@@ -2,6 +2,10 @@
 
 > 数字は語る。だが、まだ語りきっていないことがある。
 
+![SakAnalytics](../docs/images/sakanalytics.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
 観測データセット（1試合1行: `key, date, home, away, hs, as`）から、チーム×シーズンの指標を作る。
 測るだけで、除外や良し悪しの判断はしない（それは PythDRagoras と分析設定の仕事）。
 

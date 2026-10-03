@@ -40,3 +40,19 @@ jobs:
 
   actionlint:
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@main
+
+  links:
+    name: Markdown links (local + pushed branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Local (tracked files, exact case)
+        run: python -S nagoyaction/linkcheck.py
+      - name: Remote (files exist on the pushed branch)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -S nagoyaction/linkcheck.py --remote "${{ github.repository }}" --ref "${{ github.head_ref || github.ref_name }}"

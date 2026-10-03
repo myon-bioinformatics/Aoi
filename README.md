@@ -30,7 +30,9 @@ What is missing?
 Aoi
 -->
 
-docs/images/aoi-origin.png
+![Aoi の始まり](docs/images/aoi-origin.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
 ## Why Aoi Exists
 
@@ -60,9 +62,9 @@ If you are new to Aoi, read these documents first.
 
 ### Core Documents
 
-- docs/GENESIS.md
-- docs/philosophy.md
-- docs/principles.md
+- [docs/GENESIS.md](docs/GENESIS.md)
+- [docs/philosophy.md](docs/philosophy.md)
+- [docs/principles.md](docs/principles.md)
 
 These documents explain:
 
@@ -92,7 +94,6 @@ Validation
 New Observation
 -->
 
-docs/images/research-cycle.png
 
 ## Research Cycle
 
@@ -166,7 +167,9 @@ Aoi
 └─ PythDRagoras
 -->
 
-docs/images/ecosystem.png
+![Aoi Ecosystem Map](docs/images/ecosystem.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
 ## Ecosystem
 
@@ -210,7 +213,6 @@ NagoyAction -> Automate
 PythDRagoras -> Challenge
 -->
 
-docs/images/responsibilities.png
 
 ## Project Responsibilities
 
@@ -224,7 +226,7 @@ Question:
 
 Documentation:
 
-- docs/query.md
+- [queryu/README.md](queryu/README.md)
 
 ---
 
@@ -238,7 +240,8 @@ Question:
 
 Documentation:
 
-- docs/observation.md
+- [docs/observation.md](docs/observation.md)
+- [blueprobe/README.md](blueprobe/README.md)
 
 ---
 
@@ -252,7 +255,7 @@ Question:
 
 Documentation:
 
-- docs/analytics.md
+- [sakanalytics/README.md](sakanalytics/README.md)
 
 ---
 
@@ -266,7 +269,7 @@ Question:
 
 Documentation:
 
-- docs/visualization.md
+- 未着手（次のサイクルから）。構想は [docs/images/dragowing.webp](docs/images/dragowing.webp)
 
 ---
 
@@ -280,7 +283,7 @@ Question:
 
 Documentation:
 
-- docs/automation.md
+- [nagoyaction/README.md](nagoyaction/README.md)
 
 ---
 
@@ -298,8 +301,10 @@ Its purpose is to challenge assumptions, expose limitations, and generate better
 
 Documentation:
 
-- docs/hypothesis.md
-- docs/validation.md
+- [docs/PythDRagoras.md](docs/PythDRagoras.md)
+- [docs/hypothesis.md](docs/hypothesis.md)
+- [docs/validation.md](docs/validation.md)
+- [pythdragoras/README.md](pythdragoras/README.md)
 
 ---
 
@@ -317,7 +322,9 @@ New Hypothesis
 Validation
 -->
 
-docs/images/pythdragoras.png
+![PythDRagoras](docs/images/pythdragoras.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
 ## PythDRagoras
 
@@ -345,9 +352,9 @@ Before contributing code, metrics, models, or assumptions:
 
 Read:
 
-- docs/GENESIS.md
-- docs/philosophy.md
-- docs/principles.md
+- [docs/GENESIS.md](docs/GENESIS.md)
+- [docs/philosophy.md](docs/philosophy.md)
+- [docs/principles.md](docs/principles.md)
 
 The philosophy of Aoi is more important than any individual implementation.
 
@@ -392,4 +399,4 @@ Everything that follows exists to explore why.
 
 For the complete origin story, read:
 
-→ docs/GENESIS.md
+→ [docs/GENESIS.md](docs/GENESIS.md)

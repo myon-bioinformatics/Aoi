@@ -232,3 +232,45 @@ context = ["rank", "RF", "RA", "rank_rd", "wins_vs_pythag"]
 links = ["H2"]
 falsifier = "新しいデータで、この範囲かつ rd > 0 のチーム・シーズンの4分の1を超えて B クラス"
 note = "motivated_by に作るきっかけの16単位すべてを入れたので、今のデータでの held-out は0単位（判断保留が正しい）。失点の少なさは、得点の不足を上回ったときにだけ順位に届く、という見方の確かめ"
+
+# ---- R3: 得点の不足はどの得点帯で生まれたか（research/R3-scoring-bands.md） ----
+# 追加: 2026-10-04。rf_def_* は実データでまだ計算していない。R1・R2 の結果は見ている。
+
+[[proposition]]
+id = "P19"
+statement = "得点がリーグ5位以下だったシーズンの中日は、床（0〜2点に抑えられる試合）の不足が、天井（6点以上）の不足より大きい"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "rf_def_floor_minus_ceiling", op = "<", value = 0 }]
+surprise = "rf_def_floor_minus_ceiling"
+context = ["rank", "rf_def_floor", "rf_def_mid", "rf_def_ceiling", "rf_def_total"]
+links = ["H2"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、天井の不足のほうが大きい"
+note = "成り立てば「抑え込まれる試合が多い」。成り立たなければ「大量点が出ない」側を調べる"
+
+[[proposition]]
+id = "P20"
+statement = "得点がリーグ5位以下のチーム・シーズンでは、床の不足が天井の不足より大きい"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "rf_def_floor_minus_ceiling", op = "<", value = 0 }]
+surprise = "rf_def_floor_minus_ceiling"
+context = ["rank", "rf_def_floor", "rf_def_ceiling", "rf_def_total"]
+links = ["H2"]
+falsifier = "低得点のチーム・シーズンの半数以上で、天井の不足のほうが大きい"
+note = "P19 と成立率を並べ、中日の形が低得点のチームの中で特別かを見る"
+
+[[proposition]]
+id = "P21"
+statement = "得点がリーグ5位以下のチームの間では、床の不足が天井の不足より大きい形なら B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "rf_def_floor_minus_ceiling", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["rank", "rank_ra", "rd", "rf_def_total"]
+links = ["H2"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。不足の形は順位と関係しない"
+note = "低得点のチームはもともと大半が B クラスなので、成立率より lift と p を読む"

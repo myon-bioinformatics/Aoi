@@ -112,3 +112,5 @@ PR #2 の追加更新 `b4e2ff7` も統合し、既存テスト375件・研究テ
 ホーム／ビジター差の得点・失点・相手別の分解を [HOME_AWAY_RESULTS.md](HOME_AWAY_RESULTS.md) に追記した。球場係数は推定していない。
 
 失点分布の探索と既存PythDRAgoraSによる逐次判定を [LOSS_TAIL_RESULTS.md](LOSS_TAIL_RESULTS.md) に追加した。テスト・集計はexit=0、命題は反例によりexit=3。
+
+得点側の分布と比較基準を [SCORING_RESULTS.md](SCORING_RESULTS.md) で再検討した。失点差の大きさを理由に得点側の検討を省略しない。

@@ -192,16 +192,20 @@ def test_cycle1_files_reference_real_columns():
     import tomllib
     from pathlib import Path
 
-    from sakanalytics import season_table, to_team_games
+    from sakanalytics import inning_decomposition, season_table, to_team_games
 
     root = Path(__file__).resolve().parents[2] / "cycles" / "c001-chunichi"
     teams = tomllib.loads((root / "analysis.toml").read_text(encoding="utf-8"))["teams"]
     games = pl.DataFrame([{"key": "1", "date": "2024-04-01", "home": "d", "away": "g", "hs": 3, "as": 2},
                           {"key": "2", "date": "2024-04-02", "home": "t", "away": "d", "hs": 1, "as": 0}])
-    cols = set(season_table(to_team_games(games, teams)).columns)
+    st = season_table(to_team_games(games, teams))
+    innings = pl.DataFrame([{"season": 2024, "team": t, "window": w, "games": 0, "innings": 1, "runs": 0,
+                             "scoring_innings": 1} for t in ("x",) for w in ("all", "first6")],
+                           schema_overrides={"season": pl.Int32})  # パイプラインと同じく --innings の列も作る
+    cols = set(inning_decomposition(st, innings).columns)
     props, _ = pr.load(root / "propositions.toml")
     for p in props:
-        for c in [*p.get("if", []), *p["then"]]:
+        for c in [*p.get("if", []), *p["then"], *(p.get("scope") or {}).get("where", [])]:
             assert c["col"] in cols, (p["id"], c["col"])
         for c in [p.get("surprise"), *p.get("context", [])]:
             assert c is None or c in cols, (p["id"], c)

@@ -1,0 +1,23 @@
+# 分析設定。除外・注目チームなど「解釈の判断」はすべてここに書き、結果にも記録される。
+
+[focus]
+team = "d"
+league = "C"   # 順位の検定はセ・リーグの6球団で比べる（交流戦の試合は成績に含む）
+
+[[exclude]]
+season = 2020
+reason = "120試合の短縮シーズン（開幕延期）で、セ・リーグはCSを実施していない。他の年と同じ条件の順位とみなせるか判断を保留する（人の判断による除外）"
+
+[teams]
+g  = { name = "巨人", league = "C" }
+s  = { name = "ヤクルト", league = "C" }
+db = { name = "DeNA", league = "C" }
+d  = { name = "中日", league = "C" }
+t  = { name = "阪神", league = "C" }
+c  = { name = "広島", league = "C" }
+h  = { name = "ソフトバンク", league = "P" }
+f  = { name = "日本ハム", league = "P" }
+b  = { name = "オリックス", league = "P" }
+e  = { name = "楽天", league = "P" }
+l  = { name = "西武", league = "P" }
+m  = { name = "ロッテ", league = "P" }

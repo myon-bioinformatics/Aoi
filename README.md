@@ -60,7 +60,7 @@ If you are new to Aoi, read these documents first.
 
 ### Core Documents
 
-- docs/genesis.md
+- docs/GENESIS.md
 - docs/philosophy.md
 - docs/principles.md
 
@@ -345,7 +345,7 @@ Before contributing code, metrics, models, or assumptions:
 
 Read:
 
-- docs/genesis.md
+- docs/GENESIS.md
 - docs/philosophy.md
 - docs/principles.md
 
@@ -392,4 +392,4 @@ Everything that follows exists to explore why.
 
 For the complete origin story, read:
 
-→ docs/genesis.md
+→ docs/GENESIS.md

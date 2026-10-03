@@ -1,0 +1,49 @@
+# サイクル1（中日ドラゴンズ）を GitHub 上で実行する。
+# 中身は nagoyaction/nagoyaction.py が cycles/c001-chunichi/pipeline.toml を実行するだけで、
+# ローカルでの実行（python nagoyaction/nagoyaction.py run ...）と同じ。
+# 生のページと観測データ（data/）は Actions のキャッシュにだけ残し、リポジトリには入れない。
+# コミットするのは自作の指標と検証記録（cycles/c001-chunichi/outputs/）だけ。
+name: cycle c001 (chunichi)
+
+on:
+  workflow_dispatch:
+    inputs:
+      offline:
+        description: "取得を行わず、キャッシュだけで再解析する"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cycle-c001  # 二重起動で取得元に二重アクセスしない
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install uv
+        run: python -m pip install uv
+      - uses: actions/cache@v4
+        with:
+          path: data
+          key: aoi-data-c001-${{ github.run_id }}
+          restore-keys: aoi-data-c001-
+      - name: Doctor
+        run: python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml ${{ inputs.offline && '--offline' || '' }}
+      - name: Run pipeline
+        run: python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl ${{ inputs.offline && '--offline' || '' }}
+      - name: Commit outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cycles/c001-chunichi/outputs
+          git diff --cached --quiet || git commit -m "cycle c001: update outputs"
+          git push

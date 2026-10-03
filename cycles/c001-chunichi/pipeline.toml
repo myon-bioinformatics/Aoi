@@ -1,0 +1,49 @@
+# サイクル1: 中日ドラゴンズ。ローカルでも GitHub Actions でも、この定義だけを実行する。
+#   python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
+#   python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml [--offline]
+name = "c001-chunichi"
+root = "../.."
+
+[requires]
+python = "3.11"
+tools = ["git", "uv"]
+optional = ["gh"]
+
+[vars]
+years = "2012-2025"
+cache = "data/raw/npb_calendar"
+games = "data/observations/npb_calendar/games.jsonl"
+out = "cycles/c001-chunichi/outputs"
+config = "cycles/c001-chunichi/analysis.toml"
+
+# 1. 取得（ネットワーク）。取得済みのページは再取得しない。進行中のシーズンだけ更新を確認する
+[[step]]
+name = "fetch"
+run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_calendar", "--years", "{years}",
+       "--cache", "{cache}", "--out", "{games}"]
+network = true
+outputs = ["data/raw/npb_calendar/manifest.jsonl"]
+
+# 2. 観測データセットをキャッシュから作り直す（ネットワークなし）。解析ルールを直したらここから
+[[step]]
+name = "observe"
+run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_calendar", "--years", "{years}",
+       "--cache", "{cache}", "--out", "{games}", "--offline"]
+
+# 3. 構造の観測（ネットワークなし）。未知の表記・試合数の過不足を docs に残す
+[[step]]
+name = "inspect"
+run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_calendar", "--cache", "{cache}",
+       "--out", "{out}/observed.md"]
+
+# 4. 測る
+[[step]]
+name = "measure"
+run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games}", "--config", "{config}",
+       "--out", "{out}/season.jsonl"]
+
+# 5. 問い直す
+[[step]]
+name = "question"
+run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}/season.jsonl",
+       "--config", "{config}", "--hypotheses", "cycles/c001-chunichi/hypotheses.toml", "--outdir", "{out}"]

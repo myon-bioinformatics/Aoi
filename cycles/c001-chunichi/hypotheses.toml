@@ -1,0 +1,44 @@
+# 競合仮説。どれかを正解として選ぶのではなく、証拠で比べる（docs/hypothesis.md）。
+# status: 未検証（データあり） / 保留（必要なデータがない） / 支持 / 修正 / 分岐 / 結論保留 / 棄却
+
+[[hypothesis]]
+id = "H1"
+statement = "順位は1〜6に一様ではなく、下位（4〜6位）に偏って続いている"
+status = "未検証（データあり）"
+requires = "最終スコア（取得済みの範囲で可）"
+
+[[hypothesis]]
+id = "H2"
+statement = "得失点（ピタゴラス期待勝率）は勝敗を十分に説明する（残差は偶然の範囲）"
+status = "未検証（データあり）"
+requires = "最終スコア"
+
+[[hypothesis]]
+id = "H3"
+statement = "1点差試合の勝率が、期待勝率からのずれに寄与している"
+status = "未検証（データあり）"
+requires = "最終スコア"
+
+[[hypothesis]]
+id = "H4"
+statement = "2点差試合の勝率が、期待勝率からのずれに寄与している"
+status = "未検証（データあり）"
+requires = "最終スコア"
+
+[[hypothesis]]
+id = "H5"
+statement = "逆転負け（逆転勝ち）の多さが、期待勝率からのずれに寄与している"
+status = "保留（必要なデータがない）"
+requires = "イニング単位のスコア"
+
+[[hypothesis]]
+id = "H6"
+statement = "前半と後半のイニングで得点・失点の傾向が異なる"
+status = "保留（必要なデータがない）"
+requires = "イニング単位のスコア"
+
+[[hypothesis]]
+id = "H7"
+statement = "連続無得点イニング（または低得点の連続）が多い"
+status = "保留（必要なデータがない）"
+requires = "イニング単位のスコア"

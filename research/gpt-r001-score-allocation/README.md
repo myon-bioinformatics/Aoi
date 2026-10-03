@@ -120,3 +120,5 @@ PR #2 の追加更新 `b4e2ff7` も統合し、既存テスト375件・研究テ
 Grok Part3の受領検討は [PART3_RECEPTION.md](PART3_RECEPTION.md)、最終得点別の勝敗比較は [SAME_SCORE_RESULTS.md](SAME_SCORE_RESULTS.md) に記録した。
 
 Grok Part4のイニング単位の観察、分割表の算術確認、試合単位の分布との接続候補は [PART4_RECEPTION.md](PART4_RECEPTION.md) に記録した。全期間のイニング値を独立検証したという意味ではない。
+
+その後受領した共有CSVの全試合照合と64項目の加工結果は [INNING_FEATURES_RESULTS.md](INNING_FEATURES_RESULTS.md)、全列の定義は [INNING_METRICS.md](INNING_METRICS.md)。全研究テストは27件成功。イニングの配置を原HTMLから独立確認した範囲は3試合で、全試合について独立照合したのは試合集合・主催区分・両球団・最終得点である。

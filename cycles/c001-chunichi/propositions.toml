@@ -69,6 +69,45 @@ surprise = "wins_vs_pythag"
 context = ["rd", "rank", "rank_pythag"]
 links = ["H3", "H4", "H5"]
 
+# ---- 得失点差が同程度でも勝率が違う：点差の分布で説明できるか ----
+# 追加: 2026-10-03（外部の会話の提案を受けて）。このときもパイプラインの実データはまだ取得していない。
+
+[[proposition]]
+id = "P9"
+statement = "1点差の試合で勝ち越していれば、ピタゴラス期待勝利数を上回る"
+strength = "usually"
+if = [{ col = "one_run_net", op = ">", value = 0 }]
+then = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+surprise = "wins_vs_pythag"
+context = ["rd", "wpct_1run", "blowout_net"]
+links = ["H3", "H8"]
+falsifier = "1点差で勝ち越したチーム・シーズンのうち、期待勝利数を下回るものが4分の1を超える"
+note = "1点差の勝敗とピタゴラスからのずれは計算上も連動しやすい。成り立っても「どうずれたか」の記述で、「なぜか」の説明ではない"
+
+[[proposition]]
+id = "P10"
+statement = "4点以上差の試合で負け越していれば、ピタゴラス期待勝利数を上回る（大敗が失点を押し上げ、期待勝利数を下げる）"
+strength = "usually"
+if = [{ col = "blowout_net", op = "<", value = 0 }]
+then = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+surprise = "wins_vs_pythag"
+context = ["rd", "one_run_net", "rank"]
+links = ["H8"]
+falsifier = "4点以上差で負け越したチーム・シーズンのうち、期待勝利数を下回るものが4分の1を超える"
+note = "得点・失点の「配分」の偏りを見る命題。大差の試合が少ない年は条件に入らない"
+
+[[proposition]]
+id = "P11"
+statement = "得失点差が ±20 以内のチームの間では、1点差で勝ち越していれば上位半分（Aクラス）に入る"
+strength = "more_often_than_not"
+if = [{ col = "rd", op = ">=", value = -20 }, { col = "rd", op = "<=", value = 20 }, { col = "one_run_net", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rank_gap"
+context = ["rank", "rank_pythag", "wins_vs_pythag"]
+links = ["H3", "H8"]
+falsifier = "得失点差が拮抗し1点差で勝ち越したチーム・シーズンの半数以上が下位半分"
+note = "「得失点差が同程度でも勝率が違う」を、得失点差の幅を絞って比べる。±20 は「同程度」の目安として事前に決めた値"
+
 # ---- 中日ドラゴンズについての命題（focus） ----
 
 [[proposition]]

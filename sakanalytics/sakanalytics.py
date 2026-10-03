@@ -22,6 +22,9 @@
                                    ピタゴラス期待勝率・得点・失点（少ない順）・得失点差のリーグ内順位
   rank_gap                         rank − rank_pythag（正なら、得失点から期待される順位より下）
   wins_vs_pythag                   W − (W+L)·pythag_fixed（期待勝利数との差。正なら期待以上）
+  one_run_net / two_run_net        1点差・2点差の勝ち越し数（w − l）
+  blowout_net                      4点以上差の勝ち越し数（w_4plus − l_4plus）
+  rank_wpct_1run                   1点差勝率のリーグ内順位（高い順）
 """
 
 from __future__ import annotations
@@ -120,7 +123,11 @@ def add_explanatory(st: pl.DataFrame) -> pl.DataFrame:
         .with_columns(rank_pythag=r("pythag_fixed", True), rank_rf=r("RF", True),
                       rank_ra=r("RA", False), rank_rd=r("rd", True),
                       wins_vs_pythag=pl.col("W") - (pl.col("W") + pl.col("L")) * pl.col("pythag_fixed"))
-        .with_columns(rank_gap=pl.col("rank") - pl.col("rank_pythag"))
+        .with_columns(rank_gap=pl.col("rank") - pl.col("rank_pythag"),
+                      one_run_net=pl.col("w_1").cast(pl.Int64) - pl.col("l_1").cast(pl.Int64),
+                      two_run_net=pl.col("w_2").cast(pl.Int64) - pl.col("l_2").cast(pl.Int64),
+                      blowout_net=pl.col("w_4plus").cast(pl.Int64) - pl.col("l_4plus").cast(pl.Int64),
+                      rank_wpct_1run=r("wpct_1run", True))
     )
 
 

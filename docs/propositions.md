@@ -96,6 +96,19 @@ For each form, with `X` as its condition and `Y` as its consequence:
 
 ---
 
+# Falsifier And Note
+
+A proposition may declare:
+
+- `falsifier`: what observation would make us revise it. Writing it down before the evaluation keeps the proposition honest.
+- `note`: what the proposition can and cannot say. For example, a relation that is partly built into the arithmetic describes *how* a gap appeared, not *why*.
+
+Neither changes the definition (they are not part of the pre-registration fingerprint), and both are printed with the result.
+
+The output also shows the number of conditions, as a reminder of how many exceptions have been built into the proposition.
+
+---
+
 # Strength Is Declared In Words
 
 A proposition declares how strong its claim is.
@@ -234,6 +247,28 @@ The parent and its verdict stay in the record. The lineage of restatements is pr
 
 ---
 
+# Choosing Among Surviving Propositions
+
+Passing every examination is the minimum before a conclusion is stated.
+Making every proposition true is not the goal.
+
+A proposition may survive while its converse objects. Saying "this indicator works as a sufficient condition but not as a necessary one" is progress.
+A statistical proposition with exceptions within its declared strength has not failed.
+
+Passing means: objections were examined without hiding them, and the claim is stated with the strength and scope the evidence supports.
+
+When several propositions survive, prefer the one that:
+
+- applies the same criterion to every unit it compares (the comparison baseline is explicit)
+- holds beyond the counterexamples that motivated it (held-out evaluation)
+- does not accumulate convenient exception conditions (number of conditions)
+- explains more than its alternatives, and states what remains unexplained
+- declares what would make us revise it (falsifier)
+
+"Weak" or "strong" always needs a stated comparison: weak compared with whom, over which period, measured how.
+
+---
+
 # Ledger
 
 Every evaluation is appended to a ledger (`ledger.jsonl`), once per pair of proposition definition and data version.
@@ -257,7 +292,8 @@ The ledger answers the questions that matter over time: how often reality object
 
 Claims from outside the pipeline (articles, reports, other AI systems) are recorded as **claims**, not observations, together with their source and date.
 
-A claim states a number that the pipeline can reproduce (for example, a sum of residual wins over a period) and a tolerance.
+A claim states a number that the pipeline can reproduce (a sum, a mean, a count, or a ratio of sums such as a period-total win rate) and a tolerance.
+When the claim leaves something unstated (the period, pooled or averaged), the assumption is written into the claim's statement.
 The pipeline reports whether it reproduces the claim:
 
 | Status | Meaning |

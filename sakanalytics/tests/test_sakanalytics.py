@@ -79,3 +79,12 @@ def test_explanatory_columns():
     }
     d = got["d"]
     assert d["wins_vs_pythag"] == pytest.approx(3 - 5 * d["pythag_fixed"])
+
+
+def test_margin_net_columns_can_be_negative():
+    # 中日: 1点差 1勝2敗、4点以上差 0勝1敗（u32 の引き算で桁あふれしないこと）
+    rows = [("2024-04-01", "d", "g", 2, 1), ("2024-04-02", "d", "g", 1, 2), ("2024-04-03", "d", "g", 3, 4),
+            ("2024-04-04", "d", "g", 0, 9)]
+    d = season_table(to_team_games(games(rows), TEAMS)).filter(pl.col("team") == "d").row(0, named=True)
+    assert (d["one_run_net"], d["two_run_net"], d["blowout_net"]) == (-1, 0, -1)
+    assert d["rank_wpct_1run"] == 2  # 中日 1/3、巨人 2/3

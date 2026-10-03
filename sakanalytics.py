@@ -25,19 +25,29 @@
   one_run_net / two_run_net        1点差・2点差の勝ち越し数（w − l）
   blowout_net                      4点以上差の勝ち越し数（w_4plus − l_4plus）
   rank_wpct_1run                   1点差勝率のリーグ内順位（高い順）
+  alloc_*                          得点・失点の配分効果（cycles/c001-chunichi/research/R1-score-allocation.md）
+                                   試合ごとの得点の並びと失点の並びを保ち、組み合わせだけをランダムにした基準との差
+    alloc_exp_net / alloc_var      基準の（勝 − 敗）の期待値と分散（Hoeffding の厳密な公式。乱数を使わない）
+    alloc_net / alloc_z            実際の（勝 − 敗）− 期待値、その標準化
+    *_home / *_away                ホームどうし・ビジターどうしの中だけで入れ替えた基準
+    *_strat                        ホームとビジターを分けた基準の合計
+    alloc_z_abs / alloc_same_sign  |alloc_z|、ホームとビジターで alloc_net の符号がそろうか
+    alloc_z_next                   同じチームの翌シーズンの alloc_z（翌年がなければ空）
 """
 
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 import tomllib
+from collections import Counter
 from pathlib import Path
 
 import polars as pl
 
 K_FIXED = 1.83
-PATENPAT_EXP = 0.287
+PYTHAGENPAT_EXP = 0.287
 BINS = (1, 2, 3, 4)  # 4 は「4点以上」
 
 
@@ -46,8 +56,8 @@ def to_team_games(games: pl.DataFrame, teams: dict[str, dict]) -> pl.DataFrame:
     unknown = (set(games["home"]) | set(games["away"])) - set(teams)
     if unknown:  # 黙って捨てない
         raise ValueError(f"teams に定義のないチーム: {sorted(unknown)}")
-    home = games.select("date", team="home", opp="away", rf="hs", ra="as")
-    away = games.select("date", team="away", opp="home", rf="as", ra="hs")
+    home = games.select("date", team="home", opp="away", rf="hs", ra="as", is_home=pl.lit(True))
+    away = games.select("date", team="away", opp="home", rf="as", ra="hs", is_home=pl.lit(False))
     return (
         pl.concat([home, away])
         .with_columns(
@@ -57,6 +67,64 @@ def to_team_games(games: pl.DataFrame, teams: dict[str, dict]) -> pl.DataFrame:
         )
         .sort("date", "team")
     )
+
+
+def _sign(x: int) -> int:
+    return (x > 0) - (x < 0)
+
+
+def allocation(rf: list[int], ra: list[int]) -> tuple[float, float]:
+    """得点の並び rf と失点の並び ra を、組み合わせだけランダムにしたときの（勝 − 敗）の期待値と分散。
+
+    T = Σ_i c(i, π(i))、c = 符号(rf_i − ra_j)、π は一様な順列。Hoeffding (1951):
+      E[T]   = (1/n) Σ_ij c_ij
+      Var[T] = 1/(n−1) Σ_ij d_ij²,  d_ij = c_ij − 行平均_i − 列平均_j + 全体平均
+    同じ値の試合はまとめて数える（結果は試合ごとの総当たりと同じ）。
+    """
+    n = len(rf)
+    if n != len(ra):
+        raise ValueError("rf と ra の試合数が違う")
+    if n == 0:
+        return 0.0, 0.0
+    xs, ys = Counter(rf), Counter(ra)
+    c = {(x, y): _sign(x - y) for x in xs for y in ys}
+    row = {x: sum(ys[y] * c[x, y] for y in ys) / n for x in xs}
+    col = {y: sum(xs[x] * c[x, y] for x in xs) / n for y in ys}
+    total = sum(xs[x] * ys[y] * c[x, y] for x in xs for y in ys)
+    mean = total / (n * n)
+    expected = total / n
+    if n == 1:
+        return expected, 0.0
+    ss = sum(xs[x] * ys[y] * (c[x, y] - row[x] - col[y] + mean) ** 2 for x in xs for y in ys)
+    return expected, ss / (n - 1)
+
+
+def allocation_table(tg: pl.DataFrame) -> pl.DataFrame:
+    """チーム×シーズンごとの配分効果（全試合、ホームだけ、ビジターだけ、層別の合計）。"""
+    rows = []
+    for (season, team), g in tg.group_by(["season", "team"], maintain_order=True):
+        out = {"season": season, "team": team}
+        parts = {"": g, "_home": g.filter(pl.col("is_home")), "_away": g.filter(~pl.col("is_home"))}
+        for tag, part in parts.items():
+            rf, ra = part["rf"].to_list(), part["ra"].to_list()
+            exp, var = allocation(rf, ra)
+            net = sum(_sign(a - b) for a, b in zip(rf, ra))
+            out |= {f"alloc_exp_net{tag}": exp, f"alloc_var{tag}": var, f"alloc_net{tag}": net - exp,
+                    f"alloc_z{tag}": (net - exp) / math.sqrt(var) if var > 0 else None}
+        exp = out["alloc_exp_net_home"] + out["alloc_exp_net_away"]
+        var = out["alloc_var_home"] + out["alloc_var_away"]
+        net = out["alloc_net_home"] + out["alloc_net_away"]  # すでに期待値を引いた値の合計
+        out |= {"alloc_exp_net_strat": exp, "alloc_var_strat": var, "alloc_net_strat": net,
+                "alloc_z_strat": net / math.sqrt(var) if var > 0 else None}
+        rows.append(out)
+    floats = {k: pl.Float64 for k in rows[0] if k.startswith("alloc_")} if rows else {}
+    t = pl.DataFrame(rows, schema_overrides={"season": pl.Int32, **floats})  # 値がすべて空でも型を決める
+    t = t.with_columns(
+        alloc_z_abs=pl.col("alloc_z").abs(),
+        alloc_same_sign=(pl.col("alloc_net_home") * pl.col("alloc_net_away")) > 0,
+    )
+    nxt = t.select("team", season=pl.col("season") - 1, alloc_z_next=pl.col("alloc_z"))
+    return t.join(nxt, on=["season", "team"], how="left")
 
 
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
@@ -88,7 +156,7 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
     log_ratio = (RF / RA).log()
     logit = (pl.col("wpct") / (1 - pl.col("wpct"))).log()
     st = (
-        base.with_columns(wpct=W / (W + L), k_var=((RF + RA) / G) ** PATENPAT_EXP,
+        base.with_columns(wpct=W / (W + L), k_var=((RF + RA) / G) ** PYTHAGENPAT_EXP,
                           wpct_1run=pl.col("w_1") / (pl.col("w_1") + pl.col("l_1")),
                           wpct_2run=pl.col("w_2") / (pl.col("w_2") + pl.col("l_2")))
         .with_columns(
@@ -100,7 +168,8 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
         .with_columns(resid_fixed=pl.col("wpct") - pl.col("pythag_fixed"),
                       resid_var=pl.col("wpct") - pl.col("pythag_var"))
     )
-    return add_explanatory(add_rank(st)).sort("season", "league", "rank", "team")
+    st = add_explanatory(add_rank(st))
+    return st.join(allocation_table(tg), on=["season", "team"], how="left").sort("season", "league", "rank", "team")
 
 
 def add_rank(st: pl.DataFrame) -> pl.DataFrame:

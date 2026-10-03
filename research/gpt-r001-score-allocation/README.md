@@ -114,3 +114,5 @@ PR #2 の追加更新 `b4e2ff7` も統合し、既存テスト375件・研究テ
 失点分布の探索と既存PythDRAgoraSによる逐次判定を [LOSS_TAIL_RESULTS.md](LOSS_TAIL_RESULTS.md) に追加した。テスト・集計はexit=0、命題は反例によりexit=3。
 
 得点側の分布と比較基準を [SCORING_RESULTS.md](SCORING_RESULTS.md) で再検討した。失点差の大きさを理由に得点側の検討を省略しない。
+
+6球団の得点分散・0〜1点率とイニング取得の小規模試行を [SCORING_SPREAD_RESULTS.md](SCORING_SPREAD_RESULTS.md) に記録した。得点圏効率とは分けて扱う。

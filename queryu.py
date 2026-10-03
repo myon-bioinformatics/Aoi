@@ -93,8 +93,8 @@ class PoliteFetcher:
     def client(self):
         if self._client is None:
             import httpx  # オフライン実行では読み込まない
-            self._client = httpx.Client(headers={"User-Agent": UA}, timeout=30, follow_redirects=True,
-                                        transport=httpx.HTTPTransport(retries=2))
+            # transport= を渡すと環境変数のプロキシ設定が使われなくなるので渡さない
+            self._client = httpx.Client(headers={"User-Agent": UA}, timeout=30, follow_redirects=True)
         return self._client
 
     def get(self, key: str, url: str, group: str, *, live: bool = False) -> str:
@@ -138,20 +138,27 @@ def build(source, page_list, fetcher: PoliteFetcher, live_groups=()) -> dict:
     return by_group
 
 
-def write_dataset(path: Path, records: list[dict], meta: dict) -> None:
-    """記録を key でマージして書き出し、隣に manifest を置く（同じ key は新しい方を採用）。"""
+def write_dataset(path: Path, records: list[dict], meta: dict, rebuilt=None) -> None:
+    """記録を key でマージして書き出し、隣に manifest を置く（同じ key は新しい方を採用）。
+
+    rebuilt(record) -> bool: 今回すべて作り直した範囲か。既存の記録のうち、この範囲にあって今回の記録にないものは
+    消す（解析ルールを直したあと、前の規則で採用した記録が残らないように）。消した件数は manifest の removed に残す。
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    merged = {}
+    merged, new_keys, removed = {}, {r["key"] for r in records}, 0
     if path.exists():
         for line in path.read_text(encoding="utf-8").splitlines():
             r = json.loads(line)
+            if rebuilt is not None and rebuilt(r) and r["key"] not in new_keys:
+                removed += 1
+                continue
             merged[r["key"]] = r
     for r in records:
         merged[r["key"]] = r
     rows = sorted(merged.values(), key=lambda r: (r.get("date", ""), r["key"]))
     path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     body = path.read_bytes()
-    meta = {**meta, "records": len(rows), "sha256": hashlib.sha256(body).hexdigest(),
+    meta = {**meta, "records": len(rows), "removed": removed, "sha256": hashlib.sha256(body).hexdigest(),
             "generated_at": now(), "code_version": code_version()}
     path.with_suffix(".manifest.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -191,13 +198,16 @@ def main(argv=None) -> int:
     print(f"HTTP requests: {fetcher.requests}")
     if hasattr(source, "check"):
         for row in source.check(records):
-            print(row)
+            print(row["text"])
 
+    # 指定した年はキャッシュからすべて作り直している。範囲を記録から言えない取得元なら、ファイル全体を作り直す
+    scope = {str(y) for y in years}
+    rebuilt = (lambda r: source.group(r) in scope) if hasattr(source, "group") else (lambda r: True)
     write_dataset(args.out, records, {
         "source": args.source, "scope": {"years": [years[0], years[-1]]},
         "normalization": NORMALIZATION, "dropped": counts, "unknown": unknown,
         "cache_manifest": str(args.cache / "manifest.jsonl"),
-    })
+    }, rebuilt=rebuilt)
     return 0
 
 

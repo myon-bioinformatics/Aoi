@@ -124,3 +124,5 @@ Grok Part4のイニング単位の観察、分割表の算術確認、試合単�
 その後受領した共有CSVの全試合照合と64項目の加工結果は [INNING_FEATURES_RESULTS.md](INNING_FEATURES_RESULTS.md)、全列の定義は [INNING_METRICS.md](INNING_METRICS.md)。全研究テストは27件成功。イニングの配置を原HTMLから独立確認した範囲は3試合で、全試合について独立照合したのは試合集合・主催区分・両球団・最終得点である。
 
 追加パッケージの採否・対戦カード・消化順・x付き回の確認は [SUPPLEMENT_RECEPTION.md](SUPPLEMENT_RECEPTION.md)。チーム別の規定試合数による切り出しを再現し、今回の採否が整合することを確認した。64項目の入力CSVと集計値は変更なし。
+
+Part5の反例比較と対数分解を再計算した結果は [PART5_RECEPTION.md](PART5_RECEPTION.md)。主要な数値は一致し、一方で「失点上位でnet≥0または残差≥6勝が必要」という解釈には2019阪神・2020ロッテが反例として残った。

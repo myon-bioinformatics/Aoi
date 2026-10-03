@@ -96,6 +96,9 @@ def validate(p: dict) -> None:
     for c in [*p.get("if", []), *p["then"]]:
         if set(c) != {"col", "op", "value"} or c["op"] not in OPS:
             raise PropositionError(f"{pid}: 条件は {{col, op, value}}、op は {list(OPS)}: {c}")
+    for key in ("falsifier", "note"):
+        if key in p and not (isinstance(p[key], str) and p[key].strip()):
+            raise PropositionError(f"{pid}: {key} は空でない文字列")
     skip = p.get("skip_forms", [])
     if skip:
         if set(skip) != {"converse", "inverse"}:
@@ -341,6 +344,8 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
         "skipped_forms": p.get("skip_forms", []), "skip_reason": p.get("skip_reason"),
         "excluded_counterexamples": excluded_cx, "source": p.get("source"),
         "parent": p.get("parent"), "change": p.get("change"), "held_out": held_out,
+        "falsifier": p.get("falsifier"), "note": p.get("note"),
+        "conditions": len(p.get("if", [])) + len(p["then"]),
         "definition_sha256": definition_sha(p),
     } | {"judgement": None}
 
@@ -390,6 +395,7 @@ def ledger_summary(rows: list[dict], pid: str) -> dict:
 def check_claims(claims: list[dict], st: pl.DataFrame) -> list[dict]:
     """claim = {id, statement, source, date, kind, ...}。kind:
          sum / mean / count : column を filter で絞って集計し、value ± tolerance と比べる
+         ratio              : Σnum / Σden（例: 期間通算の1点差勝率 = Σw_1 / Σ(w_1+l_1)）。den は列名の配列
          interpretation     : 解釈。数で再現できないので、そのまま記録する
     """
     out = []
@@ -402,7 +408,11 @@ def check_claims(claims: list[dict], st: pl.DataFrame) -> list[dict]:
         try:
             scoped = scope_filter(st, c.get("scope"))
             df = scoped.filter(_cond(c.get("filter", []), st.columns))
-            if c["kind"] != "count" and c["column"] not in df.columns:
+            if c["kind"] == "ratio":
+                missing = [x for x in [c["num"], *c["den"]] if x not in df.columns]
+                if missing:
+                    raise PropositionError(f"存在しない列: {missing}")
+            elif c["kind"] != "count" and c["column"] not in df.columns:
                 raise PropositionError(f"存在しない列: {c['column']}")
         except PropositionError as e:
             r.update(status="not-measurable", note=str(e))
@@ -414,7 +424,17 @@ def check_claims(claims: list[dict], st: pl.DataFrame) -> list[dict]:
             r.update(status="not-reproduced", claimed=c["value"], computed=None, units=0,
                      note="主張の条件に当てはまる単位がない")
         else:
-            got = float(df.height) if c["kind"] == "count" else getattr(df[c["column"]], c["kind"])()
+            if c["kind"] == "count":
+                got = float(df.height)
+            elif c["kind"] == "ratio":
+                den = sum(float(df[x].sum()) for x in c["den"])
+                got = float(df[c["num"]].sum()) / den if den else None
+            else:
+                got = getattr(df[c["column"]], c["kind"])()
+            if got is None:  # 分母が0、または値がすべて空
+                r.update(status="not-measurable", note="値を計算できない（分母が0、または値がすべて空）")
+                out.append(r)
+                continue
             ok = abs(got - c["value"]) <= c.get("tolerance", 0)
             r.update(status="reproduced" if ok else "not-reproduced", claimed=c["value"],
                      computed=int(got) if c["kind"] == "count" else round(float(got), 3), tolerance=c.get("tolerance", 0), units=df.height)
@@ -464,6 +484,9 @@ def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] 
                   f"- 強さ: {STRENGTH_JA[r['strength']]}（{r['strength']}, 基準 {thr}）/ 範囲: {r['scope'] or '全体'} / 単位数: {r['units']}",
                   *([f"- 逆・裏は評価しない（理由: {r['skip_reason']}）"] if r.get("skipped_forms") else []),
                   *([f"- 親: {r['parent']}（変更: {_cell(r['change'])}）"] if r.get("parent") else []),
+                  *([f"- 見直す条件（反証）: {_cell(r['falsifier'])}"] if r.get("falsifier") else []),
+                  *([f"- 注記: {_cell(r['note'])}"] if r.get("note") else []),
+                  f"- 条件の数: {r.get('conditions', '-')}（例外条件を増やしすぎていないかの目安）",
                   *_ledger_line(ledger, r["id"]),
                   "", "| 形 | n | 成立 | 成立率 [95%区間] | 基準率 | lift | p | 判定不能 | 判定 | exit |", "|---|---|---|---|---|---|---|---|---|---|"]
         for f in r["forms"]:
@@ -527,8 +550,9 @@ def _cell(x) -> str:
 
 
 def _v(v):
+    """表示用。率など1未満の値は小数3桁、勝利数などは符号つき小数2桁。"""
     if isinstance(v, float):
-        return f"{v:+.2f}" if abs(v) >= 0.005 or v == 0 else f"{v:.3g}"
+        return f"{v:.3f}" if abs(v) < 1 else f"{v:+.2f}"
     return "-" if v is None else str(v)
 
 

@@ -210,7 +210,9 @@ def test_cycle1_files_reference_real_columns():
         for f in c.get("filter", []):
             assert f["col"] in cols, (c["id"], f["col"])
         assert c.get("column") is None or c["column"] in cols, c["id"]
-        assert c["kind"] in ("sum", "mean", "count", "interpretation")
+        for x in [c.get("num"), *c.get("den", [])]:
+            assert x is None or x in cols, (c["id"], x)
+        assert c["kind"] in ("sum", "mean", "count", "ratio", "interpretation")
 
 
 def test_claim_premise_not_met_is_not_reproduced_but_missing_data_is_not_measurable():
@@ -452,3 +454,26 @@ def test_pipeline_cli_maps_system_errors(tmp_path):
     props.write_text('[[proposition]]\nid="X"\nstatement="s"\nstrength="sometimes"\nthen=[{col="W",op=">",value=0}]\n',
                      encoding="utf-8")
     assert pd_main(["--season", str(season), "--config", str(cfg), "--propositions", str(props), "--outdir", str(tmp_path / "o")]) == 64
+
+
+def test_ratio_claims_and_uncomputable_values():
+    st = table(ROWS).with_columns(w_1=pl.Series([3, 1, 2, 0, 1, 2, 0, 1]), l_1=pl.Series([1, 3, 0, 2, 1, 2, 0, 1]))
+    claims = [
+        {"id": "R1", "statement": "d 通算の1点差勝率", "kind": "ratio", "num": "w_1", "den": ["w_1", "l_1"],
+         "scope": {"team": "d"}, "value": 0.5, "tolerance": 0.001},   # (3+1)/(3+1+1+3)
+        {"id": "R2", "statement": "分母0", "kind": "ratio", "num": "w_1", "den": ["w_1", "l_1"],
+         "scope": {"team": "c", "seasons": "2019"}, "value": 0.5},
+        {"id": "R3", "statement": "列なし", "kind": "ratio", "num": "nope", "den": ["l_1"], "value": 0.5},
+    ]
+    got = {c["id"]: c for c in pr.check_claims(claims, st)}
+    assert (got["R1"]["status"], got["R1"]["computed"]) == ("reproduced", 0.5)
+    assert got["R2"]["status"] == "not-measurable" and got["R3"]["status"] == "not-measurable"
+
+
+@pytest.mark.parametrize("field", ["falsifier", "note"])
+def test_falsifier_and_note_must_be_text_and_do_not_change_definition(field):
+    with pytest.raises(pr.PropositionError):
+        pr.validate({**P1, field: "  "})
+    pr.validate({**P1, field: "x"})
+    assert pr.definition_sha({**P1, field: "x"}) == pr.definition_sha(P1)  # 注記は定義（事前登録）を変えない
+    assert pr.evaluate({**P1, field: "x"}, table(ROWS))[field] == "x"

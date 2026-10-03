@@ -1,0 +1,12 @@
+{"team": "d", "team_name": "中日", "seasons": 13, "observed": 1, "expected": 3.387, "p_le_obs": 0.052, "p_ge_obs": 0.9975}
+{"team": "c", "team_name": "広島", "seasons": 13, "observed": 6, "expected": 7.607, "p_le_obs": 0.222, "p_ge_obs": 0.9308}
+{"team": "e", "team_name": "楽天", "seasons": 13, "observed": 4, "expected": 4.713, "p_le_obs": 0.4414, "p_ge_obs": 0.8292}
+{"team": "b", "team_name": "オリックス", "seasons": 13, "observed": 5, "expected": 5.654, "p_le_obs": 0.4573, "p_ge_obs": 0.8289}
+{"team": "h", "team_name": "ソフトバンク", "seasons": 13, "observed": 11, "expected": 11.433, "p_le_obs": 0.496, "p_ge_obs": 0.8218}
+{"team": "g", "team_name": "巨人", "seasons": 13, "observed": 10, "expected": 10.363, "p_le_obs": 0.5177, "p_ge_obs": 0.759}
+{"team": "l", "team_name": "西武", "seasons": 13, "observed": 6, "expected": 6.422, "p_le_obs": 0.5247, "p_ge_obs": 0.745}
+{"team": "s", "team_name": "ヤクルト", "seasons": 13, "observed": 5, "expected": 4.759, "p_le_obs": 0.7279, "p_ge_obs": 0.5704}
+{"team": "f", "team_name": "日本ハム", "seasons": 13, "observed": 7, "expected": 6.563, "p_le_obs": 0.8061, "p_ge_obs": 0.5267}
+{"team": "m", "team_name": "ロッテ", "seasons": 13, "observed": 6, "expected": 4.336, "p_le_obs": 0.9304, "p_ge_obs": 0.2121}
+{"team": "db", "team_name": "DeNA", "seasons": 13, "observed": 7, "expected": 4.968, "p_le_obs": 0.9545, "p_ge_obs": 0.1523}
+{"team": "t", "team_name": "阪神", "seasons": 13, "observed": 10, "expected": 8.054, "p_le_obs": 0.9692, "p_ge_obs": 0.1366}

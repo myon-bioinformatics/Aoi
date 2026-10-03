@@ -130,3 +130,5 @@ Part5の反例比較と対数分解を再計算した結果は [PART5_RECEPTION.
 Part6の持続性・勝率回帰の再現と解釈の境界は [PART6_RECEPTION.md](PART6_RECEPTION.md)。中日を除く相関とクラスタ別の回帰感度も確認し、持続する特徴と因果説明を分けて保持した。
 
 球団打撃成績と得点回当たり得点の連続値・年次変化・別指標の比較は [BATTING_SIZE_RESULTS.md](BATTING_SIZE_RESULTS.md)。既存R6検証を補い、長打指標だけでは説明を固定できないことと反例を記録した。
+
+低ISOでもRPSが低くない32事例の出塁・得点頻度の比較は [ISO_COUNTEREXAMPLES_RESULTS.md](ISO_COUNTEREXAMPLES_RESULTS.md)。低ISO82件を保持し、追加条件でも残る18件を記録した。次の候補はISO・出塁率併用の予測評価で、今回の探索は因果的補填や新指標の成立を示さない。

@@ -11,7 +11,7 @@ Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 15ms
+Installed 15 packages in 55ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -125,7 +125,7 @@ HTTP requests: 0
 2023: records=12 unknown=0
 2024: records=12 unknown=0
 2025: records=12 unknown=0
-HTTP requests: 28
+HTTP requests: 0
 2012: teams=12 expected=12 OK
 2013: teams=12 expected=12 OK
 2014: teams=12 expected=12 OK
@@ -352,6 +352,11 @@ shape: (14, 12)
 - P32 得点がリーグ5位以下だったシーズンの中日は、出塁率が他球団より低い: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
 - P33 ISO が同じ年・同じリーグの他球団より低ければ、得点した回のうち3点以上の回の割合も他球団より少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 修正 / 逆 保留 / 裏 保留）
 - P34 出塁率が同じ年・同じリーグの他球団より低ければ、得点する回の頻度も他球団より低い: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P35 ISO が同じ年・同じリーグの他球団より低ければ、得点した回のうち3点以上の回の割合も他球団より少ないことが多い: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 支持 / 裏 支持）
+- P36 得点がリーグ5位以下だったシーズンの中日は、床（k = 1〜2）の不足が、同じ幅の天井側（k = 6〜7）の不足より大きい: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 保留）
+- P37 得点がリーグ5位以下のチーム・シーズンでは、床（k = 1〜2）の不足が、同じ幅の天井側（k = 6〜7）の不足より大きい: **exit 4 待った！判断保留** （元 保留 / 対偶 棄却）
+- P38 四死球／打席が同じ年・同じリーグの他球団より少なければ、得点した回の大きさも他球団より小さい: **exit 2 異議あり（主張が強すぎる）** （元 修正 / 対偶 修正 / 逆 保留 / 裏 保留）
+- P39 ISO が同じ年・同じリーグの他球団より低ければ、得点した回の大きさも他球団より小さい: **exit 2 異議あり（主張が強すぎる）** （元 修正 / 対偶 修正 / 逆 保留 / 裏 保留）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -424,3 +429,8 @@ shape: (14, 12)
 [4] P32 待った！判断保留 元の命題: n=11（min_n=10）、成立率の区間 0.74〜1.00
 [4] P33 待った！判断保留 元の命題: 判例 26 件: t-2023, m-2022, c-2022, s-2016, m-2016 ほか
 [4] P34 待った！判断保留 元の命題: 判例 15 件: f-2024, h-2019, f-2014, db-2017, b-2021 ほか
+[1] P35 異議あり（例外あり） 元の命題: 判例 26 件: t-2023, m-2022, c-2022, s-2016, m-2016 ほか
+[3] P36 異議あり（不成立） 元の命題: 判例 8 件: d-2017, d-2013, d-2015, d-2021, d-2024 ほか
+[4] P37 待った！判断保留 元の命題: 判例 31 件: d-2017, b-2019, e-2015, b-2016, l-2022 ほか
+[2] P38 異議あり（主張が強すぎる） 元の命題: 判例 29 件: c-2022, b-2025, m-2016, b-2023, g-2018 ほか
+[2] P39 異議あり（主張が強すぎる） 元の命題: 判例 33 件: c-2022, m-2016, t-2023, e-2022, e-2014 ほか

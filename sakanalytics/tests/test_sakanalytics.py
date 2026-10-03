@@ -64,3 +64,18 @@ def test_rank_within_league_with_tie_flag():
 def test_interleague_games_count_for_both_leagues():
     st = season_table(to_team_games(games([("2024-06-01", "d", "h", 2, 1)]), TEAMS))
     assert st.select("team", "league", "W", "L").sort("team").rows() == [("d", "C", 1, 0), ("h", "P", 0, 1)]
+
+
+def test_explanatory_columns():
+    # 中日 3勝2敗(3-20)、巨人 2勝4敗(22-6)、阪神 1勝0敗(3-2)
+    rows = [("2024-04-01", "d", "g", 1, 0)] * 3 + [("2024-04-02", "g", "d", 10, 0)] * 2 + [("2024-04-03", "t", "g", 3, 2)]
+    st = season_table(to_team_games(games(rows), TEAMS)).filter(pl.col("league") == "C")
+    got = {r["team"]: r for r in st.iter_rows(named=True)}
+    cols = ("rank", "upper_half", "rd", "rank_pythag", "rank_gap", "rank_rf", "rank_ra", "rank_rd")
+    assert {t: tuple(r[c] for c in cols) for t, r in got.items()} == {
+        "t": (1, True, 1, 2, -1, 2, 1, 2),
+        "d": (2, False, -17, 3, -1, 2, 3, 3),   # 得点は阪神と同数 → 同順位2
+        "g": (3, False, 16, 1, 2, 1, 2, 1),     # 得失点はリーグ最良なのに最下位 = 典型的な判例
+    }
+    d = got["d"]
+    assert d["wins_vs_pythag"] == pytest.approx(3 - 5 * d["pythag_fixed"])

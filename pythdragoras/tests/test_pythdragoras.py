@@ -73,3 +73,44 @@ def test_summary_separates_observation_from_cause():
                                         "excess_wins": [-3.0], "z": [-1.0], "p_two_sided": [0.3]}),
                           rank_test(st), [{"id": "H1", "statement": "s", "status": "untested"}])
     assert "原因は示さない" in md and "2020: r" in md and "(focus)" in md and "| H1 |" in md
+
+
+@pytest.mark.parametrize("n,r,p_bb,p_tb,pi_b", [(4, 2, 0.7, 0.3, 0.5), (5, 3, 0.66, 0.34, 0.5), (6, 1, 0.9, 0.1, 0.2), (3, 3, 0.5, 0.5, 0.5)])
+def test_markov_run_tail_matches_brute_force(n, r, p_bb, p_tb, pi_b):
+    from pythdragoras import markov_run_tail
+
+    def prob(seq):
+        pr = pi_b if seq[0] else 1 - pi_b
+        for a, b in zip(seq, seq[1:]):
+            pb = p_bb if a else p_tb
+            pr *= pb if b else 1 - pb
+        return pr
+
+    def longest(seq):
+        best = cur = 0
+        for s in seq:
+            cur = cur + 1 if s else 0
+            best = max(best, cur)
+        return best
+
+    brute = sum(prob(s) for s in product([0, 1], repeat=n) if longest(s) >= r)
+    assert markov_run_tail(n, r, p_bb, p_tb, pi_b) == pytest.approx(brute)
+
+
+def test_markov_with_no_persistence_equals_independent():
+    from pythdragoras import markov_run_tail
+    assert markov_run_tail(14, 5, 0.5, 0.5, 0.5) == pytest.approx(run_tail(14, 5, 0.5))
+
+
+def test_transitions_counts():
+    from pythdragoras import transitions
+    st = _ranks({"d": [4, 5, 6, 2], "g": [1, 2, 4, 1]})
+    t = transitions(st)
+    assert (t["bb"], t["bt"], t["tb"], t["tt"]) == (2, 2, 1, 1)
+    assert t["p_bb"] == pytest.approx(0.5) and t["p_tb"] == pytest.approx(0.5)
+
+
+def test_reproduces_external_report_markov_figure():
+    # 外部レポート（Grok, 2026-10-03）: P(B→B)=0.657 のマルコフ連鎖で「14年連続B」は 0.21%
+    from pythdragoras import markov_run_tail
+    assert markov_run_tail(14, 14, 0.657, 0.343, 0.5) == pytest.approx(0.0021, abs=0.0001)

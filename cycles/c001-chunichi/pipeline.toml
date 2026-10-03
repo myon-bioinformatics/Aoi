@@ -46,4 +46,6 @@ run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games
 [[step]]
 name = "question"
 run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}/season.jsonl",
-       "--config", "{config}", "--hypotheses", "cycles/c001-chunichi/hypotheses.toml", "--outdir", "{out}"]
+       "--config", "{config}", "--hypotheses", "cycles/c001-chunichi/hypotheses.toml",
+       "--propositions", "cycles/c001-chunichi/propositions.toml", "--claims", "cycles/c001-chunichi/claims.toml",
+       "--outdir", "{out}"]

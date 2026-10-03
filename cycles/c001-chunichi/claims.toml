@@ -1,0 +1,107 @@
+# 外部の主張（references/2026-10-03-external-report.md）。観測ではない。
+# パイプラインで再現できるかを確かめる。再現しなければ、それ自体が調べるべき矛盾。
+# 注: レポートの「期待勝利数」が W+L と G のどちらを分母にしたかは書かれていない。tolerance はその幅を見込む。
+
+[[claim]]
+id = "C1"
+statement = "中日 2013-2025 の（実際の勝利数 − ピタゴラス期待勝利数）の合計は +22.0 勝（指数1.83）"
+source = "external-report"
+date = "2026-10-03"
+kind = "sum"
+column = "wins_vs_pythag"
+scope = { team = "d", seasons = "2013-2025" }
+value = 22.0
+tolerance = 1.5
+
+[[claim]]
+id = "C2"
+statement = "同じ合計から2020年を除くと +12.7 勝"
+source = "external-report"
+date = "2026-10-03"
+kind = "sum"
+column = "wins_vs_pythag"
+scope = { team = "d", seasons = "2013-2025" }
+filter = [{ col = "season", op = "!=", value = 2020 }]
+value = 12.7
+tolerance = 1.5
+
+[[claim]]
+id = "C3"
+statement = "中日 2019: 期待勝利数より −4.7 勝"
+source = "external-report"
+date = "2026-10-03"
+kind = "sum"
+column = "wins_vs_pythag"
+scope = { team = "d", seasons = "2019" }
+value = -4.7
+tolerance = 0.5
+
+[[claim]]
+id = "C4"
+statement = "中日 2019: 得失点差 +19"
+source = "external-report"
+date = "2026-10-03"
+kind = "sum"
+column = "rd"
+scope = { team = "d", seasons = "2019" }
+value = 19
+tolerance = 0
+
+[[claim]]
+id = "C5"
+statement = "中日 2019: ピタゴラス順位2位"
+source = "external-report"
+date = "2026-10-03"
+kind = "count"
+scope = { team = "d", seasons = "2019" }
+filter = [{ col = "rank_pythag", op = "==", value = 2 }]
+value = 1
+tolerance = 0
+
+[[claim]]
+id = "C6"
+statement = "中日 2020: 得失点差 −60 で3位（期待勝利数より +9.4 勝）"
+source = "external-report"
+date = "2026-10-03"
+kind = "sum"
+column = "wins_vs_pythag"
+scope = { team = "d", seasons = "2020" }
+filter = [{ col = "rd", op = "==", value = -60 }, { col = "rank", op = "==", value = 3 }]
+value = 9.4
+tolerance = 0.5
+
+[[claim]]
+id = "C7"
+statement = "中日 2013-2025 で得点リーグ順位が5〜6位だったのは13年中12年"
+source = "external-report"
+date = "2026-10-03"
+kind = "count"
+scope = { team = "d", seasons = "2013-2025" }
+filter = [{ col = "rank_rf", op = ">=", value = 5 }]
+value = 12
+tolerance = 0
+
+[[claim]]
+id = "C8"
+statement = "中日 2013-2025 で B クラス（4位以下）は13年中12年（2020年の3位を A クラスとする厳密な数え方）"
+source = "external-report"
+date = "2026-10-03"
+kind = "count"
+scope = { team = "d", seasons = "2013-2025" }
+filter = [{ col = "upper_half", op = "==", value = false }]
+value = 12
+tolerance = 0
+
+[[claim]]
+id = "C9"
+statement = "中日は運が悪かったわけではない。原因は得失点差そのもの"
+source = "external-report"
+date = "2026-10-03"
+kind = "interpretation"
+
+[[claim]]
+id = "C10"
+statement = "1958-2025 の実データで P(翌年もB | 今年B)=0.657。AR(1) ρ=0.5〜0.6 が実データをよく再現する（取得範囲 2012-2025 の外）"
+source = "external-report"
+date = "2026-10-03"
+kind = "interpretation"

@@ -16,6 +16,12 @@
   wpct_1run / wpct_2run            1点差・2点差の勝率（競合仮説の材料）
   *_median / *_mode / *_iqr        勝ち試合の点差・負け試合の点差・得点・失点の中央値・最頻値・IQR
   rank / rank_tie                  リーグ内の勝率順位（派生値）。同率は小さい順位にそろえ、rank_tie=True
+  upper_half                       rank <= リーグの球団数/2（6球団なら3位以内）
+  rd                               得失点差 RF − RA
+  rank_pythag / rank_rf / rank_ra / rank_rd
+                                   ピタゴラス期待勝率・得点・失点（少ない順）・得失点差のリーグ内順位
+  rank_gap                         rank − rank_pythag（正なら、得失点から期待される順位より下）
+  wins_vs_pythag                   W − (W+L)·pythag_fixed（期待勝利数との差。正なら期待以上）
 """
 
 from __future__ import annotations
@@ -91,16 +97,30 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
         .with_columns(resid_fixed=pl.col("wpct") - pl.col("pythag_fixed"),
                       resid_var=pl.col("wpct") - pl.col("pythag_var"))
     )
-    return add_rank(st).sort("season", "league", "rank", "team")
+    return add_explanatory(add_rank(st)).sort("season", "league", "rank", "team")
 
 
 def add_rank(st: pl.DataFrame) -> pl.DataFrame:
     """リーグ内の勝率順位。公式の順位決定方法（同率時の規定）は再現しないので、同率には印をつける。"""
     over = ["season", "league"]
-    return st.with_columns(
+    out = st.with_columns(
         rank=pl.col("wpct").rank("min", descending=True).over(over).cast(pl.Int32),
         rank_tie=(pl.col("wpct").count().over([*over, "wpct"]) > 1),
         league_size=pl.len().over(over).cast(pl.Int32),
+    )
+    return out.with_columns(upper_half=pl.col("rank") <= pl.col("league_size") / 2)
+
+
+def add_explanatory(st: pl.DataFrame) -> pl.DataFrame:
+    """命題の判定に使う、得失点から見た「期待」の列。2列の比較は必ずここで列にして見える形にする。"""
+    over = ["season", "league"]
+    r = lambda col, desc: pl.col(col).rank("min", descending=desc).over(over).cast(pl.Int32)  # noqa: E731
+    return (
+        st.with_columns(rd=pl.col("RF") - pl.col("RA"))
+        .with_columns(rank_pythag=r("pythag_fixed", True), rank_rf=r("RF", True),
+                      rank_ra=r("RA", False), rank_rd=r("rd", True),
+                      wins_vs_pythag=pl.col("W") - (pl.col("W") + pl.col("L")) * pl.col("pythag_fixed"))
+        .with_columns(rank_gap=pl.col("rank") - pl.col("rank_pythag"))
     )
 
 

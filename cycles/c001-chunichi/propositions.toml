@@ -1,0 +1,96 @@
+# サイクル1の命題（事前登録）。形式と判定規則は docs/propositions.md。
+#
+# 記録: 2026-10-03 に書いた。このとき Aoi のパイプラインによる実データはまだ取得していない。
+#       外部レポート（references/2026-10-03-external-report.md）の数値は読んだうえで書いている。
+#       強さ（strength）は言葉で選び、数値の基準はそこから自動で決まる。データに合わせて調整しない。
+# 変更: 結果を見てから基準・範囲・条件を変えるときは、新しい id を作り、この命題は残す。
+#
+# 単位: チーム×シーズン（12球団、2012〜2025年、analysis.toml の除外を適用。除外中の判例は別に表示）
+
+# ---- 得失点で順位を説明する（既存の説明） ----
+
+[[proposition]]
+id = "P1"
+statement = "得失点差がプラスなら、上位半分（Aクラス）である"
+strength = "usually"
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rank_gap"
+context = ["rank", "rank_pythag", "wins_vs_pythag"]
+links = ["H2", "H3", "H4"]
+
+[[proposition]]
+id = "P2"
+statement = "ピタゴラス期待勝率でリーグ3位以内なら、実際も3位以内である"
+strength = "usually"
+if = [{ col = "rank_pythag", op = "<=", value = 3 }]
+then = [{ col = "rank", op = "<=", value = 3 }]
+surprise = "rank_gap"
+context = ["rd", "wins_vs_pythag"]
+links = ["H2", "H3", "H4"]
+
+[[proposition]]
+id = "P3"
+statement = "得点がリーグ2位以内なら、3位以内である"
+strength = "usually"
+if = [{ col = "rank_rf", op = "<=", value = 2 }]
+then = [{ col = "rank", op = "<=", value = 3 }]
+surprise = "rank_gap"
+context = ["rank_ra", "rd"]
+links = ["H2"]
+
+[[proposition]]
+id = "P4"
+statement = "失点がリーグで2番目以内に少なければ、3位以内である"
+strength = "usually"
+if = [{ col = "rank_ra", op = "<=", value = 2 }]
+then = [{ col = "rank", op = "<=", value = 3 }]
+surprise = "rank_gap"
+context = ["rank_rf", "rd"]
+links = ["H2"]
+
+[[proposition]]
+id = "P5"
+statement = "得点がリーグ5位以下なら、下位半分（Bクラス）である"
+strength = "usually"
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["rank", "rank_ra", "rd"]
+links = ["H2"]
+
+[[proposition]]
+id = "P6"
+statement = "どのチーム・シーズンでも、実際の勝利数はピタゴラス期待勝利数の±5勝以内に収まる"
+strength = "almost_always"
+if = []
+then = [{ col = "wins_vs_pythag", op = ">=", value = -5 }, { col = "wins_vs_pythag", op = "<=", value = 5 }]
+surprise = "wins_vs_pythag"
+context = ["rd", "rank", "rank_pythag"]
+links = ["H3", "H4", "H5"]
+
+# ---- 中日ドラゴンズについての命題（focus） ----
+
+[[proposition]]
+id = "P7"
+statement = "中日の順位は、得失点から期待される順位より2つ以上は下回らない"
+strength = "usually"
+if = [{ col = "team", op = "==", value = "d" }]
+then = [{ col = "rank_gap", op = "<=", value = 1 }]
+surprise = "rank_gap"
+context = ["rank", "rank_pythag", "rd", "wins_vs_pythag"]
+links = ["H3", "H4", "H5"]
+skip_forms = ["converse", "inverse"]
+skip_reason = "条件が「中日であること」なので、逆（期待どおりなら中日である）は意味を持たない"
+
+[[proposition]]
+id = "P8"
+statement = "中日の勝利数は、ピタゴラス期待勝利数を3勝以上は下回らない（「運が悪かった」ではない）"
+strength = "usually"
+if = [{ col = "team", op = "==", value = "d" }]
+then = [{ col = "wins_vs_pythag", op = ">=", value = -3 }]
+surprise = "wins_vs_pythag"
+context = ["rank", "rank_pythag", "rd", "wpct_1run"]
+links = ["H3", "H4", "H5"]
+skip_forms = ["converse", "inverse"]
+skip_reason = "条件が「中日であること」なので、逆（期待どおりなら中日である）は意味を持たない"

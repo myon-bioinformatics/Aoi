@@ -78,6 +78,43 @@ def run_tail(n: int, r: int, p: float) -> float:
     return 1 - no_run(n, 0)
 
 
+def markov_run_tail(n: int, r: int, p_bb: float, p_tb: float, pi_b: float) -> float:
+    """2状態マルコフ連鎖（下位/上位）で、n シーズン中に下位が r 回以上連続する確率。
+
+    p_bb = P(翌年も下位 | 今年下位), p_tb = P(翌年下位 | 今年上位), pi_b = 最初の年に下位の確率。
+    戦力の持ち越し（前年の順位が翌年に影響すること）を入れた帰無仮説。
+    """
+    if r <= 0:
+        return 1.0
+    if n == 0:
+        return 0.0
+
+    @lru_cache(maxsize=None)
+    def no_run(i: int, cur: int, last_bottom: bool) -> float:  # 残り i 年、現在 cur 連続、直前が下位か
+        if cur >= r:
+            return 0.0
+        if i == 0:
+            return 1.0
+        pb = p_bb if last_bottom else p_tb
+        return pb * no_run(i - 1, cur + 1, True) + (1 - pb) * no_run(i - 1, 0, False)
+
+    first = pi_b * no_run(n - 1, 1, True) + (1 - pi_b) * no_run(n - 1, 0, False)
+    return 1 - first
+
+
+def transitions(st: pl.DataFrame) -> dict:
+    """全チームについて、隣り合う（含めた範囲で連続する）シーズンの下位/上位の移り変わりを数える。"""
+    c = {"bb": 0, "bt": 0, "tb": 0, "tt": 0}
+    for _, g in st.sort("season").group_by(["team"], maintain_order=True):
+        flags = [r > s / 2 for r, s in zip(g["rank"].to_list(), g["league_size"].to_list())]
+        for a, b in zip(flags, flags[1:]):
+            c[("b" if a else "t") + ("b" if b else "t")] += 1
+    p_bb = c["bb"] / (c["bb"] + c["bt"]) if c["bb"] + c["bt"] else None
+    p_tb = c["tb"] / (c["tb"] + c["tt"]) if c["tb"] + c["tt"] else None
+    pi_b = p_tb / (1 - p_bb + p_tb) if p_bb is not None and p_tb is not None and (1 - p_bb + p_tb) else None
+    return {**c, "p_bb": p_bb, "p_tb": p_tb, "pi_b": pi_b}
+
+
 def _longest(flags: list[bool]) -> int:
     best = cur = 0
     for f in flags:
@@ -104,11 +141,21 @@ def rank_test(st: pl.DataFrame) -> list[dict]:
             "bottom_seasons": k, "longest_bottom_run": run, "p_bottom_null": p,
             "null_p_at_least_k": binom_tail(n, k, p), "null_p_run_at_least": run_tail(n, run, p),
         })
+    # 持ち越しを入れた基準: 全チームの移り変わりから推定したマルコフ連鎖
+    tr = transitions(st)
+    for r in rows:
+        r["markov"] = {k: tr[k] for k in ("p_bb", "p_tb", "pi_b")}
+        r["markov_p_run_at_least"] = (markov_run_tail(r["seasons"], r["longest_bottom_run"], tr["p_bb"], tr["p_tb"], tr["pi_b"])
+                                      if tr["pi_b"] is not None else None)
     # 経験的基準: 同じ表に入っている全チームのうち、下位シーズン数がこのチーム以上だったチームの割合
     for r in rows:
         r["empirical_share_at_least_k"] = sum(o["bottom_seasons"] >= r["bottom_seasons"] for o in rows) / len(rows)
         r["empirical_share_run_at_least"] = sum(o["longest_bottom_run"] >= r["longest_bottom_run"] for o in rows) / len(rows)
     return sorted(rows, key=lambda r: (-r["bottom_seasons"], -r["longest_bottom_run"], r["team"]))
+
+
+def _f(x):
+    return "-" if x is None else f"{x:.3f}"
 
 
 def summary_markdown(focus: str | None, exclusions: list[dict], cum: pl.DataFrame, ranks: list[dict],
@@ -119,15 +166,20 @@ def summary_markdown(focus: str | None, exclusions: list[dict], cum: pl.DataFram
     lines += ["## 除外したシーズン", ""]
     lines += [f"- {e['season']}: {e['reason']}（{e['rows_removed']} 行）" for e in exclusions] or ["- なし"]
     lines += ["", "## 順位の偏り", "",
-              "| team | 期間 | 下位シーズン | 最長連続 | 帰無: P(下位≥k) | 帰無: P(連続≥r) | 全球団中で下位≥kの割合 | 同率 |",
-              "|---|---|---|---|---|---|---|---|"]
+              "| team | 期間 | 下位シーズン | 最長連続 | 独立: P(下位≥k) | 独立: P(連続≥r) | マルコフ: P(連続≥r) | 全球団中で下位≥kの割合 | 同率 |",
+              "|---|---|---|---|---|---|---|---|---|"]
     for r in ranks:
         mark = " **(focus)**" if r["team"] == focus else ""
         lines.append(f"| {r['team_name']}{mark} | {r['first']}-{r['last']} ({r['seasons']}) | {r['bottom_seasons']} "
                      f"| {r['longest_bottom_run']} | {r['null_p_at_least_k']:.2e} | {r['null_p_run_at_least']:.2e} "
+                     f"| {'-' if r['markov_p_run_at_least'] is None else format(r['markov_p_run_at_least'], '.2e')} "
                      f"| {r['empirical_share_at_least_k']:.2f} | {r['rank_ties']} |")
-    lines += ["", "帰無仮説は各シーズンを独立とみなすため、前年からの戦力の持ち越しを無視し、珍しさを過大に見積もる。",
-              "全球団との比較（経験的基準）と並べて読むこと。", ""]
+    if ranks:
+        m = ranks[0]["markov"]
+        lines += ["", f"マルコフ連鎖の推定値（含めた範囲の全チーム）: P(下位→下位)={_f(m['p_bb'])}, "
+                      f"P(上位→下位)={_f(m['p_tb'])}, 定常的に下位の確率={_f(m['pi_b'])}"]
+    lines += ["", "「独立」は各シーズンを独立とみなすため、前年からの戦力の持ち越しを無視し、珍しさを過大に見積もる。",
+              "「マルコフ」は持ち越しを入れるが、推定に使える年数が短いと不安定になる。全球団との比較と並べて読むこと。", ""]
     lines += ["## 期待勝率からのずれの累積", "", "| model | team | seasons | excess_wins | z | p |", "|---|---|---|---|---|---|"]
     for r in cum.iter_rows(named=True):
         mark = " **(focus)**" if r["team"] == focus else ""
@@ -139,10 +191,14 @@ def summary_markdown(focus: str | None, exclusions: list[dict], cum: pl.DataFram
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="シーズン表から残差と順位の偏りを検証する")
+    from propositions import check_claims, evaluate, load, render, render_claims
+
+    ap = argparse.ArgumentParser(description="シーズン表から残差・順位の偏り・命題を検証する")
     ap.add_argument("--season", type=Path, required=True)
     ap.add_argument("--config", type=Path, required=True)
     ap.add_argument("--hypotheses", type=Path, help="競合仮説の一覧（TOML）")
+    ap.add_argument("--propositions", type=Path, help="命題（TOML）。docs/propositions.md の形式")
+    ap.add_argument("--claims", type=Path, help="外部の主張（TOML）")
     ap.add_argument("--outdir", type=Path, required=True)
     args = ap.parse_args(argv)
 
@@ -152,22 +208,59 @@ def main(argv=None) -> int:
     if args.hypotheses:
         with args.hypotheses.open("rb") as f:
             hyps = tomllib.load(f).get("hypothesis", [])
+    focus = cfg.get("focus", {}).get("team")
 
-    st = pl.read_ndjson(args.season)
+    full = pl.read_ndjson(args.season)
+    included, exclusions = apply_exclusions(full, cfg.get("exclude", []))
+    excluded = full.filter(~pl.col("season").is_in(included["season"].unique().to_list()))
+
     league = cfg.get("focus", {}).get("league")
-    if league:
-        st = st.filter(pl.col("league") == league)
-    st, exclusions = apply_exclusions(st, cfg.get("exclude", []))
+    st = included.filter(pl.col("league") == league) if league else included
     cum, ranks = cumulative_test(st), rank_test(st)
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     cum.write_ndjson(args.outdir / "cumulative.jsonl")
-    (args.outdir / "rank_test.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in ranks), encoding="utf-8")
+    _jsonl(args.outdir / "rank_test.jsonl", ranks)
     (args.outdir / "exclusions.json").write_text(json.dumps(exclusions, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    md = summary_markdown(cfg.get("focus", {}).get("team"), exclusions, cum, ranks, hyps)
+    md = summary_markdown(focus, exclusions, cum, ranks, hyps)
+
+    if args.propositions:
+        props, sha = load(args.propositions)
+        meta = {"sha256": sha, "code_version": _code_version(), "file": str(args.propositions)}
+        results = [{**evaluate(p, included, excluded, focus), "meta": meta} for p in props]
+        _jsonl(args.outdir / "propositions.jsonl", results)
+        (args.outdir / "objections.md").write_text(render(results, meta), encoding="utf-8")
+        md += "\n## 命題の判定\n\n" + "\n".join(
+            f"- {r['id']} {r['statement']}: " + " / ".join(
+                f"{_FORM[f['form']]} {_VERD[f['verdict']]}" for f in r["forms"])
+            + (" — **異議あり**" if r["objection"] else "") for r in results) + "\n\n詳細は objections.md。\n"
+    if args.claims:
+        with args.claims.open("rb") as f:
+            claims = check_claims(tomllib.load(f).get("claim", []), full)
+        (args.outdir / "claims.json").write_text(json.dumps(claims, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        md += "\n" + render_claims(claims)
+
     (args.outdir / "summary.md").write_text(md, encoding="utf-8")
     print(md)
     return 0
+
+
+_FORM = {"original": "元", "contrapositive": "対偶", "converse": "逆", "inverse": "裏"}
+_VERD = {"Supported": "支持", "Rejected": "棄却", "Refined": "修正", "Inconclusive": "保留"}
+
+
+def _jsonl(path: Path, rows) -> None:
+    path.write_text("".join(json.dumps(r, ensure_ascii=False, default=str) + "\n" for r in rows), encoding="utf-8")
+
+
+def _code_version():
+    import subprocess
+    try:
+        out = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, timeout=5,
+                             cwd=Path(__file__).resolve().parent, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout.strip() or None
 
 
 if __name__ == "__main__":

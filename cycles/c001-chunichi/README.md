@@ -17,6 +17,8 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 | 除外 | 2020年（理由は `analysis.toml`） | `outputs/exclusions.json` |
 | 比較対象 | セ・リーグの6球団 | `analysis.toml` の `[focus]` |
 | 保留 | イニング単位のデータ（逆転・前半/後半・連続無得点） | `hypotheses.toml` |
+| 命題 | 得失点・ピタゴラス・得点/失点順位と順位の関係、中日についての命題（P1〜P8、事前登録） | `propositions.toml` |
+| 外部の主張 | 外部レポートの数値（C1〜C8）と解釈（C9, C10） | `claims.toml`、`references/` |
 
 ## 実行
 
@@ -38,5 +40,8 @@ GitHub 上では Actions の「cycle c001 (chunichi)」を手動実行する。�
 | `rank_test.jsonl` | 順位の偏りの検定（帰無仮説と全球団比較） |
 | `exclusions.json` | 除外したシーズンと理由 |
 | `summary.md` | 検証記録。観測した数だけを書き、原因は書かない |
+| `objections.md` | 命題ごとの判定と「異議あり」（判例の一覧、除外中の判例） |
+| `propositions.jsonl` | 同じ内容の機械向け形式（命題ファイルの SHA-256 とコードの版つき） |
+| `claims.json` | 外部の主張の再現結果 |
 
 生のページ（`data/raw/`）と1試合ごとの観測（`data/observations/`）は git に入れない。

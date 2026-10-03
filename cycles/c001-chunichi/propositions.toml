@@ -329,3 +329,71 @@ context = ["inn_dlog_freq_6", "inn_dlog_size_6", "inn_freq_minus_size"]
 links = ["H5", "H6"]
 falsifier = "P22 と判定が食い違う（9回裏の省略・延長の扱いが結果を左右している）"
 note = "9回裏の省略・サヨナラの途中終了の影響を小さくした比較。補正ではない"
+
+# ---- R5: 点が入った回が小さいのはどこで・どの形でか（research/R5-scoring-inning-size.md） ----
+# 追加: 2026-10-04。*_home / *_away / inn_*_share は実データでまだ計算していない。R4 の結果は見ている。
+
+[[proposition]]
+id = "P26"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点した回のうち1点の回の割合が他球団より多い"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_d_single_share", op = ">", value = 0 }]
+surprise = "inn_d_single_share"
+context = ["inn_d_big_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、1点の回の割合が他球団以下"
+note = "P27 と組で読む。片方だけ成り立つなら、大きさの不足はその側に集中している"
+
+[[proposition]]
+id = "P27"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点した回のうち3点以上の回の割合が他球団より少ない"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+surprise = "inn_d_big_share"
+context = ["inn_d_single_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、3点以上の回の割合が他球団以上"
+note = "P30（中日以外の低得点のチーム）と成立率を並べ、中日固有かを見る"
+
+[[proposition]]
+id = "P28"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ホームの試合で得点した回の大きさが他球団（ホーム同士）より小さい"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_dlog_size_home", op = "<", value = 0 }]
+surprise = "inn_dlog_size_home"
+context = ["inn_dlog_size_away", "inn_dlog_size", "inn_dlog_freq_home"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、ホームの大きさが他球団以上"
+note = "球場の係数ではない。ホーム同士で比べるだけ。P29 と片方だけ成り立つなら、主催区分の問題として扱う（原因は特定しない）"
+
+[[proposition]]
+id = "P29"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ビジターの試合で得点した回の大きさが他球団（ビジター同士）より小さい"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_dlog_size_away", op = "<", value = 0 }]
+surprise = "inn_dlog_size_away"
+context = ["inn_dlog_size_home", "inn_dlog_size", "inn_dlog_freq_away"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、ビジターの大きさが他球団以上"
+note = "P28 と組で読む"
+
+[[proposition]]
+id = "P30"
+statement = "得点がリーグ5位以下のチーム・シーズン（中日を除く）では、得点した回のうち3点以上の回の割合が他球団より少ない"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+surprise = "inn_d_big_share"
+context = ["inn_d_single_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+falsifier = "中日以外の低得点のチーム・シーズンの半数以上で、3点以上の回の割合が他球団以上"
+note = "P27 と同じくらい成り立つなら、3点以上の回の少なさは低得点のチームに共通"

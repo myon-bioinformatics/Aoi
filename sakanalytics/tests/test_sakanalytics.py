@@ -272,3 +272,25 @@ def test_inning_decomposition_stops_on_mismatch_and_leaves_missing_seasons_empty
     out = inning_decomposition(st, _innings_rows(st, {"d": (18, 2), "g": (17, 3)}))
     t = out.filter(pl.col("team") == "t").row(0, named=True)
     assert t["inn_I"] is None and t["inn_dlog_freq"] is None  # 集計のない単位は 0 ではなく空
+
+
+def test_inning_venue_split_and_scoring_inning_shares():
+    from sakanalytics import inning_decomposition
+    rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3), ("2024-04-03", "t", "d", 5, 1)]
+    st = season_table(to_team_games(games(rows), TEAMS))
+    base = []
+    for r in st.iter_rows(named=True):
+        # 全体: 攻撃 18 回・得点した回 3（1点の回 2、3点以上の回 1）。ホームとビジターに半分ずつ
+        for venue, k in (("all", 1), ("home", 0.5), ("away", 0.5)):
+            base.append({"season": r["season"], "team": r["team"], "venue": venue, "window": "all",
+                         "games": r["G"] * k, "innings": 18 * k, "runs": r["RF"] * k, "scoring_innings": 3 * k,
+                         "single_run_inning_rate": 2 / 18, "big_inning_rate": 1 / 18})
+    out = inning_decomposition(st, pl.DataFrame(base, schema_overrides={"season": pl.Int32}))
+    d = out.filter(pl.col("team") == "d").row(0, named=True)
+    assert d["inn_single_share"] == pytest.approx(2 / 3) and d["inn_big_share"] == pytest.approx(1 / 3)
+    assert d["inn_d_single_share"] == pytest.approx(0.0)              # 3球団とも同じ割合
+    assert d["inn_dlog_size_home"] == pytest.approx(d["inn_dlog_size"])  # 半分ずつなので同じ
+    broken = pl.DataFrame(base, schema_overrides={"season": pl.Int32}).with_columns(
+        runs=pl.when(pl.col("venue") == "home").then(pl.col("runs") + 1).otherwise(pl.col("runs")))
+    with pytest.raises(ValueError, match="ホーム＋ビジター"):
+        inning_decomposition(st, broken)

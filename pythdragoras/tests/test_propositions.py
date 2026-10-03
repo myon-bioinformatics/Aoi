@@ -199,9 +199,11 @@ def test_cycle1_files_reference_real_columns():
     games = pl.DataFrame([{"key": "1", "date": "2024-04-01", "home": "d", "away": "g", "hs": 3, "as": 2},
                           {"key": "2", "date": "2024-04-02", "home": "t", "away": "d", "hs": 1, "as": 0}])
     st = season_table(to_team_games(games, teams))
-    innings = pl.DataFrame([{"season": 2024, "team": t, "window": w, "games": 0, "innings": 1, "runs": 0,
-                             "scoring_innings": 1} for t in ("x",) for w in ("all", "first6")],
-                           schema_overrides={"season": pl.Int32})  # パイプラインと同じく --innings の列も作る
+    # パイプラインと同じく --innings の列も作る（実際の CSV と同じ venue・window・率の列をそろえる）
+    innings = pl.DataFrame([{"season": 2024, "team": "x", "venue": v, "window": w, "games": 0, "innings": 2, "runs": 0,
+                             "scoring_innings": 1, "single_run_inning_rate": 0.5, "big_inning_rate": 0.0}
+                            for v in ("all", "home", "away") for w in ("all", "first6")],
+                           schema_overrides={"season": pl.Int32})
     cols = set(inning_decomposition(st, innings).columns)
     props, _ = pr.load(root / "propositions.toml")
     for p in props:

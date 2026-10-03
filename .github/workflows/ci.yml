@@ -55,4 +55,6 @@ jobs:
       - name: Remote (files exist on the pushed branch)
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python -S nagoyaction/linkcheck.py --remote "${{ github.repository }}" --ref "${{ github.head_ref || github.ref_name }}"
+          REPO: ${{ github.repository }}
+          REF: ${{ github.head_ref || github.ref_name }}  # ブランチ名は外部入力なので run に直接埋め込まない
+        run: python -S nagoyaction/linkcheck.py --remote "$REPO" --ref "$REF"

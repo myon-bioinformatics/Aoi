@@ -1,0 +1,2033 @@
+{
+  "input_sha256": "7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9",
+  "script_sha256": "c540c55278859918af1863cdedbed8e0b8d992c5441ad24d4d5b24e9bd300678",
+  "protocol_sha256": "1523800f88a2c09e03ff54fdb85b00f18d88562e6fbbe6975fdcd9c27cda8780",
+  "aggregation": "pooled games; annual cells and same-year comparisons retained",
+  "pooled": [
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "home",
+      "score": "0",
+      "frequency": 0.11207834602829161,
+      "g": 103,
+      "w": 0,
+      "l": 97,
+      "d": 6,
+      "win_rate": 0.0,
+      "we_rate": 0.02912621359223301
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "home",
+      "score": "1",
+      "frequency": 0.1632208922742111,
+      "g": 150,
+      "w": 26,
+      "l": 114,
+      "d": 10,
+      "win_rate": 0.18571428571428572,
+      "we_rate": 0.20666666666666667
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "home",
+      "score": "2",
+      "frequency": 0.1708378672470076,
+      "g": 157,
+      "w": 60,
+      "l": 90,
+      "d": 7,
+      "win_rate": 0.4,
+      "we_rate": 0.40445859872611467
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "home",
+      "score": "3",
+      "frequency": 0.17301414581066377,
+      "g": 159,
+      "w": 91,
+      "l": 58,
+      "d": 10,
+      "win_rate": 0.610738255033557,
+      "we_rate": 0.6037735849056604
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "home",
+      "score": "4",
+      "frequency": 0.12731229597388466,
+      "g": 117,
+      "w": 78,
+      "l": 39,
+      "d": 0,
+      "win_rate": 0.6666666666666666,
+      "we_rate": 0.6666666666666666
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "home",
+      "score": "5",
+      "frequency": 0.08596300326441784,
+      "g": 79,
+      "w": 54,
+      "l": 20,
+      "d": 5,
+      "win_rate": 0.7297297297297297,
+      "we_rate": 0.7151898734177216
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "home",
+      "score": "6",
+      "frequency": 0.056583242655059846,
+      "g": 52,
+      "w": 44,
+      "l": 6,
+      "d": 2,
+      "win_rate": 0.88,
+      "we_rate": 0.8653846153846154
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "home",
+      "score": "7+",
+      "frequency": 0.11099020674646355,
+      "g": 102,
+      "w": 99,
+      "l": 3,
+      "d": 0,
+      "win_rate": 0.9705882352941176,
+      "we_rate": 0.9705882352941176
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "away",
+      "score": "0",
+      "frequency": 0.11099020674646355,
+      "g": 102,
+      "w": 0,
+      "l": 97,
+      "d": 5,
+      "win_rate": 0.0,
+      "we_rate": 0.024509803921568627
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "away",
+      "score": "1",
+      "frequency": 0.15669205658324264,
+      "g": 144,
+      "w": 15,
+      "l": 124,
+      "d": 5,
+      "win_rate": 0.1079136690647482,
+      "we_rate": 0.12152777777777778
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "away",
+      "score": "2",
+      "frequency": 0.16866158868335146,
+      "g": 155,
+      "w": 22,
+      "l": 128,
+      "d": 5,
+      "win_rate": 0.14666666666666667,
+      "we_rate": 0.15806451612903225
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "away",
+      "score": "3",
+      "frequency": 0.1425462459194777,
+      "g": 131,
+      "w": 49,
+      "l": 80,
+      "d": 2,
+      "win_rate": 0.3798449612403101,
+      "we_rate": 0.3816793893129771
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "away",
+      "score": "4",
+      "frequency": 0.12078346028291621,
+      "g": 111,
+      "w": 58,
+      "l": 49,
+      "d": 4,
+      "win_rate": 0.5420560747663551,
+      "we_rate": 0.5405405405405406
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "away",
+      "score": "5",
+      "frequency": 0.09357997823721437,
+      "g": 86,
+      "w": 47,
+      "l": 39,
+      "d": 0,
+      "win_rate": 0.5465116279069767,
+      "we_rate": 0.5465116279069767
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "away",
+      "score": "6",
+      "frequency": 0.07290533188248095,
+      "g": 67,
+      "w": 51,
+      "l": 16,
+      "d": 0,
+      "win_rate": 0.7611940298507462,
+      "we_rate": 0.7611940298507462
+    },
+    {
+      "scope": "all",
+      "group": "chunichi",
+      "side": "away",
+      "score": "7+",
+      "frequency": 0.1338411316648531,
+      "g": 123,
+      "w": 107,
+      "l": 15,
+      "d": 1,
+      "win_rate": 0.8770491803278688,
+      "we_rate": 0.8739837398373984
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "home",
+      "score": "0",
+      "frequency": 0.07747551686615888,
+      "g": 356,
+      "w": 0,
+      "l": 342,
+      "d": 14,
+      "win_rate": 0.0,
+      "we_rate": 0.019662921348314606
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "home",
+      "score": "1",
+      "frequency": 0.11947769314472252,
+      "g": 549,
+      "w": 103,
+      "l": 424,
+      "d": 22,
+      "win_rate": 0.1954459203036053,
+      "we_rate": 0.20765027322404372
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "home",
+      "score": "2",
+      "frequency": 0.15538628944504895,
+      "g": 714,
+      "w": 246,
+      "l": 436,
+      "d": 32,
+      "win_rate": 0.36070381231671556,
+      "we_rate": 0.36694677871148457
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "home",
+      "score": "3",
+      "frequency": 0.15321001088139283,
+      "g": 704,
+      "w": 339,
+      "l": 338,
+      "d": 27,
+      "win_rate": 0.5007385524372231,
+      "we_rate": 0.5007102272727273
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "home",
+      "score": "4",
+      "frequency": 0.12448313384113166,
+      "g": 572,
+      "w": 353,
+      "l": 203,
+      "d": 16,
+      "win_rate": 0.6348920863309353,
+      "we_rate": 0.6311188811188811
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "home",
+      "score": "5",
+      "frequency": 0.10359085963003264,
+      "g": 476,
+      "w": 329,
+      "l": 133,
+      "d": 14,
+      "win_rate": 0.7121212121212122,
+      "we_rate": 0.7058823529411765
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "home",
+      "score": "6",
+      "frequency": 0.08465723612622415,
+      "g": 389,
+      "w": 319,
+      "l": 63,
+      "d": 7,
+      "win_rate": 0.8350785340314136,
+      "we_rate": 0.8290488431876607
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "home",
+      "score": "7+",
+      "frequency": 0.18171926006528835,
+      "g": 835,
+      "w": 741,
+      "l": 82,
+      "d": 12,
+      "win_rate": 0.9003645200486027,
+      "we_rate": 0.8946107784431138
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "away",
+      "score": "0",
+      "frequency": 0.10097932535364526,
+      "g": 464,
+      "w": 0,
+      "l": 448,
+      "d": 16,
+      "win_rate": 0.0,
+      "we_rate": 0.017241379310344827
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "away",
+      "score": "1",
+      "frequency": 0.14602829162132752,
+      "g": 671,
+      "w": 72,
+      "l": 574,
+      "d": 25,
+      "win_rate": 0.11145510835913312,
+      "we_rate": 0.12593144560357675
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "away",
+      "score": "2",
+      "frequency": 0.15103373231773667,
+      "g": 694,
+      "w": 178,
+      "l": 480,
+      "d": 36,
+      "win_rate": 0.270516717325228,
+      "we_rate": 0.2824207492795389
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "away",
+      "score": "3",
+      "frequency": 0.14145810663764963,
+      "g": 650,
+      "w": 263,
+      "l": 353,
+      "d": 34,
+      "win_rate": 0.42694805194805197,
+      "we_rate": 0.4307692307692308
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "away",
+      "score": "4",
+      "frequency": 0.11795429815016321,
+      "g": 542,
+      "w": 285,
+      "l": 250,
+      "d": 7,
+      "win_rate": 0.5327102803738317,
+      "we_rate": 0.5322878228782287
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "away",
+      "score": "5",
+      "frequency": 0.09727965179542981,
+      "g": 447,
+      "w": 297,
+      "l": 132,
+      "d": 18,
+      "win_rate": 0.6923076923076923,
+      "we_rate": 0.6845637583892618
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "away",
+      "score": "6",
+      "frequency": 0.0735582154515778,
+      "g": 338,
+      "w": 258,
+      "l": 71,
+      "d": 9,
+      "win_rate": 0.78419452887538,
+      "we_rate": 0.7766272189349113
+    },
+    {
+      "scope": "all",
+      "group": "other_cl",
+      "side": "away",
+      "score": "7+",
+      "frequency": 0.17170837867247007,
+      "g": 789,
+      "w": 700,
+      "l": 79,
+      "d": 10,
+      "win_rate": 0.8985879332477535,
+      "we_rate": 0.8935361216730038
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "home",
+      "score": "0",
+      "frequency": 0.11525029103608847,
+      "g": 99,
+      "w": 0,
+      "l": 94,
+      "d": 5,
+      "win_rate": 0.0,
+      "we_rate": 0.025252525252525252
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "home",
+      "score": "1",
+      "frequency": 0.16763678696158324,
+      "g": 144,
+      "w": 24,
+      "l": 110,
+      "d": 10,
+      "win_rate": 0.1791044776119403,
+      "we_rate": 0.2013888888888889
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "home",
+      "score": "2",
+      "frequency": 0.17578579743888242,
+      "g": 151,
+      "w": 58,
+      "l": 88,
+      "d": 5,
+      "win_rate": 0.3972602739726027,
+      "we_rate": 0.40066225165562913
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "home",
+      "score": "3",
+      "frequency": 0.16996507566938301,
+      "g": 146,
+      "w": 83,
+      "l": 53,
+      "d": 10,
+      "win_rate": 0.6102941176470589,
+      "we_rate": 0.6027397260273972
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "home",
+      "score": "4",
+      "frequency": 0.12339930151338765,
+      "g": 106,
+      "w": 71,
+      "l": 35,
+      "d": 0,
+      "win_rate": 0.6698113207547169,
+      "we_rate": 0.6698113207547169
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "home",
+      "score": "5",
+      "frequency": 0.08149010477299184,
+      "g": 70,
+      "w": 47,
+      "l": 19,
+      "d": 4,
+      "win_rate": 0.7121212121212122,
+      "we_rate": 0.7
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "home",
+      "score": "6",
+      "frequency": 0.05471478463329453,
+      "g": 47,
+      "w": 40,
+      "l": 5,
+      "d": 2,
+      "win_rate": 0.8888888888888888,
+      "we_rate": 0.8723404255319149
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "home",
+      "score": "7+",
+      "frequency": 0.11175785797438882,
+      "g": 96,
+      "w": 93,
+      "l": 3,
+      "d": 0,
+      "win_rate": 0.96875,
+      "we_rate": 0.96875
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "away",
+      "score": "0",
+      "frequency": 0.11059371362048893,
+      "g": 95,
+      "w": 0,
+      "l": 90,
+      "d": 5,
+      "win_rate": 0.0,
+      "we_rate": 0.02631578947368421
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "away",
+      "score": "1",
+      "frequency": 0.15832363213038417,
+      "g": 136,
+      "w": 15,
+      "l": 116,
+      "d": 5,
+      "win_rate": 0.11450381679389313,
+      "we_rate": 0.12867647058823528
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "away",
+      "score": "2",
+      "frequency": 0.17345750873108265,
+      "g": 149,
+      "w": 22,
+      "l": 122,
+      "d": 5,
+      "win_rate": 0.1527777777777778,
+      "we_rate": 0.1644295302013423
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "away",
+      "score": "3",
+      "frequency": 0.13038416763678695,
+      "g": 112,
+      "w": 42,
+      "l": 68,
+      "d": 2,
+      "win_rate": 0.38181818181818183,
+      "we_rate": 0.38392857142857145
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "away",
+      "score": "4",
+      "frequency": 0.12223515715948778,
+      "g": 105,
+      "w": 54,
+      "l": 48,
+      "d": 3,
+      "win_rate": 0.5294117647058824,
+      "we_rate": 0.5285714285714286
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "away",
+      "score": "5",
+      "frequency": 0.09545983701979045,
+      "g": 82,
+      "w": 44,
+      "l": 38,
+      "d": 0,
+      "win_rate": 0.5365853658536586,
+      "we_rate": 0.5365853658536586
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "away",
+      "score": "6",
+      "frequency": 0.07683352735739232,
+      "g": 66,
+      "w": 50,
+      "l": 16,
+      "d": 0,
+      "win_rate": 0.7575757575757576,
+      "we_rate": 0.7575757575757576
+    },
+    {
+      "scope": "without2020",
+      "group": "chunichi",
+      "side": "away",
+      "score": "7+",
+      "frequency": 0.13271245634458673,
+      "g": 114,
+      "w": 98,
+      "l": 15,
+      "d": 1,
+      "win_rate": 0.8672566371681416,
+      "we_rate": 0.8640350877192983
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "home",
+      "score": "0",
+      "frequency": 0.07986030267753201,
+      "g": 343,
+      "w": 0,
+      "l": 329,
+      "d": 14,
+      "win_rate": 0.0,
+      "we_rate": 0.02040816326530612
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "home",
+      "score": "1",
+      "frequency": 0.12083818393480791,
+      "g": 519,
+      "w": 101,
+      "l": 398,
+      "d": 20,
+      "win_rate": 0.20240480961923848,
+      "we_rate": 0.2138728323699422
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "home",
+      "score": "2",
+      "frequency": 0.1548311990686845,
+      "g": 665,
+      "w": 227,
+      "l": 409,
+      "d": 29,
+      "win_rate": 0.35691823899371067,
+      "we_rate": 0.3631578947368421
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "home",
+      "score": "3",
+      "frequency": 0.15273573923166472,
+      "g": 656,
+      "w": 317,
+      "l": 318,
+      "d": 21,
+      "win_rate": 0.49921259842519683,
+      "we_rate": 0.4992378048780488
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "home",
+      "score": "4",
+      "frequency": 0.1259604190919674,
+      "g": 541,
+      "w": 339,
+      "l": 188,
+      "d": 14,
+      "win_rate": 0.6432637571157496,
+      "we_rate": 0.6395563770794824
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "home",
+      "score": "5",
+      "frequency": 0.10267753201396973,
+      "g": 441,
+      "w": 310,
+      "l": 121,
+      "d": 10,
+      "win_rate": 0.7192575406032483,
+      "we_rate": 0.7142857142857143
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "home",
+      "score": "6",
+      "frequency": 0.08265424912689173,
+      "g": 355,
+      "w": 290,
+      "l": 58,
+      "d": 7,
+      "win_rate": 0.8333333333333334,
+      "we_rate": 0.8267605633802817
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "home",
+      "score": "7+",
+      "frequency": 0.18044237485448195,
+      "g": 775,
+      "w": 688,
+      "l": 78,
+      "d": 9,
+      "win_rate": 0.8981723237597912,
+      "we_rate": 0.8935483870967742
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "away",
+      "score": "0",
+      "frequency": 0.10011641443538999,
+      "g": 430,
+      "w": 0,
+      "l": 415,
+      "d": 15,
+      "win_rate": 0.0,
+      "we_rate": 0.01744186046511628
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "away",
+      "score": "1",
+      "frequency": 0.14644935972060535,
+      "g": 629,
+      "w": 72,
+      "l": 534,
+      "d": 23,
+      "win_rate": 0.1188118811881188,
+      "we_rate": 0.1327503974562798
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "away",
+      "score": "2",
+      "frequency": 0.15273573923166472,
+      "g": 656,
+      "w": 171,
+      "l": 454,
+      "d": 31,
+      "win_rate": 0.2736,
+      "we_rate": 0.2842987804878049
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "away",
+      "score": "3",
+      "frequency": 0.1429569266589057,
+      "g": 614,
+      "w": 256,
+      "l": 330,
+      "d": 28,
+      "win_rate": 0.43686006825938567,
+      "we_rate": 0.43973941368078173
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "away",
+      "score": "4",
+      "frequency": 0.11804423748544819,
+      "g": 507,
+      "w": 268,
+      "l": 233,
+      "d": 6,
+      "win_rate": 0.5349301397205589,
+      "we_rate": 0.534516765285996
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "away",
+      "score": "5",
+      "frequency": 0.09592549476135041,
+      "g": 412,
+      "w": 276,
+      "l": 123,
+      "d": 13,
+      "win_rate": 0.6917293233082706,
+      "we_rate": 0.6856796116504854
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "away",
+      "score": "6",
+      "frequency": 0.07427240977881257,
+      "g": 319,
+      "w": 247,
+      "l": 63,
+      "d": 9,
+      "win_rate": 0.7967741935483871,
+      "we_rate": 0.7884012539184952
+    },
+    {
+      "scope": "without2020",
+      "group": "other_cl",
+      "side": "away",
+      "score": "7+",
+      "frequency": 0.16949941792782305,
+      "g": 728,
+      "w": 645,
+      "l": 76,
+      "d": 7,
+      "win_rate": 0.8945908460471568,
+      "we_rate": 0.8907967032967034
+    }
+  ],
+  "matched_years": [
+    {
+      "side": "home",
+      "score": 0,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "home",
+      "score": 1,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.25,
+          "other_cl": 0.25,
+          "difference": 0.0
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.1,
+          "other_cl": 0.13953488372093023,
+          "difference": -0.039534883720930225
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.125,
+          "other_cl": 0.30952380952380953,
+          "difference": -0.18452380952380953
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.3,
+          "other_cl": 0.03125,
+          "difference": 0.26875
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.09090909090909091,
+          "other_cl": 0.21739130434782608,
+          "difference": -0.12648221343873517
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.0,
+          "other_cl": 0.11428571428571428,
+          "difference": -0.11428571428571428
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.07142857142857142,
+          "other_cl": 0.13333333333333333,
+          "difference": -0.06190476190476191
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.3333333333333333,
+          "other_cl": 0.07142857142857142,
+          "difference": 0.26190476190476186
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.2857142857142857,
+          "other_cl": 0.18421052631578946,
+          "difference": 0.10150375939849623
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.3333333333333333,
+          "other_cl": 0.2553191489361702,
+          "difference": 0.07801418439716312
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.14285714285714285,
+          "other_cl": 0.27906976744186046,
+          "difference": -0.1362126245847176
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.2777777777777778,
+          "other_cl": 0.20833333333333334,
+          "difference": 0.06944444444444445
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.125,
+          "other_cl": 0.22033898305084745,
+          "difference": -0.09533898305084745
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "home",
+      "score": 2,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.25,
+          "other_cl": 0.4375,
+          "difference": -0.1875
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.3333333333333333,
+          "other_cl": 0.35294117647058826,
+          "difference": -0.019607843137254943
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.3076923076923077,
+          "other_cl": 0.48484848484848486,
+          "difference": -0.17715617715617715
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.21428571428571427,
+          "other_cl": 0.2962962962962963,
+          "difference": -0.082010582010582
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.5,
+          "other_cl": 0.2857142857142857,
+          "difference": 0.2142857142857143
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.0,
+          "other_cl": 0.2727272727272727,
+          "difference": -0.2727272727272727
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.15384615384615385,
+          "other_cl": 0.23636363636363636,
+          "difference": -0.0825174825174825
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.5,
+          "other_cl": 0.41304347826086957,
+          "difference": 0.08695652173913043
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.5454545454545454,
+          "other_cl": 0.2807017543859649,
+          "difference": 0.2647527910685805
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.5714285714285714,
+          "other_cl": 0.34146341463414637,
+          "difference": 0.22996515679442503
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.5333333333333333,
+          "other_cl": 0.4230769230769231,
+          "difference": 0.11025641025641025
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.6428571428571429,
+          "other_cl": 0.4107142857142857,
+          "difference": 0.2321428571428572
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.5,
+          "other_cl": 0.4,
+          "difference": 0.09999999999999998
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "home",
+      "score": 3,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.25,
+          "other_cl": 0.38461538461538464,
+          "difference": -0.13461538461538464
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.6666666666666666,
+          "other_cl": 0.4186046511627907,
+          "difference": 0.2480620155038759
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.7222222222222222,
+          "other_cl": 0.5892857142857143,
+          "difference": 0.1329365079365079
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.5555555555555556,
+          "other_cl": 0.5671641791044776,
+          "difference": -0.011608623548922004
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.5454545454545454,
+          "other_cl": 0.5121951219512195,
+          "difference": 0.03325942350332589
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.6923076923076923,
+          "other_cl": 0.3559322033898305,
+          "difference": 0.3363754889178618
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.6363636363636364,
+          "other_cl": 0.4909090909090909,
+          "difference": 0.14545454545454545
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.6153846153846154,
+          "other_cl": 0.5238095238095238,
+          "difference": 0.09157509157509158
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.45454545454545453,
+          "other_cl": 0.40816326530612246,
+          "difference": 0.04638218923933207
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.6,
+          "other_cl": 0.5223880597014925,
+          "difference": 0.07761194029850749
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.7777777777777778,
+          "other_cl": 0.5283018867924528,
+          "difference": 0.24947589098532497
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.8,
+          "other_cl": 0.5555555555555556,
+          "difference": 0.24444444444444446
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.625,
+          "other_cl": 0.6666666666666666,
+          "difference": -0.04166666666666663
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "home",
+      "score": 4,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.6923076923076923,
+          "other_cl": 0.5625,
+          "difference": 0.1298076923076923
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.375,
+          "other_cl": 0.6727272727272727,
+          "difference": -0.29772727272727273
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.5555555555555556,
+          "other_cl": 0.7021276595744681,
+          "difference": -0.14657210401891252
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.8571428571428571,
+          "other_cl": 0.575,
+          "difference": 0.28214285714285714
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.8,
+          "other_cl": 0.6,
+          "difference": 0.20000000000000007
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.75,
+          "other_cl": 0.5,
+          "difference": 0.25
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.7142857142857143,
+          "other_cl": 0.5217391304347826,
+          "difference": 0.1925465838509317
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.6363636363636364,
+          "other_cl": 0.4827586206896552,
+          "difference": 0.15360501567398116
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.8333333333333334,
+          "other_cl": 0.7222222222222222,
+          "difference": 0.11111111111111116
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.8333333333333334,
+          "other_cl": 0.5789473684210527,
+          "difference": 0.2543859649122807
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.5,
+          "other_cl": 0.7254901960784313,
+          "difference": -0.22549019607843135
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.5,
+          "other_cl": 0.8,
+          "difference": -0.30000000000000004
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.5,
+          "other_cl": 0.7941176470588235,
+          "difference": -0.2941176470588235
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "home",
+      "score": 5,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.6,
+          "other_cl": 0.64,
+          "difference": -0.040000000000000036
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.42857142857142855,
+          "other_cl": 0.7021276595744681,
+          "difference": -0.27355623100303955
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.8571428571428571,
+          "other_cl": 0.7586206896551724,
+          "difference": 0.09852216748768472
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.6,
+          "other_cl": 0.8108108108108109,
+          "difference": -0.21081081081081088
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.3333333333333333,
+          "other_cl": 0.6842105263157895,
+          "difference": -0.3508771929824562
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.75,
+          "other_cl": 0.48484848484848486,
+          "difference": 0.26515151515151514
+        },
+        {
+          "year": 2019,
+          "chunichi": 1.0,
+          "other_cl": 0.65,
+          "difference": 0.35
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.875,
+          "other_cl": 0.6129032258064516,
+          "difference": 0.2620967741935484
+        },
+        {
+          "year": 2021,
+          "chunichi": 1.0,
+          "other_cl": 0.65625,
+          "difference": 0.34375
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.75,
+          "other_cl": 0.6842105263157895,
+          "difference": 0.06578947368421051
+        },
+        {
+          "year": 2023,
+          "chunichi": 1.0,
+          "other_cl": 0.7837837837837838,
+          "difference": 0.21621621621621623
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.8,
+          "other_cl": 0.8620689655172413,
+          "difference": -0.06206896551724128
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.75,
+          "other_cl": 0.8695652173913043,
+          "difference": -0.11956521739130432
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "home",
+      "score": 6,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 1.0,
+          "other_cl": 0.6363636363636364,
+          "difference": 0.36363636363636365
+        },
+        {
+          "year": 2014,
+          "chunichi": 1.0,
+          "other_cl": 0.7619047619047619,
+          "difference": 0.23809523809523814
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.8,
+          "other_cl": 0.9090909090909091,
+          "difference": -0.10909090909090902
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.8333333333333334,
+          "other_cl": 0.8809523809523809,
+          "difference": -0.04761904761904756
+        },
+        {
+          "year": 2017,
+          "chunichi": 1.0,
+          "other_cl": 0.85,
+          "difference": 0.15000000000000002
+        },
+        {
+          "year": 2018,
+          "chunichi": 1.0,
+          "other_cl": 0.8387096774193549,
+          "difference": 0.16129032258064513
+        },
+        {
+          "year": 2019,
+          "chunichi": 1.0,
+          "other_cl": 0.8518518518518519,
+          "difference": 0.14814814814814814
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.8,
+          "other_cl": 0.8529411764705882,
+          "difference": -0.05294117647058816
+        },
+        {
+          "year": 2021,
+          "chunichi": 1.0,
+          "other_cl": 0.7894736842105263,
+          "difference": 0.21052631578947367
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.5,
+          "other_cl": 0.8529411764705882,
+          "difference": -0.3529411764705882
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.0,
+          "other_cl": 0.9,
+          "difference": -0.9
+        },
+        {
+          "year": 2024,
+          "chunichi": 1.0,
+          "other_cl": 0.84375,
+          "difference": 0.15625
+        },
+        {
+          "year": 2025,
+          "chunichi": 1.0,
+          "other_cl": 0.8823529411764706,
+          "difference": 0.11764705882352944
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "away",
+      "score": 0,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "away",
+      "score": 1,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.2,
+          "other_cl": 0.15517241379310345,
+          "difference": 0.04482758620689656
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.0,
+          "other_cl": 0.11363636363636363,
+          "difference": -0.11363636363636363
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.1,
+          "other_cl": 0.06451612903225806,
+          "difference": 0.03548387096774194
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.0,
+          "other_cl": 0.10204081632653061,
+          "difference": -0.10204081632653061
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.125,
+          "other_cl": 0.10344827586206896,
+          "difference": 0.021551724137931036
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.0,
+          "other_cl": 0.08823529411764706,
+          "difference": -0.08823529411764706
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.2,
+          "other_cl": 0.02564102564102564,
+          "difference": 0.17435897435897438
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.0,
+          "other_cl": 0.0,
+          "difference": 0.0
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.11764705882352941,
+          "other_cl": 0.075,
+          "difference": 0.04264705882352941
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.15384615384615385,
+          "other_cl": 0.17307692307692307,
+          "difference": -0.019230769230769218
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.0,
+          "other_cl": 0.16923076923076924,
+          "difference": -0.16923076923076924
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.1875,
+          "other_cl": 0.17307692307692307,
+          "difference": 0.014423076923076927
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.2,
+          "other_cl": 0.1320754716981132,
+          "difference": 0.0679245283018868
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "away",
+      "score": 2,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.1,
+          "other_cl": 0.30612244897959184,
+          "difference": -0.20612244897959184
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.5714285714285714,
+          "other_cl": 0.22916666666666666,
+          "difference": 0.34226190476190477
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.0,
+          "other_cl": 0.2571428571428571,
+          "difference": -0.2571428571428571
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.0,
+          "other_cl": 0.16,
+          "difference": -0.16
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.13333333333333333,
+          "other_cl": 0.19148936170212766,
+          "difference": -0.05815602836879433
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.08333333333333333,
+          "other_cl": 0.2564102564102564,
+          "difference": -0.17307692307692307
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.08333333333333333,
+          "other_cl": 0.2033898305084746,
+          "difference": -0.12005649717514126
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.0,
+          "other_cl": 0.21212121212121213,
+          "difference": -0.21212121212121213
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.0,
+          "other_cl": 0.35,
+          "difference": -0.35
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.18181818181818182,
+          "other_cl": 0.27450980392156865,
+          "difference": -0.09269162210338683
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.25,
+          "other_cl": 0.30612244897959184,
+          "difference": -0.056122448979591844
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.25,
+          "other_cl": 0.45,
+          "difference": -0.2
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.2857142857142857,
+          "other_cl": 0.2857142857142857,
+          "difference": 0.0
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "away",
+      "score": 3,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.25,
+          "other_cl": 0.3541666666666667,
+          "difference": -0.10416666666666669
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.15384615384615385,
+          "other_cl": 0.41304347826086957,
+          "difference": -0.2591973244147157
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.4444444444444444,
+          "other_cl": 0.44,
+          "difference": 0.0044444444444444176
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.4,
+          "other_cl": 0.42857142857142855,
+          "difference": -0.028571428571428525
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.125,
+          "other_cl": 0.4318181818181818,
+          "difference": -0.3068181818181818
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.14285714285714285,
+          "other_cl": 0.39215686274509803,
+          "difference": -0.24929971988795518
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.46153846153846156,
+          "other_cl": 0.5348837209302325,
+          "difference": -0.07334525939177095
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.3684210526315789,
+          "other_cl": 0.23333333333333334,
+          "difference": 0.1350877192982456
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.25,
+          "other_cl": 0.43478260869565216,
+          "difference": -0.18478260869565216
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.8571428571428571,
+          "other_cl": 0.4791666666666667,
+          "difference": 0.3779761904761904
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.5,
+          "other_cl": 0.4166666666666667,
+          "difference": 0.08333333333333331
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.4,
+          "other_cl": 0.3617021276595745,
+          "difference": 0.03829787234042553
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.7142857142857143,
+          "other_cl": 0.574468085106383,
+          "difference": 0.13981762917933127
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "away",
+      "score": 4,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.5,
+          "other_cl": 0.6,
+          "difference": -0.09999999999999998
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.46153846153846156,
+          "other_cl": 0.4782608695652174,
+          "difference": -0.01672240802675584
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.625,
+          "other_cl": 0.425,
+          "difference": 0.2
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.375,
+          "other_cl": 0.5142857142857142,
+          "difference": -0.13928571428571423
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.5454545454545454,
+          "other_cl": 0.5454545454545454,
+          "difference": 0.0
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.3333333333333333,
+          "other_cl": 0.5490196078431373,
+          "difference": -0.215686274509804
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.4444444444444444,
+          "other_cl": 0.38461538461538464,
+          "difference": 0.05982905982905978
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.8,
+          "other_cl": 0.5,
+          "difference": 0.30000000000000004
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.6666666666666666,
+          "other_cl": 0.7073170731707317,
+          "difference": -0.04065040650406504
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.8,
+          "other_cl": 0.6153846153846154,
+          "difference": 0.18461538461538463
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.6666666666666666,
+          "other_cl": 0.5833333333333334,
+          "difference": 0.08333333333333326
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.6153846153846154,
+          "other_cl": 0.6170212765957447,
+          "difference": -0.0016366612111292644
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.4444444444444444,
+          "other_cl": 0.43902439024390244,
+          "difference": 0.005420054200541979
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "away",
+      "score": 5,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.875,
+          "other_cl": 0.8571428571428571,
+          "difference": 0.017857142857142905
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.6,
+          "other_cl": 0.5,
+          "difference": 0.09999999999999998
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.5555555555555556,
+          "other_cl": 0.75,
+          "difference": -0.19444444444444442
+        },
+        {
+          "year": 2016,
+          "chunichi": 0.75,
+          "other_cl": 0.5641025641025641,
+          "difference": 0.1858974358974359
+        },
+        {
+          "year": 2017,
+          "chunichi": 0.5,
+          "other_cl": 0.7,
+          "difference": -0.19999999999999996
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.25,
+          "other_cl": 0.5777777777777777,
+          "difference": -0.3277777777777777
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.5,
+          "other_cl": 0.5588235294117647,
+          "difference": -0.05882352941176472
+        },
+        {
+          "year": 2020,
+          "chunichi": 0.75,
+          "other_cl": 0.7,
+          "difference": 0.050000000000000044
+        },
+        {
+          "year": 2021,
+          "chunichi": 0.6,
+          "other_cl": 0.8275862068965517,
+          "difference": -0.22758620689655173
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.5714285714285714,
+          "other_cl": 0.5714285714285714,
+          "difference": 0.0
+        },
+        {
+          "year": 2023,
+          "chunichi": 0.375,
+          "other_cl": 0.7272727272727273,
+          "difference": -0.3522727272727273
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.5,
+          "other_cl": 0.8571428571428571,
+          "difference": -0.3571428571428571
+        },
+        {
+          "year": 2025,
+          "chunichi": 0.5,
+          "other_cl": 0.84375,
+          "difference": -0.34375
+        }
+      ],
+      "missing_years": []
+    },
+    {
+      "side": "away",
+      "score": 6,
+      "years": [
+        {
+          "year": 2013,
+          "chunichi": 0.75,
+          "other_cl": 0.8275862068965517,
+          "difference": -0.07758620689655171
+        },
+        {
+          "year": 2014,
+          "chunichi": 0.6,
+          "other_cl": 0.6756756756756757,
+          "difference": -0.07567567567567568
+        },
+        {
+          "year": 2015,
+          "chunichi": 0.5,
+          "other_cl": 0.85,
+          "difference": -0.35
+        },
+        {
+          "year": 2016,
+          "chunichi": 1.0,
+          "other_cl": 0.7941176470588235,
+          "difference": 0.20588235294117652
+        },
+        {
+          "year": 2017,
+          "chunichi": 1.0,
+          "other_cl": 0.6842105263157895,
+          "difference": 0.3157894736842105
+        },
+        {
+          "year": 2018,
+          "chunichi": 0.7777777777777778,
+          "other_cl": 0.9090909090909091,
+          "difference": -0.13131313131313127
+        },
+        {
+          "year": 2019,
+          "chunichi": 0.5,
+          "other_cl": 0.7727272727272727,
+          "difference": -0.2727272727272727
+        },
+        {
+          "year": 2020,
+          "chunichi": 1.0,
+          "other_cl": 0.5789473684210527,
+          "difference": 0.42105263157894735
+        },
+        {
+          "year": 2021,
+          "chunichi": 1.0,
+          "other_cl": 0.7894736842105263,
+          "difference": 0.21052631578947367
+        },
+        {
+          "year": 2022,
+          "chunichi": 0.6666666666666666,
+          "other_cl": 0.8518518518518519,
+          "difference": -0.18518518518518523
+        },
+        {
+          "year": 2023,
+          "chunichi": 1.0,
+          "other_cl": 0.8095238095238095,
+          "difference": 0.19047619047619047
+        },
+        {
+          "year": 2024,
+          "chunichi": 0.6666666666666666,
+          "other_cl": 0.7894736842105263,
+          "difference": -0.1228070175438597
+        },
+        {
+          "year": 2025,
+          "chunichi": 1.0,
+          "other_cl": 0.8,
+          "difference": 0.19999999999999996
+        }
+      ],
+      "missing_years": []
+    }
+  ],
+  "exit_code": 0
+}

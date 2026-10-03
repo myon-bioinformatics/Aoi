@@ -40,7 +40,7 @@ run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_calenda
 [[step]]
 name = "measure"
 run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games}", "--config", "{config}",
-       "--out", "{out}/season.jsonl"]
+       "--out", "{out}/season.jsonl", "--innings", "cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz"]
 
 # 5. 問い直す
 [[step]]

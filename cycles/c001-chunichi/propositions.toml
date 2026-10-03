@@ -274,3 +274,58 @@ context = ["rank", "rank_ra", "rd", "rf_def_total"]
 links = ["H2"]
 falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。不足の形は順位と関係しない"
 note = "低得点のチームはもともと大半が B クラスなので、成立率より lift と p を読む"
+
+# ---- R4: 点が入る回が少ないのか、入っても少ないのか（research/R4-scoring-frequency-size.md） ----
+# 追加: 2026-10-04。inn_* は実データでまだ計算していない。R1〜R3 の結果と PR #3 のイニング集計の要約は読んでいる。
+
+[[proposition]]
+id = "P22"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点する回の頻度の不足が、得点した回の大きさの不足より大きい"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_freq_minus_size", op = "<", value = 0 }]
+surprise = "inn_freq_minus_size"
+context = ["rank", "inn_dlog_freq", "inn_dlog_size", "inn_dlog_rpi"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、大きさの不足のほうが大きい"
+note = "成り立てば「点が入る回が少ない」。成り立たなければ「入っても1点で止まる」側を調べる"
+
+[[proposition]]
+id = "P23"
+statement = "得点がリーグ5位以下のチーム・シーズンでは、得点する回の頻度の不足が、得点した回の大きさの不足より大きい"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_freq_minus_size", op = "<", value = 0 }]
+surprise = "inn_freq_minus_size"
+context = ["rank", "inn_dlog_freq", "inn_dlog_size"]
+links = ["H5", "H6"]
+falsifier = "低得点のチーム・シーズンの半数以上で、大きさの不足のほうが大きい"
+note = "P22 と成立率を並べ、中日の形が低得点のチームの中で特別かを見る"
+
+[[proposition]]
+id = "P24"
+statement = "得点がリーグ5位以下のチームの間では、得点する回の頻度の不足が大きい形なら B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "inn_freq_minus_size", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["rank", "rank_ra", "rd", "inn_dlog_rpi"]
+links = ["H5", "H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。形は順位と関係しない"
+note = "低得点のチームはもともと大半が B クラスなので、成立率より lift と p を読む"
+
+[[proposition]]
+id = "P25"
+statement = "P22 を、双方が6回まで攻撃した試合の1〜6回だけで見ても、頻度の不足が大きさの不足より大きい"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_freq_minus_size_6", op = "<", value = 0 }]
+surprise = "inn_freq_minus_size_6"
+context = ["inn_dlog_freq_6", "inn_dlog_size_6", "inn_freq_minus_size"]
+links = ["H5", "H6"]
+falsifier = "P22 と判定が食い違う（9回裏の省略・延長の扱いが結果を左右している）"
+note = "9回裏の省略・サヨナラの途中終了の影響を小さくした比較。補正ではない"

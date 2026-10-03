@@ -2,6 +2,10 @@
 
 > 本当にその説明で十分か？
 
+![PythDRagoras](../docs/images/pythdragoras.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
 思想は [docs/PythDRagoras.md](../docs/PythDRagoras.md)。ここはその検証部分の実装。
 
 | 関数 | 中身 |

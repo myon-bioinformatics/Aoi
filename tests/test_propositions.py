@@ -240,3 +240,87 @@ def test_skip_forms_rules(skip, reason, ok):
     else:
         with pytest.raises(pr.PropositionError):
             pr.validate(p)
+
+
+# ---------- 系譜・きっかけ以外での判定・台帳 ----------
+
+P1A = {**P1, "id": "P1a", "statement": "得失点差プラスかつピタゴラス3位以内ならAクラス",
+       "if": [{"col": "rd", "op": ">", "value": 0}, {"col": "rank_pythag", "op": "<=", "value": 3}],
+       "parent": "P1", "change": "d-2019 を見てピタゴラス順位の条件を足した", "motivated_by": ["d-2019"]}
+
+
+def _toml(props):
+    import json as _j
+
+    def cond(cs):
+        return "[" + ", ".join(f'{{col="{c["col"]}", op="{c["op"]}", value={_j.dumps(c["value"])}}}' for c in cs) + "]"
+    out = []
+    for p in props:
+        out.append("[[proposition]]")
+        for k in ("id", "statement", "strength", "parent", "change"):
+            if p.get(k):
+                out.append(f'{k} = "{p[k]}"')
+        out.append(f"if = {cond(p.get('if', []))}")
+        out.append(f"then = {cond(p['then'])}")
+        if p.get("motivated_by"):
+            out.append(f"motivated_by = {_j.dumps(p['motivated_by'])}")
+    return "\n".join(out) + "\n"
+
+
+def test_parent_must_come_first_and_needs_change(tmp_path):
+    f = tmp_path / "p.toml"
+    f.write_text(_toml([P1, P1A]), encoding="utf-8")
+    assert [p["id"] for p in pr.load(f)[0]] == ["P1", "P1a"]
+    f.write_text(_toml([P1A, P1]), encoding="utf-8")
+    with pytest.raises(pr.PropositionError, match="前の方"):
+        pr.load(f)
+    with pytest.raises(pr.PropositionError, match="change"):
+        pr.validate({**P1A, "change": ""})
+    with pytest.raises(pr.PropositionError, match="parent"):
+        pr.validate({**P1, "motivated_by": ["d-2019"]})
+    with pytest.raises(pr.PropositionError, match="team-season"):
+        pr.validate({**P1A, "motivated_by": ["2019"]})
+
+
+def test_held_out_excludes_the_motivating_units():
+    r = pr.evaluate(P1A, table(ROWS), focus="d")
+    orig = r["forms"][0]
+    h = r["held_out"]
+    # rd>0 かつ rank_pythag<=3: d19 g19 g21 t21 c21 → 5件、判例は d19（5位）と t21（4位）
+    assert (orig["n"], [c["unit"] for c in orig["counterexamples"]]) == (5, ["d-2019", "t-2021"])
+    # きっかけ d-2019 を除くと 4件、判例は t-2021 だけ残る = 作り直しは他の単位ではまだ異議を受けている
+    assert (h["n"], h["hold"], h["counterexamples"]) == (4, 3, ["t-2021"])
+    assert h["excluded_units"] == ["d-2019"]
+    md = pr.render([pr.evaluate(P1, table(ROWS)), r], {})
+    assert "## 命題の系譜" in md and "P1 → **P1a**" in md and "きっかけ以外での判定" in md
+
+
+def test_definition_sha_tracks_meaning_not_annotations():
+    base = pr.definition_sha(P1)
+    assert pr.definition_sha({**P1, "links": ["H9"], "context": []}) == base
+    assert pr.definition_sha({**P1, "then": [{"col": "rank", "op": "<=", "value": 2}]}) != base
+    assert pr.definition_sha({**P1, "strength": "almost_always"}) != base
+
+
+def test_ledger_appends_once_per_data_version_and_counts_streak(tmp_path):
+    path = tmp_path / "ledger.jsonl"
+    with_cx = [pr.evaluate(P1, table(ROWS))]
+    clean = [pr.evaluate(P1, table([r for r in ROWS if r[:2] not in {("d", 2019), ("t", 2021)}]))]
+    assert clean[0]["forms"][0]["counterexamples"] == []
+    pr.update_ledger(path, with_cx, "data-v1", None)
+    pr.update_ledger(path, with_cx, "data-v1", None)          # 同じデータは二度書かない
+    pr.update_ledger(path, clean, "data-v2", None)
+    rows = pr.update_ledger(path, clean, "data-v3", "abc")
+    s = pr.ledger_summary(rows, "P1")
+    # 逆には t-2019 の判例が残り続けるので「どれかの形」は3回とも異議あり
+    assert s == {"evaluations": 3, "objections": 1, "objections_any_form": 3, "no_objection_streak": 2, "definitions": 1}
+
+
+def test_ledger_flags_redefinition_under_the_same_id(tmp_path):
+    path = tmp_path / "ledger.jsonl"
+    pr.update_ledger(path, [pr.evaluate(P1, table(ROWS))], "v1", None)
+    changed = {**P1, "strength": "more_often_than_not"}  # 結果を見てから基準を弱めた
+    rows = pr.update_ledger(path, [pr.evaluate(changed, table(ROWS))], "v1", None)
+    assert pr.ledger_summary(rows, "P1")["definitions"] == 2
+    md = pr.render([pr.evaluate(changed, table(ROWS))], {}, ledger=rows)
+    assert "事前登録の違反の疑い" in md

@@ -11,8 +11,11 @@
 
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
+import json
 import math
+import re
 import operator
 import tomllib
 from pathlib import Path
@@ -45,9 +48,20 @@ def load(path: Path) -> tuple[list[dict], str]:
     ids = [p.get("id") for p in props]
     if len(set(ids)) != len(ids) or not all(ids):
         raise PropositionError(f"id は必須で一意: {ids}")
+    seen: set[str] = set()
     for p in props:
         validate(p)
+        if p.get("parent") and p["parent"] not in seen:  # 親は先に定義されている必要がある（循環しない）
+            raise PropositionError(f"{p['id']}: parent {p['parent']} がこのファイルの前の方にない")
+        seen.add(p["id"])
     return props, hashlib.sha256(raw).hexdigest()
+
+
+def definition_sha(p: dict) -> str:
+    """命題1つの定義の指紋。同じ id のまま定義が変わったら台帳で分かる。"""
+    keys = ("statement", "strength", "if", "then", "scope", "min_n", "alpha", "skip_forms", "parent", "motivated_by")
+    body = json.dumps({k: p.get(k) for k in keys}, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()
 
 
 def validate(p: dict) -> None:
@@ -66,6 +80,14 @@ def validate(p: dict) -> None:
             raise PropositionError(f"{pid}: skip_forms で省けるのは逆と裏の組だけ（元の命題と対偶は省けない）")
         if not str(p.get("skip_reason", "")).strip():
             raise PropositionError(f"{pid}: skip_forms には skip_reason が必要")
+    if p.get("parent") and not str(p.get("change", "")).strip():
+        raise PropositionError(f"{pid}: parent があるときは change（何をなぜ変えたか）が必要")
+    if p.get("motivated_by"):
+        if not p.get("parent"):
+            raise PropositionError(f"{pid}: motivated_by は作り直した命題（parent あり）にだけ書ける")
+        bad = [u for u in p["motivated_by"] if not re.fullmatch(r"[a-z]+-\d{4}", str(u))]
+        if bad:
+            raise PropositionError(f"{pid}: motivated_by は 'team-season'（例: d-2019）: {bad}")
 
 
 # ---------- 条件 ----------
@@ -201,6 +223,17 @@ def evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None = None, fo
     for f1, f2 in (("original", "contrapositive"), ("converse", "inverse")):
         if f1 in by and {c["unit"] for c in by[f1]["counterexamples"]} != {c["unit"] for c in by[f2]["counterexamples"]}:
             raise AssertionError(f"{p['id']}: {f1} と {f2} の判例が一致しない（実装の誤り）")
+    held_out = None
+    if p.get("motivated_by"):
+        keys = pl.concat_str([pl.col("team"), pl.lit("-"), pl.col("season").cast(pl.Utf8)])
+        rest = df.filter(~keys.is_in(p["motivated_by"]))
+        flags = rest.select(x=a, y=b).drop_nulls()
+        n, k = int(flags["x"].sum()), int((flags["x"] & flags["y"]).sum())
+        c_, d_ = int((~flags["x"] & flags["y"]).sum()), int((~flags["x"] & ~flags["y"]).sum())
+        ci, p_val = wilson(k, n), fisher_greater(k, n - k, c_, d_)
+        held_out = {"excluded_units": list(p["motivated_by"]), "n": n, "hold": k, "rate": k / n if n else None,
+                    "ci": ci, "fisher_p": p_val, "verdict": verdict(kind, threshold, n, k, ci, p_val, min_n, alpha),
+                    "counterexamples": [c["unit"] for c in _counterexamples(rest, a, b, p, "original", focus)]}
     excluded_cx = []
     if excluded is not None and excluded.height:
         ex = scope_filter(excluded, p.get("scope"))
@@ -212,7 +245,49 @@ def evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None = None, fo
         "objection": any(f["counterexamples"] for f in forms),
         "skipped_forms": p.get("skip_forms", []), "skip_reason": p.get("skip_reason"),
         "excluded_counterexamples": excluded_cx, "source": p.get("source"),
+        "parent": p.get("parent"), "change": p.get("change"), "held_out": held_out,
+        "definition_sha256": definition_sha(p),
     }
+
+
+# ---------- 台帳 ----------
+
+def update_ledger(path: Path, results: list[dict], data_sha: str, code_version: str | None) -> list[dict]:
+    """評価ごとに1行を追記する。同じ（命題の定義, データ）の組は二度書かない。"""
+    path = Path(path)
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()] if path.exists() else []
+    have = {(r["id"], r["definition_sha256"], r["data_sha256"]) for r in rows}
+    now = dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
+    for r in results:
+        key = (r["id"], r["definition_sha256"], data_sha)
+        if key in have:
+            continue
+        rows.append({
+            "recorded_at": now, "id": r["id"], "definition_sha256": r["definition_sha256"], "data_sha256": data_sha,
+            "code_version": code_version, "objection": r["objection"],
+            "forms": {f["form"]: {"verdict": f["verdict"], "n": f["n"], "counterexamples": len(f["counterexamples"])}
+                      for f in r["forms"]},
+        })
+        have.add(key)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+    return rows
+
+
+def ledger_summary(rows: list[dict], pid: str) -> dict:
+    """台帳から: 評価回数、元の命題への異議の回数（どれかの形への異議も別に）、
+    直近の「元の命題に判例なし」の連続回数、同じ id の定義の数（2以上なら事前登録の違反の疑い）。"""
+    mine = [r for r in rows if r["id"] == pid]
+    streak = 0
+    for r in reversed(mine):
+        if r["forms"].get("original", {}).get("counterexamples", 1) == 0:
+            streak += 1
+        else:
+            break
+    orig = [r["forms"].get("original", {}).get("counterexamples", 0) > 0 for r in mine]
+    return {"evaluations": len(mine), "objections": sum(orig), "objections_any_form": sum(r["objection"] for r in mine),
+            "no_objection_streak": streak,
+            "definitions": len(dict.fromkeys(r["definition_sha256"] for r in mine))}
 
 
 # ---------- 外部の主張 ----------
@@ -258,17 +333,33 @@ def _fmt(x, nd=2):
     return "-" if x is None else f"{x:.{nd}f}"
 
 
-def render(results: list[dict], meta: dict, limit: int = 10) -> str:
+def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] | None = None) -> str:
     lines = ["# 異議あり — 命題の判定記録（自動生成）", "",
              "判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。",
              f"命題ファイル SHA-256: `{meta.get('sha256', '-')}` / コード: `{meta.get('code_version') or '測定なし'}`", "",
              "判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。", ""]
+    children = {}
+    for r in results:
+        if r.get("parent"):
+            children.setdefault(r["parent"], []).append(r)
+    if children:
+        lines += ["## 命題の系譜", ""]
+        def walk(pid, depth):
+            for c in children.get(pid, []):
+                lines.append(f"{'  ' * depth}- {pid} → **{c['id']}**: {_cell(c['change'])}")
+                walk(c["id"], depth + 1)
+        for r in results:
+            if not r.get("parent") and r["id"] in children:
+                walk(r["id"], 0)
+        lines.append("")
     for r in results:
         thr = "反例なし" if r["kind"] == "universal" else f"{r['threshold']:.2f}"
         lines += [f"## {r['id']}: {_cell(r['statement'])}", "",
                   f"- もし: `{text(r['if'])}` ならば: `{text(r['then'])}`",
                   f"- 強さ: {STRENGTH_JA[r['strength']]}（{r['strength']}, 基準 {thr}）/ 範囲: {r['scope'] or '全体'} / 単位数: {r['units']}",
                   *([f"- 逆・裏は評価しない（理由: {r['skip_reason']}）"] if r.get("skipped_forms") else []),
+                  *([f"- 親: {r['parent']}（変更: {_cell(r['change'])}）"] if r.get("parent") else []),
+                  *_ledger_line(ledger, r["id"]),
                   "", "| 形 | n | 成立 | 成立率 [95%区間] | 基準率 | lift | p | 判定不能 | 判定 |", "|---|---|---|---|---|---|---|---|---|"]
         for f in r["forms"]:
             ci = f"{_fmt(f['rate'])} [{_fmt(f['ci'][0])}, {_fmt(f['ci'][1])}]"
@@ -288,6 +379,12 @@ def render(results: list[dict], meta: dict, limit: int = 10) -> str:
                 lines += [f"- {c['team_name']} {c['season']}{mark}: {vals}{sup}", f"  - {c['question']}{links}"]
             if len(cx) > limit:
                 lines.append(f"- ほか {len(cx) - limit} 件（propositions.jsonl を参照）")
+        h = r.get("held_out")
+        if h:
+            lines += ["", f"**きっかけ以外での判定**（作り直しのきっかけ {', '.join(h['excluded_units'])} を除く）: "
+                          f"n={h['n']} 成立={h['hold']} 成立率={_fmt(h['rate'])} [{_fmt(h['ci'][0])}, {_fmt(h['ci'][1])}] "
+                          f"→ **{VERDICT_JA[h['verdict']]}**"
+                          + (f" / 判例: {', '.join(h['counterexamples'][:limit])}" if h["counterexamples"] else " / 判例なし")]
         if r["excluded_counterexamples"]:
             lines += ["", "**除外中の判例**（統計からは除いたが、判例としては残す）", ""]
             for c in r["excluded_counterexamples"]:
@@ -295,6 +392,16 @@ def render(results: list[dict], meta: dict, limit: int = 10) -> str:
                 lines.append(f"- {c['team_name']} {c['season']}{' **(focus)**' if c['focus'] else ''}: {vals}")
         lines.append("")
     return "\n".join(lines)
+
+
+def _ledger_line(ledger, pid) -> list[str]:
+    if not ledger:
+        return []
+    s = ledger_summary(ledger, pid)
+    warn = "（**同じ id で定義が変わっている。事前登録の違反の疑い**）" if s["definitions"] > 1 else ""
+    return [f"- 台帳: 評価 {s['evaluations']} 回、元の命題に異議あり {s['objections']} 回"
+            f"（どれかの形に異議あり {s['objections_any_form']} 回）、"
+            f"直近で元の命題に判例がない連続 {s['no_objection_streak']} 回{warn}"]
 
 
 def render_claims(claims: list[dict]) -> str:

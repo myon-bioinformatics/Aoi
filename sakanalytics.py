@@ -35,6 +35,9 @@
     inn_dlog_rpi/_freq/_size       log(得点/回)・log(得点した回の割合)・log(得点した回の平均得点) の、他球団平均との差
     inn_freq_minus_size            inn_dlog_freq − inn_dlog_size（負なら、頻度の不足が大きさの不足より大きい）
     *_6                            双方が6回まで攻撃した試合の1〜6回だけで同じ計算
+    *_home / *_away                ホーム・ビジターの試合だけで同じ計算（球場の係数ではない。比べる範囲を分けるだけ）
+    inn_single_share / big_share   得点した回のうち、1点の回・3点以上の回の割合（R5）
+    inn_d_single_share / _big_share  それぞれの、同じ年・同じリーグの他球団の平均との差
   alloc_*                          得点・失点の配分効果（cycles/c001-chunichi/research/R1-score-allocation.md）
                                    試合ごとの得点の並びと失点の並びを保ち、組み合わせだけをランダムにした基準との差
     alloc_exp_net / alloc_var      基準の（勝 − 敗）の期待値と分散（Hoeffding の厳密な公式。乱数を使わない）
@@ -193,11 +196,21 @@ def inning_decomposition(st: pl.DataFrame, innings: pl.DataFrame) -> pl.DataFram
     """
     over = ["season", "league"]
     out = st
-    for window, tag in (("all", ""), ("first6", "_6")):
-        w = innings.filter(pl.col("window") == window).select(
+    if "venue" not in innings.columns:
+        innings = innings.with_columns(venue=pl.lit("all"))
+    shares = {"single_run_inning_rate", "big_inning_rate"} <= set(innings.columns)
+    parts = [("all", "all", ""), ("all", "first6", "_6"), ("home", "all", "_home"), ("away", "all", "_away")]
+    for venue, window, tag in parts:
+        sel = innings.filter((pl.col("venue") == venue) & (pl.col("window") == window))
+        if sel.height == 0:
+            continue
+        w = sel.select(
             "season", "team", pl.col("games").alias("_g"), pl.col("innings").alias(f"inn_I{tag}"),
-            pl.col("runs").alias("_r"), pl.col("scoring_innings").alias(f"inn_S{tag}"))
-        if window == "all":
+            pl.col("runs").alias("_r"), pl.col("scoring_innings").alias(f"inn_S{tag}"),
+            *([(pl.col("single_run_inning_rate") * pl.col("innings") / pl.col("scoring_innings")).alias(f"inn_single_share{tag}"),
+               (pl.col("big_inning_rate") * pl.col("innings") / pl.col("scoring_innings")).alias(f"inn_big_share{tag}")]
+              if shares else []))
+        if (venue, window) == ("all", "all"):
             chk = st.select("season", "team", "G", "RF").join(w, on=["season", "team"], how="inner")
             bad = chk.filter((pl.col("G") != pl.col("_g")) | (pl.col("RF") != pl.col("_r")))
             if bad.height:
@@ -212,6 +225,18 @@ def inning_decomposition(st: pl.DataFrame, innings: pl.DataFrame) -> pl.DataFram
             for k in logs
         }).drop([f"_l{k}" for k in logs])
         out = out.with_columns(**{f"inn_freq_minus_size{tag}": pl.col(f"inn_dlog_freq{tag}") - pl.col(f"inn_dlog_size{tag}")})
+        if shares:  # 得点した回のうち 1点の回・3点以上の回の割合の、他球団平均との差（R5）
+            out = out.with_columns(**{
+                f"inn_d_{k}{tag}": pl.col(f"inn_{k}{tag}")
+                - (pl.col(f"inn_{k}{tag}").sum().over(over) - pl.col(f"inn_{k}{tag}"))
+                / (pl.col(f"inn_{k}{tag}").count().over(over) - 1)
+                for k in ("single_share", "big_share")
+            })
+    if {"inn_R_home", "inn_R_away"} <= set(out.columns):  # ホームとビジターの和が全体と合うか
+        bad = out.filter(pl.col("inn_R").is_not_null() & ((pl.col("inn_R_home") + pl.col("inn_R_away") != pl.col("inn_R"))
+                                                          | (pl.col("inn_I_home") + pl.col("inn_I_away") != pl.col("inn_I"))))
+        if bad.height:
+            raise ValueError(f"イニング集計のホーム＋ビジターが全体と合わない: {bad.select('season', 'team').rows()[:5]}")
     return out
 
 
@@ -313,7 +338,7 @@ def main(argv=None) -> int:
     if args.innings:
         raw = pl.read_csv(args.innings)
         if "year" in raw.columns:  # PR #3 の形式: year, team, venue, role, window, ...
-            raw = raw.filter((pl.col("venue") == "all") & (pl.col("role") == "off")).rename({"year": "season"})
+            raw = raw.filter(pl.col("role") == "off").rename({"year": "season"})
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)

@@ -102,6 +102,34 @@ def allocation_cumulative(st: pl.DataFrame) -> pl.DataFrame:
     return pl.concat(out).drop("var").sort("baseline", "z")
 
 
+def rank_expectation(st: pl.DataFrame) -> list[dict]:
+    """R10: 得点・失点の分布から見た A クラスの回数の期待値と、実際の回数。
+
+    各シーズンの sim_p_upper を独立な確率として、A クラスの回数 X の分布（ポアソン二項分布）を作る。
+      expected  : Σ sim_p_upper
+      observed  : 実際に上位半分だった回数
+      p_le_obs  : P(X ≤ observed)。小さいほど、得点・失点の分布の割に A クラスが少ない
+      p_ge_obs  : P(X ≥ observed)。小さいほど、分布の割に A クラスが多い
+    """
+    if "sim_p_upper" not in st.columns:
+        return []
+    out = []
+    for (team,), g in st.sort("season").group_by(["team"], maintain_order=True):
+        ps = [p for p in g["sim_p_upper"].to_list() if p is not None]
+        dist = [1.0]
+        for p in ps:
+            nxt = [0.0] * (len(dist) + 1)
+            for k, q in enumerate(dist):
+                nxt[k] += q * (1 - p)
+                nxt[k + 1] += q * p
+            dist = nxt
+        obs = int(g.filter(pl.col("upper_half"))["season"].len())
+        out.append({"team": team, "team_name": g["team_name"][0], "seasons": len(ps), "observed": obs,
+                    "expected": round(sum(ps), 3), "p_le_obs": round(sum(dist[: obs + 1]), 4),
+                    "p_ge_obs": round(sum(dist[obs:]), 4)})
+    return sorted(out, key=lambda r: r["p_le_obs"])
+
+
 def binom_tail(n: int, k: int, p: float) -> float:
     """P(X >= k), X ~ Binomial(n, p)。"""
     return sum(math.comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(k, n + 1))
@@ -295,6 +323,7 @@ def main(argv=None) -> int:
     if alloc.height:
         alloc.write_ndjson(args.outdir / "allocation.jsonl")
     _jsonl(args.outdir / "persistence.jsonl", pers)
+    _jsonl(args.outdir / "rank_expectation.jsonl", rank_expectation(included))
 
     if args.propositions:
         try:

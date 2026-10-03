@@ -289,5 +289,17 @@
     "kind": "sum",
     "status": "not-measurable",
     "note": "範囲内の単位がない（取得範囲を確認）"
+  },
+  {
+    "id": "C27",
+    "statement": "中日の1点差勝率 .495 は、各年の値の13年単純平均（PR #3 の照合で明示された定義）。C12 は期間通算と仮定して .486 となり再現しなかった。定義の違いを分けて残す",
+    "source": "research-pr3 (GPT R001, f75576f)",
+    "date": "2026-10-03",
+    "kind": "mean",
+    "status": "reproduced",
+    "claimed": 0.495,
+    "computed": 0.495,
+    "tolerance": 0.0005,
+    "units": 13
   }
 ]

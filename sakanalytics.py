@@ -31,6 +31,7 @@
   rf_def_floor / _mid / _ceiling   得点／試合の他球団平均との差を、得点帯（0〜2点 / 3〜5点 / 6点以上）に分けたもの（R3）
   rf_def_total                     3つの合計 = 得点／試合 − 同じ年・同じリーグの他球団の得点／試合の平均
   rf_def_floor_minus_ceiling       rf_def_floor − rf_def_ceiling（負なら、床の不足が天井の不足より大きい）
+  sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
     inn_dlog_rpi/_freq/_size       log(得点/回)・log(得点した回の割合)・log(得点した回の平均得点) の、他球団平均との差
@@ -43,6 +44,8 @@
     bat_xbh_h                      安打のうち長打（二塁打・三塁打・本塁打）の割合
     bat_walk_share                 出塁（安打＋四球＋死球）のうち、四球・死球の割合（R8）
     bat_ibb_bb                     四球のうち故意四球の割合（R8）
+    bat_r_ab / r_pa                打数あたり・打席あたりの得点（R9）
+    bat_r_runner                   走者（安打＋四球＋死球）1人あたりの得点（R9。本塁打の打者も走者に数える）
     bat_d_*                        それぞれの、同じ年・同じリーグの他球団の平均との差
     inn_single_share / big_share   得点した回のうち、1点の回・3点以上の回の割合（R5）
     inn_d_single_share / _big_share  それぞれの、同じ年・同じリーグの他球団の平均との差
@@ -264,6 +267,10 @@ BATTING_RATES = {
     "walk_share": lambda: (pl.col("bb") + pl.col("hbp")) / (pl.col("h") + pl.col("bb") + pl.col("hbp")),
     # 四球のうち故意四球の割合（勝負を避けられた分）
     "ibb_bb": lambda: pl.col("ibb") / pl.col("bb"),
+    # 機会あたりの得点（R9）。打数あたり・打席あたり・走者（安打＋四球＋死球）1人あたり
+    "r_ab": lambda: pl.col("r") / pl.col("ab"),
+    "r_pa": lambda: pl.col("r") / pl.col("pa"),
+    "r_runner": lambda: pl.col("r") / (pl.col("h") + pl.col("bb") + pl.col("hbp")),
 }
 
 
@@ -293,6 +300,74 @@ def batting_join(st: pl.DataFrame, bat: pl.DataFrame) -> pl.DataFrame:
         / (pl.col(f"bat_{k}").count().over(over) - 1)
         for k in BATTING_RATES
     })
+
+
+def _season_wpct_pmf(rf: list[int], ra: list[int]) -> tuple[list[float], list[float]]:
+    """1試合 = 自分の得点の分布から1つ、失点の分布から1つを独立に引く。それを試合数だけ繰り返したときの勝率の分布。
+
+    返り値: (勝率の値（昇順）, その確率)。勝率 = 勝 / (勝 + 敗)。引き分けは数えない（全試合引き分けの組は除く）
+    """
+    n = len(rf)
+    xs, ys = Counter(rf), Counter(ra)
+    pw = sum(xs[x] * ys[y] for x in xs for y in ys if x > y) / (n * n)
+    pt = sum(xs[x] * ys[x] for x in xs) / (n * n)
+    pl_ = 1.0 - pw - pt
+    logs = [math.log(q) if q > 0 else None for q in (pw, pt, pl_)]
+    lg = [math.lgamma(k + 1) for k in range(n + 1)]
+    dist: dict[float, float] = {}
+    for w in range(n + 1):
+        for t in range(n - w + 1):
+            l_ = n - w - t
+            if w + l_ == 0 or any(c > 0 and lq is None for c, lq in zip((w, t, l_), logs)):
+                continue
+            lp = lg[n] - lg[w] - lg[t] - lg[l_] + sum(c * lq for c, lq in zip((w, t, l_), logs) if c > 0)
+            v = w / (w + l_)
+            dist[v] = dist.get(v, 0.0) + math.exp(lp)
+    vals = sorted(dist)
+    total = sum(dist.values())
+    return vals, [dist[v] / total for v in vals]
+
+
+def rank_probability(tg: pl.DataFrame) -> pl.DataFrame:
+    """R10: 各チームの得点・失点の分布だけからシーズンを作り直したとき、上位半分（A クラス）に入る確率。
+
+    乱数で何度もシーズンを作る代わりに、その極限（作り直しを無限に繰り返したときの割合）を厳密に計算する。
+    順位はリーグ内の勝率で、同率は上の順位に数える（rank "min" と同じ）。各チームは独立に作り直す。
+      sim_p_upper : 上位半分に入る確率
+      sim_wpct    : 勝率の期待値
+    """
+    from bisect import bisect_right
+
+    pmf, league_of = {}, {}
+    for (season, team, league), g in tg.group_by(["season", "team", "league"]):
+        pmf[(season, team)] = _season_wpct_pmf(g["rf"].to_list(), g["ra"].to_list())
+        league_of[(season, team)] = league
+    tails = {}
+    for key, (vals, probs) in pmf.items():  # P(勝率 > v) を引くための後ろからの累積
+        acc, suffix = 0.0, [0.0] * (len(vals) + 1)
+        for i in range(len(vals) - 1, -1, -1):
+            acc += probs[i]
+            suffix[i] = acc
+        tails[key] = (vals, suffix)
+    rows = []
+    for (season, team), (vals, probs) in pmf.items():
+        others = [k for k in pmf if k[0] == season and k[1] != team and league_of[k] == league_of[(season, team)]]
+        allowed = (len(others) + 1) // 2 - 1  # 上位半分 = 自分より勝率の高いチームが allowed 以下
+        p_up = 0.0
+        for v, pv in zip(vals, probs):
+            dp = [1.0] + [0.0] * (allowed + 1)  # dp[k] = 自分より上が k チーム（allowed+1 は「それより多い」）
+            for k in others:
+                ov, suf = tails[k]
+                q = suf[bisect_right(ov, v)]
+                nxt = [0.0] * (allowed + 2)
+                for c, pc in enumerate(dp):
+                    nxt[c] += pc * (1 - q)
+                    nxt[min(c + 1, allowed + 1)] += pc * q
+                dp = nxt
+            p_up += pv * sum(dp[: allowed + 1])
+        rows.append({"season": season, "team": team, "sim_p_upper": p_up,
+                     "sim_wpct": sum(v * pv for v, pv in zip(vals, probs))})
+    return pl.DataFrame(rows, schema={"season": pl.Int32, "team": pl.Utf8, "sim_p_upper": pl.Float64, "sim_wpct": pl.Float64})
 
 
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
@@ -340,6 +415,7 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
     st = add_explanatory(add_rank(st))
     st = st.join(allocation_table(tg), on=["season", "team"], how="left")
     st = st.join(scoring_deficit(tg), on=["season", "team"], how="left")
+    st = st.join(rank_probability(tg), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 

@@ -148,3 +148,16 @@ def test_allocation_cumulative_sums_and_z():
     assert a[("全試合", "d")]["z"] == pytest.approx(-3.0 / 3.0)
     assert a[("ホーム/ビジター別", "d")]["z"] == pytest.approx(-2.0 / math.sqrt(8.0))
     assert allocation_cumulative(pl.DataFrame({"team": ["x"]})).height == 0
+
+
+def test_rank_expectation_poisson_binomial():
+    from pythdragoras import rank_expectation
+    st = pl.DataFrame({"team": ["d"] * 3 + ["g"] * 2, "team_name": ["中日"] * 3 + ["巨人"] * 2,
+                       "season": [2013, 2014, 2015, 2013, 2014], "upper_half": [False, False, True, True, True],
+                       "sim_p_upper": [0.5, 0.5, 0.2, 0.9, 0.5]})
+    r = {x["team"]: x for x in rank_expectation(st)}
+    # d: X = 2つの 0.5 と 1つの 0.2。P(X ≤ 1) = 1 − P(X=2) − P(X=3) = 1 − (0.25·0.8 + 2·0.25·0.2) − 0.25·0.2
+    assert r["d"]["expected"] == pytest.approx(1.2) and r["d"]["observed"] == 1
+    assert r["d"]["p_le_obs"] == pytest.approx(1 - (0.2 + 0.1) - 0.05)
+    assert r["g"]["p_ge_obs"] == pytest.approx(0.45) and r["g"]["p_le_obs"] == pytest.approx(1.0)
+    assert rank_expectation(st.drop("sim_p_upper")) == []

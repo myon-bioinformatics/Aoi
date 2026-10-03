@@ -320,6 +320,7 @@ def test_batting_join_rates_relative_and_no_raw_counts():
     assert d["bat_obp"] == pytest.approx(42 / 113) and d["bat_d_obp"] == pytest.approx(0.0)
     assert d["bat_walk_share"] == pytest.approx(12 / 42) and d["bat_ibb_bb"] == pytest.approx(0.1)
     assert d["bat_d_ibb_bb"] == pytest.approx(0.1 - 0.2)
+    assert d["bat_r_runner"] == pytest.approx(d["RF"] / 42) and d["bat_r_pa"] == pytest.approx(d["RF"] / 115)
     assert not {"hr", "ab", "tb", "h", "bb", "ibb"} & set(out.columns)  # 原票の値は出力に入れない
 
 
@@ -340,3 +341,46 @@ def test_equal_width_band_k67_is_part_of_ceiling_and_not_added_to_total():
     assert v["d"]["rf_def_k67"] == pytest.approx(1.0)
     assert v["d"]["rf_def_floor_minus_k67"] == pytest.approx(-0.75 - 1.0)
     assert v["d"]["rf_def_floor"] + v["d"]["rf_def_mid"] + v["d"]["rf_def_ceiling"] == pytest.approx(v["d"]["rf_def_total"])
+
+
+def _tg(teams):
+    """teams: {team: (rf の並び, ra の並び)}。同じ年・同じリーグ"""
+    return pl.DataFrame([{"season": 2024, "team": t, "league": "C", "rf": a, "ra": b}
+                         for t, (rf, ra) in teams.items() for a, b in zip(rf, ra)],
+                        schema_overrides={"season": pl.Int32})
+
+
+def test_rank_probability_matches_a_seeded_random_simulation():
+    # 乱数でシーズンを何度も作り直した割合と、厳密な計算が一致する（4チーム・8試合、上位半分 = 2位以内）
+    import random
+    from sakanalytics import rank_probability
+    teams = {"a": ([5, 1, 3, 0, 4, 2, 6, 2], [2, 3, 1, 4, 0, 2, 5, 3]), "b": ([2, 2, 3, 1, 0, 4, 2, 1], [3, 1, 2, 2, 4, 0, 1, 2]),
+             "c": ([7, 0, 1, 3, 2, 2, 5, 0], [1, 6, 2, 3, 3, 0, 4, 2]), "d": ([1, 0, 2, 1, 3, 0, 1, 2], [2, 4, 1, 3, 2, 5, 1, 0])}
+    exact = {r["team"]: r["sim_p_upper"] for r in rank_probability(_tg(teams)).iter_rows(named=True)}
+    rnd, n, hits = random.Random(20261004), 40000, dict.fromkeys(teams, 0)
+    for _ in range(n):
+        wp = {}
+        for t, (rf, ra) in teams.items():
+            w = l_ = 0
+            for _ in range(len(rf)):
+                x, y = rnd.choice(rf), rnd.choice(ra)
+                w, l_ = w + (x > y), l_ + (x < y)
+            wp[t] = w / (w + l_) if w + l_ else None
+        for t, v in wp.items():
+            if v is None:
+                continue
+            above = sum(1 for o, ov in wp.items() if o != t and ov is not None and ov > v)
+            hits[t] += above <= 1
+    for t in teams:
+        assert exact[t] == pytest.approx(hits[t] / n, abs=0.012), t
+
+
+def test_rank_probability_identical_teams_and_dominant_team():
+    from sakanalytics import rank_probability
+    same = ([3, 1, 4, 1, 5, 2], [2, 7, 1, 8, 2, 8])
+    p = {r["team"]: r["sim_p_upper"] for r in rank_probability(_tg({t: same for t in "dgt"})).iter_rows(named=True)}
+    assert p["d"] == pytest.approx(p["g"]) == pytest.approx(p["t"])
+    strong = ([9] * 6, [0] * 6)
+    weak = ([0, 1, 0, 1, 0, 1], [3, 4, 3, 4, 3, 4])
+    p = {r["team"]: r["sim_p_upper"] for r in rank_probability(_tg({"d": strong, "g": weak, "t": weak})).iter_rows(named=True)}
+    assert p["d"] == pytest.approx(1.0) and p["g"] < 0.01

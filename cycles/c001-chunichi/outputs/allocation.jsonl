@@ -1,0 +1,12 @@
+{"team":"d","team_name":"中日","seasons":13,"alloc_net":-15.625978090766822,"baseline":"ホーム/ビジター別","z":-0.7727118404708669}
+{"team":"s","team_name":"ヤクルト","seasons":13,"alloc_net":-15.707355242566514,"baseline":"ホーム/ビジター別","z":-0.7574016809172217}
+{"team":"c","team_name":"広島","seasons":13,"alloc_net":3.911971830985916,"baseline":"ホーム/ビジター別","z":0.19024224722317787}
+{"team":"g","team_name":"巨人","seasons":13,"alloc_net":8.710093896713616,"baseline":"ホーム/ビジター別","z":0.42606764924440615}
+{"team":"t","team_name":"阪神","seasons":13,"alloc_net":14.525821596244134,"baseline":"ホーム/ビジター別","z":0.709029861035488}
+{"team":"db","team_name":"DeNA","seasons":13,"alloc_net":16.092918622848202,"baseline":"ホーム/ビジター別","z":0.7784973640593482}
+{"team":"s","team_name":"ヤクルト","seasons":13,"alloc_net":-20.14121989121989,"baseline":"全試合","z":-0.9639740605155225}
+{"team":"d","team_name":"中日","seasons":13,"alloc_net":-14.42705905205905,"baseline":"全試合","z":-0.7097169879100764}
+{"team":"c","team_name":"広島","seasons":13,"alloc_net":2.732760295260297,"baseline":"全試合","z":0.132501922817347}
+{"team":"g","team_name":"巨人","seasons":13,"alloc_net":7.919289044289039,"baseline":"全試合","z":0.38639156083322357}
+{"team":"db","team_name":"DeNA","seasons":13,"alloc_net":13.448912198912202,"baseline":"全試合","z":0.6472973966947696}
+{"team":"t","team_name":"阪神","seasons":13,"alloc_net":14.703622766122763,"baseline":"全試合","z":0.7176818347766252}

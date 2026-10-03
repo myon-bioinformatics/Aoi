@@ -94,7 +94,7 @@ def run():
     args.out.mkdir(parents=True,exist_ok=True)
     (args.out/'iso_counterexamples.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
     with (args.out/'iso_counterexamples.csv').open('w',encoding='utf-8',newline='') as f:
-        w=csv.DictWriter(f,fieldnames=list(rows[0]))
+        w=csv.DictWriter(f,fieldnames=list(rows[0]),lineterminator="\n")
         w.writeheader();w.writerows(result['low_iso_rows'])
     print(json.dumps(result['scopes'],ensure_ascii=False,indent=2))
 

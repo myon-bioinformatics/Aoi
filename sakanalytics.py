@@ -36,6 +36,11 @@
     inn_freq_minus_size            inn_dlog_freq − inn_dlog_size（負なら、頻度の不足が大きさの不足より大きい）
     *_6                            双方が6回まで攻撃した試合の1〜6回だけで同じ計算
     *_home / *_away                ホーム・ビジターの試合だけで同じ計算（球場の係数ではない。比べる範囲を分けるだけ）
+  bat_*（--batting があるとき）     チーム打撃成績から計算した率（R6）。打数・本塁打数などの原票の値は出力しない
+    bat_avg / obp / slg / iso      打率・出塁率・長打率・ISO（長打率 − 打率）
+    bat_hr_pa / bb_pa / so_pa      本塁打・四死球・三振の、打席あたりの割合
+    bat_xbh_h                      安打のうち長打（二塁打・三塁打・本塁打）の割合
+    bat_d_*                        それぞれの、同じ年・同じリーグの他球団の平均との差
     inn_single_share / big_share   得点した回のうち、1点の回・3点以上の回の割合（R5）
     inn_d_single_share / _big_share  それぞれの、同じ年・同じリーグの他球団の平均との差
   alloc_*                          得点・失点の配分効果（cycles/c001-chunichi/research/R1-score-allocation.md）
@@ -240,6 +245,46 @@ def inning_decomposition(st: pl.DataFrame, innings: pl.DataFrame) -> pl.DataFram
     return out
 
 
+BATTING_RATES = {
+    "avg": lambda: pl.col("h") / pl.col("ab"),
+    "obp": lambda: (pl.col("h") + pl.col("bb") + pl.col("hbp")) / (pl.col("ab") + pl.col("bb") + pl.col("hbp") + pl.col("sf")),
+    "slg": lambda: pl.col("tb") / pl.col("ab"),
+    "iso": lambda: (pl.col("tb") - pl.col("h")) / pl.col("ab"),
+    "hr_pa": lambda: pl.col("hr") / pl.col("pa"),
+    "bb_pa": lambda: (pl.col("bb") + pl.col("hbp")) / pl.col("pa"),
+    "so_pa": lambda: pl.col("so") / pl.col("pa"),
+    "xbh_h": lambda: (pl.col("b2") + pl.col("b3") + pl.col("hr")) / pl.col("h"),
+}
+
+
+def batting_join(st: pl.DataFrame, bat: pl.DataFrame) -> pl.DataFrame:
+    """チーム打撃成績（R6）から率を計算して結合する。結合するのは率と、同じ年・同じリーグの他球団の平均との差だけ。
+
+    照合（1つでも合わなければ ValueError）:
+      - 試合数・得点が、最終スコア由来の G・RF と一致する
+      - 打数などから計算し直した打率・長打率・出塁率が、ページの値と表示桁（小数3桁）で一致する
+    率: bat_avg / obp / slg / iso（= 長打率 − 打率）/ hr_pa（本塁打／打席）/ bb_pa（四死球／打席）/ so_pa / xbh_h（長打／安打）
+    """
+    over = ["season", "league"]
+    b = bat.with_columns(pl.col("season").cast(pl.Int32)).with_columns(
+        **{f"bat_{k}": f() for k, f in BATTING_RATES.items()})
+    chk = st.select("season", "team", "G", "RF").join(b, on=["season", "team"], how="inner")
+    bad = chk.filter((pl.col("G") != pl.col("g")) | (pl.col("RF") != pl.col("r")))
+    if bad.height:
+        raise ValueError(f"打撃成績の試合数・得点が最終スコアと合わない: {bad.select('season', 'team').rows()[:5]}")
+    for k in ("avg", "obp", "slg"):
+        off = b.filter((pl.col(f"bat_{k}") - pl.col(k)).abs() > 0.0005 + 1e-9)
+        if off.height:
+            raise ValueError(f"打撃成績の {k} を計算し直すとページの値と合わない: {off.select('season', 'team').rows()[:5]}")
+    cols = [f"bat_{k}" for k in BATTING_RATES]
+    out = st.join(b.select("season", "team", *cols), on=["season", "team"], how="left")
+    return out.with_columns(**{
+        f"bat_d_{k}": pl.col(f"bat_{k}") - (pl.col(f"bat_{k}").sum().over(over) - pl.col(f"bat_{k}"))
+        / (pl.col(f"bat_{k}").count().over(over) - 1)
+        for k in BATTING_RATES
+    })
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -331,6 +376,7 @@ def main(argv=None) -> int:
     ap.add_argument("--config", type=Path, required=True, help="分析設定（[teams] を含む TOML）")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--innings", type=Path, help="イニング単位の集計（CSV / CSV.gz、R4）。あれば inn_* の列を加える")
+    ap.add_argument("--batting", type=Path, help="チーム打撃成績の観測（JSONL、R6）。あれば bat_* の率を加える")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
@@ -340,6 +386,8 @@ def main(argv=None) -> int:
         if "year" in raw.columns:  # PR #3 の形式: year, team, venue, role, window, ...
             raw = raw.filter(pl.col("role") == "off").rename({"year": "season"})
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
+    if args.batting:
+        st = batting_join(st, pl.read_ndjson(args.batting))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     focus = cfg.get("focus", {}).get("team")

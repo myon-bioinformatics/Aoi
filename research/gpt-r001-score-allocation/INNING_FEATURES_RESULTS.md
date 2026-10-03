@@ -14,6 +14,8 @@
 
 共有パッケージには生HTML、gamelist.py、games_raw.json、team_games.csvがなく、共有parse.py/innings.py単体で元の取得工程を再実行することはできない。新しいスクリプトは共有CSVを入力として再実行できる。数値付きxの途中終了フラグはCSVでは失われており復元しない。未知文字列が元工程で除外されていないかについても、元HTMLなしに全面確認はできない。
 
+追記：後続の補足パッケージでgamelist.py・解析済みJSON・試合CSV・数値付きxの別表を受領した。[SUPPLEMENT_RECEPTION.md](SUPPLEMENT_RECEPTION.md) に確認結果を記録。元のイニングCSVは同一で、本報告の64項目は変更していない。生HTMLは引き続き未受領。
+
 ## 成果物
 
 | ファイル | 内容 |

@@ -162,3 +162,47 @@ def test_allocation_next_season_and_same_sign():
     # Series の drop_nulls()/abs() は Python 3.15 ベータ + polars 1.44.2 で None を返すので、式で書く
     assert set(t.select(pl.col("alloc_same_sign").drop_nulls())["alloc_same_sign"].to_list()) <= {True, False}
     assert t["alloc_z_abs"].to_list() == [abs(v) for v in z]
+
+
+def test_opponent_strata_equal_home_away_strata_when_only_one_opponent():
+    from sakanalytics import allocation_table
+    rows = [("2024-04-01", "d", "g", 2, 3), ("2024-04-02", "d", "g", 9, 0), ("2024-04-03", "d", "g", 4, 4),
+            ("2024-04-04", "g", "d", 3, 2), ("2024-04-05", "g", "d", 0, 9), ("2024-04-06", "g", "d", 1, 5)]
+    d = allocation_table(to_team_games(games(rows), TEAMS)).filter(pl.col("team") == "d").row(0, named=True)
+    for k in ("exp_net", "var", "net", "z"):
+        assert d[f"alloc_{k}_opp"] == pytest.approx(d[f"alloc_{k}_strat"])
+
+
+def test_opponent_strata_match_shuffle_of_runs_allowed_in_win_equivalents():
+    # PR #3（R001）の方法: 得点を固定し、失点だけを（相手 × ホーム/ビジター）の中で並べ替え、
+    # 勝相当 WE = W + 0.5·D の平均との差を取る。全通りを数えると、勝−敗の差 = 2 × WE の差になる（引き分けを含めて）
+    from itertools import permutations
+    from sakanalytics import allocation_table
+    rows = [("2024-04-01", "d", "g", 2, 3), ("2024-04-02", "d", "g", 9, 0), ("2024-04-03", "d", "g", 4, 4),
+            ("2024-04-04", "g", "d", 3, 2), ("2024-04-05", "g", "d", 0, 9),
+            ("2024-04-06", "d", "t", 1, 5), ("2024-04-07", "d", "t", 5, 1), ("2024-04-08", "d", "t", 3, 3),
+            ("2024-04-09", "t", "d", 6, 2), ("2024-04-10", "t", "d", 2, 2)]
+    tg = to_team_games(games(rows), TEAMS).filter(pl.col("team") == "d")
+
+    def we(rf, ra):
+        return sum(1.0 if a > b else 0.5 if a == b else 0.0 for a, b in zip(rf, ra))
+
+    excess_we = 0.0
+    for _, cell in tg.group_by(["opp", "is_home"]):
+        rf, ra = cell["rf"].to_list(), cell["ra"].to_list()
+        perms = list(permutations(ra))
+        excess_we += we(rf, ra) - sum(we(rf, p) for p in perms) / len(perms)
+    d = allocation_table(tg).row(0, named=True)
+    assert d["alloc_net_opp"] == pytest.approx(2 * excess_we)
+
+
+def test_home_away_gap_against_other_teams_of_the_league():
+    rows = [("2024-04-01", "d", "g", 5, 1), ("2024-04-02", "g", "d", 3, 1),   # d: ホーム +4、ビジター −2
+            ("2024-04-03", "t", "g", 2, 2), ("2024-04-04", "g", "t", 0, 1)]   # g: ホーム +2/−1、ビジター −4/0
+    st = season_table(to_team_games(games(rows), TEAMS))
+    v = {r["team"]: r for r in st.iter_rows(named=True)}
+    assert (v["d"]["rd_home_g"], v["d"]["rd_away_g"], v["d"]["home_away_gap"]) == (4.0, -2.0, 6.0)
+    assert v["g"]["home_away_gap"] == pytest.approx(0.5 - (-2.0))
+    assert v["t"]["home_away_gap"] == pytest.approx(0.0 - 1.0)
+    # 他の2球団の平均との差
+    assert v["d"]["home_away_gap_vs_league"] == pytest.approx(6.0 - (2.5 + -1.0) / 2)

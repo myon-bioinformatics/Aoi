@@ -104,3 +104,27 @@ def test_cli_offline_end_to_end(tmp_path, capsys):
     meta = json.loads(out.with_suffix(".manifest.json").read_text())
     assert meta["dropped"] == {"cancelled": 1, "non_regular": 1} and meta["unknown"] == 0
     assert "NFKC" in meta["normalization"]
+
+
+def test_write_dataset_drops_records_the_rebuilt_scope_no_longer_produces(tmp_path):
+    # 解析ルールを直した後、前の規則で採用した試合（例: CS）が残らない。範囲外の年は残す
+    path = tmp_path / "obs" / "games.jsonl"
+    old = [{"key": "a", "date": "2013-10-12"}, {"key": "cs", "date": "2013-10-12"}, {"key": "z", "date": "2014-04-01"}]
+    write_dataset(path, old, {"source": "s"})
+    write_dataset(path, [{"key": "a", "date": "2013-10-12"}], {"source": "s"},
+                  rebuilt=lambda r: npb_calendar.group(r) == "2013")
+    assert [r["key"] for r in map(json.loads, path.read_text().splitlines())] == ["a", "z"]
+    assert json.loads(path.with_suffix(".manifest.json").read_text())["removed"] == 1
+
+
+def test_client_keeps_environment_proxy_settings(tmp_path, monkeypatch):
+    # transport= を渡すと httpx は環境変数のプロキシを使わない（PR #3 で判明）
+    seen = {}
+
+    class Spy:
+        def __init__(self, **kw):
+            seen.update(kw)
+
+    monkeypatch.setattr(httpx, "Client", Spy)
+    PoliteFetcher(Cache(tmp_path / "cache"), wait=0).client
+    assert "transport" not in seen and "mounts" not in seen and seen.get("trust_env", True)

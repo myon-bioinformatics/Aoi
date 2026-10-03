@@ -25,12 +25,16 @@
   one_run_net / two_run_net        1点差・2点差の勝ち越し数（w − l）
   blowout_net                      4点以上差の勝ち越し数（w_4plus − l_4plus）
   rank_wpct_1run                   1点差勝率のリーグ内順位（高い順）
+  rd_home_g / rd_away_g            ホーム・ビジターの試合での得失点差／試合
+  home_away_gap                    rd_home_g − rd_away_g（観測した差。補正の係数には使わない）
+  home_away_gap_vs_league          home_away_gap − 同じ年・同じリーグの他球団の home_away_gap の平均
   alloc_*                          得点・失点の配分効果（cycles/c001-chunichi/research/R1-score-allocation.md）
                                    試合ごとの得点の並びと失点の並びを保ち、組み合わせだけをランダムにした基準との差
     alloc_exp_net / alloc_var      基準の（勝 − 敗）の期待値と分散（Hoeffding の厳密な公式。乱数を使わない）
     alloc_net / alloc_z            実際の（勝 − 敗）− 期待値、その標準化
     *_home / *_away                ホームどうし・ビジターどうしの中だけで入れ替えた基準
     *_strat                        ホームとビジターを分けた基準の合計
+    *_opp                          対戦相手 × ホーム/ビジターの組ごとに入れ替えた基準の合計（球場の係数ではない。比べる範囲を狭めるだけ）
     alloc_z_abs / alloc_same_sign  |alloc_z|、ホームとビジターで alloc_net の符号がそろうか
     alloc_z_next                   同じチームの翌シーズンの alloc_z（翌年がなければ空）
 """
@@ -116,6 +120,13 @@ def allocation_table(tg: pl.DataFrame) -> pl.DataFrame:
         net = out["alloc_net_home"] + out["alloc_net_away"]  # すでに期待値を引いた値の合計
         out |= {"alloc_exp_net_strat": exp, "alloc_var_strat": var, "alloc_net_strat": net,
                 "alloc_z_strat": net / math.sqrt(var) if var > 0 else None}
+        exp = var = net = 0.0  # 対戦相手 × ホーム/ビジターの組ごとに入れ替えた基準の合計
+        for _, cell in g.group_by(["opp", "is_home"]):
+            rf, ra = cell["rf"].to_list(), cell["ra"].to_list()
+            e, v = allocation(rf, ra)
+            exp, var, net = exp + e, var + v, net + sum(_sign(a - b) for a, b in zip(rf, ra)) - e
+        out |= {"alloc_exp_net_opp": exp, "alloc_var_opp": var, "alloc_net_opp": net,
+                "alloc_z_opp": net / math.sqrt(var) if var > 0 else None}
         rows.append(out)
     floats = {k: pl.Float64 for k in rows[0] if k.startswith("alloc_")} if rows else {}
     t = pl.DataFrame(rows, schema_overrides={"season": pl.Int32, **floats})  # 値がすべて空でも型を決める
@@ -151,6 +162,7 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
         *bins,
         *_spread(margin.filter(win), "win_margin"), *_spread(margin.filter(loss), "loss_margin"),
         *_spread(pl.col("rf"), "rf"), *_spread(pl.col("ra"), "ra"),
+        m.filter(pl.col("is_home")).mean().alias("rd_home_g"), m.filter(~pl.col("is_home")).mean().alias("rd_away_g"),
     )
     W, L, RF, RA, G = (pl.col(c) for c in ("W", "L", "RF", "RA", "G"))
     log_ratio = (RF / RA).log()
@@ -196,7 +208,11 @@ def add_explanatory(st: pl.DataFrame) -> pl.DataFrame:
                       one_run_net=pl.col("w_1").cast(pl.Int64) - pl.col("l_1").cast(pl.Int64),
                       two_run_net=pl.col("w_2").cast(pl.Int64) - pl.col("l_2").cast(pl.Int64),
                       blowout_net=pl.col("w_4plus").cast(pl.Int64) - pl.col("l_4plus").cast(pl.Int64),
-                      rank_wpct_1run=r("wpct_1run", True))
+                      rank_wpct_1run=r("wpct_1run", True),
+                      home_away_gap=pl.col("rd_home_g") - pl.col("rd_away_g"))
+        .with_columns(home_away_gap_vs_league=pl.col("home_away_gap")
+                      - (pl.col("home_away_gap").sum().over(over) - pl.col("home_away_gap"))
+                      / (pl.len().over(over) - 1))
     )
 
 

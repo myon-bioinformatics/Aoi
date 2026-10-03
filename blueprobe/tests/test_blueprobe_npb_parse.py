@@ -96,3 +96,65 @@ def test_merge_dedupes_across_pages():
     total = merge(merge(new_report(), a), b)
     assert [r["key"] for r in total["records"]] == ["2024040201097"]
     assert dict(total["counts"]) == {"cancelled": 1}
+
+
+# ---------- 公式戦以外の大会（見出しで分ける） ----------
+# 実ページの形（PR #3 の実データ観測）を、架空のスコアで再現する。日付だけでは分けられない例: 2013-10-12
+
+def day(*children):
+    return '<div class="stvsteam">' + "".join(children) + "</div>"
+
+
+def game(gid, text):
+    return f'<div><a href="/bis/{gid[:4]}/games/s{gid}.html">{text}</a></div>'
+
+
+def label(text):
+    return f'<div class="tescheaten">{text}</div>'
+
+
+def test_same_day_postseason_is_excluded_by_label_and_counted_per_label():
+    html = (day(label("CS ファーストS"), game("2013101200001", "神 2 - 1 広"))
+            + day(game("2013101200002", "楽 3 - 2 オ")))
+    r = parse(html)
+    assert [(g["key"], g["home"], g["away"]) for g in r["records"]] == [("2013101200002", "e", "b")]
+    assert dict(r["counts"]) == {"non_regular:CS ファーストS": 1}
+    assert r["unknown"] == []
+
+
+def test_label_applies_to_every_following_game_in_the_day_block_only():
+    html = day(game("2013101200003", "ロ 1 - 0 西"), label("日本シリーズ"),
+               game("2013101200004", "楽 2 - 0 巨"), game("2013101200005", "巨 4 - 2 楽"))
+    r = parse(html)
+    assert [g["key"] for g in r["records"]] == ["2013101200003"]
+    assert r["counts"]["non_regular:日本シリーズ"] == 2
+
+
+def test_allstar_teams_are_not_unknown_when_labelled():
+    r = parse(day(label("オールスター"), game("2013071900001", "パ 2 - 2 セ")))
+    assert (r["records"], r["unknown"]) == ([], [])
+    assert r["counts"]["non_regular:オールスター"] == 1
+
+
+def test_label_is_normalized_before_matching():
+    r = parse(day(label(" ＣＳ　ファイナルＳ "), game("2013101700001", "巨 3 - 0 広")))
+    assert r["records"] == [] and r["counts"]["non_regular:CS ファイナルS"] == 1
+
+
+def test_unknown_label_is_recorded_not_adopted_and_not_dropped():
+    r = parse(day(label("未知の大会"), game("2013101200001", "神 2 - 1 広")))
+    assert r["records"] == []
+    assert r["unknown"] == [{"key": "2013101200001", "raw": "[未知の大会] 神 2 - 1 広"}]
+
+
+def test_label_found_through_nested_markup():
+    html = day(label("<span>CS ファイナルS</span>"),
+               '<div><p><span><a href="/bis/2013/games/s2013101700002.html">巨 1 - 0 広</a></span></p></div>')
+    r = parse(html)
+    assert r["records"] == [] and r["counts"]["non_regular:CS ファイナルS"] == 1
+
+
+@pytest.mark.parametrize("name", sorted(__import__("npb_calendar").NON_REGULAR_LABELS))
+def test_every_known_label_excludes(name):
+    r = parse(day(label(name), game("2020111400001", "ソ 2 - 1 ロ")))
+    assert r["records"] == [] and r["unknown"] == [] and r["counts"][f"non_regular:{name}"] == 1

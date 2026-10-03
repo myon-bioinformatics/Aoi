@@ -49,5 +49,5 @@ def test_inspect_can_hand_back_records_and_markdown_shows_checks():
     inspect(npb_calendar, [("2024_04", "u", "2024", f'<a href="{P}">中 4 - 3 巨</a>')], recs)
     assert [r["key"] for r in recs] == ["2024040201097"]
     checks = npb_calendar.check(recs)
-    assert checks == ["2024: teams=2 games/team=0-1 expected=143 要確認"]
+    assert [(c["group"], c["ok"]) for c in checks] == [("2024", False)]
     assert "取りこぼしの確認" in to_markdown([], "t", checks)

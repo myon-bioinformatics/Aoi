@@ -187,3 +187,93 @@ statement = "長期低迷を、ピタゴラス期待勝数からの継続的な�
 source = "external-conversation-gpt"
 date = "2026-10-03"
 kind = "interpretation"
+
+# ---------- PR #3（GPT の独立研究 R001、2026-10-03、コミット f75576f）----------
+# 実データ（2013〜2025年、11,028試合、公式年計 156球団年×6項目と一致）で計算された値。
+# R001 の超過は「勝相当 WE = W + 0.5D」。並べ替えで n は変わらないので、勝 − 敗 の超過 = 2 × WE の超過。
+# R001 はモンテカルロ（4,000回）、こちらは厳密な公式。参照平均の標準誤差は最大 0.048 WE（= 0.096 勝−敗）。
+
+[[claim]]
+id = "C19"
+statement = "中日 2013-2025 でピタゴラス（指数1.83）の期待勝数を下回った年は 2014・2015・2016・2018・2019 の5年（C15 の「3年」と食い違う）"
+source = "research-pr3 (GPT R001, f75576f)"
+date = "2026-10-03"
+kind = "count"
+scope = { team = "d", seasons = "2013-2025" }
+filter = [{ col = "wins_vs_pythag", op = "<", value = 0 }]
+value = 5
+tolerance = 0
+
+[[claim]]
+id = "C20"
+statement = "中日 2013-2025、ホーム／ビジター内で失点を並べ替える基準に対する組合せの超過は平均 −0.73 WE／年（勝−敗では −1.46）"
+source = "research-pr3 (GPT R001, f75576f)"
+date = "2026-10-03"
+kind = "mean"
+column = "alloc_net_strat"
+scope = { team = "d", seasons = "2013-2025" }
+value = -1.46
+tolerance = 0.05
+
+[[claim]]
+id = "C21"
+statement = "C20 から 2020 年を除くと平均 −1.08 WE／年（勝−敗では −2.16）"
+source = "research-pr3 (GPT R001, f75576f)"
+date = "2026-10-03"
+kind = "mean"
+column = "alloc_net_strat"
+scope = { team = "d", seasons = "2013-2025" }
+filter = [{ col = "season", op = "!=", value = 2020 }]
+value = -2.16
+tolerance = 0.05
+
+[[claim]]
+id = "C22"
+statement = "中日 2015 の同じ基準での超過は −5.45 WE（勝−敗では −10.90）。1年だけの値で、計算方法の違い（厳密 / 4,000回）を確かめる"
+source = "research-pr3 (GPT R001, f75576f)"
+date = "2026-10-03"
+kind = "sum"
+column = "alloc_net_strat"
+scope = { team = "d", seasons = "2015" }
+value = -10.90
+tolerance = 0.2
+
+[[claim]]
+id = "C23"
+statement = "ホーム／ビジター×対戦相手の中で並べ替えると、中日 2013-2025 の超過は平均 −0.55 WE／年（勝−敗では −1.10）。こちらは対戦相手で層別した基準をまだ持たない"
+source = "research-pr3 (GPT R001, f75576f)"
+date = "2026-10-03"
+kind = "mean"
+column = "alloc_net_opp"
+scope = { team = "d", seasons = "2013-2025" }
+value = -1.10
+tolerance = 0.05
+
+[[claim]]
+id = "C24"
+statement = "中日のホームとビジターの得失点差／試合の開きは、13年中12年で他のセ5球団の平均より大きい（2023年だけ逆）。球場係数の推定ではない（主催区分の比較）"
+source = "research-pr3 (GPT R001, f75576f)"
+date = "2026-10-03"
+kind = "count"
+scope = { team = "d", seasons = "2013-2025" }
+filter = [{ col = "home_away_gap_vs_league", op = ">", value = 0 }]
+value = 12
+tolerance = 0
+
+[[claim]]
+id = "C25"
+statement = "組合せの超過／試合の隣り合うシーズンの相関は、セ・リーグでほぼ 0（ホーム／ビジター基準 −0.005、相手も保つ基準 −0.030）。能力がないことは示さない"
+source = "research-pr3 (GPT R001, f75576f)"
+date = "2026-10-03"
+kind = "interpretation"
+
+[[claim]]
+id = "C26"
+statement = "中日 2026 の最終成績は 60勝81敗2分（10/3 に 3-1 で勝って全日程終了）。勝数で照合する。取得範囲（2026）を広げるまでは判定できない"
+source = "external-report-part2 (Grok)"
+date = "2026-10-03"
+kind = "sum"
+column = "W"
+scope = { team = "d", seasons = "2026" }
+value = 60
+tolerance = 0

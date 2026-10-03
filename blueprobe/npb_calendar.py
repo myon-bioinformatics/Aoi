@@ -12,10 +12,16 @@ URL   : https://npb.jp/bis/{year}/calendar/index_{MM}.html （2012〜2025年は�
   derived  : date（URL の試合IDから）, home/away（略字から）, hs/as（得点）, normalized（正規化で文字列が変わったか）
 勝敗・点差はここでは計算しない（SakAnalytics の仕事）。
 
+公式戦以外の試合（CS・日本シリーズ・オールスターなど）も同じ /bis/{year}/games/ のリンクで、
+同じ日に公式戦と並ぶことがある（例: 2013-10-12）。日付やパスでは分けられない。
+ページでは日ごとの枠（class="stvsteam"）の中で、大会の見出し（class="tescheaten"）が後ろの試合の前に置かれる。
+見出しのついた試合は採用しない。知らない見出しは unknown に入れる（黙って捨てない・黙って採用しない）。
+
 採用しなかったものの区分（counts）:
-  cancelled   : 試合リンクだが中止表記（* - *、中止、ノーゲーム）
-  non_regular : スコア形式だが公式戦の試合リンクではない（CS・日本シリーズなど）
-  unknown     : 試合リンクなのにどれにも当たらない → 表記の変化を疑う。原文を残す
+  cancelled           : 試合リンクだが中止表記（* - *、中止、ノーゲーム）
+  non_regular         : スコア形式だが試合リンクではない
+  non_regular:<見出し> : 公式戦以外の大会の見出しがついた試合リンク（見出しごとに数える）
+  unknown             : 試合リンクなのにどれにも当たらない、または知らない見出し → 表記の変化を疑う。原文を残す
 """
 
 from __future__ import annotations
@@ -52,6 +58,31 @@ GAME_PATH = re.compile(r"/bis/(?P<y>\d{4})/games/s(?P<id>(?P=y)(?P<md>\d{4})\d+)
 SCORE = re.compile(rf"(?P<home>{_TEAM}) ?(?P<hs>[0-9]{{1,2}}) ?{_DASH} ?(?P<as>[0-9]{{1,2}}) ?(?P<away>{_TEAM})")
 CANCELLED = re.compile(rf"{_TEAM} ?\* ?{_DASH} ?\* ?{_TEAM}|.*(中止|ノーゲーム).*")
 
+# 公式戦以外の大会の見出し（正規化後）。2013〜2025年の全ページで見つかったもの。2020年のセは CS なし、パは1ステージ
+NON_REGULAR_LABELS = frozenset({
+    "CS ファーストS", "CS ファイナルS", "クライマックスS", "日本シリーズ", "オールスター", "アジアシリーズ",
+})
+DAY_BLOCK, LABEL = "stvsteam", "tescheaten"
+
+
+def _has_class(node, name: str) -> bool:
+    return name in (node.attributes.get("class") or "").split()
+
+
+def competition_label(a) -> str | None:
+    """試合リンクの前に置かれた大会の見出し（正規化後）。日ごとの枠の外、または見出しがなければ None。"""
+    node = a
+    while node.parent is not None and not _has_class(node.parent, DAY_BLOCK):
+        node = node.parent
+    if node.parent is None:
+        return None
+    prev = node.prev
+    while prev is not None:
+        if _has_class(prev, LABEL):
+            return normalize(prev.text(deep=True))
+        prev = prev.prev
+    return None
+
 
 def pages(years) -> list[tuple[str, str, str]]:
     """取得すべきページ (key, url, group)。group は年。"""
@@ -85,6 +116,12 @@ def parse(html: str, url: str = "") -> dict:
         if path["id"] in seen:
             continue
         seen.add(path["id"])
+        if (label := competition_label(a)) is not None:
+            if label in NON_REGULAR_LABELS:
+                out["counts"][f"non_regular:{label}"] += 1
+            else:
+                out["unknown"].append({"key": path["id"], "raw": f"[{label}] {raw}"})
+            continue
         if kind == "game":
             md = path["md"]
             out["records"].append({
@@ -103,8 +140,11 @@ def parse(html: str, url: str = "") -> dict:
     return out
 
 
-def check(records: list[dict]) -> list[str]:
-    """年×球団の試合数を既知値と比べる。中止は振替で消化されるので、取りこぼしがなければ一致する。"""
+def check(records: list[dict]) -> list[dict]:
+    """年×球団の試合数を既知値と比べる。中止は振替で消化されるので、取りこぼしも混入もなければ一致する。
+
+    返り値は年ごとに {"group", "ok", "text"}。判定は ok で行い、text は表示のためだけに使う。
+    """
     from collections import Counter
 
     n = Counter()
@@ -117,6 +157,12 @@ def check(records: list[dict]) -> list[str]:
         got = [n[(y, t)] for t in TEAM_NAME]
         exp = EXPECTED_GAMES.get(y, EXPECTED_DEFAULT)
         ok = all(g == exp for g in got)
-        out.append(f"{y}: teams={sum(g > 0 for g in got)} games/team={min(got)}-{max(got)} expected={exp} "
-                   + ("OK" if ok else "要確認"))
+        text = (f"{y}: teams={sum(g > 0 for g in got)} games/team={min(got)}-{max(got)} expected={exp} "
+                + ("OK" if ok else "要確認"))
+        out.append({"group": str(y), "ok": ok, "text": text})
     return out
+
+
+def group(record: dict) -> str:
+    """記録がどの group（年）のページから来たか。データセットを年単位で作り直すときに使う。"""
+    return record["date"][:4]

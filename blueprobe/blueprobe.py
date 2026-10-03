@@ -95,13 +95,14 @@ def inspect(source, pages: Iterable[tuple[str, str, str, str]], records_out: lis
     return rows
 
 
-def to_markdown(rows: list[dict], title: str, checks: list[str] | None = None) -> str:
+def to_markdown(rows: list[dict], title: str, checks: list[dict] | None = None) -> str:
+    """checks は source.check() の返り値（{"group", "ok", "text"} の並び）。"""
     cols = sorted({k for r in rows for k in r if k != "unknown_shapes"}, key=lambda k: (k != "group", k))
     lines = [f"# {title}", "", "取得済みページの再解析結果（自動生成）。ネットワークには出ていない。", "",
              "| " + " | ".join(cols) + " |", "|" + "---|" * len(cols)]
     lines += ["| " + " | ".join(str(r.get(c, 0)) for c in cols) + " |" for r in rows]
     if checks:
-        lines += ["", "## 取りこぼしの確認（既知値との照合）", "", *[f"- {c}" for c in checks]]
+        lines += ["", "## 取りこぼしの確認（既知値との照合）", "", *[f"- {c['text']}" for c in checks]]
     shapes = [(r["group"], r["unknown_shapes"]) for r in rows if r["unknown_shapes"]]
     if shapes:
         lines += ["", "## 未知の表記（数字は # に伏せた形）", ""]
@@ -114,7 +115,7 @@ def main(argv=None) -> int:
     ap.add_argument("--source", required=True)
     ap.add_argument("--cache", type=Path, required=True, help="QueRyu のキャッシュディレクトリ")
     ap.add_argument("--out", type=Path, help="Markdown の出力先")
-    ap.add_argument("--strict", action="store_true", help="未知の表記があれば終了コード1")
+    ap.add_argument("--strict", action="store_true", help="未知の表記、または既知値と合わない group があれば終了コード1")
     args = ap.parse_args(argv)
 
     source = load_source(args.source)
@@ -143,7 +144,10 @@ def main(argv=None) -> int:
     n_unknown = sum(r["unknown"] for r in rows)
     if n_unknown:
         print(f"unknown: {n_unknown} 件。表記の変化を疑う（上の表を参照）", file=sys.stderr)
-    return 1 if (args.strict and n_unknown) else 0
+    failed = [c["group"] for c in checks or [] if not c["ok"]]
+    if failed:
+        print(f"既知値と合わない group: {', '.join(failed)}（取りこぼし・混入を疑う）", file=sys.stderr)
+    return 1 if (args.strict and (n_unknown or failed)) else 0
 
 
 if __name__ == "__main__":

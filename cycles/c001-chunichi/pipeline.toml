@@ -30,11 +30,11 @@ name = "observe"
 run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_calendar", "--years", "{years}",
        "--cache", "{cache}", "--out", "{games}", "--offline"]
 
-# 3. 構造の観測（ネットワークなし）。未知の表記・試合数の過不足を docs に残す
+# 3. 構造の観測（ネットワークなし）。未知の表記・試合数の過不足を残し、あればここで止める（測る前に）
 [[step]]
 name = "inspect"
 run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_calendar", "--cache", "{cache}",
-       "--out", "{out}/observed.md"]
+       "--out", "{out}/observed.md", "--strict"]
 
 # 4. 測る
 [[step]]

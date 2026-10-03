@@ -6,6 +6,7 @@ URL : https://npb.jp/bis/{year}/stats/tmb_{c|p}.html （c = セ・リーグ、p 
 表の見出し行（先頭のセルが「チーム」）で列を決め、同じセル数の行を1球団として読む。
 見出しは正規化し、語の中の空白を除いてから既知の名前と全体一致で比べる
 （2012〜2024年は「打 率」のように空白が入り、2025年は入らない。「故意四球」と「故意四」は同じ列）。
+チーム名は既知の表記と全体一致。2012〜2024年の「中 日」のように1文字ずつ空けた形は、詰めると既知の表記になるときだけ読む。
 知らない見出し・知らないチーム名は unknown に入れる（黙って捨てない・黙って採用しない）。
 
 記録（1球団1年）:
@@ -40,6 +41,7 @@ RATES = {"avg", "slg", "obp"}
 TEAM_BY_NAME = {v: k for k, v in TEAM_NAME.items()}
 INT = re.compile(r"[0-9]{1,5}")
 RATE = re.compile(r"[01]?\.[0-9]{3}")
+SPREAD = re.compile(r"\S \S")  # 2文字のチーム名を1文字空けた書き方（「中 日」）。観測したのは2文字の名前だけ
 
 
 def pages(years) -> list[tuple[str, str, str]]:
@@ -69,7 +71,8 @@ def parse(html: str, url: str = "") -> dict:
         if header is None or len(cells) != len(header) + 1:
             continue
         name, values = cells[0], cells[1:]
-        team = TEAM_BY_NAME.get(name)
+        # 2012〜2024年は2文字のチーム名を1文字ずつ空けて書く（「中 日」）。1文字ずつ空いた形だけを詰める
+        team = TEAM_BY_NAME.get(name) or (TEAM_BY_NAME.get(name.replace(" ", "")) if SPREAD.fullmatch(name) else None)
         if team is None or (league and LEAGUE[team] != league):
             out["unknown"].append({"key": f"{season}:{name}", "raw": " | ".join(cells)})
             continue

@@ -66,7 +66,14 @@ def test_headers_with_spaces_inside_words_are_read():
     assert r["unknown"] == [] and r["records"][0]["hr"] == 60
 
 
-def test_spaces_are_removed_only_from_headers_not_from_team_names():
-    # チーム名の空白は除かない。知らない表記として残す（見出しのように意味を推測しない）
-    r = parse(page(["中 日"] + ROW[1:]), URL)
-    assert r["records"] == [] and r["unknown"][0]["key"] == "2024:中 日"
+@pytest.mark.parametrize("name,team", [("中 日", "d"), ("巨 人", "g"), ("ヤクルト", "s")])
+def test_two_character_names_spread_with_a_space_are_read(name, team):
+    # 実ページ 2012〜2024年の書き方（--strict で見つかった形）
+    r = parse(page([name] + ROW[1:]), URL)
+    assert r["unknown"] == [] and r["records"][0]["team"] == team
+
+
+@pytest.mark.parametrize("name", ["中 日本", "中日ドラゴンズ", "D e N A"])  # 正規化（空白をまとめる）の後でも既知にならない形
+def test_other_spacings_or_names_stay_unknown(name):
+    r = parse(page([name] + ROW[1:]), URL)
+    assert r["records"] == [] and len(r["unknown"]) == 1

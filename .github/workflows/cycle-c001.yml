@@ -6,6 +6,9 @@
 name: cycle c001 (chunichi)
 
 on:
+  # main に入るまでは手動実行のボタンが出ないので、専用ブランチへのプッシュでも起動できるようにする
+  push:
+    branches: [run/c001]
   workflow_dispatch:
     inputs:
       offline:
@@ -42,6 +45,16 @@ jobs:
         run: python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl ${{ inputs.offline && '--offline' || '' }}
       - name: Judgement (exit codes) to the job summary
         run: python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --only judge >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep outputs (also when a step stopped the pipeline)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c001-outputs
+          path: |
+            cycles/c001-chunichi/outputs
+            data/receipts
+            data/observations/npb_calendar/games.manifest.json
+          if-no-files-found: warn
       - name: Commit outputs
         run: |
           git config user.name "github-actions[bot]"

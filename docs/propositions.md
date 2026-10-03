@@ -64,6 +64,23 @@ The scope says which units the proposition talks about: `league`, `team`, `seaso
 
 Use `where` when S is the comparison condition, not part of the claim. A unit whose `where` value is missing is counted as undetermined (exit 5), never silently left outside the scope.
 
+## Identity
+
+A sequential ID (`P31`) is a convenient name, but it says nothing about what is asked. Two IDs can ask the same question, and the same question can be investigated twice without anyone noticing. Every proposition therefore has three layers of identity.
+
+| Layer | Example | Role |
+|---|---|---|
+| ID | `P31` | A name. Never reused. |
+| Key | `[team=d, where:rank_rf>=5] * => bat_d_iso<0` | What is asked, in a readable form: `[scope] condition => consequence`. Generated from the definition; conditions are sorted. |
+| Signature | first 16 hex digits of SHA-256 of the key | The same question has the same signature, whatever its wording, strength or notes. |
+
+Two more rules follow from the key.
+
+- **The same question is stopped at load time.** If a proposition has the same signature as an earlier one, loading fails, unless the earlier one is an ancestor through `parent`. A restatement that only changes the strength must say so with `parent` and `change`.
+- **Siblings are shown.** Propositions with the same scope and consequence but different conditions (the same thing asked from different directions) share a *family* signature. The record lists them together, so that one is read against the other.
+
+The key, signature and family are written to the results, so other agents can search for a question before adding it.
+
 ---
 
 # Four Forms

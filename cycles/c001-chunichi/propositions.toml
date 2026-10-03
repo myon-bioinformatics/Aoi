@@ -174,3 +174,45 @@ skip_forms = ["converse", "inverse"]
 skip_reason = "条件が「中日であること」なので、逆（配分で損をしていなければ中日である）は意味を持たない"
 falsifier = "中日のシーズンのうち、配分で負け越し（alloc_net < 0）が4分の1を超える"
 note = "成り立てば、CS 不出場の説明は配分ではなく、得点・失点の総量（とその原因）の側に寄る"
+
+# ---- R2: 得点が少なくても A クラスに入れたのはなぜか（research/R2-low-scoring-a-class.md） ----
+# 追加: 2026-10-04。R1 の実データの結果と、P5 の判例のチーム・年は見たうえで書いている（値は見ていない）。
+
+[[proposition]]
+id = "P15"
+statement = "得点がリーグ5位以下のチームの間では、失点がリーグで2番目以内に少なければ A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "rank_ra", op = "<=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rank_gap"
+context = ["rank", "rank_rf", "rd", "rank_rd", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "低得点で失点が2番目以内に少ないチーム・シーズンのうち、B クラスが4分の1を超える"
+note = "逆（A クラスなら失点が2番目以内）は、低得点の A クラスが失点の少なさで届いたかを見る"
+
+[[proposition]]
+id = "P16"
+statement = "得点がリーグ5位以下のチームの間では、ピタゴラス期待勝利数を上回れば A クラス"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "wins_vs_pythag"
+context = ["rank", "rank_ra", "rd", "one_run_net", "alloc_net_strat"]
+links = ["H3", "H9"]
+falsifier = "低得点で期待以上に勝ったチーム・シーズンの半数以上が B クラス"
+note = "逆（A クラスなら期待以上）が成り立つなら、低得点の A クラスは得失点で説明しにくい部分で届いた。R1 ではその部分は翌年に続かなかった"
+
+[[proposition]]
+id = "P17"
+statement = "得点がリーグ5位以下だったシーズンの中日は、失点がリーグで2番目以内に少なくない"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "rank_ra", op = ">=", value = 3 }]
+surprise = "rank_ra"
+context = ["rank", "rank_rf", "rd", "RA"]
+links = ["H2"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、失点が2番目以内に少ない"
+note = "成り立てば「失点でも補えなかった」。成り立たなければ、失点は少なかったのに届かなかった年があり、得点の不足の大きさに戻る"

@@ -93,7 +93,10 @@ def validate(p: dict) -> None:
             raise PropositionError(f"{pid}: {key} が必要")
     if p["strength"] not in STRENGTH:
         raise PropositionError(f"{pid}: strength は {list(STRENGTH)} のどれか")
-    for c in [*p.get("if", []), *p["then"]]:
+    scope = p.get("scope") or {}
+    if set(scope) - {"league", "team", "seasons", "where"}:
+        raise PropositionError(f"{pid}: scope に書けるのは league, team, seasons, where: {sorted(scope)}")
+    for c in [*p.get("if", []), *p["then"], *scope.get("where", [])]:
         if set(c) != {"col", "op", "value"} or c["op"] not in OPS:
             raise PropositionError(f"{pid}: 条件は {{col, op, value}}、op は {list(OPS)}: {c}")
     for key in ("falsifier", "note"):
@@ -145,7 +148,18 @@ def scope_filter(st: pl.DataFrame, scope: dict | None) -> pl.DataFrame:
     if "seasons" in scope:
         a, _, b = str(scope["seasons"]).partition("-")
         out = out.filter(pl.col("season").is_between(int(a), int(b or a)))
+    if scope.get("where"):  # 条件で絞った範囲（例: 得点がリーグ5位以下のチームの間では）。値が空の単位は範囲に入れない
+        out = out.filter(_cond(scope["where"], st.columns))
     return out
+
+
+def scope_unknown(st: pl.DataFrame, scope: dict | None) -> int:
+    """where の値が空で、範囲に入るか判定できない単位の数（黙って範囲の外にしない）。"""
+    scope = scope or {}
+    if not scope.get("where"):
+        return 0
+    base = scope_filter(st, {k: v for k, v in scope.items() if k != "where"})
+    return base.select(w=_cond(scope["where"], st.columns)).filter(pl.col("w").is_null()).height
 
 
 # ---------- 統計 ----------
@@ -297,11 +311,12 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
     kind, threshold = STRENGTH[p["strength"]]
     min_n, alpha = int(p.get("min_n", 10)), float(p.get("alpha", 0.05))
     df = scope_filter(st, p.get("scope"))
+    outside = scope_unknown(st, p.get("scope"))
     a, b = _cond(p.get("if", []), df.columns), _cond(p["then"], df.columns)
     forms = []
     for name, x, y in _forms(a, b, bool(p.get("if")) and not p.get("skip_forms")):
         flags = df.select(x=x, y=y)
-        undetermined = flags.filter(pl.col("x").is_null() | pl.col("y").is_null()).height  # 空の値で判定できない行
+        undetermined = flags.filter(pl.col("x").is_null() | pl.col("y").is_null()).height + outside  # 空の値で判定できない行
         flags = flags.drop_nulls()
         xs, ys = flags["x"], flags["y"]
         n, k = int(xs.sum()), int((xs & ys).sum())

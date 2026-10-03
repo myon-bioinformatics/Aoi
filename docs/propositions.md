@@ -51,6 +51,19 @@ For every unit u in the scope:   A(u)  ⇒  B(u)
 
 Arbitrary code is never evaluated.
 
+## Scope
+
+The scope says which units the proposition talks about: `league`, `team`, `seasons`, and `where`.
+
+`where` narrows the scope by conditions of the same form as `A` and `B` ("among teams that scored fifth or lower in the league, ..."). It is different from putting the conditions into `A`:
+
+| Written as | Means | Converse |
+|---|---|---|
+| `where: S`, `A ⇒ B` | among units with S: A ⇒ B | among units with S: B ⇒ A |
+| `A ∧ S ⇒ B` | for all units: (A and S) ⇒ B | B ⇒ (A and S), which also claims S |
+
+Use `where` when S is the comparison condition, not part of the claim. A unit whose `where` value is missing is counted as undetermined (exit 5), never silently left outside the scope.
+
 ---
 
 # Four Forms

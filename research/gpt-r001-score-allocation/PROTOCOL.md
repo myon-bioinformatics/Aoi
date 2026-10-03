@@ -72,3 +72,15 @@ comparisons, hypotheses and unknowns. Keep raw NPB HTML/game rows in ignored
 No conclusion that residuals are luck, score pairing is skill, or low scoring is
 a causal explanation. No cherry-picking only supportive years. Do not modify
 PR #2's implementation or its proposition semantics as part of this research.
+
+## Acquisition amendment (before diagnostic computation)
+
+The initial existing-parser run produced 883 games in 2013 instead of 864 and
+12 unknown strings. Inspection of raw DOM found postseason, all-star and Asia
+Series links using the SAME game URL shape as regular games. On 2013-10-12,
+regular and CS games coexist, so a global date cutoff is invalid. The study
+adapter `observe.py` uses the nearest preceding explicit `.tescheaten` competition
+label inside `.stvsteam`, archives excluded links with that reason locally,
+and fails on unknown labels. Unlabelled games still use the upstream score parser.
+This corrects evidence scope, not a hypothesis or threshold. Core PR #2 files are
+unchanged. Also verify PL annual totals, extending the planned CL-only coverage.

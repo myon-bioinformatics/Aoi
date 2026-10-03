@@ -193,7 +193,8 @@ def summary_markdown(focus: str | None, exclusions: list[dict], cum: pl.DataFram
 def main(argv=None) -> int:
     import hashlib
 
-    from propositions import check_claims, evaluate, load, render, render_claims, update_ledger
+    from propositions import (DataError, PropositionError, check_claims, evaluate, judge, label, ledger_summary,
+                              load, render, render_claims, update_ledger)
 
     ap = argparse.ArgumentParser(description="シーズン表から残差・順位の偏り・命題を検証する")
     ap.add_argument("--season", type=Path, required=True)
@@ -227,17 +228,29 @@ def main(argv=None) -> int:
     md = summary_markdown(focus, exclusions, cum, ranks, hyps)
 
     if args.propositions:
-        props, sha = load(args.propositions)
-        meta = {"sha256": sha, "code_version": _code_version(), "file": str(args.propositions)}
-        results = [{**evaluate(p, included, excluded, focus), "meta": meta} for p in props]
-        _jsonl(args.outdir / "propositions.jsonl", results)
+        try:
+            props, sha = load(args.propositions)
+            meta = {"sha256": sha, "code_version": _code_version(), "file": str(args.propositions)}
+            results = [{**evaluate(p, included, excluded, focus), "meta": meta} for p in props]
+        except DataError as e:  # 判定の結果（異議）ではなく、仕組みの不具合は失敗にする
+            print(f"[65] {e}", file=sys.stderr)
+            return 65
+        except PropositionError as e:
+            print(f"[64] {e}", file=sys.stderr)
+            return 64
+        except AssertionError as e:
+            print(f"[70] {e}", file=sys.stderr)
+            return 70
         data_sha = hashlib.sha256(args.season.read_bytes()).hexdigest()
         ledger = update_ledger(args.outdir / "ledger.jsonl", results, data_sha, meta["code_version"])
+        for r in results:  # 台帳を見たうえで最終の判定（同じ id の再定義は 6）
+            r["judgement"] = judge(r, ledger_summary(ledger, r["id"])["definitions"])
+        _jsonl(args.outdir / "propositions.jsonl", results)
         (args.outdir / "objections.md").write_text(render(results, meta, ledger=ledger), encoding="utf-8")
         md += "\n## 命題の判定\n\n" + "\n".join(
-            f"- {r['id']} {r['statement']}: " + " / ".join(
-                f"{_FORM[f['form']]} {_VERD[f['verdict']]}" for f in r["forms"])
-            + (" — **異議あり**" if r["objection"] else "") for r in results) + "\n\n詳細は objections.md。\n"
+            f"- {r['id']} {r['statement']}: **exit {r['judgement']['code']} {label(r['judgement']['code'])}** "
+            "（" + " / ".join(f"{_FORM.get(f['form'], f['form'])} {_VERD[f['verdict']]}" for f in r["forms"]) + "）"
+            for r in results) + "\n\n詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。\n"
     if args.claims:
         with args.claims.open("rb") as f:
             claims = check_claims(tomllib.load(f).get("claim", []), full)

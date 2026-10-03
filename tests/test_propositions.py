@@ -477,3 +477,39 @@ def test_falsifier_and_note_must_be_text_and_do_not_change_definition(field):
     pr.validate({**P1, field: "x"})
     assert pr.definition_sha({**P1, field: "x"}) == pr.definition_sha(P1)  # 注記は定義（事前登録）を変えない
     assert pr.evaluate({**P1, field: "x"}, table(ROWS))[field] == "x"
+
+
+# ---------- 範囲の条件（scope.where） ----------
+
+def _where_table():
+    # 列 low: 範囲の条件。low=True の中では rd>0 ⇒ rank<=3 が1件だけ破れる。範囲の外には判例を置く
+    rows = [("a", 2020, 5, 1, 1, True), ("b", 2020, 3, 2, 2, True), ("c", 2020, 4, 5, 2, True),
+            ("d", 2020, -2, 6, 6, True), ("e", 2020, 9, 6, 1, False), ("f", 2020, 1, 4, 3, None)]
+    return pl.DataFrame([{"team": t, "team_name": t.upper(), "season": s, "league": "C", "rd": rd, "rank": rk,
+                          "rank_pythag": rp, "rank_gap": rk - rp, "low": low} for t, s, rd, rk, rp, low in rows])
+
+
+def test_where_narrows_units_and_keeps_converse_inside_the_scope():
+    p = {**P1, "scope": {"where": [{"col": "low", "op": "==", "value": True}]}}
+    r = pr.evaluate(p, _where_table())
+    by = {f["form"]: f for f in r["forms"]}
+    assert r["units"] == 4                                    # e（範囲外）と f（値が空）は入らない
+    assert [c["unit"] for c in by["original"]["counterexamples"]] == ["c-2020"]   # e-2020 は範囲外なので判例にならない
+    assert (by["converse"]["n"], by["converse"]["hold"]) == (2, 2)                # 逆も範囲の中だけで数える
+
+
+def test_where_with_missing_value_is_undetermined_not_silently_outside():
+    p = {**P1, "scope": {"where": [{"col": "low", "op": "==", "value": True}]}}
+    r = pr.evaluate(p, _where_table())
+    assert {f["undetermined"] for f in r["forms"]} == {1}
+
+
+def test_where_condition_is_validated_and_changes_the_definition():
+    bad = {**P1, "scope": {"where": [{"col": "low", "op": "~", "value": True}]}}
+    with pytest.raises(pr.PropositionError, match="op"):
+        pr.validate(bad)
+    with pytest.raises(pr.PropositionError, match="scope"):
+        pr.validate({**P1, "scope": {"filter": []}})
+    with pytest.raises(pr.DataError, match="存在しない列"):
+        pr.evaluate({**P1, "scope": {"where": [{"col": "nope", "op": "==", "value": 1}]}}, _where_table())
+    assert pr.definition_sha({**P1, "scope": {"where": [{"col": "low", "op": "==", "value": True}]}}) != pr.definition_sha(P1)

@@ -10,5 +10,12 @@
     "summary.json": "7c67abc7dd5739090e4f2f0913d73b436c1bcb4c63bf7e49e269e3efedcfd510",
     "team_seasons.csv": "2ae37c7d60552e5fda4cf59e9018d0e7d2d679b742c3297e54561aa63fdafb5f"
   },
-  "note": "Raw HTML and game rows remain in ignored local data cache. Refer to source receipts for actual retrieval timestamps."
+  "note": "Raw HTML and game rows remain in ignored local data cache. Refer to source receipts for actual retrieval timestamps.",
+  "integration_base_sha": "b4e2ff7231f32fa010d2a6705844d5f9df3a467c",
+  "validation": {
+    "upstream_pytest_passed": 375,
+    "research_unittest_passed": 10,
+    "deterministic_replay": "team_seasons.csv and summary.json byte-identical on second run",
+    "csv_line_endings": "standard csv module CRLF"
+  }
 }

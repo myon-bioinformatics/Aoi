@@ -108,3 +108,5 @@ python -m venv /tmp/aoi-r001-venv
 PR #2 の追加更新 `b4e2ff7` も統合し、既存テスト375件・研究テスト10件が成功した。同じ入力・種での再計算で `team_seasons.csv` と `summary.json` のバイト一致を確認した。PR #2 は2026年の不出場確定を記載しているが、本研究の独立照合は2013〜2025年までである。
 
 追加のGrok報告について、主要10指標の独立照合と解釈上の異議を [EXTERNAL_UPDATE.md](EXTERNAL_UPDATE.md) に記録した。
+
+ホーム／ビジター差の得点・失点・相手別の分解を [HOME_AWAY_RESULTS.md](HOME_AWAY_RESULTS.md) に追記した。球場係数は推定していない。

@@ -327,3 +327,13 @@ def test_batting_join_stops_when_page_disagrees_with_our_numbers(over, msg):
     st = season_table(to_team_games(games(rows), TEAMS))
     with pytest.raises(ValueError, match=msg):
         batting_join(st, _batting(st, **over))
+
+
+def test_equal_width_band_k67_is_part_of_ceiling_and_not_added_to_total():
+    rows = [("2024-04-01", "d", "g", 0, 2), ("2024-04-02", "g", "d", 2, 7),
+            ("2024-04-03", "t", "g", 4, 1), ("2024-04-04", "g", "t", 1, 4)]
+    v = {r["team"]: r for r in season_table(to_team_games(games(rows), TEAMS)).iter_rows(named=True)}
+    # d: P(≥6)=P(≥7)=.5、他の2球団は 0 → k=6,7 の差は .5 × 2。床（k=1,2）は (−.5) + (−.25)
+    assert v["d"]["rf_def_k67"] == pytest.approx(1.0)
+    assert v["d"]["rf_def_floor_minus_k67"] == pytest.approx(-0.75 - 1.0)
+    assert v["d"]["rf_def_floor"] + v["d"]["rf_def_mid"] + v["d"]["rf_def_ceiling"] == pytest.approx(v["d"]["rf_def_total"])

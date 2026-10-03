@@ -28,6 +28,9 @@
   rd_home_g / rd_away_g            ホーム・ビジターの試合での得失点差／試合
   home_away_gap                    rd_home_g − rd_away_g（観測した差。補正の係数には使わない）
   home_away_gap_vs_league          home_away_gap − 同じ年・同じリーグの他球団の home_away_gap の平均
+  rf_def_floor / _mid / _ceiling   得点／試合の他球団平均との差を、得点帯（0〜2点 / 3〜5点 / 6点以上）に分けたもの（R3）
+  rf_def_total                     3つの合計 = 得点／試合 − 同じ年・同じリーグの他球団の得点／試合の平均
+  rf_def_floor_minus_ceiling       rf_def_floor − rf_def_ceiling（負なら、床の不足が天井の不足より大きい）
   alloc_*                          得点・失点の配分効果（cycles/c001-chunichi/research/R1-score-allocation.md）
                                    試合ごとの得点の並びと失点の並びを保ち、組み合わせだけをランダムにした基準との差
     alloc_exp_net / alloc_var      基準の（勝 − 敗）の期待値と分散（Hoeffding の厳密な公式。乱数を使わない）
@@ -138,6 +141,43 @@ def allocation_table(tg: pl.DataFrame) -> pl.DataFrame:
     return t.join(nxt, on=["season", "team"], how="left")
 
 
+SCORING_BANDS = {"floor": (1, 2), "mid": (3, 5), "ceiling": (6, None)}  # k の範囲（k 点以上取れたか）
+
+
+def scoring_deficit(tg: pl.DataFrame) -> pl.DataFrame:
+    """得点の差を、どの得点帯で生まれたかに分ける（R3）。
+
+    1試合の平均得点 = Σ_{k≥1} P(得点 ≥ k)。同じ年・同じリーグの他球団の P(得点 ≥ k) の平均との差を
+    k ごとに取り、帯ごとに足す。帯の合計は「得点／試合 − 他球団の得点／試合の平均」にちょうど一致する。
+      rf_def_floor   : k = 1〜2（0〜2点に抑えられる試合の多さ）
+      rf_def_mid     : k = 3〜5
+      rf_def_ceiling : k ≥ 6（大量得点の少なさ）
+    """
+    tails: dict[tuple, dict[int, float]] = {}
+    league_of: dict[tuple, str] = {}
+    for (season, team, league), g in tg.group_by(["season", "team", "league"]):
+        rf = g["rf"].to_list()
+        n = len(rf)
+        tails[(season, team)] = {k: sum(r >= k for r in rf) / n for k in range(1, max(rf, default=0) + 1)}
+        league_of[(season, team)] = league
+    rows = []
+    for (season, team), t in tails.items():
+        others = [o for key, o in tails.items()
+                  if key[0] == season and key[1] != team and league_of[key] == league_of[(season, team)]]
+        if not others:
+            continue
+        ks = set(t).union(*others)
+        diff = {k: t.get(k, 0.0) - sum(o.get(k, 0.0) for o in others) / len(others) for k in ks}
+        out = {"season": season, "team": team}
+        for band, (lo, hi) in SCORING_BANDS.items():
+            out[f"rf_def_{band}"] = sum(v for k, v in diff.items() if k >= lo and (hi is None or k <= hi))
+        out["rf_def_total"] = sum(diff.values())
+        rows.append(out)
+    schema = {"season": pl.Int32, "team": pl.Utf8, **{f"rf_def_{b}": pl.Float64 for b in [*SCORING_BANDS, "total"]}}
+    t = pl.DataFrame(rows, schema=schema)
+    return t.with_columns(rf_def_floor_minus_ceiling=pl.col("rf_def_floor") - pl.col("rf_def_ceiling"))
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -181,7 +221,9 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
                       resid_var=pl.col("wpct") - pl.col("pythag_var"))
     )
     st = add_explanatory(add_rank(st))
-    return st.join(allocation_table(tg), on=["season", "team"], how="left").sort("season", "league", "rank", "team")
+    st = st.join(allocation_table(tg), on=["season", "team"], how="left")
+    st = st.join(scoring_deficit(tg), on=["season", "team"], how="left")
+    return st.sort("season", "league", "rank", "team")
 
 
 def add_rank(st: pl.DataFrame) -> pl.DataFrame:

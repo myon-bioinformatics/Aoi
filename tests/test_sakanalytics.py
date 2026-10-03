@@ -206,3 +206,30 @@ def test_home_away_gap_against_other_teams_of_the_league():
     assert v["t"]["home_away_gap"] == pytest.approx(0.0 - 1.0)
     # 他の2球団の平均との差
     assert v["d"]["home_away_gap_vs_league"] == pytest.approx(6.0 - (2.5 + -1.0) / 2)
+
+
+def test_scoring_deficit_bands_by_hand():
+    # d の得点 0, 7 / g の得点 2, 2 / t の得点 4, 4（3チームとも同じ年・同じリーグ）
+    rows = [("2024-04-01", "d", "g", 0, 2), ("2024-04-02", "g", "d", 2, 7),
+            ("2024-04-03", "t", "g", 4, 1), ("2024-04-04", "g", "t", 1, 4)]
+    v = {r["team"]: r for r in season_table(to_team_games(games(rows), TEAMS)).iter_rows(named=True)}
+    for t, r in v.items():
+        others = [o for o in v.values() if o["team"] != t]
+        mean_other = sum(o["RF"] / o["G"] for o in others) / len(others)
+        assert r["rf_def_floor"] + r["rf_def_mid"] + r["rf_def_ceiling"] == pytest.approx(r["rf_def_total"])
+        assert r["rf_def_total"] == pytest.approx(r["RF"] / r["G"] - mean_other)
+    # d: P(≥1)=P(≥2)=.5, P(≥3..7)=.5。他: t(4,4) は P(≥1..4)=1、g(2,1,2,1) は P(≥1)=1, P(≥2)=.5
+    assert v["d"]["rf_def_floor"] == pytest.approx((0.5 - 1.0) + (0.5 - 0.75))
+    assert v["d"]["rf_def_mid"] == pytest.approx((0.5 - 0.5) * 2 + (0.5 - 0.0))
+    assert v["d"]["rf_def_ceiling"] == pytest.approx(0.5 * 2)
+    assert v["d"]["rf_def_floor_minus_ceiling"] == pytest.approx(-0.75 - 1.0)
+
+
+def test_scoring_deficit_is_relative_within_season_and_league():
+    from sakanalytics import scoring_deficit
+    rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "h", "f", 9, 0), ("2025-04-01", "d", "g", 1, 1)]
+    teams = {**TEAMS, "f": {"name": "日本ハム", "league": "P"}}
+    t = scoring_deficit(to_team_games(games(rows), teams))
+    got = {(r["season"], r["team"]): r["rf_def_total"] for r in t.iter_rows(named=True)}
+    assert got[(2024, "d")] == pytest.approx(3 - 1) and got[(2024, "h")] == pytest.approx(9 - 0)  # 他リーグと混ぜない
+    assert got[(2025, "d")] == pytest.approx(0.0)

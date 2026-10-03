@@ -57,3 +57,16 @@ def test_pages_and_check():
                              ("2024_p", "https://npb.jp/bis/2024/stats/tmb_p.html", "2024")]
     recs = parse(page(ROW), URL)["records"]
     assert [(c["group"], c["ok"]) for c in check(recs)] == [("2024", False)]
+
+
+def test_headers_with_spaces_inside_words_are_read():
+    # 実ページ 2012〜2024年の見出し（npb_team_batting の --strict で見つかった形）。「チ ー ム」も同じ扱い
+    head = [h if len(h) < 2 else " ".join(h) for h in HEAD]
+    r = parse(page(ROW, head=head), URL)
+    assert r["unknown"] == [] and r["records"][0]["hr"] == 60
+
+
+def test_spaces_are_removed_only_from_headers_not_from_team_names():
+    # チーム名の空白は除かない。知らない表記として残す（見出しのように意味を推測しない）
+    r = parse(page(["中 日"] + ROW[1:]), URL)
+    assert r["records"] == [] and r["unknown"][0]["key"] == "2024:中 日"

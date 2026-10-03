@@ -42,10 +42,10 @@ jobs:
       - name: Doctor
         run: python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml ${{ inputs.offline && '--offline' || '' }}
       - name: Run pipeline
-        # 実行の記録（各ステップの結果・件数・エラー文）を outputs/run.log にも残す。止まったときも読めるように
+        # 実行の記録（各ステップの結果・件数・エラー文）を outputs/run.txt にも残す（*.log は .gitignore の対象）。止まったときも読めるように
         run: |
           set -o pipefail
-          python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl ${{ inputs.offline && '--offline' || '' }} 2>&1 | tee cycles/c001-chunichi/outputs/run.log
+          python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl ${{ inputs.offline && '--offline' || '' }} 2>&1 | tee cycles/c001-chunichi/outputs/run.txt
       - name: Judgement (exit codes) to the job summary
         run: python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --only judge >> "$GITHUB_STEP_SUMMARY"
       - name: Keep outputs (also when a step stopped the pipeline)
@@ -59,7 +59,7 @@ jobs:
             data/observations/npb_calendar/games.manifest.json
           if-no-files-found: warn
       - name: Commit outputs
-        if: always()  # 止まったときも、それまでの出力と run.log を残す
+        if: always()  # 止まったときも、それまでの出力と run.txt を残す
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

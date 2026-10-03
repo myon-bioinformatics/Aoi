@@ -4,7 +4,8 @@ URL : https://npb.jp/bis/{year}/stats/tmb_{c|p}.html （c = セ・リーグ、p 
 1ページ = 1年・1リーグの6球団。
 
 表の見出し行（先頭のセルが「チーム」）で列を決め、同じセル数の行を1球団として読む。
-見出しは正規化してから既知の名前と全体一致で比べる（例: 「故意四球」と「故意四」は同じ列）。
+見出しは正規化し、語の中の空白を除いてから既知の名前と全体一致で比べる
+（2012〜2024年は「打 率」のように空白が入り、2025年は入らない。「故意四球」と「故意四」は同じ列）。
 知らない見出し・知らないチーム名は unknown に入れる（黙って捨てない・黙って採用しない）。
 
 記録（1球団1年）:
@@ -56,13 +57,14 @@ def parse(html: str, url: str = "") -> dict:
     header = None
     for tr in LexborHTMLParser(html).css("tr"):
         cells = _cells(tr)
-        if cells and cells[0] == "チーム":
-            unknown = [c for c in cells[1:] if c not in COLUMNS]
+        names = [re.sub(r"\s", "", c) for c in cells]  # 見出しは語の中に空白が入る年がある（2012〜2024年の「打 率」）
+        if names and names[0] == "チーム":
+            unknown = [c for c in names[1:] if c not in COLUMNS]
             if unknown:
                 out["unknown"].append({"key": f"header:{season}:{league}", "raw": " | ".join(unknown)})
                 header = None
                 continue
-            header = [COLUMNS[c] for c in cells[1:]]
+            header = [COLUMNS[c] for c in names[1:]]
             continue
         if header is None or len(cells) != len(header) + 1:
             continue

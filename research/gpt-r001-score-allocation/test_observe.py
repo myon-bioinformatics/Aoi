@@ -26,6 +26,13 @@ class CompetitionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unclassified"):
             parse(html, "https://npb.jp/example")
 
+    def test_2020_single_stage_cs_label(self):
+        html = '''<div class="stvsteam"><div class="tescheaten">クライマックスS</div>
+        <div><a href="/bis/2020/games/s2020111400001.html">ソ 2 - 1 ロ</a></div></div>'''
+        report, excluded = parse(html, "https://npb.jp/example")
+        self.assertEqual(len(report["records"]), 0)
+        self.assertEqual(excluded[0]["label"], "クライマックスS")
+
 
 if __name__ == "__main__":
     unittest.main()

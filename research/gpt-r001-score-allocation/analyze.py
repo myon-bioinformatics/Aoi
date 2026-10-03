@@ -120,6 +120,7 @@ def main():
     ap.add_argument("--replicates", type=int, default=4000)
     ap.add_argument("--seed", type=int, default=20261003)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--verification", type=Path, default=Path(__file__).parent / "outputs/official_verification.json")
     args = ap.parse_args()
     if args.replicates < 2:
         ap.error("at least two replicates required")
@@ -127,6 +128,11 @@ def main():
     meta = json.loads(meta_path.read_text())
     if meta["unknown"] != 0 or meta["sha256"] != sha(args.games):
         raise ValueError("unknown records or dataset hash mismatch")
+    verification = json.loads(args.verification.read_text())
+    expected_units = {(y, t) for y in YEARS for t in TEAMS}
+    checked_units = {(r["year"], r["team"]) for r in verification["checks"] if r["match"]}
+    if verification["games_sha256"] != sha(args.games) or checked_units != expected_units:
+        raise ValueError("independent official verification missing or mismatched")
     source = [json.loads(s) for s in args.games.read_text().splitlines()]
     grouped = units(source)
     summaries = {k: describe(v) for k, v in grouped.items()}
@@ -157,6 +163,7 @@ def main():
     result = {"replicates": args.replicates, "seed": args.seed, "game_count": len(source),
               "team_seasons": len(grouped), "games_sha256": sha(args.games),
               "dataset_manifest_sha256": sha(meta_path), "script_sha256": sha(__file__),
+              "verification_sha256": sha(args.verification),
               "protocol_sha256": sha(Path(__file__).with_name("PROTOCOL.md")),
               "lag_correlations_descriptive_only": lag,
               "note": "Exploratory reference distributions; no causal or significance claim."}

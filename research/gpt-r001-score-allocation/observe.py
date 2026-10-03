@@ -12,7 +12,7 @@ from blueprobe import NORMALIZATION, merge, new_report
 from queryu import Cache, write_dataset
 from selectolax.lexbor import LexborHTMLParser
 
-NON_REGULAR = {"CS ファーストS", "CS ファイナルS", "日本シリーズ", "オールスター", "アジアシリーズ"}
+NON_REGULAR = {"CS ファーストS", "CS ファイナルS", "クライマックスS", "日本シリーズ", "オールスター", "アジアシリーズ"}
 
 
 def parse(html, url):

@@ -114,3 +114,37 @@ def test_reproduces_external_report_markov_figure():
     # 外部レポート（Grok, 2026-10-03）: P(B→B)=0.657 のマルコフ連鎖で「14年連続B」は 0.21%
     from pythdragoras import markov_run_tail
     assert markov_run_tail(14, 14, 0.657, 0.343, 0.5) == pytest.approx(0.0021, abs=0.0001)
+
+
+def test_persistence_pairs_only_adjacent_seasons_and_reports_missing():
+    from pythdragoras import persistence
+    st = pl.DataFrame({"team": ["a"] * 4 + ["b"] * 4 + ["c"] * 3,
+                       "season": [2012, 2013, 2014, 2016] * 2 + [2012, 2013, 2014],
+                       "x": [1.0, 2.0, 3.0, 9.0, 2.0, 1.0, 0.0, 9.0, 5.0, 5.5, 6.0]})
+    p = {r["column"]: r for r in persistence(st, ["x", "nope"])}
+    # 組: a(12→13,13→14) b(12→13,13→14) c(12→13,13→14) = 6組。2014→2016 は隣り合わないので使わない
+    assert p["x"]["n"] == 6
+    xs, ys = [1, 2, 2, 1, 5, 5.5], [2, 3, 1, 0, 5.5, 6]
+    mx, my = sum(xs) / 6, sum(ys) / 6
+    r = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / math.sqrt(
+        sum((x - mx) ** 2 for x in xs) * sum((y - my) ** 2 for y in ys))
+    assert p["x"]["r"] == pytest.approx(r) and p["x"]["ci"][0] < r < p["x"]["ci"][1]
+    assert p["nope"]["note"] and p["nope"]["r"] is None
+
+
+def test_persistence_too_few_pairs():
+    from pythdragoras import persistence
+    st = pl.DataFrame({"team": ["a", "a"], "season": [2012, 2013], "x": [1.0, 2.0]})
+    assert persistence(st, ["x"])[0]["r"] is None
+
+
+def test_allocation_cumulative_sums_and_z():
+    from pythdragoras import allocation_cumulative
+    st = pl.DataFrame({"team": ["d", "d", "g"], "team_name": ["中日", "中日", "巨人"],
+                       "alloc_net": [-2.0, -1.0, 3.0], "alloc_var": [4.0, 5.0, 9.0],
+                       "alloc_net_strat": [-1.0, -1.0, 2.0], "alloc_var_strat": [4.0, 4.0, 4.0]})
+    a = {(r["baseline"], r["team"]): r for r in allocation_cumulative(st).iter_rows(named=True)}
+    assert a[("全試合", "d")]["alloc_net"] == pytest.approx(-3.0)
+    assert a[("全試合", "d")]["z"] == pytest.approx(-3.0 / 3.0)
+    assert a[("ホーム/ビジター別", "d")]["z"] == pytest.approx(-2.0 / math.sqrt(8.0))
+    assert allocation_cumulative(pl.DataFrame({"team": ["x"]})).height == 0

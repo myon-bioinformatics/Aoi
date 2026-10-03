@@ -133,3 +133,44 @@ context = ["rank", "rank_pythag", "rd", "wpct_1run"]
 links = ["H3", "H4", "H5"]
 skip_forms = ["converse", "inverse"]
 skip_reason = "条件が「中日であること」なので、逆（期待どおりなら中日である）は意味を持たない"
+
+# ---- R1: 得点・失点の配分（research/R1-score-allocation.md と同時に登録。探索的） ----
+# 追加: 2026-10-03。配分効果はまだ実データで一度も計算していない。
+
+[[proposition]]
+id = "P12"
+statement = "配分効果がはっきりプラスのシーズン（alloc_z ≥ 1）の翌年も、配分効果はプラスである（配分はチームの特徴として続く）"
+strength = "more_often_than_not"
+if = [{ col = "alloc_z", op = ">=", value = 1 }]
+then = [{ col = "alloc_z_next", op = ">", value = 0 }]
+surprise = "alloc_z_next"
+context = ["alloc_z", "wins_vs_pythag"]
+links = ["H9"]
+falsifier = "alloc_z ≥ 1 のシーズンのうち、翌年の alloc_z が 0 以下になるものが半数以上"
+note = "翌年のないシーズン（最終年、除外の前年）は判定できない単位として数える。同じチームでも選手は入れ替わる"
+
+[[proposition]]
+id = "P13"
+statement = "配分効果がはっきり出たシーズン（|alloc_z| ≥ 1）は、ホームとビジターで配分効果の符号がそろう"
+strength = "more_often_than_not"
+if = [{ col = "alloc_z_abs", op = ">=", value = 1 }]
+then = [{ col = "alloc_same_sign", op = "==", value = true }]
+surprise = "alloc_z"
+context = ["alloc_net_home", "alloc_net_away"]
+links = ["H9"]
+falsifier = "|alloc_z| ≥ 1 のシーズンの半数以上で、ホームとビジターの符号が逆"
+note = "ホームの勝ち試合は9回裏を行わない・サヨナラで打ち切られるため、ホームの配分効果は偏りやすい（R1 の限界を参照）"
+
+[[proposition]]
+id = "P14"
+statement = "中日は、得点・失点の配分（どの試合で組み合わさったか）で勝ち越し数を失っていない（alloc_net ≥ 0）"
+strength = "usually"
+if = [{ col = "team", op = "==", value = "d" }]
+then = [{ col = "alloc_net", op = ">=", value = 0 }]
+surprise = "alloc_net"
+context = ["rank", "rd", "wins_vs_pythag", "alloc_z"]
+links = ["H3", "H9"]
+skip_forms = ["converse", "inverse"]
+skip_reason = "条件が「中日であること」なので、逆（配分で損をしていなければ中日である）は意味を持たない"
+falsifier = "中日のシーズンのうち、配分で負け越し（alloc_net < 0）が4分の1を超える"
+note = "成り立てば、CS 不出場の説明は配分ではなく、得点・失点の総量（とその原因）の側に寄る"

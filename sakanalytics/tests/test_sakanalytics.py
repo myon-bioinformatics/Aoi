@@ -88,3 +88,77 @@ def test_margin_net_columns_can_be_negative():
     d = season_table(to_team_games(games(rows), TEAMS)).filter(pl.col("team") == "d").row(0, named=True)
     assert (d["one_run_net"], d["two_run_net"], d["blowout_net"]) == (-1, 0, -1)
     assert d["rank_wpct_1run"] == 2  # 中日 1/3、巨人 2/3
+
+
+# ---------- 配分効果（R1） ----------
+
+def _brute(rf, ra):
+    """全通りの組み合わせを数えた（勝 − 敗）の平均と分散。"""
+    from itertools import permutations
+    vals = [sum((a > b) - (a < b) for a, b in zip(rf, p)) for p in permutations(ra)]
+    m = sum(vals) / len(vals)
+    return m, sum((v - m) ** 2 for v in vals) / len(vals)
+
+
+@pytest.mark.parametrize("rf,ra", [
+    ([3, 1], [2, 2]),
+    ([5, 0, 2, 2], [1, 3, 2, 0]),         # 引き分けを含む
+    ([1, 1, 1, 1, 1], [0, 2, 1, 3, 1]),   # 同じ得点が並ぶ
+    ([10, 0, 4, 3, 2, 7], [3, 3, 1, 9, 0, 2]),
+    ([0, 0, 0], [0, 0, 0]),               # すべて引き分け → 分散 0
+])
+def test_allocation_matches_enumeration(rf, ra):
+    from sakanalytics import allocation
+    exp, var = allocation(rf, ra)
+    bm, bv = _brute(rf, ra)
+    assert exp == pytest.approx(bm) and var == pytest.approx(bv)
+
+
+def test_allocation_random_small_cases_match_enumeration():
+    import random
+    from sakanalytics import allocation
+    rnd = random.Random(1)
+    for _ in range(60):
+        n = rnd.randint(2, 6)
+        rf, ra = [rnd.randint(0, 6) for _ in range(n)], [rnd.randint(0, 6) for _ in range(n)]
+        exp, var = allocation(rf, ra)
+        bm, bv = _brute(rf, ra)
+        assert exp == pytest.approx(bm) and var == pytest.approx(bv), (rf, ra)
+
+
+def test_allocation_edges():
+    from sakanalytics import allocation
+    assert allocation([], []) == (0.0, 0.0)
+    assert allocation([3], [1]) == (1.0, 0.0)
+    with pytest.raises(ValueError):
+        allocation([1, 2], [1])
+
+
+def test_allocation_effect_detects_concentrated_runs():
+    # 総得点・総失点は同じ（得点 2,2,2,2,10 / 失点 3,3,3,3,0）。
+    # 実際の組み合わせ: 大勝1つ・惜敗4つ → 1勝4敗。ランダムなら平均ではもっと勝てる
+    from sakanalytics import allocation_table
+    rows = [("2024-04-0%d" % (i + 1), "d", "g", hs, as_) for i, (hs, as_) in enumerate([(2, 3)] * 4 + [(10, 0)])]
+    tg = to_team_games(games(rows), TEAMS)
+    d = allocation_table(tg).filter(pl.col("team") == "d").row(0, named=True)
+    exp_net = (4 * (-4 + 1) + 1 * 5) / 5  # 2点の試合: 0点の相手にだけ勝つ / 10点の試合: 全勝
+    assert d["alloc_exp_net"] == pytest.approx(exp_net)
+    assert d["alloc_net"] == pytest.approx(-3 - exp_net) and d["alloc_net"] < 0
+    # 中日はすべてホームなので、ホームだけの基準＝全体、ビジターは試合なし
+    assert d["alloc_net_home"] == pytest.approx(d["alloc_net"]) and d["alloc_var_away"] == 0.0
+    assert d["alloc_z_away"] is None
+    assert d["alloc_net_strat"] == pytest.approx(d["alloc_net_home"])
+
+
+def test_allocation_next_season_and_same_sign():
+    from sakanalytics import allocation_table
+    rows = []
+    for y in (2023, 2024, 2026):  # 2025 がない → 2024 の翌年は空
+        rows += [(f"{y}-04-01", "d", "g", 2, 3), (f"{y}-04-02", "d", "g", 9, 0),
+                 (f"{y}-04-03", "g", "d", 3, 2), (f"{y}-04-04", "g", "d", 0, 9)]
+    t = allocation_table(to_team_games(games(rows), TEAMS)).filter(pl.col("team") == "d").sort("season")
+    z = t["alloc_z"].to_list()
+    assert t["alloc_z_next"].to_list() == [z[1], None, None]
+    # Series の drop_nulls()/abs() は Python 3.15 ベータ + polars 1.44.2 で None を返すので、式で書く
+    assert set(t.select(pl.col("alloc_same_sign").drop_nulls())["alloc_same_sign"].to_list()) <= {True, False}
+    assert t["alloc_z_abs"].to_list() == [abs(v) for v in z]

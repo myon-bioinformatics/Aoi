@@ -39,7 +39,8 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 | 比較対象 | セ・リーグの6球団 | `analysis.toml` の `[focus]` |
 | 保留 | イニング単位のデータ（逆転・前半/後半・連続無得点） | `hypotheses.toml` |
 | 命題 | 得失点・ピタゴラス・得点/失点順位と順位の関係、中日についての命題（P1〜P8、事前登録） | `propositions.toml` |
-| 外部の主張 | 外部レポートの数値（C1〜C8）と解釈（C9, C10） | `claims.toml`、`references/` |
+| 外部の主張 | 外部レポート・外部の会話の数値と解釈（C1〜C18） | `claims.toml`、`references/` |
+| 研究計画 | R1: 得点・失点の配分（探索的。計算の前に仮説・比較条件・限界を記録） | `research/` |
 
 ## 実行
 
@@ -64,5 +65,8 @@ GitHub 上では Actions の「cycle c001 (chunichi)」を手動実行する。�
 | `objections.md` | 命題ごとの判定と「異議あり」（判例の一覧、除外中の判例） |
 | `propositions.jsonl` | 同じ内容の機械向け形式（命題ファイルの SHA-256 とコードの版つき） |
 | `claims.json` | 外部の主張の再現結果 |
+| `allocation.jsonl` | 配分効果の期間合計（R1） |
+| `persistence.jsonl` | 隣り合うシーズンの相関（配分効果・ピタゴラスのずれ・勝率） |
+| `ledger.jsonl` | 命題の判定の台帳 |
 
 生のページ（`data/raw/`）と1試合ごとの観測（`data/observations/`）は git に入れない。

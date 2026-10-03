@@ -57,6 +57,51 @@ def cumulative_test(st: pl.DataFrame) -> pl.DataFrame:
     ).drop("var").sort("model", "z")
 
 
+def persistence(st: pl.DataFrame, cols: list[str]) -> list[dict]:
+    """同じチームの隣り合うシーズン（t, t+1）の相関。続く特徴か、毎年入れ替わる偶然かの目安。
+
+    Pearson の r と、Fisher の z 変換による 95% 区間。列がなければ黙って飛ばさず、その旨を返す。
+    """
+    out = []
+    for col in cols:
+        if col not in st.columns:
+            out.append({"column": col, "n": 0, "r": None, "ci": None, "note": "列がない"})
+            continue
+        a = st.select("team", "season", x=pl.col(col))
+        pairs = a.join(a.select("team", season=pl.col("season") - 1, y=pl.col("x")), on=["team", "season"]).drop_nulls(["x", "y"])
+        n = pairs.height
+        if n < 4:
+            out.append({"column": col, "n": n, "r": None, "ci": None, "note": "組が少なすぎる"})
+            continue
+        xs, ys = pairs["x"].to_list(), pairs["y"].to_list()
+        mx, my = sum(xs) / n, sum(ys) / n
+        sxy = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+        sxx, syy = sum((x - mx) ** 2 for x in xs), sum((y - my) ** 2 for y in ys)
+        r = sxy / math.sqrt(sxx * syy) if sxx > 0 and syy > 0 else None
+        ci = None
+        if r is not None and abs(r) < 1:
+            z, h = math.atanh(r), 1.959963984540054 / math.sqrt(n - 3)
+            ci = (math.tanh(z - h), math.tanh(z + h))
+        out.append({"column": col, "n": n, "r": r, "ci": ci, "note": ""})
+    return out
+
+
+def allocation_cumulative(st: pl.DataFrame) -> pl.DataFrame:
+    """配分効果の期間合計。z = Σ alloc_net / √Σ alloc_var（シーズンを独立とみなす）。"""
+    if "alloc_net" not in st.columns:
+        return pl.DataFrame()
+    out = []
+    for tag in ("", "_strat"):
+        out.append(
+            st.group_by("team", maintain_order=True)
+            .agg(pl.first("team_name"), pl.len().alias("seasons"),
+                 pl.col(f"alloc_net{tag}").sum().alias("alloc_net"), pl.col(f"alloc_var{tag}").sum().alias("var"))
+            .with_columns(baseline=pl.lit("全試合" if not tag else "ホーム/ビジター別"),
+                          z=pl.col("alloc_net") / pl.col("var").sqrt())
+        )
+    return pl.concat(out).drop("var").sort("baseline", "z")
+
+
 def binom_tail(n: int, k: int, p: float) -> float:
     """P(X >= k), X ~ Binomial(n, p)。"""
     return sum(math.comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(k, n + 1))
@@ -154,12 +199,16 @@ def rank_test(st: pl.DataFrame) -> list[dict]:
     return sorted(rows, key=lambda r: (-r["bottom_seasons"], -r["longest_bottom_run"], r["team"]))
 
 
+def _fz(x):
+    return "-" if x is None else f"{x:+.2f}"
+
+
 def _f(x):
     return "-" if x is None else f"{x:.3f}"
 
 
 def summary_markdown(focus: str | None, exclusions: list[dict], cum: pl.DataFrame, ranks: list[dict],
-                     hypotheses: list[dict]) -> str:
+                     hypotheses: list[dict], alloc: pl.DataFrame | None = None, pers: list[dict] | None = None) -> str:
     """観測（数えたもの）と解釈（ここでは書かない）を分けた要約。"""
     lines = ["# PythDRagoras 検証記録（自動生成）", "",
              "この記録は「説明できない部分がどれだけ偶然では起きにくいか」を示すだけで、原因は示さない。", ""]
@@ -184,6 +233,19 @@ def summary_markdown(focus: str | None, exclusions: list[dict], cum: pl.DataFram
     for r in cum.iter_rows(named=True):
         mark = " **(focus)**" if r["team"] == focus else ""
         lines.append(f"| {r['model']} | {r['team_name']}{mark} | {r['seasons']} | {r['excess_wins']:+.1f} | {r['z']:+.2f} | {r['p_two_sided']:.3f} |")
+    if alloc is not None and alloc.height:
+        lines += ["", "## 得点・失点の配分効果の累積（R1、探索的）", "",
+                  "試合ごとの得点と失点の並びを保ち、組み合わせだけをランダムにした基準と比べた（勝 − 敗）の差。",
+                  "", "| 基準 | team | seasons | 配分効果（勝−敗） | z |", "|---|---|---|---|---|"]
+        for r in alloc.iter_rows(named=True):
+            mark = " **(focus)**" if r["team"] == focus else ""
+            lines.append(f"| {r['baseline']} | {r['team_name']}{mark} | {r['seasons']} | {r['alloc_net']:+.1f} | {_fz(r['z'])} |")
+    if pers:
+        lines += ["", "## 翌年にも続くか（隣り合うシーズンの相関、全チーム）", "",
+                  "| 指標 | 組の数 | r | 95%区間 | 備考 |", "|---|---|---|---|---|"]
+        for p in pers:
+            ci = "-" if p["ci"] is None else f"{p['ci'][0]:+.2f}〜{p['ci'][1]:+.2f}"
+            lines.append(f"| {p['column']} | {p['n']} | {_fz(p['r'])} | {ci} | {p['note']} |")
     if hypotheses:
         lines += ["", "## 競合仮説の状態", "", "| id | 仮説 | 状態 | 必要なデータ |", "|---|---|---|---|"]
         lines += [f"| {h['id']} | {h['statement']} | {h['status']} | {h.get('requires', '-')} |" for h in hypotheses]
@@ -222,12 +284,17 @@ def main(argv=None) -> int:
     league = cfg.get("focus", {}).get("league")
     st = included.filter(pl.col("league") == league) if league else included
     cum, ranks = cumulative_test(st), rank_test(st)
+    alloc = allocation_cumulative(st)
+    pers = persistence(included, ["alloc_z", "alloc_z_strat", "resid_fixed", "wpct"])
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     cum.write_ndjson(args.outdir / "cumulative.jsonl")
     _jsonl(args.outdir / "rank_test.jsonl", ranks)
     (args.outdir / "exclusions.json").write_text(json.dumps(exclusions, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    md = summary_markdown(focus, exclusions, cum, ranks, hyps)
+    md = summary_markdown(focus, exclusions, cum, ranks, hyps, alloc, pers)
+    if alloc.height:
+        alloc.write_ndjson(args.outdir / "allocation.jsonl")
+    _jsonl(args.outdir / "persistence.jsonl", pers)
 
     if args.propositions:
         try:

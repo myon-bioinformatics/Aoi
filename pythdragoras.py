@@ -215,7 +215,9 @@ def main(argv=None) -> int:
 
     full = pl.read_ndjson(args.season)
     included, exclusions = apply_exclusions(full, cfg.get("exclude", []))
-    excluded = full.filter(~pl.col("season").is_in(included["season"].unique().to_list()))
+    # 除外したシーズンを、除外の記録から直接取り出す
+    # （Series.unique() は Python 3.15 ベータ + polars 1.44.2 で None を返すため使わない）
+    excluded = full.filter(pl.col("season").is_in([int(e["season"]) for e in exclusions]))
 
     league = cfg.get("focus", {}).get("league")
     st = included.filter(pl.col("league") == league) if league else included

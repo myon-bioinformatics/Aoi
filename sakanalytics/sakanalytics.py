@@ -41,6 +41,8 @@
     bat_avg / obp / slg / iso      打率・出塁率・長打率・ISO（長打率 − 打率）
     bat_hr_pa / bb_pa / so_pa      本塁打・四死球・三振の、打席あたりの割合
     bat_xbh_h                      安打のうち長打（二塁打・三塁打・本塁打）の割合
+    bat_walk_share                 出塁（安打＋四球＋死球）のうち、四球・死球の割合（R8）
+    bat_ibb_bb                     四球のうち故意四球の割合（R8）
     bat_d_*                        それぞれの、同じ年・同じリーグの他球団の平均との差
     inn_single_share / big_share   得点した回のうち、1点の回・3点以上の回の割合（R5）
     inn_d_single_share / _big_share  それぞれの、同じ年・同じリーグの他球団の平均との差
@@ -258,6 +260,10 @@ BATTING_RATES = {
     "bb_pa": lambda: (pl.col("bb") + pl.col("hbp")) / pl.col("pa"),
     "so_pa": lambda: pl.col("so") / pl.col("pa"),
     "xbh_h": lambda: (pl.col("b2") + pl.col("b3") + pl.col("hr")) / pl.col("h"),
+    # 出塁のうち、四球・死球による割合（R8）。安打で出たのか、四死球で出たのか
+    "walk_share": lambda: (pl.col("bb") + pl.col("hbp")) / (pl.col("h") + pl.col("bb") + pl.col("hbp")),
+    # 四球のうち故意四球の割合（勝負を避けられた分）
+    "ibb_bb": lambda: pl.col("ibb") / pl.col("bb"),
 }
 
 

@@ -524,3 +524,84 @@ context = ["bat_d_iso", "bat_d_bb_pa", "bat_d_obp", "rank"]
 links = ["H6"]
 falsifier = "ISO が低いチーム・シーズンの4分の1を超えて、得点した回の大きさが他球団以上"
 note = "R6 の自分への異議から（同じデータを見た後に作った）。P38 と並べて読む"
+
+# ---- R8: 出塁のうち四死球の割合と、順位で比べる逆・裏（research/R8-walk-share.md） ----
+# 追加: 2026-10-04。bat_walk_share・bat_ibb_bb は実データでまだ計算していない。R6・R7 の結果は見ている。
+
+[[proposition]]
+id = "P40"
+statement = "得点がリーグ5位以下だったシーズンの中日は、出塁のうち四死球による割合が他球団より低い"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_walk_share", op = "<", value = 0 }]
+surprise = "bat_d_walk_share"
+context = ["bat_d_avg", "bat_d_bb_pa", "bat_d_obp", "rank"]
+links = ["H5"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、四死球による出塁の割合が他球団以上"
+note = "R6 の数字から向きはある程度予想できる。他の低得点のチームとの差は summary で並べて読む"
+
+[[proposition]]
+id = "P41"
+statement = "得点がリーグ5位以下のチームの間では、出塁のうち四死球による割合が他球団より低ければ B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "bat_d_walk_share", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["bat_d_walk_share", "bat_d_avg", "rank_ra", "rd"]
+links = ["H5"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。低得点のチームの中では、出塁の中身は順位を分けない"
+note = "中日だけの命題では作れない逆・裏を、低得点のチームどうしの比較で作る。成立率より lift と p を読む"
+
+[[proposition]]
+id = "P42"
+statement = "得点がリーグ5位以下のチームの間では、ISO が他球団より低ければ B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "bat_d_iso", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["bat_d_iso", "bat_d_obp", "rank_ra", "rd"]
+links = ["H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。低得点のチームの中では、長打の不足は順位を分けない"
+note = "P41・P43 と兄弟（範囲と結論が同じ）"
+
+[[proposition]]
+id = "P43"
+statement = "得点がリーグ5位以下のチームの間では、四死球／打席が他球団より少なければ B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "bat_d_bb_pa", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["bat_d_bb_pa", "bat_d_iso", "rank_ra", "rd"]
+links = ["H5"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。低得点のチームの中では、四死球の少なさは順位を分けない"
+note = "P41・P42 と兄弟"
+
+[[proposition]]
+id = "P44"
+statement = "出塁のうち四死球による割合が同じ年・同じリーグの他球団より低ければ、得点した回の大きさも他球団より小さい"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_walk_share", op = "<", value = 0 }]
+then = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+surprise = "inn_dlog_size"
+context = ["bat_d_walk_share", "bat_d_bb_pa", "bat_d_avg", "rank"]
+links = ["H5", "H6"]
+falsifier = "四死球による出塁の割合が低いチーム・シーズンの4分の1を超えて、得点した回の大きさが他球団以上"
+note = "P38（四死球／打席）・P39（ISO）と兄弟。P38 より明らかに弱ければ、効くのは割合ではなく数"
+
+[[proposition]]
+id = "P45"
+statement = "得点がリーグ5位以下だったシーズンの中日は、四球のうち故意四球の割合が他球団より低い"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_ibb_bb", op = "<", value = 0 }]
+surprise = "bat_d_ibb_bb"
+context = ["bat_d_iso", "bat_d_bb_pa", "rank"]
+links = ["H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、故意四球の割合が他球団以上"
+note = "勝負を避けられない（打者が怖がられていない）という読みの確かめ。成り立たなければこの読みは使わない"

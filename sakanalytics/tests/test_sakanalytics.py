@@ -304,6 +304,7 @@ def _batting(st, **over):
             tb = 39
         rows.append({"season": r["season"], "team": r["team"], "g": r["G"], "r": r["RF"], "pa": 115, "ab": ab, "h": h,
                      "b2": 5, "b3": 1, "hr": 3 if r["team"] == "d" else 4, "tb": tb, "bb": bb, "hbp": hbp, "sf": sf, "so": 20,
+                     "ibb": 1 if r["team"] == "d" else 2,
                      "avg": round(h / ab, 3), "slg": round(tb / ab, 3),
                      "obp": round((h + bb + hbp) / (ab + bb + hbp + sf), 3), **over})
     return pl.DataFrame(rows)
@@ -317,7 +318,9 @@ def test_batting_join_rates_relative_and_no_raw_counts():
     d = out.filter(pl.col("team") == "d").row(0, named=True)
     assert d["bat_iso"] == pytest.approx(0.39 - 0.30) and d["bat_d_iso"] == pytest.approx(0.09 - 0.15)
     assert d["bat_obp"] == pytest.approx(42 / 113) and d["bat_d_obp"] == pytest.approx(0.0)
-    assert not {"hr", "ab", "tb", "h", "bb"} & set(out.columns)  # 原票の値は出力に入れない
+    assert d["bat_walk_share"] == pytest.approx(12 / 42) and d["bat_ibb_bb"] == pytest.approx(0.1)
+    assert d["bat_d_ibb_bb"] == pytest.approx(0.1 - 0.2)
+    assert not {"hr", "ab", "tb", "h", "bb", "ibb"} & set(out.columns)  # 原票の値は出力に入れない
 
 
 @pytest.mark.parametrize("over,msg", [({"r": 999}, "得点"), ({"obp": 0.5}, "obp")])

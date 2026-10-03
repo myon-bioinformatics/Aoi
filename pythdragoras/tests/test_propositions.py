@@ -205,7 +205,7 @@ def test_cycle1_files_reference_real_columns():
                             for v in ("all", "home", "away") for w in ("all", "first6")],
                            schema_overrides={"season": pl.Int32})
     bat = pl.DataFrame([{"season": 2024, "team": "x", **{k: 1 for k in ("g", "r", "pa", "ab", "h", "b2", "b3", "hr", "tb", "bb",
-                                                                          "hbp", "sf", "so")}, "avg": 1.0, "slg": 1.0, "obp": 0.75}])
+                                                                          "hbp", "sf", "so", "ibb")}, "avg": 1.0, "slg": 1.0, "obp": 0.75}])
     cols = set(batting_join(inning_decomposition(st, innings), bat).columns)
     props, _ = pr.load(root / "propositions.toml")
     for p in props:

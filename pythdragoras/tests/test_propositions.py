@@ -152,12 +152,21 @@ def test_excluded_units_keep_their_counterexamples():
     assert r["forms"][0]["n"] == 5
 
 
-def test_render_shows_objection_and_excluded_and_sha():
+def test_result_carries_objection_and_excluded_structure():
     excluded = table([("g", 2020, 30, 5, 1)])
     r = pr.evaluate(P1, table(ROWS), excluded, focus="d")
-    md = pr.render([r], {"sha256": "abc123", "code_version": None})
-    assert "異議あり！" in md and "D 2019 **(focus)**" in md and "除外中の判例" in md
-    assert "abc123" in md and "測定なし" in md and "原因は示さない" in md
+    assert r["objection"] is True
+    assert [c["unit"] for c in r["excluded_counterexamples"]] == ["g-2020"]
+    assert r["judgement"]["code"] != 0
+
+
+def test_every_exit_code_has_both_languages_and_render_smoke():
+    for code, (ja, en) in pr.EXIT.items():
+        assert ja.strip() and en.strip() and pr.label(code, "ja") == ja and pr.label(code, "en") == en
+    r = pr.evaluate(P1, table(ROWS), table([("g", 2020, 30, 5, 1)]), focus="d")
+    for lang in ("ja", "en"):  # 表示は落ちずに作れること、判定のコードの言葉が入ること
+        md = pr.render([r], {"sha256": "x"}, lang=lang)
+        assert pr.label(r["judgement"]["code"], lang) in md
 
 
 # ---------- 外部の主張 ----------
@@ -236,7 +245,7 @@ def test_skip_forms_rules(skip, reason, ok):
         pr.validate(p)
         r = pr.evaluate(p, table(ROWS))
         assert [f["form"] for f in r["forms"]] == ["original", "contrapositive"]
-        assert "理由: 主語の選択" in pr.render([r], {})
+        assert r["skipped_forms"] == ["converse", "inverse"] and r["skip_reason"] == "主語の選択"
     else:
         with pytest.raises(pr.PropositionError):
             pr.validate(p)
@@ -291,8 +300,8 @@ def test_held_out_excludes_the_motivating_units():
     # きっかけ d-2019 を除くと 4件、判例は t-2021 だけ残る = 作り直しは他の単位ではまだ異議を受けている
     assert (h["n"], h["hold"], h["counterexamples"]) == (4, 3, ["t-2021"])
     assert h["excluded_units"] == ["d-2019"]
-    md = pr.render([pr.evaluate(P1, table(ROWS)), r], {})
-    assert "## 命題の系譜" in md and "P1 → **P1a**" in md and "きっかけ以外での判定" in md
+    assert (r["parent"], r["change"]) == ("P1", P1A["change"])
+    assert r["judgement"]["form"] == "original"  # 元の命題で既に判例がある
 
 
 def test_definition_sha_tracks_meaning_not_annotations():
@@ -322,5 +331,124 @@ def test_ledger_flags_redefinition_under_the_same_id(tmp_path):
     changed = {**P1, "strength": "more_often_than_not"}  # 結果を見てから基準を弱めた
     rows = pr.update_ledger(path, [pr.evaluate(changed, table(ROWS))], "v1", None)
     assert pr.ledger_summary(rows, "P1")["definitions"] == 2
-    md = pr.render([pr.evaluate(changed, table(ROWS))], {}, ledger=rows)
-    assert "事前登録の違反の疑い" in md
+    assert pr.judge(pr.evaluate(changed, table(ROWS)), 2)["code"] == 6
+
+
+# ---------- 終了コード ----------
+
+@pytest.mark.parametrize("verdict_,cx,und,code", [
+    ("Supported", 0, 0, 0), ("Supported", 0, 2, 5), ("Supported", 3, 0, 1), ("Refined", 3, 0, 2),
+    ("Rejected", 3, 0, 3), ("Inconclusive", 0, 0, 4), ("Inconclusive", 3, 0, 4),
+])
+def test_form_code(verdict_, cx, und, code):
+    assert pr.form_code(verdict_, cx, und) == code
+
+
+def test_all_hold_but_too_few_units_is_inconclusive_not_zero():
+    few = [(t, s, 10 if i < 3 else -10, i + 1, i + 1) for s in (2012, 2013) for i, t in enumerate("abcdef")]
+    j = pr.evaluate({**P1, "min_n": 1}, table(few))["judgement"]
+    assert (j["code"], j["form"]) == (4, "original")  # 6件全部成立でも「概ね」は証明できない
+
+
+def test_form_code_rejects_impossible_combination():
+    with pytest.raises(AssertionError):
+        pr.form_code("Rejected", 0, 0)
+
+
+def _clean_rows():
+    # rd>0 ⇔ rank<=3 が完全に成り立つ表（24単位、各形 n=12）。逆・裏まで判例なし。
+    # 全件成立でも Wilson 下限が 0.75 に届くには n>=12 が要る（n/(n+z²) >= 0.75）
+    return [(t, s, 10 if i < 3 else -10, i + 1, i + 1) for s in range(2012, 2016) for i, t in enumerate("abcdef")]
+
+
+def test_stages_confirmed_only_after_converse_and_inverse():
+    r = pr.evaluate({**P1, "min_n": 1}, table(_clean_rows()))
+    j = r["judgement"]
+    assert (j["code"], j["stage"], j["form"]) == (0, "confirmed", None)
+    sk = pr.evaluate({**P1, "min_n": 1, "skip_forms": ["converse", "inverse"], "skip_reason": "r"}, table(_clean_rows()))
+    assert (sk["judgement"]["code"], sk["judgement"]["stage"]) == (0, "provisional")
+
+
+def _many_clean_rows():
+    return [(t, s, 10 if i < 3 else -10, i + 1, i + 1) for s in range(2000, 2016) for i, t in enumerate("abcdef")]
+
+
+@pytest.mark.parametrize("rows,code", [
+    (lambda: _clean_rows(), 4),        # 13件中12件: 判例はあるが件数が足りず保留
+    (lambda: _many_clean_rows(), 1),   # 49件中48件: 「概ね」の範囲の例外
+])
+def test_stage_provisional_when_converse_objects(rows, code):
+    data = rows() + [("g", 2016, -5, 2, 2)]  # Aクラスなのに得失点差マイナス = 逆の判例
+    j = pr.evaluate({**P1, "min_n": 1}, table(data))["judgement"]
+    assert (j["code"], j["stage"], j["form"]) == (code, "provisional", "converse")
+    assert j["units"] == ["g-2016"]
+
+
+def test_stage_none_when_original_objects():
+    j = pr.evaluate(P1, table(ROWS))["judgement"]
+    assert (j["stage"], j["form"]) == ("none", "original") and j["code"] in (1, 2, 3, 4)
+
+
+def test_held_out_is_checked_right_after_original():
+    rows = _clean_rows() + [("d", 2019, 19, 5, 2)]
+    p = {**P1, "min_n": 1, "parent": "P0", "change": "c", "motivated_by": ["d-2019"]}
+    j = pr.evaluate(p, table(rows))["judgement"]
+    assert j["form"] == "original"  # 元の命題では d-2019 が判例
+    r = pr.evaluate(p, table(rows))
+    assert r["held_out"]["counterexamples"] == []  # きっかけを除けば判例なし
+
+
+def _write_results(tmp_path, results):
+    path = tmp_path / "propositions.jsonl"
+    path.write_text("".join(__import__("json").dumps(r, ensure_ascii=False, default=str) + "\n" for r in results),
+                    encoding="utf-8")
+    return path
+
+
+def test_judge_cli_exit_codes(tmp_path):
+    clean = {**pr.evaluate({**P1, "min_n": 1}, table(_clean_rows())), "id": "OK"}
+    bad = pr.evaluate(P1, table(ROWS))
+    path = _write_results(tmp_path, [clean, bad])
+    assert pr.main(["judge", str(path), "--id", "OK"]) == 0
+    assert pr.main(["judge", str(path)]) == bad["judgement"]["code"] != 0
+    assert pr.main(["judge", str(path), "--report-only"]) == 0     # 異議は失敗にしない
+    assert pr.main(["judge", str(path), "--id", "NOPE"]) == 64       # 仕組みの不具合は失敗
+    assert pr.main(["judge", str(tmp_path / "missing.jsonl")]) == 66
+    assert pr.main(["judge", str(tmp_path / "missing.jsonl"), "--report-only"]) == 66
+
+
+def test_judge_stops_at_first_nonzero_unless_keep_going(tmp_path):
+    bad = pr.evaluate(P1, table(ROWS))
+    clean = {**pr.evaluate({**P1, "min_n": 1}, table(_clean_rows())), "id": "OK"}
+    lines = []
+    assert pr.run_judge([bad, clean], None, None, False, "ja", out=lines.append) != 0
+    assert len(lines) == 1  # && でつないだときと同じく、最初の失敗で止まる
+    lines.clear()
+    pr.run_judge([bad, clean], None, None, True, "en", out=lines.append)
+    assert [line.split("]")[0] for line in lines][1] == "[0"  # 2件目は OK（コードだけを見る）
+    assert len(lines) == 2
+
+
+def test_judge_flags_redefinition_from_ledger(tmp_path):
+    clean = {**pr.evaluate({**P1, "min_n": 1}, table(_clean_rows())), "id": "OK"}
+    path = _write_results(tmp_path, [clean])
+    ledger = [{"id": "OK", "definition_sha256": d, "data_sha256": "x", "objection": False, "forms": {}} for d in ("a", "b")]
+    (tmp_path / "ledger.jsonl").write_text("".join(__import__("json").dumps(r) + "\n" for r in ledger))
+    assert pr.main(["judge", str(path)]) == 6
+
+
+def test_pipeline_cli_maps_system_errors(tmp_path):
+    from pythdragoras import main as pd_main
+    season = tmp_path / "season.jsonl"
+    pl.DataFrame({"season": [2024], "team": ["d"], "team_name": ["中日"], "league": ["C"], "W": [1], "L": [1],
+                  "rank": [1], "rank_tie": [False], "league_size": [1], "pythag_fixed": [0.5], "pythag_var": [0.5]}
+                 ).write_ndjson(season)
+    cfg = tmp_path / "a.toml"
+    cfg.write_text("[focus]\nteam='d'\n", encoding="utf-8")
+    props = tmp_path / "p.toml"
+    props.write_text('[[proposition]]\nid="X"\nstatement="s"\nstrength="usually"\nthen=[{col="nope",op=">",value=0}]\n',
+                     encoding="utf-8")
+    assert pd_main(["--season", str(season), "--config", str(cfg), "--propositions", str(props), "--outdir", str(tmp_path / "o")]) == 65
+    props.write_text('[[proposition]]\nid="X"\nstatement="s"\nstrength="sometimes"\nthen=[{col="W",op=">",value=0}]\n',
+                     encoding="utf-8")
+    assert pd_main(["--season", str(season), "--config", str(cfg), "--propositions", str(props), "--outdir", str(tmp_path / "o")]) == 64

@@ -175,6 +175,47 @@ Criteria are written before the results are seen.
 
 ---
 
+# Exit Codes
+
+A verdict is returned as a number. Words are only a rendering of that number (Japanese and English are provided).
+Judgement logic and tests compare numbers, never display text.
+
+| Code | Japanese | English | Meaning |
+|---|---|---|---|
+| 0 | 異議なし | No objection | every examined form has no counterexample |
+| 1 | 異議あり（例外あり） | Objection! | counterexamples exist, within the declared strength (Supported) |
+| 2 | 異議あり（主張が強すぎる） | Objection! | a relationship exists but is weaker than claimed (Refined) |
+| 3 | 異議あり（不成立） | Objection! | not supported (Rejected) |
+| 4 | 待った！判断保留 | Hold it! | too few units, or the interval straddles the threshold (Inconclusive) |
+| 5 | 待った！判定できない単位がある | Hold it! | no counterexample, but some units could not be decided (missing values). Unknown is never 0 |
+| 6 | 事前登録の違反の疑い | Pre-registration breach | the ledger holds more than one definition under the same ID |
+| 64 | 命題ファイルの誤り | Invalid proposition file | |
+| 65 | データの誤り | Data error | a referenced column does not exist |
+| 66 | 入力がない | No input | |
+| 70 | 実装の誤り | Internal error | a logical invariant failed (for example, original and contrapositive disagree) |
+
+Codes 1 to 6 are results of the inquiry. Codes 64 and above are failures of the system.
+
+The forms are examined in a fixed order, and examination stops at the first non-zero code:
+
+```text
+original → held-out (restated propositions only) → contrapositive
+    all zero so far → provisional "no objection" (仮の異議なし)
+→ converse → inverse
+    all zero → confirmed "no objection" (異議なし)
+```
+
+When converse and inverse are skipped with a reason, the best possible stage is provisional.
+
+```bash
+python pythdragoras/propositions.py judge outputs/propositions.jsonl              # stop at the first non-zero
+python pythdragoras/propositions.py judge outputs/propositions.jsonl --id P2       # one proposition
+python pythdragoras/propositions.py judge outputs/propositions.jsonl --keep-going --lang en
+python pythdragoras/propositions.py judge outputs/propositions.jsonl --report-only # objections do not fail; system errors do
+```
+
+---
+
 # Restating A Proposition
 
 An objection is not the end of a proposition. It is the reason to write the next one.

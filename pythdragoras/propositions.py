@@ -31,13 +31,35 @@ STRENGTH = {  # 言葉と基準の対応は固定。データに合わせて調�
 STRENGTH_JA = {"always": "必ず", "almost_always": "ほとんど", "usually": "概ね", "more_often_than_not": "多くの場合"}
 OPS = {"<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
 VERDICT_JA = {"Supported": "支持", "Rejected": "棄却", "Refined": "修正", "Inconclusive": "判断保留"}
-FORM_JA = {"original": "元の命題", "contrapositive": "対偶", "converse": "逆", "inverse": "裏"}
+FORM_JA = {"original": "元の命題", "contrapositive": "対偶", "converse": "逆", "inverse": "裏", "held_out": "きっかけ以外"}
 Z95 = 1.959963984540054
 UNIT_COLS = ("season", "team", "team_name")
 
 
 class PropositionError(ValueError):
-    pass
+    """命題ファイルの誤り（終了コード 64）。"""
+
+
+class DataError(PropositionError):
+    """データの誤り。命題が参照する列がない、など（終了コード 65）。"""
+
+
+# 判定の終了コード。論理上の異議は 1〜6、仕組みの不具合は 64 以上（sysexits の慣習）。
+# 0 だけが「異議なし」。原因が分からないときも 0 にはしない。
+EXIT = {
+    0: ("異議なし", "No objection"),
+    1: ("異議あり（例外あり）", "Objection! (counterexamples within the declared strength)"),
+    2: ("異議あり（主張が強すぎる）", "Objection! (the claim is stronger than the evidence)"),
+    3: ("異議あり（不成立）", "Objection! (not supported)"),
+    4: ("待った！判断保留", "Hold it! (inconclusive)"),
+    5: ("待った！判定できない単位がある", "Hold it! (undetermined units)"),
+    6: ("事前登録の違反の疑い", "Pre-registration breach (redefined under the same ID)"),
+    64: ("命題ファイルの誤り", "Invalid proposition file"),
+    65: ("データの誤り", "Data error"),
+    66: ("入力がない", "No input"),
+    70: ("実装の誤り", "Internal error"),
+}
+STAGE_ORDER = ("original", "held_out", "contrapositive", "converse", "inverse")
 
 
 # ---------- 読み込み ----------
@@ -98,7 +120,7 @@ def _cond(conds: list[dict], columns) -> pl.Expr:
     exprs = []
     for c in conds:
         if c["col"] not in columns:
-            raise PropositionError(f"存在しない列: {c['col']}（黙って偽にはしない）")
+            raise DataError(f"存在しない列: {c['col']}（黙って偽にはしない）")
         exprs.append(OPS[c["op"]](pl.col(c["col"]), pl.lit(c["value"])))
     out = exprs[0]
     for e in exprs[1:]:
@@ -165,6 +187,72 @@ def verdict(kind: str, threshold: float | None, n: int, k: int, ci: tuple[float,
 
 # ---------- 判定 ----------
 
+def form_code(verdict_: str, counterexamples: int, undetermined: int) -> int:
+    """1つの形の終了コード。"""
+    if verdict_ == "Inconclusive":
+        return 4
+    if counterexamples:
+        return {"Supported": 1, "Refined": 2, "Rejected": 3}[verdict_]
+    if verdict_ != "Supported":  # 判例なしで棄却・修正にはならないはず
+        raise AssertionError(f"判例なしで {verdict_}（実装の誤り）")
+    return 5 if undetermined else 0
+
+
+def judge(result: dict, ledger_definitions: int = 1) -> dict:
+    """形を決まった順に調べ、最初に 0 でなかったところで止まる。
+
+    stage: none（元の命題で止まった）/ provisional（元の命題と対偶まで 0）/ confirmed（逆・裏まで 0）
+    """
+    if ledger_definitions > 1:
+        j = {"code": 6, "stage": "none", "form": None}
+        return {**j, "reason": reason_text(j, "ja")}
+    forms = {f["form"]: f for f in result["forms"]}
+    if result.get("held_out"):
+        forms["held_out"] = result["held_out"]
+    passed = []
+    for name in STAGE_ORDER:
+        f = forms.get(name)
+        if f is None:
+            continue
+        cx = f["counterexamples"]
+        code = form_code(f["verdict"], len(cx), f.get("undetermined", 0))
+        if code:
+            units = [c if isinstance(c, str) else c["unit"] for c in cx]
+            stage = "provisional" if {"original", "contrapositive"} <= set(passed) else "none"
+            j = {"code": code, "stage": stage, "form": name, "units": units, "n": f["n"], "min_n": result["min_n"],
+                 "ci": list(f["ci"]), "undetermined": f.get("undetermined", 0)}
+            return {**j, "reason": reason_text(j, "ja")}
+        passed.append(name)
+    full = {"converse", "inverse"} <= set(passed)
+    j = {"code": 0, "stage": "confirmed" if full else "provisional", "form": None,
+         "skip_reason": None if full else (result.get("skip_reason") or "")}
+    return {**j, "reason": reason_text(j, "ja")}
+
+
+FORM_EN = {"original": "original", "contrapositive": "contrapositive", "converse": "converse", "inverse": "inverse",
+           "held_out": "held-out"}
+
+
+def reason_text(j: dict, lang: str = "ja") -> str:
+    """判定の構造（コード・形・判例の単位など）から、表示用の理由を作る。判定には使わない。"""
+    en = lang == "en"
+    if j["code"] == 0:
+        if j.get("skip_reason") is None:
+            return ""
+        why = j["skip_reason"] or ("no condition" if en else "条件なしの命題")
+        return f"converse and inverse skipped ({why})" if en else f"逆・裏は省略（{why}）"
+    if j["code"] == 6:
+        return "more than one definition under the same ID in the ledger" if en else "台帳に同じ id の定義が複数ある"
+    units = j.get("units") or []
+    if units:
+        more = (" and more" if en else " ほか") if len(units) > 5 else ""
+        return (f"{len(units)} counterexample(s): " if en else f"判例 {len(units)} 件: ") + ", ".join(units[:5]) + more
+    if j["code"] == 4:
+        lo, hi = j["ci"]
+        return (f"n={j['n']} (min_n={j['min_n']}), interval {lo:.2f}-{hi:.2f}" if en
+                else f"n={j['n']}（min_n={j['min_n']}）、成立率の区間 {lo:.2f}〜{hi:.2f}")
+    return (f"{j['undetermined']} undetermined unit(s)" if en else f"判定できない単位 {j['undetermined']} 件")
+
 def _forms(a: pl.Expr, b: pl.Expr, has_if: bool):
     forms = [("original", a, b), ("contrapositive", ~b, ~a)]
     if has_if:
@@ -181,7 +269,7 @@ def _counterexamples(df: pl.DataFrame, x: pl.Expr, y: pl.Expr, p: dict, form: st
     context = [c for c in p.get("context", []) if c in df.columns and c not in used]
     surprise = p.get("surprise")
     if surprise and surprise not in df.columns:
-        raise PropositionError(f"{p['id']}: surprise の列がない: {surprise}")
+        raise DataError(f"{p['id']}: surprise の列がない: {surprise}")
     cond_x, cond_y = (p.get("if", []), p["then"]) if form in ("original", "contrapositive") else (p["then"], p.get("if", []))
     rows = []
     for r in df.filter(x & ~y).iter_rows(named=True):
@@ -197,6 +285,12 @@ def _counterexamples(df: pl.DataFrame, x: pl.Expr, y: pl.Expr, p: dict, form: st
 
 
 def evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None = None, focus: str | None = None) -> dict:
+    r = _evaluate(p, st, excluded, focus)
+    r["judgement"] = judge(r)
+    return r
+
+
+def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: str | None) -> dict:
     kind, threshold = STRENGTH[p["strength"]]
     min_n, alpha = int(p.get("min_n", 10)), float(p.get("alpha", 0.05))
     df = scope_filter(st, p.get("scope"))
@@ -218,6 +312,7 @@ def evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None = None, fo
             "verdict": verdict(kind, threshold, n, k, ci, p_val, min_n, alpha),
             "counterexamples": _counterexamples(df, x, y, p, name, focus),
         })
+        forms[-1]["code"] = form_code(forms[-1]["verdict"], len(forms[-1]["counterexamples"]), undetermined)
     by = {f["form"]: f for f in forms}
     # 論理から必ず成り立つこと: 元の命題と対偶、逆と裏は、判例が同じ
     for f1, f2 in (("original", "contrapositive"), ("converse", "inverse")):
@@ -247,7 +342,7 @@ def evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None = None, fo
         "excluded_counterexamples": excluded_cx, "source": p.get("source"),
         "parent": p.get("parent"), "change": p.get("change"), "held_out": held_out,
         "definition_sha256": definition_sha(p),
-    }
+    } | {"judgement": None}
 
 
 # ---------- 台帳 ----------
@@ -333,7 +428,13 @@ def _fmt(x, nd=2):
     return "-" if x is None else f"{x:.{nd}f}"
 
 
-def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] | None = None) -> str:
+def label(code: int, lang: str = "ja") -> str:
+    """終了コードを表示用の言葉に変える。判定はコードで行い、言葉は表示のためだけに使う。"""
+    ja, en = EXIT[code]
+    return en if lang == "en" else ja
+
+
+def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] | None = None, lang: str = "ja") -> str:
     lines = ["# 異議あり — 命題の判定記録（自動生成）", "",
              "判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。",
              f"命題ファイル SHA-256: `{meta.get('sha256', '-')}` / コード: `{meta.get('code_version') or '測定なし'}`", "",
@@ -354,23 +455,27 @@ def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] 
         lines.append("")
     for r in results:
         thr = "反例なし" if r["kind"] == "universal" else f"{r['threshold']:.2f}"
+        j = r["judgement"]
+        stage = {"none": "", "provisional": "（仮: 元の命題と対偶まで）", "confirmed": "（逆・裏まで）"}[j["stage"]]
         lines += [f"## {r['id']}: {_cell(r['statement'])}", "",
+                  f"- **判定: exit {j['code']} {label(j['code'], lang)}**{stage}"
+                  + (f" — {FORM_JA.get(j['form'], j['form'])}: {j['reason']}" if j["form"] else (f" — {j['reason']}" if j["reason"] else "")),
                   f"- もし: `{text(r['if'])}` ならば: `{text(r['then'])}`",
                   f"- 強さ: {STRENGTH_JA[r['strength']]}（{r['strength']}, 基準 {thr}）/ 範囲: {r['scope'] or '全体'} / 単位数: {r['units']}",
                   *([f"- 逆・裏は評価しない（理由: {r['skip_reason']}）"] if r.get("skipped_forms") else []),
                   *([f"- 親: {r['parent']}（変更: {_cell(r['change'])}）"] if r.get("parent") else []),
                   *_ledger_line(ledger, r["id"]),
-                  "", "| 形 | n | 成立 | 成立率 [95%区間] | 基準率 | lift | p | 判定不能 | 判定 |", "|---|---|---|---|---|---|---|---|---|"]
+                  "", "| 形 | n | 成立 | 成立率 [95%区間] | 基準率 | lift | p | 判定不能 | 判定 | exit |", "|---|---|---|---|---|---|---|---|---|---|"]
         for f in r["forms"]:
             ci = f"{_fmt(f['rate'])} [{_fmt(f['ci'][0])}, {_fmt(f['ci'][1])}]"
             lines.append(f"| {FORM_JA[f['form']]} | {f['n']} | {f['hold']} | {ci} | {_fmt(f['base_rate'])} "
-                         f"| {_fmt(f['lift'])} | {_fmt(f['fisher_p'], 3)} | {f['undetermined']} | {VERDICT_JA[f['verdict']]} |")
+                         f"| {_fmt(f['lift'])} | {_fmt(f['fisher_p'], 3)} | {f['undetermined']} | {VERDICT_JA[f['verdict']]} | {f['code']} |")
         for f in r["forms"]:
             if f["form"] in ("contrapositive", "inverse") or not f["counterexamples"]:
                 continue
             twin = "対偶" if f["form"] == "original" else "裏"
             cx = f["counterexamples"]
-            lines += ["", f"**異議あり！** {FORM_JA[f['form']]}に判例 {len(cx)} 件（{twin}の判例も同じ）", ""]
+            lines += ["", f"**{label(f['code'], lang)}** {FORM_JA[f['form']]}に判例 {len(cx)} 件（{twin}の判例も同じ）", ""]
             for c in cx[:limit]:
                 mark = " **(focus)**" if c["focus"] else ""
                 vals = ", ".join(f"{k}={_v(v)}" for k, v in {**c["values"], **c["context"]}.items())
@@ -425,3 +530,60 @@ def _v(v):
     if isinstance(v, float):
         return f"{v:+.2f}" if abs(v) >= 0.005 or v == 0 else f"{v:.3g}"
     return "-" if v is None else str(v)
+
+
+# ---------- コマンド ----------
+
+def run_judge(results: list[dict], ids: list[str] | None, ledger: list[dict] | None, keep_going: bool,
+              lang: str, out=print) -> int:
+    """命題を順に判定して表示し、最初に 0 でなかったコードを返す（keep_going でなければそこで止まる）。"""
+    known = [r["id"] for r in results]
+    for i in ids or []:
+        if i not in known:
+            out(f"[64] {i}: {label(64, lang)}（そんな id はない: {known}）")
+            return 64
+    first = 0
+    for r in results:
+        if ids and r["id"] not in ids:
+            continue
+        defs = ledger_summary(ledger, r["id"])["definitions"] if ledger else 1
+        j = judge(r, defs)
+        forms = FORM_EN if lang == "en" else FORM_JA
+        where = f" {forms.get(j['form'], j['form'])}:" if j["form"] else ""
+        out(f"[{j['code']}] {r['id']} {label(j['code'], lang)}{where} {reason_text(j, lang)}".rstrip())
+        if j["code"] and not first:
+            first = j["code"]
+            if not keep_going:
+                break
+    return first
+
+
+def main(argv=None) -> int:
+    import argparse
+    import sys
+
+    ap = argparse.ArgumentParser(description="命題の判定結果を終了コードで返す（0 = 異議なし）")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    j = sub.add_parser("judge", help="propositions.jsonl を順に判定する")
+    j.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
+    j.add_argument("--id", nargs="+", dest="ids")
+    j.add_argument("--ledger", type=Path, help="台帳（既定: 同じディレクトリの ledger.jsonl）")
+    j.add_argument("--keep-going", action="store_true", help="0 でない命題があっても最後まで表示する")
+    j.add_argument("--report-only", action="store_true",
+                   help="判定を表示するだけで、異議（1〜6）では失敗にしない。仕組みの不具合（64 以上）は失敗にする")
+    j.add_argument("--lang", choices=["ja", "en"], default="ja")
+    args = ap.parse_args(argv)
+
+    if not args.results.exists():
+        print(f"[66] {label(66, args.lang)}: {args.results}", file=sys.stderr)
+        return 66
+    results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines()]
+    ledger_path = args.ledger or args.results.with_name("ledger.jsonl")
+    ledger = ([json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines()]
+              if ledger_path.exists() else None)
+    code = run_judge(results, args.ids, ledger, args.keep_going or args.report_only, args.lang)
+    return code if (code >= 64 or not args.report_only) else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

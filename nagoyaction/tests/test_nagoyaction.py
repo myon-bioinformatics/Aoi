@@ -43,7 +43,7 @@ class Done:
 
 def test_cycle_pipeline_is_valid():
     p = na.load(CYCLE)
-    assert [s["name"] for s in p["step"]] == ["fetch", "observe", "inspect", "measure", "question"]
+    assert [s["name"] for s in p["step"]] == ["fetch", "observe", "inspect", "measure", "question", "judge"]
     assert [s["name"] for s in p["step"] if s.get("network")] == ["fetch"]  # 外に出るのは取得だけ
     assert p["_root"] == ROOT
     for s in p["step"]:

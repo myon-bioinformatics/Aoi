@@ -49,3 +49,8 @@ run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}
        "--config", "{config}", "--hypotheses", "cycles/c001-chunichi/hypotheses.toml",
        "--propositions", "cycles/c001-chunichi/propositions.toml", "--claims", "cycles/c001-chunichi/claims.toml",
        "--outdir", "{out}"]
+
+# 6. 判定を終了コードで表示する。異議（1〜6）では止めず、仕組みの不具合（64 以上）だけを失敗にする
+[[step]]
+name = "judge"
+run = ["uv", "run", "python", "pythdragoras/propositions.py", "judge", "{out}/propositions.jsonl", "--report-only"]

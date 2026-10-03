@@ -233,3 +233,42 @@ def test_scoring_deficit_is_relative_within_season_and_league():
     got = {(r["season"], r["team"]): r["rf_def_total"] for r in t.iter_rows(named=True)}
     assert got[(2024, "d")] == pytest.approx(3 - 1) and got[(2024, "h")] == pytest.approx(9 - 0)  # 他リーグと混ぜない
     assert got[(2025, "d")] == pytest.approx(0.0)
+
+
+def _innings_rows(st, scoring):
+    """st の G・RF に合わせたイニング集計。scoring: team -> (攻撃回数, 得点した回の数)"""
+    rows = []
+    for r in st.iter_rows(named=True):
+        if r["team"] in scoring:
+            i, s_ = scoring[r["team"]]
+            for w in ("all", "first6"):
+                rows.append({"season": r["season"], "team": r["team"], "window": w, "games": r["G"],
+                             "innings": i, "runs": r["RF"], "scoring_innings": s_})
+    return pl.DataFrame(rows, schema_overrides={"season": pl.Int32})
+
+
+def test_inning_decomposition_identity_and_relative_to_league():
+    from sakanalytics import inning_decomposition
+    rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3), ("2024-04-03", "t", "d", 5, 1)]
+    st = season_table(to_team_games(games(rows), TEAMS))
+    out = inning_decomposition(st, _innings_rows(st, {"d": (18, 2), "g": (17, 3), "t": (17, 4)}))
+    v = {r["team"]: r for r in out.iter_rows(named=True)}
+    for r in v.values():
+        assert r["inn_dlog_freq"] + r["inn_dlog_size"] == pytest.approx(r["inn_dlog_rpi"])
+        assert r["inn_freq_minus_size"] == pytest.approx(r["inn_dlog_freq"] - r["inn_dlog_size"])
+    # d: 得点 3（2+1）、攻撃 18 回、得点した回 2。他の2球団の log の平均との差
+    lf = lambda s_, i: math.log(s_ / i)  # noqa: E731
+    assert v["d"]["inn_dlog_freq"] == pytest.approx(lf(2, 18) - (lf(3, 17) + lf(4, 17)) / 2)
+    assert v["d"]["inn_dlog_size"] == pytest.approx(math.log(3 / 2) - (math.log(v["g"]["RF"] / 3) + math.log(v["t"]["RF"] / 4)) / 2)
+
+
+def test_inning_decomposition_stops_on_mismatch_and_leaves_missing_seasons_empty():
+    from sakanalytics import inning_decomposition
+    rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3), ("2024-04-03", "t", "d", 5, 1)]
+    st = season_table(to_team_games(games(rows), TEAMS))
+    bad = _innings_rows(st, {"d": (18, 2)}).with_columns(runs=pl.col("runs") + 1)
+    with pytest.raises(ValueError, match="合わない"):
+        inning_decomposition(st, bad)
+    out = inning_decomposition(st, _innings_rows(st, {"d": (18, 2), "g": (17, 3)}))
+    t = out.filter(pl.col("team") == "t").row(0, named=True)
+    assert t["inn_I"] is None and t["inn_dlog_freq"] is None  # 集計のない単位は 0 ではなく空

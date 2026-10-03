@@ -31,6 +31,10 @@
   rf_def_floor / _mid / _ceiling   得点／試合の他球団平均との差を、得点帯（0〜2点 / 3〜5点 / 6点以上）に分けたもの（R3）
   rf_def_total                     3つの合計 = 得点／試合 − 同じ年・同じリーグの他球団の得点／試合の平均
   rf_def_floor_minus_ceiling       rf_def_floor − rf_def_ceiling（負なら、床の不足が天井の不足より大きい）
+  inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
+    inn_dlog_rpi/_freq/_size       log(得点/回)・log(得点した回の割合)・log(得点した回の平均得点) の、他球団平均との差
+    inn_freq_minus_size            inn_dlog_freq − inn_dlog_size（負なら、頻度の不足が大きさの不足より大きい）
+    *_6                            双方が6回まで攻撃した試合の1〜6回だけで同じ計算
   alloc_*                          得点・失点の配分効果（cycles/c001-chunichi/research/R1-score-allocation.md）
                                    試合ごとの得点の並びと失点の並びを保ち、組み合わせだけをランダムにした基準との差
     alloc_exp_net / alloc_var      基準の（勝 − 敗）の期待値と分散（Hoeffding の厳密な公式。乱数を使わない）
@@ -178,6 +182,39 @@ def scoring_deficit(tg: pl.DataFrame) -> pl.DataFrame:
     return t.with_columns(rf_def_floor_minus_ceiling=pl.col("rf_def_floor") - pl.col("rf_def_ceiling"))
 
 
+def inning_decomposition(st: pl.DataFrame, innings: pl.DataFrame) -> pl.DataFrame:
+    """イニング単位の集計（R4）を結合し、1イニングあたりの得点の差を「頻度」と「大きさ」に分ける。
+
+    innings: 1行 = チーム×シーズン×window。列 season, team, window（"all" / "first6"）, games, innings, runs, scoring_innings
+             （外部の集計を読む。最終スコア側の G・RF と1つでも合わなければ ValueError で止める）
+    得点／イニング = 得点した回の割合 × 得点した回の平均得点。対数を取り、同じ年・同じリーグの他球団の平均との差にすると
+      inn_dlog_rpi = inn_dlog_freq + inn_dlog_size  （ちょうど一致する）
+    first6（双方が6回まで攻撃した試合の1〜6回）は、9回裏の省略・延長の影響を小さくした比較（列名の末尾 _6）。
+    """
+    over = ["season", "league"]
+    out = st
+    for window, tag in (("all", ""), ("first6", "_6")):
+        w = innings.filter(pl.col("window") == window).select(
+            "season", "team", pl.col("games").alias("_g"), pl.col("innings").alias(f"inn_I{tag}"),
+            pl.col("runs").alias("_r"), pl.col("scoring_innings").alias(f"inn_S{tag}"))
+        if window == "all":
+            chk = st.select("season", "team", "G", "RF").join(w, on=["season", "team"], how="inner")
+            bad = chk.filter((pl.col("G") != pl.col("_g")) | (pl.col("RF") != pl.col("_r")))
+            if bad.height:
+                raise ValueError(f"イニング集計が最終スコアと合わない: {bad.select('season', 'team').rows()[:5]}")
+        out = out.join(w.rename({"_r": f"inn_R{tag}"}).drop("_g"), on=["season", "team"], how="left")
+        I, S, R = pl.col(f"inn_I{tag}"), pl.col(f"inn_S{tag}"), pl.col(f"inn_R{tag}")
+        logs = {"rpi": (R / I).log(), "freq": (S / I).log(), "size": (R / S).log()}
+        out = out.with_columns(**{f"_l{k}": v for k, v in logs.items()})
+        out = out.with_columns(**{
+            f"inn_dlog_{k}{tag}": pl.col(f"_l{k}")
+            - (pl.col(f"_l{k}").sum().over(over) - pl.col(f"_l{k}")) / (pl.col(f"_l{k}").count().over(over) - 1)
+            for k in logs
+        }).drop([f"_l{k}" for k in logs])
+        out = out.with_columns(**{f"inn_freq_minus_size{tag}": pl.col(f"inn_dlog_freq{tag}") - pl.col(f"inn_dlog_size{tag}")})
+    return out
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -268,10 +305,16 @@ def main(argv=None) -> int:
     ap.add_argument("--games", type=Path, required=True)
     ap.add_argument("--config", type=Path, required=True, help="分析設定（[teams] を含む TOML）")
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--innings", type=Path, help="イニング単位の集計（CSV / CSV.gz、R4）。あれば inn_* の列を加える")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
     st = season_table(to_team_games(pl.read_ndjson(args.games), cfg["teams"]))
+    if args.innings:
+        raw = pl.read_csv(args.innings)
+        if "year" in raw.columns:  # PR #3 の形式: year, team, venue, role, window, ...
+            raw = raw.filter((pl.col("venue") == "all") & (pl.col("role") == "off")).rename({"year": "season"})
+        st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     focus = cfg.get("focus", {}).get("team")

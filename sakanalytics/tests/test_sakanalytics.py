@@ -294,3 +294,36 @@ def test_inning_venue_split_and_scoring_inning_shares():
         runs=pl.when(pl.col("venue") == "home").then(pl.col("runs") + 1).otherwise(pl.col("runs")))
     with pytest.raises(ValueError, match="ホーム＋ビジター"):
         inning_decomposition(st, broken)
+
+
+def _batting(st, **over):
+    rows = []
+    for r in st.iter_rows(named=True):
+        h, ab, bb, hbp, sf, tb = 30, 100, 10, 2, 1, 45
+        if r["team"] == "d":
+            tb = 39
+        rows.append({"season": r["season"], "team": r["team"], "g": r["G"], "r": r["RF"], "pa": 115, "ab": ab, "h": h,
+                     "b2": 5, "b3": 1, "hr": 3 if r["team"] == "d" else 4, "tb": tb, "bb": bb, "hbp": hbp, "sf": sf, "so": 20,
+                     "avg": round(h / ab, 3), "slg": round(tb / ab, 3),
+                     "obp": round((h + bb + hbp) / (ab + bb + hbp + sf), 3), **over})
+    return pl.DataFrame(rows)
+
+
+def test_batting_join_rates_relative_and_no_raw_counts():
+    from sakanalytics import batting_join
+    rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3), ("2024-04-03", "t", "d", 5, 1)]
+    st = season_table(to_team_games(games(rows), TEAMS))
+    out = batting_join(st, _batting(st))
+    d = out.filter(pl.col("team") == "d").row(0, named=True)
+    assert d["bat_iso"] == pytest.approx(0.39 - 0.30) and d["bat_d_iso"] == pytest.approx(0.09 - 0.15)
+    assert d["bat_obp"] == pytest.approx(42 / 113) and d["bat_d_obp"] == pytest.approx(0.0)
+    assert not {"hr", "ab", "tb", "h", "bb"} & set(out.columns)  # 原票の値は出力に入れない
+
+
+@pytest.mark.parametrize("over,msg", [({"r": 999}, "得点"), ({"obp": 0.5}, "obp")])
+def test_batting_join_stops_when_page_disagrees_with_our_numbers(over, msg):
+    from sakanalytics import batting_join
+    rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3)]
+    st = season_table(to_team_games(games(rows), TEAMS))
+    with pytest.raises(ValueError, match=msg):
+        batting_join(st, _batting(st, **over))

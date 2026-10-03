@@ -397,3 +397,58 @@ context = ["inn_d_single_share", "inn_dlog_size", "rank"]
 links = ["H5", "H6"]
 falsifier = "中日以外の低得点のチーム・シーズンの半数以上で、3点以上の回の割合が他球団以上"
 note = "P27 と同じくらい成り立つなら、3点以上の回の少なさは低得点のチームに共通"
+
+# ---- R6: 得点した回が小さいのは、長打の不足か、出塁の不足か（research/R6-team-batting.md） ----
+# 追加: 2026-10-04。チーム打撃成績はまだ取得していない。R4・R5 の結果は見ている。
+
+[[proposition]]
+id = "P31"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ISO（長打率 − 打率）が他球団より低い"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_iso", op = "<", value = 0 }]
+surprise = "bat_d_iso"
+context = ["bat_d_obp", "bat_d_hr_pa", "bat_d_bb_pa", "rank"]
+links = ["H2", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、ISO が他球団以上"
+note = "P32 と組で読む。片方だけ成り立つなら、不足はその側に寄る"
+
+[[proposition]]
+id = "P32"
+statement = "得点がリーグ5位以下だったシーズンの中日は、出塁率が他球団より低い"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_obp", op = "<", value = 0 }]
+surprise = "bat_d_obp"
+context = ["bat_d_iso", "bat_d_avg", "bat_d_bb_pa", "rank"]
+links = ["H2", "H5"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、出塁率が他球団以上"
+note = "P31 と組で読む"
+
+[[proposition]]
+id = "P33"
+statement = "ISO が同じ年・同じリーグの他球団より低ければ、得点した回のうち3点以上の回の割合も他球団より少ない"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_iso", op = "<", value = 0 }]
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+surprise = "inn_d_big_share"
+context = ["bat_d_iso", "bat_d_obp", "inn_dlog_size", "rank"]
+links = ["H6"]
+falsifier = "ISO が低いチーム・シーズンの4分の1を超えて、3点以上の回の割合が他球団以上"
+note = "成り立たなければ、ISO と大量点の回を結ぶ見方そのものを弱める（中日の R5 の結果を長打で説明できなくなる）"
+
+[[proposition]]
+id = "P34"
+statement = "出塁率が同じ年・同じリーグの他球団より低ければ、得点する回の頻度も他球団より低い"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_obp", op = "<", value = 0 }]
+then = [{ col = "inn_dlog_freq", op = "<", value = 0 }]
+surprise = "inn_dlog_freq"
+context = ["bat_d_obp", "bat_d_iso", "rank"]
+links = ["H5"]
+falsifier = "出塁率が低いチーム・シーズンの4分の1を超えて、得点する回の頻度が他球団以上"
+note = "P33 と対で、出塁 ↔ 頻度、長打 ↔ 大きさ、という対応が成り立つかを見る"

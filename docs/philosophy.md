@@ -276,6 +276,56 @@ No explanation is immune to reconsideration.
 
 ---
 
+# Staying Unsatisfied
+
+Aoi does not stop when an explanation is good enough.
+
+Many analyses end with an approximation.
+
+A regression that fits.
+
+A metric that usually works.
+
+The remaining doubt is set aside, and the discussion ends halfway.
+
+Aoi keeps that doubt.
+
+An explanation is rarely examined only in the direction it was stated.
+
+If A usually leads to B, Aoi also asks:
+
+- Does B usually come with A? (converse)
+- Without A, is B usually absent? (inverse)
+- Without B, is A usually absent? (contrapositive)
+
+Each direction can object in a different place.
+
+When an objection appears, inspect the counterexample.
+
+Restate the proposition.
+
+Then test the restated proposition on units that did not motivate the change.
+
+A proposition tailored to its own counterexamples will always look correct.
+
+Only units it was not tailored to can tell whether the restatement learned something.
+
+If another team objects, inspect that counterexample too.
+
+The record of this exchange matters more than any single proposition:
+
+- how many objections appeared
+- where they appeared
+- how long a proposition has survived without one
+
+It is acceptable to remain puzzled.
+
+Being puzzled is not a failure of analysis.
+
+It is the point where analysis was about to stop too early.
+
+---
+
 # Final Principle
 
 The purpose of Aoi is not to defend existing explanations.

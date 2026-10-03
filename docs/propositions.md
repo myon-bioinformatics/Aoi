@@ -175,6 +175,43 @@ Criteria are written before the results are seen.
 
 ---
 
+# Restating A Proposition
+
+An objection is not the end of a proposition. It is the reason to write the next one.
+
+A restated proposition:
+
+- has a new ID and declares `parent` (the proposition it restates)
+- declares `change`: what was changed and why
+- declares `motivated_by`: the counterexamples that led to the change (for example `d-2019`)
+
+Adding conditions until no counterexample remains is always possible. A proposition tailored to its own counterexamples will always look correct.
+
+For that reason a restated proposition is also evaluated **without the units that motivated it** (held-out evaluation). Its support is read from the held-out verdict. If other units object there, the restatement has not yet learned anything general; inspect those counterexamples next.
+
+The parent and its verdict stay in the record. The lineage of restatements is printed at the top of the output.
+
+---
+
+# Ledger
+
+Every evaluation is appended to a ledger (`ledger.jsonl`), once per pair of proposition definition and data version.
+
+From the ledger, each proposition reports:
+
+| Measure | Meaning |
+|---|---|
+| evaluations | how many data versions it has been evaluated on |
+| objections | how many of those had a counterexample to the original form (any form is counted separately) |
+| no-objection streak | how many of the most recent evaluations had no counterexample to the original form |
+| definitions | how many different definitions were recorded under the same ID |
+
+More than one definition under the same ID means the proposition was changed in place. That breaks pre-registration and is flagged in the output.
+
+The ledger answers the questions that matter over time: how often reality objected, where, and how long a proposition has survived without objection.
+
+---
+
 # External Claims
 
 Claims from outside the pipeline (articles, reports, other AI systems) are recorded as **claims**, not observations, together with their source and date.

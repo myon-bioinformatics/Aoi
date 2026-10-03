@@ -191,7 +191,9 @@ def summary_markdown(focus: str | None, exclusions: list[dict], cum: pl.DataFram
 
 
 def main(argv=None) -> int:
-    from propositions import check_claims, evaluate, load, render, render_claims
+    import hashlib
+
+    from propositions import check_claims, evaluate, load, render, render_claims, update_ledger
 
     ap = argparse.ArgumentParser(description="シーズン表から残差・順位の偏り・命題を検証する")
     ap.add_argument("--season", type=Path, required=True)
@@ -229,7 +231,9 @@ def main(argv=None) -> int:
         meta = {"sha256": sha, "code_version": _code_version(), "file": str(args.propositions)}
         results = [{**evaluate(p, included, excluded, focus), "meta": meta} for p in props]
         _jsonl(args.outdir / "propositions.jsonl", results)
-        (args.outdir / "objections.md").write_text(render(results, meta), encoding="utf-8")
+        data_sha = hashlib.sha256(args.season.read_bytes()).hexdigest()
+        ledger = update_ledger(args.outdir / "ledger.jsonl", results, data_sha, meta["code_version"])
+        (args.outdir / "objections.md").write_text(render(results, meta, ledger=ledger), encoding="utf-8")
         md += "\n## 命題の判定\n\n" + "\n".join(
             f"- {r['id']} {r['statement']}: " + " / ".join(
                 f"{_FORM[f['form']]} {_VERD[f['verdict']]}" for f in r["forms"])

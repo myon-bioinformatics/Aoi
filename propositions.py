@@ -71,12 +71,49 @@ def load(path: Path) -> tuple[list[dict], str]:
     if len(set(ids)) != len(ids) or not all(ids):
         raise PropositionError(f"id は必須で一意: {ids}")
     seen: set[str] = set()
+    by_signature: dict[str, str] = {}
+    parent_of = {p["id"]: p.get("parent") for p in props}
     for p in props:
         validate(p)
         if p.get("parent") and p["parent"] not in seen:  # 親は先に定義されている必要がある（循環しない）
             raise PropositionError(f"{p['id']}: parent {p['parent']} がこのファイルの前の方にない")
+        ident = identity(p)
+        other = by_signature.get(ident["signature"])
+        if other and other not in _ancestors(p["id"], parent_of):
+            raise PropositionError(f"{p['id']}: {other} と同じ問い（{ident['key']}）。"
+                                   f"作り直しなら parent に {other} を書き、change に何を変えたかを書く")
+        by_signature.setdefault(ident["signature"], p["id"])
         seen.add(p["id"])
     return props, hashlib.sha256(raw).hexdigest()
+
+
+def _ancestors(pid: str, parent_of: dict) -> set[str]:
+    out, cur = set(), parent_of.get(pid)
+    while cur:
+        out.add(cur)
+        cur = parent_of.get(cur)
+    return out
+
+
+def _canon(conds: list[dict]) -> list[str]:
+    return sorted(f"{c['col']}{c['op']}{json.dumps(c['value'], ensure_ascii=False)}" for c in conds)
+
+
+def identity(p: dict) -> dict:
+    """命題が「何を問うているか」の識別子。番号・文言・強さ・注記には左右されない。
+
+    key       : 読める形。[範囲] 条件 => 結論（条件の並び順は正規化する）
+    signature : key の指紋。同じなら同じ問い（作り直しは parent で明示する。そうでなければ読み込みで止める）
+    family    : 範囲と結論だけの指紋。同じなら「兄弟」（同じことを別の条件から問うている）
+    """
+    sc = p.get("scope") or {}
+    scope = [f"{k}={sc[k]}" for k in ("league", "team", "seasons") if k in sc]
+    scope += [f"where:{w}" for w in _canon(sc.get("where", []))]
+    head = f"[{', '.join(scope) or 'all'}]"
+    then = " & ".join(_canon(p["then"]))
+    key = f"{head} {' & '.join(_canon(p.get('if', []))) or '*'} => {then}"
+    h = lambda t: hashlib.sha256(t.encode("utf-8")).hexdigest()[:16]  # noqa: E731
+    return {"key": key, "signature": h(key), "family": h(f"{head} => {then}")}
 
 
 def definition_sha(p: dict) -> str:
@@ -362,6 +399,7 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
         "falsifier": p.get("falsifier"), "note": p.get("note"),
         "conditions": len(p.get("if", [])) + len(p["then"]),
         "definition_sha256": definition_sha(p),
+        **identity(p),
     } | {"judgement": None}
 
 
@@ -474,6 +512,11 @@ def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] 
              "判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。",
              f"命題ファイル SHA-256: `{meta.get('sha256', '-')}` / コード: `{meta.get('code_version') or '測定なし'}`", "",
              "判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。", ""]
+    family: dict[str, list[str]] = {}
+    for r in results:
+        if r.get("family"):
+            family.setdefault(r["family"], []).append(r["id"])
+    siblings = {i: [o for o in ids if o != i] for ids in family.values() for i in ids}
     children = {}
     for r in results:
         if r.get("parent"):
@@ -496,6 +539,8 @@ def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] 
                   f"- **判定: exit {j['code']} {label(j['code'], lang)}**{stage}"
                   + (f" — {FORM_JA.get(j['form'], j['form'])}: {j['reason']}" if j["form"] else (f" — {j['reason']}" if j["reason"] else "")),
                   f"- もし: `{text(r['if'])}` ならば: `{text(r['then'])}`",
+                  f"- 識別子: `{r.get('key', '-')}`（指紋 `{r.get('signature', '-')}`）",
+                  *([f"- 兄弟（範囲と結論が同じ、条件が違う）: {', '.join(siblings[r['id']])}"] if siblings.get(r["id"]) else []),
                   f"- 強さ: {STRENGTH_JA[r['strength']]}（{r['strength']}, 基準 {thr}）/ 範囲: {r['scope'] or '全体'} / 単位数: {r['units']}",
                   *([f"- 逆・裏は評価しない（理由: {r['skip_reason']}）"] if r.get("skipped_forms") else []),
                   *([f"- 親: {r['parent']}（変更: {_cell(r['change'])}）"] if r.get("parent") else []),

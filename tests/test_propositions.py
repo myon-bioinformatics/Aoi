@@ -521,3 +521,47 @@ def test_where_condition_is_validated_and_changes_the_definition():
     with pytest.raises(pr.DataError, match="存在しない列"):
         pr.evaluate({**P1, "scope": {"where": [{"col": "nope", "op": "==", "value": 1}]}}, _where_table())
     assert pr.definition_sha({**P1, "scope": {"where": [{"col": "low", "op": "==", "value": True}]}}) != pr.definition_sha(P1)
+
+
+# ---------- 識別子（同じ問いの重複を止める） ----------
+
+def _blocks(*blocks):
+    return "\n".join("[[proposition]]\n" + b for b in blocks)
+
+
+A = 'id="A"\nstatement="s"\nstrength="usually"\nif=[{col="x",op=">",value=0},{col="y",op="<",value=1}]\nthen=[{col="z",op="==",value=true}]\n'
+
+
+def test_same_question_under_another_number_is_stopped(tmp_path):
+    # 文言・強さ・条件の並び順が違っても、範囲・条件・結論が同じなら同じ問い
+    b = 'id="B"\nstatement="別の言い方"\nstrength="always"\nif=[{col="y",op="<",value=1},{col="x",op=">",value=0}]\nthen=[{col="z",op="==",value=true}]\n'
+    f = tmp_path / "p.toml"
+    f.write_text(_blocks(A, b), encoding="utf-8")
+    with pytest.raises(pr.PropositionError, match="A と同じ問い"):
+        pr.load(f)
+
+
+def test_restatement_with_parent_may_share_the_question(tmp_path):
+    b = 'id="B"\nparent="A"\nchange="強さを下げた"\nstatement="s"\nstrength="more_often_than_not"\nif=[{col="x",op=">",value=0},{col="y",op="<",value=1}]\nthen=[{col="z",op="==",value=true}]\n'
+    c = 'id="C"\nparent="B"\nchange="さらに注記を変えた"\nstatement="s"\nstrength="more_often_than_not"\nif=[{col="x",op=">",value=0},{col="y",op="<",value=1}]\nthen=[{col="z",op="==",value=true}]\n'
+    f = tmp_path / "p.toml"
+    f.write_text(_blocks(A, b, c), encoding="utf-8")
+    props, _ = pr.load(f)  # 祖先（A）と同じ問いでも通る
+    assert [p["id"] for p in props] == ["A", "B", "C"]
+
+
+def test_identity_key_is_readable_and_scope_matters():
+    a = {"if": [{"col": "y", "op": "<", "value": 1}, {"col": "x", "op": ">", "value": 0}],
+         "then": [{"col": "z", "op": "==", "value": True}], "scope": {"team": "d", "where": [{"col": "rank_rf", "op": ">=", "value": 5}]}}
+    i = pr.identity(a)
+    assert i["key"] == '[team=d, where:rank_rf>=5] x>0 & y<1 => z==true'
+    assert pr.identity({**a, "scope": {"team": "g"}})["signature"] != i["signature"]
+    sib = {**a, "if": [{"col": "w", "op": ">", "value": 0}]}
+    assert pr.identity(sib)["family"] == i["family"] and pr.identity(sib)["signature"] != i["signature"]
+
+
+def test_render_lists_siblings():
+    st = table([("a", 2020, 5, 1, 1), ("b", 2020, -3, 5, 4), ("c", 2020, 2, 2, 3)])
+    p2 = {**P1, "id": "P2", "if": [{"col": "rank_pythag", "op": "<=", "value": 3}]}
+    md = pr.render([pr.evaluate(P1, st), pr.evaluate(p2, st)], {})
+    assert md.count("兄弟（範囲と結論が同じ、条件が違う）") == 2

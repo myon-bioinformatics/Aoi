@@ -31,6 +31,7 @@
   rf_def_floor / _mid / _ceiling   得点／試合の他球団平均との差を、得点帯（0〜2点 / 3〜5点 / 6点以上）に分けたもの（R3）
   rf_def_total                     3つの合計 = 得点／試合 − 同じ年・同じリーグの他球団の得点／試合の平均
   rf_def_floor_minus_ceiling       rf_def_floor − rf_def_ceiling（負なら、床の不足が天井の不足より大きい）
+  rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
     inn_dlog_rpi/_freq/_size       log(得点/回)・log(得点した回の割合)・log(得点した回の平均得点) の、他球団平均との差
     inn_freq_minus_size            inn_dlog_freq − inn_dlog_size（負なら、頻度の不足が大きさの不足より大きい）
@@ -153,7 +154,8 @@ def allocation_table(tg: pl.DataFrame) -> pl.DataFrame:
     return t.join(nxt, on=["season", "team"], how="left")
 
 
-SCORING_BANDS = {"floor": (1, 2), "mid": (3, 5), "ceiling": (6, None)}  # k の範囲（k 点以上取れたか）
+# k の範囲（k 点以上取れたか）。k67 は floor と同じ幅（2段）で天井側を見るための帯（R7、P19 の異議から）
+SCORING_BANDS = {"floor": (1, 2), "mid": (3, 5), "ceiling": (6, None), "k67": (6, 7)}
 
 
 def scoring_deficit(tg: pl.DataFrame) -> pl.DataFrame:
@@ -164,6 +166,7 @@ def scoring_deficit(tg: pl.DataFrame) -> pl.DataFrame:
       rf_def_floor   : k = 1〜2（0〜2点に抑えられる試合の多さ）
       rf_def_mid     : k = 3〜5
       rf_def_ceiling : k ≥ 6（大量得点の少なさ）
+      rf_def_k67     : k = 6〜7（floor と同じ幅で天井側を見る。rf_def_ceiling の一部で、合計には足さない）
     """
     tails: dict[tuple, dict[int, float]] = {}
     league_of: dict[tuple, str] = {}
@@ -187,7 +190,8 @@ def scoring_deficit(tg: pl.DataFrame) -> pl.DataFrame:
         rows.append(out)
     schema = {"season": pl.Int32, "team": pl.Utf8, **{f"rf_def_{b}": pl.Float64 for b in [*SCORING_BANDS, "total"]}}
     t = pl.DataFrame(rows, schema=schema)
-    return t.with_columns(rf_def_floor_minus_ceiling=pl.col("rf_def_floor") - pl.col("rf_def_ceiling"))
+    return t.with_columns(rf_def_floor_minus_ceiling=pl.col("rf_def_floor") - pl.col("rf_def_ceiling"),
+                          rf_def_floor_minus_k67=pl.col("rf_def_floor") - pl.col("rf_def_k67"))
 
 
 def inning_decomposition(st: pl.DataFrame, innings: pl.DataFrame) -> pl.DataFrame:

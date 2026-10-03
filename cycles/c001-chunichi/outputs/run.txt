@@ -1,0 +1,230 @@
+[✓] python: 3.14.7 (requires >= 3.11)
+[✓] git: git version 2.55.0
+[✓] uv: uv 0.12.23 (x86_64-unknown-linux-gnu)
+[✓] gh: gh version 2.101.0 (2026-09-15)
+[run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl
+Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
+Creating virtual environment at: .venv
+Downloading pygments (1.2MiB)
+Downloading polars-runtime-32 (47.6MiB)
+Downloading selectolax (2.4MiB)
+ Downloaded pygments
+ Downloaded selectolax
+ Downloaded polars-runtime-32
+Installed 15 packages in 11ms
+2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
+2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
+2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+2015: records=858 cancelled=40 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+2016: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2017: records=858 cancelled=27 non_regular:CS ファイナルS=12 non_regular:CS ファーストS=7 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2018: records=858 cancelled=56 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2019: records=858 cancelled=21 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=4 unknown=0
+2020: records=720 cancelled=23 non_regular:クライマックスS=2 non_regular:日本シリーズ=4 unknown=0
+2021: records=858 cancelled=32 non_regular:CS ファイナルS=6 non_regular:CS ファーストS=4 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2022: records=858 cancelled=31 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2023: records=858 cancelled=33 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2024: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2025: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=4 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+HTTP requests: 0
+2012: teams=12 games/team=144-144 expected=144 OK
+2013: teams=12 games/team=144-144 expected=144 OK
+2014: teams=12 games/team=144-144 expected=144 OK
+2015: teams=12 games/team=143-143 expected=143 OK
+2016: teams=12 games/team=143-143 expected=143 OK
+2017: teams=12 games/team=143-143 expected=143 OK
+2018: teams=12 games/team=143-143 expected=143 OK
+2019: teams=12 games/team=143-143 expected=143 OK
+2020: teams=12 games/team=120-120 expected=120 OK
+2021: teams=12 games/team=143-143 expected=143 OK
+2022: teams=12 games/team=143-143 expected=143 OK
+2023: teams=12 games/team=143-143 expected=143 OK
+2024: teams=12 games/team=143-143 expected=143 OK
+2025: teams=12 games/team=143-143 expected=143 OK
+[run] observe: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --offline
+2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
+2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
+2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+2015: records=858 cancelled=40 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+2016: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2017: records=858 cancelled=27 non_regular:CS ファイナルS=12 non_regular:CS ファーストS=7 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2018: records=858 cancelled=56 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2019: records=858 cancelled=21 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=4 unknown=0
+2020: records=720 cancelled=23 non_regular:クライマックスS=2 non_regular:日本シリーズ=4 unknown=0
+2021: records=858 cancelled=32 non_regular:CS ファイナルS=6 non_regular:CS ファーストS=4 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2022: records=858 cancelled=31 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2023: records=858 cancelled=33 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2024: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2025: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=4 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+HTTP requests: 0
+2012: teams=12 games/team=144-144 expected=144 OK
+2013: teams=12 games/team=144-144 expected=144 OK
+2014: teams=12 games/team=144-144 expected=144 OK
+2015: teams=12 games/team=143-143 expected=143 OK
+2016: teams=12 games/team=143-143 expected=143 OK
+2017: teams=12 games/team=143-143 expected=143 OK
+2018: teams=12 games/team=143-143 expected=143 OK
+2019: teams=12 games/team=143-143 expected=143 OK
+2020: teams=12 games/team=120-120 expected=120 OK
+2021: teams=12 games/team=143-143 expected=143 OK
+2022: teams=12 games/team=143-143 expected=143 OK
+2023: teams=12 games/team=143-143 expected=143 OK
+2024: teams=12 games/team=143-143 expected=143 OK
+2025: teams=12 games/team=143-143 expected=143 OK
+[run] inspect: uv run python blueprobe/blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out cycles/c001-chunichi/outputs/observed.md --strict
+# npb_calendar: 観測された構造
+
+取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
+
+| group | empty_pages | n_cancelled | n_non_regular:CS ファイナルS | n_non_regular:CS ファーストS | n_non_regular:アジアシリーズ | n_non_regular:オールスター | n_non_regular:クライマックスS | n_non_regular:日本シリーズ | pages | records | unknown |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2012 | 1 | 32 | 9 | 6 | 7 | 3 | 0 | 6 | 8 | 864 | 0 |
+| 2013 | 1 | 29 | 8 | 5 | 9 | 3 | 0 | 7 | 8 | 864 | 0 |
+| 2014 | 2 | 36 | 10 | 6 | 0 | 2 | 0 | 5 | 7 | 864 | 0 |
+| 2015 | 2 | 40 | 7 | 6 | 0 | 2 | 0 | 5 | 7 | 858 | 0 |
+| 2016 | 2 | 28 | 9 | 5 | 0 | 2 | 0 | 6 | 7 | 858 | 0 |
+| 2017 | 1 | 27 | 12 | 7 | 0 | 2 | 0 | 6 | 8 | 858 | 0 |
+| 2018 | 1 | 56 | 8 | 5 | 0 | 2 | 0 | 6 | 8 | 858 | 0 |
+| 2019 | 2 | 21 | 10 | 6 | 0 | 2 | 0 | 4 | 7 | 858 | 0 |
+| 2020 | 3 | 23 | 0 | 0 | 0 | 0 | 2 | 4 | 6 | 720 | 0 |
+| 2021 | 1 | 32 | 6 | 4 | 0 | 2 | 0 | 6 | 8 | 858 | 0 |
+| 2022 | 2 | 31 | 7 | 5 | 0 | 2 | 0 | 7 | 7 | 858 | 0 |
+| 2023 | 1 | 33 | 7 | 5 | 0 | 2 | 0 | 7 | 8 | 858 | 0 |
+| 2024 | 1 | 28 | 9 | 5 | 0 | 2 | 0 | 7 | 8 | 858 | 0 |
+| 2025 | 2 | 28 | 9 | 4 | 0 | 2 | 0 | 5 | 7 | 858 | 0 |
+
+## 取りこぼしの確認（既知値との照合）
+
+- 2012: teams=12 games/team=144-144 expected=144 OK
+- 2013: teams=12 games/team=144-144 expected=144 OK
+- 2014: teams=12 games/team=144-144 expected=144 OK
+- 2015: teams=12 games/team=143-143 expected=143 OK
+- 2016: teams=12 games/team=143-143 expected=143 OK
+- 2017: teams=12 games/team=143-143 expected=143 OK
+- 2018: teams=12 games/team=143-143 expected=143 OK
+- 2019: teams=12 games/team=143-143 expected=143 OK
+- 2020: teams=12 games/team=120-120 expected=120 OK
+- 2021: teams=12 games/team=143-143 expected=143 OK
+- 2022: teams=12 games/team=143-143 expected=143 OK
+- 2023: teams=12 games/team=143-143 expected=143 OK
+- 2024: teams=12 games/team=143-143 expected=143 OK
+- 2025: teams=12 games/team=143-143 expected=143 OK
+
+[run] fetch_batting: uv run python queryu/queryu.py --source npb_team_batting --years 2012-2025 --cache data/raw/npb_team_batting --out data/observations/npb_team_batting/teams.jsonl
+2012: records=6 unknown=6
+2013: records=6 unknown=6
+2014: records=6 unknown=6
+2015: records=6 unknown=6
+2016: records=6 unknown=6
+2017: records=6 unknown=6
+2018: records=6 unknown=6
+2019: records=6 unknown=6
+2020: records=6 unknown=6
+2021: records=6 unknown=6
+2022: records=6 unknown=6
+2023: records=6 unknown=6
+2024: records=6 unknown=6
+2025: records=12 unknown=0
+HTTP requests: 28
+2012: teams=6 expected=12 要確認
+2013: teams=6 expected=12 要確認
+2014: teams=6 expected=12 要確認
+2015: teams=6 expected=12 要確認
+2016: teams=6 expected=12 要確認
+2017: teams=6 expected=12 要確認
+2018: teams=6 expected=12 要確認
+2019: teams=6 expected=12 要確認
+2020: teams=6 expected=12 要確認
+2021: teams=6 expected=12 要確認
+2022: teams=6 expected=12 要確認
+2023: teams=6 expected=12 要確認
+2024: teams=6 expected=12 要確認
+2025: teams=12 expected=12 OK
+[run] observe_batting: uv run python queryu/queryu.py --source npb_team_batting --years 2012-2025 --cache data/raw/npb_team_batting --out data/observations/npb_team_batting/teams.jsonl --offline
+2012: records=6 unknown=6
+2013: records=6 unknown=6
+2014: records=6 unknown=6
+2015: records=6 unknown=6
+2016: records=6 unknown=6
+2017: records=6 unknown=6
+2018: records=6 unknown=6
+2019: records=6 unknown=6
+2020: records=6 unknown=6
+2021: records=6 unknown=6
+2022: records=6 unknown=6
+2023: records=6 unknown=6
+2024: records=6 unknown=6
+2025: records=12 unknown=0
+HTTP requests: 0
+2012: teams=6 expected=12 要確認
+2013: teams=6 expected=12 要確認
+2014: teams=6 expected=12 要確認
+2015: teams=6 expected=12 要確認
+2016: teams=6 expected=12 要確認
+2017: teams=6 expected=12 要確認
+2018: teams=6 expected=12 要確認
+2019: teams=6 expected=12 要確認
+2020: teams=6 expected=12 要確認
+2021: teams=6 expected=12 要確認
+2022: teams=6 expected=12 要確認
+2023: teams=6 expected=12 要確認
+2024: teams=6 expected=12 要確認
+2025: teams=12 expected=12 OK
+[run] inspect_batting: uv run python blueprobe/blueprobe.py --source npb_team_batting --cache data/raw/npb_team_batting --out cycles/c001-chunichi/outputs/observed_batting.md --strict
+unknown: 78 件。表記の変化を疑う（上の表を参照）
+既知値と合わない group: 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024（取りこぼし・混入を疑う）
+# npb_team_batting: 観測された構造
+
+取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
+
+| group | empty_pages | pages | records | unknown |
+|---|---|---|---|---|
+| 2012 | 0 | 2 | 6 | 6 |
+| 2013 | 0 | 2 | 6 | 6 |
+| 2014 | 0 | 2 | 6 | 6 |
+| 2015 | 0 | 2 | 6 | 6 |
+| 2016 | 0 | 2 | 6 | 6 |
+| 2017 | 0 | 2 | 6 | 6 |
+| 2018 | 0 | 2 | 6 | 6 |
+| 2019 | 0 | 2 | 6 | 6 |
+| 2020 | 0 | 2 | 6 | 6 |
+| 2021 | 0 | 2 | 6 | 6 |
+| 2022 | 0 | 2 | 6 | 6 |
+| 2023 | 0 | 2 | 6 | 6 |
+| 2024 | 0 | 2 | 6 | 6 |
+| 2025 | 0 | 2 | 12 | 0 |
+
+## 取りこぼしの確認（既知値との照合）
+
+- 2012: teams=6 expected=12 要確認
+- 2013: teams=6 expected=12 要確認
+- 2014: teams=6 expected=12 要確認
+- 2015: teams=6 expected=12 要確認
+- 2016: teams=6 expected=12 要確認
+- 2017: teams=6 expected=12 要確認
+- 2018: teams=6 expected=12 要確認
+- 2019: teams=6 expected=12 要確認
+- 2020: teams=6 expected=12 要確認
+- 2021: teams=6 expected=12 要確認
+- 2022: teams=6 expected=12 要確認
+- 2023: teams=6 expected=12 要確認
+- 2024: teams=6 expected=12 要確認
+- 2025: teams=12 expected=12 OK
+
+## 未知の表記（数字は # に伏せた形）
+
+- 2012: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ### | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ### | ## | ### | ## | ### | # | ## | ### | ## | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | # | ## | ### | ### | .### | .###'`
+- 2013: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | ### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ### | ## | ### | ## | ### | ## | ## | #### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ### | ## | ### | ## | ### | ## | ## | ### | ### | .### | .###'`
+- 2014: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | # | ### | #### | ### | ### | ## | ### | ## | ### | ## | ## | ### | ### | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ### | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | # | ## | ### | ### | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | # | ## | #### | ## | .### | .###'`
+- 2015: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ## | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | # | ## | ### | ## | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ### | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ## | .### | .###'`
+- 2016: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | # | ## | #### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ### | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ### | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ### | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | # | ## | #### | ## | .### | .###'`
+- 2017: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | # | ## | #### | ## | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ### | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ### | ## | ### | ## | ### | # | ## | #### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ### | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ### | ## | ## | ## | ### | # | ## | #### | ## | .### | .###'`
+- 2018: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ## | ## | ### | ## | ## | ### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ### | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ### | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ### | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`
+- 2019: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ### | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ### | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ### | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`
+- 2020: `'中 日 | .### | ### | #### | #### | ### | ### | ### | ## | ## | #### | ### | ## | ## | ## | ## | ### | ## | ## | ### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | ### | ## | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | ### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | # | ## | ### | ## | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | ### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | ### | ## | .### | .###'`
+- 2021: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ## | ## | ### | ## | ## | ### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ### | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`
+- 2022: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ### | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`
+- 2023: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ## | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ## | ## | ### | ## | ## | #### | ### | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ### | #### | ### | ### | ## | ### | ## | ### | # | ## | ### | ### | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ## | ## | ### | # | ## | #### | ## | .### | .###'`
+- 2024: `'中 日 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ### | .### | .###'`, `'巨 人 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`, `'広 島 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | #### | ## | .### | .###'`, `'楽 天 | .### | ### | #### | #### | ### | #### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`, `'西 武 | .### | ### | #### | #### | ### | ### | ### | ## | ## | #### | ### | ## | ## | ### | ## | ### | ## | ## | ### | ## | .### | .###'`
+
+[fail] inspect_batting (exit 1)

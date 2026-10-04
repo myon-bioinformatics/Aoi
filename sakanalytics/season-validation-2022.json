@@ -1,0 +1,165 @@
+{
+  "calendar_input_sha256": "98c3c1a51ac24a8f8bf432a59d2cbf7bee638406609fca310fc07d9e0426a41e",
+  "canonical_games_sha256": "777ed74ebbe4b95a289b79ce183c9c3aebd427ad21b7bed274ab083c4f5e10ff",
+  "games": 858,
+  "schedule_basis": "retrospective actual played schedule; not an archived as-of schedule",
+  "rules": {
+    "CL": {
+      "members": [
+        "s",
+        "t",
+        "g",
+        "c",
+        "d",
+        "db"
+      ],
+      "previous_order": [
+        "s",
+        "t",
+        "g",
+        "c",
+        "d",
+        "db"
+      ],
+      "wins_before_h2h": true,
+      "cs_slots": 3,
+      "label": "NPB-2022-CL",
+      "source": "https://npb.jp/games/2022/info_cscl.html",
+      "league_pct_tiebreak": true
+    },
+    "PL": {
+      "members": [
+        "b",
+        "m",
+        "e",
+        "h",
+        "f",
+        "l"
+      ],
+      "previous_order": [
+        "b",
+        "m",
+        "e",
+        "h",
+        "f",
+        "l"
+      ],
+      "wins_before_h2h": false,
+      "cs_slots": 3,
+      "label": "NPB-2022-PL",
+      "source": "https://npb.jp/games/2022/info_cspl.html",
+      "league_pct_tiebreak": true
+    }
+  },
+  "checks": [
+    {
+      "date": "2022-09-24",
+      "snapshot_sha256": "2d4de394fdb381c9d214b18d035a9ea16375e3b3a6923ed844b510c86b9215e3",
+      "chunichi_cs_status": "open",
+      "chunichi_remaining": 6,
+      "yakult_title_clinched": false,
+      "chunichi_cs_baseline_probability": 0.0015,
+      "chunichi_cs_mc95": [
+        0.0009092618255931228,
+        0.002473584549971443
+      ],
+      "forecast_model": "smoothed-WL-log5-pooled-draw-v1",
+      "trials": 10000,
+      "seed": 20221004,
+      "model_parameters": {
+        "prior_games": 20.0,
+        "draw_prior": 0.05
+      },
+      "python": "3.12.14",
+      "solver": "ortools-9.15.6755",
+      "yakult_guarantee_magic": 2
+    },
+    {
+      "date": "2022-09-25",
+      "snapshot_sha256": "d0c8b6bf5dc71be9c4b913ef44d59ac7ea86d0775f068cced0499067b1c075a8",
+      "chunichi_cs_status": "open",
+      "chunichi_remaining": 5,
+      "yakult_title_clinched": true,
+      "chunichi_cs_baseline_probability": 0.0024,
+      "chunichi_cs_mc95": [
+        0.0016133788093978356,
+        0.0035687763690995114
+      ],
+      "forecast_model": "smoothed-WL-log5-pooled-draw-v1",
+      "trials": 10000,
+      "seed": 20221004,
+      "model_parameters": {
+        "prior_games": 20.0,
+        "draw_prior": 0.05
+      },
+      "python": "3.12.14",
+      "solver": "ortools-9.15.6755",
+      "yakult_guarantee_magic": 0
+    },
+    {
+      "date": "2022-09-26",
+      "snapshot_sha256": "a9ace3d2727ab8f3548fdc48037308c7450edbca12d6e919f46aa6bbf96f81b7",
+      "chunichi_cs_status": "open",
+      "chunichi_remaining": 5,
+      "yakult_title_clinched": true,
+      "chunichi_cs_baseline_probability": 0.0023,
+      "chunichi_cs_mc95": [
+        0.001533154495882851,
+        0.0034490774822886323
+      ],
+      "forecast_model": "smoothed-WL-log5-pooled-draw-v1",
+      "trials": 10000,
+      "seed": 20221004,
+      "model_parameters": {
+        "prior_games": 20.0,
+        "draw_prior": 0.05
+      },
+      "python": "3.12.14",
+      "solver": "ortools-9.15.6755"
+    },
+    {
+      "date": "2022-09-27",
+      "snapshot_sha256": "6568e5139b2d0b10dca2d7d89a77daaf00c9d767b3d2be15cfc7477639eabb07",
+      "chunichi_cs_status": "eliminated",
+      "chunichi_remaining": 4,
+      "yakult_title_clinched": true,
+      "chunichi_cs_baseline_probability": 0.0,
+      "chunichi_cs_mc95": [
+        0.0,
+        0.00038399837067659573
+      ],
+      "forecast_model": "smoothed-WL-log5-pooled-draw-v1",
+      "trials": 10000,
+      "seed": 20221004,
+      "model_parameters": {
+        "prior_games": 20.0,
+        "draw_prior": 0.05
+      },
+      "python": "3.12.14",
+      "solver": "ortools-9.15.6755"
+    },
+    {
+      "date": "2022-10-03",
+      "snapshot_sha256": "01bc0c625ce36d8e46b1e0155a9d559eac91a4ee8e36683386b074752a96f49b",
+      "chunichi_cs_status": "eliminated",
+      "chunichi_remaining": 0,
+      "yakult_title_clinched": true,
+      "chunichi_cs_baseline_probability": 0.0,
+      "chunichi_cs_mc95": [
+        0.0,
+        0.00038399837067659573
+      ],
+      "forecast_model": "smoothed-WL-log5-pooled-draw-v1",
+      "trials": 10000,
+      "seed": 20221004,
+      "model_parameters": {
+        "prior_games": 20.0,
+        "draw_prior": 0.05
+      },
+      "python": "3.12.14",
+      "solver": "ortools-9.15.6755",
+      "final_orders_match_official": true
+    }
+  ],
+  "passed": true
+}

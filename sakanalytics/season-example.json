@@ -1,0 +1,193 @@
+{
+  "teams": [
+    "A",
+    "B",
+    "X"
+  ],
+  "rules": {
+    "members": [
+      "A",
+      "B"
+    ],
+    "previous_order": [
+      "B",
+      "A"
+    ],
+    "wins_before_h2h": true,
+    "cs_slots": 1,
+    "label": "synthetic-2-team",
+    "source": "synthetic",
+    "league_pct_tiebreak": true
+  },
+  "schedule_basis": "synthetic fixed schedule, X is an interleague opponent",
+  "games": [
+    {
+      "id": "A0",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "A1",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "A2",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "A3",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "A4",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "A5",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "A6",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "A7",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "A8",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "A9",
+      "date": "2022-01-01",
+      "home": "A",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "B0",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "B1",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "B2",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "B3",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "B4",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "B5",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "B6",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "B7",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "B8",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "B9",
+      "date": "2022-01-01",
+      "home": "B",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "a1",
+      "date": "2022-01-02",
+      "home": "A",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "b1",
+      "date": "2022-01-02",
+      "home": "B",
+      "away": "X",
+      "result": "H"
+    },
+    {
+      "id": "b2",
+      "date": "2022-01-03",
+      "home": "B",
+      "away": "X",
+      "result": "A"
+    },
+    {
+      "id": "a2",
+      "date": "2022-01-04",
+      "home": "A",
+      "away": "X",
+      "result": "H"
+    }
+  ]
+}

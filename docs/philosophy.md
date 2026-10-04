@@ -98,7 +98,7 @@ A residual measured against a random baseline is easy to call luck.
 
 Calling it luck assumes that the events were independent and that no one acted on purpose.
 
-In competition, that assumption is rarely true. Every team plays the whole season trying to finish higher. Decisions about whom to use, when, and in which game are part of the very thing a random baseline shuffles away.
+When the subjects act on purpose (teams, people, organizations), that assumption is rarely true. In a sports league, for example, every team plays the whole season trying to finish higher, and decisions about whom to use, when, and in which game are part of the very thing a random baseline shuffles away.
 
 So a gap from a random baseline is described as what it is: "worse than the random baseline", not "unlucky". It is a trace of something not yet measured.
 
@@ -108,9 +108,9 @@ The seasons that a description cannot explain, or explains only through the base
 
 ## Same Outcome, Different Routes
 
-Two seasons can end in the same place for different reasons. Forcing one proposition to explain both usually explains neither.
+Two units can end in the same place for different reasons (for example, two seasons that both finished in the bottom half). Forcing one proposition to explain both usually explains neither.
 
-Give each route its own proposition. A single season is a single unit, so a route is generalized into a class of units that share its situation (for example, "a positive run differential but a B-class finish"), and the proposition is checked on the other members of that class, with the season that motivated it held out.
+Give each route its own proposition. A single unit cannot be judged by itself, so a route is generalized into a class of units that share its situation (for example, "a positive run differential but a bottom-half finish"), and the proposition is checked on the other members of that class, with the unit that motivated it held out.
 
 ## Mirrors Are Findings
 

@@ -295,10 +295,16 @@ def test_parent_must_come_first_and_needs_change(tmp_path):
         pr.load(f)
     with pytest.raises(pr.PropositionError, match="change"):
         pr.validate({**P1A, "change": ""})
-    with pytest.raises(pr.PropositionError, match="parent"):
-        pr.validate({**P1, "motivated_by": ["d-2019"]})
+    pr.validate({**P1, "motivated_by": ["d-2019"]})  # 作り直しでない命題も、思いついたときに見た単位を書ける
     with pytest.raises(pr.PropositionError, match="team-season"):
         pr.validate({**P1A, "motivated_by": ["2019"]})
+
+
+def test_held_out_also_applies_to_a_new_proposition_built_from_seen_units():
+    p = {**P1, "motivated_by": ["d-2019"]}
+    r = pr.evaluate(p, table(ROWS), focus="d")
+    assert r["held_out"]["excluded_units"] == ["d-2019"] and r["parent"] is None
+    assert r["held_out"]["n"] == r["forms"][0]["n"] - 1  # d-2019 は rd > 0 で前件に当たる
 
 
 def test_held_out_excludes_the_motivating_units():
@@ -636,3 +642,16 @@ def test_confirm_units_keeps_team_and_where_scope_and_reports_unknown_values():
     assert d["units"] == [{"unit": "c-2026", "status": "成立"}] and not d["has_if"]
     md = pr.render_confirmation([d], [2026], "-", ["a-2026", "b-2026", "c-2026"], detail=["P1"])
     assert "（前件なし）" in md and "| a-2026 | 範囲外 |" in md
+
+
+def test_cycle1_confirmation_setting_names_real_propositions():
+    import tomllib
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2] / "cycles" / "c001-chunichi"
+    confirm = tomllib.loads((root / "analysis.toml").read_text(encoding="utf-8")).get("confirm")
+    if confirm is None:
+        pytest.skip("確かめの設定がない")
+    props, _ = pr.load(root / "propositions.toml")
+    assert set(confirm.get("detail", [])) <= {p["id"] for p in props}
+    assert (root / "research" / "R18-confirmation-2026.md").exists()  # confirmation.md が指す手順の記録

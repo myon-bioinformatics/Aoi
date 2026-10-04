@@ -430,3 +430,12 @@ def test_battle_top_focus_and_pair_diffs_by_hand():
     assert c["pair34_focus_gap_diff"] == pytest.approx(2 / 3 - 0.5)
     assert c["pair34_vs_lower_wpct_diff"] == pytest.approx(0.0)  # 下位半分（4〜6位）の相手: c は d・e・f、d は e・f にどちらも全勝
     assert v["a"]["pair34_focus_gap_diff"] is None and v["e"]["pair34_vs_lower_wpct_diff"] is None
+
+
+def test_streak_counts_consecutive_seasons_and_resets():
+    from sakanalytics import streak
+    st = pl.DataFrame({"team": ["d"] * 6 + ["g"] * 2, "season": [2013, 2014, 2015, 2017, 2018, 2019, 2013, 2014],
+                       "x": [1, 1, 0, 1, 1, None, 1, 1]})
+    out = streak(st, pl.col("x") == 1, "s").sort("team", "season")
+    # 2016 がない → 2017 は数え直し。値が空なら空。チームごとに別々に数える
+    assert out["s"].to_list() == [1, 2, 0, 1, 2, None, 1, 2]

@@ -39,6 +39,7 @@
   vs_near_net / pair34_net         順位が1つ違いの相手、3位と4位どうしの（勝 − 敗）（R12）
   half1_vs_pythag / half2_vs_pythag  前半・後半それぞれの（勝 − 期待勝利数）（R12）
   max_win_streak / max_lose_streak / max_lose_streak_d  最長連勝・最長連敗と、連敗の他球団平均との差（R12）
+  inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -458,6 +459,37 @@ def boundary_features(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
     return out.drop("league", "rank")
 
 
+def streak(st: pl.DataFrame, cond: pl.Expr, name: str) -> pl.DataFrame:
+    """条件が、そのシーズンまで何年続けて成り立っているか（同じチーム、連続した年）。成り立たなければ 0、値が空なら空。"""
+    flags = st.select("team", "season", f=cond)
+    by = {(r["team"], r["season"]): r["f"] for r in flags.iter_rows(named=True)}
+    out = []
+    for (team, season), f in sorted(by.items()):
+        if f is None:
+            n = None
+        elif not f:
+            n = 0
+        else:
+            prev = out[-1][2] if out and out[-1][0] == team and out[-1][1] == season - 1 else None
+            n = (prev or 0) + 1
+        out.append((team, season, n))
+    tbl = pl.DataFrame(out, schema={"team": pl.Utf8, "season": pl.Int32, name: pl.Int64}, orient="row")
+    return st.join(tbl, on=["team", "season"], how="left")
+
+
+def add_persistence(st: pl.DataFrame) -> pl.DataFrame:
+    """R14: 低いままの状態が何年続いているか。
+
+      inn_size_rank        : 得点した回の大きさ（inn_dlog_size）のリーグ内の順位（小さいほうが 1）
+      inn_size_low_streak  : inn_size_rank が 2 以下の年が、その年まで何年続いているか
+      rf_low_streak        : 得点のリーグ順位が 5 位以下の年が、その年まで何年続いているか
+    """
+    if "inn_dlog_size" in st.columns:
+        st = st.with_columns(inn_size_rank=pl.col("inn_dlog_size").rank("min").over(["season", "league"]).cast(pl.Int32))
+        st = streak(st, pl.col("inn_size_rank") <= 2, "inn_size_low_streak")
+    return streak(st, pl.col("rank_rf") >= 5, "rf_low_streak")
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -563,6 +595,7 @@ def main(argv=None) -> int:
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     if args.batting:
         st = batting_join(st, pl.read_ndjson(args.batting))
+    st = add_persistence(st)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     focus = cfg.get("focus", {}).get("team")

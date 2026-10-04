@@ -68,8 +68,7 @@ class Snapshot:
         n = len(self.teams)
         if n < 2 or len(set(self.teams)) != n or not all(isinstance(t, str) and t for t in self.teams) or not self.schedule_basis:
             raise ValueError('unique teams and schedule provenance required')
-        if date.fromisoformat(self.as_of).isoformat() != self.as_of:
-            raise ValueError('as_of must be ISO YYYY-MM-DD')
+        _validate_date(self.as_of)
         for matrix in (self.wins, self.draws):
             if len(matrix) != n or any(len(row) != n for row in matrix):
                 raise ValueError('invalid matrix size')
@@ -99,11 +98,15 @@ class Snapshot:
                                           separators=(',', ':')).encode()).hexdigest()
 
 
+def _validate_date(value):
+    if not isinstance(value, str) or date.fromisoformat(value).isoformat() != value:
+        raise ValueError('dates must be ISO YYYY-MM-DD')
+
+
 def _validate_game(g, teams):
     if not isinstance(g.id, str) or not g.id or g.home not in teams or g.away not in teams or g.home == g.away:
         raise ValueError('invalid game identity or teams')
-    if date.fromisoformat(g.date).isoformat() != g.date:
-        raise ValueError('dates must be ISO YYYY-MM-DD')
+    _validate_date(g.date)
     if g.result not in (None, 'H', 'A', 'D'):
         raise ValueError('result must be H, A, D, or null')
 
@@ -112,6 +115,7 @@ def calendar_games(rows, year):
     """Adapt Aoi's regular-season calendar observations; retain no raw text."""
     result = []
     for row in rows:
+        _validate_date(row['date'])
         if date.fromisoformat(row['date']).year != year:
             continue
         h, a = row['hs'], row['as']
@@ -127,12 +131,15 @@ def calendar_games(rows, year):
 def snapshot(games, teams, as_of, *, schedule_basis):
     """Future results are discarded, never used to estimate team strength."""
     teams = tuple(teams)
+    _validate_date(as_of)
+    games = list(games)
+    for g in games:
+        _validate_game(g, teams)
     index = {t: i for i, t in enumerate(teams)}
     wins = [[0] * len(teams) for _ in teams]
     draws = [[0] * len(teams) for _ in teams]
     remaining, seen = [], set()
     for g in sorted(games, key=lambda g: (g.date, g.id)):
-        _validate_game(g, teams)
         if g.id in seen:
             raise ValueError('duplicate game id')
         seen.add(g.id)

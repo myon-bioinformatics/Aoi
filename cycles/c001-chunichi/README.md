@@ -43,10 +43,10 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 | 除外 | 2020年（理由は `analysis.toml`） | `outputs/exclusions.json` |
 | 比較対象 | 全12球団（順位の検定はセ・リーグの6球団） | `analysis.toml` の `[focus]` |
 | 保留 | 打席・走者の状態（残塁・盗塁死など）。Grok が取得中のプレー経過を待つ | `hypotheses.toml` |
-| 命題 | P1〜P96（事前登録。読める識別子と指紋つき。結果を見た後に作ったものは `change`・`note` に明記） | `propositions.toml`、`outputs/index.md` |
+| 命題 | P1〜P101（事前登録。読める識別子と指紋つき。結果を見た後に作ったものは `change`・`note` に明記） | `propositions.toml`、`outputs/index.md` |
 | 条件の探索 | B クラスを言い当てる条件の組み合わせ（候補は探索の前に固定） | `rule_candidates.toml`、`outputs/rules.jsonl` |
 | 外部の主張 | 外部レポート・外部の会話・GPT・Grok の数値と解釈（C1〜C27） | `claims.toml`、`references/` |
-| 研究計画 | R1〜R21（それぞれ計算の前に問い・方法・見直す条件・限界を記録し、結果を追記） | `research/` |
+| 研究計画 | R1〜R22（それぞれ計算の前に問い・方法・見直す条件・限界を記録し、結果を追記） | `research/` |
 
 ## 実行
 
@@ -78,6 +78,7 @@ GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main �
 | `persistence.jsonl` | 隣り合うシーズンの相関（配分効果・ピタゴラスのずれ・勝率） |
 | `persistence_all.jsonl` / `persistence_by_team.jsonl` | 隣り合うシーズンの相関（得点した回の大きさ・得点の不足・A クラスの見込み・勝率、強い相手との試合の net・env）の全体とチームごと（R14・R19） |
 | `rank_expectation.jsonl` | 得点・失点の分布から見た A クラスの回数の期待値と実際の回数（R10） |
+| `trajectory_expectation.jsonl` | シーズンの中の順位・貯金の線（3次式）の山・谷の数と、力が一定のときの見込み（R22） |
 | `rules.jsonl` | B クラスを言い当てる条件の組み合わせの探索結果（R11） |
 | `rules_r21.jsonl` | 同じ探索に 2014年の道筋の条件を足し、「または」を3つまでにしたもの（R21、`rule_candidates_r21.toml`） |
 | `ledger.jsonl` | 命題の判定の台帳 |

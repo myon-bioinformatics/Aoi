@@ -1318,3 +1318,72 @@ context = ["sim_p_upper", "wins_vs_pythag", "alloc_z_strat", "rank"]
 links = ["H2", "H3", "H9"]
 falsifier = "2026年（R18）で、この式に当たるのに A クラスのチームが出る（学習データでは156単位中1）"
 note = "R21 の探索の1位（結果を見た後の式）。P52（取りこぼしが少ない）と並べる、言い当て方の違う式。同じデータでの成績は良く見えやすい"
+
+# ---- R22: シーズンの中の線に、山（極大）と谷（極小）はあるか（research/R22-season-trajectory.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。traj_* は実データでまだ計算していない（中日の 1/4・1/2・3/4・最終の順位は R20 で見ている）。
+# どの命題も、成り立つかより、力が一定のときの基準（*_base、outputs/trajectory_expectation.jsonl）と比べて読む。
+
+[[proposition]]
+id = "P97"
+statement = "中日の B クラスの年は、順位の高さの線（3次式でならしたもの）に山がある（上がってから下がる）"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "traj_rank_peak", op = "==", value = true }]
+surprise = "traj_rank_peak_x"
+context = ["traj_rank_shape", "traj_rank_peak_base", "traj_rank_end_slope", "rank"]
+links = ["H1", "H6"]
+falsifier = "中日の B クラスの年の山の数が、力が一定のときの見込みの範囲（trajectory_expectation.jsonl で P ≥ 0.05）"
+note = "山があること自体は力が一定でも起きる。基準と比べて読む"
+
+[[proposition]]
+id = "P98"
+statement = "中日以外の B クラスのチームは、順位の高さの線に山がある"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "traj_rank_peak", op = "==", value = true }]
+surprise = "traj_rank_peak_x"
+context = ["traj_rank_shape", "traj_rank_peak_base", "traj_rank_end_slope", "rank"]
+links = ["H1", "H6"]
+falsifier = "（基準の命題。P97 と率を比べるために置く）"
+note = "P97 の比べる相手"
+
+[[proposition]]
+id = "P99"
+statement = "中日は、貯金の線（3次式でならしたもの）に山がある（貯金を増やしてから減らす）"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = []
+then = [{ col = "traj_wl_peak", op = "==", value = true }]
+surprise = "traj_wl_peak_x"
+context = ["traj_wl_shape", "traj_wl_peak_base", "traj_wl_end_slope", "rank"]
+links = ["H6"]
+falsifier = "中日の山の数が、力が一定のときの見込みの範囲（trajectory_expectation.jsonl で P ≥ 0.05）"
+note = "順位はほかのチームでも動くので、自分の力の線として貯金も見る"
+
+[[proposition]]
+id = "P100"
+statement = "中日の B クラスの年は、最後の日の順位の高さの傾きが負（下がりながらシーズンを終える）"
+strength = "usually"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "traj_rank_end_slope", op = "<", value = 0 }]
+surprise = "traj_rank_end_slope"
+context = ["traj_rank_shape", "traj_rank_peak_x", "rank"]
+links = ["H6"]
+falsifier = "P101（中日以外の B クラス）との率の差が 0.2 未満"
+note = "B クラスで終わるチームは、力が一定でも下がりながら終わりやすい。P101 と比べて読む"
+
+[[proposition]]
+id = "P101"
+statement = "中日以外の B クラスのチームは、最後の日の順位の高さの傾きが負"
+strength = "usually"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "traj_rank_end_slope", op = "<", value = 0 }]
+surprise = "traj_rank_end_slope"
+context = ["traj_rank_shape", "traj_rank_peak_x", "rank"]
+links = ["H6"]
+falsifier = "（基準の命題。P100 と率を比べるために置く）"
+note = "P100 の比べる相手"

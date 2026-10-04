@@ -384,3 +384,30 @@ def test_rank_probability_identical_teams_and_dominant_team():
     weak = ([0, 1, 0, 1, 0, 1], [3, 4, 3, 4, 3, 4])
     p = {r["team"]: r["sim_p_upper"] for r in rank_probability(_tg({"d": strong, "g": weak, "t": weak})).iter_rows(named=True)}
     assert p["d"] == pytest.approx(1.0) and p["g"] < 0.01
+
+
+def test_streaks_ties_break_both():
+    from sakanalytics import _streaks
+    assert _streaks([1, 1, -1, -1, -1, 0, -1, 1, 1, 1, 1]) == (4, 3)
+    assert _streaks([]) == (0, 0)
+
+
+def test_boundary_features_by_hand():
+    from sakanalytics import boundary_features
+    teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
+    # 4球団（セ）+ 交流戦1試合。d は c に2勝、t に1敗、g に1勝。最終順位は勝率で決まる
+    rows = [("2024-04-01", "d", "c", 3, 1), ("2024-04-02", "c", "d", 0, 2), ("2024-04-03", "t", "d", 5, 1),
+            ("2024-04-04", "d", "g", 4, 3), ("2024-04-05", "g", "c", 2, 1), ("2024-04-06", "t", "g", 6, 0),
+            ("2024-04-07", "t", "c", 1, 0), ("2024-04-08", "h", "d", 9, 0)]
+    st = season_table(to_team_games(games(rows), teams))
+    rk = {r["team"]: r["rank"] for r in st.iter_rows(named=True)}
+    v = {r["team"]: r for r in st.iter_rows(named=True)}
+    assert rk == {"t": 1, "d": 2, "g": 3, "c": 4, "h": 1}  # d は交流戦の1敗を含めて 3勝2敗
+    d = v["d"]
+    assert d["vs_upper_wpct"] == pytest.approx(0.0)         # 上位半分（1・2位）の相手 = t。1敗（自分自身は除く）
+    assert d["vs_lower_wpct"] == pytest.approx(1.0)         # g・c に3勝。交流戦（h）は数えない
+    assert d["vs_near_net"] == 1 - 1                        # 1位 t に1敗、3位 g に1勝
+    assert d["pair34_net"] is None and v["g"]["pair34_net"] == 1 and v["c"]["pair34_net"] == -1
+    assert (d["max_win_streak"], d["max_lose_streak"]) == (2, 1)
+    # 前半（最初の2試合）は2勝、期待勝利数は 2 × ピタゴラス(5, 1)
+    assert d["half1_vs_pythag"] == pytest.approx(2 - 2 / (1 + (1 / 5) ** K_FIXED))

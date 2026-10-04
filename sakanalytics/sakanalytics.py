@@ -41,6 +41,8 @@
   max_win_streak / max_lose_streak / max_lose_streak_d  最長連勝・最長連敗と、連敗の他球団平均との差（R12）
   opp_adj_top / mid / low / total  相手の強さ（自分との試合を除く）から見込まれる勝ち数との差を、相手のグループごとに足したもの（R15）
   pair34_opp_adj_*_diff            その3位と4位の間の差（R15）
+  opp_rf_gap_* / opp_ra_gap_* / opp_conv_*  相手のグループごとの、得点・失点の見込みとの差と、点の差では説明できない勝ち負け（R16）
+  opp_top_rf_minus_ra              強い相手に対する（得点の差 − 失点の差）。負なら得点の側に大きい（R16）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -486,7 +488,7 @@ def _pair34_diff(out: pl.DataFrame, cols: list[str]) -> pl.DataFrame:
 
 
 def opponent_adjusted(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
-    """R15: 相手の強さから見込まれる勝ち数との差を、相手のグループごとに足す。
+    """R15・R16: 相手の強さから見込まれる勝ち数・得点・失点との差を、相手のグループごとに足す。
 
     リーグ内の相手だけ（交流戦は外す）。相手 O との試合の見込みは、
       自分の強さ  = O との試合を除いた自分の得点・失点からのピタゴラス勝率
@@ -496,41 +498,60 @@ def opponent_adjusted(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
       opp_adj_top : 強いほうから2チーム   opp_adj_mid : その次の2チーム   opp_adj_low : 残り（6球団なら1チーム）
       opp_adj_total : リーグ内の相手すべて
     相手の強さを最終順位で決めないので、自分との対戦結果が相手のグループ分けを動かすことはない。
+
+    R16: 得点・失点の側に分ける（1試合あたりの得点の見込み = 自分の得点力 × 相手の失点の多さ ÷ リーグ平均）。
+      opp_rf_gap_* : 実際の得点 − 見込みの得点（O との試合を除いた自分の得点/試合 × 自分との試合を除いた O の失点/試合 ÷ リーグ平均 × 試合数）
+      opp_ra_gap_* : 見込みの失点 − 実際の失点（同じ形。正なら見込みより失点が少ない）
+      opp_conv_*   : 勝 − (勝 + 敗) × ピタゴラス(その相手との実際の得点, 失点)。点の差では説明できない勝ち負け
+      opp_top_rf_minus_ra : opp_rf_gap_top − opp_ra_gap_top（負なら、強い相手との差は得点の側に大きい）
+      リーグ平均 = そのリーグの球団の得点の合計 ÷ 試合数の合計（交流戦も含む全試合。強さの計算と同じ）
     """
     league_of = {(r["season"], r["team"]): r["league"] for r in st.iter_rows(named=True)}
-    tot: dict[tuple, list[int]] = {}
-    vs: dict[tuple, list[int]] = {}  # (season, team, opp) -> [rf, ra, w, l]
+    tot: dict[tuple, list[int]] = {}  # (season, team) -> [rf, ra, games]
+    vs: dict[tuple, list[int]] = {}  # (season, team, opp) -> [rf, ra, w, l, games]
     for r in tg.iter_rows(named=True):
-        k = (r["season"], r["team"])
-        t = tot.setdefault(k, [0, 0])
-        t[0] += r["rf"]
-        t[1] += r["ra"]
-        v = vs.setdefault((r["season"], r["team"], r["opp"]), [0, 0, 0, 0])
+        t = tot.setdefault((r["season"], r["team"]), [0, 0, 0])
+        t[0], t[1], t[2] = t[0] + r["rf"], t[1] + r["ra"], t[2] + 1
+        v = vs.setdefault((r["season"], r["team"], r["opp"]), [0, 0, 0, 0, 0])
         v[0] += r["rf"]
         v[1] += r["ra"]
         v[2] += r["rf"] > r["ra"]
         v[3] += r["rf"] < r["ra"]
+        v[4] += 1
+    lg: dict[tuple, list[int]] = {}
+    for (season, team), (rf, _, g) in tot.items():
+        a = lg.setdefault((season, league_of[(season, team)]), [0, 0])
+        a[0], a[1] = a[0] + rf, a[1] + g
+    groups = {"top": slice(0, 2), "mid": slice(2, 4), "low": slice(4, None)}
     rows = []
-    for (season, team), (rf, ra) in tot.items():
-        opps = [o for (s_, t_, o) in vs if s_ == season and t_ == team and league_of.get((season, o)) == league_of[(season, team)]]
+    for (season, team), (rf, ra, g) in tot.items():
+        league = league_of[(season, team)]
+        lg_rpg = lg[(season, league)][0] / lg[(season, league)][1]
+        opps = [o for (s_, t_, o) in vs if s_ == season and t_ == team and league_of.get((season, o)) == league]
         parts = []
         for o in opps:
-            orf, ora, w, l_ = vs[(season, team, o)]
+            orf, ora, w, l_, n = vs[(season, team, o)]
+            o_rf, o_ra, o_g = tot[(season, o)]
             me = _pythag_wpct(rf - orf, ra - ora)
-            o_rf, o_ra = tot[(season, o)]
             them = _pythag_wpct(o_rf - ora, o_ra - orf)  # O の得点 − 自分から取った分、O の失点 − 自分が取った分
-            if me is None or them is None:
+            if me is None or them is None or g == n or o_g == n:
                 continue
-            parts.append((them, w - (w + l_) * log5(me, them)))
-        parts.sort(key=lambda x: -x[0])
-        top, mid, low = parts[:2], parts[2:4], parts[4:]
-        rows.append({"season": season, "team": team,
-                     "opp_adj_top": sum(x for _, x in top) if top else None,
-                     "opp_adj_mid": sum(x for _, x in mid) if mid else None,
-                     "opp_adj_low": sum(x for _, x in low) if low else None,
-                     "opp_adj_total": sum(x for _, x in parts) if parts else None})
-    schema = {"season": pl.Int32, "team": pl.Utf8, **{c: pl.Float64 for c in ("opp_adj_top", "opp_adj_mid", "opp_adj_low", "opp_adj_total")}}
+            exp_rf = n * ((rf - orf) / (g - n)) * ((o_ra - orf) / (o_g - n)) / lg_rpg
+            exp_ra = n * ((o_rf - ora) / (o_g - n)) * ((ra - ora) / (g - n)) / lg_rpg
+            actual = _pythag_wpct(orf, ora)
+            parts.append({"them": them, "adj": w - (w + l_) * log5(me, them), "rf_gap": orf - exp_rf, "ra_gap": exp_ra - ora,
+                          "conv": w - (w + l_) * actual if actual is not None else 0.0})
+        parts.sort(key=lambda x: -x["them"])
+        row = {"season": season, "team": team, "opp_adj_total": sum(x["adj"] for x in parts) if parts else None}
+        for name, sl in groups.items():
+            sel = parts[sl]
+            for key, col in (("adj", "opp_adj"), ("rf_gap", "opp_rf_gap"), ("ra_gap", "opp_ra_gap"), ("conv", "opp_conv")):
+                row[f"{col}_{name}"] = sum(x[key] for x in sel) if sel else None
+        rows.append(row)
+    cols = ["opp_adj_total"] + [f"{c}_{g}" for c in ("opp_adj", "opp_rf_gap", "opp_ra_gap", "opp_conv") for g in groups]
+    schema = {"season": pl.Int32, "team": pl.Utf8, **{c: pl.Float64 for c in cols}}
     out = st.select("season", "team", "league", "rank").join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
+    out = out.with_columns(opp_top_rf_minus_ra=pl.col("opp_rf_gap_top") - pl.col("opp_ra_gap_top"))
     return _pair34_diff(out, ["opp_adj_top", "opp_adj_mid", "opp_adj_low", "opp_adj_total"]).drop("league", "rank")
 
 

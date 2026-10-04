@@ -465,3 +465,22 @@ def test_opponent_adjusted_by_hand_and_excludes_own_games():
     # 3球団なので相手は2チーム → どちらも「強いほうの2チーム」に入る
     assert v["d"]["opp_adj_top"] == pytest.approx(v["d"]["opp_adj_total"]) and v["d"]["opp_adj_mid"] is None
     assert v["h"]["opp_adj_total"] is None  # リーグ内の相手がいない（交流戦は数えない）
+
+
+def test_opponent_run_gaps_by_hand():
+    from sakanalytics import K_FIXED, opponent_adjusted
+    rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "g", "d", 2, 1), ("2024-04-03", "d", "t", 1, 4),
+            ("2024-04-04", "g", "t", 5, 5), ("2024-04-05", "t", "g", 0, 2), ("2024-04-06", "h", "d", 9, 0)]
+    tg = to_team_games(games(rows), TEAMS)
+    v = {r["team"]: r for r in opponent_adjusted(tg, season_table(tg)).iter_rows(named=True)}
+    lg = (5 + 10 + 9) / (4 + 4 + 3)  # セの3球団の得点 ÷ 試合数（交流戦も含む）
+    # d 対 g（2試合、得点 4・失点 3）: d は g 戦を除いて 2試合で得点 1・失点 13、g は d 戦を除いて 2試合で得点 7・失点 5
+    rf_g, ra_g = 4 - 2 * (1 / 2) * (5 / 2) / lg, 2 * (7 / 2) * (13 / 2) / lg - 3
+    # d 対 t（1試合、得点 1・失点 4）: d は t 戦を除いて 3試合で得点 4・失点 12、t は d 戦を除いて 2試合で得点 5・失点 7
+    rf_t, ra_t = 1 - 1 * (4 / 3) * (7 / 2) / lg, 1 * (5 / 2) * (12 / 3) / lg - 4
+    d = v["d"]
+    assert d["opp_rf_gap_top"] == pytest.approx(rf_g + rf_t) and d["opp_ra_gap_top"] == pytest.approx(ra_g + ra_t)
+    assert d["opp_top_rf_minus_ra"] == pytest.approx((rf_g + rf_t) - (ra_g + ra_t))
+    py = lambda r, a: 1 / (1 + (a / r) ** K_FIXED)  # noqa: E731
+    assert d["opp_conv_top"] == pytest.approx((1 - 2 * py(4, 3)) + (0 - 1 * py(1, 4)))
+    assert d["opp_rf_gap_mid"] is None and v["h"]["opp_rf_gap_top"] is None

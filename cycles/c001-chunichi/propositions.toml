@@ -761,3 +761,71 @@ context = ["rd", "alloc_z_strat", "pair34_net"]
 links = ["H2", "H3"]
 falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。境目では分布だけでは分けられない"
 note = "比べるための基準。P53〜P55 がこれより強く分けるなら、分布の外の情報を足している"
+
+# ---- R13: 3位を争う相手に勝てていたか（research/R13-race-for-third.md） ----
+# 追加: 2026-10-04。ユーザーの見方（3位を争う相手には勝っておく）から。P57 は R12 の結果を見た後に作った。
+# vs_battle_wpct・focus_gap・pair34_*_diff は実データでまだ計算していない。
+
+[[proposition]]
+id = "P57"
+statement = "3位と4位のチームの間では、下位の相手との勝率が相手チームより高いほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_vs_lower_wpct_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_vs_lower_wpct_diff"
+context = ["vs_lower_wpct", "sim_p_upper", "alloc_z_strat"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "R12 の平均（.556 対 .523）を見た後に作った命題。同じデータでの判定は確かめではない"
+
+[[proposition]]
+id = "P58"
+statement = "3位と4位のチームの間では、3位を争う相手（3〜5位）との勝率が相手チームより高いほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_vs_battle_wpct_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_vs_battle_wpct_diff"
+context = ["vs_battle_wpct", "vs_top_wpct", "sim_p_upper"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。争う相手に勝っておくことは境目を分けない"
+note = "ユーザーの見方から。P56（分布だけ、lift 1.43）より大きな lift なら、分布の外の情報を足している"
+
+[[proposition]]
+id = "P59"
+statement = "3位と4位のチームの間では、争う相手への重点（争う相手との勝率 − 上の相手との勝率）が相手チームより大きいほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_focus_gap_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_focus_gap_diff"
+context = ["focus_gap", "vs_battle_wpct", "vs_top_wpct"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。重点の置き方は境目を分けない"
+note = "ユーザーの見方（1・2位には最悪負けてもいい）をそのまま指標にしたもの"
+
+[[proposition]]
+id = "P60"
+statement = "得点と失点の組み合わせ方がランダムな基準より不利（alloc_z_strat < −1）なら、下位の相手との勝率が他球団平均より低い"
+strength = "usually"
+if = [{ col = "alloc_z_strat", op = "<", value = -1 }]
+then = [{ col = "vs_lower_wpct_d", op = "<", value = 0 }]
+surprise = "vs_lower_wpct_d"
+context = ["alloc_z_strat", "vs_lower_wpct", "rank"]
+links = ["H9"]
+falsifier = "組み合わせ方が不利なチーム・シーズンの4分の1を超えて、下位の相手との勝率が他球団平均以上"
+note = "下位からの取りこぼしが、R1 の「基準より不利」を別の名前で見ているだけかを確かめる。4つの形すべてで成り立てば、ほぼ同じもの"
+
+[[proposition]]
+id = "P61"
+statement = "中日は、3位を争う相手との勝率が、上の相手（1・2位）との勝率より低い"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "focus_gap", op = "<", value = 0 }]
+surprise = "focus_gap"
+context = ["vs_battle_wpct", "vs_top_wpct", "rank"]
+links = ["H3", "H9"]
+falsifier = "中日のシーズンの4分の1を超えて、争う相手との勝率のほうが高い"
+note = "成り立たなければ「中日は争う相手に負けていた」という見方を弱める"

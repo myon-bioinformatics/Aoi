@@ -706,3 +706,58 @@ context = ["rank", "sim_p_upper", "alloc_z_strat", "rd", "wins_vs_pythag"]
 links = ["H2", "H3", "H9"]
 falsifier = "2026年以降のデータで、この前件を満たすチーム・シーズンの4分の1を超えて A クラス、または B クラスの4分の1を超えて前件を満たさない"
 note = "探索（R11）で見つけた式。作るきっかけと同じデータでの判定は確かめではない。逆（B クラス ⇒ 前件）が「なぜ B クラスか」の説明の網羅性にあたる"
+
+# ---- R12: 3位と4位の境目を分けるもの（research/R12-boundary.md） ----
+# 追加: 2026-10-04。境目の指標は実データでまだ計算していない。R10・R11 の値（2014・2019年の各チーム）は見ている。
+
+[[proposition]]
+id = "P53"
+statement = "3位と4位のチームの間では、直接対決で勝ち越したほうが3位"
+strength = "usually"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_net", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_net"
+context = ["sim_p_upper", "alloc_z_strat", "vs_near_net", "half2_vs_pythag"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。境目は直接対決では決まっていない"
+note = "直接対決は順位を決める勝ち負けの一部。成り立っても記述であって、なぜ勝てたかの説明ではない"
+
+[[proposition]]
+id = "P54"
+statement = "3位と4位のチームの間では、後半に期待勝利数を上回ったほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "half2_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "half2_vs_pythag"
+context = ["half1_vs_pythag", "sim_p_upper", "pair34_net"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。後半の上振れは境目を分けない"
+note = "P53・P55・P56 と兄弟。P56（分布だけ）より強く分けるかを見る"
+
+[[proposition]]
+id = "P55"
+statement = "3位と4位のチームの間では、最長連敗が他球団平均より短いほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "max_lose_streak_d", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "max_lose_streak_d"
+context = ["max_lose_streak", "max_win_streak", "sim_p_upper"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。連敗の長さは境目を分けない"
+note = "P56（分布だけ）より強く分けるかを見る"
+
+[[proposition]]
+id = "P56"
+statement = "3位と4位のチームの間では、得点・失点の分布から見た A クラスの見込みが 0.5 以上なら3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "sim_p_upper", op = ">=", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "sim_p_upper"
+context = ["rd", "alloc_z_strat", "pair34_net"]
+links = ["H2", "H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。境目では分布だけでは分けられない"
+note = "比べるための基準。P53〜P55 がこれより強く分けるなら、分布の外の情報を足している"

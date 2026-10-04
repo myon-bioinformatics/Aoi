@@ -1100,3 +1100,59 @@ context = ["opp_rf_gap_top_c", "opp_ra_gap_top_c", "opp_net_gap_top_c"]
 links = ["H3"]
 falsifier = "held-out（中日 2019 を除く）で、試合全体の点が少なかったチームが半数以下"
 note = "2019年の道筋を、鏡の形（env）で言い直したもの。P76 と並べて読む"
+
+# ---- R19: 鏡の形は、チームの何と結びついているか（research/R19-mirror-links.md） ----
+# 追加: 2026-10-04。R17 の最後に残した問いから。env と、得点した回の大きさ・失点の順位・A/B の別との組み合わせは実データでまだ見ていない。
+# P81・P83 は中日の 2019・2021・2022年（env が大きく負で、得点した回が小さく、失点を抑えた年）を見て思いついたので、作るきっかけとして除いた確かめも出す。
+
+[[proposition]]
+id = "P81"
+motivated_by = ["d-2019", "d-2021", "d-2022"]
+statement = "得点した回の大きさがリーグ平均より小さいチームは、強い相手との試合全体の点が（同じ年・同じリーグの平均と比べて）少ない"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+then = [{ col = "opp_env_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["inn_dlog_size", "opp_rf_gap_top_c", "opp_ra_gap_top_c", "rank_ra"]
+links = ["H3"]
+falsifier = "作るきっかけ（中日 2019・2021・2022）を除いた判定で、試合全体の点が少なかった単位が半数以下"
+note = "P82（中位の相手）と並べて、強い相手に限った結びつきかを読む"
+
+[[proposition]]
+id = "P82"
+statement = "得点した回の大きさがリーグ平均より小さいチームは、中位の相手との試合全体の点も（平均と比べて）少ない"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+then = [{ col = "opp_env_gap_mid_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_mid_c"
+context = ["inn_dlog_size", "opp_rf_gap_mid_c", "opp_ra_gap_mid_c", "opp_env_gap_top_c"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "P81 の対照。P81 だけ成り立てば強い相手に限った結びつき、両方なら相手の強さに関係のない結びつき"
+
+[[proposition]]
+id = "P83"
+motivated_by = ["d-2019", "d-2021", "d-2022"]
+statement = "失点がリーグ2位以内のチームは、強い相手との試合全体の点が（平均と比べて）少ない"
+strength = "more_often_than_not"
+if = [{ col = "rank_ra", op = "<=", value = 2 }]
+then = [{ col = "opp_env_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["rank_ra", "opp_rf_gap_top_c", "opp_ra_gap_top_c", "upper_half"]
+links = ["H3"]
+falsifier = "作るきっかけ（中日 2019・2021・2022）を除いた判定で、試合全体の点が少なかった単位が半数以下"
+note = "成り立っても、投手の起用の結果か、掛け算の見込みの式の偏りかは分けられない"
+
+[[proposition]]
+id = "P84"
+statement = "A クラスのチームは、強い相手（3位を争う相手）との試合全体の点が（平均と比べて）少ない"
+strength = "more_often_than_not"
+if = [{ col = "upper_half", op = "==", value = true }]
+then = [{ col = "opp_env_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["rank", "opp_rf_gap_top_c", "opp_ra_gap_top_c", "opp_adj_top"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "上位どうしの試合が投手戦に寄るか。上位を狙った起用（作為）と矛盾しないかを見るが、起用そのものはこのデータでは分けられない"

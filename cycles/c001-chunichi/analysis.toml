@@ -21,3 +21,11 @@ b  = { name = "オリックス", league = "P" }
 e  = { name = "楽天", league = "P" }
 l  = { name = "西武", league = "P" }
 m  = { name = "ロッテ", league = "P" }
+
+# まだ使っていない年での確かめ（R18、research/R18-confirmation-2026.md）。命題を作るのに使っていない年の単位だけを、
+# 命題ごとに4つの欄（成立・判例・逆の判例・どちらも当たらない）に分けて outputs/confirmation.md に並べる。
+# 年をデータに入れるのは、その年の公式戦が全球団で終わってから（pipeline.toml の years）。
+[confirm]
+seasons = [2026]
+registered = "2026-10-04"
+detail = ["P52", "P50", "P64", "P62", "P78", "P76", "P80", "P79", "P51"]

@@ -111,7 +111,11 @@ def identity(p: dict) -> dict:
     scope += [f"where:{w}" for w in _canon(sc.get("where", []))]
     head = f"[{', '.join(scope) or 'all'}]"
     then = " & ".join(_canon(p["then"]))
-    key = f"{head} {' & '.join(_canon(p.get('if', []))) or '*'} => {then}"
+    cond = " & ".join(_canon(p.get("if", [])))
+    if p.get("if_any"):
+        groups = sorted("(" + " & ".join(_canon(g)) + ")" for g in p["if_any"])
+        cond = " & ".join(x for x in (cond, "(" + " | ".join(groups) + ")") if x)
+    key = f"{head} {cond or '*'} => {then}"
     h = lambda t: hashlib.sha256(t.encode("utf-8")).hexdigest()[:16]  # noqa: E731
     return {"key": key, "signature": h(key), "family": h(f"{head} => {then}")}
 
@@ -119,7 +123,10 @@ def identity(p: dict) -> dict:
 def definition_sha(p: dict) -> str:
     """命題1つの定義の指紋。同じ id のまま定義が変わったら台帳で分かる。"""
     keys = ("statement", "strength", "if", "then", "scope", "min_n", "alpha", "skip_forms", "parent", "motivated_by")
-    body = json.dumps({k: p.get(k) for k in keys}, ensure_ascii=False, sort_keys=True)
+    body = {k: p.get(k) for k in keys}
+    if p.get("if_any"):  # 後から加えた項目。使うときだけ入れる（既存の命題の指紋を変えない）
+        body["if_any"] = p["if_any"]
+    body = json.dumps(body, ensure_ascii=False, sort_keys=True)
     return hashlib.sha256(body.encode("utf-8")).hexdigest()
 
 
@@ -133,7 +140,10 @@ def validate(p: dict) -> None:
     scope = p.get("scope") or {}
     if set(scope) - {"league", "team", "seasons", "where"}:
         raise PropositionError(f"{pid}: scope に書けるのは league, team, seasons, where: {sorted(scope)}")
-    for c in [*p.get("if", []), *p["then"], *scope.get("where", [])]:
+    any_ = p.get("if_any", [])
+    if any_ and (not isinstance(any_, list) or not all(isinstance(g, list) and g for g in any_)):
+        raise PropositionError(f"{pid}: if_any は条件の組（空でない配列）の配列")
+    for c in [*_if_conds(p), *p["then"], *scope.get("where", [])]:
         if set(c) != {"col", "op", "value"} or c["op"] not in OPS:
             raise PropositionError(f"{pid}: 条件は {{col, op, value}}、op は {list(OPS)}: {c}")
     for key in ("falsifier", "note"):
@@ -173,6 +183,29 @@ def _cond(conds: list[dict], columns) -> pl.Expr:
 
 def text(conds: list[dict]) -> str:
     return " かつ ".join(f"{c['col']} {c['op']} {c['value']}" for c in conds) if conds else "（すべての単位）"
+
+
+def _if_conds(p: dict) -> list[dict]:
+    """前件に出てくる条件をすべて（if と if_any の各組）。"""
+    return [*p.get("if", []), *(c for g in p.get("if_any", []) for c in g)]
+
+
+def _antecedent(p: dict, columns) -> pl.Expr:
+    """前件 = if のすべて かつ（if_any の組のどれか）。if_any の各組は「かつ」でつないだ条件。"""
+    a = _cond(p.get("if", []), columns)
+    if p.get("if_any"):
+        any_ = _cond(p["if_any"][0], columns)
+        for g in p["if_any"][1:]:
+            any_ = any_ | _cond(g, columns)
+        a = a & any_
+    return a
+
+
+def if_text(p: dict) -> str:
+    parts = [text(p["if"])] if p.get("if") else []
+    if p.get("if_any"):
+        parts.append("（" + " または ".join(f"[{text(g)}]" for g in p["if_any"]) + "）")
+    return " かつ ".join(parts) if parts else "（すべての単位）"
 
 
 def scope_filter(st: pl.DataFrame, scope: dict | None) -> pl.DataFrame:
@@ -319,12 +352,13 @@ def _unit_key(r: dict) -> str:
 
 
 def _counterexamples(df: pl.DataFrame, x: pl.Expr, y: pl.Expr, p: dict, form: str, focus: str | None) -> list[dict]:
-    used = list(dict.fromkeys(c["col"] for c in [*p.get("if", []), *p["then"]]))
+    used = list(dict.fromkeys(c["col"] for c in [*_if_conds(p), *p["then"]]))
     context = [c for c in p.get("context", []) if c in df.columns and c not in used]
     surprise = p.get("surprise")
     if surprise and surprise not in df.columns:
         raise DataError(f"{p['id']}: surprise の列がない: {surprise}")
-    cond_x, cond_y = (p.get("if", []), p["then"]) if form in ("original", "contrapositive") else (p["then"], p.get("if", []))
+    a_text, b_text = if_text(p), text(p["then"])
+    cond_x, cond_y = (a_text, b_text) if form in ("original", "contrapositive") else (b_text, a_text)
     rows = []
     for r in df.filter(x & ~y).iter_rows(named=True):
         rows.append({
@@ -332,7 +366,7 @@ def _counterexamples(df: pl.DataFrame, x: pl.Expr, y: pl.Expr, p: dict, form: st
             "focus": r["team"] == focus,
             "values": {c: r[c] for c in used}, "context": {c: r[c] for c in context},
             "surprise": r[surprise] if surprise else None,
-            "question": f"{r['team_name']} {r['season']} は「{text(cond_x)}」を満たすのに「{text(cond_y)}」を満たさない。なぜか？",
+            "question": f"{r['team_name']} {r['season']} は「{cond_x}」を満たすのに「{cond_y}」を満たさない。なぜか？",
             "links": p.get("links", []),
         })
     return sorted(rows, key=lambda c: (c["surprise"] is None, -abs(c["surprise"] or 0), c["season"], c["team"]))
@@ -349,9 +383,9 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
     min_n, alpha = int(p.get("min_n", 10)), float(p.get("alpha", 0.05))
     df = scope_filter(st, p.get("scope"))
     outside = scope_unknown(st, p.get("scope"))
-    a, b = _cond(p.get("if", []), df.columns), _cond(p["then"], df.columns)
+    a, b = _antecedent(p, df.columns), _cond(p["then"], df.columns)
     forms = []
-    for name, x, y in _forms(a, b, bool(p.get("if")) and not p.get("skip_forms")):
+    for name, x, y in _forms(a, b, bool(_if_conds(p)) and not p.get("skip_forms")):
         flags = df.select(x=x, y=y)
         undetermined = flags.filter(pl.col("x").is_null() | pl.col("y").is_null()).height + outside  # 空の値で判定できない行
         flags = flags.drop_nulls()
@@ -390,14 +424,14 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
         excluded_cx = _counterexamples(ex, a, b, p, "original", focus)
     return {
         "id": p["id"], "statement": p["statement"], "strength": p["strength"], "kind": kind, "threshold": threshold,
-        "if": p.get("if", []), "then": p["then"], "scope": p.get("scope", {}), "units": df.height,
+        "if": p.get("if", []), "if_any": p.get("if_any", []), "then": p["then"], "scope": p.get("scope", {}), "units": df.height,
         "min_n": min_n, "alpha": alpha, "links": p.get("links", []), "forms": forms,
         "objection": any(f["counterexamples"] for f in forms),
         "skipped_forms": p.get("skip_forms", []), "skip_reason": p.get("skip_reason"),
         "excluded_counterexamples": excluded_cx, "source": p.get("source"),
         "parent": p.get("parent"), "change": p.get("change"), "held_out": held_out,
         "falsifier": p.get("falsifier"), "note": p.get("note"),
-        "conditions": len(p.get("if", [])) + len(p["then"]),
+        "conditions": len(_if_conds(p)) + len(p["then"]),
         "definition_sha256": definition_sha(p),
         **identity(p),
     } | {"judgement": None}
@@ -538,7 +572,7 @@ def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] 
         lines += [f"## {r['id']}: {_cell(r['statement'])}", "",
                   f"- **判定: exit {j['code']} {label(j['code'], lang)}**{stage}"
                   + (f" — {FORM_JA.get(j['form'], j['form'])}: {j['reason']}" if j["form"] else (f" — {j['reason']}" if j["reason"] else "")),
-                  f"- もし: `{text(r['if'])}` ならば: `{text(r['then'])}`",
+                  f"- もし: `{if_text(r)}` ならば: `{text(r['then'])}`",
                   f"- 識別子: `{r.get('key', '-')}`（指紋 `{r.get('signature', '-')}`）",
                   *([f"- 兄弟（範囲と結論が同じ、条件が違う）: {', '.join(siblings[r['id']])}"] if siblings.get(r["id"]) else []),
                   f"- 強さ: {STRENGTH_JA[r['strength']]}（{r['strength']}, 基準 {thr}）/ 範囲: {r['scope'] or '全体'} / 単位数: {r['units']}",

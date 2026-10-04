@@ -565,3 +565,28 @@ def test_render_lists_siblings():
     p2 = {**P1, "id": "P2", "if": [{"col": "rank_pythag", "op": "<=", "value": 3}]}
     md = pr.render([pr.evaluate(P1, st), pr.evaluate(p2, st)], {})
     assert md.count("兄弟（範囲と結論が同じ、条件が違う）") == 2
+
+
+# ---------- 「または」（if_any） ----------
+
+def test_if_any_is_or_of_and_groups_and_all_forms_follow():
+    # rows: (team, season, rd, rank, rank_pythag)。前件 = rd > 0 または rank_pythag <= 2
+    st = table([("a", 2020, 5, 1, 4), ("b", 2020, -3, 2, 2), ("c", 2020, -1, 5, 5), ("d", 2020, 2, 6, 6), ("e", 2020, -9, 3, 6)])
+    p = {**P1, "if": [], "if_any": [[{"col": "rd", "op": ">", "value": 0}], [{"col": "rank_pythag", "op": "<=", "value": 2}]]}
+    r = pr.evaluate(p, st)
+    by = {f["form"]: f for f in r["forms"]}
+    assert (by["original"]["n"], by["original"]["hold"]) == (3, 2)                 # a, b, d が前件。d は 6位
+    assert [c["unit"] for c in by["original"]["counterexamples"]] == ["d-2020"]
+    assert [c["unit"] for c in by["contrapositive"]["counterexamples"]] == ["d-2020"]
+    assert [c["unit"] for c in by["converse"]["counterexamples"]] == ["e-2020"]     # 3位なのに前件を満たさない
+    assert "または" in by["original"]["counterexamples"][0]["question"]
+
+
+def test_if_any_combines_with_if_by_and_and_appears_in_identity():
+    p = {**P1, "if": [{"col": "rank", "op": "<=", "value": 6}],
+         "if_any": [[{"col": "rd", "op": ">", "value": 0}, {"col": "rank_gap", "op": "<", "value": 1}], [{"col": "rank_pythag", "op": "<=", "value": 2}]]}
+    assert pr.identity(p)["key"] == "[all] rank<=6 & ((rank_gap<1 & rd>0) | (rank_pythag<=2)) => rank<=3"
+    assert pr.identity(p)["signature"] != pr.identity({**p, "if_any": p["if_any"][:1]})["signature"]
+    assert pr.definition_sha(p) != pr.definition_sha({**p, "if_any": []})
+    with pytest.raises(pr.PropositionError, match="if_any"):
+        pr.validate({**P1, "if_any": [[]]})

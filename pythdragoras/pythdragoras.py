@@ -296,7 +296,7 @@ def main(argv=None) -> int:
     import hashlib
 
     from propositions import (DataError, PropositionError, check_claims, evaluate, judge, label, ledger_summary,
-                              load, render, render_claims, update_ledger)
+                              load, render, render_claims, render_index, update_ledger)
 
     ap = argparse.ArgumentParser(description="シーズン表から残差・順位の偏り・命題を検証する")
     ap.add_argument("--season", type=Path, required=True)
@@ -360,6 +360,7 @@ def main(argv=None) -> int:
             r["judgement"] = judge(r, ledger_summary(ledger, r["id"])["definitions"])
         _jsonl(args.outdir / "propositions.jsonl", results)
         (args.outdir / "objections.md").write_text(render(results, meta, ledger=ledger), encoding="utf-8")
+        (args.outdir / "index.md").write_text(render_index(results, meta), encoding="utf-8")
         md += "\n## 命題の判定\n\n" + "\n".join(
             f"- {r['id']} {r['statement']}: **exit {r['judgement']['code']} {label(r['judgement']['code'])}** "
             "（" + " / ".join(f"{_FORM.get(f['form'], f['form'])} {_VERD[f['verdict']]}" for f in r["forms"]) + "）"

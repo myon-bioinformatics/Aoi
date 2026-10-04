@@ -44,6 +44,8 @@
   opp_rf_gap_* / opp_ra_gap_* / opp_conv_*  相手のグループごとの、得点・失点の見込みとの差と、点の差では説明できない勝ち負け（R16）
   opp_top_rf_minus_ra              強い相手に対する（得点の差 − 失点の差）。負なら得点の側に大きい（R16）
   opp_rf_gap_*_c / opp_ra_gap_*_c  同じ年・同じリーグの全球団の平均を引いた値（見込みの式の、相手グループごとの偏りを除く）
+  opp_net_gap_*_c / opp_env_gap_*_c  上の2つを回した軸（R17）。net = 得点の差 + 失点の差（どちらが上回ったか）、
+                                   env = 得点の差 − 失点の差（試合全体の点の多さ。負なら点の入りにくい試合）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -558,6 +560,11 @@ def opponent_adjusted(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
     over = ["season", "league"]
     out = out.with_columns(**{f"{c}_c": pl.col(c) - pl.col(c).mean().over(over)
                               for c in (f"opp_{k}_gap_{g}" for k in ("rf", "ra") for g in groups)})
+    # 得点の差と失点の差を、2本の軸に回す（R17）。
+    #   net : 得点の差 + 失点の差（どちらが多く取ったか。正なら自分が見込みより多く上回った）
+    #   env : 得点の差 − 失点の差（試合全体の点の多さ。負なら両方とも点の入りにくい試合だった）
+    out = out.with_columns(**{f"opp_net_gap_{g}_c": pl.col(f"opp_rf_gap_{g}_c") + pl.col(f"opp_ra_gap_{g}_c") for g in groups},
+                           **{f"opp_env_gap_{g}_c": pl.col(f"opp_rf_gap_{g}_c") - pl.col(f"opp_ra_gap_{g}_c") for g in groups})
     return _pair34_diff(out, ["opp_adj_top", "opp_adj_mid", "opp_adj_low", "opp_adj_total"]).drop("league", "rank")
 
 

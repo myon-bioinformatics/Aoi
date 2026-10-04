@@ -6,12 +6,12 @@
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
 Downloading pygments (1.2MiB)
-Downloading selectolax (2.4MiB)
 Downloading polars-runtime-32 (47.6MiB)
+Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 16ms
+Installed 15 packages in 7ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -383,6 +383,10 @@ shape: (14, 12)
 - P63 中日以外で、得点した回の大きさが2年以上続けてリーグ下位2位以内なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 - P64 得点が2年以上続けてリーグ5位以下なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 - P65 中日以外で、得点が2年以上続けてリーグ5位以下なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
+- P66 3位と4位のチームの間では、中位の相手（強さの順で3・4番目）に対して見込みより多く勝ったほうが3位: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P67 3位と4位のチームの間では、最も弱い相手に対して見込みより多く勝ったほうが3位: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P68 3位と4位のチームの間では、リーグ内の相手すべてに対して見込みより多く勝ったほうが3位: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P69 中日は、中位の相手（強さの順で3・4番目）に対して見込みより勝てていない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -498,3 +502,7 @@ units=156 dropped=0 target: upper_half == False
 [4] P63 待った！判断保留 元の命題: n=7（min_n=10）、成立率の区間 0.65〜1.00
 [4] P64 待った！判断保留 元の命題: 判例 4 件: t-2013, t-2019, l-2022, t-2022
 [4] P65 待った！判断保留 元の命題: 判例 4 件: t-2013, t-2019, l-2022, t-2022
+[4] P66 待った！判断保留 元の命題: 判例 11 件: g-2022, c-2024, e-2023, t-2016, c-2021 ほか
+[4] P67 待った！判断保留 元の命題: 判例 11 件: c-2012, c-2021, l-2015, e-2025, e-2022 ほか
+[4] P68 待った！判断保留 元の命題: 判例 10 件: g-2022, e-2023, db-2018, c-2021, d-2013 ほか
+[4] P69 待った！判断保留 元の命題: 判例 6 件: d-2024, d-2022, d-2014, d-2021, d-2016 ほか

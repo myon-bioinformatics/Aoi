@@ -484,3 +484,16 @@ def test_opponent_run_gaps_by_hand():
     py = lambda r, a: 1 / (1 + (a / r) ** K_FIXED)  # noqa: E731
     assert d["opp_conv_top"] == pytest.approx((1 - 2 * py(4, 3)) + (0 - 1 * py(1, 4)))
     assert d["opp_rf_gap_mid"] is None and v["h"]["opp_rf_gap_top"] is None
+
+
+def test_centered_run_gaps_average_zero_within_league_season():
+    from sakanalytics import opponent_adjusted
+    rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "g", "d", 2, 1), ("2024-04-03", "d", "t", 1, 4),
+            ("2024-04-04", "g", "t", 5, 5), ("2024-04-05", "t", "g", 0, 2), ("2024-04-06", "t", "d", 3, 2)]
+    tg = to_team_games(games(rows), TEAMS)
+    out = opponent_adjusted(tg, season_table(tg)).filter(pl.col("team").is_in(["d", "g", "t"]))
+    for c in ("opp_rf_gap_top", "opp_ra_gap_top"):
+        assert out.select(pl.col(f"{c}_c").sum()).item() == pytest.approx(0.0, abs=1e-9)
+        v = out.select(c, f"{c}_c").rows()
+        mean = sum(a for a, _ in v) / len(v)
+        assert all(b == pytest.approx(a - mean) for a, b in v)

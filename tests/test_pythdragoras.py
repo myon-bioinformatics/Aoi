@@ -171,3 +171,17 @@ def test_persistence_by_team_separates_teams():
             rows.append({"team": t, "team_name": t.upper(), "season": y, "x": float(i) * sign})
     r = {x["team"]: x for x in persistence_by_team(pl.DataFrame(rows), ["x"])}
     assert r["d"]["r"] == pytest.approx(1.0) and r["g"]["r"] == pytest.approx(1.0) and r["d"]["n"] == 7
+
+
+def test_shape_expectation_compares_observed_peaks_with_the_constant_strength_baseline():
+    from pythdragoras import TRAJ_FLAGS, shape_expectation
+    rows = [("d", 2014, False, True, 0.5), ("d", 2015, False, True, 0.5), ("g", 2014, True, False, 0.2)]
+    st = pl.DataFrame([{"team": t, "team_name": t.upper(), "season": s, "upper_half": u,
+                        **{f: v for f in TRAJ_FLAGS}, **{f"{f}_base": b for f in TRAJ_FLAGS}} for t, s, u, v, b in rows])
+    got = {(r["group"], r["flag"]): r for r in shape_expectation(st)}
+    d = got[("D・B クラス", "traj_rank_peak")]
+    # 2年とも山があり、力が一定なら山ができる割合は 0.5 ずつ: 期待 1.0、P(2回以上) = 0.25
+    assert (d["units"], d["observed"], d["expected"], d["p_ge_obs"], d["p_le_obs"]) == (2, 2, 1.0, 0.25, 1.0)
+    whole = got[("全体", "traj_wl_valley")]
+    assert (whole["units"], whole["observed"], whole["expected"]) == (3, 2, 1.2)
+    assert shape_expectation(st.drop("traj_wl_peak_base")) == []   # 列がなければ何も出さない（落とさずに失敗させない）

@@ -269,7 +269,7 @@ Question:
 
 Documentation:
 
-- 未着手（次のサイクルから）。構想は [docs/images/dragowing.webp](docs/images/dragowing.webp)
+- [Plotly による集計レポート](dragowing/README.md)。構想は [docs/images/dragowing.webp](docs/images/dragowing.webp)
 
 ---
 

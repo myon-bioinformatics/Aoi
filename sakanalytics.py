@@ -31,6 +31,10 @@
   rf_def_floor / _mid / _ceiling   得点／試合の他球団平均との差を、得点帯（0〜2点 / 3〜5点 / 6点以上）に分けたもの（R3）
   rf_def_total                     3つの合計 = 得点／試合 − 同じ年・同じリーグの他球団の得点／試合の平均
   rf_def_floor_minus_ceiling       rf_def_floor − rf_def_ceiling（負なら、床の不足が天井の不足より大きい）
+  vs_upper_wpct / vs_lower_wpct    リーグ内で上位半分・下位半分だった相手との勝率（R12。最終順位から逆にたどる面がある）
+  vs_near_net / pair34_net         順位が1つ違いの相手、3位と4位どうしの（勝 − 敗）（R12）
+  half1_vs_pythag / half2_vs_pythag  前半・後半それぞれの（勝 − 期待勝利数）（R12）
+  max_win_streak / max_lose_streak / max_lose_streak_d  最長連勝・最長連敗と、連敗の他球団平均との差（R12）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -370,6 +374,73 @@ def rank_probability(tg: pl.DataFrame) -> pl.DataFrame:
     return pl.DataFrame(rows, schema={"season": pl.Int32, "team": pl.Utf8, "sim_p_upper": pl.Float64, "sim_wpct": pl.Float64})
 
 
+def _streaks(results: list[int]) -> tuple[int, int]:
+    """勝敗の並び（+1 勝 / −1 敗 / 0 引き分け）から、最長連勝・最長連敗。引き分けは連続を切る。"""
+    best_w = best_l = cur = 0
+    for r in results:
+        cur = (cur + 1 if cur > 0 else 1) if r > 0 else (cur - 1 if cur < 0 else -1) if r < 0 else 0
+        best_w, best_l = max(best_w, cur), max(best_l, -cur)
+    return best_w, best_l
+
+
+def _pythag_gap(rf: list[int], ra: list[int]) -> float | None:
+    """その試合の集まりでの（勝 − 期待勝利数）。期待勝利数 = (勝 + 敗) × ピタゴラス（指数 K_FIXED）。"""
+    w = sum(a > b for a, b in zip(rf, ra))
+    l_ = sum(a < b for a, b in zip(rf, ra))
+    r, a = sum(rf), sum(ra)
+    if r == 0 or a == 0 or w + l_ == 0:
+        return None
+    return w - (w + l_) / (1 + (a / r) ** K_FIXED)
+
+
+def boundary_features(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
+    """R12: 順位の境目（3位と4位）で効きそうな、試合の並びと相手から作る指標。st には最終順位（rank）が要る。
+
+    対戦相手の指標は同じリーグの相手との試合だけで数える（交流戦の相手の順位は別のリーグの順位なので使わない）。
+      vs_upper_wpct / vs_lower_wpct : 最終的に上位半分・下位半分だったリーグ内の相手との勝率（引き分けを除く）
+      vs_near_net                    : 最終順位が1つ違いの相手との（勝 − 敗）
+      pair34_net                     : 3位のチームは4位の相手と、4位のチームは3位の相手との（勝 − 敗）。他の順位は空
+      half1_vs_pythag / half2_vs_pythag : シーズンを試合数で前後半に分け、それぞれの（勝 − 期待勝利数）
+      max_win_streak / max_lose_streak : 最長連勝・最長連敗（引き分けで切れる）
+      max_lose_streak_d              : 最長連敗 − 同じ年・同じリーグの他球団の平均
+    最終順位を使う指標（vs_upper など）は、勝ち負けで決まった順位から逆にたどる面がある（相手の順位も自分との試合で決まる）。
+    """
+    rank = {(r["season"], r["team"]): (r["rank"], r["league"], r["upper_half"]) for r in st.iter_rows(named=True)}
+    rows = []
+    for (season, team), g in tg.sort("date").group_by(["season", "team"], maintain_order=True):
+        my_rank, league, _ = rank[(season, team)]
+        res = [(a > b) - (a < b) for a, b in zip(g["rf"].to_list(), g["ra"].to_list())]
+        opps = g["opp"].to_list()
+        same = [(r, rank[(season, o)]) for r, o in zip(res, opps) if rank[(season, o)][1] == league]
+        def wpct(rs):
+            w, l_ = sum(x > 0 for x in rs), sum(x < 0 for x in rs)
+            return w / (w + l_) if w + l_ else None
+        other34 = {3: 4, 4: 3}.get(my_rank)
+        rf, ra = g["rf"].to_list(), g["ra"].to_list()
+        half = len(rf) // 2
+        win_s, lose_s = _streaks(res)
+        near = [r for r, (rk, _, _) in same if abs(rk - my_rank) == 1]
+        pair = [r for r, (rk, _, _) in same if rk == other34] if other34 else []
+        rows.append({
+            "season": season, "team": team,
+            "vs_upper_wpct": wpct([r for r, (_, _, up) in same if up]),
+            "vs_lower_wpct": wpct([r for r, (_, _, up) in same if not up]),
+            "vs_near_net": sum(near) if near else None,   # 対戦がなければ 0 ではなく空
+            "pair34_net": sum(pair) if pair else None,
+            "half1_vs_pythag": _pythag_gap(rf[:half], ra[:half]),
+            "half2_vs_pythag": _pythag_gap(rf[half:], ra[half:]),
+            "max_win_streak": win_s, "max_lose_streak": lose_s,
+        })
+    schema = {"season": pl.Int32, "team": pl.Utf8, "vs_upper_wpct": pl.Float64, "vs_lower_wpct": pl.Float64,
+              "vs_near_net": pl.Int64, "pair34_net": pl.Int64, "half1_vs_pythag": pl.Float64, "half2_vs_pythag": pl.Float64,
+              "max_win_streak": pl.Int64, "max_lose_streak": pl.Int64}
+    out = st.select("season", "team", "league").join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
+    over = ["season", "league"]
+    return out.with_columns(max_lose_streak_d=pl.col("max_lose_streak")
+                            - (pl.col("max_lose_streak").sum().over(over) - pl.col("max_lose_streak"))
+                            / (pl.col("max_lose_streak").count().over(over) - 1)).drop("league")
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -416,6 +487,7 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
     st = st.join(allocation_table(tg), on=["season", "team"], how="left")
     st = st.join(scoring_deficit(tg), on=["season", "team"], how="left")
     st = st.join(rank_probability(tg), on=["season", "team"], how="left")
+    st = st.join(boundary_features(tg, st), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 

@@ -92,6 +92,20 @@ A residual is not proof that a model is wrong.
 
 A residual is evidence that further investigation may be valuable.
 
+## Do Not Name A Residual "Luck"
+
+A residual measured against a random baseline is easy to call luck.
+
+Calling it luck assumes that the events were independent and that no one acted on purpose.
+
+In competition, that assumption is rarely true. Every team plays the whole season trying to finish higher. Decisions about whom to use, when, and in which game are part of the very thing a random baseline shuffles away.
+
+So a gap from a random baseline is described as what it is: "worse than the random baseline", not "unlucky". It is a trace of something not yet measured.
+
+Different formulas may look at the same thing under different names, or reach the same answer while looking at different things. There is rarely only one correct description. Several descriptions may stand side by side: one that is easy to say, and one that is hard to say but selects reliably.
+
+The seasons that a description cannot explain, or explains only through the baseline, are where new indicators are found. Digging into them is the work, not a footnote to it.
+
 ---
 
 # Unknown Is Better Than False Certainty

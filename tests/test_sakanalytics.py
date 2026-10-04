@@ -620,3 +620,32 @@ def test_season_trajectory_start_is_configurable_and_recorded():
     assert (a["wave_limit_rank"], a["wave_end_rank"], a["wave_period"]) == (pytest.approx(1.0), pytest.approx(1.0), None)
     assert a["wave_settle_x"] == pytest.approx(a["traj_start_x"]) and 0 <= a["wave_settle_pct"] <= 1
     assert a["wave_limit_rank_h1"] == pytest.approx(1.0)   # 前半（横軸 0.5 まで）だけから当てても1位に向かう
+
+
+def test_series_split_by_opponent_venue_and_a_gap_of_three_days():
+    from sakanalytics import _series_of
+    gs = [(1, 0, "g", True), (3, 1, "g", True),   # 中1日（雨天中止など）は同じカード
+          (6, 2, "g", True),                      # 3日あいたら別のカード
+          (7, 3, "g", False),                     # 球場が変わったら別のカード
+          (8, 4, "t", False)]                     # 相手が変わったら別のカード
+    assert _series_of(gs) == [[0, 1], [2], [3], [4]]
+
+
+def test_series_features_by_hand():
+    from sakanalytics import series_features
+    rows = [("2024-04-02", "d", "g", 3, 1), ("2024-04-03", "d", "g", 1, 2), ("2024-04-04", "d", "g", 4, 0),   # 2勝1敗
+            ("2024-04-05", "g", "d", 5, 1), ("2024-04-06", "g", "d", 2, 0), ("2024-04-07", "g", "d", 3, 2),   # 0勝3敗
+            ("2024-04-09", "d", "t", 2, 1), ("2024-04-10", "d", "t", 2, 2),                                    # 1勝1分
+            ("2024-04-20", "d", "g", 6, 0), ("2024-04-21", "d", "g", 3, 1), ("2024-04-22", "d", "g", 0, 1)]   # 2勝1敗
+    d = series_features(to_team_games(games(rows), TEAMS), sims=20).filter(pl.col("team") == "d").row(0, named=True)
+    # 勝敗のついた試合が2つ以上のカードは3つ（t との2連戦は1勝1分で数えない）。負け越しは g との 0勝3敗の1つ
+    assert (d["series_n"], d["series_lost"], d["series_lost_share"]) == (3, 1, pytest.approx(1 / 3))
+    assert [d[f"series3_w{k}"] for k in range(4)] == [1, 0, 2, 0]
+    # 1試合目 4つで3勝、2試合目以降（引き分けを除く）6つで2勝
+    assert d["series_g1_minus_rest"] == pytest.approx(3 / 4 - 2 / 6)
+    # 勝率: d 5勝5敗（.500）、g 5勝4敗。g との試合に勝つ見込み Log5(.5, 5/9) = 4/9。見込み 3 × 4/9、分散 3 × 4/9 × 5/9
+    e, v = 3 * 4 / 9, 3 * 4 / 9 * 5 / 9
+    assert d["series_disp"] == pytest.approx(((2 - e) ** 2 * 2 + (0 - e) ** 2) / (3 * v))
+    b = [(5 / 9) ** 3, 3 * 4 / 9 * (5 / 9) ** 2, 3 * (4 / 9) ** 2 * 5 / 9, (4 / 9) ** 3]
+    assert [d[f"series3_w{k}_exp"] for k in range(4)] == pytest.approx([3 * x for x in b])
+    assert 0 <= d["series_lost_pct"] <= 1 and 0 <= d["series_disp_pct"] <= 1

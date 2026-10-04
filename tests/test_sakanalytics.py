@@ -411,3 +411,22 @@ def test_boundary_features_by_hand():
     assert (d["max_win_streak"], d["max_lose_streak"]) == (2, 1)
     # 前半（最初の2試合）は2勝、期待勝利数は 2 × ピタゴラス(5, 1)
     assert d["half1_vs_pythag"] == pytest.approx(2 - 2 / (1 + (1 / 5) ** K_FIXED))
+
+
+def test_battle_top_focus_and_pair_diffs_by_hand():
+    teams = {k: {"name": k.upper(), "league": "C"} for k in ("a", "b", "c", "d", "e", "f")}
+    # 上の文字の球団が下の文字の球団に1試合ずつ全勝。追加で c が a に1勝。
+    # 成績: a 5-1, b 4-1, c 4-2, d 2-3, e 1-4, f 0-5 → 順位 a b c d e f
+    pairs = [(x, y) for i, x in enumerate("abcdef") for y in "abcdef"[i + 1:]]
+    rows = [(f"2024-04-{n + 1:02d}", x, y, 3, 1) for n, (x, y) in enumerate(pairs)] + [("2024-05-01", "c", "a", 2, 0)]
+    v = {r["team"]: r for r in season_table(to_team_games(games(rows), teams)).iter_rows(named=True)}
+    assert [v[t]["rank"] for t in "abcdef"] == [1, 2, 3, 4, 5, 6]
+    c, d = v["c"], v["d"]
+    # c（3位）: 上の相手（1・2位）に 1勝2敗、争う相手（3〜5位、自分を除く = d・e）に 2勝0敗
+    assert (c["vs_top_wpct"], c["vs_battle_wpct"], c["focus_gap"]) == pytest.approx((1 / 3, 1.0, 2 / 3))
+    # d（4位）: 上の相手に 0勝2敗、争う相手（c・e）に 1勝1敗
+    assert (d["vs_top_wpct"], d["vs_battle_wpct"], d["focus_gap"]) == pytest.approx((0.0, 0.5, 0.5))
+    assert c["pair34_vs_battle_wpct_diff"] == pytest.approx(0.5) and d["pair34_vs_battle_wpct_diff"] == pytest.approx(-0.5)
+    assert c["pair34_focus_gap_diff"] == pytest.approx(2 / 3 - 0.5)
+    assert c["pair34_vs_lower_wpct_diff"] == pytest.approx(0.0)  # 下位半分（4〜6位）の相手: c は d・e・f、d は e・f にどちらも全勝
+    assert v["a"]["pair34_focus_gap_diff"] is None and v["e"]["pair34_vs_lower_wpct_diff"] is None

@@ -542,6 +542,7 @@ def test_season_course_by_hand():
     d, g = v["d"], v["g"]
     assert (d["course_wpct_h1"], d["course_wpct_h2"], d["course_wpct_diff"]) == pytest.approx((1.0, 0.0, -1.0))
     assert (d["course_rank_h1"], g["course_rank_h1"]) == (1, 2)
+    assert (d["course_rank_q1"], d["course_rank_q3"], g["course_rank_q3"]) == (1, 1, 2)  # 1試合目まで 1-0、3試合目まで 2-1
     assert (d["rank"], g["rank"], d["course_fade"], g["course_fade"]) == (1, 1, 0, -1)  # 2勝2敗どうしで同率1位
     # 得点／試合: d は前半 4 → 後半 0.5（−3.5）、g は 1.5 → 3（+1.5）。失点はその裏返し
     assert (d["course_rf_d"], d["course_ra_d"]) == pytest.approx((-5.0, 5.0))

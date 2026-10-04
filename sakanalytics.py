@@ -49,7 +49,8 @@
   wl_rf_win / wl_rf_loss (+ _exp / _gap)  勝ち試合・負け試合の得点／試合と、得点・失点の組み合わせだけをランダムにしたときの見込み、その差（R20）
   wl_wpct_low / wl_wpct_high (+ _exp / _gap)  両チームの合計得点が、リーグの試合の中央値以下／より多い試合の勝率と、その見込み・差（R20）
   course_wpct_h1 / _h2 / _diff     前半・後半の勝率と、後半 − 前半（R20）
-  course_rank_h1 / course_fade     前半の勝率での順位と、最終順位 − その順位（正なら前半の位置より下で終わった、R20）
+  course_rank_q1 / _h1 / _q3       試合数の 1/4・1/2・3/4 までの勝率での順位（R20）
+  course_fade                      最終順位 − course_rank_h1（正なら前半の位置より下で終わった、R20）
   course_rf_d / course_ra_d        後半と前半の得点／試合・失点／試合の差の、他球団の平均との差（R20）
   course_close_win_h1(_d)          前半の勝ちのうち2点差以内の割合と、その他球団の平均との差（R20）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
@@ -536,6 +537,7 @@ def season_course(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
 
       course_wpct_h1 / course_wpct_h2 : 前半・後半の勝率（引き分けを除く）。course_wpct_diff = 後半 − 前半（負なら後半に落ちた）
       course_rank_h1                  : 前半の勝率でのリーグ内の順位（ある日付の順位表ではなく、各チームの前半の試合だけで並べたもの）
+      course_rank_q1 / course_rank_q3 : 同じく、各チームの試合数の 1/4・3/4 までの勝率での順位（順位の動きをたどるため）
       course_fade                     : 最終順位 − course_rank_h1（正なら、前半の位置より下で終わった）
       course_rf_d / course_ra_d       : （後半の得点／試合 − 前半の得点／試合）の、同じ年・同じリーグの他球団の平均との差。失点も同じ
                                         （季節による点の入りやすさの変化を他球団の平均で除く）
@@ -554,19 +556,22 @@ def season_course(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
         rf, ra = g["rf"].to_list(), g["ra"].to_list()
         half = len(rf) // 2
         wins = [x - y for x, y in zip(rf[:half], ra[:half]) if x > y]
-        rows.append({"season": season, "team": team,
+        q1, q3 = len(rf) // 4, len(rf) * 3 // 4
+        rows.append({"season": season, "team": team, "_q1": wpct(rf[:q1], ra[:q1]), "_q3": wpct(rf[:q3], ra[:q3]),
                      "course_wpct_h1": wpct(rf[:half], ra[:half]), "course_wpct_h2": wpct(rf[half:], ra[half:]),
                      "_rf": change(rf, half), "_ra": change(ra, half),
                      "course_close_win_h1": sum(m <= 2 for m in wins) / len(wins) if wins else None})
-    schema = {"season": pl.Int32, "team": pl.Utf8, "course_wpct_h1": pl.Float64, "course_wpct_h2": pl.Float64,
+    schema = {"season": pl.Int32, "team": pl.Utf8, "_q1": pl.Float64, "_q3": pl.Float64,
+              "course_wpct_h1": pl.Float64, "course_wpct_h2": pl.Float64,
               "_rf": pl.Float64, "_ra": pl.Float64, "course_close_win_h1": pl.Float64}
     over = ["season", "league"]
     out = st.select("season", "team", "league", "rank").join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
+    rank = lambda c: pl.col(c).rank("min", descending=True).over(over).cast(pl.Int32)  # noqa: E731
     out = out.with_columns(course_wpct_diff=pl.col("course_wpct_h2") - pl.col("course_wpct_h1"),
-                           course_rank_h1=pl.col("course_wpct_h1").rank("min", descending=True).over(over).cast(pl.Int32))
+                           course_rank_q1=rank("_q1"), course_rank_h1=rank("course_wpct_h1"), course_rank_q3=rank("_q3"))
     out = out.with_columns(course_fade=pl.col("rank") - pl.col("course_rank_h1"), course_rf_d=_vs_others("_rf"),
                            course_ra_d=_vs_others("_ra"), course_close_win_h1_d=_vs_others("course_close_win_h1"))
-    return out.drop("league", "rank", "_rf", "_ra")
+    return out.drop("league", "rank", "_rf", "_ra", "_q1", "_q3")
 
 
 def log5(p: float, q: float) -> float:

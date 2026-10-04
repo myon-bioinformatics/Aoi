@@ -590,3 +590,18 @@ def test_if_any_combines_with_if_by_and_and_appears_in_identity():
     assert pr.definition_sha(p) != pr.definition_sha({**p, "if_any": []})
     with pytest.raises(pr.PropositionError, match="if_any"):
         pr.validate({**P1, "if_any": [[]]})
+
+
+def test_render_index_lists_every_proposition_with_form_codes():
+    st = table([("a", 2020, 5, 1, 1), ("b", 2020, -3, 5, 4), ("c", 2020, 2, 2, 3), ("d", 2020, 4, 4, 2)])
+    p2 = {**P1, "id": "P2", "if": [{"col": "rank_pythag", "op": "<=", "value": 3}], "parent": "P1", "change": "条件を変えた"}
+    rs = [pr.evaluate(P1, st), pr.evaluate(p2, st)]
+    for r in rs:
+        r["judgement"] = pr.judge(r)
+    md = pr.render_index(rs, {"sha256": "x"})
+    rows = [l for l in md.splitlines() if l.startswith("| P")]
+    assert [l.split("|")[1].strip() for l in rows] == ["P1", "P2"]
+    p1 = {f["form"]: f for f in rs[0]["forms"]}
+    assert f"{p1['original']['code']}・{p1['original']['rate']:.2f}（{p1['original']['n']}）" in rows[0]
+    assert rows[1].rstrip(" |").endswith("P1")                     # 親
+    assert "総合の終了コードの内訳" in md

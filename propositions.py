@@ -626,6 +626,39 @@ def _ledger_line(ledger, pid) -> list[str]:
             f"直近で元の命題に判例がない連続 {s['no_objection_streak']} 回{warn}"]
 
 
+def render_index(results: list[dict], meta: dict, lang: str = "ja") -> str:
+    """全命題の一覧（自動生成）。1命題1行で、識別子・強さ・4つの形の判定・きっかけ以外での判定・総合・親を並べる。
+
+    各形のセルは「終了コード・成立率（単位数）」。判定の詳細と判例は objections.md。
+    """
+    from collections import Counter
+
+    verdict_ja = {"Supported": "支持", "Rejected": "棄却", "Refined": "修正", "Inconclusive": "判断保留"}
+    codes = Counter(r["judgement"]["code"] for r in results)
+    lines = ["# 命題の一覧（自動生成）", "",
+             f"命題ファイル SHA-256: `{meta.get('sha256', '-')}` / コード: `{meta.get('code_version') or '測定なし'}`", "",
+             "各形のセルは「終了コード・成立率（単位数）」。0 異議なし、1 例外あり、2 主張が強すぎる、3 不成立、4 判断保留、5 判定できない単位。",
+             "判例と根拠は objections.md、規則は docs/propositions.md。", "",
+             "総合の終了コードの内訳: " + "、".join(f"exit {c} {label(c, lang)} {n}件" for c, n in sorted(codes.items())), "",
+             "| id | 識別子 | 強さ | 元の命題 | 対偶 | 逆 | 裏 | きっかけ以外 | 総合 | 親 |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
+    for r in results:
+        by = {f["form"]: f for f in r["forms"]}
+
+        def cell(name):
+            f = by.get(name)
+            if f is None:
+                return "—"
+            rate = "-" if f["rate"] is None else f"{f['rate']:.2f}"
+            return f"{f['code']}・{rate}（{f['n']}）"
+        h = r.get("held_out")
+        held = "—" if not h else f"{verdict_ja.get(h['verdict'], h['verdict'])}・{'-' if h['rate'] is None else format(h['rate'], '.2f')}（{h['n']}）"
+        j = r["judgement"]
+        lines.append(f"| {r['id']} | `{_cell(r.get('key', '-'))}` | {STRENGTH_JA[r['strength']]} | {cell('original')} | {cell('contrapositive')} "
+                     f"| {cell('converse')} | {cell('inverse')} | {held} | **{j['code']}** {label(j['code'], lang)} | {r.get('parent') or ''} |")
+    return "\n".join(lines) + "\n"
+
+
 def render_claims(claims: list[dict]) -> str:
     if not claims:
         return ""

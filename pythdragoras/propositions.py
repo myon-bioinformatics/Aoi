@@ -157,9 +157,7 @@ def validate(p: dict) -> None:
             raise PropositionError(f"{pid}: skip_forms には skip_reason が必要")
     if p.get("parent") and not str(p.get("change", "")).strip():
         raise PropositionError(f"{pid}: parent があるときは change（何をなぜ変えたか）が必要")
-    if p.get("motivated_by"):
-        if not p.get("parent"):
-            raise PropositionError(f"{pid}: motivated_by は作り直した命題（parent あり）にだけ書ける")
+    if p.get("motivated_by"):  # 作り直しのきっかけの判例、または新しい命題を思いついたときに見た単位。どちらも判定から除いて確かめる
         bad = [u for u in p["motivated_by"] if not re.fullmatch(r"[a-z]+-\d{4}", str(u))]
         if bad:
             raise PropositionError(f"{pid}: motivated_by は 'team-season'（例: d-2019）: {bad}")

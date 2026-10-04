@@ -275,6 +275,8 @@ Adding conditions until no counterexample remains is always possible. A proposit
 
 For that reason a restated proposition is also evaluated **without the units that motivated it** (held-out evaluation). Its support is read from the held-out verdict. If other units object there, the restatement has not yet learned anything general; inspect those counterexamples next.
 
+The same applies to a new proposition (one without `parent`) whose idea came from looking at specific units. It declares those units in `motivated_by` and is read from its held-out verdict in the same way.
+
 The parent and its verdict stay in the record. The lineage of restatements is printed at the top of the output.
 
 ---

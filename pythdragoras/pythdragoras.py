@@ -342,10 +342,15 @@ def main(argv=None) -> int:
     _jsonl(args.outdir / "persistence_all.jsonl", persistence(included, keep))
 
     if args.propositions:
+        confirm = cfg.get("confirm")  # まだ使っていない年での確かめ（R18）。分析設定の [confirm] で年と、単位ごとに並べる命題を決める
         try:
             props, sha = load(args.propositions)
+            if confirm and (missing := sorted(set(confirm.get("detail", [])) - {p["id"] for p in props})):
+                raise PropositionError(f"[confirm] の detail に、命題にない id がある: {', '.join(missing)}")
             meta = {"sha256": sha, "code_version": _code_version(), "file": str(args.propositions)}
             results = [{**evaluate(p, included, excluded, focus), "meta": meta} for p in props]
+            seasons = [int(y) for y in confirm["seasons"]] if confirm else []
+            checks = [confirm_units(p, included, seasons) for p in props] if confirm else []
         except DataError as e:  # 判定の結果（異議）ではなく、仕組みの不具合は失敗にする
             print(f"[65] {e}", file=sys.stderr)
             return 65
@@ -362,12 +367,9 @@ def main(argv=None) -> int:
         _jsonl(args.outdir / "propositions.jsonl", results)
         (args.outdir / "objections.md").write_text(render(results, meta, ledger=ledger), encoding="utf-8")
         (args.outdir / "index.md").write_text(render_index(results, meta), encoding="utf-8")
-        confirm = cfg.get("confirm")
-        if confirm:  # まだ使っていない年での確かめ（R18）。分析設定の [confirm] で年と、単位ごとに並べる命題を決める
-            seasons = [int(y) for y in confirm["seasons"]]
+        if confirm:
             units = [f"{t}-{s}" for t, s in included.filter(pl.col("season").is_in(seasons))
                      .sort("season", "team").select("team", "season").iter_rows()]
-            checks = [confirm_units(p, included, seasons) for p in props]
             (args.outdir / "confirmation.md").write_text(
                 render_confirmation(checks, seasons, str(confirm.get("registered", "-")), units,
                                     confirm.get("detail", [])), encoding="utf-8")

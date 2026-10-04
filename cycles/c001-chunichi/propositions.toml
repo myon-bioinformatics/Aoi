@@ -1302,3 +1302,19 @@ context = ["sim_p_upper", "alloc_z_strat", "rank", "rd"]
 links = ["H2", "H3", "H9"]
 falsifier = "中日 2014 を除いて、P52 より Matthews 相関が上がらない（B クラスの取りこぼしの減りより、A クラスの誤りの増えが大きい）"
 note = "言いにくいが確実に選ぶ式の候補。P52 と並べて読む。原因ではなく、どこで勝ちを落としたかの説明"
+
+# ---- R21 の探索で見つけた式（結果を見た後に登録。research/R21-formula-with-2014.md） ----
+# 追加: 2026-10-04。rules_r21.jsonl の1位（約120万通りの中から同じデータで選んだ）。確かめは 2026年（R18）で行う。
+
+[[proposition]]
+id = "P96"
+statement = "得失点差が −50 未満、または分布から見た A クラスの見込みが5割未満で期待勝利数を下回った、または得失点差が +50 未満で組み合わせ方が基準より不利なら、B クラス（誤りのほとんどない式）"
+strength = "usually"
+if = []
+if_any = [[{ col = "rd", op = "<", value = -50 }], [{ col = "sim_p_upper", op = "<", value = 0.5 }, { col = "wins_vs_pythag", op = "<", value = 0 }], [{ col = "rd", op = "<", value = 50 }, { col = "alloc_z_strat", op = "<", value = -1 }]]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rd"
+context = ["sim_p_upper", "wins_vs_pythag", "alloc_z_strat", "rank"]
+links = ["H2", "H3", "H9"]
+falsifier = "2026年（R18）で、この式に当たるのに A クラスのチームが出る（学習データでは156単位中1）"
+note = "R21 の探索の1位（結果を見た後の式）。P52（取りこぼしが少ない）と並べる、言い当て方の違う式。同じデータでの成績は良く見えやすい"

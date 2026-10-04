@@ -185,3 +185,25 @@ def test_shape_expectation_compares_observed_peaks_with_the_constant_strength_ba
     whole = got[("全体", "traj_wl_valley")]
     assert (whole["units"], whole["observed"], whole["expected"]) == (3, 2, 1.2)
     assert shape_expectation(st.drop("traj_wl_peak_base")) == []   # 列がなければ何も出さない（落とさずに失敗させない）
+
+
+def test_trajectory_sensitivity_lines_up_each_start_and_group():
+    from pythdragoras import SENS_COLS, trajectory_sensitivity
+
+    def row(team, up, rank, settle, pct, decay, limit, peak, m):
+        return {"season": 2024, "team": team, "team_name": team.upper(), "rank": rank, "upper_half": up, "traj_start_games": m,
+                "wave_settle_x": settle, "wave_settle_pct": pct, "wave_decay": decay, "wave_limit_rank": limit,
+                "traj_rank_peak": peak, "traj_rank_peak_base": 0.5, "traj_wl_peak": peak, "traj_wl_peak_base": 0.5}
+    st = pl.DataFrame([row("d", False, 5, 0.3, 0.2, 3.0, 5.2, True, 10), row("g", False, 4, None, 0.9, 0.0, None, False, 10),
+                       row("t", True, 1, 0.4, 0.6, 2.0, 1.4, True, 10)], schema_overrides={"wave_limit_rank": pl.Float64,
+                                                                                           "wave_settle_x": pl.Float64})
+    units = st.with_columns(traj_start_games=pl.lit(20), wave_settle_x=pl.lit(0.5))
+    got = {(r["min_games"], r["group"]): r for r in trajectory_sensitivity(st, units, "d")}
+    d10 = got[(10, "注目チームの B クラス")]
+    assert (d10["units"], d10["settle_median"], d10["settle_never"], d10["early_share"]) == (1, 0.3, 0, 1.0)
+    assert (d10["converge_share"], d10["near_final_share"]) == (1.0, 1.0)
+    assert d10["rank_peak"] == {"observed": 1, "expected": 0.5, "p_ge_obs": 0.5}
+    g10 = got[(10, "他の B クラス")]
+    assert (g10["settle_median"], g10["settle_never"], g10["converge_share"], g10["near_final_share"]) == (None, 1, 0.0, None)
+    assert got[(20, "注目チームの B クラス")]["settle_median"] == 0.5
+    assert trajectory_sensitivity(st.drop(SENS_COLS[-1]), units, "d") == []

@@ -1,0 +1,203 @@
+{
+  "data_sha256": "7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9",
+  "script_sha256": "faafe90363be78ab9a4ed0da0ffb28f10e0f1c2a3803cb79833ff3b1d0c2a588",
+  "protocol_sha256": "7a4b7d0f1f5447046ae69fb4a1a07569f42e77df5c246e2891f6f0108aac1939",
+  "summaries": {
+    "all_raw/all": {
+      "n": 13,
+      "means": {
+        "home_r": 3.246117732033225,
+        "away_r": 3.4296647405802334,
+        "home_ra": 3.266657638136511,
+        "away_ra": 4.342313711327796,
+        "scoring": -0.18354700854700853,
+        "prevention": 1.0756560731912845,
+        "gap": 0.892109064644276,
+        "home_r_minus_others": -0.7772932466594439,
+        "away_r_minus_others": -0.37901649211508365,
+        "home_ra_minus_others": -0.6367533405561575,
+        "away_ra_minus_others": 0.4929601540869146,
+        "scoring_minus_others": -0.3982767545443601,
+        "prevention_minus_others": 1.1297134946430722,
+        "gap_minus_others": 0.7314367400987121
+      },
+      "positive_gap_minus_others_years": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2024,
+        2025
+      ]
+    },
+    "all_raw/without2020": {
+      "n": 12,
+      "means": {
+        "home_r": 3.2041275430359937,
+        "away_r": 3.432136802295253,
+        "home_ra": 3.261101330203443,
+        "away_ra": 4.30278429838289,
+        "scoring": -0.22800925925925927,
+        "prevention": 1.0416829681794473,
+        "gap": 0.813673708920188,
+        "home_r_minus_others": -0.7906787949921753,
+        "away_r_minus_others": -0.3542123109024517,
+        "home_ra_minus_others": -0.6267605633802819,
+        "away_ra_minus_others": 0.4787623891497131,
+        "scoring_minus_others": -0.4364664840897235,
+        "prevention_minus_others": 1.105522952529995,
+        "gap_minus_others": 0.6690564684402714
+      },
+      "positive_gap_minus_others_years": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2024,
+        2025
+      ]
+    },
+    "cl_raw/all": {
+      "n": 13,
+      "means": {
+        "home_r": 3.29976564653984,
+        "away_r": 3.4295836779707747,
+        "home_ra": 3.2788668320926386,
+        "away_ra": 4.3158848320138645,
+        "scoring": -0.1298180314309347,
+        "prevention": 1.0370179999212257,
+        "gap": 0.907199968490291,
+        "home_r_minus_others": -0.7320776714325101,
+        "away_r_minus_others": -0.4241699161054,
+        "home_ra_minus_others": -0.6053964315254637,
+        "away_ra_minus_others": 0.48744259324904493,
+        "scoring_minus_others": -0.30790775532711023,
+        "prevention_minus_others": 1.0928390247745086,
+        "gap_minus_others": 0.7849312694473984
+      },
+      "positive_gap_minus_others_years": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ]
+    },
+    "cl_raw/without2020": {
+      "n": 12,
+      "means": {
+        "home_r": 3.262246117084827,
+        "away_r": 3.4320489844683393,
+        "home_ra": 3.2743279569892474,
+        "away_ra": 4.274153012459464,
+        "scoring": -0.1698028673835126,
+        "prevention": 0.9998250554702168,
+        "gap": 0.8300221880867042,
+        "home_r_minus_others": -0.7416952551629972,
+        "away_r_minus_others": -0.4031285202252944,
+        "home_ra_minus_others": -0.5927905785970301,
+        "away_ra_minus_others": 0.47278503157535423,
+        "scoring_minus_others": -0.3385667349377028,
+        "prevention_minus_others": 1.0655756101723843,
+        "gap_minus_others": 0.7270088752346816
+      },
+      "positive_gap_minus_others_years": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ]
+    },
+    "cl_balanced/all": {
+      "n": 13,
+      "means": {
+        "home_r": 3.300887573964497,
+        "away_r": 3.429585798816568,
+        "home_ra": 3.2798816568047338,
+        "away_ra": 4.319230769230769,
+        "scoring": -0.12869822485207097,
+        "prevention": 1.0393491124260354,
+        "gap": 0.9106508875739645,
+        "home_r_minus_others": -0.729723865877712,
+        "away_r_minus_others": -0.4248520710059173,
+        "home_ra_minus_others": -0.6044970414201183,
+        "away_ra_minus_others": 0.49228796844181466,
+        "scoring_minus_others": -0.30487179487179483,
+        "prevention_minus_others": 1.096785009861933,
+        "gap_minus_others": 0.791913214990138
+      },
+      "positive_gap_minus_others_years": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ]
+    },
+    "cl_balanced/without2020": {
+      "n": 12,
+      "means": {
+        "home_r": 3.2634615384615384,
+        "away_r": 3.432051282051282,
+        "home_ra": 3.2754273504273503,
+        "away_ra": 4.277777777777778,
+        "scoring": -0.16858974358974355,
+        "prevention": 1.0023504273504273,
+        "gap": 0.8337606837606838,
+        "home_r_minus_others": -0.7391452991452991,
+        "away_r_minus_others": -0.4038675213675215,
+        "home_ra_minus_others": -0.5918162393162393,
+        "away_ra_minus_others": 0.4780341880341881,
+        "scoring_minus_others": -0.33527777777777773,
+        "prevention_minus_others": 1.0698504273504272,
+        "gap_minus_others": 0.7345726495726496
+      },
+      "positive_gap_minus_others_years": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ]
+    }
+  },
+  "note": "Descriptive opponent weighting, not park-adjusted or causal."
+}

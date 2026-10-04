@@ -649,3 +649,39 @@ def test_series_features_by_hand():
     b = [(5 / 9) ** 3, 3 * 4 / 9 * (5 / 9) ** 2, 3 * (4 / 9) ** 2 * 5 / 9, (4 / 9) ** 3]
     assert [d[f"series3_w{k}_exp"] for k in range(4)] == pytest.approx([3 * x for x in b])
     assert 0 <= d["series_lost_pct"] <= 1 and 0 <= d["series_disp_pct"] <= 1
+
+
+def _four_team_season():
+    teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
+    # 4球団（上位半分 = 2位以内）。毎日2試合、6日で各球団6試合。g と t は互いの試合以外ほぼ全勝、d は全敗、c は d にだけ勝つ
+    winners = [("g", "d", "t", "c"), ("t", "d", "g", "c"), ("c", "d", "g", "t"),
+               ("g", "d", "t", "c"), ("t", "d", "g", "c"), ("c", "d", "t", "g")]
+    rows = []
+    for i, (w1, l1, w2, l2) in enumerate(winners):
+        rows += [(f"2024-04-{i + 1:02d}", w1, l1, 3, 1), (f"2024-04-{i + 1:02d}", w2, l2, 2, 0)]
+    return to_team_games(games(rows), teams)
+
+
+def test_clinch_dates_by_hand():
+    from sakanalytics import clinch_dates
+    v = {r["team"]: r for r in clinch_dates(_four_team_season()).iter_rows(named=True)}
+    # d: 4日目の終わり 0勝4敗・残り2 → 上限 2/6。g の下限 4/6、t の下限 3/6 がどちらも上 → 2位以内に入れない（x = 3/5）
+    assert (v["d"]["clinch_out_x"], v["d"]["clinch_out_left"], v["d"]["clinch_in_x"]) == (pytest.approx(0.6), 2, None)
+    # c: 5日目の終わり 1勝4敗・残り1 → 上限 2/6。g の下限 5/6、t の下限 4/6 → 入れない（x = 4/5）
+    assert (v["c"]["clinch_out_x"], v["c"]["clinch_out_left"]) == (pytest.approx(0.8), 1)
+    # g: 4日目の終わり 4勝0敗・残り2 → 下限 4/6。d の上限 2/6、c の上限 3/5 がどちらも下 → 入る。t は5日目
+    assert (v["g"]["clinch_in_x"], v["g"]["clinch_in_left"], v["t"]["clinch_in_x"]) == (pytest.approx(0.6), 2, pytest.approx(0.8))
+    assert [r["decided_x"] for r in v.values()] == pytest.approx([0.8] * 4)   # 4球団すべて決まったのは5日目
+
+
+def test_season_trajectory_can_stop_when_the_top_half_is_decided():
+    from sakanalytics import season_trajectory
+    tg = _four_team_season()
+    full = season_trajectory(tg, sims=5, min_games=1).filter(pl.col("team") == "g").row(0, named=True)
+    cut = season_trajectory(tg, sims=5, min_games=1, end="decided").filter(pl.col("team") == "g").row(0, named=True)
+    assert (full["traj_end"], full["traj_end_x"]) == ("season", pytest.approx(1.0))
+    assert (cut["traj_end"], cut["traj_end_x"]) == ("decided", pytest.approx(0.8))   # 顔ぶれが決まった5日目まで
+    # g は4日目（x = 0.6）に入るのが確定。その後の山かどうかと、力が一定のときの割合が出る
+    assert full["traj_wl_peak_after_clinch"] is not None and 0 <= full["traj_wl_peak_after_clinch_base"] <= 1
+    d = season_trajectory(tg, sims=5, min_games=1).filter(pl.col("team") == "d").row(0, named=True)
+    assert d["traj_wl_peak_after_clinch"] is None                                   # 入らなかった球団は空

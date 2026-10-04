@@ -1,15 +1,18 @@
 """Synthetic fixtures only. Exhaustion is independent of the constraint model."""
 from dataclasses import replace
 from itertools import product
+from importlib.util import find_spec
 import json
+from pathlib import Path
 import random
 import subprocess
 import sys
 
 import pytest
 
-# The independent CI installs this optional solver; ordinary Aoi installs need not.
-pytest.importorskip("ortools", reason="install season-requirements.txt for exact simulator tests")
+# Only tests that actually invoke the solver require the optional dependency.
+requires_solver = pytest.mark.skipif(find_spec('ortools') is None,
+    reason='install season-requirements.txt for exact simulator tests')
 
 from season_simulator import (Game, Rules, Snapshot, baseline_probabilities,
     calendar_games, crossing_events, forecast, magic_events, npb_rules, ranking, snapshot, wilson)
@@ -37,6 +40,7 @@ def brute(s, rules, target):
     return completions
 
 
+@requires_solver
 @pytest.mark.parametrize('central', [True, False])
 @pytest.mark.parametrize('case', range(10))
 def test_exact_matches_exhaustive_completions(central, case):
@@ -103,6 +107,7 @@ def blink_fixture():
     return games, rule(('A', 'B'), slots=1, previous=('B', 'A'))
 
 
+@requires_solver
 def test_magic_lights_disappears_relights_and_clinches():
     games, r = blink_fixture()
     rows = []
@@ -121,6 +126,7 @@ def test_magic_lights_disappears_relights_and_clinches():
     assert len([e for e in magic_events(rows) if e['team'] == 'A']) == 4
 
 
+@requires_solver
 def test_zero_time_is_unknown_not_eliminated():
     games, r = blink_fixture()
     s = snapshot(games, ('A', 'B', 'X'), '2022-01-01', schedule_basis='synthetic')
@@ -167,19 +173,25 @@ def test_validation_and_unverified_profiles():
     assert forecast(s, replace(r, cs_slots=0), trials=1)['teams']['A']['cs'] is None
 
 
-def test_cli_daily_replay(tmp_path):
+@pytest.mark.parametrize('exact', [False, pytest.param(True, marks=requires_solver)])
+def test_cli_daily_replay(tmp_path, exact):
     from dataclasses import asdict
     games, r = blink_fixture()
     data = {'teams': ['A', 'B', 'X'], 'games': [asdict(g) for g in games],
             'rules': asdict(r), 'schedule_basis': 'synthetic'}
     src, dest = tmp_path / 'input.json', tmp_path / 'output.json'
     src.write_text(json.dumps(data))
-    subprocess.run([sys.executable, 'sakanalytics/season_simulator.py', str(src),
+    script = Path(__file__).resolve().parents[1] / 'season_simulator.py'
+    # The stdlib CLI also runs with all site-packages disabled.
+    subprocess.run([sys.executable, *([] if exact else ['-S']), str(script), str(src),
                     '--as-of', '2022-01-01', '--through', '2022-01-04', '--trials', '30',
-                    '--exact', '--output', str(dest)], check=True)
+                    *(['--exact'] if exact else []), '--output', str(dest)], check=True, cwd=tmp_path)
     out = json.loads(dest.read_text())
     assert len(out['daily']) == 4
-    assert out['daily'][-1]['magic']['A']['status'] == 'clinched'
+    if exact:
+        assert out['daily'][-1]['magic']['A']['status'] == 'clinched'
+    else:
+        assert 'magic' not in out['daily'][-1]
 
 
 def test_calendar_adapter_filters_year_and_drops_raw_text():
@@ -191,6 +203,7 @@ def test_calendar_adapter_filters_year_and_drops_raw_text():
         calendar_games(rows, 2019)
 
 
+@requires_solver
 def test_remaining_head_to_head_proves_more_than_independent_bounds():
     # A is fixed at 1/3. B and C can each reach 1/2, but cannot both do so.
     teams = ('A', 'B', 'C', 'X')
@@ -200,3 +213,39 @@ def test_remaining_head_to_head_proves_more_than_independent_bounds():
     assert qualification(s, rule(), 'A')['status'] == 'clinched'
     # A can even finish first if the B-C game is drawn.
     assert solve(s, rule(), 'A', inside=True)['feasible'] is True
+
+
+@pytest.mark.parametrize('solver_status,feasible', [('FEASIBLE', True), ('UNKNOWN', None)])
+def test_magic_number_unresolved_is_unknown(monkeypatch, solver_status, feasible):
+    import season_exact
+    games, r = blink_fixture()
+    s = snapshot(games, ('A', 'B', 'X'), '2022-01-01', schedule_basis='synthetic')
+
+    def unresolved(s, rules, target, *, force_wins=None, **kwargs):
+        if force_wins:
+            return {'feasible': target != 'A'}  # only A has proven self-control
+        return {'feasible': feasible, 'solver_status': solver_status, 'max_new_wins': None}
+
+    monkeypatch.setattr(season_exact, 'solve', unresolved)
+    value = title_magic(s, r)
+    assert value['A']['self_control'] is True
+    assert value['A']['status'] == 'unknown'
+    assert value['A']['magic'] is None
+    assert value['A']['guaranteed_wins_needed'] is None
+    assert value['B']['status'] == 'off'
+    rows = [{'as_of': '2022-01-01', 'magic': {'A': value['A']}},
+            {'as_of': '2022-01-02', 'magic': {'A': {**value['A'], 'status': 'lit', 'magic': 2}}}]
+    assert [e['to'] for e in magic_events(rows)] == ['unknown', 'lit']
+
+
+@pytest.mark.parametrize('invalid_date', [None, 20220101, '20220101'])
+def test_invalid_dates_raise_value_error_before_sorting(invalid_date):
+    games, _ = blink_fixture()
+    teams = ('A', 'B', 'X')
+    with pytest.raises(ValueError):
+        snapshot([*games, Game('bad', invalid_date, 'A', 'B', 'H')], teams,
+                 '2022-01-01', schedule_basis='synthetic')
+    with pytest.raises(ValueError):
+        snapshot(games, teams, invalid_date, schedule_basis='synthetic')
+    with pytest.raises(ValueError):
+        calendar_games([{'date': invalid_date}], 2022)

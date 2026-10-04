@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import argparse
+import bisect
 import itertools
 import json
 import math
@@ -58,7 +59,9 @@ def search(df: pl.DataFrame, target: list[dict], candidates: list[dict], max_ter
             for _, cm in combo:
                 m &= cm
             terms.append(([c for c, _ in combo], m))
-    out = []
+    # 上位 top 件だけを、並べる鍵（MCC の高い順 → 条件の少ない順 → 式の文字列）の順に持つ。
+    # 組の数を増やすと式の数は百万を超えるので、全部をためてから並べない（並び順は全部を並べたときと同じ）
+    best: list[tuple[tuple, dict]] = []
     for k in range(1, max_terms + 1):
         for combo in itertools.combinations(terms, k):
             m = 0
@@ -66,12 +69,18 @@ def search(df: pl.DataFrame, target: list[dict], candidates: list[dict], max_ter
                 m |= tm
             tp, fp = (m & y).bit_count(), (m & ~y & full).bit_count()
             fn, tn = (~m & y & full).bit_count(), n - (m | y).bit_count()
+            mcc, conds = _mcc(tp, fp, fn, tn), sum(len(g) for g, _ in combo)
+            if len(best) == top and (-round(mcc, 12), conds) > best[-1][0][:2]:
+                continue
             groups = [g for g, _ in combo]
-            out.append({"if_any": groups, "conditions": sum(len(g) for g in groups),
-                        "tp": tp, "fp": fp, "fn": fn, "tn": tn, "mcc": _mcc(tp, fp, fn, tn),
-                        "precision": tp / (tp + fp) if tp + fp else None, "recall": tp / (tp + fn) if tp + fn else None})
-    out.sort(key=lambda r: (-round(r["mcc"], 12), r["conditions"], json.dumps(r["if_any"], ensure_ascii=False)))
-    return out[:top]
+            key = (-round(mcc, 12), conds, json.dumps(groups, ensure_ascii=False))
+            if len(best) == top and key >= best[-1][0]:
+                continue
+            bisect.insort(best, (key, {"if_any": groups, "conditions": conds, "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+                                       "mcc": mcc, "precision": tp / (tp + fp) if tp + fp else None,
+                                       "recall": tp / (tp + fn) if tp + fn else None}), key=lambda t: t[0])
+            del best[top:]
+    return [r for _, r in best]
 
 
 def rule_text(r: dict) -> str:

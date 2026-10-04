@@ -123,6 +123,9 @@ For each form, with `X` as its condition and `Y` as its consequence:
 | `base_rate` | share of all units satisfying Y |
 | `lift` | rate / base_rate |
 | `fisher_p` | one-sided Fisher exact test: does X raise the chance of Y? |
+| `sigma` | how many standard deviations `hold` lies above (+) or below (−) the strength threshold θ, under Bin(n, θ): (hold − nθ) / √(nθ(1 − θ)) |
+| `sigma_band` | the band reached: ±1, ±2 or ±3 (σ), 0 inside ±1σ |
+| `p_above`, `p_below` | exact one-sided binomial p-values P(X ≥ hold) and P(X ≤ hold) under Bin(n, θ) |
 | `counterexamples` | units satisfying X and not Y |
 | `undetermined` | units where X or Y cannot be decided because a value is missing. They are counted and shown, never silently dropped |
 
@@ -178,6 +181,14 @@ Refined means: a relationship exists, but it is weaker than the proposition clai
 Split is not decided automatically. When counterexamples cluster (for example, one team or one period), a human splits the proposition into narrower propositions with new IDs. The original verdict is kept.
 
 A verdict is about the proposition within its scope. It is not a statement about causes.
+
+## Reading In Sigma
+
+The 95% interval of the verdict corresponds to about ±2σ, two-sided. A rate that misses the threshold by a little is reported as Inconclusive, and the exit code says no more than that.
+
+For that reason every form also reports `sigma`, the distance from the threshold in standard deviations, with exact one-sided binomial p-values. A reader can then say how far a result reached (for example, beyond 1σ but short of 2σ) instead of only that it did not cross the line.
+
+`sigma` is a reading, not a second verdict. The verdict and the exit codes keep the rules above. Changing what counts as Supported is a change of this document, made deliberately and before the evaluation it applies to.
 
 ---
 

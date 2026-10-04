@@ -655,3 +655,15 @@ def test_cycle1_confirmation_setting_names_real_propositions():
     props, _ = pr.load(root / "propositions.toml")
     assert set(confirm.get("detail", [])) <= {p["id"] for p in props}
     assert (root / "research" / "R18-confirmation-2026.md").exists()  # confirmation.md が指す手順の記録
+
+
+def test_sigma_stats_measure_the_distance_from_the_strength_threshold():
+    # 13単位中10で成立、基準 0.5: z = (10 − 6.5) ÷ √(13 × 0.25) = 1.94σ、P(X ≥ 10) = (286 + 78 + 13 + 1) ÷ 2¹³
+    s = pr.sigma_stats(10, 13, 0.5)
+    assert s["sigma"] == pytest.approx(3.5 / math.sqrt(3.25)) and s["sigma_band"] == 1
+    assert s["p_above"] == pytest.approx(378 / 8192) and s["p_below"] == pytest.approx(1 - (78 + 13 + 1) / 8192)
+    assert pr.sigma_stats(2, 13, 0.75)["sigma_band"] == -3          # 0.15 は概ね（0.75）から3σ 以上下
+    assert pr.sigma_stats(5, 0, 0.5)["sigma"] is None and pr.sigma_stats(5, 5, None)["sigma"] is None
+    r = pr.evaluate(P1, table(ROWS), focus="d")
+    f = r["forms"][0]
+    assert f["sigma"] == pytest.approx((f["hold"] - f["n"] * 0.75) / math.sqrt(f["n"] * 0.75 * 0.25))

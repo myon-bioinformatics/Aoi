@@ -57,6 +57,7 @@
   traj_rank_* / traj_wl_*          日付ごとの順位の高さ・貯金の線を3次式でならした形（山・谷・その位置・最後の傾き）と、
                                    力が一定でも山・谷ができる割合 *_base（R22。season_trajectory）。traj_start_* は線の始まり
   wave_*                           順位の線を、始まりの値から出発して減衰する波で表したもの（収束する先・決まった位置・周期、R23）
+  clinch_in_* / clinch_out_* / decided_x  A クラスに入る・入れないが数の上で確かになった日と残り試合、リーグの顔ぶれが決まった日（R26）
   series_*                         カード（同じ相手・同じ球場で続けての試合）ごとの勝ち数: 負け越したカード、勝ち数の散らばり、
                                    1試合目とそれ以外の勝率の差、3連戦の 0〜3勝の数と、力が一定のときとの比べ（R24。series_features）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
@@ -622,14 +623,14 @@ def cubic_extrema(c: list[float], lo: float, hi: float = 1.0) -> list[tuple[floa
     return [(r, "peak" if 2 * c[2] + 6 * c[3] * r < 0 else "valley") for r in roots if lo < r < hi]
 
 
-def _shape(c: list[float], lo: float) -> dict:
-    ext = cubic_extrema(c, lo)
-    mid = (lo + 1) / 2
+def _shape(c: list[float], lo: float, hi: float = 1.0) -> dict:
+    ext = cubic_extrema(c, lo, hi)
+    mid = (lo + hi) / 2
     slope_mid = c[1] + 2 * c[2] * mid + 3 * c[3] * mid * mid
     shape = "-".join(k for _, k in ext) or ("flat" if abs(slope_mid) < 1e-9 else "rise" if slope_mid > 0 else "fall")
     peaks = [x for x, k in ext if k == "peak"]
     return {"shape": shape, "peak": bool(peaks), "peak_x": peaks[0] if peaks else None,
-            "valley": any(k == "valley" for _, k in ext), "end_slope": c[1] + 2 * c[2] + 3 * c[3]}
+            "valley": any(k == "valley" for _, k in ext), "end_slope": c[1] + 2 * c[2] * hi + 3 * c[3] * hi * hi}
 
 
 WAVE_DECAYS = (0.0, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 13.0)  # 減衰の速さ λ（横軸1つ分 = 1シーズンあたり）。0 は減衰しない
@@ -659,7 +660,7 @@ def wave_basis(xs: list[float]) -> list[dict]:
     return out
 
 
-def wave_fit(ys: list[float], basis: list[dict], x0: float) -> dict:
+def wave_fit(ys: list[float], basis: list[dict], x0: float, x1: float = 1.0) -> dict:
     """wave_basis の格子から、誤差の2乗和が最も小さい減衰する波を選ぶ。
 
     返り値: limit（x → ∞ で収束する先 L。λ = 0 なら収束しないので空）、end（最後の日 x = 1 の値）、decay（λ）、
@@ -688,7 +689,7 @@ def wave_fit(ys: list[float], basis: list[dict], x0: float) -> dict:
         if best is None or sse < best[0] - 1e-12:
             best = (sse, b, lim, bb)
     sse, b, lim, bb = best
-    amp, t1 = math.hypot(h0 - lim, bb), 1 - x0
+    amp, t1 = math.hypot(h0 - lim, bb), x1 - x0   # x1: 線の終わり（ふつうはシーズンの最後の日 = 1）
     if amp <= WAVE_SETTLE:
         settle = x0
     else:
@@ -696,6 +697,82 @@ def wave_fit(ys: list[float], basis: list[dict], x0: float) -> dict:
     end = lim + math.exp(-b["lam"] * t1) * ((h0 - lim) * math.cos(b["w"] * t1) + bb * math.sin(b["w"] * t1))
     return {"limit": lim if b["lam"] > 0 else None, "end": end, "decay": b["lam"], "period": b["per"],
             "settle_x": settle, "rmse": math.sqrt(max(sse, 0.0) / n)}
+
+
+def _clinch_days(days: list[list[tuple]], winners: list, members_by_league: dict) -> dict:
+    """上位半分（6球団なら3位以内）に入る・入れないが、数の上で確かになった日（days の番号）と、その日の残り試合数。
+
+    各日の終わりに、残り試合（その年の実際の試合数 − 消化した試合数）をすべて勝つ・すべて負けるとしたときの勝率を上限・下限とする。
+      入れない: 自分の上限より、下限が高い球団が k 以上（k = 球団数 ÷ 2）
+      入る    : 自分の下限より、上限が低い球団が（球団数 − k）以上
+    残り試合どうしの直接対決（片方が勝てば片方が負ける）は考えないので、実際に決まった日より遅く出ることはあっても、早く出ることはない。
+    返り値: {"in": {球団: (日, 残り)}, "out": {球団: (日, 残り)}, "decided": {リーグ: 日}}（決まらなければ入らない）
+    """
+    total, played, w, l_ = Counter(), Counter(), Counter(), Counter()
+    for games in days:
+        for _, h, a in games:
+            total[h] += 1
+            total[a] += 1
+    inn, out, decided = {}, {}, {}
+    for i, games in enumerate(days):
+        for g, h, a in games:
+            played[h] += 1
+            played[a] += 1
+            if winners[g] is not None:
+                w[winners[g]] += 1
+                l_[a if winners[g] == h else h] += 1
+        for lg, members in members_by_league.items():
+            if lg in decided:
+                continue
+            k = len(members) // 2
+            left = {t: total[t] - played[t] for t in members}
+            hi = {t: (w[t] + left[t]) / (w[t] + left[t] + l_[t]) if w[t] + left[t] + l_[t] else None for t in members}
+            lo = {t: w[t] / (w[t] + l_[t] + left[t]) if w[t] + l_[t] + left[t] else None for t in members}
+            for t in members:
+                others = [u for u in members if u != t]
+                if t not in out and hi[t] is not None and sum(lo[u] is not None and lo[u] > hi[t] for u in others) >= k:
+                    out[t] = (i, left[t])
+                if t not in inn and lo[t] is not None and sum(hi[u] is not None and hi[u] < lo[t] for u in others) >= len(members) - k:
+                    inn[t] = (i, left[t])
+            if all(t in inn or t in out for t in members):
+                decided[lg] = i
+    return {"in": inn, "out": out, "decided": decided}
+
+
+def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
+    """R26: 上位半分（A クラス）に入る・入れないが数の上で確かになった日（_clinch_days）。位置は日付（リーグの最初の日 0、最後の日 1）。
+      clinch_in_x / clinch_in_left   : 入るが確定した日の位置と、その日の自分の残り試合数（入らなかった球団は空）
+      clinch_out_x / clinch_out_left : 入れないが確定した日の位置と残り試合数（B クラスが確定した日。入った球団は空）
+      decided_x                      : そのリーグで、全球団の入る・入れないが決まった日の位置（同率で決まらなければ空）
+    """
+    league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
+    rows = []
+    for (season,), sg in tg.filter(pl.col("is_home")).sort("date").group_by(["season"], maintain_order=True):
+        dates = sorted(set(sg["date"].to_list()))
+        day = {d: i for i, d in enumerate(dates)}
+        days, winners = [[] for _ in dates], []
+        for g, (d, home, away, hs, as_) in enumerate(sg.select("date", "team", "opp", "rf", "ra").iter_rows()):
+            days[day[d]].append((g, home, away))
+            winners.append(home if hs > as_ else away if as_ > hs else None)
+        members: dict[str, list] = {}
+        for t in sorted({t for games in days for _, h, a in games for t in (h, a)}):
+            members.setdefault(league_of[(season, t)], []).append(t)
+        c = _clinch_days(days, winners, members)
+        for lg, ms in members.items():
+            lg_days = [i for i, games in enumerate(days) if any(h in ms or a in ms for _, h, a in games)]
+            o0, o1 = (date.fromisoformat(dates[i]).toordinal() for i in (lg_days[0], lg_days[-1]))
+
+            def x(i):
+                return (date.fromisoformat(dates[i]).toordinal() - o0) / (o1 - o0) if o1 > o0 else None
+            for t in ms:
+                cin, cout = c["in"].get(t), c["out"].get(t)
+                rows.append({"season": season, "team": t,
+                             "clinch_in_x": x(cin[0]) if cin else None, "clinch_in_left": cin[1] if cin else None,
+                             "clinch_out_x": x(cout[0]) if cout else None, "clinch_out_left": cout[1] if cout else None,
+                             "decided_x": x(c["decided"][lg]) if lg in c["decided"] else None})
+    schema = {"season": pl.Int32, "team": pl.Utf8, "clinch_in_x": pl.Float64, "clinch_in_left": pl.Int64,
+              "clinch_out_x": pl.Float64, "clinch_out_left": pl.Int64, "decided_x": pl.Float64}
+    return pl.DataFrame(rows, schema=schema)
 
 
 def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:
@@ -717,12 +794,15 @@ def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:
     return paths
 
 
-def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = TRAJ_MIN_GAMES) -> pl.DataFrame:
+def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = TRAJ_MIN_GAMES,
+                      end: str = "season") -> pl.DataFrame:
     """R22: シーズンの中の順位と貯金の線を3次式でならし、山（極大）と谷（極小）があるかを見る。
 
     横軸は日付（そのリーグの最初の試合の日 0 〜 最後の試合の日 1）。リーグの全球団が min_games 試合に届いた日から最後の日まで、
     そのリーグの試合のあった日ごとの値に3次式を最小二乗で当てる。カクカクした日ごとの線を、なめらかな式に置き換えて形を読むため。
       traj_start_games / traj_start_x / traj_start_date : 線の始まり（全球団が何試合に届いた日からか、その位置と日付）
+      traj_end / traj_end_x : 線の終わり。end="season" は最後の日まで、end="decided" はそのリーグで上位半分の顔ぶれが
+                    数の上で決まった日まで（R26。その後の試合は順位を動かさない。決まらない年は最後の日まで）
       traj_rank_* : 順位の高さ（6球団なら 1位 = 6、6位 = 1。上がれば正）  traj_wl_* : 貯金（勝 − 敗）
       *_shape     : 線の形。rise / fall（山も谷もない）、peak（山）、valley（谷）、peak-valley / valley-peak（両方、起きた順）
       *_peak / *_peak_x : 線を引いた範囲の内側に山があるか / その位置（0〜1）。*_valley は谷があるか
@@ -738,6 +818,8 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
       wave_settle_pct : 力が一定のシーズンのうち、決まった位置が実際より早かった割合（同じなら半分数える。小さいほど実際が早い）
       wave_osc_base   : 力が一定のシーズンのうち、波のある式が選ばれた割合
       wave_limit_rank_h1 : 前半（横軸 0.5 まで）の線だけから当てた波が収束する先の順位（前半でもう行き先が見えていたか）
+    R26: traj_wl_peak_after_clinch : 上位半分に入るのが確定した球団で、貯金の線の山が確定より後にあるか（山がなければ偽）
+         traj_wl_peak_after_clinch_base : 力が一定のシーズンで、同じ確定の日より後に貯金の山ができた割合
     """
     league_of = {(s, t): lg for s, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
     rows = []
@@ -756,9 +838,11 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
                 losses[away if win == home else home] += 1
         teams = sorted({t for pr in pairs for t in pr})
         pct = {t: wins[t] / (wins[t] + losses[t]) if wins[t] + losses[t] else 0.5 for t in teams}
-        grid, proj, waves = {}, {}, {}
-        for lg in sorted({league_of[(season, t)] for t in teams}):
-            members = [t for t in teams if league_of[(season, t)] == lg]
+        by_league = {lg: [t for t in teams if league_of[(season, t)] == lg] for lg in sorted({league_of[(season, t)] for t in teams})}
+        clinch = _clinch_days(days, winners, by_league)
+        decided = clinch["decided"] if end == "decided" else {}
+        grid, proj, waves, clinch_x = {}, {}, {}, {}
+        for lg, members in by_league.items():
             lg_days = [i for i, games in enumerate(days) if any(h in members or a in members for _, h, a in games)]
             played, start = Counter(), None
             for i, games in enumerate(days):
@@ -771,12 +855,20 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
             if start is None or start >= lg_days[-1]:
                 continue
             o = {i: date.fromisoformat(dates[i]).toordinal() for i in lg_days}
-            idx = [i for i in lg_days if i >= start]
+            last = decided.get(lg, lg_days[-1])
+            idx = [i for i in lg_days if start <= i <= last]
+            if len(idx) < 5:
+                continue
             xs = [(o[i] - o[lg_days[0]]) / (o[lg_days[-1]] - o[lg_days[0]]) for i in idx]
             half = sum(x <= 0.5 for x in xs)  # 前半（横軸 0.5 まで）だけから当てる波（行き先がもう見えていたか）
-            grid[lg] = {"teams": members, "index": set(idx), "lo": xs[0], "xs": xs, "date": dates[idx[0]], "half": half}
+            grid[lg] = {"teams": members, "index": set(idx), "lo": xs[0], "hi": xs[-1], "xs": xs, "date": dates[idx[0]],
+                        "half": half}
             proj[lg], waves[lg] = cubic_projection(xs), wave_basis(xs)
             waves[(lg, "h1")] = wave_basis(xs[:half]) if half >= 3 else None
+            for t in members:  # 上位半分に入るのが確定した日の位置（その後の山は、決まった後の試合での山）
+                if t in clinch["in"]:
+                    clinch_x[t] = (date.fromisoformat(dates[clinch["in"][t][0]]).toordinal() - o[lg_days[0]]) / (
+                        o[lg_days[-1]] - o[lg_days[0]])
         if not grid:
             continue
 
@@ -786,7 +878,8 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
                 for t in info["teams"]:
                     rk, wl = paths[t]
                     cr, cw = ([sum(map(operator.mul, row, path)) for row in proj[lg]] for path in (rk, wl))
-                    out[t] = (_shape(cr, info["lo"]), _shape(cw, info["lo"]), wave_fit(rk, waves[lg], info["lo"]), cr)
+                    out[t] = (_shape(cr, info["lo"], info["hi"]), _shape(cw, info["lo"], info["hi"]),
+                              wave_fit(rk, waves[lg], info["lo"], info["hi"]), cr)
             return out
 
         actual = fit(_season_paths(days, grid, winners))
@@ -800,16 +893,21 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
                     base[(t, name, "valley")] += s_["valley"]
                 base[(t, "wave", "osc")] += wv["period"] is not None
                 settles[t].append(math.inf if wv["settle_x"] is None else wv["settle_x"])
+                if t in clinch_x:
+                    base[(t, "wl", "after")] += wl["peak"] and wl["peak_x"] > clinch_x[t]
         paths = _season_paths(days, grid, winners)
         for lg, info in grid.items():
             n_teams = len(info["teams"])
             for t in info["teams"]:
                 rk, wl, wv, cr = actual[t]
                 row = {"season": season, "team": t, "traj_start_games": min_games, "traj_start_x": info["lo"],
-                       "traj_start_date": info["date"]}
+                       "traj_start_date": info["date"], "traj_end": end, "traj_end_x": info["hi"]}
                 for name, s_ in (("rank", rk), ("wl", wl)):
                     row |= {f"traj_{name}_{k}": v for k, v in s_.items()}
                     row |= {f"traj_{name}_{k}_base": base[(t, name, k)] / sims if sims else None for k in ("peak", "valley")}
+                cx = clinch_x.get(t)
+                row["traj_wl_peak_after_clinch"] = None if cx is None else bool(wl["peak"] and wl["peak_x"] > cx)
+                row["traj_wl_peak_after_clinch_base"] = None if cx is None or not sims else base[(t, "wl", "after")] / sims
                 fitted = [cr[0] + cr[1] * x + cr[2] * x * x + cr[3] * x ** 3 for x in info["xs"]]
                 row["traj_rank_rmse"] = math.sqrt(sum((y - f) ** 2 for y, f in zip(paths[t][0], fitted)) / len(fitted))
                 mine = math.inf if wv["settle_x"] is None else wv["settle_x"]
@@ -824,7 +922,7 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
                         "wave_osc_base": base[(t, "wave", "osc")] / sims if sims else None}
                 rows.append(row)
     schema = {"season": pl.Int32, "team": pl.Utf8, "traj_start_games": pl.Int64, "traj_start_x": pl.Float64,
-              "traj_start_date": pl.Utf8}
+              "traj_start_date": pl.Utf8, "traj_end": pl.Utf8, "traj_end_x": pl.Float64}
     for name in ("rank", "wl"):
         schema |= {f"traj_{name}_shape": pl.Utf8, f"traj_{name}_peak": pl.Boolean, f"traj_{name}_peak_x": pl.Float64,
                    f"traj_{name}_valley": pl.Boolean, f"traj_{name}_end_slope": pl.Float64,
@@ -832,7 +930,8 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
     schema |= {"traj_rank_rmse": pl.Float64, "wave_limit_rank": pl.Float64, "wave_end_rank": pl.Float64,
                "wave_decay": pl.Float64, "wave_period": pl.Float64, "wave_osc": pl.Boolean, "wave_settle_x": pl.Float64,
                "wave_rmse": pl.Float64, "wave_settle_pct": pl.Float64, "wave_osc_base": pl.Float64,
-               "wave_limit_rank_h1": pl.Float64}
+               "wave_limit_rank_h1": pl.Float64, "traj_wl_peak_after_clinch": pl.Boolean,
+               "traj_wl_peak_after_clinch_base": pl.Float64}
     return pl.DataFrame(rows, schema=schema)
 
 
@@ -1123,9 +1222,10 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFra
     st = st.join(season_course(tg, st), on=["season", "team"], how="left")
     traj = trajectory or {}  # 分析設定の [trajectory]（線の始まりの試合数・力が一定のシーズンの作り直しの回数）
     sims = int(traj.get("sims", TRAJ_SIMS))
-    st = st.join(season_trajectory(tg, sims=sims, min_games=int(traj.get("min_games", TRAJ_MIN_GAMES))),
-                 on=["season", "team"], how="left")
+    st = st.join(season_trajectory(tg, sims=sims, min_games=int(traj.get("min_games", TRAJ_MIN_GAMES)),
+                                   end=str(traj.get("end", "season"))), on=["season", "team"], how="left")
     st = st.join(series_features(tg, sims=sims), on=["season", "team"], how="left")
+    st = st.join(clinch_dates(tg), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 
@@ -1174,7 +1274,7 @@ def main(argv=None) -> int:
     ap.add_argument("--innings", type=Path, help="イニング単位の集計（CSV / CSV.gz、R4）。あれば inn_* の列を加える")
     ap.add_argument("--batting", type=Path, help="チーム打撃成績の観測（JSONL、R6）。あれば bat_* の率を加える")
     ap.add_argument("--sensitivity-out", type=Path,
-                    help="線の始まりの試合数を [trajectory] sensitivity の各値に変えた線の読み（R25）の書き出し先")
+                    help="線の始まりの試合数（[trajectory] sensitivity）や終わり（ends、R26）を変えた線の読み（R25）の書き出し先")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
@@ -1192,8 +1292,9 @@ def main(argv=None) -> int:
     st.write_ndjson(args.out)
     if args.sensitivity_out:
         traj = cfg.get("trajectory") or {}
-        parts = [season_trajectory(tg, sims=int(traj.get("sims", TRAJ_SIMS)), min_games=int(m))
-                 for m in traj.get("sensitivity", [])]
+        sims, main_games = int(traj.get("sims", TRAJ_SIMS)), int(traj.get("min_games", TRAJ_MIN_GAMES))
+        variants = [(int(m), "season") for m in traj.get("sensitivity", [])] + [(main_games, str(e)) for e in traj.get("ends", [])]
+        parts = [season_trajectory(tg, sims=sims, min_games=m, end=e) for m, e in variants]
         if parts:
             st.select("season", "team", "team_name", "league", "rank", "upper_half").join(
                 pl.concat(parts), on=["season", "team"], how="inner").write_ndjson(args.sensitivity_out)

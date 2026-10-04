@@ -255,6 +255,24 @@ def fisher_greater(a: int, b: int, c: int, d: int) -> float:
     return sum(math.comb(r1, i) * math.comb(n - r1, c1 - i) for i in range(a, hi + 1)) / denom
 
 
+def sigma_stats(k: int, n: int, threshold: float | None) -> dict:
+    """成立数 k（n 単位のうち）が、強さの基準 θ からσ（標準偏差）いくつ分離れているか。
+
+    成立する割合がちょうど θ のときの二項分布 Bin(n, θ) で測る: z = (k − nθ) ÷ √(nθ(1 − θ))。正なら基準より上。
+      sigma      : z（σ の数）
+      sigma_band : ±1σ・±2σ・±3σ のどこまで届いたか（3, 2, 1, 0, −1, −2, −3。|z| が 3 以上なら ±3）
+      p_above    : 正確な片側 p 値 P(X ≥ k)。小さいほど、成立が基準より多いことが偶然では起きにくい
+      p_below    : 正確な片側 p 値 P(X ≤ k)。小さいほど、成立が基準より少ないことが偶然では起きにくい
+    基準のない強さ（必ず）や単位がないときは空。終了コードの判定（95% の区間、両側でおよそ ±2σ）は変えない。読むための値。
+    """
+    if not n or threshold is None or not 0 < threshold < 1:
+        return {"sigma": None, "sigma_band": None, "p_above": None, "p_below": None}
+    z = (k - n * threshold) / math.sqrt(n * threshold * (1 - threshold))
+    pmf = [math.comb(n, i) * threshold ** i * (1 - threshold) ** (n - i) for i in range(n + 1)]
+    band = min(int(abs(z)), 3) * (1 if z >= 0 else -1)
+    return {"sigma": z, "sigma_band": band, "p_above": min(1.0, sum(pmf[k:])), "p_below": min(1.0, sum(pmf[: k + 1]))}
+
+
 def verdict(kind: str, threshold: float | None, n: int, k: int, ci: tuple[float, float], p: float,
             min_n: int, alpha: float) -> str:
     """docs/propositions.md の判定表。上から順に最初に当てはまるもの。"""
@@ -396,7 +414,7 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
         forms.append({
             "form": name, "n": n, "hold": k, "undetermined": undetermined, "rate": k / n if n else None, "ci": ci,
             "base_rate": base, "lift": (k / n) / base if n and base else None, "fisher_p": p_val,
-            "verdict": verdict(kind, threshold, n, k, ci, p_val, min_n, alpha),
+            "verdict": verdict(kind, threshold, n, k, ci, p_val, min_n, alpha), **sigma_stats(k, n, threshold),
             "counterexamples": _counterexamples(df, x, y, p, name, focus),
         })
         forms[-1]["code"] = form_code(forms[-1]["verdict"], len(forms[-1]["counterexamples"]), undetermined)
@@ -415,6 +433,7 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
         ci, p_val = wilson(k, n), fisher_greater(k, n - k, c_, d_)
         held_out = {"excluded_units": list(p["motivated_by"]), "n": n, "hold": k, "rate": k / n if n else None,
                     "ci": ci, "fisher_p": p_val, "verdict": verdict(kind, threshold, n, k, ci, p_val, min_n, alpha),
+                    **sigma_stats(k, n, threshold),
                     "counterexamples": [c["unit"] for c in _counterexamples(rest, a, b, p, "original", focus)]}
     excluded_cx = []
     if excluded is not None and excluded.height:
@@ -580,10 +599,13 @@ def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] 
                   *([f"- 注記: {_cell(r['note'])}"] if r.get("note") else []),
                   f"- 条件の数: {r.get('conditions', '-')}（例外条件を増やしすぎていないかの目安）",
                   *_ledger_line(ledger, r["id"]),
-                  "", "| 形 | n | 成立 | 成立率 [95%区間] | 基準率 | lift | p | 判定不能 | 判定 | exit |", "|---|---|---|---|---|---|---|---|---|---|"]
+                  "", "| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |",
+                  "|---|---|---|---|---|---|---|---|---|---|---|"]
         for f in r["forms"]:
             ci = f"{_fmt(f['rate'])} [{_fmt(f['ci'][0])}, {_fmt(f['ci'][1])}]"
-            lines.append(f"| {FORM_JA[f['form']]} | {f['n']} | {f['hold']} | {ci} | {_fmt(f['base_rate'])} "
+            sg = "—" if f.get("sigma") is None else (
+                f"{f['sigma']:+.2f}σ（{_fmt(f['p_above'] if f['sigma'] >= 0 else f['p_below'], 3)}）")
+            lines.append(f"| {FORM_JA[f['form']]} | {f['n']} | {f['hold']} | {ci} | {sg} | {_fmt(f['base_rate'])} "
                          f"| {_fmt(f['lift'])} | {_fmt(f['fisher_p'], 3)} | {f['undetermined']} | {VERDICT_JA[f['verdict']]} | {f['code']} |")
         for f in r["forms"]:
             if f["form"] in ("contrapositive", "inverse") or not f["counterexamples"]:
@@ -699,10 +721,12 @@ def render_index(results: list[dict], meta: dict, lang: str = "ja") -> str:
     lines = ["# 命題の一覧（自動生成）", "",
              f"命題ファイル SHA-256: `{meta.get('sha256', '-')}` / コード: `{meta.get('code_version') or '測定なし'}`", "",
              "各形のセルは「終了コード・成立率（単位数）」。0 異議なし、1 例外あり、2 主張が強すぎる、3 不成立、4 判断保留、5 判定できない単位。",
+             "σ は、元の命題の成立数が強さの基準（概ね 0.75・多くの場合 0.5 など）から標準偏差いくつ分上（＋）か下（−）か。"
+             "終了コードの判定（95% の区間、両側でおよそ ±2σ）とは別に、±1σ・±2σ・±3σ で読むための値。",
              "判例と根拠は objections.md、規則は docs/propositions.md。", "",
              "総合の終了コードの内訳: " + "、".join(f"exit {c} {label(c, lang)} {n}件" for c, n in sorted(codes.items())), "",
-             "| id | 識別子 | 強さ | 元の命題 | 対偶 | 逆 | 裏 | きっかけ以外 | 総合 | 親 |",
-             "|---|---|---|---|---|---|---|---|---|---|"]
+             "| id | 識別子 | 強さ | 元の命題 | σ | 対偶 | 逆 | 裏 | きっかけ以外 | 総合 | 親 |",
+             "|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in results:
         by = {f["form"]: f for f in r["forms"]}
 
@@ -712,11 +736,15 @@ def render_index(results: list[dict], meta: dict, lang: str = "ja") -> str:
                 return "—"
             rate = "-" if f["rate"] is None else f"{f['rate']:.2f}"
             return f"{f['code']}・{rate}（{f['n']}）"
+        def sig(f):
+            return "—" if not f or f.get("sigma") is None else f"{f['sigma']:+.2f}σ"
         h = r.get("held_out")
-        held = "—" if not h else f"{verdict_ja.get(h['verdict'], h['verdict'])}・{'-' if h['rate'] is None else format(h['rate'], '.2f')}（{h['n']}）"
+        held = "—" if not h else (f"{verdict_ja.get(h['verdict'], h['verdict'])}・{'-' if h['rate'] is None else format(h['rate'], '.2f')}"
+                                  f"（{h['n']}）{'' if h.get('sigma') is None else ' ' + sig(h)}")
         j = r["judgement"]
-        lines.append(f"| {r['id']} | `{_cell(r.get('key', '-'))}` | {STRENGTH_JA[r['strength']]} | {cell('original')} | {cell('contrapositive')} "
-                     f"| {cell('converse')} | {cell('inverse')} | {held} | **{j['code']}** {label(j['code'], lang)} | {r.get('parent') or ''} |")
+        lines.append(f"| {r['id']} | `{_cell(r.get('key', '-'))}` | {STRENGTH_JA[r['strength']]} | {cell('original')} | {sig(by.get('original'))} "
+                     f"| {cell('contrapositive')} | {cell('converse')} | {cell('inverse')} | {held} "
+                     f"| **{j['code']}** {label(j['code'], lang)} | {r.get('parent') or ''} |")
     return "\n".join(lines) + "\n"
 
 

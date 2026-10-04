@@ -579,3 +579,43 @@ def test_season_trajectory_finds_a_peak_in_the_wins_minus_losses_line():
     assert 0 <= d["traj_wl_peak_base"] <= 1 and d["traj_wl_peak_base"] == season_trajectory(tg, sims=20).filter(
         pl.col("team") == "d")["traj_wl_peak_base"][0]  # 乱数の種は年で固定
     assert season_trajectory(tg.filter(pl.col("date") <= "2024-04-05"), sims=5).height == 0  # 10試合に届かなければ線を引かない
+
+
+def _damped(xs, h0, lim, lam, per, b):
+    w = 2 * math.pi / per if per else 0.0
+    return [lim + math.exp(-lam * (x - xs[0])) * ((h0 - lim) * math.cos(w * (x - xs[0])) + b * math.sin(w * (x - xs[0])))
+            for x in xs]
+
+
+def test_wave_fit_recovers_a_damped_wave_from_its_starting_value():
+    from sakanalytics import wave_basis, wave_fit
+    xs = [0.1 + 0.9 * i / 150 for i in range(151)]
+    ys = _damped(xs, h0=5.0, lim=2.0, lam=3.0, per=0.5, b=1.0)   # 始まりは 5、収束する先は 2
+    f = wave_fit(ys, wave_basis(xs), xs[0])
+    assert (f["decay"], f["period"]) == (3.0, 0.5) and f["rmse"] == pytest.approx(0.0, abs=1e-9)
+    assert f["limit"] == pytest.approx(2.0) and f["end"] == pytest.approx(ys[-1])
+    # ゆれの幅 e^(−3t)·√(3² + 1²) が 0.5 を下回る位置
+    assert f["settle_x"] == pytest.approx(0.1 + math.log(math.hypot(3, 1) / 0.5) / 3)
+
+
+def test_wave_fit_reports_no_limit_for_an_undamped_wave_and_no_period_for_a_plain_approach():
+    from sakanalytics import wave_basis, wave_fit
+    xs = [0.1 + 0.9 * i / 150 for i in range(151)]
+    basis = wave_basis(xs)
+    f = wave_fit(_damped(xs, h0=3.0, lim=3.0, lam=0.0, per=0.5, b=2.0), basis, xs[0])
+    assert (f["decay"], f["period"], f["limit"], f["settle_x"]) == (0.0, 0.5, None, None)   # 減衰しない波は決まらない
+    g = wave_fit(_damped(xs, h0=1.0, lim=4.0, lam=5.0, per=None, b=0.0), basis, xs[0])
+    assert (g["decay"], g["period"]) == (5.0, None) and g["limit"] == pytest.approx(4.0)
+
+
+def test_season_trajectory_start_is_configurable_and_recorded():
+    from sakanalytics import season_trajectory
+    rows = [(f"2024-04-{i + 1:02d}", "d", "g", 3, 1) if i < 15 else (f"2024-04-{i + 1:02d}", "d", "g", 1, 3) for i in range(30)]
+    tg = to_team_games(games(rows), TEAMS)
+    a = season_trajectory(tg, sims=5, min_games=10).filter(pl.col("team") == "d").row(0, named=True)
+    b = season_trajectory(tg, sims=5, min_games=5).filter(pl.col("team") == "d").row(0, named=True)
+    assert (a["traj_start_games"], a["traj_start_date"], a["traj_start_x"]) == (10, "2024-04-10", pytest.approx(9 / 29))
+    assert (b["traj_start_games"], b["traj_start_date"], b["traj_start_x"]) == (5, "2024-04-05", pytest.approx(4 / 29))
+    # d は線を引く間ずっと1位（最後の日は同率1位）。動かない線は、いちばん簡単な「波なしで近づく」式で、収束する先も1位
+    assert (a["wave_limit_rank"], a["wave_end_rank"], a["wave_period"]) == (pytest.approx(1.0), pytest.approx(1.0), None)
+    assert a["wave_settle_x"] == pytest.approx(a["traj_start_x"]) and 0 <= a["wave_settle_pct"] <= 1

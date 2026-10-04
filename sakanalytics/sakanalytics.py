@@ -39,6 +39,8 @@
   vs_near_net / pair34_net         順位が1つ違いの相手、3位と4位どうしの（勝 − 敗）（R12）
   half1_vs_pythag / half2_vs_pythag  前半・後半それぞれの（勝 − 期待勝利数）（R12）
   max_win_streak / max_lose_streak / max_lose_streak_d  最長連勝・最長連敗と、連敗の他球団平均との差（R12）
+  opp_adj_top / mid / low / total  相手の強さ（自分との試合を除く）から見込まれる勝ち数との差を、相手のグループごとに足したもの（R15）
+  pair34_opp_adj_*_diff            その3位と4位の間の差（R15）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -459,6 +461,79 @@ def boundary_features(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
     return out.drop("league", "rank")
 
 
+def log5(p: float, q: float) -> float:
+    """勝率 p のチームが勝率 q のチームに勝つ見込み（Log5）。リーグ平均 .500 を基準にした形。"""
+    d = p + q - 2 * p * q
+    return 0.5 if d == 0 else (p - p * q) / d
+
+
+def _pythag_wpct(rf: int, ra: int) -> float | None:
+    if rf <= 0 and ra <= 0:
+        return None
+    return 1 / (1 + (ra / rf) ** K_FIXED) if rf > 0 else 0.0
+
+
+def _pair34_diff(out: pl.DataFrame, cols: list[str]) -> pl.DataFrame:
+    """3位と4位の間で、相手（4位なら3位、3位なら4位。同率で複数いれば平均）との差。他の順位は空。"""
+    over = ["season", "league"]
+    is34 = pl.col("rank").is_in([3, 4])
+    for c in cols:
+        partner = out.filter(is34).group_by([*over, "rank"]).agg(pl.col(c).mean().alias("_m"))
+        partner = partner.with_columns(rank=7 - pl.col("rank"))  # 3 ↔ 4
+        out = out.join(partner, on=[*over, "rank"], how="left").with_columns(
+            **{f"pair34_{c}_diff": pl.when(is34).then(pl.col(c) - pl.col("_m"))}).drop("_m")
+    return out
+
+
+def opponent_adjusted(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
+    """R15: 相手の強さから見込まれる勝ち数との差を、相手のグループごとに足す。
+
+    リーグ内の相手だけ（交流戦は外す）。相手 O との試合の見込みは、
+      自分の強さ  = O との試合を除いた自分の得点・失点からのピタゴラス勝率
+      相手の強さ  = 自分との試合を除いた O の得点・失点からのピタゴラス勝率
+      見込み      = Log5(自分の強さ, 相手の強さ)
+    O との（勝 − 見込みの勝ち数 × (勝 + 敗)）を、O の強さ（自分との試合を除く）で並べたグループごとに足す。
+      opp_adj_top : 強いほうから2チーム   opp_adj_mid : その次の2チーム   opp_adj_low : 残り（6球団なら1チーム）
+      opp_adj_total : リーグ内の相手すべて
+    相手の強さを最終順位で決めないので、自分との対戦結果が相手のグループ分けを動かすことはない。
+    """
+    league_of = {(r["season"], r["team"]): r["league"] for r in st.iter_rows(named=True)}
+    tot: dict[tuple, list[int]] = {}
+    vs: dict[tuple, list[int]] = {}  # (season, team, opp) -> [rf, ra, w, l]
+    for r in tg.iter_rows(named=True):
+        k = (r["season"], r["team"])
+        t = tot.setdefault(k, [0, 0])
+        t[0] += r["rf"]
+        t[1] += r["ra"]
+        v = vs.setdefault((r["season"], r["team"], r["opp"]), [0, 0, 0, 0])
+        v[0] += r["rf"]
+        v[1] += r["ra"]
+        v[2] += r["rf"] > r["ra"]
+        v[3] += r["rf"] < r["ra"]
+    rows = []
+    for (season, team), (rf, ra) in tot.items():
+        opps = [o for (s_, t_, o) in vs if s_ == season and t_ == team and league_of.get((season, o)) == league_of[(season, team)]]
+        parts = []
+        for o in opps:
+            orf, ora, w, l_ = vs[(season, team, o)]
+            me = _pythag_wpct(rf - orf, ra - ora)
+            o_rf, o_ra = tot[(season, o)]
+            them = _pythag_wpct(o_rf - ora, o_ra - orf)  # O の得点 − 自分から取った分、O の失点 − 自分が取った分
+            if me is None or them is None:
+                continue
+            parts.append((them, w - (w + l_) * log5(me, them)))
+        parts.sort(key=lambda x: -x[0])
+        top, mid, low = parts[:2], parts[2:4], parts[4:]
+        rows.append({"season": season, "team": team,
+                     "opp_adj_top": sum(x for _, x in top) if top else None,
+                     "opp_adj_mid": sum(x for _, x in mid) if mid else None,
+                     "opp_adj_low": sum(x for _, x in low) if low else None,
+                     "opp_adj_total": sum(x for _, x in parts) if parts else None})
+    schema = {"season": pl.Int32, "team": pl.Utf8, **{c: pl.Float64 for c in ("opp_adj_top", "opp_adj_mid", "opp_adj_low", "opp_adj_total")}}
+    out = st.select("season", "team", "league", "rank").join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
+    return _pair34_diff(out, ["opp_adj_top", "opp_adj_mid", "opp_adj_low", "opp_adj_total"]).drop("league", "rank")
+
+
 def streak(st: pl.DataFrame, cond: pl.Expr, name: str) -> pl.DataFrame:
     """条件が、そのシーズンまで何年続けて成り立っているか（同じチーム、連続した年）。成り立たなければ 0、値が空なら空。"""
     flags = st.select("team", "season", f=cond)
@@ -537,6 +612,7 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
     st = st.join(scoring_deficit(tg), on=["season", "team"], how="left")
     st = st.join(rank_probability(tg), on=["season", "team"], how="left")
     st = st.join(boundary_features(tg, st), on=["season", "team"], how="left")
+    st = st.join(opponent_adjusted(tg, st), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 

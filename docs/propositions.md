@@ -48,6 +48,8 @@ For every unit u in the scope:   A(u)  ⇒  B(u)
 - Both are conjunctions of simple comparisons: `column op value`, where `op` is one of `< <= > >= == !=`.
 - Comparisons only use constants. A comparison between two columns is first computed as a derived column (for example `rank_gap = rank - rank_pythag`) so that every derived value is visible and documented.
 - An empty `A` means "every unit in the scope". Such a proposition has no converse or inverse.
+- `A` may also contain an *or*: `if_any = [[c1, c2], [c3]]` means `(c1 and c2) or c3`. Plain `if` conditions are joined to it with *and*. All four forms are evaluated as usual: the contrapositive of `(c1 ∧ c2) ∨ c3 ⇒ B` is `¬B ⇒ ¬(c1 ∧ c2) ∧ ¬c3`. A long `if_any` explains more units but is easier to fit to the data; the record shows the number of conditions so that this is visible.
+- Combinations may be searched by `pythdragoras/rule_search.py` (candidates fixed in a file before the search). A searched rule is material for a proposition, not a verdict: it is registered as a proposition made after seeing the data, and confirmed on other data.
 
 Arbitrary code is never evaluated.
 

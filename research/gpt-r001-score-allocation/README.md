@@ -134,3 +134,5 @@ Part6の持続性・勝率回帰の再現と解釈の境界は [PART6_RECEPTION.
 低ISOでもRPSが低くない32事例の出塁・得点頻度の比較は [ISO_COUNTEREXAMPLES_RESULTS.md](ISO_COUNTEREXAMPLES_RESULTS.md)。低ISO82件を保持し、追加条件でも残る18件を記録した。次の候補はISO・出塁率併用の予測評価で、今回の探索は因果的補填や新指標の成立を示さない。
 
 反例からの条件探索は [HYPOTHESIS_FOLLOWUP_PLAN.md](HYPOTHESIS_FOLLOWUP_PLAN.md) と [HYPOTHESIS_FOLLOWUP_RESULTS.md](HYPOTHESIS_FOLLOWUP_RESULTS.md)。分類性能・反例からの発見・別データでの確認を分け、持続性と接戦の条件を固定して全判例を保存した。
+
+ISOと出塁率を併用してRPSを推定する固定モデル評価は [BATTING_PREDICTION_PLAN.md](BATTING_PREDICTION_PLAN.md) / [BATTING_PREDICTION_RESULTS.md](BATTING_PREDICTION_RESULTS.md)。全体の小さな改善と反例群での悪化を両方残し、残差を新観測につなぐ候補として保持した。

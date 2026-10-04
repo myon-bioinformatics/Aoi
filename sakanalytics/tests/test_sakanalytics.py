@@ -497,3 +497,15 @@ def test_centered_run_gaps_average_zero_within_league_season():
         v = out.select(c, f"{c}_c").rows()
         mean = sum(a for a, _ in v) / len(v)
         assert all(b == pytest.approx(a - mean) for a, b in v)
+
+
+def test_net_and_env_are_a_rotation_of_scoring_and_prevention_gaps():
+    from sakanalytics import opponent_adjusted
+    rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "g", "d", 2, 1), ("2024-04-03", "d", "t", 1, 4),
+            ("2024-04-04", "g", "t", 5, 5), ("2024-04-05", "t", "g", 0, 2), ("2024-04-06", "t", "d", 3, 2)]
+    tg = to_team_games(games(rows), TEAMS)
+    for r in opponent_adjusted(tg, season_table(tg)).filter(pl.col("team").is_in(["d", "g", "t"])).iter_rows(named=True):
+        rf, ra = r["opp_rf_gap_top_c"], r["opp_ra_gap_top_c"]
+        assert r["opp_net_gap_top_c"] == pytest.approx(rf + ra) and r["opp_env_gap_top_c"] == pytest.approx(rf - ra)
+        # 元に戻せる（回しただけで情報は増えも減りもしない）
+        assert (r["opp_net_gap_top_c"] + r["opp_env_gap_top_c"]) / 2 == pytest.approx(rf)

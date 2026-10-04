@@ -8,10 +8,10 @@ Creating virtual environment at: .venv
 Downloading polars-runtime-32 (47.6MiB)
 Downloading pygments (1.2MiB)
 Downloading selectolax (2.4MiB)
- Downloaded selectolax
  Downloaded pygments
+ Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 9ms
+Installed 15 packages in 12ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -419,6 +419,10 @@ shape: (14, 12)
 - P99 中日は、貯金の線（3次式でならしたもの）に山がある（貯金を増やしてから減らす）: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
 - P100 中日の B クラスの年は、最後の日の順位の高さの傾きが負（下がりながらシーズンを終える）: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 保留）
 - P101 中日以外の B クラスのチームは、最後の日の順位の高さの傾きが負: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
+- P102 中日の B クラスの年は、順位が決まった位置（波のゆれの幅が半順位を下回る位置）が、力が一定のときの半分より早い: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P103 中日以外の B クラスのチームは、順位が決まった位置が、力が一定のときの半分より早い: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
+- P104 中日の B クラスの年は、前半の線だけから当てた波の行き先が、もう4位以下: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P105 中日以外の B クラスのチームは、前半の線だけから当てた波の行き先が、もう4位以下: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 棄却）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -582,3 +586,7 @@ units=156 dropped=0 target: upper_half == False
 [4] P99 待った！判断保留 元の命題: 判例 9 件: d-2012, d-2013, d-2015, d-2019, d-2021 ほか
 [3] P100 異議あり（不成立） 元の命題: 判例 6 件: d-2015, d-2022, d-2018, d-2016, d-2025 ほか
 [3] P101 異議あり（不成立） 元の命題: 判例 31 件: e-2012, c-2019, m-2019, db-2018, b-2018 ほか
+[4] P102 待った！判断保留 元の命題: 判例 4 件: d-2016, d-2015, d-2013, d-2017
+[3] P103 異議あり（不成立） 元の命題: 判例 41 件: f-2019, c-2012, e-2012, c-2015, db-2015 ほか
+[4] P104 待った！判断保留 元の命題: n=6（min_n=10）、成立率の区間 0.61〜1.00
+[1] P105 異議あり（例外あり） 元の命題: 判例 13 件: h-2013, db-2018, c-2022, f-2019, t-2018 ほか

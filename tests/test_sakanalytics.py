@@ -439,3 +439,29 @@ def test_streak_counts_consecutive_seasons_and_resets():
     out = streak(st, pl.col("x") == 1, "s").sort("team", "season")
     # 2016 がない → 2017 は数え直し。値が空なら空。チームごとに別々に数える
     assert out["s"].to_list() == [1, 2, 0, 1, 2, None, 1, 2]
+
+
+def test_log5_properties():
+    from sakanalytics import log5
+    assert log5(0.5, 0.5) == pytest.approx(0.5)
+    assert log5(0.6, 0.5) == pytest.approx(0.6)          # .500 の相手には自分の勝率どおり
+    assert log5(0.6, 0.4) + log5(0.4, 0.6) == pytest.approx(1.0)
+    assert log5(0.6, 0.4) == pytest.approx(0.6 * 0.6 / (0.6 * 0.6 + 0.4 * 0.4))
+
+
+def test_opponent_adjusted_by_hand_and_excludes_own_games():
+    from sakanalytics import K_FIXED, log5, opponent_adjusted
+    rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "g", "d", 2, 1), ("2024-04-03", "d", "t", 1, 4),
+            ("2024-04-04", "g", "t", 5, 5), ("2024-04-05", "t", "g", 0, 2), ("2024-04-06", "h", "d", 9, 0)]
+    tg = to_team_games(games(rows), TEAMS)
+    st = season_table(tg)
+    v = {r["team"]: r for r in opponent_adjusted(tg, st).iter_rows(named=True)}
+    py = lambda rf, ra: 1 / (1 + (ra / rf) ** K_FIXED)  # noqa: E731
+    # d 対 g: d の強さは g 戦を除く（t 戦 1-4、h 戦 0-9 → 1-13）。g の強さは d 戦を除く（t 戦 5-5、2-0 → 7-5）
+    exp_g = 2 * log5(py(1, 13), py(7, 5))
+    # d 対 t: d は t 戦を除く（g 戦 3-1, 1-2、h 戦 0-9 → 4-12）。t は d 戦を除く（g 戦 5-5, 0-2 → 5-7）
+    exp_t = 1 * log5(py(4, 12), py(5, 7))
+    assert v["d"]["opp_adj_total"] == pytest.approx((1 - exp_g) + (0 - exp_t))
+    # 3球団なので相手は2チーム → どちらも「強いほうの2チーム」に入る
+    assert v["d"]["opp_adj_top"] == pytest.approx(v["d"]["opp_adj_total"]) and v["d"]["opp_adj_mid"] is None
+    assert v["h"]["opp_adj_total"] is None  # リーグ内の相手がいない（交流戦は数えない）

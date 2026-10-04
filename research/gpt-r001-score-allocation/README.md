@@ -136,3 +136,5 @@ Part6の持続性・勝率回帰の再現と解釈の境界は [PART6_RECEPTION.
 反例からの条件探索は [HYPOTHESIS_FOLLOWUP_PLAN.md](HYPOTHESIS_FOLLOWUP_PLAN.md) と [HYPOTHESIS_FOLLOWUP_RESULTS.md](HYPOTHESIS_FOLLOWUP_RESULTS.md)。分類性能・反例からの発見・別データでの確認を分け、持続性と接戦の条件を固定して全判例を保存した。
 
 ISOと出塁率を併用してRPSを推定する固定モデル評価は [BATTING_PREDICTION_PLAN.md](BATTING_PREDICTION_PLAN.md) / [BATTING_PREDICTION_RESULTS.md](BATTING_PREDICTION_RESULTS.md)。全体の小さな改善と反例群での悪化を両方残し、残差を新観測につなぐ候補として保持した。
+
+2022中日・広島を入口に、点数別の回構成と同じ試合総得点での集中度を調べた記録は [INNING_PLACEMENT_PLAN.md](INNING_PLACEMENT_PLAN.md) / [INNING_PLACEMENT_RESULTS.md](INNING_PLACEMENT_RESULTS.md)。得点配置の違いと全判例を残し、未受領の出塁・走者損失観測とは区別した。

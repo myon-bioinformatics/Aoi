@@ -114,6 +114,43 @@ def allocation_cumulative(st: pl.DataFrame) -> pl.DataFrame:
     return pl.concat(out).drop("var").sort("baseline", "z")
 
 
+def _poisson_binomial(ps: list[float]) -> list[float]:
+    """独立な確率 ps の事象が起きる回数の分布（ポアソン二項分布）。dist[k] = P(k 回)。"""
+    dist = [1.0]
+    for p in ps:
+        nxt = [0.0] * (len(dist) + 1)
+        for k, q in enumerate(dist):
+            nxt[k] += q * (1 - p)
+            nxt[k + 1] += q * p
+        dist = nxt
+    return dist
+
+
+TRAJ_FLAGS = ("traj_rank_peak", "traj_rank_valley", "traj_wl_peak", "traj_wl_valley")
+
+
+def shape_expectation(st: pl.DataFrame) -> list[dict]:
+    """R22: シーズンの線の山・谷の数を、力が一定のときの見込み（各単位の *_base を独立な確率とした和）と比べる。
+
+    群: 全体・A クラス・B クラス・各球団・各球団の B クラス。p_ge_obs が小さいほど、力が一定のときより山（谷）が多い。
+    """
+    if any(c not in st.columns for f in TRAJ_FLAGS for c in (f, f"{f}_base")):
+        return []
+    upper = pl.col("upper_half")
+    groups = [("全体", st), ("A クラス", st.filter(upper)), ("B クラス", st.filter(~upper))]
+    for (team,), g in st.sort("team").group_by(["team"], maintain_order=True):
+        groups += [(g["team_name"][0], g), (f"{g['team_name'][0]}・B クラス", g.filter(~upper))]
+    out = []
+    for name, g in groups:
+        for f in TRAJ_FLAGS:
+            sub = g.filter(pl.col(f).is_not_null() & pl.col(f"{f}_base").is_not_null())
+            ps, obs = sub[f"{f}_base"].to_list(), sum(sub[f].to_list())
+            dist = _poisson_binomial(ps)
+            out.append({"group": name, "flag": f, "units": len(ps), "observed": obs, "expected": round(sum(ps), 2),
+                        "p_ge_obs": round(sum(dist[obs:]), 4), "p_le_obs": round(sum(dist[: obs + 1]), 4)})
+    return out
+
+
 def rank_expectation(st: pl.DataFrame) -> list[dict]:
     """R10: 得点・失点の分布から見た A クラスの回数の期待値と、実際の回数。
 
@@ -128,13 +165,7 @@ def rank_expectation(st: pl.DataFrame) -> list[dict]:
     out = []
     for (team,), g in st.sort("season").group_by(["team"], maintain_order=True):
         ps = [p for p in g["sim_p_upper"].to_list() if p is not None]
-        dist = [1.0]
-        for p in ps:
-            nxt = [0.0] * (len(dist) + 1)
-            for k, q in enumerate(dist):
-                nxt[k] += q * (1 - p)
-                nxt[k + 1] += q * p
-            dist = nxt
+        dist = _poisson_binomial(ps)
         obs = int(g.filter(pl.col("upper_half"))["season"].len())
         out.append({"team": team, "team_name": g["team_name"][0], "seasons": len(ps), "observed": obs,
                     "expected": round(sum(ps), 3), "p_le_obs": round(sum(dist[: obs + 1]), 4),
@@ -337,6 +368,7 @@ def main(argv=None) -> int:
         alloc.write_ndjson(args.outdir / "allocation.jsonl")
     _jsonl(args.outdir / "persistence.jsonl", pers)
     _jsonl(args.outdir / "rank_expectation.jsonl", rank_expectation(included))
+    _jsonl(args.outdir / "trajectory_expectation.jsonl", shape_expectation(included))
     keep = ["inn_dlog_size", "rf_def_total", "sim_p_upper", "wpct", "opp_env_gap_top_c", "opp_net_gap_top_c"]
     _jsonl(args.outdir / "persistence_by_team.jsonl", persistence_by_team(included, keep))
     _jsonl(args.outdir / "persistence_all.jsonl", persistence(included, keep))

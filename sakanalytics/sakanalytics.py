@@ -54,6 +54,8 @@
   course_rf_d / course_ra_d        後半と前半の得点／試合・失点／試合の差の、他球団の平均との差（R20）
   course_ra_h1_d                   前半の失点／試合の、他球団の平均との差（R20）
   course_close_win_h1(_d)          前半の勝ちのうち2点差以内の割合と、その他球団の平均との差（R20）
+  traj_rank_* / traj_wl_*          日付ごとの順位の高さ・貯金の線を3次式でならした形（山・谷・その位置・最後の傾き）と、
+                                   力が一定でも山・谷ができる割合 *_base（R22。season_trajectory）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -88,9 +90,11 @@ from __future__ import annotations
 
 import argparse
 import math
+import random
 import sys
 import tomllib
 from collections import Counter
+from datetime import date
 from pathlib import Path
 
 import polars as pl
@@ -577,6 +581,151 @@ def season_course(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
     return out.drop("league", "rank", "_rf", "_ra", "_ra_h1", "_q1", "_q3")
 
 
+TRAJ_MIN_GAMES = 10   # リーグの全球団がこの試合数に届いた日から線を引く（序盤の数試合の順位は揺れが大きすぎる）
+TRAJ_SIMS = 200       # 力が一定のときの基準を作る、シーズンの作り直しの回数
+
+
+def _inverse(a: list[list[float]]) -> list[list[float]]:
+    """小さな正方行列の逆行列（部分ピボットつきのガウス・ジョルダン法）。"""
+    n = len(a)
+    m = [row[:] + [float(i == j) for j in range(n)] for i, row in enumerate(a)]
+    for c in range(n):
+        p = max(range(c, n), key=lambda r: abs(m[r][c]))
+        m[c], m[p] = m[p], m[c]
+        m[c] = [v / m[c][c] for v in m[c]]
+        for r in range(n):
+            if r != c and m[r][c]:
+                f = m[r][c]
+                m[r] = [v - f * w for v, w in zip(m[r], m[c])]
+    return [row[n:] for row in m]
+
+
+def cubic_projection(xs: list[float]) -> list[list[float]]:
+    """3次式 y = c0 + c1·x + c2·x² + c3·x³ の最小二乗の係数を、y との掛け算1回で出す行列（4 × n）。"""
+    pw = [[x ** k for x in xs] for k in range(4)]
+    inv = _inverse([[sum(a * b for a, b in zip(pw[i], pw[j])) for j in range(4)] for i in range(4)])
+    return [[sum(inv[i][k] * pw[k][t] for k in range(4)) for t in range(len(xs))] for i in range(4)]
+
+
+def cubic_extrema(c: list[float], lo: float, hi: float = 1.0) -> list[tuple[float, str]]:
+    """3次式の (lo, hi) の中の極大（peak）・極小（valley）を x の小さい順に。f'(x) = c1 + 2c2·x + 3c3·x² の根で、f'' の符号で分ける。"""
+    a, b, d = 3 * c[3], 2 * c[2], c[1]
+    if abs(a) > 1e-12:
+        disc = b * b - 4 * a * d
+        roots = sorted(((-b - math.sqrt(disc)) / (2 * a), (-b + math.sqrt(disc)) / (2 * a))) if disc > 0 else []
+    else:
+        roots = [-d / b] if abs(b) > 1e-12 else []
+    return [(r, "peak" if 2 * c[2] + 6 * c[3] * r < 0 else "valley") for r in roots if lo < r < hi]
+
+
+def _shape(c: list[float], lo: float) -> dict:
+    ext = cubic_extrema(c, lo)
+    mid = (lo + 1) / 2
+    slope_mid = c[1] + 2 * c[2] * mid + 3 * c[3] * mid * mid
+    shape = "-".join(k for _, k in ext) or ("flat" if abs(slope_mid) < 1e-9 else "rise" if slope_mid > 0 else "fall")
+    peaks = [x for x, k in ext if k == "peak"]
+    return {"shape": shape, "peak": bool(peaks), "peak_x": peaks[0] if peaks else None,
+            "valley": any(k == "valley" for _, k in ext), "end_slope": c[1] + 2 * c[2] + 3 * c[3]}
+
+
+def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:
+    """1シーズン分の試合（日付順。各日 [(試合の番号, ホーム, ビジター), ...]）と各試合の勝者（引き分けは None）から、
+    各球団の「順位の高さ」（リーグの球団数 + 1 − 順位）と貯金（勝 − 敗）を、そのリーグの線を引く日ごとに並べる。"""
+    w, l_ = Counter(), Counter()
+    paths = {t: ([], []) for info in grid.values() for t in info["teams"]}
+    for i, games in enumerate(days):
+        for g, home, away in games:
+            if winners[g] is not None:
+                w[winners[g]] += 1
+                l_[away if winners[g] == home else home] += 1
+        for info in grid.values():
+            if i in info["index"]:
+                pct = {t: w[t] / (w[t] + l_[t]) if w[t] + l_[t] else 0.5 for t in info["teams"]}
+                for t in info["teams"]:
+                    paths[t][0].append(len(pct) - sum(p > pct[t] for p in pct.values()))  # 順位 = 1 + 上にいる球団の数
+                    paths[t][1].append(w[t] - l_[t])
+    return paths
+
+
+def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS) -> pl.DataFrame:
+    """R22: シーズンの中の順位と貯金の線を3次式でならし、山（極大）と谷（極小）があるかを見る。
+
+    横軸は日付（そのリーグの最初の試合の日 0 〜 最後の試合の日 1）。リーグの全球団が TRAJ_MIN_GAMES 試合に届いた日から最後の日まで、
+    そのリーグの試合のあった日ごとの値に3次式を最小二乗で当てる。カクカクした日ごとの線を、なめらかな式に置き換えて形を読むため。
+      traj_rank_* : 順位の高さ（6球団なら 1位 = 6、6位 = 1。上がれば正）  traj_wl_* : 貯金（勝 − 敗）
+      *_shape     : 線の形。rise / fall（山も谷もない）、peak（山）、valley（谷）、peak-valley / valley-peak（両方、起きた順）
+      *_peak / *_peak_x : 線を引いた範囲の内側に山があるか / その位置（0〜1）。*_valley は谷があるか
+      *_end_slope : 最後の日の傾き f'(1)（横軸1つ分 = 1シーズン分あたりの変化。順位の高さなら何位分、貯金なら何勝分）
+      *_peak_base / *_valley_base : 力が一定（その年の勝率）でも山・谷ができる割合。実際の日程のまま、引き分けでない試合の勝敗を
+                    両チームの勝率の Log5 で引き直したシーズンを sims 回作り、同じ線の引き方で数える（乱数の種は年で固定）
+    山や谷は、力が一定でも順位や貯金のゆらぎだけでできる。読むときは必ず *_base と比べる。
+    """
+    league_of = {(s, t): lg for s, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
+    rows = []
+    for (season,), sg in tg.filter(pl.col("is_home")).sort("date").group_by(["season"], maintain_order=True):
+        dates = sorted(set(sg["date"].to_list()))
+        day = {d: i for i, d in enumerate(dates)}
+        days, winners, pairs = [[] for _ in dates], [], []
+        for g, (d, home, away, hs, as_) in enumerate(sg.select("date", "team", "opp", "rf", "ra").iter_rows()):
+            days[day[d]].append((g, home, away))
+            winners.append(home if hs > as_ else away if as_ > hs else None)
+            pairs.append((home, away))
+        wins, losses = Counter(), Counter()
+        for win, (home, away) in zip(winners, pairs):
+            if win is not None:
+                wins[win] += 1
+                losses[away if win == home else home] += 1
+        teams = sorted({t for pr in pairs for t in pr})
+        pct = {t: wins[t] / (wins[t] + losses[t]) if wins[t] + losses[t] else 0.5 for t in teams}
+        grid, proj = {}, {}
+        for lg in sorted({league_of[(season, t)] for t in teams}):
+            members = [t for t in teams if league_of[(season, t)] == lg]
+            lg_days = [i for i, games in enumerate(days) if any(h in members or a in members for _, h, a in games)]
+            played, start = Counter(), None
+            for i, games in enumerate(days):
+                for _, h, a in games:
+                    played[h] += 1
+                    played[a] += 1
+                if all(played[t] >= TRAJ_MIN_GAMES for t in members):
+                    start = i
+                    break
+            if start is None or start >= lg_days[-1]:
+                continue
+            o = {i: date.fromisoformat(dates[i]).toordinal() for i in lg_days}
+            idx = [i for i in lg_days if i >= start]
+            xs = [(o[i] - o[lg_days[0]]) / (o[lg_days[-1]] - o[lg_days[0]]) for i in idx]
+            grid[lg] = {"teams": members, "index": set(idx), "lo": xs[0]}
+            proj[lg] = cubic_projection(xs)
+        if not grid:
+            continue
+
+        def fit(paths):
+            return {t: [_shape([sum(p * y for p, y in zip(row, path)) for row in proj[lg]], info["lo"]) for path in paths[t]]
+                    for lg, info in grid.items() for t in info["teams"]}
+
+        actual = fit(_season_paths(days, grid, winners))
+        rng, base = random.Random(season * 1000 + 22), Counter()
+        for _ in range(sims):
+            sim = [None if win is None else (h if rng.random() < log5(pct[h], pct[a]) else a)
+                   for win, (h, a) in zip(winners, pairs)]
+            for t, shapes in fit(_season_paths(days, grid, sim)).items():
+                for name, s_ in zip(("rank", "wl"), shapes):
+                    base[(t, name, "peak")] += s_["peak"]
+                    base[(t, name, "valley")] += s_["valley"]
+        for t, shapes in actual.items():
+            row = {"season": season, "team": t}
+            for name, s_ in zip(("rank", "wl"), shapes):
+                row |= {f"traj_{name}_{k}": v for k, v in s_.items()}
+                row |= {f"traj_{name}_{k}_base": base[(t, name, k)] / sims if sims else None for k in ("peak", "valley")}
+            rows.append(row)
+    schema = {"season": pl.Int32, "team": pl.Utf8}
+    for name in ("rank", "wl"):
+        schema |= {f"traj_{name}_shape": pl.Utf8, f"traj_{name}_peak": pl.Boolean, f"traj_{name}_peak_x": pl.Float64,
+                   f"traj_{name}_valley": pl.Boolean, f"traj_{name}_end_slope": pl.Float64,
+                   f"traj_{name}_peak_base": pl.Float64, f"traj_{name}_valley_base": pl.Float64}
+    return pl.DataFrame(rows, schema=schema)
+
+
 def log5(p: float, q: float) -> float:
     """勝率 p のチームが勝率 q のチームに勝つ見込み（Log5）。リーグ平均 .500 を基準にした形。"""
     d = p + q - 2 * p * q
@@ -760,6 +909,7 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
     st = st.join(opponent_adjusted(tg, st), on=["season", "team"], how="left")
     st = st.join(win_loss_split(tg), on=["season", "team"], how="left")
     st = st.join(season_course(tg, st), on=["season", "team"], how="left")
+    st = st.join(season_trajectory(tg), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 

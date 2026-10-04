@@ -550,3 +550,32 @@ def test_season_course_by_hand():
     assert d["course_close_win_h1"] == pytest.approx(0.5)     # 前半の勝ち 1点差・4点差のうち2点差以内は1つ
     assert g["course_close_win_h1"] is None                    # 前半に勝ちがない
     assert d["course_close_win_h1_d"] is None                  # 比べる他球団の値がない（0 で割らない）
+
+
+def test_cubic_fit_recovers_the_curve_and_its_peak_and_valley():
+    from sakanalytics import cubic_extrema, cubic_projection
+    xs = [i / 100 for i in range(101)]
+    ys = [2 + 0.6 * x - 1.5 * x * x + x ** 3 for x in xs]     # f'(x) = 3x² − 3x + 0.6 → x = 0.276（山）, 0.724（谷）
+    c = [sum(p * y for p, y in zip(row, ys)) for row in cubic_projection(xs)]
+    assert c == pytest.approx([2, 0.6, -1.5, 1], abs=1e-9)
+    (x1, k1), (x2, k2) = cubic_extrema(c, 0.0)
+    assert (k1, k2) == ("peak", "valley")
+    assert (x1, x2) == pytest.approx(((3 - math.sqrt(1.8)) / 6, (3 + math.sqrt(1.8)) / 6))
+    assert cubic_extrema(c, 0.5) == [(pytest.approx(x2), "valley")]   # 線を引く範囲の外の山は数えない
+
+
+def test_season_trajectory_finds_a_peak_in_the_wins_minus_losses_line():
+    from sakanalytics import season_trajectory
+    # d と g の2球団だけのリーグで1日1試合。d は最初の15試合に勝ち、後の15試合に負ける（貯金 +15 から 0 へ）
+    rows = [(f"2024-04-{i + 1:02d}", "d", "g", 3, 1) if i < 15 else (f"2024-04-{i + 1:02d}", "d", "g", 1, 3) for i in range(30)]
+    tg = to_team_games(games(rows), TEAMS)
+    out = {r["team"]: r for r in season_trajectory(tg, sims=20).iter_rows(named=True)}
+    d, g = out["d"], out["g"]
+    # 線は両球団が10試合に届いた日（10日目、x = 9/29）から。貯金は 10日目の +10 から 15日目の +15 まで上がり、最後に 0
+    assert d["traj_wl_peak"] and 0.4 < d["traj_wl_peak_x"] < 0.6 and "peak" in d["traj_wl_shape"]
+    assert g["traj_wl_valley"] and not g["traj_wl_peak"]
+    assert d["traj_wl_end_slope"] < 0
+    assert d["traj_rank_shape"] == "flat"           # d は最後まで勝率5割以上で、順位は1位のまま（最後の日は同率1位）
+    assert 0 <= d["traj_wl_peak_base"] <= 1 and d["traj_wl_peak_base"] == season_trajectory(tg, sims=20).filter(
+        pl.col("team") == "d")["traj_wl_peak_base"][0]  # 乱数の種は年で固定
+    assert season_trajectory(tg.filter(pl.col("date") <= "2024-04-05"), sims=5).height == 0  # 10試合に届かなければ線を引かない

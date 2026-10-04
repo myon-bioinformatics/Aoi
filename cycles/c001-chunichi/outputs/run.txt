@@ -11,7 +11,7 @@ Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 7ms
+Installed 15 packages in 14ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -387,6 +387,10 @@ shape: (14, 12)
 - P67 3位と4位のチームの間では、最も弱い相手に対して見込みより多く勝ったほうが3位: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 - P68 3位と4位のチームの間では、リーグ内の相手すべてに対して見込みより多く勝ったほうが3位: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 - P69 中日は、中位の相手（強さの順で3・4番目）に対して見込みより勝てていない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P70 中日は、強い相手（自分との試合を除いた強さで上位2チーム）に対して、見込みより得点が少ない: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 保留）
+- P71 中日は、強い相手（自分との試合を除いた強さで上位2チーム）に対して、見込みより失点が多い: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 保留）
+- P72 強い相手に見込みより負けたチーム・シーズンでは、その差は失点の側より得点の側で大きい: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 保留 / 裏 保留）
+- P73 強い相手に見込みより負けたチーム・シーズンでは、点の差では説明できない負けもある（opp_conv_top < 0）: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 保留 / 裏 支持）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -506,3 +510,7 @@ units=156 dropped=0 target: upper_half == False
 [4] P67 待った！判断保留 元の命題: 判例 11 件: c-2012, c-2021, l-2015, e-2025, e-2022 ほか
 [4] P68 待った！判断保留 元の命題: 判例 10 件: g-2022, e-2023, db-2018, c-2021, d-2013 ほか
 [4] P69 待った！判断保留 元の命題: 判例 6 件: d-2024, d-2022, d-2014, d-2021, d-2016 ほか
+[3] P70 異議あり（不成立） 元の命題: 判例 9 件: d-2012, d-2017, d-2025, d-2015, d-2016 ほか
+[3] P71 異議あり（不成立） 元の命題: 判例 9 件: d-2012, d-2021, d-2015, d-2019, d-2022 ほか
+[4] P72 待った！判断保留 元の命題: 判例 26 件: db-2013, s-2021, l-2017, e-2022, e-2018 ほか
+[1] P73 異議あり（例外あり） 元の命題: 判例 16 件: db-2023, g-2015, b-2018, m-2016, l-2014 ほか

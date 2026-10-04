@@ -106,6 +106,18 @@ Different formulas may look at the same thing under different names, or reach th
 
 The seasons that a description cannot explain, or explains only through the baseline, are where new indicators are found. Digging into them is the work, not a footnote to it.
 
+## Same Outcome, Different Routes
+
+Two seasons can end in the same place for different reasons. Forcing one proposition to explain both usually explains neither.
+
+Give each route its own proposition. A single season is a single unit, so a route is generalized into a class of units that share its situation (for example, "a positive run differential but a B-class finish"), and the proposition is checked on the other members of that class, with the season that motivated it held out.
+
+## Mirrors Are Findings
+
+Sometimes two measures move as mirror images: when one is positive, the other is negative. This is not noise to be averaged away, and not a failed proposition.
+
+A mirror means the two measures are linked. Rotating them often shows the link directly: their sum and their difference can be two different things (for example, "who scored more than expected" and "how many runs the games had"). Record mirrors as findings and keep them.
+
 ---
 
 # Unknown Is Better Than False Certainty

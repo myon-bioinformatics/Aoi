@@ -992,3 +992,111 @@ context = ["opp_rf_gap_top", "opp_ra_gap_top", "opp_adj_top", "alloc_z_strat"]
 links = ["H3", "H9"]
 falsifier = "強い相手に見込みより負けたチーム・シーズンの半数以上で、点の差どおり以上に勝っている"
 note = "点の差を勝ち負けに変える部分（R1 の組み合わせ方と近い）が、強い相手との差にどれだけ入っているかを見る"
+
+# ---- R17: 2014年と2019年は別の道筋として、鏡のような結果は連動として（research/R17-routes-and-mirrors.md） ----
+# 追加: 2026-10-04。ユーザーの見方から。opp_net_gap_*_c・opp_env_gap_*_c は実データでまだ計算していない。
+# P74・P75 は R16 の読み直しを見た後の言い直し（結果の更新）。P76〜P78・P80 は中日のその年を見て作った（他のチームの値は見ていない）。
+
+[[proposition]]
+id = "P74"
+parent = "P70"
+change = "見込みの式が相手のグループで偏っていた（R16 の自分への異議）ので、同じ年・同じリーグの全球団の平均を引いた値に変えた。R16 の読み直しを見た後の言い直し"
+statement = "中日は、強い相手に対して、得点が見込みより（同じ年・同じリーグの全球団の平均と比べて）少ない"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_rf_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_rf_gap_top_c"
+context = ["opp_ra_gap_top_c", "opp_env_gap_top_c", "opp_adj_top", "rank"]
+links = ["H2", "H5", "H6"]
+falsifier = "中日のシーズンの4分の1を超えて、平均を引いた得点の差が 0 以上"
+
+[[proposition]]
+id = "P75"
+parent = "P71"
+change = "P74 と同じ変更（平均を引いた値）"
+statement = "中日は、強い相手に対して、失点が見込みより（同じ年・同じリーグの全球団の平均と比べて）多い"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_ra_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_ra_gap_top_c"
+context = ["opp_rf_gap_top_c", "opp_env_gap_top_c", "opp_adj_top", "rank"]
+links = ["H2"]
+falsifier = "中日のシーズンの4分の1を超えて、平均を引いた失点の差が 0 以上"
+
+[[proposition]]
+id = "P76"
+parent = "P74"
+change = "中日だけから、2019年と同じ状況（得失点差がプラスなのに B クラス）のチーム・シーズン全体に広げた。2019年は作るきっかけなので held-out から除く"
+motivated_by = ["d-2019"]
+statement = "得失点差がプラスなのに B クラスだったチームは、強い相手から（平均と比べて）得点できていない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rd", op = ">", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "opp_rf_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_rf_gap_top_c"
+context = ["opp_ra_gap_top_c", "opp_env_gap_top_c", "opp_adj_top", "sim_p_upper"]
+links = ["H3", "H5"]
+falsifier = "held-out（中日 2019 を除く）で、得点の差が負のチーム・シーズンが半数以下"
+note = "2019年の道筋。2014年の道筋（P77・P78）と両方成り立つ必要はない"
+
+[[proposition]]
+id = "P77"
+parent = "P53"
+change = "3位と4位すべてから、2014年と同じ状況（4位で、分布の見込みが 0.5 以上）に絞り、結論を「直接対決で負け越し」にした。2014年は作るきっかけなので held-out から除く"
+motivated_by = ["d-2014"]
+statement = "4位で、得点・失点の分布から見た A クラスの見込みが 0.5 以上だったチームは、3位との直接対決で負け越している"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = "==", value = 4 }, { col = "sim_p_upper", op = ">=", value = 0.5 }] }
+if = []
+then = [{ col = "pair34_net", op = "<", value = 0 }]
+surprise = "pair34_net"
+context = ["sim_p_upper", "opp_conv_top", "opp_adj_top", "vs_lower_wpct"]
+links = ["H3", "H9"]
+falsifier = "held-out（中日 2014 を除く）で、直接対決で負け越したチームが半数以下"
+note = "2014年の道筋その1"
+
+[[proposition]]
+id = "P78"
+parent = "P73"
+change = "全球団から、2014年と同じ状況（4位で、分布の見込みが 0.5 以上）に絞った。2014年は作るきっかけなので held-out から除く"
+motivated_by = ["d-2014"]
+statement = "4位で、得点・失点の分布から見た A クラスの見込みが 0.5 以上だったチームは、強い相手との試合で点の差どおりに勝てていない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = "==", value = 4 }, { col = "sim_p_upper", op = ">=", value = 0.5 }] }
+if = []
+then = [{ col = "opp_conv_top", op = "<", value = 0 }]
+surprise = "opp_conv_top"
+context = ["sim_p_upper", "pair34_net", "opp_adj_top", "alloc_z_strat"]
+links = ["H3", "H9"]
+falsifier = "held-out（中日 2014 を除く）で、点の差どおり以上に勝っていたチームが半数以上"
+note = "2014年の道筋その2"
+
+[[proposition]]
+id = "P79"
+statement = "強い相手に対して得点が（平均と比べて）見込みより少なければ、失点も見込みより少ない（鏡の形）"
+strength = "more_often_than_not"
+if = [{ col = "opp_rf_gap_top_c", op = "<", value = 0 }]
+then = [{ col = "opp_ra_gap_top_c", op = ">", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["opp_rf_gap_top_c", "opp_ra_gap_top_c", "opp_net_gap_top_c"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。鏡の形は中日の数年に偶然出たもので、全球団の連動ではない"
+note = "中日の 2019・2021・2022年で見た形を全球団で確かめる。成り立てば、連動の正体は試合全体の点の多さ（env）の側"
+
+[[proposition]]
+id = "P80"
+parent = "P76"
+change = "結論を「得点の差が負」から「試合全体の点が少ない（env < 0）」に変えた（2019年の得点 −57・失点 +13 の鏡の形から）"
+motivated_by = ["d-2019"]
+statement = "得失点差がプラスなのに B クラスだったチームは、強い相手との試合全体の点が（平均と比べて）少ない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rd", op = ">", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "opp_env_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["opp_rf_gap_top_c", "opp_ra_gap_top_c", "opp_net_gap_top_c"]
+links = ["H3"]
+falsifier = "held-out（中日 2019 を除く）で、試合全体の点が少なかったチームが半数以下"
+note = "2019年の道筋を、鏡の形（env）で言い直したもの。P76 と並べて読む"

@@ -1387,3 +1387,58 @@ context = ["traj_rank_shape", "traj_rank_peak_x", "rank"]
 links = ["H6"]
 falsifier = "（基準の命題。P100 と率を比べるために置く）"
 note = "P100 の比べる相手"
+
+# ---- R23: 順位の線を、始まりの値から収束していく波で表す（research/R23-converging-wave.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。wave_* は実データでまだ計算していない（R22 の3次式の結果は見ている）。
+
+[[proposition]]
+id = "P102"
+statement = "中日の B クラスの年は、順位が決まった位置（波のゆれの幅が半順位を下回る位置）が、力が一定のときの半分より早い"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "wave_settle_pct", op = "<", value = 0.5 }]
+surprise = "wave_settle_x"
+context = ["wave_limit_rank", "wave_decay", "wave_period", "rank"]
+links = ["H1", "H6"]
+falsifier = "中日の B クラスの年のうち、力が一定のときより早く決まった年が半数以下"
+note = "P103（中日以外の B クラス）と並べて読む"
+
+[[proposition]]
+id = "P103"
+statement = "中日以外の B クラスのチームは、順位が決まった位置が、力が一定のときの半分より早い"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "wave_settle_pct", op = "<", value = 0.5 }]
+surprise = "wave_settle_x"
+context = ["wave_limit_rank", "wave_decay", "wave_period", "rank"]
+links = ["H1", "H6"]
+falsifier = "（基準の命題。P102 と率を比べるために置く）"
+note = "P102 の比べる相手"
+
+[[proposition]]
+id = "P104"
+statement = "中日の B クラスの年は、前半の線だけから当てた波の行き先が、もう4位以下"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+falsifier = "中日の B クラスの年のうち、前半の行き先が4位以下だった年が半数以下"
+note = "減衰しない波が選ばれた年は行き先が空（判定不能）。P105 と並べて読む"
+
+[[proposition]]
+id = "P105"
+statement = "中日以外の B クラスのチームは、前半の線だけから当てた波の行き先が、もう4位以下"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+falsifier = "（基準の命題。P104 と率を比べるために置く）"
+note = "P104 の比べる相手"

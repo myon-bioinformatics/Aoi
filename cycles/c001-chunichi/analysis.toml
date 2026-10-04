@@ -22,6 +22,13 @@ e  = { name = "楽天", league = "P" }
 l  = { name = "西武", league = "P" }
 m  = { name = "ロッテ", league = "P" }
 
+# シーズンの中の線（R22・R23）。リーグの全球団が min_games 試合に届いた日から線を引く（開幕直後の揺れを除く）。
+# 結果には traj_start_games・traj_start_x・traj_start_date として「何試合を終えた段階からの線か」が残る。
+# sims は、力が一定（その年の勝率）のシーズンを作り直す回数（山・谷・波・順位の決まる位置の基準）。
+[trajectory]
+min_games = 10
+sims = 200
+
 # まだ使っていない年での確かめ（R18、research/R18-confirmation-2026.md）。命題を作るのに使っていない年の単位だけを、
 # 命題ごとに4つの欄（成立・判例・逆の判例・どちらも当たらない）に分けて outputs/confirmation.md に並べる。
 # 年をデータに入れるのは、その年の公式戦が全球団で終わってから（pipeline.toml の years）。

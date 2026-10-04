@@ -1,0 +1,71 @@
+{
+  "source": "User-supplied Grok Part2 update, received 2026-10-03",
+  "data_sha256": "7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9",
+  "aggregation": "unweighted mean of 13 annual metrics",
+  "checks": {
+    "R/G": {
+      "supplied": 3.338,
+      "computed": 3.338146255453948,
+      "matches_display_rounding": true
+    },
+    "RA/G": {
+      "supplied": 3.805,
+      "computed": 3.8049855059470445,
+      "matches_display_rounding": true
+    },
+    "RD/G": {
+      "supplied": -0.467,
+      "computed": -0.46683925049309666,
+      "matches_display_rounding": true
+    },
+    "pythW_diff": {
+      "supplied": 1.693,
+      "computed": 1.6934879643189382,
+      "matches_display_rounding": true
+    },
+    "one_run_win_rate": {
+      "supplied": 0.495,
+      "computed": 0.4951762860458888,
+      "matches_display_rounding": true
+    },
+    "three_plus_win_rate": {
+      "supplied": 0.421,
+      "computed": 0.4205457824116958,
+      "matches_display_rounding": true
+    },
+    "home_win_rate": {
+      "supplied": 0.517,
+      "computed": 0.5166488027031407,
+      "matches_display_rounding": true
+    },
+    "away_win_rate": {
+      "supplied": 0.389,
+      "computed": 0.3889557497422054,
+      "matches_display_rounding": true
+    },
+    "wins_one_run_share": {
+      "supplied": 0.33,
+      "computed": 0.33031992632389834,
+      "matches_display_rounding": true
+    },
+    "wins_four_plus_share": {
+      "supplied": 0.29,
+      "computed": 0.2904306720611373,
+      "matches_display_rounding": true
+    }
+  },
+  "negative_pythagorean_residual_years": [
+    2014,
+    2015,
+    2016,
+    2018,
+    2019
+  ],
+  "not_checked": [
+    "inning trajectories",
+    "2026",
+    "all-team ranks",
+    "standardized differences",
+    "official rank tie-breaks"
+  ]
+}

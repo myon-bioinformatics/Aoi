@@ -1,0 +1,10 @@
+{
+  "plan_commit": "9035ab67e7c70efb71c0a21a03ac8088f5bf18a5",
+  "result_sha256": "c222d100397dfa2460c679f6020448d1c71ed3b8e5db9dcb45b50fecb54b0b96",
+  "annual_checks": 936,
+  "independently_replayed_cells": 14976,
+  "integer_values": 194688,
+  "walkoff_venue_aggregates": 312,
+  "replay_bytes_equal": true,
+  "scope": "aggregate scorelines; no new HTML or pitcher/event verification"
+}

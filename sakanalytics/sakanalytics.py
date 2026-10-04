@@ -57,6 +57,8 @@
   traj_rank_* / traj_wl_*          日付ごとの順位の高さ・貯金の線を3次式でならした形（山・谷・その位置・最後の傾き）と、
                                    力が一定でも山・谷ができる割合 *_base（R22。season_trajectory）。traj_start_* は線の始まり
   wave_*                           順位の線を、始まりの値から出発して減衰する波で表したもの（収束する先・決まった位置・周期、R23）
+  series_*                         カード（同じ相手・同じ球場で続けての試合）ごとの勝ち数: 負け越したカード、勝ち数の散らばり、
+                                   1試合目とそれ以外の勝率の差、3連戦の 0〜3勝の数と、力が一定のときとの比べ（R24。series_features）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -834,6 +836,108 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
     return pl.DataFrame(rows, schema=schema)
 
 
+SERIES_GAP_DAYS = 3  # 同じ相手・同じ球場でも、前の試合から3日以上あいたら別のカード
+
+
+def _series_of(games: list[tuple]) -> list[list[int]]:
+    """1球団の試合（日付順の (日の通し番号, 試合の番号, 相手, ホームか)）を、カード（同じ相手・同じ球場で続けての試合）に分ける。"""
+    out, cur = [], []
+    for d, g, opp, home in games:
+        if cur and (opp != cur[-1][2] or home != cur[-1][3] or d - cur[-1][0] >= SERIES_GAP_DAYS):
+            out.append([x[1] for x in cur])
+            cur = []
+        cur.append((d, g, opp, home))
+    return out + ([[x[1] for x in cur]] if cur else [])
+
+
+def _series_stats(team: str, series: list[list[int]], winners: list, p: dict) -> dict:
+    """カードごとの勝ち数の数え上げ。p[g] はその試合に勝つ見込み（力が一定のとき）。"""
+    n = lost = g1w = g1n = rw = rn = 0
+    num = den = 0.0
+    counts = [0, 0, 0, 0]
+    for s in series:
+        dec = [g for g in s if winners[g] is not None]
+        w = sum(winners[g] == team for g in dec)
+        if len(dec) >= 2:
+            n, lost = n + 1, lost + (w < len(dec) - w)
+            num += (w - sum(p[g] for g in dec)) ** 2
+            den += sum(p[g] * (1 - p[g]) for g in dec)
+        if len(s) == 3 and len(dec) == 3:
+            counts[w] += 1
+        if len(s) >= 2:
+            if winners[s[0]] is not None:
+                g1n, g1w = g1n + 1, g1w + (winners[s[0]] == team)
+            for g in s[1:]:
+                if winners[g] is not None:
+                    rn, rw = rn + 1, rw + (winners[g] == team)
+    return {"n": n, "lost": lost, "disp": num / den if den else None, "counts": counts,
+            "g1_minus_rest": g1w / g1n - rw / rn if g1n and rn else None}
+
+
+def series_features(tg: pl.DataFrame, sims: int = TRAJ_SIMS) -> pl.DataFrame:
+    """R24: カード（同じ相手・同じ球場で続けての試合。3日以上あけば別のカード）ごとの勝ち数。
+
+    力が一定（その年の勝率）なら、各試合の勝敗は独立で、勝つ見込みは両チームの勝率の Log5。それと比べて:
+      series_n / series_lost / series_lost_share : 勝敗のついた試合が2つ以上のカードの数、負け越したカードの数とその割合
+      series_lost_pct  : 力が一定のシーズン（実際の日程のまま勝敗を引き直す、sims 回）のうち、負け越したカードが実際より少なかった割合
+                         （同じなら半分数える）。大きいほど、実際は力が一定のときより多くのカードを負け越した
+      series_disp      : カードごとの勝ち数の散らばり Σ(勝ち数 − 見込み)² ÷ Σ 見込みの分散。毎試合独立ならおよそ 1。
+                         1 より小さいとカードの中で勝ち負けが釣り合う（1勝2敗・2勝1敗に寄る。決まった並び順があるときの形）、
+                         大きいとカードごとに偏る（3連勝・3連敗に寄る）
+      series_disp_pct  : 力が一定のシーズンのうち、散らばりが実際より小さかった割合（小さいほど、実際の散らばりが小さい）
+      series_g1_minus_rest : カードの1試合目の勝率 − 2試合目以降の勝率（2試合以上のカード）
+      series3_w0..w3 / *_exp : 3試合とも勝敗のついた3連戦で、0〜3勝だったカードの数と、力が一定のときの見込み
+    """
+    rows = []
+    for (season,), sg in tg.filter(pl.col("is_home")).sort("date").group_by(["season"], maintain_order=True):
+        winners, pairs, by_team = [], [], {}
+        for g, (d, home, away, hs, as_) in enumerate(sg.select("date", "team", "opp", "rf", "ra").iter_rows()):
+            winners.append(home if hs > as_ else away if as_ > hs else None)
+            pairs.append((home, away))
+            o = date.fromisoformat(d).toordinal()
+            by_team.setdefault(home, []).append((o, g, away, True))
+            by_team.setdefault(away, []).append((o, g, home, False))
+        wins, losses = Counter(), Counter()
+        for win, (h, a) in zip(winners, pairs):
+            if win is not None:
+                wins[win] += 1
+                losses[a if win == h else h] += 1
+        pct = {t: wins[t] / (wins[t] + losses[t]) if wins[t] + losses[t] else 0.5 for t in by_team}
+        series = {t: _series_of(gs) for t, gs in by_team.items()}
+        prob = {t: {g: log5(pct[t], pct[opp]) for _, g, opp, _ in gs} for t, gs in by_team.items()}
+        actual = {t: _series_stats(t, series[t], winners, prob[t]) for t in by_team}
+        rng, reps = random.Random(season * 1000 + 24), {t: [] for t in by_team}
+        for _ in range(sims):
+            sim = [None if win is None else (h if rng.random() < log5(pct[h], pct[a]) else a)
+                   for win, (h, a) in zip(winners, pairs)]
+            for t in by_team:
+                reps[t].append(_series_stats(t, series[t], sim, prob[t]))
+        for t, a in actual.items():
+            exp = [0.0] * 4
+            for s in series[t]:
+                if len(s) == 3 and all(winners[g] is not None for g in s):
+                    dist = [1.0]
+                    for g in s:
+                        q = prob[t][g]
+                        dist = [(dist[k] if k < len(dist) else 0) * (1 - q) + (dist[k - 1] * q if k else 0) for k in range(len(dist) + 1)]
+                    exp = [e + x for e, x in zip(exp, dist)]
+
+            def pct_below(key, value):
+                vs = [r[key] for r in reps[t] if r[key] is not None]
+                return (sum(v < value for v in vs) + 0.5 * sum(v == value for v in vs)) / len(vs) if vs and value is not None else None
+            rows.append({"season": season, "team": t, "series_n": a["n"], "series_lost": a["lost"],
+                         "series_lost_share": a["lost"] / a["n"] if a["n"] else None,
+                         "series_lost_pct": pct_below("lost", a["lost"]), "series_disp": a["disp"],
+                         "series_disp_pct": pct_below("disp", a["disp"]), "series_g1_minus_rest": a["g1_minus_rest"],
+                         **{f"series3_w{k}": a["counts"][k] for k in range(4)},
+                         **{f"series3_w{k}_exp": exp[k] for k in range(4)}})
+    schema = {"season": pl.Int32, "team": pl.Utf8, "series_n": pl.Int64, "series_lost": pl.Int64,
+              "series_lost_share": pl.Float64, "series_lost_pct": pl.Float64, "series_disp": pl.Float64,
+              "series_disp_pct": pl.Float64, "series_g1_minus_rest": pl.Float64,
+              **{f"series3_w{k}": pl.Int64 for k in range(4)}, **{f"series3_w{k}_exp": pl.Float64 for k in range(4)}}
+    return pl.DataFrame(rows, schema=schema)
+
+
 def log5(p: float, q: float) -> float:
     """勝率 p のチームが勝率 q のチームに勝つ見込み（Log5）。リーグ平均 .500 を基準にした形。"""
     d = p + q - 2 * p * q
@@ -1018,8 +1122,10 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFra
     st = st.join(win_loss_split(tg), on=["season", "team"], how="left")
     st = st.join(season_course(tg, st), on=["season", "team"], how="left")
     traj = trajectory or {}  # 分析設定の [trajectory]（線の始まりの試合数・力が一定のシーズンの作り直しの回数）
-    st = st.join(season_trajectory(tg, sims=int(traj.get("sims", TRAJ_SIMS)),
-                                   min_games=int(traj.get("min_games", TRAJ_MIN_GAMES))), on=["season", "team"], how="left")
+    sims = int(traj.get("sims", TRAJ_SIMS))
+    st = st.join(season_trajectory(tg, sims=sims, min_games=int(traj.get("min_games", TRAJ_MIN_GAMES))),
+                 on=["season", "team"], how="left")
+    st = st.join(series_features(tg, sims=sims), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 
@@ -1067,10 +1173,13 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--innings", type=Path, help="イニング単位の集計（CSV / CSV.gz、R4）。あれば inn_* の列を加える")
     ap.add_argument("--batting", type=Path, help="チーム打撃成績の観測（JSONL、R6）。あれば bat_* の率を加える")
+    ap.add_argument("--sensitivity-out", type=Path,
+                    help="線の始まりの試合数を [trajectory] sensitivity の各値に変えた線の読み（R25）の書き出し先")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
-    st = season_table(to_team_games(pl.read_ndjson(args.games), cfg["teams"]), trajectory=cfg.get("trajectory"))
+    tg = to_team_games(pl.read_ndjson(args.games), cfg["teams"])
+    st = season_table(tg, trajectory=cfg.get("trajectory"))
     if args.innings:
         raw = pl.read_csv(args.innings)
         if "year" in raw.columns:  # PR #3 の形式: year, team, venue, role, window, ...
@@ -1081,6 +1190,13 @@ def main(argv=None) -> int:
     st = add_persistence(st)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
+    if args.sensitivity_out:
+        traj = cfg.get("trajectory") or {}
+        parts = [season_trajectory(tg, sims=int(traj.get("sims", TRAJ_SIMS)), min_games=int(m))
+                 for m in traj.get("sensitivity", [])]
+        if parts:
+            st.select("season", "team", "team_name", "league", "rank", "upper_half").join(
+                pl.concat(parts), on=["season", "team"], how="inner").write_ndjson(args.sensitivity_out)
     focus = cfg.get("focus", {}).get("team")
     if focus:
         pl.Config.set_tbl_rows(40).set_tbl_cols(20).set_float_precision(3)

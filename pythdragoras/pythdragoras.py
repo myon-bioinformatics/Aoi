@@ -151,6 +151,51 @@ def shape_expectation(st: pl.DataFrame) -> list[dict]:
     return out
 
 
+SENS_COLS = ["season", "team", "team_name", "rank", "upper_half", "traj_start_games", "wave_settle_x", "wave_settle_pct",
+             "wave_decay", "wave_limit_rank", "traj_rank_peak", "traj_rank_peak_base", "traj_wl_peak", "traj_wl_peak_base"]
+
+
+def trajectory_sensitivity(st: pl.DataFrame, units: pl.DataFrame | None, focus: str | None) -> list[dict]:
+    """R25: 線の始まりの試合数（traj_start_games）を変えたとき、R22・R23 の読みが保たれるか。
+
+    st（いつもの試合数）と units（ほかの試合数、同じ列）を並べ、試合数 × 群（注目チームの B クラス・他の B クラス・A クラス）ごとに:
+      units / settle_median（順位が決まった位置の中央値。決まらなかった単位を除く）/ settle_never（決まらなかった単位の数）
+      early_share（力が一定のときより早く決まった単位 = wave_settle_pct < 0.5 の割合）/ converge_share（減衰する波の割合）
+      near_final_share（収束する先が実際の最終順位から1未満の割合。収束した単位のうち）
+      rank_peak / wl_peak : 山の数（観測、見込み、P(見込み以上)）
+    """
+    if any(c not in st.columns for c in SENS_COLS):
+        return []
+    frames = [st.select(SENS_COLS)] + ([units.select(SENS_COLS)] if units is not None and units.height else [])
+    df = pl.concat(frames, how="vertical_relaxed")
+    upper, mine = pl.col("upper_half"), pl.col("team") == (focus or "")
+    groups = [("注目チームの B クラス", mine & ~upper), ("他の B クラス", ~mine & ~upper), ("A クラス", upper)]
+    out = []
+    for m in sorted({m for m in df["traj_start_games"].to_list() if m is not None}):
+        for name, cond in groups:
+            g = df.filter((pl.col("traj_start_games") == m) & cond)
+            settle = sorted(x for x in g["wave_settle_x"].to_list() if x is not None)
+            conv = g.filter(pl.col("wave_decay") > 0)
+            row = {"min_games": m, "group": name, "units": g.height,
+                   "settle_median": round(settle[len(settle) // 2] if len(settle) % 2 else
+                                          (settle[len(settle) // 2 - 1] + settle[len(settle) // 2]) / 2, 3) if settle else None,
+                   "settle_never": g.height - len(settle),
+                   "early_share": round(sum(x < 0.5 for x in g["wave_settle_pct"].to_list() if x is not None) / g.height, 3)
+                   if g.height else None,
+                   "converge_share": round(conv.height / g.height, 3) if g.height else None,
+                   "near_final_share": round(sum(abs(a - b) < 1 for a, b in zip(conv["wave_limit_rank"].to_list(),
+                                                                              conv["rank"].to_list())) / conv.height, 3)
+                   if conv.height else None}
+            for flag in ("traj_rank_peak", "traj_wl_peak"):
+                sub = g.filter(pl.col(flag).is_not_null() & pl.col(f"{flag}_base").is_not_null())
+                ps, obs = sub[f"{flag}_base"].to_list(), sum(sub[flag].to_list())
+                dist = _poisson_binomial(ps)
+                row[flag.removeprefix("traj_")] = {"observed": obs, "expected": round(sum(ps), 2),
+                                                   "p_ge_obs": round(sum(dist[obs:]), 4)}
+            out.append(row)
+    return out
+
+
 def rank_expectation(st: pl.DataFrame) -> list[dict]:
     """R10: 得点・失点の分布から見た A クラスの回数の期待値と、実際の回数。
 
@@ -337,6 +382,8 @@ def main(argv=None) -> int:
     ap.add_argument("--propositions", type=Path, help="命題（TOML）。docs/propositions.md の形式")
     ap.add_argument("--claims", type=Path, help="外部の主張（TOML）")
     ap.add_argument("--outdir", type=Path, required=True)
+    ap.add_argument("--trajectory-sensitivity", type=Path,
+                    help="線の始まりの試合数を変えた線の読み（SakAnalytics の --sensitivity-out、R25）。あれば読みが保たれるかを並べる")
     args = ap.parse_args(argv)
 
     with args.config.open("rb") as f:
@@ -369,6 +416,9 @@ def main(argv=None) -> int:
     _jsonl(args.outdir / "persistence.jsonl", pers)
     _jsonl(args.outdir / "rank_expectation.jsonl", rank_expectation(included))
     _jsonl(args.outdir / "trajectory_expectation.jsonl", shape_expectation(included))
+    if args.trajectory_sensitivity and args.trajectory_sensitivity.exists():
+        units, _ = apply_exclusions(pl.read_ndjson(args.trajectory_sensitivity), cfg.get("exclude", []))
+        _jsonl(args.outdir / "trajectory_sensitivity.jsonl", trajectory_sensitivity(included, units, focus))
     keep = ["inn_dlog_size", "rf_def_total", "sim_p_upper", "wpct", "opp_env_gap_top_c", "opp_net_gap_top_c"]
     _jsonl(args.outdir / "persistence_by_team.jsonl", persistence_by_team(included, keep))
     _jsonl(args.outdir / "persistence_all.jsonl", persistence(included, keep))

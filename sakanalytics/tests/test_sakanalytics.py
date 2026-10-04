@@ -509,3 +509,42 @@ def test_net_and_env_are_a_rotation_of_scoring_and_prevention_gaps():
         assert r["opp_net_gap_top_c"] == pytest.approx(rf + ra) and r["opp_env_gap_top_c"] == pytest.approx(rf - ra)
         # 元に戻せる（回しただけで情報は増えも減りもしない）
         assert (r["opp_net_gap_top_c"] + r["opp_env_gap_top_c"]) / 2 == pytest.approx(rf)
+
+
+def test_win_loss_split_by_hand():
+    from sakanalytics import win_loss_split
+    # 中日のホーム4試合: (1,0) 勝 (5,4) 勝 (0,3) 負 (2,6) 負。合計得点 1, 9, 3, 8 → 中央値 5.5
+    tg = to_team_games(games([("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 5, 4),
+                              ("2024-04-03", "d", "g", 0, 3), ("2024-04-04", "d", "g", 2, 6)]), TEAMS)
+    d = win_loss_split(tg).filter(pl.col("team") == "d").row(0, named=True)
+    # 得点 {1,5,0,2} と失点 {0,4,3,6} の16通りの組: 勝ち5組（得点の和 1 + 5×3 + 2 = 18）、負け10組（和 1×3 + 5 + 0 + 2×3 = 14）、引き分け1組
+    assert (d["wl_rf_win"], d["wl_rf_win_exp"], d["wl_rf_win_gap"]) == pytest.approx((3.0, 18 / 5, 3.0 - 18 / 5))
+    assert (d["wl_rf_loss"], d["wl_rf_loss_exp"], d["wl_rf_loss_gap"]) == pytest.approx((1.0, 14 / 10, 1.0 - 14 / 10))
+    # 合計 5.5 以下の組: 勝ち3・負け5（引き分け1を除く）、より多い組: 勝ち2・負け5。実際は低い側・高い側とも1勝1敗
+    assert (d["wl_wpct_low"], d["wl_wpct_low_exp"]) == pytest.approx((0.5, 3 / 8))
+    assert (d["wl_wpct_high"], d["wl_wpct_high_exp"], d["wl_wpct_high_gap"]) == pytest.approx((0.5, 2 / 7, 0.5 - 2 / 7))
+
+
+def test_win_loss_split_pairs_runs_within_home_and_away_only():
+    from sakanalytics import win_loss_split
+    # ホームは点が入りにくく（1-0, 0-1）、ビジターは入りやすい（6-5, 5-6）。
+    # ホームとビジターを混ぜて組み合わせると、勝ちの見込みの得点は 29/6 ≈ 4.83 になり、球場の違いが差に出てしまう
+    tg = to_team_games(games([("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 0, 1),
+                              ("2024-04-03", "g", "d", 5, 6), ("2024-04-04", "g", "d", 6, 5)]), TEAMS)
+    d = win_loss_split(tg).filter(pl.col("team") == "d").row(0, named=True)
+    assert (d["wl_rf_win"], d["wl_rf_win_exp"], d["wl_rf_win_gap"]) == pytest.approx((3.5, 3.5, 0.0))
+
+
+def test_season_course_by_hand():
+    st = season_table(to_team_games(games([("2024-04-01", "d", "g", 3, 2), ("2024-04-02", "d", "g", 5, 1),
+                                           ("2024-04-03", "d", "g", 1, 4), ("2024-04-04", "d", "g", 0, 2)]), TEAMS))
+    v = {r["team"]: r for r in st.iter_rows(named=True)}
+    d, g = v["d"], v["g"]
+    assert (d["course_wpct_h1"], d["course_wpct_h2"], d["course_wpct_diff"]) == pytest.approx((1.0, 0.0, -1.0))
+    assert (d["course_rank_h1"], g["course_rank_h1"]) == (1, 2)
+    assert (d["rank"], g["rank"], d["course_fade"], g["course_fade"]) == (1, 1, 0, -1)  # 2勝2敗どうしで同率1位
+    # 得点／試合: d は前半 4 → 後半 0.5（−3.5）、g は 1.5 → 3（+1.5）。失点はその裏返し
+    assert (d["course_rf_d"], d["course_ra_d"]) == pytest.approx((-5.0, 5.0))
+    assert d["course_close_win_h1"] == pytest.approx(0.5)     # 前半の勝ち 1点差・4点差のうち2点差以内は1つ
+    assert g["course_close_win_h1"] is None                    # 前半に勝ちがない
+    assert d["course_close_win_h1_d"] is None                  # 比べる他球団の値がない（0 で割らない）

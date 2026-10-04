@@ -29,6 +29,7 @@ m  = { name = "ロッテ", league = "P" }
 min_games = 10
 sims = 200
 sensitivity = [5, 20, 30]   # R25: 線の始まりを変えても読みが保たれるかを確かめる試合数（outputs/trajectory_sensitivity.jsonl）
+ends = ["decided"]          # R26: 線の終わりを、そのリーグで1〜3位の顔ぶれが決まった日にした線も作る（始まりは min_games）
 
 # まだ使っていない年での確かめ（R18、research/R18-confirmation-2026.md）。命題を作るのに使っていない年の単位だけを、
 # 命題ごとに4つの欄（成立・判例・逆の判例・どちらも当たらない）に分けて outputs/confirmation.md に並べる。

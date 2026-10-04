@@ -1524,3 +1524,45 @@ context = ["series_disp", "rank"]
 links = ["H8"]
 falsifier = "（基準の命題。P110 と率を比べるために置く）"
 note = "P110 の比べる相手"
+
+# ---- R26: A クラスに入る・入れないが決まった日（research/R26-decided-dates.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。clinch_*・traj_wl_peak_after_clinch は実データでまだ計算していない。
+
+[[proposition]]
+id = "P112"
+statement = "中日の B クラスの年は、B クラスが（数の上で）確定した日に、残り試合が10以上あった"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "clinch_out_left", op = ">=", value = 10 }]
+surprise = "clinch_out_x"
+context = ["clinch_out_left", "decided_x", "rank"]
+links = ["H1"]
+falsifier = "中日の B クラスの年のうち、残り10試合以上で確定した年が半数以下"
+note = "確定の日は控えめ（直接対決の残りを考えない）。P113 と並べて読む"
+
+[[proposition]]
+id = "P113"
+statement = "中日以外の B クラスのチームは、B クラスが確定した日に、残り試合が10以上あった"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "clinch_out_left", op = ">=", value = 10 }]
+surprise = "clinch_out_x"
+context = ["clinch_out_left", "decided_x", "rank"]
+links = ["H1"]
+falsifier = "（基準の命題。P112 と率を比べるために置く）"
+note = "P112 の比べる相手"
+
+[[proposition]]
+id = "P114"
+statement = "A クラスで貯金の線に山があるチームは、その山が A クラスの確定より後にある（決まった後に落とす）"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = true }, { col = "traj_wl_peak", op = "==", value = true }] }
+if = []
+then = [{ col = "traj_wl_peak_after_clinch", op = "==", value = true }]
+surprise = "traj_wl_peak_x"
+context = ["clinch_in_x", "traj_wl_peak_after_clinch_base", "rank"]
+links = ["H6"]
+falsifier = "確定後の山の数が、力が一定のときの見込みの範囲（trajectory_expectation.jsonl で P ≥ 0.05）"
+note = "R22・R25 の「A クラスの貯金の山は見込みより多い」が、決まった後の試合から来ているかを見る"

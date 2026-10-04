@@ -1,0 +1,85 @@
+# R11: 「B クラス」を言い当てる条件の組み合わせの候補（research/R11-b-class-rule.md）
+# 記録: 2026-10-04。探索を実行する前に書いた。候補を後から足して探し直すときは、この版を残して別のファイルにする。
+# 全年にそろっている列だけを使う（イニング集計の inn_* は 2012年がないので入れない）。順位・勝率そのものは使わない。
+
+target = [{ col = "upper_half", op = "==", value = false }]
+max_terms = 2   # 「または」でつなぐ組の数の上限
+max_conds = 2   # 1つの組の中の「かつ」の数の上限
+
+# 得点・失点の分布から見た A クラスの確率（R10）
+[[candidate]]
+col = "sim_p_upper"
+op = "<"
+value = 0.3
+[[candidate]]
+col = "sim_p_upper"
+op = "<"
+value = 0.4
+[[candidate]]
+col = "sim_p_upper"
+op = "<"
+value = 0.5
+[[candidate]]
+col = "sim_p_upper"
+op = "<"
+value = 0.6
+
+# 得失点差
+[[candidate]]
+col = "rd"
+op = "<"
+value = -50
+[[candidate]]
+col = "rd"
+op = "<"
+value = 0
+[[candidate]]
+col = "rd"
+op = "<"
+value = 50
+
+# 期待勝利数（ピタゴラス）との差
+[[candidate]]
+col = "wins_vs_pythag"
+op = "<"
+value = -4
+[[candidate]]
+col = "wins_vs_pythag"
+op = "<"
+value = -2
+[[candidate]]
+col = "wins_vs_pythag"
+op = "<"
+value = 0
+
+# 得点・失点のリーグ内順位
+[[candidate]]
+col = "rank_rf"
+op = ">="
+value = 4
+[[candidate]]
+col = "rank_rf"
+op = ">="
+value = 5
+[[candidate]]
+col = "rank_ra"
+op = ">="
+value = 3
+[[candidate]]
+col = "rank_ra"
+op = ">="
+value = 4
+
+# 配分（R1）・1点差（P9〜P11）・得点の効率（R9）
+[[candidate]]
+col = "alloc_z_strat"
+op = "<"
+value = -1
+[[candidate]]
+col = "one_run_net"
+op = "<"
+value = 0
+[[candidate]]
+col = "bat_d_r_runner"
+op = "<"
+value = 0

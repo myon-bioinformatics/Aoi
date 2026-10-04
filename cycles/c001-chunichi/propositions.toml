@@ -1442,3 +1442,85 @@ context = ["wave_limit_rank", "course_rank_h1", "rank"]
 links = ["H1", "H6"]
 falsifier = "（基準の命題。P104 と率を比べるために置く）"
 note = "P104 の比べる相手"
+
+# ---- R24: カードごとの勝ち数と、決まった並び順（research/R24-series.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。series_* は実データでまだ計算していない。
+# どの命題も、力が一定のときなら半分ほどの単位で起きる。支持（区間の下端が 0.5 を超える）なら、それを超えた形がある。
+
+[[proposition]]
+id = "P106"
+statement = "中日は、負け越したカードが、力が一定（その年の勝率）のときより多い"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = []
+then = [{ col = "series_lost_pct", op = ">", value = 0.5 }]
+surprise = "series_lost_share"
+context = ["series_disp", "series3_w1", "series3_w1_exp", "rank"]
+links = ["H8"]
+falsifier = "中日の年のうち、力が一定のときより多くのカードを負け越した年が半数以下"
+note = "見立て「3連戦で2敗を引き当て続ける」。P107 と並べて読む"
+
+[[proposition]]
+id = "P107"
+statement = "中日以外のチームは、負け越したカードが、力が一定のときより多い"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "series_lost_pct", op = ">", value = 0.5 }]
+surprise = "series_lost_share"
+context = ["series_disp", "rank"]
+links = ["H8"]
+falsifier = "（基準の命題。P106 と率を比べるために置く）"
+note = "P106 の比べる相手"
+
+[[proposition]]
+id = "P108"
+statement = "中日は、カードごとの勝ち数の散らばりが、力が一定のときより小さい（1勝2敗・2勝1敗に寄る）"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = []
+then = [{ col = "series_disp_pct", op = "<", value = 0.5 }]
+surprise = "series_disp"
+context = ["series_lost_pct", "series3_w1", "series3_w2", "rank"]
+links = ["H8"]
+falsifier = "中日の年のうち、散らばりが力が一定のときより小さかった年が半数以下"
+note = "決まった並び順（ローテーションなど）があるときの形。P109 と並べて読む"
+
+[[proposition]]
+id = "P109"
+statement = "中日以外のチームは、カードごとの勝ち数の散らばりが、力が一定のときより小さい"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "series_disp_pct", op = "<", value = 0.5 }]
+surprise = "series_disp"
+context = ["series_lost_pct", "rank"]
+links = ["H8"]
+falsifier = "（基準の命題。P108 と率を比べるために置く）"
+note = "P108 の比べる相手"
+
+[[proposition]]
+id = "P110"
+statement = "中日は、カードの1試合目の勝率が、2試合目以降より高い"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = []
+then = [{ col = "series_g1_minus_rest", op = ">", value = 0 }]
+surprise = "series_g1_minus_rest"
+context = ["series_disp", "rank"]
+links = ["H8"]
+falsifier = "中日の年のうち、1試合目の勝率のほうが高かった年が半数以下"
+note = "並び順のいちばん単純な現れ方。P111 と並べて読む"
+
+[[proposition]]
+id = "P111"
+statement = "中日以外のチームは、カードの1試合目の勝率が、2試合目以降より高い"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "series_g1_minus_rest", op = ">", value = 0 }]
+surprise = "series_g1_minus_rest"
+context = ["series_disp", "rank"]
+links = ["H8"]
+falsifier = "（基準の命題。P110 と率を比べるために置く）"
+note = "P110 の比べる相手"

@@ -59,7 +59,8 @@ run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_team_ba
 name = "measure"
 run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games}", "--config", "{config}",
        "--out", "{out}/season.jsonl", "--innings", "cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz",
-       "--batting", "data/observations/npb_team_batting/teams.jsonl"]
+       "--batting", "data/observations/npb_team_batting/teams.jsonl",
+       "--sensitivity-out", "{out}/trajectory_sensitivity_units.jsonl"]
 
 # 5. 問い直す
 [[step]]
@@ -67,7 +68,7 @@ name = "question"
 run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}/season.jsonl",
        "--config", "{config}", "--hypotheses", "cycles/c001-chunichi/hypotheses.toml",
        "--propositions", "cycles/c001-chunichi/propositions.toml", "--claims", "cycles/c001-chunichi/claims.toml",
-       "--outdir", "{out}"]
+       "--outdir", "{out}", "--trajectory-sensitivity", "{out}/trajectory_sensitivity_units.jsonl"]
 
 # 5b. 条件の組み合わせを探す（R11。命題を作る材料で、判定ではない）
 [[step]]

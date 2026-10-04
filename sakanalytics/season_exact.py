@@ -184,7 +184,8 @@ def title_magic(s, rules, *, seconds=10):
             guarantee = None  # no attainable all-outcomes guarantee
         status = ('clinched' if bad['feasible'] is False else
                   'off' if control[t] is False or any(x is True for x in others) else
-                  'unknown' if control[t] is None or any(x is None for x in others) else 'lit')
+                  'unknown' if control[t] is None or any(x is None for x in others)
+                  or guarantee is None else 'lit')
         result[t] = {'status': status, 'self_control': control[t],
                      'guaranteed_wins_needed': guarantee,
                      'magic': guarantee if status in ('lit', 'clinched') else None,

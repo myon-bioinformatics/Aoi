@@ -1,7 +1,7 @@
 name: Season simulator
 on:
   push:
-    branches: [main, feature/season-simulator]
+    branches: [main]
     paths: ['sakanalytics/season*', 'sakanalytics/tests/test_season_simulator.py', '.github/workflows/season-simulator.yml']
   pull_request:
     paths: ['sakanalytics/season*', 'sakanalytics/tests/test_season_simulator.py', '.github/workflows/season-simulator.yml']
@@ -9,22 +9,31 @@ on:
 permissions:
   contents: read
 jobs:
+  actionlint:
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@a6f06af2e0baac480a102a5f941af971a6098c8e # actionlint v1.7.12
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python: ['3.11', '3.12', '3.13', '3.14']
+        solver: [stdlib, exact]
     env:
       PYTHONPATH: sakanalytics
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '${{ matrix.python }}'
-      - run: python -m pip install -r sakanalytics/season-requirements.txt pytest
+      - run: python -m pip install pytest==9.1.1
+      - if: matrix.solver == 'exact'
+        run: python -m pip install -r sakanalytics/season-requirements.txt
+      - name: Verify optional solver is absent
+        if: matrix.solver == 'stdlib'
+        run: python -c "import importlib.util; assert importlib.util.find_spec('ortools') is None"
       - run: python -m pytest sakanalytics/tests/test_season_simulator.py -q
       - run: python -m compileall -q sakanalytics/season_simulator.py sakanalytics/season_exact.py
       - name: Exercise result-free synthetic CLI
+        if: matrix.solver == 'exact'
         run: python sakanalytics/season_simulator.py sakanalytics/season-example.json --as-of 2022-01-01 --through 2022-01-04 --trials 100 --exact --output /tmp/season-example-output.json

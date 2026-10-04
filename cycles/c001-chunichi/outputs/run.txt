@@ -5,11 +5,11 @@
 [run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading polars-runtime-32 (47.6MiB)
 Downloading pygments (1.2MiB)
+Downloading polars-runtime-32 (47.6MiB)
 Downloading selectolax (2.4MiB)
- Downloaded pygments
  Downloaded selectolax
+ Downloaded pygments
  Downloaded polars-runtime-32
 Installed 15 packages in 12ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
@@ -429,6 +429,9 @@ shape: (14, 12)
 - P109 中日以外のチームは、カードごとの勝ち数の散らばりが、力が一定のときより小さい: **exit 4 待った！判断保留** （元 保留 / 対偶 棄却）
 - P110 中日は、カードの1試合目の勝率が、2試合目以降より高い: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
 - P111 中日以外のチームは、カードの1試合目の勝率が、2試合目以降より高い: **exit 4 待った！判断保留** （元 保留 / 対偶 棄却）
+- P112 中日の B クラスの年は、B クラスが（数の上で）確定した日に、残り試合が10以上あった: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
+- P113 中日以外の B クラスのチームは、B クラスが確定した日に、残り試合が10以上あった: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
+- P114 A クラスで貯金の線に山があるチームは、その山が A クラスの確定より後にある（決まった後に落とす）: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -602,3 +605,6 @@ units=156 dropped=0 target: upper_half == False
 [4] P109 待った！判断保留 元の命題: 判例 73 件: c-2022, h-2025, t-2022, l-2017, g-2013 ほか
 [4] P110 待った！判断保留 元の命題: 判例 4 件: d-2013, d-2014, d-2022, d-2025
 [4] P111 待った！判断保留 元の命題: 判例 67 件: e-2022, h-2021, l-2013, s-2019, l-2024 ほか
+[3] P112 異議あり（不成立） 元の命題: 判例 11 件: d-2022, d-2019, d-2013, d-2014, d-2016 ほか
+[3] P113 異議あり（不成立） 元の命題: 判例 47 件: c-2015, c-2019, e-2023, l-2015, g-2022 ほか
+[3] P114 異議あり（不成立） 元の命題: 判例 42 件: l-2012, g-2016, h-2019, db-2017, t-2014 ほか

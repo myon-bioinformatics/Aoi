@@ -173,3 +173,7 @@ ISOと出塁率を併用してRPSを推定する固定モデル評価は [BATTIN
 ## 同じ点差・会場からの終盤到達
 
 [計画](MATCHED_COMEBACK_PLAN.md)と[結果・年別反例](MATCHED_COMEBACK_RESULTS.md)。7回ビハインドからの同点以上到達は、中日13.00%対他5標準化14.19%。12年中4年は逆方向だった。[DRAgoWing / Plotly](outputs/matched_comeback.html)で6/7回・同点以上/リード/勝利を切り替えられる。点差・会場・年度を揃えた記述で、相手強度や原因は未確定。
+
+## 終盤を迎える状態と、その後の勝敗
+
+[計画](GAME_STATE_PLAN.md)と[結果・反例](GAME_STATE_RESULTS.md)。主期間の7回リード割合は中日38.25%対他5合算43.49%。2019年はビハインド割合が高いという候補にも反例。2022年はリード51試合のうち49勝だった。[DRAgoWing図](outputs/game_state.html)で年・切点・点差別の分布と勝敗を比較できる。

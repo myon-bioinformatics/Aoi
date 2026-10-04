@@ -35,6 +35,15 @@ def test_best_rule_and_tie_break_by_fewer_conditions():
     assert rule_text(best) == "[rank_ra >= 4] または [wins_vs_pythag < -4]"
 
 
+def test_keeping_only_the_top_gives_the_same_order_as_sorting_everything():
+    cands = CANDS + [{"col": "rd", "op": "<", "value": 20}, {"col": "rank_ra", "op": ">=", "value": 3},
+                     {"col": "wins_vs_pythag", "op": "<", "value": 0}]
+    everything = search(DF, TARGET, cands, max_terms=3, max_conds=2, top=10**9)
+    assert len(everything) > 100 and len({r["mcc"] for r in everything[:12]}) < 12  # 同点を含む
+    for top in (1, 5, 12):
+        assert search(DF, TARGET, cands, max_terms=3, max_conds=2, top=top) == everything[:top]
+
+
 def test_same_column_is_not_used_twice_in_one_group_and_bad_conditions_stop():
     rs = search(DF, TARGET, CANDS + [{"col": "rd", "op": "<", "value": 20}], top=500)
     assert all(len({c["col"] for c in g}) == len(g) for r in rs for g in r["if_any"])

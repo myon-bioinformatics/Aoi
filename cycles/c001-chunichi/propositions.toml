@@ -938,3 +938,57 @@ context = ["opp_adj_top", "opp_adj_low", "opp_adj_total", "rank"]
 links = ["H3", "H9"]
 falsifier = "中日のシーズンの4分の1を超えて、中位の相手に見込み以上に勝っている"
 note = "R13 の P61（相手の強さを差し引いていない版、不成立）の作り直し"
+
+# ---- R16: 強い相手に見込みより負けるのは、得点の側か、失点の側か（research/R16-strong-opponents.md） ----
+# 追加: 2026-10-04。ユーザーの問いから。R15 の結果（中日 2014・2019年の強い相手との差）は見ている。
+# opp_rf_gap_*・opp_ra_gap_*・opp_conv_* は実データでまだ計算していない。
+
+[[proposition]]
+id = "P70"
+statement = "中日は、強い相手（自分との試合を除いた強さで上位2チーム）に対して、見込みより得点が少ない"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_rf_gap_top", op = "<", value = 0 }]
+surprise = "opp_rf_gap_top"
+context = ["opp_ra_gap_top", "opp_conv_top", "opp_adj_top", "rank"]
+links = ["H2", "H5", "H6"]
+falsifier = "中日のシーズンの4分の1を超えて、強い相手に見込み以上に得点している"
+note = "基準に中日自身の得点力が入っているので、「もともと得点が少ない」は差し引かれている。P71 と組で読む"
+
+[[proposition]]
+id = "P71"
+statement = "中日は、強い相手（自分との試合を除いた強さで上位2チーム）に対して、見込みより失点が多い"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_ra_gap_top", op = "<", value = 0 }]
+surprise = "opp_ra_gap_top"
+context = ["opp_rf_gap_top", "opp_conv_top", "opp_adj_top", "rank"]
+links = ["H2"]
+falsifier = "中日のシーズンの4分の1を超えて、強い相手に見込み以下の失点に抑えている"
+note = "P70 と組で読む。片方だけ成り立つなら、強い相手との差はその側にある"
+
+[[proposition]]
+id = "P72"
+statement = "強い相手に見込みより負けたチーム・シーズンでは、その差は失点の側より得点の側で大きい"
+strength = "more_often_than_not"
+if = [{ col = "opp_adj_top", op = "<", value = 0 }]
+then = [{ col = "opp_top_rf_minus_ra", op = "<", value = 0 }]
+surprise = "opp_top_rf_minus_ra"
+context = ["opp_rf_gap_top", "opp_ra_gap_top", "opp_conv_top", "opp_adj_top"]
+links = ["H2", "H5"]
+falsifier = "強い相手に見込みより負けたチーム・シーズンの半数以上で、失点の側の差のほうが大きい"
+note = "全球団での一般の形。中日（P70・P71）がこの一般の形と同じかを見る"
+
+[[proposition]]
+id = "P73"
+statement = "強い相手に見込みより負けたチーム・シーズンでは、点の差では説明できない負けもある（opp_conv_top < 0）"
+strength = "more_often_than_not"
+if = [{ col = "opp_adj_top", op = "<", value = 0 }]
+then = [{ col = "opp_conv_top", op = "<", value = 0 }]
+surprise = "opp_conv_top"
+context = ["opp_rf_gap_top", "opp_ra_gap_top", "opp_adj_top", "alloc_z_strat"]
+links = ["H3", "H9"]
+falsifier = "強い相手に見込みより負けたチーム・シーズンの半数以上で、点の差どおり以上に勝っている"
+note = "点の差を勝ち負けに変える部分（R1 の組み合わせ方と近い）が、強い相手との差にどれだけ入っているかを見る"

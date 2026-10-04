@@ -92,6 +92,32 @@ A residual is not proof that a model is wrong.
 
 A residual is evidence that further investigation may be valuable.
 
+## Do Not Name A Residual "Luck"
+
+A residual measured against a random baseline is easy to call luck.
+
+Calling it luck assumes that the events were independent and that no one acted on purpose.
+
+When the subjects act on purpose (teams, people, organizations), that assumption is rarely true. In a sports league, for example, every team plays the whole season trying to finish higher, and decisions about whom to use, when, and in which game are part of the very thing a random baseline shuffles away.
+
+So a gap from a random baseline is described as what it is: "worse than the random baseline", not "unlucky". It is a trace of something not yet measured.
+
+Different formulas may look at the same thing under different names, or reach the same answer while looking at different things. There is rarely only one correct description. Several descriptions may stand side by side: one that is easy to say, and one that is hard to say but selects reliably.
+
+The seasons that a description cannot explain, or explains only through the baseline, are where new indicators are found. Digging into them is the work, not a footnote to it.
+
+## Same Outcome, Different Routes
+
+Two units can end in the same place for different reasons (for example, two seasons that both finished in the bottom half). Forcing one proposition to explain both usually explains neither.
+
+Give each route its own proposition. A single unit cannot be judged by itself, so a route is generalized into a class of units that share its situation (for example, "a positive run differential but a bottom-half finish"), and the proposition is checked on the other members of that class, with the unit that motivated it held out.
+
+## Mirrors Are Findings
+
+Sometimes two measures move as mirror images: when one is positive, the other is negative. This is not noise to be averaged away, and not a failed proposition.
+
+A mirror means the two measures are linked. Rotating them often shows the link directly: their sum and their difference can be two different things (for example, "who scored more than expected" and "how many runs the games had"). Record mirrors as findings and keep them.
+
 ---
 
 # Unknown Is Better Than False Certainty
@@ -273,6 +299,56 @@ No conclusion is sacred.
 No model is final.
 
 No explanation is immune to reconsideration.
+
+---
+
+# Staying Unsatisfied
+
+Aoi does not stop when an explanation is good enough.
+
+Many analyses end with an approximation.
+
+A regression that fits.
+
+A metric that usually works.
+
+The remaining doubt is set aside, and the discussion ends halfway.
+
+Aoi keeps that doubt.
+
+An explanation is rarely examined only in the direction it was stated.
+
+If A usually leads to B, Aoi also asks:
+
+- Does B usually come with A? (converse)
+- Without A, is B usually absent? (inverse)
+- Without B, is A usually absent? (contrapositive)
+
+Each direction can object in a different place.
+
+When an objection appears, inspect the counterexample.
+
+Restate the proposition.
+
+Then test the restated proposition on units that did not motivate the change.
+
+A proposition tailored to its own counterexamples will always look correct.
+
+Only units it was not tailored to can tell whether the restatement learned something.
+
+If another team objects, inspect that counterexample too.
+
+The record of this exchange matters more than any single proposition:
+
+- how many objections appeared
+- where they appeared
+- how long a proposition has survived without one
+
+It is acceptable to remain puzzled.
+
+Being puzzled is not a failure of analysis.
+
+It is the point where analysis was about to stop too early.
 
 ---
 

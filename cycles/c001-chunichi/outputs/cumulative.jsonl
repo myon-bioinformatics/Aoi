@@ -1,0 +1,12 @@
+{"team":"s","team_name":"ヤクルト","seasons":13,"excess_wins":-7.754406904138385,"model":"fixed","z":-0.36903098259337613,"p_two_sided":0.7121046313476023}
+{"team":"c","team_name":"広島","seasons":13,"excess_wins":-6.122606031224855,"model":"fixed","z":-0.29062530171163786,"p_two_sided":0.7713379069728444}
+{"team":"t","team_name":"阪神","seasons":13,"excess_wins":-5.1952548641944745,"model":"fixed","z":-0.24743055987817447,"p_two_sided":0.8045750259275525}
+{"team":"g","team_name":"巨人","seasons":13,"excess_wins":-4.456735183631032,"model":"fixed","z":-0.21254732925807132,"p_two_sided":0.8316800577540602}
+{"team":"db","team_name":"DeNA","seasons":13,"excess_wins":10.336032309918195,"model":"fixed","z":0.48970301706665254,"p_two_sided":0.6243440665945893}
+{"team":"d","team_name":"中日","seasons":13,"excess_wins":21.11567811828135,"model":"fixed","z":1.0083722534210082,"p_two_sided":0.31327578806058853}
+{"team":"s","team_name":"ヤクルト","seasons":13,"excess_wins":-7.680303856009317,"model":"var","z":-0.36545882974878274,"p_two_sided":0.7147689336645262}
+{"team":"c","team_name":"広島","seasons":13,"excess_wins":-7.652361476695404,"model":"var","z":-0.363272555668955,"p_two_sided":0.7164012924185139}
+{"team":"t","team_name":"阪神","seasons":13,"excess_wins":-1.8714765922631145,"model":"var","z":-0.08903198251348068,"p_two_sided":0.9290564926691448}
+{"team":"g","team_name":"巨人","seasons":13,"excess_wins":-1.115140335161236,"model":"var","z":-0.05313281587345196,"p_two_sided":0.9576260850858099}
+{"team":"db","team_name":"DeNA","seasons":13,"excess_wins":10.03472122149195,"model":"var","z":0.4752800556900621,"p_two_sided":0.6345873727367334}
+{"team":"d","team_name":"中日","seasons":13,"excess_wins":16.0150890011019,"model":"var","z":0.7639738649101842,"p_two_sided":0.44488281732502233}

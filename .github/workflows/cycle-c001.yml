@@ -1,0 +1,75 @@
+# サイクル1（中日ドラゴンズ）を GitHub 上で実行する。
+# 中身は nagoyaction/nagoyaction.py が cycles/c001-chunichi/pipeline.toml を実行するだけで、
+# ローカルでの実行（python nagoyaction/nagoyaction.py run ...）と同じ。
+# 生のページと観測データ（data/）は Actions のキャッシュにだけ残し、リポジトリには入れない。
+# コミットするのは自作の指標と検証記録（cycles/c001-chunichi/outputs/）だけ。
+name: cycle c001 (chunichi)
+
+on:
+  # main に入るまでは手動実行のボタンが出ないので、専用ブランチへのプッシュでも起動できるようにする
+  push:
+    branches: [run/c001]
+  workflow_dispatch:
+    inputs:
+      offline:
+        description: "取得を行わず、キャッシュだけで再解析する"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cycle-c001  # 二重起動で取得元に二重アクセスしない
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install uv
+        run: python -m pip install uv
+      # 取得したページは、途中のステップで止まっても必ず保存する（止まるたびに取得し直さない）
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: aoi-data-c001-${{ github.run_id }}
+          restore-keys: aoi-data-c001-
+      - name: Doctor
+        run: python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml ${{ inputs.offline && '--offline' || '' }}
+      - name: Run pipeline
+        # 実行の記録（各ステップの結果・件数・エラー文）を outputs/run.txt にも残す（*.log は .gitignore の対象）。止まったときも読めるように
+        run: |
+          set -o pipefail
+          python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl ${{ inputs.offline && '--offline' || '' }} 2>&1 | tee cycles/c001-chunichi/outputs/run.txt
+      - name: Judgement (exit codes) to the job summary
+        run: python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --only judge >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep outputs (also when a step stopped the pipeline)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c001-outputs
+          path: |
+            cycles/c001-chunichi/outputs
+            data/receipts
+            data/observations/npb_calendar/games.manifest.json
+          if-no-files-found: warn
+      - name: Save fetched pages (also when a step stopped the pipeline)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data
+          key: aoi-data-c001-${{ github.run_id }}
+      - name: Commit outputs
+        if: always()  # 止まったときも、それまでの出力と run.txt を残す
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cycles/c001-chunichi/outputs
+          git diff --cached --quiet || git commit -m "cycle c001: update outputs"
+          git push

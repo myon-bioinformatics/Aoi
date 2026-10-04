@@ -1,0 +1,162 @@
+{"group": "全体", "flag": "traj_rank_peak", "units": 156, "observed": 118, "expected": 116.25, "p_ge_obs": 0.4141, "p_le_obs": 0.6568}
+{"group": "全体", "flag": "traj_rank_valley", "units": 156, "observed": 121, "expected": 117.2, "p_ge_obs": 0.2721, "p_le_obs": 0.7874}
+{"group": "全体", "flag": "traj_wl_peak", "units": 156, "observed": 87, "expected": 75.75, "p_ge_obs": 0.0335, "p_le_obs": 0.9774}
+{"group": "全体", "flag": "traj_wl_valley", "units": 156, "observed": 90, "expected": 75.44, "p_ge_obs": 0.0084, "p_le_obs": 0.9948}
+{"group": "全体", "flag": "wave_osc", "units": 156, "observed": 143, "expected": 141.32, "p_ge_obs": 0.384, "p_le_obs": 0.7201}
+{"group": "全体", "flag": "traj_wl_peak_after_clinch", "units": 78, "observed": 4, "expected": 3.91, "p_ge_obs": 0.5565, "p_le_obs": 0.6474}
+{"group": "A クラス", "flag": "traj_rank_peak", "units": 78, "observed": 58, "expected": 59.4, "p_ge_obs": 0.7, "p_le_obs": 0.3967}
+{"group": "A クラス", "flag": "traj_rank_valley", "units": 78, "observed": 56, "expected": 57.03, "p_ge_obs": 0.659, "p_le_obs": 0.4383}
+{"group": "A クラス", "flag": "traj_wl_peak", "units": 78, "observed": 46, "expected": 37.27, "p_ge_obs": 0.0219, "p_le_obs": 0.9882}
+{"group": "A クラス", "flag": "traj_wl_valley", "units": 78, "observed": 43, "expected": 37.88, "p_ge_obs": 0.132, "p_le_obs": 0.913}
+{"group": "A クラス", "flag": "wave_osc", "units": 78, "observed": 72, "expected": 72.16, "p_ge_obs": 0.6337, "p_le_obs": 0.535}
+{"group": "A クラス", "flag": "traj_wl_peak_after_clinch", "units": 78, "observed": 4, "expected": 3.91, "p_ge_obs": 0.5565, "p_le_obs": 0.6474}
+{"group": "B クラス", "flag": "traj_rank_peak", "units": 78, "observed": 60, "expected": 56.85, "p_ge_obs": 0.252, "p_le_obs": 0.8246}
+{"group": "B クラス", "flag": "traj_rank_valley", "units": 78, "observed": 65, "expected": 60.17, "p_ge_obs": 0.1178, "p_le_obs": 0.9303}
+{"group": "B クラス", "flag": "traj_wl_peak", "units": 78, "observed": 41, "expected": 38.48, "p_ge_obs": 0.3162, "p_le_obs": 0.763}
+{"group": "B クラス", "flag": "traj_wl_valley", "units": 78, "observed": 47, "expected": 37.56, "p_ge_obs": 0.0163, "p_le_obs": 0.9913}
+{"group": "B クラス", "flag": "wave_osc", "units": 78, "observed": 71, "expected": 69.17, "p_ge_obs": 0.3265, "p_le_obs": 0.7985}
+{"group": "B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "オリックス", "flag": "traj_rank_peak", "units": 13, "observed": 10, "expected": 9.74, "p_ge_obs": 0.5817, "p_le_obs": 0.6714}
+{"group": "オリックス", "flag": "traj_rank_valley", "units": 13, "observed": 10, "expected": 9.61, "p_ge_obs": 0.5466, "p_le_obs": 0.7027}
+{"group": "オリックス", "flag": "traj_wl_peak", "units": 13, "observed": 5, "expected": 6.52, "p_ge_obs": 0.8799, "p_le_obs": 0.2777}
+{"group": "オリックス", "flag": "traj_wl_valley", "units": 13, "observed": 4, "expected": 5.7, "p_ge_obs": 0.8997, "p_le_obs": 0.2468}
+{"group": "オリックス", "flag": "wave_osc", "units": 13, "observed": 12, "expected": 11.68, "p_ge_obs": 0.6109, "p_le_obs": 0.7572}
+{"group": "オリックス", "flag": "traj_wl_peak_after_clinch", "units": 5, "observed": 0, "expected": 0.34, "p_ge_obs": 1.0, "p_le_obs": 0.7022}
+{"group": "オリックス・B クラス", "flag": "traj_rank_peak", "units": 8, "observed": 7, "expected": 5.94, "p_ge_obs": 0.3449, "p_le_obs": 0.9103}
+{"group": "オリックス・B クラス", "flag": "traj_rank_valley", "units": 8, "observed": 8, "expected": 6.12, "p_ge_obs": 0.1159, "p_le_obs": 1.0}
+{"group": "オリックス・B クラス", "flag": "traj_wl_peak", "units": 8, "observed": 3, "expected": 4.13, "p_ge_obs": 0.8844, "p_le_obs": 0.3227}
+{"group": "オリックス・B クラス", "flag": "traj_wl_valley", "units": 8, "observed": 3, "expected": 3.47, "p_ge_obs": 0.7575, "p_le_obs": 0.5143}
+{"group": "オリックス・B クラス", "flag": "wave_osc", "units": 8, "observed": 8, "expected": 7.03, "p_ge_obs": 0.3516, "p_le_obs": 1.0}
+{"group": "オリックス・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "広島", "flag": "traj_rank_peak", "units": 13, "observed": 9, "expected": 9.62, "p_ge_obs": 0.7686, "p_le_obs": 0.4493}
+{"group": "広島", "flag": "traj_rank_valley", "units": 13, "observed": 9, "expected": 9.63, "p_ge_obs": 0.7741, "p_le_obs": 0.4456}
+{"group": "広島", "flag": "traj_wl_peak", "units": 13, "observed": 6, "expected": 6.36, "p_ge_obs": 0.6954, "p_le_obs": 0.5326}
+{"group": "広島", "flag": "traj_wl_valley", "units": 13, "observed": 11, "expected": 6.6, "p_ge_obs": 0.0076, "p_le_obs": 0.9992}
+{"group": "広島", "flag": "wave_osc", "units": 13, "observed": 13, "expected": 11.96, "p_ge_obs": 0.3334, "p_le_obs": 1.0}
+{"group": "広島", "flag": "traj_wl_peak_after_clinch", "units": 6, "observed": 0, "expected": 0.4, "p_ge_obs": 1.0, "p_le_obs": 0.659}
+{"group": "広島・B クラス", "flag": "traj_rank_peak", "units": 7, "observed": 4, "expected": 5.25, "p_ge_obs": 0.9298, "p_le_obs": 0.2434}
+{"group": "広島・B クラス", "flag": "traj_rank_valley", "units": 7, "observed": 4, "expected": 5.51, "p_ge_obs": 0.9588, "p_le_obs": 0.1707}
+{"group": "広島・B クラス", "flag": "traj_wl_peak", "units": 7, "observed": 4, "expected": 4.19, "p_ge_obs": 0.7103, "p_le_obs": 0.5849}
+{"group": "広島・B クラス", "flag": "traj_wl_valley", "units": 7, "observed": 6, "expected": 4.08, "p_ge_obs": 0.1337, "p_le_obs": 0.9787}
+{"group": "広島・B クラス", "flag": "wave_osc", "units": 7, "observed": 7, "expected": 6.46, "p_ge_obs": 0.5725, "p_le_obs": 1.0}
+{"group": "広島・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "中日", "flag": "traj_rank_peak", "units": 13, "observed": 9, "expected": 9.46, "p_ge_obs": 0.7348, "p_le_obs": 0.492}
+{"group": "中日", "flag": "traj_rank_valley", "units": 13, "observed": 9, "expected": 10.13, "p_ge_obs": 0.8632, "p_le_obs": 0.3169}
+{"group": "中日", "flag": "traj_wl_peak", "units": 13, "observed": 4, "expected": 6.35, "p_ge_obs": 0.9522, "p_le_obs": 0.1424}
+{"group": "中日", "flag": "traj_wl_valley", "units": 13, "observed": 4, "expected": 6.42, "p_ge_obs": 0.9538, "p_le_obs": 0.1368}
+{"group": "中日", "flag": "wave_osc", "units": 13, "observed": 13, "expected": 11.63, "p_ge_obs": 0.233, "p_le_obs": 1.0}
+{"group": "中日", "flag": "traj_wl_peak_after_clinch", "units": 1, "observed": 0, "expected": 0.11, "p_ge_obs": 1.0, "p_le_obs": 0.89}
+{"group": "中日・B クラス", "flag": "traj_rank_peak", "units": 12, "observed": 8, "expected": 8.64, "p_ge_obs": 0.7757, "p_le_obs": 0.4453}
+{"group": "中日・B クラス", "flag": "traj_rank_valley", "units": 12, "observed": 8, "expected": 9.38, "p_ge_obs": 0.9011, "p_le_obs": 0.2566}
+{"group": "中日・B クラス", "flag": "traj_wl_peak", "units": 12, "observed": 4, "expected": 6.01, "p_ge_obs": 0.9356, "p_le_obs": 0.1826}
+{"group": "中日・B クラス", "flag": "traj_wl_valley", "units": 12, "observed": 4, "expected": 6.06, "p_ge_obs": 0.9369, "p_le_obs": 0.1773}
+{"group": "中日・B クラス", "flag": "wave_osc", "units": 12, "observed": 12, "expected": 10.7, "p_ge_obs": 0.2492, "p_le_obs": 1.0}
+{"group": "中日・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "DeNA", "flag": "traj_rank_peak", "units": 13, "observed": 11, "expected": 9.83, "p_ge_obs": 0.3509, "p_le_obs": 0.8635}
+{"group": "DeNA", "flag": "traj_rank_valley", "units": 13, "observed": 10, "expected": 9.81, "p_ge_obs": 0.5998, "p_le_obs": 0.6545}
+{"group": "DeNA", "flag": "traj_wl_peak", "units": 13, "observed": 10, "expected": 7.23, "p_ge_obs": 0.0912, "p_le_obs": 0.9754}
+{"group": "DeNA", "flag": "traj_wl_valley", "units": 13, "observed": 9, "expected": 6.94, "p_ge_obs": 0.18, "p_le_obs": 0.9378}
+{"group": "DeNA", "flag": "wave_osc", "units": 13, "observed": 13, "expected": 11.77, "p_ge_obs": 0.2694, "p_le_obs": 1.0}
+{"group": "DeNA", "flag": "traj_wl_peak_after_clinch", "units": 7, "observed": 1, "expected": 0.12, "p_ge_obs": 0.1143, "p_le_obs": 0.9944}
+{"group": "DeNA・B クラス", "flag": "traj_rank_peak", "units": 6, "observed": 5, "expected": 4.46, "p_ge_obs": 0.5198, "p_le_obs": 0.8313}
+{"group": "DeNA・B クラス", "flag": "traj_rank_valley", "units": 6, "observed": 6, "expected": 4.53, "p_ge_obs": 0.1826, "p_le_obs": 1.0}
+{"group": "DeNA・B クラス", "flag": "traj_wl_peak", "units": 6, "observed": 4, "expected": 2.81, "p_ge_obs": 0.2772, "p_le_obs": 0.9286}
+{"group": "DeNA・B クラス", "flag": "traj_wl_valley", "units": 6, "observed": 4, "expected": 2.58, "p_ge_obs": 0.2071, "p_le_obs": 0.96}
+{"group": "DeNA・B クラス", "flag": "wave_osc", "units": 6, "observed": 6, "expected": 5.25, "p_ge_obs": 0.4434, "p_le_obs": 1.0}
+{"group": "DeNA・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "楽天", "flag": "traj_rank_peak", "units": 13, "observed": 10, "expected": 9.61, "p_ge_obs": 0.5467, "p_le_obs": 0.701}
+{"group": "楽天", "flag": "traj_rank_valley", "units": 13, "observed": 10, "expected": 9.94, "p_ge_obs": 0.6333, "p_le_obs": 0.6222}
+{"group": "楽天", "flag": "traj_wl_peak", "units": 13, "observed": 9, "expected": 7.0, "p_ge_obs": 0.1937, "p_le_obs": 0.9284}
+{"group": "楽天", "flag": "traj_wl_valley", "units": 13, "observed": 9, "expected": 6.78, "p_ge_obs": 0.1595, "p_le_obs": 0.9449}
+{"group": "楽天", "flag": "wave_osc", "units": 13, "observed": 12, "expected": 11.82, "p_ge_obs": 0.6667, "p_le_obs": 0.712}
+{"group": "楽天", "flag": "traj_wl_peak_after_clinch", "units": 4, "observed": 0, "expected": 0.21, "p_ge_obs": 1.0, "p_le_obs": 0.803}
+{"group": "楽天・B クラス", "flag": "traj_rank_peak", "units": 9, "observed": 6, "expected": 6.62, "p_ge_obs": 0.8057, "p_le_obs": 0.4414}
+{"group": "楽天・B クラス", "flag": "traj_rank_valley", "units": 9, "observed": 8, "expected": 6.89, "p_ge_obs": 0.3383, "p_le_obs": 0.9105}
+{"group": "楽天・B クラス", "flag": "traj_wl_peak", "units": 9, "observed": 6, "expected": 4.8, "p_ge_obs": 0.3148, "p_le_obs": 0.8852}
+{"group": "楽天・B クラス", "flag": "traj_wl_valley", "units": 9, "observed": 8, "expected": 4.74, "p_ge_obs": 0.0219, "p_le_obs": 0.998}
+{"group": "楽天・B クラス", "flag": "wave_osc", "units": 9, "observed": 8, "expected": 8.12, "p_ge_obs": 0.7849, "p_le_obs": 0.6036}
+{"group": "楽天・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "日本ハム", "flag": "traj_rank_peak", "units": 13, "observed": 10, "expected": 9.86, "p_ge_obs": 0.6115, "p_le_obs": 0.6441}
+{"group": "日本ハム", "flag": "traj_rank_valley", "units": 13, "observed": 8, "expected": 9.86, "p_ge_obs": 0.9313, "p_le_obs": 0.185}
+{"group": "日本ハム", "flag": "traj_wl_peak", "units": 13, "observed": 7, "expected": 6.07, "p_ge_obs": 0.3989, "p_le_obs": 0.7977}
+{"group": "日本ハム", "flag": "traj_wl_valley", "units": 13, "observed": 5, "expected": 6.01, "p_ge_obs": 0.8054, "p_le_obs": 0.3879}
+{"group": "日本ハム", "flag": "wave_osc", "units": 13, "observed": 11, "expected": 11.84, "p_ge_obs": 0.8973, "p_le_obs": 0.3275}
+{"group": "日本ハム", "flag": "traj_wl_peak_after_clinch", "units": 7, "observed": 1, "expected": 0.44, "p_ge_obs": 0.368, "p_le_obs": 0.9347}
+{"group": "日本ハム・B クラス", "flag": "traj_rank_peak", "units": 6, "observed": 6, "expected": 4.36, "p_ge_obs": 0.1465, "p_le_obs": 1.0}
+{"group": "日本ハム・B クラス", "flag": "traj_rank_valley", "units": 6, "observed": 4, "expected": 4.7, "p_ge_obs": 0.8806, "p_le_obs": 0.3858}
+{"group": "日本ハム・B クラス", "flag": "traj_wl_peak", "units": 6, "observed": 4, "expected": 2.65, "p_ge_obs": 0.2367, "p_le_obs": 0.9399}
+{"group": "日本ハム・B クラス", "flag": "traj_wl_valley", "units": 6, "observed": 3, "expected": 2.81, "p_ge_obs": 0.598, "p_le_obs": 0.7147}
+{"group": "日本ハム・B クラス", "flag": "wave_osc", "units": 6, "observed": 5, "expected": 5.32, "p_ge_obs": 0.8579, "p_le_obs": 0.5191}
+{"group": "日本ハム・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "巨人", "flag": "traj_rank_peak", "units": 13, "observed": 12, "expected": 9.71, "p_ge_obs": 0.1206, "p_le_obs": 0.978}
+{"group": "巨人", "flag": "traj_rank_valley", "units": 13, "observed": 10, "expected": 9.72, "p_ge_obs": 0.5778, "p_le_obs": 0.6752}
+{"group": "巨人", "flag": "traj_wl_peak", "units": 13, "observed": 8, "expected": 6.27, "p_ge_obs": 0.2317, "p_le_obs": 0.9111}
+{"group": "巨人", "flag": "traj_wl_valley", "units": 13, "observed": 9, "expected": 6.7, "p_ge_obs": 0.1436, "p_le_obs": 0.9539}
+{"group": "巨人", "flag": "wave_osc", "units": 13, "observed": 13, "expected": 11.99, "p_ge_obs": 0.3483, "p_le_obs": 1.0}
+{"group": "巨人", "flag": "traj_wl_peak_after_clinch", "units": 10, "observed": 0, "expected": 0.44, "p_ge_obs": 1.0, "p_le_obs": 0.6355}
+{"group": "巨人・B クラス", "flag": "traj_rank_peak", "units": 3, "observed": 3, "expected": 2.31, "p_ge_obs": 0.4587, "p_le_obs": 1.0}
+{"group": "巨人・B クラス", "flag": "traj_rank_valley", "units": 3, "observed": 3, "expected": 2.33, "p_ge_obs": 0.4659, "p_le_obs": 1.0}
+{"group": "巨人・B クラス", "flag": "traj_wl_peak", "units": 3, "observed": 2, "expected": 1.82, "p_ge_obs": 0.6577, "p_le_obs": 0.7772}
+{"group": "巨人・B クラス", "flag": "traj_wl_valley", "units": 3, "observed": 3, "expected": 1.92, "p_ge_obs": 0.2594, "p_le_obs": 1.0}
+{"group": "巨人・B クラス", "flag": "wave_osc", "units": 3, "observed": 3, "expected": 2.75, "p_ge_obs": 0.7694, "p_le_obs": 1.0}
+{"group": "巨人・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "ソフトバンク", "flag": "traj_rank_peak", "units": 13, "observed": 7, "expected": 9.48, "p_ge_obs": 0.9638, "p_le_obs": 0.11}
+{"group": "ソフトバンク", "flag": "traj_rank_valley", "units": 13, "observed": 9, "expected": 9.53, "p_ge_obs": 0.7504, "p_le_obs": 0.4741}
+{"group": "ソフトバンク", "flag": "traj_wl_peak", "units": 13, "observed": 8, "expected": 5.12, "p_ge_obs": 0.0661, "p_le_obs": 0.9841}
+{"group": "ソフトバンク", "flag": "traj_wl_valley", "units": 13, "observed": 7, "expected": 5.57, "p_ge_obs": 0.2797, "p_le_obs": 0.887}
+{"group": "ソフトバンク", "flag": "wave_osc", "units": 13, "observed": 12, "expected": 11.86, "p_ge_obs": 0.6813, "p_le_obs": 0.7103}
+{"group": "ソフトバンク", "flag": "traj_wl_peak_after_clinch", "units": 11, "observed": 1, "expected": 0.76, "p_ge_obs": 0.5501, "p_le_obs": 0.8281}
+{"group": "ソフトバンク・B クラス", "flag": "traj_rank_peak", "units": 2, "observed": 2, "expected": 1.38, "p_ge_obs": 0.4708, "p_le_obs": 1.0}
+{"group": "ソフトバンク・B クラス", "flag": "traj_rank_valley", "units": 2, "observed": 2, "expected": 1.52, "p_ge_obs": 0.5733, "p_le_obs": 1.0}
+{"group": "ソフトバンク・B クラス", "flag": "traj_wl_peak", "units": 2, "observed": 1, "expected": 1.23, "p_ge_obs": 0.8522, "p_le_obs": 0.6222}
+{"group": "ソフトバンク・B クラス", "flag": "traj_wl_valley", "units": 2, "observed": 0, "expected": 1.35, "p_ge_obs": 1.0, "p_le_obs": 0.1072}
+{"group": "ソフトバンク・B クラス", "flag": "wave_osc", "units": 2, "observed": 2, "expected": 1.83, "p_ge_obs": 0.8326, "p_le_obs": 1.0}
+{"group": "ソフトバンク・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "西武", "flag": "traj_rank_peak", "units": 13, "observed": 8, "expected": 9.7, "p_ge_obs": 0.9156, "p_le_obs": 0.2148}
+{"group": "西武", "flag": "traj_rank_valley", "units": 13, "observed": 12, "expected": 9.76, "p_ge_obs": 0.126, "p_le_obs": 0.9767}
+{"group": "西武", "flag": "traj_wl_peak", "units": 13, "observed": 8, "expected": 6.34, "p_ge_obs": 0.2498, "p_le_obs": 0.8991}
+{"group": "西武", "flag": "traj_wl_valley", "units": 13, "observed": 10, "expected": 6.25, "p_ge_obs": 0.0267, "p_le_obs": 0.995}
+{"group": "西武", "flag": "wave_osc", "units": 13, "observed": 12, "expected": 11.78, "p_ge_obs": 0.6496, "p_le_obs": 0.7341}
+{"group": "西武", "flag": "traj_wl_peak_after_clinch", "units": 6, "observed": 1, "expected": 0.4, "p_ge_obs": 0.3413, "p_le_obs": 0.9499}
+{"group": "西武・B クラス", "flag": "traj_rank_peak", "units": 7, "observed": 6, "expected": 5.17, "p_ge_obs": 0.4155, "p_le_obs": 0.8822}
+{"group": "西武・B クラス", "flag": "traj_rank_valley", "units": 7, "observed": 7, "expected": 5.45, "p_ge_obs": 0.1714, "p_le_obs": 1.0}
+{"group": "西武・B クラス", "flag": "traj_wl_peak", "units": 7, "observed": 4, "expected": 3.32, "p_ge_obs": 0.4456, "p_le_obs": 0.8301}
+{"group": "西武・B クラス", "flag": "traj_wl_valley", "units": 7, "observed": 6, "expected": 3.24, "p_ge_obs": 0.0306, "p_le_obs": 0.9981}
+{"group": "西武・B クラス", "flag": "wave_osc", "units": 7, "observed": 6, "expected": 6.21, "p_ge_obs": 0.8245, "p_le_obs": 0.5819}
+{"group": "西武・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "ロッテ", "flag": "traj_rank_peak", "units": 13, "observed": 11, "expected": 9.66, "p_ge_obs": 0.312, "p_le_obs": 0.8849}
+{"group": "ロッテ", "flag": "traj_rank_valley", "units": 13, "observed": 10, "expected": 9.91, "p_ge_obs": 0.627, "p_le_obs": 0.6293}
+{"group": "ロッテ", "flag": "traj_wl_peak", "units": 13, "observed": 9, "expected": 7.03, "p_ge_obs": 0.1903, "p_le_obs": 0.9336}
+{"group": "ロッテ", "flag": "traj_wl_valley", "units": 13, "observed": 8, "expected": 6.91, "p_ge_obs": 0.3652, "p_le_obs": 0.8305}
+{"group": "ロッテ", "flag": "wave_osc", "units": 13, "observed": 11, "expected": 11.76, "p_ge_obs": 0.8823, "p_le_obs": 0.3566}
+{"group": "ロッテ", "flag": "traj_wl_peak_after_clinch", "units": 6, "observed": 0, "expected": 0.09, "p_ge_obs": 1.0, "p_le_obs": 0.9176}
+{"group": "ロッテ・B クラス", "flag": "traj_rank_peak", "units": 7, "observed": 7, "expected": 5.01, "p_ge_obs": 0.0957, "p_le_obs": 1.0}
+{"group": "ロッテ・B クラス", "flag": "traj_rank_valley", "units": 7, "observed": 6, "expected": 5.42, "p_ge_obs": 0.5079, "p_le_obs": 0.8347}
+{"group": "ロッテ・B クラス", "flag": "traj_wl_peak", "units": 7, "observed": 5, "expected": 3.25, "p_ge_obs": 0.1479, "p_le_obs": 0.9726}
+{"group": "ロッテ・B クラス", "flag": "traj_wl_valley", "units": 7, "observed": 5, "expected": 3.18, "p_ge_obs": 0.1286, "p_le_obs": 0.979}
+{"group": "ロッテ・B クラス", "flag": "wave_osc", "units": 7, "observed": 7, "expected": 6.17, "p_ge_obs": 0.4083, "p_le_obs": 1.0}
+{"group": "ロッテ・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "ヤクルト", "flag": "traj_rank_peak", "units": 13, "observed": 10, "expected": 9.69, "p_ge_obs": 0.5688, "p_le_obs": 0.6864}
+{"group": "ヤクルト", "flag": "traj_rank_valley", "units": 13, "observed": 13, "expected": 9.64, "p_ge_obs": 0.0194, "p_le_obs": 1.0}
+{"group": "ヤクルト", "flag": "traj_wl_peak", "units": 13, "observed": 5, "expected": 5.08, "p_ge_obs": 0.6293, "p_le_obs": 0.6029}
+{"group": "ヤクルト", "flag": "traj_wl_valley", "units": 13, "observed": 7, "expected": 5.28, "p_ge_obs": 0.2311, "p_le_obs": 0.9069}
+{"group": "ヤクルト", "flag": "wave_osc", "units": 13, "observed": 10, "expected": 11.3, "p_ge_obs": 0.9285, "p_le_obs": 0.2305}
+{"group": "ヤクルト", "flag": "traj_wl_peak_after_clinch", "units": 5, "observed": 0, "expected": 0.23, "p_ge_obs": 1.0, "p_le_obs": 0.7898}
+{"group": "ヤクルト・B クラス", "flag": "traj_rank_peak", "units": 8, "observed": 5, "expected": 5.57, "p_ge_obs": 0.8012, "p_le_obs": 0.4597}
+{"group": "ヤクルト・B クラス", "flag": "traj_rank_valley", "units": 8, "observed": 8, "expected": 6.0, "p_ge_obs": 0.0961, "p_le_obs": 1.0}
+{"group": "ヤクルト・B クラス", "flag": "traj_wl_peak", "units": 8, "observed": 3, "expected": 2.81, "p_ge_obs": 0.5844, "p_le_obs": 0.7091}
+{"group": "ヤクルト・B クラス", "flag": "traj_wl_valley", "units": 8, "observed": 4, "expected": 2.77, "p_ge_obs": 0.2774, "p_le_obs": 0.9092}
+{"group": "ヤクルト・B クラス", "flag": "wave_osc", "units": 8, "observed": 6, "expected": 6.67, "p_ge_obs": 0.8729, "p_le_obs": 0.3965}
+{"group": "ヤクルト・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}
+{"group": "阪神", "flag": "traj_rank_peak", "units": 13, "observed": 11, "expected": 9.89, "p_ge_obs": 0.3661, "p_le_obs": 0.8553}
+{"group": "阪神", "flag": "traj_rank_valley", "units": 13, "observed": 11, "expected": 9.65, "p_ge_obs": 0.3094, "p_le_obs": 0.8864}
+{"group": "阪神", "flag": "traj_wl_peak", "units": 13, "observed": 8, "expected": 6.38, "p_ge_obs": 0.2545, "p_le_obs": 0.8968}
+{"group": "阪神", "flag": "traj_wl_valley", "units": 13, "observed": 7, "expected": 6.29, "p_ge_obs": 0.45, "p_le_obs": 0.7632}
+{"group": "阪神", "flag": "wave_osc", "units": 13, "observed": 11, "expected": 11.95, "p_ge_obs": 0.9184, "p_le_obs": 0.2851}
+{"group": "阪神", "flag": "traj_wl_peak_after_clinch", "units": 10, "observed": 0, "expected": 0.39, "p_ge_obs": 1.0, "p_le_obs": 0.667}
+{"group": "阪神・B クラス", "flag": "traj_rank_peak", "units": 3, "observed": 1, "expected": 2.15, "p_ge_obs": 0.9783, "p_le_obs": 0.1934}
+{"group": "阪神・B クラス", "flag": "traj_rank_valley", "units": 3, "observed": 1, "expected": 2.33, "p_ge_obs": 0.9897, "p_le_obs": 0.1255}
+{"group": "阪神・B クラス", "flag": "traj_wl_peak", "units": 3, "observed": 1, "expected": 1.46, "p_ge_obs": 0.8703, "p_le_obs": 0.5205}
+{"group": "阪神・B クラス", "flag": "traj_wl_valley", "units": 3, "observed": 1, "expected": 1.36, "p_ge_obs": 0.8466, "p_le_obs": 0.5687}
+{"group": "阪神・B クラス", "flag": "wave_osc", "units": 3, "observed": 1, "expected": 2.66, "p_ge_obs": 0.9986, "p_le_obs": 0.0349}
+{"group": "阪神・B クラス", "flag": "traj_wl_peak_after_clinch", "units": 0, "observed": 0, "expected": 0, "p_ge_obs": 1.0, "p_le_obs": 1.0}

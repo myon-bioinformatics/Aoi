@@ -1,0 +1,1568 @@
+# サイクル1の命題（事前登録）。形式と判定規則は docs/propositions.md。
+#
+# 記録: 2026-10-03 に書いた。このとき Aoi のパイプラインによる実データはまだ取得していない。
+#       外部レポート（references/2026-10-03-external-report.md）の数値は読んだうえで書いている。
+#       強さ（strength）は言葉で選び、数値の基準はそこから自動で決まる。データに合わせて調整しない。
+# 変更: 結果を見てから基準・範囲・条件を変えるときは、新しい id を作り、この命題は残す。
+#
+# 単位: チーム×シーズン（12球団、2012〜2025年、analysis.toml の除外を適用。除外中の判例は別に表示）
+
+# ---- 得失点で順位を説明する（既存の説明） ----
+
+[[proposition]]
+id = "P1"
+statement = "得失点差がプラスなら、上位半分（Aクラス）である"
+strength = "usually"
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rank_gap"
+context = ["rank", "rank_pythag", "wins_vs_pythag"]
+links = ["H2", "H3", "H4"]
+
+[[proposition]]
+id = "P2"
+statement = "ピタゴラス期待勝率でリーグ3位以内なら、実際も3位以内である"
+strength = "usually"
+if = [{ col = "rank_pythag", op = "<=", value = 3 }]
+then = [{ col = "rank", op = "<=", value = 3 }]
+surprise = "rank_gap"
+context = ["rd", "wins_vs_pythag"]
+links = ["H2", "H3", "H4"]
+
+[[proposition]]
+id = "P3"
+statement = "得点がリーグ2位以内なら、3位以内である"
+strength = "usually"
+if = [{ col = "rank_rf", op = "<=", value = 2 }]
+then = [{ col = "rank", op = "<=", value = 3 }]
+surprise = "rank_gap"
+context = ["rank_ra", "rd"]
+links = ["H2"]
+
+[[proposition]]
+id = "P4"
+statement = "失点がリーグで2番目以内に少なければ、3位以内である"
+strength = "usually"
+if = [{ col = "rank_ra", op = "<=", value = 2 }]
+then = [{ col = "rank", op = "<=", value = 3 }]
+surprise = "rank_gap"
+context = ["rank_rf", "rd"]
+links = ["H2"]
+
+[[proposition]]
+id = "P5"
+statement = "得点がリーグ5位以下なら、下位半分（Bクラス）である"
+strength = "usually"
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["rank", "rank_ra", "rd"]
+links = ["H2"]
+
+[[proposition]]
+id = "P6"
+statement = "どのチーム・シーズンでも、実際の勝利数はピタゴラス期待勝利数の±5勝以内に収まる"
+strength = "almost_always"
+if = []
+then = [{ col = "wins_vs_pythag", op = ">=", value = -5 }, { col = "wins_vs_pythag", op = "<=", value = 5 }]
+surprise = "wins_vs_pythag"
+context = ["rd", "rank", "rank_pythag"]
+links = ["H3", "H4", "H5"]
+
+# ---- 得失点差が同程度でも勝率が違う：点差の分布で説明できるか ----
+# 追加: 2026-10-03（外部の会話の提案を受けて）。このときもパイプラインの実データはまだ取得していない。
+
+[[proposition]]
+id = "P9"
+statement = "1点差の試合で勝ち越していれば、ピタゴラス期待勝利数を上回る"
+strength = "usually"
+if = [{ col = "one_run_net", op = ">", value = 0 }]
+then = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+surprise = "wins_vs_pythag"
+context = ["rd", "wpct_1run", "blowout_net"]
+links = ["H3", "H8"]
+falsifier = "1点差で勝ち越したチーム・シーズンのうち、期待勝利数を下回るものが4分の1を超える"
+note = "1点差の勝敗とピタゴラスからのずれは計算上も連動しやすい。成り立っても「どうずれたか」の記述で、「なぜか」の説明ではない"
+
+[[proposition]]
+id = "P10"
+statement = "4点以上差の試合で負け越していれば、ピタゴラス期待勝利数を上回る（大敗が失点を押し上げ、期待勝利数を下げる）"
+strength = "usually"
+if = [{ col = "blowout_net", op = "<", value = 0 }]
+then = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+surprise = "wins_vs_pythag"
+context = ["rd", "one_run_net", "rank"]
+links = ["H8"]
+falsifier = "4点以上差で負け越したチーム・シーズンのうち、期待勝利数を下回るものが4分の1を超える"
+note = "得点・失点の「配分」の偏りを見る命題。大差の試合が少ない年は条件に入らない"
+
+[[proposition]]
+id = "P11"
+statement = "得失点差が ±20 以内のチームの間では、1点差で勝ち越していれば上位半分（Aクラス）に入る"
+strength = "more_often_than_not"
+if = [{ col = "rd", op = ">=", value = -20 }, { col = "rd", op = "<=", value = 20 }, { col = "one_run_net", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rank_gap"
+context = ["rank", "rank_pythag", "wins_vs_pythag"]
+links = ["H3", "H8"]
+falsifier = "得失点差が拮抗し1点差で勝ち越したチーム・シーズンの半数以上が下位半分"
+note = "「得失点差が同程度でも勝率が違う」を、得失点差の幅を絞って比べる。±20 は「同程度」の目安として事前に決めた値"
+
+# ---- 中日ドラゴンズについての命題（focus） ----
+
+[[proposition]]
+id = "P7"
+statement = "中日の順位は、得失点から期待される順位より2つ以上は下回らない"
+strength = "usually"
+if = [{ col = "team", op = "==", value = "d" }]
+then = [{ col = "rank_gap", op = "<=", value = 1 }]
+surprise = "rank_gap"
+context = ["rank", "rank_pythag", "rd", "wins_vs_pythag"]
+links = ["H3", "H4", "H5"]
+skip_forms = ["converse", "inverse"]
+skip_reason = "条件が「中日であること」なので、逆（期待どおりなら中日である）は意味を持たない"
+
+[[proposition]]
+id = "P8"
+statement = "中日の勝利数は、ピタゴラス期待勝利数を3勝以上は下回らない（「運が悪かった」ではない）"
+strength = "usually"
+if = [{ col = "team", op = "==", value = "d" }]
+then = [{ col = "wins_vs_pythag", op = ">=", value = -3 }]
+surprise = "wins_vs_pythag"
+context = ["rank", "rank_pythag", "rd", "wpct_1run"]
+links = ["H3", "H4", "H5"]
+skip_forms = ["converse", "inverse"]
+skip_reason = "条件が「中日であること」なので、逆（期待どおりなら中日である）は意味を持たない"
+
+# ---- R1: 得点・失点の配分（research/R1-score-allocation.md と同時に登録。探索的） ----
+# 追加: 2026-10-03。配分効果はまだ実データで一度も計算していない。
+
+[[proposition]]
+id = "P12"
+statement = "配分効果がはっきりプラスのシーズン（alloc_z ≥ 1）の翌年も、配分効果はプラスである（配分はチームの特徴として続く）"
+strength = "more_often_than_not"
+if = [{ col = "alloc_z", op = ">=", value = 1 }]
+then = [{ col = "alloc_z_next", op = ">", value = 0 }]
+surprise = "alloc_z_next"
+context = ["alloc_z", "wins_vs_pythag"]
+links = ["H9"]
+falsifier = "alloc_z ≥ 1 のシーズンのうち、翌年の alloc_z が 0 以下になるものが半数以上"
+note = "翌年のないシーズン（最終年、除外の前年）は判定できない単位として数える。同じチームでも選手は入れ替わる"
+
+[[proposition]]
+id = "P13"
+statement = "配分効果がはっきり出たシーズン（|alloc_z| ≥ 1）は、ホームとビジターで配分効果の符号がそろう"
+strength = "more_often_than_not"
+if = [{ col = "alloc_z_abs", op = ">=", value = 1 }]
+then = [{ col = "alloc_same_sign", op = "==", value = true }]
+surprise = "alloc_z"
+context = ["alloc_net_home", "alloc_net_away"]
+links = ["H9"]
+falsifier = "|alloc_z| ≥ 1 のシーズンの半数以上で、ホームとビジターの符号が逆"
+note = "ホームの勝ち試合は9回裏を行わない・サヨナラで打ち切られるため、ホームの配分効果は偏りやすい（R1 の限界を参照）"
+
+[[proposition]]
+id = "P14"
+statement = "中日は、得点・失点の配分（どの試合で組み合わさったか）で勝ち越し数を失っていない（alloc_net ≥ 0）"
+strength = "usually"
+if = [{ col = "team", op = "==", value = "d" }]
+then = [{ col = "alloc_net", op = ">=", value = 0 }]
+surprise = "alloc_net"
+context = ["rank", "rd", "wins_vs_pythag", "alloc_z"]
+links = ["H3", "H9"]
+skip_forms = ["converse", "inverse"]
+skip_reason = "条件が「中日であること」なので、逆（配分で損をしていなければ中日である）は意味を持たない"
+falsifier = "中日のシーズンのうち、配分で負け越し（alloc_net < 0）が4分の1を超える"
+note = "成り立てば、CS 不出場の説明は配分ではなく、得点・失点の総量（とその原因）の側に寄る"
+
+# ---- R2: 得点が少なくても A クラスに入れたのはなぜか（research/R2-low-scoring-a-class.md） ----
+# 追加: 2026-10-04。R1 の実データの結果と、P5 の判例のチーム・年は見たうえで書いている（値は見ていない）。
+
+[[proposition]]
+id = "P15"
+statement = "得点がリーグ5位以下のチームの間では、失点がリーグで2番目以内に少なければ A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "rank_ra", op = "<=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rank_gap"
+context = ["rank", "rank_rf", "rd", "rank_rd", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "低得点で失点が2番目以内に少ないチーム・シーズンのうち、B クラスが4分の1を超える"
+note = "逆（A クラスなら失点が2番目以内）は、低得点の A クラスが失点の少なさで届いたかを見る"
+
+[[proposition]]
+id = "P16"
+statement = "得点がリーグ5位以下のチームの間では、ピタゴラス期待勝利数を上回れば A クラス"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "wins_vs_pythag"
+context = ["rank", "rank_ra", "rd", "one_run_net", "alloc_net_strat"]
+links = ["H3", "H9"]
+falsifier = "低得点で期待以上に勝ったチーム・シーズンの半数以上が B クラス"
+note = "逆（A クラスなら期待以上）が成り立つなら、低得点の A クラスは得失点で説明しにくい部分で届いた。R1 ではその部分は翌年に続かなかった"
+
+[[proposition]]
+id = "P17"
+statement = "得点がリーグ5位以下だったシーズンの中日は、失点がリーグで2番目以内に少なくない"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "rank_ra", op = ">=", value = 3 }]
+surprise = "rank_ra"
+context = ["rank", "rank_rf", "rd", "RA"]
+links = ["H2"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、失点が2番目以内に少ない"
+note = "成り立てば「失点でも補えなかった」。成り立たなければ、失点は少なかったのに届かなかった年があり、得点の不足の大きさに戻る"
+
+[[proposition]]
+id = "P18"
+parent = "P15"
+change = "P15 の判例 10件（低得点・失点2番目以内なのに B クラス）を見て、得失点差がプラスかどうかで分かれているように見えたため、前件に rd > 0 を加えた。結果を見てから作ったので、確かめには新しいデータ（2026年以降、または未取得の年）を使う"
+motivated_by = ["d-2019", "t-2018", "d-2021", "l-2023", "b-2024", "b-2013", "d-2014", "b-2015", "d-2022", "c-2024", "t-2022", "t-2013", "t-2021", "h-2012", "l-2022", "t-2019"]
+statement = "得点がリーグ5位以下で失点が2番目以内に少ないチームの間では、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }, { col = "rank_ra", op = "<=", value = 2 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rank_gap"
+context = ["rank", "RF", "RA", "rank_rd", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "新しいデータで、この範囲かつ rd > 0 のチーム・シーズンの4分の1を超えて B クラス"
+note = "motivated_by に作るきっかけの16単位すべてを入れたので、今のデータでの held-out は0単位（判断保留が正しい）。失点の少なさは、得点の不足を上回ったときにだけ順位に届く、という見方の確かめ"
+
+# ---- R3: 得点の不足はどの得点帯で生まれたか（research/R3-scoring-bands.md） ----
+# 追加: 2026-10-04。rf_def_* は実データでまだ計算していない。R1・R2 の結果は見ている。
+
+[[proposition]]
+id = "P19"
+statement = "得点がリーグ5位以下だったシーズンの中日は、床（0〜2点に抑えられる試合）の不足が、天井（6点以上）の不足より大きい"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "rf_def_floor_minus_ceiling", op = "<", value = 0 }]
+surprise = "rf_def_floor_minus_ceiling"
+context = ["rank", "rf_def_floor", "rf_def_mid", "rf_def_ceiling", "rf_def_total"]
+links = ["H2"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、天井の不足のほうが大きい"
+note = "成り立てば「抑え込まれる試合が多い」。成り立たなければ「大量点が出ない」側を調べる"
+
+[[proposition]]
+id = "P20"
+statement = "得点がリーグ5位以下のチーム・シーズンでは、床の不足が天井の不足より大きい"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "rf_def_floor_minus_ceiling", op = "<", value = 0 }]
+surprise = "rf_def_floor_minus_ceiling"
+context = ["rank", "rf_def_floor", "rf_def_ceiling", "rf_def_total"]
+links = ["H2"]
+falsifier = "低得点のチーム・シーズンの半数以上で、天井の不足のほうが大きい"
+note = "P19 と成立率を並べ、中日の形が低得点のチームの中で特別かを見る"
+
+[[proposition]]
+id = "P21"
+statement = "得点がリーグ5位以下のチームの間では、床の不足が天井の不足より大きい形なら B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "rf_def_floor_minus_ceiling", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["rank", "rank_ra", "rd", "rf_def_total"]
+links = ["H2"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。不足の形は順位と関係しない"
+note = "低得点のチームはもともと大半が B クラスなので、成立率より lift と p を読む"
+
+# ---- R4: 点が入る回が少ないのか、入っても少ないのか（research/R4-scoring-frequency-size.md） ----
+# 追加: 2026-10-04。inn_* は実データでまだ計算していない。R1〜R3 の結果と PR #3 のイニング集計の要約は読んでいる。
+
+[[proposition]]
+id = "P22"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点する回の頻度の不足が、得点した回の大きさの不足より大きい"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_freq_minus_size", op = "<", value = 0 }]
+surprise = "inn_freq_minus_size"
+context = ["rank", "inn_dlog_freq", "inn_dlog_size", "inn_dlog_rpi"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、大きさの不足のほうが大きい"
+note = "成り立てば「点が入る回が少ない」。成り立たなければ「入っても1点で止まる」側を調べる"
+
+[[proposition]]
+id = "P23"
+statement = "得点がリーグ5位以下のチーム・シーズンでは、得点する回の頻度の不足が、得点した回の大きさの不足より大きい"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_freq_minus_size", op = "<", value = 0 }]
+surprise = "inn_freq_minus_size"
+context = ["rank", "inn_dlog_freq", "inn_dlog_size"]
+links = ["H5", "H6"]
+falsifier = "低得点のチーム・シーズンの半数以上で、大きさの不足のほうが大きい"
+note = "P22 と成立率を並べ、中日の形が低得点のチームの中で特別かを見る"
+
+[[proposition]]
+id = "P24"
+statement = "得点がリーグ5位以下のチームの間では、得点する回の頻度の不足が大きい形なら B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "inn_freq_minus_size", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["rank", "rank_ra", "rd", "inn_dlog_rpi"]
+links = ["H5", "H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。形は順位と関係しない"
+note = "低得点のチームはもともと大半が B クラスなので、成立率より lift と p を読む"
+
+[[proposition]]
+id = "P25"
+statement = "P22 を、双方が6回まで攻撃した試合の1〜6回だけで見ても、頻度の不足が大きさの不足より大きい"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_freq_minus_size_6", op = "<", value = 0 }]
+surprise = "inn_freq_minus_size_6"
+context = ["inn_dlog_freq_6", "inn_dlog_size_6", "inn_freq_minus_size"]
+links = ["H5", "H6"]
+falsifier = "P22 と判定が食い違う（9回裏の省略・延長の扱いが結果を左右している）"
+note = "9回裏の省略・サヨナラの途中終了の影響を小さくした比較。補正ではない"
+
+# ---- R5: 点が入った回が小さいのはどこで・どの形でか（research/R5-scoring-inning-size.md） ----
+# 追加: 2026-10-04。*_home / *_away / inn_*_share は実データでまだ計算していない。R4 の結果は見ている。
+
+[[proposition]]
+id = "P26"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点した回のうち1点の回の割合が他球団より多い"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_d_single_share", op = ">", value = 0 }]
+surprise = "inn_d_single_share"
+context = ["inn_d_big_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、1点の回の割合が他球団以下"
+note = "P27 と組で読む。片方だけ成り立つなら、大きさの不足はその側に集中している"
+
+[[proposition]]
+id = "P27"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点した回のうち3点以上の回の割合が他球団より少ない"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+surprise = "inn_d_big_share"
+context = ["inn_d_single_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、3点以上の回の割合が他球団以上"
+note = "P30（中日以外の低得点のチーム）と成立率を並べ、中日固有かを見る"
+
+[[proposition]]
+id = "P28"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ホームの試合で得点した回の大きさが他球団（ホーム同士）より小さい"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_dlog_size_home", op = "<", value = 0 }]
+surprise = "inn_dlog_size_home"
+context = ["inn_dlog_size_away", "inn_dlog_size", "inn_dlog_freq_home"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、ホームの大きさが他球団以上"
+note = "球場の係数ではない。ホーム同士で比べるだけ。P29 と片方だけ成り立つなら、主催区分の問題として扱う（原因は特定しない）"
+
+[[proposition]]
+id = "P29"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ビジターの試合で得点した回の大きさが他球団（ビジター同士）より小さい"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "inn_dlog_size_away", op = "<", value = 0 }]
+surprise = "inn_dlog_size_away"
+context = ["inn_dlog_size_home", "inn_dlog_size", "inn_dlog_freq_away"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、ビジターの大きさが他球団以上"
+note = "P28 と組で読む"
+
+[[proposition]]
+id = "P30"
+statement = "得点がリーグ5位以下のチーム・シーズン（中日を除く）では、得点した回のうち3点以上の回の割合が他球団より少ない"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025", where = [{ col = "rank_rf", op = ">=", value = 5 }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+surprise = "inn_d_big_share"
+context = ["inn_d_single_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+falsifier = "中日以外の低得点のチーム・シーズンの半数以上で、3点以上の回の割合が他球団以上"
+note = "P27 と同じくらい成り立つなら、3点以上の回の少なさは低得点のチームに共通"
+
+# ---- R6: 得点した回が小さいのは、長打の不足か、出塁の不足か（research/R6-team-batting.md） ----
+# 追加: 2026-10-04。チーム打撃成績はまだ取得していない。R4・R5 の結果は見ている。
+
+[[proposition]]
+id = "P31"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ISO（長打率 − 打率）が他球団より低い"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_iso", op = "<", value = 0 }]
+surprise = "bat_d_iso"
+context = ["bat_d_obp", "bat_d_hr_pa", "bat_d_bb_pa", "rank"]
+links = ["H2", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、ISO が他球団以上"
+note = "P32 と組で読む。片方だけ成り立つなら、不足はその側に寄る"
+
+[[proposition]]
+id = "P32"
+statement = "得点がリーグ5位以下だったシーズンの中日は、出塁率が他球団より低い"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_obp", op = "<", value = 0 }]
+surprise = "bat_d_obp"
+context = ["bat_d_iso", "bat_d_avg", "bat_d_bb_pa", "rank"]
+links = ["H2", "H5"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、出塁率が他球団以上"
+note = "P31 と組で読む"
+
+[[proposition]]
+id = "P33"
+statement = "ISO が同じ年・同じリーグの他球団より低ければ、得点した回のうち3点以上の回の割合も他球団より少ない"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_iso", op = "<", value = 0 }]
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+surprise = "inn_d_big_share"
+context = ["bat_d_iso", "bat_d_obp", "inn_dlog_size", "rank"]
+links = ["H6"]
+falsifier = "ISO が低いチーム・シーズンの4分の1を超えて、3点以上の回の割合が他球団以上"
+note = "成り立たなければ、ISO と大量点の回を結ぶ見方そのものを弱める（中日の R5 の結果を長打で説明できなくなる）"
+
+[[proposition]]
+id = "P34"
+statement = "出塁率が同じ年・同じリーグの他球団より低ければ、得点する回の頻度も他球団より低い"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_obp", op = "<", value = 0 }]
+then = [{ col = "inn_dlog_freq", op = "<", value = 0 }]
+surprise = "inn_dlog_freq"
+context = ["bat_d_obp", "bat_d_iso", "rank"]
+links = ["H5"]
+falsifier = "出塁率が低いチーム・シーズンの4分の1を超えて、得点する回の頻度が他球団以上"
+note = "P33 と対で、出塁 ↔ 頻度、長打 ↔ 大きさ、という対応が成り立つかを見る"
+
+# ---- R7: 異議から作り直す（research/R7-restatements.md） ----
+# 追加: 2026-10-04。親の命題の結果を見たうえで作り直している。rf_def_k67 は実データでまだ計算していない。
+
+[[proposition]]
+id = "P35"
+parent = "P33"
+change = "強さを usually（0.75）から more_often_than_not（0.50）に下げた。P33 は成立率 0.66・lift 1.32・p < 0.001 で、関係はあるが「概ね」に届かなかった。同じデータでの言い直しで、確かめではない"
+statement = "ISO が同じ年・同じリーグの他球団より低ければ、得点した回のうち3点以上の回の割合も他球団より少ないことが多い"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_iso", op = "<", value = 0 }]
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+surprise = "inn_d_big_share"
+context = ["bat_d_iso", "bat_d_obp", "inn_dlog_size", "rank"]
+links = ["H6"]
+falsifier = "ISO が低いチーム・シーズンの半数以上で、3点以上の回の割合が他球団以上"
+
+[[proposition]]
+id = "P36"
+parent = "P19"
+change = "天井の帯を k ≥ 6（幅の上限なし）から k = 6〜7（床と同じ幅2）に変えた。R3 の比較は、得点の量で比べると天井が大きく出る作りだったため（R3 の自分への異議）"
+statement = "得点がリーグ5位以下だったシーズンの中日は、床（k = 1〜2）の不足が、同じ幅の天井側（k = 6〜7）の不足より大きい"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "rf_def_floor_minus_k67", op = "<", value = 0 }]
+surprise = "rf_def_floor_minus_k67"
+context = ["rf_def_floor", "rf_def_k67", "rf_def_total", "rank"]
+links = ["H2"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、k = 6〜7 の不足のほうが大きい"
+note = "P19 と同じく不成立なら、R3 の読みは帯の幅の作りのせいではなかった"
+
+[[proposition]]
+id = "P37"
+parent = "P20"
+change = "P36 と同じ変更（天井の帯を k = 6〜7 にして幅をそろえた）"
+statement = "得点がリーグ5位以下のチーム・シーズンでは、床（k = 1〜2）の不足が、同じ幅の天井側（k = 6〜7）の不足より大きい"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "rf_def_floor_minus_k67", op = "<", value = 0 }]
+surprise = "rf_def_floor_minus_k67"
+context = ["rf_def_floor", "rf_def_k67", "rank"]
+links = ["H2"]
+falsifier = "低得点のチーム・シーズンの半数以上で、k = 6〜7 の不足のほうが大きい"
+
+[[proposition]]
+id = "P38"
+statement = "四死球／打席が同じ年・同じリーグの他球団より少なければ、得点した回の大きさも他球団より小さい"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_bb_pa", op = "<", value = 0 }]
+then = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+surprise = "inn_dlog_size"
+context = ["bat_d_bb_pa", "bat_d_iso", "bat_d_obp", "rank"]
+links = ["H5", "H6"]
+falsifier = "四死球が少ないチーム・シーズンの4分の1を超えて、得点した回の大きさが他球団以上"
+note = "R6 の自分への異議から（同じデータを見た後に作った）。P39 と並べて読む"
+
+[[proposition]]
+id = "P39"
+statement = "ISO が同じ年・同じリーグの他球団より低ければ、得点した回の大きさも他球団より小さい"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_iso", op = "<", value = 0 }]
+then = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+surprise = "inn_dlog_size"
+context = ["bat_d_iso", "bat_d_bb_pa", "bat_d_obp", "rank"]
+links = ["H6"]
+falsifier = "ISO が低いチーム・シーズンの4分の1を超えて、得点した回の大きさが他球団以上"
+note = "R6 の自分への異議から（同じデータを見た後に作った）。P38 と並べて読む"
+
+# ---- R8: 出塁のうち四死球の割合と、順位で比べる逆・裏（research/R8-walk-share.md） ----
+# 追加: 2026-10-04。bat_walk_share・bat_ibb_bb は実データでまだ計算していない。R6・R7 の結果は見ている。
+
+[[proposition]]
+id = "P40"
+statement = "得点がリーグ5位以下だったシーズンの中日は、出塁のうち四死球による割合が他球団より低い"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_walk_share", op = "<", value = 0 }]
+surprise = "bat_d_walk_share"
+context = ["bat_d_avg", "bat_d_bb_pa", "bat_d_obp", "rank"]
+links = ["H5"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、四死球による出塁の割合が他球団以上"
+note = "R6 の数字から向きはある程度予想できる。他の低得点のチームとの差は summary で並べて読む"
+
+[[proposition]]
+id = "P41"
+statement = "得点がリーグ5位以下のチームの間では、出塁のうち四死球による割合が他球団より低ければ B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "bat_d_walk_share", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["bat_d_walk_share", "bat_d_avg", "rank_ra", "rd"]
+links = ["H5"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。低得点のチームの中では、出塁の中身は順位を分けない"
+note = "中日だけの命題では作れない逆・裏を、低得点のチームどうしの比較で作る。成立率より lift と p を読む"
+
+[[proposition]]
+id = "P42"
+statement = "得点がリーグ5位以下のチームの間では、ISO が他球団より低ければ B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "bat_d_iso", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["bat_d_iso", "bat_d_obp", "rank_ra", "rd"]
+links = ["H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。低得点のチームの中では、長打の不足は順位を分けない"
+note = "P41・P43 と兄弟（範囲と結論が同じ）"
+
+[[proposition]]
+id = "P43"
+statement = "得点がリーグ5位以下のチームの間では、四死球／打席が他球団より少なければ B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "bat_d_bb_pa", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["bat_d_bb_pa", "bat_d_iso", "rank_ra", "rd"]
+links = ["H5"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。低得点のチームの中では、四死球の少なさは順位を分けない"
+note = "P41・P42 と兄弟"
+
+[[proposition]]
+id = "P44"
+statement = "出塁のうち四死球による割合が同じ年・同じリーグの他球団より低ければ、得点した回の大きさも他球団より小さい"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_walk_share", op = "<", value = 0 }]
+then = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+surprise = "inn_dlog_size"
+context = ["bat_d_walk_share", "bat_d_bb_pa", "bat_d_avg", "rank"]
+links = ["H5", "H6"]
+falsifier = "四死球による出塁の割合が低いチーム・シーズンの4分の1を超えて、得点した回の大きさが他球団以上"
+note = "P38（四死球／打席）・P39（ISO）と兄弟。P38 より明らかに弱ければ、効くのは割合ではなく数"
+
+[[proposition]]
+id = "P45"
+statement = "得点がリーグ5位以下だったシーズンの中日は、四球のうち故意四球の割合が他球団より低い"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_ibb_bb", op = "<", value = 0 }]
+surprise = "bat_d_ibb_bb"
+context = ["bat_d_iso", "bat_d_bb_pa", "rank"]
+links = ["H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、故意四球の割合が他球団以上"
+note = "勝負を避けられない（打者が怖がられていない）という読みの確かめ。成り立たなければこの読みは使わない"
+
+# ---- R9: 少ない機会をどれだけ点にできたか（research/R9-run-efficiency.md） ----
+# 追加: 2026-10-04。ユーザーの提案から。bat_r_* は実データでまだ計算していない。R6〜R8 の結果は見ている。
+
+[[proposition]]
+id = "P46"
+statement = "得点がリーグ5位以下だったシーズンの中日は、走者1人あたりの得点が他球団より少ない"
+strength = "usually"
+scope = { team = "d", where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = []
+then = [{ col = "bat_d_r_runner", op = "<", value = 0 }]
+surprise = "bat_d_r_runner"
+context = ["bat_d_r_ab", "bat_d_r_pa", "bat_d_obp", "bat_d_iso"]
+links = ["H5", "H6"]
+falsifier = "中日の低得点のシーズンの4分の1を超えて、走者1人あたりの得点が他球団以上"
+note = "成り立たなければ「そもそも走者が少ない」側に戻る。本塁打が多いと機械的に高くなる指標"
+
+[[proposition]]
+id = "P47"
+statement = "得点がリーグ5位以下のチーム・シーズン（中日を除く）では、走者1人あたりの得点が他球団より少ない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "bat_d_r_runner", op = "<", value = 0 }]
+surprise = "bat_d_r_runner"
+context = ["bat_d_r_ab", "bat_d_obp", "bat_d_iso"]
+links = ["H5", "H6"]
+falsifier = "中日以外の低得点のチーム・シーズンの半数以上で、走者1人あたりの得点が他球団以上"
+note = "P46 と成立率を並べ、中日固有かを見る"
+
+[[proposition]]
+id = "P48"
+statement = "走者1人あたりの得点が同じ年・同じリーグの他球団より少なければ、得点した回の大きさも他球団より小さい"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "bat_d_r_runner", op = "<", value = 0 }]
+then = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+surprise = "inn_dlog_size"
+context = ["bat_d_r_runner", "bat_d_iso", "bat_d_bb_pa"]
+links = ["H5", "H6"]
+falsifier = "走者1人あたりの得点が少ないチーム・シーズンの4分の1を超えて、得点した回の大きさが他球団以上"
+note = "P38・P39・P44 と兄弟。それらより明らかに強ければ、まとめて「走者を返す効率」として見るほうがよい"
+
+[[proposition]]
+id = "P49"
+statement = "得点がリーグ5位以下のチームの間では、走者1人あたりの得点が他球団より少なければ B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "bat_d_r_runner", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["bat_d_r_runner", "rank_ra", "rd"]
+links = ["H5", "H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。低得点のチームの中では、得点の効率は順位を分けない"
+note = "P41〜P43 と兄弟。成立率より lift と p を読む"
+
+# ---- R10: 得点・失点の分布だけからシーズンを作り直す（research/R10-rank-resimulation.md） ----
+# 追加: 2026-10-04。ユーザーの提案から。sim_p_upper は実データでまだ計算していない。R1〜R9 の結果は見ている。
+
+[[proposition]]
+id = "P50"
+statement = "得点・失点の分布だけからシーズンを作り直したときに A クラスに入る確率が 0.5 以上なら、実際も A クラス"
+strength = "usually"
+if = [{ col = "sim_p_upper", op = ">=", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rank_gap"
+context = ["sim_p_upper", "rank", "rd", "wins_vs_pythag"]
+links = ["H3", "H4"]
+falsifier = "確率 0.5 以上のチーム・シーズンの4分の1を超えて B クラス"
+note = "この作り直しが順位をどれだけ言い当てるか。成り立たなければ、R10 の他の読みも弱める"
+
+[[proposition]]
+id = "P51"
+statement = "中日は、得点・失点の分布だけからシーズンを作り直すと、A クラスに入る確率が 0.5 未満"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "sim_p_upper", op = "<", value = 0.5 }]
+surprise = "sim_p_upper"
+context = ["rank", "rd", "rank_rf", "rank_ra"]
+links = ["H2", "H3"]
+falsifier = "中日のシーズンの4分の1を超えて、作り直しで A クラスに入る確率が 0.5 以上"
+note = "中日の各年が、得点・失点の分布の時点で B クラス寄りだったか。チーム全体の比較は outputs/rank_expectation.jsonl"
+
+# ---- R11: B クラスを言い当てる条件の組み合わせ（research/R11-b-class-rule.md） ----
+# 追加: 2026-10-04。rule_search.py の結果（outputs/rules.jsonl）を見た後に作った。確かめは 2026年以降のデータで行う。
+# 最上位の式（条件3つ、相関 0.821）と条件2つまでの最良（0.809）の差が 0.02 未満なので、計画どおり少ないほうを採った。
+
+# 注（2026-10-04 追記）: 文中の「偶然の範囲」は言いすぎ。正しくは「ランダムな基準より不利」。基準からのずれを運とは呼ばない
+# （research/R11-b-class-rule.md の「言い方の訂正」）。登録した定義は変えない（同じ id で定義を変えると事前登録の違反になる）。
+[[proposition]]
+id = "P52"
+statement = "得点・失点の分布から見た A クラスの確率が4割未満、または得点と失点の組み合わせ方が偶然の範囲を超えて不利（alloc_z_strat < −1）なら、B クラス"
+strength = "usually"
+if_any = [[{ col = "sim_p_upper", op = "<", value = 0.4 }], [{ col = "alloc_z_strat", op = "<", value = -1 }]]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["rank", "sim_p_upper", "alloc_z_strat", "rd", "wins_vs_pythag"]
+links = ["H2", "H3", "H9"]
+falsifier = "2026年以降のデータで、この前件を満たすチーム・シーズンの4分の1を超えて A クラス、または B クラスの4分の1を超えて前件を満たさない"
+note = "探索（R11）で見つけた式。作るきっかけと同じデータでの判定は確かめではない。逆（B クラス ⇒ 前件）が「なぜ B クラスか」の説明の網羅性にあたる"
+
+# ---- R12: 3位と4位の境目を分けるもの（research/R12-boundary.md） ----
+# 追加: 2026-10-04。境目の指標は実データでまだ計算していない。R10・R11 の値（2014・2019年の各チーム）は見ている。
+
+[[proposition]]
+id = "P53"
+statement = "3位と4位のチームの間では、直接対決で勝ち越したほうが3位"
+strength = "usually"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_net", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_net"
+context = ["sim_p_upper", "alloc_z_strat", "vs_near_net", "half2_vs_pythag"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。境目は直接対決では決まっていない"
+note = "直接対決は順位を決める勝ち負けの一部。成り立っても記述であって、なぜ勝てたかの説明ではない"
+
+[[proposition]]
+id = "P54"
+statement = "3位と4位のチームの間では、後半に期待勝利数を上回ったほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "half2_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "half2_vs_pythag"
+context = ["half1_vs_pythag", "sim_p_upper", "pair34_net"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。後半の上振れは境目を分けない"
+note = "P53・P55・P56 と兄弟。P56（分布だけ）より強く分けるかを見る"
+
+[[proposition]]
+id = "P55"
+statement = "3位と4位のチームの間では、最長連敗が他球団平均より短いほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "max_lose_streak_d", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "max_lose_streak_d"
+context = ["max_lose_streak", "max_win_streak", "sim_p_upper"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。連敗の長さは境目を分けない"
+note = "P56（分布だけ）より強く分けるかを見る"
+
+[[proposition]]
+id = "P56"
+statement = "3位と4位のチームの間では、得点・失点の分布から見た A クラスの見込みが 0.5 以上なら3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "sim_p_upper", op = ">=", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "sim_p_upper"
+context = ["rd", "alloc_z_strat", "pair34_net"]
+links = ["H2", "H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。境目では分布だけでは分けられない"
+note = "比べるための基準。P53〜P55 がこれより強く分けるなら、分布の外の情報を足している"
+
+# ---- R13: 3位を争う相手に勝てていたか（research/R13-race-for-third.md） ----
+# 追加: 2026-10-04。ユーザーの見方（3位を争う相手には勝っておく）から。P57 は R12 の結果を見た後に作った。
+# vs_battle_wpct・focus_gap・pair34_*_diff は実データでまだ計算していない。
+
+[[proposition]]
+id = "P57"
+statement = "3位と4位のチームの間では、下位の相手との勝率が相手チームより高いほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_vs_lower_wpct_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_vs_lower_wpct_diff"
+context = ["vs_lower_wpct", "sim_p_upper", "alloc_z_strat"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "R12 の平均（.556 対 .523）を見た後に作った命題。同じデータでの判定は確かめではない"
+
+[[proposition]]
+id = "P58"
+statement = "3位と4位のチームの間では、3位を争う相手（3〜5位）との勝率が相手チームより高いほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_vs_battle_wpct_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_vs_battle_wpct_diff"
+context = ["vs_battle_wpct", "vs_top_wpct", "sim_p_upper"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。争う相手に勝っておくことは境目を分けない"
+note = "ユーザーの見方から。P56（分布だけ、lift 1.43）より大きな lift なら、分布の外の情報を足している"
+
+[[proposition]]
+id = "P59"
+statement = "3位と4位のチームの間では、争う相手への重点（争う相手との勝率 − 上の相手との勝率）が相手チームより大きいほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_focus_gap_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_focus_gap_diff"
+context = ["focus_gap", "vs_battle_wpct", "vs_top_wpct"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。重点の置き方は境目を分けない"
+note = "ユーザーの見方（1・2位には最悪負けてもいい）をそのまま指標にしたもの"
+
+[[proposition]]
+id = "P60"
+statement = "得点と失点の組み合わせ方がランダムな基準より不利（alloc_z_strat < −1）なら、下位の相手との勝率が他球団平均より低い"
+strength = "usually"
+if = [{ col = "alloc_z_strat", op = "<", value = -1 }]
+then = [{ col = "vs_lower_wpct_d", op = "<", value = 0 }]
+surprise = "vs_lower_wpct_d"
+context = ["alloc_z_strat", "vs_lower_wpct", "rank"]
+links = ["H9"]
+falsifier = "組み合わせ方が不利なチーム・シーズンの4分の1を超えて、下位の相手との勝率が他球団平均以上"
+note = "下位からの取りこぼしが、R1 の「基準より不利」を別の名前で見ているだけかを確かめる。4つの形すべてで成り立てば、ほぼ同じもの"
+
+[[proposition]]
+id = "P61"
+statement = "中日は、3位を争う相手との勝率が、上の相手（1・2位）との勝率より低い"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "focus_gap", op = "<", value = 0 }]
+surprise = "focus_gap"
+context = ["vs_battle_wpct", "vs_top_wpct", "rank"]
+links = ["H3", "H9"]
+falsifier = "中日のシーズンの4分の1を超えて、争う相手との勝率のほうが高い"
+note = "成り立たなければ「中日は争う相手に負けていた」という見方を弱める"
+
+# ---- R14: なぜ低いまま続いたのか（research/R14-persistence.md） ----
+# 追加: 2026-10-04。Grok の異議から。P62 の条件は中日の値を見た後に作った（P63 が中日を除いた確かめ）。
+# inn_size_low_streak・rf_low_streak は実データでまだ計算していない。
+
+[[proposition]]
+id = "P62"
+statement = "得点した回の大きさが2年以上続けてリーグ下位2位以内なら、B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_low_streak", op = ">=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "inn_size_low_streak"
+context = ["inn_size_rank", "inn_dlog_size", "rank", "sim_p_upper"]
+links = ["H5", "H6"]
+falsifier = "続けて低いチーム・シーズンの4分の1を超えて A クラス"
+note = "中日の値（10年続けて）を見た後に作った条件。P63（中日を除く）が確かめの役割"
+
+[[proposition]]
+id = "P63"
+statement = "中日以外で、得点した回の大きさが2年以上続けてリーグ下位2位以内なら、B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025", where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "inn_size_low_streak", op = ">=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "inn_size_low_streak"
+context = ["inn_size_rank", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+falsifier = "中日以外の続けて低いチーム・シーズンの4分の1を超えて A クラス"
+note = "該当する単位が少ない（数単位）見込み。判断保留は正しい結果としてありうる"
+
+[[proposition]]
+id = "P64"
+statement = "得点が2年以上続けてリーグ5位以下なら、B クラス"
+strength = "usually"
+if = [{ col = "rf_low_streak", op = ">=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_low_streak"
+context = ["rank_rf", "rank_ra", "rank", "sim_p_upper"]
+links = ["H2"]
+falsifier = "続けて得点が5位以下のチーム・シーズンの4分の1を超えて A クラス"
+note = "P5（得点5位以下 ⇒ B）に「続けて」を足したもの。P5 と兄弟"
+
+[[proposition]]
+id = "P65"
+statement = "中日以外で、得点が2年以上続けてリーグ5位以下なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "rf_low_streak", op = ">=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_low_streak"
+context = ["rank_rf", "rank_ra", "rank"]
+links = ["H2"]
+falsifier = "中日以外の続けて得点が5位以下のチーム・シーズンの4分の1を超えて A クラス"
+
+# ---- R15: 相手の強さを差し引いて、勝つべき相手に勝てていたか（research/R15-opponent-adjusted.md） ----
+# 追加: 2026-10-04。R13 の自分への異議と Grok の助言から。opp_adj_* は実データでまだ計算していない。
+
+[[proposition]]
+id = "P66"
+statement = "3位と4位のチームの間では、中位の相手（強さの順で3・4番目）に対して見込みより多く勝ったほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_opp_adj_mid_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_opp_adj_mid_diff"
+context = ["opp_adj_mid", "opp_adj_top", "opp_adj_low", "sim_p_upper"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。相手の強さを差し引いても、争う相手に勝っておくことは境目を分けない"
+note = "R13 の P58（相手の強さを差し引いていない版）の作り直し。P56（lift 1.43）と比べる"
+
+[[proposition]]
+id = "P67"
+statement = "3位と4位のチームの間では、最も弱い相手に対して見込みより多く勝ったほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_opp_adj_low_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_opp_adj_low_diff"
+context = ["opp_adj_low", "opp_adj_mid", "sim_p_upper"]
+links = ["H3", "H9"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。弱い相手からの取りこぼしは境目を分けない"
+note = "R12・R13 の「下位の相手との勝率」の、相手の強さを差し引いた版"
+
+[[proposition]]
+id = "P68"
+statement = "3位と4位のチームの間では、リーグ内の相手すべてに対して見込みより多く勝ったほうが3位"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = ">=", value = 3 }, { col = "rank", op = "<=", value = 4 }] }
+if = [{ col = "pair34_opp_adj_total_diff", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "pair34_opp_adj_total_diff"
+context = ["opp_adj_total", "wins_vs_pythag", "sim_p_upper"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "wins_vs_pythag とかなり重なる指標。相手ごとに見込みを変えた分だけ違う"
+
+[[proposition]]
+id = "P69"
+statement = "中日は、中位の相手（強さの順で3・4番目）に対して見込みより勝てていない"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_adj_mid", op = "<", value = 0 }]
+surprise = "opp_adj_mid"
+context = ["opp_adj_top", "opp_adj_low", "opp_adj_total", "rank"]
+links = ["H3", "H9"]
+falsifier = "中日のシーズンの4分の1を超えて、中位の相手に見込み以上に勝っている"
+note = "R13 の P61（相手の強さを差し引いていない版、不成立）の作り直し"
+
+# ---- R16: 強い相手に見込みより負けるのは、得点の側か、失点の側か（research/R16-strong-opponents.md） ----
+# 追加: 2026-10-04。ユーザーの問いから。R15 の結果（中日 2014・2019年の強い相手との差）は見ている。
+# opp_rf_gap_*・opp_ra_gap_*・opp_conv_* は実データでまだ計算していない。
+
+[[proposition]]
+id = "P70"
+statement = "中日は、強い相手（自分との試合を除いた強さで上位2チーム）に対して、見込みより得点が少ない"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_rf_gap_top", op = "<", value = 0 }]
+surprise = "opp_rf_gap_top"
+context = ["opp_ra_gap_top", "opp_conv_top", "opp_adj_top", "rank"]
+links = ["H2", "H5", "H6"]
+falsifier = "中日のシーズンの4分の1を超えて、強い相手に見込み以上に得点している"
+note = "基準に中日自身の得点力が入っているので、「もともと得点が少ない」は差し引かれている。P71 と組で読む"
+
+[[proposition]]
+id = "P71"
+statement = "中日は、強い相手（自分との試合を除いた強さで上位2チーム）に対して、見込みより失点が多い"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_ra_gap_top", op = "<", value = 0 }]
+surprise = "opp_ra_gap_top"
+context = ["opp_rf_gap_top", "opp_conv_top", "opp_adj_top", "rank"]
+links = ["H2"]
+falsifier = "中日のシーズンの4分の1を超えて、強い相手に見込み以下の失点に抑えている"
+note = "P70 と組で読む。片方だけ成り立つなら、強い相手との差はその側にある"
+
+[[proposition]]
+id = "P72"
+statement = "強い相手に見込みより負けたチーム・シーズンでは、その差は失点の側より得点の側で大きい"
+strength = "more_often_than_not"
+if = [{ col = "opp_adj_top", op = "<", value = 0 }]
+then = [{ col = "opp_top_rf_minus_ra", op = "<", value = 0 }]
+surprise = "opp_top_rf_minus_ra"
+context = ["opp_rf_gap_top", "opp_ra_gap_top", "opp_conv_top", "opp_adj_top"]
+links = ["H2", "H5"]
+falsifier = "強い相手に見込みより負けたチーム・シーズンの半数以上で、失点の側の差のほうが大きい"
+note = "全球団での一般の形。中日（P70・P71）がこの一般の形と同じかを見る"
+
+[[proposition]]
+id = "P73"
+statement = "強い相手に見込みより負けたチーム・シーズンでは、点の差では説明できない負けもある（opp_conv_top < 0）"
+strength = "more_often_than_not"
+if = [{ col = "opp_adj_top", op = "<", value = 0 }]
+then = [{ col = "opp_conv_top", op = "<", value = 0 }]
+surprise = "opp_conv_top"
+context = ["opp_rf_gap_top", "opp_ra_gap_top", "opp_adj_top", "alloc_z_strat"]
+links = ["H3", "H9"]
+falsifier = "強い相手に見込みより負けたチーム・シーズンの半数以上で、点の差どおり以上に勝っている"
+note = "点の差を勝ち負けに変える部分（R1 の組み合わせ方と近い）が、強い相手との差にどれだけ入っているかを見る"
+
+# ---- R17: 2014年と2019年は別の道筋として、鏡のような結果は連動として（research/R17-routes-and-mirrors.md） ----
+# 追加: 2026-10-04。ユーザーの見方から。opp_net_gap_*_c・opp_env_gap_*_c は実データでまだ計算していない。
+# P74・P75 は R16 の読み直しを見た後の言い直し（結果の更新）。P76〜P78・P80 は中日のその年を見て作った（他のチームの値は見ていない）。
+
+[[proposition]]
+id = "P74"
+parent = "P70"
+change = "見込みの式が相手のグループで偏っていた（R16 の自分への異議）ので、同じ年・同じリーグの全球団の平均を引いた値に変えた。R16 の読み直しを見た後の言い直し"
+statement = "中日は、強い相手に対して、得点が見込みより（同じ年・同じリーグの全球団の平均と比べて）少ない"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_rf_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_rf_gap_top_c"
+context = ["opp_ra_gap_top_c", "opp_env_gap_top_c", "opp_adj_top", "rank"]
+links = ["H2", "H5", "H6"]
+falsifier = "中日のシーズンの4分の1を超えて、平均を引いた得点の差が 0 以上"
+
+[[proposition]]
+id = "P75"
+parent = "P71"
+change = "P74 と同じ変更（平均を引いた値）"
+statement = "中日は、強い相手に対して、失点が見込みより（同じ年・同じリーグの全球団の平均と比べて）多い"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "opp_ra_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_ra_gap_top_c"
+context = ["opp_rf_gap_top_c", "opp_env_gap_top_c", "opp_adj_top", "rank"]
+links = ["H2"]
+falsifier = "中日のシーズンの4分の1を超えて、平均を引いた失点の差が 0 以上"
+
+[[proposition]]
+id = "P76"
+parent = "P74"
+change = "中日だけから、2019年と同じ状況（得失点差がプラスなのに B クラス）のチーム・シーズン全体に広げた。2019年は作るきっかけなので held-out から除く"
+motivated_by = ["d-2019"]
+statement = "得失点差がプラスなのに B クラスだったチームは、強い相手から（平均と比べて）得点できていない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rd", op = ">", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "opp_rf_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_rf_gap_top_c"
+context = ["opp_ra_gap_top_c", "opp_env_gap_top_c", "opp_adj_top", "sim_p_upper"]
+links = ["H3", "H5"]
+falsifier = "held-out（中日 2019 を除く）で、得点の差が負のチーム・シーズンが半数以下"
+note = "2019年の道筋。2014年の道筋（P77・P78）と両方成り立つ必要はない"
+
+[[proposition]]
+id = "P77"
+parent = "P53"
+change = "3位と4位すべてから、2014年と同じ状況（4位で、分布の見込みが 0.5 以上）に絞り、結論を「直接対決で負け越し」にした。2014年は作るきっかけなので held-out から除く"
+motivated_by = ["d-2014"]
+statement = "4位で、得点・失点の分布から見た A クラスの見込みが 0.5 以上だったチームは、3位との直接対決で負け越している"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = "==", value = 4 }, { col = "sim_p_upper", op = ">=", value = 0.5 }] }
+if = []
+then = [{ col = "pair34_net", op = "<", value = 0 }]
+surprise = "pair34_net"
+context = ["sim_p_upper", "opp_conv_top", "opp_adj_top", "vs_lower_wpct"]
+links = ["H3", "H9"]
+falsifier = "held-out（中日 2014 を除く）で、直接対決で負け越したチームが半数以下"
+note = "2014年の道筋その1"
+
+[[proposition]]
+id = "P78"
+parent = "P73"
+change = "全球団から、2014年と同じ状況（4位で、分布の見込みが 0.5 以上）に絞った。2014年は作るきっかけなので held-out から除く"
+motivated_by = ["d-2014"]
+statement = "4位で、得点・失点の分布から見た A クラスの見込みが 0.5 以上だったチームは、強い相手との試合で点の差どおりに勝てていない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rank", op = "==", value = 4 }, { col = "sim_p_upper", op = ">=", value = 0.5 }] }
+if = []
+then = [{ col = "opp_conv_top", op = "<", value = 0 }]
+surprise = "opp_conv_top"
+context = ["sim_p_upper", "pair34_net", "opp_adj_top", "alloc_z_strat"]
+links = ["H3", "H9"]
+falsifier = "held-out（中日 2014 を除く）で、点の差どおり以上に勝っていたチームが半数以上"
+note = "2014年の道筋その2"
+
+[[proposition]]
+id = "P79"
+statement = "強い相手に対して得点が（平均と比べて）見込みより少なければ、失点も見込みより少ない（鏡の形）"
+strength = "more_often_than_not"
+if = [{ col = "opp_rf_gap_top_c", op = "<", value = 0 }]
+then = [{ col = "opp_ra_gap_top_c", op = ">", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["opp_rf_gap_top_c", "opp_ra_gap_top_c", "opp_net_gap_top_c"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）。鏡の形は中日の数年に偶然出たもので、全球団の連動ではない"
+note = "中日の 2019・2021・2022年で見た形を全球団で確かめる。成り立てば、連動の正体は試合全体の点の多さ（env）の側"
+
+[[proposition]]
+id = "P80"
+parent = "P76"
+change = "結論を「得点の差が負」から「試合全体の点が少ない（env < 0）」に変えた（2019年の得点 −57・失点 +13 の鏡の形から）"
+motivated_by = ["d-2019"]
+statement = "得失点差がプラスなのに B クラスだったチームは、強い相手との試合全体の点が（平均と比べて）少ない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "rd", op = ">", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "opp_env_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["opp_rf_gap_top_c", "opp_ra_gap_top_c", "opp_net_gap_top_c"]
+links = ["H3"]
+falsifier = "held-out（中日 2019 を除く）で、試合全体の点が少なかったチームが半数以下"
+note = "2019年の道筋を、鏡の形（env）で言い直したもの。P76 と並べて読む"
+
+# ---- R19: 鏡の形は、チームの何と結びついているか（research/R19-mirror-links.md） ----
+# 追加: 2026-10-04。R17 の最後に残した問いから。env と、得点した回の大きさ・失点の順位・A/B の別との組み合わせは実データでまだ見ていない。
+# P81・P83 は中日の 2019・2021・2022年（env が大きく負で、得点した回が小さく、失点を抑えた年）を見て思いついたので、作るきっかけとして除いた確かめも出す。
+
+[[proposition]]
+id = "P81"
+motivated_by = ["d-2019", "d-2021", "d-2022"]
+statement = "得点した回の大きさがリーグ平均より小さいチームは、強い相手との試合全体の点が（同じ年・同じリーグの平均と比べて）少ない"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+then = [{ col = "opp_env_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["inn_dlog_size", "opp_rf_gap_top_c", "opp_ra_gap_top_c", "rank_ra"]
+links = ["H3"]
+falsifier = "作るきっかけ（中日 2019・2021・2022）を除いた判定で、試合全体の点が少なかった単位が半数以下"
+note = "P82（中位の相手）と並べて、強い相手に限った結びつきかを読む"
+
+[[proposition]]
+id = "P82"
+statement = "得点した回の大きさがリーグ平均より小さいチームは、中位の相手との試合全体の点も（平均と比べて）少ない"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_dlog_size", op = "<", value = 0 }]
+then = [{ col = "opp_env_gap_mid_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_mid_c"
+context = ["inn_dlog_size", "opp_rf_gap_mid_c", "opp_ra_gap_mid_c", "opp_env_gap_top_c"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "P81 の対照。P81 だけ成り立てば強い相手に限った結びつき、両方なら相手の強さに関係のない結びつき"
+
+[[proposition]]
+id = "P83"
+motivated_by = ["d-2019", "d-2021", "d-2022"]
+statement = "失点がリーグ2位以内のチームは、強い相手との試合全体の点が（平均と比べて）少ない"
+strength = "more_often_than_not"
+if = [{ col = "rank_ra", op = "<=", value = 2 }]
+then = [{ col = "opp_env_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["rank_ra", "opp_rf_gap_top_c", "opp_ra_gap_top_c", "upper_half"]
+links = ["H3"]
+falsifier = "作るきっかけ（中日 2019・2021・2022）を除いた判定で、試合全体の点が少なかった単位が半数以下"
+note = "成り立っても、投手の起用の結果か、掛け算の見込みの式の偏りかは分けられない"
+
+[[proposition]]
+id = "P84"
+statement = "A クラスのチームは、強い相手（3位を争う相手）との試合全体の点が（平均と比べて）少ない"
+strength = "more_often_than_not"
+if = [{ col = "upper_half", op = "==", value = true }]
+then = [{ col = "opp_env_gap_top_c", op = "<", value = 0 }]
+surprise = "opp_env_gap_top_c"
+context = ["rank", "opp_rf_gap_top_c", "opp_ra_gap_top_c", "opp_adj_top"]
+links = ["H3"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "上位どうしの試合が投手戦に寄るか。上位を狙った起用（作為）と矛盾しないかを見るが、起用そのものはこのデータでは分けられない"
+
+# ---- R20: 勝ち試合・負け試合の点と、シーズン後半の失速（research/R20-wins-losses-and-course.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。wl_*・course_* は実データでまだ計算していない。
+
+[[proposition]]
+id = "P85"
+statement = "中日は、勝ち試合の得点が、自分の得点・失点の分布から見込まれるより少ない（勝つときは投手戦で勝っている）"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "wl_rf_win_gap", op = "<", value = 0 }]
+surprise = "wl_rf_win_gap"
+context = ["wl_rf_win", "wl_rf_win_exp", "wl_rf_loss_gap", "rank"]
+links = ["H8"]
+falsifier = "中日の13年のうち4分の1を超えて、勝ち試合の得点が見込み以上"
+note = "見込みからのずれは全球団に出うる。中日の傾向と言うのは、中日の13年の平均が12球団の中で端から2番目以内のとき（R20 の読み方）"
+
+[[proposition]]
+id = "P86"
+statement = "中日は、負け試合の得点が、自分の得点・失点の分布から見込まれるより多い（点を取っても負けている）"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "wl_rf_loss_gap", op = ">", value = 0 }]
+surprise = "wl_rf_loss_gap"
+context = ["wl_rf_loss", "wl_rf_loss_exp", "wl_rf_win_gap", "rank"]
+links = ["H8"]
+falsifier = "中日の13年のうち4分の1を超えて、負け試合の得点が見込み以下"
+note = "P85 と同じ量の表と裏になりやすい（1試合の中で得点と失点が一緒に動くと両方起きる）"
+
+[[proposition]]
+id = "P87"
+statement = "中日は、両チームの合計得点がリーグの中央値より多い試合の勝率が、見込みより低い（点の多い試合を制せない）"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "wl_wpct_high_gap", op = "<", value = 0 }]
+surprise = "wl_wpct_high_gap"
+context = ["wl_wpct_high", "wl_wpct_low", "wl_wpct_low_gap", "rank"]
+links = ["H8"]
+falsifier = "中日の13年のうち4分の1を超えて、点の多い試合の勝率が見込み以上"
+
+[[proposition]]
+id = "P88"
+statement = "中日は、後半の勝率が前半より低い"
+strength = "usually"
+scope = { team = "d" }
+if = []
+then = [{ col = "course_wpct_diff", op = "<", value = 0 }]
+surprise = "course_wpct_diff"
+context = ["course_wpct_h1", "course_wpct_h2", "course_rank_h1", "rank"]
+links = ["H6"]
+falsifier = "中日の後半の勝率が前半より低い年が13年中7年以下"
+
+[[proposition]]
+id = "P89"
+statement = "中日の B クラスの年は、前半の勝率ではリーグ3位以内にいた（前半は上位にいて、後半に落ちた）"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "course_rank_h1", op = "<=", value = 3 }]
+surprise = "course_fade"
+context = ["course_rank_q1", "course_rank_q3", "rank", "course_wpct_diff"]
+links = ["H1", "H6"]
+falsifier = "中日の B クラスの年のうち、前半3位以内が半数以下"
+note = "P90（中日以外の B クラス）の率より 0.2 以上高ければ、中日の B クラスは前半は上位にいて後半に落ちる形に寄っている"
+
+[[proposition]]
+id = "P90"
+statement = "中日以外の B クラスのチームは、前半の勝率ではリーグ3位以内にいた"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "course_rank_h1", op = "<=", value = 3 }]
+surprise = "course_fade"
+context = ["course_rank_q1", "course_rank_q3", "rank", "course_wpct_diff"]
+links = ["H1", "H6"]
+falsifier = "（基準の命題。P89 と率を比べるために置く）"
+note = "P89 の比べる相手"
+
+[[proposition]]
+id = "P91"
+statement = "前半の勝ちが（他球団より）接戦に偏ったチームは、後半に失点が増える（他球団と比べて）"
+strength = "more_often_than_not"
+if = [{ col = "course_close_win_h1_d", op = ">", value = 0 }]
+then = [{ col = "course_ra_d", op = ">", value = 0 }]
+surprise = "course_ra_d"
+context = ["course_close_win_h1", "course_ra_h1_d", "course_wpct_diff", "rank_ra"]
+links = ["H3", "H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "投手の負担の見立て。P93（前半の失点が少なかったことからの戻り）と並べて読む"
+
+[[proposition]]
+id = "P92"
+statement = "前半の勝ちが（他球団より）接戦に偏ったチームは、後半の勝率が前半より下がる"
+strength = "more_often_than_not"
+if = [{ col = "course_close_win_h1_d", op = ">", value = 0 }]
+then = [{ col = "course_wpct_diff", op = "<", value = 0 }]
+surprise = "course_wpct_diff"
+context = ["course_close_win_h1", "half1_vs_pythag", "course_ra_d", "rank"]
+links = ["H3", "H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "P94（前半の出来すぎからの戻り）と並べて読む"
+
+[[proposition]]
+id = "P93"
+statement = "前半の失点が他球団より少なかったチームは、後半に失点が増える（他球団と比べて）"
+strength = "more_often_than_not"
+if = [{ col = "course_ra_h1_d", op = "<", value = 0 }]
+then = [{ col = "course_ra_d", op = ">", value = 0 }]
+surprise = "course_ra_d"
+context = ["course_ra_h1_d", "course_close_win_h1_d", "rank_ra"]
+links = ["H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "P91 の対照（前半の水準からの戻り）"
+
+[[proposition]]
+id = "P94"
+statement = "前半に得失点からの見込みより多く勝っていたチームは、後半の勝率が前半より下がる"
+strength = "more_often_than_not"
+if = [{ col = "half1_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "course_wpct_diff", op = "<", value = 0 }]
+surprise = "course_wpct_diff"
+context = ["half1_vs_pythag", "half2_vs_pythag", "course_close_win_h1_d"]
+links = ["H2", "H6"]
+falsifier = "lift が 1 に近い（Fisher の p ≥ 0.05）"
+note = "P92 の対照（前半の出来すぎからの戻り）"
+
+# ---- R21: 式1が取りこぼした 2014年も含めて選ぶ式（research/R21-formula-with-2014.md） ----
+# 追加: 2026-10-04。opp_conv_top は R17 の表で、2014年の道筋のグループ8単位の値だけ見ている。
+
+[[proposition]]
+id = "P95"
+parent = "P52"
+change = "式1が取りこぼした 2014年の道筋（R17、強い相手との試合で点の差どおりに勝てていない）を3つ目の組として足した。閾値 −2 は中日 2014 の −2.57 を見て決めた"
+motivated_by = ["d-2014"]
+statement = "得点・失点の分布から見た A クラスの見込みが4割未満、または組み合わせ方が基準より不利（alloc_z_strat < −1）、または強い相手との試合で点の差どおりに勝てていない（opp_conv_top < −2）なら、B クラス"
+strength = "usually"
+if = []
+if_any = [[{ col = "sim_p_upper", op = "<", value = 0.4 }], [{ col = "alloc_z_strat", op = "<", value = -1 }], [{ col = "opp_conv_top", op = "<", value = -2 }]]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "opp_conv_top"
+context = ["sim_p_upper", "alloc_z_strat", "rank", "rd"]
+links = ["H2", "H3", "H9"]
+falsifier = "中日 2014 を除いて、P52 より Matthews 相関が上がらない（B クラスの取りこぼしの減りより、A クラスの誤りの増えが大きい）"
+note = "言いにくいが確実に選ぶ式の候補。P52 と並べて読む。原因ではなく、どこで勝ちを落としたかの説明"
+
+# ---- R21 の探索で見つけた式（結果を見た後に登録。research/R21-formula-with-2014.md） ----
+# 追加: 2026-10-04。rules_r21.jsonl の1位（約120万通りの中から同じデータで選んだ）。確かめは 2026年（R18）で行う。
+
+[[proposition]]
+id = "P96"
+statement = "得失点差が −50 未満、または分布から見た A クラスの見込みが5割未満で期待勝利数を下回った、または得失点差が +50 未満で組み合わせ方が基準より不利なら、B クラス（誤りのほとんどない式）"
+strength = "usually"
+if = []
+if_any = [[{ col = "rd", op = "<", value = -50 }], [{ col = "sim_p_upper", op = "<", value = 0.5 }, { col = "wins_vs_pythag", op = "<", value = 0 }], [{ col = "rd", op = "<", value = 50 }, { col = "alloc_z_strat", op = "<", value = -1 }]]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rd"
+context = ["sim_p_upper", "wins_vs_pythag", "alloc_z_strat", "rank"]
+links = ["H2", "H3", "H9"]
+falsifier = "2026年（R18）で、この式に当たるのに A クラスのチームが出る（学習データでは156単位中1）"
+note = "R21 の探索の1位（結果を見た後の式）。P52（取りこぼしが少ない）と並べる、言い当て方の違う式。同じデータでの成績は良く見えやすい"
+
+# ---- R22: シーズンの中の線に、山（極大）と谷（極小）はあるか（research/R22-season-trajectory.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。traj_* は実データでまだ計算していない（中日の 1/4・1/2・3/4・最終の順位は R20 で見ている）。
+# どの命題も、成り立つかより、力が一定のときの基準（*_base、outputs/trajectory_expectation.jsonl）と比べて読む。
+
+[[proposition]]
+id = "P97"
+statement = "中日の B クラスの年は、順位の高さの線（3次式でならしたもの）に山がある（上がってから下がる）"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "traj_rank_peak", op = "==", value = true }]
+surprise = "traj_rank_peak_x"
+context = ["traj_rank_shape", "traj_rank_peak_base", "traj_rank_end_slope", "rank"]
+links = ["H1", "H6"]
+falsifier = "中日の B クラスの年の山の数が、力が一定のときの見込みの範囲（trajectory_expectation.jsonl で P ≥ 0.05）"
+note = "山があること自体は力が一定でも起きる。基準と比べて読む"
+
+[[proposition]]
+id = "P98"
+statement = "中日以外の B クラスのチームは、順位の高さの線に山がある"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "traj_rank_peak", op = "==", value = true }]
+surprise = "traj_rank_peak_x"
+context = ["traj_rank_shape", "traj_rank_peak_base", "traj_rank_end_slope", "rank"]
+links = ["H1", "H6"]
+falsifier = "（基準の命題。P97 と率を比べるために置く）"
+note = "P97 の比べる相手"
+
+[[proposition]]
+id = "P99"
+statement = "中日は、貯金の線（3次式でならしたもの）に山がある（貯金を増やしてから減らす）"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = []
+then = [{ col = "traj_wl_peak", op = "==", value = true }]
+surprise = "traj_wl_peak_x"
+context = ["traj_wl_shape", "traj_wl_peak_base", "traj_wl_end_slope", "rank"]
+links = ["H6"]
+falsifier = "中日の山の数が、力が一定のときの見込みの範囲（trajectory_expectation.jsonl で P ≥ 0.05）"
+note = "順位はほかのチームでも動くので、自分の力の線として貯金も見る"
+
+[[proposition]]
+id = "P100"
+statement = "中日の B クラスの年は、最後の日の順位の高さの傾きが負（下がりながらシーズンを終える）"
+strength = "usually"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "traj_rank_end_slope", op = "<", value = 0 }]
+surprise = "traj_rank_end_slope"
+context = ["traj_rank_shape", "traj_rank_peak_x", "rank"]
+links = ["H6"]
+falsifier = "P101（中日以外の B クラス）との率の差が 0.2 未満"
+note = "B クラスで終わるチームは、力が一定でも下がりながら終わりやすい。P101 と比べて読む"
+
+[[proposition]]
+id = "P101"
+statement = "中日以外の B クラスのチームは、最後の日の順位の高さの傾きが負"
+strength = "usually"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "traj_rank_end_slope", op = "<", value = 0 }]
+surprise = "traj_rank_end_slope"
+context = ["traj_rank_shape", "traj_rank_peak_x", "rank"]
+links = ["H6"]
+falsifier = "（基準の命題。P100 と率を比べるために置く）"
+note = "P100 の比べる相手"
+
+# ---- R23: 順位の線を、始まりの値から収束していく波で表す（research/R23-converging-wave.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。wave_* は実データでまだ計算していない（R22 の3次式の結果は見ている）。
+
+[[proposition]]
+id = "P102"
+statement = "中日の B クラスの年は、順位が決まった位置（波のゆれの幅が半順位を下回る位置）が、力が一定のときの半分より早い"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "wave_settle_pct", op = "<", value = 0.5 }]
+surprise = "wave_settle_x"
+context = ["wave_limit_rank", "wave_decay", "wave_period", "rank"]
+links = ["H1", "H6"]
+falsifier = "中日の B クラスの年のうち、力が一定のときより早く決まった年が半数以下"
+note = "P103（中日以外の B クラス）と並べて読む"
+
+[[proposition]]
+id = "P103"
+statement = "中日以外の B クラスのチームは、順位が決まった位置が、力が一定のときの半分より早い"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "wave_settle_pct", op = "<", value = 0.5 }]
+surprise = "wave_settle_x"
+context = ["wave_limit_rank", "wave_decay", "wave_period", "rank"]
+links = ["H1", "H6"]
+falsifier = "（基準の命題。P102 と率を比べるために置く）"
+note = "P102 の比べる相手"
+
+[[proposition]]
+id = "P104"
+statement = "中日の B クラスの年は、前半の線だけから当てた波の行き先が、もう4位以下"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+falsifier = "中日の B クラスの年のうち、前半の行き先が4位以下だった年が半数以下"
+note = "減衰しない波が選ばれた年は行き先が空（判定不能）。P105 と並べて読む"
+
+[[proposition]]
+id = "P105"
+statement = "中日以外の B クラスのチームは、前半の線だけから当てた波の行き先が、もう4位以下"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+falsifier = "（基準の命題。P104 と率を比べるために置く）"
+note = "P104 の比べる相手"
+
+# ---- R24: カードごとの勝ち数と、決まった並び順（research/R24-series.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。series_* は実データでまだ計算していない。
+# どの命題も、力が一定のときなら半分ほどの単位で起きる。支持（区間の下端が 0.5 を超える）なら、それを超えた形がある。
+
+[[proposition]]
+id = "P106"
+statement = "中日は、負け越したカードが、力が一定（その年の勝率）のときより多い"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = []
+then = [{ col = "series_lost_pct", op = ">", value = 0.5 }]
+surprise = "series_lost_share"
+context = ["series_disp", "series3_w1", "series3_w1_exp", "rank"]
+links = ["H8"]
+falsifier = "中日の年のうち、力が一定のときより多くのカードを負け越した年が半数以下"
+note = "見立て「3連戦で2敗を引き当て続ける」。P107 と並べて読む"
+
+[[proposition]]
+id = "P107"
+statement = "中日以外のチームは、負け越したカードが、力が一定のときより多い"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "series_lost_pct", op = ">", value = 0.5 }]
+surprise = "series_lost_share"
+context = ["series_disp", "rank"]
+links = ["H8"]
+falsifier = "（基準の命題。P106 と率を比べるために置く）"
+note = "P106 の比べる相手"
+
+[[proposition]]
+id = "P108"
+statement = "中日は、カードごとの勝ち数の散らばりが、力が一定のときより小さい（1勝2敗・2勝1敗に寄る）"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = []
+then = [{ col = "series_disp_pct", op = "<", value = 0.5 }]
+surprise = "series_disp"
+context = ["series_lost_pct", "series3_w1", "series3_w2", "rank"]
+links = ["H8"]
+falsifier = "中日の年のうち、散らばりが力が一定のときより小さかった年が半数以下"
+note = "決まった並び順（ローテーションなど）があるときの形。P109 と並べて読む"
+
+[[proposition]]
+id = "P109"
+statement = "中日以外のチームは、カードごとの勝ち数の散らばりが、力が一定のときより小さい"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "series_disp_pct", op = "<", value = 0.5 }]
+surprise = "series_disp"
+context = ["series_lost_pct", "rank"]
+links = ["H8"]
+falsifier = "（基準の命題。P108 と率を比べるために置く）"
+note = "P108 の比べる相手"
+
+[[proposition]]
+id = "P110"
+statement = "中日は、カードの1試合目の勝率が、2試合目以降より高い"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = []
+then = [{ col = "series_g1_minus_rest", op = ">", value = 0 }]
+surprise = "series_g1_minus_rest"
+context = ["series_disp", "rank"]
+links = ["H8"]
+falsifier = "中日の年のうち、1試合目の勝率のほうが高かった年が半数以下"
+note = "並び順のいちばん単純な現れ方。P111 と並べて読む"
+
+[[proposition]]
+id = "P111"
+statement = "中日以外のチームは、カードの1試合目の勝率が、2試合目以降より高い"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "series_g1_minus_rest", op = ">", value = 0 }]
+surprise = "series_g1_minus_rest"
+context = ["series_disp", "rank"]
+links = ["H8"]
+falsifier = "（基準の命題。P110 と率を比べるために置く）"
+note = "P110 の比べる相手"
+
+# ---- R26: A クラスに入る・入れないが決まった日（research/R26-decided-dates.md） ----
+# 追加: 2026-10-04。ユーザーの見立てから。clinch_*・traj_wl_peak_after_clinch は実データでまだ計算していない。
+
+[[proposition]]
+id = "P112"
+statement = "中日の B クラスの年は、B クラスが（数の上で）確定した日に、残り試合が10以上あった"
+strength = "more_often_than_not"
+scope = { team = "d", where = [{ col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "clinch_out_left", op = ">=", value = 10 }]
+surprise = "clinch_out_x"
+context = ["clinch_out_left", "decided_x", "rank"]
+links = ["H1"]
+falsifier = "中日の B クラスの年のうち、残り10試合以上で確定した年が半数以下"
+note = "確定の日は控えめ（直接対決の残りを考えない）。P113 と並べて読む"
+
+[[proposition]]
+id = "P113"
+statement = "中日以外の B クラスのチームは、B クラスが確定した日に、残り試合が10以上あった"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }, { col = "team", op = "!=", value = "d" }] }
+if = []
+then = [{ col = "clinch_out_left", op = ">=", value = 10 }]
+surprise = "clinch_out_x"
+context = ["clinch_out_left", "decided_x", "rank"]
+links = ["H1"]
+falsifier = "（基準の命題。P112 と率を比べるために置く）"
+note = "P112 の比べる相手"
+
+[[proposition]]
+id = "P114"
+statement = "A クラスで貯金の線に山があるチームは、その山が A クラスの確定より後にある（決まった後に落とす）"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = true }, { col = "traj_wl_peak", op = "==", value = true }] }
+if = []
+then = [{ col = "traj_wl_peak_after_clinch", op = "==", value = true }]
+surprise = "traj_wl_peak_x"
+context = ["clinch_in_x", "traj_wl_peak_after_clinch_base", "rank"]
+links = ["H6"]
+falsifier = "確定後の山の数が、力が一定のときの見込みの範囲（trajectory_expectation.jsonl で P ≥ 0.05）"
+note = "R22・R25 の「A クラスの貯金の山は見込みより多い」が、決まった後の試合から来ているかを見る"

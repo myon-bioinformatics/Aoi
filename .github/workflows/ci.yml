@@ -1,0 +1,77 @@
+name: CI
+
+# docs/・*.md だけの変更ではテストを走らせない（組織共通の変更検知。スキップは成功扱いになる）。
+# リンク確認は links.yml が担当し、docs の変更でも走る。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Change detection
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@76a9e43fe7469d0e3a5728e0521bc5738afad725
+
+  test:
+    name: pytest (Python ${{ matrix.python }})
+    needs: changes
+    if: needs.changes.outputs.non_docs_changed == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # failure-identity の expected-reports と揃えること
+        python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+      - run: python -VV
+      - name: Compile (syntax errors must never reach main)
+        run: python -m compileall -q blueprobe queryu sakanalytics pythdragoras nagoyaction
+      - name: Install uv
+        run: python -m pip install uv
+      - name: Test with JUnit
+        run: |
+          mkdir -p build/test-results
+          uv run --python "${{ matrix.python }}" pytest -q --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
+      - name: Preserve raw JUnit
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-py${{ matrix.python }}
+          path: build/test-results/pytest-${{ matrix.python }}.xml
+          if-no-files-found: warn
+          retention-days: 14
+      - name: NagoyAction is stdlib-only and the cycle pipeline is runnable
+        run: |
+          python -S nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
+          python -S nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --dry-run
+
+  failure-identity:
+    needs: [changes, test]
+    if: always() && (needs.changes.outputs.non_docs_changed == 'true' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
+      actions: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@4dfda95d6573250477f991a0421fa6acb9bc0258
+    with:
+      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml"]'
+      artifact-pattern: "junit-py*"
+      output-artifact: "failure-identity"
+
+  actionlint:
+    needs: changes
+    if: needs.changes.outputs.workflow_changed == 'true'
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@main

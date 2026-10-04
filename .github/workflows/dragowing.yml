@@ -1,0 +1,56 @@
+name: DRAgoWing reports
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      markdown-ref:
+        description: 'markdown upstream ref (main for latest; commit SHA for replay)'
+        default: main
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dragowing-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Resolve Markdown once for this build
+        uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/markdown
+          ref: ${{ inputs.markdown-ref || 'main' }}
+          path: .deps/markdown
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Build current reports and previous-version comparison
+        env:
+          PREVIOUS_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: >-
+          python -S dragowing/build_reports.py
+          --markdown-root .deps/markdown
+          --output build/dragowing
+          --previous-ref "$PREVIOUS_REF"
+      - name: Preserve report and exact renderer snapshot
+        uses: actions/upload-artifact@v7
+        with:
+          name: dragowing-reports
+          path: build/dragowing
+          if-no-files-found: error
+          retention-days: 14

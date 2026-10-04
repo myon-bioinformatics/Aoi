@@ -126,7 +126,7 @@ def _poisson_binomial(ps: list[float]) -> list[float]:
     return dist
 
 
-TRAJ_FLAGS = ("traj_rank_peak", "traj_rank_valley", "traj_wl_peak", "traj_wl_valley", "wave_osc")
+TRAJ_FLAGS = ("traj_rank_peak", "traj_rank_valley", "traj_wl_peak", "traj_wl_valley", "wave_osc", "traj_wl_peak_after_clinch")
 
 
 def shape_expectation(st: pl.DataFrame) -> list[dict]:
@@ -151,14 +151,14 @@ def shape_expectation(st: pl.DataFrame) -> list[dict]:
     return out
 
 
-SENS_COLS = ["season", "team", "team_name", "rank", "upper_half", "traj_start_games", "wave_settle_x", "wave_settle_pct",
+SENS_COLS = ["season", "team", "team_name", "rank", "upper_half", "traj_start_games", "traj_end", "wave_settle_x", "wave_settle_pct",
              "wave_decay", "wave_limit_rank", "traj_rank_peak", "traj_rank_peak_base", "traj_wl_peak", "traj_wl_peak_base"]
 
 
 def trajectory_sensitivity(st: pl.DataFrame, units: pl.DataFrame | None, focus: str | None) -> list[dict]:
-    """R25: 線の始まりの試合数（traj_start_games）を変えたとき、R22・R23 の読みが保たれるか。
+    """R25・R26: 線の始まりの試合数（traj_start_games）や終わり（traj_end）を変えたとき、R22・R23 の読みが保たれるか。
 
-    st（いつもの試合数）と units（ほかの試合数、同じ列）を並べ、試合数 × 群（注目チームの B クラス・他の B クラス・A クラス）ごとに:
+    st（いつもの線）と units（ほかの線、同じ列）を並べ、試合数・終わり × 群（注目チームの B クラス・他の B クラス・A クラス）ごとに:
       units / settle_median（順位が決まった位置の中央値。決まらなかった単位を除く）/ settle_never（決まらなかった単位の数）
       early_share（力が一定のときより早く決まった単位 = wave_settle_pct < 0.5 の割合）/ converge_share（減衰する波の割合）
       near_final_share（収束する先が実際の最終順位から1未満の割合。収束した単位のうち）
@@ -171,12 +171,13 @@ def trajectory_sensitivity(st: pl.DataFrame, units: pl.DataFrame | None, focus: 
     upper, mine = pl.col("upper_half"), pl.col("team") == (focus or "")
     groups = [("注目チームの B クラス", mine & ~upper), ("他の B クラス", ~mine & ~upper), ("A クラス", upper)]
     out = []
-    for m in sorted({m for m in df["traj_start_games"].to_list() if m is not None}):
+    keys = sorted({(m, e) for m, e in df.select("traj_start_games", "traj_end").iter_rows() if m is not None})
+    for m, e in keys:
         for name, cond in groups:
-            g = df.filter((pl.col("traj_start_games") == m) & cond)
+            g = df.filter((pl.col("traj_start_games") == m) & (pl.col("traj_end") == e) & cond)
             settle = sorted(x for x in g["wave_settle_x"].to_list() if x is not None)
             conv = g.filter(pl.col("wave_decay") > 0)
-            row = {"min_games": m, "group": name, "units": g.height,
+            row = {"min_games": m, "end": e, "group": name, "units": g.height,
                    "settle_median": round(settle[len(settle) // 2] if len(settle) % 2 else
                                           (settle[len(settle) // 2 - 1] + settle[len(settle) // 2]) / 2, 3) if settle else None,
                    "settle_never": g.height - len(settle),

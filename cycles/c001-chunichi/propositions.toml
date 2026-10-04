@@ -829,3 +829,57 @@ context = ["vs_battle_wpct", "vs_top_wpct", "rank"]
 links = ["H3", "H9"]
 falsifier = "中日のシーズンの4分の1を超えて、争う相手との勝率のほうが高い"
 note = "成り立たなければ「中日は争う相手に負けていた」という見方を弱める"
+
+# ---- R14: なぜ低いまま続いたのか（research/R14-persistence.md） ----
+# 追加: 2026-10-04。Grok の異議から。P62 の条件は中日の値を見た後に作った（P63 が中日を除いた確かめ）。
+# inn_size_low_streak・rf_low_streak は実データでまだ計算していない。
+
+[[proposition]]
+id = "P62"
+statement = "得点した回の大きさが2年以上続けてリーグ下位2位以内なら、B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_low_streak", op = ">=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "inn_size_low_streak"
+context = ["inn_size_rank", "inn_dlog_size", "rank", "sim_p_upper"]
+links = ["H5", "H6"]
+falsifier = "続けて低いチーム・シーズンの4分の1を超えて A クラス"
+note = "中日の値（10年続けて）を見た後に作った条件。P63（中日を除く）が確かめの役割"
+
+[[proposition]]
+id = "P63"
+statement = "中日以外で、得点した回の大きさが2年以上続けてリーグ下位2位以内なら、B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025", where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "inn_size_low_streak", op = ">=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "inn_size_low_streak"
+context = ["inn_size_rank", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+falsifier = "中日以外の続けて低いチーム・シーズンの4分の1を超えて A クラス"
+note = "該当する単位が少ない（数単位）見込み。判断保留は正しい結果としてありうる"
+
+[[proposition]]
+id = "P64"
+statement = "得点が2年以上続けてリーグ5位以下なら、B クラス"
+strength = "usually"
+if = [{ col = "rf_low_streak", op = ">=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_low_streak"
+context = ["rank_rf", "rank_ra", "rank", "sim_p_upper"]
+links = ["H2"]
+falsifier = "続けて得点が5位以下のチーム・シーズンの4分の1を超えて A クラス"
+note = "P5（得点5位以下 ⇒ B）に「続けて」を足したもの。P5 と兄弟"
+
+[[proposition]]
+id = "P65"
+statement = "中日以外で、得点が2年以上続けてリーグ5位以下なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "rf_low_streak", op = ">=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_low_streak"
+context = ["rank_rf", "rank_ra", "rank"]
+links = ["H2"]
+falsifier = "中日以外の続けて得点が5位以下のチーム・シーズンの4分の1を超えて A クラス"

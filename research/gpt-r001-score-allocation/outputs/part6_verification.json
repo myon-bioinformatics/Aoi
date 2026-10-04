@@ -1,0 +1,93 @@
+{
+  "part6_source_sha256": {
+    "PA_chunichi_vs_others.csv": "59e9bf94bd22f73aca2c111d056399d6f8e8089a35c5277d6c8b94f014247981",
+    "PA_counterexamples_RPS_escape.csv": "b2c8b0b12d2124fd11b3692d18b4e33fc1172f97b724f9b79f1a51573f1411f6",
+    "PA_persistence.csv": "2f485092dc6924cbfbca9451bc3000cda17c6551bdff1b06118319d79d032734",
+    "PB_Aclass_2x2.csv": "ba299a09f2f54bc2f24eeb6341b114a7220790023c5d202bd9a30c59b392fb30",
+    "PB_counterexamples_lowRPS_Aclass.csv": "c9a9c7ea7f259aa92a4a97330226a53a589efc3292d112f4598e6df391f41894",
+    "PB_counterexamples_lowSR_Aclass.csv": "9316f2958f8b487a94a947702f57c9688a9154551b7e7f108b53a6877dedd237",
+    "PB_regression.csv": "f23bd50419814e75853b4088aea658818fbfc9a78be36d2b6e25b131557c5b23",
+    "chunichi_trajectory.csv": "59e42cad7cc2350e891e144bdf6b8e5ea8c699d186211808c25d4ff1de51eff4",
+    "home_away_RPS_2013_2025.csv": "89b1f05df171c947322fd27312b6ff1cbd90cbce1a48f7aa8954bf0fad0196c5",
+    "p6.py": "5840d478f4244957e2610b3e420c01bb24c4986cc3e202a964450c38c42cf868",
+    "p6b.py": "9cc8a01c004e790ba3bd492570ed2fd7475b5c1a0c3bb4990386bbb9ef5f366d",
+    "p6c.py": "c48d2356fb3c2f97e8f586e69ce89399ae22c8a53ca137003b22d0d6ca65370d",
+    "persistence_pairs.csv": "74c266f7e36077dd81c79d4bcd979ae848306783ee6b8847be86737d36a44dad",
+    "report.md": "23e2d6fcb28fbb162ed9a3f2b0a137052bdd3cc8976fccf8ca1b81fb7eb3c36c"
+  },
+  "part5_team_season_sha256": "2c53048e7b3c7cae38ae3fa342103459a28be85aea80335f5d337059c4b13fcc",
+  "replay_csv_rows": {
+    "PA_chunichi_vs_others.csv": 12,
+    "PA_counterexamples_RPS_escape.csv": 25,
+    "PA_persistence.csv": 20,
+    "PB_Aclass_2x2.csv": 6,
+    "PB_counterexamples_lowRPS_Aclass.csv": 12,
+    "PB_counterexamples_lowSR_Aclass.csv": 13,
+    "PB_regression.csv": 16,
+    "chunichi_trajectory.csv": 13,
+    "home_away_RPS_2013_2025.csv": 24,
+    "persistence_pairs.csv": 144
+  },
+  "csv_tolerance": {
+    "rel": 1e-10,
+    "abs": 1e-12
+  },
+  "correlations": [
+    {
+      "omit_pairs_touching2020": false,
+      "exclude_chunichi": false,
+      "n": 144,
+      "off_lRPS": 0.18590770330739645
+    },
+    {
+      "omit_pairs_touching2020": false,
+      "exclude_chunichi": true,
+      "n": 132,
+      "off_lRPS": -0.020917068584761816
+    },
+    {
+      "omit_pairs_touching2020": true,
+      "exclude_chunichi": false,
+      "n": 120,
+      "off_lRPS": 0.19367590421620032
+    },
+    {
+      "omit_pairs_touching2020": true,
+      "exclude_chunichi": true,
+      "n": 110,
+      "off_lRPS": 0.019168088463151805
+    }
+  ],
+  "regression_sensitivity": {
+    "coefficient_order": [
+      "intercept",
+      "off_lSR",
+      "off_lRPS",
+      "def_lSR",
+      "def_lRPS"
+    ],
+    "coefficients": [
+      0.5002420784655494,
+      0.43619642053725416,
+      0.2895947990210912,
+      -0.4018925169513782,
+      -0.2784204739262323
+    ],
+    "sr_minus_rps": 0.14660162151616296,
+    "iid_se": 0.07320869482209533,
+    "iid_t": 2.00251652993432,
+    "team_cluster": {
+      "clusters": 12,
+      "se": 0.07989135468687657,
+      "t": 1.8350123375770548
+    },
+    "year_cluster": {
+      "clusters": 13,
+      "se": 0.10419948209274045,
+      "t": 1.4069323433458472
+    }
+  },
+  "script_sha256": "4d5f72ffccb0f0435156417c928a02b03f4355647257201746070177633a5acf",
+  "exit_code": 0,
+  "scope": "Replay comparison and descriptive sensitivity; no new raw HTML, causal effect, or calibrated hypothesis test."
+}

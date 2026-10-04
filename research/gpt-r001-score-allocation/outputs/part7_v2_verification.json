@@ -1,0 +1,590 @@
+{
+  "counterexample_rows": 570,
+  "diagnostics": {
+    "clipped_halves": 23,
+    "complete": 165236,
+    "halves": 166003,
+    "incomplete": 767,
+    "rowlevel_disagreement_halves": 13,
+    "rowlevel_disagreement_outs": 13.0,
+    "season_numeric_cells": 13464,
+    "season_rows": 264,
+    "tied_metric_groups": 8
+  },
+  "incomplete_reasons": {
+    "called_short": 15,
+    "stopped_mid_PA_outs_lt2": 1,
+    "walkoff_bottom": 3,
+    "x_in_linescore(walkoff/called_mid_inning)": 748
+  },
+  "inputs": {
+    "official_team_SB_CS_2013_2026.csv": "d98aed5d4fa40c479cc07ccc7d0dbc6aed3f87c2f0e2a14bccf6976a05556d9f",
+    "v2/analysis_v2.py": "0faeeff5a5c639a352fe20368a29b7f7ab6588ce1a33ff6ce81212a22ad2d2b5",
+    "v2/check_2out_mismatch.csv": "3d9cc47a95657b95b93e2f0b41ea5cb3f7ea12e903599917d87463ea4359a089",
+    "v2/chunichi_by_year_v2.csv": "872e601fe47c4471ff967ffda7430cf7fa68978b716a830a075f2ee2eeeee9da",
+    "v2/corr_rel_cRPS_v2.csv": "0f9485521f8a865c1db27ee8e455337b04e5e80fd4a3ab46ea796a8cf9505822",
+    "v2/counterexamples_2x2_v2.csv": "605441149268de4ebeb2aea950fc8c71a61df90d10a9f82060fa1d6d2cf3367d",
+    "v2/decomp_chunichi_vs_CL5_v2.csv": "12fa54b14cff26481ae5c69cf0787938362d21d809e45735d434ab7fd38da2e4",
+    "v2/explain_v1_negatives.py": "6ed308a631737e17999d59f79b84d56ea566fdfa1d214fded27be4334dd63c12",
+    "v2/half_innings_v2_public.csv.gz": "6b9507fa4485551072f4b2cee9456adce8af5197e52ee0bf7caf46eb9d343160",
+    "v2/loto_main_proposition_v2.csv": "e6e8d920ba523acf462a41688b8b3070c53e7fca10acbc93d0248f6c236905bf",
+    "v2/parse_v2.py": "933a0aae5dca5b541d22607206ddcafde1a8b0f09be2405cd1b37e29762c4736",
+    "v2/part4_vs_part7_2016_2025.csv": "d4b6642751a3b1c77199ce1600ab1309dea9fb5777779f442a9d98cf05856374",
+    "v2/part4_vs_part7_pooled.csv": "fb1f86124362bfda0c513dfa8d1868cdefe6332fb5d662b456a395443bedd6a7",
+    "v2/propositions_2x2_v2.csv": "e49dedbf15f2264f7a247bfe7c66bf6ee116ee452b7ddf7bbe921fbbb18f12ba",
+    "v2/report_v2.md": "8197294c983d17f5e42dd2916ae353ab6094368813fac6d40581993c773c7679",
+    "v2/team_season_v2.csv": "e98f4e56a5a1859e19a97e4d9b3701b40067a952bf37393e47dc02684d371ffd",
+    "v2/v1_negative_cases_explained.csv": "48b2411699655a3b60e2d22e931d8ab2fd6c80caa46e29bfb002a4ebae5907c3",
+    "v2/validation_SB_CS_vs_official_v2.csv": "09ab243fc6e0464786e22a4f54e5c958429461407c15dafa90e02d429eccb668"
+  },
+  "limitations": [
+    "min allocation is not event identification",
+    "trajectory permutation assumes within-league exchangeability",
+    "algebraic components are not causal contributions",
+    "2026 provisional; source event audit not included"
+  ],
+  "offense_decomposition": [
+    {
+      "chunichi": {
+        "s_CSPO": 0.027920646583394562,
+        "s_LOB": 1.1697281410727407,
+        "s_R": 1.6561351947097722,
+        "s_ROB": 2.9812637766348273,
+        "s_ROoth": 0.12747979426891992
+      },
+      "cl_other5": {
+        "s_CSPO": 0.02437558434620008,
+        "s_LOB": 1.1801789768932818,
+        "s_R": 1.8037932416188058,
+        "s_ROB": 3.1119941231467876,
+        "s_ROoth": 0.10364632028850007
+      },
+      "difference": {
+        "s_CSPO": 0.003545062237194481,
+        "s_LOB": -0.010450835820541071,
+        "s_R": -0.1476580469090336,
+        "s_ROB": -0.13073034651196025,
+        "s_ROoth": 0.02383347398041985
+      },
+      "identity_contributions": {
+        "s_CSPO": -0.003545062237194481,
+        "s_LOB": 0.010450835820541071,
+        "s_ROB": -0.13073034651196025,
+        "s_ROoth": -0.02383347398041985
+      },
+      "period": "2016-2025"
+    },
+    {
+      "chunichi": {
+        "s_CSPO": 0.029149797570850202,
+        "s_LOB": 1.162348178137652,
+        "s_R": 1.6530364372469635,
+        "s_ROB": 2.974089068825911,
+        "s_ROoth": 0.12955465587044535
+      },
+      "cl_other5": {
+        "s_CSPO": 0.023851460443270217,
+        "s_LOB": 1.1839864964039337,
+        "s_R": 1.798253339204462,
+        "s_ROB": 3.1101570526933804,
+        "s_ROoth": 0.10406575664171437
+      },
+      "difference": {
+        "s_CSPO": 0.005298337127579985,
+        "s_LOB": -0.02163831826628182,
+        "s_R": -0.14521690195749848,
+        "s_ROB": -0.13606798386746943,
+        "s_ROoth": 0.025488899228730974
+      },
+      "identity_contributions": {
+        "s_CSPO": -0.005298337127579985,
+        "s_LOB": 0.02163831826628182,
+        "s_ROB": -0.13606798386746943,
+        "s_ROoth": -0.025488899228730974
+      },
+      "period": "2016-2025_no2020"
+    },
+    {
+      "chunichi": {
+        "s_CSPO": 0.022813688212927757,
+        "s_LOB": 1.2623574144486691,
+        "s_R": 1.5475285171102662,
+        "s_ROB": 3.0,
+        "s_ROoth": 0.16730038022813687
+      },
+      "cl_other5": {
+        "s_CSPO": 0.027721433400946585,
+        "s_LOB": 1.1359026369168357,
+        "s_R": 1.8012170385395538,
+        "s_ROB": 3.061528059499662,
+        "s_ROoth": 0.0966869506423259
+      },
+      "difference": {
+        "s_CSPO": -0.004907745188018828,
+        "s_LOB": 0.12645477753183343,
+        "s_R": -0.25368852142928766,
+        "s_ROB": -0.06152805949966211,
+        "s_ROoth": 0.07061342958581097
+      },
+      "identity_contributions": {
+        "s_CSPO": 0.004907745188018828,
+        "s_LOB": -0.12645477753183343,
+        "s_ROB": -0.06152805949966211,
+        "s_ROoth": -0.07061342958581097
+      },
+      "period": "2022"
+    }
+  ],
+  "official_validation": [
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2016
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2017
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2018
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2019
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2020
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2021
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2022
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2023
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2024
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 0,
+        "PA": 0,
+        "R": 0,
+        "SB": 0,
+        "games": 0
+      },
+      "year": 2025
+    },
+    {
+      "mismatch_team_counts": {
+        "CS": 1,
+        "PA": 6,
+        "R": 6,
+        "SB": 1,
+        "games": 6
+      },
+      "year": 2026
+    }
+  ],
+  "previous": {
+    "changes": {
+      "complete_changed": 8
+    },
+    "old_negative": {
+      "LOB": 8,
+      "RO_other": 23
+    }
+  },
+  "propositions": [
+    {
+      "both": 29,
+      "condition": 40,
+      "counterexamples": 11,
+      "metric": "rk_s_ROB_i",
+      "n": 120,
+      "p_hypergeometric": 1.1625127387636882e-08,
+      "p_trajectory": 4.8225308641975306e-05,
+      "period": "2016-2025",
+      "side": "off",
+      "trajectory_tail_numerator": 25,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 21,
+      "condition": 40,
+      "counterexamples": 19,
+      "metric": "rk_strand",
+      "n": 120,
+      "p_hypergeometric": 0.003962435426547527,
+      "p_trajectory": 0.004371141975308642,
+      "period": "2016-2025",
+      "side": "off",
+      "trajectory_tail_numerator": 2266,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 19,
+      "condition": 40,
+      "counterexamples": 21,
+      "metric": "rk_ROoth_rate",
+      "n": 120,
+      "p_hypergeometric": 0.02723205664240957,
+      "p_trajectory": 0.030297067901234567,
+      "period": "2016-2025",
+      "side": "off",
+      "trajectory_tail_numerator": 15706,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 18,
+      "condition": 40,
+      "counterexamples": 22,
+      "metric": "rk_CSPO_rate",
+      "n": 120,
+      "p_hypergeometric": 0.05986346678909074,
+      "p_trajectory": 0.07082368827160494,
+      "period": "2016-2025",
+      "side": "off",
+      "trajectory_tail_numerator": 36715,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 15,
+      "condition": 40,
+      "counterexamples": 25,
+      "metric": "rk_SBatt_G",
+      "n": 120,
+      "p_hypergeometric": 0.3276392164041583,
+      "p_trajectory": 0.31262345679012343,
+      "period": "2016-2025",
+      "side": "off",
+      "trajectory_tail_numerator": 162064,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 13,
+      "condition": 40,
+      "counterexamples": 27,
+      "metric": "rk_s_LOB_i",
+      "n": 120,
+      "p_hypergeometric": 0.619262112414142,
+      "p_trajectory": 0.6268248456790123,
+      "period": "2016-2025",
+      "side": "off",
+      "trajectory_tail_numerator": 324946,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 2,
+      "condition": 40,
+      "counterexamples": 38,
+      "metric": "rk_s_ROB_i",
+      "n": 120,
+      "p_hypergeometric": 0.9999996958017829,
+      "p_trajectory": 1.0,
+      "period": "2016-2025",
+      "side": "def",
+      "trajectory_tail_numerator": 518400,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 9,
+      "condition": 40,
+      "counterexamples": 31,
+      "metric": "rk_strand",
+      "n": 120,
+      "p_hypergeometric": 0.9678303167944242,
+      "p_trajectory": 0.9364891975308642,
+      "period": "2016-2025",
+      "side": "def",
+      "trajectory_tail_numerator": 485476,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 11,
+      "condition": 40,
+      "counterexamples": 29,
+      "metric": "rk_ROoth_rate",
+      "n": 120,
+      "p_hypergeometric": 0.8569691491757618,
+      "p_trajectory": 0.8502430555555556,
+      "period": "2016-2025",
+      "side": "def",
+      "trajectory_tail_numerator": 440766,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 12,
+      "condition": 40,
+      "counterexamples": 28,
+      "metric": "rk_CSPO_rate",
+      "n": 120,
+      "p_hypergeometric": 0.7527492165086137,
+      "p_trajectory": 0.7603838734567901,
+      "period": "2016-2025",
+      "side": "def",
+      "trajectory_tail_numerator": 394183,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 10,
+      "condition": 40,
+      "counterexamples": 30,
+      "metric": "rk_SBatt_G",
+      "n": 120,
+      "p_hypergeometric": 0.9272103606013382,
+      "p_trajectory": 0.9449826388888889,
+      "period": "2016-2025",
+      "side": "def",
+      "trajectory_tail_numerator": 489879,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 21,
+      "condition": 40,
+      "counterexamples": 19,
+      "metric": "rk_s_LOB_i",
+      "n": 120,
+      "p_hypergeometric": 0.003962435426547527,
+      "p_trajectory": 0.009307484567901234,
+      "period": "2016-2025",
+      "side": "def",
+      "trajectory_tail_numerator": 4825,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 26,
+      "condition": 36,
+      "counterexamples": 10,
+      "metric": "rk_s_ROB_i",
+      "n": 108,
+      "p_hypergeometric": 7.888803370850669e-08,
+      "p_trajectory": 8.294753086419753e-05,
+      "period": "2016-2025(2020除く)",
+      "side": "off",
+      "trajectory_tail_numerator": 43,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 20,
+      "condition": 36,
+      "counterexamples": 16,
+      "metric": "rk_strand",
+      "n": 108,
+      "p_hypergeometric": 0.0017211130707400653,
+      "p_trajectory": 0.0014930555555555556,
+      "period": "2016-2025(2020除く)",
+      "side": "off",
+      "trajectory_tail_numerator": 774,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 16,
+      "condition": 36,
+      "counterexamples": 20,
+      "metric": "rk_ROoth_rate",
+      "n": 108,
+      "p_hypergeometric": 0.08372156621761333,
+      "p_trajectory": 0.06449266975308642,
+      "period": "2016-2025(2020除く)",
+      "side": "off",
+      "trajectory_tail_numerator": 33433,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 16,
+      "condition": 36,
+      "counterexamples": 20,
+      "metric": "rk_CSPO_rate",
+      "n": 108,
+      "p_hypergeometric": 0.08372156621761333,
+      "p_trajectory": 0.10678819444444444,
+      "period": "2016-2025(2020除く)",
+      "side": "off",
+      "trajectory_tail_numerator": 55359,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 13,
+      "condition": 36,
+      "counterexamples": 23,
+      "metric": "rk_SBatt_G",
+      "n": 108,
+      "p_hypergeometric": 0.41751008157029595,
+      "p_trajectory": 0.4097145061728395,
+      "period": "2016-2025(2020除く)",
+      "side": "off",
+      "trajectory_tail_numerator": 212396,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 12,
+      "condition": 36,
+      "counterexamples": 24,
+      "metric": "rk_s_LOB_i",
+      "n": 108,
+      "p_hypergeometric": 0.5743503599770879,
+      "p_trajectory": 0.5679340277777778,
+      "period": "2016-2025(2020除く)",
+      "side": "off",
+      "trajectory_tail_numerator": 294417,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 2,
+      "condition": 36,
+      "counterexamples": 34,
+      "metric": "rk_s_ROB_i",
+      "n": 108,
+      "p_hypergeometric": 0.9999982820130816,
+      "p_trajectory": 0.9999691358024692,
+      "period": "2016-2025(2020除く)",
+      "side": "def",
+      "trajectory_tail_numerator": 518384,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 8,
+      "condition": 36,
+      "counterexamples": 28,
+      "metric": "rk_strand",
+      "n": 108,
+      "p_hypergeometric": 0.9653741733844646,
+      "p_trajectory": 0.9414390432098766,
+      "period": "2016-2025(2020除く)",
+      "side": "def",
+      "trajectory_tail_numerator": 488042,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 10,
+      "condition": 36,
+      "counterexamples": 26,
+      "metric": "rk_ROoth_rate",
+      "n": 108,
+      "p_hypergeometric": 0.8390802227021333,
+      "p_trajectory": 0.8379745370370371,
+      "period": "2016-2025(2020除く)",
+      "side": "def",
+      "trajectory_tail_numerator": 434406,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 10,
+      "condition": 36,
+      "counterexamples": 26,
+      "metric": "rk_CSPO_rate",
+      "n": 108,
+      "p_hypergeometric": 0.8390802227021333,
+      "p_trajectory": 0.8173630401234568,
+      "period": "2016-2025(2020除く)",
+      "side": "def",
+      "trajectory_tail_numerator": 423721,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 10,
+      "condition": 36,
+      "counterexamples": 26,
+      "metric": "rk_SBatt_G",
+      "n": 108,
+      "p_hypergeometric": 0.8390802227021333,
+      "p_trajectory": 0.8456867283950618,
+      "period": "2016-2025(2020除く)",
+      "side": "def",
+      "trajectory_tail_numerator": 438404,
+      "trajectory_total": 518400
+    },
+    {
+      "both": 19,
+      "condition": 36,
+      "counterexamples": 17,
+      "metric": "rk_s_LOB_i",
+      "n": 108,
+      "p_hypergeometric": 0.005542971593001675,
+      "p_trajectory": 0.016527777777777777,
+      "period": "2016-2025(2020除く)",
+      "side": "def",
+      "trajectory_tail_numerator": 8568,
+      "trajectory_total": 518400
+    }
+  ],
+  "ranges": {
+    "LOB": [
+      0.0,
+      3.0
+    ],
+    "RO": [
+      0.0,
+      2.0
+    ],
+    "RO_other": [
+      0.0,
+      2.0
+    ]
+  },
+  "schema": "aoi-part7-v2-reception/1",
+  "scope": "provided half CSV; raw HTML parser not independently rerun",
+  "status": "aggregate_checks_passed"
+}

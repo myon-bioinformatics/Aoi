@@ -1,0 +1,7702 @@
+{
+  "annual_checks": 936,
+  "plan_commit": "53f1c66fab63bf07bdb04559ccf67d41a9beda3a",
+  "scope": "end-of-day first clinch conditional on complete realized schedule; ties bounded, not assumed",
+  "small_enumeration_checks": 16,
+  "solver": "ortools-9.15.6755",
+  "year2026": {
+    "games": 847,
+    "last_observed_date": "2026-10-03",
+    "status": "not_evaluable_incomplete_schedule"
+  },
+  "years": [
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2013-09-25",
+          "previous_date": "2013-09-24",
+          "queries": 8,
+          "year": 2013
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2013-09-25",
+          "previous_date": "2013-09-24",
+          "queries": 8,
+          "year": 2013
+        }
+      ],
+      "date": "2013-09-25",
+      "earliest": "2013-09-25",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2013-09-25",
+      "year": 2013
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  5,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2014-09-23",
+          "previous_date": "2014-09-21",
+          "queries": 8,
+          "year": 2014
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  5,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2014-09-23",
+          "previous_date": "2014-09-21",
+          "queries": 8,
+          "year": 2014
+        }
+      ],
+      "date": "2014-09-23",
+      "earliest": "2014-09-23",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2014-09-23",
+      "year": 2014
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  4
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2015-09-21",
+          "previous_date": "2015-09-20",
+          "queries": 8,
+          "year": 2015
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  4
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2015-09-21",
+          "previous_date": "2015-09-20",
+          "queries": 8,
+          "year": 2015
+        }
+      ],
+      "date": "2015-09-21",
+      "earliest": "2015-09-21",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2015-09-21",
+      "year": 2015
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2016-09-17",
+          "previous_date": "2016-09-16",
+          "queries": 9,
+          "year": 2016
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2016-09-16",
+          "previous_date": "2016-09-15",
+          "queries": 8,
+          "year": 2016
+        }
+      ],
+      "date": "2016-09-16",
+      "earliest": "2016-09-16",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2016-09-17",
+      "official_resolution": {
+        "checks": {
+          "2016-09-15": {
+            "feasible": true,
+            "max_new_wins": null,
+            "solver": "ortools-9.15.6755",
+            "solver_status": "OPTIMAL",
+            "time_limit_seconds": 10,
+            "witness": [
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              }
+            ]
+          },
+          "2016-09-16": {
+            "feasible": false,
+            "max_new_wins": null,
+            "solver": "ortools-9.15.6755",
+            "solver_status": "INFEASIBLE",
+            "time_limit_seconds": 10,
+            "witness": null
+          }
+        },
+        "league_pct_tiebreak": false,
+        "previous_order_source": "https://npb.jp/bis/2015/stats/std_c.html",
+        "source": "https://npb.jp/games/2016/info_cscl.html"
+      },
+      "year": 2016
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2017-09-20",
+          "previous_date": "2017-09-19",
+          "queries": 8,
+          "year": 2017
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2017-09-20",
+          "previous_date": "2017-09-19",
+          "queries": 8,
+          "year": 2017
+        }
+      ],
+      "date": "2017-09-20",
+      "earliest": "2017-09-20",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2017-09-20",
+      "year": 2017
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2018-09-28",
+          "previous_date": "2018-09-27",
+          "queries": 9,
+          "year": 2018
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2018-09-28",
+          "previous_date": "2018-09-27",
+          "queries": 9,
+          "year": 2018
+        }
+      ],
+      "date": "2018-09-28",
+      "earliest": "2018-09-28",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2018-09-28",
+      "year": 2018
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2019-09-24",
+          "previous_date": "2019-09-23",
+          "queries": 9,
+          "year": 2019
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              }
+            ]
+          },
+          "date": "2019-09-24",
+          "previous_date": "2019-09-23",
+          "queries": 9,
+          "year": 2019
+        }
+      ],
+      "date": "2019-09-24",
+      "earliest": "2019-09-24",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2019-09-24",
+      "year": 2019
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2020-11-05",
+          "previous_date": "2020-11-04",
+          "queries": 8,
+          "year": 2020
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2020-11-05",
+          "previous_date": "2020-11-04",
+          "queries": 8,
+          "year": 2020
+        }
+      ],
+      "date": "2020-11-05",
+      "earliest": "2020-11-05",
+      "exact": true,
+      "kind": "top3_no_CS",
+      "latest": "2020-11-05",
+      "year": 2020
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2021-10-13",
+          "previous_date": "2021-10-12",
+          "queries": 9,
+          "year": 2021
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2021-10-13",
+          "previous_date": "2021-10-12",
+          "queries": 9,
+          "year": 2021
+        }
+      ],
+      "date": "2021-10-13",
+      "earliest": "2021-10-13",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2021-10-13",
+      "year": 2021
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2022-09-27",
+          "previous_date": "2022-09-26",
+          "queries": 9,
+          "year": 2022
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  4,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2022-09-27",
+          "previous_date": "2022-09-26",
+          "queries": 9,
+          "year": 2022
+        }
+      ],
+      "date": "2022-09-27",
+      "earliest": "2022-09-27",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2022-09-27",
+      "year": 2022
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  5,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  5,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  4
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 7,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 8,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2023-09-10",
+          "previous_date": "2023-09-09",
+          "queries": 9,
+          "year": 2023
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  5,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  5,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  4
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 7,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 8,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2023-09-10",
+          "previous_date": "2023-09-09",
+          "queries": 9,
+          "year": 2023
+        }
+      ],
+      "date": "2023-09-10",
+      "earliest": "2023-09-10",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2023-09-10",
+      "year": 2023
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2024-09-20",
+          "previous_date": "2024-09-19",
+          "queries": 8,
+          "year": 2024
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "d"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "db"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  2
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "g",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  0,
+                  3
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  5
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2024-09-20",
+          "previous_date": "2024-09-19",
+          "queries": 8,
+          "year": 2024
+        }
+      ],
+      "date": "2024-09-20",
+      "earliest": "2024-09-20",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2024-09-20",
+      "year": 2024
+    },
+    {
+      "bounds": [
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "favorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "favorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2025-09-19",
+          "previous_date": "2025-09-18",
+          "queries": 9,
+          "year": 2025
+        },
+        {
+          "at": {
+            "feasible": false,
+            "status": "INFEASIBLE",
+            "target_ties": "unfavorable",
+            "witness": null
+          },
+          "before": {
+            "feasible": true,
+            "status": "OPTIMAL",
+            "target_ties": "unfavorable",
+            "witness": [
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "s"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "g"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "d",
+                  "t"
+                ],
+                "wins": [
+                  3,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "c",
+                  "g"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "db",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "e",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 6,
+                "teams": [
+                  "f",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 5,
+                "teams": [
+                  "b",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "s",
+                  "t"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "c",
+                  "db"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "f"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "l",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 3,
+                "teams": [
+                  "e",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "f",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "b",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "c",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "db",
+                  "g"
+                ],
+                "wins": [
+                  2,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "h",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 4,
+                "teams": [
+                  "b",
+                  "e"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 0,
+                "teams": [
+                  "g",
+                  "s"
+                ],
+                "wins": [
+                  1,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "f",
+                  "h"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "db",
+                  "s"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "e",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 2,
+                "teams": [
+                  "b",
+                  "l"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "draws": 1,
+                "teams": [
+                  "h",
+                  "m"
+                ],
+                "wins": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "date": "2025-09-19",
+          "previous_date": "2025-09-18",
+          "queries": 9,
+          "year": 2025
+        }
+      ],
+      "date": "2025-09-19",
+      "earliest": "2025-09-19",
+      "exact": true,
+      "kind": "B_class",
+      "latest": "2025-09-19",
+      "year": 2025
+    }
+  ]
+}

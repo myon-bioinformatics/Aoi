@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "method": "independent chronological off-row score accumulation",
+  "cells": 988,
+  "integer_cells": 3952,
+  "summary_checks": 2160,
+  "independence": "same source CSV, independent aggregation; not independent raw acquisition"
+}

@@ -5,13 +5,13 @@
 [run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
+Downloading selectolax (2.4MiB)
 Downloading pygments (1.2MiB)
 Downloading polars-runtime-32 (47.6MiB)
-Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 16ms
+Installed 15 packages in 11ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -398,6 +398,10 @@ shape: (14, 12)
 - P78 4位で、得点・失点の分布から見た A クラスの見込みが 0.5 以上だったチームは、強い相手との試合で点の差どおりに勝てていない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
 - P79 強い相手に対して得点が（平均と比べて）見込みより少なければ、失点も見込みより少ない（鏡の形）: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 支持 / 裏 保留）
 - P80 得失点差がプラスなのに B クラスだったチームは、強い相手との試合全体の点が（平均と比べて）少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P81 得点した回の大きさがリーグ平均より小さいチームは、強い相手との試合全体の点が（同じ年・同じリーグの平均と比べて）少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P82 得点した回の大きさがリーグ平均より小さいチームは、中位の相手との試合全体の点も（平均と比べて）少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P83 失点がリーグ2位以内のチームは、強い相手との試合全体の点が（平均と比べて）少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 保留 / 裏 保留）
+- P84 A クラスのチームは、強い相手（3位を争う相手）との試合全体の点が（平均と比べて）少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -528,3 +532,7 @@ units=156 dropped=0 target: upper_half == False
 [4] P78 待った！判断保留 元の命題: 判例 1 件: m-2019
 [1] P79 異議あり（例外あり） 元の命題: 判例 27 件: b-2018, db-2023, f-2017, h-2019, h-2024 ほか
 [4] P80 待った！判断保留 元の命題: 判例 6 件: h-2013, e-2022, h-2021, c-2022, m-2019 ほか
+[4] P81 待った！判断保留 元の命題: 判例 28 件: db-2015, e-2018, t-2015, db-2014, m-2018 ほか
+[4] P82 待った！判断保留 元の命題: 判例 32 件: s-2013, g-2023, c-2021, b-2019, s-2014 ほか
+[4] P83 待った！判断保留 元の命題: 判例 19 件: g-2018, h-2021, t-2017, h-2017, h-2024 ほか
+[4] P84 待った！判断保留 元の命題: 判例 38 件: s-2021, l-2017, g-2018, m-2021, db-2019 ほか

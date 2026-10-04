@@ -605,3 +605,34 @@ def test_render_index_lists_every_proposition_with_form_codes():
     assert f"{p1['original']['code']}・{p1['original']['rate']:.2f}（{p1['original']['n']}）" in rows[0]
     assert rows[1].rstrip(" |").endswith("P1")                     # 親
     assert "総合の終了コードの内訳" in md
+
+
+def test_confirm_units_reports_each_new_unit_in_all_four_cells():
+    # rd > 0 ⇒ rank <= 3。a: 成立、b: 判例（元・対偶）、c: 逆の判例（逆・裏）、e: どちらも当たらない。2020 は確かめに使わない
+    st = table([("a", 2020, 5, 1, 1), ("b", 2020, -3, 5, 4), ("a", 2026, 4, 2, 1), ("b", 2026, 3, 5, 2),
+                ("c", 2026, -1, 3, 5), ("e", 2026, -2, 6, 6)])
+    # 年の範囲は作ったときのデータの範囲なので外す（外さないと 2026 が必ず範囲外になる）
+    p = {**P1, "scope": {"seasons": "2013-2025"}}
+    c = pr.confirm_units(p, st, [2026])
+    assert c["units"] == [{"unit": "a-2026", "status": "成立"}, {"unit": "b-2026", "status": "判例"},
+                          {"unit": "c-2026", "status": "逆の判例"}, {"unit": "e-2026", "status": "どちらも当たらない"}]
+    units = ["a-2026", "b-2026", "c-2026", "e-2026"]
+    md = pr.render_confirmation([c], [2026], "2026-10-04", units, detail=["P1"])
+    cells = [x.strip() for x in [l for l in md.splitlines() if l.startswith("| P1 ")][0].split("|")]
+    assert cells[3:9] == ["4", "1", "b-2026", "c-2026", "1", "0"]
+    assert "| c-2026 | 逆の判例 |" in md
+    assert "元の命題・対偶の判例が出たもの 1 件、逆・裏の判例が出たもの 1 件" in md
+    assert pr.confirm_units(P1, st, [2027])["units"] == []
+    assert "まだない" in pr.render_confirmation([pr.confirm_units(P1, st, [2027])], [2027], "-", [])
+
+
+def test_confirm_units_keeps_team_and_where_scope_and_reports_unknown_values():
+    st = table([("a", 2026, 4, 2, 1), ("b", 2026, 3, 5, 2), ("c", 2026, -1, 3, 5)])
+    st = st.with_columns(w=pl.Series([1.0, None, 0.0]))
+    p = {**P1, "scope": {"seasons": "2013-2025", "where": [{"col": "w", "op": ">", "value": 0.5}]}}
+    c = pr.confirm_units(p, st, [2026])
+    assert c["units"] == [{"unit": "a-2026", "status": "成立"}, {"unit": "b-2026", "status": "判定不能"}]
+    d = pr.confirm_units({**P1, "if": [], "scope": {"team": "c"}}, st, [2026])
+    assert d["units"] == [{"unit": "c-2026", "status": "成立"}] and not d["has_if"]
+    md = pr.render_confirmation([d], [2026], "-", ["a-2026", "b-2026", "c-2026"], detail=["P1"])
+    assert "（前件なし）" in md and "| a-2026 | 範囲外 |" in md

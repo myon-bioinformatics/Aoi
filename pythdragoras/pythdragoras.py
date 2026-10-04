@@ -296,7 +296,8 @@ def main(argv=None) -> int:
     import hashlib
 
     from propositions import (DataError, PropositionError, check_claims, evaluate, judge, label, ledger_summary,
-                              load, render, render_claims, render_index, update_ledger)
+                              confirm_units, load, render, render_claims, render_confirmation, render_index,
+                              update_ledger)
 
     ap = argparse.ArgumentParser(description="シーズン表から残差・順位の偏り・命題を検証する")
     ap.add_argument("--season", type=Path, required=True)
@@ -336,7 +337,7 @@ def main(argv=None) -> int:
         alloc.write_ndjson(args.outdir / "allocation.jsonl")
     _jsonl(args.outdir / "persistence.jsonl", pers)
     _jsonl(args.outdir / "rank_expectation.jsonl", rank_expectation(included))
-    keep = ["inn_dlog_size", "rf_def_total", "sim_p_upper", "wpct"]
+    keep = ["inn_dlog_size", "rf_def_total", "sim_p_upper", "wpct", "opp_env_gap_top_c", "opp_net_gap_top_c"]
     _jsonl(args.outdir / "persistence_by_team.jsonl", persistence_by_team(included, keep))
     _jsonl(args.outdir / "persistence_all.jsonl", persistence(included, keep))
 
@@ -361,6 +362,15 @@ def main(argv=None) -> int:
         _jsonl(args.outdir / "propositions.jsonl", results)
         (args.outdir / "objections.md").write_text(render(results, meta, ledger=ledger), encoding="utf-8")
         (args.outdir / "index.md").write_text(render_index(results, meta), encoding="utf-8")
+        confirm = cfg.get("confirm")
+        if confirm:  # まだ使っていない年での確かめ（R18）。分析設定の [confirm] で年と、単位ごとに並べる命題を決める
+            seasons = [int(y) for y in confirm["seasons"]]
+            units = [f"{t}-{s}" for t, s in included.filter(pl.col("season").is_in(seasons))
+                     .sort("season", "team").select("team", "season").iter_rows()]
+            checks = [confirm_units(p, included, seasons) for p in props]
+            (args.outdir / "confirmation.md").write_text(
+                render_confirmation(checks, seasons, str(confirm.get("registered", "-")), units,
+                                    confirm.get("detail", [])), encoding="utf-8")
         md += "\n## 命題の判定\n\n" + "\n".join(
             f"- {r['id']} {r['statement']}: **exit {r['judgement']['code']} {label(r['judgement']['code'])}** "
             "（" + " / ".join(f"{_FORM.get(f['form'], f['form'])} {_VERD[f['verdict']]}" for f in r["forms"]) + "）"

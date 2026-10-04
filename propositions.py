@@ -626,6 +626,69 @@ def _ledger_line(ledger, pid) -> list[str]:
             f"直近で元の命題に判例がない連続 {s['no_objection_streak']} 回{warn}"]
 
 
+def confirm_units(p: dict, st: pl.DataFrame, seasons: list[int]) -> dict:
+    """事前登録した命題を、作るときに使っていない年（seasons）の単位だけで照らす（R18）。
+
+    範囲（scope）のうち年の範囲は「命題を作ったときのデータの範囲」なので外し、リーグ・チーム・条件の範囲はそのまま使う。
+    単位ごとに前件 x と後件 y の組で状態を返す。統計の判定はしない（単位が少ないため）。
+      成立: x かつ y / 判例: x なのに y でない（元の命題と対偶の判例）
+      逆の判例: x でないのに y（逆と裏の判例）/ どちらも当たらない: x でも y でもない / 判定不能: x か y の値が空
+    """
+    scope = {k: v for k, v in (p.get("scope") or {}).items() if k != "seasons"}
+    new = st.filter(pl.col("season").is_in(seasons))
+    df = scope_filter(new, scope)
+    rows = []
+    if df.height:
+        flags = df.select("team", "season", x=_antecedent(p, df.columns), y=_cond(p["then"], df.columns))
+        for r in flags.sort("season", "team").iter_rows(named=True):
+            x, y = r["x"], r["y"]
+            if x is None or y is None:
+                status = "判定不能"
+            elif x:
+                status = "成立" if y else "判例"
+            else:
+                status = "逆の判例" if y else "どちらも当たらない"
+            rows.append({"unit": f"{r['team']}-{r['season']}", "status": status})
+    if scope.get("where"):  # 条件の値が空で、範囲に入るか決まらない単位も判定不能として残す（黙って範囲の外にしない）
+        base = scope_filter(new, {k: v for k, v in scope.items() if k != "where"})
+        rows += [{"unit": f"{t}-{s}", "status": "判定不能"} for t, s in
+                 base.filter(_cond(scope["where"], base.columns).is_null()).sort("season", "team")
+                 .select("team", "season").iter_rows()]
+    return {"id": p["id"], "key": identity(p)["key"], "has_if": bool(_if_conds(p)), "units": rows}
+
+
+def render_confirmation(checks: list[dict], seasons: list[int], registered: str, units: list[str],
+                        detail: list[str] = ()) -> str:
+    """confirm_units の結果の一覧。判例は単位の名前を出し、ほかは数える。detail の命題は単位ごとの状態も並べる。"""
+    lines = ["# まだ使っていない年での確かめ（自動生成）", "",
+             f"確かめに使う年: {', '.join(map(str, seasons))}。手順の登録: {registered}"
+             "（[research/R18-confirmation-2026.md](../research/R18-confirmation-2026.md)）。",
+             "命題は確かめに使う年より前のデータで作り、判定の基準もそのとき決めた。"
+             "年の範囲だけ外し、ほかの範囲（チーム・条件）はそのまま使う。単位が少ないので統計の判定はせず、単位ごとに数える。", ""]
+    if not units:
+        return "\n".join(lines + ["確かめに使う年のデータがまだない。", ""])
+    tried = [c for c in checks if c["units"]]
+    lines += [f"単位: {len(units)}（{', '.join(units)}）。範囲に入る単位があった命題 {len(tried)} 件のうち、"
+              f"元の命題・対偶の判例が出たもの {sum(any(u['status'] == '判例' for u in c['units']) for c in tried)} 件、"
+              f"逆・裏の判例が出たもの {sum(any(u['status'] == '逆の判例' for u in c['units']) for c in tried)} 件。", "",
+              "| id | 識別子 | 照らした単位 | 成立 | 判例（元・対偶） | 逆の判例（逆・裏） | どちらも当たらない | 判定不能 |",
+              "|---|---|---|---|---|---|---|---|"]
+    for c in checks:
+        st_ = [u["status"] for u in c["units"]]
+        names = {s: ", ".join(u["unit"] for u in c["units"] if u["status"] == s) or "なし" for s in ("判例", "逆の判例")}
+        conv = (names["逆の判例"], str(st_.count("どちらも当たらない"))) if c["has_if"] else ("（前件なし）", "（前件なし）")
+        lines.append(f"| {c['id']} | `{_cell(c['key'])}` | {len(st_)} | {st_.count('成立')} | {names['判例']} "
+                     f"| {conv[0]} | {conv[1]} | {st_.count('判定不能')} |")
+    shown = [c for c in checks if c["id"] in set(detail)]
+    if shown:
+        lines += ["", "## 単位ごとの状態", "",
+                  "範囲外: その命題の範囲（チーム・条件）に入らない単位。判定不能: 値が空（イニング単位のデータがない年など）。", "",
+                  "| 単位 | " + " | ".join(c["id"] for c in shown) + " |", "|---|" + "---|" * len(shown)]
+        status = [{u["unit"]: u["status"] for u in c["units"]} for c in shown]
+        lines += [f"| {u} | " + " | ".join(s.get(u, "範囲外") for s in status) + " |" for u in units]
+    return "\n".join(lines) + "\n"
+
+
 def render_index(results: list[dict], meta: dict, lang: str = "ja") -> str:
     """全命題の一覧（自動生成）。1命題1行で、識別子・強さ・4つの形の判定・きっかけ以外での判定・総合・親を並べる。
 

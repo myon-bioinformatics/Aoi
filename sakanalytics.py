@@ -52,6 +52,7 @@
   course_rank_q1 / _h1 / _q3       試合数の 1/4・1/2・3/4 までの勝率での順位（R20）
   course_fade                      最終順位 − course_rank_h1（正なら前半の位置より下で終わった、R20）
   course_rf_d / course_ra_d        後半と前半の得点／試合・失点／試合の差の、他球団の平均との差（R20）
+  course_ra_h1_d                   前半の失点／試合の、他球団の平均との差（R20）
   course_close_win_h1(_d)          前半の勝ちのうち2点差以内の割合と、その他球団の平均との差（R20）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
@@ -541,6 +542,7 @@ def season_course(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
       course_fade                     : 最終順位 − course_rank_h1（正なら、前半の位置より下で終わった）
       course_rf_d / course_ra_d       : （後半の得点／試合 − 前半の得点／試合）の、同じ年・同じリーグの他球団の平均との差。失点も同じ
                                         （季節による点の入りやすさの変化を他球団の平均で除く）
+      course_ra_h1_d                  : 前半の失点／試合の、他球団の平均との差（後半の変化を、前半の水準からの戻りと分けて読むため）
       course_close_win_h1             : 前半の勝ちのうち、2点差以内の勝ちの割合
       course_close_win_h1_d           : その、他球団の平均との差（正なら、前半の勝ちが接戦に偏っていた）
     """
@@ -559,19 +561,20 @@ def season_course(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
         q1, q3 = len(rf) // 4, len(rf) * 3 // 4
         rows.append({"season": season, "team": team, "_q1": wpct(rf[:q1], ra[:q1]), "_q3": wpct(rf[:q3], ra[:q3]),
                      "course_wpct_h1": wpct(rf[:half], ra[:half]), "course_wpct_h2": wpct(rf[half:], ra[half:]),
-                     "_rf": change(rf, half), "_ra": change(ra, half),
+                     "_rf": change(rf, half), "_ra": change(ra, half), "_ra_h1": sum(ra[:half]) / half if half else None,
                      "course_close_win_h1": sum(m <= 2 for m in wins) / len(wins) if wins else None})
     schema = {"season": pl.Int32, "team": pl.Utf8, "_q1": pl.Float64, "_q3": pl.Float64,
               "course_wpct_h1": pl.Float64, "course_wpct_h2": pl.Float64,
-              "_rf": pl.Float64, "_ra": pl.Float64, "course_close_win_h1": pl.Float64}
+              "_rf": pl.Float64, "_ra": pl.Float64, "_ra_h1": pl.Float64, "course_close_win_h1": pl.Float64}
     over = ["season", "league"]
     out = st.select("season", "team", "league", "rank").join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
     rank = lambda c: pl.col(c).rank("min", descending=True).over(over).cast(pl.Int32)  # noqa: E731
     out = out.with_columns(course_wpct_diff=pl.col("course_wpct_h2") - pl.col("course_wpct_h1"),
                            course_rank_q1=rank("_q1"), course_rank_h1=rank("course_wpct_h1"), course_rank_q3=rank("_q3"))
     out = out.with_columns(course_fade=pl.col("rank") - pl.col("course_rank_h1"), course_rf_d=_vs_others("_rf"),
-                           course_ra_d=_vs_others("_ra"), course_close_win_h1_d=_vs_others("course_close_win_h1"))
-    return out.drop("league", "rank", "_rf", "_ra", "_q1", "_q3")
+                           course_ra_d=_vs_others("_ra"), course_ra_h1_d=_vs_others("_ra_h1"),
+                           course_close_win_h1_d=_vs_others("course_close_win_h1"))
+    return out.drop("league", "rank", "_rf", "_ra", "_ra_h1", "_q1", "_q3")
 
 
 def log5(p: float, q: float) -> float:

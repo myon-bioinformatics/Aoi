@@ -546,6 +546,7 @@ def test_season_course_by_hand():
     assert (d["rank"], g["rank"], d["course_fade"], g["course_fade"]) == (1, 1, 0, -1)  # 2勝2敗どうしで同率1位
     # 得点／試合: d は前半 4 → 後半 0.5（−3.5）、g は 1.5 → 3（+1.5）。失点はその裏返し
     assert (d["course_rf_d"], d["course_ra_d"]) == pytest.approx((-5.0, 5.0))
+    assert d["course_ra_h1_d"] == pytest.approx(1.5 - 4.0)     # 前半の失点／試合: d は (2+1)/2、g は (3+5)/2
     assert d["course_close_win_h1"] == pytest.approx(0.5)     # 前半の勝ち 1点差・4点差のうち2点差以内は1つ
     assert g["course_close_win_h1"] is None                    # 前半に勝ちがない
     assert d["course_close_win_h1_d"] is None                  # 比べる他球団の値がない（0 で割らない）

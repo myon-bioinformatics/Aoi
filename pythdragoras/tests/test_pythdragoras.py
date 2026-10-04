@@ -161,3 +161,13 @@ def test_rank_expectation_poisson_binomial():
     assert r["d"]["p_le_obs"] == pytest.approx(1 - (0.2 + 0.1) - 0.05)
     assert r["g"]["p_ge_obs"] == pytest.approx(0.45) and r["g"]["p_le_obs"] == pytest.approx(1.0)
     assert rank_expectation(st.drop("sim_p_upper")) == []
+
+
+def test_persistence_by_team_separates_teams():
+    from pythdragoras import persistence_by_team
+    rows = []
+    for t, sign in (("d", 1), ("g", -1)):
+        for i, y in enumerate(range(2013, 2021)):
+            rows.append({"team": t, "team_name": t.upper(), "season": y, "x": float(i) * sign})
+    r = {x["team"]: x for x in persistence_by_team(pl.DataFrame(rows), ["x"])}
+    assert r["d"]["r"] == pytest.approx(1.0) and r["g"]["r"] == pytest.approx(1.0) and r["d"]["n"] == 7

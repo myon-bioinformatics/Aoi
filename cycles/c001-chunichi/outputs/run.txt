@@ -8,10 +8,10 @@ Creating virtual environment at: .venv
 Downloading polars-runtime-32 (47.6MiB)
 Downloading pygments (1.2MiB)
 Downloading selectolax (2.4MiB)
- Downloaded pygments
  Downloaded selectolax
+ Downloaded pygments
  Downloaded polars-runtime-32
-Installed 15 packages in 12ms
+Installed 15 packages in 9ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -414,6 +414,11 @@ shape: (14, 12)
 - P94 前半に得失点からの見込みより多く勝っていたチームは、後半の勝率が前半より下がる: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 支持）
 - P95 得点・失点の分布から見た A クラスの見込みが4割未満、または組み合わせ方が基準より不利（alloc_z_strat < −1）、または強い相手との試合で点の差どおりに勝てていない（opp_conv_top < −2）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 支持）
 - P96 得失点差が −50 未満、または分布から見た A クラスの見込みが5割未満で期待勝利数を下回った、または得失点差が +50 未満で組み合わせ方が基準より不利なら、B クラス（誤りのほとんどない式）: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 支持 / 裏 支持）
+- P97 中日の B クラスの年は、順位の高さの線（3次式でならしたもの）に山がある（上がってから下がる）: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P98 中日以外の B クラスのチームは、順位の高さの線に山がある: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 棄却）
+- P99 中日は、貯金の線（3次式でならしたもの）に山がある（貯金を増やしてから減らす）: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P100 中日の B クラスの年は、最後の日の順位の高さの傾きが負（下がりながらシーズンを終える）: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 保留）
+- P101 中日以外の B クラスのチームは、最後の日の順位の高さの傾きが負: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -572,3 +577,8 @@ units=156 dropped=0 target: upper_half == False
 [4] P94 待った！判断保留 元の命題: 判例 36 件: s-2025, e-2023, g-2017, m-2017, f-2021 ほか
 [4] P95 待った！判断保留 元の命題: 判例 18 件: g-2018, t-2022, t-2014, e-2019, g-2012 ほか
 [1] P96 異議あり（例外あり） 元の命題: 判例 1 件: t-2015
+[4] P97 待った！判断保留 元の命題: 判例 4 件: d-2015, d-2018, d-2022, d-2025
+[1] P98 異議あり（例外あり） 元の命題: 判例 14 件: t-2012, db-2013, e-2014, e-2015, l-2016 ほか
+[4] P99 待った！判断保留 元の命題: 判例 9 件: d-2012, d-2013, d-2015, d-2019, d-2021 ほか
+[3] P100 異議あり（不成立） 元の命題: 判例 6 件: d-2015, d-2022, d-2018, d-2016, d-2025 ほか
+[3] P101 異議あり（不成立） 元の命題: 判例 31 件: e-2012, c-2019, m-2019, db-2018, b-2018 ほか

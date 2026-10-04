@@ -6,12 +6,12 @@
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
 Downloading polars-runtime-32 (47.6MiB)
-Downloading selectolax (2.4MiB)
 Downloading pygments (1.2MiB)
+Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 13ms
+Installed 15 packages in 12ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -413,6 +413,7 @@ shape: (14, 12)
 - P93 前半の失点が他球団より少なかったチームは、後半に失点が増える（他球団と比べて）: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 支持 / 裏 支持）
 - P94 前半に得失点からの見込みより多く勝っていたチームは、後半の勝率が前半より下がる: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 支持）
 - P95 得点・失点の分布から見た A クラスの見込みが4割未満、または組み合わせ方が基準より不利（alloc_z_strat < −1）、または強い相手との試合で点の差どおりに勝てていない（opp_conv_top < −2）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 支持）
+- P96 得失点差が −50 未満、または分布から見た A クラスの見込みが5割未満で期待勝利数を下回った、または得失点差が +50 未満で組み合わせ方が基準より不利なら、B クラス（誤りのほとんどない式）: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 支持 / 裏 支持）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -570,3 +571,4 @@ units=156 dropped=0 target: upper_half == False
 [1] P93 異議あり（例外あり） 元の命題: 判例 26 件: h-2025, g-2017, g-2024, c-2016, c-2013 ほか
 [4] P94 待った！判断保留 元の命題: 判例 36 件: s-2025, e-2023, g-2017, m-2017, f-2021 ほか
 [4] P95 待った！判断保留 元の命題: 判例 18 件: g-2018, t-2022, t-2014, e-2019, g-2012 ほか
+[1] P96 異議あり（例外あり） 元の命題: 判例 1 件: t-2015

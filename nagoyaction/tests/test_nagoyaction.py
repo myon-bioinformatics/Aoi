@@ -44,7 +44,7 @@ class Done:
 def test_cycle_pipeline_is_valid():
     p = na.load(CYCLE)
     assert [s["name"] for s in p["step"]] == ["fetch", "observe", "inspect", "fetch_batting", "observe_batting",
-                                              "inspect_batting", "measure", "question", "search", "judge"]
+                                              "inspect_batting", "measure", "question", "search", "search_r21", "judge"]
     assert [s["name"] for s in p["step"] if s.get("network")] == ["fetch", "fetch_batting"]  # 外に出るのは取得だけ
     names = [s["name"] for s in p["step"]]
     for s in p["step"]:  # 構造の確認は --strict で、測る前に止まれる位置にある

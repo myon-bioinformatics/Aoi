@@ -1,0 +1,100 @@
+# R21: 式1（P52）が取りこぼした 2014年も含めて B クラスを言い当てる式の候補（research/R21-formula-with-2014.md）
+# 記録: 2026-10-04。探索を実行する前に書いた。R11 の候補（rule_candidates.toml、17個）はそのまま残し、
+# 2014年の道筋（R17: 強い相手との試合で点の差どおりに勝てていない、opp_conv_top）の3個を足して、「または」を3つまでにした。
+# opp_conv_top は R17 の表で、2014年の道筋のグループ8単位の値を見ている（中日 2014 は −2.57）。
+
+target = [{ col = "upper_half", op = "==", value = false }]
+max_terms = 3   # 「または」でつなぐ組の数の上限（R11 は 2）
+max_conds = 2   # 1つの組の中の「かつ」の数の上限
+
+# 得点・失点の分布から見た A クラスの確率（R10）
+[[candidate]]
+col = "sim_p_upper"
+op = "<"
+value = 0.3
+[[candidate]]
+col = "sim_p_upper"
+op = "<"
+value = 0.4
+[[candidate]]
+col = "sim_p_upper"
+op = "<"
+value = 0.5
+[[candidate]]
+col = "sim_p_upper"
+op = "<"
+value = 0.6
+
+# 得失点差
+[[candidate]]
+col = "rd"
+op = "<"
+value = -50
+[[candidate]]
+col = "rd"
+op = "<"
+value = 0
+[[candidate]]
+col = "rd"
+op = "<"
+value = 50
+
+# 期待勝利数（ピタゴラス）との差
+[[candidate]]
+col = "wins_vs_pythag"
+op = "<"
+value = -4
+[[candidate]]
+col = "wins_vs_pythag"
+op = "<"
+value = -2
+[[candidate]]
+col = "wins_vs_pythag"
+op = "<"
+value = 0
+
+# 得点・失点のリーグ内順位
+[[candidate]]
+col = "rank_rf"
+op = ">="
+value = 4
+[[candidate]]
+col = "rank_rf"
+op = ">="
+value = 5
+[[candidate]]
+col = "rank_ra"
+op = ">="
+value = 3
+[[candidate]]
+col = "rank_ra"
+op = ">="
+value = 4
+
+# 配分（R1）・1点差（P9〜P11）・得点の効率（R9）
+[[candidate]]
+col = "alloc_z_strat"
+op = "<"
+value = -1
+[[candidate]]
+col = "one_run_net"
+op = "<"
+value = 0
+[[candidate]]
+col = "bat_d_r_runner"
+op = "<"
+value = 0
+
+# 2014年の道筋（R17）: 強い相手との試合での、点の差では説明できない勝ち負け
+[[candidate]]
+col = "opp_conv_top"
+op = "<"
+value = -1
+[[candidate]]
+col = "opp_conv_top"
+op = "<"
+value = -2
+[[candidate]]
+col = "opp_conv_top"
+op = "<"
+value = -3

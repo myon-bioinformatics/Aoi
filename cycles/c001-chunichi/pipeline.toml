@@ -75,6 +75,12 @@ name = "search"
 run = ["uv", "run", "python", "pythdragoras/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
        "--candidates", "cycles/c001-chunichi/rule_candidates.toml", "--out", "{out}/rules.jsonl"]
 
+# 5c. R21: R11 の候補に 2014年の道筋（opp_conv_top）を足し、「または」を3つまでにして探す（R11 の探索はそのまま残す）
+[[step]]
+name = "search_r21"
+run = ["uv", "run", "python", "pythdragoras/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
+       "--candidates", "cycles/c001-chunichi/rule_candidates_r21.toml", "--out", "{out}/rules_r21.jsonl"]
+
 # 6. 判定を終了コードで表示する。異議（1〜6）では止めず、仕組みの不具合（64 以上）だけを失敗にする
 [[step]]
 name = "judge"

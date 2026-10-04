@@ -55,7 +55,8 @@
   course_ra_h1_d                   前半の失点／試合の、他球団の平均との差（R20）
   course_close_win_h1(_d)          前半の勝ちのうち2点差以内の割合と、その他球団の平均との差（R20）
   traj_rank_* / traj_wl_*          日付ごとの順位の高さ・貯金の線を3次式でならした形（山・谷・その位置・最後の傾き）と、
-                                   力が一定でも山・谷ができる割合 *_base（R22。season_trajectory）
+                                   力が一定でも山・谷ができる割合 *_base（R22。season_trajectory）。traj_start_* は線の始まり
+  wave_*                           順位の線を、始まりの値から出発して減衰する波で表したもの（収束する先・決まった位置・周期、R23）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -90,6 +91,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import operator
 import random
 import sys
 import tomllib
@@ -628,6 +630,72 @@ def _shape(c: list[float], lo: float) -> dict:
             "valley": any(k == "valley" for _, k in ext), "end_slope": c[1] + 2 * c[2] + 3 * c[3]}
 
 
+WAVE_DECAYS = (0.0, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 13.0)  # 減衰の速さ λ（横軸1つ分 = 1シーズンあたり）。0 は減衰しない
+WAVE_PERIODS = (None, 2.0, 1.0, 0.75, 0.5, 1 / 3, 0.25)    # 波の周期（シーズンの何割で1周するか）。None は波なし
+WAVE_SETTLE = 0.5                                          # ゆれの幅が半順位を下回ったら「順位が決まった」とみなす
+
+
+def wave_basis(xs: list[float]) -> list[dict]:
+    """減衰する波 h(x) = L + e^(−λt)·((h0 − L)·cos ωt + B·sin ωt)（t = x − 線の始まり）を当てるための、格子ごとの量。
+
+    h0 は線の始まり（全球団が決めた試合数に届いた日）の値そのもので、当てはめで動かさない（切片を置かない）。
+    λ と周期は格子から選び、L（収束する先）と B（始まりの傾きを決める量）は最小二乗で決める。どの格子でも連続で微分できる。
+    """
+    t = [x - xs[0] for x in xs]
+    # 同じ当てはまりなら簡単なほうを選ぶ順: 波なしで近づく → 減衰する波 → 減衰しない波（始まりの値のまま動かない線は候補にしない）
+    grid = ([(lam, None) for lam in WAVE_DECAYS if lam > 0]
+            + [(lam, per) for lam in WAVE_DECAYS if lam > 0 for per in WAVE_PERIODS if per]
+            + [(0.0, per) for per in WAVE_PERIODS if per])
+    out = []
+    for lam, per in grid:
+        w = 2 * math.pi / per if per else 0.0
+        ec = [math.exp(-lam * u) * math.cos(w * u) for u in t]
+        es = [math.exp(-lam * u) * math.sin(w * u) for u in t]
+        sec, sec2, sese = sum(ec), sum(e * e for e in ec), sum(a * b for a, b in zip(ec, es))
+        out.append({"lam": lam, "per": per, "w": w, "ec": ec, "es": es, "sec": sec, "sec2": sec2, "sese": sese,
+                    "uu": len(t) - 2 * sec + sec2, "uv": sum(es) - sese, "vv": sum(e * e for e in es)})
+    return out
+
+
+def wave_fit(ys: list[float], basis: list[dict], x0: float) -> dict:
+    """wave_basis の格子から、誤差の2乗和が最も小さい減衰する波を選ぶ。
+
+    返り値: limit（x → ∞ で収束する先 L。λ = 0 なら収束しないので空）、end（最後の日 x = 1 の値）、decay（λ）、
+    period（周期。波がなければ空）、settle_x（ゆれの幅 e^(−λt)·√((h0 − L)² + B²) が WAVE_SETTLE を下回る位置。
+    1 を超えればシーズン中には決まらない。減衰しなければ空）、rmse
+    """
+    h0, n = ys[0], len(ys)
+    sy, sy2 = sum(ys), sum(y * y for y in ys)
+    best = None
+    for b in basis:
+        ech = sum(map(operator.mul, b["ec"], ys))
+        ur = sy - h0 * b["sec"] - ech + h0 * b["sec2"]          # Σ u·r（u = 1 − e·cos、r = y − h0·e·cos）
+        rr = sy2 - 2 * h0 * ech + h0 * h0 * b["sec2"]            # Σ r²
+        if b["per"] is None:
+            if b["uu"] <= 1e-12:
+                continue
+            lim, bb = ur / b["uu"], 0.0
+            sse = rr - lim * ur
+        else:
+            vr = sum(map(operator.mul, b["es"], ys)) - h0 * b["sese"]   # Σ v·r（v = e·sin）
+            det = b["uu"] * b["vv"] - b["uv"] ** 2
+            if det <= 1e-12:
+                continue
+            lim, bb = (b["vv"] * ur - b["uv"] * vr) / det, (b["uu"] * vr - b["uv"] * ur) / det
+            sse = rr - lim * ur - bb * vr
+        if best is None or sse < best[0] - 1e-12:
+            best = (sse, b, lim, bb)
+    sse, b, lim, bb = best
+    amp, t1 = math.hypot(h0 - lim, bb), 1 - x0
+    if amp <= WAVE_SETTLE:
+        settle = x0
+    else:
+        settle = x0 + math.log(amp / WAVE_SETTLE) / b["lam"] if b["lam"] > 0 else None
+    end = lim + math.exp(-b["lam"] * t1) * ((h0 - lim) * math.cos(b["w"] * t1) + bb * math.sin(b["w"] * t1))
+    return {"limit": lim if b["lam"] > 0 else None, "end": end, "decay": b["lam"], "period": b["per"],
+            "settle_x": settle, "rmse": math.sqrt(max(sse, 0.0) / n)}
+
+
 def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:
     """1シーズン分の試合（日付順。各日 [(試合の番号, ホーム, ビジター), ...]）と各試合の勝者（引き分けは None）から、
     各球団の「順位の高さ」（リーグの球団数 + 1 − 順位）と貯金（勝 − 敗）を、そのリーグの線を引く日ごとに並べる。"""
@@ -647,11 +715,12 @@ def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:
     return paths
 
 
-def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS) -> pl.DataFrame:
+def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = TRAJ_MIN_GAMES) -> pl.DataFrame:
     """R22: シーズンの中の順位と貯金の線を3次式でならし、山（極大）と谷（極小）があるかを見る。
 
-    横軸は日付（そのリーグの最初の試合の日 0 〜 最後の試合の日 1）。リーグの全球団が TRAJ_MIN_GAMES 試合に届いた日から最後の日まで、
+    横軸は日付（そのリーグの最初の試合の日 0 〜 最後の試合の日 1）。リーグの全球団が min_games 試合に届いた日から最後の日まで、
     そのリーグの試合のあった日ごとの値に3次式を最小二乗で当てる。カクカクした日ごとの線を、なめらかな式に置き換えて形を読むため。
+      traj_start_games / traj_start_x / traj_start_date : 線の始まり（全球団が何試合に届いた日からか、その位置と日付）
       traj_rank_* : 順位の高さ（6球団なら 1位 = 6、6位 = 1。上がれば正）  traj_wl_* : 貯金（勝 − 敗）
       *_shape     : 線の形。rise / fall（山も谷もない）、peak（山）、valley（谷）、peak-valley / valley-peak（両方、起きた順）
       *_peak / *_peak_x : 線を引いた範囲の内側に山があるか / その位置（0〜1）。*_valley は谷があるか
@@ -659,6 +728,13 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS) -> pl.DataFrame:
       *_peak_base / *_valley_base : 力が一定（その年の勝率）でも山・谷ができる割合。実際の日程のまま、引き分けでない試合の勝敗を
                     両チームの勝率の Log5 で引き直したシーズンを sims 回作り、同じ線の引き方で数える（乱数の種は年で固定）
     山や谷は、力が一定でも順位や貯金のゆらぎだけでできる。読むときは必ず *_base と比べる。
+      traj_rank_rmse : 順位の高さの線と3次式の差の大きさ（2乗平均の平方根、順位の単位）
+    R23: 順位の高さの線に、始まりの値から出発して減衰する波（wave_fit）を当てる。順位の単位に直して:
+      wave_limit_rank : 線が収束する先の順位（減衰しなければ空）  wave_end_rank : 最後の日の値  wave_decay : λ
+      wave_period     : 波の周期（波がなければ空）  wave_osc : 波があるか  wave_rmse : 当てはまりの差の大きさ
+      wave_settle_x   : 順位が決まった位置（ゆれの幅が半順位を下回る。1 を超えればシーズン中には決まっていない）
+      wave_settle_pct : 力が一定のシーズンのうち、決まった位置が実際より早かった割合（同じなら半分数える。小さいほど実際が早い）
+      wave_osc_base   : 力が一定のシーズンのうち、波のある式が選ばれた割合
     """
     league_of = {(s, t): lg for s, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
     rows = []
@@ -677,7 +753,7 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS) -> pl.DataFrame:
                 losses[away if win == home else home] += 1
         teams = sorted({t for pr in pairs for t in pr})
         pct = {t: wins[t] / (wins[t] + losses[t]) if wins[t] + losses[t] else 0.5 for t in teams}
-        grid, proj = {}, {}
+        grid, proj, waves = {}, {}, {}
         for lg in sorted({league_of[(season, t)] for t in teams}):
             members = [t for t in teams if league_of[(season, t)] == lg]
             lg_days = [i for i, games in enumerate(days) if any(h in members or a in members for _, h, a in games)]
@@ -686,7 +762,7 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS) -> pl.DataFrame:
                 for _, h, a in games:
                     played[h] += 1
                     played[a] += 1
-                if all(played[t] >= TRAJ_MIN_GAMES for t in members):
+                if all(played[t] >= min_games for t in members):
                     start = i
                     break
             if start is None or start >= lg_days[-1]:
@@ -694,35 +770,60 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS) -> pl.DataFrame:
             o = {i: date.fromisoformat(dates[i]).toordinal() for i in lg_days}
             idx = [i for i in lg_days if i >= start]
             xs = [(o[i] - o[lg_days[0]]) / (o[lg_days[-1]] - o[lg_days[0]]) for i in idx]
-            grid[lg] = {"teams": members, "index": set(idx), "lo": xs[0]}
-            proj[lg] = cubic_projection(xs)
+            grid[lg] = {"teams": members, "index": set(idx), "lo": xs[0], "xs": xs, "date": dates[idx[0]]}
+            proj[lg], waves[lg] = cubic_projection(xs), wave_basis(xs)
         if not grid:
             continue
 
         def fit(paths):
-            return {t: [_shape([sum(p * y for p, y in zip(row, path)) for row in proj[lg]], info["lo"]) for path in paths[t]]
-                    for lg, info in grid.items() for t in info["teams"]}
+            out = {}
+            for lg, info in grid.items():
+                for t in info["teams"]:
+                    rk, wl = paths[t]
+                    cr, cw = ([sum(map(operator.mul, row, path)) for row in proj[lg]] for path in (rk, wl))
+                    out[t] = (_shape(cr, info["lo"]), _shape(cw, info["lo"]), wave_fit(rk, waves[lg], info["lo"]), cr)
+            return out
 
         actual = fit(_season_paths(days, grid, winners))
-        rng, base = random.Random(season * 1000 + 22), Counter()
+        rng, base, settles = random.Random(season * 1000 + 22), Counter(), {t: [] for t in actual}
         for _ in range(sims):
             sim = [None if win is None else (h if rng.random() < log5(pct[h], pct[a]) else a)
                    for win, (h, a) in zip(winners, pairs)]
-            for t, shapes in fit(_season_paths(days, grid, sim)).items():
-                for name, s_ in zip(("rank", "wl"), shapes):
+            for t, (rk, wl, wv, _) in fit(_season_paths(days, grid, sim)).items():
+                for name, s_ in (("rank", rk), ("wl", wl)):
                     base[(t, name, "peak")] += s_["peak"]
                     base[(t, name, "valley")] += s_["valley"]
-        for t, shapes in actual.items():
-            row = {"season": season, "team": t}
-            for name, s_ in zip(("rank", "wl"), shapes):
-                row |= {f"traj_{name}_{k}": v for k, v in s_.items()}
-                row |= {f"traj_{name}_{k}_base": base[(t, name, k)] / sims if sims else None for k in ("peak", "valley")}
-            rows.append(row)
-    schema = {"season": pl.Int32, "team": pl.Utf8}
+                base[(t, "wave", "osc")] += wv["period"] is not None
+                settles[t].append(math.inf if wv["settle_x"] is None else wv["settle_x"])
+        paths = _season_paths(days, grid, winners)
+        for lg, info in grid.items():
+            n_teams = len(info["teams"])
+            for t in info["teams"]:
+                rk, wl, wv, cr = actual[t]
+                row = {"season": season, "team": t, "traj_start_games": min_games, "traj_start_x": info["lo"],
+                       "traj_start_date": info["date"]}
+                for name, s_ in (("rank", rk), ("wl", wl)):
+                    row |= {f"traj_{name}_{k}": v for k, v in s_.items()}
+                    row |= {f"traj_{name}_{k}_base": base[(t, name, k)] / sims if sims else None for k in ("peak", "valley")}
+                fitted = [cr[0] + cr[1] * x + cr[2] * x * x + cr[3] * x ** 3 for x in info["xs"]]
+                row["traj_rank_rmse"] = math.sqrt(sum((y - f) ** 2 for y, f in zip(paths[t][0], fitted)) / len(fitted))
+                mine = math.inf if wv["settle_x"] is None else wv["settle_x"]
+                row |= {"wave_limit_rank": None if wv["limit"] is None else n_teams + 1 - wv["limit"],
+                        "wave_end_rank": n_teams + 1 - wv["end"], "wave_decay": wv["decay"], "wave_period": wv["period"],
+                        "wave_osc": wv["period"] is not None, "wave_settle_x": wv["settle_x"], "wave_rmse": wv["rmse"],
+                        "wave_settle_pct": (sum(v < mine for v in settles[t]) + 0.5 * sum(v == mine for v in settles[t]))
+                        / sims if sims else None,
+                        "wave_osc_base": base[(t, "wave", "osc")] / sims if sims else None}
+                rows.append(row)
+    schema = {"season": pl.Int32, "team": pl.Utf8, "traj_start_games": pl.Int64, "traj_start_x": pl.Float64,
+              "traj_start_date": pl.Utf8}
     for name in ("rank", "wl"):
         schema |= {f"traj_{name}_shape": pl.Utf8, f"traj_{name}_peak": pl.Boolean, f"traj_{name}_peak_x": pl.Float64,
                    f"traj_{name}_valley": pl.Boolean, f"traj_{name}_end_slope": pl.Float64,
                    f"traj_{name}_peak_base": pl.Float64, f"traj_{name}_valley_base": pl.Float64}
+    schema |= {"traj_rank_rmse": pl.Float64, "wave_limit_rank": pl.Float64, "wave_end_rank": pl.Float64,
+               "wave_decay": pl.Float64, "wave_period": pl.Float64, "wave_osc": pl.Boolean, "wave_settle_x": pl.Float64,
+               "wave_rmse": pl.Float64, "wave_settle_pct": pl.Float64, "wave_osc_base": pl.Float64}
     return pl.DataFrame(rows, schema=schema)
 
 
@@ -867,7 +968,7 @@ def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     ]
 
 
-def season_table(tg: pl.DataFrame) -> pl.DataFrame:
+def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFrame:
     m = pl.col("rf") - pl.col("ra")
     win, loss, margin = m > 0, m < 0, m.abs()
     bins = []
@@ -909,7 +1010,9 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
     st = st.join(opponent_adjusted(tg, st), on=["season", "team"], how="left")
     st = st.join(win_loss_split(tg), on=["season", "team"], how="left")
     st = st.join(season_course(tg, st), on=["season", "team"], how="left")
-    st = st.join(season_trajectory(tg), on=["season", "team"], how="left")
+    traj = trajectory or {}  # 分析設定の [trajectory]（線の始まりの試合数・力が一定のシーズンの作り直しの回数）
+    st = st.join(season_trajectory(tg, sims=int(traj.get("sims", TRAJ_SIMS)),
+                                   min_games=int(traj.get("min_games", TRAJ_MIN_GAMES))), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 
@@ -960,7 +1063,7 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
-    st = season_table(to_team_games(pl.read_ndjson(args.games), cfg["teams"]))
+    st = season_table(to_team_games(pl.read_ndjson(args.games), cfg["teams"]), trajectory=cfg.get("trajectory"))
     if args.innings:
         raw = pl.read_csv(args.innings)
         if "year" in raw.columns:  # PR #3 の形式: year, team, venue, role, window, ...

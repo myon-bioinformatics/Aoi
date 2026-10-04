@@ -5,13 +5,13 @@
 [run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
+Downloading polars-runtime-32 (47.6MiB)
 Downloading selectolax (2.4MiB)
 Downloading pygments (1.2MiB)
-Downloading polars-runtime-32 (47.6MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 11ms
+Installed 15 packages in 13ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -402,6 +402,17 @@ shape: (14, 12)
 - P82 得点した回の大きさがリーグ平均より小さいチームは、中位の相手との試合全体の点も（平均と比べて）少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 - P83 失点がリーグ2位以内のチームは、強い相手との試合全体の点が（平均と比べて）少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 保留 / 裏 保留）
 - P84 A クラスのチームは、強い相手（3位を争う相手）との試合全体の点が（平均と比べて）少ない: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P85 中日は、勝ち試合の得点が、自分の得点・失点の分布から見込まれるより少ない（勝つときは投手戦で勝っている）: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P86 中日は、負け試合の得点が、自分の得点・失点の分布から見込まれるより多い（点を取っても負けている）: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P87 中日は、両チームの合計得点がリーグの中央値より多い試合の勝率が、見込みより低い（点の多い試合を制せない）: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 保留）
+- P88 中日は、後半の勝率が前半より低い: **exit 4 待った！判断保留** （元 保留 / 対偶 保留）
+- P89 中日の B クラスの年は、前半の勝率ではリーグ3位以内にいた（前半は上位にいて、後半に落ちた）: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
+- P90 中日以外の B クラスのチームは、前半の勝率ではリーグ3位以内にいた: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
+- P91 前半の勝ちが（他球団より）接戦に偏ったチームは、後半に失点が増える（他球団と比べて）: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P92 前半の勝ちが（他球団より）接戦に偏ったチームは、後半の勝率が前半より下がる: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P93 前半の失点が他球団より少なかったチームは、後半に失点が増える（他球団と比べて）: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 支持 / 裏 支持）
+- P94 前半に得失点からの見込みより多く勝っていたチームは、後半の勝率が前半より下がる: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 支持）
+- P95 得点・失点の分布から見た A クラスの見込みが4割未満、または組み合わせ方が基準より不利（alloc_z_strat < −1）、または強い相手との試合で点の差どおりに勝てていない（opp_conv_top < −2）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 支持）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -451,6 +462,18 @@ units=156 dropped=0 target: upper_half == False
  8. mcc=0.816 成立率=0.97 逆=0.83 条件=3  [rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0]
  9. mcc=0.816 成立率=0.85 逆=0.97 条件=3  [sim_p_upper < 0.5] または [alloc_z_strat < -1 かつ one_run_net < 0]
 10. mcc=0.816 成立率=0.97 逆=0.83 条件=4  [sim_p_upper < 0.3 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0]
+[run] search_r21: uv run python pythdragoras/rule_search.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --candidates cycles/c001-chunichi/rule_candidates_r21.toml --out cycles/c001-chunichi/outputs/rules_r21.jsonl
+units=156 dropped=0 target: upper_half == False
+ 1. mcc=0.865 成立率=0.99 逆=0.87 条件=5  [rd < -50] または [sim_p_upper < 0.5 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
+ 2. mcc=0.865 成立率=0.99 逆=0.87 条件=6  [sim_p_upper < 0.3 かつ rd < -50] または [sim_p_upper < 0.5 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
+ 3. mcc=0.865 成立率=0.99 逆=0.87 条件=6  [sim_p_upper < 0.4 かつ rd < -50] または [sim_p_upper < 0.5 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
+ 4. mcc=0.865 成立率=0.99 逆=0.87 条件=6  [sim_p_upper < 0.5 かつ rd < -50] または [sim_p_upper < 0.5 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
+ 5. mcc=0.865 成立率=0.99 逆=0.87 条件=6  [sim_p_upper < 0.5 かつ wins_vs_pythag < 0] または [sim_p_upper < 0.6 かつ rd < -50] または [rd < 50 かつ alloc_z_strat < -1]
+ 6. mcc=0.862 成立率=0.97 逆=0.88 条件=5  [rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
+ 7. mcc=0.862 成立率=0.97 逆=0.88 条件=6  [sim_p_upper < 0.3 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
+ 8. mcc=0.862 成立率=0.97 逆=0.88 条件=6  [sim_p_upper < 0.4 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
+ 9. mcc=0.862 成立率=0.97 逆=0.88 条件=6  [sim_p_upper < 0.5 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
+10. mcc=0.862 成立率=0.97 逆=0.88 条件=6  [sim_p_upper < 0.6 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
 [run] judge: uv run python pythdragoras/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --report-only
 [4] P1 待った！判断保留 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 [1] P2 異議あり（例外あり） 元の命題: 判例 11 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
@@ -536,3 +559,14 @@ units=156 dropped=0 target: upper_half == False
 [4] P82 待った！判断保留 元の命題: 判例 32 件: s-2013, g-2023, c-2021, b-2019, s-2014 ほか
 [4] P83 待った！判断保留 元の命題: 判例 19 件: g-2018, h-2021, t-2017, h-2017, h-2024 ほか
 [4] P84 待った！判断保留 元の命題: 判例 38 件: s-2021, l-2017, g-2018, m-2021, db-2019 ほか
+[4] P85 待った！判断保留 元の命題: 判例 1 件: d-2021
+[4] P86 待った！判断保留 元の命題: 判例 2 件: d-2012, d-2013
+[3] P87 異議あり（不成立） 元の命題: 判例 7 件: d-2021, d-2013, d-2012, d-2024, d-2025 ほか
+[4] P88 待った！判断保留 元の命題: 判例 6 件: d-2022, d-2019, d-2013, d-2023, d-2012 ほか
+[3] P89 異議あり（不成立） 元の命題: 判例 10 件: d-2015, d-2017, d-2018, d-2021, d-2023 ほか
+[3] P90 異議あり（不成立） 元の命題: 判例 49 件: l-2021, f-2023, b-2013, db-2014, s-2014 ほか
+[4] P91 待った！判断保留 元の命題: 判例 42 件: d-2022, db-2021, m-2015, db-2022, h-2012 ほか
+[4] P92 待った！判断保留 元の命題: 判例 40 件: c-2021, s-2025, e-2023, g-2017, m-2017 ほか
+[1] P93 異議あり（例外あり） 元の命題: 判例 26 件: h-2025, g-2017, g-2024, c-2016, c-2013 ほか
+[4] P94 待った！判断保留 元の命題: 判例 36 件: s-2025, e-2023, g-2017, m-2017, f-2021 ほか
+[4] P95 待った！判断保留 元の命題: 判例 18 件: g-2018, t-2022, t-2014, e-2019, g-2012 ほか

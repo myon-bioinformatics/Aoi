@@ -126,11 +126,11 @@ def _poisson_binomial(ps: list[float]) -> list[float]:
     return dist
 
 
-TRAJ_FLAGS = ("traj_rank_peak", "traj_rank_valley", "traj_wl_peak", "traj_wl_valley")
+TRAJ_FLAGS = ("traj_rank_peak", "traj_rank_valley", "traj_wl_peak", "traj_wl_valley", "wave_osc")
 
 
 def shape_expectation(st: pl.DataFrame) -> list[dict]:
-    """R22: シーズンの線の山・谷の数を、力が一定のときの見込み（各単位の *_base を独立な確率とした和）と比べる。
+    """R22・R23: シーズンの線の山・谷（と波）の数を、力が一定のときの見込み（各単位の *_base を独立な確率とした和）と比べる。
 
     群: 全体・A クラス・B クラス・各球団・各球団の B クラス。p_ge_obs が小さいほど、力が一定のときより山（谷）が多い。
     """

@@ -86,6 +86,18 @@ def persistence(st: pl.DataFrame, cols: list[str]) -> list[dict]:
     return out
 
 
+def persistence_by_team(st: pl.DataFrame, cols: list[str]) -> list[dict]:
+    """R14: チームごとの、隣り合うシーズンの相関。全体の相関（persistence）と並べ、どのチームの特徴が続くかを見る。
+
+    1チームの組は12前後しかないので、区間は広い。値の大小より、全体との違いを読む。
+    """
+    out = []
+    for (team,), g in st.sort("season").group_by(["team"], maintain_order=True):
+        for r in persistence(g, cols):
+            out.append({"team": team, "team_name": g["team_name"][0], **r})
+    return out
+
+
 def allocation_cumulative(st: pl.DataFrame) -> pl.DataFrame:
     """配分効果の期間合計。z = Σ alloc_net / √Σ alloc_var（シーズンを独立とみなす）。"""
     if "alloc_net" not in st.columns:
@@ -324,6 +336,9 @@ def main(argv=None) -> int:
         alloc.write_ndjson(args.outdir / "allocation.jsonl")
     _jsonl(args.outdir / "persistence.jsonl", pers)
     _jsonl(args.outdir / "rank_expectation.jsonl", rank_expectation(included))
+    keep = ["inn_dlog_size", "rf_def_total", "sim_p_upper", "wpct"]
+    _jsonl(args.outdir / "persistence_by_team.jsonl", persistence_by_team(included, keep))
+    _jsonl(args.outdir / "persistence_all.jsonl", persistence(included, keep))
 
     if args.propositions:
         try:

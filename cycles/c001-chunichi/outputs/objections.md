@@ -1,7 +1,7 @@
 # 異議あり — 命題の判定記録（自動生成）
 
 判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。
-命題ファイル SHA-256: `dd709b7f96d4fbfe50aa80ba6ce381c5485819d16fe8a6ac29ee7abb3f9c9089` / コード: `5179dbd39ca2e78fa1208ef7ae340b1aedb7900b`
+命題ファイル SHA-256: `9a031111ad04aa81adb8888f3452c60da99c365455f0c7546a8052de04661fe2` / コード: `a24c7c15c40be239511785e483dec1b34f2f767d`
 
 判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。
 
@@ -292,6 +292,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 8 件: t-2015, t-2019, t-2022, c-2023, h-2012 ほか
 - もし: `rank_rf >= 5` ならば: `upper_half == False`
 - 識別子: `[all] rank_rf>=5 => upper_half==false`（指紋 `b7529d85063bb804`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P52
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 条件の数: 2（例外条件を増やしすぎていないかの目安）
 - 台帳: 評価 9 回、元の命題に異議あり 9 回（どれかの形に異議あり 9 回）、直近で元の命題に判例がない連続 0 回
@@ -2435,3 +2436,63 @@
   - 中日 2019 は「（すべての単位）」を満たすのに「sim_p_upper < 0.5」を満たさない。なぜか？ → H2, H3
 - 中日 2014 **(focus)**: sim_p_upper=0.543, rank=4, rd=-20, rank_rf=5, rank_ra=2 / surprise=0.543
   - 中日 2014 は「（すべての単位）」を満たすのに「sim_p_upper < 0.5」を満たさない。なぜか？ → H2, H3
+
+## P52: 得点・失点の分布から見た A クラスの確率が4割未満、または得点と失点の組み合わせ方が偶然の範囲を超えて不利（alloc_z_strat < −1）なら、B クラス
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 10 件: t-2015, t-2022, m-2013, t-2014, m-2015 ほか
+- もし: `（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）` ならば: `upper_half == False`
+- 識別子: `[all] ((alloc_z_strat<-1) | (sim_p_upper<0.4)) => upper_half==false`（指紋 `9b39490e840f2e44`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P5
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: 2026年以降のデータで、この前件を満たすチーム・シーズンの4分の1を超えて A クラス、または B クラスの4分の1を超えて前件を満たさない
+- 注記: 探索（R11）で見つけた式。作るきっかけと同じデータでの判定は確かめではない。逆（B クラス ⇒ 前件）が「なぜ B クラスか」の説明の網羅性にあたる
+- 条件の数: 3（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 83 | 73 | 0.88 [0.79, 0.93] | 0.50 | 1.76 | 0.000 | 0 | 支持 | 1 |
+| 対偶 | 78 | 68 | 0.87 [0.78, 0.93] | 0.47 | 1.86 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 78 | 73 | 0.94 [0.86, 0.97] | 0.53 | 1.76 | 0.000 | 0 | 支持 | 1 |
+| 裏 | 73 | 68 | 0.93 [0.85, 0.97] | 0.50 | 1.86 | 0.000 | 0 | 支持 | 1 |
+
+**異議あり（例外あり）** 元の命題に判例 10 件（対偶の判例も同じ）
+
+- 阪神 2015: sim_p_upper=0.234, alloc_z_strat=+1.44, upper_half=True, rank=3, rd=-85, wins_vs_pythag=+10.25 / surprise=-3
+  - 阪神 2015 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- 阪神 2022: sim_p_upper=0.832, alloc_z_strat=-2.14, upper_half=True, rank=3, rd=61, wins_vs_pythag=-9.93 / surprise=2
+  - 阪神 2022 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- ロッテ 2013: sim_p_upper=0.222, alloc_z_strat=+1.64, upper_half=True, rank=3, rd=-12, wins_vs_pythag=+4.35 / surprise=-1
+  - ロッテ 2013 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- 阪神 2014: sim_p_upper=0.293, alloc_z_strat=+2.46, upper_half=True, rank=2, rd=-15, wins_vs_pythag=+5.12 / surprise=-1
+  - 阪神 2014 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- ロッテ 2015: sim_p_upper=0.262, alloc_z_strat=+1.33, upper_half=True, rank=3, rd=-2, wins_vs_pythag=+2.23 / surprise=-1
+  - ロッテ 2015 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- DeNA 2017: sim_p_upper=0.317, alloc_z_strat=+1.71, upper_half=True, rank=3, rd=-1, wins_vs_pythag=+4.11 / surprise=-1
+  - DeNA 2017 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- 巨人 2018: sim_p_upper=0.817, alloc_z_strat=-1.75, upper_half=True, rank=3, rd=50, wins_vs_pythag=-7.25 / surprise=1
+  - 巨人 2018 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- ヤクルト 2012: sim_p_upper=0.399, alloc_z_strat=+1.53, upper_half=True, rank=3, rd=-15, wins_vs_pythag=+3.30 / surprise=0
+  - ヤクルト 2012 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- ソフトバンク 2022: sim_p_upper=0.928, alloc_z_strat=-1.10, upper_half=True, rank=1, rd=84, wins_vs_pythag=-5.01 / surprise=0
+  - ソフトバンク 2022 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+- 阪神 2025: sim_p_upper=1.000, alloc_z_strat=-1.53, upper_half=True, rank=1, rd=144, wins_vs_pythag=-5.62 / surprise=0
+  - 阪神 2025 は「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2, H3, H9
+
+**異議あり（例外あり）** 逆に判例 5 件（裏の判例も同じ）
+
+- 楽天 2012: sim_p_upper=0.425, alloc_z_strat=0.135, upper_half=False, rank=4, rd=24, wins_vs_pythag=-3.07 / surprise=1
+  - 楽天 2012 は「upper_half == False」を満たすのに「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たさない。なぜか？ → H2, H3, H9
+- 広島 2019: sim_p_upper=0.487, alloc_z_strat=0.232, upper_half=False, rank=4, rd=-10, wins_vs_pythag=+1.07 / surprise=1
+  - 広島 2019 は「upper_half == False」を満たすのに「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たさない。なぜか？ → H2, H3, H9
+- 巨人 2023: sim_p_upper=0.738, alloc_z_strat=-0.914, upper_half=False, rank=4, rd=16, wins_vs_pythag=-1.50 / surprise=1
+  - 巨人 2023 は「upper_half == False」を満たすのに「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たさない。なぜか？ → H2, H3, H9
+- 中日 2014 **(focus)**: sim_p_upper=0.543, alloc_z_strat=-0.752, upper_half=False, rank=4, rd=-20, wins_vs_pythag=-0.792 / surprise=0
+  - 中日 2014 は「upper_half == False」を満たすのに「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たさない。なぜか？ → H2, H3, H9
+- 阪神 2016: sim_p_upper=0.438, alloc_z_strat=-0.594, upper_half=False, rank=4, rd=-40, wins_vs_pythag=-1.13 / surprise=0
+  - 阪神 2016 は「upper_half == False」を満たすのに「（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）」を満たさない。なぜか？ → H2, H3, H9
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- 中日 2020 **(focus)**: sim_p_upper=0.371, alloc_z_strat=+1.36, upper_half=True, rank=3, rd=-60, wins_vs_pythag=+9.35
+- 西武 2020: sim_p_upper=0.200, alloc_z_strat=+2.26, upper_half=True, rank=3, rd=-64, wins_vs_pythag=+6.63

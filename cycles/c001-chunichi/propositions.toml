@@ -688,3 +688,19 @@ context = ["rank", "rd", "rank_rf", "rank_ra"]
 links = ["H2", "H3"]
 falsifier = "中日のシーズンの4分の1を超えて、作り直しで A クラスに入る確率が 0.5 以上"
 note = "中日の各年が、得点・失点の分布の時点で B クラス寄りだったか。チーム全体の比較は outputs/rank_expectation.jsonl"
+
+# ---- R11: B クラスを言い当てる条件の組み合わせ（research/R11-b-class-rule.md） ----
+# 追加: 2026-10-04。rule_search.py の結果（outputs/rules.jsonl）を見た後に作った。確かめは 2026年以降のデータで行う。
+# 最上位の式（条件3つ、相関 0.821）と条件2つまでの最良（0.809）の差が 0.02 未満なので、計画どおり少ないほうを採った。
+
+[[proposition]]
+id = "P52"
+statement = "得点・失点の分布から見た A クラスの確率が4割未満、または得点と失点の組み合わせ方が偶然の範囲を超えて不利（alloc_z_strat < −1）なら、B クラス"
+strength = "usually"
+if_any = [[{ col = "sim_p_upper", op = "<", value = 0.4 }], [{ col = "alloc_z_strat", op = "<", value = -1 }]]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rank_gap"
+context = ["rank", "sim_p_upper", "alloc_z_strat", "rd", "wins_vs_pythag"]
+links = ["H2", "H3", "H9"]
+falsifier = "2026年以降のデータで、この前件を満たすチーム・シーズンの4分の1を超えて A クラス、または B クラスの4分の1を超えて前件を満たさない"
+note = "探索（R11）で見つけた式。作るきっかけと同じデータでの判定は確かめではない。逆（B クラス ⇒ 前件）が「なぜ B クラスか」の説明の網羅性にあたる"

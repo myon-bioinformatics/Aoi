@@ -619,3 +619,4 @@ def test_season_trajectory_start_is_configurable_and_recorded():
     # d は線を引く間ずっと1位（最後の日は同率1位）。動かない線は、いちばん簡単な「波なしで近づく」式で、収束する先も1位
     assert (a["wave_limit_rank"], a["wave_end_rank"], a["wave_period"]) == (pytest.approx(1.0), pytest.approx(1.0), None)
     assert a["wave_settle_x"] == pytest.approx(a["traj_start_x"]) and 0 <= a["wave_settle_pct"] <= 1
+    assert a["wave_limit_rank_h1"] == pytest.approx(1.0)   # 前半（横軸 0.5 まで）だけから当てても1位に向かう

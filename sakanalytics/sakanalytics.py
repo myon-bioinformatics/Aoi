@@ -735,6 +735,7 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
       wave_settle_x   : 順位が決まった位置（ゆれの幅が半順位を下回る。1 を超えればシーズン中には決まっていない）
       wave_settle_pct : 力が一定のシーズンのうち、決まった位置が実際より早かった割合（同じなら半分数える。小さいほど実際が早い）
       wave_osc_base   : 力が一定のシーズンのうち、波のある式が選ばれた割合
+      wave_limit_rank_h1 : 前半（横軸 0.5 まで）の線だけから当てた波が収束する先の順位（前半でもう行き先が見えていたか）
     """
     league_of = {(s, t): lg for s, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
     rows = []
@@ -770,8 +771,10 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
             o = {i: date.fromisoformat(dates[i]).toordinal() for i in lg_days}
             idx = [i for i in lg_days if i >= start]
             xs = [(o[i] - o[lg_days[0]]) / (o[lg_days[-1]] - o[lg_days[0]]) for i in idx]
-            grid[lg] = {"teams": members, "index": set(idx), "lo": xs[0], "xs": xs, "date": dates[idx[0]]}
+            half = sum(x <= 0.5 for x in xs)  # 前半（横軸 0.5 まで）だけから当てる波（行き先がもう見えていたか）
+            grid[lg] = {"teams": members, "index": set(idx), "lo": xs[0], "xs": xs, "date": dates[idx[0]], "half": half}
             proj[lg], waves[lg] = cubic_projection(xs), wave_basis(xs)
+            waves[(lg, "h1")] = wave_basis(xs[:half]) if half >= 3 else None
         if not grid:
             continue
 
@@ -808,6 +811,9 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
                 fitted = [cr[0] + cr[1] * x + cr[2] * x * x + cr[3] * x ** 3 for x in info["xs"]]
                 row["traj_rank_rmse"] = math.sqrt(sum((y - f) ** 2 for y, f in zip(paths[t][0], fitted)) / len(fitted))
                 mine = math.inf if wv["settle_x"] is None else wv["settle_x"]
+                h1 = waves[(lg, "h1")]
+                w1 = wave_fit(paths[t][0][: info["half"]], h1, info["lo"]) if h1 else None
+                row["wave_limit_rank_h1"] = None if w1 is None or w1["limit"] is None else n_teams + 1 - w1["limit"]
                 row |= {"wave_limit_rank": None if wv["limit"] is None else n_teams + 1 - wv["limit"],
                         "wave_end_rank": n_teams + 1 - wv["end"], "wave_decay": wv["decay"], "wave_period": wv["period"],
                         "wave_osc": wv["period"] is not None, "wave_settle_x": wv["settle_x"], "wave_rmse": wv["rmse"],
@@ -823,7 +829,8 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
                    f"traj_{name}_peak_base": pl.Float64, f"traj_{name}_valley_base": pl.Float64}
     schema |= {"traj_rank_rmse": pl.Float64, "wave_limit_rank": pl.Float64, "wave_end_rank": pl.Float64,
                "wave_decay": pl.Float64, "wave_period": pl.Float64, "wave_osc": pl.Boolean, "wave_settle_x": pl.Float64,
-               "wave_rmse": pl.Float64, "wave_settle_pct": pl.Float64, "wave_osc_base": pl.Float64}
+               "wave_rmse": pl.Float64, "wave_settle_pct": pl.Float64, "wave_osc_base": pl.Float64,
+               "wave_limit_rank_h1": pl.Float64}
     return pl.DataFrame(rows, schema=schema)
 
 

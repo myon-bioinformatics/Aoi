@@ -46,6 +46,12 @@
   opp_rf_gap_*_c / opp_ra_gap_*_c  同じ年・同じリーグの全球団の平均を引いた値（見込みの式の、相手グループごとの偏りを除く）
   opp_net_gap_*_c / opp_env_gap_*_c  上の2つを回した軸（R17）。net = 得点の差 + 失点の差（どちらが上回ったか）、
                                    env = 得点の差 − 失点の差（試合全体の点の多さ。負なら点の入りにくい試合）
+  wl_rf_win / wl_rf_loss (+ _exp / _gap)  勝ち試合・負け試合の得点／試合と、得点・失点の組み合わせだけをランダムにしたときの見込み、その差（R20）
+  wl_wpct_low / wl_wpct_high (+ _exp / _gap)  両チームの合計得点が、リーグの試合の中央値以下／より多い試合の勝率と、その見込み・差（R20）
+  course_wpct_h1 / _h2 / _diff     前半・後半の勝率と、後半 − 前半（R20）
+  course_rank_h1 / course_fade     前半の勝率での順位と、最終順位 − その順位（正なら前半の位置より下で終わった、R20）
+  course_rf_d / course_ra_d        後半と前半の得点／試合・失点／試合の差の、他球団の平均との差（R20）
+  course_close_win_h1(_d)          前半の勝ちのうち2点差以内の割合と、その他球団の平均との差（R20）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -466,6 +472,103 @@ def boundary_features(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
     return out.drop("league", "rank")
 
 
+def _vs_others(c: str, over=("season", "league")) -> pl.Expr:
+    """同じ年・同じリーグの他球団の平均との差。比べる他球団がいなければ空（0 で割った値を残さない）。"""
+    x, n = pl.col(c), pl.col(c).count().over(over)
+    return pl.when(x.is_not_null() & (n > 1)).then(x - (x.sum().over(over) - x) / (n - 1))
+
+
+def _wl_sums(pairs, cut: float) -> dict[str, float]:
+    """(得点, 失点, 重み) の並びから、勝ち・負けの数と得点の和、点の少ない・多い試合の勝ち数と勝敗のついた数を足す。"""
+    s = dict.fromkeys(("n_win", "rf_win", "n_loss", "rf_loss", "w_low", "d_low", "w_high", "d_high"), 0.0)
+    for x, y, w in pairs:
+        if x == y:
+            continue
+        side = "low" if x + y <= cut else "high"
+        s[f"d_{side}"] += w
+        if x > y:
+            s["n_win"], s["rf_win"], s[f"w_{side}"] = s["n_win"] + w, s["rf_win"] + w * x, s[f"w_{side}"] + w
+        else:
+            s["n_loss"], s["rf_loss"] = s["n_loss"] + w, s["rf_loss"] + w * x
+    return s
+
+
+def win_loss_split(tg: pl.DataFrame) -> pl.DataFrame:
+    """R20: 勝ち試合・負け試合の得点と、点の少ない試合・多い試合の勝率。
+
+    見込みは、同じチーム・同じシーズンの得点と失点を、ホームとビジターそれぞれの中で組み合わせだけランダムにしたときの値
+    （alloc_*_strat と同じ基準。球場の違いは組み合わせの中にとどまるので、係数は使わない）。点の数え上げで厳密に計算する。
+      wl_rf_win / wl_rf_loss             : 勝ち試合・負け試合の得点／試合（実際）
+      wl_rf_win_exp / wl_rf_loss_exp     : 同じ量の見込み（「この得点・失点の分布なら、勝つときは平均何点で勝つはずか」）
+      wl_rf_win_gap / wl_rf_loss_gap     : 実際 − 見込み。勝ちで負なら勝ち試合は見込みより点が少ない（投手戦で勝った）、
+                                           負けで正なら負け試合に見込みより多くの点が入った
+      wl_wpct_low / wl_wpct_high         : 両チームの合計得点が、同じ年・同じリーグの試合の中央値以下／より多い試合の勝率
+      wl_wpct_low_exp / _high_exp / _gap : その見込み（見込みの勝ち数 ÷ 見込みの勝敗のついた試合数）と、実際 − 見込み
+    """
+    tot = tg.with_columns(_t=pl.col("rf") + pl.col("ra")).group_by("season", "league").agg(pl.col("_t").median())
+    cut = {(s, lg): m for s, lg, m in tot.iter_rows()}
+    keys = (("rf_win", "rf_win", "n_win"), ("rf_loss", "rf_loss", "n_loss"),
+            ("wpct_low", "w_low", "d_low"), ("wpct_high", "w_high", "d_high"))
+    rows = []
+    for (season, team), g in tg.group_by(["season", "team"], maintain_order=True):
+        m = cut[(season, g["league"][0])]
+        rf, ra, home = g["rf"].to_list(), g["ra"].to_list(), g["is_home"].to_list()
+        exp_pairs = []
+        for venue in (True, False):
+            cx = Counter(x for x, h in zip(rf, home) if h == venue)
+            cy = Counter(y for y, h in zip(ra, home) if h == venue)
+            n = sum(cx.values())
+            exp_pairs += [(x, y, cx[x] * cy[y] / n) for x in cx for y in cy]
+        act, exp = _wl_sums([(x, y, 1.0) for x, y in zip(rf, ra)], m), _wl_sums(exp_pairs, m)
+        row = {"season": season, "team": team}
+        for name, num, den in keys:
+            a = act[num] / act[den] if act[den] else None
+            e = exp[num] / exp[den] if exp[den] else None
+            row |= {f"wl_{name}": a, f"wl_{name}_exp": e, f"wl_{name}_gap": a - e if a is not None and e is not None else None}
+        rows.append(row)
+    schema = {"season": pl.Int32, "team": pl.Utf8,
+              **{f"wl_{n}{s}": pl.Float64 for n, _, _ in keys for s in ("", "_exp", "_gap")}}
+    return pl.DataFrame(rows, schema=schema)
+
+
+def season_course(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
+    """R20: シーズンの前半と後半。各チームの試合数で半分に分ける（half1_vs_pythag と同じ分け方）。st には最終順位が要る。
+
+      course_wpct_h1 / course_wpct_h2 : 前半・後半の勝率（引き分けを除く）。course_wpct_diff = 後半 − 前半（負なら後半に落ちた）
+      course_rank_h1                  : 前半の勝率でのリーグ内の順位（ある日付の順位表ではなく、各チームの前半の試合だけで並べたもの）
+      course_fade                     : 最終順位 − course_rank_h1（正なら、前半の位置より下で終わった）
+      course_rf_d / course_ra_d       : （後半の得点／試合 − 前半の得点／試合）の、同じ年・同じリーグの他球団の平均との差。失点も同じ
+                                        （季節による点の入りやすさの変化を他球団の平均で除く）
+      course_close_win_h1             : 前半の勝ちのうち、2点差以内の勝ちの割合
+      course_close_win_h1_d           : その、他球団の平均との差（正なら、前半の勝ちが接戦に偏っていた）
+    """
+    def wpct(rf, ra):
+        w, l_ = sum(x > y for x, y in zip(rf, ra)), sum(x < y for x, y in zip(rf, ra))
+        return w / (w + l_) if w + l_ else None
+
+    def change(v, half):
+        return sum(v[half:]) / len(v[half:]) - sum(v[:half]) / len(v[:half]) if half and len(v) > half else None
+
+    rows = []
+    for (season, team), g in tg.sort("date").group_by(["season", "team"], maintain_order=True):
+        rf, ra = g["rf"].to_list(), g["ra"].to_list()
+        half = len(rf) // 2
+        wins = [x - y for x, y in zip(rf[:half], ra[:half]) if x > y]
+        rows.append({"season": season, "team": team,
+                     "course_wpct_h1": wpct(rf[:half], ra[:half]), "course_wpct_h2": wpct(rf[half:], ra[half:]),
+                     "_rf": change(rf, half), "_ra": change(ra, half),
+                     "course_close_win_h1": sum(m <= 2 for m in wins) / len(wins) if wins else None})
+    schema = {"season": pl.Int32, "team": pl.Utf8, "course_wpct_h1": pl.Float64, "course_wpct_h2": pl.Float64,
+              "_rf": pl.Float64, "_ra": pl.Float64, "course_close_win_h1": pl.Float64}
+    over = ["season", "league"]
+    out = st.select("season", "team", "league", "rank").join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
+    out = out.with_columns(course_wpct_diff=pl.col("course_wpct_h2") - pl.col("course_wpct_h1"),
+                           course_rank_h1=pl.col("course_wpct_h1").rank("min", descending=True).over(over).cast(pl.Int32))
+    out = out.with_columns(course_fade=pl.col("rank") - pl.col("course_rank_h1"), course_rf_d=_vs_others("_rf"),
+                           course_ra_d=_vs_others("_ra"), course_close_win_h1_d=_vs_others("course_close_win_h1"))
+    return out.drop("league", "rank", "_rf", "_ra")
+
+
 def log5(p: float, q: float) -> float:
     """勝率 p のチームが勝率 q のチームに勝つ見込み（Log5）。リーグ平均 .500 を基準にした形。"""
     d = p + q - 2 * p * q
@@ -647,6 +750,8 @@ def season_table(tg: pl.DataFrame) -> pl.DataFrame:
     st = st.join(rank_probability(tg), on=["season", "team"], how="left")
     st = st.join(boundary_features(tg, st), on=["season", "team"], how="left")
     st = st.join(opponent_adjusted(tg, st), on=["season", "team"], how="left")
+    st = st.join(win_loss_split(tg), on=["season", "team"], how="left")
+    st = st.join(season_course(tg, st), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 

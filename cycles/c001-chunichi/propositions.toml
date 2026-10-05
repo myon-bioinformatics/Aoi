@@ -1989,3 +1989,18 @@ context = ["rank", "rf_adv", "ra_adv", "rd"]
 links = ["H2"]
 falsifier = "（P141 と率を比べるための命題）"
 note = "中日の 2012・2019・2021年の区分。P140 の範囲から中日を除いたもの（P140 の得失点差プラスの単位は見ている）"
+
+# 追加: 2026-10-05。R36 の結果を見た後の命題。範囲の12単位（中日 2019 を含む。2020年は除外）の値はすべて見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P143"
+statement = "得点の不足も失点の優位も誤差を超えている（得点 −1・失点 +1）チームは、上の相手（1・2位）との勝率が .47 以上なら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_zone_se", op = "==", value = -1 }, { col = "ra_zone_se", op = "==", value = 1 }] }
+if = [{ col = "vs_top_wpct", op = ">=", value = 0.47 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "vs_top_wpct"
+context = ["rank", "rd", "wins_vs_pythag", "one_run_net", "opp_net_gap_top_c"]
+links = ["H3"]
+falsifier = "2026年以降、この形で上の相手に .47 以上なのに B、または .47 未満なのに A の単位が続く"
+note = "R36 で、同じ形の A 5単位（.48〜.57）と B 6単位（.34〜.46）を分けた唯一の指標。境は見た後。上の相手は最終順位で決めるので、A かどうかと算術でつながる面がある"

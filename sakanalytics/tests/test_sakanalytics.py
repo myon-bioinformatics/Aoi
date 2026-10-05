@@ -991,3 +991,15 @@ def test_league_bar_uses_only_the_other_teams():
     # 上位3球団（a・b・c）は、ほかの5球団の3番目 = d の .52 を越えれば入る。下位（d・e・f）は c の .53
     assert out == pytest.approx({"a": 0.52, "b": 0.52, "c": 0.52, "d": 0.53, "e": 0.53, "f": 0.53})
     assert all((wp > out[t]) == (t in "abc") for t, wp in zip("abcdef", w))
+
+
+
+def test_mix_zone_on_another_column_with_prefix():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000, 2000, 2001], "team": ["a", "b", "c"], "wpct": [.50, .52, .50],
+                       "live_wpct": [.49, .51, None], "upper_half": [True, False, True]})
+    out = {r["team"]: r for r in sa.add_mix_zone(st, col="live_wpct", prefix="live_mix").iter_rows(named=True)}
+    assert out["c"]["live_mix_lo"] == pytest.approx(.49) and out["c"]["live_mix_hi"] == pytest.approx(.51)
+    assert out["c"]["live_mix_zone"] is None            # 自分の値が空なら空
+    assert "mix_zone" not in out["c"]                   # 元の列は作らない

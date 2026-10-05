@@ -40,6 +40,20 @@
 uv run python pythdragoras/propositions.py next cycles/c001-chunichi/outputs/propositions.jsonl --reading 1 2
 ```
 
+## 命題の集合（`sets.py`、R48）
+
+登録した命題の条件を集合として名前で呼び（`from` に命題の id、`part` に if・then・where）、集合の式（`&` かつ、`|` または、`~` でない）を命題として判定する。式は「かつ」の組を「または」で並べた形に直して、4つの形・終了コード・判例を命題と同じ規則で出す。
+
+- 焦点の球団の後件に当たる単位（中日の B の年など）のうち、式に入るものの数（**覆い**）を出す
+- **通る** = 元の命題の形に判例がなく（終了コード 0）、焦点の後件の単位をすべて覆う。逆は求めない
+- 1つ通っても正解とは書かない。別々の命題から組んだ式が複数通ることを求める
+- 集合は登録済みの命題の条件だけから作る（新しい条件をここで書かない）。式は計算の前に `sets.toml` に書く
+
+```bash
+uv run python pythdragoras/sets.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml \
+  --propositions cycles/c001-chunichi/propositions.toml --sets cycles/c001-chunichi/sets.toml --outdir cycles/c001-chunichi/outputs --report-only
+```
+
 外部の主張（記事・レポート・他のAI）は、観測ではなく claim として登録し、パイプラインで再現できるかを確かめる。
 
 帰無仮説は各シーズンを独立とみなすため、前年からの戦力の持ち越しを無視し、珍しさを過大に見積もる。

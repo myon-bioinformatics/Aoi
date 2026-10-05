@@ -1766,7 +1766,7 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
-    tg = to_team_games(pl.read_ndjson(args.games), cfg["teams"])
+    tg = to_team_games(pl.read_ndjson(args.games, infer_schema_length=None), cfg["teams"])
     st = season_table(tg, trajectory=cfg.get("trajectory"))
     if args.innings:
         raw = pl.read_csv(args.innings)
@@ -1774,11 +1774,11 @@ def main(argv=None) -> int:
             raw = raw.filter(pl.col("role") == "off").rename({"year": "season"})
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     if args.batting:
-        st = batting_join(st, pl.read_ndjson(args.batting))
+        st = batting_join(st, pl.read_ndjson(args.batting, infer_schema_length=None))
     if args.fielding:
-        st = fielding_join(st, pl.read_ndjson(args.fielding))
+        st = fielding_join(st, pl.read_ndjson(args.fielding, infer_schema_length=None))
     if args.linescore:
-        st = linescore_join(st, tg, pl.read_ndjson(args.linescore))
+        st = linescore_join(st, tg, pl.read_ndjson(args.linescore, infer_schema_length=None))
     st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
     excl = [int(e["season"]) for e in cfg.get("exclude", [])]
     st = add_mix_zone(add_mix_zone(st, exclude=excl), exclude=excl, col="live_wpct", prefix="live_mix")

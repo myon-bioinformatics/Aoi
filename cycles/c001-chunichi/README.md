@@ -72,6 +72,7 @@ GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main �
 | `exclusions.json` | 除外したシーズンと理由 |
 | `summary.md` | 検証記録。観測した数だけを書き、原因は書かない |
 | `objections.md` | 命題ごとの判定と「異議あり」（判例の一覧、除外中の判例） |
+| `next.md` / `next.jsonl` | **次の命題の種**。元の命題と逆を並べた読み（十分条件だけ・必要条件だけなど）と、判例を「絞る」（元の判例）・「道筋」（逆の判例）に分けた一覧。判定ではない |
 | `propositions.jsonl` | 同じ内容の機械向け形式（命題ファイルの SHA-256 とコードの版つき） |
 | `claims.json` | 外部の主張の再現結果 |
 | `allocation.jsonl` | 配分効果の期間合計（R1） |

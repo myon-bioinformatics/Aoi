@@ -373,8 +373,8 @@ def main(argv=None) -> int:
     import hashlib
 
     from propositions import (DataError, PropositionError, check_claims, evaluate, judge, label, ledger_summary,
-                              confirm_units, load, render, render_claims, render_confirmation, render_index,
-                              update_ledger)
+                              confirm_units, load, reading, render, render_claims, render_confirmation, render_index,
+                              render_next, update_ledger)
 
     ap = argparse.ArgumentParser(description="シーズン表から残差・順位の偏り・命題を検証する")
     ap.add_argument("--season", type=Path, required=True)
@@ -450,6 +450,9 @@ def main(argv=None) -> int:
         _jsonl(args.outdir / "propositions.jsonl", results)
         (args.outdir / "objections.md").write_text(render(results, meta, ledger=ledger), encoding="utf-8")
         (args.outdir / "index.md").write_text(render_index(results, meta), encoding="utf-8")
+        readings = [reading(r) for r in results]  # 元の命題と逆を並べた読み。判定ではなく、次の命題の種
+        _jsonl(args.outdir / "next.jsonl", readings)
+        (args.outdir / "next.md").write_text(render_next(readings, meta), encoding="utf-8")
         if confirm:
             units = [f"{t}-{s}" for t, s in included.filter(pl.col("season").is_in(seasons))
                      .sort("season", "team").select("team", "season").iter_rows()]

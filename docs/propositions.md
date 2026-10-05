@@ -312,6 +312,37 @@ When several propositions survive, prefer the one that:
 
 "Weak" or "strong" always needs a stated comparison: weak compared with whom, over which period, measured how.
 
+## Reading The Original And The Converse Together
+
+The original (`A ⇒ B`) asks whether A is enough for B. The converse (`B ⇒ A`) asks whether B needs A.
+Reading the two verdicts side by side tells where to look next. It is a **reading**, not a verdict: it never changes an exit code.
+
+| Reading | Original | Converse | What it says |
+|---|---|---|---|
+| 0 | supported | supported | close to equivalence; the counterexamples on either side are where A and B part |
+| 1 | supported | refined or rejected | sufficient, not necessary: other units reach B without A |
+| 2 | refined or rejected | supported | necessary, not sufficient: A alone does not reach B |
+| 3 | neither supported, one refined | | a relationship weaker than claimed in both directions |
+| 4 | rejected | rejected | neither direction holds |
+| 5 | either inconclusive | | add units before reading |
+| 6 | converse skipped | | one direction only |
+
+"Supported" here means the form's exit code is 0, 1 or 5. The readings are numbers; words are only their rendering.
+
+Each reading carries two lists of seeds, taken from the counterexamples:
+
+- **narrow** — counterexamples of the original (A and not B): units where A was not enough. Candidates for a missing condition (*and*) or a narrower scope (`where`).
+- **route** — counterexamples of the converse (B and not A): units that reached B without A. Candidates for another route (*or*).
+
+For each list the most frequent unit group (one team, one season) is shown, as a hint for Split. Splitting stays a human decision.
+
+A seed is material, not a verdict. A proposition written from seeds is a new proposition: it is pre-registered under a new ID, and the units it came from are declared in `motivated_by`, so that it is read from its held-out evaluation.
+
+```bash
+python pythdragoras/propositions.py next outputs/propositions.jsonl              # every proposition
+python pythdragoras/propositions.py next outputs/propositions.jsonl --reading 1 2 # sufficient-only and necessary-only
+```
+
 ---
 
 # Ledger

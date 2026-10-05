@@ -34,6 +34,12 @@
 反例が1件でもあれば、判定が「支持」でも **異議あり** として判例を並べる。支持された説明の中の反例こそが、説明が足りなくなる場所だからである。
 除外したシーズンの判例は、統計からは外しても「除外中の判例」として必ず表示する。
 
+元の命題と逆の判定を並べた「読み」（十分条件だけ・必要条件だけ・同値に近い など、番号 0〜6）と、判例から取った次の命題の種（**絞る** = 元の命題の判例、**道筋** = 逆の判例）を `next.md`・`next.jsonl` に書く。読みは判定ではなく、終了コードを変えない（[docs/propositions.md](../docs/propositions.md) の Reading The Original And The Converse Together）。
+
+```bash
+uv run python pythdragoras/propositions.py next cycles/c001-chunichi/outputs/propositions.jsonl --reading 1 2
+```
+
 外部の主張（記事・レポート・他のAI）は、観測ではなく claim として登録し、パイプラインで再現できるかを確かめる。
 
 帰無仮説は各シーズンを独立とみなすため、前年からの戦力の持ち越しを無視し、珍しさを過大に見積もる。

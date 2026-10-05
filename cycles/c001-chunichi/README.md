@@ -66,7 +66,7 @@ GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main �
 | `confirmation.md` | **まだ使っていない年（2026年）での確かめ**。命題ごとに、その年の単位を成立・判例・逆の判例・どちらも当たらないに分けて数える（R18、`analysis.toml` の `[confirm]`） |
 | `observed.md` | 年ごとの取得結果、採用しなかった件数、未知の表記（数字は伏せる）、試合数の照合 |
 | `observed_batting.md` | チーム打撃成績の構造の確認（同上） |
-| `season.jsonl` | チーム×シーズンの指標（派生値） |
+| `season.jsonl` | チーム×シーズンの指標（派生値）。優位・誤差・形などの列の式は [sakanalytics/README.md](../../sakanalytics/README.md) |
 | `cumulative.jsonl` | 期待勝率からのずれの累積と z 値 |
 | `rank_test.jsonl` | 順位の偏りの検定（帰無仮説と全球団比較） |
 | `exclusions.json` | 除外したシーズンと理由 |

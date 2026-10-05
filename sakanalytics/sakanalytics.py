@@ -64,6 +64,7 @@
   rf_adv / ra_adv / run_balance / short_share  得点・失点の優位を1試合あたりの点で（他球団平均との差）。収支と、0〜1 の取り分（R32。add_balance）
   rf_adv_z / ra_adv_z / *_zone     優位を全単位の標準偏差で割ったものと、その3区分（1・0・−1）。|z| < 1 を 0 の近くとして読む（R33）
   rf_sd_g / ra_sd_g / *_adv_se / *_zone_se  試合ごとの点の標準偏差と、優位の誤差・誤差1つ分での3区分（R34）
+  rf_adv_t / ra_adv_t / run_balance_t / bat_routes / vs_top_minus_lower / adv_shape_se  研究で使った読みを列にしたもの（R39。add_composites。式は関数の説明と README）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1214,6 +1215,37 @@ def add_balance(st: pl.DataFrame) -> pl.DataFrame:
                            ra_zone_se=zone(pl.col("ra_adv") / pl.col("ra_adv_se")))
 
 
+def add_composites(st: pl.DataFrame) -> pl.DataFrame:
+    """R39: これまでの研究で使った読みを、使い回せる列にする。どれも既存の列だけから計算する（新しい観測はない）。
+
+      rf_adv_t / ra_adv_t : 優位 ÷ 優位の誤差（rf_adv / rf_adv_se、ra_adv / ra_adv_se）。誤差の何倍 0 から離れているかの連続値。
+                            *_zone_se（1・0・−1）は |t| ≥ 1 で区切った同じ量
+      run_balance_t       : 収支 ÷ 収支の誤差 = run_balance / √(rf_adv_se² + ra_adv_se²)。得点と失点の誤差は独立とみなす
+      bat_routes          : 打撃の経路の数（0〜2）= [bat_d_bb_pa ≥ 0] + [bat_d_iso ≥ 0]。四死球／打席・長打率−打率（ISO）が
+                            同じ年・同じリーグの他球団の平均以上なら 1 つ。どちらかが空なら空（R33・R34: 経路が1つあれば大きな不足は避けられた）
+      vs_top_minus_lower  : 上の相手との勝率 − 下の相手との勝率（vs_top_wpct − vs_lower_wpct）。上・下は最終順位で決める
+                            （docs/propositions.md の Groups Defined By The Final Outcome）。プラスなら上の相手のほうに勝っている
+      adv_shape_se        : 得点・失点の誤差での区分を1つにした文字列 "得点/失点"。それぞれ "-1"・"0"・"+1" で9通り
+                            （例 "-1/+1" = 得点ははっきり足りず、失点ははっきり上回る。"-1/0" = 得点ははっきり足りず、失点は平均と区別できない）。
+                            範囲（where）を1つの条件で書くためのもの
+    元になる列がない表では、その列を作らない（試合ごとの列がない表には *_t と adv_shape_se がない）。
+    """
+    cols = set(st.columns)
+    out = []
+    if {"rf_adv_se", "ra_adv_se"} <= cols:
+        out += [(pl.col("rf_adv") / pl.col("rf_adv_se")).alias("rf_adv_t"),
+                (pl.col("ra_adv") / pl.col("ra_adv_se")).alias("ra_adv_t"),
+                (pl.col("run_balance") / (pl.col("rf_adv_se").pow(2) + pl.col("ra_adv_se").pow(2)).sqrt()).alias("run_balance_t")]
+    if {"rf_zone_se", "ra_zone_se"} <= cols:
+        label = lambda c: pl.col(c).replace_strict({-1: "-1", 0: "0", 1: "+1"}, default=None, return_dtype=pl.Utf8)  # noqa: E731
+        out.append(pl.concat_str([label("rf_zone_se"), pl.lit("/"), label("ra_zone_se")]).alias("adv_shape_se"))  # どちらかが空なら空
+    if {"bat_d_bb_pa", "bat_d_iso"} <= cols:
+        out.append((pl.col("bat_d_bb_pa") >= 0).cast(pl.Int32).add((pl.col("bat_d_iso") >= 0).cast(pl.Int32)).alias("bat_routes"))
+    if {"vs_top_wpct", "vs_lower_wpct"} <= cols:
+        out.append((pl.col("vs_top_wpct") - pl.col("vs_lower_wpct")).alias("vs_top_minus_lower"))
+    return st.with_columns(out) if out else st
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -1332,7 +1364,7 @@ def main(argv=None) -> int:
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     if args.batting:
         st = batting_join(st, pl.read_ndjson(args.batting))
-    st = add_balance(add_persistence(st))
+    st = add_composites(add_balance(add_persistence(st)))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

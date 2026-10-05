@@ -1066,6 +1066,12 @@ def test_standing_lock_by_hand():
     # c は4試合目の日に落ち着いた: それまで W W L L（.500）、その後 L（1試合 .000）。t は初日に落ち着き、以後 4試合 3勝1敗
     assert (v["c"]["pre_lock_wpct"], v["c"]["post_lock_g"], v["c"]["post_lock_wpct"]) == (pytest.approx(0.5), 1, pytest.approx(0.0))
     assert (v["t"]["post_lock_g"], v["t"]["post_lock_wpct"]) == (4, pytest.approx(0.75))
+    # 4つ目の区間（5試合 → 4・5試合目）。最終の上位半分は {g, t}。すべて 2−1 の1点差
+    # c: 4試合目 g に 1−2（上の相手）、5試合目 t に 1−2（上の相手）→ 上 −2、下 0、1点差 −2、点の差 −1/試合
+    c = v["c"]
+    assert (c["q4_g"], c["q4_rd_g"], c["q4_one_run_net"], c["q4_wl_vs_upper"], c["q4_wl_vs_lower"]) == (2, pytest.approx(-1.0), -2, -2, 0)
+    # g: 4試合目 c に勝ち（下）、5試合目 d に勝ち（下）→ 下 +2
+    assert (v["g"]["q4_wl_vs_upper"], v["g"]["q4_wl_vs_lower"]) == (0, 2)
 
 
 def test_lone_down_counts_quarters_where_only_one_team_lost():

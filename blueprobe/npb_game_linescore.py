@@ -31,6 +31,7 @@ NAME = "npb_game_linescore"
 GAMES = Path("data/observations/npb_calendar/games.jsonl")   # 日程の観測（パイプラインの root から）
 TEAM_BY_NAME = {v: k for k, v in TEAM_NAME.items()} | {"読売": "g"}
 INT = re.compile(r"[0-9]{1,3}")
+LINE_CELL = re.compile(r"[0-9]{0,2}[xX]?|-")   # 回の得点の列（「1X」「X」「-」、空も）
 
 
 def pages(years, games: Path = GAMES) -> list[tuple[str, str, str]]:
@@ -67,11 +68,17 @@ def parse(html: str, url: str = "") -> dict:
     date = f'{m["y"]}-{m["md"][:2]}-{m["md"][2:]}' if m else None
     found = []                               # (チーム, セル)
     shapes = []                              # 読めなかったときの手がかり（チーム名の位置, セルの数）
+    unknown_names = []                       # 得点表の形の行の、知らない先頭の名前（チーム名の候補）
     for tr in LexborHTMLParser(html).css("tr"):
         cells = _cells(tr)
         names = [re.sub(r"\s", "", c) for c in cells]
         hit = [i for i, n in enumerate(names) if n in TEAM_BY_NAME]
         if not hit:
+            # 得点表の形: 先頭が数字を含まない名前、回の得点の列（数字・X・-・空）が9つ以上、最後の3つが整数
+            if (names and names[0] and not re.search(r"[0-9]", names[0]) and len(cells) >= 13
+                    and all(INT.fullmatch(c) for c in cells[-3:])
+                    and all(LINE_CELL.fullmatch(c) for c in cells[1:-3])):
+                unknown_names.append(names[0])
             continue
         shapes.append((hit[0], len(cells)))
         if hit[0] != 0 or len(cells) < 5:
@@ -86,6 +93,8 @@ def parse(html: str, url: str = "") -> dict:
                                    "raw": " | ".join(cells), "source_url": url})
         return out
     out["counts"]["no_linescore_page"] += 1
+    for n in unknown_names:   # チームの名前（個人ではない）。知らない表記として残し、確かめてから足す
+        out["unknown"].append({"key": f"{gid}:{n}", "raw": f"得点表の形の行の知らない名前: {n}"})
     if not shapes:
         out["counts"]["no_team_row"] += 1
     elif found and not rows:

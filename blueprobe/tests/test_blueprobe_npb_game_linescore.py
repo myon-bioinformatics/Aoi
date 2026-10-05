@@ -53,3 +53,14 @@ def test_check_counts_rows_per_game():
     recs = parse(page(AWAY, HOME), URL)["records"]
     assert [c["ok"] for c in check(recs)] == [True]
     assert [c["ok"] for c in check(recs[:1])] == [False]
+
+
+def test_unknown_team_name_in_a_line_score_shaped_row_is_reported():
+    """得点表の形の行の先頭が知らない名前なら、チーム名の候補として unknown に残す（選手の行は残さない）。"""
+    other = ["東京ヤクルト", *"0 0 1 0 0 0 0 0 0".split(), "-", "1", "6", "0"]
+    r = parse(page(other, HOME), URL)
+    assert r["records"] == [] and [u["raw"] for u in r["unknown"]] == ["得点表の形の行の知らない名前: 東京ヤクルト"]
+    # 実ページの選手の行は先頭のセルが空（1回目の preview で見た形 「 | E.ラミレス | # | …」）か、「+」「.###」を含む
+    for pitcher in (["", "ウィック", "1", "", "2", "0", "1", "0", "0", "0", "3", "1", "2", "0"],
+                    ["ウィック", "", "+", "2", "0", "1", "0", "0", "0", "3", "1", "2", "0"]):
+        assert parse(page(pitcher, HOME), URL)["unknown"] == []

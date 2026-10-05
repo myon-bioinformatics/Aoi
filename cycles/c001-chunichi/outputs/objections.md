@@ -1,7 +1,7 @@
 # 異議あり — 命題の判定記録（自動生成）
 
 判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。
-命題ファイル SHA-256: `dad59efbdb594a5f6c953835f72672462568ad36355e7064d1f0e12d3a6e3f0d` / コード: `35cb5bcbba40f3871e8dbf1df45838c248cb59de`
+命題ファイル SHA-256: `f7e4944d7fa91a6e9bd6de87ead33f4c372eb17a07a4d8d7d76d5e20dd87128e` / コード: `91c38160fc6d41d37548211652df367a09cee69b`
 
 判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。
 
@@ -6927,3 +6927,83 @@
 
 - 阪神 2015: vs_top_wpct=0.440, upper_half=True, rank=3, ra_zone_se=-1, rd=-85, wins_vs_pythag=+10.25 / surprise=0.440
   - 阪神 2015 は「upper_half == True」を満たすのに「vs_top_wpct >= 0.47」を満たさない。なぜか？ → H3
+
+## P145: 得失点差がプラスでも、得点・失点の組み合わせ方が基準より1標準偏差を超えて不利なら、B クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 4 件: t-2022, g-2018, t-2025, h-2022
+- もし: `alloc_z_strat < -1` ならば: `upper_half == False`
+- 識別子: `[where:rd>0] alloc_z_strat<-1 => upper_half==false`（指紋 `b77eb16d54b35f44`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P146
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'rd', 'op': '>', 'value': 0}]} / 単位数: 73
+- 見直す条件（反証）: 得失点差プラスで組み合わせ方 < −1 の単位の4分の1を超えて A クラス
+- 注記: R38 で得失点差プラスの B の 10/12 が A の25%より下だった指標。境は R11 と同じ −1。組み合わせ方は勝ち数と一部算術でつながる（R1）
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 12 | 8 | 0.67 [0.39, 0.86] | -0.67σ（0.351） | 0.16 | 4.06 | 0.000 | 0 | 判断保留 | 4 |
+| 対偶 | 61 | 57 | 0.93 [0.84, 0.97] | +3.33σ（0.000） | 0.84 | 1.12 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 12 | 8 | 0.67 [0.39, 0.86] | -0.67σ（0.351） | 0.16 | 4.06 | 0.000 | 0 | 判断保留 | 4 |
+| 裏 | 61 | 57 | 0.93 [0.84, 0.97] | +3.33σ（0.000） | 0.84 | 1.12 | 0.000 | 0 | 支持 | 1 |
+
+**待った！判断保留** 元の命題に判例 4 件（対偶の判例も同じ）
+
+- 阪神 2022: alloc_z_strat=-2.14, upper_half=True, rank=3, rd=61, wins_vs_pythag=-9.93, one_run_net=-5 / surprise=-2.14
+  - 阪神 2022 は「alloc_z_strat < -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H3
+- 巨人 2018: alloc_z_strat=-1.75, upper_half=True, rank=3, rd=50, wins_vs_pythag=-7.25, one_run_net=-12 / surprise=-1.75
+  - 巨人 2018 は「alloc_z_strat < -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H3
+- 阪神 2025: alloc_z_strat=-1.53, upper_half=True, rank=1, rd=144, wins_vs_pythag=-5.62, one_run_net=-3 / surprise=-1.53
+  - 阪神 2025 は「alloc_z_strat < -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H3
+- ソフトバンク 2022: alloc_z_strat=-1.10, upper_half=True, rank=1, rd=84, wins_vs_pythag=-5.01, one_run_net=0 / surprise=-1.10
+  - ソフトバンク 2022 は「alloc_z_strat < -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H3
+
+**待った！判断保留** 逆に判例 4 件（裏の判例も同じ）
+
+- 巨人 2023: alloc_z_strat=-0.914, upper_half=False, rank=4, rd=16, wins_vs_pythag=-1.50, one_run_net=0 / surprise=-0.914
+  - 巨人 2023 は「upper_half == False」を満たすのに「alloc_z_strat < -1」を満たさない。なぜか？ → H3
+- 広島 2022: alloc_z_strat=-0.293, upper_half=False, rank=5, rd=8, wins_vs_pythag=-4.93, one_run_net=-7 / surprise=-0.293
+  - 広島 2022 は「upper_half == False」を満たすのに「alloc_z_strat < -1」を満たさない。なぜか？ → H3
+- 楽天 2022: alloc_z_strat=0.284, upper_half=False, rank=4, rd=11, wins_vs_pythag=-2.34, one_run_net=8 / surprise=0.284
+  - 楽天 2022 は「upper_half == False」を満たすのに「alloc_z_strat < -1」を満たさない。なぜか？ → H3
+- 楽天 2012: alloc_z_strat=0.135, upper_half=False, rank=4, rd=24, wins_vs_pythag=-3.07, one_run_net=5 / surprise=0.135
+  - 楽天 2012 は「upper_half == False」を満たすのに「alloc_z_strat < -1」を満たさない。なぜか？ → H3
+
+## P146: 得失点差がプラスでも、下の相手（4〜6位）に勝ち越せない（.500 未満）なら、B クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 1 件: e-2019
+- もし: `vs_lower_wpct < 0.5` ならば: `upper_half == False`
+- 識別子: `[where:rd>0] vs_lower_wpct<0.5 => upper_half==false`（指紋 `61a3d07fdf417639`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P145
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'rd', 'op': '>', 'value': 0}]} / 単位数: 73
+- 見直す条件（反証）: 得失点差プラスで下の相手に .500 未満の単位の4分の1を超えて A クラス
+- 注記: R38 で得失点差プラスの B の 8/12 が A の25%（.54）より下だった指標。境は五分。下の相手は最終順位で決める（docs/propositions.md の前提）
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 7 | 6 | 0.86 [0.49, 0.97] | +0.65σ（0.445） | 0.16 | 5.21 | 0.000 | 0 | 判断保留 | 4 |
+| 対偶 | 61 | 60 | 0.98 [0.91, 1.00] | +4.21σ（0.000） | 0.90 | 1.09 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 12 | 6 | 0.50 [0.25, 0.75] | -2.00σ（0.054） | 0.10 | 5.21 | 0.000 | 0 | 修正 | 2 |
+| 裏 | 66 | 60 | 0.91 [0.82, 0.96] | +2.98σ（0.001） | 0.84 | 1.09 | 0.000 | 0 | 支持 | 1 |
+
+**待った！判断保留** 元の命題に判例 1 件（対偶の判例も同じ）
+
+- 楽天 2019: vs_lower_wpct=0.493, upper_half=True, rank=3, rd=36, vs_top_wpct=0.520, alloc_z_strat=-0.950 / surprise=0.493
+  - 楽天 2019 は「vs_lower_wpct < 0.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H3
+
+**異議あり（主張が強すぎる）** 逆に判例 6 件（裏の判例も同じ）
+
+- 西武 2015: vs_lower_wpct=0.660, upper_half=False, rank=4, rd=58, vs_top_wpct=0.312, alloc_z_strat=-1.04 / surprise=0.660
+  - 西武 2015 は「upper_half == False」を満たすのに「vs_lower_wpct < 0.5」を満たさない。なぜか？ → H3
+- 巨人 2023: vs_lower_wpct=0.653, upper_half=False, rank=4, rd=16, vs_top_wpct=0.286, alloc_z_strat=-0.914 / surprise=0.653
+  - 巨人 2023 は「upper_half == False」を満たすのに「vs_lower_wpct < 0.5」を満たさない。なぜか？ → H3
+- 巨人 2017: vs_lower_wpct=0.620, upper_half=False, rank=4, rd=32, vs_top_wpct=0.417, alloc_z_strat=-1.17 / surprise=0.620
+  - 巨人 2017 は「upper_half == False」を満たすのに「vs_lower_wpct < 0.5」を満たさない。なぜか？ → H3
+- 楽天 2022: vs_lower_wpct=0.571, upper_half=False, rank=4, rd=11, vs_top_wpct=0.469, alloc_z_strat=0.284 / surprise=0.571
+  - 楽天 2022 は「upper_half == False」を満たすのに「vs_lower_wpct < 0.5」を満たさない。なぜか？ → H3
+- ソフトバンク 2021: vs_lower_wpct=0.537, upper_half=False, rank=4, rd=71, vs_top_wpct=0.500, alloc_z_strat=-2.48 / surprise=0.537
+  - ソフトバンク 2021 は「upper_half == False」を満たすのに「vs_lower_wpct < 0.5」を満たさない。なぜか？ → H3
+- 楽天 2012: vs_lower_wpct=0.500, upper_half=False, rank=4, rd=24, vs_top_wpct=0.500, alloc_z_strat=0.135 / surprise=0.500
+  - 楽天 2012 は「upper_half == False」を満たすのに「vs_lower_wpct < 0.5」を満たさない。なぜか？ → H3

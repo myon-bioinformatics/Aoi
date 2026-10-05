@@ -2021,3 +2021,32 @@ context = ["rank", "ra_zone_se", "rd", "wins_vs_pythag"]
 links = ["H3"]
 falsifier = "2026年以降、得点がはっきり足りず上の相手に .47 以上なのに B の単位が出る"
 note = "上の相手は最終順位で決める（docs/propositions.md の Groups Defined By The Final Outcome）。A かどうかと算術でつながる面がある。境は見た後"
+
+# 追加: 2026-10-05。R38 の結果を見た後の命題。得失点差プラスの B 12単位・A 61単位の13の指標を見ている。
+# 境は結果に合わせず、P145 は R11（P52）の −1、P146 は五分（.500）を使う。2026年で確かめる。
+
+[[proposition]]
+id = "P145"
+statement = "得失点差がプラスでも、得点・失点の組み合わせ方が基準より1標準偏差を超えて不利なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "rd", op = ">", value = 0 }] }
+if = [{ col = "alloc_z_strat", op = "<", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "alloc_z_strat"
+context = ["rank", "rd", "wins_vs_pythag", "one_run_net"]
+links = ["H3"]
+falsifier = "得失点差プラスで組み合わせ方 < −1 の単位の4分の1を超えて A クラス"
+note = "R38 で得失点差プラスの B の 10/12 が A の25%より下だった指標。境は R11 と同じ −1。組み合わせ方は勝ち数と一部算術でつながる（R1）"
+
+[[proposition]]
+id = "P146"
+statement = "得失点差がプラスでも、下の相手（4〜6位）に勝ち越せない（.500 未満）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "rd", op = ">", value = 0 }] }
+if = [{ col = "vs_lower_wpct", op = "<", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "vs_lower_wpct"
+context = ["rank", "rd", "vs_top_wpct", "alloc_z_strat"]
+links = ["H3"]
+falsifier = "得失点差プラスで下の相手に .500 未満の単位の4分の1を超えて A クラス"
+note = "R38 で得失点差プラスの B の 8/12 が A の25%（.54）より下だった指標。境は五分。下の相手は最終順位で決める（docs/propositions.md の前提）"

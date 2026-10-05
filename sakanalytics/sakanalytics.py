@@ -816,6 +816,9 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
       dead_g / dead_wpct / dead_rd_g : 決まった日より後の試合（A・B には効かない試合）。なければ dead_g = 0、ほかは空
       h2_live_g / h2_live_wpct       : 後半（自分の試合の後ろ半分、境は 試合数 ÷ 2 の切り捨て）のうち、効く試合の数と勝率（R63。
                                        後半の下がりが、決まった後の試合で起きたのかを分ける）
+      h1_rd_g / h1_wl_vs_upper / h1_wl_vs_lower : 前半の1試合あたりの点の差と、同じリーグの上位半分・下位半分の相手との勝 − 敗（R64）
+      h2_live_rd_g / h2_live_wl_vs_upper / h2_live_wl_vs_lower : 後半の効く試合だけの同じもの（R64）。
+                                       上位・下位は最終の勝率で決める（同率は上位側、前提）。交流戦の相手は数えない
     """
     league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
     rows = []
@@ -837,13 +840,28 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
 
             def x(i):
                 return (date.fromisoformat(dates[i]).toordinal() - o0) / (o1 - o0) if o1 > o0 else None
+            fw, fl = Counter(), Counter()
+            for _, h, a, hs, as_ in played_on:
+                for u, my, op in ((h, hs, as_), (a, as_, hs)):
+                    fw[u] += my > op
+                    fl[u] += my < op
+            fwp = {u: fw[u] / (fw[u] + fl[u]) if fw[u] + fl[u] else 0.0 for u in ms}
+            upper = {u for u in ms if 1 + sum(fwp[v] > fwp[u] for v in ms) <= len(ms) // 2}   # 最終の上位半分（同率は上位側）
             for t in ms:
                 cin, cout, fx = c["in"].get(t), c["out"].get(t), c["fixed"].get(t)
                 cut = (cin or cout or (len(dates), None))[0]   # この日まで（含む）が A・B に効く試合
                 part = {"live": [0, 0, 0, 0], "dead": [0, 0, 0, 0]}  # 勝・負・試合・点の差
-                mine = [(di, *((hs, as_) if t == h else (as_, hs))) for di, h, a, hs, as_ in played_on if t in (h, a)]
-                h2 = [(my, op) for di, my, op in mine[len(mine) // 2:] if di <= cut]
-                h2w, h2l = sum(my > op for my, op in h2), sum(my < op for my, op in h2)
+                mine = [(di, *((hs, as_, a) if t == h else (as_, hs, h))) for di, h, a, hs, as_ in played_on if t in (h, a)]
+                h1_ = [(my, op, o) for di, my, op, o in mine[:len(mine) // 2]]
+                h2 = [(my, op, o) for di, my, op, o in mine[len(mine) // 2:] if di <= cut]
+                h2w, h2l = sum(my > op for my, op, _ in h2), sum(my < op for my, op, _ in h2)
+
+                def split(games, prefix):
+                    def net(cond):
+                        return sum((my > op) - (my < op) for my, op, o in games if cond(o))
+                    return {f"{prefix}_rd_g": sum(my - op for my, op, _ in games) / len(games) if games else None,
+                            f"{prefix}_wl_vs_upper": net(lambda o: o in ms and o in upper),
+                            f"{prefix}_wl_vs_lower": net(lambda o: o in ms and o not in upper)}
                 for di, h, a, hs, as_ in played_on:
                     if t not in (h, a):
                         continue
@@ -864,13 +882,16 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
                              "decided_x": x(c["decided"][lg]) if lg in c["decided"] else None,
                              "rank_fixed_x": x(fx[0]) if fx else None, "rank_fixed_left": fx[1] if fx else None,
                              "rank_fixed": fx[2] if fx else None, **rec,
-                             "h2_live_g": len(h2), "h2_live_wpct": h2w / (h2w + h2l) if h2w + h2l else None})
+                             "h2_live_g": len(h2), "h2_live_wpct": h2w / (h2w + h2l) if h2w + h2l else None,
+                             **split(h1_, "h1"), **split(h2, "h2_live")})
     schema = {"season": pl.Int32, "team": pl.Utf8, "clinch_in_x": pl.Float64, "clinch_in_left": pl.Int64,
               "clinch_out_x": pl.Float64, "clinch_out_left": pl.Int64, "decided_x": pl.Float64,
               "rank_fixed_x": pl.Float64, "rank_fixed_left": pl.Int64, "rank_fixed": pl.Int64,
               "live_g": pl.Int64, "live_wpct": pl.Float64, "live_rd_g": pl.Float64,
               "dead_g": pl.Int64, "dead_wpct": pl.Float64, "dead_rd_g": pl.Float64,
-              "h2_live_g": pl.Int64, "h2_live_wpct": pl.Float64}
+              "h2_live_g": pl.Int64, "h2_live_wpct": pl.Float64,
+              **{f"{p_}_{k}": (pl.Float64 if k == "rd_g" else pl.Int64) for p_ in ("h1", "h2_live")
+                 for k in ("rd_g", "wl_vs_upper", "wl_vs_lower")}}
     return pl.DataFrame(rows, schema=schema)
 
 

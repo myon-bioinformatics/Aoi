@@ -696,6 +696,12 @@ def test_rank_fixed_and_live_dead_split_by_hand():
     # 後半（4〜6試合目）のうち効く試合: g は4日目に確定 → 4試合目だけ（勝ち）。t は5日目 → 4・5試合目（勝ち・勝ち）
     assert (g["h2_live_g"], g["h2_live_wpct"]) == (1, pytest.approx(1.0))
     assert (t["h2_live_g"], t["h2_live_wpct"]) == (2, pytest.approx(1.0))
+    # 最終の上位半分は g・t（5勝1敗で同率、どちらも上位側）。g の前半（1〜3日目）: d に勝ち(+2)・c に勝ち(+2)・t に勝ち(+2)
+    assert (g["h1_rd_g"], g["h1_wl_vs_upper"], g["h1_wl_vs_lower"]) == (pytest.approx(2.0), 1, 2)
+    # g の後半の効く試合は4日目の d 戦だけ（3−1）
+    assert (g["h2_live_rd_g"], g["h2_live_wl_vs_upper"], g["h2_live_wl_vs_lower"]) == (pytest.approx(2.0), 0, 1)
+    # d の前半: g・t・c に3連敗（−2, −2, −2）。上位 2敗、下位 1敗
+    assert (v["d"]["h1_wl_vs_upper"], v["d"]["h1_wl_vs_lower"]) == (-2, -1)
 
 
 def test_live_dead_when_never_decided():

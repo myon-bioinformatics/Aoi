@@ -79,7 +79,8 @@ run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_team_fi
        "--out", "{out}/observed_fielding.md", "--strict"]
 
 # 3d. 試合ごとの得点表（R H E、チームの失策）。1試合1ページ（1年 約860ページ、3秒間隔で約45分）。
-# 日程の観測（{games}）のリンクから、linescore_years の年だけ取る。形を確かめるまでは preview（--strict なし）で、measure には渡さない。
+# 日程の観測（{games}）のリンクから、linescore_years の年だけ取る。最初は preview（--strict なし）で形を確かめ、
+# 2025年の 858試合・1,716行がすべて読めたので（2026-10-05、正式名称8つを観測した表記として足した）、--strict に替えて measure に渡す。
 [[step]]
 name = "fetch_linescore"
 run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_game_linescore", "--years", "{linescore_years}",
@@ -94,9 +95,9 @@ run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_game_linescor
        "--cache", "data/raw/npb_game_linescore", "--out", "data/observations/npb_game_linescore/teams.jsonl", "--offline"]
 
 [[step]]
-name = "preview_linescore"
+name = "inspect_linescore"
 run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_game_linescore", "--cache", "data/raw/npb_game_linescore",
-       "--out", "{out}/observed_linescore.md"]
+       "--out", "{out}/observed_linescore.md", "--strict"]
 
 # 4. 測る
 [[step]]
@@ -105,6 +106,7 @@ run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games
        "--out", "{out}/season.jsonl", "--innings", "cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz",
        "--batting", "data/observations/npb_team_batting/teams.jsonl",
        "--fielding", "data/observations/npb_team_fielding/teams.jsonl",
+       "--linescore", "data/observations/npb_game_linescore/teams.jsonl",
        "--sensitivity-out", "{out}/trajectory_sensitivity_units.jsonl"]
 
 # 5. 問い直す

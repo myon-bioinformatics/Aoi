@@ -739,3 +739,41 @@ def test_add_balance_z_scales_by_the_spread_of_all_units():
     assert out["rf_adv_z"].std() == pytest.approx(1.0)
     for z, zone in zip(out["ra_adv_z"].to_list(), out["ra_zone"].to_list()):
         assert zone == (1 if z >= 1 else -1 if z <= -1 else 0)
+
+
+def test_add_balance_standard_error_combines_own_and_others():
+    import math
+
+    import polars as pl
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [100] * 3,
+                       "RF": [300, 400, 500], "RA": [400, 400, 400],
+                       "rf_sd_g": [2.0, 2.0, 2.0], "ra_sd_g": [3.0, 1.0, 1.0]})
+    out = {r["team"]: r for r in sa.add_balance(st).iter_rows(named=True)}
+    # 自分 4/100、他2球団の平均 (4/100 + 4/100) / 2² → 誤差 = √(0.04 + 0.02)
+    assert out["a"]["rf_adv_se"] == pytest.approx(math.sqrt(0.04 + 0.02))
+    # a の得点の優位 −1.5 は誤差 0.245 の6倍 → −1。b は 0 → 0
+    assert out["a"]["rf_zone_se"] == -1 and out["b"]["rf_zone_se"] == 0 and out["c"]["rf_zone_se"] == 1
+    # 失点: a の誤差は自分 9/100 と他 (1/100 + 1/100)/4
+    assert out["a"]["ra_adv_se"] == pytest.approx(math.sqrt(0.09 + 0.005))
+
+
+def test_add_balance_without_per_game_spread_skips_standard_error():
+    import polars as pl
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3,
+                       "RF": [30, 40, 50], "RA": [30, 40, 50]})
+    assert "rf_zone_se" not in sa.add_balance(st).columns
+
+
+def test_season_table_has_per_game_spread():
+    results = [(3, 1), (5, 2), (1, 4), (7, 0)]
+    st = season_table(to_team_games(games([("2024-04-01", "d", "g", rf, ra) for rf, ra in results]), TEAMS))
+    d = st.filter(pl.col("team") == "d").row(0, named=True)
+    rf = [r for r, _ in results]
+    mean = sum(rf) / len(rf)
+    assert d["rf_sd_g"] == pytest.approx(math.sqrt(sum((x - mean) ** 2 for x in rf) / (len(rf) - 1)))

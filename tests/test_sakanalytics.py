@@ -951,3 +951,14 @@ def test_mix_zone_edges_are_inside_and_missing_side_is_null():
     assert out["c"]["mix_lo"] == pytest.approx(.50) and out["c"]["mix_zone"] == 0   # 帯の端ちょうどは中
     assert out["a"]["mix_hi"] is None and out["a"]["mix_zone"] is None              # 2001 に B がない
     assert sa.add_mix_zone(pl.DataFrame({"season": [1]})).columns == ["season"]
+
+
+def test_league_bar_uses_only_the_other_teams():
+    import sakanalytics as sa
+
+    w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
+    out = {r["team"]: r["lg_bar"] for r in sa.add_league_shape(st).iter_rows(named=True)}
+    # 上位3球団（a・b・c）は、ほかの5球団の3番目 = d の .52 を越えれば入る。下位（d・e・f）は c の .53
+    assert out == pytest.approx({"a": 0.52, "b": 0.52, "c": 0.52, "d": 0.53, "e": 0.53, "f": 0.53})
+    assert all((wp > out[t]) == (t in "abc") for t, wp in zip("abcdef", w))

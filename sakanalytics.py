@@ -70,6 +70,7 @@
   lg_line / line_gap_pythag        A の線（3位と4位の勝率の中間）と、点の差で見込む勝率の線からの距離（R50）
   lg_rank_at_500                   勝率 .500 が何位に当たるか（滑らかな順位、R51）
   lg_break_after / lg_break_gap / lg_tier / lg_tier_of_3rd  データの散らばりから引く線: いちばん大きな隙間と、3つの塊（R52）
+  lg_bar                           越えるべき高さ: ほかの球団の中で上位半分の最後の勝率（R56）
   mix_lo / mix_hi / mix_zone       A と B が混ざる帯（ほかの年の A の最低勝率〜B の最高勝率）と、帯の下・中・上（−1・0・+1、R53。add_mix_zone）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -1294,6 +1295,7 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
                        3.5 より小さいほど、.500 が上位寄り（五分を超えるチームが少ない）
       lg_break_after / lg_break_gap : 勝率のいちばん大きな隙間が「k 位と k+1 位の間」の k と、その差（R52。natural_breaks）
       lg_tier / lg_tier_of_3rd      : 大きい隙間2つで分けた3つの塊のうち、自分のいる塊と3位のいる塊（上から 1・2・3、R52）
+      lg_bar        : 越えるべき高さ = ほかの球団の中で（球団数 ÷ 2）番目の勝率（6球団なら3番目、R56）。ほかの球団だけで決まり、自分の勝率は入らない
       line_gap_pythag : 点の差で見込む勝率（pythag_fixed）− A の線（R50）。マイナスなら、点の差どおりでは線に届かない。
                         勝率 − A の線 = line_gap_pythag + resid_fixed（点の差より勝った分）の算術の恒等式で分ける
     勝率を高い順に並べた k 番目の値を使う（同率でも k 番目）。リーグのチームが足りなければ空。
@@ -1321,11 +1323,15 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
         gap = ordered[one[0] - 1] - ordered[one[0]] if one else None
         for team, wp in lg.select("team", "wpct").iter_rows():
             pos = 1 + sum(x > wp for x in ordered) if wp is not None else None  # 勝率での位置（同率は上位側）
+            others = sorted((x for t2, x in lg.select("team", "wpct").iter_rows() if t2 != team and x is not None), reverse=True)
+            k = len(w) // 2  # 上位半分の数（6球団なら3）
             rows.append({"season": season, "team": team, "lg_break_after": one[0] if one else None, "lg_break_gap": gap,
-                         "lg_tier": tier_of(pos, two), "lg_tier_of_3rd": tier_of(3, two)})
+                         "lg_tier": tier_of(pos, two), "lg_tier_of_3rd": tier_of(3, two),
+                         "lg_bar": others[k - 1] if 0 < k <= len(others) else None})
     if rows:
         st = st.join(pl.DataFrame(rows, schema={"season": st.schema["season"], "team": pl.Utf8, "lg_break_after": pl.Int64,
-                                                 "lg_break_gap": pl.Float64, "lg_tier": pl.Int64, "lg_tier_of_3rd": pl.Int64}),
+                                                 "lg_break_gap": pl.Float64, "lg_tier": pl.Int64, "lg_tier_of_3rd": pl.Int64,
+                                                 "lg_bar": pl.Float64}),
                      on=["season", "team"], how="left")
     # R50: A の線（3位と4位の勝率の中間）までの距離を、点の差で見込む勝率で測る。
     #   wpct − lg_line = line_gap_pythag（点の差で見込む位置）+ resid_fixed（点の差より勝った分）  ← 算術の恒等式

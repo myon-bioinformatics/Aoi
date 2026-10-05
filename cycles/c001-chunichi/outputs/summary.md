@@ -276,7 +276,7 @@
 - P191 試合数の 3/4 の時点で3〜4位（AB の状態）なら、最後の区間で勝ち越せば A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 - P192 試合数の 3/4 の時点で3〜4位なら、最後の区間で下位半分の相手から勝ち越せば A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 
-詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
+詳細は objections.md。終了コードは `python PythDRagoras/logic/propositions.py judge` で確かめられる。
 
 # 外部の主張との照合（自動生成）
 

@@ -2,16 +2,16 @@
 [✓] git: git version 2.55.0
 [✓] uv: uv 0.12.23 (x86_64-unknown-linux-gnu)
 [✓] gh: gh version 2.101.0 (2026-09-15)
-[run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
+[run] fetch: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
+Downloading pygments (1.2MiB)
 Downloading polars-runtime-32 (47.6MiB)
 Downloading selectolax (2.4MiB)
-Downloading pygments (1.2MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 8ms
+Installed 15 packages in 12ms
 ledger: 126 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
@@ -42,7 +42,7 @@ HTTP requests: 0
 2023: teams=12 games/team=143-143 expected=143 OK
 2024: teams=12 games/team=143-143 expected=143 OK
 2025: teams=12 games/team=143-143 expected=143 OK
-[run] observe: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --offline
+[run] observe: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --offline
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -72,7 +72,7 @@ HTTP requests: 0
 2023: teams=12 games/team=143-143 expected=143 OK
 2024: teams=12 games/team=143-143 expected=143 OK
 2025: teams=12 games/team=143-143 expected=143 OK
-[run] inspect: uv run python blueprobe/blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out cycles/c001-chunichi/outputs/observed.md --strict
+[run] inspect: uv run python BlueProbe/blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out cycles/c001-chunichi/outputs/observed.md --strict
 # npb_calendar: 観測された構造
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
@@ -111,7 +111,7 @@ HTTP requests: 0
 - 2024: teams=12 games/team=143-143 expected=143 OK
 - 2025: teams=12 games/team=143-143 expected=143 OK
 
-[run] fetch_batting: uv run python queryu/queryu.py --source npb_team_batting --years 2012-2025 --cache data/raw/npb_team_batting --out data/observations/npb_team_batting/teams.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_team_batting.jsonl
+[run] fetch_batting: uv run python QueRyu/queryu.py --source npb_team_batting --years 2012-2025 --cache data/raw/npb_team_batting --out data/observations/npb_team_batting/teams.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_team_batting.jsonl
 ledger: 28 pages, refetched=0, changed=0
 2012: records=12 unknown=0
 2013: records=12 unknown=0
@@ -142,7 +142,7 @@ HTTP requests: 0
 2023: teams=12 expected=12 OK
 2024: teams=12 expected=12 OK
 2025: teams=12 expected=12 OK
-[run] observe_batting: uv run python queryu/queryu.py --source npb_team_batting --years 2012-2025 --cache data/raw/npb_team_batting --out data/observations/npb_team_batting/teams.jsonl --offline
+[run] observe_batting: uv run python QueRyu/queryu.py --source npb_team_batting --years 2012-2025 --cache data/raw/npb_team_batting --out data/observations/npb_team_batting/teams.jsonl --offline
 2012: records=12 unknown=0
 2013: records=12 unknown=0
 2014: records=12 unknown=0
@@ -172,7 +172,7 @@ HTTP requests: 0
 2023: teams=12 expected=12 OK
 2024: teams=12 expected=12 OK
 2025: teams=12 expected=12 OK
-[run] inspect_batting: uv run python blueprobe/blueprobe.py --source npb_team_batting --cache data/raw/npb_team_batting --out cycles/c001-chunichi/outputs/observed_batting.md --strict
+[run] inspect_batting: uv run python BlueProbe/blueprobe.py --source npb_team_batting --cache data/raw/npb_team_batting --out cycles/c001-chunichi/outputs/observed_batting.md --strict
 # npb_team_batting: 観測された構造
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
@@ -211,7 +211,7 @@ HTTP requests: 0
 - 2024: teams=12 expected=12 OK
 - 2025: teams=12 expected=12 OK
 
-[run] fetch_fielding: uv run python queryu/queryu.py --source npb_team_fielding --years 2012-2025 --cache data/raw/npb_team_fielding --out data/observations/npb_team_fielding/teams.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_team_fielding.jsonl
+[run] fetch_fielding: uv run python QueRyu/queryu.py --source npb_team_fielding --years 2012-2025 --cache data/raw/npb_team_fielding --out data/observations/npb_team_fielding/teams.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_team_fielding.jsonl
 ledger: 28 pages, refetched=0, changed=0
 2012: records=12 unknown=0
 2013: records=12 unknown=0
@@ -242,7 +242,7 @@ HTTP requests: 0
 2023: teams=12 expected=12 OK
 2024: teams=12 expected=12 OK
 2025: teams=12 expected=12 OK
-[run] observe_fielding: uv run python queryu/queryu.py --source npb_team_fielding --years 2012-2025 --cache data/raw/npb_team_fielding --out data/observations/npb_team_fielding/teams.jsonl --offline
+[run] observe_fielding: uv run python QueRyu/queryu.py --source npb_team_fielding --years 2012-2025 --cache data/raw/npb_team_fielding --out data/observations/npb_team_fielding/teams.jsonl --offline
 2012: records=12 unknown=0
 2013: records=12 unknown=0
 2014: records=12 unknown=0
@@ -272,7 +272,7 @@ HTTP requests: 0
 2023: teams=12 expected=12 OK
 2024: teams=12 expected=12 OK
 2025: teams=12 expected=12 OK
-[run] inspect_fielding: uv run python blueprobe/blueprobe.py --source npb_team_fielding --cache data/raw/npb_team_fielding --out cycles/c001-chunichi/outputs/observed_fielding.md --strict
+[run] inspect_fielding: uv run python BlueProbe/blueprobe.py --source npb_team_fielding --cache data/raw/npb_team_fielding --out cycles/c001-chunichi/outputs/observed_fielding.md --strict
 # npb_team_fielding: 観測された構造
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
@@ -311,16 +311,16 @@ HTTP requests: 0
 - 2024: teams=12 expected=12 OK
 - 2025: teams=12 expected=12 OK
 
-[run] fetch_linescore: uv run python queryu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_game_linescore.jsonl
+[run] fetch_linescore: uv run python QueRyu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_game_linescore.jsonl
 ledger: 858 pages, refetched=0, changed=0
 2025: records=1716 unknown=0
 HTTP requests: 0
 2025: games=858 rows_not_2=0 OK
-[run] observe_linescore: uv run python queryu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --offline
+[run] observe_linescore: uv run python QueRyu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --offline
 2025: records=1716 unknown=0
 HTTP requests: 0
 2025: games=858 rows_not_2=0 OK
-[run] inspect_linescore: uv run python blueprobe/blueprobe.py --source npb_game_linescore --cache data/raw/npb_game_linescore --out cycles/c001-chunichi/outputs/observed_linescore.md --strict
+[run] inspect_linescore: uv run python BlueProbe/blueprobe.py --source npb_game_linescore --cache data/raw/npb_game_linescore --out cycles/c001-chunichi/outputs/observed_linescore.md --strict
 # npb_game_linescore: 観測された構造
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
@@ -333,7 +333,7 @@ HTTP requests: 0
 
 - 2025: games=858 rows_not_2=0 OK
 
-[run] measure: uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --linescore data/observations/npb_game_linescore/teams.jsonl --sensitivity-out cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
+[run] measure: uv run python SakAnalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --linescore data/observations/npb_game_linescore/teams.jsonl --sensitivity-out cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
 shape: (14, 12)
 ┌────────┬──────┬─────────┬─────┬─────┬─────┬───────┬─────────┬─────────┬────────┬────────┬────────┐
 │ season ┆ rank ┆ rank_ti ┆ W   ┆ L   ┆ T   ┆ wpct  ┆ pythag_ ┆ resid_f ┆ logit_ ┆ wpct_1 ┆ wpct_2 │
@@ -356,7 +356,7 @@ shape: (14, 12)
 │ 2024   ┆ 6    ┆ false   ┆ 60  ┆ 75  ┆ 8   ┆ 0.444 ┆ 0.388   ┆ 0.056   ┆ 0.231  ┆ 0.600  ┆ 0.385  │
 │ 2025   ┆ 4    ┆ false   ┆ 63  ┆ 78  ┆ 2   ┆ 0.447 ┆ 0.437   ┆ 0.010   ┆ 0.040  ┆ 0.466  ┆ 0.419  │
 └────────┴──────┴─────────┴─────┴─────┴─────┴───────┴─────────┴─────────┴────────┴────────┴────────┘
-[run] question: uv run python pythdragoras/pythdragoras.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --hypotheses cycles/c001-chunichi/hypotheses.toml --propositions cycles/c001-chunichi/propositions.toml --claims cycles/c001-chunichi/claims.toml --outdir cycles/c001-chunichi/outputs --trajectory-sensitivity cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
+[run] question: uv run python PythDRagoras/pythdragoras.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --hypotheses cycles/c001-chunichi/hypotheses.toml --propositions cycles/c001-chunichi/propositions.toml --claims cycles/c001-chunichi/claims.toml --outdir cycles/c001-chunichi/outputs --trajectory-sensitivity cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
 # PythDRagoras 検証記録（自動生成）
 
 この記録は「説明できない部分がどれだけ偶然では起きにくいか」を示すだけで、原因は示さない。
@@ -635,7 +635,7 @@ shape: (14, 12)
 - P191 試合数の 3/4 の時点で3〜4位（AB の状態）なら、最後の区間で勝ち越せば A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 - P192 試合数の 3/4 の時点で3〜4位なら、最後の区間で下位半分の相手から勝ち越せば A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 
-詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
+詳細は objections.md。終了コードは `python PythDRagoras/logic/propositions.py judge` で確かめられる。
 
 # 外部の主張との照合（自動生成）
 
@@ -671,7 +671,7 @@ shape: (14, 12)
 | C26 | 中日 2026 の最終成績は 60勝81敗2分（10/3 に 3-1 で勝って全日程終了）。勝数で照合する。取得範囲（2026）を広げるまでは判定できない | external-report-part2 (Grok) 2026-10-03 | 測定不能 | - | - |
 | C27 | 中日の1点差勝率 .495 は、各年の値の13年単純平均（PR #3 の照合で明示された定義）。C12 は期間通算と仮定して .486 となり再現しなかった。定義の違いを分けて残す | research-pr3 (GPT R001, f75576f) 2026-10-03 | 再現 | 0.495 | 0.495 |
 
-[run] search: uv run python pythdragoras/rule_search.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --candidates cycles/c001-chunichi/rule_candidates.toml --out cycles/c001-chunichi/outputs/rules.jsonl
+[run] search: uv run python PythDRagoras/logic/rule_search.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --candidates cycles/c001-chunichi/rule_candidates.toml --out cycles/c001-chunichi/outputs/rules.jsonl
 units=156 dropped=0 target: upper_half == False
  1. mcc=0.821 成立率=0.92 逆=0.90 条件=3  [sim_p_upper < 0.4] または [rd < 50 かつ alloc_z_strat < -1]
  2. mcc=0.821 成立率=0.92 逆=0.90 条件=4  [sim_p_upper < 0.4 かつ rd < 50] または [rd < 50 かつ alloc_z_strat < -1]
@@ -683,7 +683,7 @@ units=156 dropped=0 target: upper_half == False
  8. mcc=0.816 成立率=0.97 逆=0.83 条件=3  [rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0]
  9. mcc=0.816 成立率=0.85 逆=0.97 条件=3  [sim_p_upper < 0.5] または [alloc_z_strat < -1 かつ one_run_net < 0]
 10. mcc=0.816 成立率=0.97 逆=0.83 条件=4  [sim_p_upper < 0.3 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0]
-[run] search_r21: uv run python pythdragoras/rule_search.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --candidates cycles/c001-chunichi/rule_candidates_r21.toml --out cycles/c001-chunichi/outputs/rules_r21.jsonl
+[run] search_r21: uv run python PythDRagoras/logic/rule_search.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --candidates cycles/c001-chunichi/rule_candidates_r21.toml --out cycles/c001-chunichi/outputs/rules_r21.jsonl
 units=156 dropped=0 target: upper_half == False
  1. mcc=0.865 成立率=0.99 逆=0.87 条件=5  [rd < -50] または [sim_p_upper < 0.5 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
  2. mcc=0.865 成立率=0.99 逆=0.87 条件=6  [sim_p_upper < 0.3 かつ rd < -50] または [sim_p_upper < 0.5 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
@@ -695,7 +695,7 @@ units=156 dropped=0 target: upper_half == False
  8. mcc=0.862 成立率=0.97 逆=0.88 条件=6  [sim_p_upper < 0.4 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
  9. mcc=0.862 成立率=0.97 逆=0.88 条件=6  [sim_p_upper < 0.5 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
 10. mcc=0.862 成立率=0.97 逆=0.88 条件=6  [sim_p_upper < 0.6 かつ rd < -50] または [sim_p_upper < 0.6 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]
-[run] sets: uv run python pythdragoras/sets.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --propositions cycles/c001-chunichi/propositions.toml --sets cycles/c001-chunichi/sets.toml --outdir cycles/c001-chunichi/outputs --report-only
+[run] sets: uv run python PythDRagoras/logic/sets.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml --propositions cycles/c001-chunichi/propositions.toml --sets cycles/c001-chunichi/sets.toml --outdir cycles/c001-chunichi/outputs --report-only
 [1] E1 異議あり（例外あり） 覆い 11/12  OFF_SHORT & ~TOP_WIN
 [1] E2 異議あり（例外あり） 覆い 9/12  OFF_SHORT & ~OFF_SHORT_DEF_CLEAR
 [1] E3 異議あり（例外あり） 覆い 10/12  BIG_SHORT | (OFF_SHORT & ~OFF_SHORT_DEF_CLEAR)
@@ -713,7 +713,7 @@ units=156 dropped=0 target: upper_half == False
 [1] E15 異議あり（例外あり） 覆い 11/12  (F96 | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT
 [4] E16 待った！判断保留 覆い 12/12  SHORT_T | UNDER
 [4] E17 待った！判断保留 覆い 12/12  SHORT_T | (UNDER & ~ALLOC_GOOD)
-[run] judge: uv run python pythdragoras/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --report-only
+[run] judge: uv run python PythDRagoras/logic/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --report-only
 [4] P1 待った！判断保留 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 [1] P2 異議あり（例外あり） 元の命題: 判例 11 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 [4] P3 待った！判断保留 元の命題: 判例 16 件: h-2013, h-2021, l-2015, c-2022, e-2023 ほか

@@ -787,8 +787,11 @@ def reading(r: dict) -> dict:
         code = 3
     else:
         code = 4
+    rates = {f: (by[f]["code"], by[f]["rate"], by[f]["n"]) if f in by else None
+             for f in ("original", "contrapositive", "converse", "inverse")}  # 4つの形すべて（漏れなく並べる、R41）
     return {"id": r["id"], "key": r.get("key"), "signature": r.get("signature"), "reading": code,
-            "original": o, "converse": c, "exit": r["judgement"]["code"],
+            "original": o, "converse": c, "exit": r["judgement"]["code"], "forms": rates,
+            "skip_reason": r.get("skip_reason"),
             "narrow": _seed(by["original"]["counterexamples"]),
             "route": _seed(by["converse"]["counterexamples"]) if c is not None else None}
 
@@ -829,16 +832,26 @@ def render_next(readings: list[dict], meta: dict, limit: int = 8) -> str:
         where = f"（最多: {team[0]} {team[1]}件、{season[0]}年 {season[1]}件）" if s["n"] > 1 else ""
         return f"{s['n']}件: " + ", ".join(shown) + more + where
 
+    def form(x, f):
+        v = (x.get("forms") or {}).get(f)
+        if v is None:
+            return "—"
+        code, rate, n = v
+        return f"{code}・{'-' if rate is None else format(rate, '.2f')}（{n}）"
+
     for k in sorted(counts):
         lines += ["", f"## {k} {READING[k][0]}", "",
-                  "| id | 識別子 | 元・逆 | 総合 | 絞る（元の判例） | 道筋（逆の判例） |", "|---|---|---|---|---|---|"]
+                  "| id | 識別子 | 元の命題 | 対偶 | 逆 | 裏 | 総合 | 絞る（元の判例） | 道筋（逆の判例） |",
+                  "|---|---|---|---|---|---|---|---|---|"]
         for x in readings:
             if x["reading"] != k:
                 continue
-            conv = "—" if x["converse"] is None else x["converse"]
-            lines.append(f"| {x['id']} | `{_cell(x.get('key') or '-')}` | {x['original']}・{conv} | {x['exit']} "
-                         f"| {_cell(units(x['narrow']))} | {_cell(units(x['route']))} |")
-    lines += ["", "太字は焦点の球団。番号は形の終了コード（0 異議なし、1 例外あり、2 主張が強すぎる、3 不成立、4 判断保留、5 判定できない単位）。"]
+            route = units(x["route"]) if x["route"] is not None else ("省略: " + (x.get("skip_reason") or "条件なしの命題"))
+            lines.append(f"| {x['id']} | `{_cell(x.get('key') or '-')}` | {form(x, 'original')} | {form(x, 'contrapositive')} "
+                         f"| {form(x, 'converse')} | {form(x, 'inverse')} | {x['exit']} "
+                         f"| {_cell(units(x['narrow']))} | {_cell(route)} |")
+    lines += ["", "太字は焦点の球団。形のセルは「終了コード・成立率（単位数）」。終了コードは 0 異議なし、1 例外あり、2 主張が強すぎる、3 不成立、4 判断保留、5 判定できない単位。",
+              "逆・裏が「—」の命題は、条件が空か、主語を選ぶだけの条件で省略したもの（道筋の欄に理由）。条件を範囲（where）に書いた命題は、条件を「もし」に移すと逆・裏が作られる（R41）"]
     return "\n".join(lines) + "\n"
 
 

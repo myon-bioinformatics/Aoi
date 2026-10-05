@@ -100,7 +100,7 @@ def main(argv=None) -> int:
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
     spec = tomllib.loads(args.candidates.read_text(encoding="utf-8"))
-    st = pl.read_ndjson(args.season)
+    st = pl.read_ndjson(args.season, infer_schema_length=None)
     st, _ = apply_exclusions(st, cfg.get("exclude", []))
     cols = sorted({c["col"] for c in [*spec["target"], *spec["candidate"]]})
     usable = st.drop_nulls(cols)  # 値が空の単位は探索に入れない（件数は出力に残す）

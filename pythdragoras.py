@@ -395,7 +395,7 @@ def main(argv=None) -> int:
             hyps = tomllib.load(f).get("hypothesis", [])
     focus = cfg.get("focus", {}).get("team")
 
-    full = pl.read_ndjson(args.season)
+    full = pl.read_ndjson(args.season, infer_schema_length=None)
     included, exclusions = apply_exclusions(full, cfg.get("exclude", []))
     # 除外したシーズンを、除外の記録から直接取り出す
     # （Series.unique() は Python 3.15 ベータ + polars 1.44.2 で None を返すため使わない）
@@ -418,7 +418,7 @@ def main(argv=None) -> int:
     _jsonl(args.outdir / "rank_expectation.jsonl", rank_expectation(included))
     _jsonl(args.outdir / "trajectory_expectation.jsonl", shape_expectation(included))
     if args.trajectory_sensitivity and args.trajectory_sensitivity.exists():
-        units, _ = apply_exclusions(pl.read_ndjson(args.trajectory_sensitivity), cfg.get("exclude", []))
+        units, _ = apply_exclusions(pl.read_ndjson(args.trajectory_sensitivity, infer_schema_length=None), cfg.get("exclude", []))
         _jsonl(args.outdir / "trajectory_sensitivity.jsonl", trajectory_sensitivity(included, units, focus))
     keep = ["inn_dlog_size", "rf_def_total", "sim_p_upper", "wpct", "opp_env_gap_top_c", "opp_net_gap_top_c"]
     _jsonl(args.outdir / "persistence_by_team.jsonl", persistence_by_team(included, keep))

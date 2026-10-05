@@ -41,6 +41,14 @@ uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calenda
 | `bat_routes` | 打撃の経路の数（0〜2） | [`bat_d_bb_pa` ≥ 0] + [`bat_d_iso` ≥ 0] | 四死球／打席・ISO が他球団の平均以上なら1つ。どちらかが空なら空 |
 | `vs_top_minus_lower` | 上の相手との勝率 − 下の相手との勝率 | `vs_top_wpct − vs_lower_wpct` | 上 = 最終順位の1・2位、下 = 4〜6位。最終順位で決めるので、A かどうかと算術でつながる面がある |
 
+## A の線（R46・R50）
+
+| 列 | 中身 | 式 | 注意 |
+|---|---|---|---|
+| `lg_lead_gap` / `lg_gap34` / `lg_rest_sd` | 1位 − 2位、3位 − 4位の勝率差、1位以外の勝率の標準偏差 | 勝率を高い順に並べた k 番目の値 | リーグごとの比較には使わない（ユーザーの方針） |
+| `lg_line` | その年・そのリーグの A の線 | （3位の勝率 + 4位の勝率）÷ 2 | |
+| `line_gap_pythag` | 点の差で見込む勝率の、A の線からの距離 | `pythag_fixed − lg_line` | 勝率 − A の線 = `line_gap_pythag` + `resid_fixed`（点の差より勝った分）の恒等式で分ける |
+
 ## B に着く道筋の参考値（R45）
 
 `path_offense`・`path_defense`・`path_convert`・`path_collapse`（当たるか）と、当たったものを `+` でつないだ `b_paths`（例 `offense+convert`、どれにも当たらなければ `none`）。**判定（命題の終了コード）には使わない参考値**で、規則はこれまでの研究で決めたものを固定して使う（値を見て変えない）。A の単位にも付く（道筋に当たりながら A に入った、と読む）。

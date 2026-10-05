@@ -57,10 +57,19 @@ def test_check_counts_rows_per_game():
 
 def test_unknown_team_name_in_a_line_score_shaped_row_is_reported():
     """得点表の形の行の先頭が知らない名前なら、チーム名の候補として unknown に残す（選手の行は残さない）。"""
-    other = ["東京ヤクルト", *"0 0 1 0 0 0 0 0 0".split(), "-", "1", "6", "0"]
+    other = ["横浜大洋", *"0 0 1 0 0 0 0 0 0".split(), "-", "1", "6", "0"]   # 架空（今の12球団にない表記）
     r = parse(page(other, HOME), URL)
-    assert r["records"] == [] and [u["raw"] for u in r["unknown"]] == ["得点表の形の行の知らない名前: 東京ヤクルト"]
+    assert r["records"] == [] and [u["raw"] for u in r["unknown"]] == ["得点表の形の行の知らない名前: 横浜大洋"]
     # 実ページの選手の行は先頭のセルが空（1回目の preview で見た形 「 | E.ラミレス | # | …」）か、「+」「.###」を含む
     for pitcher in (["", "ウィック", "1", "", "2", "0", "1", "0", "0", "0", "3", "1", "2", "0"],
                     ["ウィック", "", "+", "2", "0", "1", "0", "0", "0", "3", "1", "2", "0"]):
         assert parse(page(pitcher, HOME), URL)["unknown"] == []
+
+
+def test_full_club_names_seen_on_real_pages():
+    names = {"北海道日本ハム": "f", "千葉ロッテ": "m", "埼玉西武": "l", "広島東洋": "c", "東京ヤクルト": "s",
+             "東北楽天": "e", "横浜DeNA": "db", "福岡ソフトバンク": "h"}
+    for name, code in names.items():
+        row = [name, *"0 0 0 0 0 0 0 0 0".split(), "-", "0", "3", "1"]
+        teams = {x["team"] for x in parse(page(row, HOME), URL)["records"]}
+        assert teams == {code, "d"}, name

@@ -66,6 +66,16 @@ The scope says which units the proposition talks about: `league`, `team`, `seaso
 
 Use `where` when S is the comparison condition, not part of the claim. A unit whose `where` value is missing is counted as undetermined (exit 5), never silently left outside the scope.
 
+## Groups Defined By The Final Outcome
+
+An inquiry that explains a final outcome (a final rank, a final class) is retrospective: it is made knowing how the season ended.
+Groups used inside a proposition — "the teams that finished first or second", "the upper half" — are therefore defined by the **final** outcome, not by the standing on the day of each game.
+
+This is a premise, not a flaw to be corrected:
+
+- defining a group by the standing at the time of each game makes the data harder to use and the propositions harder to generate, without making them more honest
+- the premise is stated with every proposition whose group depends on it. A proposition that groups opponents by the final rank can be partly linked to its own consequence by arithmetic (beating an upper opponent lowers that opponent and raises oneself); the `note` says so
+
 ## Identity
 
 A sequential ID (`P31`) is a convenient name, but it says nothing about what is asked. Two IDs can ask the same question, and the same question can be investigated twice without anyone noticing. Every proposition therefore has three layers of identity.

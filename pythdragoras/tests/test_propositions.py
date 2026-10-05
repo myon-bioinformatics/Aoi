@@ -676,11 +676,11 @@ def _result(orig, conv, cx_o=(), cx_c=()):
     def cx(units):
         return [{"unit": u, "team": u.split("-")[0], "season": int(u.split("-")[1]), "focus": u.startswith("d-")}
                 for u in units]
-    forms = [{"form": "original", "code": orig, "counterexamples": cx(cx_o)},
-             {"form": "contrapositive", "code": orig, "counterexamples": cx(cx_o)}]
+    forms = [{"form": "original", "code": orig, "rate": 0.9, "n": 20, "counterexamples": cx(cx_o)},
+             {"form": "contrapositive", "code": orig, "rate": 0.8, "n": 15, "counterexamples": cx(cx_o)}]
     if conv is not None:
-        forms += [{"form": "converse", "code": conv, "counterexamples": cx(cx_c)},
-                  {"form": "inverse", "code": conv, "counterexamples": cx(cx_c)}]
+        forms += [{"form": "converse", "code": conv, "rate": 0.6, "n": 18, "counterexamples": cx(cx_c)},
+                  {"form": "inverse", "code": conv, "rate": 0.5, "n": 12, "counterexamples": cx(cx_c)}]
     return {"id": "X", "key": "[all] a>0 => b>0", "signature": "s", "forms": forms, "judgement": {"code": orig}}
 
 
@@ -736,3 +736,11 @@ def test_cli_next_prints_readings_and_never_fails_on_objections(tmp_path, capsys
     assert capsys.readouterr().out.startswith("[4] X")
     assert pr.main(["next", str(f), "--id", "Nope"]) == 64
     assert pr.main(["next", str(tmp_path / "none.jsonl")]) == 66
+
+
+def test_reading_keeps_all_four_forms_and_render_shows_them():
+    x = pr.reading(_result(1, 3, cx_c=["d-2014"]))
+    assert set(x["forms"]) == {"original", "contrapositive", "converse", "inverse"}
+    assert x["forms"]["inverse"] == (3, 0.5, 12)
+    md = pr.render_next([x, pr.reading(_result(0, None))], {"sha256": "s"})
+    assert "| 元の命題 | 対偶 | 逆 | 裏 |" in md and "3・0.50（12）" in md and "省略: " in md

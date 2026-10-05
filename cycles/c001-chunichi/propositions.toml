@@ -2695,3 +2695,19 @@ context = ["course_rank_q3", "lock_g", "q_wl_3", "lg_bar"]
 links = ["H2"]
 falsifier = "きっかけ以外で、3/4 で3〜4位・最後の区間で勝ち越した単位の4分の1を超えて B"
 note = "R60。最後の区間の境は自分の試合数 × 3 ÷ 4 の切り捨て。3/4 の時点の順位（course_rank_q3）は各チームの 3/4 までの試合で並べたもの（R20）で、区間の境とほぼ同じ所"
+
+# 追加: 2026-10-05。R62 の結果を見た後の命題。3/4 で3〜4位の51単位の値を見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P192"
+statement = "試合数の 3/4 の時点で3〜4位なら、最後の区間で下位半分の相手から勝ち越せば A クラス"
+strength = "usually"
+scope = { where = [{ col = "course_rank_q3", op = ">=", value = 3 }, { col = "course_rank_q3", op = "<=", value = 4 }] }
+if = [{ col = "q4_wl_vs_lower", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["d-2021"]
+surprise = "q4_wl_vs_lower"
+context = ["q4_wl_vs_upper", "q4_rd_g", "lg_bar", "q_wl_4"]
+links = ["H2"]
+falsifier = "きっかけ以外で、3/4 で3〜4位・最後の区間で下の相手から勝ち越した単位の4分の1を超えて B"
+note = "R62。下位半分の相手は最終順位で決める（docs/propositions.md の前提）ので、最後の区間の成績と算術でつながる分がある"

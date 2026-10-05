@@ -92,6 +92,14 @@ def main(argv: list[str]) -> int:
     above_q3_b = [unit(r) for r in rows if r["wpct"] >= q3 and not r["upper_half"]]
     below_q1_a = [unit(r) for r in rows if r["wpct"] < q1 and r["upper_half"]]
     print(f"Q3 以上の B: {above_q3_b or 'なし'}、Q1 未満の A: {below_q1_a or 'なし'}")
+    # 実行後に足した: 四分位の帯ごとの A・B の数（どの帯で A と B が混ざるか）
+    bands = (("Q1 未満", lambda w: w < q1), ("Q1〜中央値", lambda w: q1 <= w < med),
+             ("中央値〜Q3", lambda w: med <= w < q3), ("Q3 以上", lambda w: w >= q3))
+    print("\n| 帯 | A | B | うち中日の B |\n|---|---|---|---|")
+    for name, f in bands:
+        xs = [r for r in rows if f(r["wpct"])]
+        print(f"| {name} | {sum(r['upper_half'] for r in xs)} | {sum(not r['upper_half'] for r in xs)} "
+              f"| {sum(1 for r in d if f(r['wpct']))} |")
 
     # 6. 阪神 2015年
     h = next((r for r in rows if r["team"] == "t" and r["season"] == 2015), None)

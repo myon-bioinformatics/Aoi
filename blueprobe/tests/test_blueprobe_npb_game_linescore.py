@@ -24,14 +24,20 @@ def test_two_rows_become_team_records():
     assert by["d"]["key"] == "2024040201097-d"
 
 
-def test_unknown_team_row_is_recorded():
-    r = parse(page(["横 浜", *"0 0 0".split(), "-", "1", "5", "0"], HOME), URL)
-    assert r["records"] == [] and any("横浜" in u["key"] for u in r["unknown"])
+def test_player_rows_are_not_read_or_recorded():
+    """選手の行（投手の成績など）は読まず、unknown にも counts にも入れない（個人の記録は扱わない）。"""
+    pitcher = ["", "ウィック", "1", "", "2", "0", "1", "0", "0", "0"]
+    r = parse(page(AWAY, HOME, pitcher), URL)
+    assert len(r["records"]) == 2 and r["unknown"] == [] and not r["counts"]
 
 
-def test_not_two_rows_is_not_read():
+def test_unreadable_page_leaves_shape_hints_only():
     r = parse(page(HOME), URL)
-    assert r["records"] == [] and "2つでない" in r["unknown"][0]["raw"]
+    assert r["records"] == [] and r["counts"]["no_linescore_page"] == 1 and r["counts"]["team_rows_1"] == 1
+    assert r["counts"]["team_cell_0_len_16"] == 1
+    r = parse(page(["", "中 日", "0", "0"]), URL)
+    assert r["counts"]["team_cell_1_len_4"] == 1 and r["records"] == []
+    assert parse(page(["x", "1"]), URL)["counts"]["no_team_row"] == 1
 
 
 def test_pages_from_calendar_observations(tmp_path):

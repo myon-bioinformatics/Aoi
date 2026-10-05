@@ -52,33 +52,48 @@ def _cells(tr) -> list[str]:
 
 
 def parse(html: str, url: str = "") -> dict:
+    """得点表の2行を読む。選手の行（投手・打者の成績）は読まない・数えない・unknown にも入れない（個人の記録は扱わない方針）。
+
+    得点表が読めないページは、形の手がかりだけを counts に残す（中身は残さない）:
+      no_team_row            : チーム名のセルを持つ行がない
+      team_rows_<n>          : チーム名のセルを持つ行が n 個（2 でない）
+      team_cell_<i>_len_<k>  : 読めなかったページで、チーム名が行の i 番目のセルにあり、行のセルが k 個
+      tail_not_rhe           : チーム名の行はあるが、最後の3つが整数でない
+    """
     out = new_report()
     m = GAME_PATH.fullmatch(urlsplit(url).path) if url else None
     gid = m["id"] if m else None
     season = int(m["y"]) if m else None
     date = f'{m["y"]}-{m["md"][:2]}-{m["md"][2:]}' if m else None
-    teams = []
+    found = []                               # (チーム, セル)
+    shapes = []                              # 読めなかったときの手がかり（チーム名の位置, セルの数）
     for tr in LexborHTMLParser(html).css("tr"):
         cells = _cells(tr)
-        if len(cells) < 5:
+        names = [re.sub(r"\s", "", c) for c in cells]
+        hit = [i for i, n in enumerate(names) if n in TEAM_BY_NAME]
+        if not hit:
             continue
-        name = re.sub(r"\s", "", cells[0])
-        tail = cells[-3:]
-        if not all(INT.fullmatch(c) for c in tail):
+        shapes.append((hit[0], len(cells)))
+        if hit[0] != 0 or len(cells) < 5:
             continue
-        team = TEAM_BY_NAME.get(name)
-        if team is None:
-            if any(re.fullmatch(r"[0-9xX]{1,3}", c) for c in cells[1:-3]):   # 得点表の行の形なのに知らない名前
-                out["unknown"].append({"key": f"{gid}:{name}", "raw": " | ".join(cells)})
-            continue
-        r, h, e = (int(c) for c in tail)
-        teams.append(team)
-        out["records"].append({"key": f"{gid}-{team}", "game_id": gid, "season": season, "date": date, "team": team,
-                               "league": LEAGUE[team], "r": r, "h": h, "e": e,
-                               "raw": " | ".join(cells), "source_url": url})
-    if len(teams) not in (0, 2) or len(set(teams)) != len(teams):
-        out["unknown"].append({"key": f"{gid}:rows", "raw": f"得点表の行が2つでない: {teams}"})
-        out["records"] = []
+        found.append((TEAM_BY_NAME[names[0]], cells))
+    rows = [(t, c) for t, c in found if all(INT.fullmatch(x) for x in c[-3:])]
+    if len(rows) == 2 and rows[0][0] != rows[1][0]:
+        for team, cells in rows:
+            r, h, e = (int(c) for c in cells[-3:])
+            out["records"].append({"key": f"{gid}-{team}", "game_id": gid, "season": season, "date": date, "team": team,
+                                   "league": LEAGUE[team], "r": r, "h": h, "e": e,
+                                   "raw": " | ".join(cells), "source_url": url})
+        return out
+    out["counts"]["no_linescore_page"] += 1
+    if not shapes:
+        out["counts"]["no_team_row"] += 1
+    elif found and not rows:
+        out["counts"]["tail_not_rhe"] += 1
+    else:
+        out["counts"][f"team_rows_{len(rows)}"] += 1
+    for i, k in shapes:
+        out["counts"][f"team_cell_{i}_len_{k}"] += 1
     return out
 
 

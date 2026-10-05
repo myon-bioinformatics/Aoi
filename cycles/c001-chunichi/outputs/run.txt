@@ -5,13 +5,13 @@
 [run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading polars-runtime-32 (47.6MiB)
 Downloading pygments (1.2MiB)
+Downloading polars-runtime-32 (47.6MiB)
 Downloading selectolax (2.4MiB)
- Downloaded pygments
  Downloaded selectolax
+ Downloaded pygments
  Downloaded polars-runtime-32
-Installed 15 packages in 49ms
+Installed 15 packages in 11ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -504,6 +504,8 @@ shape: (14, 12)
 - P184 収支がマイナスなら、点の差より勝っても（resid_fixed > 0）、A と B が混ざる帯の下にいる: **exit 2 異議あり（主張が強すぎる）** （元 修正 / 対偶 保留 / 逆 修正 / 裏 修正）
 - P185 収支の不足が誤差を超える（run_balance_t ≤ −1）なら、点の差より勝っても（resid_fixed > 0）B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 - P186 収支の不足が誤差を超える（run_balance_t ≤ −1）なら、A と B が混ざる帯の下にいる: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 修正 / 裏 保留）
+- P187 点の差より負けた（resid_fixed < 0）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 保留）
+- P188 A と B が混ざる帯の中で、越えるべき高さ（ほかの5球団の3番目の勝率）が .500 未満なら、A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 
 詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
 
@@ -581,6 +583,8 @@ units=156 dropped=0 target: upper_half == False
 [1] E13 異議あり（例外あり） 覆い 12/12 通る  (F96 | (OFF_SHORT & ~TOP_WIN)) & ~ALLOC_GOOD
 [5] E14 待った！判定できない単位がある 覆い 11/12  (PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT
 [1] E15 異議あり（例外あり） 覆い 11/12  (F96 | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT
+[4] E16 待った！判断保留 覆い 12/12  SHORT_T | UNDER
+[4] E17 待った！判断保留 覆い 12/12  SHORT_T | (UNDER & ~ALLOC_GOOD)
 [run] judge: uv run python pythdragoras/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --report-only
 [4] P1 待った！判断保留 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 [1] P2 異議あり（例外あり） 元の命題: 判例 11 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
@@ -768,3 +772,5 @@ units=156 dropped=0 target: upper_half == False
 [2] P184 異議あり（主張が強すぎる） 元の命題: 判例 22 件: t-2015, db-2022, c-2023, b-2025, t-2014 ほか
 [4] P185 待った！判断保留 元の命題: 判例 1 件: t-2015
 [1] P186 異議あり（例外あり） 元の命題: 判例 2 件: t-2015, e-2023
+[4] P187 待った！判断保留 元の命題: 判例 34 件: t-2022, g-2018, h-2024, t-2025, f-2025 ほか
+[4] P188 待った！判断保留 元の命題: 判例 2 件: c-2015, g-2022

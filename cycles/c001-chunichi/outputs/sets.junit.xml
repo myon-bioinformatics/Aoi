@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<testsuite name="pythdragoras.sets" tests="15" failures="14" errors="0" skipped="0">
+<testsuite name="pythdragoras.sets" tests="17" failures="16" errors="0" skipped="0">
   <properties>
-    <property name="sets_sha256" value="f912eec330f6f406179c8f67aea5212dddcc7d5483cad104531bbb3e3ca2df3a" />
-    <property name="propositions_sha256" value="56bf8898d19dae0050d50699eddc9791f00833f7e8f5b254ba50af9469a876fe" />
+    <property name="sets_sha256" value="b174607565118853083b40291eb9b9894016d2e2315b95ab6f4c22f0795bf2b2" />
+    <property name="propositions_sha256" value="c4641c5b4fc21ecfe3fcd29877cbed94c01f0e952529f33c38326fa308106853" />
   </properties>
   <testcase classname="sets" name="E1: OFF_SHORT &amp; ~TOP_WIN">
     <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2018" type="exit1">元の命題 44/45、総合の終了コード 1、覆い 11/12</failure>
@@ -46,5 +46,11 @@
   </testcase>
   <testcase classname="sets" name="E15: (F96 | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~MID_CONVERT">
     <failure message="覆えなかった焦点の単位 1件: d-2023" type="exit0">元の命題 66/66、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E16: SHORT_T | UNDER">
+    <failure message="判例 35件: f-2012, g-2012, h-2012, c-2013, t-2013, b-2014, c-2014, f-2014, h-2014, g-2015, s-2015, t-2015, c-2016, f-2016, h-2016, c-2017, l-2017, g-2018, e-2019, g-2019, e-2021, g-2021, h-2022, l-2022, t-2022, h-2023, t-2023, db-2024, g-2024, h-2024, t-2024, db-2025, f-2025, h-2025, t-2025" type="exit4">元の命題 73/108、総合の終了コード 4、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E17: SHORT_T | (UNDER &amp; ~ALLOC_GOOD)">
+    <failure message="判例 33件: f-2012, h-2012, c-2013, t-2013, b-2014, c-2014, f-2014, h-2014, g-2015, s-2015, t-2015, c-2016, f-2016, h-2016, c-2017, l-2017, g-2018, e-2019, g-2019, e-2021, g-2021, h-2022, l-2022, t-2022, h-2023, db-2024, g-2024, h-2024, t-2024, db-2025, f-2025, h-2025, t-2025" type="exit4">元の命題 73/106、総合の終了コード 4、覆い 12/12</failure>
   </testcase>
 </testsuite>

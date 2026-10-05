@@ -153,6 +153,18 @@ Future users should always be able to distinguish:
 
 ---
 
+# The Unit Is Observed As A Whole
+
+Aoi observes a unit by its own record (in cycle 1, a team by its team record), not by the records of its members (players, pitchers, line-ups).
+
+The records of members bring many more variables, each with its own reasons to vary, and an explanation built on them tends to spread out rather than converge.
+
+- Questions that can only be answered with members' records are recorded as **outside the scope by policy**, not as waiting for data
+- Team-level aggregates of play (for example, runners left on base by the team) are records of the unit and stay in scope
+- Where a reading would tempt a member-level explanation ("the pitchers tired"), the record states only what the unit's own data shows ("runs allowed rose in the second half")
+
+---
+
 # Divergence Is Information
 
 A derived value can diverge: a ratio whose denominator is close to zero, a logarithm of zero, a rate over an empty group.

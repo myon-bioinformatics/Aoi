@@ -2050,3 +2050,103 @@ context = ["rank", "rd", "vs_top_wpct", "alloc_z_strat"]
 links = ["H3"]
 falsifier = "得失点差プラスで下の相手に .500 未満の単位の4分の1を超えて A クラス"
 note = "R38 で得失点差プラスの B の 8/12 が A の25%（.54）より下だった指標。境は五分。下の相手は最終順位で決める（docs/propositions.md の前提）"
+
+# 追加: 2026-10-05。R40（精度の高い命題の逆・裏と、形ごとの命題）。計算前に登録した。
+# 見ているもの: 形 -1/-1（13中12 が B、阪神 2015 が A）・-1/0（中日以外 17中16 が B、巨人 2016 が A。中日の該当年はすべて B）・
+# -1/+1（中日以外 11中6 が B）の A・B（R35〜R37）、形ごとの単位数（R39）。ほかの形の A・B と、得点・失点 −1 から見た逆は見ていない。
+
+[[proposition]]
+id = "P147"
+statement = "得点の不足が誤差を超えている（得点 −1）なら、B クラス"
+strength = "usually"
+if = [{ col = "rf_zone_se", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_adv_t"
+context = ["rank", "adv_shape_se", "run_balance_t"]
+links = ["H2"]
+falsifier = "得点 −1 の単位の4分の1を超えて A クラス"
+note = "元の命題の率は R35〜R37 からほぼ分かっている。読みたいのは逆（B なら得点ははっきり足りない）で、P148 の逆と比べる"
+
+[[proposition]]
+id = "P148"
+statement = "失点の優位が誤差を超えて負けている（失点 −1）なら、B クラス"
+strength = "usually"
+if = [{ col = "ra_zone_se", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "ra_adv_t"
+context = ["rank", "adv_shape_se", "run_balance_t"]
+links = ["H2"]
+falsifier = "失点 −1 の単位の4分の1を超えて A クラス"
+note = "P147 の鏡（失点の側）。逆（B なら失点ははっきり劣る）を P147 の逆と比べる"
+
+[[proposition]]
+id = "P149"
+statement = "得点も失点もはっきり劣る（形 -1/-1）なら、B クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "-1/-1" }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて A クラス"
+note = "見ている（13中12）。形ごとの表をそろえるために置く"
+
+[[proposition]]
+id = "P150"
+statement = "得点ははっきり足りず、失点は平均と区別できない（形 -1/0）なら、B クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "-1/0" }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t", "bat_routes"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて A クラス"
+note = "中日を含めた P141。見ている。P151（鏡 0/-1）と比べる"
+
+[[proposition]]
+id = "P151"
+statement = "得点は平均と区別できず、失点ははっきり劣る（形 0/-1）なら、B クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "0/-1" }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて A クラス"
+note = "P150 の鏡。まだ見ていない"
+
+[[proposition]]
+id = "P152"
+statement = "得点も失点もはっきり上回る（形 +1/+1）なら、A クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "+1/+1" }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて B クラス"
+note = "まだ見ていない"
+
+[[proposition]]
+id = "P153"
+statement = "得点ははっきり上回り、失点は平均と区別できない（形 +1/0）なら、A クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "+1/0" }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて B クラス"
+note = "まだ見ていない。P154（鏡 0/+1）と比べる"
+
+[[proposition]]
+id = "P154"
+statement = "得点は平均と区別できず、失点ははっきり上回る（形 0/+1）なら、A クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "0/+1" }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて B クラス"
+note = "まだ見ていない"

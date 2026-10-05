@@ -5,13 +5,13 @@
 [run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading polars-runtime-32 (47.6MiB)
 Downloading pygments (1.2MiB)
+Downloading polars-runtime-32 (47.6MiB)
 Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 23ms
+Installed 15 packages in 12ms
 ledger: 126 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
@@ -313,30 +313,25 @@ HTTP requests: 0
 
 [run] fetch_linescore: uv run python queryu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_game_linescore.jsonl
 ledger: 858 pages, refetched=0, changed=0
-2025: records=920 no_linescore_page=398 no_team_row=31 team_cell_0_len_1=367 team_cell_0_len_11=1 team_cell_0_len_12=2 team_cell_0_len_16=323 team_cell_0_len_18=18 team_cell_0_len_19=10 team_cell_0_len_2=183 team_cell_0_len_20=13 team_cell_1_len_2=551 team_rows_1=367 unknown=426
+2025: records=1716 unknown=0
 HTTP requests: 0
-2025: games=460 rows_not_2=0 OK
+2025: games=858 rows_not_2=0 OK
 [run] observe_linescore: uv run python queryu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --offline
-2025: records=920 no_linescore_page=398 no_team_row=31 team_cell_0_len_1=367 team_cell_0_len_11=1 team_cell_0_len_12=2 team_cell_0_len_16=323 team_cell_0_len_18=18 team_cell_0_len_19=10 team_cell_0_len_2=183 team_cell_0_len_20=13 team_cell_1_len_2=551 team_rows_1=367 unknown=426
+2025: records=1716 unknown=0
 HTTP requests: 0
-2025: games=460 rows_not_2=0 OK
+2025: games=858 rows_not_2=0 OK
 [run] preview_linescore: uv run python blueprobe/blueprobe.py --source npb_game_linescore --cache data/raw/npb_game_linescore --out cycles/c001-chunichi/outputs/observed_linescore.md
-unknown: 426 件。表記の変化を疑う（上の表を参照）
 # npb_game_linescore: 観測された構造
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
 
-| group | empty_pages | n_no_linescore_page | n_no_team_row | n_team_cell_0_len_1 | n_team_cell_0_len_11 | n_team_cell_0_len_12 | n_team_cell_0_len_16 | n_team_cell_0_len_18 | n_team_cell_0_len_19 | n_team_cell_0_len_2 | n_team_cell_0_len_20 | n_team_cell_1_len_2 | n_team_rows_1 | pages | records | unknown |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 2025 | 0 | 398 | 31 | 367 | 1 | 2 | 323 | 18 | 10 | 183 | 13 | 551 | 367 | 858 | 920 | 426 |
+| group | empty_pages | pages | records | unknown |
+|---|---|---|---|---|
+| 2025 | 0 | 858 | 1716 | 0 |
 
 ## 取りこぼしの確認（既知値との照合）
 
-- 2025: games=460 rows_not_2=0 OK
-
-## 未知の表記（数字は # に伏せた形）
-
-- 2025: `'得点表の形の行の知らない名前: 東北楽天'`, `'得点表の形の行の知らない名前: 横浜DeNA'`, `'得点表の形の行の知らない名前: 福岡ソフトバンク'`
+- 2025: games=858 rows_not_2=0 OK
 
 [run] measure: uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --sensitivity-out cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
 shape: (14, 12)

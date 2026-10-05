@@ -685,3 +685,42 @@ def test_season_trajectory_can_stop_when_the_top_half_is_decided():
     assert full["traj_wl_peak_after_clinch"] is not None and 0 <= full["traj_wl_peak_after_clinch_base"] <= 1
     d = season_trajectory(tg, sims=5, min_games=1).filter(pl.col("team") == "d").row(0, named=True)
     assert d["traj_wl_peak_after_clinch"] is None                                   # 入らなかった球団は空
+
+
+# ---------- R32: 得点・失点の優位（1試合あたり） ----------
+
+def test_add_balance_is_relative_to_the_other_teams_and_share_stays_bounded():
+    import polars as pl
+
+    import sakanalytics as sa
+
+    # 1リーグ3球団、10試合。他2球団の平均と比べる
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3,
+                       "RF": [30, 40, 50], "RA": [30, 40, 50]})
+    out = {r["team"]: r for r in sa.add_balance(st).iter_rows(named=True)}
+    assert out["a"]["rf_adv"] == pytest.approx(3.0 - 4.5) and out["a"]["ra_adv"] == pytest.approx(4.5 - 3.0)
+    assert out["b"]["rf_adv"] == pytest.approx(0.0) and out["b"]["ra_adv"] == pytest.approx(0.0)
+    assert out["a"]["run_balance"] == pytest.approx(0.0)
+    # a: 不足 1.5、優位 1.5 → 取り分 0.5。c: 不足なし・優位マイナス → 空。b: 不足も優位もない → 空
+    assert out["a"]["short_share"] == pytest.approx(0.5)
+    assert out["c"]["short_share"] is None and out["b"]["short_share"] is None
+
+
+@pytest.mark.parametrize("rf,ra,expected", [
+    ([40, 50, 50], [40, 50, 50], 0.5),        # 不足 1.0、優位 1.0 → 0.5
+    ([40, 50, 50], [50, 50, 50], 1.0),        # 不足 1.0、優位 0 → 1（補えなかった）
+    ([40, 50, 50], [55, 50, 50], 1.0),        # 不足 1.0、優位 −0.5 → 1 で止める
+    ([50, 40, 40], [40, 50, 50], 0.0),        # 不足なし、優位 1.0 → 0
+    ([40, 50, 50], [45, 50, 50], 1 / 1.5),    # 不足 1.0、優位 0.5 → 0.667
+])
+def test_short_share_edges(rf, ra, expected):
+    import polars as pl
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3, "RF": rf, "RA": ra})
+    r = sa.add_balance(st).row(0, named=True)
+    d, a = max(0.0, -r["rf_adv"]), r["ra_adv"]
+    assert 0.0 <= r["short_share"] <= 1.0
+    assert r["short_share"] == pytest.approx(min(1.0, d / (d + a)) if d + a > 0 else 1.0)
+    assert r["short_share"] == pytest.approx(expected)

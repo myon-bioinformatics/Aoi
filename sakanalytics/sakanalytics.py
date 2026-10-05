@@ -61,6 +61,7 @@
   series_*                         カード（同じ相手・同じ球場で続けての試合）ごとの勝ち数: 負け越したカード、勝ち数の散らばり、
                                    1試合目とそれ以外の勝率の差、3連戦の 0〜3勝の数と、力が一定のときとの比べ（R24。series_features）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
+  rf_adv / ra_adv / run_balance / short_share  得点・失点の優位を1試合あたりの点で（他球団平均との差）。収支と、0〜1 の取り分（R32。add_balance）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1170,6 +1171,27 @@ def add_persistence(st: pl.DataFrame) -> pl.DataFrame:
     return streak(st, pl.col("rank_rf") >= 5, "rf_low_streak")
 
 
+def add_balance(st: pl.DataFrame) -> pl.DataFrame:
+    """R32: 得点・失点の優位を、順位ではなく1試合あたりの点で表す（同じ年・同じリーグの他球団の平均との差）。
+
+      rf_adv       : 得点／試合 − 他球団の得点／試合の平均（プラスほど取った。rf_def_total と同じ量を、得点・失点から直接）
+      ra_adv       : 他球団の失点／試合の平均 − 失点／試合（プラスほど抑えた）
+      run_balance  : rf_adv + ra_adv（得点の不足を失点の優位で補えたか。プラスなら補えた）
+      short_share  : 不足 ÷（不足 + 優位）。不足 = max(0, −rf_adv)、優位 = ra_adv。0〜1 に収まる（割る数が 0 の近くでも発散しない、R31）
+                     不足があって優位が不足を打ち消せない（不足 + 優位 ≤ 0）なら 1。不足がなく優位が正なら 0。不足も優位もなければ空
+    順位（rank_rf・rank_ra）は3位のところで中身がない（優位がほぼ 0 か負）ことがある（R31）ので、量で見る列を置く。
+    """
+    over = ["season", "league"]
+    others = lambda e: (e.sum().over(over) - e) / (pl.len().over(over) - 1)  # noqa: E731
+    rf_g, ra_g = pl.col("RF") / pl.col("G"), pl.col("RA") / pl.col("G")
+    st = st.with_columns(rf_adv=rf_g - others(rf_g), ra_adv=others(ra_g) - ra_g)
+    d, a = pl.max_horizontal(-pl.col("rf_adv"), pl.lit(0.0)), pl.col("ra_adv")
+    share = (pl.when(d + a > 0).then((d / (d + a)).clip(0.0, 1.0))
+             .when(d > 0).then(pl.lit(1.0))
+             .otherwise(None))
+    return st.with_columns(run_balance=pl.col("rf_adv") + a, short_share=share)
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -1287,7 +1309,7 @@ def main(argv=None) -> int:
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     if args.batting:
         st = batting_join(st, pl.read_ndjson(args.batting))
-    st = add_persistence(st)
+    st = add_balance(add_persistence(st))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

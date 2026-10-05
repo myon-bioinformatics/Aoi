@@ -2511,3 +2511,19 @@ context = ["rank", "rd", "opp_conv_top", "opp_conv_low"]
 links = ["H3"]
 falsifier = "きっかけ以外で、中位の相手から3勝以上多く勝った単位の4分の1を超えて B"
 note = "R49。中位の相手は最終順位で決める（docs/propositions.md の前提）"
+
+# 追加: 2026-10-05。R50（A の線までの距離）。計算前に登録した。lg_line・line_gap_pythag の値は見ていない。
+# きっかけは阪神 2015年（2015年のセ・リーグは 1位 − 2位 .011、3位 − 4位 .004 で、全チームが五分前後に固まっていた、R46 の表）。
+
+[[proposition]]
+id = "P180"
+statement = "点の差どおりに勝てば A の線（3位と4位の勝率の中間）に届く（line_gap_pythag ≥ 0）なら、A クラス"
+strength = "usually"
+if = [{ col = "line_gap_pythag", op = ">=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "line_gap_pythag"
+context = ["rank", "lg_line", "pythag_fixed", "resid_fixed", "wins_vs_pythag"]
+links = ["H2", "H3"]
+falsifier = "点の差どおりで線に届くチームの4分の1を超えて B"
+note = "勝率 − 線 = line_gap_pythag + resid_fixed の恒等式のうち、前の項だけで言う命題。逆の判例（線に届かないのに A）は、点の差より勝って線を越えたチーム。線は最終順位で決める（前提）"

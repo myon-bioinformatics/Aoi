@@ -2369,3 +2369,59 @@ context = ["wave_limit_rank", "course_rank_h1", "rank"]
 links = ["H1", "H6"]
 falsifier = "中日の B の年の半分以下しか、前半の行き先が4位以下にならない"
 note = "中日の A は 2012年だけなので、対偶・裏は単位が少ない"
+
+# 追加: 2026-10-05。R43（残っていた種の続き）。計算前に登録した。
+# 見ているもの: P116 の判例15単位の名前と、その得点の順位（R27）。中日 2016年の前半3位・最終6位（R20・R42）。
+# course_rf_d・course_ra_d の値と、P116 の判例の失点の区分は見ていない。
+
+[[proposition]]
+id = "P170"
+statement = "前半の順位より3つ以上下で終わった（course_fade ≥ 3）なら、後半の失点が前半より（他球団と比べて）増えている"
+strength = "more_often_than_not"
+if = [{ col = "course_fade", op = ">=", value = 3 }]
+then = [{ col = "course_ra_d", op = ">", value = 0 }]
+surprise = "course_ra_d"
+context = ["rank", "course_rank_h1", "course_rf_d", "half2_vs_pythag"]
+links = ["H6"]
+falsifier = "大きく落ちた単位の半分以下しか、後半の失点が増えていない"
+note = "開いた問い5（投手の負担は後半に効くか）の、投手の記録なしでできる部分。P171（得点の側）と率を比べる"
+
+[[proposition]]
+id = "P171"
+statement = "前半の順位より3つ以上下で終わったなら、後半の得点が前半より（他球団と比べて）減っている"
+strength = "more_often_than_not"
+if = [{ col = "course_fade", op = ">=", value = 3 }]
+then = [{ col = "course_rf_d", op = "<", value = 0 }]
+surprise = "course_rf_d"
+context = ["rank", "course_rank_h1", "course_ra_d", "half2_vs_pythag"]
+links = ["H6"]
+falsifier = "大きく落ちた単位の半分以下しか、後半の得点が減っていない"
+note = "P170 の鏡（得点の側）"
+
+[[proposition]]
+id = "P172"
+statement = "得点した回の大きさがリーグ上位2位以内で、失点がはっきり劣ってはいない（失点の区分 ≥ 0）なら、A クラス"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_rank", op = ">=", value = 5 }, { col = "ra_zone_se", op = ">=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P116"
+change = "R27 の種: P116 の判例（大きさは上位なのに B）の多くは得点も上位だった。失点がはっきり劣る単位を除く条件を足す"
+surprise = "inn_dlog_size"
+context = ["rank", "ra_adv_t", "rank_rf"]
+links = ["H5"]
+falsifier = "この条件の単位の4分の1を超えて B クラス"
+note = "P173 と並べる。P116 は 0.69"
+
+[[proposition]]
+id = "P173"
+statement = "得点した回の大きさがリーグ上位2位以内でも、失点がはっきり劣る（失点 −1）なら、B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_rank", op = ">=", value = 5 }, { col = "ra_zone_se", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "ra_adv_t"
+context = ["rank", "inn_dlog_size", "rank_rf"]
+links = ["H5"]
+falsifier = "この条件の単位の4分の1を超えて A クラス"
+note = "P172 の裏の側を、命題として立てたもの"

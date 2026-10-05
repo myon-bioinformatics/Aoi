@@ -45,15 +45,13 @@ def test_cycle_pipeline_is_valid():
     p = na.load(CYCLE)
     assert [s["name"] for s in p["step"]] == ["fetch", "observe", "inspect", "fetch_batting", "observe_batting",
                                               "inspect_batting", "fetch_fielding", "observe_fielding", "inspect_fielding",
-                                              "fetch_linescore", "observe_linescore", "preview_linescore",
+                                              "fetch_linescore", "observe_linescore", "inspect_linescore",
                                               "measure", "question", "search", "search_r21", "sets", "judge"]
     assert [s["name"] for s in p["step"] if s.get("network")] == ["fetch", "fetch_batting", "fetch_fielding", "fetch_linescore"]  # 外に出るのは取得だけ
     # 守備成績は形を確かめた後に measure へ渡す（構造の確認は --strict、下の一般の確認）
     measure = next(s for s in p["step"] if s["name"] == "measure")
     assert any("npb_team_fielding" in a for a in measure["run"])
-    # 試合ごとの得点表は形を確かめる前なので preview（--strict なし）で、measure にはまだ渡さない
-    assert "--strict" not in next(s for s in p["step"] if s["name"] == "preview_linescore")["run"]
-    assert not any("npb_game_linescore" in a for a in measure["run"])
+    assert any("npb_game_linescore" in a for a in measure["run"])   # 試合ごとの得点表も形を確かめた後に渡す
     names = [s["name"] for s in p["step"]]
     for s in p["step"]:  # 構造の確認は --strict で、測る前に止まれる位置にある
         if s["name"].startswith("inspect"):

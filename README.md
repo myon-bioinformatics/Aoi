@@ -48,6 +48,7 @@ uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calenda
 | `lg_lead_gap` / `lg_gap34` / `lg_rest_sd` | 1位 − 2位、3位 − 4位の勝率差、1位以外の勝率の標準偏差 | 勝率を高い順に並べた k 番目の値 | リーグごとの比較には使わない（ユーザーの方針） |
 | `lg_line` | その年・そのリーグの A の線 | （3位の勝率 + 4位の勝率）÷ 2 | |
 | `line_gap_pythag` | 点の差で見込む勝率の、A の線からの距離 | `pythag_fixed − lg_line` | 勝率 − A の線 = `line_gap_pythag` + `resid_fixed`（点の差より勝った分）の恒等式で分ける |
+| `lg_rank_at_500` | 勝率 .500 が何位に当たるか（もう1つの線の引き方） | 勝率を高い順に並べ、.500 をはさむ2チームの間を直線でつないだ順位 | 3.5 より小さいほど .500 が上位寄り。全チームが .500 の片側なら空 |
 
 ## B に着く道筋の参考値（R45）
 

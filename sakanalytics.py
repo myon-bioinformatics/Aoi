@@ -68,6 +68,7 @@
   path_* / b_paths                 B に着く道筋の参考値（R45。add_b_paths、規則は B_PATHS。判定には使わない）
   lg_lead_gap / lg_gap34 / lg_rest_sd  その年・そのリーグの順位の形（1位と2位の差、3位と4位の差、1位以外の散らばり。R46。add_league_shape）
   lg_line / line_gap_pythag        A の線（3位と4位の勝率の中間）と、点の差で見込む勝率の線からの距離（R50）
+  lg_rank_at_500                   勝率 .500 が何位に当たるか（滑らかな順位、R51）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1249,6 +1250,20 @@ def add_composites(st: pl.DataFrame) -> pl.DataFrame:
     return st.with_columns(out) if out else st
 
 
+def rank_at(wpcts: list, level: float = 0.5) -> float | None:
+    """勝率の並び（高い順）の中で、勝率 level が何位に当たるかを、隣り合う2チームの間を直線でつないで返す（R51）。
+
+    例: 勝率 .52・.51・.49 … なら .500 は 2.5位。全チームが level より上（下）なら、いちばん下（上）の順位の外側として空。
+    """
+    w = sorted((x for x in wpcts if x is not None), reverse=True)
+    for k in range(len(w) - 1):
+        if w[k] >= level >= w[k + 1]:
+            if w[k] == w[k + 1]:
+                return k + 1.5
+            return (k + 1) + (w[k] - level) / (w[k] - w[k + 1])
+    return None
+
+
 def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
     """R46: その年・そのリーグの順位の形（リーグ全体で1つの値を、各単位に付ける）。勝率（wpct）と順位（rank）だけから作る。
 
@@ -1256,6 +1271,8 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
       lg_gap34      : 3位の勝率 − 4位の勝率（小さいほど A と B の境が近い）
       lg_rest_sd    : 2〜6位（1位を除く）の勝率の標準偏差（小さいほど、1位以外が狭い範囲に押し込まれている）
       lg_line       : A の線 = （3位の勝率 + 4位の勝率）÷ 2（R50。その年・そのリーグで A と B を分ける高さ）
+      lg_rank_at_500 : 勝率 .500 が何位に当たるか（隣り合う2チームの間を直線でつないだ順位、R51。rank_at）。
+                       3.5 より小さいほど、.500 が上位寄り（五分を超えるチームが少ない）
       line_gap_pythag : 点の差で見込む勝率（pythag_fixed）− A の線（R50）。マイナスなら、点の差どおりでは線に届かない。
                         勝率 − A の線 = line_gap_pythag + resid_fixed（点の差より勝った分）の算術の恒等式で分ける
     勝率を高い順に並べた k 番目の値を使う（同率でも k 番目）。リーグのチームが足りなければ空。
@@ -1269,6 +1286,8 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
         lg_gap34=nth(3) - nth(4),
         lg_rest_sd=pl.col("wpct").filter(pl.col("wpct") < pl.col("wpct").max()).std().over(over),
         lg_line=(nth(3) + nth(4)) / 2,
+        lg_rank_at_500=pl.col("wpct").map_batches(lambda w: pl.Series([rank_at(w.to_list(), 0.5)] * len(w)),
+                                                   return_dtype=pl.Float64).over(over),
     )
     # R50: A の線（3位と4位の勝率の中間）までの距離を、点の差で見込む勝率で測る。
     #   wpct − lg_line = line_gap_pythag（点の差で見込む位置）+ resid_fixed（点の差より勝った分）  ← 算術の恒等式

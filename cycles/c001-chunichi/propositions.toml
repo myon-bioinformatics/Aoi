@@ -2557,3 +2557,33 @@ context = ["wpct", "mix_lo", "mix_hi", "rank"]
 links = ["H2"]
 falsifier = "帯の上の単位の10分の1を超えて B"
 note = "R53。P181 の鏡の側。きっかけの巨人 2017年は帯の上端そのもの"
+
+# 追加: 2026-10-05。R54（帯の両端、巨人 2017・2018年）の結果を見た後の命題。2つの単位の値は見ている。ほかの単位の値は見ていない。
+# 2つの巨人はどちらも、収支はプラス（失点の優位がリーグでいちばん大きい）なのに、点の差を勝ちに変えられず（1点差 −14・−12）、勝率が線の近くまで落ちていた。
+# 中日の B の年はその鏡（収支はマイナス、点の差より勝った年が多い、R51）に見えるので、鏡の側も同時に登録する。
+
+[[proposition]]
+id = "P183"
+statement = "収支がプラスなのに点の差を勝ちに変えられない（path_convert）なら、A と B が混ざる帯の中に落ちる"
+strength = "usually"
+if = [{ col = "run_balance", op = ">", value = 0 }, { col = "path_convert", op = "==", value = true }]
+then = [{ col = "mix_zone", op = "==", value = 0 }]
+motivated_by = ["g-2017", "g-2018"]
+surprise = "path_convert"
+context = ["run_balance", "wins_vs_pythag", "one_run_net", "alloc_z_strat", "wpct", "mix_lo", "mix_hi"]
+links = ["H2", "H3"]
+falsifier = "きっかけ以外で、収支プラス・変えられない単位の4分の1を超えて帯の外"
+note = "R54。帯は1年抜き（R53）。path_convert の規則は R45 で決めたもの（wins_vs_pythag < −2 か alloc_z_strat < −1）を使い、値を見て変えない"
+
+[[proposition]]
+id = "P184"
+statement = "収支がマイナスなら、点の差より勝っても（resid_fixed > 0）、A と B が混ざる帯の下にいる"
+strength = "usually"
+if = [{ col = "run_balance", op = "<", value = 0 }, { col = "resid_fixed", op = ">", value = 0 }]
+then = [{ col = "mix_zone", op = "==", value = -1 }]
+motivated_by = ["g-2017", "g-2018"]
+surprise = "resid_fixed"
+context = ["run_balance", "wins_vs_pythag", "wpct", "mix_lo"]
+links = ["H2", "H3"]
+falsifier = "収支マイナス・点の差より勝った単位の4分の1を超えて帯の中か上"
+note = "R54。P183 の鏡の側（中日の B の年の形、R51 の区画）。きっかけは巨人の2単位だが、この命題の範囲には入らない（どちらも収支プラス）"

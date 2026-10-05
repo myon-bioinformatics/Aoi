@@ -1,7 +1,7 @@
 # 異議あり — 命題の判定記録（自動生成）
 
 判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。
-命題ファイル SHA-256: `8b6bec2e9635f1fe2e55ae7e40a489ca5e4a91380b64a515c1a9d620b3fe2f63` / コード: `a0600d3257d3fbf281842535cca580a0c619fa71`
+命題ファイル SHA-256: `aa3314e3c92b9295560af7faf5bbf615ab389bdc1c46bf0215e1d7c447676419` / コード: `242f928284b7e25b5ff9e4df36edae76ba2c31c4`
 
 判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。
 
@@ -6001,6 +6001,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 6 件: l-2015, m-2019, g-2023, e-2022, c-2022 ほか
 - もし: `rd > 0` ならば: `upper_half == True`
 - 識別子: `[where:rank_ra>=4, where:rank_rf<=3] rd>0 => upper_half==true`（指紋 `100214fdc4f6f6ba`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P124
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'rank_rf', 'op': '<=', 'value': 3}, {'col': 'rank_ra', 'op': '>=', 'value': 4}]} / 単位数: 41
 - 見直す条件（反証）: 得失点差プラスの単位の4分の1を超えて B クラス
 - 注記: P121 の鏡（得点の側）。この範囲の得失点差と順位の組はまだ見ていない
@@ -6061,6 +6062,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 3 件: g-2017, e-2012, d-2019
 - もし: `rd > 0` ならば: `upper_half == True`
 - 識別子: `[where:rank_ra<=3, where:rank_rf>=4] rd>0 => upper_half==true`（指紋 `213b1a6b6d580d4f`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P125
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'rank_ra', 'op': '<=', 'value': 3}, {'col': 'rank_rf', 'op': '>=', 'value': 4}]} / 単位数: 43
 - 見直す条件（反証）: きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス
 - 注記: P121 の範囲を得点4位まで広げた形。得点4位の17単位は見ていないので、きっかけ以外はその部分で読む
@@ -6095,3 +6097,101 @@
   - ロッテ 2015 は「upper_half == True」を満たすのに「rd > 0」を満たさない。なぜか？ → H2
 
 **きっかけ以外での判定**（作り直しのきっかけ t-2013, t-2021, t-2022, h-2012, l-2022, d-2019 を除く）: n=13 成立=11 成立率=0.85 [0.58, 0.96] → **判断保留** / 判例: g-2017, e-2012
+
+## P124: 得点だけが上位半分のチームは、点の差から見込まれるより多く勝っていれば A クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 6 件: e-2023, s-2016, g-2022, m-2022, db-2015 ほか
+- もし: `wins_vs_pythag > 0` ならば: `upper_half == True`
+- 識別子: `[where:rank_ra>=4, where:rank_rf<=3] wins_vs_pythag>0 => upper_half==true`（指紋 `412955a6842c100e`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P122
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'rank_rf', 'op': '<=', 'value': 3}, {'col': 'rank_ra', 'op': '>=', 'value': 4}]} / 単位数: 41
+- 見直す条件（反証）: きっかけの16単位を除いて、見込みより多く勝った単位の4分の1を超えて B クラス
+- 注記: wins_vs_pythag は勝ち数と、得点・失点から見込まれる勝ち数（固定指数）の差。きっかけ以外の25単位で読む
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 23 | 17 | 0.74 [0.54, 0.87] | -0.12σ（0.532） | 0.49 | 1.52 | 0.000 | 0 | 判断保留 | 4 |
+| 対偶 | 21 | 15 | 0.71 [0.50, 0.86] | -0.38σ（0.433） | 0.44 | 1.63 | 0.000 | 0 | 判断保留 | 4 |
+| 逆 | 20 | 17 | 0.85 [0.64, 0.95] | +1.03σ（0.225） | 0.56 | 1.52 | 0.000 | 0 | 判断保留 | 4 |
+| 裏 | 18 | 15 | 0.83 [0.61, 0.94] | +0.82σ（0.306） | 0.51 | 1.63 | 0.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 元の命題に判例 6 件（対偶の判例も同じ）
+
+- 楽天 2023: wins_vs_pythag=+4.68, upper_half=False, rank=4, rd=-43, rank_rf=2, rank_ra=6, one_run_net=6 / surprise=+4.68
+  - 楽天 2023 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- ヤクルト 2016: wins_vs_pythag=+3.04, upper_half=False, rank=5, rd=-100, rank_rf=2, rank_ra=6, one_run_net=0 / surprise=+3.04
+  - ヤクルト 2016 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 巨人 2022: wins_vs_pythag=+2.61, upper_half=False, rank=4, rd=-41, rank_rf=3, rank_ra=6, one_run_net=4 / surprise=+2.61
+  - 巨人 2022 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- ロッテ 2022: wins_vs_pythag=+2.38, upper_half=False, rank=5, rd=-35, rank_rf=3, rank_ra=6, one_run_net=-12 / surprise=+2.38
+  - ロッテ 2022 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- DeNA 2015: wins_vs_pythag=+1.52, upper_half=False, rank=6, rd=-90, rank_rf=2, rank_ra=6, one_run_net=0 / surprise=+1.52
+  - DeNA 2015 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 広島 2021: wins_vs_pythag=0.845, upper_half=False, rank=4, rd=-32, rank_rf=3, rank_ra=5, one_run_net=-2 / surprise=0.845
+  - 広島 2021 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+
+**待った！判断保留** 逆に判例 3 件（裏の判例も同じ）
+
+- ソフトバンク 2023: wins_vs_pythag=-2.56, upper_half=True, rank=3, rd=29, rank_rf=1, rank_ra=4, one_run_net=2 / surprise=-2.56
+  - ソフトバンク 2023 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- DeNA 2024: wins_vs_pythag=-1.37, upper_half=True, rank=3, rd=19, rank_rf=1, rank_ra=5, one_run_net=-5 / surprise=-1.37
+  - DeNA 2024 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- ヤクルト 2015: wins_vs_pythag=-1.10, upper_half=True, rank=1, rd=56, rank_rf=1, rank_ra=4, one_run_net=2 / surprise=-1.10
+  - ヤクルト 2015 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+
+**きっかけ以外での判定**（作り直しのきっかけ b-2025, c-2022, db-2016, db-2017, db-2019, e-2022, g-2023, l-2012, l-2015, l-2016, m-2013, m-2019, m-2024, s-2012, s-2018, t-2014 を除く）: n=13 成立=7 成立率=0.54 [0.29, 0.77] → **判断保留** / 判例: e-2023, s-2016, g-2022, m-2022, db-2015, c-2021
+
+## P125: 失点だけが上位半分のチームは、点の差から見込まれるより多く勝っていれば A クラス（P124 の鏡）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 5 件: d-2022, db-2018, d-2023, d-2021, l-2025
+- もし: `wins_vs_pythag > 0` ならば: `upper_half == True`
+- 識別子: `[where:rank_ra<=3, where:rank_rf>=4] wins_vs_pythag>0 => upper_half==true`（指紋 `47dce11519f6107a`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P123
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'rank_ra', 'op': '<=', 'value': 3}, {'col': 'rank_rf', 'op': '>=', 'value': 4}]} / 単位数: 43
+- 見直す条件（反証）: （P124 と率を比べるための命題）
+- 注記: R28 で見た26単位（得点5・6位）を除き、得点4位の17単位で読む
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 17 | 12 | 0.71 [0.47, 0.87] | -0.42σ（0.426） | 0.47 | 1.52 | 0.012 | 0 | 判断保留 | 4 |
+| 対偶 | 23 | 18 | 0.78 [0.58, 0.90] | +0.36σ（0.468） | 0.60 | 1.29 | 0.012 | 0 | 判断保留 | 4 |
+| 逆 | 20 | 12 | 0.60 [0.39, 0.78] | -1.55σ（0.102） | 0.40 | 1.52 | 0.012 | 0 | 判断保留 | 4 |
+| 裏 | 26 | 18 | 0.69 [0.50, 0.83] | -0.68σ（0.315） | 0.53 | 1.29 | 0.012 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 元の命題に判例 5 件（対偶の判例も同じ）
+
+- 中日 2022 **(focus)**: wins_vs_pythag=+6.93, upper_half=False, rank=6, rd=-81, rank_rf=6, rank_ra=2, one_run_net=2 / surprise=+6.93
+  - 中日 2022 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- DeNA 2018: wins_vs_pythag=+3.92, upper_half=False, rank=4, rd=-70, rank_rf=6, rank_ra=3, one_run_net=-1 / surprise=+3.92
+  - DeNA 2018 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 中日 2023 **(focus)**: wins_vs_pythag=+2.18, upper_half=False, rank=6, rd=-108, rank_rf=6, rank_ra=3, one_run_net=-3 / surprise=+2.18
+  - 中日 2023 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 中日 2021 **(focus)**: wins_vs_pythag=+1.48, upper_half=False, rank=5, rd=-73, rank_rf=6, rank_ra=1, one_run_net=-2 / surprise=+1.48
+  - 中日 2021 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 西武 2025: wins_vs_pythag=+1.03, upper_half=False, rank=5, rd=-55, rank_rf=6, rank_ra=3, one_run_net=4 / surprise=+1.03
+  - 西武 2025 は「wins_vs_pythag > 0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+
+**待った！判断保留** 逆に判例 8 件（裏の判例も同じ）
+
+- 阪神 2022: wins_vs_pythag=-9.93, upper_half=True, rank=3, rd=61, rank_rf=5, rank_ra=1, one_run_net=-5 / surprise=-9.93
+  - 阪神 2022 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- 巨人 2024: wins_vs_pythag=-2.87, upper_half=True, rank=1, rd=81, rank_rf=4, rank_ra=1, one_run_net=4 / surprise=-2.87
+  - 巨人 2024 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- 巨人 2015: wins_vs_pythag=-2.40, upper_half=True, rank=2, rd=46, rank_rf=4, rank_ra=1, one_run_net=1 / surprise=-2.40
+  - 巨人 2015 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- 阪神 2013: wins_vs_pythag=-2.40, upper_half=True, rank=2, rd=43, rank_rf=5, rank_ra=1, one_run_net=2 / surprise=-2.40
+  - 阪神 2013 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- ソフトバンク 2012: wins_vs_pythag=-2.15, upper_half=True, rank=3, rd=23, rank_rf=5, rank_ra=1, one_run_net=-3 / surprise=-2.15
+  - ソフトバンク 2012 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- 広島 2013: wins_vs_pythag=-1.85, upper_half=True, rank=3, rd=3, rank_rf=4, rank_ra=3, one_run_net=-1 / surprise=-1.85
+  - 広島 2013 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- 楽天 2021: wins_vs_pythag=-0.817, upper_half=True, rank=3, rd=25, rank_rf=4, rank_ra=3, one_run_net=2 / surprise=-0.817
+  - 楽天 2021 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+- 西武 2022: wins_vs_pythag=-0.247, upper_half=True, rank=3, rd=16, rank_rf=5, rank_ra=1, one_run_net=-3 / surprise=-0.247
+  - 西武 2022 は「upper_half == True」を満たすのに「wins_vs_pythag > 0」を満たさない。なぜか？ → H3
+
+**きっかけ以外での判定**（作り直しのきっかけ b-2013, b-2015, b-2024, c-2024, d-2014, d-2015, d-2019, d-2021, d-2022, d-2023, db-2018, e-2018, f-2019, f-2023, h-2012, l-2022, l-2023, l-2024, l-2025, t-2012, t-2013, t-2016, t-2018, t-2019, t-2021, t-2022 を除く）: n=10 成立=10 成立率=1.00 [0.72, 1.00] → **判断保留** / 判例なし

@@ -5,13 +5,13 @@
 [run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading selectolax (2.4MiB)
 Downloading pygments (1.2MiB)
 Downloading polars-runtime-32 (47.6MiB)
- Downloaded selectolax
+Downloading selectolax (2.4MiB)
  Downloaded pygments
+ Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 17ms
+Installed 15 packages in 8ms
 ledger: 126 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
@@ -313,25 +313,30 @@ HTTP requests: 0
 
 [run] fetch_linescore: uv run python queryu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_game_linescore.jsonl
 ledger: 858 pages, refetched=0, changed=0
-2025: records=168 no_linescore_page=774 no_team_row=370 team_cell_0_len_1=404 team_cell_0_len_15=1 team_cell_0_len_16=350 team_cell_0_len_18=21 team_cell_0_len_19=10 team_cell_0_len_2=202 team_cell_0_len_20=22 team_cell_1_len_2=606 team_rows_1=404 unknown=0
+2025: records=168 no_linescore_page=774 no_team_row=370 team_cell_0_len_1=404 team_cell_0_len_15=1 team_cell_0_len_16=350 team_cell_0_len_18=21 team_cell_0_len_19=10 team_cell_0_len_2=202 team_cell_0_len_20=22 team_cell_1_len_2=606 team_rows_1=404 unknown=1138
 HTTP requests: 0
 2025: games=84 rows_not_2=0 OK
 [run] observe_linescore: uv run python queryu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --offline
-2025: records=168 no_linescore_page=774 no_team_row=370 team_cell_0_len_1=404 team_cell_0_len_15=1 team_cell_0_len_16=350 team_cell_0_len_18=21 team_cell_0_len_19=10 team_cell_0_len_2=202 team_cell_0_len_20=22 team_cell_1_len_2=606 team_rows_1=404 unknown=0
+2025: records=168 no_linescore_page=774 no_team_row=370 team_cell_0_len_1=404 team_cell_0_len_15=1 team_cell_0_len_16=350 team_cell_0_len_18=21 team_cell_0_len_19=10 team_cell_0_len_2=202 team_cell_0_len_20=22 team_cell_1_len_2=606 team_rows_1=404 unknown=1138
 HTTP requests: 0
 2025: games=84 rows_not_2=0 OK
 [run] preview_linescore: uv run python blueprobe/blueprobe.py --source npb_game_linescore --cache data/raw/npb_game_linescore --out cycles/c001-chunichi/outputs/observed_linescore.md
+unknown: 1138 件。表記の変化を疑う（上の表を参照）
 # npb_game_linescore: 観測された構造
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
 
 | group | empty_pages | n_no_linescore_page | n_no_team_row | n_team_cell_0_len_1 | n_team_cell_0_len_15 | n_team_cell_0_len_16 | n_team_cell_0_len_18 | n_team_cell_0_len_19 | n_team_cell_0_len_2 | n_team_cell_0_len_20 | n_team_cell_1_len_2 | n_team_rows_1 | pages | records | unknown |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 2025 | 0 | 774 | 370 | 404 | 1 | 350 | 21 | 10 | 202 | 22 | 606 | 404 | 858 | 168 | 0 |
+| 2025 | 0 | 774 | 370 | 404 | 1 | 350 | 21 | 10 | 202 | 22 | 606 | 404 | 858 | 168 | 1138 |
 
 ## 取りこぼしの確認（既知値との照合）
 
 - 2025: games=84 rows_not_2=0 OK
+
+## 未知の表記（数字は # に伏せた形）
+
+- 2025: `'得点表の形の行の知らない名前: 北海道日本ハム'`, `'得点表の形の行の知らない名前: 千葉ロッテ'`, `'得点表の形の行の知らない名前: 埼玉西武'`, `'得点表の形の行の知らない名前: 広島東洋'`, `'得点表の形の行の知らない名前: 東京ヤクルト'`
 
 [run] measure: uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --sensitivity-out cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
 shape: (14, 12)

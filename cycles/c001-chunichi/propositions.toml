@@ -1731,3 +1731,95 @@ context = ["rank", "rd", "rank_rf", "rank_ra", "one_run_net"]
 links = ["H3"]
 falsifier = "（P124 と率を比べるための命題）"
 note = "R28 で見た26単位（得点5・6位）を除き、得点4位の17単位で読む"
+
+# 追加: 2026-10-05。R32（R31 の3つの種）。計算前に登録した。
+# rf_adv・ra_adv・run_balance・short_share は bd85db6 で作った列で、命題の範囲・条件の組はまだ見ていない。
+# R31 で、順位の「失点だけ上位」の B クラスについて、不足 ÷ 優位の分布（中日以外の中央値 2.18、最頻の区間 2.25）は見ている。
+
+[[proposition]]
+id = "P126"
+statement = "得点も失点も、1試合あたりで他球団の平均を上回っていない（優位がない）なら、B クラス"
+strength = "usually"
+if = [{ col = "rf_adv", op = "<=", value = 0 }, { col = "ra_adv", op = "<=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P115"
+change = "上位半分を順位（3位以内）ではなく、1試合あたりの優位の符号で決める。R31 で、失点3位でも優位がほぼ 0 か負の単位が4つあった"
+surprise = "rd"
+context = ["rank", "rank_rf", "rank_ra", "run_balance"]
+links = ["H2"]
+falsifier = "優位のないチーム・シーズンの4分の1を超えて A クラス"
+note = "P115 の対偶（A なら一方は3位以内）が、量で決めても保たれるかを見る"
+
+[[proposition]]
+id = "P127"
+statement = "失点だけに優位がある（失点の優位 > 0、得点の優位 ≤ 0）チームは、得点が5位以下なら B クラス"
+strength = "usually"
+scope = { where = [{ col = "ra_adv", op = ">", value = 0 }, { col = "rf_adv", op = "<=", value = 0 }] }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P118"
+change = "失点だけ上位の範囲を、順位ではなく優位の符号で決める（R31）"
+motivated_by = ["d-2014", "d-2015", "d-2019", "d-2021", "d-2022", "d-2023"]
+surprise = "rd"
+context = ["rank", "rank_ra", "ra_adv", "rf_adv"]
+links = ["H2"]
+falsifier = "きっかけの中日6単位を除いて、4分の1を超えて A クラス"
+note = "P118 と同じく中日の6単位を見た後の条件。きっかけ以外で読む"
+
+[[proposition]]
+id = "P128"
+statement = "失点だけに優位があるチームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "ra_adv", op = ">", value = 0 }, { col = "rf_adv", op = "<=", value = 0 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P123"
+change = "失点だけ上位の範囲を、順位ではなく優位の符号で決める（R31）"
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rank_ra", "rank_rf", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
+note = "P123 の範囲を量で決め直した形"
+
+[[proposition]]
+id = "P129"
+statement = "中日以外で、失点だけに優位がある B クラスは、得点した回の大きさが2年以上続けて下位2位以内なら、得点の不足が大きい（1試合 0.6点を超える）"
+strength = "usually"
+scope = { seasons = "2013-2025", where = [{ col = "team", op = "!=", value = "d" }, { col = "ra_adv", op = ">", value = 0 },
+          { col = "rf_adv", op = "<=", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = [{ col = "inn_size_low_streak", op = ">=", value = 2 }]
+then = [{ col = "rf_adv", op = "<", value = -0.6 }]
+surprise = "rf_adv"
+context = ["rank", "inn_size_rank", "ra_adv", "run_balance"]
+links = ["H5", "H6"]
+falsifier = "続けて低い単位の4分の1を超えて、不足が 0.6 以下"
+note = "R31 の中日の2つの層（届きかけた年 −0.25〜−0.32、届かなかった年 −0.89〜−1.13）の間をとって 0.6 を境にした（中日を見た後の境）。分ける条件は中日以外で探す"
+
+[[proposition]]
+id = "P130"
+statement = "中日以外で、失点だけに優位がある B クラスは、四死球と長打がどちらも他球団より少なければ、得点の不足が大きい（1試合 0.6点を超える）"
+strength = "usually"
+scope = { where = [{ col = "team", op = "!=", value = "d" }, { col = "ra_adv", op = ">", value = 0 },
+          { col = "rf_adv", op = "<=", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = [{ col = "bat_d_bb_pa", op = "<", value = 0 }, { col = "bat_d_iso", op = "<", value = 0 }]
+then = [{ col = "rf_adv", op = "<", value = -0.6 }]
+surprise = "rf_adv"
+context = ["rank", "bat_d_avg", "ra_adv", "run_balance"]
+links = ["H6", "H7"]
+falsifier = "四死球も長打も少ない単位の4分の1を超えて、不足が 0.6 以下"
+note = "R6〜R9 の「中日は四死球と長打がそれぞれ別々に少ない」を、届かなかった層を分ける条件として中日以外で試す。境 0.6 は P129 と同じ"
+
+[[proposition]]
+id = "P131"
+statement = "中日以外で、得点に不足があり失点だけに優位がある B クラスは、不足が優位の 1.5〜2.5 倍（取り分 0.6〜0.714）に入る"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }, { col = "ra_adv", op = ">", value = 0 },
+          { col = "rf_adv", op = "<", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "short_share", op = ">=", value = 0.6 }, { col = "short_share", op = "<=", value = 0.7143 }]
+surprise = "short_share"
+context = ["rf_adv", "ra_adv", "run_balance", "rank"]
+links = ["H2"]
+falsifier = "半分以下しか、この範囲に入らない"
+note = "R31 で順位の範囲で見た分布（中央値 2.18、最頻の区間 2.25）を見た後の命題。同じデータでは確かめにならない。2026年で確かめる（[confirm]）。比 r と取り分 s は s = r ÷ (1 + r)"

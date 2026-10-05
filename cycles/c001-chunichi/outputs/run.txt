@@ -11,7 +11,7 @@ Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 17ms
+Installed 15 packages in 14ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -269,7 +269,7 @@ HTTP requests: 0
 2023: teams=12 expected=12 OK
 2024: teams=12 expected=12 OK
 2025: teams=12 expected=12 OK
-[run] preview_fielding: uv run python blueprobe/blueprobe.py --source npb_team_fielding --cache data/raw/npb_team_fielding --out cycles/c001-chunichi/outputs/observed_fielding.md
+[run] inspect_fielding: uv run python blueprobe/blueprobe.py --source npb_team_fielding --cache data/raw/npb_team_fielding --out cycles/c001-chunichi/outputs/observed_fielding.md --strict
 # npb_team_fielding: 観測された構造
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
@@ -308,7 +308,7 @@ HTTP requests: 0
 - 2024: teams=12 expected=12 OK
 - 2025: teams=12 expected=12 OK
 
-[run] measure: uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --sensitivity-out cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
+[run] measure: uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --sensitivity-out cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
 shape: (14, 12)
 ┌────────┬──────┬─────────┬─────┬─────┬─────┬───────┬─────────┬─────────┬────────┬────────┬────────┐
 │ season ┆ rank ┆ rank_ti ┆ W   ┆ L   ┆ T   ┆ wpct  ┆ pythag_ ┆ resid_f ┆ logit_ ┆ wpct_1 ┆ wpct_2 │

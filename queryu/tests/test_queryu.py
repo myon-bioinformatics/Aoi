@@ -7,7 +7,7 @@ import httpx
 import pytest
 
 import npb_calendar
-from queryu import Cache, OfflineMiss, PoliteFetcher, build, main, write_dataset
+from queryu import Cache, OfflineMiss, PoliteFetcher, RefetchRefused, build, load_ledger, main, write_dataset, write_ledger
 
 PAGE = (Path(__file__).resolve().parents[2] / "blueprobe" / "tests" / "fixtures" / "npb_calendar_sample.html").read_text(encoding="utf-8")
 
@@ -128,3 +128,58 @@ def test_client_keeps_environment_proxy_settings(tmp_path, monkeypatch):
     monkeypatch.setattr(httpx, "Client", Spy)
     PoliteFetcher(Cache(tmp_path / "cache"), wait=0).client
     assert "transport" not in seen and "mounts" not in seen and seen.get("trust_env", True)
+
+
+
+# ---------- 一度だけ取る（取得台帳） ----------
+
+def test_ledger_keeps_provenance_without_content(tmp_path):
+    f = fetcher(tmp_path, only_april)
+    build(npb_calendar, npb_calendar.pages([2024]), f)
+    n = write_ledger(tmp_path / "ledger.jsonl", f.cache)
+    led = load_ledger(tmp_path / "ledger.jsonl")
+    assert n == 9 and set(led["2024_04"]) == {"key", "url", "group", "status", "sha256", "bytes", "fetched_at"}
+    assert "file" not in led["2024_04"]                                   # 中身の場所も持たない
+
+
+def test_lost_cache_does_not_refetch_silently(tmp_path):
+    f = fetcher(tmp_path, only_april)
+    build(npb_calendar, npb_calendar.pages([2024]), f)
+    write_ledger(tmp_path / "ledger.jsonl", f.cache)
+    known = load_ledger(tmp_path / "ledger.jsonl")
+    lost = PoliteFetcher(Cache(tmp_path / "lost"), wait=0, known=known,
+                         client=httpx.Client(transport=httpx.MockTransport(lambda r: pytest.fail("取り直さない"))))
+    with pytest.raises(RefetchRefused, match="台帳"):
+        build(npb_calendar, npb_calendar.pages([2024]), lost)
+
+
+def test_allowed_refetch_reports_changed_pages(tmp_path):
+    f = fetcher(tmp_path, only_april)
+    build(npb_calendar, npb_calendar.pages([2024]), f)
+    write_ledger(tmp_path / "ledger.jsonl", f.cache)
+    changed = PAGE.replace("中", "中", 1) + "<!-- changed -->"
+
+    def handler(req):
+        return httpx.Response(200, text=changed) if "index_04" in str(req.url) else httpx.Response(404)
+    again = PoliteFetcher(Cache(tmp_path / "lost"), wait=0, known=load_ledger(tmp_path / "ledger.jsonl"), allow_refetch=True,
+                          client=httpx.Client(transport=httpx.MockTransport(handler)))
+    build(npb_calendar, npb_calendar.pages([2024]), again)
+    assert len(again.refetched) == 9 and again.changed == ["2024_04"]
+
+
+def test_live_season_is_not_blocked_by_the_ledger(tmp_path):
+    f = fetcher(tmp_path, only_april)
+    pages = [p for p in npb_calendar.pages([2024]) if p[0] == "2024_04"]
+    build(npb_calendar, pages, f)
+    write_ledger(tmp_path / "ledger.jsonl", f.cache)
+    live = PoliteFetcher(Cache(tmp_path / "lost"), wait=0, known=load_ledger(tmp_path / "ledger.jsonl"),
+                         client=httpx.Client(transport=httpx.MockTransport(only_april)))
+    assert len(build(npb_calendar, pages, live, live_groups={"2024"})["2024"]["records"]) == 4   # 進行中のシーズンは確認してよい
+
+
+def test_cli_writes_ledger(tmp_path, capsys):
+    for key, url, group in npb_calendar.pages([2024]):
+        Cache(tmp_path / "cache").put(key, url, group, 404, b"", {})
+    assert main(["--source", "npb_calendar", "--years", "2024", "--cache", str(tmp_path / "cache"),
+                 "--out", str(tmp_path / "o.jsonl"), "--offline", "--ledger", str(tmp_path / "l.jsonl")]) == 0
+    assert "ledger: 9 pages, refetched=0, changed=0" in capsys.readouterr().out

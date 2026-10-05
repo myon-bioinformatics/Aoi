@@ -18,10 +18,12 @@ config = "cycles/c001-chunichi/analysis.toml"
 linescore_years = "2025"   # 試合ごとの得点表（R H E）は量が大きいので年を絞る（R63、ユーザーと決めた: まず 2025年）
 
 # 1. 取得（ネットワーク）。取得済みのページは再取得しない。進行中のシーズンだけ更新を確認する
+#    取得台帳（{out}/fetched/<source>.jsonl、来歴だけで中身なし）にあるページがキャッシュから消えていたら、取り直さずに止まる（QueRyu）
 [[step]]
 name = "fetch"
 run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_calendar", "--years", "{years}",
-       "--cache", "{cache}", "--out", "{games}"]
+       "--cache", "{cache}", "--out", "{games}",
+       "--ledger", "{out}/fetched/npb_calendar.jsonl"]
 network = true
 outputs = ["data/raw/npb_calendar/manifest.jsonl"]
 
@@ -41,7 +43,8 @@ run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_calenda
 [[step]]
 name = "fetch_batting"
 run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_team_batting", "--years", "{years}",
-       "--cache", "data/raw/npb_team_batting", "--out", "data/observations/npb_team_batting/teams.jsonl"]
+       "--cache", "data/raw/npb_team_batting", "--out", "data/observations/npb_team_batting/teams.jsonl",
+       "--ledger", "{out}/fetched/npb_team_batting.jsonl"]
 network = true
 outputs = ["data/raw/npb_team_batting/manifest.jsonl"]
 
@@ -60,7 +63,8 @@ run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_team_ba
 [[step]]
 name = "fetch_fielding"
 run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_team_fielding", "--years", "{years}",
-       "--cache", "data/raw/npb_team_fielding", "--out", "data/observations/npb_team_fielding/teams.jsonl"]
+       "--cache", "data/raw/npb_team_fielding", "--out", "data/observations/npb_team_fielding/teams.jsonl",
+       "--ledger", "{out}/fetched/npb_team_fielding.jsonl"]
 network = true
 outputs = ["data/raw/npb_team_fielding/manifest.jsonl"]
 
@@ -79,7 +83,8 @@ run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_team_fi
 [[step]]
 name = "fetch_linescore"
 run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_game_linescore", "--years", "{linescore_years}",
-       "--cache", "data/raw/npb_game_linescore", "--out", "data/observations/npb_game_linescore/teams.jsonl"]
+       "--cache", "data/raw/npb_game_linescore", "--out", "data/observations/npb_game_linescore/teams.jsonl",
+       "--ledger", "{out}/fetched/npb_game_linescore.jsonl"]
 network = true
 outputs = ["data/raw/npb_game_linescore/manifest.jsonl"]
 

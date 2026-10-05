@@ -1,7 +1,8 @@
 # サイクル1（中日ドラゴンズ）を GitHub 上で実行する。
 # 中身は nagoyaction/nagoyaction.py が cycles/c001-chunichi/pipeline.toml を実行するだけで、
 # ローカルでの実行（python nagoyaction/nagoyaction.py run ...）と同じ。
-# 生のページと観測データ（data/）は Actions のキャッシュにだけ残し、リポジトリには入れない。
+# 生のページと観測データ（data/）は Actions のキャッシュにだけ残し、リポジトリには入れない（公開リポジトリなので再配布しない）。
+# 取ったページの来歴（中身なし）は outputs/fetched/ の取得台帳に残し、消えたキャッシュを黙って取り直さない（QueRyu）。
 # コミットするのは自作の指標と検証記録（cycles/c001-chunichi/outputs/）だけ。
 name: cycle c001 (chunichi)
 
@@ -13,6 +14,10 @@ on:
     inputs:
       offline:
         description: "取得を行わず、キャッシュだけで再解析する"
+        type: boolean
+        default: false
+      allow_refetch:
+        description: "取得台帳にあるのにキャッシュから消えたページの取り直しを許す（人が決めたときだけ）"
         type: boolean
         default: false
 
@@ -44,6 +49,8 @@ jobs:
       - name: Doctor
         run: python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml ${{ inputs.offline && '--offline' || '' }}
       - name: Run pipeline
+        env:
+          AOI_ALLOW_REFETCH: ${{ inputs.allow_refetch && '1' || '' }}
         # 実行の記録（各ステップの結果・件数・エラー文）を outputs/run.txt にも残す（*.log は .gitignore の対象）。止まったときも読めるように
         run: |
           set -o pipefail

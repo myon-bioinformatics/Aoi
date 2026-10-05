@@ -10,6 +10,13 @@
 
 データセットは data/observations/<source>/<entity>.jsonl に置き、隣に .manifest.json を置く。
 生のスコアを含むので data/ は git に入れない。
+
+一度だけ取る（ユーザーの方針、2026-10-05）:
+  - 生の HTML は1ページ1回だけ取り、gzip のまま保存する（Cache）。解析の規則を直すときは保存したページから作り直す（--offline）
+  - 取得台帳（--ledger）: 取ったページの来歴だけ（key, url, group, status, sha256, bytes, fetched_at）を git に残す。中身は残さない
+  - 台帳にある過去シーズンのページがキャッシュから消えていたら、黙って取り直さずに止まる（RefetchRefused）。
+    取り直すかは人が決め、--allow-refetch（または環境変数 AOI_ALLOW_REFETCH=1）のときだけ取る。
+    取り直したページの sha256 が台帳と違えば、その数を表示する（ページが後から変わったことの記録）
 """
 
 from __future__ import annotations
@@ -82,12 +89,39 @@ class OfflineMiss(RuntimeError):
     """オフラインモードで、キャッシュにないページを要求した。"""
 
 
+class RefetchRefused(RuntimeError):
+    """取得台帳にある（一度取った）ページがキャッシュになく、許可なく取り直そうとした。"""
+
+
+LEDGER_FIELDS = ("key", "url", "group", "status", "sha256", "bytes", "fetched_at")
+
+
+def load_ledger(path: Path | None) -> dict[str, dict]:
+    if path is None or not Path(path).exists():
+        return {}
+    return {e["key"]: e for e in map(json.loads, Path(path).read_text(encoding="utf-8").splitlines())}
+
+
+def write_ledger(path: Path, cache: Cache) -> int:
+    """キャッシュにあるページの来歴（中身なし）を台帳に合わせて書く。台帳にだけある行も残す（消えたキャッシュの記録）。"""
+    merged = load_ledger(path)
+    for key, e in cache.latest().items():
+        merged[key] = {k: e.get(k) for k in LEDGER_FIELDS}
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(json.dumps(merged[k], ensure_ascii=False) + "\n" for k in sorted(merged)), encoding="utf-8")
+    return len(merged)
+
+
 class PoliteFetcher:
-    def __init__(self, cache: Cache, wait: float = 3.0, *, offline: bool = False, client=None):
+    def __init__(self, cache: Cache, wait: float = 3.0, *, offline: bool = False, client=None,
+                 known: dict | None = None, allow_refetch: bool = False):
         self.cache, self.wait, self.offline = cache, wait, offline
         self._client = client
         self.requests = 0
         self._latest = cache.latest()
+        self.known, self.allow_refetch = known or {}, allow_refetch   # 取得台帳（一度取ったページ）
+        self.refetched, self.changed = [], []
 
     @property
     def client(self):
@@ -105,6 +139,11 @@ class PoliteFetcher:
             if cached:
                 return self.cache.body(cached)
             raise OfflineMiss(f"{key} はキャッシュにない（オフライン）")
+        if not cached and not live and key in self.known:
+            if not self.allow_refetch:
+                raise RefetchRefused(f"{key} は取得台帳にある（{self.known[key].get('fetched_at')} に取得）のにキャッシュにない。"
+                                     "取り直すかは人が決める（--allow-refetch / AOI_ALLOW_REFETCH=1）")
+            self.refetched.append(key)
 
         headers = {}
         if cached and cached.get("last_modified"):
@@ -124,6 +163,8 @@ class PoliteFetcher:
             r.raise_for_status()
         content = r.content if r.status_code == 200 else b""  # 存在しないページも「空」として覚える
         self._latest[key] = self.cache.put(key, url, group, r.status_code, content, r.headers)
+        if key in self.known and self.known[key].get("sha256") != self._latest[key]["sha256"]:
+            self.changed.append(key)
         return content.decode("utf-8")
 
 
@@ -178,13 +219,24 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--wait", type=float, default=3.0, help="リクエスト間隔（秒）")
     ap.add_argument("--offline", action="store_true", help="キャッシュだけで作る。ネットワークに出ない")
+    ap.add_argument("--ledger", type=Path, help="取得台帳（来歴だけ、中身なし。git に残す）。ここにあるページは取り直さない")
+    ap.add_argument("--allow-refetch", action="store_true",
+                    help="台帳にあるのにキャッシュにないページの取り直しを許す（人が決めたときだけ。AOI_ALLOW_REFETCH=1 でも同じ）")
     args = ap.parse_args(argv)
 
     source = load_source(args.source)
     years = _years(args.years)
     live = {str(y) for y in years if y >= dt.date.today().year}  # 進行中のシーズンだけ更新を確認
-    fetcher = PoliteFetcher(Cache(args.cache), args.wait, offline=args.offline)
-    groups = build(source, source.pages(years), fetcher, live)
+    import os
+
+    allow = args.allow_refetch or os.environ.get("AOI_ALLOW_REFETCH") == "1"
+    fetcher = PoliteFetcher(Cache(args.cache), args.wait, offline=args.offline, known=load_ledger(args.ledger), allow_refetch=allow)
+    try:
+        groups = build(source, source.pages(years), fetcher, live)
+    finally:
+        if args.ledger:   # 止まったときも、それまでに取ったページは台帳に残す
+            n = write_ledger(args.ledger, fetcher.cache)
+            print(f"ledger: {n} pages, refetched={len(fetcher.refetched)}, changed={len(fetcher.changed)}")
 
     records, counts, unknown = [], {}, 0
     for g, r in sorted(groups.items()):

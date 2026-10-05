@@ -1823,3 +1823,65 @@ context = ["rf_adv", "ra_adv", "run_balance", "rank"]
 links = ["H2"]
 falsifier = "半分以下しか、この範囲に入らない"
 note = "R31 で順位の範囲で見た分布（中央値 2.18、最頻の区間 2.25）を見た後の命題。同じデータでは確かめにならない。2026年で確かめる（[confirm]）。比 r と取り分 s は s = r ÷ (1 + r)"
+
+# 追加: 2026-10-05。R33（R32 の2つの種）。計算前に登録した。
+# 種A（必要の向き）: R32 で、中日以外の失点だけ優位の B で不足 > 0.6 の5単位（P130 の逆）は見ている。その5単位を motivated_by にする。
+# 種B（境に幅）: *_z・*_zone は 5de3bc6 で作った列で、範囲・条件の組はまだ見ていない。標準偏差（得点 0.47、失点 0.45）は見た。
+
+[[proposition]]
+id = "P132"
+statement = "B クラスで、得点の不足が1試合 0.6点を超えるなら、四死球も長打も他球団より少ない（必要の向き）"
+strength = "usually"
+scope = { where = [{ col = "upper_half", op = "==", value = false }] }
+if = [{ col = "rf_adv", op = "<", value = -0.6 }]
+then = [{ col = "bat_d_bb_pa", op = "<", value = 0 }, { col = "bat_d_iso", op = "<", value = 0 }]
+motivated_by = ["e-2018", "b-2018", "l-2025", "b-2024", "f-2021"]
+surprise = "rf_adv"
+context = ["rank", "bat_d_avg", "rank_ra", "ra_adv"]
+links = ["H6", "H7"]
+falsifier = "きっかけの5単位を除いて、不足が 0.6 を超える B の4分の1を超えて、四死球か長打の少なくとも一方が他球団以上"
+note = "R32 の P130 の逆（5中5）を、失点だけ優位の範囲から B クラス全体に広げた。中日を含む。きっかけ以外で読む"
+
+[[proposition]]
+id = "P133"
+statement = "得点の不足が1試合 0.6点を超えるなら、四死球も長打も他球団より少ない（A クラスも含む全体）"
+strength = "usually"
+if = [{ col = "rf_adv", op = "<", value = -0.6 }]
+then = [{ col = "bat_d_bb_pa", op = "<", value = 0 }, { col = "bat_d_iso", op = "<", value = 0 }]
+motivated_by = ["e-2018", "b-2018", "l-2025", "b-2024", "f-2021"]
+surprise = "rf_adv"
+context = ["rank", "bat_d_avg", "upper_half"]
+links = ["H6", "H7"]
+falsifier = "きっかけの5単位を除いて、不足が 0.6 を超える単位の4分の1を超えて、どちらか一方が他球団以上"
+note = "B クラスに限るか（P132）、不足の大きさそのものの形か（P133）を比べる"
+
+[[proposition]]
+id = "P134"
+statement = "0 の近く（|z| < 1）を除いて、得点にも失点にも、はっきりした優位がない（どちらも z ≤ −1）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_zone", op = "!=", value = 0 }, { col = "ra_zone", op = "!=", value = 0 }] }
+if = [{ col = "rf_zone", op = "==", value = -1 }, { col = "ra_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P126"
+change = "優位の符号ではなく、0 から1標準偏差以上離れた単位だけで読む（R32 で 0 の近くの単位が出入りした）"
+surprise = "rd"
+context = ["rank", "rf_adv", "ra_adv", "run_balance"]
+links = ["H2"]
+falsifier = "はっきりした優位がない単位の4分の1を超えて A クラス"
+note = "対偶（A なら、どちらかにはっきりした優位がある）を P126 の対偶 0.91 と並べる"
+
+[[proposition]]
+id = "P135"
+statement = "失点にだけはっきりした優位がある（失点 z ≥ 1、得点 z ≤ −1）チームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "ra_zone", op = "==", value = 1 }, { col = "rf_zone", op = "==", value = -1 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P128"
+change = "失点だけ優位の範囲を、符号ではなく1標準偏差以上の離れで決める"
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rf_adv", "ra_adv", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
+note = "範囲の単位は少なくなる見込み。判断保留は正しい結果としてありうる"

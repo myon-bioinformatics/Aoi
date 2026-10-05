@@ -63,7 +63,9 @@ def main(argv: list[str]) -> int:
         short = sum(r["balance"] < 0 for r in xs)
         print(f"\n失点だけ上位の B クラス・{name}: {len(xs)}単位、補えなかった（収支 < 0）{short}、"
               f"得点の不足 {mean([r['rf_def_total'] for r in xs]):+.3f}、失点の優位 {mean([r['ra_adv'] for r in xs]):+.3f}、"
-              f"不足 ÷ 優位 {mean([-r['rf_def_total'] / r['ra_adv'] for r in xs if r['ra_adv'] > 0]):.2f}")
+              f"不足 ÷ 優位（平均の比）{-mean([r['rf_def_total'] for r in xs]) / mean([r['ra_adv'] for r in xs]):.2f}")
+    # 計画では「不足 ÷ 優位」の各単位の比の平均を使うと決めていたが、優位がほぼ 0 の単位で比が発散し、
+    # 平均が意味をなさなかった（実行後に分かった）。R31 の結果に変更として記録し、平均の比に置き換えた
     return 0
 
 

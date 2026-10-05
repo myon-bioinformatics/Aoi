@@ -2150,3 +2150,189 @@ context = ["rank", "rf_adv_t", "ra_adv_t"]
 links = ["H2"]
 falsifier = "この形の4分の1を超えて B クラス"
 note = "まだ見ていない"
+
+# 追加: 2026-10-05。R41（精度の高い命題の逆・裏を漏れなく見る）。計算前に登録した。
+# 親の命題は条件を範囲（where）に書いていたため、逆・裏が作られていなかった。team 以外の where の条件を「もし」に移す。
+# 元の命題の単位と判例は親と同じになる（見ている）。逆・裏・対偶はまだ見ていない。
+
+[[proposition]]
+id = "P155"
+statement = "得点がリーグ5位以下のチーム・シーズンでは、得点する回の頻度の不足が、得点した回の大きさの不足より大きい（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_freq_minus_size", op = "<", value = 0 }]
+parent = "P23"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_freq_minus_size"
+context = ["rank", "inn_dlog_freq", "inn_dlog_size"]
+links = ["H5", "H6"]
+note = "R41。親 P23 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P156"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点した回のうち1点の回の割合が他球団より多い（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_d_single_share", op = ">", value = 0 }]
+parent = "P26"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_d_single_share"
+context = ["inn_d_big_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+note = "R41。親 P26 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P157"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点した回のうち3点以上の回の割合が他球団より少ない（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+parent = "P27"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_d_big_share"
+context = ["inn_d_single_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+note = "R41。親 P27 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P158"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ホームの試合で得点した回の大きさが他球団（ホーム同士）より小さい（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_dlog_size_home", op = "<", value = 0 }]
+parent = "P28"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_dlog_size_home"
+context = ["inn_dlog_size_away", "inn_dlog_size", "inn_dlog_freq_home"]
+links = ["H5", "H6"]
+note = "R41。親 P28 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P159"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ビジターの試合で得点した回の大きさが他球団（ビジター同士）より小さい（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_dlog_size_away", op = "<", value = 0 }]
+parent = "P29"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_dlog_size_away"
+context = ["inn_dlog_size_home", "inn_dlog_size", "inn_dlog_freq_away"]
+links = ["H5", "H6"]
+note = "R41。親 P29 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P160"
+statement = "得点がリーグ5位以下のチーム・シーズン（中日を除く）では、得点した回のうち3点以上の回の割合が他球団より少ない（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025", where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+parent = "P30"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_d_big_share"
+context = ["inn_d_single_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+note = "R41。親 P30 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P161"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ISO（長打率 − 打率）が他球団より低い（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "bat_d_iso", op = "<", value = 0 }]
+parent = "P31"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "bat_d_iso"
+context = ["bat_d_obp", "bat_d_hr_pa", "bat_d_bb_pa", "rank"]
+links = ["H2", "H6"]
+note = "R41。親 P31 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P162"
+statement = "得点がリーグ5位以下だったシーズンの中日は、出塁率が他球団より低い（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "bat_d_obp", op = "<", value = 0 }]
+parent = "P32"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "bat_d_obp"
+context = ["bat_d_iso", "bat_d_avg", "bat_d_bb_pa", "rank"]
+links = ["H2", "H5"]
+note = "R41。親 P32 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P163"
+statement = "得点がリーグ5位以下だったシーズンの中日は、走者1人あたりの得点が他球団より少ない（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "bat_d_r_runner", op = "<", value = 0 }]
+parent = "P46"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "bat_d_r_runner"
+context = ["bat_d_r_ab", "bat_d_r_pa", "bat_d_obp", "bat_d_iso"]
+links = ["H5", "H6"]
+note = "R41。親 P46 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P164"
+statement = "得点がリーグ5位以下のチーム・シーズン（中日を除く）では、走者1人あたりの得点が他球団より少ない（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "bat_d_r_runner", op = "<", value = 0 }]
+parent = "P47"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "bat_d_r_runner"
+context = ["bat_d_r_ab", "bat_d_obp", "bat_d_iso"]
+links = ["H5", "H6"]
+note = "R41。親 P47 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P165"
+statement = "中日以外の B クラスのチームは、順位の高さの線に山がある（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "upper_half", op = "==", value = false }]
+then = [{ col = "traj_rank_peak", op = "==", value = true }]
+parent = "P98"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "traj_rank_peak_x"
+context = ["traj_rank_shape", "traj_rank_peak_base", "traj_rank_end_slope", "rank"]
+links = ["H1", "H6"]
+note = "R41。親 P98 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P166"
+statement = "中日以外の B クラスのチームは、前半の線だけから当てた波の行き先が、もう4位以下（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "upper_half", op = "==", value = false }]
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+parent = "P105"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+note = "R41。親 P105 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P167"
+statement = "中日以外で、得点の不足が誤差を超え（得点 −1）、失点の優位が誤差の内側（失点 0）なら、B クラス（条件を「もし」に移した形）"
+strength = "usually"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "rf_zone_se", op = "==", value = -1 }, { col = "ra_zone_se", op = "==", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P141"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "run_balance"
+context = ["rank", "rf_adv", "ra_adv", "rank_ra", "rank_rf"]
+links = ["H2"]
+note = "R41。親 P141 の元の命題・判例と同じ。読むのは逆・裏"

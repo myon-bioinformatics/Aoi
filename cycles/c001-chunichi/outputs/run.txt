@@ -5,13 +5,13 @@
 [run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading pygments (1.2MiB)
 Downloading polars-runtime-32 (47.6MiB)
+Downloading pygments (1.2MiB)
 Downloading selectolax (2.4MiB)
- Downloaded selectolax
  Downloaded pygments
+ Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 11ms
+Installed 15 packages in 16ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0

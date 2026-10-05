@@ -75,6 +75,7 @@
   lg_bar                           越えるべき高さ: ほかの球団の中で上位半分の最後の勝率（R56）
   mix_lo / mix_hi / mix_zone       A と B が混ざる帯（ほかの年の A の最低勝率〜B の最高勝率）と、帯の下・中・上（−1・0・+1、R53。add_mix_zone）
   live_mix_lo / _hi / _zone        同じ帯を、A・B に効く試合だけの勝率（live_wpct）で引いたもの（R58）
+  rf_mix_* / bal_mix_* / vsl_mix_*  同じ帯を、得点の優位・収支・下の相手との勝率の値で引いたもの（R66。大きいほどよい指標だけ）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1782,6 +1783,8 @@ def main(argv=None) -> int:
     st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
     excl = [int(e["season"]) for e in cfg.get("exclude", [])]
     st = add_mix_zone(add_mix_zone(st, exclude=excl), exclude=excl, col="live_wpct", prefix="live_mix")
+    for col, prefix in (("rf_adv", "rf_mix"), ("run_balance", "bal_mix"), ("vs_lower_wpct", "vsl_mix")):   # R66: 指標の値の帯
+        st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

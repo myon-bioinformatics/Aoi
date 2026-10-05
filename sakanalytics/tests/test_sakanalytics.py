@@ -918,3 +918,36 @@ def test_league_shape_tiers_columns():
     out = {r["team"]: r for r in sa.add_league_shape(st).iter_rows(named=True)}
     assert out["a"]["lg_break_after"] == 5 and out["a"]["lg_break_gap"] == pytest.approx(0.11)
     assert [out[t]["lg_tier"] for t in "abcdef"] == [1, 1, 2, 2, 2, 3] and out["d"]["lg_tier_of_3rd"] == 2
+
+
+# ---------- R53: A と B が混ざる帯（1年抜き） ----------
+
+def test_mix_zone_leaves_own_season_out():
+    import sakanalytics as sa
+
+    rows = [(2000, .60, True), (2000, .49, True), (2000, .51, False), (2000, .40, False),
+            (2001, .55, True), (2001, .47, False), (2001, .45, False),
+            (2002, .30, True), (2002, .70, False)]          # 2002 は除外の年: 帯を引くのに使わない
+    st = pl.DataFrame({"season": [r[0] for r in rows], "team": [str(i) for i in range(len(rows))],
+                       "wpct": [r[1] for r in rows], "upper_half": [r[2] for r in rows]})
+    out = sa.add_mix_zone(st, exclude=[2002]).sort("team")
+    got = {(r["season"], r["wpct"]): r for r in out.iter_rows(named=True)}
+    # 2001 の単位は 2000 だけから: A の最低 .49、B の最高 .51
+    assert got[(2001, .55)]["mix_lo"] == pytest.approx(.49) and got[(2001, .55)]["mix_hi"] == pytest.approx(.51)
+    assert [got[(2001, w)]["mix_zone"] for w in (.55, .47, .45)] == [1, -1, -1]
+    # 2000 の単位は 2001 だけから: A の最低 .55、B の最高 .47 → 帯は開かない（lo > hi）が値はそのまま
+    assert got[(2000, .49)]["mix_lo"] == pytest.approx(.55) and got[(2000, .49)]["mix_hi"] == pytest.approx(.47)
+    assert got[(2000, .49)]["mix_zone"] == -1 and got[(2000, .60)]["mix_zone"] == 1
+    # 除外の年の単位にも値は付く（ほかの年から引く）
+    assert got[(2002, .30)]["mix_zone"] == -1
+
+
+def test_mix_zone_edges_are_inside_and_missing_side_is_null():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000, 2000, 2001], "team": ["a", "b", "c"], "wpct": [.50, .52, .50],
+                       "upper_half": [True, False, True]})
+    out = {r["team"]: r for r in sa.add_mix_zone(st).iter_rows(named=True)}
+    assert out["c"]["mix_lo"] == pytest.approx(.50) and out["c"]["mix_zone"] == 0   # 帯の端ちょうどは中
+    assert out["a"]["mix_hi"] is None and out["a"]["mix_zone"] is None              # 2001 に B がない
+    assert sa.add_mix_zone(pl.DataFrame({"season": [1]})).columns == ["season"]

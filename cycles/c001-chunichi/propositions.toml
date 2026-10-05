@@ -2425,3 +2425,46 @@ context = ["rank", "inn_dlog_size", "rank_rf"]
 links = ["H5"]
 falsifier = "この条件の単位の4分の1を超えて A クラス"
 note = "P172 の裏の側を、命題として立てたもの"
+
+# 追加: 2026-10-05。R46（どの道筋にも当たらない B と、1位の独走）。計算前に登録した。
+# 見ているもの: どの道筋にも当たらない B の4単位の名前（広島 2012・中日 2018・広島 2019・巨人 2023、どれもセ・リーグ）。
+# 野球の一般知識として、これらの年のセ・リーグに独走したチームがあったことはおおよそ知っている。lg_* の値は見ていない。
+
+[[proposition]]
+id = "P174"
+statement = "1位が抜けた年（1位と2位の勝率差 .050 以上）の B クラスは、どの道筋にも当たらない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }] }
+if = [{ col = "lg_lead_gap", op = ">=", value = 0.05 }]
+then = [{ col = "b_paths", op = "==", value = "none" }]
+surprise = "lg_lead_gap"
+context = ["rank", "league", "lg_gap34", "lg_rest_sd", "b_paths"]
+links = ["H1"]
+falsifier = "（P175 と率を比べるための命題。率そのものは低い見込み）"
+note = "読むのは率の比べ（P175 との差）と、逆（道筋のない B なら1位が抜けた年）"
+
+[[proposition]]
+id = "P175"
+statement = "1位が抜けていない年（1位と2位の勝率差 .050 未満）の B クラスは、どの道筋にも当たらない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }] }
+if = [{ col = "lg_lead_gap", op = "<", value = 0.05 }]
+then = [{ col = "b_paths", op = "==", value = "none" }]
+surprise = "lg_lead_gap"
+context = ["rank", "league", "lg_gap34", "lg_rest_sd", "b_paths"]
+links = ["H1"]
+falsifier = "（P174 と率を比べるための命題）"
+note = "P174 の比べる相手"
+
+[[proposition]]
+id = "P176"
+statement = "どの道筋にも当たらない B クラスは、3位と4位の勝率差が .020 未満の年にいる（A と B の境が近い）"
+strength = "usually"
+scope = { where = [{ col = "upper_half", op = "==", value = false }] }
+if = [{ col = "b_paths", op = "==", value = "none" }]
+then = [{ col = "lg_gap34", op = "<", value = 0.02 }]
+surprise = "lg_gap34"
+context = ["rank", "league", "lg_lead_gap", "lg_rest_sd"]
+links = ["H1"]
+falsifier = "道筋のない B の4分の1を超えて、3位と4位の差が .020 以上"
+note = "単位は4つで判断保留の見込み。逆（境が近い年の B は道筋がない）も見る"

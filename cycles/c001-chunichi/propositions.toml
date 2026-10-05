@@ -2648,3 +2648,34 @@ context = ["wpct", "lg_line", "lg_rank_at_500", "mix_lo", "mix_hi"]
 links = ["H2"]
 falsifier = "きっかけ以外で、帯の中・高さ .500 未満の単位の4分の1を超えて B"
 note = "R56。勝率 − lg_bar の符号は A・B と算術で一致するので、この命題は「帯の中の勝率はほぼ .500 なので、外の高さが .500 の上か下かで決まる」ことの記述。.500 は R51 の線で、値から選んでいない"
+
+# 追加: 2026-10-05。R58（2本の線で3つの状態、時期をまたぐ動き）の結果を見た後の命題。全単位の値を見ている。2026年で確かめる。
+# 順位の目盛りの2本の線（2.5位・4.5位）は、3.5位の上下に1つずつで、値から選んでいない。
+
+[[proposition]]
+id = "P189"
+statement = "試合数の 3/4 の時点で B の状態（5〜6位）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "course_rank_q3", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2019"]
+surprise = "course_rank_q3"
+context = ["course_rank_h1", "course_rank_q1", "rank", "clinch_out_x"]
+links = ["H2"]
+falsifier = "3/4 の時点で5〜6位の単位の10分の1を超えて A"
+note = "R58。3/4 の時点の順位は、その時点までの各チームの試合だけで並べたもの（R20）。逆（B ⇒ 3/4 で5〜6位）の判例は、最後に落ちた B（中日 2013・2014・2021年など）"
+
+[[proposition]]
+id = "P190"
+statement = "効く試合だけで引いた帯（live_mix_zone）の下なら、B クラス"
+strength = "almost_always"
+if = [{ col = "live_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["g-2018"]
+surprise = "live_mix_zone"
+context = ["live_wpct", "live_mix_lo", "mix_zone", "dead_g"]
+links = ["H2"]
+falsifier = "効く試合の帯の下の単位の10分の1を超えて A"
+note = "R58。P181 を効く試合だけで言い直した命題（change: 全試合 → 効く試合）。帯の端は巨人 2018年のまま"
+parent = "P181"
+change = "勝率を、A・B が決まる前の効く試合だけで数える（R57・R58）"

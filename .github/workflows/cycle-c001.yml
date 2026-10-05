@@ -26,7 +26,8 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 試合ごとの得点表（1年 約860ページ、3秒間隔で約45分）を取る回があるので 90分。取得済みのページは止まっても保存される
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

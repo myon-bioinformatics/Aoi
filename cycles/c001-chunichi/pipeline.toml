@@ -15,6 +15,7 @@ cache = "data/raw/npb_calendar"
 games = "data/observations/npb_calendar/games.jsonl"
 out = "cycles/c001-chunichi/outputs"
 config = "cycles/c001-chunichi/analysis.toml"
+linescore_years = "2025"   # 試合ごとの得点表（R H E）は量が大きいので年を絞る（R63、ユーザーと決めた: まず 2025年）
 
 # 1. 取得（ネットワーク）。取得済みのページは再取得しない。進行中のシーズンだけ更新を確認する
 [[step]]
@@ -72,6 +73,25 @@ run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_team_fielding
 name = "inspect_fielding"
 run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_team_fielding", "--cache", "data/raw/npb_team_fielding",
        "--out", "{out}/observed_fielding.md", "--strict"]
+
+# 3d. 試合ごとの得点表（R H E、チームの失策）。1試合1ページ（1年 約860ページ、3秒間隔で約45分）。
+# 日程の観測（{games}）のリンクから、linescore_years の年だけ取る。形を確かめるまでは preview（--strict なし）で、measure には渡さない。
+[[step]]
+name = "fetch_linescore"
+run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_game_linescore", "--years", "{linescore_years}",
+       "--cache", "data/raw/npb_game_linescore", "--out", "data/observations/npb_game_linescore/teams.jsonl"]
+network = true
+outputs = ["data/raw/npb_game_linescore/manifest.jsonl"]
+
+[[step]]
+name = "observe_linescore"
+run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_game_linescore", "--years", "{linescore_years}",
+       "--cache", "data/raw/npb_game_linescore", "--out", "data/observations/npb_game_linescore/teams.jsonl", "--offline"]
+
+[[step]]
+name = "preview_linescore"
+run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_game_linescore", "--cache", "data/raw/npb_game_linescore",
+       "--out", "{out}/observed_linescore.md"]
 
 # 4. 測る
 [[step]]

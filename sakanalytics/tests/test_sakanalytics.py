@@ -674,6 +674,35 @@ def test_clinch_dates_by_hand():
     assert [r["decided_x"] for r in v.values()] == pytest.approx([0.8] * 4)   # 4球団すべて決まったのは5日目
 
 
+
+def test_rank_fixed_and_live_dead_split_by_hand():
+    """R57: 最終順位が確かになった日と、A・B が決まる前（効く試合）・後（効かない試合）の分け方。"""
+    from sakanalytics import clinch_dates
+    v = {r["team"]: r for r in clinch_dates(_four_team_season()).iter_rows(named=True)}
+    # 最終: g 5勝1敗、t 5勝1敗（同率）、c 2勝4敗、d 0勝6敗。d・c は最終日に4位・3位が確定。g・t は同率なので決まらない
+    assert (v["d"]["rank_fixed_x"], v["d"]["rank_fixed_left"], v["d"]["rank_fixed"]) == (pytest.approx(1.0), 0, 4)
+    assert (v["c"]["rank_fixed_x"], v["c"]["rank_fixed"]) == (pytest.approx(1.0), 3)
+    assert v["g"]["rank_fixed"] is None and v["t"]["rank_fixed_x"] is None
+    # g: 4日目に入るのが確定 → 1〜4日目が効く試合（4勝0敗、点の差 +2 ×4）、5・6日目が効かない試合（1勝1敗、+2 と −2）
+    g = v["g"]
+    assert (g["live_g"], g["live_wpct"], g["live_rd_g"]) == (4, pytest.approx(1.0), pytest.approx(2.0))
+    assert (g["dead_g"], g["dead_wpct"], g["dead_rd_g"]) == (2, pytest.approx(0.5), pytest.approx(0.0))
+    # t: 5日目に確定 → 4勝1敗（3日目に g に 0−2）、効かない試合は6日目の1つ
+    t = v["t"]
+    assert (t["live_g"], t["live_wpct"], t["live_rd_g"]) == (5, pytest.approx(0.8), pytest.approx(1.2))
+    assert (t["dead_g"], t["dead_wpct"]) == (1, pytest.approx(1.0))
+    # 効く試合 + 効かない試合 = 全試合
+    assert all(r["live_g"] + r["dead_g"] == 6 for r in v.values())
+
+
+def test_live_dead_when_never_decided():
+    from sakanalytics import clinch_dates
+    teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
+    # 4球団で1日だけ。誰も確定しない → すべて効く試合、効かない試合は 0
+    tg = to_team_games(games([("2024-04-01", "g", "d", 3, 1), ("2024-04-01", "t", "c", 2, 0)]), teams)
+    v = {r["team"]: r for r in clinch_dates(tg).iter_rows(named=True)}
+    assert all(r["dead_g"] == 0 and r["dead_wpct"] is None and r["live_g"] == 1 for r in v.values())
+
 def test_season_trajectory_can_stop_when_the_top_half_is_decided():
     from sakanalytics import season_trajectory
     tg = _four_team_season()

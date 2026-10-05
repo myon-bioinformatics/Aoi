@@ -2,14 +2,14 @@
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
 
-| group | empty_pages | n_no_linescore_page | n_no_team_row | n_team_cell_0_len_1 | n_team_cell_0_len_15 | n_team_cell_0_len_16 | n_team_cell_0_len_18 | n_team_cell_0_len_19 | n_team_cell_0_len_2 | n_team_cell_0_len_20 | n_team_cell_1_len_2 | n_team_rows_1 | pages | records | unknown |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 2025 | 0 | 774 | 370 | 404 | 1 | 350 | 21 | 10 | 202 | 22 | 606 | 404 | 858 | 168 | 1138 |
+| group | empty_pages | n_no_linescore_page | n_no_team_row | n_team_cell_0_len_1 | n_team_cell_0_len_11 | n_team_cell_0_len_12 | n_team_cell_0_len_16 | n_team_cell_0_len_18 | n_team_cell_0_len_19 | n_team_cell_0_len_2 | n_team_cell_0_len_20 | n_team_cell_1_len_2 | n_team_rows_1 | pages | records | unknown |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2025 | 0 | 398 | 31 | 367 | 1 | 2 | 323 | 18 | 10 | 183 | 13 | 551 | 367 | 858 | 920 | 426 |
 
 ## 取りこぼしの確認（既知値との照合）
 
-- 2025: games=84 rows_not_2=0 OK
+- 2025: games=460 rows_not_2=0 OK
 
 ## 未知の表記（数字は # に伏せた形）
 
-- 2025: `'得点表の形の行の知らない名前: 北海道日本ハム'`, `'得点表の形の行の知らない名前: 千葉ロッテ'`, `'得点表の形の行の知らない名前: 埼玉西武'`, `'得点表の形の行の知らない名前: 広島東洋'`, `'得点表の形の行の知らない名前: 東京ヤクルト'`
+- 2025: `'得点表の形の行の知らない名前: 東北楽天'`, `'得点表の形の行の知らない名前: 横浜DeNA'`, `'得点表の形の行の知らない名前: 福岡ソフトバンク'`

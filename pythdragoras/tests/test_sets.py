@@ -111,3 +111,12 @@ def test_junit_records_why_an_expression_stopped():
     fail = root.findall("testcase")[1].find("failure")
     assert "t-2015" in fail.get("message") and "d-2018" in fail.get("message") and fail.get("type") == "exit1"
     assert root.findall("testcase")[0].find("failure") is None
+
+
+def test_stoppers_ledger_counts_expressions_per_unit():
+    def result(i, cx, missed):
+        return {"id": i, "coverage": {"missed": missed}, "forms": [{"form": "original", "counterexamples": [{"unit": u} for u in cx]}]}
+    book = dict(st_.stoppers([result("E1", ["t-2015"], ["d-2018"]), result("E2", ["t-2015", "g-2016"], []), result("E3", [], ["d-2018"])]))
+    assert book["t-2015"] == {"counterexample": ["E1", "E2"], "missed": []}
+    assert book["d-2018"] == {"counterexample": [], "missed": ["E1", "E3"]}
+    assert list(dict(st_.stoppers([result("E1", ["a"], []), result("E2", ["b"], ["b"])])))[0] == "b"

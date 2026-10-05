@@ -861,3 +861,17 @@ def test_add_league_shape_with_few_teams_is_empty_not_an_error():
     st = pl.DataFrame({"season": [2000] * 2, "league": ["C"] * 2, "team": ["a", "b"], "rank": [1, 2], "wpct": [0.6, 0.4]})
     out = sa.add_league_shape(st).row(0, named=True)
     assert out["lg_lead_gap"] == pytest.approx(0.2) and out["lg_gap34"] is None
+
+
+def test_line_and_gap_decompose_win_pct_against_the_line():
+    import sakanalytics as sa
+
+    w = [0.65, 0.55, 0.52, 0.50, 0.45, 0.33]
+    pyth = [0.60, 0.56, 0.49, 0.53, 0.46, 0.36]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6],
+                       "wpct": w, "pythag_fixed": pyth})
+    out = sa.add_league_shape(st).with_columns(resid_fixed=pl.col("wpct") - pl.col("pythag_fixed"))
+    for r in out.iter_rows(named=True):
+        assert r["lg_line"] == pytest.approx(0.51)
+        # 勝率 − 線 = 点の差で見込む位置 + 点の差より勝った分
+        assert r["wpct"] - r["lg_line"] == pytest.approx(r["line_gap_pythag"] + r["resid_fixed"])

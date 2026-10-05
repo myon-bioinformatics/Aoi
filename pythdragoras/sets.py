@@ -245,7 +245,28 @@ def render(results: list[dict], meta: dict) -> str:
     missed = [(r["id"], r["coverage"]["missed"]) for r in results if r["coverage"]["missed"]]
     if missed:
         lines += ["", "覆えなかった焦点の単位:", ""] + [f"- {i}: {', '.join(m)}" for i, m in missed]
+    ledger = stoppers(results)
+    if ledger:
+        lines += ["", "## 式を止めた単位（例外の台帳、R50）", "",
+                  "どの式の判例になったか（判例）・どの式で覆えなかったか（覆えない）を、単位ごとに数える。",
+                  "多くの式を止める単位ほど、今の集合（命題の条件）では表しきれていない。", "",
+                  "| 単位 | 判例になった式 | 覆えなかった式 |", "|---|---|---|"]
+        for u, v in ledger:
+            lines.append(f"| {u} | {len(v['counterexample'])}（{', '.join(v['counterexample']) or '—'}） "
+                         f"| {len(v['missed'])}（{', '.join(v['missed']) or '—'}） |")
     return "\n".join(lines) + "\n"
+
+
+def stoppers(results: list[dict]) -> list[tuple[str, dict]]:
+    """式を止めた単位の台帳（R50）。判例になった式・覆えなかった式を単位ごとに集め、止めた数の多い順に並べる。"""
+    book: dict[str, dict] = {}
+    for r in results:
+        original = next(f for f in r["forms"] if f["form"] == "original")
+        for c in original["counterexamples"]:
+            book.setdefault(c["unit"], {"counterexample": [], "missed": []})["counterexample"].append(r["id"])
+        for u in r["coverage"]["missed"]:
+            book.setdefault(u, {"counterexample": [], "missed": []})["missed"].append(r["id"])
+    return sorted(book.items(), key=lambda kv: (-(len(kv[1]["counterexample"]) + len(kv[1]["missed"])), kv[0]))
 
 
 def junit(results: list[dict], meta: dict) -> str:

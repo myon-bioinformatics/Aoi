@@ -2004,3 +2004,20 @@ context = ["rank", "rd", "wins_vs_pythag", "one_run_net", "opp_net_gap_top_c"]
 links = ["H3"]
 falsifier = "2026年以降、この形で上の相手に .47 以上なのに B、または .47 未満なのに A の単位が続く"
 note = "R36 で、同じ形の A 5単位（.48〜.57）と B 6単位（.34〜.46）を分けた唯一の指標。境は見た後。上の相手は最終順位で決めるので、A かどうかと算術でつながる面がある"
+
+# 追加: 2026-10-05。R37 の結果を見た後の命題。得点 −1 の3つの形の B の最大と A の値を見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P144"
+statement = "得点の不足が誤差を超えている（得点 −1）チームは、上の相手（1・2位）との勝率が .47 以上なら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_zone_se", op = "==", value = -1 }] }
+if = [{ col = "vs_top_wpct", op = ">=", value = 0.47 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P143"
+change = "範囲を、失点 +1 の形だけから、得点 −1 の形すべて（失点 −1・0・+1）に広げた。R37 で阪神 2015・巨人 2016 も同じ向きに外れていた"
+surprise = "vs_top_wpct"
+context = ["rank", "ra_zone_se", "rd", "wins_vs_pythag"]
+links = ["H3"]
+falsifier = "2026年以降、得点がはっきり足りず上の相手に .47 以上なのに B の単位が出る"
+note = "上の相手は最終順位で決める（docs/propositions.md の Groups Defined By The Final Outcome）。A かどうかと算術でつながる面がある。境は見た後"

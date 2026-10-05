@@ -2468,3 +2468,46 @@ context = ["rank", "league", "lg_lead_gap", "lg_rest_sd"]
 links = ["H1"]
 falsifier = "道筋のない B の4分の1を超えて、3位と4位の差が .020 以上"
 note = "単位は4つで判断保留の見込み。逆（境が近い年の B は道筋がない）も見る"
+
+# 追加: 2026-10-05。R49（阪神 2015年をきっかけにした命題。集合の式で、どの式でも判例だった単位）。計算前に登録した。
+# 見ているもの: 阪神 2015年の値（R37: 点の差より +10.3勝、組み合わせ方 +1.44、中位の相手との変換 +6.0）、中日 2022年の点の差より +6.9勝（R30）。
+# 境の値は仮置き（刻んで振らない）。きっかけ（阪神 2015年）以外で読む。
+
+[[proposition]]
+id = "P177"
+statement = "点の差から見込まれるより5勝以上多く勝てば、A クラス"
+strength = "usually"
+if = [{ col = "wins_vs_pythag", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "wins_vs_pythag"
+context = ["rank", "rd", "alloc_z_strat", "one_run_net"]
+links = ["H3"]
+falsifier = "きっかけ以外で、5勝以上多く勝った単位の4分の1を超えて B"
+note = "R49。中日 2022年（+6.9 で B）は判例になると分かっている。wins_vs_pythag は勝ち数を含むので A かどうかと一部算術でつながる"
+
+[[proposition]]
+id = "P178"
+statement = "得点・失点の組み合わせ方が基準より1標準偏差以上有利なら、A クラス"
+strength = "usually"
+if = [{ col = "alloc_z_strat", op = ">=", value = 1 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "alloc_z_strat"
+context = ["rank", "rd", "wins_vs_pythag"]
+links = ["H3"]
+falsifier = "きっかけ以外で、組み合わせ方 ≥ 1 の単位の4分の1を超えて B"
+note = "R49。P52 の「組み合わせ方 < −1 ⇒ B」の鏡の側"
+
+[[proposition]]
+id = "P179"
+statement = "中位の相手との試合で、点の差から見込まれるより3勝以上多く勝てば、A クラス"
+strength = "usually"
+if = [{ col = "opp_conv_mid", op = ">=", value = 3 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "opp_conv_mid"
+context = ["rank", "rd", "opp_conv_top", "opp_conv_low"]
+links = ["H3"]
+falsifier = "きっかけ以外で、中位の相手から3勝以上多く勝った単位の4分の1を超えて B"
+note = "R49。中位の相手は最終順位で決める（docs/propositions.md の前提）"

@@ -86,3 +86,47 @@ statement = "失点がはっきり劣り、上の相手に .47 未満なら B（
 id = "E9"
 expr = "(OFF_SHORT | DEF_WORSE) & ~TOP_WIN & ~(OFF_SHORT_DEF_CLEAR)"
 statement = "得点か失点がはっきり劣り、上の相手に .47 未満で、得点 −1・失点 +1 の形ではないなら B"
+
+# ---- 追加: 2026-10-05、R49。阪神 2015年をきっかけにした命題の前件を集合にし、E6・E7 から除く式を計算の前に書く ----
+
+[[set]]
+id = "CONVERT_BIG"      # 点の差より5勝以上多く勝った（P177）
+from = "P177"
+
+[[set]]
+id = "ALLOC_GOOD"       # 組み合わせ方 ≥ 1（P178）
+from = "P178"
+
+[[set]]
+id = "MID_CONVERT"      # 中位の相手から点の差より3勝以上多く勝った（P179）
+from = "P179"
+
+[[expr]]
+id = "E10"
+expr = "(PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)) & ~CONVERT_BIG"
+statement = "E6 から、点の差より5勝以上多く勝った単位を除く"
+
+[[expr]]
+id = "E11"
+expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~CONVERT_BIG"
+statement = "E7 から、点の差より5勝以上多く勝った単位を除く"
+
+[[expr]]
+id = "E12"
+expr = "(PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)) & ~ALLOC_GOOD"
+statement = "E6 から、組み合わせ方 ≥ 1 の単位を除く"
+
+[[expr]]
+id = "E13"
+expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~ALLOC_GOOD"
+statement = "E7 から、組み合わせ方 ≥ 1 の単位を除く"
+
+[[expr]]
+id = "E14"
+expr = "(PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT"
+statement = "E6 から、中位の相手から3勝以上多く勝った単位を除く"
+
+[[expr]]
+id = "E15"
+expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT"
+statement = "E7 から、中位の相手から3勝以上多く勝った単位を除く"

@@ -5,13 +5,13 @@
 [run] fetch: uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading selectolax (2.4MiB)
 Downloading polars-runtime-32 (47.6MiB)
 Downloading pygments (1.2MiB)
+Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 12ms
+Installed 15 packages in 9ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -208,6 +208,78 @@ HTTP requests: 0
 - 2023: teams=12 expected=12 OK
 - 2024: teams=12 expected=12 OK
 - 2025: teams=12 expected=12 OK
+
+[run] fetch_fielding: uv run python queryu/queryu.py --source npb_team_fielding --years 2012-2025 --cache data/raw/npb_team_fielding --out data/observations/npb_team_fielding/teams.jsonl
+2012: records=0 unknown=2
+2013: records=0 unknown=2
+2014: records=0 unknown=2
+2015: records=0 unknown=2
+2016: records=0 unknown=2
+2017: records=0 unknown=2
+2018: records=0 unknown=2
+2019: records=0 unknown=2
+2020: records=0 unknown=2
+2021: records=0 unknown=2
+2022: records=0 unknown=2
+2023: records=0 unknown=2
+2024: records=0 unknown=2
+2025: records=0 unknown=2
+HTTP requests: 28
+[run] observe_fielding: uv run python queryu/queryu.py --source npb_team_fielding --years 2012-2025 --cache data/raw/npb_team_fielding --out data/observations/npb_team_fielding/teams.jsonl --offline
+2012: records=0 unknown=2
+2013: records=0 unknown=2
+2014: records=0 unknown=2
+2015: records=0 unknown=2
+2016: records=0 unknown=2
+2017: records=0 unknown=2
+2018: records=0 unknown=2
+2019: records=0 unknown=2
+2020: records=0 unknown=2
+2021: records=0 unknown=2
+2022: records=0 unknown=2
+2023: records=0 unknown=2
+2024: records=0 unknown=2
+2025: records=0 unknown=2
+HTTP requests: 0
+[run] preview_fielding: uv run python blueprobe/blueprobe.py --source npb_team_fielding --cache data/raw/npb_team_fielding --out cycles/c001-chunichi/outputs/observed_fielding.md
+unknown: 28 件。表記の変化を疑う（上の表を参照）
+# npb_team_fielding: 観測された構造
+
+取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
+
+| group | empty_pages | pages | records | unknown |
+|---|---|---|---|---|
+| 2012 | 0 | 2 | 0 | 2 |
+| 2013 | 0 | 2 | 0 | 2 |
+| 2014 | 0 | 2 | 0 | 2 |
+| 2015 | 0 | 2 | 0 | 2 |
+| 2016 | 0 | 2 | 0 | 2 |
+| 2017 | 0 | 2 | 0 | 2 |
+| 2018 | 0 | 2 | 0 | 2 |
+| 2019 | 0 | 2 | 0 | 2 |
+| 2020 | 0 | 2 | 0 | 2 |
+| 2021 | 0 | 2 | 0 | 2 |
+| 2022 | 0 | 2 | 0 | 2 |
+| 2023 | 0 | 2 | 0 | 2 |
+| 2024 | 0 | 2 | 0 | 2 |
+| 2025 | 0 | 2 | 0 | 2 |
+
+## 未知の表記（数字は # に伏せた形）
+
+- 2012: `'守機備会'`
+- 2013: `'守機備会'`
+- 2014: `'守機備会'`
+- 2015: `'守機備会'`
+- 2016: `'守機備会'`
+- 2017: `'守機備会'`
+- 2018: `'守機備会'`
+- 2019: `'守機備会'`
+- 2020: `'守機備会'`
+- 2021: `'守機備会'`
+- 2022: `'守機備会'`
+- 2023: `'守機備会'`
+- 2024: `'守機備会'`
+- 2025: `'併殺・参加 | 併殺・球団'`
 
 [run] measure: uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --sensitivity-out cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
 shape: (14, 12)

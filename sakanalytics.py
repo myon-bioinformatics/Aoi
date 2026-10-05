@@ -877,6 +877,8 @@ def standing_lock(tg: pl.DataFrame) -> pl.DataFrame:
       lg_set_lock_x    : そのリーグで、上位半分の顔ぶれが最後と同じになり、その後変わらなくなった日の位置
       q_wl_1〜4        : 自分の試合を消化順に4つに分けた（境は 試合数 × q ÷ 4 の切り捨て）それぞれの勝 − 敗
       lone_down_n      : 4つの区間のうち、そのリーグで自分だけが勝 − 敗 < 0 だった区間の数（ほかの球団の区間は同じ番号どうしで比べる）
+      pre_lock_wpct / post_lock_g / post_lock_wpct : 落ち着いた日まで（その日を含む）の勝率と、その後の試合数・勝率（R61。
+                         最後の側に落ち着いた後も同じ向きで戦ったか、五分に戻したか）
     R26 の確定日（数の上で決まった日）と違い、実際の順位表がいつから最後と同じ側に落ち着いたかを見る。
     """
     league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
@@ -934,11 +936,18 @@ def standing_lock(tg: pl.DataFrame) -> pl.DataFrame:
                 final = side_by_day[last][t]
                 lk = lock_day(lambda i: side_by_day[i][t] != final)
                 lone = sum(qs[t][q] < 0 and all(qs[u][q] >= 0 for u in ms if u != t) for q in range(4))
-                rows.append({"season": season, "team": t, "lock_g": played_by_day[lk].get(t, 0), "lock_x": x(lk),
+                g0 = played_by_day[lk].get(t, 0)
+                pre, post = seq[t][:g0], seq[t][g0:]
+
+                def wp(xs):
+                    w_, l2 = xs.count(1), xs.count(-1)
+                    return w_ / (w_ + l2) if w_ + l2 else None
+                rows.append({"season": season, "team": t, "lock_g": g0, "lock_x": x(lk),
                              "lg_set_lock_x": x(set_lock), **{f"q_wl_{q + 1}": qs[t][q] for q in range(4)},
-                             "lone_down_n": lone})
+                             "lone_down_n": lone, "pre_lock_wpct": wp(pre), "post_lock_g": len(post), "post_lock_wpct": wp(post)})
     schema = {"season": pl.Int32, "team": pl.Utf8, "lock_g": pl.Int64, "lock_x": pl.Float64, "lg_set_lock_x": pl.Float64,
-              **{f"q_wl_{q}": pl.Int64 for q in range(1, 5)}, "lone_down_n": pl.Int64}
+              **{f"q_wl_{q}": pl.Int64 for q in range(1, 5)}, "lone_down_n": pl.Int64,
+              "pre_lock_wpct": pl.Float64, "post_lock_g": pl.Int64, "post_lock_wpct": pl.Float64}
     return pl.DataFrame(rows, schema=schema)
 
 def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:

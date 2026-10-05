@@ -1063,6 +1063,9 @@ def test_standing_lock_by_hand():
     assert [v["g"][f"q_wl_{q}"] for q in range(1, 5)] == [-1, 1, 1, 2]
     assert [v["c"][f"q_wl_{q}"] for q in range(1, 5)] == [1, 1, -1, -2]
     assert all(r["lone_down_n"] == 0 for r in v.values())                          # どの区間も負け越しは2球団以上
+    # c は4試合目の日に落ち着いた: それまで W W L L（.500）、その後 L（1試合 .000）。t は初日に落ち着き、以後 4試合 3勝1敗
+    assert (v["c"]["pre_lock_wpct"], v["c"]["post_lock_g"], v["c"]["post_lock_wpct"]) == (pytest.approx(0.5), 1, pytest.approx(0.0))
+    assert (v["t"]["post_lock_g"], v["t"]["post_lock_wpct"]) == (4, pytest.approx(0.75))
 
 
 def test_lone_down_counts_quarters_where_only_one_team_lost():

@@ -1651,3 +1651,48 @@ context = ["rank", "rank_rf", "inn_size_low_streak", "sim_p_upper"]
 links = ["H5"]
 falsifier = "きっかけの中日6単位を除いて、大きさ下位2位以内の単位の4分の1を超えて A クラス"
 note = "得点の量（P118）と、点の入り方（回の大きさ）のどちらが、片側だけ上位のチームを分けるかを比べる"
+
+# 追加: 2026-10-05。R29（片側だけ上位のチームは、得失点差の符号で分かれるか）。
+# P121 は R28 の記述（事前登録の外）を見た後に作った。P122 の範囲（得点だけ上位）の得失点差と順位の組は見ていない。
+# P123 の範囲（失点だけ上位）は、得点5・6位の26単位を R28 で見ている。得点4位の17単位は見ていない。
+
+[[proposition]]
+id = "P121"
+statement = "失点だけが上位半分で得点が5位以下のチームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rank_ra", "rank_rf", "wins_vs_pythag", "sim_p_upper"]
+links = ["H2"]
+falsifier = "2026年以降、この範囲で得失点差プラスなのに B クラスの単位が出る（中日 2019年に続く判例）"
+note = "R28 の記述（判例は中日 2019年だけ）を見た後に作った。同じデータでは確かめにならず、きっかけ以外の単位はほぼ残らない。確かめは 2026年以降（analysis.toml の [confirm]）"
+
+[[proposition]]
+id = "P122"
+statement = "得点だけが上位半分（得点3位以内・失点4位以下）のチームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = "<=", value = 3 }, { col = "rank_ra", op = ">=", value = 4 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rd"
+context = ["rank", "rank_rf", "rank_ra", "wins_vs_pythag", "sim_p_upper"]
+links = ["H2"]
+falsifier = "得失点差プラスの単位の4分の1を超えて B クラス"
+note = "P121 の鏡（得点の側）。この範囲の得失点差と順位の組はまだ見ていない"
+
+[[proposition]]
+id = "P123"
+statement = "失点だけが上位半分（失点3位以内・得点4位以下）のチームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 4 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rank_ra", "rank_rf", "wins_vs_pythag", "sim_p_upper"]
+links = ["H2"]
+falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
+note = "P121 の範囲を得点4位まで広げた形。得点4位の17単位は見ていないので、きっかけ以外はその部分で読む"

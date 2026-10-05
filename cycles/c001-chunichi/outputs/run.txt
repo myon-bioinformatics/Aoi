@@ -5,13 +5,13 @@
 [run] fetch: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading pygments (1.2MiB)
 Downloading polars-runtime-32 (47.6MiB)
+Downloading pygments (1.2MiB)
 Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 12ms
+Installed 15 packages in 15ms
 ledger: 126 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
@@ -634,6 +634,9 @@ shape: (14, 12)
 - P190 効く試合だけで引いた帯（live_mix_zone）の下なら、B クラス: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 修正 / 裏 保留）
 - P191 試合数の 3/4 の時点で3〜4位（AB の状態）なら、最後の区間で勝ち越せば A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 - P192 試合数の 3/4 の時点で3〜4位なら、最後の区間で下位半分の相手から勝ち越せば A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P193 得点の優位が、ほかの年のどの A よりも低い（rf_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
+- P194 収支が、ほかの年のどの A よりも低い（bal_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
+- P195 下位半分の相手との勝率が、ほかの年のどの A よりも低い（vsl_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 
 詳細は objections.md。終了コードは `python PythDRagoras/logic/propositions.py judge` で確かめられる。
 
@@ -906,3 +909,6 @@ units=156 dropped=0 target: upper_half == False
 [1] P190 異議あり（例外あり） 元の命題: 判例 1 件: g-2018
 [4] P191 待った！判断保留 元の命題: 判例 7 件: g-2017, l-2015, e-2023, c-2015, m-2014 ほか
 [4] P192 待った！判断保留 元の命題: 判例 10 件: g-2023, l-2015, g-2017, m-2012, d-2013 ほか
+[4] P193 待った！判断保留 元の命題: 判例 1 件: t-2019
+[4] P194 待った！判断保留 元の命題: 判例 1 件: t-2015
+[4] P195 待った！判断保留 元の命題: 判例 1 件: e-2019

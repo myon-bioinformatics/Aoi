@@ -59,6 +59,7 @@
   wave_*                           順位の線を、始まりの値から出発して減衰する波で表したもの（収束する先・決まった位置・周期、R23）
   clinch_in_* / clinch_out_* / decided_x  A クラスに入る・入れないが数の上で確かになった日と残り試合、リーグの顔ぶれが決まった日（R26）
   rank_fixed_* / live_* / dead_*  最終順位が確かになった日と、A・B が決まる前（効く試合）・後（効かない試合）の勝率と点の差（R57）
+  lock_g / lock_x / lg_set_lock_x / q_wl_* / lone_down_n  順位表で A・B の側が最後と同じに落ち着いた試合数（N）と日、4つの区間の勝 − 敗、自分だけ負け越した区間の数（R60）
   series_*                         カード（同じ相手・同じ球場で続けての試合）ごとの勝ち数: 負け越したカード、勝ち数の散らばり、
                                    1試合目とそれ以外の勝率の差、3連戦の 0〜3勝の数と、力が一定のときとの比べ（R24。series_features）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
@@ -866,6 +867,80 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
     return pl.DataFrame(rows, schema=schema)
 
 
+
+def standing_lock(tg: pl.DataFrame) -> pl.DataFrame:
+    """R60: 何試合目の時点の順位表で、最後の A・B がおおよそ分かるか（その日の順位表 = 各日の終わりの勝率の並び）。
+
+      lock_g / lock_x  : 自分の上位半分か否か（勝率で自分より上の球団の数 + 1 ≤ 球団数 ÷ 2）が、最後と同じになり、
+                         その後一度も変わらなくなった日の、自分の消化試合数と日付の位置（0 = 開幕、1 = 最終日）。
+                         一度も変わらなければ初日（同率は上位側に数える）
+      lg_set_lock_x    : そのリーグで、上位半分の顔ぶれが最後と同じになり、その後変わらなくなった日の位置
+      q_wl_1〜4        : 自分の試合を消化順に4つに分けた（境は 試合数 × q ÷ 4 の切り捨て）それぞれの勝 − 敗
+      lone_down_n      : 4つの区間のうち、そのリーグで自分だけが勝 − 敗 < 0 だった区間の数（ほかの球団の区間は同じ番号どうしで比べる）
+    R26 の確定日（数の上で決まった日）と違い、実際の順位表がいつから最後と同じ側に落ち着いたかを見る。
+    """
+    league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
+    rows = []
+    for (season,), sg in tg.filter(pl.col("is_home")).sort("date").group_by(["season"], maintain_order=True):
+        dates = sorted(set(sg["date"].to_list()))
+        day = {d: i for i, d in enumerate(dates)}
+        games_by_day = [[] for _ in dates]
+        for d, home, away, hs, as_ in sg.select("date", "team", "opp", "rf", "ra").iter_rows():
+            games_by_day[day[d]].append((home, away, hs, as_))
+        teams = sorted({t for g in games_by_day for h, a, _, _ in g for t in (h, a)})
+        members: dict[str, list] = {}
+        for t in teams:
+            members.setdefault(league_of[(season, t)], []).append(t)
+        w, l_, n = Counter(), Counter(), Counter()
+        seq = {t: [] for t in teams}                       # 消化順の 1（勝）・−1（負）・0（分）
+        side_by_day, played_by_day, set_by_day = [], [], []
+        for games in games_by_day:
+            for h, a, hs, as_ in games:
+                for t, my, op in ((h, hs, as_), (a, as_, hs)):
+                    n[t] += 1
+                    w[t] += my > op
+                    l_[t] += my < op
+                    seq[t].append(1 if my > op else -1 if my < op else 0)
+            wp = {t: w[t] / (w[t] + l_[t]) if w[t] + l_[t] else None for t in teams}
+            side, sets = {}, {}
+            for lg, ms in members.items():
+                k = len(ms) // 2
+                up = {t for t in ms if wp[t] is not None and 1 + sum(wp[u] is not None and wp[u] > wp[t] for u in ms) <= k}
+                sets[lg] = frozenset(up)
+                for t in ms:
+                    side[t] = t in up
+            side_by_day.append(side)
+            played_by_day.append(dict(n))
+            set_by_day.append(sets)
+        last = len(dates) - 1
+        for lg, ms in members.items():
+            lg_days = [i for i, g in enumerate(games_by_day) if any(h in ms or a in ms for h, a, _, _ in g)]
+            o0, o1 = (date.fromisoformat(dates[i]).toordinal() for i in (lg_days[0], lg_days[-1]))
+
+            def x(i):
+                return (date.fromisoformat(dates[i]).toordinal() - o0) / (o1 - o0) if o1 > o0 else None
+
+            def lock_day(differs):
+                bad = [i for i in lg_days if differs(i)]
+                return lg_days[0] if not bad else next((i for i in lg_days if i > bad[-1]), last)
+            final_set = set_by_day[last][lg]
+            set_lock = lock_day(lambda i: set_by_day[i][lg] != final_set)
+            qs = {}
+            for t in ms:
+                m = len(seq[t])
+                bounds = [m * q // 4 for q in range(5)]
+                qs[t] = [sum(seq[t][bounds[q]:bounds[q + 1]]) for q in range(4)]
+            for t in ms:
+                final = side_by_day[last][t]
+                lk = lock_day(lambda i: side_by_day[i][t] != final)
+                lone = sum(qs[t][q] < 0 and all(qs[u][q] >= 0 for u in ms if u != t) for q in range(4))
+                rows.append({"season": season, "team": t, "lock_g": played_by_day[lk].get(t, 0), "lock_x": x(lk),
+                             "lg_set_lock_x": x(set_lock), **{f"q_wl_{q + 1}": qs[t][q] for q in range(4)},
+                             "lone_down_n": lone})
+    schema = {"season": pl.Int32, "team": pl.Utf8, "lock_g": pl.Int64, "lock_x": pl.Float64, "lg_set_lock_x": pl.Float64,
+              **{f"q_wl_{q}": pl.Int64 for q in range(1, 5)}, "lone_down_n": pl.Int64}
+    return pl.DataFrame(rows, schema=schema)
+
 def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:
     """1シーズン分の試合（日付順。各日 [(試合の番号, ホーム, ビジター), ...]）と各試合の勝者（引き分けは None）から、
     各球団の「順位の高さ」（リーグの球団数 + 1 − 順位）と貯金（勝 − 敗）を、そのリーグの線を引く日ごとに並べる。"""
@@ -1546,6 +1621,7 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFra
                                    end=str(traj.get("end", "season"))), on=["season", "team"], how="left")
     st = st.join(series_features(tg, sims=sims), on=["season", "team"], how="left")
     st = st.join(clinch_dates(tg), on=["season", "team"], how="left")
+    st = st.join(standing_lock(tg), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 

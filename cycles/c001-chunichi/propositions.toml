@@ -2679,3 +2679,19 @@ falsifier = "効く試合の帯の下の単位の10分の1を超えて A"
 note = "R58。P181 を効く試合だけで言い直した命題（change: 全試合 → 効く試合）。帯の端は巨人 2018年のまま"
 parent = "P181"
 change = "勝率を、A・B が決まる前の効く試合だけで数える（R57・R58）"
+
+# 追加: 2026-10-05。R60 の結果を見た後の命題。3/4 の時点で3〜4位の51単位の値を見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P191"
+statement = "試合数の 3/4 の時点で3〜4位（AB の状態）なら、最後の区間で勝ち越せば A クラス"
+strength = "usually"
+scope = { where = [{ col = "course_rank_q3", op = ">=", value = 3 }, { col = "course_rank_q3", op = "<=", value = 4 }] }
+if = [{ col = "q_wl_4", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["g-2017"]
+surprise = "q_wl_4"
+context = ["course_rank_q3", "lock_g", "q_wl_3", "lg_bar"]
+links = ["H2"]
+falsifier = "きっかけ以外で、3/4 で3〜4位・最後の区間で勝ち越した単位の4分の1を超えて B"
+note = "R60。最後の区間の境は自分の試合数 × 3 ÷ 4 の切り捨て。3/4 の時点の順位（course_rank_q3）は各チームの 3/4 までの試合で並べたもの（R20）で、区間の境とほぼ同じ所"

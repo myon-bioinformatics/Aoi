@@ -693,6 +693,9 @@ def test_rank_fixed_and_live_dead_split_by_hand():
     assert (t["dead_g"], t["dead_wpct"]) == (1, pytest.approx(1.0))
     # 効く試合 + 効かない試合 = 全試合
     assert all(r["live_g"] + r["dead_g"] == 6 for r in v.values())
+    # 後半（4〜6試合目）のうち効く試合: g は4日目に確定 → 4試合目だけ（勝ち）。t は5日目 → 4・5試合目（勝ち・勝ち）
+    assert (g["h2_live_g"], g["h2_live_wpct"]) == (1, pytest.approx(1.0))
+    assert (t["h2_live_g"], t["h2_live_wpct"]) == (2, pytest.approx(1.0))
 
 
 def test_live_dead_when_never_decided():

@@ -814,6 +814,8 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
       live_g / live_wpct / live_rd_g : 自分の入る・入れないが決まった日まで（その日を含む）の試合数・勝率・1試合あたりの点の差（R57）。
                                        決まらなければ全試合
       dead_g / dead_wpct / dead_rd_g : 決まった日より後の試合（A・B には効かない試合）。なければ dead_g = 0、ほかは空
+      h2_live_g / h2_live_wpct       : 後半（自分の試合の後ろ半分、境は 試合数 ÷ 2 の切り捨て）のうち、効く試合の数と勝率（R63。
+                                       後半の下がりが、決まった後の試合で起きたのかを分ける）
     """
     league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
     rows = []
@@ -839,6 +841,9 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
                 cin, cout, fx = c["in"].get(t), c["out"].get(t), c["fixed"].get(t)
                 cut = (cin or cout or (len(dates), None))[0]   # この日まで（含む）が A・B に効く試合
                 part = {"live": [0, 0, 0, 0], "dead": [0, 0, 0, 0]}  # 勝・負・試合・点の差
+                mine = [(di, *((hs, as_) if t == h else (as_, hs))) for di, h, a, hs, as_ in played_on if t in (h, a)]
+                h2 = [(my, op) for di, my, op in mine[len(mine) // 2:] if di <= cut]
+                h2w, h2l = sum(my > op for my, op in h2), sum(my < op for my, op in h2)
                 for di, h, a, hs, as_ in played_on:
                     if t not in (h, a):
                         continue
@@ -858,12 +863,14 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
                              "clinch_out_x": x(cout[0]) if cout else None, "clinch_out_left": cout[1] if cout else None,
                              "decided_x": x(c["decided"][lg]) if lg in c["decided"] else None,
                              "rank_fixed_x": x(fx[0]) if fx else None, "rank_fixed_left": fx[1] if fx else None,
-                             "rank_fixed": fx[2] if fx else None, **rec})
+                             "rank_fixed": fx[2] if fx else None, **rec,
+                             "h2_live_g": len(h2), "h2_live_wpct": h2w / (h2w + h2l) if h2w + h2l else None})
     schema = {"season": pl.Int32, "team": pl.Utf8, "clinch_in_x": pl.Float64, "clinch_in_left": pl.Int64,
               "clinch_out_x": pl.Float64, "clinch_out_left": pl.Int64, "decided_x": pl.Float64,
               "rank_fixed_x": pl.Float64, "rank_fixed_left": pl.Int64, "rank_fixed": pl.Int64,
               "live_g": pl.Int64, "live_wpct": pl.Float64, "live_rd_g": pl.Float64,
-              "dead_g": pl.Int64, "dead_wpct": pl.Float64, "dead_rd_g": pl.Float64}
+              "dead_g": pl.Int64, "dead_wpct": pl.Float64, "dead_rd_g": pl.Float64,
+              "h2_live_g": pl.Int64, "h2_live_wpct": pl.Float64}
     return pl.DataFrame(rows, schema=schema)
 
 

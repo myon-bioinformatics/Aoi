@@ -168,6 +168,8 @@ The words map to fixed thresholds, so the same wording always means the same cri
 
 A threshold is never tuned to the data. If a claim needs another strength, it is a different claim.
 
+The same holds for the boundary values written inside conditions (for example "the leader is .050 ahead"). Such a value is a **provisional placeholder** chosen before the evaluation. Do not sweep it in steps (.040, .050, .060, …) to see where the reading changes: sweeping makes the analysis hurry toward a conclusion. If the placeholder turns out to be the wrong question, write a different proposition.
+
 Defaults: `min_n = 10`, `alpha = 0.05`, 95% intervals.
 
 ---

@@ -1,7 +1,7 @@
 # 異議あり — 命題の判定記録（自動生成）
 
 判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。
-命題ファイル SHA-256: `ce47d1f4dcb649b9f6e291183e92e559097593edfebe7b541485f5e3eb39a19e` / コード: `f2857e579a5cc486337c273c0a60bcbcedbdd067`
+命題ファイル SHA-256: `2d66359b381b23ee55e11f7bf8fe59b2fb2dce826f4b89bde2ca6a4bc39b7f8c` / コード: `ecd7e00beee4eb201f13bdc8530c8005789a64f3`
 
 判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。
 
@@ -5804,3 +5804,164 @@
 
 - 中日 2020 **(focus)**: inn_size_rank=1, upper_half=True, inn_size_low_streak=4, rank=3, rank_rf=6, sim_p_upper=0.371
 - 西武 2020: inn_size_rank=1, upper_half=True, inn_size_low_streak=1, rank=3, rank_rf=4, sim_p_upper=0.200
+
+## P118: 失点だけが上位半分（失点3位以内・得点4位以下）のチームは、得点が5位以下なら B クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 6 件: t-2022, t-2013, t-2021, t-2019, h-2012 ほか
+- もし: `rank_rf >= 5` ならば: `upper_half == False`
+- 識別子: `[where:rank_ra<=3, where:rank_rf>=4] rank_rf>=5 => upper_half==false`（指紋 `9a0ad0383775b6a7`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'rank_ra', 'op': '<=', 'value': 3}, {'col': 'rank_rf', 'op': '>=', 'value': 4}]} / 単位数: 43
+- 見直す条件（反証）: きっかけの中日6単位を除いて、得点5位以下の単位の4分の1を超えて A クラス
+- 注記: 中日の6単位（得点5・6位）を見た後の条件。きっかけ以外で読む
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 26 | 20 | 0.77 [0.58, 0.89] | +0.23σ（0.515） | 0.53 | 1.44 | 0.000 | 0 | 判断保留 | 4 |
+| 対偶 | 20 | 14 | 0.70 [0.48, 0.85] | -0.52σ（0.383） | 0.40 | 1.77 | 0.000 | 0 | 判断保留 | 4 |
+| 逆 | 23 | 20 | 0.87 [0.68, 0.95] | +1.32σ（0.137） | 0.60 | 1.44 | 0.000 | 0 | 判断保留 | 4 |
+| 裏 | 17 | 14 | 0.82 [0.59, 0.94] | +0.70σ（0.353） | 0.47 | 1.77 | 0.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 元の命題に判例 6 件（対偶の判例も同じ）
+
+- 阪神 2022: rank_rf=5, upper_half=True, rank=3, rank_ra=1, rd=61, sim_p_upper=0.832 / surprise=61
+  - 阪神 2022 は「rank_rf >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 阪神 2013: rank_rf=5, upper_half=True, rank=2, rank_ra=1, rd=43, sim_p_upper=0.858 / surprise=43
+  - 阪神 2013 は「rank_rf >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 阪神 2021: rank_rf=5, upper_half=True, rank=2, rank_ra=2, rd=33, sim_p_upper=0.891 / surprise=33
+  - 阪神 2021 は「rank_rf >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 阪神 2019: rank_rf=6, upper_half=True, rank=3, rank_ra=2, rd=-28, sim_p_upper=0.424 / surprise=-28
+  - 阪神 2019 は「rank_rf >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ソフトバンク 2012: rank_rf=5, upper_half=True, rank=3, rank_ra=1, rd=23, sim_p_upper=0.669 / surprise=23
+  - ソフトバンク 2012 は「rank_rf >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 西武 2022: rank_rf=5, upper_half=True, rank=3, rank_ra=1, rd=16, sim_p_upper=0.526 / surprise=16
+  - 西武 2022 は「rank_rf >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+
+**待った！判断保留** 逆に判例 3 件（裏の判例も同じ）
+
+- 巨人 2017: rank_rf=4, upper_half=False, rank=4, rank_ra=1, rd=32, sim_p_upper=0.844 / surprise=32
+  - 巨人 2017 は「upper_half == False」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H2
+- オリックス 2018: rank_rf=4, upper_half=False, rank=4, rank_ra=1, rd=-27, sim_p_upper=0.330 / surprise=-27
+  - オリックス 2018 は「upper_half == False」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H2
+- 楽天 2012: rank_rf=4, upper_half=False, rank=4, rank_ra=3, rd=24, sim_p_upper=0.425 / surprise=24
+  - 楽天 2012 は「upper_half == False」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H2
+
+**きっかけ以外での判定**（作り直しのきっかけ d-2014, d-2015, d-2019, d-2021, d-2022, d-2023 を除く）: n=20 成立=14 成立率=0.70 [0.48, 0.85] → **判断保留** / 判例: t-2022, t-2013, t-2021, t-2019, h-2012, l-2022
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- ロッテ 2020: rank_rf=5, upper_half=True, rank=2, rank_ra=2, rd=-18, sim_p_upper=0.561
+
+## P119: 得点だけが上位半分（得点3位以内・失点4位以下）のチームは、失点が5位以下なら B クラス（P118 の鏡）
+
+- **判定: exit 3 異議あり（不成立）** — 元の命題: 判例 13 件: l-2018, l-2019, s-2022, f-2015, db-2024 ほか
+- もし: `rank_ra >= 5` ならば: `upper_half == False`
+- 識別子: `[where:rank_ra>=4, where:rank_rf<=3] rank_ra>=5 => upper_half==false`（指紋 `661afc308b616172`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'rank_rf', 'op': '<=', 'value': 3}, {'col': 'rank_ra', 'op': '>=', 'value': 4}]} / 単位数: 41
+- 見直す条件（反証）: 失点5位以下の単位の4分の1を超えて A クラス
+- 注記: P118 と対称か（弱い側の深さが効くのは失点の側でも同じか）を見る
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 26 | 13 | 0.50 [0.32, 0.68] | -2.94σ（0.005） | 0.51 | 0.98 | 0.701 | 0 | 棄却 | 3 |
+| 対偶 | 20 | 7 | 0.35 [0.18, 0.57] | -4.13σ（0.000） | 0.37 | 0.96 | 0.701 | 0 | 棄却 | 3 |
+| 逆 | 21 | 13 | 0.62 [0.41, 0.79] | -1.39σ（0.130） | 0.63 | 0.98 | 0.701 | 0 | 判断保留 | 4 |
+| 裏 | 15 | 7 | 0.47 [0.25, 0.70] | -2.53σ（0.017） | 0.49 | 0.96 | 0.701 | 0 | 棄却 | 3 |
+
+**異議あり（不成立）** 元の命題に判例 13 件（対偶の判例も同じ）
+
+- 西武 2018: rank_ra=6, upper_half=True, rank=1, rank_rf=1, rd=139, sim_p_upper=0.990 / surprise=139
+  - 西武 2018 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 西武 2019: rank_ra=6, upper_half=True, rank=1, rank_rf=1, rd=61, sim_p_upper=0.824 / surprise=61
+  - 西武 2019 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ヤクルト 2022: rank_ra=5, upper_half=True, rank=1, rank_rf=1, rd=53, sim_p_upper=0.852 / surprise=53
+  - ヤクルト 2022 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 日本ハム 2015: rank_ra=5, upper_half=True, rank=2, rank_rf=3, rd=34, sim_p_upper=0.753 / surprise=34
+  - 日本ハム 2015 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- DeNA 2024: rank_ra=5, upper_half=True, rank=3, rank_rf=1, rd=19, sim_p_upper=0.626 / surprise=19
+  - DeNA 2024 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- DeNA 2016: rank_ra=5, upper_half=True, rank=3, rank_rf=3, rd=-16, sim_p_upper=0.560 / surprise=-16
+  - DeNA 2016 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ヤクルト 2012: rank_ra=5, upper_half=True, rank=3, rank_rf=2, rd=-15, sim_p_upper=0.399 / surprise=-15
+  - ヤクルト 2012 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- DeNA 2019: rank_ra=5, upper_half=True, rank=2, rank_rf=3, rd=-15, sim_p_upper=0.426 / surprise=-15
+  - DeNA 2019 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ロッテ 2021: rank_ra=5, upper_half=True, rank=2, rank_rf=1, rd=14, sim_p_upper=0.550 / surprise=14
+  - ロッテ 2021 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ロッテ 2013: rank_ra=5, upper_half=True, rank=3, rank_rf=3, rd=-12, sim_p_upper=0.222 / surprise=-12
+  - ロッテ 2013 は「rank_ra >= 5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ほか 3 件（propositions.jsonl を参照）
+
+**待った！判断保留** 逆に判例 8 件（裏の判例も同じ）
+
+- 西武 2015: rank_ra=4, upper_half=False, rank=4, rank_rf=2, rd=58, sim_p_upper=0.680 / surprise=58
+  - 西武 2015 は「upper_half == False」を満たすのに「rank_ra >= 5」を満たさない。なぜか？ → H2
+- ロッテ 2019: rank_ra=4, upper_half=False, rank=4, rank_rf=2, rd=31, sim_p_upper=0.666 / surprise=31
+  - ロッテ 2019 は「upper_half == False」を満たすのに「rank_ra >= 5」を満たさない。なぜか？ → H2
+- 広島 2012: rank_ra=4, upper_half=False, rank=4, rank_rf=3, rd=-27, sim_p_upper=0.347 / surprise=-27
+  - 広島 2012 は「upper_half == False」を満たすのに「rank_ra >= 5」を満たさない。なぜか？ → H2
+- 巨人 2023: rank_ra=4, upper_half=False, rank=4, rank_rf=3, rd=16, sim_p_upper=0.738 / surprise=16
+  - 巨人 2023 は「upper_half == False」を満たすのに「rank_ra >= 5」を満たさない。なぜか？ → H2
+- 楽天 2022: rank_ra=4, upper_half=False, rank=4, rank_rf=2, rd=11, sim_p_upper=0.329 / surprise=11
+  - 楽天 2022 は「upper_half == False」を満たすのに「rank_ra >= 5」を満たさない。なぜか？ → H2
+- 広島 2022: rank_ra=4, upper_half=False, rank=5, rank_rf=2, rd=8, sim_p_upper=0.319 / surprise=8
+  - 広島 2022 は「upper_half == False」を満たすのに「rank_ra >= 5」を満たさない。なぜか？ → H2
+- ロッテ 2012: rank_ra=4, upper_half=False, rank=5, rank_rf=3, rd=-3, sim_p_upper=0.464 / surprise=-3
+  - ロッテ 2012 は「upper_half == False」を満たすのに「rank_ra >= 5」を満たさない。なぜか？ → H2
+- 西武 2016: rank_ra=4, upper_half=False, rank=4, rank_rf=2, rd=1, sim_p_upper=0.384 / surprise=1
+  - 西武 2016 は「upper_half == False」を満たすのに「rank_ra >= 5」を満たさない。なぜか？ → H2
+
+## P120: 失点だけが上位半分のチームは、得点した回の大きさが下位2位以内なら B クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 7 件: h-2019, b-2022, db-2022, g-2016, l-2022 ほか
+- もし: `inn_size_rank <= 2` ならば: `upper_half == False`
+- 識別子: `[seasons=2013-2025, where:rank_ra<=3, where:rank_rf>=4] inn_size_rank<=2 => upper_half==false`（指紋 `ecd0af94b2f85356`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'seasons': '2013-2025', 'where': [{'col': 'rank_ra', 'op': '<=', 'value': 3}, {'col': 'rank_rf', 'op': '>=', 'value': 4}]} / 単位数: 39
+- 見直す条件（反証）: きっかけの中日6単位を除いて、大きさ下位2位以内の単位の4分の1を超えて A クラス
+- 注記: 得点の量（P118）と、点の入り方（回の大きさ）のどちらが、片側だけ上位のチームを分けるかを比べる
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 22 | 15 | 0.68 [0.47, 0.84] | -0.74σ（0.301） | 0.54 | 1.27 | 0.042 | 0 | 判断保留 | 4 |
+| 対偶 | 18 | 11 | 0.61 [0.39, 0.80] | -1.36σ（0.139） | 0.44 | 1.40 | 0.042 | 0 | 判断保留 | 4 |
+| 逆 | 21 | 15 | 0.71 [0.50, 0.86] | -0.38σ（0.433） | 0.56 | 1.27 | 0.042 | 0 | 判断保留 | 4 |
+| 裏 | 17 | 11 | 0.65 [0.41, 0.83] | -0.98σ（0.235） | 0.46 | 1.40 | 0.042 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 元の命題に判例 7 件（対偶の判例も同じ）
+
+- ソフトバンク 2019: inn_size_rank=1, upper_half=True, rank=2, rank_rf=4, inn_size_low_streak=1, sim_p_upper=0.527 / surprise=-0.103
+  - ソフトバンク 2019 は「inn_size_rank <= 2」を満たすのに「upper_half == False」を満たさない。なぜか？ → H5
+- オリックス 2022: inn_size_rank=1, upper_half=True, rank=1, rank_rf=4, inn_size_low_streak=1, sim_p_upper=0.855 / surprise=-0.079
+  - オリックス 2022 は「inn_size_rank <= 2」を満たすのに「upper_half == False」を満たさない。なぜか？ → H5
+- DeNA 2022: inn_size_rank=2, upper_half=True, rank=2, rank_rf=4, inn_size_low_streak=1, sim_p_upper=0.618 / surprise=-0.067
+  - DeNA 2022 は「inn_size_rank <= 2」を満たすのに「upper_half == False」を満たさない。なぜか？ → H5
+- 巨人 2016: inn_size_rank=1, upper_half=True, rank=2, rank_rf=4, inn_size_low_streak=1, sim_p_upper=0.698 / surprise=-0.050
+  - 巨人 2016 は「inn_size_rank <= 2」を満たすのに「upper_half == False」を満たさない。なぜか？ → H5
+- 西武 2022: inn_size_rank=2, upper_half=True, rank=3, rank_rf=5, inn_size_low_streak=1, sim_p_upper=0.526 / surprise=-0.045
+  - 西武 2022 は「inn_size_rank <= 2」を満たすのに「upper_half == False」を満たさない。なぜか？ → H5
+- 西武 2013: inn_size_rank=2, upper_half=True, rank=2, rank_rf=4, inn_size_low_streak=1, sim_p_upper=0.689 / surprise=-0.030
+  - 西武 2013 は「inn_size_rank <= 2」を満たすのに「upper_half == False」を満たさない。なぜか？ → H5
+- 楽天 2021: inn_size_rank=2, upper_half=True, rank=3, rank_rf=4, inn_size_low_streak=1, sim_p_upper=0.631 / surprise=-0.015
+  - 楽天 2021 は「inn_size_rank <= 2」を満たすのに「upper_half == False」を満たさない。なぜか？ → H5
+
+**待った！判断保留** 逆に判例 6 件（裏の判例も同じ）
+
+- 日本ハム 2019: inn_size_rank=5, upper_half=False, rank=5, rank_rf=5, inn_size_low_streak=0, sim_p_upper=0.242 / surprise=0.031
+  - 日本ハム 2019 は「upper_half == False」を満たすのに「inn_size_rank <= 2」を満たさない。なぜか？ → H5
+- 広島 2024: inn_size_rank=3, upper_half=False, rank=4, rank_rf=5, inn_size_low_streak=0, sim_p_upper=0.324 / surprise=-0.028
+  - 広島 2024 は「upper_half == False」を満たすのに「inn_size_rank <= 2」を満たさない。なぜか？ → H5
+- オリックス 2018: inn_size_rank=3, upper_half=False, rank=4, rank_rf=4, inn_size_low_streak=0, sim_p_upper=0.330 / surprise=-0.015
+  - オリックス 2018 は「upper_half == False」を満たすのに「inn_size_rank <= 2」を満たさない。なぜか？ → H5
+- 阪神 2018: inn_size_rank=3, upper_half=False, rank=6, rank_rf=5, inn_size_low_streak=0, sim_p_upper=0.092 / surprise=0.010
+  - 阪神 2018 は「upper_half == False」を満たすのに「inn_size_rank <= 2」を満たさない。なぜか？ → H5
+- 西武 2023: inn_size_rank=3, upper_half=False, rank=5, rank_rf=6, inn_size_low_streak=0, sim_p_upper=0.357 / surprise=-0.004
+  - 西武 2023 は「upper_half == False」を満たすのに「inn_size_rank <= 2」を満たさない。なぜか？ → H5
+- 巨人 2017: inn_size_rank=4, upper_half=False, rank=4, rank_rf=4, inn_size_low_streak=0, sim_p_upper=0.844 / surprise=0.004
+  - 巨人 2017 は「upper_half == False」を満たすのに「inn_size_rank <= 2」を満たさない。なぜか？ → H5
+
+**きっかけ以外での判定**（作り直しのきっかけ d-2014, d-2015, d-2019, d-2021, d-2022, d-2023 を除く）: n=16 成立=9 成立率=0.56 [0.33, 0.77] → **判断保留** / 判例: h-2019, b-2022, db-2022, g-2016, l-2022, l-2013, e-2021

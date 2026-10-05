@@ -55,6 +55,7 @@ uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calenda
 | `mix_lo` / `mix_hi` / `mix_zone` | A と B が混ざる帯（R53）と、自分がその下・中・上のどこか（−1・0・+1） | 自分の年を除いたほかの年（設定の `[[exclude]]` の年も除く）の全単位で、A の勝率の最低（mix_lo）と B の勝率の最高（mix_hi） | 1年抜きなので、その年のデータで線を決めていない。リーグはまとめる。端ちょうどは中（0）。ほかの年に A か B がなければ空 |
 | `live_mix_lo` / `live_mix_hi` / `live_mix_zone` | 同じ帯を、A・B に効く試合だけの勝率（`live_wpct`）で引いたもの（R58） | `add_mix_zone(col="live_wpct", prefix="live_mix")` | 効かない試合（決まった後）を外した帯 |
 | `fld_fpct` / `fld_e_g` / `fld_dp_g` / `fld_pb_g` / `fld_a_po` と `fld_d_*` | チーム守備成績の率（`--fielding`）: 守備率・失策/試合・併殺/試合・捕逸/試合・補殺/刺殺と、同じ年・同じリーグの他球団の平均との差 | `fielding_join`。試合数・守備機会・守備率の照合が合わなければ止まる | `fld_d_e_g` がマイナスなら、他球団より失策が少ない。原票の数は出さない |
+| `ls_cov` / `ls_e_g` / `ls_opp_e_g` / `ls_e_net_g` / `ls_e_net_close` / `ls_e_net_win` / `ls_e_net_loss` / `ls_e_net_q4` | 試合ごとの得点表（`--linescore`）からの失策: 得点表のある試合の割合、自分・相手の失策／試合、（自分 − 相手）／試合を全試合・1点差・勝ち・負け・最後の区間で | `linescore_join`。日付とチームで結び、R が日程の得点と合わなければ止まる | 取得した年だけ埋まる（`ls_cov` = 0 の年は空）。マイナスなら相手より失策が少ない |
 | `rank_fixed_x` / `rank_fixed_left` / `rank_fixed` | 最終順位が数の上で確かになった日の位置（0 = 開幕、1 = 最終日）・その日の残り試合・その順位（R57） | 各日の終わりに残りを全勝・全敗としたときの勝率の上限・下限から、ありうる最高と最低の順位が一致した日 | 直接対決を考えないので控えめ（遅く出ることはあっても早くは出ない）。最後まで同率なら空 |
 | `live_g` / `live_wpct` / `live_rd_g` | A・B に効く試合（自分の入る・入れないが決まった日まで、その日を含む）の試合数・勝率・1試合あたりの点の差（R57） | `clinch_in_x` か `clinch_out_x` の日で区切る。決まらなければ全試合 | 区切りは R26 と同じ控えめな日付 |
 | `dead_g` / `dead_wpct` / `dead_rd_g` | 決まった日より後の試合（A・B には効かない試合） | 同上の残り | なければ `dead_g` = 0、ほかは空 |

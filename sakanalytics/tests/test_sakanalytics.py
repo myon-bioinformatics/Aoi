@@ -1093,3 +1093,42 @@ def test_lone_down_counts_quarters_where_only_one_team_lost():
         rows += [(f"2024-04-{i + 1:02d}", w, "d", 3, 1), (f"2024-04-{i + 1:02d}", others[0], others[1], 2, 2)]
     v = {r["team"]: r for r in standing_lock(to_team_games(games(rows), teams)).iter_rows(named=True)}
     assert v["d"]["lone_down_n"] == 4 and v["g"]["lone_down_n"] == 0
+
+
+
+# ---------- 試合ごとの得点表（R H E） ----------
+
+def _ls(rows):
+    return pl.DataFrame([{"date": d, "team": t, "r": r, "h": 5, "e": e} for d, t, r, e in rows])
+
+
+def test_linescore_join_error_differences_by_game_type():
+    import sakanalytics as sa
+
+    tg = to_team_games(games([("2024-04-01", "d", "g", 3, 2), ("2024-04-02", "d", "g", 1, 5),
+                              ("2024-04-03", "g", "d", 4, 3), ("2024-04-04", "d", "g", 6, 0)]), TEAMS)
+    st = season_table(tg)
+    ls = _ls([("2024-04-01", "d", 3, 0), ("2024-04-01", "g", 2, 1), ("2024-04-02", "d", 1, 2), ("2024-04-02", "g", 5, 0),
+              ("2024-04-03", "g", 4, 0), ("2024-04-03", "d", 3, 1), ("2024-04-04", "d", 6, 0), ("2024-04-04", "g", 0, 0)])
+    d = sa.linescore_join(st, tg, ls).filter(pl.col("team") == "d").row(0, named=True)
+    # 中日: 自分の失策 0,2,1,0（計3）、相手 1,0,0,0（計1）
+    assert d["ls_cov"] == pytest.approx(1.0) and d["ls_e_g"] == pytest.approx(3 / 4) and d["ls_opp_e_g"] == pytest.approx(1 / 4)
+    assert d["ls_e_net_g"] == pytest.approx(2 / 4)
+    assert d["ls_e_net_close"] == pytest.approx((-1 + 1) / 2)     # 1点差は 4/1（勝ち、−1）と 4/3（負け、+1）
+    assert d["ls_e_net_win"] == pytest.approx((-1 + 0) / 2) and d["ls_e_net_loss"] == pytest.approx((2 + 1) / 2)
+    assert d["ls_e_net_q4"] == pytest.approx(0.0)                  # 最後の区間は4試合目だけ（境 4 × 3 ÷ 4 = 3）
+
+
+def test_linescore_join_stops_on_mismatch_and_leaves_missing_years_empty():
+    import sakanalytics as sa
+
+    tg = to_team_games(games([("2024-04-01", "d", "g", 3, 2), ("2023-04-01", "d", "g", 1, 0)]), TEAMS)
+    st = season_table(tg)
+    with pytest.raises(ValueError, match="R が"):
+        sa.linescore_join(st, tg, _ls([("2024-04-01", "d", 4, 0), ("2024-04-01", "g", 2, 0)]))
+    with pytest.raises(ValueError, match="2つ以上"):
+        sa.linescore_join(st, tg, _ls([("2024-04-01", "d", 3, 0), ("2024-04-01", "d", 3, 0), ("2024-04-01", "g", 2, 0)]))
+    out = {(r["season"], r["team"]): r for r in sa.linescore_join(
+        st, tg, _ls([("2024-04-01", "d", 3, 0), ("2024-04-01", "g", 2, 1)])).iter_rows(named=True)}
+    assert out[(2024, "d")]["ls_cov"] == pytest.approx(1.0) and out[(2023, "d")]["ls_cov"] == 0.0
+    assert out[(2023, "d")]["ls_e_net_g"] is None                 # 取得していない年は空

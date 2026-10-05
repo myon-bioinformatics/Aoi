@@ -84,6 +84,7 @@
     *_home / *_away                ホーム・ビジターの試合だけで同じ計算（球場の係数ではない。比べる範囲を分けるだけ）
   bat_*（--batting があるとき）     チーム打撃成績から計算した率（R6）。打数・本塁打数などの原票の値は出力しない
   fld_*（--fielding があるとき）    チーム守備成績から計算した率（守備率・失策/試合・併殺/試合・捕逸/試合・補殺/刺殺）と他球団との差 fld_d_*
+  ls_*（--linescore があるとき）    試合ごとの得点表（R H E）からの失策の差（1点差・勝ち・負け・最後の区間）。取得した年だけ埋まる
     bat_avg / obp / slg / iso      打率・出塁率・長打率・ISO（長打率 − 打率）
     bat_hr_pa / bb_pa / so_pa      本塁打・四死球・三振の、打席あたりの割合
     bat_xbh_h                      安打のうち長打（二塁打・三塁打・本塁打）の割合
@@ -389,6 +390,41 @@ def fielding_join(st: pl.DataFrame, fld: pl.DataFrame) -> pl.DataFrame:
         / (pl.col(f"fld_{k}").count().over(over) - 1)
         for k in FIELDING_RATES
     })
+
+
+def linescore_join(st: pl.DataFrame, tg: pl.DataFrame, ls: pl.DataFrame) -> pl.DataFrame:
+    """試合ごとの得点表（R H E、BlueProbe npb_game_linescore）を試合ごとの結果に結び、失策の差をチーム×シーズンで出す（R64 の準備）。
+
+    結び方: 日付とチーム（NPB の公式戦に同じ日の同じチームの2試合はない前提。あれば止まる）。相手の失策は、同じ日の相手の行。
+    照合（合わなければ ValueError）: 同じ日付・チームの行が1つ、得点表の R が日程の得点と一致する。
+    出す列（得点表のある試合だけで数える。原票の数は出さない）:
+      ls_cov        : 得点表のある試合の割合（取得した年だけ埋まる）
+      ls_e_g / ls_opp_e_g : 自分の失策／試合、相手の失策／試合
+      ls_e_net_g    : （自分の失策 − 相手の失策）／試合。マイナスなら相手より失策が少ない
+      ls_e_net_close / ls_e_net_win / ls_e_net_loss / ls_e_net_q4 : 同じ差を、1点差の試合・勝った試合・負けた試合・
+                      最後の区間（自分の試合の最後の 1/4）だけで1試合あたりに
+    """
+    l2 = ls.select(pl.col("date"), pl.col("team"), pl.col("r").alias("ls_r"), pl.col("e").alias("ls_e"))
+    dup = l2.group_by("date", "team").len().filter(pl.col("len") > 1)
+    if dup.height:
+        raise ValueError(f"得点表に同じ日付・チームの行が2つ以上ある: {dup.select('date', 'team').rows()[:5]}")
+    g = tg.sort("date").with_columns(n=pl.int_range(pl.len()).over("season", "team"), m=pl.len().over("season", "team"))
+    g = g.join(l2, on=["date", "team"], how="inner").join(
+        l2.select("date", pl.col("team").alias("opp"), pl.col("ls_e").alias("ls_opp_e")), on=["date", "opp"], how="inner")
+    bad = g.filter(pl.col("ls_r") != pl.col("rf"))
+    if bad.height:
+        raise ValueError(f"得点表の R が日程の得点と合わない: {bad.select('date', 'team').rows()[:5]}")
+    net = pl.col("ls_e") - pl.col("ls_opp_e")
+
+    def mean_net(cond):
+        return net.filter(cond).mean()
+    agg = g.group_by("season", "team").agg(
+        ls_g=pl.len(), ls_e_g=pl.col("ls_e").mean(), ls_opp_e_g=pl.col("ls_opp_e").mean(), ls_e_net_g=net.mean(),
+        ls_e_net_close=mean_net((pl.col("rf") - pl.col("ra")).abs() == 1),
+        ls_e_net_win=mean_net(pl.col("rf") > pl.col("ra")), ls_e_net_loss=mean_net(pl.col("rf") < pl.col("ra")),
+        ls_e_net_q4=mean_net(pl.col("n") >= pl.col("m") * 3 // 4))
+    out = st.join(agg, on=["season", "team"], how="left")
+    return out.with_columns(ls_cov=(pl.col("ls_g") / pl.col("G")).fill_null(0.0)).drop("ls_g")
 
 def _season_wpct_pmf(rf: list[int], ra: list[int]) -> tuple[list[float], list[float]]:
     """1試合 = 自分の得点の分布から1つ、失点の分布から1つを独立に引く。それを試合数だけ繰り返したときの勝率の分布。
@@ -1724,6 +1760,7 @@ def main(argv=None) -> int:
     ap.add_argument("--innings", type=Path, help="イニング単位の集計（CSV / CSV.gz、R4）。あれば inn_* の列を加える")
     ap.add_argument("--batting", type=Path, help="チーム打撃成績の観測（JSONL、R6）。あれば bat_* の率を加える")
     ap.add_argument("--fielding", type=Path, help="チーム守備成績の観測（JSONL）。あれば fld_* の率を加える")
+    ap.add_argument("--linescore", type=Path, help="試合ごとの得点表の観測（JSONL）。あれば ls_* の失策の差を加える")
     ap.add_argument("--sensitivity-out", type=Path,
                     help="線の始まりの試合数（[trajectory] sensitivity）や終わり（ends、R26）を変えた線の読み（R25）の書き出し先")
     args = ap.parse_args(argv)
@@ -1740,6 +1777,8 @@ def main(argv=None) -> int:
         st = batting_join(st, pl.read_ndjson(args.batting))
     if args.fielding:
         st = fielding_join(st, pl.read_ndjson(args.fielding))
+    if args.linescore:
+        st = linescore_join(st, tg, pl.read_ndjson(args.linescore))
     st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
     excl = [int(e["season"]) for e in cfg.get("exclude", [])]
     st = add_mix_zone(add_mix_zone(st, exclude=excl), exclude=excl, col="live_wpct", prefix="live_mix")

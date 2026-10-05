@@ -66,6 +66,7 @@
   rf_sd_g / ra_sd_g / *_adv_se / *_zone_se  試合ごとの点の標準偏差と、優位の誤差・誤差1つ分での3区分（R34）
   rf_adv_t / ra_adv_t / run_balance_t / bat_routes / vs_top_minus_lower / adv_shape_se  研究で使った読みを列にしたもの（R39。add_composites。式は関数の説明と README）
   path_* / b_paths                 B に着く道筋の参考値（R45。add_b_paths、規則は B_PATHS。判定には使わない）
+  lg_lead_gap / lg_gap34 / lg_rest_sd  その年・そのリーグの順位の形（1位と2位の差、3位と4位の差、1位以外の散らばり。R46。add_league_shape）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1247,6 +1248,25 @@ def add_composites(st: pl.DataFrame) -> pl.DataFrame:
     return st.with_columns(out) if out else st
 
 
+def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
+    """R46: その年・そのリーグの順位の形（リーグ全体で1つの値を、各単位に付ける）。勝率（wpct）と順位（rank）だけから作る。
+
+      lg_lead_gap   : 1位の勝率 − 2位の勝率（大きいほど1位が抜けている。「一人勝ち」の目安）
+      lg_gap34      : 3位の勝率 − 4位の勝率（小さいほど A と B の境が近い）
+      lg_rest_sd    : 2〜6位（1位を除く）の勝率の標準偏差（小さいほど、1位以外が狭い範囲に押し込まれている）
+    勝率を高い順に並べた k 番目の値を使う（同率でも k 番目）。リーグのチームが足りなければ空。
+    """
+    if not {"season", "league", "rank", "wpct"} <= set(st.columns):
+        return st
+    over = ["season", "league"]
+    nth = lambda k: pl.col("wpct").sort(descending=True).slice(k - 1, 1).first().over(over)  # noqa: E731  # 同率でも k 番目。足りなければ空
+    return st.with_columns(
+        lg_lead_gap=nth(1) - nth(2),
+        lg_gap34=nth(3) - nth(4),
+        lg_rest_sd=pl.col("wpct").filter(pl.col("wpct") < pl.col("wpct").max()).std().over(over),
+    )
+
+
 # R45: B に着く道筋の参考値。規則はこれまでの研究で決めたものを固定して使う（値を見て変えない）。判定には使わない
 B_PATHS = {
     "offense": "得点不足: 得点の優位が誤差を超えてマイナス（rf_zone_se = −1、R35・R40）",
@@ -1404,7 +1424,7 @@ def main(argv=None) -> int:
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     if args.batting:
         st = batting_join(st, pl.read_ndjson(args.batting))
-    st = add_b_paths(add_composites(add_balance(add_persistence(st))))
+    st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

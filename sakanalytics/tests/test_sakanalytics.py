@@ -836,3 +836,28 @@ def test_add_b_paths_none_when_no_rule_hits_and_skips_without_inputs():
     assert sa.add_b_paths(st)["b_paths"].to_list() == ["none"]
     assert sa.add_b_paths(pl.DataFrame({"x": [1]})).columns == ["x"]
     assert set(sa.B_PATHS) == {"offense", "defense", "convert", "collapse"}
+
+
+# ---------- R46: リーグの順位の形 ----------
+
+def test_add_league_shape_gaps_and_rest_spread():
+    import statistics
+
+    import sakanalytics as sa
+
+    w = [0.65, 0.55, 0.52, 0.50, 0.45, 0.33]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
+    out = sa.add_league_shape(st).row(0, named=True)
+    assert out["lg_lead_gap"] == pytest.approx(0.10) and out["lg_gap34"] == pytest.approx(0.02)
+    assert out["lg_rest_sd"] == pytest.approx(statistics.stdev(w[1:]))
+    # 同率で並んでも k 番目の勝率を使う
+    tie = st.with_columns(rank=pl.Series([1, 2, 3, 3, 5, 6]), wpct=pl.Series([0.6, 0.55, 0.5, 0.5, 0.45, 0.4]))
+    assert sa.add_league_shape(tie).row(0, named=True)["lg_gap34"] == pytest.approx(0.0)
+
+
+def test_add_league_shape_with_few_teams_is_empty_not_an_error():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 2, "league": ["C"] * 2, "team": ["a", "b"], "rank": [1, 2], "wpct": [0.6, 0.4]})
+    out = sa.add_league_shape(st).row(0, named=True)
+    assert out["lg_lead_gap"] == pytest.approx(0.2) and out["lg_gap34"] is None

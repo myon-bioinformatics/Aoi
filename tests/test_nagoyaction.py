@@ -44,13 +44,12 @@ class Done:
 def test_cycle_pipeline_is_valid():
     p = na.load(CYCLE)
     assert [s["name"] for s in p["step"]] == ["fetch", "observe", "inspect", "fetch_batting", "observe_batting",
-                                              "inspect_batting", "fetch_fielding", "observe_fielding", "preview_fielding",
+                                              "inspect_batting", "fetch_fielding", "observe_fielding", "inspect_fielding",
                                               "measure", "question", "search", "search_r21", "sets", "judge"]
     assert [s["name"] for s in p["step"] if s.get("network")] == ["fetch", "fetch_batting", "fetch_fielding"]  # 外に出るのは取得だけ
-    # 形を確かめる前の取得元は preview（--strict なし）で、measure にはまだ渡さない
+    # 守備成績は形を確かめた後に measure へ渡す（構造の確認は --strict、下の一般の確認）
     measure = next(s for s in p["step"] if s["name"] == "measure")
-    assert "--strict" not in next(s for s in p["step"] if s["name"] == "preview_fielding")["run"]
-    assert not any("npb_team_fielding" in a for a in measure["run"])
+    assert any("npb_team_fielding" in a for a in measure["run"])
     names = [s["name"] for s in p["step"]]
     for s in p["step"]:  # 構造の確認は --strict で、測る前に止まれる位置にある
         if s["name"].startswith("inspect"):

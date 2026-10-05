@@ -777,3 +777,32 @@ def test_season_table_has_per_game_spread():
     rf = [r for r, _ in results]
     mean = sum(rf) / len(rf)
     assert d["rf_sd_g"] == pytest.approx(math.sqrt(sum((x - mean) ** 2 for x in rf) / (len(rf) - 1)))
+
+
+# ---------- R39: 研究で使った読みを列にしたもの ----------
+
+def test_add_composites_values_and_missing_inputs():
+    import math
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({
+        "rf_adv": [-0.6, 0.2, 0.0], "ra_adv": [0.3, -0.1, 0.0], "run_balance": [-0.3, 0.1, 0.0],
+        "rf_adv_se": [0.2, 0.25, 0.3], "ra_adv_se": [0.3, 0.25, 0.3],
+        "rf_zone_se": [-1, 0, None], "ra_zone_se": [1, 0, 0],
+        "bat_d_bb_pa": [-0.01, 0.0, None], "bat_d_iso": [0.02, -0.01, 0.01],
+        "vs_top_wpct": [0.45, 0.5, 0.4], "vs_lower_wpct": [0.48, 0.6, None],
+    })
+    out = sa.add_composites(st).to_dicts()
+    assert out[0]["rf_adv_t"] == pytest.approx(-3.0) and out[0]["ra_adv_t"] == pytest.approx(1.0)
+    assert out[0]["run_balance_t"] == pytest.approx(-0.3 / math.sqrt(0.04 + 0.09))
+    assert [r["adv_shape_se"] for r in out] == ["-1/+1", "0/0", None]
+    assert [r["bat_routes"] for r in out] == [1, 1, None]   # 四死球 −・長打 + → 1、四死球 0（以上）・長打 − → 1
+    assert out[0]["vs_top_minus_lower"] == pytest.approx(-0.03) and out[2]["vs_top_minus_lower"] is None
+
+
+def test_add_composites_skips_columns_whose_inputs_are_absent():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"rf_adv": [0.1], "ra_adv": [0.1], "run_balance": [0.2]})
+    assert sa.add_composites(st).columns == st.columns

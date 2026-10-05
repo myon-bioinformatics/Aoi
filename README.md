@@ -18,3 +18,27 @@
 uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl \
   --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl
 ```
+
+## 優位・誤差と、研究から作った列（R32〜R34・R39）
+
+どれも同じ年・同じリーグの他球団と比べた値で、1試合あたり。順位ではなく量で読むための列。
+上の相手・下の相手は**最終順位**で決める（結果を知ったうえでの議論。[docs/propositions.md](../docs/propositions.md) の Groups Defined By The Final Outcome）。
+
+| 列 | 中身 | 式 | 注意 |
+|---|---|---|---|
+| `rf_adv` | 得点の優位（プラスほど多く取った） | 得点／試合 − 他球団の得点／試合の平均 | `rf_def_total` と同じ量 |
+| `ra_adv` | 失点の優位（プラスほど抑えた） | 他球団の失点／試合の平均 − 失点／試合 | |
+| `run_balance` | 収支 | `rf_adv + ra_adv` | プラスなら、得点の不足を失点で補えた |
+| `short_share` | 取り分（0〜1） | 不足 ÷（不足 + 優位）。不足 = max(0, −`rf_adv`)、優位 = `ra_adv` | 割る数が 0 の近くでも発散しない。打ち消せないなら 1、不足がなく優位が正なら 0、どちらもなければ空 |
+| `rf_adv_z` / `ra_adv_z` | 優位 ÷ 全単位の優位の標準偏差 | | 物差しはチームの間の散らばり。年を足すと少し動く |
+| `rf_zone` / `ra_zone` | 上の z の3区分 | z ≥ 1 → 1、z ≤ −1 → −1、その間 → 0 | R33 で広すぎた。誤差の区分（下）を優先 |
+| `rf_sd_g` / `ra_sd_g` | 試合ごとの得点・失点の標準偏差 | | 試合ごとの値から作る（measure の段階） |
+| `rf_adv_se` / `ra_adv_se` | 優位の誤差 | √（自分の sd² ÷ 試合数 + Σ 他球団の sd² ÷ 試合数 ÷ 他球団の数²） | 各チームの試合は独立とみなす |
+| `rf_zone_se` / `ra_zone_se` | 誤差での3区分 | 優位 ≥ 誤差 → 1、≤ −誤差 → −1、その間 → 0 | 0 は「平均と区別できない」 |
+| `rf_adv_t` / `ra_adv_t` | 優位が誤差の何倍か（連続値） | `rf_adv / rf_adv_se`、`ra_adv / ra_adv_se` | `*_zone_se` は \|t\| ≥ 1 で区切った同じ量 |
+| `run_balance_t` | 収支が誤差の何倍か | `run_balance / √(rf_adv_se² + ra_adv_se²)` | 得点と失点の誤差は独立とみなす |
+| `adv_shape_se` | 形（9通りの文字列） | `"<得点の区分>/<失点の区分>"`、それぞれ `-1`・`0`・`+1` | 例 `-1/+1` = 得点ははっきり足りず、失点ははっきり上回る |
+| `bat_routes` | 打撃の経路の数（0〜2） | [`bat_d_bb_pa` ≥ 0] + [`bat_d_iso` ≥ 0] | 四死球／打席・ISO が他球団の平均以上なら1つ。どちらかが空なら空 |
+| `vs_top_minus_lower` | 上の相手との勝率 − 下の相手との勝率 | `vs_top_wpct − vs_lower_wpct` | 上 = 最終順位の1・2位、下 = 4〜6位。最終順位で決めるので、A かどうかと算術でつながる面がある |
+
+どの列も「測る」だけで、良し悪しの判断はしない。どの研究でなぜ作ったかは `cycles/c001-chunichi/research/R31`〜`R39` にある。

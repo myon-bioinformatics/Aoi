@@ -11,7 +11,7 @@ Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 12ms
+Installed 15 packages in 17ms
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -307,6 +307,32 @@ HTTP requests: 0
 - 2023: teams=12 expected=12 OK
 - 2024: teams=12 expected=12 OK
 - 2025: teams=12 expected=12 OK
+
+[run] fetch_linescore: uv run python queryu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl
+2025: records=168 unknown=32370
+HTTP requests: 858
+2025: games=84 rows_not_2=0 OK
+[run] observe_linescore: uv run python queryu/queryu.py --source npb_game_linescore --years 2025 --cache data/raw/npb_game_linescore --out data/observations/npb_game_linescore/teams.jsonl --offline
+2025: records=168 unknown=32370
+HTTP requests: 0
+2025: games=84 rows_not_2=0 OK
+[run] preview_linescore: uv run python blueprobe/blueprobe.py --source npb_game_linescore --cache data/raw/npb_game_linescore --out cycles/c001-chunichi/outputs/observed_linescore.md
+unknown: 32370 件。表記の変化を疑う（上の表を参照）
+# npb_game_linescore: 観測された構造
+
+取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
+
+| group | empty_pages | pages | records | unknown |
+|---|---|---|---|---|
+| 2025 | 0 | 858 | 168 | 32370 |
+
+## 取りこぼしの確認（既知値との照合）
+
+- 2025: games=84 rows_not_2=0 OK
+
+## 未知の表記（数字は # に伏せた形）
+
+- 2025: `' | E.ラミレス | # |  | # | # | # | # | # | #'`, `' | E.ラミレス | # | .# | # | # | # | # | # | #'`, `' | アドゥワ | # |  | ## | # | # | # | # | #'`, `' | ウィック |  | + | # | # | # | # | # | #'`, `' | ウィック | # |  | # | # | # | # | # | #'`
 
 [run] measure: uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --sensitivity-out cycles/c001-chunichi/outputs/trajectory_sensitivity_units.jsonl
 shape: (14, 12)

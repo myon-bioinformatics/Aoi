@@ -65,6 +65,7 @@
   rf_adv_z / ra_adv_z / *_zone     優位を全単位の標準偏差で割ったものと、その3区分（1・0・−1）。|z| < 1 を 0 の近くとして読む（R33）
   rf_sd_g / ra_sd_g / *_adv_se / *_zone_se  試合ごとの点の標準偏差と、優位の誤差・誤差1つ分での3区分（R34）
   rf_adv_t / ra_adv_t / run_balance_t / bat_routes / vs_top_minus_lower / adv_shape_se  研究で使った読みを列にしたもの（R39。add_composites。式は関数の説明と README）
+  path_* / b_paths                 B に着く道筋の参考値（R45。add_b_paths、規則は B_PATHS。判定には使わない）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1246,6 +1247,45 @@ def add_composites(st: pl.DataFrame) -> pl.DataFrame:
     return st.with_columns(out) if out else st
 
 
+# R45: B に着く道筋の参考値。規則はこれまでの研究で決めたものを固定して使う（値を見て変えない）。判定には使わない
+B_PATHS = {
+    "offense": "得点不足: 得点の優位が誤差を超えてマイナス（rf_zone_se = −1、R35・R40）",
+    "defense": "失点の劣り: 失点の優位が誤差を超えてマイナス（ra_zone_se = −1、R40・R44）",
+    "convert": "点の差を勝ちに変えられない: 点の差より2勝を超えて少ない（wins_vs_pythag < −2）か、組み合わせ方 < −1（R38・R44）",
+    "collapse": "後半の崩れ: 前半より3つ以上下で終わり、後半に得点が減り失点が増え、後半は点の差より2勝を超えて少ない（R43・R44）",
+}
+
+
+def add_b_paths(st: pl.DataFrame) -> pl.DataFrame:
+    """R45: B に着く道筋の参考値（B_PATHS の規則）。A の単位にも付く（道筋に当たりながら A に入った、と読む）。
+
+      path_offense / path_defense / path_convert / path_collapse : それぞれの規則に当たるか。元の列が空なら空
+      b_paths : 当たった道筋を "+" でつないだ文字列（例 "offense+convert"）。どれにも当たらなければ "none"、
+                どの規則も判定できなければ空。判定（命題の終了コード）には使わない参考値
+    元の列がない表では作らない。
+    """
+    need = {"rf_zone_se", "ra_zone_se", "wins_vs_pythag", "alloc_z_strat", "course_fade", "course_rf_d", "course_ra_d",
+            "half2_vs_pythag"}
+    if not need <= set(st.columns):
+        return st
+    col = pl.col
+    flags = {
+        "path_offense": col("rf_zone_se") == -1,
+        "path_defense": col("ra_zone_se") == -1,
+        # 片方が空でも、もう片方で当たれば当たり。両方空なら空
+        "path_convert": (col("wins_vs_pythag") < -2).fill_null(False) | (col("alloc_z_strat") < -1).fill_null(False),
+        "path_collapse": (col("course_fade") >= 3) & (col("course_rf_d") < 0) & (col("course_ra_d") > 0) & (col("half2_vs_pythag") < -2),
+    }
+    flags["path_convert"] = (pl.when(col("wins_vs_pythag").is_null() & col("alloc_z_strat").is_null())
+                             .then(None).otherwise(flags["path_convert"]))
+    st = st.with_columns(**flags)
+    names = [k.removeprefix("path_") for k in flags]
+    hit = [pl.when(col(f"path_{n}")).then(pl.lit(n)) for n in names]
+    joined = pl.concat_list(hit).list.drop_nulls().list.join("+")
+    known = pl.any_horizontal([col(f"path_{n}").is_not_null() for n in names])
+    return st.with_columns(b_paths=pl.when(~known).then(None).when(joined == "").then(pl.lit("none")).otherwise(joined))
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -1364,7 +1404,7 @@ def main(argv=None) -> int:
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     if args.batting:
         st = batting_join(st, pl.read_ndjson(args.batting))
-    st = add_composites(add_balance(add_persistence(st)))
+    st = add_b_paths(add_composites(add_balance(add_persistence(st))))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

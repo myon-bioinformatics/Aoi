@@ -41,4 +41,17 @@ uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calenda
 | `bat_routes` | 打撃の経路の数（0〜2） | [`bat_d_bb_pa` ≥ 0] + [`bat_d_iso` ≥ 0] | 四死球／打席・ISO が他球団の平均以上なら1つ。どちらかが空なら空 |
 | `vs_top_minus_lower` | 上の相手との勝率 − 下の相手との勝率 | `vs_top_wpct − vs_lower_wpct` | 上 = 最終順位の1・2位、下 = 4〜6位。最終順位で決めるので、A かどうかと算術でつながる面がある |
 
+## B に着く道筋の参考値（R45）
+
+`path_offense`・`path_defense`・`path_convert`・`path_collapse`（当たるか）と、当たったものを `+` でつないだ `b_paths`（例 `offense+convert`、どれにも当たらなければ `none`）。**判定（命題の終了コード）には使わない参考値**で、規則はこれまでの研究で決めたものを固定して使う（値を見て変えない）。A の単位にも付く（道筋に当たりながら A に入った、と読む）。
+
+| 道筋 | 規則 | 出どころ |
+|---|---|---|
+| `offense` 得点不足 | `rf_zone_se = −1`（得点の優位が誤差を超えてマイナス） | R35・R40 |
+| `defense` 失点の劣り | `ra_zone_se = −1` | R40・R44 |
+| `convert` 点の差を勝ちに変えられない | `wins_vs_pythag < −2` または `alloc_z_strat < −1` | R38・R44 |
+| `collapse` 後半の崩れ | `course_fade ≥ 3` かつ `course_rf_d < 0` かつ `course_ra_d > 0` かつ `half2_vs_pythag < −2` | R43・R44 |
+
+元の列が空なら、その道筋は空。どの道筋も判定できなければ `b_paths` は空。
+
 どの列も「測る」だけで、良し悪しの判断はしない。どの研究でなぜ作ったかは `cycles/c001-chunichi/research/R31`〜`R39` にある。

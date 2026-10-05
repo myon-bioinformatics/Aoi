@@ -2711,3 +2711,45 @@ context = ["q4_wl_vs_upper", "q4_rd_g", "lg_bar", "q_wl_4"]
 links = ["H2"]
 falsifier = "きっかけ以外で、3/4 で3〜4位・最後の区間で下の相手から勝ち越した単位の4分の1を超えて B"
 note = "R62。下位半分の相手は最終順位で決める（docs/propositions.md の前提）ので、最後の区間の成績と算術でつながる分がある"
+
+# 追加: 2026-10-06。R66（順位ではなく指標の値に線を引く）の結果を見た後の命題。2013〜2025年の値を見ている。2012年は軽く確かめた。2026年で確かめる。
+# 帯は1年抜き（自分の年を除いたほかの年の A の最も悪い値）。人が決める区切りの値はない。
+
+[[proposition]]
+id = "P193"
+statement = "得点の優位が、ほかの年のどの A よりも低い（rf_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "rf_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2023"]
+surprise = "rf_mix_zone"
+context = ["rf_adv", "rf_mix_lo", "ra_adv", "run_balance"]
+links = ["H1", "H2"]
+falsifier = "得点の優位が帯の下の単位の10分の1を超えて A"
+note = "R66。中日の B 12年のうち5年がこの状態。得点だけの帯でここまで分かれるのは、得点の不足が中日の B の中心であることの記述"
+
+[[proposition]]
+id = "P194"
+statement = "収支が、ほかの年のどの A よりも低い（bal_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "bal_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["t-2015"]
+surprise = "bal_mix_zone"
+context = ["run_balance", "bal_mix_lo", "resid_fixed"]
+links = ["H2"]
+falsifier = "収支が帯の下の単位の10分の1を超えて A"
+note = "R66。帯の端は阪神 2015年（収支 −0.61 で A、R54）が決めているはず。自分の年を除くので、阪神 2015年の年には帯が狭まる"
+
+[[proposition]]
+id = "P195"
+statement = "下位半分の相手との勝率が、ほかの年のどの A よりも低い（vsl_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "vsl_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2021"]
+surprise = "vsl_mix_zone"
+context = ["vs_lower_wpct", "vsl_mix_lo", "vs_top_wpct"]
+links = ["H2"]
+falsifier = "下の相手との勝率が帯の下の単位の10分の1を超えて A"
+note = "R66。下位半分は最終順位で決める（前提）ので、自分の順位と算術でつながる分がある。中日の B 12年のうち7年がこの状態"

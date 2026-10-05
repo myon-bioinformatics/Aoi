@@ -2336,3 +2336,36 @@ surprise = "run_balance"
 context = ["rank", "rf_adv", "ra_adv", "rank_ra", "rank_rf"]
 links = ["H2"]
 note = "R41。親 P141 の元の命題・判例と同じ。読むのは逆・裏"
+
+# 追加: 2026-10-05。R42（前半の線の行き先と B、中日を含めて4つの形で）。計算前に登録した。
+# 見ているもの: P104（中日の B 12年のうち 6年は行き先が空、残り 6年はすべて 4位以下）、P105・P166（中日以外）。
+# 中日を含めた逆・裏・対偶、中日の A（2012年）の値は見ていない。
+
+[[proposition]]
+id = "P168"
+statement = "B クラスなら、前半の線だけから当てた波の行き先が、もう4位以下（中日を含む全体）"
+strength = "more_often_than_not"
+if = [{ col = "upper_half", op = "==", value = false }]
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+parent = "P166"
+change = "範囲から「中日以外」を外し、中日を含めた全体で4つの形を見る"
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+falsifier = "B クラスの単位の半分以下しか、前半の行き先が4位以下にならない"
+note = "減衰しない波が選ばれた年は行き先が空で、判定できない単位（exit 5 の対象）として数える"
+
+[[proposition]]
+id = "P169"
+statement = "中日は、B クラスの年なら、前半の線だけから当てた波の行き先が、もう4位以下"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = [{ col = "upper_half", op = "==", value = false }]
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+parent = "P104"
+change = "範囲の「B クラス」を「もし」に移し、中日だけで逆・裏を見られるようにした（R41 と同じ立て直し）"
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+falsifier = "中日の B の年の半分以下しか、前半の行き先が4位以下にならない"
+note = "中日の A は 2012年だけなので、対偶・裏は単位が少ない"

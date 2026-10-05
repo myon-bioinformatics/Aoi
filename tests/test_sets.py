@@ -94,3 +94,20 @@ def test_load_sets_rejects_duplicates_and_bad_ids(tmp_path):
     f.write_text('[[set]]\nid="A"\nfrom="P1"\n[[expr]]\nid="P1"\nexpr="A"\n', encoding="utf-8")
     with pytest.raises(st_.SetError, match="一意"):
         st_.load_sets(f, list(PROPS.values()))
+
+
+def test_junit_records_why_an_expression_stopped():
+    import xml.etree.ElementTree as ET
+
+    def result(i, passes, cx, missed, code=1):
+        return {"id": i, "expr": "A & ~B", "passes": passes, "judgement": {"code": code},
+                "coverage": {"n": 3, "covered": 3 - len(missed), "missed": missed},
+                "forms": [{"form": "original", "code": 0 if passes else code, "hold": 9, "n": 10,
+                           "counterexamples": [{"unit": u} for u in cx]}]}
+    xml = st_.junit([result("E1", True, [], []), result("E2", False, ["t-2015"], ["d-2018"])],
+                    {"sha256": "s", "props_sha256": "p"})
+    root = ET.fromstring(xml)
+    assert root.get("tests") == "2" and root.get("failures") == "1"
+    fail = root.findall("testcase")[1].find("failure")
+    assert "t-2015" in fail.get("message") and "d-2018" in fail.get("message") and fail.get("type") == "exit1"
+    assert root.findall("testcase")[0].find("failure") is None

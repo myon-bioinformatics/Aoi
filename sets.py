@@ -248,6 +248,42 @@ def render(results: list[dict], meta: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def junit(results: list[dict], meta: dict) -> str:
+    """式を JUnit 形式のテスト報告にする（R49）。通らなかった式は failure として、止まった理由を残す。
+
+    止まった理由（判例・覆えなかった焦点の単位）は、足りる指標・足りない指標を見つける材料なので、
+    CI の成果物としても積み上げる。
+    """
+    import xml.etree.ElementTree as ET
+
+    failures = sum(not r["passes"] for r in results)
+    suite = ET.Element("testsuite", name="pythdragoras.sets", tests=str(len(results)), failures=str(failures),
+                       errors="0", skipped="0")
+    props = ET.SubElement(suite, "properties")
+    ET.SubElement(props, "property", name="sets_sha256", value=meta["sha256"])
+    ET.SubElement(props, "property", name="propositions_sha256", value=meta["props_sha256"])
+    for r in results:
+        case = ET.SubElement(suite, "testcase", classname="sets", name=f"{r['id']}: {r['expr']}")
+        if r["passes"]:
+            continue
+        original = next(f for f in r["forms"] if f["form"] == "original")
+        cx = [c["unit"] for c in original["counterexamples"]]
+        cov = r["coverage"]
+        reasons = []
+        if cx:
+            reasons.append(f"判例 {len(cx)}件: {', '.join(cx)}")
+        elif original["code"] != 0:
+            reasons.append(f"元の命題の終了コード {original['code']}（判例なし、判断保留など）")
+        if cov["covered"] < cov["n"]:
+            reasons.append(f"覆えなかった焦点の単位 {cov['n'] - cov['covered']}件: {', '.join(cov['missed'])}")
+        msg = "；".join(reasons) or "通らない"
+        fail = ET.SubElement(case, "failure", message=msg, type=f"exit{original['code']}")
+        fail.text = (f"元の命題 {original['hold']}/{original['n']}、総合の終了コード {r['judgement']['code']}、"
+                     f"覆い {cov['covered']}/{cov['n']}")
+    ET.indent(suite)
+    return ET.tostring(suite, encoding="unicode", xml_declaration=True) + "\n"
+
+
 def main(argv=None) -> int:
     import argparse
 
@@ -299,6 +335,7 @@ def main(argv=None) -> int:
     (args.outdir / "sets.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False, default=str) + "\n" for r in results),
                                             encoding="utf-8")
     (args.outdir / "sets.md").write_text(render(results, meta), encoding="utf-8")
+    (args.outdir / "sets.junit.xml").write_text(junit(results, meta), encoding="utf-8")
     first = 0
     for r in results:
         code = r["judgement"]["code"]

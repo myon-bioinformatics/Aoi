@@ -158,7 +158,7 @@ Examples:
 
 SakAnalytics transforms observations into measurable structures.
 
-Implementation: [remaining-season simulation, CS probability and title magic](../sakanalytics/SEASON_SIMULATOR.md).
+Implementation: [remaining-season simulation, CS probability and title magic](../SakAnalytics/baseball/SEASON_SIMULATOR.md).
 
 ---
 

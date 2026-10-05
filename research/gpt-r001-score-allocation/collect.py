@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT / "blueprobe"), str(ROOT / "queryu")]
+sys.path[:0] = [str(ROOT / "BlueProbe"), str(ROOT / "BlueProbe/baseball"), str(ROOT / "QueRyu")]
 import httpx
 import npb_calendar
 from queryu import Cache, PoliteFetcher, UA

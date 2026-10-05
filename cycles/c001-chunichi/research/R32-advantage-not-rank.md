@@ -2,7 +2,7 @@
 
 記録: 2026-10-05。計算を始める前に書いた。R31 の3つの種を、ユーザーの依頼で3つとも進める。
 
-列 `rf_adv`・`ra_adv`・`run_balance`・`short_share` は `bd85db6` で作った（[sakanalytics](../../../sakanalytics/sakanalytics.py) の `add_balance`）。列を足したときの照合（`rf_adv` が `rf_def_total` と一致、差の最大 8×10⁻¹⁶）と、1行の値の確認以外は見ていない。P126〜P131 の範囲・条件の組は見ていない。
+列 `rf_adv`・`ra_adv`・`run_balance`・`short_share` は `bd85db6` で作った（[sakanalytics](../../../SakAnalytics/sakanalytics.py) の `add_balance`）。列を足したときの照合（`rf_adv` が `rf_def_total` と一致、差の最大 8×10⁻¹⁶）と、1行の値の確認以外は見ていない。P126〜P131 の範囲・条件の組は見ていない。
 
 ## 種と命題
 

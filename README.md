@@ -226,7 +226,7 @@ Question:
 
 Documentation:
 
-- [queryu/README.md](queryu/README.md)
+- [QueRyu/README.md](QueRyu/README.md)
 
 ---
 
@@ -241,7 +241,7 @@ Question:
 Documentation:
 
 - [docs/observation.md](docs/observation.md)
-- [blueprobe/README.md](blueprobe/README.md)
+- [BlueProbe/README.md](BlueProbe/README.md)
 
 ---
 
@@ -255,7 +255,7 @@ Question:
 
 Documentation:
 
-- [sakanalytics/README.md](sakanalytics/README.md)
+- [SakAnalytics/README.md](SakAnalytics/README.md)
 
 ---
 
@@ -269,7 +269,7 @@ Question:
 
 Documentation:
 
-- [Plotly による集計レポート](dragowing/README.md)。構想は [docs/images/dragowing.webp](docs/images/dragowing.webp)
+- [Plotly による集計レポート](DRAgoWing/README.md)。構想は [docs/images/dragowing.webp](docs/images/dragowing.webp)
 
 ---
 
@@ -283,7 +283,7 @@ Question:
 
 Documentation:
 
-- [nagoyaction/README.md](nagoyaction/README.md)
+- [NagoyAction/README.md](NagoyAction/README.md)
 
 ---
 
@@ -304,7 +304,7 @@ Documentation:
 - [docs/PythDRagoras.md](docs/PythDRagoras.md)
 - [docs/hypothesis.md](docs/hypothesis.md)
 - [docs/validation.md](docs/validation.md)
-- [pythdragoras/README.md](pythdragoras/README.md)
+- [PythDRagoras/README.md](PythDRagoras/README.md)
 
 ---
 
@@ -357,6 +357,15 @@ Read:
 - [docs/principles.md](docs/principles.md)
 
 The philosophy of Aoi is more important than any individual implementation.
+
+### Repository Layout
+
+Each subproject lives in a folder named after the subproject (`BlueProbe/`, `QueRyu/`, `SakAnalytics/`, `PythDRagoras/`, `NagoyAction/`, `DRAgoWing/`), so that searches for the name find it.
+
+- The main file with the same name, in lowercase, sits at the top of the folder (`BlueProbe/blueprobe.py`). It is the only `.py` there.
+- Every other `.py` goes into a purpose folder below it (a child or a grandchild): `baseball/` for baseball sources and simulators, `logic/` for propositions and sets, `checks/`, `reports/`. Code that only makes sense for Chunichi stays with its cycle (`cycles/c001-chunichi/research/`).
+- `.py` file names and purpose folders are lowercase. Tests stay in each subproject's `tests/`.
+- `NagoyAction/tests/test_layout.py` checks these rules.
 
 A technically correct implementation may still be incompatible with Aoi if it:
 

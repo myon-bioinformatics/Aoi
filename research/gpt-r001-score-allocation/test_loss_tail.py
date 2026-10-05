@@ -34,7 +34,7 @@ class LossTailTests(unittest.TestCase):
             self.assertEqual(p.returncode,65)
 
     def test_existing_engine_returns_objection_not_success(self):
-        sys.path.insert(0,str(HERE.parents[1]/'pythdragoras'))
+        sys.path[:0]=[str(HERE.parents[1]/'PythDRagoras'),str(HERE.parents[1]/'PythDRagoras'/'logic')]
         import polars as pl
         import propositions as pr
         prop=pr.load(HERE/'tail_propositions.toml')[0][0]

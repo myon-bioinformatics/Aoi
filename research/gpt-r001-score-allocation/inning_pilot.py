@@ -11,7 +11,7 @@ from analyze import sha
 
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
-sys.path.insert(0,str(ROOT/'queryu'))
+sys.path.insert(0,str(ROOT/'QueRyu'))
 from queryu import Cache,PoliteFetcher,UA
 
 NAMES={'中日':'d','東京ヤクルト':'s','巨人':'g','読売':'g','阪神':'t','広島':'c','広島東洋':'c','横浜DeNA':'db','DeNA':'db'}

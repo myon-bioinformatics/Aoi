@@ -10,7 +10,7 @@
 | `bat_routes` | 打撃の経路の数（0〜2） | 四死球か長打の一方が他球団以上なら、大きな不足は避けられた（R33・R34） |
 | `vs_top_minus_lower` | 上の相手との勝率 − 下の相手との勝率 | 得点が足りないチームは上の相手に勝てるかで A に届き（R36・R37）、得失点差プラスのチームは下の相手に勝ち越せるかで B に落ちる（R38） |
 
-- 式と注意は [sakanalytics/README.md](../../../sakanalytics/README.md) の表と、`add_composites` の説明にある
+- 式と注意は [SakAnalytics/README.md](../../../SakAnalytics/README.md) の表と、`add_composites` の説明にある
 - どれも既存の列だけから計算する。既存の season.jsonl の各行の末尾に同じ関数で足した（既存の値・並びは変えていない）。measure ステップでも同じ順に作られる
 - 上の相手・下の相手は最終順位で決める（docs/propositions.md の Groups Defined By The Final Outcome）
 

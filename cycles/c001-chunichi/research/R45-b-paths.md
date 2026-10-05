@@ -2,7 +2,7 @@
 
 記録: 2026-10-05。命題の研究ではなく、参考値の列の追加の記録。ユーザーの見立て: 1単位ずつ見ていけば、参考になる値として指標・計算が出せそう。
 
-R35〜R44 で1単位ずつ見たときの分け方の規則を、そのまま列にした（`add_b_paths`、規則は `sakanalytics.py` の `B_PATHS` と [sakanalytics/README.md](../../../sakanalytics/README.md)）。
+R35〜R44 で1単位ずつ見たときの分け方の規則を、そのまま列にした（`add_b_paths`、規則は `sakanalytics.py` の `B_PATHS` と [SakAnalytics/README.md](../../../SakAnalytics/README.md)）。
 
 - **判定には使わない参考値**。命題の終了コードには関わらない
 - 規則はこれまでの研究で決めたものを固定して使う。値を見て規則を変えない（変えるなら新しい列名で）

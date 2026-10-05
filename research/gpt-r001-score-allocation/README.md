@@ -164,7 +164,7 @@ ISOと出塁率を併用してRPSを推定する固定モデル評価は [BATTIN
 
 ## DRAgoWing による得点時期の可視化
 
-[Plotly HTML レポート](outputs/score_timing.html) をダウンロードしてブラウザーで開くと、2013〜2025年と6回・7回の切点を選べます。2020年は参考表示、2026年は対象外です。既存の early_scoring.json / late_reaction.json を [アダプター](render_score_report.py) で読み、[DRAgoWing](../../dragowing/README.md) で描画します。グラフにはインターネット接続が必要です。各図に分母付き数値表を併設し、終盤得点の図は延長を分離、反撃の経過分類は延長を含みます。生データを追加配布せず、新たな因果判定も行いません。
+[Plotly HTML レポート](outputs/score_timing.html) をダウンロードしてブラウザーで開くと、2013〜2025年と6回・7回の切点を選べます。2020年は参考表示、2026年は対象外です。既存の early_scoring.json / late_reaction.json を [アダプター](render_score_report.py) で読み、[DRAgoWing](../../DRAgoWing/README.md) で描画します。グラフにはインターネット接続が必要です。各図に分母付き数値表を併設し、終盤得点の図は延長を分離、反撃の経過分類は延長を含みます。生データを追加配布せず、新たな因果判定も行いません。
 
 ## Bクラス確定前後・区間感度（2022年入口）
 

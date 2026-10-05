@@ -1,5 +1,5 @@
 # 命題の集合（R48）。登録済みの命題の条件だけから集合を作り、式を計算の前に書く。
-#   uv run python pythdragoras/sets.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml \
+#   uv run python PythDRagoras/logic/sets.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml \
 #     --propositions cycles/c001-chunichi/propositions.toml --sets cycles/c001-chunichi/sets.toml --outdir cycles/c001-chunichi/outputs --report-only
 # 集合は全単位（2012〜2025年、2020年は除外）の上で作る。命題の範囲（seasons・team）は使わない。
 

@@ -11,7 +11,7 @@ from analyze import CL, TEAMS, YEARS, units, sha
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-sys.path.insert(0, str(ROOT/'pythdragoras'))
+sys.path[:0] = [str(ROOT/'PythDRagoras'), str(ROOT/'PythDRagoras/logic')]
 
 
 def split(home, away, cap):
@@ -98,7 +98,7 @@ def judge(args):
     results=[pr.evaluate(p,pl.DataFrame(rows),focus='d') for p in props]
     # Process all propositions sequentially; preserve every judgement. First nonzero is the process exit.
     code=next((r['judgement']['code'] for r in results if r['judgement']['code']),0)
-    (args.out/'loss_tail_judgements.json').write_text(json.dumps(dict(results=results,exit_code=code,proposition_sha256=digest, engine_sha256=sha(ROOT/'pythdragoras/propositions.py'), table_sha256=receipt['table_sha256']),ensure_ascii=False,indent=2)+'\n')
+    (args.out/'loss_tail_judgements.json').write_text(json.dumps(dict(results=results,exit_code=code,proposition_sha256=digest, engine_sha256=sha(ROOT/'PythDRagoras/logic/propositions.py'), table_sha256=receipt['table_sha256']),ensure_ascii=False,indent=2)+'\n')
     for r in results:
         print(json.dumps({'id':r['id'],'judgement':r['judgement']},ensure_ascii=False))
     return code

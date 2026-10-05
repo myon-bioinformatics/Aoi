@@ -6,7 +6,7 @@ from itertools import product
 import json
 from pathlib import Path
 import sys
-sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'sakanalytics'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'SakAnalytics'/'baseball'))
 from season_simulator import Game, Snapshot
 from inning_features import read_input, require
 from clinch_interval import date

@@ -6,7 +6,7 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT / "blueprobe"), str(ROOT / "queryu")]
+sys.path[:0] = [str(ROOT / "BlueProbe"), str(ROOT / "BlueProbe/baseball"), str(ROOT / "QueRyu")]
 import npb_calendar
 from blueprobe import NORMALIZATION, merge, new_report
 from queryu import Cache, write_dataset

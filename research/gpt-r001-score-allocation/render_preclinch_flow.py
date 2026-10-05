@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
-from dragowing.dragowing import render_report
+from DRAgoWing.dragowing import render_report
 
 LABELS={'lead':'リード','tie':'同点','trail':'ビハインド','unavailable':'切点対象外',
         'no_runs':'以後無得点','never_level':'得点・未到達','level_never_led':'同点のみ','led':'リード到達'}

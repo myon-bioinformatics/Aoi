@@ -125,8 +125,8 @@
 ### 再現
 
 ```bash
-python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml   # 取得済みなら npb.jp へのアクセスは 0
-python pythdragoras/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --id P52
+python NagoyAction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml   # 取得済みなら npb.jp へのアクセスは 0
+python PythDRagoras/logic/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --id P52
 ```
 
 ## 3. 説明の層（なぜ B クラスか）

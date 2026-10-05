@@ -1958,3 +1958,34 @@ context = ["rank", "rf_adv", "ra_adv", "wins_vs_pythag"]
 links = ["H2"]
 falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
 note = "P128（符号、きっかけ以外 0.92）と並べる"
+
+# 追加: 2026-10-05。R35（中日の「失点だけ上位」の年を誤差の内側・外側に分ける）。計算前に登録した。
+# 中日の年の区分（R34 の記述）は見ている。中日以外で「得点は誤差を超えてマイナス・失点は誤差の内側」の単位の A・B は見ていない。
+
+[[proposition]]
+id = "P141"
+statement = "中日以外で、得点の不足が誤差を超え（得点 −1）、失点の優位が誤差の内側（失点 0）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "team", op = "!=", value = "d" }, { col = "rf_zone_se", op = "==", value = -1 },
+          { col = "ra_zone_se", op = "==", value = 0 }] }
+if = []
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance"
+context = ["rank", "rf_adv", "ra_adv", "rank_ra", "rank_rf"]
+links = ["H2"]
+falsifier = "この範囲の単位の4分の1を超えて A クラス"
+note = "中日の 2013〜2016・2022〜2025年はこの区分（R34）。中日の形が、得点ははっきり足りず失点は平均と区別できないチームに共通かを見る"
+
+[[proposition]]
+id = "P142"
+statement = "中日以外で、得点の不足が誤差を超え、失点の優位も誤差を超えている（得点 −1・失点 +1）なら、B クラス"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }, { col = "rf_zone_se", op = "==", value = -1 },
+          { col = "ra_zone_se", op = "==", value = 1 }] }
+if = []
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance"
+context = ["rank", "rf_adv", "ra_adv", "rd"]
+links = ["H2"]
+falsifier = "（P141 と率を比べるための命題）"
+note = "中日の 2012・2019・2021年の区分。P140 の範囲から中日を除いたもの（P140 の得失点差プラスの単位は見ている）"

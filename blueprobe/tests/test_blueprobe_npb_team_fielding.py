@@ -38,3 +38,12 @@ def test_unknown_sub_header_is_recorded():
 def test_pages_and_check():
     assert pages([2025])[0] == ("2025_c", "https://npb.jp/bis/2025/stats/tmf_c.html", "2025")
     assert [c["ok"] for c in check(parse(page(ROW), URL)["records"])] == [False]
+
+
+def test_observed_spelling_variants():
+    """preview_fielding で見た実ページの表記: 2012〜2024年の「守機備会」、2025年の別々のセル「併殺・参加」「併殺・球団」。"""
+    head = [("守　機\n備　会" if h == "守備機会" else h) for h in HEAD]
+    assert parse(page(ROW, head=head), URL)["records"][0]["tc"] == 5488
+    head25 = ["チーム", "守備率", "試合", "守備機会", "刺殺", "補殺", "失策", "併殺・参加", "併殺・球団", "捕逸"]
+    rec = parse(page(["中日"] + ROW[1:], head=head25, sub=None), "https://npb.jp/bis/2025/stats/tmf_c.html")["records"][0]
+    assert (rec["dp_part"], rec["dp"], rec["e"]) == (328, 122, 52)

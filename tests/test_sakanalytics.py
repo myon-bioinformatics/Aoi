@@ -1003,3 +1003,39 @@ def test_mix_zone_on_another_column_with_prefix():
     assert out["c"]["live_mix_lo"] == pytest.approx(.49) and out["c"]["live_mix_hi"] == pytest.approx(.51)
     assert out["c"]["live_mix_zone"] is None            # 自分の値が空なら空
     assert "mix_zone" not in out["c"]                   # 元の列は作らない
+
+
+
+# ---------- チーム守備成績 ----------
+
+def _fld(team, g=143, po=3800, a=1500, e=50, dp=120, pb=5, fpct=None, tc=None):
+    tc = po + a + e if tc is None else tc
+    fpct = round((po + a) / tc, 3) if fpct is None else fpct
+    return {"season": 2024, "team": team, "league": "C", "g": g, "tc": tc, "po": po, "a": a, "e": e,
+            "dp_part": dp * 3, "dp": dp, "pb": pb, "fpct": fpct}
+
+
+def test_fielding_join_rates_and_relative_to_others():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2024] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [143] * 3})
+    fld = pl.DataFrame([_fld("a", e=40), _fld("b", e=50), _fld("c", e=60)])
+    out = {r["team"]: r for r in sa.fielding_join(st, fld).iter_rows(named=True)}
+    assert out["a"]["fld_e_g"] == pytest.approx(40 / 143)
+    assert out["a"]["fld_d_e_g"] == pytest.approx(40 / 143 - (50 + 60) / 2 / 143)   # 他球団より失策が少ない → マイナス
+    assert out["b"]["fld_d_e_g"] == pytest.approx(0.0)
+    assert out["a"]["fld_fpct"] == pytest.approx(5300 / 5340)
+    assert "e" not in out["a"] and "po" not in out["a"]                               # 原票の数は結合しない
+
+
+@pytest.mark.parametrize("bad,match", [
+    ({"g": 142}, "試合数"),
+    ({"tc": 9999}, "守備機会"),
+    ({"fpct": 0.900}, "守備率"),
+])
+def test_fielding_join_stops_when_the_page_does_not_add_up(bad, match):
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2024], "league": ["C"], "team": ["a"], "G": [143]})
+    with pytest.raises(ValueError, match=match):
+        sa.fielding_join(st, pl.DataFrame([_fld("a", **bad)]))

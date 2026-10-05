@@ -70,6 +70,7 @@
   lg_line / line_gap_pythag        A の線（3位と4位の勝率の中間）と、点の差で見込む勝率の線からの距離（R50）
   lg_rank_at_500                   勝率 .500 が何位に当たるか（滑らかな順位、R51）
   lg_break_after / lg_break_gap / lg_tier / lg_tier_of_3rd  データの散らばりから引く線: いちばん大きな隙間と、3つの塊（R52）
+  mix_lo / mix_hi / mix_zone       A と B が混ざる帯（ほかの年の A の最低勝率〜B の最高勝率）と、帯の下・中・上（−1・0・+1、R53。add_mix_zone）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1333,6 +1334,33 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
     return st
 
 
+
+def add_mix_zone(st: pl.DataFrame, exclude=()) -> pl.DataFrame:
+    """R53: A と B が混ざる帯。自分の年を除いたほかの年（exclude の年も除く）の全単位から引く（1年抜き）。
+
+      mix_lo   : ほかの年の A（upper_half）の勝率の最低。これより下には、ほかの年に A が1つもない
+      mix_hi   : ほかの年の B の勝率の最高。これより上には、ほかの年に B が1つもない
+      mix_zone : 勝率 < mix_lo なら −1（帯の下）、勝率 > mix_hi なら +1（帯の上）、それ以外は 0（A と B が混ざる帯の中）
+    リーグはまとめて扱う。自分の年のデータで線を決めないので、その年の A・B を当てる読みに使える。
+    ほかの年に A（または B）がなければ空。mix_lo > mix_hi（帯が開かない）でも値はそのまま出す。
+    """
+    if not {"season", "wpct", "upper_half"} <= set(st.columns):
+        return st
+    pool = st.filter(~pl.col("season").is_in(list(exclude))).select("season", "wpct", "upper_half")
+    seasons = sorted(set(st.get_column("season").to_list()))
+    rows = []
+    for s in seasons:
+        other = pool.filter(pl.col("season") != s)
+        a, b = other.filter(pl.col("upper_half"))["wpct"], other.filter(~pl.col("upper_half"))["wpct"]
+        rows.append({"season": s, "mix_lo": a.min() if len(a) else None, "mix_hi": b.max() if len(b) else None})
+    st = st.join(pl.DataFrame(rows, schema={"season": st.schema["season"], "mix_lo": pl.Float64, "mix_hi": pl.Float64}),
+                 on="season", how="left")
+    return st.with_columns(
+        mix_zone=pl.when(pl.col("wpct").is_null() | pl.col("mix_lo").is_null() | pl.col("mix_hi").is_null()).then(None)
+        .when(pl.col("wpct") < pl.col("mix_lo")).then(-1)
+        .when(pl.col("wpct") > pl.col("mix_hi")).then(1)
+        .otherwise(0).cast(pl.Int64))
+
 # R45: B に着く道筋の参考値。規則はこれまでの研究で決めたものを固定して使う（値を見て変えない）。判定には使わない
 B_PATHS = {
     "offense": "得点不足: 得点の優位が誤差を超えてマイナス（rf_zone_se = −1、R35・R40）",
@@ -1491,6 +1519,7 @@ def main(argv=None) -> int:
     if args.batting:
         st = batting_join(st, pl.read_ndjson(args.batting))
     st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
+    st = add_mix_zone(st, exclude=[int(e["season"]) for e in cfg.get("exclude", [])])
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

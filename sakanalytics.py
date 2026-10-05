@@ -69,6 +69,7 @@
   lg_lead_gap / lg_gap34 / lg_rest_sd  その年・そのリーグの順位の形（1位と2位の差、3位と4位の差、1位以外の散らばり。R46。add_league_shape）
   lg_line / line_gap_pythag        A の線（3位と4位の勝率の中間）と、点の差で見込む勝率の線からの距離（R50）
   lg_rank_at_500                   勝率 .500 が何位に当たるか（滑らかな順位、R51）
+  lg_break_after / lg_break_gap / lg_tier / lg_tier_of_3rd  データの散らばりから引く線: いちばん大きな隙間と、3つの塊（R52）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1264,6 +1265,23 @@ def rank_at(wpcts: list, level: float = 0.5) -> float | None:
     return None
 
 
+def natural_breaks(wpcts: list, n_breaks: int = 1) -> list[int]:
+    """勝率を高い順に並べ、隣り合う2チームの差の大きい順に n_breaks 個の切れ目を返す（R52）。
+
+    返り値は「k 位と k+1 位の間」の k（昇順）。差が同じなら上位側を先にとる。データの散らばりだけで決まり、人が決めた区切りを使わない。
+    """
+    w = sorted((x for x in wpcts if x is not None), reverse=True)
+    gaps = sorted(((round(w[k] - w[k + 1], 9), -k) for k in range(len(w) - 1)), reverse=True)  # 丸めて同じ差を同じに扱う
+    return sorted(-g[1] + 1 for g in gaps[:n_breaks])
+
+
+def tier_of(rank: int | None, breaks: list[int]) -> int | None:
+    """切れ目 breaks（k 位と k+1 位の間）で分けた塊の番号（上から 1, 2, …）。"""
+    if rank is None:
+        return None
+    return 1 + sum(rank > b for b in breaks)
+
+
 def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
     """R46: その年・そのリーグの順位の形（リーグ全体で1つの値を、各単位に付ける）。勝率（wpct）と順位（rank）だけから作る。
 
@@ -1273,6 +1291,8 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
       lg_line       : A の線 = （3位の勝率 + 4位の勝率）÷ 2（R50。その年・そのリーグで A と B を分ける高さ）
       lg_rank_at_500 : 勝率 .500 が何位に当たるか（隣り合う2チームの間を直線でつないだ順位、R51。rank_at）。
                        3.5 より小さいほど、.500 が上位寄り（五分を超えるチームが少ない）
+      lg_break_after / lg_break_gap : 勝率のいちばん大きな隙間が「k 位と k+1 位の間」の k と、その差（R52。natural_breaks）
+      lg_tier / lg_tier_of_3rd      : 大きい隙間2つで分けた3つの塊のうち、自分のいる塊と3位のいる塊（上から 1・2・3、R52）
       line_gap_pythag : 点の差で見込む勝率（pythag_fixed）− A の線（R50）。マイナスなら、点の差どおりでは線に届かない。
                         勝率 − A の線 = line_gap_pythag + resid_fixed（点の差より勝った分）の算術の恒等式で分ける
     勝率を高い順に並べた k 番目の値を使う（同率でも k 番目）。リーグのチームが足りなければ空。
@@ -1289,6 +1309,23 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
         lg_rank_at_500=pl.col("wpct").map_batches(lambda w: pl.Series([rank_at(w.to_list(), 0.5)] * len(w)),
                                                    return_dtype=pl.Float64).over(over),
     )
+    # R52: データの散らばりから引く線。いちばん大きな隙間（1つ）と、大きい隙間2つで分けた3つの塊
+    keys = st.select("season", "league").unique()
+    rows = []
+    for season, league in keys.iter_rows():
+        lg = st.filter((pl.col("season") == season) & (pl.col("league") == league))
+        w = lg["wpct"].to_list()
+        one, two = natural_breaks(w, 1), natural_breaks(w, 2)
+        ordered = sorted((x for x in w if x is not None), reverse=True)
+        gap = ordered[one[0] - 1] - ordered[one[0]] if one else None
+        for team, wp in lg.select("team", "wpct").iter_rows():
+            pos = 1 + sum(x > wp for x in ordered) if wp is not None else None  # 勝率での位置（同率は上位側）
+            rows.append({"season": season, "team": team, "lg_break_after": one[0] if one else None, "lg_break_gap": gap,
+                         "lg_tier": tier_of(pos, two), "lg_tier_of_3rd": tier_of(3, two)})
+    if rows:
+        st = st.join(pl.DataFrame(rows, schema={"season": st.schema["season"], "team": pl.Utf8, "lg_break_after": pl.Int64,
+                                                 "lg_break_gap": pl.Float64, "lg_tier": pl.Int64, "lg_tier_of_3rd": pl.Int64}),
+                     on=["season", "team"], how="left")
     # R50: A の線（3位と4位の勝率の中間）までの距離を、点の差で見込む勝率で測る。
     #   wpct − lg_line = line_gap_pythag（点の差で見込む位置）+ resid_fixed（点の差より勝った分）  ← 算術の恒等式
     if "pythag_fixed" in st.columns:

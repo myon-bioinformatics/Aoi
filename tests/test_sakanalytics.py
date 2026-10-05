@@ -896,3 +896,25 @@ def test_league_shape_has_rank_at_500():
     w = [0.6, 0.52, 0.51, 0.49, 0.45, 0.43]
     st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
     assert sa.add_league_shape(st)["lg_rank_at_500"].to_list() == pytest.approx([3.5] * 6)
+
+
+# ---------- R52: データの散らばりから引く線 ----------
+
+def test_natural_breaks_and_tiers():
+    import sakanalytics as sa
+
+    w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]       # 隙間: .02 .07 .01 .01 .11
+    assert sa.natural_breaks(w, 1) == [5]          # 5位と6位の間
+    assert sa.natural_breaks(w, 2) == [2, 5]       # 2位と3位の間、5位と6位の間
+    assert [sa.tier_of(k, [2, 5]) for k in range(1, 7)] == [1, 1, 2, 2, 2, 3]
+    assert sa.natural_breaks([0.6, 0.5, 0.4, 0.3], 1) == [1]   # 差が同じなら上位側
+
+
+def test_league_shape_tiers_columns():
+    import sakanalytics as sa
+
+    w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
+    out = {r["team"]: r for r in sa.add_league_shape(st).iter_rows(named=True)}
+    assert out["a"]["lg_break_after"] == 5 and out["a"]["lg_break_gap"] == pytest.approx(0.11)
+    assert [out[t]["lg_tier"] for t in "abcdef"] == [1, 1, 2, 2, 2, 3] and out["d"]["lg_tier_of_3rd"] == 2

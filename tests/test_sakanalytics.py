@@ -806,3 +806,33 @@ def test_add_composites_skips_columns_whose_inputs_are_absent():
 
     st = pl.DataFrame({"rf_adv": [0.1], "ra_adv": [0.1], "run_balance": [0.2]})
     assert sa.add_composites(st).columns == st.columns
+
+
+# ---------- R45: B に着く道筋の参考値 ----------
+
+def test_add_b_paths_labels_and_nulls():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({
+        "rf_zone_se": [-1, 0, 0, 0, None],
+        "ra_zone_se": [0, -1, 0, 0, None],
+        "wins_vs_pythag": [-3.0, 0.0, 1.0, -0.5, None],
+        "alloc_z_strat": [0.0, 0.0, -1.5, 0.0, None],
+        "course_fade": [0, 0, 0, 3, None],
+        "course_rf_d": [0.0, 0.0, 0.0, -0.3, None],
+        "course_ra_d": [0.0, 0.0, 0.0, 0.4, None],
+        "half2_vs_pythag": [0.0, 0.0, 0.0, -2.5, None],
+    })
+    out = sa.add_b_paths(st).to_dicts()
+    assert [r["b_paths"] for r in out] == ["offense+convert", "defense", "convert", "collapse", None]
+    assert out[1]["path_convert"] is False and out[4]["path_convert"] is None
+
+
+def test_add_b_paths_none_when_no_rule_hits_and_skips_without_inputs():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"rf_zone_se": [1], "ra_zone_se": [1], "wins_vs_pythag": [0.0], "alloc_z_strat": [0.0],
+                       "course_fade": [0], "course_rf_d": [0.1], "course_ra_d": [-0.1], "half2_vs_pythag": [0.0]})
+    assert sa.add_b_paths(st)["b_paths"].to_list() == ["none"]
+    assert sa.add_b_paths(pl.DataFrame({"x": [1]})).columns == ["x"]
+    assert set(sa.B_PATHS) == {"offense", "defense", "convert", "collapse"}

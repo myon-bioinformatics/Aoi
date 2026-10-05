@@ -82,6 +82,7 @@
     *_6                            双方が6回まで攻撃した試合の1〜6回だけで同じ計算
     *_home / *_away                ホーム・ビジターの試合だけで同じ計算（球場の係数ではない。比べる範囲を分けるだけ）
   bat_*（--batting があるとき）     チーム打撃成績から計算した率（R6）。打数・本塁打数などの原票の値は出力しない
+  fld_*（--fielding があるとき）    チーム守備成績から計算した率（守備率・失策/試合・併殺/試合・捕逸/試合・補殺/刺殺）と他球団との差 fld_d_*
     bat_avg / obp / slg / iso      打率・出塁率・長打率・ISO（長打率 − 打率）
     bat_hr_pa / bb_pa / so_pa      本塁打・四死球・三振の、打席あたりの割合
     bat_xbh_h                      安打のうち長打（二塁打・三塁打・本塁打）の割合
@@ -347,6 +348,46 @@ def batting_join(st: pl.DataFrame, bat: pl.DataFrame) -> pl.DataFrame:
         for k in BATTING_RATES
     })
 
+
+
+FIELDING_RATES = {  # チーム守備成績（R59 の準備）。どれも1試合あたりか割合。原票の数は出力しない
+    "fpct": lambda: (pl.col("po") + pl.col("a")) / (pl.col("po") + pl.col("a") + pl.col("e")),
+    "e_g": lambda: pl.col("e") / pl.col("g"),
+    "dp_g": lambda: pl.col("dp") / pl.col("g"),
+    "pb_g": lambda: pl.col("pb") / pl.col("g"),
+    "a_po": lambda: pl.col("a") / pl.col("po"),   # 刺殺に対する補殺（内野で打球を処理した多さの目安）
+}
+
+
+def fielding_join(st: pl.DataFrame, fld: pl.DataFrame) -> pl.DataFrame:
+    """チーム守備成績から率を計算して結合する（fld_* と、同じ年・同じリーグの他球団の平均との差 fld_d_*）。
+
+    照合（1つでも合わなければ ValueError）:
+      - 試合数が、最終スコア由来の G と一致する
+      - 守備機会 = 刺殺 + 補殺 + 失策
+      - (刺殺 + 補殺) ÷ 守備機会 が、ページの守備率と表示桁（小数3桁）で一致する
+    fld_e_g は失策が少ないほど小さい（他球団との差 fld_d_e_g がマイナスなら、失策が少なかった）。
+    """
+    over = ["season", "league"]
+    f = fld.with_columns(pl.col("season").cast(pl.Int32)).with_columns(
+        **{f"fld_{k}": fn() for k, fn in FIELDING_RATES.items()})
+    chk = st.select("season", "team", "G").join(f, on=["season", "team"], how="inner")
+    bad = chk.filter(pl.col("G") != pl.col("g"))
+    if bad.height:
+        raise ValueError(f"守備成績の試合数が最終スコアと合わない: {bad.select('season', 'team').rows()[:5]}")
+    bad = f.filter(pl.col("tc") != pl.col("po") + pl.col("a") + pl.col("e"))
+    if bad.height:
+        raise ValueError(f"守備機会が 刺殺 + 補殺 + 失策 と合わない: {bad.select('season', 'team').rows()[:5]}")
+    off = f.filter((pl.col("fld_fpct") - pl.col("fpct")).abs() > 0.0005 + 1e-9)
+    if off.height:
+        raise ValueError(f"守備率を計算し直すとページの値と合わない: {off.select('season', 'team').rows()[:5]}")
+    cols = [f"fld_{k}" for k in FIELDING_RATES]
+    out = st.join(f.select("season", "team", *cols), on=["season", "team"], how="left")
+    return out.with_columns(**{
+        f"fld_d_{k}": pl.col(f"fld_{k}") - (pl.col(f"fld_{k}").sum().over(over) - pl.col(f"fld_{k}"))
+        / (pl.col(f"fld_{k}").count().over(over) - 1)
+        for k in FIELDING_RATES
+    })
 
 def _season_wpct_pmf(rf: list[int], ra: list[int]) -> tuple[list[float], list[float]]:
     """1試合 = 自分の得点の分布から1つ、失点の分布から1つを独立に引く。それを試合数だけ繰り返したときの勝率の分布。
@@ -1552,6 +1593,7 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--innings", type=Path, help="イニング単位の集計（CSV / CSV.gz、R4）。あれば inn_* の列を加える")
     ap.add_argument("--batting", type=Path, help="チーム打撃成績の観測（JSONL、R6）。あれば bat_* の率を加える")
+    ap.add_argument("--fielding", type=Path, help="チーム守備成績の観測（JSONL）。あれば fld_* の率を加える")
     ap.add_argument("--sensitivity-out", type=Path,
                     help="線の始まりの試合数（[trajectory] sensitivity）や終わり（ends、R26）を変えた線の読み（R25）の書き出し先")
     args = ap.parse_args(argv)
@@ -1566,6 +1608,8 @@ def main(argv=None) -> int:
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     if args.batting:
         st = batting_join(st, pl.read_ndjson(args.batting))
+    if args.fielding:
+        st = fielding_join(st, pl.read_ndjson(args.fielding))
     st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
     excl = [int(e["season"]) for e in cfg.get("exclude", [])]
     st = add_mix_zone(add_mix_zone(st, exclude=excl), exclude=excl, col="live_wpct", prefix="live_mix")

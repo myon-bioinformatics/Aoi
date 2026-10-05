@@ -36,4 +36,6 @@ WebFetch で 2025年・2018年のセ・リーグを確認した（2026-10-05）�
 
 ## パイプラインでの扱い
 
-形を実ページで確かめるまでは `preview_fielding`（`--strict` なし）で `observed_fielding.md` に書き出すだけで、SakAnalytics（measure）には渡さない。見出しと 12球団 × 14年が読めたことを確かめてから、`inspect_fielding`（`--strict`）に替え、照合（試合数がカレンダー由来の値と一致）を付けて結合する。
+最初は `preview_fielding`（`--strict` なし）で形を確かめた。2回目で 12球団 × 14年（2012〜2025年）がすべて読め、未知の表記は 0 になったので、`inspect_fielding`（`--strict`）に替えて SakAnalytics の `fielding_join` に渡す。照合: 試合数がカレンダー由来の値と一致、守備機会 = 刺殺 + 補殺 + 失策、守備率を計算し直すとページの値と表示桁で一致。合わなければ止まる。
+
+`outputs/season.jsonl` には率（`fld_fpct`・`fld_e_g`・`fld_dp_g`・`fld_pb_g`・`fld_a_po`）と他球団との差（`fld_d_*`）だけを出し、原票の数は出さない。

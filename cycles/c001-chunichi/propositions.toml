@@ -1566,3 +1566,44 @@ context = ["clinch_in_x", "traj_wl_peak_after_clinch_base", "rank"]
 links = ["H6"]
 falsifier = "確定後の山の数が、力が一定のときの見込みの範囲（trajectory_expectation.jsonl で P ≥ 0.05）"
 note = "R22・R25 の「A クラスの貯金の山は見込みより多い」が、決まった後の試合から来ているかを見る"
+
+# 追加: 2026-10-05。R27（逆・裏から次の命題を立てる）。計算前に登録した。
+# P115〜P117 の結果は見ていない。既存の命題の読み（outputs/next.md）は見ている。
+
+[[proposition]]
+id = "P115"
+statement = "得点も失点もリーグ上位半分（3位以内）に入らないなら、B クラス"
+strength = "usually"
+if = [{ col = "rank_rf", op = ">=", value = 4 }, { col = "rank_ra", op = ">=", value = 4 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rd"
+context = ["rank", "rd", "sim_p_upper"]
+links = ["H2"]
+falsifier = "得点も失点も4位以下のチーム・シーズンの4分の1を超えて A クラス"
+note = "十分の向きの命題。逆（B クラスなら、得点も失点も4位以下）の判例が、得点か失点のどちらかは上位なのに B になった道筋の種になる"
+
+[[proposition]]
+id = "P116"
+statement = "得点した回の大きさがリーグ上位2位以内なら、A クラス（P62 の鏡）"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_rank", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "inn_dlog_size"
+context = ["inn_size_rank", "rank", "rank_rf", "sim_p_upper"]
+links = ["H5"]
+falsifier = "大きさが上位2位以内のチーム・シーズンの4分の1を超えて B クラス"
+note = "inn_size_rank は小さいほうが 1（6球団なので 5・6 が上位2位）。大きさの軸が上にも下にも効く（対称）か、下だけの床かを見る"
+
+[[proposition]]
+id = "P117"
+statement = "得点した回の大きさがその年リーグ下位2位以内なら、B クラス（続けてでなく1年だけ）"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_rank", op = "<=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "inn_dlog_size"
+context = ["inn_size_low_streak", "rank", "rank_rf", "sim_p_upper"]
+links = ["H5", "H6"]
+falsifier = "（P62 と率を比べるための命題）"
+note = "P62（2年以上続けて）と率を比べ、続いていることが効いているかを見る"

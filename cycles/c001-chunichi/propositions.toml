@@ -2617,3 +2617,34 @@ context = ["run_balance", "resid_fixed", "wpct", "mix_lo"]
 links = ["H2"]
 falsifier = "きっかけ以外で、不足が誤差を超える単位の4分の1を超えて帯の中か上"
 note = "R55。勝ち方の条件を外した形。逆（帯の下なら不足が誤差を超える）で、帯の下に落ちる別の道（不足は誤差の内だが勝ち方で落とした）を数える"
+
+# 追加: 2026-10-05。R55・R56 の種。結果を見た後の命題。
+# P187 は「点の差より負けた」だけの集合を作るための命題（R55 の中日の2つ目の道）。A にも多いと見込んで登録する（通らないことを先に見込む）。
+# P188 は R56（帯の中では越えるべき高さが決めた）を、人が選んだ .500 の線（R51 でユーザーが挙げた線）で言う命題。帯の中の31単位の lg_bar の中央値は見ている。
+
+[[proposition]]
+id = "P187"
+statement = "点の差より負けた（resid_fixed < 0）なら、B クラス"
+strength = "more_often_than_not"
+if = [{ col = "resid_fixed", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2014", "d-2015", "d-2018", "d-2019"]
+surprise = "resid_fixed"
+context = ["run_balance_t", "wins_vs_pythag", "wpct"]
+links = ["H3"]
+falsifier = "点の差より負けた単位の半分以上が A"
+note = "R55。中日の B の2つ目の道（不足は誤差の内なのに点の差より負けた4年）の片側だけを取り出した集合のための命題"
+
+[[proposition]]
+id = "P188"
+statement = "A と B が混ざる帯の中で、越えるべき高さ（ほかの5球団の3番目の勝率）が .500 未満なら、A クラス"
+strength = "usually"
+scope = { where = [{ col = "mix_zone", op = "==", value = 0 }] }
+if = [{ col = "lg_bar", op = "<", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "lg_bar"
+context = ["wpct", "lg_line", "lg_rank_at_500", "mix_lo", "mix_hi"]
+links = ["H2"]
+falsifier = "きっかけ以外で、帯の中・高さ .500 未満の単位の4分の1を超えて B"
+note = "R56。勝率 − lg_bar の符号は A・B と算術で一致するので、この命題は「帯の中の勝率はほぼ .500 なので、外の高さが .500 の上か下かで決まる」ことの記述。.500 は R51 の線で、値から選んでいない"

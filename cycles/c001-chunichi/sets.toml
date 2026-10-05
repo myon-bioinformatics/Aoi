@@ -130,3 +130,22 @@ statement = "E6 から、中位の相手から3勝以上多く勝った単位を
 id = "E15"
 expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT"
 statement = "E7 から、中位の相手から3勝以上多く勝った単位を除く"
+
+# 追加: 2026-10-05。R55 の種1。中日の B の2つの道（計算前に書いた式。P186・P187 の判定はまだ Actions で見ていない）
+[[set]]
+id = "SHORT_T"          # 収支の不足が誤差を超える（P186）
+from = "P186"
+
+[[set]]
+id = "UNDER"            # 点の差より負けた（P187）
+from = "P187"
+
+[[expr]]
+id = "E16"
+expr = "SHORT_T | UNDER"
+statement = "不足が誤差を超えるか、点の差より負けたか（中日の B の2つの道）。後半は A にも多いので、判例の形を見る式"
+
+[[expr]]
+id = "E17"
+expr = "SHORT_T | (UNDER & ~ALLOC_GOOD)"
+statement = "E16 の後半から、組み合わせ方 ≥ 1 の単位を除く（点の差より負けても組み合わせ方がよい単位を外す）"

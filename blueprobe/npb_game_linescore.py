@@ -29,7 +29,11 @@ from npb_calendar import GAME_PATH, LEAGUE, TEAM_NAME
 
 NAME = "npb_game_linescore"
 GAMES = Path("data/observations/npb_calendar/games.jsonl")   # 日程の観測（パイプラインの root から）
-TEAM_BY_NAME = {v: k for k, v in TEAM_NAME.items()} | {"読売": "g"}
+TEAM_BY_NAME = {v: k for k, v in TEAM_NAME.items()} | {
+    "読売": "g",
+    # 得点表で観測した正式名称（2025年、preview_linescore の2回目、2026-10-05）
+    "北海道日本ハム": "f", "千葉ロッテ": "m", "埼玉西武": "l", "広島東洋": "c", "東京ヤクルト": "s",
+}
 INT = re.compile(r"[0-9]{1,3}")
 LINE_CELL = re.compile(r"[0-9]{0,2}[xX]?|-")   # 回の得点の列（「1X」「X」「-」、空も）
 

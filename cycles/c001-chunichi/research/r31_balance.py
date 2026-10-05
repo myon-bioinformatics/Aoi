@@ -13,6 +13,8 @@ from pathlib import Path
 
 BANDS = ("floor", "mid", "ceiling", "total")
 EARLY, LATE = range(2013, 2020), range(2021, 2026)  # 計画で先に決めた2つの期間（2020年は除く）
+DIVERGE = 10.0  # 発散とみなす比（不足が優位の10倍以上）。実行後に決めた目安で、判定には使わない
+MODE_BIN = 0.5  # 比の最頻値をとるときの幅。実行後に決めた
 
 
 def per_game(row: dict, col: str) -> float:
@@ -68,12 +70,22 @@ def main(argv: list[str]) -> int:
     # 平均が意味をなさなかった（実行後に分かった）。R31 の結果に変更として記録し、平均の比に置き換えた
 
     # 0 の近くの割り算への対策を並べる（ユーザーの指摘から。どれが正しいかは決めず、読みが保たれるかを見る）
-    print("\n| 失点だけ上位の B | 比の平均（計画） | 平均の比 | 比の中央値 | 対数で平均（幾何平均） | 取り分の平均 → 比 | 外した単位 |")
-    print("|---|---|---|---|---|---|---|")
-    for name, xs in (("中日", [r for r in one if r["team"] == "d"]), ("中日以外", [r for r in one if r["team"] != "d"])):
+    print("\n| 失点だけ上位の B | 比の平均（計画） | 平均の比 | 比の中央値 | 比の最頻値（幅 0.5） | 対数で平均（幾何平均） | 取り分の平均 → 比 | 対数で外した単位 |")
+    print("|---|---|---|---|---|---|---|---|")
+    groups = (("中日", [r for r in one if r["team"] == "d"]), ("中日以外", [r for r in one if r["team"] != "d"]))
+    for name, xs in groups:
         v = ratio_variants([-r["rf_def_total"] for r in xs], [r["ra_adv"] for r in xs])
-        print(f"| {name} | {v['mean_of_ratios']:.3g} | {v['ratio_of_means']:.2f} | {v['median_of_ratios']:.2f} "
+        modes = "・".join(f"{m:.2f}" for m in v["mode_of_ratios"])
+        print(f"| {name} | {v['mean_of_ratios']:.3g} | {v['ratio_of_means']:.2f} | {v['median_of_ratios']:.2f} | {modes} "
               f"| {v['geometric_mean']:.2f} | {v['share_mean']:.2f} → {v['share_as_ratio']:.2f} | {v['dropped']} |")
+
+    # 発散は失敗ではなく観測（ユーザーの見立て）。どの単位で発散したか・しなかったかを並べ、次の命題の種にする
+    print(f"\n発散した単位（優位 ≤ 0、または 不足 ÷ 優位 ≥ {DIVERGE}）:")
+    for name, xs in groups:
+        hit = [r for r in xs if r["ra_adv"] <= 0 or -r["rf_def_total"] / r["ra_adv"] >= DIVERGE]
+        print(f"- {name}: {len(hit)}/{len(xs)}単位 " + ", ".join(
+            f"{r['team']}-{r['season']}（失点{r['rank_ra']}位、優位 {r['ra_adv']:+.3f}、不足 {r['rf_def_total']:+.2f}）"
+            for r in sorted(hit, key=lambda r: r["ra_adv"])))
     return 0
 
 
@@ -85,6 +97,8 @@ def ratio_variants(deficit: list[float], advantage: list[float]) -> dict:
     - median_of_ratios: 単位ごとの比の中央値。発散した少数の単位に引っ張られない
     - geometric_mean: 自然対数をとって平均し、戻したもの（exp(平均 ln(不足/優位))）。大きな比を圧縮する。
       対数は正の値にしか定義できないので、優位 ≤ 0 の単位は外す（dropped に数える）
+    - mode_of_ratios: 比を幅 MODE_BIN の区間に分けたときの最頻の区間の中央（同数なら複数）。発散した単位は自分だけの区間に入る。
+      すべての単位が同じ区間なら比べられない（区間を細かくする）
     - share_mean: 取り分 不足 ÷（不足 + 優位）の平均。0〜1 に収まり、優位が 0 なら 1（すべて補えなかった）。
       優位がマイナスの単位も 1 で止める。share_as_ratio = s ÷ (1 − s) で比の目盛りに戻す
     不足・優位はどちらもプラスの向き（不足 = 他球団より少ない得点の量）で渡す。
@@ -97,7 +111,13 @@ def ratio_variants(deficit: list[float], advantage: list[float]) -> dict:
     logs = [math.log(d) - math.log(a) for d, a in pos if d > 0]
     shares = [1.0 if a <= 0 else min(1.0, max(0.0, d / (d + a))) for d, a in zip(deficit, advantage)]
     s = mean(shares)
+    from collections import Counter
+
+    bins = Counter(math.floor(r / MODE_BIN) for r in ratios)
+    top = max(bins.values()) if bins else 0
+    modes = sorted((b + 0.5) * MODE_BIN for b, c in bins.items() if c == top)
     return {
+        "mode_of_ratios": modes,
         "mean_of_ratios": mean(ratios),
         "ratio_of_means": mean(deficit) / mean(advantage),
         "median_of_ratios": statistics.median(ratios) if ratios else float("nan"),

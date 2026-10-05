@@ -153,6 +153,28 @@ Future users should always be able to distinguish:
 
 ---
 
+# Divergence Is Information
+
+A derived value can diverge: a ratio whose denominator is close to zero, a logarithm of zero, a rate over an empty group.
+
+Divergence is not a failure of the data, and it is not a reason to discard a measure.
+Calling a diverging measure "unusable" is often impatience with data that cannot be obtained, not a property of the data.
+
+When a value diverges:
+
+- record which units diverge and which converge. Divergence on one side only (for example, the focus team converges while the others diverge) is itself an observation and can become the next proposition
+- do not silently replace the measure. If another form is used, record the change and the reason
+- read the same quantity in several forms and check whether the reading survives all of them. Typical forms for a ratio near zero:
+  - mean of ratios (diverges)
+  - ratio of means
+  - median of ratios (reads by order)
+  - mode of binned ratios (a typical value; undefined when units scatter, which is also information)
+  - mean of logarithms, returned with exp (compresses large ratios; defined only for positive values)
+  - a bounded share such as a ÷ (a + b), kept between 0 and 1
+- no form is correct by default. A reading that changes direction between forms is not stated as a conclusion
+
+---
+
 # Unknown Formats
 
 Unknown formats should be treated as observations.

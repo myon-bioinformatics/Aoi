@@ -1607,3 +1607,47 @@ context = ["inn_size_low_streak", "rank", "rank_rf", "sim_p_upper"]
 links = ["H5", "H6"]
 falsifier = "（P62 と率を比べるための命題）"
 note = "P62（2年以上続けて）と率を比べ、続いていることが効いているかを見る"
+
+# 追加: 2026-10-05。R28（片側だけ上位のチームで、何が A と B を分けるか）。計算前に登録した。
+# P115 の逆の判例（R27）は見ている。P118〜P120 の結果は見ていない。
+
+[[proposition]]
+id = "P118"
+statement = "失点だけが上位半分（失点3位以内・得点4位以下）のチームは、得点が5位以下なら B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 4 }] }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2014", "d-2015", "d-2019", "d-2021", "d-2022", "d-2023"]
+surprise = "rd"
+context = ["rank", "rank_ra", "rd", "sim_p_upper"]
+links = ["H2"]
+falsifier = "きっかけの中日6単位を除いて、得点5位以下の単位の4分の1を超えて A クラス"
+note = "中日の6単位（得点5・6位）を見た後の条件。きっかけ以外で読む"
+
+[[proposition]]
+id = "P119"
+statement = "得点だけが上位半分（得点3位以内・失点4位以下）のチームは、失点が5位以下なら B クラス（P118 の鏡）"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = "<=", value = 3 }, { col = "rank_ra", op = ">=", value = 4 }] }
+if = [{ col = "rank_ra", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rd"
+context = ["rank", "rank_rf", "rd", "sim_p_upper"]
+links = ["H2"]
+falsifier = "失点5位以下の単位の4分の1を超えて A クラス"
+note = "P118 と対称か（弱い側の深さが効くのは失点の側でも同じか）を見る"
+
+[[proposition]]
+id = "P120"
+statement = "失点だけが上位半分のチームは、得点した回の大きさが下位2位以内なら B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025", where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 4 }] }
+if = [{ col = "inn_size_rank", op = "<=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2014", "d-2015", "d-2019", "d-2021", "d-2022", "d-2023"]
+surprise = "inn_dlog_size"
+context = ["rank", "rank_rf", "inn_size_low_streak", "sim_p_upper"]
+links = ["H5"]
+falsifier = "きっかけの中日6単位を除いて、大きさ下位2位以内の単位の4分の1を超えて A クラス"
+note = "得点の量（P118）と、点の入り方（回の大きさ）のどちらが、片側だけ上位のチームを分けるかを比べる"

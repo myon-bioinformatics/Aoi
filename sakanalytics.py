@@ -58,6 +58,7 @@
                                    力が一定でも山・谷ができる割合 *_base（R22。season_trajectory）。traj_start_* は線の始まり
   wave_*                           順位の線を、始まりの値から出発して減衰する波で表したもの（収束する先・決まった位置・周期、R23）
   clinch_in_* / clinch_out_* / decided_x  A クラスに入る・入れないが数の上で確かになった日と残り試合、リーグの顔ぶれが決まった日（R26）
+  rank_fixed_* / live_* / dead_*  最終順位が確かになった日と、A・B が決まる前（効く試合）・後（効かない試合）の勝率と点の差（R57）
   series_*                         カード（同じ相手・同じ球場で続けての試合）ごとの勝ち数: 負け越したカード、勝ち数の散らばり、
                                    1試合目とそれ以外の勝率の差、3連戦の 0〜3勝の数と、力が一定のときとの比べ（R24。series_features）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
@@ -717,14 +718,17 @@ def _clinch_days(days: list[list[tuple]], winners: list, members_by_league: dict
       入れない: 自分の上限より、下限が高い球団が k 以上（k = 球団数 ÷ 2）
       入る    : 自分の下限より、上限が低い球団が（球団数 − k）以上
     残り試合どうしの直接対決（片方が勝てば片方が負ける）は考えないので、実際に決まった日より遅く出ることはあっても、早く出ることはない。
-    返り値: {"in": {球団: (日, 残り)}, "out": {球団: (日, 残り)}, "decided": {リーグ: 日}}（決まらなければ入らない）
+    最終順位の確定（R57）: 自分より下限が高い球団の数 + 1（ありうる最高の順位）と、球団数 − 自分の下限より上限が低い球団の数
+    （ありうる最低の順位）が一致した日。同じく控えめ（遅く出ることはあっても、早く出ることはない）。
+    返り値: {"in": {球団: (日, 残り)}, "out": {球団: (日, 残り)}, "decided": {リーグ: 日},
+             "fixed": {球団: (日, 残り, 順位)}}（決まらなければ入らない）
     """
     total, played, w, l_ = Counter(), Counter(), Counter(), Counter()
     for games in days:
         for _, h, a in games:
             total[h] += 1
             total[a] += 1
-    inn, out, decided = {}, {}, {}
+    inn, out, decided, fixed = {}, {}, {}, {}
     for i, games in enumerate(days):
         for g, h, a in games:
             played[h] += 1
@@ -733,12 +737,20 @@ def _clinch_days(days: list[list[tuple]], winners: list, members_by_league: dict
                 w[winners[g]] += 1
                 l_[a if winners[g] == h else h] += 1
         for lg, members in members_by_league.items():
-            if lg in decided:
-                continue
             k = len(members) // 2
             left = {t: total[t] - played[t] for t in members}
             hi = {t: (w[t] + left[t]) / (w[t] + left[t] + l_[t]) if w[t] + left[t] + l_[t] else None for t in members}
             lo = {t: w[t] / (w[t] + l_[t] + left[t]) if w[t] + l_[t] + left[t] else None for t in members}
+            for t in members:
+                if t in fixed or hi[t] is None or lo[t] is None:
+                    continue
+                others = [u for u in members if u != t]
+                best = 1 + sum(lo[u] is not None and lo[u] > hi[t] for u in others)
+                worst = len(members) - sum(hi[u] is not None and hi[u] < lo[t] for u in others)
+                if best == worst:
+                    fixed[t] = (i, left[t], best)
+            if lg in decided:
+                continue
             for t in members:
                 others = [u for u in members if u != t]
                 if t not in out and hi[t] is not None and sum(lo[u] is not None and lo[u] > hi[t] for u in others) >= k:
@@ -747,7 +759,7 @@ def _clinch_days(days: list[list[tuple]], winners: list, members_by_league: dict
                     inn[t] = (i, left[t])
             if all(t in inn or t in out for t in members):
                 decided[lg] = i
-    return {"in": inn, "out": out, "decided": decided}
+    return {"in": inn, "out": out, "decided": decided, "fixed": fixed}
 
 
 def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
@@ -755,16 +767,21 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
       clinch_in_x / clinch_in_left   : 入るが確定した日の位置と、その日の自分の残り試合数（入らなかった球団は空）
       clinch_out_x / clinch_out_left : 入れないが確定した日の位置と残り試合数（B クラスが確定した日。入った球団は空）
       decided_x                      : そのリーグで、全球団の入る・入れないが決まった日の位置（同率で決まらなければ空）
+      rank_fixed_x / rank_fixed_left / rank_fixed : 最終順位が数の上で確かになった日の位置・残り試合・その順位（R57）
+      live_g / live_wpct / live_rd_g : 自分の入る・入れないが決まった日まで（その日を含む）の試合数・勝率・1試合あたりの点の差（R57）。
+                                       決まらなければ全試合
+      dead_g / dead_wpct / dead_rd_g : 決まった日より後の試合（A・B には効かない試合）。なければ dead_g = 0、ほかは空
     """
     league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
     rows = []
     for (season,), sg in tg.filter(pl.col("is_home")).sort("date").group_by(["season"], maintain_order=True):
         dates = sorted(set(sg["date"].to_list()))
         day = {d: i for i, d in enumerate(dates)}
-        days, winners = [[] for _ in dates], []
+        days, winners, played_on = [[] for _ in dates], [], []
         for g, (d, home, away, hs, as_) in enumerate(sg.select("date", "team", "opp", "rf", "ra").iter_rows()):
             days[day[d]].append((g, home, away))
             winners.append(home if hs > as_ else away if as_ > hs else None)
+            played_on.append((day[d], home, away, hs, as_))
         members: dict[str, list] = {}
         for t in sorted({t for games in days for _, h, a in games for t in (h, a)}):
             members.setdefault(league_of[(season, t)], []).append(t)
@@ -776,13 +793,34 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
             def x(i):
                 return (date.fromisoformat(dates[i]).toordinal() - o0) / (o1 - o0) if o1 > o0 else None
             for t in ms:
-                cin, cout = c["in"].get(t), c["out"].get(t)
+                cin, cout, fx = c["in"].get(t), c["out"].get(t), c["fixed"].get(t)
+                cut = (cin or cout or (len(dates), None))[0]   # この日まで（含む）が A・B に効く試合
+                part = {"live": [0, 0, 0, 0], "dead": [0, 0, 0, 0]}  # 勝・負・試合・点の差
+                for di, h, a, hs, as_ in played_on:
+                    if t not in (h, a):
+                        continue
+                    my, op = (hs, as_) if t == h else (as_, hs)
+                    q = part["live" if di <= cut else "dead"]
+                    q[0] += my > op
+                    q[1] += my < op
+                    q[2] += 1
+                    q[3] += my - op
+                rec = {}
+                for name, (pw, pl_, pg, prd) in part.items():
+                    rec[f"{name}_g"] = pg
+                    rec[f"{name}_wpct"] = pw / (pw + pl_) if pw + pl_ else None
+                    rec[f"{name}_rd_g"] = prd / pg if pg else None
                 rows.append({"season": season, "team": t,
                              "clinch_in_x": x(cin[0]) if cin else None, "clinch_in_left": cin[1] if cin else None,
                              "clinch_out_x": x(cout[0]) if cout else None, "clinch_out_left": cout[1] if cout else None,
-                             "decided_x": x(c["decided"][lg]) if lg in c["decided"] else None})
+                             "decided_x": x(c["decided"][lg]) if lg in c["decided"] else None,
+                             "rank_fixed_x": x(fx[0]) if fx else None, "rank_fixed_left": fx[1] if fx else None,
+                             "rank_fixed": fx[2] if fx else None, **rec})
     schema = {"season": pl.Int32, "team": pl.Utf8, "clinch_in_x": pl.Float64, "clinch_in_left": pl.Int64,
-              "clinch_out_x": pl.Float64, "clinch_out_left": pl.Int64, "decided_x": pl.Float64}
+              "clinch_out_x": pl.Float64, "clinch_out_left": pl.Int64, "decided_x": pl.Float64,
+              "rank_fixed_x": pl.Float64, "rank_fixed_left": pl.Int64, "rank_fixed": pl.Int64,
+              "live_g": pl.Int64, "live_wpct": pl.Float64, "live_rd_g": pl.Float64,
+              "dead_g": pl.Int64, "dead_wpct": pl.Float64, "dead_rd_g": pl.Float64}
     return pl.DataFrame(rows, schema=schema)
 
 

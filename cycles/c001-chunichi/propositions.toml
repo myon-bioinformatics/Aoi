@@ -2527,3 +2527,33 @@ context = ["rank", "lg_line", "pythag_fixed", "resid_fixed", "wins_vs_pythag"]
 links = ["H2", "H3"]
 falsifier = "点の差どおりで線に届くチームの4分の1を超えて B"
 note = "勝率 − 線 = line_gap_pythag + resid_fixed の恒等式のうち、前の項だけで言う命題。逆の判例（線に届かないのに A）は、点の差より勝って線を越えたチーム。線は最終順位で決める（前提）"
+
+# 追加: 2026-10-05。R53（線の引き方の一覧）の結果を見た後の命題。mix_lo・mix_hi・mix_zone の値は全単位で見ている。
+# 帯の端は巨人 2018年（A の最低 .486）と巨人 2017年（B の最高 .514）で決まる。2026年で確かめる。
+# 勝率と順位は算術でつながるので、「なぜ B か」の説明ではなく、「A と B が混ざる帯からどれだけ下にいたか」の記述として使う。
+
+[[proposition]]
+id = "P181"
+statement = "ほかの年の A の最低勝率より下（A と B が混ざる帯の下、mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["g-2018"]
+surprise = "mix_zone"
+context = ["wpct", "mix_lo", "mix_hi", "rank"]
+links = ["H2"]
+falsifier = "帯の下の単位の10分の1を超えて A"
+note = "R53。帯は自分の年を除いて引く（1年抜き）。きっかけの巨人 2018年は帯の下端そのもの。勝率と順位の算術のつながりが強いので、通っても説明ではない"
+
+[[proposition]]
+id = "P182"
+statement = "ほかの年の B の最高勝率より上（帯の上、mix_zone = +1）なら、A クラス"
+strength = "almost_always"
+if = [{ col = "mix_zone", op = "==", value = 1 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["g-2017"]
+surprise = "mix_zone"
+context = ["wpct", "mix_lo", "mix_hi", "rank"]
+links = ["H2"]
+falsifier = "帯の上の単位の10分の1を超えて B"
+note = "R53。P181 の鏡の側。きっかけの巨人 2017年は帯の上端そのもの"

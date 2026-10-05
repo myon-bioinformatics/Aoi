@@ -748,6 +748,100 @@ def render_index(results: list[dict], meta: dict, lang: str = "ja") -> str:
     return "\n".join(lines) + "\n"
 
 
+# ---------- 4つの形を並べて読む（次の命題の種） ----------
+
+# 元の命題（A ⇒ B、十分の向き）と逆（B ⇒ A、必要の向き）の判定の組から決まる読み。判定ではない。
+# 判定とテストは番号で比べ、言葉は表示だけに使う（終了コードと同じ扱い）。
+READING = {
+    0: ("両方の向きで支持（同値に近い）", "both directions supported (close to equivalence)"),
+    1: ("十分条件だが必要条件ではない", "sufficient, not necessary"),
+    2: ("必要条件だが十分条件ではない", "necessary, not sufficient"),
+    3: ("どちらの向きも主張より弱い結びつき", "a relationship weaker than claimed in both directions"),
+    4: ("どちらの向きも不成立", "neither direction holds"),
+    5: ("判断保留を含む（単位を足して読み直す）", "inconclusive in at least one direction (add units)"),
+    6: ("一方向だけ（逆・裏は省略）", "one direction only (converse and inverse skipped)"),
+}
+_SUPPORTED = (0, 1, 5)  # 形の終了コードのうち、その向きが支持されたもの
+
+
+def reading(r: dict) -> dict:
+    """元の命題と逆の形の終了コードから、読み（READING の番号）と次の問いの種を作る。
+
+    - 元の命題の判例（A かつ B でない）: A を満たしたのに B に至らなかった単位。足りない条件（かつ）や、範囲（where）の候補
+    - 逆の判例（B かつ A でない）: A を通らずに B に至った単位。別の道筋（または）の候補
+    種は材料であって判定ではない。種から作る命題は新しい id で事前登録し、きっかけの単位を motivated_by に書く。
+    """
+    by = {f["form"]: f for f in r["forms"]}
+    o, c = by["original"]["code"], by.get("converse", {}).get("code")
+    if c is None:
+        code = 6
+    elif 4 in (o, c):
+        code = 5
+    elif o in _SUPPORTED and c in _SUPPORTED:
+        code = 0
+    elif o in _SUPPORTED:
+        code = 1
+    elif c in _SUPPORTED:
+        code = 2
+    elif 2 in (o, c):
+        code = 3
+    else:
+        code = 4
+    return {"id": r["id"], "key": r.get("key"), "signature": r.get("signature"), "reading": code,
+            "original": o, "converse": c, "exit": r["judgement"]["code"],
+            "narrow": _seed(by["original"]["counterexamples"]),
+            "route": _seed(by["converse"]["counterexamples"]) if c is not None else None}
+
+
+def _seed(cx: list[dict]) -> dict:
+    """判例を、種として読める形にまとめる。判例が1つの球団・1つの年に集まっているかも示す（分けるかは人が決める）。"""
+    from collections import Counter
+
+    units = [x["unit"] for x in cx]
+    teams, seasons = Counter(x["team"] for x in cx), Counter(x["season"] for x in cx)
+    top_team, top_season = teams.most_common(1), seasons.most_common(1)
+    return {"n": len(units), "units": units, "focus": [x["unit"] for x in cx if x.get("focus")],
+            "top_team": top_team[0] if top_team else None, "top_season": top_season[0] if top_season else None}
+
+
+def render_next(readings: list[dict], meta: dict, limit: int = 8) -> str:
+    """読みの一覧（自動生成）。人が次の命題を考えるための表。"""
+    lines = ["# 次の命題の種（自動生成）", "",
+             f"命題ファイル SHA-256: `{meta.get('sha256', '-')}` / コード: `{meta.get('code_version') or '測定なし'}`", "",
+             "元の命題（A ⇒ B）と逆（B ⇒ A）の判定を並べて読む。読みは判定ではなく、終了コードも変えない。",
+             "- **絞る**: 元の命題の判例（A なのに B でない）。足りない条件（かつ）や、範囲（where）の候補",
+             "- **道筋**: 逆の判例（B なのに A でない）。A を通らずに B に至った単位。別の道筋（または）の候補",
+             "- 判例が1つの球団・1つの年に集まるかを並べる。分けるかどうかは人が決める（docs/propositions.md の Split）",
+             "- 種から作る命題は、新しい id で事前登録し、きっかけの単位を `motivated_by` に書く（きっかけ以外で読む）", ""]
+    from collections import Counter
+
+    counts = Counter(x["reading"] for x in readings)
+    lines += ["| 読み | 件数 |", "|---|---|"]
+    lines += [f"| {k} {READING[k][0]} | {counts[k]} |" for k in sorted(counts)]
+
+    def units(s):
+        if not s or not s["n"]:
+            return "—"
+        focus = set(s["focus"])
+        shown = [f"**{u}**" if u in focus else u for u in s["units"][:limit]]
+        more = f" ほか{s['n'] - limit}" if s["n"] > limit else ""
+        team, season = s["top_team"], s["top_season"]
+        where = f"（最多: {team[0]} {team[1]}件、{season[0]}年 {season[1]}件）" if s["n"] > 1 else ""
+        return f"{s['n']}件: " + ", ".join(shown) + more + where
+
+    for k in sorted(counts):
+        lines += ["", f"## {k} {READING[k][0]}", "",
+                  "| id | 識別子 | 元・逆 | 総合 | 絞る（元の判例） | 道筋（逆の判例） |", "|---|---|---|---|---|---|"]
+        for x in readings:
+            if x["reading"] != k:
+                continue
+            conv = "—" if x["converse"] is None else x["converse"]
+            lines.append(f"| {x['id']} | `{_cell(x.get('key') or '-')}` | {x['original']}・{conv} | {x['exit']} "
+                         f"| {_cell(units(x['narrow']))} | {_cell(units(x['route']))} |")
+    lines += ["", "太字は焦点の球団。番号は形の終了コード（0 異議なし、1 例外あり、2 主張が強すぎる、3 不成立、4 判断保留、5 判定できない単位）。"]
+    return "\n".join(lines) + "\n"
+
+
 def render_claims(claims: list[dict]) -> str:
     if not claims:
         return ""
@@ -812,7 +906,28 @@ def main(argv=None) -> int:
     j.add_argument("--report-only", action="store_true",
                    help="判定を表示するだけで、異議（1〜6）では失敗にしない。仕組みの不具合（64 以上）は失敗にする")
     j.add_argument("--lang", choices=["ja", "en"], default="ja")
+    nx = sub.add_parser("next", help="元の命題と逆の判定を並べて読み、次の命題の種を表示する（判定ではない）")
+    nx.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
+    nx.add_argument("--id", nargs="+", dest="ids")
+    nx.add_argument("--reading", type=int, nargs="+", choices=sorted(READING), help="この読みの番号だけを表示する")
     args = ap.parse_args(argv)
+
+    if args.cmd == "next":
+        if not args.results.exists():
+            print(f"[66] {label(66)}: {args.results}", file=sys.stderr)
+            return 66
+        results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines()]
+        known = {r["id"] for r in results}
+        if missing := [i for i in args.ids or [] if i not in known]:
+            print(f"[64] {label(64)}（そんな id はない: {', '.join(missing)}）", file=sys.stderr)
+            return 64
+        for x in map(reading, results):
+            if (args.ids and x["id"] not in args.ids) or (args.reading and x["reading"] not in args.reading):
+                continue
+            route = "—" if x["route"] is None else x["route"]["n"]
+            print(f"[{x['reading']}] {x['id']} {READING[x['reading']][0]}  元 {x['original']} 逆 {x['converse'] if x['converse'] is not None else '—'}"
+                  f"  絞る {x['narrow']['n']} 道筋 {route}  {x['key']}")
+        return 0  # 読みは判定ではないので、失敗にしない
 
     if not args.results.exists():
         print(f"[66] {label(66, args.lang)}: {args.results}", file=sys.stderr)

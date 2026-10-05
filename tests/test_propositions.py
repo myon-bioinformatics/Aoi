@@ -667,3 +667,72 @@ def test_sigma_stats_measure_the_distance_from_the_strength_threshold():
     r = pr.evaluate(P1, table(ROWS), focus="d")
     f = r["forms"][0]
     assert f["sigma"] == pytest.approx((f["hold"] - f["n"] * 0.75) / math.sqrt(f["n"] * 0.75 * 0.25))
+
+
+# ---------- 4つの形を並べて読む（次の命題の種） ----------
+
+def _result(orig, conv, cx_o=(), cx_c=()):
+    """形の終了コードと判例だけを持つ、読みのための結果。conv が None なら逆・裏を省略した命題。"""
+    def cx(units):
+        return [{"unit": u, "team": u.split("-")[0], "season": int(u.split("-")[1]), "focus": u.startswith("d-")}
+                for u in units]
+    forms = [{"form": "original", "code": orig, "counterexamples": cx(cx_o)},
+             {"form": "contrapositive", "code": orig, "counterexamples": cx(cx_o)}]
+    if conv is not None:
+        forms += [{"form": "converse", "code": conv, "counterexamples": cx(cx_c)},
+                  {"form": "inverse", "code": conv, "counterexamples": cx(cx_c)}]
+    return {"id": "X", "key": "[all] a>0 => b>0", "signature": "s", "forms": forms, "judgement": {"code": orig}}
+
+
+@pytest.mark.parametrize("orig,conv,expected", [
+    (0, 0, 0), (1, 1, 0), (1, 5, 0),     # 両方の向きで支持
+    (0, 3, 1), (1, 2, 1),                 # 十分条件だけ
+    (3, 1, 2), (2, 0, 2),                 # 必要条件だけ
+    (2, 2, 3), (2, 3, 3), (3, 2, 3),      # 結びつきはあるが主張より弱い
+    (3, 3, 4),                            # どちらも不成立
+    (4, 1, 5), (1, 4, 5), (4, 4, 5),      # 判断保留を含む
+    (0, None, 6), (3, None, 6),           # 逆・裏を省略
+])
+def test_reading_from_original_and_converse_codes(orig, conv, expected):
+    assert pr.reading(_result(orig, conv))["reading"] == expected
+
+
+def test_reading_every_code_has_a_label():
+    for code, (ja, en) in pr.READING.items():
+        assert ja and en
+
+
+def test_reading_seeds_split_narrow_and_route_and_show_clusters():
+    r = pr.reading(_result(1, 2, cx_o=["d-2014"], cx_c=["d-2019", "d-2021", "g-2019"]))
+    assert r["narrow"]["units"] == ["d-2014"] and r["narrow"]["focus"] == ["d-2014"]
+    assert r["route"]["n"] == 3 and r["route"]["top_team"] == ("d", 2) and r["route"]["top_season"] == (2019, 2)
+    assert r["route"]["focus"] == ["d-2019", "d-2021"]
+    assert pr.reading(_result(0, None))["route"] is None
+
+
+def test_reading_agrees_with_real_evaluation():
+    """十分だが必要ではない関係を実際に評価して、読みが 1 になり、逆の判例が道筋の種になる。"""
+    # rd>0 の単位は必ず A。A のうち rd<=0 の単位が多い（A に至る別の道筋がある）
+    rows = [("a", 1960 + i, 10, 1, 1) for i in range(40)] + [("b", 1960 + i, -10, 2, 4) for i in range(40)] \
+        + [("c", 1960 + i, -10, 5, 5) for i in range(40)]
+    p = {**P1, "min_n": 10, "strength": "almost_always"}
+    r = pr.evaluate(p, table(rows))
+    x = pr.reading(r)
+    assert x["original"] == 0 and x["converse"] in (2, 3) and x["reading"] == 1
+    assert x["narrow"]["n"] == 0 and x["route"]["n"] == 40 and x["route"]["top_team"] == ("b", 40)
+
+
+def test_render_next_groups_by_reading_and_marks_focus():
+    md = pr.render_next([pr.reading(_result(1, 3, cx_c=["d-2014", "g-2015"])), pr.reading(_result(0, 0))],
+                        {"sha256": "abc", "code_version": "v"})
+    assert "## 1 " in md and "## 0 " in md and "**d-2014**" in md and "abc" in md
+
+
+def test_cli_next_prints_readings_and_never_fails_on_objections(tmp_path, capsys):
+    f = tmp_path / "propositions.jsonl"
+    import json
+    f.write_text(json.dumps(_result(3, 3, cx_o=["d-2019"])) + "\n", encoding="utf-8")
+    assert pr.main(["next", str(f)]) == 0
+    assert capsys.readouterr().out.startswith("[4] X")
+    assert pr.main(["next", str(f), "--id", "Nope"]) == 64
+    assert pr.main(["next", str(tmp_path / "none.jsonl")]) == 66

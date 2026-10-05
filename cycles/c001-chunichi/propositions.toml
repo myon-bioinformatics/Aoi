@@ -1696,3 +1696,38 @@ context = ["rank", "rank_ra", "rank_rf", "wins_vs_pythag", "sim_p_upper"]
 links = ["H2"]
 falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
 note = "P121 の範囲を得点4位まで広げた形。得点4位の17単位は見ていないので、きっかけ以外はその部分で読む"
+
+# 追加: 2026-10-05。R30（片側だけ上位のチームは、点の差を勝ちに変えられたかで分かれるか）。計算前に登録した。
+# P124 の種は R29（P122 の判例・逆の判例16単位の wins_vs_pythag）を見た後。その16単位を motivated_by にし、残りの25単位で読む。
+# P125 は鏡（失点の側）。R28 で得点5・6位の26単位の wins_vs_pythag を見ているので motivated_by にし、得点4位の17単位で読む。
+
+[[proposition]]
+id = "P124"
+statement = "得点だけが上位半分のチームは、点の差から見込まれるより多く勝っていれば A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = "<=", value = 3 }, { col = "rank_ra", op = ">=", value = 4 }] }
+if = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["b-2025", "c-2022", "db-2016", "db-2017", "db-2019", "e-2022", "g-2023", "l-2012", "l-2015", "l-2016",
+                "m-2013", "m-2019", "m-2024", "s-2012", "s-2018", "t-2014"]
+surprise = "wins_vs_pythag"
+context = ["rank", "rd", "rank_rf", "rank_ra", "one_run_net"]
+links = ["H3"]
+falsifier = "きっかけの16単位を除いて、見込みより多く勝った単位の4分の1を超えて B クラス"
+note = "wins_vs_pythag は勝ち数と、得点・失点から見込まれる勝ち数（固定指数）の差。きっかけ以外の25単位で読む"
+
+[[proposition]]
+id = "P125"
+statement = "失点だけが上位半分のチームは、点の差から見込まれるより多く勝っていれば A クラス（P124 の鏡）"
+strength = "usually"
+scope = { where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 4 }] }
+if = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["b-2013", "b-2015", "b-2024", "c-2024", "d-2014", "d-2015", "d-2019", "d-2021", "d-2022", "d-2023",
+                "db-2018", "e-2018", "f-2019", "f-2023", "h-2012", "l-2022", "l-2023", "l-2024", "l-2025",
+                "t-2012", "t-2013", "t-2016", "t-2018", "t-2019", "t-2021", "t-2022"]
+surprise = "wins_vs_pythag"
+context = ["rank", "rd", "rank_rf", "rank_ra", "one_run_net"]
+links = ["H3"]
+falsifier = "（P124 と率を比べるための命題）"
+note = "R28 で見た26単位（得点5・6位）を除き、得点4位の17単位で読む"

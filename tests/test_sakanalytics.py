@@ -724,3 +724,18 @@ def test_short_share_edges(rf, ra, expected):
     assert 0.0 <= r["short_share"] <= 1.0
     assert r["short_share"] == pytest.approx(min(1.0, d / (d + a)) if d + a > 0 else 1.0)
     assert r["short_share"] == pytest.approx(expected)
+
+
+def test_add_balance_z_scales_by_the_spread_of_all_units():
+    import polars as pl
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3 + [2001] * 3, "league": ["C"] * 6, "team": ["a", "b", "c"] * 2,
+                       "G": [10] * 6, "RF": [30, 40, 50, 35, 40, 45], "RA": [50, 40, 30, 40, 40, 40]})
+    out = sa.add_balance(st)
+    sd = out["ra_adv"].std()
+    assert out["ra_adv_z"].to_list() == pytest.approx([x / sd for x in out["ra_adv"].to_list()])
+    assert out["rf_adv_z"].std() == pytest.approx(1.0)
+    for z, zone in zip(out["ra_adv_z"].to_list(), out["ra_zone"].to_list()):
+        assert zone == (1 if z >= 1 else -1 if z <= -1 else 0)

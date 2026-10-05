@@ -1,0 +1,88 @@
+# 命題の集合（R48）。登録済みの命題の条件だけから集合を作り、式を計算の前に書く。
+#   uv run python pythdragoras/sets.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml \
+#     --propositions cycles/c001-chunichi/propositions.toml --sets cycles/c001-chunichi/sets.toml --outdir cycles/c001-chunichi/outputs --report-only
+# 集合は全単位（2012〜2025年、2020年は除外）の上で作る。命題の範囲（seasons・team）は使わない。
+
+[[set]]
+id = "OFF_SHORT"        # 得点の優位が誤差を超えてマイナス
+from = "P147"
+
+[[set]]
+id = "DEF_WORSE"        # 失点の優位が誤差を超えてマイナス
+from = "P148"
+
+[[set]]
+id = "OFF_SHORT_DEF_CLEAR"   # 得点 −1 かつ 失点 +1（R35〜R36 の形）
+from = "P140"
+part = "where"
+
+[[set]]
+id = "TOP_WIN"          # 上の相手（1・2位）との勝率 .47 以上
+from = "P144"
+
+[[set]]
+id = "LOWER_FAIL"       # 下の相手（4〜6位）に .500 未満
+from = "P146"
+
+[[set]]
+id = "BIG_SHORT"        # 得点の不足が1試合 0.6点を超える
+from = "P138"
+
+[[set]]
+id = "PERSIST_LOW"      # 得点した回の大きさが2年以上続けて下位2位以内（式2）
+from = "P62"
+
+[[set]]
+id = "F52"              # 式1: 分布の見込み < 0.4 または 組み合わせ方 < −1
+from = "P52"
+
+[[set]]
+id = "F96"              # 式1′
+from = "P96"
+
+# ---- 式（どれも「式に入るなら B クラス」。強さは 概ね） ----
+
+[[expr]]
+id = "E1"
+expr = "OFF_SHORT & ~TOP_WIN"
+statement = "得点がはっきり足りず、上の相手に .47 未満なら B"
+
+[[expr]]
+id = "E2"
+expr = "OFF_SHORT & ~OFF_SHORT_DEF_CLEAR"
+statement = "得点がはっきり足りず、失点がはっきり上回ってはいないなら B"
+
+[[expr]]
+id = "E3"
+expr = "BIG_SHORT | (OFF_SHORT & ~OFF_SHORT_DEF_CLEAR)"
+statement = "得点の不足が大きいか、得点がはっきり足りず失点がはっきり上回ってはいないなら B"
+
+[[expr]]
+id = "E4"
+expr = "F52"
+statement = "式1（P52）をそのまま集合として"
+
+[[expr]]
+id = "E5"
+expr = "F96"
+statement = "式1′（P96）をそのまま集合として"
+
+[[expr]]
+id = "E6"
+expr = "PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)"
+statement = "得点した回の大きさが続けて低いか、得点がはっきり足りず上の相手に .47 未満なら B"
+
+[[expr]]
+id = "E7"
+expr = "F96 | (OFF_SHORT & ~TOP_WIN)"
+statement = "式1′か、得点がはっきり足りず上の相手に .47 未満なら B"
+
+[[expr]]
+id = "E8"
+expr = "DEF_WORSE & ~TOP_WIN"
+statement = "失点がはっきり劣り、上の相手に .47 未満なら B（E1 の鏡、中日を覆うことは求めない）"
+
+[[expr]]
+id = "E9"
+expr = "(OFF_SHORT | DEF_WORSE) & ~TOP_WIN & ~(OFF_SHORT_DEF_CLEAR)"
+statement = "得点か失点がはっきり劣り、上の相手に .47 未満で、得点 −1・失点 +1 の形ではないなら B"

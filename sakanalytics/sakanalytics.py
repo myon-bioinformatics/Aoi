@@ -63,6 +63,7 @@
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
   rf_adv / ra_adv / run_balance / short_share  得点・失点の優位を1試合あたりの点で（他球団平均との差）。収支と、0〜1 の取り分（R32。add_balance）
   rf_adv_z / ra_adv_z / *_zone     優位を全単位の標準偏差で割ったものと、その3区分（1・0・−1）。|z| < 1 を 0 の近くとして読む（R33）
+  rf_sd_g / ra_sd_g / *_adv_se / *_zone_se  試合ごとの点の標準偏差と、優位の誤差・誤差1つ分での3区分（R34）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1184,6 +1185,8 @@ def add_balance(st: pl.DataFrame) -> pl.DataFrame:
       rf_adv_z / ra_adv_z : 優位 ÷ 表の全単位の優位の標準偏差（R33）。|z| ≥ 1 なら 0 から1標準偏差以上離れている
       rf_zone / ra_zone   : z ≥ 1 なら 1、z ≤ −1 なら −1、その間（0 の近く）なら 0。範囲（where）は「かつ」しか書けないので、
                             「0 の近くを除く」を zone != 0 で書けるようにする
+      rf_adv_se / ra_adv_se / rf_zone_se / ra_zone_se : その年の平均の不確かさ（試合ごとの点の標準偏差 rf_sd_g・ra_sd_g から）と、
+                            優位が誤差1つ分以上離れているかの3区分（R34）。試合ごとの列がないシーズン表では作らない
     """
     over = ["season", "league"]
     others = lambda e: (e.sum().over(over) - e) / (pl.len().over(over) - 1)  # noqa: E731
@@ -1198,7 +1201,17 @@ def add_balance(st: pl.DataFrame) -> pl.DataFrame:
     # 符号で範囲を決めると出入りしやすい（R32）。物差しは表に入っている全単位で決まるので、年を足すと少し動く
     st = st.with_columns(rf_adv_z=pl.col("rf_adv") / pl.col("rf_adv").std(), ra_adv_z=pl.col("ra_adv") / pl.col("ra_adv").std())
     zone = lambda z: pl.when(z >= 1).then(1).when(z <= -1).then(-1).when(z.is_not_null()).then(0).cast(pl.Int32)  # noqa: E731
-    return st.with_columns(rf_zone=zone(pl.col("rf_adv_z")), ra_zone=zone(pl.col("ra_adv_z")))
+    st = st.with_columns(rf_zone=zone(pl.col("rf_adv_z")), ra_zone=zone(pl.col("ra_adv_z")))
+    if not {"rf_sd_g", "ra_sd_g"} <= set(st.columns):
+        return st
+    # R34: その年の平均の不確かさを物差しにする。優位 = 自分の平均 − 他球団の平均の平均 なので、
+    # 誤差² = 自分の平均の誤差²（sd² ÷ 試合数）+ 他球団の平均の誤差²の和 ÷ 他球団の数²（各チームの試合は独立とみなす）
+    n = pl.len().over(over) - 1
+    var = lambda sd: sd.pow(2) / pl.col("G")  # noqa: E731
+    se = lambda sd: (var(sd) + (var(sd).sum().over(over) - var(sd)) / n.pow(2)).sqrt()  # noqa: E731
+    st = st.with_columns(rf_adv_se=se(pl.col("rf_sd_g")), ra_adv_se=se(pl.col("ra_sd_g")))
+    return st.with_columns(rf_zone_se=zone(pl.col("rf_adv") / pl.col("rf_adv_se")),
+                           ra_zone_se=zone(pl.col("ra_adv") / pl.col("ra_adv_se")))
 
 
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
@@ -1226,6 +1239,7 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFra
         *_spread(margin.filter(win), "win_margin"), *_spread(margin.filter(loss), "loss_margin"),
         *_spread(pl.col("rf"), "rf"), *_spread(pl.col("ra"), "ra"),
         m.filter(pl.col("is_home")).mean().alias("rd_home_g"), m.filter(~pl.col("is_home")).mean().alias("rd_away_g"),
+        pl.col("rf").std().alias("rf_sd_g"), pl.col("ra").std().alias("ra_sd_g"),  # 試合ごとの点の散らばり（R34。add_balance の誤差）
     )
     W, L, RF, RA, G = (pl.col(c) for c in ("W", "L", "RF", "RA", "G"))
     log_ratio = (RF / RA).log()

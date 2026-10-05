@@ -1,7 +1,7 @@
 # 異議あり — 命題の判定記録（自動生成）
 
 判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。
-命題ファイル SHA-256: `8cbc3b98af710151321a1d567e411d9dddc150831374d48302cc55d6570b7e08` / コード: `fb58e36cfe1e8b16a5325396d02ded60bb5217d9`
+命題ファイル SHA-256: `cba542abaa3bf6f1ba5bb680227fbe47605a87f79dbb4f770be1947584873085` / コード: `01134cd83f1722d0518b3f1393ba8c9e2e74f29d`
 
 判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。
 
@@ -48,7 +48,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 - もし: `rd > 0` ならば: `upper_half == True`
 - 識別子: `[all] rd>0 => upper_half==true`（指紋 `43d21396576b5a67`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P11, P50, P152, P153, P154
+- 兄弟（範囲と結論が同じ、条件が違う）: P11, P50, P152, P153, P154, P177, P178, P179
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 条件の数: 2（例外条件を増やしすぎていないかの目安）
 - 台帳: 評価 29 回、元の命題に異議あり 29 回（どれかの形に異議あり 29 回）、直近で元の命題に判例がない連続 0 回
@@ -580,7 +580,7 @@
 - **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 2 件: c-2019, e-2022
 - もし: `rd >= -20 かつ rd <= 20 かつ one_run_net > 0` ならば: `upper_half == True`
 - 識別子: `[all] one_run_net>0 & rd<=20 & rd>=-20 => upper_half==true`（指紋 `46eaae2a798cd858`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P1, P50, P152, P153, P154
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P50, P152, P153, P154, P177, P178, P179
 - 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 得失点差が拮抗し1点差で勝ち越したチーム・シーズンの半数以上が下位半分
 - 注記: 「得失点差が同程度でも勝率が違う」を、得失点差の幅を絞って比べる。±20 は「同程度」の目安として事前に決めた値
@@ -2380,7 +2380,7 @@
 - **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 9 件: h-2013, d-2019, h-2021, l-2015, c-2015 ほか
 - もし: `sim_p_upper >= 0.5` ならば: `upper_half == True`
 - 識別子: `[all] sim_p_upper>=0.5 => upper_half==true`（指紋 `afed9548b83675bb`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P152, P153, P154
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P152, P153, P154, P177, P178, P179
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 確率 0.5 以上のチーム・シーズンの4分の1を超えて B クラス
 - 注記: この作り直しが順位をどれだけ言い当てるか。成り立たなければ、R10 の他の読みも弱める
@@ -7323,7 +7323,7 @@
 - **判定: exit 2 異議あり（主張が強すぎる）**（仮: 元の命題と対偶まで） — 逆: 判例 65 件: l-2018, l-2017, b-2014, g-2013, b-2023 ほか
 - もし: `adv_shape_se == +1/+1` ならば: `upper_half == True`
 - 識別子: `[all] adv_shape_se=="+1/+1" => upper_half==true`（指紋 `ead60eba821d66dc`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P153, P154
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P153, P154, P177, P178, P179
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: この形の4分の1を超えて B クラス
 - 注記: まだ見ていない
@@ -7366,7 +7366,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 2 件: h-2013, l-2015
 - もし: `adv_shape_se == +1/0` ならば: `upper_half == True`
 - 識別子: `[all] adv_shape_se=="+1/0" => upper_half==true`（指紋 `ddfa02810fe5226d`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P154
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P154, P177, P178, P179
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: この形の4分の1を超えて B クラス
 - 注記: まだ見ていない。P154（鏡 0/+1）と比べる
@@ -7420,7 +7420,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 2 件: h-2021, c-2015
 - もし: `adv_shape_se == 0/+1` ならば: `upper_half == True`
 - 識別子: `[all] adv_shape_se=="0/+1" => upper_half==true`（指紋 `7f1ed22826a69037`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P153
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P153, P177, P178, P179
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: この形の4分の1を超えて B クラス
 - 注記: まだ見ていない
@@ -8481,3 +8481,171 @@
 - オリックス 2019: b_paths=offense, lg_gap34=0.014, rank=6, league=P, lg_lead_gap=0.013, lg_rest_sd=0.039 / surprise=0.014
   - オリックス 2019 は「lg_gap34 < 0.02」を満たすのに「b_paths == none」を満たさない。なぜか？ → H1
 - ほか 24 件（propositions.jsonl を参照）
+
+## P177: 点の差から見込まれるより5勝以上多く勝てば、A クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 5 件: e-2024, d-2024, e-2025, d-2022, d-2017
+- もし: `wins_vs_pythag >= 5` ならば: `upper_half == True`
+- 識別子: `[all] wins_vs_pythag>=5 => upper_half==true`（指紋 `7b61084cee78732b`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P153, P154, P178, P179
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: きっかけ以外で、5勝以上多く勝った単位の4分の1を超えて B
+- 注記: R49。中日 2022年（+6.9 で B）は判例になると分かっている。wins_vs_pythag は勝ち数を含むので A かどうかと一部算術でつながる
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 18 | 13 | 0.72 [0.49, 0.88] | -0.27σ（0.481） | 0.50 | 1.44 | 0.039 | 0 | 判断保留 | 4 |
+| 対偶 | 78 | 73 | 0.94 [0.86, 0.97] | +3.79σ（0.000） | 0.88 | 1.06 | 0.039 | 0 | 支持 | 1 |
+| 逆 | 78 | 13 | 0.17 [0.10, 0.26] | -11.90σ（0.000） | 0.12 | 1.44 | 0.039 | 0 | 修正 | 2 |
+| 裏 | 138 | 73 | 0.53 [0.45, 0.61] | -6.00σ（0.000） | 0.50 | 1.06 | 0.039 | 0 | 修正 | 2 |
+
+**待った！判断保留** 元の命題に判例 5 件（対偶の判例も同じ）
+
+- 楽天 2024: wins_vs_pythag=+7.78, upper_half=False, rank=4, rd=-87, alloc_z_strat=+1.88, one_run_net=3 / surprise=+7.78
+  - 楽天 2024 は「wins_vs_pythag >= 5」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 中日 2024 **(focus)**: wins_vs_pythag=+7.56, upper_half=False, rank=6, rd=-105, alloc_z_strat=0.459, one_run_net=10 / surprise=+7.56
+  - 中日 2024 は「wins_vs_pythag >= 5」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 楽天 2025: wins_vs_pythag=+7.06, upper_half=False, rank=4, rd=-80, alloc_z_strat=+1.24, one_run_net=12 / surprise=+7.06
+  - 楽天 2025 は「wins_vs_pythag >= 5」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 中日 2022 **(focus)**: wins_vs_pythag=+6.93, upper_half=False, rank=6, rd=-81, alloc_z_strat=0.719, one_run_net=2 / surprise=+6.93
+  - 中日 2022 は「wins_vs_pythag >= 5」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 中日 2017 **(focus)**: wins_vs_pythag=+5.29, upper_half=False, rank=5, rd=-136, alloc_z_strat=0.233, one_run_net=-3 / surprise=+5.29
+  - 中日 2017 は「wins_vs_pythag >= 5」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+
+**異議あり（主張が強すぎる）** 逆に判例 65 件（裏の判例も同じ）
+
+- 阪神 2022: wins_vs_pythag=-9.93, upper_half=True, rank=3, rd=61, alloc_z_strat=-2.14, one_run_net=-5 / surprise=-9.93
+  - 阪神 2022 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- 巨人 2018: wins_vs_pythag=-7.25, upper_half=True, rank=3, rd=50, alloc_z_strat=-1.75, one_run_net=-12 / surprise=-7.25
+  - 巨人 2018 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- ソフトバンク 2024: wins_vs_pythag=-5.88, upper_half=True, rank=1, rd=217, alloc_z_strat=0.285, one_run_net=5 / surprise=-5.88
+  - ソフトバンク 2024 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- 阪神 2025: wins_vs_pythag=-5.62, upper_half=True, rank=1, rd=144, alloc_z_strat=-1.53, one_run_net=-3 / surprise=-5.62
+  - 阪神 2025 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- 日本ハム 2025: wins_vs_pythag=-5.30, upper_half=True, rank=2, rd=139, alloc_z_strat=0.957, one_run_net=1 / surprise=-5.30
+  - 日本ハム 2025 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- オリックス 2014: wins_vs_pythag=-5.19, upper_half=True, rank=2, rd=116, alloc_z_strat=-0.632, one_run_net=-6 / surprise=-5.19
+  - オリックス 2014 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- ソフトバンク 2022: wins_vs_pythag=-5.01, upper_half=True, rank=1, rd=84, alloc_z_strat=-1.10, one_run_net=0 / surprise=-5.01
+  - ソフトバンク 2022 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- 広島 2018: wins_vs_pythag=+4.93, upper_half=True, rank=1, rd=70, alloc_z_strat=+1.46, one_run_net=7 / surprise=+4.93
+  - 広島 2018 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- 日本ハム 2015: wins_vs_pythag=+4.83, upper_half=True, rank=2, rd=34, alloc_z_strat=+1.32, one_run_net=8 / surprise=+4.83
+  - 日本ハム 2015 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- ヤクルト 2022: wins_vs_pythag=+4.82, upper_half=True, rank=1, rd=53, alloc_z_strat=+1.89, one_run_net=8 / surprise=+4.82
+  - ヤクルト 2022 は「upper_half == True」を満たすのに「wins_vs_pythag >= 5」を満たさない。なぜか？ → H3
+- ほか 55 件（propositions.jsonl を参照）
+
+**きっかけ以外での判定**（作り直しのきっかけ t-2015 を除く）: n=17 成立=12 成立率=0.71 [0.47, 0.87] → **判断保留** / 判例: e-2024, d-2024, e-2025, d-2022, d-2017
+
+## P178: 得点・失点の組み合わせ方が基準より1標準偏差以上有利なら、A クラス
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 3 件: e-2024, e-2025, b-2019
+- もし: `alloc_z_strat >= 1` ならば: `upper_half == True`
+- 識別子: `[all] alloc_z_strat>=1 => upper_half==true`（指紋 `e5eb40764a993e0e`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P153, P154, P177, P179
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: きっかけ以外で、組み合わせ方 ≥ 1 の単位の4分の1を超えて B
+- 注記: R49。P52 の「組み合わせ方 < −1 ⇒ B」の鏡の側
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 31 | 28 | 0.90 [0.75, 0.97] | +1.97σ（0.031） | 0.50 | 1.81 | 0.000 | 0 | 支持 | 1 |
+| 対偶 | 78 | 75 | 0.96 [0.89, 0.99] | +4.31σ（0.000） | 0.80 | 1.20 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 78 | 28 | 0.36 [0.26, 0.47] | -7.98σ（0.000） | 0.20 | 1.81 | 0.000 | 0 | 修正 | 2 |
+| 裏 | 125 | 75 | 0.60 [0.51, 0.68] | -3.87σ（0.000） | 0.50 | 1.20 | 0.000 | 0 | 修正 | 2 |
+
+**異議あり（例外あり）** 元の命題に判例 3 件（対偶の判例も同じ）
+
+- 楽天 2024: alloc_z_strat=+1.88, upper_half=False, rank=4, rd=-87, wins_vs_pythag=+7.78 / surprise=+1.88
+  - 楽天 2024 は「alloc_z_strat >= 1」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 楽天 2025: alloc_z_strat=+1.24, upper_half=False, rank=4, rd=-80, wins_vs_pythag=+7.06 / surprise=+1.24
+  - 楽天 2025 は「alloc_z_strat >= 1」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- オリックス 2019: alloc_z_strat=+1.08, upper_half=False, rank=6, rd=-93, wins_vs_pythag=+2.75 / surprise=+1.08
+  - オリックス 2019 は「alloc_z_strat >= 1」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+
+**異議あり（主張が強すぎる）** 逆に判例 50 件（裏の判例も同じ）
+
+- 阪神 2022: alloc_z_strat=-2.14, upper_half=True, rank=3, rd=61, wins_vs_pythag=-9.93 / surprise=-2.14
+  - 阪神 2022 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- 巨人 2018: alloc_z_strat=-1.75, upper_half=True, rank=3, rd=50, wins_vs_pythag=-7.25 / surprise=-1.75
+  - 巨人 2018 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- 阪神 2025: alloc_z_strat=-1.53, upper_half=True, rank=1, rd=144, wins_vs_pythag=-5.62 / surprise=-1.53
+  - 阪神 2025 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- ソフトバンク 2022: alloc_z_strat=-1.10, upper_half=True, rank=1, rd=84, wins_vs_pythag=-5.01 / surprise=-1.10
+  - ソフトバンク 2022 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- 西武 2017: alloc_z_strat=-0.997, upper_half=True, rank=2, rd=130, wins_vs_pythag=-4.21 / surprise=-0.997
+  - 西武 2017 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- 楽天 2013: alloc_z_strat=0.970, upper_half=True, rank=1, rd=91, wins_vs_pythag=+1.47 / surprise=0.970
+  - 楽天 2013 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- 日本ハム 2025: alloc_z_strat=0.957, upper_half=True, rank=2, rd=139, wins_vs_pythag=-5.30 / surprise=0.957
+  - 日本ハム 2025 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- 楽天 2019: alloc_z_strat=-0.950, upper_half=True, rank=3, rd=36, wins_vs_pythag=-2.34 / surprise=-0.950
+  - 楽天 2019 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- 日本ハム 2018: alloc_z_strat=0.910, upper_half=True, rank=3, rd=3, wins_vs_pythag=+3.67 / surprise=0.910
+  - 日本ハム 2018 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- 日本ハム 2012: alloc_z_strat=-0.890, upper_half=True, rank=1, rd=60, wins_vs_pythag=-0.083 / surprise=-0.890
+  - 日本ハム 2012 は「upper_half == True」を満たすのに「alloc_z_strat >= 1」を満たさない。なぜか？ → H3
+- ほか 40 件（propositions.jsonl を参照）
+
+**きっかけ以外での判定**（作り直しのきっかけ t-2015 を除く）: n=30 成立=27 成立率=0.90 [0.74, 0.97] → **判断保留** / 判例: e-2024, e-2025, b-2019
+
+## P179: 中位の相手との試合で、点の差から見込まれるより3勝以上多く勝てば、A クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 4 件: m-2017, e-2015, d-2023, e-2023
+- もし: `opp_conv_mid >= 3` ならば: `upper_half == True`
+- 識別子: `[all] opp_conv_mid>=3 => upper_half==true`（指紋 `b54daa8b824c738c`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P153, P154, P177, P178
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: きっかけ以外で、中位の相手から3勝以上多く勝った単位の4分の1を超えて B
+- 注記: R49。中位の相手は最終順位で決める（docs/propositions.md の前提）
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 15 | 11 | 0.73 [0.48, 0.89] | -0.15σ（0.539） | 0.50 | 1.47 | 0.050 | 0 | 判断保留 | 4 |
+| 対偶 | 78 | 74 | 0.95 [0.88, 0.98] | +4.05σ（0.000） | 0.90 | 1.05 | 0.050 | 0 | 支持 | 1 |
+| 逆 | 78 | 11 | 0.14 [0.08, 0.24] | -12.42σ（0.000） | 0.10 | 1.47 | 0.050 | 0 | 棄却 | 3 |
+| 裏 | 141 | 74 | 0.52 [0.44, 0.61] | -6.17σ（0.000） | 0.50 | 1.05 | 0.050 | 0 | 棄却 | 3 |
+
+**待った！判断保留** 元の命題に判例 4 件（対偶の判例も同じ）
+
+- ロッテ 2017: opp_conv_mid=+3.88, upper_half=False, rank=6, rd=-168, opp_conv_top=-2.42, opp_conv_low=+1.04 / surprise=+3.88
+  - ロッテ 2017 は「opp_conv_mid >= 3」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 楽天 2015: opp_conv_mid=+3.40, upper_half=False, rank=6, rd=-149, opp_conv_top=0.168, opp_conv_low=-0.063 / surprise=+3.40
+  - 楽天 2015 は「opp_conv_mid >= 3」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 中日 2023 **(focus)**: opp_conv_mid=+3.31, upper_half=False, rank=6, rd=-108, opp_conv_top=-0.037, opp_conv_low=-0.949 / surprise=+3.31
+  - 中日 2023 は「opp_conv_mid >= 3」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+- 楽天 2023: opp_conv_mid=+3.14, upper_half=False, rank=4, rd=-43, opp_conv_top=-0.450, opp_conv_low=-1.02 / surprise=+3.14
+  - 楽天 2023 は「opp_conv_mid >= 3」を満たすのに「upper_half == True」を満たさない。なぜか？ → H3
+
+**異議あり（不成立）** 逆に判例 67 件（裏の判例も同じ）
+
+- 西武 2017: opp_conv_mid=-4.29, upper_half=True, rank=2, rd=130, opp_conv_top=0.616, opp_conv_low=-0.586 / surprise=-4.29
+  - 西武 2017 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- ソフトバンク 2024: opp_conv_mid=-4.14, upper_half=True, rank=1, rd=217, opp_conv_top=-1.06, opp_conv_low=-0.989 / surprise=-4.14
+  - ソフトバンク 2024 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- 阪神 2022: opp_conv_mid=-2.84, upper_half=True, rank=3, rd=61, opp_conv_top=-5.18, opp_conv_low=-2.09 / surprise=-2.84
+  - 阪神 2022 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- 巨人 2015: opp_conv_mid=-2.79, upper_half=True, rank=2, rd=46, opp_conv_top=+3.53, opp_conv_low=+1.07 / surprise=-2.79
+  - 巨人 2015 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- 西武 2019: opp_conv_mid=+2.76, upper_half=True, rank=1, rd=61, opp_conv_top=+1.21, opp_conv_low=0.714 / surprise=+2.76
+  - 西武 2019 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- 楽天 2017: opp_conv_mid=+2.75, upper_half=True, rank=3, rd=57, opp_conv_top=-1.75, opp_conv_low=-1.48 / surprise=+2.75
+  - 楽天 2017 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- 広島 2023: opp_conv_mid=+2.64, upper_half=True, rank=2, rd=-15, opp_conv_top=0.595, opp_conv_low=+1.68 / surprise=+2.64
+  - 広島 2023 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- ソフトバンク 2017: opp_conv_mid=+2.60, upper_half=True, rank=1, rd=155, opp_conv_top=+1.13, opp_conv_low=+3.01 / surprise=+2.60
+  - ソフトバンク 2017 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- ヤクルト 2018: opp_conv_mid=+2.59, upper_half=True, rank=2, rd=-7, opp_conv_top=-1.17, opp_conv_low=+1.79 / surprise=+2.59
+  - ヤクルト 2018 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- オリックス 2025: opp_conv_mid=-2.58, upper_half=True, rank=3, rd=-17, opp_conv_top=+2.49, opp_conv_low=+3.12 / surprise=-2.58
+  - オリックス 2025 は「upper_half == True」を満たすのに「opp_conv_mid >= 3」を満たさない。なぜか？ → H3
+- ほか 57 件（propositions.jsonl を参照）
+
+**きっかけ以外での判定**（作り直しのきっかけ t-2015 を除く）: n=14 成立=10 成立率=0.71 [0.45, 0.88] → **判断保留** / 判例: m-2017, e-2015, d-2023, e-2023

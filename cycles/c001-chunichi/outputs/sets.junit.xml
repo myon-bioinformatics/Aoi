@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<testsuite name="pythdragoras.sets" tests="9" failures="9" errors="0" skipped="0">
+<testsuite name="pythdragoras.sets" tests="15" failures="14" errors="0" skipped="0">
   <properties>
-    <property name="sets_sha256" value="543f7d12f50b0942a14f5ff7d7d8b023f16193c1890032bb8caf1dc2d547f840" />
-    <property name="propositions_sha256" value="8cbc3b98af710151321a1d567e411d9dddc150831374d48302cc55d6570b7e08" />
+    <property name="sets_sha256" value="f912eec330f6f406179c8f67aea5212dddcc7d5483cad104531bbb3e3ca2df3a" />
+    <property name="propositions_sha256" value="cba542abaa3bf6f1ba5bb680227fbe47605a87f79dbb4f770be1947584873085" />
   </properties>
   <testcase classname="sets" name="E1: OFF_SHORT &amp; ~TOP_WIN">
     <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2018" type="exit1">元の命題 44/45、総合の終了コード 1、覆い 11/12</failure>
@@ -30,5 +30,21 @@
   </testcase>
   <testcase classname="sets" name="E9: (OFF_SHORT | DEF_WORSE) &amp; ~TOP_WIN &amp; ~(OFF_SHORT_DEF_CLEAR)">
     <failure message="判例 4件: t-2015, m-2023, db-2024, b-2025；覆えなかった焦点の単位 3件: d-2018, d-2019, d-2021" type="exit1">元の命題 56/60、総合の終了コード 1、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E10: (PERSIST_LOW | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~CONVERT_BIG">
+    <failure message="元の命題の終了コード 5（判例なし、判断保留など）；覆えなかった焦点の単位 3件: d-2017, d-2022, d-2024" type="exit5">元の命題 44/44、総合の終了コード 5、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E11: (F96 | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~CONVERT_BIG">
+    <failure message="覆えなかった焦点の単位 3件: d-2017, d-2022, d-2024" type="exit0">元の命題 64/64、総合の終了コード 4、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E12: (PERSIST_LOW | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~ALLOC_GOOD">
+    <failure message="元の命題の終了コード 5（判例なし、判断保留など）" type="exit5">元の命題 46/46、総合の終了コード 5、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E13: (F96 | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~ALLOC_GOOD" />
+  <testcase classname="sets" name="E14: (PERSIST_LOW | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~MID_CONVERT">
+    <failure message="元の命題の終了コード 5（判例なし、判断保留など）；覆えなかった焦点の単位 1件: d-2023" type="exit5">元の命題 45/45、総合の終了コード 5、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E15: (F96 | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~MID_CONVERT">
+    <failure message="覆えなかった焦点の単位 1件: d-2023" type="exit0">元の命題 66/66、総合の終了コード 1、覆い 11/12</failure>
   </testcase>
 </testsuite>

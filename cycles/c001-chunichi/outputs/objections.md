@@ -1,7 +1,7 @@
 # 異議あり — 命題の判定記録（自動生成）
 
 判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。
-命題ファイル SHA-256: `f7e4944d7fa91a6e9bd6de87ead33f4c372eb17a07a4d8d7d76d5e20dd87128e` / コード: `d24794b08a620be5bcfaf43341aecaab7a82ed4c`
+命題ファイル SHA-256: `79419f1f270226dee09bf020eab0caba1e2fd9a44cb06ed6e842633075c0d409` / コード: `e73fcbc0275001bb8c260081d41cf7ae8dd1a130`
 
 判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。
 
@@ -32,7 +32,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 - もし: `rd > 0` ならば: `upper_half == True`
 - 識別子: `[all] rd>0 => upper_half==true`（指紋 `43d21396576b5a67`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P11, P50
+- 兄弟（範囲と結論が同じ、条件が違う）: P11, P50, P152, P153, P154
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 条件の数: 2（例外条件を増やしすぎていないかの目安）
 - 台帳: 評価 27 回、元の命題に異議あり 27 回（どれかの形に異議あり 27 回）、直近で元の命題に判例がない連続 0 回
@@ -307,7 +307,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 8 件: t-2015, t-2019, t-2022, c-2023, h-2012 ほか
 - もし: `rank_rf >= 5` ならば: `upper_half == False`
 - 識別子: `[all] rank_rf>=5 => upper_half==false`（指紋 `b7529d85063bb804`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P52, P64, P95, P96, P115, P126, P138
+- 兄弟（範囲と結論が同じ、条件が違う）: P52, P64, P95, P96, P115, P126, P138, P147, P148, P149, P150, P151
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 条件の数: 2（例外条件を増やしすぎていないかの目安）
 - 台帳: 評価 27 回、元の命題に異議あり 27 回（どれかの形に異議あり 27 回）、直近で元の命題に判例がない連続 0 回
@@ -564,7 +564,7 @@
 - **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 2 件: c-2019, e-2022
 - もし: `rd >= -20 かつ rd <= 20 かつ one_run_net > 0` ならば: `upper_half == True`
 - 識別子: `[all] one_run_net>0 & rd<=20 & rd>=-20 => upper_half==true`（指紋 `46eaae2a798cd858`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P1, P50
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P50, P152, P153, P154
 - 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 得失点差が拮抗し1点差で勝ち越したチーム・シーズンの半数以上が下位半分
 - 注記: 「得失点差が同程度でも勝率が違う」を、得失点差の幅を絞って比べる。±20 は「同程度」の目安として事前に決めた値
@@ -2364,7 +2364,7 @@
 - **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 9 件: h-2013, d-2019, h-2021, l-2015, c-2015 ほか
 - もし: `sim_p_upper >= 0.5` ならば: `upper_half == True`
 - 識別子: `[all] sim_p_upper>=0.5 => upper_half==true`（指紋 `afed9548b83675bb`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P152, P153, P154
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 確率 0.5 以上のチーム・シーズンの4分の1を超えて B クラス
 - 注記: この作り直しが順位をどれだけ言い当てるか。成り立たなければ、R10 の他の読みも弱める
@@ -2457,7 +2457,7 @@
 - **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 10 件: t-2015, t-2022, m-2013, t-2014, m-2015 ほか
 - もし: `（[sim_p_upper < 0.4] または [alloc_z_strat < -1]）` ならば: `upper_half == False`
 - 識別子: `[all] ((alloc_z_strat<-1) | (sim_p_upper<0.4)) => upper_half==false`（指紋 `9b39490e840f2e44`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P5, P64, P95, P96, P115, P126, P138
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P64, P95, P96, P115, P126, P138, P147, P148, P149, P150, P151
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 2026年以降のデータで、この前件を満たすチーム・シーズンの4分の1を超えて A クラス、または B クラスの4分の1を超えて前件を満たさない
 - 注記: 探索（R11）で見つけた式。作るきっかけと同じデータでの判定は確かめではない。逆（B クラス ⇒ 前件）が「なぜ B クラスか」の説明の網羅性にあたる
@@ -3182,7 +3182,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 4 件: t-2013, t-2019, l-2022, t-2022
 - もし: `rf_low_streak >= 2` ならば: `upper_half == False`
 - 識別子: `[all] rf_low_streak>=2 => upper_half==false`（指紋 `79cfb4c532f3825c`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P95, P96, P115, P126, P138
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P95, P96, P115, P126, P138, P147, P148, P149, P150, P151
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 続けて得点が5位以下のチーム・シーズンの4分の1を超えて A クラス
 - 注記: P5（得点5位以下 ⇒ B）に「続けて」を足したもの。P5 と兄弟
@@ -4814,7 +4814,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 18 件: g-2018, t-2022, t-2014, e-2019, g-2012 ほか
 - もし: `（[sim_p_upper < 0.4] または [alloc_z_strat < -1] または [opp_conv_top < -2]）` ならば: `upper_half == False`
 - 識別子: `[all] ((alloc_z_strat<-1) | (opp_conv_top<-2) | (sim_p_upper<0.4)) => upper_half==false`（指紋 `2705568c057ad20f`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P96, P115, P126, P138
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P96, P115, P126, P138, P147, P148, P149, P150, P151
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 親: P52（変更: 式1が取りこぼした 2014年の道筋（R17、強い相手との試合で点の差どおりに勝てていない）を3つ目の組として足した。閾値 −2 は中日 2014 の −2.57 を見て決めた）
 - 見直す条件（反証）: 中日 2014 を除いて、P52 より Matthews 相関が上がらない（B クラスの取りこぼしの減りより、A クラスの誤りの増えが大きい）
@@ -4874,7 +4874,7 @@
 - **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 1 件: t-2015
 - もし: `（[rd < -50] または [sim_p_upper < 0.5 かつ wins_vs_pythag < 0] または [rd < 50 かつ alloc_z_strat < -1]）` ならば: `upper_half == False`
 - 識別子: `[all] ((alloc_z_strat<-1 & rd<50) | (rd<-50) | (sim_p_upper<0.5 & wins_vs_pythag<0)) => upper_half==false`（指紋 `bdb05c59ec6f9d12`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P115, P126, P138
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P115, P126, P138, P147, P148, P149, P150, P151
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 2026年（R18）で、この式に当たるのに A クラスのチームが出る（学習データでは156単位中1）
 - 注記: R21 の探索の1位（結果を見た後の式）。P52（取りこぼしが少ない）と並べる、言い当て方の違う式。同じデータでの成績は良く見えやすい
@@ -5616,7 +5616,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 4 件: t-2015, m-2023, c-2023, g-2021
 - もし: `rank_rf >= 4 かつ rank_ra >= 4` ならば: `upper_half == False`
 - 識別子: `[all] rank_ra>=4 & rank_rf>=4 => upper_half==false`（指紋 `5b650488a6bfb0d9`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P126, P138
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P126, P138, P147, P148, P149, P150, P151
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 得点も失点も4位以下のチーム・シーズンの4分の1を超えて A クラス
 - 注記: 十分の向きの命題。逆（B クラスなら、得点も失点も4位以下）の判例が、得点か失点のどちらかは上位なのに B になった道筋の種になる
@@ -6209,7 +6209,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 7 件: t-2015, db-2022, db-2019, c-2023, m-2013 ほか
 - もし: `rf_adv <= 0 かつ ra_adv <= 0` ならば: `upper_half == False`
 - 識別子: `[all] ra_adv<=0 & rf_adv<=0 => upper_half==false`（指紋 `2dc6e335fd5e67d9`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P138
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P138, P147, P148, P149, P150, P151
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
 - 親: P115（変更: 上位半分を順位（3位以内）ではなく、1試合あたりの優位の符号で決める。R31 で、失点3位でも優位がほぼ 0 か負の単位が4つあった）
 - 見直す条件（反証）: 優位のないチーム・シーズンの4分の1を超えて A クラス
@@ -6707,7 +6707,7 @@
 - **判定: exit 3 異議あり（不成立）**（仮: 元の命題と対偶まで） — 逆: 判例 61 件: h-2013, b-2013, f-2017, d-2016, db-2013 ほか
 - もし: `rf_adv < -0.6` ならば: `upper_half == False`
 - 識別子: `[all] rf_adv<-0.6 => upper_half==false`（指紋 `283ec921c3253ea2`）
-- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P126
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P126, P147, P148, P149, P150, P151
 - 強さ: 必ず（always, 基準 反例なし）/ 範囲: 全体 / 単位数: 156
 - 見直す条件（反証）: 不足が 0.6 を超えて A クラスの単位が1つでも出る
 - 注記: R33 で 17中17 を見た後の命題。同じデータでは確かめにならない。2026年で確かめる（[confirm]）
@@ -7007,3 +7007,442 @@
   - ソフトバンク 2021 は「upper_half == False」を満たすのに「vs_lower_wpct < 0.5」を満たさない。なぜか？ → H3
 - 楽天 2012: vs_lower_wpct=0.500, upper_half=False, rank=4, rd=24, vs_top_wpct=0.500, alloc_z_strat=0.135 / surprise=0.500
   - 楽天 2012 は「upper_half == False」を満たすのに「vs_lower_wpct < 0.5」を満たさない。なぜか？ → H3
+
+## P147: 得点の不足が誤差を超えている（得点 −1）なら、B クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 8 件: t-2019, g-2016, t-2015, l-2022, h-2012 ほか
+- もし: `rf_zone_se == -1` ならば: `upper_half == False`
+- 識別子: `[all] rf_zone_se==-1 => upper_half==false`（指紋 `87e483d8d2733c8c`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P126, P138, P148, P149, P150, P151
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: 得点 −1 の単位の4分の1を超えて A クラス
+- 注記: 元の命題の率は R35〜R37 からほぼ分かっている。読みたいのは逆（B なら得点ははっきり足りない）で、P148 の逆と比べる
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 52 | 44 | 0.85 [0.72, 0.92] | +1.60σ（0.070） | 0.50 | 1.69 | 0.000 | 0 | 判断保留 | 4 |
+| 対偶 | 78 | 70 | 0.90 [0.81, 0.95] | +3.01σ（0.001） | 0.67 | 1.35 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 78 | 44 | 0.56 [0.45, 0.67] | -3.79σ（0.000） | 0.33 | 1.69 | 0.000 | 0 | 修正 | 2 |
+| 裏 | 104 | 70 | 0.67 [0.58, 0.76] | -1.81σ（0.048） | 0.50 | 1.35 | 0.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 元の命題に判例 8 件（対偶の判例も同じ）
+
+- 阪神 2019: rf_zone_se=-1, upper_half=True, rank=3, adv_shape_se=-1/+1, run_balance_t=-0.520 / surprise=-2.05
+  - 阪神 2019 は「rf_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 巨人 2016: rf_zone_se=-1, upper_half=True, rank=2, adv_shape_se=-1/0, run_balance_t=-0.308 / surprise=-1.54
+  - 巨人 2016 は「rf_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 阪神 2015: rf_zone_se=-1, upper_half=True, rank=3, adv_shape_se=-1/-1, run_balance_t=-1.69 / surprise=-1.39
+  - 阪神 2015 は「rf_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 西武 2022: rf_zone_se=-1, upper_half=True, rank=3, adv_shape_se=-1/+1, run_balance_t=0.263 / surprise=-1.37
+  - 西武 2022 は「rf_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ソフトバンク 2012: rf_zone_se=-1, upper_half=True, rank=3, adv_shape_se=-1/+1, run_balance_t=0.482 / surprise=-1.16
+  - ソフトバンク 2012 は「rf_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 阪神 2013: rf_zone_se=-1, upper_half=True, rank=2, adv_shape_se=-1/+1, run_balance_t=+1.28 / surprise=-1.14
+  - 阪神 2013 は「rf_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 中日 2012 **(focus)**: rf_zone_se=-1, upper_half=True, rank=2, adv_shape_se=-1/+1, run_balance_t=0.530 / surprise=-1.12
+  - 中日 2012 は「rf_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ソフトバンク 2019: rf_zone_se=-1, upper_half=True, rank=2, adv_shape_se=-1/+1, run_balance_t=0.303 / surprise=-1.08
+  - ソフトバンク 2019 は「rf_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+
+**異議あり（主張が強すぎる）** 逆に判例 34 件（裏の判例も同じ）
+
+- ソフトバンク 2013: rf_zone_se=1, upper_half=False, rank=4, adv_shape_se=+1/0, run_balance_t=+1.75 / surprise=+2.34
+  - ソフトバンク 2013 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- ヤクルト 2024: rf_zone_se=1, upper_half=False, rank=5, adv_shape_se=+1/-1, run_balance_t=-1.31 / surprise=+1.71
+  - ヤクルト 2024 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- DeNA 2013: rf_zone_se=1, upper_half=False, rank=5, adv_shape_se=+1/-1, run_balance_t=-0.777 / surprise=+1.70
+  - DeNA 2013 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- ヤクルト 2014: rf_zone_se=1, upper_half=False, rank=6, adv_shape_se=+1/-1, run_balance_t=-0.793 / surprise=+1.66
+  - ヤクルト 2014 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- ヤクルト 2019: rf_zone_se=1, upper_half=False, rank=6, adv_shape_se=+1/-1, run_balance_t=-1.58 / surprise=+1.61
+  - ヤクルト 2019 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- 西武 2015: rf_zone_se=1, upper_half=False, rank=4, adv_shape_se=+1/0, run_balance_t=0.918 / surprise=+1.53
+  - 西武 2015 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- 西武 2016: rf_zone_se=1, upper_half=False, rank=4, adv_shape_se=+1/-1, run_balance_t=-0.231 / surprise=+1.15
+  - 西武 2016 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- ヤクルト 2016: rf_zone_se=1, upper_half=False, rank=5, adv_shape_se=+1/-1, run_balance_t=-1.96 / surprise=+1.02
+  - ヤクルト 2016 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- ヤクルト 2023: rf_zone_se=0, upper_half=False, rank=5, adv_shape_se=0/-1, run_balance_t=-0.804 / surprise=0.987
+  - ヤクルト 2023 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- 楽天 2022: rf_zone_se=0, upper_half=False, rank=4, adv_shape_se=0/0, run_balance_t=0.109 / surprise=0.953
+  - 楽天 2022 は「upper_half == False」を満たすのに「rf_zone_se == -1」を満たさない。なぜか？ → H2
+- ほか 24 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- 中日 2020 **(focus)**: rf_zone_se=-1, upper_half=True, rank=3, adv_shape_se=-1/0, run_balance_t=-1.39
+- ロッテ 2020: rf_zone_se=-1, upper_half=True, rank=2, adv_shape_se=-1/0, run_balance_t=-0.443
+
+## P148: 失点の優位が誤差を超えて負けている（失点 −1）なら、B クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 10 件: l-2019, s-2012, l-2018, db-2024, b-2025 ほか
+- もし: `ra_zone_se == -1` ならば: `upper_half == False`
+- 識別子: `[all] ra_zone_se==-1 => upper_half==false`（指紋 `b7486b886a6ce7d8`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P126, P138, P147, P149, P150, P151
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: 失点 −1 の単位の4分の1を超えて A クラス
+- 注記: P147 の鏡（失点の側）。逆（B なら失点ははっきり劣る）を P147 の逆と比べる
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 43 | 33 | 0.77 [0.62, 0.87] | +0.26σ（0.477） | 0.50 | 1.53 | 0.000 | 0 | 判断保留 | 4 |
+| 対偶 | 78 | 68 | 0.87 [0.78, 0.93] | +2.48σ（0.006） | 0.72 | 1.20 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 78 | 33 | 0.42 [0.32, 0.53] | -6.67σ（0.000） | 0.28 | 1.53 | 0.000 | 0 | 修正 | 2 |
+| 裏 | 113 | 68 | 0.60 [0.51, 0.69] | -3.64σ（0.000） | 0.50 | 1.20 | 0.000 | 0 | 修正 | 2 |
+
+**待った！判断保留** 元の命題に判例 10 件（対偶の判例も同じ）
+
+- 西武 2019: ra_zone_se=-1, upper_half=True, rank=1, adv_shape_se=+1/-1, run_balance_t=+1.13 / surprise=-2.34
+  - 西武 2019 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ヤクルト 2012: ra_zone_se=-1, upper_half=True, rank=3, adv_shape_se=+1/-1, run_balance_t=-0.259 / surprise=-1.89
+  - ヤクルト 2012 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 西武 2018: ra_zone_se=-1, upper_half=True, rank=1, adv_shape_se=+1/-1, run_balance_t=+2.57 / surprise=-1.56
+  - 西武 2018 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- DeNA 2024: ra_zone_se=-1, upper_half=True, rank=3, adv_shape_se=+1/-1, run_balance_t=0.420 / surprise=-1.46
+  - DeNA 2024 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- オリックス 2025: ra_zone_se=-1, upper_half=True, rank=3, adv_shape_se=0/-1, run_balance_t=-0.528 / surprise=-1.34
+  - オリックス 2025 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ロッテ 2021: ra_zone_se=-1, upper_half=True, rank=2, adv_shape_se=+1/-1, run_balance_t=0.192 / surprise=-1.29
+  - ロッテ 2021 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 西武 2012: ra_zone_se=-1, upper_half=True, rank=2, adv_shape_se=+1/-1, run_balance_t=-0.132 / surprise=-1.24
+  - 西武 2012 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ヤクルト 2022: ra_zone_se=-1, upper_half=True, rank=1, adv_shape_se=+1/-1, run_balance_t=+1.19 / surprise=-1.14
+  - ヤクルト 2022 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- 阪神 2015: ra_zone_se=-1, upper_half=True, rank=3, adv_shape_se=-1/-1, run_balance_t=-1.69 / surprise=-1.06
+  - 阪神 2015 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ロッテ 2023: ra_zone_se=-1, upper_half=True, rank=2, adv_shape_se=0/-1, run_balance_t=-0.422 / surprise=-1.00
+  - ロッテ 2023 は「ra_zone_se == -1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+
+**異議あり（主張が強すぎる）** 逆に判例 45 件（裏の判例も同じ）
+
+- 中日 2021 **(focus)**: ra_zone_se=1, upper_half=False, rank=5, adv_shape_se=-1/+1, run_balance_t=-1.68 / surprise=+2.22
+  - 中日 2021 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- 巨人 2017: ra_zone_se=1, upper_half=False, rank=4, adv_shape_se=-1/+1, run_balance_t=0.847 / surprise=+2.19
+  - 巨人 2017 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- 中日 2019 **(focus)**: ra_zone_se=1, upper_half=False, rank=5, adv_shape_se=-1/+1, run_balance_t=0.545 / surprise=+2.07
+  - 中日 2019 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- 広島 2024: ra_zone_se=1, upper_half=False, rank=4, adv_shape_se=-1/+1, run_balance_t=-0.126 / surprise=+1.50
+  - 広島 2024 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- 広島 2015: ra_zone_se=1, upper_half=False, rank=4, adv_shape_se=0/+1, run_balance_t=+1.05 / surprise=+1.39
+  - 広島 2015 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- ソフトバンク 2021: ra_zone_se=1, upper_half=False, rank=4, adv_shape_se=0/+1, run_balance_t=+1.50 / surprise=+1.22
+  - ソフトバンク 2021 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- 西武 2023: ra_zone_se=1, upper_half=False, rank=5, adv_shape_se=-1/+1, run_balance_t=-0.729 / surprise=+1.12
+  - 西武 2023 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- オリックス 2024: ra_zone_se=1, upper_half=False, rank=5, adv_shape_se=-1/+1, run_balance_t=-1.13 / surprise=+1.08
+  - オリックス 2024 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- オリックス 2018: ra_zone_se=1, upper_half=False, rank=4, adv_shape_se=-1/+1, run_balance_t=-0.852 / surprise=+1.06
+  - オリックス 2018 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- オリックス 2013: ra_zone_se=1, upper_half=False, rank=5, adv_shape_se=-1/+1, run_balance_t=-0.715 / surprise=+1.03
+  - オリックス 2013 は「upper_half == False」を満たすのに「ra_zone_se == -1」を満たさない。なぜか？ → H2
+- ほか 35 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- 西武 2020: ra_zone_se=-1, upper_half=True, rank=3, adv_shape_se=0/-1, run_balance_t=-1.57
+
+## P149: 得点も失点もはっきり劣る（形 -1/-1）なら、B クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 1 件: t-2015
+- もし: `adv_shape_se == -1/-1` ならば: `upper_half == False`
+- 識別子: `[all] adv_shape_se=="-1/-1" => upper_half==false`（指紋 `46ee815a9e4806bc`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P126, P138, P147, P148, P150, P151
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: この形の4分の1を超えて A クラス
+- 注記: 見ている（13中12）。形ごとの表をそろえるために置く
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 13 | 12 | 0.92 [0.67, 0.99] | +1.44σ（0.127） | 0.50 | 1.85 | 0.001 | 0 | 判断保留 | 4 |
+| 対偶 | 78 | 77 | 0.99 [0.93, 1.00] | +4.84σ（0.000） | 0.92 | 1.08 | 0.001 | 0 | 支持 | 1 |
+| 逆 | 78 | 12 | 0.15 [0.09, 0.25] | -12.16σ（0.000） | 0.08 | 1.85 | 0.001 | 0 | 修正 | 2 |
+| 裏 | 143 | 77 | 0.54 [0.46, 0.62] | -5.84σ（0.000） | 0.50 | 1.08 | 0.001 | 0 | 修正 | 2 |
+
+**待った！判断保留** 元の命題に判例 1 件（対偶の判例も同じ）
+
+- 阪神 2015: adv_shape_se=-1/-1, upper_half=True, rank=3, rf_adv_t=-1.39, ra_adv_t=-1.06 / surprise=-1.69
+  - 阪神 2015 は「adv_shape_se == -1/-1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+
+**異議あり（主張が強すぎる）** 逆に判例 66 件（裏の判例も同じ）
+
+- 西武 2024: adv_shape_se=-1/0, upper_half=False, rank=6, rf_adv_t=-4.96, ra_adv_t=-0.159 / surprise=-3.41
+  - 西武 2024 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- ヤクルト 2025: adv_shape_se=0/-1, upper_half=False, rank=6, rf_adv_t=-0.621, ra_adv_t=-3.34 / surprise=-2.91
+  - ヤクルト 2025 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- 中日 2024 **(focus)**: adv_shape_se=-1/0, upper_half=False, rank=6, rf_adv_t=-3.48, ra_adv_t=-0.593 / surprise=-2.65
+  - 中日 2024 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- 中日 2023 **(focus)**: adv_shape_se=-1/0, upper_half=False, rank=6, rf_adv_t=-4.14, ra_adv_t=0.063 / surprise=-2.64
+  - 中日 2023 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- ロッテ 2018: adv_shape_se=-1/0, upper_half=False, rank=5, rf_adv_t=-2.48, ra_adv_t=-0.913 / surprise=-2.37
+  - ロッテ 2018 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- オリックス 2019: adv_shape_se=-1/0, upper_half=False, rank=6, rf_adv_t=-2.29, ra_adv_t=-0.783 / surprise=-2.16
+  - オリックス 2019 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- 日本ハム 2017: adv_shape_se=-1/0, upper_half=False, rank=5, rf_adv_t=-2.13, ra_adv_t=-0.904 / surprise=-2.14
+  - 日本ハム 2017 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- ロッテ 2014: adv_shape_se=0/-1, upper_half=False, rank=4, rf_adv_t=-0.674, ra_adv_t=-2.11 / surprise=-2.03
+  - ロッテ 2014 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- ヤクルト 2016: adv_shape_se=+1/-1, upper_half=False, rank=5, rf_adv_t=+1.02, ra_adv_t=-3.59 / surprise=-1.96
+  - ヤクルト 2016 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- DeNA 2015: adv_shape_se=0/-1, upper_half=False, rank=6, rf_adv_t=0.204, ra_adv_t=-2.82 / surprise=-1.95
+  - DeNA 2015 は「upper_half == False」を満たすのに「adv_shape_se == -1/-1」を満たさない。なぜか？ → H2
+- ほか 56 件（propositions.jsonl を参照）
+
+## P150: 得点ははっきり足りず、失点は平均と区別できない（形 -1/0）なら、B クラス
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 1 件: g-2016
+- もし: `adv_shape_se == -1/0` ならば: `upper_half == False`
+- 識別子: `[all] adv_shape_se=="-1/0" => upper_half==false`（指紋 `585834e7dca94dc7`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P126, P138, P147, P148, P149, P151
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: この形の4分の1を超えて A クラス
+- 注記: 中日を含めた P141。見ている。P151（鏡 0/-1）と比べる
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 25 | 24 | 0.96 [0.80, 0.99] | +2.42σ（0.007） | 0.50 | 1.92 | 0.000 | 0 | 支持 | 1 |
+| 対偶 | 78 | 77 | 0.99 [0.93, 1.00] | +4.84σ（0.000） | 0.84 | 1.18 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 78 | 24 | 0.31 [0.22, 0.42] | -9.02σ（0.000） | 0.16 | 1.92 | 0.000 | 0 | 修正 | 2 |
+| 裏 | 131 | 77 | 0.59 [0.50, 0.67] | -4.29σ（0.000） | 0.50 | 1.18 | 0.000 | 0 | 修正 | 2 |
+
+**異議あり（例外あり）** 元の命題に判例 1 件（対偶の判例も同じ）
+
+- 巨人 2016: adv_shape_se=-1/0, upper_half=True, rank=2, rf_adv_t=-1.54, ra_adv_t=0.970, bat_routes=1 / surprise=-0.308
+  - 巨人 2016 は「adv_shape_se == -1/0」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+
+**異議あり（主張が強すぎる）** 逆に判例 54 件（裏の判例も同じ）
+
+- ヤクルト 2017: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-3.02, ra_adv_t=-2.46, bat_routes=1 / surprise=-3.87
+  - ヤクルト 2017 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- ロッテ 2017: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-3.19, ra_adv_t=-2.27, bat_routes=0 / surprise=-3.80
+  - ロッテ 2017 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- 楽天 2015: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-3.86, ra_adv_t=-1.55, bat_routes=0 / surprise=-3.71
+  - 楽天 2015 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- DeNA 2012: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-1.10, ra_adv_t=-3.62, bat_routes=0 / surprise=-3.45
+  - DeNA 2012 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- オリックス 2016: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-2.86, ra_adv_t=-1.75, bat_routes=0 / surprise=-3.18
+  - オリックス 2016 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- 中日 2017 **(focus)**: adv_shape_se=-1/-1, upper_half=False, rank=5, rf_adv_t=-3.14, ra_adv_t=-1.41, bat_routes=0 / surprise=-3.03
+  - 中日 2017 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- ヤクルト 2025: adv_shape_se=0/-1, upper_half=False, rank=6, rf_adv_t=-0.621, ra_adv_t=-3.34, bat_routes=1 / surprise=-2.91
+  - ヤクルト 2025 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- ロッテ 2025: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-1.47, ra_adv_t=-2.53, bat_routes=0 / surprise=-2.85
+  - ロッテ 2025 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- 楽天 2016: adv_shape_se=-1/-1, upper_half=False, rank=5, rf_adv_t=-1.17, ra_adv_t=-2.30, bat_routes=0 / surprise=-2.47
+  - 楽天 2016 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- オリックス 2012: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-1.55, ra_adv_t=-1.44, bat_routes=2 / surprise=-2.10
+  - オリックス 2012 は「upper_half == False」を満たすのに「adv_shape_se == -1/0」を満たさない。なぜか？ → H2
+- ほか 44 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- 中日 2020 **(focus)**: adv_shape_se=-1/0, upper_half=True, rank=3, rf_adv_t=-2.51, ra_adv_t=0.134, bat_routes=0
+- ロッテ 2020: adv_shape_se=-1/0, upper_half=True, rank=2, rf_adv_t=-1.15, ra_adv_t=0.511, bat_routes=1
+
+## P151: 得点は平均と区別できず、失点ははっきり劣る（形 0/-1）なら、B クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 2 件: b-2025, m-2023
+- もし: `adv_shape_se == 0/-1` ならば: `upper_half == False`
+- 識別子: `[all] adv_shape_se=="0/-1" => upper_half==false`（指紋 `643e7bcb6148d3b6`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P5, P52, P64, P95, P96, P115, P126, P138, P147, P148, P149, P150
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: この形の4分の1を超えて A クラス
+- 注記: P150 の鏡。まだ見ていない
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 17 | 15 | 0.88 [0.66, 0.97] | +1.26σ（0.164） | 0.50 | 1.76 | 0.001 | 0 | 判断保留 | 4 |
+| 対偶 | 78 | 76 | 0.97 [0.91, 0.99] | +4.58σ（0.000） | 0.89 | 1.09 | 0.001 | 0 | 支持 | 1 |
+| 逆 | 78 | 15 | 0.19 [0.12, 0.29] | -11.37σ（0.000） | 0.11 | 1.76 | 0.001 | 0 | 修正 | 2 |
+| 裏 | 139 | 76 | 0.55 [0.46, 0.63] | -5.53σ（0.000） | 0.50 | 1.09 | 0.001 | 0 | 修正 | 2 |
+
+**待った！判断保留** 元の命題に判例 2 件（対偶の判例も同じ）
+
+- オリックス 2025: adv_shape_se=0/-1, upper_half=True, rank=3, rf_adv_t=0.623, ra_adv_t=-1.34 / surprise=-0.528
+  - オリックス 2025 は「adv_shape_se == 0/-1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+- ロッテ 2023: adv_shape_se=0/-1, upper_half=True, rank=2, rf_adv_t=0.419, ra_adv_t=-1.00 / surprise=-0.422
+  - ロッテ 2023 は「adv_shape_se == 0/-1」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+
+**異議あり（主張が強すぎる）** 逆に判例 63 件（裏の判例も同じ）
+
+- ヤクルト 2017: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-3.02, ra_adv_t=-2.46 / surprise=-3.87
+  - ヤクルト 2017 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- ロッテ 2017: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-3.19, ra_adv_t=-2.27 / surprise=-3.80
+  - ロッテ 2017 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- 楽天 2015: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-3.86, ra_adv_t=-1.55 / surprise=-3.71
+  - 楽天 2015 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- DeNA 2012: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-1.10, ra_adv_t=-3.62 / surprise=-3.45
+  - DeNA 2012 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- 西武 2024: adv_shape_se=-1/0, upper_half=False, rank=6, rf_adv_t=-4.96, ra_adv_t=-0.159 / surprise=-3.41
+  - 西武 2024 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- オリックス 2016: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-2.86, ra_adv_t=-1.75 / surprise=-3.18
+  - オリックス 2016 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- 中日 2017 **(focus)**: adv_shape_se=-1/-1, upper_half=False, rank=5, rf_adv_t=-3.14, ra_adv_t=-1.41 / surprise=-3.03
+  - 中日 2017 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- ロッテ 2025: adv_shape_se=-1/-1, upper_half=False, rank=6, rf_adv_t=-1.47, ra_adv_t=-2.53 / surprise=-2.85
+  - ロッテ 2025 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- 中日 2024 **(focus)**: adv_shape_se=-1/0, upper_half=False, rank=6, rf_adv_t=-3.48, ra_adv_t=-0.593 / surprise=-2.65
+  - 中日 2024 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- 中日 2023 **(focus)**: adv_shape_se=-1/0, upper_half=False, rank=6, rf_adv_t=-4.14, ra_adv_t=0.063 / surprise=-2.64
+  - 中日 2023 は「upper_half == False」を満たすのに「adv_shape_se == 0/-1」を満たさない。なぜか？ → H2
+- ほか 53 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- 西武 2020: adv_shape_se=0/-1, upper_half=True, rank=3, rf_adv_t=-0.542, ra_adv_t=-1.63
+
+## P152: 得点も失点もはっきり上回る（形 +1/+1）なら、A クラス
+
+- **判定: exit 2 異議あり（主張が強すぎる）**（仮: 元の命題と対偶まで） — 逆: 判例 65 件: l-2018, l-2017, b-2014, g-2013, b-2023 ほか
+- もし: `adv_shape_se == +1/+1` ならば: `upper_half == True`
+- 識別子: `[all] adv_shape_se=="+1/+1" => upper_half==true`（指紋 `ead60eba821d66dc`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P153, P154
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: この形の4分の1を超えて B クラス
+- 注記: まだ見ていない
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 0 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 1 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 13 | 13 | 1.00 [0.77, 1.00] | +2.08σ（0.024） | 0.50 | 2.00 | 0.000 | 0 | 支持 | 0 |
+| 対偶 | 78 | 78 | 1.00 [0.95, 1.00] | +5.10σ（0.000） | 0.92 | 1.09 | 0.000 | 0 | 支持 | 0 |
+| 逆 | 78 | 13 | 0.17 [0.10, 0.26] | -11.90σ（0.000） | 0.08 | 2.00 | 0.000 | 0 | 修正 | 2 |
+| 裏 | 143 | 78 | 0.55 [0.46, 0.62] | -5.65σ（0.000） | 0.50 | 1.09 | 0.000 | 0 | 修正 | 2 |
+
+**異議あり（主張が強すぎる）** 逆に判例 65 件（裏の判例も同じ）
+
+- 西武 2018: adv_shape_se=+1/-1, upper_half=True, rank=1, rf_adv_t=+5.07, ra_adv_t=-1.56 / surprise=+2.57
+  - 西武 2018 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- 西武 2017: adv_shape_se=+1/0, upper_half=True, rank=2, rf_adv_t=+3.22, ra_adv_t=0.251 / surprise=+2.51
+  - 西武 2017 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- オリックス 2014: adv_shape_se=0/+1, upper_half=True, rank=2, rf_adv_t=0.212, ra_adv_t=+3.47 / surprise=+2.47
+  - オリックス 2014 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- 巨人 2013: adv_shape_se=0/+1, upper_half=True, rank=1, rf_adv_t=0.813, ra_adv_t=+2.46 / surprise=+2.28
+  - 巨人 2013 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- オリックス 2023: adv_shape_se=0/+1, upper_half=True, rank=1, rf_adv_t=0.505, ra_adv_t=+2.43 / surprise=+2.06
+  - オリックス 2023 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- ヤクルト 2021: adv_shape_se=+1/0, upper_half=True, rank=1, rf_adv_t=+2.40, ra_adv_t=0.430 / surprise=+2.05
+  - ヤクルト 2021 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- 巨人 2024: adv_shape_se=0/+1, upper_half=True, rank=1, rf_adv_t=0.050, ra_adv_t=+3.04 / surprise=+2.02
+  - 巨人 2024 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- ソフトバンク 2018: adv_shape_se=+1/0, upper_half=True, rank=2, rf_adv_t=+2.22, ra_adv_t=0.579 / surprise=+1.97
+  - ソフトバンク 2018 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- ソフトバンク 2022: adv_shape_se=+1/0, upper_half=True, rank=1, rf_adv_t=+1.66, ra_adv_t=0.776 / surprise=+1.74
+  - ソフトバンク 2022 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- 広島 2018: adv_shape_se=+1/0, upper_half=True, rank=1, rf_adv_t=+2.85, ra_adv_t=-0.466 / surprise=+1.72
+  - 広島 2018 は「upper_half == True」を満たすのに「adv_shape_se == +1/+1」を満たさない。なぜか？ → H2
+- ほか 55 件（propositions.jsonl を参照）
+
+## P153: 得点ははっきり上回り、失点は平均と区別できない（形 +1/0）なら、A クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 2 件: h-2013, l-2015
+- もし: `adv_shape_se == +1/0` ならば: `upper_half == True`
+- 識別子: `[all] adv_shape_se=="+1/0" => upper_half==true`（指紋 `ddfa02810fe5226d`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P154
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: この形の4分の1を超えて B クラス
+- 注記: まだ見ていない。P154（鏡 0/+1）と比べる
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 15 | 13 | 0.87 [0.62, 0.96] | +1.04σ（0.236） | 0.50 | 1.73 | 0.002 | 0 | 判断保留 | 4 |
+| 対偶 | 78 | 76 | 0.97 [0.91, 0.99] | +4.58σ（0.000） | 0.90 | 1.08 | 0.002 | 0 | 支持 | 1 |
+| 逆 | 78 | 13 | 0.17 [0.10, 0.26] | -11.90σ（0.000） | 0.10 | 1.73 | 0.002 | 0 | 修正 | 2 |
+| 裏 | 141 | 76 | 0.54 [0.46, 0.62] | -5.79σ（0.000） | 0.50 | 1.08 | 0.002 | 0 | 修正 | 2 |
+
+**待った！判断保留** 元の命題に判例 2 件（対偶の判例も同じ）
+
+- ソフトバンク 2013: adv_shape_se=+1/0, upper_half=False, rank=4, rf_adv_t=+2.34, ra_adv_t=0.032 / surprise=+1.75
+  - ソフトバンク 2013 は「adv_shape_se == +1/0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H2
+- 西武 2015: adv_shape_se=+1/0, upper_half=False, rank=4, rf_adv_t=+1.53, ra_adv_t=-0.352 / surprise=0.918
+  - 西武 2015 は「adv_shape_se == +1/0」を満たすのに「upper_half == True」を満たさない。なぜか？ → H2
+
+**異議あり（主張が強すぎる）** 逆に判例 65 件（裏の判例も同じ）
+
+- ソフトバンク 2024: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+3.67, ra_adv_t=+3.49 / surprise=+5.03
+  - ソフトバンク 2024 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- 巨人 2012: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+2.66, ra_adv_t=+4.58 / surprise=+4.85
+  - 巨人 2012 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- 広島 2017: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+4.84, ra_adv_t=+1.10 / surprise=+4.32
+  - 広島 2017 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- 広島 2016: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+3.59, ra_adv_t=+2.45 / surprise=+4.30
+  - 広島 2016 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- 阪神 2025: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+1.45, ra_adv_t=+4.57 / surprise=+4.23
+  - 阪神 2025 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- ソフトバンク 2025: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+2.11, ra_adv_t=+3.18 / surprise=+3.67
+  - ソフトバンク 2025 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- ソフトバンク 2015: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+2.49, ra_adv_t=+2.42 / surprise=+3.48
+  - ソフトバンク 2015 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- 日本ハム 2016: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+1.09, ra_adv_t=+3.79 / surprise=+3.30
+  - 日本ハム 2016 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- ソフトバンク 2016: adv_shape_se=+1/+1, upper_half=True, rank=2, rf_adv_t=+1.53, ra_adv_t=+3.37 / surprise=+3.29
+  - ソフトバンク 2016 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- 日本ハム 2025: adv_shape_se=+1/+1, upper_half=True, rank=2, rf_adv_t=+2.02, ra_adv_t=+2.63 / surprise=+3.22
+  - 日本ハム 2025 は「upper_half == True」を満たすのに「adv_shape_se == +1/0」を満たさない。なぜか？ → H2
+- ほか 55 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- 楽天 2020: adv_shape_se=+1/0, upper_half=False, rank=4, rf_adv_t=+1.82, ra_adv_t=-0.940
+
+## P154: 得点は平均と区別できず、失点ははっきり上回る（形 0/+1）なら、A クラス
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 2 件: h-2021, c-2015
+- もし: `adv_shape_se == 0/+1` ならば: `upper_half == True`
+- 識別子: `[all] adv_shape_se=="0/+1" => upper_half==true`（指紋 `7f1ed22826a69037`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P1, P11, P50, P152, P153
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: 全体 / 単位数: 156
+- 見直す条件（反証）: この形の4分の1を超えて B クラス
+- 注記: まだ見ていない
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 19 | 17 | 0.89 [0.69, 0.97] | +1.46σ（0.111） | 0.50 | 1.79 | 0.000 | 0 | 判断保留 | 4 |
+| 対偶 | 78 | 76 | 0.97 [0.91, 0.99] | +4.58σ（0.000） | 0.88 | 1.11 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 78 | 17 | 0.22 [0.14, 0.32] | -10.85σ（0.000） | 0.12 | 1.79 | 0.000 | 0 | 修正 | 2 |
+| 裏 | 137 | 76 | 0.55 [0.47, 0.64] | -5.28σ（0.000） | 0.50 | 1.11 | 0.000 | 0 | 修正 | 2 |
+
+**待った！判断保留** 元の命題に判例 2 件（対偶の判例も同じ）
+
+- ソフトバンク 2021: adv_shape_se=0/+1, upper_half=False, rank=4, rf_adv_t=0.915, ra_adv_t=+1.22 / surprise=+1.50
+  - ソフトバンク 2021 は「adv_shape_se == 0/+1」を満たすのに「upper_half == True」を満たさない。なぜか？ → H2
+- 広島 2015: adv_shape_se=0/+1, upper_half=False, rank=4, rf_adv_t=0.115, ra_adv_t=+1.39 / surprise=+1.05
+  - 広島 2015 は「adv_shape_se == 0/+1」を満たすのに「upper_half == True」を満たさない。なぜか？ → H2
+
+**異議あり（主張が強すぎる）** 逆に判例 61 件（裏の判例も同じ）
+
+- ソフトバンク 2024: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+3.67, ra_adv_t=+3.49 / surprise=+5.03
+  - ソフトバンク 2024 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- 巨人 2012: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+2.66, ra_adv_t=+4.58 / surprise=+4.85
+  - 巨人 2012 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- 広島 2017: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+4.84, ra_adv_t=+1.10 / surprise=+4.32
+  - 広島 2017 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- 広島 2016: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+3.59, ra_adv_t=+2.45 / surprise=+4.30
+  - 広島 2016 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- 阪神 2025: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+1.45, ra_adv_t=+4.57 / surprise=+4.23
+  - 阪神 2025 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- ソフトバンク 2025: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+2.11, ra_adv_t=+3.18 / surprise=+3.67
+  - ソフトバンク 2025 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- ソフトバンク 2015: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+2.49, ra_adv_t=+2.42 / surprise=+3.48
+  - ソフトバンク 2015 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- 日本ハム 2016: adv_shape_se=+1/+1, upper_half=True, rank=1, rf_adv_t=+1.09, ra_adv_t=+3.79 / surprise=+3.30
+  - 日本ハム 2016 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- ソフトバンク 2016: adv_shape_se=+1/+1, upper_half=True, rank=2, rf_adv_t=+1.53, ra_adv_t=+3.37 / surprise=+3.29
+  - ソフトバンク 2016 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- 日本ハム 2025: adv_shape_se=+1/+1, upper_half=True, rank=2, rf_adv_t=+2.02, ra_adv_t=+2.63 / surprise=+3.22
+  - 日本ハム 2025 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
+- ほか 51 件（propositions.jsonl を参照）

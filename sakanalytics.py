@@ -879,6 +879,8 @@ def standing_lock(tg: pl.DataFrame) -> pl.DataFrame:
       lone_down_n      : 4つの区間のうち、そのリーグで自分だけが勝 − 敗 < 0 だった区間の数（ほかの球団の区間は同じ番号どうしで比べる）
       pre_lock_wpct / post_lock_g / post_lock_wpct : 落ち着いた日まで（その日を含む）の勝率と、その後の試合数・勝率（R61。
                          最後の側に落ち着いた後も同じ向きで戦ったか、五分に戻したか）
+      q4_g / q4_rd_g / q4_one_run_net / q4_wl_vs_upper / q4_wl_vs_lower : 4つ目の区間（最後の 1/4）の試合数、1試合あたりの点の差、
+                         1点差の勝 − 敗、同じリーグの上位半分（最終順位）・下位半分の相手との勝 − 敗（R62。交流戦の相手は数えない）
     R26 の確定日（数の上で決まった日）と違い、実際の順位表がいつから最後と同じ側に落ち着いたかを見る。
     """
     league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
@@ -895,6 +897,7 @@ def standing_lock(tg: pl.DataFrame) -> pl.DataFrame:
             members.setdefault(league_of[(season, t)], []).append(t)
         w, l_, n = Counter(), Counter(), Counter()
         seq = {t: [] for t in teams}                       # 消化順の 1（勝）・−1（負）・0（分）
+        det = {t: [] for t in teams}                       # 消化順の（自分の点, 相手の点, 相手）
         side_by_day, played_by_day, set_by_day = [], [], []
         for games in games_by_day:
             for h, a, hs, as_ in games:
@@ -903,6 +906,7 @@ def standing_lock(tg: pl.DataFrame) -> pl.DataFrame:
                     w[t] += my > op
                     l_[t] += my < op
                     seq[t].append(1 if my > op else -1 if my < op else 0)
+                    det[t].append((my, op, a if t == h else h))
             wp = {t: w[t] / (w[t] + l_[t]) if w[t] + l_[t] else None for t in teams}
             side, sets = {}, {}
             for lg, ms in members.items():
@@ -942,12 +946,25 @@ def standing_lock(tg: pl.DataFrame) -> pl.DataFrame:
                 def wp(xs):
                     w_, l2 = xs.count(1), xs.count(-1)
                     return w_ / (w_ + l2) if w_ + l2 else None
-                rows.append({"season": season, "team": t, "lock_g": g0, "lock_x": x(lk),
+                m = len(seq[t])
+                last_q = det[t][m * 3 // 4:]
+                up_set = set_by_day[last][lg]
+
+                def net(cond):
+                    return sum((my > op) - (my < op) for my, op, o in last_q if cond(my, op, o))
+                q4 = {"q4_g": len(last_q),
+                      "q4_rd_g": sum(my - op for my, op, _ in last_q) / len(last_q) if last_q else None,
+                      "q4_one_run_net": net(lambda my, op, o: abs(my - op) == 1),
+                      "q4_wl_vs_upper": net(lambda my, op, o: o in ms and o in up_set),
+                      "q4_wl_vs_lower": net(lambda my, op, o: o in ms and o not in up_set)}
+                rows.append({"season": season, "team": t, "lock_g": g0, "lock_x": x(lk), **q4,
                              "lg_set_lock_x": x(set_lock), **{f"q_wl_{q + 1}": qs[t][q] for q in range(4)},
                              "lone_down_n": lone, "pre_lock_wpct": wp(pre), "post_lock_g": len(post), "post_lock_wpct": wp(post)})
     schema = {"season": pl.Int32, "team": pl.Utf8, "lock_g": pl.Int64, "lock_x": pl.Float64, "lg_set_lock_x": pl.Float64,
               **{f"q_wl_{q}": pl.Int64 for q in range(1, 5)}, "lone_down_n": pl.Int64,
-              "pre_lock_wpct": pl.Float64, "post_lock_g": pl.Int64, "post_lock_wpct": pl.Float64}
+              "pre_lock_wpct": pl.Float64, "post_lock_g": pl.Int64, "post_lock_wpct": pl.Float64,
+              "q4_g": pl.Int64, "q4_rd_g": pl.Float64, "q4_one_run_net": pl.Int64, "q4_wl_vs_upper": pl.Int64,
+              "q4_wl_vs_lower": pl.Int64}
     return pl.DataFrame(rows, schema=schema)
 
 def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:

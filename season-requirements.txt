@@ -1,2 +1,0 @@
-# Optional exact solver; forecasts themselves use Python's standard library.
-ortools==9.15.6755

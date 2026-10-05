@@ -1,7 +1,7 @@
 # 異議あり — 命題の判定記録（自動生成）
 
 判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。
-命題ファイル SHA-256: `136290a0845b3001467c66314d0557755351ded09debc66a5420e799316b497e` / コード: `27d4ff92d0b6566b1542575db7a53e3e8c01336a`
+命題ファイル SHA-256: `0240eda19ff4c11cd2cf715f3fb389023be854301bde4c826b132fd79dd5fa04` / コード: `807da411980af3371cae9541626bcc0b1e43c85f`
 
 判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。
 
@@ -29,7 +29,9 @@
 - P71 → **P75**: P74 と同じ変更（平均を引いた値）
 - P73 → **P78**: 全球団から、2014年と同じ状況（4位で、分布の見込みが 0.5 以上）に絞った。2014年は作るきっかけなので held-out から除く
 - P98 → **P165**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P104 → **P169**: 範囲の「B クラス」を「もし」に移し、中日だけで逆・裏を見られるようにした（R41 と同じ立て直し）
 - P105 → **P166**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+  - P166 → **P168**: 範囲から「中日以外」を外し、中日を含めた全体で4つの形を見る
 - P115 → **P126**: 上位半分を順位（3位以内）ではなく、1試合あたりの優位の符号で決める。R31 で、失点3位でも優位がほぼ 0 か負の単位が4つあった
   - P126 → **P134**: 優位の符号ではなく、0 から1標準偏差以上離れた単位だけで読む（R32 で 0 の近くの単位が出入りした）
     - P134 → **P139**: 幅の物差しを、チームの間の散らばり（R33、広すぎた）から、その年の平均の誤差（試合ごとの点の散らばり）にする
@@ -8021,3 +8023,94 @@
 **除外中の判例**（統計からは除いたが、判例としては残す）
 
 - ロッテ 2020: rf_zone_se=-1, ra_zone_se=0, upper_half=True, rank=2, rf_adv=-0.328, ra_adv=0.148, rank_ra=2, rank_rf=5
+
+## P168: B クラスなら、前半の線だけから当てた波の行き先が、もう4位以下（中日を含む全体）
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 13 件: h-2013, db-2018, c-2022, f-2019, t-2018 ほか
+- もし: `upper_half == False` ならば: `wave_limit_rank_h1 >= 3.5`
+- 識別子: `[all] upper_half==false => wave_limit_rank_h1>=3.5`（指紋 `86f06a2ce2abff99`）
+- 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: 全体 / 単位数: 156
+- 親: P166（変更: 範囲から「中日以外」を外し、中日を含めた全体で4つの形を見る）
+- 見直す条件（反証）: B クラスの単位の半分以下しか、前半の行き先が4位以下にならない
+- 注記: 減衰しない波が選ばれた年は行き先が空で、判定できない単位（exit 5 の対象）として数える
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 64 | 51 | 0.80 [0.68, 0.88] | +4.75σ（0.000） | 0.50 | 1.61 | 0.000 | 31 | 支持 | 1 |
+| 対偶 | 63 | 50 | 0.79 [0.68, 0.88] | +4.66σ（0.000） | 0.49 | 1.63 | 0.000 | 31 | 支持 | 1 |
+| 逆 | 62 | 51 | 0.82 [0.71, 0.90] | +5.08σ（0.000） | 0.51 | 1.61 | 0.000 | 31 | 支持 | 1 |
+| 裏 | 61 | 50 | 0.82 [0.71, 0.90] | +4.99σ（0.000） | 0.50 | 1.63 | 0.000 | 31 | 支持 | 1 |
+
+**異議あり（例外あり）** 元の命題に判例 13 件（対偶の判例も同じ）
+
+- ソフトバンク 2013: upper_half=False, wave_limit_rank_h1=+3.46, wave_limit_rank=+3.50, course_rank_h1=3, rank=4 / surprise=+3.46
+  - ソフトバンク 2013 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- DeNA 2018: upper_half=False, wave_limit_rank_h1=+3.36, wave_limit_rank=+4.21, course_rank_h1=4, rank=4 / surprise=+3.36
+  - DeNA 2018 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 広島 2022: upper_half=False, wave_limit_rank_h1=+3.16, wave_limit_rank=-, course_rank_h1=3, rank=5 / surprise=+3.16
+  - 広島 2022 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 日本ハム 2019: upper_half=False, wave_limit_rank_h1=+3.13, wave_limit_rank=+5.65, course_rank_h1=3, rank=5 / surprise=+3.13
+  - 日本ハム 2019 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 阪神 2018: upper_half=False, wave_limit_rank_h1=+2.99, wave_limit_rank=+5.09, course_rank_h1=2, rank=6 / surprise=+2.99
+  - 阪神 2018 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 広島 2025: upper_half=False, wave_limit_rank_h1=+2.90, wave_limit_rank=+4.27, course_rank_h1=2, rank=5 / surprise=+2.90
+  - 広島 2025 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 巨人 2022: upper_half=False, wave_limit_rank_h1=+1.90, wave_limit_rank=-, course_rank_h1=2, rank=4 / surprise=+1.90
+  - 巨人 2022 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 楽天 2022: upper_half=False, wave_limit_rank_h1=+1.87, wave_limit_rank=+4.08, course_rank_h1=2, rank=4 / surprise=+1.87
+  - 楽天 2022 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- DeNA 2015: upper_half=False, wave_limit_rank_h1=+1.84, wave_limit_rank=+5.34, course_rank_h1=3, rank=6 / surprise=+1.84
+  - DeNA 2015 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 楽天 2016: upper_half=False, wave_limit_rank_h1=+1.43, wave_limit_rank=+4.36, course_rank_h1=5, rank=5 / surprise=+1.43
+  - 楽天 2016 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- ほか 3 件（propositions.jsonl を参照）
+
+**異議あり（例外あり）** 逆に判例 11 件（裏の判例も同じ）
+
+- DeNA 2022: upper_half=True, wave_limit_rank_h1=+4.96, wave_limit_rank=+1.64, course_rank_h1=4, rank=2 / surprise=+4.96
+  - DeNA 2022 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- DeNA 2019: upper_half=True, wave_limit_rank_h1=+4.59, wave_limit_rank=+2.62, course_rank_h1=4, rank=2 / surprise=+4.59
+  - DeNA 2019 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ロッテ 2015: upper_half=True, wave_limit_rank_h1=+4.22, wave_limit_rank=+3.57, course_rank_h1=4, rank=3 / surprise=+4.22
+  - ロッテ 2015 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2018: upper_half=True, wave_limit_rank_h1=+4.08, wave_limit_rank=+2.30, course_rank_h1=2, rank=2 / surprise=+4.08
+  - ヤクルト 2018 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ソフトバンク 2012: upper_half=True, wave_limit_rank_h1=+4.03, wave_limit_rank=+2.16, course_rank_h1=5, rank=3 / surprise=+4.03
+  - ソフトバンク 2012 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 阪神 2014: upper_half=True, wave_limit_rank_h1=+3.97, wave_limit_rank=+2.67, course_rank_h1=4, rank=2 / surprise=+3.97
+  - 阪神 2014 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 中日 2012 **(focus)**: upper_half=True, wave_limit_rank_h1=+3.86, wave_limit_rank=+1.85, course_rank_h1=2, rank=2 / surprise=+3.86
+  - 中日 2012 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2015: upper_half=True, wave_limit_rank_h1=+3.83, wave_limit_rank=-, course_rank_h1=4, rank=1 / surprise=+3.83
+  - ヤクルト 2015 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 広島 2013: upper_half=True, wave_limit_rank_h1=+3.80, wave_limit_rank=+3.21, course_rank_h1=3, rank=3 / surprise=+3.80
+  - 広島 2013 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ソフトバンク 2025: upper_half=True, wave_limit_rank_h1=+3.65, wave_limit_rank=0.771, course_rank_h1=3, rank=1 / surprise=+3.65
+  - ソフトバンク 2025 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ほか 1 件（propositions.jsonl を参照）
+
+## P169: 中日は、B クラスの年なら、前半の線だけから当てた波の行き先が、もう4位以下
+
+- **判定: exit 4 待った！判断保留** — 元の命題: n=6（min_n=10）、成立率の区間 0.61〜1.00
+- もし: `upper_half == False` ならば: `wave_limit_rank_h1 >= 3.5`
+- 識別子: `[team=d] upper_half==false => wave_limit_rank_h1>=3.5`（指紋 `ae1cdf9893b1d675`）
+- 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: {'team': 'd'} / 単位数: 13
+- 親: P104（変更: 範囲の「B クラス」を「もし」に移し、中日だけで逆・裏を見られるようにした（R41 と同じ立て直し））
+- 見直す条件（反証）: 中日の B の年の半分以下しか、前半の行き先が4位以下にならない
+- 注記: 中日の A は 2012年だけなので、対偶・裏は単位が少ない
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 0 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 1 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 6 | 6 | 1.00 [0.61, 1.00] | +2.45σ（0.016） | 1.00 | 1.00 | 1.000 | 6 | 判断保留 | 4 |
+| 対偶 | 0 | 0 | - [0.00, 1.00] | — | 0.14 | - | 1.000 | 6 | 判断保留 | 4 |
+| 逆 | 7 | 6 | 0.86 [0.49, 0.97] | +1.89σ（0.062） | 0.86 | 1.00 | 1.000 | 6 | 判断保留 | 4 |
+| 裏 | 1 | 0 | 0.00 [0.00, 0.79] | -1.00σ（0.500） | 0.00 | - | 1.000 | 6 | 判断保留 | 4 |
+
+**待った！判断保留** 逆に判例 1 件（裏の判例も同じ）
+
+- 中日 2012 **(focus)**: upper_half=True, wave_limit_rank_h1=+3.86, wave_limit_rank=+1.85, course_rank_h1=2, rank=2 / surprise=+3.86
+  - 中日 2012 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6

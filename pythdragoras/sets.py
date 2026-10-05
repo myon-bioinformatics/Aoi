@@ -336,7 +336,7 @@ def main(argv=None) -> int:
     except (SetError, pr.PropositionError) as e:
         print(f"[64] {e}", file=sys.stderr)
         return 64
-    full = pl.read_ndjson(args.season)
+    full = pl.read_ndjson(args.season, infer_schema_length=None)
     included, exclusions = apply_exclusions(full, cfg.get("exclude", []))
     excluded = full.filter(pl.col("season").is_in([int(x["season"]) for x in exclusions]))
     try:

@@ -2,7 +2,7 @@
 <testsuite name="pythdragoras.sets" tests="15" failures="14" errors="0" skipped="0">
   <properties>
     <property name="sets_sha256" value="f912eec330f6f406179c8f67aea5212dddcc7d5483cad104531bbb3e3ca2df3a" />
-    <property name="propositions_sha256" value="16c9c1f873aa81d049ecdf1ce51f75227cf44fc64b419fc389f61501e5a101a3" />
+    <property name="propositions_sha256" value="56bf8898d19dae0050d50699eddc9791f00833f7e8f5b254ba50af9469a876fe" />
   </properties>
   <testcase classname="sets" name="E1: OFF_SHORT &amp; ~TOP_WIN">
     <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2018" type="exit1">元の命題 44/45、総合の終了コード 1、覆い 11/12</failure>

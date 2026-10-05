@@ -1,7 +1,7 @@
 # 異議あり — 命題の判定記録（自動生成）
 
 判定基準は結果を見る前に命題ファイルに書いたもの（docs/propositions.md）。
-命題ファイル SHA-256: `79419f1f270226dee09bf020eab0caba1e2fd9a44cb06ed6e842633075c0d409` / コード: `e73fcbc0275001bb8c260081d41cf7ae8dd1a130`
+命題ファイル SHA-256: `136290a0845b3001467c66314d0557755351ded09debc66a5420e799316b497e` / コード: `27d4ff92d0b6566b1542575db7a53e3e8c01336a`
 
 判定は命題がその範囲で成り立つかどうかだけを示し、原因は示さない。
 
@@ -10,7 +10,17 @@
 - P15 → **P18**: P15 の判例 10件（低得点・失点2番目以内なのに B クラス）を見て、得失点差がプラスかどうかで分かれているように見えたため、前件に rd > 0 を加えた。結果を見てから作ったので、確かめには新しいデータ（2026年以降、または未取得の年）を使う
 - P19 → **P36**: 天井の帯を k ≥ 6（幅の上限なし）から k = 6〜7（床と同じ幅2）に変えた。R3 の比較は、得点の量で比べると天井が大きく出る作りだったため（R3 の自分への異議）
 - P20 → **P37**: P36 と同じ変更（天井の帯を k = 6〜7 にして幅をそろえた）
+- P23 → **P155**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P26 → **P156**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P27 → **P157**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P28 → **P158**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P29 → **P159**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P30 → **P160**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P31 → **P161**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P32 → **P162**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
 - P33 → **P35**: 強さを usually（0.75）から more_often_than_not（0.50）に下げた。P33 は成立率 0.66・lift 1.32・p < 0.001 で、関係はあるが「概ね」に届かなかった。同じデータでの言い直しで、確かめではない
+- P46 → **P163**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P47 → **P164**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
 - P52 → **P95**: 式1が取りこぼした 2014年の道筋（R17、強い相手との試合で点の差どおりに勝てていない）を3つ目の組として足した。閾値 −2 は中日 2014 の −2.57 を見て決めた
 - P53 → **P77**: 3位と4位すべてから、2014年と同じ状況（4位で、分布の見込みが 0.5 以上）に絞り、結論を「直接対決で負け越し」にした。2014年は作るきっかけなので held-out から除く
 - P70 → **P74**: 見込みの式が相手のグループで偏っていた（R16 の自分への異議）ので、同じ年・同じリーグの全球団の平均を引いた値に変えた。R16 の読み直しを見た後の言い直し
@@ -18,6 +28,8 @@
     - P76 → **P80**: 結論を「得点の差が負」から「試合全体の点が少ない（env < 0）」に変えた（2019年の得点 −57・失点 +13 の鏡の形から）
 - P71 → **P75**: P74 と同じ変更（平均を引いた値）
 - P73 → **P78**: 全球団から、2014年と同じ状況（4位で、分布の見込みが 0.5 以上）に絞った。2014年は作るきっかけなので held-out から除く
+- P98 → **P165**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
+- P105 → **P166**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
 - P115 → **P126**: 上位半分を順位（3位以内）ではなく、1試合あたりの優位の符号で決める。R31 で、失点3位でも優位がほぼ 0 か負の単位が4つあった
   - P126 → **P134**: 優位の符号ではなく、0 から1標準偏差以上離れた単位だけで読む（R32 で 0 の近くの単位が出入りした）
     - P134 → **P139**: 幅の物差しを、チームの間の散らばり（R33、広すぎた）から、その年の平均の誤差（試合ごとの点の散らばり）にする
@@ -25,6 +37,7 @@
 - P123 → **P128**: 失点だけ上位の範囲を、順位ではなく優位の符号で決める（R31）
   - P128 → **P135**: 失点だけ優位の範囲を、符号ではなく1標準偏差以上の離れで決める
     - P135 → **P140**: 幅の物差しを、その年の平均の誤差にする
+- P141 → **P167**: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ
 - P143 → **P144**: 範囲を、失点 +1 の形だけから、得点 −1 の形すべて（失点 −1・0・+1）に広げた。R37 で阪神 2015・巨人 2016 も同じ向きに外れていた
 
 ## P1: 得失点差がプラスなら、上位半分（Aクラス）である
@@ -3240,6 +3253,7 @@
 - **判定: exit 4 待った！判断保留** — 元の命題: 判例 4 件: t-2013, t-2019, l-2022, t-2022
 - もし: `rf_low_streak >= 2` ならば: `upper_half == False`
 - 識別子: `[where:team!="d"] rf_low_streak>=2 => upper_half==false`（指紋 `75e8c9a6e5eb720b`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P167
 - 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'team', 'op': '!=', 'value': 'd'}]} / 単位数: 143
 - 見直す条件（反証）: 中日以外の続けて得点が5位以下のチーム・シーズンの4分の1を超えて A クラス
 - 条件の数: 2（例外条件を増やしすぎていないかの目安）
@@ -7446,3 +7460,564 @@
 - 日本ハム 2025: adv_shape_se=+1/+1, upper_half=True, rank=2, rf_adv_t=+2.02, ra_adv_t=+2.63 / surprise=+3.22
   - 日本ハム 2025 は「upper_half == True」を満たすのに「adv_shape_se == 0/+1」を満たさない。なぜか？ → H2
 - ほか 51 件（propositions.jsonl を参照）
+
+## P155: 得点がリーグ5位以下のチーム・シーズンでは、得点する回の頻度の不足が、得点した回の大きさの不足より大きい（条件を「もし」に移した形）
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 13 件: d-2017, f-2023, d-2022, db-2018, d-2013 ほか
+- もし: `rank_rf >= 5` ならば: `inn_freq_minus_size < 0`
+- 識別子: `[seasons=2013-2025] rank_rf>=5 => inn_freq_minus_size<0`（指紋 `417299378b37b89b`）
+- 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: {'seasons': '2013-2025'} / 単位数: 144
+- 親: P23（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P23 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 48 | 35 | 0.73 [0.59, 0.83] | +3.18σ（0.001） | 0.45 | 1.62 | 0.000 | 0 | 支持 | 1 |
+| 対偶 | 79 | 66 | 0.84 [0.74, 0.90] | +5.96σ（0.000） | 0.67 | 1.25 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 65 | 35 | 0.54 [0.42, 0.65] | +0.62σ（0.310） | 0.33 | 1.62 | 0.000 | 0 | 判断保留 | 4 |
+| 裏 | 96 | 66 | 0.69 [0.59, 0.77] | +3.67σ（0.000） | 0.55 | 1.25 | 0.000 | 0 | 支持 | 1 |
+
+**異議あり（例外あり）** 元の命題に判例 13 件（対偶の判例も同じ）
+
+- 中日 2017 **(focus)**: rank_rf=5, inn_freq_minus_size=0.089, rank=5, inn_dlog_freq=-0.047, inn_dlog_size=-0.136 / surprise=0.089
+  - 中日 2017 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- 日本ハム 2023: rank_rf=5, inn_freq_minus_size=0.065, rank=6, inn_dlog_freq=-0.003, inn_dlog_size=-0.068 / surprise=0.065
+  - 日本ハム 2023 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- 中日 2022 **(focus)**: rank_rf=6, inn_freq_minus_size=0.049, rank=6, inn_dlog_freq=-0.107, inn_dlog_size=-0.156 / surprise=0.049
+  - 中日 2022 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- DeNA 2018: rank_rf=6, inn_freq_minus_size=0.043, rank=4, inn_dlog_freq=-0.029, inn_dlog_size=-0.072 / surprise=0.043
+  - DeNA 2018 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- 中日 2013 **(focus)**: rank_rf=6, inn_freq_minus_size=0.043, rank=4, inn_dlog_freq=-0.029, inn_dlog_size=-0.072 / surprise=0.043
+  - 中日 2013 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- 中日 2019 **(focus)**: rank_rf=5, inn_freq_minus_size=0.040, rank=5, inn_dlog_freq=-0.012, inn_dlog_size=-0.052 / surprise=0.040
+  - 中日 2019 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- 楽天 2015: rank_rf=6, inn_freq_minus_size=0.038, rank=6, inn_dlog_freq=-0.117, inn_dlog_size=-0.156 / surprise=0.038
+  - 楽天 2015 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- 広島 2023: rank_rf=5, inn_freq_minus_size=0.023, rank=2, inn_dlog_freq=0.008, inn_dlog_size=-0.015 / surprise=0.023
+  - 広島 2023 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- 中日 2025 **(focus)**: rank_rf=6, inn_freq_minus_size=0.018, rank=4, inn_dlog_freq=-0.068, inn_dlog_size=-0.087 / surprise=0.018
+  - 中日 2025 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- オリックス 2024: rank_rf=5, inn_freq_minus_size=0.010, rank=5, inn_dlog_freq=-0.089, inn_dlog_size=-0.098 / surprise=0.010
+  - オリックス 2024 は「rank_rf >= 5」を満たすのに「inn_freq_minus_size < 0」を満たさない。なぜか？ → H5, H6
+- ほか 3 件（propositions.jsonl を参照）
+
+**待った！判断保留** 逆に判例 30 件（裏の判例も同じ）
+
+- 巨人 2024: rank_rf=4, inn_freq_minus_size=-0.217, rank=1, inn_dlog_freq=-0.103, inn_dlog_size=0.115 / surprise=-0.217
+  - 巨人 2024 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ロッテ 2016: rank_rf=4, inn_freq_minus_size=-0.150, rank=3, inn_dlog_freq=-0.077, inn_dlog_size=0.073 / surprise=-0.150
+  - ロッテ 2016 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- オリックス 2025: rank_rf=3, inn_freq_minus_size=-0.134, rank=3, inn_dlog_freq=-0.043, inn_dlog_size=0.091 / surprise=-0.134
+  - オリックス 2025 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 広島 2022: rank_rf=2, inn_freq_minus_size=-0.134, rank=5, inn_dlog_freq=-0.030, inn_dlog_size=0.103 / surprise=-0.134
+  - 広島 2022 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- オリックス 2018: rank_rf=4, inn_freq_minus_size=-0.120, rank=4, inn_dlog_freq=-0.135, inn_dlog_size=-0.015 / surprise=-0.120
+  - オリックス 2018 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 巨人 2018: rank_rf=3, inn_freq_minus_size=-0.111, rank=3, inn_dlog_freq=-0.054, inn_dlog_size=0.057 / surprise=-0.111
+  - 巨人 2018 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- DeNA 2019: rank_rf=3, inn_freq_minus_size=-0.090, rank=2, inn_dlog_freq=-0.047, inn_dlog_size=0.043 / surprise=-0.090
+  - DeNA 2019 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- オリックス 2023: rank_rf=3, inn_freq_minus_size=-0.085, rank=1, inn_dlog_freq=-0.023, inn_dlog_size=0.062 / surprise=-0.085
+  - オリックス 2023 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 阪神 2014: rank_rf=3, inn_freq_minus_size=-0.085, rank=2, inn_dlog_freq=-0.046, inn_dlog_size=0.039 / surprise=-0.085
+  - 阪神 2014 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ロッテ 2015: rank_rf=4, inn_freq_minus_size=-0.072, rank=3, inn_dlog_freq=-0.038, inn_dlog_size=0.034 / surprise=-0.072
+  - ロッテ 2015 は「inn_freq_minus_size < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ほか 20 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- 中日 2020 **(focus)**: rank_rf=6, inn_freq_minus_size=0.031, rank=3, inn_dlog_freq=-0.065, inn_dlog_size=-0.096
+
+## P156: 得点がリーグ5位以下だったシーズンの中日は、得点した回のうち1点の回の割合が他球団より多い（条件を「もし」に移した形）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 1 件: d-2015
+- もし: `rank_rf >= 5` ならば: `inn_d_single_share > 0`
+- 識別子: `[team=d, seasons=2013-2025] rank_rf>=5 => inn_d_single_share>0`（指紋 `094067c41970bf6f`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'team': 'd', 'seasons': '2013-2025'} / 単位数: 12
+- 親: P26（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P26 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 11 | 10 | 0.91 [0.62, 0.98] | +1.22σ（0.197） | 0.92 | 0.99 | 1.000 | 0 | 判断保留 | 4 |
+| 対偶 | 1 | 0 | 0.00 [0.00, 0.79] | -1.73σ（0.250） | 0.08 | 0.00 | 1.000 | 0 | 判断保留 | 4 |
+| 逆 | 11 | 10 | 0.91 [0.62, 0.98] | +1.22σ（0.197） | 0.92 | 0.99 | 1.000 | 0 | 判断保留 | 4 |
+| 裏 | 1 | 0 | 0.00 [0.00, 0.79] | -1.73σ（0.250） | 0.08 | 0.00 | 1.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 元の命題に判例 1 件（対偶の判例も同じ）
+
+- 中日 2015 **(focus)**: rank_rf=5, inn_d_single_share=-0.008, inn_d_big_share=-0.015, inn_dlog_size=-0.028, rank=5 / surprise=-0.008
+  - 中日 2015 は「rank_rf >= 5」を満たすのに「inn_d_single_share > 0」を満たさない。なぜか？ → H5, H6
+
+**待った！判断保留** 逆に判例 1 件（裏の判例も同じ）
+
+- 中日 2018 **(focus)**: rank_rf=4, inn_d_single_share=0.053, inn_d_big_share=-0.018, inn_dlog_size=-0.065, rank=5 / surprise=0.053
+  - 中日 2018 は「inn_d_single_share > 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+
+## P157: 得点がリーグ5位以下だったシーズンの中日は、得点した回のうち3点以上の回の割合が他球団より少ない（条件を「もし」に移した形）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: n=11（min_n=10）、成立率の区間 0.74〜1.00
+- もし: `rank_rf >= 5` ならば: `inn_d_big_share < 0`
+- 識別子: `[team=d, seasons=2013-2025] rank_rf>=5 => inn_d_big_share<0`（指紋 `48ec33a54c3b8c8e`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'team': 'd', 'seasons': '2013-2025'} / 単位数: 12
+- 親: P27（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P27 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 0 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 1 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 11 | 11 | 1.00 [0.74, 1.00] | +1.91σ（0.042） | 1.00 | 1.00 | 1.000 | 0 | 判断保留 | 4 |
+| 対偶 | 0 | 0 | - [0.00, 1.00] | — | 0.08 | - | 1.000 | 0 | 判断保留 | 4 |
+| 逆 | 12 | 11 | 0.92 [0.65, 0.99] | +1.33σ（0.158） | 0.92 | 1.00 | 1.000 | 0 | 判断保留 | 4 |
+| 裏 | 1 | 0 | 0.00 [0.00, 0.79] | -1.73σ（0.250） | 0.00 | - | 1.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 逆に判例 1 件（裏の判例も同じ）
+
+- 中日 2018 **(focus)**: rank_rf=4, inn_d_big_share=-0.018, inn_d_single_share=0.053, inn_dlog_size=-0.065, rank=5 / surprise=-0.018
+  - 中日 2018 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+
+## P158: 得点がリーグ5位以下だったシーズンの中日は、ホームの試合で得点した回の大きさが他球団（ホーム同士）より小さい（条件を「もし」に移した形）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 1 件: d-2014
+- もし: `rank_rf >= 5` ならば: `inn_dlog_size_home < 0`
+- 識別子: `[team=d, seasons=2013-2025] rank_rf>=5 => inn_dlog_size_home<0`（指紋 `e88908bc62636f29`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'team': 'd', 'seasons': '2013-2025'} / 単位数: 12
+- 親: P28（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P28 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 11 | 10 | 0.91 [0.62, 0.98] | +1.22σ（0.197） | 0.92 | 0.99 | 1.000 | 0 | 判断保留 | 4 |
+| 対偶 | 1 | 0 | 0.00 [0.00, 0.79] | -1.73σ（0.250） | 0.08 | 0.00 | 1.000 | 0 | 判断保留 | 4 |
+| 逆 | 11 | 10 | 0.91 [0.62, 0.98] | +1.22σ（0.197） | 0.92 | 0.99 | 1.000 | 0 | 判断保留 | 4 |
+| 裏 | 1 | 0 | 0.00 [0.00, 0.79] | -1.73σ（0.250） | 0.08 | 0.00 | 1.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 元の命題に判例 1 件（対偶の判例も同じ）
+
+- 中日 2014 **(focus)**: rank_rf=5, inn_dlog_size_home=0.009, inn_dlog_size_away=-0.055, inn_dlog_size=-0.024, inn_dlog_freq_home=-0.117 / surprise=0.009
+  - 中日 2014 は「rank_rf >= 5」を満たすのに「inn_dlog_size_home < 0」を満たさない。なぜか？ → H5, H6
+
+**待った！判断保留** 逆に判例 1 件（裏の判例も同じ）
+
+- 中日 2018 **(focus)**: rank_rf=4, inn_dlog_size_home=-0.094, inn_dlog_size_away=-0.030, inn_dlog_size=-0.065, inn_dlog_freq_home=-0.006 / surprise=-0.094
+  - 中日 2018 は「inn_dlog_size_home < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+
+## P159: 得点がリーグ5位以下だったシーズンの中日は、ビジターの試合で得点した回の大きさが他球団（ビジター同士）より小さい（条件を「もし」に移した形）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 1 件: d-2016
+- もし: `rank_rf >= 5` ならば: `inn_dlog_size_away < 0`
+- 識別子: `[team=d, seasons=2013-2025] rank_rf>=5 => inn_dlog_size_away<0`（指紋 `86dc84f8475a2e8f`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'team': 'd', 'seasons': '2013-2025'} / 単位数: 12
+- 親: P29（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P29 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 11 | 10 | 0.91 [0.62, 0.98] | +1.22σ（0.197） | 0.92 | 0.99 | 1.000 | 0 | 判断保留 | 4 |
+| 対偶 | 1 | 0 | 0.00 [0.00, 0.79] | -1.73σ（0.250） | 0.08 | 0.00 | 1.000 | 0 | 判断保留 | 4 |
+| 逆 | 11 | 10 | 0.91 [0.62, 0.98] | +1.22σ（0.197） | 0.92 | 0.99 | 1.000 | 0 | 判断保留 | 4 |
+| 裏 | 1 | 0 | 0.00 [0.00, 0.79] | -1.73σ（0.250） | 0.08 | 0.00 | 1.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 元の命題に判例 1 件（対偶の判例も同じ）
+
+- 中日 2016 **(focus)**: rank_rf=6, inn_dlog_size_away=0.037, inn_dlog_size_home=-0.002, inn_dlog_size=0.018, inn_dlog_freq_away=-0.052 / surprise=0.037
+  - 中日 2016 は「rank_rf >= 5」を満たすのに「inn_dlog_size_away < 0」を満たさない。なぜか？ → H5, H6
+
+**待った！判断保留** 逆に判例 1 件（裏の判例も同じ）
+
+- 中日 2018 **(focus)**: rank_rf=4, inn_dlog_size_away=-0.030, inn_dlog_size_home=-0.094, inn_dlog_size=-0.065, inn_dlog_freq_away=0.052 / surprise=-0.030
+  - 中日 2018 は「inn_dlog_size_away < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+
+## P160: 得点がリーグ5位以下のチーム・シーズン（中日を除く）では、得点した回のうち3点以上の回の割合が他球団より少ない（条件を「もし」に移した形）
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 9 件: e-2014, e-2016, m-2025, f-2019, l-2024 ほか
+- もし: `rank_rf >= 5` ならば: `inn_d_big_share < 0`
+- 識別子: `[seasons=2013-2025, where:team!="d"] rank_rf>=5 => inn_d_big_share<0`（指紋 `be27866f59d53db8`）
+- 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: {'seasons': '2013-2025', 'where': [{'col': 'team', 'op': '!=', 'value': 'd'}]} / 単位数: 132
+- 親: P30（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P30 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 37 | 28 | 0.76 [0.60, 0.87] | +3.12σ（0.001） | 0.45 | 1.66 | 0.000 | 0 | 支持 | 1 |
+| 対偶 | 72 | 63 | 0.88 [0.78, 0.93] | +6.36σ（0.000） | 0.72 | 1.22 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 60 | 28 | 0.47 [0.35, 0.59] | -0.52σ（0.349） | 0.28 | 1.66 | 0.000 | 0 | 判断保留 | 4 |
+| 裏 | 95 | 63 | 0.66 [0.56, 0.75] | +3.18σ（0.001） | 0.55 | 1.22 | 0.000 | 0 | 支持 | 1 |
+
+**異議あり（例外あり）** 元の命題に判例 9 件（対偶の判例も同じ）
+
+- 楽天 2014: rank_rf=6, inn_d_big_share=0.034, inn_d_single_share=-0.040, inn_dlog_size=0.049, rank=6 / surprise=0.034
+  - 楽天 2014 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+- 楽天 2016: rank_rf=5, inn_d_big_share=0.022, inn_d_single_share=-0.010, inn_dlog_size=0.034, rank=5 / surprise=0.022
+  - 楽天 2016 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+- ロッテ 2025: rank_rf=5, inn_d_big_share=0.019, inn_d_single_share=0.000, inn_dlog_size=0.018, rank=6 / surprise=0.019
+  - ロッテ 2025 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+- 日本ハム 2019: rank_rf=5, inn_d_big_share=0.011, inn_d_single_share=-0.011, inn_dlog_size=0.031, rank=5 / surprise=0.011
+  - 日本ハム 2019 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+- 西武 2024: rank_rf=6, inn_d_big_share=0.010, inn_d_single_share=0.026, inn_dlog_size=-0.032, rank=6 / surprise=0.010
+  - 西武 2024 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+- 西武 2021: rank_rf=5, inn_d_big_share=0.008, inn_d_single_share=-0.010, inn_dlog_size=0.015, rank=6 / surprise=0.008
+  - 西武 2021 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+- 阪神 2022: rank_rf=5, inn_d_big_share=0.006, inn_d_single_share=-0.048, inn_dlog_size=0.031, rank=3 / surprise=0.006
+  - 阪神 2022 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+- 阪神 2013: rank_rf=5, inn_d_big_share=0.002, inn_d_single_share=0.013, inn_dlog_size=0.024, rank=2 / surprise=0.002
+  - 阪神 2013 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+- オリックス 2015: rank_rf=5, inn_d_big_share=0.001, inn_d_single_share=-0.004, inn_dlog_size=0.014, rank=5 / surprise=0.001
+  - オリックス 2015 は「rank_rf >= 5」を満たすのに「inn_d_big_share < 0」を満たさない。なぜか？ → H5, H6
+
+**待った！判断保留** 逆に判例 32 件（裏の判例も同じ）
+
+- オリックス 2022: rank_rf=4, inn_d_big_share=-0.045, inn_d_single_share=0.009, inn_dlog_size=-0.079, rank=1 / surprise=-0.045
+  - オリックス 2022 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 楽天 2025: rank_rf=4, inn_d_big_share=-0.039, inn_d_single_share=0.057, inn_dlog_size=-0.102, rank=4 / surprise=-0.039
+  - 楽天 2025 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 西武 2016: rank_rf=2, inn_d_big_share=-0.036, inn_d_single_share=0.055, inn_dlog_size=-0.069, rank=4 / surprise=-0.036
+  - 西武 2016 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ソフトバンク 2014: rank_rf=1, inn_d_big_share=-0.036, inn_d_single_share=0.007, inn_dlog_size=-0.019, rank=1 / surprise=-0.036
+  - ソフトバンク 2014 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 巨人 2016: rank_rf=4, inn_d_big_share=-0.034, inn_d_single_share=0.027, inn_dlog_size=-0.050, rank=2 / surprise=-0.034
+  - 巨人 2016 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ヤクルト 2024: rank_rf=2, inn_d_big_share=-0.029, inn_d_single_share=0.030, inn_dlog_size=-0.057, rank=5 / surprise=-0.029
+  - ヤクルト 2024 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ヤクルト 2014: rank_rf=1, inn_d_big_share=-0.026, inn_d_single_share=0.010, inn_dlog_size=-0.020, rank=6 / surprise=-0.026
+  - ヤクルト 2014 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ソフトバンク 2019: rank_rf=4, inn_d_big_share=-0.025, inn_d_single_share=0.081, inn_dlog_size=-0.103, rank=2 / surprise=-0.025
+  - ソフトバンク 2019 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 楽天 2019: rank_rf=3, inn_d_big_share=-0.022, inn_d_single_share=-0.005, inn_dlog_size=-0.008, rank=3 / surprise=-0.022
+  - 楽天 2019 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- DeNA 2022: rank_rf=4, inn_d_big_share=-0.022, inn_d_single_share=0.043, inn_dlog_size=-0.067, rank=2 / surprise=-0.022
+  - DeNA 2022 は「inn_d_big_share < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ほか 22 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- ロッテ 2020: rank_rf=5, inn_d_big_share=0.022, inn_d_single_share=0.011, inn_dlog_size=-0.004, rank=2
+- ヤクルト 2020: rank_rf=5, inn_d_big_share=0.020, inn_d_single_share=-0.021, inn_dlog_size=0.009, rank=6
+
+## P161: 得点がリーグ5位以下だったシーズンの中日は、ISO（長打率 − 打率）が他球団より低い（条件を「もし」に移した形）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: n=11（min_n=10）、成立率の区間 0.74〜1.00
+- もし: `rank_rf >= 5` ならば: `bat_d_iso < 0`
+- 識別子: `[team=d] rank_rf>=5 => bat_d_iso<0`（指紋 `684b7a1cde4dfb19`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'team': 'd'} / 単位数: 13
+- 親: P31（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P31 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 0 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 1 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 11 | 11 | 1.00 [0.74, 1.00] | +1.91σ（0.042） | 1.00 | 1.00 | 1.000 | 0 | 判断保留 | 4 |
+| 対偶 | 0 | 0 | - [0.00, 1.00] | — | 0.15 | - | 1.000 | 0 | 判断保留 | 4 |
+| 逆 | 13 | 11 | 0.85 [0.58, 0.96] | +0.80σ（0.333） | 0.85 | 1.00 | 1.000 | 0 | 判断保留 | 4 |
+| 裏 | 2 | 0 | 0.00 [0.00, 0.66] | -2.45σ（0.062） | 0.00 | - | 1.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 逆に判例 2 件（裏の判例も同じ）
+
+- 中日 2018 **(focus)**: rank_rf=4, bat_d_iso=-0.030, bat_d_obp=-0.007, bat_d_hr_pa=-0.009, bat_d_bb_pa=-0.017, rank=5 / surprise=-0.030
+  - 中日 2018 は「bat_d_iso < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H2, H6
+- 中日 2012 **(focus)**: rank_rf=4, bat_d_iso=-0.007, bat_d_obp=0.001, bat_d_hr_pa=-0.001, bat_d_bb_pa=0.000, rank=2 / surprise=-0.007
+  - 中日 2012 は「bat_d_iso < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H2, H6
+
+## P162: 得点がリーグ5位以下だったシーズンの中日は、出塁率が他球団より低い（条件を「もし」に移した形）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: n=11（min_n=10）、成立率の区間 0.74〜1.00
+- もし: `rank_rf >= 5` ならば: `bat_d_obp < 0`
+- 識別子: `[team=d] rank_rf>=5 => bat_d_obp<0`（指紋 `edb2ae2b701f9c59`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'team': 'd'} / 単位数: 13
+- 親: P32（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P32 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 0 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 1 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 11 | 11 | 1.00 [0.74, 1.00] | +1.91σ（0.042） | 0.92 | 1.08 | 0.154 | 0 | 判断保留 | 4 |
+| 対偶 | 1 | 1 | 1.00 [0.21, 1.00] | +0.58σ（0.750） | 0.15 | 6.50 | 0.154 | 0 | 判断保留 | 4 |
+| 逆 | 12 | 11 | 0.92 [0.65, 0.99] | +1.33σ（0.158） | 0.85 | 1.08 | 0.154 | 0 | 判断保留 | 4 |
+| 裏 | 2 | 1 | 0.50 [0.09, 0.91] | -0.82σ（0.438） | 0.08 | 6.50 | 0.154 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 逆に判例 1 件（裏の判例も同じ）
+
+- 中日 2018 **(focus)**: rank_rf=4, bat_d_obp=-0.007, bat_d_iso=-0.030, bat_d_avg=0.007, bat_d_bb_pa=-0.017, rank=5 / surprise=-0.007
+  - 中日 2018 は「bat_d_obp < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H2, H5
+
+## P163: 得点がリーグ5位以下だったシーズンの中日は、走者1人あたりの得点が他球団より少ない（条件を「もし」に移した形）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: n=11（min_n=10）、成立率の区間 0.74〜1.00
+- もし: `rank_rf >= 5` ならば: `bat_d_r_runner < 0`
+- 識別子: `[team=d] rank_rf>=5 => bat_d_r_runner<0`（指紋 `81ae80184b8d08b0`）
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'team': 'd'} / 単位数: 13
+- 親: P46（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P46 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 0 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 1 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 11 | 11 | 1.00 [0.74, 1.00] | +1.91σ（0.042） | 1.00 | 1.00 | 1.000 | 0 | 判断保留 | 4 |
+| 対偶 | 0 | 0 | - [0.00, 1.00] | — | 0.15 | - | 1.000 | 0 | 判断保留 | 4 |
+| 逆 | 13 | 11 | 0.85 [0.58, 0.96] | +0.80σ（0.333） | 0.85 | 1.00 | 1.000 | 0 | 判断保留 | 4 |
+| 裏 | 2 | 0 | 0.00 [0.00, 0.66] | -2.45σ（0.062） | 0.00 | - | 1.000 | 0 | 判断保留 | 4 |
+
+**待った！判断保留** 逆に判例 2 件（裏の判例も同じ）
+
+- 中日 2012 **(focus)**: rank_rf=4, bat_d_r_runner=-0.024, bat_d_r_ab=-0.008, bat_d_r_pa=-0.007, bat_d_obp=0.001, bat_d_iso=-0.007 / surprise=-0.024
+  - 中日 2012 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 中日 2018 **(focus)**: rank_rf=4, bat_d_r_runner=-0.005, bat_d_r_ab=-0.007, bat_d_r_pa=-0.004, bat_d_obp=-0.007, bat_d_iso=-0.030 / surprise=-0.005
+  - 中日 2018 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+
+## P164: 得点がリーグ5位以下のチーム・シーズン（中日を除く）では、走者1人あたりの得点が他球団より少ない（条件を「もし」に移した形）
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 5 件: t-2021, m-2014, db-2018, c-2023, f-2022
+- もし: `rank_rf >= 5` ならば: `bat_d_r_runner < 0`
+- 識別子: `[where:team!="d"] rank_rf>=5 => bat_d_r_runner<0`（指紋 `6aa697208a2edb09`）
+- 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: {'where': [{'col': 'team', 'op': '!=', 'value': 'd'}]} / 単位数: 143
+- 親: P47（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P47 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 41 | 36 | 0.88 [0.74, 0.95] | +4.84σ（0.000） | 0.45 | 1.96 | 0.000 | 0 | 支持 | 1 |
+| 対偶 | 79 | 74 | 0.94 [0.86, 0.97] | +7.76σ（0.000） | 0.71 | 1.31 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 64 | 36 | 0.56 [0.44, 0.68] | +1.00σ（0.191） | 0.29 | 1.96 | 0.000 | 0 | 判断保留 | 4 |
+| 裏 | 102 | 74 | 0.73 [0.63, 0.80] | +4.55σ（0.000） | 0.55 | 1.31 | 0.000 | 0 | 支持 | 1 |
+
+**異議あり（例外あり）** 元の命題に判例 5 件（対偶の判例も同じ）
+
+- 阪神 2021: rank_rf=5, bat_d_r_runner=0.009, bat_d_r_ab=0.001, bat_d_obp=-0.005, bat_d_iso=-0.001 / surprise=0.009
+  - 阪神 2021 は「rank_rf >= 5」を満たすのに「bat_d_r_runner < 0」を満たさない。なぜか？ → H5, H6
+- ロッテ 2014: rank_rf=5, bat_d_r_runner=0.005, bat_d_r_ab=-0.007, bat_d_obp=-0.017, bat_d_iso=0.006 / surprise=0.005
+  - ロッテ 2014 は「rank_rf >= 5」を満たすのに「bat_d_r_runner < 0」を満たさない。なぜか？ → H5, H6
+- DeNA 2018: rank_rf=6, bat_d_r_runner=0.005, bat_d_r_ab=-0.013, bat_d_obp=-0.028, bat_d_iso=0.029 / surprise=0.005
+  - DeNA 2018 は「rank_rf >= 5」を満たすのに「bat_d_r_runner < 0」を満たさない。なぜか？ → H5, H6
+- 広島 2023: rank_rf=5, bat_d_r_runner=0.003, bat_d_r_ab=-0.001, bat_d_obp=-0.002, bat_d_iso=-0.009 / surprise=0.003
+  - 広島 2023 は「rank_rf >= 5」を満たすのに「bat_d_r_runner < 0」を満たさない。なぜか？ → H5, H6
+- 日本ハム 2022: rank_rf=6, bat_d_r_runner=0.002, bat_d_r_ab=-0.009, bat_d_obp=-0.021, bat_d_iso=0.004 / surprise=0.002
+  - 日本ハム 2022 は「rank_rf >= 5」を満たすのに「bat_d_r_runner < 0」を満たさない。なぜか？ → H5, H6
+
+**待った！判断保留** 逆に判例 28 件（裏の判例も同じ）
+
+- 楽天 2025: rank_rf=4, bat_d_r_runner=-0.032, bat_d_r_ab=-0.009, bat_d_obp=0.003, bat_d_iso=-0.025 / surprise=-0.032
+  - 楽天 2025 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 楽天 2021: rank_rf=4, bat_d_r_runner=-0.023, bat_d_r_ab=-0.000, bat_d_obp=0.016, bat_d_iso=-0.008 / surprise=-0.023
+  - 楽天 2021 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- オリックス 2022: rank_rf=4, bat_d_r_runner=-0.020, bat_d_r_ab=-0.003, bat_d_obp=0.009, bat_d_iso=-0.005 / surprise=-0.020
+  - オリックス 2022 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 巨人 2017: rank_rf=4, bat_d_r_runner=-0.020, bat_d_r_ab=-0.007, bat_d_obp=0.000, bat_d_iso=-0.003 / surprise=-0.020
+  - 巨人 2017 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- オリックス 2018: rank_rf=4, bat_d_r_runner=-0.019, bat_d_r_ab=-0.016, bat_d_obp=-0.020, bat_d_iso=-0.027 / surprise=-0.019
+  - オリックス 2018 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- オリックス 2017: rank_rf=4, bat_d_r_runner=-0.018, bat_d_r_ab=-0.009, bat_d_obp=-0.004, bat_d_iso=-0.008 / surprise=-0.018
+  - オリックス 2017 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 日本ハム 2018: rank_rf=3, bat_d_r_runner=-0.018, bat_d_r_ab=-0.003, bat_d_obp=0.006, bat_d_iso=-0.003 / surprise=-0.018
+  - 日本ハム 2018 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 楽天 2019: rank_rf=3, bat_d_r_runner=-0.013, bat_d_r_ab=0.001, bat_d_obp=0.009, bat_d_iso=-0.001 / surprise=-0.013
+  - 楽天 2019 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- 巨人 2025: rank_rf=3, bat_d_r_runner=-0.013, bat_d_r_ab=0.000, bat_d_obp=0.013, bat_d_iso=0.003 / surprise=-0.013
+  - 巨人 2025 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- DeNA 2022: rank_rf=4, bat_d_r_runner=-0.012, bat_d_r_ab=-0.004, bat_d_obp=0.001, bat_d_iso=0.006 / surprise=-0.012
+  - DeNA 2022 は「bat_d_r_runner < 0」を満たすのに「rank_rf >= 5」を満たさない。なぜか？ → H5, H6
+- ほか 18 件（propositions.jsonl を参照）
+
+## P165: 中日以外の B クラスのチームは、順位の高さの線に山がある（条件を「もし」に移した形）
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 14 件: t-2012, db-2013, e-2014, e-2015, l-2016 ほか
+- もし: `upper_half == False` ならば: `traj_rank_peak == True`
+- 識別子: `[where:team!="d"] upper_half==false => traj_rank_peak==true`（指紋 `e2ccc4b6fbb0bf94`）
+- 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: {'where': [{'col': 'team', 'op': '!=', 'value': 'd'}]} / 単位数: 143
+- 親: P98（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P98 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 66 | 52 | 0.79 [0.67, 0.87] | +4.68σ（0.000） | 0.76 | 1.03 | 0.320 | 0 | 支持 | 1 |
+| 対偶 | 34 | 20 | 0.59 [0.42, 0.74] | +1.03σ（0.196） | 0.54 | 1.09 | 0.320 | 0 | 判断保留 | 4 |
+| 逆 | 109 | 52 | 0.48 [0.39, 0.57] | -0.48σ（0.351） | 0.46 | 1.03 | 0.320 | 0 | 判断保留 | 4 |
+| 裏 | 77 | 20 | 0.26 [0.17, 0.37] | -4.22σ（0.000） | 0.24 | 1.09 | 0.320 | 0 | 棄却 | 3 |
+
+**異議あり（例外あり）** 元の命題に判例 14 件（対偶の判例も同じ）
+
+- 阪神 2012: upper_half=False, traj_rank_peak=False, traj_rank_shape=fall, traj_rank_peak_base=0.765, traj_rank_end_slope=-0.447, rank=5
+  - 阪神 2012 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- DeNA 2013: upper_half=False, traj_rank_peak=False, traj_rank_shape=valley, traj_rank_peak_base=0.735, traj_rank_end_slope=+2.18, rank=5
+  - DeNA 2013 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- 楽天 2014: upper_half=False, traj_rank_peak=False, traj_rank_shape=valley, traj_rank_peak_base=0.725, traj_rank_end_slope=+7.87, rank=6
+  - 楽天 2014 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- 楽天 2015: upper_half=False, traj_rank_peak=False, traj_rank_shape=fall, traj_rank_peak_base=0.665, traj_rank_end_slope=-7.49, rank=6
+  - 楽天 2015 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- 西武 2016: upper_half=False, traj_rank_peak=False, traj_rank_shape=valley, traj_rank_peak_base=0.760, traj_rank_end_slope=+5.81, rank=4
+  - 西武 2016 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2016: upper_half=False, traj_rank_peak=False, traj_rank_shape=valley, traj_rank_peak_base=0.685, traj_rank_end_slope=+3.97, rank=5
+  - ヤクルト 2016 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2017: upper_half=False, traj_rank_peak=False, traj_rank_shape=valley, traj_rank_peak_base=0.520, traj_rank_end_slope=+1.68, rank=6
+  - ヤクルト 2017 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- 阪神 2018: upper_half=False, traj_rank_peak=False, traj_rank_shape=fall, traj_rank_peak_base=0.645, traj_rank_end_slope=-9.26, rank=6
+  - 阪神 2018 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2019: upper_half=False, traj_rank_peak=False, traj_rank_shape=valley, traj_rank_peak_base=0.680, traj_rank_end_slope=+1.45, rank=6
+  - ヤクルト 2019 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- 広島 2021: upper_half=False, traj_rank_peak=False, traj_rank_shape=valley, traj_rank_peak_base=0.795, traj_rank_end_slope=+9.13, rank=4
+  - 広島 2021 は「upper_half == False」を満たすのに「traj_rank_peak == True」を満たさない。なぜか？ → H1, H6
+- ほか 4 件（propositions.jsonl を参照）
+
+**待った！判断保留** 逆に判例 57 件（裏の判例も同じ）
+
+- 巨人 2016: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.755, traj_rank_end_slope=-0.073, rank=2 / surprise=0.992
+  - 巨人 2016 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2015: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.790, traj_rank_end_slope=-2.75, rank=1 / surprise=0.951
+  - ヤクルト 2015 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- オリックス 2023: upper_half=True, traj_rank_peak=True, traj_rank_shape=peak, traj_rank_peak_base=0.690, traj_rank_end_slope=-0.162, rank=1 / surprise=0.940
+  - オリックス 2023 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- DeNA 2022: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.745, traj_rank_end_slope=-5.84, rank=2 / surprise=0.908
+  - DeNA 2022 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ソフトバンク 2014: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.725, traj_rank_end_slope=-2.20, rank=1 / surprise=0.892
+  - ソフトバンク 2014 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 日本ハム 2015: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.780, traj_rank_end_slope=-0.455, rank=2 / surprise=0.872
+  - 日本ハム 2015 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 西武 2012: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.770, traj_rank_end_slope=-9.74, rank=2 / surprise=0.872
+  - 西武 2012 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 広島 2023: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.765, traj_rank_end_slope=-5.03, rank=2 / surprise=0.856
+  - 広島 2023 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ソフトバンク 2025: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.775, traj_rank_end_slope=-8.77, rank=1 / surprise=0.850
+  - ソフトバンク 2025 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2018: upper_half=True, traj_rank_peak=True, traj_rank_shape=valley-peak, traj_rank_peak_base=0.835, traj_rank_end_slope=-11.99, rank=2 / surprise=0.839
+  - ヤクルト 2018 は「traj_rank_peak == True」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ほか 47 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- オリックス 2020: upper_half=False, traj_rank_peak=False, traj_rank_shape=valley, traj_rank_peak_base=0.645, traj_rank_end_slope=+1.45, rank=6
+- 楽天 2020: upper_half=False, traj_rank_peak=False, traj_rank_shape=fall, traj_rank_peak_base=0.750, traj_rank_end_slope=-2.56, rank=4
+
+## P166: 中日以外の B クラスのチームは、前半の線だけから当てた波の行き先が、もう4位以下（条件を「もし」に移した形）
+
+- **判定: exit 1 異議あり（例外あり）** — 元の命題: 判例 13 件: h-2013, db-2018, c-2022, f-2019, t-2018 ほか
+- もし: `upper_half == False` ならば: `wave_limit_rank_h1 >= 3.5`
+- 識別子: `[where:team!="d"] upper_half==false => wave_limit_rank_h1>=3.5`（指紋 `00685ca8c15a8121`）
+- 強さ: 多くの場合（more_often_than_not, 基準 0.50）/ 範囲: {'where': [{'col': 'team', 'op': '!=', 'value': 'd'}]} / 単位数: 143
+- 親: P105（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P105 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 2（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 58 | 45 | 0.78 [0.65, 0.86] | +4.20σ（0.000） | 0.47 | 1.66 | 0.000 | 25 | 支持 | 1 |
+| 対偶 | 63 | 50 | 0.79 [0.68, 0.88] | +4.66σ（0.000） | 0.51 | 1.56 | 0.000 | 25 | 支持 | 1 |
+| 逆 | 55 | 45 | 0.82 [0.70, 0.90] | +4.72σ（0.000） | 0.49 | 1.66 | 0.000 | 25 | 支持 | 1 |
+| 裏 | 60 | 50 | 0.83 [0.72, 0.91] | +5.16σ（0.000） | 0.53 | 1.56 | 0.000 | 25 | 支持 | 1 |
+
+**異議あり（例外あり）** 元の命題に判例 13 件（対偶の判例も同じ）
+
+- ソフトバンク 2013: upper_half=False, wave_limit_rank_h1=+3.46, wave_limit_rank=+3.50, course_rank_h1=3, rank=4 / surprise=+3.46
+  - ソフトバンク 2013 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- DeNA 2018: upper_half=False, wave_limit_rank_h1=+3.36, wave_limit_rank=+4.21, course_rank_h1=4, rank=4 / surprise=+3.36
+  - DeNA 2018 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 広島 2022: upper_half=False, wave_limit_rank_h1=+3.16, wave_limit_rank=-, course_rank_h1=3, rank=5 / surprise=+3.16
+  - 広島 2022 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 日本ハム 2019: upper_half=False, wave_limit_rank_h1=+3.13, wave_limit_rank=+5.65, course_rank_h1=3, rank=5 / surprise=+3.13
+  - 日本ハム 2019 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 阪神 2018: upper_half=False, wave_limit_rank_h1=+2.99, wave_limit_rank=+5.09, course_rank_h1=2, rank=6 / surprise=+2.99
+  - 阪神 2018 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 広島 2025: upper_half=False, wave_limit_rank_h1=+2.90, wave_limit_rank=+4.27, course_rank_h1=2, rank=5 / surprise=+2.90
+  - 広島 2025 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 巨人 2022: upper_half=False, wave_limit_rank_h1=+1.90, wave_limit_rank=-, course_rank_h1=2, rank=4 / surprise=+1.90
+  - 巨人 2022 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 楽天 2022: upper_half=False, wave_limit_rank_h1=+1.87, wave_limit_rank=+4.08, course_rank_h1=2, rank=4 / surprise=+1.87
+  - 楽天 2022 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- DeNA 2015: upper_half=False, wave_limit_rank_h1=+1.84, wave_limit_rank=+5.34, course_rank_h1=3, rank=6 / surprise=+1.84
+  - DeNA 2015 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- 楽天 2016: upper_half=False, wave_limit_rank_h1=+1.43, wave_limit_rank=+4.36, course_rank_h1=5, rank=5 / surprise=+1.43
+  - 楽天 2016 は「upper_half == False」を満たすのに「wave_limit_rank_h1 >= 3.5」を満たさない。なぜか？ → H1, H6
+- ほか 3 件（propositions.jsonl を参照）
+
+**異議あり（例外あり）** 逆に判例 10 件（裏の判例も同じ）
+
+- DeNA 2022: upper_half=True, wave_limit_rank_h1=+4.96, wave_limit_rank=+1.64, course_rank_h1=4, rank=2 / surprise=+4.96
+  - DeNA 2022 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- DeNA 2019: upper_half=True, wave_limit_rank_h1=+4.59, wave_limit_rank=+2.62, course_rank_h1=4, rank=2 / surprise=+4.59
+  - DeNA 2019 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ロッテ 2015: upper_half=True, wave_limit_rank_h1=+4.22, wave_limit_rank=+3.57, course_rank_h1=4, rank=3 / surprise=+4.22
+  - ロッテ 2015 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2018: upper_half=True, wave_limit_rank_h1=+4.08, wave_limit_rank=+2.30, course_rank_h1=2, rank=2 / surprise=+4.08
+  - ヤクルト 2018 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ソフトバンク 2012: upper_half=True, wave_limit_rank_h1=+4.03, wave_limit_rank=+2.16, course_rank_h1=5, rank=3 / surprise=+4.03
+  - ソフトバンク 2012 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 阪神 2014: upper_half=True, wave_limit_rank_h1=+3.97, wave_limit_rank=+2.67, course_rank_h1=4, rank=2 / surprise=+3.97
+  - 阪神 2014 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ヤクルト 2015: upper_half=True, wave_limit_rank_h1=+3.83, wave_limit_rank=-, course_rank_h1=4, rank=1 / surprise=+3.83
+  - ヤクルト 2015 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 広島 2013: upper_half=True, wave_limit_rank_h1=+3.80, wave_limit_rank=+3.21, course_rank_h1=3, rank=3 / surprise=+3.80
+  - 広島 2013 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- ソフトバンク 2025: upper_half=True, wave_limit_rank_h1=+3.65, wave_limit_rank=0.771, course_rank_h1=3, rank=1 / surprise=+3.65
+  - ソフトバンク 2025 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+- 西武 2019: upper_half=True, wave_limit_rank_h1=+3.59, wave_limit_rank=+1.67, course_rank_h1=4, rank=1 / surprise=+3.59
+  - 西武 2019 は「wave_limit_rank_h1 >= 3.5」を満たすのに「upper_half == False」を満たさない。なぜか？ → H1, H6
+
+## P167: 中日以外で、得点の不足が誤差を超え（得点 −1）、失点の優位が誤差の内側（失点 0）なら、B クラス（条件を「もし」に移した形）
+
+- **判定: exit 4 待った！判断保留** — 元の命題: 判例 1 件: g-2016
+- もし: `rf_zone_se == -1 かつ ra_zone_se == 0` ならば: `upper_half == False`
+- 識別子: `[where:team!="d"] ra_zone_se==0 & rf_zone_se==-1 => upper_half==false`（指紋 `453bbd9f46af68ad`）
+- 兄弟（範囲と結論が同じ、条件が違う）: P65
+- 強さ: 概ね（usually, 基準 0.75）/ 範囲: {'where': [{'col': 'team', 'op': '!=', 'value': 'd'}]} / 単位数: 143
+- 親: P141（変更: 範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ）
+- 注記: R41。親 P141 の元の命題・判例と同じ。読むのは逆・裏
+- 条件の数: 3（例外条件を増やしすぎていないかの目安）
+- 台帳: 評価 1 回、元の命題に異議あり 1 回（どれかの形に異議あり 1 回）、直近で元の命題に判例がない連続 0 回
+
+| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 元の命題 | 17 | 16 | 0.94 [0.73, 0.99] | +1.82σ（0.050） | 0.46 | 2.04 | 0.000 | 0 | 判断保留 | 4 |
+| 対偶 | 77 | 76 | 0.99 [0.93, 1.00] | +4.80σ（0.000） | 0.88 | 1.12 | 0.000 | 0 | 支持 | 1 |
+| 逆 | 66 | 16 | 0.24 [0.16, 0.36] | -9.52σ（0.000） | 0.12 | 2.04 | 0.000 | 0 | 修正 | 2 |
+| 裏 | 126 | 76 | 0.60 [0.52, 0.68] | -3.81σ（0.000） | 0.54 | 1.12 | 0.000 | 0 | 修正 | 2 |
+
+**待った！判断保留** 元の命題に判例 1 件（対偶の判例も同じ）
+
+- 巨人 2016: rf_zone_se=-1, ra_zone_se=0, upper_half=True, rank=2, rf_adv=-0.365, ra_adv=0.256, rank_ra=2, rank_rf=4 / surprise=-0.109
+  - 巨人 2016 は「rf_zone_se == -1 かつ ra_zone_se == 0」を満たすのに「upper_half == False」を満たさない。なぜか？ → H2
+
+**異議あり（主張が強すぎる）** 逆に判例 50 件（裏の判例も同じ）
+
+- ヤクルト 2017: rf_zone_se=-1, ra_zone_se=-1, upper_half=False, rank=6, rf_adv=-0.811, ra_adv=-0.660, rank_ra=6, rank_rf=6 / surprise=-1.47
+  - ヤクルト 2017 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- ロッテ 2017: rf_zone_se=-1, ra_zone_se=-1, upper_half=False, rank=6, rf_adv=-0.792, ra_adv=-0.657, rank_ra=6, rank_rf=6 / surprise=-1.45
+  - ロッテ 2017 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- 楽天 2015: rf_zone_se=-1, ra_zone_se=-1, upper_half=False, rank=6, rf_adv=-0.926, ra_adv=-0.425, rank_ra=6, rank_rf=6 / surprise=-1.35
+  - 楽天 2015 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- オリックス 2016: rf_zone_se=-1, ra_zone_se=-1, upper_half=False, rank=6, rf_adv=-0.709, ra_adv=-0.524, rank_ra=5, rank_rf=6 / surprise=-1.23
+  - オリックス 2016 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- DeNA 2012: rf_zone_se=-1, ra_zone_se=-1, upper_half=False, rank=6, rf_adv=-0.256, ra_adv=-0.958, rank_ra=6, rank_rf=5 / surprise=-1.21
+  - DeNA 2012 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- 楽天 2016: rf_zone_se=-1, ra_zone_se=-1, upper_half=False, rank=5, rf_adv=-0.331, ra_adv=-0.684, rank_ra=6, rank_rf=5 / surprise=-1.02
+  - 楽天 2016 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- ロッテ 2025: rf_zone_se=-1, ra_zone_se=-1, upper_half=False, rank=6, rf_adv=-0.352, ra_adv=-0.639, rank_ra=6, rank_rf=5 / surprise=-0.992
+  - ロッテ 2025 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- ヤクルト 2025: rf_zone_se=0, ra_zone_se=-1, upper_half=False, rank=6, rf_adv=-0.137, ra_adv=-0.827, rank_ra=6, rank_rf=4 / surprise=-0.964
+  - ヤクルト 2025 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- ロッテ 2014: rf_zone_se=0, ra_zone_se=-1, upper_half=False, rank=4, rf_adv=-0.176, ra_adv=-0.621, rank_ra=6, rank_rf=5 / surprise=-0.797
+  - ロッテ 2014 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- ヤクルト 2016: rf_zone_se=1, ra_zone_se=-1, upper_half=False, rank=5, rf_adv=0.264, ra_adv=-1.01, rank_ra=6, rank_rf=2 / surprise=-0.747
+  - ヤクルト 2016 は「upper_half == False」を満たすのに「rf_zone_se == -1 かつ ra_zone_se == 0」を満たさない。なぜか？ → H2
+- ほか 40 件（propositions.jsonl を参照）
+
+**除外中の判例**（統計からは除いたが、判例としては残す）
+
+- ロッテ 2020: rf_zone_se=-1, ra_zone_se=0, upper_half=True, rank=2, rf_adv=-0.328, ra_adv=0.148, rank_ra=2, rank_rf=5

@@ -1039,3 +1039,39 @@ def test_fielding_join_stops_when_the_page_does_not_add_up(bad, match):
     st = pl.DataFrame({"season": [2024], "league": ["C"], "team": ["a"], "G": [143]})
     with pytest.raises(ValueError, match=match):
         sa.fielding_join(st, pl.DataFrame([_fld("a", **bad)]))
+
+
+
+# ---------- R60: 順位表で A・B の側が落ち着いた試合数 ----------
+
+def test_standing_lock_by_hand():
+    from sakanalytics import standing_lock
+    teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
+    # 4球団（上位半分 = 2位以内）。c は3日目まで上の側、4日目から下。g は初日だけ下
+    rows = [("2024-04-01", "c", "g", 2, 1), ("2024-04-01", "t", "d", 2, 1),
+            ("2024-04-02", "c", "t", 2, 1), ("2024-04-02", "g", "d", 2, 1),
+            ("2024-04-03", "g", "c", 2, 1), ("2024-04-03", "t", "d", 2, 1),
+            ("2024-04-04", "g", "c", 2, 1), ("2024-04-04", "t", "d", 2, 1),
+            ("2024-04-05", "g", "d", 2, 1), ("2024-04-05", "t", "c", 2, 1)]
+    v = {r["team"]: r for r in standing_lock(to_team_games(games(rows), teams)).iter_rows(named=True)}
+    # 最後: g 4勝1敗、t 4勝1敗、c 2勝3敗、d 0勝5敗。c は 3日目（2勝1敗で3球団が並ぶ）まで上の側 → 4日目から落ち着く
+    assert (v["c"]["lock_g"], v["c"]["lock_x"]) == (4, pytest.approx(0.75))
+    assert (v["g"]["lock_g"], v["g"]["lock_x"]) == (2, pytest.approx(0.25))   # 初日 0勝1敗で下の側
+    assert (v["t"]["lock_g"], v["d"]["lock_g"]) == (1, 1)                         # 一度も変わらない → 初日
+    assert v["d"]["lg_set_lock_x"] == pytest.approx(0.75)                         # 上位2の顔ぶれ {g, t} は4日目から
+    # 4つの区間（5試合 → 境 0・1・2・3・5）
+    assert [v["g"][f"q_wl_{q}"] for q in range(1, 5)] == [-1, 1, 1, 2]
+    assert [v["c"][f"q_wl_{q}"] for q in range(1, 5)] == [1, 1, -1, -2]
+    assert all(r["lone_down_n"] == 0 for r in v.values())                          # どの区間も負け越しは2球団以上
+
+
+def test_lone_down_counts_quarters_where_only_one_team_lost():
+    from sakanalytics import standing_lock
+    teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
+    # 4日、各球団4試合。d だけが毎日負ける。ほかの3球団は、d に勝った球団以外は互いに 1勝1敗……にならないよう引き分けを使う
+    rows = []
+    for i, w in enumerate(["g", "t", "c", "g"]):
+        others = [x for x in ("g", "t", "c") if x != w]
+        rows += [(f"2024-04-{i + 1:02d}", w, "d", 3, 1), (f"2024-04-{i + 1:02d}", others[0], others[1], 2, 2)]
+    v = {r["team"]: r for r in standing_lock(to_team_games(games(rows), teams)).iter_rows(named=True)}
+    assert v["d"]["lone_down_n"] == 4 and v["g"]["lone_down_n"] == 0

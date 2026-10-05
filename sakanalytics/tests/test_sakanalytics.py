@@ -875,3 +875,24 @@ def test_line_and_gap_decompose_win_pct_against_the_line():
         assert r["lg_line"] == pytest.approx(0.51)
         # 勝率 − 線 = 点の差で見込む位置 + 点の差より勝った分
         assert r["wpct"] - r["lg_line"] == pytest.approx(r["line_gap_pythag"] + r["resid_fixed"])
+
+
+@pytest.mark.parametrize("w,expected", [
+    ([0.6, 0.52, 0.51, 0.49, 0.45, 0.43], 3.5),          # .51 と .49 のちょうど間
+    ([0.6, 0.55, 0.50, 0.48, 0.45, 0.42], 3.0),          # 3位がちょうど .500
+    ([0.6, 0.52, 0.48, 0.47, 0.46, 0.47], 2.5),          # 並びが乱れていても高い順に並べ直す
+    ([0.6, 0.58, 0.56, 0.55, 0.53, 0.51], None),         # 全チームが .500 より上
+])
+def test_rank_at_500(w, expected):
+    import sakanalytics as sa
+
+    got = sa.rank_at(w, 0.5)
+    assert got == (pytest.approx(expected) if expected is not None else None)
+
+
+def test_league_shape_has_rank_at_500():
+    import sakanalytics as sa
+
+    w = [0.6, 0.52, 0.51, 0.49, 0.45, 0.43]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
+    assert sa.add_league_shape(st)["lg_rank_at_500"].to_list() == pytest.approx([3.5] * 6)

@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<testsuite name="pythdragoras.sets" tests="22" failures="21" errors="0" skipped="0">
+<testsuite name="pythdragoras.sets" tests="25" failures="24" errors="0" skipped="0">
   <properties>
-    <property name="sets_sha256" value="adc559efd4eb321e9cfbc6cf865720c7d4819b52895dc7ea19e5b0d36083e7ee" />
-    <property name="propositions_sha256" value="769730d3b02e6b6934d5fa325e08b8cafc38d38d3b5b07f247652585fa9b7e7d" />
+    <property name="sets_sha256" value="6f87ad2ea230b2cf8d63344926c454685e63f8cd714e619823572d8878c243d5" />
+    <property name="propositions_sha256" value="da8273ba9e8d02f169512270a512ac54bee6233d012950a4e5ec9adf1c97f8bf" />
   </properties>
   <testcase classname="sets" name="E1: OFF_SHORT &amp; ~TOP_WIN">
     <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2018" type="exit1">元の命題 44/45、総合の終了コード 1、覆い 11/12</failure>
@@ -67,5 +67,14 @@
   </testcase>
   <testcase classname="sets" name="E22: Q3_LOW | (Q3_MID &amp; ~Q4_POS)">
     <failure message="判例 10件: h-2012, c-2014, db-2016, m-2016, l-2017, g-2018, e-2021, t-2022, h-2023, m-2024" type="exit1">元の命題 70/80、総合の終了コード 1、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E24: (~MIDDLE &amp; BAL_NONPOS) | (MIDDLE &amp; PBAR_SHORT &amp; CONV_NEG)">
+    <failure message="判例 11件: l-2012, s-2012, m-2013, t-2015, db-2016, g-2016, db-2019, t-2019, c-2023, m-2023, m-2024；覆えなかった焦点の単位 1件: d-2019" type="exit1">元の命題 66/77、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E25: (~MIDDLE &amp; ~NEAR &amp; BAL_NONPOS) | ((MIDDLE | NEAR) &amp; PBAR_SHORT &amp; CONV_NEG)">
+    <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2019" type="exit1">元の命題 63/64、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E26: ((~MIDDLE &amp; ~NEAR &amp; BAL_NONPOS) | ((MIDDLE | NEAR) &amp; PBAR_SHORT &amp; CONV_NEG)) &amp; (Q3_LOW | (Q3_MID &amp; ~Q4_POS))">
+    <failure message="覆えなかった焦点の単位 1件: d-2019" type="exit0">元の命題 60/60、総合の終了コード 4、覆い 11/12</failure>
   </testcase>
 </testsuite>

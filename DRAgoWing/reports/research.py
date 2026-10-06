@@ -27,6 +27,18 @@ def build(state: Path):
         "title": "条件を満たした探索候補（各探索の先頭10件）", "note": "事後的に見つけた候補。全件と4つの形の判定は結果JSONに保存。",
         "headers": ["候補ID", "式", "親候補", "探索のきっかけになった単位", "探索ID"], "rows": discoveries,
         "data": [], "layout": {}})
+    observations = state / "feedback/observations.json"
+    if observations.exists():
+        observed = json.loads(observations.read_text())
+        spec["research_observations"] = {**observed, "discoveries": discoveries}
+        pairs = observed["pairs"]
+        spec["frames"][""]["panels"].append({
+            "title": "指標が近く、A・Bが分かれた球団年", "note": observed["measurement"]["method"],
+            "headers": ["球団年", "標準化距離", "反例に含まれる命題・式"],
+            "rows": [[" / ".join(p["units"]), round(p["distance"], 4),
+                      ", ".join(f["target"] for f in p["findings"])] for p in pairs],
+            "data": [{"type": "bar", "x": [" / ".join(p["units"]) for p in pairs],
+                      "y": [p["distance"] for p in pairs], "name": "距離（小さいほど近い）"}], "layout": {}})
     destination = state / "public/index.html"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(render_report(spec), encoding="utf-8")

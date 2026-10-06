@@ -19,10 +19,10 @@ from dataclasses import asdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT / "QueRyu/ask"), str(ROOT / "PythDRagoras/logic"), str(ROOT / "DRAgoWing"), str(ROOT / "DRAgoWing/reports")]
+sys.path[:0] = [str(ROOT / "QueRyu/ask"), str(ROOT / "PythDRagoras/logic"), str(ROOT / "DRAgoWing"), str(ROOT / "DRAgoWing/reports"), str(ROOT / "SakAnalytics/baseball"), str(ROOT / "BlueProbe/reports")]
+from feedback import prepare_feedback, observe_report
 from bank import lookup, prepare
 from autonomous import next_request
-from research import build as build_report
 from ask import answer, load, parse, render, schema, validate_query
 from exploration import Explorer, atomic_json, digest, plan, snapshot, summary, save_state, read_state
 
@@ -238,7 +238,8 @@ def worker(api, state, cycle: Path, seconds=18000, autonomous=False):
     current_inputs = snapshot(ROOT, cycle)
     if autonomous:
         prepare(cycle / "outputs", state.path / "known")
-        build_report(state.path)
+        prepare_feedback(ROOT, cycle, state.path)
+        observe_report(state.path)
         state.save()
     while time.monotonic() < deadline:
         state.sync()
@@ -277,7 +278,7 @@ def worker(api, state, cycle: Path, seconds=18000, autonomous=False):
             report = path.with_name("report.md")
             report.write_text(summary(saved) + "\n", encoding="utf-8")
             if autonomous:
-                build_report(state.path)
+                observe_report(state.path)
             state.save()
             progressed = True
         # Durable terminal results are retried independently of evaluation, so a

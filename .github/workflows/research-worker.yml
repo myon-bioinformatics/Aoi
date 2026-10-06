@@ -44,5 +44,6 @@ jobs:
             .research-state/jobs
             .research-state/known
             .research-state/public
+            .research-state/feedback
           include-hidden-files: true
           if-no-files-found: ignore

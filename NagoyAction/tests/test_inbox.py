@@ -287,3 +287,50 @@ def test_inbox_uses_prepared_bank(cycle, tmp_path, monkeypatch):
     monkeypatch.setattr(inbox, "answer", lambda *a: pytest.fail("prepared answer should be reused"))
     record, _ = ask_question('E1 に判例はある？', cycle / "outputs", cache=tmp_path / "answers")
     assert record["result"]["answer"] == "はい"
+
+
+def test_neighbor_feedback_html_roundtrip_and_restart(cycle, tmp_path):
+    from feedback import prepare_feedback, observe_report
+    from autonomous import next_request
+    from dragowing_inspect import inspect
+    from neighbors import discover
+    rows = [
+        {'team': 'd', 'season': 2021, 'league': 'C', 'upper_half': False, 'rf_adv': -1., 'ra_adv': 1., 'vs_lower_wpct': .5},
+        {'team': 't', 'season': 2021, 'league': 'C', 'upper_half': True, 'rf_adv': -.9, 'ra_adv': .9, 'vs_lower_wpct': .51},
+        {'team': 'g', 'season': 2021, 'league': 'C', 'upper_half': True, 'rf_adv': 2., 'ra_adv': 2., 'vs_lower_wpct': .8},
+        {'team': 's', 'season': 2020, 'league': 'C', 'upper_half': True, 'rf_adv': -1., 'ra_adv': 1., 'vs_lower_wpct': .5}]
+    measured = discover(rows, excluded=[2020])
+    assert measured['pairs'][0]['units'] == ['d-2021', 't-2021']
+    assert measured['skipped'] == ['s-2020']
+    assert discover(list(reversed(rows)), excluded=[2020]) == measured
+    (cycle/'outputs/season.jsonl').write_text('\n'.join(json.dumps(r) for r in rows))
+    (cycle/'outputs/sets.jsonl').write_text(json.dumps(item(listed=('d-2021',))) + '\n')
+    # E2 is first in the registry; feedback must prioritize E1 instead.
+    with (cycle/'sets.toml').open('a') as f:
+        f.write('\n[[expr]]\nid="E2"\nexpr="B"\n')
+    registry = cycle/'sets.toml'
+    registry.write_text(registry.read_text().replace('[[expr]]\nid="E1"\nexpr="A"\n', '').replace('[[expr]]\nid="E2"\nexpr="B"\n', '[[expr]]\nid="E2"\nexpr="B"\n[[expr]]\nid="E1"\nexpr="A"\n'))
+    state = tmp_path / 'feedback-state'
+    root = Path(__file__).resolve().parents[2]
+    prepare_feedback(root, cycle, state)
+    observe_report(state)
+    observation = json.loads((state/'feedback/blueprobe.json').read_text())
+    assert observation['baseline'] and observation['added']
+    pair = observation['rows']['d-2021|t-2021']
+    assert pair['findings'][0]['target'] == 'E1'
+    assert '未確認' in pair['findings'][0]['other_status']
+    assert next_request(cycle, {'test': 1}, state)['seed'] == 'E1'
+    before = {str(p): p.read_bytes() for p in state.rglob('*') if p.is_file()}
+    prepare_feedback(root, cycle, state)
+    observe_report(state)
+    assert before == {str(p): p.read_bytes() for p in state.rglob('*') if p.is_file()}
+    rows[0]['rf_adv'] = -1.1
+    (cycle/'outputs/season.jsonl').write_text('\n'.join(json.dumps(r) for r in rows))
+    prepare_feedback(root, cycle, state)
+    observe_report(state)
+    assert 'd-2021|t-2021' in json.loads((state/'feedback/blueprobe.json').read_text())['changed']
+    assert len(list((state/'feedback/history').glob('*.json'))) == 2
+    with pytest.raises(ValueError, match='未知'):
+        inspect('<script id="report-data">{"research_observations":{"version":99}}</script>')
+    with pytest.raises(ValueError, match='一意'):
+        inspect('<script src="https://example.invalid"></script>')

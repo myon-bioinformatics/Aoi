@@ -11,6 +11,10 @@ def next_request(cycle, inputs, state_path):
     # Existing expressions first; then combinations of all registered sets.
     # Expansion itself follows counterexamples / uncovered units in Explorer.
     seeds = [e["id"] for e in registry.get("expr", [])] + ["all"]
+    priority = state_path / "feedback/priority.json"
+    if priority.exists():
+        preferred = json.loads(priority.read_text()).get("targets", [])
+        seeds = [s for s in preferred if s in seeds] + [s for s in seeds if s not in preferred]
     for seed in seeds:
         spec = plan(seed, cycle)
         job = digest({"inputs": inputs, "plan": spec})[:24]

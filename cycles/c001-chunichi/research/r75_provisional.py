@@ -32,7 +32,7 @@ def classify(flags):
     hold = ins.filter(pl.col("y"))
     cx = ins.filter(~pl.col("y"))["team"].to_list()
     dx = flags.filter(pl.col("team") == "d").rows(named=True)
-    d = "-" if not dx else "判定不能" if dx[0]["x"] is None or dx[0]["y"] is None else "入る" if dx[0]["x"] else "入らない"
+    d = "-" if not dx else "入らない" if dx[0]["x"] is False else "判定不能" if dx[0]["x"] is None or dx[0]["y"] is None else "入る"
     return ins.height, hold.height, sorted(cx), unknown.height, d
 
 

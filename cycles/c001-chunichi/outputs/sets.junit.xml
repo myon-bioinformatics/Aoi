@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <testsuite name="pythdragoras.sets" tests="31" failures="29" errors="0" skipped="0">
   <properties>
-    <property name="sets_sha256" value="b971a28767598878d0127c3489e715376e069e014fe194b8d0e24445d89e5e04" />
+    <property name="sets_sha256" value="c72179713973ebe58d7a78eed4888fe7ff65eaf166ede8e549d61a08cdf813c3" />
     <property name="propositions_sha256" value="20ebf739caa0f2b14c2ae8c3662d178a6694aaa43a3f0ad9a475b84ebcf6acf0" />
   </properties>
   <testcase classname="sets" name="E1: OFF_SHORT &amp; ~TOP_WIN">

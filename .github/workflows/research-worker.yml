@@ -32,6 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           AOI_INBOX_ISSUE: ${{ vars.AOI_INBOX_ISSUE }}
+          AOI_RESEARCH_ENABLED: ${{ vars.AOI_RESEARCH_ENABLED }}
         run: >-
           python NagoyAction/nagoyaction.py run NagoyAction/pipelines/research.toml
           --receipt build/research-receipt.jsonl
@@ -46,5 +47,6 @@ jobs:
             .research-state/public
             .research-state/feedback
             .research-state/pending-replies
+            .research-state/notifications
           include-hidden-files: true
           if-no-files-found: ignore

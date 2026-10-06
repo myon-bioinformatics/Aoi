@@ -21,7 +21,7 @@ def prepare_feedback(root, cycle, state):
         return
     rows = [json.loads(line) for line in (cycle/'outputs/season.jsonl').read_text().splitlines() if line.strip()]
     cfg = tomllib.loads((cycle/'analysis.toml').read_text())
-    measured = discover(rows, [int(e['season']) for e in cfg.get('exclude', [])])
+    measured = discover(rows, sorted({2012, *(int(e['season']) for e in cfg.get('exclude', []))}))
     pairs = check_pairs(measured, load(cycle/'outputs'))
     atomic_json(path, {'version': 1, 'input': identity, 'measurement': measured, 'pairs': pairs})
 
@@ -37,6 +37,6 @@ def observe_report(state):
     atomic_json(state / 'feedback/history' / (digest(observed) + '.json'), observed)
     atomic_json(path, observed)
     targets = sorted({f['target'] for key in observed['rows']
-                      for f in observed['rows'][key].get('findings', []) if f['target'].startswith('E')})
+                      for f in observed['rows'][key].get('findings', []) if f['target'].startswith('E')}, key=lambda t: int(t[1:]))
     atomic_json(state / 'feedback/priority.json', {'input': observed['input'], 'targets': targets,
                 'reason': 'BlueProbe がHTMLの構造化観測から読み取った現在のペアの反例に関連する式'})

@@ -186,7 +186,7 @@ def summary(state: dict) -> str:
     found = state.get("found_preview", [r for r in state.get("results", []) if r.get("passes")])
     total = state.get("candidates_count", len(state.get("candidates", [])))
     count = state.get("found_count", len(found))
-    lines = [f"状態: {state['status']} / 処理 {state['cursor']}/{total} / 候補 {count}件",
+    lines = [f"状態: {state['status']} / 処理 {state['cursor']}/{total} / 条件を満たす候補 {count}件",
              "対象データ内の探索結果です。独立データでの確認・数学的な一般証明ではありません。"]
     for r in found[:10]:
         lines.append(f"- `{r['id']}` `{r['expr']}`: 反例0、焦点の覆い {r['coverage']['covered']}/{r['coverage']['n']}")

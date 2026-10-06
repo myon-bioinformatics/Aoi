@@ -15,9 +15,13 @@ def next_request(cycle, inputs, state_path):
     if priority.exists():
         preferred = json.loads(priority.read_text()).get("targets", [])
         seeds = [s for s in preferred if s in seeds] + [s for s in seeds if s not in preferred]
+    stopped = {json.loads(p.read_text())["job"] for p in (state_path / "requests").glob("*.json")
+               if (state_path / "stops" / f"{p.stem}.json").exists()}
     for seed in seeds:
         spec = plan(seed, cycle)
         job = digest({"inputs": inputs, "plan": spec})[:24]
+        if job in stopped:
+            continue
         path = state_path / "jobs" / job / "state.json"
         if path.exists() and json.loads(path.read_text())["status"] in TERMINAL:
             continue

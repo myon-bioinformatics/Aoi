@@ -197,7 +197,7 @@ def _id_key(i: str) -> tuple:
 def answer(q: Query, items: list[dict]) -> dict:
     """Query に、判定済みの結果だけで答える（計算し直さない）。"""
     if q.target and not any(it["id"] == q.target for it in items):
-        return {"answer": None, "error": f"{q.target} は判定済みの結果にない", "rows": []}
+        return {"answer": "判定不能", "error": f"{q.target} は判定済みの結果にない", "rows": []}
     rows, uncertain, evaluated = [], False, 0
     for it in sorted(items, key=lambda it: _id_key(it["id"])):
         if q.target and it["id"] != q.target:
@@ -244,13 +244,16 @@ def render(text: str, q: Query, unread: list[str], res: dict) -> str:
     lines = [f"問い: {text}", "読み取り: " + json.dumps(asdict(q), ensure_ascii=False)]
     lines += [f"読めなかった: {u}" for u in unread]
     if res.get("error"):
-        return "\n".join([*lines, f"答え: なし（{res['error']}）"])
+        return "\n".join([*lines, f"答え: 判定不能（{res['error']}）"])
     head = f"{ASKS[q.ask]}・{FORMS[q.form]}・{KINDS[q.kind]}" + ("・除いた後の判例" if q.exclude else "")
     lines.append(f"答え（{head}）: {res['answer']}" + ("" if q.ask == "has_counterexample" else " 件"))
     for r in res["rows"][:50]:
         cx = ", ".join(r["counterexamples"]) or "なし"
         more = "" if r["listed_all"] else "（一覧は一部）"
-        lines.append(f"- {r['id']} {r['hold']}/{r['n']}（{r['rate']:.3f}）判例 {r['counterexamples_left']}: {cx}{more}")
+        count = r["counterexamples_left"] if r["counterexamples_left"] is not None else "不明"
+        label = "除外後の判例" if q.exclude else "判例"
+        excluded = "（除外 " + ", ".join(q.exclude) + "）" if q.exclude else ""
+        lines.append(f"- {r['id']} 元の成立率 {r['hold']}/{r['n']}（{r['rate']:.3f}）／{label} {count}{excluded}: {cx}{more}")
     if len(res["rows"]) > 50:
         lines.append(f"- ほか {len(res['rows']) - 50} 件")
     return "\n".join(lines)

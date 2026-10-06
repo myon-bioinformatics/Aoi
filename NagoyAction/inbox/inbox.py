@@ -14,6 +14,7 @@ import re
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 import urllib.error
 import urllib.request
 from dataclasses import asdict
@@ -121,6 +122,55 @@ class State:
         raise RuntimeError("状態保存に失敗。ローカルチェックポイントを artifact から回収してください")
 
 
+class BufferedState:
+    """Keep local shards current; push/sync at most every five minutes."""
+    def __init__(self, state):
+        self.state, self.path = state, state.path
+        self.updated = time.monotonic()
+        self.dirty = False
+        self.started = False
+
+    def flush(self):
+        if self.dirty:
+            self.state.save()
+            self.dirty = False
+        self.updated = time.monotonic()
+
+    def save(self):
+        self.dirty = True
+        if time.monotonic() - self.updated >= 300:
+            self.flush()
+
+    def sync(self):
+        if not self.started or time.monotonic() - self.updated >= 300:
+            self.flush()
+            self.state.sync()
+            self.started = True
+
+
+def safe_observe(path):
+    try:
+        observe_report(path)
+    except (ValueError, TypeError, KeyError, OSError) as e:
+        atomic_json(path / "feedback/report-error.json", {"error": f"{type(e).__name__}: {e}"})
+        print("HTML観測を保留。探索は継続します。", file=sys.stderr)
+    else:
+        (path / "feedback/report-error.json").unlink(missing_ok=True)
+
+
+def pending_requests(path):
+    pending = []
+    for p in (path / "requests").glob("*.json"):
+        request = json.loads(p.read_text())
+        saved = path / "jobs" / request["job"] / "state.json"
+        if (path / "stops" / f"{request['comment_id']}.json").exists():
+            continue
+        if saved.exists() and json.loads(saved.read_text())["status"] in ("completed", "bounded", "blocked", "error"):
+            continue
+        pending.append(request)
+    return pending
+
+
 def local_query(text: str):
     """Optional llama.cpp endpoint. A schema restricts syntax, not truth."""
     envelope = {"type": "object", "additionalProperties": False, "required": ["query", "unread"],
@@ -203,12 +253,20 @@ def status_report(path):
         saved = path / "jobs" / request["job"] / "state.json"
         label = labels.get(json.loads(saved.read_text())["status"], "状態不明") if saved.exists() else "待機"
         counts[label] += 1
-    paths = sorted((path / "jobs").glob("*/state.json"))
+    paths = sorted((path / "jobs").glob("*/state.json"), key=lambda p: (json.loads(p.read_text()).get("updated_at", ""), p.parent.name))
     body = f"探索依頼の累積受付: {len(requests)}件（コメント単位。自動探索は含まない）\n"
     body += " / ".join(f"{name}: {n}件" for name, n in counts.items())
     body += f"\n保存済み探索job: {len(paths)}件（同一依頼の統合・自動探索を含む）"
     body += f"\n返信再送待ち: {len(list((path / 'pending-replies').glob('*.json')))}件"
-    body += "\n\n" + ("\n\n".join(f"`{p.parent.name}`\n" + summary(json.loads(p.read_text(encoding="utf-8"))) for p in paths[-10:]) or "探索の実行結果はまだありません。")
+    body += f"\nコマンド累積受付: {len(list((path / 'receipts').glob('*.json')))}件（この /status 自身は保存前）"
+    if (path / "feedback/report-error.json").exists():
+        body += "\nHTML観測: エラーで保留（前回観測を維持）"
+    stopped_jobs = {json.loads(p.read_text())["job"] for p in requests if (path / "stops" / f"{p.stem}.json").exists()}
+    active_jobs = {r["job"] for r in pending_requests(path)}
+    def shown(p):
+        note = "停止（自動探索も停止）\n" if p.parent.name in stopped_jobs - active_jobs else ""
+        return note + summary(json.loads(p.read_text(encoding="utf-8")))
+    body += "\n\n" + ("\n\n".join(f"`{p.parent.name}`\n" + shown(p) for p in reversed(paths[-10:])) or "探索の実行結果はまだありません。")
     return body
 
 def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
@@ -240,6 +298,9 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
                     request = json.loads(request_path.read_text(encoding="utf-8"))
                     spec, job = request["plan"], request["job"]
                 else:
+                    pending = pending_requests(state.path)
+                    if len(pending) >= 20 or sum(r["author"] == record["author"] for r in pending) >= 2:
+                        raise ValueError("未完了の探索依頼は1人2件・全体20件までです。完了または停止後に新しいコメントで依頼してください")
                     spec = plan(text, cycle)
                     job = digest({"plan": spec, "inputs": inputs})[:24]
                     request = {**record, "plan": spec, "job": job}
@@ -258,9 +319,14 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
                 request = json.loads(path.read_text(encoding="utf-8"))
                 if request["author"] != record["author"] and c.get("author_association") not in ("OWNER", "MEMBER", "COLLABORATOR"):
                     raise ValueError("停止できるのは依頼者かリポジトリ管理側です")
-                atomic_json(state.path / "stops" / f"{text}.json", record)
-                state.save()
-                body = f"依頼 `{text}` を停止しました。共同の同一jobに別の依頼があれば、その依頼分は続きます。"
+                saved_path = state.path / "jobs" / request["job"] / "state.json"
+                terminal = saved_path.exists() and json.loads(saved_path.read_text())["status"] in ("completed", "bounded", "blocked", "error")
+                if terminal:
+                    body = f"依頼 `{text}` はすでに終了しています。新しい停止記録は作りません。"
+                else:
+                    atomic_json(state.path / "stops" / f"{text}.json", record)
+                    state.save()
+                    body = f"依頼 `{text}` を停止しました。同じjobの自動探索も停止します。別の未停止依頼があれば、その依頼分は続きます。"
         except (ValueError, TypeError, urllib.error.URLError) as e:
             body = "判定不能 / 入力を確認してください: " + str(e)
             record["error"] = str(e)
@@ -272,14 +338,21 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
 
 
 def worker(api, state, cycle: Path, seconds=18000, autonomous=False):
+    buffered = BufferedState(state)
+    try:
+        return run_worker(api, buffered, cycle, seconds, autonomous)
+    finally:
+        buffered.flush()
+
+
+def run_worker(api, state, cycle: Path, seconds=18000, autonomous=False):
     deadline = time.monotonic() + seconds
-    failed_replies = set()
-    notifications_available = True
+    last_report = time.monotonic()
     current_inputs = snapshot(ROOT, cycle)
     if autonomous:
         prepare(cycle / "outputs", state.path / "known")
         prepare_feedback(ROOT, cycle, state.path)
-        observe_report(state.path)
+        safe_observe(state.path)
         state.save()
     while time.monotonic() < deadline:
         state.sync()
@@ -313,47 +386,74 @@ def worker(api, state, cycle: Path, seconds=18000, autonomous=False):
                 except Exception as e:
                     saved = saved or {"cursor": 0, "candidates": [], "results": [], "bounded": False}
                     saved.update(status="error", error=f"{type(e).__name__}: {e}")
+            saved["updated_at"] = datetime.now(timezone.utc).isoformat()
             saved["origin"] = request.get("origin", "comment")
             save_state(path, saved)
             report = path.with_name("report.md")
             report.write_text(summary(saved) + "\n", encoding="utf-8")
-            if autonomous:
-                observe_report(state.path)
+            if autonomous and (time.monotonic() - last_report >= 300 or saved["status"] in ("completed", "bounded", "blocked", "error")):
+                safe_observe(state.path)
+                last_report = time.monotonic()
             state.save()
             progressed = True
-        # Durable terminal results are retried independently of evaluation, so a
-        # failed comment POST never causes a completed job to be recomputed.
-        comments = []
-        if api and notifications_available:
-            try:
-                comments = api.comments()
-            except (urllib.error.URLError, OSError, http.client.HTTPException, json.JSONDecodeError) as e:
-                notifications_available = False
-                atomic_json(state.path / "pending-replies/worker-comments.json",
-                            {"error": f"{type(e).__name__}: {e}", "retry": "次回workerでコメントを取得してから完了通知"})
-                state.save()
-                print("完了通知のコメント取得を次回へ保留", file=sys.stderr)
-            else:
-                pending = state.path / "pending-replies/worker-comments.json"
-                if pending.exists():
-                    pending.unlink()
-                    state.save()
-        for request in active if api and notifications_available else []:
-            path = state.path / "jobs" / request["job"] / "state.json"
-            if path.exists():
-                saved = json.loads(path.read_text(encoding="utf-8"))
-                if saved["status"] in ("completed", "bounded", "blocked", "error"):
-                    key = f"result-{request['comment_id']}"
-                    if key not in failed_replies and not reply_saved(api, state, key, f"依頼 `{request['comment_id']}`\n" + summary(saved), comments):
-                        failed_replies.add(key)
         if not progressed:
             break
+    if api:
+        notify_run(api, state)
+
+
+def notify_run(api, state):
+    """One durable completion bundle per run; resume prior bundles verbatim."""
+    bundles = [json.loads(p.read_text()) for p in sorted((state.path / "notifications").glob("*.json"))]
+    assigned = {cid for bundle in bundles for cid in bundle["comments"]}
+    finished = []
+    for p in sorted((state.path / "requests").glob("*.json")):
+        request = json.loads(p.read_text())
+        if request["comment_id"] in assigned or (state.path / "stops" / f"{request['comment_id']}.json").exists():
+            continue
+        path = state.path / "jobs" / request["job"] / "state.json"
+        if path.exists():
+            saved = json.loads(path.read_text())
+            if saved["status"] in ("completed", "bounded", "blocked", "error"):
+                finished.append((request, saved))
+    finished = finished[:20]  # Bound comment size; the next run collects remaining results.
+    if finished:
+        ids = [r["comment_id"] for r, _ in finished]
+        key = "run-results-" + digest(ids)[:24]
+        run_id = os.environ.get("GITHUB_RUN_ID", "local")
+        body = f"探索結果まとめ / run `{run_id}` / {len(finished)}依頼\n"
+        repo = os.environ.get("GITHUB_REPOSITORY")
+        if repo and run_id.isdigit():
+            body += f"詳細とartifact: https://github.com/{repo}/actions/runs/{run_id}\n"
+        for request, saved in finished:
+            body += f"\n依頼 `{request['comment_id']}` / 結果ID: result-{request['comment_id']}\n" + summary(saved)[:1800] + "\n"
+        bundle = {"key": key, "comments": ids, "body": body, "run_id": run_id, "sent": False}
+        atomic_json(state.path / "notifications" / f"{key}.json", bundle)
+        state.save()
+        bundles.append(bundle)
+    pending = [bundle for bundle in bundles if not bundle["sent"]]
+    if not pending:
+        return
+    state.flush()  # Bundle and results must be durable before any POST.
+    try:
+        comments = api.comments()  # One shared listing, including retry markers.
+    except (urllib.error.URLError, OSError, http.client.HTTPException, json.JSONDecodeError) as e:
+        atomic_json(state.path / "pending-replies/worker-comments.json", {"error": f"{type(e).__name__}: {e}"})
+        state.save()
+        return
+    (state.path / "pending-replies/worker-comments.json").unlink(missing_ok=True)
+    state.save()
+    for bundle in pending:
+        if reply_saved(api, state, bundle["key"], bundle["body"], comments):
+            bundle["sent"] = True
+            atomic_json(state.path / "notifications" / f"{bundle['key']}.json", bundle)
+            state.save()
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("mode", choices=("intake", "worker"))
-    ap.add_argument("--autonomous", action="store_true", help="登録済みの式から依頼なしで探索する")
+    ap.add_argument("--autonomous", action="store_true", default=os.environ.get("AOI_RESEARCH_ENABLED") == "1", help="登録済みの式から依頼なしで探索する")
     ap.add_argument("--issue", type=int, default=os.environ.get("AOI_INBOX_ISSUE"))
     ap.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY"))
     ap.add_argument("--seconds", type=int, default=18000)

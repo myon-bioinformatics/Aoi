@@ -357,7 +357,7 @@ def test_reply_failure_does_not_block_later_intake(cycle, tmp_path, monkeypatch)
     assert sum('reply-32' in c['body'] for c in comments) == 1
 
 
-def test_worker_failed_completion_does_not_block_another_reply(cycle, tmp_path, monkeypatch):
+def test_worker_bundled_completion_recovers_lost_response(cycle, tmp_path, monkeypatch):
     import inbox
     monkeypatch.setattr(inbox, 'snapshot', lambda *a: {'fixture': 'one'})
     comments = [{'id': i, 'user': {'login': 'person'}, 'created_at': '2026-01-01', 'body': '/explore E1'} for i in (41, 42)]
@@ -371,7 +371,7 @@ def test_worker_failed_completion_does_not_block_another_reply(cycle, tmp_path, 
         return original(path, body)
     monkeypatch.setattr(api, 'call', flaky)
     worker(api, state, cycle, seconds=10)
-    assert (state.path/'pending-replies/result-41.json').exists()
+    assert len(list((state.path/'pending-replies').glob('run-results-*.json'))) == 1
     assert any('result-42' in c['body'] for c in comments)
     results = {str(p):p.read_bytes() for p in (state.path/'jobs').rglob('*.json')}
     monkeypatch.setattr(api, 'call', original)
@@ -411,3 +411,141 @@ def test_worker_comment_get_failure_does_not_interrupt_evaluation(cycle, tmp_pat
     worker(api, state, cycle, seconds=10)
     assert not list((state.path/'pending-replies').glob('*.json'))
     assert sum('result-51' in c['body'] for c in comments) == 1
+
+
+def test_buffered_checkpoints_limit_pushes_and_preserve_final(tmp_path, monkeypatch):
+    import inbox
+    clock = [0]
+    monkeypatch.setattr(inbox.time, 'monotonic', lambda: clock[0])
+    disk = DiskState(tmp_path)
+    buffered = inbox.BufferedState(disk)
+    buffered.sync()
+    for i in range(1, 301):
+        clock[0] = i
+        buffered.save()
+        buffered.sync()
+    assert disk.saves == 1
+    clock[0] = 301
+    buffered.save()
+    buffered.flush()
+    assert disk.saves == 2
+
+
+def test_stopped_manual_job_is_not_selected_automatically(cycle, tmp_path, monkeypatch):
+    import inbox
+    from autonomous import next_request
+    inputs = {'fixture': 'stop'}
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: inputs)
+    comments = [{'id': 501, 'user': {'login': 'anyone'}, 'created_at': '2026-01-01', 'body': '/explore E1'}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'sha')
+    request = json.loads((state.path/'requests/501.json').read_text())
+    comments.append({'id': 502, 'user': {'login': 'anyone'}, 'created_at': '2026-01-01', 'body': '/stop 501'})
+    intake(api, state, cycle, 'sha')
+    assert next_request(cycle, inputs, state.path)['job'] != request['job']
+    assert '停止' in inbox.status_report(state.path)
+    # A different input fingerprint has a different job and is not suppressed.
+    assert next_request(cycle, {'fixture': 'new'}, state.path)['seed'] == 'E1'
+
+
+def test_public_exploration_has_per_author_queue_limit(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'quota'})
+    comments = [{'id': i, 'user': {'login': 'public'}, 'created_at': '2026-01-01', 'body': '/explore E1'} for i in (511,512,513)]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'sha')
+    assert len(list((state.path/'requests').glob('*.json'))) == 2
+    assert '1人2件' in json.loads((state.path/'receipts/513.json').read_text())['error']
+    comments.append({'id': 514, 'user': {'login': 'public'}, 'created_at': '2026-01-01', 'body': '/stop 511'})
+    comments.append({'id': 515, 'user': {'login': 'public'}, 'created_at': '2026-01-01', 'body': '/explore E1'})
+    intake(api, state, cycle, 'sha')
+    assert (state.path/'requests/515.json').exists()
+
+
+def test_worker_reads_comments_only_for_completion(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'poll'})
+    comments = [{'id': 521, 'user': {'login': 'p'}, 'created_at': '2026-01-01', 'body': '/explore E1'}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'sha')
+    calls = []
+    monkeypatch.setattr(api, 'comments', lambda: calls.append(1) or list(comments))
+    original = inbox.Explorer.advance
+    batches = []
+    def small(self, saved, **kwargs):
+        batches.append(1)
+        return original(self, saved, seconds=10, max_steps=1)
+    monkeypatch.setattr(inbox.Explorer, 'advance', small)
+    worker(api, state, cycle, seconds=20)
+    assert len(batches) > 2 and len(calls) == 1
+    assert state.saves < len(batches)
+
+
+def test_finished_stop_does_not_create_stop_record(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'terminal'})
+    comments = [{'id': 531, 'user': {'login': 'p'}, 'created_at': '2026-01-01', 'body': '/explore E1'}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'sha')
+    worker(api, state, cycle, seconds=20)
+    comments.append({'id': 532, 'user': {'login': 'p'}, 'created_at': '2026-01-01', 'body': '/stop 531'})
+    intake(api, state, cycle, 'sha')
+    assert not (state.path/'stops/531.json').exists()
+    assert 'すでに終了' in json.loads((state.path/'receipts/532.json').read_text())['reply_body']
+
+
+def test_missing_target_and_exclusion_are_unambiguous():
+    from ask import render
+    q = Query(target='E99', ask='has_counterexample')
+    assert '答え: 判定不能' in render('', q, [], answer(q, [item()]))
+    q = Query(ask='has_counterexample', exclude=['t'])
+    text = render('', q, [], answer(q, [item(4,2)]))
+    assert '元の成立率 2/4' in text and '除外後の判例 不明' in text
+    assert 'None' not in text
+
+
+def test_html_observation_failure_keeps_previous_and_worker_continues(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'html'})
+    def bad(path):
+        raise ValueError('unknown report')
+    monkeypatch.setattr(inbox, 'observe_report', bad)
+    (cycle/'outputs/sets.jsonl').write_text(json.dumps(item())+'\n')
+    state = DiskState(tmp_path/'state')
+    atomic_json(state.path/'feedback/blueprobe.json', {'previous': True})
+    worker(None, state, cycle, seconds=20, autonomous=True)
+    assert json.loads((state.path/'feedback/blueprobe.json').read_text()) == {'previous': True}
+    assert (state.path/'feedback/report-error.json').exists()
+    assert all(json.loads(p.read_text())['status'] == 'completed' for p in (state.path/'jobs').glob('*/state.json'))
+
+
+@pytest.mark.parametrize('enabled', ['', '0', '1'])
+def test_inbox_configuration_does_not_enable_automatic_research(monkeypatch, tmp_path, enabled):
+    import inbox
+    monkeypatch.setenv('AOI_RESEARCH_ENABLED', enabled)
+    seen = []
+    monkeypatch.setattr(inbox, 'State', lambda *args, **kwargs: DiskState(tmp_path))
+    monkeypatch.setattr(inbox, 'worker', lambda *args, **kwargs: seen.append(kwargs['autonomous']))
+    inbox.main(['worker', '--repository', 'owner/repo', '--issue', '1', '--state-dir', str(tmp_path)])
+    assert seen == [enabled == '1']
+
+
+def test_completion_bundles_use_run_id_without_run_api(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'run'})
+    monkeypatch.setenv('GITHUB_RUN_ID', '98765')
+    monkeypatch.setenv('GITHUB_REPOSITORY', 'owner/repo')
+    comments = [{'id': i, 'user': {'login': 'p'}, 'created_at': '2026-01-01', 'body': '/explore E1'} for i in (601, 602)]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'sha')
+    calls, original = [], api.call
+    def record(path, body):
+        calls.append(path)
+        return original(path, body)
+    monkeypatch.setattr(api, 'call', record)
+    worker(api, state, cycle, seconds=20)
+    assert calls == ['/issues/1/comments']
+    body = comments[-1]['body']
+    assert 'run `98765`' in body and 'result-601' in body and 'result-602' in body
+    worker(api, state, cycle, seconds=20)
+    assert len(calls) == 1

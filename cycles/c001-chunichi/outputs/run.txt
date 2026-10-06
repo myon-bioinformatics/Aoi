@@ -5,14 +5,14 @@
 [run] fetch: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
+Downloading polars-runtime-32 (47.6MiB)
 Downloading pygments (1.2MiB)
 Downloading selectolax (2.4MiB)
-Downloading polars-runtime-32 (47.6MiB)
- Downloaded selectolax
  Downloaded pygments
+ Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 11ms
-ledger: 126 pages, refetched=0, changed=0
+Installed 15 packages in 21ms
+ledger: 135 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
 2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
@@ -93,6 +93,7 @@ HTTP requests: 0
 | 2023 | 1 | 33 | 7 | 5 | 0 | 2 | 0 | 7 | 8 | 858 | 0 |
 | 2024 | 1 | 28 | 9 | 5 | 0 | 2 | 0 | 7 | 8 | 858 | 0 |
 | 2025 | 2 | 28 | 9 | 4 | 0 | 2 | 0 | 5 | 7 | 858 | 0 |
+| 2026 | 9 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## 取りこぼしの確認（既知値との照合）
 
@@ -946,43 +947,31 @@ units=156 dropped=0 target: upper_half == False
 [4] P205 待った！判断保留 元の命題: 判例 1 件: t-2022
 [4] P206 待った！判断保留 元の命題: 判例 1 件: t-2015
 [4] P207 待った！判断保留 元の命題: 判例 1 件: h-2023
-[run] fetch_2026: uv run python QueRyu/queryu.py --source npb_calendar --years 2026 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games_2026.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
-ledger: 135 pages, refetched=0, changed=0
-2026: records=0 unknown=0
+[run] fetch_2026: uv run python QueRyu/queryu.py --source npb_schedule_current --years 2026 --cache data/raw/npb_schedule_current --out data/observations/npb_schedule_current/games_2026.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_schedule_current.jsonl
+ledger: 9 pages, refetched=0, changed=0
+2026: records=854 cancelled=41 unknown=20
 HTTP requests: 9
-[run] provisional_games: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2026 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games_provisional.jsonl --offline
-2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
-2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
-2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
-2015: records=858 cancelled=40 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
-2016: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
-2017: records=858 cancelled=27 non_regular:CS ファイナルS=12 non_regular:CS ファーストS=7 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
-2018: records=858 cancelled=56 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
-2019: records=858 cancelled=21 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=4 unknown=0
-2020: records=720 cancelled=23 non_regular:クライマックスS=2 non_regular:日本シリーズ=4 unknown=0
-2021: records=858 cancelled=32 non_regular:CS ファイナルS=6 non_regular:CS ファーストS=4 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
-2022: records=858 cancelled=31 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
-2023: records=858 cancelled=33 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
-2024: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
-2025: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=4 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
-2026: records=0 unknown=0
-HTTP requests: 0
-2012: teams=12 games/team=144-144 expected=144 OK
-2013: teams=12 games/team=144-144 expected=144 OK
-2014: teams=12 games/team=144-144 expected=144 OK
-2015: teams=12 games/team=143-143 expected=143 OK
-2016: teams=12 games/team=143-143 expected=143 OK
-2017: teams=12 games/team=143-143 expected=143 OK
-2018: teams=12 games/team=143-143 expected=143 OK
-2019: teams=12 games/team=143-143 expected=143 OK
-2020: teams=12 games/team=120-120 expected=120 OK
-2021: teams=12 games/team=143-143 expected=143 OK
-2022: teams=12 games/team=143-143 expected=143 OK
-2023: teams=12 games/team=143-143 expected=143 OK
-2024: teams=12 games/team=143-143 expected=143 OK
-2025: teams=12 games/team=143-143 expected=143 OK
-[run] provisional_measure: uv run python SakAnalytics/sakanalytics.py --games data/observations/npb_calendar/games_provisional.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/provisional/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --linescore data/observations/npb_game_linescore/teams.jsonl
-shape: (14, 12)
+2026: teams=12 games/team=140-143 max=143 finished=7 OK（進行中）
+[run] preview_2026: uv run python BlueProbe/blueprobe.py --source npb_schedule_current --cache data/raw/npb_schedule_current --out cycles/c001-chunichi/outputs/provisional/observed_2026.md
+unknown: 20 件。表記の変化を疑う（上の表を参照）
+# npb_schedule_current: 観測された構造
+
+取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
+
+| group | empty_pages | n_cancelled | pages | records | unknown |
+|---|---|---|---|---|---|
+| 2026 | 0 | 41 | 9 | 854 | 20 |
+
+## 取りこぼしの確認（既知値との照合）
+
+- 2026: teams=12 games/team=140-143 max=143 finished=7 OK（進行中）
+
+## 未知の表記（数字は # に伏せた形）
+
+- 2026: `'\n      \n        \n        \n        -\n        （ZOZOマリン）##:##\n      \n      '`, `'\n      \n        \n        \n        -\n        （甲子園）##:##\n      \n      '`, `'[cl-pl] \n                        \n                                                  #\n                          -\n                          #\n                        \n                                                '`, `'[pl-cl] \n                        \n                                                  #\n                          -\n                          #\n                        \n                                                '`
+
+[run] provisional_measure: uv run python SakAnalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl data/observations/npb_schedule_current/games_2026.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/provisional/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --linescore data/observations/npb_game_linescore/teams.jsonl
+shape: (15, 12)
 ┌────────┬──────┬─────────┬─────┬─────┬─────┬───────┬─────────┬─────────┬────────┬────────┬────────┐
 │ season ┆ rank ┆ rank_ti ┆ W   ┆ L   ┆ T   ┆ wpct  ┆ pythag_ ┆ resid_f ┆ logit_ ┆ wpct_1 ┆ wpct_2 │
 │ ---    ┆ ---  ┆ e       ┆ --- ┆ --- ┆ --- ┆ ---   ┆ fixed   ┆ ixed    ┆ resid  ┆ run    ┆ run    │
@@ -1003,58 +992,71 @@ shape: (14, 12)
 │ 2023   ┆ 6    ┆ false   ┆ 56  ┆ 82  ┆ 5   ┆ 0.406 ┆ 0.390   ┆ 0.016   ┆ 0.066  ┆ 0.467  ┆ 0.429  │
 │ 2024   ┆ 6    ┆ false   ┆ 60  ┆ 75  ┆ 8   ┆ 0.444 ┆ 0.388   ┆ 0.056   ┆ 0.231  ┆ 0.600  ┆ 0.385  │
 │ 2025   ┆ 4    ┆ false   ┆ 63  ┆ 78  ┆ 2   ┆ 0.447 ┆ 0.437   ┆ 0.010   ┆ 0.040  ┆ 0.466  ┆ 0.419  │
+│ 2026   ┆ 6    ┆ false   ┆ 60  ┆ 81  ┆ 2   ┆ 0.426 ┆ 0.485   ┆ -0.059  ┆ -0.240 ┆ 0.409  ┆ 0.276  │
 └────────┴──────┴─────────┴─────┴─────┴─────┴───────┴─────────┴─────────┴────────┴────────┴────────┘
 [run] provisional_check: uv run python cycles/c001-chunichi/research/r75_provisional.py cycles/c001-chunichi/outputs/provisional/season.jsonl cycles/c001-chunichi/propositions.toml cycles/c001-chunichi/sets.toml --out cycles/c001-chunichi/outputs/provisional/check.md
-# 2026年の暫定の判定（消化した試合だけ、0 単位）
+# 2026年の暫定の判定（消化した試合だけ、12 単位）
 
 暫定。R18 の手順（全球団が143試合を終えてから）で取り込んだ後、もう一度判定する。
 
 | 球団 | 試合 | 勝率 | 順位 | A |
 |---|---|---|---|---|
+| 阪神 | 140 | 0.558 | 1 | A |
+| 巨人 | 143 | 0.543 | 2 | A |
+| DeNA | 143 | 0.507 | 3 | A |
+| 広島 | 141 | 0.445 | 4 | B |
+| ヤクルト | 142 | 0.429 | 5 | B |
+| 中日 | 143 | 0.426 | 6 | B |
+| ソフトバンク | 143 | 0.650 | 1 | A |
+| 西武 | 142 | 0.565 | 2 | A |
+| 日本ハム | 143 | 0.557 | 3 | A |
+| オリックス | 143 | 0.461 | 4 | B |
+| ロッテ | 142 | 0.453 | 5 | B |
+| 楽天 | 143 | 0.408 | 6 | B |
 
 ## 命題（P181〜P207）
 
 | id | 前件に入った | 後件も当たり | 判例 | 中日 |
 |---|---|---|---|---|
-| P181 | 0 | 0 | なし | - |
-| P182 | 0 | 0 | なし | - |
-| P183 | 0 | 0 | なし | - |
-| P184 | 0 | 0 | なし | - |
-| P185 | 0 | 0 | なし | - |
-| P186 | 0 | 0 | なし | - |
-| P187 | 0 | 0 | なし | - |
-| P188 | 0 | 0 | なし | - |
-| P189 | 0 | 0 | なし | - |
-| P190 | 0 | 0 | なし | - |
-| P191 | 0 | 0 | なし | - |
-| P192 | 0 | 0 | なし | - |
-| P193 | 0 | 0 | なし | - |
-| P194 | 0 | 0 | なし | - |
-| P195 | 0 | 0 | なし | - |
-| P196 | 0 | 0 | なし | - |
-| P197 | 0 | 0 | なし | - |
-| P198 | 0 | 0 | なし | - |
-| P199 | 0 | 0 | なし | - |
-| P200 | 0 | 0 | なし | - |
-| P201 | 0 | 0 | なし | - |
-| P202 | 0 | 0 | なし | - |
-| P203 | 0 | 0 | なし | - |
-| P204 | 0 | 0 | なし | - |
-| P205 | 0 | 0 | なし | - |
-| P206 | 0 | 0 | なし | - |
-| P207 | 0 | 0 | なし | - |
+| P181 | 6 | 6 | なし | 入る |
+| P182 | 5 | 5 | なし | 入らない |
+| P183 | 3 | 1 | h, t | 入らない |
+| P184 | 4 | 4 | なし | 入らない |
+| P185 | 4 | 4 | なし | 入らない |
+| P186 | 5 | 5 | なし | 入らない |
+| P187 | 5 | 2 | db, h, t | 入る |
+| P188 | 1 | 1 | なし | - |
+| P189 | 4 | 4 | なし | 入る |
+| P190 | 6 | 6 | なし | 入る |
+| P191 | 2 | 2 | なし | - |
+| P192 | 2 | 2 | なし | - |
+| P193 | 1 | 1 | なし | 入らない |
+| P194 | 5 | 5 | なし | 入らない |
+| P195 | 3 | 3 | なし | 入る |
+| P196 | 1 | 1 | なし | 入らない |
+| P197 | 5 | 5 | なし | 入らない |
+| P198 | 1 | 0 | d | 入る |
+| P199 | 6 | 6 | なし | 入る |
+| P200 | 6 | 6 | なし | 入る |
+| P201 | 5 | 2 | db, h, t | 入る |
+| P202 | 1 | 1 | なし | 入らない |
+| P203 | 1 | 1 | なし | 入る |
+| P204 | 1 | 1 | なし | 入る |
+| P205 | 0 | 0 | なし | 入らない |
+| P206 | 5 | 5 | なし | 入らない |
+| P207 | 3 | 3 | なし | 入る |
 
 ## 式（E19〜E28）
 
 | id | 前件に入った | 後件も当たり | 判例 | 中日 |
 |---|---|---|---|---|
-| E19 | 0 | 0 | なし | - |
-| E20 | 0 | 0 | なし | - |
-| E21 | 0 | 0 | なし | - |
-| E22 | 0 | 0 | なし | - |
-| E24 | 0 | 0 | なし | - |
-| E25 | 0 | 0 | なし | - |
-| E26 | 0 | 0 | なし | - |
-| E27 | 0 | 0 | なし | - |
-| E28 | 0 | 0 | なし | - |
+| E19 | 6 | 6 | なし | 入る |
+| E20 | 6 | 6 | なし | 入る |
+| E21 | 6 | 6 | なし | 入る |
+| E22 | 6 | 6 | なし | 入る |
+| E24 | 6 | 6 | なし | 入る |
+| E25 | 6 | 6 | なし | 入る |
+| E26 | 6 | 6 | なし | 入る |
+| E27 | 6 | 6 | なし | 入る |
+| E28 | 6 | 6 | なし | 入る |
 

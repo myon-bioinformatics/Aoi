@@ -43,7 +43,7 @@ jobs:
         env:
           PREVIOUS_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: >-
-          python -S dragowing/build_reports.py
+          python -S DRAgoWing/reports/build_reports.py
           --markdown-root .deps/markdown
           --output build/dragowing
           --previous-ref "$PREVIOUS_REF"

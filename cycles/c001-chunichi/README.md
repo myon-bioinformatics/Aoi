@@ -38,7 +38,7 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 | 項目 | 内容 | 記録場所 |
 |---|---|---|
 | 期間 | 2012〜2025年の公式戦（交流戦を含む）。イニング単位は 2013〜2025年 | `pipeline.toml` の `years` |
-| 取得元 | npb.jp の月別公式戦カレンダー（最終スコア）、チーム打撃成績 | `blueprobe/docs/npb_calendar.md`、`blueprobe/docs/npb_team_batting.md` |
+| 取得元 | npb.jp の月別公式戦カレンダー（最終スコア）、チーム打撃成績 | `BlueProbe/docs/npb_calendar.md`、`BlueProbe/docs/npb_team_batting.md` |
 | 外部の集計 | イニング単位の球団×年の集計（PR #3、GPT。試合数・得点をこちらの値と照合） | `references/pr3-inning-team-year-metrics.csv.gz` |
 | 除外 | 2020年（理由は `analysis.toml`） | `outputs/exclusions.json` |
 | 比較対象 | 全12球団（順位の検定はセ・リーグの6球団） | `analysis.toml` の `[focus]` |
@@ -51,8 +51,8 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 ## 実行
 
 ```bash
-python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
-python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl
+python NagoyAction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
+python NagoyAction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl
 ```
 
 GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main に入るまでは `run/c001` ブランチへの push で起動。結果はそのブランチにコミットされる）。中身は同じコマンド。
@@ -66,12 +66,14 @@ GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main �
 | `confirmation.md` | **まだ使っていない年（2026年）での確かめ**。命題ごとに、その年の単位を成立・判例・逆の判例・どちらも当たらないに分けて数える（R18、`analysis.toml` の `[confirm]`） |
 | `observed.md` | 年ごとの取得結果、採用しなかった件数、未知の表記（数字は伏せる）、試合数の照合 |
 | `observed_batting.md` | チーム打撃成績の構造の確認（同上） |
-| `season.jsonl` | チーム×シーズンの指標（派生値） |
+| `season.jsonl` | チーム×シーズンの指標（派生値）。優位・誤差・形などの列の式は [SakAnalytics/README.md](../../SakAnalytics/README.md) |
 | `cumulative.jsonl` | 期待勝率からのずれの累積と z 値 |
 | `rank_test.jsonl` | 順位の偏りの検定（帰無仮説と全球団比較） |
 | `exclusions.json` | 除外したシーズンと理由 |
 | `summary.md` | 検証記録。観測した数だけを書き、原因は書かない |
 | `objections.md` | 命題ごとの判定と「異議あり」（判例の一覧、除外中の判例） |
+| `sets.md` / `sets.jsonl` / `sets.junit.xml` | **命題の集合の式**（R48）。式ごとの4つの形・中日の B の年の覆い・通るか。JUnit 形式で、通らなかった式の止まった理由を残す |
+| `next.md` / `next.jsonl` | **次の命題の種**。元の命題と逆を並べた読み（十分条件だけ・必要条件だけなど）と、判例を「絞る」（元の判例）・「道筋」（逆の判例）に分けた一覧。判定ではない |
 | `propositions.jsonl` | 同じ内容の機械向け形式（命題ファイルの SHA-256 とコードの版つき） |
 | `claims.json` | 外部の主張の再現結果 |
 | `allocation.jsonl` | 配分効果の期間合計（R1） |

@@ -49,7 +49,7 @@ For every unit u in the scope:   A(u)  ⇒  B(u)
 - Comparisons only use constants. A comparison between two columns is first computed as a derived column (for example `rank_gap = rank - rank_pythag`) so that every derived value is visible and documented.
 - An empty `A` means "every unit in the scope". Such a proposition has no converse or inverse.
 - `A` may also contain an *or*: `if_any = [[c1, c2], [c3]]` means `(c1 and c2) or c3`. Plain `if` conditions are joined to it with *and*. All four forms are evaluated as usual: the contrapositive of `(c1 ∧ c2) ∨ c3 ⇒ B` is `¬B ⇒ ¬(c1 ∧ c2) ∧ ¬c3`. A long `if_any` explains more units but is easier to fit to the data; the record shows the number of conditions so that this is visible.
-- Combinations may be searched by `pythdragoras/rule_search.py` (candidates fixed in a file before the search). A searched rule is material for a proposition, not a verdict: it is registered as a proposition made after seeing the data, and confirmed on other data.
+- Combinations may be searched by `PythDRagoras/logic/rule_search.py` (candidates fixed in a file before the search). A searched rule is material for a proposition, not a verdict: it is registered as a proposition made after seeing the data, and confirmed on other data.
 
 Arbitrary code is never evaluated.
 
@@ -65,6 +65,16 @@ The scope says which units the proposition talks about: `league`, `team`, `seaso
 | `A ∧ S ⇒ B` | for all units: (A and S) ⇒ B | B ⇒ (A and S), which also claims S |
 
 Use `where` when S is the comparison condition, not part of the claim. A unit whose `where` value is missing is counted as undetermined (exit 5), never silently left outside the scope.
+
+## Groups Defined By The Final Outcome
+
+An inquiry that explains a final outcome (a final rank, a final class) is retrospective: it is made knowing how the season ended.
+Groups used inside a proposition — "the teams that finished first or second", "the upper half" — are therefore defined by the **final** outcome, not by the standing on the day of each game.
+
+This is a premise, not a flaw to be corrected:
+
+- defining a group by the standing at the time of each game makes the data harder to use and the propositions harder to generate, without making them more honest
+- the premise is stated with every proposition whose group depends on it. A proposition that groups opponents by the final rank can be partly linked to its own consequence by arithmetic (beating an upper opponent lowers that opponent and raises oneself); the `note` says so
 
 ## Identity
 
@@ -157,6 +167,8 @@ The words map to fixed thresholds, so the same wording always means the same cri
 | `more_often_than_not` | 多くの場合 | statistical | 0.50 |
 
 A threshold is never tuned to the data. If a claim needs another strength, it is a different claim.
+
+The same holds for the boundary values written inside conditions (for example "the leader is .050 ahead"). Such a value is a **provisional placeholder** chosen before the evaluation. Do not sweep it in steps (.040, .050, .060, …) to see where the reading changes: sweeping makes the analysis hurry toward a conclusion. If the placeholder turns out to be the wrong question, write a different proposition.
 
 Defaults: `min_n = 10`, `alpha = 0.05`, 95% intervals.
 
@@ -264,10 +276,10 @@ original → held-out (restated propositions only) → contrapositive
 When converse and inverse are skipped with a reason, the best possible stage is provisional.
 
 ```bash
-python pythdragoras/propositions.py judge outputs/propositions.jsonl              # stop at the first non-zero
-python pythdragoras/propositions.py judge outputs/propositions.jsonl --id P2       # one proposition
-python pythdragoras/propositions.py judge outputs/propositions.jsonl --keep-going --lang en
-python pythdragoras/propositions.py judge outputs/propositions.jsonl --report-only # objections do not fail; system errors do
+python PythDRagoras/logic/propositions.py judge outputs/propositions.jsonl              # stop at the first non-zero
+python PythDRagoras/logic/propositions.py judge outputs/propositions.jsonl --id P2       # one proposition
+python PythDRagoras/logic/propositions.py judge outputs/propositions.jsonl --keep-going --lang en
+python PythDRagoras/logic/propositions.py judge outputs/propositions.jsonl --report-only # objections do not fail; system errors do
 ```
 
 ---
@@ -311,6 +323,37 @@ When several propositions survive, prefer the one that:
 - declares what would make us revise it (falsifier)
 
 "Weak" or "strong" always needs a stated comparison: weak compared with whom, over which period, measured how.
+
+## Reading The Original And The Converse Together
+
+The original (`A ⇒ B`) asks whether A is enough for B. The converse (`B ⇒ A`) asks whether B needs A.
+Reading the two verdicts side by side tells where to look next. It is a **reading**, not a verdict: it never changes an exit code.
+
+| Reading | Original | Converse | What it says |
+|---|---|---|---|
+| 0 | supported | supported | close to equivalence; the counterexamples on either side are where A and B part |
+| 1 | supported | refined or rejected | sufficient, not necessary: other units reach B without A |
+| 2 | refined or rejected | supported | necessary, not sufficient: A alone does not reach B |
+| 3 | neither supported, one refined | | a relationship weaker than claimed in both directions |
+| 4 | rejected | rejected | neither direction holds |
+| 5 | either inconclusive | | add units before reading |
+| 6 | converse skipped | | one direction only |
+
+"Supported" here means the form's exit code is 0 or 1. Exit code 5 means undetermined units remain; like code 4, it maps to reading 5 and must not strengthen the reading. The readings are numbers; words are only their rendering.
+
+Each reading carries two lists of seeds, taken from the counterexamples:
+
+- **narrow** — counterexamples of the original (A and not B): units where A was not enough. Candidates for a missing condition (*and*) or a narrower scope (`where`).
+- **route** — counterexamples of the converse (B and not A): units that reached B without A. Candidates for another route (*or*).
+
+For each list the most frequent unit group (one team, one season) is shown, as a hint for Split. Splitting stays a human decision.
+
+A seed is material, not a verdict. A proposition written from seeds is a new proposition: it is pre-registered under a new ID, and the units it came from are declared in `motivated_by`, so that it is read from its held-out evaluation.
+
+```bash
+python PythDRagoras/logic/propositions.py next outputs/propositions.jsonl              # every proposition
+python PythDRagoras/logic/propositions.py next outputs/propositions.jsonl --reading 1 2 # sufficient-only and necessary-only
+```
 
 ---
 

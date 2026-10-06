@@ -25,10 +25,10 @@ jobs:
         with:
           python-version: "3.14"
       - name: Local (tracked files, exact case)
-        run: python -S nagoyaction/linkcheck.py
+        run: python -S NagoyAction/checks/linkcheck.py
       - name: Remote (files exist on the pushed branch)
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           REF: ${{ github.head_ref || github.ref_name }}  # ブランチ名は外部入力なので run に直接埋め込まない
-        run: python -S nagoyaction/linkcheck.py --remote "$REPO" --ref "$REF"
+        run: python -S NagoyAction/checks/linkcheck.py --remote "$REPO" --ref "$REF"

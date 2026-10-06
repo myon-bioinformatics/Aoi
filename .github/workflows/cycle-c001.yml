@@ -1,7 +1,8 @@
 # サイクル1（中日ドラゴンズ）を GitHub 上で実行する。
-# 中身は nagoyaction/nagoyaction.py が cycles/c001-chunichi/pipeline.toml を実行するだけで、
-# ローカルでの実行（python nagoyaction/nagoyaction.py run ...）と同じ。
-# 生のページと観測データ（data/）は Actions のキャッシュにだけ残し、リポジトリには入れない。
+# 中身は NagoyAction/nagoyaction.py が cycles/c001-chunichi/pipeline.toml を実行するだけで、
+# ローカルでの実行（python NagoyAction/nagoyaction.py run ...）と同じ。
+# 生のページと観測データ（data/）は Actions のキャッシュにだけ残し、リポジトリには入れない（公開リポジトリなので再配布しない）。
+# 取ったページの来歴（中身なし）は outputs/fetched/ の取得台帳に残し、消えたキャッシュを黙って取り直さない（QueRyu）。
 # コミットするのは自作の指標と検証記録（cycles/c001-chunichi/outputs/）だけ。
 name: cycle c001 (chunichi)
 
@@ -15,6 +16,10 @@ on:
         description: "取得を行わず、キャッシュだけで再解析する"
         type: boolean
         default: false
+      allow_refetch:
+        description: "取得台帳にあるのにキャッシュから消えたページの取り直しを許す（人が決めたときだけ）"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -26,7 +31,8 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 試合ごとの得点表（1年 約860ページ、3秒間隔で約45分）を取る回があるので 90分。取得済みのページは止まっても保存される
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -41,14 +47,16 @@ jobs:
           key: aoi-data-c001-${{ github.run_id }}
           restore-keys: aoi-data-c001-
       - name: Doctor
-        run: python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml ${{ inputs.offline && '--offline' || '' }}
+        run: python NagoyAction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml ${{ inputs.offline && '--offline' || '' }}
       - name: Run pipeline
+        env:
+          AOI_ALLOW_REFETCH: ${{ inputs.allow_refetch && '1' || '' }}
         # 実行の記録（各ステップの結果・件数・エラー文）を outputs/run.txt にも残す（*.log は .gitignore の対象）。止まったときも読めるように
         run: |
           set -o pipefail
-          python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl ${{ inputs.offline && '--offline' || '' }} 2>&1 | tee cycles/c001-chunichi/outputs/run.txt
+          python NagoyAction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl ${{ inputs.offline && '--offline' || '' }} 2>&1 | tee cycles/c001-chunichi/outputs/run.txt
       - name: Judgement (exit codes) to the job summary
-        run: python nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --only judge >> "$GITHUB_STEP_SUMMARY"
+        run: python NagoyAction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --only judge >> "$GITHUB_STEP_SUMMARY"
       - name: Keep outputs (also when a step stopped the pipeline)
         if: always()
         uses: actions/upload-artifact@v4

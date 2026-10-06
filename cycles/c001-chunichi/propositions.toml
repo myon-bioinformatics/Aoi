@@ -1566,3 +1566,1416 @@ context = ["clinch_in_x", "traj_wl_peak_after_clinch_base", "rank"]
 links = ["H6"]
 falsifier = "確定後の山の数が、力が一定のときの見込みの範囲（trajectory_expectation.jsonl で P ≥ 0.05）"
 note = "R22・R25 の「A クラスの貯金の山は見込みより多い」が、決まった後の試合から来ているかを見る"
+
+# 追加: 2026-10-05。R27（逆・裏から次の命題を立てる）。計算前に登録した。
+# P115〜P117 の結果は見ていない。既存の命題の読み（outputs/next.md）は見ている。
+
+[[proposition]]
+id = "P115"
+statement = "得点も失点もリーグ上位半分（3位以内）に入らないなら、B クラス"
+strength = "usually"
+if = [{ col = "rank_rf", op = ">=", value = 4 }, { col = "rank_ra", op = ">=", value = 4 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rd"
+context = ["rank", "rd", "sim_p_upper"]
+links = ["H2"]
+falsifier = "得点も失点も4位以下のチーム・シーズンの4分の1を超えて A クラス"
+note = "十分の向きの命題。逆（B クラスなら、得点も失点も4位以下）の判例が、得点か失点のどちらかは上位なのに B になった道筋の種になる"
+
+[[proposition]]
+id = "P116"
+statement = "得点した回の大きさがリーグ上位2位以内なら、A クラス（P62 の鏡）"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_rank", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "inn_dlog_size"
+context = ["inn_size_rank", "rank", "rank_rf", "sim_p_upper"]
+links = ["H5"]
+falsifier = "大きさが上位2位以内のチーム・シーズンの4分の1を超えて B クラス"
+note = "inn_size_rank は小さいほうが 1（6球団なので 5・6 が上位2位）。大きさの軸が上にも下にも効く（対称）か、下だけの床かを見る"
+
+[[proposition]]
+id = "P117"
+statement = "得点した回の大きさがその年リーグ下位2位以内なら、B クラス（続けてでなく1年だけ）"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_rank", op = "<=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "inn_dlog_size"
+context = ["inn_size_low_streak", "rank", "rank_rf", "sim_p_upper"]
+links = ["H5", "H6"]
+falsifier = "（P62 と率を比べるための命題）"
+note = "P62（2年以上続けて）と率を比べ、続いていることが効いているかを見る"
+
+# 追加: 2026-10-05。R28（片側だけ上位のチームで、何が A と B を分けるか）。計算前に登録した。
+# P115 の逆の判例（R27）は見ている。P118〜P120 の結果は見ていない。
+
+[[proposition]]
+id = "P118"
+statement = "失点だけが上位半分（失点3位以内・得点4位以下）のチームは、得点が5位以下なら B クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 4 }] }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2014", "d-2015", "d-2019", "d-2021", "d-2022", "d-2023"]
+surprise = "rd"
+context = ["rank", "rank_ra", "rd", "sim_p_upper"]
+links = ["H2"]
+falsifier = "きっかけの中日6単位を除いて、得点5位以下の単位の4分の1を超えて A クラス"
+note = "中日の6単位（得点5・6位）を見た後の条件。きっかけ以外で読む"
+
+[[proposition]]
+id = "P119"
+statement = "得点だけが上位半分（得点3位以内・失点4位以下）のチームは、失点が5位以下なら B クラス（P118 の鏡）"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = "<=", value = 3 }, { col = "rank_ra", op = ">=", value = 4 }] }
+if = [{ col = "rank_ra", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rd"
+context = ["rank", "rank_rf", "rd", "sim_p_upper"]
+links = ["H2"]
+falsifier = "失点5位以下の単位の4分の1を超えて A クラス"
+note = "P118 と対称か（弱い側の深さが効くのは失点の側でも同じか）を見る"
+
+[[proposition]]
+id = "P120"
+statement = "失点だけが上位半分のチームは、得点した回の大きさが下位2位以内なら B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025", where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 4 }] }
+if = [{ col = "inn_size_rank", op = "<=", value = 2 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2014", "d-2015", "d-2019", "d-2021", "d-2022", "d-2023"]
+surprise = "inn_dlog_size"
+context = ["rank", "rank_rf", "inn_size_low_streak", "sim_p_upper"]
+links = ["H5"]
+falsifier = "きっかけの中日6単位を除いて、大きさ下位2位以内の単位の4分の1を超えて A クラス"
+note = "得点の量（P118）と、点の入り方（回の大きさ）のどちらが、片側だけ上位のチームを分けるかを比べる"
+
+# 追加: 2026-10-05。R29（片側だけ上位のチームは、得失点差の符号で分かれるか）。
+# P121 は R28 の記述（事前登録の外）を見た後に作った。P122 の範囲（得点だけ上位）の得失点差と順位の組は見ていない。
+# P123 の範囲（失点だけ上位）は、得点5・6位の26単位を R28 で見ている。得点4位の17単位は見ていない。
+
+[[proposition]]
+id = "P121"
+statement = "失点だけが上位半分で得点が5位以下のチームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 5 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rank_ra", "rank_rf", "wins_vs_pythag", "sim_p_upper"]
+links = ["H2"]
+falsifier = "2026年以降、この範囲で得失点差プラスなのに B クラスの単位が出る（中日 2019年に続く判例）"
+note = "R28 の記述（判例は中日 2019年だけ）を見た後に作った。同じデータでは確かめにならず、きっかけ以外の単位はほぼ残らない。確かめは 2026年以降（analysis.toml の [confirm]）"
+
+[[proposition]]
+id = "P122"
+statement = "得点だけが上位半分（得点3位以内・失点4位以下）のチームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = "<=", value = 3 }, { col = "rank_ra", op = ">=", value = 4 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "rd"
+context = ["rank", "rank_rf", "rank_ra", "wins_vs_pythag", "sim_p_upper"]
+links = ["H2"]
+falsifier = "得失点差プラスの単位の4分の1を超えて B クラス"
+note = "P121 の鏡（得点の側）。この範囲の得失点差と順位の組はまだ見ていない"
+
+[[proposition]]
+id = "P123"
+statement = "失点だけが上位半分（失点3位以内・得点4位以下）のチームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 4 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rank_ra", "rank_rf", "wins_vs_pythag", "sim_p_upper"]
+links = ["H2"]
+falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
+note = "P121 の範囲を得点4位まで広げた形。得点4位の17単位は見ていないので、きっかけ以外はその部分で読む"
+
+# 追加: 2026-10-05。R30（片側だけ上位のチームは、点の差を勝ちに変えられたかで分かれるか）。計算前に登録した。
+# P124 の種は R29（P122 の判例・逆の判例16単位の wins_vs_pythag）を見た後。その16単位を motivated_by にし、残りの25単位で読む。
+# P125 は鏡（失点の側）。R28 で得点5・6位の26単位の wins_vs_pythag を見ているので motivated_by にし、得点4位の17単位で読む。
+
+[[proposition]]
+id = "P124"
+statement = "得点だけが上位半分のチームは、点の差から見込まれるより多く勝っていれば A クラス"
+strength = "usually"
+scope = { where = [{ col = "rank_rf", op = "<=", value = 3 }, { col = "rank_ra", op = ">=", value = 4 }] }
+if = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["b-2025", "c-2022", "db-2016", "db-2017", "db-2019", "e-2022", "g-2023", "l-2012", "l-2015", "l-2016",
+                "m-2013", "m-2019", "m-2024", "s-2012", "s-2018", "t-2014"]
+surprise = "wins_vs_pythag"
+context = ["rank", "rd", "rank_rf", "rank_ra", "one_run_net"]
+links = ["H3"]
+falsifier = "きっかけの16単位を除いて、見込みより多く勝った単位の4分の1を超えて B クラス"
+note = "wins_vs_pythag は勝ち数と、得点・失点から見込まれる勝ち数（固定指数）の差。きっかけ以外の25単位で読む"
+
+[[proposition]]
+id = "P125"
+statement = "失点だけが上位半分のチームは、点の差から見込まれるより多く勝っていれば A クラス（P124 の鏡）"
+strength = "usually"
+scope = { where = [{ col = "rank_ra", op = "<=", value = 3 }, { col = "rank_rf", op = ">=", value = 4 }] }
+if = [{ col = "wins_vs_pythag", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["b-2013", "b-2015", "b-2024", "c-2024", "d-2014", "d-2015", "d-2019", "d-2021", "d-2022", "d-2023",
+                "db-2018", "e-2018", "f-2019", "f-2023", "h-2012", "l-2022", "l-2023", "l-2024", "l-2025",
+                "t-2012", "t-2013", "t-2016", "t-2018", "t-2019", "t-2021", "t-2022"]
+surprise = "wins_vs_pythag"
+context = ["rank", "rd", "rank_rf", "rank_ra", "one_run_net"]
+links = ["H3"]
+falsifier = "（P124 と率を比べるための命題）"
+note = "R28 で見た26単位（得点5・6位）を除き、得点4位の17単位で読む"
+
+# 追加: 2026-10-05。R32（R31 の3つの種）。計算前に登録した。
+# rf_adv・ra_adv・run_balance・short_share は bd85db6 で作った列で、命題の範囲・条件の組はまだ見ていない。
+# R31 で、順位の「失点だけ上位」の B クラスについて、不足 ÷ 優位の分布（中日以外の中央値 2.18、最頻の区間 2.25）は見ている。
+
+[[proposition]]
+id = "P126"
+statement = "得点も失点も、1試合あたりで他球団の平均を上回っていない（優位がない）なら、B クラス"
+strength = "usually"
+if = [{ col = "rf_adv", op = "<=", value = 0 }, { col = "ra_adv", op = "<=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P115"
+change = "上位半分を順位（3位以内）ではなく、1試合あたりの優位の符号で決める。R31 で、失点3位でも優位がほぼ 0 か負の単位が4つあった"
+surprise = "rd"
+context = ["rank", "rank_rf", "rank_ra", "run_balance"]
+links = ["H2"]
+falsifier = "優位のないチーム・シーズンの4分の1を超えて A クラス"
+note = "P115 の対偶（A なら一方は3位以内）が、量で決めても保たれるかを見る"
+
+[[proposition]]
+id = "P127"
+statement = "失点だけに優位がある（失点の優位 > 0、得点の優位 ≤ 0）チームは、得点が5位以下なら B クラス"
+strength = "usually"
+scope = { where = [{ col = "ra_adv", op = ">", value = 0 }, { col = "rf_adv", op = "<=", value = 0 }] }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P118"
+change = "失点だけ上位の範囲を、順位ではなく優位の符号で決める（R31）"
+motivated_by = ["d-2014", "d-2015", "d-2019", "d-2021", "d-2022", "d-2023"]
+surprise = "rd"
+context = ["rank", "rank_ra", "ra_adv", "rf_adv"]
+links = ["H2"]
+falsifier = "きっかけの中日6単位を除いて、4分の1を超えて A クラス"
+note = "P118 と同じく中日の6単位を見た後の条件。きっかけ以外で読む"
+
+[[proposition]]
+id = "P128"
+statement = "失点だけに優位があるチームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "ra_adv", op = ">", value = 0 }, { col = "rf_adv", op = "<=", value = 0 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P123"
+change = "失点だけ上位の範囲を、順位ではなく優位の符号で決める（R31）"
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rank_ra", "rank_rf", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
+note = "P123 の範囲を量で決め直した形"
+
+[[proposition]]
+id = "P129"
+statement = "中日以外で、失点だけに優位がある B クラスは、得点した回の大きさが2年以上続けて下位2位以内なら、得点の不足が大きい（1試合 0.6点を超える）"
+strength = "usually"
+scope = { seasons = "2013-2025", where = [{ col = "team", op = "!=", value = "d" }, { col = "ra_adv", op = ">", value = 0 },
+          { col = "rf_adv", op = "<=", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = [{ col = "inn_size_low_streak", op = ">=", value = 2 }]
+then = [{ col = "rf_adv", op = "<", value = -0.6 }]
+surprise = "rf_adv"
+context = ["rank", "inn_size_rank", "ra_adv", "run_balance"]
+links = ["H5", "H6"]
+falsifier = "続けて低い単位の4分の1を超えて、不足が 0.6 以下"
+note = "R31 の中日の2つの層（届きかけた年 −0.25〜−0.32、届かなかった年 −0.89〜−1.13）の間をとって 0.6 を境にした（中日を見た後の境）。分ける条件は中日以外で探す"
+
+[[proposition]]
+id = "P130"
+statement = "中日以外で、失点だけに優位がある B クラスは、四死球と長打がどちらも他球団より少なければ、得点の不足が大きい（1試合 0.6点を超える）"
+strength = "usually"
+scope = { where = [{ col = "team", op = "!=", value = "d" }, { col = "ra_adv", op = ">", value = 0 },
+          { col = "rf_adv", op = "<=", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = [{ col = "bat_d_bb_pa", op = "<", value = 0 }, { col = "bat_d_iso", op = "<", value = 0 }]
+then = [{ col = "rf_adv", op = "<", value = -0.6 }]
+surprise = "rf_adv"
+context = ["rank", "bat_d_avg", "ra_adv", "run_balance"]
+links = ["H6", "H7"]
+falsifier = "四死球も長打も少ない単位の4分の1を超えて、不足が 0.6 以下"
+note = "R6〜R9 の「中日は四死球と長打がそれぞれ別々に少ない」を、届かなかった層を分ける条件として中日以外で試す。境 0.6 は P129 と同じ"
+
+[[proposition]]
+id = "P131"
+statement = "中日以外で、得点に不足があり失点だけに優位がある B クラスは、不足が優位の 1.5〜2.5 倍（取り分 0.6〜0.714）に入る"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }, { col = "ra_adv", op = ">", value = 0 },
+          { col = "rf_adv", op = "<", value = 0 }, { col = "upper_half", op = "==", value = false }] }
+if = []
+then = [{ col = "short_share", op = ">=", value = 0.6 }, { col = "short_share", op = "<=", value = 0.7143 }]
+surprise = "short_share"
+context = ["rf_adv", "ra_adv", "run_balance", "rank"]
+links = ["H2"]
+falsifier = "半分以下しか、この範囲に入らない"
+note = "R31 で順位の範囲で見た分布（中央値 2.18、最頻の区間 2.25）を見た後の命題。同じデータでは確かめにならない。2026年で確かめる（[confirm]）。比 r と取り分 s は s = r ÷ (1 + r)"
+
+# 追加: 2026-10-05。R33（R32 の2つの種）。計算前に登録した。
+# 種A（必要の向き）: R32 で、中日以外の失点だけ優位の B で不足 > 0.6 の5単位（P130 の逆）は見ている。その5単位を motivated_by にする。
+# 種B（境に幅）: *_z・*_zone は 5de3bc6 で作った列で、範囲・条件の組はまだ見ていない。標準偏差（得点 0.47、失点 0.45）は見た。
+
+[[proposition]]
+id = "P132"
+statement = "B クラスで、得点の不足が1試合 0.6点を超えるなら、四死球も長打も他球団より少ない（必要の向き）"
+strength = "usually"
+scope = { where = [{ col = "upper_half", op = "==", value = false }] }
+if = [{ col = "rf_adv", op = "<", value = -0.6 }]
+then = [{ col = "bat_d_bb_pa", op = "<", value = 0 }, { col = "bat_d_iso", op = "<", value = 0 }]
+motivated_by = ["e-2018", "b-2018", "l-2025", "b-2024", "f-2021"]
+surprise = "rf_adv"
+context = ["rank", "bat_d_avg", "rank_ra", "ra_adv"]
+links = ["H6", "H7"]
+falsifier = "きっかけの5単位を除いて、不足が 0.6 を超える B の4分の1を超えて、四死球か長打の少なくとも一方が他球団以上"
+note = "R32 の P130 の逆（5中5）を、失点だけ優位の範囲から B クラス全体に広げた。中日を含む。きっかけ以外で読む"
+
+[[proposition]]
+id = "P133"
+statement = "得点の不足が1試合 0.6点を超えるなら、四死球も長打も他球団より少ない（A クラスも含む全体）"
+strength = "usually"
+if = [{ col = "rf_adv", op = "<", value = -0.6 }]
+then = [{ col = "bat_d_bb_pa", op = "<", value = 0 }, { col = "bat_d_iso", op = "<", value = 0 }]
+motivated_by = ["e-2018", "b-2018", "l-2025", "b-2024", "f-2021"]
+surprise = "rf_adv"
+context = ["rank", "bat_d_avg", "upper_half"]
+links = ["H6", "H7"]
+falsifier = "きっかけの5単位を除いて、不足が 0.6 を超える単位の4分の1を超えて、どちらか一方が他球団以上"
+note = "B クラスに限るか（P132）、不足の大きさそのものの形か（P133）を比べる"
+
+[[proposition]]
+id = "P134"
+statement = "0 の近く（|z| < 1）を除いて、得点にも失点にも、はっきりした優位がない（どちらも z ≤ −1）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_zone", op = "!=", value = 0 }, { col = "ra_zone", op = "!=", value = 0 }] }
+if = [{ col = "rf_zone", op = "==", value = -1 }, { col = "ra_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P126"
+change = "優位の符号ではなく、0 から1標準偏差以上離れた単位だけで読む（R32 で 0 の近くの単位が出入りした）"
+surprise = "rd"
+context = ["rank", "rf_adv", "ra_adv", "run_balance"]
+links = ["H2"]
+falsifier = "はっきりした優位がない単位の4分の1を超えて A クラス"
+note = "対偶（A なら、どちらかにはっきりした優位がある）を P126 の対偶 0.91 と並べる"
+
+[[proposition]]
+id = "P135"
+statement = "失点にだけはっきりした優位がある（失点 z ≥ 1、得点 z ≤ −1）チームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "ra_zone", op = "==", value = 1 }, { col = "rf_zone", op = "==", value = -1 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P128"
+change = "失点だけ優位の範囲を、符号ではなく1標準偏差以上の離れで決める"
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rf_adv", "ra_adv", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
+note = "範囲の単位は少なくなる見込み。判断保留は正しい結果としてありうる"
+
+# 追加: 2026-10-05。R34（R33 の3つの種）。計算前に登録した。
+# P136・P137 は R33 の P133 の対偶（判例はヤクルト 2017・ロッテ 2018 の2つ、どちらも四死球は他球団以上で長打だけ少ない）を見ている。
+# そのため、P136 の判例はその2つ、P137 の判例は 0 になることが、計算前に論理から分かっている。率と単位の数を読み、2026年で確かめる。
+# P138 は R33 で「不足 > 0.6 の17単位はすべて B」を見た後の命題。2026年で確かめる。
+# P139・P140 の *_zone_se は f81d0b2 で作った列で、Actions で作り直した season.jsonl の値はまだ見ていない。
+
+[[proposition]]
+id = "P136"
+statement = "四死球が他球団以上なら、得点の不足は1試合 0.6点以下"
+strength = "almost_always"
+if = [{ col = "bat_d_bb_pa", op = ">=", value = 0 }]
+then = [{ col = "rf_adv", op = ">=", value = -0.6 }]
+surprise = "rf_adv"
+context = ["bat_d_iso", "rank", "upper_half"]
+links = ["H6", "H7"]
+falsifier = "四死球が他球団以上の単位の1割を超えて、不足が 0.6 を超える"
+note = "P133 の対偶を経路ごとに分けた（四死球の経路）。判例は R33 で見た2単位（長打だけ少ない）になると分かっている。P137 と率・単位の数を比べる"
+
+[[proposition]]
+id = "P137"
+statement = "長打（ISO）が他球団以上なら、得点の不足は1試合 0.6点以下"
+strength = "almost_always"
+if = [{ col = "bat_d_iso", op = ">=", value = 0 }]
+then = [{ col = "rf_adv", op = ">=", value = -0.6 }]
+surprise = "rf_adv"
+context = ["bat_d_bb_pa", "rank", "upper_half"]
+links = ["H6", "H7"]
+falsifier = "長打が他球団以上の単位の1割を超えて、不足が 0.6 を超える"
+note = "P133 の対偶を経路ごとに分けた（長打の経路）。判例が 0 になると分かっている"
+
+[[proposition]]
+id = "P138"
+statement = "得点の不足が1試合 0.6点を超えるなら、必ず B クラス"
+strength = "always"
+if = [{ col = "rf_adv", op = "<", value = -0.6 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_adv"
+context = ["rank", "ra_adv", "run_balance"]
+links = ["H2"]
+falsifier = "不足が 0.6 を超えて A クラスの単位が1つでも出る"
+note = "R33 で 17中17 を見た後の命題。同じデータでは確かめにならない。2026年で確かめる（[confirm]）"
+
+[[proposition]]
+id = "P139"
+statement = "得点にも失点にも、誤差1つ分を超える優位がない（どちらも誤差1つ分以上の劣位）なら、B クラス（誤差の幅で 0 の近くを除く）"
+strength = "usually"
+scope = { where = [{ col = "rf_zone_se", op = "!=", value = 0 }, { col = "ra_zone_se", op = "!=", value = 0 }] }
+if = [{ col = "rf_zone_se", op = "==", value = -1 }, { col = "ra_zone_se", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P134"
+change = "幅の物差しを、チームの間の散らばり（R33、広すぎた）から、その年の平均の誤差（試合ごとの点の散らばり）にする"
+surprise = "rd"
+context = ["rank", "rf_adv", "ra_adv", "rf_adv_se", "ra_adv_se"]
+links = ["H2"]
+falsifier = "はっきりした優位がない単位の4分の1を超えて A クラス"
+note = "対偶（A なら、どちらかに誤差を超える優位）を P126 の対偶 0.91 と並べる"
+
+[[proposition]]
+id = "P140"
+statement = "失点にだけ誤差を超える優位がある（失点 +、得点 −、どちらも誤差1つ分以上）チームは、得失点差がプラスなら A クラス"
+strength = "usually"
+scope = { where = [{ col = "ra_zone_se", op = "==", value = 1 }, { col = "rf_zone_se", op = "==", value = -1 }] }
+if = [{ col = "rd", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P135"
+change = "幅の物差しを、その年の平均の誤差にする"
+motivated_by = ["t-2013", "t-2021", "t-2022", "h-2012", "l-2022", "d-2019"]
+surprise = "rd"
+context = ["rank", "rf_adv", "ra_adv", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "きっかけの6単位を除いて、得失点差プラスの単位の4分の1を超えて B クラス"
+note = "P128（符号、きっかけ以外 0.92）と並べる"
+
+# 追加: 2026-10-05。R35（中日の「失点だけ上位」の年を誤差の内側・外側に分ける）。計算前に登録した。
+# 中日の年の区分（R34 の記述）は見ている。中日以外で「得点は誤差を超えてマイナス・失点は誤差の内側」の単位の A・B は見ていない。
+
+[[proposition]]
+id = "P141"
+statement = "中日以外で、得点の不足が誤差を超え（得点 −1）、失点の優位が誤差の内側（失点 0）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "team", op = "!=", value = "d" }, { col = "rf_zone_se", op = "==", value = -1 },
+          { col = "ra_zone_se", op = "==", value = 0 }] }
+if = []
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance"
+context = ["rank", "rf_adv", "ra_adv", "rank_ra", "rank_rf"]
+links = ["H2"]
+falsifier = "この範囲の単位の4分の1を超えて A クラス"
+note = "中日の 2013〜2016・2022〜2025年はこの区分（R34）。中日の形が、得点ははっきり足りず失点は平均と区別できないチームに共通かを見る"
+
+[[proposition]]
+id = "P142"
+statement = "中日以外で、得点の不足が誤差を超え、失点の優位も誤差を超えている（得点 −1・失点 +1）なら、B クラス"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }, { col = "rf_zone_se", op = "==", value = -1 },
+          { col = "ra_zone_se", op = "==", value = 1 }] }
+if = []
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance"
+context = ["rank", "rf_adv", "ra_adv", "rd"]
+links = ["H2"]
+falsifier = "（P141 と率を比べるための命題）"
+note = "中日の 2012・2019・2021年の区分。P140 の範囲から中日を除いたもの（P140 の得失点差プラスの単位は見ている）"
+
+# 追加: 2026-10-05。R36 の結果を見た後の命題。範囲の14単位（中日 2012・2019・2021 を含む。2020年は除外）の値はすべて見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P143"
+statement = "得点の不足も失点の優位も誤差を超えている（得点 −1・失点 +1）チームは、上の相手（1・2位）との勝率が .47 以上なら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_zone_se", op = "==", value = -1 }, { col = "ra_zone_se", op = "==", value = 1 }] }
+if = [{ col = "vs_top_wpct", op = ">=", value = 0.47 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "vs_top_wpct"
+context = ["rank", "rd", "wins_vs_pythag", "one_run_net", "opp_net_gap_top_c"]
+links = ["H3"]
+falsifier = "2026年以降、この形で上の相手に .47 以上なのに B、または .47 未満なのに A の単位が続く"
+note = "R36 で、同じ形の A 5単位（.48〜.57）と B 6単位（.34〜.46）を分けた唯一の指標。境は見た後。上の相手は最終順位で決めるので、A かどうかと算術でつながる面がある"
+
+# 追加: 2026-10-05。R37 の結果を見た後の命題。得点 −1 の3つの形の B の最大と A の値を見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P144"
+statement = "得点の不足が誤差を超えている（得点 −1）チームは、上の相手（1・2位）との勝率が .47 以上なら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_zone_se", op = "==", value = -1 }] }
+if = [{ col = "vs_top_wpct", op = ">=", value = 0.47 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P143"
+change = "範囲を、失点 +1 の形だけから、得点 −1 の形すべて（失点 −1・0・+1）に広げた。R37 で阪神 2015・巨人 2016 も同じ向きに外れていた"
+surprise = "vs_top_wpct"
+context = ["rank", "ra_zone_se", "rd", "wins_vs_pythag"]
+links = ["H3"]
+falsifier = "2026年以降、得点がはっきり足りず上の相手に .47 以上なのに B の単位が出る"
+note = "上の相手は最終順位で決める（docs/propositions.md の Groups Defined By The Final Outcome）。A かどうかと算術でつながる面がある。境は見た後"
+
+# 追加: 2026-10-05。R38 の結果を見た後の命題。得失点差プラスの B 12単位・A 61単位の13の指標を見ている。
+# 境は結果に合わせず、P145 は R11（P52）の −1、P146 は五分（.500）を使う。2026年で確かめる。
+
+[[proposition]]
+id = "P145"
+statement = "得失点差がプラスでも、得点・失点の組み合わせ方が基準より1標準偏差を超えて不利なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "rd", op = ">", value = 0 }] }
+if = [{ col = "alloc_z_strat", op = "<", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "alloc_z_strat"
+context = ["rank", "rd", "wins_vs_pythag", "one_run_net"]
+links = ["H3"]
+falsifier = "得失点差プラスで組み合わせ方 < −1 の単位の4分の1を超えて A クラス"
+note = "R38 で得失点差プラスの B の 10/12 が A の25%より下だった指標。境は R11 と同じ −1。組み合わせ方は勝ち数と一部算術でつながる（R1）"
+
+[[proposition]]
+id = "P146"
+statement = "得失点差がプラスでも、下の相手（4〜6位）に勝ち越せない（.500 未満）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "rd", op = ">", value = 0 }] }
+if = [{ col = "vs_lower_wpct", op = "<", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "vs_lower_wpct"
+context = ["rank", "rd", "vs_top_wpct", "alloc_z_strat"]
+links = ["H3"]
+falsifier = "得失点差プラスで下の相手に .500 未満の単位の4分の1を超えて A クラス"
+note = "R38 で得失点差プラスの B の 8/12 が A の25%（.54）より下だった指標。境は五分。下の相手は最終順位で決める（docs/propositions.md の前提）"
+
+# 追加: 2026-10-05。R40（精度の高い命題の逆・裏と、形ごとの命題）。計算前に登録した。
+# 見ているもの: 形 -1/-1（13中12 が B、阪神 2015 が A）・-1/0（中日以外 17中16 が B、巨人 2016 が A。中日の該当年はすべて B）・
+# -1/+1（中日以外 11中6 が B）の A・B（R35〜R37）、形ごとの単位数（R39）。ほかの形の A・B と、得点・失点 −1 から見た逆は見ていない。
+
+[[proposition]]
+id = "P147"
+statement = "得点の不足が誤差を超えている（得点 −1）なら、B クラス"
+strength = "usually"
+if = [{ col = "rf_zone_se", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_adv_t"
+context = ["rank", "adv_shape_se", "run_balance_t"]
+links = ["H2"]
+falsifier = "得点 −1 の単位の4分の1を超えて A クラス"
+note = "元の命題の率は R35〜R37 からほぼ分かっている。読みたいのは逆（B なら得点ははっきり足りない）で、P148 の逆と比べる"
+
+[[proposition]]
+id = "P148"
+statement = "失点の優位が誤差を超えて負けている（失点 −1）なら、B クラス"
+strength = "usually"
+if = [{ col = "ra_zone_se", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "ra_adv_t"
+context = ["rank", "adv_shape_se", "run_balance_t"]
+links = ["H2"]
+falsifier = "失点 −1 の単位の4分の1を超えて A クラス"
+note = "P147 の鏡（失点の側）。逆（B なら失点ははっきり劣る）を P147 の逆と比べる"
+
+[[proposition]]
+id = "P149"
+statement = "得点も失点もはっきり劣る（形 -1/-1）なら、B クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "-1/-1" }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて A クラス"
+note = "見ている（13中12）。形ごとの表をそろえるために置く"
+
+[[proposition]]
+id = "P150"
+statement = "得点ははっきり足りず、失点は平均と区別できない（形 -1/0）なら、B クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "-1/0" }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t", "bat_routes"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて A クラス"
+note = "中日を含めた P141。見ている。P151（鏡 0/-1）と比べる"
+
+[[proposition]]
+id = "P151"
+statement = "得点は平均と区別できず、失点ははっきり劣る（形 0/-1）なら、B クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "0/-1" }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて A クラス"
+note = "P150 の鏡。まだ見ていない"
+
+[[proposition]]
+id = "P152"
+statement = "得点も失点もはっきり上回る（形 +1/+1）なら、A クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "+1/+1" }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて B クラス"
+note = "まだ見ていない"
+
+[[proposition]]
+id = "P153"
+statement = "得点ははっきり上回り、失点は平均と区別できない（形 +1/0）なら、A クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "+1/0" }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて B クラス"
+note = "まだ見ていない。P154（鏡 0/+1）と比べる"
+
+[[proposition]]
+id = "P154"
+statement = "得点は平均と区別できず、失点ははっきり上回る（形 0/+1）なら、A クラス"
+strength = "usually"
+if = [{ col = "adv_shape_se", op = "==", value = "0/+1" }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "run_balance_t"
+context = ["rank", "rf_adv_t", "ra_adv_t"]
+links = ["H2"]
+falsifier = "この形の4分の1を超えて B クラス"
+note = "まだ見ていない"
+
+# 追加: 2026-10-05。R41（精度の高い命題の逆・裏を漏れなく見る）。計算前に登録した。
+# 親の命題は条件を範囲（where）に書いていたため、逆・裏が作られていなかった。team 以外の where の条件を「もし」に移す。
+# 元の命題の単位と判例は親と同じになる（見ている）。逆・裏・対偶はまだ見ていない。
+
+[[proposition]]
+id = "P155"
+statement = "得点がリーグ5位以下のチーム・シーズンでは、得点する回の頻度の不足が、得点した回の大きさの不足より大きい（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_freq_minus_size", op = "<", value = 0 }]
+parent = "P23"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_freq_minus_size"
+context = ["rank", "inn_dlog_freq", "inn_dlog_size"]
+links = ["H5", "H6"]
+note = "R41。親 P23 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P156"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点した回のうち1点の回の割合が他球団より多い（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_d_single_share", op = ">", value = 0 }]
+parent = "P26"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_d_single_share"
+context = ["inn_d_big_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+note = "R41。親 P26 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P157"
+statement = "得点がリーグ5位以下だったシーズンの中日は、得点した回のうち3点以上の回の割合が他球団より少ない（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+parent = "P27"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_d_big_share"
+context = ["inn_d_single_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+note = "R41。親 P27 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P158"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ホームの試合で得点した回の大きさが他球団（ホーム同士）より小さい（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_dlog_size_home", op = "<", value = 0 }]
+parent = "P28"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_dlog_size_home"
+context = ["inn_dlog_size_away", "inn_dlog_size", "inn_dlog_freq_home"]
+links = ["H5", "H6"]
+note = "R41。親 P28 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P159"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ビジターの試合で得点した回の大きさが他球団（ビジター同士）より小さい（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d", seasons = "2013-2025" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_dlog_size_away", op = "<", value = 0 }]
+parent = "P29"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_dlog_size_away"
+context = ["inn_dlog_size_home", "inn_dlog_size", "inn_dlog_freq_away"]
+links = ["H5", "H6"]
+note = "R41。親 P29 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P160"
+statement = "得点がリーグ5位以下のチーム・シーズン（中日を除く）では、得点した回のうち3点以上の回の割合が他球団より少ない（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { seasons = "2013-2025", where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "inn_d_big_share", op = "<", value = 0 }]
+parent = "P30"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "inn_d_big_share"
+context = ["inn_d_single_share", "inn_dlog_size", "rank"]
+links = ["H5", "H6"]
+note = "R41。親 P30 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P161"
+statement = "得点がリーグ5位以下だったシーズンの中日は、ISO（長打率 − 打率）が他球団より低い（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "bat_d_iso", op = "<", value = 0 }]
+parent = "P31"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "bat_d_iso"
+context = ["bat_d_obp", "bat_d_hr_pa", "bat_d_bb_pa", "rank"]
+links = ["H2", "H6"]
+note = "R41。親 P31 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P162"
+statement = "得点がリーグ5位以下だったシーズンの中日は、出塁率が他球団より低い（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "bat_d_obp", op = "<", value = 0 }]
+parent = "P32"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "bat_d_obp"
+context = ["bat_d_iso", "bat_d_avg", "bat_d_bb_pa", "rank"]
+links = ["H2", "H5"]
+note = "R41。親 P32 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P163"
+statement = "得点がリーグ5位以下だったシーズンの中日は、走者1人あたりの得点が他球団より少ない（条件を「もし」に移した形）"
+strength = "usually"
+scope = { team = "d" }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "bat_d_r_runner", op = "<", value = 0 }]
+parent = "P46"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "bat_d_r_runner"
+context = ["bat_d_r_ab", "bat_d_r_pa", "bat_d_obp", "bat_d_iso"]
+links = ["H5", "H6"]
+note = "R41。親 P46 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P164"
+statement = "得点がリーグ5位以下のチーム・シーズン（中日を除く）では、走者1人あたりの得点が他球団より少ない（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "rank_rf", op = ">=", value = 5 }]
+then = [{ col = "bat_d_r_runner", op = "<", value = 0 }]
+parent = "P47"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "bat_d_r_runner"
+context = ["bat_d_r_ab", "bat_d_obp", "bat_d_iso"]
+links = ["H5", "H6"]
+note = "R41。親 P47 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P165"
+statement = "中日以外の B クラスのチームは、順位の高さの線に山がある（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "upper_half", op = "==", value = false }]
+then = [{ col = "traj_rank_peak", op = "==", value = true }]
+parent = "P98"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "traj_rank_peak_x"
+context = ["traj_rank_shape", "traj_rank_peak_base", "traj_rank_end_slope", "rank"]
+links = ["H1", "H6"]
+note = "R41。親 P98 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P166"
+statement = "中日以外の B クラスのチームは、前半の線だけから当てた波の行き先が、もう4位以下（条件を「もし」に移した形）"
+strength = "more_often_than_not"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "upper_half", op = "==", value = false }]
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+parent = "P105"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+note = "R41。親 P105 の元の命題・判例と同じ。読むのは逆・裏"
+
+[[proposition]]
+id = "P167"
+statement = "中日以外で、得点の不足が誤差を超え（得点 −1）、失点の優位が誤差の内側（失点 0）なら、B クラス（条件を「もし」に移した形）"
+strength = "usually"
+scope = { where = [{ col = "team", op = "!=", value = "d" }] }
+if = [{ col = "rf_zone_se", op = "==", value = -1 }, { col = "ra_zone_se", op = "==", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+parent = "P141"
+change = "範囲（where）に書いていた条件を「もし」に移し、逆・裏を見られるようにした。元の命題の単位は親と同じ"
+surprise = "run_balance"
+context = ["rank", "rf_adv", "ra_adv", "rank_ra", "rank_rf"]
+links = ["H2"]
+note = "R41。親 P141 の元の命題・判例と同じ。読むのは逆・裏"
+
+# 追加: 2026-10-05。R42（前半の線の行き先と B、中日を含めて4つの形で）。計算前に登録した。
+# 見ているもの: P104（中日の B 12年のうち 6年は行き先が空、残り 6年はすべて 4位以下）、P105・P166（中日以外）。
+# 中日を含めた逆・裏・対偶、中日の A（2012年）の値は見ていない。
+
+[[proposition]]
+id = "P168"
+statement = "B クラスなら、前半の線だけから当てた波の行き先が、もう4位以下（中日を含む全体）"
+strength = "more_often_than_not"
+if = [{ col = "upper_half", op = "==", value = false }]
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+parent = "P166"
+change = "範囲から「中日以外」を外し、中日を含めた全体で4つの形を見る"
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+falsifier = "B クラスの単位の半分以下しか、前半の行き先が4位以下にならない"
+note = "減衰しない波が選ばれた年は行き先が空で、判定できない単位（exit 5 の対象）として数える"
+
+[[proposition]]
+id = "P169"
+statement = "中日は、B クラスの年なら、前半の線だけから当てた波の行き先が、もう4位以下"
+strength = "more_often_than_not"
+scope = { team = "d" }
+if = [{ col = "upper_half", op = "==", value = false }]
+then = [{ col = "wave_limit_rank_h1", op = ">=", value = 3.5 }]
+parent = "P104"
+change = "範囲の「B クラス」を「もし」に移し、中日だけで逆・裏を見られるようにした（R41 と同じ立て直し）"
+surprise = "wave_limit_rank_h1"
+context = ["wave_limit_rank", "course_rank_h1", "rank"]
+links = ["H1", "H6"]
+falsifier = "中日の B の年の半分以下しか、前半の行き先が4位以下にならない"
+note = "中日の A は 2012年だけなので、対偶・裏は単位が少ない"
+
+# 追加: 2026-10-05。R43（残っていた種の続き）。計算前に登録した。
+# 見ているもの: P116 の判例15単位の名前と、その得点の順位（R27）。中日 2016年の前半3位・最終6位（R20・R42）。
+# course_rf_d・course_ra_d の値と、P116 の判例の失点の区分は見ていない。
+
+[[proposition]]
+id = "P170"
+statement = "前半の順位より3つ以上下で終わった（course_fade ≥ 3）なら、後半の失点が前半より（他球団と比べて）増えている"
+strength = "more_often_than_not"
+if = [{ col = "course_fade", op = ">=", value = 3 }]
+then = [{ col = "course_ra_d", op = ">", value = 0 }]
+surprise = "course_ra_d"
+context = ["rank", "course_rank_h1", "course_rf_d", "half2_vs_pythag"]
+links = ["H6"]
+falsifier = "大きく落ちた単位の半分以下しか、後半の失点が増えていない"
+note = "開いた問い5（投手の負担は後半に効くか）の、投手の記録なしでできる部分。P171（得点の側）と率を比べる"
+
+[[proposition]]
+id = "P171"
+statement = "前半の順位より3つ以上下で終わったなら、後半の得点が前半より（他球団と比べて）減っている"
+strength = "more_often_than_not"
+if = [{ col = "course_fade", op = ">=", value = 3 }]
+then = [{ col = "course_rf_d", op = "<", value = 0 }]
+surprise = "course_rf_d"
+context = ["rank", "course_rank_h1", "course_ra_d", "half2_vs_pythag"]
+links = ["H6"]
+falsifier = "大きく落ちた単位の半分以下しか、後半の得点が減っていない"
+note = "P170 の鏡（得点の側）"
+
+[[proposition]]
+id = "P172"
+statement = "得点した回の大きさがリーグ上位2位以内で、失点がはっきり劣ってはいない（失点の区分 ≥ 0）なら、A クラス"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_rank", op = ">=", value = 5 }, { col = "ra_zone_se", op = ">=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+parent = "P116"
+change = "R27 の種: P116 の判例（大きさは上位なのに B）の多くは得点も上位だった。失点がはっきり劣る単位を除く条件を足す"
+surprise = "inn_dlog_size"
+context = ["rank", "ra_adv_t", "rank_rf"]
+links = ["H5"]
+falsifier = "この条件の単位の4分の1を超えて B クラス"
+note = "P173 と並べる。P116 は 0.69"
+
+[[proposition]]
+id = "P173"
+statement = "得点した回の大きさがリーグ上位2位以内でも、失点がはっきり劣る（失点 −1）なら、B クラス"
+strength = "usually"
+scope = { seasons = "2013-2025" }
+if = [{ col = "inn_size_rank", op = ">=", value = 5 }, { col = "ra_zone_se", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "ra_adv_t"
+context = ["rank", "inn_dlog_size", "rank_rf"]
+links = ["H5"]
+falsifier = "この条件の単位の4分の1を超えて A クラス"
+note = "P172 の裏の側を、命題として立てたもの"
+
+# 追加: 2026-10-05。R46（どの道筋にも当たらない B と、1位の独走）。計算前に登録した。
+# 見ているもの: どの道筋にも当たらない B の4単位の名前（広島 2012・中日 2018・広島 2019・巨人 2023、どれもセ・リーグ）。
+# 野球の一般知識として、これらの年のセ・リーグに独走したチームがあったことはおおよそ知っている。lg_* の値は見ていない。
+
+[[proposition]]
+id = "P174"
+statement = "1位が抜けた年（1位と2位の勝率差 .050 以上）の B クラスは、どの道筋にも当たらない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }] }
+if = [{ col = "lg_lead_gap", op = ">=", value = 0.05 }]
+then = [{ col = "b_paths", op = "==", value = "none" }]
+surprise = "lg_lead_gap"
+context = ["rank", "league", "lg_gap34", "lg_rest_sd", "b_paths"]
+links = ["H1"]
+falsifier = "（P175 と率を比べるための命題。率そのものは低い見込み）"
+note = "読むのは率の比べ（P175 との差）と、逆（道筋のない B なら1位が抜けた年）"
+
+[[proposition]]
+id = "P175"
+statement = "1位が抜けていない年（1位と2位の勝率差 .050 未満）の B クラスは、どの道筋にも当たらない"
+strength = "more_often_than_not"
+scope = { where = [{ col = "upper_half", op = "==", value = false }] }
+if = [{ col = "lg_lead_gap", op = "<", value = 0.05 }]
+then = [{ col = "b_paths", op = "==", value = "none" }]
+surprise = "lg_lead_gap"
+context = ["rank", "league", "lg_gap34", "lg_rest_sd", "b_paths"]
+links = ["H1"]
+falsifier = "（P174 と率を比べるための命題）"
+note = "P174 の比べる相手"
+
+[[proposition]]
+id = "P176"
+statement = "どの道筋にも当たらない B クラスは、3位と4位の勝率差が .020 未満の年にいる（A と B の境が近い）"
+strength = "usually"
+scope = { where = [{ col = "upper_half", op = "==", value = false }] }
+if = [{ col = "b_paths", op = "==", value = "none" }]
+then = [{ col = "lg_gap34", op = "<", value = 0.02 }]
+surprise = "lg_gap34"
+context = ["rank", "league", "lg_lead_gap", "lg_rest_sd"]
+links = ["H1"]
+falsifier = "道筋のない B の4分の1を超えて、3位と4位の差が .020 以上"
+note = "単位は4つで判断保留の見込み。逆（境が近い年の B は道筋がない）も見る"
+
+# 追加: 2026-10-05。R49（阪神 2015年をきっかけにした命題。集合の式で、どの式でも判例だった単位）。計算前に登録した。
+# 見ているもの: 阪神 2015年の値（R37: 点の差より +10.3勝、組み合わせ方 +1.44、中位の相手との変換 +6.0）、中日 2022年の点の差より +6.9勝（R30）。
+# 境の値は仮置き（刻んで振らない）。きっかけ（阪神 2015年）以外で読む。
+
+[[proposition]]
+id = "P177"
+statement = "点の差から見込まれるより5勝以上多く勝てば、A クラス"
+strength = "usually"
+if = [{ col = "wins_vs_pythag", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "wins_vs_pythag"
+context = ["rank", "rd", "alloc_z_strat", "one_run_net"]
+links = ["H3"]
+falsifier = "きっかけ以外で、5勝以上多く勝った単位の4分の1を超えて B"
+note = "R49。中日 2022年（+6.9 で B）は判例になると分かっている。wins_vs_pythag は勝ち数を含むので A かどうかと一部算術でつながる"
+
+[[proposition]]
+id = "P178"
+statement = "得点・失点の組み合わせ方が基準より1標準偏差以上有利なら、A クラス"
+strength = "usually"
+if = [{ col = "alloc_z_strat", op = ">=", value = 1 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "alloc_z_strat"
+context = ["rank", "rd", "wins_vs_pythag"]
+links = ["H3"]
+falsifier = "きっかけ以外で、組み合わせ方 ≥ 1 の単位の4分の1を超えて B"
+note = "R49。P52 の「組み合わせ方 < −1 ⇒ B」の鏡の側"
+
+[[proposition]]
+id = "P179"
+statement = "中位の相手との試合で、点の差から見込まれるより3勝以上多く勝てば、A クラス"
+strength = "usually"
+if = [{ col = "opp_conv_mid", op = ">=", value = 3 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "opp_conv_mid"
+context = ["rank", "rd", "opp_conv_top", "opp_conv_low"]
+links = ["H3"]
+falsifier = "きっかけ以外で、中位の相手から3勝以上多く勝った単位の4分の1を超えて B"
+note = "R49。中位の相手は最終順位で決める（docs/propositions.md の前提）"
+
+# 追加: 2026-10-05。R50（A の線までの距離）。計算前に登録した。lg_line・line_gap_pythag の値は見ていない。
+# きっかけは阪神 2015年（2015年のセ・リーグは 1位 − 2位 .011、3位 − 4位 .004 で、全チームが五分前後に固まっていた、R46 の表）。
+
+[[proposition]]
+id = "P180"
+statement = "点の差どおりに勝てば A の線（3位と4位の勝率の中間）に届く（line_gap_pythag ≥ 0）なら、A クラス"
+strength = "usually"
+if = [{ col = "line_gap_pythag", op = ">=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "line_gap_pythag"
+context = ["rank", "lg_line", "pythag_fixed", "resid_fixed", "wins_vs_pythag"]
+links = ["H2", "H3"]
+falsifier = "点の差どおりで線に届くチームの4分の1を超えて B"
+note = "勝率 − 線 = line_gap_pythag + resid_fixed の恒等式のうち、前の項だけで言う命題。逆の判例（線に届かないのに A）は、点の差より勝って線を越えたチーム。線は最終順位で決める（前提）"
+
+# 追加: 2026-10-05。R53（線の引き方の一覧）の結果を見た後の命題。mix_lo・mix_hi・mix_zone の値は全単位で見ている。
+# 帯の端は巨人 2018年（A の最低 .486）と巨人 2017年（B の最高 .514）で決まる。2026年で確かめる。
+# 勝率と順位は算術でつながるので、「なぜ B か」の説明ではなく、「A と B が混ざる帯からどれだけ下にいたか」の記述として使う。
+
+[[proposition]]
+id = "P181"
+statement = "ほかの年の A の最低勝率より下（A と B が混ざる帯の下、mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["g-2018"]
+surprise = "mix_zone"
+context = ["wpct", "mix_lo", "mix_hi", "rank"]
+links = ["H2"]
+falsifier = "帯の下の単位の10分の1を超えて A"
+note = "R53。帯は自分の年を除いて引く（1年抜き）。きっかけの巨人 2018年は帯の下端そのもの。勝率と順位の算術のつながりが強いので、通っても説明ではない"
+
+[[proposition]]
+id = "P182"
+statement = "ほかの年の B の最高勝率より上（帯の上、mix_zone = +1）なら、A クラス"
+strength = "almost_always"
+if = [{ col = "mix_zone", op = "==", value = 1 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["g-2017"]
+surprise = "mix_zone"
+context = ["wpct", "mix_lo", "mix_hi", "rank"]
+links = ["H2"]
+falsifier = "帯の上の単位の10分の1を超えて B"
+note = "R53。P181 の鏡の側。きっかけの巨人 2017年は帯の上端そのもの"
+
+# 追加: 2026-10-05。R54（帯の両端、巨人 2017・2018年）の結果を見た後の命題。2つの単位の値は見ている。ほかの単位の値は見ていない。
+# 2つの巨人はどちらも、収支はプラス（失点の優位がリーグでいちばん大きい）なのに、点の差を勝ちに変えられず（1点差 −14・−12）、勝率が線の近くまで落ちていた。
+# 中日の B の年はその鏡（収支はマイナス、点の差より勝った年が多い、R51）に見えるので、鏡の側も同時に登録する。
+
+[[proposition]]
+id = "P183"
+statement = "収支がプラスなのに点の差を勝ちに変えられない（path_convert）なら、A と B が混ざる帯の中に落ちる"
+strength = "usually"
+if = [{ col = "run_balance", op = ">", value = 0 }, { col = "path_convert", op = "==", value = true }]
+then = [{ col = "mix_zone", op = "==", value = 0 }]
+motivated_by = ["g-2017", "g-2018"]
+surprise = "path_convert"
+context = ["run_balance", "wins_vs_pythag", "one_run_net", "alloc_z_strat", "wpct", "mix_lo", "mix_hi"]
+links = ["H2", "H3"]
+falsifier = "きっかけ以外で、収支プラス・変えられない単位の4分の1を超えて帯の外"
+note = "R54。帯は1年抜き（R53）。path_convert の規則は R45 で決めたもの（wins_vs_pythag < −2 か alloc_z_strat < −1）を使い、値を見て変えない"
+
+[[proposition]]
+id = "P184"
+statement = "収支がマイナスなら、点の差より勝っても（resid_fixed > 0）、A と B が混ざる帯の下にいる"
+strength = "usually"
+if = [{ col = "run_balance", op = "<", value = 0 }, { col = "resid_fixed", op = ">", value = 0 }]
+then = [{ col = "mix_zone", op = "==", value = -1 }]
+motivated_by = ["g-2017", "g-2018"]
+surprise = "resid_fixed"
+context = ["run_balance", "wins_vs_pythag", "wpct", "mix_lo"]
+links = ["H2", "H3"]
+falsifier = "収支マイナス・点の差より勝った単位の4分の1を超えて帯の中か上"
+note = "R54。P183 の鏡の側（中日の B の年の形、R51 の区画）。きっかけは巨人の2単位だが、この命題の範囲には入らない（どちらも収支プラス）"
+
+# 追加: 2026-10-05。R55（収支の不足の大きさ、R54 の種1）。計算前に登録した。run_balance_t の値は見ていない。
+# ただし run_balance（不足の大きさ）は R54 で P184 の48単位について見ている。区切りは既存の「誤差1つ分」（*_zone_se と同じ |t| ≥ 1、R34）で、値から決めない。
+# きっかけは阪神 2015年（中日と同じ大きさの不足で A に入ったただ1つの単位）。
+
+[[proposition]]
+id = "P185"
+statement = "収支の不足が誤差を超える（run_balance_t ≤ −1）なら、点の差より勝っても（resid_fixed > 0）B クラス"
+strength = "almost_always"
+if = [{ col = "run_balance_t", op = "<=", value = -1 }, { col = "resid_fixed", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["t-2015"]
+surprise = "run_balance_t"
+context = ["run_balance", "resid_fixed", "wins_vs_pythag", "wpct", "mix_zone"]
+links = ["H2", "H3"]
+falsifier = "きっかけ以外で、不足が誤差を超え・点の差より勝った単位の10分の1を超えて A"
+note = "R55。P184 を不足の大きさで狭めた命題。R54 で run_balance を見ているので、確かめは 2026年"
+
+[[proposition]]
+id = "P186"
+statement = "収支の不足が誤差を超える（run_balance_t ≤ −1）なら、A と B が混ざる帯の下にいる"
+strength = "usually"
+if = [{ col = "run_balance_t", op = "<=", value = -1 }]
+then = [{ col = "mix_zone", op = "==", value = -1 }]
+motivated_by = ["t-2015"]
+surprise = "run_balance_t"
+context = ["run_balance", "resid_fixed", "wpct", "mix_lo"]
+links = ["H2"]
+falsifier = "きっかけ以外で、不足が誤差を超える単位の4分の1を超えて帯の中か上"
+note = "R55。勝ち方の条件を外した形。逆（帯の下なら不足が誤差を超える）で、帯の下に落ちる別の道（不足は誤差の内だが勝ち方で落とした）を数える"
+
+# 追加: 2026-10-05。R55・R56 の種。結果を見た後の命題。
+# P187 は「点の差より負けた」だけの集合を作るための命題（R55 の中日の2つ目の道）。A にも多いと見込んで登録する（通らないことを先に見込む）。
+# P188 は R56（帯の中では越えるべき高さが決めた）を、人が選んだ .500 の線（R51 でユーザーが挙げた線）で言う命題。帯の中の31単位の lg_bar の中央値は見ている。
+
+[[proposition]]
+id = "P187"
+statement = "点の差より負けた（resid_fixed < 0）なら、B クラス"
+strength = "more_often_than_not"
+if = [{ col = "resid_fixed", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2014", "d-2015", "d-2018", "d-2019"]
+surprise = "resid_fixed"
+context = ["run_balance_t", "wins_vs_pythag", "wpct"]
+links = ["H3"]
+falsifier = "点の差より負けた単位の半分以上が A"
+note = "R55。中日の B の2つ目の道（不足は誤差の内なのに点の差より負けた4年）の片側だけを取り出した集合のための命題"
+
+[[proposition]]
+id = "P188"
+statement = "A と B が混ざる帯の中で、越えるべき高さ（ほかの5球団の3番目の勝率）が .500 未満なら、A クラス"
+strength = "usually"
+scope = { where = [{ col = "mix_zone", op = "==", value = 0 }] }
+if = [{ col = "lg_bar", op = "<", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015"]
+surprise = "lg_bar"
+context = ["wpct", "lg_line", "lg_rank_at_500", "mix_lo", "mix_hi"]
+links = ["H2"]
+falsifier = "きっかけ以外で、帯の中・高さ .500 未満の単位の4分の1を超えて B"
+note = "R56。勝率 − lg_bar の符号は A・B と算術で一致するので、この命題は「帯の中の勝率はほぼ .500 なので、外の高さが .500 の上か下かで決まる」ことの記述。.500 は R51 の線で、値から選んでいない"
+
+# 追加: 2026-10-05。R58（2本の線で3つの状態、時期をまたぐ動き）の結果を見た後の命題。全単位の値を見ている。2026年で確かめる。
+# 順位の目盛りの2本の線（2.5位・4.5位）は、3.5位の上下に1つずつで、値から選んでいない。
+
+[[proposition]]
+id = "P189"
+statement = "試合数の 3/4 の時点で B の状態（5〜6位）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "course_rank_q3", op = ">=", value = 5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2019"]
+surprise = "course_rank_q3"
+context = ["course_rank_h1", "course_rank_q1", "rank", "clinch_out_x"]
+links = ["H2"]
+falsifier = "3/4 の時点で5〜6位の単位の10分の1を超えて A"
+note = "R58。3/4 の時点の順位は、その時点までの各チームの試合だけで並べたもの（R20）。逆（B ⇒ 3/4 で5〜6位）の判例は、最後に落ちた B（中日 2013・2014・2021年など）"
+
+[[proposition]]
+id = "P190"
+statement = "効く試合だけで引いた帯（live_mix_zone）の下なら、B クラス"
+strength = "almost_always"
+if = [{ col = "live_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["g-2018"]
+surprise = "live_mix_zone"
+context = ["live_wpct", "live_mix_lo", "mix_zone", "dead_g"]
+links = ["H2"]
+falsifier = "効く試合の帯の下の単位の10分の1を超えて A"
+note = "R58。P181 を効く試合だけで言い直した命題（change: 全試合 → 効く試合）。帯の端は巨人 2018年のまま"
+parent = "P181"
+change = "勝率を、A・B が決まる前の効く試合だけで数える（R57・R58）"
+
+# 追加: 2026-10-05。R60 の結果を見た後の命題。3/4 の時点で3〜4位の51単位の値を見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P191"
+statement = "試合数の 3/4 の時点で3〜4位（AB の状態）なら、最後の区間で勝ち越せば A クラス"
+strength = "usually"
+scope = { where = [{ col = "course_rank_q3", op = ">=", value = 3 }, { col = "course_rank_q3", op = "<=", value = 4 }] }
+if = [{ col = "q_wl_4", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["g-2017"]
+surprise = "q_wl_4"
+context = ["course_rank_q3", "lock_g", "q_wl_3", "lg_bar"]
+links = ["H2"]
+falsifier = "きっかけ以外で、3/4 で3〜4位・最後の区間で勝ち越した単位の4分の1を超えて B"
+note = "R60。最後の区間の境は自分の試合数 × 3 ÷ 4 の切り捨て。3/4 の時点の順位（course_rank_q3）は各チームの 3/4 までの試合で並べたもの（R20）で、区間の境とほぼ同じ所"
+
+# 追加: 2026-10-05。R62 の結果を見た後の命題。3/4 で3〜4位の51単位の値を見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P192"
+statement = "試合数の 3/4 の時点で3〜4位なら、最後の区間で下位半分の相手から勝ち越せば A クラス"
+strength = "usually"
+scope = { where = [{ col = "course_rank_q3", op = ">=", value = 3 }, { col = "course_rank_q3", op = "<=", value = 4 }] }
+if = [{ col = "q4_wl_vs_lower", op = ">", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["d-2021"]
+surprise = "q4_wl_vs_lower"
+context = ["q4_wl_vs_upper", "q4_rd_g", "lg_bar", "q_wl_4"]
+links = ["H2"]
+falsifier = "きっかけ以外で、3/4 で3〜4位・最後の区間で下の相手から勝ち越した単位の4分の1を超えて B"
+note = "R62。下位半分の相手は最終順位で決める（docs/propositions.md の前提）ので、最後の区間の成績と算術でつながる分がある"
+
+# 追加: 2026-10-06。R66（順位ではなく指標の値に線を引く）の結果を見た後の命題。2013〜2025年の値を見ている。2012年は軽く確かめた。2026年で確かめる。
+# 帯は1年抜き（自分の年を除いたほかの年の A の最も悪い値）。人が決める区切りの値はない。
+
+[[proposition]]
+id = "P193"
+statement = "得点の優位が、ほかの年のどの A よりも低い（rf_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "rf_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2023"]
+surprise = "rf_mix_zone"
+context = ["rf_adv", "rf_mix_lo", "ra_adv", "run_balance"]
+links = ["H1", "H2"]
+falsifier = "得点の優位が帯の下の単位の10分の1を超えて A"
+note = "R66。中日の B 12年のうち5年がこの状態。得点だけの帯でここまで分かれるのは、得点の不足が中日の B の中心であることの記述"
+
+[[proposition]]
+id = "P194"
+statement = "収支が、ほかの年のどの A よりも低い（bal_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "bal_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["t-2015"]
+surprise = "bal_mix_zone"
+context = ["run_balance", "bal_mix_lo", "resid_fixed"]
+links = ["H2"]
+falsifier = "収支が帯の下の単位の10分の1を超えて A"
+note = "R66。帯の端は阪神 2015年（収支 −0.61 で A、R54）が決めているはず。自分の年を除くので、阪神 2015年の年には帯が狭まる"
+
+[[proposition]]
+id = "P195"
+statement = "下位半分の相手との勝率が、ほかの年のどの A よりも低い（vsl_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "vsl_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2021"]
+surprise = "vsl_mix_zone"
+context = ["vs_lower_wpct", "vsl_mix_lo", "vs_top_wpct"]
+links = ["H2"]
+falsifier = "下の相手との勝率が帯の下の単位の10分の1を超えて A"
+note = "R66。下位半分は最終順位で決める（前提）ので、自分の順位と算術でつながる分がある。中日の B 12年のうち7年がこの状態"
+
+# 追加: 2026-10-06。R67（独自の指標・得点と失点の状態の9通り）の結果を見た後の命題。2013〜2025年の値を見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P196"
+statement = "得点の側がリーグの下2つ（rf_state2 = B）で、失点の側が真ん中（ra_state2 = AB）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "rf_state2", op = "==", value = "B" }, { col = "ra_state2", op = "==", value = "AB" }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2013", "d-2015", "d-2016", "d-2023", "d-2024", "d-2025"]
+surprise = "rf_adv"
+context = ["rf_state2", "ra_state2", "ra_adv", "run_balance", "resid_fixed"]
+links = ["H1", "H2"]
+falsifier = "得点が下2つ・失点が真ん中の単位の10分の1を超えて A"
+note = "R67。2013〜2025年では 0/15 が A。中日の B のうち6年がこのます目。2本線は順位ではなく値の線（add_state2）"
+
+[[proposition]]
+id = "P197"
+statement = "得点・失点の分布から見た A の確率が、ほかの年のどの A よりも低い（sim_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "sim_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2017"]
+surprise = "sim_mix_zone"
+context = ["sim_p_upper", "sim_mix_lo", "run_balance_t"]
+links = ["H2"]
+falsifier = "分布から見た A の確率が帯の下の単位の10分の1を超えて A"
+note = "R67。独自の指標のうち帯がいちばん狭い（中 72/144）。中日の B のうち9年が帯の下"
+
+# 追加: 2026-10-06。R71（二段の式）のための命題。R67〜R70 の結果を見た後。2026年で確かめる。
+# 二段: 収支が片側に振れたます目では収支の符号、得点も失点も真ん中のます目では外の高さ（.500）と勝ち方の符号。区切りは中立の値（0・.500）で、値から選んでいない。
+
+[[proposition]]
+id = "P198"
+statement = "得点も失点もリーグの真ん中（rf_state2 = ra_state2 = AB）なら、A クラス"
+strength = "more_often_than_not"
+if = [{ col = "rf_state2", op = "==", value = "AB" }, { col = "ra_state2", op = "==", value = "AB" }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["g-2023"]
+surprise = "lg_bar"
+context = ["rf_adv", "ra_adv", "run_balance", "lg_bar", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "きっかけ以外で、得点も失点も真ん中の単位の半分以上が B"
+note = "R67・R70。集合 MIDDLE のための命題（2013〜2025年で 12/16 が A を見ている）"
+
+[[proposition]]
+id = "P199"
+statement = "収支が 0 以下（得点の不足が失点の優位以上）なら、B クラス"
+strength = "usually"
+if = [{ col = "run_balance", op = "<=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["t-2015"]
+surprise = "run_balance"
+context = ["rf_adv", "ra_adv", "wins_vs_pythag", "lg_bar"]
+links = ["H2"]
+falsifier = "きっかけ以外で、収支 0 以下の単位の4分の1を超えて A"
+note = "R69（収支の符号が全体で 118/144 を当てた）。集合 BAL_NONPOS のための命題"
+
+[[proposition]]
+id = "P200"
+statement = "越えるべき高さ（ほかの球団の上位半分の最後の勝率）が .500 を超えるなら、B クラス"
+strength = "usually"
+if = [{ col = "lg_bar", op = ">", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["g-2017"]
+surprise = "lg_bar"
+context = ["wpct", "lg_line", "lg_rank_at_500"]
+links = ["H2"]
+falsifier = "きっかけ以外で、高さが .500 を超える単位の4分の1を超えて A"
+note = "R56・R70。高さは自分の勝率を含まないが、同じ年・同じリーグの中では A の側が算術で低くなる（R68）。集合 BAR_HIGH のための命題"
+
+[[proposition]]
+id = "P201"
+statement = "点の差から見込まれるより負けた（wins_vs_pythag < 0）なら、B クラス"
+strength = "more_often_than_not"
+if = [{ col = "wins_vs_pythag", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2019"]
+surprise = "wins_vs_pythag"
+context = ["resid_fixed", "one_run_net", "alloc_z_strat"]
+links = ["H3"]
+falsifier = "きっかけ以外で、点の差より負けた単位の半分以上が A"
+note = "R70。集合 CONV_NEG のための命題。勝ち方は球団に付いていない（R70）"
+
+# 追加: 2026-10-06。R72（E20 の「線の近く」の集合のための命題）。計算前に登録した。run_balance_t は R55 で見ている。
+# 区切りは既存の誤差1つ分（|t| < 1、R34）と .500（R51）で、値から決めない。
+
+[[proposition]]
+id = "P202"
+statement = "収支が誤差の内（|run_balance_t| < 1）なら、越えるべき高さが .500 未満で A クラス"
+strength = "usually"
+scope = { where = [{ col = "run_balance_t", op = ">", value = -1 }, { col = "run_balance_t", op = "<", value = 1 }] }
+if = [{ col = "lg_bar", op = "<", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015", "d-2019"]
+surprise = "lg_bar"
+context = ["run_balance", "run_balance_t", "wins_vs_pythag", "wpct"]
+links = ["H2"]
+falsifier = "きっかけ以外で、収支が誤差の内・高さ < .500 の単位の4分の1を超えて B"
+note = "R72。収支が誤差の内のチームは、点の差では A・B を言えない（線の近く）ので、外の高さで決まるという読み（R56・R70）。E20 の NEAR の集合は、この命題の範囲（where）"
+
+# 追加: 2026-10-06。R73（ユーザーの指摘: 越えるべき高さを固定の .500 と比べるのは乱暴。独走の1位がいる年と拮抗した年で本来の高さが違う）。
+# P200（高さ > .500）・P202（高さ < .500）の代わりに、その年のほかの球団の点の差から出した高さ（lg_bar_pythag）と、自分の点の差で見込む勝率を比べる。
+# 計算前に登録した。pbar_gap の値は見ていない。
+
+[[proposition]]
+id = "P203"
+statement = "得点も失点も真ん中のます目で、点の差どおりではその年の高さに届かない（pbar_gap < 0）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_state2", op = "==", value = "AB" }, { col = "ra_state2", op = "==", value = "AB" }] }
+if = [{ col = "pbar_gap", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "pbar_gap"
+context = ["lg_bar_pythag", "pythag_fixed", "lg_bar", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "真ん中のます目で点の差どおりでは届かない単位の4分の1を超えて A"
+note = "R73。P200（固定の .500）の作り直し。高さはその年のほかの球団の点の差から出す"
+parent = "P200"
+change = "越えるべき高さを固定の .500 と比べるのをやめ、その年のほかの球団の点の差で見込む勝率の上位半分の最後（lg_bar_pythag）と、自分の点の差で見込む勝率を比べる（ユーザーの指摘、R73）"
+
+[[proposition]]
+id = "P204"
+statement = "収支が誤差の内（|run_balance_t| < 1）で、点の差どおりではその年の高さに届かない（pbar_gap < 0）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "run_balance_t", op = ">", value = -1 }, { col = "run_balance_t", op = "<", value = 1 }] }
+if = [{ col = "pbar_gap", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "pbar_gap"
+context = ["lg_bar_pythag", "pythag_fixed", "run_balance", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "収支が誤差の内で点の差どおりでは届かない単位の4分の1を超えて A"
+note = "R73。P202（固定の .500）の作り直し"
+parent = "P202"
+change = "P203 と同じ（固定の .500 をやめ、その年の点の差から出した高さと比べる）"
+
+# 追加: 2026-10-06。R74（指標の帯の式 E21 を、その年の高さで作り直す）。計算前に登録した。*_bgap と帯の値は見ていない。
+# 帯は、その年の高さ（ほかの球団の上位半分の最後の値）からの差で引く（固定の 0・.500 を使わない、R73 のユーザーの指摘）。
+
+[[proposition]]
+id = "P205"
+statement = "得点の優位が、その年の高さからの差で、ほかの年のどの A よりも低い（rfg_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "rfg_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_adv_bgap"
+context = ["rf_adv", "rf_adv_bgap", "rfg_mix_lo"]
+links = ["H1", "H2"]
+falsifier = "帯の下の単位の10分の1を超えて A"
+note = "R74。P193 の作り直し"
+parent = "P193"
+change = "得点の優位をそのまま比べるのをやめ、その年の高さ（ほかの球団の上位半分の最後の値）からの差で帯を引く（R73・R74）"
+
+[[proposition]]
+id = "P206"
+statement = "収支が、その年の高さからの差で、ほかの年のどの A よりも低い（balg_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "balg_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_bgap"
+context = ["run_balance", "run_balance_bgap", "balg_mix_lo"]
+links = ["H2"]
+falsifier = "帯の下の単位の10分の1を超えて A"
+note = "R74。P194 の作り直し"
+parent = "P194"
+change = "P205 と同じ（その年の高さからの差で帯を引く）"
+
+[[proposition]]
+id = "P207"
+statement = "下位半分の相手との勝率が、その年の高さからの差で、ほかの年のどの A よりも低い（vslg_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "vslg_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "vs_lower_wpct_bgap"
+context = ["vs_lower_wpct", "vs_lower_wpct_bgap", "vslg_mix_lo"]
+links = ["H2"]
+falsifier = "帯の下の単位の10分の1を超えて A"
+note = "R74。P195 の作り直し"
+parent = "P195"
+change = "P205 と同じ（その年の高さからの差で帯を引く）"
+
+# ---- R76: 判例のない式を、その年の高さで作り直す（research/R76-zero-counterexample-on-season-bar.md） ----
+# 追加: 2026-10-06。計算前に登録。大きさ（50点・.03）は元のまま、比べる基準点だけをその年の高さに移す（刻んで探さない）。
+
+[[proposition]]
+id = "P208"
+statement = "その年の高さからの得失点差が −50 未満、または分布から見た A の見込みが5割未満で期待勝利数を下回った、またはその年の高さからの得失点差が +50 未満で組み合わせ方が基準より不利なら、B クラス"
+strength = "usually"
+if = []
+if_any = [[{ col = "rd_bgap", op = "<", value = -50 }], [{ col = "sim_p_upper", op = "<", value = 0.5 }, { col = "wins_vs_pythag", op = "<", value = 0 }], [{ col = "rd_bgap", op = "<", value = 50 }, { col = "alloc_z_strat", op = "<", value = -1 }]]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rd_bgap"
+context = ["rd", "sim_p_upper", "wins_vs_pythag", "alloc_z_strat", "rank"]
+links = ["H2", "H3", "H9"]
+falsifier = "2026年（R18）で、この式に当たるのに A クラスのチームが出る"
+note = "R76。P96 の作り直し"
+parent = "P96"
+change = "得失点差を 0（勝率 .500 の位置）と比べるのをやめ、その年・そのリーグのほかの球団の上位半分の最後の得失点差からの差（rd_bgap）で比べる。50点はそのまま"
+
+[[proposition]]
+id = "P209"
+statement = "得点の不足が誤差を超えている（得点 −1）チームは、上の相手（1・2位）との勝率がその年の高さから −.03 以上なら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_zone_se", op = "==", value = -1 }] }
+if = [{ col = "vs_top_bar_gap", op = ">=", value = -0.03 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "vs_top_bar_gap"
+context = ["vs_top_wpct", "lg_bar", "rank", "rd"]
+links = ["H3"]
+falsifier = "得点がはっきり足りず上の相手にその年の高さ −.03 以上なのに B の単位が出る"
+note = "R76。P144 の作り直し。上の相手は最終順位で決める（算術でつながる面がある）"
+parent = "P144"
+change = "上の相手との勝率を .47（.500 − .03）と比べるのをやめ、その年の高さ（lg_bar）− .03 と比べる"
+
+[[proposition]]
+id = "P210"
+statement = "収支が、その年の高さ（ほかの球団の上位半分の最後の値）以下なら、B クラス"
+strength = "usually"
+if = [{ col = "run_balance_bgap", op = "<=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_bgap"
+context = ["run_balance", "rank", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "その年の高さ以下の収支で A の単位が多く出る"
+note = "R76。P199 の作り直し（E26 の中の BAL_NONPOS）"
+parent = "P199"
+change = "収支を 0（リーグ平均）と比べるのをやめ、その年の高さからの差で比べる"

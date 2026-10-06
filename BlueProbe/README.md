@@ -1,0 +1,60 @@
+# BlueProbe
+
+> まず見に行く。解釈はあとで。
+
+![BlueProbe](../docs/images/blueprobe.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
+観測と発見を担う。取得したページを読み、**何がそこにあるか**を記録する。勝敗や原因の判断はしない。
+
+## 構成
+
+| ファイル | 役割 |
+|---|---|
+| `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`） |
+| `baseball/npb_calendar.py` | 取得元: npb.jp の月別公式戦カレンダー |
+| `baseball/npb_team_batting.py`・`npb_team_fielding.py` | 取得元: チーム打撃成績・チーム守備成績 |
+| `baseball/npb_game_linescore.py` | 取得元: 試合ごとの得点表（R H E） |
+| `docs/npb_calendar.md` | その取得元で、どの年の何を確認したか（観測と未確認を分ける） |
+| `docs/antipatterns.md` | 繰り返しそうな失敗とその約束 |
+| `tests/cases/*.jsonl` | 表記揺れのコーパス（xprobe と同じ id / category / value / reason 形式） |
+
+## 報告の契約
+
+1ページを読んだ結果は、採用したものだけでなく、採用しなかったものも返す。
+
+```text
+records : 採用した観測（原文と派生値を並べる）
+counts  : 採用しなかったものの区分ごとの件数（例: cancelled, non_regular）
+unknown : どの区分にも当たらなかったもの。原文を残す → 表記の変化を疑う
+```
+
+## 取得元を足す
+
+`BlueProbe/<用途>/<name>.py`（野球なら `baseball/`）に次の2つを書けば、QueRyu と `inspect` からそのまま使える。
+
+```python
+def pages(scope) -> list[tuple[str, str, str]]: ...   # (key, url, group)
+def parse(html: str, url: str) -> dict: ...          # new_report() の形で返す
+def check(records) -> list[str]: ...                 # 任意。既知値との照合
+```
+
+正規表現は狭く、全体一致で書く。新しい表記を見つけたら、広げる前にコーパスへケースを足す。
+
+新しい用途のフォルダ（野球以外の取得元など）を作ったら、`blueprobe.py` の `SOURCE_DIRS` に足す（`load_source` はそこから名前で読む）。
+
+新しい取得元は、次の順で足す（`npb_team_fielding`・`npb_game_linescore` で確立した手順）:
+
+1. WebFetch で1〜2ページの見出しと1行を確かめ、`docs/<name>.md` に「確認した形」として書く（WebFetch はセルの中の空白や改行を正確には見せない）
+2. 取得は1回だけ（QueRyu の取得台帳）。生の HTML をそのまま保存し、読み方を直すときは保存したページから作り直す
+3. パイプラインでは最初 `preview_<name>`（`--strict` なし）で書き出すだけにし、measure には渡さない。未知の表記は黙って読まずに `unknown` に残す
+4. 実ページで見つかった別の表記を、観測した表記として足す（推測で広げない）。すべて読めたら `inspect_<name>`（`--strict`）に替え、照合（試合数など）を付けて measure に渡す
+
+## 実行
+
+```bash
+uv run python BlueProbe/blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
+```
+
+キャッシュだけを読み、ネットワークには出ない。未知の表記があれば件数を表示する（`--strict` で終了コード1）。

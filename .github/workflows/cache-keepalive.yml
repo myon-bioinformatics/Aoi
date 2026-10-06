@@ -1,0 +1,48 @@
+# 生のページのキャッシュ（Actions のキャッシュ、7日間使われないと消える）を週2回読んで、消えないようにする。
+# 取得元に二度取りに行かないため（QueRyu の「一度だけ取る」）。取得元にはアクセスしない。
+# 定期実行は既定のブランチ（main）にこのファイルが入ってから動く。
+name: cache keepalive
+
+on:
+  schedule:
+    - cron: "17 3 * * 1,4"   # 毎週月・木曜 03:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cycle-c001   # サイクルの実行と同時に動かない
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Restore in the branch that owns the cache
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: gh api --method POST "repos/$REPOSITORY/actions/workflows/cache-keepalive.yml/dispatches" -f ref=run/c001
+  touch:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/run/c001'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/cache/restore@v4
+        id: restore
+        with:
+          path: data
+          key: aoi-data-c001-keepalive-${{ github.run_id }}
+          restore-keys: aoi-data-c001-
+      - name: Report what was kept
+        env:
+          MATCHED_KEY: ${{ steps.restore.outputs.cache-matched-key }}
+        run: |
+          test -n "$MATCHED_KEY" || { echo "run/c001 cache not found; no refetch performed"; exit 1; }
+          echo "restored key: $MATCHED_KEY"
+          for m in data/raw/*/manifest.jsonl; do [ -f "$m" ] && echo "$m: $(wc -l < "$m") entries"; done

@@ -1,6 +1,6 @@
 # サイクル1: 中日ドラゴンズ。ローカルでも GitHub Actions でも、この定義だけを実行する。
-#   python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
-#   python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml [--offline]
+#   python NagoyAction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
+#   python NagoyAction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml [--offline]
 name = "c001-chunichi"
 root = "../.."
 
@@ -15,57 +15,104 @@ cache = "data/raw/npb_calendar"
 games = "data/observations/npb_calendar/games.jsonl"
 out = "cycles/c001-chunichi/outputs"
 config = "cycles/c001-chunichi/analysis.toml"
+linescore_years = "2025"   # 試合ごとの得点表（R H E）は量が大きいので年を絞る（R63、ユーザーと決めた: まず 2025年）
 
 # 1. 取得（ネットワーク）。取得済みのページは再取得しない。進行中のシーズンだけ更新を確認する
+#    取得台帳（{out}/fetched/<source>.jsonl、来歴だけで中身なし）にあるページがキャッシュから消えていたら、取り直さずに止まる（QueRyu）
 [[step]]
 name = "fetch"
-run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_calendar", "--years", "{years}",
-       "--cache", "{cache}", "--out", "{games}"]
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_calendar", "--years", "{years}",
+       "--cache", "{cache}", "--out", "{games}",
+       "--ledger", "{out}/fetched/npb_calendar.jsonl"]
 network = true
 outputs = ["data/raw/npb_calendar/manifest.jsonl"]
 
 # 2. 観測データセットをキャッシュから作り直す（ネットワークなし）。解析ルールを直したらここから
 [[step]]
 name = "observe"
-run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_calendar", "--years", "{years}",
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_calendar", "--years", "{years}",
        "--cache", "{cache}", "--out", "{games}", "--offline"]
 
 # 3. 構造の観測（ネットワークなし）。未知の表記・試合数の過不足を残し、あればここで止める（測る前に）
 [[step]]
 name = "inspect"
-run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_calendar", "--cache", "{cache}",
+run = ["uv", "run", "python", "BlueProbe/blueprobe.py", "--source", "npb_calendar", "--cache", "{cache}",
        "--out", "{out}/observed.md", "--strict"]
 
 # 3b. チーム打撃成績（R6）。1年1リーグ1ページ（2012〜2025年で28ページ）。取得・作り直し・構造の確認は上と同じ流れ
 [[step]]
 name = "fetch_batting"
-run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_team_batting", "--years", "{years}",
-       "--cache", "data/raw/npb_team_batting", "--out", "data/observations/npb_team_batting/teams.jsonl"]
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_team_batting", "--years", "{years}",
+       "--cache", "data/raw/npb_team_batting", "--out", "data/observations/npb_team_batting/teams.jsonl",
+       "--ledger", "{out}/fetched/npb_team_batting.jsonl"]
 network = true
 outputs = ["data/raw/npb_team_batting/manifest.jsonl"]
 
 [[step]]
 name = "observe_batting"
-run = ["uv", "run", "python", "queryu/queryu.py", "--source", "npb_team_batting", "--years", "{years}",
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_team_batting", "--years", "{years}",
        "--cache", "data/raw/npb_team_batting", "--out", "data/observations/npb_team_batting/teams.jsonl", "--offline"]
 
 [[step]]
 name = "inspect_batting"
-run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_team_batting", "--cache", "data/raw/npb_team_batting",
+run = ["uv", "run", "python", "BlueProbe/blueprobe.py", "--source", "npb_team_batting", "--cache", "data/raw/npb_team_batting",
        "--out", "{out}/observed_batting.md", "--strict"]
+
+# 3c. チーム守備成績（R58 の後、ユーザーの見立て: 失策などのチームの記録）。1年1リーグ1ページ。
+# 最初は preview（--strict なし）で形を確かめ、28ページ・12球団 × 14年が読めたので（2026-10-05）、--strict に替えて measure に渡す。
+[[step]]
+name = "fetch_fielding"
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_team_fielding", "--years", "{years}",
+       "--cache", "data/raw/npb_team_fielding", "--out", "data/observations/npb_team_fielding/teams.jsonl",
+       "--ledger", "{out}/fetched/npb_team_fielding.jsonl"]
+network = true
+outputs = ["data/raw/npb_team_fielding/manifest.jsonl"]
+
+[[step]]
+name = "observe_fielding"
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_team_fielding", "--years", "{years}",
+       "--cache", "data/raw/npb_team_fielding", "--out", "data/observations/npb_team_fielding/teams.jsonl", "--offline"]
+
+[[step]]
+name = "inspect_fielding"
+run = ["uv", "run", "python", "BlueProbe/blueprobe.py", "--source", "npb_team_fielding", "--cache", "data/raw/npb_team_fielding",
+       "--out", "{out}/observed_fielding.md", "--strict"]
+
+# 3d. 試合ごとの得点表（R H E、チームの失策）。1試合1ページ（1年 約860ページ、3秒間隔で約45分）。
+# 日程の観測（{games}）のリンクから、linescore_years の年だけ取る。最初は preview（--strict なし）で形を確かめ、
+# 2025年の 858試合・1,716行がすべて読めたので（2026-10-05、正式名称8つを観測した表記として足した）、--strict に替えて measure に渡す。
+[[step]]
+name = "fetch_linescore"
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_game_linescore", "--years", "{linescore_years}",
+       "--cache", "data/raw/npb_game_linescore", "--out", "data/observations/npb_game_linescore/teams.jsonl",
+       "--ledger", "{out}/fetched/npb_game_linescore.jsonl"]
+network = true
+outputs = ["data/raw/npb_game_linescore/manifest.jsonl"]
+
+[[step]]
+name = "observe_linescore"
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_game_linescore", "--years", "{linescore_years}",
+       "--cache", "data/raw/npb_game_linescore", "--out", "data/observations/npb_game_linescore/teams.jsonl", "--offline"]
+
+[[step]]
+name = "inspect_linescore"
+run = ["uv", "run", "python", "BlueProbe/blueprobe.py", "--source", "npb_game_linescore", "--cache", "data/raw/npb_game_linescore",
+       "--out", "{out}/observed_linescore.md", "--strict"]
 
 # 4. 測る
 [[step]]
 name = "measure"
-run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games}", "--config", "{config}",
+run = ["uv", "run", "python", "SakAnalytics/sakanalytics.py", "--games", "{games}", "--config", "{config}",
        "--out", "{out}/season.jsonl", "--innings", "cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz",
        "--batting", "data/observations/npb_team_batting/teams.jsonl",
+       "--fielding", "data/observations/npb_team_fielding/teams.jsonl",
+       "--linescore", "data/observations/npb_game_linescore/teams.jsonl",
        "--sensitivity-out", "{out}/trajectory_sensitivity_units.jsonl"]
 
 # 5. 問い直す
 [[step]]
 name = "question"
-run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}/season.jsonl",
+run = ["uv", "run", "python", "PythDRagoras/pythdragoras.py", "--season", "{out}/season.jsonl",
        "--config", "{config}", "--hypotheses", "cycles/c001-chunichi/hypotheses.toml",
        "--propositions", "cycles/c001-chunichi/propositions.toml", "--claims", "cycles/c001-chunichi/claims.toml",
        "--outdir", "{out}", "--trajectory-sensitivity", "{out}/trajectory_sensitivity_units.jsonl"]
@@ -73,16 +120,59 @@ run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}
 # 5b. 条件の組み合わせを探す（R11。命題を作る材料で、判定ではない）
 [[step]]
 name = "search"
-run = ["uv", "run", "python", "pythdragoras/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
+run = ["uv", "run", "python", "PythDRagoras/logic/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
        "--candidates", "cycles/c001-chunichi/rule_candidates.toml", "--out", "{out}/rules.jsonl"]
 
 # 5c. R21: R11 の候補に 2014年の道筋（opp_conv_top）を足し、「または」を3つまでにして探す（R11 の探索はそのまま残す）
 [[step]]
 name = "search_r21"
-run = ["uv", "run", "python", "pythdragoras/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
+run = ["uv", "run", "python", "PythDRagoras/logic/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
        "--candidates", "cycles/c001-chunichi/rule_candidates_r21.toml", "--out", "{out}/rules_r21.jsonl"]
+
+# 5d. R48: 命題の条件を集合にし、集合の式を命題として判定する（outputs/sets.md）。異議では止めない
+[[step]]
+name = "sets"
+run = ["uv", "run", "python", "PythDRagoras/logic/sets.py", "--season", "{out}/season.jsonl", "--config", "{config}",
+       "--propositions", "cycles/c001-chunichi/propositions.toml", "--sets", "cycles/c001-chunichi/sets.toml",
+       "--outdir", "{out}", "--report-only"]
 
 # 6. 判定を終了コードで表示する。異議（1〜6）では止めず、仕組みの不具合（64 以上）だけを失敗にする
 [[step]]
 name = "judge"
-run = ["uv", "run", "python", "pythdragoras/propositions.py", "judge", "{out}/propositions.jsonl", "--report-only"]
+run = ["uv", "run", "python", "PythDRagoras/logic/propositions.py", "judge", "{out}/propositions.jsonl", "--report-only"]
+
+# 6. 2026年の暫定（R74、ユーザーの指示）。本体の結果のあとに置く（止まっても本体の出力は残る）。
+#    消化した試合だけで測る（未消化を架空の結果で埋めない。率・順位は今の順位表と同じ）。R18 の取り込み（全日程の後）は別。
+# 今季の日程は過去の年と別の場所・別の書き方（/games/2026/schedule_MM_detail.html、npb_calendar の /bis/2026/calendar/ は 404）。
+#    BlueProbe の手順: 一度だけ取り（進行中のシーズンなので更新だけ確認する）、最初は preview（--strict なし）で形を確かめた。
+#    9ページ・854試合が読め、未知の20件は「- （球場）18:00」（結果前）とオールスター（cl-pl）だったので、観測した表記として足し、
+#    --strict に替えた（2026-10-06）。CS などが混ざれば（143 超え・組み合わせの数の超過・未知の表記）、暫定の測定の前に止まる。
+[[step]]
+name = "fetch_2026"
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_schedule_current", "--years", "2026",
+       "--cache", "data/raw/npb_schedule_current", "--out", "data/observations/npb_schedule_current/games_2026.jsonl",
+       "--ledger", "{out}/fetched/npb_schedule_current.jsonl"]
+network = true
+outputs = ["data/raw/npb_schedule_current/manifest.jsonl"]
+
+[[step]]
+name = "preview_2026"
+run = ["uv", "run", "python", "BlueProbe/blueprobe.py", "--source", "npb_schedule_current", "--cache", "data/raw/npb_schedule_current",
+       "--out", "{out}/provisional/observed_2026.md", "--strict"]
+
+[[step]]
+name = "provisional_measure"
+run = ["uv", "run", "python", "SakAnalytics/sakanalytics.py",
+       "--games", "{games}", "data/observations/npb_schedule_current/games_2026.jsonl",
+       "--config", "{config}", "--out", "{out}/provisional/season.jsonl",
+       "--innings", "cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz",
+       "--batting", "data/observations/npb_team_batting/teams.jsonl",
+       "--fielding", "data/observations/npb_team_fielding/teams.jsonl",
+       "--linescore", "data/observations/npb_game_linescore/teams.jsonl"]
+
+[[step]]
+name = "provisional_check"
+run = ["uv", "run", "python", "cycles/c001-chunichi/research/r75_provisional.py", "{out}/provisional/season.jsonl",
+       "cycles/c001-chunichi/propositions.toml", "cycles/c001-chunichi/sets.toml",
+       "--out", "{out}/provisional/check.md"]
+

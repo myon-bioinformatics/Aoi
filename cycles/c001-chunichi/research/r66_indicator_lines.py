@@ -26,6 +26,20 @@ INDICATORS = [  # (列, 中身, 向き +1/−1, 中立の値 or None)。計画�
     ("course_wpct_h1", "前半の勝率", 1, 0.5),
     ("wpct", "（基準）勝率", 1, 0.5),
 ]
+OWN = [  # R67: このプロジェクトで作った独自の指標（向きと中立の値は R67 の計画で先に決めた）
+    ("sim_p_upper", "分布から見た A の確率（R10）", 1, 0.5), ("run_balance_t", "収支 ÷ 誤差（R39）", 1, 0.0),
+    ("rf_adv_t", "得点の優位 ÷ 誤差", 1, 0.0), ("ra_adv_t", "失点の優位 ÷ 誤差", 1, 0.0),
+    ("rf_def_total", "得点の不足（帯の合計、R3）", 1, 0.0), ("short_share", "不足の取り分（R32）", -1, 0.5),
+    ("line_gap_pythag", "点の差で A の線まで（R50）", 1, 0.0), ("lg_bar", "越えるべき高さ（R56、外）", -1, 0.5),
+    ("wins_vs_pythag", "点の差より勝った数", 1, 0.0), ("alloc_z", "組み合わせ方（全体、R1）", 1, 0.0),
+    ("opp_conv_top", "上の相手で点の差より勝った分", 1, 0.0), ("opp_conv_mid", "中位の相手で同じ", 1, 0.0),
+    ("opp_conv_low", "下の相手で同じ", 1, 0.0), ("inn_dlog_freq", "得点した回の頻度（R4）", 1, 0.0),
+    ("inn_dlog_size", "得点した回の大きさ（R4）", 1, 0.0), ("half1_vs_pythag", "前半に点の差より勝った数", 1, 0.0),
+    ("course_wpct_diff", "後半 − 前半の勝率（R20）", 1, 0.0), ("series_lost_pct", "負け越したカードの多さ（R24）", -1, 0.5),
+    ("max_lose_streak", "最長連敗", -1, None), ("q4_rd_g", "最後の区間の点の差（R62）", 1, 0.0),
+    ("h2_live_rd_g", "後半の効く試合の点の差（R64）", 1, 0.0), ("vs_battle_wpct", "競り合う相手との勝率", 1, 0.5),
+    ("wpct", "（基準）勝率", 1, 0.5),
+]
 
 
 def mid(a, b):
@@ -36,7 +50,9 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("season_jsonl", type=Path)
     ap.add_argument("--season", type=int, help="この年だけを確かめる（2012 など）")
+    ap.add_argument("--set", choices=["base", "own"], default="base", help="base = R66 の20指標、own = R67 の独自指標")
     args = ap.parse_args(argv)
+    indicators = OWN if args.set == "own" else INDICATORS
     rows = [json.loads(line) for line in args.season_jsonl.read_text(encoding="utf-8").splitlines()]
     for r in rows:
         r["rf_g"], r["ra_g"] = r["RF"] / r["G"], r["RA"] / r["G"]
@@ -51,7 +67,7 @@ def main(argv=None) -> int:
     print("| 指標 | 3.5位の線で一致 | 中立の線で一致 | 2本線: A→A | AB→A | B→B | 帯の幅（AB の単位） | 帯: A→A・B→B | 中日の B: 2本線で B | 帯の下 |")
     print("|---|---|---|---|---|---|---|---|---|---|")
     out = []
-    for col, label, sign, neutral in INDICATORS:
+    for col, label, sign, neutral in indicators:
         rs = [r for r in target if r.get(col) is not None]
         if not rs:
             continue
@@ -90,7 +106,7 @@ def main(argv=None) -> int:
     print("\n3.5位の線での一致の高い順: " + "、".join(f"{l} {a:.2f}" for a, l in sorted(out, reverse=True)))
 
     print("\n中日の B 12年の、2本線での状態（A・AB・B）:")
-    for col, label, sign, _ in INDICATORS:
+    for col, label, sign, _ in indicators:
         line = []
         for r in d:
             if r.get(col) is None:

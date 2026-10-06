@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<testsuite name="pythdragoras.sets" tests="27" failures="26" errors="0" skipped="0">
+<testsuite name="pythdragoras.sets" tests="31" failures="29" errors="0" skipped="0">
   <properties>
-    <property name="sets_sha256" value="f4311d0d8500709507f2ac6e200927bb73710e8352f25be990d34197c702b120" />
-    <property name="propositions_sha256" value="09705c4d0c1cf41aa7e7428db98f759634b748c63f4ec4b014d2d0500a54653d" />
+    <property name="sets_sha256" value="b971a28767598878d0127c3489e715376e069e014fe194b8d0e24445d89e5e04" />
+    <property name="propositions_sha256" value="20ebf739caa0f2b14c2ae8c3662d178a6694aaa43a3f0ad9a475b84ebcf6acf0" />
   </properties>
   <testcase classname="sets" name="E1: OFF_SHORT &amp; ~TOP_WIN">
     <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2018" type="exit1">元の命題 44/45、総合の終了コード 1、覆い 11/12</failure>
@@ -82,5 +82,15 @@
   </testcase>
   <testcase classname="sets" name="E28: (RFG_BELOW | BALG_BELOW | VSLG_BELOW) | (Q3_LOW | (Q3_MID &amp; ~Q4_POS))">
     <failure message="判例 11件: h-2012, c-2014, t-2015, db-2016, m-2016, l-2017, g-2018, e-2021, t-2022, h-2023, m-2024" type="exit1">元の命題 75/86、総合の終了コード 1、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E29: (F96B | (OFF_SHORT &amp; ~TOP_WIN_B)) &amp; ~CONVERT_BIG">
+    <failure message="覆えなかった焦点の単位 3件: d-2017, d-2022, d-2024" type="exit0">元の命題 64/64、総合の終了コード 4、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E30: (F96B | (OFF_SHORT &amp; ~TOP_WIN_B)) &amp; ~ALLOC_GOOD" />
+  <testcase classname="sets" name="E31: (F96B | (OFF_SHORT &amp; ~TOP_WIN_B)) &amp; ~MID_CONVERT">
+    <failure message="覆えなかった焦点の単位 1件: d-2023" type="exit0">元の命題 66/66、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E32: ((~MIDDLE &amp; ~NEAR &amp; BALG_NONPOS) | ((MIDDLE | NEAR) &amp; PBAR_SHORT &amp; CONV_NEG)) &amp; (Q3_LOW | (Q3_MID &amp; ~Q4_POS))">
+    <failure message="覆えなかった焦点の単位 1件: d-2019" type="exit0">元の命題 60/60、総合の終了コード 4、覆い 11/12</failure>
   </testcase>
 </testsuite>

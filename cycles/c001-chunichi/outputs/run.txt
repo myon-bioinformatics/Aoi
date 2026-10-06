@@ -5,13 +5,13 @@
 [run] fetch: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading polars-runtime-32 (47.6MiB)
 Downloading pygments (1.2MiB)
+Downloading polars-runtime-32 (47.6MiB)
 Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 21ms
+Installed 15 packages in 17ms
 ledger: 135 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
@@ -650,6 +650,9 @@ shape: (14, 12)
 - P205 得点の優位が、その年の高さからの差で、ほかの年のどの A よりも低い（rfg_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 - P206 収支が、その年の高さからの差で、ほかの年のどの A よりも低い（balg_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 - P207 下位半分の相手との勝率が、その年の高さからの差で、ほかの年のどの A よりも低い（vslg_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
+- P208 その年の高さからの得失点差が −50 未満、または分布から見た A の見込みが5割未満で期待勝利数を下回った、またはその年の高さからの得失点差が +50 未満で組み合わせ方が基準より不利なら、B クラス: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 支持 / 裏 支持）
+- P209 得点の不足が誤差を超えている（得点 −1）チームは、上の相手（1・2位）との勝率がその年の高さから −.03 以上なら A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 保留 / 裏 支持）
+- P210 収支が、その年の高さ（ほかの球団の上位半分の最後の値）以下なら、B クラス: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 支持 / 裏 支持）
 
 詳細は objections.md。終了コードは `python PythDRagoras/logic/propositions.py judge` で確かめられる。
 
@@ -739,6 +742,10 @@ units=156 dropped=0 target: upper_half == False
 [4] E26 待った！判断保留 覆い 11/12  ((~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))
 [1] E27 異議あり（例外あり） 覆い 10/12  RFG_BELOW | BALG_BELOW | VSLG_BELOW
 [1] E28 異議あり（例外あり） 覆い 12/12  (RFG_BELOW | BALG_BELOW | VSLG_BELOW) | (Q3_LOW | (Q3_MID & ~Q4_POS))
+[4] E29 待った！判断保留 覆い 9/12  (F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~CONVERT_BIG
+[1] E30 異議あり（例外あり） 覆い 12/12 通る  (F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~ALLOC_GOOD
+[1] E31 異議あり（例外あり） 覆い 11/12  (F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~MID_CONVERT
+[4] E32 待った！判断保留 覆い 11/12  ((~MIDDLE & ~NEAR & BALG_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))
 [run] judge: uv run python PythDRagoras/logic/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --report-only
 [4] P1 待った！判断保留 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 [1] P2 異議あり（例外あり） 元の命題: 判例 11 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
@@ -947,6 +954,9 @@ units=156 dropped=0 target: upper_half == False
 [4] P205 待った！判断保留 元の命題: 判例 1 件: t-2022
 [4] P206 待った！判断保留 元の命題: 判例 1 件: t-2015
 [4] P207 待った！判断保留 元の命題: 判例 1 件: h-2023
+[1] P208 異議あり（例外あり） 元の命題: 判例 1 件: t-2015
+[4] P209 待った！判断保留 元の命題: n=7（min_n=10）、成立率の区間 0.65〜1.00
+[1] P210 異議あり（例外あり） 元の命題: 判例 12 件: t-2015, db-2022, m-2015, db-2017, c-2023 ほか
 [run] fetch_2026: uv run python QueRyu/queryu.py --source npb_schedule_current --years 2026 --cache data/raw/npb_schedule_current --out data/observations/npb_schedule_current/games_2026.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_schedule_current.jsonl
 ledger: 9 pages, refetched=0, changed=0
 2026: records=854 cancelled=41 unknown=20
@@ -1045,11 +1055,17 @@ shape: (15, 12)
 | P205 | 0 | 0 | なし | 入らない |
 | P206 | 5 | 5 | なし | 入らない |
 | P207 | 3 | 3 | なし | 入る |
+| P208 | 6 | 6 | なし | 入る |
+| P209 | 1 | 1 | なし | - |
+| P210 | 6 | 6 | なし | 入る |
 
 ## 式（E19〜E28）
 
 | id | 前件に入った | 後件も当たり | 判例 | 中日 |
 |---|---|---|---|---|
+| E11 | 5 | 4 | l | 入る |
+| E13 | 5 | 5 | なし | 入る |
+| E15 | 6 | 5 | l | 入る |
 | E19 | 6 | 6 | なし | 入る |
 | E20 | 6 | 6 | なし | 入る |
 | E21 | 6 | 6 | なし | 入る |
@@ -1059,4 +1075,8 @@ shape: (15, 12)
 | E26 | 6 | 6 | なし | 入る |
 | E27 | 6 | 6 | なし | 入る |
 | E28 | 6 | 6 | なし | 入る |
+| E29 | 4 | 4 | なし | 入る |
+| E30 | 5 | 5 | なし | 入る |
+| E31 | 5 | 5 | なし | 入る |
+| E32 | 6 | 6 | なし | 入る |
 

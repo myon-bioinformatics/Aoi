@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<testsuite name="pythdragoras.sets" tests="19" failures="18" errors="0" skipped="0">
+<testsuite name="pythdragoras.sets" tests="22" failures="21" errors="0" skipped="0">
   <properties>
-    <property name="sets_sha256" value="06765a88be88c8e18cc60f789f0c2bf3392ca4df80d118ccd4adfbe022f6e3cf" />
-    <property name="propositions_sha256" value="3f11b889c5bfb702fc500cdeea94a05f81b7da7699e9de8c29231d1f27765e4a" />
+    <property name="sets_sha256" value="adc559efd4eb321e9cfbc6cf865720c7d4819b52895dc7ea19e5b0d36083e7ee" />
+    <property name="propositions_sha256" value="769730d3b02e6b6934d5fa325e08b8cafc38d38d3b5b07f247652585fa9b7e7d" />
   </properties>
   <testcase classname="sets" name="E1: OFF_SHORT &amp; ~TOP_WIN">
     <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2018" type="exit1">元の命題 44/45、総合の終了コード 1、覆い 11/12</failure>
@@ -58,5 +58,14 @@
   </testcase>
   <testcase classname="sets" name="E19: (~MIDDLE &amp; BAL_NONPOS) | (MIDDLE &amp; BAR_HIGH &amp; CONV_NEG)">
     <failure message="判例 11件: l-2012, s-2012, m-2013, t-2015, db-2016, g-2016, db-2019, t-2019, c-2023, m-2023, m-2024；覆えなかった焦点の単位 1件: d-2019" type="exit1">元の命題 68/79、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E20: (~MIDDLE &amp; ~NEAR &amp; BAL_NONPOS) | ((MIDDLE | NEAR) &amp; BAR_HIGH &amp; CONV_NEG)">
+    <failure message="判例 1件: t-2015；覆えなかった焦点の単位 2件: d-2015, d-2018" type="exit1">元の命題 64/65、総合の終了コード 1、覆い 10/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E21: RF_BELOW | BAL_BELOW | VSL_BELOW">
+    <failure message="判例 3件: t-2015, e-2019, t-2019；覆えなかった焦点の単位 2件: d-2014, d-2015" type="exit1">元の命題 55/58、総合の終了コード 1、覆い 10/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E22: Q3_LOW | (Q3_MID &amp; ~Q4_POS)">
+    <failure message="判例 10件: h-2012, c-2014, db-2016, m-2016, l-2017, g-2018, e-2021, t-2022, h-2023, m-2024" type="exit1">元の命題 70/80、総合の終了コード 1、覆い 12/12</failure>
   </testcase>
 </testsuite>

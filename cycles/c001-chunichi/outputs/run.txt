@@ -11,7 +11,7 @@ Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 11ms
+Installed 15 packages in 12ms
 ledger: 126 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
@@ -643,6 +643,7 @@ shape: (14, 12)
 - P199 収支が 0 以下（得点の不足が失点の優位以上）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 保留）
 - P200 越えるべき高さ（ほかの球団の上位半分の最後の勝率）が .500 を超えるなら、B クラス: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 保留 / 裏 保留）
 - P201 点の差から見込まれるより負けた（wins_vs_pythag < 0）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 保留）
+- P202 収支が誤差の内（|run_balance_t| < 1）なら、越えるべき高さが .500 未満で A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 
 詳細は objections.md。終了コードは `python PythDRagoras/logic/propositions.py judge` で確かめられる。
 
@@ -724,6 +725,9 @@ units=156 dropped=0 target: upper_half == False
 [4] E17 待った！判断保留 覆い 12/12  SHORT_T | (UNDER & ~ALLOC_GOOD)
 [4] E18 待った！判断保留 覆い 11/12  (~MIDDLE & BAL_NONPOS) | (MIDDLE & (BAR_HIGH | CONV_NEG))
 [1] E19 異議あり（例外あり） 覆い 11/12  (~MIDDLE & BAL_NONPOS) | (MIDDLE & BAR_HIGH & CONV_NEG)
+[1] E20 異議あり（例外あり） 覆い 10/12  (~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & BAR_HIGH & CONV_NEG)
+[1] E21 異議あり（例外あり） 覆い 10/12  RF_BELOW | BAL_BELOW | VSL_BELOW
+[1] E22 異議あり（例外あり） 覆い 12/12  Q3_LOW | (Q3_MID & ~Q4_POS)
 [run] judge: uv run python PythDRagoras/logic/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --report-only
 [4] P1 待った！判断保留 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 [1] P2 異議あり（例外あり） 元の命題: 判例 11 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
@@ -926,3 +930,4 @@ units=156 dropped=0 target: upper_half == False
 [4] P199 待った！判断保留 元の命題: 判例 18 件: t-2015, db-2022, m-2013, t-2019, b-2025 ほか
 [1] P200 異議あり（例外あり） 元の命題: 判例 9 件: c-2017, db-2017, t-2017, e-2013, l-2013 ほか
 [4] P201 待った！判断保留 元の命題: 判例 34 件: t-2022, g-2018, h-2024, t-2025, f-2025 ほか
+[4] P202 待った！判断保留 元の命題: 判例 8 件: d-2015, c-2021, t-2016, db-2013, c-2022 ほか

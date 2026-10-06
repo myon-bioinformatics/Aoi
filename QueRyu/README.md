@@ -46,3 +46,7 @@ key, url, group, status, file, sha256, bytes, fetched_at, last_modified, etag, c
 uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 \
   --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl [--offline]
 ```
+
+## 問い合わせ
+
+判定済みの命題と式に、日本語の問いで聞く（「E25 に阪神 2015 以外の判例はある？」）。読み取りと答えを分け、答えは PythDRagoras の結果を引くだけ。詳しくは [docs/ask.md](docs/ask.md)。

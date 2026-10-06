@@ -5,13 +5,13 @@
 [run] fetch: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading pygments (1.2MiB)
 Downloading polars-runtime-32 (47.6MiB)
+Downloading pygments (1.2MiB)
 Downloading selectolax (2.4MiB)
- Downloaded selectolax
  Downloaded pygments
+ Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 8ms
+Installed 15 packages in 11ms
 ledger: 126 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
@@ -639,6 +639,10 @@ shape: (14, 12)
 - P195 下位半分の相手との勝率が、ほかの年のどの A よりも低い（vsl_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 - P196 得点の側がリーグの下2つ（rf_state2 = B）で、失点の側が真ん中（ra_state2 = AB）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 - P197 得点・失点の分布から見た A の確率が、ほかの年のどの A よりも低い（sim_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
+- P198 得点も失点もリーグの真ん中（rf_state2 = ra_state2 = AB）なら、A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 棄却 / 裏 保留）
+- P199 収支が 0 以下（得点の不足が失点の優位以上）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 保留）
+- P200 越えるべき高さ（ほかの球団の上位半分の最後の勝率）が .500 を超えるなら、B クラス: **exit 1 異議あり（例外あり）** （元 支持 / 対偶 支持 / 逆 保留 / 裏 保留）
+- P201 点の差から見込まれるより負けた（wins_vs_pythag < 0）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 支持 / 裏 保留）
 
 詳細は objections.md。終了コードは `python PythDRagoras/logic/propositions.py judge` で確かめられる。
 
@@ -718,6 +722,8 @@ units=156 dropped=0 target: upper_half == False
 [1] E15 異議あり（例外あり） 覆い 11/12  (F96 | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT
 [4] E16 待った！判断保留 覆い 12/12  SHORT_T | UNDER
 [4] E17 待った！判断保留 覆い 12/12  SHORT_T | (UNDER & ~ALLOC_GOOD)
+[4] E18 待った！判断保留 覆い 11/12  (~MIDDLE & BAL_NONPOS) | (MIDDLE & (BAR_HIGH | CONV_NEG))
+[1] E19 異議あり（例外あり） 覆い 11/12  (~MIDDLE & BAL_NONPOS) | (MIDDLE & BAR_HIGH & CONV_NEG)
 [run] judge: uv run python PythDRagoras/logic/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --report-only
 [4] P1 待った！判断保留 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 [1] P2 異議あり（例外あり） 元の命題: 判例 11 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
@@ -916,3 +922,7 @@ units=156 dropped=0 target: upper_half == False
 [4] P195 待った！判断保留 元の命題: 判例 1 件: e-2019
 [4] P196 待った！判断保留 元の命題: n=16（min_n=10）、成立率の区間 0.81〜1.00
 [4] P197 待った！判断保留 元の命題: 判例 1 件: m-2013
+[4] P198 待った！判断保留 元の命題: 判例 7 件: g-2023, l-2014, l-2016, c-2012, e-2012 ほか
+[4] P199 待った！判断保留 元の命題: 判例 18 件: t-2015, db-2022, m-2013, t-2019, b-2025 ほか
+[1] P200 異議あり（例外あり） 元の命題: 判例 9 件: c-2017, db-2017, t-2017, e-2013, l-2013 ほか
+[4] P201 待った！判断保留 元の命題: 判例 34 件: t-2022, g-2018, h-2024, t-2025, f-2025 ほか

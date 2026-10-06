@@ -73,6 +73,7 @@
   lg_rank_at_500                   勝率 .500 が何位に当たるか（滑らかな順位、R51）
   lg_break_after / lg_break_gap / lg_tier / lg_tier_of_3rd  データの散らばりから引く線: いちばん大きな隙間と、3つの塊（R52）
   lg_bar                           越えるべき高さ: ほかの球団の中で上位半分の最後の勝率（R56）
+  lg_bar_pythag / pbar_gap         点の差から見たその年の越えるべき高さ（ほかの球団の点の差で見込む勝率の上位半分の最後）と、自分の点の差で見込む勝率との差（R73）
   mix_lo / mix_hi / mix_zone       A と B が混ざる帯（ほかの年の A の最低勝率〜B の最高勝率）と、帯の下・中・上（−1・0・+1、R53。add_mix_zone）
   live_mix_lo / _hi / _zone        同じ帯を、A・B に効く試合だけの勝率（live_wpct）で引いたもの（R58）
   rf_mix_* / bal_mix_* / vsl_mix_* / sim_mix_*  同じ帯を、得点の優位・収支・下の相手との勝率・分布から見た A の確率の値で引いたもの（R66・R67）
@@ -1584,6 +1585,21 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
     #   wpct − lg_line = line_gap_pythag（点の差で見込む位置）+ resid_fixed（点の差より勝った分）  ← 算術の恒等式
     if "pythag_fixed" in st.columns:
         st = st.with_columns(line_gap_pythag=pl.col("pythag_fixed") - pl.col("lg_line"))
+        # R73: その年の本来の超えるべき高さを、点の差から出す（固定の .500 と比べない。独走の1位がいる年・拮抗した年で変わる）
+        #   lg_bar_pythag : ほかの球団の「点の差で見込む勝率」を高い順に並べた（球団数 ÷ 2）番目
+        #   pbar_gap      : 自分の点の差で見込む勝率 − lg_bar_pythag（マイナスなら、点の差どおりではその年の高さに届かない）
+        prow = []
+        for season, league in keys.iter_rows():
+            lg = st.filter((pl.col("season") == season) & (pl.col("league") == league)).select("team", "pythag_fixed").rows()
+            k = len(lg) // 2
+            for team, py in lg:
+                others = sorted((x for t2, x in lg if t2 != team and x is not None), reverse=True)
+                bar = others[k - 1] if 0 < k <= len(others) else None
+                prow.append({"season": season, "team": team, "lg_bar_pythag": bar,
+                             "pbar_gap": py - bar if py is not None and bar is not None else None})
+        if prow:
+            st = st.join(pl.DataFrame(prow, schema={"season": st.schema["season"], "team": pl.Utf8, "lg_bar_pythag": pl.Float64,
+                                                    "pbar_gap": pl.Float64}), on=["season", "team"], how="left")
     return st
 
 

@@ -1144,3 +1144,19 @@ def test_state2_two_lines_on_values():
     # 線は (5+4)/2 = 4.5 と (3+2)/2 = 2.5 → 6・5 は A、4・3 は AB、2・1 は B
     assert [out[(2000, t)] for t in "abcdef"] == ["A", "A", "AB", "AB", "B", "B"]
     assert all(out[(2001, t)] is None for t in "abcdef")   # 値のない球団があるリーグ年は空
+
+
+
+def test_bar_from_run_differences_uses_only_the_other_teams():
+    """R73: 点の差から見た越えるべき高さ。.500 のような固定の値を使わない。"""
+    import sakanalytics as sa
+
+    w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
+    py = [0.70, 0.55, 0.52, 0.51, 0.47, 0.40]   # 1位が点の差で独走している年
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6],
+                       "wpct": w, "pythag_fixed": py})
+    out = {r["team"]: r for r in sa.add_league_shape(st).iter_rows(named=True)}
+    # c はほかの5球団の点の差で見込む勝率 .70・.55・.51・.47・.40 の3番目 = .51 を越えるべき。d は .70・.55・.52 の3番目 = .52
+    assert out["c"]["lg_bar_pythag"] == pytest.approx(0.51) and out["c"]["pbar_gap"] == pytest.approx(0.01)
+    assert out["d"]["lg_bar_pythag"] == pytest.approx(0.52) and out["d"]["pbar_gap"] == pytest.approx(-0.01)
+    assert out["a"]["lg_bar_pythag"] == pytest.approx(0.51)

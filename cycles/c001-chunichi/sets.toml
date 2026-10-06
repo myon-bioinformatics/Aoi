@@ -222,3 +222,23 @@ statement = "指標の帯の式（R66）: 得点の優位・収支・下の相�
 id = "E22"
 expr = "Q3_LOW | (Q3_MID & ~Q4_POS)"
 statement = "時期の状態の式（R58・R60）: 3/4 で5〜6位、または 3/4 で3〜4位で最後の区間に勝ち越せなかった"
+
+# 追加: 2026-10-06。R73（計算前に書いた式）。固定の .500 を使った BAR_HIGH の代わりに、その年の点の差から出した高さに届かない PBAR_SHORT
+[[set]]
+id = "PBAR_SHORT"       # 点の差どおりではその年の高さに届かない（P203）
+from = "P203"
+
+[[expr]]
+id = "E24"
+expr = "(~MIDDLE & BAL_NONPOS) | (MIDDLE & PBAR_SHORT & CONV_NEG)"
+statement = "E19 の作り直し: 真ん中のます目は、その年の高さに点の差で届かず、かつ点の差より負け"
+
+[[expr]]
+id = "E25"
+expr = "(~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)"
+statement = "E20 の作り直し: 真ん中のます目か線の近くは、その年の高さに点の差で届かず、かつ点の差より負け"
+
+[[expr]]
+id = "E26"
+expr = "((~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))"
+statement = "E25 と時期の状態の式（E22）の積（R72 の種1、E23 の代わり）"

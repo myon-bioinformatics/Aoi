@@ -2853,3 +2853,37 @@ context = ["run_balance", "run_balance_t", "wins_vs_pythag", "wpct"]
 links = ["H2"]
 falsifier = "きっかけ以外で、収支が誤差の内・高さ < .500 の単位の4分の1を超えて B"
 note = "R72。収支が誤差の内のチームは、点の差では A・B を言えない（線の近く）ので、外の高さで決まるという読み（R56・R70）。E20 の NEAR の集合は、この命題の範囲（where）"
+
+# 追加: 2026-10-06。R73（ユーザーの指摘: 越えるべき高さを固定の .500 と比べるのは乱暴。独走の1位がいる年と拮抗した年で本来の高さが違う）。
+# P200（高さ > .500）・P202（高さ < .500）の代わりに、その年のほかの球団の点の差から出した高さ（lg_bar_pythag）と、自分の点の差で見込む勝率を比べる。
+# 計算前に登録した。pbar_gap の値は見ていない。
+
+[[proposition]]
+id = "P203"
+statement = "得点も失点も真ん中のます目で、点の差どおりではその年の高さに届かない（pbar_gap < 0）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_state2", op = "==", value = "AB" }, { col = "ra_state2", op = "==", value = "AB" }] }
+if = [{ col = "pbar_gap", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "pbar_gap"
+context = ["lg_bar_pythag", "pythag_fixed", "lg_bar", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "真ん中のます目で点の差どおりでは届かない単位の4分の1を超えて A"
+note = "R73。P200（固定の .500）の作り直し。高さはその年のほかの球団の点の差から出す"
+parent = "P200"
+change = "越えるべき高さを固定の .500 と比べるのをやめ、その年のほかの球団の点の差で見込む勝率の上位半分の最後（lg_bar_pythag）と、自分の点の差で見込む勝率を比べる（ユーザーの指摘、R73）"
+
+[[proposition]]
+id = "P204"
+statement = "収支が誤差の内（|run_balance_t| < 1）で、点の差どおりではその年の高さに届かない（pbar_gap < 0）なら、B クラス"
+strength = "usually"
+scope = { where = [{ col = "run_balance_t", op = ">", value = -1 }, { col = "run_balance_t", op = "<", value = 1 }] }
+if = [{ col = "pbar_gap", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "pbar_gap"
+context = ["lg_bar_pythag", "pythag_fixed", "run_balance", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "収支が誤差の内で点の差どおりでは届かない単位の4分の1を超えて A"
+note = "R73。P202（固定の .500）の作り直し"
+parent = "P202"
+change = "P203 と同じ（固定の .500 をやめ、その年の点の差から出した高さと比べる）"

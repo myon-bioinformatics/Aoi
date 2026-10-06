@@ -2836,3 +2836,20 @@ context = ["resid_fixed", "one_run_net", "alloc_z_strat"]
 links = ["H3"]
 falsifier = "きっかけ以外で、点の差より負けた単位の半分以上が A"
 note = "R70。集合 CONV_NEG のための命題。勝ち方は球団に付いていない（R70）"
+
+# 追加: 2026-10-06。R72（E20 の「線の近く」の集合のための命題）。計算前に登録した。run_balance_t は R55 で見ている。
+# 区切りは既存の誤差1つ分（|t| < 1、R34）と .500（R51）で、値から決めない。
+
+[[proposition]]
+id = "P202"
+statement = "収支が誤差の内（|run_balance_t| < 1）なら、越えるべき高さが .500 未満で A クラス"
+strength = "usually"
+scope = { where = [{ col = "run_balance_t", op = ">", value = -1 }, { col = "run_balance_t", op = "<", value = 1 }] }
+if = [{ col = "lg_bar", op = "<", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["t-2015", "d-2019"]
+surprise = "lg_bar"
+context = ["run_balance", "run_balance_t", "wins_vs_pythag", "wpct"]
+links = ["H2"]
+falsifier = "きっかけ以外で、収支が誤差の内・高さ < .500 の単位の4分の1を超えて B"
+note = "R72。収支が誤差の内のチームは、点の差では A・B を言えない（線の近く）ので、外の高さで決まるという読み（R56・R70）。E20 の NEAR の集合は、この命題の範囲（where）"

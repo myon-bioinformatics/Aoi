@@ -176,3 +176,49 @@ statement = "二段の式（または）: 片側に振れたます目は収支 0
 id = "E19"
 expr = "(~MIDDLE & BAL_NONPOS) | (MIDDLE & BAR_HIGH & CONV_NEG)"
 statement = "二段の式（かつ）: 真ん中のます目は高さ > .500 かつ点の差より負け"
+
+# 追加: 2026-10-06。R72（計算前に書いた式）。E20 は E19 に「線の近く」を足した式。E21・E22 は E19 と出どころの違う式
+[[set]]
+id = "NEAR"             # 収支が誤差の内（P202 の範囲）
+from = "P202"
+part = "where"
+
+[[set]]
+id = "RF_BELOW"         # 得点の優位がほかの年のどの A よりも低い（P193）
+from = "P193"
+
+[[set]]
+id = "BAL_BELOW"        # 収支がほかの年のどの A よりも低い（P194）
+from = "P194"
+
+[[set]]
+id = "VSL_BELOW"        # 下位半分の相手との勝率がほかの年のどの A よりも低い（P195）
+from = "P195"
+
+[[set]]
+id = "Q3_LOW"           # 3/4 の時点で5〜6位（P189）
+from = "P189"
+
+[[set]]
+id = "Q3_MID"           # 3/4 の時点で3〜4位（P191 の範囲）
+from = "P191"
+part = "where"
+
+[[set]]
+id = "Q4_POS"           # 最後の区間で勝ち越し（P191）
+from = "P191"
+
+[[expr]]
+id = "E20"
+expr = "(~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & BAR_HIGH & CONV_NEG)"
+statement = "E19 に線の近くを足した式: 真ん中のます目か、収支が誤差の内なら、高さ > .500 かつ点の差より負け。それ以外は収支 0 以下"
+
+[[expr]]
+id = "E21"
+expr = "RF_BELOW | BAL_BELOW | VSL_BELOW"
+statement = "指標の帯の式（R66）: 得点の優位・収支・下の相手との勝率のどれかが、ほかの年のどの A よりも悪い"
+
+[[expr]]
+id = "E22"
+expr = "Q3_LOW | (Q3_MID & ~Q4_POS)"
+statement = "時期の状態の式（R58・R60）: 3/4 で5〜6位、または 3/4 で3〜4位で最後の区間に勝ち越せなかった"

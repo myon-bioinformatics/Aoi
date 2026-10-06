@@ -105,7 +105,7 @@ def main(argv=None) -> int:
               f"| `{col}` {label} | {agree35 / n:.2f} | - | {a2} | {ab2} | {b2} | {width}/{n} | {band} | {d_b2}/{len(dd)} | {d_bb}/{len(dd)} |")
     print("\n3.5位の線での一致の高い順: " + "、".join(f"{l} {a:.2f}" for a, l in sorted(out, reverse=True)))
 
-    print("\n中日の B 12年の、2本線での状態（A・AB・B）:")
+    print(f"\n中日の B {len(d)}年の、2本線での状態（A・AB・B）:")
     for col, label, sign, _ in indicators:
         line = []
         for r in d:
@@ -118,7 +118,7 @@ def main(argv=None) -> int:
                 line.append("-")
                 continue
             line.append("A" if v > mid(lg[1], lg[2]) else "B" if v < mid(lg[3], lg[4]) else "AB")
-        print(f"  {label}: " + " ".join(f"{r['season'] % 100:02d}{s}" for r, s in zip(d, line)))
+        print((f"  {label}: " + " ".join(f"{r['season'] % 100:02d}{s}" for r, s in zip(d, line))).rstrip())
     return 0
 
 

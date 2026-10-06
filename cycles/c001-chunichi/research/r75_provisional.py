@@ -67,9 +67,9 @@ def main(argv: list[str]) -> int:
             d = "-" if not dx else ("入る" if dx[0]["x"] else "入らない")
             print(f"| {p['id']} | {ins.height} | {hold.height} | {', '.join(cx) or 'なし'} | {d} |")
 
-    print("\n## 命題（P181〜P207）")
+    print("\n## 命題（P181〜P210）")
     judge_rows([by_id[i] for i in PROPS if i in by_id])
-    print("\n## 式（E19〜E28）")
+    print("\n## 式（E11・E13・E15・E19〜E32）")
     judge_rows([st_.compile_expr(e, sets) for e in exprs if e["id"] in EXPRS])
     return 0
 

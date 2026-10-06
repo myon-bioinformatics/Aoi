@@ -1160,3 +1160,16 @@ def test_bar_from_run_differences_uses_only_the_other_teams():
     assert out["c"]["lg_bar_pythag"] == pytest.approx(0.51) and out["c"]["pbar_gap"] == pytest.approx(0.01)
     assert out["d"]["lg_bar_pythag"] == pytest.approx(0.52) and out["d"]["pbar_gap"] == pytest.approx(-0.01)
     assert out["a"]["lg_bar_pythag"] == pytest.approx(0.51)
+
+
+
+def test_bar_gaps_are_relative_to_the_seasons_own_bar():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 6 + [2001] * 6, "league": ["C"] * 12, "team": list("abcdefabcdef"),
+                       "x": [6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]})
+    out = {(r["season"], r["team"]): r["x_bgap"] for r in sa.add_bar_gaps(st, ["x"]).iter_rows(named=True)}
+    # 2000年: c のほかの5球団の3番目は d の 3 → +1。d は c の 4 → −1。2001年は同じ並びで値が 1/10 → ±0.1
+    assert out[(2000, "c")] == pytest.approx(1) and out[(2000, "d")] == pytest.approx(-1)
+    assert out[(2001, "c")] == pytest.approx(0.1) and out[(2001, "d")] == pytest.approx(-0.1)
+    assert sa.add_bar_gaps(st, ["missing"]).columns == st.columns

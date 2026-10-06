@@ -77,6 +77,7 @@
   mix_lo / mix_hi / mix_zone       A と B が混ざる帯（ほかの年の A の最低勝率〜B の最高勝率）と、帯の下・中・上（−1・0・+1、R53。add_mix_zone）
   live_mix_lo / _hi / _zone        同じ帯を、A・B に効く試合だけの勝率（live_wpct）で引いたもの（R58）
   rf_mix_* / bal_mix_* / vsl_mix_* / sim_mix_*  同じ帯を、得点の優位・収支・下の相手との勝率・分布から見た A の確率の値で引いたもの（R66・R67）
+  *_bgap / rfg_mix_* / balg_mix_* / vslg_mix_*  その年の高さ（ほかの球団の上位半分の最後の値）からの差と、その差で引いた帯（R74）
   rf_state2 / ra_state2            得点・失点の優位の2本線の状態（A・AB・B、R67。add_state2）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
@@ -1604,6 +1605,43 @@ def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
 
 
 
+
+def add_bands_and_states(st: pl.DataFrame, excl=()) -> pl.DataFrame:
+    """帯（1年抜き）・その年の高さからの差・2本線の状態を、まとめて足す（measure の最後。テストも同じ関数を呼ぶ）。"""
+    st = add_mix_zone(add_mix_zone(st, exclude=excl), exclude=excl, col="live_wpct", prefix="live_mix")
+    for col, prefix in (("rf_adv", "rf_mix"), ("run_balance", "bal_mix"), ("vs_lower_wpct", "vsl_mix"),
+                        ("sim_p_upper", "sim_mix")):   # R66・R67: 指標の値の帯
+        st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
+    st = add_bar_gaps(st, ("rf_adv", "run_balance", "vs_lower_wpct"))     # R74: その年の高さからの差
+    for col, prefix in (("rf_adv_bgap", "rfg_mix"), ("run_balance_bgap", "balg_mix"), ("vs_lower_wpct_bgap", "vslg_mix")):
+        st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
+    return add_state2(add_state2(st, "rf_adv", "rf_state2"), "ra_adv", "ra_state2")   # R67: 得点・失点の側の2本線の状態
+
+
+def add_bar_gaps(st: pl.DataFrame, cols) -> pl.DataFrame:
+    """R74: 指標ごとの、その年の高さからの差（<列>_bgap）。
+
+    その年・そのリーグのほかの球団の値を高い順に並べた（球団数 ÷ 2）番目を、その年の高さとし、自分の値 − その高さを出す。
+    固定の値（0 や .500）と比べず、独走の1位がいる年と拮抗した年の違いをそのまま持つ（R73 の lg_bar_pythag と同じ考え方）。
+    大きいほどよい指標だけに使う。
+    """
+    cols = [c for c in cols if c in st.columns]
+    if not cols or not {"season", "league", "team"} <= set(st.columns):
+        return st
+    rows = []
+    for (season, league), g in st.group_by(["season", "league"]):
+        recs = g.select("team", *cols).rows(named=True)
+        k = len(recs) // 2
+        for r in recs:
+            out = {"season": season, "team": r["team"]}
+            for c in cols:
+                others = sorted((x[c] for x in recs if x["team"] != r["team"] and x[c] is not None), reverse=True)
+                bar = others[k - 1] if 0 < k <= len(others) else None
+                out[f"{c}_bgap"] = r[c] - bar if r[c] is not None and bar is not None else None
+            rows.append(out)
+    schema = {"season": st.schema["season"], "team": pl.Utf8, **{f"{c}_bgap": pl.Float64 for c in cols}}
+    return st.join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
+
 def add_mix_zone(st: pl.DataFrame, exclude=(), col: str = "wpct", prefix: str = "mix") -> pl.DataFrame:
     """R53: A と B が混ざる帯。自分の年を除いたほかの年（exclude の年も除く）の全単位から引く（1年抜き）。
 
@@ -1816,11 +1854,7 @@ def main(argv=None) -> int:
         st = linescore_join(st, tg, pl.read_ndjson(args.linescore, infer_schema_length=None))
     st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
     excl = [int(e["season"]) for e in cfg.get("exclude", [])]
-    st = add_mix_zone(add_mix_zone(st, exclude=excl), exclude=excl, col="live_wpct", prefix="live_mix")
-    for col, prefix in (("rf_adv", "rf_mix"), ("run_balance", "bal_mix"), ("vs_lower_wpct", "vsl_mix"),
-                        ("sim_p_upper", "sim_mix")):   # R66・R67: 指標の値の帯
-        st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
-    st = add_state2(add_state2(st, "rf_adv", "rf_state2"), "ra_adv", "ra_state2")   # R67: 得点・失点の側の2本線の状態
+    st = add_bands_and_states(st, excl)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

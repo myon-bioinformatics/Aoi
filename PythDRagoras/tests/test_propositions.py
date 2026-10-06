@@ -200,7 +200,7 @@ def test_cycle1_files_reference_real_columns():
     import tomllib
     from pathlib import Path
 
-    from sakanalytics import add_b_paths, add_balance, add_league_shape, add_mix_zone, add_state2, add_composites, add_persistence, batting_join, inning_decomposition, season_table, to_team_games
+    from sakanalytics import add_b_paths, add_balance, add_bands_and_states, add_composites, add_league_shape, add_persistence, batting_join, inning_decomposition, season_table, to_team_games
 
     root = Path(__file__).resolve().parents[2] / "cycles" / "c001-chunichi"
     teams = tomllib.loads((root / "analysis.toml").read_text(encoding="utf-8"))["teams"]
@@ -214,7 +214,7 @@ def test_cycle1_files_reference_real_columns():
                            schema_overrides={"season": pl.Int32})
     bat = pl.DataFrame([{"season": 2024, "team": "x", **{k: 1 for k in ("g", "r", "pa", "ab", "h", "b2", "b3", "hr", "tb", "bb",
                                                                           "hbp", "sf", "so", "ibb")}, "avg": 1.0, "slg": 1.0, "obp": 0.75}])
-    cols = set(add_state2(add_state2(add_mix_zone(add_mix_zone(add_mix_zone(add_mix_zone(add_mix_zone(add_mix_zone(add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(batting_join(inning_decomposition(st, innings), bat))))))), col="live_wpct", prefix="live_mix"), col="rf_adv", prefix="rf_mix"), col="run_balance", prefix="bal_mix"), col="vs_lower_wpct", prefix="vsl_mix"), col="sim_p_upper", prefix="sim_mix"), "rf_adv", "rf_state2"), "ra_adv", "ra_state2").columns)  # measure と同じ順
+    cols = set(add_bands_and_states(add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(batting_join(inning_decomposition(st, innings), bat))))))).columns)  # measure と同じ順
     props, _ = pr.load(root / "propositions.toml")
     for p in props:
         for c in [*p.get("if", []), *p["then"], *(p.get("scope") or {}).get("where", [])]:

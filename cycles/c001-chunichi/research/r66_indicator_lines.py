@@ -46,8 +46,7 @@ def mid(a, b):
     return (a + b) / 2
 
 
-def main(argv=None, indicators=None) -> int:
-    indicators = indicators or INDICATORS
+def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("season_jsonl", type=Path)
     ap.add_argument("--season", type=int, help="この年だけを確かめる（2012 など）")

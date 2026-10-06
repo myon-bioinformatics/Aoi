@@ -56,10 +56,10 @@ def main(argv=None) -> int:
     rows = [json.loads(line) for line in args.season_jsonl.read_text(encoding="utf-8").splitlines()]
     for r in rows:
         r["rf_g"], r["ra_g"] = r["RF"] / r["G"], r["RA"] / r["G"]
-    pool_all = [r for r in rows if r["season"] not in EXCLUDED]
-    target = [r for r in pool_all if (r["season"] == args.season if args.season else r["season"] in SCOPE)]
+    pool_all = [r for r in rows if r["season"] in SCOPE]
+    target = [r for r in rows if r["season"] not in EXCLUDED and (r["season"] == args.season if args.season else r["season"] in SCOPE)]
     leagues: dict = {}
-    for r in pool_all:
+    for r in rows:
         leagues.setdefault((r["season"], r["league"]), []).append(r)
     d = sorted((r for r in target if r["team"] == FOCUS and not r["upper_half"]), key=lambda r: r["season"])
     print(f"範囲: {len(target)} 単位（{'その年 ' + str(args.season) if args.season else '2013〜2025年、2020年を除く'}）、中日の B {len(d)}年\n")
@@ -105,7 +105,7 @@ def main(argv=None) -> int:
               f"| `{col}` {label} | {agree35 / n:.2f} | - | {a2} | {ab2} | {b2} | {width}/{n} | {band} | {d_b2}/{len(dd)} | {d_bb}/{len(dd)} |")
     print("\n3.5位の線での一致の高い順: " + "、".join(f"{l} {a:.2f}" for a, l in sorted(out, reverse=True)))
 
-    print("\n中日の B 12年の、2本線での状態（A・AB・B）:")
+    print(f"\n中日の B {len(d)}年の、2本線での状態（A・AB・B）:")
     for col, label, sign, _ in indicators:
         line = []
         for r in d:
@@ -118,7 +118,7 @@ def main(argv=None) -> int:
                 line.append("-")
                 continue
             line.append("A" if v > mid(lg[1], lg[2]) else "B" if v < mid(lg[3], lg[4]) else "AB")
-        print(f"  {label}: " + " ".join(f"{r['season'] % 100:02d}{s}" for r, s in zip(d, line)))
+        print((f"  {label}: " + " ".join(f"{r['season'] % 100:02d}{s}" for r, s in zip(d, line))).rstrip())
     return 0
 
 

@@ -54,3 +54,17 @@ def test_schema_and_direct_query(tmp_path, capsys):
     log = tmp_path / "ask.jsonl"
     main(["--results", str(tmp_path), "E26 の判例は？", "--log", str(log)])
     assert json.loads(log.read_text(encoding="utf-8"))["query"]["target"] == "E26"
+
+
+def test_invalid_query_values_are_controlled_errors(capsys):
+    import pytest
+    from ask import validate_query
+    invalid = [[], None, {'ask': []}, {'form': {}}, {'kind': []}, {'target': 2},
+               {'exclude': 'd'}, {'about': [2]}, {'min_rate': True}, {'max_rate': float('nan')},
+               {'min_rate': 10**400}, {'min_rate': .9, 'max_rate': .1}]
+    for raw in invalid:
+        with pytest.raises(ValueError):
+            validate_query(raw)
+        assert main(['--query', json.dumps(raw)]) == 2
+    assert main(['--query', '{']) == 2
+    assert 'Traceback' not in capsys.readouterr().err

@@ -72,7 +72,7 @@ def validate_query(raw: dict) -> Query:
     if not isinstance(raw, dict) or set(raw) - set(Query.__dataclass_fields__):
         raise ValueError("Query は定義済み項目だけを持つ object")
     q = Query(**raw)
-    if q.ask not in ASKS or q.form not in FORMS or q.kind not in KINDS:
+    if any(not isinstance(v, str) or v not in choices for v, choices in ((q.ask, ASKS), (q.form, FORMS), (q.kind, KINDS))):
         raise ValueError("ask / form / kind が選択肢の外")
     if q.target is not None and (not isinstance(q.target, str) or not re.fullmatch(r"[PE]\d+", q.target)):
         raise ValueError("target は P番号 / E番号 / null")
@@ -85,7 +85,7 @@ def validate_query(raw: dict) -> Query:
         ):
             raise ValueError("単位は登録済み球団コード、または 球団コード-年")
     for v in (q.min_rate, q.max_rate):
-        if v is not None and (type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1):
+        if v is not None and (type(v) not in (int, float) or not 0 <= v <= 1 or not math.isfinite(v)):
             raise ValueError("成立率は 0〜1 の数値 / null")
     if q.min_rate is not None and q.max_rate is not None and q.min_rate > q.max_rate:
         raise ValueError("成立率の下限が上限より大きい")

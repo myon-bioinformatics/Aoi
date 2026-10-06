@@ -196,7 +196,12 @@ class DiskState:
 
 def fake_api(monkeypatch, comments):
     api = GitHub("owner/repo", 1)
-    monkeypatch.setattr(api, "comments", lambda: list(comments))
+    def trusted_comments():
+        for comment in comments:
+            if "id" in comment:
+                comment.setdefault("author_association", "COLLABORATOR")
+        return list(comments)
+    monkeypatch.setattr(api, "comments", trusted_comments)
     def call(path, body):
         reply = {"user": {"login": "github-actions[bot]"}, **body}
         comments.append(reply)
@@ -448,18 +453,18 @@ def test_stopped_manual_job_is_not_selected_automatically(cycle, tmp_path, monke
     assert next_request(cycle, {'fixture': 'new'}, state.path)['seed'] == 'E1'
 
 
-def test_public_exploration_has_per_author_queue_limit(cycle, tmp_path, monkeypatch):
+def test_trusted_exploration_has_five_pending_requests_per_author(cycle, tmp_path, monkeypatch):
     import inbox
     monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'quota'})
-    comments = [{'id': i, 'user': {'login': 'public'}, 'created_at': '2026-01-01', 'body': '/explore E1'} for i in (511,512,513)]
+    comments = [{'id': i, 'user': {'login': 'trusted'}, 'created_at': '2026-01-01', 'body': '/explore E1'} for i in range(511,517)]
     api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
     intake(api, state, cycle, 'sha')
-    assert len(list((state.path/'requests').glob('*.json'))) == 2
-    assert '1人2件' in json.loads((state.path/'receipts/513.json').read_text())['error']
-    comments.append({'id': 514, 'user': {'login': 'public'}, 'created_at': '2026-01-01', 'body': '/stop 511'})
-    comments.append({'id': 515, 'user': {'login': 'public'}, 'created_at': '2026-01-01', 'body': '/explore E1'})
+    assert len(list((state.path/'requests').glob('*.json'))) == 5
+    assert '1人5件' in json.loads((state.path/'receipts/516.json').read_text())['error']
+    comments.append({'id': 517, 'user': {'login': 'trusted'}, 'created_at': '2026-01-01', 'body': '/stop 511'})
+    comments.append({'id': 518, 'user': {'login': 'trusted'}, 'created_at': '2026-01-01', 'body': '/explore E1'})
     intake(api, state, cycle, 'sha')
-    assert (state.path/'requests/515.json').exists()
+    assert (state.path/'requests/518.json').exists()
 
 
 def test_worker_reads_comments_only_for_completion(cycle, tmp_path, monkeypatch):
@@ -549,3 +554,52 @@ def test_completion_bundles_use_run_id_without_run_api(cycle, tmp_path, monkeypa
     assert 'run `98765`' in body and 'result-601' in body and 'result-602' in body
     worker(api, state, cycle, seconds=20)
     assert len(calls) == 1
+
+
+@pytest.mark.parametrize('body', ['/ask E1 の判例', '/explore E1', '/status', '/stop 1'])
+def test_untrusted_commands_are_ignored_before_work_and_reply(cycle, tmp_path, monkeypatch, body):
+    import inbox
+    monkeypatch.setenv('AOI_INBOX_ALLOWED_ACTORS', '[]')
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'gate'})
+    def unexpected(*args, **kwargs):
+        pytest.fail('untrusted comment must not invoke computation, status, or persistence')
+    monkeypatch.setattr(inbox, 'ask_question', unexpected)
+    monkeypatch.setattr(inbox, 'plan', unexpected)
+    monkeypatch.setattr(inbox, 'status_report', unexpected)
+    comments = [{'id': 701, 'user': {'login': 'outsider'}, 'author_association': 'NONE',
+                 'created_at': '2026-01-01', 'body': body}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    monkeypatch.setattr(state, 'save', unexpected)
+    intake(api, state, cycle, 'sha')
+    assert len(comments) == 1 and not state.path.exists()
+
+
+@pytest.mark.parametrize('login,association', [('owner','NONE'), ('someone','OWNER'),
+    ('someone','MEMBER'), ('someone','COLLABORATOR'), ('github-actions[bot]','NONE'), ('allowed[bot]','NONE')])
+def test_allowed_actor_handles_owner_members_and_explicit_bots(monkeypatch, login, association):
+    from inbox import allowed_actor
+    monkeypatch.setenv('AOI_INBOX_ALLOWED_ACTORS', '["Allowed[bot]"]')
+    assert allowed_actor({'user': {'login': login}, 'author_association': association}, 'owner/repo')
+    assert not allowed_actor({'user': {'login': 'other[bot]'}, 'author_association': 'NONE'}, 'owner/repo')
+
+
+def test_allowlisted_bot_is_accepted_during_polling(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setenv('AOI_INBOX_ALLOWED_ACTORS', '["agent[bot]"]')
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'allowlist'})
+    comments = [{'id': 711, 'user': {'login': 'agent[bot]'}, 'author_association': 'NONE',
+                 'created_at': '2026-01-01', 'body': '/status'}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'sha')
+    assert (state.path/'receipts/711.json').exists() and len(comments) == 2
+
+
+def test_total_pending_limit_still_applies_to_trusted_users(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *args: {'fixture': 'global'})
+    comments = [{'id': 720+i, 'user': {'login': f'trusted{i//5}'}, 'created_at': '2026-01-01',
+                 'body': '/explore E1'} for i in range(21)]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'sha')
+    assert len(list((state.path/'requests').glob('*.json'))) == 20
+    assert '全体20件' in json.loads((state.path/'receipts/740.json').read_text())['error']

@@ -41,6 +41,18 @@ def command(comment: dict):
     return (match[1], (match[2] or "").strip()) if match else None
 
 
+def allowed_actor(comment, repository):
+    """All commands share the same gate, also during scheduled polling."""
+    author = comment.get("user", {}).get("login", "").casefold()
+    if not author:
+        return False
+    raw = json.loads(os.environ.get("AOI_INBOX_ALLOWED_ACTORS", "") or "[]")
+    if not isinstance(raw, list) or any(not isinstance(value, str) or not value for value in raw):
+        raise ValueError("AOI_INBOX_ALLOWED_ACTORS はGitHubログイン名のJSON配列にしてください")
+    allowed = {repository.split("/")[0].casefold(), SELF, *(value.casefold() for value in raw)}
+    return comment.get("author_association") in ("OWNER", "MEMBER", "COLLABORATOR") or author in allowed
+
+
 class GitHub:
     def __init__(self, repository: str, issue: int):
         if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository) or issue < 1:
@@ -274,7 +286,7 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
     inputs = snapshot(ROOT, cycle)
     for c in list(comments):
         parsed = command(c)
-        if parsed is None:
+        if parsed is None or not allowed_actor(c, api.repository):
             continue
         cid = str(int(c["id"]))
         receipt = state.path / "receipts" / f"{cid}.json"
@@ -285,7 +297,7 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
             continue
         kind, text = parsed
         record = {"comment_id": int(cid), "author": c["user"]["login"], "body": c["body"],
-                  "created_at": c["created_at"], "code_sha": code_sha, "inputs": inputs, "kind": kind}
+                  "created_at": c["created_at"], "author_association": c.get("author_association", "NONE"), "code_sha": code_sha, "inputs": inputs, "kind": kind}
         try:
             if kind == "ask":
                 response, body = ask_question(text, cycle / "outputs", use_llm, state.path / "answers")
@@ -299,8 +311,8 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
                     spec, job = request["plan"], request["job"]
                 else:
                     pending = pending_requests(state.path)
-                    if len(pending) >= 20 or sum(r["author"] == record["author"] for r in pending) >= 2:
-                        raise ValueError("未完了の探索依頼は1人2件・全体20件までです。完了または停止後に新しいコメントで依頼してください")
+                    if len(pending) >= 20 or sum(r["author"] == record["author"] for r in pending) >= 5:
+                        raise ValueError("未完了の探索依頼は1人5件・全体20件までです。完了または停止後に新しいコメントで依頼してください")
                     spec = plan(text, cycle)
                     job = digest({"plan": spec, "inputs": inputs})[:24]
                     request = {**record, "plan": spec, "job": job}

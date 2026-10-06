@@ -21,7 +21,11 @@ jobs:
       vars.AOI_INBOX_ISSUE != '' &&
       (github.event_name != 'issue_comment' ||
        (github.event.issue.number == fromJSON(vars.AOI_INBOX_ISSUE) &&
-        startsWith(github.event.comment.body, '/')))
+        startsWith(github.event.comment.body, '/') &&
+        (contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) ||
+         github.event.comment.user.login == github.repository_owner ||
+         github.event.comment.user.login == 'github-actions[bot]' ||
+         contains(fromJSON(vars.AOI_INBOX_ALLOWED_ACTORS || '[]'), github.event.comment.user.login))))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -42,6 +46,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           AOI_INBOX_ISSUE: ${{ vars.AOI_INBOX_ISSUE }}
+          AOI_INBOX_ALLOWED_ACTORS: ${{ vars.AOI_INBOX_ALLOWED_ACTORS }}
           AOI_USE_LOCAL_LLM: ${{ vars.AOI_USE_LOCAL_LLM }}
           AOI_LLAMA_IMAGE: ${{ vars.AOI_LLAMA_IMAGE }}
           AOI_LLAMA_MODEL_URL: ${{ vars.AOI_LLAMA_MODEL_URL }}

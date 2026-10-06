@@ -75,7 +75,8 @@
   lg_bar                           越えるべき高さ: ほかの球団の中で上位半分の最後の勝率（R56）
   mix_lo / mix_hi / mix_zone       A と B が混ざる帯（ほかの年の A の最低勝率〜B の最高勝率）と、帯の下・中・上（−1・0・+1、R53。add_mix_zone）
   live_mix_lo / _hi / _zone        同じ帯を、A・B に効く試合だけの勝率（live_wpct）で引いたもの（R58）
-  rf_mix_* / bal_mix_* / vsl_mix_*  同じ帯を、得点の優位・収支・下の相手との勝率の値で引いたもの（R66。大きいほどよい指標だけ）
+  rf_mix_* / bal_mix_* / vsl_mix_* / sim_mix_*  同じ帯を、得点の優位・収支・下の相手との勝率・分布から見た A の確率の値で引いたもの（R66・R67）
+  rf_state2 / ra_state2            得点・失点の優位の2本線の状態（A・AB・B、R67。add_state2）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -1616,6 +1617,23 @@ def add_mix_zone(st: pl.DataFrame, exclude=(), col: str = "wpct", prefix: str = 
         .when(pl.col(col) > pl.col(hi_)).then(1)
         .otherwise(0).cast(pl.Int64).alias(zone_))
 
+
+def add_state2(st: pl.DataFrame, col: str, name: str) -> pl.DataFrame:
+    """R66・R67: 2本線の状態。同じ年・同じリーグの球団の値を大きい順に並べ、2番目と3番目の真ん中・4番目と5番目の真ん中で
+    "A"（上）・"AB"（間）・"B"（下）に分ける（6球団の前提。値のない球団があるリーグ年は空）。順位ではなく値の線。"""
+    if not {"season", "league", col} <= set(st.columns):
+        return st
+    rows = []
+    for (season, league), g in st.group_by(["season", "league"]):
+        vals = sorted((v for v in g[col].to_list() if v is not None), reverse=True)
+        ok = len(vals) == g.height and len(vals) >= 5
+        hi, lo = ((vals[1] + vals[2]) / 2, (vals[3] + vals[4]) / 2) if ok else (None, None)
+        for team, v in g.select("team", col).iter_rows():
+            rows.append({"season": season, "team": team,
+                         name: None if not ok or v is None else "A" if v > hi else "B" if v < lo else "AB"})
+    return st.join(pl.DataFrame(rows, schema={"season": st.schema["season"], "team": pl.Utf8, name: pl.Utf8}),
+                   on=["season", "team"], how="left")
+
 # R45: B に着く道筋の参考値。規則はこれまでの研究で決めたものを固定して使う（値を見て変えない）。判定には使わない
 B_PATHS = {
     "offense": "得点不足: 得点の優位が誤差を超えてマイナス（rf_zone_se = −1、R35・R40）",
@@ -1783,8 +1801,10 @@ def main(argv=None) -> int:
     st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
     excl = [int(e["season"]) for e in cfg.get("exclude", [])]
     st = add_mix_zone(add_mix_zone(st, exclude=excl), exclude=excl, col="live_wpct", prefix="live_mix")
-    for col, prefix in (("rf_adv", "rf_mix"), ("run_balance", "bal_mix"), ("vs_lower_wpct", "vsl_mix")):   # R66: 指標の値の帯
+    for col, prefix in (("rf_adv", "rf_mix"), ("run_balance", "bal_mix"), ("vs_lower_wpct", "vsl_mix"),
+                        ("sim_p_upper", "sim_mix")):   # R66・R67: 指標の値の帯
         st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
+    st = add_state2(add_state2(st, "rf_adv", "rf_state2"), "ra_adv", "ra_state2")   # R67: 得点・失点の側の2本線の状態
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

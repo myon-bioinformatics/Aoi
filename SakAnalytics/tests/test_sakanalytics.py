@@ -1132,3 +1132,15 @@ def test_linescore_join_stops_on_mismatch_and_leaves_missing_years_empty():
         st, tg, _ls([("2024-04-01", "d", 3, 0), ("2024-04-01", "g", 2, 1)])).iter_rows(named=True)}
     assert out[(2024, "d")]["ls_cov"] == pytest.approx(1.0) and out[(2023, "d")]["ls_cov"] == 0.0
     assert out[(2023, "d")]["ls_e_net_g"] is None                 # 取得していない年は空
+
+
+
+def test_state2_two_lines_on_values():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 6 + [2001] * 6, "league": ["C"] * 12, "team": list("abcdef") * 2,
+                       "x": [6, 5, 4, 3, 2, 1, 6, 5, 4, 3, 2, None]})
+    out = {(r["season"], r["team"]): r["xs"] for r in sa.add_state2(st, "x", "xs").iter_rows(named=True)}
+    # 線は (5+4)/2 = 4.5 と (3+2)/2 = 2.5 → 6・5 は A、4・3 は AB、2・1 は B
+    assert [out[(2000, t)] for t in "abcdef"] == ["A", "A", "AB", "AB", "B", "B"]
+    assert all(out[(2001, t)] is None for t in "abcdef")   # 値のない球団があるリーグ年は空

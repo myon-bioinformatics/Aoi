@@ -114,6 +114,9 @@ def main(argv=None) -> int:
                 continue
             lg = sorted((sign * x[col] for x in leagues[(r["season"], r["league"])] if x.get(col) is not None), reverse=True)
             v = sign * r[col]
+            if len(lg) < 5:   # 値のない球団があるリーグ年（short_share など）は状態を出さない
+                line.append("-")
+                continue
             line.append("A" if v > mid(lg[1], lg[2]) else "B" if v < mid(lg[3], lg[4]) else "AB")
         print(f"  {label}: " + " ".join(f"{r['season'] % 100:02d}{s}" for r, s in zip(d, line)))
     return 0

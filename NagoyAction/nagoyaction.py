@@ -34,6 +34,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -117,11 +118,17 @@ def _select(steps, only, start):
 def run(p: dict, *, offline=False, only=None, start=None, dry_run=False, receipt: Path | None = None,
         runner=subprocess.run) -> int:
     vars_ = {k: str(v) for k, v in p.get("vars", {}).items()}
+    first_failure = 0
     for s in _select(p["step"], only, start):
         argv = _expand(s["run"], vars_)
         entry = {"pipeline": p.get("name"), "step": s["name"], "argv": argv,
                  "started": dt.datetime.now(dt.UTC).isoformat(timespec="seconds")}
-        if offline and s.get("network"):
+        if s.get("when_env") and os.environ.get(s["when_env"]) != "1":
+            entry.update(skipped=True, reason="optional step disabled")
+            print(f"[skip] {s['name']}（{s['when_env']} != 1）")
+        elif first_failure and not s.get("always"):
+            entry.update(skipped=True, reason="previous step failed")
+        elif offline and s.get("network"):
             entry.update(skipped=True, reason="offline: network step")
             print(f"[skip] {s['name']}（オフライン。取得済みの成果物を使う）")
         elif dry_run:
@@ -129,17 +136,21 @@ def run(p: dict, *, offline=False, only=None, start=None, dry_run=False, receipt
             print(f"[dry-run] {s['name']}: {' '.join(argv)}")
         else:
             print(f"[run] {s['name']}: {' '.join(argv)}", flush=True)
-            rc = runner(argv, cwd=p["_root"], check=False).returncode
+            try:
+                rc = runner(argv, cwd=p["_root"], check=False).returncode
+            except (OSError, subprocess.SubprocessError) as e:
+                print(f"[fail] {s['name']}: {e}", file=sys.stderr)
+                rc = 127
             entry.update(returncode=rc, ended=dt.datetime.now(dt.UTC).isoformat(timespec="seconds"))
             if receipt:
                 _append(receipt, entry)
             if rc != 0:
                 print(f"[fail] {s['name']} (exit {rc})", file=sys.stderr)
-                return rc
+                first_failure = first_failure or rc
             continue
         if receipt:
             _append(receipt, entry)
-    return 0
+    return first_failure
 
 
 def _append(path: Path, entry: dict) -> None:

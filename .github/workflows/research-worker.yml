@@ -1,0 +1,52 @@
+name: Aoi bounded research worker
+
+on:
+  schedule:
+    - cron: '11,26,41,56 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: aoi-research-worker
+  cancel-in-progress: false
+
+jobs:
+  explore:
+    if: vars.AOI_RESEARCH_ENABLED == '1' || vars.AOI_INBOX_ISSUE != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Install uv
+        run: python -m pip install uv
+      - name: Explore for at most five hours; save between small batches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AOI_INBOX_ISSUE: ${{ vars.AOI_INBOX_ISSUE }}
+          AOI_RESEARCH_ENABLED: ${{ vars.AOI_RESEARCH_ENABLED }}
+        run: >-
+          python NagoyAction/nagoyaction.py run NagoyAction/pipelines/research.toml
+          --receipt build/research-receipt.jsonl
+      - name: Preserve checkpoints and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-checkpoint-${{ github.run_id }}
+          path: |
+            .research-state/jobs
+            .research-state/known
+            .research-state/public
+            .research-state/feedback
+            .research-state/pending-replies
+            .research-state/notifications
+          include-hidden-files: true
+          if-no-files-found: ignore

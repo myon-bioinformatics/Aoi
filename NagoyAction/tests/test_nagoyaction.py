@@ -131,3 +131,33 @@ def test_cli_is_stdlib_only_and_runs_from_another_directory(tmp_path):
                           str(CYCLE), "--dry-run"], capture_output=True, text=True, cwd=tmp_path)
     assert out.returncode in (0, 1), out.stderr  # 1 = 手元に uv がない環境では doctor が止める
     assert ("[dry-run] fetch" in out.stdout) or ("uv" in out.stdout and "✗" in out.stdout)
+
+
+def test_optional_docker_hooks_cleanup_after_failure(monkeypatch, tmp_path):
+    p = na.load(ROOT / "NagoyAction/pipelines/inbox.toml")
+    monkeypatch.setenv("AOI_USE_LOCAL_LLM", "1")
+    calls = []
+    def runner(argv, cwd, check):
+        calls.append(argv)
+        return Done(9 if argv[-1] == "intake" else 0)
+    assert na.run(p, runner=runner, receipt=tmp_path / "receipt.jsonl") == 9
+    assert calls[-1][-1] == "down"
+    assert [r["step"] for r in map(json.loads, (tmp_path / "receipt.jsonl").read_text().splitlines())] == [
+        "model", "llama-start", "llama-ready", "intake", "llama-stop"]
+    monkeypatch.delenv("AOI_USE_LOCAL_LLM")
+    calls.clear()
+    assert na.run(p, runner=runner) == 9
+    assert len(calls) == 1 and calls[0][-1] == "intake"
+
+
+def test_cleanup_also_runs_after_missing_executable(monkeypatch):
+    p = na.load(ROOT / "NagoyAction/pipelines/inbox.toml")
+    monkeypatch.setenv("AOI_USE_LOCAL_LLM", "1")
+    calls = []
+    def runner(argv, cwd, check):
+        calls.append(argv)
+        if argv[-1] == "prepare":
+            raise FileNotFoundError("missing")
+        return Done(0)
+    assert na.run(p, runner=runner) == 127
+    assert len(calls) == 2 and calls[-1][-1] == "down"

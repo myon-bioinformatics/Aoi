@@ -16,5 +16,5 @@ package = false
 # フォルダ名はサブプロジェクト名（BlueProbe など）、.py は小文字。同名のメインファイルはトップに、
 # それ以外は用途のフォルダ（baseball/ = 野球の取得元・シミュレーター、logic/ = 命題と集合、checks/、reports/）に置く
 pythonpath = ["BlueProbe", "BlueProbe/baseball", "QueRyu", "QueRyu/ask", "SakAnalytics", "SakAnalytics/baseball",
-              "PythDRagoras", "PythDRagoras/logic", "NagoyAction", "NagoyAction/checks", "DRAgoWing", "DRAgoWing/reports"]
+              "PythDRagoras", "PythDRagoras/logic", "NagoyAction", "NagoyAction/checks", "NagoyAction/inbox", "DRAgoWing", "DRAgoWing/reports"]
 testpaths = ["BlueProbe/tests", "QueRyu/tests", "SakAnalytics/tests", "PythDRagoras/tests", "NagoyAction/tests", "DRAgoWing/tests"]

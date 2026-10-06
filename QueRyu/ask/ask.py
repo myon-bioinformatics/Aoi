@@ -12,8 +12,8 @@
 from __future__ import annotations
 
 import argparse
-import math
 import json
+import math
 import re
 import sys
 import unicodedata
@@ -156,6 +156,27 @@ def parse(text: str) -> tuple[Query, list[str]]:
         unread.append("問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）")
     if q.ask == "rate" and q.min_rate is None and q.max_rate is None:
         unread.append("成立率の条件の数が読めない")
+    if any(rel in ("未満", "超") for _, _, rel in _PCT.findall(t)):
+        unread.append("未満・超は未対応。以上・以下とは区別して問い合わせてください")
+    if sum(word in t for word in ("対偶", "裏")) + bool(re.search(r"逆(?!に)", t)) > 1:
+        unread.append("形が2つ以上ある")
+    # Consume only the supported vocabulary. Unrecognized restrictions must not
+    # quietly disappear (e.g. 雨の日だけ, 2025年だけ, E25とE26).
+    rest = _ID.sub(" ", t)
+    rest = _PCT.sub(" ", rest)
+    rest = re.sub(r"(?:" + _TEAM.pattern + r")\s*(?:20\d{2}年?)?", " ", rest)
+    rest = _CODE_UNIT.sub(" ", rest)
+    words = ("判例", "反例", "例外", "成立率", "命題", "式", "対偶", "逆に", "逆", "裏", "元の", "original",
+             "一覧", "唯一", "ただ1つ", "1つだけ", "ひとつだけ", "1個だけ", "以外", "除いて", "除く", "抜いて", "抜き",
+             "ありますか", "あるの", "ある", "ない", "有無", "はい", "いいえ", "教えてください", "教えて", "ください")
+    rest = re.sub("|".join(map(re.escape, sorted(words, key=len, reverse=True))), " ", rest)
+    rest = re.sub(r"[\s?？、。,:：のにはがをでとか]", "", rest)
+    if rest:
+        unread.append(f"未対応の語・条件: {rest}")
+    try:
+        validate_query(asdict(q))
+    except (ValueError, TypeError) as e:
+        unread.append(str(e))
     return q, unread
 
 
@@ -176,8 +197,8 @@ def _id_key(i: str) -> tuple:
 def answer(q: Query, items: list[dict]) -> dict:
     """Query に、判定済みの結果だけで答える（計算し直さない）。"""
     if q.target and not any(it["id"] == q.target for it in items):
-        return {"answer": None, "error": f"{q.target} は判定済みの結果にない", "rows": []}
-    rows = []
+        return {"answer": "判定不能", "error": f"{q.target} は判定済みの結果にない", "rows": []}
+    rows, uncertain, evaluated = [], False, 0
     for it in sorted(items, key=lambda it: _id_key(it["id"])):
         if q.target and it["id"] != q.target:
             continue
@@ -185,41 +206,54 @@ def answer(q: Query, items: list[dict]) -> dict:
             continue
         f = next((f for f in it.get("forms", []) if f.get("form") == q.form), None)
         if f is None or not f.get("n"):
+            uncertain = True
             continue
+        evaluated += 1
         listed = [c["unit"] for c in f.get("counterexamples", [])]
-        n_cx = f["n"] - f["hold"] - f.get("undetermined", 0)
-        cx = [u for u in listed if u not in q.exclude]
+        # PythDRagoras counts n AFTER removing unknown rows. Do not subtract
+        # undetermined again: that used to hide real counterexamples.
+        n_cx = f["n"] - f["hold"]
+        cx = [u for u in listed if not any(u == a or u.split("-")[0] == a for a in q.exclude)]
         complete = len(listed) == n_cx
         left = n_cx - (len(listed) - len(cx))
+        count_known = complete or not q.exclude
+        uncertain |= bool(f.get("undetermined", 0)) or not count_known
         if q.about and not any(u == a or u.split("-")[0] == a for u in cx for a in q.about):
+            uncertain |= not complete
             continue
-        if q.ask == "unique_exception" and left != 1:
+        if q.ask == "unique_exception" and (not count_known or left != 1):
             continue
         if q.min_rate is not None and f["rate"] < q.min_rate:
             continue
         if q.max_rate is not None and f["rate"] > q.max_rate:
             continue
         rows.append({"id": it["id"], "form": q.form, "n": f["n"], "hold": f["hold"], "rate": round(f["rate"], 3),
-                     "counterexamples_left": left, "counterexamples": cx, "listed_all": complete,
+                     "counterexamples_left": left if count_known else None,
+                     "has_counterexample": bool(cx) or (count_known and left > 0),
+                     "undetermined": f.get("undetermined", 0), "counterexamples": cx, "listed_all": complete,
                      "statement": it.get("statement", "")})
     if q.ask == "has_counterexample":
-        ans = "はい" if any(r["counterexamples_left"] > 0 for r in rows) else "いいえ"
+        ans = ("はい" if any(r["has_counterexample"] for r in rows)
+               else "判定不能" if uncertain or not evaluated else "いいえ")
     else:
         ans = len(rows)
-    return {"answer": ans, "rows": rows}
+    return {"answer": ans, "rows": rows, "incomplete": uncertain or not evaluated}
 
 
 def render(text: str, q: Query, unread: list[str], res: dict) -> str:
     lines = [f"問い: {text}", "読み取り: " + json.dumps(asdict(q), ensure_ascii=False)]
     lines += [f"読めなかった: {u}" for u in unread]
     if res.get("error"):
-        return "\n".join([*lines, f"答え: なし（{res['error']}）"])
+        return "\n".join([*lines, f"答え: 判定不能（{res['error']}）"])
     head = f"{ASKS[q.ask]}・{FORMS[q.form]}・{KINDS[q.kind]}" + ("・除いた後の判例" if q.exclude else "")
     lines.append(f"答え（{head}）: {res['answer']}" + ("" if q.ask == "has_counterexample" else " 件"))
     for r in res["rows"][:50]:
         cx = ", ".join(r["counterexamples"]) or "なし"
         more = "" if r["listed_all"] else "（一覧は一部）"
-        lines.append(f"- {r['id']} {r['hold']}/{r['n']}（{r['rate']:.3f}）判例 {r['counterexamples_left']}: {cx}{more}")
+        count = r["counterexamples_left"] if r["counterexamples_left"] is not None else "不明"
+        label = "除外後の判例" if q.exclude else "判例"
+        excluded = "（除外 " + ", ".join(q.exclude) + "）" if q.exclude else ""
+        lines.append(f"- {r['id']} 元の成立率 {r['hold']}/{r['n']}（{r['rate']:.3f}）／{label} {count}{excluded}: {cx}{more}")
     if len(res["rows"]) > 50:
         lines.append(f"- ほか {len(res['rows']) - 50} 件")
     return "\n".join(lines)
@@ -251,7 +285,8 @@ def main(argv=None) -> int:
         q, unread = parse(text)
     else:
         ap.error("問いか --query か --schema が要る")
-    res = answer(q, load(args.results))
+    res = ({"answer": "判定不能", "error": "解釈を確認してください: " + "; ".join(unread), "rows": []}
+           if unread else answer(q, load(args.results)))
     if args.log:
         args.log.parent.mkdir(parents=True, exist_ok=True)
         with args.log.open("a", encoding="utf-8") as fh:

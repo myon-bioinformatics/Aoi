@@ -22,6 +22,11 @@ python NagoyAction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 - 標準ライブラリだけ（Python 3.11+）。このファイル1つをコピーすれば他のリポジトリでも使える
 
 GitHub Actions のワークフローは、このコマンドを呼ぶだけにする（例: `.github/workflows/cycle-c001.yml`）。
+
+質問受付・探索worker・任意のllama.cpp Docker起動も [同じ実行方法](docs/inbox.md) を使う。
+`pipelines/inbox.toml` と `pipelines/research.toml` が手順、`containers/llama.compose.yml` がDocker設定。
+手順の `when_env` は環境変数が `1` の場合だけ実行し、`always = true` は先行失敗後にも後片付けを行う。
+
 組織共通の再利用ワークフロー（actionlint など）は `myon-bioinformatics/myon-bioinformatics` のものを使う。
 他のリポジトリから共有モジュールを取り込むときは、同リポジトリの `vendor_sync.py`（SHA 固定）を使う。
 

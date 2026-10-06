@@ -339,7 +339,7 @@ Reading the two verdicts side by side tells where to look next. It is a **readin
 | 5 | either inconclusive | | add units before reading |
 | 6 | converse skipped | | one direction only |
 
-"Supported" here means the form's exit code is 0, 1 or 5. The readings are numbers; words are only their rendering.
+"Supported" here means the form's exit code is 0 or 1. Exit code 5 means undetermined units remain; like code 4, it maps to reading 5 and must not strengthen the reading. The readings are numbers; words are only their rendering.
 
 Each reading carries two lists of seeds, taken from the counterexamples:
 

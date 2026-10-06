@@ -56,10 +56,10 @@ def main(argv=None) -> int:
     rows = [json.loads(line) for line in args.season_jsonl.read_text(encoding="utf-8").splitlines()]
     for r in rows:
         r["rf_g"], r["ra_g"] = r["RF"] / r["G"], r["RA"] / r["G"]
-    pool_all = [r for r in rows if r["season"] not in EXCLUDED]
-    target = [r for r in pool_all if (r["season"] == args.season if args.season else r["season"] in SCOPE)]
+    pool_all = [r for r in rows if r["season"] in SCOPE]
+    target = [r for r in rows if r["season"] not in EXCLUDED and (r["season"] == args.season if args.season else r["season"] in SCOPE)]
     leagues: dict = {}
-    for r in pool_all:
+    for r in rows:
         leagues.setdefault((r["season"], r["league"]), []).append(r)
     d = sorted((r for r in target if r["team"] == FOCUS and not r["upper_half"]), key=lambda r: r["season"])
     print(f"範囲: {len(target)} 単位（{'その年 ' + str(args.season) if args.season else '2013〜2025年、2020年を除く'}）、中日の B {len(d)}年\n")

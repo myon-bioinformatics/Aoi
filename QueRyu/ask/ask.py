@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import json
 import re
 import sys
@@ -64,6 +65,31 @@ def schema() -> dict:
             "max_rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
         },
     }
+
+
+def validate_query(raw: dict) -> Query:
+    """Validate all fields at the execution boundary, including LLM output."""
+    if not isinstance(raw, dict) or set(raw) - set(Query.__dataclass_fields__):
+        raise ValueError("Query は定義済み項目だけを持つ object")
+    q = Query(**raw)
+    if any(not isinstance(v, str) or v not in choices for v, choices in ((q.ask, ASKS), (q.form, FORMS), (q.kind, KINDS))):
+        raise ValueError("ask / form / kind が選択肢の外")
+    if q.target is not None and (not isinstance(q.target, str) or not re.fullmatch(r"[PE]\d+", q.target)):
+        raise ValueError("target は P番号 / E番号 / null")
+    if q.target and q.kind != "any" and q.target[0] != ("P" if q.kind == "proposition" else "E"):
+        raise ValueError("target と kind が一致しない")
+    for values in (q.exclude, q.about):
+        if not isinstance(values, list) or len(values) > 200 or any(
+            not isinstance(v, str) or not re.fullmatch(r"[a-z]{1,2}(-\d{4})?", v)
+            or v.split("-")[0] not in CODES for v in values
+        ):
+            raise ValueError("単位は登録済み球団コード、または 球団コード-年")
+    for v in (q.min_rate, q.max_rate):
+        if v is not None and (type(v) not in (int, float) or not 0 <= v <= 1 or not math.isfinite(v)):
+            raise ValueError("成立率は 0〜1 の数値 / null")
+    if q.min_rate is not None and q.max_rate is not None and q.min_rate > q.max_rate:
+        raise ValueError("成立率の下限が上限より大きい")
+    return q
 
 
 _ID = re.compile(r"(?<![A-Za-z])([PE])\s?(\d{1,4})(?!\d)")
@@ -214,13 +240,12 @@ def main(argv=None) -> int:
         print(json.dumps(schema(), ensure_ascii=False, indent=2))
         return 0
     if args.query:
-        raw = json.loads(args.query)
-        bad = sorted(set(raw) - set(Query.__dataclass_fields__))
-        if (bad or raw.get("ask", "counterexamples") not in ASKS or raw.get("form", "original") not in FORMS
-                or raw.get("kind", "any") not in KINDS):
-            print(f"Query の値が型の外: {bad or raw}", file=sys.stderr)
+        try:
+            q = validate_query(json.loads(args.query))
+        except (ValueError, TypeError) as e:
+            print(f"Query の値が型の外: {e}", file=sys.stderr)
             return 2
-        q, unread, text = Query(**raw), [], args.query
+        unread, text = [], args.query
     elif args.question:
         text = args.question
         q, unread = parse(text)

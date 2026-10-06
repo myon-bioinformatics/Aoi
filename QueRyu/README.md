@@ -24,7 +24,7 @@
 - 台帳にある過去シーズンのページがキャッシュから消えていたら、**黙って取り直さずに止まる**（`RefetchRefused`）。取り直すかは人が決め、`--allow-refetch`（GitHub Actions では手動実行の `allow_refetch`、環境変数 `AOI_ALLOW_REFETCH=1`）のときだけ取る
 - 取り直したページの `sha256` が台帳と違えば `changed` に数える（ページが後から変わったことの記録）
 - 進行中のシーズン（`live`）は台帳があっても条件付きGETで確認してよい
-- キャッシュは GitHub Actions のキャッシュ（7日間使われないと消える）にある。`cache-keepalive.yml` が週1回読んで消えないようにする（main に入ってから動く）
+- キャッシュは GitHub Actions のキャッシュ（7日間使われないと消える）にある。`cache-keepalive.yml` が週2回、main から `run/c001` 上の同workflowを dispatch し、キャッシュを所有するブランチで復元する（main に入ってから動く）。main の restore では `run/c001` 専用キャッシュに届かない。対象ブランチに workflow が必要で、キャッシュ消失時は失敗として報告し、取り直さない
 - 量の大きい取得元（試合ごとのページ、1年 約860ページ）は、年を絞って取り、形と照合を確かめてから広げる
 
 ## 来歴

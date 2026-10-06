@@ -25,6 +25,17 @@ def cell(v):
     return "-" if v is None else str(v)
 
 
+def classify(flags):
+    unknown = flags.filter(pl.col("x").is_null() | pl.col("y").is_null())
+    known = flags.filter(pl.col("x").is_not_null() & pl.col("y").is_not_null())
+    ins = known.filter(pl.col("x"))
+    hold = ins.filter(pl.col("y"))
+    cx = ins.filter(~pl.col("y"))["team"].to_list()
+    dx = flags.filter(pl.col("team") == "d").rows(named=True)
+    d = "-" if not dx else "判定不能" if dx[0]["x"] is None or dx[0]["y"] is None else "入る" if dx[0]["x"] else "入らない"
+    return ins.height, hold.height, sorted(cx), unknown.height, d
+
+
 def main(argv: list[str]) -> int:
     import contextlib
     import io
@@ -52,20 +63,21 @@ def main(argv: list[str]) -> int:
         print(f"| {r['team_name']} | {r['G']} | {r['wpct']:.3f} | {r['rank']} | {'A' if r['upper_half'] else 'B'} |")
 
     def judge_rows(items):
-        print("\n| id | 前件に入った | 後件も当たり | 判例 | 中日 |\n|---|---|---|---|---|")
+        print("\n| id | 前件に入った | 後件も当たり | 判例 | 判定不能 | 中日 |\n|---|---|---|---|---|---|")
         for p in items:
             try:
                 sub = pr.scope_filter(d26, p.get("scope"))
                 flags = sub.select("team", x=pr._antecedent(p, sub.columns), y=pr._cond(p["then"], sub.columns))
+                scope = p.get("scope") or {}
+                if scope.get("where"):
+                    base = pr.scope_filter(d26, {k: v for k, v in scope.items() if k != "where"})
+                    unknown_scope = base.filter(pr._cond(scope["where"], base.columns).is_null())
+                    flags = pl.concat([flags, unknown_scope.select("team", x=pl.lit(None, dtype=pl.Boolean), y=pl.lit(None, dtype=pl.Boolean))])
             except Exception as e:  # noqa: BLE001  列がない（暫定で測れない列）なども記録する
-                print(f"| {p['id']} | 判定できない: {type(e).__name__} | | | |")
+                print(f"| {p['id']} | 判定できない: {type(e).__name__} | | | | |")
                 continue
-            ins = flags.filter(pl.col("x").fill_null(False))
-            hold = ins.filter(pl.col("y").fill_null(False))
-            cx = sorted(set(ins["team"].to_list()) - set(hold["team"].to_list()))
-            dx = flags.filter(pl.col("team") == "d").rows(named=True)
-            d = "-" if not dx else ("入る" if dx[0]["x"] else "入らない")
-            print(f"| {p['id']} | {ins.height} | {hold.height} | {', '.join(cx) or 'なし'} | {d} |")
+            n, hold, cx, unknown, d = classify(flags)
+            print(f"| {p['id']} | {n} | {hold} | {', '.join(cx) or 'なし'} | {unknown} | {d} |")
 
     print("\n## 命題（P181〜P210）")
     judge_rows([by_id[i] for i in PROPS if i in by_id])

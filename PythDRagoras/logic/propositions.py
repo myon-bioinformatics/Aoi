@@ -763,10 +763,10 @@ READING = {
     2: ("必要条件だが十分条件ではない", "necessary, not sufficient"),
     3: ("どちらの向きも主張より弱い結びつき", "a relationship weaker than claimed in both directions"),
     4: ("どちらの向きも不成立", "neither direction holds"),
-    5: ("判断保留を含む（単位を足して読み直す）", "inconclusive in at least one direction (add units)"),
+    5: ("判断保留・未判定を含む（不足を確認して読み直す）", "inconclusive or undetermined in at least one direction"),
     6: ("一方向だけ（逆・裏は省略）", "one direction only (converse and inverse skipped)"),
 }
-_SUPPORTED = (0, 1, 5)  # 形の終了コードのうち、その向きが支持されたもの
+_SUPPORTED = (0, 1)  # 形の終了コードのうち、その向きが支持されたもの
 
 
 def reading(r: dict) -> dict:
@@ -780,7 +780,7 @@ def reading(r: dict) -> dict:
     o, c = by["original"]["code"], by.get("converse", {}).get("code")
     if c is None:
         code = 6
-    elif 4 in (o, c):
+    elif any(v in (4, 5) for v in (o, c)):
         code = 5
     elif o in _SUPPORTED and c in _SUPPORTED:
         code = 0

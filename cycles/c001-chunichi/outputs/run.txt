@@ -6,8 +6,8 @@
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
 Downloading pygments (1.2MiB)
-Downloading polars-runtime-32 (47.6MiB)
 Downloading selectolax (2.4MiB)
+Downloading polars-runtime-32 (47.6MiB)
  Downloaded selectolax
  Downloaded pygments
  Downloaded polars-runtime-32
@@ -646,6 +646,9 @@ shape: (14, 12)
 - P202 収支が誤差の内（|run_balance_t| < 1）なら、越えるべき高さが .500 未満で A クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 - P203 得点も失点も真ん中のます目で、点の差どおりではその年の高さに届かない（pbar_gap < 0）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
 - P204 収支が誤差の内（|run_balance_t| < 1）で、点の差どおりではその年の高さに届かない（pbar_gap < 0）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 保留 / 逆 保留 / 裏 保留）
+- P205 得点の優位が、その年の高さからの差で、ほかの年のどの A よりも低い（rfg_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
+- P206 収支が、その年の高さからの差で、ほかの年のどの A よりも低い（balg_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
+- P207 下位半分の相手との勝率が、その年の高さからの差で、ほかの年のどの A よりも低い（vslg_mix_zone = −1）なら、B クラス: **exit 4 待った！判断保留** （元 保留 / 対偶 支持 / 逆 修正 / 裏 修正）
 
 詳細は objections.md。終了コードは `python PythDRagoras/logic/propositions.py judge` で確かめられる。
 
@@ -733,6 +736,8 @@ units=156 dropped=0 target: upper_half == False
 [1] E24 異議あり（例外あり） 覆い 11/12  (~MIDDLE & BAL_NONPOS) | (MIDDLE & PBAR_SHORT & CONV_NEG)
 [1] E25 異議あり（例外あり） 覆い 11/12  (~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)
 [4] E26 待った！判断保留 覆い 11/12  ((~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))
+[1] E27 異議あり（例外あり） 覆い 10/12  RFG_BELOW | BALG_BELOW | VSLG_BELOW
+[1] E28 異議あり（例外あり） 覆い 12/12  (RFG_BELOW | BALG_BELOW | VSLG_BELOW) | (Q3_LOW | (Q3_MID & ~Q4_POS))
 [run] judge: uv run python PythDRagoras/logic/propositions.py judge cycles/c001-chunichi/outputs/propositions.jsonl --report-only
 [4] P1 待った！判断保留 元の命題: 判例 12 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
 [1] P2 異議あり（例外あり） 元の命題: 判例 11 件: h-2013, d-2019, h-2021, l-2015, c-2022 ほか
@@ -938,3 +943,118 @@ units=156 dropped=0 target: upper_half == False
 [4] P202 待った！判断保留 元の命題: 判例 8 件: d-2015, c-2021, t-2016, db-2013, c-2022 ほか
 [4] P203 待った！判断保留 元の命題: 判例 2 件: db-2022, m-2015
 [4] P204 待った！判断保留 元の命題: 判例 10 件: db-2022, db-2017, c-2023, m-2015, l-2012 ほか
+[4] P205 待った！判断保留 元の命題: 判例 1 件: t-2022
+[4] P206 待った！判断保留 元の命題: 判例 1 件: t-2015
+[4] P207 待った！判断保留 元の命題: 判例 1 件: h-2023
+[run] fetch_2026: uv run python QueRyu/queryu.py --source npb_calendar --years 2026 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games_2026.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
+ledger: 135 pages, refetched=0, changed=0
+2026: records=0 unknown=0
+HTTP requests: 9
+[run] provisional_games: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2026 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games_provisional.jsonl --offline
+2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
+2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
+2014: records=864 cancelled=36 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+2015: records=858 cancelled=40 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+2016: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2017: records=858 cancelled=27 non_regular:CS ファイナルS=12 non_regular:CS ファーストS=7 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2018: records=858 cancelled=56 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2019: records=858 cancelled=21 non_regular:CS ファイナルS=10 non_regular:CS ファーストS=6 non_regular:オールスター=2 non_regular:日本シリーズ=4 unknown=0
+2020: records=720 cancelled=23 non_regular:クライマックスS=2 non_regular:日本シリーズ=4 unknown=0
+2021: records=858 cancelled=32 non_regular:CS ファイナルS=6 non_regular:CS ファーストS=4 non_regular:オールスター=2 non_regular:日本シリーズ=6 unknown=0
+2022: records=858 cancelled=31 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2023: records=858 cancelled=33 non_regular:CS ファイナルS=7 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2024: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=5 non_regular:オールスター=2 non_regular:日本シリーズ=7 unknown=0
+2025: records=858 cancelled=28 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=4 non_regular:オールスター=2 non_regular:日本シリーズ=5 unknown=0
+2026: records=0 unknown=0
+HTTP requests: 0
+2012: teams=12 games/team=144-144 expected=144 OK
+2013: teams=12 games/team=144-144 expected=144 OK
+2014: teams=12 games/team=144-144 expected=144 OK
+2015: teams=12 games/team=143-143 expected=143 OK
+2016: teams=12 games/team=143-143 expected=143 OK
+2017: teams=12 games/team=143-143 expected=143 OK
+2018: teams=12 games/team=143-143 expected=143 OK
+2019: teams=12 games/team=143-143 expected=143 OK
+2020: teams=12 games/team=120-120 expected=120 OK
+2021: teams=12 games/team=143-143 expected=143 OK
+2022: teams=12 games/team=143-143 expected=143 OK
+2023: teams=12 games/team=143-143 expected=143 OK
+2024: teams=12 games/team=143-143 expected=143 OK
+2025: teams=12 games/team=143-143 expected=143 OK
+[run] provisional_measure: uv run python SakAnalytics/sakanalytics.py --games data/observations/npb_calendar/games_provisional.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/provisional/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --linescore data/observations/npb_game_linescore/teams.jsonl
+shape: (14, 12)
+┌────────┬──────┬─────────┬─────┬─────┬─────┬───────┬─────────┬─────────┬────────┬────────┬────────┐
+│ season ┆ rank ┆ rank_ti ┆ W   ┆ L   ┆ T   ┆ wpct  ┆ pythag_ ┆ resid_f ┆ logit_ ┆ wpct_1 ┆ wpct_2 │
+│ ---    ┆ ---  ┆ e       ┆ --- ┆ --- ┆ --- ┆ ---   ┆ fixed   ┆ ixed    ┆ resid  ┆ run    ┆ run    │
+│ i32    ┆ i32  ┆ ---     ┆ u32 ┆ u32 ┆ u32 ┆ f64   ┆ ---     ┆ ---     ┆ ---    ┆ ---    ┆ ---    │
+│        ┆      ┆ bool    ┆     ┆     ┆     ┆       ┆ f64     ┆ f64     ┆ f64    ┆ f64    ┆ f64    │
+╞════════╪══════╪═════════╪═════╪═════╪═════╪═══════╪═════════╪═════════╪════════╪════════╪════════╡
+│ 2012   ┆ 2    ┆ false   ┆ 75  ┆ 53  ┆ 16  ┆ 0.586 ┆ 0.520   ┆ 0.066   ┆ 0.268  ┆ 0.634  ┆ 0.600  │
+│ 2013   ┆ 4    ┆ false   ┆ 64  ┆ 77  ┆ 3   ┆ 0.454 ┆ 0.441   ┆ 0.013   ┆ 0.053  ┆ 0.512  ┆ 0.548  │
+│ 2014   ┆ 4    ┆ false   ┆ 67  ┆ 73  ┆ 4   ┆ 0.479 ┆ 0.484   ┆ -0.006  ┆ -0.023 ┆ 0.472  ┆ 0.480  │
+│ 2015   ┆ 5    ┆ false   ┆ 62  ┆ 77  ┆ 4   ┆ 0.446 ┆ 0.471   ┆ -0.025  ┆ -0.101 ┆ 0.444  ┆ 0.412  │
+│ 2016   ┆ 6    ┆ false   ┆ 58  ┆ 82  ┆ 3   ┆ 0.414 ┆ 0.438   ┆ -0.024  ┆ -0.097 ┆ 0.410  ┆ 0.536  │
+│ 2017   ┆ 5    ┆ false   ┆ 59  ┆ 79  ┆ 5   ┆ 0.428 ┆ 0.389   ┆ 0.038   ┆ 0.159  ┆ 0.463  ┆ 0.536  │
+│ 2018   ┆ 5    ┆ false   ┆ 63  ┆ 78  ┆ 2   ┆ 0.447 ┆ 0.459   ┆ -0.012  ┆ -0.050 ┆ 0.488  ┆ 0.300  │
+│ 2019   ┆ 5    ┆ false   ┆ 68  ┆ 73  ┆ 2   ┆ 0.482 ┆ 0.516   ┆ -0.033  ┆ -0.134 ┆ 0.413  ┆ 0.500  │
+│ 2020   ┆ 3    ┆ false   ┆ 60  ┆ 55  ┆ 5   ┆ 0.522 ┆ 0.440   ┆ 0.081   ┆ 0.327  ┆ 0.706  ┆ 0.750  │
+│ 2021   ┆ 5    ┆ false   ┆ 55  ┆ 71  ┆ 17  ┆ 0.437 ┆ 0.425   ┆ 0.012   ┆ 0.048  ┆ 0.474  ┆ 0.364  │
+│ 2022   ┆ 6    ┆ false   ┆ 66  ┆ 75  ┆ 2   ┆ 0.468 ┆ 0.419   ┆ 0.049   ┆ 0.199  ┆ 0.523  ┆ 0.429  │
+│ 2023   ┆ 6    ┆ false   ┆ 56  ┆ 82  ┆ 5   ┆ 0.406 ┆ 0.390   ┆ 0.016   ┆ 0.066  ┆ 0.467  ┆ 0.429  │
+│ 2024   ┆ 6    ┆ false   ┆ 60  ┆ 75  ┆ 8   ┆ 0.444 ┆ 0.388   ┆ 0.056   ┆ 0.231  ┆ 0.600  ┆ 0.385  │
+│ 2025   ┆ 4    ┆ false   ┆ 63  ┆ 78  ┆ 2   ┆ 0.447 ┆ 0.437   ┆ 0.010   ┆ 0.040  ┆ 0.466  ┆ 0.419  │
+└────────┴──────┴─────────┴─────┴─────┴─────┴───────┴─────────┴─────────┴────────┴────────┴────────┘
+[run] provisional_check: uv run python cycles/c001-chunichi/research/r75_provisional.py cycles/c001-chunichi/outputs/provisional/season.jsonl cycles/c001-chunichi/propositions.toml cycles/c001-chunichi/sets.toml --out cycles/c001-chunichi/outputs/provisional/check.md
+# 2026年の暫定の判定（消化した試合だけ、0 単位）
+
+暫定。R18 の手順（全球団が143試合を終えてから）で取り込んだ後、もう一度判定する。
+
+| 球団 | 試合 | 勝率 | 順位 | A |
+|---|---|---|---|---|
+
+## 命題（P181〜P207）
+
+| id | 前件に入った | 後件も当たり | 判例 | 中日 |
+|---|---|---|---|---|
+| P181 | 0 | 0 | なし | - |
+| P182 | 0 | 0 | なし | - |
+| P183 | 0 | 0 | なし | - |
+| P184 | 0 | 0 | なし | - |
+| P185 | 0 | 0 | なし | - |
+| P186 | 0 | 0 | なし | - |
+| P187 | 0 | 0 | なし | - |
+| P188 | 0 | 0 | なし | - |
+| P189 | 0 | 0 | なし | - |
+| P190 | 0 | 0 | なし | - |
+| P191 | 0 | 0 | なし | - |
+| P192 | 0 | 0 | なし | - |
+| P193 | 0 | 0 | なし | - |
+| P194 | 0 | 0 | なし | - |
+| P195 | 0 | 0 | なし | - |
+| P196 | 0 | 0 | なし | - |
+| P197 | 0 | 0 | なし | - |
+| P198 | 0 | 0 | なし | - |
+| P199 | 0 | 0 | なし | - |
+| P200 | 0 | 0 | なし | - |
+| P201 | 0 | 0 | なし | - |
+| P202 | 0 | 0 | なし | - |
+| P203 | 0 | 0 | なし | - |
+| P204 | 0 | 0 | なし | - |
+| P205 | 0 | 0 | なし | - |
+| P206 | 0 | 0 | なし | - |
+| P207 | 0 | 0 | なし | - |
+
+## 式（E19〜E28）
+
+| id | 前件に入った | 後件も当たり | 判例 | 中日 |
+|---|---|---|---|---|
+| E19 | 0 | 0 | なし | - |
+| E20 | 0 | 0 | なし | - |
+| E21 | 0 | 0 | なし | - |
+| E22 | 0 | 0 | なし | - |
+| E24 | 0 | 0 | なし | - |
+| E25 | 0 | 0 | なし | - |
+| E26 | 0 | 0 | なし | - |
+| E27 | 0 | 0 | なし | - |
+| E28 | 0 | 0 | なし | - |
+

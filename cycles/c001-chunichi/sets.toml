@@ -149,3 +149,30 @@ statement = "不足が誤差を超えるか、点の差より負けたか（中�
 id = "E17"
 expr = "SHORT_T | (UNDER & ~ALLOC_GOOD)"
 statement = "E16 の後半から、組み合わせ方 ≥ 1 の単位を除く（点の差より負けても組み合わせ方がよい単位を外す）"
+
+# 追加: 2026-10-06。R71 の二段の式（計算前に書いた。P198〜P201 の判定はまだ見ていない）
+[[set]]
+id = "MIDDLE"           # 得点も失点もリーグの真ん中（P198）
+from = "P198"
+
+[[set]]
+id = "BAL_NONPOS"       # 収支 0 以下（P199）
+from = "P199"
+
+[[set]]
+id = "BAR_HIGH"         # 越えるべき高さ > .500（P200）
+from = "P200"
+
+[[set]]
+id = "CONV_NEG"         # 点の差より負けた（P201）
+from = "P201"
+
+[[expr]]
+id = "E18"
+expr = "(~MIDDLE & BAL_NONPOS) | (MIDDLE & (BAR_HIGH | CONV_NEG))"
+statement = "二段の式（または）: 片側に振れたます目は収支 0 以下、真ん中のます目は高さ > .500 か点の差より負け"
+
+[[expr]]
+id = "E19"
+expr = "(~MIDDLE & BAL_NONPOS) | (MIDDLE & BAR_HIGH & CONV_NEG)"
+statement = "二段の式（かつ）: 真ん中のます目は高さ > .500 かつ点の差より負け"

@@ -2781,3 +2781,58 @@ context = ["sim_p_upper", "sim_mix_lo", "run_balance_t"]
 links = ["H2"]
 falsifier = "分布から見た A の確率が帯の下の単位の10分の1を超えて A"
 note = "R67。独自の指標のうち帯がいちばん狭い（中 72/144）。中日の B のうち9年が帯の下"
+
+# 追加: 2026-10-06。R71（二段の式）のための命題。R67〜R70 の結果を見た後。2026年で確かめる。
+# 二段: 収支が片側に振れたます目では収支の符号、得点も失点も真ん中のます目では外の高さ（.500）と勝ち方の符号。区切りは中立の値（0・.500）で、値から選んでいない。
+
+[[proposition]]
+id = "P198"
+statement = "得点も失点もリーグの真ん中（rf_state2 = ra_state2 = AB）なら、A クラス"
+strength = "more_often_than_not"
+if = [{ col = "rf_state2", op = "==", value = "AB" }, { col = "ra_state2", op = "==", value = "AB" }]
+then = [{ col = "upper_half", op = "==", value = true }]
+motivated_by = ["g-2023"]
+surprise = "lg_bar"
+context = ["rf_adv", "ra_adv", "run_balance", "lg_bar", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "きっかけ以外で、得点も失点も真ん中の単位の半分以上が B"
+note = "R67・R70。集合 MIDDLE のための命題（2013〜2025年で 12/16 が A を見ている）"
+
+[[proposition]]
+id = "P199"
+statement = "収支が 0 以下（得点の不足が失点の優位以上）なら、B クラス"
+strength = "usually"
+if = [{ col = "run_balance", op = "<=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["t-2015"]
+surprise = "run_balance"
+context = ["rf_adv", "ra_adv", "wins_vs_pythag", "lg_bar"]
+links = ["H2"]
+falsifier = "きっかけ以外で、収支 0 以下の単位の4分の1を超えて A"
+note = "R69（収支の符号が全体で 118/144 を当てた）。集合 BAL_NONPOS のための命題"
+
+[[proposition]]
+id = "P200"
+statement = "越えるべき高さ（ほかの球団の上位半分の最後の勝率）が .500 を超えるなら、B クラス"
+strength = "usually"
+if = [{ col = "lg_bar", op = ">", value = 0.5 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["g-2017"]
+surprise = "lg_bar"
+context = ["wpct", "lg_line", "lg_rank_at_500"]
+links = ["H2"]
+falsifier = "きっかけ以外で、高さが .500 を超える単位の4分の1を超えて A"
+note = "R56・R70。高さは自分の勝率を含まないが、同じ年・同じリーグの中では A の側が算術で低くなる（R68）。集合 BAR_HIGH のための命題"
+
+[[proposition]]
+id = "P201"
+statement = "点の差から見込まれるより負けた（wins_vs_pythag < 0）なら、B クラス"
+strength = "more_often_than_not"
+if = [{ col = "wins_vs_pythag", op = "<", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2019"]
+surprise = "wins_vs_pythag"
+context = ["resid_fixed", "one_run_net", "alloc_z_strat"]
+links = ["H3"]
+falsifier = "きっかけ以外で、点の差より負けた単位の半分以上が A"
+note = "R70。集合 CONV_NEG のための命題。勝ち方は球団に付いていない（R70）"

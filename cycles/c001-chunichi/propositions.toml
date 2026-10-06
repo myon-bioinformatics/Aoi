@@ -2753,3 +2753,31 @@ context = ["vs_lower_wpct", "vsl_mix_lo", "vs_top_wpct"]
 links = ["H2"]
 falsifier = "下の相手との勝率が帯の下の単位の10分の1を超えて A"
 note = "R66。下位半分は最終順位で決める（前提）ので、自分の順位と算術でつながる分がある。中日の B 12年のうち7年がこの状態"
+
+# 追加: 2026-10-06。R67（独自の指標・得点と失点の状態の9通り）の結果を見た後の命題。2013〜2025年の値を見ている。2026年で確かめる。
+
+[[proposition]]
+id = "P196"
+statement = "得点の側がリーグの下2つ（rf_state2 = B）で、失点の側が真ん中（ra_state2 = AB）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "rf_state2", op = "==", value = "B" }, { col = "ra_state2", op = "==", value = "AB" }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2013", "d-2015", "d-2016", "d-2023", "d-2024", "d-2025"]
+surprise = "rf_state2"
+context = ["rf_adv", "ra_adv", "run_balance", "resid_fixed"]
+links = ["H1", "H2"]
+falsifier = "得点が下2つ・失点が真ん中の単位の10分の1を超えて A"
+note = "R67。2013〜2025年では 0/15 が A。中日の B のうち6年がこのます目。2本線は順位ではなく値の線（add_state2）"
+
+[[proposition]]
+id = "P197"
+statement = "得点・失点の分布から見た A の確率が、ほかの年のどの A よりも低い（sim_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "sim_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+motivated_by = ["d-2017"]
+surprise = "sim_mix_zone"
+context = ["sim_p_upper", "sim_mix_lo", "run_balance_t"]
+links = ["H2"]
+falsifier = "分布から見た A の確率が帯の下の単位の10分の1を超えて A"
+note = "R67。独自の指標のうち帯がいちばん狭い（中 72/144）。中日の B のうち9年が帯の下"

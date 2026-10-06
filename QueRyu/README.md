@@ -50,3 +50,5 @@ uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 \
 ## 問い合わせ
 
 判定済みの命題と式に、日本語の問いで聞く（「E25 に阪神 2015 以外の判例はある？」）。読み取りと答えを分け、答えは PythDRagoras の結果を引くだけ。詳しくは [docs/ask.md](docs/ask.md)。
+
+GitHubコメントからの質問受付と、既存集合による再開可能な探索の実行管理は [NagoyAction](../NagoyAction/docs/inbox.md)。

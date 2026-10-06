@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 import unicodedata
@@ -64,6 +65,31 @@ def schema() -> dict:
             "max_rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
         },
     }
+
+
+def validate_query(raw: dict) -> Query:
+    """Validate all fields at the execution boundary, including LLM output."""
+    if not isinstance(raw, dict) or set(raw) - set(Query.__dataclass_fields__):
+        raise ValueError("Query は定義済み項目だけを持つ object")
+    q = Query(**raw)
+    if q.ask not in ASKS or q.form not in FORMS or q.kind not in KINDS:
+        raise ValueError("ask / form / kind が選択肢の外")
+    if q.target is not None and (not isinstance(q.target, str) or not re.fullmatch(r"[PE]\d+", q.target)):
+        raise ValueError("target は P番号 / E番号 / null")
+    if q.target and q.kind != "any" and q.target[0] != ("P" if q.kind == "proposition" else "E"):
+        raise ValueError("target と kind が一致しない")
+    for values in (q.exclude, q.about):
+        if not isinstance(values, list) or len(values) > 200 or any(
+            not isinstance(v, str) or not re.fullmatch(r"[a-z]{1,2}(-\d{4})?", v)
+            or v.split("-")[0] not in CODES for v in values
+        ):
+            raise ValueError("単位は登録済み球団コード、または 球団コード-年")
+    for v in (q.min_rate, q.max_rate):
+        if v is not None and (type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1):
+            raise ValueError("成立率は 0〜1 の数値 / null")
+    if q.min_rate is not None and q.max_rate is not None and q.min_rate > q.max_rate:
+        raise ValueError("成立率の下限が上限より大きい")
+    return q
 
 
 _ID = re.compile(r"(?<![A-Za-z])([PE])\s?(\d{1,4})(?!\d)")
@@ -130,6 +156,27 @@ def parse(text: str) -> tuple[Query, list[str]]:
         unread.append("問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）")
     if q.ask == "rate" and q.min_rate is None and q.max_rate is None:
         unread.append("成立率の条件の数が読めない")
+    if any(rel in ("未満", "超") for _, _, rel in _PCT.findall(t)):
+        unread.append("未満・超は未対応。以上・以下とは区別して問い合わせてください")
+    if sum(word in t for word in ("対偶", "裏")) + bool(re.search(r"逆(?!に)", t)) > 1:
+        unread.append("形が2つ以上ある")
+    # Consume only the supported vocabulary. Unrecognized restrictions must not
+    # quietly disappear (e.g. 雨の日だけ, 2025年だけ, E25とE26).
+    rest = _ID.sub(" ", t)
+    rest = _PCT.sub(" ", rest)
+    rest = re.sub(r"(?:" + _TEAM.pattern + r")\s*(?:20\d{2}年?)?", " ", rest)
+    rest = _CODE_UNIT.sub(" ", rest)
+    words = ("判例", "反例", "例外", "成立率", "命題", "式", "対偶", "逆に", "逆", "裏", "元の", "original",
+             "一覧", "唯一", "ただ1つ", "1つだけ", "ひとつだけ", "1個だけ", "以外", "除いて", "除く", "抜いて", "抜き",
+             "ありますか", "あるの", "ある", "ない", "有無", "はい", "いいえ", "教えてください", "教えて", "ください")
+    rest = re.sub("|".join(map(re.escape, sorted(words, key=len, reverse=True))), " ", rest)
+    rest = re.sub(r"[\s?？、。,:：のにはがをでとか]", "", rest)
+    if rest:
+        unread.append(f"未対応の語・条件: {rest}")
+    try:
+        validate_query(asdict(q))
+    except (ValueError, TypeError) as e:
+        unread.append(str(e))
     return q, unread
 
 
@@ -151,7 +198,7 @@ def answer(q: Query, items: list[dict]) -> dict:
     """Query に、判定済みの結果だけで答える（計算し直さない）。"""
     if q.target and not any(it["id"] == q.target for it in items):
         return {"answer": None, "error": f"{q.target} は判定済みの結果にない", "rows": []}
-    rows = []
+    rows, uncertain, evaluated = [], False, 0
     for it in sorted(items, key=lambda it: _id_key(it["id"])):
         if q.target and it["id"] != q.target:
             continue
@@ -159,28 +206,38 @@ def answer(q: Query, items: list[dict]) -> dict:
             continue
         f = next((f for f in it.get("forms", []) if f.get("form") == q.form), None)
         if f is None or not f.get("n"):
+            uncertain = True
             continue
+        evaluated += 1
         listed = [c["unit"] for c in f.get("counterexamples", [])]
-        n_cx = f["n"] - f["hold"] - f.get("undetermined", 0)
-        cx = [u for u in listed if u not in q.exclude]
+        # PythDRagoras counts n AFTER removing unknown rows. Do not subtract
+        # undetermined again: that used to hide real counterexamples.
+        n_cx = f["n"] - f["hold"]
+        cx = [u for u in listed if not any(u == a or u.split("-")[0] == a for a in q.exclude)]
         complete = len(listed) == n_cx
         left = n_cx - (len(listed) - len(cx))
+        count_known = complete or not q.exclude
+        uncertain |= bool(f.get("undetermined", 0)) or not count_known
         if q.about and not any(u == a or u.split("-")[0] == a for u in cx for a in q.about):
+            uncertain |= not complete
             continue
-        if q.ask == "unique_exception" and left != 1:
+        if q.ask == "unique_exception" and (not count_known or left != 1):
             continue
         if q.min_rate is not None and f["rate"] < q.min_rate:
             continue
         if q.max_rate is not None and f["rate"] > q.max_rate:
             continue
         rows.append({"id": it["id"], "form": q.form, "n": f["n"], "hold": f["hold"], "rate": round(f["rate"], 3),
-                     "counterexamples_left": left, "counterexamples": cx, "listed_all": complete,
+                     "counterexamples_left": left if count_known else None,
+                     "has_counterexample": bool(cx) or (count_known and left > 0),
+                     "undetermined": f.get("undetermined", 0), "counterexamples": cx, "listed_all": complete,
                      "statement": it.get("statement", "")})
     if q.ask == "has_counterexample":
-        ans = "はい" if any(r["counterexamples_left"] > 0 for r in rows) else "いいえ"
+        ans = ("はい" if any(r["has_counterexample"] for r in rows)
+               else "判定不能" if uncertain or not evaluated else "いいえ")
     else:
         ans = len(rows)
-    return {"answer": ans, "rows": rows}
+    return {"answer": ans, "rows": rows, "incomplete": uncertain or not evaluated}
 
 
 def render(text: str, q: Query, unread: list[str], res: dict) -> str:
@@ -214,19 +271,19 @@ def main(argv=None) -> int:
         print(json.dumps(schema(), ensure_ascii=False, indent=2))
         return 0
     if args.query:
-        raw = json.loads(args.query)
-        bad = sorted(set(raw) - set(Query.__dataclass_fields__))
-        if (bad or raw.get("ask", "counterexamples") not in ASKS or raw.get("form", "original") not in FORMS
-                or raw.get("kind", "any") not in KINDS):
-            print(f"Query の値が型の外: {bad or raw}", file=sys.stderr)
+        try:
+            q = validate_query(json.loads(args.query))
+        except (ValueError, TypeError) as e:
+            print(f"Query の値が型の外: {e}", file=sys.stderr)
             return 2
-        q, unread, text = Query(**raw), [], args.query
+        unread, text = [], args.query
     elif args.question:
         text = args.question
         q, unread = parse(text)
     else:
         ap.error("問いか --query か --schema が要る")
-    res = answer(q, load(args.results))
+    res = ({"answer": "判定不能", "error": "解釈を確認してください: " + "; ".join(unread), "rows": []}
+           if unread else answer(q, load(args.results)))
     if args.log:
         args.log.parent.mkdir(parents=True, exist_ok=True)
         with args.log.open("a", encoding="utf-8") as fh:

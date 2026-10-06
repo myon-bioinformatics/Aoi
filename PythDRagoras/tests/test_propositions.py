@@ -107,6 +107,14 @@ def test_four_forms_counts_and_counterexamples():
     assert "rd > 0" in c["question"] and "rank <= 3" in c["question"] and c["links"] == ["H3"]
 
 
+def test_text_surprise_column_does_not_stop_the_ordering():
+    """surprise に文字列の列（2本線の状態 "A"/"AB"/"B" など）を指定しても止まらない（Actions の question で止まった形）。"""
+    t = table(ROWS).with_columns(state=pl.when(pl.col("rd") > 0).then(pl.lit("A")).otherwise(pl.lit("B")))
+    r = pr.evaluate({**P1, "surprise": "state"}, t, focus="d")
+    cx = next(f for f in r["forms"] if f["form"] == "original")["counterexamples"]
+    assert [c["unit"] for c in cx] == ["d-2019", "t-2021"] and cx[0]["surprise"] == "A"   # 年・球団の順
+
+
 def test_contrapositive_invariant_holds_on_random_tables():
     import random
     rnd = random.Random(0)

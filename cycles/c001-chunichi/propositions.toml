@@ -2763,8 +2763,8 @@ strength = "almost_always"
 if = [{ col = "rf_state2", op = "==", value = "B" }, { col = "ra_state2", op = "==", value = "AB" }]
 then = [{ col = "upper_half", op = "==", value = false }]
 motivated_by = ["d-2013", "d-2015", "d-2016", "d-2023", "d-2024", "d-2025"]
-surprise = "rf_state2"
-context = ["rf_adv", "ra_adv", "run_balance", "resid_fixed"]
+surprise = "rf_adv"
+context = ["rf_state2", "ra_state2", "ra_adv", "run_balance", "resid_fixed"]
 links = ["H1", "H2"]
 falsifier = "得点が下2つ・失点が真ん中の単位の10分の1を超えて A"
 note = "R67。2013〜2025年では 0/15 が A。中日の B のうち6年がこのます目。2本線は順位ではなく値の線（add_state2）"

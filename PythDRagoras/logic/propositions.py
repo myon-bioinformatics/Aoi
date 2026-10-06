@@ -386,7 +386,11 @@ def _counterexamples(df: pl.DataFrame, x: pl.Expr, y: pl.Expr, p: dict, form: st
             "question": f"{r['team_name']} {r['season']} は「{cond_x}」を満たすのに「{cond_y}」を満たさない。なぜか？",
             "links": p.get("links", []),
         })
-    return sorted(rows, key=lambda c: (c["surprise"] is None, -abs(c["surprise"] or 0), c["season"], c["team"]))
+    # surprise が数値でない列（"A"・"AB"・"B" のような状態など）なら、並べる手がかりにしない（2026-10-06、P196 で止まった）
+    def magnitude(c):
+        v = c["surprise"]
+        return abs(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+    return sorted(rows, key=lambda c: (magnitude(c) is None, -(magnitude(c) or 0), c["season"], c["team"]))
 
 
 def evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None = None, focus: str | None = None) -> dict:

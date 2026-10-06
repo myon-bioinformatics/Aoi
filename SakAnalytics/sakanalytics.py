@@ -1612,10 +1612,18 @@ def add_bands_and_states(st: pl.DataFrame, excl=()) -> pl.DataFrame:
     for col, prefix in (("rf_adv", "rf_mix"), ("run_balance", "bal_mix"), ("vs_lower_wpct", "vsl_mix"),
                         ("sim_p_upper", "sim_mix")):   # R66・R67: 指標の値の帯
         st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
-    st = add_bar_gaps(st, ("rf_adv", "run_balance", "vs_lower_wpct"))     # R74: その年の高さからの差
+    st = add_bar_gaps(st, ("rf_adv", "run_balance", "vs_lower_wpct", "rd"))     # R74・R76: その年の高さからの差
+    st = add_vs_top_bar_gap(st)
     for col, prefix in (("rf_adv_bgap", "rfg_mix"), ("run_balance_bgap", "balg_mix"), ("vs_lower_wpct_bgap", "vslg_mix")):
         st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
     return add_state2(add_state2(st, "rf_adv", "rf_state2"), "ra_adv", "ra_state2")   # R67: 得点・失点の側の2本線の状態
+
+
+def add_vs_top_bar_gap(st: pl.DataFrame) -> pl.DataFrame:
+    """R76: 上の相手（1・2位）との勝率 − その年の高さ（lg_bar）。固定の .500 ではなく、その年の A の最後の勝率と比べる。"""
+    if not {"vs_top_wpct", "lg_bar"} <= set(st.columns):
+        return st
+    return st.with_columns(vs_top_bar_gap=pl.col("vs_top_wpct") - pl.col("lg_bar"))
 
 
 def add_bar_gaps(st: pl.DataFrame, cols) -> pl.DataFrame:

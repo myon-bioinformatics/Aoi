@@ -17,8 +17,8 @@ import propositions as pr  # noqa: E402
 import sets as st_  # noqa: E402
 
 SEASON = 2026
-PROPS = [f"P{i}" for i in range(181, 208)]
-EXPRS = [f"E{i}" for i in range(19, 29)]
+PROPS = [f"P{i}" for i in range(181, 211)]
+EXPRS = ["E11", "E13", "E15", *(f"E{i}" for i in range(19, 33))]   # R76: 判例のない式と、その作り直し
 
 
 def cell(v):

@@ -265,3 +265,36 @@ statement = "E21 の作り直し: 得点の優位・収支・下の相手との�
 id = "E28"
 expr = "(RFG_BELOW | BALG_BELOW | VSLG_BELOW) | (Q3_LOW | (Q3_MID & ~Q4_POS))"
 statement = "指標の帯（E27）と時期の状態（E22）の和: どちらかが B と言えば B（覆いを広げる側の組み合わせ）"
+
+# 追加: 2026-10-06。R76（計算前に書いた式）。判例のない式（E11・E13・E15・E26）の作り直し。元の式は消さない
+[[set]]
+id = "F96B"               # P96 の作り直し: 得失点差をその年の高さから測る
+from = "P208"
+
+[[set]]
+id = "TOP_WIN_B"          # P144 の作り直し: 上の相手との勝率をその年の高さ − .03 と比べる
+from = "P209"
+
+[[set]]
+id = "BALG_NONPOS"        # P199 の作り直し: 収支がその年の高さ以下
+from = "P210"
+
+[[expr]]
+id = "E29"
+expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~CONVERT_BIG"
+statement = "E11 の作り直し（その年の高さ）"
+
+[[expr]]
+id = "E30"
+expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~ALLOC_GOOD"
+statement = "E13 の作り直し（その年の高さ）"
+
+[[expr]]
+id = "E31"
+expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~MID_CONVERT"
+statement = "E15 の作り直し（その年の高さ）"
+
+[[expr]]
+id = "E32"
+expr = "((~MIDDLE & ~NEAR & BALG_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))"
+statement = "E26 の作り直し（収支をその年の高さから測る）"

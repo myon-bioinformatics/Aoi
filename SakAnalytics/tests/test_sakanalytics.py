@@ -1173,3 +1173,12 @@ def test_bar_gaps_are_relative_to_the_seasons_own_bar():
     assert out[(2000, "c")] == pytest.approx(1) and out[(2000, "d")] == pytest.approx(-1)
     assert out[(2001, "c")] == pytest.approx(0.1) and out[(2001, "d")] == pytest.approx(-0.1)
     assert sa.add_bar_gaps(st, ["missing"]).columns == st.columns
+
+
+def test_vs_top_is_compared_with_the_seasons_bar():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"team": ["a", "b"], "vs_top_wpct": [0.45, None], "lg_bar": [0.47, 0.5]})
+    out = sa.add_vs_top_bar_gap(st)
+    assert out["vs_top_bar_gap"].to_list()[0] == pytest.approx(-0.02) and out["vs_top_bar_gap"].to_list()[1] is None
+    assert sa.add_vs_top_bar_gap(st.drop("lg_bar")).columns == ["team", "vs_top_wpct"]

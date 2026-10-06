@@ -2932,3 +2932,50 @@ falsifier = "帯の下の単位の10分の1を超えて A"
 note = "R74。P195 の作り直し"
 parent = "P195"
 change = "P205 と同じ（その年の高さからの差で帯を引く）"
+
+# ---- R76: 判例のない式を、その年の高さで作り直す（research/R76-zero-counterexample-on-season-bar.md） ----
+# 追加: 2026-10-06。計算前に登録。大きさ（50点・.03）は元のまま、比べる基準点だけをその年の高さに移す（刻んで探さない）。
+
+[[proposition]]
+id = "P208"
+statement = "その年の高さからの得失点差が −50 未満、または分布から見た A の見込みが5割未満で期待勝利数を下回った、またはその年の高さからの得失点差が +50 未満で組み合わせ方が基準より不利なら、B クラス"
+strength = "usually"
+if = []
+if_any = [[{ col = "rd_bgap", op = "<", value = -50 }], [{ col = "sim_p_upper", op = "<", value = 0.5 }, { col = "wins_vs_pythag", op = "<", value = 0 }], [{ col = "rd_bgap", op = "<", value = 50 }, { col = "alloc_z_strat", op = "<", value = -1 }]]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rd_bgap"
+context = ["rd", "sim_p_upper", "wins_vs_pythag", "alloc_z_strat", "rank"]
+links = ["H2", "H3", "H9"]
+falsifier = "2026年（R18）で、この式に当たるのに A クラスのチームが出る"
+note = "R76。P96 の作り直し"
+parent = "P96"
+change = "得失点差を 0（勝率 .500 の位置）と比べるのをやめ、その年・そのリーグのほかの球団の上位半分の最後の得失点差からの差（rd_bgap）で比べる。50点はそのまま"
+
+[[proposition]]
+id = "P209"
+statement = "得点の不足が誤差を超えている（得点 −1）チームは、上の相手（1・2位）との勝率がその年の高さから −.03 以上なら A クラス"
+strength = "usually"
+scope = { where = [{ col = "rf_zone_se", op = "==", value = -1 }] }
+if = [{ col = "vs_top_bar_gap", op = ">=", value = -0.03 }]
+then = [{ col = "upper_half", op = "==", value = true }]
+surprise = "vs_top_bar_gap"
+context = ["vs_top_wpct", "lg_bar", "rank", "rd"]
+links = ["H3"]
+falsifier = "得点がはっきり足りず上の相手にその年の高さ −.03 以上なのに B の単位が出る"
+note = "R76。P144 の作り直し。上の相手は最終順位で決める（算術でつながる面がある）"
+parent = "P144"
+change = "上の相手との勝率を .47（.500 − .03）と比べるのをやめ、その年の高さ（lg_bar）− .03 と比べる"
+
+[[proposition]]
+id = "P210"
+statement = "収支が、その年の高さ（ほかの球団の上位半分の最後の値）以下なら、B クラス"
+strength = "usually"
+if = [{ col = "run_balance_bgap", op = "<=", value = 0 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_bgap"
+context = ["run_balance", "rank", "wins_vs_pythag"]
+links = ["H2"]
+falsifier = "その年の高さ以下の収支で A の単位が多く出る"
+note = "R76。P199 の作り直し（E26 の中の BAL_NONPOS）"
+parent = "P199"
+change = "収支を 0（リーグ平均）と比べるのをやめ、その年の高さからの差で比べる"

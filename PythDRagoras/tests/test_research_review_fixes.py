@@ -39,3 +39,11 @@ def test_r75_nulls_are_not_counterexamples_or_nonmembers():
     flags = pl.DataFrame({'team': ['d','t','g','s','c'],
                           'x': [True, True, True, None, False], 'y': [None, False, True, True, None]})
     assert m.classify(flags) == (2, 1, ['t'], 3, '判定不能')
+
+
+def test_r75_false_antecedent_is_outside_even_if_consequent_unknown():
+    m = script('r75_provisional')
+    flags = pl.DataFrame({'team': ['d'], 'x': [False], 'y': [None]}, schema={'team': pl.String, 'x': pl.Boolean, 'y': pl.Boolean})
+    # Unknown count follows the core evaluator's missing-value accounting;
+    # antecedent membership is still known to be false.
+    assert m.classify(flags) == (0, 0, [], 1, '入らない')

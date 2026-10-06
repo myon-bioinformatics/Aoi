@@ -228,6 +228,7 @@ def render(results: list[dict], meta: dict) -> str:
              "登録した命題の条件を集合にし、式（& かつ、| または、~ でない）を命題として判定した（R48）。",
              "形のセルは「終了コード・成立率（単位数）」。覆いは、焦点の球団の後件に当たる単位のうち、式に入る単位の数。",
              "**通る** = 元の命題の形が終了コード 0（判例なし）で、焦点の後件の単位をすべて覆う。逆は求めない（後件に至る道筋は1つとは限らない）。",
+             "通るは評価データ内での条件充足。事後構成と明示した式は過去の結果を参照して作成・選択しており、独立確認なし。計算前の式の登録だけでは独立確認にならない。",
              "1つ通っても正解とは書かない（別々の命題から組んだ式が複数通ることを求める）。", "",
              "| 式 | 集合の式 | 組の数 | 元の命題 | 対偶 | 逆 | 裏 | 総合 | 焦点の覆い | 通る | 判例（元） |",
              "|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -239,7 +240,8 @@ def render(results: list[dict], meta: dict) -> str:
             return "—" if x is None else f"{x['code']}・{'-' if x['rate'] is None else format(x['rate'], '.2f')}（{x['n']}）"
         cov = r["coverage"]
         cx = [c["unit"] for c in by["original"]["counterexamples"]]
-        lines.append(f"| {r['id']} | `{r['expr']}` | {r['groups']} | {cell('original')} | {cell('contrapositive')} | {cell('converse')} "
+        stage = "（事後構成・独立確認なし）" if r.get("posthoc") else ""
+        lines.append(f"| {r['id']}{stage} | `{r['expr']}` | {r['groups']} | {cell('original')} | {cell('contrapositive')} | {cell('converse')} "
                      f"| {cell('inverse')} | {r['judgement']['code']} | {cov['covered']}/{cov['n']} | {'**通る**' if r['passes'] else ''} "
                      f"| {', '.join(cx[:6])}{' ほか' if len(cx) > 6 else ''} |")
     missed = [(r["id"], r["coverage"]["missed"]) for r in results if r["coverage"]["missed"]]
@@ -345,7 +347,7 @@ def main(argv=None) -> int:
             r = pr.evaluate(p, included, excluded, focus)
             cov = coverage(p, included, focus)
             original = next(f for f in r["forms"] if f["form"] == "original")
-            r |= {"expr": e["expr"], "groups": len(p.get("if_any") or [p["if"]]), "coverage": cov,
+            r |= {"posthoc": bool(e.get("posthoc", False)), "expr": e["expr"], "groups": len(p.get("if_any") or [p["if"]]), "coverage": cov,
                   "passes": original["code"] == 0 and cov["n"] > 0 and cov["covered"] == cov["n"]}
             results.append(r)
     except pr.DataError as e:

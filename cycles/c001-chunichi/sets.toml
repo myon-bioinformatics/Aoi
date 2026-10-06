@@ -108,6 +108,7 @@ statement = "E6 から、点の差より5勝以上多く勝った単位を除く
 
 [[expr]]
 id = "E11"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
 expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~CONVERT_BIG"
 statement = "E7 から、点の差より5勝以上多く勝った単位を除く"
 
@@ -118,6 +119,7 @@ statement = "E6 から、組み合わせ方 ≥ 1 の単位を除く"
 
 [[expr]]
 id = "E13"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
 expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~ALLOC_GOOD"
 statement = "E7 から、組み合わせ方 ≥ 1 の単位を除く"
 
@@ -128,6 +130,7 @@ statement = "E6 から、中位の相手から3勝以上多く勝った単位を
 
 [[expr]]
 id = "E15"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
 expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT"
 statement = "E7 から、中位の相手から3勝以上多く勝った単位を除く"
 
@@ -240,6 +243,7 @@ statement = "E20 の作り直し: 真ん中のます目か線の近くは、そ�
 
 [[expr]]
 id = "E26"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
 expr = "((~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))"
 statement = "E25 と時期の状態の式（E22）の積（R72 の種1、E23 の代わり）"
 
@@ -281,20 +285,24 @@ from = "P210"
 
 [[expr]]
 id = "E29"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
 expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~CONVERT_BIG"
 statement = "E11 の作り直し（その年の高さ）"
 
 [[expr]]
 id = "E30"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
 expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~ALLOC_GOOD"
 statement = "E13 の作り直し（その年の高さ）"
 
 [[expr]]
 id = "E31"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
 expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~MID_CONVERT"
 statement = "E15 の作り直し（その年の高さ）"
 
 [[expr]]
 id = "E32"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
 expr = "((~MIDDLE & ~NEAR & BALG_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))"
 statement = "E26 の作り直し（収支をその年の高さから測る）"

@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   explore:
-    if: vars.AOI_INBOX_ISSUE != ''
+    if: vars.AOI_RESEARCH_ENABLED == '1' || vars.AOI_INBOX_ISSUE != ''
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
@@ -40,6 +40,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: research-checkpoint-${{ github.run_id }}
-          path: .research-state/jobs
+          path: |
+            .research-state/jobs
+            .research-state/known
+            .research-state/public
           include-hidden-files: true
           if-no-files-found: ignore

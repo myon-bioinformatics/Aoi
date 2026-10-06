@@ -19,7 +19,10 @@ from dataclasses import asdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT / "QueRyu/ask"), str(ROOT / "PythDRagoras/logic")]
+sys.path[:0] = [str(ROOT / "QueRyu/ask"), str(ROOT / "PythDRagoras/logic"), str(ROOT / "DRAgoWing"), str(ROOT / "DRAgoWing/reports")]
+from bank import lookup, prepare
+from autonomous import next_request
+from research import build as build_report
 from ask import answer, load, parse, render, schema, validate_query
 from exploration import Explorer, atomic_json, digest, plan, snapshot, summary, save_state, read_state
 
@@ -151,8 +154,11 @@ def ask_question(text: str, results: Path, use_llm=False, cache: Path | None = N
     key = digest({"query": asdict(q), "results": hashes,
                   "answer_code": hashlib.sha256((ROOT / "QueRyu/ask/ask.py").read_bytes()).hexdigest()})
     cached = cache / f"{key}.json" if cache else None
+    prepared = lookup(q, results, cache.parent / "known") if cache and not unread else None
     if unread:
         res = {"answer": "判定不能", "error": "解釈を確認してください: " + "; ".join(unread), "rows": []}
+    elif prepared is not None:
+        res = prepared
     elif cached and cached.exists():
         res = json.loads(cached.read_text(encoding="utf-8"))
     else:
@@ -227,14 +233,21 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
         api.reply("reply-" + cid, body, comments)
 
 
-def worker(api, state, cycle: Path, seconds=18000):
+def worker(api, state, cycle: Path, seconds=18000, autonomous=False):
     deadline = time.monotonic() + seconds
     current_inputs = snapshot(ROOT, cycle)
+    if autonomous:
+        prepare(cycle / "outputs", state.path / "known")
+        build_report(state.path)
+        state.save()
     while time.monotonic() < deadline:
         state.sync()
         requests = [json.loads(p.read_text(encoding="utf-8")) for p in sorted((state.path / "requests").glob("*.json"))]
         active = [r for r in requests if not (state.path / "stops" / f"{r['comment_id']}.json").exists()]
         by_job = {r["job"]: r for r in active}
+        automatic = next_request(cycle, current_inputs, state.path) if autonomous else None
+        if automatic:
+            by_job.setdefault(automatic["job"], automatic)
         progressed = False
         for job, request in by_job.items():
             if time.monotonic() >= deadline:
@@ -259,15 +272,18 @@ def worker(api, state, cycle: Path, seconds=18000):
                 except Exception as e:
                     saved = saved or {"cursor": 0, "candidates": [], "results": [], "bounded": False}
                     saved.update(status="error", error=f"{type(e).__name__}: {e}")
+            saved["origin"] = request.get("origin", "comment")
             save_state(path, saved)
             report = path.with_name("report.md")
             report.write_text(summary(saved) + "\n", encoding="utf-8")
+            if autonomous:
+                build_report(state.path)
             state.save()
             progressed = True
         # Durable terminal results are retried independently of evaluation, so a
         # failed comment POST never causes a completed job to be recomputed.
-        comments = api.comments()
-        for request in active:
+        comments = api.comments() if api else []
+        for request in active if api else []:
             path = state.path / "jobs" / request["job"] / "state.json"
             if path.exists():
                 saved = json.loads(path.read_text(encoding="utf-8"))
@@ -280,26 +296,27 @@ def worker(api, state, cycle: Path, seconds=18000):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("mode", choices=("intake", "worker"))
+    ap.add_argument("--autonomous", action="store_true", help="登録済みの式から依頼なしで探索する")
     ap.add_argument("--issue", type=int, default=os.environ.get("AOI_INBOX_ISSUE"))
     ap.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY"))
     ap.add_argument("--seconds", type=int, default=18000)
     ap.add_argument("--state-dir", type=Path, default=ROOT / ".research-state")
     args = ap.parse_args(argv)
-    if not args.issue or not args.repository:
+    if not args.repository or (not args.issue and args.mode == "intake"):
         ap.error("--issue / AOI_INBOX_ISSUE と --repository / GITHUB_REPOSITORY が必要")
     if not 0 < args.seconds <= 18000:
         ap.error("seconds は1〜18000")
-    api = GitHub(args.repository, args.issue)
+    api = GitHub(args.repository, args.issue) if args.issue else None
     cycle = ROOT / "cycles/c001-chunichi"
     try:
-        state = State(ROOT, args.state_dir.resolve(), create=args.mode == "intake")
+        state = State(ROOT, args.state_dir.resolve(), create=args.mode == "intake" or args.autonomous)
     except FileNotFoundError:
         print("受付未起動。処理する依頼はありません。")
         return 0
     if args.mode == "intake":
         intake(api, state, cycle, git(ROOT, "rev-parse", "HEAD").stdout.strip(), os.environ.get("AOI_USE_LOCAL_LLM") == "1")
     else:
-        worker(api, state, cycle, args.seconds)
+        worker(api, state, cycle, args.seconds, autonomous=args.autonomous)
     return 0
 
 

@@ -252,3 +252,38 @@ def test_worker_refuses_to_mix_changed_inputs(cycle, tmp_path, monkeypatch):
     worker(api, state, cycle, seconds=20)
     saved = json.loads(next((state.path / "jobs").glob("*/state.json")).read_text())
     assert saved["status"] == "blocked" and saved["cursor"] == 0
+
+
+def test_automatic_worker_without_comments_prepares_and_finishes(cycle, tmp_path, monkeypatch):
+    import inbox
+    import bank
+    from autonomous import next_request
+    inputs = {"fixture": "automatic"}
+    monkeypatch.setattr(inbox, "snapshot", lambda *args: inputs)
+    (cycle / "outputs/sets.jsonl").write_text(json.dumps(item()) + "\n")
+    state = DiskState(tmp_path / "autostate")
+    worker(None, state, cycle, seconds=20, autonomous=True)
+    assert next_request(cycle, inputs, state.path) is None
+    manifest = json.loads((state.path / "known/manifest.json").read_text())
+    assert manifest["questions"] == 16
+    q = Query(target="E1", ask="has_counterexample")
+    assert bank.lookup(q, cycle / "outputs", state.path / "known") == answer(q, [item()])
+    assert (state.path / "public/index.html").exists()
+    before = {str(p): p.read_bytes() for p in state.path.rglob("*.json")}
+    worker(None, state, cycle, seconds=20, autonomous=True)
+    assert before == {str(p): p.read_bytes() for p in state.path.rglob("*.json")}
+    assert next_request(cycle, {"fixture": "changed"}, state.path) is not None
+    (cycle / "outputs/sets.jsonl").write_text(json.dumps(item(2, 2, listed=())) + "\n")
+    assert bank.lookup(q, cycle / "outputs", state.path / "known") is None
+    bank.prepare(cycle / "outputs", state.path / "known")
+    assert bank.lookup(q, cycle / "outputs", state.path / "known")["answer"] == "いいえ"
+
+
+def test_inbox_uses_prepared_bank(cycle, tmp_path, monkeypatch):
+    import bank
+    import inbox
+    (cycle / "outputs/sets.jsonl").write_text(json.dumps(item()) + "\n")
+    bank.prepare(cycle / "outputs", tmp_path / "known")
+    monkeypatch.setattr(inbox, "answer", lambda *a: pytest.fail("prepared answer should be reused"))
+    record, _ = ask_question('E1 に判例はある？', cycle / "outputs", cache=tmp_path / "answers")
+    assert record["result"]["answer"] == "はい"

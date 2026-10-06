@@ -13,5 +13,5 @@ outputs = [".venv/pyvenv.cfg"]
 
 [[step]]
 name = "explore"
-run = ["uv", "run", "--frozen", "python", "NagoyAction/inbox/inbox.py", "worker", "--seconds", "18000"]
+run = ["uv", "run", "--frozen", "python", "NagoyAction/inbox/inbox.py", "worker", "--seconds", "18000", "--autonomous"]
 network = true

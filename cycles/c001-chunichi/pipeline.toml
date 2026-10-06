@@ -144,7 +144,9 @@ run = ["uv", "run", "python", "PythDRagoras/logic/propositions.py", "judge", "{o
 # 6. 2026年の暫定（R74、ユーザーの指示）。本体の結果のあとに置く（止まっても本体の出力は残る）。
 #    消化した試合だけで測る（未消化を架空の結果で埋めない。率・順位は今の順位表と同じ）。R18 の取り込み（全日程の後）は別。
 # 今季の日程は過去の年と別の場所・別の書き方（/games/2026/schedule_MM_detail.html、npb_calendar の /bis/2026/calendar/ は 404）。
-#    BlueProbe の手順: 一度だけ取り（進行中のシーズンなので更新だけ確認する）、最初は preview（--strict なし）で形を確かめる。
+#    BlueProbe の手順: 一度だけ取り（進行中のシーズンなので更新だけ確認する）、最初は preview（--strict なし）で形を確かめた。
+#    9ページ・854試合が読め、未知の20件は「- （球場）18:00」（結果前）とオールスター（cl-pl）だったので、観測した表記として足し、
+#    --strict に替えた（2026-10-06）。CS などが混ざれば（143 超え・組み合わせの数の超過・未知の表記）、暫定の測定の前に止まる。
 [[step]]
 name = "fetch_2026"
 run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_schedule_current", "--years", "2026",
@@ -156,7 +158,7 @@ outputs = ["data/raw/npb_schedule_current/manifest.jsonl"]
 [[step]]
 name = "preview_2026"
 run = ["uv", "run", "python", "BlueProbe/blueprobe.py", "--source", "npb_schedule_current", "--cache", "data/raw/npb_schedule_current",
-       "--out", "{out}/provisional/observed_2026.md"]
+       "--out", "{out}/provisional/observed_2026.md", "--strict"]
 
 [[step]]
 name = "provisional_measure"

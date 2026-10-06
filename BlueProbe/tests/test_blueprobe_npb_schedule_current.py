@@ -29,8 +29,26 @@ def test_not_yet_played_cancelled_and_unknown_are_counted_not_taken():
             + row(href="https://npb.jp/scores/2026/0903/d-c-22/", text="4回 2 - 1"))
     r = parse(html, URL)
     assert r["records"] == []
-    assert (r["counts"]["scheduled"], r["counts"]["cancelled"]) == (1, 1)
-    assert [u["key"] for u in r["unknown"]] == ["20260725-cl-pl-1", "20260903-d-c-22"]
+    assert (r["counts"]["scheduled:09"], r["counts"]["cancelled"]) == (1, 1)
+    assert [u["key"] for u in r["unknown"]] == ["20260903-d-c-22"]
+    assert r["counts"]["non_regular:オールスター"] == 1
+
+
+def test_observed_spellings_in_preview_2026():
+    """preview_2026 で実ページに見た表記: 結果前の「- （球場）18:00」（空白・改行つき）、オールスターの cl-pl・pl-cl。"""
+    html = (row(href="https://npb.jp/scores/2026/1006/m-l-25/", text="\n  \n   -\n   （ZOZOマリン）18:00\n  ")
+            + row(href="https://npb.jp/scores/2026/0724/pl-cl-2/", text="\n  3\n  -\n  2\n "))
+    r = parse(html, URL)
+    assert r["records"] == [] and r["unknown"] == []
+    assert (r["counts"]["scheduled:10"], r["counts"]["non_regular:オールスター"]) == (1, 1)
+
+
+def test_pair_over_the_regular_count_is_flagged():
+    base = {"home": "g", "away": "t", "hs": 1, "as": 0}
+    same = [{**base, "date": f"2026-{4 + i // 20:02d}-{1 + i % 20:02d}"} for i in range(26)]
+    assert [c["ok"] for c in check(same)] == [False] and "pairs-over=g-t:26" in check(same)[0]["text"]
+    inter = [{**base, "away": "h", "date": f"2026-06-{1 + i:02d}"} for i in range(4)]
+    assert [c["ok"] for c in check(inter)] == [False]
 
 
 def test_same_game_linked_twice_is_one_record_and_other_score_links_are_non_regular():

@@ -16,9 +16,10 @@ URL   : https://npb.jp/games/{year}/schedule_{MM}_detail.html
 key は「年月日-ホーム-ビジター-番号」。
 
 採用しなかったものの区分（counts）:
-  scheduled      : 試合のリンクだが、まだ結果がない（スコアの形でない、「試合前」など）
+  scheduled:<月>  : 試合のリンクだが、まだ結果がない（数字がない、または「- （球場）18:00」）
   cancelled      : 中止・ノーゲーム
   non_regular    : スコアの形だが、試合のリンクではない
+  non_regular:オールスター : コードが cl・pl の試合
   unknown        : 知らないチームコード（オールスターなど）、または読めない文字列 → 原文を残す
 
 注意:
@@ -48,6 +49,13 @@ _DASH = "[-‐‑‒–—−]"
 GAME_PATH = re.compile(r"/scores/(?P<y>\d{4})/(?P<md>\d{4})/(?P<home>[a-z]+)-(?P<away>[a-z]+)-(?P<n>\d+)/?")
 SCORE = re.compile(rf"(?P<hs>[0-9]{{1,2}}) ?{_DASH} ?(?P<as>[0-9]{{1,2}})")
 CANCELLED = re.compile(r".*(中止|ノーゲーム).*")
+# まだ結果のない試合: スコアの代わりに「- （球場）18:00」（preview_2026 で実ページに見た表記、2026-10-06）
+SCHEDULED = re.compile(rf"{_DASH}? ?(\([^)]*\))? ?[0-9]{{1,2}}:[0-9]{{2}}")
+# 公式戦以外のコード: オールスター（cl-pl / pl-cl、preview_2026 で見た）
+NON_REGULAR_CODES = {"cl": "オールスター", "pl": "オールスター"}
+# 同じ組み合わせの公式戦の数（同じリーグ 25、交流戦 3）。超えたら CS などが混ざっている
+PAIR_MAX = {True: 25, False: 3}
+LEAGUE = {t: ("C" if t in {"g", "s", "db", "d", "t", "c"} else "P") for t in CODES}
 
 
 def pages(years) -> list[tuple[str, str, str]]:
@@ -72,6 +80,9 @@ def parse(html: str, url: str = "") -> dict:
         if key in seen:
             continue
         seen.add(key)
+        if path["home"] in NON_REGULAR_CODES or path["away"] in NON_REGULAR_CODES:
+            out["counts"][f"non_regular:{NON_REGULAR_CODES.get(path['home']) or NON_REGULAR_CODES[path['away']]}"] += 1
+            continue
         if path["home"] not in CODES or path["away"] not in CODES:
             out["unknown"].append({"key": key, "raw": f"[{path['home']}-{path['away']}] {raw}"})
             continue
@@ -88,32 +99,37 @@ def parse(html: str, url: str = "") -> dict:
             })
         elif CANCELLED.fullmatch(t):
             out["counts"]["cancelled"] += 1
-        elif not re.search(r"[0-9]", t):
-            out["counts"]["scheduled"] += 1
+        elif not re.search(r"[0-9]", t) or SCHEDULED.fullmatch(t):
+            out["counts"][f"scheduled:{path['md'][:2]}"] += 1   # 月ごと（残りの公式戦か、CS などの予定かを月で見分ける材料）
         else:
             out["unknown"].append({"key": key, "raw": raw})
     return out
 
 
 def check(records: list[dict]) -> list[dict]:
-    """年ごとに、1球団の試合数の範囲を書く。143 を超える球団があれば ok=False（公式戦以外の混入）。
+    """年ごとに、1球団の試合数の範囲を書く。次のどれかなら ok=False（公式戦以外の混入を疑う）:
+    143 を超える球団、同じ日に同じ球団の試合が2つ、同じ組み合わせが公式戦の数（同じリーグ 25、交流戦 3）を超える。
 
-    進行中のシーズンなので、143 に届かないのは正常。同じ日に同じ球団の試合が2つあっても ok=False。
+    進行中のシーズンなので、143 に届かないのは正常。
     """
-    n, day = Counter(), Counter()
+    n, day, pair = Counter(), Counter(), Counter()
     for r in records:
         y = int(r["date"][:4])
         for t in (r["home"], r["away"]):
             n[(y, t)] += 1
             day[(r["date"], t)] += 1
+        pair[(y, *sorted((r["home"], r["away"])))] += 1
     out = []
     for y in sorted({y for y, _ in n}):
         got = {t: n[(y, t)] for t in sorted(CODES)}
         double = sorted(f"{d}:{t}" for (d, t), k in day.items() if k > 1 and d.startswith(str(y)))
-        ok = max(got.values()) <= EXPECTED_MAX and not double
+        over = sorted(f"{a}-{b}:{k}" for (yy, a, b), k in pair.items()
+                      if yy == y and k > PAIR_MAX[LEAGUE[a] == LEAGUE[b]])
+        ok = max(got.values()) <= EXPECTED_MAX and not double and not over
         text = (f"{y}: teams={sum(g > 0 for g in got.values())} games/team={min(got.values())}-{max(got.values())} "
                 f"max={EXPECTED_MAX} finished={sum(g == EXPECTED_MAX for g in got.values())} "
                 + (f"same-day={','.join(double)} " if double else "")
+                + (f"pairs-over={','.join(over)} " if over else "")
                 + ("OK（進行中）" if ok else "要確認"))
         out.append({"group": str(y), "ok": ok, "text": text})
     return out

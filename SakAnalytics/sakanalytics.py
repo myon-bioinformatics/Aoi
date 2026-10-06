@@ -1825,9 +1825,21 @@ def load_config(path: Path) -> dict:
         return tomllib.load(f)
 
 
+def read_games(paths) -> pl.DataFrame:
+    """日程の観測を1つ以上読んでつなぐ。取得元ごとの余分な列は落とし、同じ試合（key）の重なりは止める。"""
+    cols = ["key", "date", "home", "away", "hs", "as"]
+    parts = [pl.read_ndjson(p, infer_schema_length=None).select(cols) for p in paths]
+    games = pl.concat(parts, how="vertical_relaxed")
+    dup = games.filter(pl.col("key").is_duplicated()).get_column("key")
+    if dup.len():
+        raise SystemExit(f"同じ試合が2つの観測にある: {sorted(set(dup))[:5]}")
+    return games
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="観測データセットからチーム×シーズンの指標を作る")
-    ap.add_argument("--games", type=Path, required=True)
+    ap.add_argument("--games", type=Path, nargs="+", required=True,
+                    help="日程の観測（JSONL）。複数なら並べてつなぐ（例: 過去の年 + 今季の暫定）。同じ key が2回出たら止める")
     ap.add_argument("--config", type=Path, required=True, help="分析設定（[teams] を含む TOML）")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--innings", type=Path, help="イニング単位の集計（CSV / CSV.gz、R4）。あれば inn_* の列を加える")
@@ -1839,7 +1851,7 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
-    tg = to_team_games(pl.read_ndjson(args.games, infer_schema_length=None), cfg["teams"])
+    tg = to_team_games(read_games(args.games), cfg["teams"])
     st = season_table(tg, trajectory=cfg.get("trajectory"))
     if args.innings:
         raw = pl.read_csv(args.innings)

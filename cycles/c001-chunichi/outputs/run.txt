@@ -5,13 +5,13 @@
 [run] fetch: uv run python QueRyu/queryu.py --source npb_calendar --years 2012-2025 --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_calendar.jsonl
 Using CPython 3.14.7 interpreter at: /opt/hostedtoolcache/Python/3.14.7/x64/bin/python3.14
 Creating virtual environment at: .venv
-Downloading pygments (1.2MiB)
 Downloading polars-runtime-32 (47.6MiB)
+Downloading pygments (1.2MiB)
 Downloading selectolax (2.4MiB)
  Downloaded pygments
  Downloaded selectolax
  Downloaded polars-runtime-32
-Installed 15 packages in 17ms
+Installed 15 packages in 9ms
 ledger: 135 pages, refetched=0, changed=0
 2012: records=864 cancelled=32 non_regular:CS ファイナルS=9 non_regular:CS ファーストS=6 non_regular:アジアシリーズ=7 non_regular:オールスター=3 non_regular:日本シリーズ=6 unknown=0
 2013: records=864 cancelled=29 non_regular:CS ファイナルS=8 non_regular:CS ファーストS=5 non_regular:アジアシリーズ=9 non_regular:オールスター=3 non_regular:日本シリーズ=7 unknown=0
@@ -959,26 +959,21 @@ units=156 dropped=0 target: upper_half == False
 [1] P210 異議あり（例外あり） 元の命題: 判例 12 件: t-2015, db-2022, m-2015, db-2017, c-2023 ほか
 [run] fetch_2026: uv run python QueRyu/queryu.py --source npb_schedule_current --years 2026 --cache data/raw/npb_schedule_current --out data/observations/npb_schedule_current/games_2026.jsonl --ledger cycles/c001-chunichi/outputs/fetched/npb_schedule_current.jsonl
 ledger: 9 pages, refetched=0, changed=0
-2026: records=854 cancelled=41 unknown=20
+2026: records=854 cancelled=41 non_regular:オールスター=2 scheduled:10=18 unknown=0
 HTTP requests: 9
 2026: teams=12 games/team=140-143 max=143 finished=7 OK（進行中）
-[run] preview_2026: uv run python BlueProbe/blueprobe.py --source npb_schedule_current --cache data/raw/npb_schedule_current --out cycles/c001-chunichi/outputs/provisional/observed_2026.md
-unknown: 20 件。表記の変化を疑う（上の表を参照）
+[run] preview_2026: uv run python BlueProbe/blueprobe.py --source npb_schedule_current --cache data/raw/npb_schedule_current --out cycles/c001-chunichi/outputs/provisional/observed_2026.md --strict
 # npb_schedule_current: 観測された構造
 
 取得済みページの再解析結果（自動生成）。ネットワークには出ていない。
 
-| group | empty_pages | n_cancelled | pages | records | unknown |
-|---|---|---|---|---|---|
-| 2026 | 0 | 41 | 9 | 854 | 20 |
+| group | empty_pages | n_cancelled | n_non_regular:オールスター | n_scheduled:10 | pages | records | unknown |
+|---|---|---|---|---|---|---|---|
+| 2026 | 0 | 41 | 2 | 18 | 9 | 854 | 0 |
 
 ## 取りこぼしの確認（既知値との照合）
 
 - 2026: teams=12 games/team=140-143 max=143 finished=7 OK（進行中）
-
-## 未知の表記（数字は # に伏せた形）
-
-- 2026: `'\n      \n        \n        \n        -\n        （ZOZOマリン）##:##\n      \n      '`, `'\n      \n        \n        \n        -\n        （甲子園）##:##\n      \n      '`, `'[cl-pl] \n                        \n                                                  #\n                          -\n                          #\n                        \n                                                '`, `'[pl-cl] \n                        \n                                                  #\n                          -\n                          #\n                        \n                                                '`
 
 [run] provisional_measure: uv run python SakAnalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl data/observations/npb_schedule_current/games_2026.jsonl --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/provisional/season.jsonl --innings cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz --batting data/observations/npb_team_batting/teams.jsonl --fielding data/observations/npb_team_fielding/teams.jsonl --linescore data/observations/npb_game_linescore/teams.jsonl
 shape: (15, 12)

@@ -140,3 +140,33 @@ run = ["uv", "run", "python", "PythDRagoras/logic/sets.py", "--season", "{out}/s
 [[step]]
 name = "judge"
 run = ["uv", "run", "python", "PythDRagoras/logic/propositions.py", "judge", "{out}/propositions.jsonl", "--report-only"]
+
+# 6. 2026年の暫定（R74、ユーザーの指示）。本体の結果のあとに置く（止まっても本体の出力は残る）。
+#    消化した試合だけで測る（未消化を架空の結果で埋めない。率・順位は今の順位表と同じ）。R18 の取り込み（全日程の後）は別。
+[[step]]
+name = "fetch_2026"
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_calendar", "--years", "2026",
+       "--cache", "{cache}", "--out", "data/observations/npb_calendar/games_2026.jsonl",
+       "--ledger", "{out}/fetched/npb_calendar.jsonl"]
+network = true
+
+[[step]]
+name = "provisional_games"
+run = ["uv", "run", "python", "QueRyu/queryu.py", "--source", "npb_calendar", "--years", "2012-2026",
+       "--cache", "{cache}", "--out", "data/observations/npb_calendar/games_provisional.jsonl", "--offline"]
+
+[[step]]
+name = "provisional_measure"
+run = ["uv", "run", "python", "SakAnalytics/sakanalytics.py", "--games", "data/observations/npb_calendar/games_provisional.jsonl",
+       "--config", "{config}", "--out", "{out}/provisional/season.jsonl",
+       "--innings", "cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz",
+       "--batting", "data/observations/npb_team_batting/teams.jsonl",
+       "--fielding", "data/observations/npb_team_fielding/teams.jsonl",
+       "--linescore", "data/observations/npb_game_linescore/teams.jsonl"]
+
+[[step]]
+name = "provisional_check"
+run = ["uv", "run", "python", "cycles/c001-chunichi/research/r75_provisional.py", "{out}/provisional/season.jsonl",
+       "cycles/c001-chunichi/propositions.toml", "cycles/c001-chunichi/sets.toml",
+       "--out", "{out}/provisional/check.md"]
+

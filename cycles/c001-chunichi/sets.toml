@@ -242,3 +242,26 @@ statement = "E20 の作り直し: 真ん中のます目か線の近くは、そ�
 id = "E26"
 expr = "((~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))"
 statement = "E25 と時期の状態の式（E22）の積（R72 の種1、E23 の代わり）"
+
+# 追加: 2026-10-06。R74（計算前に書いた式）。E21 の作り直しと、出どころの違う積
+[[set]]
+id = "RFG_BELOW"
+from = "P205"
+
+[[set]]
+id = "BALG_BELOW"
+from = "P206"
+
+[[set]]
+id = "VSLG_BELOW"
+from = "P207"
+
+[[expr]]
+id = "E27"
+expr = "RFG_BELOW | BALG_BELOW | VSLG_BELOW"
+statement = "E21 の作り直し: 得点の優位・収支・下の相手との勝率のどれかが、その年の高さからの差で、ほかの年のどの A よりも悪い"
+
+[[expr]]
+id = "E28"
+expr = "(RFG_BELOW | BALG_BELOW | VSLG_BELOW) | (Q3_LOW | (Q3_MID & ~Q4_POS))"
+statement = "指標の帯（E27）と時期の状態（E22）の和: どちらかが B と言えば B（覆いを広げる側の組み合わせ）"

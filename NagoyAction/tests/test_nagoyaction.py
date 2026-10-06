@@ -46,8 +46,9 @@ def test_cycle_pipeline_is_valid():
     assert [s["name"] for s in p["step"]] == ["fetch", "observe", "inspect", "fetch_batting", "observe_batting",
                                               "inspect_batting", "fetch_fielding", "observe_fielding", "inspect_fielding",
                                               "fetch_linescore", "observe_linescore", "inspect_linescore",
-                                              "measure", "question", "search", "search_r21", "sets", "judge"]
-    assert [s["name"] for s in p["step"] if s.get("network")] == ["fetch", "fetch_batting", "fetch_fielding", "fetch_linescore"]  # 外に出るのは取得だけ
+                                              "measure", "question", "search", "search_r21", "sets", "judge",
+                                              "fetch_2026", "provisional_games", "provisional_measure", "provisional_check"]
+    assert [s["name"] for s in p["step"] if s.get("network")] == ["fetch", "fetch_batting", "fetch_fielding", "fetch_linescore", "fetch_2026"]  # 外に出るのは取得だけ
     # 守備成績は形を確かめた後に measure へ渡す（構造の確認は --strict、下の一般の確認）
     measure = next(s for s in p["step"] if s["name"] == "measure")
     assert any("npb_team_fielding" in a for a in measure["run"])

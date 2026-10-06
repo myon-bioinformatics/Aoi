@@ -2887,3 +2887,48 @@ falsifier = "収支が誤差の内で点の差どおりでは届かない単位�
 note = "R73。P202（固定の .500）の作り直し"
 parent = "P202"
 change = "P203 と同じ（固定の .500 をやめ、その年の点の差から出した高さと比べる）"
+
+# 追加: 2026-10-06。R74（指標の帯の式 E21 を、その年の高さで作り直す）。計算前に登録した。*_bgap と帯の値は見ていない。
+# 帯は、その年の高さ（ほかの球団の上位半分の最後の値）からの差で引く（固定の 0・.500 を使わない、R73 のユーザーの指摘）。
+
+[[proposition]]
+id = "P205"
+statement = "得点の優位が、その年の高さからの差で、ほかの年のどの A よりも低い（rfg_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "rfg_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "rf_adv_bgap"
+context = ["rf_adv", "rf_adv_bgap", "rfg_mix_lo"]
+links = ["H1", "H2"]
+falsifier = "帯の下の単位の10分の1を超えて A"
+note = "R74。P193 の作り直し"
+parent = "P193"
+change = "得点の優位をそのまま比べるのをやめ、その年の高さ（ほかの球団の上位半分の最後の値）からの差で帯を引く（R73・R74）"
+
+[[proposition]]
+id = "P206"
+statement = "収支が、その年の高さからの差で、ほかの年のどの A よりも低い（balg_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "balg_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "run_balance_bgap"
+context = ["run_balance", "run_balance_bgap", "balg_mix_lo"]
+links = ["H2"]
+falsifier = "帯の下の単位の10分の1を超えて A"
+note = "R74。P194 の作り直し"
+parent = "P194"
+change = "P205 と同じ（その年の高さからの差で帯を引く）"
+
+[[proposition]]
+id = "P207"
+statement = "下位半分の相手との勝率が、その年の高さからの差で、ほかの年のどの A よりも低い（vslg_mix_zone = −1）なら、B クラス"
+strength = "almost_always"
+if = [{ col = "vslg_mix_zone", op = "==", value = -1 }]
+then = [{ col = "upper_half", op = "==", value = false }]
+surprise = "vs_lower_wpct_bgap"
+context = ["vs_lower_wpct", "vs_lower_wpct_bgap", "vslg_mix_lo"]
+links = ["H2"]
+falsifier = "帯の下の単位の10分の1を超えて A"
+note = "R74。P195 の作り直し"
+parent = "P195"
+change = "P205 と同じ（その年の高さからの差で帯を引く）"

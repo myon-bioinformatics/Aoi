@@ -233,8 +233,7 @@ def test_accepted_reply_with_lost_response_is_not_posted_twice(cycle, tmp_path, 
         original(path, body)
         raise urllib.error.URLError("response lost after POST")
     monkeypatch.setattr(api, "call", lost)
-    with pytest.raises(urllib.error.URLError):
-        intake(api, state, cycle, "test-sha")
+    intake(api, state, cycle, "test-sha")
     assert (state.path / "receipts/11.json").exists()
     comments[0]["body"] = "/explore all"  # editing a processed comment is not a new request
     monkeypatch.setattr(api, "call", original)
@@ -334,3 +333,81 @@ def test_neighbor_feedback_html_roundtrip_and_restart(cycle, tmp_path):
         inspect('<script id="report-data">{"research_observations":{"version":99}}</script>')
     with pytest.raises(ValueError, match='一意'):
         inspect('<script src="https://example.invalid"></script>')
+
+
+def test_reply_failure_does_not_block_later_intake(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *a: {'fixture': 'one'})
+    comments = [{'id': i, 'user': {'login': 'person'}, 'created_at': '2026-01-01', 'body': '/status'} for i in (31, 32)]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    original = api.call
+    def flaky(path, body):
+        if 'reply-31' in body['body']:
+            raise urllib.error.URLError('not sent')
+        return original(path, body)
+    monkeypatch.setattr(api, 'call', flaky)
+    intake(api, state, cycle, 'test')
+    assert (state.path/'receipts/32.json').exists()
+    assert (state.path/'pending-replies/reply-31.json').exists()
+    assert any('reply-32' in c['body'] for c in comments)
+    monkeypatch.setattr(api, 'call', original)
+    intake(api, state, cycle, 'test')
+    assert not list((state.path/'pending-replies').glob('*.json'))
+    assert sum('reply-31' in c['body'] for c in comments) == 1
+    assert sum('reply-32' in c['body'] for c in comments) == 1
+
+
+def test_worker_failed_completion_does_not_block_another_reply(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *a: {'fixture': 'one'})
+    comments = [{'id': i, 'user': {'login': 'person'}, 'created_at': '2026-01-01', 'body': '/explore E1'} for i in (41, 42)]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'test')
+    original = api.call
+    def flaky(path, body):
+        if 'result-41' in body['body']:
+            original(path, body)  # response lost after successful POST
+            raise urllib.error.URLError('lost response')
+        return original(path, body)
+    monkeypatch.setattr(api, 'call', flaky)
+    worker(api, state, cycle, seconds=10)
+    assert (state.path/'pending-replies/result-41.json').exists()
+    assert any('result-42' in c['body'] for c in comments)
+    results = {str(p):p.read_bytes() for p in (state.path/'jobs').rglob('*.json')}
+    monkeypatch.setattr(api, 'call', original)
+    worker(api, state, cycle, seconds=10)
+    assert results == {str(p):p.read_bytes() for p in (state.path/'jobs').rglob('*.json')}
+    assert not list((state.path/'pending-replies').glob('*.json'))
+    assert sum('result-41' in c['body'] for c in comments) == 1
+
+
+def test_status_distinguishes_request_counts_and_shared_jobs(tmp_path):
+    from inbox import status_report
+    for cid, job in [(1,'shared'),(2,'shared'),(3,'queued'),(4,'running'),(5,'bounded'),(6,'blocked'),(7,'error')]:
+        atomic_json(tmp_path/'requests'/f'{cid}.json', {'comment_id': cid, 'job': job})
+    for job,status in [('shared','completed'),('running','running'),('bounded','bounded'),('blocked','blocked'),('error','error'),('automatic','completed')]:
+        atomic_json(tmp_path/'jobs'/job/'state.json', {'status':status,'cursor':0,'candidates':[],'results':[],'bounded': status == 'bounded'})
+    atomic_json(tmp_path/'stops/2.json', {})
+    text = status_report(tmp_path)
+    for value in ['累積受付: 7件','待機: 1件','進行・再開待ち: 1件','完了: 1件','上限到達: 1件',
+                  '停止: 1件','入力変更で保留: 1件','エラー: 1件','探索job: 6件']:
+        assert value in text
+
+
+def test_worker_comment_get_failure_does_not_interrupt_evaluation(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, 'snapshot', lambda *a: {'fixture': 'one'})
+    comments = [{'id': 51, 'user': {'login': 'person'}, 'created_at': '2026-01-01', 'body': '/explore E1'}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path/'state')
+    intake(api, state, cycle, 'test')
+    def unavailable():
+        raise urllib.error.URLError('cannot list comments')
+    monkeypatch.setattr(api, 'comments', unavailable)
+    worker(api, state, cycle, seconds=10)
+    path = next((state.path/'jobs').glob('*/state.json'))
+    assert json.loads(path.read_text())['status'] == 'completed'
+    assert (state.path/'pending-replies/worker-comments.json').exists()
+    monkeypatch.setattr(api, 'comments', lambda: list(comments))
+    worker(api, state, cycle, seconds=10)
+    assert not list((state.path/'pending-replies').glob('*.json'))
+    assert sum('result-51' in c['body'] for c in comments) == 1

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import json
 import os
 import re
@@ -171,6 +172,45 @@ def ask_question(text: str, results: Path, use_llm=False, cache: Path | None = N
             "model": model}, render(text, q, unread, res)
 
 
+
+def reply_saved(api, state, key, body, comments):
+    """Try once; retain failures for the next poll with a fresh marker list."""
+    pending = state.path / "pending-replies" / f"{key}.json"
+    try:
+        api.reply(key, body, comments)
+    except (urllib.error.URLError, OSError, http.client.HTTPException, json.JSONDecodeError) as e:
+        atomic_json(pending, {"key": key, "error": f"{type(e).__name__}: {e}"})
+        state.save()
+        print(f"返信を次回へ保留: {key}: {type(e).__name__}", file=sys.stderr)
+        return False
+    if pending.exists():
+        pending.unlink()
+        state.save()
+    return True
+
+
+def status_report(path):
+    counts = {"待機": 0, "進行・再開待ち": 0, "完了": 0, "上限到達": 0,
+              "停止": 0, "入力変更で保留": 0, "エラー": 0, "状態不明": 0}
+    labels = {"queued": "待機", "running": "進行・再開待ち", "completed": "完了", "bounded": "上限到達",
+              "blocked": "入力変更で保留", "error": "エラー"}
+    requests = list((path / "requests").glob("*.json"))
+    for p in requests:
+        request = json.loads(p.read_text(encoding="utf-8"))
+        if (path / "stops" / f"{request['comment_id']}.json").exists():
+            counts["停止"] += 1
+            continue
+        saved = path / "jobs" / request["job"] / "state.json"
+        label = labels.get(json.loads(saved.read_text())["status"], "状態不明") if saved.exists() else "待機"
+        counts[label] += 1
+    paths = sorted((path / "jobs").glob("*/state.json"))
+    body = f"探索依頼の累積受付: {len(requests)}件（コメント単位。自動探索は含まない）\n"
+    body += " / ".join(f"{name}: {n}件" for name, n in counts.items())
+    body += f"\n保存済み探索job: {len(paths)}件（同一依頼の統合・自動探索を含む）"
+    body += f"\n返信再送待ち: {len(list((path / 'pending-replies').glob('*.json')))}件"
+    body += "\n\n" + ("\n\n".join(f"`{p.parent.name}`\n" + summary(json.loads(p.read_text(encoding="utf-8"))) for p in paths[-10:]) or "探索の実行結果はまだありません。")
+    return body
+
 def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
     comments = api.comments()
     inputs = snapshot(ROOT, cycle)
@@ -183,7 +223,7 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
         if receipt.exists():
             previous = json.loads(receipt.read_text(encoding="utf-8"))
             if previous.get("reply_body"):
-                api.reply("reply-" + cid, previous["reply_body"], comments)
+                reply_saved(api, state, "reply-" + cid, previous["reply_body"], comments)
             continue
         kind, text = parsed
         record = {"comment_id": int(cid), "author": c["user"]["login"], "body": c["body"],
@@ -208,9 +248,7 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
                 state.save()
                 body = f"探索を受け付けました。依頼 `{cid}` / job `{job}`\n計画: `{json.dumps(spec, ensure_ascii=False)}`\n同じ計画・入力は同じjobとして処理します。進捗は /status。停止は /stop {cid}。"
             elif kind == "status":
-                paths = sorted((state.path / "jobs").glob("*/state.json"))
-                body = "\n\n".join(f"`{p.parent.name}`\n" + summary(json.loads(p.read_text(encoding="utf-8"))) for p in paths[-10:]) or "探索の実行結果はまだありません。"
-                body += f"\n受付済み依頼: {len(list((state.path / 'requests').glob('*.json')))}件"
+                body = status_report(state.path)
             else:
                 if not re.fullmatch(r"\d+", text):
                     raise ValueError("/stop には依頼のコメントIDを指定してください")
@@ -230,11 +268,13 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False):
         record["reply_body"] = body
         atomic_json(receipt, record)
         state.save()
-        api.reply("reply-" + cid, body, comments)
+        reply_saved(api, state, "reply-" + cid, body, comments)
 
 
 def worker(api, state, cycle: Path, seconds=18000, autonomous=False):
     deadline = time.monotonic() + seconds
+    failed_replies = set()
+    notifications_available = True
     current_inputs = snapshot(ROOT, cycle)
     if autonomous:
         prepare(cycle / "outputs", state.path / "known")
@@ -283,13 +323,29 @@ def worker(api, state, cycle: Path, seconds=18000, autonomous=False):
             progressed = True
         # Durable terminal results are retried independently of evaluation, so a
         # failed comment POST never causes a completed job to be recomputed.
-        comments = api.comments() if api else []
-        for request in active if api else []:
+        comments = []
+        if api and notifications_available:
+            try:
+                comments = api.comments()
+            except (urllib.error.URLError, OSError, http.client.HTTPException, json.JSONDecodeError) as e:
+                notifications_available = False
+                atomic_json(state.path / "pending-replies/worker-comments.json",
+                            {"error": f"{type(e).__name__}: {e}", "retry": "次回workerでコメントを取得してから完了通知"})
+                state.save()
+                print("完了通知のコメント取得を次回へ保留", file=sys.stderr)
+            else:
+                pending = state.path / "pending-replies/worker-comments.json"
+                if pending.exists():
+                    pending.unlink()
+                    state.save()
+        for request in active if api and notifications_available else []:
             path = state.path / "jobs" / request["job"] / "state.json"
             if path.exists():
                 saved = json.loads(path.read_text(encoding="utf-8"))
                 if saved["status"] in ("completed", "bounded", "blocked", "error"):
-                    api.reply(f"result-{request['comment_id']}", f"依頼 `{request['comment_id']}`\n" + summary(saved), comments)
+                    key = f"result-{request['comment_id']}"
+                    if key not in failed_replies and not reply_saved(api, state, key, f"依頼 `{request['comment_id']}`\n" + summary(saved), comments):
+                        failed_replies.add(key)
         if not progressed:
             break
 

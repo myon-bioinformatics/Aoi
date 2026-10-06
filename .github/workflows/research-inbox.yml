@@ -57,6 +57,7 @@ jobs:
           path: |
             .research-state/requests
             .research-state/receipts
+            .research-state/pending-replies
             .research-state/answers
             .research-state/stops
             build/inbox-receipt.jsonl

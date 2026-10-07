@@ -231,7 +231,7 @@ def answer(q: Query, items: list[dict]) -> dict:
                      "counterexamples_left": left if count_known else None,
                      "has_counterexample": bool(cx) or (count_known and left > 0),
                      "undetermined": f.get("undetermined", 0), "counterexamples": cx, "listed_all": complete,
-                     "statement": it.get("statement", "")})
+                     "statement": it.get("statement", ""), "registration": registration_status(it)})
     if q.ask == "has_counterexample":
         ans = ("はい" if any(r["has_counterexample"] for r in rows)
                else "判定不能" if uncertain or not evaluated else "いいえ")
@@ -253,7 +253,7 @@ def render(text: str, q: Query, unread: list[str], res: dict) -> str:
         count = r["counterexamples_left"] if r["counterexamples_left"] is not None else "不明"
         label = "除外後の判例" if q.exclude else "判例"
         excluded = "（除外 " + ", ".join(q.exclude) + "）" if q.exclude else ""
-        lines.append(f"- {r['id']} {FORMS[q.form]}の成立率 {r['hold']}/{r['n']}（{r['rate']:.3f}）／{label} {count}{excluded}: {cx}{more}")
+        lines.append(f"- {r['id']}［{r['registration']}］ {FORMS[q.form]}の成立率 {r['hold']}/{r['n']}（{r['rate']:.3f}）／{label} {count}{excluded}: {cx}{more}")
     if len(res["rows"]) > 50:
         lines.append(f"- ほか {len(res['rows']) - 50} 件")
     return "\n".join(lines)

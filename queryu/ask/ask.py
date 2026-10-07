@@ -21,6 +21,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 FORMS = {"original": "元の命題", "contrapositive": "対偶", "converse": "逆", "inverse": "裏"}
+RATE_FORMS = {"original": "元", "contrapositive": "対偶", "converse": "逆", "inverse": "裏"}
 ASKS = {
     "has_counterexample": "判例はあるか（はい・いいえ）",
     "counterexamples": "判例の一覧",
@@ -262,7 +263,7 @@ def render(text: str, q: Query, unread: list[str], res: dict) -> str:
         count = r["counterexamples_left"] if r["counterexamples_left"] is not None else "不明"
         label = "除外後の判例" if q.exclude else "判例"
         excluded = "（除外 " + ", ".join(q.exclude) + "）" if q.exclude else ""
-        lines.append(f"- {r['id']}［{r['registration']}］ {FORMS[q.form]}の成立率 {r['hold']}/{r['n']}（{r['rate']:.3f}）／{label} {count}{excluded}: {cx}{more}")
+        lines.append(f"- {r['id']}［{r['registration']}］ {RATE_FORMS[q.form]}の成立率 {r['hold']}/{r['n']}（{r['rate']:.3f}）／{label} {count}{excluded}: {cx}{more}")
     if len(res["rows"]) > 50:
         lines.append(f"- ほか {len(res['rows']) - 50} 件")
     return "\n".join(lines)

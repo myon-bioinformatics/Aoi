@@ -326,7 +326,7 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False, cycle_name="",
                     # Persist the plan before acknowledging or doing any evaluation.
                     state.save()
                     body = f"探索を受け付けました。依頼 `{cid}` / job `{job}`\n計画: `{json.dumps(spec, ensure_ascii=False)}`\n同じ計画・入力は同じjobとして処理します。進捗は /status。停止は /stop {cid}。"
-                elif kind == "status":
+            elif kind == "status":
                 body = status_report(state.path)
             else:
                 if not re.fullmatch(r"\d+", text):

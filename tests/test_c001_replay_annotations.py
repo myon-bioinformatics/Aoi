@@ -217,5 +217,114 @@ class AnnotationTests(unittest.TestCase):
         self.assertTrue((self.root / "v2/annotated/verification-summary.json").is_file())
 
 
+    def test_conflicting_skip_and_exit_code_is_invalid_evidence(self):
+        for code in (0, 64):
+            with self.subTest(code=code):
+                self.rows("replay-receipt.jsonl", [{"step": "question", "skipped": True, "returncode": code}])
+                with self.assertRaisesRegex(ValueError, "Conflicting execution receipt"):
+                    self.run_audit()
+
+    def test_receipt_types_cannot_implicitly_claim_execution_or_skip(self):
+        for extra in ({"skipped": "false"}, {"skipped": 1}, {"returncode": 0.0},
+                      {"returncode": False}, {"returncode": "0"}):
+            with self.subTest(extra=extra):
+                self.rows("replay-receipt.jsonl", [{"step": "question", **extra}])
+                with self.assertRaisesRegex(ValueError, "Invalid execution receipt"):
+                    self.run_audit()
+
+    def test_success_requires_preserved_season_input(self):
+        (self.root / "v2/season.jsonl").unlink()
+        with self.assertRaisesRegex(ValueError, "Successful receipt without inherited input"):
+            self.run_audit()
+        self.assertFalse((self.root / "v2/annotated").exists())
+
+    def test_absent_season_with_unexecuted_steps_retains_V1(self):
+        (self.root / "v2/season.jsonl").unlink()
+        self.rows("replay-receipt.jsonl", [{"step": "question", "skipped": True, "reason": "no_saved_input"}])
+        self.run_audit()
+        self.assertEqual(self.output("propositions.jsonl")[0]["verification"]["equivalent"], "V1")
+        self.assertEqual(self.output("season.jsonl")[0]["data"], self.original)
+
+    def add_sensitivity_input(self):
+        for side in ("v1", "v2"):
+            self.rows(f"{side}/trajectory_sensitivity_units.jsonl", [{"season": 2019, "team": "d", "metric": 1}])
+        self.rehash()
+
+    def test_changed_sensitivity_input_cannot_be_called_V1_inheritance(self):
+        self.add_sensitivity_input()
+        self.rows("v2/trajectory_sensitivity_units.jsonl", [{"season": 2019, "team": "d", "metric": 2}])
+        with self.assertRaisesRegex(ValueError, "Inherited input hash mismatch"):
+            self.run_audit()
+        self.assertFalse((self.root / "v2/annotated").exists())
+
+    def test_success_requires_declared_sensitivity_input(self):
+        self.add_sensitivity_input()
+        (self.root / "v2/trajectory_sensitivity_units.jsonl").unlink()
+        with self.assertRaisesRegex(ValueError, "Successful receipt without inherited input"):
+            self.run_audit()
+
+    def test_missing_sensitivity_does_not_block_unaffected_set_replay(self):
+        self.add_sensitivity_input()
+        (self.root / "v2/trajectory_sensitivity_units.jsonl").unlink()
+        self.rows("replay-receipt.jsonl", [{"step": "question", "skipped": True, "reason": "optional_input_missing"},
+                                         {"step": "sets", "returncode": 0}])
+        summary = self.run_audit()
+        self.assertEqual(summary["outputs"]["propositions.jsonl"]["execution_status"], "skipped")
+        self.assertEqual(summary["outputs"]["sets.jsonl"]["execution_status"], "replayed")
+        self.assertEqual(self.output("propositions.jsonl")[0]["verification"]["equivalent"], "V1")
+
+    def test_missing_sensitivity_baseline_cannot_authenticate_a_copy(self):
+        self.add_sensitivity_input()
+        (self.root / "v1/trajectory_sensitivity_units.jsonl").unlink()
+        with self.assertRaisesRegex(ValueError, "Inherited input hash mismatch"):
+            self.run_audit()
+
+    def test_bool_numeric_equality_cannot_hide_input_mutation(self):
+        row = {**self.original, "early_only_metric": 1}
+        self.rows("v1/season.jsonl", [row]); self.rehash()
+        self.rows("v2/season.jsonl", [{**row, "early_only_metric": True}])
+        with self.assertRaisesRegex(ValueError, "Inherited input hash mismatch"):
+            self.run_audit()
+
+    def cli(self):
+        return subprocess.run([sys.executable, "-S", str(SCRIPT), str(self.root)], capture_output=True, text=True)
+
+    def test_failed_execution_has_nonzero_cli_and_preserves_V1(self):
+        self.rows("replay-receipt.jsonl", [{"step": "question", "returncode": 64}])
+        child = self.cli()
+        self.assertEqual(child.returncode, 64, child.stderr)
+        row = self.output("propositions.jsonl")[0]
+        self.assertEqual(row["verification"]["verification_status"], "failed")
+        self.assertEqual(row["verification"]["value_origin"], "V1")
+
+    def test_removed_output_id_has_nonzero_cli_without_filling_V2(self):
+        self.rows("v2/propositions.jsonl", [{"id": "P2", "verdict": "Supported"}])
+        child = self.cli()
+        self.assertEqual(child.returncode, 1, child.stderr)
+        self.assertIsNone(self.output("propositions.jsonl")[0]["data"])
+
+    def test_legitimate_skip_keeps_successful_publication_exit(self):
+        self.rows("replay-receipt.jsonl", [{"step": "question", "skipped": True, "reason": "legacy_not_saved"}])
+        child = self.cli()
+        self.assertEqual(child.returncode, 0, child.stderr)
+        self.assertEqual(self.output("propositions.jsonl")[0]["verification"]["equivalent"], "V1")
+
+    def test_failed_judge_is_not_hidden_by_successful_output_steps(self):
+        self.rows("replay-receipt.jsonl", [{"step": "question", "returncode": 0},
+                                         {"step": "sets", "returncode": 0}, {"step": "judge", "returncode": 64}])
+        child = self.cli()
+        self.assertEqual(child.returncode, 64, child.stderr)
+        summary = mod.read_json(self.root / "v2/annotated/verification-summary.json")
+        self.assertEqual(summary["execution_steps"]["judge"]["status"], "failed")
+
+    def test_unchanged_sensitivity_inputs_have_hash_evidence(self):
+        self.add_sensitivity_input()
+        summary = self.run_audit()
+        for side in ("v1", "v2"):
+            name = f"{side}/trajectory_sensitivity_units.jsonl"
+            self.assertEqual(summary["evidence_sha256"][name], mod.sha(self.root / name))
+
+
+
 if __name__ == "__main__":
     unittest.main()

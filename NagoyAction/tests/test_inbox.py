@@ -603,3 +603,53 @@ def test_total_pending_limit_still_applies_to_trusted_users(cycle, tmp_path, mon
     intake(api, state, cycle, 'sha')
     assert len(list((state.path/'requests').glob('*.json'))) == 20
     assert '全体20件' in json.loads((state.path/'receipts/740.json').read_text())['error']
+
+
+def test_registration_status_is_conservative_and_rendered():
+    from ask import registration_status, render
+    posthoc = item()
+    posthoc["posthoc"] = True
+    unknown = item()
+    unknown["id"] = "E2"
+    prereg = item()
+    prereg["id"] = "E3"
+    prereg["preregistered"] = True
+    assert registration_status(posthoc) == "事後構成"
+    assert registration_status(unknown) == "不明"
+    assert registration_status(prereg) == "事前登録"
+    q = Query(target="E1", form="contrapositive")
+    result = answer(q, [posthoc])
+    assert result["rows"][0]["registration"] == "事後構成"
+    assert "［事後構成］" in render("E1 の対偶", q, [], result)
+    assert "対偶の成立率" in render("E1 の対偶", q, [], result)
+
+
+def test_explore_is_not_saved_when_research_disabled(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.delenv("AOI_RESEARCH_ENABLED", raising=False)
+    monkeypatch.setattr(inbox, "snapshot", lambda *args: {"fixture": "disabled"})
+    comments = [{"id": 801, "user": {"login": "owner"}, "author_association": "OWNER",
+                 "created_at": "2026-01-01", "body": "/explore E1"}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path / "state")
+    intake(api, state, cycle, "code", cycle_name="c001", result_sha="result")
+    assert not list((state.path / "requests").glob("*.json"))
+    assert "探索は未稼働" in comments[-1]["body"]
+    assert "対象サイクル: `c001`" in comments[-1]["body"] and "結果SHA: `result`" in comments[-1]["body"]
+
+
+def test_internal_error_isolated_and_next_comment_runs(cycle, tmp_path, monkeypatch):
+    import inbox
+    monkeypatch.setattr(inbox, "snapshot", lambda *args: {"fixture": "errors"})
+    comments = [
+        {"id": 811, "user": {"login": "owner"}, "author_association": "OWNER",
+         "created_at": "2026-01-01", "body": "/ask broken"},
+        {"id": 812, "user": {"login": "owner"}, "author_association": "OWNER",
+         "created_at": "2026-01-01", "body": "/status"},
+    ]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path / "state")
+    monkeypatch.setattr(inbox, "ask_question", lambda *args, **kwargs: (_ for _ in ()).throw(KeyError("choices")))
+    intake(api, state, cycle, "code", cycle_name="c001", result_sha="result")
+    receipt = json.loads((state.path / "receipts/811.json").read_text())
+    assert receipt["error_type"] == "KeyError"
+    assert (state.path / "receipts/812.json").exists()
+    assert any("コマンド累積受付" in c["body"] for c in comments if c.get("user", {}).get("login") == "github-actions[bot]")

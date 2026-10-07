@@ -64,6 +64,7 @@ jobs:
           ref: ${{ steps.target.outputs.ref }}
           path: .aoi-results-source
           fetch-depth: 1
+          persist-credentials: false
       - name: Prepare isolated results directory
         id: results
         env:

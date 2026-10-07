@@ -1,0 +1,19 @@
+{
+  "comment_id": 6027767405,
+  "author": "myon-bioinformatics",
+  "body": "/status",
+  "created_at": "2026-10-07T00:00:13Z",
+  "author_association": "OWNER",
+  "code_sha": "b86054b1fe50360f665128d87aedbc1f968a6763",
+  "cycle": "c001-chunichi",
+  "result_sha": "0723d1137fc8448fbabb7bbe5fc14333ddfaabe2",
+  "inputs": {
+    "queryu/ask/ask.py": "3f6035ddf254cacd570c2bece27cb646556faff7a1138d751337b7a9af113947",
+    "queryu/ask/bank.py": "f9ffd57ab604e9e398c793c094841e8b06c40d428a1f7a5e8a2e655a0e33e73e",
+    "nagoyaction/inbox/inbox.py": "1014c6eb9f461538aefc58a1085216e44e206a4cc67da348011b79432763c77d",
+    ".aoi-results/c001-chunichi/outputs/sets.jsonl": "4c609505f77de9f38f6ac930a7a75a809a87a63cf888b95b735962c06c21cd94",
+    ".aoi-results/c001-chunichi/outputs/propositions.jsonl": "50cd4dc472541c03f04f7037657db2a1d1ffaa2663ab7918cf3a7c0777d47891"
+  },
+  "kind": "status",
+  "reply_body": "コマンド累積受付: 3件（この /status 自身は保存前）\n回答キャッシュ: 3件\n返信再送待ち: 0件\n探索ワーカー: 未導入（#10 は質問受付のみ）\n\n対象サイクル: `c001-chunichi` / 結果SHA: `0723d1137fc8448fbabb7bbe5fc14333ddfaabe2` / 対象コード: `b86054b1fe50360f665128d87aedbc1f968a6763` / 元コメント: 6027767405"
+}

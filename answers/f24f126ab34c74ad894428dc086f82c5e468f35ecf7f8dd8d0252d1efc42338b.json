@@ -1,0 +1,102 @@
+{
+  "answer": 6,
+  "rows": [
+    {
+      "id": "E1",
+      "form": "original",
+      "n": 45,
+      "hold": 44,
+      "rate": 0.978,
+      "counterexamples_left": 1,
+      "has_counterexample": true,
+      "undetermined": 0,
+      "counterexamples": [
+        "t-2015"
+      ],
+      "listed_all": true,
+      "statement": "得点がはっきり足りず、上の相手に .47 未満なら B",
+      "registration": "不明"
+    },
+    {
+      "id": "E5",
+      "form": "original",
+      "n": 69,
+      "hold": 68,
+      "rate": 0.986,
+      "counterexamples_left": 1,
+      "has_counterexample": true,
+      "undetermined": 0,
+      "counterexamples": [
+        "t-2015"
+      ],
+      "listed_all": true,
+      "statement": "式1′（P96）をそのまま集合として",
+      "registration": "不明"
+    },
+    {
+      "id": "E6",
+      "form": "original",
+      "n": 49,
+      "hold": 48,
+      "rate": 0.98,
+      "counterexamples_left": 1,
+      "has_counterexample": true,
+      "undetermined": 9,
+      "counterexamples": [
+        "t-2015"
+      ],
+      "listed_all": true,
+      "statement": "得点した回の大きさが続けて低いか、得点がはっきり足りず上の相手に .47 未満なら B",
+      "registration": "不明"
+    },
+    {
+      "id": "E7",
+      "form": "original",
+      "n": 70,
+      "hold": 69,
+      "rate": 0.986,
+      "counterexamples_left": 1,
+      "has_counterexample": true,
+      "undetermined": 0,
+      "counterexamples": [
+        "t-2015"
+      ],
+      "listed_all": true,
+      "statement": "式1′か、得点がはっきり足りず上の相手に .47 未満なら B",
+      "registration": "不明"
+    },
+    {
+      "id": "E20",
+      "form": "original",
+      "n": 65,
+      "hold": 64,
+      "rate": 0.985,
+      "counterexamples_left": 1,
+      "has_counterexample": true,
+      "undetermined": 0,
+      "counterexamples": [
+        "t-2015"
+      ],
+      "listed_all": true,
+      "statement": "E19 に線の近くを足した式: 真ん中のます目か、収支が誤差の内なら、高さ > .500 かつ点の差より負け。それ以外は収支 0 以下",
+      "registration": "不明"
+    },
+    {
+      "id": "E25",
+      "form": "original",
+      "n": 64,
+      "hold": 63,
+      "rate": 0.984,
+      "counterexamples_left": 1,
+      "has_counterexample": true,
+      "undetermined": 0,
+      "counterexamples": [
+        "t-2015"
+      ],
+      "listed_all": true,
+      "statement": "E20 の作り直し: 真ん中のます目か線の近くは、その年の高さに点の差で届かず、かつ点の差より負け",
+      "registration": "不明"
+    }
+  ],
+  "incomplete": true
+}

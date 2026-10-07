@@ -23,6 +23,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: data
+          key: aoi-data-c001-replay-readonly
           restore-keys: aoi-data-c001-
       - name: Require offline source material
         run: |

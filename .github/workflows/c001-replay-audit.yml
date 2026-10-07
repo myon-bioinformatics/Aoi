@@ -1,0 +1,56 @@
+name: c001 offline replay audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: cycle-001/chunichi
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install uv
+        run: python -m pip install uv
+      - name: Restore saved c001 source cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          restore-keys: aoi-data-c001-
+      - name: Require offline source material
+        run: |
+          test -d data/raw/npb_calendar
+          test -d data/raw/npb_team_batting
+          test -d data/raw/npb_team_fielding
+          test -d data/raw/npb_game_linescore
+      - name: Freeze V1 and create isolated V2 workspace
+        run: |
+          cp -a cycles/c001-chunichi/outputs /tmp/c001-v1
+          cp cycles/c001-chunichi/pipeline.toml /tmp/replay.toml
+          sed -i 's#out = "cycles/c001-chunichi/outputs"#out = "/tmp/c001-v2"#' /tmp/replay.toml
+          mkdir -p /tmp/c001-v2
+          cp -a cycles/c001-chunichi/outputs/fetched /tmp/c001-v2/fetched
+      - name: Rebuild deterministic layers without network
+        run: |
+          python nagoyaction/nagoyaction.py run /tmp/replay.toml --offline --start observe --receipt /tmp/c001-v2-receipt.jsonl
+      - name: Compare V1 and V2 semantic outputs
+        if: always()
+        run: python scripts/compare_c001_replay.py /tmp/c001-v1 /tmp/c001-v2 --out /tmp/c001-replay-diff.json
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: c001-offline-replay-${{ github.run_id }}
+          path: |
+            /tmp/c001-replay-diff.json
+            /tmp/c001-v2-receipt.jsonl
+            /tmp/c001-v2/propositions.jsonl
+            /tmp/c001-v2/sets.jsonl
+          if-no-files-found: warn

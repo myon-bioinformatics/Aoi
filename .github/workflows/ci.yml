@@ -39,7 +39,7 @@ jobs:
           allow-prereleases: true
       - run: python -VV
       - name: Compile (syntax errors must never reach main)
-        run: python -m compileall -q blueprobe queryu sakanalytics pythdragoras nagoyaction
+        run: python -m compileall -q BlueProbe QueRyu SakAnalytics PythDRagoras NagoyAction DRAgoWing
       - name: Install uv
         run: python -m pip install uv
       - name: Test with JUnit
@@ -56,8 +56,8 @@ jobs:
           retention-days: 14
       - name: NagoyAction is stdlib-only and the cycle pipeline is runnable
         run: |
-          python -S nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
-          python -S nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --dry-run
+          python -S NagoyAction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
+          python -S NagoyAction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --dry-run
 
   failure-identity:
     needs: [changes, test]

@@ -198,7 +198,7 @@
 - P113 中日以外の B クラスのチームは、B クラスが確定した日に、残り試合が10以上あった: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
 - P114 A クラスで貯金の線に山があるチームは、その山が A クラスの確定より後にある（決まった後に落とす）: **exit 3 異議あり（不成立）** （元 棄却 / 対偶 棄却）
 
-詳細は objections.md。終了コードは `python pythdragoras/propositions.py judge` で確かめられる。
+詳細は objections.md。終了コードは `python PythDRagoras/logic/propositions.py judge` で確かめられる。
 
 # 外部の主張との照合（自動生成）
 

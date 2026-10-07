@@ -27,7 +27,7 @@ The same check applies to a new **section** added to an existing master file.
 
 ## Master Files
 
-The list is checked by a test (`nagoyaction/tests/test_docs_masters.py`): a file directly under `docs/` that is not listed here, or a listed file that does not exist, fails the check. Adding a master file therefore always comes with an explicit check against the four criteria above.
+The list is checked by a test (`NagoyAction/tests/test_docs_masters.py`): a file directly under `docs/` that is not listed here, or a listed file that does not exist, fails the check. Adding a master file therefore always comes with an explicit check against the four criteria above.
 
 | File | What it defines |
 |---|---|

@@ -226,7 +226,7 @@ Question:
 
 Documentation:
 
-- [queryu/README.md](queryu/README.md)
+- [QueRyu/README.md](QueRyu/README.md)
 
 ---
 
@@ -241,7 +241,7 @@ Question:
 Documentation:
 
 - [docs/observation.md](docs/observation.md)
-- [blueprobe/README.md](blueprobe/README.md)
+- [BlueProbe/README.md](BlueProbe/README.md)
 
 ---
 
@@ -255,7 +255,7 @@ Question:
 
 Documentation:
 
-- [sakanalytics/README.md](sakanalytics/README.md)
+- [SakAnalytics/README.md](SakAnalytics/README.md)
 
 ---
 
@@ -269,7 +269,7 @@ Question:
 
 Documentation:
 
-- 未着手（次のサイクルから）。構想は [docs/images/dragowing.webp](docs/images/dragowing.webp)
+- [DRAgoWing/README.md](DRAgoWing/README.md)：保存済みの質問・探索結果をHTMLで表示。
 
 ---
 
@@ -283,7 +283,7 @@ Question:
 
 Documentation:
 
-- [nagoyaction/README.md](nagoyaction/README.md)
+- [NagoyAction/README.md](NagoyAction/README.md)
 
 ---
 
@@ -304,7 +304,7 @@ Documentation:
 - [docs/PythDRagoras.md](docs/PythDRagoras.md)
 - [docs/hypothesis.md](docs/hypothesis.md)
 - [docs/validation.md](docs/validation.md)
-- [pythdragoras/README.md](pythdragoras/README.md)
+- [PythDRagoras/README.md](PythDRagoras/README.md)
 
 ---
 
@@ -400,3 +400,9 @@ Everything that follows exists to explore why.
 For the complete origin story, read:
 
 → [docs/GENESIS.md](docs/GENESIS.md)
+
+## 質問受付の導入
+
+専用Issueで `/ask`・`/status`・`/explore`・`/stop` を受け付けます。
+設定するまで自動受付は停止しています。コードは main、研究サイクルと結果のブランチは設定で選べます。
+導入手順・必要な変数・止め方は [NagoyAction/docs/inbox.md](NagoyAction/docs/inbox.md) を参照してください。

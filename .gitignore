@@ -222,3 +222,8 @@ __marimo__/
 # Aoi
 data/
 .venv/
+# Separate git worktree containing durable inquiry / exploration state.
+.research-state/
+.models/
+
+.research-data/

@@ -2,9 +2,9 @@ name: Season simulator
 on:
   push:
     branches: [main]
-    paths: ['sakanalytics/season*', 'sakanalytics/tests/test_season_simulator.py', '.github/workflows/season-simulator.yml']
+    paths: ['SakAnalytics/baseball/season*', 'SakAnalytics/tests/test_season_simulator.py', '.github/workflows/season-simulator.yml']
   pull_request:
-    paths: ['sakanalytics/season*', 'sakanalytics/tests/test_season_simulator.py', '.github/workflows/season-simulator.yml']
+    paths: ['SakAnalytics/baseball/season*', 'SakAnalytics/tests/test_season_simulator.py', '.github/workflows/season-simulator.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,7 +18,7 @@ jobs:
         python: ['3.11', '3.12', '3.13', '3.14']
         solver: [stdlib, exact]
     env:
-      PYTHONPATH: sakanalytics
+      PYTHONPATH: SakAnalytics/baseball
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -28,12 +28,12 @@ jobs:
           python-version: '${{ matrix.python }}'
       - run: python -m pip install pytest==9.1.1
       - if: matrix.solver == 'exact'
-        run: python -m pip install -r sakanalytics/season-requirements.txt
+        run: python -m pip install -r SakAnalytics/baseball/season-requirements.txt
       - name: Verify optional solver is absent
         if: matrix.solver == 'stdlib'
         run: python -c "import importlib.util; assert importlib.util.find_spec('ortools') is None"
-      - run: python -m pytest sakanalytics/tests/test_season_simulator.py -q
-      - run: python -m compileall -q sakanalytics/season_simulator.py sakanalytics/season_exact.py
+      - run: python -m pytest SakAnalytics/tests/test_season_simulator.py -q
+      - run: python -m compileall -q SakAnalytics/baseball/season_simulator.py SakAnalytics/baseball/season_exact.py
       - name: Exercise result-free synthetic CLI
         if: matrix.solver == 'exact'
-        run: python sakanalytics/season_simulator.py sakanalytics/season-example.json --as-of 2022-01-01 --through 2022-01-04 --trials 100 --exact --output /tmp/season-example-output.json
+        run: python SakAnalytics/baseball/season_simulator.py SakAnalytics/baseball/season-example.json --as-of 2022-01-01 --through 2022-01-04 --trials 100 --exact --output /tmp/season-example-output.json

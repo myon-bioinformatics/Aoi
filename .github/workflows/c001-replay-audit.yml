@@ -2,6 +2,8 @@ name: c001 offline replay audit
 
 on:
   workflow_dispatch:
+  push:
+    branches: [codex/c001-replay-compare]
 
 permissions:
   contents: read

@@ -100,11 +100,18 @@ def step_state(receipts, step):
     row = receipts.get((step,))
     if row is None:
         return "skipped", "no_execution_receipt"
-    if row.get("skipped"):
+    skipped, code = row.get("skipped", False), row.get("returncode")
+    if not isinstance(skipped, bool) or (code is not None and type(code) is not int):
+        raise ValueError(f"Invalid execution receipt types: {step}")
+    if row.get("reason") is not None and not isinstance(row["reason"], str):
+        raise ValueError(f"Invalid execution receipt reason: {step}")
+    if skipped:
+        if code is not None:
+            raise ValueError(f"Conflicting execution receipt: {step} is skipped but has an exit code")
         return "skipped", row.get("reason") or "step_not_executed"
-    if row.get("returncode") == 0 and not isinstance(row.get("returncode"), bool):
+    if code == 0:
         return "replayed", "successful_execution_on_saved_V1_inputs"
-    return "failed", f"execution_failed_or_incomplete: {row.get('returncode')}"
+    return "failed", f"execution_failed_or_incomplete: {code}"
 
 
 def annotate(audit: Path) -> dict:
@@ -131,6 +138,23 @@ def annotate(audit: Path) -> dict:
     annual_report = read_json(annual_report_path) if annual_report_path.exists() else None
     annual_executed = (manifest.get("initialization_status") == "complete" and annual_report is not None)
     receipts = read_rows(audit / "replay-receipt.jsonl", ("step",))
+    execution = {key[0]: dict(zip(("status", "reason"), step_state(receipts, key[0]))) for key in receipts}
+    # These files are copied inputs, not V2 calculations. Compare bytes so that
+    # Python's True == 1 equality cannot authenticate an altered input.
+    for name in ("season.jsonl", "trajectory_sensitivity_units.jsonl"):
+        copied = sha(v2 / name)
+        if copied is not None and copied != sha(v1 / name):
+            raise ValueError(f"Inherited input hash mismatch: {name}")
+    dependencies = {"question": ("season.jsonl", "trajectory_sensitivity_units.jsonl"),
+                    "sets": ("season.jsonl",)}
+    for step, names in dependencies.items():
+        if execution.get(step, {}).get("status") != "replayed":
+            continue
+        for name in names:
+            if name != "season.jsonl" and name not in inputs:
+                continue  # Optional input was not part of this frozen snapshot.
+            if sha(v1 / name) is None or sha(v2 / name) is None:
+                raise ValueError(f"Successful receipt without inherited input: {step}/{name}")
     out = v2 / "annotated"
     out.mkdir(parents=True, exist_ok=True)
     states, season_rows, computed_rows = Counter(), [], []
@@ -210,12 +234,14 @@ def annotate(audit: Path) -> dict:
     sources = {str(p.relative_to(audit)): sha(p) for p in
                (audit / "input-manifest.json", annual_report_path, annual_path, audit / "replay-receipt.jsonl",
                 v1 / "season.jsonl", v2 / "season.jsonl", v1 / "propositions.jsonl", v2 / "propositions.jsonl",
-                v1 / "sets.jsonl", v2 / "sets.jsonl")}
+                v1 / "sets.jsonl", v2 / "sets.jsonl",
+                v1 / "trajectory_sensitivity_units.jsonl", v2 / "trajectory_sensitivity_units.jsonl")}
     summary = {"schema": SCHEMA, "dataset_version": "V2", "verification_coverage": "partial",
                "source_validation": "skipped", "research_sha": manifest.get("research_sha"),
                "harness_sha": manifest.get("harness_sha"), "annual_input_units": len(originals),
                "annual_field_counts": dict(states), "formula_mismatches": mismatches,
                "recomputed_annual_units": len(computed_rows), "outputs": result_counts,
+               "execution_steps": execution,
                "inherited_input_files": {n: {"verification_status": "skipped" if sha(v2 / n) else "unavailable",
                                                 "reason": "source_reaggregation_not_performed", "sha256": sha(v2 / n)}
                                          for n in ("season.jsonl", "trajectory_sensitivity_units.jsonl")},
@@ -235,7 +261,9 @@ def annotate(audit: Path) -> dict:
         "`equivalent=V2`は記載されたverification_scope内だけです。元データの正しさや命題の成立を保証しません。\n"
         "`value_origin=V1, verification_status=verified`は、旧値を残したまま年間式の整合性を確認した状態です。\n"
         "`skipped`は未検証の継承、`unavailable`は値なし、`failed`は実行不具合、`different`は不一致です。\n"
-        "いずれも検証成功の件数には足しません。V1にもない値は推定して埋めません。\n\n"
+        "いずれも検証成功の件数には足しません。V1にもない値は推定して埋めません。\n"
+        "継承入力の食い違い・成功記録と入力欠落の矛盾はエラーです。正当な未実行はV1を残します。\n"
+        "CLIは注釈保存に成功しても、実行失敗なら64、不一致なら1で終了します。スキップだけなら0です。\n\n"
         "このディレクトリのdata+verificationを一緒に利用してください。親ディレクトリのJSONLは比較用の未注釈原本です。\n",
         encoding="utf-8")
     return summary
@@ -250,7 +278,10 @@ def main(argv=None):
     except (OSError, ValueError, KeyError, TypeError) as exc:
         parser.exit(64, f"Invalid replay evidence: {exc}\n")
     print(json.dumps({k: summary[k] for k in ("verification_coverage", "annual_field_counts", "outputs")}, ensure_ascii=False))
-    return 1 if summary["formula_mismatches"] else 0
+    if any(step["status"] == "failed" for step in summary["execution_steps"].values()):
+        return 64
+    different = any(result["counts"].get("different", 0) for result in summary["outputs"].values())
+    return 1 if summary["formula_mismatches"] or different else 0
 
 
 if __name__ == "__main__":

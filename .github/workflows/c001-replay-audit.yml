@@ -10,50 +10,204 @@ permissions:
 
 jobs:
   replay:
+    name: Replay from saved annual inputs (not raw-source replay)
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      AUDIT_DIR: ${{ runner.temp }}/c001-replay-audit
+      UV_PYTHON_DOWNLOADS: never
     steps:
-      - uses: actions/checkout@v7
+      - name: Keep the PR harness checkout
+        uses: actions/checkout@v7
         with:
-          ref: cycle-001/chunichi
+          persist-credentials: false
+      - name: Read the frozen research snapshot separately
+        uses: actions/checkout@v7
+        with:
+          ref: 0723d1137fc8448fbabb7bbe5fc14333ddfaabe2
+          path: research
+          persist-credentials: false
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
-      - name: Install uv
-        run: python -m pip install uv
-      - name: Restore saved c001 source cache
-        uses: actions/cache/restore@v4
-        with:
-          path: data
-          key: aoi-data-c001-replay-readonly
-          restore-keys: aoi-data-c001-
-      - name: Require offline source material
+      - name: Freeze inputs and check formulas from annual totals
         run: |
-          test -d data/raw/npb_calendar
-          test -d data/raw/npb_team_batting
-          test -d data/raw/npb_team_fielding
-          test -d data/raw/npb_game_linescore
-      - name: Freeze V1 and create isolated V2 workspace
+          python - <<'PY'
+          import hashlib, json, math, os, shutil, subprocess
+          from pathlib import Path
+
+          audit = Path(os.environ['AUDIT_DIR'])
+          audit.mkdir(parents=True, exist_ok=True)
+          research = Path('research').resolve()
+          cycle = research / 'cycles/c001-chunichi'
+          source = cycle / 'outputs'
+          v1, v2 = audit / 'v1', audit / 'v2'
+          v1.mkdir()
+          v2.mkdir()
+          provenance = {
+              'mode': 'saved_annual_input_replay', 'raw_source_replayed': False,
+              'harness_sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+              'research_sha': subprocess.check_output(['git', '-C', str(research), 'rev-parse', 'HEAD'], text=True).strip(),
+              'recomputed_layers': ['annual_scalar_formula_checks', 'question', 'sets', 'judge'],
+              'not_recomputed': {
+                  'acquisition_and_raw_parsing': 'Use saved inputs; no NPB network requests.',
+                  'game_to_season_aggregation': 'Trust frozen season aggregates as input, not independently verified raw data.',
+                  'daily_trajectory_and_game_detail_features': 'Existing columns are inherited, not regenerated or independently validated.',
+                  '2026_provisional_and_rule_search': 'Outside this bounded replay.'},
+              'inputs': {}, 'initialization_status': 'in_progress'}
+          manifest = audit / 'input-manifest.json'
+          manifest.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + '\n')
+          for name in ('season.jsonl', 'propositions.jsonl', 'sets.jsonl', 'trajectory_sensitivity_units.jsonl'):
+              src = source / name
+              if not src.is_file() or src.stat().st_size == 0:
+                  raise ValueError(f'Required frozen input missing or empty: {src}')
+              shutil.copy2(src, v1 / name)
+              provenance['inputs'][name] = hashlib.sha256(src.read_bytes()).hexdigest()
+          for name in ('season.jsonl', 'trajectory_sensitivity_units.jsonl'):
+              shutil.copy2(v1 / name, v2 / name)
+          if (source / 'fetched').is_dir():
+              shutil.copytree(source / 'fetched', v2 / 'fetched')
+          definitions = audit / 'definitions'
+          definitions.mkdir()
+          for src in sorted(cycle.glob('*.toml')):
+              shutil.copy2(src, definitions / src.name)
+              provenance['inputs'][src.name] = hashlib.sha256(src.read_bytes()).hexdigest()
+          rows = [json.loads(line) for line in (v1 / 'season.jsonl').read_text().splitlines() if line.strip()]
+          if not rows:
+              raise ValueError('Empty annual input is not a successful replay')
+          units = [(row['season'], row['team']) for row in rows]
+          if len(set(units)) != len(units):
+              raise ValueError('Duplicate team-season input')
+
+          def annual_metrics(row):
+              required = ('W', 'L', 'T', 'RF', 'RA')
+              if any(row.get(k) is None for k in required):
+                  return None
+              for k in required:
+                  value = row[k]
+                  if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0 or int(value) != value:
+                      raise ValueError(f'Invalid annual count {k}={value!r}')
+              w, loss, ties, rf, ra = (row[k] for k in required)
+              games, decisions = w + loss + ties, w + loss
+              if row.get('G') is not None and row['G'] != games:
+                  raise ValueError('G != W + L + T')
+              wpct = w / decisions if decisions else None
+              denom = rf ** 1.83 + ra ** 1.83
+              pythag = rf ** 1.83 / denom if denom else None
+              return {'G': games, 'wpct': wpct, 'RF_per_game': rf / games if games else None,
+                      'RA_per_game': ra / games if games else None, 'rd': rf - ra,
+                      'pythag_fixed': pythag,
+                      'resid_fixed': wpct - pythag if wpct is not None and pythag is not None else None,
+                      'wins_vs_pythag': w - decisions * pythag if pythag is not None else None}
+
+          recalculated, differences, skipped = [], [], []
+          comparable_fields = 0
+          for row in rows:
+              unit = {'season': row['season'], 'team': row['team']}
+              metrics = annual_metrics(row)
+              if metrics is None:
+                  skipped.append({**unit, 'reason': 'missing_annual_counts'})
+                  continue
+              recalculated.append({**unit, **metrics})
+              for field, value in metrics.items():
+                  if field not in row or row[field] is None or value is None:
+                      continue
+                  comparable_fields += 1
+                  if not math.isclose(float(row[field]), value, rel_tol=0, abs_tol=1e-12):
+                      differences.append({**unit, 'field': field, 'v1': row[field], 'recomputed': value})
+          (audit / 'annual-recalculated.jsonl').write_text(''.join(json.dumps(row, ensure_ascii=False) + '\n' for row in recalculated))
+          (audit / 'annual-formula-audit.json').write_text(json.dumps({
+              'source': 'frozen season aggregates, not a new independent NPB acquisition',
+              'fixed_exponent': 1.83, 'input_units': len(rows), 'recomputed_units': len(recalculated),
+              'comparable_fields': comparable_fields, 'skipped': skipped,
+              'differences': len(differences), 'items': differences}, ensure_ascii=False, indent=2) + '\n')
+          provenance.update(initialization_status='complete', input_units=len(rows),
+                            seasons=sorted({row['season'] for row in rows}),
+                            inherited_columns=sorted(set().union(*(row.keys() for row in rows))))
+          manifest.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + '\n')
+          print(f'Frozen annual units: {len(rows)}; scalar formula differences: {len(differences)}')
+          PY
+      - name: Install execution dependencies (not research data)
         run: |
-          cp -a cycles/c001-chunichi/outputs /tmp/c001-v1
-          cp cycles/c001-chunichi/pipeline.toml /tmp/replay.toml
-          sed -i 's#out = "cycles/c001-chunichi/outputs"#out = "/tmp/c001-v2"#' /tmp/replay.toml
-          mkdir -p /tmp/c001-v2
-          cp -a cycles/c001-chunichi/outputs/fetched /tmp/c001-v2/fetched
-      - name: Rebuild deterministic layers without network
+          python -m pip install uv
+          cd research
+          uv sync --frozen --no-dev
+      - name: Replay questions and sets from saved inputs without fetching data
+        id: replay
+        env:
+          UV_OFFLINE: "true"
         run: |
-          python nagoyaction/nagoyaction.py run /tmp/replay.toml --offline --start observe --receipt /tmp/c001-v2-receipt.jsonl
-      - name: Compare V1 and V2 semantic outputs
+          set -o pipefail
+          python - <<'PY' 2>&1 | tee "$AUDIT_DIR/replay.log"
+          import os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('nagoyaction').resolve()))
+          import nagoyaction
+          audit = Path(os.environ['AUDIT_DIR'])
+          p = nagoyaction.load(Path('research/cycles/c001-chunichi/pipeline.toml'))
+          selected = ('question', 'sets', 'judge')
+          by_name = {s['name']: s for s in p['step']}
+          p['step'] = [by_name[name] for name in selected]
+          if any(s.get('network') for s in p['step']):
+              raise ValueError('A selected saved-input step unexpectedly requires network')
+          p['vars']['out'] = str(audit / 'v2')
+          raise SystemExit(nagoyaction.run(p, offline=True, receipt=audit / 'replay-receipt.jsonl'))
+          PY
+      - name: Compare semantic outputs and classify observed differences
         if: always()
-        run: python scripts/compare_c001_replay.py /tmp/c001-v1 /tmp/c001-v2 --out /tmp/c001-replay-diff.json
-      - name: Preserve replay evidence
+        env:
+          REPLAY_OUTCOME: ${{ steps.replay.outcome }}
+        run: |
+          python - <<'PY'
+          import collections, json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          import compare_c001_replay as compare
+          audit = Path(os.environ['AUDIT_DIR'])
+          audit.mkdir(parents=True, exist_ok=True)
+          report = {'mode': 'saved_annual_input_replay', 'raw_source_replayed': False,
+                    'replay_outcome': os.environ['REPLAY_OUTCOME'], 'comparison_status': 'not_run',
+                    'differences': None, 'cause_status': 'not_established'}
+          code = 0
+          try:
+              if report['replay_outcome'] != 'success':
+                  report['reason'] = 'Replay did not complete; missing outputs are not semantic differences.'
+                  code = 64
+              else:
+                  for directory in ('v1', 'v2'):
+                      for name in ('propositions.jsonl', 'sets.jsonl'):
+                          rows = compare.read_jsonl(audit / directory / name)
+                          if not rows or len({r['id'] for r in rows}) != len(rows):
+                              raise ValueError(f'Empty or duplicate IDs: {directory}/{name}')
+                  diffs = compare.compare_dirs(audit / 'v1', audit / 'v2')
+                  categories = {'definition_sha256': 'definition', 'data_sha256': 'input_identity',
+                                'counterexamples': 'counterexample_membership',
+                                'presence': 'id_or_form_presence', 'file_presence': 'file_presence',
+                                **{k: 'registration_metadata' for k in ('posthoc', 'parent', 'change', 'held_out')}}
+                  counts = collections.Counter(categories.get(d['field'], 'result_value') for d in diffs)
+                  report.update(comparison_status='complete', differences=len(diffs), items=diffs,
+                                affected_ids=len({(d['kind'], d.get('id')) for d in diffs if 'id' in d}),
+                                field_categories=dict(sorted(counts.items())),
+                                classification_note='Observed field categories only; root causes require investigation.')
+                  annual = json.loads((audit / 'annual-formula-audit.json').read_text())
+                  report['annual_formula_differences'] = annual['differences']
+                  code = 1 if diffs or annual['differences'] else 0
+          except Exception as exc:
+              report.update(comparison_status='failed', error=f'{type(exc).__name__}: {exc}')
+              code = 64
+          (audit / 'c001-replay-diff.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+          summary = f"## c001 saved-input replay\n\nNot a raw-source replay.\n\nComparison: {report['comparison_status']}\n\nSemantic field differences: {report['differences']}\n\n"
+          summary += 'Acquisition, raw parsing, game-to-season aggregation and daily/detail feature generation were not replayed.\n'
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write(summary)
+          print(json.dumps({k: v for k, v in report.items() if k != 'items'}, ensure_ascii=False, indent=2))
+          raise SystemExit(code)
+          PY
+      - name: Preserve replay evidence even when a calculation fails
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: c001-offline-replay-${{ github.run_id }}
-          path: |
-            /tmp/c001-replay-diff.json
-            /tmp/c001-v2-receipt.jsonl
-            /tmp/c001-v2/propositions.jsonl
-            /tmp/c001-v2/sets.jsonl
-          if-no-files-found: warn
+          name: c001-saved-input-replay-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.AUDIT_DIR }}/
+          retention-days: 90
+          if-no-files-found: error

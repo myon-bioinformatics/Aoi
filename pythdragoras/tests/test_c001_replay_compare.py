@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from compare_c001_replay import compare_dirs
+from compare_c001_replay import compare_dirs, prepare_v2
 
 
 def write(path, rows):
@@ -46,3 +46,14 @@ def test_replay_reports_missing_ids_and_forms(tmp_path):
         write(tmp_path/d/"propositions.jsonl", [])
     diffs = compare_dirs(tmp_path/"v1", tmp_path/"v2")
     assert {d["id"] for d in diffs} == {"E1", "E2"}
+
+
+def test_prepare_v2_never_copies_semantic_outputs(tmp_path):
+    v1, v2 = tmp_path/"v1", tmp_path/"v2"
+    write(v1/"propositions.jsonl", [{"id": "P1"}])
+    write(v1/"sets.jsonl", [{"id": "E1"}])
+    write(v1/"fetched"/"source.jsonl", [{"url": "saved"}])
+    prepare_v2(v1, v2)
+    assert not (v2/"propositions.jsonl").exists()
+    assert not (v2/"sets.jsonl").exists()
+    assert (v2/"fetched"/"source.jsonl").exists()

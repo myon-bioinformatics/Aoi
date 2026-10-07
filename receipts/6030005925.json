@@ -1,0 +1,69 @@
+{
+  "comment_id": 6030005925,
+  "author": "myon-bioinformatics",
+  "body": "/ask P117 の対偶の判例",
+  "created_at": "2026-10-07T03:01:32Z",
+  "author_association": "OWNER",
+  "code_sha": "b86054b1fe50360f665128d87aedbc1f968a6763",
+  "cycle": "c001-chunichi",
+  "result_sha": "0723d1137fc8448fbabb7bbe5fc14333ddfaabe2",
+  "inputs": {
+    "queryu/ask/ask.py": "3f6035ddf254cacd570c2bece27cb646556faff7a1138d751337b7a9af113947",
+    "queryu/ask/bank.py": "f9ffd57ab604e9e398c793c094841e8b06c40d428a1f7a5e8a2e655a0e33e73e",
+    "nagoyaction/inbox/inbox.py": "1014c6eb9f461538aefc58a1085216e44e206a4cc67da348011b79432763c77d",
+    ".aoi-results/c001-chunichi/outputs/sets.jsonl": "4c609505f77de9f38f6ac930a7a75a809a87a63cf888b95b735962c06c21cd94",
+    ".aoi-results/c001-chunichi/outputs/propositions.jsonl": "50cd4dc472541c03f04f7037657db2a1d1ffaa2663ab7918cf3a7c0777d47891"
+  },
+  "kind": "ask",
+  "response": {
+    "question": "P117 の対偶の判例",
+    "query": {
+      "ask": "counterexamples",
+      "target": "P117",
+      "kind": "any",
+      "form": "contrapositive",
+      "exclude": [],
+      "about": [],
+      "min_rate": null,
+      "max_rate": null
+    },
+    "unread": [],
+    "result": {
+      "answer": 1,
+      "rows": [
+        {
+          "id": "P117",
+          "form": "contrapositive",
+          "n": 72,
+          "hold": 62,
+          "rate": 0.861,
+          "counterexamples_left": 10,
+          "has_counterexample": true,
+          "undetermined": 0,
+          "counterexamples": [
+            "h-2019",
+            "b-2022",
+            "db-2022",
+            "m-2023",
+            "g-2016",
+            "l-2022",
+            "t-2015",
+            "l-2013",
+            "h-2014",
+            "e-2021"
+          ],
+          "listed_all": true,
+          "statement": "得点した回の大きさがその年リーグ下位2位以内なら、B クラス（続けてでなく1年だけ）",
+          "registration": "不明"
+        }
+      ],
+      "incomplete": false
+    },
+    "reader": "rules"
+  },
+  "result_files": {
+    "sets.jsonl": "4c609505f77de9f38f6ac930a7a75a809a87a63cf888b95b735962c06c21cd94",
+    "propositions.jsonl": "50cd4dc472541c03f04f7037657db2a1d1ffaa2663ab7918cf3a7c0777d47891"
+  },
+  "reply_body": "問い: P117 の対偶の判例\n読み取り: {\"ask\": \"counterexamples\", \"target\": \"P117\", \"kind\": \"any\", \"form\": \"contrapositive\", \"exclude\": [], \"about\": [], \"min_rate\": null, \"max_rate\": null}\n答え（判例の一覧・対偶・命題と式）: 1 件\n- P117［不明］ 対偶の成立率 62/72（0.861）／判例 10: h-2019, b-2022, db-2022, m-2023, g-2016, l-2022, t-2015, l-2013, h-2014, e-2021\n\n対象サイクル: `c001-chunichi` / 結果SHA: `0723d1137fc8448fbabb7bbe5fc14333ddfaabe2` / 対象コード: `b86054b1fe50360f665128d87aedbc1f968a6763` / 元コメント: 6030005925"
+}

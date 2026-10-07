@@ -22,7 +22,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "queryu/ask"), str(ROOT / "pythdragoras"), str(ROOT / "DRAgoWing"), str(ROOT / "DRAgoWing/reports"), str(ROOT / "sakanalytics"), str(ROOT / "blueprobe")]
-from feedback import prepare_feedback, observe_report
 from bank import lookup, prepare
 from autonomous import next_request
 from ask import answer, load, parse, render, schema, validate_query
@@ -165,6 +164,7 @@ class BufferedState:
 
 def safe_observe(path):
     try:
+        from feedback import observe_report
         observe_report(path)
     except (ValueError, TypeError, KeyError, OSError) as e:
         atomic_json(path / "feedback/report-error.json", {"error": f"{type(e).__name__}: {e}"})
@@ -370,6 +370,7 @@ def run_worker(api, state, cycle: Path, seconds=18000, autonomous=False):
     current_inputs = snapshot(ROOT, cycle)
     if autonomous:
         prepare(cycle / "outputs", state.path / "known")
+        from feedback import prepare_feedback
         prepare_feedback(ROOT, cycle, state.path)
         safe_observe(state.path)
         state.save()

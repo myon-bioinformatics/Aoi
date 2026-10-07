@@ -1,0 +1,37 @@
+name = "research-inbox"
+root = "../.."
+
+[requires]
+python = "3.11"
+tools = ["git"]
+optional = ["docker"]
+
+[[step]]
+name = "model"
+run = ["python", "nagoyaction/containers/llama.py", "prepare"]
+when_env = "AOI_USE_LOCAL_LLM"
+network = true
+outputs = [".models/model.gguf", ".models/identity.json"]
+
+[[step]]
+name = "llama-start"
+run = ["docker", "compose", "-p", "aoi-inbox", "-f", "nagoyaction/containers/llama.compose.yml", "up", "--detach"]
+when_env = "AOI_USE_LOCAL_LLM"
+network = true
+
+[[step]]
+name = "llama-ready"
+run = ["python", "nagoyaction/containers/llama.py", "wait"]
+when_env = "AOI_USE_LOCAL_LLM"
+network = true
+
+[[step]]
+name = "intake"
+run = ["python", "nagoyaction/inbox/inbox.py", "intake"]
+network = true
+
+[[step]]
+name = "llama-stop"
+run = ["docker", "compose", "-p", "aoi-inbox", "-f", "nagoyaction/containers/llama.compose.yml", "down"]
+when_env = "AOI_USE_LOCAL_LLM"
+always = true

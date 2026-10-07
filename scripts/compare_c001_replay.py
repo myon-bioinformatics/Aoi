@@ -4,7 +4,7 @@ The comparator is intentionally independent from the pipeline.  It never decides
 which side is correct; any difference is evidence to investigate.
 """
 from __future__ import annotations
-import argparse, json, math
+import argparse, json, math, shutil
 from pathlib import Path
 
 FORM_FIELDS = ("n", "hold", "undetermined", "rate", "verdict", "code")
@@ -65,6 +65,20 @@ def compare_dirs(v1: Path, v2: Path):
             continue
         diffs += compare_rows(kind, by_id(a), by_id(b))
     return diffs
+
+
+def prepare_v2(v1: Path, v2: Path):
+    """Seed only non-regenerated evidence needed by downstream steps.
+
+    Never copy the two semantic outputs under comparison.
+    """
+    if v2.exists():
+        shutil.rmtree(v2)
+    v2.mkdir(parents=True)
+    for name in ("fetched",):
+        src = v1 / name
+        if src.exists():
+            shutil.copytree(src, v2 / name)
 
 
 def main(argv=None):

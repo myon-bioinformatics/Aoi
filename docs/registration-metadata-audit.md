@@ -30,3 +30,22 @@ The production inbox therefore correctly renders E25 as **unknown** with the cur
 - narrative comments are audit leads only.
 
 No c001 research result or metadata value is changed by this PR.
+
+
+## Replay against historical c001 data
+
+The audit contract was replayed against the concrete R72/R73/R76 metadata pattern from
+`cycle-001/chunichi@0723d1137fc8448fbabb7bbe5fc14333ddfaabe2`.
+
+- R72 narrative says the family was written before evaluation; E20 has no explicit registration field.
+- R73 says the same; E25 has no explicit registration field, while E26 is explicitly posthoc.
+- R76 says the family was written before evaluation, while E29-E32 are explicitly posthoc.
+
+This is exactly why narrative text and a single `posthoc` boolean must not be collapsed
+into one inferred truth.  The regression fixture preserves this historical tension:
+E20/E25 remain unknown; E26/E29-E32 remain posthoc.  No record is promoted to
+preregistered until the durable pre-evaluation evidence is identified.
+
+The #9 production replies independently exercise the consumer side: E25 rendered
+`［不明］`, while E26 and E30 rendered `［事後構成］`.  Those observations agree
+with this conservative classification and do not themselves rewrite the source data.

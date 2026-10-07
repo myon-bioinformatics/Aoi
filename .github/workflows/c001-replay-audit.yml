@@ -220,6 +220,19 @@ jobs:
               f.write(f"Annual fields: {counts}. Identity fields are excluded from these counts.\n\n")
               f.write('Use v2/annotated/ for values with origin and scope. V1 inheritance, skipped checks, missing values and failures are not successful verification. Replayed results still depend on saved V1 inputs.\n')
           PY
+      - name: Publish independently named V2 research results
+        if: always()
+        run: |
+          python -S scripts/publish_c001_v2_results.py "$AUDIT_DIR"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          report = json.loads((Path(os.environ['AUDIT_DIR']) / 'v2/results/summary.json').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write('\n## V2 research results\n\n')
+              f.write(f"Published: {report['published_results']} results; {report['by_kind']}.\n")
+              f.write('Public IDs use V2-P... / V2-E...; original P/E IDs remain source_id provenance.\n')
+          PY
       - name: Preserve replay evidence even when a calculation fails
         if: always()
         uses: actions/upload-artifact@v7

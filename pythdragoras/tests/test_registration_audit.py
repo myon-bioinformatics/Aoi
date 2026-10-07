@@ -46,3 +46,18 @@ def test_narrative_is_only_an_audit_lead(tmp_path):
     assert "E25" in narrative_candidates(path)
     # Narrative text alone must never become machine-readable preregistration.
     assert classify({"id": "E25"}).status == "unknown"
+
+
+def test_all_machine_readable_registration_records_are_self_consistent():
+    """Any future explicit registration metadata must satisfy the same contract."""
+    path = Path("cycles/c001-chunichi/sets.toml")
+    if not path.exists():
+        return
+    for expr in load_exprs(path):
+        assert audit_record(expr) == [], f"{expr.get('id')}: {audit_record(expr)}"
+
+
+def test_classification_does_not_depend_on_successful_results():
+    """A perfect observed rate is evidence about the result, never about when it was defined."""
+    assert classify({"forms": [{"n": 60, "hold": 60, "rate": 1.0}]}).status == "unknown"
+    assert classify({"posthoc": True, "forms": [{"n": 60, "hold": 60, "rate": 1.0}]}).status == "posthoc"

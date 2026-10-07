@@ -1,0 +1,111 @@
+name: Aoi question inbox
+
+on:
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      cycle:
+        description: Research cycle name
+        required: false
+        default: ''
+      results_ref:
+        description: Ref containing research results
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: aoi-question-inbox-state-writer
+  cancel-in-progress: false
+
+jobs:
+  intake:
+    if: >-
+      vars.AOI_INBOX_ISSUE != '' &&
+      (github.event_name != 'issue_comment' ||
+       (github.event.issue.number == fromJSON(vars.AOI_INBOX_ISSUE) &&
+        startsWith(github.event.comment.body, '/') &&
+        (contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) ||
+         github.event.comment.user.login == github.repository_owner ||
+         github.event.comment.user.login == 'github-actions[bot]' ||
+         contains(fromJSON(vars.AOI_INBOX_ALLOWED_ACTORS || '[]'), github.event.comment.user.login))))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout trusted code
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Resolve research target
+        id: target
+        env:
+          INPUT_CYCLE: ${{ inputs.cycle }}
+          INPUT_REF: ${{ inputs.results_ref }}
+          DEFAULT_CYCLE: ${{ vars.AOI_RESEARCH_CYCLE }}
+          DEFAULT_REF: ${{ vars.AOI_RESULTS_REF }}
+        run: |
+          cycle="${INPUT_CYCLE:-$DEFAULT_CYCLE}"
+          ref="${INPUT_REF:-$DEFAULT_REF}"
+          test -n "$cycle" && test -n "$ref"
+          [[ "$cycle" =~ ^[A-Za-z0-9._-]+$ ]]
+          [[ "$ref" =~ ^[A-Za-z0-9._/-]+$ ]] && [[ "$ref" != *".."* ]]
+          echo "cycle=$cycle" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout results as data only
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.target.outputs.ref }}
+          path: .aoi-results-source
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Prepare isolated results directory
+        id: results
+        env:
+          CYCLE: ${{ steps.target.outputs.cycle }}
+        run: |
+          src=".aoi-results-source/cycles/$CYCLE"
+          test -d "$src/outputs"
+          test -f "$src/outputs/propositions.jsonl" -o -f "$src/outputs/sets.jsonl"
+          mkdir -p ".aoi-results/$CYCLE"
+          cp -a "$src/." ".aoi-results/$CYCLE/"
+          echo "sha=$(git -C .aoi-results-source rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Run question inbox
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AOI_INBOX_ISSUE: ${{ vars.AOI_INBOX_ISSUE }}
+          AOI_INBOX_ALLOWED_ACTORS: ${{ vars.AOI_INBOX_ALLOWED_ACTORS }}
+          AOI_RESEARCH_CYCLE: ${{ steps.target.outputs.cycle }}
+          AOI_RESULTS_REF: ${{ steps.target.outputs.ref }}
+          AOI_RESULTS_SHA: ${{ steps.results.outputs.sha }}
+          AOI_STATE_BRANCH: aoi-research-state-${{ steps.target.outputs.cycle }}
+        run: >-
+          python nagoyaction/nagoyaction.py run nagoyaction/pipelines/inbox.toml
+          --receipt build/inbox-receipt.jsonl
+
+      - name: Preserve any checkpoint whose push failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: inbox-recovery-${{ github.run_id }}
+          path: |
+            .research-state/receipts
+            .research-state/pending-replies
+            .research-state/answers
+            build/inbox-receipt.jsonl
+          include-hidden-files: true
+          if-no-files-found: ignore

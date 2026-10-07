@@ -1,0 +1,11 @@
+name = "research-inbox"
+root = "../.."
+
+[requires]
+python = "3.11"
+tools = ["git"]
+
+[[step]]
+name = "intake"
+run = ["python", "nagoyaction/inbox/inbox.py", "intake"]
+network = true

@@ -1,0 +1,60 @@
+{
+  "comment_id": 6027765557,
+  "author": "myon-bioinformatics",
+  "body": "/ask E25 に阪神 2015 以外の判例はある？",
+  "created_at": "2026-10-07T00:00:04Z",
+  "author_association": "OWNER",
+  "code_sha": "b86054b1fe50360f665128d87aedbc1f968a6763",
+  "cycle": "c001-chunichi",
+  "result_sha": "0723d1137fc8448fbabb7bbe5fc14333ddfaabe2",
+  "inputs": {
+    "queryu/ask/ask.py": "3f6035ddf254cacd570c2bece27cb646556faff7a1138d751337b7a9af113947",
+    "queryu/ask/bank.py": "f9ffd57ab604e9e398c793c094841e8b06c40d428a1f7a5e8a2e655a0e33e73e",
+    "nagoyaction/inbox/inbox.py": "1014c6eb9f461538aefc58a1085216e44e206a4cc67da348011b79432763c77d",
+    ".aoi-results/c001-chunichi/outputs/sets.jsonl": "4c609505f77de9f38f6ac930a7a75a809a87a63cf888b95b735962c06c21cd94",
+    ".aoi-results/c001-chunichi/outputs/propositions.jsonl": "50cd4dc472541c03f04f7037657db2a1d1ffaa2663ab7918cf3a7c0777d47891"
+  },
+  "kind": "ask",
+  "response": {
+    "question": "E25 に阪神 2015 以外の判例はある？",
+    "query": {
+      "ask": "has_counterexample",
+      "target": "E25",
+      "kind": "any",
+      "form": "original",
+      "exclude": [
+        "t-2015"
+      ],
+      "about": [],
+      "min_rate": null,
+      "max_rate": null
+    },
+    "unread": [],
+    "result": {
+      "answer": "いいえ",
+      "rows": [
+        {
+          "id": "E25",
+          "form": "original",
+          "n": 64,
+          "hold": 63,
+          "rate": 0.984,
+          "counterexamples_left": 0,
+          "has_counterexample": false,
+          "undetermined": 0,
+          "counterexamples": [],
+          "listed_all": true,
+          "statement": "E20 の作り直し: 真ん中のます目か線の近くは、その年の高さに点の差で届かず、かつ点の差より負け",
+          "registration": "不明"
+        }
+      ],
+      "incomplete": false
+    },
+    "reader": "rules"
+  },
+  "result_files": {
+    "sets.jsonl": "4c609505f77de9f38f6ac930a7a75a809a87a63cf888b95b735962c06c21cd94",
+    "propositions.jsonl": "50cd4dc472541c03f04f7037657db2a1d1ffaa2663ab7918cf3a7c0777d47891"
+  },
+  "reply_body": "問い: E25 に阪神 2015 以外の判例はある？\n読み取り: {\"ask\": \"has_counterexample\", \"target\": \"E25\", \"kind\": \"any\", \"form\": \"original\", \"exclude\": [\"t-2015\"], \"about\": [], \"min_rate\": null, \"max_rate\": null}\n答え（判例はあるか（はい・いいえ）・元の命題・命題と式・除いた後の判例）: いいえ\n- E25［不明］ 元の成立率 63/64（0.984）／除外後の判例 0（除外 t-2015）: なし\n\n対象サイクル: `c001-chunichi` / 結果SHA: `0723d1137fc8448fbabb7bbe5fc14333ddfaabe2` / 対象コード: `b86054b1fe50360f665128d87aedbc1f968a6763` / 元コメント: 6027765557"
+}

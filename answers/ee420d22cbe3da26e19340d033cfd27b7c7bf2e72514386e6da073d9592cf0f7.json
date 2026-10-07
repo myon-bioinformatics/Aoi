@@ -1,0 +1,20 @@
+{
+  "answer": "いいえ",
+  "rows": [
+    {
+      "id": "E30",
+      "form": "original",
+      "n": 66,
+      "hold": 66,
+      "rate": 1.0,
+      "counterexamples_left": 0,
+      "has_counterexample": false,
+      "undetermined": 0,
+      "counterexamples": [],
+      "listed_all": true,
+      "statement": "E13 の作り直し（その年の高さ）",
+      "registration": "事後構成"
+    }
+  ],
+  "incomplete": false
+}

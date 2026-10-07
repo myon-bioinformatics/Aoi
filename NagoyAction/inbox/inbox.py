@@ -308,22 +308,25 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False, cycle_name="",
                 record["result_files"] = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                                           for p in (cycle / "outputs").glob("*.jsonl") if p.name in ("sets.jsonl", "propositions.jsonl")}
             elif kind == "explore":
-                request_path = state.path / "requests" / f"{cid}.json"
-                if request_path.exists():
-                    request = json.loads(request_path.read_text(encoding="utf-8"))
-                    spec, job = request["plan"], request["job"]
+                if os.environ.get("AOI_RESEARCH_ENABLED") != "1":
+                    body = "探索は未稼働です。AOI_RESEARCH_ENABLED=1 と worker の導入後に利用できます。"
                 else:
-                    pending = pending_requests(state.path)
-                    if len(pending) >= 20 or sum(r["author"] == record["author"] for r in pending) >= 5:
-                        raise ValueError("未完了の探索依頼は1人5件・全体20件までです。完了または停止後に新しいコメントで依頼してください")
-                    spec = plan(text, cycle)
-                    job = digest({"plan": spec, "inputs": inputs})[:24]
-                    request = {**record, "plan": spec, "job": job}
-                    atomic_json(request_path, request)
-                # Persist the plan before acknowledging or doing any evaluation.
-                state.save()
-                body = f"探索を受け付けました。依頼 `{cid}` / job `{job}`\n計画: `{json.dumps(spec, ensure_ascii=False)}`\n同じ計画・入力は同じjobとして処理します。進捗は /status。停止は /stop {cid}。"
-            elif kind == "status":
+                        request_path = state.path / "requests" / f"{cid}.json"
+                    if request_path.exists():
+                        request = json.loads(request_path.read_text(encoding="utf-8"))
+                        spec, job = request["plan"], request["job"]
+                    else:
+                        pending = pending_requests(state.path)
+                        if len(pending) >= 20 or sum(r["author"] == record["author"] for r in pending) >= 5:
+                            raise ValueError("未完了の探索依頼は1人5件・全体20件までです。完了または停止後に新しいコメントで依頼してください")
+                        spec = plan(text, cycle)
+                        job = digest({"plan": spec, "inputs": inputs})[:24]
+                        request = {**record, "plan": spec, "job": job}
+                        atomic_json(request_path, request)
+                    # Persist the plan before acknowledging or doing any evaluation.
+                    state.save()
+                    body = f"探索を受け付けました。依頼 `{cid}` / job `{job}`\n計画: `{json.dumps(spec, ensure_ascii=False)}`\n同じ計画・入力は同じjobとして処理します。進捗は /status。停止は /stop {cid}。"
+                elif kind == "status":
                 body = status_report(state.path)
             else:
                 if not re.fullmatch(r"\d+", text):
@@ -345,6 +348,7 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False, cycle_name="",
         except Exception as e:
             body = "判定不能 / 入力を確認してください: " + str(e)
             record["error"] = str(e)
+            record["error_type"] = type(e).__name__
         body += f"\n\n対象サイクル: `{cycle_name}` / 結果SHA: `{result_sha}` / 対象コード: `{code_sha}` / 元コメント: {cid}"
         record["reply_body"] = body
         atomic_json(receipt, record)
@@ -479,8 +483,10 @@ def main(argv=None):
     if not 0 < args.seconds <= 18000:
         ap.error("seconds は1〜18000")
     api = GitHub(args.repository, args.issue) if args.issue else None
-    cycle_name = os.environ.get("AOI_RESEARCH_CYCLE", "c001-chunichi")
-    result_ref = os.environ.get("AOI_RESULTS_REF", "cycle-001/chunichi")
+    cycle_name = os.environ.get("AOI_RESEARCH_CYCLE")
+    result_ref = os.environ.get("AOI_RESULTS_REF")
+    if not cycle_name or not result_ref:
+        ap.error("AOI_RESEARCH_CYCLE / AOI_RESULTS_REF が必要")
     if not re.fullmatch(r"[A-Za-z0-9._-]+", cycle_name) or not re.fullmatch(r"[A-Za-z0-9._/-]+", result_ref) or ".." in result_ref:
         ap.error("AOI_RESEARCH_CYCLE / AOI_RESULTS_REF が不正")
     cycle = ROOT / ".aoi-results" / cycle_name

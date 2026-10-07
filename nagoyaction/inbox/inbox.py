@@ -311,7 +311,7 @@ def intake(api, state, cycle: Path, code_sha: str, use_llm=False, cycle_name="",
                 if os.environ.get("AOI_RESEARCH_ENABLED") != "1":
                     body = "探索は未稼働です。AOI_RESEARCH_ENABLED=1 と worker の導入後に利用できます。"
                 else:
-                        request_path = state.path / "requests" / f"{cid}.json"
+                    request_path = state.path / "requests" / f"{cid}.json"
                     if request_path.exists():
                         request = json.loads(request_path.read_text(encoding="utf-8"))
                         spec, job = request["plan"], request["job"]

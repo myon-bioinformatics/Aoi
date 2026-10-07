@@ -99,7 +99,7 @@ jobs:
           AOI_LLAMA_MODEL_URL: ${{ vars.AOI_LLAMA_MODEL_URL }}
           AOI_LLAMA_MODEL_SHA256: ${{ vars.AOI_LLAMA_MODEL_SHA256 }}
         run: >-
-          python NagoyAction/nagoyaction.py run NagoyAction/pipelines/inbox.toml
+          python nagoyaction/nagoyaction.py run nagoyaction/pipelines/inbox.toml
           --receipt build/inbox-receipt.jsonl
       - name: Preserve any checkpoint whose push failed
         if: failure()

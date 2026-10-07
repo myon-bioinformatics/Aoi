@@ -1,0 +1,46 @@
+{
+  "comment_id": 6030008437,
+  "author": "myon-bioinformatics",
+  "body": "/ask P121 は 2026 年で確かめられた？",
+  "created_at": "2026-10-07T03:01:46Z",
+  "author_association": "OWNER",
+  "code_sha": "b86054b1fe50360f665128d87aedbc1f968a6763",
+  "cycle": "c001-chunichi",
+  "result_sha": "0723d1137fc8448fbabb7bbe5fc14333ddfaabe2",
+  "inputs": {
+    "queryu/ask/ask.py": "3f6035ddf254cacd570c2bece27cb646556faff7a1138d751337b7a9af113947",
+    "queryu/ask/bank.py": "f9ffd57ab604e9e398c793c094841e8b06c40d428a1f7a5e8a2e655a0e33e73e",
+    "nagoyaction/inbox/inbox.py": "1014c6eb9f461538aefc58a1085216e44e206a4cc67da348011b79432763c77d",
+    ".aoi-results/c001-chunichi/outputs/sets.jsonl": "4c609505f77de9f38f6ac930a7a75a809a87a63cf888b95b735962c06c21cd94",
+    ".aoi-results/c001-chunichi/outputs/propositions.jsonl": "50cd4dc472541c03f04f7037657db2a1d1ffaa2663ab7918cf3a7c0777d47891"
+  },
+  "kind": "ask",
+  "response": {
+    "question": "P121 は 2026 年で確かめられた？",
+    "query": {
+      "ask": "counterexamples",
+      "target": "P121",
+      "kind": "any",
+      "form": "original",
+      "exclude": [],
+      "about": [],
+      "min_rate": null,
+      "max_rate": null
+    },
+    "unread": [
+      "問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）",
+      "未対応の語・条件: 2026年確められた"
+    ],
+    "result": {
+      "answer": "判定不能",
+      "error": "解釈を確認してください: 問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）; 未対応の語・条件: 2026年確められた",
+      "rows": []
+    },
+    "reader": "rules"
+  },
+  "result_files": {
+    "sets.jsonl": "4c609505f77de9f38f6ac930a7a75a809a87a63cf888b95b735962c06c21cd94",
+    "propositions.jsonl": "50cd4dc472541c03f04f7037657db2a1d1ffaa2663ab7918cf3a7c0777d47891"
+  },
+  "reply_body": "問い: P121 は 2026 年で確かめられた？\n読み取り: {\"ask\": \"counterexamples\", \"target\": \"P121\", \"kind\": \"any\", \"form\": \"original\", \"exclude\": [], \"about\": [], \"min_rate\": null, \"max_rate\": null}\n読めなかった: 問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）\n読めなかった: 未対応の語・条件: 2026年確められた\n答え: 判定不能（解釈を確認してください: 問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）; 未対応の語・条件: 2026年確められた）\n\n対象サイクル: `c001-chunichi` / 結果SHA: `0723d1137fc8448fbabb7bbe5fc14333ddfaabe2` / 対象コード: `b86054b1fe50360f665128d87aedbc1f968a6763` / 元コメント: 6030008437"
+}

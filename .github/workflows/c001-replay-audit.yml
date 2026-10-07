@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      AUDIT_DIR: ${{ runner.temp }}/c001-replay-audit
+      AUDIT_DIR: /tmp/c001-replay-audit
       UV_PYTHON_DOWNLOADS: never
     steps:
       - name: Keep the PR harness checkout

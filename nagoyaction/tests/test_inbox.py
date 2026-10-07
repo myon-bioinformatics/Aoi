@@ -396,6 +396,10 @@ def test_registration_status_is_conservative_and_rendered():
     assert registration_status(posthoc) == "事後構成"
     assert registration_status(unknown) == "不明"
     assert registration_status(prereg) == "事前登録"
+    posthoc["forms"].append({
+        **posthoc["forms"][0],
+        "form": "contrapositive",
+    })
     q = Query(target="E1", form="contrapositive")
     text = render("", q, [], answer(q, [posthoc]))
     assert "対偶の成立率" in text

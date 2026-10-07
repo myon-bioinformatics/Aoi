@@ -30,6 +30,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
+      - name: Test per-value V1/V2 verification and fallback contract (stdlib)
+        run: python -S -m unittest discover -s nagoyaction/tests -p test_c001_replay_annotations.py -v
       - name: Freeze inputs and check formulas from annual totals
         run: |
           python - <<'PY'
@@ -202,6 +204,21 @@ jobs:
               f.write(summary)
           print(json.dumps({k: v for k, v in report.items() if k != 'items'}, ensure_ascii=False, indent=2))
           raise SystemExit(code)
+          PY
+      - name: Publish V2 with explicit V1 inheritance and per-value verification
+        if: always()
+        run: |
+          python -S scripts/annotate_c001_replay.py "$AUDIT_DIR"
+          cp "$AUDIT_DIR/v2/annotated/README.md" "$AUDIT_DIR/v2/VERIFICATION.md"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          report = json.loads((Path(os.environ['AUDIT_DIR']) / 'v2/annotated/verification-summary.json').read_text())
+          counts = report['annual_field_counts']
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write('\n## V2 verification coverage: partial\n\n')
+              f.write(f"Annual fields: {counts}. Identity fields are excluded from these counts.\n\n")
+              f.write('Use v2/annotated/ for values with origin and scope. V1 inheritance, skipped checks, missing values and failures are not successful verification. Replayed results still depend on saved V1 inputs.\n')
           PY
       - name: Preserve replay evidence even when a calculation fails
         if: always()

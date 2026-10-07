@@ -1,0 +1,20 @@
+{
+  "answer": "いいえ",
+  "rows": [
+    {
+      "id": "E26",
+      "form": "original",
+      "n": 60,
+      "hold": 60,
+      "rate": 1.0,
+      "counterexamples_left": 0,
+      "has_counterexample": false,
+      "undetermined": 0,
+      "counterexamples": [],
+      "listed_all": true,
+      "statement": "E25 と時期の状態の式（E22）の積（R72 の種1、E23 の代わり）",
+      "registration": "事後構成"
+    }
+  ],
+  "incomplete": false
+}

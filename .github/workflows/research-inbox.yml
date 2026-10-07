@@ -43,6 +43,7 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
+
       - name: Resolve research target
         id: target
         env:
@@ -58,6 +59,7 @@ jobs:
           [[ "$ref" =~ ^[A-Za-z0-9._/-]+$ ]] && [[ "$ref" != *".."* ]]
           echo "cycle=$cycle" >> "$GITHUB_OUTPUT"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
       - name: Checkout results as data only
         uses: actions/checkout@v7
         with:
@@ -65,6 +67,7 @@ jobs:
           path: .aoi-results-source
           fetch-depth: 1
           persist-credentials: false
+
       - name: Prepare isolated results directory
         id: results
         env:
@@ -76,16 +79,12 @@ jobs:
           mkdir -p ".aoi-results/$CYCLE"
           cp -a "$src/." ".aoi-results/$CYCLE/"
           echo "sha=$(git -C .aoi-results-source rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-python@v7
         with:
           python-version: '3.14'
-      - name: Restore verified model cache
-        if: vars.AOI_USE_LOCAL_LLM == '1'
-        uses: actions/cache@v4
-        with:
-          path: .models
-          key: aoi-llama-${{ vars.AOI_LLAMA_MODEL_SHA256 }}
-      - name: Run NagoyAction inbox and optional Docker hooks
+
+      - name: Run question inbox
         env:
           GH_TOKEN: ${{ github.token }}
           AOI_INBOX_ISSUE: ${{ vars.AOI_INBOX_ISSUE }}
@@ -94,25 +93,19 @@ jobs:
           AOI_RESULTS_REF: ${{ steps.target.outputs.ref }}
           AOI_RESULTS_SHA: ${{ steps.results.outputs.sha }}
           AOI_STATE_BRANCH: aoi-research-state-${{ steps.target.outputs.cycle }}
-          AOI_USE_LOCAL_LLM: ${{ vars.AOI_USE_LOCAL_LLM }}
-          AOI_LLAMA_IMAGE: ${{ vars.AOI_LLAMA_IMAGE }}
-          AOI_LLAMA_MODEL_URL: ${{ vars.AOI_LLAMA_MODEL_URL }}
-          AOI_LLAMA_MODEL_SHA256: ${{ vars.AOI_LLAMA_MODEL_SHA256 }}
         run: >-
           python nagoyaction/nagoyaction.py run nagoyaction/pipelines/inbox.toml
           --receipt build/inbox-receipt.jsonl
+
       - name: Preserve any checkpoint whose push failed
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: inbox-recovery-${{ github.run_id }}
           path: |
-            .research-state/requests
             .research-state/receipts
             .research-state/pending-replies
             .research-state/answers
-            .research-state/stops
             build/inbox-receipt.jsonl
-            .models/identity.json
           include-hidden-files: true
           if-no-files-found: ignore

@@ -71,3 +71,22 @@ selectorはタグ、`#id`、`.class`、子要素 `>`、子孫の限定的な構�
 CSSの描画・JavaScript実行・HTML5ブラウザDOM再構築を意味しない。
 全CSS構文への対応やPages上のPython実行は保証しない。
 
+### CSSを読む・既存NPB解析と比べる
+
+`HtmlSource(include_css=True, stylesheets={saved_url: saved_css}, extractor=extract)`
+で埋め込み・inline・明示した保存CSSの宣言を読む。色番号、CSS変数、重要指定、
+条件付きルール、selectorとHTML要素の一致をderived側に残す。
+外部stylesheetと@importは取得せず未読参照として残す。CSSごとのハッシュも残す。
+未対応selectorはunsupported、一致なしはunmatchedと区別する。
+表示色・継承・詳細度・変数解決・画面サイズ条件は計算せず、computed_stylesはfalse。
+CSSが読めたことを、画面を再現できたこととして扱わない。
+
+`html_compare.compare_calendar()` は、保存HTMLからselectorで読んだリンク群と、
+既存 `npb_calendar.parse()` が採用した試合URLを比較する。
+採用試合の欠落、リンク重複、抽出失敗を返す。元HTMLをNPB parserにそのまま渡すので、
+大会見出し・中止・未知表記の判定は既存処理が保持する。
+`complete_for_adopted_games` は既存parserが採用した試合に対する被覆だけを意味し、
+parser自身が未知の試合を取りこぼしていないという証明ではない。
+NPB保存fixtureの4試合・中止1件・非公式戦1件を用いて比較する。
+同じ原文を何度再解析しても新規GETはしない。labなしの通常NPBテストは従来どおり動く。
+

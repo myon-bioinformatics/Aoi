@@ -8,9 +8,11 @@ from blueprobe import new_report
 
 
 class HtmlSource:
-    def __init__(self, *, selector=None, extractor=None):
+    def __init__(self, *, selector=None, extractor=None, include_css=False, stylesheets=None):
         self.selector = selector
         self.extractor = extractor
+        self.include_css = include_css
+        self.stylesheets = stylesheets
 
     def parse(self, html, url):
         extractor = self.extractor
@@ -24,7 +26,10 @@ class HtmlSource:
             extractor = extract
         report = new_report()
         try:
-            result = extractor(html, url, selector=self.selector)
+            options = {'selector': self.selector}
+            if self.include_css or self.stylesheets is not None:
+                options.update(include_css=self.include_css, stylesheets=self.stylesheets)
+            result = extractor(html, url, **options)
         except ValueError as exc:
             report['counts']['extraction_failed'] += 1
             report['unknown'].append({'raw': html, 'url': url, 'reason': str(exc)})

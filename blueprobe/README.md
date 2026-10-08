@@ -47,3 +47,27 @@ uv run python blueprobe/blueprobe.py --source npb_calendar --cache data/raw/npb_
 ```
 
 キャッシュだけを読み、ネットワークには出ない。未知の表記があれば件数を表示する（`--strict` で終了コード1）。
+
+## 保存HTMLの共通抽出へ接続する
+
+`html_source.HtmlSource(selector=..., extractor=...)` は、取得済みHTMLを信頼した
+オフライン抽出関数へ渡し、既存の `inspect()` の報告形式に変換する。
+取得・キャッシュ・NPB固有の観測は引き続き既存モジュールが担当する。
+抽出できない構造は `extraction_failed` と原文付き `unknown` に残す。
+同じページの抽出条件変更や再実行では、リンク先・CSSを含めて通信しない。
+
+```python
+from html_source import HtmlSource
+from mcp_toolcall_lab.adapters.html_snapshot import extract
+
+source = HtmlSource(selector="main#calendar > .day", extractor=extract)
+rows = inspect(source, saved_pages, records_out)
+```
+
+上記は lab PR #110 とそのselector follow-upが提供する抽出関数を使う任意の接続例。
+BlueProbeはそのパッケージを自動インストールしない。通常のNPB解析に新しい依存はない。
+`--source html_source` はlabの抽出モジュールが利用可能な環境でgeneric抽出を行う。
+selectorはタグ、`#id`、`.class`、子要素 `>`、子孫の限定的な構文で、
+CSSの描画・JavaScript実行・HTML5ブラウザDOM再構築を意味しない。
+全CSS構文への対応やPages上のPython実行は保証しない。
+

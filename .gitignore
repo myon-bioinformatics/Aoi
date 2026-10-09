@@ -222,3 +222,6 @@ __marimo__/
 # Aoi
 data/
 .venv/
+
+# Test-only pinned cross-repository integration checkout
+.test-deps/

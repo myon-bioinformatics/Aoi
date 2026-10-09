@@ -1,6 +1,8 @@
 """Registration provenance must be explicit and conservative."""
 from pathlib import Path
 
+import pytest
+
 from registration_audit import audit_record, classify, load_exprs, narrative_candidates
 
 
@@ -25,6 +27,31 @@ def test_preregistration_needs_pre_evaluation_evidence():
 def test_conflicting_assertions_are_rejected():
     rec = {"posthoc": True, "preregistration": {"recorded_before_evaluation": True, "evidence": "R73"}}
     assert audit_record(rec)
+
+
+@pytest.mark.parametrize("evidence", [None, "", " \t\n", True, False, 1, 0, ["R73"], {"ref": "R73"}])
+def test_preregistration_rejects_blank_or_non_text_evidence(evidence):
+    record = {"preregistration": {"recorded_before_evaluation": True, "evidence": evidence}}
+    assert classify(record).status == "unknown"
+    assert audit_record(record) == ["preregistration requires non-blank text evidence"]
+
+
+def test_preregistration_keeps_explicit_text_evidence():
+    evidence = "archive/registration.toml@0123456789abcdef#E25"
+    record = {"preregistration": {"recorded_before_evaluation": True, "evidence": evidence}}
+    assert classify(record).status == "preregistered"
+    assert classify(record).evidence == evidence
+    assert audit_record(record) == []
+
+
+@pytest.mark.parametrize("evidence", [" \t\n", True, ["R73"], {"ref": "R73"}])
+def test_invalid_preregistration_evidence_never_overrides_posthoc(evidence):
+    record = {"posthoc": True, "preregistration": {"recorded_before_evaluation": True, "evidence": evidence}}
+    assert classify(record).status == "posthoc"
+    assert audit_record(record) == [
+        "posthoc and preregistration cannot both be asserted",
+        "preregistration requires non-blank text evidence",
+    ]
 
 
 def test_c001_current_metadata_does_not_guess_preregistration():

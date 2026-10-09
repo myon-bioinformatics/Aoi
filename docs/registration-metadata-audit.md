@@ -12,6 +12,12 @@ A result has three display states:
 
 Therefore `posthoc = false` is not an alias for preregistration.
 
+`preregistration.evidence` must be a non-blank string naming the record.
+Booleans, numbers, arrays, tables, and whitespace-only strings are invalid;
+they leave the classification unknown unless explicit `posthoc = true` applies.
+The audit validates this metadata shape, not the existence or timing of the
+named evidence: those still require checking the durable source record.
+
 Narrative comments such as 「計算前に書いた式」 are useful audit leads, but they do not silently upgrade metadata.  They must be checked against a durable record before adding a `preregistration` table.
 
 ## First c001 audit leads

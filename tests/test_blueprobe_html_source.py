@@ -11,7 +11,9 @@ from html_source import HtmlSource
 def no_network(monkeypatch):
     blocked = Mock(side_effect=AssertionError('unexpected network'))
     monkeypatch.setattr(socket.socket, 'connect', blocked)
+    monkeypatch.setattr(socket.socket, 'connect_ex', blocked)
     monkeypatch.setattr(socket, 'create_connection', blocked)
+    monkeypatch.setattr(socket, 'getaddrinfo', blocked)
 
 
 def test_saved_pages_delegate_selector_and_preserve_observations():
@@ -46,18 +48,30 @@ def test_transport_or_programming_errors_are_not_reclassified_as_drift():
         source.parse('<main>x</main>', 'https://example.test')
 
 
-def test_optional_real_lab_extractor_reuses_all_calendar_rows():
-    module = pytest.importorskip('mcp_toolcall_lab.adapters.html_snapshot',
-                                reason='optional cross-repository integration')
+def test_optional_real_lab_extractor_reuses_all_calendar_rows(lab_html_snapshot):
+    module = lab_html_snapshot
     html = '<main id="calendar">' + ''.join(
         f'<div class="day"><a href="/d/{i}">{i}日</a></div>' for i in range(1, 32)) + '</main>'
     source = HtmlSource(selector='#calendar > .day', extractor=module.extract)
+    observations = []
     for _ in range(2):
         records = []
         rows = inspect(source, [('month', 'https://example.test/month', '2026', html)], records)
         assert rows[0]['unknown'] == 0
+        assert records[0]['raw'] == html
         assert records[0]['derived']['scope_count'] == 31
-        assert len(records[0]['derived']['links']) == 31
+        assert records[0]['derived']['links'] == [
+            {'text': f'{day}日', 'url': f'https://example.test/d/{day}'}
+            for day in range(1, 32)
+        ]
+        observations.append(records)
+    assert observations[0] == observations[1]
     drift = HtmlSource(selector='#missing', extractor=module.extract).parse(
         html, 'https://example.test/month')
     assert drift['counts']['extraction_failed'] == 1
+    assert drift['records'] == []
+    unsupported = HtmlSource(selector='.day:hover', extractor=module.extract).parse(
+        html, 'https://example.test/month')
+    assert unsupported['counts']['extraction_failed'] == 1
+    assert unsupported['records'] == []
+    assert unsupported['unknown'][0]['reason'] == 'unsupported selector syntax'

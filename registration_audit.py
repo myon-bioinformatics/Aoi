@@ -17,13 +17,18 @@ class Provenance:
     evidence: str | None = None
 
 
+def _has_text_evidence(value: object) -> bool:
+    """Require a named record, not a truthy value coerced to text."""
+    return isinstance(value, str) and bool(value.strip())
+
+
 def classify(record: dict) -> Provenance:
     """Return only statuses supported by explicit machine-readable evidence."""
     if record.get("posthoc") is True:
         return Provenance("posthoc", "posthoc=true")
     prereg = record.get("preregistration")
-    if isinstance(prereg, dict) and prereg.get("recorded_before_evaluation") is True and prereg.get("evidence"):
-        return Provenance("preregistered", str(prereg["evidence"]))
+    if isinstance(prereg, dict) and prereg.get("recorded_before_evaluation") is True and _has_text_evidence(prereg.get("evidence")):
+        return Provenance("preregistered", prereg["evidence"])
     # Missing or false posthoc is deliberately not evidence of preregistration.
     return Provenance("unknown")
 
@@ -39,8 +44,8 @@ def audit_record(record: dict) -> list[str]:
         else:
             if prereg.get("recorded_before_evaluation") is not True:
                 errors.append("preregistration requires recorded_before_evaluation=true")
-            if not prereg.get("evidence"):
-                errors.append("preregistration requires evidence")
+            if not _has_text_evidence(prereg.get("evidence")):
+                errors.append("preregistration requires non-blank text evidence")
     return errors
 
 

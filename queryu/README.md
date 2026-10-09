@@ -66,6 +66,8 @@ UTF-8 にした値の hash。現行の厳密な UTF-8 保存では一致する�
 独自項目を含む元の行全体は `cache_entry` に保存し、補完した来歴と混同しない。
 これだけでは URL・取得時刻の真実性や HTTP 応答の真正性は証明しない。
 
-責務は、取得・保存本文・照合・履歴が QueRyu、保存データの観測・結果検証と
-共有抽出への接続が BlueProbe、実行元やソースの identity 確認・CI runner・証跡の
-実行管理が NagoyAction。この変更では新しい runner や実行証明を追加しない。
+責務は、取得・保存本文・照合・履歴が QueRyu、HTML構造の抽出・観測値の読み取りが
+BlueProbe、集計・指標計算が [SakAnalytics](../sakanalytics/README.md)、
+仮説評価が [PythDRagoras](../pythdragoras/README.md)。実行元やソースの identity 確認・
+CI runner・証跡の実行管理は NagoyAction が担う。この変更では新しい runner や
+実行証明を追加しない。

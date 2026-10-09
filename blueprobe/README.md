@@ -80,6 +80,9 @@ NPB parser には原文HTMLをそのまま渡す。snapshot対応の `HtmlSource
 `Cache.snapshot()` の envelope を渡し、既存の
 `mcp_toolcall_lab.source_access.extract_snapshot` で検証・抽出する。
 独自 validator や HTML parser は増やさない。
+ここでの再解析はHTML構造の抽出・観測値の読み取りを指す。集計・指標計算は
+[SakAnalytics](../sakanalytics/README.md)、仮説評価は
+[PythDRagoras](../pythdragoras/README.md) が担う。
 
 ```python
 from blueprobe import inspect_cache

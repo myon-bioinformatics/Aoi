@@ -18,9 +18,7 @@ Aoi の原則との対応:
 from __future__ import annotations
 
 import argparse
-import gzip
 import importlib
-import json
 import re
 import sys
 import unicodedata
@@ -73,6 +71,34 @@ def inspect(source, pages: Iterable[tuple[str, str, str, str]], records_out: lis
 
     ネットワークには出ない。解析ルールを直したら、これだけを何度でも回す。
     """
+    return _inspect(source.parse, pages, records_out)
+
+
+def inspect_cache(source, cache, entries=None, records_out=None) -> list[dict]:
+    """Replay latest or explicitly selected historical cache entries, offline.
+
+    Snapshot-aware sources receive the verified envelope; existing semantic
+    parsers receive the unchanged decoded HTML. Cache integrity errors stop the
+    replay before parser invocation and never trigger a replacement fetch.
+    """
+    snapshot_parser = getattr(source, 'parse_snapshot', None)
+    if entries is None:
+        entries = [entry for _, entry in sorted(cache.latest().items())]
+
+    def pages():
+        for entry in entries:
+            if snapshot_parser is not None:
+                snapshot = cache.snapshot(entry)
+                payload = snapshot if snapshot['html'] else ''
+            else:
+                payload = cache.body(entry)
+            yield entry['key'], entry['url'], entry['group'], payload
+
+    parser = (lambda snapshot, url: snapshot_parser(snapshot)) if snapshot_parser is not None else source.parse
+    return _inspect(parser, pages(), records_out)
+
+
+def _inspect(parser, pages, records_out):
     groups: dict[str, dict] = {}
     for key, url, group, html in pages:
         g = groups.setdefault(group, {"pages": 0, "empty": 0, "report": new_report()})
@@ -80,7 +106,7 @@ def inspect(source, pages: Iterable[tuple[str, str, str, str]], records_out: lis
             g["empty"] += 1
             continue
         g["pages"] += 1
-        merge(g["report"], source.parse(html, url))
+        merge(g["report"], parser(html, url))
     rows = []
     for group, g in sorted(groups.items()):
         r = g["report"]
@@ -123,18 +149,9 @@ def main(argv=None) -> int:
     if not manifest.exists():
         print(f"no cache manifest: {manifest}", file=sys.stderr)
         return 1
-    latest = {}
-    for line in manifest.read_text(encoding="utf-8").splitlines():
-        e = json.loads(line)
-        if e["status"] in (200, 404):  # 304（更新なしの確認）は本文を持たない
-            latest[e["key"]] = e  # 同じページは最新の取得を使う
-    def pages():
-        for key, e in sorted(latest.items()):
-            body = gzip.decompress((args.cache / e["file"]).read_bytes()).decode("utf-8") if e.get("file") else ""
-            yield key, e["url"], e["group"], body
-
+    from queryu import Cache
     records: list = []
-    rows = inspect(source, pages(), records)
+    rows = inspect_cache(source, Cache(args.cache), records_out=records)
     checks = source.check(records) if hasattr(source, "check") else None
     md = to_markdown(rows, f"{args.source}: 観測された構造", checks)
     if args.out:
@@ -151,5 +168,6 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    sys.path[:0] = [str(Path(__file__).resolve().parent),
+                    str(Path(__file__).resolve().parents[1] / "queryu")]
     raise SystemExit(main())

@@ -82,19 +82,22 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
-      - name: Verify pinned source and both import origins
+      - name: Verify pinned source and all import origins
         run: |
           test "$(git -C .test-deps/lab rev-parse HEAD)" = "$LAB_SHA"
           python - <<'PYCODE'
           import os
           from pathlib import Path
           from mcp_toolcall_lab.adapters import css_inspect, html_snapshot
+          from mcp_toolcall_lab import source_access
 
           root = Path(os.environ["AOI_LAB_SOURCE_ROOT"]).resolve()
           for module in (html_snapshot, css_inspect):
               expected = root / "mcp_toolcall_lab/adapters" / (module.__name__.rsplit(".", 1)[1] + ".py")
               assert Path(module.__file__).resolve() == expected, module.__file__
               print(module.__name__, module.__file__)
+          assert Path(source_access.__file__).resolve() == root / "mcp_toolcall_lab/source_access.py"
+          print(source_access.__name__, source_access.__file__)
           PYCODE
       - name: Install uv
         run: python -m pip install uv
@@ -104,6 +107,7 @@ jobs:
           uv run --locked --python 3.14 pytest -q --require-lab-integration \
             blueprobe/tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows \
             blueprobe/tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
+            blueprobe/tests/test_blueprobe_html_source.py::test_verified_cache_real_lab_snapshot_replay \
             --junitxml=build/test-results/lab-integration-3.14.xml
       - name: Preserve raw integration JUnit
         if: always()

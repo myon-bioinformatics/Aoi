@@ -72,6 +72,42 @@ selectorはタグ、`#id`、`.class`、子要素 `>`、子孫の限定的な構�
 CSSの描画・JavaScript実行・HTML5ブラウザDOM再構築を意味しない。
 全CSS構文への対応やPages上のPython実行は保証しない。
 
+### 検証済みキャッシュから snapshot を再利用する
+
+`inspect_cache(source, cache, entries=None, records_out=None)` は QueRyu の照合済み
+本文を読む。既定では最新行、`entries` を指定すると選んだ取得時点の行を使う。
+NPB parser には原文HTMLをそのまま渡す。snapshot対応の `HtmlSource` には
+`Cache.snapshot()` の envelope を渡し、既存の
+`mcp_toolcall_lab.source_access.extract_snapshot` で検証・抽出する。
+独自 validator や HTML parser は増やさない。
+ここでの再解析はHTML構造の抽出・観測値の読み取りを指す。集計・指標計算は
+[SakAnalytics](../sakanalytics/README.md)、仮説評価は
+[PythDRagoras](../pythdragoras/README.md) が担う。
+
+```python
+from blueprobe import inspect_cache
+from html_source import HtmlSource
+from queryu import Cache
+
+records = []
+rows = inspect_cache(HtmlSource(selector=".calendar a"), Cache("data/raw/npb_calendar"),
+                     records_out=records)
+```
+
+`--source html_source --cache ...` の CLI もこの経路を使う。
+`derived` は従来の抽出結果を維持し、`snapshot` に共有検証が返す属性、
+`cache_entry` に元の来歴を残す。任意の注入関数は
+`HtmlSource(snapshot_extractor=...)` で明示する。引数は snapshot 辞書と抽出条件、
+戻り値は lab と同じ `snapshot` / `extraction` の辞書。
+従来の `parse(html, url)` / `extractor=...` は raw HTML 用として残し、
+保存済みバイトの照合を行ったことにはしない。
+
+QueRyu の hash/長さ不一致は抽出前にエラーで止まり、欠けた過去本文を自動取得しない。
+lab は schema・URL形式・上限サイズ・decoded content hash を検査するが、
+URLや取得時刻の真実性・応答の真正性までは検証しない。来歴が不明なら不明のまま残す。
+ソースcheckout・CI runner identityの実行管理は NagoyAction 側の責務であり、
+BlueProbe runtime に checkout検証や runner は追加しない。
+
 ### CSSを読む・既存NPB解析と比べる
 
 `HtmlSource(include_css=True, stylesheets={saved_url: saved_css}, extractor=extract)`
@@ -96,7 +132,7 @@ NPB保存fixtureの4試合・中止1件・非公式戦1件を用いて比較す�
 CI の `Offline lab integration (Python 3.14)` は、lab のマージコミット
 `6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90` を `.test-deps/lab` に別途 checkout する。
 `src` をテスト時の `PYTHONPATH` に追加し、事前確認で SHA と
-`html_snapshot`・`css_inspect` の import 元を照合する。両モジュールの import 元は
+`html_snapshot`・`css_inspect`・`source_access` の import 元を照合する。import 元は
 実テスト内でも確認する。単一ファイルのコピー、lab の自動インストール、実行時の取得はしない。
 通常の Python 3.11–3.15 のテスト行列は lab なしで維持し、統合テストは 3.14 のみで行う。
 全 Python 版での lab 統合を検証したという意味ではない。
@@ -113,14 +149,17 @@ uv run --locked --python 3.14 python - <<'PY'
 import os
 from pathlib import Path
 from mcp_toolcall_lab.adapters import css_inspect, html_snapshot
+from mcp_toolcall_lab import source_access
 root = Path(os.environ['AOI_LAB_SOURCE_ROOT']).resolve()
 for module in (html_snapshot, css_inspect):
     expected = root / 'mcp_toolcall_lab/adapters' / (module.__name__.rsplit('.', 1)[1] + '.py')
     assert Path(module.__file__).resolve() == expected, module.__file__
+assert Path(source_access.__file__).resolve() == root / 'mcp_toolcall_lab/source_access.py'
 PY
 uv run --locked --python 3.14 pytest -q --require-lab-integration \
   blueprobe/tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows \
   blueprobe/tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
+  blueprobe/tests/test_blueprobe_html_source.py::test_verified_cache_real_lab_snapshot_replay \
   --junitxml=build/test-results/lab-integration-3.14.xml
 # lab ありの全テスト
 uv run --locked --python 3.14 pytest -q --require-lab-integration
@@ -129,20 +168,20 @@ unset PYTHONPATH AOI_LAB_SOURCE_ROOT
 uv run --locked --python 3.14 pytest -q
 ```
 
-`--require-lab-integration` は実 extractor の2テストを必須にし、未収集・skip・
-import 失敗を成功扱いにしない。通常モードでは lab がない場合のみ任意統合の2件を skip する。
-両モジュールのテストは socket 接続を遮断し、31行の抽出、保存 NPB HTML の4試合の被覆、
+`--require-lab-integration` は実 extractor の3テストを必須にし、未収集・skip・
+import 失敗を成功扱いにしない。通常モードでは lab がない場合のみ任意統合の3件を skip する。
+これらのテストは socket 接続を遮断し、31行の抽出、保存 NPB HTML の4試合の被覆、
 重複、中止1件・非公式戦1件、保存外部 CSS、未対応 selector、再実行の一致を検証する。
 外部 CSS のリンクや `@import` を自動取得しないことも確認する。
 統合 JUnit は失敗時も保存し、集約側は通常5件と統合1件の計6レポートを必須にする。
 
-2026-10-09 のローカル検証（Python 3.14.8、固定 lab SHA、Aoi の locked 依存）:
+以下は PR #15 時点の過去のローカル検証（2026-10-09、Python 3.14.8、固定 lab SHA、Aoi の locked 依存）:
 
 - 実 extractor の必須2テスト: 2 passed / 0 skipped
 - lab ありの全テスト: 533 passed / 24 skipped
 - lab なしの全テスト: 531 passed / 26 skipped
 
 共通の24 skip は任意の season simulator 用依存がないためで、この統合とは別のもの。
-lab なしではさらに実 extractor の2テストを skip する。初回 PR 本文の `284 passed` は
+当時の lab なしではさらに実 extractor の2テストを skip した。初回 PR 本文の `284 passed` は
 過去の検証記録であり、現在の全テスト件数として扱わない。CI の結果は
 [PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15) の最新実行で確認する。

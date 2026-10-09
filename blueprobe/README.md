@@ -64,7 +64,8 @@ source = HtmlSource(selector="main#calendar > .day", extractor=extract)
 rows = inspect(source, saved_pages, records_out)
 ```
 
-上記は lab PR #110 とそのselector follow-upが提供する抽出関数を使う任意の接続例。
+上記はマージ済みの lab PR [#110](https://github.com/myon-bioinformatics/mcp-toolcall-lab/pull/110)・
+[#111](https://github.com/myon-bioinformatics/mcp-toolcall-lab/pull/111) の抽出関数を使う任意の接続例。
 BlueProbeはそのパッケージを自動インストールしない。通常のNPB解析に新しい依存はない。
 `--source html_source` はlabの抽出モジュールが利用可能な環境でgeneric抽出を行う。
 selectorはタグ、`#id`、`.class`、子要素 `>`、子孫の限定的な構文で、
@@ -90,3 +91,58 @@ parser自身が未知の試合を取りこぼしていないという証明で�
 NPB保存fixtureの4試合・中止1件・非公式戦1件を用いて比較する。
 同じ原文を何度再解析しても新規GETはしない。labなしの通常NPBテストは従来どおり動く。
 
+### 固定した実装でオフライン統合テストを再現する
+
+CI の `Offline lab integration (Python 3.14)` は、lab のマージコミット
+`6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90` を `.test-deps/lab` に別途 checkout する。
+`src` をテスト時の `PYTHONPATH` に追加し、事前確認で SHA と
+`html_snapshot`・`css_inspect` の import 元を照合する。両モジュールの import 元は
+実テスト内でも確認する。単一ファイルのコピー、lab の自動インストール、実行時の取得はしない。
+通常の Python 3.11–3.15 のテスト行列は lab なしで維持し、統合テストは 3.14 のみで行う。
+全 Python 版での lab 統合を検証したという意味ではない。
+
+Aoi のリポジトリルートで実行する（clone はテスト前の準備で、抽出中の通信ではない）。
+
+```bash
+git clone https://github.com/myon-bioinformatics/mcp-toolcall-lab.git .test-deps/lab
+git -C .test-deps/lab checkout --detach 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
+test "$(git -C .test-deps/lab rev-parse HEAD)" = 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
+export AOI_LAB_SOURCE_ROOT="$PWD/.test-deps/lab/src"
+export PYTHONPATH="$AOI_LAB_SOURCE_ROOT"
+uv run --locked --python 3.14 python - <<'PY'
+import os
+from pathlib import Path
+from mcp_toolcall_lab.adapters import css_inspect, html_snapshot
+root = Path(os.environ['AOI_LAB_SOURCE_ROOT']).resolve()
+for module in (html_snapshot, css_inspect):
+    expected = root / 'mcp_toolcall_lab/adapters' / (module.__name__.rsplit('.', 1)[1] + '.py')
+    assert Path(module.__file__).resolve() == expected, module.__file__
+PY
+uv run --locked --python 3.14 pytest -q --require-lab-integration \
+  blueprobe/tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows \
+  blueprobe/tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
+  --junitxml=build/test-results/lab-integration-3.14.xml
+# lab ありの全テスト
+uv run --locked --python 3.14 pytest -q --require-lab-integration
+# lab なしの通常テスト。別途 lab をインストールしていない環境で実行する。
+unset PYTHONPATH AOI_LAB_SOURCE_ROOT
+uv run --locked --python 3.14 pytest -q
+```
+
+`--require-lab-integration` は実 extractor の2テストを必須にし、未収集・skip・
+import 失敗を成功扱いにしない。通常モードでは lab がない場合のみ任意統合の2件を skip する。
+両モジュールのテストは socket 接続を遮断し、31行の抽出、保存 NPB HTML の4試合の被覆、
+重複、中止1件・非公式戦1件、保存外部 CSS、未対応 selector、再実行の一致を検証する。
+外部 CSS のリンクや `@import` を自動取得しないことも確認する。
+統合 JUnit は失敗時も保存し、集約側は通常5件と統合1件の計6レポートを必須にする。
+
+2026-10-09 のローカル検証（Python 3.14.8、固定 lab SHA、Aoi の locked 依存）:
+
+- 実 extractor の必須2テスト: 2 passed / 0 skipped
+- lab ありの全テスト: 533 passed / 24 skipped
+- lab なしの全テスト: 531 passed / 26 skipped
+
+共通の24 skip は任意の season simulator 用依存がないためで、この統合とは別のもの。
+lab なしではさらに実 extractor の2テストを skip する。初回 PR 本文の `284 passed` は
+過去の検証記録であり、現在の全テスト件数として扱わない。CI の結果は
+[PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15) の最新実行で確認する。

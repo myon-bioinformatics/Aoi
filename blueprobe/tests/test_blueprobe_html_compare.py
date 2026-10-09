@@ -1,3 +1,4 @@
+from hashlib import sha256
 from pathlib import Path
 import socket
 from unittest.mock import Mock
@@ -12,7 +13,9 @@ from html_source import HtmlSource
 def no_network(monkeypatch):
     blocked = Mock(side_effect=AssertionError('unexpected network'))
     monkeypatch.setattr(socket.socket, 'connect', blocked)
+    monkeypatch.setattr(socket.socket, 'connect_ex', blocked)
     monkeypatch.setattr(socket, 'create_connection', blocked)
+    monkeypatch.setattr(socket, 'getaddrinfo', blocked)
 
 
 def test_comparison_uses_original_html_and_reports_missing_adopted_urls():
@@ -36,13 +39,18 @@ def test_css_options_are_delegated_without_loading_assets():
     assert result['records'][0]['derived']['css']['computed_styles'] is False
 
 
-def test_real_saved_npb_fixture_coverage_and_css():
-    module = pytest.importorskip('mcp_toolcall_lab.adapters.html_snapshot',
-                                reason='optional shared extractor integration')
-    html = (Path(__file__).parent / 'fixtures/npb_calendar_sample.html').read_text()
-    html = '<style>.calendar a{color:#123456}.missing:hover{display:none}</style>' + html
+def test_real_saved_npb_fixture_coverage_and_css(lab_html_snapshot):
+    module = lab_html_snapshot
+    fixtures = Path(__file__).parent / 'fixtures'
+    html = (fixtures / 'npb_calendar_sample.html').read_text(encoding='utf-8')
+    saved_css = (fixtures / 'npb_calendar_sample.css').read_text(encoding='utf-8')
+    html = ('<style>.calendar a{color:#123456}.missing:hover{display:none}</style>'
+            '<link rel="stylesheet" href="../assets/calendar.css">'
+            '<link rel="stylesheet" href="../assets/not-saved.css">' + html)
     url = 'https://npb.jp/bis/2024/calendar/index_04.html'
-    results = [compare_calendar(html, url, extractor=module.extract, include_css=True) for _ in range(2)]
+    stylesheets = {'../assets/calendar.css': saved_css}
+    results = [compare_calendar(html, url, extractor=module.extract, include_css=True,
+                                stylesheets=stylesheets) for _ in range(2)]
     assert results[0] == results[1]
     result = results[0]
     assert result['coverage']['adopted_games'] == 4
@@ -51,10 +59,39 @@ def test_real_saved_npb_fixture_coverage_and_css():
     assert result['coverage']['duplicate_urls'] == {'https://npb.jp/bis/2024/games/s2024040201097.html': 2}
     assert result['semantic']['counts']['cancelled'] == 1
     assert result['semantic']['counts']['non_regular'] == 1
-    css = result['structural']['records'][0]['derived']['css']
+    structural = result['structural']['records'][0]
+    assert structural['raw'] == html
+    css = structural['derived']['css']
+    assert css['computed_styles'] is False
+    assert [source['kind'] for source in css['sources']] == ['embedded', 'supplied']
     assert css['sources'][0]['inspection']['rules'][0]['declarations'][0]['hex_colors'] == ['#123456']
     assert css['selector_matches'][0]['matched'] == result['coverage']['link_occurrences']
     assert css['selector_matches'][1]['status'] == 'unsupported'
+    supplied = css['sources'][1]
+    assert supplied['url'] == 'https://npb.jp/bis/2024/assets/calendar.css'
+    assert supplied['inspection']['content_sha256'] == sha256(saved_css.encode('utf-8')).hexdigest()
+    assert supplied['inspection']['computed_styles'] is False
+    assert supplied['inspection']['rules'][0]['declarations'][0]['hex_colors'] == ['#abcdef']
+    assert supplied['inspection']['rules'][0]['declarations'][1]['value'] == (
+        'url("https://example.test/not-loaded.svg")')
+    assert supplied['inspection']['unknown'] == [
+        {'source': '@font-face', 'reason': 'unsupported at-rule body'}
+    ]
+    assert css['selector_matches'][2:] == [
+        {'source': 1, 'rule': 0, 'selector': '.calendar a',
+         'matched': result['coverage']['link_occurrences'], 'contexts': [], 'status': 'matched'},
+        {'source': 1, 'rule': 1, 'selector': '.calendar td > a',
+         'matched': result['coverage']['link_occurrences'],
+         'contexts': ['@media (min-width: 800px)'], 'status': 'matched'},
+    ]
+    assert css['stylesheet_references'] == [
+        'https://npb.jp/bis/2024/assets/calendar.css',
+        'https://npb.jp/bis/2024/assets/not-saved.css',
+    ]
+    assert structural['derived']['stylesheets'] == css['stylesheet_references']
+    assert css['unloaded_stylesheets'] == ['https://npb.jp/bis/2024/assets/not-saved.css']
+    assert css['unloaded_imports'] == ['@import url("https://example.test/not-loaded.css")']
+    assert stylesheets == {'../assets/calendar.css': saved_css}
     drift = compare_calendar(html, url, selector='#changed', extractor=module.extract)
     assert not drift['coverage']['complete_for_adopted_games']
     assert len(drift['coverage']['missing_adopted_urls']) == 4

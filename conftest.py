@@ -9,6 +9,7 @@ import pytest
 LAB_INTEGRATION_NODE_IDS = {
     'blueprobe/tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows',
     'blueprobe/tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css',
+    'blueprobe/tests/test_blueprobe_html_source.py::test_verified_cache_real_lab_snapshot_replay',
 }
 _LAB_REPORTS = pytest.StashKey[dict[str, dict[str, str]]]()
 
@@ -16,7 +17,7 @@ _LAB_REPORTS = pytest.StashKey[dict[str, dict[str, str]]]()
 def pytest_addoption(parser):
     parser.addoption(
         '--require-lab-integration', action='store_true',
-        help='Require both real offline mcp-toolcall-lab regressions to pass without skips.',
+        help='Require all real offline mcp-toolcall-lab regressions to pass without skips.',
     )
 
 
@@ -44,6 +45,17 @@ def lab_html_snapshot(pytestconfig, no_network):
                 pytest.fail(f'{module.__name__} imported from {origin}; expected {expected}', pytrace=False)
         return modules['html_snapshot']
     return pytest.importorskip(module_name, reason='optional cross-repository integration')
+
+
+@pytest.fixture
+def lab_source_access(pytestconfig, lab_html_snapshot):
+    module = import_module('mcp_toolcall_lab.source_access')
+    if pytestconfig.getoption('--require-lab-integration'):
+        expected = (Path(os.environ['AOI_LAB_SOURCE_ROOT']) / 'mcp_toolcall_lab' / 'source_access.py').resolve()
+        origin = getattr(module, '__file__', None)
+        if origin is None or Path(origin).resolve() != expected:
+            pytest.fail(f'{module.__name__} imported from {origin}; expected {expected}', pytrace=False)
+    return module
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)

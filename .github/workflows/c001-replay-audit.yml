@@ -1,0 +1,98 @@
+name: c001 offline replay audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/c001-replay-compare]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  replay:
+    name: Replay from saved annual inputs (not raw-source replay)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      AUDIT_DIR: /tmp/c001-replay-audit
+      UV_PYTHON_DOWNLOADS: never
+    steps:
+      - name: Keep the PR harness checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Read the frozen research snapshot separately
+        uses: actions/checkout@v7
+        with:
+          ref: 0723d1137fc8448fbabb7bbe5fc14333ddfaabe2
+          path: research
+          persist-credentials: false
+      - name: Read pinned canonical GHI (no forked transport)
+        uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/gh_identity
+          ref: fc2c527257b12eb99c00637bbae74f8988fd6bf4
+          path: .ghi
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Import and CLI smoke for pinned GHI
+        run: |
+          python -S -c "import sys; sys.path.insert(0, 'nagoyaction'); from ghi_execution import load_ghi; g = load_ghi('.ghi'); assert callable(g.request) and callable(g.local_identity)"
+          python -S .ghi/gh_identity.py --help
+      - name: Test c001 annotations and publication gate (stdlib)
+        run: python -S -m unittest discover -s nagoyaction/tests -p 'test_c001_*.py' -v
+      - name: Observe current execution identity through GHI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -S nagoyaction/ghi_execution.py --ghi .ghi --research research --audit "$AUDIT_DIR"
+      - name: Freeze inputs and check formulas from annual totals
+        run: python -S scripts/run_c001_replay_stage.py freeze --audit "$AUDIT_DIR"
+      - name: Install execution dependencies (not research data)
+        run: |
+          python -m pip install uv
+          cd research
+          uv sync --frozen
+      - name: Replay questions and sets from saved inputs without fetching data
+        env:
+          UV_OFFLINE: "true"
+        run: |
+          set -o pipefail
+          python -S scripts/run_c001_replay_stage.py replay --audit "$AUDIT_DIR" 2>&1 | tee "$AUDIT_DIR/replay.log"
+      - name: Compare semantic outputs
+        if: always()
+        run: python -S scripts/run_c001_replay_stage.py compare --audit "$AUDIT_DIR"
+      - name: Annotate V1 inheritance and verification scope
+        if: always()
+        run: |
+          python -S scripts/run_c001_replay_stage.py annotate --audit "$AUDIT_DIR"
+          cp "$AUDIT_DIR/v2/annotated/README.md" "$AUDIT_DIR/v2/VERIFICATION.md"
+      - name: Gate and publish V2 public result catalog
+        if: always()
+        run: python -S scripts/publish_c001_v2_results.py "$AUDIT_DIR"
+      - name: Summarize publication decision even on failure
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ['AUDIT_DIR'])
+          path = root / 'publication-gate.json'
+          gate = json.loads(path.read_text()) if path.exists() else {'allowed': False, 'status': 'no_evidence'}
+          summary = root / 'v2/results/summary.json'
+          published = json.loads(summary.read_text())['published_results'] if gate['allowed'] and summary.exists() else 0
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write(f"## V2 publication: {gate['status']}\n\nPublished results: {published}\n\n")
+              f.write(f"Full-field differences: {gate.get('full_field_differences', 'unknown')}; execution-revision differences: {gate.get('provenance_differences', 'unknown')}; unresolved: {gate.get('unresolved_differences', 'unknown')}\n\n")
+              f.write('Saved V1 inputs; not independent raw-source validation. See publication-gate.json and stage-evidence/.\n')
+          PY
+      - name: Preserve replay evidence even when a calculation fails
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: c001-saved-input-replay-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.AUDIT_DIR }}/
+          retention-days: 90
+          if-no-files-found: error

@@ -59,16 +59,71 @@ jobs:
           python -S nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
           python -S nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --dry-run
 
+  lab-integration:
+    name: Offline lab integration (Python 3.14)
+    needs: changes
+    if: needs.changes.outputs.non_docs_changed == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      LAB_SHA: 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
+      AOI_LAB_SOURCE_ROOT: ${{ github.workspace }}/.test-deps/lab/src
+      PYTHONPATH: ${{ github.workspace }}/.test-deps/lab/src
+    steps:
+      - uses: actions/checkout@v7
+      # Test-only source checkout. Keep html_snapshot and css_inspect together;
+      # never copy a single module or install lab as an Aoi runtime dependency.
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/mcp-toolcall-lab
+          ref: 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
+          path: .test-deps/lab
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Verify pinned source and both import origins
+        run: |
+          test "$(git -C .test-deps/lab rev-parse HEAD)" = "$LAB_SHA"
+          python - <<'PYCODE'
+          import os
+          from pathlib import Path
+          from mcp_toolcall_lab.adapters import css_inspect, html_snapshot
+
+          root = Path(os.environ["AOI_LAB_SOURCE_ROOT"]).resolve()
+          for module in (html_snapshot, css_inspect):
+              expected = root / "mcp_toolcall_lab/adapters" / (module.__name__.rsplit(".", 1)[1] + ".py")
+              assert Path(module.__file__).resolve() == expected, module.__file__
+              print(module.__name__, module.__file__)
+          PYCODE
+      - name: Install uv
+        run: python -m pip install uv
+      - name: Require real offline extractor tests with JUnit
+        run: |
+          mkdir -p build/test-results
+          uv run --locked --python 3.14 pytest -q --require-lab-integration \
+            blueprobe/tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows \
+            blueprobe/tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
+            --junitxml=build/test-results/lab-integration-3.14.xml
+      - name: Preserve raw integration JUnit
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-lab-integration-py3.14
+          path: build/test-results/lab-integration-3.14.xml
+          if-no-files-found: error
+          retention-days: 14
+
   failure-identity:
-    needs: [changes, test]
+    needs: [changes, test, lab-integration]
     if: always() && (needs.changes.outputs.non_docs_changed == 'true' || github.event_name == 'workflow_dispatch')
     permissions:
       contents: read
       actions: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@4dfda95d6573250477f991a0421fa6acb9bc0258
     with:
-      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml"]'
-      artifact-pattern: "junit-py*"
+      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.14/lab-integration-3.14.xml"]'
+      artifact-pattern: "junit-*"
       output-artifact: "failure-identity"
 
   actionlint:

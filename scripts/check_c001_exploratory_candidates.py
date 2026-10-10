@@ -196,7 +196,12 @@ def calculate(snapshot, include_2020=False):
             elif matched:
                 matches.append(row)
                 if row["upper_half"]:
-                    counterexamples.append({"unit": unit, "rank": row["rank"], "upper_half": True})
+                    counterexamples.append({"unit": unit, "rank": row["rank"], "upper_half": True,
+                                            "matching_parents": [p for p in ("P62", "P138", "P189", "P196")
+                                                                 if p in expression and verdict(row, p, snapshot["definitions"])],
+                                            "observed": {field: row[field] for field in
+                                                         ("inn_size_low_streak", "rf_adv", "rf_state2", "ra_state2",
+                                                          "course_rank_q3", "q_wl_4")}})
                 if row["team"] == "d" and row["season"] in focus:
                     focus_covered.append(row["season"])
                     focus_paths[str(row["season"])] = [p for p in ("P62", "P138", "P189", "P196")
@@ -207,7 +212,13 @@ def calculate(snapshot, include_2020=False):
                         "focus_covered": sorted(focus_covered), "focus_coverage": f"{len(focus_covered)}/{len(focus)}",
                         "focus_paths": focus_paths,
                         "focus_not_covered": sorted(focus - set(focus_covered))}
-    return {"cohort": {"years": "2013-2025", "exclude": [] if include_2020 else [2020],
+    removed_by_e22 = [{"unit": f'{row["team"]}-{row["season"]}', "rank": row["rank"],
+                       "course_rank_q3": row["course_rank_q3"], "q_wl_4": row["q_wl_4"]}
+                      for row in filtered
+                      if verdict(row, "E7", snapshot["definitions"]) is True
+                      and verdict(row, "E22", snapshot["definitions"]) is False]
+    return {"e7_excluded_by_e22": removed_by_e22,
+            "cohort": {"years": "2013-2025", "exclude": [] if include_2020 else [2020],
                        "units": expected_count, "outcome": "final rank >= 4 (B); not CS participation"},
             "candidates": result}
 

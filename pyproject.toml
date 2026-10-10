@@ -3,7 +3,7 @@ name = "aoi"
 version = "0.1.0"
 description = "Observe. Measure. Question."
 requires-python = ">=3.11"
-dependencies = ["polars>=1.30", "httpx>=0.28", "selectolax>=0.3.27"]
+dependencies = ["polars>=2", "httpx>=0.28", "selectolax>=1"]
 
 [dependency-groups]
 dev = ["pytest>=8"]

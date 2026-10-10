@@ -1,7 +1,8 @@
-"""本体のコードで、Python 3.15 ベータ + polars 1.44.2 で None を返す Series メソッドを使っていないか。
+"""本体のコードで、列を取り出した直後に Series メソッドを繋いでいないか。
 
-確認した範囲（2026-10-03）: Series の abs / drop_nulls / unique / mode / is_null / fill_null / round / is_in は
-None を返す。DataFrame 上の式（pl.col(...).abs() など）は正常に動く。
+Python 3.15 ベータ + polars 1.44.2 では Series の abs / drop_nulls / unique / mode / is_null /
+fill_null / round / is_in が None を返した。polars 2.0.0 + Python 3.15.0 では同じ呼び出しは Series を返す。
+DataFrame 上の式（pl.col(...).abs() など）はどちらの版でも同じ結果なので、その書き方のままにする。
 df["col"].abs() のような書き方を見つけたら、式（df.select(pl.col("col").abs())）に書き換える。
 """
 

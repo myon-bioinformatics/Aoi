@@ -104,7 +104,7 @@ def test_snapshot_provenance_cannot_be_silently_repointed(snapshot, tmp_path):
 
 def test_tracked_projection_blob_is_immutable():
     raw = FIXTURE.read_bytes()
-    github_blob = b"blob " + str(len(raw)).encode("ascii") + b"\\x00" + raw
+    github_blob = b"blob " + str(len(raw)).encode("ascii") + bytes([0]) + raw
     assert hashlib.sha1(github_blob).hexdigest() == "8c5509c25c5377d0b740cdd870e163a5cc18dd06"
 
 

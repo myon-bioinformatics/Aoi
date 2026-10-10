@@ -35,7 +35,7 @@ The evaluator resolves the pinned predicates and set references rather than hard
 
 All three base comparisons have zero undetermined team-years. Chunichi 2020 is not covered by `E7 & E22` because Q3 position was 4 and the final quarter had `q_wl_4 = +8`. This narrower AND avoids that counterexample; it does **not** explain away the original E7 counterexample or establish causation. Another historically important E7 counterexample is Hanshin 2015 (3rd place, Q3 position 1), retained in the original research.
 
-The CLI's JSON report includes candidate expression strings, relevant locked parent predicates and set definitions, both cohort sizes/exclusions, per-candidate holds, antecedent counts, unknowns, final-rank counterexamples, and individual Chunichi-year coverage/active paths.
+The CLI's JSON report includes candidate expression strings, relevant locked parent predicates and set definitions, both cohort sizes/exclusions, per-candidate holds, antecedent counts, unknowns, final-rank counterexamples, and individual Chunichi-year coverage/active paths. It also keeps **raw saved feature values and active parent paths for each counterexample**, plus the units removed from the original E7 antecedent by adding E22: 5 team-years without 2020 (including Hanshin 2015), 8 team-years with 2020 (including Hanshin 2015 and Chunichi 2020). The original E7 result remains unchanged.
 
 ## Run without downloading anything in CI
 

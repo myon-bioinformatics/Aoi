@@ -159,7 +159,7 @@ def test_allocation_next_season_and_same_sign():
     t = allocation_table(to_team_games(games(rows), TEAMS)).filter(pl.col("team") == "d").sort("season")
     z = t["alloc_z"].to_list()
     assert t["alloc_z_next"].to_list() == [z[1], None, None]
-    # Series の drop_nulls()/abs() は Python 3.15 ベータ + polars 1.44.2 で None を返すので、式で書く
+    # 式で書く。Series の drop_nulls()/abs() は polars 1.44.2 の Python 3.15 ベータで None を返した（2.0.0 では直っている）
     assert set(t.select(pl.col("alloc_same_sign").drop_nulls())["alloc_same_sign"].to_list()) <= {True, False}
     assert t["alloc_z_abs"].to_list() == [abs(v) for v in z]
 

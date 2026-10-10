@@ -6,7 +6,7 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 from analyze import sha
 
 HERE=Path(__file__).resolve().parent
@@ -33,7 +33,7 @@ def cell(raw,side,last):
 
 
 def parse(html,g):
-    root=HTMLParser(html)
+    root=LexborHTMLParser(html)
     candidates=[r for r in root.css('#gmdivresult tr') if r.css_first('.gmscoreteam')]
     if len(candidates)!=2:
         raise ValueError('expected exactly two score rows')

@@ -1,6 +1,6 @@
 # Python 3.12 was used; the analysis itself uses only the standard library.
 httpx==0.28.1
-selectolax==0.4.13
+selectolax==1.0.0
 
 # Existing PythDRAgoraS engine used by the loss-tail judgement.
 polars==1.44.2

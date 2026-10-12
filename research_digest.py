@@ -264,7 +264,7 @@ def render_markdown(notes: list[dict], audit: dict) -> str:
             lines.append("- " + row["id"] + ": " + "; ".join(failures))
     lines += ["", "## 事前登録・見直し条件の証跡", ""]
     for row in notes:
-        if row["review"]["status"] not in {"pre_registered", "unparsed"} and not row["review"]["criteria"] and not row["review"]["pre_registered_items"]:
+        if row["review"]["status"] not in {"pre_registered", "unparsed"} and not row["review"]["criteria"] and not row["review"]["pre_registered_items"] and not row["review"]["items"]:
             continue
         lines.append("### " + row["id"] + " (" + row["review"]["status"] + ")")
         for item in row["review"]["items"]:
@@ -273,7 +273,7 @@ def render_markdown(notes: list[dict], audit: dict) -> str:
             lines.append("- [事前登録] " + item)
         for criterion in row["review"]["criteria"]:
             lines.append("- " + ", ".join(criterion["proposition_ids"]) + ": " + criterion["reading"])
-        if not row["review"]["items"] and not row["review"]["criteria"]:
+        if not row["review"]["items"] and not row["review"]["criteria"] and not row["review"]["pre_registered_items"]:
             lines.append("- 抽出可能な条件なし（条件が存在しないとは断定しない）")
         lines.append("")
     lines += ["## FINDINGS.md の限定的な照合", "",

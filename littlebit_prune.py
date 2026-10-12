@@ -141,8 +141,12 @@ def search_guaranteed(df, target, candidates, max_terms: int = 2, max_conds: int
     y_int = _mask(df, target)
     n_pos, n_neg = y_int.bit_count(), n - y_int.bit_count()
     terms = _build_terms(df, candidates, max_conds)
-    if n == 0 or not terms:
+    if not terms:
         return []
+    if n == 0:
+        # 単位が無いと近似も枝刈りも意味がない。厳密計算（全 0 の行）と同じ結果を返す
+        from rule_search import _search_bitset
+        return _search_bitset(df, target, candidates, max_terms, max_conds, top)
     groups = [g for g, _ in terms]
     T = _masks_to_matrix([m for _, m in terms], n)
     y = _mask_bits(y_int, n)

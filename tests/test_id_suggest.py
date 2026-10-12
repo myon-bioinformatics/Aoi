@@ -51,6 +51,8 @@ def test_explicit_id_skips_the_index():
     assert built["n"] == 0
     assert got["status"] == "explicit" and got["selected"] == "E25"
     assert got["candidates"] == [{"id": "E25", "similarity": None}]
+    # E25 は DOCS に無いので、known=False と note で知らせる
+    assert got["known"] is False and "見つからない" in got["note"]
 
 
 def test_handwritten_explicit_questions_keep_the_written_id():
@@ -114,3 +116,23 @@ def test_cli_prints_candidates_and_does_not_answer(tmp_path, capsys):
     assert suggest.main(["量子暗号の株価を教えて", "--results", str(results), "--threshold", "1.1", "--dim", "4"]) == 0
     got = json.loads(capsys.readouterr().out)
     assert got["status"] == "判定不能" and got["selected"] is None
+
+
+def test_explicit_id_present_in_docs_is_known():
+    got = suggest.suggest("P46 の判例は？", DOCS, threshold=0.99)
+    assert got["selected"] == "P46" and got["known"] is True and "見つからない" not in got["note"]
+
+
+def test_ties_are_ordered_by_document_order():
+    # 類似度がちょうど同じ文書は、文書の並び（ids の順）で毎回同じ順に出る
+    import numpy as np
+
+    docs = [(f"P{i}", f"得失点差がプラスなら上位半分である {i}") for i in range(20, 0, -1)]
+    idx = suggest.Index(docs, dim=4)
+    d = idx.Zf.shape[1]
+    idx.Zf = np.full_like(idx.Zf, 1 / np.sqrt(d))
+    idx.B = np.ones_like(idx.B)
+    for mode in ("float", "binary"):
+        got = idx.query("得失点差がプラスなら上位か", mode, 10)
+        assert len({s for _, s in got}) == 1
+        assert [i for i, _ in got] == [f"P{i}" for i in range(20, 10, -1)]

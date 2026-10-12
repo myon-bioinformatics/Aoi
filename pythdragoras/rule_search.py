@@ -142,9 +142,10 @@ def _search_bitset(df: pl.DataFrame, target: list[dict], candidates: list[dict],
 
 def _mcc_vec(tp, fp, n_pos: int, n_neg: int):
     fn, tn = n_pos - tp, n_neg - fp
-    d = np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
     with np.errstate(invalid="ignore", divide="ignore"):
-        return np.where(d > 0, (tp * tn - fp * fn) / np.where(d > 0, d, 1.0), 0.0)
+        prod = (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)
+        d = np.sqrt(np.where(prod > 0, prod, 0.0))
+        return np.where(d > 0, (tp * tn - fp * fn) / d, 0.0)
 
 
 def _exact_counts(T: np.ndarray, y: np.ndarray):
@@ -233,17 +234,35 @@ def _matrix_bytes(n_terms: int, n_units: int, max_terms: int) -> int:
 
 
 def search(df: pl.DataFrame, target: list[dict], candidates: list[dict], max_terms: int = 2,
-           max_conds: int = 2, top: int = 20, *, backend: str | None = None) -> list[dict]:
+           max_conds: int = 2, top: int = 20, *, backend: str | None = None, prune: str | None = None,
+           rank: int = 8, stages: int = 2) -> list[dict]:
     """df の各単位について、候補の条件からできる式を総当たりで評価する。値が空の単位は呼び出す側で除いておく。
 
     backend を省略したときは、ビット行列の結果がビット集合版と一致する範囲だけビット行列を使う。
     それ以外（max_terms が 3 以上、単位数が厳密に数える範囲を超える、または組の数が多くて
     行列の見積りメモリが _MATRIX_BYTES を超える）はビット集合のまま。top は 1 以上（それ以外は ValueError）。
+
+    prune="littlebit" は実験用の保証付き枝刈りで、既定ではオフ。確認済み入力では厳密計算と一致するが、
+    float64 の丸め誤差まで含む任意入力での形式的保証ではない。
+    今の単位数では厳密計算より遅い（littlebit_prune のモジュール文書）。prune と backend は同時に指定できない
+    （ValueError）。prune も m×m の行列を持つので、見積りが _MATRIX_BYTES を超えると PropositionError で止める。
     """
     if backend not in (None, "bitmatrix", "bitset"):
         raise PropositionError(f"backend は bitmatrix / bitset / 省略: {backend}")
+    if prune is not None and prune != "littlebit":
+        raise PropositionError(f"prune は littlebit / 省略: {prune}")
     if isinstance(top, bool) or not isinstance(top, int) or top < 1:
         raise ValueError(f"top は 1 以上の整数: {top!r}")
+    if prune is not None and backend is not None:
+        raise ValueError(f"prune と backend は同時に指定できない: prune={prune}, backend={backend}")
+    _check(target, candidates)
+    if prune == "littlebit":
+        need = _matrix_bytes(_count_terms(candidates, max_conds), df.height, 2)
+        if need > _MATRIX_BYTES:
+            raise PropositionError(
+                f"littlebit の見積りメモリ {need} bytes が上限 {_MATRIX_BYTES} bytes を超える（候補を減らすか prune なし）")
+        from littlebit_prune import search_guaranteed
+        return search_guaranteed(df, target, candidates, max_terms, max_conds, top, rank=rank, stages=stages)
     use_matrix = _bitmatrix_exact(max_terms, df.height)
     if backend == "bitmatrix" and not use_matrix:
         raise PropositionError(
@@ -275,6 +294,10 @@ def main(argv=None) -> int:
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--backend", choices=("bitmatrix", "bitset"), default=None,
                     help="省略時は、結果が一致する範囲だけ bitmatrix。max_terms>=3 などは bitset")
+    ap.add_argument("--prune", choices=("littlebit",), default=None,
+                    help="実験用。littlebit は保証付き枝刈り（既定ではオフ。今の規模では厳密計算より遅い）")
+    ap.add_argument("--rank", type=int, default=8, help="--prune littlebit の潜在次元")
+    ap.add_argument("--stages", type=int, default=2, help="--prune littlebit の残差の段数")
     args = ap.parse_args(argv)
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
@@ -284,7 +307,8 @@ def main(argv=None) -> int:
     cols = sorted({c["col"] for c in [*spec["target"], *spec["candidate"]]})
     usable = st.drop_nulls(cols)  # 値が空の単位は探索に入れない（件数は出力に残す）
     rules = search(usable, spec["target"], spec["candidate"], int(spec.get("max_terms", 2)),
-                   int(spec.get("max_conds", 2)), args.top, backend=args.backend)
+                   int(spec.get("max_conds", 2)), args.top, backend=args.backend, prune=args.prune,
+                   rank=args.rank, stages=args.stages)
     meta = {"units": usable.height, "dropped_for_missing_values": st.height - usable.height,
             "target": text(spec["target"]), "candidates": len(spec["candidate"])}
     args.out.parent.mkdir(parents=True, exist_ok=True)

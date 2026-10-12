@@ -138,9 +138,10 @@ def _search_bitset(df: pl.DataFrame, target: list[dict], candidates: list[dict],
 
 def _mcc_vec(tp, fp, n_pos: int, n_neg: int):
     fn, tn = n_pos - tp, n_neg - fp
-    d = np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
     with np.errstate(invalid="ignore", divide="ignore"):
-        return np.where(d > 0, (tp * tn - fp * fn) / np.where(d > 0, d, 1.0), 0.0)
+        prod = (tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)
+        d = np.sqrt(np.where(prod > 0, prod, 0.0))
+        return np.where(d > 0, (tp * tn - fp * fn) / d, 0.0)
 
 
 def _exact_counts(T: np.ndarray, y: np.ndarray):
@@ -207,14 +208,24 @@ def _bitmatrix_exact(max_terms: int, n_units: int) -> bool:
 
 
 def search(df: pl.DataFrame, target: list[dict], candidates: list[dict], max_terms: int = 2,
-           max_conds: int = 2, top: int = 20, *, backend: str | None = None) -> list[dict]:
+           max_conds: int = 2, top: int = 20, *, backend: str | None = None, prune: str | None = None,
+           rank: int = 8, stages: int = 2) -> list[dict]:
     """df の各単位について、候補の条件からできる式を総当たりで評価する。値が空の単位は呼び出す側で除いておく。
 
     backend を省略したときは、ビット行列の結果がビット集合版と一致する範囲だけビット行列を使う。
     それ以外（max_terms が 3 以上、または単位数が厳密に数える範囲を超える）はビット集合のまま。
+
+    prune="littlebit" は実験用の保証付き枝刈りで、既定ではオフ。結果は厳密計算と一致するが、
+    今の単位数では厳密計算より遅い（littlebit_prune のモジュール文書）。
     """
     if backend not in (None, "bitmatrix", "bitset"):
         raise PropositionError(f"backend は bitmatrix / bitset / 省略: {backend}")
+    if prune is not None and prune != "littlebit":
+        raise PropositionError(f"prune は littlebit / 省略: {prune}")
+    _check(target, candidates)
+    if prune == "littlebit":
+        from littlebit_prune import search_guaranteed
+        return search_guaranteed(df, target, candidates, max_terms, max_conds, top, rank=rank, stages=stages)
     use_matrix = _bitmatrix_exact(max_terms, df.height)
     if backend == "bitmatrix" and not use_matrix:
         raise PropositionError(
@@ -239,6 +250,10 @@ def main(argv=None) -> int:
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--backend", choices=("bitmatrix", "bitset"), default=None,
                     help="省略時は、結果が一致する範囲だけ bitmatrix。max_terms>=3 などは bitset")
+    ap.add_argument("--prune", choices=("littlebit",), default=None,
+                    help="実験用。littlebit は保証付き枝刈り（既定ではオフ。今の規模では厳密計算より遅い）")
+    ap.add_argument("--rank", type=int, default=8, help="--prune littlebit の潜在次元")
+    ap.add_argument("--stages", type=int, default=2, help="--prune littlebit の残差の段数")
     args = ap.parse_args(argv)
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
@@ -248,7 +263,8 @@ def main(argv=None) -> int:
     cols = sorted({c["col"] for c in [*spec["target"], *spec["candidate"]]})
     usable = st.drop_nulls(cols)  # 値が空の単位は探索に入れない（件数は出力に残す）
     rules = search(usable, spec["target"], spec["candidate"], int(spec.get("max_terms", 2)),
-                   int(spec.get("max_conds", 2)), args.top, backend=args.backend)
+                   int(spec.get("max_conds", 2)), args.top, backend=args.backend, prune=args.prune,
+                   rank=args.rank, stages=args.stages)
     meta = {"units": usable.height, "dropped_for_missing_values": st.height - usable.height,
             "target": text(spec["target"]), "candidates": len(spec["candidate"])}
     args.out.parent.mkdir(parents=True, exist_ok=True)

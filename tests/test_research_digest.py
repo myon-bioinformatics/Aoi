@@ -55,7 +55,7 @@ def test_real_26_notes_101_table_references_and_catalog_match(real_notes):
     assert sum(len(n["proposition_ids"]) for n in notes) == 101
     assert len(codes) >= 114
     assert not {p for n in notes for p in n["proposition_ids"]} - catalog
-    assert not {p for n in notes for p in n["proposition_ids"]} - codes
+    assert not {p for n in notes for p in n["proposition_ids"]} - codes.keys()
     assert all(n["recorded"] and n["title"] for n in notes)
 
 

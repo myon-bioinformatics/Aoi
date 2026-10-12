@@ -144,7 +144,8 @@ class Index:
             sim = ((self.B * self.l) @ z) / scale
         sim = np.nan_to_num(sim, nan=-np.inf, posinf=np.inf, neginf=-np.inf)
         k = min(k, sim.size)
-        order = np.argsort(-sim)[:k]
+        # 同じ類似度の候補は文書の並び（ids の順）で決める。既定の quicksort は同点の並びが決まらない
+        order = np.argsort(-sim, kind="stable")[:k]
         return [(self.ids[int(i)], float(sim[int(i)])) for i in order]
 
     def sizes(self) -> dict[str, int]:
@@ -164,7 +165,8 @@ def suggest(text: str, docs: list[tuple[str, str]], *, threshold: float, mode: s
     """候補を返す。selected に入るのは、問いに書いてある ID だけ。類似度では選ばない。
 
     status:
-      explicit … 問いに ID が書いてある。索引は使わない。書いてあるものと対象が違うことがある
+      explicit … 問いに ID が書いてある。索引は使わない。書いてあるものと対象が違うことがある。
+                 書いてある ID が docs に無いときは known=False にし、note で知らせる（selected はそのまま）
       要確認   … 1位の類似度が閾値以上。候補であり、答えではない
       判定不能 … 1位の類似度が閾値未満。候補リストは残すが、確定しない
     """
@@ -172,9 +174,12 @@ def suggest(text: str, docs: list[tuple[str, str]], *, threshold: float, mode: s
         raise ValueError("threshold は有限の数")
     named = written_id(text)
     if named:
-        return {"status": "explicit", "selected": named,
-                "candidates": [{"id": named, "similarity": None}],
-                "note": "問いに書いてある ID。類似度では選んでいない。答えではない。"}
+        known = any(i == named for i, _ in docs)
+        note = "問いに書いてある ID。類似度では選んでいない。答えではない。"
+        if not known:
+            note += f" 注意: {named} は読み込んだ命題・式に見つからない（番号の書き間違いか、別の結果の ID かもしれない）。"
+        return {"status": "explicit", "selected": named, "known": known,
+                "candidates": [{"id": named, "similarity": None}], "note": note}
     idx = index if index is not None else Index(docs, dim)
     top = idx.query(text, mode, k)
     candidates = [{"id": i, "similarity": s} for i, s in top]

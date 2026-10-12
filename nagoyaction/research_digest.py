@@ -24,6 +24,7 @@ _spec = importlib.util.spec_from_file_location("aoi_vendored_markdown", _MARKDOW
 if _spec is None or _spec.loader is None:
     raise ImportError(f"Cannot load pinned Markdown helper: {_MARKDOWN_PATH}")
 _md = importlib.util.module_from_spec(_spec)
+sys.modules[_spec.name] = _md  # dataclass decorators need the module registered
 _spec.loader.exec_module(_md)
 
 RESEARCH_FILE = re.compile(r"^R([1-9]\d*)-[^/]+\.md$")

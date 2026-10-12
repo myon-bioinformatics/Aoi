@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import bisect
+import heapq
 import itertools
 import json
 import math
@@ -199,10 +200,13 @@ def _search_bitmatrix(df: pl.DataFrame, target: list[dict], candidates: list[dic
         keep1, keep2 = _keep_mcc(m1, kth), _keep_mcc(m2, kth)
     else:
         keep1, keep2 = np.arange(m1.size), np.arange(m2.size)
-    rows = [_record([groups[i]], a_tp[i], a_fp[i], n_pos, n_neg) for i in keep1]
-    rows += [_record([groups[iu[0][k]], groups[iu[1][k]]], pair_tp[k], pair_fp[k], n_pos, n_neg) for k in keep2]
-    rows.sort(key=lambda t: t[0])
-    return [r for _, r in rows[:top]]
+    # MCC の境界で全候補が同点になる場合も、Python の結果オブジェクトを全件保持しない。
+    # 鍵は従来どおりで、同点も条件数・式の文字列まで比較して上位 top 件を選ぶ。
+    singles = (_record([groups[i]], a_tp[i], a_fp[i], n_pos, n_neg) for i in keep1)
+    pairs = (_record([groups[iu[0][k]], groups[iu[1][k]]], pair_tp[k], pair_fp[k], n_pos, n_neg)
+             for k in keep2)
+    rows = heapq.nsmallest(top, itertools.chain(singles, pairs), key=lambda t: t[0])
+    return [r for _, r in rows]
 
 
 def _bitmatrix_exact(max_terms: int, n_units: int) -> bool:

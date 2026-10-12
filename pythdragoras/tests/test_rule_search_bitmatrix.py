@@ -145,6 +145,37 @@ def test_memory_cap_is_respected_with_small_limit(monkeypatch):
     assert_same(search(DF, TARGET, CANDS, top=5), search(DF, TARGET, CANDS, top=5, backend="bitset"))
 
 
+def test_all_ties_keep_only_top_result_objects(monkeypatch):
+    # 64 条件から 2080 件が同点になる。行列とは別の Python オブジェクトの保持量も制限する。
+    class TrackedRow(dict):
+        live = peak = 0
+
+        def __init__(self, row):
+            super().__init__(row)
+            type(self).live += 1
+            type(self).peak = max(type(self).peak, type(self).live)
+
+        def __del__(self):
+            type(self).live -= 1
+
+    original = rs._record
+
+    def tracked(*args):
+        key, row = original(*args)
+        return key, TrackedRow(row)
+
+    cands = [{"col": f"c{i}", "op": "==", "value": 1} for i in range(64)]
+    df = pl.DataFrame({**{f"c{i}": [1, 1] for i in range(64)}, "y": [True, True]})
+    target = [{"col": "y", "op": "==", "value": True}]
+    top = 3
+    expected = search(df, target, cands, max_conds=1, top=top, backend="bitset")
+    monkeypatch.setattr(rs, "_record", tracked)
+    actual = search(df, target, cands, max_conds=1, top=top, backend="bitmatrix")
+    assert_same(actual, expected)
+    # heap の top 件に加え、評価中と generator が直前に返した行だけを許容する。
+    assert TrackedRow.peak <= top + 2
+
+
 @pytest.mark.parametrize("backend", [None, "bitset", "bitmatrix"])
 @pytest.mark.parametrize("top", [0, -1, True, 1.5])
 def test_top_must_be_positive_int_for_every_backend(backend, top):

@@ -140,6 +140,30 @@ def test_unknown_prop_is_reported_and_not_fabricated(tmp_path):
     assert {"id": "P999", "exit_code": None} in notes[0]["current_judgements"]
 
 
+
+def test_explicit_and_pre_registered_sections_are_both_retained(tmp_path):
+    path = tmp_path / "R18-example.md"
+    path.write_text(
+        "# R18: title\n記録: 2026-10-04\n"
+        "## 読み方（先に決める）\n- 先に比較する\n"
+        "## 見直す条件（反証）\n- 判例を再点検する\n",
+        encoding="utf-8",
+    )
+    row = digest.parse_note(path)
+    assert row["review"]["status"] == "explicit"
+    assert row["review"]["items"] == ["判例を再点検する"]
+    assert row["review"]["pre_registered_items"] == ["先に比較する"]
+
+
+def test_duplicate_registry_ids_rejected(tmp_path):
+    cycle = _test_cycle(tmp_path, R18_SAMPLE)
+    (cycle / "propositions.toml").write_text(
+        '[[proposition]]\nid = "P52"\n[[proposition]]\nid = "P52"\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(digest.DigestError, match="Duplicate proposition"):
+        digest.collect(cycle)
+
 def test_duplicate_table_rows_remain_visible(tmp_path):
     path = tmp_path / "R18-example.md"
     path.write_text(

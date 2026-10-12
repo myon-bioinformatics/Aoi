@@ -78,21 +78,22 @@ def _table_criteria(section: dict) -> list[dict]:
 
 def _review(sections: list[dict]) -> dict:
     explicit = [s for s in sections if s["level"] == 2 and "見直す条件" in s["title"]]
-    if explicit:
-        items = [item for s in explicit for item in _bullets(s)]
-        return {"status": "explicit" if items else "unparsed",
-                "headings": [s["title"] for s in explicit],
-                "items": items, "criteria": []}
     registered = [s for s in sections if s["level"] == 2
                   and ("先に決める" in s["title"] or "事前登録" in s["title"]
                        or "判定基準" in s["title"])]
-    items = [item for s in registered for item in _bullets(s)]
+    pre_items = [item for s in registered for item in _bullets(s)]
     criteria = [rule for s in registered for rule in _table_criteria(s)]
+    if explicit:
+        items = [item for s in explicit for item in _bullets(s)]
+        return {"status": "explicit" if items else "unparsed",
+                "headings": [s["title"] for s in explicit + registered],
+                "items": items, "pre_registered_items": pre_items, "criteria": criteria}
     if registered:
-        return {"status": "pre_registered" if items or criteria else "unparsed",
+        return {"status": "pre_registered" if pre_items or criteria else "unparsed",
                 "headings": [s["title"] for s in registered],
-                "items": items, "criteria": criteria}
-    return {"status": "unknown", "headings": [], "items": [], "criteria": []}
+                "items": pre_items, "pre_registered_items": [], "criteria": criteria}
+    return {"status": "unknown", "headings": [], "items": [],
+            "pre_registered_items": [], "criteria": []}
 
 
 def parse_note(path: Path) -> dict:
@@ -124,7 +125,7 @@ def parse_note(path: Path) -> dict:
                       if re.search(r"計算.*前|結果を見た後|事前登録|取り込む前", line)][:5]
     return {
         "id": rid, "title": header.group(2), "recorded": recorded.group(1),
-        "path": path.as_posix(), "role": "pre_registered_2026_confirmation_plan"
+        "path": "research/" + path.name, "role": "pre_registered_2026_confirmation_plan"
         if is_confirmation else "research_record",
         "proposition_ids": _unique(table_ids),  # all first-column table IDs
         "defines": [] if is_confirmation else _unique(table_ids),
@@ -262,11 +263,13 @@ def render_markdown(notes: list[dict], audit: dict) -> str:
             lines.append("- " + row["id"] + ": " + "; ".join(failures))
     lines += ["", "## 事前登録・見直し条件の証跡", ""]
     for row in notes:
-        if row["review"]["status"] not in {"pre_registered", "unparsed"}:
+        if row["review"]["status"] not in {"pre_registered", "unparsed"} and not row["review"]["criteria"] and not row["review"]["pre_registered_items"]:
             continue
         lines.append("### " + row["id"] + " (" + row["review"]["status"] + ")")
         for item in row["review"]["items"]:
             lines.append("- " + item)
+        for item in row["review"]["pre_registered_items"]:
+            lines.append("- [事前登録] " + item)
         for criterion in row["review"]["criteria"]:
             lines.append("- " + ", ".join(criterion["proposition_ids"]) + ": " + criterion["reading"])
         if not row["review"]["items"] and not row["review"]["criteria"]:

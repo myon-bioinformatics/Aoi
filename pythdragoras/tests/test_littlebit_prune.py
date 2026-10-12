@@ -91,3 +91,26 @@ def test_mcc_upper_is_an_upper_bound():
         true_max = rs._mcc_vec(tp.ravel().astype(float), fp.ravel().astype(float), n_pos, n_neg).max()
         ub = mcc_upper(np.array([tl]), np.array([th]), np.array([fl]), np.array([fh]), n_pos, n_neg)[0]
         assert ub >= true_max - 1e-9
+
+
+def test_zero_units_matches_exact():
+    empty = DF.clear()
+    exact = search(empty, TARGET, CANDS, top=20, backend="bitset")
+    assert exact and all(r["tp"] == r["fp"] == r["fn"] == r["tn"] == 0 for r in exact)
+    assert ranking(search(empty, TARGET, CANDS, top=20, prune="littlebit")) == ranking(exact)
+
+
+@pytest.mark.parametrize("backend", ["bitset", "bitmatrix"])
+def test_prune_and_backend_together_is_an_error(backend):
+    with pytest.raises(ValueError, match="同時に指定できない"):
+        search(DF, TARGET, CANDS, prune="littlebit", backend=backend)
+
+
+def test_prune_respects_matrix_memory_cap(monkeypatch):
+    def boom(*_a, **_k):
+        raise AssertionError("上限を超えたのに littlebit が呼ばれた")
+
+    monkeypatch.setattr("littlebit_prune.search_guaranteed", boom)
+    monkeypatch.setattr(rs, "_MATRIX_BYTES", 1)
+    with pytest.raises(rs.PropositionError, match="見積りメモリ"):
+        search(DF, TARGET, CANDS, prune="littlebit")

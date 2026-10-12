@@ -206,7 +206,7 @@ def collect(cycle: Path) -> tuple[list[dict], dict[str, int], set[str]]:
         present = set(row["proposition_ids"]) | set(row["confirmation_focus_ids"])
         mentioned_p = set(re.findall(r"P[1-9]\d*", " ".join(row["references"]))) | present
         row["unknown_ids"] = _unique(list(mentioned_p - catalog))
-        row["missing_judgements"] = _unique(list(present - codes))
+        row["missing_judgements"] = _unique(list(present - codes.keys()))
     return notes, codes, catalog
 
 

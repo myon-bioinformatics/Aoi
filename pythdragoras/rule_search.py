@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import bisect
+import heapq
 import itertools
 import json
 import math
@@ -200,10 +201,13 @@ def _search_bitmatrix(df: pl.DataFrame, target: list[dict], candidates: list[dic
         keep1, keep2 = _keep_mcc(m1, kth), _keep_mcc(m2, kth)
     else:
         keep1, keep2 = np.arange(m1.size), np.arange(m2.size)
-    rows = [_record([groups[i]], a_tp[i], a_fp[i], n_pos, n_neg) for i in keep1]
-    rows += [_record([groups[iu[0][k]], groups[iu[1][k]]], pair_tp[k], pair_fp[k], n_pos, n_neg) for k in keep2]
-    rows.sort(key=lambda t: t[0])
-    return [r for _, r in rows[:top]]
+    # MCC の境界で全候補が同点になる場合も、Python の結果オブジェクトを全件保持しない。
+    # 鍵は従来どおりで、同点も条件数・式の文字列まで比較して上位 top 件を選ぶ。
+    singles = (_record([groups[i]], a_tp[i], a_fp[i], n_pos, n_neg) for i in keep1)
+    pairs = (_record([groups[iu[0][k]], groups[iu[1][k]]], pair_tp[k], pair_fp[k], n_pos, n_neg)
+             for k in keep2)
+    rows = heapq.nsmallest(top, itertools.chain(singles, pairs), key=lambda t: t[0])
+    return [r for _, r in rows]
 
 
 def _bitmatrix_exact(max_terms: int, n_units: int) -> bool:
@@ -238,7 +242,8 @@ def search(df: pl.DataFrame, target: list[dict], candidates: list[dict], max_ter
     それ以外（max_terms が 3 以上、単位数が厳密に数える範囲を超える、または組の数が多くて
     行列の見積りメモリが _MATRIX_BYTES を超える）はビット集合のまま。top は 1 以上（それ以外は ValueError）。
 
-    prune="littlebit" は実験用の保証付き枝刈りで、既定ではオフ。結果は厳密計算と一致するが、
+    prune="littlebit" は実験用の保証付き枝刈りで、既定ではオフ。確認済み入力では厳密計算と一致するが、
+    float64 の丸め誤差まで含む任意入力での形式的保証ではない。
     今の単位数では厳密計算より遅い（littlebit_prune のモジュール文書）。prune と backend は同時に指定できない
     （ValueError）。prune も m×m の行列を持つので、見積りが _MATRIX_BYTES を超えると PropositionError で止める。
     """

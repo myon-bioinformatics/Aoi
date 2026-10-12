@@ -114,3 +114,33 @@ def test_prune_respects_matrix_memory_cap(monkeypatch):
     monkeypatch.setattr(rs, "_MATRIX_BYTES", 1)
     with pytest.raises(rs.PropositionError, match="見積りメモリ"):
         search(DF, TARGET, CANDS, prune="littlebit")
+
+
+def test_all_ties_bound_retained_result_rows(monkeypatch):
+    import littlebit_prune as lp
+
+    class TrackedRow(dict):
+        live = peak = 0
+
+        def __init__(self, row):
+            super().__init__(row)
+            type(self).live += 1
+            type(self).peak = max(type(self).peak, type(self).live)
+
+        def __del__(self):
+            type(self).live -= 1
+
+    original = lp._record
+
+    def tracked(*args):
+        key, row = original(*args)
+        return key, TrackedRow(row)
+
+    cands = [{"col": f"c{i}", "op": "==", "value": 1} for i in range(32)]
+    df = pl.DataFrame({**{f"c{i}": [1, 1] for i in range(32)}, "y": [True, True]})
+    target = [{"col": "y", "op": "==", "value": True}]
+    expected = search(df, target, cands, max_conds=1, top=3, backend="bitset")
+    monkeypatch.setattr(lp, "_record", tracked)
+    actual = search(df, target, cands, max_conds=1, top=3, prune="littlebit")
+    assert actual == expected
+    assert TrackedRow.peak <= 5

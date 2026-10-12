@@ -3,7 +3,8 @@
 低ランク分解、符号での二値化、行・列・潜在次元のスケール（交互最小二乗）、残差の段で
 組の交わりを近似し、Cauchy–Schwarz で誤差の上限を出す。MCC の上限が、すでに厳密に数えた
 候補の top 件目より低い組だけ捨て、残った組はビット列の popcount で数え直す。
-捨てた組が上位に入らない範囲だけを捨てるので、結果は厳密計算と一致する。
+実数演算では、捨てた組が上位に入らない範囲だけを捨てる。実装は float64 と固定の許容誤差を使うため、
+任意の入力・BLAS に対する丸め誤差込みの形式的保証ではない。確認済み入力では厳密計算と一致する。
 
 観測（試作、2026-10-12、共有の機械で 1 回）: 今の規模では厳密計算より遅い。
 156 単位・80 条件で約 7 秒対 2.6 秒、合成 5,000 単位・45 条件で約 47〜54 秒対 0.37 秒。
@@ -12,6 +13,9 @@
 """
 
 from __future__ import annotations
+
+import heapq
+import itertools
 
 import numpy as np
 
@@ -189,7 +193,9 @@ def search_guaranteed(df, target, candidates, max_terms: int = 2, max_conds: int
         keep2 = np.nonzero(-np.round(m2, 12) <= kth)[0]
     else:
         keep1, keep2 = np.arange(m1.size), np.arange(m2.size)
-    rows = [_record([groups[i]], a_tp[i], a_fp[i], n_pos, n_neg) for i in keep1]
-    rows += [_record([groups[iu[0][keep[k]]], groups[iu[1][keep[k]]]], k_tp[k], k_fp[k], n_pos, n_neg) for k in keep2]
-    rows.sort(key=lambda t: t[0])
-    return [r for _, r in rows[:top]]
+    # 境界が全同点でも結果オブジェクトを全件保持しない（厳密 bitmatrix と同じ順位キー）。
+    singles = (_record([groups[i]], a_tp[i], a_fp[i], n_pos, n_neg) for i in keep1)
+    pairs = (_record([groups[iu[0][keep[k]]], groups[iu[1][keep[k]]]], k_tp[k], k_fp[k], n_pos, n_neg)
+             for k in keep2)
+    rows = heapq.nsmallest(top, itertools.chain(singles, pairs), key=lambda t: t[0])
+    return [r for _, r in rows]

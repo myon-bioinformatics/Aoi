@@ -85,6 +85,25 @@ def test_real_explicit_and_unknown_statuses_remain_distinct(real_notes):
                {"explicit", "pre_registered", "unknown", "unparsed"} for n in notes)
 
 
+
+def test_explicit_review_items_are_rendered_in_evidence_section(real_notes):
+    notes, _, _ = real_notes
+    explicit = [n for n in notes if n["review"]["status"] == "explicit"
+                and n["review"]["items"]]
+    assert len(explicit) >= 17
+    rendered = digest.render_markdown(notes, {
+        "unknown_findings_ids": [], "not_in_research_notes": [],
+        "checked_explicit_exit_labels": 0, "explicit_exit_mismatches": [],
+    })
+    evidence = rendered.split("## 事前登録・見直し条件の証跡", 1)[1].split(
+        "## FINDINGS.md の限定的な照合", 1
+    )[0]
+    for note in explicit:
+        assert "### " + note["id"] + " (explicit)" in evidence
+        assert "- " + note["review"]["items"][0] in evidence
+
+
+
 def test_generate_idempotence_and_judgement_refresh(tmp_path):
     cycle = _test_cycle(tmp_path, R18_SAMPLE)
     out = tmp_path / "out"

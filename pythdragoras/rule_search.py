@@ -36,6 +36,9 @@ from propositions import OPS, PropositionError, _cond, text
 # MCC の分母は (tp+fp)(tp+fn)(tn+fp)(tn+fn) で、各因子は単位数以下。n^4 が 2^53 未満なら積も厳密。
 # 8192^4 = 2^52。これを超える単位数はビット集合のままにする（結果がずれないように）。
 _EXACT_UNITS = 8192
+# ビット行列は組どうしの T×T 行列（交わり・tp・fp など）を同時に持つ。候補が多いと T が増えて
+# メモリが T^2 で増えるので、見積りがこの上限を超える入力は既定ではビット集合に戻す（明示指定なら止める）。
+_MATRIX_BYTES = 512 * 1024 * 1024
 
 
 def _mask(df: pl.DataFrame, conds: list[dict]) -> int:
@@ -206,19 +209,48 @@ def _bitmatrix_exact(max_terms: int, n_units: int) -> bool:
     return max_terms <= 2 and n_units <= _EXACT_UNITS
 
 
+def _count_terms(candidates: list[dict], max_conds: int) -> int:
+    """_build_terms が作る組の数（マスクは作らない）。"""
+    cols = [c["col"] for c in candidates]
+    return sum(1 for k in range(1, max_conds + 1) for combo in itertools.combinations(cols, k)
+               if len(set(combo)) == k)
+
+
+def _matrix_bytes(n_terms: int, n_units: int, max_terms: int) -> int:
+    """ビット行列版が同時に持つ量の保守的な見積り（bytes）。
+    T×n: bool 行列 3 枚 + float64 2 枚。max_terms=2 なら T×T: float64/int64 を 6 枚（Iy, In, tp, fp と一時配列）
+    + 上三角の組 P=T(T-1)/2 についての index 2 本・tp/fp/MCC など 6 本（いずれも 8 bytes）。"""
+    t, n = n_terms, max(n_units, 0)
+    b = t * n * (3 + 2 * 8)
+    if max_terms == 2 and t >= 2:
+        pairs = t * (t - 1) // 2
+        b += 6 * t * t * 8 + 8 * pairs * 8
+    return b
+
+
 def search(df: pl.DataFrame, target: list[dict], candidates: list[dict], max_terms: int = 2,
            max_conds: int = 2, top: int = 20, *, backend: str | None = None) -> list[dict]:
     """df の各単位について、候補の条件からできる式を総当たりで評価する。値が空の単位は呼び出す側で除いておく。
 
     backend を省略したときは、ビット行列の結果がビット集合版と一致する範囲だけビット行列を使う。
-    それ以外（max_terms が 3 以上、または単位数が厳密に数える範囲を超える）はビット集合のまま。
+    それ以外（max_terms が 3 以上、単位数が厳密に数える範囲を超える、または組の数が多くて
+    行列の見積りメモリが _MATRIX_BYTES を超える）はビット集合のまま。top は 1 以上（それ以外は ValueError）。
     """
     if backend not in (None, "bitmatrix", "bitset"):
         raise PropositionError(f"backend は bitmatrix / bitset / 省略: {backend}")
+    if isinstance(top, bool) or not isinstance(top, int) or top < 1:
+        raise ValueError(f"top は 1 以上の整数: {top!r}")
     use_matrix = _bitmatrix_exact(max_terms, df.height)
     if backend == "bitmatrix" and not use_matrix:
         raise PropositionError(
             f"ビット行列は max_terms<=2 かつ単位数<={_EXACT_UNITS} のときだけ（今 max_terms={max_terms}, 単位数={df.height}）")
+    if use_matrix and backend != "bitset":
+        need = _matrix_bytes(_count_terms(candidates, max_conds), df.height, max_terms)
+        if need > _MATRIX_BYTES:
+            if backend == "bitmatrix":
+                raise PropositionError(
+                    f"ビット行列の見積りメモリ {need} bytes が上限 {_MATRIX_BYTES} bytes を超える（候補を減らすか bitset）")
+            use_matrix = False
     if backend == "bitset" or not use_matrix:
         return _search_bitset(df, target, candidates, max_terms, max_conds, top)
     return _search_bitmatrix(df, target, candidates, max_terms, max_conds, top)

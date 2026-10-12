@@ -111,3 +111,56 @@ def test_real_season_top20_matches_bitset():
     kw = dict(max_terms=int(spec["max_terms"]), max_conds=int(spec["max_conds"]), top=20)
     assert_same(search(usable, spec["target"], spec["candidate"], **kw),
                 search(usable, spec["target"], spec["candidate"], backend="bitset", **kw))
+
+
+def test_many_candidates_fall_back_to_bitset_instead_of_building_huge_matrices(monkeypatch):
+    # 単位数は少ないが候補が多い: T = C + C(C-1)/2。C=200 なら T=20100 で T×T が数十 GB になる
+    cands = [{"col": f"c{j}", "op": "<", "value": 1} for j in range(200)]
+    assert rs._count_terms(cands, 2) == 200 + 200 * 199 // 2
+    assert rs._matrix_bytes(rs._count_terms(cands, 2), 5, 2) > rs._MATRIX_BYTES
+    df = pl.DataFrame({**{f"c{j}": [0, 1, 0, 1, 1] for j in range(200)}, "y": [True, False, True, False, True]})
+    target = [{"col": "y", "op": "==", "value": True}]
+    called = {"matrix": 0, "bits": 0}
+
+    def no_matrix(*a, **k):
+        called["matrix"] += 1
+        raise AssertionError("bitmatrix must not run")
+
+    def fake_bits(*a, **k):
+        called["bits"] += 1
+        return []
+
+    monkeypatch.setattr(rs, "_search_bitmatrix", no_matrix)
+    monkeypatch.setattr(rs, "_search_bitset", fake_bits)
+    assert search(df, target, cands, max_terms=2) == []
+    assert called == {"matrix": 0, "bits": 1}
+    with pytest.raises(rs.PropositionError, match="見積りメモリ"):
+        search(df, target, cands, max_terms=2, backend="bitmatrix")
+
+
+def test_memory_cap_is_respected_with_small_limit(monkeypatch):
+    monkeypatch.setattr(rs, "_MATRIX_BYTES", 1)
+    with pytest.raises(rs.PropositionError):
+        search(DF, TARGET, CANDS, backend="bitmatrix")
+    assert_same(search(DF, TARGET, CANDS, top=5), search(DF, TARGET, CANDS, top=5, backend="bitset"))
+
+
+@pytest.mark.parametrize("backend", [None, "bitset", "bitmatrix"])
+@pytest.mark.parametrize("top", [0, -1, True, 1.5])
+def test_top_must_be_positive_int_for_every_backend(backend, top):
+    with pytest.raises(ValueError):
+        search(DF, TARGET, CANDS, top=top, backend=backend)
+
+
+@pytest.mark.parametrize("n", [0, 1, 7, 8, 9, 63, 64, 65])
+@pytest.mark.parametrize("max_terms", [1, 2])
+def test_widths_around_byte_and_word_boundaries_match_bitset(n, max_terms):
+    rng = np.random.default_rng(n)
+    df = pl.DataFrame({"c0": rng.integers(0, 4, n), "c1": rng.integers(0, 4, n), "c2": rng.integers(0, 4, n),
+                       "y": rng.random(n) < 0.5}, schema={"c0": pl.Int64, "c1": pl.Int64, "c2": pl.Int64, "y": pl.Boolean})
+    cands = [{"col": "c0", "op": "<", "value": 2}, {"col": "c1", "op": "<", "value": 2},
+             {"col": "c2", "op": ">=", "value": 2}, {"col": "c0", "op": ">=", "value": 3}]
+    target = [{"col": "y", "op": "==", "value": True}]
+    for top in (1, 5, 50):
+        assert_same(search(df, target, cands, max_terms, 2, top, backend="bitmatrix"),
+                    search(df, target, cands, max_terms, 2, top, backend="bitset"))

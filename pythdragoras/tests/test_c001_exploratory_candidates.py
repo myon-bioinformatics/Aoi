@@ -110,8 +110,9 @@ def test_tracked_projection_blob_is_immutable():
 
 def test_optional_full_artifact_matches_tracked_projection(snapshot):
     archive = os.environ.get("AOI_C001_ARTIFACT_ZIP")
-    if archive:
-        original = mod.from_artifact(Path(archive))
-        assert mod.report(original) == mod.report(snapshot)
-        assert mod.compact_snapshot(original)["rows"] == [
-            [row[key] for key in mod.KEYS] for row in snapshot["rows"]]
+    if not archive:
+        pytest.skip("AOI_C001_ARTIFACT_ZIP is not set; original artifact replay was not run")
+    original = mod.from_artifact(Path(archive))
+    assert mod.report(original) == mod.report(snapshot)
+    assert mod.compact_snapshot(original)["rows"] == [
+        [row[key] for key in mod.KEYS] for row in snapshot["rows"]]

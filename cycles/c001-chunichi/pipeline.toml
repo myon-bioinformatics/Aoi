@@ -86,3 +86,9 @@ run = ["uv", "run", "python", "pythdragoras/rule_search.py", "--season", "{out}/
 [[step]]
 name = "judge"
 run = ["uv", "run", "python", "pythdragoras/propositions.py", "judge", "{out}/propositions.jsonl", "--report-only"]
+
+# 7. 研究記録の一覧（オフライン）。現在の総合判定を結合するが、2026年の独立検証とは別。
+[[step]]
+name = "digest"
+run = ["uv", "run", "python", "nagoyaction/research_digest.py",
+       "cycles/c001-chunichi", "--outdir", "{out}"]

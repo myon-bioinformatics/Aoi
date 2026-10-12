@@ -1,0 +1,23 @@
+{
+  "schema": "vendor-lock/1",
+  "files": [
+    {
+      "repository": "myon-bioinformatics/markdown",
+      "ref": "aa5bccfcaf11f17473c7f1ff502509dfa1547660",
+      "commit": "aa5bccfcaf11f17473c7f1ff502509dfa1547660",
+      "source": "markdown.py",
+      "destination": "vendor/markdown.py",
+      "blob_sha": "769e9f9087fc0ce1abd397841c1335b2dceeb0d0",
+      "sha256": "fa375892faefb7749253d10bfffc6e38978a17bb7396df2b1deb7b63764c6c8e"
+    },
+    {
+      "repository": "myon-bioinformatics/markdown",
+      "ref": "aa5bccfcaf11f17473c7f1ff502509dfa1547660",
+      "commit": "aa5bccfcaf11f17473c7f1ff502509dfa1547660",
+      "source": "LICENSE",
+      "destination": "vendor/markdown-LICENSE",
+      "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
+      "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
+    }
+  ]
+}

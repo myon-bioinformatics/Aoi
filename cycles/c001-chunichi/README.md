@@ -12,6 +12,8 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 
 **いまの到達点は [FINDINGS.md](FINDINGS.md)**（式・結果・弱めた見方・開いた問い）。全命題の最新の判定は [`outputs/index.md`](outputs/index.md)（自動生成）。
 
+[PR #3 の訂正・未検証事項の引き継ぎ](research/PR3_FOLLOWUP.md)は、2026-10-04時点の履歴です。F1〜F7の現在の完了監査や、研究成果全体のmain統合を表すものではありません。
+
 数え方の注意（結論を書くときに、どれで言っているかを必ず明示する）:
 
 - CS 進出の条件は、6球団リーグでは3位以内。判定で使う `upper_half`（上位半分）と一致する

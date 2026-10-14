@@ -32,6 +32,27 @@ jobs:
       - run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
       - run: python -m compileall -q -x '\.test-deps' .
       - run: python -m pip install uv
-      - run: uv run --python "${{ matrix.python }}" pytest -q
+      - run: uv run --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
           PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/queryu
+      - name: Preserve JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-py${{ matrix.python }}
+          path: reports/junit.xml
+          if-no-files-found: error
+          retention-days: 14
+
+  failure-identity:
+    needs: test
+    if: always()
+    permissions:
+      contents: read
+      actions: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@652608b16c73ecd1e39db848abba3d08a00a8a3a
+    with:
+      expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml"]'
+      artifact-pattern: junit-*
+      output-artifact: failure-identity
+      commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}

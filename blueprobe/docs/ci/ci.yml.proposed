@@ -1,0 +1,60 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # QueRyu（Aoi/queryu）はキャッシュ連携テストで使う。コピーせず、固定 SHA で別途 checkout する
+      AOI_SHA: 7084f4bd8463dc8b4732f020ff96c431c7172bf8
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+      - uses: actions/checkout@v5
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ env.AOI_SHA }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - run: python -m compileall -q -x '\.test-deps' .
+      - run: python -m pip install uv
+      - name: Test with JUnit
+        run: |
+          mkdir -p build/test-results
+          uv run --python "${{ matrix.python }}" pytest -q --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/queryu
+      - name: Preserve raw JUnit
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-py${{ matrix.python }}
+          path: build/test-results/pytest-${{ matrix.python }}.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+  failure-identity:
+    needs: [test]
+    if: always()
+    permissions:
+      contents: read
+      actions: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@4dfda95d6573250477f991a0421fa6acb9bc0258
+    with:
+      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml"]'
+      artifact-pattern: "junit-*"
+      output-artifact: "failure-identity"

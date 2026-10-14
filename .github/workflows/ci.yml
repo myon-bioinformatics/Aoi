@@ -20,6 +20,22 @@ jobs:
     name: Change detection
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@76a9e43fe7469d0e3a5728e0521bc5738afad725
 
+  vendor-lock:
+    name: Vendor lock
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/myon-bioinformatics
+          ref: f907560c2b9b3f7a0f78f4434f547f91cb2ef954
+          path: .vendor-sync-tools
+          sparse-checkout: vendor_sync.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - run: python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
+
   test:
     name: pytest (Python ${{ matrix.python }})
     needs: changes

@@ -10,18 +10,13 @@ BlueProbe 本体はこれらを import しない（`pythonpath` にも入れて�
 |---|---|---|---|---|
 | `ascii_artist.py` | [ascii_artist](https://github.com/myon-bioinformatics/ascii_artist) | `ascii_artist.py` | `20a192da70e6` | 同左 |
 | `browser_evidence.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `browser_evidence.py` | `7f45f52ae677` | 同左 |
-| `check_evidence.py` | [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/check_evidence.py` | `78a3a8c37ca3` | 同左 |
+| `check_evidence.py` | [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/check_evidence.py` | `78a3a8c37ca3` | 同左。親の `browser_evidence.py`（10-08 の screenshot 証跡契約）に置き換わる可能性あり |
 | `cli_args.py` | [cli_args](https://github.com/myon-bioinformatics/cli_args) | `cli_args.py` | `6317485625ac` | 同左 |
 | `gh_identity.py` | [gh_identity](https://github.com/myon-bioinformatics/gh_identity) | `gh_identity.py` | `c6b52a29d8cd` | 同左 |
-| `gh_ops.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `gh_ops.py` | `7f45f52ae677` | 同左 |
-| `git_inspector.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `git_inspector.py` | `7f45f52ae677` | 同左 |
 | `github_public_resolver.py` | [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/github_public_resolver.py` | `56982948ba79` | 同左 |
 | `jsonl_digest.py` | [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/jsonl_digest.py` | `78a3a8c37ca3` | 同左 |
 | `markdown.py` | [markdown](https://github.com/myon-bioinformatics/markdown) | `markdown.py` | `aa5bccfcaf11` | 同左 |
 | `nvd_nist_known_vulns.py` | [nvd_nist_known_vulns](https://github.com/myon-bioinformatics/nvd_nist_known_vulns) | `nvd_nist_known_vulns.py` | `cc85b8263c15` | 同左 |
-| `python_artifact_provenance.py` | [ascii_artist](https://github.com/myon-bioinformatics/ascii_artist) | `vendor/python_artifact_provenance.py` | `20a192da70e6` | Ironmate（上流から削除済み） |
-| `repository_metadata_contract.py` | [Err-o-RoadRunner](https://github.com/myon-bioinformatics/Err-o-RoadRunner) | `vendor/repository_metadata_contract.py` | `13c089742514` | Ironmate（上流から削除済み） |
-| `vendor_sync.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `vendor_sync.py` | `7f45f52ae677` | 同左 |
 | `xprobe.py` | [xprobe](https://github.com/myon-bioinformatics/xprobe) | `xprobe.py` | `db770a438b7f` | 同左 |
 | `yourself.py` | [yourself](https://github.com/myon-bioinformatics/yourself) | `yourself.py` | `0da9a5b19eb0` | 同左 |
 
@@ -54,3 +49,8 @@ BlueProbe 本体はこれらを import しない（`pythonpath` にも入れて�
 | `ci_status.py` | Ironmate（上流 myon-bioinformatics） | 読み取り専用の CI 状態は `gh_ops.py` と重複。`vendor/gh_identity.py` を相対パスで読む前提 |
 | `gh_workflow.py` | Ironmate（上流 myon-bioinformatics） | GitHub Actions 操作は `gh_ops.py`（親の正規ツール）と重複。gh CLI と隣の gh_identity 前提 |
 | `check_png.py` | Err-o-RoadRunner（上流 browser-test-kit） | PNG 検証は `browser_evidence.py` と重複 |
+| `git_inspector.py` | myon-bioinformatics | gh_identity に吸収済み（c26198f, #62）。親の版は gh_identity の `git_*` への互換 shim のみ。旧い完全版（Ironmate・browser-test-kit・ascii_artist など）は古いコピー |
+| `repository_metadata_contract.py` | Err-o-RoadRunner（本来 Ironmate） | 上流から削除済み（Ironmate c05cb13, #81）。gh_identity の `repository_metadata_v1` / v2 が後継 |
+| `python_artifact_provenance.py` | ascii_artist（本来 Ironmate） | 上流から削除済み（Ironmate c05cb13, #81） |
+| `vendor_sync.py` | myon-bioinformatics | 親リポジトリの vendoring ツール群（`vendor_*.py`）の中核。BlueProbe の対象外 |
+| `gh_ops.py` | myon-bioinformatics | 親リポジトリの正規ツール（parent-owned）。PR 読み取り等は gh_identity へ委譲中 |

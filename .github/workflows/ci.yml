@@ -7,7 +7,14 @@ on:
 permissions:
   contents: read
 jobs:
+  changes:
+    permissions:
+      contents: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@40bd74c4a36896509b506d6d06251255be6c77c7
+
   test:
+    if: needs.changes.outputs.product_changed == 'true'
+    needs: changes
     runs-on: ubuntu-latest
     env:
       # QueRyu（Aoi/queryu）はキャッシュ連携テストで使う。コピーせず、固定 SHA で別途 checkout する
@@ -45,6 +52,8 @@ jobs:
           retention-days: 14
 
   vendor-locked:
+    if: needs.changes.outputs.product_changed == 'true'
+    needs: changes
     name: Vendor locked baseline
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -77,8 +86,8 @@ jobs:
           python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
 
   failure-identity:
-    needs: test
-    if: always()
+    needs: [changes, test]
+    if: (always()) && needs.changes.outputs.product_changed == 'true'
     permissions:
       contents: read
       actions: read
@@ -88,3 +97,10 @@ jobs:
       artifact-pattern: junit-*
       output-artifact: failure-identity
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  actionlint:
+    needs: changes
+    if: needs.changes.outputs.workflow_changed == 'true'
+    permissions:
+      contents: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@40bd74c4a36896509b506d6d06251255be6c77c7

@@ -10,7 +10,7 @@ permissions:
   contents: read
 jobs:
   actionlint:
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@a6f06af2e0baac480a102a5f941af971a6098c8e # actionlint v1.7.12
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@f907560c2b9b3f7a0f78f4434f547f91cb2ef954 # actionlint v1.7.12
   test:
     runs-on: ubuntu-latest
     strategy:

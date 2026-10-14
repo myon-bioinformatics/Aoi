@@ -1,5 +1,3 @@
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/cli_args/blob/6317485625ac7229f82b10c0e5c071ac5c234acd/cli_args.py
-# source: myon-bioinformatics/cli_args @ 6317485625ac7229f82b10c0e5c071ac5c234acd (cli_args.py). 編集しない。更新は取り込み直す。
 """Reusable CLI building blocks. Python 3.10+, standard library only.
 
 Importing this module never parses argv or starts a subprocess.

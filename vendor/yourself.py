@@ -1,5 +1,3 @@
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/yourself/blob/0da9a5b19eb01ad01d347be8164ecbb4d26eb332/yourself.py
-# source: myon-bioinformatics/yourself @ 0da9a5b19eb01ad01d347be8164ecbb4d26eb332 (yourself.py). 編集しない。更新は取り込み直す。
 """Read-only environment facts, using the standard library only.
 
 No network requests, package installation or project-file content reads.

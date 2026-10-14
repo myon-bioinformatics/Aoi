@@ -1,5 +1,3 @@
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/ascii_artist/blob/20a192da70e6d364a91aab7d7b89cfe1bf968d95/ascii_artist.py
-# source: myon-bioinformatics/ascii_artist @ 20a192da70e6d364a91aab7d7b89cfe1bf968d95 (ascii_artist.py). 編集しない。更新は取り込み直す。
 # ascii_artist.py
 # metadata: __all__=32 | base_sha=7c21bacfac7b60327b77f9b31a87869ef7838a7e | updated_at=2026-09-23T05:39:43Z
 

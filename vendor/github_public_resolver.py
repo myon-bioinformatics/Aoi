@@ -1,5 +1,3 @@
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/mcp-toolcall-lab/blob/56982948ba79c070664cf9efe87a3d753e417acf/src/mcp_toolcall_lab/github_public_resolver.py
-# source: myon-bioinformatics/mcp-toolcall-lab @ 56982948ba79c070664cf9efe87a3d753e417acf (src/mcp_toolcall_lab/github_public_resolver.py). 編集しない。更新は取り込み直す。
 """Anonymous, read-only resolver for public GitHub resources.
 
 The resolver distinguishes an observed HTTP result from an unverified claim.

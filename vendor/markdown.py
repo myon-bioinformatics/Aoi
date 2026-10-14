@@ -1,5 +1,3 @@
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/markdown/blob/aa5bccfcaf11f17473c7f1ff502509dfa1547660/markdown.py
-# source: myon-bioinformatics/markdown @ aa5bccfcaf11f17473c7f1ff502509dfa1547660 (markdown.py). 編集しない。更新は取り込み直す。
 # markdown.py
 # metadata: __all__=127 | base_sha=99b6a174a883f60a9c3ed01164a81fd7bd26ff76 | updated_at=2026-09-27T09:40:47Z
 """Stdlib-only Markdown utility functions.

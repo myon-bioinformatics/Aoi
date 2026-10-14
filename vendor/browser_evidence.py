@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/myon-bioinformatics/blob/7f45f52ae677e879de49db01008d8ddf4ce5a54d/browser_evidence.py
-# source: myon-bioinformatics/myon-bioinformatics @ 7f45f52ae677e879de49db01008d8ddf4ce5a54d (browser_evidence.py). 編集しない。更新は取り込み直す。
 """Shared stdlib-only screenshot evidence manifest; independent browser engines."""
 from __future__ import annotations
 

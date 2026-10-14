@@ -1,0 +1,15 @@
+@import url("https://example.test/not-loaded.css");
+
+.calendar a {
+    background-color: #abcdef;
+    background-image: url("https://example.test/not-loaded.svg");
+}
+
+@media (min-width: 800px) {
+    .calendar td > a { border-color: #0a0; }
+}
+
+@font-face {
+    font-family: SavedCalendar;
+    src: url("https://example.test/not-loaded.woff2");
+}

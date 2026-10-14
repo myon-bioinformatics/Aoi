@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/Err-o-RoadRunner/blob/13c0897425146f2c17fae85138c6d520b80a80df/vendor/check_evidence.py
-# source: myon-bioinformatics/Err-o-RoadRunner @ 13c0897425146f2c17fae85138c6d520b80a80df (vendor/check_evidence.py). 編集しない。更新は取り込み直す。
+# vendored into BlueProbe from https://github.com/myon-bioinformatics/browser-test-kit/blob/78a3a8c37ca3306f7746046de335e044e2761a93/scripts/check_evidence.py
+# source: myon-bioinformatics/browser-test-kit @ 78a3a8c37ca3306f7746046de335e044e2761a93 (scripts/check_evidence.py). 編集しない。更新は取り込み直す。
 """Validate screenshot evidence by project identity, not by file count.
 
 Each successful test attempt writes a metadata JSON file next to its PNG::

@@ -3,31 +3,27 @@
 myon-bioinformatics の公開・非アーカイブのリポジトリにある `vendor/` 配下から、
 **単一ファイル・標準ライブラリのみ**の Python モジュールを、使う・使わないに関わらず置いている。
 各ファイルの先頭に取り込み元（リポジトリ・コミット SHA・パス）を書いた。編集せず、更新は取り込み直す。
-上流のリポジトリがあるものは上流から、ないものは vendor していたリポジトリから取った。
+本来の置き場（上流）があるものは上流から、上流から消えたものは vendor していたリポジトリから取った。
 BlueProbe 本体はこれらを import しない（`pythonpath` にも入れていない）。
 
-| ファイル | 取り込み元 | パス | コミット |
-|---|---|---|---|
-| `ascii_artist.py` | [ascii_artist](https://github.com/myon-bioinformatics/ascii_artist) | `ascii_artist.py` | `20a192da70e6` |
-| `browser_evidence.py` | [Ironmate](https://github.com/myon-bioinformatics/Ironmate) | `vendor/browser_evidence.py` | `9643e2eae1c6` |
-| `check_evidence.py` | [Err-o-RoadRunner](https://github.com/myon-bioinformatics/Err-o-RoadRunner) | `vendor/check_evidence.py` | `13c089742514` |
-| `check_png.py` | [Err-o-RoadRunner](https://github.com/myon-bioinformatics/Err-o-RoadRunner) | `vendor/check_png.py` | `13c089742514` |
-| `ci_status.py` | [Ironmate](https://github.com/myon-bioinformatics/Ironmate) | `vendor/ci_status.py` | `9643e2eae1c6` |
-| `cli_args.py` | [cli_args](https://github.com/myon-bioinformatics/cli_args) | `cli_args.py` | `6317485625ac` |
-| `gh_identity.py` | [gh_identity](https://github.com/myon-bioinformatics/gh_identity) | `gh_identity.py` | `c6b52a29d8cd` |
-| `gh_ops.py` | [Err-o-RoadRunner](https://github.com/myon-bioinformatics/Err-o-RoadRunner) | `vendor/gh_ops.py` | `13c089742514` |
-| `gh_workflow.py` | [Ironmate](https://github.com/myon-bioinformatics/Ironmate) | `vendor/gh_workflow.py` | `9643e2eae1c6` |
-| `git_inspector.py` | [Ironmate](https://github.com/myon-bioinformatics/Ironmate) | `vendor/git_inspector.py` | `9643e2eae1c6` |
-| `github_public_resolver.py` | [ascii_artist](https://github.com/myon-bioinformatics/ascii_artist) | `vendor/github_public_resolver.py` | `20a192da70e6` |
-| `jsonl_digest.py` | [Err-o-RoadRunner](https://github.com/myon-bioinformatics/Err-o-RoadRunner) | `vendor/jsonl_digest.py` | `13c089742514` |
-| `main.py` | [Ironmate](https://github.com/myon-bioinformatics/Ironmate) | `vendor/main.py` | `9643e2eae1c6` |
-| `markdown.py` | [markdown](https://github.com/myon-bioinformatics/markdown) | `markdown.py` | `aa5bccfcaf11` |
-| `nvd_nist_known_vulns.py` | [nvd_nist_known_vulns](https://github.com/myon-bioinformatics/nvd_nist_known_vulns) | `nvd_nist_known_vulns.py` | `cc85b8263c15` |
-| `python_artifact_provenance.py` | [ascii_artist](https://github.com/myon-bioinformatics/ascii_artist) | `vendor/python_artifact_provenance.py` | `20a192da70e6` |
-| `repository_metadata_contract.py` | [Err-o-RoadRunner](https://github.com/myon-bioinformatics/Err-o-RoadRunner) | `vendor/repository_metadata_contract.py` | `13c089742514` |
-| `vendor_sync.py` | [Ironmate](https://github.com/myon-bioinformatics/Ironmate) | `vendor/vendor_sync.py` | `9643e2eae1c6` |
-| `xprobe.py` | [xprobe](https://github.com/myon-bioinformatics/xprobe) | `xprobe.py` | `db770a438b7f` |
-| `yourself.py` | [yourself](https://github.com/myon-bioinformatics/yourself) | `yourself.py` | `0da9a5b19eb0` |
+| ファイル | 取り込み元 | パス | コミット | 本来の置き場 |
+|---|---|---|---|---|
+| `ascii_artist.py` | [ascii_artist](https://github.com/myon-bioinformatics/ascii_artist) | `ascii_artist.py` | `20a192da70e6` | 同左 |
+| `browser_evidence.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `browser_evidence.py` | `7f45f52ae677` | 同左 |
+| `check_evidence.py` | [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/check_evidence.py` | `78a3a8c37ca3` | 同左 |
+| `cli_args.py` | [cli_args](https://github.com/myon-bioinformatics/cli_args) | `cli_args.py` | `6317485625ac` | 同左 |
+| `gh_identity.py` | [gh_identity](https://github.com/myon-bioinformatics/gh_identity) | `gh_identity.py` | `c6b52a29d8cd` | 同左 |
+| `gh_ops.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `gh_ops.py` | `7f45f52ae677` | 同左 |
+| `git_inspector.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `git_inspector.py` | `7f45f52ae677` | 同左 |
+| `github_public_resolver.py` | [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/github_public_resolver.py` | `56982948ba79` | 同左 |
+| `jsonl_digest.py` | [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/jsonl_digest.py` | `78a3a8c37ca3` | 同左 |
+| `markdown.py` | [markdown](https://github.com/myon-bioinformatics/markdown) | `markdown.py` | `aa5bccfcaf11` | 同左 |
+| `nvd_nist_known_vulns.py` | [nvd_nist_known_vulns](https://github.com/myon-bioinformatics/nvd_nist_known_vulns) | `nvd_nist_known_vulns.py` | `cc85b8263c15` | 同左 |
+| `python_artifact_provenance.py` | [ascii_artist](https://github.com/myon-bioinformatics/ascii_artist) | `vendor/python_artifact_provenance.py` | `20a192da70e6` | Ironmate（上流から削除済み） |
+| `repository_metadata_contract.py` | [Err-o-RoadRunner](https://github.com/myon-bioinformatics/Err-o-RoadRunner) | `vendor/repository_metadata_contract.py` | `13c089742514` | Ironmate（上流から削除済み） |
+| `vendor_sync.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `vendor_sync.py` | `7f45f52ae677` | 同左 |
+| `xprobe.py` | [xprobe](https://github.com/myon-bioinformatics/xprobe) | `xprobe.py` | `db770a438b7f` | 同左 |
+| `yourself.py` | [yourself](https://github.com/myon-bioinformatics/yourself) | `yourself.py` | `0da9a5b19eb0` | 同左 |
 
 ## 取り込まなかったもの
 
@@ -54,3 +50,7 @@ BlueProbe 本体はこれらを import しない（`pythonpath` にも入れて�
 | `video_to_image_gui.py` | video_to_image_gui | 標準ライブラリ以外: FreeSimpleGUI, PySimpleGUI |
 | `web_ui.py` | web-ui | css/・js/ の資産と組で使う複数ファイル構成 |
 | `xprobe_pytest.py` | nvd_nist_known_vulns | 標準ライブラリ以外: pytest |
+| `main.py` | Ironmate | アプリ内部の HTTP サーバのつなぎ（独立モジュールではない） |
+| `ci_status.py` | Ironmate（上流 myon-bioinformatics） | 読み取り専用の CI 状態は `gh_ops.py` と重複。`vendor/gh_identity.py` を相対パスで読む前提 |
+| `gh_workflow.py` | Ironmate（上流 myon-bioinformatics） | GitHub Actions 操作は `gh_ops.py`（親の正規ツール）と重複。gh CLI と隣の gh_identity 前提 |
+| `check_png.py` | Err-o-RoadRunner（上流 browser-test-kit） | PNG 検証は `browser_evidence.py` と重複 |

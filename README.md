@@ -2,11 +2,51 @@
 
 > まず見に行く。解釈はあとで。
 
-![BlueProbe](../docs/images/blueprobe.webp)
+![BlueProbe](docs/images/blueprobe.webp)
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
 観測と発見を担う。取得したページを読み、**何がそこにあるか**を記録する。勝敗や原因の判断はしない。
+
+## 出自
+
+このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト
+[`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) から、履歴を保ったまま独立させたもの。
+Aoi 側の `blueprobe/` とは `git subtree` で同期し続ける（どちらで変更しても、もう一方へ反映する）。
+
+独立の目的は、HTML/CSS/DOM の構造を見て観測・抽出する知見を、リポジトリ横断でここに集めること。
+他リポジトリのコードは vendor 配下にも関数コピーにもしない。下の参照先を見に行き、考え方と契約を揃える。
+各リポジトリ側でのリファクタリングはそれぞれで行ってよい。
+
+## 参照・整合する関連リポジトリ
+
+| リポジトリ | 見るところ | 内容 |
+|---|---|---|
+| [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/adapters/html_snapshot.py`, `css_inspect.py`, `source_access.py`, `docs/source-access.md` | 保存HTMLのオフライン抽出・CSS検査・取得元アクセス（SHA で固定して任意接続） |
+| [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/page_text.py`, `examples/capture_browser_dom.py`, `docs/dom-capture.md`, `fixtures/page_text/` | ページ本文抽出とブラウザDOM採取 |
+| [web-ui](https://github.com/myon-bioinformatics/web-ui) | `docs/local-dom-lab.md`, `tool/serve_dom_lab.py`, `tests/integration/test_gradio_dom.py` | ローカルDOMラボと DOM 証跡 |
+| [flutter_navigation_basic](https://github.com/myon-bioinformatics/flutter_navigation_basic) | `e2e/tests/*.spec.ts` | Flutter Web 画面の DOM 観測（Playwright） |
+
+揃え方: 参照先で新しい抽出の工夫や失敗を見つけたら、まずここのコーパス（`tests/cases/`）か `docs/antipatterns.md` に観測として残し、それから実装を合わせる。
+
+## 同期
+
+```bash
+# Aoi → BlueProbe（Aoi のルートで）
+git subtree push -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main
+# BlueProbe → Aoi（Aoi のルートで）
+git subtree pull -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main --squash
+```
+
+キャッシュ連携テストは QueRyu（`Aoi/queryu`）を使う。CI は Aoi を固定 SHA（`AOI_SHA`）で `.test-deps/aoi` に checkout し、
+`PYTHONPATH` に `queryu` を足す。ローカルでは `PYTHONPATH=<Aoi>/queryu uv run pytest -q`。
+
+`pyproject.toml`・`conftest.py`・`docs/images/`・`.github/` は独立リポジトリ側だけのファイル。
+
+## 今後の検討
+
+他リポジトリが、BlueProbe の中核となる表記正規化・抽出の関数だけを最小の単一ファイルモジュールとして置く可能性はある。
+その場合でも、このリポジトリ全体を vendor することはしない。現時点では未定。
 
 ## 構成
 
@@ -30,7 +70,7 @@ unknown : どの区分にも当たらなかったもの。原文を残す → �
 
 ## 取得元を足す
 
-`blueprobe/<name>.py` に次の2つを書けば、QueRyu と `inspect` からそのまま使える。
+`<name>.py`（Aoi では `blueprobe/<name>.py`）に次の2つを書けば、QueRyu と `inspect` からそのまま使える。
 
 ```python
 def pages(scope) -> list[tuple[str, str, str]]: ...   # (key, url, group)
@@ -43,7 +83,7 @@ def check(records) -> list[str]: ...                 # 任意。既知値との�
 ## 実行
 
 ```bash
-uv run python blueprobe/blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
+uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
 ```
 
 キャッシュだけを読み、ネットワークには出ない。未知の表記があれば件数を表示する（`--strict` で終了コード1）。
@@ -81,8 +121,8 @@ NPB parser には原文HTMLをそのまま渡す。snapshot対応の `HtmlSource
 `mcp_toolcall_lab.source_access.extract_snapshot` で検証・抽出する。
 独自 validator や HTML parser は増やさない。
 ここでの再解析はHTML構造の抽出・観測値の読み取りを指す。集計・指標計算は
-[SakAnalytics](../sakanalytics/README.md)、仮説評価は
-[PythDRagoras](../pythdragoras/README.md) が担う。
+[SakAnalytics](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics)、仮説評価は
+[PythDRagoras](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) が担う。
 
 ```python
 from blueprobe import inspect_cache
@@ -137,7 +177,7 @@ CI の `Offline lab integration (Python 3.14)` は、lab のマージコミッ�
 通常の Python 3.11–3.15 のテスト行列は lab なしで維持し、統合テストは 3.14 のみで行う。
 全 Python 版での lab 統合を検証したという意味ではない。
 
-Aoi のリポジトリルートで実行する（clone はテスト前の準備で、抽出中の通信ではない）。
+このリポジトリのルートで実行する（Aoi では Aoi のルートで、テストパスに `blueprobe/` を付ける）（clone はテスト前の準備で、抽出中の通信ではない）。
 
 ```bash
 git clone https://github.com/myon-bioinformatics/mcp-toolcall-lab.git .test-deps/lab
@@ -145,7 +185,7 @@ git -C .test-deps/lab checkout --detach 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
 test "$(git -C .test-deps/lab rev-parse HEAD)" = 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
 export AOI_LAB_SOURCE_ROOT="$PWD/.test-deps/lab/src"
 export PYTHONPATH="$AOI_LAB_SOURCE_ROOT"
-uv run --locked --python 3.14 python - <<'PY'
+uv run --python 3.14 python - <<'PY'
 import os
 from pathlib import Path
 from mcp_toolcall_lab.adapters import css_inspect, html_snapshot
@@ -156,16 +196,16 @@ for module in (html_snapshot, css_inspect):
     assert Path(module.__file__).resolve() == expected, module.__file__
 assert Path(source_access.__file__).resolve() == root / 'mcp_toolcall_lab/source_access.py'
 PY
-uv run --locked --python 3.14 pytest -q --require-lab-integration \
-  blueprobe/tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows \
-  blueprobe/tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
-  blueprobe/tests/test_blueprobe_html_source.py::test_verified_cache_real_lab_snapshot_replay \
+uv run --python 3.14 pytest -q --require-lab-integration \
+  tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows \
+  tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
+  tests/test_blueprobe_html_source.py::test_verified_cache_real_lab_snapshot_replay \
   --junitxml=build/test-results/lab-integration-3.14.xml
 # lab ありの全テスト
-uv run --locked --python 3.14 pytest -q --require-lab-integration
+uv run --python 3.14 pytest -q --require-lab-integration
 # lab なしの通常テスト。別途 lab をインストールしていない環境で実行する。
 unset PYTHONPATH AOI_LAB_SOURCE_ROOT
-uv run --locked --python 3.14 pytest -q
+uv run --python 3.14 pytest -q
 ```
 
 `--require-lab-integration` は実 extractor の3テストを必須にし、未収集・skip・

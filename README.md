@@ -55,6 +55,9 @@ git subtree pull -P blueprobe https://github.com/myon-bioinformatics/BlueProbe m
 | `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`） |
 | `npb_calendar.py` | 取得元: npb.jp の月別公式戦カレンダー |
 | `docs/npb_calendar.md` | その取得元で、どの年の何を確認したか（観測と未確認を分ける） |
+| `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
+| `docs/contract/v1/` | 報告と snapshot 記録の契約（追加はv1のまま、破壊的変更はv2） |
+| `docs/boundaries.md` | BlueProbe / QueRyu / web-ui の責務の境界（提案） |
 | `docs/antipatterns.md` | 繰り返しそうな失敗とその約束 |
 | `tests/cases/*.jsonl` | 表記揺れのコーパス（xprobe と同じ id / category / value / reason 形式） |
 
@@ -114,7 +117,11 @@ CSSの描画・JavaScript実行・HTML5ブラウザDOM再構築を意味しな�
 
 ### 検証済みキャッシュから snapshot を再利用する
 
-`inspect_cache(source, cache, entries=None, records_out=None)` は QueRyu の照合済み
+供給元は差し替えられる（契約は [docs/contract/v1/snapshot.md](docs/contract/v1/snapshot.md)）。
+任意の供給元は `inspect_snapshots(source, supplier)`、QueRyu は `inspect_queryu_cache`。
+旧名 `inspect_cache` は互換のため残す（非推奨）。
+
+`inspect_queryu_cache(source, cache, entries=None, records_out=None)` は QueRyu の照合済み
 本文を読む。既定では最新行、`entries` を指定すると選んだ取得時点の行を使う。
 NPB parser には原文HTMLをそのまま渡す。snapshot対応の `HtmlSource` には
 `Cache.snapshot()` の envelope を渡し、既存の
@@ -125,12 +132,12 @@ NPB parser には原文HTMLをそのまま渡す。snapshot対応の `HtmlSource
 [PythDRagoras](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) が担う。
 
 ```python
-from blueprobe import inspect_cache
+from blueprobe import inspect_queryu_cache
 from html_source import HtmlSource
 from queryu import Cache
 
 records = []
-rows = inspect_cache(HtmlSource(selector=".calendar a"), Cache("data/raw/npb_calendar"),
+rows = inspect_queryu_cache(HtmlSource(selector=".calendar a"), Cache("data/raw/npb_calendar"),
                      records_out=records)
 ```
 

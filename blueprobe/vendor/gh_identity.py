@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/gh_identity/blob/c6b52a29d8cd1dce0ebe0c4288cd16b0e4b84b96/gh_identity.py
-# source: myon-bioinformatics/gh_identity @ c6b52a29d8cd1dce0ebe0c4288cd16b0e4b84b96 (gh_identity.py). 編集しない。更新は取り込み直す。
 """gh_identity: stdlib-only GitHub operations with gh-first/urllib fallback."""
 from __future__ import annotations
 from collections import Counter

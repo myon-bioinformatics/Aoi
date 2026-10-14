@@ -2,9 +2,6 @@
 
 > まず見に行く。解釈はあとで。
 
-> BlueProbe は独立リポジトリ [myon-bioinformatics/BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) としても公開している。
-> このディレクトリとは `git subtree` で同期する。リポジトリ横断の HTML/CSS/DOM 観測の知見はそちらに集約する。
-
 ![BlueProbe](docs/images/blueprobe.webp)
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
@@ -18,7 +15,10 @@
 Aoi 側の `blueprobe/` とは `git subtree` で同期し続ける（どちらで変更しても、もう一方へ反映する）。
 
 独立の目的は、HTML/CSS/DOM の構造を見て観測・抽出する知見を、リポジトリ横断でここに集めること。
-他リポジトリのコードは vendor 配下にも関数コピーにもしない。下の参照先を見に行き、考え方と契約を揃える。
+BlueProbe の実行コードは他リポジトリの実装に依存せず、必要な情報は参照先と契約を揃えて扱う。
+例外として `vendor/` には、公開リポジトリから選んだ標準ライブラリのみの単一ファイルを、来歴を記録するカタログとして保持する。
+このカタログは BlueProbe の実行コード・テストから import せず、Python path にも加えない。配布依存や BlueProbe の API ではない。
+各ファイルの上流コミットとバイト列は `vendor.lock.json`（`vendor-lock/1`）で固定し、CIで照合する。
 各リポジトリ側でのリファクタリングはそれぞれで行ってよい。
 
 ## 参照・整合する関連リポジトリ

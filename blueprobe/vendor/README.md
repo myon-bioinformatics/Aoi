@@ -2,23 +2,9 @@
 
 myon-bioinformatics の公開・非アーカイブのリポジトリにある `vendor/` 配下から、
 **単一ファイル・標準ライブラリのみ**の Python モジュールを、使う・使わないに関わらず置いている。
-各ファイルの先頭に取り込み元（リポジトリ・コミット SHA・パス）を書いた。編集せず、更新は取り込み直す。
+取り込み元（リポジトリ・コミット SHA・パス）とバイト列はルートの [`vendor.lock.json`](../vendor.lock.json)（`vendor-lock/1`）で固定する。編集せず、更新は lock を書き換えて取り込み直す。
 本来の置き場（上流）があるものは上流から、上流から消えたものは vendor していたリポジトリから取った。
 BlueProbe 本体はこれらを import しない（`pythonpath` にも入れていない）。
-
-| ファイル | 取り込み元 | パス | コミット | 本来の置き場 |
-|---|---|---|---|---|
-| `ascii_artist.py` | [ascii_artist](https://github.com/myon-bioinformatics/ascii_artist) | `ascii_artist.py` | `20a192da70e6` | 同左 |
-| `browser_evidence.py` | [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) | `browser_evidence.py` | `7f45f52ae677` | 同左 |
-| `check_evidence.py` | [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/check_evidence.py` | `78a3a8c37ca3` | 同左。親の `browser_evidence.py`（10-08 の screenshot 証跡契約）に置き換わる可能性あり |
-| `cli_args.py` | [cli_args](https://github.com/myon-bioinformatics/cli_args) | `cli_args.py` | `6317485625ac` | 同左 |
-| `gh_identity.py` | [gh_identity](https://github.com/myon-bioinformatics/gh_identity) | `gh_identity.py` | `c6b52a29d8cd` | 同左 |
-| `github_public_resolver.py` | [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/github_public_resolver.py` | `56982948ba79` | 同左 |
-| `jsonl_digest.py` | [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/jsonl_digest.py` | `78a3a8c37ca3` | 同左 |
-| `markdown.py` | [markdown](https://github.com/myon-bioinformatics/markdown) | `markdown.py` | `aa5bccfcaf11` | 同左 |
-| `nvd_nist_known_vulns.py` | [nvd_nist_known_vulns](https://github.com/myon-bioinformatics/nvd_nist_known_vulns) | `nvd_nist_known_vulns.py` | `cc85b8263c15` | 同左 |
-| `xprobe.py` | [xprobe](https://github.com/myon-bioinformatics/xprobe) | `xprobe.py` | `db770a438b7f` | 同左 |
-| `yourself.py` | [yourself](https://github.com/myon-bioinformatics/yourself) | `yourself.py` | `0da9a5b19eb0` | 同左 |
 
 ## 取り込まなかったもの
 

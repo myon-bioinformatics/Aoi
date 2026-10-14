@@ -1,5 +1,3 @@
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/nvd_nist_known_vulns/blob/cc85b8263c159147e2e4cdce5b30499209382e3a/nvd_nist_known_vulns.py
-# source: myon-bioinformatics/nvd_nist_known_vulns @ cc85b8263c159147e2e4cdce5b30499209382e3a (nvd_nist_known_vulns.py). 編集しない。更新は取り込み直す。
 """Dependency-free NVD CVE API 2.0 client with local CVSS score calculation.
 
 Network requests are globally throttled per process; concurrent callers are not synchronized.

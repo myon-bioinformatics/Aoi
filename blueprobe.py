@@ -74,28 +74,41 @@ def inspect(source, pages: Iterable[tuple[str, str, str, str]], records_out: lis
     return _inspect(source.parse, pages, records_out)
 
 
-def inspect_cache(source, cache, entries=None, records_out=None) -> list[dict]:
-    """Replay latest or explicitly selected historical cache entries, offline.
+def inspect_snapshots(source, supplier, entries=None, records_out=None) -> list[dict]:
+    """供給元（snapshot_source.SnapshotSupplier）の保存済み本文を、オフラインで再解析する。
 
-    Snapshot-aware sources receive the verified envelope; existing semantic
-    parsers receive the unchanged decoded HTML. Cache integrity errors stop the
-    replay before parser invocation and never trigger a replacement fetch.
+    entries を省くと supplier.entries()（既定の行）を読む。指定すれば、その取得時点の行を読む。
+    parse_snapshot を持つ source には html-snapshot/1 の記録を、それ以外には本文を渡す。
+    照合の失敗は parser を呼ぶ前に止まり、再取得で置き換えない。
     """
     snapshot_parser = getattr(source, 'parse_snapshot', None)
     if entries is None:
-        entries = [entry for _, entry in sorted(cache.latest().items())]
+        entries = list(supplier.entries())
 
     def pages():
         for entry in entries:
             if snapshot_parser is not None:
-                snapshot = cache.snapshot(entry)
+                snapshot = supplier.snapshot(entry)
                 payload = snapshot if snapshot['html'] else ''
             else:
-                payload = cache.body(entry)
+                payload = supplier.body(entry)
             yield entry['key'], entry['url'], entry['group'], payload
 
     parser = (lambda snapshot, url: snapshot_parser(snapshot)) if snapshot_parser is not None else source.parse
     return _inspect(parser, pages(), records_out)
+
+
+def inspect_queryu_cache(source, cache, entries=None, records_out=None) -> list[dict]:
+    """QueRyu の Cache を供給元として再解析する（QueRyuCacheSource 経由）。"""
+    from snapshot_source import QueRyuCacheSource
+    return inspect_snapshots(source, QueRyuCacheSource(cache), entries, records_out)
+
+
+def inspect_cache(source, cache, entries=None, records_out=None) -> list[dict]:
+    """非推奨: inspect_queryu_cache の旧名。Aoi/QueRyu 側の互換のために残す（契約 v1 の間は削除しない）。"""
+    import warnings
+    warnings.warn("inspect_cache is deprecated; use inspect_queryu_cache", DeprecationWarning, stacklevel=2)
+    return inspect_queryu_cache(source, cache, entries, records_out)
 
 
 def _inspect(parser, pages, records_out):
@@ -151,7 +164,7 @@ def main(argv=None) -> int:
         return 1
     from queryu import Cache
     records: list = []
-    rows = inspect_cache(source, Cache(args.cache), records_out=records)
+    rows = inspect_queryu_cache(source, Cache(args.cache), records_out=records)
     checks = source.check(records) if hasattr(source, "check") else None
     md = to_markdown(rows, f"{args.source}: 観測された構造", checks)
     if args.out:

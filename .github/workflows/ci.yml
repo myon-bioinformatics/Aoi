@@ -86,7 +86,7 @@ jobs:
     env:
       LAB_SHA: 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
       AOI_LAB_SOURCE_ROOT: ${{ github.workspace }}/.test-deps/lab/src
-      PYTHONPATH: ${{ github.workspace }}/.test-deps/lab/src
+      PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/.test-deps/lab/src
     steps:
       - uses: actions/checkout@v7
       # Test-only source checkout. Keep html_snapshot and css_inspect together;

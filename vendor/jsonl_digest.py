@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/browser-test-kit/blob/78a3a8c37ca3306f7746046de335e044e2761a93/scripts/jsonl_digest.py
-# source: myon-bioinformatics/browser-test-kit @ 78a3a8c37ca3306f7746046de335e044e2761a93 (scripts/jsonl_digest.py). 編集しない。更新は取り込み直す。
 """Digest a JSONL log (events, test or agent transcripts, tool traces) instead of reading it whole.
 
 Prints the record count (and unparsable lines), counts per kind (``--key``,

@@ -1,5 +1,3 @@
-# vendored into BlueProbe from https://github.com/myon-bioinformatics/xprobe/blob/db770a438b7f9d43df526e1ad380fc7752d959d4/xprobe.py
-# source: myon-bioinformatics/xprobe @ db770a438b7f9d43df526e1ad380fc7752d959d4 (xprobe.py). 編集しない。更新は取り込み直す。
 """Stdlib-only search and failure probes; copy this file to vendor it.
 
 Importing this module performs no I/O. Probes execute only caller-supplied

@@ -2,6 +2,9 @@
 
 > まず見に行く。解釈はあとで。
 
+> BlueProbe は独立リポジトリ [myon-bioinformatics/BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) としても公開している。
+> このディレクトリとは `git subtree` で同期する。リポジトリ横断の HTML/CSS/DOM 観測の知見はそちらに集約する。
+
 ![BlueProbe](../docs/images/blueprobe.webp)
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*

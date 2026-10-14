@@ -284,6 +284,50 @@ def _same_ranking(left: list[dict], right: list[dict], derived_cols: set[str]) -
     return top_view(left, derived_cols) == top_view(right, derived_cols)
 
 
+def classification_sets(df: pl.DataFrame, target: list[dict], row: dict) -> dict:
+    """Exact, bounded confusion sets identified by unit, rather than counts alone."""
+    labels = unit_labels(df)
+    truth = rule_search._mask(df, target)
+    prediction = 0
+    for group in row["if_any"]:
+        prediction |= rule_search._mask(df, group)
+    full = (1 << df.height) - 1
+    masks = {"tp": prediction & truth, "fp": prediction & ~truth & full,
+             "fn": ~prediction & truth & full, "tn": ~prediction & ~truth & full}
+    return {key: sorted(label for i, label in enumerate(labels) if mask & (1 << i))
+            for key, mask in masks.items()}
+
+
+def unit_comparison(df: pl.DataFrame, target: list[dict], baseline: list[dict],
+                    augmented: list[dict]) -> dict:
+    """Compare every retained rule to the best baseline on the discovery sample."""
+    reference = classification_sets(df, target, baseline[0]) if baseline else None
+    baseline_sets = [classification_sets(df, target, row) for row in baseline]
+    rows = []
+    for rank, row in enumerate(augmented, 1):
+        units = classification_sets(df, target, row)
+        entry = {"rank": rank, "formula": rule_text(row), "sets": units,
+                 "matching_baseline_top_ranks": [i for i, sets in enumerate(baseline_sets, 1) if sets == units]}
+        if reference is not None:
+            overlap = {}
+            for key in reference:
+                left, right = set(reference[key]), set(units[key])
+                overlap[key] = {"common": sorted(left & right),
+                                "baseline_only": sorted(left - right),
+                                "rule_only": sorted(right - left)}
+            entry.update({"overlap": overlap,
+                          "same_predictions": units == reference,
+                          "corrected_fp": sorted(set(reference["fp"]) & set(units["tn"])),
+                          "corrected_fn": sorted(set(reference["fn"]) & set(units["tp"])),
+                          "introduced_fp": sorted(set(reference["tn"]) & set(units["fp"])),
+                          "introduced_fn": sorted(set(reference["tp"]) & set(units["fn"]))})
+        rows.append(entry)
+    return {"scope": "same discovery sample; not independent validation",
+            "independent_validation_performed": False,
+            "unit_labels": sorted(unit_labels(df)),
+            "baseline_best": reference, "augmented_top": rows}
+
+
 def compare(df: pl.DataFrame, target: list[dict], candidates: list[dict], *,
             rank: int = DEFAULT_RANK, stages: int = DEFAULT_STAGES, seed: int = DEFAULT_SEED,
             top: int = 20, max_terms: int = 2, max_conds: int = 2, meta: dict | None = None) -> dict:
@@ -336,6 +380,7 @@ def compare(df: pl.DataFrame, target: list[dict], candidates: list[dict], *,
         },
         "baseline": {"top": top_view(baseline, set())},
         "with_derived": {"top": with_top},
+        "unit_comparison": unit_comparison(derived["frame"], target, baseline, both),
         "derived_in_top": entered,
         "derived_candidates": info["derived_candidates"],
         "residual": {
@@ -388,6 +433,24 @@ def render_markdown(report: dict) -> str:
     lines += ["", "成立は前件が真かつ目的が真の単位数（tp）。反例は前件が真かつ目的が偽の単位数（fp）。", ""]
     lines += _formula_table("既存の候補だけ", report["baseline"]["top"])
     lines += _formula_table("既存の候補に派生候補を足したもの", report["with_derived"]["top"])
+    comparison = report["unit_comparison"]
+    lines += ["", "### 球団年ごとの判定集合", "",
+              "既存最良式との比較。全単位のID、TP/FP/FN/TN集合、共通部分と両方向の差分は comparison.json の `unit_comparison` に保存する。",
+              "FP修正は既存FP→TN、FN修正は既存FN→TP。新規誤りと合わせて評価する。", "",
+              "| 順位 | 判定集合一致 | FP修正 | FN修正 | 新規FP | 新規FN |",
+              "|---:|---|---|---|---|---|"]
+    for row in comparison["augmented_top"]:
+        cells = [str(row["rank"]), str(row.get("same_predictions"))]
+        cells += [", ".join(row.get(key, [])) or "—" for key in
+                  ("corrected_fp", "corrected_fn", "introduced_fp", "introduced_fn")]
+        lines.append("| " + " | ".join(cells) + " |")
+    matched = sum(bool(row["matching_baseline_top_ranks"]) for row in comparison["augmented_top"])
+    lines += ["", f"上位{len(comparison['augmented_top'])}式中{matched}式は既存上位式のいずれかと判定集合が一致する。",
+              "この比較は探索に使った同じ標本での記述であり、独立検証ではない。目的列を因子分解に渡さなくても、式の選択は目的列で採点される。",
+              "独立検証は未実施。式・変換・設定を固定し、未使用の球団年に適用して評価する必要がある。保存済みloading_unitsは標本内のマスクであり、新しい球団年への外挿器ではない。",
+
+              "`matching_baseline_top_ranks` は既存上位式との集合一致を示す。一致がなくても既存候補全体で表現不能という証明ではない。",
+              "同一判定の式は追加の識別能力を示さない。誤りの修正があっても新規誤りと相殺される場合は改善と扱わない。", ""]
     lines += ["", "### 上位に入った派生候補", ""]
     if report["derived_in_top"]:
         for cand in report["derived_in_top"]:

@@ -264,3 +264,51 @@ def test_c001_fresh_derivation_ignores_b_class(monkeypatch):
     assert info["candidates_added"] + info["candidates_dropped"] == info["patterns_requested"]
     assert info["matrix_shape"] == [df.height, len(spec["candidate"])]
     assert all(cand["source"] == "littlebit-approx" and cand["registration"] == "posthoc" for cand in got["candidates"])
+
+
+def test_equal_counts_do_not_imply_equal_unit_predictions():
+    df = pl.DataFrame({'team': ['a', 'b', 'c', 'd'], 'season': [2020]*4,
+                       'y': [True, True, False, False],
+                       'a': [True, False, True, False],
+                       'b': [False, True, False, True]})
+    target = [{'col': 'y', 'op': '==', 'value': True}]
+    def rule(col):
+        return {'if_any': [[{'col': col, 'op': '==', 'value': True}]]}
+    base, other = rule('a'), rule('b')
+    left = la.classification_sets(df, target, base)
+    right = la.classification_sets(df, target, other)
+    assert {k: len(v) for k, v in left.items()} == {k: len(v) for k, v in right.items()}
+    result = la.unit_comparison(df, target, [base], [other])['augmented_top'][0]
+    assert not result['same_predictions']
+    assert result['corrected_fp'] == ['c-2020']
+    assert result['introduced_fp'] == ['d-2020']
+    assert result['corrected_fn'] == ['b-2020']
+    assert result['introduced_fn'] == ['a-2020']
+    assert all(not change['common'] for change in result['overlap'].values())
+    reordered = df.reverse()
+    assert la.unit_comparison(reordered, target, [base], [other])['augmented_top'][0] == result
+
+
+def test_saved_unit_comparison_recomputed_from_saved_masks():
+    report = json.loads(ART.read_text(encoding='utf-8'))
+    df, spec, _ = load_cycle(CYCLE)
+    frame = attach_loadings(df, report['derived_candidates'])
+    extra = [la.as_search_candidate(c) for c in report['derived_candidates']]
+    kw = _cycle_kw(spec, report['approximation']['top'])
+    baseline = search(df, spec['target'], spec['candidate'], **kw)
+    both = search(frame, spec['target'], [*spec['candidate'], *extra], **kw)
+    result = la.unit_comparison(frame, spec['target'], baseline, both)
+    assert result == report['unit_comparison']
+    assert result['independent_validation_performed'] is False
+    assert len(result['unit_labels']) == 156
+    assert {k:len(v) for k,v in result['baseline_best'].items()} == {'tp':70,'fp':6,'fn':8,'tn':72}
+    second = result['augmented_top'][1]
+    assert 'littlebit_s0_k0' in second['formula']
+    assert second['same_predictions'] and second['matching_baseline_top_ranks'] == [1, 2]
+    for row, scored in zip(result['augmented_top'], both):
+        sets = [set(v) for v in row['sets'].values()]
+        assert set.union(*sets) == set(result['unit_labels'])
+        assert sum(map(len, sets)) == 156
+        assert all(len(row['sets'][key]) == scored[key] for key in ('tp','fp','fn','tn'))
+        if row['same_predictions']:
+            assert all(not change['baseline_only'] and not change['rule_only'] for change in row['overlap'].values())

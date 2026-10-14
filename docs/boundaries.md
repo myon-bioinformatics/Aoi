@@ -23,3 +23,12 @@
 | browser-test-kit `scripts/page_text.py` | 本文抽出 | コピーしない。固定 SHA で参照し、BlueProbe 側に比較の観測を残す |
 
 web-ui に残すもの: 配信（Gradio/HTML の生成）、CSS/テーマ、HTML 構造の契約。
+
+## 未決: 「見に行く」側の持ち主
+
+`inspect_cache` は当面 DeprecationWarning を出したまま残す。
+
+「取りに行く・見に行く」側（保存済み本文の供給、および mcp-toolcall-lab の snapshot 証跡＝`html-snapshot/1` の生成と照合）は、
+BlueProbe より QueRyu が持つほうが自然かもしれない。QueRyu はすでに取得・来歴・`Cache.snapshot()` を持つため。
+その場合 BlueProbe は「読む・観測を報告する」に絞り、供給元の契約（`docs/contract/v1/snapshot.md`）だけを持つ。
+どちらに置くかは未決（open question）。

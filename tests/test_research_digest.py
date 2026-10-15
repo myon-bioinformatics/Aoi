@@ -48,10 +48,11 @@ def real_notes():
     return digest.collect(CYCLE)
 
 
-def test_real_28_notes_103_table_references_and_catalog_match(real_notes):
+def test_real_29_notes_103_table_references_and_catalog_match(real_notes):
     notes, codes, catalog = real_notes
-    assert [n["id"] for n in notes] == [f"R{i}" for i in range(1, 29)]
-    assert len(notes) == 28
+    assert [n["id"] for n in notes] == [f"R{i}" for i in range(1, 30)]
+    assert len(notes) == 29
+    assert notes[-1]["defines"] == []  # R29 explores separate LAB IDs, not registered P IDs.
     assert notes[-1]["recorded"] == "2026-10-15"
     assert sum(len(n["proposition_ids"]) for n in notes) == 103
     assert len(codes) >= 114

@@ -286,6 +286,7 @@ def main(argv=None) -> int:
     rebuilt = (lambda r: source.group(r) in scope) if hasattr(source, "group") else (lambda r: True)
     write_dataset(args.out, records, {
         "source": args.source, "scope": {"years": [years[0], years[-1]]},
+        "source_code_sha256": hashlib.sha256(Path(source.__file__).read_bytes()).hexdigest(),
         "normalization": NORMALIZATION, "dropped": counts, "unknown": unknown,
         "cache_manifest": str(args.cache / "manifest.jsonl"),
     }, rebuilt=rebuilt)

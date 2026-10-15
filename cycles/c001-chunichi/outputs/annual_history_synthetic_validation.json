@@ -1,0 +1,562 @@
+{
+  "schema": "aoi-annual-history-validation/1",
+  "real": {
+    "years": [
+      1950,
+      1951,
+      1952,
+      1953,
+      1954,
+      1955,
+      1956,
+      1957,
+      1958,
+      1959,
+      1960,
+      1961,
+      1962,
+      1963,
+      1964,
+      1965,
+      1966,
+      1967,
+      1968,
+      1969,
+      1970,
+      1971,
+      1972,
+      1973,
+      1974,
+      1975,
+      1976,
+      1977,
+      1978,
+      1979,
+      1980,
+      1981,
+      1982,
+      1983,
+      1984,
+      1985,
+      1986,
+      1987,
+      1988,
+      1989,
+      1990,
+      1991,
+      1992,
+      1993,
+      1994,
+      1995,
+      1996,
+      1997,
+      1998,
+      1999,
+      2000,
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "team_seasons": 939,
+    "records": 4125,
+    "cached_pages": 330,
+    "acquisition_events": 331,
+    "checks_passed": 19943,
+    "checks_failed": 0,
+    "failures": [],
+    "checks_by_kind": {
+      "standings_present": {
+        "passed": 198
+      },
+      "category_members": {
+        "passed": 638
+      },
+      "unique_members": {
+        "passed": 638
+      },
+      "six_teams": {
+        "passed": 44
+      },
+      "G=W+L+T": {
+        "passed": 1203
+      },
+      "G:batting": {
+        "passed": 1203
+      },
+      "G:pitching": {
+        "passed": 1203
+      },
+      "pitching:勝利": {
+        "passed": 1203
+      },
+      "pitching:敗北": {
+        "passed": 1203
+      },
+      "batting_average": {
+        "passed": 1203
+      },
+      "winning_percentage": {
+        "passed": 528
+      },
+      "G:fielding": {
+        "passed": 264
+      },
+      "total_bases": {
+        "passed": 264
+      },
+      "slugging": {
+        "passed": 264
+      },
+      "onbase": {
+        "passed": 264
+      },
+      "ERA": {
+        "passed": 264
+      },
+      "fielding_chances": {
+        "passed": 264
+      },
+      "fielding_percentage": {
+        "passed": 264
+      },
+      "home_road:W": {
+        "passed": 264
+      },
+      "home_road:L": {
+        "passed": 264
+      },
+      "home_road:T": {
+        "passed": 264
+      },
+      "cross_source:standings:勝利": {
+        "passed": 264
+      },
+      "cross_source:standings:勝率": {
+        "passed": 264
+      },
+      "cross_source:standings:引分": {
+        "passed": 264
+      },
+      "cross_source:standings:敗北": {
+        "passed": 264
+      },
+      "cross_source:standings:試合": {
+        "passed": 264
+      },
+      "cross_source:batting:三塁打": {
+        "passed": 264
+      },
+      "cross_source:batting:二塁打": {
+        "passed": 264
+      },
+      "cross_source:batting:安打": {
+        "passed": 264
+      },
+      "cross_source:batting:得点": {
+        "passed": 264
+      },
+      "cross_source:batting:打数": {
+        "passed": 264
+      },
+      "cross_source:batting:打点": {
+        "passed": 264
+      },
+      "cross_source:batting:打率": {
+        "passed": 264
+      },
+      "cross_source:batting:本塁打": {
+        "passed": 264
+      },
+      "cross_source:batting:盗塁": {
+        "passed": 264
+      },
+      "cross_source:batting:試合": {
+        "passed": 264
+      },
+      "cross_source:pitching:セーブ": {
+        "passed": 264
+      },
+      "cross_source:pitching:勝利": {
+        "passed": 264
+      },
+      "cross_source:pitching:失点": {
+        "passed": 264
+      },
+      "cross_source:pitching:完封勝": {
+        "passed": 264
+      },
+      "cross_source:pitching:完投": {
+        "passed": 264
+      },
+      "cross_source:pitching:投球回アウト": {
+        "passed": 264
+      },
+      "cross_source:pitching:敗北": {
+        "passed": 264
+      },
+      "cross_source:pitching:試合": {
+        "passed": 264
+      },
+      "cross_source:pitching:防御率": {
+        "passed": 264
+      },
+      "cross_source:ERA_from_detail_counts": {
+        "passed": 264
+      },
+      "global_W=L": {
+        "passed": 99
+      },
+      "global_draw_even": {
+        "passed": 99
+      },
+      "global_RF=RA": {
+        "passed": 99
+      },
+      "global_bat=pitch:安打": {
+        "passed": 22
+      },
+      "global_bat=pitch:本塁打": {
+        "passed": 22
+      },
+      "global_bat=pitch:四球": {
+        "passed": 22
+      },
+      "global_bat=pitch:死球": {
+        "passed": 22
+      },
+      "global_bat=pitch:三振": {
+        "passed": 22
+      },
+      "global_outs": {
+        "passed": 22
+      },
+      "existing_season:G": {
+        "passed": 168
+      },
+      "existing_season:W": {
+        "passed": 168
+      },
+      "existing_season:L": {
+        "passed": 168
+      },
+      "existing_season:T": {
+        "passed": 168
+      },
+      "existing_season:RF": {
+        "passed": 168
+      },
+      "existing_season:RA": {
+        "passed": 168
+      },
+      "source_unknown_zero": {
+        "passed": 1
+      },
+      "source_dataset_sha256": {
+        "passed": 1
+      }
+    },
+    "observed_columns": {
+      "archive/batting": [
+        "三塁打",
+        "二塁打",
+        "安打",
+        "得点",
+        "打数",
+        "打点",
+        "打率",
+        "本塁打",
+        "盗塁",
+        "試合"
+      ],
+      "archive/pitching": [
+        "セーブ",
+        "勝利",
+        "失点",
+        "奪三振",
+        "完封勝",
+        "完投",
+        "投球回",
+        "敗北",
+        "試合",
+        "防御率"
+      ],
+      "archive/standings": [
+        "ゲーム差",
+        "勝利",
+        "勝率",
+        "半期順位",
+        "引分",
+        "敗北",
+        "試合"
+      ],
+      "detail/batting": [
+        "三塁打",
+        "三振",
+        "二塁打",
+        "併殺打",
+        "出塁率",
+        "四球",
+        "塁打",
+        "安打",
+        "得点",
+        "打席",
+        "打数",
+        "打点",
+        "打率",
+        "故意四",
+        "本塁打",
+        "死球",
+        "犠打",
+        "犠飛",
+        "盗塁",
+        "盗塁刺",
+        "試合",
+        "長打率"
+      ],
+      "detail/fielding": [
+        "併殺/参加",
+        "併殺/球団",
+        "刺殺",
+        "失策",
+        "守備機会",
+        "守備率",
+        "捕逸",
+        "補殺",
+        "試合"
+      ],
+      "detail/interleague": [
+        "ホーム",
+        "ロード",
+        "勝利",
+        "勝率",
+        "対オ",
+        "対ソ",
+        "対デ",
+        "対ヤ",
+        "対ロ",
+        "対中",
+        "対巨",
+        "対広",
+        "対日",
+        "対楽",
+        "対横",
+        "対神",
+        "対西",
+        "引分",
+        "敗北",
+        "試合"
+      ],
+      "detail/pitching": [
+        "HP",
+        "セーブ",
+        "ホールド",
+        "ボーク",
+        "三振",
+        "勝利",
+        "勝率",
+        "四球",
+        "失点",
+        "安打",
+        "完封勝",
+        "完投",
+        "打者",
+        "投球回",
+        "故意四",
+        "敗北",
+        "暴投",
+        "本塁打",
+        "死球",
+        "無四球",
+        "自責点",
+        "試合",
+        "防御率"
+      ],
+      "detail/standings": [
+        "ホーム",
+        "ロード",
+        "交流戦",
+        "勝利",
+        "勝率",
+        "対オ",
+        "対ソ",
+        "対デ",
+        "対ヤ",
+        "対ロ",
+        "対中",
+        "対巨",
+        "対広",
+        "対日",
+        "対楽",
+        "対横",
+        "対神",
+        "対西",
+        "差",
+        "引分",
+        "敗北",
+        "試合"
+      ]
+    },
+    "derived_columns": {
+      "archive/pitching": [
+        "投球回アウト"
+      ],
+      "detail/pitching": [
+        "投球回アウト"
+      ]
+    },
+    "observations_sha256": "4f3cd15eca0c04e61c892a2be71e4d5aa89cb809d2805829cd45be5c6986b9b3",
+    "annual_sha256": "30db9d822a408cb23a40625e32baf134736648443e3d2bb3239c9e05ba187093",
+    "parser_sha256": "6def87525258fb07e69e5f1248db548735c73b43991b2c88aa3b97628d364b74",
+    "comparison_policy": "integers exact; normal rate digits ROUND_HALF_UP; observed extended digits truncated to source precision; historical win-percentage rules not guessed"
+  },
+  "synthetic": [
+    {
+      "leagues": 1,
+      "cases": 60,
+      "groups": [
+        {
+          "profile": "aligned",
+          "cases": 20,
+          "year_passed": 20,
+          "game_passed": 20,
+          "counts": {
+            "tp": 40,
+            "tn": 60,
+            "fn": 20
+          },
+          "p_upper_given_pythag_at_least_half": 1.0
+        },
+        {
+          "profile": "same_totals",
+          "cases": 20,
+          "year_passed": 20,
+          "game_passed": 20,
+          "counts": {
+            "tp": 60,
+            "fp": 60
+          },
+          "p_upper_given_pythag_at_least_half": 0.5
+        },
+        {
+          "profile": "reversed",
+          "cases": 20,
+          "year_passed": 20,
+          "game_passed": 20,
+          "counts": {
+            "fn": 60,
+            "tn": 20,
+            "fp": 40
+          },
+          "p_upper_given_pythag_at_least_half": 0.0
+        }
+      ],
+      "games": 22500,
+      "negative_controls": 60,
+      "rejected_controls": 60,
+      "control_types": {
+        "nonconserving_annual_wins": 20,
+        "balanced_but_pairwise_infeasible": 20,
+        "tampered_game_score": 20
+      },
+      "calibration": {
+        "path": "data/observations/npb_team_annual/annual.jsonl",
+        "sha256": "30db9d822a408cb23a40625e32baf134736648443e3d2bb3239c9e05ba187093",
+        "years": [
+          2013,
+          2026
+        ],
+        "units": 168,
+        "statistic": "median RF/G; only common-run volume calibrated, no causal or joint-distribution fit"
+      },
+      "generator_sha256": "98499702a53cf97192821d51105371c8c68cc5a59763ea9a27476b6fd2212e2d",
+      "python_version": "3.12.14",
+      "sha256": "5585c6b8c4799f59488dd47b1cdd9cef09d1647069a9cccb661dff866c3bcbfd"
+    },
+    {
+      "leagues": 2,
+      "cases": 60,
+      "groups": [
+        {
+          "profile": "aligned",
+          "cases": 20,
+          "year_passed": 20,
+          "game_passed": 20,
+          "counts": {
+            "tp": 80,
+            "tn": 120,
+            "fn": 40
+          },
+          "p_upper_given_pythag_at_least_half": 1.0
+        },
+        {
+          "profile": "same_totals",
+          "cases": 20,
+          "year_passed": 20,
+          "game_passed": 20,
+          "counts": {
+            "tp": 120,
+            "fp": 120
+          },
+          "p_upper_given_pythag_at_least_half": 0.5
+        },
+        {
+          "profile": "reversed",
+          "cases": 20,
+          "year_passed": 20,
+          "game_passed": 20,
+          "counts": {
+            "fn": 120,
+            "tn": 40,
+            "fp": 80
+          },
+          "p_upper_given_pythag_at_least_half": 0.0
+        }
+      ],
+      "games": 51480,
+      "negative_controls": 60,
+      "rejected_controls": 60,
+      "control_types": {
+        "nonconserving_annual_wins": 20,
+        "balanced_but_pairwise_infeasible": 20,
+        "tampered_game_score": 20
+      },
+      "calibration": {
+        "path": "data/observations/npb_team_annual/annual.jsonl",
+        "sha256": "30db9d822a408cb23a40625e32baf134736648443e3d2bb3239c9e05ba187093",
+        "years": [
+          2013,
+          2026
+        ],
+        "units": 168,
+        "statistic": "median RF/G; only common-run volume calibrated, no causal or joint-distribution fit"
+      },
+      "generator_sha256": "98499702a53cf97192821d51105371c8c68cc5a59763ea9a27476b6fd2212e2d",
+      "python_version": "3.12.14",
+      "sha256": "2a1d329553de32635c94fca73226e83babea8e427048da1370a7def71e20bf2a"
+    }
+  ],
+  "interpretation": "Synthetic success counts are model-conditional consistency checks, not additional observed NPB samples or a causal verdict about Chunichi."
+}

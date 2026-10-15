@@ -53,7 +53,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@9cc33f08f225eaf67d9a00489a1bf15977ebee25
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@b000e5967cb7596f6f9f20fe396a686fdc700c16
     with:
       expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml"]'
       artifact-pattern: "junit-*"

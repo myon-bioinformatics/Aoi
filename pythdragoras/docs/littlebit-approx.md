@@ -71,3 +71,40 @@ c001 では、既存の候補だけを `search` に渡した上位と、派生�
 ```bash
 uv run python pythdragoras/littlebit_approx.py
 ```
+
+## 年を分けたfit/transform
+
+`derive` の `loading_units` は因子分解した表の行の集合であり、未使用年へ適用する予測器ではない。
+列重み `bundle` だけでは、未知行の `h`・`Us`、すなわち `F` の符号が決まらない。
+未知行を含めてSVD/ALSをやり直すと、学習済みの軸や条件も動くため独立した評価にならない。
+
+[littlebit_holdout.py](../littlebit_holdout.py) は、この制約を避ける**別の候補生成方式**を実装する。
+
+1. 学習年の候補条件行列だけを `littlebit` へ渡し、段ごとの列因子 `W = Vs * g` を固定する。
+2. 各段で `Z = R @ pinv(W.T)`、次段の入力を `R - Z @ W.T` とする。逆行列の切捨ては `rcond=1e-12`。
+3. 学習行の `Z` だけで軸の向きを選び、`s * Z[:, k] > 1e-10` を条件にする。定数・重複の除外も学習側だけで行う。
+4. **学習側にも同じtransform**を適用してから既存のMCC・同点順序で式を選び、評価年では因子・向き・式を動かさない。
+
+この射影は、元の `F = h * Us * l` の符号制約を再現する方式ではない。そのため列名も
+`littlebit_project_s*_k*` とし、元の `littlebit_s0_k0/k4` の追試と混同しない。
+保存するencoder/decoderと式はJSONで再読込でき、評価時には目的列・球団年のID・他の評価行に依存しない。
+古い `loading_units` を `transform` へ渡した場合は拒否する。
+
+```bash
+uv run python pythdragoras/littlebit_holdout.py
+```
+
+既定のblock比較は学習2012〜2022年、評価2023〜2025年である。補助のwalk-forwardは最初の5年から始め、
+次の1年を評価してから学習期間を伸ばす。既存設定の2020年除外を維持し、全設定・入力SHA-256・式・モデル・
+TP/FP/FN/TNのID集合を [holdout.json](../../cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.json) に保存する。
+[holdout.md](../../cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.md) に比較表を置く。
+
+比較対象は、学習側の既存候補最良式（baseline）、追加候補込みの最良式（augmented）、
+派生列を一つ以上含む最良式（derived）である。derivedは上位20件にある式だけに絞らず総当たりする。
+派生候補が作れないfoldは生成なしとし、黙ってそのfoldを除いた集計はしない。
+MCCの分母が0なら既存採点規約では0、報告では未定義の印も保存する。
+
+既に調査で閲覧した年を再分割するため、これはfitと評価の漏洩を避けた**過去年バックテスト**である。
+候補閾値・手法を含む完全な未閲覧データでの独立確認ではなく、事前登録の証拠にもならない。
+保存済み特徴量はシーズン終了時の集計であり、将来シーズンや開幕前の予測精度を示さない。
+既存探索の最良MCCや命題・合格条件、`confirmation.md` は変更しない。

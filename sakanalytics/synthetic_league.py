@@ -293,16 +293,93 @@ def experiment(seeds=range(20),mean_runs=4.,leagues=2,conversion=1.):
                 mean_runs=mean_runs,leagues=leagues,conversion=conversion,groups=groups,cases=cases,negative_controls=controls)
 
 
+PRIMARY_YEARS = tuple(range(2013, 2027))
+PROFILES = ('aligned', 'same_totals', 'reversed')
+
+
+def _season_witness(p, season):
+    p['season'] = season
+    for r in p['annual']:
+        r['season'] = season
+    games = expand(p)
+    for g in games:
+        g['season'] = season
+        g['key'] = f"{season}-" + g['key']
+    validate_games(p, games)
+    return games
+
+
+def validate_period(result):
+    """Pass only complete primary-period batches; extra history cannot fill gaps."""
+    if result.get('years') != list(PRIMARY_YEARS):
+        raise ValueError('primary acceptance period must be 2013-2026')
+    seeds = result['batch_seeds']
+    if not seeds or len(set(seeds)) != len(seeds):
+        raise ValueError('unique nonempty batch seeds required')
+    expected = {(seed, profile, year) for seed in seeds for profile in PROFILES for year in PRIMARY_YEARS}
+    actual = [(c['batch_seed'], c['profile'], c['season']) for c in result['cases']]
+    if len(actual) != len(expected) or set(actual) != expected:
+        raise ValueError('every batch/profile must contain exactly the 14 primary years')
+    if not all(c['year_check'] is True and c['game_check'] is True for c in result['cases']):
+        raise ValueError('annual or game consistency failed inside the period')
+    kinds = ('nonconserving_annual_wins', 'balanced_but_pairwise_infeasible', 'tampered_game_score')
+    expected_controls = {(seed, year, kind) for seed in seeds for year in PRIMARY_YEARS for kind in kinds}
+    controls = [(c['batch_seed'], c['season'], c['kind']) for c in result['negative_controls']]
+    if len(controls) != len(expected_controls) or set(controls) != expected_controls or not all(c['rejected'] is True for c in result['negative_controls']):
+        raise ValueError('period negative controls missing or accepted')
+    return True
+
+
+def period_experiment(seeds=range(1), mean_runs=4., leagues=2, conversion=1.):
+    """Independent annual witnesses in a 14-year batch, no temporal model fitted."""
+    seeds = list(seeds)
+    if not seeds or any(type(seed) is not int or seed < 0 for seed in seeds) or len(set(seeds)) != len(seeds):
+        raise ValueError('unique nonnegative batch seeds required')
+    cases, controls = [], []
+    for batch_seed in seeds:
+        for year in PRIMARY_YEARS:
+            seed = batch_seed * 10000 + year
+            annual = experiment([seed], mean_runs, leagues, conversion)
+            for case in annual['cases']:
+                case.update(season=year, batch_seed=batch_seed)
+                p = plan(seed=seed, profile=case['profile'], mean_runs=mean_runs, leagues=leagues, conversion=conversion)
+                games = _season_witness(p, year)
+                case['annual'] = p['annual']
+                case['games_sha256'] = hashlib.sha256(json.dumps(games, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+                cases.append(case)
+            for control in annual['negative_controls']:
+                control.update(season=year, batch_seed=batch_seed)
+                controls.append(control)
+    groups = []
+    for profile in PROFILES:
+        subset = [c for c in cases if c['profile'] == profile]
+        count = Counter()
+        for c in subset:
+            count.update(c['conditional_counts'])
+        high = count['tp'] + count['fp']
+        groups.append(dict(profile=profile, cases=len(subset), year_passed=len(subset), game_passed=len(subset),
+                           period_passed=len(seeds), period_cases=len(seeds), counts=dict(count),
+                           p_upper_given_pythag_at_least_half=count['tp']/high if high else None))
+    result = dict(schema='aoi-synthetic-period/1', synthetic=True, years=list(PRIMARY_YEARS), batch_seeds=seeds,
+                  acceptance='All 14 annual plans and game aggregates must agree, with negative controls rejected. Pre-2013 data and larger sample counts are not required.',
+                  temporal_assumption='Annual models are independent; year labels do not fit organizational persistence or official year-specific schedules.',
+                  interpretation=annual['interpretation'], games_digest_format=annual['games_digest_format'],
+                  mean_runs=mean_runs, leagues=leagues, conversion=conversion, groups=groups, cases=cases, negative_controls=controls)
+    validate_period(result)
+    return result
+
+
 def write_witnesses(result,directory):
     directory.mkdir(parents=True,exist_ok=True)
     files=[]
     for case in result['cases']:
         p=plan(seed=case['seed'],profile=case['profile'],mean_runs=result['mean_runs'],leagues=result['leagues'],conversion=result['conversion'])
-        games=expand(p)
+        games=_season_witness(p,case['season']) if 'season' in case else expand(p)
         canonical=json.dumps(games,sort_keys=True,separators=(',',':')).encode()
         if hashlib.sha256(canonical).hexdigest()!=case['games_sha256']:
             raise ValueError('witness differs from the checked experiment')
         prefix=f"{case['profile']}-{case['seed']:04d}"
+        if 'season' in case:prefix=f"{case['season']}-"+prefix
         for name,body in [(prefix+'.annual.json',json.dumps(p,ensure_ascii=False,indent=2)+'\n'),
                           (prefix+'.games.jsonl',''.join(json.dumps(g,ensure_ascii=False)+'\n' for g in games))]:
             path=directory/name
@@ -313,7 +390,7 @@ def write_witnesses(result,directory):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--seeds',type=int,default=20)
+    p.add_argument('--seeds',type=int,default=1,help='14-year batches per profile; default 1')
     p.add_argument('--mean-runs',type=float,default=4.)
     p.add_argument('--conversion',type=float,default=1.)
     p.add_argument('--leagues',type=int,choices=[1,2],default=2)
@@ -328,11 +405,12 @@ def main():
         start,end=map(int,a.calibration_years.split('-'))
         rows=[json.loads(s) for s in a.calibrate_annual.read_text(encoding='utf-8').splitlines() if s.strip()]
         units=[r for r in rows if start<=r['season']<=end and r.get('G',0)>0 and 'RF' in r]
-        if not units:p.error('no calibration units in the declared years')
+        if (start,end)!=(2013,2026):p.error('primary calibration period must be 2013-2026')
+        if {r['season'] for r in units}!=set(PRIMARY_YEARS):p.error('calibration must cover all 14 primary years')
         a.mean_runs=statistics.median(r['RF']/r['G'] for r in units)
         calibration=dict(path=str(a.calibrate_annual),sha256=hashlib.sha256(a.calibrate_annual.read_bytes()).hexdigest(),
                          years=[start,end],units=len(units),statistic='median RF/G; only common-run volume calibrated, no causal or joint-distribution fit')
-    result=experiment(range(a.seeds),a.mean_runs,a.leagues,a.conversion)
+    result=period_experiment(range(a.seeds),a.mean_runs,a.leagues,a.conversion)
     result['calibration']=calibration
     result['generator_sha256']=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     result['python_version']=platform.python_version()

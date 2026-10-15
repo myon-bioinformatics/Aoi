@@ -1,70 +1,7 @@
 {
-  "schema": "aoi-annual-history-validation/1",
-  "real": {
-    "years": [
-      1950,
-      1951,
-      1952,
-      1953,
-      1954,
-      1955,
-      1956,
-      1957,
-      1958,
-      1959,
-      1960,
-      1961,
-      1962,
-      1963,
-      1964,
-      1965,
-      1966,
-      1967,
-      1968,
-      1969,
-      1970,
-      1971,
-      1972,
-      1973,
-      1974,
-      1975,
-      1976,
-      1977,
-      1978,
-      1979,
-      1980,
-      1981,
-      1982,
-      1983,
-      1984,
-      1985,
-      1986,
-      1987,
-      1988,
-      1989,
-      1990,
-      1991,
-      1992,
-      1993,
-      1994,
-      1995,
-      1996,
-      1997,
-      1998,
-      1999,
-      2000,
-      2001,
-      2002,
-      2003,
-      2004,
-      2005,
-      2006,
-      2007,
-      2008,
-      2009,
-      2010,
-      2011,
-      2012,
+  "schema": "aoi-annual-history-validation/2",
+  "scope": {
+    "primary_years": [
       2013,
       2014,
       2015,
@@ -80,196 +17,217 @@
       2025,
       2026
     ],
-    "team_seasons": 939,
-    "records": 4125,
-    "cached_pages": 330,
-    "acquisition_events": 331,
-    "checks_passed": 19943,
+    "acceptance": "2013-2026 only; all 14 years required",
+    "reference_policy": "Pre-2013 observations are optional reference only, excluded from ordinary analysis, calibration and acceptance.",
+    "reference_location": "data/reference/annual_history_1950_2026/"
+  },
+  "real": {
+    "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "team_seasons": 168,
+    "records": 1332,
+    "cached_pages": 140,
+    "acquisition_events": 140,
+    "checks_passed": 9814,
     "checks_failed": 0,
     "failures": [],
     "checks_by_kind": {
       "standings_present": {
-        "passed": 198
+        "passed": 56
       },
       "category_members": {
-        "passed": 638
+        "passed": 196
       },
       "unique_members": {
-        "passed": 638
+        "passed": 196
       },
       "six_teams": {
-        "passed": 44
+        "passed": 28
       },
       "G=W+L+T": {
-        "passed": 1203
-      },
-      "G:batting": {
-        "passed": 1203
-      },
-      "G:pitching": {
-        "passed": 1203
-      },
-      "pitching:勝利": {
-        "passed": 1203
-      },
-      "pitching:敗北": {
-        "passed": 1203
-      },
-      "batting_average": {
-        "passed": 1203
+        "passed": 336
       },
       "winning_percentage": {
-        "passed": 528
+        "passed": 336
+      },
+      "G:batting": {
+        "passed": 336
+      },
+      "G:pitching": {
+        "passed": 336
       },
       "G:fielding": {
-        "passed": 264
+        "passed": 168
+      },
+      "pitching:勝利": {
+        "passed": 336
+      },
+      "pitching:敗北": {
+        "passed": 336
+      },
+      "batting_average": {
+        "passed": 336
       },
       "total_bases": {
-        "passed": 264
+        "passed": 168
       },
       "slugging": {
-        "passed": 264
+        "passed": 168
       },
       "onbase": {
-        "passed": 264
+        "passed": 168
       },
       "ERA": {
-        "passed": 264
+        "passed": 168
       },
       "fielding_chances": {
-        "passed": 264
+        "passed": 168
       },
       "fielding_percentage": {
-        "passed": 264
+        "passed": 168
       },
       "home_road:W": {
-        "passed": 264
+        "passed": 168
       },
       "home_road:L": {
-        "passed": 264
+        "passed": 168
       },
       "home_road:T": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:standings:勝利": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:standings:勝率": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:standings:引分": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:standings:敗北": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:standings:試合": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:三塁打": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:二塁打": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:安打": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:得点": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:打数": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:打点": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:打率": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:本塁打": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:盗塁": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:batting:試合": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:セーブ": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:勝利": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:失点": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:完封勝": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:完投": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:投球回アウト": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:敗北": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:試合": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:pitching:防御率": {
-        "passed": 264
+        "passed": 168
       },
       "cross_source:ERA_from_detail_counts": {
-        "passed": 264
+        "passed": 168
       },
       "global_W=L": {
-        "passed": 99
+        "passed": 28
       },
       "global_draw_even": {
-        "passed": 99
+        "passed": 28
       },
       "global_RF=RA": {
-        "passed": 99
+        "passed": 28
       },
       "global_bat=pitch:安打": {
-        "passed": 22
+        "passed": 14
       },
       "global_bat=pitch:本塁打": {
-        "passed": 22
+        "passed": 14
       },
       "global_bat=pitch:四球": {
-        "passed": 22
+        "passed": 14
       },
       "global_bat=pitch:死球": {
-        "passed": 22
+        "passed": 14
       },
       "global_bat=pitch:三振": {
-        "passed": 22
+        "passed": 14
       },
       "global_outs": {
-        "passed": 22
+        "passed": 14
       },
       "existing_season:G": {
-        "passed": 168
+        "passed": 156
       },
       "existing_season:W": {
-        "passed": 168
+        "passed": 156
       },
       "existing_season:L": {
-        "passed": 168
+        "passed": 156
       },
       "existing_season:T": {
-        "passed": 168
+        "passed": 156
       },
       "existing_season:RF": {
-        "passed": 168
+        "passed": 156
       },
       "existing_season:RA": {
-        "passed": 168
+        "passed": 156
       },
       "source_unknown_zero": {
         "passed": 1
@@ -307,7 +265,6 @@
         "ゲーム差",
         "勝利",
         "勝率",
-        "半期順位",
         "引分",
         "敗北",
         "試合"
@@ -362,7 +319,6 @@
         "対広",
         "対日",
         "対楽",
-        "対横",
         "対神",
         "対西",
         "引分",
@@ -410,7 +366,6 @@
         "対広",
         "対日",
         "対楽",
-        "対横",
         "対神",
         "対西",
         "差",
@@ -427,125 +382,87 @@
         "投球回アウト"
       ]
     },
-    "observations_sha256": "4f3cd15eca0c04e61c892a2be71e4d5aa89cb809d2805829cd45be5c6986b9b3",
-    "annual_sha256": "30db9d822a408cb23a40625e32baf134736648443e3d2bb3239c9e05ba187093",
+    "observations_sha256": "de7cd9ad5407cabbf7ab5b47f1e81379397df177c7877b09b4e1997331f2744a",
+    "annual_sha256": "526ae6bc6c0d58bbfd8c9eea3ff7933aabf6b5db887cc976802c0d39c53778f0",
     "parser_sha256": "6def87525258fb07e69e5f1248db548735c73b43991b2c88aa3b97628d364b74",
     "comparison_policy": "integers exact; normal rate digits ROUND_HALF_UP; observed extended digits truncated to source precision; historical win-percentage rules not guessed"
   },
   "synthetic": [
     {
-      "leagues": 1,
-      "cases": 60,
-      "groups": [
-        {
-          "profile": "aligned",
-          "cases": 20,
-          "year_passed": 20,
-          "game_passed": 20,
-          "counts": {
-            "tp": 40,
-            "tn": 60,
-            "fn": 20
-          },
-          "p_upper_given_pythag_at_least_half": 1.0
-        },
-        {
-          "profile": "same_totals",
-          "cases": 20,
-          "year_passed": 20,
-          "game_passed": 20,
-          "counts": {
-            "tp": 60,
-            "fp": 60
-          },
-          "p_upper_given_pythag_at_least_half": 0.5
-        },
-        {
-          "profile": "reversed",
-          "cases": 20,
-          "year_passed": 20,
-          "game_passed": 20,
-          "counts": {
-            "fn": 60,
-            "tn": 20,
-            "fp": 40
-          },
-          "p_upper_given_pythag_at_least_half": 0.0
-        }
-      ],
-      "games": 22500,
-      "negative_controls": 60,
-      "rejected_controls": 60,
-      "control_types": {
-        "nonconserving_annual_wins": 20,
-        "balanced_but_pairwise_infeasible": 20,
-        "tampered_game_score": 20
-      },
-      "calibration": {
-        "path": "data/observations/npb_team_annual/annual.jsonl",
-        "sha256": "30db9d822a408cb23a40625e32baf134736648443e3d2bb3239c9e05ba187093",
-        "years": [
-          2013,
-          2026
-        ],
-        "units": 168,
-        "statistic": "median RF/G; only common-run volume calibrated, no causal or joint-distribution fit"
-      },
-      "generator_sha256": "98499702a53cf97192821d51105371c8c68cc5a59763ea9a27476b6fd2212e2d",
-      "python_version": "3.12.14",
-      "sha256": "5585c6b8c4799f59488dd47b1cdd9cef09d1647069a9cccb661dff866c3bcbfd"
-    },
-    {
       "leagues": 2,
-      "cases": 60,
+      "years": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "period_batches": 3,
+      "passed_period_batches": 3,
+      "cases": 42,
       "groups": [
         {
           "profile": "aligned",
-          "cases": 20,
-          "year_passed": 20,
-          "game_passed": 20,
+          "cases": 14,
+          "year_passed": 14,
+          "game_passed": 14,
+          "period_passed": 1,
+          "period_cases": 1,
           "counts": {
-            "tp": 80,
-            "tn": 120,
-            "fn": 40
+            "tp": 56,
+            "tn": 84,
+            "fn": 28
           },
           "p_upper_given_pythag_at_least_half": 1.0
         },
         {
           "profile": "same_totals",
-          "cases": 20,
-          "year_passed": 20,
-          "game_passed": 20,
+          "cases": 14,
+          "year_passed": 14,
+          "game_passed": 14,
+          "period_passed": 1,
+          "period_cases": 1,
           "counts": {
-            "tp": 120,
-            "fp": 120
+            "tp": 84,
+            "fp": 84
           },
           "p_upper_given_pythag_at_least_half": 0.5
         },
         {
           "profile": "reversed",
-          "cases": 20,
-          "year_passed": 20,
-          "game_passed": 20,
+          "cases": 14,
+          "year_passed": 14,
+          "game_passed": 14,
+          "period_passed": 1,
+          "period_cases": 1,
           "counts": {
-            "fn": 120,
-            "tn": 40,
-            "fp": 80
+            "fn": 84,
+            "tn": 28,
+            "fp": 56
           },
           "p_upper_given_pythag_at_least_half": 0.0
         }
       ],
-      "games": 51480,
-      "negative_controls": 60,
-      "rejected_controls": 60,
+      "games": 36036,
+      "negative_controls": 42,
+      "rejected_controls": 42,
       "control_types": {
-        "nonconserving_annual_wins": 20,
-        "balanced_but_pairwise_infeasible": 20,
-        "tampered_game_score": 20
+        "nonconserving_annual_wins": 14,
+        "balanced_but_pairwise_infeasible": 14,
+        "tampered_game_score": 14
       },
       "calibration": {
         "path": "data/observations/npb_team_annual/annual.jsonl",
-        "sha256": "30db9d822a408cb23a40625e32baf134736648443e3d2bb3239c9e05ba187093",
+        "sha256": "526ae6bc6c0d58bbfd8c9eea3ff7933aabf6b5db887cc976802c0d39c53778f0",
         "years": [
           2013,
           2026
@@ -553,9 +470,9 @@
         "units": 168,
         "statistic": "median RF/G; only common-run volume calibrated, no causal or joint-distribution fit"
       },
-      "generator_sha256": "98499702a53cf97192821d51105371c8c68cc5a59763ea9a27476b6fd2212e2d",
+      "generator_sha256": "55516498b3c884d8cbf8732e33f9150136eca304b7ba9a57559f294f6e8465c6",
       "python_version": "3.12.14",
-      "sha256": "2a1d329553de32635c94fca73226e83babea8e427048da1370a7def71e20bf2a"
+      "sha256": "4fe19c1ed6b155b45d610088e1ea44e447cc033931ece7093c105acc15e792c5"
     }
   ],
   "interpretation": "Synthetic success counts are model-conditional consistency checks, not additional observed NPB samples or a causal verdict about Chunichi."

@@ -172,6 +172,83 @@ def test_invalid_settings_fail_closed(cfg, change):
         lab.validate_settings({**cfg, **change})
 
 
+def replay_observations(case, props):
+    """Rebuild observations from the case, never from stored observation values."""
+    rows, actual = lab.observe(
+        case['plan'], year=case['season'], phase=case['phase'], track=case['track'],
+        case_id=case['case_id'], witness=case['witness'])
+    for row in rows:
+        row['reference_hits'] = {
+            p['id']: dict(antecedent=lab.antecedent(row, p),
+                          target=lab._condition(row, p['then'])) for p in props}
+    return rows, actual
+
+
+def assert_observations_match(expected, saved):
+    """Compare complete rows and multiplicity, including JSON scalar types."""
+    expected_by_id = {r['unit_id']: r for r in expected}
+    saved_by_id = {r['unit_id']: r for r in saved}
+    assert len(expected_by_id) == len(expected), 'duplicate replay unit_id'
+    assert len(saved_by_id) == len(saved), 'duplicate saved unit_id'
+    assert expected_by_id.keys() == saved_by_id.keys(), 'missing or unexpected unit_id'
+    for unit_id, row in expected_by_id.items():
+        assert lab.canonical(row) == lab.canonical(saved_by_id[unit_id]), unit_id
+
+
+@pytest.fixture
+def replayed_case(props):
+    case = lab.read_jsonl(OUT / 'cases.jsonl.gz')[0]
+    rows, _ = replay_observations(case, props)
+    saved = [r for r in lab.read_jsonl(OUT / 'observations.jsonl.gz')
+             if r['case_id'] == case['case_id']]
+    assert_observations_match(rows, saved)
+    return rows, saved
+
+
+@pytest.mark.parametrize('field', [
+    'G', 'W', 'L', 'T', 'RF', 'RA', 'rank', 'rank_tie', 'rank_pythag',
+    'rank_rf', 'rank_ra', 'rd', 'pythag_fixed', 'pythag_expected_wins',
+    'expected_schedule_wins', 'wins_vs_pythag', 'upper_half', 'synthetic',
+    'season', 'league', 'team', 'phase', 'track', 'case_id', 'unit_id',
+    'views', 'reference_antecedent', 'reference_target', 'label_type',
+])
+def test_observation_replay_rejects_corrupted_fields(replayed_case, field):
+    rows, saved = replayed_case
+    corrupted = deepcopy(saved)
+    row = corrupted[0]
+    if field.startswith('reference_'):
+        key = field.removeprefix('reference_')
+        row['reference_hits']['P2'][key] = not row['reference_hits']['P2'][key]
+    elif field == 'views':
+        row['views']['raw']['margin'] += 1
+    elif field == 'label_type':
+        row['upper_half'] = int(row['upper_half'])
+    else:
+        value = row[field]
+        row[field] = (not value if type(value) is bool else
+                      value + 1 if isinstance(value, (int, float)) else value + '/corrupted')
+    with pytest.raises(AssertionError):
+        assert_observations_match(rows, corrupted)
+
+
+@pytest.mark.parametrize('change', ['missing', 'duplicate', 'extra', 'missing-field', 'extra-field'])
+def test_observation_replay_rejects_incomplete_or_extra_evidence(replayed_case, change):
+    rows, saved = replayed_case
+    corrupted = deepcopy(saved)
+    if change == 'missing':
+        corrupted.pop()
+    elif change == 'duplicate':
+        corrupted.append(deepcopy(corrupted[0]))
+    elif change == 'extra':
+        corrupted.append({**deepcopy(corrupted[0]), 'unit_id': 'unexpected/C7'})
+    elif change == 'missing-field':
+        del corrupted[0]['reference_hits']
+    else:
+        corrupted[0]['unexpected'] = True
+    with pytest.raises(AssertionError):
+        assert_observations_match(rows, corrupted)
+
+
 def test_saved_evidence_replays_and_contains_passes_and_nonpasses(cfg, props):
     report = json.loads((OUT / 'results.json').read_text())
     assert report['settings'] == cfg
@@ -188,10 +265,12 @@ def test_saved_evidence_replays_and_contains_passes_and_nonpasses(cfg, props):
     observations = lab.read_jsonl(OUT / report['artifacts']['observations']['path'])
     indexed = {r['unit_id']: r for r in observations}
     assert len(indexed) == len(observations)
+    replayed = []
     for case in cases:
-        rows, actual = lab.observe(case['plan'], year=case['season'], phase=case['phase'], track=case['track'], case_id=case['case_id'], witness=case['witness'])
-        assert actual['games_sha256'] == case['games_sha256']
-        assert all(r['views'] == indexed[r['unit_id']]['views'] for r in rows)
+        rows, actual = replay_observations(case, props)
+        assert all(actual[key] == case[key] for key in actual), case['case_id']
+        replayed.extend(rows)
+    assert_observations_match(replayed, observations)
     for group in lab.read_jsonl(OUT / report['artifacts']['classifications']['path']):
         rows = [r for r in observations if (r['track'], r['phase']) == (group['track'], group['phase'])]
         assert lab.evaluate_views(rows, report['models'][group['track']]) == group['metrics']

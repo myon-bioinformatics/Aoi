@@ -27,3 +27,17 @@ uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calenda
 過去年の網羅や生成件数の増加は要求しない。2013年以前は通常の解析・較正・合格判定から分けて参考保管する。
 得失点が同じでも勝敗配分の違う例を作れる。生成例は実測件数に加算しない。
 手順・生成族・完了条件は [c001の取得・架空検証記録](../cycles/c001-chunichi/annual-history-synthetic.md)。
+
+## 条件付き生成・能力予算・得点尺度の実験
+
+`league_laboratory.py` は、得失点を固定して隠した勝敗を補完する実験、同じポイント予算で能力を配分する実験、
+同じ整数スコアを6種類の分析単位で測る実験を実行する。年成績で先に検査し、代表例だけ試合へ展開する。
+生成不能例・推奨条件の通過/不通過・修正/新規FP/FN・尺度間の順位変化を残し、次の命題の材料にする。
+
+```bash
+python -S sakanalytics/league_laboratory.py
+```
+
+設定は [league-laboratory.toml](../cycles/c001-chunichi/league-laboratory.toml)、
+観測と解釈は [R29](../cycles/c001-chunichi/research/R29-league-laboratory.md)。
+架空モデルの仮定下の探索で、既存命題・合格条件・実測スコアは変更しない。

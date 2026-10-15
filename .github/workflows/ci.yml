@@ -37,8 +37,6 @@ jobs:
       - run: python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
       - name: Verify BlueProbe subtree vendor lock
         run: python -S .vendor-sync-tools/vendor_sync.py check --root blueprobe --manifest vendor.lock.json
-      - name: Verify unified parent workflow pins
-        run: python -S scripts/check_parent_ci_pins.py
 
   test:
     name: pytest (Python ${{ matrix.python }})

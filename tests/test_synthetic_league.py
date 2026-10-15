@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import pytest
-from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan)
+from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan,period_experiment,validate_period)
 
 
 @pytest.mark.parametrize('profile',['aligned','same_totals','reversed'])
@@ -97,9 +97,36 @@ def test_cli_without_site_packages(tmp_path):
     out=tmp_path/'synthetic.json'
     witnesses=tmp_path/'witnesses'
     subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'synthetic_league.py'),'--seeds','1','--out',str(out),'--witness-dir',str(witnesses)],check=True)
-    assert len(json.loads(out.read_text())['cases'])==3
-    assert len(json.loads((witnesses/'manifest.json').read_text())['files'])==6
+    assert len(json.loads(out.read_text())['cases'])==42
+    assert len(json.loads((witnesses/'manifest.json').read_text())['files'])==84
     for path in witnesses.glob('*.annual.json'):
         p=json.loads(path.read_text())
         games=[json.loads(line) for line in path.with_name(path.name.replace('.annual.json','.games.jsonl')).read_text().splitlines()]
         assert validate_games(p,games)
+
+
+@pytest.fixture(scope='module')
+def primary_period():
+    return period_experiment()
+
+
+def test_complete_14_year_period_is_the_acceptance_unit(primary_period):
+    assert validate_period(primary_period)
+    assert len(primary_period['cases']) == 3*14
+    for group in primary_period['groups']:
+        assert group['period_passed'] == group['period_cases'] == 1
+        assert group['year_passed'] == group['game_passed'] == 14
+    assert all({r['season'] for r in c['annual']} == {c['season']} for c in primary_period['cases'])
+    assert len(primary_period['negative_controls']) == 42
+
+
+@pytest.mark.parametrize('change', ['missing_year', 'duplicate_year', 'old_year', 'failed_check', 'missing_control', 'accepted_control'])
+def test_partial_or_historical_data_cannot_satisfy_period(primary_period, change):
+    r = deepcopy(primary_period)
+    if change == 'missing_year':r['cases'].pop()
+    if change == 'duplicate_year':r['cases'][-1]['season'] = 2013
+    if change == 'old_year':r['cases'][-1]['season'] = 2012
+    if change == 'failed_check':r['cases'][-1]['game_check'] = False
+    if change == 'missing_control':r['negative_controls'].pop()
+    if change == 'accepted_control':r['negative_controls'][-1]['rejected'] = False
+    with pytest.raises(ValueError):validate_period(r)

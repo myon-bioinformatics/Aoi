@@ -71,3 +71,10 @@ BlueProbe、集計・指標計算が [SakAnalytics](../sakanalytics/README.md)�
 仮説評価が [PythDRagoras](../pythdragoras/README.md)。実行元やソースの identity 確認・
 CI runner・証跡の実行管理は NagoyAction が担う。この変更では新しい runner や
 実行証明を追加しない。
+
+## 年間チーム成績の追加取得
+
+`--source npb_team_annual --years 1950-2026` で、両リーグの年度別チーム表を取得できる。
+2005年以降は詳細な勝敗・打撃・投手・守備の全掲載列も取得し、年度別要約表と区別して保持する。
+データセットのmanifestには、解析に用いたsourceモジュール自体の `source_code_sha256` も残す。
+範囲・照合・再実行は [c001の取得・架空検証記録](../cycles/c001-chunichi/annual-history-synthetic.md)。

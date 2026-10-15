@@ -1,0 +1,49 @@
+# 年単位の探索。既存の分析設定や命題・R18の定義は変更しない。
+# 2026年の結果はすでに既知。係数選択から分離するが、完全な盲検とは呼ばない。
+[search]
+team = "d"
+league = "C"
+expected_teams = ["g", "s", "db", "d", "t", "c"]
+start = 2013
+end = 2026
+outcome = "upper_half" # CS開催有無とは別。2020は以下の理由で除外。
+holdout = [2026]
+min_support = 8
+min_years = 5
+min_mcc = 0.3
+min_year_fraction = 0.75
+
+[[exclude]]
+season = 2020
+reason = "短縮シーズンかつセCS非開催。既存サイクルと同じく通常年との比較から除外する。"
+
+# 得点/試合の他球団平均との差 + w × 失点抑制/試合の他球団平均との差。
+# w=1は通常の得失点バランス、w=0は得点側だけ。
+[[index]]
+id = "run_balance"
+x = "rf_vs_peers"
+y = "ra_saved_vs_peers"
+weights = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
+thresholds = [-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+baseline_weight = 1.0
+baseline_threshold = 0.0
+
+# 通常のOPSとは異なる実験指標。出塁率とISOの同年他球団平均との差を混ぜる。
+[[index]]
+id = "onbase_power"
+x = "bat_d_obp"
+y = "bat_d_iso"
+weights = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
+thresholds = [-0.08, -0.07, -0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]
+baseline_weight = 1.0
+baseline_threshold = 0.0
+
+# イニング得点の「頻度」「得点した回の大きさ」。2026の原集計がなければ検証欠損と明示。
+[[index]]
+id = "inning_frequency_size"
+x = "inn_dlog_freq"
+y = "inn_dlog_size"
+weights = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
+thresholds = [-0.4, -0.35, -0.3, -0.25, -0.2, -0.15, -0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
+baseline_weight = 1.0
+baseline_threshold = 0.0

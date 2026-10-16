@@ -88,6 +88,24 @@ def _cell(value) -> str:
     return str(value)
 
 
+def empty_antecedent(item: dict) -> bool:
+    return not item.get("if") and not item.get("if_any")
+
+
+def format_contingency_cell(item: dict, key: str) -> str:
+    """2×2 のマス。空の前件で ¬P 行に置く 0 は注釈付き。"""
+    value = contingency(item)[key]
+    if empty_antecedent(item) and key in ("¬P∧Q", "¬P∧¬Q") and value == 0:
+        return "0（前件が空）"
+    return _cell(value)
+
+
+COUNTEREXAMPLE_PAIR_LABELS = (
+    ("original", "contrapositive"),
+    ("converse", "inverse"),
+)
+
+
 def _form_cell(form: dict | None) -> str:
     counts = _counts(form)
     if counts is None:
@@ -96,25 +114,48 @@ def _form_cell(form: dict | None) -> str:
     return f"{hold}/{n}（反例 {n - hold}）"
 
 
-def render_forms_table(item: dict) -> str:
+def _form_line(name: str, form: dict | None) -> str:
+    text = f"{FORM_LABEL[name]}: {_form_cell(form)}"
+    if isinstance(form, dict) and "rate" in form:
+        text += " rate=" + json.dumps(form.get("rate"), ensure_ascii=False)
+    return text
+
+
+def render_forms_table(item: dict, *, heading: bool = True) -> str:
     """C1. Contingency 2×2, then the four forms as a 2×2. Both carry the registration label."""
     label = registration_status(item)
-    cells = contingency(item)
     forms = _forms(item)
     ident = item.get("id", "")
-    lines = [
-        f"［{label}］ {ident}",
-        "",
-        "|  | Q | ¬Q |",
-        "|---|---|---|",
-        f"| P | {_cell(cells['P∧Q'])} | {_cell(cells['P∧¬Q'])} |",
-        f"| ¬P | {_cell(cells['¬P∧Q'])} | {_cell(cells['¬P∧¬Q'])} |",
-        "",
-        f"| {FORM_LABEL['original']}: {_form_cell(forms.get('original'))} | {FORM_LABEL['converse']}: {_form_cell(forms.get('converse'))} |",
-        "|---|---|",
-        f"| {FORM_LABEL['inverse']}: {_form_cell(forms.get('inverse'))} | {FORM_LABEL['contrapositive']}: {_form_cell(forms.get('contrapositive'))} |",
-    ]
+    lines = []
+    if heading:
+        lines.extend([f"［{label}］ {ident}", ""])
+    lines.extend(
+        [
+            "|  | Q | ¬Q |",
+            "|---|---|---|",
+            f"| P | {format_contingency_cell(item, 'P∧Q')} | {format_contingency_cell(item, 'P∧¬Q')} |",
+            f"| ¬P | {format_contingency_cell(item, '¬P∧Q')} | {format_contingency_cell(item, '¬P∧¬Q')} |",
+            "",
+            "|  |  |",
+            "|---|---|",
+            f"| {_form_line('original', forms.get('original'))} | {_form_line('converse', forms.get('converse'))} |",
+            f"| {_form_line('inverse', forms.get('inverse'))} | {_form_line('contrapositive', forms.get('contrapositive'))} |",
+        ]
+    )
     return "\n".join(lines)
+
+
+def counterexample_lists_equal(left, right) -> bool:
+    """反例配列が同じ単位の並びか。記録の順をそのまま比べる。"""
+    if not isinstance(left, dict) or not isinstance(right, dict):
+        return False
+    a = left.get("counterexamples") or []
+    b = right.get("counterexamples") or []
+    if len(a) != len(b):
+        return False
+    return [row.get("unit") for row in a if isinstance(row, dict)] == [
+        row.get("unit") for row in b if isinstance(row, dict)
+    ]
 
 
 def _value(value) -> str:

@@ -40,3 +40,5 @@ python dragowing/forms.py --results cycles/c001-chunichi/outputs --id P1
 この表は、保存された判定の数をマスに置いたものである。マスが大きいことを、その命題が正しいことや、次の年も成り立つこととしては読まない。`不明` は「事前登録ではなかった」という意味ではなく、機械的な記録が無い、という表示である。
 
 候補 ID（`もしかして`）はこの表示には出さない。問い合わせ側の扱いは [ask.md](../../queryu/docs/ask.md)。
+
+HTML（軌跡、球団×年、条件の重なり、命題の一覧）は [figures.md](figures.md)。

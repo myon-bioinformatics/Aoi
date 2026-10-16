@@ -22,8 +22,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "queryu/ask")]
 
-from ask import answer, load, parse, render, validate_query
-from bank import lookup
+from ask import (
+    answer_results,
+    parse,
+    render,
+    resolve_threshold,
+    suggestion_for,
+    validate_query,
+)
+from bank import cache_key, lookup, prepare
 
 BRANCH_PREFIX = "aoi-research-state"
 SELF = "github-actions[bot]"
@@ -60,7 +67,7 @@ def snapshot(root: Path, cycle: Path) -> dict:
     ]
     if not results:
         raise FileNotFoundError(
-            "結果が読めません: outputs/sets.jsonl または outputs/propositions.jsonl が必要です"
+            "結果が読めない: outputs/sets.jsonl または outputs/propositions.jsonl が必要です"
         )
     files.extend(results)
 
@@ -238,30 +245,32 @@ class State:
         )
 
 
-def ask_question(text: str, results: Path, cache: Path | None = None):
+def ask_question(
+    text: str,
+    results: Path,
+    cache: Path | None = None,
+    *,
+    known: Path | None = None,
+    cycle: str = "",
+    result_sha: str = "",
+    suggest_threshold: float | None = None,
+):
     reader = "json" if text.startswith("{") else "rules"
     if text.startswith("{"):
         q, unread = validate_query(json.loads(text)), []
     else:
         q, unread = parse(text)
+    if (cache is not None or known is not None) and not cycle:
+        raise ValueError("cycle が必要")
 
-    hashes = {
-        name: hashlib.sha256((results / name).read_bytes()).hexdigest()
-        if (results / name).exists()
-        else None
-        for name in ("sets.jsonl", "propositions.jsonl")
-    }
-    key = digest(
-        {
-            "query": asdict(q),
-            "results": hashes,
-            "answer_code": hashlib.sha256(
-                (ROOT / "queryu/ask/ask.py").read_bytes()
-            ).hexdigest(),
-        }
-    )
-    cached = cache / f"{key}.json" if cache else None
-    prepared = lookup(q, results, cache.parent / "known") if cache and not unread else None
+    if known is not None and not unread:
+        prepare(results, known, cycle=cycle, result_sha=result_sha)
+        prepared = lookup(q, results, known, cycle=cycle, result_sha=result_sha)
+    else:
+        prepared = None
+    cached = None
+    if cache is not None:
+        cached = cache / f"{cache_key(cycle, results, q, result_sha)}.json"
     if unread:
         result = {
             "answer": "判定不能",
@@ -273,16 +282,19 @@ def ask_question(text: str, results: Path, cache: Path | None = None):
     elif cached and cached.exists():
         result = json.loads(cached.read_text(encoding="utf-8"))
     else:
-        result = answer(q, load(results))
+        result = answer_results(q, results)
         if cached:
             atomic_json(cached, result)
+    hinted = suggestion_for(text, results, unread, result, suggest_threshold)
     return {
         "question": text,
         "query": asdict(q),
         "unread": unread,
         "result": result,
         "reader": reader,
-    }, render(text, q, unread, result)
+        "suggestions": hinted["candidates"],
+        "suggestion_status": hinted["status"],
+    }, render(text, q, unread, result, hinted["line"])
 
 
 def reply_saved(api, state, key, body, comments):
@@ -310,7 +322,7 @@ def reply_saved(api, state, key, body, comments):
 def status_report(path: Path):
     receipts = len(list((path / "receipts").glob("*.json")))
     pending = len(list((path / "pending-replies").glob("*.json")))
-    answers = len(list((path / "answers").glob("*.json")))
+    answers = len(list(path.glob("**/answers/*.json")))
     return (
         f"コマンド累積受付: {receipts}件（この /status 自身は保存前）\n"
         f"回答キャッシュ: {answers}件\n"
@@ -362,8 +374,15 @@ def intake(
         }
         try:
             if kind == "ask":
+                base = state.path / cycle_name / (result_sha or "sha-missing")
                 response, body = ask_question(
-                    text, cycle / "outputs", state.path / "answers"
+                    text,
+                    cycle / "outputs",
+                    cache=base / "answers",
+                    known=base / "known",
+                    cycle=cycle_name,
+                    result_sha=result_sha,
+                    suggest_threshold=resolve_threshold(ROOT, cycle / "outputs", cycle_name, None),
                 )
                 record["response"] = response
                 record["result_files"] = {

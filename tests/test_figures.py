@@ -14,6 +14,7 @@ from dragowing.cli import PngUnavailable, main, write_png
 from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
 from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
 from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
+from vendor import web_ui
 from dragowing.plotly_cdn import PLOTLY_JS_CDN, fetch_plotly_js, reset_plotly_js_cache
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
@@ -263,7 +264,7 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
     assert not (out / "plotly.min.js").exists()
-    assert f'<script charset="utf-8" src="{PLOTLY_JS_CDN}"></script>' in index
+    assert web_ui.remote_script_tag(PLOTLY_JS_CDN) in index
     head = index.split("</head>", 1)[0]
     assert head.count("<script") == 2
     assert index.count("Plotly.newPlot") == 2
@@ -280,6 +281,8 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     embedded = tmp_path / "embedded"
     reset_plotly_js_cache()
     embed_body = b"window.Plotly=" + b"e" * 200
+    import hashlib
+    monkeypatch.setattr(web_ui, "PLOTLY_JS_SHA256", hashlib.sha256(embed_body).hexdigest())
     embed_response = MagicMock()
     embed_response.read.return_value = embed_body
     embed_response.status = 200
@@ -451,7 +454,7 @@ def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
     assert main(["--results", str(RESULTS), "--out", str(out), "--id", "P1"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
-    assert f'<script charset="utf-8" src="{PLOTLY_JS_CDN}"></script>' in index
+    assert web_ui.remote_script_tag(PLOTLY_JS_CDN) in index
     assert not (out / "plotly.min.js").exists()
     assert index.count("Plotly.newPlot") == 2
     assert '"type":"circle"' not in index

@@ -1,7 +1,8 @@
 """Exact live-generator replay, separate from the frozen-model replay tests.
 
-The expensive test is required by littlebit-holdout-drift.yml, not multiplied
-across the ordinary Python matrix. It never updates the committed evidence.
+The source/input/artifact SHA guard is always required. Strict regeneration is
+opt-in: the original record lacks its BLAS/CPU configuration and its frozen
+coefficients are not bitwise portable. No test updates the committed evidence.
 No scientific value, model coefficient, unit ID, flag, or new field is ignored.
 """
 from copy import deepcopy
@@ -18,6 +19,86 @@ import pytest
 
 PINNED_RUNTIME = {"python": "3.14.8", "numpy": "2.5.4", "polars": "2.0.0"}
 ARTIFACTS = ("holdout.json", "holdout.md")
+CYCLE_PATH = "cycles/c001-chunichi"
+EVIDENCE_PATH = f"{CYCLE_PATH}/outputs/exploratory/littlebit-holdout"
+PROVENANCE_PATH = f"{EVIDENCE_PATH}/holdout.provenance.json"
+SOURCE_PATHS = tuple(f"pythdragoras/{name}.py" for name in (
+    "littlebit_holdout", "littlebit_approx", "littlebit_prune", "rule_search",
+    "propositions", "registration_audit", "pythdragoras"))
+INPUT_PATHS = tuple(f"{CYCLE_PATH}/{name}" for name in (
+    "outputs/season.jsonl", "rule_candidates.toml", "analysis.toml"))
+ARTIFACT_PATHS = tuple(f"{EVIDENCE_PATH}/{name}" for name in ARTIFACTS)
+PROVENANCE_GROUPS = {
+    "source_sha256": SOURCE_PATHS,
+    "inputs_sha256": INPUT_PATHS,
+    "artifacts_sha256": ARTIFACT_PATHS,
+}
+
+
+def _verify_provenance(root, manifest):
+    """Fail closed on missing coverage, missing files, or any byte change."""
+    assert manifest["schema"] == "littlebit-holdout-provenance/1"
+    for group, paths in PROVENANCE_GROUPS.items():
+        expected = manifest[group]
+        assert set(expected) == set(paths), f"{group}: incomplete or unexpected coverage"
+        for name in paths:
+            digest = hashlib.sha256((root / name).read_bytes()).hexdigest()
+            assert digest == expected[name], f"{name}: SHA-256 drift; review provenance, never auto-rebaseline"
+
+
+def test_littlebit_committed_provenance_matches_current_sources_and_untouched_evidence():
+    root = Path(__file__).resolve().parents[2]
+    manifest = json.loads((root / PROVENANCE_PATH).read_text(encoding="utf-8"))
+    _verify_provenance(root, manifest)
+    report = json.loads((root / EVIDENCE_PATH / "holdout.json").read_text(encoding="utf-8"))
+    assert manifest["historical_runtime"] == report["runtime"]
+    assert {f"{CYCLE_PATH}/{name}": digest for name, digest in report["inputs_sha256"].items()} == manifest["inputs_sha256"]
+    assert report["posthoc"] is True and report["exploratory"] is True
+    assert report["independent_confirmation"] is False
+
+
+@pytest.fixture
+def provenance_tree(tmp_path):
+    manifest = {"schema": "littlebit-holdout-provenance/1"}
+    for group, paths in PROVENANCE_GROUPS.items():
+        manifest[group] = {}
+        for name in paths:
+            path = tmp_path / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            content = f"synthetic provenance fixture: {name}\n".encode()
+            path.write_bytes(content)
+            manifest[group][name] = hashlib.sha256(content).hexdigest()
+    return tmp_path, manifest
+
+
+def test_littlebit_provenance_accepts_complete_identical_snapshot(provenance_tree):
+    _verify_provenance(*provenance_tree)
+
+
+@pytest.mark.parametrize("name", SOURCE_PATHS + INPUT_PATHS + ARTIFACT_PATHS)
+def test_littlebit_provenance_rejects_each_generator_dependency_contract_and_artifact_change(provenance_tree, name):
+    root, manifest = provenance_tree
+    path = root / name
+    path.write_bytes(path.read_bytes() + b"changed\n")
+    with pytest.raises(AssertionError, match="SHA-256 drift"):
+        _verify_provenance(root, manifest)
+
+
+@pytest.mark.parametrize("group", PROVENANCE_GROUPS)
+def test_littlebit_provenance_rejects_empty_coverage(provenance_tree, group):
+    root, manifest = provenance_tree
+    manifest[group] = {}
+    with pytest.raises(AssertionError, match="coverage"):
+        _verify_provenance(root, manifest)
+
+
+def test_littlebit_provenance_rejects_missing_source(provenance_tree):
+    root, manifest = provenance_tree
+    (root / SOURCE_PATHS[0]).unlink()
+    with pytest.raises(FileNotFoundError):
+        _verify_provenance(root, manifest)
+
+
 
 
 def _json_bytes(value):
@@ -204,7 +285,7 @@ def test_littlebit_live_generator_and_dependency_changes_are_detected(tmp_path, 
 
 
 @pytest.mark.skipif(os.environ.get("AOI_REGENERATE_LITTLEBIT_HOLDOUT") != "1",
-                    reason="required separately in pinned LittleBit holdout drift CI")
+                    reason="opt-in bitwise reconstruction; BLAS-dependent drift is recorded in provenance")
 def test_littlebit_committed_holdout_regenerates_from_current_generator(tmp_path, monkeypatch):
     import numpy as np
     import polars as pl

@@ -99,10 +99,10 @@ def test_same_query_cache_invalidated_when_results_change(tmp_path):
     path = results / "sets.jsonl"
     path.write_text(json.dumps(item()), encoding="utf-8")
     text = '{"ask":"has_counterexample", "target":"E1"}'
-    first, _ = ask_question(text, results, cache=cache)
+    first, _ = ask_question(text, results, cache=cache, cycle="c001", result_sha="r1")
     assert first["result"]["answer"] == "はい"
     path.write_text(json.dumps(item(2, 2, listed=())), encoding="utf-8")
-    second, _ = ask_question(text, results, cache=cache)
+    second, _ = ask_question(text, results, cache=cache, cycle="c001", result_sha="r1")
     assert second["result"]["answer"] == "いいえ"
     assert len(list(cache.glob("*.json"))) == 2
 
@@ -127,7 +127,7 @@ def test_snapshot_uses_real_main_layout(cycle):
 
 def test_snapshot_requires_readable_result(cycle):
     (cycle / "outputs/sets.jsonl").unlink()
-    with pytest.raises(FileNotFoundError, match="結果が読めません"):
+    with pytest.raises(FileNotFoundError, match="結果が読めない"):
         snapshot(Path(__file__).resolve().parents[2], cycle)
 
 

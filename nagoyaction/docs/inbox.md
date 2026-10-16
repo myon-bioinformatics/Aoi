@@ -28,6 +28,18 @@
 
 `sets.jsonl` と `propositions.jsonl` の両方がない場合は、「ID がない」とは扱わず「結果が読めない」として受付を止める。
 
+片方だけが無いときは受付自体は止まらない。そのファイルを必要とする問い（式の ID には `sets.jsonl`、命題の ID には `propositions.jsonl`）は、`結果が読めない: <ファイル名>` と返し、`判定済みの結果にない` とは書かない。結果 ref の checkout が無いときに、main の `cycles/<cycle>/outputs` へは切り替えない。
+
+既知回答と回答キャッシュの鍵は同じ組である。
+
+```text
+(cycle, 結果の SHA とファイルの hash, ask.py と bank.py の hash, Query)
+```
+
+ディレクトリは `state/<cycle>/<結果SHA>/known` と `state/<cycle>/<結果SHA>/answers` で、呼び出し側が渡す。`answers` の親を `known` と決めて読むことはしない。
+
+読めなかった語、または読めた結果に ID が無いときは、返信に `もしかして: …（候補。答えではない）` を最大 5 件付ける。候補は答えにしない。必要なファイルが読めないときは、この行は付けない。閾値は `cycles/<cycle>/ask.toml` の `suggest_threshold`。キーが無ければ、候補は確定しない。
+
 ## 状態と重複防止
 
 状態ブランチはサイクルごとに `aoi-research-state-<cycle>` を使う。受領記録、回答キャッシュ、返信再送待ちを保存する。

@@ -269,7 +269,7 @@ Question:
 
 Documentation:
 
-- 未着手（次のサイクルから）。構想は [docs/images/dragowing.webp](docs/images/dragowing.webp)
+- 四つの形の 2×2 と条件の論理記号: [dragowing/docs/forms.md](dragowing/docs/forms.md)。構想図は [docs/images/dragowing.webp](docs/images/dragowing.webp)
 
 ---
 

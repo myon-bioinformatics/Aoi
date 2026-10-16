@@ -47,6 +47,7 @@ def test_similar_candidates_never_select_an_id():
 def test_unread_appends_candidates_and_does_not_answer_them(tmp_path, capsys):
     results = tmp_path / "out"
     _write(results, [_prop(i, t) for i, t in DOCS])
+    (results / "sets.jsonl").write_text("", encoding="utf-8")
     text = "中日は得点が5位以下の年に走者ひとりあたりの得点が他より少ない、雨の日だけ"
     code = main([text, "--results", str(results), "--json", "--suggest-threshold", "0"])
     assert code == 1
@@ -125,6 +126,7 @@ def test_threshold_comes_from_cycle_config_and_missing_means_unconfirmed(tmp_pat
     assert ask.load_suggest_threshold(bare) is None
     results = tmp_path / "out"
     _write(results, [_prop(i, t) for i, t in DOCS])
+    (results / "sets.jsonl").write_text("", encoding="utf-8")
     hinted = suggestion_for("雨の日だけ教えて", results, ["未対応の語・条件: 雨日だけ教えて"], {"answer": "判定不能", "error": "x", "rows": []}, None)
     assert hinted["status"] == "判定不能"
     assert hinted["selected"] is None

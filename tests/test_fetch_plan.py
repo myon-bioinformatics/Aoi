@@ -41,7 +41,7 @@ def test_plan_counts_cache_conditional_and_new_without_a_client(tmp_path, monkey
     pages = npb_calendar.pages([2026])
     for key, url, group in pages:
         if key.endswith(("_03", "_04")):
-            cache.put(key, url, group, 200, b"<html></html>", {})
+            cache.put(key, url, group, 200, b"<html></html>", {"etag": '"v1"'})
     today = dt.date(2026, 5, 1)
     kept, future = split_future_months(pages, today)
     plan = acquisition_plan(

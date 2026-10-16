@@ -90,6 +90,12 @@ def _check_png(data, width, height):
     assert len(set(zlib.decompress(b"".join(compressed)))) > 32
 
 
+def _page_targets(browser):
+    # Full Chrome can start component extension service workers asynchronously.
+    # Compare page identities, so a leaked render page cannot hide behind churn.
+    return {t["targetId"] for t in browser.call("Target.getTargets")["targetInfos"] if t["type"] == "page"}
+
+
 def test_export_draw_plotly_three_figures_in_one_session(tmp_path, chrome_executable):
     evidence = os.environ.get("DRAGOWING_EXPORT_EVIDENCE_DIR")
     if evidence:
@@ -107,7 +113,7 @@ def test_export_draw_plotly_three_figures_in_one_session(tmp_path, chrome_execut
     ]
     with RenderSession(chrome=chrome_executable, offline=True) as session:
         pid = session.browser._proc.pid
-        baseline = session.browser.call("Target.getTargets")["targetInfos"]
+        baseline = _page_targets(session.browser)
         if evidence:
             import plotly
             (tmp_path / "runtime.json").write_text(json.dumps({
@@ -123,7 +129,7 @@ def test_export_draw_plotly_three_figures_in_one_session(tmp_path, chrome_execut
                 data = export_draw(PLOTLY, plotly_figure_content(fig), path, fmt, session=session)
                 assert data == path.read_bytes()
                 assert session.browser._proc.pid == pid
-                assert len(session.browser.call("Target.getTargets")["targetInfos"]) == len(baseline)
+                assert _page_targets(session.browser) == baseline
                 if fmt == "svg":
                     root = ET.fromstring(data)
                     text = "".join(root.itertext())
@@ -157,12 +163,12 @@ def test_export_failure_preserves_destination_and_releases_target(tmp_path, chro
     out = tmp_path / "existing.png"
     out.write_bytes(b"previous-result")
     with RenderSession(chrome=chrome_executable, offline=True) as session:
-        baseline = len(session.browser.call("Target.getTargets")["targetInfos"])
+        baseline = _page_targets(session.browser)
         bad = replace(PLOTLY, svg_expression="Promise.reject(new Error('capture failed'))")
         with pytest.raises(RuntimeError, match="capture failed"):
             export_draw(bad, plotly_figure_content({"data": []}), out, "svg", session=session)
         assert out.read_bytes() == b"previous-result"
-        assert len(session.browser.call("Target.getTargets")["targetInfos"]) == baseline
+        assert _page_targets(session.browser) == baseline
         export_draw(PLOTLY, plotly_figure_content({"data": []}), tmp_path / "after.svg", "svg", session=session)
 
 

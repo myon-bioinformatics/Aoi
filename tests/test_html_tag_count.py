@@ -1,4 +1,4 @@
-from dragowing.htmlcount import count_elements
+from dragowing.html_tag_count import count_elements
 
 
 def test_count_elements_limits_tags():

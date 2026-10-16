@@ -21,6 +21,13 @@ import propositions as pr
 import league_laboratory as lab
 
 SCHEMA = 'aoi-proposition-seed-evaluation/1'
+# Fixed design declared by synthetic_p96_provenance.json; never infer coverage
+# from the rows that happen to be present (even if their file SHA is valid).
+ANNUAL_UNITS = 2016
+ANNUAL_COHORTS = frozenset(
+    (seed, profile, conversion)
+    for seed, conversion in ((0, 1.), (1, 1.), (2, 1.), (3, .5))
+    for profile in ('aligned', 'same_totals', 'reversed'))
 
 
 def support(prop, columns):
@@ -73,12 +80,18 @@ def build(cycle, plan_path):
     sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
     if sha(units) != provenance['files'][units.name]:
         raise ValueError('saved synthetic features differ from checked provenance')
+    if type(provenance.get('units')) is not int or provenance['units'] != ANNUAL_UNITS:
+        raise ValueError('annual provenance must declare exactly 2016 units')
     annual = defaultdict(list)
     for line in units.read_text().splitlines():
         row = json.loads(line)
         if row.get('synthetic') is not True:
             raise ValueError('synthetic-only features required')
         annual[(row['batch_seed'], row['profile'], row['conversion'])].append(row)
+    if set(annual) != ANNUAL_COHORTS:
+        raise ValueError('missing or unexpected annual cohorts')
+    if sum(map(len, annual.values())) != provenance['units']:
+        raise ValueError('annual unit count differs from declared provenance')
     for key, rows in annual.items():
         if len(rows) != 168 or {r['season'] for r in rows} != set(range(2013, 2027)):
             raise ValueError('complete fixed annual cohort required')
@@ -111,6 +124,8 @@ def build(cycle, plan_path):
                 for year in range(2023, 2027) for a in lab.allocations(cfg['skill_budget'])}
     if seen != expected:
         raise ValueError('missing or unexpected skill plans')
+    registries = {'annual-score-witness': ANNUAL_COHORTS,
+                  'skill-budget': {(seed, loss) for seed, loss, _, _ in expected}}
     result = dict(schema=SCHEMA, synthetic=True, real_sample_increment=0, propositions={},
                   inputs=dict(propositions_sha256=definition_file_sha, settings_sha256=sha(cycle / 'league-laboratory.toml'),
                               annual_features_sha256=sha(units), skill_plans_sha256=sha(plan_path)),
@@ -120,7 +135,7 @@ def build(cycle, plan_path):
     for prop in props:
         pid = prop['id']
         item = dict(definition_sha256=pr.definition_sha(prop), groups=None, reason=None, unavailable=[])
-        collected = defaultdict(list)
+        collected = {}
         for dataset, source in [('annual-score-witness', annual), ('skill-budget', skill)]:
             available = support(prop, next(iter(source.values()))[0].keys())
             if not available['supported']:
@@ -136,11 +151,13 @@ def build(cycle, plan_path):
                     condition.update(loss=loss, years=list(range(2023, 2027)),
                                      allocations=[list(a) for a in lab.allocations(cfg['skill_budget'])], settings_sha256=lab.digest(cfg))
                 counts, covariates = measure(rows, prop)
-                collected[lab.canonical(condition)].append(dict(seed=seed, condition=condition,
-                                                                 counts=counts, covariates=covariates))
+                group = collected.setdefault(lab.canonical(condition), dict(
+                    condition=condition,
+                    expected_seeds=sorted(k[0] for k in registries[dataset] if k[1:] == key[1:]),
+                    runs=[]))
+                group['runs'].append(dict(seed=seed, condition=condition, counts=counts, covariates=covariates))
         if collected:
-            item['groups'] = [dict(condition=runs[0]['condition'], expected_seeds=sorted(r['seed'] for r in runs), runs=runs)
-                              for _, runs in sorted(collected.items())]
+            item['groups'] = [group for _, group in sorted(collected.items())]
         else:
             item['reason'] = 'synthetic_inputs_or_identity_adapter_unavailable'
         result['propositions'][pid] = item

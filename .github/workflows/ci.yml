@@ -136,8 +136,52 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  chrome-export:
+    name: Offline Chrome export (Python 3.14)
+    needs: changes
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install dependencies before disconnecting the network
+        run: |
+          python -m pip install uv
+          uv sync --locked --python 3.14
+      - name: Require Chrome and render without a network namespace interface
+        shell: bash
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium)"
+          "$chrome" --version
+          mkdir -p build/test-results
+          sudo unshare --net -- env CHROME="$chrome" DRAGOWING_REQUIRE_CHROME=1 \
+            DRAGOWING_EXPORT_EVIDENCE_DIR="$PWD/build/export-evidence" \
+            "$PWD/.venv/bin/python" -m pytest -q \
+            dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
+            --junitxml=build/test-results/chrome-export-3.14.xml
+      - name: Preserve Chrome export JUnit
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-chrome-export-py3.14
+          path: build/test-results/chrome-export-3.14.xml
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Preserve rendered PNG and SVG evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrome-export-evidence
+          path: build/export-evidence
+          if-no-files-found: error
+          retention-days: 14
+
   failure-identity:
-    needs: [changes, test, lab-integration]
+    needs: [changes, test, lab-integration, chrome-export]
     if: always() && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch')
     permissions:
       contents: read
@@ -145,7 +189,7 @@ jobs:
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@b000e5967cb7596f6f9f20fe396a686fdc700c16
     with:
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
-      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.14/lab-integration-3.14.xml"]'
+      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.14/lab-integration-3.14.xml","junit-chrome-export-py3.14/chrome-export-3.14.xml"]'
       artifact-pattern: "junit-*"
       output-artifact: "failure-identity"
 

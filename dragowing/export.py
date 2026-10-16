@@ -5,7 +5,11 @@ from __future__ import annotations
 import html as html_lib
 import json
 import os
+import shutil
+import tempfile
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Callable
 
 from .render import RenderSession, Timeouts
 
@@ -19,9 +23,19 @@ class DrawConfig:
     ready_selector: str | None = None
     ready_expression: str | None = None
     capture_selector: str | None = None
+    local_scripts: tuple[Callable[[], Path], ...] = ()
+    svg_expression: str | None = None
 
-    def page(self, content: str) -> str:
-        scripts = "".join('<script src=%s></script>' % json.dumps(url) for url in self.script_urls)
+    def page(self, content: str, directory: Path | None = None) -> str:
+        urls = list(self.script_urls)
+        for resolve in self.local_scripts:
+            source = resolve()
+            if directory is not None:
+                dest = directory / source.name
+                shutil.copyfile(source, dest)
+                source = dest
+            urls.append(source.resolve().as_uri())
+        scripts = "".join('<script src="%s"></script>' % html_lib.escape(url, quote=True) for url in urls)
         return self.template.replace("{{scripts}}", scripts).replace("{{content}}", content)
 
 
@@ -42,17 +56,23 @@ def export_draw(
 ) -> bytes:
     """Build a page from ``config`` + ``content``, render in Chrome, write to ``path``."""
     own = session is None
+    if fmt not in ("png", "svg"):
+        raise ValueError("fmt must be png or svg")
     if own:
         session = RenderSession(chrome=chrome, timeouts=timeouts)
     try:
-        data = session.render(
-            page_html(config, content),
-            fmt,
-            ready_selector=config.ready_selector,
-            ready_expression=config.ready_expression,
-            capture_selector=config.capture_selector,
-            scale=scale,
-        )
+        # A fresh copy per export cannot retain a bundle from an older installed
+        # Plotly. Keep the file alive until Chrome has completed capture.
+        with tempfile.TemporaryDirectory(prefix="dragowing-export-") as workdir:
+            data = session.render(
+                config.page(content, Path(workdir)),
+                fmt,
+                ready_selector=config.ready_selector,
+                ready_expression=config.ready_expression,
+                capture_selector=config.capture_selector,
+                svg_expression=config.svg_expression,
+                scale=scale,
+            )
         path = os.fspath(path)
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         with open(path, "wb") as handle:
@@ -65,18 +85,38 @@ def export_draw(
 
 # --- example configs (not library-specific modules) ---
 
+def plotlyjs_path() -> Path:
+    # Reuse #43's original installed-package lookup. Its latest HTML renderer
+    # removed that helper and defaults to CDN; leave that output unchanged.
+    import plotly
+
+    path = Path(plotly.__file__).resolve().parent / "package_data" / "plotly.min.js"
+    if not path.is_file():
+        raise FileNotFoundError(f"plotly.min.js is missing: {path}")
+    return path
+
+
 PLOTLY = DrawConfig(
-    script_urls=("https://cdn.plot.ly/plotly-latest.min.js",),
-    template="<!doctype html><meta charset=utf-8>{{scripts}}<div id=g></div>{{content}}",
-    ready_selector="svg.main-svg",
-    capture_selector="svg.main-svg",
+    script_urls=(),
+    local_scripts=(plotlyjs_path,),
+    template=("<!doctype html><meta charset=utf-8><style>body{margin:0}</style>"
+              "<script>window.PlotlyConfig={MathJaxConfig:'local'};</script>"
+              "{{scripts}}<div id=g></div>{{content}}"),
+    ready_expression="window.__dragowing_ready.then(()=>true)",
+    capture_selector="#g .svg-container",
+    # Plotly has multiple sibling SVG layers. The first svg.main-svg omits
+    # titles/legends; toImage serializes the complete figure using local JS.
+    svg_expression=("Plotly.toImage(document.getElementById('g'),{format:'svg'})"
+                    ".then(url=>decodeURIComponent(url.slice(url.indexOf(',')+1)))"),
 )
 
 
 def plotly_figure_content(fig_json) -> str:
     spec = fig_json if isinstance(fig_json, str) else json.dumps(fig_json, separators=(",", ":"))
     json.loads(spec)
-    return "<script>Plotly.newPlot('g',%s);</script>" % spec
+    spec = spec.replace("<", "\\u003c")
+    return ("<script>window.__dragowing_ready=(()=>{const spec=%s;"
+            "return Plotly.newPlot('g',spec.data,spec.layout,{displayModeBar:false})})();</script>") % spec
 
 
 MERMAID = DrawConfig(

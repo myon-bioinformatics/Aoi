@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from .forms import load_items
-from .htmlout import copy_plotlyjs, index_body, propositions_body, standalone
+from .htmlout import index_body, propositions_body, standalone
 from .overlap import finalize_conditions, load_overlap, parse_cond
 from .records import read_jsonl, select_items
 
@@ -30,7 +30,7 @@ def write_png(fig, path: Path) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="記録された結果を Plotly の HTML にする。判定はやり直さない。")
+    parser = argparse.ArgumentParser(description="記録された結果を HTML にする。判定はやり直さない。")
     parser.add_argument("--results", type=Path, required=True, help="season.jsonl と propositions.jsonl があるディレクトリ")
     parser.add_argument("--out", type=Path, required=True, help="HTML の出力ディレクトリ")
     parser.add_argument("--id", action="append", dest="ids", help="この命題だけ。繰り返せる。省略すると全部")
@@ -45,7 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--embed",
         action="store_true",
-        help="各 HTML に Plotly.js を埋め込む。既定は出力先へ plotly.min.js を1つコピーして参照する",
+        help="index.html に Plotly.js を埋め込む。既定は CDN。propositions.html は Plotly を使わない",
     )
     return parser
 
@@ -60,21 +60,19 @@ def main(argv=None) -> int:
         conds = finalize_conditions([parse_cond(text) for text in args.conds] if args.conds else None, items, rows)
         overlap = load_overlap(season_path, conds)
         index_html, index_figures = index_body(rows, overlap, args.column)
-        prop_html, prop_figures = propositions_body(chosen)
+        prop_html = propositions_body(chosen)
     except (FileNotFoundError, ValueError, TypeError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    if not args.embed:
-        copy_plotlyjs(out)
-    (out / "index.html").write_text(standalone("DRAgoWing", index_html, embed=args.embed), encoding="utf-8")
-    (out / "propositions.html").write_text(
-        standalone("命題ごとの四つの形と反例カード", prop_html, embed=args.embed), encoding="utf-8"
+    (out / "index.html").write_text(
+        standalone("DRAgoWing", index_html, plotly=True, embed=args.embed), encoding="utf-8"
     )
+    (out / "propositions.html").write_text(standalone("命題の一覧", prop_html), encoding="utf-8")
     if args.png:
         try:
-            for name, fig in {**index_figures, **prop_figures}.items():
+            for name, fig in index_figures.items():
                 write_png(fig, out / "png" / f"{name}.png")
         except PngUnavailable as exc:
             print(str(exc), file=sys.stderr)

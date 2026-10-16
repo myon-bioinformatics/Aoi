@@ -269,7 +269,7 @@ Question:
 
 Documentation:
 
-- 四つの形の 2×2 と条件の論理記号: [dragowing/docs/forms.md](dragowing/docs/forms.md)。軌跡・球団×年・条件の重なり・反例カードの HTML: [dragowing/docs/figures.md](dragowing/docs/figures.md)。構想図は [docs/images/dragowing.webp](docs/images/dragowing.webp)
+- 四つの形の 2×2 と条件の論理記号: [dragowing/docs/forms.md](dragowing/docs/forms.md)。軌跡・球団×年・条件の重なり・命題の一覧の HTML: [dragowing/docs/figures.md](dragowing/docs/figures.md)。構想図は [docs/images/dragowing.webp](docs/images/dragowing.webp)
 
 ---
 

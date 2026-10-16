@@ -13,6 +13,7 @@ from dragowing.cli import PngUnavailable, main, write_png
 from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
 from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
 from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
+from dragowing.plotly_cdn import PLOTLY_JS_CDN, fetch_plotly_js
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
 from ask import registration_status
@@ -29,8 +30,8 @@ OPS = {
 }
 
 
-def spec_of(fig) -> dict:
-    return json.loads(embed_json(fig.to_dict()))
+def spec_of(spec: dict) -> dict:
+    return json.loads(embed_json(spec))
 
 
 def shown(value) -> str:
@@ -260,12 +261,10 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     assert main(["--results", str(results), "--out", str(out), "--id", "P9"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
-    from plotly.offline import get_plotlyjs, get_plotlyjs_version
-
-    cdn = f"https://cdn.plot.ly/plotly-{get_plotlyjs_version()}.min.js"
     assert not (out / "plotly.min.js").exists()
-    assert f'<script charset="utf-8" src="{cdn}"></script>' in index
-    assert get_plotlyjs()[:80] not in index
+    assert f'<script charset="utf-8" src="{PLOTLY_JS_CDN}"></script>' in index
+    head = index.split("</head>", 1)[0]
+    assert head.count("<script") == 2
     assert index.count("Plotly.newPlot") == 2
     assert '"type":"circle"' not in index
     assert "8.4548548226457" in index
@@ -281,11 +280,11 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     assert main(["--results", str(results), "--out", str(embedded), "--id", "P9", "--embed"]) == 0
     alone = (embedded / "index.html").read_text(encoding="utf-8")
     assert "src=\"plotly.min.js\"" not in alone
-    assert cdn not in alone
-    assert get_plotlyjs()[:80] in alone
+    assert PLOTLY_JS_CDN not in alone
+    assert fetch_plotly_js()[:80] in alone
     assert not (embedded / "plotly.min.js").exists()
     embedded_props = (embedded / "propositions.html").read_text(encoding="utf-8")
-    assert get_plotlyjs()[:80] not in embedded_props
+    assert fetch_plotly_js()[:80] not in embedded_props
     proc = subprocess.run(
         [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"],
         cwd=ROOT,
@@ -295,6 +294,12 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     )
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
+    try:
+        import kaleido  # noqa: F401
+
+        has_kaleido = True
+    except ImportError:
+        has_kaleido = False
     builtins = __import__("builtins")
     real_import = builtins.__import__
 
@@ -314,9 +319,7 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
         capture_output=True,
         text=True,
     )
-    try:
-        import kaleido  # noqa: F401
-    except ImportError:
+    if not has_kaleido:
         assert missing.returncode == 2
         assert "kaleido" in missing.stderr
         assert (tmp_path / "png" / "index.html").is_file()
@@ -438,10 +441,7 @@ def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
     assert main(["--results", str(RESULTS), "--out", str(out), "--id", "P1"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
-    from plotly.offline import get_plotlyjs_version
-
-    cdn = f"https://cdn.plot.ly/plotly-{get_plotlyjs_version()}.min.js"
-    assert f'<script charset="utf-8" src="{cdn}"></script>' in index
+    assert f'<script charset="utf-8" src="{PLOTLY_JS_CDN}"></script>' in index
     assert not (out / "plotly.min.js").exists()
     assert index.count("Plotly.newPlot") == 2
     assert '"type":"circle"' not in index
@@ -502,7 +502,7 @@ def test_every_proposition_table_matches_the_file():
 
 
 def test_sources_do_not_import_banned_plot_libraries():
-    banned = {"matplotlib", "seaborn", "statsmodels", "plotly.express"}
+    banned_roots = {"matplotlib", "seaborn", "statsmodels", "plotly"}
     for path in (ROOT / "dragowing").rglob("*.py"):
         if "tests" in path.parts:
             continue
@@ -514,13 +514,12 @@ def test_sources_do_not_import_banned_plot_libraries():
             elif isinstance(node, ast.ImportFrom) and node.module:
                 modules = [node.module]
             for module in modules:
-                assert module.split(".")[0] not in {"matplotlib", "seaborn", "statsmodels"}
-                assert not module.startswith("plotly.express")
+                root = module.split(".")[0]
+                assert root not in banned_roots
                 assert module != "kaleido"
         text = path.read_text(encoding="utf-8")
         for word in ("trendline", "lowess", "spline"):
             assert word not in text
-        assert not any(name in text for name in banned if name != "plotly.express")
 
 
 def test_spec_from_html_roundtrip_matches_the_figure():

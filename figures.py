@@ -1,15 +1,26 @@
-"""記録された値の Plotly 図。あてはめ、平滑化、階級への丸めはしない。"""
+"""記録された値の Plotly 図 JSON（data / layout）。あてはめ、平滑化、階級への丸めはしない。"""
 from __future__ import annotations
 
 import json
-
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 A_COLOR = "#1f77b4"
 B_COLOR = "#d62728"
 LINE_COLOR = "#9aa0a6"
 FONT = "Noto Sans JP, Yu Gothic, Meiryo, sans-serif"
+
+# Plotly の Viridis を ``to_dict()`` したときと同じ段。
+_VIRIDIS_SCALE = [
+    [0.0, "#440154"],
+    [0.1111111111111111, "#482878"],
+    [0.2222222222222222, "#3e4989"],
+    [0.3333333333333333, "#31688e"],
+    [0.4444444444444444, "#26828e"],
+    [0.5555555555555556, "#1f9e89"],
+    [0.6666666666666666, "#35b779"],
+    [0.7777777777777778, "#6ece58"],
+    [0.8888888888888888, "#b5de2b"],
+    [1.0, "#fde725"],
+]
 
 
 def class_mark(upper) -> tuple[str, str]:
@@ -23,7 +34,7 @@ def class_mark(upper) -> tuple[str, str]:
 
 def _base_layout(**extra):
     layout = dict(
-        template=None,
+        template={},
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
         font=dict(family=FONT, size=13, color="#1a1a1a"),
@@ -37,7 +48,26 @@ def _team_label(league: str, team_name: str, team: str) -> str:
     return f"{league} {team_name} ({team})"
 
 
-def trajectory_figure(rows: list[dict]) -> go.Figure:
+def _subplot_domains(ncols: int, spacing: float = 0.08) -> list[tuple[float, float]]:
+    if ncols < 1:
+        raise ValueError("ncols")
+    width = (1.0 - spacing * (ncols - 1)) / ncols
+    return [(index * (width + spacing), index * (width + spacing) + width) for index in range(ncols)]
+
+
+def _axis_names(col_index: int) -> tuple[str, str]:
+    """1-based column index → trace xaxis/yaxis refs and layout axis keys."""
+    if col_index == 1:
+        return "x", "y"
+    suffix = str(col_index)
+    return f"x{suffix}", f"y{suffix}"
+
+
+def _layout_axis_key(axis_ref: str) -> str:
+    return "xaxis" if axis_ref == "x" else f"{axis_ref}axis"
+
+
+def trajectory_figure(rows: list[dict]) -> dict:
     """C3. 得点順位 × 失点順位。点の色は upper_half。線は記録の順をつなぐだけ。"""
     for key in ("league", "team", "team_name", "season", "rank_rf", "rank_ra", "upper_half"):
         if rows and key not in rows[0]:
@@ -50,14 +80,51 @@ def trajectory_figure(rows: list[dict]) -> go.Figure:
     leagues = sorted({league for league, _ in grouped})
     if not leagues:
         raise ValueError("軌跡にする行がない")
-    fig = make_subplots(
-        rows=1,
-        cols=len(leagues),
-        subplot_titles=[f"league={league}" for league in leagues],
-        horizontal_spacing=0.08,
-    )
+    domains = _subplot_domains(len(leagues))
+    traces: list[dict] = []
     points = []
+    layout = _base_layout(
+        title=dict(
+            text="得点順位 rank_rf × 失点順位 rank_ra<br>点の色: A は upper_half==true、B は upper_half==false<br>線は同じ league・team の記録を season の昇順につないだもの"
+        ),
+        height=640,
+        width=1040,
+        legend=dict(font=dict(size=11)),
+        meta={"kind": "trajectory", "source": "season.jsonl", "points": points},
+    )
+    annotations = []
     for col, league in enumerate(leagues, start=1):
+        x_ref, y_ref = _axis_names(col)
+        x_key = _layout_axis_key(x_ref)
+        y_key = _layout_axis_key(y_ref)
+        lo, hi = domains[col - 1]
+        layout[x_key] = dict(
+            anchor=y_ref,
+            domain=[lo, hi],
+            title=dict(text="得点順位 rank_rf"),
+            dtick=1,
+        )
+        layout[y_key] = dict(
+            anchor=x_ref,
+            domain=[0.0, 1.0],
+            title=dict(text="失点順位 rank_ra"),
+            dtick=1,
+            scaleanchor=x_ref,
+            scaleratio=1,
+        )
+        annotations.append(
+            dict(
+                font=dict(size=16),
+                showarrow=False,
+                text=f"league={league}",
+                x=(lo + hi) / 2,
+                xanchor="center",
+                xref="paper",
+                y=1.0,
+                yanchor="bottom",
+                yref="paper",
+            )
+        )
         teams = sorted(team for lg, team in grouped if lg == league)
         for team in teams:
             series = sorted(grouped[(league, team)], key=lambda item: (item[0], item[1]))
@@ -81,71 +148,53 @@ def trajectory_figure(rows: list[dict]) -> go.Figure:
                     }
                 )
                 points.append(custom[-1])
-            fig.add_trace(
-                go.Scatter(
-                    x=xs,
-                    y=ys,
-                    mode="lines+markers",
-                    name=_team_label(league, team_name, team),
-                    line=dict(color=LINE_COLOR, width=1, shape="linear"),
-                    marker=dict(color=colors, size=10, line=dict(width=0)),
-                    customdata=custom,
-                    connectgaps=False,
-                    hovertemplate=(
-                        "season=%{customdata.season}<br>"
-                        "league=%{customdata.league} %{customdata.team_name} (%{customdata.team})<br>"
-                        "rank_rf=%{customdata.rank_rf}<br>"
-                        "rank_ra=%{customdata.rank_ra}<br>"
-                        "upper_half=%{customdata.upper_half}<br>"
-                        "class=%{customdata.class}<extra></extra>"
-                    ),
-                    meta={"role": "trajectory", "league": league, "team": team, "team_name": team_name},
+            trace = dict(
+                type="scatter",
+                x=xs,
+                y=ys,
+                mode="lines+markers",
+                name=_team_label(league, team_name, team),
+                line=dict(color=LINE_COLOR, width=1, shape="linear"),
+                marker=dict(color=colors, size=10, line=dict(width=0)),
+                customdata=custom,
+                connectgaps=False,
+                hovertemplate=(
+                    "season=%{customdata.season}<br>"
+                    "league=%{customdata.league} %{customdata.team_name} (%{customdata.team})<br>"
+                    "rank_rf=%{customdata.rank_rf}<br>"
+                    "rank_ra=%{customdata.rank_ra}<br>"
+                    "upper_half=%{customdata.upper_half}<br>"
+                    "class=%{customdata.class}<extra></extra>"
                 ),
-                row=1,
-                col=col,
+                meta={"role": "trajectory", "league": league, "team": team, "team_name": team_name},
             )
-        axis = "x" if col == 1 else f"x{col}"
-        fig.update_xaxes(title_text="得点順位 rank_rf", dtick=1, row=1, col=col)
-        fig.update_yaxes(
-            title_text="失点順位 rank_ra",
-            dtick=1,
-            scaleanchor=axis,
-            scaleratio=1,
-            row=1,
-            col=col,
-        )
-    fig.add_trace(
-        go.Scatter(
-            x=[],
-            y=[],
-            mode="markers",
-            marker=dict(color=A_COLOR, size=10),
-            name="A (upper_half==true)",
-            meta={"role": "legend"},
-        )
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=[],
-            y=[],
-            mode="markers",
-            marker=dict(color=B_COLOR, size=10),
-            name="B (upper_half==false)",
-            meta={"role": "legend"},
-        )
-    )
-    fig.update_layout(
-        **_base_layout(
-            title=dict(
-                text="得点順位 rank_rf × 失点順位 rank_ra<br>点の色: A は upper_half==true、B は upper_half==false<br>線は同じ league・team の記録を season の昇順につないだもの"
+            trace["xaxis"] = x_ref
+            trace["yaxis"] = y_ref
+            traces.append(trace)
+    layout["annotations"] = annotations
+    traces.extend(
+        [
+            dict(
+                type="scatter",
+                x=[],
+                y=[],
+                mode="markers",
+                marker=dict(color=A_COLOR, size=10),
+                name="A (upper_half==true)",
+                meta={"role": "legend"},
             ),
-            height=640,
-            width=1040,
-            legend=dict(font=dict(size=11)),
-            meta={"kind": "trajectory", "source": "season.jsonl", "points": points},
-        )
+            dict(
+                type="scatter",
+                x=[],
+                y=[],
+                mode="markers",
+                marker=dict(color=B_COLOR, size=10),
+                name="B (upper_half==false)",
+                meta={"role": "legend"},
+            ),
+        ]
     )
-    return fig
+    return {"data": traces, "layout": layout}
 
 
 def _numeric_column(rows: list[dict], column: str) -> None:
@@ -181,7 +230,7 @@ def _heatmap_order(teams: list[tuple]) -> list[tuple]:
     return sorted(teams, key=key)
 
 
-def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figure:
+def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> dict:
     """C4. 球団 × 年。色は列の値。マスの文字は A/B だけ。数はホバー。"""
     _numeric_column(rows, column)
     teams = _heatmap_order(list({(row["league"], row["team"], row["team_name"]) for row in rows}))
@@ -225,57 +274,51 @@ def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figur
     finite = [value for row in z for value in row if isinstance(value, (int, float))]
     zmin = min(finite) if finite else None
     zmax = max(finite) if finite else None
-    fig = go.Figure(
-        data=[
-            go.Heatmap(
-                x=seasons,
-                y=labels,
-                z=z,
-                text=text,
-                texttemplate="%{text}",
-                textfont=dict(family=FONT, size=14, color="#1a1a1a"),
-                customdata=custom,
-                colorscale="Viridis",
-                zmin=zmin,
-                zmax=zmax,
-                zsmooth=False,
-                hoverongaps=False,
-                showlegend=False,
-                colorbar=dict(title=dict(text=column)),
-                hovertemplate=(
-                    "team=%{customdata.team} %{customdata.team_name}<br>"
-                    "season=%{customdata.season}<br>"
-                    "class=%{customdata.class}<br>"
-                    "rank=%{customdata.rank_text}<br>"
-                    f"{column}=%{{customdata.value_text}}<extra></extra>"
-                ),
-            )
-        ]
+    layout = _base_layout(
+        title=dict(text="球団 × 年"),
+        height=640,
+        width=980,
+        meta={
+            "kind": "heatmap",
+            "source": "season.jsonl",
+            "column": column,
+            "x": seasons,
+            "y": labels,
+            "z": z,
+            "marks": marks,
+            "records": records,
+        },
+        xaxis=dict(type="category", title=dict(text="season"), automargin=True),
+        yaxis=dict(
+            type="category",
+            categoryorder="array",
+            categoryarray=list(reversed(labels)),
+            title=dict(text="team"),
+            automargin=True,
+        ),
     )
-    fig.update_layout(
-        **_base_layout(
-            title=dict(text="球団 × 年"),
-            height=640,
-            width=980,
-            meta={
-                "kind": "heatmap",
-                "source": "season.jsonl",
-                "column": column,
-                "x": seasons,
-                "y": labels,
-                "z": z,
-                "marks": marks,
-                "records": records,
-            },
-        )
+    trace = dict(
+        type="heatmap",
+        x=seasons,
+        y=labels,
+        z=z,
+        text=text,
+        texttemplate="%{text}",
+        textfont=dict(family=FONT, size=14, color="#1a1a1a"),
+        customdata=custom,
+        colorscale=_VIRIDIS_SCALE,
+        zmin=zmin,
+        zmax=zmax,
+        zsmooth=False,
+        hoverongaps=False,
+        showlegend=False,
+        colorbar=dict(title=dict(text=column)),
+        hovertemplate=(
+            "team=%{customdata.team} %{customdata.team_name}<br>"
+            "season=%{customdata.season}<br>"
+            "class=%{customdata.class}<br>"
+            "rank=%{customdata.rank_text}<br>"
+            f"{column}=%{{customdata.value_text}}<extra></extra>"
+        ),
     )
-    fig.update_xaxes(type="category", title_text="season", automargin=True)
-    fig.update_yaxes(
-        type="category",
-        categoryorder="array",
-        categoryarray=list(reversed(labels)),
-        title_text="team",
-        automargin=True,
-    )
-    return fig
-
+    return {"data": [trace], "layout": layout}

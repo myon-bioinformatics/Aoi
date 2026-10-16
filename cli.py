@@ -18,15 +18,16 @@ class PngUnavailable(RuntimeError):
     """kaleido が無い。HTML は書けている。"""
 
 
-def write_png(fig, path: Path) -> None:
+def write_png(spec: dict, path: Path) -> None:
     try:
         import kaleido  # noqa: F401
+        import plotly.graph_objects as go
     except ImportError as exc:
         raise PngUnavailable(
-            "PNG には任意依存 png（kaleido）が必要です。HTML は kaleido なしで書けます。"
+            "PNG には任意依存 png（kaleido と plotly）が必要です。HTML は plotly なしで書けます。"
         ) from exc
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.write_image(path, format="png", engine="kaleido")
+    go.Figure(spec).write_image(str(path), format="png")
 
 
 def build_parser() -> argparse.ArgumentParser:

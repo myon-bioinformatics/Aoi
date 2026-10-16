@@ -113,8 +113,15 @@ def test_all_114_existing_verdicts_and_counterexamples_unchanged():
         assert r['definition_sha256']==old['definition_sha256']
         assert r['metrics']['tp']==r['forms'][0]['hold']
         for a,b in zip(r['forms'],old['forms']):
-            assert json.dumps({k:v for k,v in a.items() if k!='metrics'},sort_keys=True)==json.dumps(
-                {k:v for k,v in b.items() if k!='metrics'},sort_keys=True)
+            for key,value in a.items():
+                if key=='metrics':
+                    continue
+                # Float summation changed in Python 3.12. Keep the verdict,
+                # integer counts and counterexamples exact across 3.11–3.15.
+                if isinstance(value,float) or key=='ci':
+                    assert value==pytest.approx(b[key],rel=1e-12,abs=1e-12)
+                else:
+                    assert value==b[key]
 
 
 def test_saved_seed_registry_matches_every_registered_definition():

@@ -49,7 +49,7 @@ PNG が要るときだけ、依存の extra `png`（kaleido）を入れて `--pn
 
 論理記号の行は `render_logic` の文字列である。`>` を `<=` に書き換えない。
 
-反例は形ごとに 1 つの表で、1 行が `counterexamples` の 1 要素である。表は `<details>` に入れ、初めは畳んである。行数は配列の長さである。2×2 の反例数は `n - hold` である。この結果では両方の数が一致している形もあるが、配列が短い保存なら行数は配列の長さのままである。列は記録にある `unit`、`season`、`team`、`team_name`、`focus`、`surprise`、`question`、`links`、`values`、`context` である。`values` と `context` は JSON の文字のまま置く。`question` の文は記録の文である。
+反例は形ごとに 1 つの表で、1 行が `counterexamples` の 1 要素である。元と対偶、逆と裏が同じ単位の並びなら 1 表にまとめ、文でそう書く。並びが違うときだけ両方を出し、見出しに `不一致` と書く。表は `<details>` に入れ、初めは畳んである。並びは記録の順で、`|surprise|` の降順、同点は `season`、次に `team` である。行数は配列の長さである。2×2 の反例数は `n - hold` である。列は記録にある `unit`、`season`、`team`、`team_name`、`focus`、`surprise`、`question`、`values`、`context` である。`excluded_counterexamples` と `held_out` も同じ列で別節に置く。空の前件で ¬P 行に置く 0 は `0（前件が空）` と書く。`values` と `context` は JSON の文字のまま置く。
 
 `statement` を節に出すときは、フィールド名 `statement:` を付けて記録の文として置く。
 
@@ -67,7 +67,7 @@ PNG が要るときだけ、依存の extra `png`（kaleido）を入れて `--pn
 
 図の題は「球団 × 年」である。行のラベルは `team` の記号だけである（`d`、`g`、`s`、`db`、`t`、`c`、`h`、`f`、`b`、`e`、`l`、`m`）。球団名は軸に書かない。上からこの順で、中日 `d` が最上段である。この並びに無い記号は、その後へ記号順で置く。同じ記号が二つのリーグにあるときは `league:team` にして行を分けたままにする。列は `season` の昇順である。既定の列は `wins_vs_pythag`。`--column` で、どの行にも数値（または null）としてある列へ替えられる。文字列の列は拒否する。
 
-色は、そのマスの列の値である。マスに書く文字は `A` か `B` の一字だけである。`upper_half == true` を A、`false` を B とする。null のマスには文字を置かない。数はマスに書かない。行が無いマスの値は null のままで、0 にはしない。
+色は、そのマスの列の値である（`sigma_band` ではない）。図の近くに `zmin` と `zmax` を置く。マスに書く文字は `A` か `B` の一字だけである。`upper_half == true` を A、`false` を B とする。null のマスには文字を置かない。数はマスに書かない。行が無いマスの値は null のままで、0 にはしない。
 
 ホバーに出すのは `team`、`team_name`、`season`、`class`（A または B）、`rank`（その行に列があるとき）、その列の値である。値と `rank` は記録の数のまま出す。`upper_half` というフィールド名はホバーに出さない。
 

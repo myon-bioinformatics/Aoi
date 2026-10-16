@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from ask import registration_status
-from forms import contingency, render_forms_table, render_item, render_logic, main
+from forms import contingency, format_contingency_cell, render_forms_table, render_item, render_logic, main
 
 LABELS = ("事後構成", "事前登録", "不明")
 
@@ -88,6 +88,9 @@ def test_empty_antecedent_marks_not_p_as_zero_only_from_the_empty_lists():
     ]
     assert contingency(row)["¬P∧Q"] == 0
     assert contingency(row)["¬P∧¬Q"] == 0
+    assert format_contingency_cell(row, "¬P∧Q") == "0（前件が空）"
+    table = render_forms_table(row, heading=False)
+    assert "0（前件が空）" in table
     text = render_logic(row)
     assert "（条件なし）" in text
     assert "（if も if_any も空）" in text

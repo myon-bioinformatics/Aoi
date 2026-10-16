@@ -293,12 +293,16 @@ def resolve_threshold(root: Path, results: Path, cycle: str | None, override: fl
     return load_suggest_threshold(Path(results).parent)
 
 
-def suggestion_for(text: str, results: Path, unread: list[str], res: dict, threshold: float | None) -> dict:
+def suggestion_for(text: str, results: Path, unread: list[str], res: dict, threshold: float | None,
+                   *, query: Query | None = None) -> dict:
     """Up to five candidate IDs when the reply is 判定不能 because of unread text or an unknown ID.
 
     Candidates are not written into ``answer`` or ``Query.target``.
     """
     error = res.get("error") or ""
+    q = query if query is not None else parse(text)[0]
+    if "結果が読めない" in error or any(not (Path(results) / name).is_file() for name in required_files(q)):
+        return {"candidates": [], "line": "", "status": None, "selected": None}
     unknown_id = "結果にない" in error and "結果が読めない" not in error
     if not unread and not unknown_id:
         return {"candidates": [], "line": "", "status": None, "selected": None}
@@ -440,7 +444,7 @@ def main(argv=None) -> int:
         ap.error("問いか --query か --schema が要る")
     res = ({"answer": "判定不能", "error": "解釈を確認してください: " + "; ".join(unread), "rows": []}
            if unread else answer_results(q, results))
-    hinted = suggestion_for(text, results, unread, res, threshold)
+    hinted = suggestion_for(text, results, unread, res, threshold, query=q)
     if args.log:
         args.log.parent.mkdir(parents=True, exist_ok=True)
         with args.log.open("a", encoding="utf-8") as fh:

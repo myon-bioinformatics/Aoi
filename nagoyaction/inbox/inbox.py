@@ -285,7 +285,7 @@ def ask_question(
         result = answer_results(q, results)
         if cached:
             atomic_json(cached, result)
-    hinted = suggestion_for(text, results, unread, result, suggest_threshold)
+    hinted = suggestion_for(text, results, unread, result, suggest_threshold, query=q)
     return {
         "question": text,
         "query": asdict(q),

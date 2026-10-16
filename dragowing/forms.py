@@ -111,6 +111,7 @@ def render_forms_table(item: dict) -> str:
         f"| ¬P | {_cell(cells['¬P∧Q'])} | {_cell(cells['¬P∧¬Q'])} |",
         "",
         f"| {FORM_LABEL['original']}: {_form_cell(forms.get('original'))} | {FORM_LABEL['converse']}: {_form_cell(forms.get('converse'))} |",
+        "|---|---|",
         f"| {FORM_LABEL['inverse']}: {_form_cell(forms.get('inverse'))} | {FORM_LABEL['contrapositive']}: {_form_cell(forms.get('contrapositive'))} |",
     ]
     return "\n".join(lines)
@@ -173,10 +174,10 @@ def logic_lines(item: dict) -> list[str]:
         return ["（then がない）"]
     if ant is None:
         return [
-            f"元: （条件なし） → {cons}",
-            "逆: （if も if_any も空）",
-            "裏: （if も if_any も空）",
-            f"対偶: ¬({cons}) → （if も if_any も空）",
+            f"元: ⊤（条件なし） → {cons}",
+            f"逆: {cons} → ⊤（条件なし）（未評価）（if も if_any も空）",
+            f"裏: ⊥（条件なしの否定） → ¬({cons})（未評価）（if も if_any も空）",
+            f"対偶: ¬({cons}) → ⊥（条件なしの否定）",
         ]
     return [
         f"元: {ant} → {cons}",

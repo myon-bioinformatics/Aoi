@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from annual_scope import PRIMARY_YEARS, primary_cache
 from queryu import Cache
+from npb_team_annual import pages
 
 
 def test_only_primary_cache_is_copied_and_reference_input_is_unchanged(tmp_path):
@@ -10,7 +11,9 @@ def test_only_primary_cache_is_copied_and_reference_input_is_unchanged(tmp_path)
     for year in (2012, *PRIMARY_YEARS):
         for lg in ('c', 'p'):
             for cat in ('std', 'tmb', 'tmp', 'tmf', 'archive'):
-                cache.put(f'{year}_{lg}_{cat}', f'https://npb.jp/{year}/{lg}/{cat}', str(year), 200, b'<html>team</html>', {})
+                key=f'{year}_{lg}_{cat}'
+                url=next(url for k,url,_ in pages([year]) if k==key)
+                cache.put(key,url,str(year),200,b'<html>team</html>',{})
     original = cache.manifest.read_bytes()
     out = tmp_path/'primary'
     assert primary_cache(cache.root, out) == 140

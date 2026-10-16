@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import pytest
-from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan,period_experiment,validate_period)
+from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan,period_experiment,validate_period,calibration_mean,_flow)
 
 
 @pytest.mark.parametrize('profile',['aligned','same_totals','reversed'])
@@ -46,6 +46,21 @@ def test_seed_reproducibility_and_explicit_synthetic_identity():
     assert expand(p)==expand(p)
     assert all(g['synthetic'] is True for g in expand(p))
     assert p['synthetic'] is True
+
+
+@pytest.mark.parametrize('profile',['aligned','same_totals','reversed'])
+def test_minimum_pair_counts_and_zero_score_draws_are_valid(profile):
+    p=plan(seed=0,profile=profile,within=3,inter=3,mean_runs=1,conversion=0)
+    games=expand(p)
+    assert validate_games(p,games)
+    assert any(g['hs']==g['as']==0 for g in games)
+
+
+def test_season_labels_are_part_of_the_game_witness():
+    from synthetic_league import _season_witness
+    p=plan();games=_season_witness(p,2013)
+    games[0]['season']=2012
+    with pytest.raises(ValueError,match='season'):validate_games(p,games)
 
 
 def test_impossible_annual_constraints_are_not_silently_relaxed():
@@ -130,3 +145,72 @@ def test_partial_or_historical_data_cannot_satisfy_period(primary_period, change
     if change == 'missing_control':r['negative_controls'].pop()
     if change == 'accepted_control':r['negative_controls'][-1]['rejected'] = False
     with pytest.raises(ValueError):validate_period(r)
+
+
+@pytest.mark.parametrize('field,value', [('annual',[]),('games',0),('games_sha256','0'*64),
+                                      ('seed',999),('conditional_counts',{}),('profile','other')])
+def test_saved_period_cases_are_replayed_instead_of_trusting_success(primary_period,field,value):
+    r=deepcopy(primary_period)
+    r['cases'][0][field]=value
+    with pytest.raises(ValueError):validate_period(r)
+
+
+def test_saved_period_group_totals_and_control_seeds_are_replayed(primary_period):
+    r=deepcopy(primary_period);r['groups'][0]['period_passed']=100
+    with pytest.raises(ValueError,match='replay'):validate_period(r)
+    r=deepcopy(primary_period);r['negative_controls'][0]['seed']+=1
+    with pytest.raises(ValueError,match='replay'):validate_period(r)
+
+
+@pytest.mark.parametrize('change',['identity','league','pair_missing','pair_count'])
+def test_declared_family_membership_and_schedule_cannot_drift(change):
+    p=plan()
+    if change=='identity':p['annual'][0]['synthetic']=False
+    if change=='league':p['annual'][0]['league']='P'
+    if change=='pair_missing':p['pairs'].pop()
+    if change=='pair_count':p['within']+=1
+    with pytest.raises(ValueError):validate_plan(p)
+
+
+def test_game_pair_budgets_are_checked_even_when_every_annual_total_is_unchanged():
+    p=plan(seed=8);games=expand(p)
+    # A balanced four-edge cycle leaves each team's W/L/T/RF/RA intact.
+    for pair,delta in [(('C1','C2'),1),(('C2','C3'),-1),(('C3','C4'),1),(('C1','C4'),-1)]:
+        g=next(g for g in games if tuple(sorted((g['home'],g['away'])))==pair and min(g['hs'],g['as'])>=1)
+        g['hs']+=delta;g['as']+=delta
+    with pytest.raises(ValueError,match='pair budget'):validate_games(p,games)
+
+
+def test_maxflow_feasibility_matches_exhaustive_small_graph():
+    from itertools import product
+    pairs=[('a','b',2),('a','c',1),('b','c',1)]
+    possible=set()
+    for ab,ac,bc in product(range(3),range(2),range(2)):
+        possible.add((ab+ac,2-ab+bc,2-ac-bc))
+    for quotas in product(range(5),repeat=3):
+        if quotas in possible:
+            allocation=_flow(dict(zip('abc',quotas)),pairs)
+            assert all(a+b==n for (a,b),(_,_,n) in zip(allocation,pairs))
+            actual=Counter()
+            for (a,b,_),(wa,wb) in zip(pairs,allocation):actual[a]+=wa;actual[b]+=wb
+            assert tuple(actual[t] for t in 'abc')==quotas
+        else:
+            with pytest.raises(InfeasibleScenario):_flow(dict(zip('abc',quotas)),pairs)
+
+
+@pytest.fixture
+def calibration_rows():
+    return [dict(season=y,league=lg,team=f'{lg}{i}',RF=400,G=100) for y in range(2013,2027) for lg in ('C','P') for i in range(6)]
+
+
+@pytest.mark.parametrize('change',['missing','duplicate','history','synthetic','bad_games','bad_runs'])
+def test_calibration_requires_complete_distinct_real_primary_rows(calibration_rows,change):
+    rows=calibration_rows
+    assert calibration_mean(rows)==4
+    if change=='missing':rows.pop()
+    if change=='duplicate':rows[-1]=dict(rows[-2])
+    if change=='history':rows.append(dict(rows[0],season=2012))
+    if change=='synthetic':rows[0]['synthetic']=True
+    if change=='bad_games':rows[0]['G']=0
+    if change=='bad_runs':rows[0]['RF']=-1
+    with pytest.raises(ValueError):calibration_mean(rows)

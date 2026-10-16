@@ -257,51 +257,69 @@ def _numeric_column(rows: list[dict], column: str) -> None:
             raise ValueError(f"列 {column} は数値ではない")
 
 
+# 上から下。中日 d を最上段にする。括弧内の並びは記録にある記号で、d を先頭に繰り上げたもの。
+_TEAM_TOP_DOWN = ("d", "g", "s", "db", "t", "c", "h", "f", "b", "e", "l", "m")
+
+
+def _exact_text(value) -> str:
+    if value is None:
+        return "null"
+    return json.dumps(value, ensure_ascii=False)
+
+
+def _heatmap_order(teams: list[tuple]) -> list[tuple]:
+    rank = {code: index for index, code in enumerate(_TEAM_TOP_DOWN)}
+
+    def key(item):
+        code = item[1]
+        if code in rank:
+            return (0, rank[code], item[0])
+        return (1, code, item[0])
+
+    return sorted(teams, key=key)
+
+
 def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figure:
-    """C4. 球団 × 年。値は列の記録。B は upper_half==false のマスだけに付ける。"""
+    """C4. 球団 × 年。色は列の値。マスの文字は A/B だけ。数はホバー。"""
     _numeric_column(rows, column)
-    teams = sorted({(row["league"], row["team"], row["team_name"]) for row in rows})
+    teams = _heatmap_order(list({(row["league"], row["team"], row["team_name"]) for row in rows}))
     seasons = sorted({row["season"] for row in rows})
     index = {(row["league"], row["team"], row["season"]): row for row in rows}
-    labels = [_team_label(league, name, team) for league, team, name in teams]
-    z, text, marks, records = [], [], [], []
-    for league, team, name in teams:
-        z_row, text_row, mark_row = [], [], []
+    codes = [team for _league, team, _name in teams]
+    clash = len(codes) != len(set(codes))
+    labels = [f"{league}:{team}" if clash else team for league, team, _name in teams]
+    z, text, marks, records, custom = [], [], [], [], []
+    for (league, team, name), label in zip(teams, labels):
+        z_row, text_row, mark_row, custom_row = [], [], [], []
         for season in seasons:
             row = index.get((league, team, season))
             if row is None:
-                value, upper = None, None
+                value, upper, rank = None, None, None
             else:
                 value, upper = row.get(column), row.get("upper_half")
+                rank = row.get("rank") if "rank" in row else None
             _color, klass = class_mark(upper)
-            mark = "B" if upper is False else ""
-            shown = "null" if value is None else json.dumps(value, ensure_ascii=False)
-            if mark:
-                shown = f"{shown} {mark}"
             z_row.append(value)
-            text_row.append(shown)
-            mark_row.append(mark)
-            records.append(
+            text_row.append(klass)
+            mark_row.append(klass)
+            custom_row.append(
                 {
                     "league": league,
                     "team": team,
                     "team_name": name,
                     "season": season,
-                    "column": column,
-                    "value": value,
-                    "upper_half": upper,
-                    "mark": mark,
                     "class": klass,
+                    "rank": rank,
+                    "rank_text": _exact_text(rank),
+                    "value": value,
+                    "value_text": _exact_text(value),
                 }
             )
+            records.append(custom_row[-1] | {"column": column, "upper_half": upper, "mark": klass})
         z.append(z_row)
         text.append(text_row)
         marks.append(mark_row)
-    custom = []
-    cursor = 0
-    for _team in teams:
-        custom.append(records[cursor : cursor + len(seasons)])
-        cursor += len(seasons)
+        custom.append(custom_row)
     fig = go.Figure(
         data=[
             go.Heatmap(
@@ -310,24 +328,26 @@ def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figur
                 z=z,
                 text=text,
                 texttemplate="%{text}",
+                textfont=dict(family=FONT, size=14, color="#1a1a1a"),
                 customdata=custom,
                 colorscale="Viridis",
                 zsmooth=False,
                 hoverongaps=False,
+                showlegend=False,
                 colorbar=dict(title=dict(text=column)),
                 hovertemplate=(
-                    "league=%{customdata.league} %{customdata.team_name} (%{customdata.team})<br>"
+                    "team=%{customdata.team} %{customdata.team_name}<br>"
                     "season=%{customdata.season}<br>"
-                    f"{column}=%{{customdata.value}}<br>"
-                    "upper_half=%{customdata.upper_half}<br>"
-                    "mark=%{customdata.mark}<extra></extra>"
+                    "class=%{customdata.class}<br>"
+                    "rank=%{customdata.rank_text}<br>"
+                    f"{column}=%{{customdata.value_text}}<extra></extra>"
                 ),
             )
         ]
     )
     fig.update_layout(
         **_base_layout(
-            title=dict(text=f"{column}<br>B は upper_half==false のマス"),
+            title=dict(text="球団 × 年"),
             height=640,
             width=980,
             meta={
@@ -342,8 +362,14 @@ def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figur
             },
         )
     )
-    fig.update_xaxes(type="category", title_text="season")
-    fig.update_yaxes(type="category", categoryorder="array", categoryarray=list(reversed(labels)), title_text="team")
+    fig.update_xaxes(type="category", title_text="season", automargin=True)
+    fig.update_yaxes(
+        type="category",
+        categoryorder="array",
+        categoryarray=list(reversed(labels)),
+        title_text="team",
+        automargin=True,
+    )
     return fig
 
 

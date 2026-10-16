@@ -7,16 +7,22 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --id P1
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --column wins_vs_pythag
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --cond 'rd,>,0' --cond 'rank_ra,<=,2'
+python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --embed
 ```
 
 `--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。
 
-出力は次の 2 ファイルである。どちらも単体の HTML で、Plotly.js をファイルの中に持つ。
+既定の出力は、HTML と、その隣に置く `plotly.min.js` である。`plotly.min.js` は、インストールされた Plotly の `package_data/plotly.min.js` を出力ディレクトリへコピーしたものである。HTML はそれを `src="plotly.min.js"` で読む。Plotly.js を各 HTML に埋め込まない。ブラウザはネットワークに出さない。
+
+`--embed` を付けると、各 HTML に Plotly.js を埋め込む。そのファイルだけを別の場所へ移しても図が出る。`plotly.min.js` は書かない。
 
 | ファイル | 中身 |
 |---|---|
 | `index.html` | 軌跡、球団×年、条件の重なりと単位の表 |
 | `propositions.html` | 命題ごとの 2×2、論理記号、反例カード |
+| `plotly.min.js` | 共有の Plotly.js。`--embed` のときは無い |
+
+ページの見出し、カードの見出し、論理記号の囲みは Markdown で書き、Python-Markdown で HTML にする。記録の数と `data-json` は、変換のあとにもファイルの値のまま残す。
 
 文字だけの 2×2 は [forms.md](forms.md) の `dragowing/forms.py` のままである。
 
@@ -58,9 +64,11 @@ PNG が要るときだけ、依存の extra `png`（kaleido）を入れて `--pn
 
 ### 球団×年（提案 C4）
 
-行は `league`、`team` の記号順、列は `season` の昇順である。既定の列は `wins_vs_pythag`。`--column` で、どの行にも数値（または null）としてある列へ替えられる。文字列の列は拒否する。
+図の題は「球団 × 年」である。行のラベルは `team` の記号だけである（`d`、`g`、`s`、`db`、`t`、`c`、`h`、`f`、`b`、`e`、`l`、`m`）。球団名は軸に書かない。上からこの順で、中日 `d` が最上段である。この並びに無い記号は、その後へ記号順で置く。同じ記号が二つのリーグにあるときは `league:team` にして行を分けたままにする。列は `season` の昇順である。既定の列は `wins_vs_pythag`。`--column` で、どの行にも数値（または null）としてある列へ替えられる。文字列の列は拒否する。
 
-マスの数は、その球団年の列の値である。行が無いマスは null のままで、0 にはしない。`upper_half == false` のマスにだけ文字 B を付ける。`true` のマスには付けない。
+色は、そのマスの列の値である。マスに書く文字は `A` か `B` の一字だけである。`upper_half == true` を A、`false` を B とする。null のマスには文字を置かない。数はマスに書かない。行が無いマスの値は null のままで、0 にはしない。
+
+ホバーに出すのは `team`、`team_name`、`season`、`class`（A または B）、`rank`（その行に列があるとき）、その列の値である。値と `rank` は記録の数のまま出す。`upper_half` というフィールド名はホバーに出さない。
 
 ### 条件の重なり（提案 C5）
 
@@ -78,7 +86,7 @@ B は `upper_half == false` という集合の表示名である。
 
 軌跡の線は、記録された点の順をつないだものである。傾きを傾向や予測としては読まない。A と B は `upper_half` の表示名で、色が付いている理由の説明ではない。
 
-`wins_vs_pythag` の色は、その数の大小を見やすくしたものである。正や負を、勝ち越しや失敗の判断としては読まない。B の文字は `upper_half == false` の印である。
+`wins_vs_pythag` の色は、その数の大小を見やすくしたものである。正や負を、勝ち越しや失敗の判断としては読まない。マスの A と B はクラスの表示名である。ホバーの `rank` は記録された順位で、このページは順位を計算し直さない。
 
 重なりの図は、選んだ条件式が記録の上でどこで同時に真だったかの件数である。式を採用したことや、次に使う規則であることは示さない。円の大きさでは件数を比べない。
 

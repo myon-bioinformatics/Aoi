@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from .forms import load_items
-from .htmlout import index_body, propositions_body, standalone
+from .htmlout import copy_plotlyjs, index_body, propositions_body, standalone
 from .overlap import finalize_conditions, load_overlap, parse_cond
 from .records import read_jsonl, select_items
 
@@ -42,6 +42,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="重なりの条件。col,op,値（JSON）。例: rd,>,0 。省略すると if の先頭2件と B クラス",
     )
     parser.add_argument("--png", action="store_true", help="PNG も書く。kaleido と Chrome が要る。既定では HTML だけ")
+    parser.add_argument(
+        "--embed",
+        action="store_true",
+        help="各 HTML に Plotly.js を埋め込む。既定は出力先へ plotly.min.js を1つコピーして参照する",
+    )
     return parser
 
 
@@ -61,8 +66,12 @@ def main(argv=None) -> int:
         return 1
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "index.html").write_text(standalone("DRAgoWing", index_html), encoding="utf-8")
-    (out / "propositions.html").write_text(standalone("命題ごとの四つの形と反例カード", prop_html), encoding="utf-8")
+    if not args.embed:
+        copy_plotlyjs(out)
+    (out / "index.html").write_text(standalone("DRAgoWing", index_html, embed=args.embed), encoding="utf-8")
+    (out / "propositions.html").write_text(
+        standalone("命題ごとの四つの形と反例カード", prop_html, embed=args.embed), encoding="utf-8"
+    )
     if args.png:
         try:
             for name, fig in {**index_figures, **prop_figures}.items():

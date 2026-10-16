@@ -8,6 +8,6 @@
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 ```
 
-`build/dragowing/index.html` と `propositions.html` ができる。ブラウザで開く。ネットワークには出さない。図のライブラリは Plotly で、Plotly.js は HTML に入っている。
+`build/dragowing/index.html` と `propositions.html` と、共有の `plotly.min.js` ができる。ブラウザで開く。ネットワークには出さない。図のライブラリは Plotly で、Plotly.js は出力先に1つだけ置く。各 HTML に埋め込むときは `--embed` を付ける。ページの文章は Markdown から HTML にしている。
 
 PNG は任意である。`uv sync --extra png` のあと `--png` を付ける。kaleido と Chrome が要る。付けなければ HTML だけで、テストもそちらだけを見る。

@@ -156,14 +156,28 @@ def test_trajectory_and_heatmap_keep_source_values_including_a_gap():
     assert payload["zsmooth"] is False
     x, y, z = payload["x"], payload["y"], payload["z"]
     assert x == [2012, 2014]
-    i = y.index("C 中日 (d)")
+    assert y[0] == "d"
+    assert heat["layout"]["yaxis"]["categoryarray"][-1] == "d"
+    assert heat["layout"]["title"]["text"] == "球団 × 年"
+    i = y.index("d")
     assert z[i][x.index(2012)] == 8.4548548226457
     assert z[i][x.index(2014)] == -1.678984877580291
-    assert z[y.index("C 巨人 (g)")][x.index(2014)] is None
+    assert z[y.index("g")][x.index(2014)] is None
+    assert payload["text"][i][x.index(2012)] == "A"
+    assert payload["text"][i][x.index(2014)] == "B"
+    assert payload["text"][y.index("g")][x.index(2014)] == ""
+    assert set("".join(cell for row in payload["text"] for cell in row)) <= set("AB")
+    cell = payload["customdata"][i][x.index(2012)]
+    assert cell["value"] == 8.4548548226457
+    assert cell["value_text"] == "8.4548548226457"
+    assert cell["class"] == "A"
+    assert cell["team"] == "d"
+    assert cell["season"] == 2012
+    assert cell["rank_text"] == "null"
+    assert "upper_half" not in payload["hovertemplate"]
+    assert "8.4548548226457" not in "".join(payload["text"][i])
     assert heat["layout"]["meta"]["marks"][i][x.index(2014)] == "B"
-    assert heat["layout"]["meta"]["marks"][i][x.index(2012)] == ""
-    assert "8.4548548226457" in payload["text"][i][0]
-    assert payload["text"][i][1].endswith(" B")
+    assert heat["layout"]["meta"]["marks"][i][x.index(2012)] == "A"
 
 
 def test_overlap_file_uses_the_numpy_mask_without_filling_nulls(tmp_path):
@@ -233,13 +247,25 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     assert main(["--results", str(results), "--out", str(out), "--id", "P9"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
-    assert "<script src=" not in index
-    assert "plotly.js" in index
+    bundle = (out / "plotly.min.js").read_bytes()
+    from dragowing.htmlout import plotlyjs_path
+
+    assert bundle == plotlyjs_path().read_bytes()
+    assert '<script charset="utf-8" src="plotly.min.js"></script>' in index
+    assert bundle[:80].decode("utf-8") not in index
     assert index.count("Plotly.newPlot") == 3
     assert "8.4548548226457" in index
     assert "cdn.plot.ly/plotly" not in index
+    assert "<h2>球団 × 年" in index
     assert "［事後構成］ P9" in props
     assert "なぜか？" in props
+    assert "<h2" in props
+    embedded = tmp_path / "embedded"
+    assert main(["--results", str(results), "--out", str(embedded), "--id", "P9", "--embed"]) == 0
+    alone = (embedded / "index.html").read_text(encoding="utf-8")
+    assert "src=\"plotly.min.js\"" not in alone
+    assert bundle[:80].decode("utf-8") in alone
+    assert not (embedded / "plotly.min.js").exists()
     proc = subprocess.run(
         [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"],
         cwd=ROOT,
@@ -327,17 +353,30 @@ def test_real_records_are_copied_into_the_figures():
     heat = spec_of(heatmap_figure(rows, "wins_vs_pythag"))
     payload = heat["data"][0]
     assert payload["zsmooth"] is False
+    assert payload["y"][0] == "d"
+    assert heat["layout"]["yaxis"]["categoryarray"][-1] == "d"
+    assert heat["layout"]["title"]["text"] == "球団 × 年"
+    assert payload["y"] == ["d", "g", "s", "db", "t", "c", "h", "f", "b", "e", "l", "m"]
+    assert "upper_half" not in payload["hovertemplate"]
     index = {(row["league"], row["team"], row["season"]): row for row in rows}
-    for i, label in enumerate(payload["y"]):
+    for i, team in enumerate(payload["y"]):
         for j, season in enumerate(payload["x"]):
-            league, rest = label.split(" ", 1)
-            team = rest.rsplit("(", 1)[1][:-1]
-            row = index[(league, team, season)]
+            row = next(item for item in rows if item["team"] == team and item["season"] == season)
+            assert index[(row["league"], team, season)] is row
             assert payload["z"][i][j] == row["wins_vs_pythag"]
             assert heat["layout"]["meta"]["z"][i][j] == row["wins_vs_pythag"]
-            mark = "B" if row["upper_half"] is False else ""
+            mark = "A" if row["upper_half"] is True else "B" if row["upper_half"] is False else ""
+            assert payload["text"][i][j] == mark
             assert heat["layout"]["meta"]["marks"][i][j] == mark
-            assert json.dumps(row["wins_vs_pythag"]) in payload["text"][i][j]
+            hover = payload["customdata"][i][j]
+            assert hover["value"] == row["wins_vs_pythag"]
+            assert hover["value_text"] == json.dumps(row["wins_vs_pythag"])
+            assert hover["rank"] == row["rank"]
+            assert hover["rank_text"] == json.dumps(row["rank"])
+            assert hover["class"] == mark
+            assert hover["team"] == row["team"]
+            assert hover["season"] == row["season"]
+            assert json.dumps(row["wins_vs_pythag"]) not in payload["text"][i][j]
     dragons = next(row for row in rows if row["team"] == "d" and row["season"] == 2012)
     assert dragons["wins_vs_pythag"] == 8.4548548226457
     assert round(dragons["wins_vs_pythag"], 4) != dragons["wins_vs_pythag"]
@@ -379,8 +418,9 @@ def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
     assert main(["--results", str(RESULTS), "--out", str(out), "--id", "P1"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
-    assert "<script src=" not in index
-    assert "plotly.js" in index
+    assert '<script charset="utf-8" src="plotly.min.js"></script>' in index
+    assert (out / "plotly.min.js").is_file()
+    assert index.count('<script charset="utf-8" src="plotly.min.js"></script>') == 1
     heat = spec_from(index, "heatmap")
     assert any(cell == 8.4548548226457 for row in heat["data"][0]["z"] for cell in row)
     assert 'id="P1"' in props

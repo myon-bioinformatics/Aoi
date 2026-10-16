@@ -113,9 +113,10 @@ python -S sakanalytics/synthetic_league.py \
 通常の集約は期間外の実測や不完全な14年組を拒否する。参考側の検証成功は合格の前提にしない。
 
 ```bash
-python -S nagoyaction/annual_history_report.py \
+uv run python nagoyaction/annual_history_report.py \
   --observations data/observations/npb_team_annual/records.jsonl \
   --audit data/observations/npb_team_annual/audit.json \
+  --baseline cycles/c001-chunichi/outputs/season.jsonl \
   --annual data/observations/npb_team_annual/annual.jsonl \
   --experiment data/synthetic/annual_leagues/12teams/experiment.json \
   --cache-manifest data/raw/npb_annual/manifest.jsonl \
@@ -151,12 +152,20 @@ reversedの30/30という成立率と54件の取りこぼしを両方残し、�
 same_totalsのP2は期待勝率が全チーム同率になり、既存の同率最上位（rank min）の扱いで全168件が前提に入る。
 これらの差を、命題が使う情報の範囲や新しい分岐を検討するきっかけとして扱う。
 
-### 取りこぼしからの任意の追加探索
+## PR #39の独立レビュー後の再検証
 
-P96の54件を再現し、P52との重なり・偽陽性・偽陰性を比較した。
-別IDの候補6件を固定し、別seed 1・2と配分係数0.5でも参考検証した。
-得失点差の上限を外す候補はreversedで範囲を広げたが、全条件で精度を保つ改善にはならなかった。
-探索時に全件を拾った残差+5の閾値も、仮定変更では上位48件を拾う。
-詳細・54件の個別記録・再現手順は[R28](research/R28-synthetic-p96-misses.md)。
-候補・全条件の混同行列・反例ID・合成特徴量・SHAは`outputs/synthetic_p96_*`に分離した。
-既存命題、実測の台帳、PR #39の必須合格条件には反映しない。
+[レビュー記録](annual-history-review39.md)と[追加検証の集約証跡](outputs/annual_history_review39.json)を参照。
+従来の9,814件・42球団群年の記録は取得時点の結果として保持する。
+追加した検証項目による件数を、実測標本数の増加とは扱わない。
+
+集約時は保存済みの元HTML140ページをSHA・バイト数・公式URL・年の対応まで確認して再解析し、原文セルを含む全観測記録と比較する。
+年表と監査全項目（既存年表を使う場合はそのSHAも含む）を再計算し、較正値・168個の一意な球団年・全合成ケース・試合SHA・負の対照・集約値を照合する。
+旧監査は新しい項目を含まないため、上記のannual_auditを先に再実行する。--baselineは両コマンドで同じファイルを指定する。
+合成生成と算術監査は標準ライブラリだけで動く。元HTML再解析を含む集約は既存BlueProbeのselectolaxを使うためuv runで実行する。新しい依存パッケージは追加しない。
+
+元HTMLと観測台帳の再解析照合だけを行う場合:
+
+```bash
+uv run python queryu/annual_scope.py --cache data/raw/npb_annual \
+  --verify-observations data/observations/npb_team_annual/records.jsonl
+```

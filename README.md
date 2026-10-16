@@ -41,3 +41,21 @@ python -S sakanalytics/league_laboratory.py
 設定は [league-laboratory.toml](../cycles/c001-chunichi/league-laboratory.toml)、
 観測と解釈は [R29](../cycles/c001-chunichi/research/R29-league-laboratory.md)。
 架空モデルの仮定下の探索で、既存命題・合格条件・実測スコアは変更しない。
+
+## 全命題の共通評価軸とseed感度
+
+PythDRagorasは全命題・評価した各形にPrecision / Recall / F1 / Accuracy /
+Balanced Accuracy / MCCを付ける。分母0・定数予測などは`None`と理由を残し、正式判定には使わない。
+合成入力がない命題もseed評価の項目を持ち、未評価は`None`。特定の再評価候補だけに限定しない。
+
+```bash
+python sakanalytics/proposition_seed_audit.py
+# 年成績の証跡も同じ条件で作り直す場合だけ:
+python sakanalytics/proposition_seed_audit.py --generate-plans
+```
+
+既存の年成績合成3系列と、能力予算のseed 0〜9・2023〜2026年・全28配分・減衰0/0.4を使う。
+証跡は`cycles/c001-chunichi/outputs/exploratory/proposition-evaluation/`。
+通常のc001 pipelineも`--seed-evaluation`で診断を読み、`outputs/index.md`へ全命題を並べる。
+年・命題定義・生成条件が同じ群内だけでseedの振れを測り、条件変更の効果とは分ける。
+合成入力は13命題に対応し、必要な列や実在球団への対応付けがない命題は未評価のままにする。

@@ -18,6 +18,24 @@
       "destination": "vendor/markdown-LICENSE",
       "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
       "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
+    },
+    {
+      "repository": "myon-bioinformatics/web-ui",
+      "ref": "918aeb5b6d1dd1e1976b70490fa135105c5023fe",
+      "commit": "918aeb5b6d1dd1e1976b70490fa135105c5023fe",
+      "source": "web_ui.py",
+      "destination": "vendor/web_ui.py",
+      "blob_sha": "1cf4221bc0d86deaa48e6ee8d232e92be744d99d",
+      "sha256": "07bf4297ecfff1fdba2f6817fc46aa780183f87f37b11f6cd7986d6952c4e424"
+    },
+    {
+      "repository": "myon-bioinformatics/web-ui",
+      "ref": "918aeb5b6d1dd1e1976b70490fa135105c5023fe",
+      "commit": "918aeb5b6d1dd1e1976b70490fa135105c5023fe",
+      "source": "LICENSE",
+      "destination": "vendor/web-ui-LICENSE",
+      "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
+      "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
     }
   ]
 }

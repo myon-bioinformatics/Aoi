@@ -17,7 +17,7 @@ with RenderSession(offline=True) as session:
 
 `PLOTLY` は #43 の初期実装と同じ方式で、インストール済み plotly の `package_data/plotly.min.js` を見つける。呼出しごとの一時ディレクトリにコピーし、`file:` URL で読み込む。CDN の URL や JS バージョンの固定値は使わない。Python パッケージを更新した後の出力は、そのパッケージに同梱された JS を使う。一時ファイルは出力が終わってから消す。図のデータもローカルに用意する必要がある（外部 URL の地図・画像・フォント等を自動取得する機能ではない）。
 
-#43 最新版はローカル JS の補助関数を削除し、HTML の既定を同梱 JS のバージョンに対応する CDN へ変更している。その既定は維持する。画像出力側の `export.plotlyjs_path()` に元のパッケージ内検索方式を残し、画像のオフライン動作を HTML の既定と分離する。
+HTML の外部タグと `--embed` は locked web-ui の固定版＋ハッシュ契約を共用する。画像出力側の `export.plotlyjs_path()` に元のパッケージ内検索方式を残し、画像のオフライン動作を HTML の既定と分離する。
 
 `Plotly.newPlot` の Promise 完了を待つ。PNG は図のコンテナ全体をスクリーンショットにし、SVG はローカルの `Plotly.toImage` で全レイヤーを直列化する。最初の `svg.main-svg` だけを取得すると欠落するタイトル・凡例も含める。SVG の WebGL 部分等の扱いは Plotly.js の仕様による。
 

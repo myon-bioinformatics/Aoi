@@ -151,6 +151,10 @@ jobs:
         run: |
           python -m pip install uv
           uv sync --locked --extra export --python 3.14
+      - name: Prepare and verify the fixed Plotly CDN bundle before disconnecting
+        run: |
+          mkdir -p build/test-assets
+          python -S -c 'from pathlib import Path; from vendor.web_ui import fetch_plotly_js; Path("build/test-assets/plotly.min.js").write_bytes(fetch_plotly_js())'
       - name: Require Chrome and render without a network namespace interface
         shell: bash
         run: |
@@ -159,8 +163,10 @@ jobs:
           mkdir -p build/test-results
           sudo unshare --net -- env CHROME="$chrome" DRAGOWING_REQUIRE_CHROME=1 \
             DRAGOWING_EXPORT_EVIDENCE_DIR="$PWD/build/export-evidence" \
+            DRAGOWING_PINNED_PLOTLY_JS="$PWD/build/test-assets/plotly.min.js" \
             "$PWD/.venv/bin/python" -m pytest -q \
             dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
+            dragowing/tests/test_plotly_cdn.py \
             --junitxml=build/test-results/chrome-export-3.14.xml
       - name: Preserve Chrome export JUnit
         if: always()

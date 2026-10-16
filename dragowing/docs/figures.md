@@ -12,7 +12,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 `--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。
 
-既定では、`index.html` が CDN の Plotly.js（`https://cdn.plot.ly/plotly-latest.min.js`、版は固定しない）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。Python パッケージ `plotly` は依存に置かない。
+既定では、`index.html` が CDN の Plotly.js（固定版 URL＋SHA-256 SRI、契約は `vendor/web_ui.py`）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。Python パッケージ `plotly` は依存に置かない。
 
 `--embed` を付けると、`index.html` に Plotly.js を埋め込む。`propositions.html` は埋め込まない。
 
@@ -28,6 +28,20 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 PNG が要るときだけ、依存の extra `png`（kaleido）を入れて `--png` を付ける。Chrome もそのときだけ要る。extra が無いと HTML は書いたうえで終了コード 2 になる。テストは kaleido も Chrome も使わない。
 
 `sets.jsonl` はこの結果に無い。条件式のハッセ図（提案の C6）は出していない。成立率をここで新しく計算して色を塗ることもしていない。
+
+配布契約は web-ui の単一ファイルを `vendor.lock.json` の正確なコミットと
+ファイルハッシュで固定して共用する。版・URL・期待 SHA-256・SRI・8 MiB の上限・
+取得と検証はそこで管理し、DRAgoWing は重複定義しない。
+`--embed` は固定 URL の bytes をハッシュ照合してから UTF-8 に変換し、
+HTML raw-text 終端を検査して埋め込む。HTTP エラー・取得失敗・サイズ超過・
+CDN 内容不一致・改変はエラーで停止し、成功 bytes だけをプロセス内キャッシュに置く。
+版更新は upstream の契約更新と lock 更新を一組で行う。
+
+web-ui の `remote_scripts` / `remote_script_tag` / `fetch_plotly_js` を共用する。
+`plotly_figure` は `ui-panel` と inline 初期化を返すため、既存の
+`application/json` 図形ブロック・ID・CSS・DRAgoWing 初期化は維持する。
+PNG/SVG API と CLI `--png` は従来どおりローカルの Python Plotly 同梱 JS を使う。
+その版はインストールされたパッケージに従い、CDN 契約の版とは別に実行証跡へ記録する。
 
 ## 観測
 

@@ -184,3 +184,58 @@ def test_export_draw_mermaid_svg_contains_labels(tmp_path, chrome_executable):
     text = out.read_text(encoding="utf-8")
     assert "Alpha" in text and "Beta" in text
     assert "<svg" in text
+
+
+def test_pinned_embed_html_and_image_exports(tmp_path, chrome_executable):
+    """Real fixed CDN bytes work in unchanged DRAgoWing JSON blocks and PNG/SVG."""
+    import io
+    from unittest.mock import patch
+    from dragowing import plotly_cdn
+    from dragowing.htmlout import figure_block, spec_from, standalone
+    from vendor import web_ui
+
+    source = os.environ.get('DRAGOWING_PINNED_PLOTLY_JS')
+    if not source:
+        if os.environ.get('DRAGOWING_REQUIRE_CHROME') == '1':
+            pytest.fail('required pinned Plotly bundle not prepared')
+        pytest.skip('real pinned CDN bytes supplied by Chrome CI')
+    raw = web_ui.verify_plotly_js(Path(source).read_bytes())
+    class Response(io.BytesIO):
+        status = 200
+    figures = [
+        {'data': [{'type': 'scatter', 'x': [1, 2, 3], 'y': [2, 4, 3],
+                   'mode': 'lines+markers', 'name': 'pinned-series'}],
+         'layout': {'width': 400, 'height': 300, 'showlegend': True,
+                    'title': {'text': 'Pinned scatter'}}},
+        {'data': [{'type': 'heatmap', 'x': [2025, 2026], 'y': ['d', 'g'],
+                   'z': [[-1.2, 0.3], [1.1, -0.4]], 'text': [['B', 'A'], ['A', 'B']],
+                   'texttemplate': '%{text}'}],
+         'layout': {'width': 400, 'height': 300, 'title': {'text': 'Pinned heatmap'}}},
+    ]
+    ready = ("new Promise((ok,bad)=>{let n=0;(function tick(){"
+             "let g=document.getElementById('g');"
+             "if(g&&g._fullLayout&&g.querySelector('.main-svg')){"
+             "if(Plotly.version!==%s)return bad(Error('wrong version'));ok(true);}"
+             "else if(++n>1000)bad(Error('render timeout'));else setTimeout(tick,20);})()})"
+             % json.dumps(web_ui.PLOTLY_JS_VERSION))
+    plotly_cdn.reset_plotly_js_cache()
+    try:
+        with RenderSession(chrome=chrome_executable, offline=True) as session:
+            for index, spec in enumerate(figures):
+                with patch('urllib.request.urlopen', return_value=Response(raw)):
+                    page = standalone('DRAgoWing', figure_block(spec, 'g'), plotly=True, embed=True)
+                assert spec_from(page, 'g') == spec
+                config = replace(PLOTLY, local_scripts=(), template=page, ready_expression=ready)
+                for fmt in ('png', 'svg'):
+                    data = export_draw(config, '', tmp_path / f'pinned-{index}.{fmt}', fmt, session=session)
+                    if fmt == 'png':
+                        _check_png(data, 400, 300)
+                    else:
+                        root = ET.fromstring(data)
+                        assert spec['layout']['title']['text'] in ''.join(root.itertext())
+                        if index == 0:
+                            assert 'pinned-series' in ''.join(root.itertext())
+                        else:
+                            assert {'A', 'B'} <= set(root.itertext())
+    finally:
+        plotly_cdn.reset_plotly_js_cache()

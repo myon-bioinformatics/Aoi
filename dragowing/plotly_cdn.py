@@ -1,19 +1,14 @@
-"""Plotly.js CDN URL and optional embed fetch (stdlib only).
+"""DRAgoWing adapter to the locked web-ui Plotly distribution contract.
 
-TODO(myon-bioinformatics/web-ui#59): vendor ``remote_scripts`` / ``plotly_figure`` from web-ui
-when PR 59 merges; keep DRAgoWing's JSON-in-``application/json`` figure blocks unless we
-align on web-ui's inline initializer shape.
+Figure JSON/initialization remains DRAgoWing-owned; URL, SRI and bounded bytes
+verification come from one vendored upstream module, recorded in vendor.lock.json.
 """
 from __future__ import annotations
 
-import html
-import urllib.error
-import urllib.request
+from vendor import web_ui
 
-PLOTLY_JS_CDN = "https://cdn.plot.ly/plotly-latest.min.js"
-_FETCH_TIMEOUT_SECONDS = 60.0
-
-_PLOTLY_JS_CACHE: str | None = None
+PLOTLY_JS_CDN = web_ui.PLOTLY_JS_URL
+_PLOTLY_JS_CACHE: bytes | None = None
 
 
 def reset_plotly_js_cache() -> None:
@@ -23,45 +18,19 @@ def reset_plotly_js_cache() -> None:
 
 
 def fetch_plotly_js() -> str:
-    """Download unpinned plotly-latest for ``--embed`` (cached in-process)."""
+    """Fetch fixed, verified bytes through web-ui and cache successful bytes only."""
     global _PLOTLY_JS_CACHE
-    if _PLOTLY_JS_CACHE is not None:
-        return _PLOTLY_JS_CACHE
-    request = urllib.request.Request(
-        PLOTLY_JS_CDN,
-        headers={"User-Agent": "DRAgoWing/1.0 (embed fetch)"},
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=_FETCH_TIMEOUT_SECONDS) as response:
-            status = response.status if hasattr(response, "status") else response.getcode()
-            if status != 200:
-                raise RuntimeError(f"Plotly.js CDN returned HTTP {status} for {PLOTLY_JS_CDN}")
-            raw = response.read()
-    except urllib.error.HTTPError as exc:
-        raise RuntimeError(
-            f"Plotly.js CDN request failed: HTTP {exc.code} {exc.reason} ({PLOTLY_JS_CDN})"
-        ) from exc
-    except urllib.error.URLError as exc:
-        reason = exc.reason
-        if isinstance(reason, TimeoutError):
-            raise RuntimeError(
-                f"Plotly.js CDN request timed out after {_FETCH_TIMEOUT_SECONDS}s ({PLOTLY_JS_CDN})"
-            ) from exc
-        raise RuntimeError(f"Plotly.js CDN request failed: {reason} ({PLOTLY_JS_CDN})") from exc
-    except TimeoutError as exc:
-        raise RuntimeError(
-            f"Plotly.js CDN request timed out after {_FETCH_TIMEOUT_SECONDS}s ({PLOTLY_JS_CDN})"
-        ) from exc
-    body = raw.decode("utf-8")
-    if not body.strip():
-        raise RuntimeError(f"Plotly.js CDN returned an empty body ({PLOTLY_JS_CDN})")
-    _PLOTLY_JS_CACHE = body
-    return body
+    if _PLOTLY_JS_CACHE is None:
+        raw = web_ui.fetch_plotly_js()
+        body = raw.decode("utf-8")
+        # A trusted JS bundle still must not terminate an HTML raw-text element.
+        web_ui.classic_script(body)
+        _PLOTLY_JS_CACHE = raw
+    return _PLOTLY_JS_CACHE.decode("utf-8")
 
 
 def plotly_script_tags(*, embed: bool) -> str:
     config = "<script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>\n"
     if embed:
-        return config + f"<script>{fetch_plotly_js()}</script>"
-    src = html.escape(PLOTLY_JS_CDN, quote=True)
-    return config + f'<script charset="utf-8" src="{src}"></script>'
+        return config + web_ui.classic_script(fetch_plotly_js())
+    return config + web_ui.remote_script_tag(web_ui.remote_scripts("plotly.js")[0])

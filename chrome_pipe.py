@@ -1,20 +1,20 @@
-"""Headless Chrome over --remote-debugging-pipe.
+"""Headless Chrome over --remote-debugging-pipe (stdlib only, no package imports).
 
-NUL-delimited JSON DevTools messages on fds 3 and 4. Kaleido and
-choreographer (both MIT) use this approach; this file reimplements it
-and does not copy their code. Standard library only, so the module can
-move to another repo without the rest of this package.
+NUL-delimited JSON on fds 3 and 4. Kaleido and choreographer (MIT) use this
+pattern; this file reimplements it and does not copy their code.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import queue
 import select
 import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 
 _NAMES = ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome")
@@ -50,15 +50,16 @@ def find_chrome(chrome: str | None = None) -> str:
 
 
 class Chrome:
-    """One browser process. call() and evaluate() reuse it."""
+    """One browser process. A reader thread drains the pipe so large replies cannot deadlock."""
 
-    def __init__(self, chrome: str | None = None, timeout: float = 60):
+    def __init__(self, chrome: str | None = None, timeout: float = 30):
         self.chrome = chrome
         self.timeout = timeout
         self._proc = self._w = self._r = self._err = self._tmp = None
-        self._buf = b""
         self._id = 0
-        self._events: list[dict] = []
+        self._inbox: queue.Queue = queue.Queue()
+        self._stop = threading.Event()
+        self._reader: threading.Thread | None = None
 
     def __enter__(self) -> Chrome:
         self.start()
@@ -74,59 +75,50 @@ class Chrome:
         self._tmp = tempfile.mkdtemp(prefix="chrome-pipe-")
         try:
             self._spawn(exe)
+            self._start_reader()
         except Exception:
             self.close()
             raise
 
-    def open(self, url: str) -> str:
-        """Open url in a new page and return its flattened session id."""
-        if self._proc is None:
-            self.start()
-        target = self.call("Target.createTarget", {"url": "about:blank"})["targetId"]
-        session = self.call("Target.attachToTarget", {"targetId": target, "flatten": True})["sessionId"]
-        self.call("Page.enable", session=session)
-        self._events.clear()
-        self.call("Page.navigate", {"url": url}, session=session)
-        self.wait_event("Page.loadEventFired")
-        return session
+    def call(self, method: str, params: dict | None = None, session: str | None = None,
+             timeout: float | None = None) -> dict:
+        limit = timeout if timeout is not None else self.timeout
+        mid = self._send(method, params, session)
+        deadline = time.monotonic() + limit
+        while True:
+            message = self._recv(deadline)
+            if message.get("id") == mid:
+                if "error" in message:
+                    err = message["error"]
+                    raise RuntimeError(err.get("message") if isinstance(err, dict) else err)
+                return message.get("result") or {}
 
-    def evaluate(self, expression: str, session: str, await_promise: bool = True):
+    def evaluate(self, expression: str, session: str, await_promise: bool = True,
+                 timeout: float | None = None):
         result = self.call("Runtime.evaluate", {
             "expression": expression, "awaitPromise": await_promise, "returnByValue": True,
-        }, session=session)
+        }, session=session, timeout=timeout)
         if "exceptionDetails" in result:
             detail = result["exceptionDetails"]
             exc = detail.get("exception") or {}
             raise RuntimeError(exc.get("description") or detail.get("text") or "JavaScript failed")
         return (result.get("result") or {}).get("value")
 
-    def call(self, method: str, params: dict | None = None, session: str | None = None) -> dict:
-        mid = self._send(method, params, session)
-        deadline = time.monotonic() + self.timeout
+    def wait_event(self, method: str, session: str | None = None, timeout: float | None = None) -> dict:
+        limit = timeout if timeout is not None else self.timeout
+        deadline = time.monotonic() + limit
         while True:
-            message = self._read(deadline)
-            if message.get("id") == mid:
-                if "error" in message:
-                    err = message["error"]
-                    raise RuntimeError(err.get("message") if isinstance(err, dict) else err)
-                return message.get("result") or {}
-            if "method" in message:
-                self._events.append(message)
-
-    def wait_event(self, method: str) -> dict:
-        deadline = time.monotonic() + self.timeout
-        while True:
-            for index, message in enumerate(self._events):
-                if message.get("method") == method:
-                    return self._events.pop(index)
-            message = self._read(deadline)
+            message = self._recv(deadline)
             if message.get("method") == method:
-                return message
-            if "method" in message:
-                self._events.append(message)
+                if session is None or message.get("sessionId") == session:
+                    return message
 
     def close(self) -> None:
         proc, self._proc = self._proc, None
+        self._stop.set()
+        if self._reader is not None:
+            self._reader.join(timeout=2)
+            self._reader = None
         if proc is not None and proc.poll() is None and self._w is not None:
             try:
                 self._send("Browser.close")
@@ -148,7 +140,11 @@ class Chrome:
         if self._tmp:
             shutil.rmtree(self._tmp, ignore_errors=True)
             self._tmp = None
-        self._events.clear()
+        while not self._inbox.empty():
+            try:
+                self._inbox.get_nowait()
+            except queue.Empty:
+                break
 
     def _spawn(self, exe: str) -> None:
         self._err = open(os.path.join(self._tmp, "chrome.err"), "w", encoding="utf-8")
@@ -156,7 +152,6 @@ class Chrome:
         read_out, write_out = os.pipe()
 
         def handoff() -> None:
-            # Dup above fd 4 first. dup2(3, 3) is a no-op and keeps close-on-exec.
             copies = []
             for src in (read_in, write_out):
                 fd = os.dup(src)
@@ -188,6 +183,27 @@ class Chrome:
         os.close(write_out)
         self._w, self._r = write_in, read_out
 
+    def _start_reader(self) -> None:
+        def loop() -> None:
+            buf = b""
+            while not self._stop.is_set():
+                ready, _, _ = select.select([self._r], [], [], 0.2)
+                if not ready:
+                    continue
+                chunk = os.read(self._r, 1 << 20)
+                if not chunk:
+                    self._inbox.put({"__eof__": True})
+                    return
+                buf += chunk
+                while True:
+                    message, buf = pop_message(buf)
+                    if message is None:
+                        break
+                    self._inbox.put(message)
+
+        self._reader = threading.Thread(target=loop, name="chrome-pipe-reader", daemon=True)
+        self._reader.start()
+
     def _send(self, method: str, params: dict | None = None, session: str | None = None) -> int:
         self._id += 1
         message = {"id": self._id, "method": method, "params": params or {}}
@@ -196,21 +212,20 @@ class Chrome:
         os.write(self._w, frame_message(message))
         return self._id
 
-    def _read(self, deadline: float) -> dict:
+    def _recv(self, deadline: float) -> dict:
         while True:
-            message, self._buf = pop_message(self._buf)
-            if message is not None:
-                return message
             remaining = deadline - time.monotonic()
-            if remaining <= 0 or not select.select([self._r], [], [], max(0, remaining))[0]:
-                raise TimeoutError("Chrome did not answer within %ss" % self.timeout)
-            chunk = os.read(self._r, 1 << 20)
-            if chunk:
-                self._buf += chunk
-                continue
-            detail = ""
+            if remaining <= 0:
+                raise TimeoutError("Chrome did not answer within the timeout")
             try:
-                detail = open(os.path.join(self._tmp, "chrome.err"), encoding="utf-8", errors="replace").read()[-800:]
-            except OSError:
-                pass
-            raise RuntimeError("Chrome closed the pipe. " + detail)
+                message = self._inbox.get(timeout=min(0.25, remaining))
+            except queue.Empty:
+                continue
+            if message.get("__eof__"):
+                detail = ""
+                try:
+                    detail = open(os.path.join(self._tmp, "chrome.err"), encoding="utf-8", errors="replace").read()[-800:]
+                except OSError:
+                    pass
+                raise RuntimeError("Chrome closed the pipe. " + detail)
+            return message

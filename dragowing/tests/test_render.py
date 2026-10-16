@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 
 from dragowing.chrome_pipe import find_chrome, frame_message, pop_message
-from dragowing.export import MERMAID_SHA256, mermaid_page
-from dragowing.htmlcount import count_elements
+from dragowing.export import MERMAID, mermaid_diagram_content, page_html
+from dragowing.html_tag_count import count_elements
 from dragowing.render import RenderSession, Timeouts, render_html
 
 _PIPE = Path(__file__).resolve().parents[1] / "chrome_pipe.py"
@@ -34,12 +34,11 @@ def test_chrome_pipe_has_no_dragowing_imports():
             assert all(not alias.name.startswith("dragowing") for alias in node.names)
 
 
-def test_mermaid_page_counts_tags_without_browser():
-    html = mermaid_page("graph TD\n  A-->B", "/tmp/example", js_uri="file:///tmp/example/mermaid.min.js")
+def test_mermaid_example_page_counts_tags_without_browser():
+    html = page_html(MERMAID, mermaid_diagram_content("graph TD\n  A-->B"))
     counts = count_elements(html, ("pre", "script"))
     assert counts == {"pre": 1, "script": 2}
     assert "graph TD" in html
-    assert MERMAID_SHA256
 
 
 def test_missing_chrome_and_windows(monkeypatch, tmp_path):

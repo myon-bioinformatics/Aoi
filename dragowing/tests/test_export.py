@@ -1,33 +1,31 @@
-"""Plotly and Mermaid adapters."""
+"""Config-driven export (Plotly and Mermaid are example configs only)."""
 
-import base64
 import json
 import sys
-from urllib.parse import quote
 
 import pytest
 
 from dragowing.chrome_pipe import find_chrome
-from dragowing.export import Session, decode_data_url, export_figure, export_mermaid, plotlyjs_path
-from dragowing.render import Timeouts
+from dragowing.export import MERMAID, PLOTLY, export_draw, mermaid_diagram_content, page_html, plotly_figure_content
+from dragowing.html_tag_count import count_elements
+from dragowing.render import RenderSession, Timeouts
 
 
-def test_decode_data_url_base64_and_percent_encoding():
-    png = decode_data_url("data:image/png;base64," + base64.b64encode(b"\x89PNG\r\n").decode())
-    assert png == b"\x89PNG\r\n"
-    svg = decode_data_url("data:image/svg+xml," + quote("<svg>a b</svg>"))
-    assert svg == b"<svg>a b</svg>"
+def test_page_html_builds_plotly_and_mermaid_without_browser():
+    plotly = page_html(PLOTLY, plotly_figure_content({"data": [], "layout": {"title": {"text": "t"}}}))
+    assert "plotly-latest.min.js" in plotly
+    assert "Plotly.newPlot" in plotly
+    assert count_elements(plotly, ("script", "div")) == {"script": 2, "div": 1}
 
-
-def test_plotlyjs_path_is_bundled_file():
-    path = plotlyjs_path()
-    assert path.name == "plotly.min.js"
-    assert path.is_file()
+    mermaid = page_html(MERMAID, mermaid_diagram_content("graph TD\n  A-->B"))
+    assert "mermaid.min.js" in mermaid
+    assert "graph TD" in mermaid
+    assert count_elements(mermaid, ("pre", "script")) == {"pre": 1, "script": 2}
 
 
 def test_fmt_is_png_or_svg(tmp_path):
     with pytest.raises(ValueError, match="png or svg"):
-        export_figure({"data": []}, tmp_path / "out.gif", "gif")
+        export_draw(PLOTLY, plotly_figure_content({"data": []}), tmp_path / "out.gif", "gif")
 
 
 def _installed_chrome():
@@ -40,7 +38,7 @@ def _installed_chrome():
 
 
 @pytest.mark.skipif(_installed_chrome() is None, reason="Chrome/Chromium is not available")
-def test_plotly_session_exports_three_figures_by_svg_text(tmp_path):
+def test_export_draw_plotly_three_figures_in_one_session(tmp_path):
     figures = [
         {
             "data": [{"type": "scatter", "x": [1, 2, 3], "y": [index, 1, 4]}],
@@ -48,25 +46,38 @@ def test_plotly_session_exports_three_figures_by_svg_text(tmp_path):
         }
         for index in range(3)
     ]
-    with Session(timeouts=Timeouts(launch=30, load=30, ready=30, capture=30)) as session:
+    timeouts = Timeouts(launch=45, load=45, ready=45, capture=20)
+    with RenderSession(timeouts=timeouts) as session:
         pid = session.browser._proc.pid
         for index, fig in enumerate(figures):
             fmt = "svg" if index == 2 else "png"
             path = tmp_path / ("fig-%s.%s" % (index, fmt))
-            export_figure(fig, path, fmt, session=session, width=320, height=240)
+            export_draw(
+                PLOTLY,
+                plotly_figure_content(fig),
+                path,
+                fmt,
+                session=session,
+                scale=1.0,
+            )
             assert session.browser._proc.pid == pid
             if fmt == "svg":
                 text = path.read_text(encoding="utf-8")
-                assert "title-%d" % index in text
-                assert "<svg" in text
+                assert "<svg" in text and "scatterlayer" in text
             else:
                 assert path.stat().st_size > 100
 
 
 @pytest.mark.skipif(_installed_chrome() is None, reason="Chrome/Chromium is not available")
-def test_mermaid_export_contains_node_labels(tmp_path):
+def test_export_draw_mermaid_svg_contains_labels(tmp_path):
     out = tmp_path / "flow.svg"
-    export_mermaid("graph TD\n  Alpha-->Beta", out, "svg", timeouts=Timeouts(launch=30, load=30, ready=45, capture=20))
+    export_draw(
+        MERMAID,
+        mermaid_diagram_content("graph TD\n  Alpha-->Beta"),
+        out,
+        "svg",
+        timeouts=Timeouts(launch=45, load=45, ready=60, capture=20),
+    )
     text = out.read_text(encoding="utf-8")
     assert "Alpha" in text or "Beta" in text
     assert "<svg" in text

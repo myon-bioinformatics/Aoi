@@ -1,9 +1,12 @@
-"""単体 HTML。Plotly.js はページに埋め込む。CDN には出さない。"""
+"""HTML。既定は出力先の plotly.min.js を1つ参照する。文章は Markdown から作る。"""
 from __future__ import annotations
 
 import html
 import json
+import shutil
+from pathlib import Path
 
+import markdown
 from plotly.offline import get_plotlyjs
 
 from .figures import four_forms_figure, heatmap_figure, overlap_figure, trajectory_figure
@@ -22,6 +25,59 @@ caption { text-align: left; font-weight: 650; padding-bottom: 0.25rem; }
 .figure { min-height: 480px; }
 .provenance { color: #333; }
 """
+
+_MD = ["tables", "fenced_code", "attr_list", "md_in_html"]
+PLOTLY_JS_NAME = "plotly.min.js"
+
+_INDEX_MD = """\
+入力ファイル: `season.jsonl`, `propositions.jsonl`。値は記録のまま。
+{: .provenance}
+
+## 得点順位 × 失点順位
+
+@@TRAJECTORY@@
+
+## 球団 × 年（`@@COLUMN@@`）
+
+@@HEATMAP@@
+
+## 条件集合の重なり
+
+@@OVERLAP@@
+
+@@UNITS@@
+
+[命題ごとの四つの形と反例カード](propositions.html)
+"""
+
+_PROPOSITIONS_MD = """\
+入力ファイル: `propositions.jsonl`。値は記録のまま。
+{: .provenance}
+
+[球団年の図へ](index.html)
+"""
+
+
+def render_md(source: str) -> str:
+    return markdown.markdown(source, extensions=_MD)
+
+
+def plotlyjs_path() -> Path:
+    import plotly
+
+    path = Path(plotly.__file__).resolve().parent / "package_data" / PLOTLY_JS_NAME
+    if not path.is_file():
+        raise FileNotFoundError(f"plotly.min.js が無い: {path}")
+    return path
+
+
+def copy_plotlyjs(directory: Path) -> Path:
+    """インストールされた Plotly の plotly.min.js を出力ディレクトリへコピーする。"""
+    dest = Path(directory) / PLOTLY_JS_NAME
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if not dest.exists():
+        shutil.copyfile(plotlyjs_path(), dest)
+    return dest
 
 
 def to_builtin(obj):
@@ -58,11 +114,11 @@ def json_attr(value) -> str:
     return html.escape(json.dumps(value, ensure_ascii=False, allow_nan=False), quote=True)
 
 
-def spec_from(html: str, div_id: str) -> dict:
+def spec_from(page: str, div_id: str) -> dict:
     marker = f'id="{div_id}-data">'
-    start = html.index(marker) + len(marker)
-    end = html.index("</script>", start)
-    return json.loads(html[start:end])
+    start = page.index(marker) + len(marker)
+    end = page.index("</script>", start)
+    return json.loads(page[start:end])
 
 
 def figure_block(fig, div_id: str) -> str:
@@ -75,12 +131,19 @@ def figure_block(fig, div_id: str) -> str:
         f'  var spec = JSON.parse(document.getElementById("{div_id}-data").textContent);\n'
         f'  Plotly.newPlot("{div_id}", spec.data, spec.layout, {{responsive:true,displaylogo:false}});\n'
         "})();\n"
-        "</script>\n"
+        "</script>"
     )
 
 
-def standalone(title: str, body: str) -> str:
-    js = get_plotlyjs()
+def standalone(title: str, body: str, *, embed: bool = False) -> str:
+    """HTML 文書。embed のとき Plotly.js をこのファイルに入れる。"""
+    if embed:
+        script = f"<script>window.PlotlyConfig = {{MathJaxConfig: 'local'}};</script>\n<script>{get_plotlyjs()}</script>"
+    else:
+        script = (
+            "<script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>\n"
+            f'<script charset="utf-8" src="{PLOTLY_JS_NAME}"></script>'
+        )
     return (
         "<!DOCTYPE html>\n"
         '<html lang="ja">\n'
@@ -89,7 +152,7 @@ def standalone(title: str, body: str) -> str:
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
         f"<title>{html.escape(title)}</title>\n"
         f"<style>{_STYLE}</style>\n"
-        f"<script>{js}</script>\n"
+        f"{script}\n"
         "</head>\n"
         "<body>\n"
         f"<h1>{html.escape(title)}</h1>\n"
@@ -99,25 +162,21 @@ def standalone(title: str, body: str) -> str:
     )
 
 
-def _field_table(caption: str, mapping) -> str:
-    rows = []
-    if isinstance(mapping, dict):
-        pairs = list(mapping.items())
-    else:
-        pairs = [("value", mapping)]
+def _span(value) -> str:
+    raw = json.dumps(value, ensure_ascii=False, allow_nan=False)
+    return f'<span data-json="{json_attr(value)}">{html.escape(raw)}</span>'
+
+
+def _md_table(caption: str, mapping) -> str:
+    pairs = list(mapping.items()) if isinstance(mapping, dict) else [("value", mapping)]
+    lines = [caption, "", "| | |", "| --- | --- |"]
     for key, value in pairs:
-        rows.append(
-            "<tr>"
-            f"<th>{html.escape(str(key))}</th>"
-            f"<td data-json=\"{json_attr(value)}\">{html.escape(json.dumps(value, ensure_ascii=False, allow_nan=False))}</td>"
-            "</tr>"
-        )
-    body = "".join(rows)
-    return f"<table class=\"{html.escape(caption)}\"><caption>{html.escape(caption)}</caption><tbody>{body}</tbody></table>"
+        lines.append(f"| {key} | {_span(value)} |")
+    return "\n".join(lines)
 
 
-def cards_html(item: dict) -> str:
-    """C7. counterexamples の要素を 1 枚ずつ。枚数は配列の長さ。"""
+def cards_md(item: dict) -> str:
+    """C7. カード1枚を Markdown の article にする。値は data-json のまま。"""
     blocks = []
     stored = 0
     for form in item.get("forms") or []:
@@ -130,37 +189,52 @@ def cards_html(item: dict) -> str:
             stored += 1
             unit = str(card.get("unit", ""))
             bits = [
-                f'<article class="card" data-id="{html.escape(str(item.get("id") or ""))}" '
-                f'data-form="{html.escape(form_name)}" data-unit="{html.escape(unit)}">',
-                f"<h3>{html.escape(form_name)} · {html.escape(unit)}</h3>",
+                (
+                    f'<article class="card" markdown="1" data-id="{html.escape(str(item.get("id") or ""))}" '
+                    f'data-form="{html.escape(form_name)}" data-unit="{html.escape(unit)}">'
+                ),
+                "",
+                f"### `{form_name}` · `{unit}`",
+                "",
             ]
             if "question" in card:
                 bits.append(f'<p class="question">question: {html.escape(str(card.get("question") or ""))}</p>')
-            bits.append(_field_table("values", card.get("values") or {}))
-            bits.append(_field_table("context", card.get("context") or {}))
+                bits.append("")
+            bits.append(_md_table("values", card.get("values") or {}))
+            bits.append("")
+            bits.append(_md_table("context", card.get("context") or {}))
             for key in ("season", "team", "team_name", "focus"):
                 if key in card:
+                    bits.append("")
                     bits.append(
-                        f'<p class="identity" data-key="{html.escape(key)}" data-json="{json_attr(card[key])}">'
-                        f"{html.escape(key)}: {html.escape(json.dumps(card[key], ensure_ascii=False, allow_nan=False))}</p>"
+                        f'<p class="identity" data-key="{html.escape(key)}">{html.escape(key)}: {_span(card[key])}</p>'
                     )
+            bits.append("")
             bits.append("</article>")
-            blocks.append("".join(bits))
-    head = f'<p class="card-count">counterexamples: {stored}</p>'
-    return head + "\n".join(blocks)
+            blocks.append("\n".join(bits))
+    return f"counterexamples: {stored}\n\n" + "\n\n".join(blocks)
 
 
-def proposition_section(item: dict) -> str:
+def cards_html(item: dict) -> str:
+    return render_md(cards_md(item))
+
+
+def proposition_section(item: dict) -> tuple[str, object]:
     ident = str(item.get("id") or "")
     figure = four_forms_figure(item)
-    parts = [f'<section id="{html.escape(ident)}">', f"<h2>［{html.escape(figure.layout.meta['registration'])}］ {html.escape(ident)}</h2>"]
+    label = figure.layout.meta["registration"]
+    parts = [f"## ［{label}］ {ident} {{#{ident}}}", ""]
     if isinstance(item.get("statement"), str):
         parts.append(f'<p class="statement">statement: {html.escape(item["statement"])}</p>')
-    parts.append(f"<pre>{html.escape(render_logic(item))}</pre>")
+        parts.append("")
+    parts.append("```")
+    parts.append(render_logic(item))
+    parts.append("```")
+    parts.append("")
     parts.append(figure_block(figure, f"forms-{ident}"))
-    parts.append(cards_html(item))
-    parts.append("</section>")
-    return "\n".join(parts), figure
+    parts.append("")
+    parts.append(cards_md(item))
+    return render_md("\n".join(parts)), figure
 
 
 def overlap_table(overlap: dict) -> str:
@@ -182,7 +256,9 @@ def overlap_table(overlap: dict) -> str:
         cells.extend(unit["values"][col] for col in columns)
         body = []
         for name, value in zip(head, cells):
-            body.append(f'<td data-col="{html.escape(name)}" data-json="{json_attr(value)}">{html.escape(json.dumps(value, ensure_ascii=False, allow_nan=False))}</td>')
+            body.append(
+                f'<td data-col="{html.escape(name)}" data-json="{json_attr(value)}">{html.escape(json.dumps(value, ensure_ascii=False, allow_nan=False))}</td>'
+            )
         rows.append(f'<tr data-unit="{html.escape(unit["unit"])}">' + "".join(body) + "</tr>")
     return '<table class="overlap-units"><caption>units</caption>' + "".join(rows) + "</table>"
 
@@ -191,30 +267,18 @@ def index_body(rows: list[dict], overlap: dict, column: str) -> tuple[str, dict]
     trajectory = trajectory_figure(rows)
     heat = heatmap_figure(rows, column)
     venn = overlap_figure(overlap)
-    body = "\n".join(
-        [
-            '<p class="provenance">入力ファイル: season.jsonl, propositions.jsonl。値は記録のまま。</p>',
-            "<section>",
-            "<h2>得点順位 × 失点順位</h2>",
-            figure_block(trajectory, "trajectory"),
-            "</section>",
-            "<section>",
-            f"<h2>球団 × 年（{html.escape(column)}）</h2>",
-            figure_block(heat, "heatmap"),
-            "</section>",
-            "<section>",
-            "<h2>条件集合の重なり</h2>",
-            figure_block(venn, "overlap"),
-            overlap_table(overlap),
-            "</section>",
-            '<p><a href="propositions.html">命題ごとの四つの形と反例カード</a></p>',
-        ]
+    source = (
+        _INDEX_MD.replace("@@COLUMN@@", column)
+        .replace("@@TRAJECTORY@@", figure_block(trajectory, "trajectory"))
+        .replace("@@HEATMAP@@", figure_block(heat, "heatmap"))
+        .replace("@@OVERLAP@@", figure_block(venn, "overlap"))
+        .replace("@@UNITS@@", overlap_table(overlap))
     )
-    return body, {"trajectory": trajectory, "heatmap": heat, "overlap": venn}
+    return render_md(source), {"trajectory": trajectory, "heatmap": heat, "overlap": venn}
 
 
 def propositions_body(items: list[dict]) -> tuple[str, dict]:
-    parts = ['<p class="provenance">入力ファイル: propositions.jsonl。値は記録のまま。</p>', '<p><a href="index.html">球団年の図へ</a></p>']
+    parts = [render_md(_PROPOSITIONS_MD)]
     figures = {}
     for item in items:
         section, figure = proposition_section(item)

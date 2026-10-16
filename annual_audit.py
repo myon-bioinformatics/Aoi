@@ -12,9 +12,14 @@ import hashlib
 import json
 from pathlib import Path
 
+OPPONENTS = dict(zip(('対巨','対中','対神','対デ','対ヤ','対広','対ソ','対日','対オ','対楽','対西','対ロ'),
+                     ('g','d','t','db','s','c','h','f','b','e','l','m')))
+
 
 def audit(records, *, expected_years=(), baseline=()):
-    checks, units, grouped, seen = [], {}, defaultdict(list), set()
+    records=list(records)
+    expected_years=tuple(expected_years)
+    checks, units, grouped, seen, identities = [], {}, defaultdict(list), set(), set()
     def equal(name, observed, expected, unit):
         checks.append(dict(check=name,unit=unit,observed=observed,expected=expected,ok=observed==expected))
     def rate(name, numerator, denominator, published, digits, unit, raw=None):
@@ -34,12 +39,18 @@ def audit(records, *, expected_years=(), baseline=()):
             raise ValueError(f"duplicate observation: {rec['key']}")
         seen.add(rec['key'])
         key=(rec['season'],rec['league'],rec['team'])
+        identity=(*key,rec['source_kind'],rec['category'])
+        if identity in identities:
+            raise ValueError(f'duplicate observation identity: {identity}')
+        identities.add(identity)
         if key not in units:
             units[key]=dict(season=key[0],league=key[1],team=key[2],team_name=rec['team_name'],tables={},raw_tables={})
         units[key]['tables'][f"{rec['source_kind']}_{rec['category']}"]=rec['values']
         units[key]['raw_tables'][f"{rec['source_kind']}_{rec['category']}"]=rec.get('raw_values',{})
         grouped[(rec['season'],rec['league'],rec['source_kind'],rec['category'])].append(rec)
     years=sorted(set(expected_years) or {r['season'] for r in records})
+    if expected_years:
+        equal('observation_years',sorted({r['season'] for r in records}),years,'dataset')
     for year in years:
         for lg in ('C','P'):
             kinds={'archive':['standings','batting','pitching']}
@@ -55,6 +66,13 @@ def audit(records, *, expected_years=(), baseline=()):
             # No interleague until 2005: retain the actual historical member count.
             if year>=2005:
                 equal('six_teams',len({r['team'] for r in grouped[(year,lg,'detail','standings')]}),6,f'{year}/{lg}')
+                equal('cross_source_members',sorted(r['team'] for r in grouped[(year,lg,'archive','standings')]),
+                      sorted(r['team'] for r in grouped[(year,lg,'detail','standings')]),f'{year}/{lg}')
+            for source in kinds:
+                extra=grouped[(year,lg,source,'interleague')]
+                if extra:
+                    equal('interleague_members',sorted(r['team'] for r in extra),
+                          sorted(r['team'] for r in grouped[(year,lg,source,'standings')]),f'{year}/{lg}/{source}')
     for key,unit in sorted(units.items()):
         ident='/'.join(map(str,key))
         tables=unit['tables']
@@ -88,6 +106,26 @@ def audit(records, *, expected_years=(), baseline=()):
             if st and all(isinstance(st.get(c),dict) for c in ('ホーム','ロード')):
                 for col,label in [('W','勝利'),('L','敗北'),('T','引分')]:
                     equal('home_road:'+col,st['ホーム'][col]+st['ロード'][col],st[label],ident+'/'+source)
+            inter=tables.get(source+'_interleague',{})
+            if inter:
+                equal('interleague:G=W+L+T',inter['試合'],sum(inter[k] for k in ('勝利','敗北','引分')),ident+'/'+source)
+                rate('interleague:winning_percentage',inter['勝利'],inter['勝利']+inter['敗北'],inter['勝率'],3,ident+'/'+source)
+                if isinstance(st.get('交流戦'),dict):
+                    for col,label in [('W','勝利'),('L','敗北'),('T','引分')]:
+                        equal('interleague:season:'+col,inter[label],st['交流戦'][col],ident+'/'+source)
+            for cat,table in [('standings',st),('interleague',inter)]:
+                opponents={h:v for h,v in table.items() if h in OPPONENTS and isinstance(v,dict)}
+                if not opponents:continue
+                for col,label in [('W','勝利'),('L','敗北'),('T','引分')]:
+                    total=sum(v[col] for v in opponents.values())
+                    if cat=='standings' and isinstance(table.get('交流戦'),dict):total+=table['交流戦'][col]
+                    equal('opponent_sum:'+cat+':'+col,total,table[label],ident+'/'+source)
+                for header,value in opponents.items():
+                    other=next((u for (y,lg,t),u in units.items() if y==key[0] and t==OPPONENTS[header]),None)
+                    own=next((h for h,t in OPPONENTS.items() if t==key[2]),None)
+                    reverse=other['tables'].get(source+'_'+cat,{}).get(own) if other else None
+                    for col,opposite in [('W','L'),('L','W'),('T','T')]:
+                        equal('opponent_reciprocal:'+cat+':'+col,value[col],reverse.get(opposite) if isinstance(reverse,dict) else None,ident+'/'+source+'/'+header)
         for cat in ('standings','batting','pitching'):
             a,b=tables.get('archive_'+cat,{}),tables.get('detail_'+cat,{})
             for col in sorted(a.keys() & b.keys()):
@@ -142,6 +180,30 @@ def audit(records, *, expected_years=(), baseline=()):
             'annual':list(units.values()),'comparison_policy':'integers exact; normal rate digits ROUND_HALF_UP; observed extended digits truncated to source precision; historical win-percentage rules not guessed'}
 
 
+def audit_files(observations, expected_years, baseline=None):
+    """Recompute the complete saved audit, including optional baseline evidence."""
+    read=lambda path:[json.loads(s) for s in path.read_text(encoding='utf-8').splitlines() if s.strip()]
+    r=audit(read(observations),expected_years=expected_years,baseline=read(baseline) if baseline else [])
+    manifest=observations.with_suffix('.manifest.json')
+    extras=[]
+    if not manifest.exists():
+        extras.append(dict(check='source_manifest_present',unit=str(observations),observed=False,expected=True,ok=False))
+    else:
+        metadata=json.loads(manifest.read_text(encoding='utf-8'))
+        value=metadata.get('unknown')
+        extras.append(dict(check='source_unknown_zero',unit=str(observations),observed=value,expected=0,ok=type(value) is int and value==0))
+        digest=hashlib.sha256(observations.read_bytes()).hexdigest()
+        extras.append(dict(check='source_dataset_sha256',unit=str(observations),observed=digest,expected=metadata.get('sha256'),ok=digest==metadata.get('sha256')))
+        r['source_parser_sha256']=metadata.get('source_code_sha256')
+    for extra in extras:
+        r['checks'].append(extra)
+        if extra['ok']:r['passed']+=1
+        else:r['failed']+=1;r['failures'].append(extra)
+    r['source_sha256']=hashlib.sha256(observations.read_bytes()).hexdigest()
+    r['baseline_sha256']=hashlib.sha256(baseline.read_bytes()).hexdigest() if baseline else None
+    return r
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--observations',type=Path,required=True)
@@ -150,25 +212,8 @@ def main():
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--annual-out',type=Path,required=True)
     a=p.parse_args()
-    read=lambda path:[json.loads(s) for s in path.read_text(encoding='utf-8').splitlines() if s.strip()]
     start,end=map(int,a.years.split('-'))
-    r=audit(read(a.observations),expected_years=range(start,end+1),baseline=read(a.baseline) if a.baseline else [])
-    manifest=a.observations.with_suffix('.manifest.json')
-    extras=[]
-    if not manifest.exists():
-        extras.append(dict(check='source_manifest_present',unit=str(a.observations),observed=False,expected=True,ok=False))
-    else:
-        metadata=json.loads(manifest.read_text(encoding='utf-8'))
-        value=metadata.get('unknown')
-        extras.append(dict(check='source_unknown_zero',unit=str(a.observations),observed=value,expected=0,ok=type(value) is int and value==0))
-        digest=hashlib.sha256(a.observations.read_bytes()).hexdigest()
-        extras.append(dict(check='source_dataset_sha256',unit=str(a.observations),observed=digest,expected=metadata.get('sha256'),ok=digest==metadata.get('sha256')))
-        r['source_parser_sha256']=metadata.get('source_code_sha256')
-    for extra in extras:
-        r['checks'].append(extra)
-        if extra['ok']:r['passed']+=1
-        else:r['failed']+=1;r['failures'].append(extra)
-    r['source_sha256']=hashlib.sha256(a.observations.read_bytes()).hexdigest()
+    r=audit_files(a.observations,range(start,end+1),a.baseline)
     for path in (a.out,a.annual_out):path.parent.mkdir(parents=True,exist_ok=True)
     a.annual_out.write_text(''.join(json.dumps(s,ensure_ascii=False)+'\n' for s in r.pop('annual')),encoding='utf-8')
     a.out.write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

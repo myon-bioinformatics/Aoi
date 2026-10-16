@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import sys
 import unicodedata
@@ -104,13 +105,142 @@ def _norm(text: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", text).split())
 
 
-def parse(text: str) -> tuple[Query, list[str]]:
-    """問い → (Query, 読めなかったこと)。読めなかったことは、黙って捨てずに返す。"""
-    t = _norm(text)
-    q, unread = Query(), []
+@dataclass(frozen=True)
+class UnreadSpan:
+    """Half-open Python Unicode code-point offsets into the original input."""
+    start: int
+    end: int
+    raw_text: str
+
+
+@dataclass(frozen=True)
+class ParseDiagnostic:
+    code: str
+    explanation: str
+
+
+@dataclass
+class ParsedInput:
+    raw_text: str
+    query: Query
+    diagnostics: list[ParseDiagnostic] = field(default_factory=list)
+    unread_spans: list[UnreadSpan] = field(default_factory=list)
+
+    @property
+    def status(self) -> str:
+        return "undetermined" if self.diagnostics or self.unread_spans else "parsed"
+
+    @property
+    def unread(self) -> list[str]:
+        """Compatibility presentation; never used to recover raw text or offsets."""
+        return ([d.explanation for d in self.diagnostics if d.code != "unsupported_text"]
+                + [f"未対応の語・条件: {span.raw_text}" for span in self.unread_spans])
+
+    def metadata(self) -> dict:
+        return {"raw_text": self.raw_text, "parse_status": self.status,
+                "parse_diagnostics": [asdict(d) for d in self.diagnostics],
+                "unread_spans": [asdict(span) for span in self.unread_spans]}
+
+    def blocked_answer(self) -> dict:
+        """Shared CLI/inbox decision, with stable machine reasons and separate display."""
+        return {"answer": "判定不能", "status": "undetermined",
+                "reason_codes": [d.code for d in self.diagnostics],
+                "error": "解釈を確認してください: " + "; ".join(self.unread), "rows": []}
+
+
+def _norm_with_spans(text: str) -> tuple[str, list[tuple[int, int]]]:
+    """NFKC/whitespace view plus a map back to untouched source segments.
+
+    Combining marks (including half-width dakuten), compatibility expansions,
+    and Hangul composition can change length. Keep each normalization segment
+    together instead of treating normalized offsets as source offsets.
+    """
+    chars, offsets = [], []
+    start, segment, normalized = 0, "", ""
+
+    def flush(end):
+        chars.extend(normalized)
+        offsets.extend([(start, end)] * len(normalized))
+
+    for i, char in enumerate(text):
+        part = unicodedata.normalize("NFKC", char)
+        joined = unicodedata.normalize("NFKC", segment + char)
+        if segment and (unicodedata.combining(part[0]) or joined != normalized + part):
+            segment += char
+            normalized = joined
+        else:
+            flush(i)
+            start, segment, normalized = i, char, part
+    flush(len(text))
+    view = "".join(chars)
+    words = list(re.finditer(r"\S+", view))
+    out, source = [], []
+    previous_end = 0
+    for word in words:
+        if out:
+            out.append(" ")
+            gap = offsets[previous_end:word.start()]
+            source.append((min(s for s, _ in gap), max(e for _, e in gap)))
+        out.append(word[0])
+        source.extend(offsets[word.start():word.end()])
+        previous_end = word.end()
+    return "".join(out), source
+
+
+_WORDS = ("判例", "反例", "例外", "成立率", "命題", "式", "対偶", "逆に", "逆", "裏", "元の", "original",
+          "一覧", "唯一", "ただ1つ", "1つだけ", "ひとつだけ", "1個だけ", "以外", "除いて", "除く", "抜いて", "抜き",
+          "ありますか", "あるの", "ある", "ない", "有無", "はい", "いいえ", "教えてください", "教えて", "ください")
+_WORD = re.compile("|".join(map(re.escape, sorted(_WORDS, key=len, reverse=True))))
+_TEAM_UNIT = re.compile(r"(?:" + _TEAM.pattern + r")\s*(?:20\d{2}年?)?")
+_SEPARATORS = " \t\r\n?？、。,:："
+_CONNECTORS = {"の", "に", "は", "が", "を", "で", "と", "か", "には", "のは", "とは", "では"}
+
+
+def _unread_spans(raw: str, view: str, offsets: list[tuple[int, int]]) -> list[UnreadSpan]:
+    # Mask consumed ranges without changing their positions or joining words.
+    rest = list(view)
+    consumed = [False] * len(view)
+    for pattern in (_ID, _PCT, _TEAM_UNIT, _CODE_UNIT, _WORD):
+        for match in pattern.finditer("".join(rest)):
+            if pattern is _CODE_UNIT and match[1] not in CODES:
+                continue
+            rest[match.start():match.end()] = ["\0"] * len(match[0])
+            consumed[match.start():match.end()] = [True] * len(match[0])
+    spans = []
+    # A literal NUL in user input is unknown text, not our internal mask.
+    for match in re.finditer(r"0+", "".join("1" if flag else "0" for flag in consumed)):
+        start, end = match.span()
+        while start < end and view[start] in _SEPARATORS:
+            start += 1
+        while end > start and view[end - 1] in _SEPARATORS:
+            end -= 1
+        if start == end or view[start:end] in _CONNECTORS:
+            continue
+        # A standalone leading particle is grammar, not part of the next word.
+        # Do not remove particles from inside an unknown word or condition.
+        leading = re.match(r"(?:には|のは|とは|では|[のにはがをでと])\s+", view[start:end])
+        if leading:
+            start += leading.end()
+        source_start = min(s for s, _ in offsets[start:end])
+        source_end = max(e for _, e in offsets[start:end])
+        if spans and source_start <= spans[-1].end:
+            source_start = spans.pop().start
+        spans.append(UnreadSpan(source_start, source_end, raw[source_start:source_end]))
+    return spans
+
+
+def parse_input(text: str) -> ParsedInput:
+    """Read a normalized view, retaining source evidence and machine diagnostics."""
+    t, offsets = _norm_with_spans(text)
+    q = Query()
+    parsed = ParsedInput(text, q)
+
+    def report(code, explanation):
+        parsed.diagnostics.append(ParseDiagnostic(code, explanation))
+
     ids = [f"{a}{int(b)}" for a, b in _ID.findall(t)]
     if len(ids) > 1:
-        unread.append(f"命題・式が2つ以上: {', '.join(ids)}（最初の {ids[0]} だけ使う）")
+        report("multiple_targets", f"命題・式が2つ以上: {', '.join(ids)}（最初の {ids[0]} だけ使う）")
     q.target = ids[0] if ids else None
     has_e, has_p = "式" in t, "命題" in t
     if not q.target and has_e != has_p:
@@ -142,7 +272,7 @@ def parse(text: str) -> tuple[Query, list[str]]:
         else:
             q.min_rate = v
             if not rel:
-                unread.append(f"{num}{unit_} の向き（以上・以下）が書かれていない（以上として読む）")
+                report("missing_rate_direction", f"{num}{unit_} の向き（以上・以下）が書かれていない（以上として読む）")
 
     # 問いの種類
     if re.search(r"唯一|ただ1つ|1つだけ|ひとつだけ|1個だけ", t):
@@ -154,41 +284,163 @@ def parse(text: str) -> tuple[Query, list[str]]:
     elif q.min_rate is not None or q.max_rate is not None or "成立率" in t:
         q.ask = "rate"
     else:
-        unread.append("問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）")
+        report("unrecognized_ask", "問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）")
     if q.ask == "rate" and q.min_rate is None and q.max_rate is None:
-        unread.append("成立率の条件の数が読めない")
+        report("missing_rate_value", "成立率の条件の数が読めない")
     if any(rel in ("未満", "超") for _, _, rel in _PCT.findall(t)):
-        unread.append("未満・超は未対応。以上・以下とは区別して問い合わせてください")
+        report("unsupported_rate_comparison", "未満・超は未対応。以上・以下とは区別して問い合わせてください")
     if sum(word in t for word in ("対偶", "裏")) + bool(re.search(r"逆(?!に)", t)) > 1:
-        unread.append("形が2つ以上ある")
-    # Consume only the supported vocabulary. Unrecognized restrictions must not
-    # quietly disappear (e.g. 雨の日だけ, 2025年だけ, E25とE26).
-    rest = _ID.sub(" ", t)
-    rest = _PCT.sub(" ", rest)
-    rest = re.sub(r"(?:" + _TEAM.pattern + r")\s*(?:20\d{2}年?)?", " ", rest)
-    rest = _CODE_UNIT.sub(" ", rest)
-    words = ("判例", "反例", "例外", "成立率", "命題", "式", "対偶", "逆に", "逆", "裏", "元の", "original",
-             "一覧", "唯一", "ただ1つ", "1つだけ", "ひとつだけ", "1個だけ", "以外", "除いて", "除く", "抜いて", "抜き",
-             "ありますか", "あるの", "ある", "ない", "有無", "はい", "いいえ", "教えてください", "教えて", "ください")
-    rest = re.sub("|".join(map(re.escape, sorted(words, key=len, reverse=True))), " ", rest)
-    rest = re.sub(r"[\s?？、。,:：のにはがをでとか]", "", rest)
-    if rest:
-        unread.append(f"未対応の語・条件: {rest}")
+        report("multiple_forms", "形が2つ以上ある")
+    parsed.unread_spans = _unread_spans(text, t, offsets)
+    if parsed.unread_spans:
+        report("unsupported_text", "未対応の語・条件が残っています")
     try:
         validate_query(asdict(q))
     except (ValueError, TypeError) as e:
-        unread.append(str(e))
-    return q, unread
+        report("invalid_query", str(e))
+    return parsed
+
+
+def parse(text: str) -> tuple[Query, list[str]]:
+    """Compatibility API. Structured evidence is available from ``parse_input``."""
+    parsed = parse_input(text)
+    return parsed.query, parsed.unread
+
+
+RESULT_FILES = ("propositions.jsonl", "sets.jsonl")
 
 
 def load(results: Path) -> list[dict]:
     """判定済みの命題と式（PythDRagoras の出力）。どちらも forms に4つの形の判定を持つ。"""
-    out = []
-    for name in ("propositions.jsonl", "sets.jsonl"):
-        p = results / name
-        if p.exists():
-            out += [json.loads(line) for line in p.read_text(encoding="utf-8").splitlines() if line.strip()]
-    return out
+    return load_info(results)[0]
+
+
+def load_info(results: Path) -> tuple[list[dict], dict[str, bool]]:
+    """Read the result files that exist. A missing file is recorded, not skipped silently."""
+    present, out = {}, []
+    for name in RESULT_FILES:
+        path = Path(results) / name
+        if path.is_file():
+            present[name] = True
+            out += [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        else:
+            present[name] = False
+    return out, present
+
+
+def required_files(q: Query) -> list[str]:
+    """Files the query has to read. Kind ``any`` without an ID needs both."""
+    need = []
+    if q.target:
+        need.append("sets.jsonl" if q.target.startswith("E") else "propositions.jsonl")
+    if q.kind == "expression":
+        need.append("sets.jsonl")
+    elif q.kind == "proposition":
+        need.append("propositions.jsonl")
+    elif not q.target:
+        need.extend(RESULT_FILES)
+    return list(dict.fromkeys(need))
+
+
+def answer_results(q: Query, results: Path) -> dict:
+    """Answer from one configured results directory.
+
+    A missing file the query needs is ``結果が読めない``. That is separate from an ID
+    that was looked up in a file and was not there.
+    """
+    items, present = load_info(results)
+    missing = [name for name in required_files(q) if not present.get(name)]
+    if missing:
+        return {"answer": "判定不能", "error": "結果が読めない: " + "、".join(missing), "rows": []}
+    return answer(q, items)
+
+
+def pipeline_out(root: Path, cycle: str) -> Path:
+    if not isinstance(cycle, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", cycle):
+        raise FileNotFoundError(f"結果が読めない: サイクル名が不正 ({cycle})")
+    config = root / "cycles" / cycle / "pipeline.toml"
+    if not config.is_file():
+        raise FileNotFoundError(f"結果が読めない: サイクル設定がない {config}")
+    match = re.search(r'(?m)^out\s*=\s*"([^"]+)"', config.read_text(encoding="utf-8"))
+    if not match:
+        raise FileNotFoundError(f"結果が読めない: {config} に out がない")
+    return root / match.group(1)
+
+
+def resolve_results_dir(root: Path, *, explicit: Path | None = None, cycle: str | None = None,
+                        results_ref: str | None = None, results_dir: str | None = None) -> Path:
+    """Pick the results directory from the explicit path or the cycle configuration.
+
+    When a results ref or ``AOI_RESULTS_DIR`` is set, only that location is used.
+    """
+    if explicit is not None:
+        return explicit
+    if results_dir:
+        path = Path(results_dir)
+        if not path.is_dir():
+            raise FileNotFoundError(f"結果が読めない: {path}")
+        return path
+    if results_ref:
+        if not cycle or not re.fullmatch(r"[A-Za-z0-9._-]+", cycle):
+            raise FileNotFoundError("結果が読めない: 結果 ref にはサイクル名が必要")
+        if not re.fullmatch(r"[A-Za-z0-9._/-]+", results_ref) or ".." in results_ref:
+            raise FileNotFoundError(f"結果が読めない: 結果 ref が不正 ({results_ref})")
+        path = root / ".aoi-results" / cycle / "outputs"
+        if not path.is_dir():
+            raise FileNotFoundError(f"結果が読めない: {results_ref} の {path} がない")
+        return path
+    return pipeline_out(root, cycle or "c001-chunichi")
+
+
+def load_suggest_threshold(cycle_dir: Path) -> float | None:
+    """Read ``suggest_threshold`` from ``<cycle>/ask.toml``. Missing file or key → None."""
+    path = Path(cycle_dir) / "ask.toml"
+    if not path.is_file():
+        return None
+    import tomllib
+    with path.open("rb") as fh:
+        data = tomllib.load(fh)
+    if "suggest_threshold" not in data or data["suggest_threshold"] is None:
+        return None
+    value = data["suggest_threshold"]
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+        raise ValueError("suggest_threshold は有限の数")
+    return float(value)
+
+
+def resolve_threshold(root: Path, results: Path, cycle: str | None, override: float | None) -> float | None:
+    if override is not None:
+        return override
+    if cycle and re.fullmatch(r"[A-Za-z0-9._-]+", cycle):
+        config = root / "cycles" / cycle / "ask.toml"
+        if config.is_file():
+            return load_suggest_threshold(config.parent)
+    return load_suggest_threshold(Path(results).parent)
+
+
+def suggestion_for(text: str, results: Path, unread: list[str], res: dict, threshold: float | None,
+                   *, query: Query | None = None) -> dict:
+    """Up to five candidate IDs when the reply is 判定不能 because of unread text or an unknown ID.
+
+    Candidates are not written into ``answer`` or ``Query.target``.
+    """
+    error = res.get("error") or ""
+    q = query if query is not None else parse(text)[0]
+    if "結果が読めない" in error or any(not (Path(results) / name).is_file() for name in required_files(q)):
+        return {"candidates": [], "line": "", "status": None, "selected": None}
+    unknown_id = "結果にない" in error and "結果が読めない" not in error
+    if not unread and not unknown_id:
+        return {"candidates": [], "line": "", "status": None, "selected": None}
+    try:
+        import suggest
+        docs = suggest.load_docs(results)
+        got = suggest.similar_candidates(text, docs, threshold=threshold, k=5)
+    except (FileNotFoundError, ValueError):
+        return {"candidates": [], "line": "", "status": None, "selected": None}
+    candidates = list(got.get("candidates") or [])[:5]
+    ids = [c["id"] for c in candidates if c.get("id")]
+    line = ("もしかして: " + " / ".join(ids) + "（候補。答えではない）") if ids else ""
+    return {"candidates": candidates, "line": line, "status": got.get("status"), "selected": None}
 
 
 def _id_key(i: str) -> tuple:
@@ -250,11 +502,14 @@ def answer(q: Query, items: list[dict]) -> dict:
     return {"answer": ans, "rows": rows, "incomplete": uncertain or not evaluated}
 
 
-def render(text: str, q: Query, unread: list[str], res: dict) -> str:
+def render(text: str, q: Query, unread: list[str], res: dict, suggestion_line: str = "") -> str:
     lines = [f"問い: {text}", "読み取り: " + json.dumps(asdict(q), ensure_ascii=False)]
     lines += [f"読めなかった: {u}" for u in unread]
     if res.get("error"):
-        return "\n".join([*lines, f"答え: 判定不能（{res['error']}）"])
+        lines.append(f"答え: 判定不能（{res['error']}）")
+        if suggestion_line:
+            lines.append(suggestion_line)
+        return "\n".join(lines)
     head = f"{ASKS[q.ask]}・{FORMS[q.form]}・{KINDS[q.kind]}" + ("・除いた後の判例" if q.exclude else "")
     lines.append(f"答え（{head}）: {res['answer']}" + ("" if q.ask == "has_counterexample" else " 件"))
     for r in res["rows"][:50]:
@@ -266,14 +521,19 @@ def render(text: str, q: Query, unread: list[str], res: dict) -> str:
         lines.append(f"- {r['id']}［{r['registration']}］ {RATE_FORMS[q.form]}の成立率 {r['hold']}/{r['n']}（{r['rate']:.3f}）／{label} {count}{excluded}: {cx}{more}")
     if len(res["rows"]) > 50:
         lines.append(f"- ほか {len(res['rows']) - 50} 件")
+    if suggestion_line:
+        lines.append(suggestion_line)
     return "\n".join(lines)
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("question", nargs="?", help="日本語の問い")
-    ap.add_argument("--results", type=Path, default=Path("cycles/c001-chunichi/outputs"),
-                    help="判定済みの結果のフォルダ（propositions.jsonl・sets.jsonl）")
+    ap.add_argument("--results", type=Path, default=None,
+                    help="判定済みの結果のフォルダ。省略時はサイクル設定（結果 ref があるときはその checkout だけ）")
+    ap.add_argument("--cycle", default=None, help="サイクル名。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi の pipeline")
+    ap.add_argument("--suggest-threshold", type=float, default=None,
+                    help="候補の類似度。省略時は cycles/<cycle>/ask.toml。未設定なら候補は確定しない")
     ap.add_argument("--query", help="読み取りを飛ばし、Query を JSON で直接渡す（llama.cpp・MCP が選んだもの）")
     ap.add_argument("--schema", action="store_true", help="Query の JSON Schema を出す")
     ap.add_argument("--json", action="store_true", help="答えを JSON で出す")
@@ -283,26 +543,44 @@ def main(argv=None) -> int:
     if args.schema:
         print(json.dumps(schema(), ensure_ascii=False, indent=2))
         return 0
+    root = Path(__file__).resolve().parents[2]
+    cycle = args.cycle or os.environ.get("AOI_RESEARCH_CYCLE")
+    try:
+        results = resolve_results_dir(
+            root, explicit=args.results, cycle=cycle,
+            results_ref=os.environ.get("AOI_RESULTS_REF"),
+            results_dir=os.environ.get("AOI_RESULTS_DIR"),
+        )
+        threshold = resolve_threshold(root, results, cycle, args.suggest_threshold)
+    except (FileNotFoundError, ValueError) as e:
+        print(str(e), file=sys.stderr)
+        return 1
     if args.query:
         try:
             q = validate_query(json.loads(args.query))
         except (ValueError, TypeError) as e:
             print(f"Query の値が型の外: {e}", file=sys.stderr)
             return 2
-        unread, text = [], args.query
+        text = args.query
+        parsed = ParsedInput(text, q)
     elif args.question:
         text = args.question
-        q, unread = parse(text)
+        parsed = parse_input(text)
+        q = parsed.query
     else:
         ap.error("問いか --query か --schema が要る")
-    res = ({"answer": "判定不能", "error": "解釈を確認してください: " + "; ".join(unread), "rows": []}
-           if unread else answer(q, load(args.results)))
+    unread = parsed.unread
+    res = parsed.blocked_answer() if parsed.status == "undetermined" else answer_results(q, results)
+    hinted = suggestion_for(text, results, unread, res, threshold, query=q)
     if args.log:
         args.log.parent.mkdir(parents=True, exist_ok=True)
         with args.log.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps({"question": text, "query": asdict(q), "unread": unread}, ensure_ascii=False) + "\n")
-    print(json.dumps({"query": asdict(q), "unread": unread, **res}, ensure_ascii=False, indent=2) if args.json
-          else render(text, q, unread, res))
+            fh.write(json.dumps({"question": text, "query": asdict(q), "unread": unread,
+                                 **parsed.metadata()}, ensure_ascii=False) + "\n")
+    payload = {"query": asdict(q), "unread": unread, **parsed.metadata(), **res,
+               "suggestions": hinted["candidates"], "suggestion_status": hinted["status"]}
+    print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json
+          else render(text, q, unread, res, hinted["line"]))
     return 1 if res.get("error") else 0
 
 

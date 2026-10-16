@@ -1,0 +1,20 @@
+# 探索設定。試行後に系列別学習・比較方向の探索を追加した事後的設計。
+# 独立した事前登録ではない。以降の再実行はこの版で固定する。
+schema = "aoi-league-laboratory/1"
+years = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+train_through = 2022
+discovery_seed = 0
+evaluation_seed = 1
+within = 25
+mean_runs = 4.0
+completion_attempts = 8
+fixed_teams = ["C1", "C2"]
+skill_budget = 6
+attack_weight = 0.8
+defense_weight = 0.8
+conversion_weight = 1.5
+evaluation_loss = 0.4
+views = ["raw", "linear_097", "log1p", "sqrt", "capped4", "relative"]
+threshold_ops = ["<", ">="]
+measurement_decimals = 12
+reference_propositions = ["P2", "P3", "P4", "P5"]

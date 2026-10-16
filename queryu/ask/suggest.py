@@ -198,6 +198,34 @@ def math_isfinite(v: float) -> bool:
     return x == x and x not in (float("inf"), float("-inf"))
 
 
+def similar_candidates(text: str, docs: list[tuple[str, str]], *, threshold: float | None, mode: str = "float",
+                       dim: int = 128, k: int = 5, index: Index | None = None) -> dict:
+    """類似する ID を最大 k 件返す。selected は常に null。答えにはしない。
+
+    問いに ID が書いてあっても索引を使う（番号の書き間違いを、書いてある ID の繰り返しにしない）。
+    閾値が None のときは、どの候補も閾値を超えた扱いにしない。
+    """
+    named = written_id(text)
+    body = _ID.sub(" ", text).strip()
+    if written_id(body):
+        body = _ID.sub(" ", body).strip()
+    if not body:
+        body = text
+    # None は「設定が無い」。有限の閾値を置いたことにはせず、候補だけ返す。
+    got = suggest(body, docs, threshold=-1.0 if threshold is None else threshold,
+                  mode=mode, dim=dim, k=k, index=index)
+    explicit = got.get("status") == "explicit"
+    got["selected"] = None
+    got["written_id"] = named
+    got["note"] = "候補。答えではない。"
+    if explicit:
+        got["status"] = "判定不能"
+        got["candidates"] = []
+    elif threshold is None:
+        got["status"] = "判定不能"
+    return got
+
+
 def suggest_results(text: str, results: Path, **kw) -> dict:
     return suggest(text, load_docs(results), **kw)
 

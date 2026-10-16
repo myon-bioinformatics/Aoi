@@ -1,0 +1,66 @@
+[
+  {
+    "file": "1950_c_archive.html",
+    "source_url": "https://npb.jp/bis/yearly/centralleague_1950.html",
+    "fetched_at": "2026-10-15T04:51:25+00:00",
+    "response_sha256": "4b649f9d1eb8bba5673f9d10c1e34d5daab57e450de50507ed41b8bfabea1f98",
+    "fixture_sha256": "79149030fa750c1e4612f7d62158dc17cf9dee635867e0f4f28d8695cd3171b7",
+    "selection": "only tables whose direct first header cell is チーム; no individual tables"
+  },
+  {
+    "file": "2005_c_std.html",
+    "source_url": "https://npb.jp/bis/2005/stats/std_c.html",
+    "fetched_at": "2026-10-15T04:50:33+00:00",
+    "response_sha256": "8ff32e0de9bd7332277a9bd487c693cd771bff11342b2ac1c2d9f3f82ecea048",
+    "fixture_sha256": "ee8d1cf6ec18362ab0fb4ccdf83905704cc9e2e7d6de43e3327ee0aa28717f6f",
+    "selection": "only tables whose direct first header cell is チーム; no individual tables"
+  },
+  {
+    "file": "2005_c_tmb.html",
+    "source_url": "https://npb.jp/bis/2005/stats/tmb_c.html",
+    "fetched_at": "2026-10-15T04:50:37+00:00",
+    "response_sha256": "5f4cd575032838a5c27a9214fc3aa88631db9628d824063986eb1e9dd4ec2a73",
+    "fixture_sha256": "ae1551eb1818b55b28b4ccfd2b655105ec0192094e46adad7430a601bd51d4c6",
+    "selection": "only tables whose direct first header cell is チーム; no individual tables"
+  },
+  {
+    "file": "2005_c_tmp.html",
+    "source_url": "https://npb.jp/bis/2005/stats/tmp_c.html",
+    "fetched_at": "2026-10-15T04:50:41+00:00",
+    "response_sha256": "29a07553a4e1b05112254991156945d502a2155fa5d66ff99afcfd8df4a2287c",
+    "fixture_sha256": "6483e81301bac9605995f8c695b204eee271ed9e88de9deb0690fbc6a7d8e063",
+    "selection": "only tables whose direct first header cell is チーム; no individual tables"
+  },
+  {
+    "file": "2005_c_tmf.html",
+    "source_url": "https://npb.jp/bis/2005/stats/tmf_c.html",
+    "fetched_at": "2026-10-15T04:50:44+00:00",
+    "response_sha256": "bfc05ebbef4aead58fefe2e715335f12abf4bdef2715b74864d7076b7478ae73",
+    "fixture_sha256": "ec50eb916c02f3df73f1f36e05d526ebad3d6289ef7b7d4fab3c07e0a708b3a7",
+    "selection": "only tables whose direct first header cell is チーム; no individual tables"
+  },
+  {
+    "file": "2026_c_tmf.html",
+    "source_url": "https://npb.jp/bis/2026/stats/tmf_c.html",
+    "fetched_at": "2026-10-15T05:00:27+00:00",
+    "response_sha256": "eba4843ff4be02c9e20cf9eb5005cc2c29a044d6388d2e848430487c0dc5b2a4",
+    "fixture_sha256": "2065aea78c7c5cfea637eb242f385e32794918a009962edf0a49027f873a45ae",
+    "selection": "only direct team tables; no individual records; trailing line whitespace removed"
+  },
+  {
+    "file": "1961_c_archive.html",
+    "source_url": "https://npb.jp/bis/yearly/centralleague_1961.html",
+    "fetched_at": "2026-10-15T05:01:55+00:00",
+    "response_sha256": "35ad3f980e686009a9693329a6ce0df56d7ef33b73e54d7029de717b0adda505",
+    "fixture_sha256": "8f063ba0833a7011240aff7efd320173969c5555e71aa1695fe00f76f9ecfe9e",
+    "selection": "only direct team tables; no individual records"
+  },
+  {
+    "file": "1973_p_archive.html",
+    "source_url": "https://npb.jp/bis/yearly/pacificleague_1973.html",
+    "fetched_at": "2026-10-15T05:03:34+00:00",
+    "response_sha256": "c3d090a3bd5a24fc022af3f77d6d88461603490d6a3b699203e9c9ea13352774",
+    "fixture_sha256": "8d1191b5f64e6e3c1d7d69db22cd9fcc08166050a33e559f31e3ce50224b910b",
+    "selection": "only direct team tables; no individual records"
+  }
+]

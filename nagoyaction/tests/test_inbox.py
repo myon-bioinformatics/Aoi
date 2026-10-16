@@ -99,10 +99,10 @@ def test_same_query_cache_invalidated_when_results_change(tmp_path):
     path = results / "sets.jsonl"
     path.write_text(json.dumps(item()), encoding="utf-8")
     text = '{"ask":"has_counterexample", "target":"E1"}'
-    first, _ = ask_question(text, results, cache=cache)
+    first, _ = ask_question(text, results, cache=cache, cycle="c001", result_sha="r1")
     assert first["result"]["answer"] == "はい"
     path.write_text(json.dumps(item(2, 2, listed=())), encoding="utf-8")
-    second, _ = ask_question(text, results, cache=cache)
+    second, _ = ask_question(text, results, cache=cache, cycle="c001", result_sha="r1")
     assert second["result"]["answer"] == "いいえ"
     assert len(list(cache.glob("*.json"))) == 2
 
@@ -127,7 +127,7 @@ def test_snapshot_uses_real_main_layout(cycle):
 
 def test_snapshot_requires_readable_result(cycle):
     (cycle / "outputs/sets.jsonl").unlink()
-    with pytest.raises(FileNotFoundError, match="結果が読めません"):
+    with pytest.raises(FileNotFoundError, match="結果が読めない"):
         snapshot(Path(__file__).resolve().parents[2], cycle)
 
 
@@ -225,6 +225,25 @@ def test_existing_ask_and_status_comments_are_processed(cycle, tmp_path, monkeyp
     assert (state.path / "receipts/3.json").exists()
     assert not (state.path / "receipts/1.json").exists()
     assert sum("aoi-inbox:reply-" in row.get("body", "") for row in comments) == 2
+
+
+def test_q5_receipt_durably_keeps_original_input_and_spans(cycle, tmp_path, monkeypatch):
+    question = "P121 は 2026 年で確かめられた？"
+    comments = [{"id": 5, "user": {"login": "person"}, "created_at": "2026-10-16",
+                 "body": "/ask " + question}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path / "state")
+    intake(api, state, cycle, "code-sha", "c001", "result-sha")
+    receipt = json.loads((state.path / "receipts/5.json").read_text(encoding="utf-8"))
+    response = receipt["response"]
+    assert receipt["body"] == "/ask " + question
+    assert response["raw_text"] == question
+    assert response["parse_status"] == "undetermined"
+    assert response["unread_spans"] == [{"start": 7, "end": 20, "raw_text": "2026 年で確かめられた"}]
+    assert response["result"]["reason_codes"] == ["unrecognized_ask", "unsupported_text"]
+    assert response["result"]["answer"] == "判定不能" and response["result"]["rows"] == []
+    assert "2026 年で確かめられた" in receipt["reply_body"]
+    assert not list(state.path.glob("**/answers/*.json"))
+    assert not list(state.path.glob("**/known/manifest.json"))
 
 
 def test_processed_comment_edit_is_not_reprocessed(cycle, tmp_path, monkeypatch):

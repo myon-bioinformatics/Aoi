@@ -374,13 +374,14 @@ def main(argv=None) -> int:
 
     from propositions import (DataError, PropositionError, check_claims, evaluate, judge, label, ledger_summary,
                               confirm_units, load, render, render_claims, render_confirmation, render_index,
-                              update_ledger)
+                              update_ledger, attach_seed_evaluation)
 
     ap = argparse.ArgumentParser(description="シーズン表から残差・順位の偏り・命題を検証する")
     ap.add_argument("--season", type=Path, required=True)
     ap.add_argument("--config", type=Path, required=True)
     ap.add_argument("--hypotheses", type=Path, help="競合仮説の一覧（TOML）")
     ap.add_argument("--propositions", type=Path, help="命題（TOML）。docs/propositions.md の形式")
+    ap.add_argument("--seed-evaluation", type=Path, help="任意の合成seed診断JSON。未指定なら全命題でNone")
     ap.add_argument("--claims", type=Path, help="外部の主張（TOML）")
     ap.add_argument("--outdir", type=Path, required=True)
     ap.add_argument("--trajectory-sensitivity", type=Path,
@@ -431,7 +432,16 @@ def main(argv=None) -> int:
             if confirm and (missing := sorted(set(confirm.get("detail", [])) - {p["id"] for p in props})):
                 raise PropositionError(f"[confirm] の detail に、命題にない id がある: {', '.join(missing)}")
             meta = {"sha256": sha, "code_version": _code_version(), "file": str(args.propositions)}
+            meta["evaluation_axes_code_sha256"] = hashlib.sha256(Path(__file__).with_name("propositions.py").read_bytes()).hexdigest()
+            meta["seed_evaluation_sha256"] = (hashlib.sha256(args.seed_evaluation.read_bytes()).hexdigest()
+                                               if args.seed_evaluation and args.seed_evaluation.exists() else None)
             results = [{**evaluate(p, included, excluded, focus), "meta": meta} for p in props]
+            if args.seed_evaluation:
+                try:
+                    seed_evidence = json.loads(args.seed_evaluation.read_text(encoding="utf-8"))
+                except (OSError, ValueError) as exc:
+                    raise DataError(f"cannot read seed evaluation: {exc}") from exc
+                attach_seed_evaluation(results, seed_evidence)
             seasons = [int(y) for y in confirm["seasons"]] if confirm else []
             checks = [confirm_units(p, included, seasons) for p in props] if confirm else []
         except DataError as e:  # 判定の結果（異議）ではなく、仕組みの不具合は失敗にする

@@ -10,7 +10,20 @@ dependencies = [
     # 2.4 系は Python 3.11–3.14、2.5.2 以降は 3.12–3.15（3.15 の wheel は 2.5.2 から）。
     "numpy>=2.4,<2.5; python_version < '3.12'",
     "numpy>=2.5.2; python_version >= '3.12'",
+    # 図はブラウザの plotly.js。Python plotly は置かない。matplotlib / seaborn / statsmodels も置かない。
+    # ページの文章。実行時の依存はこのパッケージだけで、3.11–3.15。
+    "markdown>=3.7",
 ]
+
+[project.optional-dependencies]
+# CLI の --png は kaleido + plotly。Chrome パイプAPIは export extra のみ。
+# 既定の HTML とテストは plotly も kaleido も Chrome も使わない。
+png = [
+    "kaleido>=1",
+    "plotly>=6.1.1",
+]
+
+export = ["plotly>=6.1.1"]
 
 [dependency-groups]
 dev = ["pytest>=8"]
@@ -20,5 +33,5 @@ package = false
 
 [tool.pytest.ini_options]
 # サブプロジェクトはそれぞれ単独のディレクトリ。将来の分離に備え、互いをパッケージにしない
-pythonpath = ["blueprobe", "queryu", "queryu/ask", "sakanalytics", "pythdragoras", "nagoyaction", "nagoyaction/inbox"]
-testpaths = ["tests", "blueprobe/tests", "queryu/tests", "sakanalytics/tests", "pythdragoras/tests", "nagoyaction/tests"]
+pythonpath = ["blueprobe", "queryu", "queryu/ask", "sakanalytics", "pythdragoras", "nagoyaction", "nagoyaction/inbox", "dragowing"]
+testpaths = ["tests", "blueprobe/tests", "queryu/tests", "sakanalytics/tests", "pythdragoras/tests", "nagoyaction/tests", "dragowing/tests"]

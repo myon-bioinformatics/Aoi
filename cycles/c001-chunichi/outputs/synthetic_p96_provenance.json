@@ -1,0 +1,46 @@
+{
+  "schema": "aoi-synthetic-discovery-provenance/1",
+  "synthetic": true,
+  "real_sample_increment": 0,
+  "source_pr39_head": "8dd4daa4b2f7e47e7f3b43c8e53c28aa285541fe",
+  "primary_years": [
+    2013,
+    2026
+  ],
+  "discovery": "batch 0/reversed; all six candidates frozen before holdout feature extraction",
+  "holdout": "batches 1,2 at conversion 1; additional stress batch 3 at conversion 0.5; all three profiles",
+  "calibration": "PR39 common run volume retained: 3.822333916083916; no additional real observations",
+  "sources": [
+    {
+      "role": "discovery",
+      "feature_sha256": "305c7b948b78f75451d1acce2217fa06fe049d9fba4739b473990c1ac2affe5c",
+      "source_experiment_sha256": "4fe19c1ed6b155b45d610088e1ea44e447cc033931ece7093c105acc15e792c5",
+      "measurement_sha256": "c55681913ce63125b6ef61776e9002cf3fd1d7cdd1c1f061d32dfdeac3ee37b1",
+      "generator_sha256": "55516498b3c884d8cbf8732e33f9150136eca304b7ba9a57559f294f6e8465c6"
+    },
+    {
+      "role": "holdout",
+      "feature_sha256": "0ddc02ac8299039bf5a3706365cb9dd8e6b1d907306e7da74e745bf86285b2d7",
+      "source_experiment_sha256": "e9f60f69560600e3cbb0676924f24c7faf659ed6590d2a677aeb2d755f6e27f0",
+      "measurement_sha256": "c55681913ce63125b6ef61776e9002cf3fd1d7cdd1c1f061d32dfdeac3ee37b1",
+      "generator_sha256": "55516498b3c884d8cbf8732e33f9150136eca304b7ba9a57559f294f6e8465c6"
+    },
+    {
+      "role": "stress",
+      "feature_sha256": "68c5f56fe8344eb77afd5f1b6c54f8f9c6b6b4368cad90688a7554cb19c8be07",
+      "source_experiment_sha256": "4c2d1d61b5f0462093f11af393460779b4100feb7132d9fb6d631119013ee211",
+      "measurement_sha256": "c55681913ce63125b6ef61776e9002cf3fd1d7cdd1c1f061d32dfdeac3ee37b1",
+      "generator_sha256": "55516498b3c884d8cbf8732e33f9150136eca304b7ba9a57559f294f6e8465c6"
+    }
+  ],
+  "registry_sha256": "a1307c449e15bc92fa55b3174418f52fc5db08e87065901da790afb745ddd6d4",
+  "python_version": "3.12.14",
+  "units": 2016,
+  "files": {
+    "synthetic_p96_candidates.json": "a1307c449e15bc92fa55b3174418f52fc5db08e87065901da790afb745ddd6d4",
+    "synthetic_p96_discovery.json": "10b2066ad9120f5e3ec5fa45e2c840c01be6a84a8945b55e64c70be3567d2303",
+    "synthetic_p96_holdout.json": "5379e41c67c1341b20368b4d47fb26f11e891d33687b501ac2126cc1360d0224",
+    "synthetic_p96_stress.json": "7a087162bd0a00645418c333b1b0e9e5e7f8d9d7640f12c8b9d3d1c62b154446",
+    "synthetic_p96_units.jsonl": "cdcc7689ad423563633479d9490de3b9a6794dffaa94f5b03587d9a8ff5d5399"
+  }
+}

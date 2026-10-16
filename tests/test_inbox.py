@@ -227,6 +227,25 @@ def test_existing_ask_and_status_comments_are_processed(cycle, tmp_path, monkeyp
     assert sum("aoi-inbox:reply-" in row.get("body", "") for row in comments) == 2
 
 
+def test_q5_receipt_durably_keeps_original_input_and_spans(cycle, tmp_path, monkeypatch):
+    question = "P121 は 2026 年で確かめられた？"
+    comments = [{"id": 5, "user": {"login": "person"}, "created_at": "2026-10-16",
+                 "body": "/ask " + question}]
+    api, state = fake_api(monkeypatch, comments), DiskState(tmp_path / "state")
+    intake(api, state, cycle, "code-sha", "c001", "result-sha")
+    receipt = json.loads((state.path / "receipts/5.json").read_text(encoding="utf-8"))
+    response = receipt["response"]
+    assert receipt["body"] == "/ask " + question
+    assert response["raw_text"] == question
+    assert response["parse_status"] == "undetermined"
+    assert response["unread_spans"] == [{"start": 7, "end": 20, "raw_text": "2026 年で確かめられた"}]
+    assert response["result"]["reason_codes"] == ["unrecognized_ask", "unsupported_text"]
+    assert response["result"]["answer"] == "判定不能" and response["result"]["rows"] == []
+    assert "2026 年で確かめられた" in receipt["reply_body"]
+    assert not list(state.path.glob("**/answers/*.json"))
+    assert not list(state.path.glob("**/known/manifest.json"))
+
+
 def test_processed_comment_edit_is_not_reprocessed(cycle, tmp_path, monkeypatch):
     comments = [
         {

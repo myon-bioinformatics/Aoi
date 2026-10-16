@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 
 from .figures import heatmap_figure, trajectory_figure
+from .plotly_cdn import plotly_script_tags
 from .forms import (
     COUNTEREXAMPLE_PAIR_LABELS,
     FORM_LABEL,
@@ -139,8 +140,8 @@ def _js_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace("<", "\\u003c")
 
 
-def figure_block(fig, div_id: str) -> str:
-    payload = embed_json(fig.to_dict())
+def figure_block(spec: dict, div_id: str) -> str:
+    payload = embed_json(spec)
     attr = html.escape(div_id, quote=True)
     js_id = _js_string(div_id)
     return (
@@ -156,22 +157,9 @@ def figure_block(fig, div_id: str) -> str:
     )
 
 
-def plotly_script(*, embed: bool) -> str:
-    """軌跡と球団×年用。既定は CDN。embed のとき index.html に Plotly.js を入れる。"""
-    from plotly.offline import get_plotlyjs_version
-
-    config = "<script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>\n"
-    if embed:
-        from plotly.offline import get_plotlyjs
-
-        return config + f"<script>{get_plotlyjs()}</script>"
-    src = html.escape(f"https://cdn.plot.ly/plotly-{get_plotlyjs_version()}.min.js", quote=True)
-    return config + f'<script charset="utf-8" src="{src}"></script>'
-
-
 def standalone(title: str, body: str, *, plotly: bool = False, embed: bool = False) -> str:
     """HTML 文書。plotly は軌跡と球団×年のページだけ。"""
-    script = plotly_script(embed=embed) + "\n" if plotly else ""
+    script = plotly_script_tags(embed=embed) + "\n" if plotly else ""
     return (
         "<!DOCTYPE html>\n"
         '<html lang="ja">\n'
@@ -385,8 +373,8 @@ def overlap_md(overlap: dict) -> str:
     return note + "\n\n" + regions + "\n\n" + _table(headers, rows)
 
 
-def heatmap_note(fig, column: str) -> str:
-    z = fig.layout.meta["z"]
+def heatmap_note(spec: dict, column: str) -> str:
+    z = spec["layout"]["meta"]["z"]
     finite = [value for row in z for value in row if isinstance(value, (int, float))]
     zmin = min(finite) if finite else None
     zmax = max(finite) if finite else None

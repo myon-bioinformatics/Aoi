@@ -28,7 +28,6 @@ dependencies = [
     { name = "markdown" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "plotly" },
     { name = "polars" },
     { name = "selectolax" },
 ]
@@ -36,6 +35,7 @@ dependencies = [
 [package.optional-dependencies]
 png = [
     { name = "kaleido" },
+    { name = "plotly" },
 ]
 
 [package.dev-dependencies]
@@ -50,7 +50,7 @@ requires-dist = [
     { name = "markdown", specifier = ">=3.7" },
     { name = "numpy", marker = "python_full_version < '3.12'", specifier = ">=2.4,<2.5" },
     { name = "numpy", marker = "python_full_version >= '3.12'", specifier = ">=2.5.2" },
-    { name = "plotly", specifier = ">=6.1.1" },
+    { name = "plotly", marker = "extra == 'png'", specifier = ">=6.1.1" },
     { name = "polars", specifier = ">=2" },
     { name = "selectolax", specifier = ">=1" },
 ]

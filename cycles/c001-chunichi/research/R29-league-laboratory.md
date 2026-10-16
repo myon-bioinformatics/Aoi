@@ -155,3 +155,22 @@ seed内の不変を全seedでの不変とは呼ばず、変動から偶然や隠
 全体977 passed / 28 skipped / 23 subtests passed。既存の非推奨API警告3件。
 研究digestは29 notes・103 table proposition IDs・0 explicit FINDINGS mismatchesで生成・再現確認した。
 pipeline dry-runと`git diff --check`も成功。通常の命題JSON・一覧・詳細記録に全命題の共通項目を反映した。
+
+## 年成績seed証跡のcohort完全性確認（2026-10-16）
+
+provenanceで宣言した2,016球団年と、seed 0〜2・conversion 1およびstress seed 3・conversion 0.5の
+各3 profile（aligned / same_totals / reversed）、計12 cohortを固定registryとしてコードに明記した。
+`build()`はprovenanceの`units`が整数2,016であること、実データのcohort集合の完全一致、総行数を検証し、
+従来の各cohort 168行・2013〜2026年の検査も継続する。診断の期待seedも観測できた行から縮めず、
+年成績・能力予算それぞれの固定registryから設定する。入力不足はseed不変性として集計せず例外とする。
+
+12 cohortを1組ずつ丸ごと削除してファイルSHAを更新する回帰テストを追加した。
+総行数を維持したseed/profile/conversionの差し替え、provenance件数の変更、行の欠落/重複も拒否する。
+修正前のコードではseed 2/reversedの168行欠落が通り、期待seedが[0, 1]へ縮むことを再現し、
+修正後は同じ入力を拒否することを確認した。保存済み証跡に欠落はなく、全2,240能力予算planも再生成功。
+再生成したseed評価の差分は解析コードSHAのみで、既存114命題の定義・正式判定・反例・整数得点・
+合格基準・研究結果を維持した。
+
+検証: 追加22テストを含む関連92 passed。全体999 passed / 28 skipped / 23 subtests passed
+（Python 3.12.14、既存非推奨API警告3件）。研究digest生成・`--check`、pipeline doctor/dry-run、
+`git diff --check`も成功した。

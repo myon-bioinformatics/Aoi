@@ -2,7 +2,7 @@
 
 記録: 2026-10-05。計算を始める前に書いた。R31 の3つの種を、ユーザーの依頼で3つとも進める。
 
-列 `rf_adv`・`ra_adv`・`run_balance`・`short_share` は `bd85db6` で作った（[sakanalytics](../../../SakAnalytics/sakanalytics.py) の `add_balance`）。列を足したときの照合（`rf_adv` が `rf_def_total` と一致、差の最大 8×10⁻¹⁶）と、1行の値の確認以外は見ていない。P126〜P131 の範囲・条件の組は見ていない。
+列 `rf_adv`・`ra_adv`・`run_balance`・`short_share` は `bd85db6` で作った（[sakanalytics](../../../../SakAnalytics/sakanalytics.py) の `add_balance`）。列を足したときの照合（`rf_adv` が `rf_def_total` と一致、差の最大 8×10⁻¹⁶）と、1行の値の確認以外は見ていない。P126〜P131 の範囲・条件の組は見ていない。
 
 ## 種と命題
 
@@ -16,7 +16,7 @@
 | 3. 中日以外は不足が優位の約2倍 | P131 取り分 0.6〜0.714 | — | 見た後 | **2026年で確かめる**（`[confirm]` に追加）。同じデータでの判定は記録だけ |
 
 - 境の 0.6（1試合あたりの得点の不足）は、中日の2つの層（−0.25〜−0.32 と −0.89〜−1.13）の間をとった。中日を見た後の境なので、P129・P130 は中日を範囲から外す
-- P131 の比 1.5〜2.5 は、取り分 s = r ÷ (1 + r) で 0.6〜0.714。取り分は割る数が 0 の近くでも発散しない（R31、[docs/data-policy.md](../../../docs/data-policy.md) の Divergence Is Information）
+- P131 の比 1.5〜2.5 は、取り分 s = r ÷ (1 + r) で 0.6〜0.714。取り分は割る数が 0 の近くでも発散しない（R31、[docs/data-policy.md](../../../../docs/data-policy.md) の Divergence Is Information）
 
 ## 発散の扱い（先に決める）
 

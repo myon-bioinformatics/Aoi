@@ -7,7 +7,7 @@
 - 命題を出し、判例ありきで、それがどこまで成り立つかを出す
 - 命題が成り立つなら、逆・裏・対偶を見る。判例が出た命題も、逆・裏を使って次へ進む
 
-PythDRagoras はこれまでも4つの形を判定していたが、元の命題と逆を**並べて読む**手順はなかった。今回、それを `propositions.py next` と `outputs/next.md` にした（[docs/propositions.md](../../../docs/propositions.md) の Reading The Original And The Converse Together）。
+PythDRagoras はこれまでも4つの形を判定していたが、元の命題と逆を**並べて読む**手順はなかった。今回、それを `propositions.py next` と `outputs/next.md` にした（[docs/propositions.md](../../../../docs/propositions.md) の Reading The Original And The Converse Together）。
 
 | 読み | 元の命題 | 逆 | 次に見るところ |
 |---|---|---|---|

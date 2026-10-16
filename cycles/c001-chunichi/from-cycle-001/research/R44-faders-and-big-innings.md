@@ -4,7 +4,7 @@
 
 ## 方針（ユーザーの方針）
 
-チームの成績だけで見る。投手の登板記録などの個人の成績は、これからも使わない（[docs/data-policy.md](../../../docs/data-policy.md) に The Unit Is Observed As A Whole を追記し、FINDINGS の開いた問いを書き直した）。
+チームの成績だけで見る。投手の登板記録などの個人の成績は、これからも使わない（[docs/data-policy.md](../../../../docs/data-policy.md) に The Unit Is Observed As A Whole を追記し、FINDINGS の開いた問いを書き直した）。
 
 ## 見ているもの
 

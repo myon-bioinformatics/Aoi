@@ -5,7 +5,7 @@
 ## 位置づけ（ユーザーの方針）
 
 - 精度の高い命題でも、判例の側を調べると、R36（中日 2019年）のように良い分析が得られることがある。しっかりしている命題の判例を、そういう目線で調べる
-- 「上の相手」などの相手の分け方は**最終順位**で決める。結果を知ったうえでの議論なので、その前提ははっきり書いたうえで揺るがせない（[docs/propositions.md](../../../docs/propositions.md) の Groups Defined By The Final Outcome に追記した）
+- 「上の相手」などの相手の分け方は**最終順位**で決める。結果を知ったうえでの議論なので、その前提ははっきり書いたうえで揺るがせない（[docs/propositions.md](../../../../docs/propositions.md) の Groups Defined By The Final Outcome に追記した）
 
 ## 選んだ判例
 

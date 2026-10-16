@@ -389,8 +389,8 @@ For each list the most frequent unit group (one team, one season) is shown, as a
 A seed is material, not a verdict. A proposition written from seeds is a new proposition: it is pre-registered under a new ID, and the units it came from are declared in `motivated_by`, so that it is read from its held-out evaluation.
 
 ```bash
-python pythdragoras/propositions.py next outputs/propositions.jsonl              # every proposition
-python pythdragoras/propositions.py next outputs/propositions.jsonl --reading 1 2 # sufficient-only and necessary-only
+python PythDRagoras/logic/propositions.py next outputs/propositions.jsonl              # every proposition
+python PythDRagoras/logic/propositions.py next outputs/propositions.jsonl --reading 1 2 # sufficient-only and necessary-only
 ```
 
 # Ledger

@@ -35,15 +35,41 @@ PROVENANCE_GROUPS = {
 }
 
 
+def _source_divergence(manifest):
+    """Reviewed source drift. Artifact and input hashes cannot be redirected."""
+    rows = manifest.get("source_divergence") or []
+    assert isinstance(rows, list)
+    by_path = {}
+    for row in rows:
+        path = row["path"]
+        assert path not in by_path
+        assert path in SOURCE_PATHS
+        assert row["artifacts_regenerated"] is False
+        assert row["inputs_regenerated"] is False
+        assert isinstance(row["reason"], str) and row["reason"].strip()
+        assert row["evidence_sha256"] != row["current_sha256"]
+        by_path[path] = row
+    return by_path
+
+
 def _verify_provenance(root, manifest):
-    """Fail closed on missing coverage, missing files, or any byte change."""
+    """Fail closed on missing coverage, missing files, or any unreviewed byte change."""
     assert manifest["schema"] == "littlebit-holdout-provenance/1"
+    diverged = _source_divergence(manifest)
     for group, paths in PROVENANCE_GROUPS.items():
         expected = manifest[group]
         assert set(expected) == set(paths), f"{group}: incomplete or unexpected coverage"
         for name in paths:
             digest = hashlib.sha256((root / name).read_bytes()).hexdigest()
-            assert digest == expected[name], f"{name}: SHA-256 drift; review provenance, never auto-rebaseline"
+            if name in diverged:
+                assert group == "source_sha256"
+                row = diverged[name]
+                assert row["evidence_sha256"] == expected[name]
+                assert digest == row["current_sha256"], (
+                    f"{name}: SHA-256 drift; review provenance, never auto-rebaseline")
+            else:
+                assert digest == expected[name], (
+                    f"{name}: SHA-256 drift; review provenance, never auto-rebaseline")
 
 
 def test_littlebit_committed_provenance_matches_current_sources_and_untouched_evidence():
@@ -96,6 +122,40 @@ def test_littlebit_provenance_rejects_missing_source(provenance_tree):
     root, manifest = provenance_tree
     (root / SOURCE_PATHS[0]).unlink()
     with pytest.raises(FileNotFoundError):
+        _verify_provenance(root, manifest)
+
+
+def test_littlebit_reviewed_source_divergence_stays_fail_closed(provenance_tree):
+    root, manifest = provenance_tree
+    path = SOURCE_PATHS[0]
+    original = hashlib.sha256((root / path).read_bytes()).hexdigest()
+    (root / path).write_bytes((root / path).read_bytes() + b"reviewed-diagnostic\n")
+    current = hashlib.sha256((root / path).read_bytes()).hexdigest()
+    manifest["source_divergence"] = [{
+        "path": path,
+        "evidence_sha256": original,
+        "current_sha256": current,
+        "artifacts_regenerated": False,
+        "inputs_regenerated": False,
+        "reason": "reviewed file drift; frozen artifacts stay at the evidence hash",
+    }]
+    _verify_provenance(root, manifest)
+    (root / path).write_bytes((root / path).read_bytes() + b"again\n")
+    with pytest.raises(AssertionError, match="SHA-256 drift"):
+        _verify_provenance(root, manifest)
+
+
+def test_littlebit_source_divergence_cannot_rebaseline_artifacts(provenance_tree):
+    root, manifest = provenance_tree
+    manifest["source_divergence"] = [{
+        "path": ARTIFACT_PATHS[0],
+        "evidence_sha256": "a" * 64,
+        "current_sha256": "b" * 64,
+        "artifacts_regenerated": False,
+        "inputs_regenerated": False,
+        "reason": "artifacts are not a source divergence",
+    }]
+    with pytest.raises(AssertionError):
         _verify_provenance(root, manifest)
 
 

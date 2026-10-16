@@ -54,5 +54,23 @@
     "pythdragoras/registration_audit.py": "4b69cded14220a232888f403c5e593f4fcfd9800579367dcead8a82b35a3e569",
     "pythdragoras/rule_search.py": "300f874a6b1bf197f20843e4278cbe888e855e8324283006f45950fa70487c88"
   },
-  "verification_mode": "source-input-artifact-sha256; not a claim of bitwise generator reproduction"
+  "verification_mode": "source-input-artifact-sha256; not a claim of bitwise generator reproduction",
+  "source_divergence": [
+    {
+      "path": "pythdragoras/propositions.py",
+      "evidence_sha256": "7222a63014d7dca091757d6eab65f38dfb2345e67b9d5415e4e415f830973189",
+      "current_sha256": "6a2f9115e7f285d0cea88a0c004366da1d30b42d3fec154d397bec396a819849",
+      "artifacts_regenerated": false,
+      "inputs_regenerated": false,
+      "reason": "Commit 3a7592d added uniform proposition diagnostics (metrics and seed_sensitivity) after the holdout evidence was frozen. holdout.json and holdout.md stay at their evidence hashes. This is not a regenerated baseline."
+    },
+    {
+      "path": "pythdragoras/pythdragoras.py",
+      "evidence_sha256": "9b1bd96469a009ab207efa3ac6f6affdd3a12dbfe00b34c1c67147351607cd7b",
+      "current_sha256": "75cc9260fdce559e74bf671d3450b22d9745bbb1abbb1c70055e63574c093d72",
+      "artifacts_regenerated": false,
+      "inputs_regenerated": false,
+      "reason": "The same diagnostics commit added an optional --seed-evaluation path. The LittleBit holdout CLI does not use it, and the frozen artifacts were not rewritten."
+    }
+  ]
 }

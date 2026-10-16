@@ -157,6 +157,15 @@ def validate_plan(p):
     if p.get('synthetic') is not True:raise ValueError('synthetic identity required')
     rows=p['annual'];teams=[r['team'] for r in rows]
     if len(set(teams))!=len(teams):raise ValueError('duplicate annual teams')
+    if type(p.get('leagues')) is not int or p['leagues'] not in (1,2):
+        raise ValueError('one or two synthetic leagues required')
+    expected_teams={f'{lg}{i}' for lg in ('C','P')[:p['leagues']] for i in range(1,7)}
+    if set(teams)!=expected_teams or any(r.get('synthetic') is not True or r.get('league')!=r['team'][0] for r in rows):
+        raise ValueError('annual synthetic membership mismatch')
+    if any(type(p.get(k)) is not int or p[k]<3 for k in ('within','inter')):
+        raise ValueError('at least three integer games per pair required')
+    if 'season' in p and any(r.get('season')!=p['season'] for r in rows):
+        raise ValueError('annual season mismatch')
     derived={t:Counter() for t in teams}
     seen_pairs=set()
     for pair in p['pairs']:
@@ -165,6 +174,8 @@ def validate_plan(p):
         key=tuple(sorted((a,b)))
         if key in seen_pairs:raise ValueError('duplicate pair')
         seen_pairs.add(key)
+        if pair['G']!=(p['within'] if a[0]==b[0] else p['inter']):
+            raise ValueError('pair schedule disagrees with declared counts')
         for c in ['G','T','W_a','W_b','common_runs','margin_a','margin_b','RF_a','RF_b']:
             if type(pair[c]) is not int or pair[c]<0:raise ValueError('integer nonnegative pair quantities required')
         if pair['W_a']+pair['W_b']+pair['T']!=pair['G']:raise ValueError('pair outcomes do not sum to games')
@@ -175,6 +186,8 @@ def validate_plan(p):
         for t,w,l,rf,ra in [(a,pair['W_a'],pair['W_b'],pair['RF_a'],pair['RF_b']),
                             (b,pair['W_b'],pair['W_a'],pair['RF_b'],pair['RF_a'])]:
             derived[t].update(G=pair['G'],W=w,L=l,T=pair['T'],RF=rf,RA=ra)
+    if len(seen_pairs)!=len(teams)*(len(teams)-1)//2:
+        raise ValueError('complete round-robin pairs required')
     for r in rows:
         for key in ('G','W','L','T','RF','RA'):
             if type(r[key]) is not int or r[key]!=derived[r['team']][key]:raise ValueError('annual/pair mismatch: '+key)
@@ -215,6 +228,8 @@ def expand(p):
             if i%2:home,away=away,home;a,b=b,a
             games.append(dict(key=f'synthetic-{p["seed"]}-{p["profile"]}-{pair_index}-{i}',synthetic=True,
                               home=home,away=away,hs=a,**{'as':b}))
+    if 'season' in p:
+        for g in games:g['season']=p['season']
     validate_games(p,games)
     return games
 
@@ -240,6 +255,14 @@ def validate_games(p,games):
             if actual[r['team']][key]!=r[key]:raise ValueError('game/annual mismatch: '+key)
     pair_counts=Counter(tuple(sorted((g['home'],g['away']))) for g in games)
     if pair_counts!=Counter({tuple(sorted((p['a'],p['b']))):p['G'] for p in p['pairs']}):raise ValueError('schedule pair-count mismatch')
+    by_pair=defaultdict(list)
+    for g in games:
+        if 'season' in p and g.get('season')!=p['season']:raise ValueError('game season mismatch')
+        by_pair[tuple(sorted((g['home'],g['away'])))].append(g)
+    for pair in p['pairs']:
+        actual_pair=aggregate(by_pair[tuple(sorted((pair['a'],pair['b'])))])[pair['a']]
+        expected_pair=dict(W=pair['W_a'],L=pair['W_b'],T=pair['T'],RF=pair['RF_a'],RA=pair['RF_b'])
+        if any(actual_pair[k]!=v for k,v in expected_pair.items()):raise ValueError('game/pair budget mismatch')
     return True
 
 
@@ -309,13 +332,15 @@ def _season_witness(p, season):
     return games
 
 
-def validate_period(result):
+def _validate_period_structure(result):
     """Pass only complete primary-period batches; extra history cannot fill gaps."""
     if result.get('years') != list(PRIMARY_YEARS):
         raise ValueError('primary acceptance period must be 2013-2026')
     seeds = result['batch_seeds']
-    if not seeds or len(set(seeds)) != len(seeds):
+    if not seeds or any(type(s) is not int or s<0 for s in seeds) or len(set(seeds)) != len(seeds):
         raise ValueError('unique nonempty batch seeds required')
+    if result.get('schema')!='aoi-synthetic-period/1' or result.get('synthetic') is not True:
+        raise ValueError('synthetic period identity required')
     expected = {(seed, profile, year) for seed in seeds for profile in PROFILES for year in PRIMARY_YEARS}
     actual = [(c['batch_seed'], c['profile'], c['season']) for c in result['cases']]
     if len(actual) != len(expected) or set(actual) != expected:
@@ -327,6 +352,21 @@ def validate_period(result):
     controls = [(c['batch_seed'], c['season'], c['kind']) for c in result['negative_controls']]
     if len(controls) != len(expected_controls) or set(controls) != expected_controls or not all(c['rejected'] is True for c in result['negative_controls']):
         raise ValueError('period negative controls missing or accepted')
+    return True
+
+
+def validate_period(result):
+    """Replay every saved annual row, game digest, group and negative control."""
+    _validate_period_structure(result)
+    fresh=period_experiment(result['batch_seeds'],result['mean_runs'],result['leagues'],result['conversion'])
+    keys={
+        'cases':lambda c:(c['batch_seed'],c['profile'],c['season']),
+        'negative_controls':lambda c:(c['batch_seed'],c['season'],c['kind']),
+        'groups':lambda c:c['profile'],
+    }
+    for field,key in keys.items():
+        if sorted(result[field],key=key)!=sorted(fresh[field],key=key):
+            raise ValueError('saved period witness replay mismatch: '+field)
     return True
 
 
@@ -365,7 +405,7 @@ def period_experiment(seeds=range(1), mean_runs=4., leagues=2, conversion=1.):
                   temporal_assumption='Annual models are independent; year labels do not fit organizational persistence or official year-specific schedules.',
                   interpretation=annual['interpretation'], games_digest_format=annual['games_digest_format'],
                   mean_runs=mean_runs, leagues=leagues, conversion=conversion, groups=groups, cases=cases, negative_controls=controls)
-    validate_period(result)
+    _validate_period_structure(result)
     return result
 
 
@@ -388,6 +428,18 @@ def write_witnesses(result,directory):
     (directory/'manifest.json').write_text(json.dumps(dict(synthetic=True,files=files),indent=2)+'\n',encoding='utf-8')
 
 
+def calibration_mean(rows):
+    """Exactly 168 distinct real team-seasons; do not silently filter history."""
+    identities=[(r['season'],r['league'],r['team']) for r in rows]
+    counts=Counter((r['season'],r['league']) for r in rows)
+    expected=Counter({(year,lg):6 for year in PRIMARY_YEARS for lg in ('C','P')})
+    if counts!=expected or len(set(identities))!=len(identities):
+        raise ValueError('calibration requires 168 unique primary team-seasons in both leagues')
+    if any(r.get('synthetic') is True or type(r.get('G')) is not int or r['G']<=0 or type(r.get('RF')) is not int or r['RF']<0 for r in rows):
+        raise ValueError('real nonnegative RF and positive integer G required for calibration')
+    return statistics.median(r['RF']/r['G'] for r in rows)
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--seeds',type=int,default=1,help='14-year batches per profile; default 1')
@@ -404,12 +456,10 @@ def main():
     if a.calibrate_annual:
         start,end=map(int,a.calibration_years.split('-'))
         rows=[json.loads(s) for s in a.calibrate_annual.read_text(encoding='utf-8').splitlines() if s.strip()]
-        units=[r for r in rows if start<=r['season']<=end and r.get('G',0)>0 and 'RF' in r]
         if (start,end)!=(2013,2026):p.error('primary calibration period must be 2013-2026')
-        if {r['season'] for r in units}!=set(PRIMARY_YEARS):p.error('calibration must cover all 14 primary years')
-        a.mean_runs=statistics.median(r['RF']/r['G'] for r in units)
+        a.mean_runs=calibration_mean(rows)
         calibration=dict(path=str(a.calibrate_annual),sha256=hashlib.sha256(a.calibrate_annual.read_bytes()).hexdigest(),
-                         years=[start,end],units=len(units),statistic='median RF/G; only common-run volume calibrated, no causal or joint-distribution fit')
+                         years=[start,end],units=len(rows),statistic='median RF/G; only common-run volume calibrated, no causal or joint-distribution fit')
     result=period_experiment(range(a.seeds),a.mean_runs,a.leagues,a.conversion)
     result['calibration']=calibration
     result['generator_sha256']=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()

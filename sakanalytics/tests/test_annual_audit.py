@@ -46,6 +46,32 @@ def test_missing_year_and_duplicate_are_not_success():
     with pytest.raises(ValueError):audit(data)
 
 
+def test_duplicate_table_identity_cannot_be_hidden_by_another_record_key():
+    data=observations();duplicate=deepcopy(data[0]);duplicate['key']='another-key';data.append(duplicate)
+    with pytest.raises(ValueError,match='identity'):audit(data)
+
+
+def test_explicit_scope_rejects_reference_observations():
+    data=observations();extra=deepcopy(data[0]);extra.update(key='extra',season=1949);data.append(extra)
+    assert any(c['check']=='observation_years' for c in audit(data,expected_years=[1950])['failures'])
+
+
+def test_opponent_row_sums_and_reciprocal_results_are_verified():
+    data=observations()
+    # Use two official team IDs for a small opponent-table mutation.
+    for row in data:
+        if row['league']=='C' and row['team'] in ('C0','C1'):
+            row['team']='g' if row['team']=='C0' else 'd'
+    for row in data:
+        if row['category']=='standings' and row['team'] in ('g','d'):
+            row['values']['対中' if row['team']=='g' else '対巨']=dict(W=10,L=10,T=0)
+    assert audit(data)['failed']==0
+    row=next(r for r in data if r['team']=='g' and r['category']=='standings')
+    row['values']['対中']['W']+=1
+    failed={c['check'] for c in audit(data)['failures']}
+    assert {'opponent_sum:standings:W','opponent_reciprocal:standings:W'}<=failed
+
+
 def test_bad_outs_and_integer_totals_are_detected():
     data=observations();data[0]['values']['試合']=21;data[1]['values']['得点']=101
     failed={f['check'] for f in audit(data)['failures']}

@@ -17,6 +17,7 @@ import json
 import math
 import re
 import operator
+import statistics
 import tomllib
 from pathlib import Path
 
@@ -60,6 +61,114 @@ EXIT = {
     70: ("実装の誤り", "Internal error"),
 }
 STAGE_ORDER = ("original", "held_out", "contrapositive", "converse", "inverse")
+EVALUATION_METRICS = ("precision", "recall", "f1", "accuracy", "balanced_accuracy", "mcc")
+
+
+def classification_metrics(tp: int, fp: int, fn: int, tn: int) -> dict:
+    """Diagnostic classification axes; never change a proposition's verdict."""
+    if any(type(v) is not int or v < 0 for v in (tp, fp, fn, tn)):
+        raise DataError("confusion counts must be nonnegative integers")
+    n = tp + fp + fn + tn
+    divide = lambda a, b: a / b if b else None
+    recall, specificity = divide(tp, tp + fn), divide(tn, tn + fp)
+    denominator = math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+    values = dict(precision=divide(tp, tp + fp), recall=recall,
+                  f1=divide(2 * tp, 2 * tp + fp + fn), accuracy=divide(tp + tn, n),
+                  balanced_accuracy=(recall + specificity) / 2 if recall is not None and specificity is not None else None,
+                  mcc=divide(tp * tn - fp * fn, denominator))
+    reasons = dict(precision="no_positive_predictions", recall="no_positive_targets",
+                   f1="no_positive_predictions_or_targets", accuracy="no_determined_units",
+                   balanced_accuracy="missing_target_class", mcc="constant_prediction_or_target")
+    return dict(n=n, tp=tp, fp=fp, fn=fn, tn=tn, **values,
+                none_reasons={key: reasons[key] if value is None else None for key, value in values.items()})
+
+
+def empty_seed_axes(reason: str = "not_evaluated") -> dict:
+    """Unknown is None, not zero variance or a negative result."""
+    return dict(status="not_evaluated", reason=reason, seed_count=None, groups=None)
+
+
+def seed_distribution(values: list) -> dict:
+    if any(v is not None and (type(v) not in (int, float) or not math.isfinite(v)) for v in values):
+        raise DataError("seed metrics must be finite numbers or None")
+    known = [v for v in values if v is not None]
+    status = ("undefined" if not known else "single_seed" if len(known) == 1 else
+              "observed_variation" if max(known) > min(known) else "invariant_in_tested_seeds")
+    return dict(status=status, total=len(values), defined=len(known), undefined=len(values) - len(known),
+                mean=statistics.mean(known) if known else None, median=statistics.median(known) if known else None,
+                min=min(known) if known else None, max=max(known) if known else None,
+                range=max(known) - min(known) if len(known) > 1 else None,
+                population_sd=statistics.pstdev(known) if len(known) > 1 else None)
+
+
+def summarize_seed_group(group: dict, expected_definition: str) -> dict:
+    """Recompute every metric from counts; compare seeds only within one design."""
+    if not isinstance(group, dict):
+        raise DataError("seed group must be an object")
+    condition, runs, seeds = group["condition"], group["runs"], group["expected_seeds"]
+    if not isinstance(condition, dict) or not isinstance(runs, list) or any(not isinstance(r, dict) for r in runs):
+        raise DataError("seed condition and runs have invalid types")
+    if condition.get("definition_sha256") != expected_definition:
+        raise DataError("seed evidence uses a different proposition definition")
+    if (not isinstance(seeds, list) or not seeds or any(type(s) is not int or s < 0 for s in seeds)
+            or len(set(seeds)) != len(seeds) or not isinstance(runs, list)):
+        raise DataError("distinct nonnegative expected seeds required")
+    if any(type(r.get("seed")) is not int for r in runs):
+        raise DataError("seed must be an integer")
+    by_seed = {r["seed"]: r for r in runs}
+    if len(by_seed) != len(runs) or set(by_seed) != set(seeds):
+        raise DataError("duplicate, missing or unexpected seed")
+    measured = []
+    for seed in sorted(seeds):
+        run = by_seed[seed]
+        if run.get("condition") != condition:
+            raise DataError("seed comparison changed years/settings/definition")
+        counts = run["counts"]
+        measured.append(classification_metrics(*(counts[k] for k in ("tp", "fp", "fn", "tn"))))
+    distributions = {key: seed_distribution([m[key] for m in measured]) for key in EVALUATION_METRICS}
+    mccs = [m["mcc"] for m in measured if m["mcc"] is not None]
+    covariates = sorted({k for run in runs for k in run.get("covariates", {})})
+    return dict(condition=condition, seeds=sorted(seeds), seed_count=len(seeds), metrics=distributions,
+                mcc_signs=dict(positive=sum(v > 0 for v in mccs), zero=sum(v == 0 for v in mccs),
+                               negative=sum(v < 0 for v in mccs), undefined=len(seeds) - len(mccs)),
+                mcc_sign_flip=bool(any(v > 0 for v in mccs) and any(v < 0 for v in mccs)) if len(mccs) > 1 else None,
+                cohort_n=seed_distribution([m["n"] for m in measured]),
+                covariates={k: seed_distribution([by_seed[s].get("covariates", {}).get(k) for s in sorted(seeds)])
+                            for k in covariates})
+
+
+def attach_seed_evaluation(results: list[dict], evidence: dict) -> None:
+    """Optional synthetic diagnostics, matched by ID and immutable definition."""
+    if (not isinstance(evidence, dict) or evidence.get("schema") != "aoi-proposition-seed-evaluation/1" or evidence.get("synthetic") is not True
+            or evidence.get("real_sample_increment") != 0 or not isinstance(evidence.get("propositions"), dict)):
+        raise DataError("invalid synthetic seed evaluation envelope")
+    indexed = {r["id"]: r for r in results}
+    if set(evidence["propositions"]) - indexed.keys():
+        raise DataError("seed evaluation contains unknown proposition IDs")
+    # Validate everything before modifying any result.
+    prepared = {}
+    try:
+        for pid, item in evidence["propositions"].items():
+            if not isinstance(item, dict):
+                raise DataError("seed proposition entry must be an object")
+            definition = indexed[pid]["definition_sha256"]
+            if item["definition_sha256"] != definition:
+                raise DataError(f"{pid}: seed definition does not match")
+            groups = item["groups"]
+            if groups is None:
+                prepared[pid] = empty_seed_axes(item.get("reason") or "inputs_unavailable")
+            else:
+                if not isinstance(groups, list) or not groups:
+                    raise DataError("seed groups must be nonempty or None")
+                summaries = [summarize_seed_group(g, definition) for g in groups]
+                designs = [json.dumps(s["condition"], sort_keys=True, allow_nan=False) for s in summaries]
+                if len(set(designs)) != len(designs):
+                    raise DataError("duplicate seed comparison design")
+                prepared[pid] = dict(status="evaluated", reason=None, seed_count=None, groups=summaries)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise DataError(f"invalid seed evaluation: {exc}") from exc
+    for result in results:
+        result["seed_sensitivity"] = prepared.get(result["id"], empty_seed_axes())
 
 
 # ---------- 読み込み ----------
@@ -418,6 +527,7 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
             "counterexamples": _counterexamples(df, x, y, p, name, focus),
         })
         forms[-1]["code"] = form_code(forms[-1]["verdict"], len(forms[-1]["counterexamples"]), undetermined)
+        forms[-1]["metrics"] = classification_metrics(k, n - k, c_, d_)
     by = {f["form"]: f for f in forms}
     # 論理から必ず成り立つこと: 元の命題と対偶、逆と裏は、判例が同じ
     for f1, f2 in (("original", "contrapositive"), ("converse", "inverse")):
@@ -435,6 +545,7 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
                     "ci": ci, "fisher_p": p_val, "verdict": verdict(kind, threshold, n, k, ci, p_val, min_n, alpha),
                     **sigma_stats(k, n, threshold),
                     "counterexamples": [c["unit"] for c in _counterexamples(rest, a, b, p, "original", focus)]}
+        held_out["metrics"] = classification_metrics(k, n - k, c_, d_)
     excluded_cx = []
     if excluded is not None and excluded.height:
         ex = scope_filter(excluded, p.get("scope"))
@@ -443,6 +554,7 @@ def _evaluate(p: dict, st: pl.DataFrame, excluded: pl.DataFrame | None, focus: s
         "id": p["id"], "statement": p["statement"], "strength": p["strength"], "kind": kind, "threshold": threshold,
         "if": p.get("if", []), "if_any": p.get("if_any", []), "then": p["then"], "scope": p.get("scope", {}), "units": df.height,
         "min_n": min_n, "alpha": alpha, "links": p.get("links", []), "forms": forms,
+        "metrics": forms[0]["metrics"], "seed_sensitivity": empty_seed_axes(),
         "objection": any(f["counterexamples"] for f in forms),
         "skipped_forms": p.get("skip_forms", []), "skip_reason": p.get("skip_reason"),
         "excluded_counterexamples": excluded_cx, "source": p.get("source"),
@@ -598,6 +710,8 @@ def render(results: list[dict], meta: dict, limit: int = 10, ledger: list[dict] 
                   *([f"- 見直す条件（反証）: {_cell(r['falsifier'])}"] if r.get("falsifier") else []),
                   *([f"- 注記: {_cell(r['note'])}"] if r.get("note") else []),
                   f"- 条件の数: {r.get('conditions', '-')}（例外条件を増やしすぎていないかの目安）",
+                  f"- 共通評価軸（元の命題）: {_metrics_text(r.get('metrics'))}",
+                  f"- 合成seed評価: {_seed_status(r.get('seed_sensitivity'))}",
                   *_ledger_line(ledger, r["id"]),
                   "", "| 形 | n | 成立 | 成立率 [95%区間] | 基準から（σ、片側 p） | 基準率 | lift | p | 判定不能 | 判定 | exit |",
                   "|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -745,7 +859,51 @@ def render_index(results: list[dict], meta: dict, lang: str = "ja") -> str:
         lines.append(f"| {r['id']} | `{_cell(r.get('key', '-'))}` | {STRENGTH_JA[r['strength']]} | {cell('original')} | {sig(by.get('original'))} "
                      f"| {cell('contrapositive')} | {cell('converse')} | {cell('inverse')} | {held} "
                      f"| **{j['code']}** {label(j['code'], lang)} | {r.get('parent') or ''} |")
+    lines += ["", "## 全命題の共通評価軸", "",
+              "過小評価かどうか・元の支持判定にかかわらず同じ項目を表示する。分類指標は条件不成立を陰性予測とする診断で、逆命題を要求するものではない。",
+              "`None` は計算不能・未評価。欠けた値を0や不変に置き換えない。分母0などの理由はJSONのmetrics.none_reasons、seedの理由はseed_sensitivity.reasonを参照。",
+              "seed比較は命題定義・年・生成条件ごと。試したseed内の不変性であり、全seedの不変性・統計的有意性・因果は主張しない。", "",
+              "| 命題 | Precision | Recall | F1 | Accuracy | Balanced Accuracy | MCC | 合成seed評価 |",
+              "|---|---|---|---|---|---|---|---|"]
+    for r in results:
+        metric = r.get("metrics") or {}
+        cells = " | ".join(_axis_value(metric.get(k)) for k in EVALUATION_METRICS)
+        lines.append(f"| **{r['id']}** | {cells} | {_seed_status(r.get('seed_sensitivity'))} |")
+    for r in results:
+        groups = (r.get("seed_sensitivity") or {}).get("groups")
+        if not groups:
+            continue
+        lines += ["", f"### {r['id']} の条件別seed感度", "",
+                  "各指標は中央値 [最小, 最大]。seedが1個だけなら安定性を評価しない。", "",
+                  "| 条件 | seed数 | Precision | Recall | MCC | MCC標準偏差 | MCC符号反転 |",
+                  "|---|---|---|---|---|---|---|"]
+        for group in groups:
+            context = {k: v for k, v in group["condition"].items()
+                       if k not in ("proposition", "definition_sha256", "settings_sha256", "allocations")}
+            span = lambda key: _seed_span(group["metrics"][key])
+            lines.append(f"| `{_cell(json.dumps(context, ensure_ascii=False, sort_keys=True))}` | {group['seed_count']} "
+                         f"| {span('precision')} | {span('recall')} | {span('mcc')} "
+                         f"| {_axis_value(group['metrics']['mcc']['population_sd'])} | {group['mcc_sign_flip']} |")
     return "\n".join(lines) + "\n"
+
+
+def _axis_value(value):
+    return "None" if value is None else f"{value:.3f}"
+
+
+def _metrics_text(metric):
+    return ", ".join(f"{key}={_axis_value((metric or {}).get(key))}" for key in EVALUATION_METRICS)
+
+
+def _seed_status(axis):
+    axis = axis or empty_seed_axes()
+    if axis["groups"] is None:
+        return f"None ({axis['reason']})"
+    return f"evaluated ({len(axis['groups'])}条件; 条件別に表示)"
+
+
+def _seed_span(metric):
+    return f"{_axis_value(metric['median'])} [{_axis_value(metric['min'])}, {_axis_value(metric['max'])}]"
 
 
 def render_claims(claims: list[dict]) -> str:

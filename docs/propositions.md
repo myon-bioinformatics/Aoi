@@ -131,6 +131,44 @@ For each form, with `X` as its condition and `Y` as its consequence:
 
 ---
 
+# Common Diagnostic Axes
+
+Every proposition receives the same diagnostic fields, regardless of whether it
+was supported, rejected, inconclusive, or considered underestimated. Each
+evaluated form (including held-out when present) stores `metrics` with
+`tp`, `fp`, `fn`, `tn`, `n`, `precision`, `recall`, `f1`, `accuracy`,
+`balanced_accuracy`, and `mcc`. The proposition-level `metrics` describes the
+original form. Its positive target is that form's declared consequence B;
+conditions outside its scope are not negative examples.
+
+These classification diagnostics treat A as a positive prediction and not-A as
+a negative prediction. Low recall does not invalidate a useful sufficient
+condition. None of these fields changes the declared strength, verdict,
+counterexamples, definition fingerprint, or exit code.
+
+Undefined values are Python `None` / JSON `null`, with per-field explanations
+in `metrics.none_reasons`. A constant predicate or a constant target makes MCC
+undefined; it does not make the proposition wrong. No observations, no positive
+predictions, and no positive targets remain distinct from measured zero scores.
+Required predicate columns still raise a data error when absent: an unavailable
+optional diagnostic is not permission to silently reinterpret a proposition.
+
+Every result also contains `seed_sensitivity`, initially with `groups=None`,
+`seed_count=None`, and a reason. Optional synthetic seed evidence can be supplied
+to `pythdragoras.py --seed-evaluation PATH`. It is validated against proposition
+IDs and definition fingerprints. Counts are converted back to metrics; supplied
+metric scores are not trusted. Duplicate/missing seeds and mixed designs fail.
+
+Seed groups keep years, generator parameters, target definition and allocation
+grid fixed. For each metric they report mean, median, min/max, range, population
+standard deviation, defined/undefined seed counts and an observed status.
+`invariant_in_tested_seeds` only describes the tested seeds. A singleton is
+`single_seed`, not evidence of invariance. MCC sign flips and seed-level cohort
+sizes/covariates are recorded; changes may motivate further tests for random
+variation or omitted conditions, but do not automatically prove either cause.
+Different losses/profiles are separate groups, not seed effects. Synthetic
+evidence never increases the count of real observations.
+
 # Falsifier And Note
 
 A proposition may declare:

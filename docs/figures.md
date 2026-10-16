@@ -1,4 +1,4 @@
-# 軌跡・球団×年・条件の重なり・反例カード
+# 軌跡・球団×年・条件の重なり・命題の一覧
 
 `python -m dragowing` は、`cycles/c001-chunichi/outputs` にすでにある JSONL だけを読む。NPB の取得はしない。判定（`evaluate`）は呼ばない。数を丸めて階級に入れない。回帰、平滑化、あてはめの線は描かない。
 
@@ -12,17 +12,16 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 `--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。
 
-既定の出力は、HTML と、その隣に置く `plotly.min.js` である。`plotly.min.js` は、インストールされた Plotly の `package_data/plotly.min.js` を出力ディレクトリへコピーしたものである。HTML はそれを `src="plotly.min.js"` で読む。Plotly.js を各 HTML に埋め込まない。ブラウザはネットワークに出さない。
+既定では、`index.html` が CDN の Plotly.js（インストールされた Plotly と同じ版。`https://cdn.plot.ly/plotly-` に版と `.min.js` を続けた URL）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。
 
-`--embed` を付けると、各 HTML に Plotly.js を埋め込む。そのファイルだけを別の場所へ移しても図が出る。`plotly.min.js` は書かない。
+`--embed` を付けると、`index.html` に Plotly.js を埋め込む。`propositions.html` は埋め込まない。
 
 | ファイル | 中身 |
 |---|---|
-| `index.html` | 軌跡、球団×年、条件の重なりと単位の表 |
-| `propositions.html` | 命題ごとの 2×2、論理記号、反例カード |
-| `plotly.min.js` | 共有の Plotly.js。`--embed` のときは無い |
+| `index.html` | 軌跡、球団×年、条件の重なりの件数と単位の表 |
+| `propositions.html` | 先頭の一覧と、命題ごとの 2×2、論理記号、反例の表 |
 
-ページの見出し、カードの見出し、論理記号の囲みは Markdown で書き、Python-Markdown で HTML にする。記録の数と `data-json` は、変換のあとにもファイルの値のまま残す。
+ページの見出し、一覧、2×2、反例の表、論理記号の囲みは Markdown で書き、Python-Markdown で HTML にする。数は変換のあとにもファイルの値のまま残す。丸めない。
 
 文字だけの 2×2 は [forms.md](forms.md) の `dragowing/forms.py` のままである。
 
@@ -34,9 +33,11 @@ PNG が要るときだけ、依存の extra `png`（kaleido）を入れて `--pn
 
 図に書いてあるのは、記録の列名と値と、次の表示規則だけである。
 
-### 四つの形（提案 C1）と記号（C2）とカード（C7）と 1 ページ（C8）
+### 一覧と四つの形（提案 C1）と記号（C2）と反例の表（C7）と 1 ページ（C8）
 
-`propositions.html` は命題 1 件につき 1 節である。節の見出しの印は `registration_status` と同じ三つのどれかである。
+`propositions.html` の先頭は一覧である。1 行が 1 命題で、ID、`statement`、四つの形それぞれの `hold`、反例（`n - hold`）、`rate` を置く。ID は同じページの節へのリンクである。`rate` はファイルの数のまま置く。ここでは計算し直さない。形が無い、または `n` と `hold` から数が決まらないときは `不明` である。
+
+その下は命題 1 件につき 1 節である。節の見出しの印は `registration_status` と同じ三つのどれかである。
 
 | 記録 | 表示 |
 |---|---|
@@ -44,11 +45,11 @@ PNG が要るときだけ、依存の extra `png`（kaleido）を入れて `--pn
 | `preregistered` が true、または事前登録の記録がある | 事前登録 |
 | それ以外 | 不明 |
 
-2×2 のマスは [forms.md](forms.md) と同じく `n` と `hold` から数える。二つの形が食い違うマスは `不一致` である。空で決まらないマスは `不明` である。四つの形のマスは `hold/n（反例 n-hold）` と、記録に `rate` があるときのその数である。`rate` はファイルの数をそのまま置く。パーセントにはしない。
+2×2 のマスは [forms.md](forms.md) と同じく `n` と `hold` から数える。Markdown の表にする。Plotly の表にはしない。二つの形が食い違うマスは `不一致` である。空で決まらないマスは `不明` である。四つの形はもう一つの 2×2 で、`hold/n（反例 n-hold）` と、記録に `rate` があるときのその数である。`rate` はファイルの数をそのまま置く。パーセントにはしない。
 
 論理記号の行は `render_logic` の文字列である。`>` を `<=` に書き換えない。
 
-カードは `forms[].counterexamples` の要素 1 個につき 1 枚である。枚数は配列の長さである。2×2 の反例数は `n - hold` である。この結果では両方の数が一致しているが、配列が短い保存なら枚数は配列の長さのままである。カードに載せるのは `unit`、`season`、`team`、`team_name`、`focus`、`values`、`context`、`question` の、記録にあるものだけである。`question` の文は記録の文である。
+反例は形ごとに 1 つの表で、1 行が `counterexamples` の 1 要素である。表は `<details>` に入れ、初めは畳んである。行数は配列の長さである。2×2 の反例数は `n - hold` である。この結果では両方の数が一致している形もあるが、配列が短い保存なら行数は配列の長さのままである。列は記録にある `unit`、`season`、`team`、`team_name`、`focus`、`surprise`、`question`、`links`、`values`、`context` である。`values` と `context` は JSON の文字のまま置く。`question` の文は記録の文である。
 
 `statement` を節に出すときは、フィールド名 `statement:` を付けて記録の文として置く。
 
@@ -74,13 +75,13 @@ PNG が要るときだけ、依存の extra `png`（kaleido）を入れて `--pn
 
 条件ごとに `pythdragoras/rule_search.py` の `_mask` と `_masks_to_matrix` でビット行列を作る。件数は、その bool 行列で領域（入っている / 入っていないの組み合わせ）を数えた整数である。null の比較は真に数えない。これは `_mask` が null を立てないのと同じである。
 
-円は 2 個か 3 個である。円の面積は件数に合わせていない。件数は円の中の整数と、下の表の行である。表の `unit` は `team-season`（例: `d-2012`）で、`team_name` と条件の列の値は `season.jsonl` のその行である。
+円は描かない。件数は領域の表の整数である。下の表の `unit` は `team-season`（例: `d-2012`）で、`team_name` と条件の列の値は `season.jsonl` のその行である。
 
 B は `upper_half == false` という集合の表示名である。
 
 ## 解釈
 
-このページは、保存された数と文字列をマスと点とカードに移したものである。
+このページは、保存された数と文字列をマスと点と表に移したものである。
 
 2×2 の数が大きいことを、その命題が正しいことや、次の年も成り立つこととしては読まない。`不明` は「事前登録ではなかった」という意味ではなく、機械的な記録が無い、という表示である。詳しくは [forms.md](forms.md) の解釈と同じである。
 
@@ -88,8 +89,8 @@ B は `upper_half == false` という集合の表示名である。
 
 `wins_vs_pythag` の色は、その数の大小を見やすくしたものである。正や負を、勝ち越しや失敗の判断としては読まない。マスの A と B はクラスの表示名である。ホバーの `rank` は記録された順位で、このページは順位を計算し直さない。
 
-重なりの図は、選んだ条件式が記録の上でどこで同時に真だったかの件数である。式を採用したことや、次に使う規則であることは示さない。円の大きさでは件数を比べない。
+重なりの表は、選んだ条件式が記録の上でどこで同時に真だったかの件数である。式を採用したことや、次に使う規則であることは示さない。
 
-カードの `question` は、保存されている問いの文である。このページはその問いに答えない。
+反例の表の `question` は、保存されている問いの文である。このページはその問いに答えない。
 
 候補 ID（`もしかして`）は出さない。問い合わせ側は [ask.md](../../queryu/docs/ask.md)。

@@ -10,9 +10,9 @@ from pathlib import Path
 import pytest
 
 from dragowing.cli import PngUnavailable, main, write_png
-from dragowing.figures import A_COLOR, B_COLOR, four_forms_figure, heatmap_figure, overlap_figure, trajectory_figure
-from dragowing.forms import _cell, _form_cell, contingency
-from dragowing.htmlout import cards_html, embed_json, json_attr, proposition_section, spec_from
+from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
+from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency
+from dragowing.htmlout import embed_json, figure_block, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
 from ask import registration_status
@@ -31,6 +31,11 @@ OPS = {
 
 def spec_of(fig) -> dict:
     return json.loads(embed_json(fig.to_dict()))
+
+
+def shown(value) -> str:
+    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
+    return html.escape(text, quote=False)
 
 
 def holds(row, cond) -> bool:
@@ -93,7 +98,7 @@ def season_row(**extra):
     return base
 
 
-def test_registration_labels_are_on_the_four_forms_figure():
+def test_registration_labels_are_on_the_proposition_section():
     cases = [
         ({"posthoc": True}, "事後構成"),
         ({"preregistered": True}, "事前登録"),
@@ -101,16 +106,13 @@ def test_registration_labels_are_on_the_four_forms_figure():
     ]
     for extra, label in cases:
         item = proposition(**extra)
-        spec = spec_of(four_forms_figure(item))
-        meta = spec["layout"]["meta"]
-        assert meta["registration"] == label == registration_status(item)
-        assert spec["layout"]["title"]["text"].startswith(f"［{label}］")
-        assert meta["cells"] == contingency(item)
-        assert meta["cells"] == {"P∧Q": 3, "P∧¬Q": 2, "¬P∧Q": None, "¬P∧¬Q": None}
-        shown = spec["data"][0]["cells"]["values"]
-        assert shown[1][0] == _cell(3)
-        assert shown[2][0] == _cell(2)
-        assert "不明" in shown[1][1]
+        assert registration_status(item) == label
+        page = proposition_section(item)
+        assert f"［{label}］ P9" in page
+        assert 'id="P9"' in page
+        assert contingency(item) == {"P∧Q": 3, "P∧¬Q": 2, "¬P∧Q": None, "¬P∧¬Q": None}
+        assert ">3<" in page and ">2<" in page
+        assert "不明" in page
 
 
 def test_disagreement_stays_a_string_and_listed_cards_are_not_the_count():
@@ -121,16 +123,19 @@ def test_disagreement_stays_a_string_and_listed_cards_are_not_the_count():
         {"form": "inverse", "n": 5, "hold": 4},
         {"form": "contrapositive", "n": 6, "hold": 4},
     ]
-    spec = spec_of(four_forms_figure(item))
-    assert str(spec["layout"]["meta"]["cells"]["P∧Q"]).startswith("不一致")
-    assert "不一致" in json.dumps(spec["data"][0]["cells"]["values"], ensure_ascii=False)
-    original = next(row for row in spec["layout"]["meta"]["forms"] if row["form"] == "original")
-    assert original["n"] == 5 and original["hold"] == 3 and original["counterexample_count"] == 2
-    assert original["rate"] == 0.6
-    page, _fig = proposition_section(item)
-    assert "counterexamples: 1" in page
+    assert str(contingency(item)["P∧Q"]).startswith("不一致")
+    page = proposition_section(item)
+    assert "不一致" in page
     assert "only-one" in page
     assert "3/5（反例 2）" in page
+    assert "（1 行）" in page
+    assert "data-json" not in page
+    summary = propositions_body([item])
+    first = summary.split("</table>", 1)[0]
+    assert '<a href="#P9">P9</a>' in first
+    assert ">3<" in first and ">2<" in first and "0.6" in first
+    assert "only-one" not in first
+    assert summary.index("</table>") < summary.index("<h2")
 
 
 def test_trajectory_and_heatmap_keep_source_values_including_a_gap():
@@ -209,30 +214,32 @@ def test_overlap_file_uses_the_numpy_mask_without_filling_nulls(tmp_path):
     assert sum(region["count"] for region in overlap["regions"]) == len(rows)
     named = {unit["unit"] for unit in overlap["units"] if unit["in_set"] == [True, True, True]}
     assert named == {"a-2012"}
-    fig = spec_of(overlap_figure(overlap))
-    texts = [ann["text"] for ann in fig["layout"]["annotations"]]
-    for region, text in zip(overlap["regions"], texts):
-        if not any(region["bits"]):
-            assert text == f"外 {region['count']}"
-        else:
-            assert text == str(region["count"])
-    assert len(fig["layout"]["shapes"]) == 3
-    assert {shape["type"] for shape in fig["layout"]["shapes"]} == {"circle"}
+    page = render_md(overlap_md(overlap))
+    assert '"type":"circle"' not in page
+    assert "円は描かない" in page
+    for region in overlap["regions"]:
+        assert shown(region["name"]) in page
+        assert f"<td>{region['count']}</td>" in page
+    assert "<td>null</td>" in page
+    assert "a-2012" in page
 
 
-def test_cards_copy_values_context_and_question():
+def test_counterexample_table_copies_values_context_and_question():
     item = proposition(posthoc=True)
     card = item["forms"][0]["counterexamples"][0]
-    page, fig = proposition_section(item)
+    page = proposition_section(item)
     assert "［事後構成］ P9" in page
-    assert "question: 中日 2012 は条件を満たすのに後件を満たさない。なぜか？" in page
-    assert f'data-json="{json_attr(card["context"]["wins_vs_pythag"])}"' in page
-    assert f'data-json="{json_attr(card["values"]["rd"])}"' in page
-    assert f'data-json="{json_attr(True)}"' in page
-    spec = spec_of(fig)
-    assert spec["layout"]["meta"]["forms"][0]["rate"] == 0.6
-    assert "rate=0.6" in spec["data"][1]["cells"]["values"][0][0]
-    assert _form_cell(item["forms"][0]) in spec["data"][1]["cells"]["values"][0][0]
+    assert shown(card["question"]) in page
+    assert shown(card["values"]) in page
+    assert shown(card["context"]) in page
+    assert "8.4548548226457" in page
+    assert "rate=0.6" in page
+    assert _form_cell(item["forms"][0]) in page
+    assert "data-json" not in page
+    assert "<article" not in page
+    assert "<details>" in page
+    assert "<details open" not in page
+    assert "Plotly.newPlot" not in page
 
 
 def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch):
@@ -247,25 +254,31 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     assert main(["--results", str(results), "--out", str(out), "--id", "P9"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
-    bundle = (out / "plotly.min.js").read_bytes()
-    from dragowing.htmlout import plotlyjs_path
+    from plotly.offline import get_plotlyjs, get_plotlyjs_version
 
-    assert bundle == plotlyjs_path().read_bytes()
-    assert '<script charset="utf-8" src="plotly.min.js"></script>' in index
-    assert bundle[:80].decode("utf-8") not in index
-    assert index.count("Plotly.newPlot") == 3
+    cdn = f"https://cdn.plot.ly/plotly-{get_plotlyjs_version()}.min.js"
+    assert not (out / "plotly.min.js").exists()
+    assert f'<script charset="utf-8" src="{cdn}"></script>' in index
+    assert get_plotlyjs()[:80] not in index
+    assert index.count("Plotly.newPlot") == 2
+    assert '"type":"circle"' not in index
     assert "8.4548548226457" in index
-    assert "cdn.plot.ly/plotly" not in index
     assert "<h2>球団 × 年" in index
+    assert "Plotly.newPlot" not in props
+    assert "cdn.plot.ly" not in props
     assert "［事後構成］ P9" in props
     assert "なぜか？" in props
-    assert "<h2" in props
+    assert '<a href="#P9">P9</a>' in props
+    assert props.index("<table") < props.index("<h2")
     embedded = tmp_path / "embedded"
     assert main(["--results", str(results), "--out", str(embedded), "--id", "P9", "--embed"]) == 0
     alone = (embedded / "index.html").read_text(encoding="utf-8")
     assert "src=\"plotly.min.js\"" not in alone
-    assert bundle[:80].decode("utf-8") in alone
+    assert cdn not in alone
+    assert get_plotlyjs()[:80] in alone
     assert not (embedded / "plotly.min.js").exists()
+    embedded_props = (embedded / "propositions.html").read_text(encoding="utf-8")
+    assert get_plotlyjs()[:80] not in embedded_props
     proc = subprocess.run(
         [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"],
         cwd=ROOT,
@@ -285,7 +298,7 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
 
     monkeypatch.setattr(builtins, "__import__", block)
     with pytest.raises(PngUnavailable):
-        write_png(four_forms_figure(proposition()), tmp_path / "x.png")
+        write_png(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.png")
     assert not (tmp_path / "x.png").exists()
     missing = subprocess.run(
         [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "png"), "--png"],
@@ -396,21 +409,18 @@ def test_real_records_are_copied_into_the_figures():
     p1 = items[0]
     assert p1["id"] == "P1"
     form = p1["forms"][0]
-    spec = spec_of(four_forms_figure(p1))
-    cells = spec["layout"]["meta"]["cells"]
-    assert cells == contingency(p1)
+    cells = contingency(p1)
     assert cells["P∧Q"] == form["hold"]
     assert cells["P∧¬Q"] == form["n"] - form["hold"]
-    assert spec["layout"]["meta"]["registration"] == "不明"
-    recorded = spec["layout"]["meta"]["forms"][0]
-    assert recorded["n"] == form["n"] and recorded["hold"] == form["hold"]
-    assert recorded["rate"] == form["rate"]
-    assert recorded["counterexample_count"] == form["n"] - form["hold"]
-    page, _fig = proposition_section(p1)
+    assert registration_status(p1) == "不明"
+    page = proposition_section(p1)
+    assert _form_cell(form) in page
+    assert "rate=" + json.dumps(form["rate"], ensure_ascii=False) in page
     card = form["counterexamples"][0]
-    assert html.escape(card["question"]) in page
-    assert f'data-json="{json_attr(card["context"]["wins_vs_pythag"])}"' in page
-    assert f'data-json="{json_attr(card["values"])}"' in page or f'data-json="{json_attr(card["values"]["rd"])}"' in page
+    assert shown(card["question"]) in page
+    assert shown(card["context"]) in page
+    assert shown(card["values"]) in page
+    assert "data-json" not in page
 
 
 def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
@@ -418,40 +428,58 @@ def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
     assert main(["--results", str(RESULTS), "--out", str(out), "--id", "P1"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
-    assert '<script charset="utf-8" src="plotly.min.js"></script>' in index
-    assert (out / "plotly.min.js").is_file()
-    assert index.count('<script charset="utf-8" src="plotly.min.js"></script>') == 1
+    from plotly.offline import get_plotlyjs_version
+
+    cdn = f"https://cdn.plot.ly/plotly-{get_plotlyjs_version()}.min.js"
+    assert f'<script charset="utf-8" src="{cdn}"></script>' in index
+    assert not (out / "plotly.min.js").exists()
+    assert index.count("Plotly.newPlot") == 2
+    assert '"type":"circle"' not in index
     heat = spec_from(index, "heatmap")
     assert any(cell == 8.4548548226457 for row in heat["data"][0]["z"] for cell in row)
     assert 'id="P1"' in props
     assert 'id="P2"' not in props
     assert "［不明］ P1" in props
+    assert '<a href="#P1">P1</a>' in props
+    assert "Plotly.newPlot" not in props
 
 
-def test_every_proposition_figure_and_card_matches_the_file():
+def test_every_proposition_table_matches_the_file():
     items = [json.loads(line) for line in (RESULTS / "propositions.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
     assert len(items) == 114
+    page = propositions_body(items)
+    assert page.index("<table") < page.index("<h2")
+    assert "<details open" not in page
+    assert "data-json" not in page
+    assert "<article" not in page
+    assert "Plotly.newPlot" not in page
+    first = page.split("</table>", 1)[0]
+    p1 = items[0]
+    original = p1["forms"][0]
+    assert shown(p1["statement"]) in first
+    assert shown(original["hold"]) in first
+    assert shown(original["n"] - original["hold"]) in first
+    assert shown(original["rate"]) in first
     for item in items:
-        spec = spec_of(four_forms_figure(item))
-        assert spec["layout"]["meta"]["cells"] == contingency(item)
-        assert spec["layout"]["meta"]["registration"] == registration_status(item)
-        page = cards_html(item)
-        stored = 0
+        assert f'id="{item["id"]}"' in page
+        assert f'href="#{item["id"]}"' in page
+        assert registration_status(item) in page
+        if isinstance(item.get("statement"), str):
+            assert shown(item["statement"]) in page
+        for value in contingency(item).values():
+            assert shown(_cell(value)) in page
         for form in item["forms"]:
-            meta = next(row for row in spec["layout"]["meta"]["forms"] if row["form"] == form["form"])
-            assert meta["n"] == form["n"] and meta["hold"] == form["hold"]
-            assert meta["counterexample_count"] == form["n"] - form["hold"]
+            assert _form_cell(form) in page
             if "rate" in form:
-                assert meta["rate"] == form["rate"]
-            for card in form.get("counterexamples") or []:
-                stored += 1
-                assert html.escape(card["question"]) in page
-                assert f'data-unit="{card["unit"]}"' in page
-                for value in card["values"].values():
-                    assert f'data-json="{json_attr(value)}"' in page
-                for value in card["context"].values():
-                    assert f'data-json="{json_attr(value)}"' in page
-        assert f"counterexamples: {stored}" in page
+                assert "rate=" + json.dumps(form["rate"], ensure_ascii=False) in page
+            cards = [card for card in form.get("counterexamples") or [] if isinstance(card, dict)]
+            if cards:
+                assert f"{FORM_LABEL[form['form']]}（{len(cards)} 行）" in page
+            for card in cards:
+                assert shown(card["unit"]) in page
+                assert shown(card["question"]) in page
+                assert shown(card["values"]) in page
+                assert shown(card["context"]) in page
 
 
 def test_sources_do_not_import_banned_plot_libraries():
@@ -476,10 +504,16 @@ def test_sources_do_not_import_banned_plot_libraries():
         assert not any(name in text for name in banned if name != "plotly.express")
 
 
-def test_spec_from_html_roundtrip_matches_the_figure(tmp_path):
-    # spec_from is used if present; the helper below parses the script tag.
-    item = proposition()
-    _page, fig = proposition_section(item)
-    html = __import__("dragowing.htmlout", fromlist=["standalone"]).standalone("t", _page)
-    parsed = spec_from(html, "forms-P9")
-    assert parsed["layout"]["meta"]["cells"] == spec_of(fig)["layout"]["meta"]["cells"]
+def test_spec_from_html_roundtrip_matches_the_figure():
+    fig = heatmap_figure([season_row()], "wins_vs_pythag")
+    page = standalone("t", figure_block(fig, "heatmap"), plotly=True)
+    parsed = spec_from(page, "heatmap")
+    assert parsed["data"][0]["z"] == spec_of(fig)["data"][0]["z"]
+
+
+def test_figure_script_keeps_ids_inside_a_javascript_string():
+    fig = heatmap_figure([season_row()], "wins_vs_pythag")
+    block = figure_block(fig, 'x");alert(1)</script><script>alert(2)')
+    assert block.count("</script>") == 2
+    assert "<script>alert" not in block
+    assert "\\u003c/script" in block

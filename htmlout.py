@@ -1,16 +1,24 @@
-"""HTML。既定は出力先の plotly.min.js を1つ参照する。文章は Markdown から作る。"""
+"""HTML。文章と表は Markdown から作る。Plotly は軌跡と球団×年だけ。"""
 from __future__ import annotations
 
 import html
 import json
-import shutil
-from pathlib import Path
+import re
 
 import markdown
-from plotly.offline import get_plotlyjs
 
-from .figures import four_forms_figure, heatmap_figure, overlap_figure, trajectory_figure
-from .forms import render_logic
+from .figures import heatmap_figure, trajectory_figure
+from .forms import (
+    FORM_LABEL,
+    FORM_ORDER,
+    _counts,
+    _cell,
+    _form_cell,
+    _forms,
+    contingency,
+    registration_status,
+    render_logic,
+)
 
 _STYLE = """
 body { margin: 1.5rem auto; max-width: 1100px; color: #1a1a1a; background: #fff;
@@ -18,16 +26,19 @@ body { margin: 1.5rem auto; max-width: 1100px; color: #1a1a1a; background: #fff;
 h1, h2 { font-weight: 650; }
 a { color: #0b57d0; }
 pre { white-space: pre-wrap; background: #f7f7f7; padding: 0.8rem 1rem; }
-article.card { border: 1px solid #ccc; padding: 0.75rem 1rem; margin: 0.7rem 0; }
 table { border-collapse: collapse; margin: 0.4rem 0 1rem; }
 td, th { border: 1px solid #ddd; padding: 0.15rem 0.45rem; vertical-align: top; text-align: left; }
 caption { text-align: left; font-weight: 650; padding-bottom: 0.25rem; }
 .figure { min-height: 480px; }
 .provenance { color: #333; }
+details { margin: 0.75rem 0 1.1rem; }
+summary { cursor: pointer; }
 """
 
 _MD = ["tables", "fenced_code", "attr_list", "md_in_html"]
-PLOTLY_JS_NAME = "plotly.min.js"
+_SAFE_ANCHOR = re.compile(r"[A-Za-z][A-Za-z0-9_-]*")
+_CARD_FIELDS = ("unit", "season", "team", "team_name", "focus", "surprise", "question", "links", "values", "context")
+_SUMMARY_FORMS = (("original", "元"), ("converse", "逆"), ("inverse", "裏"), ("contrapositive", "対偶"))
 
 _INDEX_MD = """\
 入力ファイル: `season.jsonl`, `propositions.jsonl`。値は記録のまま。
@@ -45,13 +56,11 @@ _INDEX_MD = """\
 
 @@OVERLAP@@
 
-@@UNITS@@
-
-[命題ごとの四つの形と反例カード](propositions.html)
+[命題の一覧](propositions.html)
 """
 
-_PROPOSITIONS_MD = """\
-入力ファイル: `propositions.jsonl`。値は記録のまま。
+_AFTER_SUMMARY = """\
+入力ファイル: `propositions.jsonl`。`hold` と反例（`n - hold`）は記録の `n` と `hold` から数える。`rate` はファイルの数のまま置く。反例の表の行数は `counterexamples` の長さで、`n - hold` とは別に置く。
 {: .provenance}
 
 [球団年の図へ](index.html)
@@ -60,24 +69,6 @@ _PROPOSITIONS_MD = """\
 
 def render_md(source: str) -> str:
     return markdown.markdown(source, extensions=_MD)
-
-
-def plotlyjs_path() -> Path:
-    import plotly
-
-    path = Path(plotly.__file__).resolve().parent / "package_data" / PLOTLY_JS_NAME
-    if not path.is_file():
-        raise FileNotFoundError(f"plotly.min.js が無い: {path}")
-    return path
-
-
-def copy_plotlyjs(directory: Path) -> Path:
-    """インストールされた Plotly の plotly.min.js を出力ディレクトリへコピーする。"""
-    dest = Path(directory) / PLOTLY_JS_NAME
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    if not dest.exists():
-        shutil.copyfile(plotlyjs_path(), dest)
-    return dest
 
 
 def to_builtin(obj):
@@ -110,8 +101,18 @@ def embed_json(obj) -> str:
     return raw.replace("<", "\\u003c")
 
 
-def json_attr(value) -> str:
-    return html.escape(json.dumps(value, ensure_ascii=False, allow_nan=False), quote=True)
+def exact_json(value) -> str:
+    return json.dumps(value, ensure_ascii=False, allow_nan=False)
+
+
+def md_inline(value) -> str:
+    """表の外。Markdown に渡す前に HTML の区切りだけを逃がす。"""
+    text = value if isinstance(value, str) else exact_json(value)
+    return html.escape(text, quote=False)
+
+
+def md_cell(value) -> str:
+    return md_inline(value).replace("|", "\\|").replace("\r", " ").replace("\n", " ")
 
 
 def spec_from(page: str, div_id: str) -> dict:
@@ -121,29 +122,43 @@ def spec_from(page: str, div_id: str) -> dict:
     return json.loads(page[start:end])
 
 
+def _js_string(value: str) -> str:
+    return json.dumps(value, ensure_ascii=False).replace("<", "\\u003c")
+
+
 def figure_block(fig, div_id: str) -> str:
     payload = embed_json(fig.to_dict())
+    attr = html.escape(div_id, quote=True)
+    js_id = _js_string(div_id)
     return (
-        f'<div id="{html.escape(div_id)}" class="figure"></div>\n'
-        f'<script type="application/json" id="{html.escape(div_id)}-data">{payload}</script>\n'
+        f'<div id="{attr}" class="figure"></div>\n'
+        f'<script type="application/json" id="{attr}-data">{payload}</script>\n'
         "<script>\n"
         "(function(){\n"
-        f'  var spec = JSON.parse(document.getElementById("{div_id}-data").textContent);\n'
-        f'  Plotly.newPlot("{div_id}", spec.data, spec.layout, {{responsive:true,displaylogo:false}});\n'
+        f"  var id = {js_id};\n"
+        '  var spec = JSON.parse(document.getElementById(id + "-data").textContent);\n'
+        "  Plotly.newPlot(id, spec.data, spec.layout, {responsive:true,displaylogo:false});\n"
         "})();\n"
         "</script>"
     )
 
 
-def standalone(title: str, body: str, *, embed: bool = False) -> str:
-    """HTML 文書。embed のとき Plotly.js をこのファイルに入れる。"""
+def plotly_script(*, embed: bool) -> str:
+    """軌跡と球団×年用。既定は CDN。embed のとき index.html に Plotly.js を入れる。"""
+    from plotly.offline import get_plotlyjs_version
+
+    config = "<script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>\n"
     if embed:
-        script = f"<script>window.PlotlyConfig = {{MathJaxConfig: 'local'}};</script>\n<script>{get_plotlyjs()}</script>"
-    else:
-        script = (
-            "<script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>\n"
-            f'<script charset="utf-8" src="{PLOTLY_JS_NAME}"></script>'
-        )
+        from plotly.offline import get_plotlyjs
+
+        return config + f"<script>{get_plotlyjs()}</script>"
+    src = html.escape(f"https://cdn.plot.ly/plotly-{get_plotlyjs_version()}.min.js", quote=True)
+    return config + f'<script charset="utf-8" src="{src}"></script>'
+
+
+def standalone(title: str, body: str, *, plotly: bool = False, embed: bool = False) -> str:
+    """HTML 文書。plotly は軌跡と球団×年のページだけ。"""
+    script = plotly_script(embed=embed) + "\n" if plotly else ""
     return (
         "<!DOCTYPE html>\n"
         '<html lang="ja">\n'
@@ -152,7 +167,7 @@ def standalone(title: str, body: str, *, embed: bool = False) -> str:
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
         f"<title>{html.escape(title)}</title>\n"
         f"<style>{_STYLE}</style>\n"
-        f"{script}\n"
+        f"{script}"
         "</head>\n"
         "<body>\n"
         f"<h1>{html.escape(title)}</h1>\n"
@@ -162,126 +177,184 @@ def standalone(title: str, body: str, *, embed: bool = False) -> str:
     )
 
 
-def _span(value) -> str:
-    raw = json.dumps(value, ensure_ascii=False, allow_nan=False)
-    return f'<span data-json="{json_attr(value)}">{html.escape(raw)}</span>'
+def _anchors(items: list[dict]) -> list[str]:
+    used = set()
+    anchors = []
+    for index, item in enumerate(items, start=1):
+        ident = str(item.get("id") or "")
+        anchor = ident if _SAFE_ANCHOR.fullmatch(ident) else f"row-{index}"
+        if anchor in used:
+            anchor = f"row-{index}"
+        while anchor in used:
+            anchor = f"row-{index}-{len(anchors)}"
+        used.add(anchor)
+        anchors.append(anchor)
+    return anchors
 
 
-def _md_table(caption: str, mapping) -> str:
-    pairs = list(mapping.items()) if isinstance(mapping, dict) else [("value", mapping)]
-    lines = [caption, "", "| | |", "| --- | --- |"]
-    for key, value in pairs:
-        lines.append(f"| {key} | {_span(value)} |")
-    return "\n".join(lines)
+def _hold_against_rate(form):
+    counts = _counts(form) if isinstance(form, dict) else None
+    if counts is None:
+        hold, against = "不明", "不明"
+    else:
+        n, held = counts
+        hold, against = held, n - held
+    if not isinstance(form, dict) or "rate" not in form:
+        rate = "不明"
+    else:
+        rate = form.get("rate")
+    return hold, against, rate
 
 
-def cards_md(item: dict) -> str:
-    """C7. カード1枚を Markdown の article にする。値は data-json のまま。"""
+def _summary_table(items: list[dict], anchors: list[str]) -> str:
+    headers = ["ID", "statement"]
+    for _name, short in _SUMMARY_FORMS:
+        headers.extend((f"{short} hold", f"{short} 反例", f"{short} rate"))
+    rows = []
+    for item, anchor in zip(items, anchors):
+        ident = str(item.get("id") or "")
+        label = html.escape(ident, quote=False).replace("|", "\\|")
+        cells = [f"[{label}](#{anchor})", md_cell(item["statement"]) if isinstance(item.get("statement"), str) else ""]
+        forms = _forms(item)
+        for name, _short in _SUMMARY_FORMS:
+            hold, against, rate = _hold_against_rate(forms.get(name))
+            cells.extend((md_cell(hold), md_cell(against), md_cell(rate)))
+        rows.append(cells)
+    return _table(headers, rows)
+
+
+def _table(headers, row_cells) -> str:
+    head = "| " + " | ".join(md_cell(header) for header in headers) + " |"
+    sep = "| " + " | ".join("---" for _ in headers) + " |"
+    body = ["| " + " | ".join(cells) + " |" for cells in row_cells]
+    return "\n".join([head, sep, *body])
+
+
+def _form_line(name: str, form) -> str:
+    text = f"{FORM_LABEL[name]}: {_form_cell(form)}"
+    if isinstance(form, dict) and "rate" in form:
+        text += " rate=" + exact_json(form.get("rate"))
+    return text
+
+
+def forms_table_md(item: dict) -> str:
+    """四つの形。上は P/¬P × Q/¬Q、下は元・逆・裏・対偶の 2×2。どちらも Markdown の表。"""
+    cells = contingency(item)
+    forms = _forms(item)
+    grid = _table(
+        ["", "Q", "¬Q"],
+        [
+            ["P", md_cell(_cell(cells["P∧Q"])), md_cell(_cell(cells["P∧¬Q"]))],
+            ["¬P", md_cell(_cell(cells["¬P∧Q"])), md_cell(_cell(cells["¬P∧¬Q"]))],
+        ],
+    )
+    pair = _table(
+        ["", ""],
+        [
+            [md_cell(_form_line("original", forms.get("original"))), md_cell(_form_line("converse", forms.get("converse")))],
+            [md_cell(_form_line("inverse", forms.get("inverse"))), md_cell(_form_line("contrapositive", forms.get("contrapositive")))],
+        ],
+    )
+    return grid + "\n\n" + pair
+
+
+def _card_columns(cards: list[dict]) -> list[str]:
+    return [key for key in _CARD_FIELDS if any(key in card for card in cards)]
+
+
+def counterexamples_md(item: dict) -> str:
+    """形ごとに 1 表。1 行が 1 単位。既定では details で畳む。"""
+    forms = _forms(item)
     blocks = []
-    stored = 0
-    for form in item.get("forms") or []:
-        if not isinstance(form, dict):
+    for name in FORM_ORDER:
+        form = forms.get(name)
+        cards = [card for card in (form.get("counterexamples") if isinstance(form, dict) else None) or [] if isinstance(card, dict)]
+        if not cards:
             continue
-        form_name = str(form.get("form") or "")
-        for card in form.get("counterexamples") or []:
-            if not isinstance(card, dict):
-                continue
-            stored += 1
-            unit = str(card.get("unit", ""))
-            bits = [
-                (
-                    f'<article class="card" markdown="1" data-id="{html.escape(str(item.get("id") or ""))}" '
-                    f'data-form="{html.escape(form_name)}" data-unit="{html.escape(unit)}">'
-                ),
-                "",
-                f"### `{form_name}` · `{unit}`",
-                "",
-            ]
-            if "question" in card:
-                bits.append(f'<p class="question">question: {html.escape(str(card.get("question") or ""))}</p>')
-                bits.append("")
-            bits.append(_md_table("values", card.get("values") or {}))
-            bits.append("")
-            bits.append(_md_table("context", card.get("context") or {}))
-            for key in ("season", "team", "team_name", "focus"):
-                if key in card:
-                    bits.append("")
-                    bits.append(
-                        f'<p class="identity" data-key="{html.escape(key)}">{html.escape(key)}: {_span(card[key])}</p>'
-                    )
-            bits.append("")
-            bits.append("</article>")
-            blocks.append("\n".join(bits))
-    return f"counterexamples: {stored}\n\n" + "\n\n".join(blocks)
+        columns = _card_columns(cards)
+        rows = []
+        for card in cards:
+            rows.append([md_cell(card[key]) if key in card else "" for key in columns])
+        table = _table(columns, rows)
+        blocks.append(
+            "\n".join(
+                [
+                    '<details markdown="1">',
+                    f"<summary>{html.escape(FORM_LABEL[name], quote=False)}（{len(cards)} 行）</summary>",
+                    "",
+                    table,
+                    "",
+                    "</details>",
+                ]
+            )
+        )
+    return "\n\n".join(blocks)
 
 
-def cards_html(item: dict) -> str:
-    return render_md(cards_md(item))
-
-
-def proposition_section(item: dict) -> tuple[str, object]:
+def section_md(item: dict, anchor: str) -> str:
     ident = str(item.get("id") or "")
-    figure = four_forms_figure(item)
-    label = figure.layout.meta["registration"]
-    parts = [f"## ［{label}］ {ident} {{#{ident}}}", ""]
+    label = registration_status(item)
+    shown = ident if re.fullmatch(r"[A-Za-z0-9_-]+", ident) else md_inline(ident)
+    parts = [f"## ［{label}］ {shown} {{#{anchor}}}", ""]
     if isinstance(item.get("statement"), str):
-        parts.append(f'<p class="statement">statement: {html.escape(item["statement"])}</p>')
+        parts.append(f"statement: {md_inline(item['statement'])}")
         parts.append("")
     parts.append("```")
     parts.append(render_logic(item))
     parts.append("```")
     parts.append("")
-    parts.append(figure_block(figure, f"forms-{ident}"))
-    parts.append("")
-    parts.append(cards_md(item))
-    return render_md("\n".join(parts)), figure
+    parts.append(forms_table_md(item))
+    listed = counterexamples_md(item)
+    if listed:
+        parts.extend(["", listed])
+    return "\n".join(parts)
 
 
-def overlap_table(overlap: dict) -> str:
+def proposition_section(item: dict) -> str:
+    anchor = _anchors([item])[0]
+    return render_md(section_md(item, anchor))
+
+
+def propositions_md(items: list[dict]) -> str:
+    anchors = _anchors(items)
+    parts = [_summary_table(items, anchors), "", _AFTER_SUMMARY.rstrip(), ""]
+    for item, anchor in zip(items, anchors):
+        parts.extend(["", section_md(item, anchor)])
+    return "\n".join(parts)
+
+
+def propositions_body(items: list[dict]) -> str:
+    return render_md(propositions_md(items))
+
+
+def overlap_md(overlap: dict) -> str:
+    """領域の件数と単位。円は描かない。"""
+    regions = _table(
+        ["領域", "count"],
+        [[md_cell(region["name"]), md_cell(region["count"])] for region in overlap["regions"]],
+    )
     conds = overlap["conditions"]
     columns = overlap["columns"]
-    head = ["unit", "team_name", "league", "season", "upper_half"]
-    head += [f"in:{cond['label']}" for cond in conds]
-    head += [f"value:{col}" for col in columns]
-    rows = ["<tr>" + "".join(f"<th>{html.escape(name)}</th>" for name in head) + "</tr>"]
+    headers = ["unit", "team_name", "league", "season", "upper_half"]
+    headers += [f"in:{cond['label']}" for cond in conds]
+    headers += [f"value:{col}" for col in columns]
+    rows = []
     for unit in overlap["units"]:
-        cells = [
-            unit["unit"],
-            unit["team_name"],
-            unit["league"],
-            unit["season"],
-            unit["upper_half"],
-        ]
-        cells.extend(unit["in_set"])
-        cells.extend(unit["values"][col] for col in columns)
-        body = []
-        for name, value in zip(head, cells):
-            body.append(
-                f'<td data-col="{html.escape(name)}" data-json="{json_attr(value)}">{html.escape(json.dumps(value, ensure_ascii=False, allow_nan=False))}</td>'
-            )
-        rows.append(f'<tr data-unit="{html.escape(unit["unit"])}">' + "".join(body) + "</tr>")
-    return '<table class="overlap-units"><caption>units</caption>' + "".join(rows) + "</table>"
+        values = [unit["unit"], unit["team_name"], unit["league"], unit["season"], unit["upper_half"]]
+        values.extend(unit["in_set"])
+        values.extend(unit["values"][col] for col in columns)
+        rows.append([md_cell(value) for value in values])
+    note = "件数は領域の整数である。円は描かない。単位は `team-season`。値は記録のまま。"
+    return note + "\n\n" + regions + "\n\n" + _table(headers, rows)
 
 
 def index_body(rows: list[dict], overlap: dict, column: str) -> tuple[str, dict]:
     trajectory = trajectory_figure(rows)
     heat = heatmap_figure(rows, column)
-    venn = overlap_figure(overlap)
     source = (
-        _INDEX_MD.replace("@@COLUMN@@", column)
+        _INDEX_MD.replace("@@COLUMN@@", md_inline(column))
         .replace("@@TRAJECTORY@@", figure_block(trajectory, "trajectory"))
         .replace("@@HEATMAP@@", figure_block(heat, "heatmap"))
-        .replace("@@OVERLAP@@", figure_block(venn, "overlap"))
-        .replace("@@UNITS@@", overlap_table(overlap))
+        .replace("@@OVERLAP@@", overlap_md(overlap))
     )
-    return render_md(source), {"trajectory": trajectory, "heatmap": heat, "overlap": venn}
-
-
-def propositions_body(items: list[dict]) -> tuple[str, dict]:
-    parts = [render_md(_PROPOSITIONS_MD)]
-    figures = {}
-    for item in items:
-        section, figure = proposition_section(item)
-        parts.append(section)
-        figures[str(item.get("id"))] = figure
-    return "\n".join(parts), figures
+    return render_md(source), {"trajectory": trajectory, "heatmap": heat}

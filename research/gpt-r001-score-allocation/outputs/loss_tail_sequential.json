@@ -1,0 +1,43 @@
+{
+  "stages": [
+    {
+      "stage": "tests",
+      "command": [
+        "/tmp/aoi-research-venv/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/tmp/aoi-gpt-research-20261003/research/gpt-r001-score-allocation",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "...............\n----------------------------------------------------------------------\nRan 15 tests in 0.183s\n\nOK\n"
+    },
+    {
+      "stage": "analysis",
+      "command": [
+        "/tmp/aoi-research-venv/bin/python",
+        "/tmp/aoi-gpt-research-20261003/research/gpt-r001-score-allocation/loss_tail.py",
+        "analyze"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"data_sha256\": \"7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9\", \"script_sha256\": \"6f359a894862cbd30a249a6557efd7a5787a828f6555f9922189825c60555ac5\", \"protocol_sha256\": \"8a200e5eb00317ddf2d0cf601ab31b6ceeb6f17f3a8d41e3bfaaf799b3aceae4\", \"proposition_sha256\": \"660236d3646ed11bd604bda8c115420d3ba85048d66743345f7c1740f9758a6d\", \"table_sha256\": \"562f900eaf3942cb6cab51d72cc5e3c0666a193aa53e00ef6604a03a4c4e5c9c\", \"maximum_runs\": 22, \"units\": 78, \"summaries\": {\"chunichi/all\": {\"gap\": 1.0756560731912845, \"body_gap\": 0.7729294570843868, \"tail_gap\": 0.30272661610689783}, \"chunichi/without2020\": {\"gap\": 1.0416829681794473, \"body_gap\": 0.7206735785080857, \"tail_gap\": 0.3210093896713615}, \"other_cl/all\": {\"gap\": -0.05405742145178764, \"body_gap\": 8.185867340795464e-05, \"tail_gap\": -0.05413928012519561}, \"other_cl/without2020\": {\"gap\": -0.06383998435054772, \"body_gap\": -0.016855764214919158, \"tail_gap\": -0.04698422013562858}}, \"passed\": [\"input provenance\", \"156 official team-years\", \"unique games and season completeness\", \"body + tail identity\", \"survival sum identity\"], \"exit_code\": 0}\n",
+      "stderr": ""
+    },
+    {
+      "stage": "judgement",
+      "command": [
+        "/tmp/aoi-research-venv/bin/python",
+        "/tmp/aoi-gpt-research-20261003/research/gpt-r001-score-allocation/loss_tail.py",
+        "judge"
+      ],
+      "exit_code": 3,
+      "stdout": "{\"id\": \"R001-T1\", \"judgement\": {\"code\": 3, \"stage\": \"none\", \"form\": \"original\", \"units\": [\"d-2018\", \"d-2020\", \"d-2021\", \"d-2013\", \"d-2017\", \"d-2016\", \"t-2015\", \"d-2024\", \"t-2024\", \"t-2020\", \"d-2015\", \"c-2017\", \"d-2023\", \"t-2014\", \"g-2025\", \"d-2019\", \"d-2022\", \"t-2017\", \"g-2015\", \"g-2023\", \"t-2019\", \"t-2018\", \"c-2025\", \"g-2014\", \"c-2022\", \"s-2015\", \"db-2019\", \"g-2016\", \"db-2022\", \"c-2021\", \"db-2023\", \"c-2018\", \"c-2023\", \"c-2015\", \"c-2024\", \"c-2016\", \"t-2023\", \"db-2020\", \"t-2022\"], \"n\": 48, \"min_n\": 1, \"ci\": [0.101913909548, 0.319398671493], \"undetermined\": 0, \"reason\": \"判例 39 件: d-2018, d-2020, d-2021, d-2013, d-2017 ほか\"}}\n",
+      "stderr": ""
+    }
+  ],
+  "exit_code": 3
+}

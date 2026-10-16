@@ -225,3 +225,7 @@ data/
 
 # Test-only pinned cross-repository integration checkout
 .test-deps/
+
+# Separate git worktree containing durable inquiry / exploration state.
+.research-state/
+.models/

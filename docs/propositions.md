@@ -66,6 +66,16 @@ The scope says which units the proposition talks about: `league`, `team`, `seaso
 
 Use `where` when S is the comparison condition, not part of the claim. A unit whose `where` value is missing is counted as undetermined (exit 5), never silently left outside the scope.
 
+## Groups Defined By The Final Outcome
+
+An inquiry that explains a final outcome (a final rank, a final class) is retrospective: it is made knowing how the season ended.
+Groups used inside a proposition — "the teams that finished first or second", "the upper half" — are therefore defined by the **final** outcome, not by the standing on the day of each game.
+
+This is a premise, not a flaw to be corrected:
+
+- defining a group by the standing at the time of each game makes the data harder to use and the propositions harder to generate, without making them more honest
+- the premise is stated with every proposition whose group depends on it. A proposition that groups opponents by the final rank can be partly linked to its own consequence by arithmetic (beating an upper opponent lowers that opponent and raises oneself); the `note` says so
+
 ## Identity
 
 A sequential ID (`P31`) is a convenient name, but it says nothing about what is asked. Two IDs can ask the same question, and the same question can be investigated twice without anyone noticing. Every proposition therefore has three layers of identity.
@@ -351,6 +361,37 @@ When several propositions survive, prefer the one that:
 "Weak" or "strong" always needs a stated comparison: weak compared with whom, over which period, measured how.
 
 ---
+
+## Reading The Original And The Converse Together
+
+The original (`A ⇒ B`) asks whether A is enough for B. The converse (`B ⇒ A`) asks whether B needs A.
+Reading the two verdicts side by side tells where to look next. It is a **reading**, not a verdict: it never changes an exit code.
+
+| Reading | Original | Converse | What it says |
+|---|---|---|---|
+| 0 | supported | supported | close to equivalence; the counterexamples on either side are where A and B part |
+| 1 | supported | refined or rejected | sufficient, not necessary: other units reach B without A |
+| 2 | refined or rejected | supported | necessary, not sufficient: A alone does not reach B |
+| 3 | neither supported, one refined | | a relationship weaker than claimed in both directions |
+| 4 | rejected | rejected | neither direction holds |
+| 5 | either inconclusive | | add units before reading |
+| 6 | converse skipped | | one direction only |
+
+"Supported" here means the form's exit code is 0 or 1. Exit code 5 means undetermined units remain; like code 4, it maps to reading 5 and must not strengthen the reading. The readings are numbers; words are only their rendering.
+
+Each reading carries two lists of seeds, taken from the counterexamples:
+
+- **narrow** — counterexamples of the original (A and not B): units where A was not enough. Candidates for a missing condition (*and*) or a narrower scope (`where`).
+- **route** — counterexamples of the converse (B and not A): units that reached B without A. Candidates for another route (*or*).
+
+For each list the most frequent unit group (one team, one season) is shown, as a hint for Split. Splitting stays a human decision.
+
+A seed is material, not a verdict. A proposition written from seeds is a new proposition: it is pre-registered under a new ID, and the units it came from are declared in `motivated_by`, so that it is read from its held-out evaluation.
+
+```bash
+python pythdragoras/propositions.py next outputs/propositions.jsonl              # every proposition
+python pythdragoras/propositions.py next outputs/propositions.jsonl --reading 1 2 # sufficient-only and necessary-only
+```
 
 # Ledger
 

@@ -14,6 +14,9 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 
 [PR #3 の訂正・未検証事項の引き継ぎ](research/PR3_FOLLOWUP.md)は、2026-10-04時点の履歴です。F1〜F7の現在の完了監査や、研究成果全体のmain統合を表すものではありません。
 
+cycle-001/chunichi 先端の続き（R27以降の別系列、P115以降、追加の派生列、branch 側の pipeline）は [from-cycle-001/README.md](from-cycle-001/README.md) に、正本の入力ハッシュと P1〜P114 の判定を書き換えずに置いてあります。正本の `season.jsonl`・`analysis.toml`・`propositions.toml` は LittleBit holdout の固定入力のままです。
+
+
 数え方の注意（結論を書くときに、どれで言っているかを必ず明示する）:
 
 - CS 進出の条件は、6球団リーグでは3位以内。判定で使う `upper_half`（上位半分）と一致する
@@ -78,6 +81,11 @@ GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main �
 | `summary.md` | 検証記録。観測した数だけを書き、原因は書かない |
 | `objections.md` | 命題ごとの判定と「異議あり」（判例の一覧、除外中の判例） |
 | `propositions.jsonl` | 同じ内容の機械向け形式（命題ファイルの SHA-256 とコードの版つき） |
+| `sets.md` / `sets.jsonl` / `sets.junit.xml` | 命題の集合の式（branch 側 R48）。正本の命題判定とは別ファイル |
+| `next.md` / `next.jsonl` | 次の命題の種。判定ではない |
+| `observed_fielding.md` / `observed_linescore.md` | 守備・イニング得点の構造確認 |
+| `provisional/` | 2026年の暫定観測。本体の集計へは入れない |
+| `fetched/` | branch 側が残した取得台帳。正本の `data/` キャッシュとは別 |
 | `claims.json` | 外部の主張の再現結果 |
 | `allocation.jsonl` | 配分効果の期間合計（R1） |
 | `persistence.jsonl` | 隣り合うシーズンの相関（配分効果・ピタゴラスのずれ・勝率） |

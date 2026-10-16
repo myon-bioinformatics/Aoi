@@ -1,0 +1,2425 @@
+{
+  "games_sha256": "7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9",
+  "checks": [
+    {
+      "year": 2013,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2013,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2014,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2015,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2016,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2017,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2018,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2019,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2020,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2021,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2022,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2023,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2024,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "t",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "db",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "g",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "d",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "c",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "s",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "h",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "f",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "b",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "e",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "l",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    },
+    {
+      "year": 2025,
+      "team": "m",
+      "fields": [
+        "g",
+        "w",
+        "l",
+        "d",
+        "r",
+        "ra"
+      ],
+      "match": true,
+      "differences": {}
+    }
+  ],
+  "sources": [
+    {
+      "key": "central_2013",
+      "url": "https://npb.jp/bis/yearly/centralleague_2013.html",
+      "status": 200,
+      "sha256": "660303312ad5174e12eb4913833f0c8878a8de7f763225e4b81c93ab84de86ba",
+      "bytes": 52422,
+      "fetched_at": "2026-10-03T11:58:25+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2013",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2013.html",
+      "status": 200,
+      "sha256": "a277faf00c498e8915137162a883e70f90cae6ffea123056adad18f1d2a463fa",
+      "bytes": 52655,
+      "fetched_at": "2026-10-03T11:58:28+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2014",
+      "url": "https://npb.jp/bis/yearly/centralleague_2014.html",
+      "status": 200,
+      "sha256": "63c81bc5799827bcd95bf65214e8cb98b6ffc86fee188d19c55b0ff9ede47ecc",
+      "bytes": 52599,
+      "fetched_at": "2026-10-03T11:58:32+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2014",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2014.html",
+      "status": 200,
+      "sha256": "c0024467adb7d2e2127df53172df43e27fe4da3bc900e8af1c3c3d535458df8e",
+      "bytes": 52866,
+      "fetched_at": "2026-10-03T11:58:36+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2015",
+      "url": "https://npb.jp/bis/yearly/centralleague_2015.html",
+      "status": 200,
+      "sha256": "ea23831d5f86ce0489abaa9c932bfa1f24265bdcf6ea428e93a99da8b3bbbfc1",
+      "bytes": 52217,
+      "fetched_at": "2026-10-03T11:58:40+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2015",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2015.html",
+      "status": 200,
+      "sha256": "ba314918a758977c13608744e97bb9e3c6989f240fe501ba03221f50c5e294f2",
+      "bytes": 52699,
+      "fetched_at": "2026-10-03T11:58:44+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2016",
+      "url": "https://npb.jp/bis/yearly/centralleague_2016.html",
+      "status": 200,
+      "sha256": "2cb4bcb3f9f35c09cde85dba33e0fdab60f52d655300e8cd9e495ca1f95b7d0b",
+      "bytes": 52219,
+      "fetched_at": "2026-10-03T11:58:47+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2016",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2016.html",
+      "status": 200,
+      "sha256": "fae81d7522289f15363d2e34958949c2428e1e3e58e013483e2852b360b41c00",
+      "bytes": 52855,
+      "fetched_at": "2026-10-03T11:58:51+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2017",
+      "url": "https://npb.jp/bis/yearly/centralleague_2017.html",
+      "status": 200,
+      "sha256": "47a835f6a0edede9e4171b9b144514d9e1adf51fac4675b43489ca82e94365dc",
+      "bytes": 52189,
+      "fetched_at": "2026-10-03T11:58:54+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2017",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2017.html",
+      "status": 200,
+      "sha256": "964cb0f62407e34782e1db88de782146593055758fc84b9189efe68bef6ebd91",
+      "bytes": 52832,
+      "fetched_at": "2026-10-03T11:58:58+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2018",
+      "url": "https://npb.jp/bis/yearly/centralleague_2018.html",
+      "status": 200,
+      "sha256": "b7dac76924ab4697a11f46711b36f6d2bf664da189bd5bd8d2fe22adb0e9d028",
+      "bytes": 51475,
+      "fetched_at": "2026-10-03T11:59:02+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2018",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2018.html",
+      "status": 200,
+      "sha256": "48c8a99b7e64018b63b110193f6e43cc32f85a34f8fedf8ba78a4621245b8cb8",
+      "bytes": 52011,
+      "fetched_at": "2026-10-03T11:59:05+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2019",
+      "url": "https://npb.jp/bis/yearly/centralleague_2019.html",
+      "status": 200,
+      "sha256": "6cb2081d1c29cc563fc911d2d98d9af4a4006d544c3de8e8e99e834c4d333f8b",
+      "bytes": 51712,
+      "fetched_at": "2026-10-03T11:59:09+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2019",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2019.html",
+      "status": 200,
+      "sha256": "09cfaa4a43b6174d582bc0828a227f1cba7d05a3c64429e72ca9888b0ec6821a",
+      "bytes": 50613,
+      "fetched_at": "2026-10-03T11:59:13+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2020",
+      "url": "https://npb.jp/bis/yearly/centralleague_2020.html",
+      "status": 200,
+      "sha256": "a428baf8b71414bb0aa4eca08839386795b7c0bcec4833e7b4577ebcf36cc494",
+      "bytes": 50245,
+      "fetched_at": "2026-10-03T11:59:17+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2020",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2020.html",
+      "status": 200,
+      "sha256": "017e47b2e17fe6071318d1050ef3ce249b0a88ea41a4e229125db0888dfceaed",
+      "bytes": 52075,
+      "fetched_at": "2026-10-03T11:59:20+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2021",
+      "url": "https://npb.jp/bis/yearly/centralleague_2021.html",
+      "status": 200,
+      "sha256": "dbebb4ad2135f0288e3d1e2953efe67aafe89125451bcc0e52801d94075f198b",
+      "bytes": 52553,
+      "fetched_at": "2026-10-03T11:59:24+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2021",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2021.html",
+      "status": 200,
+      "sha256": "2b6df5babb8fb511fb2a763379fb5e833432169fc21c2db96c89a202aba86191",
+      "bytes": 53110,
+      "fetched_at": "2026-10-03T11:59:27+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2022",
+      "url": "https://npb.jp/bis/yearly/centralleague_2022.html",
+      "status": 200,
+      "sha256": "c46bbd1b60f3fb4ebf9694ea422f3d3b77e046b22a6373c1de901aee34a07bab",
+      "bytes": 52206,
+      "fetched_at": "2026-10-03T11:59:31+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2022",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2022.html",
+      "status": 200,
+      "sha256": "47d13db6d5cfa0a32e75803965e2b7719be0d347bccc7241125f15fabc46c76c",
+      "bytes": 52046,
+      "fetched_at": "2026-10-03T11:59:34+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2023",
+      "url": "https://npb.jp/bis/yearly/centralleague_2023.html",
+      "status": 200,
+      "sha256": "e362e61b7e322b7b9f354140d48b76b4e4699cdb4b5b9a1bead1effcb4376278",
+      "bytes": 52172,
+      "fetched_at": "2026-10-03T11:59:38+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "pacific_2023",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2023.html",
+      "status": 200,
+      "sha256": "f39413cf43b8a63dc121d3a62bb863eed7b21185f9cc7e0665a5e23cbcca6392",
+      "bytes": 52685,
+      "fetched_at": "2026-10-03T11:59:42+00:00",
+      "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+    },
+    {
+      "key": "central_2024",
+      "url": "https://npb.jp/bis/yearly/centralleague_2024.html",
+      "status": 200,
+      "sha256": "cbe8a8d23e09c5d3c96e53eb31711ccb62b1a21734fef9c82f8ad48269f6c136",
+      "bytes": 52207,
+      "fetched_at": "2026-10-03T11:59:46+00:00",
+      "code_version": "ff4203b8438c0214570bfeaf0ef363f31eba0f35"
+    },
+    {
+      "key": "pacific_2024",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2024.html",
+      "status": 200,
+      "sha256": "4a12f81f2ef4ac0d904f580dc0fd069804bee0d95019f196ded1c71177070c78",
+      "bytes": 52713,
+      "fetched_at": "2026-10-03T11:59:50+00:00",
+      "code_version": "ff4203b8438c0214570bfeaf0ef363f31eba0f35"
+    },
+    {
+      "key": "central_2025",
+      "url": "https://npb.jp/bis/yearly/centralleague_2025.html",
+      "status": 200,
+      "sha256": "3ec007e93cf71acc7cccc2335cc040437d8783202401550148ec3913103134dd",
+      "bytes": 52318,
+      "fetched_at": "2026-10-03T11:59:54+00:00",
+      "code_version": "ff4203b8438c0214570bfeaf0ef363f31eba0f35"
+    },
+    {
+      "key": "pacific_2025",
+      "url": "https://npb.jp/bis/yearly/pacificleague_2025.html",
+      "status": 200,
+      "sha256": "ff81a0e982c4bf691fbd15083523916867dc146fbc02a1fe3bcd0c5137d75cc3",
+      "bytes": 52673,
+      "fetched_at": "2026-10-03T11:59:57+00:00",
+      "code_version": "ff4203b8438c0214570bfeaf0ef363f31eba0f35"
+    }
+  ]
+}

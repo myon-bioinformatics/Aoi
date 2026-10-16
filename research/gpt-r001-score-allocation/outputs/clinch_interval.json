@@ -1,0 +1,6571 @@
+{
+  "cutoff_date": "2022-09-27",
+  "input_rows": 424702,
+  "input_sha256": "0e98d6ce001eaca565378814a551d8b694e66dff7f4ef856d4e636e39bb87beb",
+  "interval_rows": [
+    {
+      "binomial_upper_p": 0.00020122528076171875,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.9491324812536969,
+          "lo": 0.812772280651065,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.9721335187862319,
+          "lo": 0.6989663547715128,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.9727766710890127,
+          "lo": 0.6938899955776541,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9840477082499804,
+          "lo": 0.567676429681054,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 18,
+      "n": 20,
+      "proposition": "P11",
+      "rate": 0.9,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0197482591553725e-20,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.9871241450004883,
+          "lo": 0.9495847157590055,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.9929399065272408,
+          "lo": 0.9112472996432415,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.9931020278930662,
+          "lo": 0.9093369964971776,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9959451956609308,
+          "lo": 0.8546295169827473,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 76,
+      "n": 78,
+      "proposition": "P11",
+      "rate": 0.9743589743589743,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9999997168130187,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.281702335418449,
+          "lo": 0.1866520949612979,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.3355575782628359,
+          "lo": 0.15125508850526875,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.3378797732560465,
+          "lo": 0.14992510479273402,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.396965559554751,
+          "lo": 0.12027581975559384,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 18,
+      "n": 78,
+      "proposition": "P11",
+      "rate": 0.23076923076923078,
+      "reported_verdict": "修正",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.09909067068148433,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6008175608008801,
+          "lo": 0.5159707603670032,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6395185382831157,
+          "lo": 0.47489674410116867,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6410881889218846,
+          "lo": 0.4731975253638297,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6789294358871694,
+          "lo": 0.4314153916990376,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 76,
+      "n": 136,
+      "proposition": "P11",
+      "rate": 0.5588235294117647,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.4252770096063614,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6271014565367643,
+          "lo": 0.4418640607046149,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7046843001720462,
+          "lo": 0.358126892344679,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.707631663081593,
+          "lo": 0.354868336918407,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7731489887360128,
+          "lo": 0.28090506531804116,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 28,
+      "proposition": "P12",
+      "rate": 0.5357142857142857,
+      "reported_verdict": "判断保留",
+      "undetermined": 12
+    },
+    {
+      "binomial_upper_p": 1.904298924187209e-08,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8603004857446552,
+          "lo": 0.7698365005567147,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.891331834899801,
+          "lo": 0.7151965826080176,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.892463592755544,
+          "lo": 0.7127995651391927,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9169892719892117,
+          "lo": 0.6509119625786894,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 59,
+      "n": 72,
+      "proposition": "P12",
+      "rate": 0.8194444444444444,
+      "reported_verdict": "支持",
+      "undetermined": 12
+    },
+    {
+      "binomial_upper_p": 0.9999999176784994,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.26002872697665796,
+          "lo": 0.1646288072699174,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.31569263419359334,
+          "lo": 0.13052054982100708,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.31810986904215344,
+          "lo": 0.12925855201047814,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.3799379294293788,
+          "lo": 0.10154355205210275,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 72,
+      "proposition": "P12",
+      "rate": 0.20833333333333334,
+      "reported_verdict": "棄却",
+      "undetermined": 12
+    },
+    {
+      "binomial_upper_p": 0.46303888165742824,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.554765212576275,
+          "lo": 0.462328804517742,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5978503396940331,
+          "lo": 0.41883837571114535,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5996073093468609,
+          "lo": 0.4170593573198057,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6421455719834188,
+          "lo": 0.37385442801658114,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 59,
+      "n": 116,
+      "proposition": "P12",
+      "rate": 0.5086206896551724,
+      "reported_verdict": "判断保留",
+      "undetermined": 12
+    },
+    {
+      "binomial_upper_p": 0.01980850744924984,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6981224630119263,
+          "lo": 0.5760710853751705,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.748258884801255,
+          "lo": 0.5139190536533693,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7501981431320164,
+          "lo": 0.5113403184064451,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7945394618854715,
+          "lo": 0.44831768097167135,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 39,
+      "n": 61,
+      "proposition": "P13",
+      "rate": 0.639344262295082,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.2464169354635224e-08,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8166666666666667,
+          "lo": 0.7333333333333334,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8484189816804965,
+          "lo": 0.6863847893929328,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8496255361475968,
+          "lo": 0.684355046376675,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8768553590967045,
+          "lo": 0.6324039001625548,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 77,
+      "n": 99,
+      "proposition": "P13",
+      "rate": 0.7777777777777778,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.003754087767075101,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7421521678014568,
+          "lo": 0.6199167977157846,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7899571236117475,
+          "lo": 0.5552022530213656,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7917731355421084,
+          "lo": 0.5524891595398588,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8325688798842845,
+          "lo": 0.48561293829753366,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 39,
+      "n": 57,
+      "proposition": "P13",
+      "rate": 0.6842105263157895,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 3.6261610802592863e-10,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8474187889985437,
+          "lo": 0.7671645443347895,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8766514777088381,
+          "lo": 0.7202640343034892,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.877744459696206,
+          "lo": 0.7182151362633901,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.902026714737898,
+          "lo": 0.6652809775697943,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 77,
+      "n": 95,
+      "proposition": "P13",
+      "rate": 0.8105263157894737,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9998614192008972,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.25571877794400366,
+          "lo": 0.10428122205599634,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.3585307064969906,
+          "lo": 0.06678676328632951,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.3629761428190095,
+          "lo": 0.06559528575241907,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.47238555876905797,
+          "lo": 0.04276595638245717,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 4,
+      "n": 24,
+      "proposition": "P16",
+      "rate": 0.16666666666666666,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.325793913604457,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.618678278895649,
+          "lo": 0.4702106099932398,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6829476585777909,
+          "lo": 0.40066183198961974,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6854564613341083,
+          "lo": 0.39787687199922495,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.743068648741634,
+          "lo": 0.3324030493715735,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 24,
+      "n": 44,
+      "proposition": "P16",
+      "rate": 0.5454545454545454,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.63671875,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6666666666666666,
+          "lo": 0.33333333333333337,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7847839377861224,
+          "lo": 0.21521606221387757,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7886751345948129,
+          "lo": 0.21132486540518713,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8638034375544994,
+          "lo": 0.13619656244550055,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 4,
+      "n": 8,
+      "proposition": "P16",
+      "rate": 0.5,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 8.999556303024292e-05,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.9109641457246184,
+          "lo": 0.7786910266891746,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.9430099468025059,
+          "lo": 0.685101978364747,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.9440260702022878,
+          "lo": 0.6809739297977122,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9634844863043893,
+          "lo": 0.5770560542361513,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 24,
+      "n": 28,
+      "proposition": "P16",
+      "rate": 0.8571428571428571,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9999820560419352,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.2939450146868663,
+          "lo": 0.1777530985206809,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.3613378255809984,
+          "lo": 0.13724260925492748,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.364234191682922,
+          "lo": 0.13576580831707813,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.43713090407997746,
+          "lo": 0.1038527024773995,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 12,
+      "n": 52,
+      "proposition": "P20",
+      "rate": 0.23076923076923078,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.02439024390243903,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.08762160119728664,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.09090909090909091,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.18367346938775508,
+          "lo": 0,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 40,
+      "proposition": "P20",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0010440536669982237,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7881461471843977,
+          "lo": 0.6608334446523371,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8343404237254355,
+          "lo": 0.5900303501775939,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8360443884586861,
+          "lo": 0.587032534618237,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8732344086669694,
+          "lo": 0.5127305036137322,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 35,
+      "n": 48,
+      "proposition": "P23",
+      "rate": 0.7291666666666666,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.07142857142857144,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.22809537235419838,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.23529411764705882,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.40909090909090906,
+          "lo": 0,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 13,
+      "proposition": "P23",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0012816039961762726,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.819926805870366,
+          "lo": 0.680073194129634,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8663864701088361,
+          "lo": 0.5988270787855735,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8680381845946865,
+          "lo": 0.5953764495516549,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9028337873415031,
+          "lo": 0.5102096909193665,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 28,
+      "n": 37,
+      "proposition": "P30",
+      "rate": 0.7567567567567568,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.09999999999999999,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.2991450484195441,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.30769230769230765,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 9,
+      "proposition": "P30",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.003952590013929889,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7099475954957876,
+          "lo": 0.6017407161925242,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7546367318250531,
+          "lo": 0.5459589781543774,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7563756996389881,
+          "lo": 0.543624300361012,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7964515890432485,
+          "lo": 0.48590135213322216,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 50,
+      "n": 76,
+      "proposition": "P35",
+      "rate": 0.6578947368421053,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.012230453664162188,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6932360045422599,
+          "lo": 0.5807365981974661,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7401832029382592,
+          "lo": 0.5235248046738358,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.742014722035212,
+          "lo": 0.52114317270163,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7843063484048813,
+          "lo": 0.4626072318420323,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 46,
+      "n": 72,
+      "proposition": "P35",
+      "rate": 0.6388888888888888,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0006467924813381441,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.745760686838068,
+          "lo": 0.6378009569975485,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7887336902480474,
+          "lo": 0.5804575204088857,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7903834950606159,
+          "lo": 0.5780375575709631,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8278994652725984,
+          "lo": 0.5177795470730806,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 50,
+      "n": 72,
+      "proposition": "P35",
+      "rate": 0.6944444444444444,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0024516912581779666,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.730290326254833,
+          "lo": 0.6175357607016887,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7756239590467001,
+          "lo": 0.5584449810050397,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7773685273591786,
+          "lo": 0.5559648059741549,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8171087529406846,
+          "lo": 0.4945795587476272,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 46,
+      "n": 68,
+      "proposition": "P35",
+      "rate": 0.6764705882352942,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9368264620930393,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.47308313294244964,
+          "lo": 0.33823762177453165,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5393242451513848,
+          "lo": 0.2815973387185887,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5420303806816895,
+          "lo": 0.2793981907468819,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6070365094092831,
+          "lo": 0.22902906436120868,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 21,
+      "n": 52,
+      "proposition": "P37",
+      "rate": 0.40384615384615385,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.03125,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.11025539546043596,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.1142857142857143,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.225,
+          "lo": 2.7755575615628914e-17,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 31,
+      "proposition": "P37",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 3.920786184608005e-07,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.9203362508700526,
+          "lo": 0.8177589872251856,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.9467666353142228,
+          "lo": 0.7445578847902312,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.9476306613672608,
+          "lo": 0.7412582275216281,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.96461202426972,
+          "lo": 0.6553879757302801,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 36,
+      "n": 41,
+      "proposition": "P47",
+      "rate": 0.8780487804878049,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.16666666666666669,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.43448246478317476,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.4444444444444445,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6428571428571428,
+          "lo": 5.551115123125783e-17,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 5,
+      "proposition": "P47",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.27062809467315674,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.678657657246325,
+          "lo": 0.48134234275367516,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7553239739018824,
+          "lo": 0.3883466586522876,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7581474659685492,
+          "lo": 0.38470967688859387,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8190715471095755,
+          "lo": 0.30214057410254574,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 24,
+      "proposition": "P54",
+      "rate": 0.5833333333333334,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P54",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P54",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.28579409420490265,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6608938798350813,
+          "lo": 0.47703715464767715,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.734914528758763,
+          "lo": 0.3907078562746876,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7376912220566838,
+          "lo": 0.3873087779433162,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7987408900495476,
+          "lo": 0.3093672180585605,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 28,
+      "proposition": "P54",
+      "rate": 0.5714285714285714,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.8365302085876465,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5210480685173592,
+          "lo": 0.33080378333449256,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6105138625340828,
+          "lo": 0.2554444331365656,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6140252607943372,
+          "lo": 0.2526414058723295,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6941645562228429,
+          "lo": 0.19154972949144272,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 11,
+      "n": 26,
+      "proposition": "P55",
+      "rate": 0.4230769230769231,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.8365302085876465,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5210480685173592,
+          "lo": 0.33080378333449256,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6105138625340828,
+          "lo": 0.2554444331365656,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6140252607943372,
+          "lo": 0.2526414058723295,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6941645562228429,
+          "lo": 0.19154972949144272,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 11,
+      "n": 26,
+      "proposition": "P55",
+      "rate": 0.4230769230769231,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.8365302085876465,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5210480685173592,
+          "lo": 0.33080378333449256,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6105138625340828,
+          "lo": 0.2554444331365656,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6140252607943372,
+          "lo": 0.2526414058723295,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6941645562228429,
+          "lo": 0.19154972949144272,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 11,
+      "n": 26,
+      "proposition": "P55",
+      "rate": 0.4230769230769231,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.8365302085876465,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5210480685173592,
+          "lo": 0.33080378333449256,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6105138625340828,
+          "lo": 0.2554444331365656,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6140252607943372,
+          "lo": 0.2526414058723295,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6941645562228429,
+          "lo": 0.19154972949144272,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 11,
+      "n": 26,
+      "proposition": "P55",
+      "rate": 0.4230769230769231,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.017849069088697433,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7911099556516195,
+          "lo": 0.6226831477966563,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8474600394333092,
+          "lo": 0.5294071156670428,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8494496173858666,
+          "lo": 0.5255503826141334,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8909816169707152,
+          "lo": 0.43334270735360914,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 20,
+      "n": 28,
+      "proposition": "P56",
+      "rate": 0.7142857142857143,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.03775934875011444,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7742934140913584,
+          "lo": 0.5960769562790118,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8349868440453624,
+          "lo": 0.5001174167780164,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8371361039855862,
+          "lo": 0.496197229347747,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8820669881363306,
+          "lo": 0.40364729757795503,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 18,
+      "n": 26,
+      "proposition": "P56",
+      "rate": 0.6923076923076923,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0046776533126831055,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8409541365181747,
+          "lo": 0.6775643820003439,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8896615059421671,
+          "lo": 0.5794844592105632,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8913120184692245,
+          "lo": 0.5753546481974425,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9245875340252891,
+          "lo": 0.47541246597471076,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 20,
+      "n": 26,
+      "proposition": "P56",
+      "rate": 0.7692307692307693,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.011327922344207764,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8271779788708135,
+          "lo": 0.6528220211291865,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8800063377140499,
+          "lo": 0.55100555994846,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8818005628508367,
+          "lo": 0.5467708657205919,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9180069283048469,
+          "lo": 0.44562943533151667,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 18,
+      "n": 24,
+      "proposition": "P56",
+      "rate": 0.75,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P57",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P57",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P57",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P57",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P58",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P58",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P58",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P58",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P59",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P59",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P59",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.42250949144363403,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6329875448378854,
+          "lo": 0.4410865292361885,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7124414646960878,
+          "lo": 0.35457938746858797,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.715438778508356,
+          "lo": 0.35122788815831085,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7815598467202154,
+          "lo": 0.2755830104226416,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 14,
+      "n": 26,
+      "proposition": "P59",
+      "rate": 0.5384615384615384,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2785985469818115,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6691962166655074,
+          "lo": 0.47895193148264076,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7445555668634343,
+          "lo": 0.3894861374659171,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7473585941276705,
+          "lo": 0.38597473920566283,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8084502705085572,
+          "lo": 0.30583544377715693,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 26,
+      "proposition": "P66",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2785985469818115,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6691962166655074,
+          "lo": 0.47895193148264076,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7445555668634343,
+          "lo": 0.3894861374659171,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7473585941276705,
+          "lo": 0.38597473920566283,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8084502705085572,
+          "lo": 0.30583544377715693,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 26,
+      "proposition": "P66",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2785985469818115,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6691962166655074,
+          "lo": 0.47895193148264076,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7445555668634343,
+          "lo": 0.3894861374659171,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7473585941276705,
+          "lo": 0.38597473920566283,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8084502705085572,
+          "lo": 0.30583544377715693,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 26,
+      "proposition": "P66",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2785985469818115,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6691962166655074,
+          "lo": 0.47895193148264076,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7445555668634343,
+          "lo": 0.3894861374659171,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7473585941276705,
+          "lo": 0.38597473920566283,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8084502705085572,
+          "lo": 0.30583544377715693,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 26,
+      "proposition": "P66",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2785985469818115,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6691962166655074,
+          "lo": 0.47895193148264076,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7445555668634343,
+          "lo": 0.3894861374659171,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7473585941276705,
+          "lo": 0.38597473920566283,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8084502705085572,
+          "lo": 0.30583544377715693,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 26,
+      "proposition": "P67",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2785985469818115,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6691962166655074,
+          "lo": 0.47895193148264076,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7445555668634343,
+          "lo": 0.3894861374659171,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7473585941276705,
+          "lo": 0.38597473920566283,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8084502705085572,
+          "lo": 0.30583544377715693,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 26,
+      "proposition": "P67",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2785985469818115,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6691962166655074,
+          "lo": 0.47895193148264076,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7445555668634343,
+          "lo": 0.3894861374659171,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7473585941276705,
+          "lo": 0.38597473920566283,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8084502705085572,
+          "lo": 0.30583544377715693,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 26,
+      "proposition": "P67",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2785985469818115,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6691962166655074,
+          "lo": 0.47895193148264076,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7445555668634343,
+          "lo": 0.3894861374659171,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7473585941276705,
+          "lo": 0.38597473920566283,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8084502705085572,
+          "lo": 0.30583544377715693,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 15,
+      "n": 26,
+      "proposition": "P67",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P68",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P68",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P68",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.16346979141235352,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7048363769207748,
+          "lo": 0.5173858453014475,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7757140556428721,
+          "lo": 0.4253485008511553,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7783111656483459,
+          "lo": 0.42168883435165433,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8341947541038849,
+          "lo": 0.3372338173246866,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 16,
+      "n": 26,
+      "proposition": "P68",
+      "rate": 0.6153846153846154,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2983208801865413,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6085079585446024,
+          "lo": 0.4776989380071218,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6662739441690716,
+          "lo": 0.41590685979119335,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6685593567060906,
+          "lo": 0.4134078564086636,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7219015074449175,
+          "lo": 0.35385606831265815,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 31,
+      "n": 57,
+      "proposition": "P72",
+      "rate": 0.543859649122807,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0015915053144175358,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7213288663204552,
+          "lo": 0.6161711336795447,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7644579961820298,
+          "lo": 0.5614657669235915,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7661333934365473,
+          "lo": 0.5591678113827299,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8046937676986498,
+          "lo": 0.5021244141195321,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 53,
+      "n": 79,
+      "proposition": "P72",
+      "rate": 0.6708860759493671,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9662253742704866,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.45938943399480336,
+          "lo": 0.34830287369750446,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5142314683205054,
+          "lo": 0.3002201729682805,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.516495941161439,
+          "lo": 0.29831887365337584,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5717681820727103,
+          "lo": 0.253813213276127,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 31,
+      "n": 77,
+      "proposition": "P72",
+      "rate": 0.4025974025974026,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.2733567417994065,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5848761091368029,
+          "lo": 0.48512389086319724,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6304350427772756,
+          "lo": 0.437630891722979,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.632276483390793,
+          "lo": 0.4356846816577507,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6764138550571874,
+          "lo": 0.38840095975762745,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 53,
+      "n": 99,
+      "proposition": "P72",
+      "rate": 0.5353535353535354,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0006317797362177316,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7746397686026526,
+          "lo": 0.6563947141559682,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8192060065617645,
+          "lo": 0.5916980132395605,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8208778434945375,
+          "lo": 0.588958222079233,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8579976603820674,
+          "lo": 0.5207902184058115,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 41,
+      "n": 57,
+      "proposition": "P73",
+      "rate": 0.7192982456140351,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.8206993138943986e-08,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8429017348378454,
+          "lo": 0.7546592407719108,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8745917318129888,
+          "lo": 0.7029560930488834,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8757682041452717,
+          "lo": 0.7007023840900224,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9017062674549137,
+          "lo": 0.6427381769895308,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 65,
+      "n": 81,
+      "proposition": "P73",
+      "rate": 0.8024691358024691,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.24434148545157167,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6031595116595405,
+          "lo": 0.48894575149835423,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6543020361586779,
+          "lo": 0.4344837385429269,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6563463954822126,
+          "lo": 0.4322611994544962,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7046923730824983,
+          "lo": 0.37864096025083493,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 41,
+      "n": 75,
+      "proposition": "P73",
+      "rate": 0.5466666666666666,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0011973146787530049,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7025112958392342,
+          "lo": 0.6074887041607658,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7426786835425114,
+          "lo": 0.5587561692443306,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7442604514240585,
+          "lo": 0.5567104223623494,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7812168388056646,
+          "lo": 0.5058201982313724,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 65,
+      "n": 99,
+      "proposition": "P73",
+      "rate": 0.6565656565656566,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.80615234375,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5599625416927092,
+          "lo": 0.2861913044611371,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6804886874504503,
+          "lo": 0.19326031365875665,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.68488212681329,
+          "lo": 0.19011787318671014,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.777099564213949,
+          "lo": 0.1276623405479559,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 5,
+      "n": 12,
+      "proposition": "P76",
+      "rate": 0.4166666666666667,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.125,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.35433043506668743,
+          "lo": 5.551115123125783e-17,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.36363636363636365,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5625000000000001,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 7,
+      "proposition": "P76",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.88671875,
+      "form": "きっかけ以外",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5143301072556783,
+          "lo": 0.23566989274432185,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6461988254921511,
+          "lo": 0.15166471095367573,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.651058365784339,
+          "lo": 0.1489416342156608,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7534778946485245,
+          "lo": 0.09652210535147526,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 4,
+      "n": 11,
+      "proposition": "P76",
+      "rate": 0.36363636363636365,
+      "reported_verdict": null,
+      "undetermined": null
+    },
+    {
+      "binomial_upper_p": 0.63671875,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6666666666666666,
+          "lo": 0.33333333333333337,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7847839377861224,
+          "lo": 0.21521606221387757,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7886751345948129,
+          "lo": 0.21132486540518713,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8638034375544994,
+          "lo": 0.13619656244550055,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 4,
+      "n": 8,
+      "proposition": "P77",
+      "rate": 0.5,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.2,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.4898908364545973,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5,
+          "lo": 0,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6923076923076923,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 4,
+      "proposition": "P77",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.7734375,
+      "form": "きっかけ以外",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6126912220566838,
+          "lo": 0.2623087779433162,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7495416354723428,
+          "lo": 0.15821985525146975,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7540925349265142,
+          "lo": 0.15499837416439483,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.842072139234813,
+          "lo": 0.09542786076518694,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 3,
+      "n": 7,
+      "proposition": "P77",
+      "rate": 0.42857142857142855,
+      "reported_verdict": null,
+      "undetermined": null
+    },
+    {
+      "binomial_upper_p": 0.03515625,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.9511844635310913,
+          "lo": 0.7154822031355754,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.9775825085499433,
+          "lo": 0.5291118177871464,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.9782177322938193,
+          "lo": 0.5217822677061807,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9884294622881828,
+          "lo": 0.3645117141824055,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 7,
+      "n": 8,
+      "proposition": "P78",
+      "rate": 0.875,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5,
+          "lo": 0,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7934506856227626,
+          "lo": 0,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8,
+          "lo": 0,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 1,
+      "proposition": "P78",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0625,
+      "form": "きっかけ以外",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.9440260702022878,
+          "lo": 0.6809739297977122,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.9743203756552565,
+          "lo": 0.4868721707256811,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.9750491432251807,
+          "lo": 0.47949631132027387,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9867579289085643,
+          "lo": 0.3257420710914357,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 6,
+      "n": 7,
+      "proposition": "P78",
+      "rate": 0.8571428571428571,
+      "reported_verdict": null,
+      "undetermined": null
+    },
+    {
+      "binomial_upper_p": 0.003276648835141887,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7093156313839496,
+          "lo": 0.6031843686160504,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7532902678097645,
+          "lo": 0.5484909943250701,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7550044372244659,
+          "lo": 0.5462003820526425,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7945890429715603,
+          "lo": 0.48950186611934865,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 52,
+      "n": 79,
+      "proposition": "P79",
+      "rate": 0.6582278481012658,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.013258416275342418,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6889489165191014,
+          "lo": 0.5777177501475652,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7356143570713729,
+          "lo": 0.5213181349836578,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7374390533089569,
+          "lo": 0.5189712031012995,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.779676736223289,
+          "lo": 0.46128711919839765,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 47,
+      "n": 74,
+      "proposition": "P79",
+      "rate": 0.6351351351351351,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.009913457922920798,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6854248293985027,
+          "lo": 0.5796354115653527,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7302137496580033,
+          "lo": 0.52607266837636,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.731973535727864,
+          "lo": 0.523840417760508,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7729368229679526,
+          "lo": 0.46882141879028916,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 52,
+      "n": 82,
+      "proposition": "P79",
+      "rate": 0.6341463414634146,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.03377462572951339,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6642093305898457,
+          "lo": 0.5537393873588722,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7115774709359347,
+          "lo": 0.4987106689367745,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7134446075597995,
+          "lo": 0.49643193565007704,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7570174344047891,
+          "lo": 0.440656984199862,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 47,
+      "n": 77,
+      "proposition": "P79",
+      "rate": 0.6103896103896104,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.61279296875,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6386750490563073,
+          "lo": 0.3613249509436927,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7462184023662939,
+          "lo": 0.2537815976337061,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.75,
+          "lo": 0.25,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8273268353539885,
+          "lo": 0.17267316464601146,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 6,
+      "n": 12,
+      "proposition": "P80",
+      "rate": 0.5,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.14285714285714285,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.3903342879021653,
+          "lo": 2.7755575615628914e-17,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.4,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 6,
+      "proposition": "P80",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.7255859375,
+      "form": "きっかけ以外",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.602123128000775,
+          "lo": 0.3145435386658917,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.719908462590678,
+          "lo": 0.21271271622459764,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7240819464435793,
+          "lo": 0.20925138688975392,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8096470325038552,
+          "lo": 0.14035296749614473,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 5,
+      "n": 11,
+      "proposition": "P80",
+      "rate": 0.45454545454545453,
+      "reported_verdict": null,
+      "undetermined": null
+    },
+    {
+      "binomial_upper_p": 0.22498126814511124,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6168065648014405,
+          "lo": 0.4925684351985596,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.671529039881082,
+          "lo": 0.43319638238682345,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6736970708033204,
+          "lo": 0.43078054113697817,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.724430401405169,
+          "lo": 0.3727918208170533,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 35,
+      "n": 63,
+      "proposition": "P81",
+      "rate": 0.5555555555555556,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.07401609034637918,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6515637484713226,
+          "lo": 0.5341505372429631,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7021109135870279,
+          "lo": 0.476358878348368,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7041020257117101,
+          "lo": 0.4739801660691118,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.750487025319794,
+          "lo": 0.4161796413468727,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 41,
+      "n": 69,
+      "proposition": "P81",
+      "rate": 0.5942028985507246,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.7556585145484284,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5243332822399117,
+          "lo": 0.40987724407587767,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5784246261091504,
+          "lo": 0.35815696338970343,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5806256092459923,
+          "lo": 0.35608325151350156,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6335764611191932,
+          "lo": 0.306899729356997,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 35,
+      "n": 75,
+      "proposition": "P81",
+      "rate": 0.4666666666666667,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.5,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.561309167295066,
+          "lo": 0.45088595465615355,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6122788432301242,
+          "lo": 0.3995078470731793,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6143397046415244,
+          "lo": 0.3974250012408285,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6636585936184555,
+          "lo": 0.3474525174926556,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 41,
+      "n": 81,
+      "proposition": "P81",
+      "rate": 0.5061728395061729,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.34944171381000283,
+      "form": "きっかけ以外",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5966652409307676,
+          "lo": 0.4689085295610358,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6537209395856151,
+          "lo": 0.4089342702715789,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6559893114993558,
+          "lo": 0.40651068850064415,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7092150045758219,
+          "lo": 0.3487560099169318,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 32,
+      "n": 60,
+      "proposition": "P81",
+      "rate": 0.5333333333333333,
+      "reported_verdict": null,
+      "undetermined": null
+    },
+    {
+      "binomial_upper_p": 0.5993467537479669,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5546797490233472,
+          "lo": 0.42969525097665284,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6123711372504527,
+          "lo": 0.37266808813984664,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6146922853085647,
+          "lo": 0.3703823415571068,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6698127638108174,
+          "lo": 0.3162983473002937,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 31,
+      "n": 63,
+      "proposition": "P82",
+      "rate": 0.49206349206349204,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.23834389671713774,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.607253586902659,
+          "lo": 0.48996863531956336,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6595203882517588,
+          "lo": 0.4340106587147449,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6616042220066992,
+          "lo": 0.4317291113266342,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7107301555848926,
+          "lo": 0.3767698444151075,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 39,
+      "n": 71,
+      "proposition": "P82",
+      "rate": 0.5492957746478874,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9201441584409902,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.48314484745145375,
+          "lo": 0.36820650389989745,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5390061953620611,
+          "lo": 0.31784191542578866,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5412987504888161,
+          "lo": 0.31584410665404095,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5968913881016618,
+          "lo": 0.26896227043492343,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 31,
+      "n": 73,
+      "proposition": "P82",
+      "rate": 0.4246575342465753,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.6715037662068211,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.536885658376009,
+          "lo": 0.42652897577033233,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5886435129612427,
+          "lo": 0.37599641612884654,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5907472545967472,
+          "lo": 0.3739586277561941,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6413495850369766,
+          "lo": 0.32531708162969003,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 39,
+      "n": 81,
+      "proposition": "P82",
+      "rate": 0.48148148148148145,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.03519711053353114,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6982685297590211,
+          "lo": 0.5658824136372053,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7519930012618661,
+          "lo": 0.49871678132017094,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7540551036581653,
+          "lo": 0.4959448963418347,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8007811982821323,
+          "lo": 0.42872699843917916,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 33,
+      "n": 52,
+      "proposition": "P83",
+      "rate": 0.6346153846153846,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 7.418449668186181e-06,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7962063188692461,
+          "lo": 0.6973001746372474,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8337107259171367,
+          "lo": 0.6422324815502948,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8351281209488333,
+          "lo": 0.6398718790511668,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8668947953759287,
+          "lo": 0.580164028153483,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 57,
+      "n": 76,
+      "proposition": "P83",
+      "rate": 0.75,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9535440588897269,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.468289159181532,
+          "lo": 0.35887133464562837,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5219595965410984,
+          "lo": 0.3110585761276188,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.524172665022757,
+          "lo": 0.30916066831057637,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5781442457391994,
+          "lo": 0.26455238347428367,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 33,
+      "n": 80,
+      "proposition": "P83",
+      "rate": 0.4125,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.18879196164904927,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5961901170711424,
+          "lo": 0.4990479781669529,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6403108140489229,
+          "lo": 0.4524179018768031,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6420920312443108,
+          "lo": 0.4505005613482819,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.684754277325271,
+          "lo": 0.403741297895968,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 57,
+      "n": 104,
+      "proposition": "P83",
+      "rate": 0.5480769230769231,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.07620388598073902,
+      "form": "きっかけ以外",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.678942448640078,
+          "lo": 0.541057551359922,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7357098828826433,
+          "lo": 0.4724599944352045,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7378960140660348,
+          "lo": 0.46965115574528593,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7875487885085465,
+          "lo": 0.40210638390524667,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 30,
+      "n": 49,
+      "proposition": "P83",
+      "rate": 0.6122448979591837,
+      "reported_verdict": null,
+      "undetermined": null
+    },
+    {
+      "binomial_upper_p": 0.45497322593726214,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5688943614444661,
+          "lo": 0.45642209425173624,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6205104797510615,
+          "lo": 0.4039270123076001,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6225921111914217,
+          "lo": 0.4017981327110174,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6722637294489098,
+          "lo": 0.3507247762982166,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 40,
+      "n": 78,
+      "proposition": "P84",
+      "rate": 0.5128205128205128,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.5456115373622539,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5569802882298189,
+          "lo": 0.443019711770181,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6096740455453538,
+          "lo": 0.39032595445464624,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6118033988749895,
+          "lo": 0.38819660112501053,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6626978433639921,
+          "lo": 0.3373021566360079,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 38,
+      "n": 76,
+      "proposition": "P84",
+      "rate": 0.5,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.5444639393869536,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5555555555555556,
+          "lo": 0.4444444444444444,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6070258491388028,
+          "lo": 0.3929741508611972,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6091089451179962,
+          "lo": 0.3908910548820038,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.658999682000954,
+          "lo": 0.341000317999046,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 40,
+      "n": 80,
+      "proposition": "P84",
+      "rate": 0.5,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.6328289834850767,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5435779057482637,
+          "lo": 0.43110563855553374,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5960729876923999,
+          "lo": 0.37948952024893845,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5982018672889825,
+          "lo": 0.37740788880857834,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6492752237017834,
+          "lo": 0.3277362705510901,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 38,
+      "n": 78,
+      "proposition": "P84",
+      "rate": 0.48717948717948717,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.996826171875,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.29880287003741124,
+          "lo": 0.08581251457797337,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.4480308622529734,
+          "lo": 0.04696514218385378,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.4541241452319315,
+          "lo": 0.04587585476806849,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5922462401675694,
+          "lo": 0.02680137888004952,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 2,
+      "n": 12,
+      "proposition": "P89",
+      "rate": 0.16666666666666666,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.09090909090909091,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.2775327998628892,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.28571428571428575,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.4736842105263158,
+          "lo": 2.7755575615628914e-17,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 10,
+      "proposition": "P89",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9999833588249148,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.3147410023392938,
+          "lo": 0.20764705736219868,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.3743309854640803,
+          "lo": 0.1674884361182427,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.3768769324098714,
+          "lo": 0.1659802104472714,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.4409195090843654,
+          "lo": 0.13241382424896794,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 17,
+      "n": 66,
+      "proposition": "P90",
+      "rate": 0.25757575757575757,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.019999999999999997,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.07269781922049637,
+          "lo": 6.938893903907228e-18,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.07547169811320753,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.15517241379310343,
+          "lo": 1.3877787807814457e-17,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 49,
+      "proposition": "P90",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.7858964821412097,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5181151444159542,
+          "lo": 0.4059354884954382,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5713635605960243,
+          "lo": 0.35532396322799065,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5735349387679489,
+          "lo": 0.35329432952473405,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6259069843825972,
+          "lo": 0.3051274983760236,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 36,
+      "n": 78,
+      "proposition": "P91",
+      "rate": 0.46153846153846156,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.8189841011301692,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5115106415824557,
+          "lo": 0.3987457686739546,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5652691570670489,
+          "lo": 0.3481416088677176,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5674639105330733,
+          "lo": 0.3461163363805068,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6204519365303592,
+          "lo": 0.29815271463243154,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 35,
+      "n": 77,
+      "proposition": "P91",
+      "rate": 0.45454545454545453,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.8159061830846847,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5119345702215568,
+          "lo": 0.4005654297784431,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.565016670662313,
+          "lo": 0.3504845759399334,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.567184685896903,
+          "lo": 0.3484779647055066,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6195632975271828,
+          "lo": 0.30089124792736266,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 36,
+      "n": 79,
+      "proposition": "P91",
+      "rate": 0.45569620253164556,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.8459158840281596,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5053285853666308,
+          "lo": 0.39340559184855906,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5589063085943674,
+          "lo": 0.3433437231709858,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.561097146245588,
+          "lo": 0.3413418781446559,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6140797256029907,
+          "lo": 0.2939662514085034,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 35,
+      "n": 78,
+      "proposition": "P91",
+      "rate": 0.44871794871794873,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.6328289834850767,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5435779057482637,
+          "lo": 0.43110563855553374,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5960729876923999,
+          "lo": 0.37948952024893845,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5982018672889825,
+          "lo": 0.37740788880857834,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6492752237017834,
+          "lo": 0.3277362705510901,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 38,
+      "n": 78,
+      "proposition": "P92",
+      "rate": 0.48717948717948717,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.33232274520660715,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.582893878797787,
+          "lo": 0.475245656085934,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6319382998623788,
+          "lo": 0.4243417305015005,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6339143823377418,
+          "lo": 0.42226539294315696,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6810667000840078,
+          "lo": 0.3721247892776942,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 45,
+      "n": 85,
+      "proposition": "P92",
+      "rate": 0.5294117647058824,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.3176538210438331,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5935035243491967,
+          "lo": 0.47594092009524774,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6464155215452013,
+          "lo": 0.42039236914515843,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6485320118164507,
+          "lo": 0.41813465485021595,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6985856219916248,
+          "lo": 0.36391437800837523,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 38,
+      "n": 71,
+      "proposition": "P92",
+      "rate": 0.5352112676056338,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.10634140992540289,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6315425709571508,
+          "lo": 0.5203561632200643,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6804093965182452,
+          "lo": 0.4662155558337249,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6823520492765968,
+          "lo": 0.4639894141380373,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7280669683538371,
+          "lo": 0.40986406612892134,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 45,
+      "n": 78,
+      "proposition": "P92",
+      "rate": 0.5769230769230769,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0004387758900014325,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7351791263563513,
+          "lo": 0.6338684926912678,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7763860589554854,
+          "lo": 0.5805862952746208,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7779835173331208,
+          "lo": 0.5783383217473389,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8146926184819884,
+          "lo": 0.522263903257142,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 57,
+      "n": 83,
+      "proposition": "P93",
+      "rate": 0.6867469879518072,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.002935353944868601,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.713843668235785,
+          "lo": 0.6066691522770354,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7580007814294651,
+          "lo": 0.551246483089225,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7597180362729092,
+          "lo": 0.5489239390357328,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7992757182915718,
+          "lo": 0.4914219561270329,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 51,
+      "n": 77,
+      "proposition": "P93",
+      "rate": 0.6623376623376623,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 5.129817589711658e-05,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7689424697438504,
+          "lo": 0.6685575302561496,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8083182643890088,
+          "lo": 0.6141755025997595,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8098247370595277,
+          "lo": 0.611862009928424,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8439941167582635,
+          "lo": 0.5537331559690092,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 57,
+      "n": 79,
+      "proposition": "P93",
+      "rate": 0.7215189873417721,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.00045713729108154503,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7493540167393785,
+          "lo": 0.6425378751525134,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7917740942087393,
+          "lo": 0.5856263409869292,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7934017853538887,
+          "lo": 0.5832215912694879,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8304000751897183,
+          "lo": 0.5232584613956477,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 51,
+      "n": 73,
+      "proposition": "P93",
+      "rate": 0.6986301369863014,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0802892095669899,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6333586053523349,
+          "lo": 0.5275609348775502,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6799854973309328,
+          "lo": 0.4758445635760395,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6818438359963696,
+          "lo": 0.4737117195591861,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.7257237494220201,
+          "lo": 0.4216446716306115,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 50,
+      "n": 86,
+      "proposition": "P94",
+      "rate": 0.5813953488372093,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.09638021767077938,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.6288708906090981,
+          "lo": 0.5222919000885762,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6759645768712104,
+          "lo": 0.47036350207487576,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6778428054629462,
+          "lo": 0.4682246102673908,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.722217175075144,
+          "lo": 0.4160806972652813,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 49,
+      "n": 85,
+      "proposition": "P94",
+      "rate": 0.5764705882352941,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.00038338249487064537,
+      "form": "逆",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7552497285148131,
+          "lo": 0.6475280492629646,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.7976711479868337,
+          "lo": 0.5898146180172532,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7992934344846333,
+          "lo": 0.5873732321820332,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8360424979757657,
+          "lo": 0.5264575020242341,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 50,
+      "n": 71,
+      "proposition": "P94",
+      "rate": 0.704225352112676,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.0005466224864843066,
+      "form": "裏",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7516411688145949,
+          "lo": 0.6427250283685036,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.79463394742362,
+          "lo": 0.5845568276122731,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.7962789878711294,
+          "lo": 0.5820993905072489,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8335583963309283,
+          "lo": 0.520871983415907,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 49,
+      "n": 70,
+      "proposition": "P94",
+      "rate": 0.7,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.19384765625,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7852173175123025,
+          "lo": 0.5224749901800052,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8618799089087867,
+          "lo": 0.39062208887279953,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8643567769390845,
+          "lo": 0.3856432230609155,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9120032070392873,
+          "lo": 0.27847298343690297,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 8,
+      "n": 12,
+      "proposition": "P97",
+      "rate": 0.6666666666666666,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.2,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.4898908364545973,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5,
+          "lo": 0,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6923076923076923,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 4,
+      "proposition": "P97",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.4110091156811278e-06,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.833710690110839,
+          "lo": 0.7334534889936385,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8692201489207618,
+          "lo": 0.6748692879502294,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8705277920861592,
+          "lo": 0.6723293507709838,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8991019336850032,
+          "lo": 0.6075647329816634,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 52,
+      "n": 66,
+      "proposition": "P98",
+      "rate": 0.7878787878787878,
+      "reported_verdict": "支持",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.06666666666666667,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.2153108027376358,
+          "lo": 1.3877787807814457e-17,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.22222222222222224,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.391304347826087,
+          "lo": 0,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 14,
+      "proposition": "P98",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.953857421875,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.4455423845942475,
+          "lo": 0.1973147582628954,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5763065681945096,
+          "lo": 0.12680703655710515,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5813471396221532,
+          "lo": 0.12453521331902334,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6918678156477769,
+          "lo": 0.08085945707949582,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 4,
+      "n": 13,
+      "proposition": "P99",
+      "rate": 0.3076923076923077,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.09999999999999999,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.2991450484195441,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.30769230769230765,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 9,
+      "proposition": "P99",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.19384765625,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.7852173175123025,
+          "lo": 0.5224749901800052,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8618799089087867,
+          "lo": 0.39062208887279953,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8643567769390845,
+          "lo": 0.3856432230609155,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9120032070392873,
+          "lo": 0.27847298343690297,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 8,
+      "n": 12,
+      "proposition": "P102",
+      "rate": 0.6666666666666666,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.2,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.4898908364545973,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5,
+          "lo": 0,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6923076923076923,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 4,
+      "proposition": "P102",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.9822086377738841,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.4398872082827816,
+          "lo": 0.32130682156796464,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.499415240853782,
+          "lo": 0.2714944699373794,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.501878501041969,
+          "lo": 0.2695500703866025,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5620001197747808,
+          "lo": 0.22466654689188587,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 25,
+      "n": 66,
+      "proposition": "P103",
+      "rate": 0.3787878787878788,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.023809523809523808,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.08566757018443186,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.08888888888888888,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.18,
+          "lo": 0,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 41,
+      "proposition": "P103",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.015625,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.9999999999999999,
+          "lo": 0.8571428571428571,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 1,
+          "lo": 0.6096657120978346,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 1,
+          "lo": 0.6000000000000001,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 1,
+          "lo": 0.39999999999999997,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 6,
+      "n": 6,
+      "proposition": "P104",
+      "rate": 1.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 6
+    },
+    {
+      "binomial_upper_p": null,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 1.0,
+          "lo": 0.0,
+          "relation": "no_data",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 1.0,
+          "lo": 0.0,
+          "relation": "no_data",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 1.0,
+          "lo": 0.0,
+          "relation": "no_data",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 1.0,
+          "lo": 0.0,
+          "relation": "no_data",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 0,
+      "proposition": "P104",
+      "rate": null,
+      "reported_verdict": "判断保留",
+      "undetermined": 6
+    },
+    {
+      "binomial_upper_p": 1.5057954814559626e-05,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8256779183819064,
+          "lo": 0.7166949629740259,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8640633938859026,
+          "lo": 0.653388823610813,
+          "relation": "above",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8654708259857448,
+          "lo": 0.6506582062723197,
+          "relation": "above",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.8960728513559286,
+          "lo": 0.5815390889425789,
+          "relation": "above",
+          "z": 3
+        }
+      ],
+      "k": 45,
+      "n": 58,
+      "proposition": "P105",
+      "rate": 0.7758620689655172,
+      "reported_verdict": "支持",
+      "undetermined": 8
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.07142857142857144,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.22809537235419838,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.23529411764705882,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.40909090909090906,
+          "lo": 0,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 13,
+      "proposition": "P105",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 8
+    },
+    {
+      "binomial_upper_p": 0.046142578125,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8642341916829219,
+          "lo": 0.6357658083170781,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.9182047128150143,
+          "lo": 0.49743624053272495,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.9198477903626587,
+          "lo": 0.49191691551969435,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9502102605533829,
+          "lo": 0.3679715576284354,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 10,
+      "n": 13,
+      "proposition": "P106",
+      "rate": 0.7692307692307693,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.25,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5614970317550454,
+          "lo": 5.551115123125783e-17,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5714285714285715,
+          "lo": 0,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.75,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 3,
+      "proposition": "P106",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.3080013928459071,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5659226184274605,
+          "lo": 0.48268849268365066,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6046119924956097,
+          "lo": 0.44305846825994305,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6061919486932397,
+          "lo": 0.44142709892580806,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6445551668582529,
+          "lo": 0.4014974647206945,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 75,
+      "n": 143,
+      "proposition": "P107",
+      "rate": 0.5244755244755245,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.014492753623188406,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.053471336520070537,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.05555555555555555,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.11688311688311687,
+          "lo": 6.938893903907228e-18,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 68,
+      "proposition": "P107",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.953857421875,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.4455423845942475,
+          "lo": 0.1973147582628954,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5763065681945096,
+          "lo": 0.12680703655710515,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5813471396221532,
+          "lo": 0.12453521331902334,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6918678156477769,
+          "lo": 0.08085945707949582,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 4,
+      "n": 13,
+      "proposition": "P108",
+      "rate": 0.3076923076923077,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.09999999999999999,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.2991450484195441,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.30769230769230765,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.5,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 9,
+      "proposition": "P108",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.6309315984790742,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5312408935270103,
+          "lo": 0.4479257731396563,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.5706387429341319,
+          "lo": 0.40893105959920256,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5722568700298138,
+          "lo": 0.40733496670488023,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.61177245368474,
+          "lo": 0.36849070420999697,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 70,
+      "n": 143,
+      "proposition": "P109",
+      "rate": 0.48951048951048953,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.013513513513513514,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.0499920079557311,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.05194805194805195,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.1097560975609756,
+          "lo": 0,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 73,
+      "proposition": "P109",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.1334228515625,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.8026852417371046,
+          "lo": 0.5544576154057526,
+          "relation": "above",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.8731929634428948,
+          "lo": 0.42369343180549035,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.8754647866809767,
+          "lo": 0.4186528603778469,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.9191405429205041,
+          "lo": 0.308132184352223,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 9,
+      "n": 13,
+      "proposition": "P110",
+      "rate": 0.6923076923076923,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.2,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.4898908364545973,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.5,
+          "lo": 0,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6923076923076923,
+          "lo": 0,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 4,
+      "proposition": "P110",
+      "rate": 0.0,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 0.25181974486488995,
+      "form": "元の命題",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.5728346366188224,
+          "lo": 0.4896653633811776,
+          "relation": "includes",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.6113603416805273,
+          "lo": 0.4499302507194689,
+          "relation": "includes",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.6129317944243882,
+          "lo": 0.4482926953715303,
+          "relation": "includes",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.6510444208883286,
+          "lo": 0.4081661054274608,
+          "relation": "includes",
+          "z": 3
+        }
+      ],
+      "k": 76,
+      "n": 143,
+      "proposition": "P111",
+      "rate": 0.5314685314685315,
+      "reported_verdict": "判断保留",
+      "undetermined": 0
+    },
+    {
+      "binomial_upper_p": 1.0,
+      "form": "対偶",
+      "intervals": [
+        {
+          "coverage_normal": 0.6826894921370859,
+          "hi": 0.014705882352941176,
+          "lo": 0,
+          "relation": "below",
+          "z": 1
+        },
+        {
+          "coverage_normal": 0.95,
+          "hi": 0.05422613939130178,
+          "lo": 0,
+          "relation": "below",
+          "z": 1.959963984540054
+        },
+        {
+          "coverage_normal": 0.9544997361036416,
+          "hi": 0.056338028169014086,
+          "lo": 0,
+          "relation": "below",
+          "z": 2
+        },
+        {
+          "coverage_normal": 0.9973002039367398,
+          "hi": 0.11842105263157895,
+          "lo": 0,
+          "relation": "below",
+          "z": 3
+        }
+      ],
+      "k": 0,
+      "n": 67,
+      "proposition": "P111",
+      "rate": 0.0,
+      "reported_verdict": "棄却",
+      "undetermined": 0
+    }
+  ],
+  "objections_blob": "e22e9253126a21128af55863e4fb3654470cbc61",
+  "plan_commit": "324ccfdf74dc09f3454e8a96cc55cfac1b2171d2",
+  "scoring_rows": [
+    {
+      "annual": {
+        "G": 139,
+        "L": 74,
+        "RA": 488,
+        "RF": 403,
+        "T": 2,
+        "W": 63
+      },
+      "counts": {
+        "G": 139,
+        "L_G": 74,
+        "L_extra_RF": 0,
+        "L_reg_RF": 35,
+        "L_reg_innings": 222,
+        "T_G": 2,
+        "T_extra_RF": 2,
+        "T_reg_RF": 0,
+        "T_reg_innings": 6,
+        "W_G": 63,
+        "W_extra_RF": 14,
+        "W_reg_RF": 80,
+        "W_reg_innings": 158,
+        "early_RF": 272,
+        "three_plus": 41,
+        "zero": 37
+      },
+      "cut": 6,
+      "early_mean": 1.9568345323741008,
+      "group": "中日",
+      "phase": "before",
+      "three_plus_rate": 0.2949640287769784,
+      "zero_rate": 0.26618705035971224
+    },
+    {
+      "annual": {
+        "G": 139,
+        "L": 74,
+        "RA": 488,
+        "RF": 403,
+        "T": 2,
+        "W": 63
+      },
+      "counts": {
+        "G": 139,
+        "L_G": 74,
+        "L_extra_RF": 0,
+        "L_reg_RF": 22,
+        "L_reg_innings": 148,
+        "T_G": 2,
+        "T_extra_RF": 2,
+        "T_reg_RF": 0,
+        "T_reg_innings": 4,
+        "W_G": 63,
+        "W_extra_RF": 14,
+        "W_reg_RF": 61,
+        "W_reg_innings": 95,
+        "early_RF": 304,
+        "three_plus": 49,
+        "zero": 33
+      },
+      "cut": 7,
+      "early_mean": 2.1870503597122304,
+      "group": "中日",
+      "phase": "before",
+      "three_plus_rate": 0.35251798561151076,
+      "zero_rate": 0.23741007194244604
+    },
+    {
+      "annual": {
+        "G": 697,
+        "L": 335,
+        "RA": 2610,
+        "RF": 2658,
+        "T": 14,
+        "W": 348
+      },
+      "counts": {
+        "G": 697,
+        "L_G": 335,
+        "L_extra_RF": 7,
+        "L_reg_RF": 184,
+        "L_reg_innings": 999,
+        "T_G": 14,
+        "T_extra_RF": 6,
+        "T_reg_RF": 10,
+        "T_reg_innings": 42,
+        "W_G": 348,
+        "W_extra_RF": 54,
+        "W_reg_RF": 512,
+        "W_reg_innings": 880,
+        "early_RF": 1885,
+        "three_plus": 320,
+        "zero": 141
+      },
+      "cut": 6,
+      "early_mean": 2.7044476327116214,
+      "group": "他セ5球団",
+      "phase": "before",
+      "three_plus_rate": 0.45911047345767575,
+      "zero_rate": 0.20229555236728838
+    },
+    {
+      "annual": {
+        "G": 697,
+        "L": 335,
+        "RA": 2610,
+        "RF": 2658,
+        "T": 14,
+        "W": 348
+      },
+      "counts": {
+        "G": 693,
+        "L_G": 333,
+        "L_extra_RF": 7,
+        "L_reg_RF": 115,
+        "L_reg_innings": 666,
+        "T_G": 14,
+        "T_extra_RF": 6,
+        "T_reg_RF": 6,
+        "T_reg_innings": 28,
+        "W_G": 346,
+        "W_extra_RF": 54,
+        "W_reg_RF": 318,
+        "W_reg_innings": 534,
+        "early_RF": 2132,
+        "excluded": 4,
+        "three_plus": 351,
+        "zero": 119
+      },
+      "cut": 7,
+      "early_mean": 3.0764790764790764,
+      "group": "他セ5球団",
+      "phase": "before",
+      "three_plus_rate": 0.5064935064935064,
+      "zero_rate": 0.1717171717171717
+    },
+    {
+      "annual": {
+        "G": 4,
+        "L": 1,
+        "RA": 7,
+        "RF": 11,
+        "W": 3
+      },
+      "counts": {
+        "G": 4,
+        "L_G": 1,
+        "L_extra_RF": 0,
+        "L_reg_RF": 0,
+        "L_reg_innings": 3,
+        "W_G": 3,
+        "W_extra_RF": 0,
+        "W_reg_RF": 6,
+        "W_reg_innings": 9,
+        "early_RF": 5,
+        "three_plus": 0,
+        "zero": 1
+      },
+      "cut": 6,
+      "early_mean": 1.25,
+      "group": "中日",
+      "phase": "after",
+      "three_plus_rate": 0.0,
+      "zero_rate": 0.25
+    },
+    {
+      "annual": {
+        "G": 4,
+        "L": 1,
+        "RA": 7,
+        "RF": 11,
+        "W": 3
+      },
+      "counts": {
+        "G": 4,
+        "L_G": 1,
+        "L_extra_RF": 0,
+        "L_reg_RF": 0,
+        "L_reg_innings": 2,
+        "W_G": 3,
+        "W_extra_RF": 0,
+        "W_reg_RF": 6,
+        "W_reg_innings": 6,
+        "early_RF": 5,
+        "three_plus": 0,
+        "zero": 1
+      },
+      "cut": 7,
+      "early_mean": 1.25,
+      "group": "中日",
+      "phase": "after",
+      "three_plus_rate": 0.0,
+      "zero_rate": 0.25
+    },
+    {
+      "annual": {
+        "G": 18,
+        "L": 9,
+        "RA": 51,
+        "RF": 47,
+        "T": 2,
+        "W": 7
+      },
+      "counts": {
+        "G": 18,
+        "L_G": 9,
+        "L_extra_RF": 0,
+        "L_reg_RF": 3,
+        "L_reg_innings": 27,
+        "T_G": 2,
+        "T_extra_RF": 0,
+        "T_reg_RF": 5,
+        "T_reg_innings": 6,
+        "W_G": 7,
+        "W_extra_RF": 0,
+        "W_reg_RF": 5,
+        "W_reg_innings": 18,
+        "early_RF": 34,
+        "three_plus": 5,
+        "zero": 6
+      },
+      "cut": 6,
+      "early_mean": 1.8888888888888888,
+      "group": "他セ5球団",
+      "phase": "after",
+      "three_plus_rate": 0.2777777777777778,
+      "zero_rate": 0.3333333333333333
+    },
+    {
+      "annual": {
+        "G": 18,
+        "L": 9,
+        "RA": 51,
+        "RF": 47,
+        "T": 2,
+        "W": 7
+      },
+      "counts": {
+        "G": 18,
+        "L_G": 9,
+        "L_extra_RF": 0,
+        "L_reg_RF": 2,
+        "L_reg_innings": 18,
+        "T_G": 2,
+        "T_extra_RF": 0,
+        "T_reg_RF": 5,
+        "T_reg_innings": 4,
+        "W_G": 7,
+        "W_extra_RF": 0,
+        "W_reg_RF": 1,
+        "W_reg_innings": 11,
+        "early_RF": 39,
+        "three_plus": 6,
+        "zero": 5
+      },
+      "cut": 7,
+      "early_mean": 2.1666666666666665,
+      "group": "他セ5球団",
+      "phase": "after",
+      "three_plus_rate": 0.3333333333333333,
+      "zero_rate": 0.2777777777777778
+    },
+    {
+      "annual": {
+        "G": 143,
+        "L": 75,
+        "RA": 495,
+        "RF": 414,
+        "T": 2,
+        "W": 66
+      },
+      "counts": {
+        "G": 143,
+        "L_G": 75,
+        "L_extra_RF": 0,
+        "L_reg_RF": 35,
+        "L_reg_innings": 225,
+        "T_G": 2,
+        "T_extra_RF": 2,
+        "T_reg_RF": 0,
+        "T_reg_innings": 6,
+        "W_G": 66,
+        "W_extra_RF": 14,
+        "W_reg_RF": 86,
+        "W_reg_innings": 167,
+        "early_RF": 277,
+        "three_plus": 41,
+        "zero": 38
+      },
+      "cut": 6,
+      "early_mean": 1.937062937062937,
+      "group": "中日",
+      "phase": "full",
+      "three_plus_rate": 0.2867132867132867,
+      "zero_rate": 0.26573426573426573
+    },
+    {
+      "annual": {
+        "G": 143,
+        "L": 75,
+        "RA": 495,
+        "RF": 414,
+        "T": 2,
+        "W": 66
+      },
+      "counts": {
+        "G": 143,
+        "L_G": 75,
+        "L_extra_RF": 0,
+        "L_reg_RF": 22,
+        "L_reg_innings": 150,
+        "T_G": 2,
+        "T_extra_RF": 2,
+        "T_reg_RF": 0,
+        "T_reg_innings": 4,
+        "W_G": 66,
+        "W_extra_RF": 14,
+        "W_reg_RF": 67,
+        "W_reg_innings": 101,
+        "early_RF": 309,
+        "three_plus": 49,
+        "zero": 34
+      },
+      "cut": 7,
+      "early_mean": 2.160839160839161,
+      "group": "中日",
+      "phase": "full",
+      "three_plus_rate": 0.34265734265734266,
+      "zero_rate": 0.23776223776223776
+    },
+    {
+      "annual": {
+        "G": 715,
+        "L": 344,
+        "RA": 2661,
+        "RF": 2705,
+        "T": 16,
+        "W": 355
+      },
+      "counts": {
+        "G": 715,
+        "L_G": 344,
+        "L_extra_RF": 7,
+        "L_reg_RF": 187,
+        "L_reg_innings": 1026,
+        "T_G": 16,
+        "T_extra_RF": 6,
+        "T_reg_RF": 15,
+        "T_reg_innings": 48,
+        "W_G": 355,
+        "W_extra_RF": 54,
+        "W_reg_RF": 517,
+        "W_reg_innings": 898,
+        "early_RF": 1919,
+        "three_plus": 325,
+        "zero": 147
+      },
+      "cut": 6,
+      "early_mean": 2.683916083916084,
+      "group": "他セ5球団",
+      "phase": "full",
+      "three_plus_rate": 0.45454545454545453,
+      "zero_rate": 0.2055944055944056
+    },
+    {
+      "annual": {
+        "G": 715,
+        "L": 344,
+        "RA": 2661,
+        "RF": 2705,
+        "T": 16,
+        "W": 355
+      },
+      "counts": {
+        "G": 711,
+        "L_G": 342,
+        "L_extra_RF": 7,
+        "L_reg_RF": 117,
+        "L_reg_innings": 684,
+        "T_G": 16,
+        "T_extra_RF": 6,
+        "T_reg_RF": 11,
+        "T_reg_innings": 32,
+        "W_G": 353,
+        "W_extra_RF": 54,
+        "W_reg_RF": 319,
+        "W_reg_innings": 545,
+        "early_RF": 2171,
+        "excluded": 4,
+        "three_plus": 357,
+        "zero": 124
+      },
+      "cut": 7,
+      "early_mean": 3.0534458509142053,
+      "group": "他セ5球団",
+      "phase": "full",
+      "three_plus_rate": 0.5021097046413502,
+      "zero_rate": 0.17440225035161744
+    }
+  ]
+}

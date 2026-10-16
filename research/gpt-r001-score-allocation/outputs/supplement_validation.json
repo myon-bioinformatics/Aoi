@@ -1,0 +1,49 @@
+{
+  "manifest_files": 35,
+  "manifest_sha256": "32aa1a3e718c87f96804a45f0f4e5479c19e4999bda2da481f5257578b3c6153",
+  "manifest_verified": true,
+  "input_csv_unchanged": true,
+  "input_rows": 424702,
+  "source_urls": 12606,
+  "kept_games": 11875,
+  "excluded": 731,
+  "exclusions": {
+    "cancelled": 389,
+    "noGame": 72,
+    "parse_error_allstar": 25,
+    "postseason_trimmed": 234,
+    "parse_error_international": 7,
+    "other": 2,
+    "in_progress": 2
+  },
+  "cutoff_kept_games": 11875,
+  "cutoff_trimmed_games": 234,
+  "cutoff_two_sided": true,
+  "parsed_csv_matched_games": 11875,
+  "pair_count": 822,
+  "provided_labels_matched_games": 11028,
+  "simultaneous_dates": [
+    "20131012",
+    "20131013",
+    "20181013",
+    "20201114"
+  ],
+  "sumcheck_failures": 460,
+  "sumcheck_failure_reasons": {
+    "cancelled": 389,
+    "noGame": 71
+  },
+  "x_flags": 961,
+  "x_kinds": {
+    "walkoff": 914,
+    "incomplete_other": 47
+  },
+  "x_join_mismatches": 0,
+  "x_flags_2013_2025": 885,
+  "script_sha256": "6ac4614cb1dfd4f698d7ecf1a8b595a24373a3c0aa3806773f6cae4b0b250273",
+  "exit_code": 0,
+  "limits": [
+    "No raw HTML supplied; Nth-game labels and x markers are provided extractions.",
+    "incomplete_other is a classification rule, not an independently verified termination cause."
+  ]
+}

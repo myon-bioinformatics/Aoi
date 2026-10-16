@@ -1,0 +1,308 @@
+# 命題の集合（R48）。登録済みの命題の条件だけから集合を作り、式を計算の前に書く。
+#   uv run python PythDRagoras/logic/sets.py --season cycles/c001-chunichi/outputs/season.jsonl --config cycles/c001-chunichi/analysis.toml \
+#     --propositions cycles/c001-chunichi/propositions.toml --sets cycles/c001-chunichi/sets.toml --outdir cycles/c001-chunichi/outputs --report-only
+# 集合は全単位（2012〜2025年、2020年は除外）の上で作る。命題の範囲（seasons・team）は使わない。
+
+[[set]]
+id = "OFF_SHORT"        # 得点の優位が誤差を超えてマイナス
+from = "P147"
+
+[[set]]
+id = "DEF_WORSE"        # 失点の優位が誤差を超えてマイナス
+from = "P148"
+
+[[set]]
+id = "OFF_SHORT_DEF_CLEAR"   # 得点 −1 かつ 失点 +1（R35〜R36 の形）
+from = "P140"
+part = "where"
+
+[[set]]
+id = "TOP_WIN"          # 上の相手（1・2位）との勝率 .47 以上
+from = "P144"
+
+[[set]]
+id = "LOWER_FAIL"       # 下の相手（4〜6位）に .500 未満
+from = "P146"
+
+[[set]]
+id = "BIG_SHORT"        # 得点の不足が1試合 0.6点を超える
+from = "P138"
+
+[[set]]
+id = "PERSIST_LOW"      # 得点した回の大きさが2年以上続けて下位2位以内（式2）
+from = "P62"
+
+[[set]]
+id = "F52"              # 式1: 分布の見込み < 0.4 または 組み合わせ方 < −1
+from = "P52"
+
+[[set]]
+id = "F96"              # 式1′
+from = "P96"
+
+# ---- 式（どれも「式に入るなら B クラス」。強さは 概ね） ----
+
+[[expr]]
+id = "E1"
+expr = "OFF_SHORT & ~TOP_WIN"
+statement = "得点がはっきり足りず、上の相手に .47 未満なら B"
+
+[[expr]]
+id = "E2"
+expr = "OFF_SHORT & ~OFF_SHORT_DEF_CLEAR"
+statement = "得点がはっきり足りず、失点がはっきり上回ってはいないなら B"
+
+[[expr]]
+id = "E3"
+expr = "BIG_SHORT | (OFF_SHORT & ~OFF_SHORT_DEF_CLEAR)"
+statement = "得点の不足が大きいか、得点がはっきり足りず失点がはっきり上回ってはいないなら B"
+
+[[expr]]
+id = "E4"
+expr = "F52"
+statement = "式1（P52）をそのまま集合として"
+
+[[expr]]
+id = "E5"
+expr = "F96"
+statement = "式1′（P96）をそのまま集合として"
+
+[[expr]]
+id = "E6"
+expr = "PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)"
+statement = "得点した回の大きさが続けて低いか、得点がはっきり足りず上の相手に .47 未満なら B"
+
+[[expr]]
+id = "E7"
+expr = "F96 | (OFF_SHORT & ~TOP_WIN)"
+statement = "式1′か、得点がはっきり足りず上の相手に .47 未満なら B"
+
+[[expr]]
+id = "E8"
+expr = "DEF_WORSE & ~TOP_WIN"
+statement = "失点がはっきり劣り、上の相手に .47 未満なら B（E1 の鏡、中日を覆うことは求めない）"
+
+[[expr]]
+id = "E9"
+expr = "(OFF_SHORT | DEF_WORSE) & ~TOP_WIN & ~(OFF_SHORT_DEF_CLEAR)"
+statement = "得点か失点がはっきり劣り、上の相手に .47 未満で、得点 −1・失点 +1 の形ではないなら B"
+
+# ---- 追加: 2026-10-05、R49。阪神 2015年をきっかけにした命題の前件を集合にし、E6・E7 から除く式を計算の前に書く ----
+
+[[set]]
+id = "CONVERT_BIG"      # 点の差より5勝以上多く勝った（P177）
+from = "P177"
+
+[[set]]
+id = "ALLOC_GOOD"       # 組み合わせ方 ≥ 1（P178）
+from = "P178"
+
+[[set]]
+id = "MID_CONVERT"      # 中位の相手から点の差より3勝以上多く勝った（P179）
+from = "P179"
+
+[[expr]]
+id = "E10"
+expr = "(PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)) & ~CONVERT_BIG"
+statement = "E6 から、点の差より5勝以上多く勝った単位を除く"
+
+[[expr]]
+id = "E11"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
+expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~CONVERT_BIG"
+statement = "E7 から、点の差より5勝以上多く勝った単位を除く"
+
+[[expr]]
+id = "E12"
+expr = "(PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)) & ~ALLOC_GOOD"
+statement = "E6 から、組み合わせ方 ≥ 1 の単位を除く"
+
+[[expr]]
+id = "E13"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
+expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~ALLOC_GOOD"
+statement = "E7 から、組み合わせ方 ≥ 1 の単位を除く"
+
+[[expr]]
+id = "E14"
+expr = "(PERSIST_LOW | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT"
+statement = "E6 から、中位の相手から3勝以上多く勝った単位を除く"
+
+[[expr]]
+id = "E15"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
+expr = "(F96 | (OFF_SHORT & ~TOP_WIN)) & ~MID_CONVERT"
+statement = "E7 から、中位の相手から3勝以上多く勝った単位を除く"
+
+# 追加: 2026-10-05。R55 の種1。中日の B の2つの道（計算前に書いた式。P186・P187 の判定はまだ Actions で見ていない）
+[[set]]
+id = "SHORT_T"          # 収支の不足が誤差を超える（P186）
+from = "P186"
+
+[[set]]
+id = "UNDER"            # 点の差より負けた（P187）
+from = "P187"
+
+[[expr]]
+id = "E16"
+expr = "SHORT_T | UNDER"
+statement = "不足が誤差を超えるか、点の差より負けたか（中日の B の2つの道）。後半は A にも多いので、判例の形を見る式"
+
+[[expr]]
+id = "E17"
+expr = "SHORT_T | (UNDER & ~ALLOC_GOOD)"
+statement = "E16 の後半から、組み合わせ方 ≥ 1 の単位を除く（点の差より負けても組み合わせ方がよい単位を外す）"
+
+# 追加: 2026-10-06。R71 の二段の式（計算前に書いた。P198〜P201 の判定はまだ見ていない）
+[[set]]
+id = "MIDDLE"           # 得点も失点もリーグの真ん中（P198）
+from = "P198"
+
+[[set]]
+id = "BAL_NONPOS"       # 収支 0 以下（P199）
+from = "P199"
+
+[[set]]
+id = "BAR_HIGH"         # 越えるべき高さ > .500（P200）
+from = "P200"
+
+[[set]]
+id = "CONV_NEG"         # 点の差より負けた（P201）
+from = "P201"
+
+[[expr]]
+id = "E18"
+expr = "(~MIDDLE & BAL_NONPOS) | (MIDDLE & (BAR_HIGH | CONV_NEG))"
+statement = "二段の式（または）: 片側に振れたます目は収支 0 以下、真ん中のます目は高さ > .500 か点の差より負け"
+
+[[expr]]
+id = "E19"
+expr = "(~MIDDLE & BAL_NONPOS) | (MIDDLE & BAR_HIGH & CONV_NEG)"
+statement = "二段の式（かつ）: 真ん中のます目は高さ > .500 かつ点の差より負け"
+
+# 追加: 2026-10-06。R72（計算前に書いた式）。E20 は E19 に「線の近く」を足した式。E21・E22 は E19 と出どころの違う式
+[[set]]
+id = "NEAR"             # 収支が誤差の内（P202 の範囲）
+from = "P202"
+part = "where"
+
+[[set]]
+id = "RF_BELOW"         # 得点の優位がほかの年のどの A よりも低い（P193）
+from = "P193"
+
+[[set]]
+id = "BAL_BELOW"        # 収支がほかの年のどの A よりも低い（P194）
+from = "P194"
+
+[[set]]
+id = "VSL_BELOW"        # 下位半分の相手との勝率がほかの年のどの A よりも低い（P195）
+from = "P195"
+
+[[set]]
+id = "Q3_LOW"           # 3/4 の時点で5〜6位（P189）
+from = "P189"
+
+[[set]]
+id = "Q3_MID"           # 3/4 の時点で3〜4位（P191 の範囲）
+from = "P191"
+part = "where"
+
+[[set]]
+id = "Q4_POS"           # 最後の区間で勝ち越し（P191）
+from = "P191"
+
+[[expr]]
+id = "E20"
+expr = "(~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & BAR_HIGH & CONV_NEG)"
+statement = "E19 に線の近くを足した式: 真ん中のます目か、収支が誤差の内なら、高さ > .500 かつ点の差より負け。それ以外は収支 0 以下"
+
+[[expr]]
+id = "E21"
+expr = "RF_BELOW | BAL_BELOW | VSL_BELOW"
+statement = "指標の帯の式（R66）: 得点の優位・収支・下の相手との勝率のどれかが、ほかの年のどの A よりも悪い"
+
+[[expr]]
+id = "E22"
+expr = "Q3_LOW | (Q3_MID & ~Q4_POS)"
+statement = "時期の状態の式（R58・R60）: 3/4 で5〜6位、または 3/4 で3〜4位で最後の区間に勝ち越せなかった"
+
+# 追加: 2026-10-06。R73（計算前に書いた式）。固定の .500 を使った BAR_HIGH の代わりに、その年の点の差から出した高さに届かない PBAR_SHORT
+[[set]]
+id = "PBAR_SHORT"       # 点の差どおりではその年の高さに届かない（P203）
+from = "P203"
+
+[[expr]]
+id = "E24"
+expr = "(~MIDDLE & BAL_NONPOS) | (MIDDLE & PBAR_SHORT & CONV_NEG)"
+statement = "E19 の作り直し: 真ん中のます目は、その年の高さに点の差で届かず、かつ点の差より負け"
+
+[[expr]]
+id = "E25"
+expr = "(~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)"
+statement = "E20 の作り直し: 真ん中のます目か線の近くは、その年の高さに点の差で届かず、かつ点の差より負け"
+
+[[expr]]
+id = "E26"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
+expr = "((~MIDDLE & ~NEAR & BAL_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))"
+statement = "E25 と時期の状態の式（E22）の積（R72 の種1、E23 の代わり）"
+
+# 追加: 2026-10-06。R74（計算前に書いた式）。E21 の作り直しと、出どころの違う積
+[[set]]
+id = "RFG_BELOW"
+from = "P205"
+
+[[set]]
+id = "BALG_BELOW"
+from = "P206"
+
+[[set]]
+id = "VSLG_BELOW"
+from = "P207"
+
+[[expr]]
+id = "E27"
+expr = "RFG_BELOW | BALG_BELOW | VSLG_BELOW"
+statement = "E21 の作り直し: 得点の優位・収支・下の相手との勝率のどれかが、その年の高さからの差で、ほかの年のどの A よりも悪い"
+
+[[expr]]
+id = "E28"
+expr = "(RFG_BELOW | BALG_BELOW | VSLG_BELOW) | (Q3_LOW | (Q3_MID & ~Q4_POS))"
+statement = "指標の帯（E27）と時期の状態（E22）の和: どちらかが B と言えば B（覆いを広げる側の組み合わせ）"
+
+# 追加: 2026-10-06。R76（計算前に書いた式）。判例のない式（E11・E13・E15・E26）の作り直し。元の式は消さない
+[[set]]
+id = "F96B"               # P96 の作り直し: 得失点差をその年の高さから測る
+from = "P208"
+
+[[set]]
+id = "TOP_WIN_B"          # P144 の作り直し: 上の相手との勝率をその年の高さ − .03 と比べる
+from = "P209"
+
+[[set]]
+id = "BALG_NONPOS"        # P199 の作り直し: 収支がその年の高さ以下
+from = "P210"
+
+[[expr]]
+id = "E29"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
+expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~CONVERT_BIG"
+statement = "E11 の作り直し（その年の高さ）"
+
+[[expr]]
+id = "E30"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
+expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~ALLOC_GOOD"
+statement = "E13 の作り直し（その年の高さ）"
+
+[[expr]]
+id = "E31"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
+expr = "(F96B | (OFF_SHORT & ~TOP_WIN_B)) & ~MID_CONVERT"
+statement = "E15 の作り直し（その年の高さ）"
+
+[[expr]]
+id = "E32"
+posthoc = true  # 過去の結果を参照した構成・選択。独立確認ではない
+expr = "((~MIDDLE & ~NEAR & BALG_NONPOS) | ((MIDDLE | NEAR) & PBAR_SHORT & CONV_NEG)) & (Q3_LOW | (Q3_MID & ~Q4_POS))"
+statement = "E26 の作り直し（収支をその年の高さから測る）"

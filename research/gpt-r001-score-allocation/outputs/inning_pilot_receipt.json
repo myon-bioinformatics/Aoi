@@ -1,0 +1,43 @@
+{
+  "purpose": "format feasibility only; no team trend inference",
+  "games": 3,
+  "team_games": 6,
+  "played_half_innings": 51,
+  "unplayed_cells": 3,
+  "incomplete_played_cells": 0,
+  "unknown": 0,
+  "all_final_scores_match": true,
+  "sources": [
+    {
+      "key": "2024032901088",
+      "url": "https://npb.jp/bis/2024/games/s2024032901088.html",
+      "status": 200,
+      "sha256": "47230d581302c57a7ab784ad245960213fd75e46f7ffe9bc16151232681d648e",
+      "bytes": 42395,
+      "fetched_at": "2026-10-03T12:51:12+00:00",
+      "code_version": "b3b4528cb4129cebae65e41b248dd011c07856a2"
+    },
+    {
+      "key": "2024032901089",
+      "url": "https://npb.jp/bis/2024/games/s2024032901089.html",
+      "status": 200,
+      "sha256": "103947efc0022c0efa7cbc53085d8ec5e1f58ef51c9ad10f03e9a2298005826b",
+      "bytes": 44636,
+      "fetched_at": "2026-10-03T12:51:15+00:00",
+      "code_version": "b3b4528cb4129cebae65e41b248dd011c07856a2"
+    },
+    {
+      "key": "2024032901090",
+      "url": "https://npb.jp/bis/2024/games/s2024032901090.html",
+      "status": 200,
+      "sha256": "81468c8f3680acd590485177f709023c15ecb229cb500116beaef445410d6931",
+      "bytes": 42119,
+      "fetched_at": "2026-10-03T12:51:19+00:00",
+      "code_version": "b3b4528cb4129cebae65e41b248dd011c07856a2"
+    }
+  ],
+  "input_sha256": "7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9",
+  "script_sha256": "6681918c9cecf70047003ae0c33acd8fbb8b61df4ef447ff085368febf8ccb67",
+  "protocol_sha256": "a36233c8b093110cb0558e455b1ab6b84d19cda2e5548016be00c1e871c9ee91",
+  "exit_code": 0
+}

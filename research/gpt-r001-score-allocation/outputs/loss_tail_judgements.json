@@ -1,0 +1,2416 @@
+{
+  "results": [
+    {
+      "id": "R001-T1",
+      "statement": "ビジター平均失点がホームより多い球団年では、その差の過半は6失点を超える部分に現れる",
+      "strength": "always",
+      "kind": "universal",
+      "threshold": null,
+      "if": [
+        {
+          "col": "away_more",
+          "op": "==",
+          "value": true
+        }
+      ],
+      "then": [
+        {
+          "col": "tail_dominates",
+          "op": "==",
+          "value": true
+        }
+      ],
+      "scope": {},
+      "units": 78,
+      "min_n": 1,
+      "alpha": 0.05,
+      "links": [],
+      "forms": [
+        {
+          "form": "original",
+          "n": 48,
+          "hold": 9,
+          "undetermined": 0,
+          "rate": 0.1875,
+          "ci": [
+            0.101913909548,
+            0.319398671493
+          ],
+          "base_rate": 0.3717948717948718,
+          "lift": 0.5043103448275862,
+          "fisher_p": 0.9999972189012203,
+          "verdict": "Rejected",
+          "counterexamples": [
+            {
+              "unit": "d-2018",
+              "season": 2018,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.6703834115805947,
+                "body_gap": 0.9518779342723009,
+                "tail_gap": 0.7185054773082943
+              },
+              "surprise": 1.6703834115805947,
+              "question": "d 2018 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2020",
+              "season": 2020,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.483333333333333,
+                "body_gap": 1.4,
+                "tail_gap": 0.08333333333333337
+              },
+              "surprise": 1.483333333333333,
+              "question": "d 2020 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2021",
+              "season": 2021,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.3519170579029738,
+                "body_gap": 0.8947574334898278,
+                "tail_gap": 0.4571596244131455
+              },
+              "surprise": 1.3519170579029738,
+              "question": "d 2021 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2013",
+              "season": 2013,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.2916666666666665,
+                "body_gap": 0.8194444444444446,
+                "tail_gap": 0.47222222222222227
+              },
+              "surprise": 1.2916666666666665,
+              "question": "d 2013 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2017",
+              "season": 2017,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.249804381846635,
+                "body_gap": 0.764084507042254,
+                "tail_gap": 0.4857198748043819
+              },
+              "surprise": 1.249804381846635,
+              "question": "d 2017 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2016",
+              "season": 2016,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.244718309859155,
+                "body_gap": 0.887910798122066,
+                "tail_gap": 0.3568075117370892
+              },
+              "surprise": 1.244718309859155,
+              "question": "d 2016 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2015",
+              "season": 2015,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.2286776212832549,
+                "body_gap": 0.7865805946791862,
+                "tail_gap": 0.44209702660406885
+              },
+              "surprise": 1.2286776212832549,
+              "question": "t 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2024",
+              "season": 2024,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.2120500782472616,
+                "body_gap": 1.1056338028169015,
+                "tail_gap": 0.10641627543035992
+              },
+              "surprise": 1.2120500782472616,
+              "question": "d 2024 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2024",
+              "season": 2024,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.1040688575899842,
+                "body_gap": 0.793427230046948,
+                "tail_gap": 0.31064162754303604
+              },
+              "surprise": 1.1040688575899842,
+              "question": "t 2024 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2020",
+              "season": 2020,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.0333333333333328,
+                "body_gap": 0.9833333333333334,
+                "tail_gap": 0.04999999999999999
+              },
+              "surprise": 1.0333333333333328,
+              "question": "t 2020 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2015",
+              "season": 2015,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.9724178403755874,
+                "body_gap": 0.7584115805946792,
+                "tail_gap": 0.21400625978090768
+              },
+              "surprise": 0.9724178403755874,
+              "question": "d 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2017",
+              "season": 2017,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.8703051643192485,
+                "body_gap": 0.4849374021909236,
+                "tail_gap": 0.38536776212832546
+              },
+              "surprise": 0.8703051643192485,
+              "question": "c 2017 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2023",
+              "season": 2023,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.8599374021909236,
+                "body_gap": 0.657863849765258,
+                "tail_gap": 0.20207355242566516
+              },
+              "surprise": 0.8599374021909236,
+              "question": "d 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2014",
+              "season": 2014,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.833333333333333,
+                "body_gap": 0.48611111111111116,
+                "tail_gap": 0.34722222222222227
+              },
+              "surprise": 0.833333333333333,
+              "question": "t 2014 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2025",
+              "season": 2025,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.808098591549296,
+                "body_gap": 0.8401799687010953,
+                "tail_gap": -0.03208137715179965
+              },
+              "surprise": 0.808098591549296,
+              "question": "g 2025 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2019",
+              "season": 2019,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.7525430359937406,
+                "body_gap": 0.7190923317683882,
+                "tail_gap": 0.033450704225352124
+              },
+              "surprise": 0.7525430359937406,
+              "question": "d 2019 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2022",
+              "season": 2022,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.7488262910798125,
+                "body_gap": 0.5584898278560253,
+                "tail_gap": 0.19033646322378717
+              },
+              "surprise": 0.7488262910798125,
+              "question": "d 2022 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2017",
+              "season": 2017,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.5831377151799688,
+                "body_gap": 0.5780516431924885,
+                "tail_gap": 0.005086071987480456
+              },
+              "surprise": 0.5831377151799688,
+              "question": "t 2017 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2015",
+              "season": 2015,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.558098591549296,
+                "body_gap": 0.47750391236306733,
+                "tail_gap": 0.08059467918622851
+              },
+              "surprise": 0.558098591549296,
+              "question": "g 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2023",
+              "season": 2023,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.5518388106416277,
+                "body_gap": 0.334507042253521,
+                "tail_gap": 0.21733176838810642
+              },
+              "surprise": 0.5518388106416277,
+              "question": "g 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2019",
+              "season": 2019,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.4469874804381848,
+                "body_gap": 0.43916275430359963,
+                "tail_gap": 0.007824726134585291
+              },
+              "surprise": 0.4469874804381848,
+              "question": "t 2019 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2018",
+              "season": 2018,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.4420970266040687,
+                "body_gap": 0.2411971830985915,
+                "tail_gap": 0.2008998435054774
+              },
+              "surprise": 0.4420970266040687,
+              "question": "t 2018 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2025",
+              "season": 2025,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.370305164319249,
+                "body_gap": 0.4221439749608762,
+                "tail_gap": -0.05183881064162754
+              },
+              "surprise": 0.370305164319249,
+              "question": "c 2025 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2014",
+              "season": 2014,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.3611111111111116,
+                "body_gap": 0.26388888888888884,
+                "tail_gap": 0.09722222222222232
+              },
+              "surprise": 0.3611111111111116,
+              "question": "g 2014 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2022",
+              "season": 2022,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.3384194053208138,
+                "body_gap": 0.20363849765258202,
+                "tail_gap": 0.13478090766823164
+              },
+              "surprise": 0.3384194053208138,
+              "question": "c 2022 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2015",
+              "season": 2015,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.33039906103286354,
+                "body_gap": 0.227699530516432,
+                "tail_gap": 0.10269953051643188
+              },
+              "surprise": 0.33039906103286354,
+              "question": "s 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2019",
+              "season": 2019,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.3255086071987483,
+                "body_gap": 0.26134585289514867,
+                "tail_gap": 0.0641627543035993
+              },
+              "surprise": 0.3255086071987483,
+              "question": "db 2019 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2016",
+              "season": 2016,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.31885758998435065,
+                "body_gap": 0.20109546165884185,
+                "tail_gap": 0.11776212832550859
+              },
+              "surprise": 0.31885758998435065,
+              "question": "g 2016 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2022",
+              "season": 2022,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.3039906103286385,
+                "body_gap": 0.2541079812206575,
+                "tail_gap": 0.04988262910798125
+              },
+              "surprise": 0.3039906103286385,
+              "question": "db 2022 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2021",
+              "season": 2021,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.29538341158059467,
+                "body_gap": 0.1606025039123633,
+                "tail_gap": 0.1347809076682316
+              },
+              "surprise": 0.29538341158059467,
+              "question": "c 2021 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2023",
+              "season": 2023,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.2591940532081378,
+                "body_gap": 0.24960876369327067,
+                "tail_gap": 0.00958528951486698
+              },
+              "surprise": 0.2591940532081378,
+              "question": "db 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2018",
+              "season": 2018,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.18955399061032896,
+                "body_gap": 0.3898669796557126,
+                "tail_gap": -0.20031298904538342
+              },
+              "surprise": 0.18955399061032896,
+              "question": "c 2018 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2023",
+              "season": 2023,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.18955399061032852,
+                "body_gap": 0.10054773082942114,
+                "tail_gap": 0.0890062597809077
+              },
+              "surprise": 0.18955399061032852,
+              "question": "c 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2015",
+              "season": 2015,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.1774256651017212,
+                "body_gap": 0.22378716744913918,
+                "tail_gap": -0.046361502347417816
+              },
+              "surprise": 0.1774256651017212,
+              "question": "c 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2024",
+              "season": 2024,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.14084507042253502,
+                "body_gap": 0.18564162754303615,
+                "tail_gap": -0.04479655712050079
+              },
+              "surprise": 0.14084507042253502,
+              "question": "c 2024 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2016",
+              "season": 2016,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.11854460093896746,
+                "body_gap": 0.28149452269170583,
+                "tail_gap": -0.1629499217527387
+              },
+              "surprise": 0.11854460093896746,
+              "question": "c 2016 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2023",
+              "season": 2023,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.04244913928012517,
+                "body_gap": 0.18466353677621283,
+                "tail_gap": -0.1422143974960876
+              },
+              "surprise": 0.04244913928012517,
+              "question": "t 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2020",
+              "season": 2020,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.03333333333333366,
+                "body_gap": 0.1166666666666667,
+                "tail_gap": -0.08333333333333337
+              },
+              "surprise": 0.03333333333333366,
+              "question": "db 2020 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2022",
+              "season": 2022,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.01388888888888884,
+                "body_gap": 0.08118153364632263,
+                "tail_gap": -0.06729264475743349
+              },
+              "surprise": 0.01388888888888884,
+              "question": "t 2022 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            }
+          ],
+          "code": 3
+        },
+        {
+          "form": "contrapositive",
+          "n": 49,
+          "hold": 10,
+          "undetermined": 0,
+          "rate": 0.20408163265306123,
+          "ci": [
+            0.114818496058,
+            0.336370009195
+          ],
+          "base_rate": 0.38461538461538464,
+          "lift": 0.5306122448979592,
+          "fisher_p": 0.9999972189012203,
+          "verdict": "Rejected",
+          "counterexamples": [
+            {
+              "unit": "d-2018",
+              "season": 2018,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.6703834115805947,
+                "body_gap": 0.9518779342723009,
+                "tail_gap": 0.7185054773082943
+              },
+              "surprise": 1.6703834115805947,
+              "question": "d 2018 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2020",
+              "season": 2020,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.483333333333333,
+                "body_gap": 1.4,
+                "tail_gap": 0.08333333333333337
+              },
+              "surprise": 1.483333333333333,
+              "question": "d 2020 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2021",
+              "season": 2021,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.3519170579029738,
+                "body_gap": 0.8947574334898278,
+                "tail_gap": 0.4571596244131455
+              },
+              "surprise": 1.3519170579029738,
+              "question": "d 2021 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2013",
+              "season": 2013,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.2916666666666665,
+                "body_gap": 0.8194444444444446,
+                "tail_gap": 0.47222222222222227
+              },
+              "surprise": 1.2916666666666665,
+              "question": "d 2013 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2017",
+              "season": 2017,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.249804381846635,
+                "body_gap": 0.764084507042254,
+                "tail_gap": 0.4857198748043819
+              },
+              "surprise": 1.249804381846635,
+              "question": "d 2017 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2016",
+              "season": 2016,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.244718309859155,
+                "body_gap": 0.887910798122066,
+                "tail_gap": 0.3568075117370892
+              },
+              "surprise": 1.244718309859155,
+              "question": "d 2016 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2015",
+              "season": 2015,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.2286776212832549,
+                "body_gap": 0.7865805946791862,
+                "tail_gap": 0.44209702660406885
+              },
+              "surprise": 1.2286776212832549,
+              "question": "t 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2024",
+              "season": 2024,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.2120500782472616,
+                "body_gap": 1.1056338028169015,
+                "tail_gap": 0.10641627543035992
+              },
+              "surprise": 1.2120500782472616,
+              "question": "d 2024 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2024",
+              "season": 2024,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.1040688575899842,
+                "body_gap": 0.793427230046948,
+                "tail_gap": 0.31064162754303604
+              },
+              "surprise": 1.1040688575899842,
+              "question": "t 2024 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2020",
+              "season": 2020,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 1.0333333333333328,
+                "body_gap": 0.9833333333333334,
+                "tail_gap": 0.04999999999999999
+              },
+              "surprise": 1.0333333333333328,
+              "question": "t 2020 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2015",
+              "season": 2015,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.9724178403755874,
+                "body_gap": 0.7584115805946792,
+                "tail_gap": 0.21400625978090768
+              },
+              "surprise": 0.9724178403755874,
+              "question": "d 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2017",
+              "season": 2017,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.8703051643192485,
+                "body_gap": 0.4849374021909236,
+                "tail_gap": 0.38536776212832546
+              },
+              "surprise": 0.8703051643192485,
+              "question": "c 2017 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2023",
+              "season": 2023,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.8599374021909236,
+                "body_gap": 0.657863849765258,
+                "tail_gap": 0.20207355242566516
+              },
+              "surprise": 0.8599374021909236,
+              "question": "d 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2014",
+              "season": 2014,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.833333333333333,
+                "body_gap": 0.48611111111111116,
+                "tail_gap": 0.34722222222222227
+              },
+              "surprise": 0.833333333333333,
+              "question": "t 2014 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2025",
+              "season": 2025,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.808098591549296,
+                "body_gap": 0.8401799687010953,
+                "tail_gap": -0.03208137715179965
+              },
+              "surprise": 0.808098591549296,
+              "question": "g 2025 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2019",
+              "season": 2019,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.7525430359937406,
+                "body_gap": 0.7190923317683882,
+                "tail_gap": 0.033450704225352124
+              },
+              "surprise": 0.7525430359937406,
+              "question": "d 2019 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "d-2022",
+              "season": 2022,
+              "team": "d",
+              "team_name": "d",
+              "focus": true,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.7488262910798125,
+                "body_gap": 0.5584898278560253,
+                "tail_gap": 0.19033646322378717
+              },
+              "surprise": 0.7488262910798125,
+              "question": "d 2022 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2017",
+              "season": 2017,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.5831377151799688,
+                "body_gap": 0.5780516431924885,
+                "tail_gap": 0.005086071987480456
+              },
+              "surprise": 0.5831377151799688,
+              "question": "t 2017 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2015",
+              "season": 2015,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.558098591549296,
+                "body_gap": 0.47750391236306733,
+                "tail_gap": 0.08059467918622851
+              },
+              "surprise": 0.558098591549296,
+              "question": "g 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2023",
+              "season": 2023,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.5518388106416277,
+                "body_gap": 0.334507042253521,
+                "tail_gap": 0.21733176838810642
+              },
+              "surprise": 0.5518388106416277,
+              "question": "g 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2019",
+              "season": 2019,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.4469874804381848,
+                "body_gap": 0.43916275430359963,
+                "tail_gap": 0.007824726134585291
+              },
+              "surprise": 0.4469874804381848,
+              "question": "t 2019 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2018",
+              "season": 2018,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.4420970266040687,
+                "body_gap": 0.2411971830985915,
+                "tail_gap": 0.2008998435054774
+              },
+              "surprise": 0.4420970266040687,
+              "question": "t 2018 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2025",
+              "season": 2025,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.370305164319249,
+                "body_gap": 0.4221439749608762,
+                "tail_gap": -0.05183881064162754
+              },
+              "surprise": 0.370305164319249,
+              "question": "c 2025 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2014",
+              "season": 2014,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.3611111111111116,
+                "body_gap": 0.26388888888888884,
+                "tail_gap": 0.09722222222222232
+              },
+              "surprise": 0.3611111111111116,
+              "question": "g 2014 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2022",
+              "season": 2022,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.3384194053208138,
+                "body_gap": 0.20363849765258202,
+                "tail_gap": 0.13478090766823164
+              },
+              "surprise": 0.3384194053208138,
+              "question": "c 2022 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2015",
+              "season": 2015,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.33039906103286354,
+                "body_gap": 0.227699530516432,
+                "tail_gap": 0.10269953051643188
+              },
+              "surprise": 0.33039906103286354,
+              "question": "s 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2019",
+              "season": 2019,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.3255086071987483,
+                "body_gap": 0.26134585289514867,
+                "tail_gap": 0.0641627543035993
+              },
+              "surprise": 0.3255086071987483,
+              "question": "db 2019 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2016",
+              "season": 2016,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.31885758998435065,
+                "body_gap": 0.20109546165884185,
+                "tail_gap": 0.11776212832550859
+              },
+              "surprise": 0.31885758998435065,
+              "question": "g 2016 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2022",
+              "season": 2022,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.3039906103286385,
+                "body_gap": 0.2541079812206575,
+                "tail_gap": 0.04988262910798125
+              },
+              "surprise": 0.3039906103286385,
+              "question": "db 2022 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2021",
+              "season": 2021,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.29538341158059467,
+                "body_gap": 0.1606025039123633,
+                "tail_gap": 0.1347809076682316
+              },
+              "surprise": 0.29538341158059467,
+              "question": "c 2021 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2023",
+              "season": 2023,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.2591940532081378,
+                "body_gap": 0.24960876369327067,
+                "tail_gap": 0.00958528951486698
+              },
+              "surprise": 0.2591940532081378,
+              "question": "db 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2018",
+              "season": 2018,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.18955399061032896,
+                "body_gap": 0.3898669796557126,
+                "tail_gap": -0.20031298904538342
+              },
+              "surprise": 0.18955399061032896,
+              "question": "c 2018 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2023",
+              "season": 2023,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.18955399061032852,
+                "body_gap": 0.10054773082942114,
+                "tail_gap": 0.0890062597809077
+              },
+              "surprise": 0.18955399061032852,
+              "question": "c 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2015",
+              "season": 2015,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.1774256651017212,
+                "body_gap": 0.22378716744913918,
+                "tail_gap": -0.046361502347417816
+              },
+              "surprise": 0.1774256651017212,
+              "question": "c 2015 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2024",
+              "season": 2024,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.14084507042253502,
+                "body_gap": 0.18564162754303615,
+                "tail_gap": -0.04479655712050079
+              },
+              "surprise": 0.14084507042253502,
+              "question": "c 2024 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "c-2016",
+              "season": 2016,
+              "team": "c",
+              "team_name": "c",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.11854460093896746,
+                "body_gap": 0.28149452269170583,
+                "tail_gap": -0.1629499217527387
+              },
+              "surprise": 0.11854460093896746,
+              "question": "c 2016 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2023",
+              "season": 2023,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.04244913928012517,
+                "body_gap": 0.18466353677621283,
+                "tail_gap": -0.1422143974960876
+              },
+              "surprise": 0.04244913928012517,
+              "question": "t 2023 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2020",
+              "season": 2020,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.03333333333333366,
+                "body_gap": 0.1166666666666667,
+                "tail_gap": -0.08333333333333337
+              },
+              "surprise": 0.03333333333333366,
+              "question": "db 2020 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2022",
+              "season": 2022,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": true,
+                "tail_dominates": false
+              },
+              "context": {
+                "gap": 0.01388888888888884,
+                "body_gap": 0.08118153364632263,
+                "tail_gap": -0.06729264475743349
+              },
+              "surprise": 0.01388888888888884,
+              "question": "t 2022 は「away_more == True」を満たすのに「tail_dominates == True」を満たさない。なぜか？",
+              "links": []
+            }
+          ],
+          "code": 3
+        },
+        {
+          "form": "converse",
+          "n": 29,
+          "hold": 9,
+          "undetermined": 0,
+          "rate": 0.3103448275862069,
+          "ci": [
+            0.172756167445,
+            0.492301342331
+          ],
+          "base_rate": 0.6153846153846154,
+          "lift": 0.5043103448275862,
+          "fisher_p": 0.9999972189012203,
+          "verdict": "Rejected",
+          "counterexamples": [
+            {
+              "unit": "db-2013",
+              "season": 2013,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -1.3055555555555562,
+                "body_gap": -0.958333333333333,
+                "tail_gap": -0.3472222222222221
+              },
+              "surprise": -1.3055555555555562,
+              "question": "db 2013 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2017",
+              "season": 2017,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -1.2648669796557122,
+                "body_gap": -0.7560641627543037,
+                "tail_gap": -0.5088028169014085
+              },
+              "surprise": -1.2648669796557122,
+              "question": "s 2017 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2023",
+              "season": 2023,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -1.1054381846635373,
+                "body_gap": -0.7756259780907668,
+                "tail_gap": -0.32981220657277
+              },
+              "surprise": -1.1054381846635373,
+              "question": "s 2023 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2014",
+              "season": 2014,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -1.0277777777777777,
+                "body_gap": -0.7083333333333335,
+                "tail_gap": -0.3194444444444445
+              },
+              "surprise": -1.0277777777777777,
+              "question": "db 2014 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2019",
+              "season": 2019,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.925469483568075,
+                "body_gap": -0.5336463223787171,
+                "tail_gap": -0.39182316118935834
+              },
+              "surprise": -0.925469483568075,
+              "question": "s 2019 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2018",
+              "season": 2018,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.8622848200312987,
+                "body_gap": -0.6836854460093895,
+                "tail_gap": -0.17859937402190917
+              },
+              "surprise": -0.8622848200312987,
+              "question": "s 2018 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2016",
+              "season": 2016,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.8096635367762133,
+                "body_gap": -0.6486697965571206,
+                "tail_gap": -0.1609937402190923
+              },
+              "surprise": -0.8096635367762133,
+              "question": "db 2016 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2019",
+              "season": 2019,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.7134194053208143,
+                "body_gap": -0.4839593114241003,
+                "tail_gap": -0.22946009389671357
+              },
+              "surprise": -0.7134194053208143,
+              "question": "g 2019 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2021",
+              "season": 2021,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.6604068857589982,
+                "body_gap": -0.3736306729264478,
+                "tail_gap": -0.28677621283255084
+              },
+              "surprise": -0.6604068857589982,
+              "question": "g 2021 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2025",
+              "season": 2025,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.6600156494522693,
+                "body_gap": -0.5025430359937406,
+                "tail_gap": -0.15747261345852895
+              },
+              "surprise": -0.6600156494522693,
+              "question": "db 2025 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2015",
+              "season": 2015,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.617957746478873,
+                "body_gap": -0.49921752738654135,
+                "tail_gap": -0.11874021909233179
+              },
+              "surprise": -0.617957746478873,
+              "question": "db 2015 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2024",
+              "season": 2024,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.5802034428794989,
+                "body_gap": -0.5714006259780904,
+                "tail_gap": -0.008802816901408439
+              },
+              "surprise": -0.5802034428794989,
+              "question": "db 2024 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2024",
+              "season": 2024,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.5019561815336462,
+                "body_gap": -0.39886541471048487,
+                "tail_gap": -0.1030907668231612
+              },
+              "surprise": -0.5019561815336462,
+              "question": "s 2024 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2021",
+              "season": 2021,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.4526604068857587,
+                "body_gap": -0.2895148669796561,
+                "tail_gap": -0.16314553990610325
+              },
+              "surprise": -0.4526604068857587,
+              "question": "db 2021 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2021",
+              "season": 2021,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.2417840375586855,
+                "body_gap": -0.29127543035993764,
+                "tail_gap": 0.04949139280125203
+              },
+              "surprise": -0.2417840375586855,
+              "question": "s 2021 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2016",
+              "season": 2016,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.221244131455399,
+                "body_gap": -0.17331768388106417,
+                "tail_gap": -0.047926447574334896
+              },
+              "surprise": -0.221244131455399,
+              "question": "t 2016 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2022",
+              "season": 2022,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.20813771517996837,
+                "body_gap": -0.3147496087636932,
+                "tail_gap": 0.10661189358372458
+              },
+              "surprise": -0.20813771517996837,
+              "question": "g 2022 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2018",
+              "season": 2018,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.15356025039123633,
+                "body_gap": -0.38458528951486715,
+                "tail_gap": 0.2310250391236307
+              },
+              "surprise": -0.15356025039123633,
+              "question": "g 2018 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2024",
+              "season": 2024,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.11658841940532083,
+                "body_gap": -0.17507824726134613,
+                "tail_gap": 0.05848982785602502
+              },
+              "surprise": -0.11658841940532083,
+              "question": "g 2024 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2017",
+              "season": 2017,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.11443661971830998,
+                "body_gap": -0.13458528951486715,
+                "tail_gap": 0.02014866979655705
+              },
+              "surprise": -0.11443661971830998,
+              "question": "db 2017 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            }
+          ],
+          "code": 3
+        },
+        {
+          "form": "inverse",
+          "n": 30,
+          "hold": 10,
+          "undetermined": 0,
+          "rate": 0.3333333333333333,
+          "ci": [
+            0.192304980837,
+            0.512199483555
+          ],
+          "base_rate": 0.6282051282051282,
+          "lift": 0.5306122448979592,
+          "fisher_p": 0.9999972189012203,
+          "verdict": "Rejected",
+          "counterexamples": [
+            {
+              "unit": "db-2013",
+              "season": 2013,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -1.3055555555555562,
+                "body_gap": -0.958333333333333,
+                "tail_gap": -0.3472222222222221
+              },
+              "surprise": -1.3055555555555562,
+              "question": "db 2013 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2017",
+              "season": 2017,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -1.2648669796557122,
+                "body_gap": -0.7560641627543037,
+                "tail_gap": -0.5088028169014085
+              },
+              "surprise": -1.2648669796557122,
+              "question": "s 2017 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2023",
+              "season": 2023,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -1.1054381846635373,
+                "body_gap": -0.7756259780907668,
+                "tail_gap": -0.32981220657277
+              },
+              "surprise": -1.1054381846635373,
+              "question": "s 2023 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2014",
+              "season": 2014,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -1.0277777777777777,
+                "body_gap": -0.7083333333333335,
+                "tail_gap": -0.3194444444444445
+              },
+              "surprise": -1.0277777777777777,
+              "question": "db 2014 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2019",
+              "season": 2019,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.925469483568075,
+                "body_gap": -0.5336463223787171,
+                "tail_gap": -0.39182316118935834
+              },
+              "surprise": -0.925469483568075,
+              "question": "s 2019 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2018",
+              "season": 2018,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.8622848200312987,
+                "body_gap": -0.6836854460093895,
+                "tail_gap": -0.17859937402190917
+              },
+              "surprise": -0.8622848200312987,
+              "question": "s 2018 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2016",
+              "season": 2016,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.8096635367762133,
+                "body_gap": -0.6486697965571206,
+                "tail_gap": -0.1609937402190923
+              },
+              "surprise": -0.8096635367762133,
+              "question": "db 2016 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2019",
+              "season": 2019,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.7134194053208143,
+                "body_gap": -0.4839593114241003,
+                "tail_gap": -0.22946009389671357
+              },
+              "surprise": -0.7134194053208143,
+              "question": "g 2019 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2021",
+              "season": 2021,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.6604068857589982,
+                "body_gap": -0.3736306729264478,
+                "tail_gap": -0.28677621283255084
+              },
+              "surprise": -0.6604068857589982,
+              "question": "g 2021 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2025",
+              "season": 2025,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.6600156494522693,
+                "body_gap": -0.5025430359937406,
+                "tail_gap": -0.15747261345852895
+              },
+              "surprise": -0.6600156494522693,
+              "question": "db 2025 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2015",
+              "season": 2015,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.617957746478873,
+                "body_gap": -0.49921752738654135,
+                "tail_gap": -0.11874021909233179
+              },
+              "surprise": -0.617957746478873,
+              "question": "db 2015 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2024",
+              "season": 2024,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.5802034428794989,
+                "body_gap": -0.5714006259780904,
+                "tail_gap": -0.008802816901408439
+              },
+              "surprise": -0.5802034428794989,
+              "question": "db 2024 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2024",
+              "season": 2024,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.5019561815336462,
+                "body_gap": -0.39886541471048487,
+                "tail_gap": -0.1030907668231612
+              },
+              "surprise": -0.5019561815336462,
+              "question": "s 2024 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2021",
+              "season": 2021,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.4526604068857587,
+                "body_gap": -0.2895148669796561,
+                "tail_gap": -0.16314553990610325
+              },
+              "surprise": -0.4526604068857587,
+              "question": "db 2021 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "s-2021",
+              "season": 2021,
+              "team": "s",
+              "team_name": "s",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.2417840375586855,
+                "body_gap": -0.29127543035993764,
+                "tail_gap": 0.04949139280125203
+              },
+              "surprise": -0.2417840375586855,
+              "question": "s 2021 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "t-2016",
+              "season": 2016,
+              "team": "t",
+              "team_name": "t",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.221244131455399,
+                "body_gap": -0.17331768388106417,
+                "tail_gap": -0.047926447574334896
+              },
+              "surprise": -0.221244131455399,
+              "question": "t 2016 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2022",
+              "season": 2022,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.20813771517996837,
+                "body_gap": -0.3147496087636932,
+                "tail_gap": 0.10661189358372458
+              },
+              "surprise": -0.20813771517996837,
+              "question": "g 2022 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2018",
+              "season": 2018,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.15356025039123633,
+                "body_gap": -0.38458528951486715,
+                "tail_gap": 0.2310250391236307
+              },
+              "surprise": -0.15356025039123633,
+              "question": "g 2018 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "g-2024",
+              "season": 2024,
+              "team": "g",
+              "team_name": "g",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.11658841940532083,
+                "body_gap": -0.17507824726134613,
+                "tail_gap": 0.05848982785602502
+              },
+              "surprise": -0.11658841940532083,
+              "question": "g 2024 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            },
+            {
+              "unit": "db-2017",
+              "season": 2017,
+              "team": "db",
+              "team_name": "db",
+              "focus": false,
+              "values": {
+                "away_more": false,
+                "tail_dominates": true
+              },
+              "context": {
+                "gap": -0.11443661971830998,
+                "body_gap": -0.13458528951486715,
+                "tail_gap": 0.02014866979655705
+              },
+              "surprise": -0.11443661971830998,
+              "question": "db 2017 は「tail_dominates == True」を満たすのに「away_more == True」を満たさない。なぜか？",
+              "links": []
+            }
+          ],
+          "code": 3
+        }
+      ],
+      "objection": true,
+      "skipped_forms": [],
+      "skip_reason": null,
+      "excluded_counterexamples": [],
+      "source": null,
+      "parent": null,
+      "change": null,
+      "held_out": null,
+      "falsifier": "ビジターの平均失点が多いのに、6点超過分の差が上限6点成分の差を上回らない球団年がある",
+      "note": "観測した有限表での全称命題。6点を上限とする成分と超過分の差を比較。因果・運・独立標本とは解釈しない。",
+      "conditions": 2,
+      "definition_sha256": "e7a292a5cb74c0a44358a8f5644a1b88b85d46578faa0291a94d54d6e17120de",
+      "judgement": {
+        "code": 3,
+        "stage": "none",
+        "form": "original",
+        "units": [
+          "d-2018",
+          "d-2020",
+          "d-2021",
+          "d-2013",
+          "d-2017",
+          "d-2016",
+          "t-2015",
+          "d-2024",
+          "t-2024",
+          "t-2020",
+          "d-2015",
+          "c-2017",
+          "d-2023",
+          "t-2014",
+          "g-2025",
+          "d-2019",
+          "d-2022",
+          "t-2017",
+          "g-2015",
+          "g-2023",
+          "t-2019",
+          "t-2018",
+          "c-2025",
+          "g-2014",
+          "c-2022",
+          "s-2015",
+          "db-2019",
+          "g-2016",
+          "db-2022",
+          "c-2021",
+          "db-2023",
+          "c-2018",
+          "c-2023",
+          "c-2015",
+          "c-2024",
+          "c-2016",
+          "t-2023",
+          "db-2020",
+          "t-2022"
+        ],
+        "n": 48,
+        "min_n": 1,
+        "ci": [
+          0.101913909548,
+          0.319398671493
+        ],
+        "undetermined": 0,
+        "reason": "判例 39 件: d-2018, d-2020, d-2021, d-2013, d-2017 ほか"
+      }
+    }
+  ],
+  "exit_code": 3,
+  "proposition_sha256": "660236d3646ed11bd604bda8c115420d3ba85048d66743345f7c1740f9758a6d",
+  "engine_sha256": "3641d8190128737401043082d56508e3d104c3bf7dc63ec5ed3d020069afc62d",
+  "table_sha256": "562f900eaf3942cb6cab51d72cc5e3c0666a193aa53e00ef6604a03a4c4e5c9c"
+}

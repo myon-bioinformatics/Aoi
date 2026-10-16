@@ -57,24 +57,18 @@ def test_missing_chrome_and_windows(monkeypatch, tmp_path):
         find_chrome()
     exe = tmp_path / "chrome"
     exe.write_text("#!/bin/sh\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="not executable"):
+        find_chrome(str(exe))
+    exe.chmod(0o755)
     assert find_chrome(str(exe)) == str(exe)
 
 
-def _installed_chrome():
-    if sys.platform == "win32":
-        return None
-    try:
-        return find_chrome()
-    except RuntimeError:
-        return None
-
-
-@pytest.mark.skipif(_installed_chrome() is None, reason="Chrome/Chromium is not available")
-def test_render_static_svg_text_not_png_bytes(tmp_path):
+def test_render_static_svg_text_not_png_bytes(tmp_path, chrome_executable):
     html = '<!doctype html><svg><text id="w">page-weight-42</text></svg>'
     svg = render_html(
         html,
         "svg",
+        chrome=chrome_executable,
         ready_selector="svg",
         capture_selector="svg",
         timeouts=Timeouts(launch=30, load=20, ready=10, capture=10),
@@ -85,6 +79,7 @@ def test_render_static_svg_text_not_png_bytes(tmp_path):
     png = render_html(
         html,
         "png",
+        chrome=chrome_executable,
         ready_selector="svg",
         capture_selector="svg",
         timeouts=Timeouts(launch=30, load=20, ready=10, capture=10),
@@ -92,10 +87,9 @@ def test_render_static_svg_text_not_png_bytes(tmp_path):
     assert png[:8] != svg[:8]
 
 
-@pytest.mark.skipif(_installed_chrome() is None, reason="Chrome/Chromium is not available")
-def test_render_session_reuses_one_browser():
+def test_render_session_reuses_one_browser(chrome_executable):
     html = '<!doctype html><svg><text>reuse-%d</text></svg>'
-    with RenderSession(timeouts=Timeouts(launch=30, load=20, ready=10, capture=10)) as session:
+    with RenderSession(chrome=chrome_executable, timeouts=Timeouts(launch=30, load=20, ready=10, capture=10)) as session:
         pid = session.browser._proc.pid
         for index in range(3):
             svg = session.render(
@@ -106,3 +100,67 @@ def test_render_session_reuses_one_browser():
             ).decode("utf-8")
             assert ("reuse-%d" % index) in svg
             assert session.browser._proc.pid == pid
+
+
+@pytest.mark.parametrize("failure", [None, "attach", "capture", "navigate"])
+def test_each_target_is_closed_on_success_and_failures(tmp_path, failure):
+    from dragowing import render
+    class Browser:
+        _proc = object()
+        def __init__(self):
+            self.calls = []
+        def call(self, method, params=None, **kwargs):
+            self.calls.append(method)
+            if method == "Target.createTarget":
+                return {"targetId": "target"}
+            if method == "Target.attachToTarget":
+                if failure == "attach":
+                    raise RuntimeError("attach failed")
+                return {"sessionId": "session"}
+            if method == "Page.navigate" and failure == "navigate":
+                return {"errorText": "navigation failed"}
+            if method == "Target.closeTarget":
+                assert params == {"targetId": "target"}
+                return {"success": True}
+            return {}
+        def evaluate(self, *args, **kwargs):
+            if failure == "capture":
+                raise RuntimeError("capture failed")
+            return "<svg><text>complete</text></svg>"
+        def wait_event(self, *args, **kwargs):
+            return {}
+        def forget_session(self, *args):
+            pass
+    session = render.RenderSession()
+    session.browser = Browser()
+    session._workdir = str(tmp_path)
+    if failure:
+        with pytest.raises(RuntimeError, match="failed"):
+            session.render("<svg/>", "svg")
+    else:
+        assert b"complete" in session.render("<svg/>", "svg")
+    assert session.browser.calls.count("Target.closeTarget") == 1
+
+
+@pytest.mark.parametrize("ready", [{"ready_selector": "#never"}, {"ready_expression": "new Promise(()=>{})"}])
+def test_ready_timeout_releases_target_and_session_is_reusable(chrome_executable, ready):
+    with RenderSession(chrome=chrome_executable, offline=True, timeouts=Timeouts(ready=0.1)) as session:
+        baseline = len(session.browser.call("Target.getTargets")["targetInfos"])
+        with pytest.raises((RuntimeError, TimeoutError), match="timeout"):
+            session.render("<!doctype html><div>not ready</div>", "svg", **ready)
+        assert len(session.browser.call("Target.getTargets")["targetInfos"]) == baseline
+        assert b"recovered" in session.render("<svg><text>recovered</text></svg>", "svg")
+
+
+def test_browser_termination_during_session_cleans_all_resources(chrome_executable):
+    session = RenderSession(chrome=chrome_executable, offline=True)
+    with session:
+        workdir = Path(session._workdir)
+        browserdir = Path(session.browser._tmp)
+        proc = session.browser._proc
+        proc.kill()
+        proc.wait()
+        with pytest.raises(RuntimeError, match="closed the pipe"):
+            session.render("<svg/>", "svg")
+    assert not workdir.exists() and not browserdir.exists()
+    assert session.browser._proc is session.browser._reader is None

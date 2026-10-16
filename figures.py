@@ -6,10 +6,6 @@ import json
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from . import forms
-from ask import registration_status
-from .forms import FORM_LABEL, _counts, _form_cell, _forms, contingency
-
 A_COLOR = "#1f77b4"
 B_COLOR = "#d62728"
 LINE_COLOR = "#9aa0a6"
@@ -35,100 +31,6 @@ def _base_layout(**extra):
     )
     layout.update(extra)
     return layout
-
-
-def _rate_suffix(form: dict | None) -> str:
-    if not form or _counts(form) is None:
-        return ""
-    rate = form.get("rate")
-    if isinstance(rate, bool) or not isinstance(rate, (int, float)):
-        return ""
-    return "\nrate=" + json.dumps(rate, ensure_ascii=False)
-
-
-def form_meta(form: dict | None) -> dict:
-    counts = _counts(form) if form else None
-    rate = None
-    if form and counts is not None:
-        raw = form.get("rate")
-        if not isinstance(raw, bool) and isinstance(raw, (int, float)):
-            rate = raw
-    return {
-        "form": form.get("form") if form else None,
-        "n": counts[0] if counts else None,
-        "hold": counts[1] if counts else None,
-        "counterexample_count": (counts[0] - counts[1]) if counts else None,
-        "rate": rate,
-    }
-
-
-def four_forms_figure(item: dict) -> go.Figure:
-    """C1. 2×2 と四つの形。印は registration_status。"""
-    label = registration_status(item)
-    cells = contingency(item)
-    forms_by_name = _forms(item)
-    order = ("original", "converse", "inverse", "contrapositive")
-    metas = []
-    texts = {}
-    for name in order:
-        form = forms_by_name.get(name)
-        metas.append(form_meta(form))
-        texts[name] = f"{FORM_LABEL[name]}: {_form_cell(form)}{_rate_suffix(form)}"
-    fig = make_subplots(
-        rows=2,
-        cols=1,
-        specs=[[{"type": "table"}], [{"type": "table"}]],
-        vertical_spacing=0.08,
-        row_heights=[0.42, 0.58],
-    )
-    fig.add_trace(
-        go.Table(
-            header=dict(values=["", "Q", "¬Q"], fill_color="#f4f4f4", align="center", font=dict(family=FONT, size=14)),
-            cells=dict(
-                values=[
-                    ["P", "¬P"],
-                    [forms._cell(cells["P∧Q"]), forms._cell(cells["¬P∧Q"])],
-                    [forms._cell(cells["P∧¬Q"]), forms._cell(cells["¬P∧¬Q"])],
-                ],
-                align="center",
-                font=dict(family=FONT, size=16),
-                height=32,
-            ),
-        ),
-        row=1,
-        col=1,
-    )
-    fig.add_trace(
-        go.Table(
-            header=dict(values=["", ""], fill_color="#f4f4f4", align="center"),
-            cells=dict(
-                values=[
-                    [texts["original"], texts["inverse"]],
-                    [texts["converse"], texts["contrapositive"]],
-                ],
-                align="left",
-                font=dict(family=FONT, size=13),
-                height=36,
-            ),
-        ),
-        row=2,
-        col=1,
-    )
-    fig.update_layout(
-        **_base_layout(
-            title=dict(text=f"［{label}］ {item.get('id', '')}"),
-            height=560,
-            margin=dict(l=16, r=16, t=64, b=16),
-            meta={
-                "kind": "four_forms",
-                "id": item.get("id"),
-                "registration": label,
-                "cells": cells,
-                "forms": metas,
-            },
-        )
-    )
-    return fig
 
 
 def _team_label(league: str, team_name: str, team: str) -> str:
@@ -320,6 +222,9 @@ def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figur
         text.append(text_row)
         marks.append(mark_row)
         custom.append(custom_row)
+    finite = [value for row in z for value in row if isinstance(value, (int, float))]
+    zmin = min(finite) if finite else None
+    zmax = max(finite) if finite else None
     fig = go.Figure(
         data=[
             go.Heatmap(
@@ -331,6 +236,8 @@ def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figur
                 textfont=dict(family=FONT, size=14, color="#1a1a1a"),
                 customdata=custom,
                 colorscale="Viridis",
+                zmin=zmin,
+                zmax=zmax,
                 zsmooth=False,
                 hoverongaps=False,
                 showlegend=False,
@@ -372,88 +279,3 @@ def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figur
     )
     return fig
 
-
-_CIRCLES = {
-    2: [(-0.55, 0.1, 0.95), (0.55, 0.1, 0.95)],
-    3: [(-0.58, 0.42, 1.05), (0.58, 0.42, 1.05), (0.0, -0.38, 1.05)],
-}
-_SPOTS = {
-    2: {
-        (False, False): (-1.7, -1.25),
-        (True, False): (-1.05, 0.2),
-        (False, True): (1.05, 0.2),
-        (True, True): (0.0, 0.2),
-    },
-    3: {
-        (False, False, False): (-1.95, -1.5),
-        (True, False, False): (-1.25, 0.9),
-        (False, True, False): (1.25, 0.9),
-        (False, False, True): (0.0, -1.2),
-        (True, True, False): (0.0, 1.0),
-        (True, False, True): (-0.62, -0.12),
-        (False, True, True): (0.62, -0.12),
-        (True, True, True): (0.0, 0.32),
-    },
-}
-_FILL = ("rgba(31,119,180,0.28)", "rgba(255,127,14,0.28)", "rgba(44,160,44,0.28)")
-_SOLID = ("#1f77b4", "#ff7f0e", "#2ca02c")
-
-
-def overlap_figure(overlap: dict) -> go.Figure:
-    """C5. 円の面積は件数ではない。件数は整数ラベル。"""
-    conds = overlap["conditions"]
-    n_sets = len(conds)
-    if n_sets not in (2, 3):
-        raise ValueError("条件集合は 2 個か 3 個にする（B クラスを含む）")
-    shapes = []
-    for (cx, cy, radius), fill in zip(_CIRCLES[n_sets], _FILL):
-        shapes.append(
-            dict(
-                type="circle",
-                x0=cx - radius,
-                y0=cy - radius,
-                x1=cx + radius,
-                y1=cy + radius,
-                line=dict(color="#333333", width=1),
-                fillcolor=fill,
-                layer="below",
-            )
-        )
-    fig = go.Figure()
-    annotations = []
-    for region in overlap["regions"]:
-        spot = _SPOTS[n_sets][tuple(region["bits"])]
-        text = f"外 {region['count']}" if not any(region["bits"]) else str(region["count"])
-        annotations.append(dict(x=spot[0], y=spot[1], text=text, showarrow=False, font=dict(size=16, color="#111111")))
-    for index, cond in enumerate(conds):
-        fig.add_trace(
-            go.Scatter(
-                x=[],
-                y=[],
-                mode="markers",
-                marker=dict(size=12, color=_SOLID[index]),
-                name=cond["label"],
-                meta={"role": "legend"},
-            )
-        )
-    names = " · ".join(cond["label"] for cond in conds)
-    fig.update_layout(
-        **_base_layout(
-            title=dict(text=f"条件集合の重なり<br>{names}<br>円の面積は件数ではない。件数はラベルの整数"),
-            height=700,
-            width=820,
-            shapes=shapes,
-            annotations=annotations,
-            xaxis=dict(visible=False, range=[-2.6, 2.6]),
-            yaxis=dict(visible=False, range=[-2.15, 2.35], scaleanchor="x", scaleratio=1),
-            meta={
-                "kind": "overlap",
-                "source": "season.jsonl",
-                "conditions": overlap["conditions"],
-                "regions": overlap["regions"],
-                "units": overlap["units"],
-                "matrix": overlap["matrix"],
-            },
-        )
-    )
-    return fig

@@ -39,4 +39,4 @@ python dragowing/forms.py --results cycles/c001-chunichi/outputs --id P1
 
 候補 ID（`もしかして`）はこの表示には出さない。問い合わせ側の扱いは [ask.md](../../queryu/docs/ask.md)。
 
-HTML（軌跡、球団×年、条件の重なり、反例カード）は [figures.md](figures.md)。
+HTML（軌跡、球団×年、条件の重なり、命題の一覧）は [figures.md](figures.md)。

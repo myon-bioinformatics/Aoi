@@ -23,8 +23,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "queryu/ask")]
 
 from ask import (
+    ParsedInput,
     answer_results,
-    parse,
+    parse_input,
     render,
     resolve_threshold,
     suggestion_for,
@@ -257,26 +258,24 @@ def ask_question(
 ):
     reader = "json" if text.startswith("{") else "rules"
     if text.startswith("{"):
-        q, unread = validate_query(json.loads(text)), []
+        parsed = ParsedInput(text, validate_query(json.loads(text)))
     else:
-        q, unread = parse(text)
+        parsed = parse_input(text)
+    q, unread = parsed.query, parsed.unread
+    blocked = parsed.status == "undetermined"
     if (cache is not None or known is not None) and not cycle:
         raise ValueError("cycle が必要")
 
-    if known is not None and not unread:
+    if known is not None and not blocked:
         prepare(results, known, cycle=cycle, result_sha=result_sha)
         prepared = lookup(q, results, known, cycle=cycle, result_sha=result_sha)
     else:
         prepared = None
     cached = None
-    if cache is not None:
+    if cache is not None and not blocked:
         cached = cache / f"{cache_key(cycle, results, q, result_sha)}.json"
-    if unread:
-        result = {
-            "answer": "判定不能",
-            "error": "解釈を確認してください: " + "; ".join(unread),
-            "rows": [],
-        }
+    if blocked:
+        result = parsed.blocked_answer()
     elif prepared is not None:
         result = prepared
     elif cached and cached.exists():
@@ -290,6 +289,7 @@ def ask_question(
         "question": text,
         "query": asdict(q),
         "unread": unread,
+        **parsed.metadata(),
         "result": result,
         "reader": reader,
         "suggestions": hinted["candidates"],

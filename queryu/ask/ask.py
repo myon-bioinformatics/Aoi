@@ -105,13 +105,142 @@ def _norm(text: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", text).split())
 
 
-def parse(text: str) -> tuple[Query, list[str]]:
-    """問い → (Query, 読めなかったこと)。読めなかったことは、黙って捨てずに返す。"""
-    t = _norm(text)
-    q, unread = Query(), []
+@dataclass(frozen=True)
+class UnreadSpan:
+    """Half-open Python Unicode code-point offsets into the original input."""
+    start: int
+    end: int
+    raw_text: str
+
+
+@dataclass(frozen=True)
+class ParseDiagnostic:
+    code: str
+    explanation: str
+
+
+@dataclass
+class ParsedInput:
+    raw_text: str
+    query: Query
+    diagnostics: list[ParseDiagnostic] = field(default_factory=list)
+    unread_spans: list[UnreadSpan] = field(default_factory=list)
+
+    @property
+    def status(self) -> str:
+        return "undetermined" if self.diagnostics or self.unread_spans else "parsed"
+
+    @property
+    def unread(self) -> list[str]:
+        """Compatibility presentation; never used to recover raw text or offsets."""
+        return ([d.explanation for d in self.diagnostics if d.code != "unsupported_text"]
+                + [f"未対応の語・条件: {span.raw_text}" for span in self.unread_spans])
+
+    def metadata(self) -> dict:
+        return {"raw_text": self.raw_text, "parse_status": self.status,
+                "parse_diagnostics": [asdict(d) for d in self.diagnostics],
+                "unread_spans": [asdict(span) for span in self.unread_spans]}
+
+    def blocked_answer(self) -> dict:
+        """Shared CLI/inbox decision, with stable machine reasons and separate display."""
+        return {"answer": "判定不能", "status": "undetermined",
+                "reason_codes": [d.code for d in self.diagnostics],
+                "error": "解釈を確認してください: " + "; ".join(self.unread), "rows": []}
+
+
+def _norm_with_spans(text: str) -> tuple[str, list[tuple[int, int]]]:
+    """NFKC/whitespace view plus a map back to untouched source segments.
+
+    Combining marks (including half-width dakuten), compatibility expansions,
+    and Hangul composition can change length. Keep each normalization segment
+    together instead of treating normalized offsets as source offsets.
+    """
+    chars, offsets = [], []
+    start, segment, normalized = 0, "", ""
+
+    def flush(end):
+        chars.extend(normalized)
+        offsets.extend([(start, end)] * len(normalized))
+
+    for i, char in enumerate(text):
+        part = unicodedata.normalize("NFKC", char)
+        joined = unicodedata.normalize("NFKC", segment + char)
+        if segment and (unicodedata.combining(part[0]) or joined != normalized + part):
+            segment += char
+            normalized = joined
+        else:
+            flush(i)
+            start, segment, normalized = i, char, part
+    flush(len(text))
+    view = "".join(chars)
+    words = list(re.finditer(r"\S+", view))
+    out, source = [], []
+    previous_end = 0
+    for word in words:
+        if out:
+            out.append(" ")
+            gap = offsets[previous_end:word.start()]
+            source.append((min(s for s, _ in gap), max(e for _, e in gap)))
+        out.append(word[0])
+        source.extend(offsets[word.start():word.end()])
+        previous_end = word.end()
+    return "".join(out), source
+
+
+_WORDS = ("判例", "反例", "例外", "成立率", "命題", "式", "対偶", "逆に", "逆", "裏", "元の", "original",
+          "一覧", "唯一", "ただ1つ", "1つだけ", "ひとつだけ", "1個だけ", "以外", "除いて", "除く", "抜いて", "抜き",
+          "ありますか", "あるの", "ある", "ない", "有無", "はい", "いいえ", "教えてください", "教えて", "ください")
+_WORD = re.compile("|".join(map(re.escape, sorted(_WORDS, key=len, reverse=True))))
+_TEAM_UNIT = re.compile(r"(?:" + _TEAM.pattern + r")\s*(?:20\d{2}年?)?")
+_SEPARATORS = " \t\r\n?？、。,:："
+_CONNECTORS = {"の", "に", "は", "が", "を", "で", "と", "か", "には", "のは", "とは", "では"}
+
+
+def _unread_spans(raw: str, view: str, offsets: list[tuple[int, int]]) -> list[UnreadSpan]:
+    # Mask consumed ranges without changing their positions or joining words.
+    rest = list(view)
+    consumed = [False] * len(view)
+    for pattern in (_ID, _PCT, _TEAM_UNIT, _CODE_UNIT, _WORD):
+        for match in pattern.finditer("".join(rest)):
+            if pattern is _CODE_UNIT and match[1] not in CODES:
+                continue
+            rest[match.start():match.end()] = ["\0"] * len(match[0])
+            consumed[match.start():match.end()] = [True] * len(match[0])
+    spans = []
+    # A literal NUL in user input is unknown text, not our internal mask.
+    for match in re.finditer(r"0+", "".join("1" if flag else "0" for flag in consumed)):
+        start, end = match.span()
+        while start < end and view[start] in _SEPARATORS:
+            start += 1
+        while end > start and view[end - 1] in _SEPARATORS:
+            end -= 1
+        if start == end or view[start:end] in _CONNECTORS:
+            continue
+        # A standalone leading particle is grammar, not part of the next word.
+        # Do not remove particles from inside an unknown word or condition.
+        leading = re.match(r"(?:には|のは|とは|では|[のにはがをでと])\s+", view[start:end])
+        if leading:
+            start += leading.end()
+        source_start = min(s for s, _ in offsets[start:end])
+        source_end = max(e for _, e in offsets[start:end])
+        if spans and source_start <= spans[-1].end:
+            source_start = spans.pop().start
+        spans.append(UnreadSpan(source_start, source_end, raw[source_start:source_end]))
+    return spans
+
+
+def parse_input(text: str) -> ParsedInput:
+    """Read a normalized view, retaining source evidence and machine diagnostics."""
+    t, offsets = _norm_with_spans(text)
+    q = Query()
+    parsed = ParsedInput(text, q)
+
+    def report(code, explanation):
+        parsed.diagnostics.append(ParseDiagnostic(code, explanation))
+
     ids = [f"{a}{int(b)}" for a, b in _ID.findall(t)]
     if len(ids) > 1:
-        unread.append(f"命題・式が2つ以上: {', '.join(ids)}（最初の {ids[0]} だけ使う）")
+        report("multiple_targets", f"命題・式が2つ以上: {', '.join(ids)}（最初の {ids[0]} だけ使う）")
     q.target = ids[0] if ids else None
     has_e, has_p = "式" in t, "命題" in t
     if not q.target and has_e != has_p:
@@ -143,7 +272,7 @@ def parse(text: str) -> tuple[Query, list[str]]:
         else:
             q.min_rate = v
             if not rel:
-                unread.append(f"{num}{unit_} の向き（以上・以下）が書かれていない（以上として読む）")
+                report("missing_rate_direction", f"{num}{unit_} の向き（以上・以下）が書かれていない（以上として読む）")
 
     # 問いの種類
     if re.search(r"唯一|ただ1つ|1つだけ|ひとつだけ|1個だけ", t):
@@ -155,31 +284,27 @@ def parse(text: str) -> tuple[Query, list[str]]:
     elif q.min_rate is not None or q.max_rate is not None or "成立率" in t:
         q.ask = "rate"
     else:
-        unread.append("問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）")
+        report("unrecognized_ask", "問いの種類（判例・唯一の例外・成立率）が読めない（判例の一覧として読む）")
     if q.ask == "rate" and q.min_rate is None and q.max_rate is None:
-        unread.append("成立率の条件の数が読めない")
+        report("missing_rate_value", "成立率の条件の数が読めない")
     if any(rel in ("未満", "超") for _, _, rel in _PCT.findall(t)):
-        unread.append("未満・超は未対応。以上・以下とは区別して問い合わせてください")
+        report("unsupported_rate_comparison", "未満・超は未対応。以上・以下とは区別して問い合わせてください")
     if sum(word in t for word in ("対偶", "裏")) + bool(re.search(r"逆(?!に)", t)) > 1:
-        unread.append("形が2つ以上ある")
-    # Consume only the supported vocabulary. Unrecognized restrictions must not
-    # quietly disappear (e.g. 雨の日だけ, 2025年だけ, E25とE26).
-    rest = _ID.sub(" ", t)
-    rest = _PCT.sub(" ", rest)
-    rest = re.sub(r"(?:" + _TEAM.pattern + r")\s*(?:20\d{2}年?)?", " ", rest)
-    rest = _CODE_UNIT.sub(" ", rest)
-    words = ("判例", "反例", "例外", "成立率", "命題", "式", "対偶", "逆に", "逆", "裏", "元の", "original",
-             "一覧", "唯一", "ただ1つ", "1つだけ", "ひとつだけ", "1個だけ", "以外", "除いて", "除く", "抜いて", "抜き",
-             "ありますか", "あるの", "ある", "ない", "有無", "はい", "いいえ", "教えてください", "教えて", "ください")
-    rest = re.sub("|".join(map(re.escape, sorted(words, key=len, reverse=True))), " ", rest)
-    rest = re.sub(r"[\s?？、。,:：のにはがをでとか]", "", rest)
-    if rest:
-        unread.append(f"未対応の語・条件: {rest}")
+        report("multiple_forms", "形が2つ以上ある")
+    parsed.unread_spans = _unread_spans(text, t, offsets)
+    if parsed.unread_spans:
+        report("unsupported_text", "未対応の語・条件が残っています")
     try:
         validate_query(asdict(q))
     except (ValueError, TypeError) as e:
-        unread.append(str(e))
-    return q, unread
+        report("invalid_query", str(e))
+    return parsed
+
+
+def parse(text: str) -> tuple[Query, list[str]]:
+    """Compatibility API. Structured evidence is available from ``parse_input``."""
+    parsed = parse_input(text)
+    return parsed.query, parsed.unread
 
 
 RESULT_FILES = ("propositions.jsonl", "sets.jsonl")
@@ -436,20 +561,23 @@ def main(argv=None) -> int:
         except (ValueError, TypeError) as e:
             print(f"Query の値が型の外: {e}", file=sys.stderr)
             return 2
-        unread, text = [], args.query
+        text = args.query
+        parsed = ParsedInput(text, q)
     elif args.question:
         text = args.question
-        q, unread = parse(text)
+        parsed = parse_input(text)
+        q = parsed.query
     else:
         ap.error("問いか --query か --schema が要る")
-    res = ({"answer": "判定不能", "error": "解釈を確認してください: " + "; ".join(unread), "rows": []}
-           if unread else answer_results(q, results))
+    unread = parsed.unread
+    res = parsed.blocked_answer() if parsed.status == "undetermined" else answer_results(q, results)
     hinted = suggestion_for(text, results, unread, res, threshold, query=q)
     if args.log:
         args.log.parent.mkdir(parents=True, exist_ok=True)
         with args.log.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps({"question": text, "query": asdict(q), "unread": unread}, ensure_ascii=False) + "\n")
-    payload = {"query": asdict(q), "unread": unread, **res,
+            fh.write(json.dumps({"question": text, "query": asdict(q), "unread": unread,
+                                 **parsed.metadata()}, ensure_ascii=False) + "\n")
+    payload = {"query": asdict(q), "unread": unread, **parsed.metadata(), **res,
                "suggestions": hinted["candidates"], "suggestion_status": hinted["status"]}
     print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json
           else render(text, q, unread, res, hinted["line"]))

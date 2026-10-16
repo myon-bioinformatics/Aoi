@@ -45,6 +45,34 @@ python queryu/ask/ask.py "中日が判例の命題" --log cycles/c001-chunichi/o
 - 終了コード: 0 = 答えた、1 = 判定不能（結果が読めない、ID が結果にない、読めなかった語）、2 = `--query` が型の外
 
 未対応の語・条件が残った場合も終了コード1で解釈確認を求め、条件を捨てて回答しない。
+
+### 未解釈入力の証跡（Issue #30）
+
+`parse_input()` は読み取り用の NFKC・空白正規化と、保存する原文を分ける。
+`parse()` の既存の `(Query, unread)` 契約は維持する。
+CLI の JSON・`--log` の JSONL・受付の受領記録には同じ証跡を持たせる。
+
+| 項目 | 意味 |
+|---|---|
+| `raw_text` | 正規化前の問い全体。受付では `/ask` の引数（コマンド本文全体は受領記録の `body`） |
+| `unread_spans` | 未解釈の範囲の `start`・`end`・`raw_text`。0始まり、終了位置を含まない Python Unicode code point 単位。常に `raw_text[start:end]` が範囲の原文と一致する。UTF-8 byte・UTF-16 offset ではない |
+| `parse_status` | 機械値 `parsed` / `undetermined`。`parsed` は構文が読めたという意味で、研究上の成立判定ではない |
+| `parse_diagnostics` | 安定した `code` と人間向けの `explanation`。説明文で機械判定しない |
+| `unread` | 互換性のための人間向け表示。原文・span の正本ではない |
+
+Q5 `P121 は 2026 年で確かめられた？` は `parse_status=undetermined`。
+`unread_spans` は `{start: 7, end: 20, raw_text: "2026 年で確かめられた"}` を保持する。
+理由コードは `unrecognized_ask`・`unsupported_text`。回答は引き続き「判定不能」で、
+P121 の既存結果・2026 年の暫定結果には対応付けない。
+未解釈入力を止めた回答は機械値 `status=undetermined` と `reason_codes` を持ち、
+日本語の `answer`・`error`・`unread` は表示として別に保持する。
+
+助詞は残った範囲全体が既知の接続表現の場合か、空白で区切られた先頭の助詞の場合に限って扱う。
+未知語の途中の「か」「で」等は削らない。「とか」等の未知の条件も、文字を消して空にしない。
+未解釈入力は既知回答・回答キャッシュの読取りと書込みを迂回し、候補は候補としてだけ提示する。
+新しい証跡も `ask.py` 内に置くため、既存の回答コード hash で古いキャッシュを無効にする。
+取得計画・正式評価器・研究データは変更しない。
+
 結果なし・該当する形なし・判定不能単位が残る場合には、反例が確認できないことを
 「いいえ」と断定しない。不完全な反例一覧を使った除外や球団指定も同様に扱う。
 反例数は `n - hold`。`undetermined` は `n` の外に数えられているため二重に引かない。

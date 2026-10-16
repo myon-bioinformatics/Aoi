@@ -222,6 +222,9 @@ def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figur
         text.append(text_row)
         marks.append(mark_row)
         custom.append(custom_row)
+    finite = [value for row in z for value in row if isinstance(value, (int, float))]
+    zmin = min(finite) if finite else None
+    zmax = max(finite) if finite else None
     fig = go.Figure(
         data=[
             go.Heatmap(
@@ -233,6 +236,8 @@ def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> go.Figur
                 textfont=dict(family=FONT, size=14, color="#1a1a1a"),
                 customdata=custom,
                 colorscale="Viridis",
+                zmin=zmin,
+                zmax=zmax,
                 zsmooth=False,
                 hoverongaps=False,
                 showlegend=False,

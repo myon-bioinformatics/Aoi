@@ -2,21 +2,22 @@
 from __future__ import annotations
 
 import html
+import importlib
 import json
 import re
-
-import markdown
+from pathlib import Path
 
 from .figures import heatmap_figure, trajectory_figure
 from .forms import (
+    COUNTEREXAMPLE_PAIR_LABELS,
     FORM_LABEL,
     FORM_ORDER,
     _counts,
-    _cell,
     _form_cell,
     _forms,
-    contingency,
+    counterexample_lists_equal,
     registration_status,
+    render_forms_table,
     render_logic,
 )
 
@@ -37,7 +38,10 @@ summary { cursor: pointer; }
 
 _MD = ["tables", "fenced_code", "attr_list", "md_in_html"]
 _SAFE_ANCHOR = re.compile(r"[A-Za-z][A-Za-z0-9_-]*")
-_CARD_FIELDS = ("unit", "season", "team", "team_name", "focus", "surprise", "question", "links", "values", "context")
+_CARD_FIELDS = ("unit", "season", "team", "team_name", "focus", "surprise", "question", "values", "context")
+_COUNTEREXAMPLE_ORDER = (
+    "反例の並びは記録の順である。`surprise` の絶対値の降順。同点は `season`、次に `team`。"
+)
 _SUMMARY_FORMS = (("original", "元"), ("converse", "逆"), ("inverse", "裏"), ("contrapositive", "対偶"))
 
 _INDEX_MD = """\
@@ -60,15 +64,24 @@ _INDEX_MD = """\
 """
 
 _AFTER_SUMMARY = """\
-入力ファイル: `propositions.jsonl`。`hold` と反例（`n - hold`）は記録の `n` と `hold` から数える。`rate` はファイルの数のまま置く。反例の表の行数は `counterexamples` の長さで、`n - hold` とは別に置く。
+入力ファイル: `propositions.jsonl`。`hold` と反例（`n - hold`）は記録の `n` と `hold` から数える。`rate` はファイルの数のまま置く。反例の表の行数は `counterexamples` の長さで、`n - hold` とは別に置く。除外した反例は全命題で 145 行。`held_out` の再確認は 8 命題にある。
 {: .provenance}
 
 [球団年の図へ](index.html)
 """
 
 
+def _markdown_library():
+    """Python-Markdown。`vendor/markdown.py` が import を横取りしない。"""
+    module = importlib.import_module("markdown")
+    path = Path(getattr(module, "__file__", "") or "").resolve()
+    if path.as_posix().endswith("/vendor/markdown.py"):
+        raise RuntimeError(f"vendor markdown が import を横取りしている: {path}")
+    return module
+
+
 def render_md(source: str) -> str:
-    return markdown.markdown(source, extensions=_MD)
+    return _markdown_library().markdown(source, extensions=_MD)
 
 
 def to_builtin(obj):
@@ -230,65 +243,83 @@ def _table(headers, row_cells) -> str:
     return "\n".join([head, sep, *body])
 
 
-def _form_line(name: str, form) -> str:
-    text = f"{FORM_LABEL[name]}: {_form_cell(form)}"
-    if isinstance(form, dict) and "rate" in form:
-        text += " rate=" + exact_json(form.get("rate"))
-    return text
-
-
-def forms_table_md(item: dict) -> str:
-    """四つの形。上は P/¬P × Q/¬Q、下は元・逆・裏・対偶の 2×2。どちらも Markdown の表。"""
-    cells = contingency(item)
-    forms = _forms(item)
-    grid = _table(
-        ["", "Q", "¬Q"],
-        [
-            ["P", md_cell(_cell(cells["P∧Q"])), md_cell(_cell(cells["P∧¬Q"]))],
-            ["¬P", md_cell(_cell(cells["¬P∧Q"])), md_cell(_cell(cells["¬P∧¬Q"]))],
-        ],
-    )
-    pair = _table(
-        ["", ""],
-        [
-            [md_cell(_form_line("original", forms.get("original"))), md_cell(_form_line("converse", forms.get("converse")))],
-            [md_cell(_form_line("inverse", forms.get("inverse"))), md_cell(_form_line("contrapositive", forms.get("contrapositive")))],
-        ],
-    )
-    return grid + "\n\n" + pair
-
-
 def _card_columns(cards: list[dict]) -> list[str]:
     return [key for key in _CARD_FIELDS if any(key in card for card in cards)]
 
 
+def _example_table(cards: list[dict]) -> str:
+    columns = _card_columns(cards)
+    rows = [[md_cell(card[key]) if key in card else "" for key in columns] for card in cards]
+    return _table(columns, rows)
+
+
+def _details_block(summary: str, body: str) -> str:
+    return "\n".join(['<details markdown="1">', f"<summary>{html.escape(summary, quote=False)}</summary>", "", body, "", "</details>"])
+
+
 def counterexamples_md(item: dict) -> str:
-    """形ごとに 1 表。1 行が 1 単位。既定では details で畳む。"""
+    """反例。元と対偶、逆と裏が同じ単位の並びなら 1 表にまとめる。"""
     forms = _forms(item)
-    blocks = []
+    shown = set()
+    blocks = [f"<p>{md_inline(_COUNTEREXAMPLE_ORDER)}</p>"]
+    for left, right in COUNTEREXAMPLE_PAIR_LABELS:
+        lf, rf = forms.get(left), forms.get(right)
+        lc = [c for c in (lf.get("counterexamples") if isinstance(lf, dict) else None) or [] if isinstance(c, dict)]
+        rc = [c for c in (rf.get("counterexamples") if isinstance(rf, dict) else None) or [] if isinstance(c, dict)]
+        if not lc and not rc:
+            continue
+        if lc and rc and counterexample_lists_equal(lf, rf):
+            note = f"{FORM_LABEL[left]} と {FORM_LABEL[right]} は同じ単位の並びである。"
+            blocks.append(_details_block(f"{FORM_LABEL[left]} / {FORM_LABEL[right]}（{len(lc)} 行）", f"{note}\n\n{_example_table(lc)}"))
+            shown.update({left, right})
+        else:
+            mismatch = bool(lc and rc)
+            for name, cards in ((left, lc), (right, rc)):
+                if not cards or name in shown:
+                    continue
+                summary = f"{FORM_LABEL[name]}（{len(cards)} 行）"
+                if mismatch:
+                    summary = f"{FORM_LABEL[name]}（不一致、{len(cards)} 行）"
+                blocks.append(_details_block(summary, _example_table(cards)))
+                shown.add(name)
     for name in FORM_ORDER:
+        if name in shown:
+            continue
         form = forms.get(name)
-        cards = [card for card in (form.get("counterexamples") if isinstance(form, dict) else None) or [] if isinstance(card, dict)]
+        cards = [c for c in (form.get("counterexamples") if isinstance(form, dict) else None) or [] if isinstance(c, dict)]
         if not cards:
             continue
-        columns = _card_columns(cards)
-        rows = []
-        for card in cards:
-            rows.append([md_cell(card[key]) if key in card else "" for key in columns])
-        table = _table(columns, rows)
-        blocks.append(
-            "\n".join(
-                [
-                    '<details markdown="1">',
-                    f"<summary>{html.escape(FORM_LABEL[name], quote=False)}（{len(cards)} 行）</summary>",
-                    "",
-                    table,
-                    "",
-                    "</details>",
-                ]
-            )
-        )
-    return "\n\n".join(blocks)
+        blocks.append(_details_block(f"{FORM_LABEL[name]}（{len(cards)} 行）", _example_table(cards)))
+    return "\n\n".join(blocks[1:]) if len(blocks) > 1 else ""
+
+
+def excluded_counterexamples_md(item: dict) -> str:
+    cards = [c for c in item.get("excluded_counterexamples") or [] if isinstance(c, dict)]
+    if not cards:
+        return ""
+    return "\n".join(
+        [
+            "### 除外した反例",
+            "",
+            _details_block(f"除外した反例（{len(cards)} 行）", _example_table(cards)),
+        ]
+    )
+
+
+def held_out_md(item: dict) -> str:
+    held = item.get("held_out")
+    if not isinstance(held, dict):
+        return ""
+    lines = ["### held_out の再確認", ""]
+    if "excluded_units" in held:
+        lines.append(f"excluded_units: {md_inline(held['excluded_units'])}")
+    for key in ("n", "hold", "rate", "verdict", "fisher_p", "sigma", "sigma_band", "p_above", "p_below"):
+        if key in held:
+            lines.append(f"{key}: {md_inline(held[key])}")
+    cards = [c for c in held.get("counterexamples") or [] if isinstance(c, dict)]
+    if cards:
+        lines.extend(["", _details_block(f"held_out の反例（{len(cards)} 行）", _example_table(cards))])
+    return "\n".join(lines)
 
 
 def section_md(item: dict, anchor: str) -> str:
@@ -303,10 +334,16 @@ def section_md(item: dict, anchor: str) -> str:
     parts.append(render_logic(item))
     parts.append("```")
     parts.append("")
-    parts.append(forms_table_md(item))
+    parts.append(render_forms_table(item, heading=False))
     listed = counterexamples_md(item)
     if listed:
         parts.extend(["", listed])
+    excluded = excluded_counterexamples_md(item)
+    if excluded:
+        parts.extend(["", excluded])
+    held = held_out_md(item)
+    if held:
+        parts.extend(["", held])
     return "\n".join(parts)
 
 
@@ -348,13 +385,25 @@ def overlap_md(overlap: dict) -> str:
     return note + "\n\n" + regions + "\n\n" + _table(headers, rows)
 
 
+def heatmap_note(fig, column: str) -> str:
+    z = fig.layout.meta["z"]
+    finite = [value for row in z for value in row if isinstance(value, (int, float))]
+    zmin = min(finite) if finite else None
+    zmax = max(finite) if finite else None
+    return (
+        f"色は `{column}` の値（`sigma_band` ではない）。"
+        f"zmin={exact_json(zmin)}, zmax={exact_json(zmax)}。"
+        "マスの文字は A（`upper_half==true`）と B（`upper_half==false`）。"
+    )
+
+
 def index_body(rows: list[dict], overlap: dict, column: str) -> tuple[str, dict]:
     trajectory = trajectory_figure(rows)
     heat = heatmap_figure(rows, column)
     source = (
         _INDEX_MD.replace("@@COLUMN@@", md_inline(column))
         .replace("@@TRAJECTORY@@", figure_block(trajectory, "trajectory"))
-        .replace("@@HEATMAP@@", figure_block(heat, "heatmap"))
+        .replace("@@HEATMAP@@", heatmap_note(heat, column) + "\n\n" + figure_block(heat, "heatmap"))
         .replace("@@OVERLAP@@", overlap_md(overlap))
     )
     return render_md(source), {"trajectory": trajectory, "heatmap": heat}

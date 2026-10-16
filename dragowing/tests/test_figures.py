@@ -11,8 +11,8 @@ import pytest
 
 from dragowing.cli import PngUnavailable, main, write_png
 from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
-from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency
-from dragowing.htmlout import embed_json, figure_block, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
+from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
+from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
 from ask import registration_status
@@ -71,6 +71,7 @@ def proposition(**extra):
                         "focus": True,
                         "values": {"rd": 18, "upper_half": False},
                         "context": {"rank": 2, "rank_pythag": 2, "wins_vs_pythag": 8.4548548226457},
+                        "surprise": 3,
                         "question": "中日 2012 は条件を満たすのに後件を満たさない。なぜか？",
                     }
                 ],
@@ -129,6 +130,7 @@ def test_disagreement_stays_a_string_and_listed_cards_are_not_the_count():
     assert "only-one" in page
     assert "3/5（反例 2）" in page
     assert "（1 行）" in page
+    assert "同じ単位の並び" not in page
     assert "data-json" not in page
     summary = propositions_body([item])
     first = summary.split("</table>", 1)[0]
@@ -183,6 +185,8 @@ def test_trajectory_and_heatmap_keep_source_values_including_a_gap():
     assert "8.4548548226457" not in "".join(payload["text"][i])
     assert heat["layout"]["meta"]["marks"][i][x.index(2014)] == "B"
     assert heat["layout"]["meta"]["marks"][i][x.index(2012)] == "A"
+    assert heat["data"][0]["zmin"] == min(v for row in heat["data"][0]["z"] for v in row if v is not None)
+    assert heat["data"][0]["zmax"] == max(v for row in heat["data"][0]["z"] for v in row if v is not None)
 
 
 def test_overlap_file_uses_the_numpy_mask_without_filling_nulls(tmp_path):
@@ -239,6 +243,8 @@ def test_counterexample_table_copies_values_context_and_question():
     assert "<article" not in page
     assert "<details>" in page
     assert "<details open" not in page
+    assert "<th>links</th>" not in page
+    assert "surprise" in page
     assert "Plotly.newPlot" not in page
 
 
@@ -263,6 +269,7 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     assert index.count("Plotly.newPlot") == 2
     assert '"type":"circle"' not in index
     assert "8.4548548226457" in index
+    assert "zmin=" in index and "zmax=" in index
     assert "<h2>球団 × 年" in index
     assert "Plotly.newPlot" not in props
     assert "cdn.plot.ly" not in props
@@ -420,7 +427,10 @@ def test_real_records_are_copied_into_the_figures():
     assert shown(card["question"]) in page
     assert shown(card["context"]) in page
     assert shown(card["values"]) in page
+    assert "同じ単位の並び" in page
     assert "data-json" not in page
+    p6 = next(row for row in items if row["id"] == "P6")
+    assert "0（前件が空）" in proposition_section(p6)
 
 
 def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
@@ -453,6 +463,11 @@ def test_every_proposition_table_matches_the_file():
     assert "data-json" not in page
     assert "<article" not in page
     assert "Plotly.newPlot" not in page
+    assert "同じ単位の並び" in page
+    assert "<th>links</th>" not in page
+    assert "除外した反例" in page
+    assert page.count("held_out の再確認") == 8
+    assert "surprise" in page
     first = page.split("</table>", 1)[0]
     p1 = items[0]
     original = p1["forms"][0]
@@ -466,20 +481,24 @@ def test_every_proposition_table_matches_the_file():
         assert registration_status(item) in page
         if isinstance(item.get("statement"), str):
             assert shown(item["statement"]) in page
-        for value in contingency(item).values():
-            assert shown(_cell(value)) in page
+        for key in ("P∧Q", "P∧¬Q", "¬P∧Q", "¬P∧¬Q"):
+            assert shown(format_contingency_cell(item, key)) in page
         for form in item["forms"]:
             assert _form_cell(form) in page
             if "rate" in form:
                 assert "rate=" + json.dumps(form["rate"], ensure_ascii=False) in page
-            cards = [card for card in form.get("counterexamples") or [] if isinstance(card, dict)]
-            if cards:
-                assert f"{FORM_LABEL[form['form']]}（{len(cards)} 行）" in page
-            for card in cards:
+            for card in form.get("counterexamples") or []:
+                if not isinstance(card, dict):
+                    continue
                 assert shown(card["unit"]) in page
                 assert shown(card["question"]) in page
                 assert shown(card["values"]) in page
                 assert shown(card["context"]) in page
+                if "surprise" in card:
+                    assert shown(card["surprise"]) in page
+        for card in item.get("excluded_counterexamples") or []:
+            if isinstance(card, dict):
+                assert shown(card["unit"]) in page
 
 
 def test_sources_do_not_import_banned_plot_libraries():

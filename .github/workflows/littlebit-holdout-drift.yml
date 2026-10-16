@@ -1,0 +1,60 @@
+name: LittleBit holdout drift
+
+on:
+  pull_request:
+    paths:
+      - 'pythdragoras/**'
+      - 'cycles/c001-chunichi/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/littlebit-holdout-drift.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'pythdragoras/**'
+      - 'cycles/c001-chunichi/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/littlebit-holdout-drift.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: littlebit-holdout-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    name: Exact current-generator replay (Python 3.14.8)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      AOI_REGENERATE_LITTLEBIT_HOLDOUT: '1'
+      AOI_HOLDOUT_DRIFT_OUTPUT: build/littlebit-holdout-drift/regenerated
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      POLARS_MAX_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14.8'
+      - name: Install uv
+        run: python -m pip install uv
+      - name: Refit every fold and compare both committed artifacts exactly
+        run: |
+          mkdir -p build/littlebit-holdout-drift
+          uv run --locked --python 3.14.8 pytest -q -s pythdragoras/tests -k littlebit \
+            --junitxml=build/littlebit-holdout-drift/pytest.xml
+      - name: Preserve full regenerated evidence and verification diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: littlebit-holdout-drift
+          path: build/littlebit-holdout-drift/
+          if-no-files-found: error
+          retention-days: 14

@@ -100,7 +100,7 @@ def _page_targets(browser):
     return {t["targetId"] for t in browser.call("Target.getTargets")["targetInfos"] if t["type"] == "page"}
 
 
-def test_export_draw_plotly_three_figures_in_one_session(tmp_path, chrome_executable):
+def test_export_draw_plotly_three_figures_in_one_session(tmp_path, plotly_chrome_executable):
     evidence = os.environ.get("DRAGOWING_EXPORT_EVIDENCE_DIR")
     if evidence:
         tmp_path = Path(evidence)
@@ -115,7 +115,7 @@ def test_export_draw_plotly_three_figures_in_one_session(tmp_path, chrome_execut
         }
         for index in range(3)
     ]
-    with RenderSession(chrome=chrome_executable, offline=True) as session:
+    with RenderSession(chrome=plotly_chrome_executable, offline=True) as session:
         pid = session.browser._proc.pid
         baseline = _page_targets(session.browser)
         if evidence:
@@ -163,10 +163,10 @@ def _js_version():
     return get_plotlyjs_version()
 
 
-def test_export_failure_preserves_destination_and_releases_target(tmp_path, chrome_executable):
+def test_export_failure_preserves_destination_and_releases_target(tmp_path, plotly_chrome_executable):
     out = tmp_path / "existing.png"
     out.write_bytes(b"previous-result")
-    with RenderSession(chrome=chrome_executable, offline=True) as session:
+    with RenderSession(chrome=plotly_chrome_executable, offline=True) as session:
         baseline = _page_targets(session.browser)
         bad = replace(PLOTLY, svg_expression="Promise.reject(new Error('capture failed'))")
         with pytest.raises(RuntimeError, match="capture failed"):

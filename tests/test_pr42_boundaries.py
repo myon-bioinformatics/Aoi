@@ -1,6 +1,7 @@
 """Independent review probes: no NPB traffic and no persistent user state."""
 import datetime as dt
 import json
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -82,7 +83,9 @@ def test_plan_counts_actual_request_headers_and_sleeps(tmp_path, monkeypatch):
     plan = acquisition_plan(pages, cache, live={"2026"}, wait=2,
                             today=dt.date(2026, 5, 1), frozen=set(), future=[])
     calls, sleeps = [], []
-    monkeypatch.setattr(queryu.time, "sleep", sleeps.append)
+    # Do not replace time.sleep process-wide: code_version() uses subprocess,
+    # whose Python 3.11 polling also sleeps and must not pollute these counts.
+    monkeypatch.setattr(queryu, "time", SimpleNamespace(sleep=sleeps.append))
 
     def handler(request):
         calls.append(request)

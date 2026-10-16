@@ -5,6 +5,7 @@ on:
     paths:
       - 'pythdragoras/**'
       - 'cycles/c001-chunichi/**'
+      - 'conftest.py'
       - 'pyproject.toml'
       - 'uv.lock'
       - '.github/workflows/littlebit-holdout-drift.yml'
@@ -13,10 +14,16 @@ on:
     paths:
       - 'pythdragoras/**'
       - 'cycles/c001-chunichi/**'
+      - 'conftest.py'
       - 'pyproject.toml'
       - 'uv.lock'
       - '.github/workflows/littlebit-holdout-drift.yml'
   workflow_dispatch:
+    inputs:
+      strict_regeneration:
+        description: 'Also require bitwise reconstruction (known BLAS-dependent mismatch; never rebaseline)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -26,14 +33,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  regenerate:
-    name: Exact current-generator replay (Python 3.14.8)
+  provenance:
+    name: Provenance and related pytest (Python 3.14.8)
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 10
     env:
-      AOI_REGENERATE_LITTLEBIT_HOLDOUT: '1'
+      # Hash verification always runs. Strict reconstruction is NOT claimed to
+      # pass: the original evidence did not record its BLAS/CPU configuration.
+      AOI_REGENERATE_LITTLEBIT_HOLDOUT: ${{ github.event_name == 'workflow_dispatch' && inputs.strict_regeneration && '1' || '0' }}
       AOI_HOLDOUT_DRIFT_OUTPUT: build/littlebit-holdout-drift/regenerated
       PYTHONHASHSEED: '0'
+      OPENBLAS_CORETYPE: Haswell
       OPENBLAS_NUM_THREADS: '1'
       OMP_NUM_THREADS: '1'
       MKL_NUM_THREADS: '1'
@@ -48,30 +58,13 @@ jobs:
           python-version: '3.14.8'
       - name: Install uv
         run: python -m pip install uv
-      - name: Diagnose exact numerical backend without changing evidence
+      - name: Verify original sources, inputs, artifacts, and LittleBit regressions
         run: |
           mkdir -p build/littlebit-holdout-drift
-          uv run --locked --python 3.14.8 python -c 'import numpy as np; np.show_config()'
-          grep -m1 'model name' /proc/cpuinfo
-          cp cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.json build/littlebit-holdout-drift/committed-holdout.json
-          kernels='Haswell Sandybridge Nehalem'
-          if grep -q avx512f /proc/cpuinfo; then
-            kernels="$kernels SkylakeX Cooperlake"
-          fi
-          status=1
-          for kernel in $kernels; do
-            echo "NUMERICAL_BACKEND=$kernel"
-            export OPENBLAS_CORETYPE="$kernel"
-            export AOI_HOLDOUT_DRIFT_OUTPUT="build/littlebit-holdout-drift/$kernel"
-            if uv run --locked --python 3.14.8 pytest -q -s \
-              pythdragoras/tests/test_littlebit_holdout_drift.py::test_littlebit_committed_holdout_regenerates_from_current_generator \
-              --junitxml="build/littlebit-holdout-drift/pytest-$kernel.xml"; then
-              echo "EXACT_MATCH=$kernel"
-              status=0
-            fi
-          done
-          exit "$status"
-      - name: Preserve full regenerated evidence and verification diagnostics
+          cp cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json build/littlebit-holdout-drift/
+          uv run --locked --python 3.14.8 pytest -q -s pythdragoras/tests -k littlebit \
+            --junitxml=build/littlebit-holdout-drift/pytest.xml
+      - name: Preserve audit results and any strict reconstruction diagnostics
         if: always()
         uses: actions/upload-artifact@v7
         with:

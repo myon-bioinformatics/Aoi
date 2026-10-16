@@ -150,3 +150,8 @@ seed内の不変を全seedでの不変とは呼ばず、変動から偶然や隠
 能力予算の低得点球団に対する上位予測は、減衰なしで全10 seedのMCCが負（−0.962〜−0.610）、
 減衰0.4では全10 seedで正（0.817〜0.871）となった。反転はこのモデル内の減衰条件に連動する。
 既存の整数スコアや以前の保存証跡は上書きせず、追加証跡を`outputs/exploratory/proposition-evaluation/`へ分離した。
+
+検証: 共通評価軸・seedの整合性・CLI・全命題の判定不変・plan再生の追加20テストが成功。
+全体977 passed / 28 skipped / 23 subtests passed。既存の非推奨API警告3件。
+研究digestは29 notes・103 table proposition IDs・0 explicit FINDINGS mismatchesで生成・再現確認した。
+pipeline dry-runと`git diff --check`も成功。通常の命題JSON・一覧・詳細記録に全命題の共通項目を反映した。

@@ -145,10 +145,12 @@ def test_each_target_is_closed_on_success_and_failures(tmp_path, failure):
 @pytest.mark.parametrize("ready", [{"ready_selector": "#never"}, {"ready_expression": "new Promise(()=>{})"}])
 def test_ready_timeout_releases_target_and_session_is_reusable(chrome_executable, ready):
     with RenderSession(chrome=chrome_executable, offline=True, timeouts=Timeouts(ready=0.1)) as session:
-        baseline = len(session.browser.call("Target.getTargets")["targetInfos"])
+        def pages():
+            return {t["targetId"] for t in session.browser.call("Target.getTargets")["targetInfos"] if t["type"] == "page"}
+        baseline = pages()
         with pytest.raises((RuntimeError, TimeoutError), match="timeout"):
             session.render("<!doctype html><div>not ready</div>", "svg", **ready)
-        assert len(session.browser.call("Target.getTargets")["targetInfos"]) == baseline
+        assert pages() == baseline
         assert b"recovered" in session.render("<svg><text>recovered</text></svg>", "svg")
 
 

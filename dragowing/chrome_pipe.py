@@ -212,6 +212,7 @@ class Chrome:
         try:
             args = [exe, "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe",
                     "--disable-dev-shm-usage", "--disable-background-networking", "--no-first-run",
+                    "--disable-extensions", "--disable-component-extensions-with-background-pages",
                     "--user-data-dir=" + os.path.join(self._tmp, "profile"),
                     "--allow-file-access-from-files", "about:blank"]
             self._proc = subprocess.Popen(

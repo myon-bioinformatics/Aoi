@@ -6,6 +6,7 @@ import operator
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -13,7 +14,7 @@ from dragowing.cli import PngUnavailable, main, write_png
 from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
 from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
 from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
-from dragowing.plotly_cdn import PLOTLY_JS_CDN, fetch_plotly_js
+from dragowing.plotly_cdn import PLOTLY_JS_CDN, fetch_plotly_js, reset_plotly_js_cache
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
 from ask import registration_status
@@ -277,7 +278,16 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     assert '<a href="#P9">P9</a>' in props
     assert props.index("<table") < props.index("<h2")
     embedded = tmp_path / "embedded"
-    assert main(["--results", str(results), "--out", str(embedded), "--id", "P9", "--embed"]) == 0
+    reset_plotly_js_cache()
+    embed_body = b"window.Plotly=" + b"e" * 200
+    embed_response = MagicMock()
+    embed_response.read.return_value = embed_body
+    embed_response.status = 200
+    embed_response.getcode.return_value = 200
+    embed_response.__enter__.return_value = embed_response
+    embed_response.__exit__.return_value = False
+    with patch("urllib.request.urlopen", return_value=embed_response):
+        assert main(["--results", str(results), "--out", str(embedded), "--id", "P9", "--embed"]) == 0
     alone = (embedded / "index.html").read_text(encoding="utf-8")
     assert "src=\"plotly.min.js\"" not in alone
     assert PLOTLY_JS_CDN not in alone

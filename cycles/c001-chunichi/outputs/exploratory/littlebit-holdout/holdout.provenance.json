@@ -1,0 +1,58 @@
+{
+  "artifacts_sha256": {
+    "cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.json": "02bb8e1b6ae89133b38ab981714970862086e1639c5d210f574c5bb780b28a15",
+    "cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.md": "7ebf25ceb3b13dcc455f57bfb809efcae643bdef085e8a2a68e8a87486acec5a"
+  },
+  "historical_runtime": {
+    "numpy": "2.5.4",
+    "polars": "2.0.0",
+    "python": "3.14.8"
+  },
+  "inputs_sha256": {
+    "cycles/c001-chunichi/analysis.toml": "1242d47bb5078078fcfab7f778595269a9b0ac5f03ab8256517410e6f7e06783",
+    "cycles/c001-chunichi/outputs/season.jsonl": "8ddba36adfbd06db5c7510f91953184233801c596f87d4fe9bd66fc1b9573a93",
+    "cycles/c001-chunichi/rule_candidates.toml": "c309489a999f63a7aa01efccd6d0658930ee384a415c5d05a1051b0d11c15ce8"
+  },
+  "interpretation": {
+    "exploratory": true,
+    "independent_confirmation": false,
+    "note": "Previously inspected historical years remain a temporal backtest, not independent confirmation on wholly unseen data.",
+    "posthoc": true,
+    "research_results_changed": false
+  },
+  "recorded": "2026-10-16",
+  "regeneration_observation": {
+    "bitwise_original_json_match": false,
+    "differing_encoder_decoder_values": 4510,
+    "elapsed_seconds": 3.626515771000001,
+    "json_fields_outside_encoder_decoder_identical": true,
+    "limitation": "Python/NumPy/Polars versions alone do not recover the original BLAS/CPU environment. Strict reproduction still reports a mismatch; this manifest is the conservative SHA-256 fallback, not a regenerated model baseline.",
+    "markdown_identical": true,
+    "max_absolute_encoder_decoder_difference": 6.217248937900877e-15,
+    "normalization": "none; no coefficient, rule, threshold, evaluation unit, or result was overwritten",
+    "platform": "ubuntu-24.04 x86_64; OPENBLAS_CORETYPE=Haswell; BLAS and Polars threads=1",
+    "regenerated_sha256": {
+      "holdout.json": "445e772aed9de2c6480b7c6ab11ea0ee83aa2b025f8b835f541cb00abc8e763b",
+      "holdout.md": "7ebf25ceb3b13dcc455f57bfb809efcae643bdef085e8a2a68e8a87486acec5a"
+    },
+    "run": "https://github.com/myon-bioinformatics/Aoi/actions/runs/38842582100",
+    "runtime": {
+      "numpy": "2.5.4",
+      "polars": "2.0.0",
+      "python": "3.14.8"
+    },
+    "source_head": "ac01e593d4128a37750ab2f6deea935c2ab34177"
+  },
+  "schema": "littlebit-holdout-provenance/1",
+  "source_reference": "50f508d44b1d13ce820dcdd3d5bd9ab837503512",
+  "source_sha256": {
+    "pythdragoras/littlebit_approx.py": "a5ab151848a2db7192374183b8302a9098a547b88905542ccc6f570f39ece66e",
+    "pythdragoras/littlebit_holdout.py": "3dc56f974f36df3712969c981def6894de37bdc66af9f9d9e9b20442bf1f01c2",
+    "pythdragoras/littlebit_prune.py": "68bd8f2354348b3c3ea508196412c6835fb63d83da28607b49f4ffef56511852",
+    "pythdragoras/propositions.py": "7222a63014d7dca091757d6eab65f38dfb2345e67b9d5415e4e415f830973189",
+    "pythdragoras/pythdragoras.py": "9b1bd96469a009ab207efa3ac6f6affdd3a12dbfe00b34c1c67147351607cd7b",
+    "pythdragoras/registration_audit.py": "4b69cded14220a232888f403c5e593f4fcfd9800579367dcead8a82b35a3e569",
+    "pythdragoras/rule_search.py": "300f874a6b1bf197f20843e4278cbe888e855e8324283006f45950fa70487c88"
+  },
+  "verification_mode": "source-input-artifact-sha256; not a claim of bitwise generator reproduction"
+}

@@ -5,7 +5,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -111,10 +111,12 @@ def build(root, manifest, tool_path, *, check, sources=None):
             generated[item['output']] = text.encode('utf-8')
     # Generate everything before publishing anything. Check mode never writes artifacts.
     mismatch = []
-    for relative, data in generated.items():
+    for relative in generated:
         target = root / relative
         if target.is_symlink() or any(p.is_symlink() for p in target.parents if p != root.parent):
             raise ValueError('output must not traverse symlinks')
+    for relative, data in generated.items():
+        target = root / relative
         if check:
             if not target.is_file() or target.is_symlink() or target.read_bytes() != data:
                 mismatch.append(relative)

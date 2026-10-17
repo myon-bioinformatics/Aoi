@@ -11,15 +11,18 @@
         }
       },
       "repository_id": 1423045231,
-      "sha": "634117be52afb0c56248ccdea9e0628a8f0b1d03"
+      "sha": "83a53f60d1b5dec70df841a1104d4c78fbe4a494"
     },
     "myon-bioinformatics/QueRyu": {
       "optional": {
         "repository_created_at": "2026-10-17T07:05:47Z",
-        "subtree_prefix": "queryu"
+        "subtree_prefix": "queryu",
+        "mirrored_from_parent": {
+          "aoi_paths.py": "aoi_paths.py"
+        }
       },
       "repository_id": 1423051557,
-      "sha": "35a08024dc0040566068ba513074e3d8326897d4"
+      "sha": "e052cc3750cf14fd271187cee12c6ddddc11d7ab"
     }
   }
 }

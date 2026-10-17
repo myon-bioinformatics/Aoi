@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 import hashlib
 import sys
-from queryu import Cache
+from queryu import Cache, aoi_sibling_path
 
 PRIMARY_YEARS = tuple(range(2013, 2027))
 
@@ -53,7 +53,7 @@ def primary_cache(source: Path, destination: Path):
 
 def verify_observations(cache_root, observations):
     """Replay saved official bytes; no live requests and no cache mutations."""
-    sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'blueprobe'))
+    aoi_sibling_path(Path(__file__).resolve().parent, 'npb_team_annual')
     import npb_team_annual as source
     cache=Cache(cache_root)
     entries=[json.loads(s) for s in cache.manifest.read_text(encoding='utf-8').splitlines() if s.strip()]

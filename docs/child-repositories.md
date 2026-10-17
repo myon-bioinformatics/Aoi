@@ -54,5 +54,6 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 ## QueRyu
 
 - QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は、Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から `git filter-branch --subdirectory-filter queryu` で切り出しました。tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返しました（PythDRagoras と同じ split の止まり（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））。
-- そのため、Aoi の履歴とはまだつながっていません。上の手順で Aoi に一度だけ join（`--prefix=queryu`）を入れますが、まだ行っていません。[myon-bioinformatics#98](https://github.com/myon-bioinformatics/myon-bioinformatics/pull/98)（親 `gh_ops.py` の `subtree-push`）を待ちます。
-- subtree add（join）で `queryu/aoi_paths.py` が Aoi に入ったら、その直後に `child-heads.json` の QueRyu に `mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` を書きます。`check_child_heads.py` は、これで `queryu/aoi_paths.py` と Aoi 直下の `aoi_paths.py` の blob と mode を比べます。subtree add の前に書くと、コピーがないので失敗します。
+- QueRyu #1/#2/#3/#4 を merge commit で取り込んだ main `e052cc3750cf14fd271187cee12c6ddddc11d7ab` に対し、一度だけの join を追加しました。親なし squash commit の tree はこの子の tree と同一で、Aoi の merge commit の第2親として保持します。PR は squash/rebase せず merge commit で入れてください。
+- `queryu/` 全体（足場・CI・テスト・cache_core も含む）は登録した QueRyu tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。
+- 単独 QueRyu では Aoi 配下の BlueProbe を拒否します。物理的に `AOI_ROOT/queryu` にある subtree のテストだけは、逆に `AOI_ROOT/blueprobe` の正確な場所を要求します。Aoi 直下から対象を絞る場合は `pytest -c pyproject.toml queryu/tests` を使います。

@@ -55,9 +55,9 @@ def test_queryu_registered_with_exact_ids():
     entry = _load("child-heads.json")["heads"]["myon-bioinformatics/QueRyu"]
     assert entry["repository_id"] == 1423051557
     assert entry["optional"]["subtree_prefix"] == "queryu"
-    # queryu/aoi_paths.py は subtree add のあとにできる。それまでは mirrored_from_parent に書かない
-    # （書くと copy_missing で失敗する）。subtree add の直後に {"aoi_paths.py": "aoi_paths.py"} を書く
-    assert "mirrored_from_parent" not in entry["optional"]
+    assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
+    for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore"):
+        assert (ROOT / "queryu" / path).is_file(), path
 
 
 def test_registered_mirrors_are_blob_identical_to_aoi_originals():

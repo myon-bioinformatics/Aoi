@@ -1,11 +1,13 @@
 """未来の月、手動の凍結、--plan。NPB には出ない。"""
 import datetime as dt
 
-import httpx
 import pytest
 
 import npb_calendar
+import queryu
 from queryu import (
+    HandlerClient,
+    Response,
     Cache,
     acquisition_plan,
     format_plan,
@@ -25,8 +27,7 @@ PAGE = (
 
 
 def mock_client(monkeypatch, handler):
-    client_cls = httpx.Client
-    monkeypatch.setattr(httpx, "Client", lambda **_kw: client_cls(transport=httpx.MockTransport(handler)))
+    monkeypatch.setattr(queryu, "UrllibClient", lambda **_kw: HandlerClient(handler))
 
 
 def test_future_months_are_split_and_non_month_keys_stay():
@@ -39,7 +40,7 @@ def test_future_months_are_split_and_non_month_keys_stay():
 
 
 def test_plan_counts_cache_conditional_and_new_without_a_client(tmp_path, monkeypatch, capsys):
-    monkeypatch.setattr(httpx, "Client", lambda **kw: pytest.fail("network"))
+    monkeypatch.setattr(queryu, "UrllibClient", lambda **kw: pytest.fail("network"))
     cache = Cache(tmp_path / "cache")
     pages = npb_calendar.pages([2026])
     for key, url, group in pages:
@@ -77,8 +78,8 @@ def test_freeze_is_manual_and_a_frozen_season_is_not_rechecked(tmp_path, monkeyp
     def handler(req):
         calls.append(str(req.url))
         if "index_04" in str(req.url):
-            return httpx.Response(200, text=PAGE, headers={"Last-Modified": "Wed, 01 Oct 2025 00:00:00 GMT", "ETag": '"abc"'})
-        return httpx.Response(404)
+            return Response(200, text=PAGE, headers={"Last-Modified": "Wed, 01 Oct 2025 00:00:00 GMT", "ETag": '"abc"'})
+        return Response(404)
 
     mock_client(monkeypatch, handler)
     frozen = tmp_path / "frozen.json"
@@ -101,7 +102,7 @@ def test_unfrozen_current_season_is_rechecked(tmp_path, monkeypatch):
 
     def handler(req):
         calls.append(req.headers.get("If-None-Match"))
-        return httpx.Response(404)
+        return Response(404)
 
     mock_client(monkeypatch, handler)
     frozen = tmp_path / "frozen.json"

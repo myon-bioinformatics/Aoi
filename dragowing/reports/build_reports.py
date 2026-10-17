@@ -84,15 +84,15 @@ def load_markdown(path):
 
 def selected_paths(root, sha=None):
     if sha:
-        paths = git(root, 'ls-tree', '-r', '--name-only', '-z', sha, '--', 'research/', 'DRAgoWing/README.md').decode().split('\0')
+        paths = git(root, 'ls-tree', '-r', '--name-only', '-z', sha, '--', 'research/', 'dragowing/README.md', 'DRAgoWing/README.md').decode().split('\0')
         return {p for p in paths if p.endswith('.md')}
-    return {p.relative_to(root).as_posix() for p in (root / 'research').rglob('*.md')} | {'DRAgoWing/README.md'}
+    return {p.relative_to(root).as_posix() for p in (root / 'research').rglob('*.md')} | {'dragowing/README.md'}
 
 
 def build(root, upstream, output, previous_ref=None):
     root, upstream, output = root.resolve(), upstream.resolve(), output.resolve()
     # Output is an isolated build directory, never a source/repository parent.
-    if output == root or output in root.parents or root / 'research' == output or output == root / 'DRAgoWing':
+    if output == root or output in root.parents or root / 'research' == output or output == root / 'dragowing':
         raise ValueError('Output must not overwrite source')
     source = upstream / 'markdown.py'
     license_path = upstream / 'LICENSE'

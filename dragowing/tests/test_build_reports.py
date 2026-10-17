@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import subprocess
 import pytest
-from build_reports import build, revision
+from reports.build_reports import build, revision
 
 
 def commit(root, message):
@@ -17,8 +17,8 @@ def repos(tmp_path):
     root=tmp_path/'aoi';upstream=tmp_path/'markdown'
     for p in [root,upstream]:
         p.mkdir();subprocess.run(['git','-C',str(p),'init','-q'],check=True)
-    (root/'research').mkdir();(root/'DRAgoWing').mkdir()
-    (root/'DRAgoWing/README.md').write_text('# DRAgoWing\n')
+    (root/'research').mkdir();(root/'dragowing').mkdir()
+    (root/'dragowing/README.md').write_text('# DRAgoWing\n')
     (root/'research/report.md').write_text('# Old\n\n[Source](other.md)\n')
     old=commit(root,'old')
     (root/'research/report.md').write_text('# New\n\n<script>unsafe</script>\n')
@@ -37,7 +37,7 @@ def test_previous_comparison_and_provenance(repos):
     status={v['path']:v['status'] for v in manifest['documents']}
     assert status['research/added.md']=='added' # empty creation still a change
     assert status['research/report.md']=='modified'
-    assert status['DRAgoWing/README.md']=='unchanged'
+    assert status['dragowing/README.md']=='unchanged'
     rendered=(out/'research/report.html').read_text()
     diff=(out/'research/report.diff.html').read_text()
     assert 'delegated:' in rendered

@@ -1,6 +1,6 @@
 """命題の集合（R48）。登録した命題の条件を集合として名前で呼び、∩・∪・¬ の式を命題として判定する。
 
-    python PythDRagoras/logic/sets.py --season cycles/c001-chunichi/outputs/season.jsonl \
+    python pythdragoras/sets.py --season cycles/c001-chunichi/outputs/season.jsonl \
         --config cycles/c001-chunichi/analysis.toml --propositions cycles/c001-chunichi/propositions.toml \
         --sets cycles/c001-chunichi/sets.toml --outdir cycles/c001-chunichi/outputs [--report-only]
 
@@ -370,5 +370,5 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     here = Path(__file__).resolve().parent
-    sys.path[:0] = [str(here), str(here.parent)]   # logic/ と PythDRagoras/（pythdragoras.py）
+    sys.path[:0] = [str(here), str(here.parent)]   # pythdragoras/ とリポジトリルート
     raise SystemExit(main())

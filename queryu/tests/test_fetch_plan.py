@@ -15,8 +15,11 @@ from queryu import (
     split_future_months,
 )
 
+import aoi_paths
+from pathlib import Path
+
 PAGE = (
-    __import__("pathlib").Path(__file__).resolve().parents[2]
+    aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     / "blueprobe" / "tests" / "fixtures" / "npb_calendar_sample.html"
 ).read_text(encoding="utf-8")
 

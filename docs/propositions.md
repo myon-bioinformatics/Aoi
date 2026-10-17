@@ -388,10 +388,7 @@ For each list the most frequent unit group (one team, one season) is shown, as a
 
 A seed is material, not a verdict. A proposition written from seeds is a new proposition: it is pre-registered under a new ID, and the units it came from are declared in `motivated_by`, so that it is read from its held-out evaluation.
 
-```bash
-python PythDRagoras/logic/propositions.py next outputs/propositions.jsonl              # every proposition
-python PythDRagoras/logic/propositions.py next outputs/propositions.jsonl --reading 1 2 # sufficient-only and necessary-only
-```
+判定の終了コードは `pythdragoras/propositions.py judge` を使う（サイクルの `pipeline.toml` の `judge` ステップと同じ）。元命題と逆の並べ読み用の `next` サブコマンドは、ルートの旧 `PythDRagoras/logic/` 側にだけ残っていたため、本 PR でそのディレクトリを削除する。並べ読みの手順は本文の Reading 節の説明に従う。
 
 # Ledger
 

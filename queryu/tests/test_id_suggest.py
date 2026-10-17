@@ -6,8 +6,10 @@ from pathlib import Path
 import ask
 import suggest
 
-ROOT = Path(__file__).resolve().parents[2]
-RESULTS = ROOT / "cycles" / "c001-chunichi" / "outputs"
+import aoi_paths
+
+ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+RESULTS = aoi_paths.default_cycle_outputs(ROOT)
 QUESTIONS = Path(__file__).resolve().parent / "fixtures" / "id_suggest_questions.jsonl"
 
 DOCS = [

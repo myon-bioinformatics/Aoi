@@ -165,15 +165,23 @@ def build(cycle, plan_path):
 
 
 def main():
+    from aoi_layout import bind as _bind_aoi_paths
+
+    aoi_paths = _bind_aoi_paths(__file__)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--cycle', type=Path, default=Path('cycles/c001-chunichi'))
+    parser.add_argument('--root', type=Path, default=None,
+                        help='Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定')
+    parser.add_argument('--cycle', default=None,
+                        help='サイクル名または cycles/... へのパス。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi')
     parser.add_argument('--generate-plans', action='store_true')
     args = parser.parse_args()
-    out = args.cycle / 'outputs/exploratory/proposition-evaluation'
+    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
+    cycle = aoi_paths.resolve_cycle_path(root, args.cycle)
+    out = cycle / 'outputs/exploratory/proposition-evaluation'
     plans = out / 'skill-seed-plans.jsonl.gz'
     if args.generate_plans:
-        generate_plans(tomllib.loads((args.cycle / 'league-laboratory.toml').read_text()), plans)
-    result = build(args.cycle, plans)
+        generate_plans(tomllib.loads((cycle / 'league-laboratory.toml').read_text()), plans)
+    result = build(cycle, plans)
     out.mkdir(parents=True, exist_ok=True)
     (out / 'seed-evaluation.json').write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + '\n')
     print(f"{len(result['propositions'])} propositions; {result['plan_count']} plans replayed")

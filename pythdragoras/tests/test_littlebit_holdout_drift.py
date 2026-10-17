@@ -16,10 +16,12 @@ import time
 
 import pytest
 
+import aoi_paths
 
+_REPO_ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 PINNED_RUNTIME = {"python": "3.14.8", "numpy": "2.5.4", "polars": "2.0.0"}
 ARTIFACTS = ("holdout.json", "holdout.md")
-CYCLE_PATH = "cycles/c001-chunichi"
+CYCLE_PATH = f"cycles/{aoi_paths.DEFAULT_CYCLE}"
 EVIDENCE_PATH = f"{CYCLE_PATH}/outputs/exploratory/littlebit-holdout"
 PROVENANCE_PATH = f"{EVIDENCE_PATH}/holdout.provenance.json"
 SOURCE_PATHS = tuple(f"pythdragoras/{name}.py" for name in (
@@ -73,7 +75,7 @@ def _verify_provenance(root, manifest):
 
 
 def test_littlebit_committed_provenance_matches_current_sources_and_untouched_evidence():
-    root = Path(__file__).resolve().parents[2]
+    root = _REPO_ROOT
     manifest = json.loads((root / PROVENANCE_PATH).read_text(encoding="utf-8"))
     _verify_provenance(root, manifest)
     report = json.loads((root / EVIDENCE_PATH / "holdout.json").read_text(encoding="utf-8"))
@@ -351,8 +353,8 @@ def test_littlebit_committed_holdout_regenerates_from_current_generator(tmp_path
     import polars as pl
     import littlebit_holdout as lh
 
-    root = Path(__file__).resolve().parents[2]
-    cycle = root / "cycles/c001-chunichi"
+    root = _REPO_ROOT
+    cycle = aoi_paths.resolve_cycle_path(root)
     committed = cycle / "outputs/exploratory/littlebit-holdout"
     expected = _read_artifacts(committed)
     report = json.loads(expected["holdout.json"])

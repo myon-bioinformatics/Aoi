@@ -14,6 +14,78 @@ Baseball is the laboratory.
 
 The actual subject of Aoi is explanation itself.
 
+Aoi is also a working repository: a uv-managed Python project that holds the research cycles (data, configurations and findings) and the subprojects that observe, retrieve, measure, validate, visualize and automate them. Each subproject is also published as its own repository (see [Child Repositories](#child-repositories)).
+
+## Getting Started
+
+Requirements: Python 3.11 or newer (`.python-version` pins 3.14 for local work) and [uv](https://docs.astral.sh/uv/).
+
+```bash
+git clone https://github.com/myon-bioinformatics/Aoi.git
+cd Aoi
+uv sync
+uv run --locked pytest -q
+```
+
+Runtime dependencies (`pyproject.toml`): polars, httpx, selectolax, numpy and markdown. Development dependencies: pytest and coverage. Figures are drawn in the browser with plotly.js; matplotlib and the Python plotly package are not used.
+
+A research cycle is described once as a pipeline and runs the same way locally and on GitHub Actions ([NagoyAction](https://github.com/myon-bioinformatics/NagoyAction)):
+
+```bash
+python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml            # pre-flight check
+python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run  # show what would run
+```
+
+## Repository Layout
+
+| Path | Contents |
+|---|---|
+| [`blueprobe/`](blueprobe/) | BlueProbe: observation and extraction from saved HTML/CSS/DOM. Also published as [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) |
+| [`queryu/`](queryu/) | QueRyu: retrieval, provenance-tracked cache and observation datasets. Also published as [QueRyu](https://github.com/myon-bioinformatics/QueRyu) |
+| [`sakanalytics/`](sakanalytics/) | SakAnalytics: team × season metrics and statistics; remaining-season forecasts. Also published as [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) |
+| [`pythdragoras/`](pythdragoras/) | PythDRagoras: propositions, counterexamples and explanation validation. Also published as [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) |
+| [`dragowing/`](dragowing/) | DRAgoWing: figures and reports (Plotly.js HTML, four-form tables). Also published as [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) |
+| [`nagoyaction/`](nagoyaction/) | NagoyAction: pipelines and automation (same definition locally and on GitHub Actions). Also published as [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) |
+| [`cycles/`](cycles/) | Research cycles: configuration, outputs and research records. The first cycle is [`cycles/c001-chunichi/`](cycles/c001-chunichi/README.md) (Chunichi Dragons, NPB) |
+| [`research/`](research/) | Standalone research notes (for example [`research/gpt-r001-score-allocation/`](research/gpt-r001-score-allocation/README.md)) |
+| [`research_loop/`](research_loop/README.md) | Automated exploration and HTML observation that connect several subprojects |
+| [`scripts/`](scripts/) | Repository-level tools (child registry check, distribution build, c001 replay and publication) |
+| [`dist/`](dist/), [`distributions/`](distributions/), `distributions.json` | Single-file stdlib distributions (`*_min.py`); see [docs/distributions.md](docs/distributions.md) |
+| [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash |
+| [`docs/`](docs/) | Philosophy, principles, method and specifications |
+| [`tests/`](tests/) | Repository-level tests (each subproject keeps its own `tests/`) |
+| `child-heads.json` | Registered heads of the child repositories; see [docs/child-repositories.md](docs/child-repositories.md) |
+| `aoi_paths.py` | Shared repository-layout helpers (mirrored into the child repositories) |
+
+## Child Repositories
+
+Each subproject lives in Aoi as a directory and is also published as a standalone repository. Changes move between the two with `git subtree` (history is shared; see [docs/child-repositories.md](docs/child-repositories.md)). Each child README links back here and to its siblings.
+
+| Project | Repository | Directory in Aoi | Registered in |
+|---|---|---|---|
+| BlueProbe | [myon-bioinformatics/BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](blueprobe/) | `child-heads.json` of the parent [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) |
+| QueRyu | [myon-bioinformatics/QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](queryu/) | Aoi `child-heads.json` |
+| SakAnalytics | [myon-bioinformatics/sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](sakanalytics/) | Aoi `child-heads.json` |
+| PythDRagoras | [myon-bioinformatics/PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](pythdragoras/) | Aoi `child-heads.json` |
+| DRAgoWing | [myon-bioinformatics/DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](dragowing/) | Aoi `child-heads.json` |
+| NagoyAction | [myon-bioinformatics/NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](nagoyaction/) | Aoi `child-heads.json` |
+
+The copy inside Aoi and the standalone repository can drift between syncs; the registered heads are checked with `python -S scripts/check_child_heads.py --fail-on-diff`.
+
+## Tests
+
+```bash
+uv run --locked pytest -q                         # tests/ and every subproject's tests/ (pyproject.toml testpaths)
+python -S nagoyaction/linkcheck.py                # Markdown links and images (tracked files, exact case)
+python -S scripts/check_child_heads.py --fail-on-diff   # child repositories vs. their directories in Aoi
+```
+
+CI (`.github/workflows/ci.yml`) runs pytest on Python 3.11–3.15; the Links workflow runs the link check on every change, including docs-only changes.
+
+## License
+
+MIT License. See [LICENSE](LICENSE) (Copyright (c) 2026 myon). The child repositories carry the same MIT license text.
+
 ---
 
 <!-- IMAGE 01:
@@ -177,14 +249,14 @@ The Aoi ecosystem consists of multiple projects.
 
 Each project focuses on a different stage of understanding reality.
 
-| Project | Purpose |
-|----------|----------|
-| QueRyu | Query and execution |
-| BlueProbe | Observation and discovery |
-| SakAnalytics | Analysis and statistical methods |
-| DRAgoWing | Visualization and reporting |
-| NagoyAction | Automation and orchestration |
-| PythDRagoras | Hypothesis generation and explanation validation |
+| Project | Purpose | Repository | In Aoi |
+|----------|----------|----------|----------|
+| QueRyu | Query and execution | [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](queryu/) |
+| BlueProbe | Observation and discovery | [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](blueprobe/) |
+| SakAnalytics | Analysis and statistical methods | [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](sakanalytics/) |
+| DRAgoWing | Visualization and reporting | [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](dragowing/) |
+| NagoyAction | Automation and orchestration | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](nagoyaction/) |
+| PythDRagoras | Hypothesis generation and explanation validation | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](pythdragoras/) |
 
 Together they form a continuous research loop.
 
@@ -224,6 +296,8 @@ Question:
 
 > How do we obtain information reproducibly?
 
+Repository: [QueRyu](https://github.com/myon-bioinformatics/QueRyu) (in Aoi: [`queryu/`](queryu/))
+
 Documentation:
 
 - [queryu/README.md](queryu/README.md)
@@ -237,6 +311,8 @@ Responsible for observation, exploration, parsing, and discovery.
 Question:
 
 > What actually exists in the source?
+
+Repository: [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) (in Aoi: [`blueprobe/`](blueprobe/))
 
 Documentation:
 
@@ -253,6 +329,8 @@ Question:
 
 > What patterns can be measured?
 
+Repository: [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) (in Aoi: [`sakanalytics/`](sakanalytics/))
+
 Documentation:
 
 - [sakanalytics/README.md](sakanalytics/README.md)
@@ -267,6 +345,8 @@ Question:
 
 > How do hidden structures become visible?
 
+Repository: [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) (in Aoi: [`dragowing/`](dragowing/))
+
 Documentation:
 
 - 四つの形の 2×2 と条件の論理記号: [dragowing/docs/forms.md](dragowing/docs/forms.md)。軌跡・球団×年・条件の重なり・命題の一覧の HTML: [dragowing/docs/figures.md](dragowing/docs/figures.md)。構想図は [docs/images/dragowing.webp](docs/images/dragowing.webp)
@@ -280,6 +360,8 @@ Responsible for workflows and automation.
 Question:
 
 > How can research processes be repeated reliably?
+
+Repository: [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) (in Aoi: [`nagoyaction/`](nagoyaction/))
 
 Documentation:
 
@@ -298,6 +380,8 @@ Question:
 Unlike the rest of the ecosystem, PythDRagoras is not focused on producing answers.
 
 Its purpose is to challenge assumptions, expose limitations, and generate better questions.
+
+Repository: [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) (in Aoi: [`pythdragoras/`](pythdragoras/))
 
 Documentation:
 

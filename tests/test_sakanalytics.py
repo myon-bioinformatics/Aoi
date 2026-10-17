@@ -674,6 +674,44 @@ def test_clinch_dates_by_hand():
     assert [r["decided_x"] for r in v.values()] == pytest.approx([0.8] * 4)   # 4球団すべて決まったのは5日目
 
 
+
+def test_rank_fixed_and_live_dead_split_by_hand():
+    """R57: 最終順位が確かになった日と、A・B が決まる前（効く試合）・後（効かない試合）の分け方。"""
+    from sakanalytics import clinch_dates
+    v = {r["team"]: r for r in clinch_dates(_four_team_season()).iter_rows(named=True)}
+    # 最終: g 5勝1敗、t 5勝1敗（同率）、c 2勝4敗、d 0勝6敗。d・c は最終日に4位・3位が確定。g・t は同率なので決まらない
+    assert (v["d"]["rank_fixed_x"], v["d"]["rank_fixed_left"], v["d"]["rank_fixed"]) == (pytest.approx(1.0), 0, 4)
+    assert (v["c"]["rank_fixed_x"], v["c"]["rank_fixed"]) == (pytest.approx(1.0), 3)
+    assert v["g"]["rank_fixed"] is None and v["t"]["rank_fixed_x"] is None
+    # g: 4日目に入るのが確定 → 1〜4日目が効く試合（4勝0敗、点の差 +2 ×4）、5・6日目が効かない試合（1勝1敗、+2 と −2）
+    g = v["g"]
+    assert (g["live_g"], g["live_wpct"], g["live_rd_g"]) == (4, pytest.approx(1.0), pytest.approx(2.0))
+    assert (g["dead_g"], g["dead_wpct"], g["dead_rd_g"]) == (2, pytest.approx(0.5), pytest.approx(0.0))
+    # t: 5日目に確定 → 4勝1敗（3日目に g に 0−2）、効かない試合は6日目の1つ
+    t = v["t"]
+    assert (t["live_g"], t["live_wpct"], t["live_rd_g"]) == (5, pytest.approx(0.8), pytest.approx(1.2))
+    assert (t["dead_g"], t["dead_wpct"]) == (1, pytest.approx(1.0))
+    # 効く試合 + 効かない試合 = 全試合
+    assert all(r["live_g"] + r["dead_g"] == 6 for r in v.values())
+    # 後半（4〜6試合目）のうち効く試合: g は4日目に確定 → 4試合目だけ（勝ち）。t は5日目 → 4・5試合目（勝ち・勝ち）
+    assert (g["h2_live_g"], g["h2_live_wpct"]) == (1, pytest.approx(1.0))
+    assert (t["h2_live_g"], t["h2_live_wpct"]) == (2, pytest.approx(1.0))
+    # 最終の上位半分は g・t（5勝1敗で同率、どちらも上位側）。g の前半（1〜3日目）: d に勝ち(+2)・c に勝ち(+2)・t に勝ち(+2)
+    assert (g["h1_rd_g"], g["h1_wl_vs_upper"], g["h1_wl_vs_lower"]) == (pytest.approx(2.0), 1, 2)
+    # g の後半の効く試合は4日目の d 戦だけ（3−1）
+    assert (g["h2_live_rd_g"], g["h2_live_wl_vs_upper"], g["h2_live_wl_vs_lower"]) == (pytest.approx(2.0), 0, 1)
+    # d の前半: g・t・c に3連敗（−2, −2, −2）。上位 2敗、下位 1敗
+    assert (v["d"]["h1_wl_vs_upper"], v["d"]["h1_wl_vs_lower"]) == (-2, -1)
+
+
+def test_live_dead_when_never_decided():
+    from sakanalytics import clinch_dates
+    teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
+    # 4球団で1日だけ。誰も確定しない → すべて効く試合、効かない試合は 0
+    tg = to_team_games(games([("2024-04-01", "g", "d", 3, 1), ("2024-04-01", "t", "c", 2, 0)]), teams)
+    v = {r["team"]: r for r in clinch_dates(tg).iter_rows(named=True)}
+    assert all(r["dead_g"] == 0 and r["dead_wpct"] is None and r["live_g"] == 1 for r in v.values())
+
 def test_season_trajectory_can_stop_when_the_top_half_is_decided():
     from sakanalytics import season_trajectory
     tg = _four_team_season()
@@ -685,3 +723,462 @@ def test_season_trajectory_can_stop_when_the_top_half_is_decided():
     assert full["traj_wl_peak_after_clinch"] is not None and 0 <= full["traj_wl_peak_after_clinch_base"] <= 1
     d = season_trajectory(tg, sims=5, min_games=1).filter(pl.col("team") == "d").row(0, named=True)
     assert d["traj_wl_peak_after_clinch"] is None                                   # 入らなかった球団は空
+
+
+# ---------- R32: 得点・失点の優位（1試合あたり） ----------
+
+def test_add_balance_is_relative_to_the_other_teams_and_share_stays_bounded():
+    import polars as pl
+
+    import sakanalytics as sa
+
+    # 1リーグ3球団、10試合。他2球団の平均と比べる
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3,
+                       "RF": [30, 40, 50], "RA": [30, 40, 50]})
+    out = {r["team"]: r for r in sa.add_balance(st).iter_rows(named=True)}
+    assert out["a"]["rf_adv"] == pytest.approx(3.0 - 4.5) and out["a"]["ra_adv"] == pytest.approx(4.5 - 3.0)
+    assert out["b"]["rf_adv"] == pytest.approx(0.0) and out["b"]["ra_adv"] == pytest.approx(0.0)
+    assert out["a"]["run_balance"] == pytest.approx(0.0)
+    # a: 不足 1.5、優位 1.5 → 取り分 0.5。c: 不足なし・優位マイナス → 空。b: 不足も優位もない → 空
+    assert out["a"]["short_share"] == pytest.approx(0.5)
+    assert out["c"]["short_share"] is None and out["b"]["short_share"] is None
+
+
+@pytest.mark.parametrize("rf,ra,expected", [
+    ([40, 50, 50], [40, 50, 50], 0.5),        # 不足 1.0、優位 1.0 → 0.5
+    ([40, 50, 50], [50, 50, 50], 1.0),        # 不足 1.0、優位 0 → 1（補えなかった）
+    ([40, 50, 50], [55, 50, 50], 1.0),        # 不足 1.0、優位 −0.5 → 1 で止める
+    ([50, 40, 40], [40, 50, 50], 0.0),        # 不足なし、優位 1.0 → 0
+    ([40, 50, 50], [45, 50, 50], 1 / 1.5),    # 不足 1.0、優位 0.5 → 0.667
+])
+def test_short_share_edges(rf, ra, expected):
+    import polars as pl
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3, "RF": rf, "RA": ra})
+    r = sa.add_balance(st).row(0, named=True)
+    d, a = max(0.0, -r["rf_adv"]), r["ra_adv"]
+    assert 0.0 <= r["short_share"] <= 1.0
+    assert r["short_share"] == pytest.approx(min(1.0, d / (d + a)) if d + a > 0 else 1.0)
+    assert r["short_share"] == pytest.approx(expected)
+
+
+def test_add_balance_z_scales_by_the_spread_of_all_units():
+    import polars as pl
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3 + [2001] * 3, "league": ["C"] * 6, "team": ["a", "b", "c"] * 2,
+                       "G": [10] * 6, "RF": [30, 40, 50, 35, 40, 45], "RA": [50, 40, 30, 40, 40, 40]})
+    out = sa.add_balance(st)
+    sd = out["ra_adv"].std()
+    assert out["ra_adv_z"].to_list() == pytest.approx([x / sd for x in out["ra_adv"].to_list()])
+    assert out["rf_adv_z"].std() == pytest.approx(1.0)
+    for z, zone in zip(out["ra_adv_z"].to_list(), out["ra_zone"].to_list()):
+        assert zone == (1 if z >= 1 else -1 if z <= -1 else 0)
+
+
+def test_add_balance_standard_error_combines_own_and_others():
+    import math
+
+    import polars as pl
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [100] * 3,
+                       "RF": [300, 400, 500], "RA": [400, 400, 400],
+                       "rf_sd_g": [2.0, 2.0, 2.0], "ra_sd_g": [3.0, 1.0, 1.0]})
+    out = {r["team"]: r for r in sa.add_balance(st).iter_rows(named=True)}
+    # 自分 4/100、他2球団の平均 (4/100 + 4/100) / 2² → 誤差 = √(0.04 + 0.02)
+    assert out["a"]["rf_adv_se"] == pytest.approx(math.sqrt(0.04 + 0.02))
+    # a の得点の優位 −1.5 は誤差 0.245 の6倍 → −1。b は 0 → 0
+    assert out["a"]["rf_zone_se"] == -1 and out["b"]["rf_zone_se"] == 0 and out["c"]["rf_zone_se"] == 1
+    # 失点: a の誤差は自分 9/100 と他 (1/100 + 1/100)/4
+    assert out["a"]["ra_adv_se"] == pytest.approx(math.sqrt(0.09 + 0.005))
+
+
+def test_add_balance_without_per_game_spread_skips_standard_error():
+    import polars as pl
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3,
+                       "RF": [30, 40, 50], "RA": [30, 40, 50]})
+    assert "rf_zone_se" not in sa.add_balance(st).columns
+
+
+def test_season_table_has_per_game_spread():
+    results = [(3, 1), (5, 2), (1, 4), (7, 0)]
+    st = season_table(to_team_games(games([("2024-04-01", "d", "g", rf, ra) for rf, ra in results]), TEAMS))
+    d = st.filter(pl.col("team") == "d").row(0, named=True)
+    rf = [r for r, _ in results]
+    mean = sum(rf) / len(rf)
+    assert d["rf_sd_g"] == pytest.approx(math.sqrt(sum((x - mean) ** 2 for x in rf) / (len(rf) - 1)))
+
+
+# ---------- R39: 研究で使った読みを列にしたもの ----------
+
+def test_add_composites_values_and_missing_inputs():
+    import math
+
+    import sakanalytics as sa
+
+    st = pl.DataFrame({
+        "rf_adv": [-0.6, 0.2, 0.0], "ra_adv": [0.3, -0.1, 0.0], "run_balance": [-0.3, 0.1, 0.0],
+        "rf_adv_se": [0.2, 0.25, 0.3], "ra_adv_se": [0.3, 0.25, 0.3],
+        "rf_zone_se": [-1, 0, None], "ra_zone_se": [1, 0, 0],
+        "bat_d_bb_pa": [-0.01, 0.0, None], "bat_d_iso": [0.02, -0.01, 0.01],
+        "vs_top_wpct": [0.45, 0.5, 0.4], "vs_lower_wpct": [0.48, 0.6, None],
+    })
+    out = sa.add_composites(st).to_dicts()
+    assert out[0]["rf_adv_t"] == pytest.approx(-3.0) and out[0]["ra_adv_t"] == pytest.approx(1.0)
+    assert out[0]["run_balance_t"] == pytest.approx(-0.3 / math.sqrt(0.04 + 0.09))
+    assert [r["adv_shape_se"] for r in out] == ["-1/+1", "0/0", None]
+    assert [r["bat_routes"] for r in out] == [1, 1, None]   # 四死球 −・長打 + → 1、四死球 0（以上）・長打 − → 1
+    assert out[0]["vs_top_minus_lower"] == pytest.approx(-0.03) and out[2]["vs_top_minus_lower"] is None
+
+
+def test_add_composites_skips_columns_whose_inputs_are_absent():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"rf_adv": [0.1], "ra_adv": [0.1], "run_balance": [0.2]})
+    assert sa.add_composites(st).columns == st.columns
+
+
+# ---------- R45: B に着く道筋の参考値 ----------
+
+def test_add_b_paths_labels_and_nulls():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({
+        "rf_zone_se": [-1, 0, 0, 0, None],
+        "ra_zone_se": [0, -1, 0, 0, None],
+        "wins_vs_pythag": [-3.0, 0.0, 1.0, -0.5, None],
+        "alloc_z_strat": [0.0, 0.0, -1.5, 0.0, None],
+        "course_fade": [0, 0, 0, 3, None],
+        "course_rf_d": [0.0, 0.0, 0.0, -0.3, None],
+        "course_ra_d": [0.0, 0.0, 0.0, 0.4, None],
+        "half2_vs_pythag": [0.0, 0.0, 0.0, -2.5, None],
+    })
+    out = sa.add_b_paths(st).to_dicts()
+    assert [r["b_paths"] for r in out] == ["offense+convert", "defense", "convert", "collapse", None]
+    assert out[1]["path_convert"] is False and out[4]["path_convert"] is None
+
+
+def test_add_b_paths_none_when_no_rule_hits_and_skips_without_inputs():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"rf_zone_se": [1], "ra_zone_se": [1], "wins_vs_pythag": [0.0], "alloc_z_strat": [0.0],
+                       "course_fade": [0], "course_rf_d": [0.1], "course_ra_d": [-0.1], "half2_vs_pythag": [0.0]})
+    assert sa.add_b_paths(st)["b_paths"].to_list() == ["none"]
+    assert sa.add_b_paths(pl.DataFrame({"x": [1]})).columns == ["x"]
+    assert set(sa.B_PATHS) == {"offense", "defense", "convert", "collapse"}
+
+
+# ---------- R46: リーグの順位の形 ----------
+
+def test_add_league_shape_gaps_and_rest_spread():
+    import statistics
+
+    import sakanalytics as sa
+
+    w = [0.65, 0.55, 0.52, 0.50, 0.45, 0.33]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
+    out = sa.add_league_shape(st).row(0, named=True)
+    assert out["lg_lead_gap"] == pytest.approx(0.10) and out["lg_gap34"] == pytest.approx(0.02)
+    assert out["lg_rest_sd"] == pytest.approx(statistics.stdev(w[1:]))
+    # 同率で並んでも k 番目の勝率を使う
+    tie = st.with_columns(rank=pl.Series([1, 2, 3, 3, 5, 6]), wpct=pl.Series([0.6, 0.55, 0.5, 0.5, 0.45, 0.4]))
+    assert sa.add_league_shape(tie).row(0, named=True)["lg_gap34"] == pytest.approx(0.0)
+
+
+def test_add_league_shape_with_few_teams_is_empty_not_an_error():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 2, "league": ["C"] * 2, "team": ["a", "b"], "rank": [1, 2], "wpct": [0.6, 0.4]})
+    out = sa.add_league_shape(st).row(0, named=True)
+    assert out["lg_lead_gap"] == pytest.approx(0.2) and out["lg_gap34"] is None
+
+
+def test_line_and_gap_decompose_win_pct_against_the_line():
+    import sakanalytics as sa
+
+    w = [0.65, 0.55, 0.52, 0.50, 0.45, 0.33]
+    pyth = [0.60, 0.56, 0.49, 0.53, 0.46, 0.36]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6],
+                       "wpct": w, "pythag_fixed": pyth})
+    out = sa.add_league_shape(st).with_columns(resid_fixed=pl.col("wpct") - pl.col("pythag_fixed"))
+    for r in out.iter_rows(named=True):
+        assert r["lg_line"] == pytest.approx(0.51)
+        # 勝率 − 線 = 点の差で見込む位置 + 点の差より勝った分
+        assert r["wpct"] - r["lg_line"] == pytest.approx(r["line_gap_pythag"] + r["resid_fixed"])
+
+
+@pytest.mark.parametrize("w,expected", [
+    ([0.6, 0.52, 0.51, 0.49, 0.45, 0.43], 3.5),          # .51 と .49 のちょうど間
+    ([0.6, 0.55, 0.50, 0.48, 0.45, 0.42], 3.0),          # 3位がちょうど .500
+    ([0.6, 0.52, 0.48, 0.47, 0.46, 0.47], 2.5),          # 並びが乱れていても高い順に並べ直す
+    ([0.6, 0.58, 0.56, 0.55, 0.53, 0.51], None),         # 全チームが .500 より上
+])
+def test_rank_at_500(w, expected):
+    import sakanalytics as sa
+
+    got = sa.rank_at(w, 0.5)
+    assert got == (pytest.approx(expected) if expected is not None else None)
+
+
+def test_league_shape_has_rank_at_500():
+    import sakanalytics as sa
+
+    w = [0.6, 0.52, 0.51, 0.49, 0.45, 0.43]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
+    assert sa.add_league_shape(st)["lg_rank_at_500"].to_list() == pytest.approx([3.5] * 6)
+
+
+# ---------- R52: データの散らばりから引く線 ----------
+
+def test_natural_breaks_and_tiers():
+    import sakanalytics as sa
+
+    w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]       # 隙間: .02 .07 .01 .01 .11
+    assert sa.natural_breaks(w, 1) == [5]          # 5位と6位の間
+    assert sa.natural_breaks(w, 2) == [2, 5]       # 2位と3位の間、5位と6位の間
+    assert [sa.tier_of(k, [2, 5]) for k in range(1, 7)] == [1, 1, 2, 2, 2, 3]
+    assert sa.natural_breaks([0.6, 0.5, 0.4, 0.3], 1) == [1]   # 差が同じなら上位側
+
+
+def test_league_shape_tiers_columns():
+    import sakanalytics as sa
+
+    w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
+    out = {r["team"]: r for r in sa.add_league_shape(st).iter_rows(named=True)}
+    assert out["a"]["lg_break_after"] == 5 and out["a"]["lg_break_gap"] == pytest.approx(0.11)
+    assert [out[t]["lg_tier"] for t in "abcdef"] == [1, 1, 2, 2, 2, 3] and out["d"]["lg_tier_of_3rd"] == 2
+
+
+# ---------- R53: A と B が混ざる帯（1年抜き） ----------
+
+def test_mix_zone_leaves_own_season_out():
+    import sakanalytics as sa
+
+    rows = [(2000, .60, True), (2000, .49, True), (2000, .51, False), (2000, .40, False),
+            (2001, .55, True), (2001, .47, False), (2001, .45, False),
+            (2002, .30, True), (2002, .70, False)]          # 2002 は除外の年: 帯を引くのに使わない
+    st = pl.DataFrame({"season": [r[0] for r in rows], "team": [str(i) for i in range(len(rows))],
+                       "wpct": [r[1] for r in rows], "upper_half": [r[2] for r in rows]})
+    out = sa.add_mix_zone(st, exclude=[2002]).sort("team")
+    got = {(r["season"], r["wpct"]): r for r in out.iter_rows(named=True)}
+    # 2001 の単位は 2000 だけから: A の最低 .49、B の最高 .51
+    assert got[(2001, .55)]["mix_lo"] == pytest.approx(.49) and got[(2001, .55)]["mix_hi"] == pytest.approx(.51)
+    assert [got[(2001, w)]["mix_zone"] for w in (.55, .47, .45)] == [1, -1, -1]
+    # 2000 の単位は 2001 だけから: A の最低 .55、B の最高 .47 → 帯は開かない（lo > hi）が値はそのまま
+    assert got[(2000, .49)]["mix_lo"] == pytest.approx(.55) and got[(2000, .49)]["mix_hi"] == pytest.approx(.47)
+    assert got[(2000, .49)]["mix_zone"] == -1 and got[(2000, .60)]["mix_zone"] == 1
+    # 除外の年の単位にも値は付く（ほかの年から引く）
+    assert got[(2002, .30)]["mix_zone"] == -1
+
+
+def test_mix_zone_edges_are_inside_and_missing_side_is_null():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000, 2000, 2001], "team": ["a", "b", "c"], "wpct": [.50, .52, .50],
+                       "upper_half": [True, False, True]})
+    out = {r["team"]: r for r in sa.add_mix_zone(st).iter_rows(named=True)}
+    assert out["c"]["mix_lo"] == pytest.approx(.50) and out["c"]["mix_zone"] == 0   # 帯の端ちょうどは中
+    assert out["a"]["mix_hi"] is None and out["a"]["mix_zone"] is None              # 2001 に B がない
+    assert sa.add_mix_zone(pl.DataFrame({"season": [1]})).columns == ["season"]
+
+
+def test_league_bar_uses_only_the_other_teams():
+    import sakanalytics as sa
+
+    w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
+    out = {r["team"]: r["lg_bar"] for r in sa.add_league_shape(st).iter_rows(named=True)}
+    # 上位3球団（a・b・c）は、ほかの5球団の3番目 = d の .52 を越えれば入る。下位（d・e・f）は c の .53
+    assert out == pytest.approx({"a": 0.52, "b": 0.52, "c": 0.52, "d": 0.53, "e": 0.53, "f": 0.53})
+    assert all((wp > out[t]) == (t in "abc") for t, wp in zip("abcdef", w))
+
+
+
+def test_mix_zone_on_another_column_with_prefix():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000, 2000, 2001], "team": ["a", "b", "c"], "wpct": [.50, .52, .50],
+                       "live_wpct": [.49, .51, None], "upper_half": [True, False, True]})
+    out = {r["team"]: r for r in sa.add_mix_zone(st, col="live_wpct", prefix="live_mix").iter_rows(named=True)}
+    assert out["c"]["live_mix_lo"] == pytest.approx(.49) and out["c"]["live_mix_hi"] == pytest.approx(.51)
+    assert out["c"]["live_mix_zone"] is None            # 自分の値が空なら空
+    assert "mix_zone" not in out["c"]                   # 元の列は作らない
+
+
+
+# ---------- チーム守備成績 ----------
+
+def _fld(team, g=143, po=3800, a=1500, e=50, dp=120, pb=5, fpct=None, tc=None):
+    tc = po + a + e if tc is None else tc
+    fpct = round((po + a) / tc, 3) if fpct is None else fpct
+    return {"season": 2024, "team": team, "league": "C", "g": g, "tc": tc, "po": po, "a": a, "e": e,
+            "dp_part": dp * 3, "dp": dp, "pb": pb, "fpct": fpct}
+
+
+def test_fielding_join_rates_and_relative_to_others():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2024] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [143] * 3})
+    fld = pl.DataFrame([_fld("a", e=40), _fld("b", e=50), _fld("c", e=60)])
+    out = {r["team"]: r for r in sa.fielding_join(st, fld).iter_rows(named=True)}
+    assert out["a"]["fld_e_g"] == pytest.approx(40 / 143)
+    assert out["a"]["fld_d_e_g"] == pytest.approx(40 / 143 - (50 + 60) / 2 / 143)   # 他球団より失策が少ない → マイナス
+    assert out["b"]["fld_d_e_g"] == pytest.approx(0.0)
+    assert out["a"]["fld_fpct"] == pytest.approx(5300 / 5340)
+    assert "e" not in out["a"] and "po" not in out["a"]                               # 原票の数は結合しない
+
+
+@pytest.mark.parametrize("bad,match", [
+    ({"g": 142}, "試合数"),
+    ({"tc": 9999}, "守備機会"),
+    ({"fpct": 0.900}, "守備率"),
+])
+def test_fielding_join_stops_when_the_page_does_not_add_up(bad, match):
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2024], "league": ["C"], "team": ["a"], "G": [143]})
+    with pytest.raises(ValueError, match=match):
+        sa.fielding_join(st, pl.DataFrame([_fld("a", **bad)]))
+
+
+
+# ---------- R60: 順位表で A・B の側が落ち着いた試合数 ----------
+
+def test_standing_lock_by_hand():
+    from sakanalytics import standing_lock
+    teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
+    # 4球団（上位半分 = 2位以内）。c は3日目まで上の側、4日目から下。g は初日だけ下
+    rows = [("2024-04-01", "c", "g", 2, 1), ("2024-04-01", "t", "d", 2, 1),
+            ("2024-04-02", "c", "t", 2, 1), ("2024-04-02", "g", "d", 2, 1),
+            ("2024-04-03", "g", "c", 2, 1), ("2024-04-03", "t", "d", 2, 1),
+            ("2024-04-04", "g", "c", 2, 1), ("2024-04-04", "t", "d", 2, 1),
+            ("2024-04-05", "g", "d", 2, 1), ("2024-04-05", "t", "c", 2, 1)]
+    v = {r["team"]: r for r in standing_lock(to_team_games(games(rows), teams)).iter_rows(named=True)}
+    # 最後: g 4勝1敗、t 4勝1敗、c 2勝3敗、d 0勝5敗。c は 3日目（2勝1敗で3球団が並ぶ）まで上の側 → 4日目から落ち着く
+    assert (v["c"]["lock_g"], v["c"]["lock_x"]) == (4, pytest.approx(0.75))
+    assert (v["g"]["lock_g"], v["g"]["lock_x"]) == (2, pytest.approx(0.25))   # 初日 0勝1敗で下の側
+    assert (v["t"]["lock_g"], v["d"]["lock_g"]) == (1, 1)                         # 一度も変わらない → 初日
+    assert v["d"]["lg_set_lock_x"] == pytest.approx(0.75)                         # 上位2の顔ぶれ {g, t} は4日目から
+    # 4つの区間（5試合 → 境 0・1・2・3・5）
+    assert [v["g"][f"q_wl_{q}"] for q in range(1, 5)] == [-1, 1, 1, 2]
+    assert [v["c"][f"q_wl_{q}"] for q in range(1, 5)] == [1, 1, -1, -2]
+    assert all(r["lone_down_n"] == 0 for r in v.values())                          # どの区間も負け越しは2球団以上
+    # c は4試合目の日に落ち着いた: それまで W W L L（.500）、その後 L（1試合 .000）。t は初日に落ち着き、以後 4試合 3勝1敗
+    assert (v["c"]["pre_lock_wpct"], v["c"]["post_lock_g"], v["c"]["post_lock_wpct"]) == (pytest.approx(0.5), 1, pytest.approx(0.0))
+    assert (v["t"]["post_lock_g"], v["t"]["post_lock_wpct"]) == (4, pytest.approx(0.75))
+    # 4つ目の区間（5試合 → 4・5試合目）。最終の上位半分は {g, t}。すべて 2−1 の1点差
+    # c: 4試合目 g に 1−2（上の相手）、5試合目 t に 1−2（上の相手）→ 上 −2、下 0、1点差 −2、点の差 −1/試合
+    c = v["c"]
+    assert (c["q4_g"], c["q4_rd_g"], c["q4_one_run_net"], c["q4_wl_vs_upper"], c["q4_wl_vs_lower"]) == (2, pytest.approx(-1.0), -2, -2, 0)
+    # g: 4試合目 c に勝ち（下）、5試合目 d に勝ち（下）→ 下 +2
+    assert (v["g"]["q4_wl_vs_upper"], v["g"]["q4_wl_vs_lower"]) == (0, 2)
+
+
+def test_lone_down_counts_quarters_where_only_one_team_lost():
+    from sakanalytics import standing_lock
+    teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
+    # 4日、各球団4試合。d だけが毎日負ける。ほかの3球団は、d に勝った球団以外は互いに 1勝1敗……にならないよう引き分けを使う
+    rows = []
+    for i, w in enumerate(["g", "t", "c", "g"]):
+        others = [x for x in ("g", "t", "c") if x != w]
+        rows += [(f"2024-04-{i + 1:02d}", w, "d", 3, 1), (f"2024-04-{i + 1:02d}", others[0], others[1], 2, 2)]
+    v = {r["team"]: r for r in standing_lock(to_team_games(games(rows), teams)).iter_rows(named=True)}
+    assert v["d"]["lone_down_n"] == 4 and v["g"]["lone_down_n"] == 0
+
+
+
+# ---------- 試合ごとの得点表（R H E） ----------
+
+def _ls(rows):
+    return pl.DataFrame([{"date": d, "team": t, "r": r, "h": 5, "e": e} for d, t, r, e in rows])
+
+
+def test_linescore_join_error_differences_by_game_type():
+    import sakanalytics as sa
+
+    tg = to_team_games(games([("2024-04-01", "d", "g", 3, 2), ("2024-04-02", "d", "g", 1, 5),
+                              ("2024-04-03", "g", "d", 4, 3), ("2024-04-04", "d", "g", 6, 0)]), TEAMS)
+    st = season_table(tg)
+    ls = _ls([("2024-04-01", "d", 3, 0), ("2024-04-01", "g", 2, 1), ("2024-04-02", "d", 1, 2), ("2024-04-02", "g", 5, 0),
+              ("2024-04-03", "g", 4, 0), ("2024-04-03", "d", 3, 1), ("2024-04-04", "d", 6, 0), ("2024-04-04", "g", 0, 0)])
+    d = sa.linescore_join(st, tg, ls).filter(pl.col("team") == "d").row(0, named=True)
+    # 中日: 自分の失策 0,2,1,0（計3）、相手 1,0,0,0（計1）
+    assert d["ls_cov"] == pytest.approx(1.0) and d["ls_e_g"] == pytest.approx(3 / 4) and d["ls_opp_e_g"] == pytest.approx(1 / 4)
+    assert d["ls_e_net_g"] == pytest.approx(2 / 4)
+    assert d["ls_e_net_close"] == pytest.approx((-1 + 1) / 2)     # 1点差は 4/1（勝ち、−1）と 4/3（負け、+1）
+    assert d["ls_e_net_win"] == pytest.approx((-1 + 0) / 2) and d["ls_e_net_loss"] == pytest.approx((2 + 1) / 2)
+    assert d["ls_e_net_q4"] == pytest.approx(0.0)                  # 最後の区間は4試合目だけ（境 4 × 3 ÷ 4 = 3）
+
+
+def test_linescore_join_stops_on_mismatch_and_leaves_missing_years_empty():
+    import sakanalytics as sa
+
+    tg = to_team_games(games([("2024-04-01", "d", "g", 3, 2), ("2023-04-01", "d", "g", 1, 0)]), TEAMS)
+    st = season_table(tg)
+    with pytest.raises(ValueError, match="R が"):
+        sa.linescore_join(st, tg, _ls([("2024-04-01", "d", 4, 0), ("2024-04-01", "g", 2, 0)]))
+    with pytest.raises(ValueError, match="2つ以上"):
+        sa.linescore_join(st, tg, _ls([("2024-04-01", "d", 3, 0), ("2024-04-01", "d", 3, 0), ("2024-04-01", "g", 2, 0)]))
+    out = {(r["season"], r["team"]): r for r in sa.linescore_join(
+        st, tg, _ls([("2024-04-01", "d", 3, 0), ("2024-04-01", "g", 2, 1)])).iter_rows(named=True)}
+    assert out[(2024, "d")]["ls_cov"] == pytest.approx(1.0) and out[(2023, "d")]["ls_cov"] == 0.0
+    assert out[(2023, "d")]["ls_e_net_g"] is None                 # 取得していない年は空
+
+
+
+def test_state2_two_lines_on_values():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 6 + [2001] * 6, "league": ["C"] * 12, "team": list("abcdef") * 2,
+                       "x": [6, 5, 4, 3, 2, 1, 6, 5, 4, 3, 2, None]})
+    out = {(r["season"], r["team"]): r["xs"] for r in sa.add_state2(st, "x", "xs").iter_rows(named=True)}
+    # 線は (5+4)/2 = 4.5 と (3+2)/2 = 2.5 → 6・5 は A、4・3 は AB、2・1 は B
+    assert [out[(2000, t)] for t in "abcdef"] == ["A", "A", "AB", "AB", "B", "B"]
+    assert all(out[(2001, t)] is None for t in "abcdef")   # 値のない球団があるリーグ年は空
+
+
+
+def test_bar_from_run_differences_uses_only_the_other_teams():
+    """R73: 点の差から見た越えるべき高さ。.500 のような固定の値を使わない。"""
+    import sakanalytics as sa
+
+    w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
+    py = [0.70, 0.55, 0.52, 0.51, 0.47, 0.40]   # 1位が点の差で独走している年
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6],
+                       "wpct": w, "pythag_fixed": py})
+    out = {r["team"]: r for r in sa.add_league_shape(st).iter_rows(named=True)}
+    # c はほかの5球団の点の差で見込む勝率 .70・.55・.51・.47・.40 の3番目 = .51 を越えるべき。d は .70・.55・.52 の3番目 = .52
+    assert out["c"]["lg_bar_pythag"] == pytest.approx(0.51) and out["c"]["pbar_gap"] == pytest.approx(0.01)
+    assert out["d"]["lg_bar_pythag"] == pytest.approx(0.52) and out["d"]["pbar_gap"] == pytest.approx(-0.01)
+    assert out["a"]["lg_bar_pythag"] == pytest.approx(0.51)
+
+
+
+def test_bar_gaps_are_relative_to_the_seasons_own_bar():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 6 + [2001] * 6, "league": ["C"] * 12, "team": list("abcdefabcdef"),
+                       "x": [6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]})
+    out = {(r["season"], r["team"]): r["x_bgap"] for r in sa.add_bar_gaps(st, ["x"]).iter_rows(named=True)}
+    # 2000年: c のほかの5球団の3番目は d の 3 → +1。d は c の 4 → −1。2001年は同じ並びで値が 1/10 → ±0.1
+    assert out[(2000, "c")] == pytest.approx(1) and out[(2000, "d")] == pytest.approx(-1)
+    assert out[(2001, "c")] == pytest.approx(0.1) and out[(2001, "d")] == pytest.approx(-0.1)
+    assert sa.add_bar_gaps(st, ["missing"]).columns == st.columns
+
+
+def test_vs_top_is_compared_with_the_seasons_bar():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"team": ["a", "b"], "vs_top_wpct": [0.45, None], "lg_bar": [0.47, 0.5]})
+    out = sa.add_vs_top_bar_gap(st)
+    assert out["vs_top_bar_gap"].to_list()[0] == pytest.approx(-0.02) and out["vs_top_bar_gap"].to_list()[1] is None
+    assert sa.add_vs_top_bar_gap(st.drop("lg_bar")).columns == ["team", "vs_top_wpct"]

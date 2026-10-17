@@ -48,6 +48,15 @@ def test_pythdragoras_registered_with_exact_ids_and_mirrors():
         assert (ROOT / "pythdragoras" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
 
 
+def test_queryu_registered_with_exact_ids():
+    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/QueRyu"]
+    assert entry["repository_id"] == 1423051557
+    assert entry["optional"]["subtree_prefix"] == "queryu"
+    # queryu/aoi_paths.py は subtree add のあとにできる。それまでは mirrored_from_parent に書かない
+    # （書くと copy_missing で失敗する）。subtree add の直後に {"aoi_paths.py": "aoi_paths.py"} を書く
+    assert "mirrored_from_parent" not in entry["optional"]
+
+
 def test_registered_mirrors_are_blob_identical_to_aoi_originals():
     report = cch.check(ROOT, cch.validate_heads(_load("child-heads.json")), None, network=False, tools=None)
     for row in report["children"]:
@@ -60,7 +69,7 @@ def test_offline_cli_passes():
     assert out.returncode == 0, out.stderr
     report = json.loads(out.stdout)
     assert report["schema"] == "aoi-child-heads-check/1"
-    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/PythDRagoras"]
+    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu"]
 
 
 # --- ローカルの Git -------------------------------------------------------------------------

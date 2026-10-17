@@ -46,9 +46,9 @@ rows = [dict(sensor='north', year=2024, energy=10),
 comparison = saka.compare_periods(rows, entity='sensor', period='year', metrics=['energy'], before=2024, after=2025)
 assert comparison['comparisons'][0]['metrics']['energy']['delta'] == 2
 assert saka.discover([{'id':'a', 'latency':10}, {'id':'b', 'latency':12}], identifier='id', features=['latency'])['pairs'][0]['units'] == ['a', 'b']
-curve = pyth.threshold_curve([.1, .4, .9], [False, True, True], [.1, .4, 1.])
+curve = pyth.threshold_curve([.1, .4, .9], [False, True, True], [.2, .4, 1.])
 assert curve[1]['mcc'] == 1. and curve[2]['mcc'] is None
-assert pyth.shape(curve)['covered_span'] == .4-.1
+assert pyth.shape(curve)['covered_span'] == .4-.2
 assert not any(hasattr(saka, n) for n in ['FEATURES', 'audit_annual'])
 assert not any(hasattr(pyth, n) for n in ['ScoreState', 'team_games', 'analyze'])
 assert pyth.classify({'posthoc': False}).status == 'unknown'

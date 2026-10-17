@@ -9,7 +9,9 @@ import pytest
 import npb_calendar
 from queryu import Cache, OfflineMiss, PoliteFetcher, build, main, write_dataset
 
-PAGE = (Path(__file__).resolve().parents[2] / "blueprobe" / "tests" / "fixtures" / "npb_calendar_sample.html").read_text(encoding="utf-8")
+import aoi_paths
+
+PAGE = (aoi_paths.resolve_aoi_root(anchor=Path(__file__)) / "blueprobe" / "tests" / "fixtures" / "npb_calendar_sample.html").read_text(encoding="utf-8")
 
 
 def fetcher(tmp_path, handler, **kw):

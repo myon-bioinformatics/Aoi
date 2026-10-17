@@ -1,8 +1,11 @@
 # サイクル1: 中日ドラゴンズ。ローカルでも GitHub Actions でも、この定義だけを実行する。
-#   python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
-#   python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml [--offline]
+#   python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/from-cycle-001/pipeline.toml
+#   python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/from-cycle-001/pipeline.toml [--offline]
+# branch（cycle-001/chunichi）側の実行定義。正本（cycles/c001-chunichi/pipeline.toml）とは別物（README.md）。
+# branch 側で中身が違うもの（analysis.toml・propositions.toml・outputs/・research/）はこのディレクトリを指す。
+# 正本の outputs/（LittleBit holdout が固定している season.jsonl など）には書かない。
 name = "c001-chunichi"
-root = "../.."
+root = "../../.."
 
 [requires]
 python = "3.11"
@@ -13,8 +16,8 @@ optional = ["gh"]
 years = "2012-2025"
 cache = "data/raw/npb_calendar"
 games = "data/observations/npb_calendar/games.jsonl"
-out = "cycles/c001-chunichi/outputs"
-config = "cycles/c001-chunichi/analysis.toml"
+out = "cycles/c001-chunichi/from-cycle-001/outputs"
+config = "cycles/c001-chunichi/from-cycle-001/analysis.toml"
 linescore_years = "2025"   # 試合ごとの得点表（R H E）は量が大きいので年を絞る（R63、ユーザーと決めた: まず 2025年）
 
 # 1. 取得（ネットワーク）。取得済みのページは再取得しない。進行中のシーズンだけ更新を確認する
@@ -114,7 +117,7 @@ run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games
 name = "question"
 run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}/season.jsonl",
        "--config", "{config}", "--hypotheses", "cycles/c001-chunichi/hypotheses.toml",
-       "--propositions", "cycles/c001-chunichi/propositions.toml", "--claims", "cycles/c001-chunichi/claims.toml",
+       "--propositions", "cycles/c001-chunichi/from-cycle-001/propositions.toml", "--claims", "cycles/c001-chunichi/claims.toml",
        "--outdir", "{out}", "--trajectory-sensitivity", "{out}/trajectory_sensitivity_units.jsonl"]
 
 # 5b. 条件の組み合わせを探す（R11。命題を作る材料で、判定ではない）
@@ -133,7 +136,7 @@ run = ["uv", "run", "python", "pythdragoras/rule_search.py", "--season", "{out}/
 [[step]]
 name = "sets"
 run = ["uv", "run", "python", "pythdragoras/sets.py", "--season", "{out}/season.jsonl", "--config", "{config}",
-       "--propositions", "cycles/c001-chunichi/propositions.toml", "--sets", "cycles/c001-chunichi/sets.toml",
+       "--propositions", "cycles/c001-chunichi/from-cycle-001/propositions.toml", "--sets", "cycles/c001-chunichi/sets.toml",
        "--outdir", "{out}", "--report-only"]
 
 # 6. 判定を終了コードで表示する。異議（1〜6）では止めず、仕組みの不具合（64 以上）だけを失敗にする
@@ -172,7 +175,7 @@ run = ["uv", "run", "python", "sakanalytics/sakanalytics.py",
 
 [[step]]
 name = "provisional_check"
-run = ["uv", "run", "python", "cycles/c001-chunichi/research/r75_provisional.py", "{out}/provisional/season.jsonl",
-       "cycles/c001-chunichi/propositions.toml", "cycles/c001-chunichi/sets.toml",
+run = ["uv", "run", "python", "cycles/c001-chunichi/from-cycle-001/research/r75_provisional.py", "{out}/provisional/season.jsonl",
+       "cycles/c001-chunichi/from-cycle-001/propositions.toml", "cycles/c001-chunichi/sets.toml",
        "--out", "{out}/provisional/check.md"]
 

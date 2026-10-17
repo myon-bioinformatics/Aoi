@@ -4,8 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'DRAgoWing'))
-from dragowing import render_report
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from dragowing.research_report import render_report
 
 COLORS = ['#1265a8', '#d58a2b']
 NAMES = ['中日', '他セ5球団（合算）']

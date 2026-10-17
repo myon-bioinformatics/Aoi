@@ -1,0 +1,77 @@
+# BlueProbe の CI と同じ形。Aoi は固定 SHA で checkout し、コピーしない。
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  changes:
+    permissions:
+      contents: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+
+  test:
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
+    needs: changes
+    name: pytest (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    env:
+      # サイクルデータ（cycles/ の outputs）、PythDRagoras（propositions, rule_search）、QueRyu（ask）は Aoi に残す。
+      # Aoi main（dragowing/ を切り出したコミット）。
+      AOI_SHA: a8dc4997f43236b24a23df56e21f143fa0e233d8
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # Aoi の CI と同じ
+        python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ env.AOI_SHA }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - run: python -m compileall -q -x '\.test-deps' .
+      - run: python -m pip install uv
+      - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
+        env:
+          AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
+          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras:${{ github.workspace }}/.test-deps/aoi/queryu/ask
+      - name: Preserve JUnit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-py${{ matrix.python }}
+          path: reports/junit.xml
+          if-no-files-found: error
+          retention-days: 14
+
+  failure-identity:
+    needs: [changes, test]
+    if: (always()) && needs.changes.outputs.product_changed == 'true'
+    permissions:
+      contents: read
+      actions: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    with:
+      expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
+      artifact-pattern: junit-*
+      output-artifact: failure-identity
+      commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  actionlint:
+    needs: changes
+    if: needs.changes.outputs.workflow_changed == 'true'
+    permissions:
+      contents: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1

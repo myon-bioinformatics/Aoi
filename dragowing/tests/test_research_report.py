@@ -3,8 +3,9 @@ import json
 from pathlib import Path
 import pytest
 from dragowing.research_report import render_report
+import aoi_paths
 
-ROOT=Path(__file__).resolve().parents[2]
+ROOT=aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 
 
 def test_script_and_title_escaping():

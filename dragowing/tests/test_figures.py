@@ -3,8 +3,10 @@ import ast
 import html
 import json
 import operator
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -23,6 +25,34 @@ import aoi_paths
 
 ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 RESULTS = aoi_paths.default_cycle_outputs(ROOT)
+_MODULE_PARENT = None
+
+
+def _dragowing_module_run(extra_env=None):
+    """cwd and env so `python -m dragowing` loads this tree.
+
+    Inside Aoi, ROOT/dragowing is this directory, so cwd stays ROOT.
+    Standalone, cwd is the parent of a directory named dragowing (the checkout
+    when it has that name, otherwise a symlink to this repo).
+    """
+    pkg = Path(__file__).resolve().parents[1]
+    env = dict(os.environ)
+    if extra_env:
+        env.update(extra_env)
+    if (ROOT / "dragowing").resolve() == pkg:
+        return {"cwd": ROOT, "env": env}
+    global _MODULE_PARENT
+    if pkg.name == "dragowing":
+        parent = pkg.parent
+    else:
+        if _MODULE_PARENT is None:
+            parent = Path(tempfile.mkdtemp(prefix="dragowing-mod-"))
+            (parent / "dragowing").symlink_to(pkg, target_is_directory=True)
+            _MODULE_PARENT = parent
+        parent = _MODULE_PARENT
+    return {"cwd": parent, "env": env}
+
+
 OPS = {
     "<": operator.lt,
     "<=": operator.le,
@@ -300,10 +330,10 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     assert fetch_plotly_js()[:80] not in embedded_props
     proc = subprocess.run(
         [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"],
-        cwd=ROOT,
         check=False,
         capture_output=True,
         text=True,
+        **_dragowing_module_run(),
     )
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
@@ -313,11 +343,10 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     assert not (tmp_path / "x.png").exists()
     missing = subprocess.run(
         [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "png"), "--png"],
-        cwd=ROOT,
         check=False,
         capture_output=True,
         text=True,
-        env={**dict(__import__("os").environ), "CHROME": str(tmp_path / "missing-chrome")},
+        **_dragowing_module_run({"CHROME": str(tmp_path / "missing-chrome")}),
     )
     assert missing.returncode == 2
     assert "Chrome" in missing.stderr
@@ -332,20 +361,20 @@ def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path):
     assert main(["--results", str(results), "--out", str(tmp_path / "o"), "--id", "E25"]) == 1
     proc = subprocess.run(
         [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "o2"), "--id", "E25"],
-        cwd=ROOT,
         check=False,
         capture_output=True,
         text=True,
+        **_dragowing_module_run(),
     )
     assert proc.returncode == 1
     assert "結果が読めない" in proc.stderr
     assert "結果にない" not in proc.stderr
     proc = subprocess.run(
         [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "o3"), "--column", "team_name"],
-        cwd=ROOT,
         check=False,
         capture_output=True,
         text=True,
+        **_dragowing_module_run(),
     )
     assert proc.returncode == 1
     assert "数値ではない" in proc.stderr
@@ -501,8 +530,10 @@ def test_every_proposition_table_matches_the_file():
 
 def test_sources_do_not_import_banned_plot_libraries():
     banned_roots = {"matplotlib", "seaborn", "statsmodels", "plotly"}
-    for path in (ROOT / "dragowing").rglob("*.py"):
-        if "tests" in path.parts:
+    package = Path(__file__).resolve().parents[1]
+    skip = {"tests", ".test-deps", ".venv", ".git", "__pycache__", ".pytest_cache"}
+    for path in package.rglob("*.py"):
+        if skip.intersection(path.parts):
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in tree.body:

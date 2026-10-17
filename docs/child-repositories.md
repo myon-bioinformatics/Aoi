@@ -21,11 +21,12 @@ python -S scripts/check_child_heads.py --vendor-tools <myon-bioinformatics の c
 
 ```bash
 git subtree pull --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main --squash
-git subtree pull --prefix=queryu https://github.com/myon-bioinformatics/QueRyu.git main --squash
 ```
 
 `not_in_parent` のファイル（`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、`.github/`、`docs/ci/`）は取り込み後に Aoi 側で消す（BlueProbe と同じ）。
 
 git 2.47.3 の `git subtree split --prefix=pythdragoras`（と、それを使う gh_identity の `split-preflight` / `subtree-sync-status`）は、Aoi の履歴の途中で止まって 10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e`（25 コミット）を返します。PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出し、tree が Aoi の `pythdragoras/` と一致することを確かめています。`check_child_heads.py` の差分は tree で比べるので、この影響を受けません。
 
-QueRyu も同じで、`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返します。QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は `git filter-branch --subdirectory-filter queryu` で Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から切り出し、tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。
+QueRyu の同期の方法は未定（TBD）。Aoi 側で一度 `git subtree add` か `--rejoin` をして履歴をつなぐか、subtree の同期をやめて vendor lock と tree の比較だけで管理するかは、まだ決まっていない。決まるまでは `check_child_heads.py` の tree の差分だけを見る。
+
+QueRyu の切り出しについて。PythDRagoras と同じで、`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返します。QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は `git filter-branch --subdirectory-filter queryu` で Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から切り出し、tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。

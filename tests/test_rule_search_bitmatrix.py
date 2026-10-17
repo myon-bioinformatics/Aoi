@@ -14,8 +14,10 @@ import pytest
 import rule_search as rs
 from rule_search import rule_text, search
 
-ROOT = Path(__file__).resolve().parents[2]
-CYCLE = ROOT / "cycles" / "c001-chunichi"
+import aoi_paths
+
+ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+CYCLE = aoi_paths.resolve_cycle_path(ROOT)
 
 ROWS = [
     ("a", 2020, 40, 1, 2.0, True), ("b", 2020, 10, 3, -5.0, False), ("c", 2020, -20, 2, 4.0, True),

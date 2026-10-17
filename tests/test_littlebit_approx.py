@@ -17,8 +17,10 @@ from littlebit_approx import (
 from registration_audit import audit_record, classify
 from rule_search import search
 
-ROOT = Path(__file__).resolve().parents[2]
-CYCLE = ROOT / "cycles" / "c001-chunichi"
+import aoi_paths
+
+ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+CYCLE = aoi_paths.resolve_cycle_path(ROOT)
 ART = CYCLE / "outputs" / "exploratory" / "littlebit-approx" / "comparison.json"
 
 ROWS = [

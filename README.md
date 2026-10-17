@@ -8,6 +8,10 @@
 
 観測と発見を担う。取得したページを読み、**何がそこにあるか**を記録する。勝敗や原因の判断はしない。
 
+保存済みWeb画面の座標・操作履歴をブラウザなしで整理する入口は
+[`web_observations.py`](docs/web-portability.md)。Dart／Kotlin／Swiftのソースと
+ビルド設定のハッシュ一覧も作れる。保存観測の解析と、現在の実装の実行検証は区別する。
+
 ## 出自
 
 このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト

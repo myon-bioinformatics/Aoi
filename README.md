@@ -8,6 +8,25 @@
 
 取得と、観測データセットの作成を担う。取得元への負荷を抑え、いつ・どこから・どのコードで取ったかを必ず残す。
 
+## このリポジトリについて
+
+[Aoi](https://github.com/myon-bioinformatics/Aoi) の `queryu/` から独立したリポジトリ。直接の親は Aoi で、`queryu/` との差分は Aoi 側で確かめる。
+初回の `main`（`35a08024dc0040566068ba513074e3d8326897d4`）は Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` の `queryu/` を履歴ごと切り出したもの（tree `c995b928f46b297025d9cddaeee3df04b322405b`）。
+
+- サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi を checkout して `AOI_ROOT=<Aoi のルート>` を渡す
+- 抽出（`blueprobe`・`npb_calendar`・`npb_team_annual`）は [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) を checkout して `PYTHONPATH` に渡す。Aoi の `blueprobe/` は使わない
+- `aoi_paths.py` は Aoi 固有の配置の決まり（`AOI_ROOT`・`--root`・`--cycle`）で、ここでは普通のファイルとして置く。Aoi との間で vendor lock は使わない
+- Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。Aoi と QueRyu の間では vendor lock を使わない（Aoi の `queryu/aoi_paths.py` が Aoi 直下の `aoi_paths.py` と同じ blob であることは、Aoi 側で確かめる）
+- 下のリンクのうち `../` で始まるものは Aoi の中の場所を指す
+
+```sh
+git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
+git -C ../Aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7
+git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
+git -C ../BlueProbe checkout bf27a17354544519016bbbde87c7f9c8d2aa29cd
+AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
+```
+
 ## 取得元への配慮
 
 - 取得済みのページは再取得しない。今年以降で、凍結リストに無い年は更新を確認する。保存済みの `Last-Modified` / `ETag` があれば条件付きGET、無ければ条件なしのGETとなる

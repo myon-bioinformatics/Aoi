@@ -1,13 +1,15 @@
-"""取得の礼儀（負荷）と来歴の記録。ネットワークには出ず、httpx.MockTransport で応答を作る。"""
+"""取得の礼儀（負荷）と来歴の記録。ネットワークには出ず、HandlerClient で応答を作る。"""
 
 import json
 from pathlib import Path
 
-import httpx
+import urllib.request
+
 import pytest
 
 import npb_calendar
-from queryu import Cache, OfflineMiss, PoliteFetcher, build, main, write_dataset
+from queryu import (Cache, HandlerClient, HTTPStatusError, OfflineMiss, PoliteFetcher, Response, UrllibClient,
+                    build, main, write_dataset)
 
 import aoi_paths
 
@@ -15,13 +17,13 @@ PAGE = (aoi_paths.resolve_aoi_root(anchor=Path(__file__)) / "blueprobe" / "tests
 
 
 def fetcher(tmp_path, handler, **kw):
-    return PoliteFetcher(Cache(tmp_path / "cache"), wait=0, client=httpx.Client(transport=httpx.MockTransport(handler)), **kw)
+    return PoliteFetcher(Cache(tmp_path / "cache"), wait=0, client=HandlerClient(handler), **kw)
 
 
 def only_april(req):
     if "index_04" in str(req.url):
-        return httpx.Response(200, text=PAGE, headers={"Last-Modified": "Wed, 01 Oct 2025 00:00:00 GMT", "ETag": '"abc"'})
-    return httpx.Response(404)
+        return Response(200, text=PAGE, headers={"Last-Modified": "Wed, 01 Oct 2025 00:00:00 GMT", "ETag": '"abc"'})
+    return Response(404)
 
 
 def test_finished_season_hits_network_once(tmp_path):
@@ -53,9 +55,9 @@ def test_live_season_sends_conditional_headers_and_logs_304(tmp_path):
     def handler(req):
         seen.append((req.headers.get("If-Modified-Since"), req.headers.get("If-None-Match")))
         if "index_04" not in str(req.url):
-            return httpx.Response(404)
+            return Response(404)
         if req.headers.get("If-None-Match"):
-            return httpx.Response(304)
+            return Response(304)
         return only_april(req)
 
     f = fetcher(tmp_path, handler)
@@ -77,8 +79,8 @@ def test_offline_never_touches_network(tmp_path):
 
 
 def test_server_error_is_not_cached(tmp_path):
-    f = fetcher(tmp_path, lambda r: httpx.Response(503))
-    with pytest.raises(httpx.HTTPStatusError):
+    f = fetcher(tmp_path, lambda r: Response(503))
+    with pytest.raises(HTTPStatusError):
         f.get("2024_04", "https://npb.jp/x", "2024")
     assert not (tmp_path / "cache" / "manifest.jsonl").exists()
 
@@ -120,13 +122,11 @@ def test_write_dataset_drops_records_the_rebuilt_scope_no_longer_produces(tmp_pa
 
 
 def test_client_keeps_environment_proxy_settings(tmp_path, monkeypatch):
-    # transport= を渡すと httpx は環境変数のプロキシを使わない（PR #3 で判明）
-    seen = {}
-
-    class Spy:
-        def __init__(self, **kw):
-            seen.update(kw)
-
-    monkeypatch.setattr(httpx, "Client", Spy)
-    PoliteFetcher(Cache(tmp_path / "cache"), wait=0).client
-    assert "transport" not in seen and "mounts" not in seen and seen.get("trust_env", True)
+    # 環境変数のプロキシ設定を捨てない（PR #3 で判明）。urllib の既定の opener は ProxyHandler で環境変数を読む
+    monkeypatch.setenv("https_proxy", "http://proxy.example.test:8080")
+    client = PoliteFetcher(Cache(tmp_path / "cache"), wait=0).client
+    assert isinstance(client, UrllibClient)
+    proxies = [h.proxies for h in client.opener.handlers if isinstance(h, urllib.request.ProxyHandler)]
+    assert proxies and proxies[0].get("https") == "http://proxy.example.test:8080"
+    assert any(isinstance(h, urllib.request.HTTPRedirectHandler) for h in client.opener.handlers)
+    assert client.headers["User-Agent"].startswith("Aoi-QueRyu/")

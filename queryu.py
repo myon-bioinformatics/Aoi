@@ -17,8 +17,10 @@ from __future__ import annotations
 import argparse
 import copy
 import datetime as dt
+import email.message
 import gzip
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -27,6 +29,8 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
+import urllib.request
 import zlib
 from pathlib import Path
 
@@ -171,6 +175,86 @@ def wait_seconds(value) -> float:
     return wait
 
 
+class HTTPStatusError(RuntimeError):
+    """4xx・5xx の応答（404 は「空」として扱うので PoliteFetcher からは出ない）。"""
+
+    def __init__(self, response: "Response"):
+        self.response = response
+        super().__init__(f"HTTP {response.status_code}: {response.url}")
+
+
+def _header_map(headers) -> email.message.Message:
+    """大文字小文字を区別しないヘッダー（``.get("etag")`` で ``ETag`` が引ける）。"""
+    msg = email.message.Message()
+    for name, value in (headers.items() if headers is not None else ()):
+        msg[name] = value
+    return msg
+
+
+class Request:
+    """``HandlerClient`` の handler に渡す要求（url と、大文字小文字を区別しない headers）。"""
+
+    def __init__(self, url: str, headers=None):
+        self.url, self.headers = url, _header_map(headers or {})
+
+
+class Response:
+    """取得の結果。``status_code``・``content``（bytes）・``headers``・``raise_for_status()`` を持つ。"""
+
+    def __init__(self, status_code: int, content: bytes = b"", headers=None, *, text: str | None = None, url: str = ""):
+        self.status_code = int(status_code)
+        self.content = text.encode("utf-8") if text is not None else bytes(content)
+        self.headers = _header_map(headers)
+        self.url = url
+
+    def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise HTTPStatusError(self)
+
+
+class UrllibClient:
+    """標準ライブラリ（urllib）だけの GET。304・404・5xx も例外にせず ``Response`` で返す。"""
+
+    def __init__(self, headers=None, timeout: float = 30, opener=None):
+        self.headers, self.timeout = dict(headers or {}), timeout
+        # build_opener() は ProxyHandler（環境変数のプロキシ）と HTTPRedirectHandler を含む
+        self.opener = opener or urllib.request.build_opener()
+
+    def get(self, url: str, headers=None) -> Response:
+        request = urllib.request.Request(url, headers={**self.headers, **dict(headers or {})}, method="GET")
+        try:
+            with self.opener.open(request, timeout=self.timeout) as r:
+                return Response(r.status, r.read(), r.headers, url=r.geturl())
+        except urllib.error.HTTPError as error:
+            with error:
+                body = error.read() if error.fp is not None else b""
+            return Response(error.code, body, error.headers, url=url)
+
+
+class HandlerClient:
+    """ネットワークに出ない client。``handler(Request) -> Response`` で応答を作る（テスト・再生用）。"""
+
+    def __init__(self, handler):
+        self.handler = handler
+
+    def get(self, url: str, headers=None) -> Response:
+        return self.handler(Request(url, headers))
+
+
+def aoi_sibling_path(here: Path, module: str, sibling: str = "blueprobe") -> None:
+    """``module`` が import できないときだけ、Aoi の checkout の中にある隣の ``sibling/`` を ``sys.path`` に足す。
+
+    単独の QueRyu では足さない（BlueProbe は固定 SHA の checkout を PYTHONPATH で渡す）。
+    ``../blueprobe`` のような相対の隣を読むのは、親が Aoi（pyproject.toml と cycles/ がある）のときに限る。
+    """
+    if importlib.util.find_spec(module) is not None:
+        return
+    root = here.resolve().parent
+    candidate = root / sibling
+    if (root / "pyproject.toml").is_file() and (root / "cycles").is_dir() and candidate.is_dir():
+        sys.path.insert(0, str(candidate))
+
+
 class PoliteFetcher:
     def __init__(self, cache: Cache, wait: float = 3.0, *, offline: bool = False, client=None):
         self.cache, self.wait, self.offline = cache, wait_seconds(wait), offline
@@ -181,9 +265,8 @@ class PoliteFetcher:
     @property
     def client(self):
         if self._client is None:
-            import httpx  # オフライン実行では読み込まない
-            # transport= を渡すと環境変数のプロキシ設定が使われなくなるので渡さない
-            self._client = httpx.Client(headers={"User-Agent": UA}, timeout=30, follow_redirects=True)
+            # オフライン実行では作らない。urllib の既定の opener は環境変数のプロキシ設定とリダイレクトに従う
+            self._client = UrllibClient(headers={"User-Agent": UA}, timeout=30)
         return self._client
 
     def get(self, key: str, url: str, group: str, *, live: bool = False) -> str:
@@ -439,5 +522,6 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     here = Path(__file__).resolve().parent
-    sys.path[:0] = [str(here), str(here.parent / "blueprobe")]
+    sys.path.insert(0, str(here))
+    aoi_sibling_path(here, "blueprobe")
     raise SystemExit(main())

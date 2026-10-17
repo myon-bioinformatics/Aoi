@@ -1,0 +1,15 @@
+{
+  "schema": "child-heads/1",
+  "ref": "main",
+  "heads": {
+    "myon-bioinformatics/PythDRagoras": {
+      "optional": {
+        "repository_created_at": "2026-10-17T06:58:25Z",
+        "subtree_prefix": "pythdragoras",
+        "not_in_parent": [".github/", ".gitignore", "conftest.py", "docs/ci/", "pyproject.toml", "uv.lock"]
+      },
+      "repository_id": 1423045231,
+      "sha": "12522c890e64313005e2bb3cad07d90365d4cf60"
+    }
+  }
+}

@@ -76,7 +76,7 @@ def validate_heads(doc: dict) -> dict:
 def _reject_legacy_vendor_consumers(root: Path) -> None:
     if (root / LEGACY_VENDOR_CONSUMERS).exists():
         raise ValueError(
-            "vendor-consumers.json is not used between Aoi and subtree children; remove the file"
+            f"{LEGACY_VENDOR_CONSUMERS} is not used between Aoi and subtree children; remove the file"
         )
 
 

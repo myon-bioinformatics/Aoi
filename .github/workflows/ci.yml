@@ -67,7 +67,7 @@ jobs:
       - name: Test with JUnit
         run: |
           mkdir -p build/test-results
-          uv run --python "${{ matrix.python }}" pytest -q --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
+          uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
       - name: Preserve raw JUnit
         if: always()
         uses: actions/upload-artifact@v7

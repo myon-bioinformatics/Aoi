@@ -8,6 +8,7 @@ import json
 import os
 import re
 import runpy
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -20,22 +21,7 @@ SCRIPT = ROOT / "scripts" / "check_child_heads.py"
 sys.path.insert(0, str(ROOT / "scripts"))
 
 
-def _import_check_child_heads(path: Path | None = None):
-    import importlib.util
-
-    if path is None:
-        import check_child_heads as mod
-
-        return mod
-    spec = importlib.util.spec_from_file_location("check_child_heads", path)
-    mod = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(mod)
-    return mod
-
-
-_mutated = os.environ.get("CHECK_CHILD_HEADS_MUTATED")
-cch = _import_check_child_heads(Path(_mutated) if _mutated else None)
+import check_child_heads as cch  # noqa: E402
 
 SHA = "a" * 40
 NAME = "o/child"
@@ -154,6 +140,8 @@ def _run(tmp_path, root, heads, *, network=True):
     (lambda d: d.update(extra=1), 'expected child-heads/1'),
     (lambda d: d.update(ref=""), 'child-heads ref must be a nonempty string'),
     (lambda d: d.update(ref="main\x00"), 'child-heads ref must not contain control characters'),
+    (lambda d: d.update(ref="a\x1fb"), 'child-heads ref must not contain control characters'),
+    (lambda d: d.update(ref="a\x7fb"), 'child-heads ref must not contain control characters'),
     (lambda d: d.update(ref=1), 'child-heads ref must be a nonempty string'),
     (lambda d: d.update(heads={}), 'child heads must be a nonempty object'),
     (lambda d: d.update(heads=[]), 'child heads must be a nonempty object'),
@@ -196,6 +184,13 @@ def test_validate_heads_accepts_full_optional():
     assert cch.validate_heads(doc) is doc
 
 
+def test_validate_heads_ref_allows_space_and_tilde():
+    for ref in (" ", "~", "a b", "ref~1"):
+        doc = _heads(SHA)
+        doc["ref"] = ref
+        assert cch.validate_heads(doc)["ref"] == ref
+
+
 VENDOR_CONSUMERS_FILENAME = "vendor-consumers.json"
 VENDOR_CONSUMERS_MESSAGE = (
     "vendor-consumers.json is not used between Aoi and subtree children; remove the file"
@@ -208,6 +203,12 @@ def test_reject_legacy_vendor_consumers_message(tmp_path):
     (root / VENDOR_CONSUMERS_FILENAME).write_text("{}", encoding="utf-8")
     with pytest.raises(ValueError, match=f"^{re.escape(VENDOR_CONSUMERS_MESSAGE)}$"):
         cch._reject_legacy_vendor_consumers(root)
+
+
+def test_tree_docstring_describes_nul_delimited_ls_tree():
+    assert cch._tree.__doc__ == (
+        "path -> (mode, object)。-z で NUL 区切り（改行やタブを含むパスもそのまま）。"
+    )
 
 
 def test_tree_uses_nul_records_and_keeps_mode(tmp_path):
@@ -448,6 +449,8 @@ def test_script_entry_point(tmp_path, monkeypatch, capsys):
 def test_default_root_is_repository():
     out = subprocess.run([sys.executable, "-S", str(SCRIPT), "--help"], capture_output=True, text=True, check=True)
     assert out.stdout.startswith("usage:") and cch.__doc__.splitlines()[0] in out.stdout
+    assert "形と Aoi 側だけ確かめる（GitHub に取りに行かない）" in out.stdout
+    assert "子の URL。{repository} を owner/repository にする" in out.stdout
 
 
 def test_check_does_not_mutate_inputs(tmp_path):
@@ -461,7 +464,13 @@ def test_check_does_not_mutate_inputs(tmp_path):
 # --- coverage / mutation (targets scripts/check_child_heads.py) ---------------------------
 
 _COVERAGE_TEST_FILTER = (
-    "not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage"
+    "not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage "
+    "and not test_mutants_change_exactly_one_ast_site"
+)
+
+_COPY_IGNORE = shutil.ignore_patterns(
+    ".venv", "__pycache__", "actionlint", "build.coverage.check_child_heads.json",
+    ".covtest", ".covtest2",
 )
 
 _COMPARE_FLIPS = {
@@ -474,149 +483,136 @@ _COMPARE_FLIPS = {
 }
 
 
-def _compare_not_eligible(node: ast.AST) -> bool:
-    if isinstance(node, ast.Compare):
-        if len(node.ops) != 1 or type(node.ops[0]) not in _COMPARE_FLIPS:
+def _site_key(node: ast.AST, kind: str) -> tuple[str, int, int]:
+    return kind, node.lineno, node.col_offset
+
+
+def _compare_not_eligible(node: ast.Compare) -> bool:
+    if len(node.ops) != 1 or type(node.ops[0]) not in _COMPARE_FLIPS:
+        return False
+    for part in ast.walk(node):
+        if isinstance(part, ast.Constant) and part.value == "__main__":
             return False
-        for part in ast.walk(node):
-            if isinstance(part, ast.Constant) and part.value == "__main__":
-                return False
-        return True
-    return isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not)
+    return True
 
 
-def _mutant_compare_not_at(source: str, target_index: int) -> str:
-    counter = 0
+def _module_docstring_site(tree: ast.AST) -> tuple[str, int, int] | None:
+    if not isinstance(tree, ast.Module) or not tree.body:
+        return None
+    first = tree.body[0]
+    if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
+        return _site_key(first.value, "constant")
+    return None
+
+
+def _collect_mutation_sites(tree: ast.AST) -> list[tuple[str, int, int]]:
+    sites: list[tuple[str, int, int]] = []
+    skip_doc = _module_docstring_site(tree)
+
+    class _Collect(ast.NodeVisitor):
+        def visit_Compare(self, node: ast.Compare):
+            if _compare_not_eligible(node):
+                sites.append(_site_key(node, "compare"))
+            self.generic_visit(node)
+
+        def visit_UnaryOp(self, node: ast.UnaryOp):
+            if isinstance(node.op, ast.Not):
+                for part in ast.walk(node):
+                    if isinstance(part, ast.Constant) and part.value == "__main__":
+                        return
+                sites.append(_site_key(node, "not"))
+            self.generic_visit(node)
+
+        def visit_Constant(self, node: ast.Constant):
+            if isinstance(node.value, str) and node.value != "__main__":
+                key = _site_key(node, "constant")
+                if key != skip_doc:
+                    sites.append(key)
+            self.generic_visit(node)
+
+        def visit_Return(self, node: ast.Return):
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, int):
+                sites.append(_site_key(node, "return"))
+            self.generic_visit(node)
+
+    _Collect().visit(tree)
+    return sites
+
+
+def _mutate_single_site(source: str, site: tuple[str, int, int]) -> tuple[str, int]:
+    kind, lineno, col = site
+    mutations = 0
 
     class _Mutate(ast.NodeTransformer):
         def visit_Compare(self, node: ast.Compare):
-            nonlocal counter
+            nonlocal mutations
             node = self.generic_visit(node)
-            if not _compare_not_eligible(node):
-                return node
-            if counter == target_index:
+            if kind == "compare" and node.lineno == lineno and node.col_offset == col:
+                mutations += 1
                 flip = _COMPARE_FLIPS[type(node.ops[0])]
                 return ast.Compare(left=node.left, ops=[flip()], comparators=node.comparators)
-            counter += 1
             return node
 
         def visit_UnaryOp(self, node: ast.UnaryOp):
-            nonlocal counter
+            nonlocal mutations
             node = self.generic_visit(node)
-            if not _compare_not_eligible(node):
-                return node
-            if counter == target_index:
+            if kind == "not" and node.lineno == lineno and node.col_offset == col:
+                mutations += 1
                 return node.operand
-            counter += 1
             return node
 
-    tree = _Mutate().visit(ast.parse(source))
-    ast.fix_missing_locations(tree)
-    return ast.unparse(tree) + "\n"
-
-
-def _compare_not_site_count(source: str) -> int:
-    counter = 0
-
-    class _Count(ast.NodeVisitor):
-        def visit_Compare(self, node: ast.Compare):
-            nonlocal counter
-            if _compare_not_eligible(node):
-                counter += 1
-            self.generic_visit(node)
-
-        def visit_UnaryOp(self, node: ast.UnaryOp):
-            nonlocal counter
-            if _compare_not_eligible(node):
-                counter += 1
-            self.generic_visit(node)
-
-    _Count().visit(ast.parse(source))
-    return counter
-
-
-def _mutant_constant_at(source: str, target_index: int) -> str:
-    counter = 0
-    skip = {"__main__", "child-heads/1", "aoi-child-heads-check/1", "prefix_not_found", "fetch_failed: "}
-
-    class _Mutate(ast.NodeTransformer):
         def visit_Constant(self, node: ast.Constant):
-            nonlocal counter
-            if not isinstance(node.value, str) or len(node.value) < 4 or node.value in skip:
-                return node
-            if counter == target_index:
-                mutated = node.value[:-1] + ("X" if node.value[-1] != "X" else "Y")
-                return ast.Constant(value=mutated)
-            counter += 1
+            nonlocal mutations
+            if kind == "constant" and node.lineno == lineno and node.col_offset == col:
+                mutations += 1
+                tail = "X" if node.value[-1] != "X" else "Y"
+                return ast.Constant(value=node.value[:-1] + tail)
             return node
 
-    tree = _Mutate().visit(ast.parse(source))
-    ast.fix_missing_locations(tree)
-    return ast.unparse(tree) + "\n"
-
-
-def _constant_mutation_site_count(source: str) -> int:
-    skip = {"__main__", "child-heads/1", "aoi-child-heads-check/1", "prefix_not_found", "fetch_failed: "}
-    return sum(
-        1
-        for node in ast.walk(ast.parse(source))
-        if isinstance(node, ast.Constant) and isinstance(node.value, str)
-        and len(node.value) >= 4 and node.value not in skip
-    )
-
-
-def _mutant_return_at(source: str, target_index: int) -> str:
-    counter = 0
-
-    class _Mutate(ast.NodeTransformer):
         def visit_Return(self, node: ast.Return):
-            nonlocal counter
-            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, int):
-                if counter == target_index:
-                    return ast.Return(value=ast.Constant(value=node.value.value + 1))
-                counter += 1
+            nonlocal mutations
+            node = self.generic_visit(node)
+            if kind == "return" and node.lineno == lineno and node.col_offset == col:
+                mutations += 1
+                return ast.Return(value=ast.Constant(value=node.value.value + 1))
             return node
 
     tree = _Mutate().visit(ast.parse(source))
+    assert mutations == 1
     ast.fix_missing_locations(tree)
-    return ast.unparse(tree) + "\n"
+    return ast.unparse(tree) + "\n", mutations
 
 
-def _return_mutation_site_count(source: str) -> int:
-    return sum(
-        1
-        for node in ast.walk(ast.parse(source))
-        if isinstance(node, ast.Return) and isinstance(node.value, ast.Constant)
-        and isinstance(node.value.value, int)
-    )
+def _ast_dump(source: str) -> str:
+    return ast.dump(ast.parse(source), annotate_fields=True, include_attributes=False)
 
 
-def _enumerate_mutants(source: str) -> list[tuple[str, str]]:
-    mutants: list[tuple[str, str]] = []
-    for index in range(_compare_not_site_count(source)):
-        mutant = _mutant_compare_not_at(source, index)
-        if mutant != source:
-            mutants.append((f"compare-not-{index}", mutant))
-    for index in range(_constant_mutation_site_count(source)):
-        mutant = _mutant_constant_at(source, index)
-        if mutant != source:
-            mutants.append((f"constant-{index}", mutant))
-    for index in range(_return_mutation_site_count(source)):
-        mutant = _mutant_return_at(source, index)
-        if mutant != source:
-            mutants.append((f"return-{index}", mutant))
+def _enumerate_mutants(source: str) -> list[tuple[str, str, tuple[str, int, int]]]:
+    tree = ast.parse(source)
+    base_dump = _ast_dump(source)
+    mutants: list[tuple[str, str, tuple[str, int, int]]] = []
+    for index, site in enumerate(_collect_mutation_sites(tree)):
+        mutant, _applied = _mutate_single_site(source, site)
+        if _ast_dump(mutant) == base_dump:
+            continue
+        mutants.append((f"{site[0]}-{index}", mutant, site))
     return mutants
 
 
-def _run_registry_tests_under_mutation(mutant_path: Path) -> int:
-    env = {
-        **os.environ,
-        "PYTHONPATH": str(ROOT / "scripts"),
-        "CHECK_CHILD_HEADS_MUTATED": str(mutant_path),
-    }
+def _materialize_mutant_repo(tmp_path: Path, mutant_source: str) -> Path:
+    repo = tmp_path / "aoi"
+    shutil.copytree(ROOT, repo, ignore=_COPY_IGNORE)
+    script = repo / "scripts" / "check_child_heads.py"
+    script.write_text(mutant_source, encoding="utf-8")
+    return repo
+
+
+def _run_registry_tests_in_repo(repo_root: Path) -> int:
+    test_file = repo_root / "tests" / "test_child_registry.py"
+    env = {**os.environ, "PYTHONPATH": str(repo_root / "scripts")}
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", str(Path(__file__).resolve()), "-k", _COVERAGE_TEST_FILTER],
-        cwd=ROOT,
+        [sys.executable, "-m", "pytest", "-q", str(test_file), "-k", _COVERAGE_TEST_FILTER],
+        cwd=repo_root,
         env=env,
         capture_output=True,
         text=True,
@@ -624,15 +620,16 @@ def _run_registry_tests_under_mutation(mutant_path: Path) -> int:
     return proc.returncode
 
 
-def _coverage_accounting() -> dict:
+def _coverage_accounting(tmp_path: Path) -> dict:
     import coverage
 
-    cov_path = ROOT / ".coverage.check_child_heads"
-    cov_path.unlink(missing_ok=True)
+    cov_path = tmp_path / "coverage.dat"
+    json_path = tmp_path / "coverage.json"
+    test_file = ROOT / "tests" / "test_child_registry.py"
     env = {**os.environ, "PYTHONPATH": str(ROOT / "scripts"), "COVERAGE_FILE": str(cov_path)}
     run = subprocess.run(
         [sys.executable, "-m", "coverage", "run", "--branch", "--source=check_child_heads",
-         "-m", "pytest", "-q", str(Path(__file__).resolve()), "-k", _COVERAGE_TEST_FILTER],
+         "-m", "pytest", "-q", str(test_file), "-k", _COVERAGE_TEST_FILTER],
         cwd=ROOT,
         env=env,
         capture_output=True,
@@ -648,23 +645,24 @@ def _coverage_accounting() -> dict:
     statements_set = set(statements)
     missing_set = set(missing)
     excluded_set = set(excluded)
-    covered_set = statements_set - missing_set - excluded_set
-    assert statements_set == covered_set | missing_set | excluded_set
-    assert not (covered_set & missing_set)
-    assert not (covered_set & excluded_set)
-    assert not (missing_set & excluded_set)
-    json_path = ROOT / "build.coverage.check_child_heads.json"
-    json_path.parent.mkdir(exist_ok=True)
-    cov.json_report(outfile=str(json_path), include=[str(SCRIPT.relative_to(ROOT))])
-    summary = json.loads(json_path.read_text(encoding="utf-8"))["files"][str(SCRIPT.relative_to(ROOT))]["summary"]
+    covered_set = statements_set - missing_set
+    universe = statements_set | excluded_set
+    unreachable_set = excluded_set
+    uncovered_set = missing_set
+    assert universe == covered_set | unreachable_set | uncovered_set
+    assert not (covered_set & unreachable_set)
+    assert not (covered_set & uncovered_set)
+    assert not (unreachable_set & uncovered_set)
+    cov.json_report(outfile=str(json_path), include=["scripts/check_child_heads.py"])
+    summary = json.loads(json_path.read_text(encoding="utf-8"))["files"]["scripts/check_child_heads.py"]["summary"]
     assert summary["missing_lines"] == 0
     assert summary["missing_branches"] == 0
     assert summary["num_partial_branches"] == 0
     return {
-        "total": len(statements_set),
+        "total": len(universe),
         "covered": len(covered_set),
-        "unreachable": len(excluded_set),
-        "uncovered": len(missing_set),
+        "unreachable": len(unreachable_set),
+        "uncovered": len(uncovered_set),
         "statements": summary["num_statements"],
         "branches": summary["num_branches"],
         "covered_branches": summary["covered_branches"],
@@ -673,22 +671,42 @@ def _coverage_accounting() -> dict:
     }
 
 
-def test_check_child_heads_line_and_branch_coverage():
-    report = _coverage_accounting()
+def test_check_child_heads_line_and_branch_coverage(tmp_path):
+    report = _coverage_accounting(tmp_path / "cov")
     assert report["uncovered"] == 0
     assert report["covered"] + report["unreachable"] + report["uncovered"] == report["total"]
     assert report["missing_branches"] == 0
     assert report["partial_branches"] == 0
 
 
+def test_mutants_change_exactly_one_ast_site():
+    source = SCRIPT.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    for index, site in enumerate(_collect_mutation_sites(tree)):
+        _mutant, applied = _mutate_single_site(source, site)
+        assert applied == 1, (site, applied, index)
+
+
 def test_mutations_all_killed(tmp_path):
     source = SCRIPT.read_text(encoding="utf-8")
     mutants = _enumerate_mutants(source)
     assert mutants, "no mutants generated"
+    generated = len(mutants)
+    killed = 0
+    equivalent = 0
     survived = []
-    for name, mutant_source in mutants:
-        path = tmp_path / f"{name}.py"
-        path.write_text(mutant_source, encoding="utf-8")
-        if _run_registry_tests_under_mutation(path) == 0:
+    for name, mutant_source, _site in mutants:
+        if _ast_dump(mutant_source) == _ast_dump(source):
+            equivalent += 1
+            continue
+        repo = _materialize_mutant_repo(tmp_path / name, mutant_source)
+        rc = _run_registry_tests_in_repo(repo)
+        if rc == 0:
             survived.append(name)
-    assert not survived, f"survived mutants: {survived}"
+        elif rc == 1:
+            killed += 1
+        else:
+            pytest.fail(f"mutant {name}: pytest exit code {rc}\n")
+    assert equivalent == 0
+    assert not survived, f"survived ({len(survived)}): {survived}"
+    assert killed == generated

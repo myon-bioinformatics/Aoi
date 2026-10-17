@@ -17,7 +17,7 @@ dev = ["pytest>=8"]
 package = false
 
 [tool.pytest.ini_options]
-# サイクルデータ・scripts/・sakanalytics は Aoi に残す。AOI_ROOT と PYTHONPATH で固定 SHA の Aoi を指す（docs/ci/）
+# サイクルデータ・scripts/・sakanalytics は Aoi に残す。AOI_ROOT と PYTHONPATH で固定 SHA の Aoi を指す（.github/workflows/ci.yml）
 pythonpath = ["."]
 testpaths = ["tests"]
-norecursedirs = ["vendor", ".test-deps", "build", "reports"]
+norecursedirs = [".test-deps", "build", "reports"]

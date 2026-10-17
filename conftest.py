@@ -17,7 +17,7 @@ def pytest_configure(config):
         raise pytest.UsageError(
             f"Aoi のデータが見つからない（{root} に cycles/ がない）。"
             "Aoi を checkout して AOI_ROOT=<Aoi のルート>、"
-            "PYTHONPATH=<Aoi のルート>/sakanalytics を渡す（docs/ci/ci.yml.proposed と同じ）"
+            "PYTHONPATH=<Aoi のルート>/sakanalytics を渡す（.github/workflows/ci.yml と同じ）"
         )
 
 

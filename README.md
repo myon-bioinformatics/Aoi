@@ -8,29 +8,24 @@
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7   # docs/ci/ci.yml.proposed の AOI_SHA
+git -C .test-deps/aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7   # .github/workflows/ci.yml の AOI_SHA
 AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
   uv run pytest -q --junitxml=reports/junit.xml
 ```
 
 - パスは Aoi の規約（PR #49）（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
 - `AOI_ROOT` が Aoi を指していないと、pytest は最初に止まって理由を出します。
-- 依存は polars と numpy だけです（ortools は使っていません）。
+- 実行時の依存は polars と numpy だけです（ortools は使っていません）。
+- テストは、これに加えて `AOI_ROOT` の Aoi を使います。
+  - SakAnalytics: `tests/test_propositions.py:195`（`PYTHONPATH` の `sakanalytics`）。
+  - Aoi の `scripts/`: `tests/test_c001_replay_compare.py:7`（`compare_c001_replay`）と `tests/test_c001_exploratory_candidates.py:14`（`check_c001_exploratory_candidates.py`）。
+  - これ以外に Aoi の兄弟サブプロジェクトと `scripts/` を使わないことは、`tests/test_no_sibling_imports.py` で確かめます（上の3つは既知の例外）。
 
-## vendor
+## aoi_paths.py
 
-`vendor.lock.json`（vendor-lock/1）で固定し、親 myon-bioinformatics の `vendor_sync.py`（`1eda992aa6fa31a902e2c06428e53ab17e8fe3c1`）で検証します。共有するのは標準モジュールだけの単一ファイルだけです。
-
-| ファイル | 取得元 |
-|---|---|
-| `aoi_paths.py` | Aoi `aoi_paths.py` @ `85243d6d1285e3bf4667e1447308543c7d648ab7` |
-| `vendor/Aoi-LICENSE` | Aoi `LICENSE` @ 同上 |
+`aoi_paths.py` は Aoi 直下の `aoi_paths.py` と同じ中身の通常のファイルです（vendor lock は使いません）。Aoi では `pythdragoras/aoi_paths.py` になり、Aoi の `scripts/check_child_heads.py` が Aoi 直下の原本と blob が同じかを確かめます（`child-heads.json` の `optional.mirrored_from_parent`）。直すときは Aoi の原本を直し、同じ中身をここに置きます。
 
 `aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
-
-```bash
-python -S vendor_sync.py check --manifest vendor.lock.json
-```
 
 ## Aoi との同期
 

@@ -66,6 +66,16 @@ The scope says which units the proposition talks about: `league`, `team`, `seaso
 
 Use `where` when S is the comparison condition, not part of the claim. A unit whose `where` value is missing is counted as undetermined (exit 5), never silently left outside the scope.
 
+## Groups Defined By The Final Outcome
+
+An inquiry that explains a final outcome (a final rank, a final class) is retrospective: it is made knowing how the season ended.
+Groups used inside a proposition — "the teams that finished first or second", "the upper half" — are therefore defined by the **final** outcome, not by the standing on the day of each game.
+
+This is a premise, not a flaw to be corrected:
+
+- defining a group by the standing at the time of each game makes the data harder to use and the propositions harder to generate, without making them more honest
+- the premise is stated with every proposition whose group depends on it. A proposition that groups opponents by the final rank can be partly linked to its own consequence by arithmetic (beating an upper opponent lowers that opponent and raises oneself); the `note` says so
+
 ## Identity
 
 A sequential ID (`P31`) is a convenient name, but it says nothing about what is asked. Two IDs can ask the same question, and the same question can be investigated twice without anyone noticing. Every proposition therefore has three layers of identity.
@@ -130,6 +140,44 @@ For each form, with `X` as its condition and `Y` as its consequence:
 | `undetermined` | units where X or Y cannot be decided because a value is missing. They are counted and shown, never silently dropped |
 
 ---
+
+# Common Diagnostic Axes
+
+Every proposition receives the same diagnostic fields, regardless of whether it
+was supported, rejected, inconclusive, or considered underestimated. Each
+evaluated form (including held-out when present) stores `metrics` with
+`tp`, `fp`, `fn`, `tn`, `n`, `precision`, `recall`, `f1`, `accuracy`,
+`balanced_accuracy`, and `mcc`. The proposition-level `metrics` describes the
+original form. Its positive target is that form's declared consequence B;
+conditions outside its scope are not negative examples.
+
+These classification diagnostics treat A as a positive prediction and not-A as
+a negative prediction. Low recall does not invalidate a useful sufficient
+condition. None of these fields changes the declared strength, verdict,
+counterexamples, definition fingerprint, or exit code.
+
+Undefined values are Python `None` / JSON `null`, with per-field explanations
+in `metrics.none_reasons`. A constant predicate or a constant target makes MCC
+undefined; it does not make the proposition wrong. No observations, no positive
+predictions, and no positive targets remain distinct from measured zero scores.
+Required predicate columns still raise a data error when absent: an unavailable
+optional diagnostic is not permission to silently reinterpret a proposition.
+
+Every result also contains `seed_sensitivity`, initially with `groups=None`,
+`seed_count=None`, and a reason. Optional synthetic seed evidence can be supplied
+to `pythdragoras.py --seed-evaluation PATH`. It is validated against proposition
+IDs and definition fingerprints. Counts are converted back to metrics; supplied
+metric scores are not trusted. Duplicate/missing seeds and mixed designs fail.
+
+Seed groups keep years, generator parameters, target definition and allocation
+grid fixed. For each metric they report mean, median, min/max, range, population
+standard deviation, defined/undefined seed counts and an observed status.
+`invariant_in_tested_seeds` only describes the tested seeds. A singleton is
+`single_seed`, not evidence of invariance. MCC sign flips and seed-level cohort
+sizes/covariates are recorded; changes may motivate further tests for random
+variation or omitted conditions, but do not automatically prove either cause.
+Different losses/profiles are separate groups, not seed effects. Synthetic
+evidence never increases the count of real observations.
 
 # Falsifier And Note
 
@@ -313,6 +361,37 @@ When several propositions survive, prefer the one that:
 "Weak" or "strong" always needs a stated comparison: weak compared with whom, over which period, measured how.
 
 ---
+
+## Reading The Original And The Converse Together
+
+The original (`A ⇒ B`) asks whether A is enough for B. The converse (`B ⇒ A`) asks whether B needs A.
+Reading the two verdicts side by side tells where to look next. It is a **reading**, not a verdict: it never changes an exit code.
+
+| Reading | Original | Converse | What it says |
+|---|---|---|---|
+| 0 | supported | supported | close to equivalence; the counterexamples on either side are where A and B part |
+| 1 | supported | refined or rejected | sufficient, not necessary: other units reach B without A |
+| 2 | refined or rejected | supported | necessary, not sufficient: A alone does not reach B |
+| 3 | neither supported, one refined | | a relationship weaker than claimed in both directions |
+| 4 | rejected | rejected | neither direction holds |
+| 5 | either inconclusive | | add units before reading |
+| 6 | converse skipped | | one direction only |
+
+"Supported" here means the form's exit code is 0 or 1. Exit code 5 means undetermined units remain; like code 4, it maps to reading 5 and must not strengthen the reading. The readings are numbers; words are only their rendering.
+
+Each reading carries two lists of seeds, taken from the counterexamples:
+
+- **narrow** — counterexamples of the original (A and not B): units where A was not enough. Candidates for a missing condition (*and*) or a narrower scope (`where`).
+- **route** — counterexamples of the converse (B and not A): units that reached B without A. Candidates for another route (*or*).
+
+For each list the most frequent unit group (one team, one season) is shown, as a hint for Split. Splitting stays a human decision.
+
+A seed is material, not a verdict. A proposition written from seeds is a new proposition: it is pre-registered under a new ID, and the units it came from are declared in `motivated_by`, so that it is read from its held-out evaluation.
+
+```bash
+python PythDRagoras/logic/propositions.py next outputs/propositions.jsonl              # every proposition
+python PythDRagoras/logic/propositions.py next outputs/propositions.jsonl --reading 1 2 # sufficient-only and necessary-only
+```
 
 # Ledger
 

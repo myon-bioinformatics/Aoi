@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite name="pythdragoras.sets" tests="31" failures="29" errors="0" skipped="0">
+  <properties>
+    <property name="sets_sha256" value="c72179713973ebe58d7a78eed4888fe7ff65eaf166ede8e549d61a08cdf813c3" />
+    <property name="propositions_sha256" value="20ebf739caa0f2b14c2ae8c3662d178a6694aaa43a3f0ad9a475b84ebcf6acf0" />
+  </properties>
+  <testcase classname="sets" name="E1: OFF_SHORT &amp; ~TOP_WIN">
+    <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2018" type="exit1">元の命題 44/45、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E2: OFF_SHORT &amp; ~OFF_SHORT_DEF_CLEAR">
+    <failure message="判例 2件: t-2015, g-2016；覆えなかった焦点の単位 3件: d-2018, d-2019, d-2021" type="exit1">元の命題 36/38、総合の終了コード 1、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E3: BIG_SHORT | (OFF_SHORT &amp; ~OFF_SHORT_DEF_CLEAR)">
+    <failure message="判例 2件: t-2015, g-2016；覆えなかった焦点の単位 2件: d-2018, d-2019" type="exit1">元の命題 39/41、総合の終了コード 1、覆い 10/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E4: F52">
+    <failure message="判例 10件: s-2012, m-2013, t-2014, m-2015, t-2015, db-2017, g-2018, h-2022, t-2022, t-2025；覆えなかった焦点の単位 1件: d-2014" type="exit1">元の命題 73/83、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E5: F96">
+    <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2014" type="exit1">元の命題 68/69、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E6: PERSIST_LOW | (OFF_SHORT &amp; ~TOP_WIN)">
+    <failure message="判例 1件: t-2015" type="exit1">元の命題 48/49、総合の終了コード 1、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E7: F96 | (OFF_SHORT &amp; ~TOP_WIN)">
+    <failure message="判例 1件: t-2015" type="exit1">元の命題 69/70、総合の終了コード 1、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E8: DEF_WORSE &amp; ~TOP_WIN">
+    <failure message="判例 4件: t-2015, m-2023, db-2024, b-2025；覆えなかった焦点の単位 11件: d-2013, d-2014, d-2015, d-2016, d-2018, d-2019, d-2021, d-2022, d-2023, d-2024, d-2025" type="exit4">元の命題 32/36、総合の終了コード 4、覆い 1/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E9: (OFF_SHORT | DEF_WORSE) &amp; ~TOP_WIN &amp; ~(OFF_SHORT_DEF_CLEAR)">
+    <failure message="判例 4件: t-2015, m-2023, db-2024, b-2025；覆えなかった焦点の単位 3件: d-2018, d-2019, d-2021" type="exit1">元の命題 56/60、総合の終了コード 1、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E10: (PERSIST_LOW | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~CONVERT_BIG">
+    <failure message="元の命題の終了コード 5（判例なし、判断保留など）；覆えなかった焦点の単位 3件: d-2017, d-2022, d-2024" type="exit5">元の命題 44/44、総合の終了コード 5、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E11: (F96 | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~CONVERT_BIG">
+    <failure message="覆えなかった焦点の単位 3件: d-2017, d-2022, d-2024" type="exit0">元の命題 64/64、総合の終了コード 4、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E12: (PERSIST_LOW | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~ALLOC_GOOD">
+    <failure message="元の命題の終了コード 5（判例なし、判断保留など）" type="exit5">元の命題 46/46、総合の終了コード 5、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E13: (F96 | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~ALLOC_GOOD" />
+  <testcase classname="sets" name="E14: (PERSIST_LOW | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~MID_CONVERT">
+    <failure message="元の命題の終了コード 5（判例なし、判断保留など）；覆えなかった焦点の単位 1件: d-2023" type="exit5">元の命題 45/45、総合の終了コード 5、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E15: (F96 | (OFF_SHORT &amp; ~TOP_WIN)) &amp; ~MID_CONVERT">
+    <failure message="覆えなかった焦点の単位 1件: d-2023" type="exit0">元の命題 66/66、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E16: SHORT_T | UNDER">
+    <failure message="判例 35件: f-2012, g-2012, h-2012, c-2013, t-2013, b-2014, c-2014, f-2014, h-2014, g-2015, s-2015, t-2015, c-2016, f-2016, h-2016, c-2017, l-2017, g-2018, e-2019, g-2019, e-2021, g-2021, h-2022, l-2022, t-2022, h-2023, t-2023, db-2024, g-2024, h-2024, t-2024, db-2025, f-2025, h-2025, t-2025" type="exit4">元の命題 73/108、総合の終了コード 4、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E17: SHORT_T | (UNDER &amp; ~ALLOC_GOOD)">
+    <failure message="判例 33件: f-2012, h-2012, c-2013, t-2013, b-2014, c-2014, f-2014, h-2014, g-2015, s-2015, t-2015, c-2016, f-2016, h-2016, c-2017, l-2017, g-2018, e-2019, g-2019, e-2021, g-2021, h-2022, l-2022, t-2022, h-2023, db-2024, g-2024, h-2024, t-2024, db-2025, f-2025, h-2025, t-2025" type="exit4">元の命題 73/106、総合の終了コード 4、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E18: (~MIDDLE &amp; BAL_NONPOS) | (MIDDLE &amp; (BAR_HIGH | CONV_NEG))">
+    <failure message="判例 16件: l-2012, s-2012, c-2013, l-2013, m-2013, t-2015, db-2016, g-2016, db-2019, t-2019, e-2021, g-2021, c-2023, m-2023, m-2024, t-2024；覆えなかった焦点の単位 1件: d-2019" type="exit4">元の命題 69/85、総合の終了コード 4、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E19: (~MIDDLE &amp; BAL_NONPOS) | (MIDDLE &amp; BAR_HIGH &amp; CONV_NEG)">
+    <failure message="判例 11件: l-2012, s-2012, m-2013, t-2015, db-2016, g-2016, db-2019, t-2019, c-2023, m-2023, m-2024；覆えなかった焦点の単位 1件: d-2019" type="exit1">元の命題 68/79、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E20: (~MIDDLE &amp; ~NEAR &amp; BAL_NONPOS) | ((MIDDLE | NEAR) &amp; BAR_HIGH &amp; CONV_NEG)">
+    <failure message="判例 1件: t-2015；覆えなかった焦点の単位 2件: d-2015, d-2018" type="exit1">元の命題 64/65、総合の終了コード 1、覆い 10/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E21: RF_BELOW | BAL_BELOW | VSL_BELOW">
+    <failure message="判例 3件: t-2015, e-2019, t-2019；覆えなかった焦点の単位 2件: d-2014, d-2015" type="exit1">元の命題 55/58、総合の終了コード 1、覆い 10/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E22: Q3_LOW | (Q3_MID &amp; ~Q4_POS)">
+    <failure message="判例 10件: h-2012, c-2014, db-2016, m-2016, l-2017, g-2018, e-2021, t-2022, h-2023, m-2024" type="exit1">元の命題 70/80、総合の終了コード 1、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E24: (~MIDDLE &amp; BAL_NONPOS) | (MIDDLE &amp; PBAR_SHORT &amp; CONV_NEG)">
+    <failure message="判例 11件: l-2012, s-2012, m-2013, t-2015, db-2016, g-2016, db-2019, t-2019, c-2023, m-2023, m-2024；覆えなかった焦点の単位 1件: d-2019" type="exit1">元の命題 66/77、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E25: (~MIDDLE &amp; ~NEAR &amp; BAL_NONPOS) | ((MIDDLE | NEAR) &amp; PBAR_SHORT &amp; CONV_NEG)">
+    <failure message="判例 1件: t-2015；覆えなかった焦点の単位 1件: d-2019" type="exit1">元の命題 63/64、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E26: ((~MIDDLE &amp; ~NEAR &amp; BAL_NONPOS) | ((MIDDLE | NEAR) &amp; PBAR_SHORT &amp; CONV_NEG)) &amp; (Q3_LOW | (Q3_MID &amp; ~Q4_POS))">
+    <failure message="覆えなかった焦点の単位 1件: d-2019" type="exit0">元の命題 60/60、総合の終了コード 4、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E27: RFG_BELOW | BALG_BELOW | VSLG_BELOW">
+    <failure message="判例 3件: t-2015, t-2022, h-2023；覆えなかった焦点の単位 2件: d-2014, d-2019" type="exit1">元の命題 46/49、総合の終了コード 1、覆い 10/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E28: (RFG_BELOW | BALG_BELOW | VSLG_BELOW) | (Q3_LOW | (Q3_MID &amp; ~Q4_POS))">
+    <failure message="判例 11件: h-2012, c-2014, t-2015, db-2016, m-2016, l-2017, g-2018, e-2021, t-2022, h-2023, m-2024" type="exit1">元の命題 75/86、総合の終了コード 1、覆い 12/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E29: (F96B | (OFF_SHORT &amp; ~TOP_WIN_B)) &amp; ~CONVERT_BIG">
+    <failure message="覆えなかった焦点の単位 3件: d-2017, d-2022, d-2024" type="exit0">元の命題 64/64、総合の終了コード 4、覆い 9/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E30: (F96B | (OFF_SHORT &amp; ~TOP_WIN_B)) &amp; ~ALLOC_GOOD" />
+  <testcase classname="sets" name="E31: (F96B | (OFF_SHORT &amp; ~TOP_WIN_B)) &amp; ~MID_CONVERT">
+    <failure message="覆えなかった焦点の単位 1件: d-2023" type="exit0">元の命題 66/66、総合の終了コード 1、覆い 11/12</failure>
+  </testcase>
+  <testcase classname="sets" name="E32: ((~MIDDLE &amp; ~NEAR &amp; BALG_NONPOS) | ((MIDDLE | NEAR) &amp; PBAR_SHORT &amp; CONV_NEG)) &amp; (Q3_LOW | (Q3_MID &amp; ~Q4_POS))">
+    <failure message="覆えなかった焦点の単位 1件: d-2019" type="exit0">元の命題 60/60、総合の終了コード 4、覆い 11/12</failure>
+  </testcase>
+</testsuite>

@@ -1,0 +1,889 @@
+{
+  "schema": "aoi-synthetic-candidates/1",
+  "synthetic": true,
+  "discovery_batch": 0,
+  "discovery_profile": "reversed",
+  "holdout_batches": [
+    1,
+    2
+  ],
+  "selection": "No added FP, maximize rescued FN, minimize terms, canonical lexical tie-break. No holdout selection.",
+  "search_atoms": [
+    {
+      "col": "rd",
+      "op": "<",
+      "value": -50
+    },
+    {
+      "col": "rd",
+      "op": ">=",
+      "value": -50
+    },
+    {
+      "col": "rd",
+      "op": "<",
+      "value": 0
+    },
+    {
+      "col": "rd",
+      "op": ">=",
+      "value": 0
+    },
+    {
+      "col": "rd",
+      "op": "<",
+      "value": 50
+    },
+    {
+      "col": "rd",
+      "op": ">=",
+      "value": 50
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": "<",
+      "value": -10
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": ">=",
+      "value": -10
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": "<",
+      "value": -5
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": ">=",
+      "value": -5
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": "<",
+      "value": 0
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": ">=",
+      "value": 0
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": "<",
+      "value": 5
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": ">=",
+      "value": 5
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": "<",
+      "value": 10
+    },
+    {
+      "col": "wins_vs_pythag",
+      "op": ">=",
+      "value": 10
+    },
+    {
+      "col": "sim_p_upper",
+      "op": "<",
+      "value": 0.2
+    },
+    {
+      "col": "sim_p_upper",
+      "op": ">=",
+      "value": 0.2
+    },
+    {
+      "col": "sim_p_upper",
+      "op": "<",
+      "value": 0.4
+    },
+    {
+      "col": "sim_p_upper",
+      "op": ">=",
+      "value": 0.4
+    },
+    {
+      "col": "sim_p_upper",
+      "op": "<",
+      "value": 0.5
+    },
+    {
+      "col": "sim_p_upper",
+      "op": ">=",
+      "value": 0.5
+    },
+    {
+      "col": "sim_p_upper",
+      "op": "<",
+      "value": 0.6
+    },
+    {
+      "col": "sim_p_upper",
+      "op": ">=",
+      "value": 0.6
+    },
+    {
+      "col": "sim_p_upper",
+      "op": "<",
+      "value": 0.8
+    },
+    {
+      "col": "sim_p_upper",
+      "op": ">=",
+      "value": 0.8
+    },
+    {
+      "col": "alloc_z_strat",
+      "op": "<",
+      "value": -2
+    },
+    {
+      "col": "alloc_z_strat",
+      "op": ">=",
+      "value": -2
+    },
+    {
+      "col": "alloc_z_strat",
+      "op": "<",
+      "value": -1
+    },
+    {
+      "col": "alloc_z_strat",
+      "op": ">=",
+      "value": -1
+    },
+    {
+      "col": "alloc_z_strat",
+      "op": "<",
+      "value": 0
+    },
+    {
+      "col": "alloc_z_strat",
+      "op": ">=",
+      "value": 0
+    }
+  ],
+  "searched_rules": 408,
+  "selected": {
+    "group": [
+      {
+        "col": "wins_vs_pythag",
+        "op": "<",
+        "value": 5
+      }
+    ],
+    "rescued": 54,
+    "added_fp": 0,
+    "mcc": 1.0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  "ranked_search": [
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        }
+      ],
+      "rescued": 54,
+      "added_fp": 0,
+      "mcc": 1.0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    {
+      "group": [
+        {
+          "col": "rd",
+          "op": ">=",
+          "value": -50
+        },
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        }
+      ],
+      "rescued": 54,
+      "added_fp": 0,
+      "mcc": 1.0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "sim_p_upper",
+          "op": ">=",
+          "value": 0.2
+        }
+      ],
+      "rescued": 54,
+      "added_fp": 0,
+      "mcc": 1.0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "sim_p_upper",
+          "op": "<",
+          "value": 0.8
+        }
+      ],
+      "rescued": 50,
+      "added_fp": 0,
+      "mcc": 0.9534625892455924,
+      "precision": 1.0,
+      "recall": 0.9523809523809523
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "sim_p_upper",
+          "op": ">=",
+          "value": 0.4
+        }
+      ],
+      "rescued": 43,
+      "added_fp": 0,
+      "mcc": 0.8765962882830265,
+      "precision": 1.0,
+      "recall": 0.8690476190476191
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "sim_p_upper",
+          "op": ">=",
+          "value": 0.5
+        }
+      ],
+      "rescued": 34,
+      "added_fp": 0,
+      "mcc": 0.7844645405527362,
+      "precision": 1.0,
+      "recall": 0.7619047619047619
+    },
+    {
+      "group": [
+        {
+          "col": "alloc_z_strat",
+          "op": "<",
+          "value": 0
+        }
+      ],
+      "rescued": 29,
+      "added_fp": 0,
+      "mcc": 0.7357203297923232,
+      "precision": 1.0,
+      "recall": 0.7023809523809523
+    },
+    {
+      "group": [
+        {
+          "col": "rd",
+          "op": ">=",
+          "value": -50
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": "<",
+          "value": 0
+        }
+      ],
+      "rescued": 29,
+      "added_fp": 0,
+      "mcc": 0.7357203297923232,
+      "precision": 1.0,
+      "recall": 0.7023809523809523
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": "<",
+          "value": 0
+        }
+      ],
+      "rescued": 29,
+      "added_fp": 0,
+      "mcc": 0.7357203297923232,
+      "precision": 1.0,
+      "recall": 0.7023809523809523
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 10
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": "<",
+          "value": 0
+        }
+      ],
+      "rescued": 29,
+      "added_fp": 0,
+      "mcc": 0.7357203297923232,
+      "precision": 1.0,
+      "recall": 0.7023809523809523
+    },
+    {
+      "group": [
+        {
+          "col": "sim_p_upper",
+          "op": ">=",
+          "value": 0.2
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": "<",
+          "value": 0
+        }
+      ],
+      "rescued": 29,
+      "added_fp": 0,
+      "mcc": 0.7357203297923232,
+      "precision": 1.0,
+      "recall": 0.7023809523809523
+    },
+    {
+      "group": [
+        {
+          "col": "sim_p_upper",
+          "op": ">=",
+          "value": 0.4
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": "<",
+          "value": 0
+        }
+      ],
+      "rescued": 29,
+      "added_fp": 0,
+      "mcc": 0.7357203297923232,
+      "precision": 1.0,
+      "recall": 0.7023809523809523
+    },
+    {
+      "group": [
+        {
+          "col": "sim_p_upper",
+          "op": ">=",
+          "value": 0.5
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": "<",
+          "value": 0
+        }
+      ],
+      "rescued": 29,
+      "added_fp": 0,
+      "mcc": 0.7357203297923232,
+      "precision": 1.0,
+      "recall": 0.7023809523809523
+    },
+    {
+      "group": [
+        {
+          "col": "rd",
+          "op": "<",
+          "value": 0
+        },
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        }
+      ],
+      "rescued": 28,
+      "added_fp": 0,
+      "mcc": 0.7261354744623949,
+      "precision": 1.0,
+      "recall": 0.6904761904761905
+    },
+    {
+      "group": [
+        {
+          "col": "rd",
+          "op": "<",
+          "value": 50
+        },
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        }
+      ],
+      "rescued": 28,
+      "added_fp": 0,
+      "mcc": 0.7261354744623949,
+      "precision": 1.0,
+      "recall": 0.6904761904761905
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": ">=",
+          "value": -2
+        }
+      ],
+      "rescued": 28,
+      "added_fp": 0,
+      "mcc": 0.7261354744623949,
+      "precision": 1.0,
+      "recall": 0.6904761904761905
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": ">=",
+          "value": -1
+        }
+      ],
+      "rescued": 28,
+      "added_fp": 0,
+      "mcc": 0.7261354744623949,
+      "precision": 1.0,
+      "recall": 0.6904761904761905
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "sim_p_upper",
+          "op": "<",
+          "value": 0.6
+        }
+      ],
+      "rescued": 27,
+      "added_fp": 0,
+      "mcc": 0.7165985720844785,
+      "precision": 1.0,
+      "recall": 0.6785714285714286
+    },
+    {
+      "group": [
+        {
+          "col": "wins_vs_pythag",
+          "op": "<",
+          "value": 5
+        },
+        {
+          "col": "sim_p_upper",
+          "op": ">=",
+          "value": 0.6
+        }
+      ],
+      "rescued": 27,
+      "added_fp": 0,
+      "mcc": 0.7165985720844785,
+      "precision": 1.0,
+      "recall": 0.6785714285714286
+    },
+    {
+      "group": [
+        {
+          "col": "sim_p_upper",
+          "op": ">=",
+          "value": 0.6
+        },
+        {
+          "col": "alloc_z_strat",
+          "op": "<",
+          "value": 0
+        }
+      ],
+      "rescued": 27,
+      "added_fp": 0,
+      "mcc": 0.7165985720844785,
+      "precision": 1.0,
+      "recall": 0.6785714285714286
+    }
+  ],
+  "candidates": [
+    {
+      "id": "SYN96-C01",
+      "statement": "P96とP52の和集合",
+      "if_any": [
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": -50
+          }
+        ],
+        [
+          {
+            "col": "sim_p_upper",
+            "op": "<",
+            "value": 0.5
+          },
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 0
+          }
+        ],
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": 50
+          },
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": -1
+          }
+        ],
+        [
+          {
+            "col": "sim_p_upper",
+            "op": "<",
+            "value": 0.4
+          }
+        ],
+        [
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": -1
+          }
+        ]
+      ],
+      "then": [
+        {
+          "col": "upper_half",
+          "op": "==",
+          "value": false
+        }
+      ],
+      "strength": "usually"
+    },
+    {
+      "id": "SYN96-C02",
+      "statement": "配分が不利という条件から得失点差の上限を外す",
+      "if_any": [
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": -50
+          }
+        ],
+        [
+          {
+            "col": "sim_p_upper",
+            "op": "<",
+            "value": 0.5
+          },
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 0
+          }
+        ],
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": 50
+          },
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": -1
+          }
+        ],
+        [
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": -1
+          }
+        ]
+      ],
+      "then": [
+        {
+          "col": "upper_half",
+          "op": "==",
+          "value": false
+        }
+      ],
+      "strength": "usually"
+    },
+    {
+      "id": "SYN96-C03",
+      "statement": "期待勝利数未満を単独で足す（事後説明）",
+      "if_any": [
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": -50
+          }
+        ],
+        [
+          {
+            "col": "sim_p_upper",
+            "op": "<",
+            "value": 0.5
+          },
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 0
+          }
+        ],
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": 50
+          },
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": -1
+          }
+        ],
+        [
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 0
+          }
+        ]
+      ],
+      "then": [
+        {
+          "col": "upper_half",
+          "op": "==",
+          "value": false
+        }
+      ],
+      "strength": "usually"
+    },
+    {
+      "id": "SYN96-C04",
+      "statement": "得失点差が非負かつ期待勝利数未満を足す",
+      "if_any": [
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": -50
+          }
+        ],
+        [
+          {
+            "col": "sim_p_upper",
+            "op": "<",
+            "value": 0.5
+          },
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 0
+          }
+        ],
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": 50
+          },
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": -1
+          }
+        ],
+        [
+          {
+            "col": "rd",
+            "op": ">=",
+            "value": 0
+          },
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 0
+          }
+        ]
+      ],
+      "then": [
+        {
+          "col": "upper_half",
+          "op": "==",
+          "value": false
+        }
+      ],
+      "strength": "usually"
+    },
+    {
+      "id": "SYN96-C05",
+      "statement": "配分指標が負なら下位という分岐を足す",
+      "if_any": [
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": -50
+          }
+        ],
+        [
+          {
+            "col": "sim_p_upper",
+            "op": "<",
+            "value": 0.5
+          },
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 0
+          }
+        ],
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": 50
+          },
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": -1
+          }
+        ],
+        [
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": 0
+          }
+        ]
+      ],
+      "then": [
+        {
+          "col": "upper_half",
+          "op": "==",
+          "value": false
+        }
+      ],
+      "strength": "usually"
+    },
+    {
+      "id": "SYN96-C06",
+      "statement": "固定グリッドで誤陽性追加なし・救済最多の拡張",
+      "if_any": [
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": -50
+          }
+        ],
+        [
+          {
+            "col": "sim_p_upper",
+            "op": "<",
+            "value": 0.5
+          },
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 0
+          }
+        ],
+        [
+          {
+            "col": "rd",
+            "op": "<",
+            "value": 50
+          },
+          {
+            "col": "alloc_z_strat",
+            "op": "<",
+            "value": -1
+          }
+        ],
+        [
+          {
+            "col": "wins_vs_pythag",
+            "op": "<",
+            "value": 5
+          }
+        ]
+      ],
+      "then": [
+        {
+          "col": "upper_half",
+          "op": "==",
+          "value": false
+        }
+      ],
+      "strength": "usually"
+    }
+  ],
+  "input_sha256": "305c7b948b78f75451d1acce2217fa06fe049d9fba4739b473990c1ac2affe5c",
+  "propositions_sha256": "0074801d0ede337a76c98624e8d206912ad0ee42a89fecde9d8eb7646d52a35a",
+  "analysis_sha256": "a2369fc8b0b211439a3b4ded62ced5a9358bbd5492496f63af95fe1ee4b564a8"
+}

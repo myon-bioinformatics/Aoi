@@ -1,0 +1,39 @@
+{
+  "data_sha256": "7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9",
+  "script_sha256": "6f359a894862cbd30a249a6557efd7a5787a828f6555f9922189825c60555ac5",
+  "protocol_sha256": "8a200e5eb00317ddf2d0cf601ab31b6ceeb6f17f3a8d41e3bfaaf799b3aceae4",
+  "proposition_sha256": "660236d3646ed11bd604bda8c115420d3ba85048d66743345f7c1740f9758a6d",
+  "table_sha256": "562f900eaf3942cb6cab51d72cc5e3c0666a193aa53e00ef6604a03a4c4e5c9c",
+  "maximum_runs": 22,
+  "units": 78,
+  "summaries": {
+    "chunichi/all": {
+      "gap": 1.0756560731912845,
+      "body_gap": 0.7729294570843868,
+      "tail_gap": 0.30272661610689783
+    },
+    "chunichi/without2020": {
+      "gap": 1.0416829681794473,
+      "body_gap": 0.7206735785080857,
+      "tail_gap": 0.3210093896713615
+    },
+    "other_cl/all": {
+      "gap": -0.05405742145178764,
+      "body_gap": 8.185867340795464e-05,
+      "tail_gap": -0.05413928012519561
+    },
+    "other_cl/without2020": {
+      "gap": -0.06383998435054772,
+      "body_gap": -0.016855764214919158,
+      "tail_gap": -0.04698422013562858
+    }
+  },
+  "passed": [
+    "input provenance",
+    "156 official team-years",
+    "unique games and season completeness",
+    "body + tail identity",
+    "survival sum identity"
+  ],
+  "exit_code": 0
+}

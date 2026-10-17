@@ -1,0 +1,1055 @@
+[
+  {
+    "key": "2013_03",
+    "url": "https://npb.jp/bis/2013/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:49:22+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2013_04",
+    "url": "https://npb.jp/bis/2013/calendar/index_04.html",
+    "status": 200,
+    "sha256": "3d6336675fadfc2e07007696f181cbc5b430fcae28fa1c2a9804ac1da3d07b5c",
+    "bytes": 51247,
+    "fetched_at": "2026-10-03T11:49:25+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2013_05",
+    "url": "https://npb.jp/bis/2013/calendar/index_05.html",
+    "status": 200,
+    "sha256": "ccd9f599f4d84be83166625a1f16825f3ece1c00e488e3ba3184cc2dc85ccff6",
+    "bytes": 47508,
+    "fetched_at": "2026-10-03T11:49:29+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2013_06",
+    "url": "https://npb.jp/bis/2013/calendar/index_06.html",
+    "status": 200,
+    "sha256": "6f2182fb9d8da014fe70b7e0c5db97721498473f953203a588f800d454be1529",
+    "bytes": 46375,
+    "fetched_at": "2026-10-03T11:49:32+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2013_07",
+    "url": "https://npb.jp/bis/2013/calendar/index_07.html",
+    "status": 200,
+    "sha256": "b2029e5029f6e0f2023dba4b9335d18365d0117d689d9bf9facb426fd24d00c0",
+    "bytes": 47394,
+    "fetched_at": "2026-10-03T11:49:36+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2013_08",
+    "url": "https://npb.jp/bis/2013/calendar/index_08.html",
+    "status": 200,
+    "sha256": "3b75b43403833d966a9f62b4c8890c6b2673788ad2b8e7e551a1c243cfc7121d",
+    "bytes": 49573,
+    "fetched_at": "2026-10-03T11:49:39+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2013_09",
+    "url": "https://npb.jp/bis/2013/calendar/index_09.html",
+    "status": 200,
+    "sha256": "cf494b9dc30af7b1291d12c55a50ff704191d82be6aa9153026b31a92ab1d869",
+    "bytes": 48713,
+    "fetched_at": "2026-10-03T11:49:43+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2013_10",
+    "url": "https://npb.jp/bis/2013/calendar/index_10.html",
+    "status": 200,
+    "sha256": "2aedee98adc3e90cec585847662836717310dae81d2979a1abbac7c981b06d75",
+    "bytes": 41586,
+    "fetched_at": "2026-10-03T11:49:46+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2013_11",
+    "url": "https://npb.jp/bis/2013/calendar/index_11.html",
+    "status": 200,
+    "sha256": "a79f6cc464d54cb8a001560b833f6099c79573736922000079a4b4b9f461b216",
+    "bytes": 36890,
+    "fetched_at": "2026-10-03T11:49:50+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_03",
+    "url": "https://npb.jp/bis/2014/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:49:53+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_04",
+    "url": "https://npb.jp/bis/2014/calendar/index_04.html",
+    "status": 200,
+    "sha256": "5823ad6ab36389a7bb287b30da99d78c3a99ce6a1a3d77e6ba7f1456223c77ea",
+    "bytes": 51140,
+    "fetched_at": "2026-10-03T11:49:57+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_05",
+    "url": "https://npb.jp/bis/2014/calendar/index_05.html",
+    "status": 200,
+    "sha256": "15b0239a7369818c136a013d45a5829d59de3cce0ef29c435be2ee5cc2f938da",
+    "bytes": 48441,
+    "fetched_at": "2026-10-03T11:50:00+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_06",
+    "url": "https://npb.jp/bis/2014/calendar/index_06.html",
+    "status": 200,
+    "sha256": "1b6a8b118eadc0f5db1aad2b803f29ac5245a9f5972975182149ac0ac047a3e5",
+    "bytes": 45412,
+    "fetched_at": "2026-10-03T11:50:04+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_07",
+    "url": "https://npb.jp/bis/2014/calendar/index_07.html",
+    "status": 200,
+    "sha256": "c8de1207e668a696d2cd2fcea6393bb899e3642e1322065cffa4a0d01f5cc6c5",
+    "bytes": 48049,
+    "fetched_at": "2026-10-03T11:50:08+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_08",
+    "url": "https://npb.jp/bis/2014/calendar/index_08.html",
+    "status": 200,
+    "sha256": "4f13ab86f8df62d42fcf69af0e84cdfe22c760217e98fcbd27c393527a9de6c6",
+    "bytes": 50116,
+    "fetched_at": "2026-10-03T11:50:11+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_09",
+    "url": "https://npb.jp/bis/2014/calendar/index_09.html",
+    "status": 200,
+    "sha256": "86c100c655626fff0ad5fc58e56764604a3a9eb8dff1871536495d6f74870811",
+    "bytes": 48765,
+    "fetched_at": "2026-10-03T11:50:15+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_10",
+    "url": "https://npb.jp/bis/2014/calendar/index_10.html",
+    "status": 200,
+    "sha256": "0b68248c84c238da6e8f10011dfcc53fcb091ee086b43f13e6bc870652bebf24",
+    "bytes": 40857,
+    "fetched_at": "2026-10-03T11:50:18+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2014_11",
+    "url": "https://npb.jp/bis/2014/calendar/index_11.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:50:22+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_03",
+    "url": "https://npb.jp/bis/2015/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:50:25+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_04",
+    "url": "https://npb.jp/bis/2015/calendar/index_04.html",
+    "status": 200,
+    "sha256": "132f04155fe82194cd8988c68e54b77af0df6cb2033a52916ebf64ad5115b87f",
+    "bytes": 50999,
+    "fetched_at": "2026-10-03T11:50:29+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_05",
+    "url": "https://npb.jp/bis/2015/calendar/index_05.html",
+    "status": 200,
+    "sha256": "6a58e4dbd01623544a78ec2002ac8c3292f95b792c68ff36dbbbdf7f80f94399",
+    "bytes": 49653,
+    "fetched_at": "2026-10-03T11:50:32+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_06",
+    "url": "https://npb.jp/bis/2015/calendar/index_06.html",
+    "status": 200,
+    "sha256": "76823edd77a58ef3b8b0c33ed4669293ae2892d3baa6aecf26335c25848cc7f1",
+    "bytes": 46682,
+    "fetched_at": "2026-10-03T11:50:36+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_07",
+    "url": "https://npb.jp/bis/2015/calendar/index_07.html",
+    "status": 200,
+    "sha256": "6123ccc10299d278f4a16016871fd132c0e0146c70e2ab8922c21f735e6b0526",
+    "bytes": 47177,
+    "fetched_at": "2026-10-03T11:50:39+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_08",
+    "url": "https://npb.jp/bis/2015/calendar/index_08.html",
+    "status": 200,
+    "sha256": "30da9295be1818c4e5be0e4368dcdfea33157bbe01562d22bf3fa51fab70fba6",
+    "bytes": 49707,
+    "fetched_at": "2026-10-03T11:50:43+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_09",
+    "url": "https://npb.jp/bis/2015/calendar/index_09.html",
+    "status": 200,
+    "sha256": "4c3d1b1f749133bfd95b72aaf4cb77c4d172b732ef293f61ed3eb0ca1724d215",
+    "bytes": 48157,
+    "fetched_at": "2026-10-03T11:50:46+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_10",
+    "url": "https://npb.jp/bis/2015/calendar/index_10.html",
+    "status": 200,
+    "sha256": "93e5bc0d3fa29bbe86424271a7e1edd65d6fd6518402dcf2c484cc833a04f419",
+    "bytes": 40338,
+    "fetched_at": "2026-10-03T11:50:50+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2015_11",
+    "url": "https://npb.jp/bis/2015/calendar/index_11.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:50:54+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_03",
+    "url": "https://npb.jp/bis/2016/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:50:57+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_04",
+    "url": "https://npb.jp/bis/2016/calendar/index_04.html",
+    "status": 200,
+    "sha256": "71abc726eeebf87ad37a6a60db757eeb1474e1ae2d07bb6051a7610d9e19d7b8",
+    "bytes": 51941,
+    "fetched_at": "2026-10-03T11:51:01+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_05",
+    "url": "https://npb.jp/bis/2016/calendar/index_05.html",
+    "status": 200,
+    "sha256": "0f7512d1cb90b939995c5745e5e5aadcdfceb80926a8d15c6b54223677c92442",
+    "bytes": 48366,
+    "fetched_at": "2026-10-03T11:51:04+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_06",
+    "url": "https://npb.jp/bis/2016/calendar/index_06.html",
+    "status": 200,
+    "sha256": "eb6a691d9ce32ab9e7f975689609570e2c9c65ba909cfde8c45877d9d3ccc7b0",
+    "bytes": 47286,
+    "fetched_at": "2026-10-03T11:51:08+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_07",
+    "url": "https://npb.jp/bis/2016/calendar/index_07.html",
+    "status": 200,
+    "sha256": "cffa857ee8e5f799f1f28794e27a41a2402e21dd597f6c25d72b01c73fd0f6d9",
+    "bytes": 48185,
+    "fetched_at": "2026-10-03T11:51:12+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_08",
+    "url": "https://npb.jp/bis/2016/calendar/index_08.html",
+    "status": 200,
+    "sha256": "ac05e37784e8bdf9c3cf22b1e9217675dffae2eff85f838bb5145e68bd206a83",
+    "bytes": 48911,
+    "fetched_at": "2026-10-03T11:51:16+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_09",
+    "url": "https://npb.jp/bis/2016/calendar/index_09.html",
+    "status": 200,
+    "sha256": "ce600a0e037a103eaae17fe3cf851febb842b474230f2e3fb28b60ef8bf783de",
+    "bytes": 47606,
+    "fetched_at": "2026-10-03T11:51:19+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_10",
+    "url": "https://npb.jp/bis/2016/calendar/index_10.html",
+    "status": 200,
+    "sha256": "b43afc15de98ae5e37398df196dddf1c537f1de5ff46fe32ccd52eaa0264ba5f",
+    "bytes": 39708,
+    "fetched_at": "2026-10-03T11:51:23+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2016_11",
+    "url": "https://npb.jp/bis/2016/calendar/index_11.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:51:26+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_03",
+    "url": "https://npb.jp/bis/2017/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:51:29+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_04",
+    "url": "https://npb.jp/bis/2017/calendar/index_04.html",
+    "status": 200,
+    "sha256": "b28527604411304a5b28a4c9647a8de615dc740c387ea1162dd6f1344859d721",
+    "bytes": 49860,
+    "fetched_at": "2026-10-03T11:51:33+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_05",
+    "url": "https://npb.jp/bis/2017/calendar/index_05.html",
+    "status": 200,
+    "sha256": "5d9f6bbd5dbfa77613c9dd8594e108f6541976f4e63a969cee4a9992ce26e76a",
+    "bytes": 48822,
+    "fetched_at": "2026-10-03T11:51:36+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_06",
+    "url": "https://npb.jp/bis/2017/calendar/index_06.html",
+    "status": 200,
+    "sha256": "3f3a081efd4724b0bc17bd279c0b63d89d8468b309baa42fb2b5e366cfbcbd0e",
+    "bytes": 47172,
+    "fetched_at": "2026-10-03T11:51:40+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_07",
+    "url": "https://npb.jp/bis/2017/calendar/index_07.html",
+    "status": 200,
+    "sha256": "c1224d080ae5697d7d5d570de6e3f3970fb50db819dda40154d695e0711e9b44",
+    "bytes": 48299,
+    "fetched_at": "2026-10-03T11:51:43+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_08",
+    "url": "https://npb.jp/bis/2017/calendar/index_08.html",
+    "status": 200,
+    "sha256": "5de6b26f106cbaa597880b2c41eec22f9ed5ff639016eccb2181983dbc8ddc2e",
+    "bytes": 49638,
+    "fetched_at": "2026-10-03T11:51:47+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_09",
+    "url": "https://npb.jp/bis/2017/calendar/index_09.html",
+    "status": 200,
+    "sha256": "72e8bb1f1870b813541d88877524012478490e07c55f6b4074e5db9bfada4bcb",
+    "bytes": 47768,
+    "fetched_at": "2026-10-03T11:51:50+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_10",
+    "url": "https://npb.jp/bis/2017/calendar/index_10.html",
+    "status": 200,
+    "sha256": "8a9b1f1b80e85b7db799497bd7be32653ce6d97119978d709cb81b4dbd5a1d3f",
+    "bytes": 41574,
+    "fetched_at": "2026-10-03T11:51:54+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2017_11",
+    "url": "https://npb.jp/bis/2017/calendar/index_11.html",
+    "status": 200,
+    "sha256": "236e752c015d6398b20691a347cea3985927ba09537fd9006b846a1219379d15",
+    "bytes": 35744,
+    "fetched_at": "2026-10-03T11:51:57+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_03",
+    "url": "https://npb.jp/bis/2018/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:52:01+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_04",
+    "url": "https://npb.jp/bis/2018/calendar/index_04.html",
+    "status": 200,
+    "sha256": "93b782bb77c8206a72ee233ed65b794871d2698f6ceb880036509ed11d921f61",
+    "bytes": 49730,
+    "fetched_at": "2026-10-03T11:52:04+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_05",
+    "url": "https://npb.jp/bis/2018/calendar/index_05.html",
+    "status": 200,
+    "sha256": "1e100ab1719e8db1559672e9fd6070b60fe8b483f3a227b1469bd98d00900d70",
+    "bytes": 48954,
+    "fetched_at": "2026-10-03T11:52:08+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_06",
+    "url": "https://npb.jp/bis/2018/calendar/index_06.html",
+    "status": 200,
+    "sha256": "e647a06078f325b125498565ad7c08cc7c1e080bb867fccb6fc743adedeb0d2d",
+    "bytes": 47992,
+    "fetched_at": "2026-10-03T11:52:12+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_07",
+    "url": "https://npb.jp/bis/2018/calendar/index_07.html",
+    "status": 200,
+    "sha256": "3d6c6f31e40a5bd4e68b8273768b45807feacb8b02c658d7ad2c8740d33cf4da",
+    "bytes": 47425,
+    "fetched_at": "2026-10-03T11:52:16+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_08",
+    "url": "https://npb.jp/bis/2018/calendar/index_08.html",
+    "status": 200,
+    "sha256": "719c41f30904e3f37d4876f2da1a2f6660d717b87d5b5bcd7919478669b52299",
+    "bytes": 49215,
+    "fetched_at": "2026-10-03T11:52:20+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_09",
+    "url": "https://npb.jp/bis/2018/calendar/index_09.html",
+    "status": 200,
+    "sha256": "f21e39f80a023bb75fb16e152de3e90ea6386d0c11fc7de6b1c7bdf51a4b0c20",
+    "bytes": 49096,
+    "fetched_at": "2026-10-03T11:52:23+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_10",
+    "url": "https://npb.jp/bis/2018/calendar/index_10.html",
+    "status": 200,
+    "sha256": "016b1641485d7c6fd53ce5d363ff74606a409419b9353528caaa390eb67e992b",
+    "bytes": 41676,
+    "fetched_at": "2026-10-03T11:52:27+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2018_11",
+    "url": "https://npb.jp/bis/2018/calendar/index_11.html",
+    "status": 200,
+    "sha256": "baf0579a7146bbffe7d8dc35ce51bd516fe7f672fee71adebe5857ff43ac9fdb",
+    "bytes": 35416,
+    "fetched_at": "2026-10-03T11:52:30+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_03",
+    "url": "https://npb.jp/bis/2019/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:52:34+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_04",
+    "url": "https://npb.jp/bis/2019/calendar/index_04.html",
+    "status": 200,
+    "sha256": "1aab0e0e2d65fe7e48dc3db3c4cfb6f8d78772e1a4ac0d3bc786fe1df6d97347",
+    "bytes": 50337,
+    "fetched_at": "2026-10-03T11:52:37+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_05",
+    "url": "https://npb.jp/bis/2019/calendar/index_05.html",
+    "status": 200,
+    "sha256": "68e7c788047d04b78787fa233f79cdea61df7da9a4570d376944ddc551900e93",
+    "bytes": 49143,
+    "fetched_at": "2026-10-03T11:52:41+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_06",
+    "url": "https://npb.jp/bis/2019/calendar/index_06.html",
+    "status": 200,
+    "sha256": "abf4ec17a7093c0b09f70b699444e6f73fe1e436e8f39135faf2a25bb161227b",
+    "bytes": 47864,
+    "fetched_at": "2026-10-03T11:52:44+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_07",
+    "url": "https://npb.jp/bis/2019/calendar/index_07.html",
+    "status": 200,
+    "sha256": "2dca3dcb22f0e7262f13837a3202a6e817095f61f1a3e43710800d3e9bf178e7",
+    "bytes": 48067,
+    "fetched_at": "2026-10-03T11:52:48+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_08",
+    "url": "https://npb.jp/bis/2019/calendar/index_08.html",
+    "status": 200,
+    "sha256": "4e5cb330dedb96465b7e4b737799c56ba88cfc52246ef084546115e8d3e2792a",
+    "bytes": 49843,
+    "fetched_at": "2026-10-03T11:52:51+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_09",
+    "url": "https://npb.jp/bis/2019/calendar/index_09.html",
+    "status": 200,
+    "sha256": "8464bede45b0566026ac9ca46f1d2ab3754df2f849670a941aac042046603b1a",
+    "bytes": 47327,
+    "fetched_at": "2026-10-03T11:52:55+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_10",
+    "url": "https://npb.jp/bis/2019/calendar/index_10.html",
+    "status": 200,
+    "sha256": "6e95517caa3d45adbf7f73487fe4724330b05bb76f7d867c31ef295588ae3dec",
+    "bytes": 38378,
+    "fetched_at": "2026-10-03T11:52:58+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2019_11",
+    "url": "https://npb.jp/bis/2019/calendar/index_11.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:53:02+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_03",
+    "url": "https://npb.jp/bis/2020/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:53:05+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_04",
+    "url": "https://npb.jp/bis/2020/calendar/index_04.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:53:08+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_05",
+    "url": "https://npb.jp/bis/2020/calendar/index_05.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:53:11+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_06",
+    "url": "https://npb.jp/bis/2020/calendar/index_06.html",
+    "status": 200,
+    "sha256": "a0a2f409e19ad499c7f276791f89d445439658c9b3ca30e74b56df3e0d3ecad3",
+    "bytes": 40194,
+    "fetched_at": "2026-10-03T11:53:15+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_07",
+    "url": "https://npb.jp/bis/2020/calendar/index_07.html",
+    "status": 200,
+    "sha256": "24e028800976bd098f1fbce72cbd565847ca9ec2c9f1dd7f0ce958a5adce8b2c",
+    "bytes": 49656,
+    "fetched_at": "2026-10-03T11:53:18+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_08",
+    "url": "https://npb.jp/bis/2020/calendar/index_08.html",
+    "status": 200,
+    "sha256": "df3aaab77b274785c3f0723aff9bbec5cadbf733280525c3130f283d52530433",
+    "bytes": 49314,
+    "fetched_at": "2026-10-03T11:53:22+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_09",
+    "url": "https://npb.jp/bis/2020/calendar/index_09.html",
+    "status": 200,
+    "sha256": "1a6d42df033b3f74584e21ddbf690df44e6456c75d3bd512e3a2ef1822789171",
+    "bytes": 49578,
+    "fetched_at": "2026-10-03T11:53:25+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_10",
+    "url": "https://npb.jp/bis/2020/calendar/index_10.html",
+    "status": 200,
+    "sha256": "8186cd4eeec9696a1b415f4a9768f19fcabff79a633b582d04085817b29ad63d",
+    "bytes": 49952,
+    "fetched_at": "2026-10-03T11:53:29+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2020_11",
+    "url": "https://npb.jp/bis/2020/calendar/index_11.html",
+    "status": 200,
+    "sha256": "32af29635b403ff6689a6a6912bfff5bc16130ce4047ca4df0cb13309d8d2515",
+    "bytes": 39856,
+    "fetched_at": "2026-10-03T11:53:33+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_03",
+    "url": "https://npb.jp/bis/2021/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:53:36+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_04",
+    "url": "https://npb.jp/bis/2021/calendar/index_04.html",
+    "status": 200,
+    "sha256": "12ef86456565038f108812d1eb922a74286c99c50be63f0ad4e37393f75dfe6b",
+    "bytes": 52268,
+    "fetched_at": "2026-10-03T11:53:40+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_05",
+    "url": "https://npb.jp/bis/2021/calendar/index_05.html",
+    "status": 200,
+    "sha256": "78090e9688fa4ea2ec8b459eba6cb72e0e22e42ec1310f19ca1dd817121ab184",
+    "bytes": 48254,
+    "fetched_at": "2026-10-03T11:53:43+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_06",
+    "url": "https://npb.jp/bis/2021/calendar/index_06.html",
+    "status": 200,
+    "sha256": "9180fa04742859331aa73cf5cbe4de53bd0941ce33a47f3ac8d68b849ae371ff",
+    "bytes": 47701,
+    "fetched_at": "2026-10-03T11:53:47+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_07",
+    "url": "https://npb.jp/bis/2021/calendar/index_07.html",
+    "status": 200,
+    "sha256": "657d8f93e32c4d315125cc63c1cbda6f32650c778bc857ca4795f2b872fd04c6",
+    "bytes": 42023,
+    "fetched_at": "2026-10-03T11:53:51+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_08",
+    "url": "https://npb.jp/bis/2021/calendar/index_08.html",
+    "status": 200,
+    "sha256": "08d4b8232e35ae44aa4e466febe14eb59c79917fb7db382b3653ca3f5548937a",
+    "bytes": 43419,
+    "fetched_at": "2026-10-03T11:53:55+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_09",
+    "url": "https://npb.jp/bis/2021/calendar/index_09.html",
+    "status": 200,
+    "sha256": "d054132e9b8c04456b79d5082f928ded38d6a86f971049ce34b8544a1b576fe2",
+    "bytes": 48806,
+    "fetched_at": "2026-10-03T11:53:58+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_10",
+    "url": "https://npb.jp/bis/2021/calendar/index_10.html",
+    "status": 200,
+    "sha256": "1fc5833c3053eb235dfb52c2fa64efd54279bd0e592ba2fee77d11f8190e691f",
+    "bytes": 47092,
+    "fetched_at": "2026-10-03T11:54:02+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2021_11",
+    "url": "https://npb.jp/bis/2021/calendar/index_11.html",
+    "status": 200,
+    "sha256": "ab8afa61228114355efe3b2cfce86844f8633673e2b62933bc186061d2e1cd8d",
+    "bytes": 37948,
+    "fetched_at": "2026-10-03T11:54:06+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_03",
+    "url": "https://npb.jp/bis/2022/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:54:10+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_04",
+    "url": "https://npb.jp/bis/2022/calendar/index_04.html",
+    "status": 200,
+    "sha256": "c8f369f5520eb664f22a7e39de46e24a2e8b30d00eacdcd234c730d20c87dc4d",
+    "bytes": 51958,
+    "fetched_at": "2026-10-03T11:54:13+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_05",
+    "url": "https://npb.jp/bis/2022/calendar/index_05.html",
+    "status": 200,
+    "sha256": "96747481f116f5603c73ba9ee9cbe43f26cb4a474a6028ce684b8563a61098b2",
+    "bytes": 48505,
+    "fetched_at": "2026-10-03T11:54:17+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_06",
+    "url": "https://npb.jp/bis/2022/calendar/index_06.html",
+    "status": 200,
+    "sha256": "f2abd37a1b5b60a6665520f454055658e51f832cf5fcde03fe3d8ddd333e3343",
+    "bytes": 46598,
+    "fetched_at": "2026-10-03T11:54:21+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_07",
+    "url": "https://npb.jp/bis/2022/calendar/index_07.html",
+    "status": 200,
+    "sha256": "c0fb86b33aaf4e99b907e201d955d462e710c6d581cc7359f132fa48658edc58",
+    "bytes": 48127,
+    "fetched_at": "2026-10-03T11:54:25+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_08",
+    "url": "https://npb.jp/bis/2022/calendar/index_08.html",
+    "status": 200,
+    "sha256": "b84b71fab5ae3a326bb74f8fc13561bbf1109a68632594452651d2fee31b5d28",
+    "bytes": 49068,
+    "fetched_at": "2026-10-03T11:54:29+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_09",
+    "url": "https://npb.jp/bis/2022/calendar/index_09.html",
+    "status": 200,
+    "sha256": "d93dfeb4df961e4767e645479e25cc6fdc6981d46be42376064daff5dcbfac84",
+    "bytes": 47878,
+    "fetched_at": "2026-10-03T11:54:33+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_10",
+    "url": "https://npb.jp/bis/2022/calendar/index_10.html",
+    "status": 200,
+    "sha256": "023371494100e9a5141bd16857ce7079e8bb56879b9a90e4d8f443167fddaa0f",
+    "bytes": 39672,
+    "fetched_at": "2026-10-03T11:54:36+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2022_11",
+    "url": "https://npb.jp/bis/2022/calendar/index_11.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:54:40+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_03",
+    "url": "https://npb.jp/bis/2023/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:54:43+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_04",
+    "url": "https://npb.jp/bis/2023/calendar/index_04.html",
+    "status": 200,
+    "sha256": "da4d9d6592fbfe48edd431a9471548af142ce449404f751e421f3bf8dbbc42ef",
+    "bytes": 49617,
+    "fetched_at": "2026-10-03T11:54:47+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_05",
+    "url": "https://npb.jp/bis/2023/calendar/index_05.html",
+    "status": 200,
+    "sha256": "df8abb95c3ac997ed459f8228a6e71dcb24458dc3b541ea8e43e41022591f401",
+    "bytes": 48678,
+    "fetched_at": "2026-10-03T11:54:51+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_06",
+    "url": "https://npb.jp/bis/2023/calendar/index_06.html",
+    "status": 200,
+    "sha256": "3c1b3eede3046839f80b27c86c3acc7eb12fff906b163c62bef90f447d3b6312",
+    "bytes": 47661,
+    "fetched_at": "2026-10-03T11:54:55+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_07",
+    "url": "https://npb.jp/bis/2023/calendar/index_07.html",
+    "status": 200,
+    "sha256": "3adad33f7039f316ce32f62bf5a3d3beb6ba9c0c60fd8d1d75f4d114070aad65",
+    "bytes": 47761,
+    "fetched_at": "2026-10-03T11:54:59+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_08",
+    "url": "https://npb.jp/bis/2023/calendar/index_08.html",
+    "status": 200,
+    "sha256": "d6435cf19381cadf5119638e3421b67bf34f3dd1ff6bc1a5577a2389dfb61642",
+    "bytes": 49503,
+    "fetched_at": "2026-10-03T11:55:02+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_09",
+    "url": "https://npb.jp/bis/2023/calendar/index_09.html",
+    "status": 200,
+    "sha256": "d2bcbbf91620d7e5805862915b90a9fffcaacfdc6747fb3da5daa10b6fa89b11",
+    "bytes": 48380,
+    "fetched_at": "2026-10-03T11:55:06+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_10",
+    "url": "https://npb.jp/bis/2023/calendar/index_10.html",
+    "status": 200,
+    "sha256": "2b39a889849319c8c075ff2d07970d62b2c1f6dd403dec6ab087e9395a1e3095",
+    "bytes": 39983,
+    "fetched_at": "2026-10-03T11:55:10+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2023_11",
+    "url": "https://npb.jp/bis/2023/calendar/index_11.html",
+    "status": 200,
+    "sha256": "b030e38205dc6b9a822f7b55dd8f79559de24590ccf353dc1dda7da2d01bfd05",
+    "bytes": 35808,
+    "fetched_at": "2026-10-03T11:55:14+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_03",
+    "url": "https://npb.jp/bis/2024/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:55:17+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_04",
+    "url": "https://npb.jp/bis/2024/calendar/index_04.html",
+    "status": 200,
+    "sha256": "142d55fbcb736fbf6ab1a11b21a5f3bd34328a4cec3824ee8012923d5df929aa",
+    "bytes": 50543,
+    "fetched_at": "2026-10-03T11:55:21+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_05",
+    "url": "https://npb.jp/bis/2024/calendar/index_05.html",
+    "status": 200,
+    "sha256": "2843da8975b7b8404dfc91e82e938661340eed96ae69c2487617f10dbe037ec4",
+    "bytes": 48223,
+    "fetched_at": "2026-10-03T11:55:25+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_06",
+    "url": "https://npb.jp/bis/2024/calendar/index_06.html",
+    "status": 200,
+    "sha256": "104dcc8b213319612f2272b230859e941fc49dee312906457597242686436005",
+    "bytes": 47569,
+    "fetched_at": "2026-10-03T11:55:28+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_07",
+    "url": "https://npb.jp/bis/2024/calendar/index_07.html",
+    "status": 200,
+    "sha256": "5be338677bc4d338cf31fcd7035ae99a02bd31112d32337108a8ef668d1abe63",
+    "bytes": 47241,
+    "fetched_at": "2026-10-03T11:55:32+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_08",
+    "url": "https://npb.jp/bis/2024/calendar/index_08.html",
+    "status": 200,
+    "sha256": "c8d2af70c26d057c6b43c7361595b6b46d184451c99aa061afe8c9acaf4ab543",
+    "bytes": 49624,
+    "fetched_at": "2026-10-03T11:55:36+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_09",
+    "url": "https://npb.jp/bis/2024/calendar/index_09.html",
+    "status": 200,
+    "sha256": "dfc717d4fb8be9c1480067e5ae3bbbff19133f853ea66b07ef08a7f5d2e7027f",
+    "bytes": 47956,
+    "fetched_at": "2026-10-03T11:55:40+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_10",
+    "url": "https://npb.jp/bis/2024/calendar/index_10.html",
+    "status": 200,
+    "sha256": "038369479bf3a6d5971e9c173c0f0086da00191b4281a4be86e8b3d31c09e70c",
+    "bytes": 40695,
+    "fetched_at": "2026-10-03T11:55:44+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2024_11",
+    "url": "https://npb.jp/bis/2024/calendar/index_11.html",
+    "status": 200,
+    "sha256": "69490e491d3b9b953f8b43c9de6364e81b8701775f5d77cdd7b8c90d045512d7",
+    "bytes": 35417,
+    "fetched_at": "2026-10-03T11:55:48+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_03",
+    "url": "https://npb.jp/bis/2025/calendar/index_03.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:55:51+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_04",
+    "url": "https://npb.jp/bis/2025/calendar/index_04.html",
+    "status": 200,
+    "sha256": "e12d95249dd679825957eaf3b4e411c692a44a3105f7b61f9482066d971dc3e2",
+    "bytes": 50632,
+    "fetched_at": "2026-10-03T11:55:55+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_05",
+    "url": "https://npb.jp/bis/2025/calendar/index_05.html",
+    "status": 200,
+    "sha256": "02eb87beea661b91716286bc6ca0316918c43bca66c6939b31d9fff3d791eea4",
+    "bytes": 49048,
+    "fetched_at": "2026-10-03T11:55:59+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_06",
+    "url": "https://npb.jp/bis/2025/calendar/index_06.html",
+    "status": 200,
+    "sha256": "5ea2527232a6227ef528c76426af2868a65d15c77d684e8c0a9ac22a0fe9dc44",
+    "bytes": 46673,
+    "fetched_at": "2026-10-03T11:56:02+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_07",
+    "url": "https://npb.jp/bis/2025/calendar/index_07.html",
+    "status": 200,
+    "sha256": "cf3b04db01b36c97b8d596b6e926466aab0fcad717c6d41014c6b2ac5a56cf22",
+    "bytes": 47745,
+    "fetched_at": "2026-10-03T11:56:06+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_08",
+    "url": "https://npb.jp/bis/2025/calendar/index_08.html",
+    "status": 200,
+    "sha256": "542a5b3e9716d41cbcee94a6c5fc8d781ca510b558a36963faa12032b2b869b6",
+    "bytes": 49637,
+    "fetched_at": "2026-10-03T11:56:10+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_09",
+    "url": "https://npb.jp/bis/2025/calendar/index_09.html",
+    "status": 200,
+    "sha256": "f2a524edb50288abaff76fbfebe0825bb5129b89d9a21c1fa37ea659e3dde6b6",
+    "bytes": 48100,
+    "fetched_at": "2026-10-03T11:56:14+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_10",
+    "url": "https://npb.jp/bis/2025/calendar/index_10.html",
+    "status": 200,
+    "sha256": "dea2414a442c5cd610b99610c8c1ed7a85a577c413b9793618206d6767b4e398",
+    "bytes": 39575,
+    "fetched_at": "2026-10-03T11:56:17+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  },
+  {
+    "key": "2025_11",
+    "url": "https://npb.jp/bis/2025/calendar/index_11.html",
+    "status": 404,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "fetched_at": "2026-10-03T11:56:21+00:00",
+    "code_version": "ec259fbd32d5f4242c37cb1d7cbba6c5871f00fb"
+  }
+]

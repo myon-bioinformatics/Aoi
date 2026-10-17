@@ -1,0 +1,8 @@
+{
+  "cell_rows": 4706,
+  "integer_values": 56472,
+  "scope": "separate CSV off-row replay and rational weighting; same source, not independent HTML acquisition",
+  "source_games": 11028,
+  "status": "passed",
+  "weighted_metric_comparisons": 1800
+}

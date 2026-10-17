@@ -14,6 +14,9 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 
 [PR #3 の訂正・未検証事項の引き継ぎ](research/PR3_FOLLOWUP.md)は、2026-10-04時点の履歴です。F1〜F7の現在の完了監査や、研究成果全体のmain統合を表すものではありません。
 
+cycle-001/chunichi 先端の続き（R27以降の別系列、P115以降、追加の派生列、branch 側の pipeline）は [from-cycle-001/README.md](from-cycle-001/README.md) に、正本の入力ハッシュと P1〜P114 の判定を書き換えずに置いてあります。正本の `season.jsonl`・`analysis.toml`・`propositions.toml` は LittleBit holdout の固定入力のままです。
+
+
 数え方の注意（結論を書くときに、どれで言っているかを必ず明示する）:
 
 - CS 進出の条件は、6球団リーグでは3位以内。判定で使う `upper_half`（上位半分）と一致する
@@ -47,6 +50,7 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 | 保留 | 打席・走者の状態（残塁・盗塁死など）。Grok が取得中のプレー経過を待つ | `hypotheses.toml` |
 | 命題 | P1〜P114（事前登録。読める識別子と指紋つき。結果を見た後に作ったものは `change`・`note` に明記） | `propositions.toml`、`outputs/index.md` |
 | 条件の探索 | B クラスを言い当てる条件の組み合わせ（候補は探索の前に固定） | `rule_candidates.toml`、`outputs/rules.jsonl` |
+| 潜在パターンの探索 | 候補マスクの LittleBit 分解から足した条件（#22）。探索の記録で、確かめは `confirmation.md` | `outputs/exploratory/littlebit-approx/` |
 | 外部の主張 | 外部レポート・外部の会話・GPT・Grok の数値と解釈（C1〜C27） | `claims.toml`、`references/` |
 | 研究計画 | R1〜R26（それぞれ計算の前に問い・方法・見直す条件・限界を記録し、結果を追記） | `research/` |
 
@@ -77,6 +81,11 @@ GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main �
 | `summary.md` | 検証記録。観測した数だけを書き、原因は書かない |
 | `objections.md` | 命題ごとの判定と「異議あり」（判例の一覧、除外中の判例） |
 | `propositions.jsonl` | 同じ内容の機械向け形式（命題ファイルの SHA-256 とコードの版つき） |
+| `sets.md` / `sets.jsonl` / `sets.junit.xml` | 命題の集合の式（branch 側 R48）。正本の命題判定とは別ファイル |
+| `next.md` / `next.jsonl` | 次の命題の種。判定ではない |
+| `observed_fielding.md` / `observed_linescore.md` | 守備・イニング得点の構造確認 |
+| `provisional/` | 2026年の暫定観測。本体の集計へは入れない |
+| `fetched/` | branch 側が残した取得台帳。正本の `data/` キャッシュとは別 |
 | `claims.json` | 外部の主張の再現結果 |
 | `allocation.jsonl` | 配分効果の期間合計（R1） |
 | `persistence.jsonl` | 隣り合うシーズンの相関（配分効果・ピタゴラスのずれ・勝率） |
@@ -85,6 +94,7 @@ GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main �
 | `trajectory_sensitivity.jsonl` / `trajectory_sensitivity_units.jsonl` | 線の始まりの試合数を変えたときの読み（R25）。群ごとのまとめと、単位ごとの値 |
 | `trajectory_expectation.jsonl` | シーズンの中の順位・貯金の線（3次式）の山・谷の数と、順位の線に波のある式が選ばれた数を、力が一定のときの見込みと比べたもの（R22・R23） |
 | `rules.jsonl` | B クラスを言い当てる条件の組み合わせの探索結果（R11） |
+| `exploratory/littlebit-approx/` | 潜在パターン由来の条件を足した探索と、既存候補だけの探索の並び（#22）。確かめは `confirmation.md` |
 | `rules_r21.jsonl` | 同じ探索に 2014年の道筋の条件を足し、「または」を3つまでにしたもの（R21、`rule_candidates_r21.toml`） |
 | `ledger.jsonl` | 命題の判定の台帳 |
 | `run.txt` | Actions の実行の記録（各ステップの結果・件数・エラー文） |

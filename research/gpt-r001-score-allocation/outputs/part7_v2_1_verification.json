@@ -1,0 +1,76 @@
+{
+  "added_files": [
+    "v2/audit_cspo_min_vs_rowlevel_v2.csv",
+    "v2/audit_cspo_rows_v2_public.csv",
+    "v2/errata_v2_1.md"
+  ],
+  "event_complete_counts": {
+    "False": 3,
+    "True": 5044
+  },
+  "event_counts": {
+    "CS": 4383,
+    "PO": 664
+  },
+  "event_rows": 5047,
+  "event_runner_out_counts": {
+    "0": 36,
+    "1": 5011
+  },
+  "half_rows_checked": 166003,
+  "input_sha256": {
+    "audit_ends.py": "fc3d88cdd79706b50539431c8d15d285d7f280f400b6aacae808f9cf497a95c9",
+    "crawl.py": "e887dc58ab1237a27a3e1d3f3f155eb405e30f8d04d5c174278448e639843e3a",
+    "game_targets.csv": "51403f97198b39a04c0a05840259010fd56f8fc00ad564dd749f4a0c09f77a6a",
+    "inspect_half.py": "5fcd788d8c6d603ecd37663f36b372bedc93ccf8797d14f1439e6a3db190aa0a",
+    "official_team_SB_CS_2013_2026.csv": "d98aed5d4fa40c479cc07ccc7d0dbc6aed3f87c2f0e2a14bccf6976a05556d9f",
+    "parse.py": "577a47e89cdc2ce27806a2e5f1669ad30f21b4895e877cae665014265d081dd3",
+    "season_official.py": "54011566741e87af685a9c22adc59d66d82614d043953819e09d76287487087f",
+    "targets.py": "7bec6ae92312433a649fc9e31df513a57978e332fb0de2dd9ebee8e8ff82d123",
+    "v2/analysis_v2.py": "0faeeff5a5c639a352fe20368a29b7f7ab6588ce1a33ff6ce81212a22ad2d2b5",
+    "v2/audit_cspo_min_vs_rowlevel_v2.csv": "206d6fc164542e9a847867cc772218524051a8408db029db61e66f9a13d66b06",
+    "v2/audit_cspo_rows_v2_public.csv": "ad2758da93772fbb2609d5af6cd8cef6d6e85a9a9696401aafc1f85544570154",
+    "v2/check_2out_mismatch.csv": "3d9cc47a95657b95b93e2f0b41ea5cb3f7ea12e903599917d87463ea4359a089",
+    "v2/chunichi_by_year_v2.csv": "872e601fe47c4471ff967ffda7430cf7fa68978b716a830a075f2ee2eeeee9da",
+    "v2/corr_rel_cRPS_v2.csv": "0f9485521f8a865c1db27ee8e455337b04e5e80fd4a3ab46ea796a8cf9505822",
+    "v2/counterexamples_2x2_v2.csv": "605441149268de4ebeb2aea950fc8c71a61df90d10a9f82060fa1d6d2cf3367d",
+    "v2/decomp_chunichi_vs_CL5_v2.csv": "12fa54b14cff26481ae5c69cf0787938362d21d809e45735d434ab7fd38da2e4",
+    "v2/errata_v2_1.md": "f41928786ee8a6bd84f5779bd1e7c93dd8f580b6b4b242564c4b1c2e2c0333e0",
+    "v2/explain_v1_negatives.py": "6ed308a631737e17999d59f79b84d56ea566fdfa1d214fded27be4334dd63c12",
+    "v2/half_innings_v2_public.csv.gz": "6b9507fa4485551072f4b2cee9456adce8af5197e52ee0bf7caf46eb9d343160",
+    "v2/loto_main_proposition_v2.csv": "e6e8d920ba523acf462a41688b8b3070c53e7fca10acbc93d0248f6c236905bf",
+    "v2/parse_v2.py": "933a0aae5dca5b541d22607206ddcafde1a8b0f09be2405cd1b37e29762c4736",
+    "v2/part4_vs_part7_2016_2025.csv": "d4b6642751a3b1c77199ce1600ab1309dea9fb5777779f442a9d98cf05856374",
+    "v2/part4_vs_part7_pooled.csv": "fb1f86124362bfda0c513dfa8d1868cdefe6332fb5d662b456a395443bedd6a7",
+    "v2/propositions_2x2_v2.csv": "e49dedbf15f2264f7a247bfe7c66bf6ee116ee452b7ddf7bbe921fbbb18f12ba",
+    "v2/report_v2.md": "8197294c983d17f5e42dd2916ae353ab6094368813fac6d40581993c773c7679",
+    "v2/team_season_v2.csv": "e98f4e56a5a1859e19a97e4d9b3701b40067a952bf37393e47dc02684d371ffd",
+    "v2/v1_negative_cases_explained.csv": "48b2411699655a3b60e2d22e931d8ab2fd6c80caa46e29bfb002a4ebae5907c3",
+    "v2/validation_SB_CS_vs_official_v2.csv": "09ab243fc6e0464786e22a4f54e5c958429461407c15dafa90e02d429eccb668"
+  },
+  "limitations": [
+    "internal consistency of provided derived tables, not independent raw-event validation",
+    "event rows lack sequential before/after states and non-CS/PO events",
+    "min assignment remains inferred; 2026 remains provisional",
+    "original v2 report and finite z at p=1 unchanged; errata takes precedence"
+  ],
+  "mismatch_event_types": {
+    "CS": 4,
+    "PO": 9
+  },
+  "mismatch_halves": 13,
+  "mismatch_year_counts": {
+    "2017": 2,
+    "2018": 1,
+    "2019": 1,
+    "2021": 1,
+    "2022": 2,
+    "2023": 3,
+    "2024": 1,
+    "2026": 2
+  },
+  "monte_carlo_zero_exceedance_one_sided_95_upper": 1.4978549188193746e-05,
+  "schema": "aoi-part7-v2.1-reception/1",
+  "status": "provided_audit_tables_consistent",
+  "unchanged_v2_files": 25
+}

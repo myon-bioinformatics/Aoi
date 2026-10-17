@@ -1,0 +1,27 @@
+{
+  "source": "npb_calendar+r001-explicit-competition-labels",
+  "scope": {
+    "years": [
+      2013,
+      2025
+    ]
+  },
+  "normalization": "nul->U+FFFD, NFKC, collapse-whitespace",
+  "dropped": {
+    "cancelled": 412
+  },
+  "unknown": 0,
+  "competition_exclusions": {
+    "オールスター": 25,
+    "CS ファーストS": 63,
+    "CS ファイナルS": 102,
+    "日本シリーズ": 75,
+    "アジアシリーズ": 9,
+    "クライマックスS": 2
+  },
+  "cache_manifest": "/tmp/aoi-gpt-research-20261003/data/raw/npb_calendar/manifest.jsonl",
+  "records": 11028,
+  "sha256": "7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9",
+  "generated_at": "2026-10-03T11:57:50+00:00",
+  "code_version": "72eeca75198374197e5db8a5179c2a9d9dc862f6"
+}

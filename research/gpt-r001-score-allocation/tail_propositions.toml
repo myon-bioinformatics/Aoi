@@ -1,0 +1,11 @@
+[[proposition]]
+id = "R001-T1"
+statement = "ビジター平均失点がホームより多い球団年では、その差の過半は6失点を超える部分に現れる"
+strength = "always"
+min_n = 1
+if = [{col = "away_more", op = "==", value = true}]
+then = [{col = "tail_dominates", op = "==", value = true}]
+surprise = "gap"
+context = ["gap", "body_gap", "tail_gap"]
+note = "観測した有限表での全称命題。6点を上限とする成分と超過分の差を比較。因果・運・独立標本とは解釈しない。"
+falsifier = "ビジターの平均失点が多いのに、6点超過分の差が上限6点成分の差を上回らない球団年がある"

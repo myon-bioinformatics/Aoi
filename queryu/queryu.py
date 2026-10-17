@@ -20,6 +20,7 @@ import datetime as dt
 import gzip
 import hashlib
 import json
+import math
 import os
 import re
 import subprocess
@@ -163,9 +164,16 @@ class OfflineMiss(RuntimeError):
     """オフラインモードで、キャッシュにないページを要求した。"""
 
 
+def wait_seconds(value) -> float:
+    wait = float(value)
+    if not math.isfinite(wait) or wait < 0:
+        raise ValueError("待ち時間は 0 以上の有限の秒数")
+    return wait
+
+
 class PoliteFetcher:
     def __init__(self, cache: Cache, wait: float = 3.0, *, offline: bool = False, client=None):
-        self.cache, self.wait, self.offline = cache, wait, offline
+        self.cache, self.wait, self.offline = cache, wait_seconds(wait), offline
         self._client = client
         self.requests = 0
         self._latest = cache.latest()
@@ -249,6 +257,119 @@ def _years(spec: str) -> list[int]:
     return list(range(int(a), int(b or a) + 1))
 
 
+# npb_calendar の key は「年_月」。打撃成績の key（年_リーグ）は月ではないので、ここには当たらない。
+_MONTH_KEY = re.compile(r"^(?P<year>\d{4})_(?P<month>\d{2})$")
+DEFAULT_FROZEN = Path(__file__).with_name("frozen_seasons.json")
+
+
+def parse_today(value: str | None) -> dt.date:
+    if not value:
+        return dt.date.today()
+    try:
+        return dt.date.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError(f"日付は YYYY-MM-DD: {value}") from exc
+
+
+def load_frozen(path: Path) -> set[int]:
+    """手動の凍結リスト。ファイルがなければ空（終了した年を推測で足さない）。"""
+    path = Path(path)
+    if not path.exists():
+        return set()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    seasons = data.get("seasons") if isinstance(data, dict) else None
+    if not isinstance(seasons, list):
+        raise ValueError('凍結リストは {"seasons": [年, ...]}（年は 1900〜2100 の整数）')
+    validate_frozen(seasons)
+    return set(seasons)
+
+
+def validate_frozen(seasons) -> None:
+    if any(type(year) is not int or not 1900 <= year <= 2100 for year in seasons):
+        raise ValueError("凍結年は 1900〜2100 の整数")
+
+
+def save_frozen(path: Path, seasons: set[int]) -> None:
+    validate_frozen(seasons)
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"seasons": sorted(seasons)}
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    temporary.replace(path)
+
+
+def live_groups(years: list[int], today: dt.date, frozen: set[int]) -> set[str]:
+    """今年以降で、凍結リストに無い年だけを再確認の対象にする。"""
+    return {str(year) for year in years if year >= today.year and year not in frozen}
+
+
+def split_future_months(pages, today: dt.date):
+    """まだ来ていない月のページを分ける。月の key を持たないページはそのまま残す。"""
+    kept, future = [], []
+    for page in pages:
+        match = _MONTH_KEY.fullmatch(str(page[0]))
+        if match and (int(match["year"]), int(match["month"])) > (today.year, today.month):
+            future.append(page)
+        else:
+            kept.append(page)
+    return kept, future
+
+
+def acquisition_plan(pages, cache: Cache, *, live: set[str], wait: float, today: dt.date,
+                     frozen: set[int], future, offline: bool = False) -> dict:
+    """キャッシュの来歴だけで、取得の内訳を数える。ネットワークには出ない。"""
+    wait = wait_seconds(wait)
+    latest = cache.latest()
+    cached = conditional = unconditional = new = 0
+    for key, _url, group in pages:
+        if key in latest and (offline or group not in live):
+            cached += 1
+        elif key in latest and (latest[key].get("etag") or latest[key].get("last_modified")):
+            conditional += 1
+        elif key in latest:
+            unconditional += 1
+        else:
+            new += 1
+    requests = 0 if offline else conditional + unconditional + new
+    gaps = max(requests - 1, 0)
+    return {
+        "today": today.isoformat(),
+        "frozen": sorted(frozen),
+        "live": [] if offline else sorted(live),
+        "cached": cached,
+        "conditional": conditional,
+        "unconditional": unconditional,
+        "new": new,
+        "future": len(future),
+        "requests": requests,
+        "offline": offline,
+        "offline_missing": new if offline else 0,
+        "wait": wait,
+        "gaps": gaps,
+        "estimated_wait_seconds": wait * gaps,
+    }
+
+
+def format_plan(plan: dict) -> str:
+    frozen = ", ".join(str(year) for year in plan["frozen"]) or "なし"
+    return "\n".join([
+        "観測:",
+        f"  日付: {plan['today']}",
+        f"  凍結シーズン: {frozen}",
+        f"  再確認の対象年: {', '.join(plan['live']) or 'なし'}",
+        f"  キャッシュ済み（再確認しない）: {plan['cached']}",
+        f"  条件付きGET: {plan['conditional']}",
+        f"  再確認（条件なし）: {plan['unconditional']}",
+        f"  新規: {plan['new']}",
+        f"  未来の月（取得しない）: {plan['future']}",
+        f"  オフラインで不足するページ: {plan['offline_missing']}",
+        "解釈:",
+        f"  待ち時間の見積もり: {plan['estimated_wait_seconds']:g} 秒"
+        f"（間隔 {plan['wait']:g} 秒を {plan['gaps']} 回足した値）",
+    ])
+
+
 def main(argv=None) -> int:
     from blueprobe import NORMALIZATION, load_source
 
@@ -256,16 +377,39 @@ def main(argv=None) -> int:
     ap.add_argument("--source", required=True)
     ap.add_argument("--years", required=True, help="例: 2012-2025")
     ap.add_argument("--cache", type=Path, required=True)
-    ap.add_argument("--out", type=Path, required=True)
-    ap.add_argument("--wait", type=float, default=3.0, help="リクエスト間隔（秒）")
+    ap.add_argument("--out", type=Path, default=None, help="観測データセット。--plan では使わない")
+    ap.add_argument("--wait", type=wait_seconds, default=3.0, help="リクエスト間隔（0以上の有限の秒数）")
     ap.add_argument("--offline", action="store_true", help="キャッシュだけで作る。ネットワークに出ない")
+    ap.add_argument("--today", default=None, help="未来の月の判定に使う日付（YYYY-MM-DD）。省略すると実行日")
+    ap.add_argument("--frozen", type=Path, default=None, help="手動の凍結リスト JSON。省略時は queryu/frozen_seasons.json")
+    ap.add_argument("--freeze", action="append", default=[], type=int, help="この年を凍結リストに足す。--plan では書き出さない")
+    ap.add_argument("--plan", action="store_true", help="取得せず、キャッシュ済み・条件付きGET・新規の件数と待ち時間の見積もりを出す")
     args = ap.parse_args(argv)
+    if not args.plan and args.out is None:
+        ap.error("--out が要る")
 
     source = load_source(args.source)
     years = _years(args.years)
-    live = {str(y) for y in years if y >= dt.date.today().year}  # 進行中のシーズンだけ更新を確認
+    if not years:
+        ap.error("--years の終了年は開始年以上にする")
+    today = parse_today(args.today)
+    frozen_path = args.frozen or DEFAULT_FROZEN
+    try:
+        validate_frozen(args.freeze)
+        frozen = load_frozen(frozen_path)
+    except ValueError as exc:
+        ap.error(str(exc))
+    frozen |= set(args.freeze)
+    if args.freeze and not args.plan:
+        save_frozen(frozen_path, frozen)
+    live = live_groups(years, today, frozen)
+    pages, future = split_future_months(source.pages(years), today)
+    if args.plan:
+        print(format_plan(acquisition_plan(pages, Cache(args.cache), live=live, wait=args.wait,
+                                           today=today, frozen=frozen, future=future, offline=args.offline)))
+        return 0
     fetcher = PoliteFetcher(Cache(args.cache), args.wait, offline=args.offline)
-    groups = build(source, source.pages(years), fetcher, live)
+    groups = build(source, pages, fetcher, live)
 
     records, counts, unknown = [], {}, 0
     for g, r in sorted(groups.items()):
@@ -286,6 +430,7 @@ def main(argv=None) -> int:
     rebuilt = (lambda r: source.group(r) in scope) if hasattr(source, "group") else (lambda r: True)
     write_dataset(args.out, records, {
         "source": args.source, "scope": {"years": [years[0], years[-1]]},
+        "source_code_sha256": hashlib.sha256(Path(source.__file__).read_bytes()).hexdigest(),
         "normalization": NORMALIZATION, "dropped": counts, "unknown": unknown,
         "cache_manifest": str(args.cache / "manifest.jsonl"),
     }, rebuilt=rebuilt)

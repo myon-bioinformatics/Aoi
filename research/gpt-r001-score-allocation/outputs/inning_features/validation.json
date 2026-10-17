@@ -1,0 +1,32 @@
+{
+  "baseline_games": 11028,
+  "baseline_mismatches": 0,
+  "official_team_seasons": 156,
+  "official_field_comparisons": 936,
+  "official_mismatches": 0,
+  "input_rows": 424702,
+  "input_games": 11875,
+  "excluded_2026_games": 847,
+  "input_sha256": "0e98d6ce001eaca565378814a551d8b694e66dff7f4ef856d4e636e39bb87beb",
+  "baseline_sha256": "7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9",
+  "shared_files_sha256": {
+    "README.md": "f1688d7eaa852b046958e5d15d941ba0176369fafd8b4f5d10853e963f9582cf",
+    "innings.py": "7873c9084c025e322d8d9cf67f1350c44e94014df748e56d4f24e918a3557a4f",
+    "official_check.csv": "730dd865b1de325360736a3a2872fbc97ab5f3dffd923c1350e9e2bfc94bbc12",
+    "parse.py": "44508d7514a37a79eca9c9e1719b5096d502bb32c9fed082c85d2866d13d9793",
+    "team_half_innings.csv.gz": "0e98d6ce001eaca565378814a551d8b694e66dff7f4ef856d4e636e39bb87beb"
+  },
+  "script_sha256": "6d2bb6fa9d778d6f84fda35f8c57a75f6a20b51c9f0fc9cf6b5779955882b787",
+  "exit_code": 0,
+  "metric_columns": 64,
+  "team_year_metric_rows": 1872,
+  "local_game_feature_rows": 44112,
+  "group_rows": 96,
+  "output_sha256": {
+    "chunichi_peer_differences.csv": "20a18547911f9aae4af0296e5359b35c209e83831d43104cb088baf7c11c187d",
+    "chunichi_peer_differences.csv.gz": "c33a355cba6e9f1c5d0d264435bbad5411f4491c32e6768378f996d65f31e2e4",
+    "group_summary.csv": "729496a74683d054bebd3be247f031ca183825a824a95fe233acd8d1d29fdf43",
+    "team_year_metrics.csv": "ac53ebc3ebaff48461188cbffcc81543899f319992c2dac7c4f9cbacf406adbf",
+    "team_year_metrics.csv.gz": "7da59cec856d1d8860e97f31392950d974b04a84bbd8f048458886beae1ea624"
+  }
+}

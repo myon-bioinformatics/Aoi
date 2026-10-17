@@ -1,0 +1,89 @@
+{
+  "status": "nine_files_match_one_display_cell_differs",
+  "archive_sha256": "39ec42f44b5583f69a329270ba283ab755a44111afe9caf09f154451e8d9a898",
+  "checks": [
+    {
+      "file": "chunichi_by_year_v2.csv",
+      "rows": 22,
+      "mismatches": []
+    },
+    {
+      "file": "corr_rel_cRPS_v2.csv",
+      "rows": 32,
+      "mismatches": []
+    },
+    {
+      "file": "counterexamples_2x2_v2.csv",
+      "rows": 570,
+      "mismatches": []
+    },
+    {
+      "file": "decomp_chunichi_vs_CL5_v2.csv",
+      "rows": 24,
+      "mismatches": []
+    },
+    {
+      "file": "loto_main_proposition_v2.csv",
+      "rows": 12,
+      "mismatches": []
+    },
+    {
+      "file": "part4_vs_part7_2016_2025.csv",
+      "rows": 120,
+      "mismatches": []
+    },
+    {
+      "file": "part4_vs_part7_pooled.csv",
+      "rows": 4,
+      "mismatches": []
+    },
+    {
+      "file": "propositions_2x2_v2.csv",
+      "rows": 24,
+      "mismatches": [
+        {
+          "column": "z相当(teamperm)",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "team_season_v2.csv",
+      "rows": 264,
+      "mismatches": []
+    },
+    {
+      "file": "validation_SB_CS_vs_official_v2.csv",
+      "rows": 132,
+      "mismatches": []
+    }
+  ],
+  "replay_adjustments": [
+    "input half_innings_v2.csv.gz is a copy of half_innings_v2_public.csv.gz",
+    "P7 path redirected to isolated replay directory; official CSV from v2 delivery; unused v1 decomposition read from v1 delivery",
+    "Part4 input replaced with corresponding columns of previously verified Part5 team_season_relative.csv"
+  ],
+  "part4_proxy_sha256": "2c53048e7b3c7cae38ae3fa342103459a28be85aea80335f5d337059c4b13fcc",
+  "boundary_difference": {
+    "period": "2016-2025",
+    "side": "def",
+    "metric": "low scoring-inning ROB => high conceded cRPS",
+    "field": "z equivalent of trajectory permutation p",
+    "supplied": -8.21,
+    "replayed": "negative_infinity",
+    "independent_exact_p_numerator": 518400,
+    "independent_exact_p_denominator": 518400,
+    "interpretation": "p=1 exactly; finite negative z comes from floating point tail summation near 1, not evidence against the null"
+  },
+  "raw_parser_replayed": false,
+  "runtime": {
+    "python": "3.12.14",
+    "pandas": "2.2.3",
+    "numpy": "2.3.5"
+  },
+  "independent_verifier_checks": {
+    "deterministic_json": true,
+    "mutated_season_R_rejected": true,
+    "failure_created_success_json": false
+  }
+}

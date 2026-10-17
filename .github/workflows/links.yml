@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   links:
-    name: Markdown links (local + pushed branch)
+    name: Markdown links (local + checked-out commit)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -26,9 +26,11 @@ jobs:
           python-version: "3.14"
       - name: Local (tracked files, exact case)
         run: python -S nagoyaction/linkcheck.py
-      - name: Remote (files exist on the pushed branch)
+      - name: Remote (files exist in the checked-out commit)
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          REF: ${{ github.head_ref || github.ref_name }}  # ブランチ名は外部入力なので run に直接埋め込まない
+          # pull_requestではcheckoutもgithub.shaもマージ後のcommit。
+          # head_refを使うとmain側だけにあるファイルを404と誤判定する。
+          REF: ${{ github.sha }}
         run: python -S nagoyaction/linkcheck.py --remote "$REPO" --ref "$REF"

@@ -14,6 +14,8 @@ numpy のビット行列を既定にする。それ以外は、これまでど�
 使い方:
   python pythdragoras/rule_search.py --season season.jsonl --config analysis.toml --candidates rule_candidates.toml \\
       --out outputs/rules.jsonl [--top 20] [--backend bitmatrix|bitset]
+
+潜在パターンから条件を足す経路は littlebit_approx（探索の記録。成否の判定はこのファイルのまま）。
 """
 
 from __future__ import annotations
@@ -53,10 +55,35 @@ def _mcc(tp: int, fp: int, fn: int, tn: int) -> float:
     return (tp * tn - fp * fn) / d if d else 0.0
 
 
+# 判定に使う鍵。これ以外は出どころの記録で、マスクにも並べる鍵にも入れない。
+CONDITION_KEYS = {"col", "op", "value"}
+PROVENANCE_KEYS = {
+    "source", "rank", "seed", "stage", "pattern", "posthoc", "exploratory",
+    "registration", "bundle", "sign", "rule", "n_loading",
+}
+
+
 def _check(target: list[dict], candidates: list[dict]) -> None:
+    allowed = CONDITION_KEYS | PROVENANCE_KEYS
     for c in [*target, *candidates]:
-        if set(c) != {"col", "op", "value"} or c["op"] not in OPS:
-            raise PropositionError(f"条件は {{col, op, value}}: {c}")
+        if not isinstance(c, dict) or not CONDITION_KEYS <= set(c) <= allowed or c["op"] not in OPS:
+            raise PropositionError(f"条件は {{col, op, value}}（記録用のキーは {sorted(PROVENANCE_KEYS)}）: {c}")
+        if not isinstance(c["col"], str) or not c["col"]:
+            raise PropositionError(f"列名が空: {c}")
+
+
+def _logic_key(groups: list[list[dict]]) -> str:
+    """同点の順序は col, op, value だけを見る。出どころの記録では順序を変えない。"""
+    slim = []
+    for g in groups:
+        row = []
+        for c in g:
+            if set(c) == CONDITION_KEYS:
+                row.append(c)
+            else:
+                row.append({k: c[k] for k in ("col", "op", "value")})
+        slim.append(row)
+    return json.dumps(slim, ensure_ascii=False)
 
 
 def _build_terms(df: pl.DataFrame, candidates: list[dict], max_conds: int) -> list[tuple[list[dict], int]]:
@@ -102,7 +129,7 @@ def _record(groups: list[list[dict]], tp: int, fp: int, n_pos: int, n_neg: int) 
     fn, tn = n_pos - tp, n_neg - fp
     mcc = _mcc(tp, fp, fn, tn)
     conds = sum(len(g) for g in groups)
-    key = (-round(mcc, 12), conds, json.dumps(groups, ensure_ascii=False))
+    key = (-round(mcc, 12), conds, _logic_key(groups))
     row = {"if_any": groups, "conditions": conds, "tp": tp, "fp": fp, "fn": fn, "tn": tn, "mcc": mcc,
            "precision": tp / (tp + fp) if tp + fp else None, "recall": tp / (tp + fn) if tp + fn else None}
     return key, row
@@ -130,7 +157,7 @@ def _search_bitset(df: pl.DataFrame, target: list[dict], candidates: list[dict],
             if len(best) == top and (-round(mcc, 12), conds) > best[-1][0][:2]:
                 continue
             groups = [g for g, _ in combo]
-            key = (-round(mcc, 12), conds, json.dumps(groups, ensure_ascii=False))
+            key = (-round(mcc, 12), conds, _logic_key(groups))
             if len(best) == top and key >= best[-1][0]:
                 continue
             bisect.insort(best, (key, {"if_any": groups, "conditions": conds, "tp": tp, "fp": fp, "fn": fn, "tn": tn,
@@ -246,6 +273,8 @@ def search(df: pl.DataFrame, target: list[dict], candidates: list[dict], max_ter
     float64 の丸め誤差まで含む任意入力での形式的保証ではない。
     今の単位数では厳密計算より遅い（littlebit_prune のモジュール文書）。prune と backend は同時に指定できない
     （ValueError）。prune も m×m の行列を持つので、見積りが _MATRIX_BYTES を超えると PropositionError で止める。
+
+    条件辞書は col, op, value でマスクを作る。PROVENANCE_KEYS の記録が付いていても、数え方と並べる鍵は同じである。
     """
     if backend not in (None, "bitmatrix", "bitset"):
         raise PropositionError(f"backend は bitmatrix / bitset / 省略: {backend}")

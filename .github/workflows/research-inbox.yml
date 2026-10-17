@@ -103,9 +103,7 @@ jobs:
         with:
           name: inbox-recovery-${{ github.run_id }}
           path: |
-            .research-state/receipts
-            .research-state/pending-replies
-            .research-state/answers
+            .research-state
             build/inbox-receipt.jsonl
           include-hidden-files: true
           if-no-files-found: ignore

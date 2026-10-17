@@ -1,0 +1,91 @@
+{
+  "source_sha256": {
+    "chunichi_relative.csv": "f38a8d48dfd93688e6799de7950c97335059cf32ec90b4ada4404be903b2a3da",
+    "counterexamples_converse_runs1to4_Bclass.csv": "3b627ca3e62a74aeffd82598992eed72449106f8bd7332bf8b37d02058e1c0bf",
+    "counterexamples_lowruns_Aclass.csv": "667cb086bc2e1302aeb1f94ef8961e76d27f127deefaa5e4d5f135fb07c78364",
+    "group_means_relative.csv": "205140b02cd5a2c7155e7907230592a3935754d949e183d095c20dae06425090",
+    "p5.py": "b5630f174373da427ded0f2df464d31fc86216591875cb6e5a2e3607d8e55e0f",
+    "proposition_P5_2x2.csv": "10c96e4d10dbd4f37bf4c339dde0e62f80c297b4d33af8507438adeb891ede88",
+    "report.md": "f098c9121644b4dfb58fde96cabbb575abddeb38164dc278d88930d70730a0cb",
+    "source_objections_PR2_a0b1e0d.md": "ea4f160f8bfaf3652619c71d4cf685138fdb6e5f0efdabc29ec31b433fd5c7d2",
+    "team_season_relative.csv": "2c53048e7b3c7cae38ae3fa342103459a28be85aea80335f5d337059c4b13fcc"
+  },
+  "checked_team_seasons": 156,
+  "log_cells_checked": 1248,
+  "max_log_absolute_error": 5.152128723651117e-16,
+  "tables": [
+    {
+      "scope": "all",
+      "n": 156,
+      "low_B": 43,
+      "low_A": 9,
+      "other_B": 35,
+      "other_A": 69
+    },
+    {
+      "scope": "without2020",
+      "n": 144,
+      "low_B": 41,
+      "low_A": 7,
+      "other_B": 31,
+      "other_A": 65
+    }
+  ],
+  "ce7_count": 7,
+  "chunichi_minus_ce7": {
+    "off_lRG": -0.08245207657703231,
+    "off_lIG": 0.003966055625247884,
+    "off_lSR": -0.03003089491464528,
+    "off_lRPS": -0.05638723728763486
+  },
+  "decomposition_shares": {
+    "off_lIG": -0.04810134310616818,
+    "off_lSR": 0.3642224206031777,
+    "off_lRPS": 0.6838789225029898
+  },
+  "necessary_disjunction_counterexamples": [
+    {
+      "year": 2019,
+      "team": "t",
+      "rank": 3,
+      "runs_rank": 6,
+      "allowed_rank": 2,
+      "A": true,
+      "low_runs": true,
+      "pyth_residual": 3.6776930166698634,
+      "one_run_win_rate": 0.5128205128205128,
+      "off_lIG": 0.008673754942858537,
+      "off_lSR": -0.092967000332362,
+      "off_lRPS": -0.02672040612419635,
+      "off_lRG": -0.11101365151369962,
+      "def_lIG": 0.00829020292047366,
+      "def_lSR": -0.08533140759025352,
+      "def_lRPS": 0.009305503144901084,
+      "def_lRG": -0.06773570152487861,
+      "net": -0.04327794998882101
+    },
+    {
+      "year": 2020,
+      "team": "m",
+      "rank": 2,
+      "runs_rank": 5,
+      "allowed_rank": 2,
+      "A": true,
+      "low_runs": true,
+      "pyth_residual": 3.5494009701529237,
+      "one_run_win_rate": 0.5882352941176471,
+      "off_lIG": -0.0015770386488789478,
+      "off_lSR": -0.06296148248869197,
+      "off_lRPS": -0.004261514211290609,
+      "off_lRG": -0.06880003534886175,
+      "def_lIG": 0.00031510950315896365,
+      "def_lSR": -0.011405796197317079,
+      "def_lRPS": -0.01940679424043678,
+      "def_lRG": -0.03049748093459502,
+      "net": -0.038302554414266735
+    }
+  ],
+  "script_sha256": "bb6ea405dd6680b97e314e23afc0624998c4f0fbf8c2f597a23a8ba710706cff",
+  "exit_code": 0,
+  "scope": "Recomputation from reconciled calendar totals and shared inning-derived metrics; not a new raw-HTML observation."
+}

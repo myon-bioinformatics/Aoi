@@ -48,11 +48,13 @@ def real_notes():
     return digest.collect(CYCLE)
 
 
-def test_real_27_notes_101_table_references_and_catalog_match(real_notes):
+def test_real_29_notes_103_table_references_and_catalog_match(real_notes):
     notes, codes, catalog = real_notes
-    assert [n["id"] for n in notes] == [f"R{i}" for i in range(1, 28)]
-    assert len(notes) == 27
-    assert sum(len(n["proposition_ids"]) for n in notes) == 101
+    assert [n["id"] for n in notes] == [f"R{i}" for i in range(1, 30)]
+    assert len(notes) == 29
+    assert notes[-1]["defines"] == []  # R29 explores separate LAB IDs, not registered P IDs.
+    assert notes[-1]["recorded"] == "2026-10-15"
+    assert sum(len(n["proposition_ids"]) for n in notes) == 103
     assert len(codes) >= 114
     assert not {p for n in notes for p in n["proposition_ids"]} - catalog
     assert not {p for n in notes for p in n["proposition_ids"]} - codes.keys()
@@ -225,13 +227,17 @@ def test_duplicate_judgements_fail(tmp_path):
         digest.collect(cycle)
 
 
-def test_vendor_pin_matches_bytes_and_license():
+def test_markdown_vendor_pin_matches_bytes_and_license():
     lock = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
     assert lock["schema"] == "vendor-lock/1"
-    assert {entry["destination"] for entry in lock["files"]} == {
+    # This digest owns the Markdown pin. The shared lock may also serve other
+    # consumers; tests/test_vendor_lock.py verifies every entry's bytes.
+    entries = [entry for entry in lock["files"]
+               if entry["repository"] == "myon-bioinformatics/markdown"]
+    assert {entry["destination"] for entry in entries} == {
         "vendor/markdown.py", "vendor/markdown-LICENSE"
     }
-    for entry in lock["files"]:
+    for entry in entries:
         raw = (ROOT / entry["destination"]).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == entry["sha256"]
         assert hashlib.sha1(f"blob {len(raw)}\0".encode() + raw).hexdigest() == entry["blob_sha"]

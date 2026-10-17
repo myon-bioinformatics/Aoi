@@ -184,6 +184,24 @@ Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/mai
 | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
 | [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
 
+## 絵文字の名前（npm 経由の Unicode データと、オフライン用の集積）
+
+unicode.org はサンドボックスや CI から届かないことが多いが、npm レジストリには届く。
+`emoji_data.py`（標準ライブラリのみ）は、unicode.org の emoji-test.txt（CLDR の短い名前・グループ・版）を
+JSON にした `unicode-emoji-json` を npm から一度だけ取得し、QueRyu の `Cache` に来歴つきで保存する。
+
+```sh
+python emoji_data.py --cache data/raw/npm --names emoji_names.json --use inventory.json   # 取得（初回のみ）＋集積
+python emoji_data.py --cache data/raw/npm --offline --lookup "TEXT"                       # キャッシュだけで引く
+python emoji_data.py --names emoji_names.json --lookup "TEXT"                             # 集積表だけで引く（ネットワーク・キャッシュ不要）
+```
+
+- 版は `名前@x.y.z` で固定（`latest` は使わない）。レジストリの版メタデータから tarball を得て、レジストリのホストにあることと sha512 `integrity` を確かめてから保存する。`--offline` ではネットワークに出ず、未取得なら止まる
+- `emoji_names.json`（`queryu.emoji-names/1`）は、実際に使った絵文字の名前を集積してコミットする表。`--use` に xprobe `--emoji` の JSON（`xprobe.emoji-inventory.v1`）か絵文字の配列を渡すと、無い分だけ足す。既存の項目は消さず、書き換えない（手で直した名前も残る）。取得元（パッケージ・版・tarball の SHA-256・取得時刻）を `sources` に残す
+- キーは U+FE0F を除いた形（xprobe `emoji_identity`・browser-test-kit `route_trail.py` と同じ）。肌の色・髪の部品つきの変種が表に無ければ、元の絵文字の名前＋部品の名前（`thumbs up: medium skin tone`）にする
+- 初期の表は、Flutter・browser-test-kit・web-ui・markdown・gh_identity・親・BlueProbe・Aoi などの既存ファイルに出てくる 287 種類（xprobe の集計 5,934 ファイル）から作った。名前の無い 1 件（♭ U+266D、絵文字ではない記号）は足していない
+- 保存本文のファイル名は既存の `Cache.put` の規則（`blobs/<sha256>.html.gz`）のまま。中身は tarball のバイト列で、照合は他の保存本文と同じ
+
 ## ライセンス
 
 MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。

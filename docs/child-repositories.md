@@ -23,12 +23,12 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では vendor lock を使いません。`aoi_paths.py` のような Aoi 固有のファイルは、子に通常のファイルとして置き、subtree で同期します。原本との一致は、`child-heads.json` の `mirrored_from_parent` を使って `check_child_heads.py` が確かめます。手順は PythDRagoras のものを子ごとに読み替えます。
 
-PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出したので（git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e` を返す。[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)）、Aoi の履歴とつながっていません。そのため Aoi に一度だけ join を入れます。
+PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出したので（git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e` を返す。join 前は split が古い tree で止まる）、Aoi の履歴とつながっていません。そのため Aoi に一度だけ join を入れます。
 
 - join は2つのコミットです。`Squashed 'pythdragoras/' content from commit <sha>`（親なし、tree は PythDRagoras の `<sha>` と同じ、`git-subtree-dir: pythdragoras` / `git-subtree-split: <sha>`）と、それを2つ目の親にした、Aoi の tree を変えないマージ（`git-subtree-mainline:` も書く）。
 - `<sha>` は PythDRagoras の main にあるコミットにします。`git subtree pull` / `split` は `<sha>` を手元に必要とし、PythDRagoras の main から取ってくるためです。PythDRagoras の PR を squash マージして main の sha が変わったら、その sha で join を入れ直します（tree は同じ）。
 - join は2つ目の親として残す必要があります。**join を含む Aoi の PR は squash せず、merge commit で入れます**。squash すると2つ目の親が消え、`git subtree pull --squash` と `split` が止まります。
-- join 以降は `git subtree` が join を起点にするので、#74 の止まる範囲をたどりません。
+- join 以降は `git subtree` が join を起点にするので、join 以前に split が古く止まっていた範囲をたどりません。
 
 子 → Aoi（Aoi の main から作ったブランチで）:
 
@@ -47,12 +47,12 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 ```
 
 - push したブランチから PythDRagoras に PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、起点を PythDRagoras の main に付け直します（squash マージでは split のコミットが main に残らないため）。
-- **gh_identity#74 が直るまで、Aoi に対して gh_identity の `subtree-sync --write` は使いません。** `--write` なしの計画だけにし、tree の一致は上の `test` で手で確かめます。
+- **Aoi → 子への push（同期）は、親リポジトリ myon-bioinformatics の `gh_ops.py` `subtree-push` で行います**（[myon-bioinformatics#98](https://github.com/myon-bioinformatics/myon-bioinformatics/pull/98)）。gh_identity は検索・存在確認・fetch など書き込みをしない操作に限定し、add/commit/push など重い書き込みは親の gh_ops が担います。tree の一致は上の `test` と `check_child_heads.py` で確かめます。
 - `check_child_heads.py --fail-on-diff` は、登録した `sha` の tree と Aoi の `pythdragoras/` を比べます。
 - Aoi の直下から `pytest pythdragoras/tests` のようにパスだけ渡すと、pytest は `pythdragoras/pyproject.toml` を設定ファイルに選びます（rootdir が `pythdragoras/`）。Aoi の設定で動かすときは `pytest -c pyproject.toml pythdragoras/tests`。引数なしの `pytest`（CI）は Aoi の設定のままです。
 
 ## QueRyu
 
-- QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は、Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から `git filter-branch --subdirectory-filter queryu` で切り出しました。tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返しました（gh_identity#74 と同じ）。
-- そのため、Aoi の履歴とはまだつながっていません。上の手順で Aoi に一度だけ join（`--prefix=queryu`）を入れますが、まだ行っていません。gh_identity#77（push の経路の修正）を待ちます。
+- QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は、Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から `git filter-branch --subdirectory-filter queryu` で切り出しました。tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返しました（PythDRagoras と同じ split の止まり）。
+- そのため、Aoi の履歴とはまだつながっていません。上の手順で Aoi に一度だけ join（`--prefix=queryu`）を入れますが、まだ行っていません。[myon-bioinformatics#98](https://github.com/myon-bioinformatics/myon-bioinformatics/pull/98)（親 `gh_ops.py` の `subtree-push`）を待ちます。
 - subtree add（join）で `queryu/aoi_paths.py` が Aoi に入ったら、その直後に `child-heads.json` の QueRyu に `mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` を書きます。`check_child_heads.py` は、これで `queryu/aoi_paths.py` と Aoi 直下の `aoi_paths.py` の blob と mode を比べます。subtree add の前に書くと、コピーがないので失敗します。

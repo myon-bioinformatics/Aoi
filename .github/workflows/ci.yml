@@ -29,12 +29,12 @@ jobs:
         # Aoi の CI と同じ
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/Aoi
           ref: ${{ env.AOI_SHA }}
@@ -49,12 +49,49 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras
       - name: Preserve JUnit report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: junit-py${{ matrix.python }}
           path: reports/junit.xml
           if-no-files-found: error
           retention-days: 14
+
+  season-exact:
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
+    needs: changes
+    name: season-exact (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    env:
+      # test ジョブと同じ Aoi。exact の求解だけ season-requirements.txt の ortools を入れる。
+      AOI_SHA: 0a1751a60ac64708d679f22950aa2b14cf688efd
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # Aoi の season-simulator.yml と同じ（3.15 は入れない）
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ env.AOI_SHA }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - run: python -m pip install pytest==9.1.1
+      - run: python -m pip install -r season-requirements.txt
+      - run: pytest tests/test_season_simulator.py -q
+        env:
+          AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
+          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras
+      - name: Exercise result-free synthetic CLI
+        run: python season_simulator.py season-example.json --as-of 2022-01-01 --through 2022-01-04 --trials 100 --exact --output /tmp/season-example-output.json
 
   failure-identity:
     needs: [changes, test]

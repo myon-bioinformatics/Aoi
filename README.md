@@ -15,7 +15,7 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
 
 - パスは Aoi の規約（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
 - `AOI_ROOT` が Aoi を指していない（`cycles/` がない）と、pytest は最初に止まって理由を出します。
-- 実行時の依存は polars だけです。ortools は任意で、`season-requirements.txt` を入れたときだけ exact の求解が動き、無ければそのテストは skip します。
+- 実行時の依存は polars だけです。ortools は任意で、`season-requirements.txt` を入れたときだけ exact の求解が動き、無ければそのテストは skip します。CI の `season-exact` は Python 3.11–3.14 で `season-requirements.txt` を入れて、そのテストと `--exact` の例を回します。
 - テストは、これに加えて `AOI_ROOT` の Aoi を使います。
   - `cycles/` のサイクルデータ。
   - PythDRagoras の `propositions`: `proposition_seed_audit.py` と `synthetic_rule_discovery.py`（`PYTHONPATH` の `pythdragoras`）。

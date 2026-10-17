@@ -28,6 +28,12 @@ def test_pythdragoras_registered_with_exact_ids():
     assert entry["optional"]["subtree_prefix"] == "pythdragoras"
 
 
+def test_queryu_registered_with_exact_ids():
+    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/QueRyu"]
+    assert entry["repository_id"] == 1423051557
+    assert entry["optional"]["subtree_prefix"] == "queryu"
+
+
 def test_vendor_consumers_shape_and_sources_exist_in_aoi():
     registry = cch.validate_consumers(_load("vendor-consumers.json"))
     heads = _load("child-heads.json")["heads"]
@@ -44,4 +50,4 @@ def test_offline_cli_passes():
     assert out.returncode == 0, out.stderr
     report = json.loads(out.stdout)
     assert report["schema"] == "aoi-child-heads-check/1"
-    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/PythDRagoras"]
+    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu"]

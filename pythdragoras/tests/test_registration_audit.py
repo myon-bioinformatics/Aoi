@@ -55,7 +55,8 @@ def test_invalid_preregistration_evidence_never_overrides_posthoc(evidence):
 
 
 def test_c001_current_metadata_does_not_guess_preregistration():
-    path = Path("cycles/c001-chunichi/sets.toml")
+    import aoi_paths
+    path = aoi_paths.resolve_cycle_path(aoi_paths.resolve_aoi_root(anchor=Path(__file__))) / "sets.toml"
     if not path.exists():
         return  # results live on the cycle ref, not main
     exprs = {e["id"]: e for e in load_exprs(path)}
@@ -77,7 +78,8 @@ def test_narrative_is_only_an_audit_lead(tmp_path):
 
 def test_all_machine_readable_registration_records_are_self_consistent():
     """Any future explicit registration metadata must satisfy the same contract."""
-    path = Path("cycles/c001-chunichi/sets.toml")
+    import aoi_paths
+    path = aoi_paths.resolve_cycle_path(aoi_paths.resolve_aoi_root(anchor=Path(__file__))) / "sets.toml"
     if not path.exists():
         return
     for expr in load_exprs(path):

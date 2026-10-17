@@ -629,23 +629,35 @@ def write_outputs(result, out, *, config_path, props_path, real_games=None, real
 
 
 def main(argv=None):
-    root = Path(__file__).resolve().parents[1]
+    from aoi_layout import bind as _bind_aoi_paths
+
+    aoi_paths = _bind_aoi_paths(__file__)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', type=Path, default=root / 'cycles/c001-chunichi/league-laboratory.toml')
-    parser.add_argument('--propositions', type=Path, default=root / 'cycles/c001-chunichi/propositions.toml')
-    parser.add_argument('--out', type=Path, default=root / 'cycles/c001-chunichi/outputs/exploratory/league-laboratory')
+    parser.add_argument('--root', type=Path, default=None,
+                        help='Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定')
+    parser.add_argument('--cycle', default=None,
+                        help='サイクル名。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi')
+    parser.add_argument('--config', type=Path, default=None)
+    parser.add_argument('--propositions', type=Path, default=None)
+    parser.add_argument('--out', type=Path, default=None)
     parser.add_argument('--real-games', type=Path)
-    parser.add_argument('--real-seasons', type=Path, default=root / 'cycles/c001-chunichi/outputs/season.jsonl')
+    parser.add_argument('--real-seasons', type=Path, default=None)
     args = parser.parse_args(argv)
-    cfg = tomllib.loads(args.config.read_text(encoding='utf-8'))
-    registered = {p['id']: p for p in tomllib.loads(args.propositions.read_text(encoding='utf-8'))['proposition']}
+    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
+    cycle = aoi_paths.resolve_cycle_path(root, args.cycle)
+    config = args.config or (cycle / 'league-laboratory.toml')
+    propositions = args.propositions or (cycle / 'propositions.toml')
+    out = args.out or (cycle / 'outputs/exploratory/league-laboratory')
+    real_seasons = args.real_seasons or (cycle / 'outputs/season.jsonl')
+    cfg = tomllib.loads(config.read_text(encoding='utf-8'))
+    registered = {p['id']: p for p in tomllib.loads(propositions.read_text(encoding='utf-8'))['proposition']}
     props = [registered[key] for key in cfg['reference_propositions']]
     result = experiment(cfg, props)
-    report = write_outputs(result, args.out, config_path=args.config, props_path=args.propositions,
-                           real_games=args.real_games, real_seasons=args.real_seasons)
+    report = write_outputs(result, out, config_path=config, props_path=propositions,
+                           real_games=args.real_games, real_seasons=real_seasons)
     print(canonical(dict(cases=len(result['cases']), attempts=len(result['attempts']),
                          skill_scan=len(result['skill_scan']), observations=len(result['observations']),
-                         real_evaluation=report['real_evaluation']['status'], out=str(args.out))))
+                         real_evaluation=report['real_evaluation']['status'], out=str(out))))
     return 0
 
 

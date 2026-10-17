@@ -6,78 +6,49 @@
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
-観測と発見を担う。取得したページを読み、**何がそこにあるか**を記録する。勝敗や原因の判断はしない。
+## 概要
+
+BlueProbe は、取得済みの Web ページ（HTML/CSS/DOM）を読み、**何がそこにあるか**を記録する観測・抽出のツールです。勝敗や原因の判断はしません。
+
+- 取得元に依存しない部分（表記の正規化、報告の契約、キャッシュだけを読むオフライン再解析）を `blueprobe.py` に置きます。
+- 取得元ごとの読み方は別モジュール（`<name>.py`）に分け、`pages()` と `parse()` を書けばそのまま使えます（下の「取得元を足す」）。
+- 採用したものだけでなく、採用しなかったものの件数と、どの区分にも当たらなかった原文（`unknown`）も返します。
+- 再解析ではネットワークに出ません。取得は [QueRyu](https://github.com/myon-bioinformatics/QueRyu) が担い、BlueProbe はその保存本文を読みます。
 
 保存済みWeb画面の座標・操作履歴をブラウザなしで整理する入口は
 [`web_observations.py`](docs/web-portability.md)。Dart／Kotlin／Swiftのソースと
 ビルド設定のハッシュ一覧も作れる。保存観測の解析と、現在の実装の実行検証は区別する。
 
-## 出自
+[Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) から独立したリポジトリです（下の「Aoi との関係」）。
 
-このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト
-[`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) から、履歴を保ったまま独立させたもの。
-Aoi 側の `blueprobe/` とは `git subtree` で同期し続ける（どちらで変更しても、もう一方へ反映する）。
+## インストールと使い方
 
-独立の目的は、HTML/CSS/DOM の構造を見て観測・抽出する知見を、リポジトリ横断でここに集めること。
-BlueProbe の実行コードは他リポジトリの実装に依存せず、必要な情報は参照先と契約を揃えて扱う。
-例外として `vendor/` には、公開リポジトリから選んだ標準ライブラリのみの単一ファイルを、来歴を記録するカタログとして保持する。
-このカタログは BlueProbe の実行コード・テストから import せず、Python path にも加えない。配布依存や BlueProbe の API ではない。
-各ファイルの上流コミットとバイト列は `vendor.lock.json`（`vendor-lock/1`）で固定し、CIで照合する。
-各リポジトリ側でのリファクタリングはそれぞれで行ってよい。
-
-## 参照・整合する関連リポジトリ
-
-| リポジトリ | 見るところ | 内容 |
-|---|---|---|
-| [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/adapters/html_snapshot.py`, `css_inspect.py`, `source_access.py`, `docs/source-access.md` | 保存HTMLのオフライン抽出・CSS検査・取得元アクセス（SHA で固定して任意接続） |
-| [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/page_text.py`, `examples/capture_browser_dom.py`, `docs/dom-capture.md`, `fixtures/page_text/` | ページ本文抽出とブラウザDOM採取 |
-| [web-ui](https://github.com/myon-bioinformatics/web-ui) | `docs/local-dom-lab.md`, `tool/serve_dom_lab.py`, `tests/integration/test_gradio_dom.py` | ローカルDOMラボと DOM 証跡 |
-| [flutter_navigation_basic](https://github.com/myon-bioinformatics/flutter_navigation_basic) | `e2e/tests/*.spec.ts` | Flutter Web 画面の DOM 観測（Playwright） |
-
-揃え方: 参照先で新しい抽出の工夫や失敗を見つけたら、まずここのコーパス（`tests/cases/`）か `docs/antipatterns.md` に観測として残し、それから実装を合わせる。
-
-## 同期
+Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存は `selectolax` だけです（`pyproject.toml`）。
 
 ```bash
-# Aoi → BlueProbe（Aoi のルートで）
-git subtree push -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main
-# BlueProbe → Aoi（Aoi のルートで）
-git subtree pull -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main --squash
+git clone https://github.com/myon-bioinformatics/BlueProbe.git
+cd BlueProbe
+uv sync
+uv run python blueprobe.py --source <取得元のモジュール名> --cache <QueRyu のキャッシュ> --out observed.md
 ```
 
-キャッシュ連携テストは QueRyu（`Aoi/queryu`）を使う。CI は Aoi を固定 SHA（`AOI_SHA`）で `.test-deps/aoi` に checkout し、
-`PYTHONPATH` に `queryu` を足す。ローカルでは `PYTHONPATH=<Aoi>/queryu uv run pytest -q`。
-
-`pyproject.toml`・`conftest.py`・`docs/images/`・`.github/` は独立リポジトリ側だけのファイル。
-
-## 今後の検討
-
-他リポジトリが、BlueProbe の中核となる表記正規化・抽出の関数だけを最小の単一ファイルモジュールとして置く可能性はある。
-その場合でも、このリポジトリ全体を vendor することはしない。現時点では未定。
+キャッシュだけを読み、ネットワークには出ない。未知の表記があれば件数を表示する（`--strict` で終了コード1）。
 
 ## 構成
 
 | ファイル | 役割 |
 |---|---|
 | `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`） |
-| `npb_calendar.py` | 取得元: npb.jp の月別公式戦カレンダー |
-| `docs/npb_calendar.md` | その取得元で、どの年の何を確認したか（観測と未確認を分ける） |
-| `npb_team_annual.py` | 取得元: npb.jp の年度別チーム表（1950年以降の要約、2005年以降の詳細表） |
+| `html_source.py` | 保存HTMLを、信頼したオフライン抽出関数へ渡す汎用の取得元（`HtmlSource`） |
 | `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
+| `web_observations.py` | 保存済みWeb画面の観測とソース一覧の整理（ブラウザ・SDKなし） |
 | `docs/contract/v1/` | 報告と snapshot 記録の契約（追加はv1のまま、破壊的変更はv2） |
 | `docs/boundaries.md` | BlueProbe / QueRyu / web-ui の責務の境界（提案） |
 | `docs/antipatterns.md` | 繰り返しそうな失敗とその約束 |
 | `tests/cases/*.jsonl` | 表記揺れのコーパス（xprobe と同じ id / category / value / reason 形式） |
+| `vendor/`・`vendor.lock.json` | 来歴を記録する単一ファイルのカタログ（実行コード・テストからは import しない。下の「Aoi との関係」） |
 
-## 報告の契約
-
-1ページを読んだ結果は、採用したものだけでなく、採用しなかったものも返す。
-
-```text
-records : 採用した観測（原文と派生値を並べる）
-counts  : 採用しなかったものの区分ごとの件数（例: cancelled, non_regular）
-unknown : どの区分にも当たらなかったもの。原文を残す → 表記の変化を疑う
-```
+NPB（日本プロ野球）向けの取得元は、後半の「NPB（プロ野球）の取得元」にまとめています。
 
 ## 取得元を足す
 
@@ -91,13 +62,86 @@ def check(records) -> list[str]: ...                 # 任意。既知値との�
 
 正規表現は狭く、全体一致で書く。新しい表記を見つけたら、広げる前にコーパスへケースを足す。
 
-## 実行
+## 報告の契約
 
-```bash
-uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
+1ページを読んだ結果は、採用したものだけでなく、採用しなかったものも返す。
+
+```text
+records : 採用した観測（原文と派生値を並べる）
+counts  : 採用しなかったものの区分ごとの件数（例: cancelled, non_regular）
+unknown : どの区分にも当たらなかったもの。原文を残す → 表記の変化を疑う
 ```
 
-キャッシュだけを読み、ネットワークには出ない。未知の表記があれば件数を表示する（`--strict` で終了コード1）。
+## テスト
+
+```bash
+PYTHONPATH=<Aoi のルート>/queryu uv run pytest -q
+```
+
+キャッシュ連携テストは QueRyu（`Aoi/queryu`）を使う。CI（`.github/workflows/ci.yml`、Python 3.11–3.14）は Aoi を固定 SHA（`AOI_SHA`）で `.test-deps/aoi` に checkout し、
+`PYTHONPATH` に `queryu` を足す。任意の lab 統合テストは後半の「固定した実装でオフライン統合テストを再現する」。
+
+## Aoi との関係
+
+このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト
+[`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) から、履歴を保ったまま独立させたもの。
+Aoi 側の `blueprobe/` とは `git subtree` で同期し続ける（どちらで変更しても、もう一方へ反映する）。
+ほかのサブプロジェクトと違い、BlueProbe の登録先は Aoi ではなく、親の [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の `child-heads.json` です。
+
+独立の目的は、HTML/CSS/DOM の構造を見て観測・抽出する知見を、リポジトリ横断でここに集めること。
+BlueProbe の実行コードは他リポジトリの実装に依存せず、必要な情報は参照先と契約を揃えて扱う。
+例外として `vendor/` には、公開リポジトリから選んだ標準ライブラリのみの単一ファイルを、来歴を記録するカタログとして保持する。
+このカタログは BlueProbe の実行コード・テストから import せず、Python path にも加えない。配布依存や BlueProbe の API ではない。
+各ファイルの上流コミットとバイト列は `vendor.lock.json`（`vendor-lock/1`）で固定し、CIで照合する。
+各リポジトリ側でのリファクタリングはそれぞれで行ってよい。
+
+### 同期
+
+```bash
+# Aoi → BlueProbe（Aoi のルートで）
+git subtree push -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main
+# BlueProbe → Aoi（Aoi のルートで）
+git subtree pull -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main --squash
+```
+
+`pyproject.toml`・`conftest.py`・`docs/images/`・`.github/` は独立リポジトリ側だけのファイル。
+
+## 関連サブプロジェクト
+
+親の [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクトは、それぞれ独立したリポジトリになっています。Aoi の中の場所（subtree）とあわせて載せます。一覧と登録の詳細は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md) です。
+
+| リポジトリ | Aoi の中の場所 | 役割 |
+|---|---|---|
+| **BlueProbe**（このリポジトリ） | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
+| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
+| [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
+| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
+
+## 参照・整合する関連リポジトリ
+
+| リポジトリ | 見るところ | 内容 |
+|---|---|---|
+| [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/adapters/html_snapshot.py`, `css_inspect.py`, `source_access.py`, `docs/source-access.md` | 保存HTMLのオフライン抽出・CSS検査・取得元アクセス（SHA で固定して任意接続） |
+| [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/page_text.py`, `examples/capture_browser_dom.py`, `docs/dom-capture.md`, `fixtures/page_text/` | ページ本文抽出とブラウザDOM採取 |
+| [web-ui](https://github.com/myon-bioinformatics/web-ui) | `docs/local-dom-lab.md`, `tool/serve_dom_lab.py`, `tests/integration/test_gradio_dom.py` | ローカルDOMラボと DOM 証跡 |
+| [flutter_navigation_basic](https://github.com/myon-bioinformatics/flutter_navigation_basic) | `e2e/tests/*.spec.ts` | Flutter Web 画面の DOM 観測（Playwright） |
+
+揃え方: 参照先で新しい抽出の工夫や失敗を見つけたら、まずここのコーパス（`tests/cases/`）か `docs/antipatterns.md` に観測として残し、それから実装を合わせる。
+
+## ライセンス
+
+MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+
+## 今後の検討
+
+他リポジトリが、BlueProbe の中核となる表記正規化・抽出の関数だけを最小の単一ファイルモジュールとして置く可能性はある。
+その場合でも、このリポジトリ全体を vendor することはしない。現時点では未定。
+
+---
+
+# 詳しい使い方とNPB向けの内容
 
 ## 保存HTMLの共通抽出へ接続する
 
@@ -136,8 +180,8 @@ NPB parser には原文HTMLをそのまま渡す。snapshot対応の `HtmlSource
 `mcp_toolcall_lab.source_access.extract_snapshot` で検証・抽出する。
 独自 validator や HTML parser は増やさない。
 ここでの再解析はHTML構造の抽出・観測値の読み取りを指す。集計・指標計算は
-[SakAnalytics](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics)、仮説評価は
-[PythDRagoras](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) が担う。
+[SakAnalytics](https://github.com/myon-bioinformatics/sakanalytics)、仮説評価は
+[PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) が担う。
 
 ```python
 from blueprobe import inspect_queryu_cache
@@ -241,7 +285,21 @@ import 失敗を成功扱いにしない。通常モードでは lab がない�
 過去の検証記録であり、現在の全テスト件数として扱わない。CI の結果は
 [PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15) の最新実行で確認する。
 
-## NPB年間チーム表
+## NPB（プロ野球）の取得元
+
+| ファイル | 役割 |
+|---|---|
+| `npb_calendar.py` | 取得元: npb.jp の月別公式戦カレンダー |
+| `docs/npb_calendar.md` | その取得元で、どの年の何を確認したか（観測と未確認を分ける） |
+| `npb_team_annual.py` | 取得元: npb.jp の年度別チーム表（1950年以降の要約、2005年以降の詳細表） |
+| `npb_team_batting.py` | 取得元: npb.jp の年度別チーム打撃成績（[docs/npb_team_batting.md](docs/npb_team_batting.md)） |
+| `html_compare.py` | 保存HTMLの構造的な被覆と、既存のNPB観測との比較（オフライン） |
+
+```bash
+uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
+```
+
+### NPB年間チーム表
 
 `npb_team_annual.py` は1950年以降の両リーグの年度別要約表と、2005年以降の詳細な勝敗・打撃・投手・守備表を読む。
 個人表は抽出しない。未掲載の古い項目を0で補わず、未知の列は `unknown` に残す。観測のみで、率の再計算や表間の一致判定は行わない。

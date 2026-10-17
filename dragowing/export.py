@@ -11,6 +11,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+from vendor import web_ui
+
+from .plotly_cdn import fetch_plotly_js
 from .render import RenderSession, Timeouts
 
 
@@ -85,20 +88,28 @@ def export_draw(
 
 # --- example configs (not library-specific modules) ---
 
-def plotlyjs_path() -> Path:
-    # Reuse #43's original installed-package lookup. Its latest HTML renderer
-    # removed that helper and defaults to CDN; leave that output unchanged.
-    import plotly
-
-    path = Path(plotly.__file__).resolve().parent / "package_data" / "plotly.min.js"
-    if not path.is_file():
+def plotlyjs_bundle_path() -> Path:
+    """On-disk Plotly.js for file:// loading (bytes from the web-ui CDN contract)."""
+    pinned = os.environ.get("DRAGOWING_PINNED_PLOTLY_JS")
+    if pinned:
+        path = Path(pinned)
+        if path.is_file():
+            return path
         raise FileNotFoundError(f"plotly.min.js is missing: {path}")
-    return path
+    cache = Path(tempfile.gettempdir()) / ("dragowing-plotly-%s.min.js" % web_ui.PLOTLY_JS_VERSION)
+    body = fetch_plotly_js()
+    if not cache.is_file() or cache.read_text(encoding="utf-8") != body:
+        cache.write_text(body, encoding="utf-8")
+    return cache
+
+
+# Backward-compatible alias for callers that imported the old helper name.
+plotlyjs_path = plotlyjs_bundle_path
 
 
 PLOTLY = DrawConfig(
     script_urls=(),
-    local_scripts=(plotlyjs_path,),
+    local_scripts=(plotlyjs_bundle_path,),
     template=("<!doctype html><meta charset=utf-8><style>body{margin:0}</style>"
               "<script>window.PlotlyConfig={MathJaxConfig:'local'};</script>"
               "{{scripts}}<div id=g></div>{{content}}"),

@@ -11,13 +11,15 @@ from pathlib import Path
 
 import pytest
 
-from dragowing.export import MERMAID, PLOTLY, export_draw, mermaid_diagram_content, page_html, plotly_figure_content, plotlyjs_path
+from vendor import web_ui
+
+from dragowing.export import MERMAID, PLOTLY, export_draw, mermaid_diagram_content, page_html, plotly_figure_content, plotlyjs_bundle_path
 from dragowing.html_tag_count import count_elements
 from dragowing.render import RenderSession, Timeouts
 
 
 def test_page_html_builds_plotly_and_mermaid_without_browser(tmp_path):
-    # Page assembly does not require the optional installed-Plotly extra.
+    # Page assembly does not require Chrome.
     bundle = tmp_path / "plotly.min.js"
     bundle.write_text("window.Plotly={};", encoding="utf-8")
     config = replace(PLOTLY, local_scripts=(lambda: bundle,))
@@ -43,10 +45,10 @@ def test_plotly_text_cannot_close_inline_script():
     assert "\\u003c/script>" in page
 
 
-def test_bundle_copied_from_current_install_and_lives_through_render(tmp_path):
+def test_bundle_copied_from_cdn_contract_and_lives_through_render(tmp_path):
     from dragowing import export
     source = tmp_path / "plotly.min.js"
-    source.write_bytes(b"installed-v1")
+    source.write_bytes(b"cdn-bundle-v1")
     config = replace(PLOTLY, local_scripts=(lambda: source,))
     copies = []
     class Session:
@@ -61,7 +63,7 @@ def test_bundle_copied_from_current_install_and_lives_through_render(tmp_path):
             assert copies[-1] != source
             assert copies[-1].read_bytes() == source.read_bytes()
             return b"captured"
-    for version in (b"installed-v1", b"installed-v2"):
+    for version in (b"cdn-bundle-v1", b"cdn-bundle-v2"):
         source.write_bytes(version)
         assert export.export_draw(config, "", tmp_path / "out.png", session=Session()) == b"captured"
         assert not copies[-1].exists()
@@ -119,9 +121,8 @@ def test_export_draw_plotly_three_figures_in_one_session(tmp_path, plotly_chrome
         pid = session.browser._proc.pid
         baseline = _page_targets(session.browser)
         if evidence:
-            import plotly
             (tmp_path / "runtime.json").write_text(json.dumps({
-                "python": sys.version, "plotly": plotly.__version__, "plotly_js": _js_version(),
+                "python": sys.version, "plotly_js": _js_version(),
                 "chrome": session.browser.call("Browser.getVersion"),
                 "network": "CDP offline; CI additionally runs in an isolated network namespace",
                 "figure_count": 3, "formats": ["png", "svg"],
@@ -147,7 +148,7 @@ def test_export_draw_plotly_three_figures_in_one_session(tmp_path, plotly_chrome
                     png_hashes.add(hashlib.sha256(data).hexdigest())
         assert len(png_hashes) == 3
         # CDP offline mode must actually reject network fetches, while the exact
-        # installed Plotly.js version still renders from the filesystem.
+        # bundled Plotly.js version still renders from the filesystem.
         probe = replace(PLOTLY, ready_expression=(
             "window.__dragowing_ready.then(async()=>{"
             "if(Plotly.version!==%s)throw Error('wrong Plotly.js');"
@@ -159,8 +160,18 @@ def test_export_draw_plotly_three_figures_in_one_session(tmp_path, plotly_chrome
 
 
 def _js_version():
-    from plotly.offline.offline import get_plotlyjs_version
-    return get_plotlyjs_version()
+    return web_ui.PLOTLY_JS_VERSION
+
+
+def test_plotlyjs_bundle_path_materializes_verified_cdn_bytes(tmp_path, monkeypatch):
+    body = b"window.Plotly={version:'test'};"
+    bundle = tmp_path / "plotly.min.js"
+    bundle.write_bytes(body)
+    monkeypatch.setenv("DRAGOWING_PINNED_PLOTLY_JS", str(bundle))
+    assert plotlyjs_bundle_path() == bundle
+    page = page_html(PLOTLY, plotly_figure_content({"data": [], "layout": {}}))
+    assert bundle.as_uri() in page
+    assert count_elements(page, ("script", "div")) == {"script": 3, "div": 1}
 
 
 def test_export_failure_preserves_destination_and_releases_target(tmp_path, plotly_chrome_executable):

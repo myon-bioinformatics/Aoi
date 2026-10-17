@@ -15,16 +15,6 @@ dependencies = [
     "markdown>=3.7",
 ]
 
-[project.optional-dependencies]
-# CLI の --png は kaleido + plotly。Chrome パイプAPIは export extra のみ。
-# 既定の HTML とテストは plotly も kaleido も Chrome も使わない。
-png = [
-    "kaleido>=1",
-    "plotly>=6.1.1",
-]
-
-export = ["plotly>=6.1.1"]
-
 [dependency-groups]
 dev = ["pytest>=8"]
 

@@ -251,7 +251,7 @@ def test_counterexample_table_copies_values_context_and_question():
     assert "Plotly.newPlot" not in page
 
 
-def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch):
+def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     results = tmp_path / "results"
     results.mkdir()
     dump_jsonl(
@@ -307,22 +307,8 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     )
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
-    try:
-        import kaleido  # noqa: F401
-
-        has_kaleido = True
-    except ImportError:
-        has_kaleido = False
-    builtins = __import__("builtins")
-    real_import = builtins.__import__
-
-    def block(name, *args, **kwargs):
-        if name == "kaleido" or name.startswith("kaleido."):
-            raise ImportError("no kaleido")
-        return real_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", block)
-    with pytest.raises(PngUnavailable):
+    monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
+    with pytest.raises(PngUnavailable, match="Chrome"):
         write_png(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.png")
     assert not (tmp_path / "x.png").exists()
     missing = subprocess.run(
@@ -331,13 +317,11 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
         check=False,
         capture_output=True,
         text=True,
+        env={**dict(__import__("os").environ), "CHROME": str(tmp_path / "missing-chrome")},
     )
-    if not has_kaleido:
-        assert missing.returncode == 2
-        assert "kaleido" in missing.stderr
-        assert (tmp_path / "png" / "index.html").is_file()
-    else:
-        assert missing.returncode in (0, 1)
+    assert missing.returncode == 2
+    assert "Chrome" in missing.stderr
+    assert (tmp_path / "png" / "index.html").is_file()
 
 
 def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path):

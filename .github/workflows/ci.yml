@@ -255,5 +255,5 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -S scripts/check_child_heads.py --vendor-tools .vendor-sync-tools | tee build-child-heads.json
+          python -S scripts/check_child_heads.py --vendor-tools .vendor-sync-tools --fail-on-diff | tee build-child-heads.json
           { echo '## Child heads'; echo '```json'; cat build-child-heads.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

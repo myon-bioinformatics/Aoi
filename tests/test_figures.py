@@ -19,8 +19,10 @@ from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
 from ask import registration_status
 
-ROOT = Path(__file__).resolve().parents[2]
-RESULTS = ROOT / "cycles" / "c001-chunichi" / "outputs"
+import aoi_paths
+
+ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+RESULTS = aoi_paths.default_cycle_outputs(ROOT)
 OPS = {
     "<": operator.lt,
     "<=": operator.le,

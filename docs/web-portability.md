@@ -5,8 +5,14 @@
 網羅確認はFlutterの既存`python/check_web_observations.py`に残す。
 
 ```sh
-python -S web_observations.py saved-pages --source-root ../flutter_navigation_basic > observed.json
+python -S web_observations.py /path/to/saved-pages --source-root /path/to/flutter_navigation_basic > observed.json
 ```
+
+`/path/to/saved-pages`は取得済みアーティファクトを展開した実在するディレクトリに、
+`/path/to/flutter_navigation_basic`はソースの実在するディレクトリに置き換える。
+最初の位置引数は観測ディレクトリであり、`saved-pages`というサブコマンドではない。
+その配下の`web-observation.json`を再帰的に読む。ソース一覧が不要なら
+`--source-root`は省略できる。
 
 追加依存、Flutter、Dart SDK、Xcode、Android SDK、ブラウザは不要。
 `flutter-web-observation/1`と隣接する`exploration.json`を読み、BlueProbe既存の

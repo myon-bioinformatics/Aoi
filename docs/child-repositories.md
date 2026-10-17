@@ -1,6 +1,6 @@
 # Aoi の子リポジトリ
 
-Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。PythDRagoras・QueRyu・NagoyAction・sakanalytics の親は Aoi です（myon-bioinformatics からは孫）。
+Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。PythDRagoras・QueRyu・NagoyAction・sakanalytics・DRAgoWing の親は Aoi です（myon-bioinformatics からは孫）。
 
 | 子 | prefix | 登録した main |
 |---|---|---|
@@ -8,6 +8,7 @@ Aoi のサブプロジェクトを独立させたリポジトリの登録です�
 | [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | `queryu/` | `child-heads.json` の `sha` |
 | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | `nagoyaction/` | `child-heads.json` の `sha` |
 | [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | `sakanalytics/` | `child-heads.json` の `sha` |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | `dragowing/` | `child-heads.json` の `sha` |
 
 - `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
@@ -75,3 +76,10 @@ QueRyu #5 の埋込み共有 aoi_layout 出自ガード修正は、初回joinの
 - `sakanalytics/` 全体（子の CI・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した sakanalytics の tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。`min.py` は Aoi が提供し、子には置きません。
 - サイクルデータ（`cycles/`）と PythDRagoras（`propositions`）は Aoi に残します。子の CI は Aoi を固定 SHA で checkout し、`AOI_ROOT` と `PYTHONPATH` の `pythdragoras` を渡して pytest を動かします。Aoi の中では `sakanalytics/.github/` は動きません。`sakanalytics/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめます。
 - 同期は PythDRagoras の手順の `pythdragoras` を `sakanalytics`、リポジトリを sakanalytics に読み替えます。
+
+## DRAgoWing
+
+- DRAgoWing の最初の 28 コミットは、Aoi `a8dc4997f43236b24a23df56e21f143fa0e233d8` から `git filter-branch --subdirectory-filter dragowing` で切り出しました（先頭 `c789da2e30b33144f3110506f90f91ea579b9a6b`、tree `70424b5a2768f43633766435cc9552f77c1b2ba7` が Aoi の `dragowing/` と一致）。そのうえに子の足場（CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト、および単独実行のためのテスト修正）を足した main `4d798e1405e14d5cdd33e0c3f8fa87b29789b9cc` に対し、一度だけの join を入れました。親なし squash commit の tree はこの子の tree と同一で、Aoi の merge commit の第2親として残します。PR は squash/rebase せず merge commit で入れてください。
+- `dragowing/` 全体（子の CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した DRAgoWing の tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。`min.py` は Aoi が提供し、子には置きません。
+- サイクルデータ（`cycles/`）、PythDRagoras（`propositions`・`rule_search`）、QueRyu（`ask`）は Aoi に残します。子の CI は Aoi を固定 SHA で checkout し、`AOI_ROOT` と `PYTHONPATH` の `pythdragoras` と `queryu/ask` を渡して pytest を動かします。子の CI に Chrome のジョブはなく、Aoi の CI の Chrome ジョブと DRAgoWing reports ワークフローが `dragowing/` のパスを使います。Aoi の中では `dragowing/.github/` は動きません。`dragowing/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめ、パッケージ登録は何もしません。`dragowing/tests/conftest.py` と共存します。
+- 同期は PythDRagoras の手順の `pythdragoras` を `dragowing`、リポジトリを DRAgoWing に読み替えます。

@@ -83,6 +83,19 @@ def test_sakanalytics_registered_with_exact_ids():
     assert not (ROOT / "sakanalytics" / "min.py").exists()  # min.py は Aoi が提供し、子には置かない
 
 
+def test_dragowing_registered_with_exact_ids():
+    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/DRAgoWing"]
+    assert entry["repository_id"] == 1423772286
+    assert entry["optional"]["repository_created_at"] == "2026-10-17T21:45:31Z"
+    assert entry["optional"]["subtree_prefix"] == "dragowing"
+    assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
+    assert entry["sha"] == "4d798e1405e14d5cdd33e0c3f8fa87b29789b9cc"
+    assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
+    for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "aoi_paths.py", "tests/conftest.py", "tests/test_no_sibling_imports.py"):
+        assert (ROOT / "dragowing" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
+    assert not (ROOT / "dragowing" / "min.py").exists()  # min.py は Aoi が提供し、子には置かない
+
+
 def test_registered_mirrors_are_blob_identical_to_aoi_originals():
     report = cch.check(ROOT, cch.validate_heads(_load("child-heads.json")), network=False)
     for row in report["children"]:
@@ -95,7 +108,7 @@ def test_offline_cli_passes():
     assert out.returncode == 0, out.stderr
     report = json.loads(out.stdout)
     assert report["schema"] == "aoi-child-heads-check/1"
-    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/NagoyAction", "myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu", "myon-bioinformatics/sakanalytics"]
+    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/DRAgoWing", "myon-bioinformatics/NagoyAction", "myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu", "myon-bioinformatics/sakanalytics"]
 
 
 # --- ローカルの Git -------------------------------------------------------------------------

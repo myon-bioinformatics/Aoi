@@ -35,3 +35,10 @@ python nagoyaction/linkcheck.py --external                         # http(s) も
 
 GitHub は大文字小文字を区別するので、手元で開けても GitHub では 404 になることがある（例: `genesis.md` と `GENESIS.md`）。
 `git add` を忘れたファイルも、手元にはあるが GitHub にはないので失敗にする。CI では両方を実行する。
+
+## ローカル LLM のコンテナ（未接続）
+
+`containers/llama.py` と `containers/llama.compose.yml` は、#48 で消えた `NagoyAction/containers/` を戻したもの。
+公式の llama.cpp server イメージ（digest 固定）と、SHA-256 で確かめたモデルを使い、127.0.0.1 だけで待ち受ける。
+今の `pipelines/inbox.toml` と `inbox/inbox.py` からは呼ばない（ローカル LLM の連携は main への最初の展開から外してある）。
+テストは `tests/test_llama_container.py`（ネットワークなし）。

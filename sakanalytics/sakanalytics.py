@@ -58,9 +58,27 @@
                                    力が一定でも山・谷ができる割合 *_base（R22。season_trajectory）。traj_start_* は線の始まり
   wave_*                           順位の線を、始まりの値から出発して減衰する波で表したもの（収束する先・決まった位置・周期、R23）
   clinch_in_* / clinch_out_* / decided_x  A クラスに入る・入れないが数の上で確かになった日と残り試合、リーグの顔ぶれが決まった日（R26）
+  rank_fixed_* / live_* / dead_*  最終順位が確かになった日と、A・B が決まる前（効く試合）・後（効かない試合）の勝率と点の差（R57）
+  lock_g / lock_x / lg_set_lock_x / q_wl_* / lone_down_n  順位表で A・B の側が最後と同じに落ち着いた試合数（N）と日、4つの区間の勝 − 敗、自分だけ負け越した区間の数（R60）
   series_*                         カード（同じ相手・同じ球場で続けての試合）ごとの勝ち数: 負け越したカード、勝ち数の散らばり、
                                    1試合目とそれ以外の勝率の差、3連戦の 0〜3勝の数と、力が一定のときとの比べ（R24。series_features）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
+  rf_adv / ra_adv / run_balance / short_share  得点・失点の優位を1試合あたりの点で（他球団平均との差）。収支と、0〜1 の取り分（R32。add_balance）
+  rf_adv_z / ra_adv_z / *_zone     優位を全単位の標準偏差で割ったものと、その3区分（1・0・−1）。|z| < 1 を 0 の近くとして読む（R33）
+  rf_sd_g / ra_sd_g / *_adv_se / *_zone_se  試合ごとの点の標準偏差と、優位の誤差・誤差1つ分での3区分（R34）
+  rf_adv_t / ra_adv_t / run_balance_t / bat_routes / vs_top_minus_lower / adv_shape_se  研究で使った読みを列にしたもの（R39。add_composites。式は関数の説明と README）
+  path_* / b_paths                 B に着く道筋の参考値（R45。add_b_paths、規則は B_PATHS。判定には使わない）
+  lg_lead_gap / lg_gap34 / lg_rest_sd  その年・そのリーグの順位の形（1位と2位の差、3位と4位の差、1位以外の散らばり。R46。add_league_shape）
+  lg_line / line_gap_pythag        A の線（3位と4位の勝率の中間）と、点の差で見込む勝率の線からの距離（R50）
+  lg_rank_at_500                   勝率 .500 が何位に当たるか（滑らかな順位、R51）
+  lg_break_after / lg_break_gap / lg_tier / lg_tier_of_3rd  データの散らばりから引く線: いちばん大きな隙間と、3つの塊（R52）
+  lg_bar                           越えるべき高さ: ほかの球団の中で上位半分の最後の勝率（R56）
+  lg_bar_pythag / pbar_gap         点の差から見たその年の越えるべき高さ（ほかの球団の点の差で見込む勝率の上位半分の最後）と、自分の点の差で見込む勝率との差（R73）
+  mix_lo / mix_hi / mix_zone       A と B が混ざる帯（ほかの年の A の最低勝率〜B の最高勝率）と、帯の下・中・上（−1・0・+1、R53。add_mix_zone）
+  live_mix_lo / _hi / _zone        同じ帯を、A・B に効く試合だけの勝率（live_wpct）で引いたもの（R58）
+  rf_mix_* / bal_mix_* / vsl_mix_* / sim_mix_*  同じ帯を、得点の優位・収支・下の相手との勝率・分布から見た A の確率の値で引いたもの（R66・R67）
+  *_bgap / rfg_mix_* / balg_mix_* / vslg_mix_*  その年の高さ（ほかの球団の上位半分の最後の値）からの差と、その差で引いた帯（R74）
+  rf_state2 / ra_state2            得点・失点の優位の2本線の状態（A・AB・B、R67。add_state2）
   sim_p_upper / sim_wpct           得点・失点の分布だけからシーズンを作り直したときの、上位半分に入る確率・勝率の期待値（R10）
   rf_def_k67 / rf_def_floor_minus_k67  k = 6〜7 の帯（幅2）と、床（幅2）との差（R7。帯の幅をそろえた比較）
   inn_*（--innings があるとき）     イニング単位の集計からの列（R4）。inn_I/S/R: 攻撃回数・得点した回の数・得点
@@ -69,6 +87,8 @@
     *_6                            双方が6回まで攻撃した試合の1〜6回だけで同じ計算
     *_home / *_away                ホーム・ビジターの試合だけで同じ計算（球場の係数ではない。比べる範囲を分けるだけ）
   bat_*（--batting があるとき）     チーム打撃成績から計算した率（R6）。打数・本塁打数などの原票の値は出力しない
+  fld_*（--fielding があるとき）    チーム守備成績から計算した率（守備率・失策/試合・併殺/試合・捕逸/試合・補殺/刺殺）と他球団との差 fld_d_*
+  ls_*（--linescore があるとき）    試合ごとの得点表（R H E）からの失策の差（1点差・勝ち・負け・最後の区間）。取得した年だけ埋まる
     bat_avg / obp / slg / iso      打率・出塁率・長打率・ISO（長打率 − 打率）
     bat_hr_pa / bb_pa / so_pa      本塁打・四死球・三振の、打席あたりの割合
     bat_xbh_h                      安打のうち長打（二塁打・三塁打・本塁打）の割合
@@ -334,6 +354,81 @@ def batting_join(st: pl.DataFrame, bat: pl.DataFrame) -> pl.DataFrame:
         for k in BATTING_RATES
     })
 
+
+
+FIELDING_RATES = {  # チーム守備成績（R59 の準備）。どれも1試合あたりか割合。原票の数は出力しない
+    "fpct": lambda: (pl.col("po") + pl.col("a")) / (pl.col("po") + pl.col("a") + pl.col("e")),
+    "e_g": lambda: pl.col("e") / pl.col("g"),
+    "dp_g": lambda: pl.col("dp") / pl.col("g"),
+    "pb_g": lambda: pl.col("pb") / pl.col("g"),
+    "a_po": lambda: pl.col("a") / pl.col("po"),   # 刺殺に対する補殺（内野で打球を処理した多さの目安）
+}
+
+
+def fielding_join(st: pl.DataFrame, fld: pl.DataFrame) -> pl.DataFrame:
+    """チーム守備成績から率を計算して結合する（fld_* と、同じ年・同じリーグの他球団の平均との差 fld_d_*）。
+
+    照合（1つでも合わなければ ValueError）:
+      - 試合数が、最終スコア由来の G と一致する
+      - 守備機会 = 刺殺 + 補殺 + 失策
+      - (刺殺 + 補殺) ÷ 守備機会 が、ページの守備率と表示桁（小数3桁）で一致する
+    fld_e_g は失策が少ないほど小さい（他球団との差 fld_d_e_g がマイナスなら、失策が少なかった）。
+    """
+    over = ["season", "league"]
+    f = fld.with_columns(pl.col("season").cast(pl.Int32)).with_columns(
+        **{f"fld_{k}": fn() for k, fn in FIELDING_RATES.items()})
+    chk = st.select("season", "team", "G").join(f, on=["season", "team"], how="inner")
+    bad = chk.filter(pl.col("G") != pl.col("g"))
+    if bad.height:
+        raise ValueError(f"守備成績の試合数が最終スコアと合わない: {bad.select('season', 'team').rows()[:5]}")
+    bad = f.filter(pl.col("tc") != pl.col("po") + pl.col("a") + pl.col("e"))
+    if bad.height:
+        raise ValueError(f"守備機会が 刺殺 + 補殺 + 失策 と合わない: {bad.select('season', 'team').rows()[:5]}")
+    off = f.filter((pl.col("fld_fpct") - pl.col("fpct")).abs() > 0.0005 + 1e-9)
+    if off.height:
+        raise ValueError(f"守備率を計算し直すとページの値と合わない: {off.select('season', 'team').rows()[:5]}")
+    cols = [f"fld_{k}" for k in FIELDING_RATES]
+    out = st.join(f.select("season", "team", *cols), on=["season", "team"], how="left")
+    return out.with_columns(**{
+        f"fld_d_{k}": pl.col(f"fld_{k}") - (pl.col(f"fld_{k}").sum().over(over) - pl.col(f"fld_{k}"))
+        / (pl.col(f"fld_{k}").count().over(over) - 1)
+        for k in FIELDING_RATES
+    })
+
+
+def linescore_join(st: pl.DataFrame, tg: pl.DataFrame, ls: pl.DataFrame) -> pl.DataFrame:
+    """試合ごとの得点表（R H E、BlueProbe npb_game_linescore）を試合ごとの結果に結び、失策の差をチーム×シーズンで出す（R64 の準備）。
+
+    結び方: 日付とチーム（NPB の公式戦に同じ日の同じチームの2試合はない前提。あれば止まる）。相手の失策は、同じ日の相手の行。
+    照合（合わなければ ValueError）: 同じ日付・チームの行が1つ、得点表の R が日程の得点と一致する。
+    出す列（得点表のある試合だけで数える。原票の数は出さない）:
+      ls_cov        : 得点表のある試合の割合（取得した年だけ埋まる）
+      ls_e_g / ls_opp_e_g : 自分の失策／試合、相手の失策／試合
+      ls_e_net_g    : （自分の失策 − 相手の失策）／試合。マイナスなら相手より失策が少ない
+      ls_e_net_close / ls_e_net_win / ls_e_net_loss / ls_e_net_q4 : 同じ差を、1点差の試合・勝った試合・負けた試合・
+                      最後の区間（自分の試合の最後の 1/4）だけで1試合あたりに
+    """
+    l2 = ls.select(pl.col("date"), pl.col("team"), pl.col("r").alias("ls_r"), pl.col("e").alias("ls_e"))
+    dup = l2.group_by("date", "team").len().filter(pl.col("len") > 1)
+    if dup.height:
+        raise ValueError(f"得点表に同じ日付・チームの行が2つ以上ある: {dup.select('date', 'team').rows()[:5]}")
+    g = tg.sort("date").with_columns(n=pl.int_range(pl.len()).over("season", "team"), m=pl.len().over("season", "team"))
+    g = g.join(l2, on=["date", "team"], how="inner").join(
+        l2.select("date", pl.col("team").alias("opp"), pl.col("ls_e").alias("ls_opp_e")), on=["date", "opp"], how="inner")
+    bad = g.filter(pl.col("ls_r") != pl.col("rf"))
+    if bad.height:
+        raise ValueError(f"得点表の R が日程の得点と合わない: {bad.select('date', 'team').rows()[:5]}")
+    net = pl.col("ls_e") - pl.col("ls_opp_e")
+
+    def mean_net(cond):
+        return net.filter(cond).mean()
+    agg = g.group_by("season", "team").agg(
+        ls_g=pl.len(), ls_e_g=pl.col("ls_e").mean(), ls_opp_e_g=pl.col("ls_opp_e").mean(), ls_e_net_g=net.mean(),
+        ls_e_net_close=mean_net((pl.col("rf") - pl.col("ra")).abs() == 1),
+        ls_e_net_win=mean_net(pl.col("rf") > pl.col("ra")), ls_e_net_loss=mean_net(pl.col("rf") < pl.col("ra")),
+        ls_e_net_q4=mean_net(pl.col("n") >= pl.col("m") * 3 // 4))
+    out = st.join(agg, on=["season", "team"], how="left")
+    return out.with_columns(ls_cov=(pl.col("ls_g") / pl.col("G")).fill_null(0.0)).drop("ls_g")
 
 def _season_wpct_pmf(rf: list[int], ra: list[int]) -> tuple[list[float], list[float]]:
     """1試合 = 自分の得点の分布から1つ、失点の分布から1つを独立に引く。それを試合数だけ繰り返したときの勝率の分布。
@@ -706,14 +801,17 @@ def _clinch_days(days: list[list[tuple]], winners: list, members_by_league: dict
       入れない: 自分の上限より、下限が高い球団が k 以上（k = 球団数 ÷ 2）
       入る    : 自分の下限より、上限が低い球団が（球団数 − k）以上
     残り試合どうしの直接対決（片方が勝てば片方が負ける）は考えないので、実際に決まった日より遅く出ることはあっても、早く出ることはない。
-    返り値: {"in": {球団: (日, 残り)}, "out": {球団: (日, 残り)}, "decided": {リーグ: 日}}（決まらなければ入らない）
+    最終順位の確定（R57）: 自分より下限が高い球団の数 + 1（ありうる最高の順位）と、球団数 − 自分の下限より上限が低い球団の数
+    （ありうる最低の順位）が一致した日。同じく控えめ（遅く出ることはあっても、早く出ることはない）。
+    返り値: {"in": {球団: (日, 残り)}, "out": {球団: (日, 残り)}, "decided": {リーグ: 日},
+             "fixed": {球団: (日, 残り, 順位)}}（決まらなければ入らない）
     """
     total, played, w, l_ = Counter(), Counter(), Counter(), Counter()
     for games in days:
         for _, h, a in games:
             total[h] += 1
             total[a] += 1
-    inn, out, decided = {}, {}, {}
+    inn, out, decided, fixed = {}, {}, {}, {}
     for i, games in enumerate(days):
         for g, h, a in games:
             played[h] += 1
@@ -722,12 +820,20 @@ def _clinch_days(days: list[list[tuple]], winners: list, members_by_league: dict
                 w[winners[g]] += 1
                 l_[a if winners[g] == h else h] += 1
         for lg, members in members_by_league.items():
-            if lg in decided:
-                continue
             k = len(members) // 2
             left = {t: total[t] - played[t] for t in members}
             hi = {t: (w[t] + left[t]) / (w[t] + left[t] + l_[t]) if w[t] + left[t] + l_[t] else None for t in members}
             lo = {t: w[t] / (w[t] + l_[t] + left[t]) if w[t] + l_[t] + left[t] else None for t in members}
+            for t in members:
+                if t in fixed or hi[t] is None or lo[t] is None:
+                    continue
+                others = [u for u in members if u != t]
+                best = 1 + sum(lo[u] is not None and lo[u] > hi[t] for u in others)
+                worst = len(members) - sum(hi[u] is not None and hi[u] < lo[t] for u in others)
+                if best == worst:
+                    fixed[t] = (i, left[t], best)
+            if lg in decided:
+                continue
             for t in members:
                 others = [u for u in members if u != t]
                 if t not in out and hi[t] is not None and sum(lo[u] is not None and lo[u] > hi[t] for u in others) >= k:
@@ -736,7 +842,7 @@ def _clinch_days(days: list[list[tuple]], winners: list, members_by_league: dict
                     inn[t] = (i, left[t])
             if all(t in inn or t in out for t in members):
                 decided[lg] = i
-    return {"in": inn, "out": out, "decided": decided}
+    return {"in": inn, "out": out, "decided": decided, "fixed": fixed}
 
 
 def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
@@ -744,16 +850,26 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
       clinch_in_x / clinch_in_left   : 入るが確定した日の位置と、その日の自分の残り試合数（入らなかった球団は空）
       clinch_out_x / clinch_out_left : 入れないが確定した日の位置と残り試合数（B クラスが確定した日。入った球団は空）
       decided_x                      : そのリーグで、全球団の入る・入れないが決まった日の位置（同率で決まらなければ空）
+      rank_fixed_x / rank_fixed_left / rank_fixed : 最終順位が数の上で確かになった日の位置・残り試合・その順位（R57）
+      live_g / live_wpct / live_rd_g : 自分の入る・入れないが決まった日まで（その日を含む）の試合数・勝率・1試合あたりの点の差（R57）。
+                                       決まらなければ全試合
+      dead_g / dead_wpct / dead_rd_g : 決まった日より後の試合（A・B には効かない試合）。なければ dead_g = 0、ほかは空
+      h2_live_g / h2_live_wpct       : 後半（自分の試合の後ろ半分、境は 試合数 ÷ 2 の切り捨て）のうち、効く試合の数と勝率（R63。
+                                       後半の下がりが、決まった後の試合で起きたのかを分ける）
+      h1_rd_g / h1_wl_vs_upper / h1_wl_vs_lower : 前半の1試合あたりの点の差と、同じリーグの上位半分・下位半分の相手との勝 − 敗（R64）
+      h2_live_rd_g / h2_live_wl_vs_upper / h2_live_wl_vs_lower : 後半の効く試合だけの同じもの（R64）。
+                                       上位・下位は最終の勝率で決める（同率は上位側、前提）。交流戦の相手は数えない
     """
     league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
     rows = []
     for (season,), sg in tg.filter(pl.col("is_home")).sort("date").group_by(["season"], maintain_order=True):
         dates = sorted(set(sg["date"].to_list()))
         day = {d: i for i, d in enumerate(dates)}
-        days, winners = [[] for _ in dates], []
+        days, winners, played_on = [[] for _ in dates], [], []
         for g, (d, home, away, hs, as_) in enumerate(sg.select("date", "team", "opp", "rf", "ra").iter_rows()):
             days[day[d]].append((g, home, away))
             winners.append(home if hs > as_ else away if as_ > hs else None)
+            played_on.append((day[d], home, away, hs, as_))
         members: dict[str, list] = {}
         for t in sorted({t for games in days for _, h, a in games for t in (h, a)}):
             members.setdefault(league_of[(season, t)], []).append(t)
@@ -764,16 +880,160 @@ def clinch_dates(tg: pl.DataFrame) -> pl.DataFrame:
 
             def x(i):
                 return (date.fromisoformat(dates[i]).toordinal() - o0) / (o1 - o0) if o1 > o0 else None
+            fw, fl = Counter(), Counter()
+            for _, h, a, hs, as_ in played_on:
+                for u, my, op in ((h, hs, as_), (a, as_, hs)):
+                    fw[u] += my > op
+                    fl[u] += my < op
+            fwp = {u: fw[u] / (fw[u] + fl[u]) if fw[u] + fl[u] else 0.0 for u in ms}
+            upper = {u for u in ms if 1 + sum(fwp[v] > fwp[u] for v in ms) <= len(ms) // 2}   # 最終の上位半分（同率は上位側）
             for t in ms:
-                cin, cout = c["in"].get(t), c["out"].get(t)
+                cin, cout, fx = c["in"].get(t), c["out"].get(t), c["fixed"].get(t)
+                cut = (cin or cout or (len(dates), None))[0]   # この日まで（含む）が A・B に効く試合
+                part = {"live": [0, 0, 0, 0], "dead": [0, 0, 0, 0]}  # 勝・負・試合・点の差
+                mine = [(di, *((hs, as_, a) if t == h else (as_, hs, h))) for di, h, a, hs, as_ in played_on if t in (h, a)]
+                h1_ = [(my, op, o) for di, my, op, o in mine[:len(mine) // 2]]
+                h2 = [(my, op, o) for di, my, op, o in mine[len(mine) // 2:] if di <= cut]
+                h2w, h2l = sum(my > op for my, op, _ in h2), sum(my < op for my, op, _ in h2)
+
+                def split(games, prefix):
+                    def net(cond):
+                        return sum((my > op) - (my < op) for my, op, o in games if cond(o))
+                    return {f"{prefix}_rd_g": sum(my - op for my, op, _ in games) / len(games) if games else None,
+                            f"{prefix}_wl_vs_upper": net(lambda o: o in ms and o in upper),
+                            f"{prefix}_wl_vs_lower": net(lambda o: o in ms and o not in upper)}
+                for di, h, a, hs, as_ in played_on:
+                    if t not in (h, a):
+                        continue
+                    my, op = (hs, as_) if t == h else (as_, hs)
+                    q = part["live" if di <= cut else "dead"]
+                    q[0] += my > op
+                    q[1] += my < op
+                    q[2] += 1
+                    q[3] += my - op
+                rec = {}
+                for name, (pw, pl_, pg, prd) in part.items():
+                    rec[f"{name}_g"] = pg
+                    rec[f"{name}_wpct"] = pw / (pw + pl_) if pw + pl_ else None
+                    rec[f"{name}_rd_g"] = prd / pg if pg else None
                 rows.append({"season": season, "team": t,
                              "clinch_in_x": x(cin[0]) if cin else None, "clinch_in_left": cin[1] if cin else None,
                              "clinch_out_x": x(cout[0]) if cout else None, "clinch_out_left": cout[1] if cout else None,
-                             "decided_x": x(c["decided"][lg]) if lg in c["decided"] else None})
+                             "decided_x": x(c["decided"][lg]) if lg in c["decided"] else None,
+                             "rank_fixed_x": x(fx[0]) if fx else None, "rank_fixed_left": fx[1] if fx else None,
+                             "rank_fixed": fx[2] if fx else None, **rec,
+                             "h2_live_g": len(h2), "h2_live_wpct": h2w / (h2w + h2l) if h2w + h2l else None,
+                             **split(h1_, "h1"), **split(h2, "h2_live")})
     schema = {"season": pl.Int32, "team": pl.Utf8, "clinch_in_x": pl.Float64, "clinch_in_left": pl.Int64,
-              "clinch_out_x": pl.Float64, "clinch_out_left": pl.Int64, "decided_x": pl.Float64}
+              "clinch_out_x": pl.Float64, "clinch_out_left": pl.Int64, "decided_x": pl.Float64,
+              "rank_fixed_x": pl.Float64, "rank_fixed_left": pl.Int64, "rank_fixed": pl.Int64,
+              "live_g": pl.Int64, "live_wpct": pl.Float64, "live_rd_g": pl.Float64,
+              "dead_g": pl.Int64, "dead_wpct": pl.Float64, "dead_rd_g": pl.Float64,
+              "h2_live_g": pl.Int64, "h2_live_wpct": pl.Float64,
+              **{f"{p_}_{k}": (pl.Float64 if k == "rd_g" else pl.Int64) for p_ in ("h1", "h2_live")
+                 for k in ("rd_g", "wl_vs_upper", "wl_vs_lower")}}
     return pl.DataFrame(rows, schema=schema)
 
+
+
+def standing_lock(tg: pl.DataFrame) -> pl.DataFrame:
+    """R60: 何試合目の時点の順位表で、最後の A・B がおおよそ分かるか（その日の順位表 = 各日の終わりの勝率の並び）。
+
+      lock_g / lock_x  : 自分の上位半分か否か（勝率で自分より上の球団の数 + 1 ≤ 球団数 ÷ 2）が、最後と同じになり、
+                         その後一度も変わらなくなった日の、自分の消化試合数と日付の位置（0 = 開幕、1 = 最終日）。
+                         一度も変わらなければ初日（同率は上位側に数える）
+      lg_set_lock_x    : そのリーグで、上位半分の顔ぶれが最後と同じになり、その後変わらなくなった日の位置
+      q_wl_1〜4        : 自分の試合を消化順に4つに分けた（境は 試合数 × q ÷ 4 の切り捨て）それぞれの勝 − 敗
+      lone_down_n      : 4つの区間のうち、そのリーグで自分だけが勝 − 敗 < 0 だった区間の数（ほかの球団の区間は同じ番号どうしで比べる）
+      pre_lock_wpct / post_lock_g / post_lock_wpct : 落ち着いた日まで（その日を含む）の勝率と、その後の試合数・勝率（R61。
+                         最後の側に落ち着いた後も同じ向きで戦ったか、五分に戻したか）
+      q4_g / q4_rd_g / q4_one_run_net / q4_wl_vs_upper / q4_wl_vs_lower : 4つ目の区間（最後の 1/4）の試合数、1試合あたりの点の差、
+                         1点差の勝 − 敗、同じリーグの上位半分（最終順位）・下位半分の相手との勝 − 敗（R62。交流戦の相手は数えない）
+    R26 の確定日（数の上で決まった日）と違い、実際の順位表がいつから最後と同じ側に落ち着いたかを見る。
+    """
+    league_of = {(s_, t): lg for s_, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
+    rows = []
+    for (season,), sg in tg.filter(pl.col("is_home")).sort("date").group_by(["season"], maintain_order=True):
+        dates = sorted(set(sg["date"].to_list()))
+        day = {d: i for i, d in enumerate(dates)}
+        games_by_day = [[] for _ in dates]
+        for d, home, away, hs, as_ in sg.select("date", "team", "opp", "rf", "ra").iter_rows():
+            games_by_day[day[d]].append((home, away, hs, as_))
+        teams = sorted({t for g in games_by_day for h, a, _, _ in g for t in (h, a)})
+        members: dict[str, list] = {}
+        for t in teams:
+            members.setdefault(league_of[(season, t)], []).append(t)
+        w, l_, n = Counter(), Counter(), Counter()
+        seq = {t: [] for t in teams}                       # 消化順の 1（勝）・−1（負）・0（分）
+        det = {t: [] for t in teams}                       # 消化順の（自分の点, 相手の点, 相手）
+        side_by_day, played_by_day, set_by_day = [], [], []
+        for games in games_by_day:
+            for h, a, hs, as_ in games:
+                for t, my, op in ((h, hs, as_), (a, as_, hs)):
+                    n[t] += 1
+                    w[t] += my > op
+                    l_[t] += my < op
+                    seq[t].append(1 if my > op else -1 if my < op else 0)
+                    det[t].append((my, op, a if t == h else h))
+            wp = {t: w[t] / (w[t] + l_[t]) if w[t] + l_[t] else None for t in teams}
+            side, sets = {}, {}
+            for lg, ms in members.items():
+                k = len(ms) // 2
+                up = {t for t in ms if wp[t] is not None and 1 + sum(wp[u] is not None and wp[u] > wp[t] for u in ms) <= k}
+                sets[lg] = frozenset(up)
+                for t in ms:
+                    side[t] = t in up
+            side_by_day.append(side)
+            played_by_day.append(dict(n))
+            set_by_day.append(sets)
+        last = len(dates) - 1
+        for lg, ms in members.items():
+            lg_days = [i for i, g in enumerate(games_by_day) if any(h in ms or a in ms for h, a, _, _ in g)]
+            o0, o1 = (date.fromisoformat(dates[i]).toordinal() for i in (lg_days[0], lg_days[-1]))
+
+            def x(i):
+                return (date.fromisoformat(dates[i]).toordinal() - o0) / (o1 - o0) if o1 > o0 else None
+
+            def lock_day(differs):
+                bad = [i for i in lg_days if differs(i)]
+                return lg_days[0] if not bad else next((i for i in lg_days if i > bad[-1]), last)
+            final_set = set_by_day[last][lg]
+            set_lock = lock_day(lambda i: set_by_day[i][lg] != final_set)
+            qs = {}
+            for t in ms:
+                m = len(seq[t])
+                bounds = [m * q // 4 for q in range(5)]
+                qs[t] = [sum(seq[t][bounds[q]:bounds[q + 1]]) for q in range(4)]
+            for t in ms:
+                final = side_by_day[last][t]
+                lk = lock_day(lambda i: side_by_day[i][t] != final)
+                lone = sum(qs[t][q] < 0 and all(qs[u][q] >= 0 for u in ms if u != t) for q in range(4))
+                g0 = played_by_day[lk].get(t, 0)
+                pre, post = seq[t][:g0], seq[t][g0:]
+
+                def wp(xs):
+                    w_, l2 = xs.count(1), xs.count(-1)
+                    return w_ / (w_ + l2) if w_ + l2 else None
+                m = len(seq[t])
+                last_q = det[t][m * 3 // 4:]
+                up_set = set_by_day[last][lg]
+
+                def net(cond):
+                    return sum((my > op) - (my < op) for my, op, o in last_q if cond(my, op, o))
+                q4 = {"q4_g": len(last_q),
+                      "q4_rd_g": sum(my - op for my, op, _ in last_q) / len(last_q) if last_q else None,
+                      "q4_one_run_net": net(lambda my, op, o: abs(my - op) == 1),
+                      "q4_wl_vs_upper": net(lambda my, op, o: o in ms and o in up_set),
+                      "q4_wl_vs_lower": net(lambda my, op, o: o in ms and o not in up_set)}
+                rows.append({"season": season, "team": t, "lock_g": g0, "lock_x": x(lk), **q4,
+                             "lg_set_lock_x": x(set_lock), **{f"q_wl_{q + 1}": qs[t][q] for q in range(4)},
+                             "lone_down_n": lone, "pre_lock_wpct": wp(pre), "post_lock_g": len(post), "post_lock_wpct": wp(post)})
+    schema = {"season": pl.Int32, "team": pl.Utf8, "lock_g": pl.Int64, "lock_x": pl.Float64, "lg_set_lock_x": pl.Float64,
+              **{f"q_wl_{q}": pl.Int64 for q in range(1, 5)}, "lone_down_n": pl.Int64,
+              "pre_lock_wpct": pl.Float64, "post_lock_g": pl.Int64, "post_lock_wpct": pl.Float64,
+              "q4_g": pl.Int64, "q4_rd_g": pl.Float64, "q4_one_run_net": pl.Int64, "q4_wl_vs_upper": pl.Int64,
+              "q4_wl_vs_lower": pl.Int64}
+    return pl.DataFrame(rows, schema=schema)
 
 def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:
     """1シーズン分の試合（日付順。各日 [(試合の番号, ホーム, ビジター), ...]）と各試合の勝者（引き分けは None）から、
@@ -1170,6 +1430,311 @@ def add_persistence(st: pl.DataFrame) -> pl.DataFrame:
     return streak(st, pl.col("rank_rf") >= 5, "rf_low_streak")
 
 
+def add_balance(st: pl.DataFrame) -> pl.DataFrame:
+    """R32: 得点・失点の優位を、順位ではなく1試合あたりの点で表す（同じ年・同じリーグの他球団の平均との差）。
+
+      rf_adv       : 得点／試合 − 他球団の得点／試合の平均（プラスほど取った。rf_def_total と同じ量を、得点・失点から直接）
+      ra_adv       : 他球団の失点／試合の平均 − 失点／試合（プラスほど抑えた）
+      run_balance  : rf_adv + ra_adv（得点の不足を失点の優位で補えたか。プラスなら補えた）
+      short_share  : 不足 ÷（不足 + 優位）。不足 = max(0, −rf_adv)、優位 = ra_adv。0〜1 に収まる（割る数が 0 の近くでも発散しない、R31）
+                     不足があって優位が不足を打ち消せない（不足 + 優位 ≤ 0）なら 1。不足がなく優位が正なら 0。不足も優位もなければ空
+    順位（rank_rf・rank_ra）は3位のところで中身がない（優位がほぼ 0 か負）ことがある（R31）ので、量で見る列を置く。
+      rf_adv_z / ra_adv_z : 優位 ÷ 表の全単位の優位の標準偏差（R33）。|z| ≥ 1 なら 0 から1標準偏差以上離れている
+      rf_zone / ra_zone   : z ≥ 1 なら 1、z ≤ −1 なら −1、その間（0 の近く）なら 0。範囲（where）は「かつ」しか書けないので、
+                            「0 の近くを除く」を zone != 0 で書けるようにする
+      rf_adv_se / ra_adv_se / rf_zone_se / ra_zone_se : その年の平均の不確かさ（試合ごとの点の標準偏差 rf_sd_g・ra_sd_g から）と、
+                            優位が誤差1つ分以上離れているかの3区分（R34）。試合ごとの列がないシーズン表では作らない
+    """
+    over = ["season", "league"]
+    others = lambda e: (e.sum().over(over) - e) / (pl.len().over(over) - 1)  # noqa: E731
+    rf_g, ra_g = pl.col("RF") / pl.col("G"), pl.col("RA") / pl.col("G")
+    st = st.with_columns(rf_adv=rf_g - others(rf_g), ra_adv=others(ra_g) - ra_g)
+    d, a = pl.max_horizontal(-pl.col("rf_adv"), pl.lit(0.0)), pl.col("ra_adv")
+    share = (pl.when(d + a > 0).then((d / (d + a)).clip(0.0, 1.0))
+             .when(d > 0).then(pl.lit(1.0))
+             .otherwise(None))
+    st = st.with_columns(run_balance=pl.col("rf_adv") + a, short_share=share)
+    # R33: 0 からの離れ方を、全単位の優位の散らばり（標準偏差）を物差しにして表す。|z| < 1 は「0 の近く」で、
+    # 符号で範囲を決めると出入りしやすい（R32）。物差しは表に入っている全単位で決まるので、年を足すと少し動く
+    st = st.with_columns(rf_adv_z=pl.col("rf_adv") / pl.col("rf_adv").std(), ra_adv_z=pl.col("ra_adv") / pl.col("ra_adv").std())
+    zone = lambda z: pl.when(z >= 1).then(1).when(z <= -1).then(-1).when(z.is_not_null()).then(0).cast(pl.Int32)  # noqa: E731
+    st = st.with_columns(rf_zone=zone(pl.col("rf_adv_z")), ra_zone=zone(pl.col("ra_adv_z")))
+    if not {"rf_sd_g", "ra_sd_g"} <= set(st.columns):
+        return st
+    # R34: その年の平均の不確かさを物差しにする。優位 = 自分の平均 − 他球団の平均の平均 なので、
+    # 誤差² = 自分の平均の誤差²（sd² ÷ 試合数）+ 他球団の平均の誤差²の和 ÷ 他球団の数²（各チームの試合は独立とみなす）
+    n = pl.len().over(over) - 1
+    var = lambda sd: sd.pow(2) / pl.col("G")  # noqa: E731
+    se = lambda sd: (var(sd) + (var(sd).sum().over(over) - var(sd)) / n.pow(2)).sqrt()  # noqa: E731
+    st = st.with_columns(rf_adv_se=se(pl.col("rf_sd_g")), ra_adv_se=se(pl.col("ra_sd_g")))
+    return st.with_columns(rf_zone_se=zone(pl.col("rf_adv") / pl.col("rf_adv_se")),
+                           ra_zone_se=zone(pl.col("ra_adv") / pl.col("ra_adv_se")))
+
+
+def add_composites(st: pl.DataFrame) -> pl.DataFrame:
+    """R39: これまでの研究で使った読みを、使い回せる列にする。どれも既存の列だけから計算する（新しい観測はない）。
+
+      rf_adv_t / ra_adv_t : 優位 ÷ 優位の誤差（rf_adv / rf_adv_se、ra_adv / ra_adv_se）。誤差の何倍 0 から離れているかの連続値。
+                            *_zone_se（1・0・−1）は |t| ≥ 1 で区切った同じ量
+      run_balance_t       : 収支 ÷ 収支の誤差 = run_balance / √(rf_adv_se² + ra_adv_se²)。得点と失点の誤差は独立とみなす
+      bat_routes          : 打撃の経路の数（0〜2）= [bat_d_bb_pa ≥ 0] + [bat_d_iso ≥ 0]。四死球／打席・長打率−打率（ISO）が
+                            同じ年・同じリーグの他球団の平均以上なら 1 つ。どちらかが空なら空（R33・R34: 経路が1つあれば大きな不足は避けられた）
+      vs_top_minus_lower  : 上の相手との勝率 − 下の相手との勝率（vs_top_wpct − vs_lower_wpct）。上・下は最終順位で決める
+                            （docs/propositions.md の Groups Defined By The Final Outcome）。プラスなら上の相手のほうに勝っている
+      adv_shape_se        : 得点・失点の誤差での区分を1つにした文字列 "得点/失点"。それぞれ "-1"・"0"・"+1" で9通り
+                            （例 "-1/+1" = 得点ははっきり足りず、失点ははっきり上回る。"-1/0" = 得点ははっきり足りず、失点は平均と区別できない）。
+                            範囲（where）を1つの条件で書くためのもの
+    元になる列がない表では、その列を作らない（試合ごとの列がない表には *_t と adv_shape_se がない）。
+    """
+    cols = set(st.columns)
+    out = []
+    if {"rf_adv_se", "ra_adv_se"} <= cols:
+        out += [(pl.col("rf_adv") / pl.col("rf_adv_se")).alias("rf_adv_t"),
+                (pl.col("ra_adv") / pl.col("ra_adv_se")).alias("ra_adv_t"),
+                (pl.col("run_balance") / (pl.col("rf_adv_se").pow(2) + pl.col("ra_adv_se").pow(2)).sqrt()).alias("run_balance_t")]
+    if {"rf_zone_se", "ra_zone_se"} <= cols:
+        label = lambda c: pl.col(c).replace_strict({-1: "-1", 0: "0", 1: "+1"}, default=None, return_dtype=pl.Utf8)  # noqa: E731
+        out.append(pl.concat_str([label("rf_zone_se"), pl.lit("/"), label("ra_zone_se")]).alias("adv_shape_se"))  # どちらかが空なら空
+    if {"bat_d_bb_pa", "bat_d_iso"} <= cols:
+        out.append((pl.col("bat_d_bb_pa") >= 0).cast(pl.Int32).add((pl.col("bat_d_iso") >= 0).cast(pl.Int32)).alias("bat_routes"))
+    if {"vs_top_wpct", "vs_lower_wpct"} <= cols:
+        out.append((pl.col("vs_top_wpct") - pl.col("vs_lower_wpct")).alias("vs_top_minus_lower"))
+    return st.with_columns(out) if out else st
+
+
+def rank_at(wpcts: list, level: float = 0.5) -> float | None:
+    """勝率の並び（高い順）の中で、勝率 level が何位に当たるかを、隣り合う2チームの間を直線でつないで返す（R51）。
+
+    例: 勝率 .52・.51・.49 … なら .500 は 2.5位。全チームが level より上（下）なら、いちばん下（上）の順位の外側として空。
+    """
+    w = sorted((x for x in wpcts if x is not None), reverse=True)
+    for k in range(len(w) - 1):
+        if w[k] >= level >= w[k + 1]:
+            if w[k] == w[k + 1]:
+                return k + 1.5
+            return (k + 1) + (w[k] - level) / (w[k] - w[k + 1])
+    return None
+
+
+def natural_breaks(wpcts: list, n_breaks: int = 1) -> list[int]:
+    """勝率を高い順に並べ、隣り合う2チームの差の大きい順に n_breaks 個の切れ目を返す（R52）。
+
+    返り値は「k 位と k+1 位の間」の k（昇順）。差が同じなら上位側を先にとる。データの散らばりだけで決まり、人が決めた区切りを使わない。
+    """
+    w = sorted((x for x in wpcts if x is not None), reverse=True)
+    gaps = sorted(((round(w[k] - w[k + 1], 9), -k) for k in range(len(w) - 1)), reverse=True)  # 丸めて同じ差を同じに扱う
+    return sorted(-g[1] + 1 for g in gaps[:n_breaks])
+
+
+def tier_of(rank: int | None, breaks: list[int]) -> int | None:
+    """切れ目 breaks（k 位と k+1 位の間）で分けた塊の番号（上から 1, 2, …）。"""
+    if rank is None:
+        return None
+    return 1 + sum(rank > b for b in breaks)
+
+
+def add_league_shape(st: pl.DataFrame) -> pl.DataFrame:
+    """R46: その年・そのリーグの順位の形（リーグ全体で1つの値を、各単位に付ける）。勝率（wpct）と順位（rank）だけから作る。
+
+      lg_lead_gap   : 1位の勝率 − 2位の勝率（大きいほど1位が抜けている。「一人勝ち」の目安）
+      lg_gap34      : 3位の勝率 − 4位の勝率（小さいほど A と B の境が近い）
+      lg_rest_sd    : 2〜6位（1位を除く）の勝率の標準偏差（小さいほど、1位以外が狭い範囲に押し込まれている）
+      lg_line       : A の線 = （3位の勝率 + 4位の勝率）÷ 2（R50。その年・そのリーグで A と B を分ける高さ）
+      lg_rank_at_500 : 勝率 .500 が何位に当たるか（隣り合う2チームの間を直線でつないだ順位、R51。rank_at）。
+                       3.5 より小さいほど、.500 が上位寄り（五分を超えるチームが少ない）
+      lg_break_after / lg_break_gap : 勝率のいちばん大きな隙間が「k 位と k+1 位の間」の k と、その差（R52。natural_breaks）
+      lg_tier / lg_tier_of_3rd      : 大きい隙間2つで分けた3つの塊のうち、自分のいる塊と3位のいる塊（上から 1・2・3、R52）
+      lg_bar        : 越えるべき高さ = ほかの球団の中で（球団数 ÷ 2）番目の勝率（6球団なら3番目、R56）。ほかの球団だけで決まり、自分の勝率は入らない
+      line_gap_pythag : 点の差で見込む勝率（pythag_fixed）− A の線（R50）。マイナスなら、点の差どおりでは線に届かない。
+                        勝率 − A の線 = line_gap_pythag + resid_fixed（点の差より勝った分）の算術の恒等式で分ける
+    勝率を高い順に並べた k 番目の値を使う（同率でも k 番目）。リーグのチームが足りなければ空。
+    """
+    if not {"season", "league", "rank", "wpct"} <= set(st.columns):
+        return st
+    over = ["season", "league"]
+    nth = lambda k: pl.col("wpct").sort(descending=True).slice(k - 1, 1).first().over(over)  # noqa: E731  # 同率でも k 番目。足りなければ空
+    st = st.with_columns(
+        lg_lead_gap=nth(1) - nth(2),
+        lg_gap34=nth(3) - nth(4),
+        lg_rest_sd=pl.col("wpct").filter(pl.col("wpct") < pl.col("wpct").max()).std().over(over),
+        lg_line=(nth(3) + nth(4)) / 2,
+        lg_rank_at_500=pl.col("wpct").map_batches(lambda w: pl.Series([rank_at(w.to_list(), 0.5)] * len(w)),
+                                                   return_dtype=pl.Float64).over(over),
+    )
+    # R52: データの散らばりから引く線。いちばん大きな隙間（1つ）と、大きい隙間2つで分けた3つの塊
+    keys = st.select("season", "league").unique()
+    rows = []
+    for season, league in keys.iter_rows():
+        lg = st.filter((pl.col("season") == season) & (pl.col("league") == league))
+        w = lg["wpct"].to_list()
+        one, two = natural_breaks(w, 1), natural_breaks(w, 2)
+        ordered = sorted((x for x in w if x is not None), reverse=True)
+        gap = ordered[one[0] - 1] - ordered[one[0]] if one else None
+        for team, wp in lg.select("team", "wpct").iter_rows():
+            pos = 1 + sum(x > wp for x in ordered) if wp is not None else None  # 勝率での位置（同率は上位側）
+            others = sorted((x for t2, x in lg.select("team", "wpct").iter_rows() if t2 != team and x is not None), reverse=True)
+            k = len(w) // 2  # 上位半分の数（6球団なら3）
+            rows.append({"season": season, "team": team, "lg_break_after": one[0] if one else None, "lg_break_gap": gap,
+                         "lg_tier": tier_of(pos, two), "lg_tier_of_3rd": tier_of(3, two),
+                         "lg_bar": others[k - 1] if 0 < k <= len(others) else None})
+    if rows:
+        st = st.join(pl.DataFrame(rows, schema={"season": st.schema["season"], "team": pl.Utf8, "lg_break_after": pl.Int64,
+                                                 "lg_break_gap": pl.Float64, "lg_tier": pl.Int64, "lg_tier_of_3rd": pl.Int64,
+                                                 "lg_bar": pl.Float64}),
+                     on=["season", "team"], how="left")
+    # R50: A の線（3位と4位の勝率の中間）までの距離を、点の差で見込む勝率で測る。
+    #   wpct − lg_line = line_gap_pythag（点の差で見込む位置）+ resid_fixed（点の差より勝った分）  ← 算術の恒等式
+    if "pythag_fixed" in st.columns:
+        st = st.with_columns(line_gap_pythag=pl.col("pythag_fixed") - pl.col("lg_line"))
+        # R73: その年の本来の超えるべき高さを、点の差から出す（固定の .500 と比べない。独走の1位がいる年・拮抗した年で変わる）
+        #   lg_bar_pythag : ほかの球団の「点の差で見込む勝率」を高い順に並べた（球団数 ÷ 2）番目
+        #   pbar_gap      : 自分の点の差で見込む勝率 − lg_bar_pythag（マイナスなら、点の差どおりではその年の高さに届かない）
+        prow = []
+        for season, league in keys.iter_rows():
+            lg = st.filter((pl.col("season") == season) & (pl.col("league") == league)).select("team", "pythag_fixed").rows()
+            k = len(lg) // 2
+            for team, py in lg:
+                others = sorted((x for t2, x in lg if t2 != team and x is not None), reverse=True)
+                bar = others[k - 1] if 0 < k <= len(others) else None
+                prow.append({"season": season, "team": team, "lg_bar_pythag": bar,
+                             "pbar_gap": py - bar if py is not None and bar is not None else None})
+        if prow:
+            st = st.join(pl.DataFrame(prow, schema={"season": st.schema["season"], "team": pl.Utf8, "lg_bar_pythag": pl.Float64,
+                                                    "pbar_gap": pl.Float64}), on=["season", "team"], how="left")
+    return st
+
+
+
+
+def add_bands_and_states(st: pl.DataFrame, excl=()) -> pl.DataFrame:
+    """帯（1年抜き）・その年の高さからの差・2本線の状態を、まとめて足す（measure の最後。テストも同じ関数を呼ぶ）。"""
+    st = add_mix_zone(add_mix_zone(st, exclude=excl), exclude=excl, col="live_wpct", prefix="live_mix")
+    for col, prefix in (("rf_adv", "rf_mix"), ("run_balance", "bal_mix"), ("vs_lower_wpct", "vsl_mix"),
+                        ("sim_p_upper", "sim_mix")):   # R66・R67: 指標の値の帯
+        st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
+    st = add_bar_gaps(st, ("rf_adv", "run_balance", "vs_lower_wpct", "rd"))     # R74・R76: その年の高さからの差
+    st = add_vs_top_bar_gap(st)
+    for col, prefix in (("rf_adv_bgap", "rfg_mix"), ("run_balance_bgap", "balg_mix"), ("vs_lower_wpct_bgap", "vslg_mix")):
+        st = add_mix_zone(st, exclude=excl, col=col, prefix=prefix)
+    return add_state2(add_state2(st, "rf_adv", "rf_state2"), "ra_adv", "ra_state2")   # R67: 得点・失点の側の2本線の状態
+
+
+def add_vs_top_bar_gap(st: pl.DataFrame) -> pl.DataFrame:
+    """R76: 上の相手（1・2位）との勝率 − その年の高さ（lg_bar）。固定の .500 ではなく、その年の A の最後の勝率と比べる。"""
+    if not {"vs_top_wpct", "lg_bar"} <= set(st.columns):
+        return st
+    return st.with_columns(vs_top_bar_gap=pl.col("vs_top_wpct") - pl.col("lg_bar"))
+
+
+def add_bar_gaps(st: pl.DataFrame, cols) -> pl.DataFrame:
+    """R74: 指標ごとの、その年の高さからの差（<列>_bgap）。
+
+    その年・そのリーグのほかの球団の値を高い順に並べた（球団数 ÷ 2）番目を、その年の高さとし、自分の値 − その高さを出す。
+    固定の値（0 や .500）と比べず、独走の1位がいる年と拮抗した年の違いをそのまま持つ（R73 の lg_bar_pythag と同じ考え方）。
+    大きいほどよい指標だけに使う。
+    """
+    cols = [c for c in cols if c in st.columns]
+    if not cols or not {"season", "league", "team"} <= set(st.columns):
+        return st
+    rows = []
+    for (season, league), g in st.group_by(["season", "league"]):
+        recs = g.select("team", *cols).rows(named=True)
+        k = len(recs) // 2
+        for r in recs:
+            out = {"season": season, "team": r["team"]}
+            for c in cols:
+                others = sorted((x[c] for x in recs if x["team"] != r["team"] and x[c] is not None), reverse=True)
+                bar = others[k - 1] if 0 < k <= len(others) else None
+                out[f"{c}_bgap"] = r[c] - bar if r[c] is not None and bar is not None else None
+            rows.append(out)
+    schema = {"season": st.schema["season"], "team": pl.Utf8, **{f"{c}_bgap": pl.Float64 for c in cols}}
+    return st.join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
+
+def add_mix_zone(st: pl.DataFrame, exclude=(), col: str = "wpct", prefix: str = "mix") -> pl.DataFrame:
+    """R53: A と B が混ざる帯。自分の年を除いたほかの年（exclude の年も除く）の全単位から引く（1年抜き）。
+
+      mix_lo   : ほかの年の A（upper_half）の勝率の最低。これより下には、ほかの年に A が1つもない
+      mix_hi   : ほかの年の B の勝率の最高。これより上には、ほかの年に B が1つもない
+      mix_zone : 勝率 < mix_lo なら −1（帯の下）、勝率 > mix_hi なら +1（帯の上）、それ以外は 0（A と B が混ざる帯の中）
+    リーグはまとめて扱う。自分の年のデータで線を決めないので、その年の A・B を当てる読みに使える。
+    ほかの年に A（または B）がなければ空。mix_lo > mix_hi（帯が開かない）でも値はそのまま出す。
+    col / prefix: 勝率の列と出力の列名の頭（R58: col="live_wpct", prefix="live_mix" で効く試合だけの帯）。
+    """
+    if not {"season", col, "upper_half"} <= set(st.columns):
+        return st
+    lo_, hi_, zone_ = f"{prefix}_lo", f"{prefix}_hi", f"{prefix}_zone"
+    pool = st.filter(~pl.col("season").is_in(list(exclude))).select("season", pl.col(col).alias("wpct"), "upper_half") \
+        .filter(pl.col("wpct").is_not_null())
+    seasons = sorted(set(st.get_column("season").to_list()))
+    rows = []
+    for s in seasons:
+        other = pool.filter(pl.col("season") != s)
+        a, b = other.filter(pl.col("upper_half"))["wpct"], other.filter(~pl.col("upper_half"))["wpct"]
+        rows.append({"season": s, lo_: a.min() if len(a) else None, hi_: b.max() if len(b) else None})
+    st = st.join(pl.DataFrame(rows, schema={"season": st.schema["season"], lo_: pl.Float64, hi_: pl.Float64}),
+                 on="season", how="left")
+    return st.with_columns(
+        pl.when(pl.col(col).is_null() | pl.col(lo_).is_null() | pl.col(hi_).is_null()).then(None)
+        .when(pl.col(col) < pl.col(lo_)).then(-1)
+        .when(pl.col(col) > pl.col(hi_)).then(1)
+        .otherwise(0).cast(pl.Int64).alias(zone_))
+
+
+def add_state2(st: pl.DataFrame, col: str, name: str) -> pl.DataFrame:
+    """R66・R67: 2本線の状態。同じ年・同じリーグの球団の値を大きい順に並べ、2番目と3番目の真ん中・4番目と5番目の真ん中で
+    "A"（上）・"AB"（間）・"B"（下）に分ける（6球団の前提。値のない球団があるリーグ年は空）。順位ではなく値の線。"""
+    if not {"season", "league", col} <= set(st.columns):
+        return st
+    rows = []
+    for (season, league), g in st.group_by(["season", "league"]):
+        vals = sorted((v for v in g[col].to_list() if v is not None), reverse=True)
+        ok = len(vals) == g.height and len(vals) >= 5
+        hi, lo = ((vals[1] + vals[2]) / 2, (vals[3] + vals[4]) / 2) if ok else (None, None)
+        for team, v in g.select("team", col).iter_rows():
+            rows.append({"season": season, "team": team,
+                         name: None if not ok or v is None else "A" if v > hi else "B" if v < lo else "AB"})
+    return st.join(pl.DataFrame(rows, schema={"season": st.schema["season"], "team": pl.Utf8, name: pl.Utf8}),
+                   on=["season", "team"], how="left")
+
+# R45: B に着く道筋の参考値。規則はこれまでの研究で決めたものを固定して使う（値を見て変えない）。判定には使わない
+B_PATHS = {
+    "offense": "得点不足: 得点の優位が誤差を超えてマイナス（rf_zone_se = −1、R35・R40）",
+    "defense": "失点の劣り: 失点の優位が誤差を超えてマイナス（ra_zone_se = −1、R40・R44）",
+    "convert": "点の差を勝ちに変えられない: 点の差より2勝を超えて少ない（wins_vs_pythag < −2）か、組み合わせ方 < −1（R38・R44）",
+    "collapse": "後半の崩れ: 前半より3つ以上下で終わり、後半に得点が減り失点が増え、後半は点の差より2勝を超えて少ない（R43・R44）",
+}
+
+
+def add_b_paths(st: pl.DataFrame) -> pl.DataFrame:
+    """R45: B に着く道筋の参考値（B_PATHS の規則）。A の単位にも付く（道筋に当たりながら A に入った、と読む）。
+
+      path_offense / path_defense / path_convert / path_collapse : それぞれの規則に当たるか。元の列が空なら空
+      b_paths : 当たった道筋を "+" でつないだ文字列（例 "offense+convert"）。どれにも当たらなければ "none"、
+                どの規則も判定できなければ空。判定（命題の終了コード）には使わない参考値
+    元の列がない表では作らない。
+    """
+    need = {"rf_zone_se", "ra_zone_se", "wins_vs_pythag", "alloc_z_strat", "course_fade", "course_rf_d", "course_ra_d",
+            "half2_vs_pythag"}
+    if not need <= set(st.columns):
+        return st
+    col = pl.col
+    flags = {
+        "path_offense": col("rf_zone_se") == -1,
+        "path_defense": col("ra_zone_se") == -1,
+        # 片方が空でも、もう片方で当たれば当たり。両方空なら空
+        "path_convert": (col("wins_vs_pythag") < -2).fill_null(False) | (col("alloc_z_strat") < -1).fill_null(False),
+        "path_collapse": (col("course_fade") >= 3) & (col("course_rf_d") < 0) & (col("course_ra_d") > 0) & (col("half2_vs_pythag") < -2),
+    }
+    flags["path_convert"] = (pl.when(col("wins_vs_pythag").is_null() & col("alloc_z_strat").is_null())
+                             .then(None).otherwise(flags["path_convert"]))
+    st = st.with_columns(**flags)
+    names = [k.removeprefix("path_") for k in flags]
+    hit = [pl.when(col(f"path_{n}")).then(pl.lit(n)) for n in names]
+    joined = pl.concat_list(hit).list.drop_nulls().list.join("+")
+    known = pl.any_horizontal([col(f"path_{n}").is_not_null() for n in names])
+    return st.with_columns(b_paths=pl.when(~known).then(None).when(joined == "").then(pl.lit("none")).otherwise(joined))
+
+
 def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     return [
         col.median().alias(f"{name}_median"),
@@ -1195,6 +1760,7 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFra
         *_spread(margin.filter(win), "win_margin"), *_spread(margin.filter(loss), "loss_margin"),
         *_spread(pl.col("rf"), "rf"), *_spread(pl.col("ra"), "ra"),
         m.filter(pl.col("is_home")).mean().alias("rd_home_g"), m.filter(~pl.col("is_home")).mean().alias("rd_away_g"),
+        pl.col("rf").std().alias("rf_sd_g"), pl.col("ra").std().alias("ra_sd_g"),  # 試合ごとの点の散らばり（R34。add_balance の誤差）
     )
     W, L, RF, RA, G = (pl.col(c) for c in ("W", "L", "RF", "RA", "G"))
     log_ratio = (RF / RA).log()
@@ -1226,6 +1792,7 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFra
                                    end=str(traj.get("end", "season"))), on=["season", "team"], how="left")
     st = st.join(series_features(tg, sims=sims), on=["season", "team"], how="left")
     st = st.join(clinch_dates(tg), on=["season", "team"], how="left")
+    st = st.join(standing_lock(tg), on=["season", "team"], how="left")
     return st.sort("season", "league", "rank", "team")
 
 
@@ -1266,19 +1833,33 @@ def load_config(path: Path) -> dict:
         return tomllib.load(f)
 
 
+def read_games(paths) -> pl.DataFrame:
+    """日程の観測を1つ以上読んでつなぐ。取得元ごとの余分な列は落とし、同じ試合（key）の重なりは止める。"""
+    cols = ["key", "date", "home", "away", "hs", "as"]
+    parts = [pl.read_ndjson(p, infer_schema_length=None).select(cols) for p in paths]
+    games = pl.concat(parts, how="vertical_relaxed")
+    dup = games.filter(pl.col("key").is_duplicated()).get_column("key")
+    if dup.len():
+        raise SystemExit(f"同じ試合が2つの観測にある: {sorted(set(dup))[:5]}")
+    return games
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="観測データセットからチーム×シーズンの指標を作る")
-    ap.add_argument("--games", type=Path, required=True)
+    ap.add_argument("--games", type=Path, nargs="+", required=True,
+                    help="日程の観測（JSONL）。複数なら並べてつなぐ（例: 過去の年 + 今季の暫定）。同じ key が2回出たら止める")
     ap.add_argument("--config", type=Path, required=True, help="分析設定（[teams] を含む TOML）")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--innings", type=Path, help="イニング単位の集計（CSV / CSV.gz、R4）。あれば inn_* の列を加える")
     ap.add_argument("--batting", type=Path, help="チーム打撃成績の観測（JSONL、R6）。あれば bat_* の率を加える")
+    ap.add_argument("--fielding", type=Path, help="チーム守備成績の観測（JSONL）。あれば fld_* の率を加える")
+    ap.add_argument("--linescore", type=Path, help="試合ごとの得点表の観測（JSONL）。あれば ls_* の失策の差を加える")
     ap.add_argument("--sensitivity-out", type=Path,
                     help="線の始まりの試合数（[trajectory] sensitivity）や終わり（ends、R26）を変えた線の読み（R25）の書き出し先")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
-    tg = to_team_games(pl.read_ndjson(args.games), cfg["teams"])
+    tg = to_team_games(read_games(args.games), cfg["teams"])
     st = season_table(tg, trajectory=cfg.get("trajectory"))
     if args.innings:
         raw = pl.read_csv(args.innings)
@@ -1286,8 +1867,14 @@ def main(argv=None) -> int:
             raw = raw.filter(pl.col("role") == "off").rename({"year": "season"})
         st = inning_decomposition(st, raw.with_columns(pl.col("season").cast(pl.Int32)))
     if args.batting:
-        st = batting_join(st, pl.read_ndjson(args.batting))
-    st = add_persistence(st)
+        st = batting_join(st, pl.read_ndjson(args.batting, infer_schema_length=None))
+    if args.fielding:
+        st = fielding_join(st, pl.read_ndjson(args.fielding, infer_schema_length=None))
+    if args.linescore:
+        st = linescore_join(st, tg, pl.read_ndjson(args.linescore, infer_schema_length=None))
+    st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
+    excl = [int(e["season"]) for e in cfg.get("exclude", [])]
+    st = add_bands_and_states(st, excl)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
     if args.sensitivity_out:

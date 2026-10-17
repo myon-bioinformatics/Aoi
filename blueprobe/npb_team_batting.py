@@ -52,21 +52,55 @@ def _cells(tr) -> list[str]:
     return [normalize(c.text(deep=True)) for c in tr.iter() if c.tag in ("td", "th")]
 
 
-def parse(html: str, url: str = "") -> dict:
+def _header(tr) -> list[tuple[str, int]]:
+    """見出しの各セルの（空白を除いた名前, 横に何列分か）。"""
+    out = []
+    for c in tr.iter():
+        if c.tag in ("td", "th"):
+            span = (c.attributes or {}).get("colspan") or "1"
+            out.append((re.sub(r"\s", "", normalize(c.text(deep=True))), int(span) if str(span).isdigit() else 1))
+    return out
+
+
+def parse_team_table(html: str, url: str, path: re.Pattern, columns: dict, rates: set) -> dict:
+    """チーム成績の表を読む（打撃・守備で共通）。
+
+    先頭のセルが「チーム」の行を見出しとする。横に2列以上またがる見出し（守備の「併殺」）があれば、次の行を下の見出し
+    （「参加」「球団」）として読み、親の名前に続けた名前（「併殺参加」）で比べる。またがる見出しがなければ、打撃と同じ。
+    """
     out = new_report()
-    m = PATH.fullmatch(urlsplit(url).path) if url else None
+    m = path.fullmatch(urlsplit(url).path) if url else None
     season, league = (int(m["y"]), LEAGUES[m["lg"]]) if m else (None, None)
-    header = None
+    header, pending = None, None
     for tr in LexborHTMLParser(html).css("tr"):
         cells = _cells(tr)
-        names = [re.sub(r"\s", "", c) for c in cells]  # 見出しは語の中に空白が入る年がある（2012〜2024年の「打 率」）
-        if names and names[0] == "チーム":
-            unknown = [c for c in names[1:] if c not in COLUMNS]
+        if pending is not None:                        # またがる見出しの下の行
+            subs = [re.sub(r"\s", "", c) for c in cells]
+            if len(subs) == sum(span for _, span in pending if span > 1):
+                names, it = [], iter(subs)
+                for name, span in pending:
+                    names += [name] if span == 1 else [name + next(it) for _ in range(span)]
+                pending = None
+                unknown = [c for c in names[1:] if c not in columns]
+                if unknown:
+                    out["unknown"].append({"key": f"header:{season}:{league}", "raw": " | ".join(unknown)})
+                    continue
+                header = [columns[c] for c in names[1:]]
+                continue
+            out["unknown"].append({"key": f"header:{season}:{league}", "raw": "またがる見出しの下の行が読めない: " + " | ".join(cells)})
+            pending = None
+        head = _header(tr)
+        if head and head[0][0] == "チーム":
+            if any(span > 1 for _, span in head):
+                pending, header = head, None
+                continue
+            names = [n for n, _ in head]  # 見出しは語の中に空白が入る年がある（2012〜2024年の「打 率」）
+            unknown = [c for c in names[1:] if c not in columns]
             if unknown:
                 out["unknown"].append({"key": f"header:{season}:{league}", "raw": " | ".join(unknown)})
                 header = None
                 continue
-            header = [COLUMNS[c] for c in names[1:]]
+            header = [columns[c] for c in names[1:]]
             continue
         if header is None or len(cells) != len(header) + 1:
             continue
@@ -79,16 +113,20 @@ def parse(html: str, url: str = "") -> dict:
         rec = {"key": f"{season}-{team}", "season": season, "team": team, "league": LEAGUE[team]}
         bad = False
         for col, v in zip(header, values):
-            pat = RATE if col in RATES else INT
+            pat = RATE if col in rates else INT
             if not pat.fullmatch(v):
                 bad = True
                 break
-            rec[col] = float(v) if col in RATES else int(v)
+            rec[col] = float(v) if col in rates else int(v)
         if bad:
             out["unknown"].append({"key": f"{season}:{team}", "raw": " | ".join(cells)})
             continue
         out["records"].append({**rec, "raw": " | ".join(cells), "source_url": url})
     return out
+
+
+def parse(html: str, url: str = "") -> dict:
+    return parse_team_table(html, url, PATH, COLUMNS, RATES)
 
 
 def check(records: list[dict]) -> list[dict]:

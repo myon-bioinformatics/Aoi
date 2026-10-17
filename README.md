@@ -9,6 +9,24 @@
 パイプラインを TOML に一度だけ書き、**ローカルでも GitHub Actions でも同じコマンド**で動かす。
 データを外に出せない案件では、同じ定義をローカルで実行すればよい。
 
+## このリポジトリについて
+
+[Aoi](https://github.com/myon-bioinformatics/Aoi) の `nagoyaction/` から独立したリポジトリ。直接の親は Aoi で、`nagoyaction/` との差分は Aoi 側で確かめる。
+最初の 49 コミットは Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd` の `nagoyaction/` を `git filter-branch --subdirectory-filter nagoyaction` で履歴ごと切り出したもの（先頭 `b35707b877a92fd088db06f15b87d0e72158fc27`、tree `1537879773093a5350a17ca657fbdf89f6a57e72`）。
+
+- 手順やテストは Aoi の直下（`cycles/`・`queryu/`・`sakanalytics/`・`blueprobe/`・`vendor/`・`scripts/`・`docs/`）を相対パスで使う。単独ではテストしない。CI は Aoi を固定 SHA で checkout し、その `nagoyaction/` をこのリポジトリの tree に置き換えて、Aoi の設定で `nagoyaction/tests` を動かす
+- `min.py` はここには置かない（Aoi が提供する）
+- Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。Aoi と NagoyAction の間では vendor lock を使わない
+- この README のリンクのうち `../` で始まるものと、コマンド例の `nagoyaction/…`・`cycles/…` は Aoi の中の場所を指す
+
+```sh
+git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
+git -C ../Aoi checkout 0a1751a60ac64708d679f22950aa2b14cf688efd
+rm -rf ../Aoi/nagoyaction && mkdir ../Aoi/nagoyaction && git archive HEAD | tar -x -C ../Aoi/nagoyaction
+git -C ../Aoi add -A nagoyaction
+cd ../Aoi && uv run --locked pytest -q -c pyproject.toml nagoyaction/tests
+```
+
 ```bash
 python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml            # 実行前の確認
 python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml            # 実行

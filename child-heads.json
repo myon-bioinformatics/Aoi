@@ -31,6 +31,17 @@
       },
       "repository_id": 1423051557,
       "sha": "4a478d1d69b5aa0c577ce6a5882c1e35593cbf2f"
+    },
+    "myon-bioinformatics/sakanalytics": {
+      "optional": {
+        "repository_created_at": "2026-10-17T15:50:27Z",
+        "subtree_prefix": "sakanalytics",
+        "mirrored_from_parent": {
+          "aoi_paths.py": "aoi_paths.py"
+        }
+      },
+      "repository_id": 1423489570,
+      "sha": "0bb7177ac0ec5240c468b6d2c58ca52e116c6d03"
     }
   }
 }

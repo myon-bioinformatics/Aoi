@@ -12,7 +12,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 `--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。
 
-既定では、`index.html` が CDN の Plotly.js（固定版 URL＋SHA-256 SRI、契約は `vendor/web_ui.py`）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。Python パッケージ `plotly` は依存に置かない。
+既定では、`index.html` が jsDelivr の Plotly.js（`https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js`、SRI なし）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。Python パッケージ `plotly` は依存に置かない。
 
 `--embed` を付けると、`index.html` に Plotly.js を埋め込む。`propositions.html` は埋め込まない。
 

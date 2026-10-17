@@ -11,8 +11,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from vendor import web_ui
-
 from .plotly_cdn import fetch_plotly_js
 from .render import RenderSession, Timeouts
 
@@ -89,14 +87,14 @@ def export_draw(
 # --- example configs (not library-specific modules) ---
 
 def plotlyjs_bundle_path() -> Path:
-    """On-disk Plotly.js for file:// loading (bytes from the web-ui CDN contract)."""
+    """On-disk Plotly.js for file:// loading (same jsDelivr bundle as HTML)."""
     pinned = os.environ.get("DRAGOWING_PINNED_PLOTLY_JS")
     if pinned:
         path = Path(pinned)
         if path.is_file():
             return path
         raise FileNotFoundError(f"plotly.min.js is missing: {path}")
-    cache = Path(tempfile.gettempdir()) / ("dragowing-plotly-%s.min.js" % web_ui.PLOTLY_JS_VERSION)
+    cache = Path(tempfile.gettempdir()) / "dragowing-plotly.min.js"
     body = fetch_plotly_js()
     if not cache.is_file() or cache.read_text(encoding="utf-8") != body:
         cache.write_text(body, encoding="utf-8")

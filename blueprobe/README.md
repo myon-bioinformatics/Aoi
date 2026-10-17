@@ -58,6 +58,7 @@ git subtree pull -P blueprobe https://github.com/myon-bioinformatics/BlueProbe m
 | `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`） |
 | `npb_calendar.py` | 取得元: npb.jp の月別公式戦カレンダー |
 | `docs/npb_calendar.md` | その取得元で、どの年の何を確認したか（観測と未確認を分ける） |
+| `npb_team_annual.py` | 取得元: npb.jp の年度別チーム表（1950年以降の要約、2005年以降の詳細表） |
 | `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
 | `docs/contract/v1/` | 報告と snapshot 記録の契約（追加はv1のまま、破壊的変更はv2） |
 | `docs/boundaries.md` | BlueProbe / QueRyu / web-ui の責務の境界（提案） |
@@ -241,5 +242,5 @@ import 失敗を成功扱いにしない。通常モードでは lab がない�
 `npb_team_annual.py` は1950年以降の両リーグの年度別要約表と、2005年以降の詳細な勝敗・打撃・投手・守備表を読む。
 主対象・合格判定は2013〜2026年の14年間。それ以前は任意の参考で、通常の解析に混ぜない。
 個人表は抽出しない。原文セル・列順・URLを保持し、未掲載の古い項目を0で補わない。
-前後期順位・拡張小数桁・守備の複合見出し・投球回の端数を区別し、未知の列は報告する。
+前後期順位・拡張小数桁・守備の複合見出し・投球回の端数を区別し、未知の列は `unknown` に残す。
 このモジュールは観測のみ。率の再計算や表間の一致判定はAoiのSakAnalyticsで行う。

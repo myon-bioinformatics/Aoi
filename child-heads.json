@@ -6,10 +6,22 @@
       "optional": {
         "repository_created_at": "2026-10-17T06:58:25Z",
         "subtree_prefix": "pythdragoras",
-        "not_in_parent": [".github/", ".gitignore", "conftest.py", "docs/ci/", "pyproject.toml", "uv.lock"]
+        "not_in_parent": [
+          ".github/",
+          ".gitignore",
+          "conftest.py",
+          "pyproject.toml",
+          "uv.lock"
+        ],
+        "child_preamble": [
+          "README.md"
+        ],
+        "mirrored_from_parent": {
+          "aoi_paths.py": "aoi_paths.py"
+        }
       },
       "repository_id": 1423045231,
-      "sha": "12522c890e64313005e2bb3cad07d90365d4cf60"
+      "sha": "dc3eed7f17c2cac78af420987939ca00e8efbc14"
     }
   }
 }

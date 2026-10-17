@@ -1,18 +1,21 @@
 # Aoi の子リポジトリ
 
-Aoi のサブプロジェクトを `git subtree` で独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` / `vendor-consumers.json` と同じ形（`child-heads/1`、`vendor-consumers/1`）を、Aoi 直下に置きます。PythDRagoras と QueRyu の親は Aoi です（myon-bioinformatics からは孫）。
+Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。PythDRagoras の親は Aoi です（myon-bioinformatics からは孫）。
 
 | 子 | prefix | 登録した main |
 |---|---|---|
 | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | `pythdragoras/` | `child-heads.json` の `sha` |
-| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | `queryu/` | `child-heads.json` の `sha` |
 
-- `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional.subtree_prefix`、`optional.not_in_parent`（子だけに置くファイル。Aoi へ取り込まない）。
-- `vendor-consumers.json`: 子が Aoi から vendor するファイルの topology。正確な commit / blob / SHA-256 は子の `vendor.lock.json` が持つ。
-- `scripts/check_child_heads.py`: 形の確認、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分、子の `vendor.lock.json` と登録の topology。書き込みはしない。`--offline` で形だけ。
+- `child-heads.json`: 子ごとに `sha`、`repository_id`、`optional` に次を書く。
+  - `subtree_prefix`: Aoi の中の場所。
+  - `not_in_parent`: 子だけに置くパス（`/` で終わればディレクトリ）。Aoi の prefix の下にあれば `excluded_in_parent` に出る。
+  - `child_preamble`: 子の中身が「子だけの前書き + Aoi の中身」になっているファイル（PythDRagoras の `README.md`）。Aoi の中身で終わっていれば一致とみなす。本文は Aoi と同じに保ち、独立リポジトリとしての説明だけを子に足すため。
+  - `mirrored_from_parent`: prefix の下のパス → Aoi の原本のパス。共有するルートのファイルを子に通常のファイルとして置くとき（PythDRagoras の `aoi_paths.py` は Aoi 直下の `aoi_paths.py`）。Aoi の中でコピーの blob と mode が原本と違えば失敗（`--offline` でも）。QueRyu などほかの子でも同じ書き方で使う。
+- `vendor-consumers.json`（`vendor-consumers/1`）: 子が Aoi から vendor lock で取り込むファイルの topology。vendor する子がいなければ置かない（今はない）。置いた場合、`state: locked` の子の lock が登録した `sha` にない・読めないときは失敗。
+- `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分（blob と mode）、vendor lock の topology。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
 
 ```bash
-python -S scripts/check_child_heads.py --vendor-tools <myon-bioinformatics の checkout @ 1eda992>
+python -S scripts/check_child_heads.py --vendor-tools <myon-bioinformatics の checkout @ 1eda992> --fail-on-diff
 ```
 
 `sha` の更新は PR で行い、自動マージはしない。
@@ -26,7 +29,3 @@ git subtree pull --prefix=pythdragoras https://github.com/myon-bioinformatics/Py
 `not_in_parent` のファイル（`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、`.github/`、`docs/ci/`）は取り込み後に Aoi 側で消す（BlueProbe と同じ）。
 
 git 2.47.3 の `git subtree split --prefix=pythdragoras`（と、それを使う gh_identity の `split-preflight` / `subtree-sync-status`）は、Aoi の履歴の途中で止まって 10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e`（25 コミット）を返します。PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出し、tree が Aoi の `pythdragoras/` と一致することを確かめています。`check_child_heads.py` の差分は tree で比べるので、この影響を受けません。
-
-QueRyu の同期の方法は未定（TBD）。Aoi 側で一度 `git subtree add` か `--rejoin` をして履歴をつなぐか、subtree の同期をやめて vendor lock と tree の比較だけで管理するかは、まだ決まっていない。決まるまでは `check_child_heads.py` の tree の差分だけを見る。
-
-QueRyu の切り出しについて。PythDRagoras と同じで、`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返します。QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は `git filter-branch --subdirectory-filter queryu` で Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から切り出し、tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。

@@ -1,6 +1,8 @@
 """Optional cross-repository integration with an explicit fail-closed mode."""
 from importlib import import_module
+import importlib.util
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -91,3 +93,41 @@ def pytest_sessionfinish(session, exitstatus):
             terminal.write_sep('=', 'required lab integration tests did not pass')
             for node_id in incomplete:
                 terminal.write_line(f'{node_id}: {reports.get(node_id, "not run")}')
+
+
+class _DistinctBasenameModule(pytest.Module):
+    """Import one test file under a path-derived module name."""
+
+    def _getobj(self):
+        path = self.path.resolve()
+        root = Path(self.config.rootpath).resolve()
+        try:
+            rel = path.relative_to(root)
+        except ValueError:
+            rel = path
+        module_name = 'aoi_test_' + '_'.join(rel.with_suffix('').parts)
+        cached = sys.modules.get(module_name)
+        if cached is not None and Path(getattr(cached, '__file__', '') or '').resolve() == path:
+            return cached
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        if spec is None or spec.loader is None:
+            raise ImportError(path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        try:
+            spec.loader.exec_module(module)
+        except Exception:
+            sys.modules.pop(module_name, None)
+            raise
+        self.config.pluginmanager.consider_module(module)
+        return module
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_pycollect_makemodule(module_path, parent):
+    # Pure subtrees both ship tests/test_no_sibling_imports.py. Pytest's default
+    # import mode loads that basename once, then aborts when the second copy
+    # does not match. Give only those files a distinct module name.
+    if module_path.name != 'test_no_sibling_imports.py':
+        return None
+    return _DistinctBasenameModule.from_parent(parent, path=module_path)

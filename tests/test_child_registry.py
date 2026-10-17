@@ -483,8 +483,11 @@ _COMPARE_FLIPS = {
 }
 
 
-def _site_key(node: ast.AST, kind: str) -> tuple[str, int, int]:
-    return kind, node.lineno, node.col_offset
+def _is_module_docstring(node: ast.Constant, module: ast.Module) -> bool:
+    if not module.body:
+        return False
+    first = module.body[0]
+    return isinstance(first, ast.Expr) and first.value is node
 
 
 def _compare_not_eligible(node: ast.Compare) -> bool:
@@ -496,23 +499,14 @@ def _compare_not_eligible(node: ast.Compare) -> bool:
     return True
 
 
-def _module_docstring_site(tree: ast.AST) -> tuple[str, int, int] | None:
-    if not isinstance(tree, ast.Module) or not tree.body:
-        return None
-    first = tree.body[0]
-    if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
-        return _site_key(first.value, "constant")
-    return None
-
-
-def _collect_mutation_sites(tree: ast.AST) -> list[tuple[str, int, int]]:
-    sites: list[tuple[str, int, int]] = []
-    skip_doc = _module_docstring_site(tree)
+def _collect_mutation_sites(tree: ast.AST) -> list[str]:
+    sites: list[str] = []
+    assert isinstance(tree, ast.Module)
 
     class _Collect(ast.NodeVisitor):
         def visit_Compare(self, node: ast.Compare):
             if _compare_not_eligible(node):
-                sites.append(_site_key(node, "compare"))
+                sites.append("compare")
             self.generic_visit(node)
 
         def visit_UnaryOp(self, node: ast.UnaryOp):
@@ -520,64 +514,80 @@ def _collect_mutation_sites(tree: ast.AST) -> list[tuple[str, int, int]]:
                 for part in ast.walk(node):
                     if isinstance(part, ast.Constant) and part.value == "__main__":
                         return
-                sites.append(_site_key(node, "not"))
+                sites.append("not")
             self.generic_visit(node)
 
         def visit_Constant(self, node: ast.Constant):
             if isinstance(node.value, str) and node.value != "__main__":
-                key = _site_key(node, "constant")
-                if key != skip_doc:
-                    sites.append(key)
+                if not _is_module_docstring(node, tree):
+                    sites.append("constant")
             self.generic_visit(node)
 
         def visit_Return(self, node: ast.Return):
             if isinstance(node.value, ast.Constant) and isinstance(node.value.value, int):
-                sites.append(_site_key(node, "return"))
+                sites.append("return")
             self.generic_visit(node)
 
     _Collect().visit(tree)
     return sites
 
 
-def _mutate_single_site(source: str, site: tuple[str, int, int]) -> tuple[str, int]:
-    kind, lineno, col = site
+def _mutate_single_site(source: str, site_index: int) -> tuple[str, int]:
+    parsed = ast.parse(source)
     mutations = 0
+    ordinal = 0
 
     class _Mutate(ast.NodeTransformer):
         def visit_Compare(self, node: ast.Compare):
-            nonlocal mutations
+            nonlocal mutations, ordinal
             node = self.generic_visit(node)
-            if kind == "compare" and node.lineno == lineno and node.col_offset == col:
-                mutations += 1
-                flip = _COMPARE_FLIPS[type(node.ops[0])]
-                return ast.Compare(left=node.left, ops=[flip()], comparators=node.comparators)
+            if _compare_not_eligible(node):
+                if ordinal == site_index:
+                    mutations += 1
+                    ordinal += 1
+                    flip = _COMPARE_FLIPS[type(node.ops[0])]
+                    return ast.Compare(left=node.left, ops=[flip()], comparators=node.comparators)
+                ordinal += 1
             return node
 
         def visit_UnaryOp(self, node: ast.UnaryOp):
-            nonlocal mutations
+            nonlocal mutations, ordinal
             node = self.generic_visit(node)
-            if kind == "not" and node.lineno == lineno and node.col_offset == col:
-                mutations += 1
-                return node.operand
+            if isinstance(node.op, ast.Not):
+                for part in ast.walk(node):
+                    if isinstance(part, ast.Constant) and part.value == "__main__":
+                        return node
+                if ordinal == site_index:
+                    mutations += 1
+                    ordinal += 1
+                    return node.operand
+                ordinal += 1
             return node
 
         def visit_Constant(self, node: ast.Constant):
-            nonlocal mutations
-            if kind == "constant" and node.lineno == lineno and node.col_offset == col:
-                mutations += 1
-                tail = "X" if node.value[-1] != "X" else "Y"
-                return ast.Constant(value=node.value[:-1] + tail)
+            nonlocal mutations, ordinal
+            if isinstance(node.value, str) and node.value != "__main__":
+                if not _is_module_docstring(node, parsed):
+                    if ordinal == site_index:
+                        mutations += 1
+                        ordinal += 1
+                        tail = "X" if node.value[-1] != "X" else "Y"
+                        return ast.Constant(value=node.value[:-1] + tail)
+                    ordinal += 1
             return node
 
         def visit_Return(self, node: ast.Return):
-            nonlocal mutations
+            nonlocal mutations, ordinal
             node = self.generic_visit(node)
-            if kind == "return" and node.lineno == lineno and node.col_offset == col:
-                mutations += 1
-                return ast.Return(value=ast.Constant(value=node.value.value + 1))
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, int):
+                if ordinal == site_index:
+                    mutations += 1
+                    ordinal += 1
+                    return ast.Return(value=ast.Constant(value=node.value.value + 1))
+                ordinal += 1
             return node
 
-    tree = _Mutate().visit(ast.parse(source))
+    tree = _Mutate().visit(parsed)
     assert mutations == 1
     ast.fix_missing_locations(tree)
     return ast.unparse(tree) + "\n", mutations
@@ -587,15 +597,15 @@ def _ast_dump(source: str) -> str:
     return ast.dump(ast.parse(source), annotate_fields=True, include_attributes=False)
 
 
-def _enumerate_mutants(source: str) -> list[tuple[str, str, tuple[str, int, int]]]:
+def _enumerate_mutants(source: str) -> list[tuple[str, str, int]]:
     tree = ast.parse(source)
     base_dump = _ast_dump(source)
-    mutants: list[tuple[str, str, tuple[str, int, int]]] = []
-    for index, site in enumerate(_collect_mutation_sites(tree)):
-        mutant, _applied = _mutate_single_site(source, site)
+    mutants: list[tuple[str, str, int]] = []
+    for index, kind in enumerate(_collect_mutation_sites(tree)):
+        mutant, _applied = _mutate_single_site(source, index)
         if _ast_dump(mutant) == base_dump:
             continue
-        mutants.append((f"{site[0]}-{index}", mutant, site))
+        mutants.append((f"{kind}-{index}", mutant, index))
     return mutants
 
 
@@ -682,9 +692,9 @@ def test_check_child_heads_line_and_branch_coverage(tmp_path):
 def test_mutants_change_exactly_one_ast_site():
     source = SCRIPT.read_text(encoding="utf-8")
     tree = ast.parse(source)
-    for index, site in enumerate(_collect_mutation_sites(tree)):
-        _mutant, applied = _mutate_single_site(source, site)
-        assert applied == 1, (site, applied, index)
+    for index, kind in enumerate(_collect_mutation_sites(tree)):
+        _mutant, applied = _mutate_single_site(source, index)
+        assert applied == 1, (kind, applied, index)
 
 
 def test_mutations_all_killed(tmp_path):

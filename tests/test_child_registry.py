@@ -465,13 +465,10 @@ def test_check_does_not_mutate_inputs(tmp_path):
 
 _COVERAGE_TEST_FILTER = (
     "not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage "
-    "and not test_mutants_change_exactly_one_ast_site"
+    "and not test_mutants_change_exactly_one_ast_site and not test_mutation_kind_labels_match_sites"
 )
 
-_COPY_IGNORE = shutil.ignore_patterns(
-    ".venv", "__pycache__", "actionlint", "build.coverage.check_child_heads.json",
-    ".covtest", ".covtest2",
-)
+_COPY_IGNORE = shutil.ignore_patterns(".venv", "__pycache__", "actionlint")
 
 _COMPARE_FLIPS = {
     ast.Eq: ast.NotEq,
@@ -505,28 +502,28 @@ def _collect_mutation_sites(tree: ast.AST) -> list[str]:
 
     class _Collect(ast.NodeVisitor):
         def visit_Compare(self, node: ast.Compare):
+            self.generic_visit(node)
             if _compare_not_eligible(node):
                 sites.append("compare")
-            self.generic_visit(node)
 
         def visit_UnaryOp(self, node: ast.UnaryOp):
+            self.generic_visit(node)
             if isinstance(node.op, ast.Not):
                 for part in ast.walk(node):
                     if isinstance(part, ast.Constant) and part.value == "__main__":
                         return
                 sites.append("not")
-            self.generic_visit(node)
 
         def visit_Constant(self, node: ast.Constant):
+            self.generic_visit(node)
             if isinstance(node.value, str) and node.value != "__main__":
                 if not _is_module_docstring(node, tree):
                     sites.append("constant")
-            self.generic_visit(node)
 
         def visit_Return(self, node: ast.Return):
+            self.generic_visit(node)
             if isinstance(node.value, ast.Constant) and isinstance(node.value.value, int):
                 sites.append("return")
-            self.generic_visit(node)
 
     _Collect().visit(tree)
     return sites
@@ -597,16 +594,19 @@ def _ast_dump(source: str) -> str:
     return ast.dump(ast.parse(source), annotate_fields=True, include_attributes=False)
 
 
-def _enumerate_mutants(source: str) -> list[tuple[str, str, int]]:
+def _enumerate_mutants(source: str) -> tuple[list[tuple[str, str, int]], int]:
     tree = ast.parse(source)
+    kinds = _collect_mutation_sites(tree)
     base_dump = _ast_dump(source)
     mutants: list[tuple[str, str, int]] = []
-    for index, kind in enumerate(_collect_mutation_sites(tree)):
+    equivalent = 0
+    for index, kind in enumerate(kinds):
         mutant, _applied = _mutate_single_site(source, index)
         if _ast_dump(mutant) == base_dump:
+            equivalent += 1
             continue
         mutants.append((f"{kind}-{index}", mutant, index))
-    return mutants
+    return mutants, equivalent
 
 
 def _materialize_mutant_repo(tmp_path: Path, mutant_source: str) -> Path:
@@ -697,18 +697,29 @@ def test_mutants_change_exactly_one_ast_site():
         assert applied == 1, (kind, applied, index)
 
 
+def test_mutation_kind_labels_match_sites():
+    source = SCRIPT.read_text(encoding="utf-8")
+    kinds = _collect_mutation_sites(ast.parse(source))
+    mutants, _equivalent = _enumerate_mutants(source)
+    for name, _mutant, index in mutants:
+        kind, suffix = name.rsplit("-", 1)
+        assert int(suffix) == index
+        assert kind == kinds[index], (name, kinds[index], index)
+
+
 def test_mutations_all_killed(tmp_path):
     source = SCRIPT.read_text(encoding="utf-8")
-    mutants = _enumerate_mutants(source)
-    assert mutants, "no mutants generated"
+    control_repo = _materialize_mutant_repo(tmp_path / "control", source)
+    control_rc = _run_registry_tests_in_repo(control_repo)
+    assert control_rc == 0, "unmutated copy must pass the mutation test suite"
+    mutants, equivalent = _enumerate_mutants(source)
+    site_count = len(_collect_mutation_sites(ast.parse(source)))
     generated = len(mutants)
+    assert generated + equivalent == site_count
+    assert mutants, "no mutants generated"
     killed = 0
-    equivalent = 0
     survived = []
     for name, mutant_source, _site in mutants:
-        if _ast_dump(mutant_source) == _ast_dump(source):
-            equivalent += 1
-            continue
         repo = _materialize_mutant_repo(tmp_path / name, mutant_source)
         rc = _run_registry_tests_in_repo(repo)
         if rc == 0:
@@ -717,6 +728,5 @@ def test_mutations_all_killed(tmp_path):
             killed += 1
         else:
             pytest.fail(f"mutant {name}: pytest exit code {rc}\n")
-    assert equivalent == 0
-    assert not survived, f"survived ({len(survived)}): {survived}"
     assert killed == generated
+    assert not survived, f"survived ({len(survived)}): {survived}"

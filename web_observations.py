@@ -138,7 +138,7 @@ def main(argv=None):
         result = observe(args.observations, source_root=args.source_root)
     except (OSError, ValueError) as error:
         parser.exit(2, f"{error}\n")
-    print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
+    print(json.dumps(result, ensure_ascii=True, indent=2, allow_nan=False))
     return 2 if result["report"]["counts"]["invalid"] else 0
 
 

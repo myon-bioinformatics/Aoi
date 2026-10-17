@@ -1,6 +1,10 @@
 import copy
 import hashlib
 import json
+import os
+from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -73,6 +77,16 @@ def test_failed_producer_receipt_is_observed_without_becoming_a_pass(tmp_path):
     result = observe(tmp_path)["report"]
     assert result["counts"]["producer_failed_or_incomplete"] == 1
     assert result["records"][0]["derived"]["producer_status"] == "failed"
+
+
+def test_cli_preserves_unicode_on_legacy_console(tmp_path):
+    save(tmp_path, receipt())
+    script = Path(__file__).resolve().parents[1] / "web_observations.py"
+    result = subprocess.run([sys.executable, "-S", str(script), str(tmp_path)],
+        text=True, capture_output=True, encoding="ascii",
+        env={**os.environ, "PYTHONIOENCODING": "cp1252"})
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["report"]["records"][0]["derived"]["controls"][0]["label"] == "📷 写真"
 
 
 def test_source_inventory_hashes_bytes_without_claiming_route_binding(tmp_path):

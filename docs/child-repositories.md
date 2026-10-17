@@ -4,11 +4,13 @@ Aoi のサブプロジェクトを独立させたリポジトリの登録です�
 
 | 子 | prefix | 登録した main |
 |---|---|---|
-| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | `pythdragoras/` | `child-heads.json` の `sha` |
-| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | `queryu/` | `child-heads.json` の `sha` |
-| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | `nagoyaction/` | `child-heads.json` の `sha` |
-| [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | `sakanalytics/` | `child-heads.json` の `sha` |
-| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | `dragowing/` | `child-heads.json` の `sha` |
+| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](../pythdragoras/) | `child-heads.json` の `sha` |
+| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](../queryu/) | `child-heads.json` の `sha` |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](../nagoyaction/) | `child-heads.json` の `sha` |
+| [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](../sakanalytics/) | `child-heads.json` の `sha` |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](../dragowing/) | `child-heads.json` の `sha` |
+
+BlueProbe（[myon-bioinformatics/BlueProbe](https://github.com/myon-bioinformatics/BlueProbe)、Aoi の [`blueprobe/`](../blueprobe/)）も Aoi の中にありますが、登録先は Aoi ではなく親 [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の `child-heads.json` です（この表と Aoi の `child-heads.json` には含めません）。
 
 - `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。

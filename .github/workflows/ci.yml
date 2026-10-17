@@ -21,7 +21,7 @@ jobs:
     env:
       # サイクルデータ（cycles/）・scripts/・sakanalytics は Aoi に残す。
       # Aoi main（#48/#49/#50 を #51 で統合したマージコミット）。
-      AOI_SHA: 85243d6d1285e3bf4667e1447308543c7d648ab7
+      AOI_SHA: 62ad1e49154121cf237d52de352404c4400e6a55
     timeout-minutes: 10
     strategy:
       fail-fast: false

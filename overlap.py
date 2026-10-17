@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -18,9 +17,17 @@ B_COND = {"col": "upper_half", "op": "==", "value": False}
 
 
 def _engines():
-    root = Path(__file__).resolve().parents[1] / "pythdragoras"
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
+    import sys
+
+    if "propositions" not in sys.modules:
+        here = Path(__file__).resolve()
+        for root in (here.parent, *here.parents):
+            logic = root / "pythdragoras"
+            if (logic / "propositions.py").is_file():
+                path = str(logic)
+                if path not in sys.path:
+                    sys.path.insert(0, path)
+                break
     import propositions
     import rule_search
 

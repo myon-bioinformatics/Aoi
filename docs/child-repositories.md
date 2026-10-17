@@ -1,12 +1,13 @@
 # Aoi の子リポジトリ
 
-Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。PythDRagoras・QueRyu・NagoyAction の親は Aoi です（myon-bioinformatics からは孫）。
+Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。PythDRagoras・QueRyu・NagoyAction・sakanalytics の親は Aoi です（myon-bioinformatics からは孫）。
 
 | 子 | prefix | 登録した main |
 |---|---|---|
 | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | `pythdragoras/` | `child-heads.json` の `sha` |
 | [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | `queryu/` | `child-heads.json` の `sha` |
 | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | `nagoyaction/` | `child-heads.json` の `sha` |
+| [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | `sakanalytics/` | `child-heads.json` の `sha` |
 
 - `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
@@ -67,3 +68,10 @@ QueRyu #5 の埋込み共有 aoi_layout 出自ガード修正は、初回joinの
 - `nagoyaction/` 全体（子の CI・LICENSE・`.gitignore` も含む）は登録した NagoyAction の tree と同一です。Aoi の原本を写したファイルはないので `mirrored_from_parent` は書きません。`min.py` は Aoi が提供し、子には置きません。
 - NagoyAction の手順とテストは Aoi の直下（`cycles/`・`queryu/`・`sakanalytics/`・`blueprobe/`・`vendor/`・`scripts/`・`docs/`）を相対パスで使います。子の CI は Aoi を固定 SHA で checkout し、その `nagoyaction/` を子の tree に置き換えて（index の tree が子の tree と一致することを確かめて）、Aoi の設定で `pytest -c pyproject.toml nagoyaction/tests` を動かします。Aoi の中では `nagoyaction/.github/` は動きません。
 - 同期は PythDRagoras の手順の `pythdragoras` を `nagoyaction`、リポジトリを NagoyAction に読み替えます。
+
+## sakanalytics
+
+- sakanalytics の最初の 71 コミットは、Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd` から `git filter-branch --subdirectory-filter sakanalytics` で切り出しました（先頭 `67c8781b0e606ab41f56f717c2a84efa67b98533`、tree `a54fc414f1959f7619619c0ae9398ff2fe8fbcbb` が Aoi の `sakanalytics/` と一致）。そのうえに子の足場（CI・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト）を足した main `0bb7177ac0ec5240c468b6d2c58ca52e116c6d03` に対し、一度だけの join を入れました。親なし squash commit の tree はこの子の tree と同一で、Aoi の merge commit の第2親として残します。PR は squash/rebase せず merge commit で入れてください。
+- `sakanalytics/` 全体（子の CI・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した sakanalytics の tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。`min.py` は Aoi が提供し、子には置きません。
+- サイクルデータ（`cycles/`）と PythDRagoras（`propositions`）は Aoi に残します。子の CI は Aoi を固定 SHA で checkout し、`AOI_ROOT` と `PYTHONPATH` の `pythdragoras` を渡して pytest を動かします。Aoi の中では `sakanalytics/.github/` は動きません。`sakanalytics/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめます。
+- 同期は PythDRagoras の手順の `pythdragoras` を `sakanalytics`、リポジトリを sakanalytics に読み替えます。

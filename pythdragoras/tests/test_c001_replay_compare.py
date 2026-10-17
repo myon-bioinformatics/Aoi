@@ -2,7 +2,9 @@ import json
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+import aoi_paths
+
+sys.path.insert(0, str(aoi_paths.resolve_aoi_root(anchor=Path(__file__)) / "scripts"))
 from compare_c001_replay import compare_dirs, prepare_v2
 
 

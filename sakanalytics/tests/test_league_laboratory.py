@@ -6,11 +6,12 @@ import tomllib
 
 import pytest
 
+import aoi_paths
 import league_laboratory as lab
 import synthetic_league as sl
 
-ROOT = Path(__file__).resolve().parents[2]
-CYCLE = ROOT / 'cycles/c001-chunichi'
+ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+CYCLE = aoi_paths.resolve_cycle_path(ROOT)
 OUT = CYCLE / 'outputs/exploratory/league-laboratory'
 
 

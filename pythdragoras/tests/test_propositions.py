@@ -194,7 +194,8 @@ def test_cycle1_files_reference_real_columns():
 
     from sakanalytics import add_persistence, batting_join, inning_decomposition, season_table, to_team_games
 
-    root = Path(__file__).resolve().parents[2] / "cycles" / "c001-chunichi"
+    import aoi_paths
+    root = aoi_paths.resolve_cycle_path(aoi_paths.resolve_aoi_root(anchor=Path(__file__)))
     teams = tomllib.loads((root / "analysis.toml").read_text(encoding="utf-8"))["teams"]
     games = pl.DataFrame([{"key": "1", "date": "2024-04-01", "home": "d", "away": "g", "hs": 3, "as": 2},
                           {"key": "2", "date": "2024-04-02", "home": "t", "away": "d", "hs": 1, "as": 0}])
@@ -648,7 +649,8 @@ def test_cycle1_confirmation_setting_names_real_propositions():
     import tomllib
     from pathlib import Path
 
-    root = Path(__file__).resolve().parents[2] / "cycles" / "c001-chunichi"
+    import aoi_paths
+    root = aoi_paths.resolve_cycle_path(aoi_paths.resolve_aoi_root(anchor=Path(__file__)))
     confirm = tomllib.loads((root / "analysis.toml").read_text(encoding="utf-8")).get("confirm")
     if confirm is None:
         pytest.skip("確かめの設定がない")

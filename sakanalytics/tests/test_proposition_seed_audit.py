@@ -7,8 +7,10 @@ import pytest
 
 import proposition_seed_audit as audit
 
-ROOT=Path(__file__).resolve().parents[2]
-CYCLE=ROOT/'cycles/c001-chunichi'
+import aoi_paths
+
+ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+CYCLE = aoi_paths.resolve_cycle_path(ROOT)
 OUT=CYCLE/'outputs/exploratory/proposition-evaluation'
 
 

@@ -111,7 +111,8 @@ def test_cli_renders_one_id_and_refuses_a_missing_expression_file(tmp_path, caps
 
 
 def test_real_proposition_table_agrees_with_its_forms():
-    path = Path(__file__).resolve().parents[2] / "cycles" / "c001-chunichi" / "outputs" / "propositions.jsonl"
+    import aoi_paths
+    path = aoi_paths.default_cycle_outputs(aoi_paths.resolve_aoi_root(anchor=Path(__file__))) / "propositions.jsonl"
     row = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
     cells = contingency(row)
     assert all(not (isinstance(v, str) and v.startswith("不一致")) for v in cells.values())

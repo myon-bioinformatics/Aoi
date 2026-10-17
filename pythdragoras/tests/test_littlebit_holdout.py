@@ -135,7 +135,8 @@ def test_pooled_mcc_uses_confusion_totals_and_refuses_duplicate_units():
 
 
 def test_committed_backtest_replays_frozen_models_without_research_masks(monkeypatch):
-    cycle = Path(__file__).resolve().parents[2] / "cycles/c001-chunichi"
+    import aoi_paths
+    cycle = aoi_paths.resolve_cycle_path(aoi_paths.resolve_aoi_root(anchor=Path(__file__)))
     path = cycle / "outputs/exploratory/littlebit-holdout/holdout.json"
     report = json.loads(path.read_text(encoding="utf-8"))
     df, spec, _ = la.load_cycle(cycle)

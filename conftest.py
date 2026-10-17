@@ -5,6 +5,13 @@ from pathlib import Path
 
 import pytest
 
+import aoi_paths
+
+
+@pytest.fixture(scope="session")
+def aoi_root() -> Path:
+    return aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+
 
 LAB_INTEGRATION_NODE_IDS = {
     'blueprobe/tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows',

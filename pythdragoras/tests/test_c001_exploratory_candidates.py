@@ -8,7 +8,9 @@ import os
 from pathlib import Path
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+import aoi_paths
+
+ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 SCRIPT = ROOT / "scripts/check_c001_exploratory_candidates.py"
 FIXTURE = Path(__file__).parent / "fixtures/c001_exploratory_snapshot.json"
 spec = importlib.util.spec_from_file_location("c001_exploratory", SCRIPT)

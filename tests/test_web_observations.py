@@ -99,3 +99,20 @@ def test_source_inventory_hashes_bytes_without_claiming_route_binding(tmp_path):
     assert len(rows) == 4
     assert next(row for row in rows if row["path"] == "pubspec.lock")["kind"] == "build-config"
     assert all(row["sha256"] == hashlib.sha256(b"// source\r\n").hexdigest() for row in rows)
+
+
+def test_documented_directory_cli_with_source_root(tmp_path):
+    observations = tmp_path / "saved pages"
+    observations.mkdir()
+    save(observations, receipt())
+    sources = tmp_path / "flutter sources"
+    sources.mkdir()
+    (sources / "view.dart").write_text("// inventory only\n", encoding="utf-8")
+    script = Path(__file__).resolve().parents[1] / "web_observations.py"
+    result = subprocess.run([sys.executable, "-S", str(script), str(observations),
+        "--source-root", str(sources)], text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert len(report["report"]["records"]) == 1
+    assert report["sources"][0]["path"] == "view.dart"
+    assert not report["current_code_executed"]

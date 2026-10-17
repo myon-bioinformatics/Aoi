@@ -18,13 +18,17 @@ import pytest
 
 import aoi_paths
 
+# 入力と証拠（cycles/）は Aoi（AOI_ROOT）から読む。ソースはこのテストのリポジトリのもの：
+# PythDRagoras ではリポジトリ直下、Aoi では pythdragoras/。Aoi のコピーをハッシュしない。
 _REPO_ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+SOURCE_ROOT = Path(__file__).resolve().parents[1]
+SOURCE_PREFIX = "pythdragoras/"
 PINNED_RUNTIME = {"python": "3.14.8", "numpy": "2.5.4", "polars": "2.0.0"}
 ARTIFACTS = ("holdout.json", "holdout.md")
 CYCLE_PATH = f"cycles/{aoi_paths.DEFAULT_CYCLE}"
 EVIDENCE_PATH = f"{CYCLE_PATH}/outputs/exploratory/littlebit-holdout"
 PROVENANCE_PATH = f"{EVIDENCE_PATH}/holdout.provenance.json"
-SOURCE_PATHS = tuple(f"pythdragoras/{name}.py" for name in (
+SOURCE_PATHS = tuple(f"{SOURCE_PREFIX}{name}.py" for name in (
     "littlebit_holdout", "littlebit_approx", "littlebit_prune", "rule_search",
     "propositions", "registration_audit", "pythdragoras"))
 INPUT_PATHS = tuple(f"{CYCLE_PATH}/{name}" for name in (
@@ -54,15 +58,28 @@ def _source_divergence(manifest):
     return by_path
 
 
-def _verify_provenance(root, manifest):
-    """Fail closed on missing coverage, missing files, or any unreviewed byte change."""
+def _source_file(source_root, name):
+    assert name.startswith(SOURCE_PREFIX), name
+    return source_root / name[len(SOURCE_PREFIX):]
+
+
+def _verify_provenance(root, manifest, source_root=None):
+    """Fail closed on missing coverage, missing files, or any unreviewed byte change.
+
+    Inputs and artifacts are read under ``root`` (Aoi). Sources are read under
+    ``source_root`` (default ``root / "pythdragoras"``); manifest keys keep the
+    ``pythdragoras/`` prefix.
+    """
+    if source_root is None:
+        source_root = root / SOURCE_PREFIX
     assert manifest["schema"] == "littlebit-holdout-provenance/1"
     diverged = _source_divergence(manifest)
     for group, paths in PROVENANCE_GROUPS.items():
         expected = manifest[group]
         assert set(expected) == set(paths), f"{group}: incomplete or unexpected coverage"
         for name in paths:
-            digest = hashlib.sha256((root / name).read_bytes()).hexdigest()
+            path = _source_file(source_root, name) if group == "source_sha256" else root / name
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
             if name in diverged:
                 assert group == "source_sha256"
                 row = diverged[name]
@@ -77,12 +94,49 @@ def _verify_provenance(root, manifest):
 def test_littlebit_committed_provenance_matches_current_sources_and_untouched_evidence():
     root = _REPO_ROOT
     manifest = json.loads((root / PROVENANCE_PATH).read_text(encoding="utf-8"))
-    _verify_provenance(root, manifest)
+    _verify_provenance(root, manifest, SOURCE_ROOT)
     report = json.loads((root / EVIDENCE_PATH / "holdout.json").read_text(encoding="utf-8"))
     assert manifest["historical_runtime"] == report["runtime"]
     assert {f"{CYCLE_PATH}/{name}": digest for name, digest in report["inputs_sha256"].items()} == manifest["inputs_sha256"]
     assert report["posthoc"] is True and report["exploratory"] is True
     assert report["independent_confirmation"] is False
+
+
+def test_littlebit_sources_are_this_repositorys_own_files():
+    """PythDRagoras: the repository root; inside Aoi: Aoi's pythdragoras/. Never AOI_ROOT's copy."""
+    test_file = Path(__file__).resolve()
+    assert SOURCE_ROOT == test_file.parent.parent
+    for name in SOURCE_PATHS:
+        assert _source_file(SOURCE_ROOT, name).is_file(), name
+    assert (SOURCE_ROOT / "tests" / test_file.name).samefile(test_file)
+
+
+def test_littlebit_change_to_own_source_is_detected_even_if_aoi_copy_is_unchanged(tmp_path):
+    root = _REPO_ROOT
+    manifest = json.loads((root / PROVENANCE_PATH).read_text(encoding="utf-8"))
+    own = tmp_path / "own"
+    own.mkdir()
+    for name in SOURCE_PATHS:
+        (own / name[len(SOURCE_PREFIX):]).write_bytes(_source_file(SOURCE_ROOT, name).read_bytes())
+    _verify_provenance(root, manifest, own)
+    (own / "littlebit_holdout.py").write_bytes((own / "littlebit_holdout.py").read_bytes() + b"# changed\n")
+    with pytest.raises(AssertionError, match="littlebit_holdout.py: SHA-256 drift"):
+        _verify_provenance(root, manifest, own)
+
+
+def test_littlebit_inputs_come_from_root_and_sources_from_source_root(provenance_tree, tmp_path):
+    root, manifest = provenance_tree
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    for name in SOURCE_PATHS:
+        (elsewhere / name[len(SOURCE_PREFIX):]).write_bytes((root / name).read_bytes())
+        (root / name).write_bytes(b"stale copy under root\n")
+    _verify_provenance(root, manifest, elsewhere)
+    with pytest.raises(AssertionError, match="SHA-256 drift"):
+        _verify_provenance(root, manifest)
+    (elsewhere / "rule_search.py").unlink()
+    with pytest.raises(FileNotFoundError):
+        _verify_provenance(root, manifest, elsewhere)
 
 
 @pytest.fixture
@@ -379,8 +433,8 @@ def test_littlebit_committed_holdout_regenerates_from_current_generator(tmp_path
     started = time.monotonic()
     diagnostics = {"runtime": runtime, "comparison": "not-completed",
                    "normalization": "none; exact JSON and Markdown bytes",
-                   "source_sha256": {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-                                     for p in sorted((root / "pythdragoras").glob("*.py"))}}
+                   "source_sha256": {SOURCE_PREFIX + p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                                     for p in sorted(SOURCE_ROOT.glob("*.py"))}}
     try:
         actual = _regenerate(lh, cycle, output)
         assert len(fit_calls) == 1 + len(report["walk_forward"]["folds"]), "every fold must refit, not replay saved models"

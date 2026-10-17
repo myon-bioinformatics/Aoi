@@ -1,6 +1,6 @@
 # Chrome による PNG / SVG 出力
 
-画像出力 API は Python の `plotly` パッケージも kaleido も使わない。Plotly.js は HTML と同じ web-ui の CDN 契約（`dragowing/plotly_cdn.py`）から取得し、各書き出し用の一時ディレクトリへコピーして `file:` URL で読み込む。CLI の `--png` も同じ `export_draw` 経路である。
+画像出力 API は Python の `plotly` パッケージも kaleido も使わない。Plotly.js は HTML と同じ jsDelivr URL（`dragowing/plotly_cdn.py` の `PLOTLY_JS_CDN`）から取得し、各書き出し用の一時ディレクトリへコピーして `file:` URL で読み込む。CLI の `--png` も同じ `export_draw` 経路である。
 
 元の PR #44・#43・#42 の変更は、PR 整理で同じ統合ブランチに取り込んでいる。既存の HTML の既定出力、研究記録、整数得点、正式判定器には触れない。
 
@@ -17,7 +17,7 @@ with RenderSession(offline=True) as session:
 
 `PLOTLY` は Mermaid と同様にブラウザ側の JS で描く汎用 `DrawConfig` である。オフライン検証では環境変数 `DRAGOWING_PINNED_PLOTLY_JS` に、事前に検証済みの `plotly.min.js` を置ける。図のデータもローカルに用意する必要がある（外部 URL の地図・画像・フォント等を自動取得する機能ではない）。
 
-HTML の外部タグと `--embed` は locked web-ui の固定版＋ハッシュ契約を共用する。
+HTML の外部タグと `--embed` も同じ jsDelivr 配布を使う（SRI / SHA-256 固定は行わない。web-ui 側は別 PR）。
 
 `Plotly.newPlot` の Promise 完了を待つ。PNG は図のコンテナ全体をスクリーンショットにし、SVG はローカルの `Plotly.toImage` で全レイヤーを直列化する。最初の `svg.main-svg` だけを取得すると欠落するタイトル・凡例も含める。SVG の WebGL 部分等の扱いは Plotly.js の仕様による。
 

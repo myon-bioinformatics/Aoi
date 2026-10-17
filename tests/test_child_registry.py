@@ -53,7 +53,7 @@ def test_queryu_registered_with_exact_ids():
     assert entry["repository_id"] == 1423051557
     assert entry["optional"]["subtree_prefix"] == "queryu"
     # queryu/aoi_paths.py は subtree add のあとにできる。それまでは mirrored_from_parent に書かない
-    # （書くと copy_missing で失敗する）。blob の一致は tests/test_mirrored_root_files.py が確かめる
+    # （書くと copy_missing で失敗する）。subtree add の直後に {"aoi_paths.py": "aoi_paths.py"} を書く
     assert "mirrored_from_parent" not in entry["optional"]
 
 

@@ -126,3 +126,34 @@ def test_import_guard_preserves_standalone_and_embedded_contracts(aoi_root):
     assert not check(root / "wrong" / "blueprobe.py", root, root / "queryu")
     assert check(external, root, Path("/example/QueRyu"))
     assert not check(own, root, Path("/example/QueRyu"))
+
+
+def test_shared_layout_origin_requires_exact_embedded_identical_mirror(tmp_path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("queryu_layout_guard", ROOT / "conftest.py")
+    guard = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(guard)
+    check = guard._own_module_origin_is_allowed
+    root = tmp_path / "aoi"
+    here = root / "queryu"
+    own = here / "ask" / "aoi_layout.py"
+    mirror = root / "pythdragoras" / "aoi_layout.py"
+    own.parent.mkdir(parents=True)
+    mirror.parent.mkdir()
+    own.write_bytes(b"shared layout")
+    mirror.write_bytes(own.read_bytes())
+    assert check("aoi_layout", own, root, here)
+    assert check("aoi_layout", mirror, root, here)
+    assert not check("ask", mirror, root, here)
+    assert not check("aoi_layout", mirror, root, tmp_path / "QueRyu")
+    unknown = root / "unknown" / "aoi_layout.py"
+    unknown.parent.mkdir()
+    unknown.write_bytes(own.read_bytes())
+    assert not check("aoi_layout", unknown, root, here)
+    alias = mirror.parent / "alias.py"
+    alias.write_bytes(own.read_bytes())
+    assert not check("aoi_layout", alias, root, here)
+    mirror.write_bytes(b"changed layout")
+    assert not check("aoi_layout", mirror, root, here)
+    mirror.unlink()
+    assert not check("aoi_layout", mirror, root, here)

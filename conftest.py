@@ -19,6 +19,13 @@ def _root() -> Path:
     return aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 
 
+def _blueprobe_origin_is_allowed(origin: Path, root: Path, here: Path = HERE) -> bool:
+    """Embedded subtree uses Aoi/blueprobe; standalone must use an external checkout."""
+    if here == root / "queryu":
+        return origin.parent == root / "blueprobe"
+    return root not in origin.parents
+
+
 def pytest_configure(config):
     root = _root()
     if not (root / "cycles").is_dir() or not (root / "nagoyaction" / "inbox").is_dir():
@@ -40,8 +47,8 @@ def pytest_configure(config):
             f"blueprobe を import できない（{error}）。BlueProbe を checkout して PYTHONPATH に渡す"
         ) from None
     origin = Path(blueprobe.__file__).resolve()
-    if root in origin.parents:
-        raise pytest.UsageError(f"blueprobe が Aoi から読まれている（{origin}）。BlueProbe の checkout を渡す")
+    if not _blueprobe_origin_is_allowed(origin, root):
+        raise pytest.UsageError(f"blueprobe の出どころが不正（{origin}）。単独では外部 checkout、Aoi 内では Aoi/blueprobe を使う")
 
 
 def pytest_report_header(config):

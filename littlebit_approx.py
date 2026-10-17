@@ -574,17 +574,24 @@ def run_cycle(cycle: Path, *, rank: int = DEFAULT_RANK, stages: int = DEFAULT_ST
 
 
 def main(argv=None) -> int:
-    root = Path(__file__).resolve().parents[1]
+    from aoi_layout import bind as _bind_aoi_paths
+
+    aoi_paths = _bind_aoi_paths(__file__)
     ap = argparse.ArgumentParser(description="潜在パターンを条件候補にして、既存候補だけの探索と並べる（探索。確かめではない）")
-    ap.add_argument("--cycle", type=Path, default=root / "cycles" / "c001-chunichi")
+    ap.add_argument("--root", type=Path, default=None,
+                    help="Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定")
+    ap.add_argument("--cycle", default=None,
+                    help="サイクル名または cycles/... へのパス。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi")
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--rank", type=int, default=DEFAULT_RANK)
     ap.add_argument("--stages", type=int, default=DEFAULT_STAGES)
     ap.add_argument("--seed", type=int, default=DEFAULT_SEED)
     ap.add_argument("--top", type=int, default=20)
     args = ap.parse_args(argv)
-    dest = args.out or (args.cycle / "outputs" / "exploratory" / "littlebit-approx")
-    report = run_cycle(args.cycle, rank=args.rank, stages=args.stages, seed=args.seed, top=args.top)
+    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
+    cycle = aoi_paths.resolve_cycle_path(root, args.cycle)
+    dest = args.out or (cycle / "outputs" / "exploratory" / "littlebit-approx")
+    report = run_cycle(cycle, rank=args.rank, stages=args.stages, seed=args.seed, top=args.top)
     write_comparison(report, dest)
     base = report["baseline"]["top"][0] if report["baseline"]["top"] else None
     alt = report["with_derived"]["top"][0] if report["with_derived"]["top"] else None

@@ -1,11 +1,12 @@
 # Aoi の子リポジトリ
 
-Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。PythDRagoras と QueRyu の親は Aoi です（myon-bioinformatics からは孫）。
+Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。PythDRagoras・QueRyu・NagoyAction の親は Aoi です（myon-bioinformatics からは孫）。
 
 | 子 | prefix | 登録した main |
 |---|---|---|
 | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | `pythdragoras/` | `child-heads.json` の `sha` |
 | [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | `queryu/` | `child-heads.json` の `sha` |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | `nagoyaction/` | `child-heads.json` の `sha` |
 
 - `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
@@ -59,3 +60,10 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - 単独 QueRyu では Aoi 配下の BlueProbe を拒否します。物理的に `AOI_ROOT/queryu` にある subtree のテストだけは、逆に `AOI_ROOT/blueprobe` の正確な場所を要求します。Aoi 直下から対象を絞る場合は `pytest -c pyproject.toml queryu/tests` を使います。
 
 QueRyu #5 の埋込み共有 aoi_layout 出自ガード修正は、初回joinの後に通常の subtree merge で取り込みました。登録先は `4a478d1d69b5aa0c577ce6a5882c1e35593cbf2f` です。単独運用の出自制限を保ち、Aoi内では正確なPythDRagorasミラーのバイト一致を実行時に確認します。
+
+## NagoyAction
+
+- NagoyAction の最初の 49 コミットは、Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd` から `git filter-branch --subdirectory-filter nagoyaction` で切り出しました（先頭 `b35707b877a92fd088db06f15b87d0e72158fc27`、tree `1537879773093a5350a17ca657fbdf89f6a57e72` が Aoi の `nagoyaction/` と一致）。そのうえに子の足場（LICENSE・`.gitignore`・README の節、CI）を足した main `97ee776559ddebdc1ddf54330c98e3face099391` に対し、一度だけの join を入れました。親なし squash commit の tree はこの子の tree と同一で、Aoi の merge commit の第2親として残します。PR は squash/rebase せず merge commit で入れてください。
+- `nagoyaction/` 全体（子の CI・LICENSE・`.gitignore` も含む）は登録した NagoyAction の tree と同一です。Aoi の原本を写したファイルはないので `mirrored_from_parent` は書きません。`min.py` は Aoi が提供し、子には置きません。
+- NagoyAction の手順とテストは Aoi の直下（`cycles/`・`queryu/`・`sakanalytics/`・`blueprobe/`・`vendor/`・`scripts/`・`docs/`）を相対パスで使います。子の CI は Aoi を固定 SHA で checkout し、その `nagoyaction/` を子の tree に置き換えて（index の tree が子の tree と一致することを確かめて）、Aoi の設定で `pytest -c pyproject.toml nagoyaction/tests` を動かします。Aoi の中では `nagoyaction/.github/` は動きません。
+- 同期は PythDRagoras の手順の `pythdragoras` を `nagoyaction`、リポジトリを NagoyAction に読み替えます。

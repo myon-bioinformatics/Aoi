@@ -60,6 +60,17 @@ def test_queryu_registered_with_exact_ids():
         assert (ROOT / "queryu" / path).is_file(), path
 
 
+def test_nagoyaction_registered_with_exact_ids():
+    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/NagoyAction"]
+    assert entry["repository_id"] == 1423491480
+    assert entry["optional"]["subtree_prefix"] == "nagoyaction"
+    assert "mirrored_from_parent" not in entry["optional"]  # Aoi の原本を写したファイルはない
+    assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
+    for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "README.md", "nagoyaction.py"):
+        assert (ROOT / "nagoyaction" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
+    assert not (ROOT / "nagoyaction" / "min.py").exists()  # min.py は Aoi が提供し、子には置かない
+
+
 def test_registered_mirrors_are_blob_identical_to_aoi_originals():
     report = cch.check(ROOT, cch.validate_heads(_load("child-heads.json")), network=False)
     for row in report["children"]:
@@ -72,7 +83,7 @@ def test_offline_cli_passes():
     assert out.returncode == 0, out.stderr
     report = json.loads(out.stdout)
     assert report["schema"] == "aoi-child-heads-check/1"
-    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu"]
+    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/NagoyAction", "myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu"]
 
 
 # --- ローカルの Git -------------------------------------------------------------------------

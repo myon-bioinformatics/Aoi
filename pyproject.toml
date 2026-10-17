@@ -22,4 +22,4 @@ package = false
 # BlueProbe は固定 SHA の checkout を PYTHONPATH で渡す（.github/workflows/ci.yml と同じ）
 pythonpath = [".", "ask"]
 testpaths = ["tests"]
-norecursedirs = ["vendor", ".test-deps", "build", "reports"]
+norecursedirs = [".test-deps", "build", "reports"]

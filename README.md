@@ -1,6 +1,6 @@
 > **独立リポジトリ**: このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト `pythdragoras/` から独立したものです。
-> 親は Aoi（Aoi の親は myon-bioinformatics）。Aoi の `pythdragoras/` とは `git subtree` で同期します（下の「Aoi との同期」）。
-> 以下の本文は Aoi の `pythdragoras/README.md` と同じで、`../docs/` や `cycles/` への相対リンクは Aoi のリポジトリの中を指します。
+> 親は Aoi（Aoi の親は myon-bioinformatics）。tree は Aoi の `pythdragoras/` とまったく同じで（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）、`git subtree` で同期します（下の「Aoi との同期」）。
+> この README は Aoi の `pythdragoras/README.md` と同じファイルです。`../docs/` や `cycles/` への相対リンクは Aoi のリポジトリの中を指します。
 
 ## このリポジトリで動かす
 
@@ -29,16 +29,32 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
 
 ## Aoi との同期
 
-Aoi 側（`pythdragoras/` が subtree）:
+このリポジトリは Aoi の `pythdragoras/` の subtree です。除外するファイルはなく、Aoi の `pythdragoras/` の tree とこのリポジトリの tree は同じです。Aoi の中では `pythdragoras/.github/` は動かず（GitHub が読むのはリポジトリ直下の `.github/` だけ）、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめます。
+
+- 履歴は Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7`（main、#51 のマージコミット）の `pythdragoras/` から `git filter-branch --subdirectory-filter pythdragoras` で切り出しました（先頭 `12522c890e64313005e2bb3cad07d90365d4cf60`、tree `873bd0d947a99da043e314cb11762189540c6b98`）。git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭を返したためです（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)）。
+- この履歴は Aoi の履歴とつながっていないので、Aoi に一度だけ join を入れます（Aoi PR #52）。`git-subtree-split:` にこのリポジトリの main のコミットを書いた squash コミット（tree はこのリポジトリと同じ）を、Aoi の tree を変えないマージの2つ目の親にします。join 以降は `git subtree` が join を起点にするので、#74 の止まる範囲をたどりません。
+- join は2つ目の親として残す必要があります。join を含む Aoi の PR は squash せず、merge commit で入れます（squash すると2つ目の親が消え、`git subtree pull` と `split` が止まります）。
+- `git-subtree-split:` のコミットはこのリポジトリの main にある必要があります。このリポジトリの PR を squash マージして main の sha が変わったときは、Aoi で同じ tree の join を入れ直します。
+
+子 → Aoi（Aoi の main から作ったブランチで）:
 
 ```bash
 git subtree pull --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main --squash
-git subtree push --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git <branch>
+test "$(git rev-parse HEAD:pythdragoras)" = "$(git rev-parse FETCH_HEAD^{tree})"   # Aoi 側に未同期の変更がないとき
 ```
 
-- 履歴は Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7`（main、#51 のマージコミット）の `pythdragoras/` から切り出しました（75 コミット、先頭 `12522c890e64313005e2bb3cad07d90365d4cf60`、tree は Aoi の `pythdragoras/` と同じ `873bd0d947a99da043e314cb11762189540c6b98`）。初回は `070dc6430e57f9912661ef88db826462e1bc76bb` からの 72 コミットを push し、そのあと fast-forward で 3 コミットを足しています。
-- git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭（25 コミット、7 ファイル）を返したため、`git filter-branch --subdirectory-filter pythdragoras` で切り出しています。
-- Aoi に取り込まないファイル: `pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、`.github/`、`docs/ci/`（Aoi 側の設定と二重になるため）。
+Aoi → 子（Aoi の main で）:
+
+```bash
+git fetch https://github.com/myon-bioinformatics/PythDRagoras.git main   # split の起点のコミットを手元に置く
+git subtree split --prefix=pythdragoras -b sync/pythdragoras
+test "$(git rev-parse sync/pythdragoras^{tree})" = "$(git rev-parse HEAD:pythdragoras)"
+git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragoras:refs/heads/<新しいブランチ>
+```
+
+- push したブランチからこのリポジトリに PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、Aoi 側の起点をこのリポジトリの main に付け直します（squash マージでは split のコミットが main に残らないため）。
+- gh_identity#74 が直るまで、Aoi に対して gh_identity の `subtree-sync --write` は使いません。`--write` なしの計画だけにし、tree の一致は上の `test` で確かめます。
+- Aoi の `scripts/check_child_heads.py --fail-on-diff` が、Aoi の `child-heads.json` に登録した sha の tree と Aoi の `pythdragoras/` を比べます。
 
 ---
 

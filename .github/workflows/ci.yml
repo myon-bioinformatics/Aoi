@@ -232,3 +232,28 @@ jobs:
             cycles/c001-chunichi/outputs/research_digest.md
           if-no-files-found: error
           retention-days: 14
+
+  child-heads:
+    name: Child heads (subtree children)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/myon-bioinformatics
+          ref: 1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+          path: .vendor-sync-tools
+          sparse-checkout: |
+            vendor_sync.py
+            vendor_consumers.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - name: Registry, drift and subtree diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -S scripts/check_child_heads.py --vendor-tools .vendor-sync-tools | tee build-child-heads.json
+          { echo '## Child heads'; echo '```json'; cat build-child-heads.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

@@ -6,13 +6,11 @@ Aoi のサブプロジェクトを独立させたリポジトリの登録です�
 |---|---|---|
 | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | `pythdragoras/` | `child-heads.json` の `sha` |
 
-- `child-heads.json`: 子ごとに `sha`、`repository_id`、`optional` に次を書く。
+- `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
-  - `not_in_parent`: 子だけに置くパス（`/` で終わればディレクトリ）。Aoi の prefix の下にあれば `excluded_in_parent` に出る。
-  - `child_preamble`: 子の中身が「子だけの前書き + Aoi の中身」になっているファイル（PythDRagoras の `README.md`）。Aoi の中身で終わっていれば一致とみなす。本文は Aoi と同じに保ち、独立リポジトリとしての説明だけを子に足すため。
   - `mirrored_from_parent`: prefix の下のパス → Aoi の原本のパス。共有するルートのファイルを子に通常のファイルとして置くとき（PythDRagoras の `aoi_paths.py` は Aoi 直下の `aoi_paths.py`）。Aoi の中でコピーの blob と mode が原本と違えば失敗（`--offline` でも）。QueRyu などほかの子でも同じ書き方で使う。
 - `vendor-consumers.json`（`vendor-consumers/1`）: 子が Aoi から vendor lock で取り込むファイルの topology。vendor する子がいなければ置かない（今はない）。置いた場合、`state: locked` の子の lock が登録した `sha` にない・読めないときは失敗。
-- `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分（blob と mode）、vendor lock の topology。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
+- `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分（blob と mode、除外なし）、vendor lock の topology。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
 
 ```bash
 python -S scripts/check_child_heads.py --vendor-tools <myon-bioinformatics の checkout @ 1eda992> --fail-on-diff
@@ -22,10 +20,30 @@ python -S scripts/check_child_heads.py --vendor-tools <myon-bioinformatics の c
 
 ## subtree の同期
 
+PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出したので（git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e` を返す。[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)）、Aoi の履歴とつながっていません。そのため Aoi に一度だけ join を入れます。
+
+- join は2つのコミットです。`Squashed 'pythdragoras/' content from commit <sha>`（親なし、tree は PythDRagoras の `<sha>` と同じ、`git-subtree-dir: pythdragoras` / `git-subtree-split: <sha>`）と、それを2つ目の親にした、Aoi の tree を変えないマージ（`git-subtree-mainline:` も書く）。
+- `<sha>` は PythDRagoras の main にあるコミットにします。`git subtree pull` / `split` は `<sha>` を手元に必要とし、PythDRagoras の main から取ってくるためです。PythDRagoras の PR を squash マージして main の sha が変わったら、その sha で join を入れ直します（tree は同じ）。
+- join は2つ目の親として残す必要があります。**join を含む Aoi の PR は squash せず、merge commit で入れます**。squash すると2つ目の親が消え、`git subtree pull --squash` と `split` が止まります。
+- join 以降は `git subtree` が join を起点にするので、#74 の止まる範囲をたどりません。
+
+子 → Aoi（Aoi の main から作ったブランチで）:
+
 ```bash
 git subtree pull --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main --squash
+test "$(git rev-parse HEAD:pythdragoras)" = "$(git rev-parse FETCH_HEAD^{tree})"   # Aoi 側に未同期の変更がないとき
 ```
 
-`not_in_parent` のファイル（`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、`.github/`、`docs/ci/`）は取り込み後に Aoi 側で消す（BlueProbe と同じ）。
+Aoi → 子（Aoi の main で）:
 
-git 2.47.3 の `git subtree split --prefix=pythdragoras`（と、それを使う gh_identity の `split-preflight` / `subtree-sync-status`）は、Aoi の履歴の途中で止まって 10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e`（25 コミット）を返します。PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出し、tree が Aoi の `pythdragoras/` と一致することを確かめています。`check_child_heads.py` の差分は tree で比べるので、この影響を受けません。
+```bash
+git fetch https://github.com/myon-bioinformatics/PythDRagoras.git main   # split の起点のコミットを手元に置く
+git subtree split --prefix=pythdragoras -b sync/pythdragoras
+test "$(git rev-parse sync/pythdragoras^{tree})" = "$(git rev-parse HEAD:pythdragoras)"
+git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragoras:refs/heads/<新しいブランチ>
+```
+
+- push したブランチから PythDRagoras に PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、起点を PythDRagoras の main に付け直します（squash マージでは split のコミットが main に残らないため）。
+- **gh_identity#74 が直るまで、Aoi に対して gh_identity の `subtree-sync --write` は使いません。** `--write` なしの計画だけにし、tree の一致は上の `test` で手で確かめます。
+- `check_child_heads.py --fail-on-diff` は、登録した `sha` の tree と Aoi の `pythdragoras/` を比べます。
+- Aoi の直下から `pytest pythdragoras/tests` のようにパスだけ渡すと、pytest は `pythdragoras/pyproject.toml` を設定ファイルに選びます（rootdir が `pythdragoras/`）。Aoi の設定で動かすときは `pytest -c pyproject.toml pythdragoras/tests`。引数なしの `pytest`（CI）は Aoi の設定のままです。

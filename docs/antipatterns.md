@@ -17,3 +17,4 @@
 | `SCORE_IN_DOCS` | 診断用に生スコアをdocsやgitに残す | 掲載情報の転載にあたる | 生データは `data/`（git管理外）。docsの未知表記は数字を `#` に伏せる | Aoi |
 | `SILENT_NORMALIZATION` | 正規化した結果だけを残す | 何を変えたかが記録単位で追えない（Aoi Principle 2） | 原文 `raw_text` と派生値を並べ、`normalized` で変化の有無を残す | Aoi |
 | `UNRECORDED_PROVENANCE` | いつ・どこから・どのコードで取ったかを残さない | 再現も検証もできない（Aoi Principle 6, 8） | キャッシュの manifest.jsonl に URL・日時・ステータス・SHA-256・コードの版を追記する | Aoi |
+| `EMOJI_FORM_SPLIT` | U+FE0F の有無で同じ絵文字を別物として数える、または片方だけを探す | 見出しの 🗺️ と本文の 🗺 が別の項目になり、件数も対応表も割れる | `identity`（U+FE0F を除いた形）で数え、表記ごとの件数は `forms` に残す | browser-test-kit: EMOJI_VARIATION_SELECTOR |

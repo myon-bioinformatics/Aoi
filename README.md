@@ -245,3 +245,20 @@ import 失敗を成功扱いにしない。通常モードでは lab がない�
 
 `npb_team_annual.py` は1950年以降の両リーグの年度別要約表と、2005年以降の詳細な勝敗・打撃・投手・守備表を読む。
 個人表は抽出しない。未掲載の古い項目を0で補わず、未知の列は `unknown` に残す。観測のみで、率の再計算や表間の一致判定は行わない。
+
+## 保存済み HTML の絵文字観測（`emoji_observations.py`）
+
+```sh
+python emoji_observations.py page.html            # identity ごとの件数・表記・場所
+python emoji_observations.py page.html --json     # 1 出現 1 行の records と summary
+```
+
+本文・`<title>`・説明系の `<meta>`・属性（`aria-label` `title` `alt` `placeholder` など）に出る絵文字を、
+要素の位置（`html > body > nav > button`）、前後30文字の原文、操作要素の中か・そのラベル・`aria-hidden` とともに記録する。
+`script` `style` `template` `noscript` `svg` の中身と入力値（`value`）は表示文字ではないので読まない。
+上限を超えたら `unknown` に残す（黙って捨てない）。良し悪しは判断しない（例: ラベルのないボタンの中の絵文字は `unlabelled_control` として数えるだけ）。
+`observe_snapshot()` は QueRyu の `html-snapshot/1` を受け取り、`response_sha256`・`fetched_at` を各記録に引き継ぐ。
+
+判定は UTS #51 の形と Extended_Pictographic（Unicode 16.0）で、xprobe の `emoji_sequences` と同じ契約。
+他リポジトリのコードは import せず、`tests/cases/emoji_corpus.txt` と xprobe で作った期待値
+（`emoji_corpus.expected.json`、xprobe のコミットを記録）で揃える。名前の付与は QueRyu の `emoji_names.json` 側。

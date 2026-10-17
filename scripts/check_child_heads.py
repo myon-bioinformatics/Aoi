@@ -46,6 +46,8 @@ def validate_heads(doc: dict) -> dict:
         raise ValueError("expected child-heads/1")
     if not isinstance(doc["ref"], str) or not doc["ref"]:
         raise ValueError("child-heads ref must be a nonempty string")
+    if any(ord(ch) < 32 or ord(ch) == 127 for ch in doc["ref"]):
+        raise ValueError("child-heads ref must not contain control characters")
     if not isinstance(doc["heads"], dict) or not doc["heads"]:
         raise ValueError("child heads must be a nonempty object")
     for name, entry in doc["heads"].items():
@@ -74,7 +76,7 @@ def validate_heads(doc: dict) -> dict:
 def _reject_legacy_vendor_consumers(root: Path) -> None:
     if (root / LEGACY_VENDOR_CONSUMERS).exists():
         raise ValueError(
-            f"{LEGACY_VENDOR_CONSUMERS} is not used between Aoi and subtree children; remove the file"
+            "vendor-consumers.json is not used between Aoi and subtree children; remove the file"
         )
 
 

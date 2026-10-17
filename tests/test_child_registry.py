@@ -153,6 +153,7 @@ def _run(tmp_path, root, heads, *, network=True):
     (lambda d: d.update(schema="x"), 'expected child-heads/1'),
     (lambda d: d.update(extra=1), 'expected child-heads/1'),
     (lambda d: d.update(ref=""), 'child-heads ref must be a nonempty string'),
+    (lambda d: d.update(ref="main\x00"), 'child-heads ref must not contain control characters'),
     (lambda d: d.update(ref=1), 'child-heads ref must be a nonempty string'),
     (lambda d: d.update(heads={}), 'child heads must be a nonempty object'),
     (lambda d: d.update(heads=[]), 'child heads must be a nonempty object'),
@@ -195,11 +196,17 @@ def test_validate_heads_accepts_full_optional():
     assert cch.validate_heads(doc) is doc
 
 
-def test_reject_legacy_vendor_consumers(tmp_path):
+VENDOR_CONSUMERS_FILENAME = "vendor-consumers.json"
+VENDOR_CONSUMERS_MESSAGE = (
+    "vendor-consumers.json is not used between Aoi and subtree children; remove the file"
+)
+
+
+def test_reject_legacy_vendor_consumers_message(tmp_path):
     root = tmp_path / "root"
     root.mkdir()
-    (root / cch.LEGACY_VENDOR_CONSUMERS).write_text("{}", encoding="utf-8")
-    with pytest.raises(ValueError, match="not used between Aoi and subtree children"):
+    (root / VENDOR_CONSUMERS_FILENAME).write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match=f"^{re.escape(VENDOR_CONSUMERS_MESSAGE)}$"):
         cch._reject_legacy_vendor_consumers(root)
 
 
@@ -356,7 +363,7 @@ def _write_root(tmp_path, heads, files=None, *, legacy_vendor=False):
     root = tmp_path / "cli"
     payload = {"child-heads.json": json.dumps(heads)}
     if legacy_vendor:
-        payload[cch.LEGACY_VENDOR_CONSUMERS] = '{"schema":"vendor-consumers/1","consumers":[]}'
+        payload[VENDOR_CONSUMERS_FILENAME] = '{"schema":"vendor-consumers/1","consumers":[]}'
     payload.update(files or {"sub/a": "a"})
     _commit(root, payload)
     return root
@@ -395,9 +402,11 @@ def test_main_returns_1_on_diff_only_with_flag(tmp_path, capsys):
 
 def test_main_rejects_legacy_vendor_consumers(tmp_path, capsys):
     sha = _child(tmp_path, {"a": "a"})
-    root = _write_root(tmp_path, _heads(sha), legacy_vendor=True)
+    root = _write_root(tmp_path, _heads(sha), files={"sub/a": "a"})
+    (root / VENDOR_CONSUMERS_FILENAME).write_text('{"schema":"vendor-consumers/1"}', encoding="utf-8")
     rc, out, err = _main(capsys, "--root", root, "--url-template", _url(tmp_path))
-    assert rc == 2 and out == "" and "vendor-consumers.json" in err
+    assert rc == 2 and out == ""
+    assert VENDOR_CONSUMERS_MESSAGE in err
 
 
 def test_main_custom_heads_file(tmp_path, capsys):
@@ -422,7 +431,7 @@ def test_main_errors_return_2(tmp_path, capsys, case):
     if case == "shape":
         (root / "child-heads.json").write_text("{}", encoding="utf-8")
     if case == "legacy":
-        (root / cch.LEGACY_VENDOR_CONSUMERS).write_text("{}", encoding="utf-8")
+        (root / VENDOR_CONSUMERS_FILENAME).write_text("{}", encoding="utf-8")
     rc, out, err = _main(capsys, "--root", root, "--offline")
     assert rc == 2 and out == "" and re.fullmatch(r"check-child-heads: [^_].*\n", err, re.S)
 
@@ -449,7 +458,11 @@ def test_check_does_not_mutate_inputs(tmp_path):
     assert heads == before
 
 
-# --- coverage / mutation (stdlib only; targets scripts/check_child_heads.py) ---------------
+# --- coverage / mutation (targets scripts/check_child_heads.py) ---------------------------
+
+_COVERAGE_TEST_FILTER = (
+    "not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage"
+)
 
 _COMPARE_FLIPS = {
     ast.Eq: ast.NotEq,
@@ -461,7 +474,7 @@ _COMPARE_FLIPS = {
 }
 
 
-def _mutation_eligible(node: ast.AST) -> bool:
+def _compare_not_eligible(node: ast.AST) -> bool:
     if isinstance(node, ast.Compare):
         if len(node.ops) != 1 or type(node.ops[0]) not in _COMPARE_FLIPS:
             return False
@@ -472,14 +485,14 @@ def _mutation_eligible(node: ast.AST) -> bool:
     return isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not)
 
 
-def _mutant_source_at(source: str, target_index: int) -> str:
+def _mutant_compare_not_at(source: str, target_index: int) -> str:
     counter = 0
 
     class _Mutate(ast.NodeTransformer):
         def visit_Compare(self, node: ast.Compare):
             nonlocal counter
             node = self.generic_visit(node)
-            if not _mutation_eligible(node):
+            if not _compare_not_eligible(node):
                 return node
             if counter == target_index:
                 flip = _COMPARE_FLIPS[type(node.ops[0])]
@@ -490,7 +503,7 @@ def _mutant_source_at(source: str, target_index: int) -> str:
         def visit_UnaryOp(self, node: ast.UnaryOp):
             nonlocal counter
             node = self.generic_visit(node)
-            if not _mutation_eligible(node):
+            if not _compare_not_eligible(node):
                 return node
             if counter == target_index:
                 return node.operand
@@ -502,19 +515,19 @@ def _mutant_source_at(source: str, target_index: int) -> str:
     return ast.unparse(tree) + "\n"
 
 
-def _mutation_site_count(source: str) -> int:
+def _compare_not_site_count(source: str) -> int:
     counter = 0
 
     class _Count(ast.NodeVisitor):
         def visit_Compare(self, node: ast.Compare):
             nonlocal counter
-            if _mutation_eligible(node):
+            if _compare_not_eligible(node):
                 counter += 1
             self.generic_visit(node)
 
         def visit_UnaryOp(self, node: ast.UnaryOp):
             nonlocal counter
-            if _mutation_eligible(node):
+            if _compare_not_eligible(node):
                 counter += 1
             self.generic_visit(node)
 
@@ -522,116 +535,160 @@ def _mutation_site_count(source: str) -> int:
     return counter
 
 
-def _smoke_battery(mod, tmp_path: Path) -> None:
-    """Fast checks that must fail when check_child_heads.py is meaningfully mutated."""
-    heads_doc = _heads(SHA)
-    mod.validate_heads(heads_doc)
-    with pytest.raises(ValueError):
-        mod.validate_heads({})
-    root = _parent(tmp_path, {"sub/a": "a"})
-    mod._reject_legacy_vendor_consumers(root)
-    legacy = tmp_path / "legacy"
-    legacy.mkdir()
-    (legacy / mod.LEGACY_VENDOR_CONSUMERS).write_text("{}", encoding="utf-8")
-    with pytest.raises(ValueError):
-        mod._reject_legacy_vendor_consumers(legacy)
-    whole = {"p.py": ("100644", "1"), "sub/p.py": ("100644", "2")}
-    assert mod._mirrors(whole, "sub", {"p.py": "p.py"})["p.py"] == "different"
-    report = mod.check(root, heads_doc, network=False)
-    assert not mod.failed(report, fail_on_drift=False, fail_on_diff=False)
-    sha = _child(tmp_path, {"a": "a"})
-    root2 = _parent(tmp_path / "n", {"sub/a": "b"})
-    report2 = mod.check(root2, _heads(sha), network=True, url_template=_url(tmp_path))
-    assert report2["children"][0]["identical"] is False
-    assert mod.failed(report2, fail_on_drift=False, fail_on_diff=True)
-    cli_root = _write_root(tmp_path / "cli", heads_doc, files={"sub/a": "a"})
-    assert mod.main(["--root", str(cli_root), "--offline"]) == 0
+def _mutant_constant_at(source: str, target_index: int) -> str:
+    counter = 0
+    skip = {"__main__", "child-heads/1", "aoi-child-heads-check/1", "prefix_not_found", "fetch_failed: "}
+
+    class _Mutate(ast.NodeTransformer):
+        def visit_Constant(self, node: ast.Constant):
+            nonlocal counter
+            if not isinstance(node.value, str) or len(node.value) < 4 or node.value in skip:
+                return node
+            if counter == target_index:
+                mutated = node.value[:-1] + ("X" if node.value[-1] != "X" else "Y")
+                return ast.Constant(value=mutated)
+            counter += 1
+            return node
+
+    tree = _Mutate().visit(ast.parse(source))
+    ast.fix_missing_locations(tree)
+    return ast.unparse(tree) + "\n"
 
 
-def _trace_coverage_report() -> dict[str, int]:
-    import trace
+def _constant_mutation_site_count(source: str) -> int:
+    skip = {"__main__", "child-heads/1", "aoi-child-heads-check/1", "prefix_not_found", "fetch_failed: "}
+    return sum(
+        1
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+        and len(node.value) >= 4 and node.value not in skip
+    )
 
-    tracer = trace.Trace(count=1, trace=0, countcallers=0, countfuncs=0)
-    this_file = str(Path(__file__).resolve())
-    try:
-        tracer.runctx(
-            "import pytest; pytest.main(["
-            f"'-q', '{this_file}', '-k', "
-            "'not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage'"
-            "])",
-            {"pytest": pytest},
-            {},
-        )
-    except SystemExit as exc:
-        assert exc.code == 0, f"nested pytest failed: {exc.code}"
-    counts = tracer.results().counts
-    source_lines = SCRIPT.read_text(encoding="utf-8").splitlines()
-    executable = {
-        index + 1
-        for index, line in enumerate(source_lines)
-        if line.strip() and not line.lstrip().startswith("#")
+
+def _mutant_return_at(source: str, target_index: int) -> str:
+    counter = 0
+
+    class _Mutate(ast.NodeTransformer):
+        def visit_Return(self, node: ast.Return):
+            nonlocal counter
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, int):
+                if counter == target_index:
+                    return ast.Return(value=ast.Constant(value=node.value.value + 1))
+                counter += 1
+            return node
+
+    tree = _Mutate().visit(ast.parse(source))
+    ast.fix_missing_locations(tree)
+    return ast.unparse(tree) + "\n"
+
+
+def _return_mutation_site_count(source: str) -> int:
+    return sum(
+        1
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Return) and isinstance(node.value, ast.Constant)
+        and isinstance(node.value.value, int)
+    )
+
+
+def _enumerate_mutants(source: str) -> list[tuple[str, str]]:
+    mutants: list[tuple[str, str]] = []
+    for index in range(_compare_not_site_count(source)):
+        mutant = _mutant_compare_not_at(source, index)
+        if mutant != source:
+            mutants.append((f"compare-not-{index}", mutant))
+    for index in range(_constant_mutation_site_count(source)):
+        mutant = _mutant_constant_at(source, index)
+        if mutant != source:
+            mutants.append((f"constant-{index}", mutant))
+    for index in range(_return_mutation_site_count(source)):
+        mutant = _mutant_return_at(source, index)
+        if mutant != source:
+            mutants.append((f"return-{index}", mutant))
+    return mutants
+
+
+def _run_registry_tests_under_mutation(mutant_path: Path) -> int:
+    env = {
+        **os.environ,
+        "PYTHONPATH": str(ROOT / "scripts"),
+        "CHECK_CHILD_HEADS_MUTATED": str(mutant_path),
     }
-    unreachable = set()
-    in_doc = False
-    quote = None
-    for index, line in enumerate(source_lines, 1):
-        stripped = line.strip()
-        if stripped in {")", "}", "else:"}:
-            unreachable.add(index)
-        if not in_doc and (stripped.startswith('"""') or stripped.startswith("'''")):
-            quote = stripped[:3]
-            in_doc = True
-            unreachable.add(index)
-            if stripped.count(quote) >= 2 and len(stripped) > 3:
-                in_doc = False
-            continue
-        if in_doc:
-            unreachable.add(index)
-            if quote and quote in stripped:
-                in_doc = False
-            continue
-    unreachable.add(len(source_lines))  # `if __name__` / `raise SystemExit(main())`
-    if source_lines[-2].strip().startswith("if __name__"):
-        unreachable.add(len(source_lines) - 1)
-    covered = {
-        lineno
-        for (filename, lineno), hits in counts.items()
-        if filename == str(SCRIPT) and hits
-    }
-    uncovered = sorted(executable - covered - unreachable)
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", str(Path(__file__).resolve()), "-k", _COVERAGE_TEST_FILTER],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    return proc.returncode
+
+
+def _coverage_accounting() -> dict:
+    import coverage
+
+    cov_path = ROOT / ".coverage.check_child_heads"
+    cov_path.unlink(missing_ok=True)
+    env = {**os.environ, "PYTHONPATH": str(ROOT / "scripts"), "COVERAGE_FILE": str(cov_path)}
+    run = subprocess.run(
+        [sys.executable, "-m", "coverage", "run", "--branch", "--source=check_child_heads",
+         "-m", "pytest", "-q", str(Path(__file__).resolve()), "-k", _COVERAGE_TEST_FILTER],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if run.returncode != 0:
+        raise AssertionError(run.stdout + run.stderr)
+    cov = coverage.Coverage(data_file=str(cov_path))
+    cov.load()
+    measured = next(p for p in cov.get_data().measured_files() if p.endswith("check_child_heads.py"))
+    _fn, statements, missing, excluded, _missing_translate = cov.analysis2(measured)
+    statements_set = set(statements)
+    missing_set = set(missing)
+    excluded_set = set(excluded)
+    covered_set = statements_set - missing_set - excluded_set
+    assert statements_set == covered_set | missing_set | excluded_set
+    assert not (covered_set & missing_set)
+    assert not (covered_set & excluded_set)
+    assert not (missing_set & excluded_set)
+    json_path = ROOT / "build.coverage.check_child_heads.json"
+    json_path.parent.mkdir(exist_ok=True)
+    cov.json_report(outfile=str(json_path), include=[str(SCRIPT.relative_to(ROOT))])
+    summary = json.loads(json_path.read_text(encoding="utf-8"))["files"][str(SCRIPT.relative_to(ROOT))]["summary"]
+    assert summary["missing_lines"] == 0
+    assert summary["missing_branches"] == 0
+    assert summary["num_partial_branches"] == 0
     return {
-        "total": len(executable),
-        "covered": len(covered & executable),
-        "unreachable": len(unreachable & executable),
-        "uncovered": len(uncovered),
-        "uncovered_lines": uncovered,
+        "total": len(statements_set),
+        "covered": len(covered_set),
+        "unreachable": len(excluded_set),
+        "uncovered": len(missing_set),
+        "statements": summary["num_statements"],
+        "branches": summary["num_branches"],
+        "covered_branches": summary["covered_branches"],
+        "missing_branches": summary["missing_branches"],
+        "partial_branches": summary["num_partial_branches"],
     }
 
 
-def test_check_child_heads_line_and_branch_coverage(tmp_path):
-    line_report = _trace_coverage_report()
-    assert line_report["uncovered"] == 0, line_report
-    sites = _mutation_site_count(SCRIPT.read_text(encoding="utf-8"))
-    assert sites > 0
+def test_check_child_heads_line_and_branch_coverage():
+    report = _coverage_accounting()
+    assert report["uncovered"] == 0
+    assert report["covered"] + report["unreachable"] + report["uncovered"] == report["total"]
+    assert report["missing_branches"] == 0
+    assert report["partial_branches"] == 0
 
 
 def test_mutations_all_killed(tmp_path):
     source = SCRIPT.read_text(encoding="utf-8")
-    sites = _mutation_site_count(source)
-    assert sites > 0
+    mutants = _enumerate_mutants(source)
+    assert mutants, "no mutants generated"
     survived = []
-    equivalent = []
-    for index in range(sites):
-        mutant = _mutant_source_at(source, index)
-        if mutant == source:
-            equivalent.append(index)
-            continue
-        path = tmp_path / f"mut-{index}.py"
-        path.write_text(mutant, encoding="utf-8")
-        mod = _import_check_child_heads(path)
-        try:
-            _smoke_battery(mod, tmp_path / f"smoke-{index}")
-        except Exception:
-            continue
-        survived.append(index)
-    assert not survived, f"survived mutant indices: {survived} (equivalent skipped: {equivalent})"
+    for name, mutant_source in mutants:
+        path = tmp_path / f"{name}.py"
+        path.write_text(mutant_source, encoding="utf-8")
+        if _run_registry_tests_under_mutation(path) == 0:
+            survived.append(name)
+    assert not survived, f"survived mutants: {survived}"

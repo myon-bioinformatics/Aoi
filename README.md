@@ -121,3 +121,17 @@ CI runner・証跡の実行管理は NagoyAction が担う。この変更では�
 `annual_scope.py`は参考キャッシュから主対象140ページだけを検証・コピーする。
 データセットのmanifestには、解析に用いたsourceモジュール自体の `source_code_sha256` も残す。
 範囲・照合・再実行は [c001の取得・架空検証記録](../cycles/c001-chunichi/annual-history-synthetic.md)。
+
+## Stdlib cache distribution
+
+`cache_core.py` is the minimal offline API (`Cache`, `CacheIntegrityError`). It
+verifies the original body bytes and exports `html-snapshot/1`, without BlueProbe,
+NumPy, HTTP clients, Aoi files or an implicit source checkout. Unknown code
+provenance remains `None`; callers may pass `source_version` explicitly. The full
+`queryu.Cache` subclasses this core and retains its existing Git/timestamp hooks.
+
+The Aoi parent builds `queryu_min.py` with the account parent's `tools/minpy.py`.
+The min API is the cache/snapshot subset, not the full planner or question index.
+Acquisition uses the existing synchronous urllib client; no asynchronous support
+is claimed by the min artifact. Whole-tree subtree synchronization remains the
+Aoi/QueRyu development relationship. MIT notices are kept in `LICENSE`.

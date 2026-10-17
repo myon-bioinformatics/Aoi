@@ -1,3 +1,52 @@
+> **独立リポジトリ**: このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト `pythdragoras/` から独立したものです。
+> 親は Aoi（Aoi の親は myon-bioinformatics）。Aoi の `pythdragoras/` とは `git subtree` で同期します（下の「Aoi との同期」）。
+> 以下の本文は Aoi の `pythdragoras/README.md` と同じで、`../docs/` や `cycles/` への相対リンクは Aoi のリポジトリの中を指します。
+
+## このリポジトリで動かす
+
+サイクルデータ（`cycles/`）、`scripts/`、SakAnalytics は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
+
+```bash
+git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
+git -C .test-deps/aoi checkout 535243035ce3a9c9025a2384cd52fa2cba3d8100   # docs/ci/ci.yml.proposed の AOI_SHA
+AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
+  uv run pytest -q --junitxml=reports/junit.xml
+```
+
+- パスは Aoi PR #49 の規約（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
+- `AOI_ROOT` が Aoi を指していないと、pytest は最初に止まって理由を出します。
+- 依存は polars と numpy だけです（ortools は使っていません）。
+
+## vendor
+
+`vendor.lock.json`（vendor-lock/1）で固定し、親 myon-bioinformatics の `vendor_sync.py`（`1eda992aa6fa31a902e2c06428e53ab17e8fe3c1`）で検証します。共有するのは標準モジュールだけの単一ファイルだけです。
+
+| ファイル | 取得元 |
+|---|---|
+| `aoi_paths.py` | Aoi `aoi_paths.py` @ `535243035ce3a9c9025a2384cd52fa2cba3d8100` |
+| `vendor/Aoi-LICENSE` | Aoi `LICENSE` @ 同上 |
+
+`aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
+
+```bash
+python -S vendor_sync.py check --manifest vendor.lock.json
+```
+
+## Aoi との同期
+
+Aoi 側（`pythdragoras/` が subtree）:
+
+```bash
+git subtree pull --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main --squash
+git subtree push --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git <branch>
+```
+
+- 最初の履歴は Aoi `070dc6430e57f9912661ef88db826462e1bc76bb` の `pythdragoras/` から切り出しました（72 コミット、先頭 `9d7a6efa6a56e2da2eb55b408fd1a04fbd18afaf`、tree は Aoi の `pythdragoras/` と同じ `84ca7676b7ae6699b40dffc607af97405b83b8c6`）。
+- git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭（25 コミット、7 ファイル）を返したため、`git filter-branch --subdirectory-filter pythdragoras` で切り出しています。
+- Aoi に取り込まないファイル: `pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、`.github/`、`docs/ci/`（Aoi 側の設定と二重になるため）。
+
+---
+
 # PythDRagoras（実装）
 
 > 本当にその説明で十分か？

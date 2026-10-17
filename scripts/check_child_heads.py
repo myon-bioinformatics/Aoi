@@ -5,8 +5,7 @@
   親と同じ validator で確かめ、子の vendor lock と登録の topology も比べる。
 - 子の main の今の SHA と、登録した SHA のずれ（drift）を出す。
 - 登録した SHA の子の tree と、Aoi の subtree_prefix の tree の差分を、blob と mode で出す。
-  not_in_parent（子だけに置くパス）は比べず、Aoi の prefix の下にあれば excluded_in_parent に出す。
-  child_preamble のファイルは、子の中身が Aoi の中身で終わっていれば一致とみなす（子だけの前書き）。
+  子は prefix の純粋な subtree（除外するファイルはない）。not_in_parent / child_preamble は受け付けない。
 - mirrored_from_parent（prefix の下のパス → Aoi の原本のパス）は、Aoi の中で blob と mode が原本と
   同じかを確かめ、違えば失敗にする（共有するルートのファイルを子に通常のファイルとして置くとき）。
 - vendor-consumers.json はなくてもよい（vendor する子がいなければ置かない）。
@@ -30,6 +29,7 @@ from pathlib import Path
 HEX40 = re.compile(r"[0-9a-f]{40}")
 REPO = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 URL_TEMPLATE = "https://github.com/{repository}.git"
+UNSUPPORTED = ("not_in_parent", "child_preamble")
 VENDOR_FAILURES = ("topology_mismatch", "lock_missing_at_recorded_sha", "lock_invalid")
 
 
@@ -43,12 +43,6 @@ def _git_bytes(*args, cwd=None, timeout=300) -> bytes:
 
 def _git(*args, cwd=None, timeout=300) -> str:
     return _git_bytes(*args, cwd=cwd, timeout=timeout).decode("utf-8")
-
-
-def _paths(value, label: str) -> list[str]:
-    if not isinstance(value, list) or not all(isinstance(s, str) and s for s in value):
-        raise ValueError(f"{label} must be a list of paths")
-    return value
 
 
 def validate_heads(doc: dict) -> dict:
@@ -71,16 +65,13 @@ def validate_heads(doc: dict) -> dict:
         prefix = optional.get("subtree_prefix")
         if not isinstance(prefix, str) or not prefix or prefix.startswith("/") or ".." in prefix.split("/"):
             raise ValueError(f"{name}: optional.subtree_prefix is required")
-        skip = _paths(optional.get("not_in_parent", []), f"{name}: optional.not_in_parent")
-        preamble = _paths(optional.get("child_preamble", []), f"{name}: optional.child_preamble")
-        if any(_skipped(p, skip) for p in preamble):
-            raise ValueError(f"{name}: optional.child_preamble overlaps not_in_parent")
+        for key in UNSUPPORTED:
+            if key in optional:
+                raise ValueError(f"{name}: optional.{key} is not supported (the child is a pure subtree)")
         mirrors = optional.get("mirrored_from_parent", {})
         if not isinstance(mirrors, dict) or not all(isinstance(k, str) and k and isinstance(v, str) and v
                                                     for k, v in mirrors.items()):
             raise ValueError(f"{name}: optional.mirrored_from_parent must map paths to paths")
-        if any(_skipped(p, skip) for p in mirrors):
-            raise ValueError(f"{name}: optional.mirrored_from_parent overlaps not_in_parent")
     return doc
 
 
@@ -106,10 +97,6 @@ def validate_consumers(doc: dict) -> dict:
             if not all(isinstance(entry[k], str) and entry[k] for k in entry):
                 raise ValueError("consumer entry fields must be nonempty strings")
     return doc
-
-
-def _skipped(path: str, skip: list[str]) -> bool:
-    return any(path == s.rstrip("/") or (s.endswith("/") and path.startswith(s)) for s in skip)
 
 
 def _tree(repo: Path, rev: str) -> dict[str, tuple[str, str]]:
@@ -167,10 +154,8 @@ def _vendor(consumers: dict | None, name: str, child_tree: dict, bare: Path, vc)
     return "topology_match" if want == got else "topology_mismatch"
 
 
-def _child(root: Path, name: str, entry: dict, parent_tree: dict, consumers: dict | None, vc, *, ref: str,
+def _child(name: str, entry: dict, parent_tree: dict, consumers: dict | None, vc, *, ref: str,
            url_template: str, row: dict) -> None:
-    optional = entry["optional"]
-    skip, preamble = optional.get("not_in_parent", []), optional.get("child_preamble", [])
     url = url_template.format(repository=name)
     live = _git("ls-remote", url, f"refs/heads/{ref}", timeout=120).split()
     row["live_sha"] = live[0] if live else None
@@ -181,25 +166,10 @@ def _child(root: Path, name: str, entry: dict, parent_tree: dict, consumers: dic
         _git("fetch", "-q", "--depth=1", url, entry["sha"], cwd=bare)
         child_tree = _tree(bare, entry["sha"])
         row["vendor"] = _vendor(consumers, name, child_tree, bare, vc)
-        child_cmp = {p: b for p, b in child_tree.items() if not _skipped(p, skip)}
-        parent_cmp = {p: b for p, b in parent_tree.items() if not _skipped(p, skip)}
-        different = []
-        for path in sorted(parent_cmp.keys() & child_cmp.keys()):
-            (pmode, pobj), (cmode, cobj) = parent_cmp[path], child_cmp[path]
-            if pmode != cmode:
-                different.append(path)
-            elif pobj != cobj:
-                if path not in preamble:
-                    different.append(path)
-                else:
-                    body = _git_bytes("cat-file", "blob", pobj, cwd=root)
-                    if not _git_bytes("cat-file", "blob", cobj, cwd=bare).endswith(body):
-                        different.append(path)
     row["diff"] = {
-        "only_in_parent": sorted(parent_cmp.keys() - child_cmp.keys()),
-        "only_in_child": sorted(child_cmp.keys() - parent_cmp.keys()),
-        "different": different,
-        "excluded_in_parent": row["excluded_in_parent"],
+        "only_in_parent": sorted(parent_tree.keys() - child_tree.keys()),
+        "only_in_child": sorted(child_tree.keys() - parent_tree.keys()),
+        "different": sorted(p for p in parent_tree.keys() & child_tree.keys() if parent_tree[p] != child_tree[p]),
     }
     row["identical"] = not any(row["diff"].values())
 
@@ -216,16 +186,15 @@ def check(root: Path, heads: dict, consumers: dict | None, *, network: bool, too
     whole = _tree(root, "HEAD")
     for name, entry in sorted(heads["heads"].items()):
         optional = entry["optional"]
-        prefix, skip = optional["subtree_prefix"], optional.get("not_in_parent", [])
+        prefix = optional["subtree_prefix"]
         row = {"repository": name, "recorded_sha": entry["sha"], "prefix": prefix}
         parent_tree = {p[len(prefix) + 1:]: b for p, b in whole.items() if p.startswith(prefix + "/")}
-        row["excluded_in_parent"] = sorted(p for p in parent_tree if _skipped(p, skip))
         row["mirrors"] = _mirrors(whole, prefix, optional.get("mirrored_from_parent", {}))
         if not parent_tree:
             row["error"] = "prefix_not_found"
         if network:
             try:
-                _child(root, name, entry, parent_tree, consumers, vc, ref=heads["ref"],
+                _child(name, entry, parent_tree, consumers, vc, ref=heads["ref"],
                        url_template=url_template, row=row)
             except (RuntimeError, subprocess.SubprocessError, OSError) as error:
                 row["error"] = "fetch_failed: " + str(error)
@@ -238,7 +207,7 @@ def failed(report: dict, *, fail_on_drift: bool, fail_on_diff: bool) -> bool:
     bad = any("error" in c or c.get("vendor") in VENDOR_FAILURES for c in rows)
     bad |= any(state != "identical" for c in rows for state in c["mirrors"].values())
     bad |= fail_on_drift and any(c.get("drift") for c in rows)
-    bad |= fail_on_diff and any(c.get("identical") is False or c["excluded_in_parent"] for c in rows)
+    bad |= fail_on_diff and any(c.get("identical") is False for c in rows)
     return bad
 
 

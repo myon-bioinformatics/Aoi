@@ -43,8 +43,9 @@ def test_pythdragoras_registered_with_exact_ids_and_mirrors():
     assert entry["repository_id"] == 1423045231
     assert entry["optional"]["subtree_prefix"] == "pythdragoras"
     assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
-    for path in entry["optional"]["not_in_parent"]:
-        assert not (ROOT / "pythdragoras" / path.rstrip("/")).exists(), path
+    assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
+    for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore"):
+        assert (ROOT / "pythdragoras" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
 
 
 def test_queryu_registered_with_exact_ids():
@@ -60,7 +61,6 @@ def test_registered_mirrors_are_blob_identical_to_aoi_originals():
     report = cch.check(ROOT, cch.validate_heads(_load("child-heads.json")), None, network=False, tools=None)
     for row in report["children"]:
         assert set(row["mirrors"].values()) <= {"identical"}, row
-        assert row["excluded_in_parent"] == [], row
 
 
 def test_offline_cli_passes():
@@ -164,16 +164,12 @@ def _run(tmp_path, root, heads, consumers=None, *, tools=None, network=True):
     (lambda d: d["heads"][NAME]["optional"].update(subtree_prefix=""), 'o/child: optional.subtree_prefix is required'),
     (lambda d: d["heads"][NAME]["optional"].update(subtree_prefix="/abs"), 'o/child: optional.subtree_prefix is required'),
     (lambda d: d["heads"][NAME]["optional"].update(subtree_prefix="a/../b"), 'o/child: optional.subtree_prefix is required'),
-    (lambda d: d["heads"][NAME]["optional"].update(not_in_parent="x"), 'o/child: optional.not_in_parent must be a list of paths'),
-    (lambda d: d["heads"][NAME]["optional"].update(not_in_parent=[""]), 'o/child: optional.not_in_parent must be a list of paths'),
-    (lambda d: d["heads"][NAME]["optional"].update(not_in_parent=[1]), 'o/child: optional.not_in_parent must be a list of paths'),
-    (lambda d: d["heads"][NAME]["optional"].update(child_preamble=[1]), 'o/child: optional.child_preamble must be a list of paths'),
-    (lambda d: d["heads"][NAME]["optional"].update(not_in_parent=["docs/"], child_preamble=["docs/README.md"]), 'o/child: optional.child_preamble overlaps not_in_parent'),
+    (lambda d: d["heads"][NAME]["optional"].update(not_in_parent=[]), 'o/child: optional.not_in_parent is not supported (the child is a pure subtree)'),
+    (lambda d: d["heads"][NAME]["optional"].update(child_preamble=["README.md"]), 'o/child: optional.child_preamble is not supported (the child is a pure subtree)'),
     (lambda d: d["heads"][NAME]["optional"].update(mirrored_from_parent=[]), 'o/child: optional.mirrored_from_parent must map paths to paths'),
     (lambda d: d["heads"][NAME]["optional"].update(mirrored_from_parent={"a": ""}), 'o/child: optional.mirrored_from_parent must map paths to paths'),
     (lambda d: d["heads"][NAME]["optional"].update(mirrored_from_parent={"": "a"}), 'o/child: optional.mirrored_from_parent must map paths to paths'),
     (lambda d: d["heads"][NAME]["optional"].update(mirrored_from_parent={"a": 1}), 'o/child: optional.mirrored_from_parent must map paths to paths'),
-    (lambda d: d["heads"][NAME]["optional"].update(not_in_parent=["a"], mirrored_from_parent={"a": "a"}), 'o/child: optional.mirrored_from_parent overlaps not_in_parent'),
 ])
 def test_validate_heads_rejects(mutate, message):
     doc = _heads(SHA)
@@ -189,8 +185,7 @@ def test_validate_heads_accepts_repository_id_one():
 
 
 def test_validate_heads_accepts_full_optional():
-    doc = _heads(SHA, not_in_parent=["a/", "b"], child_preamble=["README.md"],
-                 mirrored_from_parent={"p.py": "p.py"}, other="free")
+    doc = _heads(SHA, mirrored_from_parent={"p.py": "p.py"}, other="free")
     assert cch.validate_heads(doc) is doc
 
 
@@ -225,14 +220,6 @@ def test_validate_consumers_accepts_locked_and_legacy_without_lock():
     doc["consumers"].append({"repository": "o/other", "state": "legacy", "lock": None,
                              "entries": [{"repository": "o/a", "source": "s", "destination": "d"}]})
     assert cch.validate_consumers(doc) is doc
-
-
-@pytest.mark.parametrize(("path", "skip", "want"), [
-    ("a", ["a"], True), ("a", ["a/"], True), ("a/b", ["a/"], True), ("a/b", ["a"], False),
-    ("ab", ["a/"], False), ("b", ["a", "b/"], True), ("c", [], False), ("a_", ["a_"], True), ("aX", ["aX"], True),
-])
-def test_skipped(path, skip, want):
-    assert cch._skipped(path, skip) is want
 
 
 def test_tree_uses_nul_records_and_keeps_mode(tmp_path):
@@ -291,54 +278,34 @@ def test_mirror_drift_fails_offline_and_identical_passes(tmp_path):
 
 # --- drift / diff ------------------------------------------------------------------------
 
-def test_identical_child_with_exclusions_preamble_and_mirror(tmp_path):
-    sha = _child(tmp_path, {"a.py": "a", "README.md": "child only\n---\nbody\n", "p.py": "p",
-                            "pyproject.toml": "c", ".github/x.yml": "w", "run.sh": ("x", "x")})
-    root = _parent(tmp_path, {"p.py": "p", "sub/a.py": "a", "sub/README.md": "body\n", "sub/p.py": "p",
-                              "sub/run.sh": ("x", "x")})
-    heads = _heads(sha, not_in_parent=["pyproject.toml", ".github/"], child_preamble=["README.md"],
-                   mirrored_from_parent={"p.py": "p.py"})
+def test_identical_pure_subtree_with_mirror(tmp_path):
+    sha = _child(tmp_path, {"a.py": "a", "README.md": "r", "p.py": "p", "pyproject.toml": "c",
+                            ".github/x.yml": "w", "run.sh": ("x", "x")})
+    root = _parent(tmp_path, {"p.py": "p", "sub/a.py": "a", "sub/README.md": "r", "sub/p.py": "p",
+                              "sub/pyproject.toml": "c", "sub/.github/x.yml": "w", "sub/run.sh": ("x", "x")})
+    heads = _heads(sha, mirrored_from_parent={"p.py": "p.py"})
     row = _run(tmp_path, root, heads)["children"][0]
     assert row["live_sha"] == sha and row["drift"] is False and row["identical"] is True
     assert row["vendor"] is None and "error" not in row
-    assert row["diff"] == {"only_in_parent": [], "only_in_child": [], "different": [], "excluded_in_parent": []}
+    assert row["diff"] == {"only_in_parent": [], "only_in_child": [], "different": []}
 
 
-def test_diff_categories_mode_preamble_and_excluded(tmp_path):
-    sha = _child(tmp_path, {"same": "s", "blob": "child", "mode": ("m", "x"), "README.md": "pre\nwrong\n",
-                            "child_only": "c", "uv.lock": "l"})
+def test_diff_categories_and_mode(tmp_path):
+    sha = _child(tmp_path, {"same": "s", "blob": "child", "mode": ("m", "x"), "child_only": "c"})
     _commit(tmp_path / "work" / NAME, {"later": "l"})
     _git(tmp_path / "work" / NAME, "push", "-q", str(tmp_path / "remotes" / f"{NAME}.git"), "HEAD:main")
-    root = _parent(tmp_path, {"sub/same": "s", "sub/blob": "parent", "sub/mode": "m", "sub/README.md": "body\n",
-                              "sub/parent_only": "p", "sub/uv.lock": "l"})
-    heads = _heads(sha, not_in_parent=["uv.lock"], child_preamble=["README.md"])
-    report = _run(tmp_path, root, heads)
+    root = _parent(tmp_path, {"sub/same": "s", "sub/blob": "parent", "sub/mode": "m", "sub/parent_only": "p"})
+    report = _run(tmp_path, root, _heads(sha))
     row = report["children"][0]
     assert row["drift"] is True and row["live_sha"] != sha
     assert row["diff"] == {"only_in_parent": ["parent_only"], "only_in_child": ["child_only"],
-                           "different": ["README.md", "blob", "mode"], "excluded_in_parent": ["uv.lock"]}
+                           "different": ["blob", "mode"]}
     assert row["identical"] is False
     assert {k: row[k] for k in ("repository", "recorded_sha", "prefix")} == {"repository": NAME, "recorded_sha": sha,
                                                                             "prefix": "sub"}
     assert not cch.failed(report, fail_on_drift=False, fail_on_diff=False)
     assert cch.failed(report, fail_on_drift=True, fail_on_diff=False)
     assert cch.failed(report, fail_on_drift=False, fail_on_diff=True)
-
-
-def test_suffix_match_only_for_preamble_files(tmp_path):
-    sha = _child(tmp_path, {"README.md": "pre\nbody", "other.md": "pre\nbody"})
-    root = _parent(tmp_path, {"sub/README.md": "body", "sub/other.md": "body"})
-    row = _run(tmp_path, root, _heads(sha, child_preamble=["README.md"]))["children"][0]
-    assert row["diff"]["different"] == ["other.md"]
-
-
-def test_excluded_in_parent_alone_fails_on_diff(tmp_path):
-    root = _parent(tmp_path, {"sub/a": "a", "sub/conftest.py": "x"})
-    report = _run(tmp_path, root, _heads(SHA, not_in_parent=["conftest.py"]), network=False)
-    assert report["children"][0]["excluded_in_parent"] == ["conftest.py"]
-    assert "identical" not in report["children"][0]
-    assert cch.failed(report, fail_on_drift=False, fail_on_diff=True)
-    assert not cch.failed(report, fail_on_drift=True, fail_on_diff=False)
 
 
 def test_missing_ref_is_drift_with_null_live_sha(tmp_path):
@@ -425,7 +392,7 @@ def _vendor_case(tmp_path, lock, consumers, tools=None):
         files["vendor.lock.json"] = lock if isinstance(lock, str) else json.dumps(lock)
     sha = _child(tmp_path, files)
     root = _parent(tmp_path, {"sub/a": "a"})
-    report = _run(tmp_path, root, _heads(sha, not_in_parent=["vendor.lock.json"]), consumers, tools=tools)
+    report = _run(tmp_path, root, _heads(sha), consumers, tools=tools)
     return report
 
 
@@ -453,7 +420,7 @@ def test_vendor_without_tools(tmp_path, lock, consumers, want):
 def test_vendor_lock_not_utf8_is_invalid(tmp_path):
     sha = _child(tmp_path, {"a": "a", "vendor.lock.json": b"\xff\xfe\x00"})
     root = _parent(tmp_path, {"sub/a": "a"})
-    report = _run(tmp_path, root, _heads(sha, not_in_parent=["vendor.lock.json"]), _consumers())
+    report = _run(tmp_path, root, _heads(sha), _consumers())
     assert report["children"][0]["vendor"] == "lock_invalid"
 
 

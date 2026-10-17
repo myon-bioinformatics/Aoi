@@ -1,3 +1,62 @@
+> **独立リポジトリ**: このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト `sakanalytics/` から独立したものです。
+> 親は Aoi（Aoi の親は myon-bioinformatics）。tree は Aoi の `sakanalytics/` とまったく同じで（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）、`git subtree` で同期します（下の「Aoi との同期」）。
+> この README は Aoi の `sakanalytics/README.md` と同じファイルです。`../docs/` や `cycles/` への相対リンクは Aoi のリポジトリの中を指します。
+
+## このリポジトリで動かす
+
+サイクルデータ（`cycles/`）と PythDRagoras（`propositions`）は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
+
+```bash
+git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
+git -C .test-deps/aoi checkout 0a1751a60ac64708d679f22950aa2b14cf688efd   # .github/workflows/ci.yml の AOI_SHA
+AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
+  uv run --locked pytest -q --junitxml=reports/junit.xml
+```
+
+- パスは Aoi の規約（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
+- `AOI_ROOT` が Aoi を指していない（`cycles/` がない）と、pytest は最初に止まって理由を出します。
+- 実行時の依存は polars だけです。ortools は任意で、`season-requirements.txt` を入れたときだけ exact の求解が動き、無ければそのテストは skip します。
+- テストは、これに加えて `AOI_ROOT` の Aoi を使います。
+  - `cycles/` のサイクルデータ。
+  - PythDRagoras の `propositions`: `proposition_seed_audit.py` と `synthetic_rule_discovery.py`（`PYTHONPATH` の `pythdragoras`）。
+  - これ以外に Aoi の兄弟サブプロジェクトと `scripts/` を使わないことは、`tests/test_no_sibling_imports.py` で確かめます（`propositions` が既知の例外です）。
+
+## aoi_paths.py
+
+`aoi_paths.py` は Aoi 直下の `aoi_paths.py` と同じ中身の通常のファイルです（blob `aa0d41f8b5a017b9b677ed0fecea327bdd5cd1af`。vendor lock は使いません）。Aoi では `sakanalytics/aoi_paths.py` になり、Aoi の `scripts/check_child_heads.py` が Aoi 直下の原本と blob と mode が同じかを確かめます（`child-heads.json` の `optional.mirrored_from_parent`）。直すときは Aoi の原本を直し、同じ中身をここに置きます。
+
+`aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
+
+## Aoi との同期
+
+このリポジトリは Aoi の `sakanalytics/` の subtree です。除外するファイルはなく、Aoi の `sakanalytics/` の tree とこのリポジトリの tree は同じです。Aoi の中では `sakanalytics/.github/` は動かず（GitHub が読むのはリポジトリ直下の `.github/` だけ）、`sakanalytics/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめます。
+
+- 履歴は Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd`（main、#57 のマージコミット）の `sakanalytics/` から履歴を残して切り出しました（main `67c8781b0e606ab41f56f717c2a84efa67b98533`、切り出し時点の tree `a54fc414f1959f7619619c0ae9398ff2fe8fbcbb` は Aoi の `sakanalytics/` と同じ）。
+- この履歴は Aoi の履歴とつながっていないので、Aoi に一度だけ join を入れます。`git-subtree-split:` にこのリポジトリの main のコミットを書いた squash コミット（tree はこのリポジトリと同じ）を、Aoi の tree を変えないマージの2つ目の親にします。join 以降は `git subtree` が join を起点にします。
+- join は2つ目の親として残す必要があります。join を含む Aoi の PR は squash せず、merge commit で入れます（squash すると2つ目の親が消え、`git subtree pull` と `split` が止まります）。
+- `git-subtree-split:` のコミットはこのリポジトリの main にある必要があります。このリポジトリの PR を squash マージして main の sha が変わったときは、Aoi で同じ tree の join を入れ直します。
+
+子 → Aoi（Aoi の main から作ったブランチで）:
+
+```bash
+git subtree pull --prefix=sakanalytics https://github.com/myon-bioinformatics/sakanalytics.git main --squash
+test "$(git rev-parse HEAD:sakanalytics)" = "$(git rev-parse FETCH_HEAD^{tree})"   # Aoi 側に未同期の変更がないとき
+```
+
+Aoi → 子（Aoi の main で）:
+
+```bash
+git fetch https://github.com/myon-bioinformatics/sakanalytics.git main   # split の起点のコミットを手元に置く
+git subtree split --prefix=sakanalytics -b sync/sakanalytics
+test "$(git rev-parse sync/sakanalytics^{tree})" = "$(git rev-parse HEAD:sakanalytics)"
+git push https://github.com/myon-bioinformatics/sakanalytics.git sync/sakanalytics:refs/heads/<新しいブランチ>
+```
+
+- push したブランチからこのリポジトリに PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、Aoi 側の起点をこのリポジトリの main に付け直します（squash マージでは split のコミットが main に残らないため）。
+- Aoi の `scripts/check_child_heads.py --fail-on-diff` が、Aoi の `child-heads.json` に登録した sha の tree と Aoi の `sakanalytics/` を比べます。
+
+---
+
 # SakAnalytics
 
 > 数字は語る。だが、まだ語りきっていないことがある。

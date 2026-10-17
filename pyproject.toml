@@ -1,0 +1,20 @@
+[project]
+name = "sakanalytics"
+version = "0.1.0"
+description = "数字は語る。だが、まだ語りきっていないことがある（Aoi の sakanalytics/ から独立）"
+requires-python = ">=3.11"
+dependencies = [
+    "polars>=2",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+# サイクルデータと PythDRagoras（propositions）は Aoi に残す。AOI_ROOT と PYTHONPATH で固定 SHA の Aoi を指す（.github/workflows/ci.yml）
+pythonpath = ["."]
+testpaths = ["tests"]
+norecursedirs = [".test-deps", "build", "reports"]

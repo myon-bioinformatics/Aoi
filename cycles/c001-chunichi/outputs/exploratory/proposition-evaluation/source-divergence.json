@@ -1,0 +1,16 @@
+{
+  "schema": "aoi-source-divergence/1",
+  "artifact": "seed-evaluation.json",
+  "recorded": "2026-10-17",
+  "source_divergence": [
+    {
+      "path": "sakanalytics/proposition_seed_audit.py",
+      "field": "analysis_sha256",
+      "evidence_sha256": "956044dbb58a9aa6fde60d5e6d47887cc405d8079a9e73a8736bbb584fb0627b",
+      "current_sha256": "b2aaa475cae57490a7a1b5566d3c1cc2ee87a4726cd91e9a221a3f4c4dfa5478",
+      "artifacts_regenerated": false,
+      "inputs_regenerated": false,
+      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() of sakanalytics/proposition_seed_audit.py (top-level AST comparison): paths now resolve through aoi_layout/aoi_paths, with new --root/--cycle and AOI_ROOT / AOI_RESEARCH_CYCLE. That commit rewrote analysis_sha256 in seed-evaluation.json to the new file hash without running the generator. seed-evaluation.json is restored byte for byte to 070dc64, so analysis_sha256 is again the hash of the file that produced it. This is not a regenerated baseline."
+    }
+  ]
+}

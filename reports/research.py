@@ -1,7 +1,7 @@
 """Render saved research manifests without rerunning the evaluator."""
 import json
 from pathlib import Path
-from dragowing import render_report
+from dragowing.research_report import render_report
 
 
 def build(state: Path):

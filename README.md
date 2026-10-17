@@ -58,6 +58,7 @@ git subtree pull -P blueprobe https://github.com/myon-bioinformatics/BlueProbe m
 | `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`） |
 | `npb_calendar.py` | 取得元: npb.jp の月別公式戦カレンダー |
 | `docs/npb_calendar.md` | その取得元で、どの年の何を確認したか（観測と未確認を分ける） |
+| `npb_team_annual.py` | 取得元: npb.jp の年度別チーム表（1950年以降の要約、2005年以降の詳細表） |
 | `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
 | `docs/contract/v1/` | 報告と snapshot 記録の契約（追加はv1のまま、破壊的変更はv2） |
 | `docs/boundaries.md` | BlueProbe / QueRyu / web-ui の責務の境界（提案） |
@@ -235,3 +236,8 @@ import 失敗を成功扱いにしない。通常モードでは lab がない�
 当時の lab なしではさらに実 extractor の2テストを skip した。初回 PR 本文の `284 passed` は
 過去の検証記録であり、現在の全テスト件数として扱わない。CI の結果は
 [PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15) の最新実行で確認する。
+
+## NPB年間チーム表
+
+`npb_team_annual.py` は1950年以降の両リーグの年度別要約表と、2005年以降の詳細な勝敗・打撃・投手・守備表を読む。
+個人表は抽出しない。未掲載の古い項目を0で補わず、未知の列は `unknown` に残す。観測のみで、率の再計算や表間の一致判定は行わない。

@@ -3,7 +3,6 @@ import datetime as dt
 import json
 from types import SimpleNamespace
 
-import httpx
 import pytest
 
 import ask
@@ -89,12 +88,11 @@ def test_plan_counts_actual_request_headers_and_sleeps(tmp_path, monkeypatch):
 
     def handler(request):
         calls.append(request)
-        return httpx.Response(304 if request.headers.get("If-None-Match") else 404)
+        return queryu.Response(304 if request.headers.get("If-None-Match") else 404)
 
-    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
-        fetcher = PoliteFetcher(cache, wait=2, client=client)
-        for key, url, group in pages:
-            fetcher.get(key, url, group, live=group == "2026")
+    fetcher = PoliteFetcher(cache, wait=2, client=queryu.HandlerClient(handler))
+    for key, url, group in pages:
+        fetcher.get(key, url, group, live=group == "2026")
     conditional = sum(bool(r.headers.get("If-None-Match") or r.headers.get("If-Modified-Since")) for r in calls)
     assert plan["cached"] == 1
     assert plan["conditional"] == conditional == 1
@@ -117,7 +115,7 @@ def test_plan_wait_boundaries(tmp_path, count):
 def test_offline_plan_has_no_http_or_sleep_and_reports_missing(tmp_path, monkeypatch, capsys):
     cache = Cache(tmp_path / "cache")
     cache.put("2026_03", "https://example.test/march", "2026", 200, b"cached", {"etag": '"v1"'})
-    monkeypatch.setattr(httpx, "Client", lambda **kw: pytest.fail("offline plan created a client"))
+    monkeypatch.setattr(queryu, "UrllibClient", lambda **kw: pytest.fail("offline plan created a client"))
     assert main(["--source", "npb_calendar", "--years", "2026", "--cache", str(cache.root),
                  "--frozen", str(tmp_path / "frozen.json"), "--today", "2026-04-01", "--offline", "--plan"]) == 0
     output = capsys.readouterr().out

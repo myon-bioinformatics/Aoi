@@ -51,6 +51,10 @@ jobs:
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Verify recovered evidence against pinned Git history
+        run: python scripts/audit_recovery_provenance.py
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}

@@ -14,10 +14,36 @@ CYCLE = aoi_paths.resolve_cycle_path(ROOT)
 OUT=CYCLE/'outputs/exploratory/proposition-evaluation'
 
 
+def _recorded_source_sha(out, artifact, field, recorded, source):
+    """記録の生成元ハッシュを確かめる。記録は書き換えない（自動で基準を更新しない）。
+
+    今のファイルが記録と同じなら、それで終わり。違うなら、source-divergence.json に
+    その差（記録時のハッシュ → 今のハッシュ、生成物は作り直していない）が書いてあることを求める。
+    """
+    current = hashlib.sha256(source.read_bytes()).hexdigest()
+    path = out / 'source-divergence.json'
+    rows = json.loads(path.read_text(encoding='utf-8'))['source_divergence'] if path.exists() else []
+    rel = source.relative_to(ROOT).as_posix()
+    matching = [r for r in rows if r['path'] == rel and r['field'] == field]
+    assert len(matching) <= 1
+    if current == recorded:
+        assert not matching, f'{rel}: divergence recorded but the file matches the evidence'
+        return
+    assert matching, f'{rel}: SHA-256 drift in {artifact} {field}; review provenance, never auto-rebaseline'
+    row = matching[0]
+    assert row['evidence_sha256'] == recorded and row['current_sha256'] == current
+    assert row['artifacts_regenerated'] is False and row['inputs_regenerated'] is False
+    assert isinstance(row['reason'], str) and row['reason'].strip()
+
+
 def test_replay_seed_registry_from_all_2240_plans():
     actual=audit.build(CYCLE,OUT/'skill-seed-plans.jsonl.gz')
     saved=json.loads((OUT/'seed-evaluation.json').read_text())
-    assert actual==saved
+    # 生成元のハッシュ（analysis_sha256）は記録の値のまま。今のファイルとの差は source-divergence.json で確かめる
+    _recorded_source_sha(OUT, 'seed-evaluation.json', 'analysis_sha256', saved['analysis_sha256'],
+                         ROOT/'sakanalytics/proposition_seed_audit.py')
+    assert actual['analysis_sha256']==hashlib.sha256((ROOT/'sakanalytics/proposition_seed_audit.py').read_bytes()).hexdigest()
+    assert {**actual, 'analysis_sha256': saved['analysis_sha256']}==saved
     assert actual['plan_count']==2240 and len(actual['propositions'])==114
     assert sum(v['groups'] is not None for v in actual['propositions'].values())==13
     for item in actual['propositions'].values():

@@ -1,0 +1,46 @@
+name: Minimal stdlib distributions
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/myon-bioinformatics
+          ref: e570367ddd648316a82a00271b7d5c35c0243daf
+          path: .test-deps/distribution-tools
+          sparse-checkout: tools/minpy.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/QueRyu
+          ref: e052cc3750cf14fd271187cee12c6ddddc11d7ab
+          path: .test-deps/distribution-sources/queryu
+          persist-credentials: false
+      - name: Regenerate and compare every committed artifact and license
+        run: python -S scripts/build_distributions.py --minpy .test-deps/distribution-tools/tools/minpy.py --sources .test-deps/distribution-sources --check
+      - run: python -m pip install pytest
+      - name: Exercise isolated single-file APIs
+        run: python -m pytest -c pyproject.toml tests/test_distributions.py tests/test_distribution_kernels.py -q --junitxml=build/distributions-junit.xml
+      - name: Preserve distribution JUnit
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-min-distributions
+          path: build/distributions-junit.xml
+          if-no-files-found: warn
+          retention-days: 14

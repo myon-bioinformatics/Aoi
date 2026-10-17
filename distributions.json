@@ -1,0 +1,64 @@
+{
+  "schema": "aoi-distributions/1",
+  "source": "cb6f2c0ce5b766fe47c37950b8d5318bcae3f181",
+  "python": "3.12",
+  "license": "LICENSE",
+  "tool": {
+    "repository": "myon-bioinformatics/myon-bioinformatics",
+    "commit": "e570367ddd648316a82a00271b7d5c35c0243daf",
+    "source": "tools/minpy.py",
+    "sha256": "cb179539e43074d6a8e114bd02743dda6113bf4d0a209b8426693aa514ed55f3"
+  },
+  "projects": {
+    "blueprobe": {
+      "prefix": "blueprobe",
+      "entry": "blueprobe/blueprobe.py",
+      "paths": [
+        "blueprobe"
+      ],
+      "output": "dist/blueprobe_min.py",
+      "api": "offline observation and snapshot inspection"
+    },
+    "queryu": {
+      "prefix": "queryu",
+      "entry": "cache_core.py",
+      "paths": [
+        "."
+      ],
+      "output": "dist/queryu_min.py",
+      "api": "verified offline cache and html-snapshot/1",
+      "repository": "myon-bioinformatics/QueRyu",
+      "commit": "e052cc3750cf14fd271187cee12c6ddddc11d7ab"
+    },
+    "sakanalytics": {
+      "prefix": "sakanalytics",
+      "entry": "distributions/entries/sakanalytics_api.py",
+      "paths": [
+        "distributions/entries",
+        "sakanalytics"
+      ],
+      "output": "dist/sakanalytics_min.py",
+      "api": "explicit period comparisons and descriptive neighbors"
+    },
+    "dragowing": {
+      "prefix": "dragowing",
+      "entry": "distributions/entries/dragowing_api.py",
+      "paths": [
+        "distributions/entries",
+        "dragowing"
+      ],
+      "output": "dist/dragowing_min.py",
+      "api": "generic series/matrix specifications and HTML reports (Plotly.js in browser)"
+    },
+    "pythdragoras": {
+      "prefix": "pythdragoras",
+      "entry": "distributions/entries/pythdragoras_api.py",
+      "paths": [
+        "distributions/entries",
+        "pythdragoras"
+      ],
+      "output": "dist/pythdragoras_min.py",
+      "api": "generic threshold sweeps, sampled curves and provenance validation"
+    }
+  }
+}

@@ -14,7 +14,6 @@ from dragowing.cli import PngUnavailable, main, write_png
 from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
 from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
 from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
-from vendor import web_ui
 from dragowing.plotly_cdn import PLOTLY_JS_CDN, fetch_plotly_js, reset_plotly_js_cache
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
@@ -253,7 +252,7 @@ def test_counterexample_table_copies_values_context_and_question():
     assert "Plotly.newPlot" not in page
 
 
-def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch):
+def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     results = tmp_path / "results"
     results.mkdir()
     dump_jsonl(
@@ -266,7 +265,8 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
     assert not (out / "plotly.min.js").exists()
-    assert web_ui.remote_script_tag(PLOTLY_JS_CDN) in index
+    assert f'src="{PLOTLY_JS_CDN}"' in index
+    assert "integrity=" not in index
     head = index.split("</head>", 1)[0]
     assert head.count("<script") == 2
     assert index.count("Plotly.newPlot") == 2
@@ -283,8 +283,6 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     embedded = tmp_path / "embedded"
     reset_plotly_js_cache()
     embed_body = b"window.Plotly=" + b"e" * 200
-    import hashlib
-    monkeypatch.setattr(web_ui, "PLOTLY_JS_SHA256", hashlib.sha256(embed_body).hexdigest())
     embed_response = MagicMock()
     embed_response.read.return_value = embed_body
     embed_response.status = 200
@@ -309,22 +307,8 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
     )
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
-    try:
-        import kaleido  # noqa: F401
-
-        has_kaleido = True
-    except ImportError:
-        has_kaleido = False
-    builtins = __import__("builtins")
-    real_import = builtins.__import__
-
-    def block(name, *args, **kwargs):
-        if name == "kaleido" or name.startswith("kaleido."):
-            raise ImportError("no kaleido")
-        return real_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", block)
-    with pytest.raises(PngUnavailable):
+    monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
+    with pytest.raises(PngUnavailable, match="Chrome"):
         write_png(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.png")
     assert not (tmp_path / "x.png").exists()
     missing = subprocess.run(
@@ -333,13 +317,11 @@ def test_cli_writes_standalone_html_and_png_needs_kaleido(tmp_path, monkeypatch)
         check=False,
         capture_output=True,
         text=True,
+        env={**dict(__import__("os").environ), "CHROME": str(tmp_path / "missing-chrome")},
     )
-    if not has_kaleido:
-        assert missing.returncode == 2
-        assert "kaleido" in missing.stderr
-        assert (tmp_path / "png" / "index.html").is_file()
-    else:
-        assert missing.returncode in (0, 1)
+    assert missing.returncode == 2
+    assert "Chrome" in missing.stderr
+    assert (tmp_path / "png" / "index.html").is_file()
 
 
 def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path):
@@ -456,7 +438,8 @@ def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
     assert main(["--results", str(RESULTS), "--out", str(out), "--id", "P1"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
-    assert web_ui.remote_script_tag(PLOTLY_JS_CDN) in index
+    assert f'src="{PLOTLY_JS_CDN}"' in index
+    assert "integrity=" not in index
     assert not (out / "plotly.min.js").exists()
     assert index.count("Plotly.newPlot") == 2
     assert '"type":"circle"' not in index

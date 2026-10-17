@@ -1,0 +1,28 @@
+{
+  "schema": "child-heads/1",
+  "ref": "main",
+  "heads": {
+    "myon-bioinformatics/PythDRagoras": {
+      "optional": {
+        "repository_created_at": "2026-10-17T06:58:25Z",
+        "subtree_prefix": "pythdragoras",
+        "mirrored_from_parent": {
+          "aoi_paths.py": "aoi_paths.py"
+        }
+      },
+      "repository_id": 1423045231,
+      "sha": "83a53f60d1b5dec70df841a1104d4c78fbe4a494"
+    },
+    "myon-bioinformatics/QueRyu": {
+      "optional": {
+        "repository_created_at": "2026-10-17T07:05:47Z",
+        "subtree_prefix": "queryu",
+        "mirrored_from_parent": {
+          "aoi_paths.py": "aoi_paths.py"
+        }
+      },
+      "repository_id": 1423051557,
+      "sha": "4a478d1d69b5aa0c577ce6a5882c1e35593cbf2f"
+    }
+  }
+}

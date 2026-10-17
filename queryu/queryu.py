@@ -17,8 +17,10 @@ from __future__ import annotations
 import argparse
 import copy
 import datetime as dt
+import email.message
 import gzip
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -27,6 +29,8 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
+import urllib.request
 import zlib
 from pathlib import Path
 
@@ -47,117 +51,22 @@ def now() -> str:
     return dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
 
 
-class CacheIntegrityError(ValueError):
-    """A cached body cannot be verified against its recorded acquisition."""
+if __name__ == "__main__":
+    # runpy does not add the script directory; keep the existing CLI path contract.
+    here = Path(__file__).resolve().parent
+    sys.path.insert(0, str(here))
+
+from cache_core import Cache as _Cache, CacheIntegrityError
 
 
-class Cache:
-    def __init__(self, root: Path):
-        self.root = Path(root)
-        self.manifest = self.root / "manifest.jsonl"
+class Cache(_Cache):
+    """Original acquisition API; retain checkout provenance and timestamp hooks."""
 
-    def latest(self) -> dict[str, dict]:
-        """ページごとの最新の来歴。本文を持つ取得（200/404）だけを対象にする。"""
-        out = {}
-        if self.manifest.exists():
-            for line in self.manifest.read_text(encoding="utf-8").splitlines():
-                e = json.loads(line)
-                if e["status"] in (200, 404):
-                    out[e["key"]] = e
-        return out
+    def _version(self) -> str | None:
+        return self.source_version if self.source_version is not None else code_version()
 
-    def _body_path(self, file: str) -> Path:
-        """Resolve only relative paths that stay inside this cache root."""
-        if not isinstance(file, str) or not file or "\\" in file or "\x00" in file:
-            raise CacheIntegrityError("cache file must be a safe relative path")
-        relative = Path(file)
-        if relative.is_absolute() or ".." in relative.parts or ":" in file:
-            raise CacheIntegrityError("cache file must be a safe relative path")
-        try:
-            root = self.root.resolve()
-            path = (root / relative).resolve()
-            path.relative_to(root)
-        except (OSError, RuntimeError, ValueError) as exc:
-            raise CacheIntegrityError("cache file escapes the cache root or cannot be resolved") from exc
-        if path == root:
-            raise CacheIntegrityError("cache file must name a body inside the cache root")
-        # Preserve the final directory entry for no-overwrite publication: a
-        # dangling symlink must count as an existing (invalid) blob, not be repaired.
-        return root / relative
-
-    def body_bytes(self, entry: dict) -> bytes:
-        """Verify recorded metadata against decompressed bytes before decoding."""
-        digest = entry.get("sha256")
-        size = entry.get("bytes")
-        if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
-            raise CacheIntegrityError("cache entry requires sha256 as 64 lowercase hexadecimal characters")
-        if type(size) is not int or size < 0:
-            raise CacheIntegrityError("cache entry requires bytes as a nonnegative integer")
-        path = self._body_path(entry.get("file"))
-        try:
-            content = gzip.decompress(path.read_bytes())
-        except (OSError, EOFError, zlib.error) as exc:
-            raise CacheIntegrityError(f"cannot read cached gzip body: {entry.get('file')!r}") from exc
-        if len(content) != size:
-            raise CacheIntegrityError(f"cache body bytes mismatch: recorded {size}, found {len(content)}")
-        if hashlib.sha256(content).hexdigest() != digest:
-            raise CacheIntegrityError("cache body sha256 mismatch")
-        return content
-
-    def body(self, entry: dict) -> str:
-        return self.body_bytes(entry).decode("utf-8", errors="strict")
-
-    def snapshot(self, entry: dict) -> dict:
-        """Export verified evidence, without guessing missing acquisition metadata."""
-        provenance = copy.deepcopy(entry)
-        content = self.body_bytes(provenance)
-        html = content.decode("utf-8", errors="strict")
-        return {
-            "schema": "html-snapshot/1", "html": html,
-            "url": provenance.get("url"), "fetched_at": provenance.get("fetched_at"),
-            "response_sha256": hashlib.sha256(content).hexdigest(),
-            "content_sha256": hashlib.sha256(html.encode("utf-8")).hexdigest(),
-            "encoding": "utf-8", "cache_entry": provenance,
-        }
-
-    def record(self, entry: dict) -> None:
-        self.root.mkdir(parents=True, exist_ok=True)
-        with self.manifest.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-
-    def put(self, key: str, url: str, group: str, status: int, content: bytes, headers) -> dict:
-        digest = hashlib.sha256(content).hexdigest()
-        file = f"blobs/{digest}.html.gz"
-        self.root.mkdir(parents=True, exist_ok=True)
-        path = self._body_path(file)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        # Publish a fully written gzip atomically, never replacing an existing blob.
-        # If another acquisition wins the race, verify its bytes instead of repairing it.
-        temporary = None
-        try:
-            with tempfile.NamedTemporaryFile(dir=path.parent, prefix=".blob-", delete=False) as f:
-                temporary = Path(f.name)
-                f.write(gzip.compress(content, mtime=0))
-                f.flush()
-                os.fsync(f.fileno())
-            try:
-                os.link(temporary, path)
-            except FileExistsError:
-                pass
-            verified = self.body_bytes({"file": file, "sha256": digest, "bytes": len(content)})
-            if verified != content:
-                raise CacheIntegrityError("cache blob content differs despite matching hash and length")
-        finally:
-            if temporary is not None:
-                temporary.unlink(missing_ok=True)
-        entry = {
-            "key": key, "url": url, "group": group, "status": status, "file": file,
-            "sha256": digest, "bytes": len(content), "fetched_at": now(),
-            "last_modified": headers.get("last-modified"), "etag": headers.get("etag"),
-            "code_version": code_version(),
-        }
-        self.record(entry)
-        return entry
+    def _now(self) -> str:
+        return now()
 
 
 class OfflineMiss(RuntimeError):
@@ -171,6 +80,86 @@ def wait_seconds(value) -> float:
     return wait
 
 
+class HTTPStatusError(RuntimeError):
+    """4xx・5xx の応答（404 は「空」として扱うので PoliteFetcher からは出ない）。"""
+
+    def __init__(self, response: "Response"):
+        self.response = response
+        super().__init__(f"HTTP {response.status_code}: {response.url}")
+
+
+def _header_map(headers) -> email.message.Message:
+    """大文字小文字を区別しないヘッダー（``.get("etag")`` で ``ETag`` が引ける）。"""
+    msg = email.message.Message()
+    for name, value in (headers.items() if headers is not None else ()):
+        msg[name] = value
+    return msg
+
+
+class Request:
+    """``HandlerClient`` の handler に渡す要求（url と、大文字小文字を区別しない headers）。"""
+
+    def __init__(self, url: str, headers=None):
+        self.url, self.headers = url, _header_map(headers or {})
+
+
+class Response:
+    """取得の結果。``status_code``・``content``（bytes）・``headers``・``raise_for_status()`` を持つ。"""
+
+    def __init__(self, status_code: int, content: bytes = b"", headers=None, *, text: str | None = None, url: str = ""):
+        self.status_code = int(status_code)
+        self.content = text.encode("utf-8") if text is not None else bytes(content)
+        self.headers = _header_map(headers)
+        self.url = url
+
+    def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise HTTPStatusError(self)
+
+
+class UrllibClient:
+    """標準ライブラリ（urllib）だけの GET。304・404・5xx も例外にせず ``Response`` で返す。"""
+
+    def __init__(self, headers=None, timeout: float = 30, opener=None):
+        self.headers, self.timeout = dict(headers or {}), timeout
+        # build_opener() は ProxyHandler（環境変数のプロキシ）と HTTPRedirectHandler を含む
+        self.opener = opener or urllib.request.build_opener()
+
+    def get(self, url: str, headers=None) -> Response:
+        request = urllib.request.Request(url, headers={**self.headers, **dict(headers or {})}, method="GET")
+        try:
+            with self.opener.open(request, timeout=self.timeout) as r:
+                return Response(r.status, r.read(), r.headers, url=r.geturl())
+        except urllib.error.HTTPError as error:
+            with error:
+                body = error.read() if error.fp is not None else b""
+            return Response(error.code, body, error.headers, url=url)
+
+
+class HandlerClient:
+    """ネットワークに出ない client。``handler(Request) -> Response`` で応答を作る（テスト・再生用）。"""
+
+    def __init__(self, handler):
+        self.handler = handler
+
+    def get(self, url: str, headers=None) -> Response:
+        return self.handler(Request(url, headers))
+
+
+def aoi_sibling_path(here: Path, module: str, sibling: str = "blueprobe") -> None:
+    """``module`` が import できないときだけ、Aoi の checkout の中にある隣の ``sibling/`` を ``sys.path`` に足す。
+
+    単独の QueRyu では足さない（BlueProbe は固定 SHA の checkout を PYTHONPATH で渡す）。
+    ``../blueprobe`` のような相対の隣を読むのは、親が Aoi（pyproject.toml と cycles/ がある）のときに限る。
+    """
+    if importlib.util.find_spec(module) is not None:
+        return
+    root = here.resolve().parent
+    candidate = root / sibling
+    if (root / "pyproject.toml").is_file() and (root / "cycles").is_dir() and candidate.is_dir():
+        sys.path.insert(0, str(candidate))
+
+
 class PoliteFetcher:
     def __init__(self, cache: Cache, wait: float = 3.0, *, offline: bool = False, client=None):
         self.cache, self.wait, self.offline = cache, wait_seconds(wait), offline
@@ -181,9 +170,8 @@ class PoliteFetcher:
     @property
     def client(self):
         if self._client is None:
-            import httpx  # オフライン実行では読み込まない
-            # transport= を渡すと環境変数のプロキシ設定が使われなくなるので渡さない
-            self._client = httpx.Client(headers={"User-Agent": UA}, timeout=30, follow_redirects=True)
+            # オフライン実行では作らない。urllib の既定の opener は環境変数のプロキシ設定とリダイレクトに従う
+            self._client = UrllibClient(headers={"User-Agent": UA}, timeout=30)
         return self._client
 
     def get(self, key: str, url: str, group: str, *, live: bool = False) -> str:
@@ -438,6 +426,5 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    here = Path(__file__).resolve().parent
-    sys.path[:0] = [str(here), str(here.parent / "blueprobe")]
+    aoi_sibling_path(here, "blueprobe")
     raise SystemExit(main())

@@ -44,3 +44,5 @@ The list is checked by a test (`nagoyaction/tests/test_docs_masters.py`): a file
 | [data-policy.md](data-policy.md) | How data is collected, stored, transformed, preserved and interpreted |
 | [registration-metadata-audit.md](registration-metadata-audit.md) | How registration provenance is classified conservatively and audited before correction |
 | [ecosystem.md](ecosystem.md) | The structure of the ecosystem: independent projects, each answering a different type of question |
+| [child-repositories.md](child-repositories.md) | Subprojects split into their own repositories (git subtree): registration, drift and diff checks |
+| [distributions.md](distributions.md) | Minimal stdlib API registration, frozen-source regeneration, license notices and subtree boundaries |

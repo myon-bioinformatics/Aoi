@@ -12,7 +12,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 `--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。
 
-既定では、`index.html` が CDN の Plotly.js（固定版 URL＋SHA-256 SRI、契約は `vendor/web_ui.py`）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。Python パッケージ `plotly` は依存に置かない。
+既定では、`index.html` が jsDelivr の Plotly.js（`https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js`、SRI なし）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。Python パッケージ `plotly` は依存に置かない。
 
 `--embed` を付けると、`index.html` に Plotly.js を埋め込む。`propositions.html` は埋め込まない。
 
@@ -25,7 +25,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 文字だけの 2×2 は [forms.md](forms.md) の `dragowing/forms.py` のままである。
 
-PNG が要るときだけ、依存の extra `png`（kaleido）を入れて `--png` を付ける。Chrome もそのときだけ要る。extra が無いと HTML は書いたうえで終了コード 2 になる。テストは kaleido も Chrome も使わない。
+PNG が要るときだけ `--png` を付ける。Chrome もそのときだけ要る（`--chrome` または `CHROME` 環境変数）。Chrome が無いと HTML は書いたうえで終了コード 2 になる。テストは Chrome も使わない。
 
 `sets.jsonl` はこの結果に無い。条件式のハッセ図（提案の C6）は出していない。成立率をここで新しく計算して色を塗ることもしていない。
 
@@ -40,8 +40,7 @@ CDN 内容不一致・改変はエラーで停止し、成功 bytes だけをプ
 web-ui の `remote_scripts` / `remote_script_tag` / `fetch_plotly_js` を共用する。
 `plotly_figure` は `ui-panel` と inline 初期化を返すため、既存の
 `application/json` 図形ブロック・ID・CSS・DRAgoWing 初期化は維持する。
-PNG/SVG API と CLI `--png` は従来どおりローカルの Python Plotly 同梱 JS を使う。
-その版はインストールされたパッケージに従い、CDN 契約の版とは別に実行証跡へ記録する。
+PNG/SVG API と CLI `--png` は `export_draw` と同じ CDN 契約の Plotly.js を一時ディレクトリへコピーして使う。
 
 ## 観測
 

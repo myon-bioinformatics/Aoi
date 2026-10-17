@@ -56,12 +56,26 @@ def pytest_report_header(config):
     return [f"AOI_ROOT={_root()}", f"blueprobe={Path(blueprobe.__file__).resolve()}"]
 
 
+def _own_module_origin_is_allowed(name: str, origin: Path, root: Path, here: Path = HERE) -> bool:
+    """Only the exact, identical embedded aoi_layout mirror may be shared."""
+    origin, root, here = origin.resolve(), root.resolve(), here.resolve()
+    if here in origin.parents:
+        return True
+    if (name != "aoi_layout" or here != root / "queryu"
+            or origin != root / "pythdragoras" / "aoi_layout.py"):
+        return False
+    try:
+        return origin.read_bytes() == (here / "ask" / "aoi_layout.py").read_bytes()
+    except OSError:
+        return False
+
+
 def pytest_sessionfinish(session, exitstatus):
     wrong = {}
     for name in OWN_MODULES:
         module = sys.modules.get(name)
         origin = getattr(module, "__file__", None)
-        if origin is not None and HERE not in Path(origin).resolve().parents:
+        if origin is not None and not _own_module_origin_is_allowed(name, Path(origin), _root()):
             wrong[name] = origin
     if wrong:
         if exitstatus == pytest.ExitCode.OK:

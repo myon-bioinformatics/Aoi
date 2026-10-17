@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # サイクルデータ（cycles/）・scripts/・sakanalytics は Aoi に残す。
-      # Aoi main（#48/#49/#50 を #51 で統合したマージコミット）。
+      # Aoi main（#56 の上に #55 をマージしたマージコミット）。
       AOI_SHA: 62ad1e49154121cf237d52de352404c4400e6a55
     timeout-minutes: 10
     strategy:

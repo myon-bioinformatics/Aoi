@@ -1,5 +1,5 @@
-"""SakAnalytics min: exact annual table audits and descriptive neighbors."""
-from annual_audit import audit as audit_annual
-from neighbors import FEATURES, discover
+"""SakAnalytics min: explicit period comparisons and descriptive nearest pairs."""
+from period_comparison import compare_periods
+from neighbor_comparison import discover
 
-__all__ = ['audit_annual', 'FEATURES', 'discover']
+__all__ = ['compare_periods', 'discover']

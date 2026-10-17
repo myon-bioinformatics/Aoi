@@ -38,7 +38,7 @@
         "sakanalytics"
       ],
       "output": "dist/sakanalytics_min.py",
-      "api": "annual table audit and descriptive neighbors"
+      "api": "explicit period comparisons and descriptive neighbors"
     },
     "dragowing": {
       "prefix": "dragowing",
@@ -48,7 +48,7 @@
         "dragowing"
       ],
       "output": "dist/dragowing_min.py",
-      "api": "figure specifications and HTML reports (Plotly.js in browser)"
+      "api": "generic series/matrix specifications and HTML reports (Plotly.js in browser)"
     },
     "pythdragoras": {
       "prefix": "pythdragoras",
@@ -58,7 +58,7 @@
         "pythdragoras"
       ],
       "output": "dist/pythdragoras_min.py",
-      "api": "score sensitivity and provenance validation"
+      "api": "generic threshold sweeps, sampled curves and provenance validation"
     }
   }
 }

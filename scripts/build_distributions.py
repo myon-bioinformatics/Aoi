@@ -63,8 +63,13 @@ def build(root, manifest, tool_path, *, check, sources=None):
         if item['output'].casefold() in outputs:
             raise ValueError('duplicate output')
         outputs.add(item['output'].casefold())
+        if not isinstance(item['paths'], list) or not item['paths']:
+            raise ValueError('nonempty source search paths required')
+        for search in item['paths']:
+            if search != '.':
+                path(search)
         if 'repository' not in item:
-            watched.extend([item['prefix'], item['entry']])
+            watched.extend([item['prefix'], item['entry'], *item['paths']])
     if git(root, 'diff', '--name-only', source, '--', *watched):
         raise ValueError('distribution source changed; commit it and update the source pin')
     if git(root, 'ls-files', '--others', '--exclude-standard', '--', *watched):

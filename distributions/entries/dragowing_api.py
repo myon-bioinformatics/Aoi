@@ -2,8 +2,8 @@
 
 Plotly.js remains a browser runtime dependency of rendered reports, outside Python.
 """
-from figures import class_mark, heatmap_figure, trajectory_figure
-from records import read_jsonl, select_items
+from plot_specs import series_figure, matrix_figure
+from records import read_jsonl
 from research_report import render_report
 
-__all__ = ['class_mark', 'heatmap_figure', 'trajectory_figure', 'read_jsonl', 'select_items', 'render_report']
+__all__ = ['series_figure', 'matrix_figure', 'read_jsonl', 'render_report']

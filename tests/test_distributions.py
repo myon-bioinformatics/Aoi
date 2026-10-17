@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -40,18 +41,23 @@ except query.CacheIntegrityError:
     pass
 else:
     raise AssertionError('corrupt cache accepted')
-rows = [dict(team='A', season=2025, league='C', upper_half=True, rf_adv=1., ra_adv=-1., vs_lower_wpct=.4),
-        dict(team='B', season=2025, league='C', upper_half=False, rf_adv=-1., ra_adv=1., vs_lower_wpct=.6)]
-assert saka.discover(rows)['pairs'][0]['units'] == ['A-2025', 'B-2025']
-state = pyth.ScoreState()
-state.update(3, 1)
-state.update(0, 0)
-assert (state.metrics()['W'], state.metrics()['T'], state.metrics()['RF']) == (1, 1, 3)
+rows = [dict(sensor='north', year=2024, energy=10),
+        dict(sensor='north', year=2025, energy=12)]
+comparison = saka.compare_periods(rows, entity='sensor', period='year', metrics=['energy'], before=2024, after=2025)
+assert comparison['comparisons'][0]['metrics']['energy']['delta'] == 2
+assert saka.discover([{'id':'a', 'latency':10}, {'id':'b', 'latency':12}], identifier='id', features=['latency'])['pairs'][0]['units'] == ['a', 'b']
+curve = pyth.threshold_curve([.1, .4, .9], [False, True, True], [.1, .4, 1.])
+assert curve[1]['mcc'] == 1. and curve[2]['mcc'] is None
+assert pyth.shape(curve)['covered_span'] == .4-.1
+assert not any(hasattr(saka, n) for n in ['FEATURES', 'audit_annual'])
+assert not any(hasattr(pyth, n) for n in ['ScoreState', 'team_games', 'analyze'])
 assert pyth.classify({'posthoc': False}).status == 'unknown'
 assert pyth.classify({'posthoc': True}).status == 'posthoc'
 report = draw.render_report({'title': '<unsafe>', 'frames': {'x': {}}, 'default': 'x'})
 assert '&lt;unsafe&gt;' in report
-assert draw.class_mark(True) != draw.class_mark(False)
+assert draw.series_figure([1, 2], [3, None])['data'][0]['connectgaps'] is False
+assert draw.matrix_figure(['p'], ['q'], [[4]])['data'][0]['z'] == [[4]]
+assert not any(hasattr(draw, n) for n in ['class_mark', 'trajectory_figure', 'heatmap_figure', 'select_items'])
 assert not any(name in sys.modules for name in ['cache_core', 'snapshot_source', 'annual_audit', 'figures', 'score_sensitivity'])
 assert not any(name in sys.modules for name in ['numpy', 'polars', 'httpx', 'selectolax'])
 '''
@@ -72,3 +78,29 @@ def test_distribution_generator_rejects_tampered_tool_before_import(tmp_path):
     assert 'must not execute' not in out.stderr
     assert not (tmp_path / 'dist').exists()
     assert (ROOT / 'dist/LICENSE').read_bytes() == (ROOT / 'LICENSE').read_bytes()
+
+
+@pytest.mark.parametrize('untracked', [False, True])
+def test_generator_rejects_changed_transitive_sources(tmp_path, monkeypatch, untracked):
+    # A helper in a search directory must be pinned even when it is not the entry.
+    import runpy
+    api = runpy.run_path(str(ROOT / 'scripts/build_distributions.py'))
+    build = api['build']
+    monkeypatch.setitem(build.__globals__, 'load_tool', lambda *args: object())
+    subprocess.run(['git', 'init', '-q', str(tmp_path)], check=True)
+    (tmp_path / 'entries').mkdir()
+    (tmp_path / 'LICENSE').write_text('notice')
+    (tmp_path / 'entries/main.py').write_text('import helper\n')
+    if not untracked:
+        (tmp_path / 'entries/helper.py').write_text('VALUE = 1\n')
+    subprocess.run(['git', '-C', str(tmp_path), 'add', '.'], check=True)
+    subprocess.run(['git', '-C', str(tmp_path), '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'source'], check=True)
+    sha = subprocess.check_output(['git', '-C', str(tmp_path), 'rev-parse', 'HEAD'], text=True).strip()
+    (tmp_path / 'entries/helper.py').write_text('VALUE = 2\n')
+    manifest = {'schema': 'aoi-distributions/1', 'source': sha,
+                'python': f'{sys.version_info.major}.{sys.version_info.minor}',
+                'tool': {'sha256': ''}, 'license': 'LICENSE',
+                'projects': {'demo': {'entry': 'entries/main.py', 'prefix': 'child',
+                                     'paths': ['entries'], 'output': 'dist/demo_min.py'}}}
+    with pytest.raises(ValueError, match='distribution source'):
+        build(tmp_path, manifest, tmp_path / 'tool.py', check=True)

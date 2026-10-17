@@ -16,7 +16,7 @@
 - サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi を checkout して `AOI_ROOT=<Aoi のルート>` を渡す
 - 抽出（`blueprobe`・`npb_calendar`・`npb_team_annual`）は [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) を checkout して `PYTHONPATH` に渡す。Aoi の `blueprobe/` は使わない
 - `aoi_paths.py` は Aoi 固有の配置の決まり（`AOI_ROOT`・`--root`・`--cycle`）で、ここでは普通のファイルとして置く。Aoi との間で vendor lock は使わない
-- Aoi との同期の方法は未定（TBD）
+- Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。Aoi と QueRyu の間では vendor lock を使わない（Aoi の `queryu/aoi_paths.py` が Aoi 直下の `aoi_paths.py` と同じ blob であることは、Aoi 側で確かめる）
 - 下のリンクのうち `../` で始まるものは Aoi の中の場所を指す
 
 ```sh

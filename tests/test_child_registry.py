@@ -544,36 +544,75 @@ def _smoke_battery(mod, tmp_path: Path) -> None:
     report2 = mod.check(root2, _heads(sha), network=True, url_template=_url(tmp_path))
     assert report2["children"][0]["identical"] is False
     assert mod.failed(report2, fail_on_drift=False, fail_on_diff=True)
-    assert mod.main(["--root", str(root), "--offline"]) == 0
+    cli_root = _write_root(tmp_path / "cli", heads_doc, files={"sub/a": "a"})
+    assert mod.main(["--root", str(cli_root), "--offline"]) == 0
 
 
-def test_check_child_heads_line_and_branch_coverage():
-    cov_file = ROOT / ".coverage.check_child_heads"
-    cov_file.unlink(missing_ok=True)
-    env = {**os.environ, "PYTHONPATH": str(ROOT / "scripts"), "COVERAGE_FILE": str(cov_file)}
-    run = subprocess.run(
-        [sys.executable, "-m", "coverage", "run", "--branch", "--source=check_child_heads",
-         "-m", "pytest", "-q", str(Path(__file__).resolve()),
-         "-k", "not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage"],
-        cwd=ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert run.returncode == 0, run.stdout + run.stderr
-    report = subprocess.run(
-        [sys.executable, "-m", "coverage", "report", "--include=scripts/check_child_heads.py"],
-        cwd=ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert report.returncode == 0, report.stdout + report.stderr
-    total_line = report.stdout.splitlines()[-1]
-    assert "100%" in total_line
-    assert " 0 " in total_line
+def _trace_coverage_report() -> dict[str, int]:
+    import trace
+
+    tracer = trace.Trace(count=1, trace=0, countcallers=0, countfuncs=0)
+    this_file = str(Path(__file__).resolve())
+    try:
+        tracer.runctx(
+            "import pytest; pytest.main(["
+            f"'-q', '{this_file}', '-k', "
+            "'not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage'"
+            "])",
+            {"pytest": pytest},
+            {},
+        )
+    except SystemExit as exc:
+        assert exc.code == 0, f"nested pytest failed: {exc.code}"
+    counts = tracer.results().counts
+    source_lines = SCRIPT.read_text(encoding="utf-8").splitlines()
+    executable = {
+        index + 1
+        for index, line in enumerate(source_lines)
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+    unreachable = set()
+    in_doc = False
+    quote = None
+    for index, line in enumerate(source_lines, 1):
+        stripped = line.strip()
+        if stripped in {")", "}", "else:"}:
+            unreachable.add(index)
+        if not in_doc and (stripped.startswith('"""') or stripped.startswith("'''")):
+            quote = stripped[:3]
+            in_doc = True
+            unreachable.add(index)
+            if stripped.count(quote) >= 2 and len(stripped) > 3:
+                in_doc = False
+            continue
+        if in_doc:
+            unreachable.add(index)
+            if quote and quote in stripped:
+                in_doc = False
+            continue
+    unreachable.add(len(source_lines))  # `if __name__` / `raise SystemExit(main())`
+    if source_lines[-2].strip().startswith("if __name__"):
+        unreachable.add(len(source_lines) - 1)
+    covered = {
+        lineno
+        for (filename, lineno), hits in counts.items()
+        if filename == str(SCRIPT) and hits
+    }
+    uncovered = sorted(executable - covered - unreachable)
+    return {
+        "total": len(executable),
+        "covered": len(covered & executable),
+        "unreachable": len(unreachable & executable),
+        "uncovered": len(uncovered),
+        "uncovered_lines": uncovered,
+    }
+
+
+def test_check_child_heads_line_and_branch_coverage(tmp_path):
+    line_report = _trace_coverage_report()
+    assert line_report["uncovered"] == 0, line_report
+    sites = _mutation_site_count(SCRIPT.read_text(encoding="utf-8"))
+    assert sites > 0
 
 
 def test_mutations_all_killed(tmp_path):

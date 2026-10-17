@@ -4,6 +4,7 @@ BlueProbe は固定 SHA の checkout を PYTHONPATH で渡す。隣の ``bluepro
 （pyproject.toml と cycles/ がある）のときだけで、その処理は ``queryu.aoi_sibling_path`` 一か所に限る。
 """
 import ast
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -73,10 +74,12 @@ def test_blueprobe_modules_come_from_the_pinned_checkout_not_a_sibling():
     import blueprobe
     import npb_calendar
     import npb_team_annual
+    pinned = [Path(p).resolve() for p in os.environ.get("PYTHONPATH", "").split(os.pathsep) if p]
     for module in (blueprobe, npb_calendar, npb_team_annual):
         origin = Path(module.__file__).resolve()
         assert origin.parent != (ROOT.parent / "blueprobe").resolve(), origin
-        assert ROOT not in origin.parents, origin
+        # PYTHONPATH で渡した BlueProbe の checkout（CI では .test-deps/blueprobe）から読まれている
+        assert origin.parent in pinned, (origin, pinned)
 
 
 def test_cli_entry_point_does_not_add_a_sibling(tmp_path):

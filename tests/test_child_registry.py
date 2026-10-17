@@ -1,8 +1,8 @@
-"""子リポジトリの登録（child-heads.json / vendor-consumers.json）と scripts/check_child_heads.py。
+"""子リポジトリの登録（child-heads.json）と scripts/check_child_heads.py。
 
-ネットワークは使わない。子はローカルの bare リポジトリ（file://）、親 myon-bioinformatics の
-vendor_sync / vendor_consumers は tmp_path に置いた小さな偽物で代える。
+ネットワークは使わない。子はローカルの bare リポジトリ（file://）。
 """
+import ast
 import copy
 import json
 import os
@@ -10,6 +10,7 @@ import re
 import runpy
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -18,7 +19,23 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check_child_heads.py"
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import check_child_heads as cch  # noqa: E402
+
+def _import_check_child_heads(path: Path | None = None):
+    import importlib.util
+
+    if path is None:
+        import check_child_heads as mod
+
+        return mod
+    spec = importlib.util.spec_from_file_location("check_child_heads", path)
+    mod = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_mutated = os.environ.get("CHECK_CHILD_HEADS_MUTATED")
+cch = _import_check_child_heads(Path(_mutated) if _mutated else None)
 
 SHA = "a" * 40
 NAME = "o/child"
@@ -58,7 +75,7 @@ def test_queryu_registered_with_exact_ids():
 
 
 def test_registered_mirrors_are_blob_identical_to_aoi_originals():
-    report = cch.check(ROOT, cch.validate_heads(_load("child-heads.json")), None, network=False, tools=None)
+    report = cch.check(ROOT, cch.validate_heads(_load("child-heads.json")), network=False)
     for row in report["children"]:
         assert set(row["mirrors"].values()) <= {"identical"}, row
 
@@ -119,25 +136,14 @@ def _heads(sha, **optional):
                                                                         "optional": base}}}
 
 
-def _consumers(**consumer):
-    base = {"repository": NAME, "state": "locked", "lock": "vendor.lock.json",
-            "entries": [{"repository": "o/Aoi", "source": "s.py", "destination": "d.py"}]}
-    base.update(consumer)
-    return {"schema": "vendor-consumers/1", "consumers": [base]}
-
-
-LOCK = {"schema": "vendor-lock/1", "files": [{"repository": "o/aoi", "source": "s.py", "destination": "D.py"}]}
-
-
 def _parent(tmp_path, files):
     root = tmp_path / "parent"
     _commit(root, files)
     return root
 
 
-def _run(tmp_path, root, heads, consumers=None, *, tools=None, network=True):
-    return cch.check(root, cch.validate_heads(heads), consumers, network=network, tools=tools,
-                     url_template=_url(tmp_path))
+def _run(tmp_path, root, heads, *, network=True):
+    return cch.check(root, cch.validate_heads(heads), network=network, url_template=_url(tmp_path))
 
 
 # --- 形 ----------------------------------------------------------------------------------
@@ -189,37 +195,12 @@ def test_validate_heads_accepts_full_optional():
     assert cch.validate_heads(doc) is doc
 
 
-@pytest.mark.parametrize(("mutate", "message"), [
-    (lambda d: [], 'expected vendor-consumers/1'),
-    (lambda d: d.update(schema="x"), 'expected vendor-consumers/1'),
-    (lambda d: d.update(extra=1), 'expected vendor-consumers/1'),
-    (lambda d: d.update(consumers=[]), 'consumers must be a nonempty list'),
-    (lambda d: d.update(consumers={}), 'consumers must be a nonempty list'),
-    (lambda d: d.update(consumers=["x"]), 'consumer repository must be owner/repository'),
-    (lambda d: d["consumers"][0].update(repository=1), 'consumer repository must be owner/repository'),
-    (lambda d: d["consumers"][0].update(repository="noslash"), 'consumer repository must be owner/repository'),
-    (lambda d: d["consumers"][0].update(state="other"), 'consumer state must be locked or legacy'),
-    (lambda d: d["consumers"][0].update(lock=None), 'locked consumer requires lock path'),
-    (lambda d: d["consumers"][0].update(lock=""), 'locked consumer requires lock path'),
-    (lambda d: d["consumers"][0].update(entries=[]), 'consumer entries must be a nonempty list'),
-    (lambda d: d["consumers"][0].update(entries={}), 'consumer entries must be a nonempty list'),
-    (lambda d: d["consumers"][0].update(entries=["x"]), 'invalid consumer entry fields'),
-    (lambda d: d["consumers"][0]["entries"][0].pop("source"), 'invalid consumer entry fields'),
-    (lambda d: d["consumers"][0]["entries"][0].update(source=""), 'consumer entry fields must be nonempty strings'),
-    (lambda d: d["consumers"][0]["entries"][0].update(destination=1), 'consumer entry fields must be nonempty strings'),
-])
-def test_validate_consumers_rejects(mutate, message):
-    doc = _consumers()
-    out = mutate(doc)
-    with pytest.raises(ValueError, match="^" + re.escape(message) + "$"):
-        cch.validate_consumers(out if isinstance(out, list) else doc)
-
-
-def test_validate_consumers_accepts_locked_and_legacy_without_lock():
-    doc = _consumers()
-    doc["consumers"].append({"repository": "o/other", "state": "legacy", "lock": None,
-                             "entries": [{"repository": "o/a", "source": "s", "destination": "d"}]})
-    assert cch.validate_consumers(doc) is doc
+def test_reject_legacy_vendor_consumers(tmp_path):
+    root = tmp_path / "root"
+    root.mkdir()
+    (root / cch.LEGACY_VENDOR_CONSUMERS).write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="not used between Aoi and subtree children"):
+        cch._reject_legacy_vendor_consumers(root)
 
 
 def test_tree_uses_nul_records_and_keeps_mode(tmp_path):
@@ -286,7 +267,7 @@ def test_identical_pure_subtree_with_mirror(tmp_path):
     heads = _heads(sha, mirrored_from_parent={"p.py": "p.py"})
     row = _run(tmp_path, root, heads)["children"][0]
     assert row["live_sha"] == sha and row["drift"] is False and row["identical"] is True
-    assert row["vendor"] is None and "error" not in row
+    assert "error" not in row
     assert row["diff"] == {"only_in_parent": [], "only_in_child": [], "different": []}
 
 
@@ -367,108 +348,15 @@ def test_fetch_timeout_value_is_passed(monkeypatch):
 
 def test_default_url_is_github():
     assert cch.URL_TEMPLATE.format(repository="o/c") == "https://github.com/o/c.git"
-    assert set(cch.VENDOR_FAILURES) == {"topology_mismatch", "lock_missing_at_recorded_sha", "lock_invalid"}
-
-
-# --- vendor ------------------------------------------------------------------------------
-
-def _fake_tools(tmp_path, *, matches=True, compare_raises=False):
-    tools = tmp_path / "tools"
-    tools.mkdir(exist_ok=True)
-    (tools / "vendor_sync.py").write_text(
-        "CALLS = []\ndef validate_child_heads(doc):\n    CALLS.append('heads')\n    return doc\n", encoding="utf-8")
-    body = "    raise ValueError('bad lock')\n" if compare_raises else f"    return {{'matches': {matches}}}\n"
-    (tools / "vendor_consumers.py").write_text(
-        "import vendor_sync\nCALLS = vendor_sync.CALLS\n"
-        "def validate(reg):\n    CALLS.append('consumers')\n    return reg\n"
-        "def compare(reg, lock, name):\n    CALLS.append(('compare', lock['schema'], name))\n" + body,
-        encoding="utf-8")
-    return tools
-
-
-def _vendor_case(tmp_path, lock, consumers, tools=None):
-    files = {"a": "a"}
-    if lock is not None:
-        files["vendor.lock.json"] = lock if isinstance(lock, str) else json.dumps(lock)
-    sha = _child(tmp_path, files)
-    root = _parent(tmp_path, {"sub/a": "a"})
-    report = _run(tmp_path, root, _heads(sha), consumers, tools=tools)
-    return report
-
-
-@pytest.mark.parametrize(("lock", "consumers", "want"), [
-    (LOCK, _consumers(), "topology_match"),
-    ({"schema": "vendor-lock/1", "files": [{"repository": "o/aoi", "source": "s.py", "destination": "e.py"}]},
-     _consumers(), "topology_mismatch"),
-    (None, _consumers(), "lock_missing_at_recorded_sha"),
-    ("{not json", _consumers(), "lock_invalid"),
-    ({"schema": "vendor-lock/1"}, _consumers(), "lock_invalid"),
-    ({"schema": "vendor-lock/1", "files": [1]}, _consumers(), "lock_invalid"),
-    (b"\xff\xfe".decode("latin-1"), _consumers(), "lock_invalid"),
-    (LOCK, _consumers(lock="other.json"), "lock_missing_at_recorded_sha"),
-    (None, _consumers(state="legacy", lock=None), "legacy"),
-    (LOCK, _consumers(repository="o/someone"), None),
-    (LOCK, None, None),
-])
-def test_vendor_without_tools(tmp_path, lock, consumers, want):
-    report = _vendor_case(tmp_path, lock, consumers)
-    assert report["children"][0]["vendor"] == want
-    failing = {"topology_mismatch", "lock_missing_at_recorded_sha", "lock_invalid"}
-    assert cch.failed(report, fail_on_drift=False, fail_on_diff=False) is (want in failing)
-
-
-def test_vendor_lock_not_utf8_is_invalid(tmp_path):
-    sha = _child(tmp_path, {"a": "a", "vendor.lock.json": b"\xff\xfe\x00"})
-    root = _parent(tmp_path, {"sub/a": "a"})
-    report = _run(tmp_path, root, _heads(sha), _consumers())
-    assert report["children"][0]["vendor"] == "lock_invalid"
-
-
-def test_vendor_casefold_repository_match(tmp_path):
-    report = _vendor_case(tmp_path, LOCK, _consumers(repository="O/CHILD"))
-    assert report["children"][0]["vendor"] == "topology_match"
-
-
-@pytest.mark.parametrize(("matches", "raises", "want"), [
-    (True, False, "topology_match"), (False, False, "topology_mismatch"), (True, True, "lock_invalid")])
-def test_vendor_with_tools(tmp_path, matches, raises, want):
-    tools = _fake_tools(tmp_path, matches=matches, compare_raises=raises)
-    report = _vendor_case(tmp_path, LOCK, _consumers(), tools=tools)
-    assert report["children"][0]["vendor"] == want
-    calls = sys.modules["vendor_sync"].CALLS
-    assert calls == ["heads", "consumers", ("compare", "vendor-lock/1", NAME)]
-    assert str(tools) not in sys.path
-
-
-def test_tools_take_precedence_over_sys_path(tmp_path, monkeypatch):
-    decoy = tmp_path / "decoy"
-    decoy.mkdir()
-    (decoy / "vendor_sync.py").write_text("raise ImportError('decoy')\n", encoding="utf-8")
-    (decoy / "vendor_consumers.py").write_text("raise ImportError('decoy')\n", encoding="utf-8")
-    monkeypatch.setattr(sys, "path", [str(decoy), *sys.path])
-    tools = _fake_tools(tmp_path)
-    root = _parent(tmp_path, {"sub/a": "a"})
-    _run(tmp_path, root, _heads(SHA), None, tools=tools, network=False)
-    assert sys.modules["vendor_sync"].CALLS == ["heads"]
-
-
-def test_tools_reloaded_each_run_and_consumers_optional(tmp_path):
-    tools = _fake_tools(tmp_path)
-    root = _parent(tmp_path, {"sub/a": "a"})
-    _run(tmp_path, root, _heads(SHA), None, tools=tools, network=False)
-    first = sys.modules["vendor_sync"]
-    assert first.CALLS == ["heads"]
-    _run(tmp_path, root, _heads(SHA), None, tools=tools, network=False)
-    assert sys.modules["vendor_sync"] is not first and sys.modules["vendor_sync"].CALLS == ["heads"]
 
 
 # --- CLI ---------------------------------------------------------------------------------
 
-def _write_root(tmp_path, heads, consumers=None, files=None):
+def _write_root(tmp_path, heads, files=None, *, legacy_vendor=False):
     root = tmp_path / "cli"
     payload = {"child-heads.json": json.dumps(heads)}
-    if consumers is not None:
-        payload["vendor-consumers.json"] = json.dumps(consumers)
+    if legacy_vendor:
+        payload[cch.LEGACY_VENDOR_CONSUMERS] = '{"schema":"vendor-consumers/1","consumers":[]}'
     payload.update(files or {"sub/a": "a"})
     _commit(root, payload)
     return root
@@ -505,23 +393,21 @@ def test_main_returns_1_on_diff_only_with_flag(tmp_path, capsys):
     assert _main(capsys, "--root", root, "--url-template", _url(tmp_path), "--fail-on-drift")[0] == 0
 
 
-def test_main_registry_used_when_present(tmp_path, capsys):
+def test_main_rejects_legacy_vendor_consumers(tmp_path, capsys):
     sha = _child(tmp_path, {"a": "a"})
-    root = _write_root(tmp_path, _heads(sha), _consumers())
-    rc, out, _ = _main(capsys, "--root", root, "--url-template", _url(tmp_path))
-    assert rc == 1 and json.loads(out)["children"][0]["vendor"] == "lock_missing_at_recorded_sha"
+    root = _write_root(tmp_path, _heads(sha), legacy_vendor=True)
+    rc, out, err = _main(capsys, "--root", root, "--url-template", _url(tmp_path))
+    assert rc == 2 and out == "" and "vendor-consumers.json" in err
 
 
-def test_main_custom_file_names(tmp_path, capsys):
+def test_main_custom_heads_file(tmp_path, capsys):
     root = tmp_path / "cli"
-    _commit(root, {"h.json": json.dumps(_heads(SHA)), "r.json": "{}", "sub/a": "a"})
-    rc, _, err = _main(capsys, "--root", root, "--heads", "h.json", "--registry", "r.json", "--offline")
-    assert rc == 2 and "vendor-consumers/1" in err
+    _commit(root, {"h.json": json.dumps(_heads(SHA)), "sub/a": "a"})
     rc, out, _ = _main(capsys, "--root", root, "--heads", "h.json", "--offline")
     assert rc == 0 and json.loads(out)["children"][0]["mirrors"] == {}
 
 
-@pytest.mark.parametrize("case", ["missing", "badjson", "shape", "tools", "norepo"])
+@pytest.mark.parametrize("case", ["missing", "badjson", "shape", "legacy", "norepo"])
 def test_main_errors_return_2(tmp_path, capsys, case):
     if case == "norepo":
         root = tmp_path / "plain"
@@ -535,8 +421,9 @@ def test_main_errors_return_2(tmp_path, capsys, case):
         (root / "child-heads.json").write_text("{", encoding="utf-8")
     if case == "shape":
         (root / "child-heads.json").write_text("{}", encoding="utf-8")
-    extra = ["--vendor-tools", tmp_path / "no-tools"] if case == "tools" else []
-    rc, out, err = _main(capsys, "--root", root, "--offline", *extra)
+    if case == "legacy":
+        (root / cch.LEGACY_VENDOR_CONSUMERS).write_text("{}", encoding="utf-8")
+    rc, out, err = _main(capsys, "--root", root, "--offline")
     assert rc == 2 and out == "" and re.fullmatch(r"check-child-heads: [^_].*\n", err, re.S)
 
 
@@ -556,7 +443,156 @@ def test_default_root_is_repository():
 
 def test_check_does_not_mutate_inputs(tmp_path):
     root = _parent(tmp_path, {"sub/a": "a"})
-    heads, consumers = _heads(SHA), _consumers()
-    before = copy.deepcopy((heads, consumers))
-    _run(tmp_path, root, heads, consumers, network=False)
-    assert (heads, consumers) == before
+    heads = _heads(SHA)
+    before = copy.deepcopy(heads)
+    _run(tmp_path, root, heads, network=False)
+    assert heads == before
+
+
+# --- coverage / mutation (stdlib only; targets scripts/check_child_heads.py) ---------------
+
+_COMPARE_FLIPS = {
+    ast.Eq: ast.NotEq,
+    ast.NotEq: ast.Eq,
+    ast.In: ast.NotIn,
+    ast.NotIn: ast.In,
+    ast.Is: ast.IsNot,
+    ast.IsNot: ast.Is,
+}
+
+
+def _mutation_eligible(node: ast.AST) -> bool:
+    if isinstance(node, ast.Compare):
+        if len(node.ops) != 1 or type(node.ops[0]) not in _COMPARE_FLIPS:
+            return False
+        for part in ast.walk(node):
+            if isinstance(part, ast.Constant) and part.value == "__main__":
+                return False
+        return True
+    return isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not)
+
+
+def _mutant_source_at(source: str, target_index: int) -> str:
+    counter = 0
+
+    class _Mutate(ast.NodeTransformer):
+        def visit_Compare(self, node: ast.Compare):
+            nonlocal counter
+            node = self.generic_visit(node)
+            if not _mutation_eligible(node):
+                return node
+            if counter == target_index:
+                flip = _COMPARE_FLIPS[type(node.ops[0])]
+                return ast.Compare(left=node.left, ops=[flip()], comparators=node.comparators)
+            counter += 1
+            return node
+
+        def visit_UnaryOp(self, node: ast.UnaryOp):
+            nonlocal counter
+            node = self.generic_visit(node)
+            if not _mutation_eligible(node):
+                return node
+            if counter == target_index:
+                return node.operand
+            counter += 1
+            return node
+
+    tree = _Mutate().visit(ast.parse(source))
+    ast.fix_missing_locations(tree)
+    return ast.unparse(tree) + "\n"
+
+
+def _mutation_site_count(source: str) -> int:
+    counter = 0
+
+    class _Count(ast.NodeVisitor):
+        def visit_Compare(self, node: ast.Compare):
+            nonlocal counter
+            if _mutation_eligible(node):
+                counter += 1
+            self.generic_visit(node)
+
+        def visit_UnaryOp(self, node: ast.UnaryOp):
+            nonlocal counter
+            if _mutation_eligible(node):
+                counter += 1
+            self.generic_visit(node)
+
+    _Count().visit(ast.parse(source))
+    return counter
+
+
+def _smoke_battery(mod, tmp_path: Path) -> None:
+    """Fast checks that must fail when check_child_heads.py is meaningfully mutated."""
+    heads_doc = _heads(SHA)
+    mod.validate_heads(heads_doc)
+    with pytest.raises(ValueError):
+        mod.validate_heads({})
+    root = _parent(tmp_path, {"sub/a": "a"})
+    mod._reject_legacy_vendor_consumers(root)
+    legacy = tmp_path / "legacy"
+    legacy.mkdir()
+    (legacy / mod.LEGACY_VENDOR_CONSUMERS).write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError):
+        mod._reject_legacy_vendor_consumers(legacy)
+    whole = {"p.py": ("100644", "1"), "sub/p.py": ("100644", "2")}
+    assert mod._mirrors(whole, "sub", {"p.py": "p.py"})["p.py"] == "different"
+    report = mod.check(root, heads_doc, network=False)
+    assert not mod.failed(report, fail_on_drift=False, fail_on_diff=False)
+    sha = _child(tmp_path, {"a": "a"})
+    root2 = _parent(tmp_path / "n", {"sub/a": "b"})
+    report2 = mod.check(root2, _heads(sha), network=True, url_template=_url(tmp_path))
+    assert report2["children"][0]["identical"] is False
+    assert mod.failed(report2, fail_on_drift=False, fail_on_diff=True)
+    assert mod.main(["--root", str(root), "--offline"]) == 0
+
+
+def test_check_child_heads_line_and_branch_coverage():
+    cov_file = ROOT / ".coverage.check_child_heads"
+    cov_file.unlink(missing_ok=True)
+    env = {**os.environ, "PYTHONPATH": str(ROOT / "scripts"), "COVERAGE_FILE": str(cov_file)}
+    run = subprocess.run(
+        [sys.executable, "-m", "coverage", "run", "--branch", "--source=check_child_heads",
+         "-m", "pytest", "-q", str(Path(__file__).resolve()),
+         "-k", "not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert run.returncode == 0, run.stdout + run.stderr
+    report = subprocess.run(
+        [sys.executable, "-m", "coverage", "report", "--include=scripts/check_child_heads.py"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert report.returncode == 0, report.stdout + report.stderr
+    total_line = report.stdout.splitlines()[-1]
+    assert "100%" in total_line
+    assert " 0 " in total_line
+
+
+def test_mutations_all_killed(tmp_path):
+    source = SCRIPT.read_text(encoding="utf-8")
+    sites = _mutation_site_count(source)
+    assert sites > 0
+    survived = []
+    equivalent = []
+    for index in range(sites):
+        mutant = _mutant_source_at(source, index)
+        if mutant == source:
+            equivalent.append(index)
+            continue
+        path = tmp_path / f"mut-{index}.py"
+        path.write_text(mutant, encoding="utf-8")
+        mod = _import_check_child_heads(path)
+        try:
+            _smoke_battery(mod, tmp_path / f"smoke-{index}")
+        except Exception:
+            continue
+        survived.append(index)
+    assert not survived, f"survived mutant indices: {survived} (equivalent skipped: {equivalent})"

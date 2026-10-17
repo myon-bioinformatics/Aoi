@@ -10,11 +10,11 @@ Aoi のサブプロジェクトを独立させたリポジトリの登録です�
 - `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
   - `mirrored_from_parent`: prefix の下のパス → Aoi の原本のパス。共有するルートのファイルを子に通常のファイルとして置くとき（PythDRagoras の `aoi_paths.py` は Aoi 直下の `aoi_paths.py`）。Aoi の中でコピーの blob と mode が原本と違えば失敗（`--offline` でも）。QueRyu などほかの子でも同じ書き方で使う。
-- `vendor-consumers.json`（`vendor-consumers/1`）: Aoi と子の間では vendor lock を使わないので、置かない。check_child_heads.py には、置いた場合の確認（`state: locked` の子の lock が登録した `sha` にない・読めないときは失敗）だけが残っている。
-- `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分（blob と mode、除外なし）、vendor lock の topology。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
+- Aoi と subtree 子の間では vendor lock を使わない（`vendor-consumers.json` は置かない）。
+- `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分（blob と mode、除外なし）。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
 
 ```bash
-python -S scripts/check_child_heads.py --vendor-tools <myon-bioinformatics の checkout @ 1eda992> --fail-on-diff
+python -S scripts/check_child_heads.py --fail-on-diff
 ```
 
 `sha` の更新は PR で行い、自動マージはしない。

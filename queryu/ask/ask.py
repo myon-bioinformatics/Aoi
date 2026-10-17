@@ -21,6 +21,10 @@ import unicodedata
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from aoi_layout import bind as _bind_aoi_paths
+
+aoi_paths = _bind_aoi_paths(__file__)
+
 FORMS = {"original": "元の命題", "contrapositive": "対偶", "converse": "逆", "inverse": "裏"}
 RATE_FORMS = {"original": "元", "contrapositive": "対偶", "converse": "逆", "inverse": "裏"}
 ASKS = {
@@ -531,6 +535,8 @@ def main(argv=None) -> int:
     ap.add_argument("question", nargs="?", help="日本語の問い")
     ap.add_argument("--results", type=Path, default=None,
                     help="判定済みの結果のフォルダ。省略時はサイクル設定（結果 ref があるときはその checkout だけ）")
+    ap.add_argument("--root", type=Path, default=None,
+                    help="Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定")
     ap.add_argument("--cycle", default=None, help="サイクル名。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi の pipeline")
     ap.add_argument("--suggest-threshold", type=float, default=None,
                     help="候補の類似度。省略時は cycles/<cycle>/ask.toml。未設定なら候補は確定しない")
@@ -543,7 +549,7 @@ def main(argv=None) -> int:
     if args.schema:
         print(json.dumps(schema(), ensure_ascii=False, indent=2))
         return 0
-    root = Path(__file__).resolve().parents[2]
+    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
     cycle = args.cycle or os.environ.get("AOI_RESEARCH_CYCLE")
     try:
         results = resolve_results_dir(

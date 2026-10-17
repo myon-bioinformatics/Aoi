@@ -134,7 +134,8 @@ def test_threshold_comes_from_cycle_config_and_missing_means_unconfirmed(tmp_pat
 
 
 def test_repo_without_sets_does_not_call_e25_missing():
-    results = Path(__file__).resolve().parents[2] / "cycles" / "c001-chunichi" / "outputs"
+    import aoi_paths
+    results = aoi_paths.default_cycle_outputs(aoi_paths.resolve_aoi_root(anchor=Path(__file__)))
     if (results / "sets.jsonl").is_file():
         return
     res = answer_results(Query(target="E25"), results)

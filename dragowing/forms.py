@@ -12,13 +12,26 @@ import json
 import sys
 from pathlib import Path
 
-_ASK = Path(__file__).resolve().parents[1] / "queryu" / "ask"
-if str(_ASK) not in sys.path:
-    sys.path.insert(0, str(_ASK))
-
-from ask import registration_status
-
 FORM_ORDER = ("original", "converse", "inverse", "contrapositive")
+
+
+def registration_status(item: dict) -> str:
+    """QueRyu ``ask`` is a sibling checkout or ``queryu/ask`` on ``PYTHONPATH``."""
+    import sys
+
+    if "ask" not in sys.modules:
+        here = Path(__file__).resolve()
+        for root in (here.parent, *here.parents):
+            ask_dir = root / "queryu" / "ask"
+            if (ask_dir / "ask.py").is_file():
+                path = str(ask_dir)
+                if path not in sys.path:
+                    sys.path.insert(0, path)
+                break
+    from ask import registration_status as ask_registration_status
+
+    return ask_registration_status(item)
+
 FORM_LABEL = {
     "original": "元 P→Q",
     "converse": "逆 Q→P",

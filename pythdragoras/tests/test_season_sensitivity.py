@@ -160,7 +160,9 @@ def test_incomplete_league_is_not_silently_used_as_peer_reference():
 
 
 def test_2026_reference_rates_match_unrounded_counts_and_league_peer_means():
-    path = Path(__file__).parents[2]/'cycles/c001-chunichi/references/season-2026-central-summary.jsonl'
+    import aoi_paths
+    cycle = aoi_paths.resolve_cycle_path(aoi_paths.resolve_aoi_root(anchor=Path(__file__)))
+    path = cycle / 'references/season-2026-central-summary.jsonl'
     data = [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()]
     assert len(data) == 6
     assert all(r['G'] == r['W']+r['L']+r['T'] == 143 for r in data)

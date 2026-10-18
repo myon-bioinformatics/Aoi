@@ -46,7 +46,6 @@ uv run python blueprobe.py --source <取得元のモジュール名> --cache <Qu
 | `docs/boundaries.md` | BlueProbe / QueRyu / web-ui の責務の境界（提案） |
 | `docs/antipatterns.md` | 繰り返しそうな失敗とその約束 |
 | `tests/cases/*.jsonl` | 表記揺れのコーパス（xprobe と同じ id / category / value / reason 形式） |
-| `vendor/`・`vendor.lock.json` | 来歴を記録する単一ファイルのカタログ（実行コード・テストからは import しない。下の「Aoi との関係」） |
 
 NPB（日本プロ野球）向けの取得元は、後半の「NPB（プロ野球）の取得元」にまとめています。
 
@@ -90,9 +89,6 @@ Aoi 側の `blueprobe/` とは `git subtree` で同期し続ける（どちら�
 
 独立の目的は、HTML/CSS/DOM の構造を見て観測・抽出する知見を、リポジトリ横断でここに集めること。
 BlueProbe の実行コードは他リポジトリの実装に依存せず、必要な情報は参照先と契約を揃えて扱う。
-例外として `vendor/` には、公開リポジトリから選んだ標準ライブラリのみの単一ファイルを、来歴を記録するカタログとして保持する。
-このカタログは BlueProbe の実行コード・テストから import せず、Python path にも加えない。配布依存や BlueProbe の API ではない。
-各ファイルの上流コミットとバイト列は `vendor.lock.json`（`vendor-lock/1`）で固定し、CIで照合する。
 各リポジトリ側でのリファクタリングはそれぞれで行ってよい。
 
 ### 同期

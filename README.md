@@ -262,3 +262,20 @@ python emoji_observations.py page.html --json     # 1 出現 1 行の records �
 判定は UTS #51 の形と Extended_Pictographic（Unicode 16.0）で、xprobe の `emoji_sequences` と同じ契約。
 他リポジトリのコードは import せず、`tests/cases/emoji_corpus.txt` と xprobe で作った期待値
 （`emoji_corpus.expected.json`、xprobe のコミットを記録）で揃える。名前の付与は QueRyu の `emoji_names.json` 側。
+
+## 操作要素・画像の名前の観測（`accessible_names.py`）
+
+```sh
+python accessible_names.py page.html                         # 名前・出どころ・区分の件数
+python accessible_names.py tests/cases/pages/github-io-html-import.json   # btk-browser-dom/1：aria スナップショットとも突き合わせる
+```
+
+ボタン・リンク・入力・タブ・画像などの名前を、出どころ（`aria-labelledby` / `aria-label` / `label` / `value` / `alt` / 本文 / `title` / `placeholder`）とともに記録し、
+`empty_name`・`emoji_only_name`・`aria_hidden_control`・`image_without_alt`・`placeholder_only`・`ambiguous_link_name`（同じ名前で行き先が違うリンク）を数える。
+名前の計算は W3C accname の**近似**（`ACCNAME_APPROXIMATION_AS_SPEC`）で、CSS は評価しない。100% の一致は目標にせず、ずれは観測としてアンチパターン集に足していく。
+
+`tests/cases/pages/` は、github.io（`myon-bioinformatics.github.io`）と web-ui の実ページ5件を、各リポジトリのコミットから
+ローカル HTTP で配信して Chromium で描画し、browser-test-kit の `capture()`（`btk-browser-dom/1`）で採った DOM と aria スナップショット。
+来歴（リポジトリ・コミット・パス・公開 URL・遮断した外部リクエスト）は各 JSON の `provenance` にある。公開サイトそのものではなくコミットからの描画で、
+`*.github.io` に届かない環境でも同じものを再現できる。突き合わせ結果は 49 件一致・CSS 由来の差 6 件・不一致 0 件（テストで固定）。
+

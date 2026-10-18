@@ -18,3 +18,8 @@
 | `SILENT_NORMALIZATION` | 正規化した結果だけを残す | 何を変えたかが記録単位で追えない（Aoi Principle 2） | 原文 `raw_text` と派生値を並べ、`normalized` で変化の有無を残す | Aoi |
 | `UNRECORDED_PROVENANCE` | いつ・どこから・どのコードで取ったかを残さない | 再現も検証もできない（Aoi Principle 6, 8） | キャッシュの manifest.jsonl に URL・日時・ステータス・SHA-256・コードの版を追記する | Aoi |
 | `EMOJI_FORM_SPLIT` | U+FE0F の有無で同じ絵文字を別物として数える、または片方だけを探す | 見出しの 🗺️ と本文の 🗺 が別の項目になり、件数も対応表も割れる | `identity`（U+FE0F を除いた形）で数え、表記ごとの件数は `forms` に残す | browser-test-kit: EMOJI_VARIATION_SELECTOR |
+| `ACCNAME_APPROXIMATION_AS_SPEC` | 静的 HTML から計算した名前を、ブラウザの名前と同じものとして扱う | CSS の装飾・閉じた `<details>`・`hidden`・役割の違いで、読み上げられる名前とずれる | `accessible_names.py` の名前は近似と明記し、btk で採った aria スナップショットと `compare_aria_snapshot()` で突き合わせ、`match` / `css_generated` / `mismatch` を数える。実ページ5件は不一致0（tests/cases/pages） | browser-test-kit: PAGE_TEXT_AS_RENDERED_TEXT |
+| `CSS_GENERATED_NAME` | `::before` / `::after` の `content` が名前に入ることを見落とす | github.io の `[GitHub]`・`$ `・`> ` のように、ブラウザの名前にだけ記号が付く | 静的な名前を含み前後が記号だけの差は `css_generated` として別に数え、不一致にしない | github.io 実ページ（6件） |
+| `HIDDEN_AS_ARIA_HIDDEN` | `hidden` 属性・閉じた `<details>` の中と、`aria-hidden="true"` の中を同じに扱う | 前者はアクセシビリティの木から外れるが、後者は見えるまま読み上げだけ消える。混ぜると 17 件の誤検出になった（mcp-toolcall-lab ページ） | `hidden` は記録の `hidden` に、`aria_hidden_control` は `aria-hidden` の中の操作要素だけに付ける | github.io mcp-toolcall-lab 実ページ |
+| `FILE_INPUT_AS_TEXTBOX` | `<input type="file">` を入力欄として数える | Chromium では button で、名前は label から付く | `type=file` は button として扱う | github.io html-import 実ページ |
+| `EMOJI_ONLY_NAME` | 操作要素の名前が絵文字だけ | 読み上げは絵文字の名前（例「wastebasket」）になり、操作の意味と一致するとは限らない | 判断はせず `emoji_only_name` として数える。`aria-label` があればそちらが名前になる | |

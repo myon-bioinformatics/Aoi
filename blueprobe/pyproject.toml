@@ -1,0 +1,18 @@
+[project]
+name = "blueprobe"
+version = "0.1.0"
+description = "まず見に行く。解釈はあとで。HTML/CSS/DOM の構造を観測して抽出する。"
+requires-python = ">=3.11"
+dependencies = ["selectolax>=1"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+# JUnit の出力先は CI で指定する（docs/ci/）
+norecursedirs = [".test-deps", "build"]

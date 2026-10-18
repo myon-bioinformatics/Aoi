@@ -146,6 +146,40 @@ Acquisition uses the existing synchronous urllib client; no asynchronous support
 is claimed by the min artifact. Whole-tree subtree synchronization remains the
 Aoi/QueRyu development relationship. MIT notices are kept in `LICENSE`.
 
+## キャッシュの照会・受け渡し・並行取得（`cache_share.py`）
+
+`cache_core.Cache` の上に載る stdlib のみのモジュール。取得済みの本文を、取り直さずに
+抽出側（BlueProbe など）や他の checkout・他の人へ渡すためのもの。
+
+- `query(cache, key=, url=, group=, status=, since=, until=, history=)`:
+  manifest の行を絞り込む。`key`／`url` は glob（`cal:2024_*`）、`since`／`until`
+  は `fetched_at` の範囲（両端を含む）。既定ではキーごとに最新の 1 行を返す。`until`
+  と組み合わせると「その時点の最新」になり、`history=True` なら全取得履歴を返す。
+- `export_bundle(cache, rows, path)` / `import_bundle(cache, path)`:
+  照合済みの gzip 本文と行を 1 つの `.tar`（`queryu-bundle/1`）にまとめて受け渡す。
+  - 書き出し時には本文を照合する。既存のファイルは上書きしない。
+  - 取り込み時には全本文の sha256 とバイト数を再照合する。不一致、パス逸脱、
+    通常ファイル以外のメンバーが一つでもあれば、何も書かずに失敗する。
+  - 既存の blob と、同じ (key, sha256, fetched_at) の行は追加しない。
+  - 取り込んだ行は元の来歴を保ったまま、`imported_from`（バンドルの SHA-256）を持つ。
+- `iter_snapshots(cache, rows)` / `aiter_snapshots(cache, rows, concurrency=4)`:
+  `html-snapshot/1` を同期ジェネレータまたは async イテレータで供給する。async 版は
+  照合と展開をスレッドで行い、順序は入力のまま保つ。
+- `fetch_many(cache, [(key, url, group), ...], client=, wait=3.0, max_hosts=4)`:
+  複数ホストを並行して取得する。
+  - 同じホストへのリクエストは指定順に 1 件ずつ送り、間を `wait` 秒空ける。
+    `PoliteFetcher` と同じ配慮。
+  - 異なるホスト同士は互いを待たない。
+  - 200 と 404 は `Cache.put`（来歴つき）で保存し、それ以外の status は本文なしで記録する。
+  - 例外は `status: null` と `error` として返し、他のホストの取得は続ける。
+  - manifest への書き込みはロックで 1 つずつ行う。
+
+```bash
+python cache_share.py --cache data/cache query --group npb_calendar --since 2026-01-01
+python cache_share.py --cache data/cache export --key 'npb_calendar:2024_*' --out share.tar
+python cache_share.py --cache other/cache import share.tar
+```
+
 ## テスト
 
 サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi と BlueProbe を固定 SHA で checkout して渡す（`.github/workflows/ci.yml` の `AOI_SHA`・`BLUEPROBE_SHA` と同じ）。

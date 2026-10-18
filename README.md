@@ -63,7 +63,7 @@ Each subproject lives in Aoi as a directory and is also published as a standalon
 
 | Project | Repository | Directory in Aoi | Registered in |
 |---|---|---|---|
-| BlueProbe | [myon-bioinformatics/BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](blueprobe/) | `child-heads.json` of the parent [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) |
+| BlueProbe | [myon-bioinformatics/BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](blueprobe/) | Aoi `child-heads.json` |
 | QueRyu | [myon-bioinformatics/QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](queryu/) | Aoi `child-heads.json` |
 | SakAnalytics | [myon-bioinformatics/sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](sakanalytics/) | Aoi `child-heads.json` |
 | PythDRagoras | [myon-bioinformatics/PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](pythdragoras/) | Aoi `child-heads.json` |

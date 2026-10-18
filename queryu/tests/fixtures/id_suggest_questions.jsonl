@@ -1,0 +1,35 @@
+{"q": "E25 に阪神 2015 以外の判例はある？", "expect": "E25", "type": "explicit"}
+{"q": "P117 の対偶の判例は？", "expect": "P117", "type": "explicit"}
+{"q": "P121 の判例は？", "expect": "P121", "type": "explicit"}
+{"q": "P62 に判例はある？", "expect": "P62", "type": "explicit"}
+{"q": "得失点差がプラスのチームはAクラスになる、という命題の判例は？", "expect": "P1", "type": "paraphrase"}
+{"q": "失点がリーグ2位以内に少ないチームは3位以内に入るか", "expect": "P4", "type": "paraphrase"}
+{"q": "1点差試合で勝ち越すとピタゴラス期待勝利数を上回る？", "expect": "P9", "type": "paraphrase"}
+{"q": "得点した回の大きさが2年連続でリーグ下位2位ならBクラスという命題に判例は？", "expect": "P62", "type": "paraphrase"}
+{"q": "得点が2年以上続けて5位以下ならBクラス？", "expect": "P64", "type": "paraphrase"}
+{"q": "得点した回の大きさがその年だけ下位2位以内ならB、の対偶の判例", "expect": "P117", "type": "paraphrase"}
+{"q": "失点だけ上位半分で得点5位以下、それでも得失点差がプラスならAクラスになる？", "expect": "P121", "type": "paraphrase"}
+{"q": "得点も失点も3位以内に入らないチームはBクラスか", "expect": "P115", "type": "paraphrase"}
+{"q": "中日は後半の勝率が前半より低いのか", "expect": "P88", "type": "paraphrase"}
+{"q": "中日はBクラスの年に、確定した日に残り試合が10以上あった？", "expect": "P112", "type": "paraphrase"}
+{"q": "中日が負け越したカードは、勝率一定のときより多い？", "expect": "P106", "type": "paraphrase"}
+{"q": "3位と4位の間で、最長連敗が短いほうが3位になるか", "expect": "P55", "type": "paraphrase"}
+{"q": "出塁率が他球団より低いと得点する回の頻度も低い？", "expect": "P34", "type": "paraphrase"}
+{"q": "収支が0以下ならBクラスの命題に判例はある？", "expect": "P199", "type": "paraphrase"}
+{"q": "点の差より負けたチームはBクラスか", "expect": "P187", "type": "paraphrase"}
+{"q": "得点の組み合わせ方が1標準偏差以上有利ならAクラス？", "expect": "P178", "type": "paraphrase"}
+{"q": "得点がはっきり足りず上の相手に.47未満ならBという式", "expect": "E1", "type": "paraphrase"}
+{"q": "真ん中のます目か線の近くで、その年の高さに点の差で届かず点の差より負けた式の判例", "expect": "E25", "type": "paraphrase"}
+{"q": "E25と時期の状態の式の積の判例は？", "expect": "E26", "type": "paraphrase_with_id_mention"}
+{"q": "中日の得点5位以下のシーズン、走者1人あたりの得点は他球団より少ない？", "expect": "P46", "type": "paraphrase"}
+{"q": "四死球が他球団以上なら得点の不足は0.6点以下か", "expect": "P136", "type": "paraphrase"}
+{"q": "1位が抜けていない年のBクラスはどの道筋にも当たらない？", "expect": "P175", "type": "paraphrase"}
+{"q": "中日は3位を争う相手との勝率が上位相手より低い？", "expect": "P61", "type": "paraphrase"}
+{"q": "失点の優位が誤差を超えて負けているならBクラス？", "expect": "P148", "type": "paraphrase"}
+{"q": "得点した回あたりの得点（cRPS）が下位2位ならBクラス？", "expect": null, "related": "P117", "type": "part7_unregistered"}
+{"q": "2026年の中日の監督は誰？", "expect": null, "type": "negative"}
+{"q": "ドラゴンズの本拠地の天気は？", "expect": null, "type": "negative"}
+{"q": "ビールの売上と観客動員の関係", "expect": null, "type": "negative"}
+{"q": "LittleBitの論文の著者は？", "expect": null, "type": "negative"}
+{"q": "明日の先発投手を教えて", "expect": null, "type": "negative"}
+{"q": "非得点イニングの残塁率が高いとBクラス？", "expect": null, "type": "negative_unregistered"}

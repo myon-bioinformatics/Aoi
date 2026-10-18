@@ -135,7 +135,7 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## ライセンス
 
-MIT License（[LICENSE](https://github.com/myon-bioinformatics/PythDRagoras/blob/main/LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
 
 ---
 

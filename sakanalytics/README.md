@@ -124,7 +124,7 @@ git push https://github.com/myon-bioinformatics/sakanalytics.git sync/sakanalyti
 
 ## ライセンス
 
-MIT License（[LICENSE](https://github.com/myon-bioinformatics/sakanalytics/blob/main/LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
 
 ---
 

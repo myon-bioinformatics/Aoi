@@ -35,8 +35,6 @@ jobs:
           sparse-checkout-cone-mode: false
           persist-credentials: false
       - run: python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
-      - name: Verify BlueProbe subtree vendor lock
-        run: python -S .vendor-sync-tools/vendor_sync.py check --root blueprobe --manifest vendor.lock.json
 
   test:
     name: pytest (Python ${{ matrix.python }})

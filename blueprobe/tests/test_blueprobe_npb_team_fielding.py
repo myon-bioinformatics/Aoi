@@ -35,6 +35,12 @@ def test_unknown_sub_header_is_recorded():
     assert r["records"] == [] and "併殺新しい" in r["unknown"][0]["raw"]
 
 
+def test_unknown_first_spanned_stat_column_is_recorded():
+    head = ["チーム", ("新守備", 2), "試合", "守備機会", "刺殺", "補殺", "失策", ("併殺", 2), "捕逸"]
+    r = parse(page(ROW, head=head, sub=["率", "値"] + SUB), URL)
+    assert r["records"] == [] and "新守備率" in r["unknown"][0]["raw"]
+
+
 def test_pages_and_check():
     assert pages([2025])[0] == ("2025_c", "https://npb.jp/bis/2025/stats/tmf_c.html", "2025")
     assert [c["ok"] for c in check(parse(page(ROW), URL)["records"])] == [False]

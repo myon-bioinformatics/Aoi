@@ -2,6 +2,14 @@
   "schema": "child-heads/1",
   "ref": "main",
   "heads": {
+    "myon-bioinformatics/BlueProbe": {
+      "optional": {
+        "repository_created_at": "2026-10-14T01:27:17Z",
+        "subtree_prefix": "blueprobe"
+      },
+      "repository_id": 1418210841,
+      "sha": "596f334198b669546a32c432422acc2eb37afeee"
+    },
     "myon-bioinformatics/DRAgoWing": {
       "optional": {
         "repository_created_at": "2026-10-17T21:45:31Z",

@@ -59,6 +59,6 @@ python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py
 
 開発履歴の同期は全体subtree、他プロジェクトへの小さな配布は上記minAPIであり、それぞれ独立した契約である。subtreeの子を丸ごとvendor lockに重複登録しない。minAPIを別の利用者がvendorするときは、その利用者が配布ファイルと通知を固定する。
 
-既存の `child-heads.json` はその登録SHAとprefixの完全一致を維持する。QueRyuのcache coreを使うmin配布と全体subtree同期は独立した検証である。初回joinでは、配布元と同じ子main `e052cc3750cf14fd271187cee12c6ddddc11d7ab` の全treeをAoiのqueryuへ取り込み、登録SHA・tree・mirrorの一致を確認した。SakAnalyticsとDRAgoWingの公開リポジトリ新規作成も、この登録だけでは実行していない。
+既存の `child-heads.json` はその登録SHAとprefixの完全一致を維持する。QueRyuのcache coreを使うmin配布と全体subtree同期は独立した検証である。全体subtreeの初回joinでは、QueRyu main `5ce256d77d64b33d4c71c2cbb84fe201f9637567` を `git subtree add` で Aoi の `queryu/` に取り込み、登録SHA・tree・mirrorの一致を確認した（`distributions.json` の QueRyu `commit` pin は min 配布用の別checkout）。SakAnalyticsとDRAgoWingの公開リポジトリ新規作成も、この登録だけでは実行していない。
 
 Aoi → 子の書き込みは親PR #102で比較ref必須になった `gh_ops.py subtree-push` を使う。指定refがない・比較対象を選べない・取得できない・祖先でない場合は止める。検証済みSHAだけを新しいブランチへ空の期待値のlease付きで送り、PRで確認する。既定ブランチへ直接pushしない。joinを含むAoi統合PRはmerge commitで履歴を残す。

@@ -60,11 +60,9 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 ## QueRyu
 
 - QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は、Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から `git filter-branch --subdirectory-filter queryu` で切り出しました。tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返しました（PythDRagoras と同じ split の止まり（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））。
-- QueRyu #1/#2/#3/#4 を merge commit で取り込んだ main `e052cc3750cf14fd271187cee12c6ddddc11d7ab` に対し、一度だけの join を追加しました。親なし squash commit の tree はこの子の tree と同一で、Aoi の merge commit の第2親として保持します。PR は squash/rebase せず merge commit で入れてください。
+- QueRyu の main `5ce256d77d64b33d4c71c2cbb84fe201f9637567`（#5–#8: 埋込み aoi_layout 出自ガード、stdlib cache core、README、emoji_data、cache_share）に対し、一度だけ `git subtree add` で join を入れました。merge commit の第2親は QueRyu main の head です（手組みの2親マージや squash 由来の join は使いません）。PR は squash/rebase せず merge commit で入れてください。
 - `queryu/` 全体（足場・CI・テスト・cache_core も含む）は登録した QueRyu tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。
-- 単独 QueRyu では Aoi 配下の BlueProbe を拒否します。物理的に `AOI_ROOT/queryu` にある subtree のテストだけは、逆に `AOI_ROOT/blueprobe` の正確な場所を要求します。Aoi 直下から対象を絞る場合は `pytest -c pyproject.toml queryu/tests` を使います。
-
-QueRyu #5 の埋込み共有 aoi_layout 出自ガード修正は、初回joinの後に通常の subtree merge で取り込みました。登録先は `4a478d1d69b5aa0c577ce6a5882c1e35593cbf2f` です。単独運用の出自制限を保ち、Aoi内では正確なPythDRagorasミラーのバイト一致を実行時に確認します。
+- 単独 QueRyu では Aoi 配下の BlueProbe を拒否します。物理的に `AOI_ROOT/queryu` にある subtree のテストだけは、逆に `AOI_ROOT/blueprobe` の正確な場所を要求します。埋込み共有 `aoi_layout` は単独運用の出自制限を保ち、Aoi 内では正確な PythDRagoras ミラーのバイト一致を実行時に確認します。Aoi 直下から対象を絞る場合は `pytest -c pyproject.toml queryu/tests` を使います。
 
 ## NagoyAction
 

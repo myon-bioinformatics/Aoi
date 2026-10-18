@@ -86,6 +86,38 @@ def test_line_score_shape_requires_thirteen_cells_and_integer_rhe():
     assert [u["raw"] for u in r["unknown"]] == ["得点表の形の行の知らない名前: 横浜大洋"]
 
 
+def test_unknown_linescore_shape_with_exactly_thirteen_cells_is_reported():
+    """Boundary for len(cells) >= 13: nine inning cells plus R/H/E after the team name."""
+    row = ["横浜大洋", *"0 0 1 0 0 0 0 0 0".split(), "1", "6", "0"]
+    assert len(row) == 13
+    r = parse(page(row), URL)
+    assert [u["raw"] for u in r["unknown"]] == ["得点表の形の行の知らない名前: 横浜大洋"]
+
+
+def test_unknown_linescore_shape_ignores_name_when_first_cell_is_empty():
+    row = ["", *"0 0 1 0 0 0 0 0 0".split(), "1", "6", "0"]
+    assert len(row) == 13
+    r = parse(page(row), URL)
+    assert r["unknown"] == [] and r["counts"]["no_team_row"] == 1
+
+
+def test_unknown_linescore_shape_requires_first_inning_cell_to_match():
+    row = ["横浜大洋", "?", *"0 0 1 0 0 0 0 0 0".split(), "1", "6", "0"]
+    r = parse(page(row), URL)
+    assert r["unknown"] == [] and r["counts"]["no_team_row"] == 1
+
+
+def test_unknown_linescore_shape_requires_last_inning_cell_to_match():
+    row = ["横浜大洋", *"0 0 1 0 0 0 0 0 0".split(), "?", "1", "6", "0"]
+    r = parse(page(row), URL)
+    assert r["unknown"] == [] and r["counts"]["no_team_row"] == 1
+
+
+def test_team_row_with_exactly_five_cells_is_counted():
+    r = parse(page(["読 売", "0", "x", "3", "11"]), URL)
+    assert r["counts"]["tail_not_rhe"] == 1 and r["counts"]["team_cell_0_len_5"] == 1 and r["records"] == []
+
+
 def test_team_not_in_first_cell_or_too_few_cells_are_skipped_for_records():
     r = parse(page(["", "読 売", "0", "0", "0"]), URL)
     assert r["records"] == [] and "team_cell_1_len_5" in r["counts"]

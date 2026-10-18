@@ -85,7 +85,7 @@ PYTHONPATH=<Aoi のルート>/queryu uv run pytest -q
 このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト
 [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) から、履歴を保ったまま独立させたもの。
 Aoi 側の `blueprobe/` とは `git subtree` で同期し続ける（どちらで変更しても、もう一方へ反映する）。
-ほかのサブプロジェクトと違い、BlueProbe の登録先は Aoi ではなく、親の [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の `child-heads.json` です。
+登録は他の subtree 子と同様、[Aoi](https://github.com/myon-bioinformatics/Aoi) 直下の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に載せます。親 [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の `child-heads.json` には登録しません。Aoi と BlueProbe のあいだでは vendor lock を使いません（一覧と手順は Aoi の [docs/child-repositories.md#blueprobe](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md#blueprobe)）。
 
 独立の目的は、HTML/CSS/DOM の構造を見て観測・抽出する知見を、リポジトリ横断でここに集めること。
 BlueProbe の実行コードは他リポジトリの実装に依存せず、必要な情報は参照先と契約を揃えて扱う。
@@ -94,11 +94,11 @@ BlueProbe の実行コードは他リポジトリの実装に依存せず、必�
 ### 同期
 
 ```bash
-# Aoi → BlueProbe（Aoi のルートで）
-git subtree push -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main
-# BlueProbe → Aoi（Aoi のルートで）
-git subtree pull -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main --squash
+# BlueProbe → Aoi（Aoi のルートで。子の main を `blueprobe/` に取り込む）
+git subtree pull --prefix=blueprobe https://github.com/myon-bioinformatics/BlueProbe.git main
 ```
+
+Aoi → BlueProbe・登録した `sha` の更新は、上の child-repositories の BlueProbe 節に従います。
 
 `pyproject.toml`・`conftest.py`・`docs/images/`・`.github/` は独立リポジトリ側だけのファイル。
 

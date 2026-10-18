@@ -24,6 +24,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-10-18: 子の README（各子の main）を Aoi の prefix にそのままコピーし、`pythdragoras/`・`sakanalytics/` に子と同じ `LICENSE` を置いて、5つの子の `sha` を各子の main（DRAgoWing `a060e79`、NagoyAction `9ee99dc`、PythDRagoras `7ea1438`、QueRyu `096bef9`、sakanalytics `887444d`）に更新しました。README と LICENSE だけの差分なので `git subtree pull` はしていません（tree は一致）。次の `git subtree pull --squash` は同じ変更を両側に持つ状態からの取り込みになります。
+
 ## subtree の同期（決定）
 
 同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では vendor lock を使いません。`aoi_paths.py` のような Aoi 固有のファイルは、子に通常のファイルとして置き、subtree で同期します。原本との一致は、`child-heads.json` の `mirrored_from_parent` を使って `check_child_heads.py` が確かめます。手順は PythDRagoras のものを子ごとに読み替えます。

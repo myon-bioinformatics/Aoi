@@ -41,6 +41,20 @@ def test_child_heads_shape_and_prefixes_exist():
         assert (ROOT / prefix).is_dir(), (name, prefix)
 
 
+def test_blueprobe_registered_with_exact_ids():
+    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/BlueProbe"]
+    assert entry["repository_id"] == 1418210841
+    assert entry["optional"]["repository_created_at"] == "2026-10-14T01:27:17Z"
+    assert entry["optional"]["subtree_prefix"] == "blueprobe"
+    assert "mirrored_from_parent" not in entry["optional"]
+    assert entry["sha"] == "596f334198b669546a32c432422acc2eb37afeee"
+    assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
+    for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "blueprobe.py", "web_observations.py"):
+        assert (ROOT / "blueprobe" / path).is_file(), path
+    assert not (ROOT / "blueprobe" / "min.py").exists()
+    assert not (ROOT / "blueprobe" / "vendor.lock.json").exists()
+
+
 def test_pythdragoras_registered_with_exact_ids_and_mirrors():
     entry = _load("child-heads.json")["heads"]["myon-bioinformatics/PythDRagoras"]
     assert entry["repository_id"] == 1423045231
@@ -108,7 +122,7 @@ def test_offline_cli_passes():
     assert out.returncode == 0, out.stderr
     report = json.loads(out.stdout)
     assert report["schema"] == "aoi-child-heads-check/1"
-    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/DRAgoWing", "myon-bioinformatics/NagoyAction", "myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu", "myon-bioinformatics/sakanalytics"]
+    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/BlueProbe", "myon-bioinformatics/DRAgoWing", "myon-bioinformatics/NagoyAction", "myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu", "myon-bioinformatics/sakanalytics"]
 
 
 # --- ローカルの Git -------------------------------------------------------------------------

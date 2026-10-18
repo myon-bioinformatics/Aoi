@@ -1,16 +1,15 @@
 # Aoi の子リポジトリ
 
-Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。PythDRagoras・QueRyu・NagoyAction・sakanalytics・DRAgoWing の親は Aoi です（myon-bioinformatics からは孫）。
+Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。BlueProbe・PythDRagoras・QueRyu・NagoyAction・sakanalytics・DRAgoWing の親は Aoi です（myon-bioinformatics からは孫）。
 
 | 子 | prefix | 登録した main |
 |---|---|---|
+| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](../blueprobe/) | `child-heads.json` の `sha` |
 | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](../pythdragoras/) | `child-heads.json` の `sha` |
 | [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](../queryu/) | `child-heads.json` の `sha` |
 | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](../nagoyaction/) | `child-heads.json` の `sha` |
 | [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](../sakanalytics/) | `child-heads.json` の `sha` |
 | [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](../dragowing/) | `child-heads.json` の `sha` |
-
-BlueProbe（[myon-bioinformatics/BlueProbe](https://github.com/myon-bioinformatics/BlueProbe)、Aoi の [`blueprobe/`](../blueprobe/)）も Aoi の中にありますが、登録先は Aoi ではなく親 [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の `child-heads.json` です（この表と Aoi の `child-heads.json` には含めません）。
 
 - `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
@@ -87,3 +86,10 @@ QueRyu #5 の埋込み共有 aoi_layout 出自ガード修正は、初回joinの
 - `dragowing/` 全体（子の CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した DRAgoWing の tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。`min.py` は Aoi が提供し、子には置きません。
 - サイクルデータ（`cycles/`）、PythDRagoras（`propositions`・`rule_search`）、QueRyu（`ask`）は Aoi に残します。子の CI は Aoi を固定 SHA で checkout し、`AOI_ROOT` と `PYTHONPATH` の `pythdragoras` と `queryu/ask` を渡して pytest を動かします。子の CI に Chrome のジョブはなく、Aoi の CI の Chrome ジョブと DRAgoWing reports ワークフローが `dragowing/` のパスを使います。Aoi の中では `dragowing/.github/` は動きません。`dragowing/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめ、パッケージ登録は何もしません。`dragowing/tests/conftest.py` と共存します。
 - 同期は PythDRagoras の手順の `pythdragoras` を `dragowing`、リポジトリを DRAgoWing に読み替えます。
+
+## BlueProbe
+
+- BlueProbe は Aoi の [`blueprobe/`](../blueprobe/) から独立したリポジトリです。親 myon-bioinformatics の `child-heads.json` への登録は廃止し、Aoi の `child-heads.json` に移しました。Aoi と子の間では vendor lock を使いません（`vendor/`・`vendor.lock.json` は子から除く）。main `596f334198b669546a32c432422acc2eb37afeee`（#21: Aoi 側にだけあった NPB 取得元の移植と vendor カタログの除去）に対し、一度だけの join を入れました。merge commit は第2親として join を残します。PR は squash/rebase せず merge commit で入れてください。
+- `blueprobe/` 全体（子の CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した BlueProbe の tree と同一です。Aoi の原本を写したファイルはないので `mirrored_from_parent` は書きません。`min.py` は Aoi が提供し、子には置きません。
+- サイクルデータ（`cycles/`）の fixture と QueRyu 連携は Aoi に残します。子の CI は Aoi を固定 SHA で checkout し、`PYTHONPATH` の `queryu` を渡して pytest を動かします。Aoi の中では `blueprobe/.github/` は動きません。
+- 同期は PythDRagoras の手順の `pythdragoras` を `blueprobe`、リポジトリを BlueProbe に読み替えます。

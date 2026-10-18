@@ -149,6 +149,8 @@ def test_cli_query_export_import(tmp_path, capsys):
     cache, _ = filled(tmp_path)
     assert cs.main(["--cache", str(cache.root), "query", "--group", "cal", "--status", "200"]) == 0
     assert [json.loads(line)["key"] for line in capsys.readouterr().out.splitlines()] == ["cal:2024_03"]
+    assert cs.main(["--cache", str(cache.root), "query", "--status", "304"]) == 0
+    assert [json.loads(line)["status"] for line in capsys.readouterr().out.splitlines()] == [304]
     out = tmp_path / "b.tar"
     assert cs.main(["--cache", str(cache.root), "export", "--key", "*", "--out", str(out)]) == 0
     assert json.loads(capsys.readouterr().out)["entries"] == 3

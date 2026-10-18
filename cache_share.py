@@ -241,7 +241,7 @@ def fetch_many(cache: Cache, requests: list[tuple[str, str, str]], *, client, wa
 
 
 def main(argv=None) -> int:
-    """``query`` prints rows as JSON lines; ``export`` writes a bundle; ``import`` adds one."""
+    """``query`` prints rows (any status) as JSON lines; ``export`` bundles 200/404 rows; ``import`` adds one."""
     import argparse
     import sys
     parser = argparse.ArgumentParser(prog="cache_share.py", description=__doc__.splitlines()[0])
@@ -264,8 +264,11 @@ def main(argv=None) -> int:
     if args.command == "import":
         print(json.dumps(import_bundle(cache, args.bundle), ensure_ascii=False))
         return 0
+    # query is an inspection path: it also lists rows without a body (304, 5xx, errors);
+    # export packs bodies, so it keeps the 200/404 rows only.
     rows = query(cache, key=args.key, url=args.url, group=args.group, status=args.status,
-                 since=args.since, until=args.until, history=args.history)
+                 since=args.since, until=args.until, history=args.history,
+                 with_body=args.command == "export")
     if args.command == "query":
         for row in rows:
             sys.stdout.write(json.dumps(row, ensure_ascii=False) + "\n")

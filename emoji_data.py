@@ -228,7 +228,8 @@ def _sequences(text: str) -> list[str]:
             continue
         if current:
             out.append(current)
-        current = ch if (ord(ch) > 0x2000 or ch in "#*0123456789") and not ch.isspace() else ""
+        # (c) and (R) are the only Extended_Pictographic code points below U+2000.
+        current = ch if (ord(ch) > 0x2000 or ch in "#*0123456789\u00a9\u00ae") and not ch.isspace() else ""
     if current:
         out.append(current)
     return [s for s in out if not (len(s) == 1 and s in "#*0123456789")]

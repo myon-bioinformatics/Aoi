@@ -1,0 +1,24 @@
+{
+ "schema": "btk-browser-dom/1",
+ "requested_url": "http://127.0.0.1:38177/examples/github-like.html",
+ "url": "http://127.0.0.1:38177/examples/github-like.html",
+ "title": "web-ui GitHub-like theme",
+ "selector": "body",
+ "captured_at": "2026-10-18T00:05:20.903382+00:00",
+ "source_kind": "dom",
+ "html_sha256": "5c8e751da299bbdbb322f7b2ec22df1fa1373ac692931e5de6a1e4dd2c5c1ddc",
+ "content_verified": false,
+ "html": "<body data-ui-theme=\"github-like\">\n<main class=\"ui-page\">\n<h1 class=\"ui-title\">web-ui · GitHub-like</h1>\n<p class=\"ui-muted\">The same semantic component contract with a different theme.</p>\n<section class=\"ui-grid\">\n<article class=\"ui-card\">\n<h2>Repository card</h2>\n<p>Theme files change presentation without changing semantic classes.</p>\n<span class=\"ui-tag\">theme</span>\n<span class=\"ui-tag\">contract-v1</span>\n</article>\n<article class=\"ui-card\">\n<h2>Controls</h2>\n<label for=\"example-input\">Example input</label>\n<input class=\"ui-input\" id=\"example-input\" value=\"shared semantic HTML\">\n<button class=\"ui-button\" type=\"button\">Example button</button>\n</article>\n</section>\n<section class=\"ui-panel\">\n<h2>Output</h2>\n<pre class=\"ui-output\">ui-page / ui-panel / ui-card / ui-button / ui-input</pre>\n</section>\n</main>\n\n\n</body>",
+ "text": "\n\nweb-ui · GitHub-like\nThe same semantic component contract with a different theme.\n\n\nRepository card\nTheme files change presentation without changing semantic classes.\ntheme\ncontract-v1\n\n\nControls\nExample input\n\nExample button\n\n\n\nOutput\nui-page / ui-panel / ui-card / ui-button / ui-input\n\n\n\n\n",
+ "visible": "web-ui · GitHub-like\n\nThe same semantic component contract with a different theme.\n\nRepository card\n\nTheme files change presentation without changing semantic classes.\n\ntheme contract-v1\nControls\nExample input  Example button\nOutput\nui-page / ui-panel / ui-card / ui-button / ui-input",
+ "aria_snapshot": "- main:\n  - heading \"web-ui · GitHub-like\" [level=1]\n  - paragraph: The same semantic component contract with a different theme.\n  - article:\n    - heading \"Repository card\" [level=2]\n    - paragraph: Theme files change presentation without changing semantic classes.\n    - text: theme contract-v1\n  - article:\n    - heading \"Controls\" [level=2]\n    - text: Example input\n    - textbox \"Example input\": shared semantic HTML\n    - button \"Example button\"\n  - heading \"Output\" [level=2]\n  - text: ui-page / ui-panel / ui-card / ui-button / ui-input",
+ "browser_version": "141.0.7390.37",
+ "provenance": {
+  "repository": "myon-bioinformatics/web-ui",
+  "commit": "9ab07c0e09cd06209dd795f7a8f9a595da302c36",
+  "path": "examples/github-like.html",
+  "served": "local http from git archive",
+  "live_url": "https://myon-bioinformatics.github.io/web-ui/examples/github-like.html",
+  "blocked_external_requests": []
+ }
+}

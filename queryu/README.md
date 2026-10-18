@@ -2,30 +2,48 @@
 
 > 再現できる取得が、確かな理解をつくる。
 
-![QueRyu](../docs/images/queryu.webp)
+![QueRyu](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/queryu.webp)
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
+## 概要
+
 取得と、観測データセットの作成を担う。取得元への負荷を抑え、いつ・どこから・どのコードで取ったかを必ず残す。
 
-## このリポジトリについて
+- **キャッシュと来歴**: 取得したページを保存し、取得ごとに1行の来歴（URL・時刻・SHA-256・ETag・コードの版）を追記する。304 や 404 も「確認した」記録として残す。
+- **取得元への配慮**: キャッシュ優先・条件付きGET・直列・既定3秒の間隔。`--plan` で、取得せずに件数と待ち時間を見積もる。
+- **観測データセット**: 取得元（[BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) の source）のページから、1記録1行の JSONL と manifest を作る。
+- **問い合わせ**（`ask/`）: 日本語の問いを決まった型に直し、PythDRagoras が判定済みの結果から答える（[docs/ask.md](docs/ask.md)）。
 
-[Aoi](https://github.com/myon-bioinformatics/Aoi) の `queryu/` から独立したリポジトリ。直接の親は Aoi で、`queryu/` との差分は Aoi 側で確かめる。
-初回の `main`（`35a08024dc0040566068ba513074e3d8326897d4`）は Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` の `queryu/` を履歴ごと切り出したもの（tree `c995b928f46b297025d9cddaeee3df04b322405b`）。
+[Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) から独立したリポジトリです（下の「Aoi との関係」）。
 
-- サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi を checkout して `AOI_ROOT=<Aoi のルート>` を渡す
-- 抽出（`blueprobe`・`npb_calendar`・`npb_team_annual`）は [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) を checkout して `PYTHONPATH` に渡す。Aoi の `blueprobe/` は使わない
-- `aoi_paths.py` は Aoi 固有の配置の決まり（`AOI_ROOT`・`--root`・`--cycle`）で、ここでは普通のファイルとして置く。Aoi との間で vendor lock は使わない
-- Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。Aoi と QueRyu の間では vendor lock を使わない（Aoi の `queryu/aoi_paths.py` が Aoi 直下の `aoi_paths.py` と同じ blob であることは、Aoi 側で確かめる）
-- 下のリンクのうち `../` で始まるものは Aoi の中の場所を指す
+## インストールと使い方
 
-```sh
-git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
-git -C ../Aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7
-git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
-git -C ../BlueProbe checkout bf27a17354544519016bbbde87c7f9c8d2aa29cd
-AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
+Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使う。依存は numpy（`ask/suggest.py`）と selectolax（BlueProbe の依存）。
+抽出（`blueprobe`・`npb_calendar`・`npb_team_annual`）は [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) を checkout して `PYTHONPATH` に渡す。Aoi の `blueprobe/` は使わない。
+
+```bash
+git clone https://github.com/myon-bioinformatics/QueRyu.git
+git clone https://github.com/myon-bioinformatics/BlueProbe.git
+cd QueRyu
+uv sync
+PYTHONPATH=../BlueProbe uv run python queryu.py --help
 ```
+
+`queryu.py` の主な引数は `--source`・`--years`・`--cache`・`--out`・`--wait`・`--offline`・`--plan`・`--freeze`。データセットを作る例は下の「データセット」にある。
+
+## 構成
+
+| ファイル | 中身 |
+|---|---|
+| `queryu.py` | CLI。`Cache`（保存と来歴）・`PoliteFetcher`（負荷を抑えた取得）・`build()`（観測データセット） |
+| `cache_core.py` | 標準ライブラリだけのオフラインのキャッシュ・スナップショット API（下の「Stdlib cache distribution」） |
+| `annual_scope.py` | 年間キャッシュから主対象の年だけを検証・コピーする |
+| `frozen_seasons.json` | 再確認しないシーズンの手動の凍結リスト |
+| `ask/` | 問い合わせ（`ask.py`）・確認用の命題 ID の候補（`suggest.py`）・登録済みの問いの一覧（`bank.py`） |
+| `docs/ask.md` | 問い合わせの仕様 |
+| `aoi_paths.py` | Aoi 固有の配置の決まり（下の「Aoi との関係」） |
+| `tests/` | pytest |
 
 ## 取得元への配慮
 
@@ -72,10 +90,11 @@ key, url, group, status, file, sha256, bytes, fetched_at, last_modified, etag, c
 生の観測を含むので `data/` は git に入れない。
 
 ```bash
-uv run python queryu/queryu.py --source npb_calendar --years 2012-2025 \
+PYTHONPATH=../BlueProbe uv run python queryu.py --source npb_calendar --years 2012-2025 \
   --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl [--offline]
 ```
 
+Aoi のルートから動かすときは `uv run python queryu/queryu.py ...`。
 
 ## 保存本文の照合と履歴
 
@@ -108,19 +127,10 @@ UTF-8 にした値の hash。現行の厳密な UTF-8 保存では一致する�
 これだけでは URL・取得時刻の真実性や HTTP 応答の真正性は証明しない。
 
 責務は、取得・保存本文・照合・履歴が QueRyu、HTML構造の抽出・観測値の読み取りが
-BlueProbe、集計・指標計算が [SakAnalytics](../sakanalytics/README.md)、
-仮説評価が [PythDRagoras](../pythdragoras/README.md)。実行元やソースの identity 確認・
-CI runner・証跡の実行管理は NagoyAction が担う。この変更では新しい runner や
+[BlueProbe](https://github.com/myon-bioinformatics/BlueProbe)、集計・指標計算が [SakAnalytics](https://github.com/myon-bioinformatics/sakanalytics)、
+仮説評価が [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)。実行元やソースの identity 確認・
+CI runner・証跡の実行管理は [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) が担う。この変更では新しい runner や
 実行証明を追加しない。
-
-## 年間チーム成績の追加取得
-
-`--source npb_team_annual --years 2013-2026` で、両リーグの年度別チーム表を取得できる。
-2005年以降は詳細な勝敗・打撃・投手・守備の全掲載列も取得し、年度別要約表と区別して保持する。
-主対象・合格判定は2013〜2026年。2013年以前は任意の参考資料として通常のデータから分ける。
-`annual_scope.py`は参考キャッシュから主対象140ページだけを検証・コピーする。
-データセットのmanifestには、解析に用いたsourceモジュール自体の `source_code_sha256` も残す。
-範囲・照合・再実行は [c001の取得・架空検証記録](../cycles/c001-chunichi/annual-history-synthetic.md)。
 
 ## Stdlib cache distribution
 
@@ -135,3 +145,60 @@ The min API is the cache/snapshot subset, not the full planner or question index
 Acquisition uses the existing synchronous urllib client; no asynchronous support
 is claimed by the min artifact. Whole-tree subtree synchronization remains the
 Aoi/QueRyu development relationship. MIT notices are kept in `LICENSE`.
+
+## テスト
+
+サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi と BlueProbe を固定 SHA で checkout して渡す（`.github/workflows/ci.yml` の `AOI_SHA`・`BLUEPROBE_SHA` と同じ）。
+
+```sh
+git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
+git -C ../Aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7
+git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
+git -C ../BlueProbe checkout bf27a17354544519016bbbde87c7f9c8d2aa29cd
+AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
+```
+
+CI は Python 3.11–3.15 で同じことをする。
+
+## Aoi との関係
+
+[Aoi](https://github.com/myon-bioinformatics/Aoi) の [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) から独立したリポジトリ。直接の親は Aoi で、`queryu/` との差分は Aoi 側で確かめる。
+初回の `main`（`35a08024dc0040566068ba513074e3d8326897d4`）は Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` の `queryu/` を履歴ごと切り出したもの（tree `c995b928f46b297025d9cddaeee3df04b322405b`）。
+Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録されている（手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
+
+- サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi を checkout して `AOI_ROOT=<Aoi のルート>` を渡す
+- `aoi_paths.py` は Aoi 固有の配置の決まり（`AOI_ROOT`・`--root`・`--cycle`）で、ここでは普通のファイルとして置く。Aoi との間で vendor lock は使わない
+- Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。Aoi と QueRyu の間では vendor lock を使わない（Aoi の `queryu/aoi_paths.py` が Aoi 直下の `aoi_paths.py` と同じ blob であることは、Aoi 側で確かめる）
+- この README は Aoi の `queryu/README.md` と同じ内容から始まっている。Aoi の中の文書へのリンクは、どちらで読んでも開けるように GitHub の URL で書く
+
+## 関連サブプロジェクト
+
+親の [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクトは、それぞれ独立したリポジトリになっています。Aoi の中の場所（subtree）とあわせて載せます。一覧と登録の詳細は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md) です。
+
+| リポジトリ | Aoi の中の場所 | 役割 |
+|---|---|---|
+| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
+| **QueRyu**（このリポジトリ） | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
+| [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
+| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
+
+## ライセンス
+
+MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+
+---
+
+# NPB（プロ野球）向けの取得
+
+以下は Aoi の研究サイクル（中日・NPB のデータ）で使っている取得元の内容です。
+
+## 年間チーム成績の追加取得
+
+`--source npb_team_annual --years 2013-2026` で、両リーグの年度別チーム表を取得できる。
+2005年以降は詳細な勝敗・打撃・投手・守備の全掲載列も取得し、年度別要約表と区別して保持する。
+主対象・合格判定は2013〜2026年。2013年以前は任意の参考資料として通常のデータから分ける。
+`annual_scope.py`は参考キャッシュから主対象140ページだけを検証・コピーする。
+データセットのmanifestには、解析に用いたsourceモジュール自体の `source_code_sha256` も残す。
+範囲・照合・再実行は [c001の取得・架空検証記録](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/annual-history-synthetic.md)。

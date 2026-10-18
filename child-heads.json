@@ -11,7 +11,7 @@
         }
       },
       "repository_id": 1423772286,
-      "sha": "4d798e1405e14d5cdd33e0c3f8fa87b29789b9cc"
+      "sha": "a060e79a3ace5b22b8ef405990b274814aae2bac"
     },
     "myon-bioinformatics/NagoyAction": {
       "optional": {
@@ -19,7 +19,7 @@
         "subtree_prefix": "nagoyaction"
       },
       "repository_id": 1423491480,
-      "sha": "97ee776559ddebdc1ddf54330c98e3face099391"
+      "sha": "9ee99dc7aacc3a88a9e64660969def5c7f70ef6b"
     },
     "myon-bioinformatics/PythDRagoras": {
       "optional": {
@@ -30,7 +30,7 @@
         }
       },
       "repository_id": 1423045231,
-      "sha": "83a53f60d1b5dec70df841a1104d4c78fbe4a494"
+      "sha": "7ea14381275d3d834113c1ed8b0e9bb66455abe7"
     },
     "myon-bioinformatics/QueRyu": {
       "optional": {
@@ -41,7 +41,7 @@
         }
       },
       "repository_id": 1423051557,
-      "sha": "4a478d1d69b5aa0c577ce6a5882c1e35593cbf2f"
+      "sha": "096bef972c09ddfe910299aaad0fee3a2e2ee4b8"
     },
     "myon-bioinformatics/sakanalytics": {
       "optional": {
@@ -52,7 +52,7 @@
         }
       },
       "repository_id": 1423489570,
-      "sha": "0bb7177ac0ec5240c468b6d2c58ca52e116c6d03"
+      "sha": "887444d6670d7e8005a462ab0a6a2f488d62895c"
     }
   }
 }

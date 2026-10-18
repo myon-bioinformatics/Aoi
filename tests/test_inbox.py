@@ -423,3 +423,23 @@ def test_registration_status_is_conservative_and_rendered():
     text = render("", q, [], answer(q, [posthoc]))
     assert "対偶の成立率" in text
     assert "事後構成" in text
+
+
+
+def test_git_never_waits_for_a_credential_prompt(monkeypatch, tmp_path):
+    """fetch-guard: fetch/push/ls-remote run without a credential or SSH prompt, within 60 s."""
+    import subprocess as sp
+    import inbox as inbox_module
+    for name in ("GIT_TERMINAL_PROMPT", "GCM_INTERACTIVE", "GIT_SSH_COMMAND"):
+        monkeypatch.delenv(name, raising=False)
+    seen = {}
+
+    def fake_run(argv, **kwargs):
+        seen.update(kwargs)
+        return sp.CompletedProcess(argv, 0, "", "")
+    monkeypatch.setattr(inbox_module.subprocess, "run", fake_run)
+    git(tmp_path, "ls-remote", "origin")
+    env = seen["env"]
+    assert (env["GIT_TERMINAL_PROMPT"], env["GCM_INTERACTIVE"], env["GIT_SSH_COMMAND"]) == (
+        "0", "never", "ssh -o BatchMode=yes")
+    assert seen["timeout"] == 60

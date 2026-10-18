@@ -89,11 +89,13 @@ class _Observer(HTMLParser):
                 "control_label": (control[1].get("aria-label") or control[1].get("title")) if control else None}
 
     def _add(self, where, text):
+        cursor = 0
         for seq in emoji_sequences(text):
             if len(self.rows) >= self.limit:
                 self.truncated = True
                 return
-            start = text.find(seq)
+            start = text.find(seq, cursor)  # sequences come in text order; anchor each one to its own place
+            cursor = start + len(seq)
             snippet = " ".join(text[max(0, start - 30):start + len(seq) + 30].split())
             self.rows.append({"emoji": seq, "identity": seq.replace("\ufe0f", ""), "where": where,
                               "element": self._path(), "raw_text": snippet, **self._context()})

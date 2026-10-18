@@ -88,3 +88,10 @@ def test_cli(tmp_path, capsys):
     data = json.loads(capsys.readouterr().out)
     assert data["records"][0]["url"] == "https://example.test/" and data["summary"][0]["identity"] == HOME
     assert eo.main([str(tmp_path / "missing.html")]) == 2
+
+
+def test_raw_text_is_anchored_to_each_occurrence():
+    filler = "x" * 40
+    html = f"<p>first {HOME} {filler} second {HOME} later</p>"
+    records = [r for r in eo.observe(html)["records"] if r["identity"] == HOME]
+    assert [r["raw_text"] for r in records] == [f"first {HOME} " + "x" * 29, "x" * 22 + f" second {HOME} later"]

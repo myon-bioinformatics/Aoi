@@ -95,7 +95,7 @@ BlueProbe の実行コードは他リポジトリの実装に依存せず、必�
 
 ```bash
 # BlueProbe → Aoi（Aoi のルートで。子の main を `blueprobe/` に取り込む）
-git subtree pull --prefix=blueprobe https://github.com/myon-bioinformatics/BlueProbe.git main --squash
+git subtree pull --prefix=blueprobe https://github.com/myon-bioinformatics/BlueProbe.git main
 ```
 
 Aoi → BlueProbe・登録した `sha` の更新は、上の child-repositories の BlueProbe 節に従います。

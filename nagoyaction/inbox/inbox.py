@@ -166,6 +166,13 @@ class GitHub:
         comments.append(comment)
 
 
+def _git_env():
+    """fetch-guard: fetch/push/ls-remote never wait for a credential or SSH prompt."""
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"}
+    env.setdefault("GIT_SSH_COMMAND", "ssh -o BatchMode=yes")
+    return env
+
+
 def git(cwd: Path, *args, check=True, input=None):
     return subprocess.run(
         ["git", "-C", str(cwd), *args],
@@ -175,6 +182,7 @@ def git(cwd: Path, *args, check=True, input=None):
         stderr=subprocess.PIPE,
         check=check,
         timeout=60,
+        env=_git_env(),
     )
 
 

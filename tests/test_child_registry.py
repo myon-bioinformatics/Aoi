@@ -70,7 +70,8 @@ def test_queryu_registered_with_exact_ids():
     assert entry["repository_id"] == 1423051557
     assert entry["optional"]["subtree_prefix"] == "queryu"
     assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
-    for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore"):
+    assert entry["sha"] == "5ce256d77d64b33d4c71c2cbb84fe201f9637567"
+    for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore", "cache_share.py", "emoji_data.py"):
         assert (ROOT / "queryu" / path).is_file(), path
 
 

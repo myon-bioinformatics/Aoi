@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import os
 import subprocess
 import sys
 import tempfile
@@ -29,8 +30,16 @@ UNSUPPORTED = ("not_in_parent", "child_preamble")
 LEGACY_VENDOR_CONSUMERS = "vendor-consumers.json"
 
 
+# fetch-guard: ls-remote/fetch of child repositories never wait for a prompt.
+def _git_env() -> dict:
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"}
+    env.setdefault("GIT_SSH_COMMAND", "ssh -o BatchMode=yes")
+    return env
+
+
 def _git_bytes(*args, cwd=None, timeout=300) -> bytes:
-    out = subprocess.run(["git", *args], cwd=cwd, capture_output=True, timeout=timeout)
+    out = subprocess.run(["git", *args], cwd=cwd, capture_output=True, timeout=timeout, env=_git_env(),
+                         stdin=subprocess.DEVNULL)
     if out.returncode:
         stderr = out.stderr.decode("utf-8", "replace").strip()[:400]
         raise RuntimeError(f"git {' '.join(args[:2])} failed: {stderr}")

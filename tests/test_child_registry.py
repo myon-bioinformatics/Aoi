@@ -781,3 +781,23 @@ def test_mutations_all_killed(tmp_path):
             pytest.fail(f"mutant {name}: pytest exit code {rc}\n")
     assert killed == generated
     assert not survived, f"survived ({len(survived)}): {survived}"
+
+
+def test_git_runs_non_interactively(monkeypatch):
+    """fetch-guard: ls-remote/fetch of child repositories never wait for a prompt."""
+    seen = {}
+
+    def fake_run(argv, **kwargs):
+        seen.update(kwargs)
+        return subprocess.CompletedProcess(argv, 0, b"", b"")
+    monkeypatch.setattr(cch.subprocess, "run", fake_run)
+    for name in ("GIT_TERMINAL_PROMPT", "GCM_INTERACTIVE", "GIT_SSH_COMMAND"):
+        monkeypatch.delenv(name, raising=False)  # the guard, not the caller's environment, must set them
+    cch._git_bytes("ls-remote", "https://example.invalid/x.git")
+    env = seen["env"]
+    assert (env["GIT_TERMINAL_PROMPT"], env["GCM_INTERACTIVE"], env["GIT_SSH_COMMAND"]) == (
+        "0", "never", "ssh -o BatchMode=yes")
+    assert seen["timeout"] == 300 and seen["stdin"] is subprocess.DEVNULL
+    monkeypatch.setenv("GIT_SSH_COMMAND", "ssh -i key")
+    cch._git_bytes("ls-remote", "x")
+    assert seen["env"]["GIT_SSH_COMMAND"] == "ssh -i key"  # a user's own SSH command is kept

@@ -14,5 +14,5 @@ package = false
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
-# JUnit の出力先は CI で指定する（docs/ci/）。vendor/ は収集・import の対象にしない
-norecursedirs = ["vendor", ".test-deps", "build"]
+# JUnit の出力先は CI で指定する（docs/ci/）
+norecursedirs = [".test-deps", "build"]

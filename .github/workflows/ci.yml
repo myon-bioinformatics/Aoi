@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.11", "3.12", "3.13", "3.14"]
+        python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -51,40 +51,6 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  vendor-locked:
-    if: needs.changes.outputs.product_changed == 'true'
-    needs: changes
-    name: Vendor locked baseline
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v7.0.0
-        with:
-          python-version: "3.12"
-      - name: Fetch pinned shared vendor tool
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: myon-bioinformatics/myon-bioinformatics
-          ref: 1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
-          path: .vendor-sync-tools
-          persist-credentials: false
-      - name: Verify and recreate locked vendor snapshot
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
-          python -S - <<'PY'
-          import json
-          from pathlib import Path
-          for entry in json.loads(Path("vendor.lock.json").read_text(encoding="utf-8"))["files"]:
-              Path(entry["destination"]).unlink()
-          PY
-          python -S .vendor-sync-tools/vendor_sync.py materialize --manifest vendor.lock.json
-          python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
-
   failure-identity:
     needs: [changes, test]
     if: (always()) && needs.changes.outputs.product_changed == 'true'
@@ -93,7 +59,7 @@ jobs:
       actions: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
     with:
-      expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml"]'
+      expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
       artifact-pattern: junit-*
       output-artifact: failure-identity
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}

@@ -2,7 +2,9 @@
 
 import pytest
 
-from npb_team_batting import check, pages, parse
+from selectolax.lexbor import LexborHTMLParser
+
+from npb_team_batting import _header, check, group, pages, parse
 
 URL = "https://npb.jp/bis/2024/stats/tmb_c.html"
 HEAD = ["チーム", "打率", "試合", "打席", "打数", "得点", "安打", "二塁打", "三塁打", "本塁打", "塁打", "打点", "盗塁",
@@ -29,6 +31,35 @@ def test_row_becomes_record_with_raw_kept():
 def test_header_spelling_variants_map_to_the_same_column():
     head = [("故意四" if h == "故意四球" else h) for h in HEAD]  # 2012・2018年の表記
     assert parse(page(ROW, head=head), URL)["records"][0]["ibb"] == 20
+
+
+def test_unknown_first_stat_column_header_is_recorded():
+    head = ["チーム", "新打率"] + HEAD[2:]
+    r = parse(page(ROW, head=head), URL)
+    assert r["records"] == [] and r["unknown"][0]["raw"] == "新打率"
+
+
+def test_non_digit_colspan_falls_back_to_one_column():
+    html = '<table><tr><th>チーム</th><th colspan="bogus">打率</th><th>試合</th></tr></table>'
+    tr = LexborHTMLParser(html).css_first("tr")
+    assert _header(tr) == [("チーム", 1), ("打率", 1), ("試合", 1)]
+
+
+def test_digit_colspan_is_preserved_for_spanned_headers():
+    html = '<table><tr><th>チーム</th><th colspan="2">併殺</th></tr></table>'
+    tr = LexborHTMLParser(html).css_first("tr")
+    assert _header(tr) == [("チーム", 1), ("併殺", 2)]
+
+
+def test_header_skips_non_table_cells_in_the_row():
+    html = '<table><tr><th>チーム</th><script></script><th>打率</th><th>試合</th></tr></table>'
+    tr = LexborHTMLParser(html).css_first("tr")
+    assert _header(tr) == [("チーム", 1), ("打率", 1), ("試合", 1)]
+
+
+def test_group_returns_season_string():
+    rec = parse(page(ROW), URL)["records"][0]
+    assert group(rec) == "2024"
 
 
 def test_unknown_header_is_recorded_and_rows_are_not_read_with_a_guessed_layout():

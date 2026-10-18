@@ -1,6 +1,6 @@
 """今季の日程・結果のページ。形は WebFetch で確かめたリンク（/scores/2026/0901/g-db-20/、文字列 "4 - 3"）どおり、数値は架空。"""
 
-from npb_schedule_current import check, pages, parse
+from npb_schedule_current import check, group, pages, parse
 
 URL = "https://npb.jp/games/2026/schedule_09_detail.html"
 H = "https://npb.jp/scores/2026/0901/g-db-20/"
@@ -54,6 +54,33 @@ def test_pair_over_the_regular_count_is_flagged():
 def test_same_game_linked_twice_is_one_record_and_other_score_links_are_non_regular():
     r = parse(row() + row() + '<a href="/news/1">4 - 3</a>', URL)
     assert len(r["records"]) == 1 and r["counts"]["non_regular"] == 1
+
+
+def test_non_game_anchor_with_score_shape_is_non_regular():
+    r = parse('<a href="/news/1">4 - 3</a>', URL)
+    assert r["counts"]["non_regular"] == 1 and r["records"] == []
+
+
+def test_non_game_anchor_without_score_is_ignored():
+    r = parse('<a href="/news/1">試合前</a>', URL)
+    assert not r["counts"] and r["records"] == []
+
+
+def test_unknown_team_codes_in_game_path_are_reported():
+    r = parse(row(href="https://npb.jp/scores/2026/0901/xx-g-20/"), URL)
+    assert r["records"] == [] and r["unknown"][0]["key"] == "20260901-xx-g-20"
+    r = parse(row(href="https://npb.jp/scores/2026/0901/g-xx-20/"), URL)
+    assert r["records"] == [] and r["unknown"][0]["key"] == "20260901-g-xx-20"
+
+
+def test_non_regular_when_only_away_has_all_star_code():
+    r = parse(row(href="https://npb.jp/scores/2026/0724/g-pl-2/", text="3 - 2"), URL)
+    assert r["counts"]["non_regular:オールスター"] == 1 and r["records"] == []
+
+
+def test_group_returns_year_from_date():
+    rec = parse(row(), URL)["records"][0]
+    assert group(rec) == "2026"
 
 
 def test_pages_and_check():

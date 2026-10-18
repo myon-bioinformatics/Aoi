@@ -289,6 +289,9 @@ import 失敗を成功扱いにしない。通常モードでは lab がない�
 | `docs/npb_calendar.md` | その取得元で、どの年の何を確認したか（観測と未確認を分ける） |
 | `npb_team_annual.py` | 取得元: npb.jp の年度別チーム表（1950年以降の要約、2005年以降の詳細表） |
 | `npb_team_batting.py` | 取得元: npb.jp の年度別チーム打撃成績（[docs/npb_team_batting.md](docs/npb_team_batting.md)） |
+| `npb_team_fielding.py` | 取得元: npb.jp の年度別チーム守備成績（[docs/npb_team_fielding.md](docs/npb_team_fielding.md)） |
+| `npb_game_linescore.py` | 取得元: npb.jp の試合ページ得点表（R・H・E）（[docs/npb_game_linescore.md](docs/npb_game_linescore.md)） |
+| `npb_schedule_current.py` | 取得元: npb.jp の今季月別日程・結果（[docs/npb_schedule_current.md](docs/npb_schedule_current.md)） |
 | `html_compare.py` | 保存HTMLの構造的な被覆と、既存のNPB観測との比較（オフライン） |
 
 ```bash

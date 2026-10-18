@@ -2,7 +2,7 @@
 
 import json
 
-from npb_game_linescore import check, pages, parse
+from npb_game_linescore import check, group, pages, parse
 
 URL = "https://npb.jp/bis/2024/games/s2024040201097.html"
 
@@ -64,6 +64,36 @@ def test_unknown_team_name_in_a_line_score_shaped_row_is_reported():
     for pitcher in (["", "ウィック", "1", "", "2", "0", "1", "0", "0", "0", "3", "1", "2", "0"],
                     ["ウィック", "", "+", "2", "0", "1", "0", "0", "0", "3", "1", "2", "0"]):
         assert parse(page(pitcher, HOME), URL)["unknown"] == []
+
+
+def test_tail_not_rhe_when_team_rows_lack_integer_rhe():
+    bad = lambda row: row[:-3] + ["x", "y", "z"]
+    r = parse(page(bad(AWAY), bad(HOME)), URL)
+    assert r["records"] == [] and r["counts"]["tail_not_rhe"] == 1 and r["counts"]["no_linescore_page"] == 1
+
+
+def test_two_valid_rows_must_be_different_teams():
+    r = parse(page(AWAY, AWAY), URL)
+    assert r["records"] == [] and r["counts"]["team_rows_2"] == 1
+
+
+def test_line_score_shape_requires_thirteen_cells_and_integer_rhe():
+    short = ["横浜大洋", *"0 0 1 0 0 0 0 0 0".split(), "-", "1", "6"]
+    r = parse(page(short), URL)
+    assert r["records"] == [] and r["unknown"] == [] and r["counts"]["no_team_row"] == 1
+    unknown_team = ["横浜大洋", *"0 0 1 0 0 0 0 0 0".split(), "-", "1", "6", "0"]
+    r = parse(page(unknown_team), URL)
+    assert [u["raw"] for u in r["unknown"]] == ["得点表の形の行の知らない名前: 横浜大洋"]
+
+
+def test_team_not_in_first_cell_or_too_few_cells_are_skipped_for_records():
+    r = parse(page(["", "読 売", "0", "0", "0"]), URL)
+    assert r["records"] == [] and "team_cell_1_len_5" in r["counts"]
+
+
+def test_group_returns_season_string():
+    rec = parse(page(AWAY, HOME), URL)["records"][0]
+    assert group(rec) == "2024"
 
 
 def test_full_club_names_seen_on_real_pages():

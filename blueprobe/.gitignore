@@ -1,5 +1,0 @@
-.venv/
-.test-deps/
-__pycache__/
-build/
-.pytest_cache/

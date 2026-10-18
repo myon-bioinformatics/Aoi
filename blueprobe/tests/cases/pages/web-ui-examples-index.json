@@ -1,0 +1,24 @@
+{
+ "schema": "btk-browser-dom/1",
+ "requested_url": "http://127.0.0.1:42971/examples/index.html",
+ "url": "http://127.0.0.1:42971/examples/index.html",
+ "title": "web-ui examples",
+ "selector": "body",
+ "captured_at": "2026-10-18T00:05:19.669272+00:00",
+ "source_kind": "dom",
+ "html_sha256": "3e3d8e75a2f161c3970a5fd0abf979fbb79bfcbcd44a5f24a419f1b3980988c4",
+ "content_verified": false,
+ "html": "<body data-ui-theme=\"modern\"><main class=\"ui-page\"><h1 class=\"ui-title\">web-ui</h1><p class=\"ui-muted\">Shared static UI contract for myon-bioinformatics projects.</p><section class=\"ui-grid\"><article class=\"ui-card\"><h2>Components</h2><p>Tokens, panels, cards, tags, controls and output surfaces.</p><span class=\"ui-tag\">modern</span> <span class=\"ui-tag\">static</span></article><article class=\"ui-card\"><h2>Stub examples</h2><p><a href=\"./mcp-stub.html\">MCP Stub</a> · <a href=\"./api-stub.html\">API Stub</a></p></article><article class=\"ui-card\"><h2>Themes</h2><p><a href=\"./github-like.html\">GitHub-like theme</a></p></article></section></main></body>",
+ "text": "web-uiShared static UI contract for myon-bioinformatics projects.ComponentsTokens, panels, cards, tags, controls and output surfaces.modern staticStub examplesMCP Stub · API StubThemesGitHub-like theme",
+ "visible": "web-ui\n\nShared static UI contract for myon-bioinformatics projects.\n\nComponents\n\nTokens, panels, cards, tags, controls and output surfaces.\n\nmodern static\nStub examples\n\nMCP Stub · API Stub\n\nThemes\n\nGitHub-like theme",
+ "aria_snapshot": "- main:\n  - heading \"> web-ui\" [level=1]\n  - paragraph: Shared static UI contract for myon-bioinformatics projects.\n  - article:\n    - heading \"> Components\" [level=2]\n    - paragraph: Tokens, panels, cards, tags, controls and output surfaces.\n    - text: \"#modern #static\"\n  - article:\n    - heading \"> Stub examples\" [level=2]\n    - paragraph:\n      - link \"MCP Stub\":\n        - /url: ./mcp-stub.html\n      - text: ·\n      - link \"API Stub\":\n        - /url: ./api-stub.html\n  - article:\n    - heading \"> Themes\" [level=2]\n    - paragraph:\n      - link \"GitHub-like theme\":\n        - /url: ./github-like.html",
+ "browser_version": "141.0.7390.37",
+ "provenance": {
+  "repository": "myon-bioinformatics/web-ui",
+  "commit": "9ab07c0e09cd06209dd795f7a8f9a595da302c36",
+  "path": "examples/index.html",
+  "served": "local http from git archive",
+  "live_url": "https://myon-bioinformatics.github.io/web-ui/examples/index.html",
+  "blocked_external_requests": []
+ }
+}

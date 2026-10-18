@@ -85,7 +85,7 @@ PYTHONPATH=<Aoi のルート>/queryu uv run pytest -q
 このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト
 [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) から、履歴を保ったまま独立させたもの。
 Aoi 側の `blueprobe/` とは `git subtree` で同期し続ける（どちらで変更しても、もう一方へ反映する）。
-ほかのサブプロジェクトと違い、BlueProbe の登録先は Aoi ではなく、親の [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の `child-heads.json` です。
+登録は他の subtree 子と同様、[Aoi](https://github.com/myon-bioinformatics/Aoi) 直下の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に載せます。親 [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の `child-heads.json` には登録しません。Aoi と BlueProbe のあいだでは vendor lock を使いません（一覧と手順は Aoi の [docs/child-repositories.md#blueprobe](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md#blueprobe)）。
 
 独立の目的は、HTML/CSS/DOM の構造を見て観測・抽出する知見を、リポジトリ横断でここに集めること。
 BlueProbe の実行コードは他リポジトリの実装に依存せず、必要な情報は参照先と契約を揃えて扱う。
@@ -94,11 +94,11 @@ BlueProbe の実行コードは他リポジトリの実装に依存せず、必�
 ### 同期
 
 ```bash
-# Aoi → BlueProbe（Aoi のルートで）
-git subtree push -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main
-# BlueProbe → Aoi（Aoi のルートで）
-git subtree pull -P blueprobe https://github.com/myon-bioinformatics/BlueProbe main --squash
+# BlueProbe → Aoi（Aoi のルートで。子の main を `blueprobe/` に取り込む）
+git subtree pull --prefix=blueprobe https://github.com/myon-bioinformatics/BlueProbe.git main
 ```
+
+Aoi → BlueProbe・登録した `sha` の更新は、上の child-repositories の BlueProbe 節に従います。
 
 `pyproject.toml`・`conftest.py`・`docs/images/`・`.github/` は独立リポジトリ側だけのファイル。
 
@@ -302,3 +302,37 @@ uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar -
 
 `npb_team_annual.py` は1950年以降の両リーグの年度別要約表と、2005年以降の詳細な勝敗・打撃・投手・守備表を読む。
 個人表は抽出しない。未掲載の古い項目を0で補わず、未知の列は `unknown` に残す。観測のみで、率の再計算や表間の一致判定は行わない。
+
+## 保存済み HTML の絵文字観測（`emoji_observations.py`）
+
+```sh
+python emoji_observations.py page.html            # identity ごとの件数・表記・場所
+python emoji_observations.py page.html --json     # 1 出現 1 行の records と summary
+```
+
+本文・`<title>`・説明系の `<meta>`・属性（`aria-label` `title` `alt` `placeholder` など）に出る絵文字を、
+要素の位置（`html > body > nav > button`）、前後30文字の原文、操作要素の中か・そのラベル・`aria-hidden` とともに記録する。
+`script` `style` `template` `noscript` `svg` の中身と入力値（`value`）は表示文字ではないので読まない。
+上限を超えたら `unknown` に残す（黙って捨てない）。良し悪しは判断しない（例: ラベルのないボタンの中の絵文字は `unlabelled_control` として数えるだけ）。
+`observe_snapshot()` は QueRyu の `html-snapshot/1` を受け取り、`response_sha256`・`fetched_at` を各記録に引き継ぐ。
+
+判定は UTS #51 の形と Extended_Pictographic（Unicode 16.0）で、xprobe の `emoji_sequences` と同じ契約。
+他リポジトリのコードは import せず、`tests/cases/emoji_corpus.txt` と xprobe で作った期待値
+（`emoji_corpus.expected.json`、xprobe のコミットを記録）で揃える。名前の付与は QueRyu の `emoji_names.json` 側。
+
+## 操作要素・画像の名前の観測（`accessible_names.py`）
+
+```sh
+python accessible_names.py page.html                         # 名前・出どころ・区分の件数
+python accessible_names.py tests/cases/pages/github-io-html-import.json   # btk-browser-dom/1：aria スナップショットとも突き合わせる
+```
+
+ボタン・リンク・入力・タブ・画像などの名前を、出どころ（`aria-labelledby` / `aria-label` / `label` / `value` / `alt` / 本文 / `title` / `placeholder`）とともに記録し、
+`empty_name`・`emoji_only_name`・`aria_hidden_control`・`image_without_alt`・`placeholder_only`・`ambiguous_link_name`（同じ名前で行き先が違うリンク）を数える。
+名前の計算は W3C accname の**近似**（`ACCNAME_APPROXIMATION_AS_SPEC`）で、CSS は評価しない。100% の一致は目標にせず、ずれは観測としてアンチパターン集に足していく。
+
+`tests/cases/pages/` は、github.io（`myon-bioinformatics.github.io`）と web-ui の実ページ5件を、各リポジトリのコミットから
+ローカル HTTP で配信して Chromium で描画し、browser-test-kit の `capture()`（`btk-browser-dom/1`）で採った DOM と aria スナップショット。
+来歴（リポジトリ・コミット・パス・公開 URL・遮断した外部リクエスト）は各 JSON の `provenance` にある。公開サイトそのものではなくコミットからの描画で、
+`*.github.io` に届かない環境でも同じものを再現できる。突き合わせ結果は 49 件一致・CSS 由来の差 6 件・不一致 0 件（テストで固定）。
+

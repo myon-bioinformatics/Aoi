@@ -151,13 +151,33 @@ def to_markdown(rows: list[dict], title: str, checks: list[dict] | None = None) 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="取得済みページをオフラインで再解析する")
-    ap.add_argument("--source", required=True)
-    ap.add_argument("--cache", type=Path, required=True, help="QueRyu のキャッシュディレクトリ")
+    ap.add_argument("--source", help="取得元モジュール名 (例: npb_calendar, html_source)")
+    ap.add_argument("--pattern", help="DOM パターンキー (例: github_readme, article_body, documentation_main, portfolio_profile)")
+    ap.add_argument("--cache", type=Path, help="QueRyu のキャッシュディレクトリ")
     ap.add_argument("--out", type=Path, help="Markdown の出力先")
     ap.add_argument("--strict", action="store_true", help="未知の表記、または既知値と合わない group があれば終了コード1")
+    ap.add_argument("--list-patterns", action="store_true", help="利用可能な DOM パターンの一覧を表示する")
     args = ap.parse_args(argv)
 
-    source = load_source(args.source)
+    if args.list_patterns:
+        from dom_patterns import list_patterns
+        patterns = list_patterns()
+        print("利用可能な DOM パターン一覧 (Dropdown / Preset 指定用):")
+        for p in patterns:
+            print(f"  - {p['key']:<20} [{p['category']}] {p['label']}")
+            print(f"      selector: {p['selector']}")
+            print(f"      desc: {p['description']}")
+        return 0
+
+    if not args.source or not args.cache:
+        ap.error("--source and --cache are required unless --list-patterns is specified")
+
+    if args.pattern and args.source == "html_source":
+        from html_source import HtmlSource
+        source = HtmlSource(pattern=args.pattern)
+    else:
+        source = load_source(args.source)
+
     manifest = args.cache / "manifest.jsonl"
     if not manifest.exists():
         print(f"no cache manifest: {manifest}", file=sys.stderr)

@@ -41,6 +41,7 @@ uv run python blueprobe.py --source <取得元のモジュール名> --cache <Qu
 | `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`） |
 | `html_source.py` | 保存HTMLを、信頼したオフライン抽出関数へ渡す汎用の取得元（`HtmlSource`） |
 | `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
+| `heading_observations.py` | 保存済み HTML の見出し階層（`<h1>`〜`<h6>`）とランドマーク構造の観測 |
 | `web_observations.py` | 保存済みWeb画面の観測とソース一覧の整理（ブラウザ・SDKなし） |
 | `docs/contract/v1/` | 報告と snapshot 記録の契約（追加はv1のまま、破壊的変更はv2） |
 | `docs/boundaries.md` | BlueProbe / QueRyu / web-ui の責務の境界（提案） |
@@ -336,3 +337,13 @@ python accessible_names.py tests/cases/pages/github-io-html-import.json   # btk-
 来歴（リポジトリ・コミット・パス・公開 URL・遮断した外部リクエスト）は各 JSON の `provenance` にある。公開サイトそのものではなくコミットからの描画で、
 `*.github.io` に届かない環境でも同じものを再現できる。突き合わせ結果は 49 件一致・CSS 由来の差 6 件・不一致 0 件（テストで固定）。
 
+## 見出し階層・ランドマーク構造の観測（`heading_observations.py`）
+
+```sh
+python heading_observations.py page.html                        # 見出しレベル・ランドマーク・フラグ件数
+python heading_observations.py tests/cases/pages/web-ui-examples-index.json --json
+```
+
+HTML 内の見出し（`<h1>`〜`<h6>`）およびランドマーク領域（`<main>`、`<nav>`、`<header>`、`<footer>`、`<aside>`、`<section>`、`<article>` や明示的な ARIA ロール）を観測する。
+レベル、テキスト、DOM パス、包含ランドマーク、非表示状態のほか、構造上の状態区分として `empty_heading`（空の見出し）、`skipped_heading_level`（レベルのスキップ）、`multiple_h1`（複数の h1）、`missing_main_landmark`（メインランドマークの欠落）、`unlabelled_landmark`（未ラベルのランドマーク）、`heading_outside_landmark`（ランドマーク外の見出し）を記録する。
+ネットワークには出ず、判断や変更は行わない。

@@ -78,6 +78,7 @@ def test_optional_real_lab_extractor_reuses_all_calendar_rows(lab_html_snapshot)
 
 
 def test_cache_snapshot_uses_separate_injected_validator(tmp_path):
+    pytest.importorskip("queryu")
     from blueprobe import inspect_cache
     from queryu import Cache
 
@@ -104,6 +105,7 @@ def test_cache_snapshot_uses_separate_injected_validator(tmp_path):
 
 
 def test_cache_tamper_stops_before_extractor_and_never_refetches(tmp_path):
+    pytest.importorskip("queryu")
     import gzip
     from blueprobe import inspect_cache
     from queryu import Cache, CacheIntegrityError
@@ -130,6 +132,7 @@ def test_snapshot_extraction_failure_preserves_envelope():
 
 
 def test_verified_cache_real_lab_snapshot_replay(tmp_path, lab_source_access):
+    pytest.importorskip("queryu")
     import hashlib
     import npb_calendar
     from pathlib import Path
@@ -171,6 +174,7 @@ def test_verified_cache_real_lab_snapshot_replay(tmp_path, lab_source_access):
 
 
 def test_blueprobe_cache_cli_uses_verified_snapshots(tmp_path, monkeypatch, capsys):
+    pytest.importorskip("queryu")
     import blueprobe
     from queryu import Cache, CacheIntegrityError
 
@@ -189,6 +193,7 @@ def test_blueprobe_cache_cli_uses_verified_snapshots(tmp_path, monkeypatch, caps
 
 
 def test_empty_404_cache_is_counted_without_parsing(tmp_path):
+    pytest.importorskip("queryu")
     from blueprobe import inspect_cache
     from queryu import Cache
 

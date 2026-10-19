@@ -1,17 +1,75 @@
-> **独立リポジトリ**: このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト `pythdragoras/` から独立したものです。
-> 親は Aoi（Aoi の親は myon-bioinformatics）。tree は Aoi の `pythdragoras/` とまったく同じで（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）、`git subtree` で同期します（下の「Aoi との同期」）。
-> この README は Aoi の `pythdragoras/README.md` と同じファイルです。`../docs/` や `cycles/` への相対リンクは Aoi のリポジトリの中を指します。
+# PythDRagoras
 
-## このリポジトリで動かす
+> 本当にその説明で十分か？
+
+![PythDRagoras](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/pythdragoras.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
+## 概要
+
+PythDRagoras は、説明を「もし A ならば B」の命題として書き、反例と異議を必ず並べて検証するツールです。答えを出すことより、説明が足りなくなる場所を見つけることを目的にしています。
+
+- **命題と「異議あり」**: 元の命題・対偶・逆・裏の4つの形で判定します。判定の基準は結果を見る前に宣言し、反例が1件でもあれば「支持」でも判例を並べます（下の「命題と「異議あり」」）。
+- **条件の探索**: 候補条件の組み合わせを総当たりで探し、目的の状態をどれだけ言い当てるかで並べます（`rule_search.py`）。
+- **感度分析**: 指標・重み・境界や、試合ごとの得失点を動かしたときの変化を調べます（`season_sensitivity.py`・`score_sensitivity.py`）。
+- 除外には理由を必須にし、何を・なぜ除いたかを結果に残します。外部の主張は観測ではなく claim として登録します。
+
+思想は Aoi の [docs/PythDRagoras.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/PythDRagoras.md)、命題の仕様は [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md)。
+[Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) から独立したリポジトリです（下の「Aoi との関係」）。
+
+## インストールと使い方
+
+Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存は polars と numpy だけです（`pyproject.toml`。ortools は使っていません）。
+
+```bash
+git clone https://github.com/myon-bioinformatics/PythDRagoras.git
+cd PythDRagoras
+uv sync
+uv run python pythdragoras.py --help
+```
+
+分析の入力（サイクルデータ `cycles/` など）は Aoi に置いています。パスは Aoi の規約（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。実際のコマンド例は後半の「詳しい仕様と研究での使い方」にあります。
+
+## 構成
+
+| ファイル | 中身 |
+|---|---|
+| `pythdragoras.py` | シーズン表から残差・順位の偏り・命題を検証する CLI（`apply_exclusions`・`cumulative_test`・`rank_test`・`summary_markdown`） |
+| `propositions.py` | 命題・判例・異議あり（仕様は [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md)） |
+| `sets.py` | 登録した命題の条件を集合として名前で呼び、∩・∪・¬ の式を命題として判定する |
+| `rule_search.py` | 条件の組み合わせ（「または」でつないだ「かつ」の組）を総当たりで探す |
+| `season_sensitivity.py` | 年成績の指標・重み・境界を動かす感度探索（標準ライブラリだけ） |
+| `score_sensitivity.py` | 試合ごとの得失点を1軸だけ変える感度分析（差分更新） |
+| `littlebit_approx.py`・`littlebit_prune.py`・`littlebit_holdout.py` | 候補の 0/1 行列から潜在パターンを条件候補にする探索と、その検証（実験） |
+| `littlebit_survey.py` | 乗算・浮動小数なしの画像の領域・重心推定（実験、単一ファイル） |
+| `registration_audit.py` | 来歴ラベル（事前登録か posthoc か）の監査 |
+| `next_seeds.py` | 元の命題と逆の判定を並べ、次の命題の種を表示する（判定ではない） |
+| `aoi_layout.py`・`aoi_paths.py` | Aoi のパスの規約（下の「Aoi との関係」） |
+
+`pythdragoras.py` などの主な関数:
+
+| 関数 | 中身 |
+|---|---|
+| `apply_exclusions` | 分析から除くシーズンを適用する。理由のない除外は受け付けず、何を・なぜ除いたかを結果に残す |
+| `cumulative_test` | 期待勝率からのずれの累積を z 値にする（固定指数・可変指数の両方） |
+| `rank_test` | 順位が下位に偏る珍しさ。帰無仮説（各シーズン独立に一様）と、全球団の実際の記録との比較を並べる |
+| `summary_markdown` | 検証記録。原因は書かない。競合仮説の状態を並べる |
+| `propositions.py` | 命題・判例・異議あり（仕様は [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md)） |
+| `littlebit_approx.py` | 候補の 0/1 行列から潜在パターンを条件候補にする（探索。判定は `rule_search.py`） |
+
+## テスト
 
 サイクルデータ（`cycles/`）、`scripts/`、SakAnalytics は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7   # .github/workflows/ci.yml の AOI_SHA
+git -C .test-deps/aoi checkout 62ad1e49154121cf237d52de352404c4400e6a55   # .github/workflows/ci.yml の AOI_SHA
 AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
   uv run pytest -q --junitxml=reports/junit.xml
 ```
+
+CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。
 
 - パスは Aoi の規約（PR #49）（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
 - `AOI_ROOT` が Aoi を指していないと、pytest は最初に止まって理由を出します。
@@ -21,13 +79,19 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
   - Aoi の `scripts/`: `tests/test_c001_replay_compare.py:7`（`compare_c001_replay`）と `tests/test_c001_exploratory_candidates.py:14`（`check_c001_exploratory_candidates.py`）。
   - これ以外に Aoi の兄弟サブプロジェクトと `scripts/` を使わないことは、`tests/test_no_sibling_imports.py` で確かめます（上の3つは既知の例外）。
 
-## aoi_paths.py
+## Aoi との関係
+
+このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) から独立したものです。
+親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `pythdragoras/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
+この README は Aoi の `pythdragoras/README.md` と同じファイルです。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
+
+### aoi_paths.py
 
 `aoi_paths.py` は Aoi 直下の `aoi_paths.py` と同じ中身の通常のファイルです（vendor lock は使いません）。Aoi では `pythdragoras/aoi_paths.py` になり、Aoi の `scripts/check_child_heads.py` が Aoi 直下の原本と blob が同じかを確かめます（`child-heads.json` の `optional.mirrored_from_parent`）。直すときは Aoi の原本を直し、同じ中身をここに置きます。
 
 `aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
 
-## Aoi との同期
+### Aoi との同期
 
 このリポジトリは Aoi の `pythdragoras/` の subtree です。除外するファイルはなく、Aoi の `pythdragoras/` の tree とこのリポジトリの tree は同じです。Aoi の中では `pythdragoras/.github/` は動かず（GitHub が読むのはリポジトリ直下の `.github/` だけ）、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめます。
 
@@ -56,26 +120,28 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - gh_identity#74 が直るまで、Aoi に対して gh_identity の `subtree-sync --write` は使いません。`--write` なしの計画だけにし、tree の一致は上の `test` で確かめます。
 - Aoi の `scripts/check_child_heads.py --fail-on-diff` が、Aoi の `child-heads.json` に登録した sha の tree と Aoi の `pythdragoras/` を比べます。
 
+## 関連サブプロジェクト
+
+親の [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクトは、それぞれ独立したリポジトリになっています。Aoi の中の場所（subtree）とあわせて載せます。一覧と登録の詳細は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md) です。
+
+| リポジトリ | Aoi の中の場所 | 役割 |
+|---|---|---|
+| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
+| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
+| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
+| **PythDRagoras**（このリポジトリ） | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
+
+## ライセンス
+
+MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+
 ---
 
-# PythDRagoras（実装）
+# 詳しい仕様と研究での使い方（NPB）
 
-> 本当にその説明で十分か？
-
-![PythDRagoras](../docs/images/pythdragoras.webp)
-
-*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
-
-思想は [docs/PythDRagoras.md](../docs/PythDRagoras.md)。ここはその検証部分の実装。
-
-| 関数 | 中身 |
-|---|---|
-| `apply_exclusions` | 分析から除くシーズンを適用する。理由のない除外は受け付けず、何を・なぜ除いたかを結果に残す |
-| `cumulative_test` | 期待勝率からのずれの累積を z 値にする（固定指数・可変指数の両方） |
-| `rank_test` | 順位が下位に偏る珍しさ。帰無仮説（各シーズン独立に一様）と、全球団の実際の記録との比較を並べる |
-| `summary_markdown` | 検証記録。原因は書かない。競合仮説の状態を並べる |
-| `propositions.py` | 命題・判例・異議あり（仕様は [docs/propositions.md](../docs/propositions.md)） |
-| `littlebit_approx.py` | 候補の 0/1 行列から潜在パターンを条件候補にする（探索。判定は `rule_search.py`） |
+以下は Aoi の研究サイクル（中日・NPB のデータ）での使い方と、各機能の詳しい仕様です。コマンド例のパス（`pythdragoras/…`・`cycles/…`）は Aoi のルートからの場所です。
 
 ## 命題と「異議あり」
 
@@ -139,8 +205,8 @@ python -S pythdragoras/season_sensitivity.py \
 期待する6球団の不足、重複した球団×年、順位同率の未定義な扱いはエラーにする。
 候補は探索的な関連であり、原因・CS出場確率・命題の支持を自動判定しない。
 
-初回の結果・定義・読み方は [年単位の探索記録](../cycles/c001-chunichi/research/R27-season-sensitivity.md)、
-年別表は [実測結果](../cycles/c001-chunichi/outputs/season_sensitivity.md)。
+初回の結果・定義・読み方は [年単位の探索記録](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/research/R27-season-sensitivity.md)、
+年別表は [実測結果](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/outputs/season_sensitivity.md)。
 2026は既知の結果を含む回顧的照合であり、完全な盲検ではない。
 通常の年表に2026を取り込んだ後は補助入力を外す。
 

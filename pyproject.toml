@@ -4,15 +4,15 @@ version = "0.1.0"
 description = "再現できる取得が、確かな理解をつくる。取得と観測データセットの作成（Aoi の queryu/ から独立）"
 requires-python = ">=3.11"
 dependencies = [
-    # 問いの候補（ask/suggest.py）。Aoi と同じ指定。2.4 系は Python 3.11–3.14、2.5.2 以降は 3.12–3.15。
-    "numpy>=2.4,<2.5; python_version < '3.12'",
-    "numpy>=2.5.2; python_version >= '3.12'",
+    # 問いの候補（ask/suggest.py）。下限は Python 3.11 でも入る最新。
+    # より新しい Python では、numpy 側の対応範囲で解決する。
+    "numpy>=2.4.6",
     # BlueProbe（抽出）は固定 SHA の別 checkout を PYTHONPATH で渡す。BlueProbe 自体の依存だけここに置く
-    "selectolax>=1",
+    "selectolax>=1.0.1",
 ]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = ["pytest>=9.1.1"]
 
 [tool.uv]
 package = false

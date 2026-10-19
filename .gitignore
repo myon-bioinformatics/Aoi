@@ -229,3 +229,6 @@ data/
 # Separate git worktree containing durable inquiry / exploration state.
 .research-state/
 .models/
+
+# Offline worker checkpoints, separate from question inbox.
+.research-worker/

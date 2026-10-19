@@ -1,8 +1,7 @@
-"""Guard the question inbox from the not-yet-connected autonomous research worker.
+"""Keep Actions activation deferred while NagoyAction's offline worker is reviewed.
 
-The research_loop modules have offline tests, but inbox.py intentionally has
-no "worker" CLI entry point. Until there is an end-to-end implementation, the
-old scheduled workflow must not call its stale research.toml pipeline.
+No live Actions entry point is restored before exact-head CI, independent review
+and a separate canary decision. The question inbox remains independent.
 """
 from pathlib import Path
 import subprocess
@@ -13,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 
 
-def test_unimplemented_worker_has_no_actions_entry_point():
+def test_worker_has_no_actions_entry_point_before_canary_review():
     # Check all live workflows, not only the former research-worker filename:
     # otherwise a renamed cron job could reproduce the failure.
     assert not (WORKFLOWS / "research-worker.yml").exists()
@@ -39,12 +38,21 @@ def test_inbox_schedule_and_intake_pipeline_are_preserved():
     ]
 
 
-def test_research_cli_is_explicitly_not_connected():
-    # This test should be revised *together with* the new worker and its
-    # bounded checkpoint/restart tests, before re-enabling any schedule.
-    completed = subprocess.run(
-        [sys.executable, str(ROOT / "nagoyaction/inbox/inbox.py"), "worker", "--seconds", "1"],
-        cwd=ROOT, capture_output=True, text=True, timeout=10, check=False
-    )
-    assert completed.returncode == 2
-    assert "invalid choice: 'worker'" in completed.stderr
+def test_research_cli_requires_explicit_enablement():
+    import os
+    for enabled in ("", "0"):
+        completed = subprocess.run(
+            [sys.executable, str(ROOT / "nagoyaction/inbox/inbox.py"), "worker", "--seconds", "1"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10, check=False,
+            env={**os.environ, "AOI_RESEARCH_ENABLED": enabled, "AOI_INBOX_ISSUE": "1"},
+        )
+        assert completed.returncode == 1
+        assert "worker disabled" in completed.stderr
+
+
+def test_owner_pipeline_is_offline_and_bounded():
+    with (ROOT / "nagoyaction/pipelines/research.toml").open("rb") as source:
+        pipeline = tomllib.load(source)
+    assert len(pipeline["step"]) == 1
+    assert pipeline["step"][0]["network"] is False
+    assert "18000" not in pipeline["step"][0]["run"]

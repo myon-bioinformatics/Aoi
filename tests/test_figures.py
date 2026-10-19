@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from dragowing.cli import PngUnavailable, main, write_png
+from dragowing.cli import ExportUnavailable, PngUnavailable, main, write_image, write_png, write_svg
 from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
 from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
 from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
@@ -338,11 +338,14 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
     monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
-    with pytest.raises(PngUnavailable, match="Chrome"):
+    with pytest.raises(ExportUnavailable, match="Chrome"):
         write_png(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.png")
+    with pytest.raises(ExportUnavailable, match="Chrome"):
+        write_svg(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.svg")
     assert not (tmp_path / "x.png").exists()
+    assert not (tmp_path / "x.svg").exists()
     missing = subprocess.run(
-        [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "png"), "--png"],
+        [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "png"), "--png", "--svg"],
         check=False,
         capture_output=True,
         text=True,

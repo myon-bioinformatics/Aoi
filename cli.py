@@ -1,6 +1,6 @@
 """python -m dragowing --results DIR --out DIR
 
-HTML を書く。PNG は --png と Chrome があるときだけ。
+HTML を書く。PNG / SVG は --png / --svg と Chrome があるときだけ。
 """
 from __future__ import annotations
 
@@ -16,19 +16,31 @@ from .overlap import finalize_conditions, load_overlap, parse_cond
 from .records import read_jsonl, select_items
 
 
-class PngUnavailable(RuntimeError):
+class ExportUnavailable(RuntimeError):
     """Chrome が無い。HTML は書けている。"""
 
 
-def write_png(spec: dict, path: Path, *, chrome: str | None = None) -> None:
+class PngUnavailable(ExportUnavailable):
+    """Chrome が無い。後方互換のための例外クラス。"""
+
+
+def write_image(spec: dict, path: Path, fmt: str = "png", *, chrome: str | None = None) -> None:
     try:
         executable = find_chrome(chrome)
     except RuntimeError as exc:
-        raise PngUnavailable(
-            "PNG には Chrome/Chromium が必要です。--chrome または CHROME 環境変数で実行ファイルを指定してください。"
+        raise ExportUnavailable(
+            f"{fmt.upper()} には Chrome/Chromium が必要です。--chrome または CHROME 環境変数で実行ファイルを指定してください。"
         ) from exc
     path.parent.mkdir(parents=True, exist_ok=True)
-    export_draw(PLOTLY, plotly_figure_content(spec), path, "png", chrome=executable)
+    export_draw(PLOTLY, plotly_figure_content(spec), path, fmt, chrome=executable)
+
+
+def write_png(spec: dict, path: Path, *, chrome: str | None = None) -> None:
+    write_image(spec, path, "png", chrome=chrome)
+
+
+def write_svg(spec: dict, path: Path, *, chrome: str | None = None) -> None:
+    write_image(spec, path, "svg", chrome=chrome)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -49,6 +61,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Chrome/Chromium の実行ファイル。省略時は CHROME / CHROMIUM 環境変数、なければ PATH",
     )
     parser.add_argument("--png", action="store_true", help="PNG も書く。Chrome が要る。既定では HTML だけ")
+    parser.add_argument("--svg", action="store_true", help="SVG も書く。Chrome が要る。既定では HTML だけ")
     parser.add_argument(
         "--embed",
         action="store_true",
@@ -77,11 +90,14 @@ def main(argv=None) -> int:
         standalone("DRAgoWing", index_html, plotly=True, embed=args.embed), encoding="utf-8"
     )
     (out / "propositions.html").write_text(standalone("命題の一覧", prop_html), encoding="utf-8")
-    if args.png:
+    if args.png or args.svg:
         try:
             for name, fig in index_figures.items():
-                write_png(fig, out / "png" / f"{name}.png", chrome=args.chrome)
-        except PngUnavailable as exc:
+                if args.png:
+                    write_png(fig, out / "png" / f"{name}.png", chrome=args.chrome)
+                if args.svg:
+                    write_svg(fig, out / "svg" / f"{name}.svg", chrome=args.chrome)
+        except ExportUnavailable as exc:
             print(str(exc), file=sys.stderr)
             return 2
         except (OSError, ValueError, RuntimeError) as exc:

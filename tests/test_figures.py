@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from dragowing.cli import ExportUnavailable, main, write_png, write_svg
+from dragowing.cli import ExportUnavailable, PngUnavailable, main, write_png, write_svg
 from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
 from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
 from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
@@ -338,7 +338,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
     monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
-    with pytest.raises(ExportUnavailable, match="Chrome"):
+    with pytest.raises(PngUnavailable, match="Chrome"):
         write_png(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.png")
     with pytest.raises(ExportUnavailable, match="Chrome"):
         write_svg(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.svg")
@@ -567,3 +567,47 @@ def test_figure_script_keeps_ids_inside_a_javascript_string():
     assert block.count("</script>") == 2
     assert "<script>alert" not in block
     assert "\\u003c/script" in block
+
+
+def test_svg_and_png_export_dispatch_formats(tmp_path, monkeypatch):
+    import dragowing.cli as cli
+    calls = []
+    monkeypatch.setattr(cli, "find_chrome", lambda chrome: "/verified/chrome")
+    monkeypatch.setattr(cli, "export_draw", lambda *args, **kwargs: calls.append((args, kwargs)))
+    spec = heatmap_figure([season_row()], "wins_vs_pythag")
+    cli.write_png(spec, tmp_path / "png" / "x.png")
+    cli.write_svg(spec, tmp_path / "svg" / "x.svg")
+    assert [args[3] for args, kwargs in calls] == ["png", "svg"]
+    assert [kwargs["chrome"] for args, kwargs in calls] == ["/verified/chrome"] * 2
+    assert all(args[2].parent.is_dir() for args, kwargs in calls)
+
+
+def test_cli_reuses_one_session_for_all_figures_and_formats(tmp_path, monkeypatch):
+    import dragowing.cli as cli
+    results = tmp_path / "results"
+    results.mkdir()
+    dump_jsonl(results / "season.jsonl", [season_row()])
+    dump_jsonl(results / "propositions.jsonl", [proposition()])
+    sessions, calls, lookups = [], [], []
+    class Session:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+            self.closed = False
+            sessions.append(self)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            self.closed = True
+    monkeypatch.setattr(cli, "RenderSession", Session)
+    monkeypatch.setattr(cli, "find_chrome", lambda chrome: lookups.append(chrome) or "/verified/chrome")
+    monkeypatch.setattr(cli, "export_draw", lambda *args, **kwargs: calls.append((args, kwargs)))
+    assert cli.main(["--results", str(results), "--out", str(tmp_path / "out"), "--png", "--svg"]) == 0
+    assert len(sessions) == 1 and sessions[0].closed
+    assert sessions[0].kwargs == {"chrome": "/verified/chrome"}
+    assert lookups == [None]
+    assert len(calls) >= 4
+    assert all(kwargs == {"session": sessions[0]} for args, kwargs in calls)
+    by_name = {}
+    for args, kwargs in calls:
+        by_name.setdefault(args[2].stem, set()).add(args[3])
+    assert all(formats == {"png", "svg"} for formats in by_name.values())

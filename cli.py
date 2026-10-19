@@ -44,7 +44,10 @@ def write_image(
 
 
 def write_png(spec: dict, path: Path, *, chrome: str | None = None) -> None:
-    write_image(spec, path, "png", chrome=chrome)
+    try:
+        write_image(spec, path, "png", chrome=chrome)
+    except ExportUnavailable as exc:
+        raise PngUnavailable(str(exc)) from exc
 
 
 def write_svg(spec: dict, path: Path, *, chrome: str | None = None) -> None:

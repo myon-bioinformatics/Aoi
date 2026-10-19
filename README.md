@@ -1,10 +1,62 @@
-> **独立リポジトリ**: このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト `dragowing/` から独立したものです。
-> 親は Aoi（Aoi の親は myon-bioinformatics）。tree は Aoi の `dragowing/` とまったく同じで（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、`LICENSE`、この README も含む）、`git subtree` で同期します（下の「Aoi との同期」）。
-> この README は Aoi の `dragowing/README.md` と同じファイルです。`../docs/` や `cycles/` への相対リンクは Aoi のリポジトリの中を指します。
+# DRAgoWing
 
-## このリポジトリで動かす
+> 記録を、判定をやり直さずに置く。
 
-サイクルデータ（`cycles/` の outputs）、PythDRagoras（`propositions` と `rule_search`）、QueRyu（`ask`）は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
+![DRAgoWing](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/dragowing.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
+## 概要
+
+記録された結果（`season.jsonl` と `propositions.jsonl`）を、判定をやり直さずに図と表にする。あてはめ・平滑化・階級への丸めはしない。
+
+四つの形の文字の表は [docs/forms.md](docs/forms.md)。HTML（軌跡、球団×年、条件の重なり、命題の一覧）は [docs/figures.md](docs/figures.md)。構想図は [docs/images/dragowing.webp](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/images/dragowing.webp)。
+
+`build/dragowing/index.html` と `propositions.html` ができる。`index.html` の軌跡と球団×年は Plotly の JSON 仕様とブラウザの plotly.js（jsDelivr の最新 dist）で描く。Python の `plotly` パッケージは使わない。`propositions.html` は一覧と Markdown の表で、Plotly は使わない。`index.html` に Plotly.js を埋め込むときは `--embed` を付ける。ページの文章は Markdown から HTML にしている。
+
+PNG は任意である。`--png` を付けると Chrome 経由で書き出す。Chrome が無ければ HTML だけで、テストもそちらだけを見る。
+
+[Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) から独立したリポジトリです（下の「Aoi との関係」）。
+
+## インストールと使い方
+
+Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存は polars、numpy、markdown です。図はブラウザの plotly.js で、matplotlib も Python の plotly も入れません。HTTP は標準ライブラリの urllib だけです（httpx は使いません）。
+
+```bash
+git clone https://github.com/myon-bioinformatics/DRAgoWing.git
+cd DRAgoWing
+uv sync
+```
+
+```bash
+python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--column 列] [--cond col,op,値] [--png] [--embed]
+```
+
+- `--results` は `season.jsonl` と `propositions.jsonl` があるディレクトリ。`--id` で命題を絞り、`--column` で球団×年に置く数値列（既定 `wins_vs_pythag`）を選ぶ。
+- 条件の重なり（`overlap.py`）は [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) の `propositions` と `rule_search` を、四つの形の表（`forms.py`）は [QueRyu](https://github.com/myon-bioinformatics/QueRyu) の `ask`（登録状態）を使います。動かすときはそれらを `PYTHONPATH` に入れます（下の「テスト」と同じ）。
+- このディレクトリはパッケージ `dragowing` の中身なので、`python -m dragowing` はディレクトリ名が `dragowing` に見える親から実行します（下の「テスト」の例）。
+
+## 構成
+
+| ファイル | 中身 |
+|---|---|
+| `cli.py`・`__main__.py` | `python -m dragowing --results DIR --out DIR` |
+| `records.py` | 結果ディレクトリの JSONL を、記録の順のまま読む |
+| `figures.py` | 記録された値の Plotly 図 JSON（data / layout） |
+| `htmlout.py` | HTML。文章と表は Markdown から作る（Plotly は軌跡と球団×年だけ） |
+| `forms.py` | 四つの形の 2×2 と、条件の論理記号（[docs/forms.md](docs/forms.md)） |
+| `overlap.py` | 条件集合と B クラスの重なり（マスクは rule_search のビット行列） |
+| `plotly_cdn.py` | Plotly.js（jsDelivr） |
+| `chrome_pipe.py`・`render.py`・`export.py` | 任意の Chrome（headless）での PNG / SVG の書き出し（[docs/export.md](docs/export.md)） |
+| `html_tag_count.py` | ブラウザなしで HTML の要素を数える |
+| `research_report.py`・`reports/` | 研究の集計図と、Markdown レポートの描画（Aoi のワークフローから呼ぶ） |
+| `docs/` | `forms.md`・`figures.md`・`export.md` |
+| `aoi_paths.py` | Aoi のパスの規約（下の「Aoi との関係」） |
+| `tests/` | pytest |
+
+## テスト
+
+サイクルデータ（`cycles/` の outputs）、[PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)（`propositions` と `rule_search`）、[QueRyu](https://github.com/myon-bioinformatics/QueRyu)（`ask`）は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
@@ -16,7 +68,6 @@ AOI_ROOT=$PWD/.test-deps/aoi \
 
 - パスは Aoi の規約（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
 - `AOI_ROOT` が Aoi を指していない（`cycles/` がない）と、pytest は最初に止まって理由を出します。
-- 実行時の依存は polars、numpy、markdown です。図はブラウザの plotly.js で、matplotlib も Python の plotly も入れません。HTTP は標準ライブラリの urllib だけです（httpx は使いません）。
 - このディレクトリはパッケージ `dragowing` の中身です（`__init__.py` は置かない。`export.py` と `cli.py` は `from .plotly_cdn` のような相対 import を使います）。テストは `from dragowing.xxx` と `python -m dragowing` を使います。pytest の `pythonpath` は `["."]` で、直下の `conftest.py` が、`dragowing` を同じディレクトリからまだ import できないときだけ、このディレクトリを `sys.modules["dragowing"]`（`__path__` はこのディレクトリ）に登録します。Aoi では親が pythonpath に入っていて同じディレクトリがすでに `dragowing` なので、この登録は何もしません。
 - pytest の外で `python -m dragowing` を動かすときは、ディレクトリ名が `dragowing` ならその親から実行します。
 
@@ -48,22 +99,28 @@ AOI_ROOT=$PWD/.test-deps/aoi \
 - `reports/build_reports.py` は Aoi 側のツールです（Aoi の DRAgoWing reports ワークフローが `myon-bioinformatics/markdown` を checkout して呼び出します）。このリポジトリの CI ではそのワークフローを実行しません。
 - Chrome のジョブはありません。Chrome が無いとき、Chrome を使うテストは skip します。
 
-## aoi_paths.py
+CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で pytest を動かします。
+
+## Aoi との関係
+
+このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) から独立したものです。
+親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `dragowing/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、`LICENSE`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
+この README は Aoi の `dragowing/README.md` と同じファイルから始まっています。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
+
+### aoi_paths.py
 
 `aoi_paths.py` は Aoi 直下の `aoi_paths.py` と同じ中身の通常のファイルです（blob `aa0d41f8b5a017b9b677ed0fecea327bdd5cd1af`、mode 100644。vendor lock は使いません）。Aoi では `dragowing/aoi_paths.py` になり、Aoi の `scripts/check_child_heads.py` が Aoi 直下の原本と blob と mode が同じかを確かめます（`child-heads.json` の `optional.mirrored_from_parent`）。直すときは Aoi の原本を直し、同じ中身をここに置きます。
 
 `aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
 
-`LICENSE` は Aoi 直下の MIT LICENSE と同じ中身です（blob `4ec4989b801bf1a3df6184d21f79e6e7ed5931f6`、1061 bytes。Copyright (c) 2026 myon）。
-
-## Aoi との同期
+### Aoi との同期
 
 このリポジトリは Aoi の `dragowing/` の subtree です。除外するファイルはなく、Aoi の `dragowing/` の tree とこのリポジトリの tree は同じです。Aoi の中では `dragowing/.github/` は動かず（GitHub が読むのはリポジトリ直下の `.github/` だけ）、`dragowing/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめ、パッケージ登録は何もしません。
 
 - 履歴は Aoi `a8dc4997f43236b24a23df56e21f143fa0e233d8`（main）の `dragowing/` から履歴を残して切り出しました（main `c789da2e30b33144f3110506f90f91ea579b9a6b`、切り出し時点の tree `70424b5a2768f43633766435cc9552f77c1b2ba7` は Aoi の `dragowing/` と同じ）。
 - この履歴は Aoi の履歴とつながっていないので、Aoi に一度だけ join を入れます。`git-subtree-split:` にこのリポジトリの main のコミットを書いた squash コミット（tree はこのリポジトリと同じ）を、Aoi の tree を変えないマージの2つ目の親にします。join 以降は `git subtree` が join を起点にします。
 - join は2つ目の親として残す必要があります。join を含む Aoi の PR は squash せず、merge commit で入れます（squash すると2つ目の親が消え、`git subtree pull` と `split` が止まります）。
-- `git-subtree-split:` のコミットはこのリポジトリの main にある必要があります。この PR も squash せず、merge commit で入れてください（squash すると main の sha が変わり、`git-subtree-split:` に書く sha が main に残りません）。
+- `git-subtree-split:` のコミットはこのリポジトリの main にある必要があります。このリポジトリの PR も squash せず、merge commit で入れてください（squash すると main の sha が変わり、`git-subtree-split:` に書く sha が main に残りません）。
 
 子 → Aoi（Aoi の main から作ったブランチで）:
 
@@ -84,25 +141,36 @@ git push https://github.com/myon-bioinformatics/DRAgoWing.git sync/dragowing:ref
 - push したブランチからこのリポジトリに PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、Aoi 側の起点をこのリポジトリの main に付け直します（squash マージでは split のコミットが main に残らないため）。
 - Aoi の `scripts/check_child_heads.py --fail-on-diff` が、Aoi の `child-heads.json` に登録した sha の tree と Aoi の `dragowing/` を比べます。
 
+## 関連サブプロジェクト
+
+親の [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクトは、それぞれ独立したリポジトリになっています。Aoi の中の場所（subtree）とあわせて載せます。一覧と登録の詳細は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md) です。
+
+| リポジトリ | Aoi の中の場所 | 役割 |
+|---|---|---|
+| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
+| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
+| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
+| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
+| **DRAgoWing**（このリポジトリ） | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
+
+## ライセンス
+
+MIT License（[LICENSE](LICENSE)）。`LICENSE` は Aoi 直下の MIT LICENSE と同じ中身です（blob `4ec4989b801bf1a3df6184d21f79e6e7ed5931f6`、1061 bytes。Copyright (c) 2026 myon）。
+
 ---
 
-# DRAgoWing
+# Aoi の研究サイクル（中日・NPB）での使い方
 
-記録を、判定をやり直さずに置く。
-
-四つの形の文字の表は [docs/forms.md](docs/forms.md)。HTML（軌跡、球団×年、条件の重なり、命題の一覧）は [docs/figures.md](docs/figures.md)。構想図は [docs/images/dragowing.webp](../docs/images/dragowing.webp)。
+Aoi のルートで、c001（中日）の出力から HTML を作る例。
 
 ```bash
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 ```
 
-`build/dragowing/index.html` と `propositions.html` ができる。`index.html` の軌跡と球団×年は Plotly の JSON 仕様とブラウザの plotly.js（jsDelivr の最新 dist）で描く。Python の `plotly` パッケージは使わない。`propositions.html` は一覧と Markdown の表で、Plotly は使わない。`index.html` に Plotly.js を埋め込むときは `--embed` を付ける。ページの文章は Markdown から HTML にしている。
-
-PNG は任意である。`--png` を付けると Chrome 経由で書き出す。Chrome が無ければ HTML だけで、テストもそちらだけを見る。
-
 ## 既存 Markdown 実装との接続
 
-[DRAgoWing reports ワークフロー](../.github/workflows/dragowing.yml) は、PR・main 更新・手動実行時に `myon-bioinformatics/markdown` の最新 main を一度チェックアウトしてから `dragowing/reports/build_reports.py` で研究文書を描画する。通常 pytest の docs-only スキップは維持し、文書だけの変更でもレポート生成は実行する。
+[DRAgoWing reports ワークフロー](https://github.com/myon-bioinformatics/Aoi/blob/main/.github/workflows/dragowing.yml) は、PR・main 更新・手動実行時に `myon-bioinformatics/markdown` の最新 main を一度チェックアウトしてから `dragowing/reports/build_reports.py` で研究文書を描画する。通常 pytest の docs-only スキップは維持し、文書だけの変更でもレポート生成は実行する。
 
 ローカルでの例（出力先は空のディレクトリを指定）:
 

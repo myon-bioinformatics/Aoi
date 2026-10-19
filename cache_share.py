@@ -310,6 +310,11 @@ def main(argv=None) -> int:
     if args.command == "verify":
         result = verify_cache(cache, rows)
         print(json.dumps(result, ensure_ascii=False))
+        if result["total"] == 0:
+            # An empty selection is usually a typo in --key/--group; do not report it as a clean pass.
+            print("error: verify selected no cached bodies; check --key/--url/--group/--status/--since/--until",
+                  file=sys.stderr)
+            return 3
         return 1 if result["corrupted"] > 0 else 0
     print(json.dumps(export_bundle(cache, rows, args.out), ensure_ascii=False))
     return 0

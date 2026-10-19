@@ -178,7 +178,13 @@ Aoi/QueRyu development relationship. MIT notices are kept in `LICENSE`.
 python cache_share.py --cache data/cache query --group npb_calendar --since 2026-01-01
 python cache_share.py --cache data/cache export --key 'npb_calendar:2024_*' --out share.tar
 python cache_share.py --cache other/cache import share.tar
+python cache_share.py --cache data/cache verify --group npb_calendar
 ```
+
+- `verify_cache(cache, entries=None)` / `verify`: 本文のある行（既定では全履歴）について、gzip 本文と
+  記録された sha256・バイト数を照合し、`{"total", "verified", "corrupted", "errors"}` を JSON で出す。
+  `verify` は query と同じ絞り込みを受け付ける。終了コードは、全件一致で 0、不一致が 1 件でもあれば 1、
+  対象が 0 件なら 3（指定ミスに気づけるよう、stderr に注記を出す）。
 
 ## テスト
 

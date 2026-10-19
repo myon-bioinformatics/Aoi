@@ -185,3 +185,9 @@ def test_verify_cache_clean_and_corrupted(tmp_path, capsys):
     assert cs.main(["--cache", str(cache.root), "verify", "--group", "team"]) == 0
     cli_filtered_out = json.loads(capsys.readouterr().out)
     assert cli_filtered_out["total"] == 1 and cli_filtered_out["corrupted"] == 0
+
+    # An empty selection is not a clean pass: exit 3 with a note on stderr
+    assert cs.main(["--cache", str(cache.root), "verify", "--group", "no-such-group"]) == 3
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["total"] == 0
+    assert "selected no cached bodies" in captured.err

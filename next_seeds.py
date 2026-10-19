@@ -9,6 +9,8 @@ predicate_code_sha256）に記録されていて、書き換えると記録の�
 読みは判定ではなく、終了コードも変えないので、別のファイルに分けても判定の結果は変わらない。
 
     python pythdragoras/next_seeds.py next cycles/c001-chunichi/outputs/propositions.jsonl [--id P1 ...] [--reading 1 2]
+        [--markdown next_seeds.md] [--jsonl next_seeds.jsonl] [--limit 8]
+    python pythdragoras/next_seeds.py render-md cycles/c001-chunichi/outputs/propositions.jsonl [--out next_seeds.md] [--jsonl next_seeds.jsonl]
 """
 from __future__ import annotations
 
@@ -149,6 +151,24 @@ def _v(v):
     return "-" if v is None else str(v)
 
 
+def _positive_int(value: str) -> int:
+    import argparse
+
+    n = int(value)
+    if n < 1:
+        raise argparse.ArgumentTypeError(f"1 以上の整数を指定する: {value}")
+    return n
+
+
+def _write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def _jsonl(readings: list[dict]) -> str:
+    return "".join(json.dumps(x, ensure_ascii=False) + "\n" for x in readings)
+
+
 def main(argv=None) -> int:
     import argparse
     import sys
@@ -159,42 +179,84 @@ def main(argv=None) -> int:
     nx.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
     nx.add_argument("--id", nargs="+", dest="ids")
     nx.add_argument("--reading", type=int, nargs="+", choices=sorted(READING), help="この読みの番号だけを表示する")
+    nx.add_argument("--markdown", "-m", type=Path, help="読みのMarkdownレポートを出力するファイルパス")
+    nx.add_argument("--jsonl", type=Path, help="読みの結果をJSONLとして出力するファイルパス")
+    nx.add_argument("--limit", type=_positive_int, default=8, help="Markdownで表示する判例単位の件数上限（既定: 8）")
+    rmd = sub.add_parser("render-md", help="propositions.jsonl の読みをすべて Markdown（next_seeds.md）にする")
+    rmd.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
+    rmd.add_argument("--out", type=Path, help="Markdown の出力先ファイルパス（未指定なら標準出力）")
+    rmd.add_argument("--jsonl", type=Path, help="読みの結果をJSONLとして出力するファイルパス")
+    rmd.add_argument("--limit", type=_positive_int, default=8, help="Markdownで表示する判例単位の件数上限（既定: 8）")
+
 
     rp = sub.add_parser("report", help="propositions.jsonl から next_seeds.md（および --claims があれば claims.md）を生成する")
     rp.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
     rp.add_argument("--claims", type=Path, help="pythdragoras.py が書いた claims.json")
-    rp.add_argument("--outdir", type=Path, help="出力ディレクトリ（next_seeds.md と claims.md を書き出す）")
-    rp.add_argument("--out", type=Path, help="出力ファイル（next_seeds.md の書き出し先）")
+    output = rp.add_mutually_exclusive_group()
+    output.add_argument("--outdir", type=Path, help="出力ディレクトリ（next_seeds.md と claims.md を書き出す）")
+    output.add_argument("--out", type=Path, help="出力ファイル（next_seeds.md の書き出し先）")
 
     args = ap.parse_args(argv)
 
+    if not args.results.exists():
+        print(f"[66] {label(66)}: {args.results}", file=sys.stderr)
+        return 66
+    results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines() if line.strip()]
+    meta = results[0].get("meta", {}) if results else {}
+
+    if args.cmd == "render-md":
+        readings = [reading(r) for r in results]
+        md = render_next(readings, meta, limit=args.limit)
+        if args.out:
+            _write(args.out, md)
+        else:
+            print(md, end="")
+        if args.jsonl:
+            _write(args.jsonl, _jsonl(readings))
+        return 0  # 読みは判定ではないので、失敗にしない
+
     if args.cmd == "next":
-        if not args.results.exists():
-            print(f"[66] {label(66)}: {args.results}", file=sys.stderr)
-            return 66
-        results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines() if line.strip()]
         known = {r["id"] for r in results}
         if missing := [i for i in args.ids or [] if i not in known]:
             print(f"[64] {label(64)}（そんな id はない: {', '.join(missing)}）", file=sys.stderr)
             return 64
+        filtered = []
         for x in map(reading, results):
             if (args.ids and x["id"] not in args.ids) or (args.reading and x["reading"] not in args.reading):
                 continue
+            filtered.append(x)
             route = "—" if x["route"] is None else x["route"]["n"]
             print(f"[{x['reading']}] {x['id']} {READING[x['reading']][0]}  元 {x['original']} 逆 {x['converse'] if x['converse'] is not None else '—'}"
                   f"  絞る {x['narrow']['n']} 道筋 {route}  {x['key']}")
+
+        if args.markdown:
+            _write(args.markdown, render_next(filtered, meta, limit=args.limit))
+        if args.jsonl:
+            _write(args.jsonl, _jsonl(filtered))
+
         return 0  # 読みは判定ではないので、失敗にしない
 
     if args.cmd == "report":
-        if not args.results.exists():
-            print(f"[66] {label(66)}: {args.results}", file=sys.stderr)
-            return 66
         if args.claims and not args.claims.exists():
             print(f"[66] {label(66)}: {args.claims}", file=sys.stderr)
             return 66
-        results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines() if line.strip()]
+        # Refuse output/input aliases before writing either report.
+        output_paths = []
+        if args.outdir:
+            output_paths.append(args.outdir / "next_seeds.md")
+            if args.claims:
+                output_paths.append(args.outdir / "claims.md")
+        elif args.out:
+            output_paths.append(args.out)
+            if args.claims:
+                output_paths.append(args.out.parent / "claims.md")
+        resolved_outputs = [path.resolve() for path in output_paths]
+        inputs = {args.results.resolve()}
+        if args.claims:
+            inputs.add(args.claims.resolve())
+        if len(set(resolved_outputs)) != len(resolved_outputs) or inputs.intersection(resolved_outputs):
+            ap.error("report outputs must be distinct from each other and input files")
         readings = [reading(r) for r in results]
-        meta = results[0].get("meta", {}) if results else {}
         md_next = render_next(readings, meta)
 
         md_claims = ""

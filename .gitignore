@@ -232,3 +232,9 @@ data/
 
 # Offline worker checkpoints, separate from question inbox.
 .research-worker/
+
+# --- common ignores (shared) ---
+node_modules/
+.DS_Store
+Thumbs.db
+# --- end common ignores ---

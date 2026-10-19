@@ -10,7 +10,7 @@ Python 3.11〜3.14。確率計算だけなら標準ライブラリで動く。
 
 ```sh
 python -m pip install -r sakanalytics/season-requirements.txt
-python -m pip install pytest==9.1.1
+python -m pip install "pytest>=9.1.1"
 python sakanalytics/season_simulator.py sakanalytics/season-example.json \
   --as-of 2022-01-01 --through 2022-01-04 --trials 10000 --seed 42 \
   --exact --output /tmp/season-forecast.json
@@ -32,10 +32,11 @@ PYTHONPATH=sakanalytics python -m pytest sakanalytics/tests/test_season_simulato
 | `rules` | 対象リーグのメンバー、前年の順序、同率規則、CS枠数、規則名と出典 |
 | `schedule_basis` | 日程の出所。その時点で知られていた予定か、後から確定した実施日程か |
 | `games` | 一意な `id`、ISO `date`、`home`、`away`、`result`（H/A/D/null） |
+| `expected_total_games` | (任意) 1球団あたりの予定総試合数（整数、または球団名→整数の辞書）。一致しなければ検証時にエラー |
 
 将来の結果が入力にあっても、`snapshot()` が時点後の `result` を取り除く。
 過去日の未確定試合はエラーにする。延期された予定は呼出側で更新する。
-予定の完全性をエンジンが外部照合することはない。抜けたカードは誤った確定判定につながるため、取得側の試合数検証と併用する。
+予定の完全性をエンジンが外部照合することはないが、`expected_total_games`（CLI では `--expected-total-games`）を指定することで、全球団の消化済み試合数と残り試合数の合計が予定試合数と一致するかを照合できる。
 
 既存の Aoi の `data/observations/npb_calendar/games.jsonl` も読み込める。
 `games` を含まない設定 JSON を用意し、以下のように渡す。
@@ -143,5 +144,5 @@ CLIはリポジトリ外の作業ディレクトリからも検証し、確率�
 ## 残件
 
 他年の規則の確認、当時の日程スナップショット、年度を分けた確率較正、閾値の再浮上例、新聞のマジック表記との追加照合。
-入力の予定総試合数を指定して照合するオプションも残件。現状は取得側の検証を前提とする。
+（入力予定総試合数を指定して照合するオプション `--expected-total-games` / `expected_total_games` は実装済み。）
 これらは共有エンジンの動作検証と分けて記録する。新しい研究命題の計算は研究計画を先に置く。

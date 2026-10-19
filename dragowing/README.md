@@ -14,7 +14,7 @@
 
 `build/dragowing/index.html` と `propositions.html` ができる。`index.html` の軌跡と球団×年は Plotly の JSON 仕様とブラウザの plotly.js（jsDelivr の最新 dist）で描く。Python の `plotly` パッケージは使わない。`propositions.html` は一覧と Markdown の表で、Plotly は使わない。`index.html` に Plotly.js を埋め込むときは `--embed` を付ける。ページの文章は Markdown から HTML にしている。
 
-PNG は任意である。`--png` を付けると Chrome 経由で書き出す。Chrome が無ければ HTML だけで、テストもそちらだけを見る。
+PNG / SVG は任意である。`--png` や `--svg` を付けると Chrome 経由で書き出す。Chrome が無ければ HTML だけで、テストもそちらだけを見る。
 
 [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) から独立したリポジトリです（下の「Aoi との関係」）。
 
@@ -29,7 +29,7 @@ uv sync
 ```
 
 ```bash
-python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--column 列] [--cond col,op,値] [--png] [--embed]
+python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--column 列] [--cond col,op,値] [--png] [--svg] [--embed]
 ```
 
 - `--results` は `season.jsonl` と `propositions.jsonl` があるディレクトリ。`--id` で命題を絞り、`--column` で球団×年に置く数値列（既定 `wins_vs_pythag`）を選ぶ。

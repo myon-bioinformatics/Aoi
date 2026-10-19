@@ -89,9 +89,158 @@ def test_cli_next_prints_readings_and_never_fails_on_objections(tmp_path, capsys
     assert ns.main(["next", str(tmp_path / "none.jsonl")]) == 66
 
 
+def test_cli_next_outputs_markdown_json_and_limit(tmp_path):
+    f = tmp_path / "propositions.jsonl"
+    md_out = tmp_path / "out" / "next_seeds.md"
+    json_out = tmp_path / "out" / "next_seeds.jsonl"
+    import json
+
+    cx_many = [f"d-{2000 + i}" for i in range(12)]
+    res = {**_result(1, 3, cx_c=cx_many), "meta": {"sha256": "hash123", "code_version": "v1.0"}}
+    f.write_text(json.dumps(res) + "\n", encoding="utf-8")
+
+    code = ns.main(["next", str(f), "--markdown", str(md_out), "--jsonl", str(json_out), "--limit", "3"])
+    assert code == 0
+
+    assert md_out.exists()
+    md_text = md_out.read_text(encoding="utf-8")
+    assert "# 次の命題の種（自動生成）" in md_text
+    assert "hash123" in md_text
+    assert "ほか9" in md_text  # 12 items with limit 3 => 3 shown + 9 more
+
+    assert json_out.exists()
+    json_lines = [json.loads(line) for line in json_out.read_text(encoding="utf-8").splitlines()]
+    assert len(json_lines) == 1
+    assert json_lines[0]["id"] == "X"
+    assert json_lines[0]["reading"] == 1
+
+
 def test_reading_keeps_all_four_forms_and_render_shows_them():
     x = ns.reading(_result(1, 3, cx_c=["d-2014"]))
     assert set(x["forms"]) == {"original", "contrapositive", "converse", "inverse"}
     assert x["forms"]["inverse"] == (3, 0.5, 12)
     md = ns.render_next([x, ns.reading(_result(0, None))], {"sha256": "s"})
     assert "| 元の命題 | 対偶 | 逆 | 裏 |" in md and "3・0.50（12）" in md and "省略: " in md
+
+
+def test_cli_report_subcommand(tmp_path, capsys):
+    import json
+
+    prop_f = tmp_path / "propositions.jsonl"
+    res = _result(3, 3, cx_o=["d-2019"])
+    res["meta"] = {"sha256": "hash123", "code_version": "v1.0"}
+    prop_f.write_text(json.dumps(res) + "\n", encoding="utf-8")
+
+    claims_f = tmp_path / "claims.json"
+    claims_data = [
+        {"id": "C1", "statement": "主張1", "source": "News", "status": "reproduced", "claimed": 0.5, "computed": 0.51}
+    ]
+    claims_f.write_text(json.dumps(claims_data) + "\n", encoding="utf-8")
+
+    # 1. Standard output without --out or --outdir
+    assert ns.main(["report", str(prop_f)]) == 0
+    captured = capsys.readouterr().out
+    assert "# 次の命題の種（自動生成）" in captured
+    assert "hash123" in captured
+
+    # 2. With --outdir
+    outdir = tmp_path / "out_dir"
+    assert ns.main(["report", str(prop_f), "--claims", str(claims_f), "--outdir", str(outdir)]) == 0
+    assert (outdir / "next_seeds.md").exists()
+    assert (outdir / "claims.md").exists()
+    assert "# 次の命題の種" in (outdir / "next_seeds.md").read_text(encoding="utf-8")
+    assert "# 外部の主張との照合" in (outdir / "claims.md").read_text(encoding="utf-8")
+
+    # 3. With --out
+    outfile = tmp_path / "custom" / "next_seeds.md"
+    assert ns.main(["report", str(prop_f), "--claims", str(claims_f), "--out", str(outfile)]) == 0
+    assert outfile.exists()
+    assert (tmp_path / "custom" / "claims.md").exists()
+
+    # 4. Error handling
+    assert ns.main(["report", str(tmp_path / "nonexistent.jsonl")]) == 66
+    assert ns.main(["report", str(prop_f), "--claims", str(tmp_path / "nonexistent.json")]) == 66
+
+
+def test_next_seeds_cli_markdown_option(tmp_path):
+    import json
+    f = tmp_path / "propositions.jsonl"
+    out_md = tmp_path / "outputs" / "next_seeds.md"
+    f.write_text(json.dumps(_result(1, 3, cx_o=["d-2019"])) + "\n", encoding="utf-8")
+
+    assert ns.main(["next", str(f), "-m", str(out_md)]) == 0
+    content = out_md.read_text(encoding="utf-8")
+    assert "# 次の命題の種（自動生成）" in content
+    assert "## 1 " in content
+
+
+def test_cli_next_markdown_keeps_only_filtered_readings(tmp_path):
+    import json
+    f = tmp_path / "propositions.jsonl"
+    out_md = tmp_path / "next_seeds.md"
+    out_jsonl = tmp_path / "next_seeds.jsonl"
+    rows = [{**_result(1, 3), "id": "A"}, {**_result(0, 0), "id": "B"}]
+    f.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+    assert ns.main(["next", str(f), "--reading", "0", "--markdown", str(out_md), "--jsonl", str(out_jsonl)]) == 0
+    assert "| B |" in out_md.read_text(encoding="utf-8") and "| A |" not in out_md.read_text(encoding="utf-8")
+    assert [json.loads(x)["id"] for x in out_jsonl.read_text(encoding="utf-8").splitlines()] == ["B"]
+
+
+def test_cli_render_md_outputs_markdown(tmp_path, capsys):
+    import json
+    f = tmp_path / "propositions.jsonl"
+    f.write_text(json.dumps({**_result(1, 3, cx_c=["d-2014"]), "meta": {"sha256": "testsha"}}) + "\n", encoding="utf-8")
+
+    assert ns.main(["render-md", str(f)]) == 0  # 未指定なら標準出力
+    out = capsys.readouterr().out
+    assert "# 次の命題の種（自動生成）" in out and "testsha" in out
+
+    out_file = tmp_path / "out" / "next_seeds.md"
+    jsonl_file = tmp_path / "out" / "next_seeds.jsonl"
+    assert ns.main(["render-md", str(f), "--out", str(out_file), "--jsonl", str(jsonl_file)]) == 0
+    assert capsys.readouterr().out == ""
+    assert out_file.read_text(encoding="utf-8") == out
+    assert json.loads(jsonl_file.read_text(encoding="utf-8").splitlines()[0])["reading"] == 1
+    assert ns.main(["render-md", str(tmp_path / "none.jsonl")]) == 66
+
+
+@pytest.mark.parametrize("cmd", ["next", "render-md"])
+@pytest.mark.parametrize("bad", ["0", "-1", "x"])
+def test_cli_limit_must_be_positive(tmp_path, cmd, bad):
+    f = tmp_path / "propositions.jsonl"
+    f.write_text("", encoding="utf-8")
+    with pytest.raises(SystemExit) as e:
+        ns.main([cmd, str(f), "--limit", bad])
+    assert e.value.code == 2
+
+
+def test_report_output_conflicts_preserve_inputs(tmp_path):
+    import json
+    source = tmp_path / "propositions.jsonl"
+    claims = tmp_path / "claims.md"
+    source.write_text(json.dumps(_result(1, 3)) + "\n", encoding="utf-8")
+    claims.write_text("[]", encoding="utf-8")
+    before = {p: p.read_bytes() for p in (source, claims)}
+    cases = [
+        ["--out", str(source)],
+        ["--claims", str(claims), "--out", str(tmp_path / "next.md")],
+        ["--claims", str(claims), "--out", str(tmp_path / "other" / "claims.md")],
+        ["--out", str(tmp_path / "next.md"), "--outdir", str(tmp_path / "out")],
+    ]
+    for options in cases:
+        with pytest.raises(SystemExit) as error:
+            ns.main(["report", str(source), *options])
+        assert error.value.code == 2
+        assert {p: p.read_bytes() for p in before} == before
+    assert not (tmp_path / "next.md").exists()
+    assert not (tmp_path / "other").exists()
+
+
+def test_report_preserves_blank_line_support_after_integration(tmp_path, capsys):
+    import json
+    source = tmp_path / "propositions.jsonl"
+    source.write_text("\n" + json.dumps(_result(1, 3)) + "\n\n", encoding="utf-8")
+    for command in ("next", "render-md", "report"):
+        assert ns.main([command, str(source)]) == 0
+        assert capsys.readouterr().out

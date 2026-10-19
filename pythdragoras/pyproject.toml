@@ -4,14 +4,14 @@ version = "0.1.0"
 description = "本当にその説明で十分か？ 命題・判例・異議あり（Aoi の pythdragoras/ から独立）"
 requires-python = ">=3.11"
 dependencies = [
-    "polars>=2",
-    # Aoi と同じ指定。2.4 系は Python 3.11–3.14、2.5.2 以降は 3.12–3.15。
-    "numpy>=2.4,<2.5; python_version < '3.12'",
-    "numpy>=2.5.2; python_version >= '3.12'",
+    "polars>=2.0.0",
+    # 2.5.4 は Python 3.12 以上。3.11 はパッケージの Requires-Python で 2.4.6 になり、上限は書かない。
+    "numpy>=2.5.4; python_version >= '3.12'",
+    "numpy>=2.4.6",
 ]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = ["pytest>=9.1.1"]
 
 [tool.uv]
 package = false

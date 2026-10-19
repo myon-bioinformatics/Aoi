@@ -4,11 +4,11 @@ version = "0.1.0"
 description = "数字は語る。だが、まだ語りきっていないことがある（Aoi の sakanalytics/ から独立）"
 requires-python = ">=3.11"
 dependencies = [
-    "polars>=2",
+    "polars>=2.0.0",
 ]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = ["pytest>=9.1.1"]
 
 [tool.uv]
 package = false

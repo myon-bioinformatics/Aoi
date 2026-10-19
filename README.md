@@ -1,10 +1,56 @@
-> **独立リポジトリ**: このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト `sakanalytics/` から独立したものです。
-> 親は Aoi（Aoi の親は myon-bioinformatics）。tree は Aoi の `sakanalytics/` とまったく同じで（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）、`git subtree` で同期します（下の「Aoi との同期」）。
-> この README は Aoi の `sakanalytics/README.md` と同じファイルです。`../docs/` や `cycles/` への相対リンクは Aoi のリポジトリの中を指します。
+# SakAnalytics
 
-## このリポジトリで動かす
+> 数字は語る。だが、まだ語りきっていないことがある。
 
-サイクルデータ（`cycles/`）と PythDRagoras（`propositions`）は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
+![SakAnalytics](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/sakanalytics.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
+## 概要
+
+観測データセット（1試合1行: `key, date, home, away, hs, as`）から、チーム×シーズンの指標を作る。
+測るだけで、除外や良し悪しの判断はしない（それは PythDRagoras と分析設定の仕事）。
+
+チームの所属と表示名は分析設定の `[teams]` で明示的に与える。定義のないチームが現れたら、黙って捨てずにエラーにする。
+
+主な列は `sakanalytics.py` の冒頭に一覧がある。順位（`rank`）は勝率から計算した派生値で、
+公式の同率時の規定は再現しないため、同率には `rank_tie = true` の印をつける。
+
+ほかに、残り試合・CS確率・優勝マジックの見通し（`season_simulator.py`、[SEASON_SIMULATOR.md](SEASON_SIMULATOR.md)）、年成績の照合（`annual_audit.py`）、架空リーグの生成（`synthetic_league.py`）がある。
+
+[Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) から独立したリポジトリです（下の「Aoi との関係」）。
+
+## インストールと使い方
+
+Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存は polars だけです。ortools は任意で、`season-requirements.txt` を入れたときだけ exact の求解（`season_exact.py`）が動きます。
+
+```bash
+git clone https://github.com/myon-bioinformatics/SakAnalytics.git
+cd SakAnalytics
+uv sync
+uv run python sakanalytics.py --help
+uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --out <season.jsonl>
+```
+
+入力の `--games` は観測データセット（1試合1行: `key, date, home, away, hs, as`。[QueRyu](https://github.com/myon-bioinformatics/QueRyu) が作る形）、`--config` は `[teams]` を含む分析設定の TOML です。打撃・守備・得点表などの観測があれば、`--batting`・`--fielding`・`--linescore` で列を足します。
+
+## 構成
+
+| ファイル | 中身 |
+|---|---|
+| `sakanalytics.py` | CLI。チーム×シーズンの指標（主な列は冒頭に一覧） |
+| `season_simulator.py`・`season_exact.py` | 残り試合の見通し（標準ライブラリ）と、任意の OR-Tools による確定判定（[SEASON_SIMULATOR.md](SEASON_SIMULATOR.md)・[SEASON_SIMULATOR_PLAN.md](SEASON_SIMULATOR_PLAN.md)） |
+| `annual_audit.py` | 年間チーム表の照合（整数項目と公表桁） |
+| `synthetic_league.py`・`league_laboratory.py` | 年成績を先に固定した架空リーグと、その実験 |
+| `neighbors.py` | 結果を使わない記述的な近傍 |
+| `proposition_seed_audit.py`・`synthetic_rule_discovery.py` | 命題の seed 感度と、架空データだけでの追跡（PythDRagoras を使う） |
+| `season_verify_2022.py` | 手元の観測だけを使う任意の統合確認 |
+| `aoi_layout.py`・`aoi_paths.py` | Aoi のパスの規約（下の「Aoi との関係」） |
+| `tests/` | pytest |
+
+## テスト
+
+サイクルデータ（`cycles/`）と [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)（`propositions`）は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
@@ -21,13 +67,21 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
   - PythDRagoras の `propositions`: `proposition_seed_audit.py` と `synthetic_rule_discovery.py`（`PYTHONPATH` の `pythdragoras`）。
   - これ以外に Aoi の兄弟サブプロジェクトと `scripts/` を使わないことは、`tests/test_no_sibling_imports.py` で確かめます（`propositions` が既知の例外です）。
 
-## aoi_paths.py
+CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。
+
+## Aoi との関係
+
+このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) から独立したものです。
+親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `sakanalytics/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
+この README は Aoi の `sakanalytics/README.md` と同じファイルから始まっています。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
+
+### aoi_paths.py
 
 `aoi_paths.py` は Aoi 直下の `aoi_paths.py` と同じ中身の通常のファイルです（blob `aa0d41f8b5a017b9b677ed0fecea327bdd5cd1af`。vendor lock は使いません）。Aoi では `sakanalytics/aoi_paths.py` になり、Aoi の `scripts/check_child_heads.py` が Aoi 直下の原本と blob と mode が同じかを確かめます（`child-heads.json` の `optional.mirrored_from_parent`）。直すときは Aoi の原本を直し、同じ中身をここに置きます。
 
 `aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
 
-## Aoi との同期
+### Aoi との同期
 
 このリポジトリは Aoi の `sakanalytics/` の subtree です。除外するファイルはなく、Aoi の `sakanalytics/` の tree とこのリポジトリの tree は同じです。Aoi の中では `sakanalytics/.github/` は動かず（GitHub が読むのはリポジトリ直下の `.github/` だけ）、`sakanalytics/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめます。
 
@@ -39,39 +93,44 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
 子 → Aoi（Aoi の main から作ったブランチで）:
 
 ```bash
-git subtree pull --prefix=sakanalytics https://github.com/myon-bioinformatics/sakanalytics.git main --squash
+git subtree pull --prefix=sakanalytics https://github.com/myon-bioinformatics/SakAnalytics.git main --squash
 test "$(git rev-parse HEAD:sakanalytics)" = "$(git rev-parse FETCH_HEAD^{tree})"   # Aoi 側に未同期の変更がないとき
 ```
 
 Aoi → 子（Aoi の main で）:
 
 ```bash
-git fetch https://github.com/myon-bioinformatics/sakanalytics.git main   # split の起点のコミットを手元に置く
+git fetch https://github.com/myon-bioinformatics/SakAnalytics.git main   # split の起点のコミットを手元に置く
 git subtree split --prefix=sakanalytics -b sync/sakanalytics
 test "$(git rev-parse sync/sakanalytics^{tree})" = "$(git rev-parse HEAD:sakanalytics)"
-git push https://github.com/myon-bioinformatics/sakanalytics.git sync/sakanalytics:refs/heads/<新しいブランチ>
+git push https://github.com/myon-bioinformatics/SakAnalytics.git sync/sakanalytics:refs/heads/<新しいブランチ>
 ```
 
 - push したブランチからこのリポジトリに PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、Aoi 側の起点をこのリポジトリの main に付け直します（squash マージでは split のコミットが main に残らないため）。
 - Aoi の `scripts/check_child_heads.py --fail-on-diff` が、Aoi の `child-heads.json` に登録した sha の tree と Aoi の `sakanalytics/` を比べます。
 
+## 関連サブプロジェクト
+
+親の [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクトは、それぞれ独立したリポジトリになっています。Aoi の中の場所（subtree）とあわせて載せます。一覧と登録の詳細は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md) です。
+
+| リポジトリ | Aoi の中の場所 | 役割 |
+|---|---|---|
+| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
+| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
+| **SakAnalytics**（このリポジトリ） | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
+| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
+
+## ライセンス
+
+MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+
 ---
 
-# SakAnalytics
+# 研究での使い方と列の詳細（中日・NPB）
 
-> 数字は語る。だが、まだ語りきっていないことがある。
-
-![SakAnalytics](../docs/images/sakanalytics.webp)
-
-*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
-
-観測データセット（1試合1行: `key, date, home, away, hs, as`）から、チーム×シーズンの指標を作る。
-測るだけで、除外や良し悪しの判断はしない（それは PythDRagoras と分析設定の仕事）。
-
-チームの所属と表示名は分析設定の `[teams]` で明示的に与える。定義のないチームが現れたら、黙って捨てずにエラーにする。
-
-主な列は `sakanalytics.py` の冒頭に一覧がある。順位（`rank`）は勝率から計算した派生値で、
-公式の同率時の規定は再現しないため、同率には `rank_tie = true` の印をつける。
+以下は Aoi の研究サイクル（c001: 中日・NPB のデータ）での使い方と、研究から作った列の詳細です。コマンド例のパス（`sakanalytics/…`・`cycles/…`・`data/…`）は Aoi のルートからの場所です。
 
 ```bash
 uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl \
@@ -81,7 +140,7 @@ uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calenda
 ## 優位・誤差と、研究から作った列（R32〜R34・R39）
 
 どれも同じ年・同じリーグの他球団と比べた値で、1試合あたり。順位ではなく量で読むための列。
-上の相手・下の相手は**最終順位**で決める（結果を知ったうえでの議論。[docs/propositions.md](../docs/propositions.md) の Groups Defined By The Final Outcome）。
+上の相手・下の相手は**最終順位**で決める（結果を知ったうえでの議論。[docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md) の Groups Defined By The Final Outcome）。
 
 | 列 | 中身 | 式 | 注意 |
 |---|---|---|---|
@@ -152,7 +211,7 @@ uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calenda
 主対象は2013〜2026年。既定は3条件×各1組の14年間で、全14年の年成績と試合集計が一致すれば合格とする。
 過去年の網羅や生成件数の増加は要求しない。2013年以前は通常の解析・較正・合格判定から分けて参考保管する。
 得失点が同じでも勝敗配分の違う例を作れる。生成例は実測件数に加算しない。
-手順・生成族・完了条件は [c001の取得・架空検証記録](../cycles/c001-chunichi/annual-history-synthetic.md)。
+手順・生成族・完了条件は [c001の取得・架空検証記録](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/annual-history-synthetic.md)。
 
 ## 条件付き生成・能力予算・得点尺度の実験
 
@@ -164,8 +223,8 @@ uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calenda
 python -S sakanalytics/league_laboratory.py
 ```
 
-設定は [league-laboratory.toml](../cycles/c001-chunichi/league-laboratory.toml)、
-観測と解釈は [R29](../cycles/c001-chunichi/research/R29-league-laboratory.md)。
+設定は [league-laboratory.toml](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/league-laboratory.toml)、
+観測と解釈は [R29](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/research/R29-league-laboratory.md)。
 架空モデルの仮定下の探索で、既存命題・合格条件・実測スコアは変更しない。
 
 ## 全命題の共通評価軸とseed感度

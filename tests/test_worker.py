@@ -111,7 +111,7 @@ def test_timeout_keeps_last_committed_unit(research, tmp_path, enabled):
     assert w.load_checkpoint(state / "checkpoint.json")["state"]["status"] == "completed"
 
 
-def test_actual_subprocess_is_killed_at_deadline(research):
+def test_actual_subprocess_is_killed_at_deadline(research, enabled):
     started = time.monotonic()
     with pytest.raises(subprocess.TimeoutExpired):
         (research / "research_loop/exploration.py").write_text("import time; time.sleep(10)\n")

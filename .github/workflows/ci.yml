@@ -20,7 +20,7 @@ jobs:
     env:
       # NagoyAction は Aoi の直下（cycles/・queryu/・sakanalytics/・blueprobe/・vendor/・scripts/・docs/）を
       # 相対パスで使う。Aoi を固定 SHA で checkout し、その nagoyaction/ をこのリポジトリの tree に置き換えてテストする
-      AOI_SHA: 0a1751a60ac64708d679f22950aa2b14cf688efd
+      AOI_SHA: c0d4f64d27bb3a43f893df09e56effc381997f13
     timeout-minutes: 10
     strategy:
       fail-fast: false

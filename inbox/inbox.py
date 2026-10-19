@@ -19,6 +19,12 @@ import urllib.request
 from dataclasses import asdict
 from pathlib import Path
 
+# Dispatch before importing the question reader. The intake implementation and
+# its configuration remain independent of research enablement.
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "worker":
+    from worker import main as worker_main
+    raise SystemExit(worker_main(sys.argv[1:]))
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "queryu/ask")]
 

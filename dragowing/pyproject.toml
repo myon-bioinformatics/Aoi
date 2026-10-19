@@ -1,0 +1,25 @@
+[project]
+name = "dragowing"
+version = "0.1.0"
+description = "記録を、判定をやり直さずに置く（Aoi の dragowing/ から独立）"
+requires-python = ">=3.11"
+dependencies = [
+    "polars>=2.0.0",
+    # 2.5 系の最新は Python 3.12 以上。3.11 では配布物の Requires-Python により 2.4.6 が選ばれる。
+    "numpy>=2.4.6",
+    "numpy>=2.5.4; python_version >= '3.12'",
+    # ページの文章。実行時の依存はこのパッケージだけで、3.11 以上。matplotlib は入れない。
+    "markdown>=3.11.1",
+]
+
+[dependency-groups]
+dev = ["pytest>=9.1.1"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+# サイクルデータ、PythDRagoras（propositions, rule_search）、QueRyu（ask）は Aoi に残す。AOI_ROOT と PYTHONPATH で固定 SHA の Aoi を指す（.github/workflows/ci.yml）
+pythonpath = ["."]
+testpaths = ["tests"]
+norecursedirs = [".test-deps", "build", "reports"]

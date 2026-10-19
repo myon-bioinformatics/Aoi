@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .chrome_pipe import find_chrome
 from .export import PLOTLY, export_draw, plotly_figure_content
+from .render import RenderSession
 from .forms import load_items
 from .htmlout import index_body, propositions_body, standalone
 from .overlap import finalize_conditions, load_overlap, parse_cond
@@ -24,7 +25,14 @@ class PngUnavailable(ExportUnavailable):
     """Chrome が無い。後方互換のための例外クラス。"""
 
 
-def write_image(spec: dict, path: Path, fmt: str = "png", *, chrome: str | None = None) -> None:
+def write_image(
+    spec: dict, path: Path, fmt: str = "png", *, chrome: str | None = None, session: RenderSession | None = None
+) -> None:
+    """session を渡すと、その Chrome を使い回す（--png と --svg で起動は 1 回）。"""
+    if session is not None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        export_draw(PLOTLY, plotly_figure_content(spec), path, fmt, session=session)
+        return
     try:
         executable = find_chrome(chrome)
     except RuntimeError as exc:
@@ -91,12 +99,20 @@ def main(argv=None) -> int:
     )
     (out / "propositions.html").write_text(standalone("命題の一覧", prop_html), encoding="utf-8")
     if args.png or args.svg:
+        formats = [fmt for fmt, wanted in (("png", args.png), ("svg", args.svg)) if wanted]
         try:
-            for name, fig in index_figures.items():
-                if args.png:
-                    write_png(fig, out / "png" / f"{name}.png", chrome=args.chrome)
-                if args.svg:
-                    write_svg(fig, out / "svg" / f"{name}.svg", chrome=args.chrome)
+            try:
+                executable = find_chrome(args.chrome)
+            except RuntimeError as exc:
+                raise ExportUnavailable(
+                    f"{'/'.join(f.upper() for f in formats)} には Chrome/Chromium が必要です。"
+                    "--chrome または CHROME 環境変数で実行ファイルを指定してください。"
+                ) from exc
+            # 図と形式が何件あっても Chrome の起動は 1 回だけ。
+            with RenderSession(chrome=executable) as session:
+                for name, fig in index_figures.items():
+                    for fmt in formats:
+                        write_image(fig, out / fmt / f"{name}.{fmt}", fmt, session=session)
         except ExportUnavailable as exc:
             print(str(exc), file=sys.stderr)
             return 2

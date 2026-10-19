@@ -11,7 +11,7 @@
 パイプラインを TOML に一度だけ書き、**ローカルでも GitHub Actions でも同じコマンド**で動かす。
 データを外に出せない案件では、同じ定義をローカルで実行すればよい。
 
-- `doctor`：Python の版、必須ツール（例: git, uv）、任意ツール（例: gh）、オフライン実行に必要な成果物の有無を確認する（`-v` / `--verbose` で詳細な診断情報を出力）。足りなければ終了コード1で、実行前に止まる
+- `doctor`：Python の版、必須ツール（例: git, uv）、任意ツール（例: gh）、オフライン実行に必要な成果物の有無を確認する（`-v` / `--verbose` で詳細情報、`--json` で JSON 出力、改善案を表示）。足りなければ終了コード1で、実行前に止まる
 - `show`：パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する（`--json` で JSON 出力）
 - `run`：doctor のあと手順を順に実行し、`--receipt` に受領記録（JSONL）を残す。失敗した手順で止まる
 - 手順はシェルを通さず、引数の配列で実行する
@@ -24,7 +24,7 @@
 インストールは要らない。Python 3.11 以上の標準ライブラリだけで動く。
 
 ```bash
-python nagoyaction.py doctor <pipeline.toml>            # 実行前の確認（-v / --verbose で詳細出力）
+python nagoyaction.py doctor <pipeline.toml>            # 実行前の確認（-v / --verbose / --json も可）
 python nagoyaction.py show   <pipeline.toml>            # パイプライン構造の表示（--json も可）
 python nagoyaction.py run    <pipeline.toml>            # 実行
 python nagoyaction.py run    <pipeline.toml> --offline  # 取得しない

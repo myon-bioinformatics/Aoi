@@ -97,6 +97,29 @@ def test_doctor_verbose_output(tmp_path, capsys):
     captured = capsys.readouterr().out
     assert "• executable:" in captured
     assert "• outputs: out.txt (exists, 11 bytes)" in captured
+    assert "Doctor found" in captured
+
+
+def test_doctor_json_and_remediation_hints(tmp_path, capsys):
+    p = na.load(write(tmp_path, BASIC))
+    # Missing optional 'gh' tool and missing offline output
+    checks = na.doctor(p, offline=True, which=lambda t: "/bin/" + t if t != "gh" else None)
+    gh_check = next(c for c in checks if c["check"] == "gh")
+    assert "hint" in gh_check
+    assert "gh" in gh_check["hint"]
+
+    off_check = next(c for c in checks if c["check"] == "offline:net")
+    assert "hint" in off_check
+    assert "net" in off_check["hint"]
+
+    # Test CLI doctor --json
+    rc = na.main(["doctor", str(p["_path"]), "--offline", "--json"])
+    assert rc == 1  # fails due to missing offline output
+    captured = capsys.readouterr().out
+    report = json.loads(captured)
+    assert report["summary"]["status"] == "fail"
+    assert report["summary"]["fail"] >= 1
+    assert any(c["check"] == "offline:net" and "hint" in c for c in report["checks"])
 
 
 def test_doctor_python_version_gate(tmp_path):

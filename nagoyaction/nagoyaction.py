@@ -72,13 +72,14 @@ def _version(tool: str) -> str:
 
 
 def doctor(p: dict, *, offline: bool = False, which=shutil.which) -> list[dict]:
-    """確認結果の一覧。level は ok / warn / fail。info に詳細診断情報を含む。"""
+    """確認結果の一覧。level は ok / warn / fail。info に詳細診断情報、hint に改善策を含む。"""
     req = p.get("requires", {})
     checks = []
-    need = tuple(int(x) for x in str(req.get("python", "3.11")).split("."))
+    need_str = str(req.get("python", "3.11"))
+    need = tuple(int(x) for x in need_str.split("."))
     have = sys.version_info[: len(need)]
     py_ok = have >= need
-    checks.append({
+    py_check = {
         "check": "python",
         "level": "ok" if py_ok else "fail",
         "detail": f"{sys.version.split()[0]} (requires >= {'.'.join(map(str, need))})",
@@ -87,11 +88,15 @@ def doctor(p: dict, *, offline: bool = False, which=shutil.which) -> list[dict]:
             "platform": sys.platform,
             "version": sys.version.replace("\n", " "),
         },
-    })
+    }
+    if not py_ok:
+        py_check["hint"] = f"Python {need_str} 以上をインストールしてください"
+    checks.append(py_check)
+
     for tool in req.get("tools", []):
         path = which(tool)
         ver = _version(tool) if path else None
-        checks.append({
+        t_check = {
             "check": tool,
             "level": "ok" if path else "fail",
             "detail": ver if path else "見つからない（インストールが必要）",
@@ -99,11 +104,15 @@ def doctor(p: dict, *, offline: bool = False, which=shutil.which) -> list[dict]:
                 "executable": path or "not found",
                 "status": "installed" if path else "missing (required)",
             },
-        })
+        }
+        if not path:
+            t_check["hint"] = f"ツール '{tool}' をインストールして PATH に追加してください"
+        checks.append(t_check)
+
     for tool in req.get("optional", []):
         path = which(tool)
         ver = _version(tool) if path else None
-        checks.append({
+        opt_check = {
             "check": tool,
             "level": "ok" if path else "warn",
             "detail": ver if path else "見つからない（なくても実行できる）",
@@ -111,7 +120,11 @@ def doctor(p: dict, *, offline: bool = False, which=shutil.which) -> list[dict]:
                 "executable": path or "not found",
                 "status": "installed" if path else "missing (optional)",
             },
-        })
+        }
+        if not path:
+            opt_check["hint"] = f"ツール '{tool}' をインストールすると追加機能が有効になります"
+        checks.append(opt_check)
+
     if offline:
         for s in p["step"]:
             if s.get("network"):
@@ -125,14 +138,17 @@ def doctor(p: dict, *, offline: bool = False, which=shutil.which) -> list[dict]:
                     else:
                         outputs_info.append(f"{o} (missing)")
                         missing.append(o)
-                checks.append({
+                off_check = {
                     "check": f"offline:{s['name']}",
                     "level": "fail" if missing else "ok",
                     "detail": f"成果物がない: {missing}" if missing else "成果物あり（取得を飛ばす）",
                     "info": {
                         "outputs": ", ".join(outputs_info) if outputs_info else "none declared",
                     },
-                })
+                }
+                if missing:
+                    off_check["hint"] = f"オンライン環境で '{s['name']}' ステップを実行して成果物を取得してください"
+                checks.append(off_check)
     return checks
 
 
@@ -247,13 +263,38 @@ def show(p: dict, *, json_output: bool = False) -> str:
     return "\n".join(lines)
 
 
-def _print_checks(checks: list[dict], *, verbose: bool = False) -> None:
+def _print_checks(checks: list[dict], *, verbose: bool = False, json_output: bool = False) -> None:
+    counts = {"ok": sum(c["level"] == "ok" for c in checks),
+              "warn": sum(c["level"] == "warn" for c in checks),
+              "fail": sum(c["level"] == "fail" for c in checks)}
+
+    if json_output:
+        report = {
+            "summary": {
+                "status": "fail" if counts["fail"] > 0 else "ok",
+                "total": len(checks),
+                "ok": counts["ok"],
+                "warn": counts["warn"],
+                "fail": counts["fail"],
+            },
+            "checks": checks,
+        }
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return
+
     mark = {"ok": "✓", "warn": "!", "fail": "✗"}
     for c in checks:
         print(f"[{mark[c['level']]}] {c['check']}: {c['detail']}")
         if verbose and c.get("info"):
             for k, v in c["info"].items():
                 print(f"    • {k}: {v}")
+        if c.get("hint"):
+            print(f"    ↳ 助言: {c['hint']}")
+
+    if counts["fail"] == 0 and counts["warn"] == 0:
+        print("\n[✓] Doctor found no issues!")
+    else:
+        print(f"\n[!] Doctor found issues: {counts['fail']} failed, {counts['warn']} warning(s).")
 
 
 def main(argv=None) -> int:
@@ -263,6 +304,7 @@ def main(argv=None) -> int:
     d.add_argument("pipeline", type=Path)
     d.add_argument("--offline", action="store_true")
     d.add_argument("-v", "--verbose", action="store_true", help="詳細な診断情報を表示")
+    d.add_argument("--json", dest="json_output", action="store_true", help="診断結果を JSON 形式で出力")
     s = sub.add_parser("show", help="パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する")
     s.add_argument("pipeline", type=Path)
     s.add_argument("--json", dest="json_output", action="store_true", help="JSON 形式で出力")
@@ -281,7 +323,7 @@ def main(argv=None) -> int:
             print(show(p, json_output=args.json_output))
             return 0
         checks = doctor(p, offline=args.offline)
-        _print_checks(checks, verbose=getattr(args, "verbose", False))
+        _print_checks(checks, verbose=getattr(args, "verbose", False), json_output=getattr(args, "json_output", False))
         if any(c["level"] == "fail" for c in checks):
             print("doctor: 足りないものがある。実行しない", file=sys.stderr)
             return 1

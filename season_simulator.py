@@ -63,6 +63,7 @@ class Snapshot:
     remaining: tuple[Game, ...]
     as_of: str
     schedule_basis: str
+    expected_total_games: int | dict[str, int] | None = None
 
     def validate(self):
         n = len(self.teams)
@@ -87,6 +88,25 @@ class Snapshot:
         if max(self.played(t) + sum(t in (g.home, g.away) for g in self.remaining)
                for t in self.teams) > 1000:
             raise ValueError('at most 1000 games per team supported')
+        if self.expected_total_games is not None:
+            if isinstance(self.expected_total_games, int):
+                if self.expected_total_games < 0:
+                    raise ValueError('expected_total_games must be nonnegative')
+            elif isinstance(self.expected_total_games, dict):
+                for k, v in self.expected_total_games.items():
+                    if k not in self.teams or type(v) is not int or v < 0:
+                        raise ValueError('expected_total_games dict must map team names to nonnegative integers')
+            else:
+                raise ValueError('expected_total_games must be an int, dict, or None')
+
+            for t in self.teams:
+                exp = (self.expected_total_games[t] if isinstance(self.expected_total_games, dict) and t in self.expected_total_games
+                       else self.expected_total_games if isinstance(self.expected_total_games, int)
+                       else None)
+                if exp is not None:
+                    tot = self.played(t) + sum(t in (g.home, g.away) for g in self.remaining)
+                    if tot != exp:
+                        raise ValueError(f"total games for team '{t}' is {tot}, expected {exp}")
         return self
 
     def played(self, team):
@@ -128,7 +148,7 @@ def calendar_games(rows, year):
     return result
 
 
-def snapshot(games, teams, as_of, *, schedule_basis):
+def snapshot(games, teams, as_of, *, schedule_basis, expected_total_games=None):
     """Future results are discarded, never used to estimate team strength."""
     teams = tuple(teams)
     _validate_date(as_of)
@@ -156,7 +176,7 @@ def snapshot(games, teams, as_of, *, schedule_basis):
         else:
             draws[h][a] += 1
             draws[a][h] += 1
-    return Snapshot(teams, wins, draws, tuple(remaining), as_of, schedule_basis).validate()
+    return Snapshot(teams, wins, draws, tuple(remaining), as_of, schedule_basis, expected_total_games).validate()
 
 
 def _pct(w, l):
@@ -299,6 +319,7 @@ def main():
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--exact', action='store_true', help='also calculate qualification and title magic')
     parser.add_argument('--solver-seconds', type=float, default=10)
+    parser.add_argument('--expected-total-games', type=int, help='verify each team total scheduled games match this integer')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     data = json.loads(args.input.read_text())
@@ -313,12 +334,14 @@ def main():
     rule_data = data['rules']
     rules = Rules(**{**rule_data, 'members': tuple(rule_data['members']),
                      'previous_order': tuple(rule_data['previous_order'])})
+    exp_games = args.expected_total_games if args.expected_total_games is not None else data.get('expected_total_games')
     current, end = date.fromisoformat(args.as_of), date.fromisoformat(args.through or args.as_of)
     if end < current:
         parser.error('--through precedes --as-of')
     rows = []
     while current <= end:
-        s = snapshot(games, data['teams'], current.isoformat(), schedule_basis=data['schedule_basis'])
+        s = snapshot(games, data['teams'], current.isoformat(), schedule_basis=data['schedule_basis'],
+                     expected_total_games=exp_games)
         row = forecast(s, rules, trials=args.trials, seed=args.seed)
         if args.exact:
             try:

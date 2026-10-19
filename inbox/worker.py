@@ -75,6 +75,56 @@ def snapshot(root, cycle, seed):
             "polars": importlib.metadata.version("polars"), "platform": platform.platform()}
 
 
+
+def resolve_bundle(root, cycle, name):
+    """Explicit, hash-pinned inputs; never fall back or overlay individual files.
+
+    A bundle selects one history directory for config/propositions/season, and
+    the cycle's shared set registry. Paths and hashes are data, never code.
+    """
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", name):
+        raise ValueError("invalid input bundle name")
+    manifest = cycle / "input-bundles" / (name + ".json")
+    def safe(path):
+        if (not path.resolve().is_relative_to(root)
+                or any(p.is_symlink() for p in (path, *path.parents))
+                or not path.is_file()):
+            raise ValueError(f"missing or unsafe bundle input: {path}")
+        return path
+    safe(manifest)
+    data = json.loads(manifest.read_bytes())
+    if (set(data) != {"schema", "id", "source", "sha256", "contract"}
+            or data["schema"] != 1 or data["id"] != name):
+        raise ValueError("invalid input bundle manifest")
+    source = data["source"]
+    if (not isinstance(source, str) or not source
+            or source != Path(source).as_posix() or Path(source).is_absolute()
+            or ".." in Path(source).parts):
+        raise ValueError("invalid bundle source directory")
+    paths = {"analysis": cycle / source / "analysis.toml",
+             "propositions": cycle / source / "propositions.toml",
+             "season": cycle / source / "outputs/season.jsonl",
+             "sets": cycle / "sets.toml"}
+    if set(data["sha256"]) != set(paths):
+        raise ValueError("bundle must pin exactly analysis/propositions/season/sets")
+    for role, path in paths.items():
+        safe(path)
+        expected = data["sha256"][role]
+        if (not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{64}", expected)
+                or hashlib.sha256(path.read_bytes()).hexdigest() != expected):
+            raise ValueError(f"bundle input hash mismatch: {role}")
+    return {"id": name, "manifest": manifest, "paths": paths, "contract": data["contract"]}
+
+
+def bundle_snapshot(root, cycle, seed, bundle):
+    result = snapshot(root, cycle, seed)
+    if bundle is not None:
+        selected = resolve_bundle(root, cycle, bundle)
+        for path in [selected["manifest"], *selected["paths"].values()]:
+            result["files"][path.relative_to(root).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+        result["input_bundle"] = bundle
+    return result
+
 def atomic_checkpoint(path, value):
     data = encode({"payload": value, "sha256": digest(value)}) + b"\n"
     if len(data) > MAX_BYTES:
@@ -132,8 +182,8 @@ def child_env():
     return env
 
 
-def evaluate(root, cycle, seed, state, timeout):
-    request = encode({"seed": seed, "state": state})
+def evaluate(root, cycle, seed, state, timeout, *, input_bundle=None):
+    request = encode({"seed": seed, "state": state, "input_bundle": input_bundle})
     # A regular temporary output avoids an unbounded PIPE allocation.
     with tempfile.TemporaryFile() as output, tempfile.TemporaryFile() as errors:
         result = subprocess.run(
@@ -170,9 +220,12 @@ def step(root, cycle):
     sys.path[:0] = [str(root / "research_loop"), str(root / "pythdragoras")]
     sys.addaudithook(_readonly_audit)
     from exploration import Explorer, plan
-    spec = plan(request["seed"], cycle)
+    selected = request.get("input_bundle")
+    inputs = resolve_bundle(root, cycle, selected) if selected is not None else None
+    kwargs = {"inputs": inputs} if inputs is not None else {}
+    spec = plan(request["seed"], cycle, **kwargs)
     state = request["state"]
-    explorer = Explorer(cycle, spec)
+    explorer = Explorer(cycle, spec, **kwargs)
     if state is None:
         state = explorer.initial({})
     else:
@@ -211,7 +264,8 @@ def run(args, *, evaluate_unit=evaluate, clock=time.monotonic):
         previous[sig] = signal.signal(sig, request_stop)
     try:
         with lock_state(state_dir):
-            inputs = snapshot(root, cycle, args.seed)
+            bundle = getattr(args, "input_bundle", None)
+            inputs = bundle_snapshot(root, cycle, args.seed, bundle)
             payload = load_checkpoint(checkpoint) if checkpoint.exists() else None
             if payload and payload["manifest"] != inputs:
                 raise ValueError("research inputs/runtime changed; use a new state directory")
@@ -230,12 +284,13 @@ def run(args, *, evaluate_unit=evaluate, clock=time.monotonic):
                     reason = "deadline"
                     break
                 try:
-                    updated = evaluate_unit(root, cycle, args.seed, state, remaining)
+                    kwargs = {"input_bundle": bundle} if bundle is not None else {}
+                    updated = evaluate_unit(root, cycle, args.seed, state, remaining, **kwargs)
                 except subprocess.TimeoutExpired:
                     reason = "deadline"
                     break
                 # Detect changes during evaluation before committing any output.
-                if snapshot(root, cycle, args.seed) != inputs:
+                if bundle_snapshot(root, cycle, args.seed, bundle) != inputs:
                     raise ValueError("research inputs changed during evaluation")
                 atomic_checkpoint(checkpoint, {"manifest": inputs, "state": updated})
                 state = updated
@@ -295,6 +350,7 @@ def main(argv=None):
     parser.add_argument("--max-steps", type=int, default=20)
     parser.add_argument("--seed", default="all", help="registered expression ID or all")
     parser.add_argument("--state-dir", type=Path)
+    parser.add_argument("--input-bundle", help="explicit cycle/input-bundles/<name>.json; no overlay or fallback")
     argv = list(sys.argv[1:] if argv is None else argv)
     args = parser.parse_args(argv)
     try:

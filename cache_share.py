@@ -29,7 +29,7 @@ from pathlib import Path
 
 from cache_core import Cache, CacheIntegrityError
 
-__all__ = ["main", "query", "export_bundle", "import_bundle", "iter_snapshots", "aiter_snapshots", "fetch_many"]
+__all__ = ["main", "query", "export_bundle", "import_bundle", "iter_snapshots", "aiter_snapshots", "fetch_many", "verify_cache"]
 
 BUNDLE_SCHEMA = "queryu-bundle/1"
 
@@ -240,14 +240,46 @@ def fetch_many(cache: Cache, requests: list[tuple[str, str, str]], *, client, wa
     return results
 
 
+def verify_cache(cache: Cache, entries: list[dict] | None = None) -> dict:
+    """Verify stored gzip bodies and recorded sha256/bytes for entries in cache.
+
+    Calls ``cache.body_bytes(entry)`` for every entry referencing a body blob.
+    Returns a dictionary summarizing total, verified, corrupted counts and error details.
+    """
+    if entries is None:
+        entries = query(cache, history=True)
+    total = verified = corrupted = 0
+    errors = []
+    for entry in entries:
+        if not entry.get("file"):
+            continue
+        total += 1
+        try:
+            cache.body_bytes(entry)
+            verified += 1
+        except (CacheIntegrityError, OSError) as error:
+            corrupted += 1
+            errors.append({
+                "key": entry.get("key"),
+                "file": entry.get("file"),
+                "error": str(error),
+            })
+    return {
+        "total": total,
+        "verified": verified,
+        "corrupted": corrupted,
+        "errors": errors,
+    }
+
+
 def main(argv=None) -> int:
-    """``query`` prints rows (any status) as JSON lines; ``export`` bundles 200/404 rows; ``import`` adds one."""
+    """``query`` prints rows; ``export`` bundles 200/404 rows; ``import`` adds one; ``verify`` checks integrity."""
     import argparse
     import sys
     parser = argparse.ArgumentParser(prog="cache_share.py", description=__doc__.splitlines()[0])
     parser.add_argument("--cache", required=True, type=Path)
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("query", "export"):
+    for name in ("query", "export", "verify"):
         command = sub.add_parser(name)
         command.add_argument("--key")
         command.add_argument("--url")
@@ -265,14 +297,20 @@ def main(argv=None) -> int:
         print(json.dumps(import_bundle(cache, args.bundle), ensure_ascii=False))
         return 0
     # query is an inspection path: it also lists rows without a body (304, 5xx, errors);
-    # export packs bodies, so it keeps the 200/404 rows only.
+    # export packs bodies, so it keeps the 200/404 rows only;
+    # verify checks body integrity.
     rows = query(cache, key=args.key, url=args.url, group=args.group, status=args.status,
-                 since=args.since, until=args.until, history=args.history,
-                 with_body=args.command == "export")
+                 since=args.since, until=args.until,
+                 history=args.history or args.command == "verify",
+                 with_body=args.command in ("export", "verify"))
     if args.command == "query":
         for row in rows:
             sys.stdout.write(json.dumps(row, ensure_ascii=False) + "\n")
         return 0
+    if args.command == "verify":
+        result = verify_cache(cache, rows)
+        print(json.dumps(result, ensure_ascii=False))
+        return 1 if result["corrupted"] > 0 else 0
     print(json.dumps(export_bundle(cache, rows, args.out), ensure_ascii=False))
     return 0
 

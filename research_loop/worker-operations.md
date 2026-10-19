@@ -49,22 +49,35 @@ and the complete threat model. Key points:
 state branch, and its `/ask`, `/status`, `/explore`, `/stop` behavior are preserved.
 The inbox `/stop` does not stop this worker; use its dedicated `STOP` file.
 
-## Current c001 input blocker (observed during integration)
+## Explicit c001 research input bundle
 
-A real offline CLI probe on `c001-chunichi` with `--seed E1` refused to initialize:
-`OFF_SHORT: from の命題がない: P147`. The root `sets.toml` references P147 and
-other extended propositions, while the canonical `propositions.toml` ends at
-P114. No checkpoint was created and no source/results file was modified.
+The canonical c001 holdout inputs remain unchanged and are not repaired by
+replacing them with later research files. Their shared set registry still cannot
+initialize with canonical P1–P114. Use an explicit selection:
+`--cycle c001-chunichi --input-bundle extended-v1`.
 
-The extended definitions and derived season columns are separately preserved in
-`from-cycle-001/`, according to that directory's README. Do not silently combine
-them with the fixed canonical holdout inputs or overwrite those inputs. A coherent,
-explicitly selected research input bundle with matching sets/propositions/data is
-a prerequisite for a real c001 canary. The subprocess replay tests use a coherent
-isolated fixture; they do not establish that today's canonical c001 registry is
-executable. This is an activation blocker, not a successful research run.
+The [versioned bundle](../cycles/c001-chunichi/input-bundles/README.md) selects the
+preserved extended history's 210 propositions, derived season data and complete
+analysis configuration, plus the explicitly pinned cycle-level registry. All 32
+set references, 31 expressions, 211 required columns, 168 unique units, configuration
+and exclusions are preflighted before an initial checkpoint. It records hashes
+of all selected files and the bundle manifest and refuses changed inputs on resume.
+The 2020 exclusion retains its reason and removes 12 rows (156 included).
+
+Real offline c001 CLI regressions now exercise initialization and evaluation,
+unchanged source hashes, and equality between five uninterrupted units and two
+plus three resumed units. These are bounded integration probes, not completed
+research or independent hypothesis confirmation. Literal null observations remain
+unknown; missing columns, invalid scalar types and nonfinite values are refused.
+
+Issue #71's **Actions activation gate remains open**. This input correction does
+not implement durable cross-runner artifact transport, a trusted-main manual
+canary workflow, actor/workflow provenance binding, or schedules. No repository
+variables or live execution settings are changed.
 
 ## Review and staged reactivation decision
+
+Input bundle review is a prerequisite, not authorization to reactivate Actions.
 
 1. NagoyAction exact-head CI and independent safety review must pass first.
 2. Check subtree parent history and tree equality; run Aoi CI and inbox regressions.

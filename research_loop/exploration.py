@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import sys
 import time
@@ -75,8 +76,105 @@ def snapshot(root: Path, cycle: Path) -> dict:
     return {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
 
 
-def plan(text: str, cycle: Path) -> dict:
-    registry = tomllib.loads((cycle / "sets.toml").read_text(encoding="utf-8"))
+
+def input_paths(cycle: Path, inputs=None) -> dict:
+    return inputs["paths"] if inputs is not None else {
+        "analysis": cycle / "analysis.toml", "propositions": cycle / "propositions.toml",
+        "sets": cycle / "sets.toml", "season": cycle / "outputs/season.jsonl"}
+
+
+def validate_bundle(inputs, props, sets, expressions, cfg, full):
+    """Preflight the entire selected registry before even an initial checkpoint.
+
+    Null observations remain unknown; missing columns/row keys never become null
+    through schema inference. Validation does not publish research judgements.
+    """
+    import polars as pl
+    import propositions as pr
+    import sets as st
+
+    contract = inputs["contract"]
+    keys = {"propositions", "sets", "expressions", "rows", "units_sha256", "analysis"}
+    if not isinstance(contract, dict) or set(contract) != keys:
+        raise ValueError("invalid bundle contract")
+    counts = {"propositions": len(props), "sets": len(sets),
+              "expressions": len(expressions), "rows": full.height}
+    if any(type(contract[k]) is not int or counts[k] != contract[k] for k in counts):
+        raise ValueError(f"bundle registry/row counts mismatch: {counts}")
+    if cfg != contract["analysis"]:
+        raise ValueError("bundle analysis configuration mismatch")
+    focus = cfg["focus"]
+    if (set(focus) != {"team", "league"} or not all(isinstance(x, str) and x for x in focus.values())
+            or cfg.get("teams", {}).get(focus["team"], {}).get("league") != focus["league"]):
+        raise ValueError("invalid bundle focus/team configuration")
+    exclusions = cfg.get("exclude", [])
+    if (any(set(e) != {"season", "reason"} or type(e["season"]) is not int
+            or not isinstance(e["reason"], str) or not e["reason"].strip() for e in exclusions)
+            or len({e["season"] for e in exclusions}) != len(exclusions)):
+        raise ValueError("invalid bundle exclusions")
+    ids = {p["id"] for p in props}
+    if not set(cfg.get("confirm", {}).get("detail", [])) <= ids:
+        raise ValueError("bundle analysis references missing confirmation propositions")
+    required = {"team", "team_name", "league", "season", "upper_half"}
+    def columns(p):
+        conds = [*p.get("if", []), *p.get("then", []), *p.get("scope", {}).get("where", []),
+                 *(c for group in p.get("if_any", []) for c in group)]
+        return ({c["col"] for c in conds} | set(p.get("context", []))
+                | ({p["surprise"]} if p.get("surprise") else set()))
+    expected_types = {}
+    compiled = []
+    for e in expressions:
+        p = st.compile_expr(e, sets)
+        pr.validate(p)
+        compiled.append(p)
+    for p in [*props, *compiled]:
+        required.update(columns(p))
+        conditions = [*p.get("if", []), *p.get("then", []), *p.get("scope", {}).get("where", []),
+                      *(c for group in p.get("if_any", []) for c in group)]
+        for condition in conditions:
+            kind = type(condition["value"])
+            if kind in (int, float):
+                kind = "number"
+            expected_types.setdefault(condition["col"], set()).add(kind)
+    # Validate per-row keys, not just the union Polars inferred from other rows.
+    rows = [json.loads(line) for line in inputs["paths"]["season"].read_text(encoding="utf-8").splitlines()]
+    for i, row in enumerate(rows):
+        missing = required - row.keys()
+        if missing:
+            raise ValueError(f"bundle row {i + 1} missing columns: {sorted(missing)}")
+        for col, value in row.items():
+            if isinstance(value, float) and not math.isfinite(value):
+                raise ValueError(f"bundle row {i + 1} nonfinite column: {col}")
+            if value is not None and col in expected_types:
+                kind = "number" if type(value) in (int, float) else type(value)
+                if expected_types[col] != {kind}:
+                    raise ValueError(f"bundle row {i + 1} incompatible type for column: {col}")
+        if (type(row["season"]) is not int or not isinstance(row["team"], str)
+                or row["team"] not in cfg["teams"]
+                or row["league"] != cfg["teams"][row["team"]]["league"]
+                or not isinstance(row["team_name"], str) or type(row["upper_half"]) is not bool):
+            raise ValueError(f"invalid bundle unit metadata at row {i + 1}")
+    units = sorted([r["team"], r["season"]] for r in rows)
+    if len({tuple(u) for u in units}) != len(units) or digest(units) != contract["units_sha256"]:
+        raise ValueError("bundle units mismatch or duplicate units")
+    seasons = {r["season"] for r in rows}
+    if any(e["season"] not in seasons for e in exclusions):
+        raise ValueError("bundle exclusion season absent from data")
+    if not any(r["team"] == focus["team"] and r["league"] == focus["league"] for r in rows):
+        raise ValueError("bundle focus absent from data")
+    # Resolve and execute every predicate (including unselected sets/expressions),
+    # catching incompatible column types before exploration can hide a step error.
+    for p in [*props, *compiled]:
+        full.select(pr._antecedent(p, full.columns), pr._cond(p["then"], full.columns).alias("then"))
+        pr.scope_filter(full, p.get("scope"))
+    return {**counts, "id": inputs["id"], "required_columns": sorted(required),
+            "null_counts": {c: full[c].null_count() for c in sorted(required) if full[c].null_count()},
+            "excluded_rows": sum(r["season"] in {e["season"] for e in exclusions} for r in rows),
+            "units_sha256": digest(units)}
+
+def plan(text: str, cycle: Path, *, inputs=None) -> dict:
+    paths = input_paths(cycle, inputs)
+    registry = tomllib.loads(paths["sets"].read_text(encoding="utf-8"))
     known = {s["id"] for s in registry["set"]}
     exprs = {e["id"]: e for e in registry["expr"]}
     if text.startswith("{"):
@@ -102,22 +200,24 @@ def plan(text: str, cycle: Path) -> dict:
         raise ValueError("seed の集合をすべて sets に含めてください")
     return {"sets": sorted(set(names)), "seed": seed, "max_depth": depth,
             "max_candidates": 50000, "target": "B", "strength": "usually",
-            "focus": tomllib.loads((cycle / "analysis.toml").read_text(encoding="utf-8")).get("focus", {}).get("team")}
+            "focus": tomllib.loads(paths["analysis"].read_text(encoding="utf-8")).get("focus", {}).get("team")}
 
 
 class Explorer:
-    def __init__(self, cycle: Path, spec: dict):
+    def __init__(self, cycle: Path, spec: dict, *, inputs=None):
         import polars as pl
         import propositions as pr
         import sets as st
         from pythdragoras import apply_exclusions
 
         self.pr, self.st, self.spec = pr, st, spec
-        props, _ = pr.load(cycle / "propositions.toml")
-        self.sets, expressions, _ = st.load_sets(cycle / "sets.toml", props)
+        paths = input_paths(cycle, inputs)
+        props, _ = pr.load(paths["propositions"])
+        self.sets, expressions, _ = st.load_sets(paths["sets"], props)
         self.expressions = {e["id"]: e for e in expressions}
-        cfg = tomllib.loads((cycle / "analysis.toml").read_text(encoding="utf-8"))
-        full = pl.read_ndjson(cycle / "outputs/season.jsonl", infer_schema_length=None)
+        cfg = tomllib.loads(paths["analysis"].read_text(encoding="utf-8"))
+        full = pl.read_ndjson(paths["season"], infer_schema_length=None)
+        self.input_validation = validate_bundle(inputs, props, self.sets, expressions, cfg, full) if inputs is not None else None
         self.included, exclusions = apply_exclusions(full, cfg.get("exclude", []))
         self.excluded = full.filter(pl.col("season").is_in([int(e["season"]) for e in exclusions]))
 
@@ -126,7 +226,8 @@ class Explorer:
                  [s for name in self.spec["sets"] for s in (name, "~" + name)])
         return {"version": 1, "plan": self.spec, "inputs": inputs, "status": "queued", "cursor": 0,
                 "candidates": [{"expr": s, "depth": 1, "parent": None, "motivated_by": []} for s in seeds],
-                "seen": {}, "results": [], "bounded": False}
+                "seen": {}, "results": [], "bounded": False,
+                **({"input_validation": self.input_validation} if self.input_validation is not None else {})}
 
     def step(self, state: dict):
         candidate = state["candidates"][state["cursor"]]

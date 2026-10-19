@@ -1,0 +1,603 @@
+{
+  "schema": "aoi-input-bundle-evidence/1",
+  "kind": "bounded local offline integration, not hypothesis confirmation or Actions activation",
+  "bundle": "extended-v1",
+  "selected_inputs": {
+    "analysis": {
+      "path": "cycles/c001-chunichi/from-cycle-001/analysis.toml",
+      "sha256": "d65e119abf65c35b16223e7a28f6f9cef3455b95c7fc16559e4e2dd501556ba2"
+    },
+    "propositions": {
+      "path": "cycles/c001-chunichi/from-cycle-001/propositions.toml",
+      "sha256": "20ebf739caa0f2b14c2ae8c3662d178a6694aaa43a3f0ad9a475b84ebcf6acf0"
+    },
+    "season": {
+      "path": "cycles/c001-chunichi/from-cycle-001/outputs/season.jsonl",
+      "sha256": "20466c46628f4657233ef6289c628f076a0c665a2129594f5651d29a0d05d350"
+    },
+    "sets": {
+      "path": "cycles/c001-chunichi/sets.toml",
+      "sha256": "564abb94dbc2e879352bceb64ee45f9b3beb0d6f6b7a79158f8195d886eba942"
+    }
+  },
+  "manifest_sha256": "e686f39fcf630240299a5a59273e6528980121649d416032c9a8dfe2fb40fe0a",
+  "set_references": [
+    {
+      "id": "OFF_SHORT",
+      "from": "P147"
+    },
+    {
+      "id": "DEF_WORSE",
+      "from": "P148"
+    },
+    {
+      "id": "OFF_SHORT_DEF_CLEAR",
+      "from": "P140",
+      "part": "where"
+    },
+    {
+      "id": "TOP_WIN",
+      "from": "P144"
+    },
+    {
+      "id": "LOWER_FAIL",
+      "from": "P146"
+    },
+    {
+      "id": "BIG_SHORT",
+      "from": "P138"
+    },
+    {
+      "id": "PERSIST_LOW",
+      "from": "P62"
+    },
+    {
+      "id": "F52",
+      "from": "P52"
+    },
+    {
+      "id": "F96",
+      "from": "P96"
+    },
+    {
+      "id": "CONVERT_BIG",
+      "from": "P177"
+    },
+    {
+      "id": "ALLOC_GOOD",
+      "from": "P178"
+    },
+    {
+      "id": "MID_CONVERT",
+      "from": "P179"
+    },
+    {
+      "id": "SHORT_T",
+      "from": "P186"
+    },
+    {
+      "id": "UNDER",
+      "from": "P187"
+    },
+    {
+      "id": "MIDDLE",
+      "from": "P198"
+    },
+    {
+      "id": "BAL_NONPOS",
+      "from": "P199"
+    },
+    {
+      "id": "BAR_HIGH",
+      "from": "P200"
+    },
+    {
+      "id": "CONV_NEG",
+      "from": "P201"
+    },
+    {
+      "id": "NEAR",
+      "from": "P202",
+      "part": "where"
+    },
+    {
+      "id": "RF_BELOW",
+      "from": "P193"
+    },
+    {
+      "id": "BAL_BELOW",
+      "from": "P194"
+    },
+    {
+      "id": "VSL_BELOW",
+      "from": "P195"
+    },
+    {
+      "id": "Q3_LOW",
+      "from": "P189"
+    },
+    {
+      "id": "Q3_MID",
+      "from": "P191",
+      "part": "where"
+    },
+    {
+      "id": "Q4_POS",
+      "from": "P191"
+    },
+    {
+      "id": "PBAR_SHORT",
+      "from": "P203"
+    },
+    {
+      "id": "RFG_BELOW",
+      "from": "P205"
+    },
+    {
+      "id": "BALG_BELOW",
+      "from": "P206"
+    },
+    {
+      "id": "VSLG_BELOW",
+      "from": "P207"
+    },
+    {
+      "id": "F96B",
+      "from": "P208"
+    },
+    {
+      "id": "TOP_WIN_B",
+      "from": "P209"
+    },
+    {
+      "id": "BALG_NONPOS",
+      "from": "P210"
+    }
+  ],
+  "validation": {
+    "propositions": 210,
+    "sets": 32,
+    "expressions": 31,
+    "rows": 168,
+    "id": "extended-v1",
+    "required_columns": [
+      "RA",
+      "RF",
+      "adv_shape_se",
+      "alloc_net",
+      "alloc_net_away",
+      "alloc_net_home",
+      "alloc_net_strat",
+      "alloc_same_sign",
+      "alloc_z",
+      "alloc_z_abs",
+      "alloc_z_next",
+      "alloc_z_strat",
+      "b_paths",
+      "bal_mix_lo",
+      "bal_mix_zone",
+      "balg_mix_lo",
+      "balg_mix_zone",
+      "bat_d_avg",
+      "bat_d_bb_pa",
+      "bat_d_hr_pa",
+      "bat_d_ibb_bb",
+      "bat_d_iso",
+      "bat_d_obp",
+      "bat_d_r_ab",
+      "bat_d_r_pa",
+      "bat_d_r_runner",
+      "bat_d_walk_share",
+      "bat_routes",
+      "blowout_net",
+      "clinch_in_x",
+      "clinch_out_left",
+      "clinch_out_x",
+      "course_close_win_h1",
+      "course_close_win_h1_d",
+      "course_fade",
+      "course_ra_d",
+      "course_ra_h1_d",
+      "course_rank_h1",
+      "course_rank_q1",
+      "course_rank_q3",
+      "course_rf_d",
+      "course_wpct_diff",
+      "course_wpct_h1",
+      "course_wpct_h2",
+      "dead_g",
+      "decided_x",
+      "focus_gap",
+      "half1_vs_pythag",
+      "half2_vs_pythag",
+      "inn_d_big_share",
+      "inn_d_single_share",
+      "inn_dlog_freq",
+      "inn_dlog_freq_6",
+      "inn_dlog_freq_away",
+      "inn_dlog_freq_home",
+      "inn_dlog_rpi",
+      "inn_dlog_size",
+      "inn_dlog_size_6",
+      "inn_dlog_size_away",
+      "inn_dlog_size_home",
+      "inn_freq_minus_size",
+      "inn_freq_minus_size_6",
+      "inn_size_low_streak",
+      "inn_size_rank",
+      "league",
+      "lg_bar",
+      "lg_bar_pythag",
+      "lg_gap34",
+      "lg_lead_gap",
+      "lg_line",
+      "lg_rank_at_500",
+      "lg_rest_sd",
+      "line_gap_pythag",
+      "live_mix_lo",
+      "live_mix_zone",
+      "live_wpct",
+      "lock_g",
+      "max_lose_streak",
+      "max_lose_streak_d",
+      "max_win_streak",
+      "mix_hi",
+      "mix_lo",
+      "mix_zone",
+      "one_run_net",
+      "opp_adj_low",
+      "opp_adj_mid",
+      "opp_adj_top",
+      "opp_adj_total",
+      "opp_conv_low",
+      "opp_conv_mid",
+      "opp_conv_top",
+      "opp_env_gap_mid_c",
+      "opp_env_gap_top_c",
+      "opp_net_gap_top_c",
+      "opp_ra_gap_mid_c",
+      "opp_ra_gap_top",
+      "opp_ra_gap_top_c",
+      "opp_rf_gap_mid_c",
+      "opp_rf_gap_top",
+      "opp_rf_gap_top_c",
+      "opp_top_rf_minus_ra",
+      "pair34_focus_gap_diff",
+      "pair34_net",
+      "pair34_opp_adj_low_diff",
+      "pair34_opp_adj_mid_diff",
+      "pair34_opp_adj_total_diff",
+      "pair34_vs_battle_wpct_diff",
+      "pair34_vs_lower_wpct_diff",
+      "path_convert",
+      "pbar_gap",
+      "pythag_fixed",
+      "q4_rd_g",
+      "q4_wl_vs_lower",
+      "q4_wl_vs_upper",
+      "q_wl_3",
+      "q_wl_4",
+      "ra_adv",
+      "ra_adv_se",
+      "ra_adv_t",
+      "ra_state2",
+      "ra_zone",
+      "ra_zone_se",
+      "rank",
+      "rank_gap",
+      "rank_pythag",
+      "rank_ra",
+      "rank_rd",
+      "rank_rf",
+      "rd",
+      "rd_bgap",
+      "resid_fixed",
+      "rf_adv",
+      "rf_adv_bgap",
+      "rf_adv_se",
+      "rf_adv_t",
+      "rf_def_ceiling",
+      "rf_def_floor",
+      "rf_def_floor_minus_ceiling",
+      "rf_def_floor_minus_k67",
+      "rf_def_k67",
+      "rf_def_mid",
+      "rf_def_total",
+      "rf_low_streak",
+      "rf_mix_lo",
+      "rf_mix_zone",
+      "rf_state2",
+      "rf_zone",
+      "rf_zone_se",
+      "rfg_mix_lo",
+      "rfg_mix_zone",
+      "run_balance",
+      "run_balance_bgap",
+      "run_balance_t",
+      "season",
+      "series3_w1",
+      "series3_w1_exp",
+      "series3_w2",
+      "series_disp",
+      "series_disp_pct",
+      "series_g1_minus_rest",
+      "series_lost_pct",
+      "series_lost_share",
+      "short_share",
+      "sim_mix_lo",
+      "sim_mix_zone",
+      "sim_p_upper",
+      "team",
+      "team_name",
+      "traj_rank_end_slope",
+      "traj_rank_peak",
+      "traj_rank_peak_base",
+      "traj_rank_peak_x",
+      "traj_rank_shape",
+      "traj_wl_end_slope",
+      "traj_wl_peak",
+      "traj_wl_peak_after_clinch",
+      "traj_wl_peak_after_clinch_base",
+      "traj_wl_peak_base",
+      "traj_wl_peak_x",
+      "traj_wl_shape",
+      "upper_half",
+      "vs_battle_wpct",
+      "vs_lower_wpct",
+      "vs_lower_wpct_bgap",
+      "vs_lower_wpct_d",
+      "vs_near_net",
+      "vs_top_bar_gap",
+      "vs_top_wpct",
+      "vsl_mix_lo",
+      "vsl_mix_zone",
+      "vslg_mix_lo",
+      "vslg_mix_zone",
+      "wave_decay",
+      "wave_limit_rank",
+      "wave_limit_rank_h1",
+      "wave_period",
+      "wave_settle_pct",
+      "wave_settle_x",
+      "wins_vs_pythag",
+      "wl_rf_loss",
+      "wl_rf_loss_exp",
+      "wl_rf_loss_gap",
+      "wl_rf_win",
+      "wl_rf_win_exp",
+      "wl_rf_win_gap",
+      "wl_wpct_high",
+      "wl_wpct_high_gap",
+      "wl_wpct_low",
+      "wl_wpct_low_gap",
+      "wpct",
+      "wpct_1run"
+    ],
+    "null_counts": {
+      "alloc_z_next": 12,
+      "clinch_in_x": 84,
+      "clinch_out_left": 84,
+      "clinch_out_x": 84,
+      "inn_d_big_share": 12,
+      "inn_d_single_share": 12,
+      "inn_dlog_freq": 12,
+      "inn_dlog_freq_6": 12,
+      "inn_dlog_freq_away": 12,
+      "inn_dlog_freq_home": 12,
+      "inn_dlog_rpi": 12,
+      "inn_dlog_size": 12,
+      "inn_dlog_size_6": 12,
+      "inn_dlog_size_away": 12,
+      "inn_dlog_size_home": 12,
+      "inn_freq_minus_size": 12,
+      "inn_freq_minus_size_6": 12,
+      "inn_size_low_streak": 12,
+      "inn_size_rank": 12,
+      "pair34_focus_gap_diff": 112,
+      "pair34_net": 112,
+      "pair34_opp_adj_low_diff": 112,
+      "pair34_opp_adj_mid_diff": 112,
+      "pair34_opp_adj_total_diff": 112,
+      "pair34_vs_battle_wpct_diff": 112,
+      "pair34_vs_lower_wpct_diff": 112,
+      "short_share": 41,
+      "traj_rank_peak_x": 42,
+      "traj_wl_peak_after_clinch": 84,
+      "traj_wl_peak_after_clinch_base": 84,
+      "traj_wl_peak_x": 74,
+      "vs_near_net": 2,
+      "wave_limit_rank": 24,
+      "wave_limit_rank_h1": 34,
+      "wave_period": 14,
+      "wave_settle_x": 19
+    },
+    "excluded_rows": 12,
+    "units_sha256": "8b4644ae3ce8e6fa3c3b6a1cab9df7449b8c216c7fe8c87c676d66a0443e74a7"
+  },
+  "analysis": {
+    "focus": {
+      "team": "d",
+      "league": "C"
+    },
+    "exclude": [
+      {
+        "season": 2020,
+        "reason": "120試合の短縮シーズン（開幕延期）で、セ・リーグはCSを実施していない。他の年と同じ条件の順位とみなせるか判断を保留する（人の判断による除外）"
+      }
+    ],
+    "teams": {
+      "g": {
+        "name": "巨人",
+        "league": "C"
+      },
+      "s": {
+        "name": "ヤクルト",
+        "league": "C"
+      },
+      "db": {
+        "name": "DeNA",
+        "league": "C"
+      },
+      "d": {
+        "name": "中日",
+        "league": "C"
+      },
+      "t": {
+        "name": "阪神",
+        "league": "C"
+      },
+      "c": {
+        "name": "広島",
+        "league": "C"
+      },
+      "h": {
+        "name": "ソフトバンク",
+        "league": "P"
+      },
+      "f": {
+        "name": "日本ハム",
+        "league": "P"
+      },
+      "b": {
+        "name": "オリックス",
+        "league": "P"
+      },
+      "e": {
+        "name": "楽天",
+        "league": "P"
+      },
+      "l": {
+        "name": "西武",
+        "league": "P"
+      },
+      "m": {
+        "name": "ロッテ",
+        "league": "P"
+      }
+    },
+    "trajectory": {
+      "min_games": 10,
+      "sims": 200,
+      "sensitivity": [
+        5,
+        20,
+        30
+      ],
+      "ends": [
+        "decided"
+      ]
+    },
+    "confirm": {
+      "seasons": [
+        2026
+      ],
+      "registered": "2026-10-04",
+      "detail": [
+        "P52",
+        "P50",
+        "P64",
+        "P62",
+        "P78",
+        "P76",
+        "P80",
+        "P79",
+        "P51",
+        "P121",
+        "P124",
+        "P131",
+        "P136",
+        "P137",
+        "P138",
+        "P141",
+        "P143",
+        "P144",
+        "P145",
+        "P146"
+      ]
+    }
+  },
+  "worker_manifest": {
+    "cycle": "cycles/c001-chunichi",
+    "files": {
+      "cycles/c001-chunichi/analysis.toml": "1242d47bb5078078fcfab7f778595269a9b0ac5f03ab8256517410e6f7e06783",
+      "cycles/c001-chunichi/from-cycle-001/analysis.toml": "d65e119abf65c35b16223e7a28f6f9cef3455b95c7fc16559e4e2dd501556ba2",
+      "cycles/c001-chunichi/from-cycle-001/outputs/season.jsonl": "20466c46628f4657233ef6289c628f076a0c665a2129594f5651d29a0d05d350",
+      "cycles/c001-chunichi/from-cycle-001/propositions.toml": "20ebf739caa0f2b14c2ae8c3662d178a6694aaa43a3f0ad9a475b84ebcf6acf0",
+      "cycles/c001-chunichi/input-bundles/extended-v1.json": "e686f39fcf630240299a5a59273e6528980121649d416032c9a8dfe2fb40fe0a",
+      "cycles/c001-chunichi/outputs/season.jsonl": "8ddba36adfbd06db5c7510f91953184233801c596f87d4fe9bd66fc1b9573a93",
+      "cycles/c001-chunichi/propositions.toml": "0074801d0ede337a76c98624e8d206912ad0ee42a89fecde9d8eb7646d52a35a",
+      "cycles/c001-chunichi/sets.toml": "564abb94dbc2e879352bceb64ee45f9b3beb0d6f6b7a79158f8195d886eba942",
+      "pyproject.toml": "1f4caa96aab9e45117363658c2995ca396c2d8f78d54de5f5e19c77867f9f86b",
+      "pythdragoras/aoi_layout.py": "147590e9cda61eeea5247755e8e63e4fb13fa3f876c7f105df762b771a08c385",
+      "pythdragoras/aoi_paths.py": "d808f3103921fe58048d72be1676582f5e26c2d69f53404bfb3220fd4cb04891",
+      "pythdragoras/conftest.py": "d35773cc6ee570ea9437f644846fe097d38de6d60b87891fe06e7133c3ef4fc0",
+      "pythdragoras/littlebit_approx.py": "eabb039943f7688b5bdcede4b3f07a42a26563d18c757c8f483a4eece6d9c06b",
+      "pythdragoras/littlebit_holdout.py": "6413d815a3567a3d43b3f1a1a1db8f629791182eed5060581bbcd9ea5098b1c8",
+      "pythdragoras/littlebit_prune.py": "68bd8f2354348b3c3ea508196412c6835fb63d83da28607b49f4ffef56511852",
+      "pythdragoras/littlebit_survey.py": "af417c6244d4dd200e7a541de770dd56f10cc3a73f62700c5b503edf502fcd48",
+      "pythdragoras/next_seeds.py": "11ee147b5139c41b67d8dcb19bfca7e2113e63927faeb92d0a060723d79d497b",
+      "pythdragoras/propositions.py": "6a2f9115e7f285d0cea88a0c004366da1d30b42d3fec154d397bec396a819849",
+      "pythdragoras/pythdragoras.py": "75cc9260fdce559e74bf671d3450b22d9745bbb1abbb1c70055e63574c093d72",
+      "pythdragoras/registration_audit.py": "4b69cded14220a232888f403c5e593f4fcfd9800579367dcead8a82b35a3e569",
+      "pythdragoras/rule_search.py": "300f874a6b1bf197f20843e4278cbe888e855e8324283006f45950fa70487c88",
+      "pythdragoras/score_sensitivity.py": "7b0e8fdc3249fc1fa802197be5689849a1ac7b85bc26b3450801bb415f6bd404",
+      "pythdragoras/season_sensitivity.py": "b12428d1d3630b67d391d51252246c8b56a31c1391bc7aba5ca0586a1f4b9a22",
+      "pythdragoras/sets.py": "b8a72132fcec0419de50c69fda61db5c82930627109b08df9df2f7ce1e4b1827",
+      "research_loop/autonomous.py": "7b41a28e953eed4a47d15541dcc10d9c0e897c1cc06af22e141d3bf45c0cfe08",
+      "research_loop/dragowing_inspect.py": "160213582b5dbf2ce24bf237fae78535af8eda05623e11544e38723b27193b67",
+      "research_loop/exploration.py": "df4311538e29f06e4fba39627c037d77d8a316b44517c788c361e1f9b88e301a",
+      "research_loop/feedback.py": "21de3572ed9cdbbd4fc4b07b50d774d42b379f3e5e888bddd4b69d82ba8b5bb7",
+      "research_loop/neighbor_checks.py": "42d41d327626adab8163ede730ad05674663ec865f2cd1b5fe1b999a05ebc339",
+      "uv.lock": "fdd7f7f9c2020a5b3663c0797c1db17922dfea8951dbf804212c6758963a3631"
+    },
+    "input_bundle": "extended-v1",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "polars": "2.0.0",
+    "python": "3.14.8",
+    "schema": 1,
+    "seed": "E1",
+    "worker_sha256": "e1826e13bdd7974b1a5dcf274aae0f5da7cdb1bce016fd359b921ffe6f34de7c"
+  },
+  "probe": {
+    "seed": "E1",
+    "whole": {
+      "reason": "step_limit",
+      "units": 3,
+      "cursor": 2,
+      "status": "running",
+      "manifest_sha256": "a68ceca628e4c3ede42e958efb7362a4cb3b432d8e7a132f3ded41f08a8ac737",
+      "authorized": {
+        "repository": "myon-bioinformatics/Aoi",
+        "actor": "local-offline-test"
+      }
+    },
+    "first": {
+      "reason": "step_limit",
+      "units": 1,
+      "cursor": 0,
+      "status": "queued",
+      "manifest_sha256": "a68ceca628e4c3ede42e958efb7362a4cb3b432d8e7a132f3ded41f08a8ac737",
+      "authorized": {
+        "repository": "myon-bioinformatics/Aoi",
+        "actor": "local-offline-test"
+      }
+    },
+    "resumed": {
+      "reason": "step_limit",
+      "units": 2,
+      "cursor": 2,
+      "status": "running",
+      "manifest_sha256": "a68ceca628e4c3ede42e958efb7362a4cb3b432d8e7a132f3ded41f08a8ac737",
+      "authorized": {
+        "repository": "myon-bioinformatics/Aoi",
+        "actor": "local-offline-test"
+      }
+    },
+    "checkpoint_payloads_equal": true,
+    "cursor": 2,
+    "results": 1,
+    "source_files_unchanged": true,
+    "checked_source_files": 214,
+    "live_activation": false
+  }
+}

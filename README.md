@@ -42,7 +42,7 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 |---|---|
 | [`blueprobe/`](blueprobe/) | BlueProbe: observation and extraction from saved HTML/CSS/DOM. Also published as [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) |
 | [`queryu/`](queryu/) | QueRyu: retrieval, provenance-tracked cache and observation datasets. Also published as [QueRyu](https://github.com/myon-bioinformatics/QueRyu) |
-| [`sakanalytics/`](sakanalytics/) | SakAnalytics: team × season metrics and statistics; remaining-season forecasts. Also published as [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) |
+| [`sakanalytics/`](sakanalytics/) | SakAnalytics: team × season metrics and statistics; remaining-season forecasts. Also published as [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) |
 | [`pythdragoras/`](pythdragoras/) | PythDRagoras: propositions, counterexamples and explanation validation. Also published as [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) |
 | [`dragowing/`](dragowing/) | DRAgoWing: figures and reports (Plotly.js HTML, four-form tables). Also published as [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) |
 | [`nagoyaction/`](nagoyaction/) | NagoyAction: pipelines and automation (same definition locally and on GitHub Actions). Also published as [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) |
@@ -65,7 +65,7 @@ Each subproject lives in Aoi as a directory and is also published as a standalon
 |---|---|---|---|
 | BlueProbe | [myon-bioinformatics/BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](blueprobe/) | Aoi `child-heads.json` |
 | QueRyu | [myon-bioinformatics/QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](queryu/) | Aoi `child-heads.json` |
-| SakAnalytics | [myon-bioinformatics/sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](sakanalytics/) | Aoi `child-heads.json` |
+| SakAnalytics | [myon-bioinformatics/SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](sakanalytics/) | Aoi `child-heads.json` |
 | PythDRagoras | [myon-bioinformatics/PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](pythdragoras/) | Aoi `child-heads.json` |
 | DRAgoWing | [myon-bioinformatics/DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](dragowing/) | Aoi `child-heads.json` |
 | NagoyAction | [myon-bioinformatics/NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](nagoyaction/) | Aoi `child-heads.json` |
@@ -253,7 +253,7 @@ Each project focuses on a different stage of understanding reality.
 |----------|----------|----------|----------|
 | QueRyu | Query and execution | [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](queryu/) |
 | BlueProbe | Observation and discovery | [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](blueprobe/) |
-| SakAnalytics | Analysis and statistical methods | [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](sakanalytics/) |
+| SakAnalytics | Analysis and statistical methods | [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](sakanalytics/) |
 | DRAgoWing | Visualization and reporting | [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](dragowing/) |
 | NagoyAction | Automation and orchestration | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](nagoyaction/) |
 | PythDRagoras | Hypothesis generation and explanation validation | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](pythdragoras/) |
@@ -329,7 +329,7 @@ Question:
 
 > What patterns can be measured?
 
-Repository: [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) (in Aoi: [`sakanalytics/`](sakanalytics/))
+Repository: [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) (in Aoi: [`sakanalytics/`](sakanalytics/))
 
 Documentation:
 

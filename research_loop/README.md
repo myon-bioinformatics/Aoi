@@ -15,10 +15,16 @@
 
 `neighbors.py`（近い球団年の組を測る）は測定なので `sakanalytics/neighbors.py` に置いた。
 
-## 未接続
+## オフライン worker 接続（有効化は保留）
 
-今の `nagoyaction/inbox/inbox.py` は「探索とローカル LLM の連携は main への最初の展開から外す」方針で、
-これらを呼ばない。ここに戻したのはコードとテストだけで、受付（inbox）への接続はしていない。
-つなぐかどうかは別に決める。
+NagoyAction の `inbox/inbox.py worker` が `exploration.py` を読み、登録済み集合の
+探索を1候補ずつ進める。期限、保存、再開、権限制御は子の実装を正本とする。
+[worker の手順と制約](../nagoyaction/docs/worker.md) を参照。
 
-テストは `tests/test_research_loop.py`（#48 の前の `NagoyAction/tests/test_inbox.py` のうち、これらのモジュールに関わるもの）。
+`autonomous.py` による複数 seed の自動選択、feedback、HTML観測、LLM、質問受付の
+`/explore`・`/stop` への接続は未導入。worker の停止は専用状態ディレクトリの
+`STOP` ファイルで行う。質問受付は従来どおり独立して動作する。
+
+テストは `tests/test_research_loop.py`（部品）と
+`nagoyaction/tests/test_worker.py`（実際の部品を呼ぶ期限・中断再開・入力保護）。
+Actions の再開判断は [worker-operations.md](worker-operations.md) を参照。

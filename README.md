@@ -40,6 +40,7 @@ uv run python blueprobe.py --source <取得元のモジュール名> --cache <Qu
 |---|---|
 | `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`） |
 | `html_source.py` | 保存HTMLを、信頼したオフライン抽出関数へ渡す汎用の取得元（`HtmlSource`） |
+| `dom_patterns.py` | DOM 構造パターン・プリセット定義と自動分類（`github_readme`, `portfolio_profile` 等） |
 | `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
 | `heading_observations.py` | 保存済み HTML の見出し階層（`<h1>`〜`<h6>`）とランドマーク構造の観測 |
 | `web_observations.py` | 保存済みWeb画面の観測とソース一覧の整理（ブラウザ・SDKなし） |

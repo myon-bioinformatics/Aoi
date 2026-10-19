@@ -23,6 +23,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-10-19（2回目）: PythDRagoras・DRAgoWing・SakAnalytics の squash の join を、BlueProbe・QueRyu・NagoyAction と同じく、prefix を消してから `git subtree add`（`--squash` なし）で入れ直しました（PythDRagoras `cd21d7e295facfbc8101ea2d89f715da27fbd80a`、DRAgoWing `8d6163989fc2f4843412a03b465fee1cf9b3ac3c`、SakAnalytics `9a5bc4a048edfdaefbbe514fdde94eb0df4f2065`）。これで6つの子はすべて squash なしの subtree で、同期は `git subtree pull`（`--squash` なし）です。
+
 2026-10-19: SakAnalytics へのリポジトリ名の変更に合わせて、6つの子の README を各子の main で直し、`git subtree pull` で Aoi に取り込みました（BlueProbe・QueRyu・NagoyAction は squash なし、PythDRagoras・DRAgoWing・SakAnalytics は join に合わせて `--squash`）。2026-10-18 に README を直接コピーしていたため、squash の3つは README が衝突し、子の版を採って解決しました（解決後の prefix の tree は子の main と同一）。`child-heads.json` の SakAnalytics のキーも新しい名前にしました。
 
 2026-10-18: 子の README（各子の main）を Aoi の prefix にそのままコピーし、`pythdragoras/`・`sakanalytics/` に子と同じ `LICENSE` を置いて、5つの子の `sha` を各子の main（DRAgoWing `a060e79`、NagoyAction `9ee99dc`、PythDRagoras `7ea1438`、QueRyu `096bef9`、sakanalytics `887444d`）に更新しました。README と LICENSE だけの差分なので `git subtree pull` はしていません（tree は一致）。次の `git subtree pull --squash` は同じ変更を両側に持つ状態からの取り込みになります。
@@ -33,15 +35,15 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出したので（git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e` を返す。join 前は split が古い tree で止まる（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））、Aoi の履歴とつながっていません。そのため Aoi に一度だけ join を入れます。
 
-- join は2つのコミットです。`Squashed 'pythdragoras/' content from commit <sha>`（親なし、tree は PythDRagoras の `<sha>` と同じ、`git-subtree-dir: pythdragoras` / `git-subtree-split: <sha>`）と、それを2つ目の親にした、Aoi の tree を変えないマージ（`git-subtree-mainline:` も書く）。
-- `<sha>` は PythDRagoras の main にあるコミットにします。`git subtree pull` / `split` は `<sha>` を手元に必要とし、PythDRagoras の main から取ってくるためです。PythDRagoras の PR を squash マージして main の sha が変わったら、その sha で join を入れ直します（tree は同じ）。
-- join は2つ目の親として残す必要があります。**join を含む Aoi の PR は squash せず、merge commit で入れます**。squash すると2つ目の親が消え、`git subtree pull --squash` と `split` が止まります。
+- 2026-10-19 に、旧 `pythdragoras/` を消してから `git subtree add --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main`（`--squash` なし）で join を入れ直しました。merge commit の第2親は PythDRagoras main の head で、PythDRagoras の全履歴が Aoi につながります（BlueProbe #64・QueRyu #68・NagoyAction #69 と同じ。手組みの2親マージや squash 由来の join は使いません。以前の squash の join と `Squashed 'pythdragoras/' changes` のコミットは履歴に残りますが、起点にはしません）。
+- 登録する `sha` は PythDRagoras の main にあるコミットにします。子の PR も squash せず merge commit で入れます。
+- join は2つ目の親として残す必要があります。**join を含む Aoi の PR は squash せず、merge commit で入れます**。squash すると2つ目の親が消え、`git subtree pull` と `split` が止まります。
 - join 以降は `git subtree` が join を起点にするので、join 以前に split が古く止まっていた範囲をたどりません。
 
 子 → Aoi（Aoi の main から作ったブランチで）:
 
 ```bash
-git subtree pull --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main --squash
+git subtree pull --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main
 test "$(git rev-parse HEAD:pythdragoras)" = "$(git rev-parse FETCH_HEAD^{tree})"   # Aoi 側に未同期の変更がないとき
 ```
 
@@ -76,17 +78,17 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 ## SakAnalytics
 
 - リポジトリ名は 2026-10-19 に sakanalytics から SakAnalytics に変えました（旧 URL は GitHub がリダイレクト）。Aoi の prefix `sakanalytics/` と Python のモジュール名 `sakanalytics` は変えません。
-- SakAnalytics の最初の 71 コミットは、Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd` から `git filter-branch --subdirectory-filter sakanalytics` で切り出しました（先頭 `67c8781b0e606ab41f56f717c2a84efa67b98533`、tree `a54fc414f1959f7619619c0ae9398ff2fe8fbcbb` が Aoi の `sakanalytics/` と一致）。そのうえに子の足場（CI・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト）を足した main `0bb7177ac0ec5240c468b6d2c58ca52e116c6d03` に対し、一度だけの join を入れました。親なし squash commit の tree はこの子の tree と同一で、Aoi の merge commit の第2親として残します。PR は squash/rebase せず merge commit で入れてください。
+- SakAnalytics の最初の 71 コミットは、Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd` から `git filter-branch --subdirectory-filter sakanalytics` で切り出しました（先頭 `67c8781b0e606ab41f56f717c2a84efa67b98533`、tree `a54fc414f1959f7619619c0ae9398ff2fe8fbcbb` が Aoi の `sakanalytics/` と一致）。そのうえに子の足場（CI・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト）を足しました。最初は `0bb7177ac0ec5240c468b6d2c58ca52e116c6d03` に対する手組みの squash の join（#59）でしたが、2026-10-19 に、旧 `sakanalytics/` を消してから main `9a5bc4a048edfdaefbbe514fdde94eb0df4f2065`（#4 の expected_total_games、#5 の README、#6 の依存の下限）に対して `git subtree add`（`--squash` なし）で join を入れ直しました。merge commit の第2親は SakAnalytics main の head です。PR は squash/rebase せず merge commit で入れてください。
 - `sakanalytics/` 全体（子の CI・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した SakAnalytics の tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。`min.py` は Aoi が提供し、子には置きません。
 - サイクルデータ（`cycles/`）と PythDRagoras（`propositions`）は Aoi に残します。子の CI は Aoi を固定 SHA で checkout し、`AOI_ROOT` と `PYTHONPATH` の `pythdragoras` を渡して pytest を動かします。Aoi の中では `sakanalytics/.github/` は動きません。`sakanalytics/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめます。
-- 同期は PythDRagoras の手順の `pythdragoras` を `sakanalytics`、リポジトリを SakAnalytics に読み替えます（squash の join なので `git subtree pull --squash`）。
+- 同期は PythDRagoras の手順の `pythdragoras` を `sakanalytics`、リポジトリを SakAnalytics に読み替えます（`--squash` なし）。
 
 ## DRAgoWing
 
-- DRAgoWing の最初の 28 コミットは、Aoi `a8dc4997f43236b24a23df56e21f143fa0e233d8` から `git filter-branch --subdirectory-filter dragowing` で切り出しました（先頭 `c789da2e30b33144f3110506f90f91ea579b9a6b`、tree `70424b5a2768f43633766435cc9552f77c1b2ba7` が Aoi の `dragowing/` と一致）。そのうえに子の足場（CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト、および単独実行のためのテスト修正）を足した main `4d798e1405e14d5cdd33e0c3f8fa87b29789b9cc` に対し、一度だけの join を入れました。親なし squash commit の tree はこの子の tree と同一で、Aoi の merge commit の第2親として残します。PR は squash/rebase せず merge commit で入れてください。
+- DRAgoWing の最初の 28 コミットは、Aoi `a8dc4997f43236b24a23df56e21f143fa0e233d8` から `git filter-branch --subdirectory-filter dragowing` で切り出しました（先頭 `c789da2e30b33144f3110506f90f91ea579b9a6b`、tree `70424b5a2768f43633766435cc9552f77c1b2ba7` が Aoi の `dragowing/` と一致）。そのうえに子の足場（CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト、および単独実行のためのテスト修正）を足しました。最初は `4d798e1405e14d5cdd33e0c3f8fa87b29789b9cc` に対する手組みの squash の join（#61）でしたが、2026-10-19 に、旧 `dragowing/` を消してから main `8d6163989fc2f4843412a03b465fee1cf9b3ac3c`（#3 の `--svg`、#4 の README、#5 の依存の下限）に対して `git subtree add`（`--squash` なし）で join を入れ直しました。merge commit の第2親は DRAgoWing main の head です。PR は squash/rebase せず merge commit で入れてください。
 - `dragowing/` 全体（子の CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した DRAgoWing の tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。`min.py` は Aoi が提供し、子には置きません。
 - サイクルデータ（`cycles/`）、PythDRagoras（`propositions`・`rule_search`）、QueRyu（`ask`）は Aoi に残します。子の CI は Aoi を固定 SHA で checkout し、`AOI_ROOT` と `PYTHONPATH` の `pythdragoras` と `queryu/ask` を渡して pytest を動かします。子の CI に Chrome のジョブはなく、Aoi の CI の Chrome ジョブと DRAgoWing reports ワークフローが `dragowing/` のパスを使います。Aoi の中では `dragowing/.github/` は動きません。`dragowing/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめ、パッケージ登録は何もしません。`dragowing/tests/conftest.py` と共存します。
-- 同期は PythDRagoras の手順の `pythdragoras` を `dragowing`、リポジトリを DRAgoWing に読み替えます。
+- 同期は PythDRagoras の手順の `pythdragoras` を `dragowing`、リポジトリを DRAgoWing に読み替えます（`--squash` なし）。
 
 ## BlueProbe
 

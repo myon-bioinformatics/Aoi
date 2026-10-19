@@ -249,3 +249,65 @@ def test_invalid_dates_raise_value_error_before_sorting(invalid_date):
         snapshot(games, teams, invalid_date, schedule_basis='synthetic')
     with pytest.raises(ValueError):
         calendar_games([{'date': invalid_date}], 2022)
+
+
+def test_expected_total_games_validation(tmp_path):
+    games, r = blink_fixture()
+    teams = ('A', 'B', 'X')
+    # Valid dict match
+    s = snapshot(games, teams, '2022-01-01', schedule_basis='synthetic',
+                 expected_total_games={'A': 12, 'B': 12, 'X': 24})
+    assert s.expected_total_games == {'A': 12, 'B': 12, 'X': 24}
+
+    # Integer mismatch (X has 24, expecting 12)
+    with pytest.raises(ValueError, match="total games for team 'X' is 24, expected 12"):
+        snapshot(games, teams, '2022-01-01', schedule_basis='synthetic', expected_total_games=12)
+
+    # Invalid expected_total_games type or values
+    with pytest.raises(ValueError, match="expected_total_games must be nonnegative"):
+        snapshot(games, teams, '2022-01-01', schedule_basis='synthetic', expected_total_games=-1)
+
+    with pytest.raises(ValueError, match="expected_total_games dict must map team names"):
+        snapshot(games, teams, '2022-01-01', schedule_basis='synthetic',
+                 expected_total_games={'A': -5})
+
+    with pytest.raises(ValueError, match="expected_total_games must be an int, dict, or None"):
+        snapshot(games, teams, '2022-01-01', schedule_basis='synthetic',
+                 expected_total_games="invalid")
+
+    # bool is not a game count, even though it subclasses int
+    for flag in (True, False):
+        with pytest.raises(ValueError, match="expected_total_games must be an int, dict, or None"):
+            snapshot(games, teams, '2022-01-01', schedule_basis='synthetic', expected_total_games=flag)
+    with pytest.raises(ValueError, match="expected_total_games dict must map team names"):
+        snapshot(games, teams, '2022-01-01', schedule_basis='synthetic', expected_total_games={'A': True})
+
+    # Test via CLI
+    from dataclasses import asdict
+    data = {'teams': ['A', 'B', 'X'], 'games': [asdict(g) for g in games],
+            'rules': asdict(r), 'schedule_basis': 'synthetic'}
+    src, dest = tmp_path / 'input.json', tmp_path / 'output.json'
+    src.write_text(json.dumps(data))
+    script = Path(__file__).resolve().parents[1] / 'season_simulator.py'
+
+    # Passing incorrect expected total games via CLI fails
+    res = subprocess.run([sys.executable, str(script), str(src),
+                          '--as-of', '2022-01-01', '--trials', '10',
+                          '--expected-total-games', '12', '--output', str(dest)],
+                         capture_output=True, text=True)
+    assert res.returncode == 2
+    assert "error: total games for team 'X' is 24, expected 12" in res.stderr
+    assert 'Traceback' not in res.stderr
+
+
+@pytest.mark.parametrize("expected", [True, False, {"A": True}, {"A": False}])
+def test_expected_total_games_rejects_boolean_counts(expected):
+    with pytest.raises(ValueError, match="expected_total_games"):
+        snapshot([], ("A", "B"), "2022-01-01", schedule_basis="synthetic",
+                 expected_total_games=expected)
+
+
+def test_expected_total_games_allows_zero_and_partial_mapping():
+    for expected in (0, {"A": 0}):
+        assert snapshot([], ("A", "B"), "2022-01-01", schedule_basis="synthetic",
+                        expected_total_games=expected).expected_total_games == expected

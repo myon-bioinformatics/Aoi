@@ -26,14 +26,19 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '${{ matrix.python }}'
-      - run: python -m pip install pytest==9.1.1
-      - if: matrix.solver == 'exact'
-        run: python -m pip install -r sakanalytics/season-requirements.txt
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: 'false'
       - name: Verify optional solver is absent
         if: matrix.solver == 'stdlib'
-        run: python -c "import importlib.util; assert importlib.util.find_spec('ortools') is None"
-      - run: python -m pytest sakanalytics/tests/test_season_simulator.py -q
-      - run: python -m compileall -q sakanalytics/season_simulator.py sakanalytics/season_exact.py
+        run: uv run --locked --python "${{ matrix.python }}" python -c "import importlib.util; assert importlib.util.find_spec('ortools') is None"
+      - name: Test without optional solver
+        if: matrix.solver == 'stdlib'
+        run: uv run --locked --python "${{ matrix.python }}" pytest sakanalytics/tests/test_season_simulator.py -q
+      - name: Test with locked optional solver
+        if: matrix.solver == 'exact'
+        run: uv run --locked --python "${{ matrix.python }}" --with-requirements sakanalytics/season-requirements.txt pytest sakanalytics/tests/test_season_simulator.py -q
+      - run: uv run --locked --python "${{ matrix.python }}" python -m compileall -q sakanalytics/season_simulator.py sakanalytics/season_exact.py
       - name: Exercise result-free synthetic CLI
         if: matrix.solver == 'exact'
-        run: python sakanalytics/season_simulator.py sakanalytics/season-example.json --as-of 2022-01-01 --through 2022-01-04 --trials 100 --exact --output /tmp/season-example-output.json
+        run: uv run --locked --python "${{ matrix.python }}" --with-requirements sakanalytics/season-requirements.txt python sakanalytics/season_simulator.py sakanalytics/season-example.json --as-of 2022-01-01 --through 2022-01-04 --trials 100 --exact --output /tmp/season-example-output.json

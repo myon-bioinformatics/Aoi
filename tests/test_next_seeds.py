@@ -95,3 +95,42 @@ def test_reading_keeps_all_four_forms_and_render_shows_them():
     assert x["forms"]["inverse"] == (3, 0.5, 12)
     md = ns.render_next([x, ns.reading(_result(0, None))], {"sha256": "s"})
     assert "| 元の命題 | 対偶 | 逆 | 裏 |" in md and "3・0.50（12）" in md and "省略: " in md
+
+
+def test_cli_report_subcommand(tmp_path, capsys):
+    import json
+
+    prop_f = tmp_path / "propositions.jsonl"
+    res = _result(3, 3, cx_o=["d-2019"])
+    res["meta"] = {"sha256": "hash123", "code_version": "v1.0"}
+    prop_f.write_text(json.dumps(res) + "\n", encoding="utf-8")
+
+    claims_f = tmp_path / "claims.json"
+    claims_data = [
+        {"id": "C1", "statement": "主張1", "source": "News", "status": "reproduced", "claimed": 0.5, "computed": 0.51}
+    ]
+    claims_f.write_text(json.dumps(claims_data) + "\n", encoding="utf-8")
+
+    # 1. Standard output without --out or --outdir
+    assert ns.main(["report", str(prop_f)]) == 0
+    captured = capsys.readouterr().out
+    assert "# 次の命題の種（自動生成）" in captured
+    assert "hash123" in captured
+
+    # 2. With --outdir
+    outdir = tmp_path / "out_dir"
+    assert ns.main(["report", str(prop_f), "--claims", str(claims_f), "--outdir", str(outdir)]) == 0
+    assert (outdir / "next_seeds.md").exists()
+    assert (outdir / "claims.md").exists()
+    assert "# 次の命題の種" in (outdir / "next_seeds.md").read_text(encoding="utf-8")
+    assert "# 外部の主張との照合" in (outdir / "claims.md").read_text(encoding="utf-8")
+
+    # 3. With --out
+    outfile = tmp_path / "custom" / "next_seeds.md"
+    assert ns.main(["report", str(prop_f), "--claims", str(claims_f), "--out", str(outfile)]) == 0
+    assert outfile.exists()
+    assert (tmp_path / "custom" / "claims.md").exists()
+
+    # 4. Error handling
+    assert ns.main(["report", str(tmp_path / "nonexistent.jsonl")]) == 66
+    assert ns.main(["report", str(prop_f), "--claims", str(tmp_path / "nonexistent.json")]) == 66

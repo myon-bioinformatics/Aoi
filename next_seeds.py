@@ -159,13 +159,20 @@ def main(argv=None) -> int:
     nx.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
     nx.add_argument("--id", nargs="+", dest="ids")
     nx.add_argument("--reading", type=int, nargs="+", choices=sorted(READING), help="この読みの番号だけを表示する")
+
+    rp = sub.add_parser("report", help="propositions.jsonl から next_seeds.md（および --claims があれば claims.md）を生成する")
+    rp.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
+    rp.add_argument("--claims", type=Path, help="pythdragoras.py が書いた claims.json")
+    rp.add_argument("--outdir", type=Path, help="出力ディレクトリ（next_seeds.md と claims.md を書き出す）")
+    rp.add_argument("--out", type=Path, help="出力ファイル（next_seeds.md の書き出し先）")
+
     args = ap.parse_args(argv)
 
     if args.cmd == "next":
         if not args.results.exists():
             print(f"[66] {label(66)}: {args.results}", file=sys.stderr)
             return 66
-        results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines()]
+        results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines() if line.strip()]
         known = {r["id"] for r in results}
         if missing := [i for i in args.ids or [] if i not in known]:
             print(f"[64] {label(64)}（そんな id はない: {', '.join(missing)}）", file=sys.stderr)
@@ -177,6 +184,41 @@ def main(argv=None) -> int:
             print(f"[{x['reading']}] {x['id']} {READING[x['reading']][0]}  元 {x['original']} 逆 {x['converse'] if x['converse'] is not None else '—'}"
                   f"  絞る {x['narrow']['n']} 道筋 {route}  {x['key']}")
         return 0  # 読みは判定ではないので、失敗にしない
+
+    if args.cmd == "report":
+        if not args.results.exists():
+            print(f"[66] {label(66)}: {args.results}", file=sys.stderr)
+            return 66
+        if args.claims and not args.claims.exists():
+            print(f"[66] {label(66)}: {args.claims}", file=sys.stderr)
+            return 66
+        results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines() if line.strip()]
+        readings = [reading(r) for r in results]
+        meta = results[0].get("meta", {}) if results else {}
+        md_next = render_next(readings, meta)
+
+        md_claims = ""
+        if args.claims:
+            claims_data = json.loads(args.claims.read_text(encoding="utf-8"))
+            md_claims = render_claims(claims_data)
+
+        if args.outdir:
+            args.outdir.mkdir(parents=True, exist_ok=True)
+            (args.outdir / "next_seeds.md").write_text(md_next, encoding="utf-8")
+            if args.claims:
+                (args.outdir / "claims.md").write_text(md_claims, encoding="utf-8")
+        elif args.out:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(md_next, encoding="utf-8")
+            if args.claims:
+                claims_out = args.out.parent / "claims.md"
+                claims_out.write_text(md_claims, encoding="utf-8")
+        else:
+            sys.stdout.write(md_next)
+            if md_claims:
+                sys.stdout.write("\n" + md_claims)
+
+        return 0
 
 
 if __name__ == "__main__":

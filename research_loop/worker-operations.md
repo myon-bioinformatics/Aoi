@@ -1,9 +1,12 @@
-# Aoi research worker: offline implementation, activation deferred
+# Aoi research worker: activation deferred
 
 The unsupported scheduled worker was removed on 2026-10-18 after failed runs.
 The question inbox remains independently operational. This change implements the
-missing worker in its owner repository, NagoyAction; **no research workflow,
-manual Actions entry point or schedule is restored, and no variable is enabled**.
+missing worker in its owner repository, NagoyAction. A separate manual checkpoint
+canary workflow is now implemented with two disabled-by-default gates; **no
+variable is enabled, no research run is dispatched and no schedule is restored**.
+See [checkpoint protocol](checkpoint-canary.md) for transport,
+review requirements, offline evidence and remaining live-validation limits.
 
 ## Implementation and ownership
 
@@ -26,7 +29,8 @@ and the complete threat model. Key points:
 
 - `AOI_RESEARCH_ENABLED=1` plus a separate allowed actor is required. Inbox
   configuration/actors never enable exploration. Actions accepts only manual
-  dispatch on trusted main; there is no such live workflow in this PR.
+  dispatch on trusted main. The manual canary additionally requires the repository
+  owner as both original/rerun actor and a false-by-default dispatch opt-in.
 - Public CLI watchdog bounds the whole process group to 1–300 seconds, including
   input hashing and checkpoint I/O. Deadline exits 124; TERM/INT are forwarded,
   and descendants are killed/reaped on exit.
@@ -37,8 +41,8 @@ and the complete threat model. Key points:
   resume. Each unit checks inputs again before committing results. Source data and
   official propositions remain read only. Results remain exploratory/unconfirmed.
 - Worker state is `.research-worker/`, separate from inbox `.research-state/`.
-  Persistence is durable local storage; cross-runner artifact restore/upload is
-  still a requirement for any future Actions canary, not an implemented promise.
+  The disabled manual canary adds explicit source-run/attempt/artifact restore and
+  upload, with API provenance and input/code/workflow checks before state writes.
 - Minimal child environment excludes credentials. Python audit hooks reject network,
   subprocesses and filesystem writes. This is trusted-code defense in depth, not
   an OS sandbox for hostile Python/native code or forged checkpoint artifacts.
@@ -70,10 +74,10 @@ plus three resumed units. These are bounded integration probes, not completed
 research or independent hypothesis confirmation. Literal null observations remain
 unknown; missing columns, invalid scalar types and nonfinite values are refused.
 
-Issue #71's **Actions activation gate remains open**. This input correction does
-not implement durable cross-runner artifact transport, a trusted-main manual
-canary workflow, actor/workflow provenance binding, or schedules. No repository
-variables or live execution settings are changed.
+Issue #71's **Actions activation gate remains open**. PR #72 completed the input
+correction. The next transport stage implements the disabled manual workflow and
+provenance binding; live artifact/canary verification remains pending separate
+approval. No repository variables or live execution settings are changed.
 
 ## Review and staged reactivation decision
 

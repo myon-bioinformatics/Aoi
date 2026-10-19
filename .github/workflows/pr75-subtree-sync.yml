@@ -1,0 +1,50 @@
+name: PR75 one-time canonical NagoyAction sync
+on:
+  pull_request:
+    types: [synchronize]
+    paths: ['.github/workflows/pr75-subtree-sync.yml']
+permissions:
+  contents: write
+concurrency:
+  group: pr75-canonical-subtree-import
+  cancel-in-progress: false
+jobs:
+  sync:
+    if: >-
+      github.repository == 'myon-bioinformatics/Aoi' &&
+      github.event.pull_request.number == 75 &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'cursor/season-simulator-uv-ae39' &&
+      github.actor == 'myon-bioinformatics'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      CHILD_SHA: 4ad09fdd7b3c1a69e103772b3a5dbf4ea4b28df8
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Import pinned child history and verify tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git subtree pull --prefix=nagoyaction https://github.com/myon-bioinformatics/NagoyAction.git "$CHILD_SHA" -m 'Import canonical NagoyAction show command and history (PR 7)'
+          test "$(git rev-parse HEAD:nagoyaction)" = "$(git rev-parse "$CHILD_SHA^{tree}")"
+          git merge-base --is-ancestor "$CHILD_SHA" HEAD
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path = Path('child-heads.json')
+          doc = json.loads(path.read_text())
+          doc['heads']['myon-bioinformatics/NagoyAction']['sha'] = os.environ['CHILD_SHA']
+          path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + '\n')
+          PY
+          git add child-heads.json
+          git commit -m 'Record canonical NagoyAction head'
+          git push origin HEAD:refs/heads/cursor/season-simulator-uv-ae39

@@ -3,6 +3,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 from pathlib import Path
 import stat
 import struct
@@ -271,9 +272,19 @@ def test_manual_workflow_remains_double_disabled_and_read_only():
     assert "github.ref == 'refs/heads/main'" in text
     assert "contents: read" in text and "actions: read" in text and ": write" not in text
     assert "persist-credentials: false" in text and "timeout-minutes: 8" in text
-    for line in text.splitlines():
-        if "uses: actions/" in line:
-            assert len(line.split("@", 1)[1].split()[0]) == 40
+
+
+def test_trusted_canary_bootstrap_is_immutable():
+    text = (ROOT / t.WORKFLOW).read_text()
+    # The project lock cannot pin the action/uv code that interprets it.
+    uses = re.findall(r"^\s*(?:-\s*)?uses:\s*(\S+)", text, re.MULTILINE)
+    assert uses
+    for action in uses:
+        assert re.fullmatch(r"[^@\s]+@[0-9a-f]{40}", action), action
+    assert "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97" in uses
+    installs = re.findall(r"^\s*python -m pip install (.+)$", text, re.MULTILINE)
+    assert installs == ["'uv==0.12.23'"]
+    assert "uv sync --frozen" in text
 
 
 def test_signed_download_never_forwards_token_and_checks_length():

@@ -152,11 +152,12 @@ def to_markdown(rows: list[dict], title: str, checks: list[dict] | None = None) 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="取得済みページをオフラインで再解析する")
     ap.add_argument("--source", help="取得元モジュール名 (例: npb_calendar, html_source)")
-    ap.add_argument("--pattern", help="DOM パターンキー (例: github_readme, article_body, documentation_main, portfolio_profile)")
+    patterns = ap.add_mutually_exclusive_group()
+    patterns.add_argument("--pattern", help="html_source 専用の DOM パターンキー（一覧: --list-patterns）")
     ap.add_argument("--cache", type=Path, help="QueRyu のキャッシュディレクトリ")
     ap.add_argument("--out", type=Path, help="Markdown の出力先")
     ap.add_argument("--strict", action="store_true", help="未知の表記、または既知値と合わない group があれば終了コード1")
-    ap.add_argument("--list-patterns", action="store_true", help="利用可能な DOM パターンの一覧を表示する")
+    patterns.add_argument("--list-patterns", action="store_true", help="利用可能な DOM パターンの一覧を表示する")
     args = ap.parse_args(argv)
 
     if args.list_patterns:
@@ -172,9 +173,14 @@ def main(argv=None) -> int:
     if not args.source or not args.cache:
         ap.error("--source and --cache are required unless --list-patterns is specified")
 
-    if args.pattern and args.source == "html_source":
+    if args.pattern is not None:
+        if args.source != "html_source":
+            ap.error("--pattern requires --source html_source")
         from html_source import HtmlSource
-        source = HtmlSource(pattern=args.pattern)
+        try:
+            source = HtmlSource(pattern=args.pattern)
+        except ValueError as exc:
+            ap.error(f"--pattern: {exc}. Use --list-patterns to see available presets")
     else:
         source = load_source(args.source)
 

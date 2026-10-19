@@ -50,3 +50,13 @@ uv run python blueprobe.py --list-patterns
 # 特定のパターンプリセットを指定して再解析を実行
 uv run python blueprobe.py --source html_source --pattern github_readme --cache <QueRyuのキャッシュ>
 ```
+
+`--pattern` は `--source html_source` 専用です。別の取得元との組み合わせや、
+未知・空のパターン名はキャッシュを読む前に CLI エラー（終了コード 2）になります。
+大文字小文字と前後の空白は `get_pattern()` と同様に正規化します。
+`--list-patterns` は取得元・キャッシュ不要で、`--pattern` とは同時指定できません。
+再解析は保存済み本文と検証済み snapshot を利用し、ネットワークで再取得しません。
+
+既定の抽出器には、セレクタのカンマ区切りと `[role='main']` に対応した
+`mcp-toolcall-lab` が必要です（[互換修正 PR #140](https://github.com/myon-bioinformatics/mcp-toolcall-lab/pull/140)）。
+CI は対応済みの commit を固定し、全8プリセットを実際の抽出器で再解析します。

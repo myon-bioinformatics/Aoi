@@ -89,7 +89,7 @@ class Snapshot:
                for t in self.teams) > 1000:
             raise ValueError('at most 1000 games per team supported')
         if self.expected_total_games is not None:
-            if isinstance(self.expected_total_games, int):
+            if type(self.expected_total_games) is int:
                 if self.expected_total_games < 0:
                     raise ValueError('expected_total_games must be nonnegative')
             elif isinstance(self.expected_total_games, dict):
@@ -101,7 +101,7 @@ class Snapshot:
 
             for t in self.teams:
                 exp = (self.expected_total_games[t] if isinstance(self.expected_total_games, dict) and t in self.expected_total_games
-                       else self.expected_total_games if isinstance(self.expected_total_games, int)
+                       else self.expected_total_games if type(self.expected_total_games) is int
                        else None)
                 if exp is not None:
                     tot = self.played(t) + sum(t in (g.home, g.away) for g in self.remaining)

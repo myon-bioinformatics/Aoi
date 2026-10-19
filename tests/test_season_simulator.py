@@ -290,3 +290,16 @@ def test_expected_total_games_validation(tmp_path):
                          capture_output=True, text=True)
     assert res.returncode != 0
     assert "total games for team 'X' is 24, expected 12" in res.stderr
+
+
+@pytest.mark.parametrize("expected", [True, False, {"A": True}, {"A": False}])
+def test_expected_total_games_rejects_boolean_counts(expected):
+    with pytest.raises(ValueError, match="expected_total_games"):
+        snapshot([], ("A", "B"), "2022-01-01", schedule_basis="synthetic",
+                 expected_total_games=expected)
+
+
+def test_expected_total_games_allows_zero_and_partial_mapping():
+    for expected in (0, {"A": 0}):
+        assert snapshot([], ("A", "B"), "2022-01-01", schedule_basis="synthetic",
+                        expected_total_games=expected).expected_total_games == expected

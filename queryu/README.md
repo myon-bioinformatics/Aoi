@@ -127,7 +127,7 @@ UTF-8 にした値の hash。現行の厳密な UTF-8 保存では一致する�
 これだけでは URL・取得時刻の真実性や HTTP 応答の真正性は証明しない。
 
 責務は、取得・保存本文・照合・履歴が QueRyu、HTML構造の抽出・観測値の読み取りが
-[BlueProbe](https://github.com/myon-bioinformatics/BlueProbe)、集計・指標計算が [SakAnalytics](https://github.com/myon-bioinformatics/sakanalytics)、
+[BlueProbe](https://github.com/myon-bioinformatics/BlueProbe)、集計・指標計算が [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics)、
 仮説評価が [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)。実行元やソースの identity 確認・
 CI runner・証跡の実行管理は [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) が担う。この変更では新しい runner や
 実行証明を追加しない。
@@ -213,7 +213,7 @@ Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/mai
 |---|---|---|
 | [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
 | **QueRyu**（このリポジトリ） | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
-| [sakanalytics](https://github.com/myon-bioinformatics/sakanalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
+| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
 | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
 | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
 | [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |

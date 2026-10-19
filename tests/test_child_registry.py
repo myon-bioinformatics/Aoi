@@ -47,7 +47,7 @@ def test_blueprobe_registered_with_exact_ids():
     assert entry["optional"]["repository_created_at"] == "2026-10-14T01:27:17Z"
     assert entry["optional"]["subtree_prefix"] == "blueprobe"
     assert "mirrored_from_parent" not in entry["optional"]
-    assert entry["sha"] == "d966a68119b3a8e9025a6af1b56ce7f8caf8973e"
+    assert entry["sha"] == "724e935042b50d1f23a67322f029f32541721080"
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "blueprobe.py", "web_observations.py"):
         assert (ROOT / "blueprobe" / path).is_file(), path
@@ -70,7 +70,7 @@ def test_queryu_registered_with_exact_ids():
     assert entry["repository_id"] == 1423051557
     assert entry["optional"]["subtree_prefix"] == "queryu"
     assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
-    assert entry["sha"] == "5ce256d77d64b33d4c71c2cbb84fe201f9637567"
+    assert entry["sha"] == "250c53e98d400cb216ed15e823fee5229054511b"
     for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore", "cache_share.py", "emoji_data.py"):
         assert (ROOT / "queryu" / path).is_file(), path
 
@@ -87,7 +87,7 @@ def test_nagoyaction_registered_with_exact_ids():
 
 
 def test_sakanalytics_registered_with_exact_ids():
-    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/sakanalytics"]
+    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/SakAnalytics"]
     assert entry["repository_id"] == 1423489570
     assert entry["optional"]["repository_created_at"] == "2026-10-17T15:50:27Z"
     assert entry["optional"]["subtree_prefix"] == "sakanalytics"
@@ -104,7 +104,7 @@ def test_dragowing_registered_with_exact_ids():
     assert entry["optional"]["repository_created_at"] == "2026-10-17T21:45:31Z"
     assert entry["optional"]["subtree_prefix"] == "dragowing"
     assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
-    assert entry["sha"] == "a060e79a3ace5b22b8ef405990b274814aae2bac"
+    assert entry["sha"] == "e33a0900a347b20eaf8ef7a9ff7476df4b164272"
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "aoi_paths.py", "tests/conftest.py", "tests/test_no_sibling_imports.py"):
         assert (ROOT / "dragowing" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
@@ -123,7 +123,7 @@ def test_offline_cli_passes():
     assert out.returncode == 0, out.stderr
     report = json.loads(out.stdout)
     assert report["schema"] == "aoi-child-heads-check/1"
-    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/BlueProbe", "myon-bioinformatics/DRAgoWing", "myon-bioinformatics/NagoyAction", "myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu", "myon-bioinformatics/sakanalytics"]
+    assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/BlueProbe", "myon-bioinformatics/DRAgoWing", "myon-bioinformatics/NagoyAction", "myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu", "myon-bioinformatics/SakAnalytics"]
 
 
 # --- ローカルの Git -------------------------------------------------------------------------

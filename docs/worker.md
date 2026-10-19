@@ -86,3 +86,27 @@ untrusted checkpoint artifacts. Official propositions and inputs are read only.
 4. Inspect checkpoint/replay evidence before considering longer runs or scheduling.
 
 A successful offline test or PR merge does not enable autonomous execution.
+
+## Explicit research input bundles
+
+`worker --input-bundle extended-v1` selects
+`cycles/<cycle>/input-bundles/extended-v1.json`. Without this argument the legacy
+canonical paths remain selected; a bundle is never inferred from missing P IDs.
+No pipeline or environment default selects an extension.
+
+Schema 1 pins SHA-256 for exactly four roles: `analysis`, `propositions`, `season`,
+and `sets`. One cycle-relative `source` directory supplies analysis.toml,
+propositions.toml and outputs/season.jsonl together; sets.toml belongs to the
+cycle registry. Per-role path overrides, parent traversal, symlinks, missing files
+and hash mismatches are rejected. The manifest's contract is verified by Aoi's
+Explorer before an initial checkpoint is returned. The owner worker does not
+implement Aoi-specific statistical configuration rules.
+
+The checkpoint manifest includes the bundle JSON and every selected input hash,
+along with the legacy inputs, code, runtime and lock fingerprints. Changing the
+bundle selection, any pinned byte, or the contract refuses resume. Evaluation
+resolves the same manifest again, and the supervisor rechecks it before committing
+each unit. An Aoi version without bundle-aware Explorer support fails rather than
+silently evaluating its canonical inputs. Existing authorization, watchdog,
+read-only evaluation and offline behavior apply unchanged. These local capabilities
+do not install an Actions worker or establish durable cross-runner transport.

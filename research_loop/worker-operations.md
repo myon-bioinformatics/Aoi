@@ -5,7 +5,7 @@ The question inbox remains independently operational. This change implements the
 missing worker in its owner repository, NagoyAction. A separate manual checkpoint
 canary workflow is now implemented with two disabled-by-default gates; **no
 variable is enabled, no research run is dispatched and no schedule is restored**.
-See [checkpoint protocol](../docs/research-checkpoint-canary.md) for transport,
+See [checkpoint protocol](checkpoint-canary.md) for transport,
 review requirements, offline evidence and remaining live-validation limits.
 
 ## Implementation and ownership

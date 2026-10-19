@@ -8,6 +8,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --column wins_vs_pythag
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --cond 'rd,>,0' --cond 'rank_ra,<=,2'
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --embed
+python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --png --svg
 ```
 
 `--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。
@@ -25,7 +26,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 文字だけの 2×2 は [forms.md](forms.md) の `dragowing/forms.py` のままである。
 
-PNG が要るときだけ `--png` を付ける。Chrome もそのときだけ要る（`--chrome` または `CHROME` 環境変数）。Chrome が無いと HTML は書いたうえで終了コード 2 になる。テストは Chrome も使わない。
+PNG / SVG が要るときだけ `--png` / `--svg` を付ける。Chrome もそのときだけ要る（`--chrome` または `CHROME` 環境変数）。Chrome が無いと HTML は書いたうえで終了コード 2 になる。テストは Chrome も使わない。
 
 `sets.jsonl` はこの結果に無い。条件式のハッセ図（提案の C6）は出していない。成立率をここで新しく計算して色を塗ることもしていない。
 

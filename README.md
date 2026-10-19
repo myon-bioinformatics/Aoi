@@ -348,4 +348,4 @@ HTML 内の見出し（`<h1>`〜`<h6>`）およびランドマーク領域（`<m
 レベル、テキスト、DOM パス、包含ランドマーク、非表示状態のほか、構造上の状態区分として `empty_heading`（空の見出し）、`skipped_heading_level`（レベルのスキップ）、`multiple_h1`（複数の h1）、`missing_main_landmark`（メインランドマークの欠落）、`unlabelled_landmark`（未ラベルのランドマーク）、`heading_outside_landmark`（ランドマーク外の見出し）を記録する。
 ネットワークには出ず、判断や変更は行わない。
 
-静的な構造観測であり、ブラウザのアクセシビリティツリー全体の再現ではない。`article` と名前のない `section` はランドマークに数えず、`main` / `article` / `aside` / `nav` / `section` 内の `header` / `footer` はページ全体のランドマークに数えない（[HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)）。ARIA 見出しの `aria-level` が非正整数・不正値のときは 2 にする。
+静的な構造観測であり、ブラウザのアクセシビリティツリー全体の再現ではない。`article` と名前のない `section` はランドマークに数えず、`main` / `article` / `aside` / `nav` / `section` 内の `header` / `footer` はページ全体のランドマークに数えない（[HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)）。`aria-level` は 1 以上の整数のときだけ使い、それ以外（空・0・負・不正値）は HTML の見出しレベル（h1〜h6）に、`role="heading"` なら ARIA の既定値 2 にフォールバックする。木構造と名前の計算は `accessible_names.py` と共有する。`missing_main_landmark` はページ単位の記録（`type: "page"`）としても残す。

@@ -77,6 +77,9 @@ def test_missing_main_landmark_detection():
     html = "<html><body><h1>Title</h1><section><h2>Sub</h2></section></body></html>"
     report = ho.observe(html)
     assert report["counts"]["missing_main_landmark"] == 1
+    page = [r for r in report["records"] if r["type"] == "page"]
+    assert page == [{"key": "#page", "type": "page", "url": None, "visible_headings": 2,
+                     "flags": ["missing_main_landmark"]}]
 
 
 def test_real_page_captures_run_without_errors():
@@ -132,3 +135,17 @@ def test_named_sections_are_regions(label):
 def test_invalid_aria_heading_level_defaults_to_two(level):
     records = ho.observe(f'<main><div role="heading" aria-level="{level}">Heading</div></main>')["records"]
     assert [r["level"] for r in records if r["type"] == "heading"] == [2]
+
+
+@pytest.mark.parametrize("level,expected", [("0", 3), ("-2", 3), ("x", 3), ("", 3), ("5", 5)])
+def test_html_heading_aria_level_falls_back_to_html_level(level, expected):
+    records = ho.observe(f'<main><h3 aria-level="{level}">Heading</h3></main>')["records"]
+    assert [r["level"] for r in records if r["type"] == "heading"] == [expected]
+
+
+def test_landmark_label_and_tree_are_shared_with_accessible_names():
+    import accessible_names
+    assert ho._Tree is accessible_names._Tree
+    html = '<span id="l">From <b aria-hidden="true">x</b>id</span><section aria-labelledby="l"><h2>A</h2></section>'
+    records = ho.observe(html)["records"]
+    assert [(r["role"], r["label"]) for r in records if r["type"] == "landmark"] == [("region", "From id")]

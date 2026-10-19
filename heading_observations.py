@@ -19,84 +19,14 @@ from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
 
+from accessible_names import _Tree, _flat, _name, _path, _text, _walk  # one shared tree and name logic
 from blueprobe import new_report
 
 __all__ = ["observe", "observe_capture", "summarize"]
 
-_VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
-_SKIP = {"script", "style", "template", "noscript"}
 _HEADINGS = {"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 5, "h6": 6}
 _LANDMARK_ROLES = {"main", "navigation", "banner", "contentinfo", "complementary", "region", "search"}
 _SECTIONING_TAGS = {"article", "aside", "main", "nav", "section"}
-
-
-class _Node:
-    __slots__ = ("tag", "attrs", "children", "parent")
-
-    def __init__(self, tag, attrs, parent):
-        self.tag, self.attrs, self.children, self.parent = tag, attrs, [], parent
-
-
-class _Tree(HTMLParser):
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.root = _Node("#root", {}, None)
-        self.current, self.skip = self.root, 0
-
-    def handle_starttag(self, tag, attrs):
-        if self.skip or tag in _SKIP:
-            self.skip += tag in _SKIP
-            return
-        node = _Node(tag, {k: (v or "") for k, v in attrs}, self.current)
-        self.current.children.append(node)
-        if tag not in _VOID:
-            self.current = node
-
-    def handle_startendtag(self, tag, attrs):
-        if not self.skip:
-            self.current.children.append(_Node(tag, {k: (v or "") for k, v in attrs}, self.current))
-
-    def handle_endtag(self, tag):
-        if tag in _SKIP and self.skip:
-            self.skip -= 1
-            return
-        if self.skip:
-            return
-        node = self.current
-        while node is not self.root and node.tag != tag:
-            node = node.parent
-        if node is not self.root:
-            self.current = node.parent
-
-    def handle_data(self, data):
-        if not self.skip:
-            self.current.children.append(data)
-
-
-def _walk(node):
-    for child in node.children:
-        if isinstance(child, _Node):
-            yield child
-            yield from _walk(child)
-
-
-def _flat(text):
-    return " ".join(text.split())
-
-
-def _text(node, depth=0):
-    parts = []
-    for child in node.children:
-        if isinstance(child, str):
-            parts.append(child)
-        elif depth < 30:
-            if child.tag == "img":
-                parts.append(" " + child.attrs.get("alt", "") + " ")
-            elif child.tag == "br":
-                parts.append(" ")
-            else:
-                parts.append(" " + _text(child, depth + 1) + " ")
-    return _flat("".join(parts))
 
 
 def _is_inside_sectioning(node):
@@ -128,27 +58,23 @@ def _landmark_role(node, ids):
     return None
 
 
+def _heading_level(node):
+    """A valid aria-level (integer >= 1) wins. A missing, non-integer, zero or negative
+    aria-level falls back to the HTML level (h1-h6), or to ARIA's default 2 for role=heading."""
+    fallback = _HEADINGS.get(node.tag, 2)
+    raw = node.attrs.get("aria-level", "").strip()
+    if not raw:
+        return fallback
+    try:
+        level = int(raw)
+    except ValueError:
+        return fallback
+    return level if level >= 1 else fallback
+
+
 def _landmark_label(node, ids):
-    attrs = node.attrs
-    if attrs.get("aria-labelledby"):
-        parts = [_text(ids[i]) for i in attrs["aria-labelledby"].split() if i in ids]
-        if any(parts):
-            return _flat(" ".join(parts))
-    if attrs.get("aria-label", "").strip():
-        return _flat(attrs["aria-label"])
-    if attrs.get("title", "").strip():
-        return _flat(attrs["title"])
-    return ""
-
-
-def _path(node):
-    parts = []
-    while node is not None and node.tag != "#root" and len(parts) < 4:
-        ident = ("#" + node.attrs["id"]) if node.attrs.get("id") else (
-            "." + node.attrs["class"].split()[0] if node.attrs.get("class", "").split() else "")
-        parts.append(node.tag + ident)
-        node = node.parent
-    return " > ".join(reversed(parts))
+    """Same name computation as accessible_names (aria-labelledby, aria-label, then title)."""
+    return _name(node, None, ids, {})[0]
 
 
 def _find_enclosing_landmark(node, ids):
@@ -215,15 +141,8 @@ def observe(html: str, url: str | None = None) -> dict:
 
         # Check if node is a heading
         if node.tag in _HEADINGS or node.attrs.get("role") == "heading":
-            level = _HEADINGS.get(node.tag)
-            if level is None:
-                try:
-                    level = int(node.attrs.get("aria-level", "2"))
-                except ValueError:
-                    level = 2
-                if level < 1:
-                    level = 2
-            text = _text(node)
+            level = _heading_level(node)
+            text = _text(node, ids)
             enclosing = _find_enclosing_landmark(node, ids)
             heading_flags = []
             if not text:
@@ -249,6 +168,8 @@ def observe(html: str, url: str | None = None) -> dict:
     headings = [r for r in report["records"] if r.get("type") == "heading" and not r["hidden"]]
     if headings and not has_main_landmark:
         report["counts"]["missing_main_landmark"] = 1
+        report["records"].append({"key": f"{url or ''}#page", "type": "page", "url": url,
+                                  "visible_headings": len(headings), "flags": ["missing_main_landmark"]})
 
     return report
 

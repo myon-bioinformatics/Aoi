@@ -1,0 +1,23 @@
+[project]
+name = "pythdragoras"
+version = "0.1.0"
+description = "本当にその説明で十分か？ 命題・判例・異議あり（Aoi の pythdragoras/ から独立）"
+requires-python = ">=3.11"
+dependencies = [
+    "polars>=2.0.0",
+    # 2.5.4 は Python 3.12 以上。3.11 はパッケージの Requires-Python で 2.4.6 になり、上限は書かない。
+    "numpy>=2.5.4; python_version >= '3.12'",
+    "numpy>=2.4.6",
+]
+
+[dependency-groups]
+dev = ["pytest>=9.1.1"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+# サイクルデータ・scripts/・sakanalytics は Aoi に残す。AOI_ROOT と PYTHONPATH で固定 SHA の Aoi を指す（.github/workflows/ci.yml）
+pythonpath = ["."]
+testpaths = ["tests"]
+norecursedirs = [".test-deps", "build", "reports"]

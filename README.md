@@ -344,6 +344,8 @@ python heading_observations.py page.html                        # 見出しレ�
 python heading_observations.py tests/cases/pages/web-ui-examples-index.json --json
 ```
 
-HTML 内の見出し（`<h1>`〜`<h6>`）およびランドマーク領域（`<main>`、`<nav>`、`<header>`、`<footer>`、`<aside>`、`<section>`、`<article>` や明示的な ARIA ロール）を観測する。
+HTML 内の見出し（`<h1>`〜`<h6>`）およびランドマーク領域（`<main>`、`<nav>`、`<header>`、`<footer>`、`<aside>`、名前のある `<section>` や明示的な ARIA ロール）を観測する。
 レベル、テキスト、DOM パス、包含ランドマーク、非表示状態のほか、構造上の状態区分として `empty_heading`（空の見出し）、`skipped_heading_level`（レベルのスキップ）、`multiple_h1`（複数の h1）、`missing_main_landmark`（メインランドマークの欠落）、`unlabelled_landmark`（未ラベルのランドマーク）、`heading_outside_landmark`（ランドマーク外の見出し）を記録する。
 ネットワークには出ず、判断や変更は行わない。
+
+静的な構造観測であり、ブラウザのアクセシビリティツリー全体の再現ではない。`article` と名前のない `section` はランドマークに数えず、`main` / `article` / `aside` / `nav` / `section` 内の `header` / `footer` はページ全体のランドマークに数えない（[HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)）。ARIA 見出しの `aria-level` が非正整数・不正値のときは 2 にする。

@@ -27,7 +27,7 @@ _VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "me
 _SKIP = {"script", "style", "template", "noscript"}
 _HEADINGS = {"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 5, "h6": 6}
 _LANDMARK_ROLES = {"main", "navigation", "banner", "contentinfo", "complementary", "region", "search"}
-_SECTIONING_TAGS = {"article", "aside", "nav", "section"}
+_SECTIONING_TAGS = {"article", "aside", "main", "nav", "section"}
 
 
 class _Node:
@@ -108,7 +108,7 @@ def _is_inside_sectioning(node):
     return False
 
 
-def _landmark_role(node):
+def _landmark_role(node, ids):
     explicit = node.attrs.get("role", "").split()
     if explicit and explicit[0] in _LANDMARK_ROLES:
         return explicit[0]
@@ -124,9 +124,7 @@ def _landmark_role(node):
     if tag == "footer":
         return "contentinfo" if not _is_inside_sectioning(node) else None
     if tag == "section":
-        return "region"
-    if tag == "article":
-        return "article"
+        return "region" if _landmark_label(node, ids) else None
     return None
 
 
@@ -156,7 +154,7 @@ def _path(node):
 def _find_enclosing_landmark(node, ids):
     cursor = node.parent
     while cursor is not None and cursor.tag != "#root":
-        role = _landmark_role(cursor)
+        role = _landmark_role(cursor, ids)
         if role is not None:
             label = _landmark_label(cursor, ids)
             return {"tag": cursor.tag, "role": role, "label": label, "element": _path(cursor)}
@@ -200,13 +198,13 @@ def observe(html: str, url: str | None = None) -> dict:
         is_hidden = hidden or aria_hidden
 
         # Check if node is a landmark
-        role = _landmark_role(node)
+        role = _landmark_role(node, ids)
         if role is not None:
             if role == "main" and not is_hidden:
                 has_main_landmark = True
             label = _landmark_label(node, ids)
             landmark_flags = []
-            if not label and node.tag in ("section", "article", "nav") or (role in ("region", "navigation") and not label):
+            if role in ("region", "navigation") and not label:
                 landmark_flags.append("unlabelled_landmark")
             record = {"key": f"{url or ''}#landmark-{index}", "type": "landmark", "url": url,
                       "tag": node.tag, "role": role, "label": label, "element": _path(node),
@@ -222,6 +220,8 @@ def observe(html: str, url: str | None = None) -> dict:
                 try:
                     level = int(node.attrs.get("aria-level", "2"))
                 except ValueError:
+                    level = 2
+                if level < 1:
                     level = 2
             text = _text(node)
             enclosing = _find_enclosing_landmark(node, ids)

@@ -229,3 +229,84 @@ def test_internal_entry_points_also_require_opt_in(mode):
                             env={**os.environ, "AOI_RESEARCH_ENABLED": "0"},
                             text=True, capture_output=True, timeout=5)
     assert result.returncode == 1 and "worker disabled" in result.stderr
+
+
+@pytest.fixture
+def bundle(research):
+    import hashlib
+    cycle = research / "cycles/test"
+    extended = cycle / "extended"
+    shutil.copytree(cycle / "outputs", extended / "outputs")
+    for name in ("analysis.toml", "propositions.toml"):
+        shutil.copyfile(cycle / name, extended / name)
+    paths = {"analysis": extended / "analysis.toml", "propositions": extended / "propositions.toml",
+             "season": extended / "outputs/season.jsonl", "sets": cycle / "sets.toml"}
+    data = {"schema": 1, "id": "test-v1", "source": "extended", "contract": {},
+            "sha256": {role: hashlib.sha256(path.read_bytes()).hexdigest() for role, path in paths.items()}}
+    directory = cycle / "input-bundles"
+    directory.mkdir()
+    manifest = directory / "test-v1.json"
+    manifest.write_text(json.dumps(data))
+    return research, cycle, manifest, data
+
+
+def test_bundle_explicit_paths_and_manifest_in_snapshot(bundle):
+    root, cycle, manifest, data = bundle
+    selected = w.resolve_bundle(root, cycle, "test-v1")
+    assert selected["paths"]["analysis"] == cycle / "extended/analysis.toml"
+    snapshot = w.bundle_snapshot(root, cycle, "all", "test-v1")
+    assert snapshot["input_bundle"] == "test-v1"
+    assert manifest.relative_to(root).as_posix() in snapshot["files"]
+    assert all(p.relative_to(root).as_posix() in snapshot["files"] for p in selected["paths"].values())
+    assert "input_bundle" not in w.bundle_snapshot(root, cycle, "all", None)
+    for name in ("../test-v1", "/test-v1", "test-v2"):
+        with pytest.raises((ValueError, FileNotFoundError)):
+            w.resolve_bundle(root, cycle, name)
+
+
+@pytest.mark.parametrize("mutation", ["hash", "missing", "symlink", "parent_symlink", "source_escape", "overlay", "role", "id"])
+def test_bundle_rejects_mixed_missing_or_unsafe_inputs(bundle, tmp_path, mutation):
+    root, cycle, manifest, data = bundle
+    source = cycle / "extended/propositions.toml"
+    if mutation == "hash":
+        source.write_text(source.read_text() + "\n# drift")
+    elif mutation == "missing":
+        source.unlink()
+    elif mutation == "symlink":
+        source.unlink()
+        source.symlink_to(cycle / "propositions.toml")
+    elif mutation == "parent_symlink":
+        shutil.move(cycle / "extended", tmp_path / "external")
+        (cycle / "extended").symlink_to(tmp_path / "external", target_is_directory=True)
+    elif mutation == "source_escape":
+        data["source"] = "../test"
+    elif mutation == "overlay":
+        data["paths"] = {"propositions": "propositions.toml"}
+    elif mutation == "role":
+        data["sha256"].pop("analysis")
+    elif mutation == "id":
+        data["id"] = "other"
+    manifest.write_text(json.dumps(data))
+    with pytest.raises((ValueError, FileNotFoundError)):
+        w.resolve_bundle(root, cycle, "test-v1")
+
+
+def test_bundle_selection_and_manifest_change_refuse_resume(bundle, tmp_path, enabled):
+    root, cycle, manifest, data = bundle
+    state = tmp_path / "selected-state"
+    selected = args(root, state, max_steps=1)
+    selected.input_bundle = "test-v1"
+    # Pinned pre-bundle Aoi may not support the new Explorer API yet. This test
+    # isolates the supervisor manifest contract; real c001 replay belongs to Aoi.
+    def initial(*a, **kw):
+        assert kw == {"input_bundle": "test-v1"}
+        return {"status": "running", "cursor": 0}
+    w.run(selected, evaluate_unit=initial)
+    before = (state / "checkpoint.json").read_bytes()
+    with pytest.raises(ValueError, match="changed"):
+        w.run(args(root, state), evaluate_unit=initial)
+    data["contract"] = {"changed": True}
+    manifest.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match="changed"):
+        w.run(selected, evaluate_unit=initial)
+    assert (state / "checkpoint.json").read_bytes() == before

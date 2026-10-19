@@ -1,0 +1,38 @@
+name: Import reviewed owner history
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  import:
+    if: >-
+      github.repository == 'myon-bioinformatics/Aoi' &&
+      github.event.pull_request.head.repo.full_name == 'myon-bioinformatics/Aoi' &&
+      github.head_ref == 'fix/research-input-bundle' &&
+      github.actor == 'myon-bioinformatics' &&
+      github.event.pull_request.user.login == 'myon-bioinformatics'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/research-input-bundle
+          fetch-depth: 0
+      - name: Attach only the pinned reviewed child history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags https://github.com/myon-bioinformatics/NagoyAction.git ea2090642b82a2c916e93171eed789afbc5db482
+          test "$(git rev-parse HEAD:nagoyaction)" = "$(git rev-parse FETCH_HEAD^{tree})"
+          test "$(git rev-parse FETCH_HEAD^{tree})" = "30027ec9c58df98614e531fb77a465b98b9d4b8d"
+          if git merge-base --is-ancestor ea2090642b82a2c916e93171eed789afbc5db482 HEAD; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge --strategy=ours --no-ff ea2090642b82a2c916e93171eed789afbc5db482 -m "Attach verified NagoyAction owner history" -m "git-subtree-dir: nagoyaction" -m "git-subtree-split: ea2090642b82a2c916e93171eed789afbc5db482"
+          git push origin HEAD:refs/heads/fix/research-input-bundle

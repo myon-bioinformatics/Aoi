@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "id": "extended-v1",
+  "source": "from-cycle-001",
+  "sha256": {
+    "analysis": "d65e119abf65c35b16223e7a28f6f9cef3455b95c7fc16559e4e2dd501556ba2",
+    "propositions": "20ebf739caa0f2b14c2ae8c3662d178a6694aaa43a3f0ad9a475b84ebcf6acf0",
+    "season": "20466c46628f4657233ef6289c628f076a0c665a2129594f5651d29a0d05d350",
+    "sets": "564abb94dbc2e879352bceb64ee45f9b3beb0d6f6b7a79158f8195d886eba942"
+  },
+  "contract": {
+    "propositions": 210,
+    "sets": 32,
+    "expressions": 31,
+    "rows": 168,
+    "units_sha256": "8b4644ae3ce8e6fa3c3b6a1cab9df7449b8c216c7fe8c87c676d66a0443e74a7",
+    "analysis": {
+      "focus": {
+        "team": "d",
+        "league": "C"
+      },
+      "exclude": [
+        {
+          "season": 2020,
+          "reason": "120試合の短縮シーズン（開幕延期）で、セ・リーグはCSを実施していない。他の年と同じ条件の順位とみなせるか判断を保留する（人の判断による除外）"
+        }
+      ],
+      "teams": {
+        "g": {
+          "name": "巨人",
+          "league": "C"
+        },
+        "s": {
+          "name": "ヤクルト",
+          "league": "C"
+        },
+        "db": {
+          "name": "DeNA",
+          "league": "C"
+        },
+        "d": {
+          "name": "中日",
+          "league": "C"
+        },
+        "t": {
+          "name": "阪神",
+          "league": "C"
+        },
+        "c": {
+          "name": "広島",
+          "league": "C"
+        },
+        "h": {
+          "name": "ソフトバンク",
+          "league": "P"
+        },
+        "f": {
+          "name": "日本ハム",
+          "league": "P"
+        },
+        "b": {
+          "name": "オリックス",
+          "league": "P"
+        },
+        "e": {
+          "name": "楽天",
+          "league": "P"
+        },
+        "l": {
+          "name": "西武",
+          "league": "P"
+        },
+        "m": {
+          "name": "ロッテ",
+          "league": "P"
+        }
+      },
+      "trajectory": {
+        "min_games": 10,
+        "sims": 200,
+        "sensitivity": [
+          5,
+          20,
+          30
+        ],
+        "ends": [
+          "decided"
+        ]
+      },
+      "confirm": {
+        "seasons": [
+          2026
+        ],
+        "registered": "2026-10-04",
+        "detail": [
+          "P52",
+          "P50",
+          "P64",
+          "P62",
+          "P78",
+          "P76",
+          "P80",
+          "P79",
+          "P51",
+          "P121",
+          "P124",
+          "P131",
+          "P136",
+          "P137",
+          "P138",
+          "P141",
+          "P143",
+          "P144",
+          "P145",
+          "P146"
+        ]
+      }
+    }
+  }
+}

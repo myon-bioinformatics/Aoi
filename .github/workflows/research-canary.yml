@@ -1,0 +1,91 @@
+name: Aoi manual research checkpoint canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_research:
+        description: Explicit opt-in; also requires AOI_RESEARCH_ENABLED=1 repository variable
+        type: boolean
+        default: false
+      seconds:
+        description: Worker wall-clock budget, 1 to 60 seconds
+        default: '30'
+        type: string
+      steps:
+        description: Maximum committed units, 1 to 5
+        default: '2'
+        type: string
+      source_run_id:
+        description: Successful source canary run ID; blank for fresh state
+        type: string
+      source_attempt:
+        description: Exact source run attempt; required with source run ID
+        type: string
+      source_artifact_id:
+        description: Exact checkpoint artifact ID; required with source run ID
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: aoi-manual-research-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    if: >-
+      github.repository == 'myon-bioinformatics/Aoi' &&
+      github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+      github.actor == 'myon-bioinformatics' && github.triggering_actor == 'myon-bioinformatics' &&
+      vars.AOI_RESEARCH_ENABLED == '1' && inputs.enable_research == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      AOI_RESEARCH_ENABLED: ${{ vars.AOI_RESEARCH_ENABLED }}
+      CANARY_ENABLE: ${{ inputs.enable_research }}
+      CANARY_SECONDS: ${{ inputs.seconds }}
+      CANARY_STEPS: ${{ inputs.steps }}
+      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+      SOURCE_ATTEMPT: ${{ inputs.source_attempt }}
+      SOURCE_ARTIFACT_ID: ${{ inputs.source_artifact_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.14.8'
+      - name: Install locked dependencies
+        timeout-minutes: 2
+        run: |
+          python -m pip install uv==0.12.23
+          uv sync --frozen
+      - name: Verify trusted run and restore data-only checkpoint
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          .venv/bin/python scripts/research_checkpoint.py prepare
+          --state "$RUNNER_TEMP/aoi-research-state" --output "$RUNNER_TEMP/aoi-research-export"
+      - name: Bounded offline worker (no token)
+        timeout-minutes: 2
+        run: >-
+          .venv/bin/python scripts/research_checkpoint.py run
+          --state "$RUNNER_TEMP/aoi-research-state" --output "$RUNNER_TEMP/aoi-research-export"
+      - name: Seal current checkpoint and provenance
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          .venv/bin/python scripts/research_checkpoint.py seal
+          --state "$RUNNER_TEMP/aoi-research-state" --output "$RUNNER_TEMP/aoi-research-export"
+      - name: Preserve verified checkpoint
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: research-checkpoint-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/aoi-research-export/*.json
+          if-no-files-found: error
+          retention-days: 14

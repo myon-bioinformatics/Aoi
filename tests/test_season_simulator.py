@@ -275,6 +275,13 @@ def test_expected_total_games_validation(tmp_path):
         snapshot(games, teams, '2022-01-01', schedule_basis='synthetic',
                  expected_total_games="invalid")
 
+    # bool is not a game count, even though it subclasses int
+    for flag in (True, False):
+        with pytest.raises(ValueError, match="expected_total_games must be an int, dict, or None"):
+            snapshot(games, teams, '2022-01-01', schedule_basis='synthetic', expected_total_games=flag)
+    with pytest.raises(ValueError, match="expected_total_games dict must map team names"):
+        snapshot(games, teams, '2022-01-01', schedule_basis='synthetic', expected_total_games={'A': True})
+
     # Test via CLI
     from dataclasses import asdict
     data = {'teams': ['A', 'B', 'X'], 'games': [asdict(g) for g in games],
@@ -288,8 +295,9 @@ def test_expected_total_games_validation(tmp_path):
                           '--as-of', '2022-01-01', '--trials', '10',
                           '--expected-total-games', '12', '--output', str(dest)],
                          capture_output=True, text=True)
-    assert res.returncode != 0
-    assert "total games for team 'X' is 24, expected 12" in res.stderr
+    assert res.returncode == 2
+    assert "error: total games for team 'X' is 24, expected 12" in res.stderr
+    assert 'Traceback' not in res.stderr
 
 
 @pytest.mark.parametrize("expected", [True, False, {"A": True}, {"A": False}])

@@ -89,20 +89,21 @@ class Snapshot:
                for t in self.teams) > 1000:
             raise ValueError('at most 1000 games per team supported')
         if self.expected_total_games is not None:
-            if type(self.expected_total_games) is int:
-                if self.expected_total_games < 0:
+            # bool は int の派生だが試合数ではないので、type(...) is int で拒否する。
+            exp_all = self.expected_total_games
+            if type(exp_all) is int:
+                if exp_all < 0:
                     raise ValueError('expected_total_games must be nonnegative')
-            elif isinstance(self.expected_total_games, dict):
-                for k, v in self.expected_total_games.items():
+                expected = {t: exp_all for t in self.teams}
+            elif type(exp_all) is dict:
+                for k, v in exp_all.items():
                     if k not in self.teams or type(v) is not int or v < 0:
                         raise ValueError('expected_total_games dict must map team names to nonnegative integers')
+                expected = exp_all
             else:
                 raise ValueError('expected_total_games must be an int, dict, or None')
-
             for t in self.teams:
-                exp = (self.expected_total_games[t] if isinstance(self.expected_total_games, dict) and t in self.expected_total_games
-                       else self.expected_total_games if type(self.expected_total_games) is int
-                       else None)
+                exp = expected.get(t)
                 if exp is not None:
                     tot = self.played(t) + sum(t in (g.home, g.away) for g in self.remaining)
                     if tot != exp:
@@ -340,8 +341,11 @@ def main():
         parser.error('--through precedes --as-of')
     rows = []
     while current <= end:
-        s = snapshot(games, data['teams'], current.isoformat(), schedule_basis=data['schedule_basis'],
-                     expected_total_games=exp_games)
+        try:
+            s = snapshot(games, data['teams'], current.isoformat(), schedule_basis=data['schedule_basis'],
+                         expected_total_games=exp_games)
+        except ValueError as exc:
+            parser.exit(2, f'error: {exc}\n')
         row = forecast(s, rules, trials=args.trials, seed=args.seed)
         if args.exact:
             try:

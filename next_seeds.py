@@ -159,6 +159,9 @@ def main(argv=None) -> int:
     nx.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
     nx.add_argument("--id", nargs="+", dest="ids")
     nx.add_argument("--reading", type=int, nargs="+", choices=sorted(READING), help="この読みの番号だけを表示する")
+    nx.add_argument("--markdown", "-m", type=Path, help="読みのMarkdownレポートを出力するファイルパス")
+    nx.add_argument("--json", type=Path, help="読みの結果をJSONLとして出力するファイルパス")
+    nx.add_argument("--limit", type=int, default=8, help="Markdownで表示する判例単位の件数上限（既定: 8）")
     args = ap.parse_args(argv)
 
     if args.cmd == "next":
@@ -170,12 +173,25 @@ def main(argv=None) -> int:
         if missing := [i for i in args.ids or [] if i not in known]:
             print(f"[64] {label(64)}（そんな id はない: {', '.join(missing)}）", file=sys.stderr)
             return 64
+        filtered = []
         for x in map(reading, results):
             if (args.ids and x["id"] not in args.ids) or (args.reading and x["reading"] not in args.reading):
                 continue
+            filtered.append(x)
             route = "—" if x["route"] is None else x["route"]["n"]
             print(f"[{x['reading']}] {x['id']} {READING[x['reading']][0]}  元 {x['original']} 逆 {x['converse'] if x['converse'] is not None else '—'}"
                   f"  絞る {x['narrow']['n']} 道筋 {route}  {x['key']}")
+
+        if args.markdown:
+            meta = results[0].get("meta", {}) if results else {}
+            md = render_next(filtered, meta, limit=args.limit)
+            args.markdown.parent.mkdir(parents=True, exist_ok=True)
+            args.markdown.write_text(md, encoding="utf-8")
+
+        if args.json:
+            args.json.parent.mkdir(parents=True, exist_ok=True)
+            args.json.write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in filtered), encoding="utf-8")
+
         return 0  # 読みは判定ではないので、失敗にしない
 
 

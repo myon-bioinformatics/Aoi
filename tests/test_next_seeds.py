@@ -89,6 +89,32 @@ def test_cli_next_prints_readings_and_never_fails_on_objections(tmp_path, capsys
     assert ns.main(["next", str(tmp_path / "none.jsonl")]) == 66
 
 
+def test_cli_next_outputs_markdown_json_and_limit(tmp_path):
+    f = tmp_path / "propositions.jsonl"
+    md_out = tmp_path / "out" / "next_seeds.md"
+    json_out = tmp_path / "out" / "next_seeds.jsonl"
+    import json
+
+    cx_many = [f"d-{2000 + i}" for i in range(12)]
+    res = {**_result(1, 3, cx_c=cx_many), "meta": {"sha256": "hash123", "code_version": "v1.0"}}
+    f.write_text(json.dumps(res) + "\n", encoding="utf-8")
+
+    code = ns.main(["next", str(f), "--markdown", str(md_out), "--json", str(json_out), "--limit", "3"])
+    assert code == 0
+
+    assert md_out.exists()
+    md_text = md_out.read_text(encoding="utf-8")
+    assert "# 次の命題の種（自動生成）" in md_text
+    assert "hash123" in md_text
+    assert "ほか9" in md_text  # 12 items with limit 3 => 3 shown + 9 more
+
+    assert json_out.exists()
+    json_lines = [json.loads(line) for line in json_out.read_text(encoding="utf-8").splitlines()]
+    assert len(json_lines) == 1
+    assert json_lines[0]["id"] == "X"
+    assert json_lines[0]["reading"] == 1
+
+
 def test_reading_keeps_all_four_forms_and_render_shows_them():
     x = ns.reading(_result(1, 3, cx_c=["d-2014"]))
     assert set(x["forms"]) == {"original", "contrapositive", "converse", "inverse"}

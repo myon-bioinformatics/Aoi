@@ -187,12 +187,21 @@ def main(argv=None) -> int:
     rmd.add_argument("--out", type=Path, help="Markdown の出力先ファイルパス（未指定なら標準出力）")
     rmd.add_argument("--jsonl", type=Path, help="読みの結果をJSONLとして出力するファイルパス")
     rmd.add_argument("--limit", type=_positive_int, default=8, help="Markdownで表示する判例単位の件数上限（既定: 8）")
+
+
+    rp = sub.add_parser("report", help="propositions.jsonl から next_seeds.md（および --claims があれば claims.md）を生成する")
+    rp.add_argument("results", type=Path, help="pythdragoras.py が書いた propositions.jsonl")
+    rp.add_argument("--claims", type=Path, help="pythdragoras.py が書いた claims.json")
+    output = rp.add_mutually_exclusive_group()
+    output.add_argument("--outdir", type=Path, help="出力ディレクトリ（next_seeds.md と claims.md を書き出す）")
+    output.add_argument("--out", type=Path, help="出力ファイル（next_seeds.md の書き出し先）")
+
     args = ap.parse_args(argv)
 
     if not args.results.exists():
         print(f"[66] {label(66)}: {args.results}", file=sys.stderr)
         return 66
-    results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines()]
+    results = [json.loads(line) for line in args.results.read_text(encoding="utf-8").splitlines() if line.strip()]
     meta = results[0].get("meta", {}) if results else {}
 
     if args.cmd == "render-md":
@@ -226,6 +235,52 @@ def main(argv=None) -> int:
             _write(args.jsonl, _jsonl(filtered))
 
         return 0  # 読みは判定ではないので、失敗にしない
+
+    if args.cmd == "report":
+        if args.claims and not args.claims.exists():
+            print(f"[66] {label(66)}: {args.claims}", file=sys.stderr)
+            return 66
+        # Refuse output/input aliases before writing either report.
+        output_paths = []
+        if args.outdir:
+            output_paths.append(args.outdir / "next_seeds.md")
+            if args.claims:
+                output_paths.append(args.outdir / "claims.md")
+        elif args.out:
+            output_paths.append(args.out)
+            if args.claims:
+                output_paths.append(args.out.parent / "claims.md")
+        resolved_outputs = [path.resolve() for path in output_paths]
+        inputs = {args.results.resolve()}
+        if args.claims:
+            inputs.add(args.claims.resolve())
+        if len(set(resolved_outputs)) != len(resolved_outputs) or inputs.intersection(resolved_outputs):
+            ap.error("report outputs must be distinct from each other and input files")
+        readings = [reading(r) for r in results]
+        md_next = render_next(readings, meta)
+
+        md_claims = ""
+        if args.claims:
+            claims_data = json.loads(args.claims.read_text(encoding="utf-8"))
+            md_claims = render_claims(claims_data)
+
+        if args.outdir:
+            args.outdir.mkdir(parents=True, exist_ok=True)
+            (args.outdir / "next_seeds.md").write_text(md_next, encoding="utf-8")
+            if args.claims:
+                (args.outdir / "claims.md").write_text(md_claims, encoding="utf-8")
+        elif args.out:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(md_next, encoding="utf-8")
+            if args.claims:
+                claims_out = args.out.parent / "claims.md"
+                claims_out.write_text(md_claims, encoding="utf-8")
+        else:
+            sys.stdout.write(md_next)
+            if md_claims:
+                sys.stdout.write("\n" + md_claims)
+
+        return 0
 
 
 if __name__ == "__main__":

@@ -25,8 +25,8 @@
 Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存は polars だけです。ortools は任意で、`season-requirements.txt` を入れたときだけ exact の求解（`season_exact.py`）が動きます。
 
 ```bash
-git clone https://github.com/myon-bioinformatics/sakanalytics.git
-cd sakanalytics
+git clone https://github.com/myon-bioinformatics/SakAnalytics.git
+cd SakAnalytics
 uv sync
 uv run python sakanalytics.py --help
 uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --out <season.jsonl>
@@ -93,17 +93,17 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 子 → Aoi（Aoi の main から作ったブランチで）:
 
 ```bash
-git subtree pull --prefix=sakanalytics https://github.com/myon-bioinformatics/sakanalytics.git main --squash
+git subtree pull --prefix=sakanalytics https://github.com/myon-bioinformatics/SakAnalytics.git main --squash
 test "$(git rev-parse HEAD:sakanalytics)" = "$(git rev-parse FETCH_HEAD^{tree})"   # Aoi 側に未同期の変更がないとき
 ```
 
 Aoi → 子（Aoi の main で）:
 
 ```bash
-git fetch https://github.com/myon-bioinformatics/sakanalytics.git main   # split の起点のコミットを手元に置く
+git fetch https://github.com/myon-bioinformatics/SakAnalytics.git main   # split の起点のコミットを手元に置く
 git subtree split --prefix=sakanalytics -b sync/sakanalytics
 test "$(git rev-parse sync/sakanalytics^{tree})" = "$(git rev-parse HEAD:sakanalytics)"
-git push https://github.com/myon-bioinformatics/sakanalytics.git sync/sakanalytics:refs/heads/<新しいブランチ>
+git push https://github.com/myon-bioinformatics/SakAnalytics.git sync/sakanalytics:refs/heads/<新しいブランチ>
 ```
 
 - push したブランチからこのリポジトリに PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、Aoi 側の起点をこのリポジトリの main に付け直します（squash マージでは split のコミットが main に残らないため）。
@@ -117,7 +117,7 @@ git push https://github.com/myon-bioinformatics/sakanalytics.git sync/sakanalyti
 |---|---|---|
 | [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
 | [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
-| **sakanalytics**（このリポジトリ） | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
+| **SakAnalytics**（このリポジトリ） | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
 | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
 | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
 | [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |

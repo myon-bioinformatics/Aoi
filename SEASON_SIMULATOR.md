@@ -10,7 +10,7 @@ Python 3.11〜3.14。確率計算だけなら標準ライブラリで動く。
 
 ```sh
 python -m pip install -r sakanalytics/season-requirements.txt
-python -m pip install pytest==9.1.1
+python -m pip install "pytest>=9.1.1"
 python sakanalytics/season_simulator.py sakanalytics/season-example.json \
   --as-of 2022-01-01 --through 2022-01-04 --trials 10000 --seed 42 \
   --exact --output /tmp/season-forecast.json

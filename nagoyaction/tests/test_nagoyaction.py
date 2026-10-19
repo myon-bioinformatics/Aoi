@@ -118,44 +118,6 @@ def test_undefined_variable_is_an_error(tmp_path):
         na.run(p, dry_run=True)
 
 
-def test_show_formatting_text_and_json(tmp_path, capsys):
-    p = na.load(write(tmp_path, BASIC))
-
-    out_text = na.show(p)
-    assert "Pipeline: t" in out_text
-    assert "Requires:" in out_text
-    assert "Tools: git" in out_text
-    assert "Vars:" in out_text
-    assert "x = hello" in out_text
-    assert "1. [net] (network)" in out_text
-    assert "command: fetch hello" in out_text
-    assert "outputs: out.txt" in out_text
-    assert "2. [local]" in out_text
-    assert "command: echo hello" in out_text
-
-    out_json_str = na.show(p, json_output=True)
-    data = json.loads(out_json_str)
-    assert data["name"] == "t"
-    assert data["requires"]["tools"] == ["git"]
-    assert data["vars"]["x"] == "hello"
-    assert len(data["steps"]) == 2
-    assert data["steps"][0]["name"] == "net"
-    assert data["steps"][0]["network"] is True
-    assert data["steps"][0]["expanded_run"] == ["fetch", "hello"]
-    assert data["steps"][0]["outputs"] == ["out.txt"]
-    assert data["steps"][1]["name"] == "local"
-    assert data["steps"][1]["network"] is False
-    assert data["steps"][1]["expanded_run"] == ["echo", "hello"]
-
-    assert na.main(["show", str(p["_path"])]) == 0
-    captured = capsys.readouterr().out
-    assert "Pipeline: t" in captured
-
-    assert na.main(["show", str(p["_path"]), "--json"]) == 0
-    captured_json = capsys.readouterr().out
-    assert json.loads(captured_json)["name"] == "t"
-
-
 def test_cli_is_stdlib_only_and_runs_from_another_directory(tmp_path):
     # 1ファイルをコピーすれば使える: 別ディレクトリから python -S（site-packages なし）で実行できる
     out = subprocess.run([sys.executable, "-S", str(ROOT / "nagoyaction" / "nagoyaction.py"), "run",

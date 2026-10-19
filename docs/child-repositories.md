@@ -70,6 +70,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## NagoyAction
 
+2026-10-20: Aoi #77 の `show` を子の正本 NagoyAction #7 へ反映し、main `4ad09fdd7b3c1a69e103772b3a5dbf4ea4b28df8` を squash なしの subtree pull で取り込みました。子 #6 の共通 `.gitignore` も含め、prefix 全体の tree と登録 SHA を一致させています。Aoi #78 の3子の join 修復も保持しています。研究workerの自動実行は有効化していません。
+
 - NagoyAction の最初の 49 コミットは、Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd` から `git filter-branch --subdirectory-filter nagoyaction` で切り出しました（先頭 `b35707b877a92fd088db06f15b87d0e72158fc27`、tree `1537879773093a5350a17ca657fbdf89f6a57e72` が Aoi の `nagoyaction/` と一致）。そのうえに子の足場（LICENSE・`.gitignore`・README の節、CI）を足し、NagoyAction #1（README）と #2（Aoi #67 の fetch-guard の同期）を merge commit で取り込んだ main `a53df3f0fd9780ab55626e489ebb12851724731c` に対し、旧 `nagoyaction/` を消してから一度だけ `git subtree add`（`--squash` なし）で join を入れ直しました。merge commit の第2親は NagoyAction main の head で、NagoyAction の全履歴が Aoi につながります（手組みの2親マージや squash 由来の join は使いません。最初の squash の join `f575167` は履歴に残りますが、起点にはしません）。PR は squash/rebase せず merge commit で入れてください。
 - `nagoyaction/` 全体（子の CI・LICENSE・`.gitignore` も含む）は登録した NagoyAction の tree と同一です。Aoi の原本を写したファイルはないので `mirrored_from_parent` は書きません。`min.py` は Aoi が提供し、子には置きません。
 - NagoyAction の手順とテストは Aoi の直下（`cycles/`・`queryu/`・`sakanalytics/`・`blueprobe/`・`vendor/`・`scripts/`・`docs/`）を相対パスで使います。子の CI は Aoi を固定 SHA で checkout し、その `nagoyaction/` を子の tree に置き換えて（index の tree が子の tree と一致することを確かめて）、Aoi の設定で `pytest -c pyproject.toml nagoyaction/tests` を動かします。Aoi の中では `nagoyaction/.github/` は動きません。

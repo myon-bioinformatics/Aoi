@@ -61,7 +61,7 @@ jobs:
       - name: Install locked dependencies
         timeout-minutes: 2
         run: |
-          python -m pip install uv==0.12.23
+          python -m pip install 'uv==0.12.23'
           uv sync --frozen
       - name: Verify trusted run and restore data-only checkpoint
         timeout-minutes: 2

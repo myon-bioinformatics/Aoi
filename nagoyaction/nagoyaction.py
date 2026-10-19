@@ -6,6 +6,7 @@ GitHub Actions のワークフローは `python nagoyaction/nagoyaction.py run <
 
   doctor <pipeline>  実行前の確認。Python の版、必要なツール（git, uv, gh など）、
                      オフライン実行に必要な成果物の有無。足りないものがあれば終了コード1
+  show <pipeline>    パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する
   run <pipeline>     doctor のあと、手順を順に実行する。各手順の結果を受領記録(JSONL)に残す
     --offline        network = true の手順は実行しない（成果物が既にあれば飛ばす。なければ止まる）
     --only / --from  一部の手順だけ実行する
@@ -148,6 +149,64 @@ def _append(path: Path, entry: dict) -> None:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
+def show(p: dict, *, json_output: bool = False) -> str:
+    """パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示形式で返す。"""
+    vars_ = {k: str(v) for k, v in p.get("vars", {}).items()}
+    req = p.get("requires", {})
+    steps_data = []
+    for s in p.get("step", []):
+        expanded = _expand(s["run"], vars_)
+        steps_data.append({
+            "name": s["name"],
+            "network": bool(s.get("network")),
+            "run": s["run"],
+            "expanded_run": expanded,
+            "outputs": s.get("outputs", []),
+        })
+
+    data = {
+        "name": p.get("name", ""),
+        "root": str(p["_root"]),
+        "requires": {
+            "python": req.get("python", "3.11"),
+            "tools": req.get("tools", []),
+            "optional": req.get("optional", []),
+        },
+        "vars": vars_,
+        "steps": steps_data,
+    }
+
+    if json_output:
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+    lines = [
+        f"Pipeline: {data['name']}",
+        f"Root: {data['root']}",
+        "Requires:",
+        f"  Python: >= {data['requires']['python']}",
+        f"  Tools: {', '.join(data['requires']['tools']) or 'なし'}",
+        f"  Optional: {', '.join(data['requires']['optional']) or 'なし'}",
+    ]
+
+    if vars_:
+        lines.append("Vars:")
+        for k, v in vars_.items():
+            lines.append(f"  {k} = {v}")
+    else:
+        lines.append("Vars: なし")
+
+    lines.append(f"Steps ({len(steps_data)}):")
+    for idx, s in enumerate(steps_data, 1):
+        net_tag = " (network)" if s["network"] else ""
+        cmd_str = " ".join(s["expanded_run"])
+        lines.append(f"  {idx}. [{s['name']}]" + net_tag)
+        lines.append(f"     command: {cmd_str}")
+        if s["outputs"]:
+            lines.append(f"     outputs: {', '.join(s['outputs'])}")
+
+    return "\n".join(lines)
+
+
 def _print_checks(checks: list[dict]) -> None:
     mark = {"ok": "✓", "warn": "!", "fail": "✗"}
     for c in checks:
@@ -160,6 +219,9 @@ def main(argv=None) -> int:
     d = sub.add_parser("doctor")
     d.add_argument("pipeline", type=Path)
     d.add_argument("--offline", action="store_true")
+    s = sub.add_parser("show", help="パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する")
+    s.add_argument("pipeline", type=Path)
+    s.add_argument("--json", dest="json_output", action="store_true", help="JSON 形式で出力")
     r = sub.add_parser("run")
     r.add_argument("pipeline", type=Path)
     r.add_argument("--offline", action="store_true")
@@ -171,6 +233,9 @@ def main(argv=None) -> int:
 
     try:
         p = load(args.pipeline)
+        if args.cmd == "show":
+            print(show(p, json_output=args.json_output))
+            return 0
         checks = doctor(p, offline=args.offline)
         _print_checks(checks)
         if any(c["level"] == "fail" for c in checks):

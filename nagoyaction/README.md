@@ -12,6 +12,7 @@
 データを外に出せない案件では、同じ定義をローカルで実行すればよい。
 
 - `doctor`：Python の版、必須ツール（例: git, uv）、任意ツール（例: gh）、オフライン実行に必要な成果物の有無を確認する。足りなければ終了コード1で、実行前に止まる
+- `show`：パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する（`--json` で JSON 出力）
 - `run`：doctor のあと手順を順に実行し、`--receipt` に受領記録（JSONL）を残す。失敗した手順で止まる
 - 手順はシェルを通さず、引数の配列で実行する
 - 標準ライブラリだけ（Python 3.11+）。このファイル1つをコピーすれば他のリポジトリでも使える
@@ -24,6 +25,7 @@
 
 ```bash
 python nagoyaction.py doctor <pipeline.toml>            # 実行前の確認
+python nagoyaction.py show   <pipeline.toml>            # パイプライン構造の表示（--json も可）
 python nagoyaction.py run    <pipeline.toml>            # 実行
 python nagoyaction.py run    <pipeline.toml> --offline  # 取得しない
 python nagoyaction.py run    <pipeline.toml> --dry-run  # 何をするかだけ表示
@@ -116,6 +118,7 @@ Aoi のルートで、c001（中日）のパイプラインを動かす例。
 
 ```bash
 python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml            # 実行前の確認
+python nagoyaction/nagoyaction.py show   cycles/c001-chunichi/pipeline.toml            # 構造の表示
 python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml            # 実行
 python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --offline  # 取得しない
 python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run  # 何をするかだけ表示

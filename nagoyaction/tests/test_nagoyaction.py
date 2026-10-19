@@ -79,6 +79,26 @@ def test_doctor_offline_needs_outputs_of_network_steps(tmp_path):
     assert {c["check"]: c["level"] for c in na.doctor(p, offline=True, which=lambda t: "/bin/" + t)}["offline:net"] == "ok"
 
 
+def test_doctor_verbose_output(tmp_path, capsys):
+    p = na.load(write(tmp_path, BASIC))
+    (tmp_path / "out.txt").write_text("hello world")
+
+    # Function call carries info dictionary in checks
+    checks = na.doctor(p, offline=True, which=lambda t: "/bin/" + t)
+    py_check = next(c for c in checks if c["check"] == "python")
+    assert "executable" in py_check["info"]
+    assert "platform" in py_check["info"]
+
+    off_check = next(c for c in checks if c["check"] == "offline:net")
+    assert "out.txt (exists, 11 bytes)" in off_check["info"]["outputs"]
+
+    # CLI test with -v / --verbose prints bullet points
+    assert na.main(["doctor", str(p["_path"]), "--offline", "-v"]) == 0
+    captured = capsys.readouterr().out
+    assert "• executable:" in captured
+    assert "• outputs: out.txt (exists, 11 bytes)" in captured
+
+
 def test_doctor_python_version_gate(tmp_path):
     p = na.load(write(tmp_path, BASIC.replace('python = "3.11"', 'python = "99.0"')))
     assert na.doctor(p, which=lambda t: "/x")[0]["level"] == "fail"

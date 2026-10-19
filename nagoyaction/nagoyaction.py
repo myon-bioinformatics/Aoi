@@ -5,7 +5,7 @@ GitHub Actions のワークフローは `python nagoyaction/nagoyaction.py run <
 データを外に出せない案件では、同じ定義をローカルで実行すればよい。
 
   doctor <pipeline>  実行前の確認。Python の版、必要なツール（git, uv, gh など）、
-                     オフライン実行に必要な成果物の有無。足りないものがあれば終了コード1
+                     オフライン実行に必要な成果物の有無（-v/--verbose で詳細診断）。足りないものがあれば終了コード1
   show <pipeline>    パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する
   run <pipeline>     doctor のあと、手順を順に実行する。各手順の結果を受領記録(JSONL)に残す
     --offline        network = true の手順は実行しない（成果物が既にあれば飛ばす。なければ止まる）
@@ -72,27 +72,67 @@ def _version(tool: str) -> str:
 
 
 def doctor(p: dict, *, offline: bool = False, which=shutil.which) -> list[dict]:
-    """確認結果の一覧。level は ok / warn / fail。"""
+    """確認結果の一覧。level は ok / warn / fail。info に詳細診断情報を含む。"""
     req = p.get("requires", {})
     checks = []
     need = tuple(int(x) for x in str(req.get("python", "3.11")).split("."))
     have = sys.version_info[: len(need)]
-    checks.append({"check": "python", "level": "ok" if have >= need else "fail",
-                   "detail": f"{sys.version.split()[0]} (requires >= {'.'.join(map(str, need))})"})
+    py_ok = have >= need
+    checks.append({
+        "check": "python",
+        "level": "ok" if py_ok else "fail",
+        "detail": f"{sys.version.split()[0]} (requires >= {'.'.join(map(str, need))})",
+        "info": {
+            "executable": sys.executable,
+            "platform": sys.platform,
+            "version": sys.version.replace("\n", " "),
+        },
+    })
     for tool in req.get("tools", []):
         path = which(tool)
-        checks.append({"check": tool, "level": "ok" if path else "fail",
-                       "detail": _version(tool) if path else "見つからない（インストールが必要）"})
+        ver = _version(tool) if path else None
+        checks.append({
+            "check": tool,
+            "level": "ok" if path else "fail",
+            "detail": ver if path else "見つからない（インストールが必要）",
+            "info": {
+                "executable": path or "not found",
+                "status": "installed" if path else "missing (required)",
+            },
+        })
     for tool in req.get("optional", []):
         path = which(tool)
-        checks.append({"check": tool, "level": "ok" if path else "warn",
-                       "detail": _version(tool) if path else "見つからない（なくても実行できる）"})
+        ver = _version(tool) if path else None
+        checks.append({
+            "check": tool,
+            "level": "ok" if path else "warn",
+            "detail": ver if path else "見つからない（なくても実行できる）",
+            "info": {
+                "executable": path or "not found",
+                "status": "installed" if path else "missing (optional)",
+            },
+        })
     if offline:
         for s in p["step"]:
             if s.get("network"):
-                missing = [o for o in s.get("outputs", []) if not (p["_root"] / o).exists()]
-                checks.append({"check": f"offline:{s['name']}", "level": "fail" if missing else "ok",
-                               "detail": f"成果物がない: {missing}" if missing else "成果物あり（取得を飛ばす）"})
+                outputs_info = []
+                missing = []
+                for o in s.get("outputs", []):
+                    target = p["_root"] / o
+                    if target.exists():
+                        size = target.stat().st_size
+                        outputs_info.append(f"{o} (exists, {size} bytes)")
+                    else:
+                        outputs_info.append(f"{o} (missing)")
+                        missing.append(o)
+                checks.append({
+                    "check": f"offline:{s['name']}",
+                    "level": "fail" if missing else "ok",
+                    "detail": f"成果物がない: {missing}" if missing else "成果物あり（取得を飛ばす）",
+                    "info": {
+                        "outputs": ", ".join(outputs_info) if outputs_info else "none declared",
+                    },
+                })
     return checks
 
 
@@ -207,10 +247,13 @@ def show(p: dict, *, json_output: bool = False) -> str:
     return "\n".join(lines)
 
 
-def _print_checks(checks: list[dict]) -> None:
+def _print_checks(checks: list[dict], *, verbose: bool = False) -> None:
     mark = {"ok": "✓", "warn": "!", "fail": "✗"}
     for c in checks:
         print(f"[{mark[c['level']]}] {c['check']}: {c['detail']}")
+        if verbose and c.get("info"):
+            for k, v in c["info"].items():
+                print(f"    • {k}: {v}")
 
 
 def main(argv=None) -> int:
@@ -219,6 +262,7 @@ def main(argv=None) -> int:
     d = sub.add_parser("doctor")
     d.add_argument("pipeline", type=Path)
     d.add_argument("--offline", action="store_true")
+    d.add_argument("-v", "--verbose", action="store_true", help="詳細な診断情報を表示")
     s = sub.add_parser("show", help="パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する")
     s.add_argument("pipeline", type=Path)
     s.add_argument("--json", dest="json_output", action="store_true", help="JSON 形式で出力")
@@ -237,7 +281,7 @@ def main(argv=None) -> int:
             print(show(p, json_output=args.json_output))
             return 0
         checks = doctor(p, offline=args.offline)
-        _print_checks(checks)
+        _print_checks(checks, verbose=getattr(args, "verbose", False))
         if any(c["level"] == "fail" for c in checks):
             print("doctor: 足りないものがある。実行しない", file=sys.stderr)
             return 1

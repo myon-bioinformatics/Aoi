@@ -3,15 +3,9 @@ root = "../.."
 
 [requires]
 python = "3.11"
-tools = ["git", "uv"]
 
-[[step]]
-name = "dependencies"
-run = ["uv", "sync", "--frozen"]
-network = true
-outputs = [".venv/pyvenv.cfg"]
-
+# Install locked dependencies separately. This pipeline never syncs or fetches.
 [[step]]
 name = "explore"
-run = ["uv", "run", "--frozen", "python", "nagoyaction/inbox/inbox.py", "worker", "--seconds", "18000"]
-network = true
+run = ["python", "nagoyaction/inbox/inbox.py", "worker", "--seconds", "60", "--max-steps", "20"]
+network = false

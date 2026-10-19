@@ -19,7 +19,7 @@
         }
       },
       "repository_id": 1423772286,
-      "sha": "e33a0900a347b20eaf8ef7a9ff7476df4b164272"
+      "sha": "8d6163989fc2f4843412a03b465fee1cf9b3ac3c"
     },
     "myon-bioinformatics/NagoyAction": {
       "optional": {
@@ -38,7 +38,7 @@
         }
       },
       "repository_id": 1423045231,
-      "sha": "489800856647388391963390d05c5ff92cd5d8cb"
+      "sha": "cd21d7e295facfbc8101ea2d89f715da27fbd80a"
     },
     "myon-bioinformatics/QueRyu": {
       "optional": {
@@ -60,7 +60,7 @@
         }
       },
       "repository_id": 1423489570,
-      "sha": "b17b17db65f1171f3ba588fbdb958773772bf0fa"
+      "sha": "9a5bc4a048edfdaefbbe514fdde94eb0df4f2065"
     }
   }
 }

@@ -172,9 +172,15 @@ def test_verified_cache_real_lab_snapshot_replay(tmp_path, lab_source_access):
         assert source.parse_snapshot({**snapshot, field: value})['counts']['extraction_failed'] == 1
 
 
-def test_blueprobe_cache_cli_uses_verified_snapshots(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize('pattern,selector', [
+    (None, None),
+    ('github_readme', 'article.markdown-body, .markdown-body'),
+    (' PORTFOLIO_PROFILE ', 'section#about, #about, .profile, .portfolio, section.bio, #portfolio'),
+])
+def test_blueprobe_cache_cli_uses_verified_snapshots(tmp_path, monkeypatch, capsys, pattern, selector):
     pytest.importorskip("queryu")
     import blueprobe
+    import html_source
     from queryu import Cache, CacheIntegrityError
 
     cache = Cache(tmp_path)
@@ -183,12 +189,17 @@ def test_blueprobe_cache_cli_uses_verified_snapshots(tmp_path, monkeypatch, caps
     extractor = Mock(return_value={'snapshot': {'schema': 'html-snapshot/1'}, 'extraction': {'text': 'x'}})
     source = HtmlSource(snapshot_extractor=extractor)
     monkeypatch.setattr(blueprobe, 'load_source', lambda name: source)
-    assert blueprobe.main(['--source', 'html_source', '--cache', str(tmp_path)]) == 0
-    extractor.assert_called_once_with(snapshot, selector=None)
+    monkeypatch.setattr(html_source, 'HtmlSource', lambda **kw: HtmlSource(snapshot_extractor=extractor, **kw))
+    args = ['--source', 'html_source', '--cache', str(tmp_path)]
+    if pattern is not None:
+        args += ['--pattern', pattern]
+    assert blueprobe.main(args) == 0
+    extractor.assert_called_once_with(snapshot, selector=selector)
     assert 'records' in capsys.readouterr().out
     (tmp_path / entry['file']).unlink()
     with pytest.raises((CacheIntegrityError, FileNotFoundError)):
-        blueprobe.main(['--source', 'html_source', '--cache', str(tmp_path)])
+        blueprobe.main(args)
+    assert extractor.call_count == 1
 
 
 def test_empty_404_cache_is_counted_without_parsing(tmp_path):
@@ -203,3 +214,39 @@ def test_empty_404_cache_is_counted_without_parsing(tmp_path):
     assert rows[0]['empty_pages'] == 1
     assert rows[0]['pages'] == rows[0]['records'] == rows[0]['unknown'] == 0
     source.snapshot_extractor.assert_not_called()
+
+
+@pytest.mark.parametrize('pattern,html', [
+    ('github_readme', '<article class="markdown-body">Saved README</article>'),
+    ('portfolio_profile', '<section id="about">Saved README</section>'),
+    ('article_body', '<article>Saved README</article>'),
+    ('documentation_main', '<div role="main">Saved README</div>'),
+    ('reader_page', '<div class="reader-view">Saved README</div>'),
+    ('npb_calendar', '<div id="calendar">Saved README</div>'),
+    ('npb_linescore', '<div class="linescore">Saved README</div>'),
+    ('generic_main', '<div id="content">Saved README</div>'),
+])
+def test_pattern_cli_replays_real_saved_html(tmp_path, monkeypatch, capsys, lab_source_access, pattern, html):
+    import blueprobe
+    from queryu import Cache
+
+    raw = '<nav>Excluded navigation</nav>' + html
+    cache = Cache(tmp_path)
+    entry = cache.put('page', 'https://example.test', 'g', 200, raw.encode(), {})
+    extract = lab_source_access.extract_snapshot
+    observations = []
+
+    def observe(snapshot, **options):
+        result = extract(snapshot, **options)
+        observations.append(result)
+        return result
+
+    monkeypatch.setattr(lab_source_access, 'extract_snapshot', observe)
+    args = ['--source', 'html_source', '--pattern', pattern, '--cache', str(tmp_path), '--strict']
+    for _ in range(2):
+        assert blueprobe.main(args) == 0
+        assert capsys.readouterr().err == ''
+    assert len(observations) == 2
+    assert observations[0] == observations[1]
+    assert observations[0]['extraction']['text'] == 'Saved README'
+    assert observations[0]['snapshot']['content_sha256'] == cache.snapshot(entry)['content_sha256']

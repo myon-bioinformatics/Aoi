@@ -98,35 +98,35 @@
           "qual": "polars",
           "name": "read_ndjson",
           "file": "dragowing/overlap.py",
-          "line": 121
+          "line": 131
         },
         {
           "op": "call",
           "qual": "polars.read_ndjson",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 121
+          "line": 131
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson()",
           "name": "height",
           "file": "dragowing/overlap.py",
-          "line": 122
+          "line": 132
         },
         {
           "op": "dunder",
           "qual": "polars.read_ndjson().height",
           "name": "__ne__",
           "file": "dragowing/overlap.py",
-          "line": 122
+          "line": 132
         },
         {
           "op": "dunder",
           "qual": "polars.read_ndjson().height.__ne__",
           "name": "__bool__",
           "file": "dragowing/overlap.py",
-          "line": 122
+          "line": 132
         }
       ]
     },
@@ -197,42 +197,42 @@
           "qual": "polars",
           "name": "read_ndjson",
           "file": "dragowing/overlap.py",
-          "line": 121
+          "line": 131
         },
         {
           "op": "call",
           "qual": "polars.read_ndjson",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 121
+          "line": 131
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson()",
           "name": "height",
           "file": "dragowing/overlap.py",
-          "line": 122
+          "line": 132
         },
         {
           "op": "dunder",
           "qual": "polars.read_ndjson()",
           "name": "__getitem__",
           "file": "dragowing/overlap.py",
-          "line": 124
+          "line": 134
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson().__getitem__",
           "name": "to_list",
           "file": "dragowing/overlap.py",
-          "line": 124
+          "line": 134
         },
         {
           "op": "call",
           "qual": "polars.read_ndjson().__getitem__.to_list",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 124
+          "line": 134
         },
         {
           "op": "getattr",
@@ -350,7 +350,6 @@
         "ones",
         "reshape",
         "shape",
-        "sum",
         "uint8",
         "unpackbits"
       ],
@@ -505,112 +504,98 @@
           "qual": "numpy.unpackbits().__getitem__.astype()",
           "name": "shape",
           "file": "dragowing/overlap.py",
-          "line": 131
+          "line": 140
         },
         {
           "op": "dunder",
           "qual": "numpy.unpackbits().__getitem__.astype()",
           "name": "__getitem__",
           "file": "dragowing/overlap.py",
-          "line": 133
+          "line": 142
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "asarray",
           "file": "dragowing/overlap.py",
-          "line": 156
+          "line": 166
         },
         {
           "op": "call",
           "qual": "numpy.asarray",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 156
+          "line": 166
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "ones",
           "file": "dragowing/overlap.py",
-          "line": 158
+          "line": 171
         },
         {
           "op": "call",
           "qual": "numpy.ones",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 158
+          "line": 171
         },
         {
           "op": "dunder",
           "qual": "numpy.asarray()",
           "name": "__getitem__",
           "file": "dragowing/overlap.py",
-          "line": 160
+          "line": 173
         },
         {
           "op": "dunder",
           "qual": "numpy.asarray().__getitem__",
           "name": "__invert__",
           "file": "dragowing/overlap.py",
-          "line": 160
+          "line": 173
         },
         {
           "op": "dunder",
           "qual": "numpy.ones()",
           "name": "__and__",
           "file": "dragowing/overlap.py",
-          "line": 160
+          "line": 173
         },
         {
           "op": "dunder",
           "qual": "numpy.ones().__and__",
           "name": "__and__",
           "file": "dragowing/overlap.py",
-          "line": 160
+          "line": 173
         },
         {
           "op": "dunder",
           "qual": "numpy.ones().__and__.__and__",
           "name": "__and__",
           "file": "dragowing/overlap.py",
-          "line": 160
+          "line": 173
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "flatnonzero",
           "file": "dragowing/overlap.py",
-          "line": 161
+          "line": 174
         },
         {
           "op": "call",
           "qual": "numpy.flatnonzero",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 161
+          "line": 174
         },
         {
           "op": "dunder",
           "qual": "numpy.flatnonzero()",
           "name": "__iter__",
           "file": "dragowing/overlap.py",
-          "line": 161
-        },
-        {
-          "op": "getattr",
-          "qual": "numpy.ones().__and__.__and__.__and__",
-          "name": "sum",
-          "file": "dragowing/overlap.py",
-          "line": 169
-        },
-        {
-          "op": "call",
-          "qual": "numpy.ones().__and__.__and__.__and__.sum",
-          "name": "",
-          "file": "dragowing/overlap.py",
-          "line": 169
+          "line": 174
         }
       ]
     },
@@ -1989,7 +1974,9 @@
       "status": 1,
       "exception": "ModuleNotFoundError: No module named 'markdown' (trace_surface absent: import blocked)",
       "dynamic_attributes": [],
-      "ast_attributes": [],
+      "ast_attributes": [
+        "__version__"
+      ],
       "missed_by_ast": [],
       "first_events": []
     },
@@ -2007,7 +1994,9 @@
       "dynamic_attributes": [
         "markdown"
       ],
-      "ast_attributes": [],
+      "ast_attributes": [
+        "__version__"
+      ],
       "missed_by_ast": [
         "markdown"
       ],

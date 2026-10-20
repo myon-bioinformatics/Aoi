@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # サイクルデータ（cycles/）・scripts/・sakanalytics は Aoi に残す。
-      # Aoi main（#85 のマージコミット）。
-      AOI_SHA: dadc6fac043fac2d1550132a362f92eeb0e12643
+      # Aoi #86 の head。holdout.provenance.json が littlebit の現在のソース SHA-256 を記録している。
+      AOI_SHA: 9249ab6e7bbec167cc75963ff315bc90ab5d9e0c
     timeout-minutes: 10
     strategy:
       fail-fast: false

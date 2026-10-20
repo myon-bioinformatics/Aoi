@@ -186,13 +186,11 @@ python cache_share.py --cache data/cache verify --group npb_calendar
 
 ## テスト
 
-サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi と BlueProbe を固定 SHA で checkout して渡す（`.github/workflows/ci.yml` の `AOI_SHA`・`BLUEPROBE_SHA` と同じ）。
+サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi と BlueProbe の最新の main を checkout して渡す。CI は実行時に `git ls-remote` で main の SHA を解決し、解決した SHA をジョブサマリーへ書く。古い実行を再現するときは workflow_dispatch の ref を指定する。
 
 ```sh
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
-git -C ../Aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7
 git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
-git -C ../BlueProbe checkout f0763c4de0a2976bb243cd7d780c8b5ae0c22ba4
 AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
 ```
 

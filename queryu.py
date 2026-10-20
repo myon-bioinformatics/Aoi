@@ -149,7 +149,7 @@ class HandlerClient:
 def aoi_sibling_path(here: Path, module: str, sibling: str = "blueprobe") -> None:
     """``module`` が import できないときだけ、Aoi の checkout の中にある隣の ``sibling/`` を ``sys.path`` に足す。
 
-    単独の QueRyu では足さない（BlueProbe は固定 SHA の checkout を PYTHONPATH で渡す）。
+    単独の QueRyu では足さない（BlueProbe は最新 main の checkout を PYTHONPATH で渡す）。
     ``../blueprobe`` のような相対の隣を読むのは、親が Aoi（pyproject.toml と cycles/ がある）のときに限る。
     """
     if importlib.util.find_spec(module) is not None:

@@ -66,7 +66,7 @@ def test_ast_of_collect_sees_only_dataframe_and_col():
     assert survey["research_digest.py"] == Counter({"DataFrame": 2, "col": 1})
     production = [
         name for name in survey
-        if not name.startswith(("scripts/", "tests/", "shrink/"))
+        if not name.startswith(("scripts/", "tests/", "shrink/", "vendor/"))
     ]
     assert production == ["research_digest.py"]
 

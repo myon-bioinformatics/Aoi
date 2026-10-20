@@ -7,10 +7,10 @@
       "path": "sakanalytics/league_laboratory.py",
       "field": "inputs.analysis_sha256",
       "evidence_sha256": "13c27269f2eb563f72a0f2af2d7c2e4fc28d782f618cbe7f014f5834f061000f",
-      "current_sha256": "b5dacd5d612ccffa0429f9c1efe5bc22b2c65bcd71cdb833610dd79bf72390bb",
+      "current_sha256": "0b8d6f6ebea7ac5135ddbda094c219de7edebbc644bd112c0ca82fdcd3798af5",
       "artifacts_regenerated": false,
       "inputs_regenerated": false,
-      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() of sakanalytics/league_laboratory.py (top-level AST comparison): paths now resolve through aoi_layout/aoi_paths, with new --root/--cycle and AOI_ROOT / AOI_RESEARCH_CYCLE. That commit rewrote inputs.analysis_sha256 in results.json to the new file hash without running the generator. results.json is restored byte for byte to 070dc64, so inputs.analysis_sha256 is again the hash of the file that produced it. This is not a regenerated baseline."
+      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() of sakanalytics/league_laboratory.py (top-level AST comparison): paths now resolve through aoi_layout/aoi_paths, with new --root/--cycle and AOI_ROOT / AOI_RESEARCH_CYCLE. That commit rewrote inputs.analysis_sha256 in results.json to the new file hash without running the generator. results.json is restored byte for byte to 070dc64, so inputs.analysis_sha256 is again the hash of the file that produced it. This is not a regenerated baseline. On 2026-10-20 SakAnalytics #10 (merge 44f95f6, pulled into Aoi by subtree) again changed only main(): --root/--cycle and aoi_layout were replaced by an explicit --cycle-dir resolved by Aoi. results.json is unchanged and was not regenerated."
     }
   ]
 }

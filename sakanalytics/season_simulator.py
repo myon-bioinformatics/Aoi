@@ -45,16 +45,6 @@ class Rules:
             raise ValueError('rule label and source are required')
 
 
-def npb_rules(year, league, members, previous_order):
-    """Only versions actually checked against the official source are preset."""
-    if (year, league) not in {(2022, 'CL'), (2022, 'PL'), (2025, 'CL')}:
-        raise ValueError('unverified year/league: supply explicit Rules with its source')
-    if len(members) != 6:
-        raise ValueError('NPB presets require six league members')
-    return Rules(tuple(members), tuple(previous_order), league == 'CL', 3,
-                 f'NPB-{year}-{league}', f'https://npb.jp/games/{year}/info_cs{league.lower()}.html')
-
-
 @dataclass
 class Snapshot:
     teams: tuple[str, ...]
@@ -133,7 +123,7 @@ def _validate_game(g, teams):
 
 
 def calendar_games(rows, year):
-    """Adapt Aoi's regular-season calendar observations; retain no raw text."""
+    """Adapt calendar rows (key, date, home, away, hs, as) for one year; retain no raw text."""
     result = []
     for row in rows:
         _validate_date(row['date'])
@@ -312,7 +302,7 @@ def magic_events(rows):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input', type=Path)
-    parser.add_argument('--calendar-jsonl', type=Path, help='Aoi regular-season observations (local only)')
+    parser.add_argument('--calendar-jsonl', type=Path, help='regular-season calendar rows as JSONL (key, date, home, away, hs, as; local only)')
     parser.add_argument('--season', type=int, help='calendar year; required with --calendar-jsonl')
     parser.add_argument('--as-of', required=True)
     parser.add_argument('--through', help='replay daily through this inclusive date')

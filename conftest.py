@@ -9,6 +9,22 @@ import pytest
 
 import aoi_paths
 
+# 子（queryu/ など）の conftest.py は Aoi の場所を AOI_ROOT で受け取る。Aoi の中ではここで入れる
+os.environ.setdefault("AOI_ROOT", str(aoi_paths.resolve_aoi_root(anchor=Path(__file__))))
+
+
+def _install_npb_teams():
+    """QueRyu's ask holds no team table; Aoi passes the NPB one (aoi_npb.TEAMS)."""
+    try:
+        import ask
+    except ImportError:
+        return
+    import aoi_npb
+    ask.set_teams(aoi_npb.TEAMS)
+
+
+_install_npb_teams()
+
 
 @pytest.fixture(scope="session")
 def aoi_root() -> Path:

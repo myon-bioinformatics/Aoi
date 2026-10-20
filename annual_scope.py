@@ -1,4 +1,7 @@
-"""Copy only the primary years from an annual cache; keep history as reference."""
+"""Copy only the primary years from an annual cache; keep history as reference.
+
+NPB-specific (official annual page keys/URLs on npb.jp, 2013-2026), so it lives in Aoi, not QueRyu.
+"""
 from __future__ import annotations
 import argparse
 import json
@@ -6,7 +9,11 @@ from pathlib import Path
 import shutil
 import hashlib
 import sys
-from queryu import Cache, aoi_sibling_path
+ROOT = Path(__file__).resolve().parent
+for _dir in (ROOT / "queryu", ROOT / "blueprobe"):
+    if str(_dir) not in sys.path:
+        sys.path.append(str(_dir))
+from queryu import Cache  # noqa: E402
 
 PRIMARY_YEARS = tuple(range(2013, 2027))
 
@@ -53,7 +60,6 @@ def primary_cache(source: Path, destination: Path):
 
 def verify_observations(cache_root, observations):
     """Replay saved official bytes; no live requests and no cache mutations."""
-    aoi_sibling_path(Path(__file__).resolve().parent, 'npb_team_annual')
     import npb_team_annual as source
     cache=Cache(cache_root)
     entries=[json.loads(s) for s in cache.manifest.read_text(encoding='utf-8').splitlines() if s.strip()]

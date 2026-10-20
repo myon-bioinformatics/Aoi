@@ -8,9 +8,22 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sakanalytics"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "queryu"))
+# NPB の年間ページの範囲（annual_scope.py）と年間表の前提（aoi_npb.py）は Aoi の直下に置く
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from synthetic_league import PRIMARY_YEARS, validate_period, calibration_mean
-from annual_audit import audit_files
+from annual_audit import audit_files as _audit_files
 from annual_scope import verify_observations
+try:
+    from aoi_npb import ANNUAL_AUDIT_RULES
+except ImportError:  # NPB の前提を内蔵していた古い annual_audit
+    ANNUAL_AUDIT_RULES = None
+
+
+def audit_files(observations, expected_years, baseline=None):
+    """annual_audit.audit_files with the NPB annual-table assumptions from Aoi."""
+    if ANNUAL_AUDIT_RULES is None:
+        return _audit_files(observations, expected_years, baseline)
+    return _audit_files(observations, expected_years, baseline, ANNUAL_AUDIT_RULES)
 
 
 def require_primary_years(years):

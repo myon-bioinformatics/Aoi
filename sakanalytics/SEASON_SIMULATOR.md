@@ -95,7 +95,7 @@ API を他のサブプロジェクトから使う際は `sakanalytics` ディレ
 | NPB 2022 パ | 当該群との対戦勝率、リーグ内勝率、前年順位 | 3 |
 
 出典：[2022セ](https://npb.jp/games/2022/info_cscl.html)、[2022パ](https://npb.jp/games/2022/info_cspl.html)、[2025セ](https://npb.jp/games/2025/info_cscl.html)。
-`npb_rules()` は未確認の年・リーグを拒否する。別の年は出典を確認した `Rules` を明示する。
+この表の NPB のプリセット（`npb_rules()`）は Aoi の `aoi_npb.py` に置く。SakAnalytics は `Rules` を受け取るだけで、リーグ固有の規則を持たない。`npb_rules()` は未確認の年・リーグを拒否する。別の年は出典を確認した `Rules` を明示する。
 前年順位も呼出側から供給する。2020年を通常の3枠に自動変換しない。
 
 当該群は、勝率（セでは勝数も）が並んだ群全体で固定し、その群との対戦を集計する。
@@ -120,10 +120,10 @@ Monte Carlo区間は反復の有限性だけを表し、モデル誤差や実力
 ## 検証
 
 [2022年接続検証JSON](season-validation-2022.json)は計算による集約値のみ。
-手元の許可済み入力で再実行するには以下を使う。
+手元の許可済み入力で再実行するには、Aoi のルートで以下を使う（NPB 2022 固有なので Aoi の `scripts/` に移した）。
 
 ```sh
-python sakanalytics/season_verify_2022.py data/observations/npb_calendar/games.jsonl \
+python scripts/season_verify_2022.py data/observations/npb_calendar/games.jsonl \
   --output /tmp/season-validation-2022.json
 ```
 

@@ -11,14 +11,50 @@ from decimal import Decimal, ROUND_HALF_UP, ROUND_DOWN
 import hashlib
 import json
 from pathlib import Path
-
-OPPONENTS = dict(zip(('対巨','対中','対神','対デ','対ヤ','対広','対ソ','対日','対オ','対楽','対西','対ロ'),
-                     ('g','d','t','db','s','c','h','f','b','e','l','m')))
+from typing import TypedDict
 
 
-def audit(records, *, expected_years=(), baseline=()):
+class AuditRules(TypedDict, total=False):
+    """League-specific assumptions. The caller (e.g. Aoi for NPB) passes them; none are built in.
+
+    leagues: league codes to check every year (default: those seen in the records)
+    detail_from: first year whose 'detail' tables are expected (default: never required)
+    winning_percentage_from: first year the modern winning-percentage rule is checked (default: every year)
+    fixed_members / fixed_members_from: exact team count per league from that year (default: not checked)
+    extended_rounding: 'truncate' or 'half_up' for digits beyond the usual precision (default: 'half_up')
+    opponents: head-to-head column header -> team code (default: no head-to-head checks)
+    """
+    leagues: tuple[str, ...]
+    detail_from: int | None
+    winning_percentage_from: int | None
+    fixed_members: int | None
+    fixed_members_from: int | None
+    extended_rounding: str
+    opponents: dict[str, str]
+
+
+def load_rules(path) -> AuditRules:
+    data=json.loads(Path(path).read_text(encoding='utf-8'))
+    if not isinstance(data,dict):raise ValueError(f'rules must be a JSON object: {path}')
+    if 'leagues' in data:data['leagues']=tuple(data['leagues'])
+    return data
+
+
+def audit(records, *, expected_years=(), baseline=(), rules: AuditRules | None = None):
     records=list(records)
     expected_years=tuple(expected_years)
+    rules=dict(rules or {})
+    unknown=set(rules)-set(AuditRules.__annotations__)
+    if unknown:raise ValueError(f'unknown audit rules: {sorted(unknown)}')
+    if rules.get('extended_rounding','half_up') not in ('truncate','half_up'):
+        raise ValueError("extended_rounding must be 'truncate' or 'half_up'")
+    OPPONENTS=dict(rules.get('opponents') or {})
+    leagues=tuple(rules.get('leagues') or sorted({r['league'] for r in records}))
+    detail_from=rules.get('detail_from')
+    pct_from=rules.get('winning_percentage_from')
+    fixed=rules.get('fixed_members')
+    fixed_from=rules.get('fixed_members_from')
+    truncate_extended=rules.get('extended_rounding','half_up')=='truncate'
     checks, units, grouped, seen, identities = [], {}, defaultdict(list), set(), set()
     def equal(name, observed, expected, unit):
         checks.append(dict(check=name,unit=unit,observed=observed,expected=expected,ok=observed==expected))
@@ -26,14 +62,13 @@ def audit(records, *, expected_years=(), baseline=()):
         if denominator:
             token=''.join(str(raw if raw is not None else published).split())
             precision=max(digits,len(token.partition('.')[2]))
-            # Extended ranking digits in the observed NPB summaries are truncated
-            # (e.g. 1961 Giants .2265 for 958/4228), not rounded to the usual 3 dp.
+            # Some sources truncate extended digits instead of rounding (rules: extended_rounding).
             extended=precision>digits
-            rounding=ROUND_DOWN if extended else ROUND_HALF_UP
+            rounding=ROUND_DOWN if extended and truncate_extended else ROUND_HALF_UP
             expected=Decimal(numerator)/Decimal(denominator)
             expected=expected.quantize(Decimal(10)**-precision,rounding=rounding)
             equal(name, str(Decimal(str(published)).quantize(Decimal(10)**-precision)), str(expected), unit)
-            checks[-1].update(precision=precision,display_policy='observed_extended_truncation' if extended else 'standard_half_up')
+            checks[-1].update(precision=precision,display_policy='observed_extended_truncation' if extended and truncate_extended else 'standard_half_up')
     for rec in records:
         if rec['key'] in seen:
             raise ValueError(f"duplicate observation: {rec['key']}")
@@ -52,9 +87,9 @@ def audit(records, *, expected_years=(), baseline=()):
     if expected_years:
         equal('observation_years',sorted({r['season'] for r in records}),years,'dataset')
     for year in years:
-        for lg in ('C','P'):
+        for lg in leagues:
             kinds={'archive':['standings','batting','pitching']}
-            if year>=2005:
+            if detail_from is not None and year>=detail_from:
                 kinds['detail']=['standings','batting','pitching','fielding']
             for source,categories in kinds.items():
                 reference={r['team'] for r in grouped[(year,lg,source,'standings')]}
@@ -63,9 +98,10 @@ def audit(records, *, expected_years=(), baseline=()):
                     teams=[r['team'] for r in grouped[(year,lg,source,cat)]]
                     equal('category_members',sorted(teams),sorted(reference),f'{year}/{lg}/{source}/{cat}')
                     equal('unique_members',len(teams),len(set(teams)),f'{year}/{lg}/{source}/{cat}')
-            # No interleague until 2005: retain the actual historical member count.
-            if year>=2005:
-                equal('six_teams',len({r['team'] for r in grouped[(year,lg,'detail','standings')]}),6,f'{year}/{lg}')
+            # Before fixed_members_from, retain the actual historical member count.
+            if fixed is not None and fixed_from is not None and year>=fixed_from and 'detail' in kinds:
+                equal('six_teams' if fixed==6 else 'fixed_members',len({r['team'] for r in grouped[(year,lg,'detail','standings')]}),fixed,f'{year}/{lg}')
+            if 'detail' in kinds:
                 equal('cross_source_members',sorted(r['team'] for r in grouped[(year,lg,'archive','standings')]),
                       sorted(r['team'] for r in grouped[(year,lg,'detail','standings')]),f'{year}/{lg}')
             for source in kinds:
@@ -81,8 +117,8 @@ def audit(records, *, expected_years=(), baseline=()):
             raw=lambda cat,col:unit['raw_tables'].get(source+'_'+cat,{}).get(col)
             if st:
                 equal('G=W+L+T',st['試合'],st['勝利']+st['敗北']+st['引分'],ident+'/'+source)
-                # Historical winning-percentage rules varied: no unverified modern rule applied before 2005.
-                if key[0]>=2005:
+                # Historical winning-percentage rules varied: no unverified modern rule before winning_percentage_from.
+                if pct_from is None or key[0]>=pct_from:
                     rate('winning_percentage',st['勝利'],st['勝利']+st['敗北'],st['勝率'],3,ident+'/'+source,raw('standings','勝率'))
             for cat,table in [('batting',bat),('pitching',pitch),('fielding',field)]:
                 if table and st:
@@ -180,10 +216,10 @@ def audit(records, *, expected_years=(), baseline=()):
             'annual':list(units.values()),'comparison_policy':'integers exact; normal rate digits ROUND_HALF_UP; observed extended digits truncated to source precision; historical win-percentage rules not guessed'}
 
 
-def audit_files(observations, expected_years, baseline=None):
+def audit_files(observations, expected_years, baseline=None, rules: AuditRules | None = None):
     """Recompute the complete saved audit, including optional baseline evidence."""
     read=lambda path:[json.loads(s) for s in path.read_text(encoding='utf-8').splitlines() if s.strip()]
-    r=audit(read(observations),expected_years=expected_years,baseline=read(baseline) if baseline else [])
+    r=audit(read(observations),expected_years=expected_years,baseline=read(baseline) if baseline else [],rules=rules)
     manifest=observations.with_suffix('.manifest.json')
     extras=[]
     if not manifest.exists():
@@ -211,9 +247,10 @@ def main():
     p.add_argument('--baseline',type=Path)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--annual-out',type=Path,required=True)
+    p.add_argument('--rules',type=Path,help='league assumptions as JSON (AuditRules); omitted means none')
     a=p.parse_args()
     start,end=map(int,a.years.split('-'))
-    r=audit_files(a.observations,range(start,end+1),a.baseline)
+    r=audit_files(a.observations,range(start,end+1),a.baseline,load_rules(a.rules) if a.rules else None)
     for path in (a.out,a.annual_out):path.parent.mkdir(parents=True,exist_ok=True)
     a.annual_out.write_text(''.join(json.dumps(s,ensure_ascii=False)+'\n' for s in r.pop('annual')),encoding='utf-8')
     a.out.write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

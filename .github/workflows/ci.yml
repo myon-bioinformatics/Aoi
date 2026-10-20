@@ -173,7 +173,7 @@ jobs:
           sudo unshare --net -- env CHROME="$chrome" DRAGOWING_REQUIRE_CHROME=1 \
             DRAGOWING_EXPORT_EVIDENCE_DIR="$PWD/build/export-evidence" \
             DRAGOWING_PINNED_PLOTLY_JS="$PWD/build/test-assets/plotly.min.js" \
-            "$PWD/.venv/bin/python" -m pytest -q \
+            "$PWD/.venv/bin/python" -m pytest -c pyproject.toml -q \
             dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
             dragowing/tests/test_plotly_cdn.py \
             --junitxml=build/test-results/chrome-export-3.14.xml

@@ -1,12 +1,19 @@
-"""Optional integration check using authorized local calendar observations only."""
+"""Optional NPB 2022 integration check using authorized local calendar observations only (moved from SakAnalytics)."""
 import argparse
 from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
 
-from season_simulator import calendar_games, forecast, npb_rules, ranking, snapshot
-from season_exact import qualification, solve, title_magic
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+for _dir in (ROOT, ROOT / "sakanalytics"):
+    if str(_dir) not in sys.path:
+        sys.path.append(str(_dir))
+from aoi_npb import npb_rules  # noqa: E402
+from season_simulator import calendar_games, forecast, ranking, snapshot  # noqa: E402
+from season_exact import qualification, solve, title_magic  # noqa: E402
 
 
 def verify(path):

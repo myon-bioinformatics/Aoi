@@ -59,7 +59,7 @@ def test_pythdragoras_registered_with_exact_ids_and_mirrors():
     entry = _load("child-heads.json")["heads"]["myon-bioinformatics/PythDRagoras"]
     assert entry["repository_id"] == 1423045231
     assert entry["optional"]["subtree_prefix"] == "pythdragoras"
-    assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
+    assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore"):
         assert (ROOT / "pythdragoras" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
@@ -69,8 +69,8 @@ def test_queryu_registered_with_exact_ids():
     entry = _load("child-heads.json")["heads"]["myon-bioinformatics/QueRyu"]
     assert entry["repository_id"] == 1423051557
     assert entry["optional"]["subtree_prefix"] == "queryu"
-    assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
-    assert entry["sha"] == "fcadaa9aaab30292703459758eae481d0f018f2d"
+    assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
+    assert entry["sha"] == "f1a91e5c6b0a09ec5aac6a19ce1e60abde3f80d6"
     for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore", "cache_share.py", "emoji_data.py"):
         assert (ROOT / "queryu" / path).is_file(), path
 
@@ -91,9 +91,9 @@ def test_sakanalytics_registered_with_exact_ids():
     assert entry["repository_id"] == 1423489570
     assert entry["optional"]["repository_created_at"] == "2026-10-17T15:50:27Z"
     assert entry["optional"]["subtree_prefix"] == "sakanalytics"
-    assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
+    assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
-    for path in (".github/workflows/ci.yml", ".gitignore", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "aoi_paths.py", "sakanalytics.py"):
+    for path in (".github/workflows/ci.yml", ".gitignore", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "sakanalytics.py"):
         assert (ROOT / "sakanalytics" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
     assert not (ROOT / "sakanalytics" / "min.py").exists()  # min.py は Aoi が提供し、子には置かない
 
@@ -103,10 +103,10 @@ def test_dragowing_registered_with_exact_ids():
     assert entry["repository_id"] == 1423772286
     assert entry["optional"]["repository_created_at"] == "2026-10-17T21:45:31Z"
     assert entry["optional"]["subtree_prefix"] == "dragowing"
-    assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
-    assert entry["sha"] == "cd8140ce695ede6add6817cced2ea5c8ee2e161f"
+    assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
+    assert entry["sha"] == "360afbde2b55b54f205664eb4cf1a9cc17f9564a"
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
-    for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "aoi_paths.py", "tests/conftest.py", "tests/test_no_sibling_imports.py"):
+    for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "tests/conftest.py", "tests/test_no_sibling_imports.py"):
         assert (ROOT / "dragowing" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
     assert not (ROOT / "dragowing" / "min.py").exists()  # min.py は Aoi が提供し、子には置かない
 

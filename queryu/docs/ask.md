@@ -34,14 +34,16 @@ python queryu/ask/ask.py "判例がただ1つの式は？"
 python queryu/ask/ask.py "P96 の対偶の判例" --json
 python queryu/ask/ask.py --query '{"ask": "has_counterexample", "target": "E26"}'
 python queryu/ask/ask.py --schema
-python queryu/ask/ask.py "中日が判例の命題" --log cycles/c001-chunichi/outputs/asked.jsonl
+python queryu/ask/ask.py "中日が判例の命題" --results <結果フォルダ> --teams <球団表.json> --log <ログ.jsonl>
 ```
 
 「式」を含む問いは `sets.jsonl` がある結果ディレクトリで実行する。main の `outputs` だけを渡すと、そのファイルが無いので `結果が読めない` になる。
 
 - `--log` は問いの原文と読み取った Query を1行ずつ残す（再現のため）
 - 判例の一覧が判定の出力で省かれている場合は「一覧は一部」と出す
-- `--results` を省略したときは、サイクルの `pipeline.toml` の `out` を読む。`AOI_RESULTS_REF` があるときは `.aoi-results/<cycle>/outputs` だけを読む
+- `--results` は必須。サイクルの `pipeline.toml` や結果 ref からの解決は Aoi の `aoi_paths.py` がして、決まったフォルダを渡す
+- `--teams` は球団名 → コードの JSON。渡さなければ球団名は読まず unread に返す（Aoi は NPB の表を渡す）
+- `--cycle-dir` があればその `ask.toml` を、なければ結果フォルダの親の `ask.toml` を読む
 - 終了コード: 0 = 答えた、1 = 判定不能（結果が読めない、ID が結果にない、読めなかった語）、2 = `--query` が型の外
 
 未対応の語・条件が残った場合も終了コード1で解釈確認を求め、条件を捨てて回答しない。
@@ -122,6 +124,6 @@ ID が書いていない問いについて、登録済みの命題・式の文�
 ### 解釈
 
 - ファイルが無いことを「その ID は判定済みでない」とは読まない。式の結果は、Issue #9 のとおり結果 ref の checkout（`.aoi-results/<cycle>/outputs`）から読む。
-- ref や `AOI_RESULTS_DIR` を指定したのにその場所が無いとき、別のサイクルの `outputs` へは切り替えない。`sets.jsonl` をこのリポジトリに作って埋めもしない。
+- 指定した結果フォルダが無いとき、別のフォルダへは切り替えない。`sets.jsonl` をこのリポジトリに作って埋めもしない。
 
 四つの形の表と条件の記号は [DRAgoWing](../../dragowing/docs/forms.md)。

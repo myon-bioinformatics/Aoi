@@ -39,6 +39,23 @@ from ask import (
 )
 from bank import cache_key, lookup, prepare
 
+try:  # QueRyu の ask は球団表を持たない。Aoi の NPB 設定（aoi_npb.py）から入れる
+    from ask import set_teams
+except ImportError:  # 球団表を内蔵していた古い ask
+    set_teams = None
+if set_teams is not None:
+    if str(ROOT) not in sys.path:
+        sys.path.append(str(ROOT))
+    from aoi_npb import TEAMS as _NPB_TEAMS
+    set_teams(_NPB_TEAMS)
+
+
+def cycle_threshold(cycle, cycle_name):
+    """ask.toml は main の cycles/<name>/ を先に、なければ結果の checkout の隣を読む。"""
+    if set_teams is None:
+        return resolve_threshold(ROOT, cycle / "outputs", cycle_name, None)
+    return resolve_threshold(cycle / "outputs", None, ROOT / "cycles" / cycle_name)
+
 BRANCH_PREFIX = "aoi-research-state"
 SELF = "github-actions[bot]"
 MARKER = "<!-- aoi-inbox:"
@@ -67,6 +84,8 @@ def snapshot(root: Path, cycle: Path) -> dict:
         root / "queryu/ask/bank.py",
         root / "nagoyaction/inbox/inbox.py",
     ]
+    if set_teams is not None:  # 球団表は Aoi の aoi_npb.py から読む
+        files.append(root / "aoi_npb.py")
     results = [
         cycle / "outputs" / name
         for name in ("sets.jsonl", "propositions.jsonl")
@@ -396,7 +415,7 @@ def intake(
                     known=base / "known",
                     cycle=cycle_name,
                     result_sha=result_sha,
-                    suggest_threshold=resolve_threshold(ROOT, cycle / "outputs", cycle_name, None),
+                    suggest_threshold=cycle_threshold(cycle, cycle_name),
                 )
                 record["response"] = response
                 record["result_files"] = {

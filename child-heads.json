@@ -13,13 +13,10 @@
     "myon-bioinformatics/DRAgoWing": {
       "optional": {
         "repository_created_at": "2026-10-17T21:45:31Z",
-        "subtree_prefix": "dragowing",
-        "mirrored_from_parent": {
-          "aoi_paths.py": "aoi_paths.py"
-        }
+        "subtree_prefix": "dragowing"
       },
       "repository_id": 1423772286,
-      "sha": "cd8140ce695ede6add6817cced2ea5c8ee2e161f"
+      "sha": "360afbde2b55b54f205664eb4cf1a9cc17f9564a"
     },
     "myon-bioinformatics/NagoyAction": {
       "optional": {
@@ -27,40 +24,31 @@
         "subtree_prefix": "nagoyaction"
       },
       "repository_id": 1423491480,
-      "sha": "a1ee275410f49f7d0ce95c6ff4f16ae5bbc39028"
+      "sha": "1181e43508c9b2a9ad4cc4ce50f5ee38032bb678"
     },
     "myon-bioinformatics/PythDRagoras": {
       "optional": {
         "repository_created_at": "2026-10-17T06:58:25Z",
-        "subtree_prefix": "pythdragoras",
-        "mirrored_from_parent": {
-          "aoi_paths.py": "aoi_paths.py"
-        }
+        "subtree_prefix": "pythdragoras"
       },
       "repository_id": 1423045231,
-      "sha": "b0f9c3a1ef255f7c0bc38bc7eeff86360403e69f"
+      "sha": "5fa793546dfe1d3f9f7e0214b6ff8f8e13cd6988"
     },
     "myon-bioinformatics/QueRyu": {
       "optional": {
         "repository_created_at": "2026-10-17T07:05:47Z",
-        "subtree_prefix": "queryu",
-        "mirrored_from_parent": {
-          "aoi_paths.py": "aoi_paths.py"
-        }
+        "subtree_prefix": "queryu"
       },
       "repository_id": 1423051557,
-      "sha": "fcadaa9aaab30292703459758eae481d0f018f2d"
+      "sha": "f1a91e5c6b0a09ec5aac6a19ce1e60abde3f80d6"
     },
     "myon-bioinformatics/SakAnalytics": {
       "optional": {
         "repository_created_at": "2026-10-17T15:50:27Z",
-        "subtree_prefix": "sakanalytics",
-        "mirrored_from_parent": {
-          "aoi_paths.py": "aoi_paths.py"
-        }
+        "subtree_prefix": "sakanalytics"
       },
       "repository_id": 1423489570,
-      "sha": "3cd2349b8a5d49f4e0de187aac2741566b3d731c"
+      "sha": "1630c836efd08baac1c09715117a96a361b5ae7a"
     }
   }
 }

@@ -3,20 +3,30 @@
 BlueProbe（抽出）は固定 SHA の BlueProbe checkout を PYTHONPATH で渡す。Aoi の blueprobe/ は使わない。
 """
 from pathlib import Path
+import os
 import sys
 
 import pytest
 
-import aoi_paths
-
 HERE = Path(__file__).resolve().parent
 # 取り違えると Aoi 側のコピーを黙ってテストしてしまうので、出どころを最後に確かめる
-OWN_MODULES = ("queryu", "annual_scope", "ask", "bank", "suggest", "aoi_layout")
+OWN_MODULES = ("queryu", "ask", "bank", "suggest")
 
 
 def _root() -> Path:
-    # Aoi の conftest.py と同じ解決順（AOI_ROOT → このファイルからの推定）
-    return aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+    # Aoi の場所は AOI_ROOT で受け取る（Aoi の中では Aoi の conftest.py が入れる）。ここでは推定しない
+    value = os.environ.get("AOI_ROOT")
+    here = Path(__file__).resolve().parent
+    if not value and (here.parent / "aoi_paths.py").is_file():
+        # Aoi に subtree として埋め込まれ、子のディレクトリだけで pytest を動かしたとき（rootdir が子になる）
+        value = str(here.parent)
+    if not value:
+        raise pytest.UsageError("AOI_ROOT=<Aoi のルート> を渡す（.github/workflows/ci.yml と同じ）")
+    root = Path(value).expanduser().resolve()
+    # テストのデータの場所（cycles/ の既定のサイクルなど）は Aoi の aoi_paths.py に聞く。QueRyu には置かない
+    if str(root) not in sys.path:
+        sys.path.append(str(root))
+    return root
 
 
 def _blueprobe_origin_is_allowed(origin: Path, root: Path, here: Path = HERE) -> bool:
@@ -57,17 +67,8 @@ def pytest_report_header(config):
 
 
 def _own_module_origin_is_allowed(name: str, origin: Path, root: Path, here: Path = HERE) -> bool:
-    """Only the exact, identical embedded aoi_layout mirror may be shared."""
-    origin, root, here = origin.resolve(), root.resolve(), here.resolve()
-    if here in origin.parents:
-        return True
-    if (name != "aoi_layout" or here != root / "queryu"
-            or origin != root / "pythdragoras" / "aoi_layout.py"):
-        return False
-    try:
-        return origin.read_bytes() == (here / "ask" / "aoi_layout.py").read_bytes()
-    except OSError:
-        return False
+    """QueRyu modules must come from this checkout."""
+    return here.resolve() in origin.resolve().parents
 
 
 def pytest_sessionfinish(session, exitstatus):

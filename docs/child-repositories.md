@@ -13,7 +13,7 @@ Aoi のサブプロジェクトを独立させたリポジトリの登録です�
 
 - `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
-  - `mirrored_from_parent`: prefix の下のパス → Aoi の原本のパス。共有するルートのファイルを子に通常のファイルとして置くとき（PythDRagoras の `aoi_paths.py` は Aoi 直下の `aoi_paths.py`）。Aoi の中でコピーの blob と mode が原本と違えば失敗（`--offline` でも）。QueRyu などほかの子でも同じ書き方で使う。
+  - `mirrored_from_parent`: checker が対応する任意の mirror 宣言。現在は登録していない。Aoi 固有の配置設定は親だけが持ち、子へ引数で渡す。
 - Aoi と subtree 子の間では vendor lock を使わない（`vendor-consumers.json` は置かない）。
 - `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分（blob と mode、除外なし）。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
 
@@ -35,7 +35,7 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 ## subtree の同期（決定）
 
-同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では vendor lock を使いません。`aoi_paths.py` のような Aoi 固有のファイルは、子に通常のファイルとして置き、subtree で同期します。原本との一致は、`child-heads.json` の `mirrored_from_parent` を使って `check_child_heads.py` が確かめます。手順は PythDRagoras のものを子ごとに読み替えます。
+同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では vendor lock を使いません。`aoi_paths.py` と `aoi_npb.py` は Aoi だけに置き、解決したパス・設定を子へ引数で渡します（[親のNPBコマンド](../cycles/c001-chunichi/npb-configuration.md)）。子のtreeは登録SHAと完全一致させます。手順は PythDRagoras のものを子ごとに読み替えます。
 
 PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出したので（git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e` を返す。join 前は split が古い tree で止まる（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））、Aoi の履歴とつながっていません。そのため Aoi に一度だけ join を入れます。
 
@@ -66,6 +66,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - Aoi の直下から `pytest pythdragoras/tests` のようにパスだけ渡すと、pytest は `pythdragoras/pyproject.toml` を設定ファイルに選びます（rootdir が `pythdragoras/`）。Aoi の設定で動かすときは `pytest -c pyproject.toml pythdragoras/tests`。引数なしの `pytest`（CI）は Aoi の設定のままです。
 
 ## QueRyu
+
+2026-10-20: Aoi の配置と NPB 固有の表・規則を子から外しました（案A）。QueRyu #17 `079d502`、DRAgoWing #9 `8eb7d9c`、PythDRagoras #16 `bd5690f`、SakAnalytics #10 `44f95f6`、NagoyAction #11 `1181e43` を、それぞれ squash なしの `git subtree pull` で取り込みました。子の `aoi_paths.py` の写しはなくなり、`child-heads.json` の `mirrored_from_parent` も外しました。Aoi の配置は直下の `aoi_paths.py`、NPB の設定（球団表・並び順・月の key・年間表の前提・CS 規則のプリセット）は直下の `aoi_npb.py` だけが持ち、子へ引数で渡します。`annual_scope.py` は Aoi の直下、`season_verify_2022.py` は `scripts/` に移しました。続けて QueRyu #18 `f1a91e5`、DRAgoWing #10 `360afbd`、PythDRagoras #17 `5fa7935`、SakAnalytics #11 `1630c83`（Aoi に埋め込まれたときは `AOI_ROOT` がなくても親の Aoi を使う conftest）も同じ方法で取り込みました。`pythdragoras/aoi_layout.py`・`sakanalytics/aoi_layout.py` は、ソースの SHA-256 を証跡で固定した CLI（littlebit、proposition_seed_audit）のためだけに残っています。
 
 2026-10-20: QueRyu #16 の merge `fcadaa9aaab30292703459758eae481d0f018f2d` を、squash なしの `git subtree pull --prefix=queryu` で取り込みました。`pattern_postprocess` は `from blueprobe import detect_pattern, get_pattern` でパターンを読みます。`queryu/` の tree は登録した SHA の tree と同一です。
 

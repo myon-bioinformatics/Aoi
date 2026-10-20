@@ -276,13 +276,18 @@ def test_manual_workflow_remains_double_disabled_and_read_only():
 
 def test_trusted_canary_bootstrap_is_immutable():
     text = (ROOT / t.WORKFLOW).read_text()
-    # The project lock cannot pin the action/uv code that interprets it.
+    # The project lock cannot pin the setup actions that interpret it.
+    # Those stay on the parent form: a release commit plus # vX.Y.Z.
+    # checkout and upload-artifact follow the parent's moving major tags.
     uses = re.findall(r"^\s*(?:-\s*)?uses:\s*(\S+)", text, re.MULTILINE)
-    assert uses
-    for action in uses:
-        assert re.fullmatch(r"[^@\s]+@[0-9a-f]{40}", action), action
-    assert "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97" in uses
-    assert "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884" in uses
+    assert uses == [
+        "actions/checkout@v7",
+        "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+        "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884",
+        "actions/upload-artifact@v7",
+    ]
+    assert "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0" in text
+    assert "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0" in text
     assert 'version: "0.13.3"' in text
     assert "pip install" not in text
     assert "uv sync --frozen" in text

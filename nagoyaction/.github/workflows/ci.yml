@@ -199,7 +199,8 @@ jobs:
           python -S nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --dry-run
 
   # 1 ジョブの中で、本物の polars で research_digest.collect のバイト列を取り、
-  # polars と polars-runtime-32 を外してから polars_min で同じ collect を動かし、cmp する。
+  # polars と polars-runtime-32 を外してから vendor/aoi/shrink/polars_min.py で同じ collect を動かし、cmp する。
+  # 最小版は scripts/collect_with_polars_min.py が vendor/aoi/ から載せる。
   polars-min:
     name: collect (real polars, then polars uninstalled)
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
@@ -240,17 +241,15 @@ jobs:
           git archive HEAD | tar -x -C .test-deps/aoi/nagoyaction
           git -C .test-deps/aoi add -A nagoyaction
           test "$(git -C .test-deps/aoi write-tree --prefix=nagoyaction/)" = "$(git rev-parse 'HEAD^{tree}')"
-      - name: Equivalence, AST, proxy trace, absent-polars tracebacks, then record real collect
+      - name: Vendored polars_min equivalence, then record real collect
         working-directory: .test-deps/aoi
         run: |
           uv sync --locked --python 3.12
-          uv run --locked --python 3.12 pytest -q -c pyproject.toml nagoyaction/tests/test_polars_min.py
-          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py survey
-          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py analyze
-          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py generate --out nagoyaction/shrink/polars_min.py --check
-          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py trace
-          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py absent
-          uv run --locked --python 3.12 python nagoyaction/shrink/run_collect.py --deps real "$GITHUB_WORKSPACE/reference.json"
+          test -f nagoyaction/vendor/aoi/shrink/polars_min.py
+          test -f nagoyaction/vendor/aoi/scripts/shrink_module.py
+          test -f nagoyaction/vendor/aoi/scripts/shrink_polars.py
+          uv run --locked --python 3.12 pytest -q -c pyproject.toml nagoyaction/tests/test_vendor_aoi.py
+          uv run --locked --python 3.12 python nagoyaction/scripts/collect_with_polars_min.py --deps real "$GITHUB_WORKSPACE/reference.json"
       - name: Reinstall locked runtime deps except polars and its compiled runtime
         working-directory: .test-deps/aoi
         run: uv sync --locked --no-dev --no-install-package polars --no-install-package polars-runtime-32 --python 3.12
@@ -261,9 +260,9 @@ jobs:
             echo "polars is still importable" >&2
             exit 1
           fi
-      - name: Same collect on polars_min
+      - name: Same collect on vendored polars_min
         working-directory: .test-deps/aoi
-        run: .venv/bin/python nagoyaction/shrink/run_collect.py --deps min "$GITHUB_WORKSPACE/minimal.json"
+        run: .venv/bin/python nagoyaction/scripts/collect_with_polars_min.py --deps min "$GITHUB_WORKSPACE/minimal.json"
       - name: Byte-identical to the real polars collect result
         run: cmp "$GITHUB_WORKSPACE/reference.json" "$GITHUB_WORKSPACE/minimal.json"
 

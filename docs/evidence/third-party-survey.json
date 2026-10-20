@@ -540,8 +540,8 @@
             "Series": 1,
             "col": 1
           },
-          "dynamic_import_sites": 5,
-          "files": 6,
+          "dynamic_import_sites": 1,
+          "files": 3,
           "import_sites": 2
         },
         "pythdragoras": {
@@ -657,12 +657,12 @@
         }
       ],
       "distinct_attributes": 25,
-      "dynamic_import_sites": 5,
-      "files": 37,
+      "dynamic_import_sites": 1,
+      "files": 34,
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 843,
+      "attribute_uses": 831,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -678,8 +678,8 @@
         "mark.parametrize": 152,
         "mark.skipif": 4,
         "param": 1,
-        "raises": 345,
-        "skip": 7
+        "raises": 334,
+        "skip": 6
       },
       "by_tree": {
         "aoi": {
@@ -731,18 +731,18 @@
           "import_sites": 11
         },
         "nagoyaction": {
-          "attribute_uses": 88,
+          "attribute_uses": 76,
           "attributes": {
             "MonkeyPatch": 1,
             "fail": 1,
             "fixture": 7,
             "mark.parametrize": 13,
-            "raises": 64,
-            "skip": 2
+            "raises": 53,
+            "skip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 13,
-          "import_sites": 13
+          "files": 12,
+          "import_sites": 12
         },
         "pythdragoras": {
           "attribute_uses": 164,
@@ -840,8 +840,8 @@
       ],
       "distinct_attributes": 16,
       "dynamic_import_sites": 1,
-      "files": 88,
-      "import_sites": 89
+      "files": 87,
+      "import_sites": 88
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1360,26 +1360,6 @@
       "tree": "nagoyaction"
     },
     {
-      "attributes": {},
-      "dynamic_lines": [
-        420
-      ],
-      "file": "nagoyaction/scripts/shrink_polars.py",
-      "import_sites": 0,
-      "package": "polars",
-      "tree": "nagoyaction"
-    },
-    {
-      "attributes": {},
-      "dynamic_lines": [
-        40
-      ],
-      "file": "nagoyaction/shrink/run_collect.py",
-      "import_sites": 0,
-      "package": "polars",
-      "tree": "nagoyaction"
-    },
-    {
       "attributes": {
         "fixture": 1,
         "mark.parametrize": 1,
@@ -1453,28 +1433,6 @@
       },
       "dynamic_lines": [],
       "file": "nagoyaction/tests/test_nagoyaction.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "nagoyaction"
-    },
-    {
-      "attributes": {},
-      "dynamic_lines": [
-        145,
-        217
-      ],
-      "file": "nagoyaction/tests/test_polars_min.py",
-      "import_sites": 0,
-      "package": "polars",
-      "tree": "nagoyaction"
-    },
-    {
-      "attributes": {
-        "raises": 11,
-        "skip": 1
-      },
-      "dynamic_lines": [],
-      "file": "nagoyaction/tests/test_polars_min.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "nagoyaction"

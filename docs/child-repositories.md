@@ -80,6 +80,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## NagoyAction
 
+2026-10-20: main `c3889f69f59d46286c974164cf3e6e6d55d3796c`（#18: ルートの `scripts/shrink_module.py`・`scripts/shrink_polars.py`・`shrink/polars_min.py` の fork を消し、共有ツールは `vendor/aoi/` だけ）を、直前の subtree merge を残したまま squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。
+
 2026-10-20: main `60e301b8bbd43ec5b682397f8ff1d6be887b1596`（#17: `vendor-aoi` の `uses:` を full SHA に固定し、`localci.py --strict` で可変ピンを失敗にする）を、直前の subtree merge を残したまま squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。
 
 2026-10-20: main `c4cdf0d7d17a15380dac89fdd21f147efcef3be5`（#12: CI が Aoi main を実行時に解決する、#15: Aoi の polars shrink 道具を vendor、#16: ローカル CI のシャードと `polars_min` の collect 検査）を squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。

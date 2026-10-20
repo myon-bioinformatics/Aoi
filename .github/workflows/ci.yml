@@ -59,7 +59,7 @@ jobs:
           allow-prereleases: true
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: "0.13.1"
+          version: "0.13.3"
           enable-cache: false
       - run: python -VV
       - name: Compile (syntax errors must never reach main)
@@ -106,7 +106,7 @@ jobs:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: "0.13.1"
+          version: "0.13.3"
           enable-cache: false
       - name: Verify pinned source and all import origins
         run: |
@@ -155,7 +155,7 @@ jobs:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: "0.13.1"
+          version: "0.13.3"
           enable-cache: false
       - name: Install dependencies before disconnecting the network
         run: |
@@ -227,12 +227,12 @@ jobs:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: "0.13.1"
+          version: "0.13.3"
           enable-cache: false
       - name: Generate digest from committed records only
-        run: uv run --python 3.14 python nagoyaction/research_digest.py cycles/c001-chunichi
+        run: uv run --locked --python 3.14 python nagoyaction/research_digest.py cycles/c001-chunichi
       - name: Verify reproducibility
-        run: uv run --python 3.14 python nagoyaction/research_digest.py cycles/c001-chunichi --check
+        run: uv run --locked --python 3.14 python nagoyaction/research_digest.py cycles/c001-chunichi --check
       - name: Preserve generated research digest
         if: always()
         uses: actions/upload-artifact@v7

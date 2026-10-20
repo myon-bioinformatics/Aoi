@@ -34,7 +34,7 @@ jobs:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: "0.13.1"
+          version: "0.13.3"
           enable-cache: false
       # 取得したページは、途中のステップで止まっても必ず保存する（止まるたびに取得し直さない）
       - uses: actions/cache/restore@v6

@@ -3,11 +3,16 @@
 c001 全体の SVD はこのファイルでは走らせない。
 """
 import importlib.util
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import linalg_feasibility as lf  # noqa: E402
+
 np = pytest.importorskip("numpy")
 
 
@@ -133,5 +138,67 @@ def test_broadcast_add():
     ref = np.array([[1.0], [2.0]]) + np.array([10.0, 20.0])
     assert got.shape == (2, 2)
     assert got.tolist() == ref.tolist()
+
+
+def test_ast_reaches_the_heavy_calls_and_not_bitmatrix_svd():
+    found = lf.analyze(lf.ENTRIES)
+    suggest = found["queryu/ask/suggest.py:Index"]["uses"]
+    assert "linalg.svd" in suggest and "linalg.norm" in suggest
+    little = {}
+    for key in (
+        "pythdragoras/littlebit_prune.py:littlebit",
+        "pythdragoras/littlebit_prune.py:overlap_bounds",
+        "pythdragoras/littlebit_prune.py:search_guaranteed",
+    ):
+        little.update(found[key]["uses"])
+    assert {"linalg.svd", "linalg.lstsq", "einsum"} <= set(little)
+    assert "linalg.pinv" in found["pythdragoras/littlebit_holdout.py:fit"]["uses"]
+    bit = found["pythdragoras/rule_search.py:_search_bitmatrix"]["uses"]
+    for name in ("linalg.svd", "linalg.lstsq", "linalg.pinv", "einsum"):
+        assert name not in bit
+    visited = found["queryu/ask/suggest.py:suggest"]["visited"]
+    assert any(item.endswith("Index.__init__") for item in visited)
+    assert any(item.endswith("Index.query") for item in visited)
+
+
+def test_absent_probe_exits_on_missing_numpy_attribute():
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "linalg_feasibility.py"), "absent"],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "numpy.zeros" in proc.stderr
+
+
+def test_min_refuses_when_numpy_is_installed(tmp_path):
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "shrink" / "run_linalg.py"), "--numpy", "min", "--scope", "fixture",
+         str(tmp_path / "out.json")],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    assert proc.returncode != 0
+    assert "numpy が入っている" in proc.stderr
+
+
+def test_fixture_code_paths_match_numpy(tmp_path):
+    script = str(ROOT / "shrink" / "run_linalg.py")
+    real = tmp_path / "real.json"
+    got = tmp_path / "got.json"
+    first = subprocess.run(
+        [sys.executable, script, "--numpy", "real", "--scope", "fixture", str(real)],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    assert first.returncode == 0, first.stderr
+    second = subprocess.run(
+        [sys.executable, script, "--numpy", "min", "--allow-installed", "--scope", "fixture", str(got)],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    assert second.returncode == 0, second.stderr
+    assert second.stdout.strip().endswith("numpy_linalg_min.py") or "numpy_linalg_min.py" in second.stdout
+    compared = subprocess.run(
+        [sys.executable, script, "--compare", str(real), str(got)],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    assert compared.returncode == 0, compared.stdout + compared.stderr
 
 

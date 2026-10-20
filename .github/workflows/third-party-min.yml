@@ -1,0 +1,66 @@
+name: Third-party min experiment
+
+# 実験: selectolax_min（html.parser）と httpx_min（urllib）を本物と比べ、
+# パッケージの無い環境で研究コードを動かす。coverage は fetch_module の pure wheel。
+# 既存のワークフローには触れない。1ジョブ。
+on:
+  pull_request:
+    paths:
+      - mindeps/**
+      - scripts/trace_third_party.py
+      - tests/test_third_party_min.py
+      - .github/workflows/third-party-min.yml
+      - research/gpt-r001-score-allocation/observe.py
+      - research/gpt-r001-score-allocation/verify.py
+      - research/gpt-r001-score-allocation/inning_pilot.py
+      - research/gpt-r001-score-allocation/collect.py
+      - queryu/queryu.py
+      - scripts/check_child_heads.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  without-packages:
+    name: Real code without selectolax, httpx, and pip coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - run: uv sync --locked --python 3.12
+      - name: Equivalence against the installed packages
+        run: uv run --locked --python 3.12 pytest -q tests/test_third_party_min.py
+      - name: AST survey, package-absent tracebacks, fetch_module rejections
+        run: uv run --locked --python 3.12 python scripts/trace_third_party.py --resolve
+      - name: Reference results with the real packages
+        run: |
+          uv run --locked --python 3.12 python mindeps/run_selectolax.py --impl real sel-real.json
+          uv run --locked --python 3.12 python mindeps/run_httpx.py --impl real http-real.json
+          uv run --locked --python 3.12 python mindeps/run_coverage.py --impl real cov-real.json
+      - name: Empty environment without those packages
+        run: uv venv .venv-min --python 3.12
+      - name: The packages are not installed there
+        run: |
+          if .venv-min/bin/python -c 'import selectolax'; then echo 'selectolax is installed in the empty environment' >&2; exit 1; fi
+          if .venv-min/bin/python -c 'import httpx'; then echo 'httpx is installed in the empty environment' >&2; exit 1; fi
+          if .venv-min/bin/python -c 'import coverage'; then echo 'coverage is installed in the empty environment' >&2; exit 1; fi
+      - name: Same research code on the replacements
+        run: |
+          .venv-min/bin/python mindeps/run_selectolax.py --impl min sel-min.json
+          .venv-min/bin/python mindeps/run_httpx.py --impl min http-min.json
+          .venv-min/bin/python mindeps/run_coverage.py --impl cdn cov-min.json
+      - name: Byte-identical to the real packages
+        run: |
+          cmp sel-real.json sel-min.json
+          cmp http-real.json http-min.json
+          cmp cov-real.json cov-min.json

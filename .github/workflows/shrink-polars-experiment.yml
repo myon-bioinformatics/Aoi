@@ -1,0 +1,67 @@
+name: Shrink polars experiment
+
+# 実験: DRAgoWing の load_overlap が使う polars を shrink/polars_min.py で置き換える。
+# 1 ジョブの中で、本物の polars と numpy の JSON を取り、すぐ両方を外して
+# polars_min と numpy_min で同じ実コードを動かし、バイト単位で比べる。
+# 既存のワークフローと本番の依存には触れない。
+on:
+  pull_request:
+    paths:
+      - scripts/shrink_polars.py
+      - shrink/polars_min.py
+      - shrink/polars_feasibility.md
+      - shrink/run_overlap_stdlib.py
+      - tests/test_shrink_polars.py
+      - .github/workflows/shrink-polars-experiment.yml
+      - dragowing/overlap.py
+      - pythdragoras/propositions.py
+      - pythdragoras/rule_search.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  without-polars-or-numpy:
+    name: load_overlap on Python ${{ matrix.python }} (real, then neither installed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Equivalence against real polars, then record the real load_overlap JSON
+        run: |
+          uv sync --locked --python "${{ matrix.python }}"
+          uv run --locked --python "${{ matrix.python }}" pytest -q tests/test_shrink_polars.py
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py generate dragowing/overlap.py:load_overlap pythdragoras/propositions.py:_cond --out shrink/polars_min.py --check
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py survey
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py analyze
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py trace
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py absent
+          uv run --locked --python "${{ matrix.python }}" python shrink/run_overlap_stdlib.py --deps real reference.json
+      - name: Reinstall locked runtime deps except polars, its runtime, and numpy
+        run: uv sync --locked --no-dev --no-install-package numpy --no-install-package polars --no-install-package polars-runtime-32 --python "${{ matrix.python }}"
+      - name: polars and numpy are not installed
+        run: |
+          if .venv/bin/python -c 'import numpy'; then
+            exit 1
+          fi
+          if .venv/bin/python -c 'import polars'; then
+            exit 1
+          fi
+      - name: Same load_overlap on polars_min and numpy_min
+        run: .venv/bin/python shrink/run_overlap_stdlib.py --deps min minimal.json
+      - name: Byte-identical to the real polars and numpy result
+        run: cmp reference.json minimal.json

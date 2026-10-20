@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "files_scanned": 287,
+  "dynamic_nonliteral": [
+    {
+      "file": "blueprobe/blueprobe.py",
+      "line": 65
+    },
+    {
+      "file": "dist/blueprobe_min.py",
+      "line": 118
+    },
+    {
+      "file": "dist/dragowing_min.py",
+      "line": 120
+    },
+    {
+      "file": "dist/pythdragoras_min.py",
+      "line": 120
+    },
+    {
+      "file": "dist/queryu_min.py",
+      "line": 117
+    },
+    {
+      "file": "dist/sakanalytics_min.py",
+      "line": 119
+    },
+    {
+      "file": "queryu/conftest.py",
+      "line": 49
+    },
+    {
+      "file": "scripts/fetch_module.py",
+      "line": 369
+    }
+  ],
+  "packages": {
+    "requests": {
+      "attributes": {},
+      "declared": [],
+      "import_names": [
+        "requests"
+      ],
+      "import_sites": []
+    },
+    "tqdm": {
+      "attributes": {},
+      "declared": [],
+      "import_names": [
+        "tqdm"
+      ],
+      "import_sites": []
+    },
+    "biopython": {
+      "attributes": {},
+      "declared": [],
+      "import_names": [
+        "Bio",
+        "biopython"
+      ],
+      "import_sites": []
+    }
+  },
+  "traces": [
+    {
+      "dynamic_attributes": [],
+      "exception": null,
+      "hits": [],
+      "mode": "absent",
+      "packages": [
+        "requests",
+        "tqdm",
+        "Bio",
+        "biopython"
+      ],
+      "status": 0
+    },
+    {
+      "dynamic_attributes": [],
+      "exception": null,
+      "hits": [],
+      "mode": "stub",
+      "packages": [
+        "requests",
+        "tqdm",
+        "Bio",
+        "biopython"
+      ],
+      "status": 0
+    }
+  ]
+}

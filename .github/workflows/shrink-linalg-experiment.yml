@@ -1,0 +1,87 @@
+name: Shrink linalg experiment
+
+# 実験: suggest の SVD と littlebit / ビット行列を、標準ライブラリだけの shrink/numpy_linalg_min.py で動かす。
+# 本物の numpy で基準を作り、numpy を入れない環境で同じ実コード（c001）を1回走らせて許容誤差で比べる。
+# 既存のワークフローには触れない。c001 の pure-Python SVD は数十秒なので、通常の pytest には入れない。
+on:
+  pull_request:
+    paths:
+      - shrink/numpy_linalg_min.py
+      - shrink/run_linalg.py
+      - scripts/linalg_feasibility.py
+      - tests/test_numpy_linalg_min.py
+      - queryu/ask/suggest.py
+      - pythdragoras/littlebit_prune.py
+      - pythdragoras/littlebit_approx.py
+      - pythdragoras/littlebit_holdout.py
+      - pythdragoras/rule_search.py
+      - .github/workflows/shrink-linalg-experiment.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference:
+    name: Equivalence with real numpy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - run: uv sync --locked --python 3.14
+      - name: Stand-in matches numpy on small cases and the fixture path
+        run: uv run --locked --python 3.14 pytest -q tests/test_numpy_linalg_min.py
+      - name: AST reachability
+        run: uv run --locked --python 3.14 python scripts/linalg_feasibility.py ast
+      - name: Trace real numpy call shapes on c001
+        run: uv run --locked --python 3.14 python scripts/linalg_feasibility.py trace --scope c001
+      - name: Absent numpy fails on the first attribute
+        run: uv run --locked --python 3.14 python scripts/linalg_feasibility.py absent
+      - name: c001 paths with real numpy
+        run: uv run --locked --python 3.14 python shrink/run_linalg.py --numpy real --scope c001 reference.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linalg-reference
+          path: reference.json
+          if-no-files-found: error
+
+  without-numpy:
+    name: Real c001 paths on numpy_linalg_min (numpy not installed)
+    needs: reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Install locked runtime deps except numpy
+        run: uv sync --locked --no-dev --no-install-package numpy --python "${{ matrix.python }}"
+      - name: numpy is not installed
+        run: if .venv/bin/python -c 'import numpy'; then echo 'numpy is installed' >&2; exit 1; fi
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: linalg-reference
+      - name: c001 paths with numpy_linalg_min
+        run: .venv/bin/python shrink/run_linalg.py --numpy min --scope c001 got.json
+      - name: Within tolerance of the real-numpy result
+        run: .venv/bin/python shrink/run_linalg.py --compare reference.json got.json

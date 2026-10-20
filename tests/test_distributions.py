@@ -104,3 +104,91 @@ def test_generator_rejects_changed_transitive_sources(tmp_path, monkeypatch, unt
                                      'paths': ['entries'], 'output': 'dist/demo_min.py'}}}
     with pytest.raises(ValueError, match='distribution source'):
         build(tmp_path, manifest, tmp_path / 'tool.py', check=True)
+
+
+def test_omit_from_bundle_hides_files_from_minpy_and_keeps_the_checkout(tmp_path, monkeypatch):
+    import runpy
+    api = runpy.run_path(str(ROOT / 'scripts/build_distributions.py'))
+    build = api['build']
+    seen = {}
+
+    class Tool:
+        @staticmethod
+        def bundle(*, root, entry, repository, commit, search_paths, require_clean):
+            root = Path(root)
+            seen['hidden'] = (root / 'pkg' / 'external.py').exists()
+            seen['entry'] = (root / entry).is_file()
+            seen['require_clean'] = require_clean
+            return 'bundle'
+
+        @staticmethod
+        def parse_header(text):
+            return {'allow': []}
+
+    monkeypatch.setitem(build.__globals__, 'load_tool', lambda *args: Tool)
+    subprocess.run(['git', 'init', '-q', str(tmp_path)], check=True)
+    (tmp_path / 'pkg').mkdir()
+    (tmp_path / 'LICENSE').write_text('notice')
+    (tmp_path / 'pkg' / 'api.py').write_text('VALUE = 1\n')
+    (tmp_path / 'pkg' / 'external.py').write_text('import selectolax\n')
+    subprocess.run(['git', '-C', str(tmp_path), 'add', '.'], check=True)
+    subprocess.run(['git', '-C', str(tmp_path), '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'source'], check=True)
+    sha = subprocess.check_output(['git', '-C', str(tmp_path), 'rev-parse', 'HEAD'], text=True).strip()
+    manifest = {'schema': 'aoi-distributions/1', 'source': sha,
+                'python': f'{sys.version_info.major}.{sys.version_info.minor}',
+                'tool': {'sha256': ''}, 'license': 'LICENSE',
+                'projects': {'demo': {'entry': 'pkg/api.py', 'prefix': 'pkg', 'paths': ['pkg'],
+                                     'omit_from_bundle': ['pkg/external.py'],
+                                     'output': 'dist/demo_min.py'}}}
+    build(tmp_path, manifest, tmp_path / 'tool.py', check=False)
+    assert seen == {'hidden': False, 'entry': True, 'require_clean': False}
+    assert (tmp_path / 'pkg' / 'external.py').is_file()
+    assert (tmp_path / 'dist' / 'demo_min.py').read_text() == 'bundle'
+
+
+@pytest.mark.parametrize('omit,kind,match', [
+    ('pkg/external.py', 'file', 'omit_from_bundle must be a list of relative paths'),
+    ([1], 'file', 'omit_from_bundle must be a list of relative paths'),
+    (['pkg/absent.py'], 'file', 'omit_from_bundle entry is missing'),
+    (['pkg/link.py'], 'symlink-inside', 'omit_from_bundle entry is missing'),
+    (['pkg/escape.py'], 'symlink-outside', 'omit_from_bundle escapes the snapshot'),
+])
+def test_omit_from_bundle_rejects_bad_entries(tmp_path, monkeypatch, omit, kind, match):
+    import runpy
+    api = runpy.run_path(str(ROOT / 'scripts/build_distributions.py'))
+    build = api['build']
+
+    class Tool:
+        @staticmethod
+        def bundle(**kwargs):
+            raise AssertionError('minpy must not run when omit_from_bundle is invalid')
+
+        @staticmethod
+        def parse_header(text):
+            return {'allow': []}
+
+    monkeypatch.setitem(build.__globals__, 'load_tool', lambda *args: Tool)
+    subprocess.run(['git', 'init', '-q', str(tmp_path)], check=True)
+    package = tmp_path / 'pkg'
+    package.mkdir()
+    (tmp_path / 'LICENSE').write_text('notice')
+    (package / 'api.py').write_text('VALUE = 1\n')
+    (package / 'external.py').write_text('import selectolax\n')
+    if kind == 'symlink-inside':
+        (package / 'link.py').symlink_to('api.py')
+    elif kind == 'symlink-outside':
+        outside = tmp_path.parent / 'omit-outside.txt'
+        outside.write_text('outside')
+        (package / 'escape.py').symlink_to(outside)
+    subprocess.run(['git', '-C', str(tmp_path), 'add', '.'], check=True)
+    subprocess.run(['git', '-C', str(tmp_path), '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'source'], check=True)
+    sha = subprocess.check_output(['git', '-C', str(tmp_path), 'rev-parse', 'HEAD'], text=True).strip()
+    manifest = {'schema': 'aoi-distributions/1', 'source': sha,
+                'python': f'{sys.version_info.major}.{sys.version_info.minor}',
+                'tool': {'sha256': ''}, 'license': 'LICENSE',
+                'projects': {'demo': {'entry': 'pkg/api.py', 'prefix': 'pkg', 'paths': ['pkg'],
+                                     'omit_from_bundle': omit,
+                                     'output': 'dist/demo_min.py'}}}
+    with pytest.raises(ValueError, match=match):
+        build(tmp_path, manifest, tmp_path / 'tool.py', check=True)
+    assert (package / 'external.py').is_file()

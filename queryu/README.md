@@ -178,7 +178,13 @@ Aoi/QueRyu development relationship. MIT notices are kept in `LICENSE`.
 python cache_share.py --cache data/cache query --group npb_calendar --since 2026-01-01
 python cache_share.py --cache data/cache export --key 'npb_calendar:2024_*' --out share.tar
 python cache_share.py --cache other/cache import share.tar
+python cache_share.py --cache data/cache verify --group npb_calendar
 ```
+
+- `verify_cache(cache, entries=None)` / `verify`: 本文のある行（既定では全履歴）について、gzip 本文と
+  記録された sha256・バイト数を照合し、`{"total", "verified", "corrupted", "errors"}` を JSON で出す。
+  `verify` は query と同じ絞り込みを受け付ける。終了コードは、全件一致で 0、不一致が 1 件でもあれば 1、
+  対象が 0 件なら 3（指定ミスに気づけるよう、stderr に注記を出す）。
 
 ## テスト
 
@@ -188,7 +194,7 @@ python cache_share.py --cache other/cache import share.tar
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
 git -C ../Aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7
 git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
-git -C ../BlueProbe checkout bf27a17354544519016bbbde87c7f9c8d2aa29cd
+git -C ../BlueProbe checkout 563d84488a57efd3bca2d89c97c0a72759ab8ee5
 AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
 ```
 

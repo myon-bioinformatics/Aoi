@@ -8,8 +8,12 @@ from blueprobe import new_report
 
 
 class HtmlSource:
-    def __init__(self, *, selector=None, extractor=None, include_css=False, stylesheets=None,
+    def __init__(self, *, selector=None, pattern=None, extractor=None, include_css=False, stylesheets=None,
                  snapshot_extractor=None):
+        if pattern is not None and selector is None:
+            from dom_patterns import get_selector_for_pattern
+            selector = get_selector_for_pattern(pattern)
+        self.pattern = pattern
         self.selector = selector
         self.extractor = extractor
         self.include_css = include_css

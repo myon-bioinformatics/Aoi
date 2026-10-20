@@ -1,0 +1,81 @@
+name: Shrink module experiment
+
+# 実験: scripts/shrink_module.py が ast で DRAgoWing の load_overlap から numpy の使用を集め、
+# shrink/numpy_min.py（pure-Python）を生成する。本物の numpy と比べたあと、numpy を入れない環境で
+# 同じ実コードを numpy_min で動かし、結果が一致することを1回の実行で確かめる。既存のワークフローには触れない。
+on:
+  pull_request:
+    paths:
+      - scripts/shrink_module.py
+      - shrink/**
+      - tests/test_shrink_module.py
+      - dragowing/overlap.py
+      - pythdragoras/rule_search.py
+      - .github/workflows/shrink-module-experiment.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference:
+    name: Equivalence with real numpy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - run: uv sync --locked --python 3.14
+      - name: numpy_min is current and matches numpy
+        run: uv run --locked --python 3.14 pytest -q tests/test_shrink_module.py
+      - name: Survey and analyze
+        run: |
+          uv run --locked --python 3.14 python scripts/shrink_module.py survey numpy
+          uv run --locked --python 3.14 python scripts/shrink_module.py analyze numpy dragowing/overlap.py:load_overlap
+      - name: load_overlap on c001 with real numpy
+        run: uv run --locked --python 3.14 python shrink/run_overlap.py --numpy real reference.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: overlap-reference
+          path: reference.json
+          if-no-files-found: error
+
+  without-numpy:
+    name: Real code on numpy_min (numpy not installed)
+    needs: reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Install locked runtime deps except numpy
+        run: uv sync --locked --no-dev --no-install-package numpy --python "${{ matrix.python }}"
+      - name: numpy is not installed
+        run: "! .venv/bin/python -c 'import numpy'"
+      - uses: actions/download-artifact@v8
+        with:
+          name: overlap-reference
+      - name: load_overlap on c001 with numpy_min
+        run: .venv/bin/python shrink/run_overlap.py --numpy min minimal.json
+      - name: Byte-identical to the real-numpy result
+        run: cmp reference.json minimal.json

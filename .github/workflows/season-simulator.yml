@@ -35,10 +35,10 @@ jobs:
         run: uv run --locked --python "${{ matrix.python }}" python -c "import importlib.util; assert importlib.util.find_spec('ortools') is None"
       - name: Test without optional solver
         if: matrix.solver == 'stdlib'
-        run: uv run --locked --python "${{ matrix.python }}" pytest sakanalytics/tests/test_season_simulator.py -q
+        run: uv run --locked --python "${{ matrix.python }}" pytest -c pyproject.toml sakanalytics/tests/test_season_simulator.py -q
       - name: Test with locked optional solver
         if: matrix.solver == 'exact'
-        run: uv run --locked --python "${{ matrix.python }}" --with-requirements sakanalytics/season-requirements.txt pytest sakanalytics/tests/test_season_simulator.py -q
+        run: uv run --locked --python "${{ matrix.python }}" --with-requirements sakanalytics/season-requirements.txt pytest -c pyproject.toml sakanalytics/tests/test_season_simulator.py -q
       - run: uv run --locked --python "${{ matrix.python }}" python -m compileall -q sakanalytics/season_simulator.py sakanalytics/season_exact.py
       - name: Exercise result-free synthetic CLI
         if: matrix.solver == 'exact'

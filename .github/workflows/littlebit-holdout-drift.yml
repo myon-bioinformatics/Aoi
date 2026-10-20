@@ -64,7 +64,7 @@ jobs:
         run: |
           mkdir -p build/littlebit-holdout-drift
           cp cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json build/littlebit-holdout-drift/
-          uv run --locked --python 3.14.8 pytest -q -s pythdragoras/tests -k littlebit \
+          uv run --locked --python 3.14.8 pytest -c pyproject.toml -q -s pythdragoras/tests -k littlebit \
             --junitxml=build/littlebit-holdout-drift/pytest.xml
       - name: Preserve audit results and any strict reconstruction diagnostics
         if: always()

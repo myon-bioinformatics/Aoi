@@ -23,6 +23,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-10-20: BlueProbe #30 の merge `50a2846d68fcba4acbe7e4abf7fb0130de07de89`（標準ライブラリの html.parser）と QueRyu #16 の merge `fcadaa9aaab30292703459758eae481d0f018f2d` を、squash なしの `git subtree pull --prefix=blueprobe` と `git subtree pull --prefix=queryu` で取り込みました。`blueprobe/` と `queryu/` の tree は登録した SHA の tree と同一です。各 merge commit の第2親は子の main の head です。
+
 2026-10-20: 各子の open PR を子ごとの統合 PR（BlueProbe #29、QueRyu #15、PythDRagoras #15、DRAgoWing #8、SakAnalytics #9、NagoyAction #10）にまとめて merge し、6つの子すべてを `git subtree pull`（`--squash` なし）で取り込みました（BlueProbe `27f61b3b10c629ace49ad6c8a2dc9f09ad5e31f3`、QueRyu `0a83400f3a718901815e1d07d2e2d990976839b3`、PythDRagoras `b0f9c3a1ef255f7c0bc38bc7eeff86360403e69f`、DRAgoWing `cd8140ce695ede6add6817cced2ea5c8ee2e161f`、SakAnalytics `3cd2349b8a5d49f4e0de187aac2741566b3d731c`、NagoyAction `a1ee275410f49f7d0ce95c6ff4f16ae5bbc39028`）。各 merge commit の第2親は子の main の head です。
 
 2026-10-19（2回目）: PythDRagoras・DRAgoWing・SakAnalytics の squash の join を、BlueProbe・QueRyu・NagoyAction と同じく、prefix を消してから `git subtree add`（`--squash` なし）で入れ直しました（PythDRagoras `cd21d7e295facfbc8101ea2d89f715da27fbd80a`、DRAgoWing `8d6163989fc2f4843412a03b465fee1cf9b3ac3c`、SakAnalytics `9a5bc4a048edfdaefbbe514fdde94eb0df4f2065`）。これで6つの子はすべて squash なしの subtree で、同期は `git subtree pull`（`--squash` なし）です。
@@ -65,6 +67,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## QueRyu
 
+2026-10-20: QueRyu #16 の merge `fcadaa9aaab30292703459758eae481d0f018f2d` を、squash なしの `git subtree pull --prefix=queryu` で取り込みました。`pattern_postprocess` は `from blueprobe import detect_pattern, get_pattern` でパターンを読みます。`queryu/` の tree は登録した SHA の tree と同一です。
+
 2026-10-20: QueRyu #14 の merge `b8b2983edde039f010be75e40944f750ccfd9ce7` を、squash なしの `git subtree pull --prefix=queryu` で取り込みました。`queryu/` の tree は登録した SHA の tree と同一です。この版は import 時に BlueProbe の `dom_patterns` を読むため、BlueProbe main `563d84488a57efd3bca2d89c97c0a72759ab8ee5` も同じ方法で `blueprobe/` に取り込みました。DRAgoWing・PythDRagoras・SakAnalytics は drift のみなので登録 SHA は変えていません。
 
 - QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は、Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から `git filter-branch --subdirectory-filter queryu` で切り出しました。tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返しました（PythDRagoras と同じ split の止まり（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））。
@@ -97,6 +101,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - 同期は PythDRagoras の手順の `pythdragoras` を `dragowing`、リポジトリを DRAgoWing に読み替えます（`--squash` なし）。
 
 ## BlueProbe
+
+2026-10-20: main `50a2846d68fcba4acbe7e4abf7fb0130de07de89`（#30: 標準ライブラリの html.parser。DOM パターン表は `blueprobe.py` にあり、`dom_patterns.py` は再エクスポート）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。実行時の依存はありません。
 
 2026-10-20: main `563d84488a57efd3bca2d89c97c0a72759ab8ee5`（#26 の DOM パターン）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。QueRyu の新しい `pattern_postprocess` が `load_source("dom_patterns")` を import 時に呼ぶためです。
 

@@ -8,7 +8,7 @@
         "subtree_prefix": "blueprobe"
       },
       "repository_id": 1418210841,
-      "sha": "27f61b3b10c629ace49ad6c8a2dc9f09ad5e31f3"
+      "sha": "50a2846d68fcba4acbe7e4abf7fb0130de07de89"
     },
     "myon-bioinformatics/DRAgoWing": {
       "optional": {
@@ -49,7 +49,7 @@
         }
       },
       "repository_id": 1423051557,
-      "sha": "0a83400f3a718901815e1d07d2e2d990976839b3"
+      "sha": "fcadaa9aaab30292703459758eae481d0f018f2d"
     },
     "myon-bioinformatics/SakAnalytics": {
       "optional": {

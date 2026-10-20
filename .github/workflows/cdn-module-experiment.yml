@@ -1,0 +1,43 @@
+name: CDN module experiment
+
+# 実験: pip/uv を使わず、PyPI の pure-Python wheel（markdown）を取り、sha256 を照合し、
+# キャッシュして sys.path から import する。既存のワークフローには触れない。
+on:
+  pull_request:
+    paths:
+      - scripts/fetch_module.py
+      - scripts/cdn_markdown_smoke.py
+      - .github/workflows/cdn-module-experiment.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fetch-and-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Resolve latest markdown wheel and its PyPI sha256
+        id: resolve
+        run: python scripts/fetch_module.py resolve markdown --github-output
+      - uses: actions/cache@v6
+        with:
+          path: .cdn-cache
+          key: cdn-${{ steps.resolve.outputs.filename }}-${{ steps.resolve.outputs.sha256 }}
+      - name: markdown is not installed
+        run: "! python -c 'import markdown'"
+      - name: Fetch (or reuse cache), verify sha256, import from the wheel
+        run: python scripts/fetch_module.py fetch markdown --cache .cdn-cache
+      - name: Run DRAgoWing render_md with the fetched module
+        run: python scripts/cdn_markdown_smoke.py .cdn-cache

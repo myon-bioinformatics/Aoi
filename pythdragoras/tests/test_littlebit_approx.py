@@ -123,6 +123,29 @@ def test_factorization_does_not_read_the_target(monkeypatch):
     assert target[0]["col"] not in {cond["col"] for cond in cands}
 
 
+def test_cli_takes_cycle_dir_or_aoi_root_without_searching(tmp_path, monkeypatch):
+    monkeypatch.delenv("AOI_ROOT", raising=False)
+    monkeypatch.delenv("AOI_RESEARCH_CYCLE", raising=False)
+    cycle = tmp_path / "cycle"
+    cycle.mkdir()
+    with pytest.raises(FileNotFoundError, match="analysis.toml"):
+        la.main(["--cycle-dir", str(cycle)])
+    with pytest.raises(SystemExit, match="--cycle-dir"):
+        la.main([])
+    root = tmp_path / "aoi"
+    name = "demo-cycle"
+    (root / "cycles" / name).mkdir(parents=True)
+    monkeypatch.setenv("AOI_RESEARCH_CYCLE", name)
+    with pytest.raises(FileNotFoundError, match="analysis.toml"):
+        la.main(["--root", str(root)])
+    monkeypatch.setenv("AOI_ROOT", str(root))
+    with pytest.raises(FileNotFoundError, match=name):
+        la.main([])
+    monkeypatch.setenv("AOI_RESEARCH_CYCLE", "a/b")
+    with pytest.raises(SystemExit, match="AOI_RESEARCH_CYCLE"):
+        la.main(["--root", str(root)])
+
+
 def test_provenance_fields_and_registration():
     df, _, cands = block_frame()
     got = derive(df, cands, rank=2, stages=1, seed=3)

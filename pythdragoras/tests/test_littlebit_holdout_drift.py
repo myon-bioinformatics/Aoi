@@ -215,8 +215,6 @@ def test_littlebit_source_divergence_cannot_rebaseline_artifacts(provenance_tree
         _verify_provenance(root, manifest)
 
 
-
-
 def _json_bytes(value):
     return (json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True,
                        allow_nan=False) + "\n").encode("utf-8")
@@ -248,7 +246,7 @@ def _regenerate(generator, cycle, output):
         raise ValueError("regeneration must not overwrite committed evidence")
     # Use the real CLI and its real run_cycle/default settings/serialization.
     # Do not feed it saved encoders, decoders, selected rules, or research masks.
-    result = generator.main(["--cycle", str(cycle), "--out", str(output)])
+    result = generator.main(["--cycle-dir", str(cycle), "--out", str(output)])
     assert result == 0, f"live generator returned {result!r}"
     return _read_artifacts(output)
 
@@ -357,7 +355,7 @@ def test_littlebit_drift_calls_live_cli_and_protects_committed_files(tmp_path, e
             return 0
 
     _assert_matches(expected, _regenerate(Generator, cycle, output))
-    assert calls == [["--cycle", str(cycle), "--out", str(output)]]
+    assert calls == [["--cycle-dir", str(cycle), "--out", str(output)]]
     with pytest.raises(ValueError, match="must not overwrite"):
         _regenerate(Generator, cycle, committed / ".." / committed.name)
     assert len(calls) == 1

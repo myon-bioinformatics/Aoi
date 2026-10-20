@@ -134,6 +134,17 @@ def test_pooled_mcc_uses_confusion_totals_and_refuses_duplicate_units():
         lh.pooled([first, first], "baseline")
 
 
+def test_cli_takes_cycle_dir_without_aoi_layout(tmp_path, monkeypatch):
+    monkeypatch.delenv("AOI_ROOT", raising=False)
+    monkeypatch.delenv("AOI_RESEARCH_CYCLE", raising=False)
+    cycle = tmp_path / "cycle"
+    cycle.mkdir()
+    with pytest.raises(FileNotFoundError, match="analysis.toml"):
+        lh.main(["--cycle-dir", str(cycle)])
+    with pytest.raises(SystemExit, match="--cycle-dir"):
+        lh.main([])
+
+
 def test_committed_backtest_replays_frozen_models_without_research_masks(monkeypatch):
     import aoi_paths
     cycle = aoi_paths.resolve_cycle_path(aoi_paths.resolve_aoi_root(anchor=Path(__file__)))

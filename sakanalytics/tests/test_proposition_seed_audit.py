@@ -39,10 +39,10 @@ def _recorded_source_sha(out, artifact, field, recorded, source):
 def test_replay_seed_registry_from_all_2240_plans():
     actual=audit.build(CYCLE,OUT/'skill-seed-plans.jsonl.gz')
     saved=json.loads((OUT/'seed-evaluation.json').read_text())
-    # 生成元のハッシュ（analysis_sha256）は記録の値のまま。今のファイルとの差は source-divergence.json で確かめる
-    _recorded_source_sha(OUT, 'seed-evaluation.json', 'analysis_sha256', saved['analysis_sha256'],
-                         ROOT/'sakanalytics/proposition_seed_audit.py')
-    assert actual['analysis_sha256']==hashlib.sha256((ROOT/'sakanalytics/proposition_seed_audit.py').read_bytes()).hexdigest()
+    # 生成元のハッシュは Aoi の source-divergence.json だけが説明する。ローカルな上書きはしない。
+    source = ROOT/'sakanalytics/proposition_seed_audit.py'
+    _recorded_source_sha(OUT, 'seed-evaluation.json', 'analysis_sha256', saved['analysis_sha256'], source)
+    assert actual['analysis_sha256']==hashlib.sha256(source.read_bytes()).hexdigest()
     assert {**actual, 'analysis_sha256': saved['analysis_sha256']}==saved
     assert actual['plan_count']==2240 and len(actual['propositions'])==114
     assert sum(v['groups'] is not None for v in actual['propositions'].values())==13
@@ -121,6 +121,14 @@ def test_annual_row_count_matches_declared_units(annual_input,change):
     rewrite_annual(annual_input,rows)
     with pytest.raises(ValueError,match='annual unit count differs from declared provenance'):
         audit.build(annual_input,OUT/'skill-seed-plans.jsonl.gz')
+
+
+def test_cli_takes_cycle_dir_without_resolving_aoi_paths():
+    text = Path(audit.__file__).read_text(encoding='utf-8')
+    assert 'aoi_layout' not in text and 'aoi_paths' not in text
+    with pytest.raises(SystemExit) as caught:
+        audit.main([])
+    assert caught.value.code == 2
 
 
 def test_missing_features_and_real_team_scope_are_explicit():

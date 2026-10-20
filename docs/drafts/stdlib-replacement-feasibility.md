@@ -1,5 +1,13 @@
 # Stdlib replacement: where the line is
 
+**Production follow-up:** DRAgoWing now provides an explicit `load_overlap(..., backend="stdlib")`
+(and `--overlap-backend stdlib`) for the supported scalar overlap path. It uses a private row
+implementation without injecting `numpy_min` or `polars_min`. The default remains native.
+Scope, parity checks, and startup/warm time plus memory measurements are in
+[the backend contract](../../dragowing/docs/overlap-stdlib.md).
+The study below records the original experiment; the generated inventory and traces are refreshed
+for the current tree. Historical import counts in this note describe the 2026-10-20 survey snapshot.
+
 Survey of third-party imports across Aoi and the six child subtrees, plus live traces of the call paths an AST count cannot see. This note does not add `<pkg>_min.py` modules and does not change a pipeline. Shrinks that the classification marks as worth trying are separate changes.
 
 Observed on 2026-10-20 against the locked environment (Python 3.12): polars 2.0.0, numpy 2.5.4, httpx 0.28.1, markdown 3.11.2, selectolax 1.0.1. PyPI wheel class below is what `scripts/fetch_module.py resolve` said about the current release of each distribution.
@@ -133,13 +141,13 @@ pytest is the test runner (83 files). coverage is imported once, in `tests/test_
 
 Of the package modules under `dragowing/`, only two import a third-party library: `overlap.py` (numpy and polars) and `htmlout.py` (markdown, dynamically). Figures, records, forms, the HTML shell, the Plotly **JSON** spec, and the CDN URL are stdlib. Plotly itself is the browser's plotly.js, not a Python package. Chrome export needs a browser. Those two are outside this question. `dragowing/scripts/run_stdlib_paths.py` is the comparison runner, not a package module: it imports numpy and markdown to record `__file__` and `__version__`. The copy at `dragowing/vendor/aoi/scripts/fetch_module.py` is the same bytes as `scripts/fetch_module.py`, so the survey records the same non-literal `import_module` a second time.
 
-`load_overlap` does not run on the stdlib alone today. The numpy half does: #89 runs this same function with numpy uninstalled. The polars half is the surface in the table above (`read_ndjson`, `height`, `columns`, `select`, `to_list`, `col`, `lit`, the six comparisons, nulls). Until a `polars_min` for that surface exists and is checked the way `numpy_min` is, the claim stops there. `render_md` runs without installing markdown only by fetching the wheel (#87), which is class (a), not stdlib.
+`load_overlap` originally did not run on the stdlib alone; the explicit production follow-up above now covers its supported scalar inputs. The numpy half does: #89 runs this same function with numpy uninstalled. The polars half is the surface in the table above (`read_ndjson`, `height`, `columns`, `select`, `to_list`, `col`, `lit`, the six comparisons, nulls). Until a `polars_min` for that surface exists and is checked the way `numpy_min` is, the claim stops there. `render_md` runs without installing markdown only by fetching the wheel (#87), which is class (a), not stdlib.
 
 ## A managed `min.py` and downstream callers
 
 `dist/dragowing_min.py` (and the other four files next to it) is already the managed stdlib copy. The survey finds no third-party import under `dist/`. It also does not include `load_overlap` or `render_md`. A downstream caller of `dragowing_min` never imports polars, numpy, or markdown. That contract is the one in `docs/distributions.md`, and this study does not change it.
 
-A caller of the **full** package hits `import polars` inside `load_overlap` and `import numpy` at the top of `overlap.py`. The injection point already used for numpy is process-wide and does not edit production code: `shrink/run_overlap.py` puts `shrink/numpy_min.py` in `sys.modules["numpy"]` before the import. The same seam is what a `polars_min` would use (`sys.modules["polars"]` before `dragowing.overlap` is imported). It works for a caller that owns the process. It does not work if polars was already imported, and it does not apply to someone who only received `dist/dragowing_min.py`, because that file never calls `load_overlap`.
+A caller of the **full** package using the default native backend hits lazy `import polars` and `import numpy` inside `load_overlap`; the explicit stdlib backend bypasses both. The injection point already used for numpy is process-wide and does not edit production code: `shrink/run_overlap.py` puts `shrink/numpy_min.py` in `sys.modules["numpy"]` before the import. The same seam is what a `polars_min` would use (`sys.modules["polars"]` before `dragowing.overlap` is imported). It works for a caller that owns the process. It does not work if polars was already imported, and it does not apply to someone who only received `dist/dragowing_min.py`, because that file never calls `load_overlap`.
 
 ## What the traces do not prove
 

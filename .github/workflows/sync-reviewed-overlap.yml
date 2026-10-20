@@ -1,0 +1,47 @@
+name: Sync reviewed overlap subtree
+on:
+  pull_request:
+    paths:
+      - .github/workflows/sync-reviewed-overlap.yml
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feat/overlap-stdlib-integration'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Import reviewed child history into the integration branch
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+          CHILD_SHA: 5487e25add5ec084c16d4a4e4ac8a734da2ba695
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$HEAD_BRANCH" = feat/overlap-stdlib-integration
+          remote=https://github.com/myon-bioinformatics/DRAgoWing.git
+          test "$(git ls-remote "$remote" refs/heads/main | cut -f1)" = "$CHILD_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git subtree pull --prefix=dragowing "$remote" "$CHILD_SHA" -m 'Merge reviewed DRAgoWing stdlib overlap backend (PR #15)'
+          test "$(git rev-parse HEAD:dragowing)" = "$(git rev-parse "$CHILD_SHA^{tree}")"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          p = Path('child-heads.json')
+          data = json.loads(p.read_text())
+          data['heads']['myon-bioinformatics/DRAgoWing']['sha'] = os.environ['CHILD_SHA']
+          p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+          p = Path('tests/test_child_registry.py')
+          p.write_text(p.read_text().replace('e7734b3d538ff49c00a0295d21553a160ff67467', os.environ['CHILD_SHA']))
+          PY
+          git add child-heads.json tests/test_child_registry.py
+          git commit -m 'Register reviewed DRAgoWing overlap backend revision'
+          git push origin "HEAD:refs/heads/$HEAD_BRANCH"

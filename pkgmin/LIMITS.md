@@ -22,6 +22,8 @@ Dynamic (`pkgmin/trace_used.py`), on `pkgmin/run_paths.py`:
 
 The committed result is `pkgmin/evidence/used-surface.json`. Import sites, attributes, and declarations are empty for all three. Eight `import_module` / `__import__` calls take a non-literal argument (`blueprobe.py`, the five `dist/*_min.py` bundles, `queryu/conftest.py`, `scripts/fetch_module.py`). None of them is these packages. A non-literal import inside a function this driver does not call would still be invisible; the AST would see it if the module name were a literal.
 
+`cycles/c001-chunichi/from-cycle-001/research/r35_reference.py` uses nested f-string quotes, which `ast.parse` accepts on Python 3.12 and rejects on 3.11. The survey skips a file it cannot parse instead of recording a version-specific hole. That file does not import `requests`, `tqdm`, or `Bio` (read on 3.12, where it does parse).
+
 ## The modules
 
 | File | Loaded as | Exports |

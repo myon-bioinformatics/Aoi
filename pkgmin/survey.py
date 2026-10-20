@@ -115,11 +115,16 @@ def _attr_chain(node: ast.AST) -> list[str] | None:
 
 
 def scan_file(path: Path, rel: str) -> tuple[list[dict], Counter, list[dict]]:
-    """Import sites, attribute counts by distribution, and non-literal dynamic imports."""
+    """Import sites, attribute counts by distribution, and non-literal dynamic imports.
+
+    A file this interpreter cannot parse is skipped. ``r35_reference.py`` uses
+    nested f-string quotes (3.12) and does not import these packages; counting
+    the skip would make the check depend on the parser version.
+    """
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), rel)
     except SyntaxError:
-        return [], Counter(), [{"file": rel, "line": 0, "kind": "unparsed"}]
+        return [], Counter(), []
     _tag_parents(tree)
     sites: list[dict] = []
     attrs: Counter = Counter()

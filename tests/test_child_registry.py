@@ -47,7 +47,7 @@ def test_blueprobe_registered_with_exact_ids():
     assert entry["optional"]["repository_created_at"] == "2026-10-14T01:27:17Z"
     assert entry["optional"]["subtree_prefix"] == "blueprobe"
     assert "mirrored_from_parent" not in entry["optional"]
-    assert entry["sha"] == "27f61b3b10c629ace49ad6c8a2dc9f09ad5e31f3"
+    assert entry["sha"] == "50a2846d68fcba4acbe7e4abf7fb0130de07de89"
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "blueprobe.py", "web_observations.py"):
         assert (ROOT / "blueprobe" / path).is_file(), path
@@ -70,7 +70,7 @@ def test_queryu_registered_with_exact_ids():
     assert entry["repository_id"] == 1423051557
     assert entry["optional"]["subtree_prefix"] == "queryu"
     assert entry["optional"]["mirrored_from_parent"] == {"aoi_paths.py": "aoi_paths.py"}
-    assert entry["sha"] == "0a83400f3a718901815e1d07d2e2d990976839b3"
+    assert entry["sha"] == "fcadaa9aaab30292703459758eae481d0f018f2d"
     for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore", "cache_share.py", "emoji_data.py"):
         assert (ROOT / "queryu" / path).is_file(), path
 

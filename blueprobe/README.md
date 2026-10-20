@@ -23,7 +23,7 @@ BlueProbe は、取得済みの Web ページ（HTML/CSS/DOM）を読み、**何
 
 ## インストールと使い方
 
-Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存は `selectolax` だけです（`pyproject.toml`）。
+Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存はありません（`pyproject.toml`）。`selectolax` は開発時の照合だけで、標準ライブラリの HTML 木と Lexbor の結果を比べます。
 
 ```bash
 git clone https://github.com/myon-bioinformatics/BlueProbe.git
@@ -38,9 +38,9 @@ uv run python blueprobe.py --source <取得元のモジュール名> --cache <Qu
 
 | ファイル | 役割 |
 |---|---|
-| `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`） |
+| `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`）、DOM パターン表、`html.parser` の HTML 木 |
 | `html_source.py` | 保存HTMLを、信頼したオフライン抽出関数へ渡す汎用の取得元（`HtmlSource`） |
-| `dom_patterns.py` | DOM 構造パターン・プリセット定義と自動分類（`github_readme`, `portfolio_profile` 等） |
+| `dom_patterns.py` | `blueprobe` のパターン API を再公開する（`load_source("dom_patterns")` 用） |
 | `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
 | `heading_observations.py` | 保存済み HTML の見出し階層（`<h1>`〜`<h6>`）とランドマーク構造の観測 |
 | `web_observations.py` | 保存済みWeb画面の観測とソース一覧の整理（ブラウザ・SDKなし） |

@@ -22,13 +22,20 @@ SOURCE = (Path(__file__).resolve().parents[1] / "pattern_postprocess.py").read_t
 
 def test_module_calls_blueprobe_without_a_local_pattern_table():
     tree = ast.parse(SOURCE)
-    imports = [
-        node.module for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom) and node.module
-    ]
-    assert "blueprobe" in imports
-    assert all("dom_patterns" not in module for module in imports)
+    imported = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            imported.setdefault(node.module, []).extend(alias.name for alias in node.names)
+        if isinstance(node, ast.Import):
+            assert all(alias.name == "blueprobe" or "." not in alias.name for alias in node.names)
+    assert imported["blueprobe"] == ["detect_pattern", "get_pattern"]
+    assert all("." not in module for module in imported)
+    assert "dom_patterns" not in SOURCE
+    assert "load_source" not in SOURCE
     assert "DOM_PATTERNS" not in SOURCE
+    import blueprobe
+    assert pattern_postprocess.detect_pattern is blueprobe.detect_pattern
+    assert pattern_postprocess.get_pattern is blueprobe.get_pattern
     handlers = [handler.type for node in ast.walk(tree) if isinstance(node, ast.ExceptHandler) for handler in [node]]
     assert all(handler is not None for handler in handlers)
     for handler in handlers:

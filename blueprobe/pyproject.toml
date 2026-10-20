@@ -3,10 +3,10 @@ name = "blueprobe"
 version = "0.1.0"
 description = "まず見に行く。解釈はあとで。HTML/CSS/DOM の構造を観測して抽出する。"
 requires-python = ">=3.11"
-dependencies = ["selectolax>=1"]
+dependencies = []
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "selectolax>=1"]
 
 [tool.uv]
 package = false

@@ -2,8 +2,8 @@
 
 並べ替え（alphabetical / numeric）と、テキスト条件による絞り込みだけを持つ。
 ページの読み取り、DOM パターン表、パターン検出、本文の抽出は BlueProbe が持つ。
-パターンが要るときは ``from blueprobe import load_source`` で ``dom_patterns`` を読む。
-``from blueprobe.dom_patterns import`` は blueprobe がパッケージではないため解決しない。
+パターンが要るときは ``from blueprobe import detect_pattern, get_pattern`` で読む。
+blueprobe はパッケージではないので、``from blueprobe import ...`` のままにする。
 検出できない、未知のキー、数値にできない値は、ここで握りつぶさずに呼び出し元へ返す。
 """
 
@@ -18,24 +18,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
-from blueprobe import load_source
-
-
-def _load_dom_patterns():
-    """BlueProbe の checkout にある dom_patterns だけを読む。別の場所なら ImportError。"""
-    import blueprobe
-
-    patterns = load_source("dom_patterns")
-    expected = Path(blueprobe.__file__).resolve().parent
-    origin = Path(getattr(patterns, "__file__", "")).resolve().parent
-    if origin != expected:
-        raise ImportError(f"dom_patterns が BlueProbe の checkout ではありません: {origin}")
-    return patterns
-
-
-_dom_patterns = _load_dom_patterns()
-detect_pattern = _dom_patterns.detect_pattern
-get_pattern = _dom_patterns.get_pattern
+from blueprobe import detect_pattern, get_pattern
 
 SCHEMA = "queryu-pattern-postprocess/1"
 SORT_MODES = {"alphabetical", "numeric"}

@@ -2,8 +2,7 @@
 
 import pytest
 
-from selectolax.lexbor import LexborHTMLParser
-
+from blueprobe import HtmlTree
 from npb_team_batting import _header, check, group, pages, parse
 
 URL = "https://npb.jp/bis/2024/stats/tmb_c.html"
@@ -41,19 +40,19 @@ def test_unknown_first_stat_column_header_is_recorded():
 
 def test_non_digit_colspan_falls_back_to_one_column():
     html = '<table><tr><th>チーム</th><th colspan="bogus">打率</th><th>試合</th></tr></table>'
-    tr = LexborHTMLParser(html).css_first("tr")
+    tr = HtmlTree(html).css_first("tr")
     assert _header(tr) == [("チーム", 1), ("打率", 1), ("試合", 1)]
 
 
 def test_digit_colspan_is_preserved_for_spanned_headers():
     html = '<table><tr><th>チーム</th><th colspan="2">併殺</th></tr></table>'
-    tr = LexborHTMLParser(html).css_first("tr")
+    tr = HtmlTree(html).css_first("tr")
     assert _header(tr) == [("チーム", 1), ("併殺", 2)]
 
 
 def test_header_skips_non_table_cells_in_the_row():
     html = '<table><tr><th>チーム</th><script></script><th>打率</th><th>試合</th></tr></table>'
-    tr = LexborHTMLParser(html).css_first("tr")
+    tr = HtmlTree(html).css_first("tr")
     assert _header(tr) == [("チーム", 1), ("打率", 1), ("試合", 1)]
 
 

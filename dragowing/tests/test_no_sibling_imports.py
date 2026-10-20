@@ -1,7 +1,7 @@
 """DRAgoWing は Aoi の兄弟サブプロジェクト（pythdragoras など）と Aoi の scripts/ を import しない。
 
 使ってよいのは、標準ライブラリ、pyproject の依存（polars / numpy / markdown）と pytest、このリポジトリの
-モジュール（Aoi の aoi_paths.py と同じ中身の aoi_paths.py を含む。このディレクトリ自体がパッケージ dragowing）だけ。
+モジュール（このディレクトリ自体がパッケージ dragowing）だけ。
 既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の dragowing/ でも同じ結果になる。
 """
@@ -26,6 +26,10 @@ KNOWN_EXCEPTIONS = {
     ("forms.py", "path:queryu"),
     ("tests/test_figures.py", "import:ask"),
     ("tests/test_forms.py", "import:ask"),
+    # テストのデータの場所は AOI_ROOT の Aoi の aoi_paths に聞く（conftest.py が AOI_ROOT を sys.path に足す）
+    ("tests/test_figures.py", "import:aoi_paths"),
+    ("tests/test_forms.py", "import:aoi_paths"),
+    ("tests/test_research_report.py", "import:aoi_paths"),
 }
 
 

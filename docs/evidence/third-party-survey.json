@@ -662,7 +662,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 842,
+      "attribute_uses": 843,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -678,7 +678,7 @@
         "mark.parametrize": 152,
         "mark.skipif": 4,
         "param": 1,
-        "raises": 344,
+        "raises": 345,
         "skip": 7
       },
       "by_tree": {
@@ -716,14 +716,14 @@
           "import_sites": 15
         },
         "dragowing": {
-          "attribute_uses": 67,
+          "attribute_uses": 68,
           "attributes": {
             "UsageError": 2,
             "fail": 2,
             "fixture": 7,
             "mark.parametrize": 13,
             "mark.skipif": 2,
-            "raises": 38,
+            "raises": 39,
             "skip": 3
           },
           "dynamic_import_sites": 0,
@@ -1216,7 +1216,7 @@
         "fixture": 1,
         "mark.parametrize": 3,
         "mark.skipif": 1,
-        "raises": 8
+        "raises": 9
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_chrome_pipe.py",

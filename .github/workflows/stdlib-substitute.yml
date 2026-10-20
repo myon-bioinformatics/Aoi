@@ -99,9 +99,11 @@ jobs:
       - name: Drop markdown and numpy; keep polars
         run: uv sync --locked --no-dev --no-install-package markdown --no-install-package numpy --python 3.14
       - name: markdown and numpy are not installed
+        shell: bash
         run: |
-          ! .venv/bin/python -c 'import markdown'
-          ! .venv/bin/python -c 'import numpy'
+          set -euo pipefail
+          .venv/bin/python -c 'import markdown' && exit 1
+          .venv/bin/python -c 'import numpy' && exit 1
           .venv/bin/python -c 'import polars'
       - name: render_md from the wheel and load_overlap on numpy_min
         env:

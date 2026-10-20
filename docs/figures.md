@@ -8,6 +8,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --column wins_vs_pythag
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --cond 'rd,>,0' --cond 'rank_ra,<=,2'
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --embed
+python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --team-order d,g,s   # 球団×年の上からの並び。省略すると記号順
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --png --svg
 ```
 

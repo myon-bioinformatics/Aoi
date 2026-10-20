@@ -385,9 +385,9 @@ def heatmap_note(spec: dict, column: str) -> str:
     )
 
 
-def index_body(rows: list[dict], overlap: dict, column: str) -> tuple[str, dict]:
+def index_body(rows: list[dict], overlap: dict, column: str, team_order=()) -> tuple[str, dict]:
     trajectory = trajectory_figure(rows)
-    heat = heatmap_figure(rows, column)
+    heat = heatmap_figure(rows, column, team_order)
     source = (
         _INDEX_MD.replace("@@COLUMN@@", md_inline(column))
         .replace("@@TRAJECTORY@@", figure_block(trajectory, "trajectory"))

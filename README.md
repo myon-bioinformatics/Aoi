@@ -51,7 +51,6 @@ python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--colum
 | `html_tag_count.py` | ブラウザなしで HTML の要素を数える |
 | `research_report.py`・`reports/` | 研究の集計図と、Markdown レポートの描画（Aoi のワークフローから呼ぶ） |
 | `docs/` | `forms.md`・`figures.md`・`export.md` |
-| `aoi_paths.py` | Aoi のパスの規約（下の「Aoi との関係」） |
 | `tests/` | pytest |
 
 ## テスト
@@ -66,7 +65,7 @@ AOI_ROOT=$PWD/.test-deps/aoi \
   uv run --locked pytest -q --junitxml=reports/junit.xml
 ```
 
-- パスは Aoi の規約（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
+- DRAgoWing は Aoi の配置を知りません。`--results` と（必要なら）`--team-order` を明示で受け取ります。テストは `AOI_ROOT` の Aoi の `aoi_paths.py` でデータの場所を決めます。
 - `AOI_ROOT` が Aoi を指していない（`cycles/` がない）と、pytest は最初に止まって理由を出します。
 - このディレクトリはパッケージ `dragowing` の中身です（`__init__.py` は置かない。`export.py` と `cli.py` は `from .plotly_cdn` のような相対 import を使います）。テストは `from dragowing.xxx` と `python -m dragowing` を使います。pytest の `pythonpath` は `["."]` で、直下の `conftest.py` が、`dragowing` を同じディレクトリからまだ import できないときだけ、このディレクトリを `sys.modules["dragowing"]`（`__path__` はこのディレクトリ）に登録します。Aoi では親が pythonpath に入っていて同じディレクトリがすでに `dragowing` なので、この登録は何もしません。
 - pytest の外で `python -m dragowing` を動かすときは、ディレクトリ名が `dragowing` ならその親から実行します。
@@ -106,12 +105,6 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で pytest を動かし
 このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) から独立したものです。
 親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `dragowing/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、`LICENSE`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
 この README は Aoi の `dragowing/README.md` と同じファイルから始まっています。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
-
-### aoi_paths.py
-
-`aoi_paths.py` は Aoi 直下の `aoi_paths.py` と同じ中身の通常のファイルです（blob `aa0d41f8b5a017b9b677ed0fecea327bdd5cd1af`、mode 100644。vendor lock は使いません）。Aoi では `dragowing/aoi_paths.py` になり、Aoi の `scripts/check_child_heads.py` が Aoi 直下の原本と blob と mode が同じかを確かめます（`child-heads.json` の `optional.mirrored_from_parent`）。直すときは Aoi の原本を直し、同じ中身をここに置きます。
-
-`aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
 
 ### Aoi との同期
 
@@ -165,7 +158,8 @@ MIT License（[LICENSE](LICENSE)）。`LICENSE` は Aoi 直下の MIT LICENSE �
 Aoi のルートで、c001（中日）の出力から HTML を作る例。
 
 ```bash
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
+python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing \
+  --team-order d,g,s,db,t,c,h,f,b,e,l,m   # 並び順は Aoi の設定（aoi_npb.py の TEAM_ORDER）
 ```
 
 ## 既存 Markdown 実装との接続

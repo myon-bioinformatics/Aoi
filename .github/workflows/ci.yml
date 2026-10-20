@@ -21,7 +21,7 @@ jobs:
       # サイクルデータ（cycles/）・blueprobe の fixture・nagoyaction/inbox は Aoi に残す。コピーせず固定 SHA で checkout する
       AOI_SHA: 85243d6d1285e3bf4667e1447308543c7d648ab7
       # 抽出（blueprobe・npb_calendar・npb_team_annual）は BlueProbe を固定 SHA で checkout する
-      BLUEPROBE_SHA: 50a2846d68fcba4acbe7e4abf7fb0130de07de89
+      BLUEPROBE_SHA: f0763c4de0a2976bb243cd7d780c8b5ae0c22ba4
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -32,11 +32,11 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           version: "0.13.3"
           enable-cache: false

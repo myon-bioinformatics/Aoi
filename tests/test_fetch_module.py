@@ -85,6 +85,12 @@ def test_rejects_bad_hash_compiled_and_runtime_deps(monkeypatch, tmp_path):
         fm.resolve("cdnfake")
 
 
+def test_resolve_version_requests_that_release(monkeypatch):
+    calls = _serve(monkeypatch, _wheel())
+    fm.resolve("cdnfake", "1.2.3")
+    assert calls == [f"{fm.INDEX}/cdnfake/1.2.3/json"]
+
+
 def test_only_https():
     with pytest.raises(ValueError):
         fm._get("http://pypi.org/pypi/markdown/json")

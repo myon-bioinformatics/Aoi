@@ -101,6 +101,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## DRAgoWing
 
+2026-10-21: DRAgoWing #15 の main `5487e25add5ec084c16d4a4e4ac8a734da2ba695` を squash なしの `git subtree pull` で取り込みました。`load_overlap(..., backend="stdlib")` の明示選択・一致検証・測定を含み、既定は native のままです。prefix tree と登録SHAは一致し、研究入力・holdout履歴・研究結果は変更していません。
+
 2026-10-20: main `e7734b3d538ff49c00a0295d21553a160ff67467`（#13: Aoi の `fetch_module.py` と `numpy_min.py` を `vendor/aoi/` に置く。#14: `dragowing/.github/workflows/` の `uses:` を full SHA に固定）を、直前の subtree merge を残したまま squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。
 
 2026-10-20: main `ec0280afb8dfdfe9ae486a4337aa736e08ff9de8`（#12: Markdown を pure-Python wheel として取得し、`shrink/numpy_min.py` で `render_md` と `load_overlap` をインストール済みの markdown / numpy なしで動かす）を squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。

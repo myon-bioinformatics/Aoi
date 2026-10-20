@@ -137,7 +137,9 @@ def test_absent_discovers_only_the_c001_surface():
         assert key in out.stdout
     assert "Expr.__and__" not in out.stdout
     assert "succeeded regions=8" in out.stdout
-    assert "dragowing/overlap.py:121:load_overlap" in out.stdout
+    lines = (ROOT / "dragowing/overlap.py").read_text(encoding="utf-8").splitlines()
+    read_line = next(i for i, line in enumerate(lines, 1) if "frame = pl.read_ndjson(path)" in line)
+    assert f"dragowing/overlap.py:{read_line}:load_overlap" in out.stdout
 
 
 def test_trace_names_methods_the_ast_misses():

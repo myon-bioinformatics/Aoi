@@ -4,6 +4,17 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      parent-ref:
+        description: 'Parent ref override; empty resolves latest main'
+        required: false
+        default: ''
+        type: string
+      queryu-ref:
+        description: 'QueRyu ref override; empty reads child-heads.json'
+        required: false
+        default: ''
+        type: string
 permissions:
   contents: read
 jobs:
@@ -17,10 +28,51 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
+      - name: Resolve parent main and QueRyu subtree head
+        id: resolved
+        env:
+          PARENT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.parent-ref || '' }}
+          QUERYU_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.queryu-ref || '' }}
+        run: |
+          set -euo pipefail
+          resolve_head() {
+            local remote="$1" ref="$2" sha
+            ref="${ref#refs/heads/}"
+            if [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+              sha="$ref"
+            elif [[ "$ref" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+              sha=$(git ls-remote "$remote" "refs/heads/${ref}" | awk 'NR==1 { print $1 }')
+            else
+              echo "ref contains unsupported characters" >&2
+              return 1
+            fi
+            if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "could not resolve ${ref}" >&2
+              return 1
+            fi
+            printf '%s' "$sha"
+          }
+          if [[ -n "${PARENT_REF}" ]]; then
+            parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git "$PARENT_REF")
+          else
+            parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git main)
+          fi
+          if [[ -n "${QUERYU_REF}" ]]; then
+            queryu_sha=$(resolve_head https://github.com/myon-bioinformatics/QueRyu.git "$QUERYU_REF")
+          else
+            queryu_sha=$(python -S -c 'import json,re,sys; sha=json.load(open("child-heads.json"))["heads"]["myon-bioinformatics/QueRyu"]["sha"]; ok=isinstance(sha,str) and re.fullmatch(r"[0-9a-f]{40}", sha); sys.exit("QueRyu sha in child-heads.json must be a full commit") if not ok else print(sha)')
+          fi
+          echo "parent_sha=${parent_sha}" >> "$GITHUB_OUTPUT"
+          echo "queryu_sha=${queryu_sha}" >> "$GITHUB_OUTPUT"
+          {
+            echo '## Resolved distribution checkouts'
+            echo "myon-bioinformatics/myon-bioinformatics ${parent_sha}"
+            echo "myon-bioinformatics/QueRyu ${queryu_sha}"
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/myon-bioinformatics
-          ref: e570367ddd648316a82a00271b7d5c35c0243daf
+          ref: ${{ steps.resolved.outputs.parent_sha }}
           path: .test-deps/distribution-tools
           sparse-checkout: tools/minpy.py
           sparse-checkout-cone-mode: false
@@ -28,7 +80,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/QueRyu
-          ref: 079d502b40c9c012dd8df078186d8f5ac37fab45
+          ref: ${{ steps.resolved.outputs.queryu_sha }}
           path: .test-deps/distribution-sources/queryu
           persist-credentials: false
       - name: Regenerate and compare every committed artifact and license

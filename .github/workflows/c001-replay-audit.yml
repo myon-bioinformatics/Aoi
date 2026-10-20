@@ -22,16 +22,18 @@ jobs:
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - name: Read the frozen research snapshot separately
+      - name: Read the research past-pattern snapshot separately
         uses: actions/checkout@v7
         with:
+          # past-pattern snapshot of this repository, fetched by SHA for verification test data
           ref: 0723d1137fc8448fbabb7bbe5fc14333ddfaabe2
           path: research
           persist-credentials: false
-      - name: Read pinned canonical GHI (no forked transport)
+      - name: Read GHI past-pattern snapshot (no forked transport)
         uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/gh_identity
+          # past-pattern snapshot of gh_identity, fetched by SHA for verification test data
           ref: fc2c527257b12eb99c00637bbae74f8988fd6bf4
           path: .ghi
           persist-credentials: false
@@ -42,7 +44,7 @@ jobs:
         with:
           version: "0.13.3"
           enable-cache: false
-      - name: Import and CLI smoke for pinned GHI
+      - name: Import and CLI smoke for the GHI past-pattern snapshot
         run: |
           python -S -c "import sys; sys.path.insert(0, 'nagoyaction'); from ghi_execution import load_ghi; g = load_ghi('.ghi'); assert callable(g.request) and callable(g.local_identity)"
           python -S .ghi/gh_identity.py --help

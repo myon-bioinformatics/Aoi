@@ -5,9 +5,9 @@
   "license": "LICENSE",
   "tool": {
     "repository": "myon-bioinformatics/myon-bioinformatics",
-    "commit": "e570367ddd648316a82a00271b7d5c35c0243daf",
+    "commit": "bfacb98da72633c8c70d22fcef6dbab26d3f9294",
     "source": "tools/minpy.py",
-    "sha256": "cb179539e43074d6a8e114bd02743dda6113bf4d0a209b8426693aa514ed55f3"
+    "sha256": "df4403701b00fe03f887a514701c4e13461d281188aec86b2dd8d148ff2fe771"
   },
   "projects": {
     "blueprobe": {
@@ -31,7 +31,7 @@
       "output": "dist/queryu_min.py",
       "api": "verified offline cache and html-snapshot/1",
       "repository": "myon-bioinformatics/QueRyu",
-      "commit": "079d502b40c9c012dd8df078186d8f5ac37fab45"
+      "commit": "f1a91e5c6b0a09ec5aac6a19ce1e60abde3f80d6"
     },
     "sakanalytics": {
       "prefix": "sakanalytics",

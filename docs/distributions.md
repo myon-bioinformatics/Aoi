@@ -45,7 +45,7 @@ figure = series_figure([p["threshold"] for p in curve],
 
 - `source`: Aoiの入口と元モジュールを凍結したcommit。成果物を含める後続commitから参照し、自己参照を避ける。
 - `tool`: 親の `tools/minpy.py` の取得元commitとSHA-256。実行前に照合する。
-- `projects`: 入口・検索パス・出力・提供範囲。QueRyuのcache coreだけは独立した子mainの `repository` / `commit` を参照する。
+- `projects`: 入口・検索パス・出力・提供範囲。QueRyuのcache coreだけは `child-heads.json` に登録した sha を `repository` / `commit` に記録する。
 - 生成はPython 3.12で固定。同じツール・ソースから全ファイルを再生成し、バイト一致を確認する。元コードが変わった場合はソースのcommitを更新して再生成する。入口だけでなく検索ディレクトリ内の依存核の変更・未追跡ファイルも検出して停止する。
 
 ```sh
@@ -53,12 +53,12 @@ python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py
 python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py --sources /checkouts --check
 ```
 
-`/checkouts/queryu` は登録したQueRyu commitの明示的なcheckout。自動探索・自動取得は行わない。`--check` は成果物を書き換えない。CIが固定SHAで元コードとツールを用意し、全5本とMIT通知を比較する。隔離テストはコピーした5本だけを `python -I -S` で読み、キャッシュ改ざん拒否・BlueProbe連携・期間比較・近傍・閾値・来歴・HTML生成を実行する。
+`/checkouts/queryu` は `child-heads.json` に登録した QueRyu の sha の checkout である。親の `tools/minpy.py` は実行時に親 main を解決して取る。解決した SHA はジョブの summary に残す。`workflow_dispatch` では親 ref と QueRyu ref を上書きできる。`--check` は成果物を書き換えない。`distributions.json` の tool SHA-256 と QueRyu commit は照合用の記録として残し、checkout がその commit と一致し、ツールのバイト列が記録した SHA-256 と一致することを確かめる。隔離テストはコピーした5本だけを `python -I -S` で読み、キャッシュ改ざん拒否・BlueProbe連携・期間比較・近傍・閾値・来歴・HTML生成を実行する。
 
 ## subtreeとの関係
 
 開発履歴の同期は全体subtree、他プロジェクトへの小さな配布は上記minAPIであり、それぞれ独立した契約である。subtreeの子を丸ごとvendor lockに重複登録しない。minAPIを別の利用者がvendorするときは、その利用者が配布ファイルと通知を固定する。
 
-既存の `child-heads.json` はその登録SHAとprefixの完全一致を維持する。QueRyuのcache coreを使うmin配布と全体subtree同期は独立した検証である。全体subtreeの初回joinでは、QueRyu main `5ce256d77d64b33d4c71c2cbb84fe201f9637567` を `git subtree add` で Aoi の `queryu/` に取り込み、登録SHA・tree・mirrorの一致を確認した（`distributions.json` の QueRyu `commit` pin は min 配布用の別checkout）。SakAnalyticsとDRAgoWingの公開リポジトリ新規作成も、この登録だけでは実行していない。
+既存の `child-heads.json` はその登録SHAとprefixの完全一致を維持する。QueRyuのcache coreを使うmin配布と全体subtree同期は独立した検証である。全体subtreeの初回joinでは、QueRyu main `5ce256d77d64b33d4c71c2cbb84fe201f9637567` を `git subtree add` で Aoi の `queryu/` に取り込み、登録SHA・tree・mirrorの一致を確認した。min配布の QueRyu checkout は、その後 `child-heads.json` の sha に合わせる。SakAnalyticsとDRAgoWingの公開リポジトリ新規作成も、この登録だけでは実行していない。
 
 Aoi → 子の書き込みは親PR #102で比較ref必須になった `gh_ops.py subtree-push` を使う。指定refがない・比較対象を選べない・取得できない・祖先でない場合は止める。検証済みSHAだけを新しいブランチへ空の期待値のlease付きで送り、PRで確認する。既定ブランチへ直接pushしない。joinを含むAoi統合PRはmerge commitで履歴を残す。

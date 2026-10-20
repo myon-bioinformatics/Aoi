@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       markdown-ref:
-        description: 'markdown upstream ref (main for latest; commit SHA for replay)'
+        description: 'markdown upstream ref (main for latest; past-pattern snapshot SHA for replay)'
+        # past-pattern snapshot of markdown, fetched by SHA for verification test data
         default: aa5bccfcaf11f17473c7f1ff502509dfa1547660
         required: false
         type: string
@@ -33,6 +34,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/markdown
+          # past-pattern snapshot of markdown, fetched by SHA for verification test data
           ref: ${{ inputs.markdown-ref || 'aa5bccfcaf11f17473c7f1ff502509dfa1547660' }}
           path: .deps/markdown
           persist-credentials: false

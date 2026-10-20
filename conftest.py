@@ -1,6 +1,6 @@
 """QueRyu 単独リポジトリ用。サイクルデータ・blueprobe の fixture・nagoyaction/inbox は Aoi に残す（AOI_ROOT）。
 
-BlueProbe（抽出）は固定 SHA の BlueProbe checkout を PYTHONPATH で渡す。Aoi の blueprobe/ は使わない。
+BlueProbe（抽出）は最新 main の BlueProbe checkout を PYTHONPATH で渡す。Aoi の blueprobe/ は使わない。
 """
 from pathlib import Path
 import os

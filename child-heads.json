@@ -16,7 +16,7 @@
         "subtree_prefix": "dragowing"
       },
       "repository_id": 1423772286,
-      "sha": "8eb7d9c2ada3574373263bea3d8cd9dd55a9e97c"
+      "sha": "360afbde2b55b54f205664eb4cf1a9cc17f9564a"
     },
     "myon-bioinformatics/NagoyAction": {
       "optional": {
@@ -32,7 +32,7 @@
         "subtree_prefix": "pythdragoras"
       },
       "repository_id": 1423045231,
-      "sha": "bd5690f2cb26c1d2eaab8caa71e5c1bc3d96cafc"
+      "sha": "5fa793546dfe1d3f9f7e0214b6ff8f8e13cd6988"
     },
     "myon-bioinformatics/QueRyu": {
       "optional": {
@@ -40,7 +40,7 @@
         "subtree_prefix": "queryu"
       },
       "repository_id": 1423051557,
-      "sha": "079d502b40c9c012dd8df078186d8f5ac37fab45"
+      "sha": "f1a91e5c6b0a09ec5aac6a19ce1e60abde3f80d6"
     },
     "myon-bioinformatics/SakAnalytics": {
       "optional": {
@@ -48,7 +48,7 @@
         "subtree_prefix": "sakanalytics"
       },
       "repository_id": 1423489570,
-      "sha": "44f95f67d3c15e9bb420825513ac5e8465dc84b5"
+      "sha": "1630c836efd08baac1c09715117a96a361b5ae7a"
     }
   }
 }

@@ -167,22 +167,17 @@ def evaluate(rows, props, registry):
 
 
 def main():
-    from aoi_layout import bind as _bind_aoi_paths
-
-    aoi_paths = _bind_aoi_paths(__file__)
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('mode',choices=['features','discover','evaluate'])
     p.add_argument('--input',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
-    p.add_argument('--root', type=Path, default=None,
-                   help='Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定')
-    p.add_argument('--cycle', default=None,
-                   help='サイクル名。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi')
+    p.add_argument('--cycle-dir',type=Path,help='サイクルのフォルダ（呼び出し側が解決して渡す）。--propositions がなければ必須')
     p.add_argument('--registry',type=Path)
     p.add_argument('--propositions',type=Path,default=None)
     a=p.parse_args()
-    root = aoi_paths.resolve_aoi_root(a.root, anchor=Path(__file__))
-    propositions = a.propositions or (aoi_paths.resolve_cycle_path(root, a.cycle) / 'propositions.toml')
+    if a.propositions is None and a.cycle_dir is None and a.mode!='features':
+        p.error('--propositions か --cycle-dir が要る')
+    propositions = a.propositions or (a.cycle_dir / 'propositions.toml' if a.cycle_dir else None)
     source=json.loads(a.input.read_text())
     if a.mode=='features':
         result=dict(synthetic=True,source_sha256=sha(a.input),generator_sha256=sha(Path(__file__).with_name('synthetic_league.py')),

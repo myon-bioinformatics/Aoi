@@ -629,22 +629,16 @@ def write_outputs(result, out, *, config_path, props_path, real_games=None, real
 
 
 def main(argv=None):
-    from aoi_layout import bind as _bind_aoi_paths
-
-    aoi_paths = _bind_aoi_paths(__file__)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=None,
-                        help='Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定')
-    parser.add_argument('--cycle', default=None,
-                        help='サイクル名。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi')
+    parser.add_argument('--cycle-dir', type=Path, required=True,
+                        help='サイクルのフォルダ（呼び出し側が解決して渡す）')
     parser.add_argument('--config', type=Path, default=None)
     parser.add_argument('--propositions', type=Path, default=None)
     parser.add_argument('--out', type=Path, default=None)
     parser.add_argument('--real-games', type=Path)
     parser.add_argument('--real-seasons', type=Path, default=None)
     args = parser.parse_args(argv)
-    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
-    cycle = aoi_paths.resolve_cycle_path(root, args.cycle)
+    cycle = args.cycle_dir.resolve()
     config = args.config or (cycle / 'league-laboratory.toml')
     propositions = args.propositions or (cycle / 'propositions.toml')
     out = args.out or (cycle / 'outputs/exploratory/league-laboratory')

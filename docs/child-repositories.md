@@ -97,6 +97,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## DRAgoWing
 
+2026-10-20: main `e7734b3d538ff49c00a0295d21553a160ff67467`（#13: Aoi の `fetch_module.py` と `numpy_min.py` を `vendor/aoi/` に置く。#14: `dragowing/.github/workflows/` の `uses:` を full SHA に固定）を、直前の subtree merge を残したまま squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。
+
 2026-10-20: main `ec0280afb8dfdfe9ae486a4337aa736e08ff9de8`（#12: Markdown を pure-Python wheel として取得し、`shrink/numpy_min.py` で `render_md` と `load_overlap` をインストール済みの markdown / numpy なしで動かす）を squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。
 
 - DRAgoWing の最初の 28 コミットは、Aoi `a8dc4997f43236b24a23df56e21f143fa0e233d8` から `git filter-branch --subdirectory-filter dragowing` で切り出しました（先頭 `c789da2e30b33144f3110506f90f91ea579b9a6b`、tree `70424b5a2768f43633766435cc9552f77c1b2ba7` が Aoi の `dragowing/` と一致）。そのうえに子の足場（CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト、および単独実行のためのテスト修正）を足しました。最初は `4d798e1405e14d5cdd33e0c3f8fa87b29789b9cc` に対する手組みの squash の join（#61）でしたが、2026-10-19 に、旧 `dragowing/` を消してから main `8d6163989fc2f4843412a03b465fee1cf9b3ac3c`（#3 の `--svg`、#4 の README、#5 の依存の下限）に対して `git subtree add`（`--squash` なし）で join を入れ直しました。merge commit の第2親は DRAgoWing main の head です。PR は squash/rebase せず merge commit で入れてください。

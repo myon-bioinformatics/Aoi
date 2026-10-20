@@ -2,7 +2,7 @@
 
 使ってよいのは、標準ライブラリ、pyproject の依存（polars）と pytest、任意の ortools
 （season-requirements.txt。入っていなければ exact のテストは skip）、このリポジトリの
-モジュール（Aoi の aoi_paths.py と同じ中身の aoi_paths.py を含む）だけ。既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
+モジュールだけ。既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の sakanalytics/ でも同じ結果になる。
 """
 import ast
@@ -14,6 +14,9 @@ SKIP_DIRS = {".git", ".venv", ".test-deps", "build", "reports", "__pycache__"}
 THIRD_PARTY = {"polars", "pytest", "ortools"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "dragowing", "scripts")
+# Aoi のルートの aoi_paths.py（AOI_ROOT から読む。このリポジトリには置かない）。
+# テストのデータの場所と、出力の証跡を固定した proposition_seed_audit の CLI が使う aoi_layout.py だけが読む
+AOI_PROVIDED = {"aoi_paths"}
 KNOWN_EXCEPTIONS = {
     # PythDRagoras の propositions。PYTHONPATH で渡す
     ("proposition_seed_audit.py", "import:propositions"),
@@ -49,7 +52,7 @@ def _uses(tree):
 
 
 def find_uses():
-    allowed = set(sys.stdlib_module_names) | THIRD_PARTY | _local_modules()
+    allowed = set(sys.stdlib_module_names) | THIRD_PARTY | AOI_PROVIDED | _local_modules()
     found = set()
     for rel, path in _sources():
         for use in _uses(ast.parse(path.read_text(encoding="utf-8"), filename=rel)):

@@ -1,6 +1,16 @@
 from copy import deepcopy
+from functools import partial
 import pytest
-from annual_audit import audit
+from annual_audit import audit as generic_audit
+
+# NPB の前提はテスト用にここで渡す（本番は Aoi の aoi_npb.py の ANNUAL_AUDIT_RULES）
+NPB_LIKE = dict(
+    leagues=('C','P'), detail_from=2005, winning_percentage_from=2005, fixed_members=6, fixed_members_from=2005,
+    extended_rounding='truncate',
+    opponents=dict(zip(('対巨','対中','対神','対デ','対ヤ','対広','対ソ','対日','対オ','対楽','対西','対ロ'),
+                       ('g','d','t','db','s','c','h','f','b','e','l','m'))),
+)
+audit = partial(generic_audit, rules=NPB_LIKE)
 
 
 def observations():
@@ -117,3 +127,12 @@ def test_cli_checks_manifest_digest_as_well_as_arithmetic(tmp_path,tampered):
     report=json.loads(out.read_text())
     assert report['failed']==int(tampered)
     if tampered:assert report['failures'][0]['check']=='source_dataset_sha256'
+
+
+def test_league_assumptions_are_passed_in_not_built_in():
+    data=observations()
+    for rec in data:
+        if rec['category']=='standings':rec['values']['対巨']={'W':99,'L':0,'T':0}
+    assert not any(f['check'].startswith('opponent') for f in generic_audit(data)['failures'])
+    with pytest.raises(ValueError,match='unknown audit rules'):generic_audit(data,rules={'teams':6})
+    with pytest.raises(ValueError,match='extended_rounding'):generic_audit(data,rules={'extended_rounding':'up'})

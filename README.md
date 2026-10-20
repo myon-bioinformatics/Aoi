@@ -44,8 +44,7 @@ uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --o
 | `synthetic_league.py`・`league_laboratory.py` | 年成績を先に固定した架空リーグと、その実験 |
 | `neighbors.py` | 結果を使わない記述的な近傍 |
 | `proposition_seed_audit.py`・`synthetic_rule_discovery.py` | 命題の seed 感度と、架空データだけでの追跡（PythDRagoras を使う） |
-| `season_verify_2022.py` | 手元の観測だけを使う任意の統合確認 |
-| `aoi_layout.py`・`aoi_paths.py` | Aoi のパスの規約（下の「Aoi との関係」） |
+| `aoi_layout.py` | 出力の証跡を固定した `proposition_seed_audit.py` の CLI だけが使う（下の「Aoi との関係」） |
 | `tests/` | pytest |
 
 ## テスト
@@ -59,7 +58,7 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
   uv run --locked pytest -q --junitxml=reports/junit.xml
 ```
 
-- パスは Aoi の規約（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
+- CLI は `--cycle-dir` などのパスを明示で受け取ります（`proposition_seed_audit.py` だけは下の理由で `aoi_layout.py` のまま）。テストは `AOI_ROOT` だけで Aoi を受け取り、データの場所は Aoi の `aoi_paths.py` に聞きます。
 - `AOI_ROOT` が Aoi を指していない（`cycles/` がない）と、pytest は最初に止まって理由を出します。
 - 実行時の依存は polars だけです。ortools は任意で、`season-requirements.txt` を入れたときだけ exact の求解が動き、無ければそのテストは skip します。
 - テストは、これに加えて `AOI_ROOT` の Aoi を使います。
@@ -75,11 +74,11 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `sakanalytics/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
 この README は Aoi の `sakanalytics/README.md` と同じファイルから始まっています。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
 
-### aoi_paths.py
+### aoi_layout.py
 
-`aoi_paths.py` は Aoi 直下の `aoi_paths.py` と同じ中身の通常のファイルです（blob `aa0d41f8b5a017b9b677ed0fecea327bdd5cd1af`。vendor lock は使いません）。Aoi では `sakanalytics/aoi_paths.py` になり、Aoi の `scripts/check_child_heads.py` が Aoi 直下の原本と blob と mode が同じかを確かめます（`child-heads.json` の `optional.mirrored_from_parent`）。直すときは Aoi の原本を直し、同じ中身をここに置きます。
+`aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。`aoi_layout.py` は `proposition_seed_audit.py` の CLI が Aoi の `aoi_paths.py` を探すために残しています。このファイルは Aoi の `seed-evaluation.json`（`analysis_sha256`）でソースの SHA-256 を固定しているので、CLI を引数だけにする変更は、子の CI が読む Aoi の固定 SHA を上げるときにまとめて行います。
 
-`aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
+NPB 固有の前提（年間表の球団数・丸め方・対戦列、CS の規則のプリセット `npb_rules()`、2022 年の検証 `season_verify_2022.py`）は Aoi の `aoi_npb.py`・`scripts/` に置き、ここでは `AuditRules`・`Rules` として受け取ります。
 
 ### Aoi との同期
 

@@ -51,6 +51,7 @@ python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--colum
 | `html_tag_count.py` | ブラウザなしで HTML の要素を数える |
 | `research_report.py`・`reports/` | 研究の集計図と、Markdown レポートの描画（Aoi のワークフローから呼ぶ） |
 | `docs/` | `forms.md`・`figures.md`・`export.md` |
+| `vendor/aoi/`・`vendor.lock.json` | Aoi の共有ツールのうち、このリポジトリが使う `fetch_module.py` と `numpy_min.py` |
 | `tests/` | pytest |
 
 ## テスト
@@ -98,7 +99,7 @@ AOI_ROOT=$PWD/.test-deps/aoi \
 - `reports/build_reports.py` は Aoi 側のツールです（Aoi の DRAgoWing reports ワークフローが `myon-bioinformatics/markdown` を checkout して呼び出します）。このリポジトリの CI ではそのワークフローを実行しません。
 - Chrome のジョブはありません。Chrome が無いとき、Chrome を使うテストは skip します。
 
-CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で pytest を動かします。
+CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で pytest を動かします。`vendor.lock.json`（`vendor-lock/1`）は path、sha256、source（`myon-bioinformatics/Aoi`）で、写しは `vendor/aoi/` にあります。CI は Aoi の main を `git ls-remote` で解決し（`workflow_dispatch` の `aoi-ref` で上書きできる）、repository id `1402862784` を確かめてから写しと比べます。不一致は pull request では警告、main への push と schedule では失敗です。
 
 ## Aoi との関係
 

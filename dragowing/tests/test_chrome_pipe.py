@@ -115,6 +115,29 @@ def test_startup_failure_cleans_process_thread_and_tempdir(peer, prefix, error, 
     assert session.browser._proc is session.browser._reader is None
 
 
+def test_spawn_disables_dbus_even_if_the_parent_bus_is_stalled(peer, monkeypatch):
+    from dragowing import chrome_pipe
+    captured = {}
+
+    def record(argv, **kwargs):
+        captured["argv"] = argv
+        captured["env"] = kwargs.get("env")
+        raise OSError("cannot spawn")
+
+    monkeypatch.setenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/tmp/stalled-session-bus")
+    monkeypatch.setenv("DBUS_SYSTEM_BUS_ADDRESS", "unix:path=/tmp/stalled-system-bus")
+    monkeypatch.setattr(chrome_pipe.subprocess, "Popen", record)
+    browser = Chrome(peer())
+    with pytest.raises(OSError, match="cannot spawn"):
+        browser.start()
+    env = captured["env"]
+    assert env["DBUS_SESSION_BUS_ADDRESS"] == "disabled:"
+    assert env["DBUS_SYSTEM_BUS_ADDRESS"] == "disabled:"
+    assert "--password-store=basic" in captured["argv"]
+    assert "--use-mock-keychain" in captured["argv"]
+    assert "--disable-breakpad" in captured["argv"]
+
+
 def test_popen_failure_closes_descriptors(peer, monkeypatch):
     from dragowing import chrome_pipe
     pipe, descriptors = os.pipe, []

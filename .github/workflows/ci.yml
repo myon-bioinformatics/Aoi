@@ -23,92 +23,32 @@ jobs:
   resolve-aoi:
     needs: changes
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     outputs:
       sha: ${{ steps.resolve.outputs.sha }}
+      aoi_sha: ${{ steps.resolve.outputs.aoi_sha }}
+      myon_bioinformatics_sha: ${{ steps.resolve.outputs.myon_bioinformatics_sha }}
+      markdown_sha: ${{ steps.resolve.outputs.markdown_sha }}
+      web_ui_sha: ${{ steps.resolve.outputs.web_ui_sha }}
     steps:
-      - name: Resolve Aoi main
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Resolve referenced repositories
         id: resolve
         env:
           AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
-          AOI_REPOSITORY_ID: "1402862784"
           GITHUB_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
           GITHUB_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
-          export GIT_TERMINAL_PROMPT=0
-          export GCM_INTERACTIVE=never
-          export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
-
-          python3 - <<'PY'
-          import json
-          import os
-          import urllib.request
-
-          repo = "myon-bioinformatics/Aoi"
-          expected = int(os.environ["AOI_REPOSITORY_ID"])
-          token = os.environ.get("GITHUB_TOKEN", "")
-          headers = {"Accept": "application/vnd.github+json", "User-Agent": "nagoyaction-ci"}
-          if token:
-              headers["Authorization"] = "Bearer " + token
-          req = urllib.request.Request("https://api.github.com/repos/" + repo, headers=headers)
-          with urllib.request.urlopen(req, timeout=60) as resp:
-              data = json.load(resp)
-          full_name = str(data.get("full_name", "")).lower()
-          if data.get("id") != expected or full_name != repo.lower():
-              raise SystemExit("Aoi repository id mismatch")
-          if data.get("visibility") not in (None, "public") or data.get("private") is True:
-              raise SystemExit("Aoi repository is not public")
-          PY
-
-          how="refs/heads/main"
-          if [[ -n "$AOI_REF_INPUT" ]]; then
-            if [[ "$AOI_REF_INPUT" =~ ^[0-9a-fA-F]{40}$ ]]; then
-              sha=$(printf '%s' "$AOI_REF_INPUT" | tr '[:upper:]' '[:lower:]')
-              how="workflow_dispatch input"
-            elif [[ "$AOI_REF_INPUT" =~ ^refs/heads/[A-Za-z0-9._/-]+$ ]]; then
-              listing=$(git ls-remote https://github.com/myon-bioinformatics/Aoi "$AOI_REF_INPUT")
-              sha=$(printf '%s\n' "$listing" | awk -v ref="$AOI_REF_INPUT" '$2 == ref { print $1; exit }')
-              how="$AOI_REF_INPUT"
-            elif [[ "$AOI_REF_INPUT" =~ ^[A-Za-z0-9._/-]+$ ]]; then
-              refspec="refs/heads/$AOI_REF_INPUT"
-              listing=$(git ls-remote https://github.com/myon-bioinformatics/Aoi "$refspec")
-              sha=$(printf '%s\n' "$listing" | awk -v ref="$refspec" '$2 == ref { print $1; exit }')
-              how="$refspec"
-            else
-              echo "invalid aoi_ref" >&2
-              exit 1
-            fi
-          else
-            listing=$(git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main)
-            sha=$(printf '%s\n' "$listing" | awk '$2 == "refs/heads/main" { print $1; exit }')
-          fi
-          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "could not resolve Aoi SHA" >&2
-            exit 1
-          fi
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-          # Source-commit provenance is recorded here. A later checkout mismatch is
-          # report-only on pull_request and strict on push to main and schedule.
-          strict=0
-          if [[ "$EVENT_NAME" == "schedule" ]]; then
-            strict=1
-          elif [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
-            strict=1
-          fi
-          if [[ "$strict" == "1" ]]; then
-            mode="strict"
-          else
-            mode="report-only"
-          fi
-          {
-            echo "## Aoi source"
-            echo "Resolved \`$sha\` from \`$how\`."
-            echo "Repository id \`$AOI_REPOSITORY_ID\`."
-            echo "Source-hash provenance: $mode."
-          } >> "$GITHUB_STEP_SUMMARY"
+          python localci.py resolve --github-output
 
   # vendor/aoi のバイトを、解決した Aoi の原本と shared-tools.lock.json に照合する。
   # pull request では不一致を警告にし、main への push と schedule では失敗にする。
@@ -190,18 +130,18 @@ jobs:
         # Aoi の CI と同じ。failure-identity の expected-reports と揃えること
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - uses: astral-sh/setup-uv@v10.3.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version: "0.13.3"
           enable-cache: false
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
           ref: ${{ needs.resolve-aoi.outputs.sha }}
@@ -246,7 +186,7 @@ jobs:
         run: uv run --locked --python "${{ matrix.python }}" pytest -q -c pyproject.toml nagoyaction/tests --junitxml="$GITHUB_WORKSPACE/reports/junit.xml"
       - name: Preserve JUnit report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python }}
           path: reports/junit.xml
@@ -277,3 +217,32 @@ jobs:
     permissions:
       contents: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+
+  local-ci:
+    needs: changes
+    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Setup uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Run local CI
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
+        run: |
+          set -euo pipefail
+          seed="${{ github.run_id }}"
+          echo "localci seed=${seed}"
+          python localci.py run --repeat 10 --seed "${seed}"

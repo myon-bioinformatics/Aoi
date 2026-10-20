@@ -1,4 +1,5 @@
 .venv/
+.localci/
 __pycache__/
 .pytest_cache/
 .test-deps/

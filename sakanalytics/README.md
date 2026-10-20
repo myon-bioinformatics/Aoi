@@ -52,7 +52,7 @@ uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --o
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout dadc6fac043fac2d1550132a362f92eeb0e12643   # .github/workflows/ci.yml の AOI_SHA
+git -C .test-deps/aoi checkout 9249ab6e7bbec167cc75963ff315bc90ab5d9e0c   # .github/workflows/ci.yml の AOI_SHA
 AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
   uv run --locked pytest -q --junitxml=reports/junit.xml
 ```
@@ -77,7 +77,7 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 
 `aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。CLI は `--cycle-dir` を受け取り、テストは `AOI_ROOT` だけを受け取ります。
 
-`proposition_seed_audit.py` の `analysis_sha256` は、Aoi の `seed-evaluation.json` と `source-divergence.json` に固定されています。このリポジトリのファイルは、ピンした Aoi（`AOI_SHA`）の `sakanalytics/proposition_seed_audit.py` とバイトが違います。違いは `expected-source-divergence.json` に1件だけ書き、テストが証跡・サイドカー・このリポジトリのファイルのハッシュを突き合わせます。生成物は作り直していません。Aoi は次の subtree pull で、そのサイドカーの `current_sha256` を宣言の `child_sha256` に更新します（`evidence_sha256` はそのまま。行は1件のまま）。一致したあとに宣言ファイルが残っていると、テストは失敗します。
+`proposition_seed_audit.py` の `analysis_sha256` は、Aoi の `seed-evaluation.json` と `source-divergence.json` に固定されています。テストはピンした Aoi のコピーと、そのサイドカーだけを比べます。記録と違うハッシュをローカルな宣言で通すことはしません。生成物は作り直していません。
 
 NPB 固有の前提（年間表の球団数・丸め方・対戦列、CS の規則のプリセット `npb_rules()`、2022 年の検証 `season_verify_2022.py`）は Aoi の `aoi_npb.py`・`scripts/` に置き、ここでは `AuditRules`・`Rules` として受け取ります。
 

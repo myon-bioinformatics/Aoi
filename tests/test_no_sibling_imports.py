@@ -15,7 +15,7 @@ THIRD_PARTY = {"polars", "pytest", "ortools"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "dragowing", "scripts")
 # Aoi のルートの aoi_paths.py（AOI_ROOT から読む。このリポジトリには置かない）。
-# テストのデータの場所と、出力の証跡を固定した proposition_seed_audit の CLI が使う aoi_layout.py だけが読む
+# 読むのはテストのデータの場所だけ。CLI は --cycle-dir を受け取る。
 AOI_PROVIDED = {"aoi_paths"}
 KNOWN_EXCEPTIONS = {
     # PythDRagoras の propositions。PYTHONPATH で渡す
@@ -59,6 +59,10 @@ def find_uses():
             if use.startswith("path:") or use[len("import:"):] not in allowed:
                 found.add((rel, use))
     return found
+
+
+def test_aoi_layout_shim_is_gone():
+    assert not (ROOT / "aoi_layout.py").exists()
 
 
 def test_no_sibling_subproject_imports():

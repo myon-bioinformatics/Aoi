@@ -368,16 +368,36 @@ def test_parse_collect_only_and_collection(tmp_path):
     assert limits
 
 
+def _workflow_job(text: str, name: str) -> str:
+    lines = text.splitlines(keepends=True)
+    start = next(index for index, line in enumerate(lines) if line.startswith(f"  {name}:"))
+    end = len(lines)
+    for index in range(start + 1, len(lines)):
+        line = lines[index]
+        body = line[2:].strip()
+        if line.startswith("  ") and not line.startswith("   ") and body.endswith(":") and " " not in body[:-1]:
+            end = index
+            break
+    return "".join(lines[start:end])
+
+
 def test_workflow_delegates_resolution_and_pins_actions_by_sha():
     text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    assert "python localci.py resolve --github-output" in text
-    assert "AOI_REPOSITORY_ID" not in text
+    resolve = _workflow_job(text, "resolve-aoi")
+    assert "python localci.py resolve --github-output" in resolve
+    assert "sha: ${{ steps.resolve.outputs.sha }}" in resolve
+    assert "AOI_REPOSITORY_ID" not in resolve
+    assert "AOI_REPOSITORY_ID" in _workflow_job(text, "vendor-aoi")
+    polars = _workflow_job(text, "polars-min")
+    assert 'test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"' in polars
+    assert "needs.resolve-aoi.outputs.sha" in polars
     assert 'python localci.py run --repeat 10 --seed "${seed}"' in text
     assert "github.run_id" in text
     assert "timeout-minutes: 40" in text
     assert "--self-tests" not in text
     assert "--pytest tests/test_localci.py" not in text
-    uses = localci.parse_uses(text)
+    pinned = "".join(_workflow_job(text, name) for name in ("resolve-aoi", "test", "polars-min", "local-ci"))
+    uses = localci.parse_uses(pinned)
     checkout = [item["ref"] for item in uses if item["repo"] == "actions/checkout"]
     assert checkout and set(checkout) == {"3d3c42e5aac5ba805825da76410c181273ba90b1"}
     setup = [item["ref"] for item in uses if item["repo"] == "actions/setup-python"]

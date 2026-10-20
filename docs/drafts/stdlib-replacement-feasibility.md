@@ -12,7 +12,7 @@ Observed on 2026-10-20 against the locked environment (Python 3.12): polars 2.0.
 
 **(c) Not feasible** as a stdlib replacement of that package. The reason is the native library, the size of the surface, or both. A neighboring path that is already stdlib does not make the package itself shrinkable.
 
-Counts come from `scripts/survey_third_party.py`. That count is static: `import` / `from`, string literals passed to `importlib.import_module` or `__import__`, and `alias.attr` chains. A method on a returned value (`frame.height`, `node.css(...)`, `a > b`) is invisible to it. `scripts/trace_surface.py` runs the call in three ways:
+Counts come from `scripts/survey_third_party.py`. That count is static: `import` / `from`, string literals passed to `importlib.import_module` or `__import__`, and `alias.attr` chains. A method on a returned value (`frame.height`, `node.css(...)`, `a > b`) is invisible to it. An f-string that reuses its quote inside `{}` (`f'{row['name']}'`, legal since Python 3.12) is parsed on 3.11 by widening that f-string to triple quotes first, so the same tree produces the same inventory on every interpreter CI runs. `scripts/trace_surface.py` runs the call in three ways:
 
 - **absent** blocks the import. The traceback is the `ModuleNotFoundError` a missing wheel raises, at the project's import line.
 - **stub** lets the import succeed and returns another stub for every attribute. The first operation that needs a real value raises `StubGap`. The events are the prefix of the surface; the traceback is the first hole.

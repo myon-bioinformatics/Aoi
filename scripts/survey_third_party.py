@@ -15,6 +15,10 @@ A name is third-party when it is not in the standard library and either it is
 declared in a pyproject/requirements file, or no project file or directory has
 that name. Declared dependencies win over a same-named project file
 (``vendor/markdown.py`` is not the PyPI package ``markdown``).
+
+Python 3.12 accepts ``f'{row['name']}'``. When that form fails to parse, the
+f-string is widened to triple quotes and the file is parsed again, so the
+inventory does not change with the interpreter.
 """
 from __future__ import annotations
 
@@ -215,6 +219,217 @@ def tree_of(rel: Path) -> str:
     return rel.parts[0] if len(rel.parts) > 1 else "aoi"
 
 
+def relax_fstring_quotes(source: str) -> str:
+    """Rewrite f-strings that reuse their delimiter inside ``{}``.
+
+    ``f'{row['name']}'`` is legal from Python 3.12. The 3.11 parser ends the
+    literal at the inner quote, and that quote cannot appear anywhere inside the
+    literal. Widening the delimiter (``f'''{row['name']}'''``) keeps the
+    expression and stays inside the quotes of a surrounding f-string.
+    """
+    text, _ = _scan_code(source, 0, len(source))
+    return text
+
+
+def _widen_fstring_delimiter(delimiter: str, body: str) -> str:
+    if len(delimiter) != 1 or delimiter not in body or body.endswith("\\"):
+        return delimiter
+    other = '"' if delimiter == "'" else "'"
+    for candidate in (delimiter * 3, other, other * 3):
+        if candidate not in body:
+            return candidate
+    return delimiter
+
+
+def _valid_string_prefix(prefix: str) -> bool:
+    if len(prefix) > 2:
+        return False
+    letters = [char.lower() for char in prefix]
+    if len(set(letters)) != len(letters):
+        return False
+    if "u" in letters and letters != ["u"]:
+        return False
+    if "b" in letters and "f" in letters:
+        return False
+    return all(char in "rbuf" for char in letters)
+
+
+def _string_open(source: str, i: int, end: int) -> tuple[str, int, str] | None:
+    """Return ``(prefix, body_index, delimiter)`` when a string starts at ``i``."""
+    if i >= end:
+        return None
+    if i > 0 and (source[i - 1].isalnum() or source[i - 1] == "_"):
+        return None
+    for length in (2, 1, 0):
+        quote_at = i + length
+        if quote_at >= end or source[quote_at] not in "'\"":
+            continue
+        prefix = source[i:quote_at]
+        if not _valid_string_prefix(prefix):
+            continue
+        quote = source[quote_at]
+        if source.startswith(quote * 3, quote_at):
+            delimiter = quote * 3
+        else:
+            delimiter = quote
+        return prefix, quote_at + len(delimiter), delimiter
+    return None
+
+
+def _retarget_string(delimiter: str, content: str, banned: frozenset[str]) -> str:
+    if delimiter[0] not in banned:
+        return delimiter + content + delimiter
+    other = '"' if delimiter[0] == "'" else "'"
+    candidates = []
+    if other not in banned:
+        candidates.append(other * len(delimiter) if len(delimiter) == 3 else other)
+        candidates.append(other * 3)
+    for opener in candidates:
+        if opener in content or content.endswith("\\"):
+            continue
+        return opener + content + opener
+    return delimiter + content + delimiter
+
+
+def _plain_string(source: str, start: int, body: int, delimiter: str, end: int, raw: bool, banned: frozenset[str]) -> tuple[str, int]:
+    i = body
+    content: list[str] = []
+    while i < end:
+        if source.startswith(delimiter, i):
+            text = _retarget_string(delimiter, "".join(content), banned)
+            prefix = source[start:body - len(delimiter)]
+            return prefix + text, i + len(delimiter)
+        if source[i] == "\\" and i + 1 < end:
+            nxt = source[i + 1]
+            if raw and source.startswith(delimiter, i + 1):
+                content.append(source[i:i + 1 + len(delimiter)])
+                i += 1 + len(delimiter)
+                continue
+            if not raw:
+                content.append(source[i:i + 2])
+                i += 2
+                continue
+            content.append(source[i:i + 2] if nxt != "\n" else source[i])
+            i += 2 if nxt != "\n" else 1
+            continue
+        content.append(source[i])
+        i += 1
+    return source[start:end], end
+
+
+def _scan_string(source: str, i: int, end: int, banned: frozenset[str]) -> tuple[str, int] | None:
+    opened = _string_open(source, i, end)
+    if opened is None:
+        return None
+    prefix, body, delimiter = opened
+    raw = "r" in prefix.lower()
+    if "f" not in prefix.lower():
+        return _plain_string(source, i, body, delimiter, end, raw, banned)
+    # Nested f-strings are rewritten first. This delimiter is widened only when
+    # the quote still occurs in the body, which is what Python 3.11 rejects.
+    rewritten, close = _scan_fstring_body(source, body, delimiter, end, frozenset())
+    if close == end and not source.startswith(delimiter, max(0, close - len(delimiter))):
+        return source[i:end], end
+    opener = _widen_fstring_delimiter(delimiter, rewritten)
+    return prefix + opener + rewritten + opener, close
+
+
+def _scan_fstring_body(source: str, i: int, delimiter: str, end: int, banned: frozenset[str]) -> tuple[str, int]:
+    parts: list[str] = []
+    while i < end:
+        if source.startswith(delimiter, i):
+            return "".join(parts), i + len(delimiter)
+        if source[i] == "\\" and i + 1 < end:
+            parts.append(source[i:i + 2])
+            i += 2
+            continue
+        if source.startswith("{{", i) or source.startswith("}}", i):
+            parts.append(source[i:i + 2])
+            i += 2
+            continue
+        if source[i] == "{":
+            expr, i = _scan_interpolation(source, i + 1, end, banned)
+            parts.append("{" + expr + "}")
+            continue
+        parts.append(source[i])
+        i += 1
+    return "".join(parts), i
+
+
+def _scan_interpolation(source: str, i: int, end: int, banned: frozenset[str]) -> tuple[str, int]:
+    parts: list[str] = []
+    brace = paren = bracket = 0
+    while i < end:
+        nested = _scan_string(source, i, end, banned)
+        if nested is not None:
+            text, i = nested
+            parts.append(text)
+            continue
+        char = source[i]
+        if char == "#":
+            newline = source.find("\n", i, end)
+            if newline < 0:
+                parts.append(source[i:end])
+                return "".join(parts), end
+            parts.append(source[i:newline + 1])
+            i = newline + 1
+            continue
+        if char == "{":
+            brace += 1
+        elif char == "}":
+            if brace == paren == bracket == 0:
+                return "".join(parts), i + 1
+            if brace:
+                brace -= 1
+        elif char == "(":
+            paren += 1
+        elif char == ")":
+            if paren:
+                paren -= 1
+        elif char == "[":
+            bracket += 1
+        elif char == "]":
+            if bracket:
+                bracket -= 1
+        parts.append(char)
+        i += 1
+    return "".join(parts), i
+
+
+def _scan_code(source: str, i: int, end: int) -> tuple[str, int]:
+    parts: list[str] = []
+    while i < end:
+        if source[i] == "#":
+            newline = source.find("\n", i, end)
+            if newline < 0:
+                parts.append(source[i:end])
+                return "".join(parts), end
+            parts.append(source[i:newline + 1])
+            i = newline + 1
+            continue
+        nested = _scan_string(source, i, end, frozenset())
+        if nested is not None:
+            text, i = nested
+            parts.append(text)
+            continue
+        parts.append(source[i])
+        i += 1
+    return "".join(parts), i
+
+
+def parse_source(source: str, filename: str) -> ast.AST:
+    """Parse ``source``, relaxing f-string quotes when this interpreter must."""
+    try:
+        return ast.parse(source, filename)
+    except SyntaxError as exc:
+        if "f-string" not in (exc.msg or ""):
+            raise
+        relaxed = relax_fstring_quotes(source)
+        if relaxed == source:
+            raise
+        return ast.parse(relaxed, filename)
+
+
 def survey(root: Path = ROOT) -> dict:
     declared = declared_dependencies(root)
     declared_norms = set(declared)
@@ -226,7 +441,7 @@ def survey(root: Path = ROOT) -> dict:
     for path in iter_py_files(root):
         rel = path.relative_to(root).as_posix()
         try:
-            tree = ast.parse(path.read_text(encoding="utf-8"), rel)
+            tree = parse_source(path.read_text(encoding="utf-8"), rel)
         except SyntaxError:
             unparsed.append(rel)
             continue

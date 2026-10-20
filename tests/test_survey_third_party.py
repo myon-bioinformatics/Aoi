@@ -98,6 +98,44 @@ def test_check_fails_when_the_inventory_is_stale(tmp_path):
     json.loads(target.read_text(encoding="utf-8"))
 
 
+def test_pep701_fstring_quotes_parse_and_keep_import_counts(tmp_path):
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import survey_third_party as survey
+
+    nested = "shown = f'{row['team']}-{row['season']}'\n"
+    same_line = (
+        "print(f\"（{', '.join(f'{r['team']}-{r['season']}' for r in big if r['upper_half'])}）\")\n"
+    )
+    relaxed_nested = survey.relax_fstring_quotes(nested)
+    relaxed_line = survey.relax_fstring_quotes(same_line)
+    untouched = survey.relax_fstring_quotes("label = f\"{r['team']}\"\n")
+    assert relaxed_nested == "shown = f'''{row['team']}-{row['season']}'''\n"
+    assert "f'''{r['team']}-{r['season']}'''" in relaxed_line
+    assert "r['upper_half']" in relaxed_line
+    assert untouched == "label = f\"{r['team']}\"\n"
+    for source in (relaxed_nested, relaxed_line, untouched):
+        survey.ast.parse(source)
+
+    _write(tmp_path / "pyproject.toml", """
+        [project]
+        name = "sample"
+        version = "0"
+        dependencies = ["polars>=1"]
+    """)
+    _write(tmp_path / "nested.py", """
+        import polars as pl
+
+        def label(row):
+            shown = f'{row['team']}-{row['season']}'
+            return pl.col(shown)
+    """)
+    data = survey.survey(tmp_path)
+    assert data["unparsed"] == []
+    assert data["packages"]["polars"]["attributes"] == {"col": 1}
+    tree = survey.parse_source(nested, "nested.py")
+    assert isinstance(tree, survey.ast.AST)
+
+
 def test_committed_inventory_matches_the_tree():
     proc = subprocess.run(
         [sys.executable, str(SURVEY), "--check", str(ROOT / "docs" / "evidence" / "third-party-survey.json")],

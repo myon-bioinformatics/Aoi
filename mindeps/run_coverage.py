@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -114,11 +115,102 @@ def _locked_coverage_version() -> str:
     raise SystemExit("uv.lock に coverage が無い")
 
 
+_EXTRA_EQ = re.compile(r"""^extra\s*==\s*['"]([^'"]+)['"]$""")
+
+
+def _and_clauses(marker: str) -> list[str] | None:
+    """Top-level ``and`` clauses. ``or`` is not a conjunction, so return None."""
+    clauses: list[str] = []
+    buf: list[str] = []
+    quote = ""
+    i = 0
+    while i < len(marker):
+        ch = marker[i]
+        if quote:
+            buf.append(ch)
+            if ch == quote:
+                quote = ""
+            i += 1
+            continue
+        if ch in "\"'":
+            quote = ch
+            buf.append(ch)
+            i += 1
+            continue
+        if marker.startswith(" or ", i):
+            return None
+        if marker.startswith(" and ", i):
+            clauses.append("".join(buf).strip())
+            buf = []
+            i += 5
+            continue
+        buf.append(ch)
+        i += 1
+    if quote:
+        return None
+    clauses.append("".join(buf).strip())
+    return clauses
+
+
+def _unselected_extra(requirement: str) -> bool:
+    """True when the marker is an AND that demands an extra.
+
+    ``fetch_module`` fail-closes on a pre-release such as ``3.11.0a6`` before it
+    can see ``extra == "toml"``. No extra is selected, so that conjunction is not
+    a runtime dependency. A bare requirement, or one that uses ``or``, stays a
+    dependency.
+    """
+    if ";" not in requirement:
+        return False
+    clauses = _and_clauses(requirement.split(";", 1)[1].strip())
+    if not clauses:
+        return False
+    for clause in clauses:
+        text = clause.strip()
+        while text.startswith("(") and text.endswith(")") and len(text) > 1:
+            text = text[1:-1].strip()
+        match = _EXTRA_EQ.fullmatch(text)
+        if match and match.group(1) != "":
+            return True
+    return False
+
+
+def _listed_runtime_deps(package: str, version: str) -> list[str]:
+    import fetch_module
+
+    url = f"{fetch_module.INDEX}/{package}/{version}/json"
+    meta = json.loads(fetch_module._get(url))
+    return fetch_module.runtime_requirements(meta["info"])
+
+
+def _resolve_coverage(version: str) -> dict:
+    """Resolve the locked pure wheel.
+
+    ``coverage`` 7.16.2 publishes one requirement,
+    ``tomli; python_full_version <= "3.11.0a6" and extra == "toml"``.
+    The locked resolver treats the pre-release comparison as an active
+    dependency. The extra is not selected, so the wheel is still fetched.
+    """
+    import fetch_module
+
+    try:
+        return fetch_module.resolve("coverage", version)
+    except SystemExit as exc:
+        deps = _listed_runtime_deps("coverage", version)
+        if deps and all(_unselected_extra(dep) for dep in deps):
+            return fetch_module.resolve("coverage", version, allow_deps=True)
+        raise exc
+
+
 def _load_cdn():
     if importlib.util.find_spec("coverage") is not None:
         raise SystemExit("coverage が入っている。--impl cdn は coverage なしの環境で動かす")
     import fetch_module
-    return fetch_module.ensure("coverage", ROOT / ".cdn-cache", _locked_coverage_version())
+
+    spec = _resolve_coverage(_locked_coverage_version())
+    wheel = fetch_module.fetch(spec, ROOT / ".cdn-cache")
+    sys.path.insert(0, str(wheel))
+    return importlib.import_module("coverage")
 
 
 def main(argv=None) -> int:

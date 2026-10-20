@@ -150,7 +150,7 @@ def analyze(games: list[dict], team: str, *, max_step: int = 3,
 def markdown(report: dict) -> str:
     lines = [f"# 試合ごとの得失点感度分析 ({report['team']})", "",
              report["policy"]["interpretation"], "",
-             "| 軸 | ステップ | 探象年数 | 全年勝ち越し増加 | 変更点数 | 勝ち越し増加 | 変更1点あたりの勝ち越し | 状態 | 命題 |",
+             "| 軸 | ステップ | 探索年数 | 全年勝ち越し増加 | 変更点数 | 勝ち越し増加 | 変更1点あたりの勝ち越し | 状態 | 命題 |",
              "|---|---:|---:|---|---:|---:|---:|---|---|"]
     def fmt(v, prec=3):
         return "未定義" if v is None else f"{v:.{prec}f}"

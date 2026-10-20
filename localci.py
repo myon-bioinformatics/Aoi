@@ -22,7 +22,9 @@ pytest では `-p localci_pytest` が同じ差し替えを monkeypatch する。
 参照先（Aoi、myon-bioinformatics/myon-bioinformatics、vendor）の main SHA は
 `git ls-remote` と GitHub API の repository id 照合で実行時に解決する。
 SHA はソースに固定しない。`uses:` のピンが各アクションの最新リリースタグの
-コミットと一致するかは、既定では報告だけする。`--strict` で失敗にする。
+コミットと一致するかは、既定では報告だけする。`--strict` で古い SHA ピンと、
+setup アクションの SHA でないピンを失敗にする。setup 以外の actions/* の
+メジャータグ `vN`（checkout、upload-artifact、download-artifact、cache など）は許す。
 
 actionlint の版もソースに固定しない。実行のたびに最新リリースを解決し、
 タグ・資産名・検証した sha256 を記録する。GitHub Actions では取得か検証に
@@ -57,6 +59,13 @@ class LocalCIError(Exception):
 
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+MAJOR_TAG_RE = re.compile(r"^v[0-9]+$")
+# 親は setup をリリースの 40 桁 SHA にする。actions/setup-* と setup-uv。
+_SETUP_ACTIONS = frozenset({
+    "actions/setup-python",
+    "actions/setup-node",
+    "astral-sh/setup-uv",
+})
 _USES = re.compile(r"^[ \t]*(?:-[ \t]*)?uses:[ \t]*(?P<value>.+?)[ \t]*$", re.M)
 
 # repository id はコミット SHA ではなく、取り違えを防ぐための公開の数値 ID。
@@ -246,12 +255,25 @@ def parse_uses(text: str) -> list[dict]:
     return found
 
 
-def classify_pin(ref: str, latest: tuple[str, str] | None) -> str:
+def is_setup_action(repo: str) -> bool:
+    """親が 40 桁 SHA と `# vX.Y.Z` で書く setup アクション。"""
+    return repo in _SETUP_ACTIONS or repo.startswith("actions/setup-")
+
+
+def allows_major_tag(repo: str) -> bool:
+    """setup 以外の actions/* は動くメジャータグ vN でよい。"""
+    return repo.startswith("actions/") and not is_setup_action(repo)
+
+
+def classify_pin(ref: str, latest: tuple[str, str] | None, repo: str = "") -> str:
     """latest は (tag, commit SHA)。リリースが無ければ None。
 
-    SHA でないピンは unpinned。SHA でリリースが無ければ no-release。
-    一致すれば match、違えば outdated。
+    setup 以外の actions/* のメジャータグ vN は major。
+    それ以外で SHA でないピンは unpinned。
+    SHA でリリースが無ければ no-release。一致すれば match、違えば outdated。
     """
+    if MAJOR_TAG_RE.fullmatch(ref) and allows_major_tag(repo):
+        return "major"
     if not SHA_RE.fullmatch(ref.lower()):
         return "unpinned"
     if latest is None:
@@ -263,6 +285,7 @@ def classify_pin(ref: str, latest: tuple[str, str] | None) -> str:
 
 
 def pin_fails(status: str, strict: bool) -> bool:
+    """major は setup 以外の actions/* の動くメジャータグ。`--strict` でも失敗にしない。"""
     return strict and status in {"outdated", "unpinned"}
 
 
@@ -1042,19 +1065,23 @@ class Session:
 
     def _pin(self, check: Check) -> Outcome:
         latest = self._release(check.repo)
-        status = classify_pin(check.ref, latest)
+        status = classify_pin(check.ref, latest, check.repo)
         probe = substitute("sha_probe", "0" * 40, lambda rng: f"{rng.getrandbits(160):040x}")
         latest_sha = latest[1] if latest else ""
         if latest_sha and probe == latest_sha:
             probe = substitute("sha_probe_retry", "f" * 40, lambda rng: f"{rng.getrandbits(160):040x}")
-        if latest_sha and classify_pin(probe, latest) == "match":
+        if latest_sha and classify_pin(probe, latest, check.repo) == "match":
             raise LocalCIError("random sha probe matched the latest release")
-        if latest is None:
+        if latest is None and status == "major":
+            detail = f"{check.repo}@{check.ref} is a moving major tag; no release to compare"
+        elif latest is None:
             detail = f"{check.repo}@{check.ref or '(none)'} has no release tag; not compared"
         elif status == "match":
             detail = f"{check.repo}@{check.ref} matches {latest[0]}"
         elif status == "outdated":
             detail = f"{check.repo}@{check.ref} is outdated; latest {latest[0]} is {latest[1]}"
+        elif status == "major":
+            detail = f"{check.repo}@{check.ref} is a moving major tag; latest {latest[0]} is {latest[1]}"
         else:
             detail = f"{check.repo}@{check.ref or '(none)'} is not a SHA pin; latest {latest[0]} is {latest[1]}"
         failed = pin_fails(status, self.strict)
@@ -1273,7 +1300,7 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--repeat", type=_positive, default=1, help="シャード数。各検査は全ラウンドで一度だけ走る")
     run.add_argument("--seed", type=int, default=None, help="シャッフルと入力の差し替えを再現する")
     run.add_argument("--keep-going", action="store_true", help="失敗したあとも残りのラウンドを実行する")
-    run.add_argument("--strict", action="store_true", help="古い uses: ピンや SHA でないピンを失敗にする")
+    run.add_argument("--strict", action="store_true", help="古い SHA ピンを失敗にする。setup 以外の actions/* の vN は許す")
     run.add_argument("--root", type=Path, default=None)
     run.add_argument("--pytest", dest="pytest_paths", action="append", default=None,
                      help="このリポジトリ内の pytest パス。指定すると Aoi は checkout しない")

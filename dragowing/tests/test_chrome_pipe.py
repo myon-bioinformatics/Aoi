@@ -131,8 +131,17 @@ def test_spawn_disables_dbus_even_if_the_parent_bus_is_stalled(peer, monkeypatch
     with pytest.raises(OSError, match="cannot spawn"):
         browser.start()
     env = captured["env"]
-    assert env["DBUS_SESSION_BUS_ADDRESS"] == "disabled:"
-    assert env["DBUS_SYSTEM_BUS_ADDRESS"] == "disabled:"
+    session = env["DBUS_SESSION_BUS_ADDRESS"]
+    system = env["DBUS_SYSTEM_BUS_ADDRESS"]
+    assert session == system
+    assert session.startswith("unix:path=")
+    socket_path = session.split("=", 1)[1]
+    assert socket_path.endswith(os.path.join("no-bus.sock"))
+    assert not os.path.exists(socket_path)
+    assert "disabled:" not in session
+    assert session != "unix:path=/tmp/stalled-session-bus"
+    assert env["NO_AT_BRIDGE"] == "1"
+    assert "--ozone-platform=headless" in captured["argv"]
     assert "--password-store=basic" in captured["argv"]
     assert "--use-mock-keychain" in captured["argv"]
     assert "--disable-breakpad" in captured["argv"]

@@ -82,7 +82,7 @@ pytest -p localci_pytest --localci-repeat 10 --localci-round 3 --localci-seed 7
 
 解決する参照先は Aoi、`myon-bioinformatics/myon-bioinformatics`、vendor の `markdown` と `web-ui`、それにリポジトリ直下の `vendor.lock.json` に書かれたリポジトリ。SHA はソースに書かない。GitHub Actions の resolve ジョブは `python localci.py resolve --github-output` を呼び、ジョブ出力 `sha`（Aoi）を checkout に渡す。再利用ワークフローの `uses:` は式にできないので、ファイル上のピンのままにし、localci が最新リリースと比べる。
 
-pytest の一式は、実行時に解決した Aoi の SHA を `.localci/aoi` に checkout して集める。HEAD がその SHA であることを確かめてから、このリポジトリの tree を `nagoyaction/` に重ね、`tests/` 全体を `--repeat` のシャードに分ける。各シャードの pytest は 1 プロセスで実行する。uv が無いとき、または Aoi を取らずにこのリポジトリだけの検査を走らせるときは `--self-tests`（`tests/test_localci.py` だけ）。`--pytest PATH` も Aoi を checkout しない。CI の local-ci ジョブは `--repeat 10` で、seed に `github.run_id` を使い、開始時に `localci seed=` を出す。
+pytest の一式は、実行時に解決した Aoi の SHA を `.localci/aoi` に checkout して集める。HEAD がその SHA であることを確かめてから、このリポジトリの tree を `nagoyaction/` に重ね、`tests/` 全体を `--repeat` のシャードに分ける。各シャードの pytest は 1 プロセスで実行する。uv が無いとき、または Aoi を取らずにこのリポジトリだけの検査を走らせるときは `--self-tests`（`tests/test_localci.py` だけ）。`--pytest PATH` も Aoi を checkout しない。CI の local-ci ジョブは `--repeat 10 --strict` で、seed に `github.run_id` を使い、開始時に `localci seed=` を出す。`--strict` では SHA でない `uses:` を失敗にする。
 
 ```bash
 python localci.py run --self-tests

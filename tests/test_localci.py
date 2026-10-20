@@ -519,6 +519,15 @@ def test_workflow_delegates_resolution_and_pins_actions_by_sha():
     polars = _workflow_job(text, "polars-min")
     assert 'test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"' in polars
     assert "needs.resolve-aoi.outputs.sha" in polars
+    assert "nagoyaction/vendor/aoi/shrink/polars_min.py" in polars
+    assert "nagoyaction/vendor/aoi/scripts/shrink_module.py" in polars
+    assert "nagoyaction/vendor/aoi/scripts/shrink_polars.py" in polars
+    assert "nagoyaction/scripts/collect_with_polars_min.py" in polars
+    assert "nagoyaction/tests/test_vendor_aoi.py" in polars
+    assert "nagoyaction/scripts/shrink_polars.py" not in polars
+    assert "nagoyaction/scripts/shrink_module.py" not in polars
+    assert "nagoyaction/shrink/" not in polars
+    assert "test_polars_min.py" not in polars
     assert 'python localci.py run --repeat 10 --seed "${seed}" --strict' in text
     assert "github.run_id" in text
     assert "timeout-minutes: 40" in text

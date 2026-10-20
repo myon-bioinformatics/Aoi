@@ -74,11 +74,11 @@ GitHub は大文字小文字を区別するので、手元で開けても GitHub
 
 ## テスト
 
-手順やテストは Aoi の直下（`cycles/`・`queryu/`・`sakanalytics/`・`blueprobe/`・`vendor/`・`scripts/`・`docs/`）を相対パスで使う。単独ではテストしない。CI は Aoi を固定 SHA で checkout し、その `nagoyaction/` をこのリポジトリの tree に置き換えて、Aoi の設定で `nagoyaction/tests` を動かす（`.github/workflows/ci.yml` の `AOI_SHA`）。
+手順やテストは Aoi の直下（`cycles/`・`queryu/`・`sakanalytics/`・`blueprobe/`・`vendor/`・`scripts/`・`docs/`）を相対パスで使う。単独ではテストしない。CI は実行のたびに `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main` で main の SHA を解決して checkout し、その `nagoyaction/` をこのリポジトリの tree に置き換えて、Aoi の設定で `nagoyaction/tests` を動かす。解決した SHA はジョブの summary に残す。`workflow_dispatch` の `aoi_ref` で ref を指定できる。
 
 ```sh
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
-git -C ../Aoi checkout 0a1751a60ac64708d679f22950aa2b14cf688efd
+git -C ../Aoi checkout main
 rm -rf ../Aoi/nagoyaction && mkdir ../Aoi/nagoyaction && git archive HEAD | tar -x -C ../Aoi/nagoyaction
 git -C ../Aoi add -A nagoyaction
 cd ../Aoi && uv run --locked pytest -q -c pyproject.toml nagoyaction/tests

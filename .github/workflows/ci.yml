@@ -155,7 +155,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -170,9 +170,12 @@ jobs:
         with:
           version: "0.13.3"
           enable-cache: false
-      - name: Run local CI once
+      - name: Run local CI
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
         run: |
           set -euo pipefail
-          uv run --no-project --python 3.11 --with 'pytest>=8' python localci.py run --repeat 1 --pytest tests/test_localci.py
+          seed="${{ github.run_id }}"
+          echo "localci seed=${seed}"
+          python localci.py run --repeat 10 --seed "${seed}"

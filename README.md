@@ -63,10 +63,11 @@ GitHub Actions のワークフローは、このコマンドを呼ぶだけに�
 `python localci.py run` は `.github/workflows` を actionlint で検査する。shellcheck が PATH にあれば、actionlint は `run:` ブロックにもそれを使う。actionlint は実行のたびに rhysd/actionlint の最新リリースを取り、公開された checksums と GitHub の digest を確かめる（版は固定しない。取れなければ `go run ...@latest`）。同時に、参照先リポジトリの main の SHA を `git ls-remote` と GitHub API の repository id 照合で解決し、`.localci/refs.env` に書く。`uses:` のピンが各アクションの最新リリースタグのコミットと一致するかは、既定では報告だけする。
 
 ```bash
-python localci.py run                         # 一巡（シャードは1つ）
-python localci.py run --repeat 10             # 10 ラウンドに分けて一巡
+python localci.py run                         # Aoi の tests/ 全体を一巡（シャードは1つ）
+python localci.py run --repeat 10             # その全体を 10 ラウンドに分けて一巡
 python localci.py run --repeat 10 --seed 7    # 同じ分け方と入力の差し替えを再現
 python localci.py run --repeat 10 --keep-going
+python localci.py run --self-tests            # tests/test_localci.py だけ（Aoi なし）
 python localci.py run --strict                # 古いピン、SHA でないピンを失敗にする
 python localci.py resolve                     # SHA の解決だけ。CI の resolve ジョブもこれ
 ```
@@ -81,7 +82,12 @@ pytest -p localci_pytest --localci-repeat 10 --localci-round 3 --localci-seed 7
 
 解決する参照先は Aoi、`myon-bioinformatics/myon-bioinformatics`、vendor の `markdown` と `web-ui`、それにリポジトリ直下の `vendor.lock.json` に書かれたリポジトリ。SHA はソースに書かない。GitHub Actions の resolve ジョブは `python localci.py resolve --github-output` を呼び、ジョブ出力 `sha`（Aoi）を checkout に渡す。再利用ワークフローの `uses:` は式にできないので、ファイル上のピンのままにし、localci が最新リリースと比べる。
 
-pytest の一式は Aoi を checkout したツリーで集まる（「テスト」）。Aoi が無いと import できないモジュールは収集エラーとして報告し、検査の失敗にはしない。
+pytest の一式は、実行時に解決した Aoi の SHA を `.localci/aoi` に checkout して集める。HEAD がその SHA であることを確かめてから、このリポジトリの tree を `nagoyaction/` に重ね、`tests/` 全体を `--repeat` のシャードに分ける。各シャードの pytest は 1 プロセスで実行する。uv が無いとき、または Aoi を取らずにこのリポジトリだけの検査を走らせるときは `--self-tests`（`tests/test_localci.py` だけ）。`--pytest PATH` も Aoi を checkout しない。CI の local-ci ジョブは `--repeat 10` で、seed に `github.run_id` を使い、開始時に `localci seed=` を出す。
+
+```bash
+python localci.py run --self-tests
+python localci.py run --pytest tests/test_localci.py
+```
 
 ## リンク確認（`linkcheck.py`）
 

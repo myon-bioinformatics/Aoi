@@ -4,6 +4,9 @@ import hashlib
 import io
 import json
 import os
+import random
+import subprocess
+import sys
 import tarfile
 import urllib.error
 from pathlib import Path
@@ -367,6 +370,11 @@ def test_workflow_delegates_resolution_and_pins_actions_by_sha():
     text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert "python localci.py resolve --github-output" in text
     assert "AOI_REPOSITORY_ID" not in text
+    assert 'python localci.py run --repeat 10 --seed "${seed}"' in text
+    assert "github.run_id" in text
+    assert "timeout-minutes: 40" in text
+    assert "--self-tests" not in text
+    assert "--pytest tests/test_localci.py" not in text
     uses = localci.parse_uses(text)
     checkout = [item["ref"] for item in uses if item["repo"] == "actions/checkout"]
     assert checkout and set(checkout) == {"3d3c42e5aac5ba805825da76410c181273ba90b1"}
@@ -457,3 +465,233 @@ def test_run_local_is_fail_fast_and_prints_the_master_seed(tmp_path, monkeypatch
     assert "pytest が見つからない" in text
     assert "; stopped" in text
     assert "b" in text
+
+
+def _git(argv, cwd):
+    env = os.environ.copy()
+    env["GIT_AUTHOR_NAME"] = "localci"
+    env["GIT_AUTHOR_EMAIL"] = "localci@example.com"
+    env["GIT_COMMITTER_NAME"] = "localci"
+    env["GIT_COMMITTER_EMAIL"] = "localci@example.com"
+    return subprocess.run(argv, cwd=cwd, check=True, capture_output=True, text=True, env=env)
+
+
+def test_checkout_aoi_fails_when_head_differs(tmp_path):
+    resolved = localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)
+    calls = []
+
+    def runner(argv, **kwargs):
+        calls.append(argv)
+        assert kwargs["env"]["GIT_TERMINAL_PROMPT"] == "0"
+        if argv[1:] == ["rev-parse", "HEAD"]:
+            return Proc(stdout=SHA_B + "\n")
+        return Proc(stdout="")
+
+    with pytest.raises(localci.LocalCIError, match="does not match"):
+        localci.checkout_aoi(tmp_path, resolved, runner=runner)
+    assert calls[0][:2] == ["git", "clone"]
+    assert ["git", "fetch", "--no-tags", "origin", "refs/heads/main"] in calls
+    assert ["git", "checkout", "-f", "--detach", SHA_A] in calls
+
+
+def test_checkout_aoi_matches_a_local_origin(tmp_path):
+    origin = tmp_path / "origin"
+    origin.mkdir()
+    _git(["git", "init", "-b", "main"], origin)
+    (origin / "f.txt").write_text("1\n", encoding="utf-8")
+    _git(["git", "add", "f.txt"], origin)
+    _git(["git", "commit", "-m", "init"], origin)
+    sha = _git(["git", "rev-parse", "HEAD"], origin).stdout.strip()
+    resolved = localci.Resolved(localci.SOURCES[0], sha, "refs/heads/main", 1402862784)
+    dest = localci.checkout_aoi(tmp_path / "work", resolved, remote=str(origin))
+    assert _git(["git", "rev-parse", "HEAD"], dest).stdout.strip() == sha
+
+
+def test_overlay_matches_the_committed_tree_only(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(["git", "init", "-b", "main"], repo)
+    (repo / "hello.txt").write_text("hi\n", encoding="utf-8")
+    _git(["git", "add", "hello.txt"], repo)
+    _git(["git", "commit", "-m", "init"], repo)
+    (repo / "secret.txt").write_text("no\n", encoding="utf-8")
+    aoi = tmp_path / "aoi"
+    aoi.mkdir()
+    _git(["git", "init", "-b", "main"], aoi)
+    localci.overlay_nagoyaction(aoi, repo)
+    assert (aoi / "nagoyaction" / "hello.txt").read_text(encoding="utf-8") == "hi\n"
+    assert not (aoi / "nagoyaction" / "secret.txt").exists()
+
+
+def test_self_tests_do_not_fetch_aoi(tmp_path):
+    tests = tmp_path / "tests"
+    tests.mkdir()
+    (tests / "test_localci.py").write_text("def test_one():\n    assert True\n", encoding="utf-8")
+    calls = []
+    real = subprocess.run
+
+    def runner(argv, **kwargs):
+        calls.append(list(argv))
+        if argv[:2] in (["git", "clone"], ["git", "ls-remote"], ["git", "fetch"]):
+            raise AssertionError(argv)
+        return real(argv, **kwargs)
+
+    checks, _limits, cwd, prefix, resolved = localci.prepare_pytest(
+        tmp_path, pytest_paths=None, skip_pytest=False, self_tests=True,
+        aoi_ref="", token="", runner=runner, opener=None, emit=lambda _line: None,
+    )
+    assert resolved is None
+    assert cwd == tmp_path
+    assert prefix[:3] == [sys.executable, "-m", "pytest"]
+    assert any(check.target.endswith("test_localci.py::test_one") for check in checks)
+    assert not any(cmd[:2] == ["git", "clone"] for cmd in calls)
+
+
+def test_full_suite_checks_out_the_resolved_sha(tmp_path, monkeypatch):
+    sha = "c" * 40
+    resolved = localci.Resolved(localci.SOURCES[0], sha, "refs/heads/main", 1402862784)
+
+    def resolve_source(source, ref, **kwargs):
+        assert source.repo == "myon-bioinformatics/Aoi"
+        assert ref == "topic"
+        return resolved
+
+    def checkout(root, item, runner, remote=None):
+        del runner, remote
+        assert item is resolved
+        dest = root / ".localci" / "aoi"
+        dest.mkdir(parents=True)
+        return dest
+
+    def overlay(aoi, root, runner):
+        del root, runner
+        assert aoi == tmp_path / ".localci" / "aoi"
+
+    def collect(aoi, runner):
+        del runner
+        assert aoi == tmp_path / ".localci" / "aoi"
+        return ["nagoyaction/tests/test_x.py::test_y"]
+
+    monkeypatch.setattr(localci, "resolve_source", resolve_source)
+    monkeypatch.setattr(localci, "checkout_aoi", checkout)
+    monkeypatch.setattr(localci, "overlay_nagoyaction", overlay)
+    monkeypatch.setattr(localci, "collect_aoi_tests", collect)
+    checks, limits, cwd, prefix, got = localci.prepare_pytest(
+        tmp_path, pytest_paths=None, skip_pytest=False, self_tests=False,
+        aoi_ref="topic", token="", runner=lambda *args, **kwargs: Proc(), opener=None, emit=lambda _line: None,
+    )
+    assert got.sha == sha
+    assert cwd == tmp_path / ".localci" / "aoi"
+    assert prefix[:4] == ["uv", "run", "--locked", "--python"]
+    assert "3.11" in prefix
+    assert "nagoyaction/tests" not in prefix
+    assert any(check.id == "pytest:nagoyaction/tests/test_x.py::test_y" for check in checks)
+    assert any("workflow" in item for item in limits)
+
+
+def test_aoi_collection_failure_is_an_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(localci.shutil, "which", lambda name: "/usr/bin/uv" if name == "uv" else None)
+
+    def runner(argv, **kwargs):
+        del kwargs
+        assert argv[:2] == ["uv", "run"]
+        assert "--continue-on-collection-errors" not in argv
+        assert argv[-1] == "nagoyaction/tests"
+        return Proc(rc=2, stderr="ERROR collecting nagoyaction/tests/test_x.py")
+
+    with pytest.raises(localci.LocalCIError, match="テスト収集に失敗"):
+        localci.collect_aoi_tests(tmp_path, runner=runner)
+
+
+def test_session_reuses_the_checked_out_sha():
+    resolved = localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)
+    session = localci.Session(ROOT, aoi_resolved=resolved, runner=lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("git")))
+    check = localci.Check("resolve:myon-bioinformatics/Aoi", "resolve", "myon-bioinformatics/Aoi", repo="myon-bioinformatics/Aoi")
+    outcome = session._resolve(check)
+    assert outcome.ok and SHA_A in outcome.detail
+    assert session.resolved["myon-bioinformatics/Aoi"].sha == SHA_A
+
+
+def test_pytest_shard_runs_as_one_batch_and_stops():
+    checks = [
+        localci.Check("pin:a", "pin", "a"),
+        localci.Check("pytest:t1", "pytest", "t1"),
+        localci.Check("pytest:t2", "pytest", "t2"),
+        localci.Check("resolve:z", "resolve", "z"),
+    ]
+    seen = []
+
+    def execute(check, seed):
+        del seed
+        seen.append(("one", check.id))
+        return localci.Outcome("pass", "ok", [])
+
+    def execute_pytest(group, rseed, keep_going):
+        seen.append(("batch", [check.id for check in group], rseed, keep_going))
+        return {
+            "pytest:t1": localci.Outcome("pass", "", []),
+            "pytest:t2": localci.Outcome("fail", "boom\ntrace", []),
+        }
+
+    report = localci.run_plan(
+        shards=[checks], master_seed=4, execute=execute, keep_going=False,
+        emit=lambda _line: None, execute_pytest=execute_pytest,
+    )
+    assert seen[0] == ("one", "pin:a")
+    assert seen[1][0] == "batch"
+    assert seen[1][1] == ["pytest:t1", "pytest:t2"]
+    assert seen[1][2] == localci.mix_seed(4, "round", 1)
+    assert seen[1][3] is False
+    assert ("one", "resolve:z") not in seen
+    assert report.rounds[0].failed_check == "pytest:t2"
+
+
+def test_pytest_batch_names_the_failed_node(tmp_path):
+    checks = [
+        localci.Check("pytest:tests/test_a.py::test_one", "pytest", "tests/test_a.py::test_one"),
+        localci.Check("pytest:tests/test_a.py::test_two", "pytest", "tests/test_a.py::test_two"),
+    ]
+
+    def runner(argv, **kwargs):
+        assert kwargs["cwd"] == tmp_path
+        assert "--localci-round-seed" in argv
+        assert argv[argv.index("--localci-round-seed") + 1] == "9"
+        assert "-x" in argv
+        assert argv[-2:] == ["tests/test_a.py::test_one", "tests/test_a.py::test_two"]
+        return Proc(rc=1, stdout="F\nFAILED tests/test_a.py::test_one - assert 0\n")
+
+    outcomes = localci.run_pytest_batch(
+        checks, 9, cwd=tmp_path, prefix=[sys.executable, "-m", "pytest"], keep_going=False, runner=runner,
+    )
+    assert outcomes["pytest:tests/test_a.py::test_one"].status == "fail"
+    assert outcomes["pytest:tests/test_a.py::test_one"].detail.startswith("failed tests/test_a.py::test_one")
+    assert outcomes["pytest:tests/test_a.py::test_two"].detail == "not run"
+
+
+def test_round_seed_is_applied_per_node(tmp_path):
+    (tmp_path / "test_nodes.py").write_text(
+        "import localci\n"
+        "def test_a():\n"
+        "    value = localci.substitute('n', 0, lambda rng: rng.randrange(10**9))\n"
+        "    open('a.txt', 'w', encoding='utf-8').write(str(value))\n"
+        "def test_b():\n"
+        "    value = localci.substitute('n', 0, lambda rng: rng.randrange(10**9))\n"
+        "    open('b.txt', 'w', encoding='utf-8').write(str(value))\n",
+        encoding="utf-8",
+    )
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
+    env.pop("LOCALCI_INPUT_LOG", None)
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "-p", "localci_pytest", "-q", "--localci-round-seed", "11"],
+        cwd=tmp_path, env=env, capture_output=True, text=True, check=False,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+
+    def expected(node):
+        rng = random.Random(localci.mix_seed(11, "pytest:" + node))
+        return str(rng.randrange(10**9))
+
+    assert (tmp_path / "a.txt").read_text(encoding="utf-8") == expected("test_nodes.py::test_a")
+    assert (tmp_path / "b.txt").read_text(encoding="utf-8") == expected("test_nodes.py::test_b")
+    assert (tmp_path / "a.txt").read_text(encoding="utf-8") != (tmp_path / "b.txt").read_text(encoding="utf-8")

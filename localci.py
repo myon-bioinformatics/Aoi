@@ -2,6 +2,7 @@
 
   python localci.py run --repeat 10
   python localci.py run --repeat 10 --seed 7 --keep-going
+  python localci.py run --self-tests
   python localci.py run --strict
   python localci.py resolve --github-output
 
@@ -9,6 +10,11 @@
 ほぼ等しい N 個のシャードに分け、1 ラウンドに 1 シャードだけ実行する。
 全ラウンドが終わると各検査はちょうど一度だけ走る。失敗したラウンドで止まり、
 ラウンド番号・シャードの中身・seed を出す。`--keep-going` で最後まで続ける。
+
+既定の pytest は Aoi の `tests/` 全体。実行時に解決した SHA を `.localci/aoi`
+に checkout し、HEAD がその SHA であることを確かめてから、このリポジトリの
+tree を `nagoyaction/` に重ねる。`--self-tests` は Aoi を取らず
+`tests/test_localci.py` だけを実行する。
 
 特定の固定値で通る検査は `substitute` で、そのラウンドの seed から別の値に差し替える。
 pytest では `-p localci_pytest` が同じ差し替えを monkeypatch する。
@@ -641,31 +647,167 @@ def _read_input_log(path: Path) -> list[dict]:
     return found
 
 
-def run_pytest_node(nodeid: str, seed: int, root: Path, runner=subprocess.run) -> Outcome:
+AOI_PYTEST_PREFIX = ["uv", "run", "--locked", "--python", "3.11", "pytest", "-c", "pyproject.toml"]
+_FAILED_NODE = re.compile(r"^(?:FAILED|ERROR)\s+(\S+)", re.M)
+
+
+def _git(runner, argv: list[str], *, cwd: Path, timeout: int, text: bool = True):
+    try:
+        out = runner(argv, cwd=cwd, capture_output=True, text=text, check=False, timeout=timeout, env=git_env())
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise LocalCIError(f"{' '.join(argv)} failed: {exc}") from exc
+    if out.returncode != 0:
+        err = out.stderr or out.stdout or ""
+        if isinstance(err, bytes):
+            err = err.decode("utf-8", "replace")
+        raise LocalCIError(f"{' '.join(argv)} failed: {str(err).strip()}")
+    return out
+
+
+def checkout_aoi(root: Path, resolved: Resolved, *, runner=subprocess.run, remote: str | None = None) -> Path:
+    """解決済み SHA を `.localci/aoi` に checkout し、HEAD が一致しなければ失敗する。"""
+    if not SHA_RE.fullmatch(resolved.sha):
+        raise LocalCIError(f"resolved Aoi SHA is not 40 hex digits: {resolved.sha}")
+    dest = root / ".localci" / "aoi"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if not (dest / ".git").exists():
+        if dest.exists():
+            shutil.rmtree(dest)
+        url = remote or f"https://github.com/{resolved.source.repo}"
+        _git(runner, ["git", "clone", "--no-checkout", url, str(dest)], cwd=root, timeout=600)
+    fetch = resolved.how if resolved.how.startswith("refs/") else resolved.sha
+    _git(runner, ["git", "fetch", "--no-tags", "origin", fetch], cwd=dest, timeout=600)
+    _git(runner, ["git", "checkout", "-f", "--detach", resolved.sha], cwd=dest, timeout=180)
+    head = _git(runner, ["git", "rev-parse", "HEAD"], cwd=dest, timeout=60).stdout.strip().lower()
+    if head != resolved.sha:
+        raise LocalCIError(f"Aoi checkout {head} does not match resolved {resolved.sha}")
+    return dest
+
+
+def overlay_nagoyaction(aoi: Path, root: Path, *, runner=subprocess.run) -> None:
+    """このリポジトリの commit 済み tree を Aoi の nagoyaction/ に重ね、tree が一致することを確かめる。"""
+    dest = aoi / "nagoyaction"
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+    out = _git(runner, ["git", "archive", "HEAD"], cwd=root, timeout=120, text=False)
+    blob = out.stdout if isinstance(out.stdout, bytes) else (out.stdout or "").encode()
+    try:
+        with tarfile.open(fileobj=io.BytesIO(blob), mode="r:") as tar:
+            try:
+                tar.extractall(dest, filter="data")
+            except TypeError:
+                tar.extractall(dest)
+    except (tarfile.TarError, OSError) as exc:
+        raise LocalCIError(f"git archive extract failed: {exc}") from exc
+    _git(runner, ["git", "add", "-A", "nagoyaction"], cwd=aoi, timeout=120)
+    tree = _git(runner, ["git", "write-tree", "--prefix=nagoyaction/"], cwd=aoi, timeout=60).stdout.strip()
+    expected = _git(runner, ["git", "rev-parse", "HEAD^{tree}"], cwd=root, timeout=60).stdout.strip()
+    if tree != expected:
+        raise LocalCIError(f"nagoyaction overlay {tree} does not match HEAD^{{tree}} {expected}")
+
+
+def pytest_env(cwd: Path) -> dict:
+    env = git_env()
+    plugin_root = cwd if (cwd / "localci.py").is_file() else cwd / "nagoyaction"
+    env["PYTHONPATH"] = str(plugin_root) + os.pathsep + env.get("PYTHONPATH", "")
+    return env
+
+
+def failed_pytest_nodes(text: str) -> list[str]:
+    return _FAILED_NODE.findall(text)
+
+
+def _batch_outcomes(checks: list[Check], returncode: int, detail: str, inputs: list[dict],
+                    keep_going: bool) -> dict[str, Outcome]:
+    nodeids = [check.target for check in checks]
+    by_node: dict[str, Outcome] = {}
+    def failed_detail(node: str, body: str) -> str:
+        text = f"failed {node}"
+        if body:
+            return text + "\n" + body
+        return text
+
+    if returncode == 0:
+        for index, check in enumerate(checks):
+            by_node[check.id] = Outcome("pass", "", inputs if index == 0 else [])
+        return by_node
+    failed = [node for node in failed_pytest_nodes(detail) if node in nodeids]
+    if not failed:
+        for index, check in enumerate(checks):
+            by_node[check.id] = Outcome(
+                "fail", failed_detail(check.target, detail) if index == 0 else "failed", inputs if index == 0 else [],
+            )
+        return by_node
+    if keep_going:
+        attached = False
+        failed_set = set(failed)
+        for check in checks:
+            if check.target in failed_set:
+                by_node[check.id] = Outcome(
+                    "fail", failed_detail(check.target, detail) if not attached else check.target, inputs if not attached else [],
+                )
+                attached = True
+            else:
+                by_node[check.id] = Outcome("pass", "", [])
+        return by_node
+    first = failed[0]
+    seen = False
+    for check in checks:
+        if check.target == first:
+            by_node[check.id] = Outcome("fail", failed_detail(first, detail), inputs)
+            seen = True
+        elif seen:
+            by_node[check.id] = Outcome("fail", "not run", [])
+        else:
+            by_node[check.id] = Outcome("pass", "", [])
+    return by_node
+
+
+def run_pytest_batch(checks: list[Check], round_seed: int, *, cwd: Path, prefix: list[str],
+                     keep_going: bool, runner=subprocess.run) -> dict[str, Outcome]:
+    """同じシャードの pytest を 1 プロセスで実行し、ノードごとに round seed から差し替える。"""
     handle = tempfile.NamedTemporaryFile(prefix="localci-inputs-", suffix=".log", delete=False)
     log = Path(handle.name)
     handle.close()
-    env = os.environ.copy()
-    env["LOCALCI_INPUT_LOG"] = str(log)
-    cmd = [
-        sys.executable, "-m", "pytest", "-q", "--tb=line", "-p", "localci_pytest",
-        "--localci-seed", str(seed), "--localci-activate", nodeid,
-    ]
+    cmd = [*prefix, "-q", "--tb=line", "-p", "localci_pytest", "--localci-round-seed", str(round_seed)]
+    if not keep_going:
+        cmd.append("-x")
+    cmd.extend(check.target for check in checks)
     try:
-        out = runner(cmd, cwd=root, capture_output=True, text=True, check=False, timeout=180, env=env)
+        out = runner(cmd, cwd=cwd, capture_output=True, text=True, check=False, timeout=900, env=pytest_env(cwd))
     except (OSError, subprocess.SubprocessError) as exc:
-        return Outcome("fail", str(exc), _read_input_log(log))
-    finally:
         inputs = _read_input_log(log)
         log.unlink(missing_ok=True)
+        return {check.id: Outcome("fail", str(exc) if index == 0 else "not run", inputs if index == 0 else [])
+                for index, check in enumerate(checks)}
+    inputs = _read_input_log(log)
+    log.unlink(missing_ok=True)
     detail = "\n".join(part for part in ((out.stdout or ""), (out.stderr or "")) if part).strip()
-    if out.returncode == 0:
-        return Outcome("pass", detail, inputs)
-    return Outcome("fail", detail, inputs)
+    return _batch_outcomes(checks, out.returncode, detail, inputs, keep_going)
 
 
-def build_checks(root: Path, *, pytest_paths: list[str] | None, skip_pytest: bool,
-                 runner=subprocess.run) -> tuple[list[Check], list[str]]:
+def collect_aoi_tests(aoi: Path, runner=subprocess.run) -> list[str]:
+    if shutil.which("uv") is None:
+        raise LocalCIError(
+            "uv が PATH に無いので Aoi の tests/ を実行できない。"
+            "--self-tests で tests/test_localci.py だけ実行できる"
+        )
+    cmd = [*AOI_PYTEST_PREFIX, "--collect-only", "-q", "nagoyaction/tests"]
+    try:
+        out = runner(cmd, cwd=aoi, capture_output=True, text=True, check=False, timeout=300, env=pytest_env(aoi))
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise LocalCIError(f"Aoi のテスト収集に失敗した: {exc}") from exc
+    detail = "\n".join(part for part in ((out.stdout or ""), (out.stderr or "")) if part).strip()
+    if out.returncode != 0:
+        raise LocalCIError(f"Aoi のテスト収集に失敗した: {detail}")
+    nodeids = parse_collect_only(out.stdout or "")
+    if not nodeids:
+        raise LocalCIError(f"Aoi のテスト収集が空だった: {detail}")
+    return nodeids
+
+
+def workflow_checks(root: Path) -> tuple[list[Check], list[str]]:
     limits: list[str] = []
     checks: list[Check] = []
     for source in sources_for(root):
@@ -679,6 +821,38 @@ def build_checks(root: Path, *, pytest_paths: list[str] | None, skip_pytest: boo
     for item in workflow_uses(root):
         ident = f"pin:{item['file']}:{item['line']}:{item['raw']}"
         checks.append(Check(ident, "pin", item["raw"], file=item["file"], ref=item["ref"], repo=item["repo"]))
+    return checks, limits
+
+
+def full_suite(pytest_paths: list[str] | None, skip_pytest: bool, self_tests: bool) -> bool:
+    return not skip_pytest and not self_tests and not pytest_paths
+
+
+def prepare_pytest(root: Path, *, pytest_paths: list[str] | None, skip_pytest: bool, self_tests: bool,
+                   aoi_ref: str, token: str, runner, opener, emit) -> tuple[list[Check], list[str], Path, list[str], Resolved | None]:
+    """検査一覧、pytest の cwd、コマンド前置、checkout 済みの Aoi 解決結果を返す。"""
+    if not full_suite(pytest_paths, skip_pytest, self_tests):
+        paths = pytest_paths
+        if self_tests and not paths:
+            paths = ["tests/test_localci.py"]
+        checks, limits = build_checks(root, pytest_paths=paths, skip_pytest=skip_pytest, runner=runner)
+        return checks, limits, root, [sys.executable, "-m", "pytest"], None
+    source = next(item for item in SOURCES if item.key == "aoi")
+    ref = aoi_ref or os.environ.get("AOI_REF_INPUT", "")
+    resolved = resolve_source(source, ref, token=token, runner=runner, opener=opener)
+    emit(f"Aoi {resolved.sha} from {resolved.how} (repository id {resolved.repository_id})")
+    aoi = checkout_aoi(root, resolved, runner=runner)
+    overlay_nagoyaction(aoi, root, runner=runner)
+    emit(f"Aoi checkout {aoi} HEAD {resolved.sha}")
+    nodeids = collect_aoi_tests(aoi, runner)
+    checks, limits = workflow_checks(root)
+    checks.extend(Check(f"pytest:{nodeid}", "pytest", nodeid) for nodeid in nodeids)
+    return checks, limits, aoi, list(AOI_PYTEST_PREFIX), resolved
+
+
+def build_checks(root: Path, *, pytest_paths: list[str] | None, skip_pytest: bool,
+                 runner=subprocess.run) -> tuple[list[Check], list[str]]:
+    checks, limits = workflow_checks(root)
     if not skip_pytest:
         paths = pytest_paths or ["tests"]
         existing = []
@@ -701,13 +875,16 @@ def build_checks(root: Path, *, pytest_paths: list[str] | None, skip_pytest: boo
 class Session:
     def __init__(self, root: Path, *, token: str = "", strict: bool = False,
                  runner=subprocess.run, opener=urllib.request.urlopen,
-                 actionlint: Path | None | str = "auto"):
+                 actionlint: Path | None | str = "auto",
+                 aoi_resolved: Resolved | None = None, aoi_ref: str = ""):
         self.root = root
         self.token = token
         self.strict = strict
         self.runner = runner
         self.opener = opener
         self.actionlint = actionlint
+        self.aoi_resolved = aoi_resolved
+        self.aoi_ref = aoi_ref
         self.resolved: dict[str, Resolved] = {}
         self.releases: dict[str, tuple[str, str] | None] = {}
         self.shellcheck = shellcheck_path()
@@ -723,10 +900,13 @@ class Session:
 
     def _resolve(self, check: Check) -> Outcome:
         source = next(s for s in sources_for(self.root) if s.repo == check.repo)
-        ref = ""
-        if source.key == "aoi":
-            ref = os.environ.get("AOI_REF_INPUT", "")
-        item = resolve_source(source, ref, token=self.token, runner=self.runner, opener=self.opener)
+        if source.key == "aoi" and self.aoi_resolved is not None:
+            item = self.aoi_resolved
+        else:
+            ref = ""
+            if source.key == "aoi":
+                ref = self.aoi_ref or os.environ.get("AOI_REF_INPUT", "")
+            item = resolve_source(source, ref, token=self.token, runner=self.runner, opener=self.opener)
         self.resolved[source.repo] = item
         return Outcome("pass", f"{item.sha} from {item.how} (repository id {item.repository_id})", [])
 
@@ -782,7 +962,25 @@ class Session:
             raise LocalCIError(f"actionlint: {exc}") from exc
 
 
-def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going: bool, emit) -> PlanReport:
+def iter_work(shard: list[Check], coalesce_pytest: bool):
+    """非 pytest は 1 件ずつ。pytest はシャード内を 1 プロセスにまとめる。"""
+    if not coalesce_pytest:
+        for check in shard:
+            yield [check]
+        return
+    pytest_checks = [check for check in shard if check.kind == "pytest"]
+    emitted = False
+    for check in shard:
+        if check.kind == "pytest":
+            if not emitted:
+                yield pytest_checks
+                emitted = True
+            continue
+        yield [check]
+
+
+def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going: bool, emit,
+             execute_pytest=None) -> PlanReport:
     reports: list[RoundReport] = []
     stopped = False
     total = len(shards)
@@ -796,18 +994,9 @@ def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going
             emit("  (empty shard)")
         failed_check = None
         lines: list[str] = []
-        for check in shard:
-            emit(f"  > {check.id}")
-            cseed = mix_seed(rseed, check.id)
-            try:
-                with use_seed(cseed):
-                    outcome = execute(check, cseed)
-                    inputs = take_substitutions()
-                    inputs.extend(outcome.inputs)
-            except (LocalCIError, OSError, urllib.error.URLError, subprocess.SubprocessError) as exc:
-                outcome = Outcome("fail", str(exc), take_substitutions())
-                inputs = outcome.inputs
-            for item in inputs:
+
+        def note(check: Check, outcome: Outcome) -> str | None:
+            for item in outcome.inputs:
                 text = f"    inputs: {item['name']} {item['fixed']} -> {item['value']}"
                 lines.append(text)
                 emit(text)
@@ -815,12 +1004,45 @@ def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going
             line = f"    [{mark}] {outcome.detail.splitlines()[0] if outcome.detail else check.kind}"
             lines.append(line)
             emit(line)
-            if not outcome.ok and failed_check is None:
-                failed_check = check.id
-                if outcome.detail and "\n" in outcome.detail:
-                    emit(outcome.detail)
-                if not keep_going:
-                    break
+            if outcome.ok:
+                return None
+            if outcome.detail and "\n" in outcome.detail:
+                emit(outcome.detail)
+            return check.id
+
+        for group in iter_work(shard, execute_pytest is not None):
+            if failed_check is not None and not keep_going:
+                break
+            if execute_pytest is not None and group and group[0].kind == "pytest":
+                for check in group:
+                    emit(f"  > {check.id}")
+                try:
+                    outcomes = execute_pytest(group, rseed, keep_going)
+                except (LocalCIError, OSError, urllib.error.URLError, subprocess.SubprocessError) as exc:
+                    outcomes = {check.id: Outcome("fail", str(exc) if index == 0 else "not run", [])
+                                for index, check in enumerate(group)}
+                for check in group:
+                    outcome = outcomes.get(check.id) or Outcome("fail", "not run", [])
+                    found = note(check, outcome)
+                    if found is not None and failed_check is None:
+                        failed_check = found
+                    if failed_check is not None and not keep_going:
+                        break
+                continue
+            check = group[0]
+            emit(f"  > {check.id}")
+            cseed = mix_seed(rseed, check.id)
+            try:
+                with use_seed(cseed):
+                    outcome = execute(check, cseed)
+                    inputs = take_substitutions()
+                    inputs.extend(outcome.inputs)
+                    outcome = Outcome(outcome.status, outcome.detail, inputs)
+            except (LocalCIError, OSError, urllib.error.URLError, subprocess.SubprocessError) as exc:
+                outcome = Outcome("fail", str(exc), take_substitutions())
+            found = note(check, outcome)
+            if found is not None and failed_check is None:
+                failed_check = found
         passed = failed_check is None
         reports.append(RoundReport(number, rseed, ids, passed, failed_check, lines))
         if passed:
@@ -845,11 +1067,16 @@ def _emit_print(text: str) -> None:
 
 def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, strict: bool,
               pytest_paths: list[str] | None, skip_pytest: bool, env_file: Path | None,
+              self_tests: bool = False, aoi_ref: str = "",
               token: str | None = None, runner=subprocess.run, opener=urllib.request.urlopen,
               emit=_emit_print) -> int:
     master = seed if seed is not None else random.SystemRandom().randrange(1, 2**31)
     token = github_token() if token is None else token
-    checks, limits = build_checks(root, pytest_paths=pytest_paths, skip_pytest=skip_pytest, runner=runner)
+    emit(f"localci seed={master}")
+    checks, limits, pytest_cwd, pytest_prefix, aoi_resolved = prepare_pytest(
+        root, pytest_paths=pytest_paths, skip_pytest=skip_pytest, self_tests=self_tests,
+        aoi_ref=aoi_ref, token=token, runner=runner, opener=opener, emit=emit,
+    )
     shards = split_shards(checks, repeat, master)
     shellcheck = shellcheck_path()
     emit(f"localci seed={master} checks={len(checks)} rounds={repeat}")
@@ -858,14 +1085,22 @@ def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, st
         emit("limits:")
         for item in limits:
             emit(f"  - {item}")
-    session = Session(root, token=token, strict=strict, runner=runner, opener=opener)
+    session = Session(
+        root, token=token, strict=strict, runner=runner, opener=opener,
+        aoi_resolved=aoi_resolved, aoi_ref=aoi_ref,
+    )
 
     def execute(check: Check, cseed: int) -> Outcome:
-        if check.kind == "pytest":
-            return run_pytest_node(check.target, cseed, root, runner)
+        del cseed
         return session.execute(check)
 
-    report = run_plan(shards=shards, master_seed=master, execute=execute, keep_going=keep_going, emit=emit)
+    def execute_pytest(group: list[Check], rseed: int, going: bool) -> dict[str, Outcome]:
+        return run_pytest_batch(group, rseed, cwd=pytest_cwd, prefix=pytest_prefix, keep_going=going, runner=runner)
+
+    report = run_plan(
+        shards=shards, master_seed=master, execute=execute, keep_going=keep_going, emit=emit,
+        execute_pytest=None if skip_pytest else execute_pytest,
+    )
     if session.resolved:
         path = env_file or (root / ".localci" / "refs.env")
         write_env_file(path, list(session.resolved.values()))
@@ -914,8 +1149,12 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--keep-going", action="store_true", help="失敗したあとも残りのラウンドを実行する")
     run.add_argument("--strict", action="store_true", help="古い uses: ピンや SHA でないピンを失敗にする")
     run.add_argument("--root", type=Path, default=None)
-    run.add_argument("--pytest", dest="pytest_paths", action="append", default=None, help="pytest のパス。省略時は tests")
+    run.add_argument("--pytest", dest="pytest_paths", action="append", default=None,
+                     help="このリポジトリ内の pytest パス。指定すると Aoi は checkout しない")
+    run.add_argument("--self-tests", action="store_true",
+                     help="Aoi を checkout せず tests/test_localci.py だけ実行する")
     run.add_argument("--skip-pytest", action="store_true")
+    run.add_argument("--aoi-ref", default="", help="Aoi の ref。空なら AOI_REF_INPUT、それも空なら main")
     run.add_argument("--env-file", type=Path, default=None)
     resolve = sub.add_parser("resolve", help="参照先リポジトリの main SHA を解決する")
     resolve.add_argument("--root", type=Path, default=None)
@@ -948,6 +1187,7 @@ def main(argv: list[str] | None = None) -> int:
         return run_local(
             root, repeat=args.repeat, seed=args.seed, keep_going=args.keep_going, strict=args.strict,
             pytest_paths=args.pytest_paths, skip_pytest=args.skip_pytest, env_file=args.env_file,
+            self_tests=args.self_tests, aoi_ref=args.aoi_ref,
         )
     except LocalCIError as exc:
         print(f"localci: {exc}", file=sys.stderr)

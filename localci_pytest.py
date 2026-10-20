@@ -4,6 +4,8 @@
 
 `--localci-round` を省略すると絞らない。`--localci-seed` があるときは
 `localci.substitute` が固定値ではなく seed からの値を返す。
+`--localci-round-seed` は各テストの直前に `mix_seed(round, "pytest:" + nodeid)`
+で乱数を置き直す。同じシャードの複数ノードを 1 プロセスで実行するときに使う。
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ def pytest_addoption(parser):
     parser.addoption("--localci-repeat", type=int, default=None)
     parser.addoption("--localci-round", type=int, default=None)
     parser.addoption("--localci-seed", default=None)
+    parser.addoption("--localci-round-seed", default=None)
     parser.addoption("--localci-activate", action="store_true")
 
 
@@ -37,6 +40,15 @@ def pytest_unconfigure(config):
     mp = getattr(config, "_localci_monkeypatch", None)
     if mp is not None:
         mp.undo()
+
+
+def pytest_runtest_setup(item):
+    raw = item.config.getoption("localci_round_seed")
+    if raw is None or raw == "":
+        return
+    seed = localci.mix_seed(int(raw), "pytest:" + item.nodeid)
+    localci._substitutions.clear()
+    localci._active_rng = random.Random(seed)
 
 
 def pytest_collection_modifyitems(config, items):

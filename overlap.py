@@ -8,7 +8,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import numpy as np
+import operator
+
+OPS = {"<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
 
 from .forms import _atom
 from .records import read_jsonl
@@ -49,12 +51,11 @@ def _key(cond: dict) -> tuple:
 
 
 def parse_cond(text: str) -> dict:
-    _, propositions = _engines()
     try:
         col, op, raw = text.split(",", 2)
     except ValueError:
         raise ValueError(f"条件の書き方は col,op,値（JSON）。例: rd,>,0 。受け取ったもの: {text}") from None
-    if op not in propositions.OPS:
+    if op not in OPS:
         raise ValueError(f"演算子が条件にない: {op}")
     try:
         value = json.loads(raw)
@@ -65,13 +66,12 @@ def parse_cond(text: str) -> dict:
 
 def default_conditions(items: list[dict], rows: list[dict]) -> list[dict]:
     """propositions の if をファイル順に見て、列がある原子を 2 個まで。最後に B クラスを足す。"""
-    _, propositions = _engines()
     have = set(rows[0]) if rows else set()
     chosen: list[dict] = []
     seen = set()
     for item in items:
         for cond in item.get("if") or []:
-            if not isinstance(cond, dict) or cond.get("col") not in have or cond.get("op") not in propositions.OPS:
+            if not isinstance(cond, dict) or cond.get("col") not in have or cond.get("op") not in OPS:
                 continue
             if "value" not in cond:
                 continue
@@ -111,26 +111,35 @@ def _patterns(n_sets: int):
         yield tuple(bool(bits & (1 << i)) for i in range(n_sets))
 
 
-def load_overlap(path: Path, conds: list[dict]) -> dict:
-    """season.jsonl を読み、条件ごとのビット行列と領域の件数を返す。"""
-    rule_search, _ = _engines()
-    import polars as pl
-
+def load_overlap(path: Path, conds: list[dict], *, backend: str = "native") -> dict:
+    """条件行列と領域の件数。backend="stdlib" だけがライブラリ不要の限定経路。"""
+    if backend not in ("native", "stdlib"):
+        raise ValueError(f"overlap backend は native か stdlib: {backend}")
     path = Path(path)
-    rows = read_jsonl(path)
-    frame = pl.read_ndjson(path)
-    if frame.height != len(rows):
-        raise ValueError("season.jsonl の行数が揃わない")
-    teams, seasons = frame["team"].to_list(), frame["season"].to_list()
-    for index, row in enumerate(rows):
-        if teams[index] != row["team"] or seasons[index] != row["season"]:
-            raise ValueError("season.jsonl の行の順が揃わない")
     labeled = [{**cond, "label": label_of(cond)} for cond in conds]
-    masks = [rule_search._mask(frame, [cond]) for cond in labeled]
-    matrix = rule_search._masks_to_matrix(masks, frame.height)
-    if matrix.shape != (len(labeled), len(rows)):
-        raise ValueError("ビット行列の形が条件数と行数に合わない")
-    bits = [[bool(matrix[i, j]) for j in range(len(rows))] for i in range(len(labeled))]
+    if backend == "stdlib":
+        from ._overlap_stdlib import condition_bits, read_rows
+
+        rows = read_rows(path)
+        bits = condition_bits(rows, labeled)
+    else:
+        import numpy as np
+        import polars as pl
+
+        rows = read_jsonl(path)
+        rule_search, _ = _engines()
+        frame = pl.read_ndjson(path)
+        if frame.height != len(rows):
+            raise ValueError("season.jsonl の行数が揃わない")
+        teams, seasons = frame["team"].to_list(), frame["season"].to_list()
+        for index, row in enumerate(rows):
+            if teams[index] != row["team"] or seasons[index] != row["season"]:
+                raise ValueError("season.jsonl の行の順が揃わない")
+        masks = [rule_search._mask(frame, [cond]) for cond in labeled]
+        matrix = rule_search._masks_to_matrix(masks, frame.height)
+        if matrix.shape != (len(labeled), len(rows)):
+            raise ValueError("ビット行列の形が条件数と行数に合わない")
+        bits = [[bool(matrix[i, j]) for j in range(len(rows))] for i in range(len(labeled))]
     columns = []
     for cond in labeled:
         if cond["col"] not in columns:
@@ -153,12 +162,16 @@ def load_overlap(path: Path, conds: list[dict]) -> dict:
             }
         )
     regions = []
-    arr = np.asarray(bits, dtype=bool)
+    if backend == "native":
+        arr = np.asarray(bits, dtype=bool)
     for pattern in _patterns(len(labeled)):
-        selected = np.ones(len(rows), dtype=bool)
-        for i, on in enumerate(pattern):
-            selected &= arr[i] if on else ~arr[i]
-        indexes = [int(i) for i in np.flatnonzero(selected)]
+        if backend == "stdlib":
+            indexes = [j for j in range(len(rows)) if all(bits[i][j] == on for i, on in enumerate(pattern))]
+        else:
+            selected = np.ones(len(rows), dtype=bool)
+            for i, on in enumerate(pattern):
+                selected &= arr[i] if on else ~arr[i]
+            indexes = [int(i) for i in np.flatnonzero(selected)]
         name = "外" if not any(pattern) else " ∧ ".join(
             labeled[i]["label"] if on else f"¬({labeled[i]['label']})" for i, on in enumerate(pattern)
         )
@@ -166,7 +179,7 @@ def load_overlap(path: Path, conds: list[dict]) -> dict:
             {
                 "name": name,
                 "bits": list(pattern),
-                "count": int(selected.sum()),
+                "count": len(indexes),
                 "unit_index": indexes,
             }
         )

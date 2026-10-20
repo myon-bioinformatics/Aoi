@@ -83,6 +83,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Chrome/Chromium の実行ファイル。省略時は CHROME / CHROMIUM 環境変数、なければ PATH",
     )
+    parser.add_argument(
+        "--overlap-backend", choices=("native", "stdlib"), default="native",
+        help="重なり計算。stdlib は限定したスカラー列のみ（numpy/polars 不要）。既定は native",
+    )
     parser.add_argument("--png", action="store_true", help="PNG も書く。Chrome が要る。既定では HTML だけ")
     parser.add_argument("--svg", action="store_true", help="SVG も書く。Chrome が要る。既定では HTML だけ")
     parser.add_argument(
@@ -101,7 +105,7 @@ def main(argv=None) -> int:
         rows = read_jsonl(season_path)
         chosen = select_items(items, present, args.ids)
         conds = finalize_conditions([parse_cond(text) for text in args.conds] if args.conds else None, items, rows)
-        overlap = load_overlap(season_path, conds)
+        overlap = load_overlap(season_path, conds, backend=args.overlap_backend)
         index_html, index_figures = index_body(rows, overlap, args.column, team_order(args.team_order))
         prop_html = propositions_body(chosen)
     except (FileNotFoundError, ValueError, TypeError) as exc:

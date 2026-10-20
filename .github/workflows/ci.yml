@@ -114,11 +114,10 @@ jobs:
     needs: [changes, resolve-aoi]
     runs-on: ubuntu-latest
     env:
-      # Deliberate fixture pin. The README treats mcp-toolcall-lab as a fixed
-      # snapshot for offline integration, so this SHA stays pinned and the
-      # equality check stays strict on every event.
+      # LAB_SHA: past-pattern snapshot of mcp-toolcall-lab used as verification test data.
+      # Fetched by SHA. The checkout must match this snapshot on every event.
       # A floating source-hash comparison is report-only on pull_request and
-      # strict on push to main and on schedule. Aoi is not hash-pinned.
+      # strict on push to main and on schedule.
       LAB_SHA: 81b1150d633d5c6aaedc893c951c8f584ba877e3
     timeout-minutes: 10
     strategy:

@@ -2,17 +2,16 @@ name: Stdlib substitute
 
 # 実験: 1 ジョブの中で、入っている markdown と numpy で render_md と load_overlap の出力を取り、
 # すぐ両方を外す。markdown は lock が入れた版の pure wheel を sha256 照合して載せる。
-# PyPI の最新版は step summary に書くだけで、比較には使わない。numpy は shrink/numpy_min.py
+# PyPI の最新版は step summary に書くだけで、比較には使わない。numpy は vendor/aoi の numpy_min.py
 # （overlap と兄弟の rule_search より前に載せる）。polars は残す。バイト単位で比べる。
 # Aoi は ci.yml と同じく実行時に main の SHA を解決する。既存の CI ジョブと pyproject の依存には触れない。
 on:
   pull_request:
     paths:
-      - scripts/fetch_module.py
+      - vendor/aoi/scripts/fetch_module.py
+      - vendor/aoi/shrink/numpy_min.py
+      - vendor.lock.json
       - scripts/run_stdlib_paths.py
-      - shrink/numpy_min.py
-      - tests/test_fetch_module.py
-      - tests/test_numpy_min.py
       - tests/test_stdlib_paths.py
       - htmlout.py
       - overlap.py
@@ -96,9 +95,10 @@ jobs:
           [[ "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
       - name: Record the latest pure markdown wheel
+        continue-on-error: true
         run: |
           set -euo pipefail
-          python scripts/fetch_module.py resolve markdown > "$RUNNER_TEMP/markdown-latest.json"
+          python vendor/aoi/scripts/fetch_module.py resolve markdown > "$RUNNER_TEMP/markdown-latest.json"
           python - <<'PY'
           import json
           import os
@@ -115,7 +115,7 @@ jobs:
         run: |
           set -euo pipefail
           uv sync --locked --python 3.14
-          uv run --locked --python 3.14 pytest -q tests/test_fetch_module.py tests/test_numpy_min.py tests/test_stdlib_paths.py
+          uv run --locked --python 3.14 pytest -q tests/test_vendor_lock.py tests/test_stdlib_paths.py
           installed="$(.venv/bin/python -c 'import markdown; print(markdown.__version__)')"
           echo "markdown_version=${installed}" >> "$GITHUB_OUTPUT"
           .venv/bin/python scripts/run_stdlib_paths.py --deps real --markdown-version "${installed}" reference.json

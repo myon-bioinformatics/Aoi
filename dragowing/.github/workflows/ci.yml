@@ -1,4 +1,5 @@
-# Aoi はコピーしない。main の SHA は実行時に解決し、workflow_dispatch の aoi-ref で上書きできる。
+# Aoi の checkout は実行時に main の SHA を解決する（workflow_dispatch の aoi-ref で上書きできる）。
+# vendor/aoi は共有ツールの写しで、vendor-lock ジョブが同じ SHA と照合する。
 name: CI
 on:
   push:
@@ -24,7 +25,8 @@ jobs:
   aoi:
     name: Resolve Aoi
     needs: changes
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    # vendor-lock は docs-only の PR でも Aoi の最新 main と照合する。product_changed では落とさない。
+    if: always() && needs.changes.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -97,6 +99,58 @@ jobs:
             echo "- repository_id: ${AOI_REPOSITORY_ID}"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  vendor-lock:
+    name: Vendor lock
+    needs: aoi
+    if: always() && needs.aoi.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ needs.aoi.outputs.sha }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - name: Compare vendored tools to Aoi
+        env:
+          AOI_SHA: ${{ needs.aoi.outputs.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+          uv --version
+          {
+            echo "## Vendor lock"
+            echo ""
+            echo "- sha: ${AOI_SHA}"
+            echo "- repository_id: 1402862784"
+          } >> "$GITHUB_STEP_SUMMARY"
+          strict=0
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
+            strict=1
+          elif [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            strict=1
+          fi
+          if [[ "$strict" == "1" ]]; then
+            python -S scripts/check_vendor_lock.py --aoi .test-deps/aoi
+          else
+            python -S scripts/check_vendor_lock.py --aoi .test-deps/aoi --warn
+          fi
+
   test:
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     needs: [changes, aoi]
@@ -109,16 +163,16 @@ jobs:
         # Aoi の CI と同じ
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - uses: astral-sh/setup-uv@v10.3.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version: "0.13.3"
           enable-cache: false
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
           ref: ${{ needs.aoi.outputs.sha }}
@@ -140,7 +194,7 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras:${{ github.workspace }}/.test-deps/aoi/queryu/ask
       - name: Preserve JUnit report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python }}
           path: reports/junit.xml

@@ -36,6 +36,13 @@ python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--colum
 - 条件の重なり（`overlap.py`）は [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) の `propositions` と `rule_search` を、四つの形の表（`forms.py`）は [QueRyu](https://github.com/myon-bioinformatics/QueRyu) の `ask`（登録状態）を使います。動かすときはそれらを `PYTHONPATH` に入れます（下の「テスト」と同じ）。
 - このディレクトリはパッケージ `dragowing` の中身なので、`python -m dragowing` はディレクトリ名が `dragowing` に見える親から実行します（下の「テスト」の例）。
 
+## 重なり計算だけを軽量にする
+
+`load_overlap(path, conds, backend="stdlib")` または `--overlap-backend stdlib` で、
+NumPy・Polarsを読み込まない限定経路を選べます。既定は従来の `native` です。
+対応入力・制限・比較測定は [docs/overlap-stdlib.md](docs/overlap-stdlib.md)。
+HTMLのMarkdown、画像出力のChromeなどは引き続き必要です。
+
 ## 構成
 
 | ファイル | 中身 |

@@ -131,9 +131,6 @@ def run(deps: str, cache: Path, markdown_version: str | None) -> dict:
     from dragowing.overlap import default_conditions, load_overlap
     from dragowing.records import read_jsonl
 
-    overlap_mod = sys.modules["dragowing.overlap"]
-    if overlap_mod.np is not numpy:
-        raise SystemExit("overlap が、先に載せた numpy を見ていない")
     if "rule_search" in sys.modules:
         raise SystemExit("rule_search が overlap の読み込みで import されている")
     sample = render_md(SAMPLE)
@@ -152,9 +149,6 @@ def run(deps: str, cache: Path, markdown_version: str | None) -> dict:
     rows = read_jsonl(results / "season.jsonl")
     items = read_jsonl(results / "propositions.jsonl")
     conds = default_conditions(items, rows)
-    rule_search = sys.modules.get("rule_search")
-    if rule_search is None or rule_search.np is not numpy:
-        raise SystemExit("rule_search が、先に載せた numpy を見ていない")
     overlap = load_overlap(results / "season.jsonl", conds)
     if sys.modules["rule_search"].np is not numpy or sys.modules["numpy"] is not numpy:
         raise SystemExit("load_overlap の途中で numpy が入れ替わった")

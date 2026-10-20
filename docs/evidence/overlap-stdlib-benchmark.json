@@ -1,0 +1,164 @@
+{
+  "input_sha256": {
+    "propositions.jsonl": "e635d5d4f987a10e128d2df62a78e37c38f295b638f2789f85acc49d218e13b2",
+    "season.jsonl": "8ddba36adfbd06db5c7510f91953184233801c596f87d4fe9bd66fc1b9573a93"
+  },
+  "medians": {
+    "native": {
+      "cold_seconds": 0.8015980210002454,
+      "process_peak_rss_bytes": 167202816,
+      "process_wall_seconds": 1.2557137149997288,
+      "python_peak_bytes": 31493242,
+      "warm_median_seconds": 0.03475337499912712
+    },
+    "stdlib": {
+      "cold_seconds": 0.45761819900144474,
+      "process_peak_rss_bytes": 66093056,
+      "process_wall_seconds": 0.8713320960014244,
+      "python_peak_bytes": 21423287,
+      "warm_median_seconds": 0.05292397499943036
+    }
+  },
+  "memory_note": "RSS includes native allocations and process overhead; tracemalloc peak covers Python-tracked cold allocations only. Cold timing includes tracemalloc overhead; warm timing does not.",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "python": "3.14.8 (main, Oct  3 2026, 01:04:31) [Clang 22.1.3 ]",
+  "repeats": 5,
+  "samples": [
+    {
+      "backend": "native",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.7833825790003175,
+      "imported_libraries": {
+        "numpy": "2.5.4",
+        "polars": "2.0.0"
+      },
+      "process_peak_rss_bytes": 167682048,
+      "process_wall_seconds": 1.2557137149997288,
+      "python_peak_bytes": 31494561,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.048504513997613685
+    },
+    {
+      "backend": "stdlib",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.46432038599959924,
+      "imported_libraries": {},
+      "process_peak_rss_bytes": 66088960,
+      "process_wall_seconds": 0.9128711920020578,
+      "python_peak_bytes": 21423287,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.0562938219991338
+    },
+    {
+      "backend": "native",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.8015980210002454,
+      "imported_libraries": {
+        "numpy": "2.5.4",
+        "polars": "2.0.0"
+      },
+      "process_peak_rss_bytes": 168390656,
+      "process_wall_seconds": 1.2057523949988536,
+      "python_peak_bytes": 31493242,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.03475337499912712
+    },
+    {
+      "backend": "stdlib",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.5105658020002011,
+      "imported_libraries": {},
+      "process_peak_rss_bytes": 66088960,
+      "process_wall_seconds": 0.9643338860005315,
+      "python_peak_bytes": 21423287,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.05497868799648131
+    },
+    {
+      "backend": "native",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 1.0512100730011298,
+      "imported_libraries": {
+        "numpy": "2.5.4",
+        "polars": "2.0.0"
+      },
+      "process_peak_rss_bytes": 166289408,
+      "process_wall_seconds": 1.5263705839970498,
+      "python_peak_bytes": 31492992,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.04639763199884328
+    },
+    {
+      "backend": "stdlib",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.45761819900144474,
+      "imported_libraries": {},
+      "process_peak_rss_bytes": 66093056,
+      "process_wall_seconds": 0.8713320960014244,
+      "python_peak_bytes": 21423287,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.05292397499943036
+    },
+    {
+      "backend": "native",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.8982482589999563,
+      "imported_libraries": {
+        "numpy": "2.5.4",
+        "polars": "2.0.0"
+      },
+      "process_peak_rss_bytes": 167190528,
+      "process_wall_seconds": 1.2781572829990182,
+      "python_peak_bytes": 31492720,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.0337422400007199
+    },
+    {
+      "backend": "stdlib",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.3219409179982904,
+      "imported_libraries": {},
+      "process_peak_rss_bytes": 66093056,
+      "process_wall_seconds": 0.6527578519999224,
+      "python_peak_bytes": 21423287,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.03540913700271631
+    },
+    {
+      "backend": "native",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.705315088001953,
+      "imported_libraries": {
+        "numpy": "2.5.4",
+        "polars": "2.0.0"
+      },
+      "process_peak_rss_bytes": 167202816,
+      "process_wall_seconds": 1.0886016840013326,
+      "python_peak_bytes": 31494250,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.03329828300047666
+    },
+    {
+      "backend": "stdlib",
+      "canonical_sha256": "12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35",
+      "cold_seconds": 0.4154389799987257,
+      "imported_libraries": {},
+      "process_peak_rss_bytes": 66093056,
+      "process_wall_seconds": 0.8054082910020952,
+      "python_peak_bytes": 21423242,
+      "regions": 8,
+      "rows": 168,
+      "warm_median_seconds": 0.0427605400000175
+    }
+  ],
+  "warm_repeats": 7
+}

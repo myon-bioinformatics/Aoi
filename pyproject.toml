@@ -14,7 +14,7 @@ dev = ["pytest>=9.1.1"]
 package = false
 
 [tool.pytest.ini_options]
-# サイクルデータと PythDRagoras（propositions）は Aoi に残す。AOI_ROOT と PYTHONPATH で固定 SHA の Aoi を指す（.github/workflows/ci.yml）
+# サイクルデータと PythDRagoras（propositions）は Aoi に残す。AOI_ROOT と PYTHONPATH で Aoi の main を指す（.github/workflows/ci.yml）
 pythonpath = ["."]
 testpaths = ["tests"]
 norecursedirs = [".test-deps", "build", "reports"]

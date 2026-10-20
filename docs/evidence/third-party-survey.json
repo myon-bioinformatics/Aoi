@@ -26,6 +26,10 @@
       "line": 119
     },
     {
+      "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
+      "line": 369
+    },
+    {
       "file": "queryu/conftest.py",
       "line": 49
     },
@@ -119,15 +123,19 @@
       "import_sites": 3
     },
     "markdown": {
-      "attribute_uses": 0,
-      "attributes": {},
+      "attribute_uses": 3,
+      "attributes": {
+        "__version__": 3
+      },
       "by_tree": {
         "dragowing": {
-          "attribute_uses": 0,
-          "attributes": {},
+          "attribute_uses": 3,
+          "attributes": {
+            "__version__": 3
+          },
           "dynamic_import_sites": 1,
-          "files": 1,
-          "import_sites": 0
+          "files": 2,
+          "import_sites": 1
         }
       },
       "declared": [
@@ -142,10 +150,10 @@
           "name": "markdown"
         }
       ],
-      "distinct_attributes": 0,
+      "distinct_attributes": 1,
       "dynamic_import_sites": 1,
-      "files": 1,
-      "import_sites": 0
+      "files": 2,
+      "import_sites": 1
     },
     "mcp_toolcall_lab": {
       "attribute_uses": 2,
@@ -172,10 +180,10 @@
       "import_sites": 2
     },
     "numpy": {
-      "attribute_uses": 239,
+      "attribute_uses": 241,
       "attributes": {
-        "__file__": 1,
-        "__version__": 3,
+        "__file__": 2,
+        "__version__": 4,
         "abs": 7,
         "any": 2,
         "arange": 7,
@@ -242,15 +250,17 @@
       },
       "by_tree": {
         "dragowing": {
-          "attribute_uses": 3,
+          "attribute_uses": 5,
           "attributes": {
+            "__file__": 1,
+            "__version__": 1,
             "asarray": 1,
             "flatnonzero": 1,
             "ones": 1
           },
           "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
+          "files": 2,
+          "import_sites": 2
         },
         "pythdragoras": {
           "attribute_uses": 192,
@@ -405,8 +415,8 @@
       ],
       "distinct_attributes": 65,
       "dynamic_import_sites": 0,
-      "files": 14,
-      "import_sites": 14
+      "files": 15,
+      "import_sites": 15
     },
     "ortools": {
       "attribute_uses": 2,
@@ -1150,6 +1160,27 @@
       "file": "dragowing/overlap.py",
       "import_sites": 1,
       "package": "polars",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "__version__": 3
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/scripts/run_stdlib_paths.py",
+      "import_sites": 1,
+      "package": "markdown",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "__file__": 1,
+        "__version__": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/scripts/run_stdlib_paths.py",
+      "import_sites": 1,
+      "package": "numpy",
       "tree": "dragowing"
     },
     {
@@ -2512,16 +2543,6 @@
     },
     {
       "attributes": {
-        "raises": 7
-      },
-      "dynamic_lines": [],
-      "file": "tests/test_fetch_module.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "tests"
-    },
-    {
-      "attributes": {
         "mark.parametrize": 1
       },
       "dynamic_lines": [],
@@ -2581,6 +2602,16 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_research_loop.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 7
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_shared_fetch_module.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

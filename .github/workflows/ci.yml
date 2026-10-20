@@ -198,6 +198,75 @@ jobs:
           python -S nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
           python -S nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --dry-run
 
+  # 1 ジョブの中で、本物の polars で research_digest.collect のバイト列を取り、
+  # polars と polars-runtime-32 を外してから polars_min で同じ collect を動かし、cmp する。
+  polars-min:
+    name: collect (real polars, then polars uninstalled)
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: [changes, resolve-aoi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ needs.resolve-aoi.outputs.sha }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - name: Verify checkout matches resolved SHA
+        env:
+          AOI_SHA: ${{ needs.resolve-aoi.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "resolved Aoi SHA missing" >&2
+            exit 1
+          fi
+          test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - name: Replace Aoi nagoyaction/ with this repository's tree
+        run: |
+          rm -rf .test-deps/aoi/nagoyaction
+          mkdir .test-deps/aoi/nagoyaction
+          git archive HEAD | tar -x -C .test-deps/aoi/nagoyaction
+          git -C .test-deps/aoi add -A nagoyaction
+          test "$(git -C .test-deps/aoi write-tree --prefix=nagoyaction/)" = "$(git rev-parse 'HEAD^{tree}')"
+      - name: Equivalence, AST, proxy trace, absent-polars tracebacks, then record real collect
+        working-directory: .test-deps/aoi
+        run: |
+          uv sync --locked --python 3.12
+          uv run --locked --python 3.12 pytest -q -c pyproject.toml nagoyaction/tests/test_polars_min.py
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py survey
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py analyze
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py generate --out nagoyaction/shrink/polars_min.py --check
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py trace
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py absent
+          uv run --locked --python 3.12 python nagoyaction/shrink/run_collect.py --deps real "$GITHUB_WORKSPACE/reference.json"
+      - name: Reinstall locked runtime deps except polars and its compiled runtime
+        working-directory: .test-deps/aoi
+        run: uv sync --locked --no-dev --no-install-package polars --no-install-package polars-runtime-32 --python 3.12
+      - name: polars is not installed
+        working-directory: .test-deps/aoi
+        run: |
+          if .venv/bin/python -c 'import polars'; then
+            echo "polars is still importable" >&2
+            exit 1
+          fi
+      - name: Same collect on polars_min
+        working-directory: .test-deps/aoi
+        run: .venv/bin/python nagoyaction/shrink/run_collect.py --deps min "$GITHUB_WORKSPACE/minimal.json"
+      - name: Byte-identical to the real polars collect result
+        run: cmp "$GITHUB_WORKSPACE/reference.json" "$GITHUB_WORKSPACE/minimal.json"
+
   failure-identity:
     needs: [changes, test]
     if: (always()) && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')

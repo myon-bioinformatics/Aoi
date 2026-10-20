@@ -112,6 +112,43 @@ def test_only_from_and_unknown_step(tmp_path):
         na.run(p, only=["nope"], runner=runner)
 
 
+def test_until_and_range_selection(tmp_path):
+    p = na.load(write(tmp_path, BASIC))
+    calls = []
+    runner = lambda argv, cwd, check: calls.append(argv[0]) or Done(0)  # noqa: E731
+    na.run(p, until="net", runner=runner)
+    assert calls == ["fetch"]
+    calls.clear()
+    na.run(p, start="net", until="local", runner=runner)
+    assert calls == ["fetch", "echo"]
+    with pytest.raises(na.PipelineError, match="より前"):
+        na.run(p, start="local", until="net", runner=runner)
+
+
+def test_var_overrides_and_invalid_var(tmp_path, capsys):
+    p = na.load(write(tmp_path, BASIC))
+    calls = []
+    runner = lambda argv, cwd, check: calls.append(argv) or Done(0)  # noqa: E731
+    na.run(p, var_overrides={"x": "world"}, runner=runner)
+    assert calls[0] == ["fetch", "world"]
+    assert calls[1] == ["echo", "world"]
+
+    out_text = na.show(p, var_overrides={"x": "custom"})
+    assert "x = custom" in out_text
+    assert "command: fetch custom" in out_text
+
+    with pytest.raises(na.PipelineError, match="KEY=VALUE"):
+        na._parse_override_vars(["invalid_format"])
+
+    with pytest.raises(na.PipelineError, match="空"):
+        na._parse_override_vars(["=val"])
+
+    assert na.main(["run", str(p["_path"]), "-v", "x=cli_override", "--dry-run"]) == 0
+    captured = capsys.readouterr().out
+    assert "[dry-run] net: fetch cli_override" in captured
+    assert "[dry-run] local: echo cli_override" in captured
+
+
 def test_undefined_variable_is_an_error(tmp_path):
     p = na.load(write(tmp_path, BASIC.replace("{x}", "{y}")))
     with pytest.raises(na.PipelineError, match="y"):

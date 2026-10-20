@@ -26,8 +26,11 @@
 ```bash
 python nagoyaction.py doctor <pipeline.toml>            # 実行前の確認
 python nagoyaction.py show   <pipeline.toml>            # パイプライン構造の表示（--json も可）
+python nagoyaction.py show   <pipeline.toml> -v x=val   # 変数を上書きして表示
 python nagoyaction.py run    <pipeline.toml>            # 実行
 python nagoyaction.py run    <pipeline.toml> --offline  # 取得しない
+python nagoyaction.py run    <pipeline.toml> --from a --until b  # 指定範囲の手順だけ実行
+python nagoyaction.py run    <pipeline.toml> -v x=val   # 変数をコマンドラインから上書き
 python nagoyaction.py run    <pipeline.toml> --dry-run  # 何をするかだけ表示
 ```
 

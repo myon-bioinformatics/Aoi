@@ -161,6 +161,24 @@ def test_undefined_variable_is_an_error(tmp_path):
         na.run(p, dry_run=True)
 
 
+def test_chaos_resilience_runner_and_cli(tmp_path, capsys):
+    p = na.load(write(tmp_path, BASIC))
+
+    report = na.chaos(p, trials=5, seed=123)
+    assert "Chaos Resilience Analysis Report" in report
+    assert "Seed: 123" in report
+    assert "Resilience Rate:" in report
+
+    # Test CLI with --json
+    assert na.main(["chaos", str(p["_path"]), "--trials", "5", "--seed", "123", "--json"]) == 0
+    captured = capsys.readouterr().out
+    data = json.loads(captured)
+    assert data["pipeline"] == "t"
+    assert data["seed"] == 123
+    assert data["total_trials"] == 5
+    assert len(data["trials"]) == 5
+
+
 def test_troubleshoot_pattern_matching_receipt_and_cli(tmp_path, capsys):
     # Test CUDA pattern matching
     cuda_out = na.troubleshoot(error_text="CUDA out of memory error in PyTorch model")

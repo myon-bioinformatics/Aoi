@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import random
 import shutil
 import subprocess
 import sys
@@ -320,6 +321,74 @@ TROUBLESHOOT_PATTERNS = [
 ]
 
 
+def chaos(p: dict, *, trials: int = 10, seed: int = 42, offline: bool = True, json_output: bool = False) -> str:
+    """環境の揺らぎ（ツール未インストール・欠落等）をシード制御のもとで擬似的に発生させ、パイプラインの耐性を検証する。"""
+    rng = random.Random(seed)
+    req_tools = p.get("requires", {}).get("tools", [])
+    opt_tools = p.get("requires", {}).get("optional", [])
+    all_tools = req_tools + opt_tools
+
+    trial_results = []
+    failure_modes = {}
+
+    for t in range(1, trials + 1):
+        sim_missing = {tool for tool in all_tools if rng.random() < 0.25}
+        mock_which = lambda tool, sim=sim_missing: None if tool in sim else f"/usr/bin/{tool}"
+
+        checks = doctor(p, offline=offline, which=mock_which)
+        fails = [c for c in checks if c["level"] == "fail"]
+        passed = len(fails) == 0
+
+        hints = [c["hint"] for c in checks if c.get("hint")]
+        for f in fails:
+            chk = f["check"]
+            failure_modes[chk] = failure_modes.get(chk, 0) + 1
+
+        trial_results.append({
+            "trial": t,
+            "passed": passed,
+            "simulated_missing_tools": sorted(sim_missing),
+            "failed_checks": [f["check"] for f in fails],
+            "hints": hints,
+        })
+
+    success_count = sum(1 for tr in trial_results if tr["passed"])
+    resilience_rate = success_count / trials if trials > 0 else 0.0
+
+    report_data = {
+        "pipeline": p.get("name", ""),
+        "seed": seed,
+        "total_trials": trials,
+        "success_count": success_count,
+        "resilience_rate": round(resilience_rate, 4),
+        "failure_mode_counts": failure_modes,
+        "trials": trial_results,
+    }
+
+    if json_output:
+        return json.dumps(report_data, ensure_ascii=False, indent=2)
+
+    lines = [
+        f"Chaos Resilience Analysis Report for '{report_data['pipeline']}':",
+        f"  Seed: {seed} | Total Trials: {trials}",
+        f"  Resilience Rate: {success_count}/{trials} ({resilience_rate * 100:.1f}%)",
+        "  Encountered Failure Modes:",
+    ]
+    if failure_modes:
+        for mode, count in sorted(failure_modes.items(), key=lambda x: -x[1]):
+            lines.append(f"    • {mode}: {count} time(s)")
+    else:
+        lines.append("    • None (All trials passed)")
+
+    lines.append("\n  Trial Summaries:")
+    for tr in trial_results:
+        status = "PASSED" if tr["passed"] else f"FAILED ({', '.join(tr['failed_checks'])})"
+        missing_str = ", ".join(tr["simulated_missing_tools"]) or "none"
+        lines.append(f"    Trial {tr['trial']:02d}: [{status}] | simulated missing: {missing_str}")
+
+    return "\n".join(lines)
+
+
 def troubleshoot(error_text: str = "", exit_code: int | None = None, receipt_path: Path | None = None,
                  step: str | None = None, json_output: bool = False) -> str:
     """エラーメッセージや受領記録から失敗原因を解析し、改善策とコミライブラリ/参照先を提案する。"""
@@ -436,6 +505,12 @@ def main(argv=None) -> int:
     t.add_argument("--receipt", type=Path, default=None, help="受領記録 (JSONL)")
     t.add_argument("--step", default=None, help="失敗したステップ名")
     t.add_argument("--json", dest="json_output", action="store_true", help="JSON 形式で出力")
+    c = sub.add_parser("chaos", help="シード制御のもとで環境の揺らぎ（ツール未インストール・欠落等）を模擬し、パイプラインの耐性を検証する")
+    c.add_argument("pipeline", type=Path)
+    c.add_argument("--trials", type=int, default=10, help="試行回数 (既定: 10)")
+    c.add_argument("--seed", type=int, default=42, help="乱数シード (既定: 42)")
+    c.add_argument("--offline", action="store_true", help="オフライン環境を評価する")
+    c.add_argument("--json", dest="json_output", action="store_true", help="JSON 形式で出力")
     r = sub.add_parser("run")
     r.add_argument("pipeline", type=Path)
     r.add_argument("--offline", action="store_true")
@@ -452,6 +527,9 @@ def main(argv=None) -> int:
 
     try:
         p = load(args.pipeline)
+        if args.cmd == "chaos":
+            print(chaos(p, trials=args.trials, seed=args.seed, offline=args.offline, json_output=args.json_output))
+            return 0
         if args.cmd == "show":
             print(show(p, json_output=args.json_output))
             return 0

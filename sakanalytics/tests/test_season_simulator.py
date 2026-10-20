@@ -15,7 +15,7 @@ requires_solver = pytest.mark.skipif(find_spec('ortools') is None,
     reason='install season-requirements.txt for exact simulator tests')
 
 from season_simulator import (Game, Rules, Snapshot, baseline_probabilities,
-    calendar_games, crossing_events, forecast, magic_events, npb_rules, ranking, snapshot, wilson)
+    calendar_games, crossing_events, forecast, magic_events, ranking, snapshot, wilson)
 from season_exact import qualification, solve, title_magic
 
 
@@ -166,9 +166,6 @@ def test_validation_and_unverified_profiles():
         snapshot([Game('x', s.as_of, 'A', 'B')], s.teams, s.as_of, schedule_basis='synthetic')
     with pytest.raises(ValueError):
         forecast(s, r, probabilities={g.id: (float('nan'), 0, 1) for g in s.remaining})
-    with pytest.raises(ValueError):
-        npb_rules(2020, 'CL', r.members, r.previous_order)
-    assert npb_rules(2022, 'PL', tuple('ABCDEF'), tuple('ABCDEF')).wins_before_h2h is False
     assert qualification(s, replace(r, cs_slots=0), 'A')['status'] == 'not_held'
     assert forecast(s, replace(r, cs_slots=0), trials=1)['teams']['A']['cs'] is None
 

@@ -282,8 +282,9 @@ def test_trusted_canary_bootstrap_is_immutable():
     for action in uses:
         assert re.fullmatch(r"[^@\s]+@[0-9a-f]{40}", action), action
     assert "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97" in uses
-    installs = re.findall(r"^\s*python -m pip install (.+)$", text, re.MULTILINE)
-    assert installs == ["'uv==0.13.1'"]
+    assert "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884" in uses
+    assert 'version: "0.13.3"' in text
+    assert "pip install" not in text
     assert "uv sync --frozen" in text
 
 

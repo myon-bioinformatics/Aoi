@@ -38,7 +38,7 @@ uv run python blueprobe.py --source <取得元のモジュール名> --cache <Qu
 
 | ファイル | 役割 |
 |---|---|
-| `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`）、DOM パターン表、`html.parser` の HTML 木 |
+| `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`）、DOM パターン表（`--list-patterns`）、文書分類（`classify_document` / `--classify`）、`html.parser` の HTML 木。詳しくは [docs/dom_patterns.md](docs/dom_patterns.md) |
 | `html_source.py` | 保存HTMLを、信頼したオフライン抽出関数へ渡す汎用の取得元（`HtmlSource`） |
 | `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
 | `heading_observations.py` | 保存済み HTML の見出し階層（`<h1>`〜`<h6>`）とランドマーク構造の観測 |

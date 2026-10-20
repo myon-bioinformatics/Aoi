@@ -9,6 +9,10 @@ import pytest
 def _root() -> Path:
     # Aoi の場所は AOI_ROOT で受け取る（Aoi の中では Aoi の conftest.py が入れる）。ここでは推定しない
     value = os.environ.get("AOI_ROOT")
+    here = Path(__file__).resolve().parent
+    if not value and (here.parent / "aoi_paths.py").is_file():
+        # Aoi に subtree として埋め込まれ、子のディレクトリだけで pytest を動かしたとき（rootdir が子になる）
+        value = str(here.parent)
     if not value:
         raise pytest.UsageError("AOI_ROOT=<Aoi のルート> を渡す（.github/workflows/ci.yml と同じ）")
     root = Path(value).expanduser().resolve()

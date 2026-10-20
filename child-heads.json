@@ -32,7 +32,7 @@
         "subtree_prefix": "pythdragoras"
       },
       "repository_id": 1423045231,
-      "sha": "b35ab6ee3cc5d71eed946c7292914a0fab0749ba"
+      "sha": "c10c8c52ac549f587cc03f58f2dd37496f2b4523"
     },
     "myon-bioinformatics/QueRyu": {
       "optional": {
@@ -48,7 +48,7 @@
         "subtree_prefix": "sakanalytics"
       },
       "repository_id": 1423489570,
-      "sha": "6477ebf21b407061bb028dec47c2cb01f7f0c229"
+      "sha": "e527554ea58b3f73a0854d1a13c8edbec48be47a"
     }
   }
 }

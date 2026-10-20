@@ -67,6 +67,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## QueRyu
 
+2026-10-20: Aoi の配置と NPB 固有の表・規則を子から外しました（案A）。QueRyu #17 `079d502`、DRAgoWing #9 `8eb7d9c`、PythDRagoras #16 `bd5690f`、SakAnalytics #10 `44f95f6`、NagoyAction #11 `1181e43` を、それぞれ squash なしの `git subtree pull` で取り込みました。子の `aoi_paths.py` の写しはなくなり、`child-heads.json` の `mirrored_from_parent` も外しました。Aoi の配置は直下の `aoi_paths.py`、NPB の設定（球団表・並び順・月の key・年間表の前提・CS 規則のプリセット）は直下の `aoi_npb.py` だけが持ち、子へ引数で渡します。`annual_scope.py` は Aoi の直下、`season_verify_2022.py` は `scripts/` に移しました。`pythdragoras/aoi_layout.py`・`sakanalytics/aoi_layout.py` は、ソースの SHA-256 を証跡で固定した CLI（littlebit、proposition_seed_audit）のためだけに残っています。
+
 2026-10-20: QueRyu #16 の merge `fcadaa9aaab30292703459758eae481d0f018f2d` を、squash なしの `git subtree pull --prefix=queryu` で取り込みました。`pattern_postprocess` は `from blueprobe import detect_pattern, get_pattern` でパターンを読みます。`queryu/` の tree は登録した SHA の tree と同一です。
 
 2026-10-20: QueRyu #14 の merge `b8b2983edde039f010be75e40944f750ccfd9ce7` を、squash なしの `git subtree pull --prefix=queryu` で取り込みました。`queryu/` の tree は登録した SHA の tree と同一です。この版は import 時に BlueProbe の `dom_patterns` を読むため、BlueProbe main `563d84488a57efd3bca2d89c97c0a72759ab8ee5` も同じ方法で `blueprobe/` に取り込みました。DRAgoWing・PythDRagoras・SakAnalytics は drift のみなので登録 SHA は変えていません。

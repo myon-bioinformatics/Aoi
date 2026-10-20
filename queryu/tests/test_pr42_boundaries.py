@@ -9,6 +9,9 @@ import ask
 import queryu
 from queryu import Cache, PoliteFetcher, acquisition_plan, load_frozen, main, save_frozen
 
+MONTH_KEY = r"(?P<year>\d{4})_(?P<month>\d{2})"  # npb_calendar の key（年_月）。Aoi の pipeline と同じ
+
+
 
 @pytest.mark.parametrize("year", [26, 1899, 2101])
 @pytest.mark.parametrize("plan", [False, True])
@@ -16,7 +19,7 @@ def test_invalid_freeze_never_changes_state(tmp_path, year, plan):
     frozen = tmp_path / "frozen.json"
     frozen.write_text('{"seasons": [2025]}\n')
     before = frozen.read_bytes()
-    argv = ["--source", "npb_calendar", "--years", "2026", "--cache", str(tmp_path / "cache"),
+    argv = ["--source", "npb_calendar", "--month-key", MONTH_KEY, "--years", "2026", "--cache", str(tmp_path / "cache"),
             "--frozen", str(frozen), "--freeze", str(year), "--out", str(tmp_path / "games.jsonl"), "--offline"]
     if plan:
         argv.append("--plan")
@@ -45,7 +48,7 @@ def test_save_frozen_accepts_both_contract_endpoints(tmp_path):
 def test_missing_output_does_not_persist_freeze(tmp_path):
     frozen = tmp_path / "frozen.json"
     with pytest.raises(SystemExit) as error:
-        main(["--source", "npb_calendar", "--years", "2026", "--cache", str(tmp_path / "cache"),
+        main(["--source", "npb_calendar", "--month-key", MONTH_KEY, "--years", "2026", "--cache", str(tmp_path / "cache"),
               "--frozen", str(frozen), "--freeze", "2026"])
     assert error.value.code == 2
     assert not frozen.exists()
@@ -54,7 +57,7 @@ def test_missing_output_does_not_persist_freeze(tmp_path):
 def test_reversed_year_range_does_not_persist_freeze(tmp_path):
     frozen = tmp_path / "frozen.json"
     with pytest.raises(SystemExit) as error:
-        main(["--source", "npb_calendar", "--years", "2027-2026", "--cache", str(tmp_path / "cache"),
+        main(["--source", "npb_calendar", "--month-key", MONTH_KEY, "--years", "2027-2026", "--cache", str(tmp_path / "cache"),
               "--frozen", str(frozen), "--freeze", "2026", "--out", str(tmp_path / "games.jsonl"), "--offline"])
     assert error.value.code == 2
     assert not frozen.exists()
@@ -64,7 +67,7 @@ def test_reversed_year_range_does_not_persist_freeze(tmp_path):
 def test_invalid_wait_rejected_before_plan_or_state_write(tmp_path, wait):
     frozen = tmp_path / "frozen.json"
     with pytest.raises(SystemExit) as error:
-        main(["--source", "npb_calendar", "--years", "2026", "--cache", str(tmp_path / "cache"),
+        main(["--source", "npb_calendar", "--month-key", MONTH_KEY, "--years", "2026", "--cache", str(tmp_path / "cache"),
               "--frozen", str(frozen), "--freeze", "2026", "--wait", wait, "--plan"])
     assert error.value.code == 2
     assert not frozen.exists()
@@ -116,7 +119,7 @@ def test_offline_plan_has_no_http_or_sleep_and_reports_missing(tmp_path, monkeyp
     cache = Cache(tmp_path / "cache")
     cache.put("2026_03", "https://example.test/march", "2026", 200, b"cached", {"etag": '"v1"'})
     monkeypatch.setattr(queryu, "UrllibClient", lambda **kw: pytest.fail("offline plan created a client"))
-    assert main(["--source", "npb_calendar", "--years", "2026", "--cache", str(cache.root),
+    assert main(["--source", "npb_calendar", "--month-key", MONTH_KEY, "--years", "2026", "--cache", str(cache.root),
                  "--frozen", str(tmp_path / "frozen.json"), "--today", "2026-04-01", "--offline", "--plan"]) == 0
     output = capsys.readouterr().out
     assert "キャッシュ済み（再確認しない）: 1" in output
@@ -128,7 +131,7 @@ def test_offline_plan_has_no_http_or_sleep_and_reports_missing(tmp_path, monkeyp
 @pytest.mark.parametrize("today,kept", [("2026-12-31", ["2026_12"]), ("2027-01-01", ["2026_12", "2027_01"])])
 def test_future_filter_at_year_boundary_keeps_non_month_keys(today, kept):
     pages = [(key, "u", key[:4]) for key in ["2026_12", "2027_01", "2027_03", "2027_c"]]
-    actual, future = queryu.split_future_months(pages, dt.date.fromisoformat(today))
+    actual, future = queryu.split_future_months(pages, dt.date.fromisoformat(today), MONTH_KEY)
     assert [p[0] for p in actual] == [*kept, "2027_c"]
     assert len(actual) + len(future) == len(pages)
 

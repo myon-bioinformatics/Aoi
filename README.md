@@ -60,7 +60,7 @@ GitHub Actions のワークフローは、このコマンドを呼ぶだけに�
 
 ワークフローとテストを、GitHub Actions の完了を待たずに手元で検査する。
 
-`python localci.py run` は `.github/workflows` を actionlint で検査する。shellcheck が PATH にあれば、actionlint は `run:` ブロックにもそれを使う。actionlint は実行のたびに rhysd/actionlint の最新リリースを取り、公開された checksums と GitHub の digest を確かめる（版は固定しない。取れなければ `go run ...@latest`）。同時に、参照先リポジトリの main の SHA を `git ls-remote` と GitHub API の repository id 照合で解決し、`.localci/refs.env` に書く。`uses:` のピンが各アクションの最新リリースタグのコミットと一致するかは、既定では報告だけする。
+`python localci.py run` は `.github/workflows` を actionlint で検査する。shellcheck が PATH にあれば、actionlint は `run:` ブロックにもそれを使う。actionlint は実行のたびに rhysd/actionlint の最新リリースを解決し、公開された checksums と GitHub の digest を確かめる。版はソースに固定しない。解決したタグ、資産名、検証した sha256 を出力と `.localci/refs.env` に残し、`GITHUB_STEP_SUMMARY` があれば解決した参照先 SHA の隣に書く。GitHub Actions 上では取得か検証に失敗したらそこで止まり、Go には戻さない。手元では、タグを解決できたときだけ `go run github.com/rhysd/actionlint/cmd/actionlint@<tag>` に戻る。同時に、参照先リポジトリの main の SHA を `git ls-remote` と GitHub API の repository id 照合で解決し、`.localci/refs.env` に書く。`uses:` のピンが各アクションの最新リリースタグのコミットと一致するかは、既定では報告だけする。
 
 ```bash
 python localci.py run                         # Aoi の tests/ 全体を一巡（シャードは1つ）

@@ -24,6 +24,10 @@ pytest では `-p localci_pytest` が同じ差し替えを monkeypatch する。
 SHA はソースに固定しない。`uses:` のピンが各アクションの最新リリースタグの
 コミットと一致するかは、既定では報告だけする。`--strict` で失敗にする。
 
+actionlint の版もソースに固定しない。実行のたびに最新リリースを解決し、
+タグ・資産名・検証した sha256 を記録する。GitHub Actions では取得か検証に
+失敗したら停止する。手元では、解決済みのタグだけ `go run ...@<tag>` に戻る。
+
 標準ライブラリだけ（Python 3.11+）。
 """
 
@@ -104,6 +108,15 @@ class Resolved:
     sha: str
     how: str
     repository_id: int
+
+
+@dataclass(frozen=True)
+class ActionlintRecord:
+    tag: str
+    asset: str
+    sha256: str
+    binary: Path | None
+    via: str
 
 
 @dataclass
@@ -425,6 +438,52 @@ def format_github_output(resolved: list[Resolved]) -> str:
     return "\n".join(lines) + ("\n" if lines else "")
 
 
+def running_in_github_actions() -> bool:
+    return os.environ.get("GITHUB_ACTIONS") == "true"
+
+
+def format_actionlint_line(record: ActionlintRecord) -> str:
+    sha = record.sha256 if record.sha256 else "unverified"
+    via = f"go@{record.tag}" if record.via == "go" and record.tag else record.via
+    return f"actionlint tag={record.tag} asset={record.asset} sha256={sha} via={via}"
+
+
+def format_actionlint_env(record: ActionlintRecord) -> str:
+    lines = [f"ACTIONLINT_TAG={record.tag}", f"ACTIONLINT_ASSET={record.asset}"]
+    if record.sha256:
+        lines.append(f"ACTIONLINT_SHA256={record.sha256}")
+    return "\n".join(lines) + "\n"
+
+
+def format_run_summary(resolved: list[Resolved], actionlint: ActionlintRecord | None) -> str:
+    """解決した参照先 SHA と、その隣に actionlint の解決結果を書く。"""
+    lines = ["## Resolved repositories"]
+    if not resolved:
+        lines.append("No repository SHA was resolved.")
+    for item in resolved:
+        lines.append(f"- `{item.source.repo}` `{item.sha}` ({item.how}), repository id `{item.repository_id}`")
+    lines.append("")
+    lines.append("## actionlint")
+    if actionlint is None or not actionlint.tag:
+        lines.append("actionlint was not resolved.")
+    else:
+        lines.append(f"- Tag: `{actionlint.tag}`")
+        lines.append(f"- Asset: `{actionlint.asset}`")
+        if actionlint.sha256:
+            lines.append(f"- sha256: `{actionlint.sha256}`")
+        else:
+            lines.append("- sha256: not verified")
+        via = f"go@{actionlint.tag}" if actionlint.via == "go" else actionlint.via
+        lines.append(f"- via: `{via}`")
+    return "\n".join(lines) + "\n"
+
+
+def append_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(text)
+
+
 def format_step_summary(resolved: list[Resolved], mode: str) -> str:
     aoi = next((item for item in resolved if item.source.key == "aoi"), None)
     lines = ["## Aoi source"]
@@ -534,9 +593,65 @@ def extract_actionlint(archive: bytes, filename: str) -> bytes:
         return extracted.read()
 
 
+_ACTIONLINT_RECORD = "actionlint.record.json"
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _read_actionlint_record(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    sha = str(data.get("sha256", "")).lower()
+    if not _HEX64.fullmatch(sha):
+        return None
+    return {"tag": str(data.get("tag", "")), "asset": str(data.get("asset", "")), "sha256": sha}
+
+
+def _install_actionlint(cache: Path, release: dict, tag: str, version: str, filename: str, *,
+                        token: str, opener) -> ActionlintRecord:
+    dest = cache / "actionlint" / version / ("actionlint.exe" if filename.endswith(".zip") else "actionlint")
+    record_path = dest.parent / _ACTIONLINT_RECORD
+    saved = _read_actionlint_record(record_path)
+    if dest.is_file() and os.access(dest, os.X_OK) and saved and saved["tag"] == tag and saved["asset"] == filename:
+        return ActionlintRecord(tag, filename, saved["sha256"], dest, "release")
+    assets = {item.get("name"): item for item in release.get("assets", [])}
+    archive_asset = assets.get(filename)
+    checksum_name = f"actionlint_{version}_checksums.txt"
+    checksum_asset = assets.get(checksum_name)
+    if not archive_asset or not checksum_asset:
+        raise LocalCIError(f"actionlint release is missing {filename}")
+    archive = fetch_bytes(archive_asset["browser_download_url"], token, opener)
+    checksum_bytes = fetch_bytes(checksum_asset["browser_download_url"], token, opener)
+    archive_digest = _asset_digest(archive_asset)
+    checksum_digest = _asset_digest(checksum_asset)
+    if archive_digest:
+        verify_bytes(archive, archive_digest, filename)
+    if checksum_digest:
+        verify_bytes(checksum_bytes, checksum_digest, checksum_name)
+    expected = checksum_for(checksum_bytes.decode("utf-8", "replace"), filename).lower()
+    verify_bytes(archive, expected, filename)
+    payload = extract_actionlint(archive, filename)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(payload)
+    dest.chmod(0o755)
+    record_path.write_text(
+        json.dumps({"tag": tag, "asset": filename, "sha256": expected}) + "\n",
+        encoding="utf-8",
+    )
+    return ActionlintRecord(tag, filename, expected, dest, "release")
+
+
 def ensure_actionlint(cache: Path, *, token: str = "", opener=urllib.request.urlopen,
-                      system: str | None = None, machine: str | None = None) -> Path:
-    """最新リリースの actionlint を取得し、checksums.txt と API digest で確かめる。版は固定しない。"""
+                      system: str | None = None, machine: str | None = None) -> ActionlintRecord:
+    """最新リリースを解決する。版はソースに固定しない。
+
+    取得と checksum/digest の検証に成功した sha256 だけを記録する。
+    GitHub Actions では失敗したらそこで止まる。手元では、タグを解決できたときだけ
+    Go のそのタグへ戻す（`@latest` には戻さない）。
+    """
     system = system or sys.platform
     if system == "linux":
         system = "Linux"
@@ -554,38 +669,29 @@ def ensure_actionlint(cache: Path, *, token: str = "", opener=urllib.request.url
     version = tag[1:] if tag.startswith("v") else tag
     if not version:
         raise LocalCIError("actionlint release has no tag")
-    filename = actionlint_archive(version, system, machine)
-    dest = cache / "actionlint" / version / ("actionlint.exe" if filename.endswith(".zip") else "actionlint")
-    if dest.is_file() and os.access(dest, os.X_OK):
-        return dest
-    assets = {item.get("name"): item for item in release.get("assets", [])}
-    archive_asset = assets.get(filename)
-    checksum_name = f"actionlint_{version}_checksums.txt"
-    checksum_asset = assets.get(checksum_name)
-    if not archive_asset or not checksum_asset:
-        raise LocalCIError(f"actionlint release is missing {filename}")
-    archive = fetch_bytes(archive_asset["browser_download_url"], token, opener)
-    checksum_bytes = fetch_bytes(checksum_asset["browser_download_url"], token, opener)
-    archive_digest = _asset_digest(archive_asset)
-    checksum_digest = _asset_digest(checksum_asset)
-    if archive_digest:
-        verify_bytes(archive, archive_digest, filename)
-    if checksum_digest:
-        verify_bytes(checksum_bytes, checksum_digest, checksum_name)
-    expected = checksum_for(checksum_bytes.decode("utf-8", "replace"), filename)
-    verify_bytes(archive, expected, filename)
-    payload = extract_actionlint(archive, filename)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_bytes(payload)
-    dest.chmod(0o755)
-    return dest
+    try:
+        filename = actionlint_archive(version, system, machine)
+        return _install_actionlint(cache, release, tag, version, filename, token=token, opener=opener)
+    except (LocalCIError, OSError) as exc:
+        if running_in_github_actions():
+            raise LocalCIError(f"actionlint {tag}: {exc}") from exc
+        asset = ""
+        try:
+            asset = actionlint_archive(version, system, machine)
+        except LocalCIError:
+            asset = ""
+        return ActionlintRecord(tag, asset, "", None, "go")
 
 
-def actionlint_argv(binary: Path | None, files: list[str], shellcheck: str | None) -> list[str]:
+def actionlint_argv(binary: Path | None, files: list[str], shellcheck: str | None,
+                    go_ref: str | None = None) -> list[str]:
     if binary is not None:
         cmd = [str(binary)]
+    elif go_ref and go_ref not in {"latest", "@latest"}:
+        ref = go_ref[1:] if go_ref.startswith("@") else go_ref
+        cmd = ["go", "run", f"github.com/rhysd/actionlint/cmd/actionlint@{ref}"]
     else:
-        cmd = ["go", "run", "github.com/rhysd/actionlint/cmd/actionlint@latest"]
+        raise LocalCIError("actionlint tag was not resolved")
     if shellcheck:
         cmd.extend(["-shellcheck", shellcheck])
     else:
@@ -889,6 +995,24 @@ class Session:
         self.resolved: dict[str, Resolved] = {}
         self.releases: dict[str, tuple[str, str] | None] = {}
         self.shellcheck = shellcheck_path()
+        self.actionlint_record: ActionlintRecord | None = None
+
+    def prepare_actionlint(self) -> ActionlintRecord | None:
+        if self.actionlint_record is not None:
+            return self.actionlint_record
+        if self.actionlint is None:
+            return None
+        if isinstance(self.actionlint, Path):
+            self.actionlint_record = ActionlintRecord("", "", "", self.actionlint, "path")
+            return self.actionlint_record
+        record = ensure_actionlint(self.root / ".localci", token=self.token, opener=self.opener)
+        if record.via == "go":
+            if not record.tag:
+                raise LocalCIError("actionlint tag was not resolved")
+            if shutil.which("go") is None:
+                raise LocalCIError(f"actionlint {record.tag} の取得に失敗し、go も PATH に無い")
+        self.actionlint_record = record
+        return record
 
     def execute(self, check: Check) -> Outcome:
         if check.kind == "resolve":
@@ -937,8 +1061,10 @@ class Session:
         return Outcome("fail" if failed else "pass", detail, [])
 
     def _actionlint(self, check: Check) -> Outcome:
-        binary = self._binary()
-        argv = actionlint_argv(binary, [str(self.root / check.target)], self.shellcheck)
+        record = self.prepare_actionlint()
+        binary = None if record is None else record.binary
+        go_ref = record.tag if record is not None and record.via == "go" else None
+        argv = actionlint_argv(binary, [str(self.root / check.target)], self.shellcheck, go_ref=go_ref)
         try:
             out = self.runner(argv, cwd=self.root, capture_output=True, text=True, check=False, timeout=180)
         except (OSError, subprocess.SubprocessError) as exc:
@@ -948,19 +1074,6 @@ class Session:
         if out.returncode == 0:
             return Outcome("pass", f"actionlint ok ({tool})", [])
         return Outcome("fail", detail or f"actionlint exit {out.returncode} ({tool})", [])
-
-    def _binary(self) -> Path | None:
-        if self.actionlint is None:
-            return None
-        if isinstance(self.actionlint, Path):
-            return self.actionlint
-        try:
-            return ensure_actionlint(self.root / ".localci", token=self.token, opener=self.opener)
-        except (LocalCIError, OSError) as exc:
-            if shutil.which("go"):
-                self.actionlint = None
-                return None
-            raise LocalCIError(f"actionlint: {exc}") from exc
 
 
 def iter_work(shard: list[Check], coalesce_pytest: bool):
@@ -1090,6 +1203,11 @@ def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, st
         root, token=token, strict=strict, runner=runner, opener=opener,
         aoi_resolved=aoi_resolved, aoi_ref=aoi_ref,
     )
+    actionlint_record = None
+    if any(check.kind == "actionlint" for check in checks):
+        actionlint_record = session.prepare_actionlint()
+        if actionlint_record is not None and actionlint_record.tag:
+            emit(format_actionlint_line(actionlint_record))
 
     def execute(check: Check, cseed: int) -> Outcome:
         del cseed
@@ -1102,11 +1220,18 @@ def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, st
         shards=shards, master_seed=master, execute=execute, keep_going=keep_going, emit=emit,
         execute_pytest=None if skip_pytest else execute_pytest,
     )
-    if session.resolved:
-        path = env_file or (root / ".localci" / "refs.env")
-        write_env_file(path, list(session.resolved.values()))
+    recorded = list(session.resolved.values())
+    path = env_file or (root / ".localci" / "refs.env")
+    if recorded:
+        write_env_file(path, recorded)
         emit(f"refs: {path}")
-        emit(format_env(list(session.resolved.values())).rstrip())
+        emit(format_env(recorded).rstrip())
+    if actionlint_record is not None and actionlint_record.tag:
+        append_text(path, format_actionlint_env(actionlint_record))
+        emit(format_actionlint_line(actionlint_record))
+    summary = os.environ.get("GITHUB_STEP_SUMMARY", "")
+    if summary and (recorded or (actionlint_record is not None and actionlint_record.tag)):
+        append_text(Path(summary), format_run_summary(recorded, actionlint_record))
     passed = report.passed_rounds
     emit("=== summary ===")
     emit(f"seed: {master}")

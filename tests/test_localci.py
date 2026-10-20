@@ -319,7 +319,11 @@ def test_env_file_github_output_and_provenance(tmp_path, monkeypatch):
     assert f"AOI_SHA={SHA_A}" in (tmp_path / "refs.env").read_text(encoding="utf-8")
 
 
-def test_checksum_and_actionlint_cache(tmp_path):
+_LATEST = "https://api.github.com/repos/rhysd/actionlint/releases/latest"
+_ASSET = "actionlint_9.9.9_linux_amd64.tar.gz"
+
+
+def _actionlint_blob():
     payload = b"#!/bin/sh\necho actionlint\n"
     archive = io.BytesIO()
     with tarfile.open(fileobj=archive, mode="w:gz") as tar:
@@ -329,31 +333,147 @@ def test_checksum_and_actionlint_cache(tmp_path):
         tar.addfile(info, io.BytesIO(payload))
     blob = archive.getvalue()
     digest = hashlib.sha256(blob).hexdigest()
-    checksums = f"{digest}  actionlint_9.9.9_linux_amd64.tar.gz\n".encode()
+    checksums = f"{digest}  {_ASSET}\n".encode()
     checksum_digest = hashlib.sha256(checksums).hexdigest()
     release = {"tag_name": "v9.9.9", "assets": [
-        {"name": "actionlint_9.9.9_linux_amd64.tar.gz", "browser_download_url": "https://example.test/a.tar.gz", "digest": "sha256:" + digest},
+        {"name": _ASSET, "browser_download_url": "https://example.test/a.tar.gz", "digest": "sha256:" + digest},
         {"name": "actionlint_9.9.9_checksums.txt", "browser_download_url": "https://example.test/checksums.txt", "digest": "sha256:" + checksum_digest},
     ]}
     routes = {
-        "https://api.github.com/repos/rhysd/actionlint/releases/latest": release,
+        _LATEST: release,
         "https://example.test/a.tar.gz": blob,
         "https://example.test/checksums.txt": checksums,
     }
+    return payload, digest, routes
+
+
+def test_checksum_and_actionlint_cache(tmp_path, monkeypatch):
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    payload, digest, routes = _actionlint_blob()
     opener = Opener(routes)
-    path = localci.ensure_actionlint(tmp_path, opener=opener, system="Linux", machine="x86_64")
-    assert path.read_bytes() == payload
+    record = localci.ensure_actionlint(tmp_path, opener=opener, system="Linux", machine="x86_64")
+    assert record.binary.read_bytes() == payload
+    assert record.tag == "v9.9.9"
+    assert record.asset == _ASSET
+    assert record.sha256 == digest
+    assert record.via == "release"
     before = len(opener.urls)
-    assert localci.ensure_actionlint(tmp_path, opener=opener, system="Linux", machine="x86_64") == path
-    assert opener.urls[before:] == ["https://api.github.com/repos/rhysd/actionlint/releases/latest"]
+    again = localci.ensure_actionlint(tmp_path, opener=opener, system="Linux", machine="x86_64")
+    assert again.binary == record.binary
+    assert again.sha256 == digest
+    assert opener.urls[before:] == [_LATEST]
     routes["https://example.test/a.tar.gz"] = b"tampered"
     with pytest.raises(localci.LocalCIError, match="checksum mismatch"):
         localci.ensure_actionlint(tmp_path / "other", opener=Opener(routes), system="Linux", machine="x86_64")
-    assert localci.checksum_for(digest + " *actionlint_9.9.9_linux_amd64.tar.gz\n", "actionlint_9.9.9_linux_amd64.tar.gz") == digest
-    argv = localci.actionlint_argv(None, ["ci.yml"], None)
-    assert argv[:3] == ["go", "run", "github.com/rhysd/actionlint/cmd/actionlint@latest"]
+    assert localci.checksum_for(digest + " *" + _ASSET + "\n", _ASSET) == digest
+    with pytest.raises(localci.LocalCIError, match="tag was not resolved"):
+        localci.actionlint_argv(None, ["ci.yml"], None)
+    argv = localci.actionlint_argv(None, ["ci.yml"], None, go_ref="v9.9.9")
+    assert argv[:3] == ["go", "run", "github.com/rhysd/actionlint/cmd/actionlint@v9.9.9"]
+    assert "@latest" not in " ".join(argv)
     assert "-shellcheck=" in argv
-    assert localci.actionlint_argv(path, ["ci.yml"], "/usr/bin/shellcheck")[-3:] == ["-shellcheck", "/usr/bin/shellcheck", "ci.yml"]
+    assert localci.actionlint_argv(record.binary, ["ci.yml"], "/usr/bin/shellcheck")[-3:] == ["-shellcheck", "/usr/bin/shellcheck", "ci.yml"]
+
+
+def test_github_actions_fails_closed_without_go(tmp_path, monkeypatch):
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setattr(localci.shutil, "which", lambda name: "/usr/bin/go" if name == "go" else None)
+    _payload, _digest, routes = _actionlint_blob()
+    routes["https://example.test/a.tar.gz"] = b"tampered"
+    calls = []
+
+    def runner(argv, **kwargs):
+        calls.append(argv)
+        return Proc()
+
+    session = localci.Session(tmp_path, opener=Opener(routes), runner=runner)
+    with pytest.raises(localci.LocalCIError, match="checksum mismatch"):
+        session.prepare_actionlint()
+    assert session.actionlint_record is None
+    assert calls == []
+    download = dict(routes)
+    download["https://example.test/a.tar.gz"] = http_error("https://example.test/a.tar.gz", 500)
+    with pytest.raises(localci.LocalCIError, match="download 500"):
+        localci.ensure_actionlint(tmp_path / "download", opener=Opener(download), system="Linux", machine="x86_64")
+    missing = {_LATEST: http_error(_LATEST, 404)}
+    with pytest.raises(localci.LocalCIError, match="GitHub API 404"):
+        localci.ensure_actionlint(tmp_path / "lookup", opener=Opener(missing), system="Linux", machine="x86_64")
+
+
+def test_local_go_fallback_uses_the_resolved_tag(tmp_path, monkeypatch):
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    monkeypatch.setattr(localci.shutil, "which", lambda name: "/usr/bin/go" if name == "go" else None)
+    _payload, _digest, routes = _actionlint_blob()
+    routes["https://example.test/a.tar.gz"] = b"tampered"
+    calls = []
+
+    def runner(argv, **kwargs):
+        calls.append(list(argv))
+        return Proc()
+
+    session = localci.Session(tmp_path, opener=Opener(routes), runner=runner)
+    record = session.prepare_actionlint()
+    assert record.via == "go"
+    assert record.tag == "v9.9.9"
+    assert record.asset == _ASSET
+    assert record.sha256 == ""
+    assert record.binary is None
+    outcome = session._actionlint(localci.Check("actionlint:ci.yml", "actionlint", "ci.yml"))
+    assert outcome.ok
+    assert calls and calls[0][2] == "github.com/rhysd/actionlint/cmd/actionlint@v9.9.9"
+    assert all("@latest" not in part for part in calls[0])
+    broken = {_LATEST: http_error(_LATEST, 404)}
+    with pytest.raises(localci.LocalCIError, match="GitHub API 404"):
+        localci.ensure_actionlint(tmp_path / "lookup", opener=Opener(broken), system="Linux", machine="x86_64")
+
+
+def test_run_records_actionlint_next_to_resolved_shas(tmp_path, monkeypatch):
+    record = localci.ActionlintRecord("v9.9.9", _ASSET, "ab" * 32, None, "release")
+    checks = [
+        localci.Check("resolve:myon-bioinformatics/Aoi", "resolve", "myon-bioinformatics/Aoi", repo="myon-bioinformatics/Aoi"),
+        localci.Check("actionlint:.github/workflows/ci.yml", "actionlint", ".github/workflows/ci.yml"),
+    ]
+    monkeypatch.setattr(
+        localci, "prepare_pytest",
+        lambda *args, **kwargs: (checks, [], tmp_path, [sys.executable, "-m", "pytest"], None),
+    )
+
+    class FakeSession:
+        def __init__(self, *args, **kwargs):
+            self.resolved = {}
+
+        def prepare_actionlint(self):
+            return record
+
+        def execute(self, check):
+            if check.kind == "resolve":
+                item = localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)
+                self.resolved[item.source.repo] = item
+            return localci.Outcome("pass", "ok", [])
+
+    monkeypatch.setattr(localci, "Session", FakeSession)
+    summary = tmp_path / "summary.md"
+    env_file = tmp_path / "refs.env"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    lines = []
+    rc = localci.run_local(
+        tmp_path, repeat=1, seed=3, keep_going=False, strict=False,
+        pytest_paths=None, skip_pytest=True, env_file=env_file, emit=lines.append,
+    )
+    text = "\n".join(lines)
+    assert rc == 0
+    assert f"actionlint tag=v9.9.9 asset={_ASSET} sha256={'ab' * 32} via=release" in text
+    assert f"AOI_SHA={SHA_A}" in text
+    body = summary.read_text(encoding="utf-8")
+    assert f"`{SHA_A}`" in body
+    assert f"Tag: `v9.9.9`" in body
+    assert f"Asset: `{_ASSET}`" in body
+    assert f"sha256: `{'ab' * 32}`" in body
+    saved = env_file.read_text(encoding="utf-8")
+    assert f"AOI_SHA={SHA_A}" in saved
+    assert "ACTIONLINT_TAG=v9.9.9" in saved
+    assert f"ACTIONLINT_ASSET={_ASSET}" in saved
+    assert f"ACTIONLINT_SHA256={'ab' * 32}" in saved
 
 
 def test_parse_collect_only_and_collection(tmp_path):

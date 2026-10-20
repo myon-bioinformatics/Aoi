@@ -55,8 +55,12 @@ jobs:
         run: uv sync --locked --no-dev --no-install-package numpy --no-install-package polars --no-install-package polars-runtime-32 --python "${{ matrix.python }}"
       - name: polars and numpy are not installed
         run: |
-          ! .venv/bin/python -c 'import numpy'
-          ! .venv/bin/python -c 'import polars'
+          if .venv/bin/python -c 'import numpy'; then
+            exit 1
+          fi
+          if .venv/bin/python -c 'import polars'; then
+            exit 1
+          fi
       - name: Same load_overlap on polars_min and numpy_min
         run: .venv/bin/python shrink/run_overlap_stdlib.py --deps min minimal.json
       - name: Byte-identical to the real polars and numpy result

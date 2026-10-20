@@ -58,6 +58,21 @@ def _seconds(value: float) -> float:
     return value
 
 
+def _browser_environment() -> dict:
+    """Environment for a headless browser that must not wait on D-Bus.
+
+    A session or system bus that accepts the connection and then never replies
+    blocks Chrome inside a synchronous bus call. The DevTools pipe stays silent,
+    so ``Browser.getVersion`` hits the launch timeout even though the process is
+    still running. Rendering does not use D-Bus; ``disabled:`` fails the
+    connection immediately instead of waiting out the bus method timeout.
+    """
+    env = os.environ.copy()
+    env["DBUS_SESSION_BUS_ADDRESS"] = "disabled:"
+    env["DBUS_SYSTEM_BUS_ADDRESS"] = "disabled:"
+    return env
+
+
 def find_chrome(chrome: str | None = None) -> str:
     if sys.platform == "win32":
         raise RuntimeError("Chrome over a debugging pipe is not supported on Windows")
@@ -105,6 +120,9 @@ class Chrome:
         try:
             self._spawn(exe)
             self._start_reader()
+            # Readiness gate: the command sits in the pipe until Chrome reads it.
+            # A bus stall never produces this reply, so the launch budget must
+            # not be spent inside D-Bus (see _browser_environment).
             self.call("Browser.getVersion", timeout=self.timeout)
         except Exception:
             self.close()
@@ -213,12 +231,15 @@ class Chrome:
             args = [exe, "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe",
                     "--disable-dev-shm-usage", "--disable-background-networking", "--no-first-run",
                     "--disable-extensions", "--disable-component-extensions-with-background-pages",
+                    # Keyring and crashpad also call out to D-Bus during startup.
+                    "--password-store=basic", "--use-mock-keychain", "--disable-breakpad",
                     "--user-data-dir=" + os.path.join(self._tmp, "profile"),
                     "--allow-file-access-from-files", "about:blank"]
             self._proc = subprocess.Popen(
                 [sys.executable, "-S", "-c", _HANDOFF, str(read_in), str(write_out), *args],
                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=self._err,
-                close_fds=True, pass_fds=(read_in, write_out), start_new_session=True)
+                close_fds=True, pass_fds=(read_in, write_out), start_new_session=True,
+                env=_browser_environment())
         except Exception:
             os.close(write_in)
             os.close(read_out)
@@ -294,16 +315,25 @@ class Chrome:
                 pass
         return ""
 
+    def _timeout_error(self, message: str) -> TimeoutError:
+        # Capture stderr before start() cleans the temp dir on the way out.
+        if self._proc is not None and self._proc.poll() is None:
+            message += "; the browser process is still running and has not answered"
+        detail = self._diagnostic().strip()
+        if detail:
+            message += "\n" + detail
+        return TimeoutError(message)
+
     def _recv(self, deadline: float) -> dict:
         if self._failure:
             raise RuntimeError(self._failure)
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise TimeoutError("Chrome did not answer within the timeout")
+            raise self._timeout_error("Chrome did not answer within the timeout")
         try:
             message = self._inbox.get(timeout=remaining)
         except queue.Empty as exc:
-            raise TimeoutError("Chrome did not answer within the timeout") from exc
+            raise self._timeout_error("Chrome did not answer within the timeout") from exc
         if "__failure__" in message:
             self._failure = message["__failure__"] + ". " + self._diagnostic()
             raise RuntimeError(self._failure)

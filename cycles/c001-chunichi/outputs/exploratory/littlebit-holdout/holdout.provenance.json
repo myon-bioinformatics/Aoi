@@ -75,18 +75,18 @@
     {
       "path": "pythdragoras/littlebit_approx.py",
       "evidence_sha256": "a5ab151848a2db7192374183b8302a9098a547b88905542ccc6f570f39ece66e",
-      "current_sha256": "eabb039943f7688b5bdcede4b3f07a42a26563d18c757c8f483a4eece6d9c06b",
+      "current_sha256": "f949a625ff195b4cb1d07f86026d47db0c4f52d5b73d42fa93dee7493600e365",
       "artifacts_regenerated": false,
       "inputs_regenerated": false,
-      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() (top-level AST comparison): --cycle now resolves through aoi_layout/aoi_paths, with new --root and AOI_ROOT / AOI_RESEARCH_CYCLE. The evidence hash is this file at source_reference 50f508d44b1d13ce820dcdd3d5bd9ab837503512. holdout.json and holdout.md stay at their evidence hashes. This is not a regenerated baseline."
+      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() (top-level AST comparison): --cycle now resolves through aoi_layout/aoi_paths, with new --root and AOI_ROOT / AOI_RESEARCH_CYCLE. The evidence hash is this file at source_reference 50f508d44b1d13ce820dcdd3d5bd9ab837503512. holdout.json and holdout.md stay at their evidence hashes. This is not a regenerated baseline. Removed the aoi_layout.py import. resolve_cycle_dir takes --cycle-dir, or --root / AOI_ROOT with AOI_RESEARCH_CYCLE, and does not search for aoi_paths.py. Evidence hash a5ab151848a2db7192374183b8302a9098a547b88905542ccc6f570f39ece66e stays source_sha256 at source_reference 50f508d44b1d13ce820dcdd3d5bd9ab837503512. Previous current eabb039943f7688b5bdcede4b3f07a42a26563d18c757c8f483a4eece6d9c06b was the aoi_layout CLI. holdout.json and holdout.md stay at their evidence hashes. This is not a regenerated baseline."
     },
     {
       "path": "pythdragoras/littlebit_holdout.py",
       "evidence_sha256": "3dc56f974f36df3712969c981def6894de37bdc66af9f9d9e9b20442bf1f01c2",
-      "current_sha256": "6413d815a3567a3d43b3f1a1a1db8f629791182eed5060581bbcd9ea5098b1c8",
+      "current_sha256": "bd76d8a222c919f3673f16203ace2c063203991e79a89b0891655528c2597645",
       "artifacts_regenerated": false,
       "inputs_regenerated": false,
-      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() (top-level AST comparison): --cycle now resolves through aoi_layout/aoi_paths, with new --root and AOI_ROOT / AOI_RESEARCH_CYCLE. The evidence hash is this file at source_reference 50f508d44b1d13ce820dcdd3d5bd9ab837503512. holdout.json and holdout.md stay at their evidence hashes. This is not a regenerated baseline."
+      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() (top-level AST comparison): --cycle now resolves through aoi_layout/aoi_paths, with new --root and AOI_ROOT / AOI_RESEARCH_CYCLE. The evidence hash is this file at source_reference 50f508d44b1d13ce820dcdd3d5bd9ab837503512. holdout.json and holdout.md stay at their evidence hashes. This is not a regenerated baseline. Removed the aoi_layout.py import. main() takes the cycle directory from littlebit_approx.resolve_cycle_dir (--cycle-dir, or --root / AOI_ROOT with AOI_RESEARCH_CYCLE) and does not search for aoi_paths.py. Evidence hash 3dc56f974f36df3712969c981def6894de37bdc66af9f9d9e9b20442bf1f01c2 stays source_sha256 at source_reference 50f508d44b1d13ce820dcdd3d5bd9ab837503512. Previous current 6413d815a3567a3d43b3f1a1a1db8f629791182eed5060581bbcd9ea5098b1c8 was the aoi_layout CLI. holdout.json and holdout.md stay at their evidence hashes. This is not a regenerated baseline."
     }
   ]
 }

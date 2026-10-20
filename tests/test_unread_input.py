@@ -178,3 +178,13 @@ def test_machine_decision_does_not_depend_on_human_wording(results, monkeypatch)
     assert got["result"]["answer"] == "判定不能" and got["result"]["rows"] == []
     assert got["unread_spans"] == [{"start": 7, "end": 20, "raw_text": "2026 年で確かめられた"}]
     assert "説明文を変更" in shown
+
+
+def test_without_a_team_table_team_names_are_unread():
+    import ask
+    ask.set_teams({})
+    parsed = ask.parse_input("中日が判例の命題")
+    assert parsed.query.about == []
+    assert any("中日" in u for u in parsed.unread)
+    with __import__("pytest").raises(ValueError):
+        ask.set_teams({"": "d"})

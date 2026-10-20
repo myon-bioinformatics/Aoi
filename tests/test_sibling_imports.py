@@ -128,7 +128,7 @@ def test_import_guard_preserves_standalone_and_embedded_contracts(aoi_root):
     assert not check(own, root, Path("/example/QueRyu"))
 
 
-def test_shared_layout_origin_requires_exact_embedded_identical_mirror(tmp_path):
+def test_own_module_origin_must_be_this_checkout(tmp_path):
     import importlib.util
     spec = importlib.util.spec_from_file_location("queryu_layout_guard", ROOT / "conftest.py")
     guard = importlib.util.module_from_spec(spec)
@@ -136,24 +136,16 @@ def test_shared_layout_origin_requires_exact_embedded_identical_mirror(tmp_path)
     check = guard._own_module_origin_is_allowed
     root = tmp_path / "aoi"
     here = root / "queryu"
-    own = here / "ask" / "aoi_layout.py"
-    mirror = root / "pythdragoras" / "aoi_layout.py"
-    own.parent.mkdir(parents=True)
-    mirror.parent.mkdir()
-    own.write_bytes(b"shared layout")
-    mirror.write_bytes(own.read_bytes())
-    assert check("aoi_layout", own, root, here)
-    assert check("aoi_layout", mirror, root, here)
-    assert not check("ask", mirror, root, here)
-    assert not check("aoi_layout", mirror, root, tmp_path / "QueRyu")
-    unknown = root / "unknown" / "aoi_layout.py"
-    unknown.parent.mkdir()
-    unknown.write_bytes(own.read_bytes())
-    assert not check("aoi_layout", unknown, root, here)
-    alias = mirror.parent / "alias.py"
-    alias.write_bytes(own.read_bytes())
-    assert not check("aoi_layout", alias, root, here)
-    mirror.write_bytes(b"changed layout")
-    assert not check("aoi_layout", mirror, root, here)
-    mirror.unlink()
-    assert not check("aoi_layout", mirror, root, here)
+    assert check("ask", here / "ask" / "ask.py", root, here)
+    assert not check("ask", root / "pythdragoras" / "ask.py", root, here)
+
+
+def test_no_aoi_layout_files_or_default_cycle():
+    assert not (ROOT / "aoi_paths.py").exists()
+    assert not (ROOT / "ask" / "aoi_layout.py").exists()
+    for path in SOURCES:
+        if path.name == "conftest.py":  # テストの土台は Aoi の場所を AOI_ROOT で受け取る
+            continue
+        text = path.read_text(encoding="utf-8")
+        assert "c001-chunichi" not in text, path
+        assert "aoi_layout" not in text and "aoi_paths" not in text, path

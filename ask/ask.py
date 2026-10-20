@@ -1,6 +1,6 @@
 """問い合わせ: 日本語の問いを、決まった型（Query）に直し、判定済みの結果から答える（QueRyu/docs/ask.md）。
 
-    python queryu/ask/ask.py "E25 に阪神 2015 以外の判例はある？" --results cycles/c001-chunichi/outputs
+    python queryu/ask/ask.py "E25 に阪神 2015 以外の判例はある？" --results <結果フォルダ> --teams <球団表.json>
     python queryu/ask/ask.py --schema          # Query の JSON Schema（llama.cpp や MCP のツールで、型で縛った選択に使う）
 
 役割の分け方（Jev の「型で縛った選択」の考え方。モデルも API キーも使わない）:
@@ -14,16 +14,11 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import os
 import re
 import sys
 import unicodedata
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-
-from aoi_layout import bind as _bind_aoi_paths
-
-aoi_paths = _bind_aoi_paths(__file__)
 
 FORMS = {"original": "元の命題", "contrapositive": "対偶", "converse": "逆", "inverse": "裏"}
 RATE_FORMS = {"original": "元", "contrapositive": "対偶", "converse": "逆", "inverse": "裏"}
@@ -33,15 +28,9 @@ ASKS = {
     "unique_exception": "判例がちょうど1つのもの",
     "rate": "成立率が条件を満たすもの",
 }
-TEAMS = {  # 球団名 → コード。取得元の表記（npb_calendar・npb_game_linescore）と、よく使う呼び名
-    "巨人": "g", "読売": "g", "ジャイアンツ": "g", "ヤクルト": "s", "東京ヤクルト": "s", "スワローズ": "s",
-    "DeNA": "db", "横浜DeNA": "db", "ベイスターズ": "db", "中日": "d", "ドラゴンズ": "d",
-    "阪神": "t", "タイガース": "t", "広島": "c", "広島東洋": "c", "カープ": "c",
-    "ソフトバンク": "h", "福岡ソフトバンク": "h", "ホークス": "h", "日本ハム": "f", "北海道日本ハム": "f", "ファイターズ": "f",
-    "オリックス": "b", "バファローズ": "b", "楽天": "e", "東北楽天": "e", "イーグルス": "e",
-    "西武": "l", "埼玉西武": "l", "ライオンズ": "l", "ロッテ": "m", "千葉ロッテ": "m", "マリーンズ": "m",
-}
-CODES = set(TEAMS.values())
+# 球団名 → コード。中身は呼び出し側（Aoi など）が set_teams / --teams で渡す。ここには持たない
+TEAMS: dict[str, str] = {}
+CODES: set[str] = set()
 KINDS = {"any": "命題と式", "proposition": "命題", "expression": "式"}
 
 
@@ -102,7 +91,14 @@ _ID = re.compile(r"(?<![A-Za-z])([PE])\s?(\d{1,4})(?!\d)")
 _YEAR = re.compile(r"(20\d{2})(?:年)?")
 _CODE_UNIT = re.compile(r"(?<![A-Za-z])([a-z]{1,2})-(\d{4})(?!\d)")
 _PCT = re.compile(r"(\d{1,3}(?:\.\d+)?)\s?(%|パーセント|割)\s?(以上|以下|未満|超)?")
-_TEAM = re.compile("|".join(sorted(map(re.escape, TEAMS), key=len, reverse=True)))
+_NEVER = r"(?!)"
+
+
+def _team_pattern(teams) -> str:
+    return "|".join(sorted(map(re.escape, teams), key=len, reverse=True)) or _NEVER
+
+
+_TEAM = re.compile(_team_pattern(TEAMS))
 
 
 def _norm(text: str) -> str:
@@ -196,6 +192,27 @@ _WORDS = ("判例", "反例", "例外", "成立率", "命題", "式", "対偶", 
           "ありますか", "あるの", "ある", "ない", "有無", "はい", "いいえ", "教えてください", "教えて", "ください")
 _WORD = re.compile("|".join(map(re.escape, sorted(_WORDS, key=len, reverse=True))))
 _TEAM_UNIT = re.compile(r"(?:" + _TEAM.pattern + r")\s*(?:20\d{2}年?)?")
+
+
+def set_teams(teams: dict[str, str]) -> None:
+    """Install the team-name table (name → code) used by the reader. Empty means no team names."""
+    global _TEAM, _TEAM_UNIT, CODES
+    if not isinstance(teams, dict) or not all(isinstance(k, str) and k and isinstance(v, str) and v
+                                              for k, v in teams.items()):
+        raise ValueError("球団表は 空でない文字列 → 文字列 の対応")
+    TEAMS.clear()
+    TEAMS.update(teams)
+    CODES = set(TEAMS.values())
+    _TEAM = re.compile(_team_pattern(TEAMS))
+    _TEAM_UNIT = re.compile(r"(?:" + _TEAM.pattern + r")\s*(?:20\d{2}年?)?")
+
+
+def load_teams(path: Path) -> dict[str, str]:
+    """Read a team-name table from a JSON object file (name → code)."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"球団表は JSON のオブジェクト: {path}")
+    return data
 _SEPARATORS = " \t\r\n?？、。,:："
 _CONNECTORS = {"の", "に", "は", "が", "を", "で", "と", "か", "には", "のは", "とは", "では"}
 
@@ -359,43 +376,6 @@ def answer_results(q: Query, results: Path) -> dict:
     return answer(q, items)
 
 
-def pipeline_out(root: Path, cycle: str) -> Path:
-    if not isinstance(cycle, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", cycle):
-        raise FileNotFoundError(f"結果が読めない: サイクル名が不正 ({cycle})")
-    config = root / "cycles" / cycle / "pipeline.toml"
-    if not config.is_file():
-        raise FileNotFoundError(f"結果が読めない: サイクル設定がない {config}")
-    match = re.search(r'(?m)^out\s*=\s*"([^"]+)"', config.read_text(encoding="utf-8"))
-    if not match:
-        raise FileNotFoundError(f"結果が読めない: {config} に out がない")
-    return root / match.group(1)
-
-
-def resolve_results_dir(root: Path, *, explicit: Path | None = None, cycle: str | None = None,
-                        results_ref: str | None = None, results_dir: str | None = None) -> Path:
-    """Pick the results directory from the explicit path or the cycle configuration.
-
-    When a results ref or ``AOI_RESULTS_DIR`` is set, only that location is used.
-    """
-    if explicit is not None:
-        return explicit
-    if results_dir:
-        path = Path(results_dir)
-        if not path.is_dir():
-            raise FileNotFoundError(f"結果が読めない: {path}")
-        return path
-    if results_ref:
-        if not cycle or not re.fullmatch(r"[A-Za-z0-9._-]+", cycle):
-            raise FileNotFoundError("結果が読めない: 結果 ref にはサイクル名が必要")
-        if not re.fullmatch(r"[A-Za-z0-9._/-]+", results_ref) or ".." in results_ref:
-            raise FileNotFoundError(f"結果が読めない: 結果 ref が不正 ({results_ref})")
-        path = root / ".aoi-results" / cycle / "outputs"
-        if not path.is_dir():
-            raise FileNotFoundError(f"結果が読めない: {results_ref} の {path} がない")
-        return path
-    return pipeline_out(root, cycle or "c001-chunichi")
-
-
 def load_suggest_threshold(cycle_dir: Path) -> float | None:
     """Read ``suggest_threshold`` from ``<cycle>/ask.toml``. Missing file or key → None."""
     path = Path(cycle_dir) / "ask.toml"
@@ -412,13 +392,12 @@ def load_suggest_threshold(cycle_dir: Path) -> float | None:
     return float(value)
 
 
-def resolve_threshold(root: Path, results: Path, cycle: str | None, override: float | None) -> float | None:
+def resolve_threshold(results: Path, override: float | None, cycle_dir: Path | None = None) -> float | None:
+    """Explicit override, else ``<cycle_dir>/ask.toml``, else ``ask.toml`` next to the results folder."""
     if override is not None:
         return override
-    if cycle and re.fullmatch(r"[A-Za-z0-9._-]+", cycle):
-        config = root / "cycles" / cycle / "ask.toml"
-        if config.is_file():
-            return load_suggest_threshold(config.parent)
+    if cycle_dir is not None and (Path(cycle_dir) / "ask.toml").is_file():
+        return load_suggest_threshold(cycle_dir)
     return load_suggest_threshold(Path(results).parent)
 
 
@@ -533,13 +512,12 @@ def render(text: str, q: Query, unread: list[str], res: dict, suggestion_line: s
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("question", nargs="?", help="日本語の問い")
-    ap.add_argument("--results", type=Path, default=None,
-                    help="判定済みの結果のフォルダ。省略時はサイクル設定（結果 ref があるときはその checkout だけ）")
-    ap.add_argument("--root", type=Path, default=None,
-                    help="Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定")
-    ap.add_argument("--cycle", default=None, help="サイクル名。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi の pipeline")
+    ap.add_argument("--results", type=Path, default=None, help="判定済みの結果のフォルダ（--schema 以外では必須）")
+    ap.add_argument("--cycle-dir", type=Path, default=None,
+                    help="ask.toml を読むフォルダ。省略時は結果フォルダの親")
+    ap.add_argument("--teams", type=Path, default=None, help="球団名 → コードの JSON。省略時は球団名を読まない")
     ap.add_argument("--suggest-threshold", type=float, default=None,
-                    help="候補の類似度。省略時は cycles/<cycle>/ask.toml。未設定なら候補は確定しない")
+                    help="候補の類似度。省略時は ask.toml。未設定なら候補は確定しない")
     ap.add_argument("--query", help="読み取りを飛ばし、Query を JSON で直接渡す（llama.cpp・MCP が選んだもの）")
     ap.add_argument("--schema", action="store_true", help="Query の JSON Schema を出す")
     ap.add_argument("--json", action="store_true", help="答えを JSON で出す")
@@ -549,15 +527,13 @@ def main(argv=None) -> int:
     if args.schema:
         print(json.dumps(schema(), ensure_ascii=False, indent=2))
         return 0
-    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
-    cycle = args.cycle or os.environ.get("AOI_RESEARCH_CYCLE")
+    if args.results is None:
+        ap.error("--results が要る")
+    results = args.results
     try:
-        results = resolve_results_dir(
-            root, explicit=args.results, cycle=cycle,
-            results_ref=os.environ.get("AOI_RESULTS_REF"),
-            results_dir=os.environ.get("AOI_RESULTS_DIR"),
-        )
-        threshold = resolve_threshold(root, results, cycle, args.suggest_threshold)
+        if args.teams is not None:
+            set_teams(load_teams(args.teams))
+        threshold = resolve_threshold(results, args.suggest_threshold, args.cycle_dir)
     except (FileNotFoundError, ValueError) as e:
         print(str(e), file=sys.stderr)
         return 1

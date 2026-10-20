@@ -141,20 +141,3 @@ def test_repo_without_sets_does_not_call_e25_missing():
     res = answer_results(Query(target="E25"), results)
     assert res["error"].startswith("結果が読めない")
     assert "結果にない" not in res["error"]
-
-
-def test_results_ref_is_not_replaced_by_another_directory(tmp_path):
-    root = tmp_path / "repo"
-    configured = root / "cycles" / "c001-chunichi"
-    configured.mkdir(parents=True)
-    (configured / "pipeline.toml").write_text('out = "cycles/c001-chunichi/outputs"\n', encoding="utf-8")
-    (root / "cycles" / "c001-chunichi" / "outputs").mkdir()
-    with __import__("pytest").raises(FileNotFoundError, match="結果が読めない"):
-        ask.resolve_results_dir(root, cycle="c001-chunichi", results_ref="cycle-001/chunichi")
-    isolated = root / ".aoi-results" / "c001-chunichi" / "outputs"
-    isolated.mkdir(parents=True)
-    got = ask.resolve_results_dir(root, cycle="c001-chunichi", results_ref="cycle-001/chunichi")
-    assert got == isolated
-    explicit = tmp_path / "explicit"
-    explicit.mkdir()
-    assert ask.resolve_results_dir(root, explicit=explicit, cycle="other", results_ref="cycle-001/chunichi") == explicit

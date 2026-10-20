@@ -6,7 +6,7 @@
 
 --deps real は pip/uv で入った markdown と numpy を使う。
 --deps min は両方が入っていないときだけ動く。markdown は pure wheel を sha256 照合して
-sys.path に載せる。numpy は shrink/numpy_min.py を sys.modules['numpy'] に、
+sys.path に載せる。numpy は vendor/aoi の numpy_min.py を sys.modules['numpy'] に、
 overlap も兄弟の rule_search も import するより前に置く。polars はそのまま使う。
 
 AOI_ROOT は Aoi の checkout（cycles/ があること）。rule_search は PYTHONPATH から読む。
@@ -61,18 +61,30 @@ def _load_py(name: str, path: Path):
     return module
 
 
+def _vendored(name: str) -> Path:
+    """vendor.lock.json の path を vendor/aoi の下で開く。"""
+    document = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
+    matches = [entry["path"] for entry in document["files"] if Path(entry["path"]).name == name]
+    if len(matches) != 1:
+        raise SystemExit(f"vendor.lock.json に {name} が一つない")
+    rel = Path(matches[0])
+    if rel.is_absolute() or ".." in rel.parts:
+        raise SystemExit(f"vendor.lock.json の path が相対パスでない: {matches[0]}")
+    return ROOT / "vendor" / "aoi" / rel
+
+
 def _preload_numpy_min():
     """rule_search の `import numpy` が最小版を見るように、先に載せる。"""
     if "rule_search" in sys.modules or "dragowing.overlap" in sys.modules:
         raise SystemExit("numpy_min を載せる前に overlap か rule_search が import されている")
-    module = _load_py("numpy", ROOT / "shrink" / "numpy_min.py")
+    module = _load_py("numpy", _vendored("numpy_min.py"))
     if not Path(module.__file__ or "").name == "numpy_min.py":
         raise SystemExit(f"numpy_min ではない: {module.__file__}")
     return module
 
 
 def _ensure_markdown(cache: Path, version: str | None):
-    fetch_module = _load_py("fetch_module", Path(__file__).resolve().parent / "fetch_module.py")
+    fetch_module = _load_py("fetch_module", _vendored("fetch_module.py"))
     module = fetch_module.ensure("markdown", cache, version)
     origin = Path(module.__file__ or "").as_posix()
     if ".whl/" not in origin:

@@ -1,0 +1,15 @@
+{
+  "schema": "vendor-lock/1",
+  "files": [
+    {
+      "path": "scripts/fetch_module.py",
+      "sha256": "e0b4d3127af0d3cc939aac2f2853a6bc2d186bf840431362b497cef242edb970",
+      "source": "myon-bioinformatics/Aoi"
+    },
+    {
+      "path": "shrink/numpy_min.py",
+      "sha256": "0779d22355ec7a3b5f4562226ff1c7862edc1c9cedb6ea04b6cf466afc5a9364",
+      "source": "myon-bioinformatics/Aoi"
+    }
+  ]
+}

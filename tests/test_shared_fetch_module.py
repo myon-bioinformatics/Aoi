@@ -112,6 +112,35 @@ def test_pypdf_requires_dist_sample_has_no_active_dependency_here():
     assert below == ['typing_extensions>=4.0; python_version < "3.11"']
 
 
+def test_unselected_extra_skips_an_unevaluable_and_clause(monkeypatch):
+    """coverage 7.16.2: pre-release comparison AND an extra that was not selected."""
+    requirement = 'tomli; python_full_version <= "3.11.0a6" and extra == "toml"'
+    marker = requirement.split(";", 1)[1].strip()
+    assert not fm.marker_applies(marker)
+    assert not fm.marker_applies('extra == "toml" and python_full_version <= "3.11.0a6"')
+    assert not fm.marker_applies('(extra == "toml")')
+    assert not fm.marker_applies('(python_full_version <= "3.11.0a6" and extra == "toml")')
+    info = {"requires_dist": [
+        requirement,
+        'tomli; (extra == "toml")',
+        'typing_extensions>=4.0; python_version < "3.11"',
+    ]}
+    assert fm.runtime_requirements(info) == []
+    selected = fm.runtime_requirements(info, {"extra": "toml"})
+    assert requirement in selected
+    _serve(monkeypatch, _wheel(), requires=[requirement])
+    assert fm.resolve("cdnfake")["version"] == "1.0"
+    _serve(monkeypatch, _wheel(), requires=['foo>=1; python_full_version <= "3.11.0a6" or extra == "toml"'])
+    with pytest.raises(SystemExit, match="依存"):
+        fm.resolve("cdnfake")
+    _serve(monkeypatch, _wheel(), requires=["tomli"])
+    with pytest.raises(SystemExit, match="依存"):
+        fm.resolve("cdnfake")
+    _serve(monkeypatch, _wheel(), requires=['foo>=1; python_full_version <= "3.11.0a6"'])
+    with pytest.raises(SystemExit, match="依存"):
+        fm.resolve("cdnfake")
+
+
 def test_release_comparison_and_fail_closed_complex_versions(monkeypatch):
     env = fm.marker_environment({"python_version": "3.12"})
     assert fm.marker_applies('python_version == "3.12.0"', env)

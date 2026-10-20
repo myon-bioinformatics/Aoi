@@ -140,15 +140,12 @@ def test_client_call_shape_is_shared_by_the_research_scripts():
         assert calls == [(expected, {"timeout": 45, "follow_redirects": True})], rel
 
 
-def test_coverage_cdn_ignores_only_an_unselected_extra_marker():
+def test_coverage_runner_uses_canonical_marker_evaluation():
     import run_coverage
 
-    marker = 'tomli; python_full_version <= "3.11.0a6" and extra == "toml"'
-    assert run_coverage._unselected_extra(marker)
-    assert run_coverage._unselected_extra('tomli; (extra == "toml")')
-    assert not run_coverage._unselected_extra("tomli")
-    assert not run_coverage._unselected_extra('foo; python_version >= "3.11" or extra == "toml"')
-    assert not run_coverage._unselected_extra('foo; python_full_version <= "3.11.0a6"')
+    assert not hasattr(run_coverage, "_unselected_extra")
+    source = (ROOT / "mindeps" / "run_coverage.py").read_text(encoding="utf-8")
+    assert "allow_deps=True" not in source
 
 
 def test_coverage_exercise_shape(tmp_path):

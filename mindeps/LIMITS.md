@@ -48,7 +48,7 @@ Not covered, because nothing in the tree calls them: HTTP/2, streaming, auth, co
 
 ### coverage → `fetch_module` CDN
 
-`coverage` is the other pure-Python dependency the tree actually imports (`tests/test_child_registry.py` measures `scripts/check_child_heads.py`). Its `py3-none-any` wheel has no C tracer and warns about it, but the Python tracer collects data. `fetch_module` fail-closes on coverage 7.16.2: the only `requires_dist` entry is `tomli; python_full_version <= "3.11.0a6" and extra == "toml"`, and the pre-release `3.11.0a6` is not a comparison it evaluates. No extra is selected, so `extra == "toml"` makes that conjunction false. `run_coverage.py --impl cdn` fetches the wheel only in that case. A requirement that is not gated on an unselected extra is still rejected.
+`coverage` is the other pure-Python dependency the tree actually imports (`tests/test_child_registry.py` measures `scripts/check_child_heads.py`). Its `py3-none-any` wheel has no C tracer and warns about it, but the Python tracer collects data. coverage 7.16.2 publishes one requirement, `tomli; python_full_version <= "3.11.0a6" and extra == "toml"`. The pre-release comparison is not evaluated, and no extra is selected, so `fetch_module` treats that `and` as false and fetches the wheel. `run_coverage.py --impl cdn` calls `resolve` with no extra allowance. A requirement that is not gated on an unselected extra is still rejected.
 
 `mindeps/run_coverage.py` runs the real `validate_heads` and `failed` under `Coverage(branch=True)`, then compares `analysis2` and the `json_report` summary. The pure wheel's numbers match the installed C-tracer build of the same locked version.
 

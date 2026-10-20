@@ -269,6 +269,39 @@ Path(sys.argv[2]).write_text(json.dumps(result, ensure_ascii=False, sort_keys=Tr
     assert minimal.read_bytes() == reference.read_bytes()
 
 
+def test_collect_chain_matches_polars():
+    """NagoyAction #13 の collect が踏む explode / filter / join / iter_rows。"""
+    pl = _polars()
+    mini = _min()
+
+    def rows(mod, links, props):
+        prop = mod.DataFrame({
+            "proposition_id": [key for key, _ in props],
+            "exit_code": [value for _, value in props],
+        })
+        link = mod.DataFrame(links).explode("proposition_id").filter(mod.col("proposition_id").is_not_null())
+        return list(link.join(prop, on="proposition_id", how="left").iter_rows(named=True))
+
+    links = [
+        {"id": "R1", "proposition_id": ["P2", "P10", "P999"]},
+        {"id": "R2", "proposition_id": []},
+        {"id": "R3", "proposition_id": [None, "P2"]},
+    ]
+    props = [("P10", 4), ("P2", 1)]
+    assert rows(mini, links, props) == rows(pl, links, props)
+    null_list = [
+        {"id": "R1", "proposition_id": ["P1"]},
+        {"id": "R2", "proposition_id": None},
+    ]
+    assert rows(mini, null_list, [("P1", 3)]) == rows(pl, null_list, [("P1", 3)])
+    empty = [{"id": "R1", "proposition_id": []}, {"id": "R2", "proposition_id": []}]
+    for mod in (mini, pl):
+        with pytest.raises(Exception):
+            rows(mod, empty, [("P1", 1)])
+    with pytest.raises(TypeError):
+        mini.DataFrame({"exit_code": [1, True]})
+
+
 def test_evaluate_stops_before_the_subset_runs_out():
     code = r"""
 import importlib.util, json, sys

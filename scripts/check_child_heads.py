@@ -6,7 +6,7 @@
   子は prefix の純粋な subtree（除外するファイルはない）。not_in_parent / child_preamble は受け付けない。
 - mirrored_from_parent（prefix の下のパス → Aoi の原本のパス）は、Aoi の中で blob と mode が原本と
   同じかを確かめ、違えば失敗にする（共有するルートのファイルを子に通常のファイルとして置くとき）。
-- Aoi と subtree 子の間では vendor lock を使わない。vendor-consumers.json が置かれていたら失敗する。
+- Aoi と subtree 子の間では vendor-consumers.json を置かない。置かれていたら失敗する。共有ツールの shared-tools.lock.json はこの検査の対象外。
 - 子ごとの取得の失敗（リポジトリがない、タイムアウトなど）は、その子の error にして次の子へ進む。
 
 既定では drift と差分は報告のみ。--fail-on-drift / --fail-on-diff で終了コード 1 にする。

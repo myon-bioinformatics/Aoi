@@ -33,7 +33,7 @@ python scripts/trace_surface.py collect --check --out docs/evidence/trace-surfac
 |---|---:|---:|---:|---:|---|---|
 | polars | 31 | 37 | 933 | 25 | rejected: depends on `polars-runtime-32` | **(b)** for DRAgoWing `load_overlap` only. **(c)** for the package |
 | numpy | 14 | 14 | 239 | 65 | rejected: no pure-Python wheel (2.5.4) | **(b)** for `load_overlap` (already generated). **(c)** for `linalg` and the surrounding ndarray use |
-| pytest | 83 | 84 (+1 dynamic) | 798 | 15 | rejected: runtime dependencies | test runner, not a target |
+| pytest | 83 | 84 (+1 dynamic) | 801 | 15 | rejected: runtime dependencies | test runner, not a target |
 | selectolax | 4 | 4 | 11 | 1 (`lexbor.LexborHTMLParser`) | rejected: no pure-Python wheel (1.0.1) | **(c)** |
 | httpx | 3 | 3 | 3 (`Client`) | 1 | rejected: `anyio`, `certifi`, `httpcore`, `idna` | **(b)** for the duck type QueRyu already implements in urllib. **(c)** for httpx itself |
 | ortools | 2 | 4 | 2 (`__version__`) | 1 | rejected: absl, numpy, pandas, protobuf, … | **(c)** |

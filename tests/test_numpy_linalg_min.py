@@ -1,7 +1,6 @@
-"""shrink/numpy_linalg_min.py を本物の numpy と、c001 より小さい実コード経路で比べる。
+"""shrink/numpy_linalg_min.py を本物の numpy と、c001 より小さい行列で比べる。
 
-c001 全体（145×3247 の SVD と 139×156 の SVD を4回）は pytest の既定に入れない。
-.github/workflows/shrink-linalg-experiment.yml が1回だけ動かす。
+c001 全体の SVD はこのファイルでは走らせない。
 """
 import importlib.util
 import subprocess
@@ -201,3 +200,5 @@ def test_fixture_code_paths_match_numpy(tmp_path):
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     assert compared.returncode == 0, compared.stdout + compared.stderr
+
+

@@ -31,7 +31,7 @@
     },
     {
       "file": "scripts/fetch_module.py",
-      "line": 99
+      "line": 369
     }
   ],
   "packages": {
@@ -650,7 +650,7 @@
       "import_sites": 37
     },
     "pytest": {
-      "attribute_uses": 798,
+      "attribute_uses": 801,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -665,7 +665,7 @@
         "mark.parametrize": 145,
         "mark.skipif": 4,
         "param": 1,
-        "raises": 311,
+        "raises": 314,
         "skip": 5
       },
       "by_tree": {
@@ -777,14 +777,14 @@
           "import_sites": 8
         },
         "tests": {
-          "attribute_uses": 62,
+          "attribute_uses": 65,
           "attributes": {
             "approx": 1,
             "fail": 1,
             "fixture": 4,
             "importorskip": 1,
             "mark.parametrize": 14,
-            "raises": 41
+            "raises": 44
           },
           "dynamic_import_sites": 0,
           "files": 12,
@@ -2512,7 +2512,7 @@
     },
     {
       "attributes": {
-        "raises": 4
+        "raises": 7
       },
       "dynamic_lines": [],
       "file": "tests/test_fetch_module.py",

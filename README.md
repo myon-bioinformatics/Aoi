@@ -55,11 +55,11 @@ python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--colum
 
 ## テスト
 
-サイクルデータ（`cycles/` の outputs）、[PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)（`propositions` と `rule_search`）、[QueRyu](https://github.com/myon-bioinformatics/QueRyu)（`ask`）は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
+サイクルデータ（`cycles/` の outputs）、[PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)（`propositions` と `rule_search`）、[QueRyu](https://github.com/myon-bioinformatics/QueRyu)（`ask`）は Aoi に残します。コピーはせず、Aoi の main を checkout して渡します。
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout a8dc4997f43236b24a23df56e21f143fa0e233d8   # .github/workflows/ci.yml の AOI_SHA
+git -C .test-deps/aoi checkout main   # CI は実行時に main の SHA を解決して checkout する
 AOI_ROOT=$PWD/.test-deps/aoi \
   PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras:$PWD/.test-deps/aoi/queryu/ask \
   uv run --locked pytest -q --junitxml=reports/junit.xml

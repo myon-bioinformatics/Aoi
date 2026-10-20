@@ -48,11 +48,11 @@ uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --o
 
 ## テスト
 
-サイクルデータ（`cycles/`）と [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)（`propositions`）は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
+サイクルデータ（`cycles/`）と [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)（`propositions`）は Aoi に残します。コピーはせず、Aoi の main を checkout して渡します。CI は `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main` でその SHA を実行時に解決します。
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout 9249ab6e7bbec167cc75963ff315bc90ab5d9e0c   # .github/workflows/ci.yml の AOI_SHA
+git -C .test-deps/aoi checkout main
 AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
   uv run --locked pytest -q --junitxml=reports/junit.xml
 ```
@@ -65,7 +65,7 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
   - PythDRagoras の `propositions`: `proposition_seed_audit.py` と `synthetic_rule_discovery.py`（`PYTHONPATH` の `pythdragoras`）。
   - これ以外に Aoi の兄弟サブプロジェクトと `scripts/` を使わないことは、`tests/test_no_sibling_imports.py` で確かめます（`propositions` が既知の例外です）。
 
-CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。
+CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。既定の ref は `refs/heads/main` で、`workflow_dispatch` の `aoi_ref` で上書きできます。解決した SHA はジョブの summary に残します。
 
 ## Aoi との関係
 
@@ -77,7 +77,7 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 
 `aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。CLI は `--cycle-dir` を受け取り、テストは `AOI_ROOT` だけを受け取ります。
 
-`proposition_seed_audit.py` の `analysis_sha256` は、Aoi の `seed-evaluation.json` と `source-divergence.json` に固定されています。テストはピンした Aoi のコピーと、そのサイドカーだけを比べます。記録と違うハッシュをローカルな宣言で通すことはしません。生成物は作り直していません。
+`proposition_seed_audit.py` の `analysis_sha256` は、Aoi の `seed-evaluation.json` と `source-divergence.json` と比べます。テストは checkout した Aoi のコピーと、そのサイドカーだけを比べます。記録と違うハッシュをローカルな宣言で通すことはしません。`SOURCE_HASH_CHECK=report` のとき（pull_request）は不一致を警告して続け、未設定を含むそれ以外は失敗します。main への push と schedule は失敗にします。生成物は作り直していません。
 
 NPB 固有の前提（年間表の球団数・丸め方・対戦列、CS の規則のプリセット `npb_rules()`、2022 年の検証 `season_verify_2022.py`）は Aoi の `aoi_npb.py`・`scripts/` に置き、ここでは `AuditRules`・`Rules` として受け取ります。
 

@@ -3,7 +3,7 @@
 数は propositions.jsonl / sets.jsonl の forms[].n と forms[].hold だけから数える。
 判定はやり直さない。図の文は観測で、成立の理由は書かない。
 
-  python dragowing/forms.py --results cycles/c001-chunichi/outputs --id P1
+  python dragowing/forms.py --results <結果フォルダ> --id P1
 """
 from __future__ import annotations
 

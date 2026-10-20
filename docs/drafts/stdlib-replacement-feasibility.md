@@ -31,9 +31,9 @@ python scripts/trace_surface.py collect --check --out docs/evidence/trace-surfac
 
 | Package | Files | Import sites | AST attribute uses | Distinct AST names | PyPI, via fetch_module | Class |
 |---|---:|---:|---:|---:|---|---|
-| polars | 31 | 37 | 933 | 25 | rejected: depends on `polars-runtime-32` | **(b)** for DRAgoWing `load_overlap` only. **(c)** for the package |
+| polars | 36 | 38 (+5 dynamic) | 937 | 25 | rejected: depends on `polars-runtime-32` | **(b)** for DRAgoWing `load_overlap` only. **(c)** for the package |
 | numpy | 14 | 14 | 239 | 65 | rejected: no pure-Python wheel (2.5.4) | **(b)** for `load_overlap` (already generated). **(c)** for `linalg` and the surrounding ndarray use |
-| pytest | 83 | 84 (+1 dynamic) | 801 | 15 | rejected: runtime dependencies | test runner, not a target |
+| pytest | 87 | 88 (+1 dynamic) | 827 | 16 | rejected: runtime dependencies | test runner, not a target |
 | selectolax | 4 | 4 | 11 | 1 (`lexbor.LexborHTMLParser`) | rejected: no pure-Python wheel (1.0.1) | **(c)** |
 | httpx | 3 | 3 | 3 (`Client`) | 1 | rejected: `anyio`, `certifi`, `httpcore`, `idna` | **(b)** for the duck type QueRyu already implements in urllib. **(c)** for httpx itself |
 | ortools | 2 | 4 | 2 (`__version__`) | 1 | rejected: absl, numpy, pandas, protobuf, … | **(c)** |
@@ -47,9 +47,9 @@ No declared dependency is completely unimported. Eight `import_module` / `__impo
 
 AST names, heaviest first:
 
-- **polars** (933): `col` 419, `DataFrame` 226, `Float64` 69, `Int64` 38, `Int32` 30, `lit` 27, `Utf8` 22, `read_ndjson` 18, `when` 14, `Series` 14, `concat` 11, `len` 10, `Expr` 10, `Boolean` 8, plus `first`, `sum`, `concat_str`, `__version__`, `any_horizontal`, `max_horizontal`, `read_csv`, `concat_list`, `int_range`, `exceptions.PolarsError`, `Config.set_tbl_rows`.
+- **polars** (937): `col` 419, `DataFrame` 228, `Float64` 69, `Int64` 38, `Int32` 30, `lit` 27, `Utf8` 22, `read_ndjson` 18, `when` 14, `Series` 15, `concat` 11, `len` 10, `Expr` 11, `Boolean` 8, plus `first`, `sum`, `concat_str`, `__version__`, `any_horizontal`, `max_horizontal`, `read_csv`, `concat_list`, `int_range`, `exceptions.PolarsError`, `Config.set_tbl_rows`.
 - **numpy** (239, 65 names): the `load_overlap` set is `asarray`, `ones`, `flatnonzero`, `frombuffer`, `uint8`, `unpackbits`, `zeros`. The heavy set is `linalg.svd` (2), `linalg.lstsq` (2), `linalg.norm` (6), `linalg.pinv` (1), plus `ndarray` 22, `float64` 24, `where` 9, `maximum` 7, `abs` 7, `sign` 6, and the rest of the table in the JSON.
-- By tree, polars attribute uses are SakAnalytics 677 (4 files), PythDRagoras 223 (17), cycles 22, DRAgoWing 3, NagoyAction 3, research_loop 2, research 2, root tests 1. Numpy attribute uses are PythDRagoras 192 (9 files), QueRyu 35 (2), research 7, DRAgoWing 3, and 2 in `shrink/run_overlap.py` (the existing harness).
+- By tree, polars attribute uses are SakAnalytics 677 (4 files), PythDRagoras 223 (17), cycles 22, DRAgoWing 3, NagoyAction 7 (6 files, including the vendored shrink harness), research_loop 2, research 2, root tests 1. Numpy attribute uses are PythDRagoras 192 (9 files), QueRyu 35 (2), research 7, DRAgoWing 3, and 2 in `shrink/run_overlap.py` (the existing harness).
 
 ## markdown — (a)
 
@@ -77,7 +77,7 @@ So the AST missed `height`, `columns`, `select`, `to_list`, indexing, and the co
 
 That surface is small enough to be a `polars_min` for **this entry**. It is not a shrink of Polars.
 
-**Everywhere else the surface is the expression engine.** SakAnalytics accounts for 677 of the 933 alias uses (`col` 340, `DataFrame` 130, dtypes, `when`, `concat`, …) across `sakanalytics.py`, `proposition_seed_audit.py`, `synthetic_rule_discovery.py`, and tests. The method calls on those frames (filter, rank, over, group_by, join) are not in the 677. PythDRagoras is 223 alias uses in 17 files: `evaluate` builds expressions, filters, drops nulls, casts, and walks `iter_rows`. NagoyAction's digest is the clearest AST miss: the survey counts `DataFrame` twice and `col` once in `nagoyaction/research_digest.py`, and the same function calls `.explode`, `.filter`, `.join`, and `.iter_rows`. Reimplementing that is a dataframe library. Class **(c)** for the package.
+**Everywhere else the surface is the expression engine.** SakAnalytics accounts for 677 of the 937 alias uses (`col` 340, `DataFrame` 130, dtypes, `when`, `concat`, …) across `sakanalytics.py`, `proposition_seed_audit.py`, `synthetic_rule_discovery.py`, and tests. The method calls on those frames (filter, rank, over, group_by, join) are not in the 677. PythDRagoras is 223 alias uses in 17 files: `evaluate` builds expressions, filters, drops nulls, casts, and walks `iter_rows`. NagoyAction's digest is the clearest AST miss: the survey counts `DataFrame` twice and `col` once in `nagoyaction/research_digest.py`, and the same function calls `.explode`, `.filter`, `.join`, and `.iter_rows`. Reimplementing that is a dataframe library. Class **(c)** for the package.
 
 `dist/dragowing_min.py` does not import polars. The managed copy described below never reaches `load_overlap`.
 

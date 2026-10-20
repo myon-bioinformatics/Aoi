@@ -21,7 +21,7 @@ jobs:
       # サイクルデータ（cycles/）・blueprobe の fixture・nagoyaction/inbox は Aoi に残す。コピーせず固定 SHA で checkout する
       AOI_SHA: 85243d6d1285e3bf4667e1447308543c7d648ab7
       # 抽出（blueprobe・npb_calendar・npb_team_annual）は BlueProbe を固定 SHA で checkout する
-      BLUEPROBE_SHA: 563d84488a57efd3bca2d89c97c0a72759ab8ee5
+      BLUEPROBE_SHA: 50a2846d68fcba4acbe7e4abf7fb0130de07de89
     timeout-minutes: 10
     strategy:
       fail-fast: false

@@ -63,7 +63,7 @@ uv run python pythdragoras.py --help
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout dadc6fac043fac2d1550132a362f92eeb0e12643   # .github/workflows/ci.yml の AOI_SHA
+git -C .test-deps/aoi checkout 9249ab6e7bbec167cc75963ff315bc90ab5d9e0c   # .github/workflows/ci.yml の AOI_SHA
 AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
   uv run pytest -q --junitxml=reports/junit.xml
 ```
@@ -88,7 +88,7 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 
 `aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。`littlebit_approx.py` と `littlebit_holdout.py` は配置を推定しません。サイクルのフォルダは `--cycle-dir` で渡します。省略するときは `--root` または環境変数 `AOI_ROOT` と、環境変数 `AOI_RESEARCH_CYCLE`（`<root>/cycles/<名前>`）です。
 
-この 2 ファイルの SHA-256 は、Aoi の `cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json` で固定しています。ピンした Aoi が記録している `source_divergence.current_sha256` と今のファイルが違うあいだは、`tests/pending_holdout_source_divergence.json` がその差です。子の CI は、証跡の `evidence_sha256` と入力と `holdout.json` / `holdout.md` を動かさず、pending に書いた current だけを「Aoi が次の subtree pull で provenance に記録する divergence」として確かめます。ピンした Aoi がすでに同じ current を記録しているのに pending が残っていると、CI は落ちます。
+この 2 ファイルの SHA-256 は、Aoi の `cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json` で固定しています。子の CI はピンした Aoi の `source_sha256` と `source_divergence` をそのまま読み、今のファイルと違うバイトがあれば落ちます。証跡の `evidence_sha256`、入力、`holdout.json` / `holdout.md` は動かしません。
 
 ### Aoi との同期
 

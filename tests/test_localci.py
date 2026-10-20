@@ -200,6 +200,8 @@ def test_classify_pin():
     assert localci.classify_pin("v1", None) == "unpinned"
     assert localci.pin_fails("outdated", strict=False) is False
     assert localci.pin_fails("outdated", strict=True) is True
+    assert localci.pin_fails("unpinned", strict=False) is False
+    assert localci.pin_fails("unpinned", strict=True) is True
     assert localci.pin_fails("no-release", strict=True) is False
 
 
@@ -224,6 +226,12 @@ def test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe():
     current = localci.Check("pin:new", "pin", "actions/checkout@" + SHA_B, ref=SHA_B, repo="actions/checkout")
     assert session._pin(current).status == "pass"
     assert "matches v7.0.1" in session._pin(current).detail
+    for ref in ("v7", "v10.3.0", ""):
+        movable = localci.Check(f"pin:{ref or 'bare'}", "pin", "actions/checkout@" + ref, ref=ref, repo="actions/checkout")
+        assert session._pin(movable).status == "fail"
+        assert "not a SHA pin" in session._pin(movable).detail
+    session.strict = False
+    assert session._pin(movable).ok
 
 
 def test_pin_without_a_release_is_not_a_strict_failure():
@@ -511,12 +519,14 @@ def test_workflow_delegates_resolution_and_pins_actions_by_sha():
     polars = _workflow_job(text, "polars-min")
     assert 'test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"' in polars
     assert "needs.resolve-aoi.outputs.sha" in polars
-    assert 'python localci.py run --repeat 10 --seed "${seed}"' in text
+    assert 'python localci.py run --repeat 10 --seed "${seed}" --strict' in text
     assert "github.run_id" in text
     assert "timeout-minutes: 40" in text
     assert "--self-tests" not in text
     assert "--pytest tests/test_localci.py" not in text
-    pinned = "".join(_workflow_job(text, name) for name in ("resolve-aoi", "test", "polars-min", "local-ci"))
+    pinned = "".join(_workflow_job(text, name) for name in ("resolve-aoi", "vendor-aoi", "test", "polars-min", "local-ci"))
+    uses = localci.parse_uses(text)
+    assert uses and all(localci.SHA_RE.fullmatch(item["ref"].lower()) for item in uses)
     uses = localci.parse_uses(pinned)
     checkout = [item["ref"] for item in uses if item["repo"] == "actions/checkout"]
     assert checkout and set(checkout) == {"3d3c42e5aac5ba805825da76410c181273ba90b1"}

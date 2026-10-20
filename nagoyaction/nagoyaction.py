@@ -9,7 +9,8 @@ GitHub Actions のワークフローは `python nagoyaction/nagoyaction.py run <
   show <pipeline>    パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する
   run <pipeline>     doctor のあと、手順を順に実行する。各手順の結果を受領記録(JSONL)に残す
     --offline        network = true の手順は実行しない（成果物が既にあれば飛ばす。なければ止まる）
-    --only / --from  一部の手順だけ実行する
+    --only / --from / --until  一部の手順だけ実行する
+    -v KEY=VALUE     変数をコマンドラインから設定・上書きする
     --dry-run        何を実行するかだけ表示する
 
 標準ライブラリだけで書く（Python 3.11+、tomllib）。1ファイルをコピーすれば他のリポジトリでも使える。
@@ -103,22 +104,41 @@ def _expand(argv: list[str], vars_: dict) -> list[str]:
         raise PipelineError(f"未定義の変数: {e}") from None
 
 
-def _select(steps, only, start):
+def _parse_override_vars(var_list: list[str] | None) -> dict[str, str]:
+    res = {}
+    if not var_list:
+        return res
+    for item in var_list:
+        if "=" not in item:
+            raise PipelineError(f"変数指定の形式が不正: {item} (KEY=VALUE の形式で指定)")
+        k, v = item.split("=", 1)
+        k = k.strip()
+        if not k:
+            raise PipelineError(f"変数名が空: {item}")
+        res[k] = v
+    return res
+
+
+def _select(steps, only=None, start=None, until=None):
     names = [s["name"] for s in steps]
-    for n in [*(only or []), *([start] if start else [])]:
+    for n in [*(only or []), *([start] if start else []), *([until] if until else [])]:
         if n not in names:
             raise PipelineError(f"そんな step はない: {n}（{names}）")
     if only:
         return [s for s in steps if s["name"] in only]
-    if start:
-        return steps[names.index(start):]
-    return steps
+    s_idx = names.index(start) if start else 0
+    e_idx = names.index(until) + 1 if until else len(steps)
+    if s_idx >= e_idx:
+        raise PipelineError(f"--from ({start}) は --until ({until}) より前でなければならない")
+    return steps[s_idx:e_idx]
 
 
-def run(p: dict, *, offline=False, only=None, start=None, dry_run=False, receipt: Path | None = None,
-        runner=subprocess.run) -> int:
+def run(p: dict, *, offline=False, only=None, start=None, until=None, var_overrides=None,
+        dry_run=False, receipt: Path | None = None, runner=subprocess.run) -> int:
     vars_ = {k: str(v) for k, v in p.get("vars", {}).items()}
-    for s in _select(p["step"], only, start):
+    if var_overrides:
+        vars_.update(var_overrides)
+    for s in _select(p["step"], only, start, until):
         argv = _expand(s["run"], vars_)
         entry = {"pipeline": p.get("name"), "step": s["name"], "argv": argv,
                  "started": dt.datetime.now(dt.UTC).isoformat(timespec="seconds")}
@@ -149,9 +169,11 @@ def _append(path: Path, entry: dict) -> None:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def show(p: dict, *, json_output: bool = False) -> str:
+def show(p: dict, *, var_overrides=None, json_output: bool = False) -> str:
     """パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示形式で返す。"""
     vars_ = {k: str(v) for k, v in p.get("vars", {}).items()}
+    if var_overrides:
+        vars_.update(var_overrides)
     req = p.get("requires", {})
     steps_data = []
     for s in p.get("step", []):
@@ -221,20 +243,24 @@ def main(argv=None) -> int:
     d.add_argument("--offline", action="store_true")
     s = sub.add_parser("show", help="パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する")
     s.add_argument("pipeline", type=Path)
+    s.add_argument("-v", "--var", action="append", help="変数の上書き (KEY=VALUE)")
     s.add_argument("--json", dest="json_output", action="store_true", help="JSON 形式で出力")
     r = sub.add_parser("run")
     r.add_argument("pipeline", type=Path)
     r.add_argument("--offline", action="store_true")
     r.add_argument("--only", nargs="+")
     r.add_argument("--from", dest="start")
+    r.add_argument("--until", "--to", dest="until", help="指定した step まで実行")
+    r.add_argument("-v", "--var", action="append", help="変数の上書き (KEY=VALUE)")
     r.add_argument("--dry-run", action="store_true")
     r.add_argument("--receipt", type=Path, help="受領記録(JSONL)の追記先")
     args = ap.parse_args(argv)
 
     try:
         p = load(args.pipeline)
+        var_overrides = _parse_override_vars(getattr(args, "var", None))
         if args.cmd == "show":
-            print(show(p, json_output=args.json_output))
+            print(show(p, var_overrides=var_overrides, json_output=args.json_output))
             return 0
         checks = doctor(p, offline=args.offline)
         _print_checks(checks)
@@ -243,8 +269,8 @@ def main(argv=None) -> int:
             return 1
         if args.cmd == "doctor":
             return 0
-        return run(p, offline=args.offline, only=args.only, start=args.start, dry_run=args.dry_run,
-                   receipt=args.receipt)
+        return run(p, offline=args.offline, only=args.only, start=args.start, until=args.until,
+                   var_overrides=var_overrides, dry_run=args.dry_run, receipt=args.receipt)
     except PipelineError as e:
         print(f"pipeline error: {e}", file=sys.stderr)
         return 2

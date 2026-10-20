@@ -36,7 +36,7 @@ jobs:
           ref: ${{ inputs.markdown-ref || 'aa5bccfcaf11f17473c7f1ff502509dfa1547660' }}
           path: .deps/markdown
           persist-credentials: false
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.14'
       - name: Build current reports and previous-version comparison

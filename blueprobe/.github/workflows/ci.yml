@@ -19,6 +19,7 @@ jobs:
     env:
       # QueRyu（Aoi/queryu）はキャッシュ連携テストで使う。コピーせず、固定 SHA で別途 checkout する
       AOI_SHA: 7084f4bd8463dc8b4732f020ff96c431c7172bf8
+      LAB_SHA: 81b1150d633d5c6aaedc893c951c8f584ba877e3
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -37,11 +38,20 @@ jobs:
           path: .test-deps/aoi
           persist-credentials: false
       - run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - uses: actions/checkout@v5
+        with:
+          repository: myon-bioinformatics/mcp-toolcall-lab
+          ref: ${{ env.LAB_SHA }}
+          path: .test-deps/lab
+          persist-credentials: false
+      - run: test "$(git -C .test-deps/lab rev-parse HEAD)" = "$LAB_SHA"
       - run: python -m compileall -q -x '\.test-deps' .
       - run: python -m pip install uv
-      - run: uv run --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
+      - run: uv sync --locked --python "${{ matrix.python }}"
+      - run: uv run --locked --python "${{ matrix.python }}" pytest -q --require-blueprobe-lab-integration --junitxml=reports/junit.xml
         env:
-          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/queryu
+          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/queryu:${{ github.workspace }}/.test-deps/lab/src
+          AOI_LAB_SOURCE_ROOT: ${{ github.workspace }}/.test-deps/lab/src
       - name: Preserve JUnit report
         if: always()
         uses: actions/upload-artifact@v4

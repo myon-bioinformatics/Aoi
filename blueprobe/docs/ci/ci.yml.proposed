@@ -35,7 +35,8 @@ jobs:
       - name: Test with JUnit
         run: |
           mkdir -p build/test-results
-          uv run --python "${{ matrix.python }}" pytest -q --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
+          uv sync --locked --python "${{ matrix.python }}"
+          uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
         env:
           PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/queryu
       - name: Preserve raw JUnit

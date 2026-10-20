@@ -147,6 +147,38 @@ def analyze(games: list[dict], team: str, *, max_step: int = 3,
             "results": results, "candidates": candidates}
 
 
+def markdown(report: dict) -> str:
+    lines = [f"# 試合ごとの得失点感度分析 ({report['team']})", "",
+             report["policy"]["interpretation"], "",
+             "| 軸 | ステップ | 探索年数 | 全年勝ち越し増加 | 変更点数 | 勝ち越し増加 | 変更1点あたりの勝ち越し | 状態 | 命題 |",
+             "|---|---:|---:|---|---:|---:|---:|---|---|"]
+    def fmt(v, prec=3):
+        return "未定義" if v is None else f"{v:.{prec}f}"
+
+    for c in report["candidates"]:
+        pos = f"{c['positive_seasons']}/{c['seasons']}"
+        net = f"{c['net_wins_delta']:+d}" if c["net_wins_delta"] is not None else "—"
+        rate = fmt(c["net_wins_per_changed_run"]) if c["net_wins_per_changed_run"] is not None else "—"
+        lines.append(f"| {c['axis']} | {c['step']} | {c['seasons']} | {pos} | {c['changed_runs']} | {net} | {rate} | {c['status']} | {c['proposition']} |")
+
+    lines += ["", "## シーズン別得失点変更曲線", ""]
+    for r in report["results"]:
+        lines += [f"### {r['season']}年 ({r['axis']}軸, {r['role']})", "",
+                  "| ステップ | 変更点数 | W | L | T | 勝率 | fixed期待勝率 | 期待勝利数 | 勝ち越し差分 |",
+                  "|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        for p in r["curve"]:
+            m = p["metrics"]
+            d = p["delta"]
+            wpct = fmt(m["wpct"])
+            pythag = fmt(m["pythag_fixed"])
+            exp_w = fmt(m["expected_wins"], 2)
+            net_delta = f"{d['W'] - d['L']:+d}" if d["W"] is not None and d["L"] is not None else "—"
+            lines.append(f"| {p['step']} | {p['changed_runs']} | {m['W']} | {m['L']} | {m['T']} | {wpct} | {pythag} | {exp_w} | {net_delta} |")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--games", type=Path, required=True)
@@ -155,6 +187,7 @@ def main() -> None:
     parser.add_argument("--max-step", type=int, default=3)
     parser.add_argument("--min-seasons", type=int, default=3)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--markdown", type=Path)
     args = parser.parse_args()
     config = tomllib.loads(args.config.read_text(encoding="utf-8"))
     team = args.team or config["focus"]["team"]
@@ -165,6 +198,9 @@ def main() -> None:
                      excluded=config.get("exclude", []), holdout=config.get("confirm", {}).get("seasons", []))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    if args.markdown:
+        args.markdown.parent.mkdir(parents=True, exist_ok=True)
+        args.markdown.write_text(markdown(result), encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -78,7 +78,7 @@ unknown : どの区分にも当たらなかったもの。原文を残す → �
 PYTHONPATH=<Aoi のルート>/queryu uv run pytest -q
 ```
 
-キャッシュ連携テストは QueRyu（`Aoi/queryu`）を使う。CI（`.github/workflows/ci.yml`、Python 3.11–3.14）は Aoi を固定 SHA（`AOI_SHA`）で `.test-deps/aoi` に checkout し、
+キャッシュ連携テストは QueRyu（`Aoi/queryu`）を使う。CI（`.github/workflows/ci.yml`、Python 3.11–3.15）は実行時に Aoi の main を解決して `.test-deps/aoi` に checkout し、解決した SHA をジョブサマリへ残す。`workflow_dispatch` の `aoi_ref` で ref を上書きできる。
 `PYTHONPATH` に `queryu` を足す。任意の lab 統合テストは後半の「固定した実装でオフライン統合テストを再現する」。
 
 ## Aoi との関係

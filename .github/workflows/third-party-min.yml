@@ -51,9 +51,9 @@ jobs:
         run: uv venv .venv-min --python 3.12
       - name: The packages are not installed there
         run: |
-          ! .venv-min/bin/python -c 'import selectolax'
-          ! .venv-min/bin/python -c 'import httpx'
-          ! .venv-min/bin/python -c 'import coverage'
+          if .venv-min/bin/python -c 'import selectolax'; then exit 1; fi
+          if .venv-min/bin/python -c 'import httpx'; then exit 1; fi
+          if .venv-min/bin/python -c 'import coverage'; then exit 1; fi
       - name: Same research code on the replacements
         run: |
           .venv-min/bin/python mindeps/run_selectolax.py --impl min sel-min.json

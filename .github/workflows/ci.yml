@@ -22,7 +22,6 @@ jobs:
 
   resolve-aoi:
     needs: changes
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -110,6 +109,74 @@ jobs:
             echo "Repository id \`$AOI_REPOSITORY_ID\`."
             echo "Source-hash provenance: $mode."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # vendor/aoi のバイトを、解決した Aoi の原本と shared-tools.lock.json に照合する。
+  # pull request では不一致を警告にし、main への push と schedule では失敗にする。
+  vendor-aoi:
+    name: Aoi vendor hashes
+    needs: [changes, resolve-aoi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ needs.resolve-aoi.outputs.sha }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - name: Compare vendored tools to the resolved Aoi tree
+        env:
+          EXPECTED_SHA: ${{ needs.resolve-aoi.outputs.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+          AOI_REPOSITORY_ID: "1402862784"
+        run: |
+          set -euo pipefail
+          uv --version
+          if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "resolved Aoi SHA missing" >&2
+            exit 1
+          fi
+          actual=$(git -C .test-deps/aoi rev-parse HEAD)
+          strict=0
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
+            strict=1
+          elif [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            strict=1
+          fi
+          if [[ "$strict" == "1" ]]; then
+            mode="strict"
+          else
+            mode="report-only"
+          fi
+          {
+            echo "## Aoi source"
+            echo "Resolved \`$EXPECTED_SHA\`."
+            echo "Repository id \`$AOI_REPOSITORY_ID\`."
+            echo "Vendor hash check: $mode."
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$actual" != "$EXPECTED_SHA" ]]; then
+            echo "Aoi checkout $actual does not match resolved $EXPECTED_SHA" >&2
+            if [[ "$strict" == "1" ]]; then
+              exit 1
+            fi
+            echo "::warning::Aoi checkout does not match the resolved source commit (report-only for this event)"
+          fi
+          if [[ "$strict" == "1" ]]; then
+            python -S scripts/check_vendor_aoi.py --aoi .test-deps/aoi
+          else
+            python -S scripts/check_vendor_aoi.py --aoi .test-deps/aoi --warn
+          fi
 
   test:
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'

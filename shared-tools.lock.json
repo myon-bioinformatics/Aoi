@@ -1,0 +1,20 @@
+{
+  "schema": "vendor-lock/1",
+  "files": [
+    {
+      "path": "vendor/aoi/scripts/shrink_module.py",
+      "sha256": "f798ba054ce65ffd717fce21fb429ec15ee4084084ca969e768675db9811922c",
+      "source": "myon-bioinformatics/Aoi"
+    },
+    {
+      "path": "vendor/aoi/scripts/shrink_polars.py",
+      "sha256": "1d8df5102a16a50c8a3a89f2b730bec21d0b1dc76106d1cb2bafeee81915ebc5",
+      "source": "myon-bioinformatics/Aoi"
+    },
+    {
+      "path": "vendor/aoi/shrink/polars_min.py",
+      "sha256": "7c3539937b266e8d11452b3621050aab7d60ae8bb05dc79ffdc12874386cf4e1",
+      "source": "myon-bioinformatics/Aoi"
+    }
+  ]
+}

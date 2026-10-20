@@ -29,7 +29,7 @@ uv sync
 uv run python pythdragoras.py --help
 ```
 
-分析の入力（サイクルデータ `cycles/` など）は Aoi に置いています。パスは呼び出し側（Aoi の `aoi_paths.py`）が解決して渡し、littlebit の CLI だけが `aoi_layout.py` で解決します。実際のコマンド例は後半の「詳しい仕様と研究での使い方」にあります。
+分析の入力（サイクルデータ `cycles/` など）は Aoi に置いています。パスは呼び出し側（Aoi の `aoi_paths.py`）が解決して渡します。littlebit の CLI は `--cycle-dir`、または `--root` / `AOI_ROOT` と `AOI_RESEARCH_CYCLE` を受け取り、配置は探しません。実際のコマンド例は後半の「詳しい仕様と研究での使い方」にあります。
 
 ## 構成
 
@@ -45,7 +45,6 @@ uv run python pythdragoras.py --help
 | `littlebit_survey.py` | 乗算・浮動小数なしの画像の領域・重心推定（実験、単一ファイル） |
 | `registration_audit.py` | 来歴ラベル（事前登録か posthoc か）の監査 |
 | `next_seeds.py` | 元の命題と逆の判定を並べ、次の命題の種を表示する（判定ではない） |
-| `aoi_layout.py` | 出力の証跡を固定した `littlebit_approx.py`・`littlebit_holdout.py` の CLI だけが使う（下の「Aoi との関係」） |
 
 `pythdragoras.py` などの主な関数:
 
@@ -64,7 +63,7 @@ uv run python pythdragoras.py --help
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout 62ad1e49154121cf237d52de352404c4400e6a55   # .github/workflows/ci.yml の AOI_SHA
+git -C .test-deps/aoi checkout dadc6fac043fac2d1550132a362f92eeb0e12643   # .github/workflows/ci.yml の AOI_SHA
 AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
   uv run pytest -q --junitxml=reports/junit.xml
 ```
@@ -85,9 +84,11 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `pythdragoras/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
 この README は Aoi の `pythdragoras/README.md` と同じファイルです。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
 
-### aoi_layout.py
+### サイクルのパス
 
-`aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。`aoi_layout.py` は、`littlebit_approx.py`・`littlebit_holdout.py` の CLI（`--root`・`--cycle`）が Aoi の `aoi_paths.py` を探すために残しています。この 2 つは Aoi の `holdout.provenance.json` などでソースの SHA-256 を固定しているので、CLI を引数だけにする変更は、子の CI が読む Aoi の固定 SHA を上げるときにまとめて行います。
+`aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。`littlebit_approx.py` と `littlebit_holdout.py` は配置を推定しません。サイクルのフォルダは `--cycle-dir` で渡します。省略するときは `--root` または環境変数 `AOI_ROOT` と、環境変数 `AOI_RESEARCH_CYCLE`（`<root>/cycles/<名前>`）です。
+
+この 2 ファイルの SHA-256 は、Aoi の `cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json` で固定しています。ピンした Aoi が記録している `source_divergence.current_sha256` と今のファイルが違うあいだは、`tests/pending_holdout_source_divergence.json` がその差です。子の CI は、証跡の `evidence_sha256` と入力と `holdout.json` / `holdout.md` を動かさず、pending に書いた current だけを「Aoi が次の subtree pull で provenance に記録する divergence」として確かめます。ピンした Aoi がすでに同じ current を記録しているのに pending が残っていると、CI は落ちます。
 
 ### Aoi との同期
 

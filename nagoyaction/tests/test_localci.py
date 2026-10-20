@@ -195,19 +195,39 @@ def test_classify_pin():
     latest = ("v1.2.3", SHA_B)
     assert localci.classify_pin(SHA_B, latest) == "match"
     assert localci.classify_pin(SHA_A, latest) == "outdated"
-    assert localci.classify_pin("v1", latest) == "unpinned"
+    assert localci.classify_pin("v1", latest, "actions/checkout") == "major"
+    assert localci.classify_pin("v7", latest, "actions/upload-artifact") == "major"
+    assert localci.classify_pin("v8", latest, "actions/download-artifact") == "major"
+    assert localci.classify_pin("v6", latest, "actions/cache") == "major"
+    assert localci.classify_pin("v7.0.1", latest, "actions/checkout") == "unpinned"
+    assert localci.classify_pin("v7", latest, "actions/setup-python") == "unpinned"
+    assert localci.classify_pin("v7", latest, "actions/setup-node") == "unpinned"
+    assert localci.classify_pin("v10", latest, "astral-sh/setup-uv") == "unpinned"
+    assert localci.classify_pin("v1", latest, "example/widget") == "unpinned"
+    assert localci.classify_pin("v1", latest, "myon-bioinformatics/myon-bioinformatics") == "unpinned"
     assert localci.classify_pin(SHA_A, None) == "no-release"
-    assert localci.classify_pin("v1", None) == "unpinned"
+    assert localci.classify_pin("v1", None, "actions/checkout") == "major"
+    assert localci.classify_pin("v1", None, "actions/setup-python") == "unpinned"
     assert localci.pin_fails("outdated", strict=False) is False
     assert localci.pin_fails("outdated", strict=True) is True
     assert localci.pin_fails("unpinned", strict=False) is False
     assert localci.pin_fails("unpinned", strict=True) is True
+    assert localci.pin_fails("major", strict=True) is False
     assert localci.pin_fails("no-release", strict=True) is False
 
 
 def test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe():
-    url = "https://api.github.com/repos/actions/checkout/releases/latest"
-    opener = Opener({url: {"tag_name": "v7.0.1"}})
+    release = {"tag_name": "v7.0.1"}
+    repos = (
+        "actions/checkout",
+        "actions/upload-artifact",
+        "actions/download-artifact",
+        "actions/cache",
+        "actions/setup-python",
+        "actions/setup-node",
+        "astral-sh/setup-uv",
+    )
+    opener = Opener({f"https://api.github.com/repos/{repo}/releases/latest": release for repo in repos})
 
     def runner(argv, **kwargs):
         assert argv[:2] == ["git", "ls-remote"]
@@ -226,7 +246,22 @@ def test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe():
     current = localci.Check("pin:new", "pin", "actions/checkout@" + SHA_B, ref=SHA_B, repo="actions/checkout")
     assert session._pin(current).status == "pass"
     assert "matches v7.0.1" in session._pin(current).detail
-    for ref in ("v7", "v10.3.0", ""):
+    for repo, ref in (
+        ("actions/checkout", "v7"),
+        ("actions/upload-artifact", "v7"),
+        ("actions/download-artifact", "v8"),
+        ("actions/cache", "v6"),
+    ):
+        major = localci.Check(f"pin:{repo}", "pin", f"{repo}@{ref}", ref=ref, repo=repo)
+        outcome = session._pin(major)
+        assert outcome.status == "pass", outcome.detail
+        assert "moving major" in outcome.detail
+    for repo in ("actions/setup-python", "actions/setup-node", "astral-sh/setup-uv"):
+        tagged = localci.Check(f"pin:{repo}", "pin", f"{repo}@v7", ref="v7", repo=repo)
+        outcome = session._pin(tagged)
+        assert outcome.status == "fail"
+        assert "not a SHA pin" in outcome.detail
+    for ref in ("v10.3.0", ""):
         movable = localci.Check(f"pin:{ref or 'bare'}", "pin", "actions/checkout@" + ref, ref=ref, repo="actions/checkout")
         assert session._pin(movable).status == "fail"
         assert "not a SHA pin" in session._pin(movable).detail
@@ -509,7 +544,7 @@ def _workflow_job(text: str, name: str) -> str:
     return "".join(lines[start:end])
 
 
-def test_workflow_delegates_resolution_and_pins_actions_by_sha():
+def test_workflow_delegates_resolution_and_follows_parent_uses_style():
     text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     resolve = _workflow_job(text, "resolve-aoi")
     assert "python localci.py resolve --github-output" in resolve
@@ -535,16 +570,45 @@ def test_workflow_delegates_resolution_and_pins_actions_by_sha():
     assert "--pytest tests/test_localci.py" not in text
     pinned = "".join(_workflow_job(text, name) for name in ("resolve-aoi", "vendor-aoi", "test", "polars-min", "local-ci"))
     uses = localci.parse_uses(text)
-    assert uses and all(localci.SHA_RE.fullmatch(item["ref"].lower()) for item in uses)
+    assert uses
+    major_actions = {"actions/checkout", "actions/upload-artifact", "actions/download-artifact", "actions/cache"}
+    for item in uses:
+        repo, ref = item["repo"], item["ref"]
+        if localci.is_setup_action(repo):
+            assert localci.SHA_RE.fullmatch(ref.lower()), item
+        elif repo in major_actions or repo.startswith("actions/"):
+            assert localci.MAJOR_TAG_RE.fullmatch(ref), item
+        else:
+            assert localci.SHA_RE.fullmatch(ref.lower()), item
+    assert "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0" in text
+    assert "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0" in text
+    assert "actions/checkout@v7" in text
+    assert "actions/upload-artifact@v7" in text
+    assert "# v7.0.1" not in text
+    assert "# v7.0.2" not in text
     uses = localci.parse_uses(pinned)
     checkout = [item["ref"] for item in uses if item["repo"] == "actions/checkout"]
-    assert checkout and set(checkout) == {"3d3c42e5aac5ba805825da76410c181273ba90b1"}
+    assert checkout and set(checkout) == {"v7"}
     setup = [item["ref"] for item in uses if item["repo"] == "actions/setup-python"]
     assert set(setup) == {"5fda3b95a4ea91299a34e894583c3862153e4b97"}
     uv = [item["ref"] for item in uses if item["repo"] == "astral-sh/setup-uv"]
     assert set(uv) == {"1c37ad07a6a961277cf70c0d37d6f313000f5884"}
     upload = [item["ref"] for item in uses if item["repo"] == "actions/upload-artifact"]
-    assert upload == ["cf430e030ddbb5b0abf93d22962f4752f3646cd9"]
+    assert upload == ["v7"]
+
+
+def test_dependabot_matches_the_parent_github_actions_schedule():
+    text = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+    assert text == (
+        'version: 2\n'
+        'updates:\n'
+        '  - package-ecosystem: "github-actions"\n'
+        '    directory: "/"\n'
+        '    schedule:\n'
+        '      interval: "monthly"\n'
+        '      timezone: "Asia/Tokyo"\n'
+        '    open-pull-requests-limit: 5\n'
+    )
 
 
 def test_pytest_plugin_shards_are_disjoint_and_cover_every_test(tmp_path):

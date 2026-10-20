@@ -35,8 +35,7 @@ import re
 from collections import Counter
 from urllib.parse import urljoin, urlsplit
 
-from blueprobe import new_report, normalize
-from selectolax.lexbor import LexborHTMLParser
+from blueprobe import HtmlTree, new_report, normalize
 
 NAME = "npb_schedule_current"
 URL = "https://npb.jp/games/{year}/schedule_{month:02d}_detail.html"
@@ -67,7 +66,7 @@ def parse(html: str, url: str = "") -> dict:
     """1ページを読み、結果の出た試合と、採用しなかったものの件数・原文を返す。"""
     out = new_report()
     seen = set()
-    for a in LexborHTMLParser(html).css("a"):
+    for a in HtmlTree(html).css("a"):
         href = a.attributes.get("href") or ""
         raw = a.text(deep=True)
         t = normalize(raw)

@@ -11,7 +11,7 @@ class HtmlSource:
     def __init__(self, *, selector=None, pattern=None, extractor=None, include_css=False, stylesheets=None,
                  snapshot_extractor=None):
         if pattern is not None and selector is None:
-            from dom_patterns import get_selector_for_pattern
+            from blueprobe import get_selector_for_pattern
             selector = get_selector_for_pattern(pattern)
         self.pattern = pattern
         self.selector = selector

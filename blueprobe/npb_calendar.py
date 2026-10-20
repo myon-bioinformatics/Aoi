@@ -29,9 +29,7 @@ from __future__ import annotations
 import re
 from urllib.parse import urljoin, urlsplit
 
-from selectolax.lexbor import LexborHTMLParser
-
-from blueprobe import new_report, normalize
+from blueprobe import HtmlTree, new_report, normalize
 
 NAME = "npb_calendar"
 URL = "https://npb.jp/bis/{year}/calendar/index_{month:02d}.html"
@@ -104,7 +102,7 @@ def parse(html: str, url: str = "") -> dict:
     """1ページを読み、採用した試合と、採用しなかったものの件数・原文を返す。"""
     out = new_report()
     seen = set()
-    for a in LexborHTMLParser(html).css("a"):
+    for a in HtmlTree(html).css("a"):
         href = a.attributes.get("href") or ""
         path = GAME_PATH.fullmatch(urlsplit(href).path) if href else None
         raw = a.text(deep=True)

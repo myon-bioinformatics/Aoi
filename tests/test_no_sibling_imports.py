@@ -32,6 +32,9 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_research_report.py", "import:aoi_paths"),
     # 実験の入口。本番のモジュールは Aoi の scripts/ を import しない。
     ("tests/test_stdlib_paths.py", "path:scripts"),
+    # 図の寸法と段階の上限は、NagoyAction の localci がラウンドの seed で差し替える。
+    # モジュールは実行時に取得する。無いときは固定値のまま（リポジトリには置かない）。
+    ("tests/test_export.py", "import:localci"),
 }
 
 

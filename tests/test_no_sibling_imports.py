@@ -13,6 +13,9 @@ SKIP_DIRS = {".git", ".venv", ".test-deps", "build", "reports", "__pycache__"}
 THIRD_PARTY = {"polars", "numpy", "pytest"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/
 SIBLING_DIRS = ("blueprobe", "queryu", "sakanalytics", "nagoyaction", "dragowing", "scripts")
+# Aoi のルートの aoi_paths.py（AOI_ROOT から読む。このリポジトリには置かない）。
+# テストのデータの場所と、出力の証跡を固定した littlebit の CLI が使う aoi_layout.py だけが読む
+AOI_PROVIDED = {"aoi_paths"}
 KNOWN_EXCEPTIONS = {
     # 実データの列名と sakanalytics の出力を突き合わせる
     ("tests/test_propositions.py", "import:sakanalytics"),
@@ -50,7 +53,7 @@ def _uses(tree):
 
 
 def find_uses():
-    allowed = set(sys.stdlib_module_names) | THIRD_PARTY | _local_modules()
+    allowed = set(sys.stdlib_module_names) | THIRD_PARTY | AOI_PROVIDED | _local_modules()
     found = set()
     for rel, path in _sources():
         for use in _uses(ast.parse(path.read_text(encoding="utf-8"), filename=rel)):

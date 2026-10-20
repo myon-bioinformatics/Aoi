@@ -29,7 +29,7 @@ uv sync
 uv run python pythdragoras.py --help
 ```
 
-分析の入力（サイクルデータ `cycles/` など）は Aoi に置いています。パスは Aoi の規約（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。実際のコマンド例は後半の「詳しい仕様と研究での使い方」にあります。
+分析の入力（サイクルデータ `cycles/` など）は Aoi に置いています。パスは呼び出し側（Aoi の `aoi_paths.py`）が解決して渡し、littlebit の CLI だけが `aoi_layout.py` で解決します。実際のコマンド例は後半の「詳しい仕様と研究での使い方」にあります。
 
 ## 構成
 
@@ -45,7 +45,7 @@ uv run python pythdragoras.py --help
 | `littlebit_survey.py` | 乗算・浮動小数なしの画像の領域・重心推定（実験、単一ファイル） |
 | `registration_audit.py` | 来歴ラベル（事前登録か posthoc か）の監査 |
 | `next_seeds.py` | 元の命題と逆の判定を並べ、次の命題の種を表示する（判定ではない） |
-| `aoi_layout.py`・`aoi_paths.py` | Aoi のパスの規約（下の「Aoi との関係」） |
+| `aoi_layout.py` | 出力の証跡を固定した `littlebit_approx.py`・`littlebit_holdout.py` の CLI だけが使う（下の「Aoi との関係」） |
 
 `pythdragoras.py` などの主な関数:
 
@@ -71,7 +71,7 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
 
 CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。
 
-- パスは Aoi の規約（PR #49）（`--root` / `AOI_ROOT`、`--cycle` / `AOI_RESEARCH_CYCLE`、`aoi_layout.py`）で解決します。
+- テストは `AOI_ROOT` だけで Aoi を受け取り、データの場所は Aoi の `aoi_paths.py` に聞きます。このリポジトリに `aoi_paths.py` は置きません。
 - `AOI_ROOT` が Aoi を指していないと、pytest は最初に止まって理由を出します。
 - 実行時の依存は polars と numpy だけです（ortools は使っていません）。
 - テストは、これに加えて `AOI_ROOT` の Aoi を使います。
@@ -85,11 +85,9 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `pythdragoras/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
 この README は Aoi の `pythdragoras/README.md` と同じファイルです。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
 
-### aoi_paths.py
+### aoi_layout.py
 
-`aoi_paths.py` は Aoi 直下の `aoi_paths.py` と同じ中身の通常のファイルです（vendor lock は使いません）。Aoi では `pythdragoras/aoi_paths.py` になり、Aoi の `scripts/check_child_heads.py` が Aoi 直下の原本と blob が同じかを確かめます（`child-heads.json` の `optional.mirrored_from_parent`）。直すときは Aoi の原本を直し、同じ中身をここに置きます。
-
-`aoi_paths.py` をリポジトリ直下に置くのは、`aoi_layout.bind()` が上のディレクトリへ向かって `aoi_paths.py` を探すためです。
+`aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。`aoi_layout.py` は、`littlebit_approx.py`・`littlebit_holdout.py` の CLI（`--root`・`--cycle`）が Aoi の `aoi_paths.py` を探すために残しています。この 2 つは Aoi の `holdout.provenance.json` などでソースの SHA-256 を固定しているので、CLI を引数だけにする変更は、子の CI が読む Aoi の固定 SHA を上げるときにまとめて行います。
 
 ### Aoi との同期
 

@@ -103,6 +103,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## DRAgoWing
 
+2026-10-21: main `9201b0221e99cdfbe29506f92768a0f056e2343b`（#17: `uses:` を親の書き方に合わせる。setup は 40 桁 SHA と `# vX.Y.Z`、それ以外の actions/* は `@vN`）を squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。
+
 2026-10-21: main `9e9376f1b7c0ec1dfbafd020a50769c8dc3d82cf`（#16: headless Chrome が D-Bus の応答待ちで `Browser.getVersion` に届かないのを止める）を squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。
 
 2026-10-21: DRAgoWing #15 の main `5487e25add5ec084c16d4a4e4ac8a734da2ba695` を squash なしの `git subtree pull` で取り込みました。`load_overlap(..., backend="stdlib")` の明示選択・一致検証・測定を含み、既定は native のままです。prefix tree と登録SHAは一致し、研究入力・holdout履歴・研究結果は変更していません。

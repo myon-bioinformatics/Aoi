@@ -2,7 +2,6 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
-import subprocess
 
 import pytest
 
@@ -13,15 +12,6 @@ import aoi_paths
 ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 CYCLE = aoi_paths.resolve_cycle_path(ROOT)
 OUT=CYCLE/'outputs/exploratory/proposition-evaluation'
-CHILD = Path(__file__).resolve().parents[1]
-PENDING_PATH = CHILD / 'expected-source-divergence.json'
-# 証跡がソースの SHA-256 を見ている、このリポジトリのファイル。
-# ピンした Aoi のコピーとバイトが違うものだけを expected-source-divergence.json に書く。
-PROVENANCE_SOURCES = (
-    'proposition_seed_audit.py',
-    'league_laboratory.py',
-    'synthetic_league.py',
-)
 
 
 def _recorded_source_sha(out, artifact, field, recorded, source):
@@ -46,97 +36,13 @@ def _recorded_source_sha(out, artifact, field, recorded, source):
     assert isinstance(row['reason'], str) and row['reason'].strip()
 
 
-def _sha256(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
-
-
-def _running_as_child():
-    """単独リポジトリの CI。Aoi に埋め込まれているときはソースとピンが同じツリー。"""
-    return ROOT.resolve() != CHILD.resolve().parent
-
-
-def _workflow_aoi_sha():
-    found = []
-    for line in (CHILD / '.github/workflows/ci.yml').read_text(encoding='utf-8').splitlines():
-        stripped = line.strip()
-        if stripped.startswith('AOI_SHA:'):
-            found.append(stripped.split(':', 1)[1].strip())
-    assert len(found) == 1
-    pinned = found[0]
-    assert len(pinned) == 40 and set(pinned) <= set('0123456789abcdef')
-    return pinned
-
-
-def _pinned_aoi_sha():
-    pinned = _workflow_aoi_sha()
-    head = subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
-    assert head == pinned, f'AOI_ROOT HEAD {head} != workflow AOI_SHA {pinned}'
-    return pinned
-
-
-def _pending_manifest():
-    if not PENDING_PATH.is_file():
-        return None
-    data = json.loads(PENDING_PATH.read_text(encoding='utf-8'))
-    assert data['schema'] == 'sakanalytics-pending-source-divergence/1'
-    assert isinstance(data['updates'], list)
-    return data
-
-
-def _child_source_sha(field, recorded, name):
-    """実行したソースと、ピンした Aoi のコピーと、証跡の三つを突き合わせる。
-
-    バイトが同じなら、source-divergence.json の検査だけで終わる。
-    このリポジトリだけが進んでいるときは expected-source-divergence.json の1件と
-    ハッシュが完全に一致しなければならない。宣言のない差、宣言と違う差、
-    もう一致しているのに残った宣言は失敗する。生成物のハッシュは書き換えない。
-    """
-    child = CHILD / name
-    aoi = ROOT / 'sakanalytics' / name
-    child_sha = _sha256(child)
-    aoi_sha = _sha256(aoi)
-    pending = _pending_manifest()
-    rows = []
-    if pending:
-        rows = [row for row in pending['updates'] if row['path'] == f'sakanalytics/{name}' and row['field'] == field]
-    assert len(rows) <= 1
-    if child_sha == aoi_sha:
-        assert not rows, f'{name}: pending divergence is stale; bytes match the pinned Aoi tree'
-        return child_sha
-    assert _running_as_child(), f'{name}: embedded tree must be one file, hashes differ'
-    assert pending is not None and rows, (
-        f'{name}: SHA-256 differs from pinned Aoi; declare it in expected-source-divergence.json'
-    )
-    row = rows[0]
-    assert pending['aoi_sha'] == _pinned_aoi_sha()
-    assert row['sidecar'].startswith('cycles/') and row['sidecar'].endswith('/source-divergence.json')
-    assert row['evidence_sha256'] == recorded
-    assert row['aoi_current_sha256'] == aoi_sha
-    assert row['child_sha256'] == child_sha
-    assert row['child_sha256'] != row['aoi_current_sha256']
-    assert row['artifacts_regenerated'] is False and row['inputs_regenerated'] is False
-    assert isinstance(row['reason'], str) and 'was not regenerated' in row['reason']
-    sidecar = json.loads((ROOT / row['sidecar']).read_text(encoding='utf-8'))
-    recorded_rows = [item for item in sidecar['source_divergence']
-                     if item['path'] == row['path'] and item['field'] == row['field']]
-    assert len(recorded_rows) == 1
-    prior = recorded_rows[0]
-    assert prior['evidence_sha256'] == row['evidence_sha256']
-    assert prior['current_sha256'] == row['aoi_current_sha256']
-    assert prior['current_sha256'] != row['child_sha256']
-    assert prior['artifacts_regenerated'] is False and prior['inputs_regenerated'] is False
-    return child_sha
-
-
 def test_replay_seed_registry_from_all_2240_plans():
     actual=audit.build(CYCLE,OUT/'skill-seed-plans.jsonl.gz')
     saved=json.loads((OUT/'seed-evaluation.json').read_text())
-    # 証跡の analysis_sha256 は記録のまま。ピンした Aoi との差は source-divergence.json、
-    # このリポジトリがさらに進んでいる差は expected-source-divergence.json。
-    _recorded_source_sha(OUT, 'seed-evaluation.json', 'analysis_sha256', saved['analysis_sha256'],
-                         ROOT/'sakanalytics/proposition_seed_audit.py')
-    child_sha = _child_source_sha('analysis_sha256', saved['analysis_sha256'], 'proposition_seed_audit.py')
-    assert actual['analysis_sha256']==child_sha
+    # 生成元のハッシュは Aoi の source-divergence.json だけが説明する。ローカルな上書きはしない。
+    source = ROOT/'sakanalytics/proposition_seed_audit.py'
+    _recorded_source_sha(OUT, 'seed-evaluation.json', 'analysis_sha256', saved['analysis_sha256'], source)
+    assert actual['analysis_sha256']==hashlib.sha256(source.read_bytes()).hexdigest()
     assert {**actual, 'analysis_sha256': saved['analysis_sha256']}==saved
     assert actual['plan_count']==2240 and len(actual['propositions'])==114
     assert sum(v['groups'] is not None for v in actual['propositions'].values())==13
@@ -215,29 +121,6 @@ def test_annual_row_count_matches_declared_units(annual_input,change):
     rewrite_annual(annual_input,rows)
     with pytest.raises(ValueError,match='annual unit count differs from declared provenance'):
         audit.build(annual_input,OUT/'skill-seed-plans.jsonl.gz')
-
-
-def test_pending_source_divergence_covers_only_real_drift():
-    if not _running_as_child():
-        assert not PENDING_PATH.exists()
-        return
-    assert _pinned_aoi_sha()
-    pending = _pending_manifest()
-    drifted = []
-    for name in PROVENANCE_SOURCES:
-        child_sha = _sha256(CHILD / name)
-        aoi_sha = _sha256(ROOT / 'sakanalytics' / name)
-        if child_sha != aoi_sha:
-            drifted.append(f'sakanalytics/{name}')
-    assert pending is not None
-    listed = [row['path'] for row in pending['updates']]
-    assert listed == drifted == ['sakanalytics/proposition_seed_audit.py']
-    assert pending['updates'][0]['field'] == 'analysis_sha256'
-    assert pending['updates'][0]['sidecar'] == (
-        'cycles/c001-chunichi/outputs/exploratory/proposition-evaluation/source-divergence.json')
-    _child_source_sha('analysis_sha256',
-                      json.loads((OUT / 'seed-evaluation.json').read_text())['analysis_sha256'],
-                      'proposition_seed_audit.py')
 
 
 def test_cli_takes_cycle_dir_without_resolving_aoi_paths():

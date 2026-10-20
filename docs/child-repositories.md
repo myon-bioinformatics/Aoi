@@ -63,6 +63,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## QueRyu
 
+2026-10-20: QueRyu #14 の merge `b8b2983edde039f010be75e40944f750ccfd9ce7` を、squash なしの `git subtree pull --prefix=queryu` で取り込みました。`queryu/` の tree は登録した SHA の tree と同一です。この版は import 時に BlueProbe の `dom_patterns` を読むため、BlueProbe main `563d84488a57efd3bca2d89c97c0a72759ab8ee5` も同じ方法で `blueprobe/` に取り込みました。DRAgoWing・PythDRagoras・SakAnalytics は drift のみなので登録 SHA は変えていません。
+
 - QueRyu の main `35a08024dc0040566068ba513074e3d8326897d4`（21 コミット）は、Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` から `git filter-branch --subdirectory-filter queryu` で切り出しました。tree `c995b928f46b297025d9cddaeee3df04b322405b` が Aoi の `queryu/` と一致することを確かめています。`git subtree split --prefix=queryu` は 3 コミットで止まり、tree `f5e3d18463fb7f4c431ee796d79d7a42ff1c772a`（10/3 時点）を返しました（PythDRagoras と同じ split の止まり（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））。
 - QueRyu の main `5ce256d77d64b33d4c71c2cbb84fe201f9637567`（#5–#8: 埋込み aoi_layout 出自ガード、stdlib cache core、README、emoji_data、cache_share）に対し、一度だけ `git subtree add` で join を入れました。merge commit の第2親は QueRyu main の head です（手組みの2親マージや squash 由来の join は使いません）。PR は squash/rebase せず merge commit で入れてください。
 - `queryu/` 全体（足場・CI・テスト・cache_core も含む）は登録した QueRyu tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。
@@ -93,6 +95,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - 同期は PythDRagoras の手順の `pythdragoras` を `dragowing`、リポジトリを DRAgoWing に読み替えます（`--squash` なし）。
 
 ## BlueProbe
+
+2026-10-20: main `563d84488a57efd3bca2d89c97c0a72759ab8ee5`（#26 の DOM パターン）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。QueRyu の新しい `pattern_postprocess` が `load_source("dom_patterns")` を import 時に呼ぶためです。
 
 - BlueProbe は Aoi の [`blueprobe/`](../blueprobe/) から独立したリポジトリです。親 myon-bioinformatics の `child-heads.json` への登録は廃止し、Aoi の `child-heads.json` に移しました。Aoi と子の間では vendor lock を使いません（`vendor/`・`vendor.lock.json` は子から除く）。main `596f334198b669546a32c432422acc2eb37afeee`（#21: Aoi 側にだけあった NPB 取得元の移植と vendor カタログの除去）に対し、一度だけの join を入れました。merge commit は第2親として join を残します。PR は squash/rebase せず merge commit で入れてください。
 - `blueprobe/` 全体（子の CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した BlueProbe の tree と同一です。Aoi の原本を写したファイルはないので `mirrored_from_parent` は書きません。`min.py` は Aoi が提供し、子には置きません。

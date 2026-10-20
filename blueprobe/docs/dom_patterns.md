@@ -1,6 +1,6 @@
 # DOM 構造パターン・プリセット設計
 
-実装は [`blueprobe.py`](../blueprobe.py)。[`dom_patterns.py`](../dom_patterns.py) は同じ関数を再公開する。
+実装は [`blueprobe.py`](../blueprobe.py)。[`blueprobe.py`](../blueprobe.py) は同じ関数を再公開する。
 
 BlueProbe は保存済み HTML の DOM 構造から特定の主要コンテンツを抽出する際、CSS セレクタを直接指定する代わりに、
 ドロップダウン/プリセット指定可能な DOM パターン識別子（`github_readme` や `portfolio_profile` 等）を選択・分類できるようにしています。
@@ -35,9 +35,9 @@ report = source.parse(html, url)
 DOM 構造を解析し、マッチするパターンを候補順（スコア順）で返します。
 
 ```python
-import dom_patterns
+import blueprobe
 
-matches = dom_patterns.detect_pattern(html)
+matches = blueprobe.detect_pattern(html)
 if matches:
     top_pattern = matches[0]["pattern"]
     print(f"判定されたパターン: {top_pattern['key']} ({top_pattern['label']})")

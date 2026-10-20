@@ -55,7 +55,7 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 | [`docs/`](docs/) | Philosophy, principles, method and specifications |
 | [`tests/`](tests/) | Repository-level tests (each subproject keeps its own `tests/`) |
 | `child-heads.json` | Registered heads of the child repositories; see [docs/child-repositories.md](docs/child-repositories.md) |
-| `aoi_paths.py`, `aoi_npb.py` | Parent-owned paths and NPB settings passed to the child APIs; see [NPB commands](docs/npb-configuration.md) |
+| `aoi_paths.py`, `aoi_npb.py` | Parent-owned paths and NPB settings passed to the child APIs; see [NPB commands](cycles/c001-chunichi/npb-configuration.md) |
 
 ## Child Repositories
 

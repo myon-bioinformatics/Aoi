@@ -35,7 +35,7 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 ## subtree の同期（決定）
 
-同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では vendor lock を使いません。`aoi_paths.py` と `aoi_npb.py` は Aoi だけに置き、解決したパス・設定を子へ引数で渡します（[親のNPBコマンド](npb-configuration.md)）。子のtreeは登録SHAと完全一致させます。手順は PythDRagoras のものを子ごとに読み替えます。
+同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では vendor lock を使いません。`aoi_paths.py` と `aoi_npb.py` は Aoi だけに置き、解決したパス・設定を子へ引数で渡します（[親のNPBコマンド](../cycles/c001-chunichi/npb-configuration.md)）。子のtreeは登録SHAと完全一致させます。手順は PythDRagoras のものを子ごとに読み替えます。
 
 PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出したので（git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e` を返す。join 前は split が古い tree で止まる（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））、Aoi の履歴とつながっていません。そのため Aoi に一度だけ join を入れます。
 

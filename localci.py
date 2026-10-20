@@ -29,6 +29,8 @@ setup アクションの SHA でないピンを失敗にする。setup 以外の
 actionlint の版もソースに固定しない。実行のたびに最新リリースを解決し、
 タグ・資産名・検証した sha256 を記録する。GitHub Actions では取得か検証に
 失敗したら停止する。手元では、解決済みのタグだけ `go run ...@<tag>` に戻る。
+`.localci/refs.env` は追記しない。キーごとに1行へ原子的に書き換え、同じキーは
+後の値を残し、並びはファイルに最初に出た順を保つ。
 
 標準ライブラリだけ（Python 3.11+）。
 """
@@ -439,17 +441,99 @@ def provenance_mode(event_name: str, github_ref: str) -> str:
     return "report-only"
 
 
-def format_env(resolved: list[Resolved]) -> str:
-    lines = ["# localci resolved refs. source: git ls-remote + repository id check"]
+_ENV_HEADER = "# localci resolved refs. source: git ls-remote + repository id check"
+_ENV_KEY = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def env_pairs(resolved: list[Resolved]) -> list[tuple[str, str]]:
+    pairs: list[tuple[str, str]] = []
     for item in resolved:
-        lines.append(f"{item.source.env}={item.sha}")
-        lines.append(f"{item.source.env.removesuffix('_SHA')}_REPOSITORY_ID={item.repository_id}")
+        pairs.append((item.source.env, item.sha))
+        pairs.append((f"{item.source.env.removesuffix('_SHA')}_REPOSITORY_ID", str(item.repository_id)))
+    return pairs
+
+
+def actionlint_pairs(record: ActionlintRecord) -> list[tuple[str, str]]:
+    pairs = [("ACTIONLINT_TAG", record.tag), ("ACTIONLINT_ASSET", record.asset)]
+    if record.sha256:
+        pairs.append(("ACTIONLINT_SHA256", record.sha256))
+    return pairs
+
+
+def merge_env_lines(existing: str, updates: list[tuple[str, str]], *,
+                    header: str | None = None, drop: tuple[str, ...] = ()) -> str:
+    """同じキーは後の値を残す。並びは最初に出た順で、新しいキーは末尾に足す。"""
+    order: list[str] = []
+    values: dict[str, str] = {}
+    kept = header
+    for raw in existing.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("#"):
+            if kept is None:
+                kept = line
+            continue
+        key, sep, value = line.partition("=")
+        if sep == "" or _ENV_KEY.fullmatch(key) is None:
+            continue
+        if key not in values:
+            order.append(key)
+        values[key] = value
+    for key, value in updates:
+        if key not in values:
+            order.append(key)
+        values[key] = value
+    for key in drop:
+        if key in values:
+            del values[key]
+            order.remove(key)
+    lines: list[str] = []
+    if kept:
+        lines.append(kept)
+    lines.extend(f"{key}={values[key]}" for key in order)
+    if not lines:
+        return ""
     return "\n".join(lines) + "\n"
 
 
-def write_env_file(path: Path, resolved: list[Resolved]) -> None:
+def atomic_write_text(path: Path, text: str) -> None:
+    """同じディレクトリへ書いてから replace する。失敗しても宛先の中身は残る。"""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(format_env(resolved), encoding="utf-8")
+    fd, name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(name, path)
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+
+
+def rewrite_env_file(path: Path, updates: list[tuple[str, str]], *,
+                     header: str | None = None, drop: tuple[str, ...] = ()) -> None:
+    existing = path.read_text(encoding="utf-8") if path.is_file() else ""
+    atomic_write_text(path, merge_env_lines(existing, updates, header=header, drop=drop))
+
+
+def format_env(resolved: list[Resolved]) -> str:
+    return merge_env_lines("", env_pairs(resolved), header=_ENV_HEADER)
+
+
+def write_env_file(path: Path, resolved: list[Resolved]) -> None:
+    rewrite_env_file(path, env_pairs(resolved), header=_ENV_HEADER)
+
+
+def write_actionlint_env(path: Path, record: ActionlintRecord) -> None:
+    drop = () if record.sha256 else ("ACTIONLINT_SHA256",)
+    rewrite_env_file(path, actionlint_pairs(record), drop=drop)
 
 
 def format_github_output(resolved: list[Resolved]) -> str:
@@ -472,10 +556,7 @@ def format_actionlint_line(record: ActionlintRecord) -> str:
 
 
 def format_actionlint_env(record: ActionlintRecord) -> str:
-    lines = [f"ACTIONLINT_TAG={record.tag}", f"ACTIONLINT_ASSET={record.asset}"]
-    if record.sha256:
-        lines.append(f"ACTIONLINT_SHA256={record.sha256}")
-    return "\n".join(lines) + "\n"
+    return merge_env_lines("", actionlint_pairs(record))
 
 
 def format_run_summary(resolved: list[Resolved], actionlint: ActionlintRecord | None) -> str:
@@ -1249,13 +1330,21 @@ def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, st
     )
     recorded = list(session.resolved.values())
     path = env_file or (root / ".localci" / "refs.env")
+    updates: list[tuple[str, str]] = []
+    header = None
+    drop: tuple[str, ...] = ()
     if recorded:
-        write_env_file(path, recorded)
+        updates.extend(env_pairs(recorded))
+        header = _ENV_HEADER
         emit(f"refs: {path}")
         emit(format_env(recorded).rstrip())
     if actionlint_record is not None and actionlint_record.tag:
-        append_text(path, format_actionlint_env(actionlint_record))
+        updates.extend(actionlint_pairs(actionlint_record))
+        if not actionlint_record.sha256:
+            drop = ("ACTIONLINT_SHA256",)
         emit(format_actionlint_line(actionlint_record))
+    if updates:
+        rewrite_env_file(path, updates, header=header, drop=drop)
     summary = os.environ.get("GITHUB_STEP_SUMMARY", "")
     if summary and (recorded or (actionlint_record is not None and actionlint_record.tag)):
         append_text(Path(summary), format_run_summary(recorded, actionlint_record))

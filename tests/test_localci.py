@@ -519,6 +519,137 @@ def test_run_records_actionlint_next_to_resolved_shas(tmp_path, monkeypatch):
     assert f"ACTIONLINT_SHA256={'ab' * 32}" in saved
 
 
+def _write_duplicate_refs(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join([
+            "# localci resolved refs. source: git ls-remote + repository id check",
+            "AOI_SHA=" + ("1" * 40),
+            "ACTIONLINT_TAG=v0.0.1",
+            "AOI_SHA=" + ("2" * 40),
+            "",
+            "ACTIONLINT_TAG=v0.0.2",
+            "MYON_BIOINFORMATICS_SHA=" + ("3" * 40),
+            f"MYON_BIOINFORMATICS_SHA={SHA_B}",
+            "# localci resolved refs. source: git ls-remote + repository id check",
+            "NOT_AN_ASSIGNMENT",
+            "ACTIONLINT_SHA256=cc",
+            "ACTIONLINT_SHA256=dd",
+        ]) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _collapsed_refs() -> str:
+    return "\n".join([
+        "# localci resolved refs. source: git ls-remote + repository id check",
+        f"AOI_SHA={SHA_A}",
+        "ACTIONLINT_TAG=v9.9.9",
+        f"MYON_BIOINFORMATICS_SHA={SHA_B}",
+        f"ACTIONLINT_SHA256={'ab' * 32}",
+        "AOI_REPOSITORY_ID=1402862784",
+        f"ACTIONLINT_ASSET={_ASSET}",
+    ]) + "\n"
+
+
+def test_refs_env_collapses_an_existing_file_of_duplicates(tmp_path):
+    path = tmp_path / ".localci" / "refs.env"
+    _write_duplicate_refs(path)
+    resolved = [localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)]
+    record = localci.ActionlintRecord("v9.9.9", _ASSET, "ab" * 32, None, "release")
+    localci.write_env_file(path, resolved)
+    localci.write_actionlint_env(path, record)
+    once = path.read_text(encoding="utf-8")
+    localci.write_env_file(path, resolved)
+    localci.write_actionlint_env(path, record)
+    twice = path.read_text(encoding="utf-8")
+    assert once == twice == _collapsed_refs()
+    keys = [line.split("=", 1)[0] for line in twice.splitlines() if "=" in line]
+    assert keys == list(dict.fromkeys(keys))
+    assert twice.count("# localci resolved refs") == 1
+    assert "NOT_AN_ASSIGNMENT" not in twice
+    assert "AOI_SHA=" + ("1" * 40) not in twice
+    assert "ACTIONLINT_TAG=v0.0.2" not in twice
+    fresh = tmp_path / "fresh.env"
+    localci.rewrite_env_file(
+        fresh,
+        [*localci.env_pairs(resolved), *localci.actionlint_pairs(record)],
+        header=localci._ENV_HEADER,
+    )
+    assert fresh.read_text(encoding="utf-8") == localci.format_env(resolved) + localci.format_actionlint_env(record)
+    localci.write_actionlint_env(path, localci.ActionlintRecord("v9.9.9", _ASSET, "", None, "go"))
+    dropped = path.read_text(encoding="utf-8")
+    assert "ACTIONLINT_SHA256" not in dropped
+    assert [line.split("=", 1)[0] for line in dropped.splitlines() if "=" in line] == [
+        "AOI_SHA",
+        "ACTIONLINT_TAG",
+        "MYON_BIOINFORMATICS_SHA",
+        "AOI_REPOSITORY_ID",
+        "ACTIONLINT_ASSET",
+    ]
+
+
+def test_refs_env_rewrite_is_atomic(tmp_path, monkeypatch):
+    path = tmp_path / ".localci" / "refs.env"
+    _write_duplicate_refs(path)
+    original = path.read_text(encoding="utf-8")
+    seen = []
+
+    def fail_replace(src, dst):
+        seen.append((Path(src), Path(dst)))
+        raise OSError("disk")
+
+    monkeypatch.setattr(localci.os, "replace", fail_replace)
+    resolved = [localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)]
+    with pytest.raises(OSError, match="disk"):
+        localci.write_env_file(path, resolved)
+    assert path.read_text(encoding="utf-8") == original
+    assert seen and seen[0][0].parent == path.parent and seen[0][1] == path
+    assert list(path.parent.iterdir()) == [path]
+
+
+def test_run_local_refs_env_stays_one_line_per_key(tmp_path, monkeypatch):
+    record = localci.ActionlintRecord("v9.9.9", _ASSET, "ab" * 32, None, "release")
+    checks = [
+        localci.Check("resolve:myon-bioinformatics/Aoi", "resolve", "myon-bioinformatics/Aoi", repo="myon-bioinformatics/Aoi"),
+        localci.Check("actionlint:.github/workflows/ci.yml", "actionlint", ".github/workflows/ci.yml"),
+    ]
+    monkeypatch.setattr(
+        localci, "prepare_pytest",
+        lambda *args, **kwargs: (checks, [], tmp_path, [sys.executable, "-m", "pytest"], None),
+    )
+
+    class FakeSession:
+        def __init__(self, *args, **kwargs):
+            self.resolved = {}
+
+        def prepare_actionlint(self):
+            return record
+
+        def execute(self, check):
+            if check.kind == "resolve":
+                item = localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)
+                self.resolved[item.source.repo] = item
+            return localci.Outcome("pass", "ok", [])
+
+    monkeypatch.setattr(localci, "Session", FakeSession)
+    env_file = tmp_path / ".localci" / "refs.env"
+    _write_duplicate_refs(env_file)
+
+    def run():
+        return localci.run_local(
+            tmp_path, repeat=2, seed=3, keep_going=False, strict=False,
+            pytest_paths=None, skip_pytest=True, env_file=None, emit=lambda _line: None,
+        )
+
+    assert run() == 0
+    first = env_file.read_text(encoding="utf-8")
+    assert run() == 0
+    second = env_file.read_text(encoding="utf-8")
+    assert first == second == _collapsed_refs()
+    assert list(env_file.parent.iterdir()) == [env_file]
+
+
 def test_parse_collect_only_and_collection(tmp_path):
     stdout = "tests/test_a.py::test_one\n\nERROR tests/test_b.py\n2 tests collected\n"
     assert localci.parse_collect_only(stdout) == ["tests/test_a.py::test_one"]

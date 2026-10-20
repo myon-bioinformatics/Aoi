@@ -4,7 +4,6 @@ from unittest.mock import Mock
 import pytest
 
 import blueprobe
-import dom_patterns
 
 
 def test_list_patterns_needs_no_cache_or_queryu(monkeypatch, capsys):
@@ -14,7 +13,7 @@ def test_list_patterns_needs_no_cache_or_queryu(monkeypatch, capsys):
     assert blueprobe.main(['--list-patterns']) == 0
     output = capsys.readouterr()
     assert output.err == ''
-    for pattern in dom_patterns.list_patterns():
+    for pattern in blueprobe.list_patterns():
         assert pattern['key'] in output.out
         assert pattern['selector'] in output.out
     load.assert_not_called()

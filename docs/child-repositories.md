@@ -104,6 +104,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## BlueProbe
 
+2026-10-20: main `f0763c4de0a2976bb243cd7d780c8b5ae0c22ba4`（#32: `social_timeline`・`ecommerce_product`・`forum_qa`・`dashboard_grid` のプリセットと `classify_document` / `--classify`。観測のみで変換はしない）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。実行時の依存はありません。
+
 2026-10-20: main `af8552e869491aa900ad1010330955fd6652d766`（#31: 再エクスポートの `dom_patterns.py` を削除し、DOM パターン API は `blueprobe.py` のみ）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。実行時の依存はありません。
 
 2026-10-20: main `50a2846d68fcba4acbe7e4abf7fb0130de07de89`（#30: 標準ライブラリの html.parser。DOM パターン表は `blueprobe.py` にあり、`dom_patterns.py` は再エクスポート）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。実行時の依存はありません。

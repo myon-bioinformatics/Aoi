@@ -74,7 +74,7 @@ GitHub は大文字小文字を区別するので、手元で開けても GitHub
 
 ## テスト
 
-手順やテストは Aoi の直下（`cycles/`・`queryu/`・`sakanalytics/`・`blueprobe/`・`vendor/`・`scripts/`・`docs/`）を相対パスで使う。単独ではテストしない。CI は実行のたびに `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main` で main の SHA を解決して checkout し、その `nagoyaction/` をこのリポジトリの tree に置き換えて、Aoi の設定で `nagoyaction/tests` を動かす。解決した SHA はジョブの summary に残す。`workflow_dispatch` の `aoi_ref` で ref を指定できる。
+手順やテストは Aoi の直下（`cycles/`・`queryu/`・`sakanalytics/`・`blueprobe/`・`vendor/`・`scripts/`・`docs/`）を相対パスで使う。単独ではテストしない。CI は実行のたびに `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main` で main の SHA を解決して checkout し、その `nagoyaction/` をこのリポジトリの tree に置き換えて、Aoi の設定で `nagoyaction/tests` を動かす。解決した SHA はジョブの summary に残す。`workflow_dispatch` の `aoi_ref` で ref を指定できる。同じ SHA で `vendor/aoi/` のバイトを Aoi の原本と照合する。不一致は pull request では警告、main への push と schedule では失敗にする。
 
 ```sh
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
@@ -93,7 +93,7 @@ CI は Python 3.11–3.15 で同じことをする。
 Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録されている（手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
 
 - `min.py` はここには置かない（Aoi が提供する）
-- Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。Aoi と NagoyAction の間では vendor lock を使わない
+- Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。subtree の一致に `vendor-consumers.json` は使わない。NagoyAction が使う stdlib-shrink の道具（`scripts/shrink_module.py`、`scripts/shrink_polars.py`、`shrink/polars_min.py`）だけを `vendor/aoi/` にバイト同一で置き、`shared-tools.lock.json`（`vendor-lock/1` の path、sha256、source）に固定する。numpy と `fetch_module` はここでは使わない
 - この README のコマンド例の `nagoyaction/…`・`cycles/…` は、Aoi のルートから見た場所を指す（Aoi の中の文書へのリンクは GitHub の URL で書く）
 
 ## 関連サブプロジェクト

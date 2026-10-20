@@ -313,20 +313,16 @@ def render_markdown(report: dict) -> str:
 
 
 def main(argv=None) -> int:
-    from aoi_layout import bind as _bind_aoi_paths
-
-    aoi_paths = _bind_aoi_paths(__file__)
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", type=Path, default=None,
-                    help="Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定")
-    ap.add_argument("--cycle", default=None,
-                    help="サイクル名または cycles/... へのパス。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi")
+                    help="Aoi のルート。省略時は AOI_ROOT。--cycle-dir があるときは不要")
+    ap.add_argument("--cycle-dir", type=Path, default=None,
+                    help="サイクルのフォルダ。省略時は <root>/cycles/<AOI_RESEARCH_CYCLE>")
     ap.add_argument("--out", type=Path)
     ap.add_argument("--train-through", type=int, default=2022)
     ap.add_argument("--min-train-years", type=int, default=5)
     args = ap.parse_args(argv)
-    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
-    cycle = aoi_paths.resolve_cycle_path(root, args.cycle)
+    cycle = la.resolve_cycle_dir(args.root, args.cycle_dir)
     report = run_cycle(cycle, train_through=args.train_through, min_train_years=args.min_train_years)
     out = args.out or cycle / "outputs/exploratory/littlebit-holdout"
     out.mkdir(parents=True, exist_ok=True)

@@ -22,9 +22,7 @@ import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from selectolax.lexbor import LexborHTMLParser
-
-from blueprobe import new_report, normalize
+from blueprobe import HtmlTree, new_report, normalize
 from npb_calendar import GAME_PATH, LEAGUE, TEAM_NAME
 
 NAME = "npb_game_linescore"
@@ -74,7 +72,7 @@ def parse(html: str, url: str = "") -> dict:
     found = []                               # (チーム, セル)
     shapes = []                              # 読めなかったときの手がかり（チーム名の位置, セルの数）
     unknown_names = []                       # 得点表の形の行の、知らない先頭の名前（チーム名の候補）
-    for tr in LexborHTMLParser(html).css("tr"):
+    for tr in HtmlTree(html).css("tr"):
         cells = _cells(tr)
         names = [re.sub(r"\s", "", c) for c in cells]
         hit = [i for i, n in enumerate(names) if n in TEAM_BY_NAME]

@@ -1,0 +1,68 @@
+name: Stdlib substitute
+
+# 実験: 1 ジョブの中で、入っている markdown と numpy で render_md と load_overlap の出力を取り、
+# すぐ両方を外す。markdown は sha256 を照合した pure wheel、numpy は shrink/numpy_min.py
+# （overlap と兄弟の rule_search より前に載せる）。polars は残す。バイト単位で比べる。
+# 既存の CI ジョブと pyproject の依存には触れない。
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  without-markdown-or-numpy:
+    name: render_md and load_overlap (real, then neither installed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # ci.yml の AOI_SHA。兄弟の rule_search と c001 の結果はここから取る。
+      AOI_SHA: a8dc4997f43236b24a23df56e21f143fa0e233d8
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ env.AOI_SHA }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - name: Aoi checkout is the pinned sibling
+        run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - name: Resolve the latest pure markdown wheel
+        id: markdown
+        run: python scripts/fetch_module.py resolve markdown --github-output
+      - name: Real packages, then record render_md and load_overlap
+        env:
+          AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
+          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras:${{ github.workspace }}/.test-deps/aoi/queryu/ask
+        run: |
+          set -euo pipefail
+          uv sync --locked --python 3.14
+          uv run --locked --python 3.14 pytest -q tests/test_fetch_module.py tests/test_numpy_min.py tests/test_stdlib_paths.py
+          installed="$(.venv/bin/python -c 'import markdown; print(markdown.__version__)')"
+          test "$installed" = "${{ steps.markdown.outputs.version }}"
+          .venv/bin/python scripts/run_stdlib_paths.py --deps real --markdown-version "${{ steps.markdown.outputs.version }}" reference.json
+      - name: Drop markdown and numpy; keep polars
+        run: uv sync --locked --no-dev --no-install-package markdown --no-install-package numpy --python 3.14
+      - name: markdown and numpy are not installed
+        run: |
+          ! .venv/bin/python -c 'import markdown'
+          ! .venv/bin/python -c 'import numpy'
+          .venv/bin/python -c 'import polars'
+      - name: render_md from the wheel and load_overlap on numpy_min
+        env:
+          AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
+          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras:${{ github.workspace }}/.test-deps/aoi/queryu/ask
+        run: .venv/bin/python scripts/run_stdlib_paths.py --deps min --markdown-version "${{ steps.markdown.outputs.version }}" --cache .cdn-cache minimal.json
+      - name: Byte-identical to the real markdown and numpy result
+        run: cmp reference.json minimal.json

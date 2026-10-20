@@ -30,6 +30,9 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_figures.py", "import:aoi_paths"),
     ("tests/test_forms.py", "import:aoi_paths"),
     ("tests/test_research_report.py", "import:aoi_paths"),
+    # 実験の入口。本番のモジュールは Aoi の scripts/ を import しない。
+    ("tests/test_fetch_module.py", "path:scripts"),
+    ("tests/test_stdlib_paths.py", "path:scripts"),
 }
 
 

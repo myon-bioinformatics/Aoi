@@ -23,6 +23,8 @@ HTML の外部タグと `--embed` も同じ jsDelivr 配布を使う（SRI / SHA
 
 パイプ通信は Python 標準ライブラリのみ。POSIX の Chrome/Chromium を使い、Windows のパイプは未対応。引数 `chrome=`、環境変数 `CHROME` / `CHROMIUM`、PATH の順に検索する。実行権限のないファイルもエラーとする。Kaleido / choreographer はこの API には不要である。
 
+起動した Chrome には D-Bus を使わせない。子プロセスの `DBUS_SESSION_BUS_ADDRESS` と `DBUS_SYSTEM_BUS_ADDRESS` は `disabled:` で、キーリングと crashpad も止める。バスが接続だけ受けて応答しないと、Chrome は DevTools パイプで `Browser.getVersion` に答える前に同期呼び出しの中で止まり、起動の上限（既定 30 秒）で失敗する。図の描画に D-Bus は要らない。応答がないままプロセスが生きているときは、その旨と stderr をタイムアウトに付ける。
+
 `Timeouts(launch=30, load=30, ready=30, capture=15)` で各段階の上限を指定できる。通信の送信側も上限内に収め、部分書き込みを最後まで送る。起動時に `Browser.getVersion` を確認する。JSON 不正、EOF、起動失敗は例外にする。タイムアウト・取得失敗を成功や空画像として扱わない。各描画の成功・失敗のどちらでも target を閉じ、破棄イベントまで待つ。close 失敗時にはブラウザ全体を終了する。
 
 `RenderSession(offline=True)` は描画ページの CDP ネットワークを無効にする。既定の汎用レンダラのネットワーク動作は変えない。`MERMAID` は引き続き CDN を使うサンプル設定であり、オフライン対応の対象は `PLOTLY` である。

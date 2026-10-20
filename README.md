@@ -60,7 +60,7 @@ GitHub Actions のワークフローは、このコマンドを呼ぶだけに�
 
 ワークフローとテストを、GitHub Actions の完了を待たずに手元で検査する。
 
-`python localci.py run` は `.github/workflows` を actionlint で検査する。shellcheck が PATH にあれば、actionlint は `run:` ブロックにもそれを使う。actionlint は実行のたびに rhysd/actionlint の最新リリースを解決し、公開された checksums と GitHub の digest を確かめる。版はソースに固定しない。解決したタグ、資産名、検証した sha256 を出力と `.localci/refs.env` に残し、`GITHUB_STEP_SUMMARY` があれば解決した参照先 SHA の隣に書く。GitHub Actions 上では取得か検証に失敗したらそこで止まり、Go には戻さない。手元では、タグを解決できたときだけ `go run github.com/rhysd/actionlint/cmd/actionlint@<tag>` に戻る。同時に、参照先リポジトリの main の SHA を `git ls-remote` と GitHub API の repository id 照合で解決し、`.localci/refs.env` に書く。`uses:` のピンが各アクションの最新リリースタグのコミットと一致するかは、既定では報告だけする。
+`python localci.py run` は `.github/workflows` を actionlint で検査する。shellcheck が PATH にあれば、actionlint は `run:` ブロックにもそれを使う。actionlint は実行のたびに rhysd/actionlint の最新リリースを解決し、公開された checksums と GitHub の digest を確かめる。版はソースに固定しない。解決したタグ、資産名、検証した sha256 を出力と `.localci/refs.env` に残し、`GITHUB_STEP_SUMMARY` があれば解決した参照先 SHA の隣に書く。GitHub Actions 上では取得か検証に失敗したらそこで止まり、Go には戻さない。手元では、タグを解決できたときだけ `go run github.com/rhysd/actionlint/cmd/actionlint@<tag>` に戻る。同時に、参照先リポジトリの main の SHA を `git ls-remote` と GitHub API の repository id 照合で解決し、`.localci/refs.env` に書く。`uses:` のピンが各アクションの最新リリースタグのコミットと一致するかは、既定では報告だけする。setup アクション（`actions/setup-python`、`actions/setup-node`、`astral-sh/setup-uv`）はリリースの 40 桁 SHA と `# vX.Y.Z`。それ以外の `actions/*` は動くメジャータグ `vN`。
 
 ```bash
 python localci.py run                         # Aoi の tests/ 全体を一巡（シャードは1つ）
@@ -68,7 +68,7 @@ python localci.py run --repeat 10             # その全体を 10 ラウンド�
 python localci.py run --repeat 10 --seed 7    # 同じ分け方と入力の差し替えを再現
 python localci.py run --repeat 10 --keep-going
 python localci.py run --self-tests            # tests/test_localci.py だけ（Aoi なし）
-python localci.py run --strict                # 古いピン、SHA でないピンを失敗にする
+python localci.py run --strict                # 古い SHA ピンを失敗にする。setup 以外の actions/* の vN は許す
 python localci.py resolve                     # SHA の解決だけ。CI の resolve ジョブもこれ
 ```
 
@@ -82,7 +82,7 @@ pytest -p localci_pytest --localci-repeat 10 --localci-round 3 --localci-seed 7
 
 解決する参照先は Aoi、`myon-bioinformatics/myon-bioinformatics`、vendor の `markdown` と `web-ui`、それにリポジトリ直下の `vendor.lock.json` に書かれたリポジトリ。SHA はソースに書かない。GitHub Actions の resolve ジョブは `python localci.py resolve --github-output` を呼び、ジョブ出力 `sha`（Aoi）を checkout に渡す。再利用ワークフローの `uses:` は式にできないので、ファイル上のピンのままにし、localci が最新リリースと比べる。
 
-pytest の一式は、実行時に解決した Aoi の SHA を `.localci/aoi` に checkout して集める。HEAD がその SHA であることを確かめてから、このリポジトリの tree を `nagoyaction/` に重ね、`tests/` 全体を `--repeat` のシャードに分ける。各シャードの pytest は 1 プロセスで実行する。uv が無いとき、または Aoi を取らずにこのリポジトリだけの検査を走らせるときは `--self-tests`（`tests/test_localci.py` だけ）。`--pytest PATH` も Aoi を checkout しない。CI の local-ci ジョブは `--repeat 10 --strict` で、seed に `github.run_id` を使い、開始時に `localci seed=` を出す。`--strict` では SHA でない `uses:` を失敗にする。
+pytest の一式は、実行時に解決した Aoi の SHA を `.localci/aoi` に checkout して集める。HEAD がその SHA であることを確かめてから、このリポジトリの tree を `nagoyaction/` に重ね、`tests/` 全体を `--repeat` のシャードに分ける。各シャードの pytest は 1 プロセスで実行する。uv が無いとき、または Aoi を取らずにこのリポジトリだけの検査を走らせるときは `--self-tests`（`tests/test_localci.py` だけ）。`--pytest PATH` も Aoi を checkout しない。CI の local-ci ジョブは `--repeat 10 --strict` で、seed に `github.run_id` を使い、開始時に `localci seed=` を出す。`--strict` では古い SHA ピンと、setup アクションや再利用ワークフローの SHA でない `uses:` を失敗にする。checkout、upload-artifact、download-artifact、cache のような setup 以外の `actions/*` のメジャータグ `vN` は失敗にしない。
 
 ```bash
 python localci.py run --self-tests

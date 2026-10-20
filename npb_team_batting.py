@@ -20,9 +20,7 @@ from __future__ import annotations
 import re
 from urllib.parse import urlsplit
 
-from selectolax.lexbor import LexborHTMLParser
-
-from blueprobe import new_report, normalize
+from blueprobe import HtmlTree, new_report, normalize
 from npb_calendar import LEAGUE, TEAM_NAME
 
 NAME = "npb_team_batting"
@@ -72,7 +70,7 @@ def parse_team_table(html: str, url: str, path: re.Pattern, columns: dict, rates
     m = path.fullmatch(urlsplit(url).path) if url else None
     season, league = (int(m["y"]), LEAGUES[m["lg"]]) if m else (None, None)
     header, pending = None, None
-    for tr in LexborHTMLParser(html).css("tr"):
+    for tr in HtmlTree(html).css("tr"):
         cells = _cells(tr)
         if pending is not None:                        # またがる見出しの下の行
             subs = [re.sub(r"\s", "", c) for c in cells]

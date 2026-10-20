@@ -1,7 +1,24 @@
 import pytest
 
+import blueprobe
 import dom_patterns
+from blueprobe import HtmlTree
 from html_source import HtmlSource
+
+
+def test_dom_patterns_module_reexports_blueprobe():
+    assert dom_patterns.detect_pattern is blueprobe.detect_pattern
+    assert dom_patterns.get_pattern is blueprobe.get_pattern
+    assert dom_patterns.get_selector_for_pattern is blueprobe.get_selector_for_pattern
+    assert dom_patterns.list_patterns is blueprobe.list_patterns
+    assert dom_patterns.DOM_PATTERNS is blueprobe.DOM_PATTERNS
+    assert dom_patterns.SCHEMA == "blueprobe-dom-patterns/1"
+
+
+@pytest.mark.parametrize("selector", ["li + li", "li ~ li", "li:nth-child(2)", "[class^='foo']", "li:not(.a)", "a, b"])
+def test_html_tree_rejects_selectors_outside_the_supported_grammar(selector):
+    with pytest.raises(ValueError, match="unsupported selector"):
+        HtmlTree("<ul><li class='a'>1</li><li class='b'>2</li></ul>").css(selector)
 
 
 def test_list_patterns_and_categories_structure():

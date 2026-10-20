@@ -11,8 +11,7 @@ import re
 import unicodedata
 from urllib.parse import urlsplit
 
-from selectolax.lexbor import LexborHTMLParser
-from blueprobe import new_report, normalize
+from blueprobe import HtmlTree, new_report, normalize
 
 NAME = 'npb_team_annual'
 DETAIL = re.compile(r'/bis/(\d{4})/stats/(std|tmb|tmp|tmf)_([cp])\.html')
@@ -120,7 +119,7 @@ def parse(html, url=''):
     lg = detail[3].upper() if detail else ('C' if archive[1]=='centralleague' else 'P')
     source = 'detail' if detail else 'archive'
     category_count = defaultdict(int)
-    for table in LexborHTMLParser(html).css('table'):
+    for table in HtmlTree(html).css('table'):
         grid = _grid(table)
         if not grid or not grid[0] or compact(grid[0][0]) != 'チーム':
             continue

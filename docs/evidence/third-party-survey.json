@@ -662,7 +662,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 834,
+      "attribute_uses": 835,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -678,7 +678,7 @@
         "mark.parametrize": 152,
         "mark.skipif": 4,
         "param": 1,
-        "raises": 337,
+        "raises": 338,
         "skip": 6
       },
       "by_tree": {
@@ -731,13 +731,13 @@
           "import_sites": 11
         },
         "nagoyaction": {
-          "attribute_uses": 76,
+          "attribute_uses": 77,
           "attributes": {
             "MonkeyPatch": 1,
             "fail": 1,
             "fixture": 7,
             "mark.parametrize": 13,
-            "raises": 53,
+            "raises": 54,
             "skip": 1
           },
           "dynamic_import_sites": 0,
@@ -1418,7 +1418,7 @@
     {
       "attributes": {
         "fixture": 1,
-        "raises": 11
+        "raises": 12
       },
       "dynamic_lines": [],
       "file": "nagoyaction/tests/test_localci.py",

@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/QueRyu
-          ref: e052cc3750cf14fd271187cee12c6ddddc11d7ab
+          ref: 079d502b40c9c012dd8df078186d8f5ac37fab45
           path: .test-deps/distribution-sources/queryu
           persist-credentials: false
       - name: Regenerate and compare every committed artifact and license

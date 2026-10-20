@@ -41,7 +41,7 @@ uv run python queryu/queryu.py --source npb_team_annual --years 2013-2026 \
 # 再実行時は --offline でネットワークなしに復元する。
 uv run python blueprobe/blueprobe.py --source npb_team_annual \
   --cache data/raw/npb_annual --out data/observations/npb_team_annual/observed.md --strict
-python -S sakanalytics/annual_audit.py \
+python -S aoi_npb.py annual-audit \
   --observations data/observations/npb_team_annual/records.jsonl --years 2013-2026 \
   --baseline cycles/c001-chunichi/outputs/season.jsonl \
   --out data/observations/npb_team_annual/audit.json \
@@ -52,7 +52,7 @@ python -S sakanalytics/annual_audit.py \
 コピー先は空でなければ拒否する。元の参考キャッシュには書き込まない。
 
 ```bash
-python -S queryu/annual_scope.py \
+python -S annual_scope.py \
   --cache data/reference/annual_history_1950_2026/raw --out data/raw/npb_annual
 ```
 
@@ -166,6 +166,6 @@ same_totalsのP2は期待勝率が全チーム同率になり、既存の同率�
 元HTMLと観測台帳の再解析照合だけを行う場合:
 
 ```bash
-uv run python queryu/annual_scope.py --cache data/raw/npb_annual \
+uv run python annual_scope.py --cache data/raw/npb_annual \
   --verify-observations data/observations/npb_team_annual/records.jsonl
 ```

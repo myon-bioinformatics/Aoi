@@ -10,7 +10,10 @@ The children (QueRyu, DRAgoWing, SakAnalytics) hold no NPB tables or rules; Aoi 
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -100,11 +103,38 @@ def write_json(kind: str, path: Path) -> Path:
     return path
 
 
-if __name__ == "__main__":
+def main(argv=None) -> int:
+    """Supply NPB defaults to generic child CLIs; keep user paths relative to cwd."""
     import argparse
+
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in ("calendar", "draw", "annual-audit"):
+        command, *forwarded = argv
+        if command == "calendar":
+            return subprocess.run([
+                sys.executable, str(ROOT / "queryu/queryu.py"),
+                "--source", "npb_calendar", "--month-key", CALENDAR_MONTH_KEY, *forwarded,
+            ], check=False).returncode
+        if command == "draw":
+            env = dict(os.environ)
+            env["PYTHONPATH"] = os.pathsep.join(filter(None, (str(ROOT), env.get("PYTHONPATH"))))
+            return subprocess.run([
+                sys.executable, "-m", "dragowing", "--team-order", ",".join(TEAM_ORDER), *forwarded,
+            ], env=env, check=False).returncode
+        with tempfile.TemporaryDirectory(prefix="aoi-npb-") as directory:
+            rules = write_json("annual-audit-rules", Path(directory) / "rules.json")
+            return subprocess.run([
+                sys.executable, str(ROOT / "sakanalytics/annual_audit.py"),
+                "--rules", str(rules), *forwarded,
+            ], check=False).returncode
 
     parser = argparse.ArgumentParser(description="NPB の設定を子の CLI 用の JSON に書き出す")
     parser.add_argument("kind", choices=("teams", "annual-audit-rules"))
     parser.add_argument("--out", type=Path, required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     print(write_json(args.kind, args.out))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

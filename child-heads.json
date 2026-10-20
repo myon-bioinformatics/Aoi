@@ -16,7 +16,7 @@
         "subtree_prefix": "dragowing"
       },
       "repository_id": 1423772286,
-      "sha": "360afbde2b55b54f205664eb4cf1a9cc17f9564a"
+      "sha": "e7734b3d538ff49c00a0295d21553a160ff67467"
     },
     "myon-bioinformatics/NagoyAction": {
       "optional": {
@@ -24,7 +24,7 @@
         "subtree_prefix": "nagoyaction"
       },
       "repository_id": 1423491480,
-      "sha": "c4cdf0d7d17a15380dac89fdd21f147efcef3be5"
+      "sha": "60e301b8bbd43ec5b682397f8ff1d6be887b1596"
     },
     "myon-bioinformatics/PythDRagoras": {
       "optional": {

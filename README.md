@@ -194,7 +194,7 @@ python cache_share.py --cache data/cache verify --group npb_calendar
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
 git -C ../Aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7
 git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
-git -C ../BlueProbe checkout bf27a17354544519016bbbde87c7f9c8d2aa29cd
+git -C ../BlueProbe checkout 563d84488a57efd3bca2d89c97c0a72759ab8ee5
 AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
 ```
 

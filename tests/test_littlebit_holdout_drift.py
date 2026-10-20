@@ -58,6 +58,62 @@ def _source_divergence(manifest):
     return by_path
 
 
+PENDING_DIVERGENCE = "tests/pending_holdout_source_divergence.json"
+
+
+def _pending_source_divergence(manifest, pending):
+    """Treat reviewed source drift as the divergence Aoi will record on its next subtree pull.
+
+    Returns a copy. Evidence hashes, inputs, and artifacts stay as the pinned Aoi
+    provenance recorded them. A pending row is accepted only while Aoi still records
+    ``replaces_sha256`` as that source's current hash. Once Aoi records
+    ``current_sha256``, the overlay no longer matches and must be removed.
+    """
+    assert pending["schema"] == "littlebit-holdout-pending-source-divergence/1"
+    assert pending["aoi_manifest"] == PROVENANCE_PATH
+    rows = pending["source_divergence"]
+    assert isinstance(rows, list)
+    recorded = _source_divergence(manifest)
+    updated = dict(recorded)
+    seen = set()
+    for row in rows:
+        path = row["path"]
+        assert path not in seen, path
+        seen.add(path)
+        assert path in SOURCE_PATHS, path
+        evidence = manifest["source_sha256"][path]
+        assert row["evidence_sha256"] == evidence
+        accepted = recorded[path]["current_sha256"] if path in recorded else evidence
+        assert row["replaces_sha256"] == accepted, (
+            f"{path}: pending divergence does not match the pinned Aoi provenance; "
+            "drop it once Aoi records current_sha256")
+        current = row["current_sha256"]
+        assert isinstance(current, str) and len(current) == 64 and all(c in "0123456789abcdef" for c in current)
+        assert current != row["replaces_sha256"]
+        assert current != evidence
+        assert row["artifacts_regenerated"] is False
+        assert row["inputs_regenerated"] is False
+        assert isinstance(row["reason"], str) and row["reason"].strip()
+        updated[path] = {
+            "path": path,
+            "evidence_sha256": evidence,
+            "current_sha256": current,
+            "artifacts_regenerated": False,
+            "inputs_regenerated": False,
+            "reason": row["reason"],
+        }
+    merged = deepcopy(manifest)
+    merged["source_divergence"] = [updated[path] for path in SOURCE_PATHS if path in updated]
+    assert merged["source_sha256"] == manifest["source_sha256"]
+    assert merged["inputs_sha256"] == manifest["inputs_sha256"]
+    assert merged["artifacts_sha256"] == manifest["artifacts_sha256"]
+    return merged
+
+
+def _load_pending_source_divergence():
+    return json.loads((SOURCE_ROOT / PENDING_DIVERGENCE).read_text(encoding="utf-8"))
+
+
 def _source_file(source_root, name):
     assert name.startswith(SOURCE_PREFIX), name
     return source_root / name[len(SOURCE_PREFIX):]
@@ -94,7 +150,15 @@ def _verify_provenance(root, manifest, source_root=None):
 def test_littlebit_committed_provenance_matches_current_sources_and_untouched_evidence():
     root = _REPO_ROOT
     manifest = json.loads((root / PROVENANCE_PATH).read_text(encoding="utf-8"))
-    _verify_provenance(root, manifest, SOURCE_ROOT)
+    pending = _load_pending_source_divergence()
+    # The pinned Aoi manifest still rejects these bytes. The overlay is the
+    # divergence Aoi has not recorded yet, not a silent bypass.
+    if pending["source_divergence"]:
+        with pytest.raises(AssertionError, match="SHA-256 drift"):
+            _verify_provenance(root, manifest, SOURCE_ROOT)
+    else:
+        _verify_provenance(root, manifest, SOURCE_ROOT)
+    _verify_provenance(root, _pending_source_divergence(manifest, pending), SOURCE_ROOT)
     report = json.loads((root / EVIDENCE_PATH / "holdout.json").read_text(encoding="utf-8"))
     assert manifest["historical_runtime"] == report["runtime"]
     assert {f"{CYCLE_PATH}/{name}": digest for name, digest in report["inputs_sha256"].items()} == manifest["inputs_sha256"]
@@ -114,14 +178,15 @@ def test_littlebit_sources_are_this_repositorys_own_files():
 def test_littlebit_change_to_own_source_is_detected_even_if_aoi_copy_is_unchanged(tmp_path):
     root = _REPO_ROOT
     manifest = json.loads((root / PROVENANCE_PATH).read_text(encoding="utf-8"))
+    expected = _pending_source_divergence(manifest, _load_pending_source_divergence())
     own = tmp_path / "own"
     own.mkdir()
     for name in SOURCE_PATHS:
         (own / name[len(SOURCE_PREFIX):]).write_bytes(_source_file(SOURCE_ROOT, name).read_bytes())
-    _verify_provenance(root, manifest, own)
+    _verify_provenance(root, expected, own)
     (own / "littlebit_holdout.py").write_bytes((own / "littlebit_holdout.py").read_bytes() + b"# changed\n")
     with pytest.raises(AssertionError, match="littlebit_holdout.py: SHA-256 drift"):
-        _verify_provenance(root, manifest, own)
+        _verify_provenance(root, expected, own)
 
 
 def test_littlebit_inputs_come_from_root_and_sources_from_source_root(provenance_tree, tmp_path):
@@ -215,6 +280,63 @@ def test_littlebit_source_divergence_cannot_rebaseline_artifacts(provenance_tree
         _verify_provenance(root, manifest)
 
 
+def _pending_row(manifest, root, path, *, extra=b"cli-only\n", **overrides):
+    evidence = manifest["source_sha256"][path]
+    file_path = root / path
+    if extra:
+        file_path.write_bytes(file_path.read_bytes() + extra)
+    current = hashlib.sha256(file_path.read_bytes()).hexdigest()
+    row = {
+        "path": path,
+        "evidence_sha256": evidence,
+        "replaces_sha256": evidence,
+        "current_sha256": current,
+        "artifacts_regenerated": False,
+        "inputs_regenerated": False,
+        "reason": "cli path resolution only; frozen artifacts stay at the evidence hash",
+    }
+    row.update(overrides)
+    return {
+        "schema": "littlebit-holdout-pending-source-divergence/1",
+        "aoi_manifest": PROVENANCE_PATH,
+        "source_divergence": [row],
+    }
+
+
+def test_pending_source_divergence_is_explicit_and_does_not_move_evidence(provenance_tree):
+    root, manifest = provenance_tree
+    path = SOURCE_PATHS[0]
+    pending = _pending_row(manifest, root, path)
+    merged = _pending_source_divergence(manifest, pending)
+    assert merged["source_sha256"][path] == manifest["source_sha256"][path]
+    assert merged["inputs_sha256"] == manifest["inputs_sha256"]
+    assert merged["artifacts_sha256"] == manifest["artifacts_sha256"]
+    _verify_provenance(root, merged)
+    with pytest.raises(AssertionError, match="SHA-256 drift"):
+        _verify_provenance(root, manifest)
+
+
+def test_pending_source_divergence_rejects_stale_aoi_hash(provenance_tree):
+    root, manifest = provenance_tree
+    pending = _pending_row(manifest, root, SOURCE_PATHS[0], replaces_sha256="0" * 64)
+    with pytest.raises(AssertionError, match="does not match the pinned Aoi provenance"):
+        _pending_source_divergence(manifest, pending)
+
+
+def test_pending_source_divergence_rejects_artifact_and_evidence_rewrites(provenance_tree):
+    root, manifest = provenance_tree
+    artifact = _pending_row(manifest, root, SOURCE_PATHS[0])
+    artifact["source_divergence"][0]["path"] = ARTIFACT_PATHS[0]
+    with pytest.raises(AssertionError):
+        _pending_source_divergence(manifest, artifact)
+    rewritten = _pending_row(manifest, root, SOURCE_PATHS[0], extra=b"")
+    rewritten["source_divergence"][0]["evidence_sha256"] = "f" * 64
+    with pytest.raises(AssertionError):
+        _pending_source_divergence(manifest, rewritten)
+    regenerated = _pending_row(manifest, root, SOURCE_PATHS[0], extra=b"")
+    regenerated["source_divergence"][0]["artifacts_regenerated"] = True
+    with pytest.raises(AssertionError):
+        _pending_source_divergence(manifest, regenerated)
 
 
 def _json_bytes(value):
@@ -248,7 +370,7 @@ def _regenerate(generator, cycle, output):
         raise ValueError("regeneration must not overwrite committed evidence")
     # Use the real CLI and its real run_cycle/default settings/serialization.
     # Do not feed it saved encoders, decoders, selected rules, or research masks.
-    result = generator.main(["--cycle", str(cycle), "--out", str(output)])
+    result = generator.main(["--cycle-dir", str(cycle), "--out", str(output)])
     assert result == 0, f"live generator returned {result!r}"
     return _read_artifacts(output)
 
@@ -357,7 +479,7 @@ def test_littlebit_drift_calls_live_cli_and_protects_committed_files(tmp_path, e
             return 0
 
     _assert_matches(expected, _regenerate(Generator, cycle, output))
-    assert calls == [["--cycle", str(cycle), "--out", str(output)]]
+    assert calls == [["--cycle-dir", str(cycle), "--out", str(output)]]
     with pytest.raises(ValueError, match="must not overwrite"):
         _regenerate(Generator, cycle, committed / ".." / committed.name)
     assert len(calls) == 1

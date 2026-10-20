@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import tomllib
 from pathlib import Path
@@ -573,23 +574,38 @@ def run_cycle(cycle: Path, *, rank: int = DEFAULT_RANK, stages: int = DEFAULT_ST
     )
 
 
-def main(argv=None) -> int:
-    from aoi_layout import bind as _bind_aoi_paths
+def resolve_cycle_dir(root: Path | str | None = None, cycle_dir: Path | str | None = None) -> Path:
+    """サイクルのフォルダを返す。aoi_paths は探さない。
 
-    aoi_paths = _bind_aoi_paths(__file__)
+    ``cycle_dir`` があればそのパス。なければ ``root``（なければ環境変数 AOI_ROOT）の
+    ``cycles/<AOI_RESEARCH_CYCLE>``。
+    """
+    if cycle_dir is not None:
+        return Path(cycle_dir).expanduser().resolve()
+    root_value = root if root is not None else os.environ.get("AOI_ROOT")
+    cycle_name = os.environ.get("AOI_RESEARCH_CYCLE")
+    if not root_value or not cycle_name:
+        raise SystemExit(
+            "サイクルのフォルダを --cycle-dir で渡すか、--root（または AOI_ROOT）と AOI_RESEARCH_CYCLE を渡す"
+        )
+    if cycle_name in {".", ".."} or "/" in cycle_name or "\\" in cycle_name:
+        raise SystemExit(f"AOI_RESEARCH_CYCLE が不正: {cycle_name}")
+    return (Path(root_value).expanduser().resolve() / "cycles" / cycle_name).resolve()
+
+
+def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="潜在パターンを条件候補にして、既存候補だけの探索と並べる（探索。確かめではない）")
     ap.add_argument("--root", type=Path, default=None,
-                    help="Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定")
-    ap.add_argument("--cycle", default=None,
-                    help="サイクル名または cycles/... へのパス。省略時は AOI_RESEARCH_CYCLE、それもなければ c001-chunichi")
+                    help="Aoi のルート。省略時は AOI_ROOT。--cycle-dir があるときは不要")
+    ap.add_argument("--cycle-dir", type=Path, default=None,
+                    help="サイクルのフォルダ。省略時は <root>/cycles/<AOI_RESEARCH_CYCLE>")
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--rank", type=int, default=DEFAULT_RANK)
     ap.add_argument("--stages", type=int, default=DEFAULT_STAGES)
     ap.add_argument("--seed", type=int, default=DEFAULT_SEED)
     ap.add_argument("--top", type=int, default=20)
     args = ap.parse_args(argv)
-    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
-    cycle = aoi_paths.resolve_cycle_path(root, args.cycle)
+    cycle = resolve_cycle_dir(args.root, args.cycle_dir)
     dest = args.out or (cycle / "outputs" / "exploratory" / "littlebit-approx")
     report = run_cycle(cycle, rank=args.rank, stages=args.stages, seed=args.seed, top=args.top)
     write_comparison(report, dest)

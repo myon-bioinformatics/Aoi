@@ -14,7 +14,7 @@ THIRD_PARTY = {"polars", "numpy", "pytest"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/
 SIBLING_DIRS = ("blueprobe", "queryu", "sakanalytics", "nagoyaction", "dragowing", "scripts")
 # Aoi のルートの aoi_paths.py（AOI_ROOT から読む。このリポジトリには置かない）。
-# テストのデータの場所と、出力の証跡を固定した littlebit の CLI が使う aoi_layout.py だけが読む
+# テストのデータの場所だけが読む。littlebit の CLI は --cycle-dir か AOI_ROOT を受け取り、配置は探さない
 AOI_PROVIDED = {"aoi_paths"}
 KNOWN_EXCEPTIONS = {
     # 実データの列名と sakanalytics の出力を突き合わせる
@@ -70,6 +70,15 @@ def test_no_sibling_subproject_imports():
 def test_known_exceptions_are_still_used():
     stale = KNOWN_EXCEPTIONS - find_uses()
     assert not stale, f"使われなくなった例外を KNOWN_EXCEPTIONS から消す: {sorted(stale)}"
+
+
+def test_aoi_layout_shim_is_gone():
+    assert not (ROOT / "aoi_layout.py").exists()
+    for name in ("littlebit_approx.py", "littlebit_holdout.py"):
+        tree = ast.parse((ROOT / name).read_text(encoding="utf-8"), filename=name)
+        imported = [alias.name.split(".")[0] for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names]
+        imported += [node.module.split(".")[0] for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module]
+        assert "aoi_layout" not in imported
 
 
 def test_detector_catches_imports_and_paths():

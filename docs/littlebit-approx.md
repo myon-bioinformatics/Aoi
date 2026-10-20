@@ -69,7 +69,7 @@ c001 では、既存の候補だけを `search` に渡した上位と、派生�
 確かめの記録は [confirmation.md](../../cycles/c001-chunichi/outputs/confirmation.md) に置く。候補ファイルは [rule_candidates.toml](../../cycles/c001-chunichi/rule_candidates.toml)。再生成は次である。
 
 ```bash
-uv run python pythdragoras/littlebit_approx.py
+uv run python pythdragoras/littlebit_approx.py --cycle-dir cycles/c001-chunichi
 ```
 
 ## 年を分けたfit/transform
@@ -91,7 +91,7 @@ uv run python pythdragoras/littlebit_approx.py
 古い `loading_units` を `transform` へ渡した場合は拒否する。
 
 ```bash
-uv run python pythdragoras/littlebit_holdout.py
+uv run python pythdragoras/littlebit_holdout.py --cycle-dir cycles/c001-chunichi
 ```
 
 既定のblock比較は学習2012〜2022年、評価2023〜2025年である。補助のwalk-forwardは最初の5年から始め、

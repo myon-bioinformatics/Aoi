@@ -3,7 +3,7 @@ name: Stdlib substitute
 # 実験: 1 ジョブの中で、入っている markdown と numpy で render_md と load_overlap の出力を取り、
 # すぐ両方を外す。markdown は sha256 を照合した pure wheel、numpy は shrink/numpy_min.py
 # （overlap と兄弟の rule_search より前に載せる）。polars は残す。バイト単位で比べる。
-# 既存の CI ジョブと pyproject の依存には触れない。
+# Aoi は ci.yml と同じく実行時に main の SHA を解決する。既存の CI ジョブと pyproject の依存には触れない。
 on:
   pull_request:
   workflow_dispatch:
@@ -16,28 +16,72 @@ jobs:
     name: render_md and load_overlap (real, then neither installed)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      # ci.yml の AOI_SHA。兄弟の rule_search と c001 の結果はここから取る。
-      AOI_SHA: a8dc4997f43236b24a23df56e21f143fa0e233d8
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           version: "0.13.3"
           enable-cache: false
+      - name: Resolve Aoi main
+        id: aoi
+        env:
+          AOI_REPOSITORY_ID: "1402862784"
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          line=$(git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main)
+          sha=$(printf '%s\n' "$line" | awk 'NF { print $1; exit }')
+          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "could not resolve Aoi main" >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ.get("GITHUB_TOKEN") or ""
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "dragowing-stdlib-substitute",
+          }
+          if token:
+              headers["Authorization"] = "Bearer " + token
+          request = urllib.request.Request(
+              "https://api.github.com/repos/myon-bioinformatics/Aoi",
+              headers=headers,
+          )
+          with urllib.request.urlopen(request, timeout=60) as response:
+              data = json.load(response)
+          expected = int(os.environ["AOI_REPOSITORY_ID"])
+          got = data.get("id")
+          name = data.get("full_name")
+          if got != expected or name != "myon-bioinformatics/Aoi":
+              raise SystemExit("Aoi repository identity mismatch: id=%s name=%s" % (got, name))
+          PY
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "Aoi main ${sha}" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/Aoi
-          ref: ${{ env.AOI_SHA }}
+          ref: ${{ steps.aoi.outputs.sha }}
           path: .test-deps/aoi
           persist-credentials: false
-      - name: Aoi checkout is the pinned sibling
-        run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - name: Aoi checkout matches resolved main
+        env:
+          AOI_SHA: ${{ steps.aoi.outputs.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
       - name: Resolve the latest pure markdown wheel
         id: markdown
         run: python scripts/fetch_module.py resolve markdown --github-output

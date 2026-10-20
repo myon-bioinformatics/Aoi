@@ -1,9 +1,13 @@
 """Exact live-generator replay, separate from the frozen-model replay tests.
 
-The source/input/artifact SHA guard is always required. Strict regeneration is
-opt-in: the original record lacks its BLAS/CPU configuration and its frozen
-coefficients are not bitwise portable. No test updates the committed evidence.
-No scientific value, model coefficient, unit ID, flag, or new field is ignored.
+The source/input/artifact SHA guard is fail-closed. Source-hash drift against
+Aoi's holdout.provenance.json warns instead of failing only when
+HOLDOUT_SOURCE_PROVENANCE is report (pull requests). Unset, strict, and any
+other value keep the failure. Input and artifact hashes always fail closed.
+Strict regeneration is opt-in: the original record lacks its BLAS/CPU
+configuration and its frozen coefficients are not bitwise portable. No test
+updates the committed evidence. No scientific value, model coefficient, unit
+ID, flag, or new field is ignored.
 """
 from copy import deepcopy
 import difflib
@@ -13,6 +17,7 @@ import os
 from pathlib import Path
 import platform
 import time
+import warnings
 
 import pytest
 
@@ -63,12 +68,39 @@ def _source_file(source_root, name):
     return source_root / name[len(SOURCE_PREFIX):]
 
 
-def _verify_provenance(root, manifest, source_root=None):
+_SOURCE_DRIFT = "SHA-256 drift; review provenance, never auto-rebaseline"
+_REPORT_SOURCE_MODES = {"report", "warn", "report-only", "warning"}
+_STRICT_SOURCE_MODES = {"", "strict", "fail", "enforce"}
+
+
+def _source_hash_report_only():
+    """True only for an explicit report-only flag. Anything else stays strict."""
+    raw = os.environ.get("HOLDOUT_SOURCE_PROVENANCE", "strict")
+    mode = raw.strip().lower()
+    if mode in _STRICT_SOURCE_MODES:
+        return False
+    if mode in _REPORT_SOURCE_MODES:
+        return True
+    raise AssertionError(
+        f"HOLDOUT_SOURCE_PROVENANCE={raw!r} is not a known mode; the source-hash check stays fail-closed")
+
+
+def _warn_source_drift(message):
+    warnings.warn(message, UserWarning, stacklevel=2)
+    print(f"::warning title=holdout source provenance::{message}")
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        with open(summary, "a", encoding="utf-8") as handle:
+            handle.write(f"\n> holdout source provenance (report only): {message}\n")
+
+
+def _verify_provenance(root, manifest, source_root=None, report_source_drift=False):
     """Fail closed on missing coverage, missing files, or any unreviewed byte change.
 
     Inputs and artifacts are read under ``root`` (Aoi). Sources are read under
     ``source_root`` (default ``root / "pythdragoras"``); manifest keys keep the
-    ``pythdragoras/`` prefix.
+    ``pythdragoras/`` prefix. ``report_source_drift`` warns on source-hash
+    mismatch only. Callers default to strict; the env flag is opt-in.
     """
     if source_root is None:
         source_root = root / SOURCE_PREFIX
@@ -84,17 +116,21 @@ def _verify_provenance(root, manifest, source_root=None):
                 assert group == "source_sha256"
                 row = diverged[name]
                 assert row["evidence_sha256"] == expected[name]
-                assert digest == row["current_sha256"], (
-                    f"{name}: SHA-256 drift; review provenance, never auto-rebaseline")
+                recorded = row["current_sha256"]
             else:
-                assert digest == expected[name], (
-                    f"{name}: SHA-256 drift; review provenance, never auto-rebaseline")
+                recorded = expected[name]
+            if digest != recorded:
+                message = f"{name}: {_SOURCE_DRIFT}"
+                if group == "source_sha256" and report_source_drift:
+                    _warn_source_drift(message)
+                else:
+                    raise AssertionError(message)
 
 
 def test_littlebit_committed_provenance_matches_current_sources_and_untouched_evidence():
     root = _REPO_ROOT
     manifest = json.loads((root / PROVENANCE_PATH).read_text(encoding="utf-8"))
-    _verify_provenance(root, manifest, SOURCE_ROOT)
+    _verify_provenance(root, manifest, SOURCE_ROOT, report_source_drift=_source_hash_report_only())
     report = json.loads((root / EVIDENCE_PATH / "holdout.json").read_text(encoding="utf-8"))
     assert manifest["historical_runtime"] == report["runtime"]
     assert {f"{CYCLE_PATH}/{name}": digest for name, digest in report["inputs_sha256"].items()} == manifest["inputs_sha256"]
@@ -213,6 +249,87 @@ def test_littlebit_source_divergence_cannot_rebaseline_artifacts(provenance_tree
     }]
     with pytest.raises(AssertionError):
         _verify_provenance(root, manifest)
+
+
+def test_source_hash_mode_is_strict_unless_report_is_explicit(monkeypatch):
+    monkeypatch.delenv("HOLDOUT_SOURCE_PROVENANCE", raising=False)
+    assert _source_hash_report_only() is False
+    for raw in ("", "strict", "fail", "enforce", " STRICT "):
+        monkeypatch.setenv("HOLDOUT_SOURCE_PROVENANCE", raw)
+        assert _source_hash_report_only() is False
+    for raw in ("report", "warn", "report-only", "warning", " Report "):
+        monkeypatch.setenv("HOLDOUT_SOURCE_PROVENANCE", raw)
+        assert _source_hash_report_only() is True
+    monkeypatch.setenv("HOLDOUT_SOURCE_PROVENANCE", "maybe")
+    with pytest.raises(AssertionError, match="HOLDOUT_SOURCE_PROVENANCE"):
+        _source_hash_report_only()
+
+
+def test_report_only_source_drift_warns_and_records_summary(provenance_tree, tmp_path, monkeypatch):
+    root, manifest = provenance_tree
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    path = root / SOURCE_PATHS[0]
+    path.write_bytes(path.read_bytes() + b"pr-drift\n")
+    with pytest.warns(UserWarning, match="SHA-256 drift"):
+        _verify_provenance(root, manifest, report_source_drift=True)
+    text = summary.read_text(encoding="utf-8")
+    assert "report only" in text
+    assert "SHA-256 drift" in text
+    with pytest.raises(AssertionError, match="SHA-256 drift"):
+        _verify_provenance(root, manifest)
+
+
+def test_report_only_does_not_weaken_input_or_artifact_hashes(provenance_tree):
+    root, manifest = provenance_tree
+    target = root / INPUT_PATHS[0]
+    target.write_bytes(target.read_bytes() + b"changed\n")
+    with pytest.raises(AssertionError, match="SHA-256 drift"):
+        _verify_provenance(root, manifest, report_source_drift=True)
+    target.write_bytes(b"synthetic provenance fixture: " + INPUT_PATHS[0].encode() + b"\n")
+    artifact = root / ARTIFACT_PATHS[0]
+    artifact.write_bytes(artifact.read_bytes() + b"changed\n")
+    with pytest.raises(AssertionError, match="SHA-256 drift"):
+        _verify_provenance(root, manifest, report_source_drift=True)
+
+
+def test_report_only_reviewed_source_divergence_still_warns_on_further_drift(provenance_tree, monkeypatch):
+    root, manifest = provenance_tree
+    monkeypatch.setenv("HOLDOUT_SOURCE_PROVENANCE", "report")
+    path = SOURCE_PATHS[0]
+    original = hashlib.sha256((root / path).read_bytes()).hexdigest()
+    (root / path).write_bytes((root / path).read_bytes() + b"reviewed-diagnostic\n")
+    current = hashlib.sha256((root / path).read_bytes()).hexdigest()
+    manifest["source_divergence"] = [{
+        "path": path,
+        "evidence_sha256": original,
+        "current_sha256": current,
+        "artifacts_regenerated": False,
+        "inputs_regenerated": False,
+        "reason": "reviewed file drift; frozen artifacts stay at the evidence hash",
+    }]
+    _verify_provenance(root, manifest, report_source_drift=_source_hash_report_only())
+    (root / path).write_bytes((root / path).read_bytes() + b"again\n")
+    with pytest.warns(UserWarning, match="SHA-256 drift"):
+        _verify_provenance(root, manifest, report_source_drift=_source_hash_report_only())
+
+
+def test_ci_resolves_aoi_main_without_hard_pinning_its_sha():
+    workflow = (SOURCE_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    readme = (SOURCE_ROOT / "README.md").read_text(encoding="utf-8")
+    assert "AOI_SHA:" not in workflow
+    assert "git ls-remote" in workflow
+    assert "https://github.com/myon-bioinformatics/Aoi" in workflow
+    assert "refs/heads/main" in workflow
+    assert "GITHUB_STEP_SUMMARY" in workflow
+    assert "aoi_ref" in workflow
+    assert "schedule:" in workflow
+    assert "HOLDOUT_SOURCE_PROVENANCE" in workflow
+    assert "actions/setup-python@v7" in workflow
+    assert "astral-sh/setup-uv@v10.3.0" in workflow
+    assert "git rev-parse HEAD" not in workflow
+    assert "9249ab6e7bbec167cc75963ff315bc90ab5d9e0c" not in readme
+    assert "git -C .test-deps/aoi checkout main" in readme
 
 
 def _json_bytes(value):

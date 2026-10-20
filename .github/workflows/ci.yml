@@ -1,10 +1,20 @@
-# BlueProbe の CI と同じ形。Aoi は固定 SHA で checkout し、コピーしない。
+# Aoi は実行時に main を解決して checkout する。別リポジトリのコミット SHA は固定しない。
+# 証跡（holdout の入力・成果物）と親の reusable workflow のピンは記録として残す。
 name: CI
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # Aoi main の holdout provenance を、リポジトリが動いていなくても毎日失敗扱いで読む。
+    - cron: "30 7 * * *"
   workflow_dispatch:
+    inputs:
+      aoi_ref:
+        description: "checkout する Aoi の ref。空なら refs/heads/main。ブランチ名、refs/…、40桁のコミット。"
+        required: false
+        type: string
+        default: ""
 permissions:
   contents: read
 jobs:
@@ -14,14 +24,16 @@ jobs:
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
 
   test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
+    if: >-
+      needs.changes.outputs.product_changed == 'true' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule'
     needs: changes
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
     env:
-      # サイクルデータ（cycles/）・scripts/・sakanalytics は Aoi に残す。
-      # Aoi main（#86 のマージコミット）。holdout.provenance.json が littlebit の現在のソース SHA-256 を記録している。
-      AOI_SHA: e43f7d2087f3928e3e55908b03ae2554879990e1
+      # pull_request だけ source-hash を警告にする。未設定・それ以外はテスト側が失敗にする。
+      HOLDOUT_SOURCE_PROVENANCE: ${{ github.event_name == 'pull_request' && 'report' || 'strict' }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -30,21 +42,90 @@ jobs:
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: ${{ matrix.python }}
-          allow-prereleases: true
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
-        with:
-          version: "0.13.3"
-          enable-cache: false
+      - name: Resolve Aoi ref
+        shell: bash
+        env:
+          AOI_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          repository="myon-bioinformatics/Aoi"
+          repository_id="1402862784"
+          url="https://github.com/myon-bioinformatics/Aoi"
+          curl_args=(
+            -fsSL
+            -H "Accept: application/vnd.github+json"
+            -H "User-Agent: pythdragoras-ci"
+            -H "X-GitHub-Api-Version: 2022-11-28"
+          )
+          if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+            curl_args+=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+          fi
+          meta="$(curl "${curl_args[@]}" "https://api.github.com/repos/${repository}")"
+          AOI_REPOSITORY="$repository" AOI_REPOSITORY_ID="$repository_id" python3 -c '
+          import json, os, sys
+          meta = json.load(sys.stdin)
+          expected_name = os.environ["AOI_REPOSITORY"]
+          expected_id = int(os.environ["AOI_REPOSITORY_ID"])
+          if type(meta.get("id")) is not int or meta["id"] != expected_id:
+              raise SystemExit("Aoi repository id mismatch")
+          if meta.get("full_name") != expected_name:
+              raise SystemExit("Aoi repository name mismatch")
+          ' <<<"$meta"
+
+          requested="${AOI_REF:-}"
+          if [[ "$requested" == *" "* || "$requested" == *$'\t'* || "$requested" == *$'\n'* || "$requested" == -* ]]; then
+            echo "::error::Aoi ref must be a branch name, refs/..., or a 40-hex commit" >&2
+            exit 1
+          fi
+          if [[ -z "$requested" ]]; then
+            ref="refs/heads/main"
+          elif [[ "$requested" == refs/* ]]; then
+            ref="$requested"
+          elif [[ "$requested" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            ref=""
+          else
+            ref="refs/heads/${requested}"
+          fi
+          if [[ -n "$ref" ]]; then
+            listing="$(git ls-remote -- "$url" "$ref")"
+            sha=""
+            while IFS=$'\t' read -r got_sha got_ref; do
+              [[ -z "${got_sha:-}" ]] && continue
+              if [[ "$got_ref" == "$ref" ]]; then
+                sha="$got_sha"
+                break
+              fi
+            done <<<"$listing"
+            label="$ref"
+          else
+            sha="$(printf '%s' "$requested" | tr '[:upper:]' '[:lower:]')"
+            label="commit"
+          fi
+          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Could not resolve ${url} ${label}" >&2
+            exit 1
+          fi
+          echo "AOI_SHA=${sha}" >> "$GITHUB_ENV"
+          {
+            echo "### Aoi"
+            echo "Resolved \`${label}\` of \`${repository}\` (${repository_id}) to \`${sha}\`."
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/Aoi
           ref: ${{ env.AOI_SHA }}
           path: .test-deps/aoi
           persist-credentials: false
-      - run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
       - run: python -m compileall -q -x '\.test-deps' .
       - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
@@ -61,7 +142,11 @@ jobs:
 
   failure-identity:
     needs: [changes, test]
-    if: (always()) && needs.changes.outputs.product_changed == 'true'
+    if: >-
+      always() &&
+      (needs.changes.outputs.product_changed == 'true' ||
+       github.event_name == 'workflow_dispatch' ||
+       github.event_name == 'schedule')
     permissions:
       contents: read
       actions: read

@@ -23,6 +23,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-10-20: 各子の open PR を子ごとの統合 PR（BlueProbe #29、QueRyu #15、PythDRagoras #15、DRAgoWing #8、SakAnalytics #9、NagoyAction #10）にまとめて merge し、6つの子すべてを `git subtree pull`（`--squash` なし）で取り込みました（BlueProbe `27f61b3b10c629ace49ad6c8a2dc9f09ad5e31f3`、QueRyu `0a83400f3a718901815e1d07d2e2d990976839b3`、PythDRagoras `b0f9c3a1ef255f7c0bc38bc7eeff86360403e69f`、DRAgoWing `cd8140ce695ede6add6817cced2ea5c8ee2e161f`、SakAnalytics `3cd2349b8a5d49f4e0de187aac2741566b3d731c`、NagoyAction `a1ee275410f49f7d0ce95c6ff4f16ae5bbc39028`）。各 merge commit の第2親は子の main の head です。
+
 2026-10-19（2回目）: PythDRagoras・DRAgoWing・SakAnalytics の squash の join を、BlueProbe・QueRyu・NagoyAction と同じく、prefix を消してから `git subtree add`（`--squash` なし）で入れ直しました（PythDRagoras `cd21d7e295facfbc8101ea2d89f715da27fbd80a`、DRAgoWing `8d6163989fc2f4843412a03b465fee1cf9b3ac3c`、SakAnalytics `9a5bc4a048edfdaefbbe514fdde94eb0df4f2065`）。これで6つの子はすべて squash なしの subtree で、同期は `git subtree pull`（`--squash` なし）です。
 
 2026-10-19: SakAnalytics へのリポジトリ名の変更に合わせて、6つの子の README を各子の main で直し、`git subtree pull` で Aoi に取り込みました（BlueProbe・QueRyu・NagoyAction は squash なし、PythDRagoras・DRAgoWing・SakAnalytics は join に合わせて `--squash`）。2026-10-18 に README を直接コピーしていたため、squash の3つは README が衝突し、子の版を採って解決しました（解決後の prefix の tree は子の main と同一）。`child-heads.json` の SakAnalytics のキーも新しい名前にしました。

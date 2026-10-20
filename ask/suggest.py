@@ -231,22 +231,15 @@ def suggest_results(text: str, results: Path, **kw) -> dict:
 
 
 def main(argv=None) -> int:
-    from aoi_layout import bind as _bind_aoi_paths
-
-    aoi_paths = _bind_aoi_paths(__file__)
     ap = argparse.ArgumentParser(description="問いから命題・式 ID の候補を出す（答えは出さない）")
     ap.add_argument("question")
-    ap.add_argument("--root", type=Path, default=None,
-                    help="Aoi リポジトリのルート。省略時は AOI_ROOT、それもなければこのファイルから推定")
-    ap.add_argument("--results", type=Path, default=None,
-                    help="判定済みの結果フォルダ。省略時は cycles/<cycle>/outputs")
+    ap.add_argument("--results", type=Path, required=True, help="判定済みの結果フォルダ")
     ap.add_argument("--threshold", type=float, required=True, help="1位の類似度がこれ未満なら判定不能。試験集合に合わせた既定値はない")
     ap.add_argument("--mode", choices=("float", "binary"), default="float")
     ap.add_argument("--dim", type=int, default=128)
     ap.add_argument("--top", type=int, default=5)
     args = ap.parse_args(argv)
-    root = aoi_paths.resolve_aoi_root(args.root, anchor=Path(__file__))
-    results = args.results or aoi_paths.default_cycle_outputs(root)
+    results = args.results
     try:
         got = suggest_results(args.question, results, threshold=args.threshold, mode=args.mode,
                               dim=args.dim, k=args.top)

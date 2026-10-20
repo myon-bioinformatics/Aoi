@@ -38,11 +38,9 @@ PYTHONPATH=../BlueProbe uv run python queryu.py --help
 |---|---|
 | `queryu.py` | CLI。`Cache`（保存と来歴）・`PoliteFetcher`（負荷を抑えた取得）・`build()`（観測データセット） |
 | `cache_core.py` | 標準ライブラリだけのオフラインのキャッシュ・スナップショット API（下の「Stdlib cache distribution」） |
-| `annual_scope.py` | 年間キャッシュから主対象の年だけを検証・コピーする |
 | `frozen_seasons.json` | 再確認しないシーズンの手動の凍結リスト |
 | `ask/` | 問い合わせ（`ask.py`）・確認用の命題 ID の候補（`suggest.py`）・登録済みの問いの一覧（`bank.py`） |
 | `docs/ask.md` | 問い合わせの仕様 |
-| `aoi_paths.py` | Aoi 固有の配置の決まり（下の「Aoi との関係」） |
 | `tests/` | pytest |
 
 ## 取得元への配慮
@@ -207,7 +205,7 @@ CI は Python 3.11–3.15 で同じことをする。
 Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録されている（手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
 
 - サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi を checkout して `AOI_ROOT=<Aoi のルート>` を渡す
-- `aoi_paths.py` は Aoi 固有の配置の決まり（`AOI_ROOT`・`--root`・`--cycle`）で、ここでは普通のファイルとして置く。Aoi との間で vendor lock は使わない
+- Aoi の配置（`AOI_ROOT`・サイクル名・`pipeline.toml`・結果 ref）は QueRyu では解決しない。Aoi の `aoi_paths.py` が解決して `--results`・`--cycle-dir`・`--teams`・`--month-key` で渡す。球団表と年間ページの範囲（旧 `annual_scope.py`）も Aoi に置く
 - Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。Aoi と QueRyu の間では vendor lock を使わない（Aoi の `queryu/aoi_paths.py` が Aoi 直下の `aoi_paths.py` と同じ blob であることは、Aoi 側で確かめる）
 - この README は Aoi の `queryu/README.md` と同じ内容から始まっている。Aoi の中の文書へのリンクは、どちらで読んでも開けるように GitHub の URL で書く
 
@@ -257,6 +255,6 @@ MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
 `--source npb_team_annual --years 2013-2026` で、両リーグの年度別チーム表を取得できる。
 2005年以降は詳細な勝敗・打撃・投手・守備の全掲載列も取得し、年度別要約表と区別して保持する。
 主対象・合格判定は2013〜2026年。2013年以前は任意の参考資料として通常のデータから分ける。
-`annual_scope.py`は参考キャッシュから主対象140ページだけを検証・コピーする。
+年間キャッシュの主対象の検証・コピー（旧 `annual_scope.py`）は NPB 固有なので Aoi の `annual_scope.py` に移した。
 データセットのmanifestには、解析に用いたsourceモジュール自体の `source_code_sha256` も残す。
 範囲・照合・再実行は [c001の取得・架空検証記録](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/annual-history-synthetic.md)。

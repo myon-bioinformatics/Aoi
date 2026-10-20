@@ -245,8 +245,8 @@ def _years(spec: str) -> list[int]:
     return list(range(int(a), int(b or a) + 1))
 
 
-# npb_calendar の key は「年_月」。打撃成績の key（年_リーグ）は月ではないので、ここには当たらない。
-_MONTH_KEY = re.compile(r"^(?P<year>\d{4})_(?P<month>\d{2})$")
+# どの key が「年・月」かは取得元ごとに違うので、呼び出し側が正規表現（名前付きの year・month）で渡す。
+# 渡さなければ、どのページも未来の月として分けない。
 DEFAULT_FROZEN = Path(__file__).with_name("frozen_seasons.json")
 
 
@@ -292,11 +292,22 @@ def live_groups(years: list[int], today: dt.date, frozen: set[int]) -> set[str]:
     return {str(year) for year in years if year >= today.year and year not in frozen}
 
 
-def split_future_months(pages, today: dt.date):
-    """まだ来ていない月のページを分ける。月の key を持たないページはそのまま残す。"""
+def month_key_pattern(value: str | re.Pattern | None) -> re.Pattern | None:
+    """Compile a month-key regex; it must define the named groups ``year`` and ``month``."""
+    if value is None or isinstance(value, re.Pattern) and {"year", "month"} <= set(value.groupindex):
+        return value
+    pattern = re.compile(value)
+    if not {"year", "month"} <= set(pattern.groupindex):
+        raise ValueError("月の key の正規表現には (?P<year>...) と (?P<month>...) が要る")
+    return pattern
+
+
+def split_future_months(pages, today: dt.date, month_key: str | re.Pattern | None = None):
+    """まだ来ていない月のページを分ける。``month_key`` に当たらないページはそのまま残す。"""
     kept, future = [], []
+    pattern = month_key_pattern(month_key)
     for page in pages:
-        match = _MONTH_KEY.fullmatch(str(page[0]))
+        match = pattern.fullmatch(str(page[0])) if pattern is not None else None
         if match and (int(match["year"]), int(match["month"])) > (today.year, today.month):
             future.append(page)
         else:
@@ -369,6 +380,8 @@ def main(argv=None) -> int:
     ap.add_argument("--wait", type=wait_seconds, default=3.0, help="リクエスト間隔（0以上の有限の秒数）")
     ap.add_argument("--offline", action="store_true", help="キャッシュだけで作る。ネットワークに出ない")
     ap.add_argument("--today", default=None, help="未来の月の判定に使う日付（YYYY-MM-DD）。省略すると実行日")
+    ap.add_argument("--month-key", default=None,
+                    help="月のページの key の正規表現（名前付きの year・month）。省略時は未来の月を分けない")
     ap.add_argument("--frozen", type=Path, default=None, help="手動の凍結リスト JSON。省略時は queryu/frozen_seasons.json")
     ap.add_argument("--freeze", action="append", default=[], type=int, help="この年を凍結リストに足す。--plan では書き出さない")
     ap.add_argument("--plan", action="store_true", help="取得せず、キャッシュ済み・条件付きGET・新規の件数と待ち時間の見積もりを出す")
@@ -381,6 +394,10 @@ def main(argv=None) -> int:
     if not years:
         ap.error("--years の終了年は開始年以上にする")
     today = parse_today(args.today)
+    try:
+        month_key = month_key_pattern(args.month_key)
+    except (re.error, ValueError) as exc:
+        ap.error(f"--month-key: {exc}")
     frozen_path = args.frozen or DEFAULT_FROZEN
     try:
         validate_frozen(args.freeze)
@@ -391,7 +408,7 @@ def main(argv=None) -> int:
     if args.freeze and not args.plan:
         save_frozen(frozen_path, frozen)
     live = live_groups(years, today, frozen)
-    pages, future = split_future_months(source.pages(years), today)
+    pages, future = split_future_months(source.pages(years), today, month_key)
     if args.plan:
         print(format_plan(acquisition_plan(pages, Cache(args.cache), live=live, wait=args.wait,
                                            today=today, frozen=frozen, future=future, offline=args.offline)))

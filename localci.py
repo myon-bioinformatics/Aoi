@@ -599,14 +599,15 @@ def shellcheck_path(which=shutil.which) -> str | None:
 
 
 def parse_collect_only(stdout: str) -> list[str]:
+    """`--collect-only -q` の各行を node id として読む。空白や括弧を含む id も切らない。"""
     nodeids = []
     for line in stdout.splitlines():
         text = line.strip()
-        if "::" not in text or text.startswith(("=", "-", "ERROR", "collected", "warning", "!")):
+        if "::" not in text or text.startswith(("=", "-", "ERROR", "collected", "warning", "!", "<")):
             continue
-        node = text.split()[0]
-        if "::" in node:
-            nodeids.append(node)
+        if " collected in " in text or text.endswith(" collected"):
+            continue
+        nodeids.append(text)
     return nodeids
 
 

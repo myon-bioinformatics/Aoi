@@ -359,6 +359,8 @@ def test_checksum_and_actionlint_cache(tmp_path):
 def test_parse_collect_only_and_collection(tmp_path):
     stdout = "tests/test_a.py::test_one\n\nERROR tests/test_b.py\n2 tests collected\n"
     assert localci.parse_collect_only(stdout) == ["tests/test_a.py::test_one"]
+    spaced = 'tests/test_a.py::test_link[[t](a.md "title")-expected0]\n1 test collected in 0.01s\n'
+    assert localci.parse_collect_only(spaced) == ['tests/test_a.py::test_link[[t](a.md "title")-expected0]']
     (tmp_path / "test_ok.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
     (tmp_path / "test_bad.py").write_text("import does_not_exist_localci\n", encoding="utf-8")
     nodeids, limits = localci.collect_pytest(["test_ok.py", "test_bad.py"], tmp_path)

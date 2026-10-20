@@ -80,6 +80,10 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## NagoyAction
 
+2026-10-21: main `6fcd420b79f0e0a8fd1034b306fd99baebb05917`（#20: `.localci/refs.env` を追記せず、キーごとに1行へ原子的に書き換える。同じキーは後の値を残し、並びは最初に出た順）を squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。
+
+2026-10-21: main `d74fb647eb58b375221f5fb6648ca364f6826a62`（#19: `uses:` を親の書き方に合わせる。setup は 40 桁 SHA と `# vX.Y.Z`、それ以外の actions/* は `@vN`。localci の `--strict` は setup 以外のメジャータグを失敗にしない）を squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。
+
 2026-10-20: main `c3889f69f59d46286c974164cf3e6e6d55d3796c`（#18: ルートの `scripts/shrink_module.py`・`scripts/shrink_polars.py`・`shrink/polars_min.py` の fork を消し、共有ツールは `vendor/aoi/` だけ）を、直前の subtree merge を残したまま squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。
 
 2026-10-20: main `60e301b8bbd43ec5b682397f8ff1d6be887b1596`（#17: `vendor-aoi` の `uses:` を full SHA に固定し、`localci.py --strict` で可変ピンを失敗にする）を、直前の subtree merge を残したまま squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。

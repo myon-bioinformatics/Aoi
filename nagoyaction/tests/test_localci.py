@@ -195,19 +195,39 @@ def test_classify_pin():
     latest = ("v1.2.3", SHA_B)
     assert localci.classify_pin(SHA_B, latest) == "match"
     assert localci.classify_pin(SHA_A, latest) == "outdated"
-    assert localci.classify_pin("v1", latest) == "unpinned"
+    assert localci.classify_pin("v1", latest, "actions/checkout") == "major"
+    assert localci.classify_pin("v7", latest, "actions/upload-artifact") == "major"
+    assert localci.classify_pin("v8", latest, "actions/download-artifact") == "major"
+    assert localci.classify_pin("v6", latest, "actions/cache") == "major"
+    assert localci.classify_pin("v7.0.1", latest, "actions/checkout") == "unpinned"
+    assert localci.classify_pin("v7", latest, "actions/setup-python") == "unpinned"
+    assert localci.classify_pin("v7", latest, "actions/setup-node") == "unpinned"
+    assert localci.classify_pin("v10", latest, "astral-sh/setup-uv") == "unpinned"
+    assert localci.classify_pin("v1", latest, "example/widget") == "unpinned"
+    assert localci.classify_pin("v1", latest, "myon-bioinformatics/myon-bioinformatics") == "unpinned"
     assert localci.classify_pin(SHA_A, None) == "no-release"
-    assert localci.classify_pin("v1", None) == "unpinned"
+    assert localci.classify_pin("v1", None, "actions/checkout") == "major"
+    assert localci.classify_pin("v1", None, "actions/setup-python") == "unpinned"
     assert localci.pin_fails("outdated", strict=False) is False
     assert localci.pin_fails("outdated", strict=True) is True
     assert localci.pin_fails("unpinned", strict=False) is False
     assert localci.pin_fails("unpinned", strict=True) is True
+    assert localci.pin_fails("major", strict=True) is False
     assert localci.pin_fails("no-release", strict=True) is False
 
 
 def test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe():
-    url = "https://api.github.com/repos/actions/checkout/releases/latest"
-    opener = Opener({url: {"tag_name": "v7.0.1"}})
+    release = {"tag_name": "v7.0.1"}
+    repos = (
+        "actions/checkout",
+        "actions/upload-artifact",
+        "actions/download-artifact",
+        "actions/cache",
+        "actions/setup-python",
+        "actions/setup-node",
+        "astral-sh/setup-uv",
+    )
+    opener = Opener({f"https://api.github.com/repos/{repo}/releases/latest": release for repo in repos})
 
     def runner(argv, **kwargs):
         assert argv[:2] == ["git", "ls-remote"]
@@ -226,7 +246,22 @@ def test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe():
     current = localci.Check("pin:new", "pin", "actions/checkout@" + SHA_B, ref=SHA_B, repo="actions/checkout")
     assert session._pin(current).status == "pass"
     assert "matches v7.0.1" in session._pin(current).detail
-    for ref in ("v7", "v10.3.0", ""):
+    for repo, ref in (
+        ("actions/checkout", "v7"),
+        ("actions/upload-artifact", "v7"),
+        ("actions/download-artifact", "v8"),
+        ("actions/cache", "v6"),
+    ):
+        major = localci.Check(f"pin:{repo}", "pin", f"{repo}@{ref}", ref=ref, repo=repo)
+        outcome = session._pin(major)
+        assert outcome.status == "pass", outcome.detail
+        assert "moving major" in outcome.detail
+    for repo in ("actions/setup-python", "actions/setup-node", "astral-sh/setup-uv"):
+        tagged = localci.Check(f"pin:{repo}", "pin", f"{repo}@v7", ref="v7", repo=repo)
+        outcome = session._pin(tagged)
+        assert outcome.status == "fail"
+        assert "not a SHA pin" in outcome.detail
+    for ref in ("v10.3.0", ""):
         movable = localci.Check(f"pin:{ref or 'bare'}", "pin", "actions/checkout@" + ref, ref=ref, repo="actions/checkout")
         assert session._pin(movable).status == "fail"
         assert "not a SHA pin" in session._pin(movable).detail
@@ -484,6 +519,137 @@ def test_run_records_actionlint_next_to_resolved_shas(tmp_path, monkeypatch):
     assert f"ACTIONLINT_SHA256={'ab' * 32}" in saved
 
 
+def _write_duplicate_refs(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join([
+            "# localci resolved refs. source: git ls-remote + repository id check",
+            "AOI_SHA=" + ("1" * 40),
+            "ACTIONLINT_TAG=v0.0.1",
+            "AOI_SHA=" + ("2" * 40),
+            "",
+            "ACTIONLINT_TAG=v0.0.2",
+            "MYON_BIOINFORMATICS_SHA=" + ("3" * 40),
+            f"MYON_BIOINFORMATICS_SHA={SHA_B}",
+            "# localci resolved refs. source: git ls-remote + repository id check",
+            "NOT_AN_ASSIGNMENT",
+            "ACTIONLINT_SHA256=cc",
+            "ACTIONLINT_SHA256=dd",
+        ]) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _collapsed_refs() -> str:
+    return "\n".join([
+        "# localci resolved refs. source: git ls-remote + repository id check",
+        f"AOI_SHA={SHA_A}",
+        "ACTIONLINT_TAG=v9.9.9",
+        f"MYON_BIOINFORMATICS_SHA={SHA_B}",
+        f"ACTIONLINT_SHA256={'ab' * 32}",
+        "AOI_REPOSITORY_ID=1402862784",
+        f"ACTIONLINT_ASSET={_ASSET}",
+    ]) + "\n"
+
+
+def test_refs_env_collapses_an_existing_file_of_duplicates(tmp_path):
+    path = tmp_path / ".localci" / "refs.env"
+    _write_duplicate_refs(path)
+    resolved = [localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)]
+    record = localci.ActionlintRecord("v9.9.9", _ASSET, "ab" * 32, None, "release")
+    localci.write_env_file(path, resolved)
+    localci.write_actionlint_env(path, record)
+    once = path.read_text(encoding="utf-8")
+    localci.write_env_file(path, resolved)
+    localci.write_actionlint_env(path, record)
+    twice = path.read_text(encoding="utf-8")
+    assert once == twice == _collapsed_refs()
+    keys = [line.split("=", 1)[0] for line in twice.splitlines() if "=" in line]
+    assert keys == list(dict.fromkeys(keys))
+    assert twice.count("# localci resolved refs") == 1
+    assert "NOT_AN_ASSIGNMENT" not in twice
+    assert "AOI_SHA=" + ("1" * 40) not in twice
+    assert "ACTIONLINT_TAG=v0.0.2" not in twice
+    fresh = tmp_path / "fresh.env"
+    localci.rewrite_env_file(
+        fresh,
+        [*localci.env_pairs(resolved), *localci.actionlint_pairs(record)],
+        header=localci._ENV_HEADER,
+    )
+    assert fresh.read_text(encoding="utf-8") == localci.format_env(resolved) + localci.format_actionlint_env(record)
+    localci.write_actionlint_env(path, localci.ActionlintRecord("v9.9.9", _ASSET, "", None, "go"))
+    dropped = path.read_text(encoding="utf-8")
+    assert "ACTIONLINT_SHA256" not in dropped
+    assert [line.split("=", 1)[0] for line in dropped.splitlines() if "=" in line] == [
+        "AOI_SHA",
+        "ACTIONLINT_TAG",
+        "MYON_BIOINFORMATICS_SHA",
+        "AOI_REPOSITORY_ID",
+        "ACTIONLINT_ASSET",
+    ]
+
+
+def test_refs_env_rewrite_is_atomic(tmp_path, monkeypatch):
+    path = tmp_path / ".localci" / "refs.env"
+    _write_duplicate_refs(path)
+    original = path.read_text(encoding="utf-8")
+    seen = []
+
+    def fail_replace(src, dst):
+        seen.append((Path(src), Path(dst)))
+        raise OSError("disk")
+
+    monkeypatch.setattr(localci.os, "replace", fail_replace)
+    resolved = [localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)]
+    with pytest.raises(OSError, match="disk"):
+        localci.write_env_file(path, resolved)
+    assert path.read_text(encoding="utf-8") == original
+    assert seen and seen[0][0].parent == path.parent and seen[0][1] == path
+    assert list(path.parent.iterdir()) == [path]
+
+
+def test_run_local_refs_env_stays_one_line_per_key(tmp_path, monkeypatch):
+    record = localci.ActionlintRecord("v9.9.9", _ASSET, "ab" * 32, None, "release")
+    checks = [
+        localci.Check("resolve:myon-bioinformatics/Aoi", "resolve", "myon-bioinformatics/Aoi", repo="myon-bioinformatics/Aoi"),
+        localci.Check("actionlint:.github/workflows/ci.yml", "actionlint", ".github/workflows/ci.yml"),
+    ]
+    monkeypatch.setattr(
+        localci, "prepare_pytest",
+        lambda *args, **kwargs: (checks, [], tmp_path, [sys.executable, "-m", "pytest"], None),
+    )
+
+    class FakeSession:
+        def __init__(self, *args, **kwargs):
+            self.resolved = {}
+
+        def prepare_actionlint(self):
+            return record
+
+        def execute(self, check):
+            if check.kind == "resolve":
+                item = localci.Resolved(localci.SOURCES[0], SHA_A, "refs/heads/main", 1402862784)
+                self.resolved[item.source.repo] = item
+            return localci.Outcome("pass", "ok", [])
+
+    monkeypatch.setattr(localci, "Session", FakeSession)
+    env_file = tmp_path / ".localci" / "refs.env"
+    _write_duplicate_refs(env_file)
+
+    def run():
+        return localci.run_local(
+            tmp_path, repeat=2, seed=3, keep_going=False, strict=False,
+            pytest_paths=None, skip_pytest=True, env_file=None, emit=lambda _line: None,
+        )
+
+    assert run() == 0
+    first = env_file.read_text(encoding="utf-8")
+    assert run() == 0
+    second = env_file.read_text(encoding="utf-8")
+    assert first == second == _collapsed_refs()
+    assert list(env_file.parent.iterdir()) == [env_file]
+
+
 def test_parse_collect_only_and_collection(tmp_path):
     stdout = "tests/test_a.py::test_one\n\nERROR tests/test_b.py\n2 tests collected\n"
     assert localci.parse_collect_only(stdout) == ["tests/test_a.py::test_one"]
@@ -509,7 +675,7 @@ def _workflow_job(text: str, name: str) -> str:
     return "".join(lines[start:end])
 
 
-def test_workflow_delegates_resolution_and_pins_actions_by_sha():
+def test_workflow_delegates_resolution_and_follows_parent_uses_style():
     text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     resolve = _workflow_job(text, "resolve-aoi")
     assert "python localci.py resolve --github-output" in resolve
@@ -535,16 +701,45 @@ def test_workflow_delegates_resolution_and_pins_actions_by_sha():
     assert "--pytest tests/test_localci.py" not in text
     pinned = "".join(_workflow_job(text, name) for name in ("resolve-aoi", "vendor-aoi", "test", "polars-min", "local-ci"))
     uses = localci.parse_uses(text)
-    assert uses and all(localci.SHA_RE.fullmatch(item["ref"].lower()) for item in uses)
+    assert uses
+    major_actions = {"actions/checkout", "actions/upload-artifact", "actions/download-artifact", "actions/cache"}
+    for item in uses:
+        repo, ref = item["repo"], item["ref"]
+        if localci.is_setup_action(repo):
+            assert localci.SHA_RE.fullmatch(ref.lower()), item
+        elif repo in major_actions or repo.startswith("actions/"):
+            assert localci.MAJOR_TAG_RE.fullmatch(ref), item
+        else:
+            assert localci.SHA_RE.fullmatch(ref.lower()), item
+    assert "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0" in text
+    assert "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0" in text
+    assert "actions/checkout@v7" in text
+    assert "actions/upload-artifact@v7" in text
+    assert "# v7.0.1" not in text
+    assert "# v7.0.2" not in text
     uses = localci.parse_uses(pinned)
     checkout = [item["ref"] for item in uses if item["repo"] == "actions/checkout"]
-    assert checkout and set(checkout) == {"3d3c42e5aac5ba805825da76410c181273ba90b1"}
+    assert checkout and set(checkout) == {"v7"}
     setup = [item["ref"] for item in uses if item["repo"] == "actions/setup-python"]
     assert set(setup) == {"5fda3b95a4ea91299a34e894583c3862153e4b97"}
     uv = [item["ref"] for item in uses if item["repo"] == "astral-sh/setup-uv"]
     assert set(uv) == {"1c37ad07a6a961277cf70c0d37d6f313000f5884"}
     upload = [item["ref"] for item in uses if item["repo"] == "actions/upload-artifact"]
-    assert upload == ["cf430e030ddbb5b0abf93d22962f4752f3646cd9"]
+    assert upload == ["v7"]
+
+
+def test_dependabot_matches_the_parent_github_actions_schedule():
+    text = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+    assert text == (
+        'version: 2\n'
+        'updates:\n'
+        '  - package-ecosystem: "github-actions"\n'
+        '    directory: "/"\n'
+        '    schedule:\n'
+        '      interval: "monthly"\n'
+        '      timezone: "Asia/Tokyo"\n'
+        '    open-pull-requests-limit: 5\n'
+    )
 
 
 def test_pytest_plugin_shards_are_disjoint_and_cover_every_test(tmp_path):

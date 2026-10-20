@@ -18,7 +18,7 @@ Counts come from `scripts/survey_third_party.py`. That count is static: `import`
 - **stub** lets the import succeed and returns another stub for every attribute. The first operation that needs a real value raises `StubGap`. The events are the prefix of the surface; the traceback is the first hole.
 - **wrap** delegates to the installed package and logs attribute access whose nearest caller is project code. Names in that log but not in the AST count are the ones the survey missed.
 
-The study's own harness (`scripts/survey_third_party.py`, `scripts/trace_surface.py`, `scripts/trace_drivers.py`, and their tests) is excluded from the counts. Inventory: `docs/evidence/third-party-survey.json`. Traces: `docs/evidence/trace-surfaces.json`.
+The study's own harness (`scripts/survey_third_party.py`, `scripts/trace_surface.py`, `scripts/trace_drivers.py`, and their tests) is excluded from the counts. So are the sibling experiment harnesses that import the same packages only to measure a stand-in: `mindeps/run_httpx.py`, `mindeps/run_coverage.py`, `pkgmin/run_paths.py`, `scripts/shrink_polars.py`, `scripts/linalg_feasibility.py`, `shrink/run_overlap_stdlib.py`, `shrink/run_linalg.py`, and `tests/test_third_party_min.py`, `tests/test_shrink_polars.py`, `tests/test_numpy_linalg_min.py`, `tests/test_pkgmin_surface.py`. `shrink/run_overlap.py` stays in the count. Inventory: `docs/evidence/third-party-survey.json`. Traces: `docs/evidence/trace-surfaces.json`.
 
 ```sh
 python scripts/survey_third_party.py

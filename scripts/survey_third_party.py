@@ -33,7 +33,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKIP_PARTS = {".venv", ".git", ".test-deps", "node_modules", "__pycache__", "build", ".cdn-cache", ".deps"}
-# This study's own harness imports the packages on purpose. Leave it out of the inventory.
+# Harnesses import the packages on purpose. Leave them out of the inventory so
+# the counts stay the product tree, not the measurement scripts.
+# The study's own files are first. The rest are the sibling experiments merged
+# with this survey (#91 selectolax/httpx/coverage, #92 polars_min, #94 numpy
+# linalg, #95 requests/tqdm/biopython). shrink/run_overlap.py from the numpy_min
+# experiment stays in the count; the doc cites it.
 SKIP_FILES = {
     "scripts/survey_third_party.py",
     "scripts/trace_surface.py",
@@ -41,6 +46,17 @@ SKIP_FILES = {
     "tests/test_survey_third_party.py",
     "tests/test_trace_surface.py",
     "tests/test_trace_surface_live.py",
+    "mindeps/run_coverage.py",
+    "mindeps/run_httpx.py",
+    "pkgmin/run_paths.py",
+    "scripts/linalg_feasibility.py",
+    "scripts/shrink_polars.py",
+    "shrink/run_linalg.py",
+    "shrink/run_overlap_stdlib.py",
+    "tests/test_numpy_linalg_min.py",
+    "tests/test_pkgmin_surface.py",
+    "tests/test_shrink_polars.py",
+    "tests/test_third_party_min.py",
 }
 REQ_NAME = re.compile(r"^([A-Za-z0-9][A-Za-z0-9_.-]*)")
 SCHEMA = 1

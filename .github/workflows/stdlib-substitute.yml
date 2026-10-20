@@ -95,6 +95,7 @@ jobs:
           [[ "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
       - name: Record the latest pure markdown wheel
+        continue-on-error: true
         run: |
           set -euo pipefail
           python vendor/aoi/scripts/fetch_module.py resolve markdown > "$RUNNER_TEMP/markdown-latest.json"

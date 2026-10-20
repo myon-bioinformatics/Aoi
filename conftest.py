@@ -139,11 +139,16 @@ class _DistinctBasenameModule(pytest.Module):
         return module
 
 
+_DISTINCT_BASENAMES = frozenset({
+    # Pure subtrees ship the same basename. Pytest's default import mode loads
+    # it once, then aborts when the next copy does not match.
+    'test_no_sibling_imports.py',
+    'test_vendor_lock.py',
+})
+
+
 @pytest.hookimpl(tryfirst=True)
 def pytest_pycollect_makemodule(module_path, parent):
-    # Pure subtrees both ship tests/test_no_sibling_imports.py. Pytest's default
-    # import mode loads that basename once, then aborts when the second copy
-    # does not match. Give only those files a distinct module name.
-    if module_path.name != 'test_no_sibling_imports.py':
+    if module_path.name not in _DISTINCT_BASENAMES:
         return None
     return _DistinctBasenameModule.from_parent(parent, path=module_path)

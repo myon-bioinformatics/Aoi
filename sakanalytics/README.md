@@ -44,7 +44,6 @@ uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --o
 | `synthetic_league.py`・`league_laboratory.py` | 年成績を先に固定した架空リーグと、その実験 |
 | `neighbors.py` | 結果を使わない記述的な近傍 |
 | `proposition_seed_audit.py`・`synthetic_rule_discovery.py` | 命題の seed 感度と、架空データだけでの追跡（PythDRagoras を使う） |
-| `aoi_layout.py` | 出力の証跡を固定した `proposition_seed_audit.py` の CLI だけが使う（下の「Aoi との関係」） |
 | `tests/` | pytest |
 
 ## テスト
@@ -53,12 +52,12 @@ uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --o
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout 0a1751a60ac64708d679f22950aa2b14cf688efd   # .github/workflows/ci.yml の AOI_SHA
+git -C .test-deps/aoi checkout dadc6fac043fac2d1550132a362f92eeb0e12643   # .github/workflows/ci.yml の AOI_SHA
 AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
   uv run --locked pytest -q --junitxml=reports/junit.xml
 ```
 
-- CLI は `--cycle-dir` などのパスを明示で受け取ります（`proposition_seed_audit.py` だけは下の理由で `aoi_layout.py` のまま）。テストは `AOI_ROOT` だけで Aoi を受け取り、データの場所は Aoi の `aoi_paths.py` に聞きます。
+- CLI は `--cycle-dir` などのパスを明示で受け取ります。テストは `AOI_ROOT` だけで Aoi を受け取り、データの場所は Aoi の `aoi_paths.py` に聞きます。
 - `AOI_ROOT` が Aoi を指していない（`cycles/` がない）と、pytest は最初に止まって理由を出します。
 - 実行時の依存は polars だけです。ortools は任意で、`season-requirements.txt` を入れたときだけ exact の求解が動き、無ければそのテストは skip します。
 - テストは、これに加えて `AOI_ROOT` の Aoi を使います。
@@ -74,9 +73,11 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `sakanalytics/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
 この README は Aoi の `sakanalytics/README.md` と同じファイルから始まっています。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
 
-### aoi_layout.py
+### ソースハッシュ
 
-`aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。`aoi_layout.py` は `proposition_seed_audit.py` の CLI が Aoi の `aoi_paths.py` を探すために残しています。このファイルは Aoi の `seed-evaluation.json`（`analysis_sha256`）でソースの SHA-256 を固定しているので、CLI を引数だけにする変更は、子の CI が読む Aoi の固定 SHA を上げるときにまとめて行います。
+`aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。CLI は `--cycle-dir` を受け取り、テストは `AOI_ROOT` だけを受け取ります。
+
+`proposition_seed_audit.py` の `analysis_sha256` は、Aoi の `seed-evaluation.json` と `source-divergence.json` に固定されています。このリポジトリのファイルは、ピンした Aoi（`AOI_SHA`）の `sakanalytics/proposition_seed_audit.py` とバイトが違います。違いは `expected-source-divergence.json` に1件だけ書き、テストが証跡・サイドカー・このリポジトリのファイルのハッシュを突き合わせます。生成物は作り直していません。Aoi は次の subtree pull で、そのサイドカーの `current_sha256` を宣言の `child_sha256` に更新します（`evidence_sha256` はそのまま。行は1件のまま）。一致したあとに宣言ファイルが残っていると、テストは失敗します。
 
 NPB 固有の前提（年間表の球団数・丸め方・対戦列、CS の規則のプリセット `npb_rules()`、2022 年の検証 `season_verify_2022.py`）は Aoi の `aoi_npb.py`・`scripts/` に置き、ここでは `AuditRules`・`Rules` として受け取ります。
 
@@ -233,9 +234,9 @@ Balanced Accuracy / MCCを付ける。分母0・定数予測などは`None`と�
 合成入力がない命題もseed評価の項目を持ち、未評価は`None`。特定の再評価候補だけに限定しない。
 
 ```bash
-python sakanalytics/proposition_seed_audit.py
+python sakanalytics/proposition_seed_audit.py --cycle-dir cycles/c001-chunichi
 # 年成績の証跡も同じ条件で作り直す場合だけ:
-python sakanalytics/proposition_seed_audit.py --generate-plans
+python sakanalytics/proposition_seed_audit.py --cycle-dir cycles/c001-chunichi --generate-plans
 ```
 
 既存の年成績合成3系列と、能力予算のseed 0〜9・2023〜2026年・全28配分・減衰0/0.4を使う。

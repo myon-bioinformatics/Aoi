@@ -1,6 +1,6 @@
 {
   "schema": "aoi-distributions/1",
-  "source": "c3901f39cd3b410d654327cf21354d8a6dc84617",
+  "source": "8db1dbb01999190b8d8fcccbe58680142b4dd2f4",
   "python": "3.12",
   "license": "LICENSE",
   "tool": {
@@ -17,7 +17,6 @@
         "blueprobe"
       ],
       "omit_from_bundle": [
-        "blueprobe/dom_patterns.py",
         "blueprobe/html_source.py"
       ],
       "output": "dist/blueprobe_min.py",

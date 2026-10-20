@@ -104,7 +104,7 @@ def test_dragowing_registered_with_exact_ids():
     assert entry["optional"]["repository_created_at"] == "2026-10-17T21:45:31Z"
     assert entry["optional"]["subtree_prefix"] == "dragowing"
     assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
-    assert entry["sha"] == "360afbde2b55b54f205664eb4cf1a9cc17f9564a"
+    assert entry["sha"] == "ec0280afb8dfdfe9ae486a4337aa736e08ff9de8"
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "tests/conftest.py", "tests/test_no_sibling_imports.py"):
         assert (ROOT / "dragowing" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く

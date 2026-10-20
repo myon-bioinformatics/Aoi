@@ -156,3 +156,38 @@ def test_cli_query_export_import(tmp_path, capsys):
     assert json.loads(capsys.readouterr().out)["entries"] == 3
     assert cs.main(["--cache", str(tmp_path / "copy"), "import", str(out)]) == 0
     assert json.loads(capsys.readouterr().out)["added"] == 3
+
+
+def test_verify_cache_clean_and_corrupted(tmp_path, capsys):
+    cache, rows = filled(tmp_path)
+    res = cs.verify_cache(cache)
+    assert res["total"] == 4 and res["verified"] == 4 and res["corrupted"] == 0 and res["errors"] == []
+
+    # Test CLI verify clean
+    assert cs.main(["--cache", str(cache.root), "verify"]) == 0
+    cli_out = json.loads(capsys.readouterr().out)
+    assert cli_out["verified"] == 4 and cli_out["corrupted"] == 0
+
+    # Corrupt one body blob
+    blob_path = cache.root / rows[0]["file"]
+    blob_path.write_bytes(b"corrupt_gzip")
+
+    res_bad = cs.verify_cache(cache)
+    assert res_bad["total"] == 4 and res_bad["verified"] == 3 and res_bad["corrupted"] == 1
+    assert len(res_bad["errors"]) == 1 and res_bad["errors"][0]["file"] == rows[0]["file"]
+
+    # Test CLI verify with corrupted blob (should exit 1)
+    assert cs.main(["--cache", str(cache.root), "verify"]) == 1
+    cli_bad_out = json.loads(capsys.readouterr().out)
+    assert cli_bad_out["corrupted"] == 1
+
+    # Filtered CLI verify on non-corrupted entry
+    assert cs.main(["--cache", str(cache.root), "verify", "--group", "team"]) == 0
+    cli_filtered_out = json.loads(capsys.readouterr().out)
+    assert cli_filtered_out["total"] == 1 and cli_filtered_out["corrupted"] == 0
+
+    # An empty selection is not a clean pass: exit 3 with a note on stderr
+    assert cs.main(["--cache", str(cache.root), "verify", "--group", "no-such-group"]) == 3
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["total"] == 0
+    assert "selected no cached bodies" in captured.err

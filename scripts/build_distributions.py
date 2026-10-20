@@ -38,6 +38,29 @@ def load_tool(filename, expected):
     return module
 
 
+def _omit_from_bundle(snapshot: Path, item: dict) -> list[str]:
+    """Drop declared files from the minpy snapshot only.
+
+    The git diff still sees them, so a source pin update is required. minpy
+    follows imports inside ``main`` when the module file exists. Files that
+    import a non-stdlib package stay in the subtree and out of the stdlib bundle.
+    """
+    omitted = item.get('omit_from_bundle', [])
+    if not isinstance(omitted, list) or not all(isinstance(entry, str) for entry in omitted):
+        raise ValueError('omit_from_bundle must be a list of relative paths')
+    for relative in omitted:
+        path(relative)
+        target = snapshot / relative
+        try:
+            target.resolve().relative_to(snapshot.resolve())
+        except ValueError as exc:
+            raise ValueError('omit_from_bundle escapes the snapshot: ' + relative) from exc
+        if not target.is_file() or target.is_symlink():
+            raise ValueError('omit_from_bundle entry is missing: ' + relative)
+        target.unlink()
+    return list(omitted)
+
+
 def build(root, manifest, tool_path, *, check, sources=None):
     if manifest.get('schema') != 'aoi-distributions/1':
         raise ValueError('expected aoi-distributions/1')
@@ -108,8 +131,13 @@ def build(root, manifest, tool_path, *, check, sources=None):
             child_notice = snapshot / license_path
             if not child_notice.is_file() or child_notice.is_symlink() or child_notice.read_bytes() != generated['dist/LICENSE']:
                 raise ValueError('license differs: ' + name + '; preserve a separate notice before publishing')
-            text = tool.bundle(root=str(snapshot), entry=item['entry'], repository=repository,
-                               commit=revision, search_paths=item['paths'], require_clean=True)
+            omitted = _omit_from_bundle(snapshot, item)
+            try:
+                text = tool.bundle(root=str(snapshot), entry=item['entry'], repository=repository,
+                                   commit=revision, search_paths=item['paths'], require_clean=not omitted)
+            finally:
+                if omitted:
+                    git(snapshot, 'checkout', '-q', '--', *omitted)
             header = tool.parse_header(text)
             if header['allow']:
                 raise ValueError('only stdlib distributions are allowed')

@@ -19,7 +19,7 @@
 
 ## インストールと使い方
 
-Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使う。依存は numpy（`ask/suggest.py`）と selectolax（BlueProbe の依存）。
+Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使う。実行時の依存は numpy（`ask/suggest.py`）。
 抽出（`blueprobe`・`npb_calendar`・`npb_team_annual`）は [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) を checkout して `PYTHONPATH` に渡す。Aoi の `blueprobe/` は使わない。
 
 ```bash
@@ -194,7 +194,7 @@ python cache_share.py --cache data/cache verify --group npb_calendar
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
 git -C ../Aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7
 git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
-git -C ../BlueProbe checkout 563d84488a57efd3bca2d89c97c0a72759ab8ee5
+git -C ../BlueProbe checkout 50a2846d68fcba4acbe7e4abf7fb0130de07de89
 AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
 ```
 

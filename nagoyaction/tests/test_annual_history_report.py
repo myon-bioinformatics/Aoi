@@ -4,8 +4,7 @@ from pathlib import Path
 import shutil
 
 import pytest
-from annual_history_report import require_primary_years, summary
-from annual_audit import audit_files
+from annual_history_report import audit_files, require_primary_years, summary
 from npb_team_annual import pages, parse
 from queryu import Cache
 from synthetic_league import period_experiment

@@ -177,6 +177,36 @@ class PatternMatch(TypedDict):
     selector_used: str
 
 
+class TableObservation(TypedDict):
+    index: int
+    kind: str  # "data" | "layout"
+    reasons: list[str]
+    rows: int
+    nested: bool
+
+
+class StructuredData(TypedDict):
+    json_ld_types: list[str]
+    json_ld_invalid: int
+    microdata_types: list[str]
+    itemprops: list[str]
+    opengraph: dict[str, str]
+
+
+class DocumentClassification(TypedDict):
+    schema: str
+    status: str  # "matched" | "fallback" | "client_rendered" | "insufficient" | "empty"
+    patterns: list[PatternMatch]
+    signals: list[str]
+    landmarks: dict[str, int]
+    articles: dict[str, int]
+    structured_data: StructuredData
+    shadow_roots: dict[str, int]
+    tables: list[TableObservation]
+    text_chars: int
+    hashed_class_ratio: float
+
+
 class _TextNode:
     __slots__ = ("tag", "attributes", "parent", "prev", "data")
 
@@ -503,6 +533,10 @@ CATEGORIES: list[DomCategory] = [
     {"key": "portfolio_bio", "label": "ポートフォリオ・自己紹介・Profile 領域"},
     {"key": "reader_view", "label": "テキスト重視リーダービュー (Reader View)"},
     {"key": "npb_sports", "label": "NPB（プロ野球）公式日程・成績表"},
+    {"key": "social", "label": "SNS・タイムライン・コメントスレッド (Feed / Thread)"},
+    {"key": "ecommerce", "label": "EC 商品詳細・商品一覧 (Product)"},
+    {"key": "forum", "label": "Q&A・フォーラム (Question / Answer)"},
+    {"key": "dashboard", "label": "ダッシュボード・カード／ウィジェット格子 (Dashboard Grid)"},
     {"key": "generic", "label": "汎用メインコンテンツ領域 (Generic Main)"},
 ]
 
@@ -570,6 +604,40 @@ DOM_PATTERNS: dict[str, DomPattern] = {
         "selector": "main, #main, #content, .main-content",
         "description": "HTML5 標準の main タグおよび一般的な主要コンテンツ領域",
         "example_sites": ["Generic Web Pages"],
+    },
+    "social_timeline": {
+        "key": "social_timeline",
+        "label": "Social Timeline / Comment Thread",
+        "category": "social",
+        "selector": "[role='feed'], [role='feed'] > article, .timeline, .thread-comments, .comment-list",
+        "description": "投稿カードが繰り返すタイムライン（ARIA feed）やコメントスレッド",
+        "example_sites": ["SNS Timeline", "Mastodon", "Blog Comments"],
+    },
+    "ecommerce_product": {
+        "key": "ecommerce_product",
+        "label": "E-commerce Product Detail / Grid",
+        "category": "ecommerce",
+        "selector": "[itemtype='https://schema.org/Product'], [itemtype='http://schema.org/Product'], "
+                    "[itemprop='price'], .product-detail, .product-grid",
+        "description": "商品名・価格を持つ商品詳細（microdata Product）や商品一覧グリッド",
+        "example_sites": ["EC Product Page", "Shop Category Grid"],
+    },
+    "forum_qa": {
+        "key": "forum_qa",
+        "label": "Q&A / Forum Question and Answers",
+        "category": "forum",
+        "selector": "[itemtype='https://schema.org/Question'], [itemtype='https://schema.org/Answer'], "
+                    "[itemprop='acceptedAnswer'], [itemprop='suggestedAnswer'], .question, .answer",
+        "description": "質問と回答の組（microdata Question/Answer、.question/.answer）",
+        "example_sites": ["Stack Overflow", "Q&A Forums"],
+    },
+    "dashboard_grid": {
+        "key": "dashboard_grid",
+        "label": "Dashboard Card / Widget Grid",
+        "category": "dashboard",
+        "selector": ".dashboard, .widget-card, .grid-item, .card-grid",
+        "description": "分析ツールや管理画面のカード・ウィジェットが並ぶ格子",
+        "example_sites": ["Analytics Dashboard", "Admin Console"],
     },
 }
 
@@ -649,6 +717,272 @@ def detect_pattern(html: str) -> list[PatternMatch]:
     return results
 
 
+CLASSIFICATION_SCHEMA = "blueprobe-dom-classification/1"
+_BROAD = ("generic_main", "reader_page")
+_SKIP_TEXT = {"script", "style", "noscript", "template"}
+_MOUNT_IDS = {"app", "root", "__next", "__nuxt", "svelte", "main-app"}
+_HASHED = (
+    re.compile(r"^(?:css|sc|jsx|emotion|tw|svelte)-[A-Za-z0-9_-]{4,}$"),
+    re.compile(r"^[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9]+__[A-Za-z0-9_-]{5,}$"),  # CSS Modules
+    re.compile(r"^(?=(?:[^0-9]*[0-9]){2})[A-Za-z_][A-Za-z0-9_]{5,9}$"),  # e.g. "x3k9qz"
+)
+# schema.org / OpenGraph type -> pattern key. Only a classification signal.
+_TYPE_HINTS = {
+    "product": "ecommerce_product", "offer": "ecommerce_product", "productgroup": "ecommerce_product",
+    "qapage": "forum_qa", "question": "forum_qa", "answer": "forum_qa",
+    "article": "article_body", "newsarticle": "article_body", "blogposting": "article_body",
+    "techarticle": "documentation_main",
+    "socialmediaposting": "social_timeline", "discussionforumposting": "social_timeline", "comment": "social_timeline",
+    "profilepage": "portfolio_profile", "person": "portfolio_profile",
+}
+_MIN_TEXT = 20
+# Bare landmarks shared by several presets; a match through them alone is a fallback.
+_LANDMARK_PARTS = {"main", "[role='main']", "#main", "#content"}
+
+
+def _visible_text(node: _Element) -> str:
+    parts: list[str] = []
+
+    def walk(current: _Element) -> None:
+        for child in current.children:
+            if isinstance(child, _TextNode):
+                parts.append(child.data)
+            elif child.tag not in _SKIP_TEXT or (child.tag == "template" and _shadow_mode(child)):
+                walk(child)
+
+    walk(node)
+    return normalize("".join(parts))
+
+
+def _shadow_mode(node: _Element) -> str | None:
+    if node.tag != "template":
+        return None
+    mode = node.attributes.get("shadowrootmode") or node.attributes.get("shadowroot")
+    return mode.strip().lower() if mode else None
+
+
+def _type_name(value: str) -> str:
+    return value.rstrip("/").rsplit("/", 1)[-1].rsplit("#", 1)[-1].strip().lower()
+
+
+def _json_ld_types(data, out: list[str]) -> None:
+    if isinstance(data, list):
+        for item in data:
+            _json_ld_types(item, out)
+    elif isinstance(data, dict):
+        kind = data.get("@type")
+        for name in kind if isinstance(kind, list) else [kind]:
+            if isinstance(name, str) and name not in out:
+                out.append(name)
+        for key, value in data.items():
+            if key != "@type" and isinstance(value, (dict, list)):
+                _json_ld_types(value, out)
+
+
+def _structured_data(tree: HtmlTree) -> StructuredData:
+    import json
+    found: StructuredData = {"json_ld_types": [], "json_ld_invalid": 0, "microdata_types": [],
+                             "itemprops": [], "opengraph": {}}
+    for node in _walk_elements(tree.root):
+        attrs = node.attributes
+        if node.tag == "script" and (attrs.get("type") or "").strip().lower() == "application/ld+json":
+            try:
+                _json_ld_types(json.loads(node.text()), found["json_ld_types"])
+            except ValueError:
+                found["json_ld_invalid"] += 1
+        if "itemscope" in attrs and attrs.get("itemtype"):
+            for name in (attrs.get("itemtype") or "").split():
+                if name not in found["microdata_types"]:
+                    found["microdata_types"].append(name)
+        if attrs.get("itemprop"):
+            for name in (attrs.get("itemprop") or "").split():
+                if name not in found["itemprops"]:
+                    found["itemprops"].append(name)
+        if node.tag == "meta":
+            prop = (attrs.get("property") or "").strip().lower()
+            if prop.startswith("og:") and attrs.get("content") is not None:
+                found["opengraph"].setdefault(prop, attrs.get("content") or "")
+    return found
+
+
+def _table_observation(index: int, table: _Element) -> TableObservation:
+    reasons: list[str] = []
+    nested = False
+    node = table.parent
+    while node is not None:
+        if node.tag == "table":
+            nested = True
+            break
+        node = node.parent
+    cells = [n for n in _walk_elements(table) if n.tag in {"td", "th"} and _nearest_table(n) is table]
+    rows = [n for n in _walk_elements(table) if n.tag == "tr" and _nearest_table(n) is table]
+    role = (table.attributes.get("role") or "").strip().lower()
+    if role in {"presentation", "none"}:
+        reasons.append(f"role={role}")
+    contains_table = any(n.tag == "table" for n in _walk_elements(table))
+    if contains_table:
+        reasons.append("contains_table")
+    data_hints = [hint for hint, ok in (
+        ("th", any(c.tag == "th" for c in cells)),
+        ("caption", any(n.tag == "caption" for n in table.iter())),
+        ("thead", any(n.tag == "thead" for n in table.iter())),
+        ("scope", any("scope" in c.attributes for c in cells)),
+    ) if ok]
+    blocky = any(n.tag in {"div", "section", "article", "nav", "form", "ul"} for c in cells for n in _walk_elements(c))
+    if blocky and not data_hints:
+        reasons.append("block_content_in_cells")
+    if len(rows) <= 1 and not data_hints:
+        reasons.append("single_row")
+    if reasons and not (data_hints and not role):
+        kind = "layout"
+    elif data_hints:
+        kind, reasons = "data", data_hints
+    else:
+        kind, reasons = "data", ["grid_without_headers"]
+    return {"index": index, "kind": kind, "reasons": reasons, "rows": len(rows), "nested": nested}
+
+
+def _nearest_table(node: _Element) -> _Element | None:
+    current = node.parent
+    while current is not None and current.tag != "table":
+        current = current.parent
+    return current
+
+
+def _is_hashed_class(name: str) -> bool:
+    return any(rx.match(name) for rx in _HASHED)
+
+
+def classify_document(html: str) -> DocumentClassification:
+    """Classify a saved HTML document without converting it.
+
+    Only observes: candidate patterns (nodes with visible text only), landmarks,
+    structured-data signals, declarative shadow roots, and table kinds.
+    Downstream converters consume this dict (see docs/dom_patterns.md).
+    """
+    empty_sd: StructuredData = {"json_ld_types": [], "json_ld_invalid": 0, "microdata_types": [],
+                                "itemprops": [], "opengraph": {}}
+    result: DocumentClassification = {
+        "schema": CLASSIFICATION_SCHEMA, "status": "empty", "patterns": [], "signals": [],
+        "landmarks": {}, "articles": {"total": 0, "top_level": 0, "nested": 0},
+        "structured_data": empty_sd, "shadow_roots": {"open": 0, "closed": 0}, "tables": [],
+        "text_chars": 0, "hashed_class_ratio": 0.0,
+    }
+    if not isinstance(html, str) or not html.strip():
+        return result
+    tree = HtmlTree(html)
+    elements = list(_walk_elements(tree.root))
+    body_text = _visible_text(tree.root)
+    result["text_chars"] = len(body_text)
+
+    classes = [name for node in elements for name in (node.attributes.get("class") or "").split()]
+    hashed = sum(1 for name in classes if _is_hashed_class(name))
+    result["hashed_class_ratio"] = round(hashed / len(classes), 3) if classes else 0.0
+    if classes and hashed / len(classes) >= 0.5:
+        result["signals"].append("hashed_class_names")
+
+    for node in elements:
+        mode = _shadow_mode(node)
+        if mode in {"open", "closed"}:
+            result["shadow_roots"][mode] += 1
+    if any(result["shadow_roots"].values()):
+        result["signals"].append("declarative_shadow_dom")
+
+    landmarks: Counter = Counter()
+    for node in elements:
+        if node.tag in {"main", "article", "nav", "aside", "header", "footer", "section"}:
+            landmarks[node.tag] += 1
+        role = (node.attributes.get("role") or "").strip().lower()
+        if role:
+            landmarks[f"role={role}"] += 1
+    result["landmarks"] = dict(sorted(landmarks.items()))
+
+    articles = [node for node in elements if node.tag == "article"]
+    nested = sum(1 for node in articles if _nearest(node, "article") is not None)
+    result["articles"] = {"total": len(articles), "top_level": len(articles) - nested, "nested": nested}
+    if len(articles) - nested > 1:
+        result["signals"].append("multiple_articles")
+    if nested:
+        result["signals"].append("nested_articles")
+
+    tables = [node for node in elements if node.tag == "table"]
+    result["tables"] = [_table_observation(i, node) for i, node in enumerate(tables)]
+    if any(t["kind"] == "layout" for t in result["tables"]):
+        result["signals"].append("layout_tables")
+
+    sd = _structured_data(tree)
+    result["structured_data"] = sd
+    if sd["json_ld_types"]:
+        result["signals"].append("json_ld")
+    if sd["json_ld_invalid"]:
+        result["signals"].append("json_ld_invalid")
+    if sd["microdata_types"] or sd["itemprops"]:
+        result["signals"].append("microdata")
+    if sd["opengraph"]:
+        result["signals"].append("opengraph")
+
+    mounts = [node for node in elements
+              if (node.attributes.get("id") or "") in _MOUNT_IDS or "data-reactroot" in node.attributes]
+    scripts = [node for node in elements if node.tag == "script" and
+               (node.attributes.get("src") or (node.attributes.get("type") or "").lower() == "module")]
+    if result["text_chars"] < _MIN_TEXT:
+        result["status"] = "client_rendered" if (mounts or scripts) and all(
+            not _visible_text(node) for node in mounts) else "insufficient"
+        if result["status"] == "client_rendered":
+            result["signals"].append("empty_app_shell")
+        return result
+
+    hinted: dict[str, list[str]] = {}
+    for name in sd["json_ld_types"] + sd["microdata_types"] + [sd["opengraph"].get("og:type", "")]:
+        key = _TYPE_HINTS.get(_type_name(name)) if name else None
+        if key:
+            hinted.setdefault(key, []).append(name)
+
+    matches: list[PatternMatch] = []
+    distinctive: set[str] = set()
+    for pattern in DOM_PATTERNS.values():
+        total = 0
+        best = None
+        for sub in [part.strip() for part in pattern["selector"].split(",") if part.strip()]:
+            nodes = [node for node in tree.css(sub) if _visible_text(node)]
+            if nodes:
+                total += len(nodes)
+                best = best or sub
+                if sub not in _LANDMARK_PARTS:
+                    distinctive.add(pattern["key"])
+        hint = hinted.get(pattern["key"])
+        if total or hint:
+            bonus = 2 if pattern["key"] in _BROAD else 10
+            matches.append({
+                "pattern": _pattern_copy(pattern),
+                "score": total + (bonus if total else 0) + (5 if hint else 0),
+                "matched_nodes": total,
+                "selector_used": best or "structured_data",
+            })
+    matches.sort(key=lambda item: (item["score"], item["matched_nodes"]), reverse=True)
+    result["patterns"] = matches
+    specific = [m for m in matches if m["pattern"]["key"] not in _BROAD and m["pattern"]["key"] in distinctive]
+    if specific:
+        result["status"] = "matched"
+    else:
+        # Obfuscated classes: fall back to semantic tags / ARIA landmarks.
+        result["status"] = "fallback"
+        if landmarks.get("main") or landmarks.get("role=main"):
+            result["signals"].append("fallback:main_landmark")
+        elif articles:
+            result["signals"].append("fallback:article")
+        else:
+            result["signals"].append("fallback:body")
+    return result
+
+
+def _nearest(node: _Element, tag: str) -> _Element | None:
+    current = node.parent
+    while current is not None and current.tag != tag:
+        current = current.parent
+    return current
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="取得済みページをオフラインで再解析する")
     ap.add_argument("--source", help="取得元モジュール名 (例: npb_calendar, html_source)")
@@ -658,7 +992,15 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, help="Markdown の出力先")
     ap.add_argument("--strict", action="store_true", help="未知の表記、または既知値と合わない group があれば終了コード1")
     patterns.add_argument("--list-patterns", action="store_true", help="利用可能な DOM パターンの一覧を表示する")
+    patterns.add_argument("--classify", type=Path, metavar="HTML",
+                          help="保存済み HTML ファイル1つを分類し、derived を JSON で表示する（ネットワークなし）")
     args = ap.parse_args(argv)
+
+    if args.classify is not None:
+        import json
+        html = args.classify.read_text(encoding="utf-8", errors="replace")
+        print(json.dumps(classify_document(html), ensure_ascii=False, indent=2))
+        return 0
 
     if args.list_patterns:
         patterns = list_patterns()

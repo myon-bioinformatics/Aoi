@@ -58,18 +58,29 @@ def _seconds(value: float) -> float:
     return value
 
 
-def _browser_environment() -> dict:
-    """Environment for a headless browser that must not wait on D-Bus.
+def _no_bus_address(directory: str) -> str:
+    """A dbus address whose connect fails immediately.
 
-    A session or system bus that accepts the connection and then never replies
-    blocks Chrome inside a synchronous bus call. The DevTools pipe stays silent,
-    so ``Browser.getVersion`` hits the launch timeout even though the process is
-    still running. Rendering does not use D-Bus; ``disabled:`` fails the
-    connection immediately instead of waiting out the bus method timeout.
+    ``disabled:`` is not a known address type. libdbus rejects it (``Unknown
+    address type``), and Chrome writes that same value when
+    ``DBUS_SESSION_BUS_ADDRESS`` is unset, then still opens the system bus.
+    A ``unix:path=`` that was never created is a real address, so ``connect``
+    returns ``ENOENT`` instead of waiting on a bus that accepts and does not
+    reply.
     """
+    return "unix:path=" + os.path.join(directory, "no-bus.sock")
+
+
+def _browser_environment(directory: str) -> dict:
+    """Environment for a headless browser that must not wait on D-Bus."""
     env = os.environ.copy()
-    env["DBUS_SESSION_BUS_ADDRESS"] = "disabled:"
-    env["DBUS_SYSTEM_BUS_ADDRESS"] = "disabled:"
+    address = _no_bus_address(directory)
+    env["DBUS_SESSION_BUS_ADDRESS"] = address
+    env["DBUS_SYSTEM_BUS_ADDRESS"] = address
+    # AT-SPI and GTK portals dial the session bus even after the address above
+    # has failed. Rendering does not use them.
+    env["NO_AT_BRIDGE"] = "1"
+    env["GTK_USE_PORTAL"] = "0"
     return env
 
 
@@ -121,8 +132,7 @@ class Chrome:
             self._spawn(exe)
             self._start_reader()
             # Readiness gate: the command sits in the pipe until Chrome reads it.
-            # A bus stall never produces this reply, so the launch budget must
-            # not be spent inside D-Bus (see _browser_environment).
+            # The launch budget must not be spent inside D-Bus (see _no_bus_address).
             self.call("Browser.getVersion", timeout=self.timeout)
         except Exception:
             self.close()
@@ -231,15 +241,21 @@ class Chrome:
             args = [exe, "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe",
                     "--disable-dev-shm-usage", "--disable-background-networking", "--no-first-run",
                     "--disable-extensions", "--disable-component-extensions-with-background-pages",
-                    # Keyring and crashpad also call out to D-Bus during startup.
+                    # Keyring, crashpad, portals, and the system bus all block startup
+                    # when the bus accepts and then does not reply. Headless Ozone
+                    # is requested so a missing X server is not required to start.
+                    "--ozone-platform=headless",
                     "--password-store=basic", "--use-mock-keychain", "--disable-breakpad",
+                    "--disable-sync", "--metrics-recording-only", "--no-default-browser-check",
+                    "--disable-component-update",
+                    "--disable-features=MediaRouter,GlobalMediaControls,HardwareMediaKeyHandling,WebAuthenticationLinux",
                     "--user-data-dir=" + os.path.join(self._tmp, "profile"),
                     "--allow-file-access-from-files", "about:blank"]
             self._proc = subprocess.Popen(
                 [sys.executable, "-S", "-c", _HANDOFF, str(read_in), str(write_out), *args],
                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=self._err,
                 close_fds=True, pass_fds=(read_in, write_out), start_new_session=True,
-                env=_browser_environment())
+                env=_browser_environment(self._tmp))
         except Exception:
             os.close(write_in)
             os.close(read_out)

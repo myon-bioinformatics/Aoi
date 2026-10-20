@@ -192,6 +192,7 @@ def run(p: dict, *, offline=False, only=None, start=None, dry_run=False, receipt
                 _append(receipt, entry)
             if rc != 0:
                 print(f"[fail] {s['name']} (exit {rc})", file=sys.stderr)
+                print(f"[hint] トラブルシューティング: `python nagoyaction.py troubleshoot --step {s['name']} --exit-code {rc}`", file=sys.stderr)
                 return rc
             continue
         if receipt:
@@ -263,6 +264,127 @@ def show(p: dict, *, json_output: bool = False) -> str:
     return "\n".join(lines)
 
 
+TROUBLESHOOT_PATTERNS = [
+    {
+        "id": "cuda_gpu_error",
+        "keywords": ["cuda", "nvcc", "nvidia", "cublas", "gpu", "out of memory", "device-side assert"],
+        "category": "CUDA / GPU Driver Issue",
+        "remediation": "NVIDIA ドライバと CUDA Toolkit / GPU ライブラリのバージョン整合性を確認してください。`nvidia-smi` で GPU 状態を確認し、`CUDA_VISIBLE_DEVICES` を見直してください。",
+        "resources": [
+            "NVIDIA CUDA Docs: https://docs.nvidia.com/cuda/",
+            "PyTorch CUDA Troubleshooting: https://pytorch.org/docs/stable/notes/cuda.html",
+            "Qiita (CUDA トラブルシューティング): https://qiita.com/tags/cuda",
+            "Stack Overflow [cuda]: https://stackoverflow.com/questions/tagged/cuda",
+        ],
+    },
+    {
+        "id": "missing_module",
+        "keywords": ["modulenotfounderror", "no module named", "import error", "cannot import name"],
+        "category": "Missing Python Module / Dependency",
+        "remediation": "環境に依存関係が不足しています。`uv sync` または `uv pip install` でライブラリをセットアップしてください。",
+        "resources": [
+            "uv Documentation: https://docs.astral.sh/uv/",
+            "PyPI (Python Package Index): https://pypi.org/",
+            "Stack Overflow [python-import]: https://stackoverflow.com/questions/tagged/python-import",
+        ],
+    },
+    {
+        "id": "command_not_found",
+        "keywords": ["command not found", "見つかりません", "not recognized as an internal or external command", "executable not found"],
+        "category": "Missing Executable / PATH Issue",
+        "remediation": "実行コマンドが見つかりません。ツールがインストールされているか、PATH 環境変数に含まれているか確認してください。",
+        "resources": [
+            "NagoyAction Doctor: `python nagoyaction.py doctor <pipeline.toml> -v`",
+            "Qiita (PATH 設定): https://qiita.com/tags/path",
+        ],
+    },
+    {
+        "id": "offline_miss",
+        "keywords": ["offlinemiss", "成果物がない", "offline: network step"],
+        "category": "Offline Mode Missing Artifact",
+        "remediation": "オフライン実行に必要なキャッシュ/成果物が存在しません。オンライン環境でネットワークステップを実行してください。",
+        "resources": [
+            "QueRyu Cache Docs: https://github.com/myon-bioinformatics/QueRyu",
+        ],
+    },
+    {
+        "id": "test_failure",
+        "keywords": ["assertionerror", "pytest", "junit", "failed", "failure"],
+        "category": "Test / Verification Failure",
+        "remediation": "テストまたは検証ステップで失敗が発生しました。該当のテストスイートを個別実行して詳細ログを確認してください。",
+        "resources": [
+            "pytest Documentation: https://docs.pytest.org/",
+            "Stack Overflow [pytest]: https://stackoverflow.com/questions/tagged/pytest",
+        ],
+    },
+]
+
+
+def troubleshoot(error_text: str = "", exit_code: int | None = None, receipt_path: Path | None = None,
+                 step: str | None = None, json_output: bool = False) -> str:
+    """エラーメッセージや受領記録から失敗原因を解析し、改善策とコミライブラリ/参照先を提案する。"""
+    logs = [error_text] if error_text else []
+    failed_step = step
+
+    if receipt_path and Path(receipt_path).exists():
+        lines = Path(receipt_path).read_text(encoding="utf-8").splitlines()
+        for line in reversed(lines):
+            try:
+                rec = json.loads(line)
+                if rec.get("returncode", 0) != 0:
+                    if not failed_step:
+                        failed_step = rec.get("step")
+                    if not exit_code:
+                        exit_code = rec.get("returncode")
+                    logs.append(json.dumps(rec, ensure_ascii=False))
+                    break
+            except ValueError:
+                continue
+
+    combined = " ".join(logs).lower()
+    matches = []
+    for pat in TROUBLESHOOT_PATTERNS:
+        if any(kw in combined for kw in pat["keywords"]):
+            matches.append(pat)
+
+    if not matches:
+        matches.append({
+            "id": "general_execution_failure",
+            "category": "General Execution Failure",
+            "remediation": f"ステップ '{failed_step or '不明'}' (exit {exit_code or '非ゼロ'}) が失敗しました。`python nagoyaction.py doctor <pipeline.toml> -v` で環境と依存を確認してください。",
+            "resources": [
+                "NagoyAction Docs: https://github.com/myon-bioinformatics/NagoyAction",
+                "Stack Overflow: https://stackoverflow.com/",
+                "Qiita: https://qiita.com/",
+            ],
+        })
+
+    data = {
+        "step": failed_step,
+        "exit_code": exit_code,
+        "matched_categories": [m["category"] for m in matches],
+        "diagnostics": matches,
+    }
+
+    if json_output:
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+    lines = [
+        "Troubleshooting Analysis Report:",
+        f"  Failed Step: {failed_step or 'Not specified'}",
+        f"  Exit Code: {exit_code if exit_code is not None else 'Not specified'}",
+        "  Identified Issues:",
+    ]
+    for idx, match in enumerate(matches, 1):
+        lines.append(f"  {idx}. [{match['category']}]")
+        lines.append(f"     ↳ 対策: {match['remediation']}")
+        lines.append("     ↳ 参照コミュニティ / ナレッジ情報:")
+        for res in match["resources"]:
+            lines.append(f"       • {res}")
+
+    return "\n".join(lines)
+
+
 def _print_checks(checks: list[dict], *, verbose: bool = False, json_output: bool = False) -> None:
     counts = {"ok": sum(c["level"] == "ok" for c in checks),
               "warn": sum(c["level"] == "warn" for c in checks),
@@ -308,6 +430,12 @@ def main(argv=None) -> int:
     s = sub.add_parser("show", help="パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する")
     s.add_argument("pipeline", type=Path)
     s.add_argument("--json", dest="json_output", action="store_true", help="JSON 形式で出力")
+    t = sub.add_parser("troubleshoot", help="エラーメッセージや受領記録から失敗原因を解析し、解決策・コミュニティ参照先を提示する")
+    t.add_argument("--error", default="", help="エラーメッセージまたはログテキスト")
+    t.add_argument("--exit-code", type=int, default=None, help="プロセス終了コード")
+    t.add_argument("--receipt", type=Path, default=None, help="受領記録 (JSONL)")
+    t.add_argument("--step", default=None, help="失敗したステップ名")
+    t.add_argument("--json", dest="json_output", action="store_true", help="JSON 形式で出力")
     r = sub.add_parser("run")
     r.add_argument("pipeline", type=Path)
     r.add_argument("--offline", action="store_true")
@@ -316,6 +444,11 @@ def main(argv=None) -> int:
     r.add_argument("--dry-run", action="store_true")
     r.add_argument("--receipt", type=Path, help="受領記録(JSONL)の追記先")
     args = ap.parse_args(argv)
+
+    if args.cmd == "troubleshoot":
+        print(troubleshoot(error_text=args.error, exit_code=args.exit_code, receipt_path=args.receipt,
+                           step=args.step, json_output=args.json_output))
+        return 0
 
     try:
         p = load(args.pipeline)

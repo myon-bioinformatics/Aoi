@@ -161,6 +161,31 @@ def test_undefined_variable_is_an_error(tmp_path):
         na.run(p, dry_run=True)
 
 
+def test_troubleshoot_pattern_matching_receipt_and_cli(tmp_path, capsys):
+    # Test CUDA pattern matching
+    cuda_out = na.troubleshoot(error_text="CUDA out of memory error in PyTorch model")
+    assert "CUDA / GPU Driver Issue" in cuda_out
+    assert "nvidia-smi" in cuda_out
+
+    # Test receipt file parsing
+    receipt = tmp_path / "receipt.jsonl"
+    receipt.write_text(json.dumps({"pipeline": "t", "step": "build_step", "returncode": 137}) + "\n", encoding="utf-8")
+
+    # Test CLI troubleshoot with receipt and --json
+    assert na.main(["troubleshoot", "--receipt", str(receipt), "--json"]) == 0
+    captured = capsys.readouterr().out
+    data = json.loads(captured)
+    assert data["step"] == "build_step"
+    assert data["exit_code"] == 137
+    assert "General Execution Failure" in data["matched_categories"]
+
+    # Test text troubleshoot output via CLI
+    assert na.main(["troubleshoot", "--error", "ModuleNotFoundError: No module named 'polars'"]) == 0
+    captured_text = capsys.readouterr().out
+    assert "Missing Python Module" in captured_text
+    assert "uv sync" in captured_text
+
+
 def test_show_formatting_text_and_json(tmp_path, capsys):
     p = na.load(write(tmp_path, BASIC))
 

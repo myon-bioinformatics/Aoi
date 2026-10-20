@@ -31,29 +31,29 @@ python scripts/trace_surface.py collect --check --out docs/evidence/trace-surfac
 
 | Package | Files | Import sites | AST attribute uses | Distinct AST names | PyPI, via fetch_module | Class |
 |---|---:|---:|---:|---:|---|---|
-| polars | 31 | 37 | 933 | 25 | rejected: depends on `polars-runtime-32` | **(b)** for DRAgoWing `load_overlap` only. **(c)** for the package |
-| numpy | 14 | 14 | 239 | 65 | rejected: no pure-Python wheel (2.5.4) | **(b)** for `load_overlap` (already generated). **(c)** for `linalg` and the surrounding ndarray use |
-| pytest | 83 | 84 (+1 dynamic) | 801 | 15 | rejected: runtime dependencies | test runner, not a target |
+| polars | 36 | 38 (+5 dynamic) | 937 | 25 | rejected: depends on `polars-runtime-32` | **(b)** for DRAgoWing `load_overlap` only. **(c)** for the package |
+| numpy | 15 | 15 | 241 | 65 | rejected: no pure-Python wheel (2.5.4) | **(b)** for `load_overlap` (already generated). **(c)** for `linalg` and the surrounding ndarray use |
+| pytest | 87 | 88 (+1 dynamic) | 827 | 16 | rejected: runtime dependencies | test runner, not a target |
 | selectolax | 4 | 4 | 11 | 1 (`lexbor.LexborHTMLParser`) | rejected: no pure-Python wheel (1.0.1) | **(c)** |
 | httpx | 3 | 3 | 3 (`Client`) | 1 | rejected: `anyio`, `certifi`, `httpcore`, `idna` | **(b)** for the duck type QueRyu already implements in urllib. **(c)** for httpx itself |
 | ortools | 2 | 4 | 2 (`__version__`) | 1 | rejected: absl, numpy, pandas, protobuf, … | **(c)** |
-| markdown | 1 | 0 static, 1 dynamic | 0 | 0 | **pure wheel** markdown 3.11.2, no runtime deps | **(a)** |
+| markdown | 2 | 1 static, 1 dynamic | 3 (`__version__`) | 1 | **pure wheel** markdown 3.11.2, no runtime deps | **(a)** |
 | pandas | 1 | 1 | 1 (`read_json`) | 1 | rejected: numpy, python-dateutil, … | **(c)** |
 | coverage | 1 | 1 | 1 (`Coverage`) | 1 | a pure wheel exists (7.16.2) | test tool, not a target |
 | DRAgoWing | 1 | 1 | 1 | 1 | not a PyPI distribution | stale import of the pre-subtree package name |
 | mcp_toolcall_lab | 1 | 2 | 2 | 2 | not a PyPI distribution | optional lab checkout, env-gated |
 
-No declared dependency is completely unimported. Eight `import_module` / `__import__` calls take a non-literal argument (f-strings); they are listed in the inventory and are not extra packages.
+No declared dependency is completely unimported. Nine `import_module` / `__import__` calls take a non-literal argument (f-strings); they are listed in the inventory and are not extra packages.
 
 AST names, heaviest first:
 
-- **polars** (933): `col` 419, `DataFrame` 226, `Float64` 69, `Int64` 38, `Int32` 30, `lit` 27, `Utf8` 22, `read_ndjson` 18, `when` 14, `Series` 14, `concat` 11, `len` 10, `Expr` 10, `Boolean` 8, plus `first`, `sum`, `concat_str`, `__version__`, `any_horizontal`, `max_horizontal`, `read_csv`, `concat_list`, `int_range`, `exceptions.PolarsError`, `Config.set_tbl_rows`.
-- **numpy** (239, 65 names): the `load_overlap` set is `asarray`, `ones`, `flatnonzero`, `frombuffer`, `uint8`, `unpackbits`, `zeros`. The heavy set is `linalg.svd` (2), `linalg.lstsq` (2), `linalg.norm` (6), `linalg.pinv` (1), plus `ndarray` 22, `float64` 24, `where` 9, `maximum` 7, `abs` 7, `sign` 6, and the rest of the table in the JSON.
-- By tree, polars attribute uses are SakAnalytics 677 (4 files), PythDRagoras 223 (17), cycles 22, DRAgoWing 3, NagoyAction 3, research_loop 2, research 2, root tests 1. Numpy attribute uses are PythDRagoras 192 (9 files), QueRyu 35 (2), research 7, DRAgoWing 3, and 2 in `shrink/run_overlap.py` (the existing harness).
+- **polars** (937): `col` 419, `DataFrame` 228, `Float64` 69, `Int64` 38, `Int32` 30, `lit` 27, `Utf8` 22, `read_ndjson` 18, `when` 14, `Series` 15, `concat` 11, `len` 10, `Expr` 11, `Boolean` 8, plus `first`, `sum`, `concat_str`, `__version__`, `any_horizontal`, `max_horizontal`, `read_csv`, `concat_list`, `int_range`, `exceptions.PolarsError`, `Config.set_tbl_rows`.
+- **numpy** (241, 65 names): the `load_overlap` set is `asarray`, `ones`, `flatnonzero`, `frombuffer`, `uint8`, `unpackbits`, `zeros`. The heavy set is `linalg.svd` (2), `linalg.lstsq` (2), `linalg.norm` (6), `linalg.pinv` (1), plus `ndarray` 22, `float64` 24, `where` 9, `maximum` 7, `abs` 7, `sign` 6, and the rest of the table in the JSON.
+- By tree, polars attribute uses are SakAnalytics 677 (4 files), PythDRagoras 223 (17), cycles 22, DRAgoWing 3, NagoyAction 7 (6 files, including the vendored shrink harness), research_loop 2, research 2, root tests 1. Numpy attribute uses are PythDRagoras 192 (9 files), QueRyu 35 (2), research 7, DRAgoWing 5, and 2 in `shrink/run_overlap.py` (the existing harness).
 
 ## markdown — (a)
 
-`dragowing/htmlout.py` loads it with `importlib.import_module("markdown")` and calls `.markdown(source, extensions=...)`. There is no static `import markdown`, so the AST survey records a dynamic import and **zero** attributes. A wrap of `render_md` on a table plus a fenced code block is the missing name: `markdown`. Absent mode raises `ModuleNotFoundError` at that `import_module`.
+`dragowing/htmlout.py` loads it with `importlib.import_module("markdown")` and calls `.markdown(source, extensions=...)`. That call is still the one dynamic import and still has no attribute in the AST. `dragowing/scripts/run_stdlib_paths.py` adds a static `import markdown` and three `__version__` reads while it checks the installed package. A wrap of `render_md` on a table plus a fenced code block is the missing name: `markdown`. Absent mode raises `ModuleNotFoundError` at that `import_module`.
 
 `fetch_module.resolve("markdown")` returns `markdown-3.11.2-py3-none-any.whl` and no runtime dependencies. That is the case #87 already runs in `.github/workflows/cdn-module-experiment.yml`, including DRAgoWing's real `render_md`. Nothing further to shrink. Markdown is not part of the stdlib, so a page that calls `render_md` still needs the wheel on `sys.path`.
 
@@ -77,7 +77,7 @@ So the AST missed `height`, `columns`, `select`, `to_list`, indexing, and the co
 
 That surface is small enough to be a `polars_min` for **this entry**. It is not a shrink of Polars.
 
-**Everywhere else the surface is the expression engine.** SakAnalytics accounts for 677 of the 933 alias uses (`col` 340, `DataFrame` 130, dtypes, `when`, `concat`, …) across `sakanalytics.py`, `proposition_seed_audit.py`, `synthetic_rule_discovery.py`, and tests. The method calls on those frames (filter, rank, over, group_by, join) are not in the 677. PythDRagoras is 223 alias uses in 17 files: `evaluate` builds expressions, filters, drops nulls, casts, and walks `iter_rows`. NagoyAction's digest is the clearest AST miss: the survey counts `DataFrame` twice and `col` once in `nagoyaction/research_digest.py`, and the same function calls `.explode`, `.filter`, `.join`, and `.iter_rows`. Reimplementing that is a dataframe library. Class **(c)** for the package.
+**Everywhere else the surface is the expression engine.** SakAnalytics accounts for 677 of the 937 alias uses (`col` 340, `DataFrame` 130, dtypes, `when`, `concat`, …) across `sakanalytics.py`, `proposition_seed_audit.py`, `synthetic_rule_discovery.py`, and tests. The method calls on those frames (filter, rank, over, group_by, join) are not in the 677. PythDRagoras is 223 alias uses in 17 files: `evaluate` builds expressions, filters, drops nulls, casts, and walks `iter_rows`. NagoyAction's digest is the clearest AST miss: the survey counts `DataFrame` twice and `col` once in `nagoyaction/research_digest.py`, and the same function calls `.explode`, `.filter`, `.join`, and `.iter_rows`. Reimplementing that is a dataframe library. Class **(c)** for the package.
 
 `dist/dragowing_min.py` does not import polars. The managed copy described below never reaches `load_overlap`.
 
@@ -93,7 +93,7 @@ AST on that path had counted `asarray`, `ones`, `flatnonzero`, `frombuffer`, `ui
 
 **QueRyu `ask/suggest.py:Index` is the other side of the line.** AST: `linalg.svd` once, `linalg.norm` four times, plus `float32`, `log`, `divide`, `packbits`, `sign`, `argsort`, `nan_to_num`, `zeros`. Wrap of `Index` on three short documents also ran `svd` and `norm`, and the methods the AST does not tie to that call: `.T`, `.mean`, `.astype`, `__matmul__`, `__getitem__`, `__setitem__`, in-place arithmetic. The projection is a real SVD. A stdlib rewrite is not going to match OpenBLAS, and the ndarray operations around it are most of a numeric array library. Class **(c)** for this path.
 
-**PythDRagoras `littlebit_prune.littlebit` is the same class.** One wrap (8×5 matrix, rank 2, one stage) called `linalg.svd` and `linalg.lstsq`, plus `einsum`, `sign`, `abs`, `maximum`, `sum`, `.T`, and `__matmul__`. `linalg.norm` and `linalg.pinv` are in the AST (norm in `littlebit_prune.overlap_bounds` and in suggest; pinv in `littlebit_holdout.fit`) and were not on this particular call. Together that is LAPACK (SVD, least squares, pseudoinverse) plus broadcasting and reductions. 192 of the 239 numpy attribute uses sit in PythDRagoras. Class **(c)**. `queryu/tests/test_id_suggest.py` adds `full_like`, `ones_like`, `sqrt` on top of the same Index.
+**PythDRagoras `littlebit_prune.littlebit` is the same class.** One wrap (8×5 matrix, rank 2, one stage) called `linalg.svd` and `linalg.lstsq`, plus `einsum`, `sign`, `abs`, `maximum`, `sum`, `.T`, and `__matmul__`. `linalg.norm` and `linalg.pinv` are in the AST (norm in `littlebit_prune.overlap_bounds` and in suggest; pinv in `littlebit_holdout.fit`) and were not on this particular call. Together that is LAPACK (SVD, least squares, pseudoinverse) plus broadcasting and reductions. 192 of the 241 numpy attribute uses sit in PythDRagoras. Class **(c)**. `queryu/tests/test_id_suggest.py` adds `full_like`, `ones_like`, `sqrt` on top of the same Index.
 
 `shrink/run_overlap.py` only touches `numpy.__file__` and `numpy.__version__` while proving which implementation ran.
 
@@ -131,7 +131,7 @@ pytest is the test runner (83 files). coverage is imported once, in `tests/test_
 
 ## DRAgoWing on the standard library
 
-Of the package modules under `dragowing/`, only two import a third-party library: `overlap.py` (numpy and polars) and `htmlout.py` (markdown, dynamically). Figures, records, forms, the HTML shell, the Plotly **JSON** spec, and the CDN URL are stdlib. Plotly itself is the browser's plotly.js, not a Python package. Chrome export needs a browser. Those two are outside this question.
+Of the package modules under `dragowing/`, only two import a third-party library: `overlap.py` (numpy and polars) and `htmlout.py` (markdown, dynamically). Figures, records, forms, the HTML shell, the Plotly **JSON** spec, and the CDN URL are stdlib. Plotly itself is the browser's plotly.js, not a Python package. Chrome export needs a browser. Those two are outside this question. `dragowing/scripts/run_stdlib_paths.py` is the comparison runner, not a package module: it imports numpy and markdown to record `__file__` and `__version__`. The copy at `dragowing/vendor/aoi/scripts/fetch_module.py` is the same bytes as `scripts/fetch_module.py`, so the survey records the same non-literal `import_module` a second time.
 
 `load_overlap` does not run on the stdlib alone today. The numpy half does: #89 runs this same function with numpy uninstalled. The polars half is the surface in the table above (`read_ndjson`, `height`, `columns`, `select`, `to_list`, `col`, `lit`, the six comparisons, nulls). Until a `polars_min` for that surface exists and is checked the way `numpy_min` is, the claim stops there. `render_md` runs without installing markdown only by fetching the wheel (#87), which is class (a), not stdlib.
 

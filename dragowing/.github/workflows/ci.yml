@@ -1,10 +1,19 @@
-# BlueProbe の CI と同じ形。Aoi は固定 SHA で checkout し、コピーしない。
+# Aoi の checkout は実行時に main の SHA を解決する（workflow_dispatch の aoi-ref で上書きできる）。
+# vendor/aoi は共有ツールの写しで、vendor-lock ジョブが同じ SHA と照合する。
 name: CI
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "17 7 * * *"
   workflow_dispatch:
+    inputs:
+      aoi-ref:
+        description: "Aoi ref to checkout (default refs/heads/main; branch, tag, or full commit SHA)"
+        required: false
+        default: "refs/heads/main"
+        type: string
 permissions:
   contents: read
 jobs:
@@ -13,15 +22,140 @@ jobs:
       contents: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
 
-  test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
+  aoi:
+    name: Resolve Aoi
     needs: changes
+    # vendor-lock は docs-only の PR でも Aoi の最新 main と照合する。product_changed では落とさない。
+    if: always() && needs.changes.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - name: Resolve Aoi ref
+        id: resolve
+        env:
+          AOI_REF_INPUT: ${{ inputs.aoi-ref || 'refs/heads/main' }}
+          AOI_REPOSITORY_ID: "1402862784"
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          ref="${AOI_REF_INPUT}"
+          if [[ ! "$ref" =~ ^([0-9a-fA-F]{40}|refs/[A-Za-z0-9._/-]+|[A-Za-z0-9._/-]+)$ ]]; then
+            echo "invalid Aoi ref" >&2
+            exit 1
+          fi
+          if [[ "$ref" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            sha=$(printf '%s' "$ref" | tr '[:upper:]' '[:lower:]')
+            shown_ref="commit"
+          else
+            if [[ "$ref" != refs/* ]]; then
+              ref="refs/heads/${ref}"
+            fi
+            if [[ "$ref" == "refs/heads/main" ]]; then
+              line=$(git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main)
+            else
+              line=$(git ls-remote https://github.com/myon-bioinformatics/Aoi "$ref")
+            fi
+            sha=$(printf '%s\n' "$line" | awk 'NF { print $1; exit }')
+            shown_ref="$ref"
+          fi
+          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "could not resolve Aoi SHA from ${ref}" >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ.get("GITHUB_TOKEN") or ""
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "dragowing-ci",
+          }
+          if token:
+              headers["Authorization"] = "Bearer " + token
+          request = urllib.request.Request(
+              "https://api.github.com/repos/myon-bioinformatics/Aoi",
+              headers=headers,
+          )
+          with urllib.request.urlopen(request, timeout=60) as response:
+              data = json.load(response)
+          expected = int(os.environ["AOI_REPOSITORY_ID"])
+          got = data.get("id")
+          name = data.get("full_name")
+          if got != expected or name != "myon-bioinformatics/Aoi":
+              raise SystemExit("Aoi repository identity mismatch: id=%s name=%s" % (got, name))
+          PY
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Aoi"
+            echo ""
+            echo "- ref: ${shown_ref}"
+            echo "- sha: ${sha}"
+            echo "- repository_id: ${AOI_REPOSITORY_ID}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  vendor-lock:
+    name: Vendor lock
+    needs: aoi
+    if: always() && needs.aoi.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ needs.aoi.outputs.sha }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - name: Compare vendored tools to Aoi
+        env:
+          AOI_SHA: ${{ needs.aoi.outputs.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+          uv --version
+          {
+            echo "## Vendor lock"
+            echo ""
+            echo "- sha: ${AOI_SHA}"
+            echo "- repository_id: 1402862784"
+          } >> "$GITHUB_STEP_SUMMARY"
+          strict=0
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
+            strict=1
+          elif [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            strict=1
+          fi
+          if [[ "$strict" == "1" ]]; then
+            python -S scripts/check_vendor_lock.py --aoi .test-deps/aoi
+          else
+            python -S scripts/check_vendor_lock.py --aoi .test-deps/aoi --warn
+          fi
+
+  test:
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: [changes, aoi]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
-    env:
-      # サイクルデータ（cycles/ の outputs）、PythDRagoras（propositions, rule_search）、QueRyu（ask）は Aoi に残す。
-      # Aoi main（dragowing/ を切り出したコミット）。
-      AOI_SHA: a8dc4997f43236b24a23df56e21f143fa0e233d8
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -29,7 +163,7 @@ jobs:
         # Aoi の CI と同じ
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
@@ -38,13 +172,21 @@ jobs:
         with:
           version: "0.13.3"
           enable-cache: false
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
-          ref: ${{ env.AOI_SHA }}
+          ref: ${{ needs.aoi.outputs.sha }}
           path: .test-deps/aoi
           persist-credentials: false
-      - run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - name: Record resolved Aoi SHA
+        env:
+          AOI_SHA: ${{ needs.aoi.outputs.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+          echo "Aoi ${AOI_SHA}" >> "$GITHUB_STEP_SUMMARY"
       - run: python -m compileall -q -x '\.test-deps' .
       - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
@@ -52,7 +194,7 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras:${{ github.workspace }}/.test-deps/aoi/queryu/ask
       - name: Preserve JUnit report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python }}
           path: reports/junit.xml

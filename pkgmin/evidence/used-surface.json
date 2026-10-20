@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "files_scanned": 287,
+  "files_scanned": 315,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
@@ -25,6 +25,10 @@
     {
       "file": "dist/sakanalytics_min.py",
       "line": 119
+    },
+    {
+      "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
+      "line": 369
     },
     {
       "file": "queryu/conftest.py",

@@ -1,3 +1,7 @@
+"""Aoi の fetch_module 試験。ファイル名は test_fetch_module.py にしない。
+
+DRAgoWing の subtree が同じ basename を持ち、pytest の既定の import mode は衝突で収集を止める。
+"""
 import hashlib
 import io
 import json

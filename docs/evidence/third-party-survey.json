@@ -26,6 +26,10 @@
       "line": 119
     },
     {
+      "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
+      "line": 369
+    },
+    {
       "file": "queryu/conftest.py",
       "line": 49
     },
@@ -119,15 +123,19 @@
       "import_sites": 3
     },
     "markdown": {
-      "attribute_uses": 0,
-      "attributes": {},
+      "attribute_uses": 3,
+      "attributes": {
+        "__version__": 3
+      },
       "by_tree": {
         "dragowing": {
-          "attribute_uses": 0,
-          "attributes": {},
+          "attribute_uses": 3,
+          "attributes": {
+            "__version__": 3
+          },
           "dynamic_import_sites": 1,
-          "files": 1,
-          "import_sites": 0
+          "files": 2,
+          "import_sites": 1
         }
       },
       "declared": [
@@ -142,10 +150,10 @@
           "name": "markdown"
         }
       ],
-      "distinct_attributes": 0,
+      "distinct_attributes": 1,
       "dynamic_import_sites": 1,
-      "files": 1,
-      "import_sites": 0
+      "files": 2,
+      "import_sites": 1
     },
     "mcp_toolcall_lab": {
       "attribute_uses": 2,
@@ -172,10 +180,10 @@
       "import_sites": 2
     },
     "numpy": {
-      "attribute_uses": 239,
+      "attribute_uses": 241,
       "attributes": {
-        "__file__": 1,
-        "__version__": 3,
+        "__file__": 2,
+        "__version__": 4,
         "abs": 7,
         "any": 2,
         "arange": 7,
@@ -242,15 +250,17 @@
       },
       "by_tree": {
         "dragowing": {
-          "attribute_uses": 3,
+          "attribute_uses": 5,
           "attributes": {
+            "__file__": 1,
+            "__version__": 1,
             "asarray": 1,
             "flatnonzero": 1,
             "ones": 1
           },
           "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
+          "files": 2,
+          "import_sites": 2
         },
         "pythdragoras": {
           "attribute_uses": 192,
@@ -405,8 +415,8 @@
       ],
       "distinct_attributes": 65,
       "dynamic_import_sites": 0,
-      "files": 14,
-      "import_sites": 14
+      "files": 15,
+      "import_sites": 15
     },
     "ortools": {
       "attribute_uses": 2,
@@ -468,16 +478,16 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 933,
+      "attribute_uses": 937,
       "attributes": {
         "Boolean": 8,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 226,
-        "Expr": 10,
+        "DataFrame": 228,
+        "Expr": 11,
         "Float64": 69,
         "Int32": 30,
         "Int64": 38,
-        "Series": 14,
+        "Series": 15,
         "Utf8": 22,
         "__version__": 2,
         "any_horizontal": 1,
@@ -523,14 +533,16 @@
           "import_sites": 3
         },
         "nagoyaction": {
-          "attribute_uses": 3,
+          "attribute_uses": 7,
           "attributes": {
-            "DataFrame": 2,
+            "DataFrame": 4,
+            "Expr": 1,
+            "Series": 1,
             "col": 1
           },
-          "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
+          "dynamic_import_sites": 5,
+          "files": 6,
+          "import_sites": 2
         },
         "pythdragoras": {
           "attribute_uses": 223,
@@ -645,28 +657,29 @@
         }
       ],
       "distinct_attributes": 25,
-      "dynamic_import_sites": 0,
-      "files": 31,
-      "import_sites": 37
+      "dynamic_import_sites": 5,
+      "files": 36,
+      "import_sites": 38
     },
     "pytest": {
-      "attribute_uses": 801,
+      "attribute_uses": 827,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
+        "MonkeyPatch": 1,
         "StashKey": 2,
         "UsageError": 10,
         "approx": 239,
         "fail": 21,
-        "fixture": 41,
+        "fixture": 42,
         "hookimpl": 3,
         "importorskip": 9,
         "mark.parametrize": 145,
         "mark.skipif": 4,
         "param": 1,
-        "raises": 314,
-        "skip": 5
+        "raises": 336,
+        "skip": 7
       },
       "by_tree": {
         "aoi": {
@@ -718,16 +731,18 @@
           "import_sites": 10
         },
         "nagoyaction": {
-          "attribute_uses": 62,
+          "attribute_uses": 88,
           "attributes": {
+            "MonkeyPatch": 1,
             "fail": 1,
-            "fixture": 6,
+            "fixture": 7,
             "mark.parametrize": 13,
-            "raises": 42
+            "raises": 64,
+            "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 9,
-          "import_sites": 9
+          "files": 13,
+          "import_sites": 13
         },
         "pythdragoras": {
           "attribute_uses": 164,
@@ -823,10 +838,10 @@
           "name": "pytest"
         }
       ],
-      "distinct_attributes": 15,
+      "distinct_attributes": 16,
       "dynamic_import_sites": 1,
-      "files": 83,
-      "import_sites": 84
+      "files": 87,
+      "import_sites": 88
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1154,6 +1169,27 @@
     },
     {
       "attributes": {
+        "__version__": 3
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/scripts/run_stdlib_paths.py",
+      "import_sites": 1,
+      "package": "markdown",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "__file__": 1,
+        "__version__": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/scripts/run_stdlib_paths.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
         "fail": 1,
         "fixture": 2,
         "skip": 1
@@ -1267,12 +1303,52 @@
     },
     {
       "attributes": {
+        "MonkeyPatch": 1
+      },
+      "dynamic_lines": [],
+      "file": "nagoyaction/localci_pytest.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {
         "DataFrame": 2,
         "col": 1
       },
       "dynamic_lines": [],
       "file": "nagoyaction/research_digest.py",
       "import_sites": 1,
+      "package": "polars",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {},
+      "dynamic_lines": [
+        41
+      ],
+      "file": "nagoyaction/scripts/collect_with_polars_min.py",
+      "import_sites": 0,
+      "package": "polars",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {},
+      "dynamic_lines": [
+        420
+      ],
+      "file": "nagoyaction/scripts/shrink_polars.py",
+      "import_sites": 0,
+      "package": "polars",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {},
+      "dynamic_lines": [
+        40
+      ],
+      "file": "nagoyaction/shrink/run_collect.py",
+      "import_sites": 0,
       "package": "polars",
       "tree": "nagoyaction"
     },
@@ -1334,11 +1410,44 @@
     },
     {
       "attributes": {
+        "fixture": 1,
+        "raises": 11
+      },
+      "dynamic_lines": [],
+      "file": "nagoyaction/tests/test_localci.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {
         "mark.parametrize": 1,
         "raises": 6
       },
       "dynamic_lines": [],
       "file": "nagoyaction/tests/test_nagoyaction.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {},
+      "dynamic_lines": [
+        145,
+        217
+      ],
+      "file": "nagoyaction/tests/test_polars_min.py",
+      "import_sites": 0,
+      "package": "polars",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {
+        "raises": 11,
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "nagoyaction/tests/test_polars_min.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "nagoyaction"
@@ -1367,6 +1476,16 @@
     },
     {
       "attributes": {
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "nagoyaction/tests/test_vendor_aoi.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {
         "fixture": 3,
         "mark.parametrize": 3,
         "raises": 20
@@ -1375,6 +1494,18 @@
       "file": "nagoyaction/tests/test_worker.py",
       "import_sites": 1,
       "package": "pytest",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {
+        "DataFrame": 2,
+        "Expr": 1,
+        "Series": 1
+      },
+      "dynamic_lines": [],
+      "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",
+      "import_sites": 1,
+      "package": "polars",
       "tree": "nagoyaction"
     },
     {
@@ -2512,16 +2643,6 @@
     },
     {
       "attributes": {
-        "raises": 7
-      },
-      "dynamic_lines": [],
-      "file": "tests/test_fetch_module.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "tests"
-    },
-    {
-      "attributes": {
         "mark.parametrize": 1
       },
       "dynamic_lines": [],
@@ -2581,6 +2702,16 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_research_loop.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 7
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_shared_fetch_module.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

@@ -27,3 +27,9 @@ uv run pytest -q nagoyaction/tests/test_research_digest.py
 `FINDINGS.md` の命題IDを登録簿・研究記録のIDと突き合わせる。終了コードの数値比較は、同じ行に `Pnn` と `exit N` が明示されている場合だけ実施する。文章による『支持』『異議』をキーワードで推測しないため、`unverified_prose=true`。数値や文章の転記を勝手に更新しない。
 
 固定したMarkdownヘルパーは `vendor/markdown.py`、出所とSHA-256は `vendor.lock.json`、MITライセンスは `vendor/markdown-LICENSE`。依存を上流最新へ暗黙に動かさない。
+
+`collect` が使う polars の面は、Aoi の `shrink/polars_min.py` を `vendor/aoi/shrink/polars_min.py` にバイト同一で置いたもので足りる。`research_digest.py` は引き続き `import polars` する。polars が無いプロセスでは、そのファイルを `sys.modules["polars"]` に載せてから import する。
+
+```bash
+python -S nagoyaction/scripts/collect_with_polars_min.py --deps min /tmp/collect.json
+```

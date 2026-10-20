@@ -80,6 +80,10 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## NagoyAction
 
+2026-10-20: main `60e301b8bbd43ec5b682397f8ff1d6be887b1596`（#17: `vendor-aoi` の `uses:` を full SHA に固定し、`localci.py --strict` で可変ピンを失敗にする）を、直前の subtree merge を残したまま squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。
+
+2026-10-20: main `c4cdf0d7d17a15380dac89fdd21f147efcef3be5`（#12: CI が Aoi main を実行時に解決する、#15: Aoi の polars shrink 道具を vendor、#16: ローカル CI のシャードと `polars_min` の collect 検査）を squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。
+
 2026-10-20: Aoi #77 の `show` を子の正本 NagoyAction #7 へ反映し、main `4ad09fdd7b3c1a69e103772b3a5dbf4ea4b28df8` を squash なしの subtree pull で取り込みました。子 #6 の共通 `.gitignore` も含め、prefix 全体の tree と登録 SHA を一致させています。Aoi #78 の3子の join 修復も保持しています。研究workerの自動実行は有効化していません。
 
 - NagoyAction の最初の 49 コミットは、Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd` から `git filter-branch --subdirectory-filter nagoyaction` で切り出しました（先頭 `b35707b877a92fd088db06f15b87d0e72158fc27`、tree `1537879773093a5350a17ca657fbdf89f6a57e72` が Aoi の `nagoyaction/` と一致）。そのうえに子の足場（LICENSE・`.gitignore`・README の節、CI）を足し、NagoyAction #1（README）と #2（Aoi #67 の fetch-guard の同期）を merge commit で取り込んだ main `a53df3f0fd9780ab55626e489ebb12851724731c` に対し、旧 `nagoyaction/` を消してから一度だけ `git subtree add`（`--squash` なし）で join を入れ直しました。merge commit の第2親は NagoyAction main の head で、NagoyAction の全履歴が Aoi につながります（手組みの2親マージや squash 由来の join は使いません。最初の squash の join `f575167` は履歴に残りますが、起点にはしません）。PR は squash/rebase せず merge commit で入れてください。
@@ -96,6 +100,10 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - 同期は PythDRagoras の手順の `pythdragoras` を `sakanalytics`、リポジトリを SakAnalytics に読み替えます（`--squash` なし）。
 
 ## DRAgoWing
+
+2026-10-20: main `e7734b3d538ff49c00a0295d21553a160ff67467`（#13: Aoi の `fetch_module.py` と `numpy_min.py` を `vendor/aoi/` に置く。#14: `dragowing/.github/workflows/` の `uses:` を full SHA に固定）を、直前の subtree merge を残したまま squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。
+
+2026-10-20: main `ec0280afb8dfdfe9ae486a4337aa736e08ff9de8`（#12: Markdown を pure-Python wheel として取得し、`shrink/numpy_min.py` で `render_md` と `load_overlap` をインストール済みの markdown / numpy なしで動かす）を squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。
 
 - DRAgoWing の最初の 28 コミットは、Aoi `a8dc4997f43236b24a23df56e21f143fa0e233d8` から `git filter-branch --subdirectory-filter dragowing` で切り出しました（先頭 `c789da2e30b33144f3110506f90f91ea579b9a6b`、tree `70424b5a2768f43633766435cc9552f77c1b2ba7` が Aoi の `dragowing/` と一致）。そのうえに子の足場（CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト、および単独実行のためのテスト修正）を足しました。最初は `4d798e1405e14d5cdd33e0c3f8fa87b29789b9cc` に対する手組みの squash の join（#61）でしたが、2026-10-19 に、旧 `dragowing/` を消してから main `8d6163989fc2f4843412a03b465fee1cf9b3ac3c`（#3 の `--svg`、#4 の README、#5 の依存の下限）に対して `git subtree add`（`--squash` なし）で join を入れ直しました。merge commit の第2親は DRAgoWing main の head です。PR は squash/rebase せず merge commit で入れてください。
 - `dragowing/` 全体（子の CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した DRAgoWing の tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。`min.py` は Aoi が提供し、子には置きません。

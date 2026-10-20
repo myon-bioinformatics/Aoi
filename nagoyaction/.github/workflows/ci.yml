@@ -3,7 +3,15 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "30 7 * * *"
   workflow_dispatch:
+    inputs:
+      aoi_ref:
+        description: "Aoi ref to checkout. Empty resolves latest main."
+        required: false
+        type: string
+        default: ""
 permissions:
   contents: read
 jobs:
@@ -12,15 +20,109 @@ jobs:
       contents: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
 
-  test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
+  resolve-aoi:
     needs: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+      aoi_sha: ${{ steps.resolve.outputs.aoi_sha }}
+      myon_bioinformatics_sha: ${{ steps.resolve.outputs.myon_bioinformatics_sha }}
+      markdown_sha: ${{ steps.resolve.outputs.markdown_sha }}
+      web_ui_sha: ${{ steps.resolve.outputs.web_ui_sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Resolve referenced repositories
+        id: resolve
+        env:
+          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
+          GITHUB_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          python localci.py resolve --github-output
+
+  # vendor/aoi のバイトを、解決した Aoi の原本と shared-tools.lock.json に照合する。
+  # pull request では不一致を警告にし、main への push と schedule では失敗にする。
+  vendor-aoi:
+    name: Aoi vendor hashes
+    needs: [changes, resolve-aoi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ needs.resolve-aoi.outputs.sha }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - name: Compare vendored tools to the resolved Aoi tree
+        env:
+          EXPECTED_SHA: ${{ needs.resolve-aoi.outputs.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+          AOI_REPOSITORY_ID: "1402862784"
+        run: |
+          set -euo pipefail
+          uv --version
+          if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "resolved Aoi SHA missing" >&2
+            exit 1
+          fi
+          actual=$(git -C .test-deps/aoi rev-parse HEAD)
+          strict=0
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
+            strict=1
+          elif [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            strict=1
+          fi
+          if [[ "$strict" == "1" ]]; then
+            mode="strict"
+          else
+            mode="report-only"
+          fi
+          {
+            echo "## Aoi source"
+            echo "Resolved \`$EXPECTED_SHA\`."
+            echo "Repository id \`$AOI_REPOSITORY_ID\`."
+            echo "Vendor hash check: $mode."
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$actual" != "$EXPECTED_SHA" ]]; then
+            echo "Aoi checkout $actual does not match resolved $EXPECTED_SHA" >&2
+            if [[ "$strict" == "1" ]]; then
+              exit 1
+            fi
+            echo "::warning::Aoi checkout does not match the resolved source commit (report-only for this event)"
+          fi
+          if [[ "$strict" == "1" ]]; then
+            python -S scripts/check_vendor_aoi.py --aoi .test-deps/aoi
+          else
+            python -S scripts/check_vendor_aoi.py --aoi .test-deps/aoi --warn
+          fi
+
+  test:
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: [changes, resolve-aoi]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
-    env:
-      # NagoyAction は Aoi の直下（cycles/・queryu/・sakanalytics/・blueprobe/・vendor/・scripts/・docs/）を
-      # 相対パスで使う。Aoi を固定 SHA で checkout し、その nagoyaction/ をこのリポジトリの tree に置き換えてテストする
-      AOI_SHA: c0d4f64d27bb3a43f893df09e56effc381997f13
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -28,7 +130,7 @@ jobs:
         # Aoi の CI と同じ。failure-identity の expected-reports と揃えること
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -39,14 +141,37 @@ jobs:
         with:
           version: "0.13.3"
           enable-cache: false
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
-          ref: ${{ env.AOI_SHA }}
+          ref: ${{ needs.resolve-aoi.outputs.sha }}
           path: .test-deps/aoi
           persist-credentials: false
-      - name: Verify pinned checkout
-        run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - name: Source checkout provenance
+        env:
+          EXPECTED_SHA: ${{ needs.resolve-aoi.outputs.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "resolved Aoi SHA missing" >&2
+            exit 1
+          fi
+          actual=$(git -C .test-deps/aoi rev-parse HEAD)
+          strict=0
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
+            strict=1
+          elif [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            strict=1
+          fi
+          if [[ "$actual" != "$EXPECTED_SHA" ]]; then
+            echo "Aoi checkout $actual does not match resolved $EXPECTED_SHA" >&2
+            if [[ "$strict" == "1" ]]; then
+              exit 1
+            fi
+            echo "::warning::Aoi checkout does not match the resolved source commit (report-only for this event)"
+          fi
       - name: Replace Aoi nagoyaction/ with this repository's tree
         run: |
           rm -rf .test-deps/aoi/nagoyaction
@@ -61,7 +186,7 @@ jobs:
         run: uv run --locked --python "${{ matrix.python }}" pytest -q -c pyproject.toml nagoyaction/tests --junitxml="$GITHUB_WORKSPACE/reports/junit.xml"
       - name: Preserve JUnit report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python }}
           path: reports/junit.xml
@@ -73,9 +198,78 @@ jobs:
           python -S nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
           python -S nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --dry-run
 
+  # 1 ジョブの中で、本物の polars で research_digest.collect のバイト列を取り、
+  # polars と polars-runtime-32 を外してから polars_min で同じ collect を動かし、cmp する。
+  polars-min:
+    name: collect (real polars, then polars uninstalled)
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: [changes, resolve-aoi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: myon-bioinformatics/Aoi
+          ref: ${{ needs.resolve-aoi.outputs.sha }}
+          path: .test-deps/aoi
+          persist-credentials: false
+      - name: Verify checkout matches resolved SHA
+        env:
+          AOI_SHA: ${{ needs.resolve-aoi.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "resolved Aoi SHA missing" >&2
+            exit 1
+          fi
+          test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
+      - name: Replace Aoi nagoyaction/ with this repository's tree
+        run: |
+          rm -rf .test-deps/aoi/nagoyaction
+          mkdir .test-deps/aoi/nagoyaction
+          git archive HEAD | tar -x -C .test-deps/aoi/nagoyaction
+          git -C .test-deps/aoi add -A nagoyaction
+          test "$(git -C .test-deps/aoi write-tree --prefix=nagoyaction/)" = "$(git rev-parse 'HEAD^{tree}')"
+      - name: Equivalence, AST, proxy trace, absent-polars tracebacks, then record real collect
+        working-directory: .test-deps/aoi
+        run: |
+          uv sync --locked --python 3.12
+          uv run --locked --python 3.12 pytest -q -c pyproject.toml nagoyaction/tests/test_polars_min.py
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py survey
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py analyze
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py generate --out nagoyaction/shrink/polars_min.py --check
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py trace
+          uv run --locked --python 3.12 python nagoyaction/scripts/shrink_polars.py absent
+          uv run --locked --python 3.12 python nagoyaction/shrink/run_collect.py --deps real "$GITHUB_WORKSPACE/reference.json"
+      - name: Reinstall locked runtime deps except polars and its compiled runtime
+        working-directory: .test-deps/aoi
+        run: uv sync --locked --no-dev --no-install-package polars --no-install-package polars-runtime-32 --python 3.12
+      - name: polars is not installed
+        working-directory: .test-deps/aoi
+        run: |
+          if .venv/bin/python -c 'import polars'; then
+            echo "polars is still importable" >&2
+            exit 1
+          fi
+      - name: Same collect on polars_min
+        working-directory: .test-deps/aoi
+        run: .venv/bin/python nagoyaction/shrink/run_collect.py --deps min "$GITHUB_WORKSPACE/minimal.json"
+      - name: Byte-identical to the real polars collect result
+        run: cmp "$GITHUB_WORKSPACE/reference.json" "$GITHUB_WORKSPACE/minimal.json"
+
   failure-identity:
     needs: [changes, test]
-    if: (always()) && needs.changes.outputs.product_changed == 'true'
+    if: (always()) && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     permissions:
       contents: read
       actions: read
@@ -92,3 +286,32 @@ jobs:
     permissions:
       contents: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+
+  local-ci:
+    needs: changes
+    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Setup uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Run local CI
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
+        run: |
+          set -euo pipefail
+          seed="${{ github.run_id }}"
+          echo "localci seed=${seed}"
+          python localci.py run --repeat 10 --seed "${seed}" --strict

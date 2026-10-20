@@ -1,0 +1,62 @@
+name: Shared tool lock
+
+# Aoi が配る stdlib-shrink の道具を shared-tools.lock.json の sha256 と照合する。
+# pull request では不一致を警告にし、main への push と schedule では失敗にする。
+# 子の SHA は lock にもこのファイルにも書かない。実行時に git ls-remote で main を取る。
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 4 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-tools-lock-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lock:
+    name: Shared tool hashes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Resolve consumer mains
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          export GCM_INTERACTIVE=never
+          export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
+          uv --version
+          python -S scripts/check_shared_tools_lock.py --resolve-consumers | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Compare tool hashes to the lock
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          strict=0
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
+            strict=1
+          elif [[ "$EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            strict=1
+          fi
+          if [[ "$strict" == "1" ]]; then
+            python -S scripts/check_shared_tools_lock.py
+          else
+            python -S scripts/check_shared_tools_lock.py --warn
+          fi

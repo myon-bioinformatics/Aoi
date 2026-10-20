@@ -60,3 +60,64 @@ def test_rejects_bad_hash_compiled_and_runtime_deps(monkeypatch, tmp_path):
 def test_only_https():
     with pytest.raises(ValueError):
         fm._get("http://pypi.org/pypi/markdown/json")
+
+
+def test_accepts_py2_py3_none_any_wheel(monkeypatch):
+    _serve(monkeypatch, _wheel(), filename="cdnfake-1.0-py2.py3-none-any.whl")
+    assert fm.resolve("cdnfake")["filename"].endswith("py2.py3-none-any.whl")
+
+
+def test_typing_extensions_marker_is_inactive_on_python_3_11_and_newer(monkeypatch):
+    assert sys.version_info >= (3, 11)
+    _serve(monkeypatch, _wheel(), requires=['typing_extensions>=4.0; python_version < "3.11"'])
+    assert fm.resolve("cdnfake")["version"] == "1.0"
+
+
+def test_typing_extensions_marker_applies_below_python_3_11(monkeypatch):
+    _serve(monkeypatch, _wheel(), requires=['typing_extensions>=4.0; python_version < "3.11"'])
+    env = {"python_version": "3.10", "python_full_version": "3.10.0"}
+    with pytest.raises(SystemExit, match="typing_extensions"):
+        fm.resolve("cdnfake", env=env)
+
+
+def test_python_3_9_is_below_3_11_as_a_version_not_as_text():
+    env = fm.marker_environment({"python_version": "3.9"})
+    assert fm.marker_applies('python_version < "3.11"', env)
+    assert not fm.marker_applies('python_version < "3.11"', fm.marker_environment({"python_version": "3.11"}))
+    assert not fm.marker_applies('python_version < "3.11"', fm.marker_environment({"python_version": "3.12"}))
+
+
+def test_extra_or_marker_follows_the_environment(monkeypatch):
+    _serve(monkeypatch, _wheel(), requires=['foo>=1; python_version >= "3.11" or extra == "dev"'])
+    with pytest.raises(SystemExit, match="依存"):
+        fm.resolve("cdnfake")
+    _serve(monkeypatch, _wheel(), requires=['foo>=1; python_version < "3.11" or extra == "dev"'])
+    assert fm.resolve("cdnfake")["version"] == "1.0"
+    assert not fm.marker_applies('extra == "brotli"', fm.marker_environment())
+
+
+def test_pypdf_requires_dist_sample_has_no_active_dependency_here():
+    info = {"requires_dist": [
+        'typing_extensions>=4.0; python_version < "3.11"',
+        'brotli>=1.2.0; extra == "brotli"',
+        'cryptography>3.0; extra == "crypto"',
+        'Pillow>=8.0.0; extra == "image"',
+    ]}
+    assert fm.runtime_requirements(info) == []
+    below = fm.runtime_requirements(info, {"python_version": "3.10", "python_full_version": "3.10.0"})
+    assert below == ['typing_extensions>=4.0; python_version < "3.11"']
+
+
+def test_release_comparison_and_fail_closed_complex_versions(monkeypatch):
+    env = fm.marker_environment({"python_version": "3.12"})
+    assert fm.marker_applies('python_version == "3.12.0"', env)
+    assert fm.marker_applies('python_version ~= "3.12"', fm.marker_environment({"python_version": "3.13"}))
+    assert not fm.marker_applies('python_version ~= "3.12.1"', fm.marker_environment({"python_version": "3.13.0"}))
+    assert fm.marker_applies('python_version != "abc"', env)
+    assert not fm.marker_applies('python_version == "abc"', env)
+    assert not fm.marker_applies('python_version < "abc"', env)
+    assert fm.marker_applies('"3.11" > python_version', fm.marker_environment({"python_version": "3.10"}))
+    assert fm.marker_applies('extra == "Brotli_X"', fm.marker_environment({"extra": "brotli.x"}))
+    _serve(monkeypatch, _wheel(), requires=['foo>=1; python_version >= "3.11a1"'])
+    with pytest.raises(SystemExit, match="依存"):
+        fm.resolve("cdnfake")

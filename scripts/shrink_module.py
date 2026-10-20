@@ -25,7 +25,7 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SKIP = {".venv", ".git", ".test-deps", "node_modules", "__pycache__"}
+SKIP = {".venv", ".git", ".test-deps", "node_modules", "__pycache__", ".pytest_cache"}
 
 
 def _py_files(root: Path):

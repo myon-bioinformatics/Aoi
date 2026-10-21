@@ -5,25 +5,31 @@ from pathlib import Path
 import pytest
 
 PARENT = "myon-bioinformatics/myon-bioinformatics"
-PARENT_WORKFLOW_PIN = "2192ff22acafdd09e80ac722df91ee937aaedd5e"
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / ".github/workflows").is_dir())
+SHA40 = re.compile(r"[0-9a-f]{40}")
 
 
-def test_parent_workflow_references_use_reviewed_rollout_commit():
+def test_parent_reusable_workflow_uses_are_one_full_sha():
+    """uses: refs to parent reusable workflows are one 40-character SHA.
+
+    Runtime tool checkouts are resolved separately and are outside this contract.
+    """
+    at = chr(64)
+    pattern = re.compile(
+        r"uses:\s*['\"]?"
+        + re.escape(PARENT)
+        + r"/\.github/workflows/[^\s'\"]+"
+        + at
+        + r"([^\s'\"]+)"
+    )
     pins = []
     for path in sorted((ROOT / ".github/workflows").glob("*")):
         if path.suffix not in (".yml", ".yaml"):
             continue
-        text = path.read_text(encoding="utf-8")
-        # Capture mutable and shortened references too, rather than ignoring them.
-        pins.extend(re.findall(r"uses:\s*['\"]?" + re.escape(PARENT) + r"/[^\s@'\"]+@([^\s'\"]+)", text))
-        lines = text.splitlines()
-        for i, line in enumerate(lines):
-            if re.fullmatch(r"\s+repository:\s*['\"]?" + re.escape(PARENT) + r"['\"]?\s*", line):
-                refs = [re.fullmatch(r"\s+ref:\s*['\"]?([^\s'\"]+)['\"]?\s*", item) for item in lines[i + 1:i + 12]]
-                pins.append(next((m.group(1) for m in refs if m), None))
-    assert pins, "shared parent references must remain observable"
-    assert set(pins) == {PARENT_WORKFLOW_PIN}, pins
+        pins.extend(pattern.findall(path.read_text(encoding="utf-8")))
+    assert pins, "parent reusable workflow uses must remain observable"
+    assert len(set(pins)) == 1, pins
+    assert SHA40.fullmatch(pins[0]), pins
 
 
 @pytest.mark.parametrize("fault", [None, "repository", "source", "commit", "sha256", "identity", "payload"])

@@ -5,6 +5,11 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      parent-ref:
+        description: 'Parent ref override; empty resolves latest main'
+        required: false
+        default: ''
+        type: string
       queryu-ref:
         description: 'QueRyu ref override; empty reads child-heads.json'
         required: false
@@ -23,12 +28,16 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - name: Resolve QueRyu subtree head
+      - name: Resolve parent main and QueRyu subtree head
         id: resolved
         env:
+          PARENT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.parent-ref || '' }}
           QUERYU_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.queryu-ref || '' }}
+          PARENT_REPOSITORY_ID: "638801160"
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
           resolve_head() {
             local remote="$1" ref="$2" sha
             ref="${ref#refs/heads/}"
@@ -46,21 +55,52 @@ jobs:
             fi
             printf '%s' "$sha"
           }
+          python -S - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ.get("GITHUB_TOKEN") or ""
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "aoi-parent-resolve",
+          }
+          if token:
+              headers["Authorization"] = "Bearer " + token
+          request = urllib.request.Request(
+              "https://api.github.com/repos/myon-bioinformatics/myon-bioinformatics",
+              headers=headers,
+          )
+          with urllib.request.urlopen(request, timeout=60) as response:
+              data = json.load(response)
+          expected = int(os.environ["PARENT_REPOSITORY_ID"])
+          got = data.get("id")
+          name = data.get("full_name")
+          if got != expected or name != "myon-bioinformatics/myon-bioinformatics":
+              raise SystemExit("parent repository identity mismatch: id=%s name=%s" % (got, name))
+          PY
+          if [[ -n "${PARENT_REF}" ]]; then
+            parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git "$PARENT_REF")
+          else
+            parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git main)
+          fi
           if [[ -n "${QUERYU_REF}" ]]; then
             queryu_sha=$(resolve_head https://github.com/myon-bioinformatics/QueRyu.git "$QUERYU_REF")
           else
             queryu_sha=$(python -S -c 'import json,re,sys; sha=json.load(open("child-heads.json"))["heads"]["myon-bioinformatics/QueRyu"]["sha"]; ok=isinstance(sha,str) and re.fullmatch(r"[0-9a-f]{40}", sha); sys.exit("QueRyu sha in child-heads.json must be a full commit") if not ok else print(sha)')
           fi
+          echo "parent_sha=${parent_sha}" >> "$GITHUB_OUTPUT"
           echo "queryu_sha=${queryu_sha}" >> "$GITHUB_OUTPUT"
           {
             echo '## Resolved distribution checkouts'
-            echo "myon-bioinformatics/myon-bioinformatics 2192ff22acafdd09e80ac722df91ee937aaedd5e"
+            echo "myon-bioinformatics/myon-bioinformatics ${parent_sha}"
+            echo "repository_id ${PARENT_REPOSITORY_ID}"
             echo "myon-bioinformatics/QueRyu ${queryu_sha}"
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/myon-bioinformatics
-          ref: 2192ff22acafdd09e80ac722df91ee937aaedd5e
+          ref: ${{ steps.resolved.outputs.parent_sha }}
           path: .test-deps/distribution-tools
           sparse-checkout: tools/minpy.py
           sparse-checkout-cone-mode: false
@@ -101,6 +141,68 @@ jobs:
           PYCODE
       - name: Regenerate and compare every committed artifact and license
         run: python -S scripts/build_distributions.py --minpy .test-deps/frozen-minpy.py --sources .test-deps/distribution-sources --check
+      - name: Compare resolved parent tool provenance
+        env:
+          PARENT_SHA: ${{ steps.resolved.outputs.parent_sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          head=$(git -C .test-deps/distribution-tools rev-parse HEAD)
+          if [[ "$head" != "$PARENT_SHA" ]]; then
+            echo "parent tool checkout is not the resolved SHA" >&2
+            exit 1
+          fi
+          python -S - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          tool = json.loads(Path("distributions.json").read_text(encoding="utf-8"))["tool"]
+          data = Path(".test-deps/distribution-tools/tools/minpy.py").read_bytes()
+          digest = hashlib.sha256(data).hexdigest()
+          recorded = tool.get("sha256")
+          identity = []
+          drift = []
+          if (tool.get("repository") != "myon-bioinformatics/myon-bioinformatics"
+                  or tool.get("source") != "tools/minpy.py"):
+              identity.append("distributions.json tool repository or source is not parent tools/minpy.py")
+          if not isinstance(recorded, str) or re.fullmatch(r"[0-9a-f]{64}", recorded) is None:
+              identity.append("distributions.json tool.sha256 is not 64 hex characters")
+          elif digest != recorded:
+              drift.append("resolved parent tools/minpy.py sha256 %s != recorded %s" % (digest, recorded))
+          event = os.environ["EVENT_NAME"]
+          ref = os.environ["GITHUB_REF"]
+          strict = event == "schedule" or (event == "push" and ref == "refs/heads/main")
+          lines = [
+              "## Parent tool provenance",
+              "",
+              "- resolved_sha: `%s`" % os.environ["PARENT_SHA"],
+              "- recorded_commit: `%s`" % tool.get("commit"),
+              "- checkout_sha256: `%s`" % digest,
+              "- recorded_sha256: `%s`" % recorded,
+              "- mode: %s" % ("strict" if strict else "report-only"),
+          ]
+          if identity or drift:
+              lines.append("- result: mismatch")
+              for item in identity + drift:
+                  lines.append("  - %s" % item)
+          else:
+              lines.append("- result: match")
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("\n".join(lines) + "\n")
+          for item in identity:
+              print("::error::" + item, file=sys.stderr)
+          for item in drift:
+              print(("::error::" if strict else "::warning::") + item, file=sys.stderr)
+          if identity or (drift and strict):
+              raise SystemExit(1)
+          PY
       - run: python -m pip install pytest
       - name: Exercise isolated single-file APIs
         run: python -m pytest -c pyproject.toml tests/test_distributions.py tests/test_distribution_kernels.py -q --junitxml=build/distributions-junit.xml

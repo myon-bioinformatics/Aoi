@@ -7,6 +7,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      parent-ref:
+        description: 'Parent ref override; empty resolves latest main'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -25,16 +31,83 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # Live lock check follows parent main. The parent's vendor-consumers-compat
+      # workflow keeps 1eda992 as a past-pattern snapshot of the old tool and
+      # registry together. This job is not that snapshot.
+      - name: Resolve parent main
+        id: parent
+        env:
+          PARENT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.parent-ref || '' }}
+          PARENT_REPOSITORY_ID: "638801160"
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          remote=https://github.com/myon-bioinformatics/myon-bioinformatics.git
+          ref="${PARENT_REF:-main}"
+          ref="${ref#refs/heads/}"
+          if [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            sha="$ref"
+          elif [[ "$ref" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+            sha=$(git ls-remote "$remote" "refs/heads/${ref}" | awk 'NR==1 { print $1 }')
+          else
+            echo "parent ref contains unsupported characters" >&2
+            exit 1
+          fi
+          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "could not resolve parent main" >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ.get("GITHUB_TOKEN") or ""
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "aoi-parent-resolve",
+          }
+          if token:
+              headers["Authorization"] = "Bearer " + token
+          request = urllib.request.Request(
+              "https://api.github.com/repos/myon-bioinformatics/myon-bioinformatics",
+              headers=headers,
+          )
+          with urllib.request.urlopen(request, timeout=60) as response:
+              data = json.load(response)
+          expected = int(os.environ["PARENT_REPOSITORY_ID"])
+          got = data.get("id")
+          name = data.get("full_name")
+          if got != expected or name != "myon-bioinformatics/myon-bioinformatics":
+              raise SystemExit("parent repository identity mismatch: id=%s name=%s" % (got, name))
+          PY
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          {
+            echo '## Resolved parent'
+            echo "myon-bioinformatics/myon-bioinformatics ${sha}"
+            echo "repository_id ${PARENT_REPOSITORY_ID}"
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/myon-bioinformatics
-          ref: 2192ff22acafdd09e80ac722df91ee937aaedd5e
+          ref: ${{ steps.parent.outputs.sha }}
           path: .vendor-sync-tools
           sparse-checkout: vendor_sync.py
           sparse-checkout-cone-mode: false
           persist-credentials: false
-      - run: python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
+      - name: Check vendor lock with the resolved parent tool
+        env:
+          PARENT_SHA: ${{ steps.parent.outputs.sha }}
+        run: |
+          set -euo pipefail
+          head=$(git -C .vendor-sync-tools rev-parse HEAD)
+          if [[ "$head" != "$PARENT_SHA" ]]; then
+            echo "parent tool checkout is not the resolved SHA" >&2
+            exit 1
+          fi
+          python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
 
   test:
     name: pytest (Python ${{ matrix.python }})

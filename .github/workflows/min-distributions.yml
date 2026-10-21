@@ -141,9 +141,10 @@ jobs:
           PYCODE
       - name: Regenerate and compare every committed artifact and license
         run: python -S scripts/build_distributions.py --minpy .test-deps/frozen-minpy.py --sources .test-deps/distribution-sources --check
-      - name: Record resolved parent tool provenance
+      - name: Compare resolved parent tool provenance
         env:
           PARENT_SHA: ${{ steps.resolved.outputs.parent_sha }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
           head=$(git -C .test-deps/distribution-tools rev-parse HEAD)
@@ -156,6 +157,7 @@ jobs:
           import json
           import os
           import re
+          import sys
           from pathlib import Path
 
           tool = json.loads(Path("distributions.json").read_text(encoding="utf-8"))["tool"]
@@ -166,8 +168,9 @@ jobs:
                   or re.fullmatch(r"[0-9a-f]{64}", recorded) is None):
               raise SystemExit("distributions.json tool identity is not parent tools/minpy.py")
           digest = hashlib.sha256(Path(".test-deps/distribution-tools/tools/minpy.py").read_bytes()).hexdigest()
-          # Latest main and the approved compiler are different pins. Record both.
-          # Reproduction verifies the approved compiler before executing it.
+          event = os.environ["EVENT_NAME"]
+          strict = event != "pull_request"
+          mismatch = digest != recorded
           lines = [
               "## Parent tool provenance",
               "",
@@ -175,13 +178,19 @@ jobs:
               "- checkout_sha256: `%s`" % digest,
               "- approved_commit: `%s`" % tool.get("commit"),
               "- approved_sha256: `%s`" % recorded,
-              "- gate: approved compiler is verified before execution; live main digest is recorded only",
+              "- mode: %s" % ("strict" if strict else "report-only"),
+              "- result: %s" % ("mismatch" if mismatch else "match"),
           ]
           summary = os.environ.get("GITHUB_STEP_SUMMARY")
           if summary:
               with open(summary, "a", encoding="utf-8") as handle:
                   handle.write("\n".join(lines) + "\n")
           print("\n".join(lines))
+          if mismatch:
+              message = "resolved parent tools/minpy.py sha256 %s != recorded %s" % (digest, recorded)
+              print(("::error::" if strict else "::warning::") + message, file=sys.stderr)
+              if strict:
+                  raise SystemExit(1)
           PY
       - run: python -m pip install pytest
       - name: Exercise isolated single-file APIs

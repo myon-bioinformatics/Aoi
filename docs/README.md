@@ -4,6 +4,20 @@ A file placed directly under `docs/` is a **master file**. Every agent working o
 
 Master files may be improved and extended, but only in ways that keep their intent.
 
+## Ecosystem Diagrams And Reading Guide
+
+[ecosystem.md](ecosystem.md) brings the existing project illustrations together with their responsibilities, handoffs, and design principles. Read it for the whole-system view; use each child's documentation for supported APIs and commands.
+
+| Project | Parent-side explanation and diagram | Implementation documentation |
+|---|---|---|
+| BlueProbe | [Observe, discover and preserve evidence](ecosystem.md#blueprobe) | [BlueProbe README](../blueprobe/README.md) |
+| QueRyu | [Retrieve reproducibly with provenance](ecosystem.md#queryu) | [QueRyu README](../queryu/README.md) |
+| SakAnalytics | [Measure patterns and preserve uncertainty](ecosystem.md#sakanalytics) | [SakAnalytics README](../sakanalytics/README.md) |
+| DRAgoWing | [Make recorded structures visible](ecosystem.md#dragowing) | [DRAgoWing README](../dragowing/README.md) |
+| NagoyAction | [Repeat and trace the research process](ecosystem.md#nagoyaction) | [NagoyAction README](../nagoyaction/README.md) |
+
+The artwork is kept in Aoi's `docs/images/` and reused without adding copies to child repositories. It illustrates the concept, not measured results, actual source HTML, or feature availability. [PythDRagoras](PythDRagoras.md) supplies the hypothesis and validation role that closes the loop.
+
 ## What Counts As A Master File
 
 A document belongs directly under `docs/` only if **all four** hold:

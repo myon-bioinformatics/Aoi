@@ -136,9 +136,11 @@ If you are new to Aoi, read these documents first.
 
 ### Core Documents
 
+- [Documentation index](docs/README.md)
 - [docs/GENESIS.md](docs/GENESIS.md)
 - [docs/philosophy.md](docs/philosophy.md)
 - [docs/principles.md](docs/principles.md)
+- [Ecosystem: concept diagrams, responsibilities and handoffs](docs/ecosystem.md)
 
 These documents explain:
 
@@ -259,6 +261,13 @@ Each project focuses on a different stage of understanding reality.
 | DRAgoWing | Visualization and reporting | [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](dragowing/) |
 | NagoyAction | Automation and orchestration | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](nagoyaction/) |
 | PythDRagoras | Hypothesis generation and explanation validation | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](pythdragoras/) |
+
+The project concept diagrams are collected with text explanations in [docs/ecosystem.md](docs/ecosystem.md):
+[BlueProbe](docs/ecosystem.md#blueprobe), [QueRyu](docs/ecosystem.md#queryu),
+[SakAnalytics](docs/ecosystem.md#sakanalytics), [DRAgoWing](docs/ecosystem.md#dragowing),
+and [NagoyAction](docs/ecosystem.md#nagoyaction).
+They reuse the existing parent-owned images in `docs/images/`; they are concept illustrations, not research results or a list of implemented features.
+For supported commands and formats, use the child documentation linked below.
 
 Together they form a continuous research loop.
 

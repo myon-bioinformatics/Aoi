@@ -495,3 +495,22 @@ Everything that follows exists to explore why.
 For the complete origin story, read:
 
 → [docs/GENESIS.md](docs/GENESIS.md)
+
+### Select a dependency-survey scope
+
+The existing stdlib-only survey accepts repeated root-relative POSIX globs
+(`*` also matches `/`). Includes are ORed; exclusions override includes.
+
+```sh
+python -S scripts/survey_third_party.py --match 'blueprobe/*' --match 'queryu/*' --exclude '*/tests/*' --list
+python -S scripts/survey_third_party.py --match 'blueprobe/*' --json /tmp/blueprobe-survey.json
+```
+
+`--list` returns eligible paths as JSON without reading source/declaration
+contents, and cannot be combined with `--json` or `--check`. A scoped survey
+still uses declarations and local module names from the whole root, so an
+excluded local module does not become a third-party dependency. JSON `selection`
+records scope; `declared_without_imports` then means absent **within selected
+sources**, not unused throughout Aoi. Empty selections and invalid roots/patterns
+exit 2; stale `--check` output exits 1. With no filters, the existing report and
+committed-evidence checks are unchanged.

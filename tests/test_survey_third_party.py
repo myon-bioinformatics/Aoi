@@ -142,3 +142,43 @@ def test_committed_inventory_matches_the_tree():
         cwd=ROOT, capture_output=True, text=True,
     )
     assert proc.returncode == 0, proc.stderr
+
+
+def test_selection_keeps_whole_root_classification(tmp_path):
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    import survey_third_party as survey
+    _project(tmp_path)
+    data = survey.survey(tmp_path, matches=['app.py', 'child/*'], excludes=['child/*'])
+    assert {row['file'] for row in data['sites']} == {'app.py'}
+    assert set(data['packages']) == {'polars'}  # excluded localmod is still local
+    assert data['packages']['polars']['declared']
+    assert data['selection']['files'] == 1
+    assert data['selection']['declared_without_imports_scope'] == 'selected_sources'
+    assert 'selected sources' in survey.render(data)
+
+
+def test_list_does_not_read_source_or_declarations(tmp_path, monkeypatch, capsys):
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    import survey_third_party as survey
+    _project(tmp_path)
+    def forbidden(*a, **k):
+        raise AssertionError('content was read')
+    monkeypatch.setattr(Path, 'read_text', forbidden)
+    assert survey.main(['--root', str(tmp_path), '--match', 'child/*', '--list']) == 0
+    assert json.loads(capsys.readouterr().out) == ['child/use_pl.py']
+
+
+def test_selection_errors_and_scoped_check(tmp_path):
+    _project(tmp_path)
+    base = [sys.executable, '-S', str(SURVEY), '--root', str(tmp_path)]
+    for args in (['--match', 'missing*'], ['--exclude', '*.py'], ['--match', ''],
+                 ['--list', '--json', str(tmp_path / 'never.json')]):
+        proc = subprocess.run(base + args, capture_output=True, text=True)
+        assert proc.returncode == 2, proc.stderr
+    target = tmp_path / 'selected.json'
+    args = ['--match', 'app.py']
+    subprocess.run(base + args + ['--json', str(target)], check=True, capture_output=True)
+    proc = subprocess.run(base + args + ['--check', str(target)], capture_output=True)
+    assert proc.returncode == 0, proc.stderr
+    proc = subprocess.run(base + ['--check', str(target)], capture_output=True)
+    assert proc.returncode == 1

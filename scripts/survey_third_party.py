@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+from fnmatch import fnmatchcase
 import json
 import re
 import sys
@@ -446,7 +447,24 @@ def parse_source(source: str, filename: str) -> ast.AST:
         return ast.parse(relaxed, filename)
 
 
-def survey(root: Path = ROOT) -> dict:
+def selected_files(root: Path, matches=(), excludes=()) -> list[Path]:
+    """Select eligible sources by root-relative POSIX glob; excludes win."""
+    if not root.is_dir():
+        raise ValueError(f"not a directory: {root}")
+    if any(not pattern.strip() for pattern in (*matches, *excludes)):
+        raise ValueError("patterns must not be empty")
+    paths = [p for p in iter_py_files(root)
+             if (not matches or any(fnmatchcase(p.relative_to(root).as_posix(), pat)
+                                    for pat in matches))
+             and not any(fnmatchcase(p.relative_to(root).as_posix(), pat)
+                         for pat in excludes)]
+    if not paths and (matches or excludes):
+        raise ValueError("no eligible Python sources selected")
+    return paths
+
+
+def survey(root: Path = ROOT, *, matches=(), excludes=()) -> dict:
+    paths = selected_files(root, matches, excludes)
     declared = declared_dependencies(root)
     declared_norms = set(declared)
     stems = project_names(root)
@@ -454,7 +472,7 @@ def survey(root: Path = ROOT) -> dict:
     sites = []
     unparsed = []
     nonliteral = []
-    for path in iter_py_files(root):
+    for path in paths:
         rel = path.relative_to(root).as_posix()
         try:
             tree = parse_source(path.read_text(encoding="utf-8"), rel)
@@ -486,7 +504,7 @@ def survey(root: Path = ROOT) -> dict:
                 "dynamic_lines": dyn,
                 "attributes": dict(sorted(attrs.items())),
             })
-    return {
+    result = {
         "schema": SCHEMA,
         "packages": _rollup(sites, declared),
         "declared_without_imports": _undeclared_unused(declared, sites),
@@ -494,6 +512,11 @@ def survey(root: Path = ROOT) -> dict:
         "unparsed": unparsed,
         "sites": sites,
     }
+    if matches or excludes:
+        result["selection"] = {"match": list(matches), "exclude": list(excludes),
+                               "files": len(paths), "context": "whole_root",
+                               "declared_without_imports_scope": "selected_sources"}
+    return result
 
 
 def _undeclared_unused(declared: dict, sites: list[dict]) -> list[dict]:
@@ -581,6 +604,9 @@ def render(data: dict) -> str:
         lines.append(f"non-literal import_module/__import__: {len(data['dynamic_nonliteral'])}")
     if data["unparsed"]:
         lines.append("unparsed: " + ", ".join(data["unparsed"]))
+    if "selection" in data:
+        lines.insert(0, f"selected sources: {data['selection']['files']} (declarations and local names: whole root)")
+        lines = [line.replace("declared but never imported:", "declared but not imported in selected sources:") for line in lines]
     return "\n".join(lines)
 
 
@@ -589,8 +615,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--json", type=Path, help="write the inventory")
     parser.add_argument("--check", type=Path, help="fail if this file differs from a fresh survey")
+    parser.add_argument("--match", action="append", default=[], help="root-relative POSIX glob (repeat: OR; * includes /)")
+    parser.add_argument("--exclude", action="append", default=[], help="exclude glob (repeat: OR; overrides --match)")
+    parser.add_argument("--list", action="store_true", help="print selected source paths as JSON without reading source or declarations")
     args = parser.parse_args(argv)
-    data = survey(args.root)
+    if args.list and (args.json or args.check):
+        parser.error("--list cannot be combined with --json or --check")
+    try:
+        if args.list:
+            print(json.dumps([p.relative_to(args.root).as_posix()
+                              for p in selected_files(args.root, args.match, args.exclude)], indent=2))
+            return 0
+        data = survey(args.root, matches=args.match, excludes=args.exclude)
+    except (ValueError, OSError) as error:
+        print(f"survey: {error}", file=sys.stderr)
+        return 2
     text = dumps(data)
     if args.check:
         current = args.check.read_text(encoding="utf-8") if args.check.exists() else ""

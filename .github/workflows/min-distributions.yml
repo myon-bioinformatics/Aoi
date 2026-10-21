@@ -82,6 +82,7 @@ jobs:
           if [[ -n "${PARENT_REF}" ]]; then
             parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git "$PARENT_REF")
           else
+            # Live provenance must not resolve the frozen distributions.json compiler.
             parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git main)
           fi
           if [[ -n "${QUERYU_REF}" ]]; then
@@ -111,6 +112,7 @@ jobs:
           ref: ${{ steps.resolved.outputs.queryu_sha }}
           path: .test-deps/distribution-sources/queryu
           persist-credentials: false
+      # Keep the live checkout intact: fetch/show the approved compiler into a separate file.
       - name: Restore approved frozen distribution compiler
         run: |
           python -S - <<'PYCODE'

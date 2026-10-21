@@ -5,11 +5,6 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      parent-ref:
-        description: 'Parent ref override; empty resolves latest main'
-        required: false
-        default: ''
-        type: string
       queryu-ref:
         description: 'QueRyu ref override; empty reads child-heads.json'
         required: false
@@ -28,10 +23,9 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - name: Resolve parent main and QueRyu subtree head
+      - name: Resolve QueRyu subtree head
         id: resolved
         env:
-          PARENT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.parent-ref || '' }}
           QUERYU_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.queryu-ref || '' }}
         run: |
           set -euo pipefail
@@ -52,27 +46,21 @@ jobs:
             fi
             printf '%s' "$sha"
           }
-          if [[ -n "${PARENT_REF}" ]]; then
-            parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git "$PARENT_REF")
-          else
-            parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git main)
-          fi
           if [[ -n "${QUERYU_REF}" ]]; then
             queryu_sha=$(resolve_head https://github.com/myon-bioinformatics/QueRyu.git "$QUERYU_REF")
           else
             queryu_sha=$(python -S -c 'import json,re,sys; sha=json.load(open("child-heads.json"))["heads"]["myon-bioinformatics/QueRyu"]["sha"]; ok=isinstance(sha,str) and re.fullmatch(r"[0-9a-f]{40}", sha); sys.exit("QueRyu sha in child-heads.json must be a full commit") if not ok else print(sha)')
           fi
-          echo "parent_sha=${parent_sha}" >> "$GITHUB_OUTPUT"
           echo "queryu_sha=${queryu_sha}" >> "$GITHUB_OUTPUT"
           {
             echo '## Resolved distribution checkouts'
-            echo "myon-bioinformatics/myon-bioinformatics ${parent_sha}"
+            echo "myon-bioinformatics/myon-bioinformatics 2192ff22acafdd09e80ac722df91ee937aaedd5e"
             echo "myon-bioinformatics/QueRyu ${queryu_sha}"
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/myon-bioinformatics
-          ref: ${{ steps.resolved.outputs.parent_sha }}
+          ref: 2192ff22acafdd09e80ac722df91ee937aaedd5e
           path: .test-deps/distribution-tools
           sparse-checkout: tools/minpy.py
           sparse-checkout-cone-mode: false

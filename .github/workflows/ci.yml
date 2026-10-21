@@ -7,12 +7,6 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
-    inputs:
-      parent-ref:
-        description: 'Parent ref override; empty resolves latest main'
-        required: false
-        default: ''
-        type: string
 
 permissions:
   contents: read
@@ -24,47 +18,18 @@ concurrency:
 jobs:
   changes:
     name: Change detection
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
 
   vendor-lock:
     name: Vendor lock
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      # Live lock check follows parent main. The parent's vendor-consumers-compat
-      # workflow keeps 1eda992 as a past-pattern snapshot of the old tool and
-      # registry together. This job is not that snapshot.
-      - name: Resolve parent main
-        id: parent
-        env:
-          PARENT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.parent-ref || '' }}
-        run: |
-          set -euo pipefail
-          remote=https://github.com/myon-bioinformatics/myon-bioinformatics.git
-          ref="${PARENT_REF:-main}"
-          ref="${ref#refs/heads/}"
-          if [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
-            sha="$ref"
-          elif [[ "$ref" =~ ^[A-Za-z0-9._/-]+$ ]]; then
-            sha=$(git ls-remote "$remote" "refs/heads/${ref}" | awk 'NR==1 { print $1 }')
-          else
-            echo "parent ref contains unsupported characters" >&2
-            exit 1
-          fi
-          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "could not resolve parent main" >&2
-            exit 1
-          fi
-          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
-          {
-            echo '## Resolved parent'
-            echo "myon-bioinformatics/myon-bioinformatics ${sha}"
-          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/myon-bioinformatics
-          ref: ${{ steps.parent.outputs.sha }}
+          ref: 2192ff22acafdd09e80ac722df91ee937aaedd5e
           path: .vendor-sync-tools
           sparse-checkout: vendor_sync.py
           sparse-checkout-cone-mode: false
@@ -238,7 +203,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
     with:
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
       expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.14/lab-integration-3.14.xml","junit-chrome-export-py3.14/chrome-export-3.14.xml"]'
@@ -248,7 +213,7 @@ jobs:
   actionlint:
     needs: changes
     if: needs.changes.outputs.workflow_changed == 'true'
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
 
 
   research-digest:

@@ -182,3 +182,12 @@ def test_selection_errors_and_scoped_check(tmp_path):
     assert proc.returncode == 0, proc.stderr
     proc = subprocess.run(base + ['--check', str(target)], capture_output=True)
     assert proc.returncode == 1
+
+
+def test_list_ignores_directories_with_python_suffix(tmp_path, capsys):
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    import survey_third_party as survey
+    (tmp_path / 'directory.py').mkdir()
+    assert survey.main(['--root', str(tmp_path), '--list']) == 0
+    assert json.loads(capsys.readouterr().out) == []
+    assert survey.main(['--root', str(tmp_path), '--match', '*.py', '--list']) == 2

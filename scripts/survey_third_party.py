@@ -453,7 +453,7 @@ def selected_files(root: Path, matches=(), excludes=()) -> list[Path]:
         raise ValueError(f"not a directory: {root}")
     if any(not pattern.strip() for pattern in (*matches, *excludes)):
         raise ValueError("patterns must not be empty")
-    paths = [p for p in iter_py_files(root)
+    paths = [p for p in iter_py_files(root) if p.is_file()
              if (not matches or any(fnmatchcase(p.relative_to(root).as_posix(), pat)
                                     for pat in matches))
              and not any(fnmatchcase(p.relative_to(root).as_posix(), pat)

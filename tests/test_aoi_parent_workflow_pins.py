@@ -5,12 +5,12 @@ from pathlib import Path
 import pytest
 
 PARENT = "myon-bioinformatics/myon-bioinformatics"
+PARENT_WORKFLOW_PIN = "2192ff22acafdd09e80ac722df91ee937aaedd5e"
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / ".github/workflows").is_dir())
-SHA40 = re.compile(r"[0-9a-f]{40}")
 
 
 def test_parent_reusable_workflow_uses_are_one_full_sha():
-    """uses: refs to parent reusable workflows are one 40-character SHA.
+    """Parent reusable-workflow uses refs are the reviewed 40-character SHA.
 
     Runtime tool checkouts are resolved separately and are outside this contract.
     """
@@ -28,8 +28,7 @@ def test_parent_reusable_workflow_uses_are_one_full_sha():
             continue
         pins.extend(pattern.findall(path.read_text(encoding="utf-8")))
     assert pins, "parent reusable workflow uses must remain observable"
-    assert len(set(pins)) == 1, pins
-    assert SHA40.fullmatch(pins[0]), pins
+    assert set(pins) == {PARENT_WORKFLOW_PIN}, pins
 
 
 @pytest.mark.parametrize("fault", [None, "repository", "source", "commit", "sha256", "identity", "payload"])

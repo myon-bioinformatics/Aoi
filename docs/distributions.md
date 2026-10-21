@@ -53,7 +53,7 @@ python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py
 python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py --sources /checkouts --check
 ```
 
-`/checkouts/queryu` は `child-heads.json` に登録した QueRyu の sha の checkout である。親の `tools/minpy.py` は実行時に親 main を解決して取る。解決した SHA はジョブの summary に残す。`workflow_dispatch` では親 ref と QueRyu ref を上書きできる。`--check` は成果物を書き換えない。`distributions.json` の tool SHA-256 と QueRyu commit は照合用の記録として残し、checkout がその commit と一致し、ツールのバイト列が記録した SHA-256 と一致することを確かめる。隔離テストはコピーした5本だけを `python -I -S` で読み、キャッシュ改ざん拒否・BlueProbe連携・期間比較・近傍・閾値・来歴・HTML生成を実行する。
+`/checkouts/queryu` は `child-heads.json` に登録した QueRyu の sha の checkout である。共有CIの親checkoutは、展開時に検証した親mainの40桁SHAへ固定する。配布物の再現には `distributions.json` の `tool.commit` と `tool.sha256` に固定したコンパイラを使う。workflowは取得したcommitの同一性とSHA-256を検証してから、共有CI用checkoutとは別の `.test-deps/frozen-minpy.py` へ保存する。親mainの更新だけで配布manifest・固定済みコンパイラ・成果物を変更しない。`workflow_dispatch` の QueRyu ref上書きは維持する。`--check` は成果物を書き換えず、コンパイラのSHA-256をimport前に再検証する。隔離テストはコピーした5本だけを `python -I -S` で読み、キャッシュ改ざん拒否・BlueProbe連携・期間比較・近傍・閾値・来歴・HTML生成を実行する。
 
 ## subtreeとの関係
 

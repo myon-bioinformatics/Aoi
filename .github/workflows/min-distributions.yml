@@ -71,8 +71,36 @@ jobs:
           ref: ${{ steps.resolved.outputs.queryu_sha }}
           path: .test-deps/distribution-sources/queryu
           persist-credentials: false
+      - name: Restore approved frozen distribution compiler
+        run: |
+          python -S - <<'PYCODE'
+          import hashlib
+          import json
+          from pathlib import Path
+          import re
+          import subprocess
+
+          tool = json.loads(Path("distributions.json").read_text())["tool"]
+          commit = tool.get("commit", "")
+          digest = tool.get("sha256", "")
+          if (tool.get("repository") != "myon-bioinformatics/myon-bioinformatics"
+                  or tool.get("source") != "tools/minpy.py"
+                  or not re.fullmatch(r"[0-9a-f]{40}", commit)
+                  or not re.fullmatch(r"[0-9a-f]{64}", digest)):
+              raise SystemExit("invalid approved distribution compiler identity")
+          checkout = ".test-deps/distribution-tools"
+          subprocess.run(["git", "-C", checkout, "fetch", "--depth=1", "origin", commit], check=True, timeout=90)
+          actual = subprocess.check_output(["git", "-C", checkout, "rev-parse", "FETCH_HEAD"], text=True, timeout=30).strip()
+          if actual != commit:
+              raise SystemExit("frozen distribution compiler commit mismatch")
+          data = subprocess.check_output(["git", "-C", checkout, "show", actual + ":tools/minpy.py"], timeout=30)
+          if hashlib.sha256(data).hexdigest() != digest:
+              raise SystemExit("frozen distribution compiler SHA-256 mismatch")
+          Path(".test-deps/frozen-minpy.py").write_bytes(data)
+          print("Verified frozen distribution compiler: " + commit)
+          PYCODE
       - name: Regenerate and compare every committed artifact and license
-        run: python -S scripts/build_distributions.py --minpy .test-deps/distribution-tools/tools/minpy.py --sources .test-deps/distribution-sources --check
+        run: python -S scripts/build_distributions.py --minpy .test-deps/frozen-minpy.py --sources .test-deps/distribution-sources --check
       - run: python -m pip install pytest
       - name: Exercise isolated single-file APIs
         run: python -m pytest -c pyproject.toml tests/test_distributions.py tests/test_distribution_kernels.py -q --junitxml=build/distributions-junit.xml

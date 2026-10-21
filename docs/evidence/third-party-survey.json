@@ -662,7 +662,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 835,
+      "attribute_uses": 837,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -675,10 +675,10 @@
         "fixture": 42,
         "hookimpl": 3,
         "importorskip": 9,
-        "mark.parametrize": 152,
+        "mark.parametrize": 153,
         "mark.skipif": 4,
         "param": 1,
-        "raises": 338,
+        "raises": 339,
         "skip": 6
       },
       "by_tree": {
@@ -792,18 +792,18 @@
           "import_sites": 8
         },
         "tests": {
-          "attribute_uses": 68,
+          "attribute_uses": 70,
           "attributes": {
             "approx": 1,
             "fail": 1,
             "fixture": 4,
             "importorskip": 1,
-            "mark.parametrize": 14,
-            "raises": 47
+            "mark.parametrize": 15,
+            "raises": 48
           },
           "dynamic_import_sites": 0,
-          "files": 12,
-          "import_sites": 12
+          "files": 13,
+          "import_sites": 13
         }
       },
       "declared": [
@@ -840,8 +840,8 @@
       ],
       "distinct_attributes": 16,
       "dynamic_import_sites": 1,
-      "files": 87,
-      "import_sites": 88
+      "files": 88,
+      "import_sites": 89
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2576,6 +2576,17 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_aoi_npb.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 1,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_aoi_parent_workflow_pins.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

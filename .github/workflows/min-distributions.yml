@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       parent-ref:
-        description: 'Parent ref override; empty resolves latest main'
+        description: 'Parent ref override; empty uses distributions.json tool.commit'
         required: false
         default: ''
         type: string
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - name: Resolve parent main and QueRyu subtree head
+      - name: Resolve pinned parent compiler and QueRyu subtree head
         id: resolved
         env:
           PARENT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.parent-ref || '' }}
@@ -55,7 +55,7 @@ jobs:
           if [[ -n "${PARENT_REF}" ]]; then
             parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git "$PARENT_REF")
           else
-            parent_sha=$(resolve_head https://github.com/myon-bioinformatics/myon-bioinformatics.git main)
+            parent_sha=$(python -S -c 'import json,re,sys; sha=json.load(open("distributions.json"))["tool"]["commit"]; sys.exit("tool.commit must be a full SHA") if not isinstance(sha,str) or not re.fullmatch(r"[0-9a-f]{40}",sha) else print(sha)')
           fi
           if [[ -n "${QUERYU_REF}" ]]; then
             queryu_sha=$(resolve_head https://github.com/myon-bioinformatics/QueRyu.git "$QUERYU_REF")

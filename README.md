@@ -8,6 +8,18 @@
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
+## Role in Aoi
+
+**Fetching and observation datasets.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Choosing data sources is hard | 1. Cache and verify | Reproducible data |
+| It is unclear when and where data came from | 2. Record provenance for every fetch | A clear fetch history |
+| Large amounts of data are hard to manage | 3. Build observation datasets | Easy comparison and analysis |
+
+Topics: datasets, fetch support, automation
+
 ## 概要
 
 取得と、観測データセットの作成を担う。取得元への負荷を抑え、いつ・どこから・どのコードで取ったかを必ず残す。

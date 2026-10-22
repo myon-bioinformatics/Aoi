@@ -1,10 +1,24 @@
 # QueRyu
 
-> 再現できる取得が、確かな理解をつくる。
+> Reproducible fetching builds reliable understanding.
+>
+> Polite web fetching with conditional-GET caching and provenance for building NPB baseball observation datasets (split out from Aoi/queryu).
 
 ![QueRyu](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/queryu.webp)
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
+## Role in Aoi
+
+**Fetching and observation datasets.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Choosing data sources is hard | 1. Cache and verify | Reproducible data |
+| It is unclear when and where data came from | 2. Record provenance for every fetch | A clear fetch history |
+| Large amounts of data are hard to manage | 3. Build observation datasets | Easy comparison and analysis |
+
+Topics: datasets, fetch support, automation
 
 ## 概要
 
@@ -186,13 +200,11 @@ python cache_share.py --cache data/cache verify --group npb_calendar
 
 ## テスト
 
-サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi と BlueProbe を固定 SHA で checkout して渡す（`.github/workflows/ci.yml` の `AOI_SHA`・`BLUEPROBE_SHA` と同じ）。
+サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi と BlueProbe の最新の main を checkout して渡す。CI は実行時に `git ls-remote` で main の SHA を解決し、解決した SHA をジョブサマリーへ書く。古い実行を再現するときは workflow_dispatch の ref を指定する。
 
 ```sh
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
-git -C ../Aoi checkout 85243d6d1285e3bf4667e1447308543c7d648ab7
 git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
-git -C ../BlueProbe checkout 50a2846d68fcba4acbe7e4abf7fb0130de07de89
 AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
 ```
 

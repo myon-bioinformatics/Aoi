@@ -3,25 +3,134 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "30 7 * * *"
   workflow_dispatch:
+    inputs:
+      aoi_ref:
+        description: "Aoi ref override for reproducing an old run. Empty resolves latest main."
+        required: false
+        default: ""
+        type: string
+      blueprobe_ref:
+        description: "BlueProbe ref override for reproducing an old run. Empty resolves latest main."
+        required: false
+        default: ""
+        type: string
 permissions:
   contents: read
 jobs:
   changes:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+
+  deps:
+    name: Resolve Aoi and BlueProbe
+    needs: changes
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      aoi_sha: ${{ steps.resolve.outputs.aoi_sha }}
+      blueprobe_sha: ${{ steps.resolve.outputs.blueprobe_sha }}
+    steps:
+      - name: Resolve latest main
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AOI_REF: ${{ github.event.inputs.aoi_ref }}
+          BLUEPROBE_REF: ${{ github.event.inputs.blueprobe_ref }}
+        run: |
+          set -euo pipefail
+          strict=0
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
+            strict=1
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            strict=1
+          fi
+          provenance_fail() {
+            local msg="$1"
+            if [[ "$strict" == "1" ]]; then
+              echo "::error::${msg}"
+              echo "ERROR: ${msg}" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            echo "::warning::${msg}"
+            echo "WARNING: ${msg}" >> "$GITHUB_STEP_SUMMARY"
+          }
+          page_repository_id() {
+            local repo="$1" html_file
+            html_file="$(mktemp)"
+            curl -fsSL -A "QueRyu-CI" "https://github.com/${repo}" -o "$html_file" || true
+            python3 -c 'import re,sys; html=open(sys.argv[1], encoding="utf-8", errors="replace").read(); m=re.search(r"octolytics-dimension-repository_id.{0,40}content=.([0-9]+)", html); print(m.group(1) if m else "")' "$html_file"
+            rm -f "$html_file"
+          }
+          resolve_sha() {
+            local repo="$1" override="$2" line sha count
+            if [[ -n "$override" ]]; then
+              if [[ "$override" =~ ^[0-9a-f]{40}$ ]]; then
+                printf '%s\n' "$override"
+                return 0
+              fi
+              if [[ "$override" =~ ^refs/[A-Za-z0-9._/-]+$ ]]; then
+                line="$(git ls-remote "https://github.com/${repo}" "$override")"
+              elif [[ "$override" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+                line="$(git ls-remote "https://github.com/${repo}" "refs/heads/${override}")"
+              else
+                echo "ref override for ${repo} is not a full commit or a simple ref" >&2
+                exit 1
+              fi
+            else
+              line="$(git ls-remote "https://github.com/${repo}" refs/heads/main)"
+            fi
+            count="$(printf '%s\n' "$line" | sed '/^$/d' | wc -l | tr -d ' ')"
+            if [[ "$count" != "1" ]]; then
+              echo "expected one ref from ${repo}, got ${count}" >&2
+              exit 1
+            fi
+            sha="${line%%[[:space:]]*}"
+            if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "could not resolve ${repo}" >&2
+              exit 1
+            fi
+            printf '%s\n' "$sha"
+          }
+          {
+            echo "## Dependency resolution"
+            if [[ "$strict" == "1" ]]; then
+              echo "Source provenance mode: strict"
+            else
+              echo "Source provenance mode: report-only"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          resolve_repo() {
+            local key="$1" repo="$2" override="$3" api_id page_id sha
+            api_id="$(gh api "repos/${repo}" --jq .id)"
+            if [[ ! "$api_id" =~ ^[0-9]+$ ]]; then
+              echo "repository id missing for ${repo}" >&2
+              exit 1
+            fi
+            page_id="$(page_repository_id "$repo")"
+            if [[ -z "$page_id" || "$page_id" != "$api_id" ]]; then
+              provenance_fail "${repo} repository id mismatch (api ${api_id}, public page ${page_id:-missing})"
+            fi
+            sha="$(resolve_sha "$repo" "$override")"
+            echo "${key}_sha=${sha}" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ${repo}"
+              echo "- repository id: ${api_id}"
+              echo "- resolved sha: ${sha}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          }
+          resolve_repo aoi myon-bioinformatics/Aoi "${AOI_REF:-}"
+          resolve_repo blueprobe myon-bioinformatics/BlueProbe "${BLUEPROBE_REF:-}"
 
   test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
-    needs: changes
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: [changes, deps]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
-    env:
-      # サイクルデータ（cycles/）・blueprobe の fixture・nagoyaction/inbox は Aoi に残す。コピーせず固定 SHA で checkout する
-      AOI_SHA: 85243d6d1285e3bf4667e1447308543c7d648ab7
-      # 抽出（blueprobe・npb_calendar・npb_team_annual）は BlueProbe を固定 SHA で checkout する
-      BLUEPROBE_SHA: 50a2846d68fcba4acbe7e4abf7fb0130de07de89
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -40,22 +149,80 @@ jobs:
         with:
           version: "0.13.3"
           enable-cache: false
+      # サイクルデータ（cycles/）・blueprobe の fixture・nagoyaction/inbox は Aoi に残す。
+      # 依存の SHA は固定しない。deps が実行時に main（または workflow_dispatch の ref）を解決する。
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/Aoi
-          ref: ${{ env.AOI_SHA }}
+          ref: ${{ needs.deps.outputs.aoi_sha }}
           path: .test-deps/aoi
           persist-credentials: false
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/BlueProbe
-          ref: ${{ env.BLUEPROBE_SHA }}
+          ref: ${{ needs.deps.outputs.blueprobe_sha }}
           path: .test-deps/blueprobe
           persist-credentials: false
-      - name: Verify pinned checkouts
+      - name: Verify resolved checkouts
+        env:
+          AOI_SHA: ${{ needs.deps.outputs.aoi_sha }}
+          BLUEPROBE_SHA: ${{ needs.deps.outputs.blueprobe_sha }}
         run: |
-          test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
-          test "$(git -C .test-deps/blueprobe rev-parse HEAD)" = "$BLUEPROBE_SHA"
+          set -euo pipefail
+          strict=0
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
+            strict=1
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            strict=1
+          fi
+          provenance_fail() {
+            local msg="$1"
+            if [[ "$strict" == "1" ]]; then
+              echo "::error::${msg}"
+              echo "ERROR: ${msg}" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            echo "::warning::${msg}"
+            echo "WARNING: ${msg}" >> "$GITHUB_STEP_SUMMARY"
+          }
+          require_head() {
+            local dir="$1" expected="$2" got
+            got="$(git -C "$dir" rev-parse HEAD)"
+            if [[ "$got" != "$expected" ]]; then
+              echo "::error::${dir} checkout ${got} does not match resolved ${expected}"
+              exit 1
+            fi
+          }
+          check_source() {
+            local dir="$1" rel="$2" file tmp digest
+            file="${dir}/${rel}"
+            if [[ ! -f "$file" ]]; then
+              echo "::error::missing ${file} at the resolved commit"
+              exit 1
+            fi
+            tmp="$(mktemp)"
+            git -C "$dir" cat-file blob "HEAD:${rel}" > "$tmp"
+            if ! cmp -s "$tmp" "$file"; then
+              rm -f "$tmp"
+              provenance_fail "${file} bytes differ from the resolved commit"
+            else
+              rm -f "$tmp"
+            fi
+            digest="$(python3 -c 'import hashlib,pathlib,sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$file")"
+            echo "- ${file}: ${digest}" >> "$GITHUB_STEP_SUMMARY"
+          }
+          test -d .test-deps/aoi/cycles
+          test -d .test-deps/aoi/nagoyaction/inbox
+          require_head .test-deps/aoi "$AOI_SHA"
+          require_head .test-deps/blueprobe "$BLUEPROBE_SHA"
+          {
+            echo "## Source hashes"
+            echo "- Aoi: ${AOI_SHA}"
+            echo "- BlueProbe: ${BLUEPROBE_SHA}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          check_source .test-deps/blueprobe blueprobe.py
+          check_source .test-deps/blueprobe npb_calendar.py
+          check_source .test-deps/blueprobe npb_team_annual.py
       - run: python -m compileall -q -x '\.test-deps' .
       - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
@@ -72,11 +239,11 @@ jobs:
 
   failure-identity:
     needs: [changes, test]
-    if: (always()) && needs.changes.outputs.product_changed == 'true'
+    if: always() && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
     with:
       expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
       artifact-pattern: junit-*
@@ -88,4 +255,4 @@ jobs:
     if: needs.changes.outputs.workflow_changed == 'true'
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e

@@ -1,6 +1,8 @@
 # QueRyu
 
-> 再現できる取得が、確かな理解をつくる。
+> Reproducible fetching builds reliable understanding.
+>
+> Polite web fetching with conditional-GET caching and provenance for building NPB baseball observation datasets (split out from Aoi/queryu).
 
 ![QueRyu](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/queryu.webp)
 

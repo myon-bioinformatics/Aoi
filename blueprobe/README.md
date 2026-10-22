@@ -1,10 +1,24 @@
 # BlueProbe
 
-> まず見に行く。解釈はあとで。
+> Observe first, interpret later.
+>
+> HTML/CSS/DOM structure observation and extraction for NPB baseball pages (split out from Aoi/blueprobe).
 
 ![BlueProbe](docs/images/blueprobe.webp)
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
+## Role in Aoi
+
+**Observation and detection.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Researching information on the web is inefficient | 1. Make discovery a regular routine | Find the information you need |
+| The whole picture of an analysis target is hard to see | 2. Read the fetched sources | A more efficient research process |
+| Unknown information is hard to find | 3. Shape the findings into reports | Leads toward the unknown |
+
+Topics: web crawling, information gathering, research support
 
 ## 概要
 
@@ -78,8 +92,8 @@ unknown : どの区分にも当たらなかったもの。原文を残す → �
 PYTHONPATH=<Aoi のルート>/queryu uv run pytest -q
 ```
 
-キャッシュ連携テストは QueRyu（`Aoi/queryu`）を使う。CI（`.github/workflows/ci.yml`、Python 3.11–3.14）は Aoi を固定 SHA（`AOI_SHA`）で `.test-deps/aoi` に checkout し、
-`PYTHONPATH` に `queryu` を足す。任意の lab 統合テストは後半の「固定した実装でオフライン統合テストを再現する」。
+キャッシュ連携テストは QueRyu（`Aoi/queryu`）を使う。CI（`.github/workflows/ci.yml`、Python 3.11–3.15）は実行時に Aoi の main を解決して `.test-deps/aoi` に checkout し、解決した SHA をジョブサマリへ残す。`workflow_dispatch` の `aoi_ref` で ref を上書きできる。
+`PYTHONPATH` に `queryu` を足す。任意の lab 統合テストは後半の「過去パターンのスナップショットでオフライン統合テストを再現する」。
 
 ## Aoi との関係
 
@@ -120,7 +134,7 @@ Aoi → BlueProbe・登録した `sha` の更新は、上の child-repositories 
 
 | リポジトリ | 見るところ | 内容 |
 |---|---|---|
-| [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/adapters/html_snapshot.py`, `css_inspect.py`, `source_access.py`, `docs/source-access.md` | 保存HTMLのオフライン抽出・CSS検査・取得元アクセス（SHA で固定して任意接続） |
+| [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/adapters/html_snapshot.py`, `css_inspect.py`, `source_access.py`, `docs/source-access.md` | 保存HTMLのオフライン抽出・CSS検査・取得元アクセス（過去パターンのスナップショットを SHA で取得して任意接続） |
 | [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/page_text.py`, `examples/capture_browser_dom.py`, `docs/dom-capture.md`, `fixtures/page_text/` | ページ本文抽出とブラウザDOM採取 |
 | [web-ui](https://github.com/myon-bioinformatics/web-ui) | `docs/local-dom-lab.md`, `tool/serve_dom_lab.py`, `tests/integration/test_gradio_dom.py` | ローカルDOMラボと DOM 証跡 |
 | [flutter_navigation_basic](https://github.com/myon-bioinformatics/flutter_navigation_basic) | `e2e/tests/*.spec.ts` | Flutter Web 画面の DOM 観測（Playwright） |
@@ -223,10 +237,10 @@ parser自身が未知の試合を取りこぼしていないという証明で�
 NPB保存fixtureの4試合・中止1件・非公式戦1件を用いて比較する。
 同じ原文を何度再解析しても新規GETはしない。labなしの通常NPBテストは従来どおり動く。
 
-### 固定した実装でオフライン統合テストを再現する
+### 過去パターンのスナップショットでオフライン統合テストを再現する
 
-CI の `Offline lab integration (Python 3.14)` は、lab のマージコミット
-`6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90` を `.test-deps/lab` に別途 checkout する。
+CI の `Offline lab integration (Python 3.14)` は、過去に作ったパターン集合の検証用テストデータとして、lab のマージコミット
+`6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90` を SHA で取得し `.test-deps/lab` に checkout する。
 `src` をテスト時の `PYTHONPATH` に追加し、事前確認で SHA と
 `html_snapshot`・`css_inspect`・`source_access` の import 元を照合する。import 元は
 実テスト内でも確認する。単一ファイルのコピー、lab の自動インストール、実行時の取得はしない。
@@ -271,7 +285,7 @@ import 失敗を成功扱いにしない。通常モードでは lab がない�
 外部 CSS のリンクや `@import` を自動取得しないことも確認する。
 統合 JUnit は失敗時も保存し、集約側は通常5件と統合1件の計6レポートを必須にする。
 
-以下は PR #15 時点の過去のローカル検証（2026-10-09、Python 3.14.8、固定 lab SHA、Aoi の locked 依存）:
+以下は PR #15 時点の過去のローカル検証（2026-10-09、Python 3.14.8、過去パターンの lab スナップショット、Aoi の locked 依存）:
 
 - 実 extractor の必須2テスト: 2 passed / 0 skipped
 - lab ありの全テスト: 533 passed / 24 skipped

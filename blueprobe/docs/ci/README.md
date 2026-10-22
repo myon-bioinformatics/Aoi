@@ -1,10 +1,10 @@
-# CI の提案
+# CI
 
-`ci.yml.proposed` を `.github/workflows/ci.yml` として置く想定（このリポジトリの push 権限では workflow を書けないため、ここに置く）。
+実行定義は `.github/workflows/ci.yml`。
 
-各リポジトリとの揃え方:
-
-- **JUnit XML**: Aoi と同じく `pytest -q --junitxml=build/test-results/pytest-<python>.xml`、artifact 名 `junit-py<python>`、
-  保持 14 日。集約は組織親リポジトリの `reusable-junit-identity.yml`（`.github/workflows/ci.yml` の workflow ピンと同じ SHA）
-  - 他リポジトリの出力先は `reports/junit.xml`・`build/junit/`・`test-results/` などに分かれている。BlueProbe は出自の Aoi に合わせた
-- **lint**: 調べた公開リポジトリに ruff などの lint 設定は見つからなかった。BlueProbe でも足さない（`python -m compileall` で構文だけ確かめる、Aoi と同じ）
+- **Aoi**: 実行時に `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main` で main の SHA を解決し、公開ページの repository id を照合してから `.test-deps/aoi` に checkout する。解決した SHA はジョブサマリに残す。`workflow_dispatch` の `aoi_ref` で ref を上書きできる。コミット SHA はファイルに固定しない。
+- **mcp-toolcall-lab**: `LAB_SHA` は、過去に作ったパターン集合を検証するためのスナップショット。SHA で取得し、検証用テストデータとして使う。この照合はどのイベントでも失敗にする。
+- **ソースハッシュ**: 浮動のソースハッシュ照合を足す場合、`pull_request` では報告のみ、`main` への push と `schedule` では失敗にする。Aoi のソースハッシュは記録しない。
+- **JUnit XML**: `pytest -q --junitxml=reports/junit.xml`、artifact 名 `junit-py<python>`、保持 14 日。集約は組織親の `reusable-junit-identity.yml`。
+- **lint**: ruff は足さない。`python -m compileall` で構文だけ確かめる。
+- **実行時**: 標準ライブラリのみ。依存の上限は置かない。

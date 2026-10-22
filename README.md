@@ -16,6 +16,29 @@ The actual subject of Aoi is explanation itself.
 
 Aoi is also a working repository: a uv-managed Python project that holds the research cycles (data, configurations and findings) and the subprojects that observe, retrieve, measure, validate, visualize and automate them. Each subproject is also published as its own repository (see [Child Repositories](#child-repositories)).
 
+## Role in Aoi
+
+**Research framework.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Observations are ambiguous and depend on who makes them | 1. Standardize observations and records | Tools that support observation |
+| Repeated research is slow to carry out | 2. Analyze and explain | Efficient hypothesis testing |
+| Results are hard to organize and reproduce | 3. Turn contradictions into hypotheses | A visible research process |
+
+Topics: observation and analysis, research support, data organization
+
+## Research Cycle and Roles
+
+| Repository | Role |
+|---|---|
+| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | Observation and extraction |
+| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | Fetching and observation datasets |
+| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | Team and season analysis |
+| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | Propositions, proofs and coordinate decomposition |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | Visualization and reports |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | Automation and orchestration |
+
 ## Getting Started
 
 Requirements: Python 3.11 or newer (`.python-version` pins 3.14 for local work) and [uv](https://docs.astral.sh/uv/).

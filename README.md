@@ -8,6 +8,18 @@
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
+## Role in Aoi
+
+**Analysis of team and season trends.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Match records are hard to analyze | 1. Compute metrics | Data-driven analysis |
+| Numbers are hard to visualize and interpret | 2. Project the remaining games | A visible outlook |
+| The analysis procedure is unclear | 3. Compute clinch numbers and simulate leagues | Easier comparison and discussion |
+
+Topics: data analysis, sports, visualization
+
 ## 概要
 
 観測データセット（1試合1行: `key, date, home, away, hs, as`）から、チーム×シーズンの指標を作る。

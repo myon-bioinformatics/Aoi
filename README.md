@@ -8,6 +8,18 @@
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
+## Role in Aoi
+
+**Automation and orchestration.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Research is hard to automate and keep running | 1. Describe the flow once in TOML | Support for automating research |
+| Local runs and GitHub need to stay in sync | 2. Run the same command everywhere | Easy reproduction and sharing |
+| Data processing needs to run on a schedule | 3. Keep a receipt for every run | Continuous analysis |
+
+Topics: GitHub Actions, automation, workflow
+
 ## 概要
 
 パイプラインを TOML に一度だけ書き、**ローカルでも GitHub Actions でも同じコマンド**で動かす。

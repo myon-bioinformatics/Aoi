@@ -1,6 +1,8 @@
 # SakAnalytics
 
-> 数字は語る。だが、まだ語りきっていないことがある。
+> The numbers speak, but they haven't said everything yet.
+>
+> Team-season metrics, remaining-game and clinch-magic simulation, and synthetic-league experiments for NPB baseball game records. Split out from Aoi's sakanalytics/ (git subtree).
 
 ![SakAnalytics](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/sakanalytics.webp)
 

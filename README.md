@@ -1,6 +1,8 @@
 # DRAgoWing
 
-> 記録を、判定をやり直さずに置く。
+> Lay down the record without re-judging it.
+>
+> Renders baseball research records as Plotly.js HTML reports, proposition tables and optional headless-Chrome PNG/SVG exports without Python plotting libraries. Split out from Aoi's dragowing/ (git subtree).
 
 ![DRAgoWing](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/dragowing.webp)
 

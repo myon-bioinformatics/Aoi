@@ -1,6 +1,8 @@
 # BlueProbe
 
-> まず見に行く。解釈はあとで。
+> Observe first, interpret later.
+>
+> HTML/CSS/DOM structure observation and extraction for NPB baseball pages (split out from Aoi/blueprobe).
 
 ![BlueProbe](docs/images/blueprobe.webp)
 

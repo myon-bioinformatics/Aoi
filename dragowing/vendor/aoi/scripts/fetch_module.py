@@ -15,7 +15,8 @@
 
 制限: compiled な wheel（selectolax など）は拒否する。requires_dist のうち、extra を
 選んでいないもの、および環境マーカーがこのインタプリタで偽のものは実行時の依存に数えない。
-評価できないマーカーは有効（依存あり）として拒否する。依存の解決はしない。
+``and`` の一方が選んでいない extra で偽なら、もう一方が評価できなくてもその依存は飛ばす。
+``or`` は真か偽かが決まらないとき有効（依存あり）として拒否する。依存の解決はしない。
 """
 from __future__ import annotations
 
@@ -260,12 +261,32 @@ class _Parser:
         raise ValueError("unsupported marker syntax")
 
 
+def _eval_bool(children, env: dict, *, kind: str) -> bool:
+    """Evaluate ``and`` / ``or`` so a decided child wins over an unevaluable one.
+
+    An unselected ``extra == "name"`` is false. That makes an ``and`` false even
+    when another clause uses a pre-release comparison this evaluator refuses.
+    An ``or`` stays unevaluable unless some clause is true or every clause is false.
+    """
+    decisive = False if kind == "and" else True
+    pending: ValueError | None = None
+    for child in children:
+        try:
+            value = _eval(child, env)
+        except ValueError as exc:
+            pending = exc
+            continue
+        if value == decisive:
+            return decisive
+    if pending is not None:
+        raise pending
+    return not decisive
+
+
 def _eval(node, env: dict) -> bool:
     kind = node[0]
-    if kind == "or":
-        return any(_eval(child, env) for child in node[1])
-    if kind == "and":
-        return all(_eval(child, env) for child in node[1])
+    if kind in ("or", "and"):
+        return _eval_bool(node[1], env, kind=kind)
     op, left, right = node[1], node[2], node[3]
     left_value, left_extra = _atom(left, env)
     right_value, right_extra = _atom(right, env)
@@ -297,7 +318,11 @@ def _split_marker(requirement: str) -> str | None:
 
 
 def runtime_requirements(info: dict, env: dict | None = None) -> list[str]:
-    """この場で効く依存。マーカーが偽なら実行時の依存に数えない。評価できなければ有効とみなす。"""
+    """この場で効く依存。マーカーが偽なら実行時の依存に数えない。
+
+    選んでいない extra との ``and`` は、他の節が評価できなくても偽である。
+    真偽が決まらないマーカーは有効とみなす。
+    """
     environment = marker_environment(env)
     active = []
     for raw in info.get("requires_dist") or []:

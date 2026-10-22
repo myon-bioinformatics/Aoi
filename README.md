@@ -8,6 +8,18 @@
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
+## Role in Aoi
+
+**Visualization and reports.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Records are scattered and hard to reproduce | 1. Read the records | Easy-to-read reports |
+| Aggregated information is hard to summarize | 2. Render them as figures and tables | Sharing through HTML |
+| Reports need continuous updating | 3. Convert them to HTML | Continuous report generation |
+
+Topics: reports, HTML, visualization
+
 ## 概要
 
 記録された結果（`season.jsonl` と `propositions.jsonl`）を、判定をやり直さずに図と表にする。あてはめ・平滑化・階級への丸めはしない。

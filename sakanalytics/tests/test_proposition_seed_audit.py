@@ -1,7 +1,9 @@
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
+import warnings
 
 import pytest
 
@@ -14,26 +16,119 @@ CYCLE = aoi_paths.resolve_cycle_path(ROOT)
 OUT=CYCLE/'outputs/exploratory/proposition-evaluation'
 
 
+def _source_hash_report_only():
+    """SOURCE_HASH_CHECK=report のときだけ警告で続ける。未設定やそれ以外は失敗する。"""
+    return os.environ.get('SOURCE_HASH_CHECK') == 'report'
+
+
+def _finish_source_hash(problems):
+    if not problems:
+        return
+    text = '\n'.join(problems)
+    if _source_hash_report_only():
+        warnings.warn(text, UserWarning, stacklevel=3)
+        if os.environ.get('GITHUB_ACTIONS') == 'true':
+            print('::warning::' + ' '.join(text.split()))
+        return
+    raise AssertionError(text)
+
+
 def _recorded_source_sha(out, artifact, field, recorded, source):
     """記録の生成元ハッシュを確かめる。記録は書き換えない（自動で基準を更新しない）。
 
     今のファイルが記録と同じなら、それで終わり。違うなら、source-divergence.json に
     その差（記録時のハッシュ → 今のハッシュ、生成物は作り直していない）が書いてあることを求める。
+    pull_request の CI は SOURCE_HASH_CHECK=report を渡し、不一致を警告にする。
     """
     current = hashlib.sha256(source.read_bytes()).hexdigest()
     path = out / 'source-divergence.json'
     rows = json.loads(path.read_text(encoding='utf-8'))['source_divergence'] if path.exists() else []
     rel = source.relative_to(ROOT).as_posix()
     matching = [r for r in rows if r['path'] == rel and r['field'] == field]
-    assert len(matching) <= 1
-    if current == recorded:
-        assert not matching, f'{rel}: divergence recorded but the file matches the evidence'
-        return
-    assert matching, f'{rel}: SHA-256 drift in {artifact} {field}; review provenance, never auto-rebaseline'
-    row = matching[0]
-    assert row['evidence_sha256'] == recorded and row['current_sha256'] == current
-    assert row['artifacts_regenerated'] is False and row['inputs_regenerated'] is False
-    assert isinstance(row['reason'], str) and row['reason'].strip()
+    problems = []
+    if len(matching) > 1:
+        problems.append(f'{rel}: multiple source-divergence rows for {field}')
+    elif current == recorded:
+        if matching:
+            problems.append(f'{rel}: divergence recorded but the file matches the evidence')
+    elif not matching:
+        problems.append(
+            f'{rel}: SHA-256 drift in {artifact} {field}; review provenance, never auto-rebaseline')
+    else:
+        row = matching[0]
+        if row['evidence_sha256'] != recorded or row['current_sha256'] != current:
+            problems.append(f'{rel}: source-divergence row does not match {artifact} {field}')
+        if row['artifacts_regenerated'] is not False or row['inputs_regenerated'] is not False:
+            problems.append(f'{rel}: source-divergence must keep artifacts_regenerated and inputs_regenerated false')
+        reason = row['reason']
+        if not isinstance(reason, str) or not reason.strip():
+            problems.append(f'{rel}: source-divergence reason is empty')
+    _finish_source_hash(problems)
+
+
+def _divergence_row(source, recorded, current):
+    return {
+        'source_divergence': [{
+            'path': source.relative_to(ROOT).as_posix(),
+            'field': 'analysis_sha256',
+            'evidence_sha256': recorded,
+            'current_sha256': current,
+            'artifacts_regenerated': False,
+            'inputs_regenerated': False,
+            'reason': 'explained drift',
+        }],
+    }
+
+
+def test_source_hash_check_fails_closed_unless_report(tmp_path, monkeypatch):
+    source = ROOT / 'sakanalytics/proposition_seed_audit.py'
+    recorded = '0' * 64
+    monkeypatch.delenv('SOURCE_HASH_CHECK', raising=False)
+    with pytest.raises(AssertionError, match='SHA-256 drift'):
+        _recorded_source_sha(tmp_path, 'seed-evaluation.json', 'analysis_sha256', recorded, source)
+    monkeypatch.setenv('SOURCE_HASH_CHECK', 'strict')
+    with pytest.raises(AssertionError, match='SHA-256 drift'):
+        _recorded_source_sha(tmp_path, 'seed-evaluation.json', 'analysis_sha256', recorded, source)
+    monkeypatch.setenv('SOURCE_HASH_CHECK', 'warn')
+    with pytest.raises(AssertionError, match='SHA-256 drift'):
+        _recorded_source_sha(tmp_path, 'seed-evaluation.json', 'analysis_sha256', recorded, source)
+    monkeypatch.setenv('SOURCE_HASH_CHECK', 'report')
+    with pytest.warns(UserWarning, match='SHA-256 drift'):
+        _recorded_source_sha(tmp_path, 'seed-evaluation.json', 'analysis_sha256', recorded, source)
+
+
+def test_source_hash_check_accepts_recorded_divergence_and_quiet_match(tmp_path, monkeypatch, recwarn):
+    source = ROOT / 'sakanalytics/proposition_seed_audit.py'
+    current = hashlib.sha256(source.read_bytes()).hexdigest()
+    recorded = 'ab' * 32
+    explained = tmp_path / 'explained'
+    explained.mkdir()
+    (explained / 'source-divergence.json').write_text(
+        json.dumps(_divergence_row(source, recorded, current)), encoding='utf-8')
+    monkeypatch.delenv('SOURCE_HASH_CHECK', raising=False)
+    _recorded_source_sha(explained, 'seed-evaluation.json', 'analysis_sha256', recorded, source)
+    assert recwarn.list == []
+    quiet = tmp_path / 'quiet'
+    quiet.mkdir()
+    monkeypatch.setenv('SOURCE_HASH_CHECK', 'report')
+    _recorded_source_sha(quiet, 'seed-evaluation.json', 'analysis_sha256', current, source)
+    assert recwarn.list == []
+
+
+def test_ci_resolves_aoi_at_runtime_and_sets_source_hash_mode():
+    text = (Path(__file__).resolve().parents[1] / '.github/workflows/ci.yml').read_text(encoding='utf-8')
+    assert 'AOI_SHA' not in text
+    assert 'e43f7d2087f3928e3e55908b03ae2554879990e1' not in text
+    assert 'git ls-remote' in text
+    assert 'https://github.com/myon-bioinformatics/Aoi' in text
+    assert 'refs/heads/main' in text
+    assert '1402862784' in text
+    assert 'SOURCE_HASH_CHECK' in text
+    assert "github.event_name == 'pull_request' && 'report' || 'strict'" in text
+    assert 'schedule:' in text
+    assert 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0' in text
+    assert 'astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0' in text
+    assert 'rev-parse' not in text
 
 
 def test_replay_seed_registry_from_all_2240_plans():

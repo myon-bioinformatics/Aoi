@@ -1,6 +1,8 @@
 # NagoyAction
 
-> 研究を、続けられる仕組みに。
+> Turning research into a system you can keep running.
+>
+> Define a research pipeline once in TOML and run it with the same stdlib-only command locally and on GitHub Actions, with run receipts, Markdown link checking and publication gates for Aoi's NPB baseball research (split out from Aoi/nagoyaction).
 
 ![NagoyAction](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/nagoyaction.webp)
 

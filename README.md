@@ -8,6 +8,18 @@
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
+## Role in Aoi
+
+**Propositions, proofs and coordinate decomposition.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Explanations are often ambiguous | 1. State propositions and draw diagrams | Understanding through figures and text |
+| Diagrams and concepts are hard to grasp | 2. Search for conditions | Try conditions by changing them |
+| The verification procedure is unclear | 3. Run sensitivity analysis | Prompts for further thinking |
+
+Topics: mathematics, visualization, education support
+
 ## 概要
 
 PythDRagoras は、説明を「もし A ならば B」の命題として書き、反例と異議を必ず並べて検証するツールです。答えを出すことより、説明が足りなくなる場所を見つけることを目的にしています。

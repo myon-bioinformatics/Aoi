@@ -8,6 +8,18 @@
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
+## Role in Aoi
+
+**Observation and detection.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Researching information on the web is inefficient | 1. Make discovery a regular routine | Find the information you need |
+| The whole picture of an analysis target is hard to see | 2. Read the fetched sources | A more efficient research process |
+| Unknown information is hard to find | 3. Shape the findings into reports | Leads toward the unknown |
+
+Topics: web crawling, information gathering, research support
+
 ## 概要
 
 BlueProbe は、取得済みの Web ページ（HTML/CSS/DOM）を読み、**何がそこにあるか**を記録する観測・抽出のツールです。勝敗や原因の判断はしません。

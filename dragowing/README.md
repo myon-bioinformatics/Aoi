@@ -1,10 +1,24 @@
 # DRAgoWing
 
-> 記録を、判定をやり直さずに置く。
+> Lay down the record without re-judging it.
+>
+> Renders baseball research records as Plotly.js HTML reports, proposition tables and optional headless-Chrome PNG/SVG exports without Python plotting libraries. Split out from Aoi's dragowing/ (git subtree).
 
 ![DRAgoWing](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/dragowing.webp)
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
+## Role in Aoi
+
+**Visualization and reports.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Records are scattered and hard to reproduce | 1. Read the records | Easy-to-read reports |
+| Aggregated information is hard to summarize | 2. Render them as figures and tables | Sharing through HTML |
+| Reports need continuous updating | 3. Convert them to HTML | Continuous report generation |
+
+Topics: reports, HTML, visualization
 
 ## 概要
 

@@ -1,10 +1,24 @@
 # PythDRagoras
 
-> 本当にその説明で十分か？
+> Propositions, precedents, objections.
+>
+> Tests explanations as propositions with counterexamples, rule search and sensitivity analysis for NPB baseball outcomes. Split out from Aoi's pythdragoras/ (git subtree).
 
 ![PythDRagoras](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/pythdragoras.webp)
 
 *イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
+## Role in Aoi
+
+**Propositions, proofs and coordinate decomposition.**
+
+| Challenges | Approach | Outcomes & value |
+|---|---|---|
+| Explanations are often ambiguous | 1. State propositions and draw diagrams | Understanding through figures and text |
+| Diagrams and concepts are hard to grasp | 2. Search for conditions | Try conditions by changing them |
+| The verification procedure is unclear | 3. Run sensitivity analysis | Prompts for further thinking |
+
+Topics: mathematics, visualization, education support
 
 ## 概要
 
@@ -59,16 +73,16 @@ uv run python pythdragoras.py --help
 
 ## テスト
 
-サイクルデータ（`cycles/`）、`scripts/`、SakAnalytics は Aoi に残します。コピーはせず、Aoi を固定 SHA で checkout して渡します。
+サイクルデータ（`cycles/`）、`scripts/`、SakAnalytics は Aoi に残します。コピーはせず、CI は実行時に Aoi の main を解決して checkout します。手元では main を使います。
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
-git -C .test-deps/aoi checkout 9249ab6e7bbec167cc75963ff315bc90ab5d9e0c   # .github/workflows/ci.yml の AOI_SHA
+git -C .test-deps/aoi checkout main
 AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
   uv run pytest -q --junitxml=reports/junit.xml
 ```
 
-CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。
+CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。`workflow_dispatch` の `aoi_ref` で ref を指定できます。解決した SHA はジョブの summary に残します。
 
 - テストは `AOI_ROOT` だけで Aoi を受け取り、データの場所は Aoi の `aoi_paths.py` に聞きます。このリポジトリに `aoi_paths.py` は置きません。
 - `AOI_ROOT` が Aoi を指していないと、pytest は最初に止まって理由を出します。
@@ -88,7 +102,7 @@ CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをし�
 
 `aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。`littlebit_approx.py` と `littlebit_holdout.py` は配置を推定しません。サイクルのフォルダは `--cycle-dir` で渡します。省略するときは `--root` または環境変数 `AOI_ROOT` と、環境変数 `AOI_RESEARCH_CYCLE`（`<root>/cycles/<名前>`）です。
 
-この 2 ファイルの SHA-256 は、Aoi の `cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json` で固定しています。子の CI はピンした Aoi の `source_sha256` と `source_divergence` をそのまま読み、今のファイルと違うバイトがあれば落ちます。証跡の `evidence_sha256`、入力、`holdout.json` / `holdout.md` は動かしません。
+この 2 ファイルの SHA-256 は、Aoi の `cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json` で固定しています。子の CI は checkout した Aoi の `source_sha256` と `source_divergence` をそのまま読みます。pull request ではソースのバイトが違うとき警告だけにし、main への push と schedule では落ちます。フラグが無いときも落ちます。証跡の `evidence_sha256`、入力、`holdout.json` / `holdout.md` は動かしません。
 
 ### Aoi との同期
 

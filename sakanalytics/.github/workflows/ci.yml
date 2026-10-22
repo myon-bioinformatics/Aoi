@@ -1,27 +1,92 @@
-# BlueProbe の CI と同じ形。Aoi は固定 SHA で checkout し、コピーしない。
+# Aoi はコピーしない。main の SHA は実行時に ls-remote で解決する。
+# workflow_dispatch の aoi_ref で ref を上書きできる。リポジトリ ID は同一性の確認で、コミット SHA のピンではない。
 name: CI
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "0 7 * * *"
   workflow_dispatch:
+    inputs:
+      aoi_ref:
+        description: "解決する Aoi の ref。既定は refs/heads/main。40桁の SHA も指定できる"
+        required: false
+        default: refs/heads/main
+        type: string
 permissions:
   contents: read
 jobs:
   changes:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+
+  resolve-aoi:
+    needs: changes
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.aoi.outputs.sha }}
+    steps:
+      - name: Resolve Aoi commit
+        id: aoi
+        env:
+          AOI_URL: https://github.com/myon-bioinformatics/Aoi
+          AOI_REPOSITORY_ID: "1402862784"
+          AOI_REF: ${{ github.event.inputs.aoi_ref || 'refs/heads/main' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          export GCM_INTERACTIVE=never
+          curl_args=(
+            --fail --silent --show-error --max-time 30
+            -H "Accept: application/vnd.github+json"
+            -H "User-Agent: sakanalytics-ci"
+          )
+          if [[ -n "${GH_TOKEN:-}" ]]; then
+            curl_args+=(-H "Authorization: Bearer ${GH_TOKEN}")
+          fi
+          meta=$(curl "${curl_args[@]}" "https://api.github.com/repos/myon-bioinformatics/Aoi")
+          identity=$(printf '%s' "$meta" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["id"]); print(d["full_name"])')
+          actual_id=${identity%%$'\n'*}
+          actual_name=${identity#*$'\n'}
+          if [[ "$actual_id" != "$AOI_REPOSITORY_ID" || "$actual_name" != "myon-bioinformatics/Aoi" ]]; then
+            echo "Aoi repository identity mismatch"
+            exit 1
+          fi
+          if [[ "$AOI_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            sha="$AOI_REF"
+          elif [[ "$AOI_REF" =~ ^refs/[A-Za-z0-9._/-]+$ ]]; then
+            remote=$(timeout 60 git ls-remote "$AOI_URL" "$AOI_REF")
+            if [[ -z "$remote" || "$remote" == *$'\n'* ]]; then
+              echo "Could not resolve a single Aoi ref"
+              exit 1
+            fi
+            sha=${remote%%[[:space:]]*}
+            if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "Resolved Aoi ref is not a commit SHA"
+              exit 1
+            fi
+          else
+            echo "aoi_ref must be refs/... or a 40-character SHA"
+            exit 1
+          fi
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Aoi"
+            echo "- ref: \`${AOI_REF}\`"
+            echo "- sha: \`${sha}\`"
+            echo "- repository_id: ${AOI_REPOSITORY_ID}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
-    needs: changes
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: [changes, resolve-aoi]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
-    env:
-      # サイクルデータ（cycles/）と PythDRagoras（propositions）は Aoi に残す。
-      # Aoi #86 の head。proposition-evaluation の source-divergence.json が aoi_layout 削除後のハッシュを記録している。
-      AOI_SHA: 9249ab6e7bbec167cc75963ff315bc90ab5d9e0c
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -41,15 +106,16 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: myon-bioinformatics/Aoi
-          ref: ${{ env.AOI_SHA }}
+          ref: ${{ needs.resolve-aoi.outputs.sha }}
           path: .test-deps/aoi
           persist-credentials: false
-      - run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
       - run: python -m compileall -q -x '\.test-deps' .
       - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
           AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
           PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras
+          # pull_request だけ警告。push（main）・schedule・workflow_dispatch・未設定は失敗。
+          SOURCE_HASH_CHECK: ${{ github.event_name == 'pull_request' && 'report' || 'strict' }}
       - name: Preserve JUnit report
         if: always()
         uses: actions/upload-artifact@v7
@@ -61,11 +127,11 @@ jobs:
 
   failure-identity:
     needs: [changes, test]
-    if: (always()) && needs.changes.outputs.product_changed == 'true'
+    if: always() && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
     with:
       expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
       artifact-pattern: junit-*
@@ -77,4 +143,4 @@ jobs:
     if: needs.changes.outputs.workflow_changed == 'true'
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e

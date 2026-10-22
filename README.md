@@ -1,6 +1,8 @@
 # PythDRagoras
 
-> 本当にその説明で十分か？
+> Propositions, precedents, objections.
+>
+> Tests explanations as propositions with counterexamples, rule search and sensitivity analysis for NPB baseball outcomes. Split out from Aoi's pythdragoras/ (git subtree).
 
 ![PythDRagoras](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/pythdragoras.webp)
 

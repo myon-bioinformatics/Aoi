@@ -27,7 +27,7 @@
     },
     {
       "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
-      "line": 369
+      "line": 394
     },
     {
       "file": "queryu/conftest.py",
@@ -662,7 +662,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 839,
+      "attribute_uses": 849,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -678,8 +678,9 @@
         "mark.parametrize": 155,
         "mark.skipif": 4,
         "param": 1,
-        "raises": 339,
-        "skip": 6
+        "raises": 346,
+        "skip": 6,
+        "warns": 3
       },
       "by_tree": {
         "aoi": {
@@ -745,7 +746,7 @@
           "import_sites": 12
         },
         "pythdragoras": {
-          "attribute_uses": 164,
+          "attribute_uses": 170,
           "attributes": {
             "UsageError": 2,
             "approx": 42,
@@ -754,8 +755,9 @@
             "importorskip": 1,
             "mark.parametrize": 37,
             "mark.skipif": 1,
-            "raises": 71,
-            "skip": 2
+            "raises": 75,
+            "skip": 2,
+            "warns": 2
           },
           "dynamic_import_sites": 0,
           "files": 17,
@@ -777,7 +779,7 @@
           "import_sites": 12
         },
         "sakanalytics": {
-          "attribute_uses": 293,
+          "attribute_uses": 297,
           "attributes": {
             "UsageError": 2,
             "approx": 196,
@@ -785,7 +787,8 @@
             "mark.parametrize": 28,
             "mark.skipif": 1,
             "param": 1,
-            "raises": 58
+            "raises": 61,
+            "warns": 1
           },
           "dynamic_import_sites": 0,
           "files": 8,
@@ -838,7 +841,7 @@
           "name": "pytest"
         }
       ],
-      "distinct_attributes": 16,
+      "distinct_attributes": 17,
       "dynamic_import_sites": 1,
       "files": 88,
       "import_sites": 89
@@ -1827,7 +1830,8 @@
         "importorskip": 1,
         "mark.parametrize": 5,
         "mark.skipif": 1,
-        "raises": 13
+        "raises": 17,
+        "warns": 2
       },
       "dynamic_lines": [],
       "file": "pythdragoras/tests/test_littlebit_holdout_drift.py",
@@ -2479,7 +2483,8 @@
       "attributes": {
         "fixture": 1,
         "mark.parametrize": 5,
-        "raises": 5
+        "raises": 8,
+        "warns": 1
       },
       "dynamic_lines": [],
       "file": "sakanalytics/tests/test_proposition_seed_audit.py",

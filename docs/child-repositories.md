@@ -67,6 +67,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## QueRyu
 
+2026-10-22: main `a0fd3aa9d8891ad6ab543d30a6287a6c6dd09b07` (English README tagline and "Role in Aoi" section, plus pending parent-pin and CI changes) was brought in with a non-squash `git subtree pull --prefix=queryu`. The merge commit's second parent is this SHA, and the subtree's tree is identical to the registered SHA's tree.
+
 2026-10-20: Aoi の配置と NPB 固有の表・規則を子から外しました（案A）。QueRyu #17 `079d502`、DRAgoWing #9 `8eb7d9c`、PythDRagoras #16 `bd5690f`、SakAnalytics #10 `44f95f6`、NagoyAction #11 `1181e43` を、それぞれ squash なしの `git subtree pull` で取り込みました。子の `aoi_paths.py` の写しはなくなり、`child-heads.json` の `mirrored_from_parent` も外しました。Aoi の配置は直下の `aoi_paths.py`、NPB の設定（球団表・並び順・月の key・年間表の前提・CS 規則のプリセット）は直下の `aoi_npb.py` だけが持ち、子へ引数で渡します。`annual_scope.py` は Aoi の直下、`season_verify_2022.py` は `scripts/` に移しました。続けて QueRyu #18 `f1a91e5`、DRAgoWing #10 `360afbd`、PythDRagoras #17 `5fa7935`、SakAnalytics #11 `1630c83`（Aoi に埋め込まれたときは `AOI_ROOT` がなくても親の Aoi を使う conftest）も同じ方法で取り込みました。`pythdragoras/aoi_layout.py`・`sakanalytics/aoi_layout.py` は、ソースの SHA-256 を証跡で固定した CLI（littlebit、proposition_seed_audit）のためだけに残っています。
 
 2026-10-20: QueRyu #16 の merge `fcadaa9aaab30292703459758eae481d0f018f2d` を、squash なしの `git subtree pull --prefix=queryu` で取り込みました。`pattern_postprocess` は `from blueprobe import detect_pattern, get_pattern` でパターンを読みます。`queryu/` の tree は登録した SHA の tree と同一です。
@@ -79,6 +81,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - 単独 QueRyu では Aoi 配下の BlueProbe を拒否します。物理的に `AOI_ROOT/queryu` にある subtree のテストだけは、逆に `AOI_ROOT/blueprobe` の正確な場所を要求します。埋込み共有 `aoi_layout` は単独運用の出自制限を保ち、Aoi 内では正確な PythDRagoras ミラーのバイト一致を実行時に確認します。Aoi 直下から対象を絞る場合は `pytest -c pyproject.toml queryu/tests` を使います。
 
 ## NagoyAction
+
+2026-10-22: main `dbd7bab6cf6ae2be60806898f5a9236439553d4b` (English README tagline and "Role in Aoi" section, plus pending parent-pin and CI changes) was brought in with a non-squash `git subtree pull --prefix=nagoyaction`. The merge commit's second parent is this SHA, and the subtree's tree is identical to the registered SHA's tree.
 
 2026-10-21: main `6fcd420b79f0e0a8fd1034b306fd99baebb05917`（#20: `.localci/refs.env` を追記せず、キーごとに1行へ原子的に書き換える。同じキーは後の値を残し、並びは最初に出た順）を squash なしの `git subtree pull --prefix=nagoyaction` で取り込みました。merge commit の第2親はこの SHA で、`nagoyaction/` の tree は登録した SHA の tree と同一です。
 
@@ -99,6 +103,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## SakAnalytics
 
+2026-10-22: main `61ee0749f8fbe86ae2aa02afcef49ff31d291e51` (English README tagline and "Role in Aoi" section, plus pending parent-pin and CI changes) was brought in with a non-squash `git subtree pull --prefix=sakanalytics`. The merge commit's second parent is this SHA, and the subtree's tree is identical to the registered SHA's tree.
+
 - リポジトリ名は 2026-10-19 に sakanalytics から SakAnalytics に変えました（旧 URL は GitHub がリダイレクト）。Aoi の prefix `sakanalytics/` と Python のモジュール名 `sakanalytics` は変えません。
 - SakAnalytics の最初の 71 コミットは、Aoi `0a1751a60ac64708d679f22950aa2b14cf688efd` から `git filter-branch --subdirectory-filter sakanalytics` で切り出しました（先頭 `67c8781b0e606ab41f56f717c2a84efa67b98533`、tree `a54fc414f1959f7619619c0ae9398ff2fe8fbcbb` が Aoi の `sakanalytics/` と一致）。そのうえに子の足場（CI・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py`・`aoi_paths.py`・README の節・兄弟 import のテスト）を足しました。最初は `0bb7177ac0ec5240c468b6d2c58ca52e116c6d03` に対する手組みの squash の join（#59）でしたが、2026-10-19 に、旧 `sakanalytics/` を消してから main `9a5bc4a048edfdaefbbe514fdde94eb0df4f2065`（#4 の expected_total_games、#5 の README、#6 の依存の下限）に対して `git subtree add`（`--squash` なし）で join を入れ直しました。merge commit の第2親は SakAnalytics main の head です。PR は squash/rebase せず merge commit で入れてください。
 - `sakanalytics/` 全体（子の CI・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した SakAnalytics の tree と同一です。`mirrored_from_parent: {"aoi_paths.py": "aoi_paths.py"}` により原本との blob/mode 一致も検査します。`min.py` は Aoi が提供し、子には置きません。
@@ -106,6 +112,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - 同期は PythDRagoras の手順の `pythdragoras` を `sakanalytics`、リポジトリを SakAnalytics に読み替えます（`--squash` なし）。
 
 ## DRAgoWing
+
+2026-10-22: main `beaf7cd5e5800ca3a52d6cb2ed6b66aa8897c7d2` (English README tagline and "Role in Aoi" section, re-vendored fetch_module.py (#20), plus pending parent-pin and CI changes) was brought in with a non-squash `git subtree pull --prefix=dragowing`. The merge commit's second parent is this SHA, and the subtree's tree is identical to the registered SHA's tree.
 
 2026-10-21: main `e88aa5bcea5315fd0cc7e9b236c3c715ff989621`（#18: libdbus が `disabled:` を拒んでも Chrome の起動が黙って上限まで待たない。子の D-Bus アドレスは作らない unix ソケットへの `unix:path=` で、`connect` は `ENOENT` ですぐ戻る）を squash なしの `git subtree pull --prefix=dragowing` で取り込みました。merge commit の第2親はこの SHA で、`dragowing/` の tree は登録した SHA の tree と同一です。
 
@@ -126,6 +134,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## BlueProbe
 
+2026-10-22: main `0fb5b53160b421463bbc385fc705594472347dcc` (English README tagline and "Role in Aoi" section, plus pending parent-pin and CI changes) was brought in with a non-squash `git subtree pull --prefix=blueprobe`. The merge commit's second parent is this SHA, and the subtree's tree is identical to the registered SHA's tree.
+
 2026-10-20: main `f0763c4de0a2976bb243cd7d780c8b5ae0c22ba4`（#32: `social_timeline`・`ecommerce_product`・`forum_qa`・`dashboard_grid` のプリセットと `classify_document` / `--classify`。観測のみで変換はしない）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。実行時の依存はありません。
 
 2026-10-20: main `af8552e869491aa900ad1010330955fd6652d766`（#31: 再エクスポートの `dom_patterns.py` を削除し、DOM パターン API は `blueprobe.py` のみ）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。実行時の依存はありません。
@@ -138,3 +148,7 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - `blueprobe/` 全体（子の CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した BlueProbe の tree と同一です。Aoi の原本を写したファイルはないので `mirrored_from_parent` は書きません。`min.py` は Aoi が提供し、子には置きません。
 - サイクルデータ（`cycles/`）の fixture と QueRyu 連携は Aoi に残します。子の CI は Aoi の past-pattern snapshot を SHA で取得して検証データに使い、`PYTHONPATH` の `queryu` を渡して pytest を動かします。Aoi の中では `blueprobe/.github/` は動きません。
 - 同期は PythDRagoras の手順の `pythdragoras` を `blueprobe`、リポジトリを BlueProbe に読み替えます。
+
+## PythDRagoras
+
+2026-10-22: main `fddfa16091ee5b12b4b75f616229d368451f09aa` (English README tagline and "Role in Aoi" section, plus pending parent-pin and CI changes) was brought in with a non-squash `git subtree pull --prefix=pythdragoras`. The merge commit's second parent is this SHA, and the subtree's tree is identical to the registered SHA's tree.

@@ -126,8 +126,8 @@ def test_ci_resolves_aoi_at_runtime_and_sets_source_hash_mode():
     assert 'SOURCE_HASH_CHECK' in text
     assert "github.event_name == 'pull_request' && 'report' || 'strict'" in text
     assert 'schedule:' in text
-    assert 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0' in text
-    assert 'astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0' in text
+    assert 'actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0' in text
+    assert 'astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2' in text
     assert 'rev-parse' not in text
 
 

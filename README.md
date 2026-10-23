@@ -126,7 +126,7 @@ AOI_ROOT=$PWD/.test-deps/aoi \
 - `reports/build_reports.py` は Aoi 側のツールです（Aoi の DRAgoWing reports ワークフローが `myon-bioinformatics/markdown` を checkout して呼び出します）。このリポジトリの CI ではそのワークフローを実行しません。
 - Chrome のジョブはありません。Chrome が無いとき、Chrome を使うテストは skip します。
 
-CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で pytest を動かします。`vendor.lock.json`（`vendor-lock/1`）は path、sha256、source（`myon-bioinformatics/Aoi`）で、写しは `vendor/aoi/` にあります。CI は Aoi の main を `git ls-remote` で解決し（`workflow_dispatch` の `aoi-ref` で上書きできる）、repository id `1402862784` を確かめてから写しと比べます。不一致は pull request では警告、main への push と schedule では失敗です。
+CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で pytest を動かします。`vendor.lock.json`（`vendor-lock/1`）は repository、ref、commit、source、destination、blob_sha、sha256 で、写しは `vendor/aoi/` にあります。CI は Aoi の main を `git ls-remote` で解決し（`workflow_dispatch` の `aoi-ref` で上書きできる）、repository id `1402862784` を確かめてから写しと比べます。不一致は pull request では警告、main への push と schedule では失敗です。並行して、親 myon-bioinformatics/myon-bioinformatics の main を `git ls-remote` で解決し（repository id `638801160`）、その SHA の `pilot/vendor_dispatch.py` を `vendor.lock.json` に対して検証します。`--record` は付けません。スキップは記録し、記録した commit の digest が違えば失敗します。
 
 ## Aoi との関係
 

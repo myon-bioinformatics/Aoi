@@ -1,0 +1,27 @@
+{
+  "source": "User-supplied project artwork sheet, 2026-10-23",
+  "source_dimensions": [
+    1536,
+    1024
+  ],
+  "coordinate_convention": "left, top, right-exclusive, bottom-exclusive",
+  "project": {
+    "label": "Aoi",
+    "icon": [
+      34,
+      73,
+      199,
+      238
+    ],
+    "favicon": [
+      210,
+      156,
+      278,
+      224
+    ],
+    "icon_sha256": "050f383d6ba1ebd74c1a57f4a8cc44b1f1da28e1c56d8c4098a2575176269ede",
+    "icon_rgb_sha256": "4b452617c39fe6819d48df993912e06830c5933b8a137f3545cbf4d55e2c122f",
+    "favicon_sha256": "80d7188fd1d3494d962e28c4146ff3a9c541ab41e6ca5cbaf7aae77ae4998cb1",
+    "favicon_rgb_sha256": "e8b567df75510a8447eebbc2668b60d1096bc0d1681f8a8628627f9ffd88f5db"
+  }
+}

@@ -325,8 +325,8 @@ def test_ci_resolves_aoi_main_without_hard_pinning_its_sha():
     assert "aoi_ref" in workflow
     assert "schedule:" in workflow
     assert "HOLDOUT_SOURCE_PROVENANCE" in workflow
-    assert "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0" in workflow
-    assert "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0" in workflow
+    assert "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0" in workflow
+    assert "astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2" in workflow
     assert "actions/checkout@v7" in workflow
     assert "actions/upload-artifact@v7" in workflow
     assert "git rev-parse HEAD" not in workflow

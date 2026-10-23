@@ -1,53 +1,49 @@
-"""Bitwise symbolic surrogate and active holdout repair (experiment).
+"""Bitmask evaluator for candidate rules, and a NOT-literal suggestion.
 
-A feature vector is a Python int: bit ``i`` is set when feature ``i`` is present.
-A rule in the proposed fragment is
+A row is a Python int. Bit ``i`` is set when candidate condition ``i`` holds.
+A rule in this fragment is
 
-    evaluate(X) = (X & M_AND) == M_AND
-                  and (X & M_NOT) == 0
-                  and every OR-clause mask shares a bit with X.
+    evaluate_fast(X) = (X & M_AND) == M_AND
+                       and (X & M_NOT) == 0
+                       and every OR-clause mask shares a bit with X.
 
-That is a conjunction of positive units, negative units, and positive
-disjunctions. It is not general DNF. ``rule_search.py`` already searches
-OR-of-AND rules with bitsets over *rows*. This module does not replace that
-search and it does not judge a proposition.
+That is a conjunction of required conditions, forbidden conditions, and
+positive disjunctions. It is not general DNF. ``[A AND B] OR [C AND D]``
+does not fit; ``compile_search_rule`` returns None and the caller keeps
+the existing evaluator.
 
-Active repair edits the masks when a fresh labeled row disagrees with the
-surrogate. Probe steps call an oracle on counterfactual vectors (``X`` with
-some bits flipped). A column of observed labels is not enough: flipping
-"rd < -50" on a historical team-season is not an observation this repository
-stores. Known limits of the repair heuristic are listed on ``repair_disagreement``.
+``rule_search`` still enumerates OR-of-AND candidates with bitsets over
+rows. That combination step is one integer OR per candidate. This module
+does not replace it. It rechecks the rules that search (or a proposition)
+already produced, when they fit the fragment: pack each candidate
+condition once, then ``evaluate_fast``. The booleans match
+``propositions._antecedent`` on the same rows, including nulls (null stays
+undetermined, it is not turned into false). On the null-free frame
+``rule_search`` actually scores, the true-positive and false-positive
+counts match the search record.
 
-The module's import surface is the standard library and is written for
-Python 3.9 (no ``int.bit_count``, no ``match``). Loading NPB rows is optional
-and imports polars only inside ``season_report``.
+``suggest_not_proposition`` does not edit the rule under test and does not
+change its verdict. Given one row the rule accepts and an oracle that
+rejects, it binary-searches extra bits. When one of those bits is
+individually inhibitory, the function returns that NOT condition as a new
+proposition to test. A bit that does not by itself remove the false
+positive is not proposed.
 
-Claimed fidelities, query counts, and microsecond timings from the external
-proposal are not constants here. ``synthetic_report`` and ``season_report``
-measure them. See ``docs/bitwise-surrogate-repair.md``.
+The false-negative edit that relaxed a lost AND bit into an OR clause was
+removed. Measured reasons are in ``docs/bitwise-surrogate-repair.md``.
+
+Importing this module needs only the standard library and stays valid on
+Python 3.9 (no ``match``, no ``int.bit_count``). Polars and the
+proposition helpers are imported inside the functions that read a frame.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
-from pathlib import Path
-import platform
-import random
-import secrets
 import sys
 import time
-
-# Claimed feature story, used only as a synthetic index choice. These indexes
-# are not columns in cycles/c001-chunichi/rule_candidates.toml (17 candidates).
-CLAIMED_AND = (12, 19)
-CLAIMED_NOT = (25,)
-CLAIMED_SLIDE_TO = 20
-CLAIMED_DECOY = 30
-N_FEATURES = 40
-
-SCHEMA = "pythdragoras-bitwise-surrogate-benchmark/1"
+from pathlib import Path
 
 
 def _mask_value(value, name):
@@ -66,7 +62,7 @@ def mask_of(bits):
 
 
 def iter_bits(mask):
-    """Ascending feature indexes. Python ``int`` is unbounded, so this walks the set bits."""
+    """Ascending feature indexes. Python ``int`` is unbounded."""
     _mask_value(mask, "mask")
     while mask:
         low = mask & -mask
@@ -76,6 +72,12 @@ def iter_bits(mask):
 
 def bit_list(mask):
     return list(iter_bits(mask))
+
+
+def _require_bool(value, name):
+    if type(value) is not bool:
+        raise ValueError("%s must be a bool" % name)
+    return value
 
 
 class BitwiseSymbolicSurrogate:
@@ -103,7 +105,7 @@ class BitwiseSymbolicSurrogate:
         }
 
     def evaluate_fast(self, x):
-        """Proposal predicate. ``X & ~M_AND`` is well-defined: Python ints are two's complement."""
+        """Two-valued predicate. ``X & ~M_AND`` is defined: Python ints are two's complement."""
         _mask_value(x, "x")
         if (x & self.m_and) != self.m_and:
             return False
@@ -126,6 +128,35 @@ class BitwiseSymbolicSurrogate:
             if not (set(iter_bits(clause)) & have):
                 return False
         return True
+
+
+def format_current_rule(rule, names=None):
+    """Human-readable rule. ``names[i]`` is the text of bit ``i`` (``"col op value"``).
+
+    Without names, bits are ``bit 0``. Connectives are AND, OR, and NOT.
+    An empty rule holds on every row.
+    """
+    parts = []
+    for bit in bit_list(rule.m_and):
+        parts.append(_atom(bit, names))
+    for clause in rule.or_clauses:
+        bits = bit_list(clause)
+        rendered = " OR ".join(_atom(bit, names) for bit in bits)
+        parts.append(rendered if len(bits) == 1 else "(%s)" % rendered)
+    for bit in bit_list(rule.m_not):
+        parts.append("NOT (%s)" % _atom(bit, names))
+    if not parts:
+        return "(every row)"
+    return " AND ".join(parts)
+
+
+def _atom(bit, names):
+    _mask_value(bit, "bit")
+    if names is None:
+        return "bit %d" % bit
+    if bit >= len(names):
+        raise ValueError("bit %d has no name" % bit)
+    return names[bit]
 
 
 def compile_bit_dnf(groups):
@@ -152,7 +183,6 @@ def compile_bit_dnf(groups):
     remainders = [[bit for bit in group if bit not in common] for group in normalized]
     if any(len(rest) > 1 for rest in remainders):
         return None
-    # A group that is exactly the common prefix subsumes every longer group.
     if any(not rest for rest in remainders):
         return BitwiseSymbolicSurrogate(mask_of(common), (), 0)
     if len(remainders) == 1:
@@ -175,159 +205,7 @@ def distill_literals(literals):
     return BitwiseSymbolicSurrogate(m_and, (), m_not)
 
 
-def _require_bool(value, name):
-    if type(value) is not bool:
-        raise ValueError("%s must be a bool" % name)
-    return value
-
-
-def repair_false_negative(rule, x, oracle):
-    """Proposal false-negative edit. Mutates ``rule``.
-
-    For each missing AND bit, probe extras ``X & ~M_AND`` from low index to
-    high and keep the first bit whose removal makes the oracle false. Relax
-    the lost bit into the OR clause ``(lost | replacement)``, or drop it.
-    Then clear forbidden bits that this positive actually has.
-
-    The proposal does not say what to do when an OR clause misses. Those
-    clauses are left in place and named in ``unhandled_missed_or``.
-    """
-    _mask_value(x, "x")
-    missing = rule.m_and & ~x
-    extras = x & ~rule.m_and
-    probes = []
-    edits = []
-    for lost in iter_bits(missing):
-        replacement = None
-        for candidate in iter_bits(extras):
-            verdict = _require_bool(oracle(x ^ (1 << candidate)), "oracle")
-            probes.append({"lost": lost, "candidate": candidate, "oracle_true": verdict})
-            if not verdict:
-                replacement = candidate
-                break
-        rule.m_and &= ~(1 << lost)
-        if replacement is None:
-            edits.append({"op": "prune", "lost": lost})
-        else:
-            clause = (1 << lost) | (1 << replacement)
-            rule.or_clauses.append(clause)
-            edits.append({"op": "relax_or", "lost": lost, "replacement": replacement})
-    hit_not = x & rule.m_not
-    if hit_not:
-        rule.m_not &= ~hit_not
-        edits.append({"op": "clear_not", "bits": bit_list(hit_not)})
-    missed = [bit_list(clause) for clause in rule.or_clauses if (x & clause) == 0]
-    return {
-        "kind": "false_negative",
-        "probes": probes,
-        "edits": edits,
-        "unhandled_missed_or": missed,
-    }
-
-
-def repair_false_positive(rule, x, oracle):
-    """Proposal false-positive edit. Mutates ``rule``.
-
-    Binary-search the ascending extra bits. If ``oracle(X ^ left_half)`` is
-    true, the inhibitory bit is assumed to lie in that half. The surviving
-    bit is added to ``M_NOT`` even when flipping it alone does not make the
-    oracle true (no extra probe is spent to check; that would change the
-    query count).
-    """
-    _mask_value(x, "x")
-    bits = bit_list(x & ~rule.m_and)
-    probes = []
-    if not bits:
-        return {
-            "kind": "false_positive",
-            "probes": probes,
-            "edits": [{"op": "no_extra_bit"}],
-            "culprit": None,
-        }
-    lo, hi = 0, len(bits)
-    while hi - lo > 1:
-        mid = lo + (hi - lo) // 2
-        left = bits[lo:mid]
-        left_mask = mask_of(left)
-        verdict = _require_bool(oracle(x ^ left_mask), "oracle")
-        probes.append({"left_bits": left, "oracle_true": verdict})
-        if verdict:
-            hi = mid
-        else:
-            lo = mid
-    culprit = bits[lo]
-    rule.m_not |= 1 << culprit
-    return {
-        "kind": "false_positive",
-        "probes": probes,
-        "edits": [{"op": "add_not", "bit": culprit}],
-        "culprit": culprit,
-    }
-
-
-def repair_disagreement(rule, x, label, oracle):
-    """Apply one proposal repair, or do nothing when the row already agrees.
-
-    Limits, matching the proposal rather than patched around:
-
-    - A false-negative probe stops at the first extra bit that flips the oracle.
-    - Several lost bits can therefore be paired with that same bit.
-    - A lost bit with no flipping candidate is deleted.
-    - Every forbidden bit present on a row labeled positive is cleared.
-    - A false positive commits one extra bit, including a bit that is not
-      individually inhibitory.
-    - Later rows can edit the rule again, including undoing a useful edit.
-    - Labels that do not come from the same oracle as the probes (noise) are
-      followed anyway.
-    """
-    _mask_value(x, "x")
-    label = _require_bool(label, "label")
-    predicted = rule.evaluate_fast(x)
-    if predicted == label:
-        return {"kind": "agree", "probes": [], "edits": [], "predict_before": predicted, "predict_after": predicted}
-    if label:
-        trace = repair_false_negative(rule, x, oracle)
-    else:
-        trace = repair_false_positive(rule, x, oracle)
-    trace["predict_before"] = predicted
-    trace["predict_after"] = rule.evaluate_fast(x)
-    return trace
-
-
-def active_repair(rule, rows, oracle, max_repairs=None):
-    """Copy ``rule`` and repair the first disagreements in ``rows``.
-
-    ``rows`` is a sequence of ``(x, label)`` or dicts with those keys plus an
-    optional ``id``. ``max_repairs`` counts edits, not agreeing rows. The
-    input rule is not mutated.
-    """
-    if max_repairs is not None and (type(max_repairs) is not int or max_repairs < 1):
-        raise ValueError("max_repairs must be a positive int or None")
-    edited = rule.copy()
-    traces = []
-    inspected = 0
-    for index, row in enumerate(rows):
-        if type(row) is dict:
-            x, label = row["x"], row["y"] if "y" in row else row["label"]
-            row_id = row.get("id", index)
-        else:
-            x, label = row
-            row_id = index
-        inspected += 1
-        if edited.evaluate_fast(x) == _require_bool(label, "label"):
-            continue
-        trace = repair_disagreement(edited, x, label, oracle)
-        trace["index"] = index
-        trace["id"] = row_id
-        trace["x"] = x
-        traces.append(trace)
-        if max_repairs is not None and len(traces) >= max_repairs:
-            break
-    return edited, traces, inspected
-
-
 def rule_from_describe(description):
-    """Inverse of ``describe`` for tests and report checks."""
     return BitwiseSymbolicSurrogate(
         mask_of(description["m_and_bits"]),
         tuple(mask_of(clause) for clause in description["or_clauses"]),
@@ -335,463 +213,478 @@ def rule_from_describe(description):
     )
 
 
-def confusion(rule, rows):
-    """Agreement with stored labels. Fidelity is ``(tp + tn) / n``."""
-    tp = fp = fn = tn = 0
-    for row in rows:
-        if type(row) is dict:
-            x, label = row["x"], row["y"] if "y" in row else row["label"]
+def suggest_not_proposition(rule, x, oracle, names=None):
+    """Propose one NOT condition as a new proposition. Do not edit ``rule``.
+
+    ``rule`` must accept ``x`` and ``oracle(x)`` must be false. Extra bits
+    (``X & ~M_AND``) are binary-searched from low index to high: if
+    ``oracle(X ^ left_half)`` is true, the inhibitory bit is taken to lie in
+    that half. The surviving bit is proposed only when flipping that bit
+    alone makes the oracle true. Otherwise the suggestion is unsupported.
+    The masks on ``rule`` are unchanged either way, so the verdict of the
+    rule under test does not move.
+    """
+    _mask_value(x, "x")
+    before = rule.describe()
+    if not rule.evaluate_fast(x):
+        return _suggestion(False, "rule_does_not_accept_row", [], None, before)
+    if _require_bool(oracle(x), "oracle"):
+        return _suggestion(False, "oracle_accepts_row", [], None, before)
+    bits = bit_list(x & ~rule.m_and)
+    probes = []
+    if not bits:
+        _assert_unchanged(rule, before)
+        return _suggestion(False, "no_extra_bit", probes, None, before)
+    lo, hi = 0, len(bits)
+    while hi - lo > 1:
+        mid = lo + (hi - lo) // 2
+        left = bits[lo:mid]
+        verdict = _require_bool(oracle(x ^ mask_of(left)), "oracle")
+        probes.append({"left_bits": list(left), "oracle_true": verdict})
+        if verdict:
+            hi = mid
         else:
-            x, label = row
-        label = _require_bool(label, "label")
-        predicted = rule.evaluate_fast(x)
-        if predicted and label:
+            lo = mid
+    culprit = bits[lo]
+    confirmed = _require_bool(oracle(x ^ (1 << culprit)), "oracle")
+    probes.append({"left_bits": [culprit], "oracle_true": confirmed, "confirm_single_bit": True})
+    _assert_unchanged(rule, before)
+    if not confirmed:
+        return _suggestion(False, "bit_is_not_individually_inhibitory", probes, culprit, before)
+    suggested = rule.copy()
+    suggested.m_not |= 1 << culprit
+    _assert_unchanged(rule, before)
+    return {
+        "supported": True,
+        "reason": "not_literal",
+        "bit": culprit,
+        "probes": probes,
+        "judged_rule": before,
+        "suggestion": {
+            "text": format_current_rule(suggested, names),
+            "not_condition": _atom(culprit, names),
+            "rule": suggested.describe(),
+        },
+    }
+
+
+def _suggestion(supported, reason, probes, bit, judged_rule):
+    return {
+        "supported": supported,
+        "reason": reason,
+        "bit": bit,
+        "probes": probes,
+        "judged_rule": judged_rule,
+        "suggestion": None,
+    }
+
+
+def _assert_unchanged(rule, before):
+    if rule.describe() != before:
+        raise RuntimeError("suggest_not_proposition edited the rule under test")
+
+
+def condition_key(cond):
+    """Identity of a condition. Provenance keys are not part of it."""
+    if not isinstance(cond, dict) or not {"col", "op", "value"} <= set(cond):
+        raise ValueError("condition needs col, op, and value")
+    value = cond["value"]
+    if type(value) is bool:
+        rendered = "true" if value else "false"
+    elif type(value) is int:
+        rendered = str(value)
+    else:
+        rendered = json.dumps(value, ensure_ascii=False, sort_keys=True)
+    return (cond["col"], cond["op"], rendered)
+
+
+def condition_names(conditions):
+    from propositions import text
+
+    return [text([cond]) for cond in conditions]
+
+
+def compile_search_rule(groups, conditions):
+    """Compile ``rule_search`` groups (OR of ANDs of condition dicts), or return None."""
+    if not isinstance(groups, list) or not groups:
+        return None
+    if groups == [[]]:
+        return BitwiseSymbolicSurrogate()
+    index = {}
+    for bit, cond in enumerate(conditions):
+        index.setdefault(condition_key(cond), bit)
+    indexed = []
+    for group in groups:
+        if not group:
+            return None
+        bits = []
+        for cond in group:
+            bit = index.get(condition_key(cond))
+            if bit is None:
+                return None
+            if bit not in bits:
+                bits.append(bit)
+        indexed.append(bits)
+    return compile_bit_dnf(indexed)
+
+
+class FeatureRows:
+    """One feature mask per row. ``nulls`` marks conditions whose value is null."""
+
+    def __init__(self, masks, nulls, names):
+        if len(masks) != len(nulls):
+            raise ValueError("masks and nulls differ in length")
+        self.masks = list(masks)
+        self.nulls = list(nulls)
+        self.names = list(names)
+        self.any_null = any(nulls)
+
+    def __len__(self):
+        return len(self.masks)
+
+
+def pack_feature_rows(df, conditions):
+    """Pack candidate-condition truth. Bit ``i`` is condition ``i``.
+
+    One polars select. A null cell sets the null mask and does not set the
+    feature bit. A true cell sets the feature bit.
+    """
+    from propositions import _cond
+
+    names = condition_names(conditions)
+    height = df.height
+    if not conditions:
+        return FeatureRows([0] * height, [0] * height, names)
+    expressions = [_cond([cond], df.columns).alias("c%d" % i) for i, cond in enumerate(conditions)]
+    table = df.select(expressions)
+    columns = [table[name].to_list() for name in table.columns]
+    masks = []
+    nulls = []
+    for row in range(height):
+        mask = 0
+        null = 0
+        for bit, column in enumerate(columns):
+            flag = column[row]
+            if flag is None:
+                null |= 1 << bit
+                continue
+            if type(flag) is not bool and type(flag).__name__ != "bool_":
+                raise ValueError("condition flag must be bool or null, got %r" % (flag,))
+            if flag:
+                mask |= 1 << bit
+        masks.append(mask)
+        nulls.append(null)
+    return FeatureRows(masks, nulls, names)
+
+
+def evaluate_row(rule, x, nulls=0):
+    """``evaluate_fast`` plus three-valued nulls.
+
+    A known-false conjunct is false. A null conjunct with no known-false
+    conjunct is undetermined (None). No nulls takes the ``evaluate_fast`` path.
+    """
+    _mask_value(x, "x")
+    _mask_value(nulls, "nulls")
+    if nulls == 0:
+        return rule.evaluate_fast(x)
+    and_false = bool(rule.m_and & ~x & ~nulls)
+    not_false = bool(x & rule.m_not)
+    or_false = False
+    and_null = bool(rule.m_and & nulls)
+    not_null = bool(rule.m_not & nulls)
+    or_null = False
+    for clause in rule.or_clauses:
+        if x & clause:
+            continue
+        if clause & nulls:
+            or_null = True
+        else:
+            or_false = True
+    if and_false or not_false or or_false:
+        return False
+    if and_null or not_null or or_null:
+        return None
+    return True
+
+
+def antecedent_flags(packed, rule):
+    """Per-row antecedent. True, False, or None when a used condition is null."""
+    if not packed.any_null:
+        fast = rule.evaluate_fast
+        return [fast(x) for x in packed.masks]
+    return [evaluate_row(rule, x, nulls) for x, nulls in zip(packed.masks, packed.nulls)]
+
+
+def evaluate_antecedents(df, group_lists, conditions):
+    """Pack ``conditions`` once and evaluate each OR-of-AND.
+
+    A rule that fits one surrogate is one ``evaluate_fast`` per row. A
+    general OR of conjunctions, which does not fit that one mask, is the OR
+    of one ``evaluate_fast`` per conjunction. Either way the flags match
+    ``propositions._antecedent``. None is reserved for a group that is not a
+    list of known conditions.
+    """
+    packed = pack_feature_rows(df, conditions)
+    return [_flags_for_groups(packed, groups, conditions) for groups in group_lists]
+
+
+def _flags_for_groups(packed, groups, conditions):
+    compiled = compile_search_rule(groups, conditions)
+    if compiled is not None:
+        return antecedent_flags(packed, compiled)
+    if not groups:
+        return None
+    columns = []
+    for group in groups:
+        compiled = compile_search_rule([group], conditions)
+        if compiled is None:
+            return None
+        columns.append(antecedent_flags(packed, compiled))
+    return _or_flags(columns)
+
+
+def _or_flags(columns):
+    """Three-valued OR. A true disjunct wins; otherwise a null stays null."""
+    out = []
+    width = len(columns[0])
+    for index in range(width):
+        decided = False
+        for column in columns:
+            if column[index]:
+                out.append(True)
+                decided = True
+                break
+        if decided:
+            continue
+        if any(column[index] is None for column in columns):
+            out.append(None)
+        else:
+            out.append(False)
+    return out
+
+
+def format_search_rule(groups, conditions):
+    """Readable text. One surrogate when the rule fits; otherwise OR of conjunctions."""
+    names = condition_names(conditions)
+    compiled = compile_search_rule(groups, conditions)
+    if compiled is not None:
+        return format_current_rule(compiled, names)
+    parts = []
+    for group in groups:
+        compiled = compile_search_rule([group], conditions)
+        if compiled is None:
+            return None
+        parts.append("[%s]" % format_current_rule(compiled, names))
+    return " OR ".join(parts)
+
+
+def screen_search_rules(df, rules, conditions):
+    """Recheck ``rule_search.search`` results with ``evaluate_fast``.
+
+    ``rules`` items carry ``if_any``. Each entry is the per-row antecedent.
+    """
+    return evaluate_antecedents(df, [rule["if_any"] for rule in rules], conditions)
+
+
+def proposition_groups(proposition):
+    """The antecedent as OR of ANDs, the shape ``_antecedent`` evaluates."""
+    base = list(proposition.get("if") or [])
+    any_groups = proposition.get("if_any") or []
+    if any_groups:
+        if base:
+            return [base + list(group) for group in any_groups]
+        return [list(group) for group in any_groups]
+    if base:
+        return [base]
+    return [[]]
+
+
+def evaluate_proposition_antecedent(df, proposition, conditions=None):
+    """Flags for one proposition antecedent, or None when it does not fit.
+
+    This does not run ``propositions.evaluate`` and does not emit a verdict.
+    """
+    groups = proposition_groups(proposition)
+    if conditions is None:
+        conditions = _vocabulary(groups)
+    flags = evaluate_antecedents(df, [groups], conditions)
+    return flags[0]
+
+
+def _vocabulary(groups):
+    ordered = []
+    seen = set()
+    for group in groups:
+        for cond in group:
+            key = condition_key(cond)
+            if key not in seen:
+                seen.add(key)
+                ordered.append({k: cond[k] for k in ("col", "op", "value")})
+    return ordered
+
+
+def counts(flags, target_flags):
+    """Confusion counts. A null antecedent or target is undetermined, not a negative."""
+    if len(flags) != len(target_flags):
+        raise ValueError("flags and target differ in length")
+    tp = fp = fn = tn = undetermined = 0
+    for antecedent, label in zip(flags, target_flags):
+        if antecedent is None or label is None:
+            undetermined += 1
+            continue
+        if antecedent and label:
             tp += 1
-        elif predicted and not label:
+        elif antecedent and not label:
             fp += 1
         elif label:
             fn += 1
         else:
             tn += 1
-    n = tp + fp + fn + tn
-    if n == 0:
-        raise ValueError("confusion requires at least one row")
-    return {
-        "tp": tp,
-        "fp": fp,
-        "fn": fn,
-        "tn": tn,
-        "n": n,
-        "fidelity": (tp + tn) / n,
-        "precision": (tp / (tp + fp)) if (tp + fp) else None,
-        "recall": (tp / (tp + fn)) if (tp + fn) else None,
-    }
+    return {"tp": tp, "fp": fp, "fn": fn, "tn": tn, "undetermined": undetermined, "n": len(flags)}
 
 
-def label_of(x, required, forbidden):
-    """Monotone conjunction used as a synthetic oracle."""
-    for bit in required:
-        if (x & (1 << bit)) == 0:
-            return False
-    for bit in forbidden:
-        if x & (1 << bit):
-            return False
-    return True
+def polars_antecedent_flags(df, groups):
+    """Existing proposition antecedent, as True / False / None per row."""
+    from propositions import _antecedent
 
-
-def _draw(rng, n_features, on, off):
-    on = set(on)
-    off = set(off)
-    if on & off:
-        raise ValueError("a feature cannot be forced on and off")
-    x = 0
-    for bit in range(n_features):
-        if bit in on or (bit not in off and rng.randrange(2)):
-            x |= 1 << bit
-    return x
-
-
-def _draw_labeled(rng, n_features, required, forbidden, forced_off, positive):
-    required = tuple(required)
-    forbidden = tuple(forbidden)
-    if positive:
-        return _draw(rng, n_features, required, set(forbidden) | set(forced_off))
-    modes = [("drop", bit) for bit in required] + [("set", bit) for bit in forbidden]
-    kind, bit = modes[rng.randrange(len(modes))]
-    on = set(required)
-    off = set(forbidden) | set(forced_off)
-    if kind == "drop":
-        on.discard(bit)
-        off.add(bit)
+    if groups == [[]]:
+        return [True] * df.height
+    if len(groups) == 1:
+        proposition = {"if": groups[0]}
     else:
-        off.discard(bit)
-        on.add(bit)
-    return _draw(rng, n_features, on, off)
+        proposition = {"if_any": groups}
+    column = df.select(x=_antecedent(proposition, df.columns))["x"].to_list()
+    out = []
+    for flag in column:
+        if flag is None:
+            out.append(None)
+        elif type(flag) is bool or type(flag).__name__ == "bool_":
+            out.append(bool(flag))
+        else:
+            raise ValueError("antecedent flag must be bool or null, got %r" % (flag,))
+    return out
 
 
-def _balanced_rows(rng, n, n_features, required, forbidden, forced_off, id_prefix):
-    if n < 2 or n % 2:
-        raise ValueError("balanced draws use a positive even count")
-    rows = []
-    half = n // 2
-    for positive in (True, False):
-        for i in range(half):
-            x = _draw_labeled(rng, n_features, required, forbidden, forced_off, positive)
-            rows.append({
-                "id": "%s-%s-%d" % (id_prefix, "pos" if positive else "neg", i),
-                "x": x,
-                "y": positive,
-            })
-    rng.shuffle(rows)
-    return rows
-
-
-def _ids(rows):
-    return [row["id"] for row in rows]
-
-
-def _timing(fn, values, min_seconds=0.05, min_calls=2000):
-    for value in values:
-        fn(value)
-    start = time.perf_counter()
+def _time_call(fn, min_seconds=0.05, min_calls=1):
+    fn()
     calls = 0
+    start = time.perf_counter()
     while True:
-        for value in values:
-            fn(value)
-            calls += 1
+        fn()
+        calls += 1
         elapsed = time.perf_counter() - start
         if elapsed >= min_seconds and calls >= min_calls:
-            break
-        if calls >= 5_000_000:
-            break
-    return {
-        "seconds": elapsed,
-        "calls": calls,
-        "seconds_per_call": elapsed / calls,
-        "microseconds_per_call": elapsed / calls * 1e6,
-    }
+            return {"calls": calls, "seconds": elapsed, "seconds_per_call": elapsed / calls}
 
 
-def _probe_queries(traces):
-    return sum(len(trace["probes"]) for trace in traces)
+def benchmark_rule_checks(df, rules, conditions, target, search_kwargs=None, min_seconds=0.05):
+    """Time rechecking real ``rule_search`` rules.
 
+    Surrogate: one feature-pack, then ``evaluate_fast`` (one call per row
+    when the rule is a single mask, one call per conjunction otherwise).
+    Proposition check: ``propositions._antecedent`` once per rule. Row
+    bitset: the masks ``rule_search._mask`` builds, combined with AND/OR.
+    The same three ways are timed on every conjunction term the search
+    builds (``max_conds``). Also times ``rule_search.search`` itself.
 
-def _scenario_record(name, rule, initial, repair_rows, eval_rows, oracle, note):
-    one, traces_one, inspected_one = active_repair(rule, repair_rows, oracle, max_repairs=1)
-    full, traces_full, inspected_full = active_repair(rule, repair_rows, oracle, max_repairs=None)
-    return {
-        "name": name,
-        "note": note,
-        "start_rule": rule.describe(),
-        "initial": confusion(rule, initial),
-        "unrepaired_eval": confusion(rule, eval_rows),
-        "repaired_one_rule": one.describe(),
-        "repaired_one_eval": confusion(one, eval_rows),
-        "repaired_one_on_repair_rows": confusion(one, repair_rows),
-        "repaired_all_rule": full.describe(),
-        "repaired_all_eval": confusion(full, eval_rows),
-        "repaired_all_on_repair_rows": confusion(full, repair_rows),
-        "probe_queries_one": _probe_queries(traces_one),
-        "probe_queries_all": _probe_queries(traces_full),
-        "rows_inspected_one": inspected_one,
-        "rows_inspected_all": inspected_full,
-        "repairs_one": len(traces_one),
-        "repairs_all": len(traces_full),
-        "traces_one": traces_one,
-        "repair_ids": _ids(repair_rows),
-        "eval_ids": _ids(eval_rows),
-        "ids_disjoint": set(_ids(repair_rows)).isdisjoint(_ids(eval_rows)),
-    }
-
-
-def synthetic_report(seed, n_features=N_FEATURES, n_initial=256, n_repair=64, n_eval=512, measure_time=True):
-    """Seeded measurements. Numbers are observations for this protocol, not targets.
-
-    Protocols (balanced classes, background bits Bernoulli 1/2, near-miss negatives):
-
-    - ``feature_shift_dead``: F12 AND F19 AND NOT F25 becomes F12 AND F20 AND NOT F25,
-      and bit 19 is forced off after the slide. One clean false negative is first
-      in the repair stream.
-    - ``feature_shift_residual``: the same slide, but bit 19 stays a free bit.
-      The eval set includes one row that still has bit 19 and lacks bit 20.
-    - ``new_decoy``: the old rule gains NOT F30. The first repair row is a
-      false positive that carries the decoy.
+    Equality is exact on the flags. Nothing here is a pass threshold for a
+    claimed microsecond or a claimed fidelity.
     """
-    if type(seed) is not int or seed < 0:
-        raise ValueError("seed must be a nonnegative int")
-    rng = random.Random(seed)
-    old_required = CLAIMED_AND
-    old_forbidden = CLAIMED_NOT
-    new_required = (CLAIMED_AND[0], CLAIMED_SLIDE_TO)
-    decoy_forbidden = CLAIMED_NOT + (CLAIMED_DECOY,)
-    for bit in list(old_required) + list(old_forbidden) + [CLAIMED_SLIDE_TO, CLAIMED_DECOY]:
-        if bit >= n_features:
-            raise ValueError("claimed feature index does not fit n_features")
-
-    initial = _balanced_rows(rng, n_initial, n_features, old_required, old_forbidden, (), "initial")
-    start = distill_literals([(bit, True) for bit in old_required] + [(bit, False) for bit in old_forbidden])
-
-    # The canonical counterexample is extra, so the random block can stay even.
-    dead_repair = _balanced_rows(rng, n_repair, n_features, new_required, old_forbidden, (CLAIMED_AND[1],), "dead-repair")
-    dead_canon = {
-        "id": "dead-repair-canonical",
-        "x": _draw(rng, n_features, new_required, set(old_forbidden) | {CLAIMED_AND[1]}),
-        "y": True,
-    }
-    dead_eval = _balanced_rows(rng, n_eval, n_features, new_required, old_forbidden, (CLAIMED_AND[1],), "dead-eval")
-
-    residual_repair = _balanced_rows(rng, n_repair, n_features, new_required, old_forbidden, (), "residual-repair")
-    residual_canon = {
-        "id": "residual-repair-canonical",
-        "x": _draw(rng, n_features, new_required, set(old_forbidden) | {CLAIMED_AND[1]}),
-        "y": True,
-    }
-    residual_eval = _balanced_rows(rng, n_eval, n_features, new_required, old_forbidden, (), "residual-eval")
-    # Old feature on, slid feature off, rest of the new rule's other literals satisfied.
-    # The relaxed OR accepts this row; the new rule does not.
-    residual_fp = {
-        "id": "residual-eval-injected-fp",
-        "x": _draw(rng, n_features, (CLAIMED_AND[0], CLAIMED_AND[1]), set(old_forbidden) | {CLAIMED_SLIDE_TO}),
-        "y": False,
-    }
-
-    decoy_repair = _balanced_rows(rng, n_repair, n_features, old_required, decoy_forbidden, (), "decoy-repair")
-    decoy_canon = {
-        "id": "decoy-repair-canonical",
-        "x": _draw(rng, n_features, old_required + (CLAIMED_DECOY,), old_forbidden),
-        "y": False,
-    }
-    decoy_eval = _balanced_rows(rng, n_eval, n_features, old_required, decoy_forbidden, (), "decoy-eval")
-
-    dead_oracle = lambda x: label_of(x, new_required, old_forbidden)
-    residual_oracle = dead_oracle
-    decoy_oracle = lambda x: label_of(x, old_required, decoy_forbidden)
-    shift_note = (
-        "Synthetic indexes %s AND NOT %s slide %s -> %s. "
-        "Not an NPB column. Repair sees a constructed counterexample first, then fresh draws."
-        % (list(old_required), list(old_forbidden), CLAIMED_AND[1], CLAIMED_SLIDE_TO)
-    )
-    scenario_list = [
-        _scenario_record(
-            "feature_shift_dead", start, initial,
-            [dead_canon] + dead_repair, dead_eval, dead_oracle,
-            shift_note + " Bit %d is forced off on every drifted row." % CLAIMED_AND[1],
-        ),
-        _scenario_record(
-            "feature_shift_residual", start, initial,
-            [residual_canon] + residual_repair, residual_eval + [residual_fp], residual_oracle,
-            shift_note + " Bit %d remains a free background bit. Eval contains residual-eval-injected-fp." % CLAIMED_AND[1],
-        ),
-        _scenario_record(
-            "new_decoy", start, initial,
-            [decoy_canon] + decoy_repair, decoy_eval, decoy_oracle,
-            "Same base rule plus NOT bit %d. First repair row is a false positive." % CLAIMED_DECOY,
-        ),
-    ]
-    scenarios = {row["name"]: row for row in scenario_list}
-    scenarios["feature_shift_residual"]["injected_false_positive"] = residual_fp
-    probe_span = _probe_span(seed)
-    sample_x = [row["x"] for row in dead_eval[:32]]
-    if measure_time:
-        timing = {
-            "evaluate_fast": _timing(start.evaluate_fast, sample_x),
-            "evaluate_reference": _timing(start.evaluate_reference, sample_x),
-            "python_call_floor": _timing(lambda _value: None, sample_x),
-            "host": {
-                "python": platform.python_version(),
-                "platform": platform.platform(),
-                "machine": platform.machine(),
-            },
-        }
-    else:
-        timing = None
-    return {
-        "schema": SCHEMA,
-        "seed": seed,
-        "n_features": n_features,
-        "n_initial": n_initial,
-        "n_repair": n_repair,
-        "n_eval": n_eval,
-        "class_balance": "equal positive and negative counts",
-        "background": "independent Bernoulli 1/2, then forced literals",
-        "negatives": "one uniformly chosen violated literal (near miss)",
-        "probe_order": "ascending feature index; the proposal does not specify order",
-        "scenarios": scenarios,
-        "probe_span": probe_span,
-        "timing": timing,
-        "flaws_exercised_by_construction": flaw_examples(seed),
-    }
-
-
-def _probe_span(seed, draws=32):
-    """Probe counts for the canonical dead-slide and decoy rows across subseeds."""
-    dead_counts = []
-    decoy_counts = []
-    parent = random.Random(seed)
-    for _ in range(draws):
-        sub = random.Random(parent.randrange(2 ** 63))
-        dead_x = _draw(sub, N_FEATURES, (CLAIMED_AND[0], CLAIMED_SLIDE_TO), set(CLAIMED_NOT) | {CLAIMED_AND[1]})
-        decoy_x = _draw(sub, N_FEATURES, CLAIMED_AND + (CLAIMED_DECOY,), CLAIMED_NOT)
-        start = distill_literals([(bit, True) for bit in CLAIMED_AND] + [(bit, False) for bit in CLAIMED_NOT])
-        dead_rule = start.copy()
-        decoy_rule = start.copy()
-        dead_trace = repair_false_negative(dead_rule, dead_x, lambda x: label_of(x, (CLAIMED_AND[0], CLAIMED_SLIDE_TO), CLAIMED_NOT))
-        decoy_trace = repair_false_positive(decoy_rule, decoy_x, lambda x: label_of(x, CLAIMED_AND, CLAIMED_NOT + (CLAIMED_DECOY,)))
-        dead_counts.append(len(dead_trace["probes"]))
-        decoy_counts.append(len(decoy_trace["probes"]))
-    def _pack(counts):
-        ordered = sorted(counts)
-        return {
-            "draws": draws,
-            "min": ordered[0],
-            "median": ordered[draws // 2],
-            "max": ordered[-1],
-            "equal_to_3": sum(count == 3 for count in counts),
-        }
-    return {"feature_shift_dead_canonical": _pack(dead_counts), "new_decoy_canonical": _pack(decoy_counts)}
-
-
-def flaw_examples(seed):
-    """Concrete counterexamples. Indexes are one sample from ``seed``; trap is the lower necessary bit."""
-    rng = random.Random(seed + 17)
-    a, old, new, trap, banned, noise, b, c, b2, c2 = rng.sample(range(N_FEATURES), 10)
-    if trap > new:
-        trap, new = new, trap
-    # First flipping candidate is the lower necessary bit, not the later one.
-    rule = distill_literals([(a, True), (old, True), (banned, False)])
-    oracle = lambda x: label_of(x, (a, trap, new), (banned,))
-    positive = mask_of((a, trap, new, noise))
-    _trace = repair_disagreement(rule, positive, True, oracle)
-    replacement = next(edit["replacement"] for edit in _trace["edits"] if edit["op"] == "relax_or")
-    false_positive = mask_of((a, trap))
-    low, high = (b2, c2) if b2 < c2 else (c2, b2)
-    multi = distill_literals([(a, True), (b, True), (c, True)])
-    multi_oracle = lambda x: label_of(x, (a, b2, c2), ())
-    multi_row = mask_of((a, b2, c2))
-    multi_trace = repair_disagreement(multi, multi_row, True, multi_oracle)
-    multi_fp = mask_of((a, low))
-    # Noisy positive clears a real ban.
-    noisy = distill_literals([(a, True), (banned, False)])
-    noisy_oracle = lambda x: label_of(x, (a,), (banned,))
-    noisy_row = mask_of((a, banned))
-    noisy_rule_result = repair_disagreement(noisy, noisy_row, True, noisy_oracle)
-    harmful_positive = mask_of((a, banned))
-    # Missing-bit false positive: binary search still commits a bit.
-    # Simulate the state after a correct OR relaxation, then a residual FP.
-    relaxed = distill_literals([(a, True)])
-    relaxed.or_clauses.append((1 << old) | (1 << new))
-    residual = mask_of((a, old, noise))
-    residual_oracle = lambda x: label_of(x, (a, new), ())
-    residual_trace = repair_disagreement(relaxed, residual, False, residual_oracle)
-    culprit = residual_trace["culprit"]
-    spoiled = mask_of((a, new, culprit)) if culprit is not None else None
-    return {
-        "first_candidate": {
-            "replacement": replacement,
-            "trap": trap,
-            "later_necessary_bit": new,
-            "false_positive_accepted": rule.evaluate_fast(false_positive) and not oracle(false_positive),
-        },
-        "multiple_lost_bits": {
-            "replacements": [edit.get("replacement") for edit in multi_trace["edits"] if edit["op"] == "relax_or"],
-            "low_new_bit": low,
-            "high_new_bit": high,
-            "false_positive_accepted": multi.evaluate_fast(multi_fp) and not multi_oracle(multi_fp),
-        },
-        "noisy_clear_not": {
-            "cleared": next(edit["bits"] for edit in noisy_rule_result["edits"] if edit["op"] == "clear_not"),
-            "banned": banned,
-            "positive_with_banned_bit_now_accepted": noisy.evaluate_fast(harmful_positive) and not noisy_oracle(harmful_positive),
-        },
-        "false_positive_on_a_missing_bit": {
-            "culprit": culprit,
-            "flipping_culprit_restores_true": (culprit is not None and residual_oracle(residual ^ (1 << culprit))),
-            "true_positive_rejected_after_commit": (
-                spoiled is not None and residual_oracle(spoiled) and not relaxed.evaluate_fast(spoiled)
-            ),
-        },
-    }
-
-
-def format_report(report):
-    """Plain-text table for a human. The JSON has the counts."""
-    lines = [
-        "schema: %s" % report.get("schema", SCHEMA),
-        "seed: %s" % report["seed"],
-        "",
-        "Fidelity is (tp + tn) / n on the named split. repaired_*_on_repair_rows is the split the edits saw.",
-        "",
-        "| scenario | initial | unrepaired eval | repaired once, eval | repaired all, eval | probes once | probes all |",
-        "|---|---:|---:|---:|---:|---:|---:|",
-    ]
-    synthetic = report.get("synthetic", report)
-    scenarios = synthetic["scenarios"] if "scenarios" in synthetic else report["scenarios"]
-    for name, row in scenarios.items():
-        lines.append("| %s | %.4f | %.4f | %.4f | %.4f | %d | %d |" % (
-            name,
-            row["initial"]["fidelity"],
-            row["unrepaired_eval"]["fidelity"],
-            row["repaired_one_eval"]["fidelity"],
-            row["repaired_all_eval"]["fidelity"],
-            row["probe_queries_one"],
-            row["probe_queries_all"],
-        ))
-    if "probe_span" in synthetic:
-        lines.append("")
-        lines.append("Canonical probe counts over %d subseeds (dead slide / decoy):" % synthetic["probe_span"]["feature_shift_dead_canonical"]["draws"])
-        for key, row in synthetic["probe_span"].items():
-            lines.append("- %s min %d median %d max %d (count of draws with exactly 3 probes: %d)" % (
-                key, row["min"], row["median"], row["max"], row["equal_to_3"]))
-    timing = synthetic.get("timing")
-    if timing:
-        fast = timing["evaluate_fast"]
-        lines.append("")
-        lines.append("evaluate_fast: %.3f µs/call over %d calls (%.3f s) on %s" % (
-            fast["microseconds_per_call"], fast["calls"], fast["seconds"], timing["host"]["python"]))
-        floor = timing["python_call_floor"]
-        lines.append("empty Python call: %.3f µs/call over %d calls" % (
-            floor["microseconds_per_call"], floor["calls"]))
-    season = report.get("season")
-    if season:
-        lines.append("")
-        lines.append(format_season(season))
-    return "\n".join(lines) + "\n"
-
-
-def _split_seasons(seasons):
-    """Earlier seasons train, then repair, then eval. Remainder stays in train.
-
-    The cut is by count of seasons, fixed before any fidelity is computed.
-    """
-    seasons = list(seasons)
-    if len(seasons) < 3:
-        raise ValueError("need at least three seasons to separate train, repair, and eval")
-    n_eval = max(1, len(seasons) // 4)
-    n_repair = max(1, len(seasons) // 4)
-    n_train = len(seasons) - n_eval - n_repair
-    if n_train < 1:
-        raise ValueError("season split left no training season")
-    return seasons[:n_train], seasons[n_train:n_train + n_repair], seasons[n_train + n_repair:]
-
-
-def _search_seconds(df, target, candidates, max_terms, top, runs=5):
     import rule_search
-    rule_search.search(df, target, candidates, max_terms=max_terms, max_conds=2, top=top)
-    samples = []
-    for _ in range(runs):
-        start = time.perf_counter()
-        rule_search.search(df, target, candidates, max_terms=max_terms, max_conds=2, top=top)
-        samples.append(time.perf_counter() - start)
-    samples.sort()
+
+    group_lists = [rule["if_any"] for rule in rules]
+    compiled = [compile_search_rule(groups, conditions) for groups in group_lists]
+    single_mask = sum(rule is not None for rule in compiled)
+    if not group_lists:
+        raise ValueError("no searched rules")
+
+    def surrogate_flags():
+        return evaluate_antecedents(df, group_lists, conditions)
+
+    def proposition_flags():
+        return [polars_antecedent_flags(df, groups) for groups in group_lists]
+
+    def row_bitset_flags():
+        row_masks = [rule_search._mask(df, [cond]) for cond in conditions]
+        index = {}
+        for bit, cond in enumerate(conditions):
+            index.setdefault(condition_key(cond), bit)
+        n = df.height
+        full = (1 << n) - 1 if n else 0
+        out = []
+        for groups in group_lists:
+            acc = 0
+            for group in groups:
+                mask = full
+                for cond in group:
+                    mask &= row_masks[index[condition_key(cond)]]
+                acc |= mask
+            out.append([bool(acc & (1 << i)) for i in range(n)])
+        return out
+
+    max_conds = int((search_kwargs or {}).get("max_conds", 2))
+    term_groups = [[group] for group, _mask in rule_search._build_terms(df, conditions, max_conds)]
+
+    def term_surrogate():
+        return evaluate_antecedents(df, term_groups, conditions)
+
+    def term_proposition():
+        return [polars_antecedent_flags(df, groups) for groups in term_groups]
+
+    def term_row_bitset():
+        row_masks = [rule_search._mask(df, [cond]) for cond in conditions]
+        index = {}
+        for bit, cond in enumerate(conditions):
+            index.setdefault(condition_key(cond), bit)
+        n = df.height
+        full = (1 << n) - 1 if n else 0
+        out = []
+        for groups in term_groups:
+            mask = full
+            for cond in groups[0]:
+                mask &= row_masks[index[condition_key(cond)]]
+            out.append([bool(mask & (1 << i)) for i in range(n)])
+        return out
+
+    surrogate = surrogate_flags()
+    proposition = proposition_flags()
+    row_bitset = row_bitset_flags()
+    flags_equal = surrogate == proposition == row_bitset and all(flags is not None for flags in surrogate)
+    target_flags = polars_antecedent_flags(df, [target])
+    count_rows = []
+    for flags, rule in zip(surrogate, rules):
+        got = counts(flags, target_flags)
+        recorded = (rule["tp"], rule["fp"], rule["fn"], rule["tn"])
+        counted = (got["tp"], got["fp"], got["fn"], got["tn"])
+        count_rows.append(recorded == counted and got["undetermined"] == 0)
+    term_surrogate_flags = term_surrogate()
+    term_equal = term_surrogate_flags == term_proposition() == term_row_bitset()
+    kwargs = dict(search_kwargs or {})
+    search_seconds = _time_call(
+        lambda: rule_search.search(df, target, conditions, **kwargs),
+        min_seconds=0.0,
+        min_calls=3,
+    )
     return {
-        "max_terms": max_terms,
-        "max_conds": 2,
-        "top": top,
-        "runs": runs,
-        "seconds": samples,
-        "min_seconds": samples[0],
-        "median_seconds": samples[len(samples) // 2],
-        "max_seconds": samples[-1],
+        "rows": df.height,
+        "searched_rules": len(rules),
+        "single_mask_rules": single_mask,
+        "conjunction_terms": len(term_groups),
+        "flags_equal": flags_equal,
+        "counts_equal": all(count_rows) and len(count_rows) == len(rules),
+        "term_flags_equal": term_equal,
+        "surrogate": _time_call(surrogate_flags, min_seconds=min_seconds),
+        "proposition_antecedent": _time_call(proposition_flags, min_seconds=min_seconds),
+        "row_bitset": _time_call(row_bitset_flags, min_seconds=min_seconds),
+        "term_surrogate": _time_call(term_surrogate, min_seconds=min_seconds),
+        "term_proposition": _time_call(term_proposition, min_seconds=min_seconds),
+        "term_row_bitset": _time_call(term_row_bitset, min_seconds=min_seconds),
+        "rule_search": search_seconds,
     }
 
 
-def _candidate_index(cond, candidates):
-    for index, candidate in enumerate(candidates):
-        if candidate["col"] == cond["col"] and candidate["op"] == cond["op"] and candidate["value"] == cond["value"]:
-            return index
-    raise ValueError("searched condition is not one of the registered candidates: %r" % (cond,))
-
-
-def _force(x, on, off):
-    for bit in on:
-        x |= 1 << bit
-    for bit in off:
-        x &= ~(1 << bit)
-    return x
-
-
-def load_candidate_rows(root):
-    """Team-seasons as feature masks. Candidate order is the TOML order, which is the bit index."""
+def load_search_frame(root):
+    """The frame ``rule_search``'s CLI scores: exclusions applied, nulls dropped."""
     import tomllib
 
     import polars as pl
@@ -801,7 +694,6 @@ def load_candidate_rows(root):
     if root_text not in sys.path:
         sys.path.append(root_text)
     import aoi_paths
-    from propositions import _cond, text
     from pythdragoras import apply_exclusions
 
     cycle = aoi_paths.resolve_cycle_path(root)
@@ -813,335 +705,63 @@ def load_candidate_rows(root):
     target = spec["target"]
     columns = sorted({item["col"] for item in [*target, *candidates]})
     before = frame.height
-    frame = frame.drop_nulls(columns).sort("season", "team")
-    flag_columns = [frame.select(x=_cond([candidate], frame.columns))["x"].to_list() for candidate in candidates]
-    target_flags = frame.select(x=_cond(target, frame.columns))["x"].to_list()
-    seasons = frame["season"].to_list()
-    teams = frame["team"].to_list()
-    rows = []
-    seen = set()
-    for index in range(frame.height):
-        x = 0
-        for bit, flags in enumerate(flag_columns):
-            if flags[index]:
-                x |= 1 << bit
-        row_id = "%s-%s" % (teams[index], int(seasons[index]))
-        if row_id in seen:
-            raise ValueError("duplicate team-season: %s" % row_id)
-        seen.add(row_id)
-        rows.append({
-            "id": row_id,
-            "season": int(seasons[index]),
-            "team": teams[index],
-            "x": x,
-            "y": bool(target_flags[index]),
-        })
-    distinct_columns = []
-    for index, candidate in enumerate(candidates):
-        if candidate["col"] not in [name for name, _ in distinct_columns]:
-            distinct_columns.append((candidate["col"], index))
-    confirm = [int(season) for season in cfg.get("confirm", {}).get("seasons", [])]
+    usable = frame.drop_nulls(columns)
     return {
-        "frame": frame,
+        "frame": usable,
         "target": target,
         "candidates": candidates,
-        "candidate_text": [text([candidate]) for candidate in candidates],
-        "rows": rows,
-        "dropped_null_rows": before - frame.height,
+        "max_terms": int(spec.get("max_terms", 2)),
+        "max_conds": int(spec.get("max_conds", 2)),
+        "dropped_null_rows": before - usable.height,
         "exclusions": removed,
-        "confirm_seasons": confirm,
-        "distinct_column_bits": distinct_columns,
         "cycle": str(cycle),
     }
 
 
-def _planted_roles(distinct_column_bits):
-    """First registered condition of the first four distinct columns. Not chosen by accuracy."""
-    if len(distinct_column_bits) < 4:
-        raise ValueError("need four distinct candidate columns to plant a slide")
-    _and, old, new, banned = [bit for _name, bit in distinct_column_bits[:4]]
-    return {"and": _and, "old": old, "new": new, "not": banned}
-
-
-def _roles_from_train_prevalence(train_rows, candidates, low=0.40, high=0.80):
-    """First four distinct columns whose train-season rate sits in ``[low, high]``.
-
-    Uses only training rows and ignores the B-class target. The window exists so a
-    planted conjunction is not forced onto the rarest thresholds. It is not fit to
-    repaired fidelity.
-    """
-    if not train_rows:
-        raise ValueError("prevalence roles need training rows")
-    chosen = []
-    used = set()
-    rates = []
-    n = len(train_rows)
-    for index, candidate in enumerate(candidates):
-        on = sum(1 for row in train_rows if row["x"] & (1 << index))
-        rate = on / n
-        rates.append(rate)
-        if candidate["col"] in used or not (low <= rate <= high):
-            continue
-        chosen.append(index)
-        used.add(candidate["col"])
-        if len(chosen) == 4:
-            break
-    if len(chosen) < 4:
-        raise ValueError("train prevalence window did not yield four columns")
-    return {"and": chosen[0], "old": chosen[1], "new": chosen[2], "not": chosen[3]}, rates
-
-
-def _planted_bundle(train_rows, repair_rows, eval_rows, roles):
-    """Plant a slide on these roles. Mechanism repair sees a constructed positive first."""
-    if not repair_rows:
-        raise RuntimeError("repair split is empty")
-
-    def _plant(rows, required, forbidden, dead_bits):
-        planted = []
-        for row in rows:
-            x = _force(row["x"], (), dead_bits)
-            planted.append({
-                "id": row["id"],
-                "season": row["season"],
-                "x": x,
-                "y": label_of(x, required, forbidden),
-            })
-        return planted
-
-    old_required = (roles["and"], roles["old"])
-    new_required = (roles["and"], roles["new"])
-    forbidden = (roles["not"],)
-    old_rule = distill_literals([(roles["and"], True), (roles["old"], True), (roles["not"], False)])
-    oracle = lambda x: label_of(x, new_required, forbidden)
-    natural_train = _plant(train_rows, old_required, forbidden, ())
-    natural_repair = _plant(repair_rows, new_required, forbidden, ())
-    natural_eval = _plant(eval_rows, new_required, forbidden, ())
-    background = repair_rows[0]["x"]
-    canonical = {
-        "id": "planted-canonical-positive",
-        "x": _force(background, new_required, forbidden + (roles["old"],)),
-        "y": True,
-    }
-    mechanism = _scenario_record(
-        "planted_natural_bits",
-        old_rule,
-        natural_train,
-        [canonical] + natural_repair,
-        natural_eval,
-        oracle,
-        "Labels are the planted function of observed candidate bits, not upper_half.",
-    )
-    one_rule, one_traces, one_inspected = active_repair(old_rule, natural_repair, oracle, max_repairs=1)
-    all_rule, all_traces, all_inspected = active_repair(old_rule, natural_repair, oracle, max_repairs=None)
-    dead_eval = _plant(eval_rows, new_required, forbidden, (roles["old"],))
-    dead_repair = _plant(repair_rows, new_required, forbidden, (roles["old"],))
-    dead_train = _plant(train_rows, old_required, forbidden, ())
-    dead = _scenario_record(
-        "planted_dead_old_bit",
-        old_rule,
-        dead_train,
-        [{
-            "id": "planted-dead-canonical-positive",
-            "x": _force(background, new_required, forbidden + (roles["old"],)),
-            "y": True,
-        }] + dead_repair,
-        dead_eval,
-        oracle,
-        "Drifted rows have the old bit cleared. Other candidate bits stay as observed.",
-    )
-    def _positives(rows):
-        return sum(1 for row in rows if row["y"])
-    return {
-        "mechanism": mechanism,
-        "observational": {
-            "note": "No constructed counterexample. Only drifted team-seasons, labeled by the planted new rule.",
-            "unrepaired_eval": confusion(old_rule, natural_eval),
-            "repaired_one_rule": one_rule.describe(),
-            "repaired_one_eval": confusion(one_rule, natural_eval),
-            "probe_queries_one": _probe_queries(one_traces),
-            "rows_inspected_one": one_inspected,
-            "repairs_one": len(one_traces),
-            "repaired_all_rule": all_rule.describe(),
-            "repaired_all_eval": confusion(all_rule, natural_eval),
-            "probe_queries_all": _probe_queries(all_traces),
-            "rows_inspected_all": all_inspected,
-            "repairs_all": len(all_traces),
-            "traces_one": one_traces,
-        },
-        "dead_old_bit": dead,
-        "positive_counts": {
-            "train": _positives(natural_train),
-            "repair": _positives(natural_repair),
-            "eval": _positives(natural_eval),
-        },
-    }
-
-
-def _rows_for(rows, seasons):
-    wanted = set(seasons)
-    return [row for row in rows if row["season"] in wanted]
-
-
-def season_report(root, seed):
-    """Real candidate masks, plus what repair cannot do with observational labels.
-
-    ``natural_target`` scores the best single conjunction from ``rule_search``
-    on earlier seasons against later seasons. There is no counterfactual oracle
-    for ``upper_half``, so repair is not run.
-
-    ``planted_natural_bits`` relabels the same masks with a planted slide at the
-    repair boundary. Probes are legal because the oracle is that planted function.
-    ``planted_dead_old_bit`` additionally turns the old bit off on drifted rows,
-    which is the case where an OR relaxation matches the new rule.
-    """
-    if type(seed) is not int or seed < 0:
-        raise ValueError("seed must be a nonnegative int")
-    loaded = load_candidate_rows(root)
-    present = []
-    for row in loaded["rows"]:
-        if row["season"] not in present:
-            present.append(row["season"])
-    confirm = set(loaded["confirm_seasons"])
-    pool = [season for season in present if season not in confirm]
-    train_seasons, repair_seasons, eval_seasons = _split_seasons(pool)
-    train_rows = _rows_for(loaded["rows"], train_seasons)
-    repair_rows = _rows_for(loaded["rows"], repair_seasons)
-    eval_rows = _rows_for(loaded["rows"], eval_seasons)
-    untouched_rows = _rows_for(loaded["rows"], [season for season in present if season in confirm])
-    roles = _planted_roles(loaded["distinct_column_bits"])
-    names = loaded["candidate_text"]
-
-    import polars as pl
-    import rule_search
-
-    frame = loaded["frame"]
-    train_frame = frame.filter(pl.col("season").is_in(train_seasons))
-    searched = rule_search.search(
-        train_frame, loaded["target"], loaded["candidates"], max_terms=1, max_conds=2, top=1)[0]
-    group = searched["if_any"][0]
-    compiled = compile_bit_dnf([[_candidate_index(cond, loaded["candidates"]) for cond in group]])
-    if compiled is None or len(searched["if_any"]) != 1:
-        raise RuntimeError("max_terms=1 did not compile to a conjunction")
-    # The compiled DNF uses only positive bits. A searched condition is a positive
-    # literal on that candidate, so M_NOT stays empty. That is the representation
-    # gap with the proposal's forbidden-bit mask.
-    natural = {
-        "counterfactual_oracle": False,
-        "repair_ran": False,
-        "reason": (
-            "Observed B-class labels do not answer oracle(X with one candidate bit flipped). "
-            "Active repair was not applied to this target."
-        ),
-        "rule_text": rule_search.rule_text(searched),
-        "rule": compiled.describe(),
-        "train_counts_from_search": {key: searched[key] for key in ("tp", "fp", "fn", "tn", "mcc")},
-        "initial": confusion(compiled, train_rows),
-        "unrepaired_repair_seasons": confusion(compiled, repair_rows),
-        "unrepaired_eval": confusion(compiled, eval_rows),
-        "search_seconds_max_terms_1_top_1": _search_seconds(
-            train_frame, loaded["target"], loaded["candidates"], 1, 1),
-        "search_seconds_max_terms_2_top_20": _search_seconds(
-            train_frame, loaded["target"], loaded["candidates"], 2, 20),
-    }
-    if untouched_rows:
-        natural["untouched_confirm_seasons"] = confusion(compiled, untouched_rows)
-
-    file_order = _planted_bundle(train_rows, repair_rows, eval_rows, roles)
-    prevalent_roles, train_rates = _roles_from_train_prevalence(train_rows, loaded["candidates"])
-    prevalent = _planted_bundle(train_rows, repair_rows, eval_rows, prevalent_roles)
-    sample = [row["x"] for row in eval_rows] or [0]
-    timer_rule = distill_literals([(roles["and"], True), (roles["old"], True), (roles["not"], False)])
-    return {
-        "schema": SCHEMA,
-        "seed": seed,
-        "seed_used_for_sampling": False,
-        "cycle": loaded["cycle"],
-        "n_candidates": len(loaded["candidates"]),
-        "claimed_indexes_12_19_25_fit": len(loaded["candidates"]) > 25,
-        "candidate_index_12_text": names[12] if len(names) > 12 else None,
-        "candidate_text": names,
-        "roles": {key: {"bit": bit, "text": names[bit]} for key, bit in roles.items()},
-        "prevalence_roles": {key: {"bit": bit, "text": names[bit]} for key, bit in prevalent_roles.items()},
-        "train_bit_rates": train_rates,
-        "train_seasons": train_seasons,
-        "repair_seasons": repair_seasons,
-        "eval_seasons": eval_seasons,
-        "confirm_seasons_held_out": [season for season in present if season in confirm],
-        "excluded": loaded["exclusions"],
-        "dropped_null_rows": loaded["dropped_null_rows"],
-        "n_train": len(train_rows),
-        "n_repair": len(repair_rows),
-        "n_eval": len(eval_rows),
-        "season_ids_disjoint": set(_ids(train_rows)).isdisjoint(_ids(repair_rows)) and set(_ids(repair_rows)).isdisjoint(_ids(eval_rows)),
-        "natural_target": natural,
-        "planted_file_order": file_order,
-        "planted_natural_bits": file_order["mechanism"],
-        "planted_observational_rows_only": file_order["observational"],
-        "planted_dead_old_bit": file_order["dead_old_bit"],
-        "planted_prevalence_window": prevalent,
-        "surrogate_timing": _timing(timer_rule.evaluate_fast, sample),
-    }
-
-
-def format_season(season):
-    natural = season["natural_target"]
-    lines = [
-        "NPB candidate rows: %s" % season["cycle"],
-        "seasons train %s repair %s eval %s" % (
-            season["train_seasons"], season["repair_seasons"], season["eval_seasons"]),
-        "candidates: %d (indexes 12, 19, and 25 all exist: %s)" % (
-            season["n_candidates"], season["claimed_indexes_12_19_25_fit"]),
-        "natural target rule: %s" % natural["rule_text"],
-        "natural initial fidelity %.4f; unrepaired eval %.4f; repair ran: %s" % (
-            natural["initial"]["fidelity"], natural["unrepaired_eval"]["fidelity"], natural["repair_ran"]),
-        "search max_terms=2 top=20 median %.6f s (min %.6f, max %.6f)" % (
-            natural["search_seconds_max_terms_2_top_20"]["median_seconds"],
-            natural["search_seconds_max_terms_2_top_20"]["min_seconds"],
-            natural["search_seconds_max_terms_2_top_20"]["max_seconds"]),
-    ]
-    def _bundle_lines(title, bundle, role_map):
-        out = ["%s: (%s) AND (%s) AND NOT (%s) -> (%s); positives train/repair/eval %s" % (
-            title, role_map["and"]["text"], role_map["old"]["text"], role_map["not"]["text"], role_map["new"]["text"],
-            bundle["positive_counts"])]
-        mechanism = bundle["mechanism"]
-        dead = bundle["dead_old_bit"]
-        obs = bundle["observational"]
-        out.append("  mechanism unrepaired %.4f repaired-once %.4f probes %d; repaired-all %.4f" % (
-            mechanism["unrepaired_eval"]["fidelity"], mechanism["repaired_one_eval"]["fidelity"],
-            mechanism["probe_queries_one"], mechanism["repaired_all_eval"]["fidelity"]))
-        out.append("  dead-old unrepaired %.4f repaired-once %.4f probes %d" % (
-            dead["unrepaired_eval"]["fidelity"], dead["repaired_one_eval"]["fidelity"], dead["probe_queries_one"]))
-        out.append("  observational unrepaired %.4f repaired-once %.4f probes %d repaired-all %.4f probes %d" % (
-            obs["unrepaired_eval"]["fidelity"], obs["repaired_one_eval"]["fidelity"], obs["probe_queries_one"],
-            obs["repaired_all_eval"]["fidelity"], obs["probe_queries_all"]))
-        return out
-    lines.extend(_bundle_lines("planted file-order", season["planted_file_order"], season["roles"]))
-    lines.extend(_bundle_lines("planted prevalence window", season["planted_prevalence_window"], season["prevalence_roles"]))
-    fast = season["surrogate_timing"]
-    lines.append("evaluate_fast on these masks: %.3f µs/call over %d calls" % (
-        fast["microseconds_per_call"], fast["calls"]))
-    return "\n".join(lines)
+def _format_seconds(timing):
+    return "calls=%d seconds=%.6f per_call=%.6g" % (
+        timing["calls"], timing["seconds"], timing["seconds_per_call"])
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Measure the bitwise surrogate and active repair. Claimed percentages are not targets.")
-    parser.add_argument("--seed", type=int, default=None)
-    parser.add_argument("--json", action="store_true")
-    parser.add_argument("--season", action="store_true", help="Score NPB candidate rows. Needs AOI_ROOT or --aoi-root, and polars.")
-    parser.add_argument("--aoi-root", type=Path, default=None)
+    parser = argparse.ArgumentParser(
+        description="Recheck rule_search candidates with the bitmask evaluator and print timings.",
+    )
+    parser.add_argument("--aoi-root", type=Path, required=True)
+    parser.add_argument("--top", type=int, default=20)
     args = parser.parse_args(argv)
-    seed = secrets.randbits(63) if args.seed is None else args.seed
-    print("bitwise_surrogate seed=%d" % seed)
-    report = {"schema": SCHEMA, "seed": seed, "synthetic": synthetic_report(seed)}
-    if args.season:
-        root = args.aoi_root if args.aoi_root is not None else os.environ.get("AOI_ROOT")
-        if not root:
-            parser.error("pass --aoi-root or set AOI_ROOT for --season")
-        report["season"] = season_report(root, seed)
-    text = json.dumps(report, indent=2, sort_keys=True) + "\n" if args.json else format_report(report)
-    sys.stdout.write(text)
-    return 0
+    import rule_search
+
+    loaded = load_search_frame(args.aoi_root)
+    rules = rule_search.search(
+        loaded["frame"], loaded["target"], loaded["candidates"],
+        loaded["max_terms"], loaded["max_conds"], args.top,
+    )
+    report = benchmark_rule_checks(
+        loaded["frame"], rules, loaded["candidates"], loaded["target"],
+        search_kwargs={
+            "max_terms": loaded["max_terms"],
+            "max_conds": loaded["max_conds"],
+            "top": args.top,
+        },
+    )
+    print("cycle=%s rows=%d dropped_nulls=%d candidates=%d" % (
+        loaded["cycle"], report["rows"], loaded["dropped_null_rows"], len(loaded["candidates"])))
+    print("searched=%d single_mask=%d conjunction_terms=%d flags_equal=%s counts_equal=%s term_flags_equal=%s" % (
+        report["searched_rules"], report["single_mask_rules"], report["conjunction_terms"],
+        report["flags_equal"], report["counts_equal"], report["term_flags_equal"]))
+    for rule in rules[:5]:
+        print("rule %s" % format_search_rule(rule["if_any"], loaded["candidates"]))
+    print("surrogate_top %s" % _format_seconds(report["surrogate"]))
+    print("proposition_antecedent_top %s" % _format_seconds(report["proposition_antecedent"]))
+    print("row_bitset_top %s" % _format_seconds(report["row_bitset"]))
+    print("surrogate_terms %s" % _format_seconds(report["term_surrogate"]))
+    print("proposition_terms %s" % _format_seconds(report["term_proposition"]))
+    print("row_bitset_terms %s" % _format_seconds(report["term_row_bitset"]))
+    print("rule_search %s" % _format_seconds(report["rule_search"]))
+    return 0 if report["flags_equal"] and report["counts_equal"] and report["term_flags_equal"] else 1
 
 
 if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     raise SystemExit(main())

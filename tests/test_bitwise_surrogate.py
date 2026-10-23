@@ -1,8 +1,7 @@
-"""Properties of the bitwise surrogate. Each run draws a seed and logs it.
+"""The bitmask evaluator matches the existing one, and a NOT suggestion does not change the verdict.
 
-Fidelity claims from the external proposal are not pass conditions. Exact
-agreement is asserted only where the generator makes the repaired rule
-equivalent to the oracle on every eval row.
+Each randomized run draws a seed and logs it. Fidelities and microsecond
+bands from the external proposal are not pass conditions.
 """
 
 import ast
@@ -26,10 +25,6 @@ def _seed():
     seed = secrets.randbits(63)
     warnings.warn("bitwise_surrogate seed=%d" % seed, UserWarning, stacklevel=2)
     return seed
-
-
-def _small(seed):
-    return bs.synthetic_report(seed, n_initial=32, n_repair=16, n_eval=64, measure_time=False)
 
 
 def test_evaluate_fast_matches_the_set_reference():
@@ -56,143 +51,25 @@ def test_rejects_bools_empty_clauses_and_negative_masks():
     rule = bs.BitwiseSymbolicSurrogate()
     with pytest.raises(ValueError):
         rule.evaluate_fast(-1)
-    with pytest.raises(ValueError):
-        bs.repair_disagreement(rule, 0, 1, lambda x: True)
 
 
-def test_copy_does_not_alias_and_agreement_does_not_probe():
+def test_copy_does_not_alias():
     rule = bs.BitwiseSymbolicSurrogate(1, (2,), 4)
     copied = rule.copy()
     copied.m_and = 0
     copied.or_clauses.append(8)
     copied.m_not = 0
     assert rule.describe() == {"m_and_bits": [0], "or_clauses": [[1]], "m_not_bits": [2]}
-    calls = []
-
-    def oracle(x):
-        calls.append(x)
-        return True
-
-    trace = bs.repair_disagreement(rule, 1 | 2, True, oracle)
-    assert trace["kind"] == "agree" and calls == []
+    assert rule.evaluate_fast(1 | 2) is True
+    assert copied.evaluate_fast(1 | 2) is False
 
 
-def test_same_seed_rebuilds_the_same_report_when_timing_is_off():
-    seed = _seed()
-    first = _small(seed)
-    second = _small(seed)
-    assert first == second
-
-
-def test_dead_slide_is_exact_on_a_disjoint_holdout_and_unrepaired_never_fires():
-    seed = _seed()
-    report = _small(seed)
-    dead = report["scenarios"]["feature_shift_dead"]
-    assert dead["ids_disjoint"] is True
-    assert set(dead["repair_ids"]).isdisjoint(dead["eval_ids"])
-    initial = dead["initial"]
-    assert initial["fp"] == 0 and initial["fn"] == 0 and initial["tp"] + initial["tn"] == initial["n"]
-    unrepaired = dead["unrepaired_eval"]
-    assert unrepaired["tp"] == 0 and unrepaired["fp"] == 0
-    assert unrepaired["fn"] == unrepaired["tn"] == unrepaired["n"] // 2
-    repaired = dead["repaired_one_eval"]
-    assert repaired["fp"] == 0 and repaired["fn"] == 0
-    assert repaired["tp"] == repaired["tn"] == repaired["n"] // 2
-    assert dead["repaired_all_eval"] == repaired
-    assert dead["repairs_one"] == 1 and dead["repairs_all"] == 1
-    assert dead["probe_queries_one"] == sum(len(trace["probes"]) for trace in dead["traces_one"])
-    trace = dead["traces_one"][0]
-    assert trace["id"] == "dead-repair-canonical"
-    assert trace["edits"] == [{"op": "relax_or", "lost": bs.CLAIMED_AND[1], "replacement": bs.CLAIMED_SLIDE_TO}]
-    probes = trace["probes"]
-    assert probes[-1]["candidate"] == bs.CLAIMED_SLIDE_TO and probes[-1]["oracle_true"] is False
-    assert all(probe["oracle_true"] is True for probe in probes[:-1])
-    assert dead["repaired_one_on_repair_rows"]["fp"] == 0
-    assert dead["repaired_one_on_repair_rows"]["fn"] == 0
-
-
-def test_single_decoy_binary_search_finds_that_bit_and_eval_is_exact():
-    seed = _seed()
-    decoy = _small(seed)["scenarios"]["new_decoy"]
-    trace = decoy["traces_one"][0]
-    assert trace["kind"] == "false_positive"
-    assert trace["edits"] == [{"op": "add_not", "bit": bs.CLAIMED_DECOY}]
-    for probe in trace["probes"]:
-        assert probe["oracle_true"] is (bs.CLAIMED_DECOY in probe["left_bits"])
-    assert len(trace["probes"]) <= max(0, (len(bs.bit_list(trace["x"] & ~bs.mask_of(bs.CLAIMED_AND))) - 1).bit_length())
-    repaired = decoy["repaired_one_eval"]
-    assert repaired["fp"] == 0 and repaired["fn"] == 0
-    assert decoy["repairs_all"] == 1
-    assert decoy["probe_queries_one"] == len(trace["probes"])
-
-
-def test_residual_or_still_accepts_the_injected_old_feature_row():
-    seed = _seed()
-    residual = _small(seed)["scenarios"]["feature_shift_residual"]
-    injected = residual["injected_false_positive"]
-    assert injected["id"] in residual["eval_ids"]
-    assert injected["id"] not in residual["repair_ids"]
-    assert injected["y"] is False
-    rule = bs.rule_from_describe(residual["repaired_one_rule"])
-    assert rule.evaluate_fast(injected["x"]) is True
-    assert residual["repaired_one_eval"]["fp"] >= 1
-    assert residual["repaired_one_rule"]["or_clauses"] == [[bs.CLAIMED_AND[1], bs.CLAIMED_SLIDE_TO]]
-
-
-def test_documented_flaws_are_forced_by_the_edit_rules():
-    seed = _seed()
-    flaws = _small(seed)["flaws_exercised_by_construction"]
-    first = flaws["first_candidate"]
-    assert first["replacement"] == first["trap"]
-    assert first["replacement"] != first["later_necessary_bit"]
-    assert first["false_positive_accepted"] is True
-    several = flaws["multiple_lost_bits"]
-    assert several["replacements"] == [several["low_new_bit"], several["low_new_bit"]]
-    assert several["low_new_bit"] != several["high_new_bit"]
-    assert several["false_positive_accepted"] is True
-    noisy = flaws["noisy_clear_not"]
-    assert noisy["cleared"] == [noisy["banned"]]
-    assert noisy["positive_with_banned_bit_now_accepted"] is True
-    missing = flaws["false_positive_on_a_missing_bit"]
-    assert missing["flipping_culprit_restores_true"] is False
-    assert missing["true_positive_rejected_after_commit"] is True
-
-
-def test_prune_when_no_candidate_flips_and_no_extra_bit_on_a_false_positive():
-    seed = _seed()
-    rng = random.Random(seed)
-    keep, lost, noise_a, noise_b = rng.sample(range(bs.N_FEATURES), 4)
-    rule = bs.distill_literals([(keep, True), (lost, True)])
-    oracle = lambda x: bs.label_of(x, (keep,), ())
-    row = bs.mask_of((keep, noise_a, noise_b))
-    calls = []
-
-    def counting(x):
-        calls.append(x)
-        return oracle(x)
-
-    trace = bs.repair_disagreement(rule, row, True, counting)
-    assert {"op": "prune", "lost": lost} in trace["edits"]
-    assert all(probe["oracle_true"] is True for probe in trace["probes"])
-    assert len(calls) == len(trace["probes"])
-    assert rule.evaluate_fast(bs.mask_of((keep,))) is True
-    assert rule.evaluate_fast(bs.mask_of((noise_a,))) is False
-
-    empty = bs.BitwiseSymbolicSurrogate()
-    none_trace = bs.repair_disagreement(empty, 0, False, lambda x: False)
-    assert none_trace["edits"] == [{"op": "no_extra_bit"}]
-    assert empty.evaluate_fast(0) is True
-
-
-def test_clear_not_is_the_whole_edit_when_the_and_mask_already_holds():
-    seed = _seed()
-    required, banned = random.Random(seed).sample(range(bs.N_FEATURES), 2)
-    rule = bs.distill_literals([(required, True), (banned, False)])
-    row = bs.mask_of((required, banned))
-    trace = bs.repair_disagreement(rule, row, True, lambda x: bs.label_of(x, (required,), ()))
-    assert trace["probes"] == []
-    assert trace["edits"] == [{"op": "clear_not", "bits": [banned]}]
-    assert rule.evaluate_fast(row) is True
+def test_format_current_rule_names_and_or_and_not():
+    rule = bs.BitwiseSymbolicSurrogate(bs.mask_of((0, 2)), (bs.mask_of((1, 3)),), bs.mask_of((4,)))
+    assert bs.format_current_rule(rule) == "bit 0 AND bit 2 AND (bit 1 OR bit 3) AND NOT (bit 4)"
+    names = ["a < 1", "b < 2", "c < 3", "d < 4", "e < 5"]
+    assert bs.format_current_rule(rule, names) == "a < 1 AND c < 3 AND (b < 2 OR d < 4) AND NOT (e < 5)"
+    assert bs.format_current_rule(bs.BitwiseSymbolicSurrogate()) == "(every row)"
 
 
 def test_compile_bit_dnf_covers_the_fragment_and_rejects_a_general_dnf():
@@ -207,7 +84,47 @@ def test_compile_bit_dnf_covers_the_fragment_and_rejects_a_general_dnf():
     assert distilled.evaluate_fast(bs.mask_of((1, 4))) is False
 
 
-def test_compiled_singleton_or_matches_rule_search_on_the_toy_frame():
+def test_nulls_match_the_proposition_antecedent_and_a_not_literal():
+    frame = pl.DataFrame({
+        "a": [1, None, 1, 0, 1],
+        "b": [1, 1, None, 0, 0],
+    })
+    first = {"col": "a", "op": ">=", "value": 1}
+    second = {"col": "b", "op": ">=", "value": 1}
+    conditions = [first, second]
+    for groups in ([[first, second]], [[first], [second]], [[first]], [[second]], [[]]):
+        got = bs.evaluate_antecedents(frame, [groups], conditions)[0]
+        assert got == bs.polars_antecedent_flags(frame, groups)
+    assert None in bs.evaluate_antecedents(frame, [[[first, second]]], conditions)[0]
+    packed = bs.pack_feature_rows(frame, conditions)
+    rule = bs.distill_literals([(0, True), (1, False)])
+    expected = frame.select(x=(pl.col("a") >= 1) & ~(pl.col("b") >= 1))["x"].to_list()
+    assert bs.antecedent_flags(packed, rule) == [None if flag is None else bool(flag) for flag in expected]
+    # The forbidden bit being known-true is false even when the required bit is null.
+    lone = pl.DataFrame({"a": [None], "b": [1]})
+    lone_packed = bs.pack_feature_rows(lone, conditions)
+    assert bs.antecedent_flags(lone_packed, rule) == [False]
+    wide = pl.DataFrame({
+        "a": [1, None, 0, 1],
+        "b": [1, 1, 1, None],
+        "c": [0, 1, None, 0],
+        "d": [1, 0, 1, 1],
+    })
+    wide_conditions = [
+        {"col": "a", "op": ">=", "value": 1},
+        {"col": "b", "op": ">=", "value": 1},
+        {"col": "c", "op": ">=", "value": 1},
+        {"col": "d", "op": ">=", "value": 1},
+    ]
+    general = [
+        [wide_conditions[0], wide_conditions[1]],
+        [wide_conditions[2], wide_conditions[3]],
+    ]
+    assert bs.compile_search_rule(general, wide_conditions) is None
+    assert bs.evaluate_antecedents(wide, [general], wide_conditions)[0] == bs.polars_antecedent_flags(wide, general)
+
+
+def test_compiled_rules_match_rule_search_and_the_proposition_antecedent():
     rows = [
         ("a", 2020, 40, 1, 2.0, True), ("b", 2020, 10, 3, -5.0, False), ("c", 2020, -20, 2, 4.0, True),
         ("d", 2020, -60, 5, 1.0, False), ("e", 2020, 5, 3, 0.5, True), ("f", 2020, -10, 6, -1.0, False),
@@ -223,31 +140,93 @@ def test_compiled_singleton_or_matches_rule_search_on_the_toy_frame():
         {"col": "rank_ra", "op": ">=", "value": 4},
         {"col": "wins_vs_pythag", "op": "<", "value": -4},
     ]
-    best = rule_search.search(frame, target, candidates, max_terms=2, max_conds=2, top=1)[0]
-    groups = []
-    for group in best["if_any"]:
-        indexes = []
-        for cond in group:
-            indexes.append(next(
-                i for i, candidate in enumerate(candidates)
-                if (candidate["col"], candidate["op"], candidate["value"]) == (cond["col"], cond["op"], cond["value"])
-            ))
-        groups.append(indexes)
-    compiled = bs.compile_bit_dnf(groups)
-    assert compiled is not None
-    masks = []
-    for row in rows:
-        flags = (
-            row[2] < 0,
-            row[3] >= 4,
-            row[4] < -4,
-        )
-        masks.append(bs.mask_of(i for i, flag in enumerate(flags) if flag))
-    # The toy's best rule is a disjunction of two single conditions, so the surrogate has one OR clause.
-    assert compiled.describe()["m_and_bits"] == []
-    for mask, row in zip(masks, rows):
-        antecedent = (row[3] >= 4) or (row[4] < -4)
-        assert compiled.evaluate_fast(mask) is antecedent
+    found = rule_search.search(frame, target, candidates, max_terms=2, max_conds=2, top=50)
+    screened = bs.screen_search_rules(frame, found, candidates)
+    assert any(flags is not None for flags in screened)
+    outside = [
+        [{"col": "rd", "op": "<", "value": 0}, {"col": "rank_ra", "op": ">=", "value": 4}],
+        [{"col": "wins_vs_pythag", "op": "<", "value": -4}, {"col": "season", "op": "==", "value": 2020}],
+    ]
+    vocabulary = candidates + [{"col": "season", "op": "==", "value": 2020}]
+    assert bs.compile_search_rule(outside, vocabulary) is None
+    general = bs.evaluate_antecedents(frame, [outside], vocabulary)
+    assert general == [bs.polars_antecedent_flags(frame, outside)]
+    assert bs.format_search_rule(outside, vocabulary) == (
+        "[rd < 0 AND rank_ra >= 4] OR [wins_vs_pythag < -4 AND season == 2020]"
+    )
+    for rule, flags in zip(found, screened):
+        assert flags is not None
+        assert flags == bs.polars_antecedent_flags(frame, rule["if_any"])
+        counted = bs.counts(flags, bs.polars_antecedent_flags(frame, [target]))
+        assert (counted["tp"], counted["fp"], counted["fn"], counted["tn"]) == (
+            rule["tp"], rule["fp"], rule["fn"], rule["tn"])
+        text = bs.format_search_rule(rule["if_any"], candidates)
+        assert text
+        compiled = bs.compile_search_rule(rule["if_any"], candidates)
+        if compiled is not None:
+            assert text == bs.format_current_rule(compiled, bs.condition_names(candidates))
+
+
+def test_a_monotone_decoy_is_suggested_and_the_judged_rule_stays():
+    seed = _seed()
+    rng = random.Random(seed)
+    required = (12, 19)
+    banned = 25
+    decoy = 30
+    rule = bs.distill_literals([(bit, True) for bit in required] + [(banned, False)])
+    original = rule.describe()
+
+    def oracle(x):
+        if (x & bs.mask_of(required)) != bs.mask_of(required):
+            return False
+        if x & bs.mask_of((banned, decoy)):
+            return False
+        return True
+
+    noise = [bit for bit in rng.sample(range(40), 8) if bit not in required + (banned, decoy)]
+    row = bs.mask_of(required + (decoy,) + tuple(noise))
+    assert rule.evaluate_fast(row) is True
+    assert oracle(row) is False
+    names = ["bit %d" % bit for bit in range(40)]
+    names[decoy] = "decoy feature"
+    found = bs.suggest_not_proposition(rule, row, oracle, names)
+    assert rule.describe() == original
+    assert rule.evaluate_fast(row) is True
+    assert found["supported"] is True
+    assert found["bit"] == decoy
+    assert found["suggestion"]["not_condition"] == "decoy feature"
+    assert found["suggestion"]["text"].endswith("AND NOT (decoy feature)")
+    for probe in found["probes"]:
+        assert probe["oracle_true"] is (decoy in probe["left_bits"])
+    suggested = bs.rule_from_describe(found["suggestion"]["rule"])
+    for _ in range(80):
+        x = rng.randrange(1 << 40)
+        assert suggested.evaluate_fast(x) is oracle(x)
+    assert rule.describe() == original
+
+
+def test_a_false_positive_without_an_inhibitory_bit_is_not_applied():
+    seed = _seed()
+    rng = random.Random(seed)
+    rule = bs.distill_literals([(0, True)])
+    original = rule.describe()
+
+    def oracle(x):
+        return (x & bs.mask_of((0, 1))) == bs.mask_of((0, 1))
+
+    extras = tuple(bit for bit in rng.sample(range(2, 30), 5))
+    row = bs.mask_of((0,) + extras)
+    assert rule.evaluate_fast(row) is True and oracle(row) is False
+    found = bs.suggest_not_proposition(rule, row, oracle)
+    assert found["supported"] is False
+    assert found["suggestion"] is None
+    assert found["reason"] == "bit_is_not_individually_inhibitory"
+    assert rule.describe() == original
+    assert rule.evaluate_fast(row) is True
+    empty = bs.BitwiseSymbolicSurrogate()
+    none = bs.suggest_not_proposition(empty, 0, lambda x: False)
+    assert none["reason"] == "no_extra_bit" and none["suggestion"] is None
+    assert empty.evaluate_fast(0) is True
 
 
 def test_module_imports_under_python_s_and_stays_free_of_py310_syntax():
@@ -264,59 +243,63 @@ def test_module_imports_under_python_s_and_stays_free_of_py310_syntax():
     for node in tree.body:
         if isinstance(node, ast.Import):
             top_level.extend(alias.name.split(".")[0] for alias in node.names)
-        elif isinstance(node, ast.ImportFrom) and node.level == 0:
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
             top_level.append(node.module.split(".")[0])
     assert set(top_level) <= set(sys.stdlib_module_names)
 
 
-def test_tight_loop_timing_is_a_positive_duration_not_a_claimed_band():
+def test_evaluate_fast_timing_is_a_positive_duration():
     seed = _seed()
-    report = bs.synthetic_report(seed, n_initial=16, n_repair=8, n_eval=16, measure_time=True)
-    timing = report["timing"]["evaluate_fast"]
-    assert timing["calls"] >= 2000
+    rng = random.Random(seed)
+    rule = bs.BitwiseSymbolicSurrogate(
+        rng.randrange(1 << 16),
+        (rng.randrange(1, 1 << 16),),
+        rng.randrange(1 << 16),
+    )
+    values = [rng.randrange(1 << 16) for _ in range(32)]
+
+    def run():
+        fast = rule.evaluate_fast
+        for value in values:
+            fast(value)
+
+    timing = bs._time_call(run, min_seconds=0.05, min_calls=1)
+    assert timing["calls"] * len(values) >= 2000
     assert timing["seconds"] > 0
     assert timing["seconds_per_call"] == timing["seconds"] / timing["calls"]
-    # The external 2–8 µs band is a hypothesis. This test only checks the clock moved.
 
 
-def test_file_order_and_random_roles_are_exact_when_the_old_bit_is_cleared(aoi_root):
-    seed = _seed()
-    season = bs.season_report(aoi_root, seed)
-    assert season["claimed_indexes_12_19_25_fit"] is False
-    assert season["n_candidates"] == 17
-    assert season["candidate_index_12_text"] == "rank_ra >= 3"
-    assert season["natural_target"]["repair_ran"] is False
-    assert season["natural_target"]["counterfactual_oracle"] is False
-    assert max(season["train_seasons"]) < min(season["repair_seasons"])
-    assert max(season["repair_seasons"]) < min(season["eval_seasons"])
-    assert 2020 not in season["train_seasons"] + season["repair_seasons"] + season["eval_seasons"]
-    assert season["season_ids_disjoint"] is True
-    searched = season["natural_target"]["train_counts_from_search"]
-    compiled = season["natural_target"]["initial"]
-    assert (compiled["tp"], compiled["fp"], compiled["fn"], compiled["tn"]) == (
-        searched["tp"], searched["fp"], searched["fn"], searched["tn"])
-    for bundle in (season["planted_file_order"], season["planted_prevalence_window"]):
-        dead = bundle["dead_old_bit"]
-        assert dead["ids_disjoint"] is True
-        assert dead["repaired_one_eval"]["fp"] == 0 and dead["repaired_one_eval"]["fn"] == 0
-        eval_ids = set(dead["eval_ids"])
-        assert eval_ids.isdisjoint(dead["repair_ids"])
-        for trace in bundle["observational"]["traces_one"]:
-            assert trace["id"] not in eval_ids
-    loaded = bs.load_candidate_rows(aoi_root)
-    rng = random.Random(seed)
-    picked = rng.sample(range(season["n_candidates"]), 4)
-    roles = {"and": picked[0], "old": picked[1], "new": picked[2], "not": picked[3]}
-    random_bundle = bs._planted_bundle(
-        [row for row in loaded["rows"] if row["season"] in season["train_seasons"]],
-        [row for row in loaded["rows"] if row["season"] in season["repair_seasons"]],
-        [row for row in loaded["rows"] if row["season"] in season["eval_seasons"]],
-        roles,
+def test_real_rule_search_rules_match_and_the_recheck_is_timed(aoi_root):
+    loaded = bs.load_search_frame(aoi_root)
+    frame, target, candidates = loaded["frame"], loaded["target"], loaded["candidates"]
+    found = rule_search.search(
+        frame, target, candidates, loaded["max_terms"], loaded["max_conds"], 20,
     )
-    random_dead = random_bundle["dead_old_bit"]["repaired_one_eval"]
-    assert random_dead["fp"] == 0 and random_dead["fn"] == 0
-    search = season["natural_target"]["search_seconds_max_terms_2_top_20"]
-    assert search["min_seconds"] <= search["median_seconds"] <= search["max_seconds"]
-    assert search["min_seconds"] > 0
-    assert season["surrogate_timing"]["calls"] >= 2000
-    assert season["surrogate_timing"]["seconds_per_call"] > 0
+    screened = bs.screen_search_rules(frame, found, candidates)
+    assert found and all(flags is not None for flags in screened)
+    target_flags = bs.polars_antecedent_flags(frame, [target])
+    for rule, flags in zip(found, screened):
+        assert flags == bs.polars_antecedent_flags(frame, rule["if_any"])
+        counted = bs.counts(flags, target_flags)
+        assert counted["undetermined"] == 0
+        assert (counted["tp"], counted["fp"], counted["fn"], counted["tn"]) == (
+            rule["tp"], rule["fp"], rule["fn"], rule["tn"])
+    singletons = [[[candidate]] for candidate in candidates]
+    singleton_flags = bs.evaluate_antecedents(frame, singletons, candidates)
+    assert all(flags is not None for flags in singleton_flags)
+    for groups, flags in zip(singletons, singleton_flags):
+        assert flags == bs.polars_antecedent_flags(frame, groups)
+    report = bs.benchmark_rule_checks(
+        frame, found, candidates, target,
+        search_kwargs={"max_terms": loaded["max_terms"], "max_conds": loaded["max_conds"], "top": 20},
+        min_seconds=0.0,
+    )
+    assert report["flags_equal"] is True
+    assert report["counts_equal"] is True
+    assert report["term_flags_equal"] is True
+    assert report["conjunction_terms"] > report["searched_rules"]
+    assert report["rows"] == frame.height
+    for name in ("surrogate", "proposition_antecedent", "row_bitset", "rule_search",
+                 "term_surrogate", "term_proposition", "term_row_bitset"):
+        assert report[name]["calls"] >= 1
+        assert report[name]["seconds"] > 0

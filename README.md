@@ -1,5 +1,11 @@
 # BlueProbe
 
+<p align="center">
+  <img src="docs/brand/icon.png" alt="BlueProbe icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+
 > Observe first, interpret later.
 >
 > HTML/CSS/DOM structure observation and extraction for NPB baseball pages (split out from Aoi/blueprobe).

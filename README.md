@@ -1,5 +1,11 @@
 # Aoi
 
+<p align="center">
+  <img src="docs/brand/icon.png" alt="Aoi icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+
 > Observe. Measure. Question.
 
 Aoi is a hypothesis-driven research framework that explores situations where observed reality cannot be fully explained by existing analytical models.

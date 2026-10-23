@@ -1,0 +1,27 @@
+{
+  "source": "User-supplied project artwork sheet, 2026-10-23",
+  "source_dimensions": [
+    1536,
+    1024
+  ],
+  "coordinate_convention": "left, top, right-exclusive, bottom-exclusive",
+  "project": {
+    "label": "Aoi",
+    "icon": [
+      34,
+      73,
+      199,
+      238
+    ],
+    "icon_sha256": "050f383d6ba1ebd74c1a57f4a8cc44b1f1da28e1c56d8c4098a2575176269ede",
+    "icon_rgb_sha256": "4b452617c39fe6819d48df993912e06830c5933b8a137f3545cbf4d55e2c122f",
+    "favicon_sha256": "01ceeeadd52413c9c320855be5d47900807591fee430a3ff322df4710e3c276f",
+    "favicon_rgb_sha256": "06d2f2b7c8c8721b58f6d94003a743079662f57c35b307c0fbe61a575001b052",
+    "favicon_source": "docs/brand/icon.png resampled to 64x64 with LANCZOS",
+    "favicon_size": [
+      64,
+      64
+    ],
+    "favicon_background": "#fafbfa"
+  }
+}

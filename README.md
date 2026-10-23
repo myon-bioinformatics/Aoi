@@ -1,5 +1,11 @@
 # DRAgoWing
 
+<p align="center">
+  <img src="docs/brand/icon.png" alt="DRAgoWing icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+
 > Lay down the record without re-judging it.
 >
 > Renders baseball research records as Plotly.js HTML reports, proposition tables and optional headless-Chrome PNG/SVG exports without Python plotting libraries. Split out from Aoi's dragowing/ (git subtree).

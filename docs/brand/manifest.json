@@ -1,0 +1,27 @@
+{
+  "source": "User-supplied project artwork sheet, 2026-10-23",
+  "source_dimensions": [
+    1536,
+    1024
+  ],
+  "coordinate_convention": "left, top, right-exclusive, bottom-exclusive",
+  "project": {
+    "label": "DRAgoWing",
+    "icon": [
+      1248,
+      71,
+      1414,
+      237
+    ],
+    "icon_sha256": "67efb36fd19162f19efc061d69a64f0fe705651659ddf4407f972335e6b34f85",
+    "icon_rgb_sha256": "87b201fd79b085c1a0d9503a89c497e679607556c45bd8c896bee337eb7cfdd9",
+    "favicon_sha256": "66ef8db2655ab3df46544208fa71bd82f56ac16773f455da9363da1330b9e935",
+    "favicon_rgb_sha256": "41e5c19399e7373a15f62344c1c5cb966ae5516d46b14b8032148207c01369b5",
+    "favicon_source": "docs/brand/icon.png resampled to 64x64 with LANCZOS",
+    "favicon_size": [
+      64,
+      64
+    ],
+    "favicon_background": "#fafbf9"
+  }
+}

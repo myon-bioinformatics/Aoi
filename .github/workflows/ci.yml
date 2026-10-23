@@ -109,6 +109,108 @@ jobs:
           fi
           python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
 
+  vendor-dispatch:
+    name: Vendor dispatch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Verify mode follows parent main and does not record. Skips stay skips.
+      # A recorded digest that does not match its recorded commit fails the job.
+      - name: Resolve parent main
+        id: parent
+        env:
+          PARENT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.parent-ref || '' }}
+          PARENT_REPOSITORY_ID: "638801160"
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          remote=https://github.com/myon-bioinformatics/myon-bioinformatics.git
+          ref="${PARENT_REF:-main}"
+          ref="${ref#refs/heads/}"
+          if [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            sha="$ref"
+          elif [[ "$ref" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+            sha=$(git ls-remote "$remote" "refs/heads/${ref}" | awk 'NR==1 { print $1 }')
+          else
+            echo "parent ref contains unsupported characters" >&2
+            exit 1
+          fi
+          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "could not resolve parent main" >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ.get("GITHUB_TOKEN") or ""
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "aoi-parent-resolve",
+          }
+          if token:
+              headers["Authorization"] = "Bearer " + token
+          request = urllib.request.Request(
+              "https://api.github.com/repos/myon-bioinformatics/myon-bioinformatics",
+              headers=headers,
+          )
+          with urllib.request.urlopen(request, timeout=60) as response:
+              data = json.load(response)
+          expected = int(os.environ["PARENT_REPOSITORY_ID"])
+          got = data.get("id")
+          name = data.get("full_name")
+          if got != expected or name != "myon-bioinformatics/myon-bioinformatics":
+              raise SystemExit("parent repository identity mismatch: id=%s name=%s" % (got, name))
+          PY
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          {
+            echo '## Resolved parent'
+            echo "myon-bioinformatics/myon-bioinformatics ${sha}"
+            echo "repository_id ${PARENT_REPOSITORY_ID}"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/myon-bioinformatics
+          ref: ${{ steps.parent.outputs.sha }}
+          path: .vendor-dispatch-tools
+          sparse-checkout: pilot/vendor_dispatch.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Verify vendor lock with the parent dispatch driver
+        env:
+          PARENT_SHA: ${{ steps.parent.outputs.sha }}
+        run: |
+          set -euo pipefail
+          head=$(git -C .vendor-dispatch-tools rev-parse HEAD)
+          if [[ "$head" != "$PARENT_SHA" ]]; then
+            echo "parent tool checkout is not the resolved SHA" >&2
+            exit 1
+          fi
+          python - <<'PY'
+          import shutil
+          import sys
+
+          if sys.version_info < (3, 11):
+              raise SystemExit("uv lane requires Python 3.11 or newer")
+          if sys.flags.no_site:
+              raise SystemExit("uv lane must keep site enabled so the driver can see uv")
+          if shutil.which("uv") is None:
+              raise SystemExit("uv is not on PATH")
+          print("python", ".".join(str(part) for part in sys.version_info[:3]))
+          PY
+          uv --version
+          python .vendor-dispatch-tools/pilot/vendor_dispatch.py --manifest vendor.lock.json
+
   test:
     name: pytest (Python ${{ matrix.python }})
     needs: changes

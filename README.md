@@ -1,5 +1,11 @@
 # NagoyAction
 
+<p align="center">
+  <img src="docs/brand/icon.png" alt="NagoyAction icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+
 > Turning research into a system you can keep running.
 >
 > Define a research pipeline once in TOML and run it with the same stdlib-only command locally and on GitHub Actions, with run receipts, Markdown link checking and publication gates for Aoi's NPB baseball research (split out from Aoi/nagoyaction).

@@ -199,3 +199,130 @@ def test_cli_is_stdlib_only_and_runs_from_another_directory(tmp_path):
                           str(CYCLE), "--dry-run"], capture_output=True, text=True, cwd=tmp_path)
     assert out.returncode in (0, 1), out.stderr  # 1 = 手元に uv がない環境では doctor が止める
     assert ("[dry-run] fetch" in out.stdout) or ("uv" in out.stdout and "✗" in out.stdout)
+
+
+NAGOYA = Path(__file__).resolve().parents[1] / "nagoyaction.py"
+
+
+def run_nagoyaction(args, *, cwd=None):
+    return subprocess.run(
+        [sys.executable, "-S", str(NAGOYA), *args],
+        cwd=cwd, capture_output=True, text=True,
+    )
+
+
+def write_pipeline(directory: Path, text: str) -> Path:
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / "pipeline.toml"
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+OK_PIPELINE = """
+name = "t"
+[requires]
+python = "3.11"
+tools = ["git"]
+[[step]]
+name = "local"
+run = ["python", "-c", "print(1)"]
+"""
+
+
+def test_help_documents_every_flag_and_exit_codes():
+    top = run_nagoyaction(["--help"])
+    assert top.returncode == 0, top.stderr
+    assert "doctor" in top.stdout and "show" in top.stdout and "run" in top.stdout
+    assert "--json" in top.stdout and "nagoyaction-error/1" in top.stdout
+    assert "終了コード:" in top.stdout and "error.code" in top.stdout
+
+    expected = {
+        "doctor": ["pipeline", "--offline", "--json", "nagoyaction-doctor/1", "終了コード:"],
+        "show": ["pipeline", "--var", "--json", "nagoyaction-pipeline/1", "KEY=VALUE", "終了コード:"],
+        "run": ["pipeline", "--offline", "--only", "--from", "--until", "--to", "--var",
+                "--dry-run", "--receipt", "--json", "nagoyaction-run/1", "終了コード:"],
+    }
+    for cmd, needles in expected.items():
+        proc = run_nagoyaction([cmd, "--help"])
+        assert proc.returncode == 0, proc.stderr
+        for needle in needles:
+            assert needle in proc.stdout, cmd + " missing " + needle
+
+
+def test_cli_json_doctor_show_run_and_errors(tmp_path):
+    ok = write_pipeline(tmp_path, OK_PIPELINE)
+    shown = run_nagoyaction(["show", str(ok), "--json"], cwd=Path("/"))
+    assert shown.returncode == 0 and shown.stderr == ""
+    body = json.loads(shown.stdout)
+    assert body["schema"] == "nagoyaction-pipeline/1" and body["name"] == "t"
+
+    for args in (["doctor", str(ok), "--json"], ["--json", "doctor", str(ok)], ["doctor", "--json", str(ok)]):
+        doctor = run_nagoyaction(args)
+        assert doctor.returncode == 0, (args, doctor.stderr)
+        doc = json.loads(doctor.stdout)
+        assert doc["schema"] == "nagoyaction-doctor/1" and doc["ok"] is True and doc["exit"] == 0
+        assert doctor.stderr == ""
+
+    dry = run_nagoyaction(["run", str(ok), "--dry-run", "--json"])
+    assert dry.returncode == 0, dry.stderr
+    ran = json.loads(dry.stdout)
+    assert ran["schema"] == "nagoyaction-run/1" and ran["exit"] == 0 and ran["dry_run"] is True
+    assert ran["steps"][0]["step"] == "local" and ran["steps"][0]["reason"] == "dry-run"
+    assert ran["checks"][0]["check"] == "python"
+    assert "[dry-run]" not in dry.stdout
+
+    missing_tool = write_pipeline(tmp_path / "badtool", """
+name = "t"
+[requires]
+python = "3.11"
+tools = ["nagoyaction-missing-tool"]
+[[step]]
+name = "local"
+run = ["python", "-c", "print(1)"]
+""")
+    failed = run_nagoyaction(["--json", "run", str(missing_tool)])
+    assert failed.returncode == 1, failed.stdout
+    stopped = json.loads(failed.stdout)
+    err = json.loads(failed.stderr)
+    assert stopped["schema"] == "nagoyaction-doctor/1" and stopped["ok"] is False
+    assert err["schema"] == "nagoyaction-error/1" and err["error"]["code"] == "doctor" and err["exit"] == 1
+    assert "nagoyaction-run/1" not in failed.stdout
+
+    step = write_pipeline(tmp_path / "step", """
+name = "t"
+[requires]
+python = "3.11"
+[[step]]
+name = "fail"
+run = %s
+""" % json.dumps([sys.executable, "-c", "import sys; raise SystemExit(5)"]))
+    broke = run_nagoyaction(["run", str(step), "--json"])
+    assert broke.returncode == 5, broke.stderr
+    ran = json.loads(broke.stdout)
+    err = json.loads(broke.stderr)
+    assert ran["schema"] == "nagoyaction-run/1" and ran["exit"] == 5
+    assert ran["steps"][0]["returncode"] == 5
+    assert err["error"]["code"] == "step" and err["exit"] == 5 and "fail" in err["error"]["message"]
+
+    invalid = write_pipeline(tmp_path / "invalid", 'name = "t"\n')
+    pipeline = run_nagoyaction(["show", str(invalid), "--json"])
+    assert pipeline.returncode == 2 and pipeline.stdout == ""
+    assert json.loads(pipeline.stderr)["error"]["code"] == "pipeline"
+
+    broken_toml = write_pipeline(tmp_path / "toml", "[\n")
+    toml_err = run_nagoyaction(["--json", "doctor", str(broken_toml)])
+    assert toml_err.returncode == 2 and toml_err.stdout == ""
+    assert json.loads(toml_err.stderr)["error"]["code"] == "toml"
+
+    missing = run_nagoyaction(["doctor", str(tmp_path / "nope.toml"), "--json"])
+    assert missing.returncode == 2 and missing.stdout == ""
+    assert json.loads(missing.stderr)["error"]["code"] == "io"
+
+    usage = run_nagoyaction(["--json"])
+    assert usage.returncode == 2 and usage.stdout == ""
+    assert json.loads(usage.stderr)["error"]["code"] == "usage"
+
+    text_usage = run_nagoyaction(["run"])
+    assert text_usage.returncode == 2
+    assert "nagoyaction-error" not in text_usage.stderr
+    assert "pipeline" in text_usage.stderr

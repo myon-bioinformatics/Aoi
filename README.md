@@ -31,9 +31,11 @@ Topics: GitHub Actions, automation, workflow
 パイプラインを TOML に一度だけ書き、**ローカルでも GitHub Actions でも同じコマンド**で動かす。
 データを外に出せない案件では、同じ定義をローカルで実行すればよい。
 
-- `doctor`：Python の版、必須ツール（例: git, uv）、任意ツール（例: gh）、オフライン実行に必要な成果物の有無を確認する。足りなければ終了コード1で、実行前に止まる
-- `show`：パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する（`--json` で JSON 出力）
-- `run`：doctor のあと手順を順に実行し、`--receipt` に受領記録（JSONL）を残す。失敗した手順で止まる
+- `doctor`：Python の版、必須ツール（例: git, uv）、任意ツール（例: gh）、オフライン実行に必要な成果物の有無を確認する。足りなければ終了コード 1 で、実行前に止まる。警告だけなら 0
+- `show`：パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する（`--json` で `nagoyaction-pipeline/1`）
+- `run`：doctor のあと手順を順に実行し、`--receipt` に受領記録（JSONL）を残す。失敗した手順の終了コードをそのまま返す
+- 使い方、TOML、パイプライン定義、ファイル読み込みの誤りは終了コード 2。`--json` の失敗は stderr の `nagoyaction-error/1`。`error.code` は `doctor` / `step` / `pipeline` / `usage` / `toml` / `io`。手順自身が 2 で終わったときと定義の誤りは、この `error.code` で区別する
+- フラグの説明と終了コードは `python nagoyaction.py --help` と、`doctor` / `show` / `run` それぞれの `--help` に書く。`--json` はサブコマンドの前でも後ろでも同じ
 - `localci`：GitHub Actions の完了を待たずに、ワークフローとテストを手元で検査する（下の「ローカル CI」）
 - 手順はシェルを通さず、引数の配列で実行する
 - 標準ライブラリだけ（Python 3.11+）。このファイル1つをコピーすれば他のリポジトリでも使える
@@ -112,13 +114,27 @@ python localci.py run --pytest tests/test_localci.py
 ## リンク確認（`linkcheck.py`）
 
 ```bash
-python nagoyaction/linkcheck.py                                    # push 前: git 登録済み・大文字小文字一致で照合
-python nagoyaction/linkcheck.py --remote OWNER/REPO --ref BRANCH   # push 後: そのブランチに実在するか（gh api）
-python nagoyaction/linkcheck.py --external                         # http(s) も確認（404/410 だけ失敗）
+python nagoyaction/linkcheck.py --help                                 # 全フラグと終了コード
+python nagoyaction/linkcheck.py --root .                               # push 前: git 登録済み・大文字小文字一致で照合
+python nagoyaction/linkcheck.py --remote OWNER/REPO --ref BRANCH       # push 後: そのブランチに実在するか（gh api）
+python nagoyaction/linkcheck.py --external                             # http(s) も確認（404/410 だけ失敗）
+python nagoyaction/linkcheck.py --external --strict                    # unverified も失敗（終了コード 3）
+python nagoyaction/linkcheck.py --json                                 # stdout は nagoyaction-linkcheck/1
 ```
 
+`--root` は git ls-files と Markdown の読み込みの基準（既定はカレントディレクトリ）。`--remote` には `--ref` が必要。`--external` は http と https を HEAD で見る。`--json` は走査できたとき stdout に `nagoyaction-linkcheck/1`（`counts` と `results`）を書き、終了コードが 0 でないときは stderr に `nagoyaction-error/1` を書く。走査前の失敗（使い方、git）も同じエラーオブジェクトで、終了コードは 2。
+
+終了コード:
+
+- `0` — broken がない。unverified（外部のタイムアウトや 403、gh api の 404 以外）は失敗にしない
+- `1` — broken が1つ以上。`--strict` でも broken が優先
+- `2` — 使い方の誤り、または `git ls-files` の失敗
+- `3` — `--strict` のときだけ。broken は無く、unverified が1つ以上（`status` または `remote`）
+
+既定のまま unverified を 0 にする。Aoi の Links ワークフローは `--strict` なしでローカルと `--remote` を実行する。到達できない外部リンクや gh の一時失敗を失敗にすると、そのジョブが壊れる。unverified を失敗にしたい呼び出しだけ `--strict` を付ける。
+
 GitHub は大文字小文字を区別するので、手元で開けても GitHub では 404 になることがある（例: `genesis.md` と `GENESIS.md`）。
-`git add` を忘れたファイルも、手元にはあるが GitHub にはないので失敗にする。CI では両方を実行する。
+`git add` を忘れたファイルも、手元にはあるが GitHub にはないので失敗にする。CI ではローカルと `--remote` の両方を、`--strict` なしで実行する。
 
 ## ローカル LLM のコンテナ（未接続）
 

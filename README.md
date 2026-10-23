@@ -57,6 +57,7 @@ uv run python pythdragoras.py --help
 | `score_sensitivity.py` | 試合ごとの得失点を1軸だけ変える感度分析（差分更新） |
 | `littlebit_approx.py`・`littlebit_prune.py`・`littlebit_holdout.py` | 候補の 0/1 行列から潜在パターンを条件候補にする探索と、その検証（実験） |
 | `littlebit_survey.py` | 乗算・浮動小数なしの画像の領域・重心推定（実験、単一ファイル） |
+| `bitwise_surrogate.py` | 外部提案のビットマスク代理と、反実仮想オラクルでの修復（実験）。主張した数値の検証は [docs/bitwise-surrogate-repair.md](docs/bitwise-surrogate-repair.md)。命題の判定には使わない |
 | `registration_audit.py` | 来歴ラベル（事前登録か posthoc か）の監査 |
 | `next_seeds.py` | 元の命題と逆の判定を並べ、次の命題の種を表示する（判定ではない） |
 

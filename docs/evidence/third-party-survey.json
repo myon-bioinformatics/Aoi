@@ -108,7 +108,7 @@
       "declared": [
         {
           "file": "pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:runtime",
           "name": "httpx"
         },
         {
@@ -146,7 +146,7 @@
         },
         {
           "file": "pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:runtime",
           "name": "markdown"
         }
       ],
@@ -389,12 +389,12 @@
         },
         {
           "file": "pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:runtime",
           "name": "numpy"
         },
         {
           "file": "pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:runtime",
           "name": "numpy"
         },
         {
@@ -637,7 +637,7 @@
         },
         {
           "file": "pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:runtime",
           "name": "polars"
         },
         {

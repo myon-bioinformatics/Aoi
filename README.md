@@ -56,7 +56,7 @@ uv sync
 uv run --locked pytest -q
 ```
 
-Runtime dependencies (`pyproject.toml`): polars, httpx, numpy and markdown. Development dependencies: pytest, coverage, and selectolax (the BlueProbe HTML parity oracle). Figures are drawn in the browser with plotly.js; matplotlib and the Python plotly package are not used.
+Workspace dependencies (`pyproject.toml`, lower bounds only): polars, httpx, numpy, markdown, pytest, coverage, and selectolax (the BlueProbe HTML parity oracle). `uv sync` installs them. The package installed from a git URL is the shared stdlib modules `fetch_module` and `numpy_min`. Figures are drawn in the browser with plotly.js; matplotlib and the Python plotly package are not used.
 
 A research cycle is described once as a pipeline and runs the same way locally and on GitHub Actions ([NagoyAction](https://github.com/myon-bioinformatics/NagoyAction)):
 

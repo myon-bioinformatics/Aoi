@@ -1,9 +1,17 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
 [project]
 name = "aoi"
 version = "0.1.0"
 description = "Observe. Measure. Question."
 requires-python = ">=3.11"
-dependencies = [
+# git から入るのは標準ライブラリの共有モジュールだけ。研究用ライブラリは下のグループ。
+
+[dependency-groups]
+dev = ["pytest>=8", "coverage>=7", "selectolax>=1"]
+runtime = [
     "polars>=2",
     "httpx>=0.28",
     # 2.4 系は Python 3.11–3.14、2.5.2 以降は 3.12–3.15（3.15 の wheel は 2.5.2 から）。
@@ -14,11 +22,18 @@ dependencies = [
     "markdown>=3.7",
 ]
 
-[dependency-groups]
-dev = ["pytest>=8", "coverage>=7", "selectolax>=1"]
-
 [tool.uv]
-package = false
+default-groups = ["dev", "runtime"]
+
+[tool.hatch.build.targets.wheel]
+packages = []
+
+[tool.hatch.build.targets.wheel.force-include]
+"scripts/fetch_module.py" = "fetch_module.py"
+"shrink/numpy_min.py" = "numpy_min.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["scripts/fetch_module.py", "shrink/numpy_min.py"]
 
 [tool.pytest.ini_options]
 # サブプロジェクトはそれぞれ単独のディレクトリ。将来の分離に備え、互いをパッケージにしない

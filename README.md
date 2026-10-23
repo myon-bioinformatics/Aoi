@@ -85,7 +85,9 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
   - PythDRagoras の `propositions`: `proposition_seed_audit.py` と `synthetic_rule_discovery.py`（`PYTHONPATH` の `pythdragoras`）。
   - これ以外に Aoi の兄弟サブプロジェクトと `scripts/` を使わないことは、`tests/test_no_sibling_imports.py` で確かめます（`propositions` が既知の例外です）。
 
-CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。既定の ref は `refs/heads/main` で、`workflow_dispatch` の `aoi_ref` で上書きできます。解決した SHA はジョブの summary に残します。
+CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。既定の ref は `refs/heads/main` で、`workflow_dispatch` の `aoi_ref` で上書きできます。解決した SHA はジョブの summary に残します。pytest は `uv run pytest` です。
+
+並行して、親 [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の main を `git ls-remote` と repository id で解決し、その SHA を summary に残してから `pilot/vendor_dispatch.py` をこのリポジトリの `vendor.lock.json` に対して検証モードで実行します（`--record` は付けません）。Node は 24 以上、そのジョブの Python は 3.11 以上です。行の skip は報告だけ、記録した digest の不一致は失敗です。このリポジトリは他リポジトリのファイルを vendor していないので、`vendor.lock.json` の `files` は空です。
 
 ## Aoi との関係
 

@@ -1,5 +1,11 @@
 # SakAnalytics
 
+<p align="center">
+  <img src="docs/brand/icon.png" alt="SakAnalytics icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+
 > The numbers speak, but they haven't said everything yet.
 >
 > Team-season metrics, remaining-game and clinch-magic simulation, and synthetic-league experiments for NPB baseball game records. Split out from Aoi's sakanalytics/ (git subtree).

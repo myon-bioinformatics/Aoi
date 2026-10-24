@@ -162,3 +162,10 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **CIV HIT:** INS ENV 2015 — alimentation % dépense totale Urbain **39.1** / Rural **55.8** (national 45.6). +2 rows.
 - **RWA HIT:** NISR EICV3 Patterns of Consumption — food % of total purchases Urban **36** / Rural **42** (2010–11). EICV6 final PDF lacked open food-share table this run. +2 rows.
 - Pack with ZMB/MOZ → **453 / 80**.
+
+## 2026-10-25 BWA/NAM/MLI append
+
+- **BWA HIT:** Stats Botswana BMTHS 2015/16 Annexure 3 — Food % FCE; Urban (Cities+Urban Villages weighted) **10.5** / Rural **21.4**. +2 rows.
+- **NAM HIT:** NSA NHIES 2015/16 Table 11.1.1 — Food and beverages Urban **26.9** / Rural **56.6**. Percentile bands not quintile/decile → food×income miss. +2 rows.
+- **MLI HIT:** INSTAT EMOP 2023-P3 Tableau 2-4 — Alimentation+boissons non alc Urbain **63.3** / Rural **75.6**. +2 rows.
+- Pack → **459 / 83**.

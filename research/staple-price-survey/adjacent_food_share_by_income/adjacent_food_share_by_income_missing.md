@@ -120,3 +120,8 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 
 - **ARM HIT:** Table 3.11 food (old COICOP) by monetary-income deciles d1–d10: 52.5…34.3. Pack → **938 / 45**.
 - SAU/ARE: still no open quintile/decile food×income (terciles / nationality cuts only) — miss.
+
+## 2026-10-25 TZA HBS food×income append
+
+- **TZA HIT:** NBS HBS 2017/18 Mainland Table 6.7.1 food % of HH consumption by consumption decile — d1–d10: 69.6, 67.3, 66.1, 64.2, 63.1, 60.9, 57.6, 53.5, 50.3, 33.9 (national 59.9). +10 rows. Pack → **948 / 46**.
+- SAU/ARE/HKG/VNM food×income miss unchanged.

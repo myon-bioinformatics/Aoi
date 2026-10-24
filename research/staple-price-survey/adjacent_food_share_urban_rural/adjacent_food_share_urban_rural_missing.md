@@ -142,3 +142,11 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **NGA HIT:** NLSS/CEP 2019 food urban **51.52** / rural **61.30** (food incl. alcohol in NBS basket).
 - **DZA HIT:** ONS 2011 alimentation&boissons urban **40.1** / rural **45.9**.
 - Pack → **435 / 72**.
+
+## 2026-10-25 UGA/TZA/ETH/KHM append
+
+- **UGA HIT:** UBOS UNHS Table 6.4 food+non-alc — 2016/17 Urban 37.8 / Rural 50.8; 2019/20 Urban 33.8 / Rural 49.0. +4 rows.
+- **TZA HIT:** NBS HBS 2017/18 Mainland Table 6.3.1 food % — Urban 52.6 / Rural 63.2 (prefer over Table 6.7.1 Total urban 55.2). +2 rows. Sibling food×income: Table 6.7.1 national deciles d1–d10 loaded.
+- **ETH HIT:** CSA HCES 2015/16 via WFP CFSVA — Urban 40.6 / Rural 51.2. +2 rows.
+- **KHM HIT:** NIS CSES 2019/20 Table 4 food share — Urban (Phnom Penh+Other urban from published food/total) 40.2 / Other rural 46.6; Food share includes alcoholic beverages. +2 rows.
+- Pack → **445 / 76**. Hours-to-buy still DEU+BRA only.

@@ -88,3 +88,8 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 - New pack `adjacent_euz_proxy_staple_levels`: national absolute retail/unit-value staples as **country ISO3 proxies** for the euro-area (EUZ) Big Mac gap (no fake EUZ aggregate).
 - Hits: **FRA** (INSEE prix moyens), **IRL** (CSO NAP), **NLD** (CBS), **ESP** (INE valor unitario) — 4601 rows, ~1992–2026-09.
 - Exhausted this turn for open absolute bulk: DEU, ITA, SWE deepen, BEL/AUT; FIN/PRT not pursued beyond priority.
+
+### Update 2026-10-24 (Asia/Tokyo) — FIN + PRT EUZ-proxy levels
+
+- Extended `adjacent_euz_proxy_staple_levels` with **FIN** (StatFin Passiivi average commodity prices 2002–2018, 1911 rows) and **PRT** (Observatório de Preços Consumo ~2019–2026, 606 rows). Pack total **7118** rows (FRA/IRL/NLD/ESP/FIN/PRT).
+- Eurostat HBS public tables have expenditure structure only (no quantities) → no DEU/ITA/BEL/AUT unit-value path this turn.

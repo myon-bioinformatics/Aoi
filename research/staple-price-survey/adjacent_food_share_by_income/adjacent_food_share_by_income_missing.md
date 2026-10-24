@@ -110,3 +110,8 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 - **RUS HIT:** Rosstat HBS R_1-5_4k (via Roschart) IV quarter 2022–2023 — Food+non-alc % of consumer expenditures by income deciles d1–d10. +20 rows → **918/44**.
 - SAU/ARE miss unchanged (terciles / no open quintile-decile).
 - Hours-to-buy still DEU+BRA only (no new NSO-designed series).
+
+## 2026-10-25 IDN Susenas 2022–2023 quintiles
+
+- **IDN HIT:** March 2022 & 2023 Susenas food share by expenditure quintile (CNBC→BPS). +10 → **928/44**.
+- SAU/ARE miss unchanged. Hours still DEU+BRA only.

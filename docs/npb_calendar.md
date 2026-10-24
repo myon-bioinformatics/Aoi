@@ -1,99 +1,99 @@
-# 取得元 npb_calendar: npb.jp の年ごとのHTML構造
+# Source npb_calendar: npb.jp's HTML structure by year
 
-公開されている情報は年をまたいでも同じでも、DOMの構造や使われているタグが変わっている可能性がある。
-このファイルでは、どの年のどのページで何を確認したかを、**観測した事実と未確認の点に分けて**記録する。
-推測で埋めない（xprobe: Inference presented as measurement、Aoi: Separate Facts From Explanations）。
+Even if the published information is the same across years, the DOM structure and the tags used may have changed.
+This file records which page of which year was checked for what, **separating observed facts from unconfirmed points**.
+Gaps are not filled by guessing (xprobe: Inference presented as measurement; Aoi: Separate Facts From Explanations).
 
-## 取得元
+## Sources
 
-| 期間 | URL | 単位 | 状態 |
+| Period | URL | Unit | Status |
 |---|---|---|---|
-| 2012〜2025 | `https://npb.jp/bis/{年}/calendar/index_{MM}.html` | 1ページ = 1か月・12球団すべて | 採用 |
-| 2016〜 | `https://npb.jp/games/{年}/schedule_{MM}_detail.html` | 1ページ = 1か月 | 不採用（2012〜2015年が404） |
+| 2012–2025 | `https://npb.jp/bis/{year}/calendar/index_{MM}.html` | 1 page = 1 month, all 12 teams | Adopted |
+| 2016– | `https://npb.jp/games/{year}/schedule_{MM}_detail.html` | 1 page = 1 month | Not adopted (404 for 2012–2015) |
 
-`games/` 配下のバックナンバーは2016年以降しかない（2026-10-03確認）。
-そこで、2012年から存在する `bis/{年}/calendar/` に一本化した。
+Back numbers under `games/` exist only from 2016 (confirmed 2026-10-03).
+So everything was unified on `bis/{year}/calendar/`, which exists from 2012.
 
-## 解析の契約
+## Parsing contract
 
-1. 公式戦の試合リンクは、パスが `/bis/{年}/games/s{年}{月日}{連番}.html` に**全体一致**するものだけを対象にする。パスの年と試合IDの先頭4桁が一致しなければ対象外とする。
-2. リンク文字列を正規化してから、`{ホーム略字} {得点} - {得点} {ビジター略字}` に**全体一致**させる。
-   - 正規化の内容：NULをU+FFFDに置換し、NFKCをかけ、連続する空白を1つにまとめる。
-   - 略字は12球団の1文字（巨 ヤ デ 中 神 広 ソ 日 オ 楽 西 ロ）に限定する。
-   - 得点は半角の0〜99に限定する。
-   - ダッシュとして扱う文字：`-` `‐` `‑` `‒` `–` `—` `−`
-3. 先に書かれたチームをホームとする。スコアは「ホーム − ビジター」の順。
-4. **公式戦以外の大会は見出しで分ける。** CS・日本シリーズ・オールスター・アジアシリーズも同じ `/bis/{年}/games/` のリンクで載り、公式戦と同じ日に並ぶことがある（例: 2013-10-12）。パスや日付では分けられない。
-   - ページでは、日ごとの枠（`class="stvsteam"`）の中に大会の見出し（`class="tescheaten"`）があり、その後ろの試合がその大会のもの。
-   - 見出しは正規化してから、既知の6つ（`CS ファーストS` `CS ファイナルS` `クライマックスS`（2020年のパ） `日本シリーズ` `オールスター` `アジアシリーズ`）と全体一致で比べる。
-   - 知らない見出しは `unknown` に入れる（採用もしないし、黙って捨てもしない）。
-5. 落としたものは黙って捨てず、件数で報告する。
+1. Only official game links whose path **fully matches** `/bis/{year}/games/s{year}{MMDD}{serial}.html` are targeted. If the path's year and the first 4 digits of the game ID don't match, it is excluded.
+2. After normalizing the link text, it must **fully match** `{home abbreviation} {runs} - {runs} {visitor abbreviation}`.
+   - Normalization: replace NUL with U+FFFD, apply NFKC, and collapse consecutive whitespace into one.
+   - Abbreviations are limited to the 12 teams' single characters (巨 ヤ デ 中 神 広 ソ 日 オ 楽 西 ロ).
+   - Runs are limited to half-width 0–99.
+   - Characters treated as dashes: `-` `‐` `‑` `‒` `–` `—` `−`
+3. The team written first is home. The score is in "home − visitor" order.
+4. **Non-official tournaments are separated by heading.** CS, the Japan Series, the All-Star Game, and the Asia Series also appear as the same `/bis/{year}/games/` links and can be on the same day as official games (e.g. 2013-10-12). They can't be separated by path or date.
+   - On the page, each day's box (`class="stvsteam"`) contains a tournament heading (`class="tescheaten"`), and the games after it belong to that tournament.
+   - Headings are normalized, then compared by full match with the 6 known ones (`CS ファーストS`, `CS ファイナルS`, `クライマックスS` (Pacific 2020), `日本シリーズ`, `オールスター`, `アジアシリーズ`).
+   - Unknown headings go into `unknown` (neither accepted nor silently discarded).
+5. What is dropped is not silently discarded but reported as counts.
 
-| 区分 | 条件 | 扱い |
+| Category | Condition | Handling |
 |---|---|---|
-| `games` | 試合リンクかつスコア形式 | 採用 |
-| `cancelled` | 試合リンクかつ `* - *`・中止・ノーゲーム | 件数のみ |
-| `non_regular` | スコア形式だが試合リンクではない | 件数のみ |
-| `non_regular:<見出し>` | 試合リンクだが、公式戦以外の大会の見出しがついている | 見出しごとの件数 |
-| `unknown` | 試合リンクなのに上のどれにも当たらない、または知らない見出し | 件数と原文を残す。**表記の変化を疑う** |
+| `games` | Game link and score form | Accepted |
+| `cancelled` | Game link and `* - *`, `中止` (cancelled), or `ノーゲーム` (no game) | Count only |
+| `non_regular` | Score form but not a game link | Count only |
+| `non_regular:<heading>` | Game link, but under a non-official tournament heading | Count per heading |
+| `unknown` | A game link matching none of the above, or an unknown heading | Keep count and source text. **Suspect a notation change** |
 
-この区分の見落とし（以前は見出しを見ていなかった）は、PR #3（GPT の研究 R001）が実ページ 2013〜2025年に当てて見つけた。
-そこでの除外は 276 件（オールスター 25、CS ファーストS 63、CS ファイナルS 102、日本シリーズ 75、アジアシリーズ 9、クライマックスS 2）で、
-除外後の 11,028 試合は公式の年度成績 156球団年 × 6項目と一致した。実データで回したら、この件数と照らし合わせる。
-試合数の既知値との照合（下）でも混入は見つかるので、パイプラインは照合が合わなければ測る前に止まる（`--strict`）。
+This oversight in categorization (headings weren't checked before) was found by PR #3 (GPT's research R001) running against real pages for 2013–2025.
+There, 276 were excluded (All-Star 25, CS First Stage 63, CS Final Stage 102, Japan Series 75, Asia Series 9, Climax Series 2),
+and the remaining 11,028 games matched the official annual stats for 156 team-years × 6 items. When run on real data, compare against these counts.
+Contamination is also caught by the check against known game counts (below), so the pipeline stops before measuring if the check fails (`--strict`).
 
-新しい表記が見つかったら、正規表現を広げる前に `blueprobe/tests/cases/npb_score_text.jsonl` へケースを追加する。
+When a new notation is found, add a case to `blueprobe/tests/cases/npb_score_text.jsonl` before widening the regex.
 
-## 年ごとの確認状況
+## Confirmation status by year
 
-確認手段は「WebFetchでレンダリング結果を読んだ」もので、生のDOMではない。
-生のDOMは、最初の一括取得で `data/raw/npb_calendar/` にキャッシュしたあと、パイプラインの `inspect` 手順で `cycles/c001-chunichi/outputs/observed.md` に集計する（ネットワークには出ない）。
+The method of confirmation was "reading the rendered result with WebFetch", not the raw DOM.
+The raw DOM is cached in `data/raw/npb_calendar/` during the first bulk fetch, then summarized into `cycles/c001-chunichi/outputs/observed.md` by the pipeline's `inspect` step (no network access).
 
-| 年 | 確認したページ | 観測した事実 | 未確認 |
+| Year | Page checked | Observed facts | Unconfirmed |
 |---|---|---|---|
-| 2012 | `calendar/index_04.html` | 3〜4月が1ページにまとまっている。試合リンクは `s2012040100187.html` 形式。文字列は `巨 4 - 2 ヤ`。中止は `ヤ * - * 神` | DOM上の親要素、5〜11月 |
-| 2012 | `calendar/index_11.html` | 日本シリーズ・アジアシリーズが `日本シリーズ[日 2 - 10 巨]` の形で載る | 公式戦リンクの有無 |
+| 2012 | `calendar/index_04.html` | March–April are on one page. Game links are of the form `s2012040100187.html`. Text is `巨 4 - 2 ヤ`. Cancellations are `ヤ * - * 神` | Parent elements in the DOM, May–November |
+| 2012 | `calendar/index_11.html` | The Japan Series and Asia Series appear in the form `日本シリーズ[日 2 - 10 巨]` | Whether there are official game links |
 | 2012 | `games/schedule_03,04_detail.html` | 404 | — |
-| 2013 | なし | — | すべて |
-| 2014〜2019, 2021〜2023 | 各年 `calendar/index_06.html` | ページが存在する。中日の試合リンクはすべて `/bis/{年}/games/s{年}{月日}{5桁}.html` 形式で、文字列は `{略字} {得点} - {得点} {略字}`。交流戦（西・ロ・ソ・楽・日・オ）も同じ形式 | DOM上の親要素、6月以外の月 |
-| 2020 | `calendar/index_07.html` | 上と同じ形式。月別ページへのリンクは6〜11月だけで、3〜5月はない（開幕延期） | DOM上の親要素 |
-| 2024 | `calendar/index_04.html` | 試合リンクは `s2024040201097.html` 形式。`中 4 - 3 巨`（バンテリンドーム）、`広 0 - 1 中`（マツダ）から、先がホームと確認 | DOM上の親要素 |
-| 2024 | `calendar/index_10.html` | 公式戦はリンクつき。CSは `CS ファーストS[神 1 - 3 デ]`、日本シリーズは `日本シリーズ[デ 3 - 5 ソ]` の形で、公式戦の試合リンクが付かない | CS・日本シリーズ側のhref |
-| 2024 | `games/schedule_04_detail.html` | 引き分けは `2 - 2`、中止は `中止`。スコアリンクは `/scores/2024/0402/d-g-01/` | — |
-| 2025 | `calendar/index_06.html` | 上と同じ形式 | DOM上の親要素、6月以外の月 |
+| 2013 | None | — | Everything |
+| 2014–2019, 2021–2023 | `calendar/index_06.html` for each year | The page exists. All Chunichi game links are of the form `/bis/{year}/games/s{year}{MMDD}{5 digits}.html`, with text `{abbr} {runs} - {runs} {abbr}`. Interleague games (西, ロ, ソ, 楽, 日, オ) use the same form | Parent elements in the DOM, months other than June |
+| 2020 | `calendar/index_07.html` | Same form as above. Links to monthly pages exist only for June–November, not March–May (opening postponed) | Parent elements in the DOM |
+| 2024 | `calendar/index_04.html` | Game links are of the form `s2024040201097.html`. From `中 4 - 3 巨` (Vantelin Dome) and `広 0 - 1 中` (Mazda), the first team was confirmed as home | Parent elements in the DOM |
+| 2024 | `calendar/index_10.html` | Official games have links. CS appears as `CS ファーストS[神 1 - 3 デ]` and the Japan Series as `日本シリーズ[デ 3 - 5 ソ]`, without official game links | hrefs on the CS and Japan Series side |
+| 2024 | `games/schedule_04_detail.html` | Ties are `2 - 2`, cancellations `中止`. Score links are `/scores/2024/0402/d-g-01/` | — |
+| 2025 | `calendar/index_06.html` | Same form as above | Parent elements in the DOM, months other than June |
 
-2014〜2025年の確認は2026-10-03、各年1ページずつ行った。
+The 2014–2025 checks were done on 2026-10-03, one page per year.
 
-日付は試合リンクのURL（`s{年}{月日}…`）から取る。WebFetchの要約では、カレンダー上の日付とURLの日付が食い違う例があった（2023年6月）。セルの位置から日付を推定しない。
+Dates are taken from the game link URL (`s{year}{MMDD}…`). In WebFetch's summaries, there were cases where the calendar date and the URL date disagreed (June 2023). Dates are not inferred from cell position.
 
-## 想定試合数（npb.jpに問い合わせずに判定するための既知値）
+## Expected game counts (known values for judging without querying npb.jp)
 
-1球団あたりの公式戦の試合数。中止は振替で消化されるため、取りこぼしがなければ全球団がこの値に一致する。
-`npb_calendar.check()` がこの表と照合し、`observe` と `inspect` の手順で表示・記録する。
+Official games per team. Cancelled games are made up, so if nothing is missed every team matches this value.
+`npb_calendar.check()` checks against this table, and the `observe` and `inspect` steps display and record it.
 
-| 年 | 試合数 |
+| Year | Games |
 |---|---|
-| 2012〜2014 | 144 |
-| 2015〜2019 | 143 |
-| 2020 | 120（開幕延期による短縮シーズン。セ・リーグはCSを実施していない） |
-| 2021〜2025 | 143 |
+| 2012–2014 | 144 |
+| 2015–2019 | 143 |
+| 2020 | 120 (shortened season due to the postponed opening; the Central League held no CS) |
+| 2021–2025 | 143 |
 
-## テスト用フィクスチャの出どころ
+## Origin of test fixtures
 
-`blueprobe/tests/fixtures/npb_calendar_sample.html` は、上記のWebFetch観測（2024年4月・10月）を元に**合成した**もので、生のHTMLではない。
-生のHTMLを取得したら、代表的な月を1ページずつフィクスチャに追加し、構造の判定をそちらに移す（markdown: DOM_FIRST_WITH_THIN_CORPUS）。
+`blueprobe/tests/fixtures/npb_calendar_sample.html` was **synthesized** from the WebFetch observations above (April and October 2024); it is not raw HTML.
+Once raw HTML is fetched, add one page per representative month to the fixtures and move structural checks there (markdown: DOM_FIRST_WITH_THIN_CORPUS).
 
-## 記録の契約（観測値と派生値）
+## Record contract (observed and derived values)
 
-`games.jsonl` の1行は、原文と、それを読んだ結果を並べて持つ。
+Each line of `games.jsonl` holds the source text and the result of reading it side by side.
 
-| 区分 | 列 | 中身 |
+| Kind | Column | Contents |
 |---|---|---|
-| 観測 | `raw_text` | リンク文字列そのもの（正規化前） |
-| 観測 | `href`, `source_url` | 試合リンクと、それが載っていたページ |
-| 派生 | `key` | 試合ID（URLから） |
-| 派生 | `date` | 日付（試合IDから。セルの位置からは取らない） |
-| 派生 | `home`, `away`, `hs`, `as` | 略字と得点を読んだもの |
-| 派生 | `normalized` | 正規化で文字列が変わったか（`raw_text` と比べられる） |
+| Observed | `raw_text` | The link text itself (before normalization) |
+| Observed | `href`, `source_url` | The game link and the page it appeared on |
+| Derived | `key` | Game ID (from the URL) |
+| Derived | `date` | Date (from the game ID, not from cell position) |
+| Derived | `home`, `away`, `hs`, `as` | Abbreviations and runs as read |
+| Derived | `normalized` | Whether normalization changed the text (comparable with `raw_text`) |
 
-正規化の内容（NUL→U+FFFD、NFKC、連続空白の圧縮）は、データセットの `.manifest.json` に記録する。
+The normalization (NUL → U+FFFD, NFKC, collapsing whitespace) is recorded in the dataset's `.manifest.json`.

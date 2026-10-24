@@ -200,3 +200,9 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **GMB HIT:** GBoS IHS 2015/16 Table 4.7 — food Urban **52.9** / Rural **68.9**. +2. Sibling Table 4.8 deciles.
 - **TON HIT:** Tonga HIES 2009 Table 2.5 — food Urban **44** / Rural **53**. +2.
 - Pack → **483 / 94**.
+
+## 2026-10-25 VUT/KIR append
+
+- **VUT HIT:** VNSO HIES 2010 — food Urban **42.5** / Rural **62.1** (from published annual expenditure totals; national 56). +2.
+- **KIR HIT:** NSO HIES 2023–24 Table 17 — Food&non-alc Urban **38.1** / Rural **42.4**. +2.
+- Pack → **487 / 96**. SLB PDF still blocked (403/404).

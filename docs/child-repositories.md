@@ -14,7 +14,7 @@ Aoi のサブプロジェクトを独立させたリポジトリの登録です�
 - `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
   - `mirrored_from_parent`: checker が対応する任意の mirror 宣言。現在は登録していない。Aoi 固有の配置設定は親だけが持ち、子へ引数で渡す。
-- Aoi と subtree 子の間では `vendor-consumers.json` を置かない。共有する stdlib-shrink の道具だけは Aoi が原本で、[`shared-tools.lock.json`](../shared-tools.lock.json)（`vendor-lock/1`）に path、sha256、source（Aoi）、consumer の子を1本ずつ書く。子はその lock のバイトを受け取る。subtree の tree 一致とは別の契約である。
+- Aoi と subtree 子の間では `vendor-consumers.json` を置かない。共有する stdlib-shrink の道具だけは Aoi が原本で、[`shared-tools.lock.json`](../shared-tools.lock.json)（`vendor-lock/1`）に path、sha256、source（Aoi）、consumer の子を1本ずつ書く。子はその lock のバイトを受け取る。subtree の tree 一致とは別の契約である。Node から単一ファイルの Python ツールを呼ぶ `vendor/py_launch.cjs` も同じ lock で配る。Aoi は親から `vendor.lock.json` で取り込み、子は Aoi の最新版のマージコミットに pin して Aoi から受け取る（親 → Aoi → 子）。子が親から直接取り込まない。
 - `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分（blob と mode、除外なし）。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
 
 ```bash
@@ -35,7 +35,7 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 ## subtree の同期（決定）
 
-同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では `vendor-consumers.json` を使いません。共有する stdlib-shrink の道具は `shared-tools.lock.json` で配ります。`aoi_paths.py` と `aoi_npb.py` は Aoi だけに置き、解決したパス・設定を子へ引数で渡します（[親のNPBコマンド](../cycles/c001-chunichi/npb-configuration.md)）。子のtreeは登録SHAと完全一致させます。手順は PythDRagoras のものを子ごとに読み替えます。
+同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では `vendor-consumers.json` を使いません。共有する stdlib-shrink の道具と `vendor/py_launch.cjs` は `shared-tools.lock.json` で配ります。`aoi_paths.py` と `aoi_npb.py` は Aoi だけに置き、解決したパス・設定を子へ引数で渡します（[親のNPBコマンド](../cycles/c001-chunichi/npb-configuration.md)）。子のtreeは登録SHAと完全一致させます。手順は PythDRagoras のものを子ごとに読み替えます。
 
 PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出したので（git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e` を返す。join 前は split が古い tree で止まる（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））、Aoi の履歴とつながっていません。そのため Aoi に一度だけ join を入れます。
 

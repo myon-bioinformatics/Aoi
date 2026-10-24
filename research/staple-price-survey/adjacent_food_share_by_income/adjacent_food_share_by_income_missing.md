@@ -100,3 +100,7 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 
 - **MDA HIT:** NBS CBGC 2024 (Ed.2025) + 2025 (Ed.2026 Table 7.26) food_q1–q5; consumption-expenditure quintiles (not income); Food+non-alc % of avg monthly per-capita consumption expenditure. 2025 methodology break noted. +10 rows → **878/42**.
 - SAU/ARE miss unchanged.
+
+## 2026-10-25 UKR food×income deciles
+
+- **UKR HIT:** SSSU Table II.45 (2020–2021) Food+non-alc % of money expenditure by per capita equivalent **money-income deciles** d1–d10. +20 rows → **898/43**.

@@ -4,9 +4,9 @@ Retrieved: **2026-10-24 Asia/Tokyo** · Season2 adjacent for Aoi #118
 
 ## Result
 
-**395 vertical rows** · **21 / 56** Big Mac ISO3 with at least one series · year span **1988–2025**.
+**437 vertical rows** · **25 / 56** Big Mac ISO3 with at least one series · year span **1988–2026**.
 
-Food (COICOP CP01 / food+non-alc) share of household expenditure by **income quintile** (`engel_share:food_q1`…`q5`) or **disposable-income decile** (`engel_share:food_d1`…`d10`). **Not** average retail prices, CPI indexes, or national-mean Engel alone.
+Food (COICOP CP01 / food+non-alc) share of household expenditure by **income quintile** (`engel_share:food_q1`…`q5`) or **income/expenditure decile** (`engel_share:food_d1`…`d10`). **Not** average retail prices, CPI indexes, or national-mean Engel alone.
 
 Schema: `country,date,year,variable,value,unit,source,note,estimated_value` (ISO3; `date=YYYY-01-01`; `unit=percent`; `estimated_value` empty — no FX, no gap-fill).
 
@@ -18,16 +18,16 @@ Schema: `country,date,year,variable,value,unit,source,note,estimated_value` (ISO
 | KOR | Aoi owns Korea food-share-by-income |
 | TWN | Aoi owns Taiwan food-share-by-income |
 
-Also skipped this pack (other Aoi / adjacent lanes): Orshansky memo, food CPI indexes, `hi_staple_levels_alt`, BLS, FPMA, Pink Sheet, UK ONS **avg retail prices** panel, CoAHD, producer prices, `adjacent_eating_out_shares` (just finished).
+Also skipped this pack (other Aoi / adjacent lanes): Orshansky memo, food CPI indexes, `hi_staple_levels_alt`, BLS, FPMA, Pink Sheet, UK ONS **avg retail prices** panel, CoAHD, producer prices, `adjacent_eating_out_shares`.
 
 ## Variables
 
 | variable | rows | unit | definition |
 |----------|-----:|------|------------|
-| `engel_share:food_q1` … `food_q5` | 325 | percent | Food+non-alc ÷ total HH expenditure ×100; income quintile 1=lowest … 5=highest |
-| `engel_share:food_d1` … `food_d10` | 70 | percent | Same share; disposable-income decile (ONS LCF / Family Spending; GBR only) |
+| `engel_share:food_q1` … `food_q5` | 347 | percent | Food(+non-alc) ÷ total HH expenditure ×100; quintile 1=lowest … 5=highest |
+| `engel_share:food_d1` … `food_d10` | 90 | percent | Same share; income/expenditure decile |
 
-Defra Family Food publishes only **q1 / q3 / q5** (lowest / middle / highest 20%); q2/q4 absent by source design (noted on those rows).
+Defra Family Food publishes only **q1 / q3 / q5** (lowest / middle / highest 20%); q2/q4 absent by source design (noted on those rows). THA SES 2561 summary publishes only **q1 / q5** (food+bev+tobacco).
 
 ## Sources (loaded)
 
@@ -35,6 +35,10 @@ Defra Family Food publishes only **q1 / q3 / q5** (lowest / middle / highest 20%
 2. **CEPALSTAT** indicator **5725** — LatAm food+non-alc share of total HH expenditure by income quintile (National). One HIES/HBS wave per country in the open pull.
 3. **ONS** Family Spending workbook 2 **Table A8** — Food & non-alcoholic drinks % of total expenditure by disposable-income **decile**; UK FYE2019–FYE2025 workbooks.
 4. **Defra** Family Food (GOV.UK CSV) — household share of spend on food by income group **q1/q3/q5**; FYE2005–FYE2025 (gap years as published).
+5. **MOSPI** HCES 2022-23 **Table A6** (Food:Total & total expenditure by 12 MPCE fractiles) + **Table A2** (estimated households) — rural+urban pop-weighted national Engel → **IND** q1–q5 and d1–d10 (year coded 2023).
+6. **NSO Thailand** SES 2561 (2018) summary PDF `SD10_04_189_7` — **THA** food+beverages+tobacco share for expenditure **q1 and q5 only**.
+7. **BPS** Susenas *Pengeluaran untuk Konsumsi Penduduk Indonesia* March 2025 & March 2026 — **IDN** q1–q5 as reported by Kompas 2026-10-06 (primary `bps.go.id` Cloudflare/403 from this egress; secondary citation noted on rows).
+8. **PSA** FIES 2023 **Table 7** via bettergov OpenSTAT mirror (`0071E3ATME0.px`) — **PHL** food+non-alc % by per-capita income **d1–d10** (published percent) plus expenditure-weighted **q1–q5**.
 
 Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS deciles kept as complementary grain. No national-accounts mean Engel used as quintile proxy.
 
@@ -78,18 +82,24 @@ Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS 
 | ONS Family Spending workbook 2 Table A8 | 70 | 2019–2025 | food_d1…d10 |
 | Defra Family Food CSV | 60 | 2005–2025 | food_q1, food_q3, food_q5 |
 
-## Priority targets
+### Asia priority append (2026-10-24)
 
-| status | ISO3 |
-|--------|------|
-| **hit** | MEX, BRA, CHL, COL, PER, ARG, TUR, GBR |
-| **miss** | ZAF, IND, THA, IDN, PHL |
+| ISO3 | rows | years | source | grain |
+|------|-----:|-------|--------|-------|
+| IND | 15 | 2023 | MOSPI HCES 2022-23 A6+A2 | q1–q5 + d1–d10 |
+| THA | 2 | 2018 | NSO SES 2561 summary PDF | q1, q5 only (food+bev+tobacco) |
+| IDN | 10 | 2025–2026 | BPS Susenas via Kompas | q1–q5 × 2 waves |
+| PHL | 15 | 2023 | PSA FIES Table 7 (bettergov) | d1–d10 + weighted q1–q5 |
 
 ## Files
 
-- `adjacent_food_share_by_income_vertical.csv` (+ `.gz`)
-- `_coverage_by_country.csv`, `_build_stats.json`, `raw/_hits.json`
-- `readme.md`, `missing.md`
-- `raw/` — Eurostat CSV, CEPALSTAT JSON, ONS xlsx, Defra CSV, probe artifacts for misses
+| file | role |
+|------|------|
+| `adjacent_food_share_by_income_vertical.csv` | long panel |
+| `adjacent_food_share_by_income_vertical.csv.gz` | gzip mirror |
+| `_coverage_by_country.csv` | per-ISO3 row/year/variable summary |
+| `_build_stats.json` | build counts |
+| `missing.md` | misses + probe notes |
+| `raw/` | source pulls (eurostat, cepal, gbr, ind, tha, idn, phl, zaf, …) |
 
-Mirrored to `/workspace/aoi-phase2/staple-price-survey/adjacent_food_share_by_income/`. No git push.
+Mirrored to `/workspace/aoi-phase2/staple-price-survey/adjacent_food_share_by_income/` (no git push).

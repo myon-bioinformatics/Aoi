@@ -120,3 +120,7 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 ### Update 2026-10-24 (Asia/Tokyo) — food share by income quintile/decile
 
 - New pack `adjacent_food_share_by_income`: **395** rows, **21** ISO3 (1988–2025). Eurostat HBS_STR_T223 + CEPALSTAT 5725 + ONS Family Spending A8 + Defra Family Food. Skips JPN/KOR/TWN (existing Season2 / Aoi lanes).
+
+### Update 2026-10-24 (Asia/Tokyo) — food-by-income Asia fill
+
+- Extended `adjacent_food_share_by_income` to **437** rows / **25** ISO3 (+IND/THA/IDN/PHL). ZAF still blocked (Stats SA Imperva captcha).

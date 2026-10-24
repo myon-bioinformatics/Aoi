@@ -14,7 +14,7 @@ Retrieved: 2026-10-24 Asia/Tokyo
 | **PRT** | **HIT** — Observatório de Preços agroalimentar Consumo absolute € (rice, flour, spaghetti, potato, bread unit), ~2019–2026 4-week periods via admin-ajax. INE Portugal open DB is IPC/index-only for food. |
 | **AUT** | **HIT** — Statistik Austria Preisradar scanner mean EUR (`https://www.statistik.at/preisradar/data/ep/{id}.json`); rice/flour/breads/pasta/potato; 2023-01–2026-09 monthly. Open Data portal food holdings remain VPI/HVPI **indices** (exhausted as absolute). |
 | DEU | **HIT** — BMEL-Statistik 5050850 annual consumer EUR (Vollkornbrot/Roggenmischbrot/Weizenmehl/Speisekartoffeln) + 5051000 Alle LEH bread/potato; rice/pasta absent; Destatis www ERR_CONNECTION_CLOSED; GENESIS no food Durchschnittspreise. |
-| ITA | **Exhausted (incl. HBS path).** Istat Data Browser = NIC/FOI/IPCA indices; public HBS microdata restricted-use. No national open absolute retail staple bulk on re-probe. |
+| ITA | **Exhausted.** ISTAT esploradati/dati.gov.it/istat.it prices theme = NIC/FOI/IPCA indices or expenditure; Genova city-only skipped; osservaprezzi.it cert fail (fuel observatory); MIMIT ERR_CONNECTION_CLOSED. No national absolute EUR staple retail open bulk (2026-10-24). |
 | SWE | **Exhausted deepen.** SCB PR0101 = KPI/HICP; Kap8T02 wrong products. |
 | BEL | **Skipped this turn** (browser fetch elsewhere). Prior open-data path: CPI/HICP only. |
 

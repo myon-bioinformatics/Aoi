@@ -115,3 +115,12 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **AZE HIT:** SSC HBS H1 2023 via banker.az — urban **44.0** / rural **46.78** food÷consumption. Pack → **413 / 64**.
 - SSC 2025 food-accessibility bulletin fetched: **not** Engel shares (skip coerce).
 - SSC composition Excel still TLS-blocked from box.
+
+## 2026-10-25 ARM + GEO + MDA thicken
+
+- **ARM HIT:** ILCS 2024 Table 3.8 food+non-alc urban **39.1** / rural **44.7**.
+- **GEO HIT:** Geostat 2025 Chart 6 food+bev+tobacco urban **37.5** / rural **41.6**.
+- **MDA HIT:** Moldova in Figures — 2021 38.1/45.8; 2022 36.0/46.4; 2023 34.9/45.4 (pack already had 2024/2025).
+- Pack → **423 / 66**.
+- ARG ENGHo urban-only sample; CHL IX EPF urban-only — miss for rural.
+- BHR/KWT/QAT: no open urban/rural food Engel — miss.

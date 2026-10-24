@@ -115,3 +115,8 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 
 - **IDN HIT:** March 2022 & 2023 Susenas food share by expenditure quintile (CNBC→BPS). +10 → **928/44**.
 - SAU/ARE miss unchanged. Hours still DEU+BRA only.
+
+## 2026-10-25 ARM ILCS 2024 food×income deciles
+
+- **ARM HIT:** Table 3.11 food (old COICOP) by monetary-income deciles d1–d10: 52.5…34.3. Pack → **938 / 45**.
+- SAU/ARE: still no open quintile/decile food×income (terciles / nationality cuts only) — miss.

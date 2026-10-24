@@ -74,3 +74,11 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **TUR:** TURKSTAT HBS microdata notes say urban/rural estimates not reliable for recent years; no open primary urban/rural food % table loaded.
 - **BHR:** 2024 HIES in field; no published urban/rural food Engel yet.
 - SAU/ARE food×income miss unchanged (terciles / no open quintile-decile).
+
+## 2026-10-25 OMN append
+
+- **OMN HIT:** ONA 17 Mar 2020 release of NCSI HIES — food-and-drink % urban 23.4 / villages 28.8 (2019) and urban 26.0 / villages 34.3 (2011). Primary NCSI PDF 404; loaded from official ONA citation. +4 rows.
+
+## 2026-10-25 CHN thicken
+
+- **CHN:** +8 rows 2019–2022 NBS press-release Food, tobacco and liquor / PCE (same method as 2023). Series now 2019–2023.

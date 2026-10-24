@@ -104,3 +104,7 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 
 - Extended `adjacent_euz_proxy_staple_levels` with **DEU** BMEL-Statistik 5050850/5051000 consumer EUR prices (bread/flour/potato; 107 rows). Pack total **7585** (AUT/DEU/ESP/FIN/FRA/IRL/NLD/PRT).
 - Rice/pasta not in these BMEL tables. Destatis www still unreachable from box; GENESIS has no food Durchschnittspreise.
+
+### Update 2026-10-24 (Asia/Tokyo) — ILO October Inquiry probe
+
+- `adjacent_ilo_october_inquiry`: ILOSTAT/UNdata/LABORSTA public surfaces are CPI/FX/PPP only or offline — **0** absolute retail staple rows loaded (docs only). Historical Inquiry food panel was CD-ROM-era.

@@ -266,3 +266,12 @@ The evidence is in `cycles/c001-chunichi/outputs/exploratory/proposition-evaluat
 The regular c001 pipeline also reads the diagnostics with `--seed-evaluation` and lists all propositions in `outputs/index.md`.
 Seed variation is measured only within groups with the same year, proposition definition, and generation conditions, kept separate from the effects of changing conditions.
 Synthetic input covers 13 propositions; propositions lacking needed columns or a mapping to real teams stay unevaluated.
+
+## Node entry (Node 24+)
+
+- `node synthetic_league.cjs <args>` runs `synthetic_league.py` (interpreter override: `SYNTHETIC_LEAGUE_PYTHON`).
+- `node annual_audit.cjs <args>` runs `annual_audit.py` (interpreter override: `ANNUAL_AUDIT_PYTHON`).
+
+Each entry uses the vendored shared launcher `vendor/py_launch.cjs` (pinned in `vendor.lock.json`).
+Arguments, stdin/stdout/stderr and the exit code are passed through unchanged; Python runs with `-S`.
+Launcher failures (no Python 3.9+, spawn error, signal) exit 2.

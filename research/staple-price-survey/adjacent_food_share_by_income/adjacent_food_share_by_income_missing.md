@@ -12,7 +12,7 @@ See `readme.md` coverage tables and `_coverage_by_country.csv`.
 | EGY | **HIT** (prior) | CAPMAS HIECS 2012/13 expenditure quintiles |
 | SAU | **MISS** | GASTAT HEIS 2013 open tables use **absolute monthly-expenditure brackets** with Food+Total levels — not equal quintile/decile shares. Do not coerce brackets→q1–q5. |
 | ARE | **MISS** | No open SCAD/FCSC HIES food×equal-quintile/decile primary table pinned this session |
-| LKA | **HIT 2016** | HIES 2016 Final Report Table 3.13 income-decile mean food÷total → `food_d1`…`d10` loaded (+10). HIES 2019 Final Report still downloading for same grain |
+| LKA | **HIT 2016+2019** | HIES 2016+2019 Final Report Table 3.13 income-decile mean food÷total → `food_d1`…`d10` (+20) |
 | JOR | **MISS** | DOS HEIS absolute expenditure brackets + demog UR; no commodity×equal-quintile food % |
 | OMN / QAT / KWT / BHR | **MISS** | NCSI/PSA/etc. open quintile food-share tables not pinned (404s / no COICOP×q) |
 | AUS / NZL / JPN / KOR / TWN | **skip** | Aoi-owned HES lanes |
@@ -172,7 +172,7 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 | ISO3 | status | notes |
 |------|--------|-------|
 | AUT BGR CYP EST GRC HRV IRL LTU LUX LVA MKD MLT MNE PRT SRB SVK SVN XKX | **HIT** +385 | Eurostat HBS_STR_T223 CP01 PM÷10→%; income quintiles QU1–QU5; waves as published (1988–2020). FIN skipped (Aoi HES lane). Raw `raw/eurostat_t223/`. |
-| LKA | **HIT** (2016 Final Report) | Table 3.13 income-decile food÷total loaded; 2019 Final Report download still in progress for second wave |
+| LKA | **HIT** (2016+2019 Final Report) | Table 3.13 income-decile food÷total loaded for both waves (+20) |
 | SAU / ARE | **MISS** (reconfirm) | terciles / no open equal quintile-decile — not coerced |
 | CAN / LBN / ISR egress | blocked | StatCan/CAS/CBS TLS 000 this box; Wayback CDX also 000 |
 | Hours-to-buy | unchanged | DEU BMEL + BRA DIEESE only |
@@ -182,3 +182,8 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 - **LKA HIT:** DCS HIES 2016 Final Report Table 3.13 — mean food & drink ÷ mean total HH expenditure by national household income decile → `engel_share:food_d1`…`d10` (2016). Food ratio excludes liquor/drugs/tobacco (DCS definition). PDF primary.
 - HIES 2019 Final Report (~56 MB) still downloading this egress for a second wave; Final Results bulletin has no food×income cut (UR only).
 - SAU/ARE miss unchanged (terciles / no open quintile-decile). Hours still DEU+BRA only.
+
+## 2026-10-25 LKA HIES 2019 income-decile food shares (+10)
+
+- **LKA HIT:** DCS HIES 2019 Final Report Table 3.13 (OCR of image page; food+non-food sums validated) → `engel_share:food_d1`…`d10` (2019). Raw PDF ~57 MB image-heavy left out of git; OCR extract in `raw/lka/`.
+- Pack now LKA 2016+2019 (+20). SAU/ARE miss unchanged. Hours still DEU+BRA only.

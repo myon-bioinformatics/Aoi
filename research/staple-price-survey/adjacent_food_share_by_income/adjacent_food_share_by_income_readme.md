@@ -4,7 +4,7 @@ Retrieved: **2026-10-25 Asia/Tokyo** · Season2 adjacent for Aoi #118
 
 ## Result
 
-**1438 vertical rows** · **82 ISO3** with at least one series · year span **1988–2026**.
+**1448 vertical rows** · **82 ISO3** with at least one series · year span **1988–2026**.
 
 Food (COICOP CP01 / food+non-alc) share of household expenditure by **income quintile** (`engel_share:food_q1`…`q5`) or **income/expenditure decile** (`engel_share:food_d1`…`d10`). Where the source publishes both, **food-total** and **food-at-home** are separate variables (`engel_share:food_*` vs `engel_share:food_at_home_*`). **Not** average retail prices, CPI indexes, or national-mean Engel alone.
 
@@ -49,7 +49,7 @@ Defra Family Food publishes only **q1 / q3 / q5**; THA SES 2561 summary only **q
 13. **SingStat** Table Builder **D10072** HES — **SGP** food+non-alc ÷ TOTAL (excl. imputed OO rental) by income quintile; waves 2002/03–2023.
 14. **Stats SA IES 1995** via DataFirst *Earning and spending in South Africa* — **ZAF** food÷total expenditure by **expenditure** quintile (Stats SA site captcha skipped).
 15. **PBS Pakistan HIES** Table 15 — **PAK** Food & Non Alcoholic Beverages by **consumption** quintiles; waves 2015-16, 2018-19.
-16. **DCS Sri Lanka HIES 2016 Final Report Table 3.13** — **LKA** income-decile food÷total (`food_d1`…`d10`).
+16. **DCS Sri Lanka HIES 2016 & 2019 Final Report Table 3.13** — **LKA** income-decile food÷total (`food_d1`…`d10`); 2019 via OCR of image page.
 17. **DOSM HES 2022** Table 1.13 — **MYS** income quintiles; **Censtatd HES 2019/20** Chart 3 — **HKG** expenditure quartiles; **NSO Vietnam VHLSS 2022** Table 6.15 — **VNM** income quintiles (Food+Foodstuff).
 
 Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS deciles kept. No national-accounts mean Engel as quintile proxy.

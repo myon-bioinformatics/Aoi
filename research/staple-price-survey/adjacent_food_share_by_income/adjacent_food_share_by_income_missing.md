@@ -133,3 +133,9 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 ## 2026-10-25 FJI HIES food×income append
 
 - **FJI HIT:** HIES 2019-20 Table 20 food share by expenditure decile — d1–d10: 36.5, 40.6, 42.5, 42.8, 43.1, 43.8, 42.5, 42.1, 39.3, 34.0. +10 rows. Pack → **963 / 48**.
+
+## 2026-10-25 MUS/MDG food×income append
+
+- **MUS HIT:** HBS 2023 Table 5.2.3 food&non-alc by income quintile — q1–q5: 40.4, 36.6, 33.9, 28.6, 22.8. +5.
+- **MDG HIT:** EPM 2021-22 Graphique 7.2 — q1–q5: 70.3, 71.2, 68.9, 65.4, 57.6. +5.
+- Pack → **973 / 50**.

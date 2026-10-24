@@ -180,3 +180,10 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 
 - **FJI HIT:** Fiji Bureau of Statistics HIES 2019-20 Figure 42 — food % per-AE consumption Urban **36.1** / Rural **46.6** (national 40.8). Sibling Table 20 food×income deciles. +2 rows.
 - Pack → **467 / 86**.
+
+## 2026-10-25 LSO/MUS/MDG append
+
+- **LSO HIT:** BOS CMS 2011/12 Q3 — food&non-alc Urban **48.1** / Rural **66.7**. +2.
+- **MUS HIT:** Statistics Mauritius HBS 2023 Table 5.3.2 — Food&non-alc Urban **28.2** / Rural **30.5**. +2. Sibling income quintiles.
+- **MDG HIT:** INSTAT EPM 2021-22 Tableau 7.3 — alimentation Urbain **59.2** / Rural **68.5** (national 65.8). +2. Sibling Graphique 7.2 quintiles.
+- Pack → **473 / 89**.

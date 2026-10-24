@@ -135,3 +135,10 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 
 - **IRN HIT:** SCI HEIS 1402 food urban **25.0** / rural **39.6** (via IranStatis citing SCI; amar.org.ir TLS-blocked).
 - Pack → **429 / 69**.
+
+## 2026-10-25 KEN + NGA + DZA
+
+- **KEN HIT:** KCHS 2021 Poverty Report Table 3.2 food urban **42.2** / rural **63.0**.
+- **NGA HIT:** NLSS/CEP 2019 food urban **51.52** / rural **61.30** (food incl. alcohol in NBS basket).
+- **DZA HIT:** ONS 2011 alimentation&boissons urban **40.1** / rural **45.9**.
+- Pack → **435 / 72**.

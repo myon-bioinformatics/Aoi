@@ -1,6 +1,6 @@
 """Validation-only browser startup evidence; no automatic browser selection.
 
-Run from Aoi's root with ``python -m dragowing.diagnose_browser --help``.
+Run from Aoi's root with ``python scripts/diagnose_dragowing_browser.py --help``.
 This module deliberately leaves the production transport and its budgets alone.
 """
 from __future__ import annotations
@@ -24,9 +24,14 @@ from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .chrome_pipe import Chrome, find_chrome
-from .export import PLOTLY, export_draw, plotly_figure_content
-from .render import RenderSession, Timeouts
+# Keep this Aoi-only validation script independent of the invocation directory.
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from dragowing.chrome_pipe import Chrome, find_chrome
+from dragowing.export import PLOTLY, export_draw, plotly_figure_content
+from dragowing.render import RenderSession, Timeouts
 
 _TAIL_BYTES = 4096
 _TEXT_LIMIT = 4096

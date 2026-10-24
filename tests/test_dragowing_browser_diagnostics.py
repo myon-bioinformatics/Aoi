@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from dragowing import diagnose_browser as diagnostic
+from scripts import diagnose_dragowing_browser as diagnostic
 
 pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="POSIX debugging pipes")
 
@@ -309,9 +309,9 @@ def test_cli_rejects_invalid_limits_without_launch(option, value):
     assert exc.value.code == 2
 
 
-def test_cli_help_runs_without_site_packages():
-    result = subprocess.run([sys.executable, "-S", "-m", "dragowing.diagnose_browser", "--help"],
-                            cwd=Path(__file__).resolve().parents[2], capture_output=True, text=True)
+def test_cli_help_runs_without_site_packages_from_other_directory(tmp_path):
+    result = subprocess.run([sys.executable, "-S", str(Path(diagnostic.__file__).resolve()), "--help"],
+                            cwd=tmp_path, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert "--plotly-js" in result.stdout
 

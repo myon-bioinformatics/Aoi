@@ -7,6 +7,9 @@ on:
     paths:
       - '.github/workflows/browser-startup-validation.yml'
       - 'dragowing/**'
+      - 'scripts/diagnose_dragowing_browser.py'
+      - 'tests/test_dragowing_browser_*.py'
+      - 'docs/browser-startup-validation.md'
   workflow_dispatch:
 
 permissions:
@@ -62,7 +65,7 @@ jobs:
         env:
           CHROME: ${{ steps.browser.outputs.executable }}
         run: |
-          .venv/bin/python -m dragowing.diagnose_browser --chrome "$CHROME" --runs 10 --timeout 30 \
+          .venv/bin/python scripts/diagnose_dragowing_browser.py --chrome "$CHROME" --runs 10 --timeout 30 \
             --output build/browser-startup/before.json
       - name: Run the full suite with explicit browser selection
         if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
@@ -80,14 +83,14 @@ jobs:
         env:
           CHROME: ${{ steps.browser.outputs.executable }}
         run: |
-          .venv/bin/python -m dragowing.diagnose_browser --chrome "$CHROME" --runs 10 --timeout 30 \
+          .venv/bin/python scripts/diagnose_dragowing_browser.py --chrome "$CHROME" --runs 10 --timeout 30 \
             --output build/browser-startup/after.json
       - name: Validate synthetic PNG and SVG exports in three sessions
         if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
         env:
           CHROME: ${{ steps.browser.outputs.executable }}
         run: |
-          .venv/bin/python -m dragowing.diagnose_browser --chrome "$CHROME" --runs 3 --timeout 30 \
+          .venv/bin/python scripts/diagnose_dragowing_browser.py --chrome "$CHROME" --runs 3 --timeout 30 \
             --plotly-js build/browser-startup/assets/plotly.min.js \
             --evidence-dir build/browser-startup/diagnostic-exports \
             --output build/browser-startup/exports.json

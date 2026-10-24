@@ -185,7 +185,7 @@ def test_high_descriptors_support_startup_and_close(tmp_path):
                     reply = reply[os.write(4, reply):]
     """), encoding="utf-8")
     peer.chmod(0o755)
-    source = Path(__file__).resolve().parents[1] / "chrome_pipe.py"
+    source = Path(__file__).resolve().parents[1] / "dragowing" / "chrome_pipe.py"
     completed = subprocess.run(
         [sys.executable, "-I", "-S", "-c", _HIGH_FD_PROBE, str(source), str(peer), str(tmp_path)],
         capture_output=True, text=True, timeout=20, check=False,

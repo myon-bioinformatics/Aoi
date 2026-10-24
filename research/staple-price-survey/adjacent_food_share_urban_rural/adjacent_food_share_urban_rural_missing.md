@@ -175,3 +175,8 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **LAO HIT:** LSB LECS via WB Poverty Profile — food % total consumption; 2012/13 Urban 49.9 / Rural 64.8; 2018/19 Urban 53.1 / Rural 68.0. +4 rows.
 - **MMR HIT:** CSO MLCS 2017 Figure 2-1b — food % consumption Urban **42.7** / Rural **55.7**. Sibling food×income q1–q5 from Figure 2-2b. +2 rows.
 - Pack → **465 / 85**.
+
+## 2026-10-25 FJI append
+
+- **FJI HIT:** Fiji Bureau of Statistics HIES 2019-20 Figure 42 — food % per-AE consumption Urban **36.1** / Rural **46.6** (national 40.8). Sibling Table 20 food×income deciles. +2 rows.
+- Pack → **467 / 86**.

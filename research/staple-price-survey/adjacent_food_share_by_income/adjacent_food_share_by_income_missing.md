@@ -129,3 +129,7 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 ## 2026-10-25 MMR MLCS food×income append
 
 - **MMR HIT:** CSO MLCS 2017 Figure 2-2b food % of consumption aggregate by consumption quintile — q1–q5: 64.5, 59.9, 56.9, 53.4, 40.7. +5 rows. Pack → **953 / 47**.
+
+## 2026-10-25 FJI HIES food×income append
+
+- **FJI HIT:** HIES 2019-20 Table 20 food share by expenditure decile — d1–d10: 36.5, 40.6, 42.5, 42.8, 43.1, 43.8, 42.5, 42.1, 39.3, 34.0. +10 rows. Pack → **963 / 48**.

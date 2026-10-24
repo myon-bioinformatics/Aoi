@@ -1,0 +1,7 @@
+VHLSS 2022 Table 6.15 — Food (Lương thực) + Foodstuff (Thực phẩm) % of consumption for living
+Income quintiles 2022: 49.9, 45.3, 42.1, 38.4, 26.1
+Components 2022 Food: 11.3/7.8/6.3/5.1/4.3; Foodstuff: 38.6/37.5/35.8/33.3/21.8
+Excludes: Outdoor meals, Fuel (Chất đốt), Drinking and smoking
+Urban/rural counterpart Table 6.11 Food+Foodstuff 2022: Urban 32.7, Rural 37.2
+PDF: https://www.nso.gov.vn/wp-content/uploads/2024/04/Sach-Khao-sat-Muc-song-dan-cu_compressed.pdf
+Retrieved: 2026-10-24 Asia/Tokyo

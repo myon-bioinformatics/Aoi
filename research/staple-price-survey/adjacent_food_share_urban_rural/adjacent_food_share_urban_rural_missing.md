@@ -6,7 +6,8 @@
 | ARG | ENGHo urban-only — no rural companion |
 | CHL | INE IX EPF urban (regional capitals) only — no rural |
 | CHE, TUR | Not in Eurostat HBS_STR_T226 extract used |
-| URY, PAN | CEPALSTAT 5725 National only (no Urban/Rural) |
+| PAN | CEPALSTAT 5725 National only (no Urban/Rural) |
+| URY | **HIT** INE ENGIH 2016-17 Cuadro 27 Montevideo 16.6 / Interior 20.4 (con VL) |
 | HKG, SGP | City-state; no rural stratum — do not coerce |
 | SAU, ARE | National/regional food % only in open HICES/HIES pubs; no urban/rural food Engel table loaded |
 | PAK | **HIT** HIES 2011-12…2018-19 urban/rural Food & Non-Alc (8 rows); 2024-25 national-only noted |
@@ -56,3 +57,12 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **COL thicken:** DANE ENPH 2016-2017 cabeceras **14.0** / centros poblados y rural disperso **31.2** (year 2017); CEPALSTAT 2016 retained.
 - **SAU/ARE food×income:** still MISS (SAU terciles only; ARE no open quintile/decile) — reconfirmed, not loaded.
 - **Hours-to-buy:** still no third-country NSO-designed labour-minutes staple series (DEU BMEL + BRA DIEESE only).
+
+## 2026-10-25 URY/JOR/MDA append
+
+- **URY HIT** INE ENGIH 2016-2017 Cuadro 27 con valor locativo: Montevideo (urban) 16.6 / Interior (rural proxy) 20.4; year 2017.
+- **JOR HIT** DOS HEIS 2013 Table 4.25: Urban 33.42 / Rural 38.24 (Food Stuff/Grand Total member JD).
+- **MDA HIT** NBS CBGC: 2024 Urban 34.4 / Rural 46.6; 2025 Urban 35.2 / Rural 47.4 (2025 methodology break noted).
+- ARG ENGHo urban-only and CHL EPF urban-capitals-only reconfirmed — no rural companion.
+- CAN StatCan SSL still blocked from box egress.
+- Hours-to-buy: still DEU+BRA only (WIFO AT Kaufkraft / Histoprix DIY not loaded).

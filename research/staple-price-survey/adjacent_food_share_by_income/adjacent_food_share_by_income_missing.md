@@ -90,3 +90,8 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 - **ARE MISS (reconfirm):** No open FCSC/SCAD/Dubai Pulse food×income-quintile or -decile table; Dubai Pulse income distribution without food Engel cut.
 - HIES 2013-14 Table 15 «Food, beverage and tobacco» quintiles **skipped** (tobacco in basket).
 - HIES 2024-25 presentation: national Food & Non-Alc 36.72% only — no quintile food % in open slides.
+
+## 2026-10-25 URY INE ENGIH deciles
+
+- **URY HIT** INE ENGIH 2016-2017 Cuadro 31 food_d1–d10 (con valor locativo; income per-capita deciles): 26.0…12.8; year 2017. Kept alongside CEPALSTAT 5725 2016 quintiles.
+- SAU/ARE miss unchanged (terciles / no open quintile-decile food Engel).

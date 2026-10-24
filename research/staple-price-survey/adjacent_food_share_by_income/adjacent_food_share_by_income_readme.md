@@ -4,7 +4,7 @@ Retrieved: **2026-10-25 Asia/Tokyo** · Season2 adjacent for Aoi #118
 
 ## Result
 
-**948 vertical rows** · **46 ISO3** with at least one series · year span **1988–2026**.
+**953 vertical rows** · **47 ISO3** with at least one series · year span **1988–2026**.
 
 Food (COICOP CP01 / food+non-alc) share of household expenditure by **income quintile** (`engel_share:food_q1`…`q5`) or **income/expenditure decile** (`engel_share:food_d1`…`d10`). Where the source publishes both, **food-total** and **food-at-home** are separate variables (`engel_share:food_*` vs `engel_share:food_at_home_*`). **Not** average retail prices, CPI indexes, or national-mean Engel alone.
 

@@ -169,3 +169,9 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **NAM HIT:** NSA NHIES 2015/16 Table 11.1.1 — Food and beverages Urban **26.9** / Rural **56.6**. Percentile bands not quintile/decile → food×income miss. +2 rows.
 - **MLI HIT:** INSTAT EMOP 2023-P3 Tableau 2-4 — Alimentation+boissons non alc Urbain **63.3** / Rural **75.6**. +2 rows.
 - Pack → **459 / 83**.
+
+## 2026-10-25 LAO/MMR append
+
+- **LAO HIT:** LSB LECS via WB Poverty Profile — food % total consumption; 2012/13 Urban 49.9 / Rural 64.8; 2018/19 Urban 53.1 / Rural 68.0. +4 rows.
+- **MMR HIT:** CSO MLCS 2017 Figure 2-1b — food % consumption Urban **42.7** / Rural **55.7**. Sibling food×income q1–q5 from Figure 2-2b. +2 rows.
+- Pack → **465 / 85**.

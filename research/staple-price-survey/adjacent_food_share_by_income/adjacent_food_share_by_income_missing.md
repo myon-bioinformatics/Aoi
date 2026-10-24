@@ -125,3 +125,7 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 
 - **TZA HIT:** NBS HBS 2017/18 Mainland Table 6.7.1 food % of HH consumption by consumption decile — d1–d10: 69.6, 67.3, 66.1, 64.2, 63.1, 60.9, 57.6, 53.5, 50.3, 33.9 (national 59.9). +10 rows. Pack → **948 / 46**.
 - SAU/ARE/HKG/VNM food×income miss unchanged.
+
+## 2026-10-25 MMR MLCS food×income append
+
+- **MMR HIT:** CSO MLCS 2017 Figure 2-2b food % of consumption aggregate by consumption quintile — q1–q5: 64.5, 59.9, 56.9, 53.4, 40.7. +5 rows. Pack → **953 / 47**.

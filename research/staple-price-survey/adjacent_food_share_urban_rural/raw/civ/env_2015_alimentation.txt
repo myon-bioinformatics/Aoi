@@ -1,0 +1,2 @@
+INS CIV ENV 2015: alimentation % dépense totale Urbain 39.1 / Rural 55.8 (national 45.6)
+IHSN PDF https://datacatalog.ihsn.org/catalog/7330/download/86785

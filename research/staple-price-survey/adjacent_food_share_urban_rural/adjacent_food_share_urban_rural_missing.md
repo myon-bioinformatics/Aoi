@@ -150,3 +150,15 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **ETH HIT:** CSA HCES 2015/16 via WFP CFSVA — Urban 40.6 / Rural 51.2. +2 rows.
 - **KHM HIT:** NIS CSES 2019/20 Table 4 food share — Urban (Phnom Penh+Other urban from published food/total) 40.2 / Other rural 46.6; Food share includes alcoholic beverages. +2 rows.
 - Pack → **445 / 76**. Hours-to-buy still DEU+BRA only.
+
+## 2026-10-25 ZMB/MOZ append
+
+- **ZMB HIT:** ZamStats LCMS 2022 executive summary — food expenditure % of household incomes Urban **34.7** / Rural **56.4**. +2 rows.
+- **MOZ HIT:** INE IOF 2022 via AIM (10 Aug 2023) — food+non-alc % of total expenditure Urban **27.8** / Rural **49.3**. Primary IOF PDF egress-blocked; AIM quotes INE. +2 rows.
+- Pack → **449 / 78**.
+
+## 2026-10-25 CIV/RWA append
+
+- **CIV HIT:** INS ENV 2015 — alimentation % dépense totale Urbain **39.1** / Rural **55.8** (national 45.6). +2 rows.
+- **RWA HIT:** NISR EICV3 Patterns of Consumption — food % of total purchases Urban **36** / Rural **42** (2010–11). EICV6 final PDF lacked open food-share table this run. +2 rows.
+- Pack with ZMB/MOZ → **453 / 80**.

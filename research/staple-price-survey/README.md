@@ -43,6 +43,10 @@ International staple prices, food-expenditure shares (Engel), and household cons
 
 High-income staples often missing from WFP/FPMA: ARE, AUS, BHR, CAN, CHE, DNK, EUZ, HKG, KWT, MYS, NOR, NZL, OMN, QAT, SGP, TWN. See [`staple_survey_missing.md`](staple_survey_missing.md).
 
+## Adjacent HI staple price levels
+
+See [`adjacent_hi_staple_levels/`](adjacent_hi_staple_levels/) for absolute NSO retail staple prices (HKG/MYS/NZL/SGP). CPI indices are elsewhere; Eurostat had no absolute LCU food-product bulk.
+
 ## Adjacent extra LatAm CPI fill
 
 See [`adjacent_extra_latam/`](adjacent_extra_latam/) for GTM/HND/NIC/PER/URY national (or Lima) food CPI and bread/rice components where published.

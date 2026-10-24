@@ -1,33 +1,33 @@
-# npb_team_batting: チーム打撃成績
+# npb_team_batting: team batting stats
 
-## 取得元
+## Source
 
-`https://npb.jp/bis/{年}/stats/tmb_c.html`（セ・リーグ）、`tmb_p.html`（パ・リーグ）。1ページ = 1年・1リーグの6球団。2012〜2025年で28ページ。
+`https://npb.jp/bis/{year}/stats/tmb_c.html` (Central League), `tmb_p.html` (Pacific League). 1 page = 1 year, 1 league, 6 teams. 28 pages for 2012–2025.
 
-## 確認した形
+## Confirmed shape
 
-最初に WebFetch で見出しと1行を確認した（2026-10-04）。WebFetch はページを文章に変換するので、セルの中の空白は見えなかった。
-その後、実際に取得したページ（2012〜2025年の28ページ）を `--strict` で確かめたところ、**2012〜2024年の見出しは語の中に空白が入っていた**（「打 率」「試 合」）。2025年は入っていない。
-この違いで 2012〜2024年の表が読めず、測る前に止まった。見出しは空白を除いてから比べるように直した。
-直した後の2回目の確認で、**2012〜2024年は2文字のチーム名も1文字空けて書かれている**ことが分かった（中 日、巨 人、広 島、阪 神、楽 天、西 武）。
-3文字以上の名前（ヤクルト、DeNA、ソフトバンク など）は空いていない。チーム名は、2文字を1文字空けた形だけを詰めて読む。
+First, the headings and one row were checked with WebFetch (2026-10-04). WebFetch converts the page to prose, so spaces inside cells weren't visible.
+Then, checking the actually fetched pages (28 pages, 2012–2025) with `--strict` showed that **2012–2024 headings had spaces inside words** (`打 率`, `試 合`). 2025 has none.
+Because of this, the 2012–2024 tables couldn't be read and it stopped before measuring. Headings were fixed to be compared after removing spaces.
+The second check after the fix showed that **in 2012–2024, two-character team names are also written with a space between the characters** (`中 日`, `巨 人`, `広 島`, `阪 神`, `楽 天`, `西 武`).
+Names of 3 or more characters (`ヤクルト`, `DeNA`, `ソフトバンク`, etc.) have no space. For team names, only the form of two characters with one space between is closed up when reading.
 
-| 年 | リーグ | 見出し | 違い |
+| Year | League | Headings | Difference |
 |---|---|---|---|
-| 2012 | パ | チーム, 打率, 試合, 打席, 打数, 得点, 安打, 二塁打, 三塁打, 本塁打, 塁打, 打点, 盗塁, 盗塁刺, 犠打, 犠飛, 四球, 故意四, 死球, 三振, 併殺打, 長打率, 出塁率 | 「故意四」 |
-| 2018 | セ | 同上 | 「故意四」 |
-| 2024 | セ | 同上 | 「故意四球」 |
+| 2012 | Pacific | チーム, 打率, 試合, 打席, 打数, 得点, 安打, 二塁打, 三塁打, 本塁打, 塁打, 打点, 盗塁, 盗塁刺, 犠打, 犠飛, 四球, 故意四, 死球, 三振, 併殺打, 長打率, 出塁率 | `故意四` (intentional walks) |
+| 2018 | Central | Same as above | `故意四` |
+| 2024 | Central | Same as above | `故意四球` |
 
-チーム名は `npb_calendar.TEAM_NAME` と同じ表記（中日、DeNA、ロッテ など）。
+Team names use the same notation as `npb_calendar.TEAM_NAME` (`中日`, `DeNA`, `ロッテ`, etc.).
 
-## 解析の契約
+## Parsing contract
 
-1. 先頭のセルが「チーム」の行を見出しとし、見出しは正規化して語の中の空白を除いてから、既知の名前と全体一致で比べる。別の表記（故意四球 / 故意四）は同じ列に寄せる
-2. 見出しと同じセル数の行を1球団として読む。チーム名は既知の表記と全体一致。2文字を1文字空けた形（`中 日`）だけは詰めてから比べる。値は整数（0〜99999）か、率（`.256` の形）に全体一致させる
-3. 知らない見出し・知らないチーム名・別リーグの球団・形の合わない値は `unknown` に入れる。知らない見出しがあれば、その表は読まない（列の位置を推測しない）
-4. 照合（SakAnalytics の `batting_join`）: 試合数・得点がカレンダー由来の値と一致すること、打率・長打率・出塁率を計算し直すとページの値と表示桁で一致すること。合わなければ止まる
+1. The row whose first cell is `チーム` (team) is the heading row. Headings are normalized, spaces inside words removed, then compared by full match with known names. Alternative notations (`故意四球` / `故意四`) map to the same column
+2. Rows with the same number of cells as the headings are read as one team each. Team names must fully match a known notation. Only the two-characters-with-a-space form (`中 日`) is closed up before comparison. Values must fully match an integer (0–99999) or a rate (the `.256` form)
+3. Unknown headings, unknown team names, teams from the other league, and values of the wrong shape go into `unknown`. If there is an unknown heading, that table isn't read (column positions aren't guessed)
+4. Cross-check (SakAnalytics' `batting_join`): games and runs must match the calendar-derived values, and recomputed batting average, slugging, and on-base percentage must match the page's values at the displayed digits. Stops if they don't match
 
-## データの扱い
+## Handling data
 
-原ページと1球団1年の観測（打数・本塁打数など）は `data/` にだけ置き、git には入れない。
-`outputs/season.jsonl` には、こちらで計算した率（`bat_*`）と、同じ年・同じリーグの他球団の平均との差（`bat_d_*`）だけを出す。
+Source pages and per-team-per-year observations (at-bats, home runs, etc.) are kept only in `data/`, not in git.
+`outputs/season.jsonl` contains only rates computed here (`bat_*`) and differences from other teams' mean in the same year and league (`bat_d_*`).

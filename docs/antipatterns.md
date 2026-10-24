@@ -1,25 +1,25 @@
-# アンチパターン集
+# Antipatterns
 
-兄弟リポジトリ（markdown / ascii_artist / xprobe）と同じ運用にする。Aoi の原則（docs/principles.md）に対応するものは出典に書く。
-繰り返しそうな失敗には安定したIDを付け、可能な限り回帰テストとセットにする。
+Same practice as the sibling repositories (markdown / ascii_artist / xprobe). Items corresponding to Aoi's principles (docs/principles.md) cite them in the source column.
+Failures likely to recur get stable IDs, paired with regression tests wherever possible.
 
-| ID | アンチパターン | なぜ困るか | このリポジトリでの約束 | 出典 |
+| ID | Antipattern | Why it hurts | Commitment in this repository | Source |
 |---|---|---|---|---|
-| `REPEATED_REMOTE_VERIFICATION` | 解析を直すたびに相手サイトへ取りに行く | 検証の回数がそのまま相手への負荷になる | 取得は一度だけ（QueRyu）。以降は `observe` / `inspect` でキャッシュを再解析する | Aoi |
-| `SILENT_DROP` | 読めなかったリンクを黙って捨てる | 表記が変わっても「試合が少ない年」にしか見えない | `cancelled` / `non_regular` / `unknown` を必ず数え、`unknown` は原文を残す | xprobe: Silent partial scans |
-| `OVERBROAD_SCORE_REGEX` | 部分一致や `\S+` でスコアを拾う | 付記つき・2試合連結・未知の略字を誤って採用する | 全体一致、略字は12文字、得点は `[0-9]{1,2}` | ascii_artist: OVERBROAD_SANITIZER_REGEX |
-| `BROADEN_BEFORE_CASE` | 新しい表記を見て、先に正規表現を広げる | 何を受け入れたかが記録に残らない | 先に `blueprobe/tests/cases/npb_score_text.jsonl` にケースを追加する | ascii_artist: Regex rules 4 |
-| `HAPPY_PATH_ONLY_TESTS` | 正常系1件だけで表記揺れを「対応済み」とする | 揺れの大半が未検証のまま残る | 採用・中止・未知の各分類に5件以上。12×12の全略字、得点の境界、DOMの入力マトリクス | ascii_artist |
-| `SUBSTRING_ONLY_ASSERTION` | 「どこかに含まれる」だけを確かめる | 構造が壊れていてもテストが通る | 返ってきたレコードを丸ごと比べる | markdown |
-| `SILENT_NUL` | NULを素通し、または黙って削除する | 後段の処理が予測不能になる。削除すると本来の文字列と区別できない | U+FFFDに置換し、置換後は `unknown` に落とす | markdown: NUL sanitization |
-| `INFERENCE_AS_MEASUREMENT` | 1年分の確認結果を全年に当てはめて書く | 確認していない年の構造変化を見落とす | `blueprobe/docs/npb_calendar.md` で観測と未確認を分けて記録する | xprobe |
-| `SYNTHETIC_FIXTURE_AS_REAL` | 合成したHTMLを実データとして扱う | 実際のDOMとの差が隠れる | フィクスチャの出どころを明記し、生HTML取得後は実ページを追加する | markdown: DOM_FIRST_WITH_THIN_CORPUS |
-| `SCORE_IN_DOCS` | 診断用に生スコアをdocsやgitに残す | 掲載情報の転載にあたる | 生データは `data/`（git管理外）。docsの未知表記は数字を `#` に伏せる | Aoi |
-| `SILENT_NORMALIZATION` | 正規化した結果だけを残す | 何を変えたかが記録単位で追えない（Aoi Principle 2） | 原文 `raw_text` と派生値を並べ、`normalized` で変化の有無を残す | Aoi |
-| `UNRECORDED_PROVENANCE` | いつ・どこから・どのコードで取ったかを残さない | 再現も検証もできない（Aoi Principle 6, 8） | キャッシュの manifest.jsonl に URL・日時・ステータス・SHA-256・コードの版を追記する | Aoi |
-| `EMOJI_FORM_SPLIT` | U+FE0F の有無で同じ絵文字を別物として数える、または片方だけを探す | 見出しの 🗺️ と本文の 🗺 が別の項目になり、件数も対応表も割れる | `identity`（U+FE0F を除いた形）で数え、表記ごとの件数は `forms` に残す | browser-test-kit: EMOJI_VARIATION_SELECTOR |
-| `ACCNAME_APPROXIMATION_AS_SPEC` | 静的 HTML から計算した名前を、ブラウザの名前と同じものとして扱う | CSS の装飾・閉じた `<details>`・`hidden`・役割の違いで、読み上げられる名前とずれる | `accessible_names.py` の名前は近似と明記し、btk で採った aria スナップショットと `compare_aria_snapshot()` で突き合わせ、`match` / `css_generated` / `mismatch` を数える。実ページ5件は不一致0（tests/cases/pages） | browser-test-kit: PAGE_TEXT_AS_RENDERED_TEXT |
-| `CSS_GENERATED_NAME` | `::before` / `::after` の `content` が名前に入ることを見落とす | github.io の `[GitHub]`・`$ `・`> ` のように、ブラウザの名前にだけ記号が付く | 静的な名前を含み前後が記号だけの差は `css_generated` として別に数え、不一致にしない | github.io 実ページ（6件） |
-| `HIDDEN_AS_ARIA_HIDDEN` | `hidden` 属性・閉じた `<details>` の中と、`aria-hidden="true"` の中を同じに扱う | 前者はアクセシビリティの木から外れるが、後者は見えるまま読み上げだけ消える。混ぜると 17 件の誤検出になった（mcp-toolcall-lab ページ） | `hidden` は記録の `hidden` に、`aria_hidden_control` は `aria-hidden` の中の操作要素だけに付ける | github.io mcp-toolcall-lab 実ページ |
-| `FILE_INPUT_AS_TEXTBOX` | `<input type="file">` を入力欄として数える | Chromium では button で、名前は label から付く | `type=file` は button として扱う | github.io html-import 実ページ |
-| `EMOJI_ONLY_NAME` | 操作要素の名前が絵文字だけ | 読み上げは絵文字の名前（例「wastebasket」）になり、操作の意味と一致するとは限らない | 判断はせず `emoji_only_name` として数える。`aria-label` があればそちらが名前になる | |
+| `REPEATED_REMOTE_VERIFICATION` | Fetching from the other site every time parsing is fixed | The number of verifications becomes load on the other site | Fetch only once (QueRyu). After that, reparse the cache with `observe` / `inspect` | Aoi |
+| `SILENT_DROP` | Silently discarding links that couldn't be read | When notation changes, it just looks like "a year with fewer games" | Always count `cancelled` / `non_regular` / `unknown`, and keep the source text for `unknown` | xprobe: Silent partial scans |
+| `OVERBROAD_SCORE_REGEX` | Picking up scores with partial matches or `\S+` | Wrongly accepts annotated text, two concatenated games, or unknown abbreviations | Full match, 12 abbreviations, runs `[0-9]{1,2}` | ascii_artist: OVERBROAD_SANITIZER_REGEX |
+| `BROADEN_BEFORE_CASE` | Seeing a new notation and widening the regex first | What was accepted isn't recorded | Add a case to `blueprobe/tests/cases/npb_score_text.jsonl` first | ascii_artist: Regex rules 4 |
+| `HAPPY_PATH_ONLY_TESTS` | Calling notation variants "handled" with a single normal case | Most variants stay unverified | 5 or more each for accepted, cancelled, and unknown. All 12×12 abbreviations, run boundaries, and a DOM input matrix | ascii_artist |
+| `SUBSTRING_ONLY_ASSERTION` | Only checking that something is "contained somewhere" | Tests pass even when the structure is broken | Compare returned records in full | markdown |
+| `SILENT_NUL` | Passing NUL through, or silently deleting it | Downstream processing becomes unpredictable. Deleting makes it indistinguishable from the original string | Replace with U+FFFD, and send the result to `unknown` | markdown: NUL sanitization |
+| `INFERENCE_AS_MEASUREMENT` | Writing one year's confirmed result as applying to all years | Misses structural changes in unconfirmed years | Record observed and unconfirmed separately in `blueprobe/docs/npb_calendar.md` | xprobe |
+| `SYNTHETIC_FIXTURE_AS_REAL` | Treating synthetic HTML as real data | Hides differences from the real DOM | State where fixtures come from, and add real pages after fetching raw HTML | markdown: DOM_FIRST_WITH_THIN_CORPUS |
+| `SCORE_IN_DOCS` | Leaving raw scores in docs or git for diagnosis | Amounts to republishing published information | Raw data in `data/` (not tracked by git). Unknown notations in docs have digits masked as `#` | Aoi |
+| `SILENT_NORMALIZATION` | Keeping only the normalized result | What changed can't be traced per record (Aoi Principle 2) | Put source `raw_text` and derived values side by side, and record whether anything changed in `normalized` | Aoi |
+| `UNRECORDED_PROVENANCE` | Not recording when, where from, and with which code something was fetched | Neither reproducible nor verifiable (Aoi Principles 6, 8) | Append URL, time, status, SHA-256, and code version to the cache's manifest.jsonl | Aoi |
+| `EMOJI_FORM_SPLIT` | Counting the same emoji as different depending on U+FE0F, or searching for only one form | The heading's 🗺️ and the body's 🗺 become separate items, splitting counts and mappings | Count by `identity` (the form without U+FE0F), and keep per-form counts in `forms` | browser-test-kit: EMOJI_VARIATION_SELECTOR |
+| `ACCNAME_APPROXIMATION_AS_SPEC` | Treating names computed from static HTML as the same as the browser's names | CSS decoration, closed `<details>`, `hidden`, and role differences make them diverge from the names read aloud | State that `accessible_names.py` names are approximations, check them with `compare_aria_snapshot()` against aria snapshots taken with btk, and count `match` / `css_generated` / `mismatch`. 0 mismatches on 5 real pages (tests/cases/pages) | browser-test-kit: PAGE_TEXT_AS_RENDERED_TEXT |
+| `CSS_GENERATED_NAME` | Missing that `::before` / `::after` `content` goes into the name | Like github.io's `[GitHub]`, `$ `, `> `, symbols appear only in the browser's name | Differences that contain the static name with only symbols around it are counted separately as `css_generated`, not as mismatches | github.io real pages (6) |
+| `HIDDEN_AS_ARIA_HIDDEN` | Treating inside the `hidden` attribute or a closed `<details>` the same as inside `aria-hidden="true"` | The former leaves the accessibility tree; the latter stays visible and only reading aloud disappears. Mixing them produced 17 false positives (mcp-toolcall-lab page) | `hidden` goes to the record's `hidden`; `aria_hidden_control` is attached only to controls inside `aria-hidden` | github.io mcp-toolcall-lab real page |
+| `FILE_INPUT_AS_TEXTBOX` | Counting `<input type="file">` as a text field | In Chromium it is a button, and its name comes from the label | Treat `type=file` as a button | github.io html-import real page |
+| `EMOJI_ONLY_NAME` | A control's name is only an emoji | It is read aloud as the emoji's name (e.g. "wastebasket"), which doesn't necessarily match the control's meaning | Don't judge; count it as `emoji_only_name`. If there is an `aria-label`, that becomes the name | |

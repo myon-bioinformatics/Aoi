@@ -1,0 +1,14 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 491a904..dfd4b26 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -141,6 +141,9 @@ jobs:
+         with:
+           version: "0.13.3"
+           enable-cache: false
++      - uses: actions/setup-node@v6
++        with:
++          node-version: "24"
+       - uses: actions/checkout@v7
+         with:
+           repository: myon-bioinformatics/Aoi

@@ -1,110 +1,110 @@
 # littlebit-approx
 
-候補条件のマスクから潜在パターンを作り、PythDRagoras の条件候補に足す。共通識別子は `littlebit-approx`。
+Builds latent patterns from candidate condition masks and adds them to PythDRagoras's candidate conditions. The shared identifier is `littlebit-approx`.
 
-成否の判定は [rule_search.py](../rule_search.py) のビット演算である。因子の計算は [littlebit_prune.py](../littlebit_prune.py) の `littlebit`（低ランク、符号による二値、行スケール・列スケール・潜在スケール、残差の段）を使う。公式の LittleBit カーネルは使わない。
+Holds and failures are judged by the bit operations of [rule_search.py](../rule_search.py). Factors are computed with `littlebit` in [littlebit_prune.py](../littlebit_prune.py) (low rank, binarization by sign, row, column, and latent scales, residual stages). The official LittleBit kernel is not used.
 
-## 行列
+## Matrix
 
-`indicator_matrix` は単位 × 候補条件の 0/1 行列である。列 j は `search` がすでに作っているマスク（`_mask`）と同じである。目的の列（B クラスの `upper_half` など）は、この行列に入れない。`derive` は target を受け取らない。
+`indicator_matrix` is a unit × candidate condition 0/1 matrix. Column j is the same as the mask `search` already builds (`_mask`). The target column (e.g. B-class `upper_half`) is not put in this matrix. `derive` does not receive the target.
 
-行を `search` と揃える作業（除外、目的や候補が空の行を落とすこと）は、呼び出す側が `search` と同じ表を渡す。
+Aligning rows with `search` (exclusions, dropping rows whose target or candidates are empty) is done by the caller passing the same table as to `search`.
 
-## 載るかどうか
+## Whether a unit follows a pattern
 
-`littlebit` の各段、各潜在軸 k について、単位側の因子を `F[:, k]` とする。`littlebit` の定義では、これは行スケール h、符号二値 Us、潜在スケール l の積である。列側は符号二値 Vs と列スケール g である。
+For each stage of `littlebit` and each latent axis k, let the unit-side factor be `F[:, k]`. By `littlebit`'s definition, this is the product of row scale h, sign binary Us, and latent scale l. The column side is sign binary Vs and column scale g.
 
-軸の符号 s は +1 または -1 である。
+The axis sign s is +1 or -1.
 
-- `np.sign(F[:, k])` の和が正なら s = +1
-- 和が負なら s = -1
-- 和が 0（正と負が同数）のときだけ seed を使う。seed から作った乱数の最初の 1 ビットが 0 なら、最初の非ゼロ成分が正になる向き、1 なら負になる向きを s とする
+- If the sum of `np.sign(F[:, k])` is positive, s = +1
+- If the sum is negative, s = -1
+- Only when the sum is 0 (equal numbers of positive and negative) is the seed used. If the first bit of random numbers from the seed is 0, s is the orientation that makes the first nonzero component positive; if 1, negative
 
-単位 i がパターン k に乗るのは `s * F[i, k] > 0` のときである。0 ちょうどは乗らない。これは因子の符号であり、.040 や .060 のような境界をデータに合わせて刻む手続きではない。
+Unit i follows pattern k when `s * F[i, k] > 0`. Exactly 0 does not follow. This is the sign of the factor, not a procedure that cuts boundaries such as .040 or .060 to fit the data.
 
-列 j の重みは `w_j = s * g_j * Vs[j, k]` である。再構成のその軸の寄与は `(s * F[:, k])` と `w` の積に戻る（s を両側に掛けると s² = 1 で元の積になる）。重みは、束ねた元の条件との算術的なつながりとして候補に残す。
+The weight of column j is `w_j = s * g_j * Vs[j, k]`. The reconstruction's contribution from that axis returns to the product of `(s * F[:, k])` and `w` (multiplying s on both sides gives s² = 1, the original product). Weights are kept in candidates as the arithmetic link to the bundled original conditions.
 
-列スケール g は、その段の中では条件ごとに一つである。潜在軸ごとの違いは、符号 `Vs[j, k]` と単位側の `F[:, k]` に出る。同じ段では、重みの絶対値は軸が違っても一致し、符号の並びが軸を分ける。
+The column scale g is one per condition within that stage. Differences between latent axes show up in the signs `Vs[j, k]` and the unit-side `F[:, k]`. Within the same stage, the absolute values of weights match across axes, and the sign pattern separates the axes.
 
-既定は rank=8、stages=2、seed=0、交互最小二乗は `littlebit` の既定 6 回である。rank と stages は枝刈りコマンドの既定と同じで、探索結果の MCC を見てから選んだ値ではない。同点以外では seed は軸を変えず、記録にだけ残る。
+Defaults are rank=8, stages=2, seed=0, and `littlebit`'s default of 6 alternating least squares iterations. rank and stages are the same as the pruning command's defaults, not values chosen after seeing the search results' MCC. Except for ties, the seed does not change axes and is only recorded.
 
-## 条件にしなかった軸
+## Axes not made into conditions
 
-人が書いた候補は消さない。要求した `rank * stages` 本のうち、次の軸は新しい条件にしない。
+Human-written candidates are never removed. Of the requested `rank * stages` axes, the following are not made into new conditions.
 
-| 理由 | 内容 |
+| Reason | Contents |
 |---|---|
-| `zero-factor` | F の列が全部 0 |
-| `constant-mask` | 乗る単位が 0 か、全員 |
-| `duplicate-mask` | すでに足したパターンと同じ 0/1 |
-| `rank-shortfall` | SVD の成分が rank に足りない |
-| `no-units` / `no-candidates` | 行列が空 |
+| `zero-factor` | The column of F is all 0 |
+| `constant-mask` | No units follow, or all do |
+| `duplicate-mask` | The same 0/1 as a pattern already added |
+| `rank-shortfall` | SVD has fewer components than rank |
+| `no-units` / `no-candidates` | The matrix is empty |
 
-足した数と落とした数の和は、要求した本数と一致する。設定（rank、stages、seed）と、この二つの数は、比較の記録に残す。
+The sum of added and dropped equals the requested count. The settings (rank, stages, seed) and these two counts are kept in the comparison record.
 
-## 出どころ
+## Provenance
 
-各派生候補は次を持つ。
+Each derived candidate has the following.
 
 - `source` = `littlebit-approx`
-- `rank`、`seed`、`stage`、`pattern`
-- `bundle`: 元の条件（`col`、`op`、`value`）と `weight`
-- `posthoc` = true、`exploratory` = true
-- `registration`: [registration_audit.py](../registration_audit.py) の `classify` の結果
+- `rank`, `seed`, `stage`, `pattern`
+- `bundle`: the original conditions (`col`, `op`, `value`) and `weight`
+- `posthoc` = true, `exploratory` = true
+- `registration`: the result of `classify` in [registration_audit.py](../registration_audit.py)
 
-この作り方は結果を見たあとの条件なので、`classify` は posthoc を返す。`exploratory` は探索であることの印であり、posthoc / preregistered / unknown に次の値を足すものではない。事前登録にするには、[registration-metadata-audit.md](../../docs/registration-metadata-audit.md) のとおり、評価より前に記録した証拠が要る。ここにはその証拠を付けない。
+This construction produces conditions after seeing results, so `classify` returns posthoc. `exploratory` marks it as exploration; it does not add a further value to posthoc / preregistered / unknown. Making it pre-registered requires evidence recorded before evaluation, as in [registration-metadata-audit.md](../../docs/registration-metadata-audit.md). No such evidence is attached here.
 
-`search` は `col`、`op`、`value` だけでマスクを作り、並べる鍵もその三つだけを見る。上の記録が付いていても、成立・反例の数は変わらない。
+`search` builds masks from `col`, `op`, and `value` only, and its sort key looks only at those three. The records above don't change the counts of holds and counterexamples.
 
-## 残差
+## Residuals
 
-残差エネルギーは、条件行列と再構成の差の二乗を、単位ごとに足したものである。全単位の平均より大きい単位を、判例を探す手がかり（`lead`）にする。平均ちょうどは手がかりにしない。目的の列の真偽では分けない。
+Residual energy is the squared difference between the condition matrix and the reconstruction, summed per unit. Units above the mean over all units become clues for finding counterexamples (`lead`). Exactly the mean is not a clue. It does not split by the truth of the target column.
 
-手がかりは「この球団年は候補の並びを因子が再構成しきれなかった」という記録である。その単位を判例だと決めた一覧は、[propositions.md](../../docs/propositions.md) の判定で別に残す。
+A clue is a record that "the factors couldn't fully reconstruct the candidate pattern for this team-year". The list of units decided to be counterexamples is kept separately by the judgement in [propositions.md](../../docs/propositions.md).
 
-## c001 の並び
+## c001 rankings
 
-c001 では、既存の候補だけを `search` に渡した上位と、派生候補を足して `search` に渡した上位を並べ、`cycles/c001-chunichi/outputs/exploratory/littlebit-approx/` に書く。観測と解釈は [comparison.md](../../cycles/c001-chunichi/outputs/exploratory/littlebit-approx/comparison.md) で節を分けている。機械向けの全体は同じディレクトリの `comparison.json` である。
+For c001, the top results from passing only existing candidates to `search` and from passing them with the derived candidates are laid side by side and written to `cycles/c001-chunichi/outputs/exploratory/littlebit-approx/`. Observation and interpretation are in separate sections of [comparison.md](../../cycles/c001-chunichi/outputs/exploratory/littlebit-approx/comparison.md). The full machine-readable version is `comparison.json` in the same directory.
 
-確かめの記録は [confirmation.md](../../cycles/c001-chunichi/outputs/confirmation.md) に置く。候補ファイルは [rule_candidates.toml](../../cycles/c001-chunichi/rule_candidates.toml)。再生成は次である。
+Confirmation records are in [confirmation.md](../../cycles/c001-chunichi/outputs/confirmation.md). The candidate file is [rule_candidates.toml](../../cycles/c001-chunichi/rule_candidates.toml). Regenerate with:
 
 ```bash
 uv run python pythdragoras/littlebit_approx.py --cycle-dir cycles/c001-chunichi
 ```
 
-## 年を分けたfit/transform
+## Fit/transform split by year
 
-`derive` の `loading_units` は因子分解した表の行の集合であり、未使用年へ適用する予測器ではない。
-列重み `bundle` だけでは、未知行の `h`・`Us`、すなわち `F` の符号が決まらない。
-未知行を含めてSVD/ALSをやり直すと、学習済みの軸や条件も動くため独立した評価にならない。
+`derive`'s `loading_units` is the set of rows of the factorized table, not a predictor applied to unused years.
+Column weights `bundle` alone don't determine `h` and `Us` for unknown rows, i.e. the sign of `F`.
+Redoing SVD/ALS including unknown rows also moves the learned axes and conditions, so it isn't an independent evaluation.
 
-[littlebit_holdout.py](../littlebit_holdout.py) は、この制約を避ける**別の候補生成方式**を実装する。
+[littlebit_holdout.py](../littlebit_holdout.py) implements **a different candidate generation method** that avoids this constraint.
 
-1. 学習年の候補条件行列だけを `littlebit` へ渡し、段ごとの列因子 `W = Vs * g` を固定する。
-2. 各段で `Z = R @ pinv(W.T)`、次段の入力を `R - Z @ W.T` とする。逆行列の切捨ては `rcond=1e-12`。
-3. 学習行の `Z` だけで軸の向きを選び、`s * Z[:, k] > 1e-10` を条件にする。定数・重複の除外も学習側だけで行う。
-4. **学習側にも同じtransform**を適用してから既存のMCC・同点順序で式を選び、評価年では因子・向き・式を動かさない。
+1. Pass only the training years' candidate condition matrix to `littlebit`, and fix the per-stage column factors `W = Vs * g`.
+2. At each stage, `Z = R @ pinv(W.T)`, and the next stage's input is `R - Z @ W.T`. The pseudo-inverse cutoff is `rcond=1e-12`.
+3. Choose axis orientation from the training rows' `Z` only, and use `s * Z[:, k] > 1e-10` as the condition. Constant and duplicate exclusion is also done on the training side only.
+4. Apply **the same transform to the training side too**, then choose formulas by the existing MCC and tie order; in evaluation years, factors, orientations, and formulas are not moved.
 
-この射影は、元の `F = h * Us * l` の符号制約を再現する方式ではない。そのため列名も
-`littlebit_project_s*_k*` とし、元の `littlebit_s0_k0/k4` の追試と混同しない。
-保存するencoder/decoderと式はJSONで再読込でき、評価時には目的列・球団年のID・他の評価行に依存しない。
-古い `loading_units` を `transform` へ渡した場合は拒否する。
+This projection does not reproduce the sign constraint of the original `F = h * Us * l`. So the column names are
+`littlebit_project_s*_k*`, not to be confused with replications of the original `littlebit_s0_k0/k4`.
+The saved encoder/decoder and formulas can be reloaded from JSON, and at evaluation time they don't depend on the target column, team-year IDs, or other evaluation rows.
+Passing an old `loading_units` to `transform` is rejected.
 
 ```bash
 uv run python pythdragoras/littlebit_holdout.py --cycle-dir cycles/c001-chunichi
 ```
 
-既定のblock比較は学習2012〜2022年、評価2023〜2025年である。補助のwalk-forwardは最初の5年から始め、
-次の1年を評価してから学習期間を伸ばす。既存設定の2020年除外を維持し、全設定・入力SHA-256・式・モデル・
-TP/FP/FN/TNのID集合を [holdout.json](../../cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.json) に保存する。
-[holdout.md](../../cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.md) に比較表を置く。
+The default block comparison is training 2012–2022 and evaluation 2023–2025. The auxiliary walk-forward starts from the first 5 years,
+evaluates the next year, then extends the training period. It keeps the existing setting's 2020 exclusion, and saves all settings, input SHA-256, formulas, models, and
+TP/FP/FN/TN ID sets in [holdout.json](../../cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.json).
+The comparison table is in [holdout.md](../../cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.md).
 
-比較対象は、学習側の既存候補最良式（baseline）、追加候補込みの最良式（augmented）、
-派生列を一つ以上含む最良式（derived）である。derivedは上位20件にある式だけに絞らず総当たりする。
-派生候補が作れないfoldは生成なしとし、黙ってそのfoldを除いた集計はしない。
-MCCの分母が0なら既存採点規約では0、報告では未定義の印も保存する。
+The comparisons are the best formula from the training side's existing candidates (baseline), the best formula including added candidates (augmented),
+and the best formula containing at least one derived column (derived). derived is searched exhaustively, not limited to formulas in the top 20.
+Folds where no derived candidate can be made are recorded as no generation; the totals are not computed by silently dropping that fold.
+When the MCC denominator is 0, the existing scoring convention gives 0, and the report also saves an undefined marker.
 
-既に調査で閲覧した年を再分割するため、これはfitと評価の漏洩を避けた**過去年バックテスト**である。
-候補閾値・手法を含む完全な未閲覧データでの独立確認ではなく、事前登録の証拠にもならない。
-保存済み特徴量はシーズン終了時の集計であり、将来シーズンや開幕前の予測精度を示さない。
-既存探索の最良MCCや命題・合格条件、`confirmation.md` は変更しない。
+Because it re-splits years already viewed during the investigation, this is a **backtest on past years** that avoids leakage between fit and evaluation.
+It is not independent confirmation on fully unseen data including candidate thresholds and methods, nor evidence of pre-registration.
+The saved features are end-of-season aggregates and do not indicate prediction accuracy for future seasons or before opening day.
+The existing search's best MCC, propositions, pass conditions, and `confirmation.md` are not changed.

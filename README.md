@@ -197,3 +197,10 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml     
 python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --offline  # don't fetch
 python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run  # only show what would be done
 ```
+
+## Node entry (Node 24+)
+
+`node nagoyaction.cjs <args>` runs `nagoyaction.py` through the vendored shared launcher
+`vendor/py_launch.cjs`, taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. Arguments, stdin/stdout/stderr and the
+exit code are passed through unchanged; Python runs with `-S`. Set `NAGOYACTION_PYTHON` to pick
+the interpreter. Launcher failures (no Python 3.9+, spawn error, signal) exit 2.

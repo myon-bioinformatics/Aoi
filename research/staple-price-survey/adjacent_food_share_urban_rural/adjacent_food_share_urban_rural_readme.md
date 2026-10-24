@@ -7,9 +7,9 @@ Urban vs rural (or municipal / non-municipal) food expenditure shares of househo
 
 Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 
-## Coverage (build 2026-10-24 Asia/Tokyo)
-- **343 rows / 50 ISO3**, years **1988–2024**
-- ISO3: AUT BEL BGR BOL BRA COL CRI CYP CZE DEU DNK DOM ECU ESP EST EUZ FIN FRA GBR GRC GTM HND HRV HUN IDN IND IRL ITA LTU LUX LVA MEX MLT MYS NIC NLD NOR PER PHL POL PRT PRY ROU RUS SLV SVK SVN SWE THA USA
+## Coverage (build 2026-10-25 Asia/Tokyo)
+- **361 rows / 56 ISO3**, years **1988–2024**
+- ISO3: AUS AUT BEL BGR BOL BRA CHN COL CRI CYP CZE DEU DNK DOM ECU ESP EST EUZ FIN FRA GBR GRC GTM HND HRV HUN IDN IND IRL ITA LKA LTU LUX LVA MEX MLT MYS NIC NLD NOR PAK PER PHL POL PRT PRY ROU RUS SLV SVK SVN SWE THA USA VNM ZAF
 - `estimated_value` empty on all rows
 
 ## Sources
@@ -23,9 +23,11 @@ Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 | NSO Thailand SES 2021 Table 6 | 2 | THA municipal/non-municipal |
 | PSA FIES via Bairagi PLOS ONE 2022 | 10 | PHL |
 | DOSM HES Report 2024 | 2 | MYS F&B 14.4 / 23.0 |
+| PBS Pakistan HIES Table 3.7.A/B | 8 | PAK Food & Non-Alc urban/rural 2011-12…2018-19 |
+| DCS Sri Lanka HIES 2019 Table 10 | 2 | LKA Urban 28.2 / Rural 36.9 |
 | Rosstat HBS R_1-5 (via Roschart) | 4 | RUS Q3 2022–2023 |
 
 ## Deliberate misses / skips
-CAN (StatCan SSL); ARG urban-only ENGHo; CHL INE EPF urban capitals only; CHE/TUR not in T226; URY/PAN/ARG/CHL CEPAL National-only for area; HKG/SGP city-state; SAU/ARE national/regional only; PAK HIES writeup lacks urban/rural food÷total; EGY CAPMAS primary not pinned; VNM GSO blocked; **ZAF left to sibling Stats SA lane**. Aoi skips: JPN/KOR/TWN, AUS/NZL HES; UK ONS LCFS national (GBR here = Eurostat T226).
+CAN (StatCan SSL); ARG urban-only ENGHo; CHL INE EPF urban capitals only; CHE/TUR not in T226; URY/PAN/ARG/CHL CEPAL National-only for area; HKG/SGP city-state; SAU/ARE national/regional only; PAK **HIT** (HIES 2011-12…2018-19); EGY CAPMAS primary not pinned; VNM/ZAF/AUS/CHN appended earlier;  Aoi skips: JPN/KOR/TWN, AUS/NZL HES; UK ONS LCFS national (GBR here = Eurostat T226).
 
 See `missing.md`.

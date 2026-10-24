@@ -1,10 +1,10 @@
 # adjacent_food_share_by_income — food expenditure share by income quintile/decile
 
-Retrieved: **2026-10-24 Asia/Tokyo** · Season2 adjacent for Aoi #118
+Retrieved: **2026-10-25 Asia/Tokyo** · Season2 adjacent for Aoi #118
 
 ## Result
 
-**848 vertical rows** · **40 ISO3** with at least one series · year span **1988–2026**.
+**858 vertical rows** · **41 ISO3** with at least one series · year span **1988–2026**.
 
 Food (COICOP CP01 / food+non-alc) share of household expenditure by **income quintile** (`engel_share:food_q1`…`q5`) or **income/expenditure decile** (`engel_share:food_d1`…`d10`). Where the source publishes both, **food-total** and **food-at-home** are separate variables (`engel_share:food_*` vs `engel_share:food_at_home_*`). **Not** average retail prices, CPI indexes, or national-mean Engel alone.
 
@@ -48,6 +48,8 @@ Defra Family Food publishes only **q1 / q3 / q5**; THA SES 2561 summary only **q
 12. **Swiss FSO** HBS dépenses par classe de revenu — **CHE** food÷consumption (not % of gross income); income classes ≈ quintiles; waves 2006–2008 … 2020–2021.
 13. **SingStat** Table Builder **D10072** HES — **SGP** food+non-alc ÷ TOTAL (excl. imputed OO rental) by income quintile; waves 2002/03–2023.
 14. **Stats SA IES 1995** via DataFirst *Earning and spending in South Africa* — **ZAF** food÷total expenditure by **expenditure** quintile (Stats SA site captcha skipped).
+15. **PBS Pakistan HIES** Table 15 — **PAK** Food & Non Alcoholic Beverages by **consumption** quintiles; waves 2015-16, 2018-19.
+16. **DOSM HES 2022** Table 1.13 — **MYS** income quintiles; **Censtatd HES 2019/20** Chart 3 — **HKG** expenditure quartiles; **NSO Vietnam VHLSS 2022** Table 6.15 — **VNM** income quintiles (Food+Foodstuff).
 
 Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS deciles kept. No national-accounts mean Engel as quintile proxy.
 
@@ -105,6 +107,7 @@ Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS 
 | THA | 2 | 2018 | NSO SES 2561 | q1, q5 only |
 | IDN | 10 | 2025–2026 | BPS via Kompas | q1–q5 × 2 |
 | PHL | 15 | 2023 | PSA FIES Table 7 | d1–d10 + q1–q5 |
+| PAK | 10 | 2016–2019 | PBS HIES Table 15 | consumption q1–q5 × 2 |
 | ISR | 5 | 2021 | CBS Israel HES 2021 | q1–q5 |
 | SGP | 25 | 2003–2023 | SingStat D10072 | q1–q5 × 5 waves |
 | CHE | 30 | 2007–2021 | Swiss FSO HBS | q1–q5 × 6 waves |

@@ -82,3 +82,11 @@ ARE/VNM still miss open income-quintile food %.
 ## 2026-10-24 VNM append
 
 VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile: 49.9, 45.3, 42.1, 38.4, 26.1 (excludes outdoor meals, fuel, drinking & smoking).
+
+## 2026-10-25 PAK append (+ SAU/ARE miss reconfirm)
+
+- **PAK HIT** 10 rows: PBS HIES 2015-16 + 2018-19 Table 15 national Food & Non Alcoholic Beverages by **consumption** quintiles (q1–q5). Pack → **858 / 41**.
+- **SAU MISS (reconfirm):** GaStat HIES 2018 Tables 44–45 only Low/Medium/High **expenditure terciles** (computed food shares Saudi ~29.9/24.3/12.4) — **not loaded** (terciles ≠ quintile/decile schema). HICES national food % only otherwise.
+- **ARE MISS (reconfirm):** No open FCSC/SCAD/Dubai Pulse food×income-quintile or -decile table; Dubai Pulse income distribution without food Engel cut.
+- HIES 2013-14 Table 15 «Food, beverage and tobacco» quintiles **skipped** (tobacco in basket).
+- HIES 2024-25 presentation: national Food & Non-Alc 36.72% only — no quintile food % in open slides.

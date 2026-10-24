@@ -33,3 +33,7 @@ food CPI indexes, housing share, SGP/HKG CPI, USDA FPO, `hi_staple_levels_alt`, 
 ## Rule reminder
 
 Do **not** invent `hours_to_buy` by dividing an external wage series by an external price series unless both come from the **same official publication designed as that indicator** (BMEL 5050900 and DIEESE PNCBA tempo columns qualify).
+
+## 2026-10-25 probe
+
+Still **DEU+BRA only** (240 rows). Additional searches (Eurostat hours-worked, UK historical Hansard minutes, THA NSO OS_02, Agroscope farm labour) are not publisher-designed staple hours-to-buy indicators. FRA Histoprix / datapi remain DIY — not loaded.

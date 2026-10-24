@@ -34,3 +34,17 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - AUS ABS HES 2015-16 Greater Capital City 16.6 / Rest of State 16.7 (food % of G&S).
 - CHN NBS 2023 food+tobacco+liquor urban 28.8 / rural 32.3 (not COICOP food-only).
 - VNM VHLSS 2022 Table 6.11 Food+Foodstuff urban 32.7 / rural 37.2.
+
+## 2026-10-25 PAK urban/rural append
+
+- **PAK HIT** 8 rows: PBS HIES Food & Non-Alc urban/rural — 2011-12, 2013-14, 2015-16, 2018-19 (years labelled 2012/2014/2016/2019). Pack → **359 / 55**.
+- Corrects earlier miss note that claimed urban/rural food÷total absent from open writeups (Table 3.7.A/B publishes it).
+- HIES 2024-25 presentation: national 36.72% only — urban/rural food % not in open slides.
+- JOR DOS HEIS 2017 G4 tables: governorate / HH-size / expenditure-bracket commodity averages; **no** clean urban×rural food Engel % table loaded (Food Groups totals also mix tobacco/restaurants).
+- CAN StatCan WDS/Daily still egress-blocked this run; EGY CAPMAS primary HIECS urban/rural food % table still not pinned; KOR kostat download egress failed.
+- Hours-to-buy: still no additional NSO-designed labour-minutes staple series (FRA Histoprix/datapi = DIY wage÷price — refused).
+
+## 2026-10-25 LKA append
+
+- **LKA HIT** 2 rows: DCS HIES 2019 Final Results Table 10 Urban 28.2 / Rural 36.9 (Food÷total). Pack → **361 / 56**. Estate 50.9% noted not loaded.
+- 2016 Final Report PDF download corrupt/unreadable this run — deferred.

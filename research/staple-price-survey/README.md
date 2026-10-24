@@ -124,3 +124,7 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 ### Update 2026-10-24 (Asia/Tokyo) — food-by-income Asia fill
 
 - Extended `adjacent_food_share_by_income` to **437** rows / **25** ISO3 (+IND/THA/IDN/PHL). ZAF still blocked (Stats SA Imperva captcha).
+
+### Update 2026-10-24 (Asia/Tokyo) — hours-to-buy staples
+
+- New pack `adjacent_hours_to_buy_staples`: **240** rows (DEU BMEL labour-minutes; BRA DIEESE PNCBA São Paulo tempo→min/kg). Official designed indicators only — no DIY wage÷price.

@@ -31,7 +31,8 @@ def test_replication_gate_passes():
 
 def test_inputs_match_staple_survey_japan_series():
     # 転記した E と P のうち、research/staple-price-survey（e-Stat）で裏が取れる範囲を固定する。
-    # E: 2005–2023 は家計調査（二人以上の世帯）、P: 2005–2015 は小売物価統計調査の 5kg 月次の年平均
+    # E: 2005–2025 は家計調査（二人以上の世帯。2024–2025 は統計局の年平均結果の概要）、
+    # P: 2005–2015 は小売物価統計調査の 5kg 月次の年平均
     import csv
     import statistics
 
@@ -49,7 +50,7 @@ def test_inputs_match_staple_survey_japan_series():
                 engel[int(r["year"])] = float(r["value"]) / 100
             elif r["variable"] == "staple_price:rice_uruchi_5kg":
                 rice.setdefault(int(r["year"]), []).append(float(r["value"]))
-    for y in range(2005, 2024):
+    for y in range(2005, 2026):
         assert abs(lag_run.E[y] - engel[y]) < 5e-4, y
     for y in range(2005, 2016):
         assert len(rice[y]) == 12, y

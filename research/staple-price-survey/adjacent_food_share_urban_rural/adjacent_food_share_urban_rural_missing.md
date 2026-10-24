@@ -193,3 +193,10 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **BTN HIT:** NSB BLSS 2017 — food Urban **30** / Rural **38** (national 34). +2. (BLSS 2022 urban 40.7 published; rural aggregate not stated — skip.)
 - **NPL HIT:** CBS NLSS 2010/11 via WFP Table 17 — food Urban **52** / Rural **55** (national 54). +2. Sibling Table 18 quintiles.
 - Pack → **477 / 91**.
+
+## 2026-10-25 LBR/GMB/TON append
+
+- **LBR HIT:** LISGIS HIES 2016 Table 3.5 — food Urban **61.3** / Rural **74.1**. +2. Sibling Table 3.6 quintiles.
+- **GMB HIT:** GBoS IHS 2015/16 Table 4.7 — food Urban **52.9** / Rural **68.9**. +2. Sibling Table 4.8 deciles.
+- **TON HIT:** Tonga HIES 2009 Table 2.5 — food Urban **44** / Rural **53**. +2.
+- Pack → **483 / 94**.

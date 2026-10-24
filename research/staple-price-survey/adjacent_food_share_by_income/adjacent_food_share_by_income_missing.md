@@ -148,3 +148,9 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 
 - **TTO HIT:** CSO SLC 2005 Table 3.4 food share by expenditure quintile — q1–q5: 41.1, 36.2, 31.4, 28.4, 23.7. +5. Pack → **983 / 52**.
 - SLV ur already loaded (different basket/source vs FUSADES EHPM Media); skip re-append.
+
+## 2026-10-25 LBR/GMB food×income append
+
+- **LBR HIT:** HIES 2016 Table 3.6 q1–q5: 75.6, 72.7, 68.3, 65.4, 55.3. +5.
+- **GMB HIT:** IHS 2015/16 Table 4.8 d1–d10: 66.4, 66.8, 65.4, 64.1, 64.1, 62.3, 58.9, 57.1, 54.5, 49.0. +10.
+- Pack → **998 / 54**.

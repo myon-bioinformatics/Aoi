@@ -43,6 +43,10 @@ International staple prices, food-expenditure shares (Engel), and household cons
 
 High-income staples often missing from WFP/FPMA: ARE, AUS, BHR, CAN, CHE, DNK, EUZ, HKG, KWT, MYS, NOR, NZL, OMN, QAT, SGP, TWN. See [`staple_survey_missing.md`](staple_survey_missing.md).
 
+## Adjacent extra (national food CPI)
+
+See [`adjacent_extra/`](adjacent_extra/) for national food / bread-cereals CPI covering high-income Big Mac gap countries and selected LatAm NSOs (Japan CPI is maintained on the Aoi phase2 Japan lane, not here).
+
 ## Reinforcement (Engel-adjacent reference)
 
 See [`reinforcement/`](reinforcement/) for Bennett starchy-staple calorie shares, Working–Leser materials (quintile food shares / published income elasticities), and Orshansky-type poverty multipliers kept as a separate normative reference. Do not mix Orshansky into Engel E.

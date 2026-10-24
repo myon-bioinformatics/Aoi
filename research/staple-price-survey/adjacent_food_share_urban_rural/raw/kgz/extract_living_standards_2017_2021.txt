@@ -1,0 +1,3 @@
+KGZ NSC Living Standards food=продовольственные/потребительские
+2017 U48.8 R50.2; 2018 U48.9 R48.9; 2019 U46.4 R49.7; 2020 U48.5 R53.2; 2021 U47.7 R49.8
+https://stat.gov.kg/media/publicationarchive/37f82583-134a-461c-a5ec-7905bcfdd8fa.pdf

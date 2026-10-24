@@ -139,3 +139,7 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 - **MUS HIT:** HBS 2023 Table 5.2.3 food&non-alc by income quintile — q1–q5: 40.4, 36.6, 33.9, 28.6, 22.8. +5.
 - **MDG HIT:** EPM 2021-22 Graphique 7.2 — q1–q5: 70.3, 71.2, 68.9, 65.4, 57.6. +5.
 - Pack → **973 / 50**.
+
+## 2026-10-25 NPL food×income append
+
+- **NPL HIT:** NLSS 2010/11 Table 18 food share by expenditure quintile — q1–q5: 67, 65, 62, 59, 46. +5. Pack → **978 / 51**.

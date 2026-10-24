@@ -187,3 +187,9 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **MUS HIT:** Statistics Mauritius HBS 2023 Table 5.3.2 — Food&non-alc Urban **28.2** / Rural **30.5**. +2. Sibling income quintiles.
 - **MDG HIT:** INSTAT EPM 2021-22 Tableau 7.3 — alimentation Urbain **59.2** / Rural **68.5** (national 65.8). +2. Sibling Graphique 7.2 quintiles.
 - Pack → **473 / 89**.
+
+## 2026-10-25 BTN/NPL append
+
+- **BTN HIT:** NSB BLSS 2017 — food Urban **30** / Rural **38** (national 34). +2. (BLSS 2022 urban 40.7 published; rural aggregate not stated — skip.)
+- **NPL HIT:** CBS NLSS 2010/11 via WFP Table 17 — food Urban **52** / Rural **55** (national 54). +2. Sibling Table 18 quintiles.
+- Pack → **477 / 91**.

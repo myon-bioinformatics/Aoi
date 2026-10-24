@@ -143,3 +143,8 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 ## 2026-10-25 NPL food×income append
 
 - **NPL HIT:** NLSS 2010/11 Table 18 food share by expenditure quintile — q1–q5: 67, 65, 62, 59, 46. +5. Pack → **978 / 51**.
+
+## 2026-10-25 TTO SLC food×income append
+
+- **TTO HIT:** CSO SLC 2005 Table 3.4 food share by expenditure quintile — q1–q5: 41.1, 36.2, 31.4, 28.4, 23.7. +5. Pack → **983 / 52**.
+- SLV ur already loaded (different basket/source vs FUSADES EHPM Media); skip re-append.

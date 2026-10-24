@@ -99,3 +99,8 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 - Extended `adjacent_euz_proxy_staple_levels` with **AUT** Statistik Austria Preisradar scanner Durchschnittspreise (8 staples, 2023-01–2026-09, +360 rows). Pack total **7478** (AUT/ESP/FIN/FRA/IRL/NLD/PRT).
 - **BEL** exhausted (Statbel/be.STAT/data.gov.be = CPI/HICP only). DEU/ITA still no open national absolute retail bulk.
 - `adjacent_icp_food_prices`: World Bank ICP public releases are PPP/PLI/expenditure only — **no LCU item average prices** loaded (docs only).
+
+### Update 2026-10-24 (Asia/Tokyo) — DEU BMEL absolute staples
+
+- Extended `adjacent_euz_proxy_staple_levels` with **DEU** BMEL-Statistik 5050850/5051000 consumer EUR prices (bread/flour/potato; 107 rows). Pack total **7585** (AUT/DEU/ESP/FIN/FRA/IRL/NLD/PRT).
+- Rice/pasta not in these BMEL tables. Destatis www still unreachable from box; GENESIS has no food Durchschnittspreise.

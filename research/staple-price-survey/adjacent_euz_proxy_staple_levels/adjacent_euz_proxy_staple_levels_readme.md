@@ -19,14 +19,15 @@ Sibling pack to `adjacent_hi_staple_levels`. These are **national** absolute ave
 | **FRA** | 1821 | baguette_kg (monthly+annual), potato ware/new, pasta_500g (stopped), parisian bread (stopped) | INSEE BDM *Prix moyens de vente de détail* (SDMX) | ~1992–2026-09 |
 | **IRL** | 2618 | bread 800g/400g, flour 2kg ×3, potato packs, spaghetti 500g | CSO PxStat CPM08 (IEP) + CPM04 + CPM12 (EUR) National Average Price | 1997–2026-09 |
 | **NLD** | 86 | bread_loaf, rice_kg, potato_kg (+ 2024–25 supermarket potato) | CBS 80345eng (to 2018) + maatwerk Agro-Nutri Monitor xlsx | 1999–2018; potato 2024–2025 |
+| **DEU** | 0 | rye_mixed_bread_kg, wholemeal_bread_500g, wheat_flour_type405_kg, potato_kg; plus LEH-all wheat_mixed_bread / multigrain / potato | BMEL-Statistik 5050850 + 5051000 | 2000; 2009–2024 |
 | **ESP** | 76 | rice_kg, bread_kg, flour_cereals_kg, pasta_couscous_kg, potato_kg | INE jaxiT3 **25169** (+ **73844** 2024–25 extension) household *valor unitario* | 2006–2025 |
 | **FIN** | 1911 | rice 1kg, wheat flour 2kg, rye/mixed/wheat breads, baguette, macaroni 400g, spaghetti 500g, cooking potatoes | Statistics Finland StatFin_Passiivi **011** Average prices of commodities (EUR) | 2002–2018 (monthly + annual avg) |
 | **PRT** | 606 | rice avg/carolino €/kg, wheat flour €/kg, spaghetti €/kg, potato €/kg, bread bolas carcaça €/unit | Observatório de Preços agroalimentar (Consumo stage; 4-week periods) | ~2019-P1–2026-P13 |
 | **AUT** | 360 | rice_long_grain_kg, wheat_flour_kg, rye_bread_kg, wholemeal/white bread 500g, bread_roll_unit, pasta_500g, potato_kg | Statistik Austria **Preisradar** scanner mean (`data/ep/{id}.json` meanData) | 2023-01–2026-09 monthly |
 
-**Total rows: 7478.** Build: `build_euz_proxy_staple_levels.py`. Stats: `_build_stats.json`.
+**Total rows: 7585.** Build: `build_euz_proxy_staple_levels.py`. Stats: `_build_stats.json`.
 
-New this turn (append): **AUT +360**. FRA/IRL/NLD/ESP/FIN/PRT unchanged.
+New this turn (append): **AUT +360**. DEU/FRA/IRL/NLD/ESP/FIN/PRT/AUT/FIN/PRT unchanged.
 
 ## Misses / exhausted (this turn)
 

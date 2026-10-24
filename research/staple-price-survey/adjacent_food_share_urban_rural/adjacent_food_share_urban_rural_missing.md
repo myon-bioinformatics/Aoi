@@ -9,8 +9,8 @@
 | URY, PAN | CEPALSTAT 5725 National only (no Urban/Rural) |
 | HKG, SGP | City-state; no rural stratum — do not coerce |
 | SAU, ARE | National/regional food % only in open HICES/HIES pubs; no urban/rural food Engel table loaded |
-| PAK | HIES 2024–25 national Food & Non-Alc 36.72%; urban/rural food÷total not in open writeup; PPRI 34.2/48.1 not used |
-| EGY | CAPMAS HIECS urban/rural cited in journals; primary CAPMAS table not pinned — deferred |
+| PAK | **HIT** HIES 2011-12…2018-19 urban/rural Food & Non-Alc (8 rows); 2024-25 national-only noted |
+| EGY | **HIT** CAPMAS HIECS 2019/2020 ERF 3948 Urban 28.63 / Rural 36.39 |
 | VNM | GSO portal blocked (same as food×income) |
 | ZAF | Sibling computerUse lane (Stats SA captcha cleared by user) — **not scraped here** |
 | Hours-to-buy expand | No additional NSO-designed labour-minutes staple indicator beyond BMEL (DEU) + DIEESE PNCBA (BRA); pack stays DEU+BRA |
@@ -48,3 +48,11 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 
 - **LKA HIT** 2 rows: DCS HIES 2019 Final Results Table 10 Urban 28.2 / Rural 36.9 (Food÷total). Pack → **361 / 56**. Estate 50.9% noted not loaded.
 - 2016 Final Report PDF download corrupt/unreadable this run — deferred.
+
+## 2026-10-25 EGY + MAR + COL append
+
+- **EGY HIT:** CAPMAS HIECS 2019/2020 (ERF download 3948) Food & Non-Alc ÷ Total consumption expenditure — Urban **28.63** / Rural **36.39** (year 2020). Primary PDF pinned.
+- **MAR HIT:** HCP ENCDM/ENNVM Alimentation urban/rural — 2001 (37.9/49.9), 2007 (36.8/49.3), 2014 (33.3/47.3). Not Big Mac ISO3; Engel companion. Full q1–q5 food shares **not** in open tables (only Q1/Q5 extremes 49.6/29.1) → food×income miss.
+- **COL thicken:** DANE ENPH 2016-2017 cabeceras **14.0** / centros poblados y rural disperso **31.2** (year 2017); CEPALSTAT 2016 retained.
+- **SAU/ARE food×income:** still MISS (SAU terciles only; ARE no open quintile/decile) — reconfirmed, not loaded.
+- **Hours-to-buy:** still no third-country NSO-designed labour-minutes staple series (DEU BMEL + BRA DIEESE only).

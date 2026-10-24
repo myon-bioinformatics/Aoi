@@ -1,5 +1,18 @@
 # Missing / blocked — adjacent_food_share_urban_rural
 
+
+### Session append (2026-10-25 ~01:56 JST)
+
+| ISO3 | status | notes |
+|------|--------|-------|
+| XKX | **HIT** +2 | Eurostat HBS_STR_T226 2015 DEG1/DEG3 CP01 (geo=XK) |
+| TUR | **MISS** (T226) | TR listed in T226 geo but **no values**; TUIK bulletin pages JS-only this egress |
+| ARG / CHL | **MISS** UR | CEPALSTAT 5725 National-only (no Urban/Rural area) |
+| SAU / ARE / SGP / HKG | **MISS / N/A** | no open UR primary / city-state |
+| CHE | **MISS** UR | HABE Grossregion ≠ urban/rural; Einkommensklasse absolute CHF bands (INC already loaded) |
+
+Hits now: **108 ISO3 · 525 rows**.
+
 | ISO3 | Status |
 |---|---|
 | CAN | StatCan SSL / WDS failure; not loaded |

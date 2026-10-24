@@ -15,7 +15,7 @@ Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 ## Sources
 | Source | Rows | Notes |
 |---|---:|---|
-| Eurostat HBS_STR_T226 | 277 | CP01; PM÷10→%; DEG1=cities→urban; DEG3=rural |
+| Eurostat HBS_STR_T226 | 279 | CP01; PM÷10→%; DEG1=cities→urban; DEG3=rural; +XKX 2015 |
 | CEPALSTAT indicator 5725 | 26 | Urban/Rural; **Total quintile** only |
 | MOSPI HCES Statement 3 | 12 | India (incl. 2023-24) |
 | Azerbaijan SSC HBS via banker.az | 2 | Azerbaijan H1 2023 |

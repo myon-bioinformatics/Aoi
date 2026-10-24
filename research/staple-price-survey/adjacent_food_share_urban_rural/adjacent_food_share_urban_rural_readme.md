@@ -8,7 +8,7 @@ Urban vs rural (or municipal / non-municipal) food expenditure shares of househo
 Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 
 ## Coverage (build 2026-10-25 Asia/Tokyo)
-- **503 rows / 104 ISO3**, years **1988–2025**
+- **505 rows / 104 ISO3**, years **1988–2025**
 - ISO3: ARM AUS AUT AZE BEL BGD BGR BOL BRA BTN BWA CHN CIV COL CRI CYP CZE DEU DNK DOM DZA ECU EGY ESP EST ETH EUZ FIN FJI FRA GBR GEO GMB GRC GTM HND HRV HUN IDN IND IRL IRN ITA JOR KEN KHM KIR LAO LBR LKA LSO LTU LUX LVA MAR MDA MDG MEX MLI MLT MMR MOZ MUS MYS NAM NGA NIC NLD NOR NPL OMN PAK PER PHL POL PRT PRY PSE ROU RUS RWA SDN SLB SLV SVK SVN SWE TCD THA TJK TLS TON TUN TZA UGA UKR URY USA VNM VUT WSM YEM ZAF ZMB
 - `estimated_value` empty on all rows
 

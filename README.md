@@ -80,7 +80,7 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 | [`research_loop/`](research_loop/README.md) | Automated exploration and HTML observation that connect several subprojects |
 | [`scripts/`](scripts/) | Repository-level tools (child registry check, distribution build, c001 replay and publication) |
 | [`dist/`](dist/), [`distributions/`](distributions/), `distributions.json` | Single-file stdlib distributions (`*_min.py`); see [docs/distributions.md](docs/distributions.md) |
-| [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash |
+| [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash. `vendor/py_launch.cjs` is the canonical copy of the parent repository's Node launcher (Node >= 24) that Aoi's children vendor from Aoi |
 | `shared-tools.lock.json` | Stdlib-shrink tools Aoi distributes to its subtree children, verified by hash |
 | [`docs/`](docs/) | Philosophy, principles, method and specifications |
 | [`tests/`](tests/) | Repository-level tests (each subproject keeps its own `tests/`) |

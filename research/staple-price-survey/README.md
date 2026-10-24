@@ -112,3 +112,7 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 ### Update 2026-10-24 (Asia/Tokyo) — eating-out / restaurants-hotels shares
 
 - New pack `adjacent_eating_out_shares`: **1444** rows, **23/56** Big Mac ISO3 — Eurostat `nama_10_co3_p3` CP11/CP111 + OECD Table5/5A HFCE shares & levels (~1995–2025). Not CPI. USA skipped (USDA FES / Aoi BLS).
+
+### Update 2026-10-24 (Asia/Tokyo) — eating-out shares near-complete
+
+- `adjacent_eating_out_shares` now **1626** rows / **55/56** Big Mac ISO3 (USA intentional skip). Added World Bank ICP 2011/2017/2021 restaurants & hotels expenditure shares + LCU levels for 32 gap countries.

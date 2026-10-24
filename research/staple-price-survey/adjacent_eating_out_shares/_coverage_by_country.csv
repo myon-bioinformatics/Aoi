@@ -1,57 +1,57 @@
 country,share_rows,share_years,share_source,fafh_rows,fafh_years,level_rows,status
-ARE,0,,,0,,0,miss
-ARG,0,,,0,,0,miss
+ARE,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+ARG,2,2017-2021,World Bank ICP 2021 API source=90,0,,2,hit
 AUS,30,1995-2024,OECD DSD_NAMAIN10@DF_TABLE5,0,,30,hit
-AZE,0,,,0,,0,miss
-BHR,0,,,0,,0,miss
-BRA,0,,,0,,0,miss
+AZE,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+BHR,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+BRA,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 CAN,31,1995-2025,OECD DSD_NAMAIN10@DF_TABLE5,0,,31,hit
 CHE,28,1995-2022,Eurostat NAMA_10_CO3_P3,0,,28,hit
 CHL,7,2018-2024,OECD DSD_NAMAIN10@DF_TABLE5,0,,7,hit
-CHN,0,,,0,,0,miss
+CHN,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 COL,20,2005-2024,OECD DSD_NAMAIN10@DF_TABLE5,0,,20,hit
 CRI,27,1995-2021,OECD DSD_NAMAIN10@DF_TABLE5,0,,27,hit
 CZE,28,1995-2022,Eurostat NAMA_10_CO3_P3,28,1995-2022,28,hit
 DNK,28,1995-2022,Eurostat NAMA_10_CO3_P3,28,1995-2022,28,hit
-EGY,0,,,0,,0,miss
+EGY,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 EUZ,28,1995-2022,Eurostat NAMA_10_CO3_P3,28,1995-2022,28,hit
 GBR,31,1995-2025,OECD DSD_NAMAIN10@DF_TABLE5,0,,31,hit
-GTM,0,,,0,,0,miss
-HKG,0,,,0,,0,miss
-HND,0,,,0,,0,miss
+GTM,2,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,2,hit
+HKG,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+HND,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 HUN,28,1995-2022,Eurostat NAMA_10_CO3_P3,28,1995-2022,28,hit
 IDN,6,2010-2015,OECD DSD_NAMAIN10@DF_TABLE5,0,,6,hit
-IND,0,,,0,,0,miss
+IND,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 ISR,29,1995-2023,OECD DSD_NAMAIN10@DF_TABLE5,30,1995-2024,29,hit
-JOR,0,,,0,,0,miss
+JOR,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 JPN,30,1995-2024,OECD DSD_NAMAIN10@DF_TABLE5A_T500,30,1995-2024,30,hit
 KOR,31,1995-2025,OECD DSD_NAMAIN10@DF_TABLE5A_T500,0,,31,hit
-KWT,0,,,0,,0,miss
-LBN,0,,,0,,0,miss
-LKA,0,,,0,,0,miss
-MDA,0,,,0,,0,miss
+KWT,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+LBN,2,2017-2021,World Bank ICP 2021 API source=90,0,,2,hit
+LKA,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+MDA,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 MEX,30,1995-2024,OECD DSD_NAMAIN10@DF_TABLE5,0,,30,hit
-MYS,0,,,0,,0,miss
-NIC,0,,,0,,0,miss
+MYS,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+NIC,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 NOR,29,1995-2023,Eurostat NAMA_10_CO3_P3,27,1995-2021,29,hit
 NZL,30,1995-2024,OECD DSD_NAMAIN10@DF_TABLE5,0,,30,hit
-OMN,0,,,0,,0,miss
-PAK,0,,,0,,0,miss
-PER,0,,,0,,0,miss
-PHL,0,,,0,,0,miss
+OMN,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+PAK,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+PER,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+PHL,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 POL,29,1995-2023,Eurostat NAMA_10_CO3_P3,29,1995-2023,29,hit
-QAT,0,,,0,,0,miss
+QAT,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 ROU,28,1995-2022,Eurostat NAMA_10_CO3_P3,28,1995-2022,28,hit
 RUS,9,2011-2019,OECD DSD_NAMAIN10@DF_TABLE5,0,,9,hit
-SAU,0,,,0,,0,miss
-SGP,0,,,0,,0,miss
+SAU,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+SGP,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 SWE,28,1995-2022,Eurostat NAMA_10_CO3_P3,28,1995-2022,28,hit
-THA,0,,,0,,0,miss
+THA,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
 TUR,15,2009-2023,Eurostat NAMA_10_CO3_P3,0,,15,hit
-TWN,0,,,0,,0,miss
-UKR,0,,,0,,0,miss
-URY,0,,,0,,0,miss
-USA,0,,,0,,0,miss
-VEN,0,,,0,,0,miss
-VNM,0,,,0,,0,miss
-ZAF,0,,,0,,0,miss
+TWN,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+UKR,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+URY,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+USA,0,,,0,,0,skip
+VEN,1,2011,World Bank ICP 2017 API source=78,0,,1,hit
+VNM,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit
+ZAF,3,2011-2021,World Bank ICP 2017 API source=78; World Bank ICP 2021 API source=90,0,,3,hit

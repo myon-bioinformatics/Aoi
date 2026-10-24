@@ -1,10 +1,21 @@
 # missing — adjacent_food_share_by_income
 
-## Hits: 37 ISO3 · 814 rows
+## Hits: 63 ISO3 · 1043 rows
 
 See `readme.md` coverage tables and `_coverage_by_country.csv`.
 
-Hits: ARG, BEL, BRA, CAN, CHE, CHL, COL, CRI, CZE, DEU, DNK, ESP, EUZ, FRA, GBR, GTM, HND, HUN, IDN, IND, ISR, ITA, MEX, NIC, NLD, NOR, PER, PHL, POL, ROU, SGP, SWE, THA, TUR, URY, USA, ZAF
+### Session append (2026-10-25 ~01:55 JST)
+
+| ISO3 | status | notes |
+|------|--------|-------|
+| BOL, SLV, PAN, PRY, DOM | **HIT** +25 | CEPALSTAT 5725 National q1–q5 (BADEHOG); raw in `raw/cepalstat_5725/` |
+| EGY | **HIT** (prior) | CAPMAS HIECS 2012/13 expenditure quintiles |
+| SAU | **MISS** | GASTAT HEIS 2013 open tables use **absolute monthly-expenditure brackets** with Food+Total levels — not equal quintile/decile shares. Do not coerce brackets→q1–q5. |
+| ARE | **MISS** | No open SCAD/FCSC HIES food×equal-quintile/decile primary table pinned this session |
+| LKA | **partial / pending** | HIES 2019 Final Results: sector food/total (UR already loaded). Final Report PDF (~56 MB) download incomplete; Final Results bulletin has **no** food×income-quintile table |
+| JOR | **MISS** | DOS HEIS absolute expenditure brackets + demog UR; no commodity×equal-quintile food % |
+| OMN / QAT / KWT / BHR | **MISS** | NCSI/PSA/etc. open quintile food-share tables not pinned (404s / no COICOP×q) |
+| AUS / NZL / JPN / KOR / TWN | **skip** | Aoi-owned HES lanes |
 
 ### By source
 

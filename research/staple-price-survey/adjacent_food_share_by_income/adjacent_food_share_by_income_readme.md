@@ -81,15 +81,20 @@ Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS 
 | ISO3 | year | rows |
 |------|-----:|-----:|
 | ARG | 2017 | 5 |
+| BOL | 2015 | 5 |
 | BRA | 2017 | 5 |
 | CHL | 2021 | 5 |
 | COL | 2016 | 5 |
 | CRI | 2018 | 5 |
+| DOM | 2018 | 5 |
 | GTM | 2014 | 5 |
 | HND | 2004 | 5 |
 | MEX | 2018 | 5 |
 | NIC | 2014 | 5 |
+| PAN | 2007 | 5 |
 | PER | 2019 | 5 |
+| PRY | 2011 | 5 |
+| SLV | 2006 | 5 |
 | URY | 2016 | 5 |
 
 ### GBR national (ONS deciles + Defra q1/q3/q5)
@@ -103,6 +108,7 @@ Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS 
 
 | ISO3 | rows | years | source | grain |
 |------|-----:|-------|--------|-------|
+| EGY | 5 | 2013 | CAPMAS HIECS 2012/13 | q1–q5 |
 | IND | 15 | 2023 | MOSPI HCES 2022-23 | q1–q5 + d1–d10 |
 | THA | 2 | 2018 | NSO SES 2561 | q1, q5 only |
 | IDN | 10 | 2025–2026 | BPS via Kompas | q1–q5 × 2 |

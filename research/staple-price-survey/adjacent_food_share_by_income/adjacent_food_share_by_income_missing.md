@@ -58,7 +58,7 @@ See `readme.md` coverage tables and `_coverage_by_country.csv`.
 
 ## Other Big Mac / priority misses (excl. Aoi skip)
 
-AZE, BHR, CHN, EGY, JOR, KWT, LBN, NZL, OMN, QAT, SAU, ARE, VEN
+AZE, BHR, CHN, JOR, KWT, LBN, OMN, QAT, SAU, ARE, VEN  (excl. Aoi NZL; EGY/LKA now HIT)
 
 No open HBS/FIES quintile×food share table loaded for these this run. National-mean Engel / ICP aggregate intentionally **not** used as quintile proxies.
 
@@ -187,3 +187,29 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 
 - **LKA HIT:** DCS HIES 2019 Final Report Table 3.13 (OCR of image page; food+non-food sums validated) → `engel_share:food_d1`…`d10` (2019). Raw PDF ~57 MB image-heavy left out of git; OCR extract in `raw/lka/`.
 - Pack now LKA 2016+2019 (+20). SAU/ARE miss unchanged. Hours still DEU+BRA only.
+
+## 2026-10-25 ~03:00 JST stop — Big Mac ISO3 remainder (food×income)
+
+Session tip after LKA 2016+2019 densification. Pack: **1448 rows / 82 ISO3**.
+
+### Still-miss Big Mac ISO3 (excl. Aoi-owned JPN/KOR/TWN/AUS/NZL)
+
+| ISO3 | status | note |
+|------|--------|------|
+| SAU | **MISS** | GaStat HICES/HIES: national food % or Low/Medium/High **terciles** only — not coerced to q1–q5/d1–d10 |
+| ARE | **MISS** | No open SCAD/FCSC/Dubai Pulse food×equal-quintile/decile table |
+| AZE | **MISS** (egress) | SSC catalog lists `en/051_52en.xls` (composition by expenditure quintiles) + UR composition xls; TLS unexpected EOF / Wayback empty this box |
+| BHR | **MISS** | data.gov.bh open sets are CPI COICOP — no HES food×income quintile/decile |
+| CHN | **MISS** | NBS: since 2013 no open expenditure-by-income-group (quintile food share unpublished) |
+| JOR | **MISS** (grain) | DOS HEIS absolute expenditure brackets / Engel-band distributions — not equal quintile/decile food % |
+| KWT | **MISS** | CSB HIES expenditure-strata tables; no open income quintile/decile food share |
+| LBN | **MISS** (egress) | CAS HBS 2011–12 pages 404/restructured; WB secondary cites quintiles but primary CAS tables not pinned |
+| OMN | **MISS** | NCSI/data.gov.om: Engel-band×income or API 403 — no open equal-cut food % table loaded |
+| QAT | **MISS** | No open PSA food×income quintile/decile pinned |
+| VEN | **MISS** | BCV ENPF / INE ESCA: no open food÷total by income quintile/decile this egress |
+
+### Loaded this session (Big Mac densify)
+- **LKA** HIES 2016 + 2019 Final Report Table 3.13 income-decile food÷total → `food_d1`…`d10` (+20)
+
+### Hours-to-buy
+Still **DEU BMEL + BRA DIEESE** only (240 rows / 2 ISO3). No third NSO-designed labour-minutes staple series found before stop.

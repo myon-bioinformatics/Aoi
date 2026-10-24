@@ -219,3 +219,22 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **VUT HIT:** VNSO HIES 2010 — food Urban **42.5** / Rural **62.1** (from published annual expenditure totals; national 56). +2.
 - **KIR HIT:** NSO HIES 2023–24 Table 17 — Food&non-alc Urban **38.1** / Rural **42.4**. +2.
 - Pack → **487 / 96**. SLB PDF still blocked (403/404).
+
+## 2026-10-25 ~03:00 JST stop — Big Mac ISO3 remainder (urban/rural)
+
+Pack: **525 rows / 108 ISO3**. Hours sibling still DEU+BRA only.
+
+### Still-miss Big Mac ISO3 (excl. Aoi JPN/KOR/TWN/NZL)
+
+| ISO3 | status | note |
+|------|--------|------|
+| HKG / SGP | **N/A** | City-state — no rural stratum; do not coerce |
+| ARG / CHL | **MISS** (no rural) | ENGHo / EPF urban-only; CEPALSTAT 5725 National-only for UR |
+| CAN | **MISS** (egress) | StatCan Daily SHS 2019 CMA vs rural food shares exist (reported 14.7/16.7) but www150 SSL/000 this box; not loaded without primary pin |
+| CHE | **MISS** | HABE Grossregion ≠ urban/rural |
+| TUR | **MISS** | Eurostat HBS_STR_T226 TR only publishes deg_urb=**UNK** (19.7%/20.4% PM÷10) — not Cities/Rural |
+| ISR | **MISS** | CBS HES defines urban/rural localities but open pubs lack food-share×locality-type table |
+| ARE / BHR / KWT / QAT / SAU | **MISS / N/A** | Gulf: no open UR food Engel; city-state-like / national-only |
+| LBN / VEN | **MISS** (egress) | CAS/BCV primary UR food Engel not pinned |
+
+No UR append this final stretch; INC densified LKA only.

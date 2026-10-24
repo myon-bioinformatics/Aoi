@@ -138,3 +138,7 @@ Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS 
 | `raw/` | source pulls |
 
 Mirrored to `/workspace/aoi-phase2/staple-price-survey/adjacent_food_share_by_income/` (no git push).
+
+### 2026-10-25 Eurostat T223 densification
+
+Added **AUT, BGR, CYP, EST, GRC, HRV, IRL, LTU, LUX, LVA, MKD, MLT, MNE, PRT, SRB, SVK, SVN, XKX** from `HBS_STR_T223` CP01 (PM÷10). Pack → **1428 / 81**. FIN omitted (Aoi national-HES lane).

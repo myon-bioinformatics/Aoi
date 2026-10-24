@@ -9,7 +9,7 @@ on:
       - 'dragowing/**'
       - 'scripts/diagnose_dragowing_browser.py'
       - 'tests/test_dragowing_browser_*.py'
-      - 'docs/browser-startup-validation.md'
+      - 'docs/diagnostics/browser-startup-validation.md'
   workflow_dispatch:
 
 permissions:

@@ -47,7 +47,7 @@ Hits: ARG, BEL, BRA, CAN, CHE, CHL, COL, CRI, CZE, DEU, DNK, ESP, EUZ, FRA, GBR,
 
 ## Other Big Mac / priority misses (excl. Aoi skip)
 
-AZE, BHR, CHN, EGY, JOR, KWT, LBN, LKA, MDA, NZL, OMN, PAK, QAT, RUS, SAU, ARE, UKR, VEN
+AZE, BHR, CHN, EGY, JOR, KWT, LBN, LKA, NZL, OMN, QAT, SAU, ARE, VEN
 
 No open HBS/FIES quintile×food share table loaded for these this run. National-mean Engel / ICP aggregate intentionally **not** used as quintile proxies.
 
@@ -104,3 +104,9 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 ## 2026-10-25 UKR food×income deciles
 
 - **UKR HIT:** SSSU Table II.45 (2020–2021) Food+non-alc % of money expenditure by per capita equivalent **money-income deciles** d1–d10. +20 rows → **898/43**.
+
+## 2026-10-25 RUS food×income deciles
+
+- **RUS HIT:** Rosstat HBS R_1-5_4k (via Roschart) IV quarter 2022–2023 — Food+non-alc % of consumer expenditures by income deciles d1–d10. +20 rows → **918/44**.
+- SAU/ARE miss unchanged (terciles / no open quintile-decile).
+- Hours-to-buy still DEU+BRA only (no new NSO-designed series).

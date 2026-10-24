@@ -82,3 +82,9 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 ## 2026-10-25 CHN thicken
 
 - **CHN:** +8 rows 2019–2022 NBS press-release Food, tobacco and liquor / PCE (same method as 2023). Series now 2019–2023.
+
+## 2026-10-25 MEX ENIGH 2024 urban/rural
+
+- **MEX HIT:** INEGI ENIGH 2024 Cuadro 13 — Alimentos, bebidas y tabaco % of gasto corriente monetario; urban 37.0 / rural 42.5. +2 rows → **399/63**. Note tobacco-included; companion to CEPALSTAT 2018 food-only.
+- IDN 2024 Susenas: national 50.10% open; precise national urban/rural % not pinned from secondary cites this egress — not loaded.
+- SAU/ARE food×income miss unchanged.

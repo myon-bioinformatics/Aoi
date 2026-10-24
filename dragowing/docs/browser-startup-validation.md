@@ -1,0 +1,108 @@
+# Browser.getVersion 起動診断（検証専用）
+
+`python -m dragowing.diagnose_browser` は、Chrome / Chromium の選択と、選択済みの実行ファイルが CDP に応答するまでの問題を分けて記録する。標準ライブラリだけで動き、研究データは読まない。既存の `Chrome`、`RenderSession`、`export_draw` を使う検証用モジュールであり、本番の起動引数、再試行、タイムアウト、ブラウザ選択は変更しない。
+
+通常の画像テストと異なり、ブラウザ不在を skip しない。指定した実行ファイル・JS がない、バージョン取得に失敗した、1 回でも試行が失敗した場合は終了コード 1。引数の構文や上限値の誤りは argparse の終了コード 2。
+
+## 起動だけを比べる
+
+Aoi のルートから、使用する実行ファイルの絶対パスを必ず渡す。
+
+```sh
+python -S -m dragowing.diagnose_browser \
+  --chrome /usr/bin/google-chrome --runs 5 --timeout 30 \
+  --output build/browser-validation/chrome-startup.json
+
+python -S -m dragowing.diagnose_browser \
+  --chrome /usr/bin/chromium --runs 5 --timeout 30 \
+  --output build/browser-validation/chromium-startup.json
+```
+
+- `--chrome` は必須。環境変数 `CHROME` / `CHROMIUM` や PATH の候補へ切り替えない。
+- 指定したパスで起動する。シンボリックリンクの実体は別途記録するが、実体パスに置き換えて起動しない。ラッパーが自身の名前・位置に依存する場合の挙動を保つ。
+- `--version` は最初に 1 回だけ別プロセスで取得する。その成否と CDP の成否は別に記録し、`--version` が失敗しても起動試行は続ける。
+- 各試行は新しいブラウザと一時プロファイルで `Browser.getVersion` の応答を待ち、閉じる。ページ描画、Plotly.js の取得、既存ユーザープロファイルの利用は行わない。
+- 各試行を独立した観測として残す。失敗を自動再試行して成功に置き換えることはしない。
+- 通常の cleanup 後にプロセス・reader・プロファイル・pipe が残る、または thread / fd 数が増える場合、後続試行を止める。残りは `unattempted_runs`、理由は `stopped_early_reason` に記録する。資源漏れを増やさず、正常終了に見せかけない。所有が確認できる生存ブラウザは、通常 cleanup の証拠を保存した後で kill / wait と best-effort close を行い、結果を `recovery` に分けて残す。未追跡の fd を推測して閉じることはしない。
+
+`--timeout` の既定値は 30 秒。CDP 呼び出し、`--version`、描画時の各段階の上限であり、試行全体の wall-clock 上限ではない。既存の Chrome cleanup の待ち時間は別にかかる。起動成功後にブラウザを使い回す本番挙動とは違い、起動試行ごとに fresh process を測る。
+
+## 任意: 同一ブラウザで 3 図 × PNG / SVG
+
+信頼できるローカルの Plotly.js を事前に用意し、`--plotly-js` と `--evidence-dir` を両方指定する。このコマンドは JS をダウンロードせず、環境変数で指定された別の JS にもフォールバックしない。
+
+```sh
+python -S -m dragowing.diagnose_browser \
+  --chrome /usr/bin/google-chrome --runs 3 --timeout 30 \
+  --plotly-js /absolute/path/to/plotly.min.js \
+  --evidence-dir build/browser-validation/chrome-images \
+  --output build/browser-validation/chrome-render.json
+```
+
+各試行は一つの `RenderSession(offline=True)` に診断用 Chrome を渡す。固定の人工データから異なる 3 図を作り、既存の Plotly 設定・`export_draw` で PNG / SVG を各 1 回出力する。6 出力が同じ PID を使い、各出力後に page target 集合が元に戻ることを確認する。
+
+PNG は署名・寸法（400 × 300）・チャンク CRC・画像データの展開を検査し、3 図の PNG hash が異なることを確認する。SVG は XML として解析し、SVG root、人工のタイトルと凡例があることを確認する。画像バイトのブラウザ間一致は求めない。画像は `run-001/figure-0.png` などに保存される。再実行には新しい evidence directory を使い、以前の画像を今回の成功と取り違えない。
+
+JS の実体パス、サイズ、SHA-256 を JSON に残す。同じ bundle・Python・OS・タイムアウト・試行数で Chrome / Chromium を別々に実行すると比較しやすい。CDP の offline は描画ページのネットワークを無効にするもので、OS 全体のネットワーク分離ではない。検証のために権限制限やプロセス起動制限を迂回しない。
+
+## JSON とログの読み方
+
+`--output -` は標準出力へ JSON だけを書く。ファイルを指定した場合は JSON を保存し、標準出力に CDP product、成功 / 失敗数、readiness の最小 / 最大秒数、失敗段階を 1 行で出す。
+
+主なフィールド:
+
+- `schema_version`: この JSON 形式の版（現在 1）。`created_at` は UTC。
+- `runtime`: Python 版、OS platform、CPU architecture、kernel release。ホスト名や環境変数は含まない。
+- `chrome.requested_path` / `executable_path` / `resolved_path`: 指定値、実際の起動パス、シンボリックリンクを解決した実体パス。
+- `chrome.version`: `--version` の出力、終了コード、所要時間、失敗情報。失敗しても trial の CDP 応答は別に確認する。
+- `preflight_failure`: 実行ファイル・JS・出力先などの事前検査失敗。
+- `trials[].cdp_product` / `cdp_protocol_version`: 最初の `Browser.getVersion` が返した識別情報。別の追加 readiness probe は行わない。
+- `readiness_elapsed_seconds`: 起動開始から最初の `Browser.getVersion` の成功 / 失敗まで。起動 cleanup を含めない。spawn 前に失敗した場合は null。
+- `render_elapsed_seconds` / `renders`: 描画全体と各画像の所要時間、hash、サイズ、PID、出力パス、残った page 数。起動だけの実行では描画時間は null。
+- `close_elapsed_seconds`: 正常時・例外時に既存 cleanup が使った時間の合計。重複した idempotent close も含む。
+- `failure`: 最初の失敗段階、例外型、bounded message、`last_cdp_method`（最後に呼んだ CDP method で、画像検証エラーなどでは失敗した操作そのものとは限らない）、失敗時の process / reader / resource / stderr snapshot。`readiness`、`session_setup`、`render.figure-0.png` などを区別する。
+- `failure.process`: snapshot 時点の PID、running / exited / not_started、returncode。Linux では `/proc/<pid>/stat` の state 文字も記録する。EOF とプロセス終了には競合があるため、EOF 時の running だけではハングと断定しない。
+- `cleanup`: 既存 cleanup 後のプロファイル削除、reader 終了、プロセス状態、pipe / stderr の解放。保持した reader / process の参照で確認する。
+- `resources_before` / `resources_after` / `resource_delta`: Python thread 数と、利用可能なら `/proc/self/fd` の個数。fd の内容やリンク先は読まない。未対応環境の fd 数は null。
+- `cleanup_failure` / `cleanup_complete`: 最初の起動・描画エラーを上書きせずに cleanup の異常も記録する。
+- `passed_runs` / `failed_runs` / `unattempted_runs`: 試行結果と未実施分。試行が全て成功しても `--version` の失敗があれば全体の `ok` は false。
+
+`stderr_tail` はファイル末尾へ seek して最大 4096 bytes だけ読む。production の例外メッセージ生成も、検証用 subclass では同じ bounded reader を通す。`Chrome.start()` が例外時に stderr と一時プロファイルを消す前に snapshot を取る。終了処理後のメッセージは capture 対象外。
+
+任意の argv / 環境変数、`/proc/*/cmdline` / `environ`、ユーザーのページや研究データは集めない。ログ中の credential・URL・environment・argument に見える文字列は伏せ、長さを制限する。ただし任意の実行ファイルが出す内容を完全に秘密判定できるわけではない。信頼する実行ファイルだけを指定し、外部に共有する前に診断 JSON を確認する。
+
+この結果は原因確定ではなく観測である。例えば process singleton socket の EPERM は実行環境の制限を示すが、別環境での断続的な `Browser.getVersion` timeout の原因まで示さない。Chrome の成功と Chromium の失敗が 1 回だけあっても、製品差と断定せず、環境・bundle・試行位置と合わせて読む。
+
+## ブラウザなしの回帰テスト
+
+```sh
+.venv/bin/python -m pytest -c pyproject.toml -q \
+  dragowing/tests/test_diagnose_browser.py \
+  dragowing/tests/test_chrome_pipe.py \
+  dragowing/tests/test_chrome_pipe_resources.py
+```
+
+新しいテストは deterministic な CDP peer を POSIX pipe で動かし、実 Chrome / Chromium やダウンロードを必要としない。起動成功、応答なし、途中終了、不正 JSON、spawn 失敗、`--version` 失敗、実行ファイル / JS 不在、不正 timeout、symlink 名の維持、同一 PID の 6 出力、ready / capture 失敗、stderr の bounded read、cleanup 失敗による後続停止を確認する。実ブラウザの成否は別の CI 実測として扱う。
+
+
+## CI の比較条件
+
+Aoi の `.github/workflows/browser-startup-validation.yml` は `ubuntu-24.04` / Python 3.14 で、`google-chrome` と `chromium` の 2 系統を別ジョブとして実行する。同一系統の実行ファイル名の別名（`google-chrome-stable`、`chromium-browser`）は検索するが、Chrome 不在時に Chromium で代替するなどの系統間フォールバックはしない。
+
+各ジョブは依存関係とローカル Plotly.js を準備した後、次の順で測る。
+
+1. fresh profile の起動を 10 回。
+2. ブラウザを明示・必須化した Aoi の全 pytest suite。
+3. fresh profile の起動をもう 10 回。
+4. 3 つの独立した session で、それぞれ 3 図 × PNG / SVG を検証。
+
+JSON、JUnit、人工図の画像を artifact に 14 日間保存する。先行の診断・テストが失敗しても、準備とブラウザ選択が成功しジョブがキャンセルされていなければ後段の測定も行う。実際の製品・版・bundle hash は各結果で確認する。通常の runner user / network のまま測り、この追加ジョブは namespace、権限、security 設定を変更しない。本番のブラウザ選択や既存のネットワーク分離 CI も変更しない。
+
+## 別に確認した resource cleanup の問題
+
+`test_chrome_pipe_resources.py` は 2 件の既存不具合を deterministic に再現する strict xfail テストである。
+
+- 2 本目の `os.pipe()` が EMFILE を返したとき、先に確保した pipe pair が未追跡のまま残る。
+- pipe fd が 1024 以上になると `select.select` が拒否し、`close()` も同じ ValueError を繰り返して cleanup に到達しない。
+
+両テストとも検証用に確保した資源はテスト側で回収する。strict xfail は健康な状態の assertion を残すためのもので、予想外に成功した場合は失敗になり、修正後には該当マーカーを外す必要がある。これらは別に確認した欠陥であり、元の断続的な `Browser.getVersion` timeout の根本原因と確定したわけではない。この検証 PR は本番 transport の修正を含まない。

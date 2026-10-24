@@ -4,7 +4,7 @@ Retrieved: **2026-10-24 Asia/Tokyo** · Season2 adjacent for Aoi #118
 
 ## Result
 
-**814 vertical rows** · **37 ISO3** with at least one series · year span **1988–2026**.
+**834 vertical rows** · **37 ISO3** with at least one series · year span **1988–2026**.
 
 Food (COICOP CP01 / food+non-alc) share of household expenditure by **income quintile** (`engel_share:food_q1`…`q5`) or **income/expenditure decile** (`engel_share:food_d1`…`d10`). Where the source publishes both, **food-total** and **food-at-home** are separate variables (`engel_share:food_*` vs `engel_share:food_at_home_*`). **Not** average retail prices, CPI indexes, or national-mean Engel alone.
 
@@ -19,7 +19,7 @@ Schema: `country,date,year,variable,value,unit,source,note,estimated_value` (ISO
 | TWN | Aoi owns Taiwan food-share-by-income |
 | AUS | ABS HES food-share lives in Aoi `abs_hes_food_share_*` — **not** duplicated here |
 
-Also skipped this pack (other Aoi / adjacent lanes): Orshansky memo, food CPI indexes, `hi_staple_levels_alt`, BLS **staple retail levels** / FAH·FAFH **indexes**, FPMA, Pink Sheet, UK ONS **avg retail prices** panel, CoAHD, producer prices, `adjacent_eating_out_shares`, JP CPI meals, DOSM/THA MOC CPI, housing share, SGP/HKG CPI, USDA FPO, Japan numeraire. ZAF Stats SA captcha — used DataFirst/CSS 1995 alternate instead. NZL HES national-all-households only (Aoi).
+Also skipped this pack (other Aoi / adjacent lanes): Orshansky memo, food CPI indexes, `hi_staple_levels_alt`, BLS **staple retail levels** / FAH·FAFH **indexes**, FPMA, Pink Sheet, UK ONS **avg retail prices** panel, CoAHD, producer prices, `adjacent_eating_out_shares`, JP CPI meals, DOSM/THA MOC CPI, housing share, SGP/HKG CPI, USDA FPO, Japan numeraire. ZAF: IES 1995 (DataFirst expenditure quintiles) kept; IES 2022/23 P0100 Table 8.2.13 income deciles (primary) + Table 8.2.10 expenditure deciles appended. NZL HES national-all-households only (Aoi).
 
 ## Variables
 

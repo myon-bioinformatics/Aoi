@@ -23,7 +23,8 @@ Hits: ARG, BEL, BRA, CAN, CHE, CHL, COL, CRI, CZE, DEU, DNK, ESP, EUZ, FRA, GBR,
 | CBS Israel HES 2021 Table 1.1 / Intro D2 | ISR |
 | Swiss FSO HBS dépenses par classe de revenu | CHE |
 | SingStat Table Builder D10072 | SGP |
-| Stats SA IES 1995 via DataFirst | ZAF (expenditure quintiles; Stats SA captcha skipped) |
+| Stats SA IES 1995 via DataFirst | ZAF (expenditure quintiles; kept) |
+| Stats SA IES 2022/23 P0100 Table 8.2.13 / 8.2.10 | ZAF (HH income deciles primary; expenditure deciles also) |
 
 ## Priority status (this append)
 
@@ -38,7 +39,7 @@ Hits: ARG, BEL, BRA, CAN, CHE, CHL, COL, CRI, CZE, DEU, DNK, ESP, EUZ, FRA, GBR,
 | BEL | **HIT** 35 rows | Eurostat |
 | CHE | **HIT** 30 rows | FSO HBS; food÷consumption computed from CHF amounts (published % are of gross income — not used) |
 | SGP | **HIT** 25 rows | SingStat D10072; food+non-alc÷TOTAL excl. imputed OO rental; 5 waves |
-| ZAF | **HIT** 5 rows | IES 1995 via DataFirst narrative (51/43/33/23/12); Stats SA captcha skipped |
+| ZAF | **HIT** 25 rows | IES 1995 expenditure quintiles (DataFirst) **kept**; IES 2022/23 P0100 Table **8.2.13** income deciles (primary) + Table **8.2.10** expenditure deciles |
 | SAU | **MISS** | GASTAT HICES 2013/2018/2023 national food % only — no income quintile cut in open pubs |
 | ARE | **MISS** | SCAD HIES methodology/2007 stats; no open food×income-quintile table |
 | HKG | **MISS** (grain mismatch) | C&SD 2024/25 HES food shares by **expenditure quartile** (37.3/30.0/26.0/19.0) — not quintiles; not coerced into q1–q5 |
@@ -65,5 +66,5 @@ No open HBS/FIES quintile×food share table loaded for these this run. National-
 - SAU/ARE national-mean food shares — not quintile
 - OECD-FAO global income-group food shares — not country quintiles
 - VNM GSO portal OLAP HTTP 500; resampled VHLSS micro → DIY not used
-- ZAF Stats SA site captcha; AgEcon 1995 HTML stub; DataFirst IES 1995 narrative **was** loaded
+- ZAF: IES 1995 (DataFirst) kept; IES 2022/23 P0100 Tables 8.2.13 (income deciles) + 8.2.10 (expenditure deciles) loaded from Stats SA PDF after captcha clear
 - Aoi CPI / housing / FPO companions: not touched

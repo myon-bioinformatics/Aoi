@@ -1,43 +1,54 @@
 # missing — adjacent_food_share_by_income
 
-## Hits: 27 ISO3 · 554 rows
+## Hits: 37 ISO3 · 814 rows
 
 See `readme.md` coverage tables and `_coverage_by_country.csv`.
 
-Hits: ARG, BRA, CAN, CHL, COL, CRI, CZE, DNK, EUZ, GBR, GTM, HND, HUN, IDN, IND, MEX, NIC, NOR, PER, PHL, POL, ROU, SWE, THA, TUR, URY, USA
+Hits: ARG, BEL, BRA, CAN, CHE, CHL, COL, CRI, CZE, DEU, DNK, ESP, EUZ, FRA, GBR, GTM, HND, HUN, IDN, IND, ISR, ITA, MEX, NIC, NLD, NOR, PER, PHL, POL, ROU, SGP, SWE, THA, TUR, URY, USA, ZAF
 
 ### By source
 
 | source | countries |
 |--------|-----------|
-| Eurostat HBS_STR_T223 | CZE, DNK, EUZ, GBR, HUN, NOR, POL, ROU, SWE, TUR |
+| Eurostat HBS_STR_T223 | CZE, DNK, EUZ, GBR, HUN, NOR, POL, ROU, SWE, TUR, **BEL, DEU, ESP, FRA, ITA, NLD** |
 | CEPALSTAT indicator 5725 | ARG, BRA, CHL, COL, CRI, GTM, HND, MEX, NIC, PER, URY |
 | ONS Family Spending workbook 2 Table A8 | GBR (deciles) |
 | Defra Family Food (GOV.UK CSV) | GBR (q1/q3/q5) |
 | MOSPI HCES 2022-23 Table A6 + A2 | IND |
 | NSO Thailand SES 2561 summary PDF | THA (q1/q5 only) |
-| BPS Susenas via Kompas (bps.go.id 403) | IDN |
-| PSA FIES 2023 Table 7 (bettergov OpenSTAT mirror) | PHL |
-| BLS CE opub Tables 2/3 | USA (food + food_at_home; quintiles + deciles) |
-| StatCan SHS Table 11-10-0223-01 via The Daily | CAN (food-total % of current consumption; quintiles) |
+| BPS Susenas via Kompas | IDN |
+| PSA FIES 2023 Table 7 (bettergov) | PHL |
+| BLS CE opub Tables 2/3 | USA |
+| StatCan SHS via The Daily | CAN |
+| CBS Israel HES 2021 Table 1.1 / Intro D2 | ISR |
+| Swiss FSO HBS dépenses par classe de revenu | CHE |
+| SingStat Table Builder D10072 | SGP |
+| Stats SA IES 1995 via DataFirst | ZAF (expenditure quintiles; Stats SA captcha skipped) |
 
-## Priority status (Asia + ZAF + NA)
+## Priority status (this append)
 
 | ISO3 | status | probe notes |
 |------|--------|-------------|
-| IND | **HIT** 15 rows | MOSPI HCES 2022-23 Excel Table A6 + Table A2 → national q1–q5 and d1–d10 |
-| THA | **HIT** 2 rows (partial) | SES 2561 summary PDF q1/q5 only |
-| IDN | **HIT** 10 rows (secondary) | BPS via Kompas; bps.go.id 403 |
-| PHL | **HIT** 15 rows | bettergov OpenSTAT FIES 2023 Table 7 |
-| USA | **HIT** 110 rows | BLS CE Table 2/3 Food and Food at home ÷ avg annual expenditures; WebFetch (curl download.bls.gov 403 Akamai) |
-| CAN | **HIT** 7 rows | StatCan Daily published shares; CSV zip HTTP 000 from this egress — full Table 11-10-0223-01 not densified |
-| ZAF | **MISS** (exhausted curl) | Stats SA / DataFirst / Wayback no open bulk IES food×quintile |
+| ISR | **HIT** 5 rows | CBS HES 2021 q1–q5; food÷consumption; net income per standard person |
+| FRA | **HIT** 35 rows | Eurostat HBS_STR_T223 CP01 |
+| DEU | **HIT** 35 rows | Eurostat |
+| ITA | **HIT** 20 rows | Eurostat (fewer waves than FR/DE) |
+| ESP | **HIT** 35 rows | Eurostat |
+| NLD | **HIT** 35 rows | Eurostat |
+| BEL | **HIT** 35 rows | Eurostat |
+| CHE | **HIT** 30 rows | FSO HBS; food÷consumption computed from CHF amounts (published % are of gross income — not used) |
+| SGP | **HIT** 25 rows | SingStat D10072; food+non-alc÷TOTAL excl. imputed OO rental; 5 waves |
+| ZAF | **HIT** 5 rows | IES 1995 via DataFirst narrative (51/43/33/23/12); Stats SA captcha skipped |
+| SAU | **MISS** | GASTAT HICES 2013/2018/2023 national food % only — no income quintile cut in open pubs |
+| ARE | **MISS** | SCAD HIES methodology/2007 stats; no open food×income-quintile table |
+| HKG | **MISS** (grain mismatch) | C&SD 2024/25 HES food shares by **expenditure quartile** (37.3/30.0/26.0/19.0) — not quintiles; not coerced into q1–q5 |
+| VNM | **MISS** | GSO VHLSS press notes / portal OLAP 500; no open published food×quintile share table loaded (microdata DIY out of scope) |
 
-## Other Big Mac misses (excl. Aoi skip)
+## Other Big Mac / priority misses (excl. Aoi skip)
 
-ARE, AUS, AZE, BHR, CHE, CHN, EGY, HKG, ISR, JOR, KWT, LBN, LKA, MDA, MYS, NZL, OMN, PAK, QAT, RUS, SAU, SGP, UKR, VEN, VNM, ZAF
+AZE, BHR, CHN, EGY, HKG, JOR, KWT, LBN, LKA, MDA, MYS, NZL, OMN, PAK, QAT, RUS, SAU, ARE, UKR, VEN, VNM
 
-No open HBS/FIES quintile×food share table loaded for these this run. National-mean Engel / ICP aggregate food shares intentionally **not** used as quintile proxies (no gap-fill). NZL Aoi HES panel is national-all-households only.
+No open HBS/FIES quintile×food share table loaded for these this run. National-mean Engel / ICP aggregate intentionally **not** used as quintile proxies.
 
 ## Intentional skip
 
@@ -46,13 +57,13 @@ No open HBS/FIES quintile×food share table loaded for these this run. National-
 | JPN | Season2 Japan Engel quintiles |
 | KOR | Aoi Korea food-share-by-income |
 | TWN | Aoi Taiwan food-share-by-income |
-| AUS | Aoi ABS HES food-share panel — do not duplicate into this pack |
+| AUS | Aoi ABS HES food-share panel |
 
 ## Probes not loaded / not reused as Engel
 
-- THA `SES_41_05.csv` — income distribution by quintile, **not** food expenditure share
-- INEGI ENIGH micro/tabulados direct: 403 (CEPALSTAT 5725 covers MEX 2018)
-- IBGE SIDRA POF: CEPALSTAT 5725 used for BRA
-- BLS staple retail levels / FAH·FAFH **indexes** / FPMA / Pink Sheet / CoAHD / producer prices / eating-out: out of scope (BLS **CE expenditure shares** are in-scope and loaded)
+- HKG quartile food shares — wrong grain for schema
+- SAU/ARE national-mean food shares — not quintile
+- OECD-FAO global income-group food shares — not country quintiles
+- VNM GSO portal OLAP HTTP 500; resampled VHLSS micro → DIY not used
+- ZAF Stats SA site captcha; AgEcon 1995 HTML stub; DataFirst IES 1995 narrative **was** loaded
 - Aoi CPI / housing / FPO companions: not touched
-- StatCan `11100223-eng.zip`: blocked from this egress (use Daily shares instead)

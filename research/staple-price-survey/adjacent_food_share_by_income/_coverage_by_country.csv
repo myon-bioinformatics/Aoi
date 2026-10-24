@@ -1,28 +1,38 @@
-country,n_rows,year_min,year_max,n_years,variables
-ARG,5,2017,2017,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-BRA,5,2017,2017,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-CAN,7,2021,2023,2,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-CHL,5,2021,2021,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-COL,5,2016,2016,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-CRI,5,2018,2018,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-CZE,15,2005,2015,3,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-DNK,30,1994,2020,6,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-EUZ,10,2015,2020,2,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-GBR,160,1988,2025,24,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-GTM,5,2014,2014,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-HND,5,2004,2004,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-HUN,20,2005,2020,4,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-IDN,10,2025,2026,2,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-IND,15,2023,2023,1,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-MEX,5,2018,2018,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-NIC,5,2014,2014,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-NOR,20,2005,2020,4,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-PER,5,2019,2019,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-PHL,15,2023,2023,1,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-POL,20,2005,2020,4,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-ROU,20,2005,2020,4,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-SWE,25,1994,2015,5,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-THA,2,2018,2018,1,engel_share:food_q1;engel_share:food_q5
-TUR,20,2005,2020,4,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-URY,5,2016,2016,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
-USA,110,2020,2024,5,engel_share:food_at_home_d1;engel_share:food_at_home_d10;engel_share:food_at_home_d2;engel_share:food_at_home_d3;engel_share:food_at_home_d4;engel_share:food_at_home_d5;engel_share:food_at_home_d6;engel_share:food_at_home_d7;engel_share:food_at_home_d8;engel_share:food_at_home_d9;engel_share:food_at_home_q1;engel_share:food_at_home_q2;engel_share:food_at_home_q3;engel_share:food_at_home_q4;engel_share:food_at_home_q5;engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
+country,rows,year_min,year_max,n_years,n_variables,sources
+ARG,5,2017,2017,1,5,CEPALSTAT indicator 5725
+BEL,35,1988,2020,7,5,Eurostat HBS_STR_T223
+BRA,5,2017,2017,1,5,CEPALSTAT indicator 5725
+CAN,7,2021,2023,2,5,Statistics Canada Survey of Household Spending (SHS) / Table 11-10-0223-01 via The Daily
+CHE,30,2007,2021,6,5,Swiss FSO HBS (bfs.admin.ch) dépenses par classe de revenu
+CHL,5,2021,2021,1,5,CEPALSTAT indicator 5725
+COL,5,2016,2016,1,5,CEPALSTAT indicator 5725
+CRI,5,2018,2018,1,5,CEPALSTAT indicator 5725
+CZE,15,2005,2015,3,5,Eurostat HBS_STR_T223
+DEU,35,1988,2020,7,5,Eurostat HBS_STR_T223
+DNK,30,1994,2020,6,5,Eurostat HBS_STR_T223
+ESP,35,1988,2020,7,5,Eurostat HBS_STR_T223
+EUZ,10,2015,2020,2,5,Eurostat HBS_STR_T223
+FRA,35,1988,2020,7,5,Eurostat HBS_STR_T223
+GBR,160,1988,2025,24,15,Defra Family Food (GOV.UK CSV); Eurostat HBS_STR_T223; ONS Family Spending workbook 2 Table A8
+GTM,5,2014,2014,1,5,CEPALSTAT indicator 5725
+HND,5,2004,2004,1,5,CEPALSTAT indicator 5725
+HUN,20,2005,2020,4,5,Eurostat HBS_STR_T223
+IDN,10,2025,2026,2,5,BPS Pengeluaran untuk Konsumsi Penduduk Indonesia (Susenas) via Kompas 2026-10-06
+IND,15,2023,2023,1,15,MOSPI HCES 2022-23 Table A6 + Table A2
+ISR,5,2021,2021,1,5,CBS Israel HES 2021 Table 1.1 / Intro D2
+ITA,20,1988,2005,4,5,Eurostat HBS_STR_T223
+MEX,5,2018,2018,1,5,CEPALSTAT indicator 5725
+NIC,5,2014,2014,1,5,CEPALSTAT indicator 5725
+NLD,35,1988,2020,7,5,Eurostat HBS_STR_T223
+NOR,20,2005,2020,4,5,Eurostat HBS_STR_T223
+PER,5,2019,2019,1,5,CEPALSTAT indicator 5725
+PHL,15,2023,2023,1,15,PSA FIES 2023 Table 7 (bettergov OpenSTAT mirror of 0071E3ATME0.px)
+POL,20,2005,2020,4,5,Eurostat HBS_STR_T223
+ROU,20,2005,2020,4,5,Eurostat HBS_STR_T223
+SGP,25,2003,2023,5,5,SingStat Table Builder D10072 (HES)
+SWE,25,1994,2015,5,5,Eurostat HBS_STR_T223
+THA,2,2018,2018,1,2,NSO Thailand SES 2561 (2018) summary SD10_04_189_7
+TUR,20,2005,2020,4,5,Eurostat HBS_STR_T223
+URY,5,2016,2016,1,5,CEPALSTAT indicator 5725
+USA,110,2020,2024,5,30,BLS Consumer Expenditure Surveys (CE) published tables
+ZAF,5,1995,1995,1,5,"Stats SA IES 1995 via DataFirst ""Earning and spending in South Africa"""

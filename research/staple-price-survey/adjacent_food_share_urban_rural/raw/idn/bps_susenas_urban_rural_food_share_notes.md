@@ -9,3 +9,5 @@ Values below are **national** urban/rural aggregates quoted from BPS Susenas boo
 | 2023 | 45.47 | 56.38 | Kompas column by BPS statistician Nuri Taufiq 2024-05-06 citing Susenas 2023; repeated in secondary lit |
 
 Definition: food (makanan) ÷ (food + non-food) monthly per-capita expenditure ×100. BPS Susenas concept (includes prepared food, tobacco often under food group in Indonesian Susenas — note tobacco/rokok is inside makanan group in Susenas classifications).
+
+| 2020 | 46.05 | 55.49 | Kompas.com 2021-05-20 citing BPS Susenas 2020 (national 49.22%) |

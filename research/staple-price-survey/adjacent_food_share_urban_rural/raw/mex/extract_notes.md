@@ -24,3 +24,17 @@ Alimentos, bebidas y tabaco % of gasto corriente monetario (INEGI Table 9 via ba
 | Rural (<2,500) | 41.99 |
 
 Rounded to 36.9 / 42.0 in pack.
+
+## 2020 (Nueva serie) — Comunicado / Nota técnica
+
+Source: https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2021/EstSociodemo/enigh2020.pdf
+Fetched via WebFetch 2026-10-25 Asia/Tokyo (primary INEGI press PDF).
+
+Alimentos, bebidas y tabaco % of gasto corriente monetario (stated after Cuadro 13; Cuadro 15 levels confirm):
+
+| Area | Alimentos, bebidas y tabaco | Total GCM | Share % |
+|------|----------------------------:|----------:|--------:|
+| Urban (≥2,500) | 12,064 | 32,441 | 37.2 |
+| Rural (<2,500) | 8,891 | 20,706 | 42.9 |
+
+Tobacco-included — companion to ENIGH 2022/2024 pack rows and CEPALSTAT 2018 food-only.

@@ -93,3 +93,12 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 
 - **MEX HIT:** ENIGH 2022 Table 9 — alimentos+bebidas+tabaco urban 36.9 / rural 42.0. +2.
 - **BRA HIT:** IBGE POF 2017-2018 Agência — alimentação urban 16.9 / rural 23.8 (year 2018). +2 → **403/63**.
+
+## 2026-10-25 MEX 2020 + IDN 2020 + LKA 2016 thicken
+
+- **MEX HIT:** INEGI ENIGH 2020 press/Nota técnica — Alimentos, bebidas y tabaco urban **37.2** / rural **42.9** (Cuadro 15 levels confirm). Pack → **409 / 63**.
+- **IDN HIT:** BPS Susenas 2020 via Kompas — makanan urban **46.05** / rural **55.49** (national 49.22).
+- **LKA HIT:** DCS HIES 2016 Final Results Table 8 — food ratio Urban **31.2** / Rural **35.4** (Estate 48.5 noted). 2016 PDF previously deferred; now loaded.
+- **COL:** DANE ENPH 2017 already in pack — skip duplicate.
+- Hours-to-buy: still DEU BMEL + BRA DIEESE only (no new NSO-designed labour-minutes series).
+- SAU/ARE food×income: still MISS (no open quintile/decile).

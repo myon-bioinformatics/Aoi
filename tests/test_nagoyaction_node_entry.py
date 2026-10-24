@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+AOI = "myon-bioinformatics/Aoi"
 TOOL = "nagoyaction"
 ENV_VAR = "NAGOYACTION_PYTHON"
 CASES = [
@@ -78,12 +79,27 @@ def _parity(root: Path, args: list[str]) -> tuple[tuple[int, str, str], tuple[in
 def test_vendored_launcher_matches_lock():
     lock = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
     entry = next(f for f in lock["files"] if f["destination"] == "vendor/py_launch.cjs")
-    assert entry["repository"] == "myon-bioinformatics/myon-bioinformatics"
-    assert entry["source"] == "py_launch.cjs"
+    assert entry["repository"] == AOI
+    assert entry["source"] == "vendor/py_launch.cjs"
+    assert entry["ref"] == entry["commit"]
+    assert len(entry["commit"]) == 40
     data = (ROOT / "vendor" / "py_launch.cjs").read_bytes()
     assert hashlib.sha256(data).hexdigest() == entry["sha256"]
     blob = hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
     assert blob == entry["blob_sha"]
+
+
+def test_vendored_license_comes_from_aoi_same_commit():
+    lock = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
+    by_dest = {f["destination"]: f for f in lock["files"]}
+    assert set(by_dest) == {"vendor/py_launch.cjs", "vendor/aoi-LICENSE"}
+    lic = by_dest["vendor/aoi-LICENSE"]
+    assert lic["repository"] == AOI
+    assert lic["source"] == "LICENSE"
+    assert lic["commit"] == by_dest["vendor/py_launch.cjs"]["commit"]
+    data = (ROOT / "vendor" / "aoi-LICENSE").read_bytes()
+    assert hashlib.sha256(data).hexdigest() == lic["sha256"]
+    assert data == (ROOT / "LICENSE").read_bytes()
 
 
 def test_entry_uses_shared_launcher_only():

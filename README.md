@@ -109,9 +109,11 @@ uv run --locked pytest -q                         # tests/ and every subproject'
 python -S nagoyaction/linkcheck.py                # Markdown links and images (tracked files, exact case)
 python -S scripts/check_child_heads.py --fail-on-diff   # child repositories vs. their directories in Aoi
 python -S scripts/check_shared_tools_lock.py            # shared tools (stdlib-shrink, py_launch.cjs) vs. shared-tools.lock.json
+node --test tests/py_launch.test.cjs                    # shared launcher: safe discovery and repeated signal forwarding (Node >= 24)
 ```
 
 CI (`.github/workflows/ci.yml`) runs pytest on Python 3.11–3.15; the Links workflow runs the link check on every change, including docs-only changes.
+The shared launcher workflow runs its regression tests on Node 26. After a launcher update merges into Aoi's main, children pin that actual Aoi merge commit, not the root repository or an unmerged Aoi branch.
 
 ## License
 

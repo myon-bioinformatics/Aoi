@@ -1,0 +1,37 @@
+name: Shared Python launcher
+
+on:
+  pull_request:
+    paths:
+      - "vendor/py_launch.cjs"
+      - "vendor.lock.json"
+      - "shared-tools.lock.json"
+      - "tests/py_launch.test.cjs"
+      - ".github/workflows/py-launch-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "vendor/py_launch.cjs"
+      - "vendor.lock.json"
+      - "shared-tools.lock.json"
+      - "tests/py_launch.test.cjs"
+      - ".github/workflows/py-launch-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  launcher:
+    name: Launcher regressions (Node 26)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: node --test tests/py_launch.test.cjs
+      - run: python -S scripts/check_shared_tools_lock.py

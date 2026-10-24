@@ -81,7 +81,7 @@
     },
     {
       "path": "vendor/py_launch.cjs",
-      "sha256": "c1ca339fe3e967d64321d7a798a14fb790a1c5cdf616009048fa3e97bf94b27e",
+      "sha256": "a78fe656cde285a83501b9b19d97b9ebde6f9637919b3adb95c50eb254154536",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/DRAgoWing",

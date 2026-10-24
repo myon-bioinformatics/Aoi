@@ -82,3 +82,9 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 - Pack `adjacent_hi_staple_levels` now includes **QAT** (NPC/data.gov.qa annual averages, 2017–2023) and **TWN** (NDC e-invoice midpoints + Taipei potato).
 - Still in pack: HKG, MYS, NZL, SGP. Active-lane exhausted/blocked: ARE, BHR, KWT, OMN, EUZ.
 - AUS/CAN/CHE/DNK/NOR remain on Aoi `hi_staple_levels_alt` (do not double-take).
+
+### Update 2026-10-24 (Asia/Tokyo) — EUZ-proxy absolute staple levels
+
+- New pack `adjacent_euz_proxy_staple_levels`: national absolute retail/unit-value staples as **country ISO3 proxies** for the euro-area (EUZ) Big Mac gap (no fake EUZ aggregate).
+- Hits: **FRA** (INSEE prix moyens), **IRL** (CSO NAP), **NLD** (CBS), **ESP** (INE valor unitario) — 4601 rows, ~1992–2026-09.
+- Exhausted this turn for open absolute bulk: DEU, ITA, SWE deepen, BEL/AUT; FIN/PRT not pursued beyond priority.

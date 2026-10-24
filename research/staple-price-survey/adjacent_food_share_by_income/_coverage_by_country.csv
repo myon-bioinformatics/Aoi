@@ -1,6 +1,7 @@
 country,n_rows,year_min,year_max,n_years,variables
 ARG,5,2017,2017,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
 BRA,5,2017,2017,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
+CAN,7,2021,2023,2,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
 CHL,5,2021,2021,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
 COL,5,2016,2016,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
 CRI,5,2018,2018,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
@@ -24,3 +25,4 @@ SWE,25,1994,2015,5,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;e
 THA,2,2018,2018,1,engel_share:food_q1;engel_share:food_q5
 TUR,20,2005,2020,4,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
 URY,5,2016,2016,1,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5
+USA,110,2020,2024,5,engel_share:food_at_home_d1;engel_share:food_at_home_d10;engel_share:food_at_home_d2;engel_share:food_at_home_d3;engel_share:food_at_home_d4;engel_share:food_at_home_d5;engel_share:food_at_home_d6;engel_share:food_at_home_d7;engel_share:food_at_home_d8;engel_share:food_at_home_d9;engel_share:food_at_home_q1;engel_share:food_at_home_q2;engel_share:food_at_home_q3;engel_share:food_at_home_q4;engel_share:food_at_home_q5;engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5

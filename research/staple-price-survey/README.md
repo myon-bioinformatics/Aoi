@@ -128,3 +128,7 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 ### Update 2026-10-24 (Asia/Tokyo) — hours-to-buy staples
 
 - New pack `adjacent_hours_to_buy_staples`: **240** rows (DEU BMEL labour-minutes; BRA DIEESE PNCBA São Paulo tempo→min/kg). Official designed indicators only — no DIY wage÷price.
+
+### Update 2026-10-24 (Asia/Tokyo) — USA + CAN food-by-income
+
+- Extended `adjacent_food_share_by_income` to **554** rows / **27** ISO3 (+USA BLS CE Tables 2/3; +CAN StatCan SHS via The Daily). AUS left to Aoi ABS HES.

@@ -1,0 +1,54 @@
+country,rows,year_min,year_max,n_years,n_variables,sources
+AUS,2,2016,2016,1,2,ABS Household Expenditure Survey Australia 2015-16 (Greater Capital City / Rest of State)
+AUT,10,1999,2020,5,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+BEL,14,1988,2020,7,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+BGR,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+BOL,2,2015,2015,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+BRA,2,2017,2017,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+CHN,2,2023,2023,1,2,"NBS Households Income and Consumption Expenditure 2023 (urban/rural food, tobacco and liquor)"
+COL,2,2016,2016,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+CRI,2,2018,2018,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+CYP,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+CZE,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+DEU,12,1988,2020,6,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+DNK,12,1994,2020,6,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+DOM,2,2018,2018,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+ECU,2,2014,2014,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+ESP,12,1994,2020,6,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+EST,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+EUZ,4,2015,2020,2,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+FIN,12,1994,2020,6,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+FRA,12,1988,2020,6,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+GBR,12,1988,2015,6,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+GRC,10,1988,2020,5,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+GTM,2,2014,2014,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+HND,2,2004,2004,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+HRV,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+HUN,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+IDN,4,2022,2023,2,2,BPS Susenas Maret 2022 (national urban/rural) via CNBC quote of BPS book; BPS Susenas Maret 2023 (national urban/rural) via BPS-staff Kompas cite
+IND,10,2000,2023,5,2,MOSPI HCES / NSS Factsheet Statement 3
+IRL,7,1999,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+ITA,14,1988,2020,7,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+LTU,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+LUX,12,1988,2020,6,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+LVA,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+MEX,2,2018,2018,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+MLT,4,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+MYS,2,2024,2024,1,2,DOSM Household Expenditure Survey Report 2024 (urban/rural Food & Beverages)
+NIC,2,2014,2014,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+NLD,6,2010,2020,3,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+NOR,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+PER,2,2019,2019,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+PHL,10,2006,2018,5,2,PSA FIES via Bairagi et al. 2022 PLOS ONE Table 2 (PMC8970376)
+POL,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+PRT,14,1988,2020,7,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+PRY,2,2011,2011,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+ROU,4,2015,2020,2,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+RUS,4,2022,2023,2,2,Rosstat HBS table R_1-5 (via Roschart mirror; food+non-alc by place of residence)
+SLV,2,2006,2006,1,2,"CEPALSTAT indicator 5725 (food share by area, total quintile)"
+SVK,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+SVN,8,2005,2020,4,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+SWE,10,1994,2015,5,2,Eurostat HBS_STR_T226 (CP01 food share by degree of urbanisation)
+THA,2,2021,2021,1,2,NSO Thailand SES 2021 Table 6 (municipal / non-municipal)
+USA,8,2021,2022,2,4,BLS CE Table 1721 (type of area)
+ZAF,2,2023,2023,1,2,Stats SA IES 2022/23 P0100 Table 8.2.7 (settlement type)

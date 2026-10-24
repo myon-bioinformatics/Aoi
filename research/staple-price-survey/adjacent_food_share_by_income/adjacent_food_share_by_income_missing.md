@@ -47,7 +47,7 @@ Hits: ARG, BEL, BRA, CAN, CHE, CHL, COL, CRI, CZE, DEU, DNK, ESP, EUZ, FRA, GBR,
 
 ## Other Big Mac / priority misses (excl. Aoi skip)
 
-AZE, BHR, CHN, EGY, HKG, JOR, KWT, LBN, LKA, MDA, MYS, NZL, OMN, PAK, QAT, RUS, SAU, ARE, UKR, VEN, VNM
+AZE, BHR, CHN, EGY, HKG, JOR, KWT, LBN, LKA, MDA, NZL, OMN, PAK, QAT, RUS, SAU, ARE, UKR, VEN, VNM
 
 No open HBS/FIES quintile×food share table loaded for these this run. National-mean Engel / ICP aggregate intentionally **not** used as quintile proxies.
 
@@ -68,3 +68,7 @@ No open HBS/FIES quintile×food share table loaded for these this run. National-
 - VNM GSO portal OLAP HTTP 500; resampled VHLSS micro → DIY not used
 - ZAF: IES 1995 (DataFirst) kept; IES 2022/23 P0100 Tables 8.2.13 (income deciles) + 8.2.10 (expenditure deciles) loaded from Stats SA PDF after captcha clear
 - Aoi CPI / housing / FPO companions: not touched
+
+## 2026-10-24 MYS append
+
+DOSM HES 2022 Table 1.13 income quintiles Food & Beverages: 25.2, 21.7, 18.8, 15.8, 11.2 (Malaysian citizen households).

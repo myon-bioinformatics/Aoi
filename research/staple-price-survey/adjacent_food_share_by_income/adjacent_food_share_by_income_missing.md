@@ -47,7 +47,7 @@ Hits: ARG, BEL, BRA, CAN, CHE, CHL, COL, CRI, CZE, DEU, DNK, ESP, EUZ, FRA, GBR,
 
 ## Other Big Mac / priority misses (excl. Aoi skip)
 
-AZE, BHR, CHN, EGY, HKG, JOR, KWT, LBN, LKA, MDA, NZL, OMN, PAK, QAT, RUS, SAU, ARE, UKR, VEN, VNM
+AZE, BHR, CHN, EGY, JOR, KWT, LBN, LKA, MDA, NZL, OMN, PAK, QAT, RUS, SAU, ARE, UKR, VEN, VNM
 
 No open HBS/FIES quintile×food share table loaded for these this run. National-mean Engel / ICP aggregate intentionally **not** used as quintile proxies.
 
@@ -72,3 +72,9 @@ No open HBS/FIES quintile×food share table loaded for these this run. National-
 ## 2026-10-24 MYS append
 
 DOSM HES 2022 Table 1.13 income quintiles Food & Beverages: 25.2, 21.7, 18.8, 15.8, 11.2 (Malaysian citizen households).
+
+## 2026-10-24 HKG append
+
+Censtatd HES 2019/20 Chart 3 expenditure quartiles Food % of total HH expenditure: 42, 31, 28, 22 (documented as expenditure quartiles — not income; not coerced to deciles).
+SAU GaStat HIES 2018 Tables 44–45 only Low/Medium/High expenditure terciles (SAR levels); computed food shares Saudi 29.9/24.3/12.4 — left unloaded (terciles ≠ quintile schema).
+ARE/VNM still miss open income-quintile food %.

@@ -10,7 +10,7 @@ Sibling pack to `adjacent_hi_staple_levels`. These are **national** absolute ave
 - No FX conversion; no unit/pack homogenization; no gap-fill.
 - Vertical schema: `country,date,year,variable,value,unit,source,note,estimated_value`.
 - Every EA-country `note` states the series is a **national proxy for the EUZ gap**, not a euro-area aggregate.
-- Never HICP/CPI indices.
+- Never HICP/CPI indices; never PPP/PLI.
 
 ## Coverage (hits)
 
@@ -22,14 +22,15 @@ Sibling pack to `adjacent_hi_staple_levels`. These are **national** absolute ave
 | **ESP** | 76 | rice_kg, bread_kg, flour_cereals_kg, pasta_couscous_kg, potato_kg | INE jaxiT3 **25169** (+ **73844** 2024–25 extension) household *valor unitario* | 2006–2025 |
 | **FIN** | 1911 | rice 1kg, wheat flour 2kg, rye/mixed/wheat breads, baguette, macaroni 400g, spaghetti 500g, cooking potatoes | Statistics Finland StatFin_Passiivi **011** Average prices of commodities (EUR) | 2002–2018 (monthly + annual avg) |
 | **PRT** | 606 | rice avg/carolino €/kg, wheat flour €/kg, spaghetti €/kg, potato €/kg, bread bolas carcaça €/unit | Observatório de Preços agroalimentar (Consumo stage; 4-week periods) | ~2019-P1–2026-P13 |
+| **AUT** | 360 | rice_long_grain_kg, wheat_flour_kg, rye_bread_kg, wholemeal/white bread 500g, bread_roll_unit, pasta_500g, potato_kg | Statistik Austria **Preisradar** scanner mean (`data/ep/{id}.json` meanData) | 2023-01–2026-09 monthly |
 
-**Total rows: 7118.** Build: `build_euz_proxy_staple_levels.py`. Stats: `_build_stats.json`.
+**Total rows: 7478.** Build: `build_euz_proxy_staple_levels.py`. Stats: `_build_stats.json`.
 
-New this turn (append): **FIN +1911**, **PRT +606**. FRA/IRL/NLD/ESP unchanged.
+New this turn (append): **AUT +360**. FRA/IRL/NLD/ESP/FIN/PRT unchanged.
 
 ## Misses / exhausted (this turn)
 
-See `missing.md`: Eurostat public HBS has **expenditure only** (no quantities → cannot form unit values); DEU EVS / ITA Istat public HBS tables likewise expenditure-only; BEL/AUT absolute bulk not secured; StatFin food averages stop at 2018; INE Portugal IPC is index-only (Observatório used instead).
+See `missing.md`. World Bank ICP public releases are PPP/PLI/expenditure only (documented under sibling `adjacent_icp_food_prices/` — **no** staple_price rows loaded). DEU/ITA remain exhausted (no new national open absolute retail bulk found). BEL skipped (fetched elsewhere). OGD Austria VPI/HVPI = indices; Preisradar absolute means used instead.
 
 ## Notes
 
@@ -39,12 +40,13 @@ See `missing.md`: Eurostat public HBS has **expenditure only** (no quantities �
 - **ESP**: *Valor unitario* = expenditure/quantity from the household budget survey (EPF) — absolute EUR/kg, **not** a CPI store quote and **not** an index. Notes say so.
 - **FIN**: NSO published average retail commodity prices (EUR) for named packs; not HBS unit values; current StatFin `khi` tree is index/fuel-only — food averages live in Passiivi archive table 011 through 2018.
 - **PRT**: Observatório Consumo stage is consumer/retail absolute EUR; bread is **EUR per unit** (bolas carcaça) as published; date = 4-week period start. Not INE IPC and not HBS.
-- **Out of scope here**: Aoi lanes (`hi_staple_levels_alt`, BLS, FPMA, Pink Sheet, UK ONS, ABS CPI); StatCan/CAN/DNK/NOR retries.
+- **AUT**: Preisradar national scanner *Durchschnittspreise* (mean) since 2023-01 for ~100 CPI basket products; pack size in product title (kg / 500 g / 1 piece). Complementary index series in the same JSON are **not** loaded. French fries / potato chips skipped (not core staples).
+- **Out of scope here**: Aoi lanes (`hi_staple_levels_alt`, BLS, FPMA, Pink Sheet, UK ONS, ABS CPI); StatCan/CAN/DNK/NOR retries; BEL redo.
 
 ## Files
 
 - `adjacent_euz_proxy_staple_levels_vertical.csv` (+ `.gz`)
 - `build_euz_proxy_staple_levels.py`
 - `_build_stats.json`
-- `raw/insee/`, `raw/cso/`, `raw/cbs/`, `raw/ine/`, `raw/statfin/`, `raw/ine_pt/`, `raw/eurostat_hbs/`, probes under `raw/destatis|istat|scb|misc/`
+- `raw/insee/`, `raw/cso/`, `raw/cbs/`, `raw/ine/`, `raw/statfin/`, `raw/ine_pt/`, `raw/statistik_at/`, `raw/eurostat_hbs/`, probes under `raw/destatis|istat|scb|misc/`
 - Mirror: `/workspace/aoi-phase2/staple-price-survey/adjacent_euz_proxy_staple_levels/`

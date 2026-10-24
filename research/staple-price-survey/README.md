@@ -93,3 +93,9 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 
 - Extended `adjacent_euz_proxy_staple_levels` with **FIN** (StatFin Passiivi average commodity prices 2002–2018, 1911 rows) and **PRT** (Observatório de Preços Consumo ~2019–2026, 606 rows). Pack total **7118** rows (FRA/IRL/NLD/ESP/FIN/PRT).
 - Eurostat HBS public tables have expenditure structure only (no quantities) → no DEU/ITA/BEL/AUT unit-value path this turn.
+
+### Update 2026-10-24 (Asia/Tokyo) — AUT Preisradar + ICP probe
+
+- Extended `adjacent_euz_proxy_staple_levels` with **AUT** Statistik Austria Preisradar scanner Durchschnittspreise (8 staples, 2023-01–2026-09, +360 rows). Pack total **7478** (AUT/ESP/FIN/FRA/IRL/NLD/PRT).
+- **BEL** exhausted (Statbel/be.STAT/data.gov.be = CPI/HICP only). DEU/ITA still no open national absolute retail bulk.
+- `adjacent_icp_food_prices`: World Bank ICP public releases are PPP/PLI/expenditure only — **no LCU item average prices** loaded (docs only).

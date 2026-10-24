@@ -49,7 +49,10 @@ def test_ci_requires_node_for_node_entry_parity():
     assert "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1" in job
     assert "node-version: '26'" in job
     assert "Require supported Node in parity CI" in job
-    if os.environ.get("GITHUB_ACTIONS") == "true":
+    # The separate local-ci job deliberately samples the stdlib-only runner.
+    # Enforce Node availability for the actual Actions "test" matrix, where
+    # setup-node is installed and all parity tests must execute.
+    if os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("GITHUB_JOB") == "test":
         assert NODE is not None, "Node 24+ is required for the Node parity suite"
 
 

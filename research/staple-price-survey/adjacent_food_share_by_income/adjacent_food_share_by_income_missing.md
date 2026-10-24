@@ -95,3 +95,8 @@ VHLSS 2022 Table 6.15 Food+Foodstuff % of living consumption by income quintile:
 
 - **URY HIT** INE ENGIH 2016-2017 Cuadro 31 food_d1–d10 (con valor locativo; income per-capita deciles): 26.0…12.8; year 2017. Kept alongside CEPALSTAT 5725 2016 quintiles.
 - SAU/ARE miss unchanged (terciles / no open quintile-decile food Engel).
+
+## 2026-10-25 MDA food×income append
+
+- **MDA HIT:** NBS CBGC 2024 (Ed.2025) + 2025 (Ed.2026 Table 7.26) food_q1–q5; consumption-expenditure quintiles (not income); Food+non-alc % of avg monthly per-capita consumption expenditure. 2025 methodology break noted. +10 rows → **878/42**.
+- SAU/ARE miss unchanged.

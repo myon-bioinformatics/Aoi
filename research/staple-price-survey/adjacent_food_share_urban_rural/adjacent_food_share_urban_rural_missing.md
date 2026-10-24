@@ -66,3 +66,11 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - ARG ENGHo urban-only and CHL EPF urban-capitals-only reconfirmed — no rural companion.
 - CAN StatCan SSL still blocked from box egress.
 - Hours-to-buy: still DEU+BRA only (WIFO AT Kaufkraft / Histoprix DIY not loaded).
+
+## 2026-10-25 UKR append + AZE probe
+
+- **UKR HIT:** SSSU *Expenditure and resources of households* Table II.3 (2019–2021) — Food+non-alc % of household money expenditure; urban total / rural. Rural < urban noted (own-production). +6 rows.
+- **AZE MISS (primary):** stat.gov.az household budget "Composition… urban and rural" listed but HTTPS from this box fails (SSL EOF); banker.az H1 2023 secondary cite (urban 44% / rural 46.78% food) **not loaded** without primary SSC xls.
+- **TUR:** TURKSTAT HBS microdata notes say urban/rural estimates not reliable for recent years; no open primary urban/rural food % table loaded.
+- **BHR:** 2024 HIES in field; no published urban/rural food Engel yet.
+- SAU/ARE food×income miss unchanged (terciles / no open quintile-decile).

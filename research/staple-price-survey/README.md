@@ -29,16 +29,16 @@ International staple prices, food-expenditure shares (Engel), and household cons
 | Family | Rows |
 |--------|------|
 | `staple_price:*` | 61,157 |
-| engel* | 554 |
+| engel* | 556 |
 | `household_consumption_total_lcu` | 1,344 |
 | `population_total` | 1,404 |
 | `bigmac_local_price` | 2,056 |
-| **Total** | **66,515** |
+| **Total** | **66,517** |
 
 ### Coverage (of 56 Big Mac countries)
 
 - Staples (A): 40 countries (WFP/FPMA + USA BLS + Japan e-Stat)
-- Engel (B): 53 (USDA ERS 2021–2025; Japan included; food includes nonalcoholic beverages; at-home). Longer Japan household-survey series kept as a separate variable.
+- Engel (B): 53 (USDA ERS 2021–2025; Japan included; food includes nonalcoholic beverages; at-home). Longer Japan household-survey series kept as a separate variable (`engel_share_food_national_hh_survey`, 2000–2025; 2024–2025 come from the Statistics Bureau annual summaries, see [`staple_survey_readme.md`](staple_survey_readme.md)).
 - Household LCU / population (C): 54 each (World Bank `NE.CON.PRVT.CN`, `SP.POP.TOTL`)
 
 High-income staples often missing from WFP/FPMA: ARE, AUS, BHR, CAN, CHE, DNK, EUZ, HKG, KWT, MYS, NOR, NZL, OMN, QAT, SGP, TWN. See [`staple_survey_missing.md`](staple_survey_missing.md).
@@ -46,6 +46,10 @@ High-income staples often missing from WFP/FPMA: ARE, AUS, BHR, CAN, CHE, DNK, E
 ## Reinforcement (Engel-adjacent reference)
 
 See [`reinforcement/`](reinforcement/) for Bennett starchy-staple calorie shares, Working–Leser materials (quintile food shares / published income elasticities), and Orshansky-type poverty multipliers kept as a separate normative reference. Do not mix Orshansky into Engel E.
+
+## Row key
+
+In `staple_survey_vertical.csv`, `country + date + variable + source` is **not** unique: FPMA/WFP rows that differ only in market or price type share it (4,030 such keys). `unit` and `note` carry that difference, so identify a row by `country, date, variable, source, unit, note`. Do not drop "duplicates" on the shorter key.
 
 ## Rules for downstream use
 

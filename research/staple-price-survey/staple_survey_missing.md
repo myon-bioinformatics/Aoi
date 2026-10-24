@@ -16,7 +16,7 @@ Country universe: user-supplied `bigmac_vertical.csv` (56 ISO3 codes including E
 - **Not in USDA file (among universe):** EUZ, MDA, NIC
 - Japan **is included** in USDA sheets (confirmed).
 - USDA food column includes **nonalcoholic beverages**; title/definition = **consumed at home**.
-- Longer Japan national household-survey Engel added separately as `engel_share_food_national_hh_survey` (definition break vs USDA — do not splice).
+- Longer Japan national household-survey Engel added separately as `engel_share_food_national_hh_survey` (2000–2025; definition break vs USDA — do not splice). 2024–2025 were added later from the Statistics Bureau annual summaries (see `staple_survey_readme.md`, Seam).
 - USD expenditure columns in USDA file intentionally **not** used.
 
 ## C. Household consumption (LCU) + population
@@ -31,11 +31,11 @@ Country universe: user-supplied `bigmac_vertical.csv` (56 ISO3 codes including E
 
 ## Row counts (output)
 - staple: 61157
-- engel*: 554
+- engel*: 556
 - household_consumption_total_lcu: 1344
 - population_total: 1404
 - bigmac_local_price: 2056
-- **total data rows:** 66515
+- **total data rows:** 66517
 
 ## Notes on currencies appearing as USD outside USA
 Some WFP/FPMA series for CRI, HND, NIC, VEN publish prices in **USD** (dollarized markets or WFP reporting currency). These were recorded as published — not converted by this survey.

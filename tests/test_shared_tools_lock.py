@@ -21,6 +21,7 @@ def test_lock_matches_shared_tool_bytes():
         "shrink/numpy_linalg_min.py",
         "shrink/numpy_min.py",
         "shrink/polars_min.py",
+        "vendor/py_launch.cjs",
     ]
 
 
@@ -62,3 +63,24 @@ def test_strict_exits_one_when_the_lock_disagrees(capsys):
         lock.problems = original
     assert "broken" in capsys.readouterr().err
     assert document["schema"] == "other"
+
+
+def test_py_launch_is_shared_from_the_vendored_parent_copy():
+    """vendor/py_launch.cjs は vendor.lock.json で親から取り込んだバイトを子へ配る。"""
+    shared = {e["path"]: e for e in lock.load_lock(ROOT)["files"]}
+    vendored = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))["files"]
+    parent = [e for e in vendored if e["destination"] == "vendor/py_launch.cjs"]
+    assert len(parent) == 1
+    assert parent[0]["repository"] == "myon-bioinformatics/myon-bioinformatics"
+    assert shared["vendor/py_launch.cjs"]["sha256"] == parent[0]["sha256"]
+    assert "myon-bioinformatics/SakAnalytics" in shared["vendor/py_launch.cjs"]["consumers"]
+    assert "myon-bioinformatics/PythDRagoras" in shared["vendor/py_launch.cjs"]["consumers"]
+
+
+def test_vendor_path_mismatch_is_reported():
+    document = lock.load_lock(ROOT)
+    for entry in document["files"]:
+        if entry["path"] == "vendor/py_launch.cjs":
+            entry["sha256"] = "0" * 64
+    found = lock.problems(ROOT, document)
+    assert any(item.startswith("vendor/py_launch.cjs: sha256 が違う") for item in found)

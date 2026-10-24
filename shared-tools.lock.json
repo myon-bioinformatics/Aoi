@@ -78,6 +78,19 @@
         "myon-bioinformatics/PythDRagoras",
         "myon-bioinformatics/SakAnalytics"
       ]
+    },
+    {
+      "path": "vendor/py_launch.cjs",
+      "sha256": "c1ca339fe3e967d64321d7a798a14fb790a1c5cdf616009048fa3e97bf94b27e",
+      "source": "myon-bioinformatics/Aoi",
+      "consumers": [
+        "myon-bioinformatics/DRAgoWing",
+        "myon-bioinformatics/BlueProbe",
+        "myon-bioinformatics/NagoyAction",
+        "myon-bioinformatics/QueRyu",
+        "myon-bioinformatics/PythDRagoras",
+        "myon-bioinformatics/SakAnalytics"
+      ]
     }
   ]
 }

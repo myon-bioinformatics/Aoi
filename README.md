@@ -80,8 +80,8 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 | [`research_loop/`](research_loop/README.md) | Automated exploration and HTML observation that connect several subprojects |
 | [`scripts/`](scripts/) | Repository-level tools (child registry check, distribution build, c001 replay and publication) |
 | [`dist/`](dist/), [`distributions/`](distributions/), `distributions.json` | Single-file stdlib distributions (`*_min.py`); see [docs/distributions.md](docs/distributions.md) |
-| [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash |
-| `shared-tools.lock.json` | Stdlib-shrink tools Aoi distributes to its subtree children, verified by hash |
+| [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash. `vendor/py_launch.cjs` is the canonical copy of the parent repository's Node launcher (Node >= 24) that Aoi's children vendor from Aoi |
+| `shared-tools.lock.json` | Stdlib-shrink tools and `vendor/py_launch.cjs` that Aoi distributes to its subtree children, verified by hash |
 | [`docs/`](docs/) | Philosophy, principles, method and specifications |
 | [`tests/`](tests/) | Repository-level tests (each subproject keeps its own `tests/`) |
 | `child-heads.json` | Registered heads of the child repositories; see [docs/child-repositories.md](docs/child-repositories.md) |
@@ -108,7 +108,7 @@ The copy inside Aoi and the standalone repository can drift between syncs; the r
 uv run --locked pytest -q                         # tests/ and every subproject's tests/ (pyproject.toml testpaths)
 python -S nagoyaction/linkcheck.py                # Markdown links and images (tracked files, exact case)
 python -S scripts/check_child_heads.py --fail-on-diff   # child repositories vs. their directories in Aoi
-python -S scripts/check_shared_tools_lock.py            # shared stdlib-shrink tools vs. shared-tools.lock.json
+python -S scripts/check_shared_tools_lock.py            # shared tools (stdlib-shrink, py_launch.cjs) vs. shared-tools.lock.json
 ```
 
 CI (`.github/workflows/ci.yml`) runs pytest on Python 3.11–3.15; the Links workflow runs the link check on every change, including docs-only changes.

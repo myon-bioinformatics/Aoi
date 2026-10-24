@@ -82,7 +82,7 @@ def test_vendored_launcher_matches_lock():
     assert entry["repository"] == AOI
     assert entry["source"] == "vendor/py_launch.cjs"
     assert entry["ref"] == entry["commit"]
-    assert len(entry["commit"]) == 40
+    assert re.fullmatch(r"[0-9a-f]{40}", entry["commit"])
     data = (ROOT / "vendor" / "py_launch.cjs").read_bytes()
     assert hashlib.sha256(data).hexdigest() == entry["sha256"]
     blob = hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
@@ -96,9 +96,11 @@ def test_vendored_license_comes_from_aoi_same_commit():
     lic = by_dest["vendor/aoi-LICENSE"]
     assert lic["repository"] == AOI
     assert lic["source"] == "LICENSE"
+    assert lic["ref"] == lic["commit"]
     assert lic["commit"] == by_dest["vendor/py_launch.cjs"]["commit"]
     data = (ROOT / "vendor" / "aoi-LICENSE").read_bytes()
     assert hashlib.sha256(data).hexdigest() == lic["sha256"]
+    assert hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest() == lic["blob_sha"]
     assert data == (ROOT / "LICENSE").read_bytes()
 
 
@@ -182,3 +184,96 @@ def test_ci_guard_fails_without_node_in_actions_test_job(monkeypatch):
     monkeypatch.setitem(globals(), "NODE", None)
     with pytest.raises(AssertionError, match="Node 24\\+ is required"):
         test_ci_requires_node_for_node_entry_parity()
+
+
+@needs_node
+@pytest.mark.skipif(os.name == "nt", reason="POSIX signal forwarding contract")
+@pytest.mark.parametrize("json_errors", [False, True], ids=["text", "json"])
+def test_entry_forwards_repeated_signals_until_child_exits(tmp_path, json_errors):
+    """Exercise the real entry and vendored launcher, with ack-driven signals."""
+    import selectors
+    import signal
+
+    (tmp_path / "vendor").mkdir()
+    shutil.copy(ROOT / "vendor" / "py_launch.cjs", tmp_path / "vendor" / "py_launch.cjs")
+    shutil.copy(ROOT / f"{TOOL}.cjs", tmp_path / f"{TOOL}.cjs")
+    (tmp_path / f"{TOOL}.py").write_text(
+        "import signal, time\n"
+        "signal.signal(signal.SIGINT, lambda *_: print('ACK', flush=True))\n"
+        "print('READY', flush=True)\n"
+        "while True: time.sleep(60)\n",
+        encoding="utf-8",
+    )
+    env = _env()
+    env["PY_LAUNCH_ERROR_FORMAT"] = "json" if json_errors else ""
+    child = subprocess.Popen(
+        [NODE, str(tmp_path / f"{TOOL}.cjs")],
+        env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, start_new_session=True,
+    )
+    try:
+        with selectors.DefaultSelector() as selector:
+            selector.register(child.stdout, selectors.EVENT_READ)
+            for expected, next_signal in [
+                (b"READY\n", signal.SIGINT),
+                (b"ACK\n", signal.SIGINT),
+                (b"ACK\n", signal.SIGTERM),
+            ]:
+                assert selector.select(timeout=5), "child did not acknowledge forwarded signal"
+                assert child.stdout.readline() == expected
+                child.send_signal(next_signal)
+        stdout, stderr = child.communicate(timeout=5)
+        assert child.returncode == 2
+        assert stdout == b""
+        if json_errors:
+            error = json.loads(stderr)
+            assert error["ok"] is False
+            assert error["code"] == "ESIGNAL"
+            assert error["exit_code"] == 2
+            assert "SIGTERM" in error["message"]
+        else:
+            assert stderr == b"py_launch: Python process terminated by signal SIGTERM\n"
+    finally:
+        try:
+            os.killpg(child.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        child.communicate(timeout=5)
+
+
+@needs_node
+@pytest.mark.parametrize("no_site,isolated", [(True, False), (False, True), (True, True)],
+                         ids=["no-site", "isolated", "both"])
+def test_entry_startup_flags_also_protect_interpreter_probe(tmp_path, no_site, isolated):
+    """A site hook must not run during discovery, before the protected child."""
+    (tmp_path / "vendor").mkdir()
+    shutil.copy(ROOT / "vendor" / "py_launch.cjs", tmp_path / "vendor" / "py_launch.cjs")
+    entry = (ROOT / f"{TOOL}.cjs").read_text(encoding="utf-8")
+    if isolated:
+        # Keep the production entry unchanged for its noSite-only contract;
+        # exercise the shared launcher's opt-in -I contract in a private copy.
+        assert "noSite: true" in entry
+        entry = entry.replace("noSite: true", f"noSite: {str(no_site).lower()}, isolated: true")
+    (tmp_path / f"{TOOL}.cjs").write_text(entry, encoding="utf-8")
+    (tmp_path / f"{TOOL}.py").write_text(
+        "import json, sys\n"
+        "print(json.dumps({'no_site': sys.flags.no_site, 'isolated': sys.flags.isolated}))\n",
+        encoding="utf-8",
+    )
+    hooks = tmp_path / "hooks"
+    hooks.mkdir()
+    marker = tmp_path / "site-hook-ran"
+    (hooks / "sitecustomize.py").write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).touch()\n",
+        encoding="utf-8",
+    )
+    env = _env()
+    env["PYTHONPATH"] = str(hooks)
+    result = subprocess.run(
+        [NODE, str(tmp_path / f"{TOOL}.cjs")], env=env,
+        capture_output=True, text=True, encoding="utf-8", timeout=15,
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"no_site": int(no_site), "isolated": int(isolated)}
+    assert result.stderr == ""
+    assert not marker.exists(), "startup flags must protect interpreter discovery too"

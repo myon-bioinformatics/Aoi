@@ -180,29 +180,32 @@
       "import_sites": 2
     },
     "numpy": {
-      "attribute_uses": 241,
+      "attribute_uses": 303,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
         "abs": 7,
+        "allclose": 3,
         "any": 2,
         "arange": 7,
         "argpartition": 1,
         "argsort": 2,
-        "array": 13,
-        "array_equal": 2,
+        "array": 21,
+        "array_equal": 3,
         "asarray": 5,
         "ascontiguousarray": 1,
         "bitwise_count": 2,
         "bool_": 1,
         "ceil": 1,
         "clip": 4,
-        "column_stack": 1,
-        "concatenate": 3,
+        "column_stack": 4,
+        "concatenate": 8,
+        "corrcoef": 1,
         "divide": 1,
         "einsum": 1,
-        "empty": 2,
+        "empty": 3,
         "errstate": 2,
+        "exp": 2,
         "flatnonzero": 2,
         "float32": 4,
         "float64": 24,
@@ -217,35 +220,38 @@
         "int8": 1,
         "integer": 1,
         "isfinite": 1,
-        "linalg.lstsq": 2,
+        "linalg.LinAlgError": 1,
+        "linalg.lstsq": 5,
         "linalg.norm": 6,
         "linalg.pinv": 1,
         "linalg.svd": 2,
-        "log": 4,
+        "log": 13,
         "maximum": 7,
+        "median": 7,
         "meshgrid": 1,
         "minimum": 5,
         "nan_to_num": 2,
         "ndarray": 22,
         "nonzero": 4,
-        "ones": 3,
+        "ones": 6,
         "ones_like": 1,
         "packbits": 3,
         "partition": 2,
+        "percentile": 4,
         "random.Generator": 1,
         "random.PCG64": 1,
-        "random.default_rng": 4,
+        "random.default_rng": 9,
         "round": 5,
         "shape": 1,
         "sign": 6,
         "sort": 1,
-        "sqrt": 4,
+        "sqrt": 5,
         "sum": 1,
         "triu_indices": 2,
         "uint8": 2,
         "unpackbits": 2,
-        "where": 9,
-        "zeros": 14,
+        "where": 13,
+        "zeros": 15,
         "zeros_like": 1
       },
       "by_tree": {
@@ -353,23 +359,48 @@
           "import_sites": 2
         },
         "research": {
-          "attribute_uses": 7,
+          "attribute_uses": 60,
           "attributes": {
-            "array": 2,
-            "column_stack": 1,
-            "linalg.lstsq": 1,
-            "log": 1,
-            "ones": 2
+            "array": 9,
+            "column_stack": 4,
+            "concatenate": 5,
+            "corrcoef": 1,
+            "empty": 1,
+            "exp": 1,
+            "linalg.LinAlgError": 1,
+            "linalg.lstsq": 4,
+            "log": 10,
+            "median": 5,
+            "ones": 5,
+            "percentile": 4,
+            "random.default_rng": 4,
+            "sqrt": 1,
+            "where": 4,
+            "zeros": 1
           },
           "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
+          "files": 3,
+          "import_sites": 3
         },
         "shrink": {
           "attribute_uses": 2,
           "attributes": {
             "__file__": 1,
             "__version__": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        },
+        "tests": {
+          "attribute_uses": 9,
+          "attributes": {
+            "allclose": 3,
+            "array": 1,
+            "array_equal": 1,
+            "exp": 1,
+            "median": 2,
+            "random.default_rng": 1
           },
           "dynamic_import_sites": 0,
           "files": 1,
@@ -413,10 +444,10 @@
           "name": "numpy"
         }
       ],
-      "distinct_attributes": 65,
+      "distinct_attributes": 71,
       "dynamic_import_sites": 0,
-      "files": 16,
-      "import_sites": 16
+      "files": 19,
+      "import_sites": 19
     },
     "ortools": {
       "attribute_uses": 2,
@@ -662,7 +693,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 849,
+      "attribute_uses": 861,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -670,13 +701,13 @@
         "MonkeyPatch": 1,
         "StashKey": 2,
         "UsageError": 10,
-        "approx": 239,
+        "approx": 249,
         "fail": 21,
-        "fixture": 42,
+        "fixture": 43,
         "hookimpl": 3,
         "importorskip": 9,
         "mark.parametrize": 155,
-        "mark.skipif": 4,
+        "mark.skipif": 5,
         "param": 1,
         "raises": 346,
         "skip": 6,
@@ -795,18 +826,19 @@
           "import_sites": 8
         },
         "tests": {
-          "attribute_uses": 72,
+          "attribute_uses": 84,
           "attributes": {
-            "approx": 1,
+            "approx": 11,
             "fail": 1,
-            "fixture": 4,
+            "fixture": 5,
             "importorskip": 1,
             "mark.parametrize": 17,
+            "mark.skipif": 1,
             "raises": 48
           },
           "dynamic_import_sites": 0,
-          "files": 13,
-          "import_sites": 13
+          "files": 14,
+          "import_sites": 14
         }
       },
       "declared": [
@@ -843,8 +875,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 88,
-      "import_sites": 89
+      "files": 89,
+      "import_sites": 90
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2245,6 +2277,49 @@
     },
     {
       "attributes": {
+        "array": 5,
+        "column_stack": 1,
+        "concatenate": 2,
+        "corrcoef": 1,
+        "linalg.LinAlgError": 1,
+        "linalg.lstsq": 1,
+        "log": 1,
+        "ones": 1,
+        "percentile": 1,
+        "random.default_rng": 1,
+        "sqrt": 1,
+        "where": 1
+      },
+      "dynamic_lines": [],
+      "file": "research/bigmac-ruler/staple_bigmac_check.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "research"
+    },
+    {
+      "attributes": {
+        "array": 2,
+        "column_stack": 2,
+        "concatenate": 3,
+        "empty": 1,
+        "exp": 1,
+        "linalg.lstsq": 2,
+        "log": 8,
+        "median": 5,
+        "ones": 2,
+        "percentile": 3,
+        "random.default_rng": 3,
+        "where": 3,
+        "zeros": 1
+      },
+      "dynamic_lines": [],
+      "file": "research/bigmac-ruler/synthetic_staples.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "research"
+    },
+    {
+      "attributes": {
         "Client": 1
       },
       "dynamic_lines": [],
@@ -2592,6 +2667,33 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_aoi_parent_workflow_pins.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "allclose": 3,
+        "array": 1,
+        "array_equal": 1,
+        "exp": 1,
+        "median": 2,
+        "random.default_rng": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_bigmac_ruler.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 10,
+        "fixture": 1,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_bigmac_ruler.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

@@ -33,3 +33,4 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - ZAF IES 2022/23 Table 8.2.7 Urban 14.2 / Traditional→rural 26.6 (Farms 20.3 noted).
 - AUS ABS HES 2015-16 Greater Capital City 16.6 / Rest of State 16.7 (food % of G&S).
 - CHN NBS 2023 food+tobacco+liquor urban 28.8 / rural 32.3 (not COICOP food-only).
+- VNM VHLSS 2022 Table 6.11 Food+Foodstuff urban 32.7 / rural 37.2.

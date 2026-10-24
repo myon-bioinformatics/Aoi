@@ -303,3 +303,13 @@ Measured on 6 kinds of 64x64 synthetic images. Tests use fixed seeds (11–16), 
 - On High Noise Dark, removing the isolated-noise drop (2+ links) lowers IoU from 0.987 to 0.840. Tests also confirm that IoU is at least 0.05 higher with the drop.
 - Shifting the reconstructed region by (3, 2) lowers IoU in every scenario (lines drop to around 0.07, filled shapes to about 0.6–0.74).
 - All 6 scenarios are measurements on fixed synthetic images; performance on real images is not guaranteed.
+
+## Node entry (Node 24+)
+
+- `node littlebit_survey.cjs <args>` runs `littlebit_survey.py` (interpreter override: `LITTLEBIT_SURVEY_PYTHON`).
+- `node season_sensitivity.cjs <args>` runs `season_sensitivity.py` (interpreter override: `SEASON_SENSITIVITY_PYTHON`).
+- `node score_sensitivity.cjs <args>` runs `score_sensitivity.py` (interpreter override: `SCORE_SENSITIVITY_PYTHON`).
+
+Each entry uses the vendored shared launcher `vendor/py_launch.cjs` (pinned in `vendor.lock.json`).
+Arguments, stdin/stdout/stderr and the exit code are passed through unchanged; Python runs with `-S`.
+Launcher failures (no Python 3.9+, spawn error, signal) exit 2.

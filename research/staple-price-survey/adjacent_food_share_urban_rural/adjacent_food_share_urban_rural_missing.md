@@ -124,3 +124,14 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - Pack → **423 / 66**.
 - ARG ENGHo urban-only sample; CHL IX EPF urban-only — miss for rural.
 - BHR/KWT/QAT: no open urban/rural food Engel — miss.
+
+## 2026-10-25 BGD + TUN urban/rural
+
+- **BGD HIT:** HIES 2022 food ÷ consumption → urban **39.7** / rural **50.1** (nat 45.8 published).
+- **TUN HIT:** EBCNV 2021 Volume A food+non-alc urban **28.8** / rural **34.3**.
+- Pack → **427 / 68**.
+
+## 2026-10-25 IRN HEIS 1402
+
+- **IRN HIT:** SCI HEIS 1402 food urban **25.0** / rural **39.6** (via IranStatis citing SCI; amar.org.ir TLS-blocked).
+- Pack → **429 / 69**.

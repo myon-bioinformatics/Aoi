@@ -102,3 +102,16 @@ Stats SA IES 2022/23 Table 8.2.7: Urban 14.2 / Traditional 26.6 (as rural) / Far
 - **COL:** DANE ENPH 2017 already in pack — skip duplicate.
 - Hours-to-buy: still DEU BMEL + BRA DIEESE only (no new NSO-designed labour-minutes series).
 - SAU/ARE food×income: still MISS (no open quintile/decile).
+
+## 2026-10-25 IND HCES 2023-24 thicken
+
+- **IND HIT:** MOSPI HCES 2023-24 Factsheet Section I — food÷MPCE urban **39.68** / rural **47.04** (year 2024). Pack → **411 / 63**.
+- AZE SSC HBS composition urban/rural table exists on portal but TLS egress failed this run — deferred.
+- TUR TurkStat: urban/rural HBS estimates not published reliably after 2014 admin split — miss.
+- ISR CBS: no open urban/rural food Engel % in published HES tables — miss.
+
+## 2026-10-25 AZE H1 2023
+
+- **AZE HIT:** SSC HBS H1 2023 via banker.az — urban **44.0** / rural **46.78** food÷consumption. Pack → **413 / 64**.
+- SSC 2025 food-accessibility bulletin fetched: **not** Engel shares (skip coerce).
+- SSC composition Excel still TLS-blocked from box.

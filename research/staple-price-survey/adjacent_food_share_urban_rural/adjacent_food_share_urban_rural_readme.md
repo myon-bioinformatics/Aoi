@@ -8,7 +8,7 @@ Urban vs rural (or municipal / non-municipal) food expenditure shares of househo
 Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 
 ## Coverage (build 2026-10-25 Asia/Tokyo)
-- **409 rows / 63 ISO3**, years **1988–2025**
+- **413 rows / 64 ISO3**, years **1988–2025**
 - ISO3: AUS AUT BEL BGR BOL BRA CHN COL CRI CYP CZE DEU DNK DOM ECU EGY ESP EST EUZ FIN FRA GBR GRC GTM HND HRV HUN IDN IND IRL ITA JOR LKA LTU LUX LVA MAR MDA MEX MLT MYS NIC NLD NOR OMN PAK PER PHL POL PRT PRY ROU RUS SLV SVK SVN SWE THA UKR URY USA VNM ZAF
 - `estimated_value` empty on all rows
 
@@ -17,7 +17,8 @@ Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 |---|---:|---|
 | Eurostat HBS_STR_T226 | 277 | CP01; PM÷10→%; DEG1=cities→urban; DEG3=rural |
 | CEPALSTAT indicator 5725 | 26 | Urban/Rural; **Total quintile** only |
-| MOSPI HCES Statement 3 | 10 | India |
+| MOSPI HCES Statement 3 | 12 | India (incl. 2023-24) |
+| Azerbaijan SSC HBS via banker.az | 2 | Azerbaijan H1 2023 |
 | BLS CE Table 1721 | 8 | USA |
 | BPS Susenas 2020–2023 (Kompas/CNBC→BPS) | 6 | IDN |
 | NSO Thailand SES 2021 Table 6 | 2 | THA municipal/non-municipal |

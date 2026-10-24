@@ -56,7 +56,6 @@ def test_ci_requires_node_for_node_entry_parity():
         assert NODE is not None, "Node 24+ is required for the Node parity suite"
 
 
-
 def _env() -> dict[str, str]:
     env = dict(os.environ)
     env[ENV_VAR] = sys.executable
@@ -159,3 +158,11 @@ def test_node_probe_rejects_missing_or_old(monkeypatch, tmp_path):
     assert _node() is None
     monkeypatch.setenv("NODE", sys.executable)  # prints "Python 3.x", not v24+
     assert _node() is None
+
+
+def test_ci_guard_fails_without_node_in_actions_test_job(monkeypatch):
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("GITHUB_JOB", "test")
+    monkeypatch.setitem(globals(), "NODE", None)
+    with pytest.raises(AssertionError, match="Node 24\\+ is required"):
+        test_ci_requires_node_for_node_entry_parity()

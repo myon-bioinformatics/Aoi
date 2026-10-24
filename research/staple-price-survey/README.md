@@ -76,3 +76,9 @@ In `staple_survey_vertical.csv`, `country + date + variable + source` is **not**
 This folder is **data only**. Do not splice USDA Engel with Japan national Engel without documenting the definition break. Do not convert currencies or pack sizes when forming \(b\).
 
 Path note: files live under `research/staple-price-survey/` (not `data/`), because the repository `.gitignore` ignores `data/`.
+
+### Update 2026-10-24 (Asia/Tokyo) — QAT + TWN absolute levels
+
+- Pack `adjacent_hi_staple_levels` now includes **QAT** (NPC/data.gov.qa annual averages, 2017–2023) and **TWN** (NDC e-invoice midpoints + Taipei potato).
+- Still in pack: HKG, MYS, NZL, SGP. Active-lane exhausted/blocked: ARE, BHR, KWT, OMN, EUZ.
+- AUS/CAN/CHE/DNK/NOR remain on Aoi `hi_staple_levels_alt` (do not double-take).

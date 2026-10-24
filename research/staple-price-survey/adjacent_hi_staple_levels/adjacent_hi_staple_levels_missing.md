@@ -2,22 +2,31 @@
 
 Retrieved: 2026-10-24 Asia/Tokyo
 
-## Gap-16 without absolute staple series (12)
+## Active lane (this bot): ARE, BHR, KWT, OMN, QAT, TWN, EUZ
 
 | ISO3 | Status |
 |------|--------|
-| ARE | No open NSO average retail staple series found (FCSC probe 403). |
-| AUS | ABS Average Retail Prices (6403.0.55.001) **discontinued 2011**; open cubes / Wayback not retrieved from this box; data.gov.au search did not surface a current absolute retail staple CSV. |
-| BHR | data.gov.bh reachable; no staple average-price bulk secured. |
-| CAN | StatsCan table **18-10-0245** (Monthly average retail prices) — **TLS `UNEXPECTED_EOF`** from box; open.canada.ca API returned empty/non-JSON; WebFetch 500. |
-| CHE | BFS “average prices” page 404 / probe HTML without clear absolute food staple download. |
-| DNK | Statbank tables inspected are CPI (`PRIS111` etc.), not absolute retail food levels. |
-| EUZ | No euro-area absolute retail staple product prices in open Eurostat bulk (see below). |
-| KWT | No open average retail staple bulk found. |
-| NOR | SSB dataset probes returned 410; no absolute retail food product table secured. |
-| OMN | No open average retail staple bulk found. |
-| QAT | No open average retail staple bulk found. |
-| TWN | MOA `RicepriceData` / data.moa.gov.tw — **TLS `UNEXPECTED_EOF`** / WebFetch 504; data.gov.tw API 405. |
+| **QAT** | **CLOSED** — NPC annual average consumer prices (selected commodities) via data.gov.qa; 48 rows / 7 series (bread 700 g, Lebanese bread 5 pcs, wheat flour ×2, rice 5 kg ×2, potato kg), 2017–2023. |
+| **TWN** | **CLOSED** — NDC e-invoice midpoints (rice 3 kg, wheat flour kg, white toast) + Taipei potato 元/台斤. MOA `RicepriceData` still TLS `UNEXPECTED_EOF` (not required for close). |
+| ARE | **Exhausted.** FCSC prices pages 403 from box. MOET Essential Goods Prices Platform reachable only via Brainy `official_shop_prices` with `license_id=source_terms_unconfirmed` / “no bulk redistribution” — **not loaded**. Dubai Pulse commodity series is financial-market, not grocery retail. |
+| BHR | **Exhausted.** data.gov.bh catalog + `search(default,"average"|"retail"|"price"|"consumer price")` — CPI index datasets and unrelated averages only; no absolute staple retail bulk. |
+| KWT | **Exhausted.** CSB CPI downloads only; `cprice.csb.gov.kw` is login/session consumer-price system, not open bulk. GCC-Stat `DF_ES_CPI` is CPI. |
+| OMN | **Exhausted.** data.gov.om Price Index / CPI base-2018 datasets only; no open average retail staple CSV/API secured (search API 403). |
+| EUZ | **Exhausted.** Eurostat open bulk has no ongoing absolute LCU/EUR retail staple product table (`prc_fpmt_m` indices/rates only; `prc_dap*` historical one-off not loaded; `apri_ap` farm-gate out of scope). |
+
+## Kept from earlier (not in active-7, already in pack)
+
+HKG, MYS, NZL, SGP — unchanged; still in vertical CSV.
+
+## Handed to Aoi lane `hi_staple_levels_alt` (do not pursue here)
+
+| ISO3 | Prior probe note (for Aoi) |
+|------|----------------------------|
+| AUS | ABS Average Retail Prices (6403.0.55.001) discontinued 2011; Wayback/TLS issues from this box. |
+| CAN | StatsCan **18-10-0245** TLS `UNEXPECTED_EOF`; open.canada.ca empty/non-JSON. |
+| CHE | BFS average-prices probe without clear absolute food staple download. |
+| DNK | Statbank tables inspected are CPI, not absolute retail food levels. |
+| NOR | SSB probes returned 410; no absolute retail food product table secured. |
 
 ## Optional (outside gap-16)
 
@@ -29,28 +38,29 @@ Retrieved: 2026-10-24 Asia/Tokyo
 
 ## Eurostat absolute retail food prices
 
-**Not included — no open absolute LCU retail product table found.**
+**Not included — no open absolute LCU retail product table found for EUZ.**
 
 | Code tried | Result |
 |------------|--------|
-| `prc_fpmt_m` | **Downloaded** — Food Price Monitoring Tool monthly. Units: `I25`, `RCH_A`, `RCH_M` only (indices & rates for HICP/PPI/ACPI/IPI). Bread/cereals/potatoes COICOP present but **not LCU levels**. |
-| `prc_fsc_idx`, `prc_fsc_irt`, `prc_fsc_agg`, `prc_fpmt_a`, `prc_apc_a` | HTTP 404 / error XML on SDMX data API. |
+| `prc_fpmt_m` | Downloaded — units `I25`, `RCH_A`, `RCH_M` only (indices & rates). |
+| `prc_fsc_*`, `prc_fpmt_a`, `prc_apc_a` | HTTP 404 / error XML on SDMX data API. |
 | `prc_hicp_aind` | HICP annual — index / contribution metrics only. |
-| `apri_ap` (agri absolute) | Farm-gate absolute prices — **out of scope** (retail required; producer already in Aoi FAOSTAT PP). |
-| PPP / PLI food | Comparative price **levels** (index vs EU), not national average retail LCU series in open bulk. |
+| `prc_dap*` (Detailed Average Prices) | Historical one-off (~2008–2015); not ongoing EA series; not loaded. |
+| `apri_ap` | Farm-gate absolute — out of scope. |
+| PPP / PLI food | Comparative levels (index vs EU), not national average retail LCU. |
 
-If Eurostat later publishes product-level average retail prices (EUR or national currency per kg/loaf), they should be added here as `staple_price:*` with pack size in `unit` and Eurostat code in `note`.
+## TLS / egress failures retained for later
 
-## TLS / egress failures to retry later
-
-- `www150.statcan.gc.ca` table 18100245 CSV zip
-- `data.moa.gov.tw` RicepriceData CSV
-- Internet Archive CDX for ABS 6403 (TLS fail from this box)
+- `www150.statcan.gc.ca` table 18100245 CSV zip (Aoi lane)
+- `data.moa.gov.tw` RicepriceData CSV (TWN closed via NDC/Taipei instead)
+- Internet Archive CDX for ABS 6403 (Aoi lane)
+- `fcsc.gov.ae` prices pages (403)
 
 ## Intentionally not collected
 
 - CPI / HICP / FAO food CPI / ILO food CPI (other adjacent packs)
-- Aoi lanes: SOFI/FIES, Asia/Africa NSO CPI, Pink Sheet, CoAHD, producer prices, Japan food service, numeraire batch
+- Brainy/MOET ARE bulk (license unconfirmed; no redistribution)
+- Aoi lanes: SOFI/FIES, Asia/Africa NSO CPI, Pink Sheet, CoAHD, producer prices, Japan food service, numeraire batch, `hi_staple_levels_alt`
 - FX conversion, unit homogenization, gap-fill
 
-Probe artifact retained: `raw/eurostat/prc_fpmt_m.tsv.gz` (indices only; not loaded into vertical CSV).
+Probe artifacts: `raw/eurostat/prc_fpmt_m.tsv.gz` (indices only); `raw/gcc/` (Qatar CSV + BHR/ARE probes).

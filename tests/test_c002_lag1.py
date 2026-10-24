@@ -29,6 +29,33 @@ def test_replication_gate_passes():
     assert ok, "\n".join(lines)
 
 
+def test_inputs_match_staple_survey_japan_series():
+    # 転記した E と P のうち、research/staple-price-survey（e-Stat）で裏が取れる範囲を固定する。
+    # E: 2005–2023 は家計調査（二人以上の世帯）、P: 2005–2015 は小売物価統計調査の 5kg 月次の年平均
+    import csv
+    import statistics
+
+    import pytest
+
+    path = LAG1.parent.parent.parent / "research" / "staple-price-survey" / "staple_survey_vertical.csv"
+    if not path.exists():
+        pytest.skip("staple-price-survey is not in this checkout")
+    engel, rice = {}, {}
+    with path.open(encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["country"] != "JPN":
+                continue
+            if r["variable"] == "engel_share_food_national_hh_survey":
+                engel[int(r["year"])] = float(r["value"]) / 100
+            elif r["variable"] == "staple_price:rice_uruchi_5kg":
+                rice.setdefault(int(r["year"]), []).append(float(r["value"]))
+    for y in range(2005, 2024):
+        assert abs(lag_run.E[y] - engel[y]) < 5e-4, y
+    for y in range(2005, 2016):
+        assert len(rice[y]) == 12, y
+        assert abs(lag_run.P[y] - statistics.mean(rice[y])) < 0.05, y
+
+
 def test_lag_test_years_follow_the_prelock():
     assert [r["t"] for r in lag_run.rolling(2005, 1)] == list(range(2012, 2026))
     assert [r["t"] for r in lag_run.rolling(2015, 1)] == list(range(2022, 2026))

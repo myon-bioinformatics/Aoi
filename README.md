@@ -202,5 +202,13 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 
 `node nagoyaction.cjs <args>` runs `nagoyaction.py` through the vendored shared launcher
 `vendor/py_launch.cjs`, taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. Arguments, stdin/stdout/stderr and the
-exit code are passed through unchanged; Python runs with `-S`. Set `NAGOYACTION_PYTHON` to pick
-the interpreter. Launcher failures (no Python 3.9+, spawn error, signal) exit 2.
+exit code are passed through unchanged; Python runs with `-S`, including interpreter discovery.
+Set `NAGOYACTION_PYTHON` to pick the interpreter. The launcher forwards repeated SIGINT/SIGTERM
+until the Python child exits. Launcher failures (no Python 3.9+, spawn error, signal) exit 2;
+set `PY_LAUNCH_ERROR_FORMAT=json` for a structured launcher error on stderr (independent of
+the tool's `--json` flag).
+
+The launcher and license are pinned to Aoi's accepting main merge commit
+[`bb5eb56`](https://github.com/myon-bioinformatics/Aoi/commit/bb5eb56f216eeff9135b7aa178197a79df152396),
+not to the root repository or an unmerged PR head. `shared-tools.lock.json` remains the separate,
+unchanged lock for the polars shrink tools under `vendor/aoi/`.

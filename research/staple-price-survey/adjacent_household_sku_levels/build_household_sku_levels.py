@@ -351,6 +351,131 @@ def from_mys_dosm() -> list[dict]:
     return out
 
 
+
+def from_fin_statfin() -> list[dict]:
+    path = RAW / "fin" / "fin_household_prices.csv"
+    if not path.exists():
+        return []
+    mapping = {
+        "0111500": ("coffee_500g", "Packet of coffee, 500 g"),
+        "0111600": ("tea_bags_50g", "Tea bags, 50 g"),
+        "0500100": ("dishwashing_detergent_machine_1kg", "Machine dishwashing detergent, 1 kg"),
+        "0500200": ("laundry_detergent_1l", "Laundry detergent, 1 l"),
+        "0500300": ("washing_up_liquid_1l", "Washing-up liquid, 1 l"),
+        "0500400": ("general_purpose_cleanser_1l", "General purpose cleanser, 1 l"),
+        "0500600": ("kitchen_towel_4rolls", "Kitchen towel, 4 rolls"),
+        "1200300": ("toilet_paper_8rolls", "Toilet paper, 8 rolls"),
+        "1200400": ("sanitary_towels_20pcs", "Sanitary towels, 20 pcs"),
+    }
+    src = (
+        "https://pxdata.stat.fi (StatFin Passiivi / Average prices of commodities "
+        "011; monthly national average)"
+    )
+    out = []
+    with path.open(newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r.get("freq") != "M":
+                continue  # monthly only; skip annual M01-M12 averages
+            code = r["commodity"]
+            if code not in mapping:
+                continue
+            var, label = mapping[code]
+            try:
+                val = float(r["value"])
+            except (TypeError, ValueError):
+                continue
+            y, m = int(r["year"]), int(r["month"])
+            note = (
+                f"StatFin 011 commodity={code}; {label}; EUR national average; "
+                f"{RETRIEVED}"
+            )
+            out.append(
+                row(
+                    "FIN",
+                    f"{y}-{m:02d}-01",
+                    y,
+                    f"household_sku:{var}",
+                    val,
+                    "EUR per published pack",
+                    src,
+                    note,
+                )
+            )
+    return out
+
+
+def from_aut_preisradar() -> list[dict]:
+    path = RAW / "aut" / "aut_household_means.csv"
+    if not path.exists():
+        return []
+    src = (
+        "https://www.statistik.at (Preisradar / price radar product means; "
+        "ep/{productId}.json meanData)"
+    )
+    out = []
+    with path.open(newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            try:
+                val = float(r["value"])
+            except (TypeError, ValueError):
+                continue
+            y, m = int(r["year"]), int(r["month"])
+            note = (
+                f"Austria Preisradar monthly mean; productId={r['product_id']}; "
+                f"{r.get('label','')}; {RETRIEVED}"
+            )
+            out.append(
+                row(
+                    "AUT",
+                    f"{y}-{m:02d}-01",
+                    y,
+                    f"household_sku:{r['variable']}",
+                    val,
+                    "EUR per published pack",
+                    src,
+                    note,
+                )
+            )
+    return out
+
+
+def from_nld_cbs() -> list[dict]:
+    path = RAW / "nld" / "nld_coffee_tea_annual.csv"
+    if not path.exists():
+        return []
+    src = (
+        "https://opendata.cbs.nl (80345eng Consumer prices of food; "
+        "Coffee_5, Tea_14; annual)"
+    )
+    units = {"coffee": "EUR per published unit (CBS Coffee_5)", "tea": "EUR per published unit (CBS Tea_14)"}
+    out = []
+    with path.open(newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            try:
+                val = float(r["value"])
+            except (TypeError, ValueError):
+                continue
+            y = int(r["year"])
+            var = r["variable"]
+            note = (
+                f"CBS 80345eng annual; Periods={r.get('period','')}; "
+                f"variable={var}; ends 2018 series close; {RETRIEVED}"
+            )
+            out.append(
+                row(
+                    "NLD",
+                    f"{y}-01-01",
+                    y,
+                    f"household_sku:{var}",
+                    val,
+                    units.get(var, "EUR"),
+                    src,
+                    note,
+                )
+            )
+    return out
+
+
 def main() -> None:
     # Skip already-landed Aoi panels (do not duplicate into #118):
     # - japan_rps_everyday_clothing_household_panel.csv
@@ -362,6 +487,9 @@ def main() -> None:
         ("IRL", from_irl_cso()),
         ("QAT", from_qat()),
         ("MYS", from_mys_dosm()),
+        ("FIN", from_fin_statfin()),
+        ("AUT", from_aut_preisradar()),
+        ("NLD", from_nld_cbs()),
     ]
     rows: list[dict] = []
     stats = {}

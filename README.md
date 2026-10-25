@@ -54,6 +54,8 @@ uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --o
 
 The input `--games` is an observation dataset (one game per line: `key, date, home, away, hs, as`, the form [QueRyu](https://github.com/myon-bioinformatics/QueRyu) builds), and `--config` is the analysis settings TOML including `[teams]`. If batting, fielding, or line score observations exist, `--batting`, `--fielding`, and `--linescore` add columns.
 
+Zero handling: a "vs. the other teams of the league" column is null (not NaN, not 0) when there is no other team to compare with. Any NaN or ±inf that still reaches the output table is turned into null and counted. `--meta-out <run.json>` records that count per column, the polars version, and the named tolerances (`TOLERANCES`: the values that used to be written as bare literals such as `1e-9`; the values are unchanged, and they are a record of what was used, not recommended values).
+
 ## Layout
 
 | File | Contents |

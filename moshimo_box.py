@@ -91,7 +91,11 @@ def _logit(p: float) -> float:
 
 
 def _expit(x: float) -> float:
-    return 1 / (1 + math.exp(-x))
+    """Stable logistic function; extreme logits may round to 0 or 1."""
+    if x >= 0:
+        return 1 / (1 + math.exp(-x))
+    z = math.exp(x)
+    return z / (1 + z)
 
 
 def _form_counts(a: int, b: int, c: int, d: int) -> dict:
@@ -132,14 +136,13 @@ def build(*, converse, inverse, contrapositive, n, exact=False) -> dict:
     a, b, c, d = (counts[k] for k in CELLS)
     forms = _form_counts(a, b, c, d)
     rate = {f: num / den for f, (num, den) in forms.items()}
-    odds_original = oc * ocp / oi
     return {
         "synthetic": True, "exact": exact, "n": n, "dials": dials, "cells": counts,
         "forms": {f: {"n": den, "hold": num, "rate": num / den} for f, (num, den) in forms.items()},
         "counterexamples": {"original": b, "contrapositive": b, "converse": c, "inverse": c},
-        "original_rate_exact": odds_original / (1 + odds_original),
+        "original_rate_exact": _expit(_logit(dials["converse"]) + _logit(dials["contrapositive"]) - _logit(dials["inverse"])),
         # the ranking score of proposition generation (rule_search.py): tp = a, fp = b, fn = c, tn = d. All four sums are > 0.
-        "mcc": (a * d - b * c) / math.sqrt((a + b) * (a + c) * (b + d) * (c + d)),
+        "mcc": (a * d - b * c) / math.prod(math.sqrt(margin) for margin in (a + b, a + c, b + d, c + d)),
         # the same numerator a*d - b*c over the margins: mcc^2 = informedness * markedness
         "informedness": rate["converse"] + rate["contrapositive"] - 1,
         "markedness": rate["original"] + rate["inverse"] - 1,
@@ -168,14 +171,20 @@ def load_record(path, proposition_id: str) -> dict:
 def table_of(record: dict, eps: float | None = None) -> tuple[dict, dict]:
     """``(cells, lifted)`` of a real proposition's 2x2 table (metrics tp, fp, fn, tn; a rule_search row works the same).
 
+    Counts must be non-negative Python integers (JSON integers); bool, floats and strings are refused, never coerced.
     With ``eps`` a zero cell is lifted to ε (``lifted`` says which); without it nothing changes. A table with an empty
     row or column is refused either way: 0/0 is undefined, not small, so ε does not lift it.
     """
     m = record.get("metrics") or record
     try:
-        counts = {cell: int(m[key]) for cell, key in zip(CELLS, ("tp", "fp", "fn", "tn"))}
+        counts = {cell: m[key] for cell, key in zip(CELLS, ("tp", "fp", "fn", "tn"))}
     except (KeyError, TypeError, ValueError):
         raise MoshimoError(f"proposition {record.get('id')!r} has no 2x2 table (metrics tp, fp, fn, tn)") from None
+    for cell, key in zip(CELLS, ("tp", "fp", "fn", "tn")):
+        value = counts[cell]
+        if type(value) is not int or value < 0:
+            raise MoshimoError(f"proposition {record.get('id')!r}: count {key} must be a non-negative integer "
+                               f"(bool, floats and strings are not counts), got {value!r}")
     eps = check_eps(eps)
     # all four forms, the original included: with a + b = 0 the original is 0/0, and lifting a and b by the same ε would
     # manufacture a rate of 1/2 out of nothing

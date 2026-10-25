@@ -169,7 +169,7 @@ def test_anchor_reads_the_dials_and_n_of_a_real_proposition_and_build_gives_its_
 
 @pytest.mark.parametrize("record,match", [
     ({"id": "X"}, "no 2x2 table"),
-    ({"id": "X", "metrics": {"tp": None, "fp": 1, "fn": 1, "tn": 1}}, "no 2x2 table"),
+    ({"id": "X", "metrics": {"tp": None, "fp": 1, "fn": 1, "tn": 1}}, "count tp must be a non-negative integer"),
     ({"id": "X", "metrics": {"tp": 120, "fp": 36, "fn": 0, "tn": 0}}, "nothing to turn"),   # condition holds for every unit
     ({"id": "X", "metrics": {"tp": 0, "fp": 11, "fn": 0, "tn": 0}}, "nothing to turn"),
 ])
@@ -399,3 +399,71 @@ def test_cli_eps_refusals(tmp_path, capsys, args, match):
     with pytest.raises(SystemExit) as exc:
         mb.main(argv)
     assert exc.value.code == 2 and match in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("key", ["tp", "fp", "fn", "tn"])
+@pytest.mark.parametrize("bad", [True, False, 1.9, 1.0, -1, "1", None, float("inf"), float("nan")])
+@pytest.mark.parametrize("nested", [True, False])
+def test_real_counts_are_nonnegative_integers_without_coercion(key, bad, nested):
+    metrics = {"tp": 61, "fp": 12, "fn": 17, "tn": 66, key: bad}
+    record = {"id": "bad", "metrics": metrics} if nested else metrics
+    for eps in (None, 1e-6):
+        with pytest.raises(mb.MoshimoError, match=f"count {key} must be a non-negative integer"):
+            mb.anchor(record, eps)
+    assert metrics[key] is bad  # rejection does not rewrite the observation
+
+
+@pytest.mark.parametrize("x,expected", [(-1000, 0.0), (1000, 1.0), (0, 0.5)])
+def test_expit_extreme_logits(x, expected):
+    assert mb._expit(x) == expected
+
+
+@pytest.mark.parametrize("tiny", [1e-300, math.nextafter(0.0, 1.0)])
+def test_headroom_accepts_extreme_valid_dials(tiny):
+    h = mb.headroom(dict(converse=tiny, inverse=0.5, contrapositive=tiny), 0.5)
+    assert h["original_rate_exact"] == 0.0  # correctly rounded underflow
+    assert h["gap"] == pytest.approx(2 * math.log(tiny))
+    assert h["breakeven"]["converse"] == 1.0
+    assert h["breakeven"]["contrapositive"] == 1.0
+    assert h["breakeven"]["inverse"] == 0.0
+    json.dumps(h, allow_nan=False)
+
+
+def test_headroom_near_one_is_finite():
+    near_one = math.nextafter(1.0, 0.0)
+    h = mb.headroom(dict(converse=near_one, inverse=1e-300, contrapositive=near_one), near_one)
+    assert h["original_rate_exact"] == 1.0 and math.isfinite(h["gap"])
+    assert all(0 <= v <= 1 for v in h["breakeven"].values())
+
+
+def test_cli_sweep_with_extreme_threshold_writes_all_rows(tmp_path, capsys):
+    out = tmp_path / "extreme.json"
+    assert mb.main(["--converse", "0.6", "--inverse", "0.7", "--contrapositive", "0.8", "--n", "168",
+                    "--threshold", "1e-300", "--sweep", "inverse=0.5,0.7,0.9", "--json", str(out)]) == 0
+    data = json.loads(out.read_text())
+    assert len(data["tables"]) == len(data["headroom"]) == 3
+    assert all(h["breakeven"]["inverse"] == 1.0 for h in data["headroom"])
+    assert all(math.isfinite(h["gap"]) for h in data["headroom"])
+    assert "break-even" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("bad", [True, 1.9, -1])
+def test_cli_rejects_bad_ledger_counts_with_reason(tmp_path, capsys, bad):
+    ledger = tmp_path / "bad.jsonl"
+    ledger.write_text(json.dumps({"id": "X", "tp": bad, "fp": 12, "fn": 17, "tn": 66}))
+    with pytest.raises(SystemExit) as exc:
+        mb.main(["--ledger", str(ledger), "--id", "X"])
+    assert exc.value.code == 2
+    assert "count tp must be a non-negative integer" in capsys.readouterr().err
+
+
+
+def test_exact_sweep_with_tiny_dials_keeps_finite_tables_and_headroom():
+    tables = mb.sweep("converse", [1e-300, 1e-200, 0.5], inverse=0.5,
+                      converse=1e-300, contrapositive=1e-300, n=100, exact=True)
+    assert len(tables) == 3
+    for table in tables:
+        assert sum(table["cells"].values()) == pytest.approx(100)
+        assert table["original_rate_exact"] == pytest.approx(table["forms"]["original"]["rate"], abs=1e-310)
+        assert table["mcc"] == pytest.approx(-math.sqrt((1 - table["dials"]["converse"]) / 2))
+        json.dumps({"table": table, "headroom": mb.headroom(table["dials"], 0.5)}, allow_nan=False)

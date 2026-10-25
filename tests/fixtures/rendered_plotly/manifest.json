@@ -1,0 +1,15 @@
+{
+  "browser": "Google Chrome for Testing 153.0.8010.12",
+  "figures_sha256": "78645791c3524f5ee3bb965d483edb6bcc86e26bb3408a275a3d5ada5b248ad2",
+  "files": {
+    "figure-0.png": "c6572518d2669af8a0cd2a4865013c393e7a625632baf4f0b4d9a69f533afc8f",
+    "figure-0.svg": "46b0175aa2edbe878182677d9c2cb106041ea9fca84db1e682b696df1bcfa9f4",
+    "figure-1.png": "46ad3b517ec3633c1830c24563e158cf6ff02df5d9f63206b4fed98bb5cc3b6e",
+    "figure-1.svg": "a975a1723f97d05999becff2fbacb4b5f86588936dafb5a34e6e3b28cf2257f5",
+    "figure-2.png": "9ad7082cccc390e446d39c422cfe27557a2e2969ac30272083183d8530a5ce1a",
+    "figure-2.svg": "6a1129cbc15bdc0c17cea631d7a4697e5c6daf7ef3aa8b92ff13a6dd996212ac"
+  },
+  "plotly_js": "4.1.2",
+  "regenerate": "python scripts/render_static_fixtures.py --chrome <chromium> --plotly-js <plotly.min.js>",
+  "schema": "aoi-rendered-plotly-fixtures/1"
+}

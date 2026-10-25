@@ -362,6 +362,13 @@ jobs:
       - name: Install dependencies before disconnecting the network
         run: |
           uv sync --locked --python 3.14
+      # No browser and no network: the page given to Chromium and the saved PNG/SVG are compared with the figure
+      # spec first, so a red browser step below can be told apart from wrong output. (The same tests also run in
+      # every pytest job; this step only puts them ahead of the browser launch.)
+      - name: Check the drawn output and the page against the figure spec before any browser starts
+        run: |
+          set -euo pipefail
+          .venv/bin/python -m pytest -c pyproject.toml -q tests/test_rendered_output_static.py
       - name: Prepare Plotly.js from jsDelivr before disconnecting the network
         run: |
           mkdir -p build/test-assets

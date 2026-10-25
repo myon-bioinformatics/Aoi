@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 957,
+      "attribute_uses": 975,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -744,14 +744,14 @@
         "UsageError": 10,
         "approx": 280,
         "fail": 30,
-        "fixture": 50,
+        "fixture": 51,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 175,
+        "mark.parametrize": 187,
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 361,
+        "raises": 366,
         "skip": 8,
         "warns": 3
       },
@@ -880,21 +880,21 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 164,
+          "attribute_uses": 182,
           "attributes": {
             "approx": 38,
             "fail": 10,
-            "fixture": 11,
+            "fixture": 12,
             "importorskip": 1,
-            "mark.parametrize": 31,
+            "mark.parametrize": 43,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 63,
+            "raises": 68,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 22,
-          "import_sites": 22
+          "files": 23,
+          "import_sites": 23
         }
       },
       "declared": [
@@ -931,8 +931,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 100,
-      "import_sites": 101
+      "files": 101,
+      "import_sites": 102
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2981,6 +2981,18 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_recovery_provenance.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.parametrize": 12,
+        "raises": 5
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_rendered_output_static.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

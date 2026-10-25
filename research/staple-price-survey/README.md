@@ -136,6 +136,6 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 
 ### Update 2026-10-25 (Asia/Tokyo) — PR #118 tip hygiene (no new digs)
 
-- `adjacent_household_sku_levels`: **3015** rows / 8 ISO3 — densify **PAUSED**; schema OK.
+- `adjacent_household_sku_levels`: **4362** rows / **11** ISO3 (ARG, AUT, CZE, FIN, FRA, IRL, MYS, NLD, NZL, QAT, SGP) — densify stop after ARG/NZL/CZE easy hits; schema OK.
 - `adjacent_hi_staple_levels`: **3691** rows / 6 ISO3 — NZL white-loaf key clash split (`bread_700g` vs `bread_600g_cheapest`); coverage docs synced.
 - `adjacent_euz_proxy_staple_levels`: **14911** rows / 8 ISO3 proxies — coverage docs synced after milk/eggs/meat/oil/sugar densify (e731537); easy densify exhausted.

@@ -1,0 +1,239 @@
+{
+  "eps": [
+    1e-09,
+    1e-06,
+    0.001
+  ],
+  "units": [
+    {
+      "season": 2013,
+      "team": "g",
+      "settled_at_start": true,
+      "K": 0.0,
+      "position": 0.06217616580310881,
+      "amp": null,
+      "abs_miss": null,
+      "rel_miss": null
+    },
+    {
+      "season": 2014,
+      "team": "b",
+      "settled_at_start": false,
+      "K": 0.08147636446707199,
+      "position": null,
+      "amp": 0.542443787692478,
+      "abs_miss": 0.5406462550163269,
+      "rel_miss": 0.006591398914740108
+    },
+    {
+      "season": 2014,
+      "team": "h",
+      "settled_at_start": false,
+      "K": 0.0774124031937869,
+      "position": null,
+      "amp": 0.5402437905258934,
+      "abs_miss": 0.535699130006833,
+      "rel_miss": 0.006871996302793025
+    },
+    {
+      "season": 2014,
+      "team": "l",
+      "settled_at_start": false,
+      "K": 0.4283563119574138,
+      "position": null,
+      "amp": 0.7673664136067272,
+      "abs_miss": 0.34122610092163086,
+      "rel_miss": 0.0007958938096419439
+    },
+    {
+      "season": 2015,
+      "team": "b",
+      "settled_at_start": false,
+      "K": 0.19909165673271326,
+      "position": null,
+      "amp": 0.6101469044588435,
+      "abs_miss": 0.5533361182897352,
+      "rel_miss": 0.002771198481094333
+    },
+    {
+      "season": 2015,
+      "team": "e",
+      "settled_at_start": false,
+      "K": 0.7324244196483788,
+      "position": null,
+      "amp": 1.040058788634084,
+      "abs_miss": 0.5785056565655395,
+      "rel_miss": 0.0007891201080756961
+    },
+    {
+      "season": 2015,
+      "team": "s",
+      "settled_at_start": false,
+      "K": 1.4664300284133907,
+      "position": null,
+      "amp": 2.166868088538493,
+      "abs_miss": 0.6118104259949178,
+      "rel_miss": 0.0004169746598925365
+    },
+    {
+      "season": 2016,
+      "team": "s",
+      "settled_at_start": false,
+      "K": 0.9876497000184424,
+      "position": null,
+      "amp": 1.3424583456335752,
+      "abs_miss": 0.5593073139898479,
+      "rel_miss": 0.0005658914786405153
+    },
+    {
+      "season": 2017,
+      "team": "e",
+      "settled_at_start": false,
+      "K": 1.0720322161302205,
+      "position": null,
+      "amp": 1.4606551027095465,
+      "abs_miss": 0.6439230309333652,
+      "rel_miss": 0.0006002127786672908
+    },
+    {
+      "season": 2018,
+      "team": "f",
+      "settled_at_start": false,
+      "K": 0.2187942550017725,
+      "position": null,
+      "amp": 0.6222875926121939,
+      "abs_miss": 0.3087173491367139,
+      "rel_miss": 0.0014085767600678768
+    },
+    {
+      "season": 2019,
+      "team": "h",
+      "settled_at_start": true,
+      "K": 0.0,
+      "position": 0.059782608695652176,
+      "amp": null,
+      "abs_miss": null,
+      "rel_miss": null
+    },
+    {
+      "season": 2020,
+      "team": "l",
+      "settled_at_start": false,
+      "K": 0.7308049629311559,
+      "position": null,
+      "amp": 1.038375821556511,
+      "abs_miss": 0.25104652356822044,
+      "rel_miss": 0.00034327823407827334
+    },
+    {
+      "season": 2021,
+      "team": "db",
+      "settled_at_start": true,
+      "K": 0.0,
+      "position": 0.05,
+      "amp": null,
+      "abs_miss": null,
+      "rel_miss": null
+    },
+    {
+      "season": 2021,
+      "team": "e",
+      "settled_at_start": false,
+      "K": 0.7248709083214102,
+      "position": null,
+      "amp": 1.0322322887831188,
+      "abs_miss": 0.4808439016342163,
+      "rel_miss": 0.0006628930374209736
+    },
+    {
+      "season": 2021,
+      "team": "f",
+      "settled_at_start": true,
+      "K": 0.0,
+      "position": 0.05504587155963303,
+      "amp": null,
+      "abs_miss": null,
+      "rel_miss": null
+    },
+    {
+      "season": 2021,
+      "team": "t",
+      "settled_at_start": false,
+      "K": 0.25225109440585414,
+      "position": null,
+      "amp": 0.6434595674573516,
+      "abs_miss": 0.5630412373575382,
+      "rel_miss": 0.002226772085257082
+    },
+    {
+      "season": 2022,
+      "team": "b",
+      "settled_at_start": false,
+      "K": 1.1190306360874442,
+      "position": null,
+      "amp": 1.5309423418680814,
+      "abs_miss": 0.534581184387207,
+      "rel_miss": 0.0004774100494223002
+    },
+    {
+      "season": 2022,
+      "team": "c",
+      "settled_at_start": false,
+      "K": 0.8666600798750593,
+      "position": null,
+      "amp": 1.189476030096782,
+      "abs_miss": 0.4931482166284695,
+      "rel_miss": 0.0005686721849812297
+    },
+    {
+      "season": 2022,
+      "team": "g",
+      "settled_at_start": false,
+      "K": 1.2442285827254433,
+      "position": null,
+      "amp": 1.735128375259287,
+      "abs_miss": 0.4463411432225257,
+      "rel_miss": 0.0003586002531257292
+    },
+    {
+      "season": 2022,
+      "team": "l",
+      "settled_at_start": false,
+      "K": 1.5949730495215542,
+      "position": null,
+      "amp": 2.4640981265412347,
+      "abs_miss": 0.2840714929625392,
+      "rel_miss": 0.0001780221308250893
+    },
+    {
+      "season": 2023,
+      "team": "d",
+      "settled_at_start": true,
+      "K": 0.0,
+      "position": 0.06417112299465241,
+      "amp": null,
+      "abs_miss": null,
+      "rel_miss": null
+    },
+    {
+      "season": 2024,
+      "team": "c",
+      "settled_at_start": false,
+      "K": 1.7636885625380034,
+      "position": null,
+      "amp": 2.916958261215365,
+      "abs_miss": 0.34796738624572754,
+      "rel_miss": 0.00019720995478941932
+    },
+    {
+      "season": 2024,
+      "team": "g",
+      "settled_at_start": false,
+      "K": 0.7242149522277036,
+      "position": null,
+      "amp": 1.031555411748249,
+      "abs_miss": 0.6174419325543568,
+      "rel_miss": 0.0008517215559047494
+    }
+  ]
+}

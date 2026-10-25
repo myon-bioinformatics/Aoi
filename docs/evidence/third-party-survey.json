@@ -711,8 +711,30 @@
       "files": 36,
       "import_sites": 41
     },
+    "pycountry": {
+      "attribute_uses": 1,
+      "attributes": {
+        "countries.get": 1
+      },
+      "by_tree": {
+        "research": {
+          "attribute_uses": 1,
+          "attributes": {
+            "countries.get": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 2
+        }
+      },
+      "declared": [],
+      "distinct_attributes": 1,
+      "dynamic_import_sites": 0,
+      "files": 1,
+      "import_sites": 2
+    },
     "pytest": {
-      "attribute_uses": 922,
+      "attribute_uses": 957,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -720,16 +742,16 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 271,
-        "fail": 24,
-        "fixture": 49,
+        "approx": 280,
+        "fail": 30,
+        "fixture": 50,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 167,
+        "mark.parametrize": 175,
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 350,
+        "raises": 361,
         "skip": 8,
         "warns": 3
       },
@@ -858,21 +880,21 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 129,
+          "attribute_uses": 164,
           "attributes": {
-            "approx": 29,
-            "fail": 4,
-            "fixture": 10,
+            "approx": 38,
+            "fail": 10,
+            "fixture": 11,
             "importorskip": 1,
-            "mark.parametrize": 23,
+            "mark.parametrize": 31,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 52,
+            "raises": 63,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 20,
-          "import_sites": 20
+          "files": 22,
+          "import_sites": 22
         }
       },
       "declared": [
@@ -909,8 +931,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 98,
-      "import_sites": 99
+      "files": 100,
+      "import_sites": 101
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2500,6 +2522,16 @@
     },
     {
       "attributes": {
+        "countries.get": 1
+      },
+      "dynamic_lines": [],
+      "file": "research/staple-price-survey/adjacent_netflix_subscription_levels/build_netflix_subscription_levels.py",
+      "import_sites": 2,
+      "package": "pycountry",
+      "tree": "research"
+    },
+    {
+      "attributes": {
         "col": 1,
         "read_ndjson": 1
       },
@@ -2817,6 +2849,17 @@
     },
     {
       "attributes": {
+        "approx": 9,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_wave_eps_settle_coefficients.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
         "skip": 1
       },
       "dynamic_lines": [],
@@ -2905,6 +2948,19 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_dragowing_browser_transport.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fail": 6,
+        "fixture": 1,
+        "mark.parametrize": 8,
+        "raises": 9
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_recovered_zip.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

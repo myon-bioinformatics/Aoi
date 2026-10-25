@@ -14,6 +14,8 @@ GENESIS.md の「Note On Evidence」で予告した、問いを生んだ観測�
 
 [PR #3 の訂正・未検証事項の引き継ぎ](research/PR3_FOLLOWUP.md)は、2026-10-04時点の履歴です。F1〜F7の現在の完了監査や、研究成果全体のmain統合を表すものではありません。
 
+回収した元ファイルの実観測・年次派生・架空シナリオの区別と、保存ZIP・復元手順は [回収入力の記録](recovered-inputs/README.md) にあります。
+
 cycle-001/chunichi 先端の続き（R27以降の別系列、P115以降、追加の派生列、branch 側の pipeline）は [from-cycle-001/README.md](from-cycle-001/README.md) に、正本の入力ハッシュと P1〜P114 の判定を書き換えずに置いてあります。正本の `season.jsonl`・`analysis.toml`・`propositions.toml` は LittleBit holdout の固定入力のままです。
 
 

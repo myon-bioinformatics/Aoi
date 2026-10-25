@@ -4,7 +4,7 @@ Retrieved: **2026-10-25 Asia/Tokyo** · Season2 adjacent for Aoi #118
 
 ## Result
 
-**1463 vertical rows** · **83 ISO3** with at least one series · year span **1988–2026**.
+**1468 vertical rows** · **84 ISO3** with at least one series · year span **1988–2026**.
 
 Food (COICOP CP01 / food+non-alc) share of household expenditure by **income quintile** (`engel_share:food_q1`…`q5`) or **income/expenditure decile** (`engel_share:food_d1`…`d10`). Where the source publishes both, **food-total** and **food-at-home** are separate variables (`engel_share:food_*` vs `engel_share:food_at_home_*`). **Not** average retail prices, CPI indexes, or national-mean Engel alone.
 
@@ -107,6 +107,9 @@ Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS 
 
 ### Asia / MENA / other append
 
+- **LBN** 2012: CAS + World Bank *Measuring poverty in Lebanon using 2011 HBS* Table A5 — Food and beverages % of total expenditure by consumption per capita quintiles (35/31/30/25/22); alcohol/tobacco separate; year=2012 (HBS Sept 2011–Nov 2012); primary joint CAS+WB technical report PDF pinned under `raw/lbn/`.
+
+
 | ISO3 | rows | years | source | grain |
 |------|-----:|-------|--------|-------|
 | EGY | 5 | 2013 | CAPMAS HIECS 2012/13 | q1–q5 |
@@ -116,6 +119,7 @@ Eurostat preferred for GBR quintiles where both Eurostat and Defra overlap; ONS 
 | PHL | 15 | 2023 | PSA FIES Table 7 | d1–d10 + q1–q5 |
 | PAK | 10 | 2016–2019 | PBS HIES Table 15 | consumption q1–q5 × 2 |
 | ISR | 5 | 2021 | CBS Israel HES 2021 | q1–q5 |
+| LBN | 5 | 2012 | CAS+WB Measuring poverty 2011 HBS Table A5 | q1–q5 |
 | SGP | 25 | 2003–2023 | SingStat D10072 | q1–q5 × 5 waves |
 | CHE | 30 | 2007–2021 | Swiss FSO HBS | q1–q5 × 6 waves |
 | ZAF | 5 | 1995 | IES 1995 via DataFirst | expenditure q1–q5 |

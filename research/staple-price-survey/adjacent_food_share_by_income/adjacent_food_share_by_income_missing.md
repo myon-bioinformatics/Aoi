@@ -225,3 +225,23 @@ Pack: **1463 rows / 83 ISO3**.
 
 ### Still-miss Big Mac ISO3 (food×income; excl. Aoi JPN/KOR/TWN/AUS/NZL)
 ARE BHR CHN JOR KWT LBN OMN QAT SAU VEN
+
+## 2026-10-25 ~10:20 JST — LBN HIT + BM INC reconfirm
+
+Pack: **1468 rows / 84 ISO3**.
+
+| ISO3 | status | notes |
+|------|--------|-------|
+| LBN | **HIT** +5 | CAS+World Bank joint technical report (2015-12-08) Table A5 — Food and beverages % of total expenditure by **consumption per capita quintiles** 35/31/30/25/22; year=2012 (HBS Sept 2011–Nov 2012); alcohol/tobacco separate; `estimated_value` empty; raw `raw/lbn/` |
+| ARE | **MISS** | SCAD HIES methodology / 2007 stats; no open food×equal-quintile/decile primary table |
+| BHR | **MISS** | 2024 HIES still in field / open CPI only — no HES food×q |
+| CHN | **MISS** | NBS explicitly stopped publishing consumption-by-income-grade detail after 2013; pre-2013 yearbook uses **7-group** (10/10/20/20/20/10/10) not equal q1–q5 — not coerced |
+| JOR | **MISS** (grain) | DOS HEIS 2017 Table 4.10 absolute expenditure brackets (JOD bands) — not equal quintile/decile |
+| KWT | **MISS** | CSB HIES expenditure-strata; no open income q/d food % |
+| OMN | **MISS** | NCSI/data.gov.om — no open equal-cut food×income table |
+| QAT | **MISS** | PSA — no open food×income q/d pinned |
+| SAU | **MISS** | GaStat HIES 2018 Tables 44–45 Low/Medium/High **terciles**; 1998/99 absolute SAR income brackets; national food % only otherwise — not coerced |
+| VEN | **MISS** | ENCOVI/BCV — no open food÷total by income q/d; ENCOVI 2014–15 not geo-representative for UR either |
+
+### Still-miss Big Mac ISO3 (food×income; excl. Aoi JPN/KOR/TWN/AUS/NZL)
+ARE BHR CHN JOR KWT OMN QAT SAU VEN

@@ -255,3 +255,22 @@ Pack: **529 rows / 109 ISO3**. Hours sibling still DEU+BRA (240/2).
 
 ### Still-miss Big Mac ISO3 (urban/rural; excl. Aoi JPN/KOR/TWN/NZL)
 ARE ARG BHR CHE CHL ISR KWT LBN QAT SAU TUR VEN (+ HKG/SGP **N/A**)
+
+## 2026-10-25 ~10:20 JST — BM UR probe (no new UR rows)
+
+Pack unchanged: **529 rows / 109 ISO3**. Hours sibling still DEU+BRA (240/2).
+
+| ISO3 | status | notes |
+|------|--------|-------|
+| CHE | **MISS** | FSO HABE: Wohnstatus = tenure (owner/tenant), not Stadt/Land; Grossregion ≠ DEG urban/rural; no public Stadt/Land food÷total Engel; Eurostat HBS_STR_T226 has no CH |
+| ARG | **MISS** (no rural) | ENGHo 2017–18 published results = localities ≥2,000 hab.; CEPALSTAT 5725 National-only; microdata rural DIY out of scope |
+| CHL | **MISS** (no rural) | INE VIII/IX EPF = urban regional capitals + conurbations only; quality report notes rural inclusion as unmet demand |
+| ISR | **MISS** | CBS HES 2021/2022 Table 30 = **housing** by locality type (not food Engel); Intro lists no consumption-composition×urban/rural table |
+| TUR | **MISS** | TurkStat stopped publishing kent/kır HBS consumption after 2014 admin reform; Eurostat T226 TR = deg_urb UNK only |
+| LBN | **MISS** UR | CAS+WB 2011 HBS Table A5 is quintile (loaded to sibling INC); stratified by region/mohafaza — **no** urban/rural food Engel |
+| ARE BHR KWT QAT SAU | **MISS / N/A** | Gulf open HIES = national / nationality / region; no urban/rural food Engel |
+| VEN | **MISS** | ENCOVI 2014–15 national, not geo-representative for UR |
+| HKG / SGP | **N/A** | city-state — leave documented; do not coerce |
+
+### Still-miss Big Mac ISO3 (urban/rural; excl. Aoi JPN/KOR/TWN/NZL)
+ARE ARG BHR CHE CHL ISR KWT LBN QAT SAU TUR VEN (+ HKG/SGP **N/A**)

@@ -1,0 +1,79 @@
+Using CPython 3.14.8 interpreter at: /opt/hostedtoolcache/Python/3.14.8/x64/bin/python3.14
+Creating virtual environment at: .venv
+   Building aoi @ file:///home/runner/work/Aoi/Aoi
+Downloading polars-runtime-32 (52.0MiB)
+Downloading numpy (15.9MiB)
+Downloading pygments (1.2MiB)
+Downloading selectolax (1.5MiB)
+ Downloaded pygments
+ Downloaded selectolax
+ Downloaded numpy
+ Downloaded polars-runtime-32
+      Built aoi @ file:///home/runner/work/Aoi/Aoi
+Installed 19 packages in 21ms
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/urllib/request.py", line 1333, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              encode_chunked=req.has_header('Transfer-encoding'))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/http/client.py", line 1386, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/http/client.py", line 1432, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/http/client.py", line 1381, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/http/client.py", line 1141, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/http/client.py", line 1085, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/http/client.py", line 1520, in connect
+    super().connect()
+    ~~~~~~~~~~~~~~~^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/http/client.py", line 1051, in connect
+    self.sock = self._create_connection(
+                ~~~~~~~~~~~~~~~~~~~~~~~^
+        (self.host,self.port), self.timeout, self.source_address)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/socket.py", line 874, in create_connection
+    raise exceptions[0]
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/socket.py", line 859, in create_connection
+    sock.connect(sa)
+    ~~~~~~~~~~~~^^^^
+TimeoutError: timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/runner/work/Aoi/Aoi/queryu/queryu.py", line 447, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/runner/work/Aoi/Aoi/queryu/queryu.py", line 417, in main
+    groups = build(source, pages, fetcher, live)
+  File "/home/runner/work/Aoi/Aoi/queryu/queryu.py", line 213, in build
+    html = fetcher.get(key, url, group, live=group in live_groups)
+  File "/home/runner/work/Aoi/Aoi/queryu/queryu.py", line 194, in get
+    r = self.client.get(url, headers=headers)
+  File "/home/runner/work/Aoi/Aoi/queryu/queryu.py", line 131, in get
+    with self.opener.open(request, timeout=self.timeout) as r:
+         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/urllib/request.py", line 487, in open
+    response = self._open(req, data)
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/urllib/request.py", line 504, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/urllib/request.py", line 1381, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        context=self._context)
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.8/x64/lib/python3.14/urllib/request.py", line 1336, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error timed out>

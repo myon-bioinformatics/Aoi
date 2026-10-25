@@ -13,6 +13,11 @@
 単位は 'per kg' の表記ゆれ（KG / Kg）だけ同一視する。包装単位（5 kg, 1.5 kg など）は使わない。
 結果は暫定の読みであり、判定ではない（点数が少ないうちは判断を保留する）。
 
+ゼロ・NaN・無限大・空欄は、読み込み時（load）と計算結果（compute）で、出なかったときも含めて必ず
+'[zero/NaN log]' として出力する。値は変えず、ε への置き換えもしない（置き方は別に決める）。
+  ZERO / NaN / INF: 記録して値はそのまま使う / BLANK: 数として読めない行は使わず記録する
+  SKIPPED: ゼロのため出さなかった / DROPPED: 失敗して捨てた（ブートストラップ）
+
 usage:
   python research/bigmac-ruler/staple_bigmac_check.py [SURVEY_CSV] --prefix staple_price:rice
       [--exclude-inflation 2.0] [--panel-out PATH]
@@ -22,6 +27,7 @@ usage:
 import argparse
 import collections
 import csv
+import math
 import sys
 
 import numpy as np
@@ -32,26 +38,90 @@ MIN_MONTHS = 6          # 年平均に必要な月数（先に宣言。結果を
 SEED, BOOT = 20261024, 4000
 
 
-def load_survey(path):
-    """縦持ちCSVから、ビッグマック・E・家計消費・人口と、主食の行を読む。"""
+def kind_of(x):
+    """'NaN' / 'INF' / 'ZERO'、どれでもなければ None。"""
+    if x is None:
+        return None
+    if x != x:
+        return 'NaN'
+    if x in (math.inf, -math.inf):
+        return 'INF'
+    return 'ZERO' if x == 0 else None
+
+
+class ZeroNaNLog:
+    """ゼロ・NaN・無限大・空欄・ゼロでのスキップが出たことを数え、必ず出力する。値は変えない。
+    （同じ 40 行を research/shrink-index/shrink_index.py にも置いている。共通部品にするかは ε の扱いが決まってから）"""
+
+    def __init__(self):
+        self.count = collections.Counter()
+        self.examples = collections.defaultdict(list)
+
+    def add(self, stage, name, kind, where=''):
+        key = (stage, name, kind)
+        self.count[key] += 1
+        if len(self.examples[key]) < 3:
+            self.examples[key].append(where if isinstance(where, str) else ' '.join(map(str, where)))
+
+    def scan(self, stage, name, values):
+        """{場所: 値} か値のリストを調べて、ゼロ・NaN・無限大を記録する。"""
+        for where, x in (values.items() if isinstance(values, dict) else enumerate(values)):
+            kind = kind_of(x)
+            if kind:
+                self.add(stage, name, kind, str(where))
+
+    def lines(self, stage):
+        rows = [(k, n) for k, n in sorted(self.count.items()) if k[0] == stage]
+        if not rows:
+            return ['[zero/NaN log] %s: none' % stage]
+        return ['[zero/NaN log] %s: %s %s x%d  e.g. %s' % (stage, k[1], k[2], n, ', '.join(self.examples[k]))
+                for k, n in rows]
+
+
+def _num(raw, log, name, where):
+    """値の文字列 -> float。数として読めなければ BLANK を記録して None（その行は使わない）。
+    ゼロ・NaN・無限大は記録して、値はそのまま返す。"""
+    try:
+        x = float(raw)
+    except (TypeError, ValueError):
+        log.add('load', name, 'BLANK', where)
+        return None
+    kind = kind_of(x)
+    if kind:
+        log.add('load', name, kind, where)
+    return x
+
+
+def load_survey(path, log=None):
+    """縦持ちCSVから、ビッグマック・E・家計消費・人口と、主食の行を読む。ゼロ・NaN・空欄は log に記録する。"""
+    log = ZeroNaNLog() if log is None else log
     bm = collections.defaultdict(list)
     cur, E, C, POP, staple = {}, {}, {}, {}, []
     with open(path, encoding='utf-8', newline='') as f:
         for r in csv.DictReader(f):
             v = r['variable']
             if v.startswith('staple_price'):
-                staple.append(r)
+                if _num(r['value'], log, 'staple_price', (r['country'], r['year'], v)) is not None:
+                    staple.append(r)
                 continue
             k = (r['country'], int(r['year']))
             if v == 'bigmac_local_price':
-                bm[k].append(float(r['value']))
-                cur[r['country']] = r['unit']
+                x = _num(r['value'], log, v, k)
+                if x is not None:
+                    bm[k].append(x)
+                    cur[r['country']] = r['unit']
             elif v == 'engel_share_food':
-                E[k] = float(r['value']) / 100
+                x = _num(r['value'], log, v, k)
+                if x is not None:
+                    E[k] = x / 100
             elif v == 'household_consumption_total_lcu':
-                C[k] = float(r['value'])
+                x = _num(r['value'], log, v, k)
+                if x is not None:
+                    C[k] = x
             elif v == 'population_total':
-                POP[k] = float(r['value'])
+                x = _num(r['value'], log, v, k)
+                if x is not None:
+                    POP[k] = x
     BM = {k: sum(v) / len(v) for k, v in bm.items() if len(v) == 2}   # 年内の2点がそろう年のみ
     return dict(BM=BM, cur=cur, E=E, C=C, POP=POP, staple=staple)
 
@@ -107,10 +177,17 @@ def build_panel(S, prefix, y0=Y0, y1=Y1, min_months=MIN_MONTHS):
     return panel, dropped
 
 
-def bigmac_ratio(S, country, y0=Y0, y1=Y1):
-    """ビッグマックの現地通貨価格の y1 / y0。どちらかの年がなければ None（除外の対象にしない）。"""
+def bigmac_ratio(S, country, y0=Y0, y1=Y1, log=None):
+    """ビッグマックの現地通貨価格の y1 / y0。どちらかの年がなければ None（除外の対象にしない）。
+    どちらかが 0 のときも比は作らない（以前は黙って None にしていた。今は SKIPPED として log に記録する）。"""
     a, b = S['BM'].get((country, y0)), S['BM'].get((country, y1))
-    return b / a if a and b else None
+    if a is None or b is None:
+        return None
+    if a == 0 or b == 0:
+        if log is not None:
+            log.add('compute', 'bigmac_ratio', 'SKIPPED', '%s (%s: %g, %s: %g)' % (country, y0, a, y1, b))
+        return None
+    return b / a
 
 
 def _decomp(x, cs, ucs):
@@ -166,6 +243,22 @@ def analyze(panel, boot=BOOT, seed=SEED):
         ci=ci, p_gamma_ge_1=float((draws[:, 2] >= 1).mean()), draws=len(draws), by_year=by_year)
 
 
+def log_computed(log, panel, res, boot):
+    """パネルと推定の結果にゼロ・NaN・無限大がないか調べて記録する（値は変えない）。
+    ブートストラップで失敗して捨てた回数も記録する（以前は黙って捨てていた）。"""
+    for k in ('price', 'bigmac', 'E', 'C_pc', 'b', 'M', 'k'):
+        log.scan('compute', 'panel.' + k, {'%s %s' % (r['country'], r['year']): r[k] for r in panel})
+    log.scan('compute', 'fit', {n: res[n] for n in ('a', 'beta', 'gamma', 'r2', 'corr_E_M', 'p_gamma_ge_1')})
+    for n, xs in res['sd'].items():
+        log.scan('compute', 'sd.' + n, dict(zip(('pooled', 'between', 'within'), xs)))
+    for n, xs in res['ci'].items():
+        log.scan('compute', 'ci.' + n, dict(zip(('lo', 'hi'), xs)))
+    for y, v in res['by_year'].items():
+        log.scan('compute', 'by_year', {'%d %s' % (y, n): v[n] for n in ('beta', 'gamma', 'r2')})
+    if res['draws'] < boot:
+        log.add('compute', 'bootstrap', 'DROPPED', '%d of %d draws failed (LinAlgError)' % (boot - res['draws'], boot))
+
+
 def report(prefix, panel, dropped, excluded, res):
     print('%s | panel rows %d, countries %d' % (prefix, res['n'], len(res['countries'])))
     print('dropped:', dict(dropped))
@@ -196,14 +289,18 @@ def main(argv=None):
     ap.add_argument('--boot', type=int, default=BOOT)
     args = ap.parse_args(argv)
 
-    S = load_survey(args.survey_csv)
+    log = ZeroNaNLog()
+    S = load_survey(args.survey_csv, log)
+    print('\n'.join(log.lines('load')))      # 読み込み直後に出す（後の計算で止まっても残る）
     panel, dropped = build_panel(S, args.prefix)
     excluded = None
     if args.exclude_inflation is not None:
-        ratios = {c: bigmac_ratio(S, c) for c in {r['country'] for r in panel}}
+        ratios = {c: bigmac_ratio(S, c, log=log) for c in {r['country'] for r in panel}}
+        log.scan('compute', 'bigmac_ratio', ratios)
         excluded = sorted(c for c, x in ratios.items() if x is not None and x >= args.exclude_inflation)
         panel = [r for r in panel if r['country'] not in excluded]
     if not panel:
+        print('\n'.join(log.lines('compute')))
         print('empty panel', file=sys.stderr)
         return 66
     if args.panel_out:
@@ -211,7 +308,10 @@ def main(argv=None):
             w = csv.DictWriter(f, fieldnames=list(panel[0].keys()))
             w.writeheader()
             w.writerows(panel)
-    report(args.prefix, panel, dropped, excluded, analyze(panel, boot=args.boot))
+    res = analyze(panel, boot=args.boot)
+    log_computed(log, panel, res, args.boot)
+    report(args.prefix, panel, dropped, excluded, res)
+    print('\n'.join(log.lines('compute')))
     return 0
 
 

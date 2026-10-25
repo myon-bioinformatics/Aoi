@@ -150,6 +150,97 @@ def test_main_without_exclusion_keeps_inflation_country(toy, capsys):
     assert "excluded" not in capsys.readouterr().out
 
 
+# ---- ゼロ・NaN のログ（値は変えない。出なかったときも「none」と必ず出す）-------------------------
+
+def _blank_row(country, date, variable, unit):
+    return [country, date, int(date[:4]), variable, "", unit, "test", "", ""]
+
+
+def test_load_logs_zero_nan_inf_blank_and_keeps_values(tmp_path):
+    rows = [
+        _row("A", "2021-01-01", "household_consumption_total_lcu", 0.0, "AAA"),   # ZERO: 記録して値は残す
+        _row("A", "2022-01-01", "engel_share_food", float("nan"), "percent"),     # NaN: 記録して値は残す
+        _row("A", "2023-01-01", "population_total", float("inf"), "persons"),     # INF: 記録して値は残す
+        _blank_row("A", "2024-01-01", "bigmac_local_price", "AAA"),               # BLANK: 使わず記録
+        _row("A", "2021-01-01", "staple_price:rice:test", 0.0, "AAA per kg"),     # 主食の価格のゼロ
+        _blank_row("A", "2021-02-01", "staple_price:rice:test", "AAA per kg"),    # 主食の価格の空欄
+        _row("A", "2021-03-01", "staple_price:rice:test", 1.5, "AAA per kg"),     # ふつうの行は記録しない
+    ]
+    path = tmp_path / "odd.csv"
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(HEADER)
+        w.writerows(rows)
+    log = chk.ZeroNaNLog()
+    S = chk.load_survey(str(path), log)
+    assert S["C"][("A", 2021)] == 0.0 and math.isnan(S["E"][("A", 2022)]) and math.isinf(S["POP"][("A", 2023)])
+    assert ("A", 2024) not in S["BM"] and "A" not in S["cur"]               # 空欄の行は使わない
+    assert [r["value"] for r in S["staple"]] == ["0", "1.5"]                 # ゼロは残り、空欄は残らない
+    assert dict(log.count) == {
+        ("load", "household_consumption_total_lcu", "ZERO"): 1,
+        ("load", "engel_share_food", "NaN"): 1,
+        ("load", "population_total", "INF"): 1,
+        ("load", "bigmac_local_price", "BLANK"): 1,
+        ("load", "staple_price", "ZERO"): 1,
+        ("load", "staple_price", "BLANK"): 1,
+    }
+    text = "\n".join(log.lines("load"))
+    assert "household_consumption_total_lcu ZERO x1  e.g. A 2021" in text and "[zero/NaN log] load: none" not in text
+
+
+def test_log_says_none_when_nothing_happened_and_does_not_change_the_numbers(toy):
+    log = chk.ZeroNaNLog()
+    assert chk.load_survey(str(toy), log) == chk.load_survey(str(toy))      # ログを付けても読み込みの結果は同じ
+    assert log.lines("load") == ["[zero/NaN log] load: none"]
+    assert log.lines("compute") == ["[zero/NaN log] compute: none"]
+
+
+def test_main_prints_the_log_for_load_and_compute(toy, capsys):
+    assert chk.main([str(toy), "--prefix", "staple_price:rice", "--boot", "50"]) == 0
+    out = capsys.readouterr().out
+    assert "[zero/NaN log] load: none" in out
+    assert "[zero/NaN log] compute: fit ZERO x1  e.g. p_gamma_ge_1" in out   # 計算結果の 0（確率が 0）も出る
+    assert out.index("[zero/NaN log] load") < out.index("panel rows")        # 読み込みのログは先に出る
+
+
+def _fake_result():
+    panel = [dict(country="A", year=2021, price=1.0, bigmac=2.0, E=0.2, C_pc=3.0, b=0.5, M=1.5, k=0.5)]
+    res = dict(a=1.0, beta=0.5, gamma=0.5, r2=0.9, corr_E_M=0.1, p_gamma_ge_1=0.2,
+               sd={"log_b": (1.0, 1.0, 1.0)}, ci={"beta": (0.1, 0.9), "gamma": (0.1, 0.9)},
+               by_year={2021: dict(beta=0.5, gamma=0.5, r2=0.9)}, draws=10)
+    return panel, res
+
+
+def test_computed_zero_nan_and_dropped_bootstrap_draws_are_logged():
+    panel, res = _fake_result()
+    log = chk.ZeroNaNLog()
+    chk.log_computed(log, panel, res, 10)
+    assert log.lines("compute") == ["[zero/NaN log] compute: none"]
+    panel[0]["b"] = 0.0
+    res["r2"] = float("nan")
+    res["ci"]["gamma"] = (float("-inf"), 0.9)
+    res["draws"] = 7
+    log = chk.ZeroNaNLog()
+    chk.log_computed(log, panel, res, 10)
+    assert dict(log.count) == {
+        ("compute", "panel.b", "ZERO"): 1,
+        ("compute", "fit", "NaN"): 1,
+        ("compute", "ci.gamma", "INF"): 1,
+        ("compute", "bootstrap", "DROPPED"): 1,
+    }
+    assert "3 of 10 draws failed" in "\n".join(log.lines("compute"))
+
+
+def test_bigmac_ratio_with_a_zero_year_is_skipped_and_logged_not_silent():
+    S = dict(BM={("A", 2021): 0.0, ("A", 2025): 2.0, ("B", 2021): 1.0, ("B", 2025): 2.0})
+    log = chk.ZeroNaNLog()
+    assert chk.bigmac_ratio(S, "A", log=log) is None                          # 以前と同じく比は作らない
+    assert chk.bigmac_ratio(S, "B", log=log) == 2.0
+    assert chk.bigmac_ratio(S, "NOWHERE", log=log) is None                    # 欠けはゼロではないので記録しない
+    assert dict(log.count) == {("compute", "bigmac_ratio", "SKIPPED"): 1}
+    assert "A (2021: 0, 2025: 2)" in "\n".join(log.lines("compute"))
+
+
 # ---- synthetic_staples --------------------------------------------------------------
 
 def test_scaffold_uses_real_covariates_only_with_both_bigmac_points(toy):

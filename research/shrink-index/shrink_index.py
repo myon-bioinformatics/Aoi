@@ -17,6 +17,11 @@ q がわかる点が MIN_POINTS に満たないときは「判断材料が足り
 予測は出さない。--whatif は「この割合が続いたら」の計算で、予測ではない（WHAT-IF と表示する）。
 直線回帰も、丸めた数字での結論も、ここには置かない。
 
+ゼロ・NaN・無限大・空欄は、読み込み時（load）と計算結果（compute）で、出なかったときも含めて必ず
+'[zero/NaN log] ...' として出力する。値は変えず、ε への置き換えもしない（置き方は別に決める）。
+  ZERO / NaN / INF: 記録して値はそのまま使う / BLANK: 数として読めない行は使わず記録する
+  SKIPPED: ゼロのため出さなかった（水準・単価）
+
 usage:
   python research/shrink-index/shrink_index.py [CSV] --product shrink:countrymaam_family_vanilla_cocoa
       [--danger-total G] [--assume-weight YEAR:G,YEAR:G] [--whatif]
@@ -33,15 +38,65 @@ DEFAULT_CSV = 'research/shrink-index/countrymaam_observed_vertical.csv'
 MIN_POINTS = 5   # q がわかる年がこれより少ないと判断を保留する（先に宣言。結果を見て変えない）
 
 
-def load(path):
-    """縦持ちCSV -> {商品: {測定: {年: 値}}}。variable は '<商品>:<測定>'。同じ年の値が食い違えば ValueError。"""
+def kind_of(x):
+    """'NaN' / 'INF' / 'ZERO'、どれでもなければ None。"""
+    if x is None:
+        return None
+    if x != x:
+        return 'NaN'
+    if x in (math.inf, -math.inf):
+        return 'INF'
+    return 'ZERO' if x == 0 else None
+
+
+class ZeroNaNLog:
+    """ゼロ・NaN・無限大・空欄・ゼロでのスキップが出たことを数え、必ず出力する。値は変えない。
+    （同じ 40 行を research/bigmac-ruler/staple_bigmac_check.py にも置いている。共通部品にするかは ε の扱いが決まってから）"""
+
+    def __init__(self):
+        self.count = collections.Counter()
+        self.examples = collections.defaultdict(list)
+
+    def add(self, stage, name, kind, where=''):
+        key = (stage, name, kind)
+        self.count[key] += 1
+        if len(self.examples[key]) < 3:
+            self.examples[key].append(where if isinstance(where, str) else ' '.join(map(str, where)))
+
+    def scan(self, stage, name, values):
+        """{場所: 値} か値のリストを調べて、ゼロ・NaN・無限大を記録する。"""
+        for where, x in (values.items() if isinstance(values, dict) else enumerate(values)):
+            kind = kind_of(x)
+            if kind:
+                self.add(stage, name, kind, str(where))
+
+    def lines(self, stage):
+        rows = [(k, n) for k, n in sorted(self.count.items()) if k[0] == stage]
+        if not rows:
+            return ['[zero/NaN log] %s: none' % stage]
+        return ['[zero/NaN log] %s: %s %s x%d  e.g. %s' % (stage, k[1], k[2], n, ', '.join(self.examples[k]))
+                for k, n in rows]
+
+
+def load(path, log=None):
+    """縦持ちCSV -> {商品: {測定: {年: 値}}}。variable は '<商品>:<測定>'。同じ年の値が食い違えば ValueError。
+    ゼロ・NaN・無限大は log に記録して値はそのまま読む。数として読めない値（空欄など）は BLANK として記録し、その行は使わない。"""
+    log = ZeroNaNLog() if log is None else log
     out = collections.defaultdict(lambda: collections.defaultdict(dict))
     with open(path, encoding='utf-8', newline='') as f:
         for r in csv.DictReader(f):
             product, measure = r['variable'].rsplit(':', 1)
-            y, v = int(r['year']), float(r['value'])
+            y = int(r['year'])
+            try:
+                v = float(r['value'])
+            except (TypeError, ValueError):
+                log.add('load', r['variable'], 'BLANK', str(y))
+                continue
+            kind = kind_of(v)
+            if kind:
+                log.add('load', r['variable'], kind, str(y))
             old = out[product][measure].get(y)
-            if old is not None and old != v:
+            if old is not None and old != v and not (old != old and v != v):   # NaN 同士は食い違いにしない
                 raise ValueError('conflict %s:%s %d: %g vs %g' % (product, measure, y, old, v))
             out[product][measure][y] = v
     return out
@@ -106,24 +161,43 @@ def _r(d, nd=4):
     return {k: round(v, nd) for k, v in d.items()}
 
 
-def report(product, m, assume=None, danger_total=None, whatif=False):
+def report(product, m, assume=None, danger_total=None, whatif=False, log=None):
+    log = ZeroNaNLog() if log is None else log
     q, assumed = totals(m, assume)
     pieces = dict(sorted(m.get('pieces', {}).items()))
     print(product)
     print('pieces        ', pieces)
     print('g per piece   ', dict(sorted(m.get('grams_per_piece', {}).items())))
     print('total g       ', _r(q, 2), ('  ASSUMED g/piece in %s' % sorted(assumed)) if assumed else '')
+    log.scan('compute', 'total g', q)
     print('evidence      %s (%d known points, MIN_POINTS=%d)' % (evidence(q), len(q), MIN_POINTS))
     if pieces:
         pl = level(pieces)
         print('pieces level  ', _r(pl) if pl else None, '(pieces only)')
+        if pl is None:
+            log.add('compute', 'pieces level', 'SKIPPED', 'base is 0 in %d' % min(pieces))
+        else:
+            log.scan('compute', 'pieces level', pl)
     sl = level(q)
     print('total level   ', _r(sl) if sl else None)
-    print('rate per year ', [(a, b, round(r, 5)) for a, b, r in rates(q)])
+    if q and sl is None:
+        log.add('compute', 'total level', 'SKIPPED', 'base q is 0 in %d' % min(q))
+    elif sl:
+        log.scan('compute', 'total level', sl)
+    rs = rates(q)
+    print('rate per year ', [(a, b, round(r, 5)) for a, b, r in rs])
+    log.scan('compute', 'rate per year', {'%d-%d' % (a, b): r for a, b, r in rs})
     if danger_total is not None:
-        print('danger D_t    ', _r({y: danger(v, danger_total) for y, v in q.items()}), '(q_d=%g g, set by hand)' % danger_total)
+        dd = {y: danger(v, danger_total) for y, v in q.items()}
+        print('danger D_t    ', _r(dd), '(q_d=%g g, set by hand)' % danger_total)
+        log.scan('compute', 'danger D_t', dd)
     if m.get('price'):
-        print('unit price    ', _r(unit_price_index(m['price'], q)))
+        up = unit_price_index(m['price'], q)
+        print('unit price    ', _r(up))
+        for y in sorted(m['price']):
+            if y in q and q[y] == 0:
+                log.add('compute', 'unit price', 'SKIPPED', 'total q is 0 in %d' % y)
+        log.scan('compute', 'unit price', up)
     if whatif:
         if danger_total is None:
             print('WHAT-IF: needs --danger-total')
@@ -133,6 +207,7 @@ def report(product, m, assume=None, danger_total=None, whatif=False):
                 yrs = whatif_years(q[last], danger_total, r)
                 print('WHAT-IF (not a forecast): if the %d-%d rate (%.4f/yr) continued from %d: %s' % (
                     a, b, r, last, 'q is not falling' if yrs is None else '%.1f years to q_d' % yrs))
+    print('\n'.join(log.lines('compute')))
     return q, assumed
 
 
@@ -144,18 +219,21 @@ def main(argv=None):
     ap.add_argument('--assume-weight', default=None, metavar='YEAR:G,YEAR:G')
     ap.add_argument('--whatif', action='store_true')
     args = ap.parse_args(argv)
+    log = ZeroNaNLog()
     try:
-        data = load(args.csv)
+        data = load(args.csv, log)
     except ValueError as e:
+        print('\n'.join(log.lines('load')))
         print(e, file=sys.stderr)
         return 65
+    print('\n'.join(log.lines('load')))      # 読み込み直後に出す（後の計算で止まっても残る）
     if args.product not in data:
         print('no rows for %s' % args.product, file=sys.stderr)
         return 66
     assume = None
     if args.assume_weight:
         assume = {int(a): float(b) for a, b in (p.split(':') for p in args.assume_weight.split(','))}
-    report(args.product, data[args.product], assume, args.danger_total, args.whatif)
+    report(args.product, data[args.product], assume, args.danger_total, args.whatif, log)
     return 0
 
 

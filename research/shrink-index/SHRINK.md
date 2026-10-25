@@ -62,6 +62,18 @@ python research/shrink-index/shrink_index.py --product shrink:countrymaam_family
 python research/shrink-index/synthetic_shrink.py --check
 ```
 
+## Zero / NaN log
+
+`shrink_index.py` always prints `[zero/NaN log]` lines, once for loading (`load`, printed right after the file is read) and once for the computed results (`compute`), and prints `none` when nothing happened. Values are never changed and nothing is replaced by an epsilon (how to place epsilon is decided separately; the same small logger is in `research/bigmac-ruler/staple_bigmac_check.py`).
+
+| Kind | Meaning |
+|---|---|
+| `ZERO` / `NaN` / `INF` | Recorded; the value is used as it is. A total, a level, a rate or a danger value that comes out as exactly 0 is recorded too (a flat interval gives a rate of exactly 0) |
+| `BLANK` | Not readable as a number; the row is not used (before, such a row stopped the run with exit 65) |
+| `SKIPPED` | Not computed because of a zero: the level when the first known total is 0 (it stays `None`), and the unit price in a year whose total is 0 |
+
+Two `NaN` rows for the same year are not a conflict (exit 65 is for two different values).
+
 ## Not made yet
 
 Other products (gram-based items, items sold at a fixed price with a shrinking quantity), a real price series, a danger level for a single piece (`q_d` on w instead of on q), hooking the index into the proposition engine (`docs/propositions.md`), and patterns for mixed units.

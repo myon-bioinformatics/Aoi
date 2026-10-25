@@ -182,3 +182,65 @@ def test_committed_synthetic_csv_can_be_read_by_the_index():
     q, _ = si.totals(m)
     assert len(q) == 33 and q[1992] == pytest.approx(300.0, rel=1e-5)
     assert q[2024] == pytest.approx(30 * 10 * math.exp(-0.002 * 32 * 32), rel=1e-5)
+
+
+# ---- ゼロ・NaN のログ（値は変えない。出なかったときも「none」と必ず出す）-------------------------
+
+def test_load_logs_zero_nan_inf_and_blank_and_keeps_values(tmp_path):
+    path = _write(tmp_path / "odd.csv", [
+        (2000, "p:pieces", 0),                  # ZERO: 記録して値は残す
+        (2001, "p:pieces", float("nan")),       # NaN: 記録して値は残す
+        (2002, "p:pieces", float("inf")),       # INF: 記録して値は残す
+        (2003, "p:pieces", ""),                 # BLANK: 使わず記録
+        (2004, "p:pieces", 5),                  # ふつうの値は記録しない
+    ])
+    log = si.ZeroNaNLog()
+    m = si.load(path, log)["p"]["pieces"]
+    assert m[2000] == 0.0 and math.isnan(m[2001]) and math.isinf(m[2002]) and m[2004] == 5.0 and 2003 not in m
+    assert dict(log.count) == {("load", "p:pieces", "ZERO"): 1, ("load", "p:pieces", "NaN"): 1,
+                               ("load", "p:pieces", "INF"): 1, ("load", "p:pieces", "BLANK"): 1}
+    assert "[zero/NaN log] load: p:pieces ZERO x1  e.g. 2000" in log.lines("load")
+
+
+def test_two_nan_rows_for_one_year_are_not_a_conflict_but_nan_vs_number_is(tmp_path):
+    same = _write(tmp_path / "nan2.csv", [(2000, "p:pieces", float("nan")), (2000, "p:pieces", float("nan"))])
+    assert math.isnan(si.load(same)["p"]["pieces"][2000])
+    bad = _write(tmp_path / "nan_vs_num.csv", [(2000, "p:pieces", float("nan")), (2000, "p:pieces", 3)])
+    with pytest.raises(ValueError, match="conflict"):
+        si.load(bad)
+
+
+def test_report_logs_zero_totals_flat_zero_rates_and_skipped_unit_prices(tmp_path, capsys):
+    rows = [(y, "p:pieces", n) for y, n in ((2000, 10), (2001, 0), (2002, 0))]
+    rows += [(y, "p:grams_per_piece", 10) for y in (2000, 2001, 2002)]
+    rows += [(y, "p:price", 100) for y in (2000, 2001, 2002)]
+    path = _write(tmp_path / "zero.csv", rows)
+    assert si.main([str(path), "--product", "p", "--danger-total", "60"]) == 0
+    out = capsys.readouterr().out
+    assert "[zero/NaN log] load: p:pieces ZERO x2  e.g. 2001, 2002" in out
+    assert "[zero/NaN log] compute: total g ZERO x2  e.g. 2001, 2002" in out
+    assert "[zero/NaN log] compute: rate per year ZERO x1  e.g. 2001-2002" in out    # 総量が変わらない区間
+    assert "[zero/NaN log] compute: unit price SKIPPED x2  e.g. total q is 0 in 2001, total q is 0 in 2002" in out
+    assert out.index("[zero/NaN log] load") < out.index("total g")                    # 読み込みのログは先に出る
+
+
+def test_report_logs_a_zero_base_level_as_skipped_and_the_value_stays_none(tmp_path, capsys):
+    path = _write(tmp_path / "base0.csv", [(2000, "p:total_g", 0), (2001, "p:total_g", 5)])
+    assert si.main([str(path), "--product", "p"]) == 0
+    out = capsys.readouterr().out
+    assert "[zero/NaN log] compute: total level SKIPPED x1  e.g. base q is 0 in 2000" in out
+    assert "total level    None" in out                                               # 値は以前と同じ
+
+
+def test_cli_prints_the_log_even_when_nothing_happens(capsys):
+    assert si.main([str(OBS), "--product", P]) == 0
+    out = capsys.readouterr().out
+    assert "[zero/NaN log] load: none" in out and "[zero/NaN log] compute: none" in out
+    assert out.index("[zero/NaN log] load") < out.index(P) < out.index("[zero/NaN log] compute")
+
+
+def test_load_log_is_printed_even_when_the_run_stops_with_a_conflict(tmp_path, capsys):
+    bad = _write(tmp_path / "c.csv", [(2000, "p:pieces", 0), (2001, "p:pieces", 18), (2001, "p:pieces", 14)])
+    assert si.main([str(bad), "--product", "p"]) == 65
+    cap = capsys.readouterr()
+    assert "[zero/NaN log] load: p:pieces ZERO x1" in cap.out and "conflict" in cap.err

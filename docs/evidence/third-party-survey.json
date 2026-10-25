@@ -693,7 +693,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 875,
+      "attribute_uses": 876,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -709,7 +709,7 @@
         "mark.parametrize": 155,
         "mark.skipif": 6,
         "param": 1,
-        "raises": 347,
+        "raises": 348,
         "skip": 6,
         "warns": 3
       },
@@ -826,7 +826,7 @@
           "import_sites": 8
         },
         "tests": {
-          "attribute_uses": 98,
+          "attribute_uses": 99,
           "attributes": {
             "approx": 23,
             "fail": 1,
@@ -834,7 +834,7 @@
             "importorskip": 1,
             "mark.parametrize": 17,
             "mark.skipif": 2,
-            "raises": 49
+            "raises": 50
           },
           "dynamic_import_sites": 0,
           "files": 15,
@@ -2823,7 +2823,7 @@
       "attributes": {
         "approx": 12,
         "mark.skipif": 1,
-        "raises": 1
+        "raises": 2
       },
       "dynamic_lines": [],
       "file": "tests/test_shrink_index.py",

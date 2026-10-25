@@ -1,31 +1,31 @@
-# 残り試合・順位・マジックの共有部品（実装前計画）
+# Shared components for remaining games, standings, and magic numbers (pre-implementation plan)
 
-2026-10-04。研究用 Draft PR #3 と独立し、main に追加する。
+2026-10-04. Independent of research Draft PR #3; added to main.
 
-## 作るもの
+## What to build
 
-- 入力時点までの勝敗（引分を含む）と、結果を含まない残りの対戦予定を分離する。
-- 勝率は引分を分母から除外し、同率規則を明示した規則オブジェクトで順位を決める。
-- 残りの各対戦を両球団に整合的に割り当て、上位 k 位が可能か／確定かを制約充足で判定する。
-- 全勝した場合でも他球団の結果次第で優勝できないかを判定し、自力優勝の有無からマジックの点灯・消滅を追う。
-- 必要勝利数は「その数以上勝てば、他の結果にかかわらず優勝する」保証値として計算する。引分や同率規則により、新聞の慣用的なマジック表示とは一致を仮定しない。
-- 平滑化した時点勝率から対戦確率を作る基準モデルと、明示的な対戦確率を受け取るシミュレーターを用意する。確率の 0/1 と数学的な確定を区別する。
-- 日付ごとの再計算・閾値通過と再浮上・点灯と消滅を保存できる API/CLI を用意する。
+- Separate wins/losses up to the input point (including ties) from the remaining schedule, which contains no results.
+- Winning percentage excludes ties from the denominator, and standings are decided by a rules object with explicit tie rules.
+- Assign each remaining game consistently to both teams, and determine by constraint satisfaction whether top k is possible or clinched.
+- Determine whether a team can fail to win the title depending on other teams' results even if it wins all its games, and track magic numbers lighting and going out from whether the team controls its own fate.
+- Compute the required wins as a guarantee: "win at least this many and you win the title regardless of other results". Because of ties and tie rules, agreement with newspapers' customary magic number display is not assumed.
+- Provide a baseline model that builds matchup probabilities from smoothed winning percentages at the time, and a simulator that accepts explicit matchup probabilities. Distinguish a probability of 0/1 from mathematical certainty.
+- Provide an API/CLI that can save per-date recalculation, threshold crossings and re-emergence, and magic numbers lighting and going out.
 
-## 境界
+## Boundaries
 
-- 今回は共有エンジンの実装検証。中日の低迷の因果説明や、新しい命題の支持を主張しない。
-- NPB 2022年セ・パ、および2025年セの公式規定を確認したプロファイルを設ける。他年へ暗黙に流用しない。2020年の CS 開催差などは別設定が必要。
-- 同率群に対する対戦勝率は、その群全体との対戦を集計する。ゼロ勝敗の率はエンジン上 0 と定義し、通常の完了シーズンとの違いを明記する。
-- 入力した全予定を消化する条件付きの計算。CS の資格決定期限を超える予定や、延期・打切りを自動推測しない。
-- シミュレーションの区間は有限反復による誤差であり、モデル誤差・将来の実力変化は含まない。
-- 生の試合記録はコミットしない。合成例、コード、検証結果の要約のみ追加する。
+- This time is implementation verification of the shared engine. It does not claim a causal explanation of Chunichi's slump or support for new propositions.
+- Provide profiles with confirmed official rules for NPB 2022 Central and Pacific, and 2025 Central. Do not implicitly reuse them for other years. Differences such as the 2020 CS format need separate settings.
+- Head-to-head winning percentage for a tied group aggregates games against that whole group. The engine defines the rate for zero decisions as 0, and documents the difference from a normal completed season.
+- The calculation is conditional on all input games being played. Games past the CS qualification deadline, postponements, and cancellations are not inferred automatically.
+- Simulation intervals are error from finite iterations and do not include model error or future changes in ability.
+- Raw game records are not committed. Only synthetic examples, code, and summaries of verification results are added.
 
-## 実装を採用する条件
+## Conditions for adopting the implementation
 
-1. 小規模リーグの全列挙と、可能／確定・自力優勝・保証勝利数が一致する。
-2. 引分、直接対決、3球団以上の同率、交流戦、前年順位、点灯→消滅→再点灯を含む。
-3. 制約ソルバーが時間切れなら unknown とし、確定に読み替えない。
-4. seed 固定で再現し、未来の結果を書き換えても過去日の確率が変わらない。
-5. NPB 2022年の手元入力で接続を確認し、日付・入力指紋・設定を記録する。新聞の日付は検証材料とする。
-6. 専用 CI が成功してから共有部品の PR を main にマージする。Draft PR #3 は維持する。
+1. Possible/clinched, self-controlled title, and guaranteed wins agree with full enumeration of small leagues.
+2. Covers ties, head-to-head, ties of 3 or more teams, interleague play, previous-year standings, and lit → out → relit.
+3. If the constraint solver times out, report unknown; do not read it as clinched.
+4. Reproducible with a fixed seed, and rewriting future results does not change past dates' probabilities.
+5. Confirm the connection with local NPB 2022 input, recording dates, input fingerprints, and settings. Newspaper dates are verification material.
+6. Merge the shared-components PR into main after the dedicated CI succeeds. Keep Draft PR #3.

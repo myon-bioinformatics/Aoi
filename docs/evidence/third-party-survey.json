@@ -478,33 +478,34 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 937,
+      "attribute_uses": 934,
       "attributes": {
         "Boolean": 8,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 228,
-        "Expr": 11,
-        "Float64": 69,
+        "DataFrame": 236,
+        "Expr": 13,
+        "Float32": 1,
+        "Float64": 70,
         "Int32": 30,
         "Int64": 38,
         "Series": 15,
         "Utf8": 22,
-        "__version__": 2,
+        "__version__": 4,
         "any_horizontal": 1,
-        "col": 419,
+        "col": 401,
         "concat": 11,
         "concat_list": 1,
         "concat_str": 2,
         "exceptions.PolarsError": 1,
         "first": 4,
         "int_range": 1,
-        "len": 10,
+        "len": 8,
         "lit": 27,
         "max_horizontal": 1,
         "read_csv": 1,
         "read_ndjson": 18,
         "sum": 2,
-        "when": 14
+        "when": 17
       },
       "by_tree": {
         "cycles": {
@@ -589,31 +590,33 @@
           "import_sites": 2
         },
         "sakanalytics": {
-          "attribute_uses": 677,
+          "attribute_uses": 674,
           "attributes": {
             "Boolean": 4,
             "Config.set_tbl_rows": 1,
-            "DataFrame": 130,
-            "Expr": 4,
-            "Float64": 66,
+            "DataFrame": 138,
+            "Expr": 6,
+            "Float32": 1,
+            "Float64": 67,
             "Int32": 29,
             "Int64": 35,
             "Series": 3,
             "Utf8": 20,
+            "__version__": 2,
             "any_horizontal": 1,
-            "col": 340,
+            "col": 322,
             "concat": 3,
             "concat_list": 1,
             "concat_str": 1,
             "first": 2,
             "int_range": 1,
-            "len": 8,
+            "len": 6,
             "lit": 9,
             "max_horizontal": 1,
             "read_csv": 1,
             "read_ndjson": 4,
             "sum": 2,
-            "when": 11
+            "when": 14
           },
           "dynamic_import_sites": 0,
           "files": 4,
@@ -656,13 +659,13 @@
           "name": "polars"
         }
       ],
-      "distinct_attributes": 25,
+      "distinct_attributes": 26,
       "dynamic_import_sites": 1,
       "files": 34,
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 849,
+      "attribute_uses": 861,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -670,13 +673,13 @@
         "MonkeyPatch": 1,
         "StashKey": 2,
         "UsageError": 10,
-        "approx": 239,
+        "approx": 243,
         "fail": 21,
         "fixture": 42,
         "hookimpl": 3,
         "importorskip": 9,
-        "mark.parametrize": 155,
-        "mark.skipif": 4,
+        "mark.parametrize": 161,
+        "mark.skipif": 6,
         "param": 1,
         "raises": 346,
         "skip": 6,
@@ -779,20 +782,20 @@
           "import_sites": 12
         },
         "sakanalytics": {
-          "attribute_uses": 297,
+          "attribute_uses": 309,
           "attributes": {
             "UsageError": 2,
-            "approx": 196,
+            "approx": 200,
             "fixture": 7,
-            "mark.parametrize": 28,
-            "mark.skipif": 1,
+            "mark.parametrize": 34,
+            "mark.skipif": 3,
             "param": 1,
             "raises": 61,
             "warns": 1
           },
           "dynamic_import_sites": 0,
-          "files": 8,
-          "import_sites": 8
+          "files": 10,
+          "import_sites": 10
         },
         "tests": {
           "attribute_uses": 72,
@@ -843,8 +846,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 88,
-      "import_sites": 89
+      "files": 90,
+      "import_sites": 91
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2404,27 +2407,29 @@
       "attributes": {
         "Boolean": 4,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 88,
-        "Expr": 4,
-        "Float64": 66,
+        "DataFrame": 90,
+        "Expr": 6,
+        "Float32": 1,
+        "Float64": 67,
         "Int32": 24,
         "Int64": 35,
         "Series": 1,
         "Utf8": 20,
+        "__version__": 1,
         "any_horizontal": 1,
-        "col": 300,
+        "col": 278,
         "concat": 3,
         "concat_list": 1,
         "concat_str": 1,
         "first": 2,
         "int_range": 1,
-        "len": 8,
+        "len": 6,
         "lit": 8,
         "max_horizontal": 1,
         "read_csv": 1,
         "read_ndjson": 4,
         "sum": 2,
-        "when": 10
+        "when": 13
       },
       "dynamic_lines": [],
       "file": "sakanalytics/sakanalytics.py",
@@ -2468,6 +2473,17 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 3,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/tests/test_annual_audit_node_entry.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
         "approx": 3,
         "fixture": 3,
         "mark.parametrize": 3,
@@ -2494,10 +2510,11 @@
     },
     {
       "attributes": {
-        "DataFrame": 37,
+        "DataFrame": 43,
         "Int32": 4,
         "Series": 2,
-        "col": 33,
+        "__version__": 1,
+        "col": 37,
         "when": 1
       },
       "dynamic_lines": [],
@@ -2508,7 +2525,7 @@
     },
     {
       "attributes": {
-        "approx": 191,
+        "approx": 195,
         "mark.parametrize": 5,
         "raises": 8
       },
@@ -2540,6 +2557,17 @@
       },
       "dynamic_lines": [],
       "file": "sakanalytics/tests/test_synthetic_league.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 3,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/tests/test_synthetic_league_node_entry.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "sakanalytics"

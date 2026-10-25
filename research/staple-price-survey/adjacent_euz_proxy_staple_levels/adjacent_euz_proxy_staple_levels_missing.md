@@ -45,3 +45,12 @@ Public Eurostat HBS datasets under `hbs_exp_*` / `hbs_str_*` / `hbs_car_*` are *
 - Farm-gate / agricultural unit values `aact_uv*` / `apri_ap` (not retail)
 - Restricted HBS / Istat MFR microdata; ICP item-price application workflow
 - Aoi lanes; BEL redo; city-only DEU/ITA regional quotes; French fries / chips from Preisradar
+
+
+## Densify 2026-10-25 Asia/Tokyo (主食 append)
+
+- Extended **NLD** CBS 80345eng (milk/eggs/butter/cheese/margarine/pork/stewing steak/sugar).
+- Extended **AUT** Preisradar (milk/eggs/butter/olive oil/sugar/pork/beef).
+- Extended **FIN** StatFin 011 (milk/eggs/butter/oil/sugar/beef/pork/chicken).
+- Still thin / exhausted for new ISO3 proxies: BEL skipped; ITA/SWE exhausted; no new EA NSO bulk opens this turn.
+- Dead-ends unchanged: CAN StatCan TLS, KOR TLS — not retried.

@@ -64,3 +64,10 @@ HKG, MYS, NZL, SGP — unchanged; still in vertical CSV.
 - FX conversion, unit homogenization, gap-fill
 
 Probe artifacts: `raw/eurostat/prc_fpmt_m.tsv.gz` (indices only); `raw/gcc/` (Qatar CSV + BHR/ARE probes).
+
+
+## Densify 2026-10-25 Asia/Tokyo (主食 append)
+
+- Extended **SGP** SingStat M213761 (noodles/pork/beef/chicken/milk/eggs/oil/potato/sugar).
+- GCC ARE/BHR/KWT/OMN absolute NSO still exhausted; no forced digs.
+- AUS/CAN/CHE/DNK/NOR remain Aoi-lane / TLS — not retried this turn.

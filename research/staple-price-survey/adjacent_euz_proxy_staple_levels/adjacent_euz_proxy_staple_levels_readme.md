@@ -51,3 +51,13 @@ See `missing.md`. World Bank ICP public releases are PPP/PLI/expenditure only (d
 - `_build_stats.json`
 - `raw/insee/`, `raw/cso/`, `raw/cbs/`, `raw/ine/`, `raw/statfin/`, `raw/ine_pt/`, `raw/statistik_at/`, `raw/eurostat_hbs/`, probes under `raw/destatis|istat|scb|misc/`
 - Mirror: `/workspace/aoi-phase2/staple-price-survey/adjacent_euz_proxy_staple_levels/`
+
+
+## Densify append (retrieved 2026-10-25 Asia/Tokyo)
+
+- **NLD** +160: butter_250g, gouda_cheese_kg, eggs_10, margarine_250g, milk_l, pork_steak_kg, stewing_steak_kg, sugar_kg (CBS 80345eng 1999–2018; bread/rice/potato already loaded; coffee/tea left in household pack).
+- **AUT** +315: fresh_milk_l, eggs_6, butter_250g, olive_oil_l, crystal_sugar_kg, pork_cutlet_kg, beef_round_kg (Preisradar meanData).
+- Total rows now **8060** (prior 7585; +475 unique).
+
+- **FIN** +1704: whole_milk_l, low_fat_milk_l, eggs_kg, dairy_butter_500g, rapeseed_oil_l, granulated_sugar_kg, beef_topside_kg, minced_beef_kg, pork_escalope_kg, chicken_breast_fillet_kg (StatFin 011 monthly; cereals/potato already loaded).
+- EUZ total rows now **9764**.

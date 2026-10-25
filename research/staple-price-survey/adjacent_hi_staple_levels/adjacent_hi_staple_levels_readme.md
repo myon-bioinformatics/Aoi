@@ -59,3 +59,9 @@ Agricultural absolute prices (`apri_ap`) are farm-gate, not retail — excluded.
 - **SGP**: Premium Thai Rice per 5 kg; Wholemeal Bread per 400 g.
 - **QAT**: Annual averages in QAR as published; pack sizes kept in `variable`/`unit` (700 g bread, 5-piece Lebanese bread, 1 kg flour/potato, 5 kg rice). Commodity spelling variants collapsed by substring match.
 - **TWN**: NDC e-invoice midpoint monthly for rice 3 kg / flour kg / white toast; Taipei potato in 元 per 台斤 (catty). MOA RicepriceData still TLS-blocked (not used).
+
+
+## Densify append (retrieved 2026-10-25 Asia/Tokyo)
+
+- **SGP** +1269: instant_noodles_5pack, lean_pork_chilled_kg, ribeye_beef_chilled_kg, whole_chicken_chilled_kg, fresh_milk_l, hen_eggs_10, cooking_oil_2kg, potato_kg, white_sugar_2kg (SingStat M213761; rice/bread already loaded).
+- Total rows now **3654** (prior 2385; +1269 unique).

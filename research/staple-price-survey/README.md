@@ -1,6 +1,6 @@
 # Staple price survey（青いプロジェクト第2弾）
 
-Retrieved: **2026-10-24 Asia/Tokyo**
+Retrieved: **2026-10-25 Asia/Tokyo**
 
 International staple prices, food-expenditure shares (Engel), and household consumption in local currency, aligned to Big Mac countries for analyses that treat staple cost as a Big Mac multiple \(b\) (local currency only; no FX).
 
@@ -133,3 +133,9 @@ Path note: files live under `research/staple-price-survey/` (not `data/`), becau
 
 - Extended `adjacent_food_share_by_income` to **554** rows / **27** ISO3 (+USA BLS CE Tables 2/3; +CAN StatCan SHS via The Daily). AUS left to Aoi ABS HES.
 - Extended `adjacent_food_share_by_income` to **814** rows / **37** ISO3 (+BEL/DEU/ESP/FRA/ITA/NLD Eurostat; +ISR CBS HES; +CHE FSO HBS; +SGP SingStat D10072; +ZAF IES 1995 via DataFirst). SAU/ARE/HKG/VNM still miss.
+
+### Update 2026-10-25 (Asia/Tokyo) — PR #118 tip hygiene (no new digs)
+
+- `adjacent_household_sku_levels`: **3015** rows / 8 ISO3 — densify **PAUSED**; schema OK.
+- `adjacent_hi_staple_levels`: **3691** rows / 6 ISO3 — NZL white-loaf key clash split (`bread_700g` vs `bread_600g_cheapest`); coverage docs synced.
+- `adjacent_euz_proxy_staple_levels`: **14911** rows / 8 ISO3 proxies — coverage docs synced after milk/eggs/meat/oil/sugar densify (e731537); easy densify exhausted.

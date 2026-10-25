@@ -64,3 +64,8 @@ SGP, MYS, IRL, QAT, FIN, AUT, NLD, **FRA** — see readme.
 - Broad CPI / HICP indices
 - Rewrites of Big Mac, `adjacent_hi_staple_levels`, `adjacent_euz_proxy_staple_levels`, hours packs
 - FX unify, unit unify, DIY hours, inventing estimates
+
+## Tip hygiene (2026-10-25 Asia/Tokyo)
+
+- Household densify **PAUSED** at **3015/8**. No further SKU digs; Aoi JPN/GBR panels not re-emitted.
+- Exhaustion bullets above stand (CAN/KOR TLS, DEU Preismonitor %-only, SWE CPI-only, textile towels/underwear absent outside Aoi).

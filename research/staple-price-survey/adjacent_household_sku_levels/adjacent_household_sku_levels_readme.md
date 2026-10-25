@@ -1,6 +1,6 @@
 # adjacent_household_sku_levels — NSO named-retail household SKUs
 
-Retrieved: 2026-10-25 Asia/Tokyo
+Retrieved: 2026-10-25 Asia/Tokyo (hygiene sync; densify PAUSED)
 
 ## Hard rules
 
@@ -57,3 +57,10 @@ Build stats: see `_build_stats.json` (3015 rows; AUT, FIN, FRA, IRL, MYS, NLD, Q
 - **AUT**: Preisradar catalogue has coffee/tea household SKUs only (no TP/detergent/towels/underwear in product list). Uses `price.meanData` (ms epoch, EUR).
 - **NLD**: Food average-price table only; coffee/tea among household lane; series ends 2018.
 - **FRA**: Ground coffee absolute retail only among lane families still in BDM; laundry powder / dishwasher powder séries arrêtées end 1998–99 (not loaded). No TP/tissue/tea/towels/underwear in famille Prix moyens.
+
+## Tip hygiene / status (2026-10-25 Asia/Tokyo)
+
+- **PAUSED** for further household SKU densify (tip ~7275b3c era; pack frozen at **3015** rows / **8** ISO3: AUT 180, FIN 1692, FRA 192, IRL 177, MYS 491, NLD 40, QAT 36, SGP 207).
+- Schema header verified: `country,date,year,variable,value,unit,source,note,estimated_value`; all `estimated_value` empty; csv/gz match; **0** duplicate keys.
+- Do **not** re-panel Aoi JPN RPS / UK ONS towels/underwear into this pack.
+- No new country digs in this hygiene pass.

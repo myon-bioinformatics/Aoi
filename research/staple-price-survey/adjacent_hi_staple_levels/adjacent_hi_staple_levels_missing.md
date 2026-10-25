@@ -78,3 +78,8 @@ Probe artifacts: `raw/eurostat/prc_fpmt_m.tsv.gz` (indices only); `raw/gcc/` (Qa
 - No other trivial hi densify this pass (MYS/TWN/HKG/NZL cereal packs left; no new open SKU bulk).
 - Forced skips unchanged: ARE/BHR/KWT/OMN/SAU/JOR/CHN/VEN; CAN/KOR TLS.
 
+## Tip hygiene (2026-10-25 Asia/Tokyo)
+
+- Coverage counts synced: **3691** rows / HKG·MYS·NZL·QAT·SGP·TWN.
+- **NZL** white-loaf `(country,date,variable)` clash fixed (`bread_700g` vs `bread_600g_cheapest`); see readme.
+- Forced skips unchanged: ARE/BHR/KWT/OMN/SAU/JOR/CHN/VEN; CAN/KOR TLS.

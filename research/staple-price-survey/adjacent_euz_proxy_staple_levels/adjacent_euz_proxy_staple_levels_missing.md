@@ -65,3 +65,7 @@ Public Eurostat HBS datasets under `hbs_exp_*` / `hbs_str_*` / `hbs_car_*` are *
 - ITA/SWE/BEL still CPI-only — not forced. ARE/BHR/KWT/OMN/SAU/JOR/CHN/VEN, CAN/KOR TLS — not forced.
 - Easy-open EUZ cereal-heavy densify for milk/eggs/meat/oil/sugar: **STOP**.
 
+## Tip hygiene (2026-10-25 Asia/Tokyo)
+
+- Coverage counts synced: **14911** rows / AUT·DEU·ESP·FIN·FRA·IRL·NLD·PRT.
+- Easy milk/eggs/meat/oil/sugar densify **STOP** (PRT/DEU thin; ITA/SWE/BEL CPI-only). No new digs this hygiene pass.

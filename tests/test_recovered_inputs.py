@@ -6,7 +6,8 @@ import io
 import json
 from pathlib import Path
 import re
-import zipfile
+
+from scripts.recovered_zip import validate_member_path, validated_zip
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,7 +36,7 @@ def test_original_archives_and_supplement_member_manifest():
         content = (ROOT / item["repository_path"]).read_bytes()
         assert len(content) == item["bytes"]
         assert _sha(content) == item["sha256"]
-        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        with validated_zip(io.BytesIO(content)) as archive:
             assert archive.testzip() is None
             assert len(archive.namelist()) == item["members"]
             assert len(set(archive.namelist())) == len(archive.namelist())
@@ -58,7 +59,7 @@ def test_preserved_games_are_not_silently_cleaned_or_renamed():
     item = CATALOG["archives"][0]
     selected = item["selected_member"]
     payload = (ROOT / selected["repository_path"]).read_bytes()
-    with zipfile.ZipFile(ROOT / item["repository_path"]) as archive:
+    with validated_zip(ROOT / item["repository_path"]) as archive:
         assert payload == archive.read(selected["path"])
     assert len(payload) == selected["bytes"]
     assert _sha(payload) == selected["sha256"]
@@ -84,7 +85,7 @@ def test_annual_panel_reuses_exact_existing_bytes_and_saved_totals_match():
     payload = (ROOT / selected["existing_repository_path"]).read_bytes()
     assert _sha(payload) == selected["sha256"]
     assert len(payload) == selected["bytes"]
-    with zipfile.ZipFile(ROOT / item["repository_path"]) as archive:
+    with validated_zip(ROOT / item["repository_path"]) as archive:
         for member in selected["paths"]:
             assert archive.read(member) == payload
         original = _json(archive.read("input-manifest.json"))
@@ -100,7 +101,7 @@ def test_annual_panel_reuses_exact_existing_bytes_and_saved_totals_match():
     assert len(index) == 168
     assert {year for year, _ in index} == set(range(2012, 2026))
     assert all(sum(y == year for y, _ in index) == 12 for year in range(2012, 2026))
-    with zipfile.ZipFile(ROOT / CATALOG["archives"][0]["repository_path"]) as archive:
+    with validated_zip(ROOT / CATALOG["archives"][0]["repository_path"]) as archive:
         summary = csv.DictReader(io.StringIO(
             archive.read("data/part2/team_season_summary.csv").decode("utf-8-sig")))
         comparisons = 0
@@ -118,7 +119,7 @@ def test_synthetic_archive_has_only_classified_preserved_synthetic_members():
     item = CATALOG["synthetic_separation"]
     payload = (ROOT / item["repository_path"]).read_bytes()
     assert _sha(payload) == item["sha256"] and len(payload) == item["bytes"]
-    with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+    with validated_zip(io.BytesIO(payload)) as archive:
         assert archive.testzip() is None
         manifest = _json(archive.read("MANIFEST.json"))
         assert manifest["classification"] == "synthetic_experiments_only_not_observed_NPB_games"
@@ -126,6 +127,8 @@ def test_synthetic_archive_has_only_classified_preserved_synthetic_members():
         seen = set()
         game_files = game_records = 0
         for entry in manifest["files"]:
+            validate_member_path(entry["source_member"])
+            validate_member_path(entry["source_archive"])
             assert entry["source_member"].startswith("data/synthetic/")
             assert entry["unchanged_from_source"] is True
             assert entry["path"] == Path(entry["source_archive"]).stem + "/" + entry["source_member"]

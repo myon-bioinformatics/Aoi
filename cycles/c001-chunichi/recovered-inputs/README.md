@@ -51,11 +51,15 @@
 
 リポジトリ直下で次を実行すると、元ZIPを変更せず、選んだ2ファイルだけをgit管理外 `data/recovered-inputs/` に復元します。既存ファイルの不一致では停止します。これはデータのコピー手順であり、利用条件や再配布権限を新たに付与するものではありません。
 
+[stdlib-only検査helper](../../../scripts/recovered_zip.py) は、読み込むZIPの全メンバーを先に検査します。絶対パス、`.` / `..` / 空要素、バックスラッシュ、Windowsのdrive・ADS・予約名、NUL等の制御文字、名前の重複・別名、ファイルとディレクトリの衝突、symlink・device等の特殊型を拒否し、安全な名前への書き換えはしません。Unix型ビット未指定の通常ファイルと、末尾 `/` の空ディレクトリは受け入れます。CIは公開する3つのZIP（架空専用ZIPを含む）と架空MANIFESTの元パスを同じ条件で検証します。このhelperは展開器ではなく、以下も固定の出力先にだけコピーします。`extract()` / `extractall()` は使いません。
+
 ```python
 import hashlib
+import io
 import json
 from pathlib import Path
-from zipfile import ZipFile
+
+from scripts.recovered_zip import validated_zip
 
 catalog = json.loads(Path("cycles/c001-chunichi/recovered-inputs/manifest.json").read_text())
 root = Path("data/recovered-inputs")
@@ -68,11 +72,13 @@ for archive, member, output in targets:
     content = source.read_bytes()
     if len(content) != archive["bytes"] or hashlib.sha256(content).hexdigest() != archive["sha256"]:
         raise ValueError(f"Archive mismatch: {source.name}")
-    with ZipFile(source) as saved:
+    with validated_zip(io.BytesIO(content)) as saved:
         payload = saved.read(member)
     expected = archive["selected_member"]
     if len(payload) != expected["bytes"] or hashlib.sha256(payload).hexdigest() != expected["sha256"]:
         raise ValueError(f"Member mismatch: {member}")
+    if output.is_symlink() or any(parent.is_symlink() for parent in output.parents):
+        raise ValueError(f"Refusing symlink output path: {output}")
     if output.exists() and output.read_bytes() != payload:
         raise ValueError(f"Refusing to overwrite different data: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -80,7 +86,7 @@ for archive, member, output in targets:
     print(output)
 ```
 
-実観測と年次派生を別ディレクトリに保持します。架空シナリオのファイルはこの復元対象に含めません。復元したファイルは既存pipelineへ自動登録されません。
+実観測と年次派生を別ディレクトリに保持します。架空シナリオのファイルはこの復元対象に含めません。復元したファイルは既存pipelineへ自動登録されません。出力先と親ディレクトリの既存symlinkも拒否しますが、他プロセスによる同時のパス差し替えを防ぐ展開sandboxではありません。自分が管理する作業ディレクトリで実行してください。
 
 ## 出典と公開範囲
 

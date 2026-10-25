@@ -88,7 +88,7 @@ JS の実体パス、サイズ、SHA-256 を JSON に残す。同じ bundle・Py
 
 ## CI の比較条件
 
-Aoi の `.github/workflows/browser-startup-validation.yml` は `ubuntu-24.04` / Python 3.14 で、`google-chrome` と `chromium` の 2 系統を別ジョブとして実行する。同一系統の実行ファイル名の別名（`google-chrome-stable`、`chromium-browser`）は検索するが、Chrome 不在時に Chromium で代替するなどの系統間フォールバックはしない。
+Aoi の `.github/workflows/browser-startup-validation.yml` は `ubuntu-24.04` / Python 3.14 で、既定では `chromium` のみを検証する。手動実行の `compare-chrome` を有効にした場合だけ `google-chrome` の互換性比較ジョブを追加する。同一系統の実行ファイル名の別名（`google-chrome-stable`、`chromium-browser`）は検索するが、系統間フォールバックはしない。必要なブラウザがなければ明示的なエラーで失敗する。
 
 各ジョブは依存関係とローカル Plotly.js を準備した後、次の順で測る。
 
@@ -109,3 +109,9 @@ JSON、JUnit、人工図の画像を artifact に 14 日間保存する。先行
 両テストとも検証用に確保した資源はテスト側で回収する。strict xfail は健康な状態の assertion を残すためのもので、予想外に成功した場合は失敗になり、修正後には該当マーカーを外す必要がある。これらは別に確認した欠陥であり、元の断続的な `Browser.getVersion` timeout の根本原因と確定したわけではない。この検証 PR は本番 transport の修正を含まない。
 
 検証コードは Aoi の `scripts/`・`tests/`・`docs/` に置き、`dragowing/` subtree は登録済みの内容を保つ。DRAgoWing の配布物・子リポジトリの同期は、この診断専用 PR には含めない。
+
+## Chromium への統一
+
+通常の offline export CI も Chromium を明示的に選択する。既存の `chrome-export` job ID、JUnit / artifact 名は集計との互換性のため保つ。OS のネットワーク分離、起動引数、タイムアウト、再試行は変更しない。診断も同じ選択済み実行ファイルで前後 10 回の起動と 3 session × 6 画像を測定する。実行ファイル・CDP の版、Plotly.js の hash、段階別時間と cleanup を合わせて確認する。
+
+本番ライブラリの既定選択は DRAgoWing の原本で変更してから、通常の subtree 同期と配布物生成で Aoi に取り込む。この Aoi 側 CI 変更だけでは、まだ取り込まれていない DRAgoWing や既存の配布物が変わったとは扱わない。Chromium への統一は元の 30 秒 timeout の修正完了を意味せず、2 件の cleanup 不具合も別件として残す。

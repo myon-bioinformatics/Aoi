@@ -1,7 +1,7 @@
 name: Browser startup validation
 
-# Diagnostic comparison only: do not change the production browser preference,
-# timeouts, retries, launch flags, or the existing offline-export CI job.
+# Chromium is the default validation browser. Manual Chrome comparison remains
+# available; neither lane changes production timeouts, retries, or launch flags.
 on:
   pull_request:
     paths:
@@ -11,6 +11,12 @@ on:
       - 'tests/test_dragowing_browser_*.py'
       - 'docs/diagnostics/browser-startup-validation.md'
   workflow_dispatch:
+    inputs:
+      compare-chrome:
+        description: Include an explicit Chrome compatibility comparison
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -27,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [google-chrome, chromium]
+        browser: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.compare-chrome && '["chromium","google-chrome"]' || '["chromium"]') }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -53,9 +59,15 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$BROWSER_NAME" == chromium ]]; then
-            executable="$(command -v chromium || command -v chromium-browser)"
+            if ! executable="$(command -v chromium || command -v chromium-browser)"; then
+              echo '::error::Chromium is required: install chromium or chromium-browser on the runner.'
+              exit 1
+            fi
           else
-            executable="$(command -v google-chrome || command -v google-chrome-stable)"
+            if ! executable="$(command -v google-chrome || command -v google-chrome-stable)"; then
+              echo '::error::The requested Chrome comparison requires google-chrome or google-chrome-stable.'
+              exit 1
+            fi
           fi
           test -x "$executable"
           "$executable" --version

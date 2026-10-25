@@ -1,0 +1,27 @@
+{
+  "source": "User-supplied project artwork sheet, 2026-10-23",
+  "source_dimensions": [
+    1536,
+    1024
+  ],
+  "coordinate_convention": "left, top, right-exclusive, bottom-exclusive",
+  "project": {
+    "label": "SakAnalytics",
+    "icon": [
+      33,
+      634,
+      201,
+      802
+    ],
+    "icon_sha256": "ed988df3b9db8fd8d24e76e3bdfc6f3fae4ee4523a9549009731847e75db4472",
+    "icon_rgb_sha256": "815287e26a0353b00f3177fc496330d17821e30127eaa54344c0a2705dfdd2cc",
+    "favicon_sha256": "62f86dbcb64ebfd42d5f5aa08e8df0a7f8f2b16568ae823c6c078ae4fb61eaa7",
+    "favicon_rgb_sha256": "978690adb188326b1f81f53e1fd2d3fe644237e86860cd70c4d1eb6e1d4a57b2",
+    "favicon_source": "docs/brand/icon.png resampled to 64x64 with LANCZOS",
+    "favicon_size": [
+      64,
+      64
+    ],
+    "favicon_background": "#fbfafa"
+  }
+}

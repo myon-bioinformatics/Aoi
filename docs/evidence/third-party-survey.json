@@ -666,7 +666,7 @@
       "import_sites": 41
     },
     "pytest": {
-      "attribute_uses": 867,
+      "attribute_uses": 874,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -674,7 +674,7 @@
         "MonkeyPatch": 1,
         "StashKey": 2,
         "UsageError": 10,
-        "approx": 247,
+        "approx": 252,
         "fail": 21,
         "fixture": 44,
         "hookimpl": 3,
@@ -682,7 +682,7 @@
         "mark.parametrize": 161,
         "mark.skipif": 6,
         "param": 1,
-        "raises": 346,
+        "raises": 348,
         "skip": 6,
         "warns": 3
       },
@@ -799,18 +799,18 @@
           "import_sites": 10
         },
         "tests": {
-          "attribute_uses": 78,
+          "attribute_uses": 85,
           "attributes": {
-            "approx": 5,
+            "approx": 10,
             "fail": 1,
             "fixture": 6,
             "importorskip": 1,
             "mark.parametrize": 17,
-            "raises": 48
+            "raises": 50
           },
           "dynamic_import_sites": 0,
-          "files": 14,
-          "import_sites": 14
+          "files": 15,
+          "import_sites": 15
         }
       },
       "declared": [
@@ -847,8 +847,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 91,
-      "import_sites": 92
+      "files": 92,
+      "import_sites": 93
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2650,6 +2650,17 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_c001_wave_eps_sensitivity.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 5,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_wave_eps_settle_coefficients.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

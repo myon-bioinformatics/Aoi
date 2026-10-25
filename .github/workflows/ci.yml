@@ -256,7 +256,7 @@ jobs:
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     needs: [changes, aoi]
     name: pytest (Python ${{ matrix.python }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -288,9 +288,25 @@ jobs:
           [[ "$AOI_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git -C .test-deps/aoi rev-parse HEAD)" = "$AOI_SHA"
           echo "Aoi ${AOI_SHA}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Select required Chromium without Chrome fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! chromium="$(command -v chromium || command -v chromium-browser)"; then
+            echo '::error::Chromium is required: install chromium or chromium-browser on the runner.'
+            exit 1
+          fi
+          test -x "$chromium"
+          "$chromium" --version
+          printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
+      - name: Prepare local Plotly.js for required exports
+        run: |
+          mkdir -p build/test-assets
+          python -S -c 'from pathlib import Path; from plotly_cdn import fetch_plotly_js; Path("build/test-assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
       - run: python -m compileall -q -x '\.test-deps' .
       - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
+          DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js
           AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
           PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras:${{ github.workspace }}/.test-deps/aoi/queryu/ask
       - name: Preserve JUnit report

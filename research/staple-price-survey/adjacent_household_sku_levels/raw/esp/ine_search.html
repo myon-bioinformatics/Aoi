@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Buscador</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="UTF-8">
+<link rel="shortcut icon" href="/menus/img/favicon.ico" type="image/x-icon">
+<link href="/menus/img/favicon.png" rel="apple-touch-icon">
+<link href="/menus/img/apple-touch-icon-57x57-precomposed.png" rel="apple-touch-icon" sizes="57x57">
+<link href="/menus/img/apple-touch-icon-60x60-precomposed.png" rel="apple-touch-icon" sizes="60x60">
+<link href="/menus/img/apple-touch-icon-72x72-precomposed.png" rel="apple-touch-icon" sizes="76x76">
+<link href="/menus/img/apple-touch-icon-76x76-precomposed.png" rel="apple-touch-icon" sizes="76x76">
+<link href="/menus/img/apple-touch-icon-114x114-precomposed.png" rel="apple-touch-icon" sizes="114x114">
+<link href="/menus/img/apple-touch-icon-120x120-precomposed.png" rel="apple-touch-icon" sizes="120x120">
+<link href="/menus/img/apple-touch-icon-144x144-precomposed.png" rel="apple-touch-icon" sizes="144x144">
+<link href="/menus/img/apple-touch-icon-152x152-precomposed.png" rel="apple-touch-icon" sizes="152x152">
+<link href="/menus/img/apple-touch-icon-160x160-precomposed.png" rel="apple-touch-icon" sizes="160x160">
+<link href="/menus/img/apple-touch-icon-180x180-precomposed.png" rel="apple-touch-icon" sizes="180x180">
+<link href="/menus/img/favicon-192x192.png" rel="icon" sizes="192x192">
+<link href="/menus/img/favicon-160x160.png" rel="icon" sizes="160x160">
+<link href="/menus/img/favicon-128x128.png" rel="icon" sizes="128x128">
+<link href="/menus/img/favicon-96x96.png" rel="icon" sizes="96x96">
+<link href="/menus/img/favicon-32x32.png" rel="icon" sizes="32x32">
+<link href="/menus/img/favicon-16x16.png" rel="icon" sizes="16x16">
+<meta property="og:locale" content="es_ES" >
+	<meta property="og:type" content="website">
+<meta property="og:site_name" content="INE">
+<meta property="og:image" content="https://www.ine.es/menus/_b/img/logoINESocial.png">
+<meta property="og:image:secure_url" content="https://www.ine.es/menus/_b/img/logoINESocial.png">
+<meta property="og:image:alt" content="Logo">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="326">
+<meta property="og:image:height" content="126">
+<meta name="description" content="INE. Instituto Nacional de Estad&#237;stica. National Statistics Institute. Spanish Statistical Office. El INE elabora y distribuye estadisticas de Espana. Este servidor contiene: Censos de Poblacion y Viviendas 2001, Informacion general, Productos de difusion, Espana en cifras, Datos coyunturales, Datos municipales, etc.. Q2016.es">
+<meta name="keywords" content="Censos poblacion viviendas, ine, espa&#241;a, estadistica, statistics, instituto nacional de estad&#237;stica, National Statistics Institute, estad&#237;stica, coyuntura, precios, poblaci&#243;n, spain, consumer prices, statistics in spanish, statistical agency, datos estad&#237;sticos, precios de consumo de Espa&#241;a, Q2016.es">
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes">
+<script type="application/ld+json" id="Organization">
+{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id" :"https://www.ine.es#Organization",
+    "name": "INE - Instituto Nacional de Estad�stica",
+    "url": "https://www.ine.es/",
+    "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Madrid, Espa�a",
+        "postalCode": "28050",
+        "streetAddress": "Avenida de Manoteras, 50-52"
+    },
+    "contactPoint": [
+        {
+        "@type": "ContactPoint",
+        "contactType" : "Escribir a InfoINE",
+        "url": "https://www.ine.es/infoine/"
+    },
+    {
+        "@type": "ContactPoint",
+        "telephone": "(+34) 91-583-91-00",
+        "faxNumber": "(+34) 91-583-91-58",
+        "contactType" : "Informaci�n al p�blico y centralita",
+        "hoursAvailable":[
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [ "Monday", "Tuesday", "Wednesday", "Thursday"],
+                "opens": "09:00",
+                "closes": "14:00"
+            },
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [ "Monday", "Tuesday", "Wednesday", "Thursday"],
+                "opens": "16:00",
+                "closes": "18:00"
+            },
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [ "Friday"],
+                "opens": "09:00",
+                "closes": "14:00"            
+            }
+        ]
+    },
+    {
+        "@type": "ContactPoint",
+        "telephone": "(+34) 91-583-94-38",
+        "faxNumber": "(+34) 91-583-45-65",
+        "contactType" : "Librer�a �ndice",
+        "email": "indice@ine.es"
+    },
+    {
+        "@type": "ContactPoint",
+        "telephone": "(+34) 91-583-94-11",
+        "contactType" : "Biblioteca",
+        "email": "biblioteca@ine.es"
+    }
+    ],
+    "logo": [
+        {
+            "@type": "ImageObject",
+            "@id": "https://www.ine.es/#logo",
+            "url": "https://www.ine.es/menus/_b/img/logoINESocial.png",
+            "width": 326,
+            "height": 125,
+            "name": "Logotipo INE (Instituto Nacional de Estad�stica)"
+        }
+    ],
+    "sameAs": [
+        "https://twitter.com/es_ine",
+        "https://www.youtube.com/@es_ine",
+        "https://www.instagram.com/es_ine_/",
+        "https://es.linkedin.com/company/ine-es"
+    ]
+}
+ 
+</script><script type="application/ld+json" id="WebSite">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://www.ine.es/#WebSite",            
+    "name": "INE - Instituto Nacional de Estad�stica",
+    "inLanguage": "es",     
+    "headline": "Instituto Nacional de Estad�stica",
+    "description" : "El INE elabora y distribuye estadisticas de Espana. Este servidor contiene: Censos de Poblacion y Viviendas 2001, Informacion general, Productos de difusion, Espana en cifras, Datos coyunturales, Datos municipales, etc.. Q2016.es",
+    "url": "https://www.ine.es/", 
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.ine.es/buscar/searchResults.do?L=1&searchString={query}",
+        "query" : "required",
+        "query-input": "required name=query"
+    }
+}</script>
+<script src="/menus/_b/js/general.js?L=0&fp=0&chars=UTF-8"></script>
+<script src="/menus/_b/js/component/ine.js?L=0"></script><noscript>
+		
+	</noscript>
+	
+	<script >
+	var sepMil= ".";
+var sepDec= ",";
+var docIsLoaded=false;
+var HM_Menu_Dir="/menus/";
+var HM_Menu_DirVersion="/menus/_b/";
+var HM_imgDir="/menus/img/";
+var HM_DirJs="/menus/js/";
+var HM_idioma="es";
+var HM_idiomaINE="0";
+var othethickbox="";
+var INE_Servidor="";
+var INE_ServidorAbsoluta="https://www.ine.es";
+var HTMLVersion=5;
+var showBtnAddCesta=true;
+var isIE=false;
+var PLOTLY_FORCE = false;
+var PLOTLY_ENABLED = false;	</script>
+		
+	
+	
+	<link rel="preload" as="style" href="/menus/_b/css/component/components.css?L=0&amp;cddm=1&amp;ilp=1&amp;pnls=1&amp;smap=1&amp;emap=1&amp;sv=1" onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')">
+<noscript>
+    <link rel="stylesheet" href="/menus/_b/css/component/components.css?L=0&amp;cddm=1&amp;ilp=1&amp;pnls=1&amp;smap=1&amp;emap=1&amp;sv=1">
+</noscript>
+<script defer src="/menus/_b/js/component/components.js?L=0&amp;cddm=1&amp;ilp=1&amp;pnls=1&amp;smap=1&amp;emap=1&amp;sv=1"></script><link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/base.css?vnew=0">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/cabecera_pie.css">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/cabecera_pie_print.css" media="print">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/nav.css">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/nav_print.css" media="print">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/iconos.css"><noscript>
+	<link rel="stylesheet" href="/menus/_b/css/base.css?vnew=0">
+	<link rel="stylesheet" href="/menus/_b/css/cabecera_pie.css">
+	<link rel="stylesheet" href="/menus/_b/css/cabecera_pie_print.css" media="print">
+	<link rel="stylesheet" href="/menus/_b/css/nav.css">
+	<link rel="stylesheet" href="/menus/_b/css/nav_print.css" media="print">
+	<link rel="stylesheet" href="/menus/_b/css/iconos.css">
+</noscript>
+	
+	
+		<script async src="/menus/NC/status.js?L=0"></script>
+	
+	<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as'); try{loadUrlScript('/menus/_b/js/consul.js?l=es',null,null);}catch{}" href="/menus/_b/css/cesta.css">
+			
+	
+	
+	
+	
+	<script async src="/menus/js/cookie.js"></script>
+	
+	<script async src="/menus/plantillas/buscar/js/liveSearch.js" ></script>
+	<script async src="/menus/_b/js/cabecera.js?v=1&qz=0"></script>	
+	<script async src="/ua/urlcorta.js"></script>
+	<script async src="/menus/_b/js/social.js"></script>
+	<script async src="/menus/js/thickboxINE.js"></script>
+	
+	
+		
+		<link rel="stylesheet" href="/menus/plantillas/buscar/css/web.css">
+<script src="/menus//plantillas/buscar/js/buscador.js"></script>	
+		
+	</head>
+<body><div class="contenedor">
+	<div class="overlay"></div>
+	<header>
+	
+		 <div class="flex-block-left-auto">
+			<div class="ImagenLogoIne">
+				 <a href="/"><img src="/menus/_b/img/LogoINE.svg" alt="SIGLAS Instituto Nacional de Estad&#237;stica">
+							
+				</a>
+	
+			</div>
+		
+			<div class="MenuDch">
+				<div class="Menu_idioma">
+					
+<div class="Menu_cabeceraIdioma">
+	<ul class="barraIdiomas">
+	
+		<li class="bordeL idioma">
+			<a href="/buscar/searchResults.do?searchString=precios+medios+detergente&amp;Menu_botonBuscador=Buscar&amp;searchType=DEF_SEARCH&amp;L=1" title="English Page" lang="en" role="button">English</a>
+		</li>
+	</ul>
+</div>
+				</div>
+	
+				
+			</div>
+		
+		</div>
+	</header>
+	
+	
+	<nav aria-label="Men� Principal" class=" main-menu"  >
+	<div>
+		<div class="toggleBtn">
+			<a href="/indiceweb.htm" id="sidebarCollapse" class="btn btn-info no-events" aria-label="Mostrar/ocultar el men� principal de navegaci�n" title="Men&#250; de navegaci&#243;n">
+			<i class="ii ii-bars"></i>
+		</a>
+		<script id="loaderFCPSC">
+			document.head.insertAdjacentHTML("beforeend", `<style id="loaderFCPST">
+				.loaderFCP { background-size: cover; width: 35px; height: 35px; transform: rotate(0deg); animation: rotationLoader 1s linear infinite; display: block; border: 2px solid white; border-radius: 100px; border-color: white white transparent white; }
+				@keyframes rotationLoader { 100% { transform: rotate(360deg); } }
+			</style>`);			document.querySelector(".main-menu .toggleBtn a").onclick=function(){
+				this.children[0].setAttribute("class", "loaderFCP")
+				return false;
+			}
+		</script>
+		
+		<img src="/menus/_b/img/LogoINESiglasMini.svg" class="nav-logo" alt="Instituto Nacional de Estad�stica">
+		</div>		<div id="sidebarLayer" class="intellimenu-layer" style="display: none;">
+		</div>
+		<ul class="secondList">
+			<li>
+				<a class="tit" href="/dyngs/CEL/index.htm?cid=41" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Censo Electoral" target="_blank">Censo Electoral</a></li>
+			<li>
+				<a class="tit" href="https://sede.ine.gob.es" role="button" aria-haspopup="true" aria-expanded="false"  aria-label="Sede electr&#243;nica" target="_blank" rel="noopener">Sede electr&#243;nica</a>
+			</li>			
+			<li class="dropdown">
+				<a id="shareBtn" data-toggle="drop-down" onclick="this.classList.toggle('active')" href="javascript:void(0)" role="button" aria-haspopup="true" aria-expanded="false"  aria-label="Compartir"> 
+					<span class="tit">Compartir</span>
+					<i class="ii ii-share"></i>
+				</a>
+				<ul class="dropdown-menu" title="Lista de redes para compartir p&#225;gina">
+					<li>
+						<a id="shareTwitter" data-social-text="INE. Instituto Nacional de Estad&#237;stica" data-social-via="es_ine" class="" href="#shareTwitter" target="SocialShared" title="Abre ventana nueva X">
+							<span class="tit">X</span>
+							<i class="ii ii-twitter-x"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareFacebook" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareFacebook" target="SocialShared" title="Abre ventana nueva Facebook">
+							<span class="tit">Facebook</span>
+							<i class="ii ii-facebook"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareLinkedin" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareLinkedin" target="SocialShared" title="Abre ventana nueva Linkedin">
+							<span class="tit">Linkedin</span>
+							<i class="ii ii-linkedin"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareWhatsapp" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareWhatsapp" target="SocialShared" title="Abre ventana nueva WhatsApp">
+							<span class="tit">WhatsApp</span>
+							<i class="ii ii-whatsapp"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareMail" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareMail" target="_self" title="Abre ventana nueva">
+							<span class="tit">Correo Electr&#243;nico</span>
+							<i class="ii ii-mail"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareClipboard" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareClipboard" target="_self" title="Abre ventana nueva">
+							<span class="tit">Copiar al portapapeles</span>
+							<i class="ii ii-copy"></i>
+						</a>
+					</li>
+				</ul>
+			</li>
+			
+		</ul>
+	</div>
+</nav>
+	<main>
+	
+	
+	
+<script>
+	function UrlCorta_InfoPOST(){
+		if (typeof serializedArray === "function") {
+			return serializedArray("BuscadorPpal");
+		} else {
+			return null;
+		}
+	}
+</script>
+<div class="AppToolBarFondo AppToolBarImg1">
+	<div class="AppToolBarContent">
+		<div class="Sup"><ul class="miga"><li><a href="https://www.ine.es">El INE</a></li><li class="title medio"><h1>Buscador</h1></li></ul></div>
+		<div class="Inf"></div>
+	</div>
+</div>
+<form id="BuscadorPpal" action="searchResults.do" method="post">
+<div class="customBar" id="pnlToolSearch" >
+<div class="group both">
+<div class="content">
+<ul class="filtroActual supbar">
+<li>
+<input type="text" class="seeker" placeholder="Escriba el texto para buscar (requerido)" title="Escriba el texto para buscar (requerido)" name="searchString" id="searchString" value="precios medios detergente" autocomplete="off" pattern="^(?!\*).*$" required>
+<label tabindex=0 class='operator AND selected'><input class="radioperatorAND" name="radioperatorAND" type="radio" checked value="1">
+<span title='Búsqueda exacta' class='isOperator'>Y</span></label>
+<label tabindex=0 class='operator OR'><input class="radioperatorOR" name="radioperatorOR" type="radio" value="0">
+<span title='Búsqueda parcial' class='isOperator'>O</span></label>
+<input type="submit" id="boton_buscar" name="boton_buscar" value="Buscar">
+<a id="ayudaBuscador" href="/buscar/ayuda.jsp" target="_blank" title="Ayuda buscador">?</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="pnlTool">
+
+<input type="hidden" name="searchType" id="searchType" value="DEF_SEARCH">
+<input type="hidden" name="startat" id="startat" value="0">
+
+<div class="globalFilters">
+<div class="filter">
+	<fieldset>
+	<legend class='flecha_down_globalFilters'>
+	<span class="iconos flecha_down"></span>Refinar búsqueda</legend>
+
+
+<ul class="filtros">
+
+<li><fieldset><legend class='availableFilter'><span class='iconos flecha_down'></span>Categoría</legend><ul id='tipo' class='categoria'><li><button class='arbol icono_plus catName ' type='button' name='f.tipo' id='node_102' value='102'  title='Plegar/Desplegar: Datos Estadísticos'>Datos Estadísticos</button><ul class='subcategoria arbol'><li class='noChild'><button class='iconos2 imgfilter catName Tablas Estadísticas' type='submit' name='qf.tipo' id='node_103' value='103'  title='Añadir a filtro: Tablas Estadísticas'>Tablas Estadísticas</button></li><li class='noChild'><button class='iconos2 imgfilter catName Población de Municipios' type='submit' name='qf.tipo' id='node_136' value='136'  title='Añadir a filtro: Población de Municipios'>Población de Municipios</button></li><li class='noChild'><button class='iconos2 imgfilter catName Notas de Prensa' type='submit' name='qf.tipo' id='node_104' value='104'  title='Añadir a filtro: Notas de Prensa'>Notas de Prensa</button></li><li class='noChild'><button class='iconos2 imgfilter catName Series Estadísticas' type='submit' name='qf.tipo' id='node_107' value='107'  title='Añadir a filtro: Series Estadísticas'>Series Estadísticas</button></li><li class='noChild'><button class='iconos2 imgfilter catName Fichas de Operaciones Estadísticas (IOE)' type='submit' name='qf.tipo' id='node_108' value='108'  title='Añadir a filtro: Fichas de Operaciones Estadísticas (IOE)'>Fichas de Operaciones Estadísticas (IOE)</button></li><li class='noChild'><button class='iconos2 imgfilter catName Metodología' type='submit' name='qf.tipo' id='node_105' value='105'  title='Añadir a filtro: Metodología'>Metodología</button></li><li><button class='arbol icono_plus catName ' type='button' name='f.tipo' id='node_117' value='117'  title='Plegar/Desplegar: Datos Históricos'>Datos Históricos</button><ul class='subcategoria arbol'><li class='noChild'><button class='iconos2 imgfilter catName INEbaseHistoria' type='submit' name='qf.tipo' id='node_118' value='118'  title='Añadir a filtro: INEbaseHistoria'>INEbaseHistoria</button></li><li class='noChild'><button class='iconos2 imgfilter catName Tablas Históricas' type='submit' name='qf.tipo' id='node_133' value='133'  title='Añadir a filtro: Tablas Históricas'>Tablas Históricas</button></li><li class='noChild'><button class='iconos2 imgfilter catName Fichas Históricas de Operaciones Estadísticas (IOE)' type='submit' name='qf.tipo' id='node_134' value='134'  title='Añadir a filtro: Fichas Históricas de Operaciones Estadísticas (IOE)'>Fichas Históricas de Operaciones Estadísticas (IOE)</button></li></ul></li></ul></li><li class='noChild'><button class='iconos2 imgfilter catName Otros Apartados' type='submit' name='qf.tipo' id='node_109' value='109'  title='Añadir a filtro: Otros Apartados'>Otros Apartados</button></li></ul></fieldset></li><li><fieldset><legend class='availableFilter'><span class="iconos	flecha_down "></span>Fecha</legend><ul id='fechamodificacion' class="categoria"><li class='fechamodificacion_noFilter'><button class='iconos2 imgfilter catName ' type='submit' name='qf.fechamodificacion' value='2024-12-31T23:00:00Z' title='Añadir a filtro:  2025 (1)'>2025 ( 1 )</button></li></ul></fieldset></li></ul>
+</fieldset>
+</div>
+</div>
+</div>
+<div class="pnlResult">
+<div class="navigate supbar">
+	<fieldset>
+	<legend class="sr-only">
+		<span class="iconos flecha_down"></span>Opciones de visualización de los resultados</legend>
+
+	<div class="left">
+ 		<span role="status" class="texto_num_reg" id="num_reg">Registros:1</span>
+ 	</div>
+
+ 	<div  class="right">
+ 		<label for="p_sort">Ordenar por:</label>
+  		<select id="p_sort" name="p_sort">
+  		<option value="0" >Relevancia</option>
+  		<option value="1">Fecha</option>
+  		</select>
+
+  		<input type="submit" class="sr-only" id="boton_buscar_p_sort" name="boton_buscar_p_sort" value="Cambiar orden de visualización">
+
+ 		<label for="p_num">Mostrar:</label>
+  		<select id="p_num" name="p_num">
+  		<option value="50"  selected>50</option>
+  		<option value="100"  >100</option>
+  		<option value="250"  >250</option>
+  		<option value="500"  >500</option>
+  		</select>
+
+ 		<input type="submit" class="sr-only" id="boton_buscar_p_num" name="boton_buscar_p_num" value="Cambiar el número de elementos mostrados">
+
+ 		<label for="p_pag">Página:</label>
+  		<select id="p_pag" name="p_pag">
+  			<option value="1" selected>Inicio</option>
+  			</select>
+  		<input type="submit" class="sr-only" id="boton_buscar_p_pag" name="boton_buscar_p_pag" value="Ir a la página">
+
+ 	</div>
+
+ 	</fieldset></div>
+
+	<div id="tabsResult">
+		<ul class="list-grp">
+			<li class='records'>
+<ul><li class='left recordTitle'><a class="rBuscFiles" href="/buscar/go?url=/art/ree/109_7.pdf&bChk=BhGNNivgIhYlyz/yY1byMY%2bxAtZTYA7SjpTWTXGVt2Q=&bId=BhGNNivgIhYlyz/yY1byMY%2bxAtZTYA7SjpTWTXGVt2Q=&bIdi=0&bT=FILES&shP=1"  target="rBus" >Publicación título no disponibles</a>
+</li><li class='right imgIcons ii-group'><div class="infoBtnDiv "><button tabindex=0 class='infoBtn tooltipINE' data-context-menu="true"onclick="return showInfoBtn(this,event);" aria-label="Información" title="Modificado: jueves, 24 de julio de 2025"> <i class="ii ii-circle ii-small ii-info"></i></button></div></li></ul><span class='descripcion'>ESTADÍSTICA ESPAÑOLA Núm 109 1985 págs 101 a 1 10 EI Indice de Precios de Consumo Una Introducci ón encaminada a disipar malentendidos y un intento de justificar la desconfianza popular por ELOY MA...</span></li>
+</ul>
+		</div>
+
+	<div class="navigate subbar">
+			<div class="right">
+				<label class="pag_pie" for="p_pag_pie">Página:</label>
+				<select id="p_pag_pie" name="p_pag">
+				</select>
+				<input type="submit" class="sr-only" id="boton_buscar_p_pag_pie" name="boton_buscar_p_pag pie" value="Filtrar">
+			</div>
+		</div>
+	</div>
+	</form>
+
+	</main><footer><div id="pie" class="d2">	<div class="homePie" >
+		<ul>
+			<li><a href="/infoine/">
+				<i class="ii ii-mail"></i> <strong>Contacto</strong></a>
+			</li>
+			<li><a href="/indiceweb.htm">Mapa web</a></li>
+			<li>
+				<a href="/dyngs/AYU/index.htm?cid=125">
+					Aviso legal
+				</a>				
+			</li>
+			<li><a href="/dyngs/AYU/index.htm?cid=127">Accesibilidad</a></li>
+			<li><a href="/prensa/seccion_prensa.htm">Prensa</a></li>
+	
+			<li class="margen_sup20imp"><a href="/dyngs/MYP/index.htm?cid=1">Clasificaciones y est&#225;ndares</a></li>
+			<li><a href="/dyngs/MYP/index.htm?cid=10">Nuevos proyectos</a></li>
+		</ul>
+	</div>
+	<div class="homePie">
+		<ul>
+			<li><a href="/dyngs/INE/index.htm?cid=498">El INE</a></li>
+			<li><a href="/dyngs/INE/index.htm?cid=401">Transparencia</a></li>
+			<li><a href="/dyngs/INE/index.htm?cid=582">El Sistema Estad&#237;stico del Estado</a></li>
+			<li><a href="/dyngs/MYP/es/index.htm?cid=35">Calidad</a></li>
+			<li><a href="/dyngs/INE/index.htm?cid=542">Sistema Estad&#237;stico Europeo</a></li>
+		</ul>
+	</div>
+	
+	<div class="homePie">
+		<ul>
+			<li><a href="/dyngs/FYE/index.htm?cid=1791">Formaci&#243;n y empleo</a></li>
+			<li><a href="/dyngs/FYE/es/index.htm?cid=1802">Pr&#225;cticas universitarias</a></li>
+			<li><a href="/dyngs/FYE/es/index.htm?cid=1802">Becas</a></li>
+			<li><a href="/dyngs/FYE/index.htm?cid=166">Oposiciones</a></li>
+			<li><a href="/dyngs/explica/index.htm?cid=1693" target="_blank"  rel="noopener">Explica</a></li>
+		</ul>
+	</div>
+	
+	<div class="homePie">
+		<ul>
+			<li><a href="/dyngs/SER/index.htm?cid=1550">Atenci&#243;n al p&#250;blico</a></li>
+			<li><a href="/dyngs/DAB/es/index.htm?cid=1722">Datos abiertos</a></li>
+			<li><a href="/dyngs/PUB/index.htm?cid=1440" aria-label="Catalogo de Publicaciones">Publicaciones</a></li>
+			<li><a href="/dyngs/SER/index.htm?cid=1391">Carta de servicios</a></li>
+		</ul>
+	</div>
+	
+	<div class="homePie" >
+		<ul>
+			<li>S&#237;guenos</li>
+			<li><a class="ii ii-twitter-x" href="https://twitter.com/es_ine" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">X</span></a></li>
+			<li><a class="ii ii-youtube" href="https://www.youtube.com/INEDifusion" target="_blank"  rel="noopener" title="Abre ventana nueva"><span class="tit">Youtube</span></a></li>
+			<li><a class="ii ii-instagram" href="https://www.instagram.com/es_ine_/" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">Instagram</span></a></li>
+			<li><a class="ii ii-linkedin" href="https://www.linkedin.com/company/ine-es" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">LinkedIn</span></a></li>
+			<li><a class="ii ii-feed" href="/dyngs/AYU/index.htm?cid=1303" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">Canal RSS</span></a></li>
+			<li><a class="ii ii-github" href="https://github.com/es-ine" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">GitHub</span></a></li>
+		</ul>
+	</div>
+	
+	<div class="homePie copyright">
+		<address aria-label='Direcci&#243;n INE'>
+			<span>
+				&copy; 2026 <a href="https://www.ine.es/" rel="author cc:attributionURL dct:creator" property="cc:attributionName">INE. Instituto Nacional de Estad&#237;stica</a>			
+				<a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;" title ="Este sitio web y su contenido est&#225;n bajo licencia CC BY-SA 4.0">
+					<i class="ii ii-cc ii-normal"></i>
+					<i class="ii ii-by ii-normal"></i>
+				</a>
+			</span>
+			<abbr>Avda. Manoteras, 52 - 28050 - Madrid - Espa&#241;a</abbr>
+			<span><a class='phone' href='tel:+34915839100'>Tlf: (+34) 91 583 91 00</a></span>
+		</address>
+	</div>
+	</div>
+		<!-- boton subir -->
+		
+		<button class="ir-arriba" aria-label="Bot&#243;n para volver arriba" title="Volver arriba">
+			<i class="ii ii-caret-up"></i>
+		</button>
+			
+		<!-- fin boton subir -->
+	</footer>
+	
+		
+			
+			
+			
+			
+			
+		</div>
+		
+		
+		<!-- Codigo de seguimiento de Google Analytics  -->
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script >
+	var script = document.createElement('script');
+       script.defer = true;
+	script.src = 'https://www.googletagmanager.com/gtag/js?id=UA-19028967-1';
+	document.body.append(script);	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+ 
+	gtag('config', 'UA-19028967-1');
+</script>
+		<script src='/menus/_b/js/politicaCookies.js' ></script>
+		
+		
+		
+</body>
+
+	</html>

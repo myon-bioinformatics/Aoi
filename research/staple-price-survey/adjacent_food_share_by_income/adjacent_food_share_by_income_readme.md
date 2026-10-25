@@ -6,9 +6,13 @@ Retrieved: **2026-10-25 Asia/Tokyo** · Season2 adjacent for Aoi #118
 
 **1468 vertical rows** · **84 ISO3** with at least one series · year span **1988–2026**.
 
-Food (COICOP CP01 / food+non-alc) share of household expenditure by **income quintile** (`engel_share:food_q1`…`q5`) or **income/expenditure decile** (`engel_share:food_d1`…`d10`). Where the source publishes both, **food-total** and **food-at-home** are separate variables (`engel_share:food_*` vs `engel_share:food_at_home_*`). **Not** average retail prices, CPI indexes, or national-mean Engel alone.
+Food expenditure shares stratified by income, expenditure, consumption, or welfare. These strata are distinct and must not be pooled.
 
-Schema: `country,date,year,variable,value,unit,source,note,estimated_value` (ISO3; `date=YYYY-01-01`; `unit=percent`; `estimated_value` empty — no FX, no gap-fill).
+Schema v2 retains all original observations and source/note text. `legacy_variable` preserves the original variable spelling for provenance only; never use it as a series key. Defra Family Food retains a separate `food_defra` source variant to distinguish overlapping GBR observations from Eurostat CP01; it must not overwrite or be averaged with Eurostat. The canonical variable is `engel_share:food[_at_home]_<stratifier>_<bucket_type>_<index>`. Required columns `stratifier`, `bucket_type`, `bucket_count`, `bucket_index` also encode the classification explicitly. The observation key is `(country,date,variable,unit)`; `source` is not used to conceal collisions.
+
+`quartile` = four 25% groups; `quintile` = five 20% groups; `decile` = ten 10% groups. Swiss CHF income brackets are `income_class` (five classes, no equal-population claim). `welfare` preserves the published bien-être label without inventing an income basis. Full source definitions remain in `note`; the broad stratifier alone does not establish international comparability. IND MPCE fractiles are expenditure strata, including the legacy quintile note that calls them income.
+
+`classification.json` records reviewed source contracts, explicitly published partial series, and a SHA-256 of every original field/row. Missing intermediate groups remain missing: no gap filling. `estimated_value` stays unchanged. Run `python scripts/check_food_share_data.py` to verify classification, keys, preservation, CSV/gzip equality, and current README coverage.
 
 ## Intentional skips (Aoi / Season2 lanes)
 
@@ -23,14 +27,9 @@ Also skipped this pack (other Aoi / adjacent lanes): Orshansky memo, food CPI in
 
 ## Variables
 
-| variable | unit | definition |
-|----------|------|------------|
-| `engel_share:food_q1` … `food_q5` | percent | Food(+non-alc / food total) ÷ total HH expenditure (or total current consumption) ×100; quintile 1=lowest … 5=highest |
-| `engel_share:food_d1` … `food_d10` | percent | Same share; income/expenditure decile |
-| `engel_share:food_at_home_q1` … `q5` | percent | **Food at home only** ÷ total HH expenditure ×100 (USA BLS CE) |
-| `engel_share:food_at_home_d1` … `d10` | percent | Food at home only; income decile (USA BLS CE) |
+Examples: `engel_share:food_income_decile_1` and `engel_share:food_expenditure_decile_1` retain both ZAF 2023 series (30.5 and 32.1). HKG 2020 uses `engel_share:food_expenditure_quartile_1`…`4`; all four observations are retained, separately from quintiles. HKG 2024/25 has not been added.
 
-Defra Family Food publishes only **q1 / q3 / q5**; THA SES 2561 summary only **q1 / q5**; CAN 2021 Daily text only **q1 / q5**. HKG 2024/25 HES publishes **expenditure quartiles** only — not loaded (schema is q1–q5 / d1–d10).
+Defra q1/q3/q5, THA q1/q5 and CAN 2021 q1/q5 are explicit partial series in the manifest, not complete quintiles. Historical q/d labels in the source descriptions below refer to `legacy_variable` only.
 
 ## Sources (loaded)
 
@@ -147,3 +146,14 @@ Mirrored to `/workspace/aoi-phase2/staple-price-survey/adjacent_food_share_by_in
 ### 2026-10-25 Eurostat T223 densification
 
 Added **AUT, BGR, CYP, EST, GRC, HRV, IRL, LTU, LUX, LVA, MKD, MLT, MNE, PRT, SRB, SVK, SVN, XKX** from `HBS_STR_T223` CP01 (PM÷10). Pack → **1428 / 81**. FIN omitted (Aoi national-HES lane).
+
+
+## Validated coverage (current CSV)
+
+<!-- coverage:start -->
+**1468 vertical rows** · **84 ISO3** · year span **1988–2026**.
+
+ISO3: ARG, ARM, AUT, AZE, BEL, BGR, BOL, BRA, CAN, CHE, CHL, COL, CRI, CYP, CZE, DEU, DNK, DOM, EGY, ESP, EST, EUZ, FJI, FRA, GBR, GMB, GRC, GTM, HKG, HND, HRV, HUN, IDN, IND, IRL, ISR, ITA, LBN, LBR, LKA, LTU, LUX, LVA, MDA, MDG, MEX, MKD, MLT, MMR, MNE, MUS, MYS, NIC, NLD, NOR, NPL, PAK, PAN, PER, PHL, POL, PRT, PRY, ROU, RUS, SDN, SGP, SLV, SRB, SVK, SVN, SWE, TCD, THA, TJK, TTO, TUR, TZA, UKR, URY, USA, VNM, XKX, ZAF.
+<!-- coverage:end -->
+
+Earlier append counts and source tables describe historical collection steps; current coverage is the validated block above.

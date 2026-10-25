@@ -95,11 +95,16 @@ jobs:
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+      - name: Require supported Node in parity CI
+        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: "0.13.3"
           enable-cache: false
@@ -144,3 +149,140 @@ jobs:
     permissions:
       contents: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+
+  # 親の main は実行時に ls-remote で解決する。SHA は summary に残す。
+  # vendor_sync.py の python -S 検査はこのリポジトリには無い。
+  # pilot/vendor_dispatch.py は vendor.lock.json を検証する。記録フラグは付けない。
+  vendor-dispatch:
+    name: vendor lock dispatch
+    needs: changes
+    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Resolve parent main
+        id: parent
+        env:
+          PARENT_URL: https://github.com/myon-bioinformatics/myon-bioinformatics
+          PARENT_REPOSITORY_ID: "638801160"
+          PARENT_NAME: myon-bioinformatics/myon-bioinformatics
+          PARENT_REF: refs/heads/main
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          export GCM_INTERACTIVE=never
+          curl_args=(
+            --fail --silent --show-error --max-time 30
+            -H "Accept: application/vnd.github+json"
+            -H "User-Agent: sakanalytics-ci"
+          )
+          if [[ -n "${GH_TOKEN:-}" ]]; then
+            curl_args+=(-H "Authorization: Bearer ${GH_TOKEN}")
+          fi
+          meta=$(curl "${curl_args[@]}" "https://api.github.com/repos/myon-bioinformatics/myon-bioinformatics")
+          identity=$(printf '%s' "$meta" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["id"]); print(d["full_name"])')
+          actual_id=${identity%%$'\n'*}
+          actual_name=${identity#*$'\n'}
+          if [[ "$actual_id" != "$PARENT_REPOSITORY_ID" || "$actual_name" != "$PARENT_NAME" ]]; then
+            echo "parent repository identity mismatch"
+            exit 1
+          fi
+          remote=$(timeout 60 git ls-remote "$PARENT_URL" "$PARENT_REF")
+          if [[ -z "$remote" || "$remote" == *$'\n'* ]]; then
+            echo "Could not resolve a single parent ref"
+            exit 1
+          fi
+          sha=${remote%%[[:space:]]*}
+          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Resolved parent ref is not a commit SHA"
+            exit 1
+          fi
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Parent"
+            echo "- ref: \`${PARENT_REF}\`"
+            echo "- sha: \`${sha}\`"
+            echo "- repository_id: ${PARENT_REPOSITORY_ID}"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Checkout parent at resolved main
+        env:
+          PARENT_URL: https://github.com/myon-bioinformatics/myon-bioinformatics
+          PARENT_SHA: ${{ steps.parent.outputs.sha }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          export GCM_INTERACTIVE=never
+          work="$GITHUB_WORKSPACE/.parent-dispatch"
+          if [[ -e "$work" ]]; then
+            echo "unexpected parent checkout"
+            exit 1
+          fi
+          git init -q "$work"
+          git -C "$work" remote add origin "$PARENT_URL"
+          git -C "$work" fetch --depth 1 origin "$PARENT_SHA"
+          git -C "$work" checkout -q FETCH_HEAD
+          actual=$(git -C "$work" log -1 --format=%H)
+          if [[ "$actual" != "$PARENT_SHA" ]]; then
+            echo "fetched parent SHA mismatch"
+            exit 1
+          fi
+          test -f "$work/pilot/vendor_dispatch.py"
+      - name: Verify vendor lock
+        env:
+          PARENT_SHA: ${{ steps.parent.outputs.sha }}
+        run: |
+          set -euo pipefail
+          python -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'
+          node_major=$(node -p "process.versions.node.split('.')[0]")
+          if [[ "$node_major" -lt 24 ]]; then
+            echo "node is older than 24"
+            exit 1
+          fi
+          command -v uv >/dev/null
+          echo "parent_sha=${PARENT_SHA}"
+          out="${RUNNER_TEMP}/vendor-dispatch.json"
+          set +e
+          python "$GITHUB_WORKSPACE/.parent-dispatch/pilot/vendor_dispatch.py" \
+            --manifest "$GITHUB_WORKSPACE/vendor.lock.json" | tee "$out"
+          status=${PIPESTATUS[0]}
+          set -e
+          DISPATCH_REPORT="$out" python - <<'PY'
+          import json
+          import os
+          report = json.load(open(os.environ["DISPATCH_REPORT"], encoding="utf-8"))
+          skips = [row for row in report["entries"] if row["action"] == "skip"]
+          errors = [row for row in report["entries"] if row["action"] == "error"]
+          print("skip_count=" + str(len(skips)))
+          for row in skips:
+              print("skip\t" + row["repository"] + "\t" + row["source"] + "\t" + row["reason"])
+          print("error_count=" + str(len(errors)))
+          for row in errors:
+              print("error\t" + row["repository"] + "\t" + row["source"] + "\t" + row["reason"])
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              lines = ["", "### Vendor dispatch skips", ""]
+              if skips:
+                  for row in skips:
+                      lines.append("- " + row["repository"] + " " + row["source"] + ": " + row["reason"])
+              else:
+                  lines.append("- none")
+              lines.append("")
+              lines.append("error_count=" + str(len(errors)))
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("\n".join(lines) + "\n")
+          PY
+          exit "$status"

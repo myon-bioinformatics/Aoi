@@ -1,0 +1,275 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><link href="/vdbvo2/faces/en/javax.faces.resource/themes/sam/theme.css?ln=icefaces.ace" rel="stylesheet" type="text/css" /><script src="/vdbvo2/faces/en/javax.faces.resource/jsf.js?ln=javax.faces&amp;v=220841323" type="text/javascript"></script><script src="/vdbvo2/faces/en/javax.faces.resource/icepush.js?v=220841323" type="text/javascript"></script><script src="/vdbvo2/faces/en/javax.faces.resource/bridge.js?v=220841323" type="text/javascript"></script><script src="/vdbvo2/faces/en/javax.faces.resource/compat.js" type="text/javascript"></script><script src="/vdbvo2/faces/en/javax.faces.resource/icefaces-compat.js" type="text/javascript"></script>
+      <meta content="no-cache" http-equiv="pragma" />
+      <meta content="width=device-width" name="viewport" />
+     
+  <title>Statistics VDB</title>
+     
+  <script> window.ctxRoot = '/vdbvo2'; window.kodjaz = '8260'; window.verze = '2.1.88'; </script>
+      <link href="/vdbvo2/min/libs-2.1.88.css?2.1.88" media="all" rel="stylesheet" type="text/css" />
+      <link href="/vdbvo2/min/statistikyhandler-2.1.88.css?2.1.88" media="all" rel="stylesheet" type="text/css" />
+    <script src="/vdbvo2/min/libs-2.1.88.js?2.1.88" type="text/javascript"></script>
+    <script src="/vdbvo2/min/statistikyhandler-2.1.88.js?2.1.88" type="text/javascript"></script>
+  <script type="text/javascript">
+    var i18n = {"novy-quickparam":"New choice","test":"\u003css"};
+    $(function(){ setTimeout(function(){ window.onbeforeunload = null; }, 500); /* ice.dispose.window */ });
+  </script></head><body class="kodjaz8260 page-statistiky">
+       <div class="loading fixedLoadingSpinner" style="display: block;">
+         <span>
+           <img alt="Loading ..." src="./img/loading45.gif" title="Loading ..." />
+         </span>  
+       </div>
+<form action="/vdbvo2/faces/en/index.jsf" enctype="application/x-www-form-urlencoded" id="j_idt54" method="post" name="j_idt54">
+<input name="j_idt54" type="hidden" value="j_idt54" />
+<input name="ice.window" type="hidden" value="3d_1792912595566" /><input name="ice.view" type="hidden" value="v3nhe9745nr" /><script id="j_idt54:j_idt54_captureSubmit" type="text/javascript">ice.captureSubmit('j_idt54',false);ice.captureEnterKey('j_idt54');</script><div class="icePnlGrp container" id="j_idt54:j_idt55"><div class="icePnlGrp main" id="j_idt54:j_idt56"><div class="icePnlGrp header-fixed" id="j_idt54:j_idt57"><div class="icePnlGrp header" id="j_idt54:j_idt58"><div class="icePnlGrp header-left" id="j_idt54:j_idt59">
+                  <a class="logo" href="http://www.czso.cz" target="_blank" title="Czech Statistical Office"></a>
+                  <a class="logo-text DBNAZEV" href="/vdbvo2/faces/en/index.jsf?page=home" style="text-decoration: none;"><span class="iceOutTxt" id="j_idt54:j_idt61">Public database</span>
+                  </a></div><div class="icePnlGrp header-right" id="j_idt54:header-right:j_idt63"><div class="icePnlGrp header-right-mutace" id="j_idt54:header-right:j_idt64">     
+          <a class="ODKAZ_SEDY notLoading kodjazX8260" href="/vdbvo2" onclick="this.href = window.location.href.replace(/\/en\//,'/')" title="Česky"><span class="iceOutTxt" id="j_idt54:header-right:j_idt66">Česky</span></a></div><div class="icePnlGrp header-right-vyhledavani" id="j_idt54:header-right:j_idt68">
+  <div class="pole-vyhledavani">
+    <div class="polickolbg">
+      
+      <script charset="UTF-8" type="text/javascript">
+        var termDefault = '';
+         
+        jQuery(function() {
+           var naseptavacInput = jQuery('#obalka-input');
+           
+          
+           naseptavacInput.keydown(function(event){
+               if (jQuery(event.target).attr("id") != 'obalka-input')
+                 return;
+
+               if(event.keyCode == 13)
+               {
+                 event.preventDefault();
+               
+                 if (jQuery(event.target).val() == termDefault)
+                   return false;
+                 
+                 if (jQuery(event.target).val().trim().length < 2)
+                 {
+                   alert('Enter at least 2 characters to start searching!');
+                   return false;
+                 }
+                 else
+                 {
+                   var url = '/vdbvo2/faces/en/index.jsf?page=vyhledavani&katalog=all&vyhltext=' + encodeURIComponent(jQuery('#obalka-input').val()) + '';
+window.location.href=url;
+                   return false;
+                 }
+               }
+             });        
+           
+             
+        });
+        
+        jQuery('#obalka-input_button').livequery(function (){
+          jQuery(this).on('click', function(event){
+               event.preventDefault();
+          
+               nas = jQuery('#' + jQuery(this).attr('naseptavacid'));
+               if (nas.val() == termDefault)
+                   return false;
+               
+               if (nas.val().trim().length < 2)
+               {
+                 alert('Enter at least 2 characters to start searching!');
+               }
+               else
+               {
+                 var url = '/vdbvo2/faces/en/index.jsf?page=vyhledavani&katalog=all&vyhltext=' + encodeURIComponent(jQuery('#obalka-input').val()) + '';
+window.location.href=url;
+               }  
+               
+               return false;
+             });
+        });
+        
+      </script>
+      
+      <table cellpadding="0" cellspacing="0" class="hledtbl">
+        <tr>
+          <td>
+            <div class="polickocbg">
+              <input class="vyhledavani-input" id="obalka-input" size="30" type="text" />
+            </div>
+          </td>
+          <td class="submitcell">
+            <div class="polickorbg">
+              <a class="vyhledavani-submit vyhledavani-submit-a vyhledavani-submit" href="#" id="obalka-input_button" naseptavacid="obalka-input" title="Start searching"></a>
+            </div>  
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div></div><div class="icePnlGrp header-right-odkazy" id="j_idt54:header-right:j_idt75">
+      <ul class="vertical-navigation" style="z-index: 100001;">
+         
+        <li>
+          
+          
+          <a class="ODKAZ_SEDY notLoading" href="/vdbvo2/faces/en/index.jsf?page=faq" title="FAQ">FAQ</a>
+                  
+                  
+        </li>
+        <li class="kontakty">
+          <a class="notLoading" href="#"><span class="iceOutTxt ODKAZ_SEDY notLoading" id="j_idt54:header-right:j_idt79" title="Contacts">Contacts</span></a>
+          <ul>
+              <li>
+              <a class="ODKAZ_SEDY notLoading" href="mailto:vdb@czso.cz?subject=Question on portal (Catalog: )" title="vdb@czso.cz">Technical assistance</a>
+            </li>
+              <li>
+              <a class="ODKAZ_SEDY notLoading" href="mailto:infoservis@czso.cz?subject=Question on VDB (Catalog: )" title="infoservis@czso.cz">General information</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a class="ODKAZ_SEDY notLoading" href="javascript:openJsWindow('napovedapop');logujPristup('NAPOVEDA');" title="Help">Help</a>
+        </li>
+         
+      </ul></div></div></div><div class="icePnlGrp topmenu" id="j_idt54:j_idt92"><div class="icePnlGrp menu-odkazy" id="j_idt54:menu-odkazy-header:j_idt93">
+    <ul>
+      <li class="polozka home">
+        <a class="HLAVNIODKAZ home home" href="/vdbvo2/faces/en/index.jsf?page=home" title="Home"><span class="iceOutTxt" id="j_idt54:menu-odkazy-header:j_idt95" title="Home"></span>
+        </a>
+      </li>  
+      <li class="polozka-selected">
+        <a class="menu-header-statistiky-link HLAVNIODKAZ-selected" href="/vdbvo2/faces/en/index.jsf?page=statistiky" title="Pre-defined output from PDB"><span class="iceOutTxt" id="j_idt54:menu-odkazy-header:j_idt97" title="Pre-defined output from PDB">Statistics</span>
+        </a>
+      </li>  
+      <li class="polozka">
+        <a class="HLAVNIODKAZ" href="/vdbvo2/faces/en/index.jsf?page=profil-uzemi" title="Territory profile"><span class="iceOutTxt" id="j_idt54:menu-odkazy-header:j_idt99" title="Territory profile">All about territory</span>
+        </a>
+      </li>
+      <li class="polozka">
+        <a class="HLAVNIODKAZ" href="/vdbvo2/faces/en/index.jsf?page=uziv-dotaz#new" title="Customized output for selected indicators, territory and period"><span class="iceOutTxt" id="j_idt54:menu-odkazy-header:j_idt101" title="Customized output for selected indicators, territory and period">Customized selection</span>
+        </a>
+      </li>
+      <li class="polozka">
+        <a class="HLAVNIODKAZ" href="/vdbvo2/faces/en/index.jsf?page=metodika-uvod" title="List of statistical indicators, their definitions and links to the relevant pre-defined outputs"><span class="iceOutTxt" id="j_idt54:menu-odkazy-header:j_idt103" title="List of statistical indicators, their definitions and links to the relevant pre-defined outputs">Indicators</span>
+        </a>
+      </li>                                
+                                      
+    </ul></div><div class="icePnlGrp menu-vedlejsi" id="j_idt54:j_idt117">
+                  <ul class="vertical-navigation" style="z-index: 100000;">
+                    <li style="z-index: 150;">
+                      <a class="HLAVNIODKAZ" href="javascript:doLogIn()" id="registrace-link" style="display: none" text="Log in / Registration" titlein="Log in / Registration" titleout="Logged-in user"><span>Log in / Registration</span></a>
+                    </li>  
+                  </ul>  
+                  
+                  <div id="login-holder" style="display: none">
+                    <ul id="user-options">
+                      <li class="opt-saved-pvo" data-handle-add="Add to favourite objects" data-handle-remove="Remove from favourite objects"><a class="ODKAZ" href="javascript:openJsWindow('udlist', 'typPref=300')" title="Click to show the favourite objects">Favourite objects</a></li>
+                      <li class="opt-saved-ud"><a class="ODKAZ" href="javascript:openJsWindow('udlist', 'typPref=200')" title="Click to show customized selections">Saved customized selections</a></li>
+                        <li><a class="ODKAZ" href="javascript:openJsWindow('userprofile');" title="Account management (password change, email notifications)">My Account</a> </li>
+                      <li><a class="ODKAZ" href="javascript:doLogOut()" title="Log out">Log out</a> </li>
+                    </ul>  
+                  </div>
+                  <div id="username-holder" style="display: none"></div></div></div><div class="icePnlGrp drobeckova-navigace" id="j_idt54:drobeckova-navigacedrob-index:j_idt125"><a class="DROBNAV" href="/vdbvo2/faces/en/index.jsf?page=home" id="j_idt54:drobeckova-navigacedrob-index:j_idt126:0:_t128" name="j_idt54:drobeckova-navigacedrob-index:j_idt126:0:_t128" title="Page: Home">Home</a><span id="j_idt54:drobeckova-navigacedrob-index:j_idt126:1:_t127">&#160;&gt;&#160;</span><span class="iceOutTxt DROBNAVAKT" id="j_idt54:drobeckova-navigacedrob-index:j_idt126:1:j_idt129" title=" Statistics">Statistics</span></div>
+              <hr class="cleaner" /><div class="icePnlGrp page-header" id="j_idt54:j_idt132">
+                <hr class="cleaner" /></div>  
+              
+              
+              <hr class="cleaner" /></div>  
+            <hr class="cleaner" /><div class="icePnlGrp data" id="j_idt54:j_idt246"><div class="icePnlGrp statistiky" id="j_idt54:statistiky:j_idt291">
+    <table class="layout-table">
+      <tr>
+        <td class="left" style="vertical-align: top; /* parametr stat.strom.leva... */ width: 300px;">
+        <div class="stat-left">
+          
+          <div class="div-oblibene hidden-spec-folder" id="folder-oblibene">
+              <a class="MODRYODKAZ oblibene-polozky " href="./index.jsf?page=statistiky&amp;katalog=obl&amp;kodjaz=8260">Favourite objects</a>
+          </div>
+          <div class="hidden-spec-folder" id="folder-ulozene-ud">
+              <a class="MODRYODKAZ ulozene-ud " href="./index.jsf?page=statistiky&amp;katalog=ud&amp;kodjaz=8260">Saved customized selections</a>
+          </div>
+          
+          <div id="stat_tree" params="?page=statistiky&amp;kodjaz=8260&amp;"></div>
+          
+          <a class="MODRYODKAZ vsechny-objekty " href="javascript: loadAllPvoTables('./statistiky-embed.jsf?page=statistiky&amp;kodjaz=8260&amp;');">All tables ungrouped</a>
+        </div>
+        </td>
+        
+        <td class="right" id="right-content">
+          
+        </td>
+        
+      </tr>
+    </table></div></div></div></div><div class="icePnlGrp paticka" id="j_idt54:j_idt633">
+          <div class="paticka-left">
+              
+            
+            <span class="paticka_logo_in" id="logo2">
+              <a class="notLoading" href="http://ec.europa.eu/" target="_blank">
+                <img alt="European Regional Development Fund" src="./img/eu_paticka.png" title="European Regional Development Fund" width="282" />
+              </a>
+            </span>  
+          </div>
+          
+          
+          
+          <div class="paticka-right"> 
+            <div class="statistika">
+              <div id="podminky"><a class="ODKAZ_SEDY" href="https://www.czso.cz/csu/czso/conditions_for_use_and_further_dissemination" target="_blank">Conditions for use of CZSO data</a>
+                
+              </div>
+              <div class="paticka-radkovani" id="gdpr-link"><a class="ODKAZ_SEDY" href="javascript:gdprDialog()" title="Cookie usage in Public database application">Information about cookie usage</a>
+              </div>
+            </div>
+          
+            <div class="aplikace">
+              <div data-gen-str="Generated" data-t="1792912595622" data-t-str="Oct 25, 2026 at 08:16:35" data-zdroj-tisk="Source: Czech Statistical Office, Public database" id="gen"><span class="iceOutTxt" id="j_idt54:j_idt639">Generated Oct 25, 2026 at 08:16:35</span>
+              </div>
+              
+              <div class="paticka-radkovani" id="verze">
+                 <a class="ODKAZ_SEDY" href="javascript:openJsWindow('verzepop')" title="vdb 2.1.88 (VDBE.CSU)">vdb 2.1.88 (VDBE.CSU)
+                </a>
+              </div>
+            </div>  
+          </div></div><a class="iceCmdLnk" href="javascript:;" id="j_idt54:j_idt673" onblur="setFocus('');" onclick="var form=formOf(this);form['j_idt54:j_idcl'].value='j_idt54:j_idt673';form['IDENT'].value='null';form['TYPLNK'].value='null';iceSubmit(form,this,event);form['j_idt54:j_idcl'].value='';form['IDENT'].value='';form['TYPLNK'].value='';return false;" onfocus="setFocus(this.id);"></a><span id="j_idt54hdnFldsDiv"><input name="icefacesCssUpdates" type="hidden" value="" /><input name="IDENT" type="hidden" /><input name="j_idt54:j_idcl" type="hidden" /><input name="TYPLNK" type="hidden" /></span><input type="hidden" name="javax.faces.ViewState" id="javax.faces.ViewState" value="-7556283368591562162:-8211309191444117090" autocomplete="off" />
+</form>
+
+      <div id="popuwindow"> 
+      </div>
+      
+       <span id="index-texty">{ &#34;logout&#34;      : &#34;log out&#34;,
+                                &#34;close_text&#34;  : &#34;Close&#34;,
+                                &#34;info&#34;        : &#34;Message&#34;,
+                                &#34;varovani&#34;    : &#34;Warning&#34;,
+                                &#34;chyba&#34;       : &#34;Error&#34;,
+                                &#34;running&#34;     : &#34;Previous request is already running, wait for its completion&#34;}</span>
+                                
+       <span id="gdpr-texty">{ &#34;gdpr_cookie&#34;  : &#34;VDB_COOKIE_SUPPORT&#34;,
+                               &#34;gdpr_expiry&#34;  : &#34;9480&#34;,
+                               &#34;gdpr_header&#34;  : &#34;Information about cookie usage&#34;,
+                               &#34;gdpr_text&#34;    : &#34;The Public database uses only the necessary cookies to ensure the operation of the website. You can find a description of individual cookies, their processing time and other information on page&#34;,
+                               &#34;gdpr_lnk_txt&#34; : &#34;More about cookies&#34;,
+                               &#34;gdpr_lnk_url&#34; : &#34;https://www.czso.cz/csu/czso/more-about-cookies&#34;,
+                               &#34;gdpr_secure&#34;  : &#34;true&#34;}</span><!-- Logovani pristupu --><script type="text/javascript"> 
+    logujPristup('STATISTIKY');
+</script><!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="https://mone.statistika.cz/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '5']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<noscript><p><img src="https://mone.statistika.cz/matomo.php?idsite=5&amp;rec=1" style="border:0;" alt="" /></p></noscript>
+<!-- End Matomo Code --><!-- Konec logovani -->
+      <script type="text/javascript">
+        
+      </script><span id="dynamic-code-compat"><script type="text/javascript"></script></span><span id="v3nhe9745nr_icefaces_config"><script>ice.setupBridge('v3nhe9745nr_icefaces_config', 'v3nhe9745nr', '3d_1792912595566', {deltaSubmit: false,disableDefaultErrorPopups: false,standardFormSerialization: false,sendDisposeWindow: true,blockUIOnSubmit: false});</script></span>
+<form action="/vdbvo2/faces/en/index.jsf" id="v3nhe9745nr" method="post" name="v3nhe9745nr">
+<input name="v3nhe9745nr" type="hidden" value="v3nhe9745nr" />
+<input name="ice.window" type="hidden" value="3d_1792912595566" /><input name="ice.view" type="hidden" value="v3nhe9745nr" /><script id="v3nhe9745nr:v3nhe9745nr_captureSubmit" type="text/javascript">ice.captureSubmit('v3nhe9745nr',false);ice.captureEnterKey('v3nhe9745nr');</script><input type="hidden" name="javax.faces.ViewState" id="javax.faces.ViewState" value="-7556283368591562162:-8211309191444117090" autocomplete="off" />
+</form><span id="v3nhe9745nr_icepush"><script type="text/javascript">ice.push.configuration.contextPath="/vdbvo2";ice.push.configuration.blockingConnectionURI="/vdbvo2/faces/en/javax.faces.resource/listen.icepush.xml";ice.push.configuration.createPushIdURI="/vdbvo2/faces/en/javax.faces.resource/create-push-id.icepush.txt";ice.push.configuration.notifyURI="/vdbvo2/faces/en/javax.faces.resource/notify.icepush.txt";ice.push.configuration.addGroupMemberURI="/vdbvo2/faces/en/javax.faces.resource/add-group-member.icepush.txt";ice.push.configuration.removeGroupMemberURI="/vdbvo2/faces/en/javax.faces.resource/remove-group-member.icepush.txt";</script></span><span id="v3nhe9745nr_icefaces_compat_config"><script type="text/javascript">ice.DefaultIndicators({connectionLostRedirectURI: null,sessionExpiredRedirectURI: null,connection: { context: '/vdbvo2/'},messages: {sessionExpired: 'User Session Expired',connectionLost: 'Network Connection Interrupted',serverError: 'Server Internal Error',description: 'To reconnect click the Reload button on the browser or click the button below',buttonText: 'Reload'}},'v3nhe9745nr_icefaces_compat_config');</script></span></body>
+  </html>

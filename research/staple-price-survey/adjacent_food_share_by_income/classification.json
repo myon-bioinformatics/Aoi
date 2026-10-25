@@ -1,0 +1,897 @@
+{
+  "schema_version": 2,
+  "original_fields": [
+    "country",
+    "date",
+    "year",
+    "variable",
+    "value",
+    "unit",
+    "source",
+    "note",
+    "estimated_value"
+  ],
+  "original_rows_sha256": "7545125729522d695d7f2d53a0e417aabffd4cb666dbcbfef78c34fce97f2dcd",
+  "source_contracts": {
+    "[\"ARG\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"ARM\",\"Armstat ILCS 2024 Social Snapshot Ch.3 Table 3.11\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"AUT\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"AZE\",\"Azərbaycan Respublikasının Dövlət Statistika Komitəsi — Ev təsərrüfatları tədqiqatının yekunları 2025 (Cədvəl 59/61)\",\"d\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"AZE\",\"Azərbaycan Respublikasının Dövlət Statistika Komitəsi — Ev təsərrüfatları tədqiqatının yekunları 2025 (Cədvəl 59/61)\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"BEL\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"BGR\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"BOL\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"BRA\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"CAN\",\"Statistics Canada Survey of Household Spending (SHS) / Table 11-10-0223-01 via The Daily\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"CHE\",\"Swiss FSO HBS (bfs.admin.ch) dépenses par classe de revenu\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "class",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"CHL\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"COL\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"CRI\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"CYP\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"CZE\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"DEU\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"DNK\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"DOM\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"EGY\",\"Egypt CAPMAS HIECS 2012/2013 Inequality in Expenditure Patterns bulletin\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"ESP\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"EST\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"EUZ\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"FJI\",\"Fiji Bureau of Statistics HIES 2019-20 Table 20\",\"d\"]": {
+      "stratifier": "consumption",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"FRA\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"GBR\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"GBR\",\"Defra Family Food (GOV.UK CSV)\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": "defra"
+    },
+    "[\"GBR\",\"ONS Family Spending workbook 2 Table A8\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"GMB\",\"GBoS Gambia IHS 2015/16 Volume III Table 4.8\",\"d\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"GRC\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"GTM\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"HKG\",\"Censtatd Hong Kong 2019/20 Household Expenditure Survey Chart 3 / §1.21 (expenditure quartiles)\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quartile",
+      "bucket_count": 4,
+      "series_variant": ""
+    },
+    "[\"HND\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"HRV\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"HUN\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"IDN\",\"BPS Susenas March 2022 (via CNBC Indonesia citing BPS)\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"IDN\",\"BPS Susenas March 2023 (via CNBC Indonesia citing BPS)\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"IDN\",\"BPS Pengeluaran untuk Konsumsi Penduduk Indonesia (Susenas) via Kompas 2026-10-06\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"IND\",\"MOSPI HCES 2022-23 Table A6 + Table A2\",\"d\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"IND\",\"MOSPI HCES 2022-23 Table A6 + Table A2\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"IRL\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"ISR\",\"CBS Israel HES 2021 Table 1.1 / Intro D2\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"ITA\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"LBN\",\"CAS Lebanon + World Bank — Measuring poverty in Lebanon using 2011 HBS (Table A5)\",\"q\"]": {
+      "stratifier": "consumption",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"LBR\",\"LISGIS Liberia HIES 2016 Table 3.6\",\"q\"]": {
+      "stratifier": "consumption",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"LKA\",\"DCS Sri Lanka HIES 2016 Final Report Table 3.13 (income decile food / total expenditure)\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"LKA\",\"DCS Sri Lanka HIES 2019 Final Report Table 3.13 (income decile food / total expenditure)\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"LTU\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"LUX\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"LVA\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MDA\",\"Moldova NBS CBGC 2024 (Aspecte nivel trai Edition 2025) structure by quintiles\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MDA\",\"Moldova NBS CBGC 2025 (Aspecte nivel trai Edition 2026) Table 7.26\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MDG\",\"INSTAT Madagascar EPM 2021-2022 Graphique 7.2\",\"q\"]": {
+      "stratifier": "welfare",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MEX\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MKD\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MLT\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MMR\",\"CSO Myanmar MLCS 2017 Figure 2-2b\",\"q\"]": {
+      "stratifier": "consumption",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MNE\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MUS\",\"Statistics Mauritius HBS 2023 Analytical Report Table 5.2.3\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"MYS\",\"DOSM Household Expenditure Survey Report 2022 Table 1.13 (income quintiles)\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"NIC\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"NLD\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"NOR\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"NPL\",\"CBS Nepal NLSS 2010/11 via WFP Nepal Food Security Monitoring Table 18\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"PAK\",\"PBS Pakistan HIES 2015-16 Table 15 (consumption quintiles; Food & Non Alcoholic Beverages)\",\"q\"]": {
+      "stratifier": "consumption",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"PAK\",\"PBS Pakistan HIES 2018-19 Table 15 (consumption quintiles; Food & Non Alcoholic Beverages)\",\"q\"]": {
+      "stratifier": "consumption",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"PAN\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"PER\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"PHL\",\"PSA FIES 2023 Table 7 (bettergov OpenSTAT mirror of 0071E3ATME0.px)\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"PHL\",\"PSA FIES 2023 Table 7 (bettergov OpenSTAT mirror of 0071E3ATME0.px)\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"POL\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"PRT\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"PRY\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"ROU\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"RUS\",\"Rosstat Russia Household Budget Survey (via Roschart mirror of R_1-5_4k)\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"SDN\",\"CBS Sudan / FAO NBHS 2009 Table 3\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"SGP\",\"SingStat Table Builder D10072 (HES)\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"SLV\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"SRB\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"SVK\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"SVN\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"SWE\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"TCD\",\"INSEED Chad ECOSIT3 2011 Tableau 5.3\",\"q\"]": {
+      "stratifier": "welfare",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"THA\",\"NSO Thailand SES 2561 (2018) summary SD10_04_189_7\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"TJK\",\"Tajikistan GKS / FAO Food Insecurity Assessment 2005 HBS Annex Table 3\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"TTO\",\"CSO Trinidad and Tobago SLC 2005 Table 3.4\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"TUR\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"TZA\",\"NBS Tanzania HBS 2017-18 Mainland Table 6.7.1\",\"d\"]": {
+      "stratifier": "consumption",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"UKR\",\"SSSU Ukraine Expenditure and resources of households 2020 Table II.45 (money-income deciles)\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"UKR\",\"SSSU Ukraine Expenditure and resources of households 2021 Table II.45 (money-income deciles)\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"URY\",\"CEPALSTAT indicator 5725\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"URY\",\"INE Uruguay ENGIH 2016-2017 Principales Resultados Cuadro 31\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"USA\",\"BLS Consumer Expenditure Surveys (CE) published tables\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"USA\",\"BLS Consumer Expenditure Surveys (CE) published tables\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"VNM\",\"NSO Vietnam VHLSS 2022 Table 6.15 (income quintiles; Food+Foodstuff)\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"XKX\",\"Eurostat HBS_STR_T223\",\"q\"]": {
+      "stratifier": "income",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"ZAF\",\"Stats SA IES 1995 via DataFirst \\\"Earning and spending in South Africa\\\"\",\"q\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "quintile",
+      "bucket_count": 5,
+      "series_variant": ""
+    },
+    "[\"ZAF\",\"Stats SA IES 2022/23 P0100 Table 8.2.10 (HH expenditure deciles)\",\"d\"]": {
+      "stratifier": "expenditure",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    },
+    "[\"ZAF\",\"Stats SA IES 2022/23 P0100 Table 8.2.13 (HH income deciles)\",\"d\"]": {
+      "stratifier": "income",
+      "bucket_type": "decile",
+      "bucket_count": 10,
+      "series_variant": ""
+    }
+  },
+  "partial_series": [
+    {
+      "key": [
+        "CAN",
+        "2021-01-01",
+        "Statistics Canada Survey of Household Spending (SHS) / Table 11-10-0223-01 via The Daily",
+        "engel_share:food_income_quintile"
+      ],
+      "indices": [
+        1,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2005-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2006-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2007-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2008-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2009-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2010-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2011-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2012-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2013-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2014-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2016-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2017-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2018-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2019-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2020-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2021-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2022-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2023-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2024-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "GBR",
+        "2025-01-01",
+        "Defra Family Food (GOV.UK CSV)",
+        "engel_share:food_defra_income_quintile"
+      ],
+      "indices": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "key": [
+        "THA",
+        "2018-01-01",
+        "NSO Thailand SES 2561 (2018) summary SD10_04_189_7",
+        "engel_share:food_expenditure_quintile"
+      ],
+      "indices": [
+        1,
+        5
+      ]
+    }
+  ]
+}

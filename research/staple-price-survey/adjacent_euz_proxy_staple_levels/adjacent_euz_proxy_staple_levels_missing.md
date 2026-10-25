@@ -45,3 +45,27 @@ Public Eurostat HBS datasets under `hbs_exp_*` / `hbs_str_*` / `hbs_car_*` are *
 - Farm-gate / agricultural unit values `aact_uv*` / `apri_ap` (not retail)
 - Restricted HBS / Istat MFR microdata; ICP item-price application workflow
 - Aoi lanes; BEL redo; city-only DEU/ITA regional quotes; French fries / chips from Preisradar
+
+
+## Densify 2026-10-25 Asia/Tokyo (主食 append)
+
+- Extended **NLD** CBS 80345eng (milk/eggs/butter/cheese/margarine/pork/stewing steak/sugar).
+- Extended **AUT** Preisradar (milk/eggs/butter/olive oil/sugar/pork/beef).
+- Extended **FIN** StatFin 011 (milk/eggs/butter/oil/sugar/beef/pork/chicken).
+- Still thin / exhausted for new ISO3 proxies: BEL skipped; ITA/SWE exhausted; no new EA NSO bulk opens this turn.
+- Dead-ends unchanged: CAN StatCan TLS, KOR TLS — not retried.
+
+## Densify s3 2026-10-25 Asia/Tokyo (easy milk/eggs/meat/oil/sugar)
+
+- Extended **IRL** CPM12 (milk/eggs/butter/sugar/beef/pork/chicken).
+- Extended **ESP** INE 25169 + 73844 (milk/eggs/butter/oils/sugar/beef/pork/poultry).
+- Extended **FRA** INSEE BDM prix moyens food idbanks (milk/butter/oils/sugar/chicken/pork/beef rumsteak); eggs absents from famille.
+- **PRT**: Observatório `get_produtos` admin-ajax 400; only cereal/potato product ids already loaded — **exhausted easy**.
+- **DEU**: BMEL 5050850/5051000 open tables remain bread/flour/potato; Eier/Fleisch/Zucker nav present but no bulk national absolute table confirmed in short try — **exhausted easy** (no Destatis reopen).
+- ITA/SWE/BEL still CPI-only — not forced. ARE/BHR/KWT/OMN/SAU/JOR/CHN/VEN, CAN/KOR TLS — not forced.
+- Easy-open EUZ cereal-heavy densify for milk/eggs/meat/oil/sugar: **STOP**.
+
+## Tip hygiene (2026-10-25 Asia/Tokyo)
+
+- Coverage counts synced: **14911** rows / AUT·DEU·ESP·FIN·FRA·IRL·NLD·PRT.
+- Easy milk/eggs/meat/oil/sugar densify **STOP** (PRT/DEU thin; ITA/SWE/BEL CPI-only). No new digs this hygiene pass.

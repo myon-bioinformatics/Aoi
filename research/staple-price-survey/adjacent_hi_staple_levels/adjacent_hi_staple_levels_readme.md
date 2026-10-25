@@ -1,6 +1,6 @@
 # adjacent_hi_staple_levels — absolute staple retail prices (HI Big Mac gaps)
 
-Retrieved: 2026-10-24 Asia/Tokyo
+Retrieved: 2026-10-25 Asia/Tokyo (hygiene sync at tip after e731537)
 
 ## Hard rules
 
@@ -18,44 +18,38 @@ Retrieved: 2026-10-24 Asia/Tokyo
 
 Original gap-16 universe still listed in `missing.md` for cross-lane tracking.
 
-## Coverage (countries with ≥1 absolute staple series in this pack)
+## Coverage (tip hygiene)
 
-| ISO3 | Series | Source | Span (approx.) |
-|------|--------|--------|----------------|
-| **HKG** | `staple_price:rice_long_grain_kg`, `staple_price:rice_short_grain_kg` | HK C&SD Monthly Digest of Statistics Table 5.8 | annual + monthly through 2026-06 |
-| **MYS** | rice_10kg, wheat_flour_kg, potato_kg, bread_400g, maize_flour_400g | DOSM PriceCatcher (monthly mean across premises) | 2022-01–2026-09 |
-| **NZL** | rice_kg, wheat_flour_1_5kg, potato_kg, bread_700g, wheatmeal_bread_700g, pasta_500g | Stats NZ FPI weighted average retail (via figure.nz) | ~2006–2026 |
-| **SGP** | rice_5kg, bread_400g | SingStat M213761 Average Retail Prices of Selected Items | 2015-01 onward |
-| **QAT** | bread_700g, lebanese_bread_5pcs, wheat_flour_kg, wheat_flour_no1_kg, rice_5kg, rice_basmati_tilda_5kg, potato_kg | Qatar NPC / data.gov.qa annual average consumer prices (selected commodities) | 2017–2023 (as published) |
-| **TWN** | rice_3kg, wheat_flour_kg, white_toast_loaf, potato_catty | NDC e-invoice midpoints (monthly); Taipei potato 元/台斤 | recent monthly (see notes) |
+**Total rows: 3691** across **6** ISO3 (HKG, MYS, NZL, QAT, SGP, TWN).
 
-**Hit in this pack: 6** (HKG, MYS, NZL, QAT, SGP, TWN).  
-**Active-lane closed this turn: QAT, TWN.**  
-**Active-lane exhausted/blocked: ARE, BHR, KWT, OMN, EUZ.** See `missing.md`.
+| ISO3 | Rows | Series (examples) | Source | Span (approx.) |
+|------|------|-------------------|--------|----------------|
+| **HKG** | 190 | rice_long_grain_kg, rice_short_grain_kg | HK C&SD MDS Table 5.8 | ~2016–2026-04 |
+| **MYS** | 230 | rice_10kg, wheat_flour_kg, potato_kg, bread_400g, maize_flour_400g | DOSM PriceCatcher monthly premise mean | 2022-01–2026-09 |
+| **NZL** | 1512 | rice_kg, wheat_flour_1_5kg, potato_kg, bread_700g (to 2014-08), bread_600g_cheapest, wheatmeal_bread_700g, pasta_500g | Stats NZ FPI via figure.nz | ~2006–2026-06 |
+| **SGP** | 1551 | rice_5kg, bread_400g, instant_noodles_5pack, lean_pork/ribeye/chicken chilled, fresh_milk_l, hen_eggs_10, cooking_oil_2kg, potato_kg, white_sugar_2kg | SingStat M213761 | 2015-01–2026-09 |
+| **QAT** | 85 | bread/Lebanese bread, flours, rice 5kg, potato; + milk/eggs/sugar/corn oil/chicken/mutton densify | PSA/NPC annual average consumer prices | 2017–2023 annual |
+| **TWN** | 123 | rice_3kg, wheat_flour_kg, white_toast_loaf, potato_catty | NDC e-invoice midpoints; Taipei potato 元/台斤 | ~2022–2025 |
 
-Build stats: `2385` rows; countries_with_series=['HKG', 'MYS', 'NZL', 'QAT', 'SGP', 'TWN'].
+**Active-lane exhausted/blocked (not forced):** ARE, BHR, KWT, OMN, EUZ (EUZ staples live in sibling `adjacent_euz_proxy_staple_levels`). See `missing.md`.
+
+## Hygiene (2026-10-25 Asia/Tokyo)
+
+- Schema header verified: `country,date,year,variable,value,unit,source,note,estimated_value`; all `estimated_value` empty; csv/gz row counts match.
+- **NZL** `staple_price:bread_700g` key clash fixed: figure.nz had two white-loaf measures under one variable — **700 g weighted average** (99 months, 2006-06–2014-08) kept as `bread_700g`; **600 g cheapest-brand** (241 months) re-labelled `bread_600g_cheapest` (unit NZD per 600 g). No invented fills; no other ISO3 changed.
+- No new country digs this hygiene pass.
 
 ## Files
 
 - `adjacent_hi_staple_levels_vertical.csv` (+ `.gz`)
-- `build_hi_staple_levels.py`
-- `_build_stats.json`
-- `raw/` — SingStat JSON, DOSM months + lookup, HK MDS, NZ figure.nz, Qatar CSV, NDC/Taipei, Eurostat/GCC probes
-- Mirror: `/workspace/aoi-phase2/staple-price-survey/adjacent_hi_staple_levels/` (light raw; full DOSM only in primary path)
+- `build_hi_staple_levels.py` / densify append scripts
+- `raw/` — SingStat, DOSM, HK MDS, figure.nz white-bread extract, Qatar CSV, NDC/Taipei, probes
+- `adjacent_hi_staple_levels_missing.md`
 
-## Eurostat (attempted; EUZ)
+## Notes
 
-Open bulk for **absolute** retail food product prices was **not found**.  
-`prc_fpmt_m` (Food Price Monitoring Tool) downloads successfully but units are only `I25` (index) / `RCH_*` (rates) — **not LCU levels**.  
-Historical one-off Detailed Average Prices (`prc_dap*`, ~2008–2015) is discontinued and not an ongoing euro-area series — not loaded.  
-`prc_fsc_*` codes 404 on the SDMX API; HICP annual is index/rates only.  
-Agricultural absolute prices (`apri_ap`) are farm-gate, not retail — excluded.
-
-## Notes on secured series
-
-- **MYS**: PriceCatcher is premise-level; pack uses monthly **mean** of positive prices for fixed SKUs chosen by observation count. Not a CPI.
-- **NZL**: figure.nz republishes Stats NZ “selected monthly weighted average prices”; values kept as NZD per published pack.
-- **HKG**: rice only from Table 5.8 ($/kg).
-- **SGP**: Premium Thai Rice per 5 kg; Wholemeal Bread per 400 g.
-- **QAT**: Annual averages in QAR as published; pack sizes kept in `variable`/`unit` (700 g bread, 5-piece Lebanese bread, 1 kg flour/potato, 5 kg rice). Commodity spelling variants collapsed by substring match.
-- **TWN**: NDC e-invoice midpoint monthly for rice 3 kg / flour kg / white toast; Taipei potato in 元 per 台斤 (catty). MOA RicepriceData still TLS-blocked (not used).
+- **MYS**: PriceCatcher premise-level monthly mean; not a CPI.
+- **NZL**: figure.nz republishes Stats NZ selected monthly weighted average prices; pack sizes kept as published (700 g vs 600 g cheapest are distinct variables after hygiene).
+- **SGP**: densify append added milk/eggs/meat/oil/sugar/potato/noodles on top of rice/bread.
+- **QAT**: Annual QAR averages; densify s3 added milk/eggs/sugar/oil/chicken/mutton from already-downloaded NPC CSV.
+- **TWN**: NDC e-invoice midpoint monthly; Taipei potato in 元 per 台斤. MOA RicepriceData TLS-blocked (not used).

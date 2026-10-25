@@ -1,0 +1,41 @@
+{
+  "rows": 911,
+  "by_country": {
+    "SGP": 207,
+    "IRL": 177,
+    "QAT": 36,
+    "MYS": 491
+  },
+  "countries": [
+    "IRL",
+    "MYS",
+    "QAT",
+    "SGP"
+  ],
+  "variables": [
+    "household_sku:body_soap_dettol_500ml",
+    "household_sku:body_soap_lifebuoy_300ml",
+    "household_sku:coffee_hang_tuah_200g",
+    "household_sku:coffee_instant_200g",
+    "household_sku:coffee_instant_nescafe_bottle",
+    "household_sku:coffee_kapal_api_180g",
+    "household_sku:coffee_tenom_180g",
+    "household_sku:dish_soap_axion_350g",
+    "household_sku:dish_soap_sunlight_1000ml",
+    "household_sku:laundry_attack_800g",
+    "household_sku:laundry_breeze_750g",
+    "household_sku:laundry_detergent_ariel",
+    "household_sku:laundry_fab_720g",
+    "household_sku:laundry_liquid_detergent_kg",
+    "household_sku:shampoo_head_shoulders",
+    "household_sku:soap_bath_lux_unit",
+    "household_sku:tea_bags_80",
+    "household_sku:tea_bags_lipton_pack",
+    "household_sku:tea_lipton_bags_100",
+    "household_sku:tea_loose_brooke_bond_pack",
+    "household_sku:tea_teh_boh_bags_100",
+    "household_sku:tea_teh_boh_powder_500g",
+    "household_sku:tissue_kleenex_50sx3",
+    "household_sku:toilet_paper_10rolls"
+  ]
+}

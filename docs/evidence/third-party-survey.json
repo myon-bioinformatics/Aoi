@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 978,
+      "attribute_uses": 982,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -747,11 +747,11 @@
         "fixture": 51,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 187,
+        "mark.parametrize": 189,
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 366,
+        "raises": 368,
         "skip": 8,
         "warns": 3
       },
@@ -880,21 +880,21 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 185,
+          "attribute_uses": 189,
           "attributes": {
             "approx": 41,
             "fail": 10,
             "fixture": 12,
             "importorskip": 1,
-            "mark.parametrize": 43,
+            "mark.parametrize": 45,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 68,
+            "raises": 70,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 23,
-          "import_sites": 23
+          "files": 24,
+          "import_sites": 24
         }
       },
       "declared": [
@@ -931,8 +931,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 101,
-      "import_sites": 102
+      "files": 102,
+      "import_sites": 103
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3038,6 +3038,17 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_research_loop.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 2,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_season_2026.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

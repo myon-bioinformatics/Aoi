@@ -377,6 +377,18 @@ jobs:
           test -x "$chromium"
           "$chromium" --version
           printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
+      # The runner image's Chromium (/usr/local/share/chromium, ~670 MB) is cold on a fresh VM: reading it took
+      # ~10 s, longer than the 8 s launch budget of test_stalled_dbus_does_not_block_browser_get_version, so the
+      # first launch failed while later launches passed. Read the tree once before the offline run (no browser
+      # launch, nothing about the test or the isolation changes).
+      - name: Read the Chromium files once so the first launch is not a cold start
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$(dirname "$(readlink -f "$CHROME")")"
+          start="$(date +%s)"
+          find "$dir" -type f -print0 | xargs -0 cat > /dev/null
+          echo "Read $(du -sm "$dir" | cut -f1) MB under $dir in $(( $(date +%s) - start )) s"
       - name: Require Chromium and render without a network namespace interface
         shell: bash
         run: |

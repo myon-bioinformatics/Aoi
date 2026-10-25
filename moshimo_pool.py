@@ -10,8 +10,9 @@ contrapositive that a registered proposition is judged by, and that is where the
 
 A zero cell puts two forms on the boundary at once (the counterexamples b are shared by original and contrapositive,
 c by converse and inverse), and an empty row or column leaves a form with no unit at all. The Moshimo Box refuses such
-a table: how to treat the boundary (the ε question) is not decided. This module counts them ahead of time, for the
-pool as a whole and against the cut of the top K, and substitutes nothing. rule_search itself gives an empty margin the
+a table unless an ε is given for a zero cell (moshimo_box ``--eps``; an empty row or column stays refused: 0/0 is
+undefined, not small). How to treat the boundary (the ε question) is not decided. This module counts them ahead of
+time, for the pool as a whole and against the cut of the top K, and substitutes nothing. rule_search itself gives an empty margin the
 score 0.0 without saying so; ``silent_zero_mcc`` counts those.
 
 The enumeration is plain Python integers as bit sets (numpy is not needed) and follows rule_search: the same units

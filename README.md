@@ -54,7 +54,7 @@ uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --o
 
 The input `--games` is an observation dataset (one game per line: `key, date, home, away, hs, as`, the form [QueRyu](https://github.com/myon-bioinformatics/QueRyu) builds), and `--config` is the analysis settings TOML including `[teams]`. If batting, fielding, or line score observations exist, `--batting`, `--fielding`, and `--linescore` add columns.
 
-Zero handling: a "vs. the other teams of the league" column is null (not NaN, not 0) when there is no other team to compare with. Any NaN or ±inf that still reaches the output table is turned into null and counted. `--meta-out <run.json>` records that count per column, the polars version, and the named tolerances (`TOLERANCES`: the values that used to be written as bare literals such as `1e-9`; the values are unchanged, and they are a record of what was used, not recommended values).
+Zero handling: a "vs. the other teams of the league" column is null (not NaN, not 0) when there is no other team to compare with. Any NaN or ±inf that still reaches the output table is turned into null and counted. `--meta-out <run.json>` records that count per column, the polars version, and the named tolerances (`TOLERANCES`: the values that used to be written as bare literals such as `1e-9`; the values are unchanged, and they are a record of what was used, not recommended values). `--wave-eps EPS` is opt-in and described under [ε](#ε-epsilon); without it the output is unchanged.
 
 ## Layout
 
@@ -68,6 +68,7 @@ Zero handling: a "vs. the other teams of the league" column is null (not NaN, no
 | `proposition_seed_audit.py`, `synthetic_rule_discovery.py` | Seed sensitivity of propositions, and tracking on synthetic data only (uses PythDRagoras) |
 | `moshimo_box.py` | Moshimo Box (もしもボックス) for proposition generation: dials for a proposition's converse, inverse and contrapositive rates. The original's rate has no dial; it is read out (optional readout uses PythDRagoras) |
 | `moshimo_pool.py` | Moshimo Pool (もしもプール): every formula a `rule_search` pool contains on its 2x2 table, a census by zero cells, and where the boundary formulas rank against the top-K cut. Stdlib + polars only (no numpy) |
+| `epsilon.py` | ε as a symbol: detects a value exactly on a boundary and, only when a caller passes an ε, lifts it inside. No default value, no numpy |
 | `tests/` | pytest |
 
 ## Moshimo Box (もしもボックス)
@@ -90,11 +91,11 @@ Three ways to use the other forms without touching the original:
 
 Mapping to classification metrics (A predicts, B is the target): original = precision, converse = recall, contrapositive = specificity, inverse = negative predictive value.
 
-The units are synthetic model checks (no randomness, never NPB observations). A dial must be strictly between 0 and 1; at the boundary a cell is empty, and how to treat that (the ε question) is not decided, so the box stops with a message instead of substituting a number. The same holds for real propositions: one with a form at exactly 0 or 1, or with an empty row or column (the condition holds for every unit, so there is no converse or inverse), is refused.
+The units are synthetic model checks (no randomness, never NPB observations). A dial must be strictly between 0 and 1; at the boundary a cell is empty. By default the box stops there with a message instead of substituting a number. The same holds for real propositions: one with a form at exactly 0 or 1 (a zero cell) or with an empty row or column (the condition holds for every unit, or never holds, so a form has no unit) is refused. Giving an ε changes only the zero-cell case (see [ε](#ε-epsilon)).
 
 ## Moshimo Pool (もしもプール)
 
-`pythdragoras/rule_search.py` tries every formula the candidate file allows, ranks them by MCC and keeps the top K; only those can be registered as propositions. Everything else never meets the converse, inverse and contrapositive a registered proposition is judged by, and it is where the zero cells are. A zero cell puts two forms on the boundary at once: `a = 0` makes the original and converse 0, `b = 0` makes the original and contrapositive 1 (no counterexample), `c = 0` makes the converse and inverse 1, `d = 0` makes the contrapositive and inverse 0. An empty row or column leaves a form with no unit (`rule_search` scores that table MCC 0.0 without saying so; `silent_zero_mcc` counts them). The Moshimo Box refuses such a table because the ε question is not decided; the pool counts them ahead of time and substitutes nothing.
+`pythdragoras/rule_search.py` tries every formula the candidate file allows, ranks them by MCC and keeps the top K; only those can be registered as propositions. Everything else never meets the converse, inverse and contrapositive a registered proposition is judged by, and it is where the zero cells are. A zero cell puts two forms on the boundary at once: `a = 0` makes the original and converse 0, `b = 0` makes the original and contrapositive 1 (no counterexample), `c = 0` makes the converse and inverse 1, `d = 0` makes the contrapositive and inverse 0. An empty row or column leaves a form with no unit (`rule_search` scores that table MCC 0.0 without saying so; `silent_zero_mcc` counts them). The Moshimo Box refuses an empty row or column always, and a zero cell unless an ε is given (`--eps`); the pool counts them ahead of time and substitutes nothing.
 
 ```bash
 uv run python moshimo_pool.py --season outputs/season.jsonl --config analysis.toml --candidates rule_candidates.toml --top 20 --list 10 --json pool.json
@@ -103,6 +104,27 @@ uv run python moshimo_pool.py --season outputs/season.jsonl --config analysis.to
 It reads the same inputs as `rule_search` (units with the config's `[[exclude]]` applied and empty values in used columns dropped, the same formulas, the same ordering key) and counts with Python integers as bit sets, so numpy is not needed (if a numpy-based step is ever needed in a lean environment, Aoi's `shrink/numpy_min.py` route applies). The census lists, per zero-cell pattern, the number of formulas, the number of different unit sets they pick (logically equivalent formulas pick the same units), the share, how many are in the top K, and which forms sit on the boundary; then the best-ranked boundary formulas with their rank by MCC (ties share a rank). A row without a boundary can be given to the box: `moshimo_box.anchor(row)`.
 
 On Aoi's c001 pools the top 20 match `outputs/rules.jsonl` and `outputs/rules_r21.jsonl` exactly (a test checks this when Aoi is present). As of 2026-10-25, with the R11 and R21 candidate files, no boundary formula reaches the top 20 in either: 515 of 9,730 formulas (220 different unit sets) and 22,218 of 1,198,337 (3,207 different unit sets).
+
+## ε (epsilon)
+
+ε is a symbol here. Its value, and how a lifted result should be treated afterwards, are not decided, so nothing in this repository picks a number: `eps` is always passed in by the caller, `None` (the default everywhere) means "do not lift", and with `None` the output tables are what they were before (when this was added the default output was compared with the pre-ε code and was identical; tests check that no `wave_lifted` column appears and that a fit off the boundary does not move at all). The only addition in the default run is the `epsilon` record in `--meta-out`, which says `None`. The boundary is still detected and counted with `None`, so the places where ε would matter are visible without choosing it.
+
+| Where | What is detected | What ε does (only when passed) |
+|---|---|---|
+| `sakanalytics.py --wave-eps EPS` (`season_trajectory(..., wave_eps=)`) | the undamped wave, λ = 0 (the fit's boundary rows) | replaces λ = 0 by ε in that row; a `wave_lifted` column says which fits were lifted; `--meta-out` records `epsilon` (the ε and how many fits sit on the boundary) |
+| `moshimo_box.py --ledger … --id … --eps EPS` (`table_of`, `anchor(record, eps)`) | a zero cell of a real proposition's 2x2 table (a rate exactly 0 or 1, its logit infinite) | the cell becomes ε units; the table is then exact (fractional cells: no unit list, no `--readout`); the lifted cells are printed and written to `--json` |
+
+What is lifted is a boundary of a parameter or of a table, and only a value that is exactly on it. What is not:
+
+- 0/0, an empty row or column of the table (including a condition that never holds). The quantity is undefined, not small; lifting `a` and `b` by the same ε would invent an original rate of 1/2. It stays null / refused.
+- A true zero in the data, or a value that is correctly 0 (`sin(0) = 0` at the first point of a wave: the angle is not a boundary of anything).
+- The denominator of a noisy ratio such as `k_eff = logit / log(RF/RA)`: lifting it drags the value toward a made-up number, so it stays null behind a named threshold (`K_EFF_MIN_LOG_RATIO`).
+
+Measured behaviour, so that the value can be decided later:
+
+- Wave fit: with λ = ε the end error and the rmse change linearly in ε, and the settling position grows like `x0 + ln(amp / WAVE_SETTLE) / ε` (it goes to infinity as ε → 0; the undamped wave never settles).
+- Moshimo Box: the logit-based numbers (the original's logit, the headroom `gap`) move with `log(1/ε)` (about 6.91 logit units between ε = 1e-3 and 1e-6), while `mcc` is defined at a zero cell and moves only by about ε. On Aoi's proposition ledger as of 2026-10-25, 57 of 114 propositions can be anchored without ε, P62 and P63 are the two zero-cell ones (ε needed), and the other 55 have an empty row (refused with or without ε).
+- ε too small for float64 (`50 / (50 + 1e-20)` is exactly 1) is refused with a message instead of silently staying on the boundary.
 
 ## Tests
 

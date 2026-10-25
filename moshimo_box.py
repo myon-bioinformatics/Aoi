@@ -33,8 +33,14 @@ Three ways to use it besides turning the dials by hand:
   number in logit units, and for each dial the value that would put the original exactly on the threshold with the
   other two held. The point estimate meeting the threshold is not the verdict flipping: the verdict also asks the
   confidence interval to clear it, and ``--readout`` shows the verdict at any dial value.
-* a proposition with an empty row or column in its table (the condition holds for every unit, so there is no
-  converse or inverse to turn), or a form at exactly 0 or 1, is refused: that boundary is the ε question.
+* a proposition with a form at exactly 0 or 1 (a zero cell: no counterexample, or nothing missed) is refused, and so
+  is one with an empty row or column (the condition holds for every unit, so there is no converse or inverse to
+  turn): that boundary is the ε question.
+* ``--eps 1e-6`` (with --ledger) is the opt-in answer for the zero cell only: the empty cell is lifted to ε (a count,
+  epsilon.lift) and the dials exist. ε's value is not decided, so nothing is lifted unless it is given, and it is never
+  defaulted. A lifted table has fractional cells ("exact"), so it has no units and no --readout. An empty row or column
+  stays refused: 0/0 is undefined, not small. The numbers that depend on ε are the logit-based ones (the original's
+  logit and the headroom move with log(1/ε)); the MCC is defined at a zero cell and moves only by about ε.
 
 Synthetic only: the units are model checks, never NPB observations. There is no randomness. A dial must be strictly
 between 0 and 1: at 0 or 1 a cell is empty and the table degenerates. How to treat that boundary (the ε question) is
@@ -54,6 +60,7 @@ import math
 from pathlib import Path
 
 import synthetic_league as sl
+from epsilon import check_eps, lift
 
 DIALS = ("converse", "inverse", "contrapositive")
 FORMS = ("original", "contrapositive", "converse", "inverse")
@@ -97,13 +104,18 @@ def rates(a: int, b: int, c: int, d: int) -> dict:
     return {f: (num / den if den else None) for f, (num, den) in _form_counts(a, b, c, d).items()}
 
 
-def build(*, converse, inverse, contrapositive, n) -> dict:
+def build(*, converse, inverse, contrapositive, n, exact=False) -> dict:
     """The 2x2 table of n synthetic units whose converse, inverse and contrapositive rates are the dials.
 
     Keyword-only on purpose: there is no ``original`` argument. Counts are the exact solution rounded to integers
     (largest remainder); ``dial_error`` is how far the realized rates are from the dials after that rounding.
+    ``exact=True`` keeps the unrounded solution instead (fractional cells, n any finite number above 0): a table with a
+    lifted cell (epsilon.py) has a cell of ε units, which no integer table can hold.
     """
-    if type(n) is not int or n < 4:
+    if exact:
+        if isinstance(n, bool) or not isinstance(n, (int, float)) or not math.isfinite(n) or n <= 0:
+            raise MoshimoError(f"n must be a finite number above 0 for an exact table, got {n!r}")
+    elif type(n) is not int or n < 4:
         raise MoshimoError(f"n must be an integer of at least 4, got {n!r}")
     dials = {name: _check_dial(name, value)
              for name, value in (("converse", converse), ("inverse", inverse), ("contrapositive", contrapositive))}
@@ -111,15 +123,18 @@ def build(*, converse, inverse, contrapositive, n) -> dict:
     # a/c = oc, d/c = oi, d/b = ocp. Scale c = 1.
     relative = {"a": oc, "b": oi / ocp, "c": 1.0, "d": oi}
     total = sum(relative.values())
-    counts = dict(zip(CELLS, sl._apportion([n * relative[k] / total for k in CELLS], n)))
-    if min(counts.values()) < 1:
-        raise MoshimoError(f"a cell rounds to 0 units with n={n} and dials {dials}; use a larger n or dials further from 0 and 1")
+    if exact:
+        counts = {k: n * relative[k] / total for k in CELLS}
+    else:
+        counts = dict(zip(CELLS, sl._apportion([n * relative[k] / total for k in CELLS], n)))
+        if min(counts.values()) < 1:
+            raise MoshimoError(f"a cell rounds to 0 units with n={n} and dials {dials}; use a larger n or dials further from 0 and 1")
     a, b, c, d = (counts[k] for k in CELLS)
     forms = _form_counts(a, b, c, d)
     rate = {f: num / den for f, (num, den) in forms.items()}
     odds_original = oc * ocp / oi
     return {
-        "synthetic": True, "n": n, "dials": dials, "cells": counts,
+        "synthetic": True, "exact": exact, "n": n, "dials": dials, "cells": counts,
         "forms": {f: {"n": den, "hold": num, "rate": num / den} for f, (num, den) in forms.items()},
         "counterexamples": {"original": b, "contrapositive": b, "converse": c, "inverse": c},
         "original_rate_exact": odds_original / (1 + odds_original),
@@ -132,12 +147,12 @@ def build(*, converse, inverse, contrapositive, n) -> dict:
     }
 
 
-def sweep(dial: str, values, *, converse, inverse, contrapositive, n) -> list[dict]:
+def sweep(dial: str, values, *, converse, inverse, contrapositive, n, exact=False) -> list[dict]:
     """Turn one dial through ``values`` with the other two held. ``dial`` can only be a dial name (never 'original')."""
     base = dict(converse=converse, inverse=inverse, contrapositive=contrapositive)
     if dial not in base:
         _check_dial(dial, 0.5)  # raises the "not a dial" message
-    return [build(**{**base, dial: v}, n=n) for v in values]
+    return [build(**{**base, dial: v}, n=n, exact=exact) for v in values]
 
 
 def load_record(path, proposition_id: str) -> dict:
@@ -150,23 +165,46 @@ def load_record(path, proposition_id: str) -> dict:
     raise MoshimoError(f"no proposition {proposition_id!r} in {path}")
 
 
-def anchor(record: dict) -> dict:
-    """The dials and n of a real proposition, read from its 2x2 table (metrics tp, fp, fn, tn).
+def table_of(record: dict, eps: float | None = None) -> tuple[dict, dict]:
+    """``(cells, lifted)`` of a real proposition's 2x2 table (metrics tp, fp, fn, tn; a rule_search row works the same).
 
-    A rule_search row (tp, fp, fn, tn at the top level) works the same. Feeding the result to ``build`` gives back the
-    table's own cells. Refused when a form has no unit to judge.
+    With ``eps`` a zero cell is lifted to ε (``lifted`` says which); without it nothing changes. A table with an empty
+    row or column is refused either way: 0/0 is undefined, not small, so ε does not lift it.
     """
     m = record.get("metrics") or record
     try:
-        a, b, c, d = (int(m[k]) for k in ("tp", "fp", "fn", "tn"))
+        counts = {cell: int(m[key]) for cell, key in zip(CELLS, ("tp", "fp", "fn", "tn"))}
     except (KeyError, TypeError, ValueError):
         raise MoshimoError(f"proposition {record.get('id')!r} has no 2x2 table (metrics tp, fp, fn, tn)") from None
-    r = rates(a, b, c, d)
-    empty = [f for f in DIALS if r[f] is None]
+    eps = check_eps(eps)
+    # all four forms, the original included: with a + b = 0 the original is 0/0, and lifting a and b by the same ε would
+    # manufacture a rate of 1/2 out of nothing
+    empty = [f for f in FORMS if rates(*counts.values())[f] is None]
     if empty:
-        raise MoshimoError(f"proposition {record.get('id')!r}: no unit to judge its {', '.join(empty)} "
-                           "(a row or column of its table is empty), so there is nothing to turn")
-    return {**{f: r[f] for f in DIALS}, "n": a + b + c + d}
+        raise MoshimoError(f"proposition {record.get('id')!r}: no unit to judge its {', '.join(empty)} (a row or column "
+                           "of its table is empty: 0/0 is undefined, not small, so eps does not lift it), so there is nothing to turn")
+    cells, lifted = {}, {}
+    for cell, v in counts.items():
+        cells[cell], hit = lift(v, eps, lo=0)
+        if hit and eps is not None:
+            lifted[cell] = eps
+    return cells, lifted
+
+
+def anchor(record: dict, eps: float | None = None) -> dict:
+    """The dials and n of a real proposition, read from its 2x2 table (see ``table_of``).
+
+    Feeding the result to ``build`` gives back the table's own cells; a table with a lifted cell needs ``exact=True``.
+    Refused when a form has no unit to judge.
+    """
+    cells, lifted = table_of(record, eps)
+    r = rates(*cells.values())
+    dials = {f: r[f] for f in DIALS}
+    bad = [f for f, v in dials.items() if lifted and not 0 < v < 1]
+    if bad:
+        raise MoshimoError(f"eps={eps:g} is too small to move the {', '.join(bad)} off the boundary in float64 for "
+                           "these counts; use a larger eps")
+    return {**dials, "n": sum(cells.values())}
 
 
 def headroom(dials: dict, threshold) -> dict:
@@ -189,6 +227,8 @@ def headroom(dials: dict, threshold) -> dict:
 
 def units(table: dict) -> list[dict]:
     """The table as synthetic units with 0/1 columns A and B, in the shape PythDRagoras' evaluator reads."""
+    if table.get("exact"):
+        raise MoshimoError("an exact table has fractional cells (a lifted cell is ε units): there are no units to list")
     flags = {"a": (1, 1), "b": (1, 0), "c": (0, 1), "d": (0, 0)}
     rows = []
     for cell in CELLS:
@@ -220,10 +260,11 @@ def render(tables: list[dict], dial: str | None, readouts: list[dict] | None = N
         head += ["original verdict", "judgement"]
     lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for i, t in enumerate(tables):
-        mark = lambda k: f"**{t['dials'][k]:.3f}**" if k == dial else f"{t['dials'][k]:.3f}"  # noqa: E731
-        row = [str(t["n"]), *(mark(k) for k in DIALS), *(str(t["cells"][k]) for k in CELLS),
-               f"{t['forms']['original']['rate']:.3f}", f"{t['original_rate_exact']:.3f}",
-               f"{t['informedness']:.3f}", f"{t['markedness']:.3f}", f"{t['mcc']:.3f}"]
+        f = (lambda v: f"{v:.8g}") if t.get("exact") else (lambda v: f"{v:.3f}")  # exact tables sit near the boundary: more digits
+        mark = lambda k: f"**{f(t['dials'][k])}**" if k == dial else f(t["dials"][k])  # noqa: E731
+        row = [f"{t['n']:g}" if t.get("exact") else str(t["n"]), *(mark(k) for k in DIALS),
+               *((f"{t['cells'][k]:.6g}" if t.get("exact") else str(t["cells"][k])) for k in CELLS),
+               f(t["forms"]["original"]["rate"]), f(t["original_rate_exact"]), f(t["informedness"]), f(t["markedness"]), f(t["mcc"])]
         if readouts:
             row += [readouts[i]["forms"]["original"]["verdict"], str(readouts[i]["judgement_code"])]
         lines.append("| " + " | ".join(row) + " |")
@@ -234,9 +275,10 @@ def render_headroom(tables: list[dict], heads: list[dict], dial: str | None) -> 
     head = ["row", "original", "threshold", "gap (logit)", *(f"{k} at break-even (now)" for k in DIALS)]
     lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for t, h in zip(tables, heads):
-        label = f"{dial}={t['dials'][dial]:.3f}" if dial else "base"
-        lines.append("| " + " | ".join([label, f"{h['original_rate_exact']:.3f}", f"{h['threshold']:.3f}", f"{h['gap']:+.3f}",
-                                         *(f"{h['breakeven'][k]:.3f} ({t['dials'][k]:.3f})" for k in DIALS)]) + " |")
+        f = (lambda v: f"{v:.8g}") if t.get("exact") else (lambda v: f"{v:.3f}")  # exact tables sit near the boundary
+        label = f"{dial}={f(t['dials'][dial])}" if dial else "base"
+        lines.append("| " + " | ".join([label, f(h["original_rate_exact"]), f"{h['threshold']:.3f}", f"{h['gap']:+.3f}",
+                                         *(f"{f(h['breakeven'][k])} ({f(t['dials'][k])})" for k in DIALS)]) + " |")
     return "\n".join(lines)
 
 
@@ -250,6 +292,9 @@ def main(argv=None) -> int:
     ap.add_argument("--id", help="proposition id in --ledger, e.g. P1")
     ap.add_argument("--threshold", type=float, help="rate threshold of the strength word (0.75 for usually): also print "
                     "each dial's break-even value; taken from the proposition with --ledger")
+    ap.add_argument("--eps", type=float, metavar="EPS",
+                    help="with --ledger: lift a zero cell of the real table to EPS units so its dials exist. ε's value is not "
+                         "decided, so nothing is lifted unless you give it. The tables are then exact (fractional cells): no --readout")
     ap.add_argument("--sweep", metavar="DIAL=V1,V2,...", help="turn one dial through these values, the other two held")
     ap.add_argument("--readout", metavar="STRENGTH", choices=("always", "almost_always", "usually", "more_often_than_not"),
                     help="also read each table back through PythDRagoras, with this strength word")
@@ -261,6 +306,10 @@ def main(argv=None) -> int:
     given = {k: getattr(a, k) for k in (*DIALS, "n")}
     if a.ledger is None and a.id is not None:
         ap.error("--id goes with --ledger")
+    if a.eps is not None and a.ledger is None:
+        ap.error("--eps lifts a zero cell of a real table: it goes with --ledger and --id")
+    if a.eps is not None and a.readout:
+        ap.error("--readout needs whole units; with --eps the tables have fractional cells")
     if a.ledger is not None and (a.id is None or any(v is not None for v in given.values())):
         ap.error("--ledger needs --id, and then the dials and n come from the proposition: leave "
                  "--converse, --inverse, --contrapositive and --n out")
@@ -268,18 +317,19 @@ def main(argv=None) -> int:
         ap.error("give --converse, --inverse, --contrapositive and --n, or start from a real proposition "
                  "with --ledger and --id")
     try:
-        threshold = a.threshold
+        threshold, lifted, exact = a.threshold, {}, a.eps is not None
         if a.ledger is not None:
             record = load_record(a.ledger, a.id)
-            base, threshold = anchor(record), (threshold if threshold is not None else record.get("threshold"))
+            base, threshold = anchor(record, a.eps), (threshold if threshold is not None else record.get("threshold"))
+            lifted = table_of(record, a.eps)[1]
         else:
             base = given
         dial = None
         if a.sweep:
             dial, _, values = a.sweep.partition("=")
-            tables = sweep(dial, [float(v) for v in values.split(",")], **base)
+            tables = sweep(dial, [float(v) for v in values.split(",")], **base, exact=exact)
         else:
-            tables = [build(**base)]
+            tables = [build(**base, exact=exact)]
         readouts = [readout(t, a.readout) for t in tables] if a.readout else None
         heads = [headroom(t["dials"], threshold) for t in tables] if threshold is not None else None
     except (ValueError, OSError) as exc:  # MoshimoError, a value that is not a number, or an unreadable ledger
@@ -287,11 +337,15 @@ def main(argv=None) -> int:
     except ModuleNotFoundError as exc:
         ap.error(f"--readout needs polars and PythDRagoras (PYTHONPATH=<Aoi>/pythdragoras): {exc}")
     print(render(tables, dial, readouts))
+    if exact:
+        print(f"\nε = {a.eps:g} (units). Lifted cell(s): {', '.join(lifted) or 'none (no cell was zero)'}. "
+              "The table is exact: fractional cells, so logit-based numbers (original, headroom) move with log(1/ε).")
     if heads:
         print("\n" + render_headroom(tables, heads, dial))
     if a.json:
         a.json.parent.mkdir(parents=True, exist_ok=True)
-        a.json.write_text(json.dumps({"anchor": {"ledger": str(a.ledger), "id": a.id} if a.ledger else None, "tables": tables,
+        a.json.write_text(json.dumps({"anchor": {"ledger": str(a.ledger), "id": a.id, "eps": a.eps, "lifted_cells": lifted} if a.ledger else None,
+                                      "tables": tables,
                                       "readouts": readouts, "headroom": heads}, ensure_ascii=False, indent=2,
                                      allow_nan=False) + "\n", encoding="utf-8")
     return 0

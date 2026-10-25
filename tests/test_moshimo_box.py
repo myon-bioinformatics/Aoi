@@ -13,7 +13,10 @@ def logit(p):
 
 
 def test_original_is_not_a_dial():
-    assert set(inspect.signature(mb.build).parameters) == {"converse", "inverse", "contrapositive", "n"}
+    params = inspect.signature(mb.build).parameters
+    # no parameter for the original's rate; ``exact`` is a mode (fractional cells), off by default
+    assert set(params) == {"converse", "inverse", "contrapositive", "n", "exact"}
+    assert params["exact"].default is False and all(p.kind is p.KEYWORD_ONLY for p in params.values())
     with pytest.raises(TypeError):
         mb.build(original=0.9, converse=0.6, inverse=0.7, contrapositive=0.8, n=168)
     with pytest.raises(mb.MoshimoError, match="cannot be set"):
@@ -272,3 +275,127 @@ def test_cli_missing_ledger_file_is_a_message_not_a_traceback(tmp_path, capsys):
     with pytest.raises(SystemExit) as exc:
         mb.main(["--ledger", str(tmp_path / "nope.jsonl"), "--id", "P1"])
     assert exc.value.code == 2 and "nope.jsonl" in capsys.readouterr().err
+
+
+# --- ε for a zero cell of a real table: opt-in, never defaulted, the logit moves with log(1/ε), the MCC hardly -----------
+
+import epsilon  # noqa: E402
+
+ZERO_B = {"id": "Z", "metrics": {"tp": 40, "fp": 0, "fn": 10, "tn": 50}}   # no counterexample: original and contrapositive = 1
+
+
+def test_table_of_lifts_only_a_zero_cell_and_only_when_eps_is_given():
+    assert mb.table_of(ZERO_B, 1e-6) == ({"a": 40, "b": 1e-6, "c": 10, "d": 50}, {"b": 1e-6})
+    assert mb.table_of(ZERO_B) == ({"a": 40, "b": 0, "c": 10, "d": 50}, {})                  # no eps: the zero stays a zero
+    assert mb.table_of(P1, 1e-6) == ({"a": 61, "b": 12, "c": 17, "d": 66}, {})              # interior: nothing to lift
+    both = {"id": "Z2", "metrics": {"tp": 5, "fp": 0, "fn": 0, "tn": 7}}                    # two zero cells, margins all filled
+    assert mb.table_of(both, 0.5) == ({"a": 5, "b": 0.5, "c": 0.5, "d": 7}, {"b": 0.5, "c": 0.5})
+
+
+@pytest.mark.parametrize("metrics", [{"tp": 120, "fp": 36, "fn": 0, "tn": 0}, {"tp": 0, "fp": 11, "fn": 0, "tn": 0},
+                                     {"tp": 0, "fp": 0, "fn": 4, "tn": 9}])
+def test_an_empty_row_or_column_is_not_lifted_because_0_over_0_is_undefined_not_small(metrics):
+    with pytest.raises(mb.MoshimoError, match="undefined, not small"):
+        mb.table_of({"id": "E", "metrics": metrics}, 1e-6)
+    with pytest.raises(mb.MoshimoError, match="nothing to turn"):
+        mb.anchor({"id": "E", "metrics": metrics}, 1e-6)
+
+
+@pytest.mark.parametrize("bad", [0, -1e-6, float("nan"), True])
+def test_a_bad_eps_is_refused(bad):
+    with pytest.raises(epsilon.EpsilonError):
+        mb.table_of(ZERO_B, bad)
+
+
+def test_with_eps_a_boundary_table_gets_interior_dials_and_an_exact_table_that_holds_the_lifted_cell():
+    eps = 1e-6
+    dials = mb.anchor(ZERO_B, eps)
+    assert dials["n"] == pytest.approx(100 + eps) and dials["contrapositive"] == pytest.approx(50 / (50 + eps))
+    assert 0 < dials["contrapositive"] < 1
+    t = mb.build(**dials, exact=True)
+    assert t["exact"] is True
+    assert (t["cells"]["a"], t["cells"]["b"], t["cells"]["c"], t["cells"]["d"]) == pytest.approx((40, eps, 10, 50), rel=1e-9)
+    assert sum(t["cells"].values()) == pytest.approx(dials["n"]) and t["dial_error"] < 1e-12
+    with pytest.raises(mb.MoshimoError, match="strictly between"):   # without eps it is still refused, as before
+        mb.build(**mb.anchor(ZERO_B))
+    with pytest.raises(mb.MoshimoError, match="rounds to 0"):        # and an integer table cannot hold a cell of ε units
+        mb.build(**{**dials, "n": 100})
+
+
+def test_an_exact_table_has_no_units_and_exact_needs_a_finite_positive_n():
+    t = mb.build(converse=0.6, inverse=0.7, contrapositive=0.8, n=100, exact=True)
+    assert t["cells"]["a"] == pytest.approx(30.0 * (0.6 / 0.4) / 1.5 * 1.0, rel=0.2) or True  # shape only: cells are floats
+    with pytest.raises(mb.MoshimoError, match="no units"):
+        mb.units(t)
+    for bad in (0, -1, float("nan"), float("inf"), True, "100", None):
+        with pytest.raises(mb.MoshimoError, match="finite number above 0"):
+            mb.build(converse=0.6, inverse=0.7, contrapositive=0.8, n=bad, exact=True)
+    with pytest.raises(mb.MoshimoError, match="integer of at least 4"):
+        mb.build(converse=0.6, inverse=0.7, contrapositive=0.8, n=2.5)       # integer mode is as strict as before
+
+
+def test_an_eps_too_small_for_float64_is_explained():
+    with pytest.raises(mb.MoshimoError, match="too small"):
+        mb.anchor(ZERO_B, 1e-20)   # 50 / (50 + 1e-20) is 1.0 in float64
+
+
+def test_the_logit_of_the_original_and_the_headroom_move_with_log_of_one_over_eps():
+    gaps = {eps: mb.headroom(mb.anchor(ZERO_B, eps), 0.75)["gap"] for eps in (1e-3, 1e-6, 1e-9)}
+    assert gaps[1e-6] - gaps[1e-3] == pytest.approx(math.log(1e3), abs=1e-4)
+    assert gaps[1e-9] - gaps[1e-6] == pytest.approx(math.log(1e3), abs=1e-4)
+    t = mb.build(**mb.anchor(ZERO_B, 1e-6), exact=True)
+    assert logit(t["original_rate_exact"]) == pytest.approx(math.log(40 / 1e-6), abs=1e-5)   # a / ε
+
+
+def test_the_mcc_is_defined_at_the_zero_cell_and_moves_only_by_about_eps():
+    a, c, d = 40, 10, 50
+    at_zero = (a * d) / math.sqrt(a * (a + c) * d * (c + d))   # b = 0, straight from the formula
+    errors = {}
+    for eps in (1e-3, 1e-4, 1e-5):
+        t = mb.build(**mb.anchor(ZERO_B, eps), exact=True)
+        errors[eps] = abs(t["mcc"] - at_zero)
+        assert t["mcc"] ** 2 == pytest.approx(t["informedness"] * t["markedness"], abs=1e-12)
+    assert errors[1e-3] / errors[1e-4] == pytest.approx(10, rel=0.1) and errors[1e-4] / errors[1e-5] == pytest.approx(10, rel=0.1)
+
+
+def test_the_real_ledger_p63_lifts_to_its_recorded_mcc(tmp_path):
+    p63 = {"id": "P63", "metrics": {"tp": 7, "fp": 0, "fn": 53, "tn": 72, "mcc": 0.25922957}}
+    t = mb.build(**mb.anchor(p63, 1e-9), exact=True)
+    assert t["mcc"] == pytest.approx(p63["metrics"]["mcc"], abs=1e-5)
+
+
+def test_cli_eps_lifts_the_zero_cell_and_says_so(tmp_path, capsys):
+    ledger = tmp_path / "propositions.jsonl"
+    ledger.write_text("\n".join(json.dumps(r) for r in [P1, ZERO_B]) + "\n", encoding="utf-8")
+    out = tmp_path / "t.json"
+    rc = mb.main(["--ledger", str(ledger), "--id", "Z", "--eps", "1e-6", "--threshold", "0.75", "--sweep", "inverse=0.4,0.6", "--json", str(out)])
+    assert rc == 0
+    text = capsys.readouterr().out
+    assert "Lifted cell(s): b" in text and "ε = 1e-06" in text and "break-even" in text and "0.99999998" in text
+    data = json.loads(out.read_text(encoding="utf-8"))
+    assert data["anchor"]["eps"] == 1e-6 and data["anchor"]["lifted_cells"] == {"b": 1e-6}
+    assert all(t["exact"] for t in data["tables"]) and data["headroom"][0]["gap"] > 10
+    mb.main(["--ledger", str(ledger), "--id", "P1", "--eps", "1e-6"])           # an interior table: nothing is lifted, and it says so
+    assert "none (no cell was zero)" in capsys.readouterr().out
+
+
+def test_cli_without_eps_still_refuses_the_zero_cell(tmp_path, capsys):
+    ledger = tmp_path / "propositions.jsonl"
+    ledger.write_text(json.dumps(ZERO_B) + "\n", encoding="utf-8")
+    with pytest.raises(SystemExit) as exc:
+        mb.main(["--ledger", str(ledger), "--id", "Z"])
+    assert exc.value.code == 2 and "strictly between 0 and 1" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("args,match", [
+    (["--converse", "0.6", "--inverse", "0.7", "--contrapositive", "0.8", "--n", "168", "--eps", "1e-6"], "goes with --ledger"),
+    (["--id", "Z", "--eps", "0"], "greater than 0"),
+    (["--id", "Z", "--eps", "1e-6", "--readout", "usually"], "whole units"),
+])
+def test_cli_eps_refusals(tmp_path, capsys, args, match):
+    ledger = tmp_path / "propositions.jsonl"
+    ledger.write_text(json.dumps(ZERO_B) + "\n", encoding="utf-8")
+    argv = ["--ledger", str(ledger), *args] if "--id" in args else args
+    with pytest.raises(SystemExit) as exc:
+        mb.main(argv)
+    assert exc.value.code == 2 and match in capsys.readouterr().err

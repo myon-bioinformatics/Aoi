@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """波の減衰 0 → ε の試し: 落ち着く位置を ε の関数として書く（探索）。
 
-減衰 λ = ε の波の「落ち着く位置」は settle_x = x0 + ln(振れ幅 / 0.5) / ε で、振れ幅も ε にわずかに依る。
-ε を小さくした範囲では settle_x = K / ε + c（K, c は単位ごとの定数）と書ける。この式を、保存済みの行
-（wave_eps_trial.py の wave_eps_rows_<ε>.jsonl、ε が 2 つ以上）の settle_x から、ε の小さい 2 つで K, c を決め、
-残りの ε で当たるか確かめる。振れ幅が最初から 0.5 順位以下の単位は、落ち着く位置が ε によらず一定（settled_at_start）。
+減衰 λ = ε の波の「落ち着く位置」は settle_x = x0 + ln(振れ幅 / 0.5) / ε で、ε を小さくした範囲では
+settle_x ≈ K / ε（K = ln(振れ幅 / 0.5)、単位ごとの定数 1 つ）と書ける。この式を、保存済みの行
+（wave_eps_trial.py の wave_eps_rows_<ε>.jsonl、ε が 2 つ以上）の settle_x から、ε の小さい 2 つの差で K を決め、
+どの ε でも settle_x が K / ε からどれだけ外れるか（絶対・相対の最大）を出す。振れ幅が最初から 0.5 順位以下の単位は、
+落ち着く位置が ε によらず一定（settled_at_start）。
 
 標準ライブラリのみ。ε の値は暫定の置き場所で、結論には使わない。
 
@@ -34,7 +35,7 @@ def load(path: Path) -> tuple[float, dict]:
 
 
 def coefficients(by_eps: dict) -> list[dict]:
-    """by_eps: {ε: {(season, team): 行}}。減衰 0 だった単位ごとに K, c と、残りの ε での当てはまりの悪さを返す。"""
+    """by_eps: {ε: {(season, team): 行}}。減衰 0 だった単位ごとに K と、K / ε からの外れ（与えた ε のうち最大）を返す。"""
     eps = sorted(by_eps)
     if len(eps) < 2:
         raise ValueError("ε が 2 つ以上いる")
@@ -47,26 +48,26 @@ def coefficients(by_eps: dict) -> list[dict]:
         if any(v is None or by_eps[e][key]["eps_wave_decay"] != e for e, v in s.items()):
             raise ValueError(f"{key}: ε の波が選ばれていない行がある")
         if abs(s[lo] - s[mid]) <= SAME * max(1.0, abs(s[lo])):
-            out.append({"season": key[0], "team": key[1], "settled_at_start": True, "K": 0.0, "c": s[lo], "amp": SETTLE, "residual": 0.0})
+            out.append({"season": key[0], "team": key[1], "settled_at_start": True, "K": 0.0, "position": s[lo], "amp": None, "abs_miss": None, "rel_miss": None})
             continue
-        k = (s[lo] - s[mid]) * lo * mid / (mid - lo)
-        c = s[mid] - k / mid
-        res = max(abs(s[e] - (c + k / e)) / max(1.0, abs(s[e])) for e in eps)
-        out.append({"season": key[0], "team": key[1], "settled_at_start": False, "K": k, "c": c, "amp": SETTLE * math.exp(k), "residual": res})
+        k = (s[lo] - s[mid]) * lo * mid / (mid - lo)         # s = K/ε + (ε によらない小さな定数) の差から K だけを取り出す
+        miss = [abs(s[e] - k / e) for e in eps]
+        out.append({"season": key[0], "team": key[1], "settled_at_start": False, "K": k, "position": None, "amp": SETTLE * math.exp(k),
+                    "abs_miss": max(miss), "rel_miss": max(m / abs(s[e]) for m, e in zip(miss, eps))})
     return out
 
 
 def render(rows: list[dict], eps: list[float]) -> str:
     moving = [r for r in rows if not r["settled_at_start"]]
-    lines = ["# 落ち着く位置 = K/ε + c（探索・暫定）", "",
-             f"ε = {', '.join(f'{e:g}' for e in eps)} の行から。K, c は ε の小さい 2 つで決め、残りの ε で当たるか確かめた。ε の値は暫定で、結論には使わない。", "",
+    lines = ["# 落ち着く位置 ≈ K/ε（探索・暫定）", "",
+             f"ε = {', '.join(f'{e:g}' for e in eps)} の行から。K は ε の小さい 2 つの差で決め、どの ε でも K/ε からどれだけ外れるかを見た。ε の値は暫定で、結論には使わない。", "",
              f"- 減衰 0 だった単位: {len(rows)}。振れ幅が最初から {SETTLE} 順位以下（ε によらず一定）: {len(rows) - len(moving)}",
-             f"- K = ln(振れ幅 / {SETTLE}): {min(r['K'] for r in moving):.4f} 〜 {max(r['K'] for r in moving):.4f}。c: {min(r['c'] for r in moving):.4f} 〜 {max(r['c'] for r in moving):.4f}",
-             f"- 残りの ε での相対のずれ（最大）: {max(r['residual'] for r in moving):.2e}", "",
-             "| 年 | 球団 | K | c | 振れ幅 | 残りの ε でのずれ |", "|---|---|---|---|---|---|"]
+             f"- K = ln(振れ幅 / {SETTLE}): {min(r['K'] for r in moving):.4f} 〜 {max(r['K'] for r in moving):.4f}",
+             f"- 落ち着く位置の K/ε からの外れ（最大）: 絶対 {max(r['abs_miss'] for r in moving):.3f}（シーズン 1 つぶんが 1）、相対 {max(r['rel_miss'] for r in moving):.2e}", "",
+             "| 年 | 球団 | K | 振れ幅 | K/ε からの外れ（絶対 / 相対） |", "|---|---|---|---|---|"]
     for r in rows:
-        lines.append(f"| {r['season']} | {r['team']} | " + ("（最初から一定）| " + f"{r['c']:.4f} | — | —" if r["settled_at_start"]
-                                                          else f"{r['K']:.4f} | {r['c']:.4f} | {r['amp']:.3f} | {r['residual']:.1e}") + " |")
+        lines.append(f"| {r['season']} | {r['team']} | " + (f"（最初から一定。位置 {r['position']:.4f}）| — | —" if r["settled_at_start"]
+                                                          else f"{r['K']:.4f} | {r['amp']:.3f} | {r['abs_miss']:.3f} / {r['rel_miss']:.1e}") + " |")
     return "\n".join(lines) + "\n"
 
 

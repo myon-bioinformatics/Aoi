@@ -666,7 +666,7 @@
       "import_sites": 41
     },
     "pytest": {
-      "attribute_uses": 874,
+      "attribute_uses": 878,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -674,7 +674,7 @@
         "MonkeyPatch": 1,
         "StashKey": 2,
         "UsageError": 10,
-        "approx": 252,
+        "approx": 256,
         "fail": 21,
         "fixture": 44,
         "hookimpl": 3,
@@ -799,9 +799,9 @@
           "import_sites": 10
         },
         "tests": {
-          "attribute_uses": 85,
+          "attribute_uses": 89,
           "attributes": {
-            "approx": 10,
+            "approx": 14,
             "fail": 1,
             "fixture": 6,
             "importorskip": 1,
@@ -2656,7 +2656,7 @@
     },
     {
       "attributes": {
-        "approx": 5,
+        "approx": 9,
         "raises": 2
       },
       "dynamic_lines": [],

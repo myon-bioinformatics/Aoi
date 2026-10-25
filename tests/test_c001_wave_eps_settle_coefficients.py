@@ -1,7 +1,7 @@
 """cycles/c001-chunichi/exploratory/wave_eps_settle_coefficients.py の確認。
 
-SYNTHETIC: 落ち着く位置が K/ε + c になるように作った行（実データではない）で、K, c を取り戻せること、
-ε によらず一定の単位を分けること、当てはまらない行を残りの ε のずれとして出すことを確かめる。結論には使わない。
+SYNTHETIC: 落ち着く位置が K/ε に小さな定数を足した形になるように作った行（実データではない）で、K を取り戻せること、
+ε によらず一定の単位を分けること、K/ε からの外れ（絶対・相対）を出すことを確かめる。結論には使わない。
 """
 import importlib.util
 import json
@@ -37,13 +37,14 @@ def table(units):
     return out
 
 
-def test_recovers_k_and_c_and_flags_the_unit_that_is_settled_from_the_start():
+def test_recovers_k_reports_the_miss_from_k_over_eps_and_flags_the_unit_that_is_settled_from_the_start():
     rows = coef.coefficients(table({(2014, "b"): (0.0815, 0.54), (2022, "l"): (1.595, 0.28), (2013, "g"): 0.062}))
     by = {(r["season"], r["team"]): r for r in rows}
-    assert by[(2014, "b")]["K"] == pytest.approx(0.0815, rel=1e-6) and by[(2014, "b")]["c"] == pytest.approx(0.54, abs=1e-6)
+    assert by[(2014, "b")]["K"] == pytest.approx(0.0815, rel=1e-6)
+    assert by[(2014, "b")]["abs_miss"] == pytest.approx(0.54, abs=1e-6) and by[(2014, "b")]["rel_miss"] == pytest.approx(0.54 / (0.54 + 81.5), rel=1e-5)
     assert by[(2022, "l")]["K"] == pytest.approx(1.595, rel=1e-6) and by[(2022, "l")]["amp"] == pytest.approx(0.5 * 2.718281828 ** 1.595, rel=1e-6)
-    assert by[(2013, "g")]["settled_at_start"] and by[(2013, "g")]["c"] == 0.062 and by[(2013, "g")]["K"] == 0.0
-    assert all(r["residual"] < 1e-9 for r in rows)
+    assert by[(2013, "g")]["settled_at_start"] and by[(2013, "g")]["position"] == 0.062 and by[(2013, "g")]["K"] == 0.0
+    assert by[(2013, "g")]["abs_miss"] is None and by[(2013, "g")]["rel_miss"] is None
 
 
 def test_float_noise_between_epsilons_does_not_turn_a_constant_position_into_a_huge_k():
@@ -61,10 +62,13 @@ def test_a_unit_that_is_not_on_the_boundary_is_left_out():
     assert [(r["season"], r["team"]) for r in coef.coefficients(t)] == [(2014, "b")]
 
 
-def test_the_residual_shows_when_the_largest_eps_does_not_follow_k_over_eps_plus_c():
+def test_the_miss_grows_when_the_largest_eps_row_does_not_follow_k_over_eps():
     t = table({(2014, "b"): (0.1, 0.5)})
+    r0 = coef.coefficients(t)[0]
+    assert (r0["abs_miss"], r0["rel_miss"]) == (pytest.approx(0.5, abs=1e-6), pytest.approx(0.5 / 100.5, rel=1e-5))
     t[1e-3][(2014, "b")]["eps_wave_settle_x"] += 5.0       # ε = 1e-3 の行だけ式から外す
-    assert coef.coefficients(t)[0]["residual"] == pytest.approx(5.0 / (0.5 + 0.1 / 1e-3 + 5.0), rel=1e-6)
+    r = coef.coefficients(t)[0]
+    assert (r["abs_miss"], r["rel_miss"]) == (pytest.approx(5.5, abs=1e-6), pytest.approx(5.5 / 105.5, rel=1e-5))
 
 
 def test_refuses_one_eps_and_a_row_where_the_eps_wave_was_not_chosen():
@@ -87,5 +91,5 @@ def test_cli_writes_json_and_markdown(tmp_path):
     data = json.loads((tmp_path / "c.json").read_text(encoding="utf-8"))
     assert data["eps"] == [1e-9, 1e-6, 1e-3] and len(data["units"]) == 2
     md = (tmp_path / "c.md").read_text(encoding="utf-8")
-    assert md.startswith("# 落ち着く位置 = K/ε + c") and "| 2014 | b |" in md
+    assert md.startswith("# 落ち着く位置 ≈ K/ε") and "| 2014 | b |" in md
     assert coef.main(["--rows", files[0], files[0], "--out-json", str(tmp_path / "d.json"), "--out-md", str(tmp_path / "d.md")]) == 2

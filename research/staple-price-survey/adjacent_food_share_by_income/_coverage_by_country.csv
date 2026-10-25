@@ -1,83 +1,84 @@
-country,rows,years,variables,sources
-ARG,5,2017-2017,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-ARM,10,2024-2024,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9,Armstat ILCS 2024 Social Snapshot Ch.3 Table 3.11
-AUT,30,1994-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-BEL,35,1988-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-BGR,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-BOL,5,2015-2015,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-BRA,5,2017-2017,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-CAN,7,2021-2023,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Statistics Canada Survey of Household Spending (SHS) / Table 11-10-0223-01 via The Daily
-CHE,30,2007-2021,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Swiss FSO HBS (bfs.admin.ch) dépenses par classe de revenu
-CHL,5,2021-2021,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-COL,5,2016-2016,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-CRI,5,2018-2018,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-CYP,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-CZE,15,2005-2015,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-DEU,35,1988-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-DNK,30,1994-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-DOM,5,2018-2018,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-EGY,5,2013-2013,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Egypt CAPMAS HIECS 2012/2013 Inequality in Expenditure Patterns bulletin
-ESP,35,1988-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-EST,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-EUZ,10,2015-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-FJI,10,2020-2020,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9,Fiji Bureau of Statistics HIES 2019-20 Table 20
-FRA,35,1988-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-GBR,160,1988-2025,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Defra Family Food (GOV.UK CSV); Eurostat HBS_STR_T223; ONS Family Spending workbook 2 Table A8
-GMB,10,2016-2016,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9,GBoS Gambia IHS 2015/16 Volume III Table 4.8
-GRC,35,1988-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-GTM,5,2014-2014,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-HKG,4,2020-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4,Censtatd Hong Kong 2019/20 Household Expenditure Survey Chart 3 / §1.21 (expenditure quartiles)
-HND,5,2004-2004,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-HRV,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-HUN,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-IDN,20,2022-2026,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,BPS Pengeluaran untuk Konsumsi Penduduk Indonesia (Susenas) via Kompas 2026-10-06; BPS Susenas March 2022 (via CNBC Indonesia citing BPS); BPS Susenas March 2023 (via CNBC Indonesia citing BPS)
-IND,15,2023-2023,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,MOSPI HCES 2022-23 Table A6 + Table A2
-IRL,30,1994-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-ISR,5,2021-2021,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CBS Israel HES 2021 Table 1.1 / Intro D2
-ITA,20,1988-2005,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-LBR,5,2016-2016,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,LISGIS Liberia HIES 2016 Table 3.6
-LKA,20,2016-2019,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9,DCS Sri Lanka HIES 2016 Final Report Table 3.13 (income decile food / total expenditure); DCS Sri Lanka HIES 2019 Final Report Table 3.13 (income decile food / total expenditure)
-LTU,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-LUX,30,1988-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-LVA,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-MDA,10,2024-2025,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Moldova NBS CBGC 2024 (Aspecte nivel trai Edition 2025) structure by quintiles; Moldova NBS CBGC 2025 (Aspecte nivel trai Edition 2026) Table 7.26
-MDG,5,2022-2022,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,INSTAT Madagascar EPM 2021-2022 Graphique 7.2
-MEX,5,2018-2018,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-MKD,15,2005-2015,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-MLT,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-MMR,5,2017-2017,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CSO Myanmar MLCS 2017 Figure 2-2b
-MNE,15,2010-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-MUS,5,2023-2023,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Statistics Mauritius HBS 2023 Analytical Report Table 5.2.3
-MYS,5,2022-2022,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,DOSM Household Expenditure Survey Report 2022 Table 1.13 (income quintiles)
-NIC,5,2014-2014,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-NLD,35,1988-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-NOR,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-NPL,5,2011-2011,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CBS Nepal NLSS 2010/11 via WFP Nepal Food Security Monitoring Table 18
-PAK,10,2016-2019,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,PBS Pakistan HIES 2015-16 Table 15 (consumption quintiles; Food & Non Alcoholic Beverages); PBS Pakistan HIES 2018-19 Table 15 (consumption quintiles; Food & Non Alcoholic Beverages)
-PAN,5,2007-2007,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-PER,5,2019-2019,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-PHL,15,2023-2023,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,PSA FIES 2023 Table 7 (bettergov OpenSTAT mirror of 0071E3ATME0.px)
-POL,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-PRT,35,1988-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-PRY,5,2011-2011,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-ROU,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-RUS,20,2022-2023,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9,Rosstat Russia Household Budget Survey (via Roschart mirror of R_1-5_4k)
-SDN,5,2009-2009,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CBS Sudan / FAO NBHS 2009 Table 3
-SGP,25,2003-2023,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,SingStat Table Builder D10072 (HES)
-SLV,5,2006-2006,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725
-SRB,10,2015-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-SVK,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-SVN,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-SWE,25,1994-2015,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-TCD,5,2011-2011,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,INSEED Chad ECOSIT3 2011 Tableau 5.3
-THA,2,2018-2018,engel_share:food_q1;engel_share:food_q5,NSO Thailand SES 2561 (2018) summary SD10_04_189_7
-TJK,5,2005-2005,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Tajikistan GKS / FAO Food Insecurity Assessment 2005 HBS Annex Table 3
-TTO,5,2005-2005,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CSO Trinidad and Tobago SLC 2005 Table 3.4
-TUR,20,2005-2020,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-TZA,10,2018-2018,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9,NBS Tanzania HBS 2017-18 Mainland Table 6.7.1
-UKR,20,2020-2021,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9,SSSU Ukraine Expenditure and resources of households 2020 Table II.45 (money-income deciles); SSSU Ukraine Expenditure and resources of households 2021 Table II.45 (money-income deciles)
-URY,15,2016-2017,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,CEPALSTAT indicator 5725; INE Uruguay ENGIH 2016-2017 Principales Resultados Cuadro 31
-USA,110,2020-2024,engel_share:food_at_home_d1;engel_share:food_at_home_d10;engel_share:food_at_home_d2;engel_share:food_at_home_d3;engel_share:food_at_home_d4;engel_share:food_at_home_d5;engel_share:food_at_home_d6;engel_share:food_at_home_d7;engel_share:food_at_home_d8;engel_share:food_at_home_d9;engel_share:food_at_home_q1;engel_share:food_at_home_q2;engel_share:food_at_home_q3;engel_share:food_at_home_q4;engel_share:food_at_home_q5;engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,BLS Consumer Expenditure Surveys (CE) published tables
-VNM,5,2022-2022,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,NSO Vietnam VHLSS 2022 Table 6.15 (income quintiles; Food+Foodstuff)
-XKX,5,2015-2015,engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,Eurostat HBS_STR_T223
-ZAF,25,1995-2023,engel_share:food_d1;engel_share:food_d10;engel_share:food_d2;engel_share:food_d3;engel_share:food_d4;engel_share:food_d5;engel_share:food_d6;engel_share:food_d7;engel_share:food_d8;engel_share:food_d9;engel_share:food_q1;engel_share:food_q2;engel_share:food_q3;engel_share:food_q4;engel_share:food_q5,"Stats SA IES 1995 via DataFirst ""Earning and spending in South Africa""; Stats SA IES 2022/23 P0100 Table 8.2.10 (HH expenditure deciles); Stats SA IES 2022/23 P0100 Table 8.2.13 (HH income deciles)"
+country,n_rows,min_year,max_year
+ARG,5,2017,2017
+ARM,10,2024,2024
+AUT,30,1994,2020
+AZE,15,2024,2024
+BEL,35,1988,2020
+BGR,20,2005,2020
+BOL,5,2015,2015
+BRA,5,2017,2017
+CAN,7,2021,2023
+CHE,30,2007,2021
+CHL,5,2021,2021
+COL,5,2016,2016
+CRI,5,2018,2018
+CYP,20,2005,2020
+CZE,15,2005,2015
+DEU,35,1988,2020
+DNK,30,1994,2020
+DOM,5,2018,2018
+EGY,5,2013,2013
+ESP,35,1988,2020
+EST,20,2005,2020
+EUZ,10,2015,2020
+FJI,10,2020,2020
+FRA,35,1988,2020
+GBR,160,1988,2025
+GMB,10,2016,2016
+GRC,35,1988,2020
+GTM,5,2014,2014
+HKG,4,2020,2020
+HND,5,2004,2004
+HRV,20,2005,2020
+HUN,20,2005,2020
+IDN,20,2022,2026
+IND,15,2023,2023
+IRL,30,1994,2020
+ISR,5,2021,2021
+ITA,20,1988,2005
+LBR,5,2016,2016
+LKA,20,2016,2019
+LTU,20,2005,2020
+LUX,30,1988,2020
+LVA,20,2005,2020
+MDA,10,2024,2025
+MDG,5,2022,2022
+MEX,5,2018,2018
+MKD,15,2005,2015
+MLT,20,2005,2020
+MMR,5,2017,2017
+MNE,15,2010,2020
+MUS,5,2023,2023
+MYS,5,2022,2022
+NIC,5,2014,2014
+NLD,35,1988,2020
+NOR,20,2005,2020
+NPL,5,2011,2011
+PAK,10,2016,2019
+PAN,5,2007,2007
+PER,5,2019,2019
+PHL,15,2023,2023
+POL,20,2005,2020
+PRT,35,1988,2020
+PRY,5,2011,2011
+ROU,20,2005,2020
+RUS,20,2022,2023
+SDN,5,2009,2009
+SGP,25,2003,2023
+SLV,5,2006,2006
+SRB,10,2015,2020
+SVK,20,2005,2020
+SVN,20,2005,2020
+SWE,25,1994,2015
+TCD,5,2011,2011
+THA,2,2018,2018
+TJK,5,2005,2005
+TTO,5,2005,2005
+TUR,20,2005,2020
+TZA,10,2018,2018
+UKR,20,2020,2021
+URY,15,2016,2017
+USA,110,2020,2024
+VNM,5,2022,2022
+XKX,5,2015,2015
+ZAF,25,1995,2023

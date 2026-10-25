@@ -213,3 +213,15 @@ Session tip after LKA 2016+2019 densification. Pack: **1448 rows / 82 ISO3**.
 
 ### Hours-to-buy
 Still **DEU BMEL + BRA DIEESE** only (240 rows / 2 ISO3). No third NSO-designed labour-minutes staple series found before stop.
+
+## 2026-10-25 ~10:10 JST resume — AZE food×income HIT
+
+Pack: **1463 rows / 83 ISO3**.
+
+| ISO3 | status | notes |
+|------|--------|-------|
+| AZE | **HIT** +15 | SSC *Ev təsərrüfatları tədqiqatının yekunları* 2025 PDF (`evtes_2025.pdf`) Cədvəl **59** expenditure-quintile food % (51.7/48.3/45.0/39.6/32.8) + Cədvəl **61** decile food % (52.8…30.3); year=2024; primary official; `estimated_value` empty |
+| ARE BHR CHN JOR KWT LBN OMN QAT SAU VEN | **MISS** | unchanged — no open equal quintile/decile×food primary this resume |
+
+### Still-miss Big Mac ISO3 (food×income; excl. Aoi JPN/KOR/TWN/AUS/NZL)
+ARE BHR CHN JOR KWT LBN OMN QAT SAU VEN

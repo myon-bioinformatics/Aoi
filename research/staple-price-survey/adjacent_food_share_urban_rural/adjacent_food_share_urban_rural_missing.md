@@ -238,3 +238,20 @@ Pack: **525 rows / 108 ISO3**. Hours sibling still DEU+BRA only.
 | LBN / VEN | **MISS** (egress) | CAS/BCV primary UR food Engel not pinned |
 
 No UR append this final stretch; INC densified LKA only.
+
+## 2026-10-25 ~10:10 JST resume — CAN HIT + AZE 2024 primary
+
+Pack: **529 rows / 109 ISO3**. Hours sibling still DEU+BRA (240/2).
+
+| ISO3 | status | notes |
+|------|--------|-------|
+| CAN | **HIT** +2 | StatCan The Daily SHS 2019 Table 3 (t003b) via Wayback HTML pin (www150 TLS 000 this box): food÷goods&services — largest CMA ≥1M **14.7** / rural **16.7**; year=2019; Table 11-10-0226-01; `estimated_value` empty. Urban = largest-CMA proxy (not all urban). |
+| AZE | **HIT refresh** +2 | SSC `evtes_2025.pdf` Cədvəl 38/39 2024 primary: urban **43.3** / rural **43.9** (kept prior banker.az 2023 rows) |
+| ARG / CHL | **MISS** (no rural) | reconfirmed CEPALSTAT 5725 National-only (no Urban/Rural members); ENGHo / IX EPF urban-only |
+| CHE | **MISS** | HABE Grossregion ≠ urban/rural; FSO HBS no Stadt/Land food÷total Engel |
+| HKG / SGP | **N/A** | city-state; HES has district/housing tenure splits, not rural stratum — do not coerce |
+| TUR ISR | **MISS** | unchanged |
+| ARE BHR KWT QAT SAU LBN VEN | **MISS / N/A** | Gulf / egress — unchanged |
+
+### Still-miss Big Mac ISO3 (urban/rural; excl. Aoi JPN/KOR/TWN/NZL)
+ARE ARG BHR CHE CHL ISR KWT LBN QAT SAU TUR VEN (+ HKG/SGP **N/A**)

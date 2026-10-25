@@ -8,8 +8,8 @@ Urban vs rural (or municipal / non-municipal) food expenditure shares of househo
 Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 
 ## Coverage (build 2026-10-25 Asia/Tokyo)
-- **523 rows / 107 ISO3**, years **1988–2025**
-- ISO3: ARM AUS AUT AZE BEL BGD BGR BOL BRA BTN BWA CHN CIV COL CRI CYP CZE DEU DJI DNK DOM DZA ECU EGY ESP EST ETH EUZ FIN FJI FRA GBR GEO GMB GRC GTM HND HRV HUN IDN IND IRL IRN ITA JOR KEN KGZ KHM KIR LAO LBR LKA LSO LTU LUX LVA MAR MDA MDG MDV MEX MLI MLT MMR MOZ MUS MYS NAM NGA NIC NLD NOR NPL OMN PAK PER PHL POL PRT PRY PSE ROU RUS RWA SDN SLB SLV SVK SVN SWE TCD THA TJK TLS TON TUN TZA UGA UKR URY USA VNM VUT WSM YEM ZAF ZMB
+- **529 rows / 109 ISO3**, years **1988–2025**
+- ISO3: ARM CAN AUS AUT AZE BEL BGD BGR BOL BRA BTN BWA CHN CIV COL CRI CYP CZE DEU DJI DNK DOM DZA ECU EGY ESP EST ETH EUZ FIN FJI FRA GBR GEO GMB GRC GTM HND HRV HUN IDN IND IRL IRN ITA JOR KEN KGZ KHM KIR LAO LBR LKA LSO LTU LUX LVA MAR MDA MDG MDV MEX MLI MLT MMR MOZ MUS MYS NAM NGA NIC NLD NOR NPL OMN PAK PER PHL POL PRT PRY PSE ROU RUS RWA SDN SLB SLV SVK SVN SWE TCD THA TJK TLS TON TUN TZA UGA UKR URY USA VNM VUT WSM YEM ZAF ZMB
 - `estimated_value` empty on all rows
 
 ## Sources
@@ -18,7 +18,8 @@ Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 | Eurostat HBS_STR_T226 | 279 | CP01; PM÷10→%; DEG1=cities→urban; DEG3=rural; +XKX 2015 |
 | CEPALSTAT indicator 5725 | 26 | Urban/Rural; **Total quintile** only |
 | MOSPI HCES Statement 3 | 12 | India (incl. 2023-24) |
-| Azerbaijan SSC HBS via banker.az | 2 | Azerbaijan H1 2023 |
+| Azerbaijan SSC HBS (banker.az 2023 + evtes_2025.pdf 2024) | 4 | AZE urban/rural |
+| StatCan The Daily SHS 2019 Table 3 (Wayback pin) | 2 | CAN CMA≥1M vs rural |
 | BLS CE Table 1721 | 8 | USA |
 | BPS Susenas 2020–2023 (Kompas/CNBC→BPS) | 6 | IDN |
 | NSO Thailand SES 2021 Table 6 | 2 | THA municipal/non-municipal |
@@ -33,6 +34,6 @@ Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 | INEGI ENIGH 2020/2022/2024 | 6 | MEX alimentos+bebidas+tabaco urban/rural |
 
 ## Deliberate misses / skips
-CAN (StatCan SSL); ARG urban-only ENGHo; CHL INE EPF urban capitals only; CHE/TUR not in T226; URY/PAN/ARG/CHL CEPAL National-only for area; HKG/SGP city-state; SAU/ARE national/regional only; PAK **HIT** (HIES 2011-12…2018-19); EGY CAPMAS primary not pinned; VNM/ZAF/AUS/CHN appended earlier;  Aoi skips: JPN/KOR/TWN, AUS/NZL HES; UK ONS LCFS national (GBR here = Eurostat T226).
+ARG urban-only ENGHo; CHL INE EPF urban capitals only; CHE/TUR not in T226; URY/PAN/ARG/CHL CEPAL National-only for area; HKG/SGP city-state; SAU/ARE national/regional only; PAK **HIT** (HIES 2011-12…2018-19); EGY CAPMAS primary not pinned; VNM/ZAF/AUS/CHN appended earlier;  Aoi skips: JPN/KOR/TWN, AUS/NZL HES; UK ONS LCFS national (GBR here = Eurostat T226).
 
 See `missing.md`.

@@ -1,5 +1,5 @@
 {
-  "rows": 2823,
+  "rows": 3015,
   "by_country": {
     "SGP": 207,
     "IRL": 177,
@@ -7,11 +7,13 @@
     "MYS": 491,
     "FIN": 1692,
     "AUT": 180,
-    "NLD": 40
+    "NLD": 40,
+    "FRA": 192
   },
   "countries": [
     "AUT",
     "FIN",
+    "FRA",
     "IRL",
     "MYS",
     "NLD",
@@ -24,6 +26,8 @@
     "household_sku:coffee",
     "household_sku:coffee_500g",
     "household_sku:coffee_beans",
+    "household_sku:coffee_ground_250g_arabica",
+    "household_sku:coffee_ground_250g_non_decaf",
     "household_sku:coffee_hang_tuah_200g",
     "household_sku:coffee_instant",
     "household_sku:coffee_instant_200g",

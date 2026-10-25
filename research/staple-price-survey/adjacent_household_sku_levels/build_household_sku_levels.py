@@ -476,6 +476,43 @@ def from_nld_cbs() -> list[dict]:
     return out
 
 
+
+def from_fra_insee() -> list[dict]:
+    path = RAW / "fra" / "fra_household_prices.csv"
+    if not path.exists():
+        return []
+    src = (
+        "https://bdm.insee.fr (INSEE BDM Prix moyens de vente de détail; "
+        "SERIES_BDM idbank coffee ground 250g; série arrêtée)"
+    )
+    out = []
+    with path.open(newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            try:
+                val = float(r["value"])
+            except (TypeError, ValueError):
+                continue
+            y, m = int(r["year"]), int(r["month"])
+            note = (
+                f"INSEE BDM idbank={r.get('idbank','')}; {r.get('label','')}; "
+                f"EUR metropolitan France average; series stopped 2019-12; "
+                f"{RETRIEVED}"
+            )
+            out.append(
+                row(
+                    "FRA",
+                    f"{y}-{m:02d}-01",
+                    y,
+                    f"household_sku:{r['variable']}",
+                    val,
+                    "EUR per 250 g",
+                    src,
+                    note,
+                )
+            )
+    return out
+
+
 def main() -> None:
     # Skip already-landed Aoi panels (do not duplicate into #118):
     # - japan_rps_everyday_clothing_household_panel.csv
@@ -490,6 +527,7 @@ def main() -> None:
         ("FIN", from_fin_statfin()),
         ("AUT", from_aut_preisradar()),
         ("NLD", from_nld_cbs()),
+        ("FRA", from_fra_insee()),
     ]
     rows: list[dict] = []
     stats = {}

@@ -12,13 +12,13 @@ Retrieved: 2026-10-25 Asia/Tokyo
 
 ## Closed in this pack (vertical CSV)
 
-SGP, MYS, IRL, QAT, **FIN**, **AUT**, **NLD** — see readme.
+SGP, MYS, IRL, QAT, FIN, AUT, NLD, **FRA** — see readme.
 
 ## SKU family gaps (relative to lane list)
 
 | Family | In this pack | Notes |
 |--------|--------------|-------|
-| coffee / tea | SGP, MYS, IRL, QAT, FIN, AUT, NLD | Strongest family |
+| coffee / tea | SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA | Strongest family |
 | soap / detergent | SGP, MYS, QAT, FIN | FIN is the dense EUZ detergent set |
 | toilet paper | SGP, FIN | MYS no stable TP SKU in selected PriceCatcher codes |
 | tissue / napkins | MYS (1 month Kleenex); FIN sanitary towels + kitchen towel | Sparse tissue; kitchen towel = paper towel SKU |
@@ -39,6 +39,24 @@ SGP, MYS, IRL, QAT, **FIN**, **AUT**, **NLD** — see readme.
 | ARE/BHR/KWT/OMN | Prior staple lane exhausted for open absolute retail bulk; not re-forced. |
 | CAN/DNK/NOR/AUS/CHE | Prior TLS/CPI-only notes; Aoi `hi_staple_levels_alt` / dead-ends — no forced household dig. |
 | TWN | NDC e-invoice path for food staples; 22933 household listing 404 this turn — not forced. |
+
+
+## Probed this densify turn (2026-10-25 Asia/Tokyo) — stop cleanly
+
+| ISO3 | Status |
+|------|--------|
+| FRA | **HIT** — INSEE BDM ground coffee 250g (2 idbanks) monthly through 2019-12. Laundry/dishwasher powder absolute exist but end 1998–99 — not loaded (below ~2012 preference). No TP/tissue/tea/textile towels/underwear in Prix moyens famille. |
+| CAN | StatCan table **18-10-0245-01** (coffee 340g, tea 20 bags, laundry detergent 4.43 L, shampoo) is the right absolute path, but **TLS EOF** from this box to www150.statcan.gc.ca (zip + WDS) — blocked this stream; not forced via workarounds. |
+| KOR | Korea Consumer Agency 참가격 / data.go.kr 생필품 averages look on-lane (detergent, toilet paper, coffee mix, tissue) but **TLS fail** to data.go.kr / price.go.kr from box — not forced. |
+| DEU | Destatis Preismonitor is **% change vs 2020**, not LCU absolute; Destatis states average absolute consumer prices not in current CPI publication programme. |
+| SWE | SCB open tables are CPI **indices** only for coffee/tea/detergent/TP. |
+| ESP | INE search for precios medios detergente — no named absolute household SKU table; prior staple hit is HBS *valor unitario* food (25169), not detergent/TP. |
+| THA | MOC open data GISProductPrice = agricultural; CPI indexes only; pricemonitor portal up but no open named household absolute bulk secured. |
+| BEL | Statbel search average prices coffee — no absolute named household table secured. |
+| DNK/NOR/AUS/ITA/HKG/ZAF/IDN/PHL | Quick portal probes: CPI/index or food-only / TLS-403; no new absolute household SKU bulk. Prior staple-lane notes stand. |
+| Textile towels / underwear | Still absent outside Aoi JPN/GBR panels after this densify pass. |
+
+**Densify stop:** open HI/EUZ/Asia absolute paths for remaining BM ISO3 are thin after this solid try (FRA landed; CAN/KOR blocked by egress TLS). No further forced digs.
 
 ## Intentionally not collected
 

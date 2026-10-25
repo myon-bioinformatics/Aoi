@@ -180,7 +180,7 @@
       "import_sites": 2
     },
     "numpy": {
-      "attribute_uses": 303,
+      "attribute_uses": 305,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
@@ -220,7 +220,7 @@
         "int8": 1,
         "integer": 1,
         "isfinite": 1,
-        "linalg.LinAlgError": 1,
+        "linalg.LinAlgError": 3,
         "linalg.lstsq": 5,
         "linalg.norm": 6,
         "linalg.pinv": 1,
@@ -393,12 +393,13 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 9,
+          "attribute_uses": 11,
           "attributes": {
             "allclose": 3,
             "array": 1,
             "array_equal": 1,
             "exp": 1,
+            "linalg.LinAlgError": 2,
             "median": 2,
             "random.default_rng": 1
           },
@@ -696,7 +697,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 888,
+      "attribute_uses": 892,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -704,12 +705,12 @@
         "MonkeyPatch": 1,
         "StashKey": 2,
         "UsageError": 10,
-        "approx": 265,
+        "approx": 267,
         "fail": 21,
         "fixture": 43,
         "hookimpl": 3,
         "importorskip": 9,
-        "mark.parametrize": 161,
+        "mark.parametrize": 163,
         "mark.skipif": 8,
         "param": 1,
         "raises": 348,
@@ -829,13 +830,13 @@
           "import_sites": 10
         },
         "tests": {
-          "attribute_uses": 99,
+          "attribute_uses": 103,
           "attributes": {
-            "approx": 23,
+            "approx": 25,
             "fail": 1,
             "fixture": 5,
             "importorskip": 1,
-            "mark.parametrize": 17,
+            "mark.parametrize": 19,
             "mark.skipif": 2,
             "raises": 50
           },
@@ -2705,6 +2706,7 @@
         "array": 1,
         "array_equal": 1,
         "exp": 1,
+        "linalg.LinAlgError": 2,
         "median": 2,
         "random.default_rng": 1
       },
@@ -2716,8 +2718,9 @@
     },
     {
       "attributes": {
-        "approx": 10,
+        "approx": 12,
         "fixture": 1,
+        "mark.parametrize": 2,
         "mark.skipif": 1
       },
       "dynamic_lines": [],

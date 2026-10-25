@@ -426,5 +426,5 @@
       "note": "Burger Parity lists this ISO3; Season2 panel filters to countries_iso3.txt (EU members → EUZ aggregate in Big Mac)."
     }
   ],
-  "note": "Burger Parity prices_all.csv is a single cross-section reference; tompec JSON is the historical panel source. Mismatches expected when observation dates / plan definitions diverge. No values copied from prices_all into the vertical panel."
+  "note": "Burger Parity prices_all.csv is a single cross-section reference; tompec JSON is the historical panel source for 2023+. Mismatches expected when observation dates / plan definitions diverge. No values copied from prices_all into the vertical panel."
 }

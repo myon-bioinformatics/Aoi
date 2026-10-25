@@ -1,0 +1,244 @@
+Country,Code,Currency,Mobile,Basic,Standard,Premium,Conversion,Mobile_USD,Basic_USD,Standard_USD,Premium_USD
+Viet Nam,VN,Vietnamese Dong,70000,180000,220000,260000,0.000043,3.01,7.74,9.46,11.18
+Indonesia,ID,Indonesian Rupiah,54000,120000,153000,186000,0.00007,3.78,8.4,10.71,13.02
+Colombia,CO,Colombian Peso,-,16900,26900,38900,0.00025,-,4.225,6.725,9.725
+Korea�(South),KR,Korean Won,-,9500,13500,17000,0.000845,-,8.028,11.408,14.365
+Chile,CL,Chilean Peso,-,5940,8320,10700,0.001175,-,6.98,9.776,12.572
+Nigeria,NG,Nigerian Naira,1200,2900,3600,4400,0.0024,2.88,6.96,8.64,10.56
+Hungary,HU,Hungarian Forint,-,2490,3490,4490,0.003068,-,7.639,10.707,13.775
+Pakistan,PK,Pakistani Rupee,250,450,800,1100,0.005613,1.403,2.526,4.49,6.174
+Kenya,KE,Kenyan Shilling,300,700,1100,1450,0.008763,2.64,6.16,9.68,12.76
+Japan,JP,Japanese Yen,-,990,1490,1980,0.0088,-,8.675,13.057,17.351
+Argentina,AR,Argentine Peso,-,379,639,939,0.009822,-,3.723,6.276,9.223
+India,IN,Indian Rupee,149,199,499,649,0.01313,1.956,2.613,6.552,8.521
+Russian Federation,RU,Russian Ruble,-,599,799,999,0.013579,-,8.134,10.85,13.565
+Philippines,PH,Philippine Peso,149,369,459,549,0.020001,2.98,7.38,9.18,10.981
+Thailand,TH,Thai Baht,99,279,349,419,0.029879,2.958,8.336,10.428,12.519
+Taiwan Republic of China,TW,New Taiwan Dollar,-,270,330,390,0.03595,-,9.706,11.864,14.021
+Czech Republic,CZ,Czech Crowns,-,199,259,319,0.044726,-,8.9,11.584,14.268
+Mexico,MX,Mexican Peso,-,139,219,299,0.047593,-,6.615,10.423,14.23
+South Africa,ZA,South African Rand,49,99,159,199,0.062541,3.065,6.192,9.944,12.446
+Egypt,EG,Egyptian Pound,-,120,165,200,0.063,-,7.56,10.395,12.6
+Morocco,MA,Moroccan Dirham,-,65,95,125,0.11,-,7.15,10.45,13.75
+Sweden,SE,Krona,-,99,129,179,0.110264,-,10.916,14.224,19.737
+Bouvet Island,BV,Krone,-,89,109,159,0.110963,-,9.876,12.095,17.643
+Norway,NO,Krone,-,89,109,159,0.110963,-,9.876,12.095,17.643
+Svalbard and Jan Mayen Islands,SJ,Krone,-,89,109,159,0.110963,-,9.876,12.095,17.643
+Hong Kong SAR China,HK,Hong Kong Dollar,-,63,78,93,0.12816,-,8.074,9.996,11.919
+Denmark,DK,Danish Krone,-,79,99,129,0.152032,-,12.011,15.051,19.612
+Faroe Islands,FO,Danish Krone,-,79,99,129,0.152032,-,12.011,15.051,19.612
+Greenland,GL,Danish Krone,-,79,99,129,0.152032,-,12.011,15.051,19.612
+Brazil,BR,Brazilian Real,-,25.9,39.9,55.9,0.176025,-,4.559,7.023,9.84
+Malaysia,MY,Malaysian Ringgit,17,35,45,55,0.23756,4.039,8.315,10.69,13.066
+Poland,PL,Polish Zloty,-,29,43,60,0.244507,-,7.091,10.514,14.67
+Peru,PE,Peruvian Sole,-,24.9,34.9,44.9,0.25,-,6.225,8.725,11.225
+Saudi Arabia,SA,Saudi Riyal,-,32,43,61,0.266667,-,8.533,11.467,16.267
+United Arab Emirates,AE,Arab Emirates Dirham,-,29,39,56,0.27,-,7.83,10.53,15.12
+Israel,IL,Israeli Shekel,-,32.9,46.9,60.9,0.321592,-,10.58,15.083,19.585
+Turkey,TR,Turkish Lira,-,26.99,40.99,54.99,0.679743,-,18.346,27.863,37.379
+Cook Islands,CK,New Zealand Dollar,-,12.99,18.49,24.99,0.679743,-,8.83,12.568,16.987
+New Zealand,NZ,New Zealand Dollar,-,12.99,18.49,24.99,0.679743,-,8.83,12.568,16.987
+Niue,NU,New Zealand Dollar,-,12.99,18.49,24.99,0.679743,-,8.83,12.568,16.987
+Tokelau,TK,New Zealand Dollar,-,12.99,18.49,24.99,0.679743,-,8.83,12.568,16.987
+Australia,AU,Australian Dollar,-,10.99,16.99,22.99,0.717399,-,7.884,12.189,16.493
+Cocos (Keeling) Islands,CC,Australian Dollar,-,10.99,16.99,22.99,0.717399,-,7.884,12.189,16.493
+Norfolk Island,NF,Australian Dollar,-,10.99,16.99,22.99,0.717399,-,7.884,12.189,16.493
+Singapore,SG,Singapore Dollar,-,12.98,17.48,21.98,0.732639,-,9.51,12.807,16.103
+Canada,CA,Canadian dollars,-,9.99,14.99,18.99,0.780985,-,7.802,11.707,14.831
+Afghanistan,AF,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Algeria,DZ,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Angola,AO,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Bangladesh,BD,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Benin,BJ,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Bhutan,BT,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Botswana,BW,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+British Indian Ocean Territory,IO,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Brunei Darussalam,BN,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Burkina Faso,BF,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Burundi,BI,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Cambodia,KH,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Cameroon,CM,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Cape Verde,CV,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Central African Republic,CF,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Chad,TD,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Macao SAR China,MO,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Christmas Island,CX,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Comoros,KM,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Congo�(Brazzaville),CG,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Congo (Kinshasa),CD,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+C�te d'Ivoire,CI,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Djibouti,DJ,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Equatorial Guinea,GQ,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Eritrea,ER,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Ethiopia,ET,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Fiji,FJ,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+French Polynesia,PF,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Gabon,GA,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Gambia,GM,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Ghana,GH,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Guam,GU,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Guinea,GN,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Guinea-Bissau,GW,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Heard and Mcdonald Islands,HM,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Iran Islamic Republic of,IR,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Iraq,IQ,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Jordan,JO,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Kiribati,KI,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Lao PDR,LA,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Lebanon,LB,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Lesotho,LS,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Liberia,LR,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Libya,LY,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Madagascar,MG,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Malawi,MW,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Maldives,MV,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Mali,ML,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Mauritania,MR,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Mauritius,MU,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Mongolia,MN,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Mozambique,MZ,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Myanmar,MM,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Namibia,NA,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Nauru,NR,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Nepal,NP,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+New Caledonia,NC,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Niger,NE,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Palestinian Territory,PS,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Papua New Guinea,PG,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Pitcairn,PN,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Rwanda,RW,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Saint-Barth�lemy,BL,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Saint Helena,SH,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Saint-Martin (French part),MF,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Samoa,WS,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Sao Tome and Principe,ST,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Senegal,SN,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Seychelles,SC,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Sierra Leone,SL,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Solomon Islands,SB,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Somalia,SO,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+South Georgia and the South Sandwich Islands,GS,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+South Sudan,SS,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Sri Lanka,LK,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Sudan,SD,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Swaziland,SZ,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Tanzania United Republic of,TZ,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Timor-Leste,TL,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Togo,TG,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Tonga,TO,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Tunisia,TN,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Tuvalu,TV,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Uganda,UG,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+US Minor Outlying Islands,UM,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Vanuatu,VU,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Wallis and Futuna Islands,WF,United States Dollar,3.99,7.99,9.99,11.99,1,3.99,7.99,9.99,11.99
+Western Sahara,EH,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Yemen,YE,United States Dollar,-,7.99,9.99,11.99,1,-,7.99,9.99,11.99
+Belize,BZ,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Bolivia,BO,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Cuba,CU,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Dominica,DM,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Dominican Republic,DO,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Ecuador,EC,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+El Salvador,SV,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Grenada,GD,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Guatemala,GT,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Guyana,GY,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Haiti,HT,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Honduras,HN,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Jamaica,JM,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Mayotte,YT,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Nicaragua,NI,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+R�union,RE,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Saint Lucia,LC,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Saint Vincent and Grenadines,VC,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Suriname,SR,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Venezuela (Bolivarian Republic),VE,United States Dollar,-,7.99,10.99,13.99,1,-,7.99,10.99,13.99
+Zambia,ZM,United States Dollar,4.59,9.29,11.59,13.99,1,4.59,9.29,11.59,13.99
+Zimbabwe,ZW,United States Dollar,4.49,8.99,11.49,13.99,1,4.49,8.99,11.49,13.99
+Paraguay,PY,United States Dollar,-,8.29,11.49,14.69,1,-,8.29,11.49,14.69
+Bahrain,BH,United States Dollar,-,7.99,9.99,14.99,1,-,7.99,9.99,14.99
+Kuwait,KW,United States Dollar,-,7.99,9.99,14.99,1,-,7.99,9.99,14.99
+Qatar,QA,United States Dollar,-,7.99,9.99,14.99,1,-,7.99,9.99,14.99
+Oman,OM,United States Dollar,-,8.39,10.49,15.79,1,-,8.39,10.49,15.79
+Anguilla,AI,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Antigua and Barbuda,AG,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Aruba,AW,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Bahamas,BS,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Bermuda,BM,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+British Virgin Islands,VG,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Cayman Islands,KY,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Costa Rica,CR,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Falkland Islands (Malvinas),FK,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Montserrat,MS,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Panama,PA,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Saint Kitts and Nevis,KN,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Trinidad and Tobago,TT,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Turks and Caicos Islands,TC,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+Uruguay,UY,United States Dollar,-,8.99,12.99,15.99,1,-,8.99,12.99,15.99
+American Samoa,AS,United States Dollar,-,8.99,13.99,17.99,1,-,8.99,13.99,17.99
+Marshall Islands,MH,United States Dollar,-,8.99,13.99,17.99,1,-,8.99,13.99,17.99
+Micronesia Federated States of,FM,United States Dollar,-,8.99,13.99,17.99,1,-,8.99,13.99,17.99
+Northern Mariana Islands,MP,United States Dollar,-,8.99,13.99,17.99,1,-,8.99,13.99,17.99
+Palau,PW,United States Dollar,-,8.99,13.99,17.99,1,-,8.99,13.99,17.99
+Puerto Rico,PR,United States Dollar,-,8.99,13.99,17.99,1,-,8.99,13.99,17.99
+United States of America,US,United States Dollar,-,8.99,13.99,17.99,1,-,8.99,13.99,17.99
+Virgin Islands US,VI,United States Dollar,-,8.99,13.99,17.99,1,-,8.99,13.99,17.99
+Barbados,BB,United States Dollar,-,10.59,15.29,18.79,1,-,10.59,15.29,18.79
+Liechtenstein,LI,Swiss Franc,-,11.9,18.9,24.9,1.083199,-,12.89,20.472,26.972
+Switzerland,CH,Swiss Franc,-,11.9,18.9,24.9,1.083199,-,12.89,20.472,26.972
+Ukraine,UA,Euro,-,4.99,7.49,9.99,1.130559,-,5.641,8.468,11.294
+Albania,AL,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Armenia,AM,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Azerbaijan,AZ,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Belarus,BY,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Bosnia and Herzegovina,BA,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Bulgaria,BG,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Croatia,HR,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Estonia,EE,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Kazakhstan,KZ,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Kyrgyzstan,KG,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Latvia,LV,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Lithuania,LT,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Macedonia Republic of,MK,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Moldova,MD,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Montenegro,ME,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Romania,RO,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Serbia,RS,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Slovakia,SK,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Slovenia,SI,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Turkmenistan,TM,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Uzbekistan,UZ,Euro,-,7.99,9.99,11.99,1.130559,-,9.033,11.294,13.555
+Cyprus,CY,Euro,-,7.99,10.99,13.99,1.130559,-,9.033,12.425,15.817
+French Guiana,GF,Euro,-,7.99,10.99,13.99,1.130559,-,9.033,12.425,15.817
+Georgia,GE,Euro,-,9.39,11.79,13.99,1.130559,-,10.616,13.329,15.817
+Greece,GR,Euro,-,7.99,10.99,13.99,1.130559,-,9.033,12.425,15.817
+Guadeloupe,GP,Euro,-,7.99,10.99,13.99,1.130559,-,9.033,12.425,15.817
+Martinique,MQ,Euro,-,7.99,10.99,13.99,1.130559,-,9.033,12.425,15.817
+Tajikistan,TJ,Euro,-,9.39,11.79,13.99,1.130559,-,10.616,13.329,15.817
+Aland Islands,AX,Euro,-,7.99,11.99,15.99,1.130559,-,9.033,13.555,18.078
+Finland,FI,Euro,-,7.99,11.99,15.99,1.130559,-,9.033,13.555,18.078
+French Southern Territories,TF,Euro,-,7.99,11.99,15.99,1.130559,-,9.033,13.555,18.078
+Monaco,MC,Euro,-,7.99,11.99,15.99,1.130559,-,9.033,13.555,18.078
+Netherlands,NL,Euro,-,7.99,11.99,15.99,1.130559,-,9.033,13.555,18.078
+Portugal,PT,Euro,-,7.99,11.99,15.99,1.130559,-,9.033,13.555,18.078
+Saint Pierre and Miquelon,PM,Euro,-,7.99,11.99,15.99,1.130559,-,9.033,13.555,18.078
+Andorra,AD,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Antarctica,AQ,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Austria,AT,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Belgium,BE,Euro,-,8.99,13.49,17.99,1.130559,-,10.164,15.251,20.339
+France,FR,Euro,-,8.99,13.49,17.99,1.130559,-,10.164,15.251,20.339
+Germany,DE,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Gibraltar,GI,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Holy See�(Vatican City State),VA,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Iceland,IS,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Ireland,IE,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Italy,IT,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Luxembourg,LU,Euro,-,8.99,13.49,17.99,1.130559,-,10.164,15.251,20.339
+Malta,MT,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+San Marino,SM,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Spain,ES,Euro,-,7.99,12.99,17.99,1.130559,-,9.033,14.686,20.339
+Guernsey,GG,British Pound,-,5.99,9.99,13.99,1.326419,-,7.945,13.251,18.557
+Isle of Man,IM,British Pound,-,5.99,9.99,13.99,1.326419,-,7.945,13.251,18.557
+Jersey,JE,British Pound,-,5.99,9.99,13.99,1.326419,-,7.945,13.251,18.557
+United Kingdom,GB,British Pound,-,5.99,9.99,13.99,1.326419,-,7.945,13.251,18.557

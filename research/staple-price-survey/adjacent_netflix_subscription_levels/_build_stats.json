@@ -1,6 +1,6 @@
 {
-  "n_rows": 5029,
-  "n_iso3": 53,
+  "n_rows": 5261,
+  "n_iso3": 54,
   "iso3_sorted": [
     "ARE",
     "ARG",
@@ -43,6 +43,7 @@
     "POL",
     "QAT",
     "ROU",
+    "RUS",
     "SAU",
     "SGP",
     "SWE",
@@ -57,14 +58,17 @@
     "ZAF"
   ],
   "plan_counts": {
-    "basic": 1371,
-    "standard": 1590,
-    "premium": 1590,
+    "basic": 1445,
+    "standard": 1664,
+    "premium": 1664,
     "basic_with_ads": 7,
     "standard_with_ads": 210,
-    "mobile": 261
+    "mobile": 271
   },
-  "snapshot_dates": [
+  "earliest_date": "2020-03-10",
+  "latest_date": "2026-09-28",
+  "n_distinct_dates": 32,
+  "tompec_snapshot_dates": [
     "2023-01-07",
     "2023-04-19",
     "2023-10-21",
@@ -96,16 +100,117 @@
     "2026-08-27",
     "2026-09-28"
   ],
-  "n_snapshots": 30,
-  "bm_miss_no_tompec_iso3": [
+  "n_tompec_snapshots": 30,
+  "pre2023": {
+    "fromabroad_2020_03_10": {
+      "date": "2020-03-10",
+      "n_rows_added": 61,
+      "n_iso3": 20,
+      "iso3": [
+        "ARG",
+        "AUS",
+        "BRA",
+        "CAN",
+        "CHE",
+        "CHL",
+        "COL",
+        "DNK",
+        "GBR",
+        "HUN",
+        "IND",
+        "ISR",
+        "MEX",
+        "NOR",
+        "NZL",
+        "PER",
+        "POL",
+        "SWE",
+        "USA",
+        "ZAF"
+      ]
+    },
+    "apoorv_comparitech_2021_12_28": {
+      "date": "2021-12-28",
+      "n_rows_added": 171,
+      "n_iso3": 54,
+      "iso3": [
+        "ARE",
+        "ARG",
+        "AUS",
+        "AZE",
+        "BHR",
+        "BRA",
+        "CAN",
+        "CHE",
+        "CHL",
+        "COL",
+        "CRI",
+        "CZE",
+        "DNK",
+        "EGY",
+        "GBR",
+        "GTM",
+        "HKG",
+        "HND",
+        "HUN",
+        "IDN",
+        "IND",
+        "ISR",
+        "JOR",
+        "JPN",
+        "KOR",
+        "KWT",
+        "LBN",
+        "LKA",
+        "MDA",
+        "MEX",
+        "MYS",
+        "NIC",
+        "NOR",
+        "NZL",
+        "OMN",
+        "PAK",
+        "PER",
+        "PHL",
+        "POL",
+        "QAT",
+        "ROU",
+        "RUS",
+        "SAU",
+        "SGP",
+        "SWE",
+        "THA",
+        "TUR",
+        "TWN",
+        "UKR",
+        "URY",
+        "USA",
+        "VEN",
+        "VNM",
+        "ZAF"
+      ],
+      "skipped_currency_mismatch_iso3": {}
+    },
+    "year_2022": {
+      "status": "thin_no_easy_open_full_LCU_cross_section",
+      "note": "No attributable open multi-country LCU table for 2022 found via tompec history, Kaggle mirrors, or trivial Wayback; USD-only prasertk/gist mirrors skipped (no FX lane)."
+    },
+    "before_2020": {
+      "status": "not_in_scope",
+      "note": "Owner ask: ~2020 onward (COVID-era); no pre-2020 dig."
+    }
+  },
+  "bm_miss_no_series": [
     "CHN",
-    "EUZ",
-    "RUS"
+    "EUZ"
   ],
-  "unmapped_iso2": {},
-  "n_skipped_non_bm_country_snapshots": 5758,
   "tompec_clone_path": "/workspace/aoi-phase2/raw/numeraire_hist_2026-10-25/tompec-netflix-prices",
   "tompec_commit": "efa54e3700976d2821d5f9379df0c9deedb4a5d0",
   "duplicate_keys": 0,
-  "estimated_value_nonempty": 0
+  "estimated_value_nonempty": 0,
+  "sources": [
+    "tompec/netflix-prices",
+    "fromabroad.org 2020-03-10",
+    "apoorvgupta25/netflix-prices (Comparitech Dec-2021)"
+  ]
 }

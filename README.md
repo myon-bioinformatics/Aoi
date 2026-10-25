@@ -77,9 +77,19 @@ A proposition "if A then B" and its converse, inverse and contrapositive all rea
 uv run python moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --sweep converse=0.3,0.5,0.7,0.9
 # read each table back through PythDRagoras' own evaluator (needs PYTHONPATH=<Aoi>/pythdragoras)
 uv run python moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --readout usually
+# start from a real proposition and turn its inverse (path is Aoi's cycles/c001-chunichi/outputs/propositions.jsonl)
+uv run python moshimo_box.py --ledger propositions.jsonl --id P1 --sweep inverse=0.6,0.8,0.9
 ```
 
-The units are synthetic model checks (no randomness, never NPB observations). A dial must be strictly between 0 and 1; at the boundary a cell is empty, and how to treat that (the ε question) is not decided, so the box stops with a message instead of substituting a number.
+Three ways to use the other forms without touching the original:
+
+- **Start from a real proposition.** `--ledger propositions.jsonl --id P1` reads the proposition's own converse, inverse, contrapositive and n from its 2x2 table (`metrics`), so "what if its inverse were 0.9?" is asked of a real rule. The first row of an unswept run is the proposition's own table.
+- **Room and break-even.** `--threshold 0.75` (taken from the proposition with `--ledger`) prints how far the original is above or below the threshold, one number in logit units, and for each dial the value that would put the original exactly on the threshold with the other two held. It is the point estimate meeting the threshold, not the verdict flipping: the verdict also asks the confidence interval to clear it (`--readout` shows the verdict).
+- **The ranking score over the four forms.** The tables print `J` and `MK` next to `mcc`: informedness `J = converse + contrapositive - 1` and markedness `MK = original + inverse - 1` (`P(B|A) - P(B|not A)`). They share the numerator `ad - bc`, and `mcc^2 = J * MK` exactly. The original shows up only inside `MK`, paired with the inverse.
+
+Mapping to classification metrics (A predicts, B is the target): original = precision, converse = recall, contrapositive = specificity, inverse = negative predictive value.
+
+The units are synthetic model checks (no randomness, never NPB observations). A dial must be strictly between 0 and 1; at the boundary a cell is empty, and how to treat that (the ε question) is not decided, so the box stops with a message instead of substituting a number. The same holds for real propositions: one with a form at exactly 0 or 1, or with an empty row or column (the condition holds for every unit, so there is no converse or inverse), is refused.
 
 ## Tests
 

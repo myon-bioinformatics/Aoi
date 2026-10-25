@@ -94,6 +94,53 @@ def test_evidence_is_held_back_below_min_points():
     assert si.evidence(four) == "insufficient" and si.evidence(five) == "sufficient"
 
 
+@pytest.mark.parametrize("observed_count, assumed_count, expected", [
+    (0, 5, "insufficient"),
+    (5, 0, "sufficient"),
+    (4, 1, "insufficient"),
+    (5, 2, "sufficient"),
+])
+def test_cli_evidence_counts_only_observed_totals(
+        tmp_path, capsys, observed_count, assumed_count, expected):
+    observed_years = list(range(2000, 2000 + observed_count))
+    assumed_years = list(range(2010, 2010 + assumed_count))
+    years = observed_years + assumed_years
+    rows = [(y, "p:pieces", 10) for y in years]
+    rows += [(y, "p:grams_per_piece", 10) for y in observed_years]
+    path = _write(tmp_path / "evidence.csv", rows)
+    args = [str(path), "--product", "p", "--danger-total", "60", "--whatif"]
+    if assumed_years:
+        args += ["--assume-weight", ",".join("%d:5" % y for y in assumed_years)]
+    assert si.main(args) == 0
+    out = capsys.readouterr().out
+    assert ("evidence      %s (%d observed points, MIN_POINTS=5)" %
+            (expected, observed_count)) in out
+    total_line = next(line for line in out.splitlines() if line.startswith("total g"))
+    for y in observed_years:
+        assert "%d: 100.0" % y in total_line
+    for y in assumed_years:
+        assert "%d: 50.0" % y in total_line
+    assert ("ASSUMED" in total_line) == bool(assumed_years)
+    # Assumptions still participate in the displayed analysis and WHAT-IF.
+    q = {y: 100.0 for y in observed_years}
+    q.update({y: 50.0 for y in assumed_years})
+    assert "total level    %s" % si._r(si.level(q)) in out
+    assert "rate per year  %s" % [(a, b, round(r, 5)) for a, b, r in si.rates(q)] in out
+    assert "WHAT-IF (not a forecast)" in out
+
+
+def test_report_evidence_observed_weight_and_direct_total_override_assumptions(capsys):
+    m = {"pieces": {2000: 10, 2001: 10, 2002: 10},
+         "grams_per_piece": {2000: 10, 2001: 10, 2002: 10},
+         "total_g": {2003: 90, 2004: 80}}
+    q, assumed = si.report("p", m, assume={y: 999 for y in range(2000, 2005)})
+    assert q == {2000: 100, 2001: 100, 2002: 100, 2003: 90, 2004: 80}
+    assert assumed == set()
+    out = capsys.readouterr().out
+    assert "evidence      sufficient (5 observed points, MIN_POINTS=5)" in out
+    assert "ASSUMED" not in out
+
+
 def test_whatif_years():
     assert si.whatif_years(300.0, 60.0, 0.0) is None and si.whatif_years(300.0, 60.0, 0.01) is None
     assert si.whatif_years(50.0, 60.0, -0.02) == 0.0

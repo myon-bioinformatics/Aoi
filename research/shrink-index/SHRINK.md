@@ -20,10 +20,10 @@ u_t = (p_t / q_t) / (p_ref / q_ref)          unit-price level (rises when the pr
 
 - q is computed only for a year where both n and w are known. **No interpolation and no carry-forward** between years. Where a source states a range ("since 2014"), the row says so in `note`.
 - `q_d` (the size at which a person cannot eat it) is **not estimated from data**. A person sets it with `--danger-total`. The synthetic check uses an illustrative 60 g.
-- `MIN_POINTS = 5`: with fewer known q points the output says **insufficient**. It is "the evidence is not enough", not "failed".
+- `MIN_POINTS = 5`: count only years with an observed `total_g` or a total derived from observed n and observed w in the same year. Exclude totals using `--assume-weight`. Fewer than five observed points gives **insufficient**; five or more gives **sufficient** for this point-count check, not a research conclusion. Five assumed years alone count as zero; four observed plus one assumed count as four. It is "the evidence is not enough", not "failed".
 - A rate `r` is an interval between two known points. With sparse points a step and a slide cannot be told apart, so the code does not try.
 - No straight-line regression and no rounded verdict. `--whatif` is an explicit opt-in ("if this rate continued, q reaches q_d in X years") and is printed as `WHAT-IF (not a forecast)`.
-- A gap in the weight can be filled by a labelled assumption: `--assume-weight 2005:10.5,2007:10.5`. The output marks those years `ASSUMED`; an observed weight always wins; assumptions are never written into the data file.
+- A gap in the weight can be filled by a labelled assumption: `--assume-weight 2005:10.5,2007:10.5`. The output marks those years `ASSUMED`; an observed weight always wins; a directly recorded total also wins; assumptions are never written into the data file. Assumed totals remain in the displayed analysis (levels, rates, danger, unit prices and explicit WHAT-IF) but never increase evidence points.
 - No currency, unit conversion or exchange rate.
 
 ## Observed data: `countrymaam_observed_vertical.csv`

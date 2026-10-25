@@ -13,7 +13,7 @@
   u_t = (p_t / q_t) / (p_ref / q_ref)        単価の水準（値段が据え置きで q が減ると上がる）
 
 q_d（人が食べられない大きさ）はデータから決めない。--danger-total で人が置く。
-q がわかる点が MIN_POINTS に満たないときは「判断材料が足りない」と表示する。
+仮置きを除き、観測から総量がわかる年が MIN_POINTS に満たないときは「判断材料が足りない」と表示する。
 予測は出さない。--whatif は「この割合が続いたら」の計算で、予測ではない（WHAT-IF と表示する）。
 直線回帰も、丸めた数字での結論も、ここには置かない。
 
@@ -35,7 +35,7 @@ import math
 import sys
 
 DEFAULT_CSV = 'research/shrink-index/countrymaam_observed_vertical.csv'
-MIN_POINTS = 5   # q がわかる年がこれより少ないと判断を保留する（先に宣言。結果を見て変えない）
+MIN_POINTS = 5   # 仮置きを除く観測総量の年がこれより少ないと判断を保留する（先に宣言。結果を見て変えない）
 
 
 def kind_of(x):
@@ -136,6 +136,7 @@ def danger(x, x_d):
 
 
 def evidence(q, min_points=MIN_POINTS):
+    """渡された観測総量の年数による点数判定。呼出し側で仮置きを除く。"""
     return 'sufficient' if len(q) >= min_points else 'insufficient'
 
 
@@ -170,7 +171,9 @@ def report(product, m, assume=None, danger_total=None, whatif=False, log=None):
     print('g per piece   ', dict(sorted(m.get('grams_per_piece', {}).items())))
     print('total g       ', _r(q, 2), ('  ASSUMED g/piece in %s' % sorted(assumed)) if assumed else '')
     log.scan('compute', 'total g', q)
-    print('evidence      %s (%d known points, MIN_POINTS=%d)' % (evidence(q), len(q), MIN_POINTS))
+    observed_q = {y: v for y, v in q.items() if y not in assumed}
+    print('evidence      %s (%d observed points, MIN_POINTS=%d)' % (
+        evidence(observed_q), len(observed_q), MIN_POINTS))
     if pieces:
         pl = level(pieces)
         print('pieces level  ', _r(pl) if pl else None, '(pieces only)')

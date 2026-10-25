@@ -1,0 +1,504 @@
+{
+  "sims": 200,
+  "units": 156,
+  "base": {
+    "min_games": 10,
+    "end": "season"
+  },
+  "grid": [
+    {
+      "eps": 0.1,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 24,
+      "still_boundary": 23,
+      "switched_in": [
+        "2019-l"
+      ],
+      "left": [],
+      "other_changed": 56,
+      "other_changed_cols": {
+        "wave_osc_base": 7,
+        "wave_limit_rank_h1": 23,
+        "wave_settle_pct": 40
+      },
+      "end_shift_max": 0.08442884059799871,
+      "end_shift_over_eps": 0.8442884059799871,
+      "limit_shift_vs_smallest_eps": 1.7495828759962864,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 7.872916924536258,
+      "settle_times_eps_median": 0.780261608087188,
+      "limit_h1_blank": 0
+    },
+    {
+      "eps": 0.03,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 24,
+      "still_boundary": 23,
+      "switched_in": [
+        "2024-h"
+      ],
+      "left": [],
+      "other_changed": 41,
+      "other_changed_cols": {
+        "wave_limit_rank_h1": 23,
+        "wave_settle_pct": 15,
+        "wave_osc_base": 7
+      },
+      "end_shift_max": 0.025830600122993985,
+      "end_shift_over_eps": 0.8610200040997995,
+      "limit_shift_vs_smallest_eps": 0.02830912088549109,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 24.8728195052742,
+      "settle_times_eps_median": 0.7440755598482947,
+      "limit_h1_blank": 0
+    },
+    {
+      "eps": 0.01,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 23,
+      "still_boundary": 23,
+      "switched_in": [],
+      "left": [],
+      "other_changed": 34,
+      "other_changed_cols": {
+        "wave_limit_rank_h1": 23,
+        "wave_settle_pct": 4,
+        "wave_osc_base": 10
+      },
+      "end_shift_max": 0.008657652877797517,
+      "end_shift_over_eps": 0.8657652877797517,
+      "limit_shift_vs_smallest_eps": 0.009436731513007501,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 73.5753988493347,
+      "settle_times_eps_median": 0.7350066788082135,
+      "limit_h1_blank": 0
+    },
+    {
+      "eps": 0.003,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 23,
+      "still_boundary": 23,
+      "switched_in": [],
+      "left": [],
+      "other_changed": 23,
+      "other_changed_cols": {
+        "wave_limit_rank_h1": 23,
+        "wave_settle_pct": 1
+      },
+      "end_shift_max": 0.0026022652580524053,
+      "end_shift_over_eps": 0.8674217526841351,
+      "limit_shift_vs_smallest_eps": 0.0028310057297442626,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 244.28608578139279,
+      "settle_times_eps_median": 0.7326340644386382,
+      "limit_h1_blank": 0
+    },
+    {
+      "eps": 0.001,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 24,
+      "still_boundary": 23,
+      "switched_in": [
+        "2024-h"
+      ],
+      "left": [],
+      "other_changed": 26,
+      "other_changed_cols": {
+        "wave_limit_rank_h1": 23,
+        "wave_osc_base": 3
+      },
+      "end_shift_max": 0.0008678945906588353,
+      "end_shift_over_eps": 0.8678945906588353,
+      "limit_shift_vs_smallest_eps": 0.0009436656406887067,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 732.0293827250239,
+      "settle_times_eps_median": 0.7319546517565105,
+      "limit_h1_blank": 0
+    },
+    {
+      "eps": 0.0001,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 23,
+      "still_boundary": 23,
+      "switched_in": [],
+      "left": [],
+      "other_changed": 30,
+      "other_changed_cols": {
+        "wave_limit_rank_h1": 23,
+        "wave_osc_base": 7
+      },
+      "end_shift_max": 8.681073032779096e-05,
+      "end_shift_over_eps": 0.8681073032779096,
+      "limit_shift_vs_smallest_eps": 9.436640752635839e-05,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 7316.56168059803,
+      "settle_times_eps_median": 0.7316486949629517,
+      "limit_h1_blank": 0
+    },
+    {
+      "eps": 1e-06,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 23,
+      "still_boundary": 23,
+      "switched_in": [],
+      "left": [],
+      "other_changed": 31,
+      "other_changed_cols": {
+        "wave_limit_rank_h1": 23,
+        "wave_osc_base": 9
+      },
+      "end_shift_max": 8.68130699771541e-07,
+      "end_shift_over_eps": 0.868130699771541,
+      "limit_shift_vs_smallest_eps": 9.436629619941073e-07,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 731615.1060658575,
+      "settle_times_eps_median": 0.7316150313348889,
+      "limit_h1_blank": 0
+    },
+    {
+      "eps": 1e-09,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 23,
+      "still_boundary": 23,
+      "switched_in": [],
+      "left": [],
+      "other_changed": 26,
+      "other_changed_cols": {
+        "wave_limit_rank_h1": 23,
+        "wave_osc_base": 3
+      },
+      "end_shift_max": 8.681313445890737e-10,
+      "end_shift_over_eps": 0.8681313445890737,
+      "limit_shift_vs_smallest_eps": 9.427250091675887e-10,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 731614691.7045434,
+      "settle_times_eps_median": 0.7316146916298124,
+      "limit_h1_blank": 0
+    },
+    {
+      "eps": 1e-12,
+      "units": 156,
+      "boundary_without_eps": 23,
+      "lifted": 24,
+      "still_boundary": 23,
+      "switched_in": [
+        "2024-h"
+      ],
+      "left": [],
+      "other_changed": 28,
+      "other_changed_cols": {
+        "wave_limit_rank_h1": 23,
+        "wave_osc_base": 5
+      },
+      "end_shift_max": 8.686384944667225e-13,
+      "end_shift_over_eps": 0.8686384944667225,
+      "limit_shift_vs_smallest_eps": 0.0,
+      "settle_over_1": 18,
+      "settle_within_season": 5,
+      "settle_x_median_over_1": 731614691290.1819,
+      "settle_times_eps_median": 0.7316146912901071,
+      "limit_h1_blank": 0
+    }
+  ],
+  "variants": {
+    "eps": 1e-06,
+    "base": {
+      "min_games": 10,
+      "end": "season"
+    },
+    "variants": [
+      {
+        "min_games": 5,
+        "end": "season",
+        "units": 156,
+        "units_in_common_with_base": 156,
+        "boundary": 23,
+        "lifted": 23,
+        "lifted_equals_boundary": true,
+        "boundary_in_common_units": 23,
+        "base_boundary_in_common_units": 23,
+        "kept_from_base": 11,
+        "added": 12,
+        "dropped": 12,
+        "jaccard": 0.3142857142857143,
+        "limit_shift_median": 0.019282232825520662,
+        "limit_shift_max": 1.6483790429068046,
+        "same_period": 10,
+        "compared": 11
+      },
+      {
+        "min_games": 10,
+        "end": "season",
+        "units": 156,
+        "units_in_common_with_base": 156,
+        "boundary": 23,
+        "lifted": 23,
+        "lifted_equals_boundary": true,
+        "boundary_in_common_units": 23,
+        "base_boundary_in_common_units": 23,
+        "kept_from_base": 23,
+        "added": 0,
+        "dropped": 0,
+        "jaccard": 1.0,
+        "limit_shift_median": 0.0,
+        "limit_shift_max": 0.0,
+        "same_period": 23,
+        "compared": 23
+      },
+      {
+        "min_games": 20,
+        "end": "season",
+        "units": 156,
+        "units_in_common_with_base": 156,
+        "boundary": 43,
+        "lifted": 43,
+        "lifted_equals_boundary": true,
+        "boundary_in_common_units": 43,
+        "base_boundary_in_common_units": 23,
+        "kept_from_base": 14,
+        "added": 29,
+        "dropped": 9,
+        "jaccard": 0.2692307692307692,
+        "limit_shift_median": 0.15481924109544543,
+        "limit_shift_max": 1.5054850772683848,
+        "same_period": 11,
+        "compared": 14
+      },
+      {
+        "min_games": 30,
+        "end": "season",
+        "units": 156,
+        "units_in_common_with_base": 156,
+        "boundary": 33,
+        "lifted": 32,
+        "lifted_equals_boundary": false,
+        "boundary_in_common_units": 33,
+        "base_boundary_in_common_units": 23,
+        "kept_from_base": 12,
+        "added": 21,
+        "dropped": 11,
+        "jaccard": 0.2727272727272727,
+        "limit_shift_median": 0.27393199520325906,
+        "limit_shift_max": 1.8845441778734866,
+        "same_period": 9,
+        "compared": 12
+      },
+      {
+        "min_games": 5,
+        "end": "decided",
+        "units": 156,
+        "units_in_common_with_base": 156,
+        "boundary": 26,
+        "lifted": 26,
+        "lifted_equals_boundary": true,
+        "boundary_in_common_units": 26,
+        "base_boundary_in_common_units": 23,
+        "kept_from_base": 11,
+        "added": 15,
+        "dropped": 12,
+        "jaccard": 0.2894736842105263,
+        "limit_shift_median": 0.019602603052164103,
+        "limit_shift_max": 1.648419287878415,
+        "same_period": 10,
+        "compared": 11
+      },
+      {
+        "min_games": 10,
+        "end": "decided",
+        "units": 156,
+        "units_in_common_with_base": 156,
+        "boundary": 23,
+        "lifted": 24,
+        "lifted_equals_boundary": false,
+        "boundary_in_common_units": 23,
+        "base_boundary_in_common_units": 23,
+        "kept_from_base": 21,
+        "added": 2,
+        "dropped": 2,
+        "jaccard": 0.84,
+        "limit_shift_median": 0.007759308154460243,
+        "limit_shift_max": 0.09457490869189744,
+        "same_period": 21,
+        "compared": 21
+      },
+      {
+        "min_games": 20,
+        "end": "decided",
+        "units": 156,
+        "units_in_common_with_base": 156,
+        "boundary": 49,
+        "lifted": 48,
+        "lifted_equals_boundary": false,
+        "boundary_in_common_units": 49,
+        "base_boundary_in_common_units": 23,
+        "kept_from_base": 14,
+        "added": 35,
+        "dropped": 9,
+        "jaccard": 0.2413793103448276,
+        "limit_shift_median": 0.22262429192540978,
+        "limit_shift_max": 2.2565321210260456,
+        "same_period": 11,
+        "compared": 14
+      },
+      {
+        "min_games": 30,
+        "end": "decided",
+        "units": 156,
+        "units_in_common_with_base": 156,
+        "boundary": 35,
+        "lifted": 34,
+        "lifted_equals_boundary": false,
+        "boundary_in_common_units": 35,
+        "base_boundary_in_common_units": 23,
+        "kept_from_base": 11,
+        "added": 24,
+        "dropped": 12,
+        "jaccard": 0.23404255319148937,
+        "limit_shift_median": 0.33910169877272267,
+        "limit_shift_max": 1.8845139792570222,
+        "same_period": 8,
+        "compared": 11
+      }
+    ],
+    "membership": [
+      {
+        "unit": "2013-g",
+        "present_in": 8,
+        "on_boundary_in": 2
+      },
+      {
+        "unit": "2014-b",
+        "present_in": 8,
+        "on_boundary_in": 2
+      },
+      {
+        "unit": "2014-h",
+        "present_in": 8,
+        "on_boundary_in": 4
+      },
+      {
+        "unit": "2014-l",
+        "present_in": 8,
+        "on_boundary_in": 5
+      },
+      {
+        "unit": "2015-b",
+        "present_in": 8,
+        "on_boundary_in": 8
+      },
+      {
+        "unit": "2015-e",
+        "present_in": 8,
+        "on_boundary_in": 6
+      },
+      {
+        "unit": "2015-s",
+        "present_in": 8,
+        "on_boundary_in": 4
+      },
+      {
+        "unit": "2016-s",
+        "present_in": 8,
+        "on_boundary_in": 4
+      },
+      {
+        "unit": "2017-e",
+        "present_in": 8,
+        "on_boundary_in": 8
+      },
+      {
+        "unit": "2018-f",
+        "present_in": 8,
+        "on_boundary_in": 6
+      },
+      {
+        "unit": "2019-h",
+        "present_in": 8,
+        "on_boundary_in": 5
+      },
+      {
+        "unit": "2020-l",
+        "present_in": 8,
+        "on_boundary_in": 6
+      },
+      {
+        "unit": "2021-db",
+        "present_in": 8,
+        "on_boundary_in": 8
+      },
+      {
+        "unit": "2021-e",
+        "present_in": 8,
+        "on_boundary_in": 4
+      },
+      {
+        "unit": "2021-f",
+        "present_in": 8,
+        "on_boundary_in": 6
+      },
+      {
+        "unit": "2021-t",
+        "present_in": 8,
+        "on_boundary_in": 6
+      },
+      {
+        "unit": "2022-b",
+        "present_in": 8,
+        "on_boundary_in": 6
+      },
+      {
+        "unit": "2022-c",
+        "present_in": 8,
+        "on_boundary_in": 2
+      },
+      {
+        "unit": "2022-g",
+        "present_in": 8,
+        "on_boundary_in": 6
+      },
+      {
+        "unit": "2022-l",
+        "present_in": 8,
+        "on_boundary_in": 8
+      },
+      {
+        "unit": "2023-d",
+        "present_in": 8,
+        "on_boundary_in": 4
+      },
+      {
+        "unit": "2024-c",
+        "present_in": 8,
+        "on_boundary_in": 5
+      },
+      {
+        "unit": "2024-g",
+        "present_in": 8,
+        "on_boundary_in": 2
+      }
+    ],
+    "membership_histogram": {
+      "2/8": 4,
+      "4/8": 5,
+      "5/8": 3,
+      "6/8": 7,
+      "8/8": 4
+    }
+  }
+}

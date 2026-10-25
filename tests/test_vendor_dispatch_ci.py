@@ -45,3 +45,16 @@ def test_vendor_dispatch_verifies_the_lock_without_record():
     assert "python .test-deps/parent/pilot/vendor_dispatch.py --manifest vendor.lock.json" in job
     assert "--record" not in job
     assert "repository: myon-bioinformatics/myon-bioinformatics" not in job
+
+
+def test_python_matrix_requires_chromium_without_implicit_chrome_fallback():
+    job = _job(CI.read_text(encoding="utf-8"), "test")
+    assert 'command -v chromium || command -v chromium-browser' in job
+    assert 'command -v google-chrome' not in job
+    assert 'Chromium is required:' in job
+    assert 'DRAGOWING_REQUIRE_CHROME=1' in job
+    assert 'DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js' in job
+    assert 'from plotly_cdn import fetch_plotly_js' in job
+    assert 'CHROMIUM=%s' not in job
+    assert '"$chromium" --version' in job
+    assert '>> "$GITHUB_ENV"' in job

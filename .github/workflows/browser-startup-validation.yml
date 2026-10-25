@@ -154,6 +154,37 @@ jobs:
         # Do not introduce sudo/unshare or weaken existing isolation elsewhere.
         run: |
           .venv/bin/python -m pytest -q --junitxml=build/browser-startup/full-suite.xml
+      - name: TRIAL surface full-suite results as annotations
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, xml.etree.ElementTree as ET
+          def esc(t):
+              return t.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          p = 'build/browser-startup/full-suite.xml'
+          if not os.path.exists(p):
+              print('::warning title=TRIAL full-suite.xml missing::pytest wrote no JUnit (killed or timed out?)')
+              raise SystemExit
+          root = ET.parse(p).getroot()
+          suites = [root] if root.tag == 'testsuite' else list(root)
+          for su in suites:
+              print('::notice title=TRIAL full-suite totals::tests=%s failures=%s errors=%s skipped=%s time=%ss' % (
+                  su.get('tests'), su.get('failures'), su.get('errors'), su.get('skipped'), su.get('time')))
+          n = 0
+          slow = []
+          for tc in root.iter('testcase'):
+              slow.append((float(tc.get('time') or 0), (tc.get('classname') or '') + '.' + (tc.get('name') or '')))
+              for tag in ('failure', 'error'):
+                  for e in tc.findall(tag):
+                      msg = ((e.get('message') or '') + '\n' + (e.text or '')).strip()
+                      print('::error title=TRIAL %s::%s' % (esc((tc.get('classname') or '') + '.' + (tc.get('name') or '')), esc(msg[-3000:])))
+                      n += 1
+                      if n >= 8:
+                          break
+          slow.sort(reverse=True)
+          print('::notice title=TRIAL slowest tests::' + esc('; '.join('%.1fs %s' % x for x in slow[:8])))
+          PY
       - name: Measure ten fresh profiles after the suite
         if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
         env:

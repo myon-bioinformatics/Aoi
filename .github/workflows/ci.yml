@@ -379,6 +379,14 @@ jobs:
           real="$(readlink -f "$chromium")"
           echo "::notice title=TRIAL chromium identity::path=$chromium real=$real version=$("$chromium" --version 2>&1 | head -1) file=$(file -b "$real" | cut -c1-120) dpkg=$(dpkg -S "$real" 2>&1 | head -1) snap=$(snap list chromium 2>&1 | tail -1) os=$(. /etc/os-release; echo "$PRETTY_NAME") kernel=$(uname -r) userns=$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>&1)"
           printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
+      - name: TRIAL read the Chromium tree once so its files are in the page cache
+        shell: bash
+        run: |
+          dir="$(dirname "$(readlink -f "$CHROME")")"
+          start=$(date +%s.%N)
+          find "$dir" -type f -print0 | xargs -0 cat > /dev/null
+          end=$(date +%s.%N)
+          echo "::notice title=TRIAL preload::read $(du -sm "$dir" | cut -f1) MB under $dir in $(echo "$end - $start" | bc) s"
       - name: Require Chromium and render without a network namespace interface
         shell: bash
         run: |

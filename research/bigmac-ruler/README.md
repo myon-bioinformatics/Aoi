@@ -19,4 +19,17 @@ python research/bigmac-ruler/synthetic_staples.py --check
 
 The default input is `research/staple-price-survey/staple_survey_vertical.csv` (from PR #118). Tests: `tests/test_bigmac_ruler.py`.
 
+## Zero / NaN log
+
+`staple_bigmac_check.py` always prints `[zero/NaN log]` lines, once for loading (`load`) and once for the computed results (`compute`), and prints `none` when nothing happened. Values are never changed and nothing is replaced by an epsilon (how to place epsilon is decided separately).
+
+| Kind | Meaning |
+|---|---|
+| `ZERO` / `NaN` / `INF` | Recorded; the value is used as it is |
+| `BLANK` | Not readable as a number; the row is not used (before, such a row stopped the run) |
+| `SKIPPED` | Not computed because of a zero (the Big Mac ratio when either year is 0; before, silently `None`) |
+| `DROPPED` | A bootstrap draw that failed (before, silently discarded) |
+
+On the observed survey, the load log shows 12 zero rows of `household_consumption_total_lcu` (VEN, 2000-2011), outside the 2021-2025 panel.
+
 This directory records no results. The numbers are a provisional reading, not a verdict: with few points, the honest statement is that the evidence is not yet enough.

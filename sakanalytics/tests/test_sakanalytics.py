@@ -1182,3 +1182,105 @@ def test_vs_top_is_compared_with_the_seasons_bar():
     out = sa.add_vs_top_bar_gap(st)
     assert out["vs_top_bar_gap"].to_list()[0] == pytest.approx(-0.02) and out["vs_top_bar_gap"].to_list()[1] is None
     assert sa.add_vs_top_bar_gap(st.drop("lg_bar")).columns == ["team", "vs_top_wpct"]
+
+
+# ---------- ゼロの扱い: 0 で割った値を残さない・名前をつけた許容値・NaN/inf の記録 ----------
+
+def test_vs_others_equals_the_old_inline_formula_when_every_team_has_others():
+    import sakanalytics as sa
+
+    over = ["season", "league"]
+    st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 3 + ["P"] * 3, "x": [1.0, 2.0, 6.0, 0.1, 0.4, 0.2]})
+    old = pl.col("x") - (pl.col("x").sum().over(over) - pl.col("x")) / (pl.col("x").count().over(over) - 1)
+    out = st.with_columns(new=sa._vs_others("x", over), old=old)
+    assert out["new"].to_list() == out["old"].to_list()  # 丸めも含めて同じ（式の順序を変えていない）
+
+
+def test_vs_others_is_null_not_nan_when_there_is_nobody_to_compare_with():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 4, "league": ["C"] * 3 + ["P"], "x": [1.0, 2.0, 6.0, 5.0]})
+    out = st.with_columns(d=sa._vs_others("x"))["d"].to_list()
+    assert out[3] is None                                     # 1球団だけのリーグ: 以前は 0/0 の NaN
+    assert out[:3] == pytest.approx([1.0 - 4.0, 2.0 - 3.5, 6.0 - 1.5])
+
+
+def test_vs_others_does_not_count_a_missing_team_among_the_others():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "x": [1.0, None, 3.0]})
+    out = st.with_columns(d=sa._vs_others("x"))["d"].to_list()
+    assert out == [pytest.approx(1.0 - 3.0), None, pytest.approx(3.0 - 1.0)]  # 比べる相手は空でない 1 球団
+
+
+def test_add_balance_leaves_a_one_team_league_empty_instead_of_nan_or_a_zero_zone():
+    import sakanalytics as sa
+
+    st = pl.DataFrame({"season": [2000] * 4, "league": ["C"] * 3 + ["P"], "team": list("abcd"), "G": [10] * 4,
+                       "RF": [30, 40, 50, 45], "RA": [30, 40, 50, 45],
+                       "rf_sd_g": [3.0] * 4, "ra_sd_g": [3.0] * 4})
+    out = {r["team"]: r for r in sa.add_balance(st).iter_rows(named=True)}
+    d = out["d"]
+    for k in ("rf_adv", "ra_adv", "run_balance", "short_share", "rf_adv_z", "ra_adv_z", "rf_zone", "ra_zone",
+              "rf_adv_se", "ra_adv_se", "rf_zone_se", "ra_zone_se"):
+        assert d[k] is None, k        # NaN でも、「0 の近く」を表す 0 でもない
+    assert out["a"]["rf_adv"] == pytest.approx(3.0 - 4.5)     # 3球団のリーグは変わらない
+
+
+def test_null_nonfinite_nulls_nan_and_inf_and_reports_the_counts():
+    import sakanalytics as sa
+
+    df = pl.DataFrame({"x": [1.0, float("nan"), float("inf"), float("-inf"), None], "n": [1, 2, 3, 4, 5], "s": list("abcde")})
+    out, report = sa.null_nonfinite(df)
+    assert out["x"].to_list() == [1.0, None, None, None, None]
+    assert report == {"x": {"nan": 1, "inf": 2}}
+    assert out["n"].to_list() == df["n"].to_list() and out["s"].to_list() == df["s"].to_list()
+
+
+def test_null_nonfinite_changes_nothing_when_every_value_is_finite():
+    import sakanalytics as sa
+
+    df = pl.DataFrame({"x": [1.0, None, -2.5], "n": [1, 2, 3]})
+    out, report = sa.null_nonfinite(df)
+    assert report == {} and out.equals(df)
+
+
+def test_named_tolerances_keep_the_values_that_were_hard_coded():
+    import sakanalytics as sa
+
+    assert sa.TOLERANCES == {
+        "EPS_CUBIC_COEF": 1e-12, "EPS_FLAT_SLOPE": 1e-9, "EPS_WAVE_SOLVE": 1e-12, "EPS_WAVE_TIE": 1e-12,
+        "K_EFF_MIN_LOG_RATIO": 0.02, "BREAK_GAP_DECIMALS": 9, "RATE_DISPLAY_TOL": 0.0005 + 1e-9,
+    }
+
+
+def test_k_eff_is_empty_when_the_run_ratio_is_too_close_to_one_to_divide_by():
+    import sakanalytics as sa
+
+    near = chunichi([(5, 4)] * 5 + [(4, 5)] * 4 + [(5, 5)] * 20)       # RF 141 / RA 140: |log| ≈ 0.007 < しきい値
+    far = chunichi([(5, 4)] * 6 + [(4, 5)] * 4)                          # RF 46 / RA 44: |log| ≈ 0.044 > しきい値
+    assert abs(math.log(near["RF"] / near["RA"])) < sa.K_EFF_MIN_LOG_RATIO and near["k_eff"] is None
+    assert abs(math.log(far["RF"] / far["RA"])) > sa.K_EFF_MIN_LOG_RATIO and far["k_eff"] is not None
+    assert chunichi([(3, 3), (2, 2)])["k_eff"] is None                  # RF = RA は 0/0
+
+
+def test_main_writes_the_run_record(tmp_path):
+    import json
+
+    import sakanalytics as sa
+
+    teams = {f"a{i}": "C" for i in range(3)} | {f"b{i}": "P" for i in range(3)}
+    rows, n = [], 0
+    for day, (h, a) in enumerate([(h, a) for h in teams for a in teams if h != a and teams[h] == teams[a]] * 2):
+        n += 1
+        rows.append({"key": str(n), "date": f"2024-04-{1 + day % 28:02d}", "home": h, "away": a, "hs": 2 + day % 4, "as": 1 + day % 3})
+    (tmp_path / "games.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    cfg = ["[trajectory]", "min_games = 2", "sims = 5", "", "[teams]"] + [f'{t} = {{ name = "{t}", league = "{lg}" }}' for t, lg in teams.items()]
+    (tmp_path / "analysis.toml").write_text("\n".join(cfg) + "\n", encoding="utf-8")
+    out, meta = tmp_path / "season.jsonl", tmp_path / "meta" / "season.meta.json"
+    assert sa.main(["--games", str(tmp_path / "games.jsonl"), "--config", str(tmp_path / "analysis.toml"),
+                    "--out", str(out), "--meta-out", str(meta)]) == 0
+    rec = json.loads(meta.read_text(encoding="utf-8"))
+    assert rec["tolerances"] == sa.TOLERANCES and rec["polars"] == pl.__version__
+    assert rec["rows"] == len(out.read_text().splitlines()) == 6 and rec["columns"] > 100
+    assert isinstance(rec["nonfinite_nulled"], dict)

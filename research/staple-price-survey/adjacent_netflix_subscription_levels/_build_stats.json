@@ -192,8 +192,22 @@
       "skipped_currency_mismatch_iso3": {}
     },
     "year_2022": {
-      "status": "thin_no_easy_open_full_LCU_cross_section",
-      "note": "No attributable open multi-country LCU table for 2022 found via tompec history, Kaggle mirrors, or trivial Wayback; USD-only prasertk/gist mirrors skipped (no FX lane)."
+      "status": "exhausted_no_usable_open_LCU",
+      "n_rows": 0,
+      "n_iso3": 0,
+      "tried_2026-10-25_AsiaTokyo": [
+        "Wayback Comparitech CDX/fetch — TLS EOF from box egress (repeat of prior fail)",
+        "Kaggle — only Dec-2021 LCU (apoorvgupta25, already loaded) or USD-only prasertk/gist",
+        "bit.ly/Netflix-Prices2 → docs.google.com/.../1668L-... — HTTP 410 Gone",
+        "TNEXT-linked Global Netflix Price sheet 1usSHC2Vrb4KRk3WCu_2LLhls5qtBHHRuh_9ESeXI3nw — HTTP 410",
+        "Reddit 2018 sheet 15ssjAf9FqqBLcgTFt7rfDUSeIVtRKWbvnVmw7JXCuzw — export 401 login wall",
+        "tnext.org/8282.html titled '2022' — article datetime 2023-04-04; fractional ARS (326.36), EGY as USD, RUS as EUR, JPY 800 vs Dec-2021 990 — rejected (mixed/undated quality)",
+        "jiangxin.info / ikannetflix mirrors of same sheet family — same defects",
+        "fromabroad.org/netflix/ — no additional dated LCU posts beyond 2020-03-10",
+        "S&P Global 'Netflix global pricing strategy, 2022' — narrative only, no LCU table",
+        "Reuters/Variety 2022 hike roundups — USA/CAN/GBR/IRL sparse; not assembled (no grind)"
+      ],
+      "note": "Soft-ask stop: no attributable easy open multi-country LCU cross-section for 2022; no invented fills."
     },
     "before_2020": {
       "status": "not_in_scope",

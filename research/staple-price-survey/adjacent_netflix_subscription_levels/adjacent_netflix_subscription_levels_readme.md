@@ -61,7 +61,7 @@ Unit: `{ISO4217} per monthly subscription`.
 | Before 2020 | Out of scope (owner: ~2020+ COVID-era) |
 | 2020 | Partial — fromabroad curated 20 BM ISO3 (native LCU only) |
 | 2021 | Good BM overlap — Comparitech Dec-2021 via Kaggle (~50 ISO3 currency-matched) |
-| 2022 | **Thin** — no easy open full multi-country LCU cross-section (USD-only mirrors skipped) |
+| 2022 | **Exhausted / 0 rows** — Sheets 410; TNEXT dated 2023-04-04 rejected; Wayback TLS; stopped (see `raw/SOURCE.md` §4) |
 | 2023-01 … 2026-09 | Dense — tompec dated JSON |
 
 ## Burger Parity snapshot cross-check (not history)

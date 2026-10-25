@@ -24,6 +24,19 @@
 - Rows kept: 171 / 54 ISO3 (currency matched to tompec billing currency; RUS/RUB added).
 - USD-only prasertk Dec-2021 mirror **not** used (no FX lane).
 
+## 4. Year 2022 — exhausted (2026-10-25 Asia/Tokyo)
+
+No usable open multi-country LCU cross-section found. Attempts:
+
+- Wayback Comparitech: TLS EOF (box egress)
+- Kaggle: Dec-2021 LCU already loaded; prasertk USD-only skipped
+- Global Netflix Price Google Sheets (`bit.ly/Netflix-Prices2`, TNEXT sheet id): HTTP 410 Gone
+- tnext.org/8282.html ("2022" title): published **2023-04-04**; fractional ARS / wrong billing currencies — rejected
+- fromabroad: no post beyond 2020-03-10
+- News hike roundups: sparse major markets only — not ground into a panel
+
+**Result:** 0 rows for 2022. Gap left explicit between 2021-12-28 and tompec 2023-01-07.
+
 ## Not used / left alone
 
 - Aoi `netflix_standard_burgerparity_panel.csv` / `prices_all.csv` — snapshot only.

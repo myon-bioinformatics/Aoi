@@ -376,6 +376,8 @@ jobs:
           fi
           test -x "$chromium"
           "$chromium" --version
+          real="$(readlink -f "$chromium")"
+          echo "::notice title=TRIAL chromium identity::path=$chromium real=$real version=$("$chromium" --version 2>&1 | head -1) file=$(file -b "$real" | cut -c1-120) dpkg=$(dpkg -S "$real" 2>&1 | head -1) snap=$(snap list chromium 2>&1 | tail -1) os=$(. /etc/os-release; echo "$PRETTY_NAME") kernel=$(uname -r) userns=$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>&1)"
           printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
       - name: Require Chromium and render without a network namespace interface
         shell: bash
@@ -389,6 +391,27 @@ jobs:
             dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
             dragowing/tests/test_plotly_cdn.py \
             --junitxml=build/test-results/chrome-export-3.14.xml
+      - name: TRIAL surface failures as annotations
+        if: failure()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          def esc(t):
+              return t.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          n = 0
+          for p in sorted(glob.glob('build/test-results/*.xml')):
+              for tc in ET.parse(p).getroot().iter('testcase'):
+                  for tag in ('failure', 'error'):
+                      for e in tc.findall(tag):
+                          msg = ((e.get('message') or '') + '\n' + (e.text or '')).strip()
+                          print('::error title=TRIAL %s::%s' % (esc((tc.get('classname') or '') + '.' + (tc.get('name') or '')), esc(msg[-3000:])))
+                          n += 1
+                          if n >= 9:
+                              raise SystemExit
+          if n == 0:
+              print('::warning title=TRIAL no failures in JUnit::no testcase failure/error found (pytest may not have written the XML)')
+          PY
       - name: Preserve Chromium export JUnit
         if: always()
         uses: actions/upload-artifact@v7

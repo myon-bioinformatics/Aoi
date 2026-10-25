@@ -61,3 +61,12 @@ See `missing.md`. World Bank ICP public releases are PPP/PLI/expenditure only (d
 
 - **FIN** +1704: whole_milk_l, low_fat_milk_l, eggs_kg, dairy_butter_500g, rapeseed_oil_l, granulated_sugar_kg, beef_topside_kg, minced_beef_kg, pork_escalope_kg, chicken_breast_fillet_kg (StatFin 011 monthly; cereals/potato already loaded).
 - EUZ total rows now **9764**.
+
+## Densify append s3 (retrieved 2026-10-25 Asia/Tokyo) — milk/eggs/meat/oil/sugar easy pass
+
+- **IRL** +1947: CPM12 National Average Price — roast/sliced beef, pork loin/steak, uncooked chicken 1.6kg, full-fat milk 2L, low-fat milk L, large/medium eggs ½ dozen, butter/lb, white granulated sugar kg (cereals/potato already loaded).
+- **ESP** +252: INE 25169 valor unitario (beef/pork/whole milk kg / semi-nonfat milk L / eggs / butter-animal fats / olive+other oils / sugar) + 73844 unitary value extension (beef&veal, swine, poultrymeat, whole/skim milk L, eggs, olive oil, animal butter, sugar).
+- **FRA** +2948: INSEE BDM Prix moyens monthly idbanks — pasteurised whole milk L, UHT semi-skimmed L, butter extra fin 250g, EVOO L, sunflower oil L, sugar cubes kg, industrial chicken kg, pork fillet roast kg, beef rumsteak kg (several stopped series retained as published absolute history; baguette/potato/pasta already loaded). No open eggs series in famille 103157792.
+- **PRT / DEU**: no easy milk/eggs/meat/oil/sugar from already-open paths this pass (Observatório Consumo product list ajax 400 beyond cereal ids 1020–1027; BMEL still bread/flour/potato only in open 505 tables). **STOP** — easy NSO densify exhausted for cereal-heavy EUZ proxies.
+- EUZ total rows now **14911** (prior 9764; +5147 unique).
+

@@ -65,3 +65,9 @@ Agricultural absolute prices (`apri_ap`) are farm-gate, not retail — excluded.
 
 - **SGP** +1269: instant_noodles_5pack, lean_pork_chilled_kg, ribeye_beef_chilled_kg, whole_chicken_chilled_kg, fresh_milk_l, hen_eggs_10, cooking_oil_2kg, potato_kg, white_sugar_2kg (SingStat M213761; rice/bread already loaded).
 - Total rows now **3654** (prior 2385; +1269 unique).
+
+## Densify s3 (retrieved 2026-10-25 Asia/Tokyo)
+
+- **QAT** +37: PSA/NPC Annual Average Consumer Prices — full cream milk 1L (Al Marai), fresh eggs 30, sugar 2kg, corn oil 1.8L (Afia), frozen whole chicken kg (Sadia), fresh whole chicken kg (Al Waha), Australian mutton kg (from already-downloaded NPC annual CSV).
+- HI total rows now **3691** (prior 3654).
+

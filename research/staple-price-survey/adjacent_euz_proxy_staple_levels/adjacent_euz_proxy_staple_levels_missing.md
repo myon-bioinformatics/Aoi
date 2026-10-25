@@ -54,3 +54,14 @@ Public Eurostat HBS datasets under `hbs_exp_*` / `hbs_str_*` / `hbs_car_*` are *
 - Extended **FIN** StatFin 011 (milk/eggs/butter/oil/sugar/beef/pork/chicken).
 - Still thin / exhausted for new ISO3 proxies: BEL skipped; ITA/SWE exhausted; no new EA NSO bulk opens this turn.
 - Dead-ends unchanged: CAN StatCan TLS, KOR TLS — not retried.
+
+## Densify s3 2026-10-25 Asia/Tokyo (easy milk/eggs/meat/oil/sugar)
+
+- Extended **IRL** CPM12 (milk/eggs/butter/sugar/beef/pork/chicken).
+- Extended **ESP** INE 25169 + 73844 (milk/eggs/butter/oils/sugar/beef/pork/poultry).
+- Extended **FRA** INSEE BDM prix moyens food idbanks (milk/butter/oils/sugar/chicken/pork/beef rumsteak); eggs absents from famille.
+- **PRT**: Observatório `get_produtos` admin-ajax 400; only cereal/potato product ids already loaded — **exhausted easy**.
+- **DEU**: BMEL 5050850/5051000 open tables remain bread/flour/potato; Eier/Fleisch/Zucker nav present but no bulk national absolute table confirmed in short try — **exhausted easy** (no Destatis reopen).
+- ITA/SWE/BEL still CPI-only — not forced. ARE/BHR/KWT/OMN/SAU/JOR/CHN/VEN, CAN/KOR TLS — not forced.
+- Easy-open EUZ cereal-heavy densify for milk/eggs/meat/oil/sugar: **STOP**.
+

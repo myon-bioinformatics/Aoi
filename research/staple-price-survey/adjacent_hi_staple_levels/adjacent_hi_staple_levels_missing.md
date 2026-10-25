@@ -71,3 +71,10 @@ Probe artifacts: `raw/eurostat/prc_fpmt_m.tsv.gz` (indices only); `raw/gcc/` (Qa
 - Extended **SGP** SingStat M213761 (noodles/pork/beef/chicken/milk/eggs/oil/potato/sugar).
 - GCC ARE/BHR/KWT/OMN absolute NSO still exhausted; no forced digs.
 - AUS/CAN/CHE/DNK/NOR remain Aoi-lane / TLS — not retried this turn.
+
+## Densify s3 2026-10-25 Asia/Tokyo
+
+- **QAT** NPC annual: milk/eggs/sugar/oil/chicken/mutton loaded into hi pack (+37).
+- No other trivial hi densify this pass (MYS/TWN/HKG/NZL cereal packs left; no new open SKU bulk).
+- Forced skips unchanged: ARE/BHR/KWT/OMN/SAU/JOR/CHN/VEN; CAN/KOR TLS.
+

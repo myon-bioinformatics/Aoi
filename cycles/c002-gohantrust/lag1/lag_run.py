@@ -60,6 +60,25 @@ def rolling(win_start, lag, dE=None):
     return out
 
 
+class _Reads(dict):
+    """ΔlogE を読んだ年を覚える辞書。検定の母集団を「統計が実際に読む年」から導くために使う。"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.read = set()
+
+    def __getitem__(self, key):
+        self.read.add(key)
+        return super().__getitem__(key)
+
+
+def used_years(win_start, lag):
+    """rolling(win_start, lag) が実際に読む ΔlogE の年（参照 index 集合）。式から手で書かず、読んだ年を数える。"""
+    rec = _Reads(DE)
+    rolling(win_start, lag, dE=rec)
+    return sorted(rec.read)
+
+
 def summarize(res, excl2025):
     r = [x for x in res if not (excl2025 and x["t"] == LAST)]
     sm = [x for x in r if x["sign_ok"]]
@@ -74,9 +93,20 @@ def sign_p(k, n):
     return sum(math.comb(n, i) for i in range(k, n + 1)) / 2 ** n
 
 
-def perm_test(win_start, lag):
+def perm_keys(win_start, lag, scope):
+    """順列でシャッフルする年。
+    "declared": 宣言 §7.2 の文面どおり、窓内で ΔlogE が定義される全年（win_start+1..LAST）。
+    "used": 統計が実際に読む年だけ。lag=0 では declared と同じ集合、lag=1 では最終年 LAST を含まない。"""
+    if scope == "declared":
+        return list(range(win_start + 1, LAST + 1))
+    if scope == "used":
+        return used_years(win_start, lag)
+    raise ValueError(scope)
+
+
+def perm_test(win_start, lag, scope="used"):
     rng = np.random.default_rng(SEED)
-    keys = list(range(win_start + 1, LAST + 1))
+    keys = perm_keys(win_start, lag, scope)
     vals = np.array([DE[k] for k in keys])
     obs = rolling(win_start, lag)
     o = {(ex, base): summarize(obs, ex)[base] for ex in (False, True) for base in ("w0", "wd")}
@@ -132,7 +162,8 @@ def run_lag():
     for name, ws in (("extended", 2005), ("legacy", 2015)):
         res = rolling(ws, 1)
         same = rolling(ws, 0)
-        pp = perm_test(ws, 1)
+        pp = perm_test(ws, 1)                       # 主: 統計が実際に読む年だけをシャッフル
+        pp_decl = perm_test(ws, 1, scope="declared")  # 宣言 §7.2 の文面どおり（窓内の全年）。比較のために残す
         blk = dict(years=[x["t"] for x in res], rows=res, corr=corr(ws), perm=None, tests={})
         for ex in (False, True):
             s = summarize(res, ex)
@@ -141,7 +172,10 @@ def run_lag():
             blk["tests"][key] = dict(
                 lag=s, same=sm,
                 p_sign0=sign_p(s["w0"], s["n"]), p_signd=sign_p(s["wd"], s["n"]),
-                p_perm0=pp[(ex, "w0")], p_permd=pp[(ex, "wd")])
+                p_perm0=pp[(ex, "w0")], p_permd=pp[(ex, "wd")],
+                p_perm0_declared=pp_decl[(ex, "w0")], p_permd_declared=pp_decl[(ex, "wd")])
+        blk["perm_scope"] = dict(main="used", years_used=perm_keys(ws, 1, "used"),
+                                 years_declared=perm_keys(ws, 1, "declared"))
         out[name] = blk
     return out
 

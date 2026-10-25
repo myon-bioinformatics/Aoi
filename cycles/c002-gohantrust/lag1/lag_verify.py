@@ -47,33 +47,71 @@ def sign_p(k, n):
     return sum(math.comb(n, i) for i in range(k, n + 1)) / 2 ** n
 
 
+class Reads(dict):
+    """run() が読んだ ΔlogE の年を覚える。順列の母集団を、式ではなく実際の読み取りから決める。"""
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.read = set()
+
+    def __getitem__(self, key):
+        self.read.add(key)
+        return super().__getitem__(key)
+
+
+def used_keys(ws):
+    rec = Reads(dE0)
+    run(ws, rec)
+    return sorted(rec.read)
+
+
+B = 4000
+
+
+def perm_p(ws, keys, obs):
+    """別の乱数器（random.Random(1)）で、keys の年の ΔlogE をシャッフルして順列 p を数える。
+    obs = {(ex, i): 観測の勝ち数}（i=0: 基準 A=ゼロ変化、i=1: 基準 B=ドリフト）。"""
+    rnd = random.Random(1)
+    vals = [dE0[k] for k in keys]
+    cnt = {k: 0 for k in obs}
+    for _ in range(B):
+        v = vals[:]
+        rnd.shuffle(v)
+        r = run(ws, dict(zip(keys, v)))
+        for (ex, i) in obs:
+            cnt[(ex, i)] += counts(r, ex)[1 + i] >= obs[(ex, i)]
+    return {k: cnt[k] / B for k in cnt}
+
+
 res = json.load(open(HERE / "lag_results.json"))
 bad = 0
 for name, ws in (("extended", 2005), ("legacy", 2015)):
     rows = run(ws, dE0)
+    obs = {(ex, i): counts(rows, ex)[1 + i] for ex in (False, True) for i in (0, 1)}
+    # 順列の契約: 統計が読む年だけをシャッフルする。最終年（2025）は lag=1 では読まれない
+    used, declared = used_keys(ws), list(range(ws + 1, 2026))
+    contract = (2025 not in used) and set(declared) - set(used) == {2025}
+    contract &= res[name]["perm_scope"]["years_used"] == used and res[name]["perm_scope"]["years_declared"] == declared
+    print(f"{name:8s} perm years read by the statistic: {used[0]}-{used[-1]} ({len(used)} yrs), "
+          f"2025 read: {2025 in used}, results.json agrees: {'OK' if contract else 'NG'}")
+    bad += not contract
+    pu = perm_p(ws, used, obs)           # 主: 読まれる年だけ
+    pdc = perm_p(ws, declared, obs)      # 宣言 §7.2 の文面どおり（窓内の全年）
     for ex, key in ((False, "incl2025"), (True, "excl2025")):
         n, w0, wd = counts(rows, ex)
         t = res[name]["tests"][key]
         ok = (n, w0, wd) == (t["lag"]["n"], t["lag"]["w0"], t["lag"]["wd"])
         ok &= abs(sign_p(w0, n) - t["p_sign0"]) < 1e-12 and abs(sign_p(wd, n) - t["p_signd"]) < 1e-12
         # 順列: 別の乱数器で検算（一致は要求せず、モンテカルロ誤差内か見る）
-        rnd = random.Random(1)
-        keys = list(range(ws + 1, 2026))
-        vals = [dE0[k] for k in keys]
-        c0 = cd = 0
-        B = 4000
-        for _ in range(B):
-            v = vals[:]
-            rnd.shuffle(v)
-            r = run(ws, dict(zip(keys, v)))
-            _, a, b = counts(r, ex)
-            c0 += a >= w0
-            cd += b >= wd
-        p0, pd = c0 / B, cd / B
-        near = abs(p0 - t["p_perm0"]) < 0.03 and abs(pd - t["p_permd"]) < 0.03
+        near = abs(pu[(ex, 0)] - t["p_perm0"]) < 0.03 and abs(pu[(ex, 1)] - t["p_permd"]) < 0.03
+        near_d = (abs(pdc[(ex, 0)] - t["p_perm0_declared"]) < 0.03
+                  and abs(pdc[(ex, 1)] - t["p_permd_declared"]) < 0.03)
         print(f"{name:8s} {key}: n={n} w0={w0} wd={wd} counts/sign={'OK' if ok else 'NG'} | "
-              f"perm(alt RNG) p0={p0:.3f} (main {t['p_perm0']:.3f}) pd={pd:.3f} (main {t['p_permd']:.3f}) {'OK' if near else 'NG'}")
-        bad += (not ok) + (not near)
+              f"perm used (alt RNG) p0={pu[(ex, 0)]:.3f} (main {t['p_perm0']:.3f}) "
+              f"pd={pu[(ex, 1)]:.3f} (main {t['p_permd']:.3f}) {'OK' if near else 'NG'} | "
+              f"declared p0={pdc[(ex, 0)]:.3f} (main {t['p_perm0_declared']:.3f}) "
+              f"pd={pdc[(ex, 1)]:.3f} (main {t['p_permd_declared']:.3f}) {'OK' if near_d else 'NG'}")
+        bad += (not ok) + (not near) + (not near_d)
 
 h = hashlib.sha256(open(HERE / "lag_prelock_2026-10-24.md", "rb").read()).hexdigest()
 print("prelock sha256:", h)

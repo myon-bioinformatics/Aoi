@@ -1,0 +1,146 @@
+{
+  "schema": "aoi-recovered-input-catalog/1",
+  "checked_on": "2026-10-25",
+  "publication_scope": "Original observed-source and derived-annual replay ZIPs; exact parsed games JSON; separate preserved synthetic-only ZIP; existing byte-identical annual panel reused.",
+  "redistribution_rights": "Not established for the recovered third-party source data. No new license grant is asserted.",
+  "queryu_observation_games_jsonl_recovered": false,
+  "archives": [
+    {
+      "filename": "aoi_supplement_share.zip",
+      "bytes": 2225759,
+      "sha256": "ac3bbcd4798292530593ec59c258a2dfa0c54a5b41f9c42306ce3851786e1f2f",
+      "members": 36,
+      "classification": "real_observation_source_package",
+      "source_snapshot_date": "2026-10-03",
+      "original_member_manifest_checks": 35,
+      "original_member_manifest_mismatches": 0,
+      "payload_published_by_this_change": true,
+      "selected_member": {
+        "path": "data/part2/games_raw.json",
+        "bytes": 4843030,
+        "sha256": "dc75aff5f5f0898716539f2be8f38e0c5aa59f22c994b439c2381fb650c92cdb",
+        "classification": "parsed_game_observations_not_source_html",
+        "format": "JSON array",
+        "records": 12574,
+        "date_range": [
+          "2013-03-29",
+          "2026-10-03"
+        ],
+        "status_counts": {
+          "final": 12111,
+          "cancelled": 389,
+          "noGame": 72,
+          "other_in_progress": 2
+        },
+        "records_missing_one_or_both_team_ids": 420,
+        "unique_urls": 12574,
+        "includes_postseason_and_allstar": true,
+        "season_2026_provisional": true,
+        "queryu_schema_compatibility": "not established; adapter not provided",
+        "repository_path": "cycles/c001-chunichi/recovered-inputs/observed/games_raw.json"
+      },
+      "repository_path": "cycles/c001-chunichi/recovered-inputs/observed/source-archives/aoi_supplement_share.zip"
+    },
+    {
+      "filename": "c001-v2-ghi-gated-37640078444.zip",
+      "bytes": 5131420,
+      "sha256": "203e783d18ed02804c13a049b10be9f87975b8d9245d9dc6b76a89ad7f94ee0d",
+      "members": 69,
+      "classification": "saved_annual_replay_and_derived_results",
+      "payload_published_by_this_change": true,
+      "selected_member": {
+        "paths": [
+          "v1/season.jsonl",
+          "v2/season.jsonl"
+        ],
+        "bytes": 1934074,
+        "sha256": "20466c46628f4657233ef6289c628f076a0c665a2129594f5651d29a0d05d350",
+        "classification": "real_observation_derived_annual_panel_including_model_outputs",
+        "format": "JSONL",
+        "records": 168,
+        "fields_per_record": 409,
+        "season_range": [
+          2012,
+          2025
+        ],
+        "teams_per_season": 12,
+        "existing_repository_path": "cycles/c001-chunichi/from-cycle-001/outputs/season.jsonl",
+        "byte_identical_to_existing": true,
+        "raw_source_replayed": false
+      },
+      "linescore_provenance_member": {
+        "path": "v2/fetched/npb_game_linescore.jsonl",
+        "records": 858,
+        "classification": "acquisition_manifest_not_score_payload"
+      },
+      "repository_path": "cycles/c001-chunichi/recovered-inputs/derived-annual/source-archives/c001-v2-ghi-gated-37640078444.zip"
+    }
+  ],
+  "comparison": {
+    "scope": "Saved supplement team_season_summary.csv against saved annual season.jsonl, not a new game-to-season reconstruction.",
+    "season_range": [
+      2013,
+      2025
+    ],
+    "team_seasons": 156,
+    "fields": [
+      "G",
+      "W",
+      "L",
+      "T",
+      "RF",
+      "RA"
+    ],
+    "equal_cells": 936,
+    "different_cells": 0
+  },
+  "separate_mixed_source_packages": [
+    {
+      "filename": "aoi_primary_2013_2026.zip",
+      "bytes": 1810205,
+      "sha256": "707f72688c7196d7b6d9d3734fe4447312e022228c5cfef593e6df4526a49468",
+      "classification": "mixed_observed_annual_and_synthetic_experiments",
+      "synthetic_prefix": "data/synthetic/",
+      "payload_published_by_this_change": false
+    },
+    {
+      "filename": "aoi_annual_history_1950_2026.zip",
+      "bytes": 4616803,
+      "sha256": "36729babd972aed7939fd66e9c1db142d5f2c680c2da9c105709347a35bdd174",
+      "classification": "mixed_observed_annual_and_synthetic_experiments",
+      "synthetic_prefix": "data/synthetic/",
+      "payload_published_by_this_change": false
+    }
+  ],
+  "existing_season_outputs": [
+    {
+      "path": "cycles/c001-chunichi/from-cycle-001/outputs/season.jsonl",
+      "sha256": "20466c46628f4657233ef6289c628f076a0c665a2129594f5651d29a0d05d350",
+      "relationship": "exact recovered v1/v2 season bytes; reused rather than copied"
+    },
+    {
+      "path": "cycles/c001-chunichi/outputs/season.jsonl",
+      "sha256": "8ddba36adfbd06db5c7510f91953184233801c596f87d4fe9bd66fc1b9573a93",
+      "relationship": "different canonical panel; not overwritten"
+    }
+  ],
+  "existing_archive_pr": "https://github.com/myon-bioinformatics/Aoi/pull/126",
+  "existing_archive_pr_checked_head": "3d234170e151463c296545907deda2fbcf45086a",
+  "synthetic_separation": {
+    "repository_path": "cycles/c001-chunichi/recovered-inputs/synthetic/aoi-synthetic-examples-only-20261025.zip",
+    "filename": "aoi-synthetic-examples-only-20261025.zip",
+    "bytes": 1121807,
+    "sha256": "7ea18be0403e789b52114491b8a34da400535c749c9bb3ae609825943176b99b",
+    "classification": "synthetic_experiments_only_not_observed_games",
+    "preserved_source_members": 330,
+    "game_files": 162,
+    "game_records": 110016,
+    "new_synthetic_generation": false,
+    "source_member_prefix": "data/synthetic/",
+    "original_mixed_archives_republished": false,
+    "calibration_provenance": "Experiment settings retain a scalar calibrated from observed annual totals; observed records are excluded."
+  },
+  "game_page_html_cache_recovered": false,
+  "annual_page_html_in_excluded_mixed_archives": true,
+  "raw_html_published_by_this_change": false
+}

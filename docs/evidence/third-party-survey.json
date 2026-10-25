@@ -662,7 +662,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 849,
+      "attribute_uses": 873,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -671,14 +671,14 @@
         "StashKey": 2,
         "UsageError": 10,
         "approx": 239,
-        "fail": 21,
-        "fixture": 42,
+        "fail": 27,
+        "fixture": 43,
         "hookimpl": 3,
         "importorskip": 9,
-        "mark.parametrize": 155,
+        "mark.parametrize": 163,
         "mark.skipif": 4,
         "param": 1,
-        "raises": 346,
+        "raises": 355,
         "skip": 6,
         "warns": 3
       },
@@ -795,18 +795,18 @@
           "import_sites": 8
         },
         "tests": {
-          "attribute_uses": 72,
+          "attribute_uses": 96,
           "attributes": {
             "approx": 1,
-            "fail": 1,
-            "fixture": 4,
+            "fail": 7,
+            "fixture": 5,
             "importorskip": 1,
-            "mark.parametrize": 17,
-            "raises": 48
+            "mark.parametrize": 25,
+            "raises": 57
           },
           "dynamic_import_sites": 0,
-          "files": 13,
-          "import_sites": 13
+          "files": 14,
+          "import_sites": 14
         }
       },
       "declared": [
@@ -843,8 +843,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 88,
-      "import_sites": 89
+      "files": 89,
+      "import_sites": 90
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2638,6 +2638,19 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_distributions.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fail": 6,
+        "fixture": 1,
+        "mark.parametrize": 8,
+        "raises": 9
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_recovered_zip.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

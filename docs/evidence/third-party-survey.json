@@ -180,7 +180,7 @@
       "import_sites": 2
     },
     "numpy": {
-      "attribute_uses": 241,
+      "attribute_uses": 252,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
@@ -189,7 +189,7 @@
         "arange": 7,
         "argpartition": 1,
         "argsort": 2,
-        "array": 13,
+        "array": 17,
         "array_equal": 2,
         "asarray": 5,
         "ascontiguousarray": 1,
@@ -199,6 +199,7 @@
         "clip": 4,
         "column_stack": 1,
         "concatenate": 3,
+        "corrcoef": 2,
         "divide": 1,
         "einsum": 1,
         "empty": 2,
@@ -223,6 +224,7 @@
         "linalg.svd": 2,
         "log": 4,
         "maximum": 7,
+        "mean": 2,
         "meshgrid": 1,
         "minimum": 5,
         "nan_to_num": 2,
@@ -234,10 +236,10 @@
         "partition": 2,
         "random.Generator": 1,
         "random.PCG64": 1,
-        "random.default_rng": 4,
+        "random.default_rng": 5,
         "round": 5,
         "shape": 1,
-        "sign": 6,
+        "sign": 8,
         "sort": 1,
         "sqrt": 4,
         "sum": 1,
@@ -249,6 +251,19 @@
         "zeros_like": 1
       },
       "by_tree": {
+        "cycles": {
+          "attribute_uses": 11,
+          "attributes": {
+            "array": 4,
+            "corrcoef": 2,
+            "mean": 2,
+            "random.default_rng": 1,
+            "sign": 2
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        },
         "dragowing": {
           "attribute_uses": 5,
           "attributes": {
@@ -413,10 +428,10 @@
           "name": "numpy"
         }
       ],
-      "distinct_attributes": 65,
+      "distinct_attributes": 67,
       "dynamic_import_sites": 0,
-      "files": 16,
-      "import_sites": 16
+      "files": 17,
+      "import_sites": 17
     },
     "ortools": {
       "attribute_uses": 2,
@@ -662,7 +677,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 849,
+      "attribute_uses": 850,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -679,7 +694,7 @@
         "mark.skipif": 4,
         "param": 1,
         "raises": 346,
-        "skip": 6,
+        "skip": 7,
         "warns": 3
       },
       "by_tree": {
@@ -795,18 +810,19 @@
           "import_sites": 8
         },
         "tests": {
-          "attribute_uses": 72,
+          "attribute_uses": 73,
           "attributes": {
             "approx": 1,
             "fail": 1,
             "fixture": 4,
             "importorskip": 1,
             "mark.parametrize": 17,
-            "raises": 48
+            "raises": 48,
+            "skip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 13,
-          "import_sites": 13
+          "files": 14,
+          "import_sites": 14
         }
       },
       "declared": [
@@ -843,8 +859,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 88,
-      "import_sites": 89
+      "files": 89,
+      "import_sites": 90
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1125,6 +1141,20 @@
       "file": "cycles/c001-chunichi/from-cycle-001/research/r76_remake.py",
       "import_sites": 1,
       "package": "polars",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "array": 4,
+        "corrcoef": 2,
+        "mean": 2,
+        "random.default_rng": 1,
+        "sign": 2
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c002-gohantrust/lag1/lag_run.py",
+      "import_sites": 1,
+      "package": "numpy",
       "tree": "cycles"
     },
     {
@@ -2592,6 +2622,16 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_aoi_parent_workflow_pins.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c002_lag1.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

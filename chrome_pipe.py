@@ -9,7 +9,7 @@ import json
 import math
 import os
 import queue
-import select
+import selectors
 import shutil
 import signal
 import subprocess
@@ -241,9 +241,13 @@ class Chrome:
 
     def _spawn(self, exe: str) -> None:
         self._err = open(os.path.join(self._tmp, "chrome.err"), "w", encoding="utf-8")
-        read_in, write_in = os.pipe()
-        read_out, write_out = os.pipe()
+        # Keep ownership local until both pipes and the child are ready.
+        allocated = []
         try:
+            read_in, write_in = os.pipe()
+            allocated.extend((read_in, write_in))
+            read_out, write_out = os.pipe()
+            allocated.extend((read_out, write_out))
             args = [exe, "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe",
                     "--disable-dev-shm-usage", "--disable-background-networking", "--no-first-run",
                     "--disable-extensions", "--disable-component-extensions-with-background-pages",
@@ -262,11 +266,11 @@ class Chrome:
                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=self._err,
                 close_fds=True, pass_fds=(read_in, write_out), start_new_session=True,
                 env=_browser_environment(self._tmp))
-        except Exception:
-            os.close(write_in)
-            os.close(read_out)
+        except BaseException:
+            for fd in allocated:
+                os.close(fd)
             raise
-        finally:
+        else:
             os.close(read_in)
             os.close(write_out)
         self._w, self._r = write_in, read_out
@@ -274,27 +278,33 @@ class Chrome:
 
     def _start_reader(self) -> None:
         def loop() -> None:
-            buf = b""
             try:
-                while not self._stop.is_set():
-                    ready, _, _ = select.select([self._r], [], [], 0.2)
-                    if not ready:
-                        continue
-                    chunk = os.read(self._r, 1 << 20)
-                    if not chunk:
-                        self._inbox.put({"__failure__": "Chrome closed the pipe"})
-                        return
-                    buf += chunk
-                    while True:
-                        message, buf = pop_message(buf)
-                        if message is None:
-                            break
-                        self._inbox.put(message)
+                # epoll/kqueue/poll support descriptors beyond select() FD_SETSIZE.
+                with selectors.DefaultSelector() as selector:
+                    selector.register(self._r, selectors.EVENT_READ)
+                    self._read_messages(selector)
             except (OSError, ValueError) as exc:
                 self._inbox.put({"__failure__": "Invalid Chrome pipe: " + str(exc)})
 
         self._reader = threading.Thread(target=loop, name="chrome-pipe-reader", daemon=True)
         self._reader.start()
+
+    def _read_messages(self, selector) -> None:
+        buf = b""
+        while not self._stop.is_set():
+            ready = selector.select(0.2)
+            if not ready:
+                continue
+            chunk = os.read(self._r, 1 << 20)
+            if not chunk:
+                self._inbox.put({"__failure__": "Chrome closed the pipe"})
+                return
+            buf += chunk
+            while True:
+                message, buf = pop_message(buf)
+                if message is None:
+                    break
+                self._inbox.put(message)
 
     def _send(self, method: str, params: dict | None = None, session: str | None = None,
               *, deadline: float | None = None) -> int:
@@ -308,25 +318,27 @@ class Chrome:
             message["sessionId"] = session
         data = memoryview(frame_message(message))
         deadline = deadline if deadline is not None else time.monotonic() + self.timeout
-        while data:
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                self._failure = "Chrome pipe write timed out"
-                raise TimeoutError("Chrome pipe write timed out")
-            _, writable, _ = select.select([], [self._w], [], remaining)
-            if not writable:
-                self._failure = "Chrome pipe write timed out"
-                raise TimeoutError("Chrome pipe write timed out")
-            try:
-                written = os.write(self._w, data)
-            except BlockingIOError:
-                continue
-            except BrokenPipeError as exc:
-                self._failure = "Chrome closed the pipe. " + self._diagnostic()
-                raise RuntimeError(self._failure) from exc
-            if written == 0:
-                raise RuntimeError("Chrome pipe write returned zero bytes")
-            data = data[written:]
+        with selectors.DefaultSelector() as selector:
+            selector.register(self._w, selectors.EVENT_WRITE)
+            while data:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    self._failure = "Chrome pipe write timed out"
+                    raise TimeoutError("Chrome pipe write timed out")
+                writable = selector.select(remaining)
+                if not writable:
+                    self._failure = "Chrome pipe write timed out"
+                    raise TimeoutError("Chrome pipe write timed out")
+                try:
+                    written = os.write(self._w, data)
+                except BlockingIOError:
+                    continue
+                except BrokenPipeError as exc:
+                    self._failure = "Chrome closed the pipe. " + self._diagnostic()
+                    raise RuntimeError(self._failure) from exc
+                if written == 0:
+                    raise RuntimeError("Chrome pipe write returned zero bytes")
+                data = data[written:]
         return self._id
 
     def _diagnostic(self) -> str:

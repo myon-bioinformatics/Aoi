@@ -6,7 +6,8 @@
 係数は決めた数ではなく、保存済みの行（wave_eps_trial.py の wave_eps_rows_<ε>.jsonl、ε が 2 つ以上）の
 settle_x を 10^n で割って出てきた数で、a を替えれば 1/a 倍になる。
 ここでは単位ごとに、ε ごとの落ち着く位置を「仮数 × 10^指数」で並べ、最小の ε の行の係数を基準に、
-ほかの ε の位置がこの形からどれだけ外れるか（絶対・相対の最大）を出す。振れ幅が最初から小さい単位は、
+ほかの ε の位置がこの形からどれだけ外れるか（絶対・相対の最大）を出す。振れ幅は、落ち着く位置の式
+（x0 + ln(振れ幅 / 0.5) / λ）に a = 1 の係数を入れて戻した値（0.5 × exp(係数)）。振れ幅が最初から小さい単位は、
 落ち着く位置が ε によらず一定（settled_at_start）で、係数の形には載せない。
 
 標準ライブラリのみ。ε の値は暫定の置き場所で、結論には使わない。
@@ -25,6 +26,7 @@ import sys
 from pathlib import Path
 
 SAME = 1e-9          # 2 つの ε で落ち着く位置が（相対で）これ以下しか違わなければ、ε によらない一定の位置とみなす
+SETTLE = 0.5         # sakanalytics.WAVE_SETTLE（ゆれの幅が半順位を下回る位置）
 
 
 def load(path: Path) -> tuple[float, dict]:
@@ -64,7 +66,7 @@ def coefficients(by_eps: dict) -> list[dict]:
             raise ValueError(f"{key}: ε の波が選ばれていない行がある")
         if abs(s[lo] - s[mid]) <= SAME * max(1.0, abs(s[lo])):
             out.append({"season": key[0], "team": key[1], "settled_at_start": True, "position": s[lo], "coefficient": None,
-                        "by_eps": [], "abs_miss": None, "rel_miss": None})
+                        "amp": None, "by_eps": [], "abs_miss": None, "rel_miss": None})
             continue
         ref = s[lo] * a_lo / 10 ** n_lo              # a = 1 に揃えた係数（a を替えると 1/a 倍になる）
         per, miss = [], []
@@ -74,7 +76,7 @@ def coefficients(by_eps: dict) -> list[dict]:
             per.append({"eps": e, "a": a, "n": n, "settle": s[e], "coefficient": s[e] / 10 ** n})
             miss.append((abs(s[e] - predicted), abs(s[e] - predicted) / abs(s[e])))
         out.append({"season": key[0], "team": key[1], "settled_at_start": False, "position": None, "coefficient": per[0]["coefficient"],
-                    "by_eps": per, "abs_miss": max(m[0] for m in miss), "rel_miss": max(m[1] for m in miss)})
+                    "amp": SETTLE * math.exp(ref), "by_eps": per, "abs_miss": max(m[0] for m in miss), "rel_miss": max(m[1] for m in miss)})
     return out
 
 
@@ -93,15 +95,15 @@ def render(rows: list[dict], eps: list[float]) -> str:
              f"- 係数（最小の ε の行、a = {eps_form(eps[0])[0]:g}）: {min(r['coefficient'] for r in moving):.4f} 〜 {max(r['coefficient'] for r in moving):.4f}",
              f"- 最小の ε の係数で、ほかの ε の位置を言い当てたときの外れ（最大）: 絶対 {max(r['abs_miss'] for r in moving):.3f}（シーズン 1 つぶんが 1）、"
              f"相対 {max(r['rel_miss'] for r in moving):.2e}", "",
-             "| 年 | 球団 | " + " | ".join(_head(e) for e in reversed(eps)) + " | 係数（最小の ε） | 外れ（絶対 / 相対） |",
-             "|---|---|" + "---|" * (len(eps) + 2)]
+             "| 年 | 球団 | " + " | ".join(_head(e) for e in reversed(eps)) + " | 係数（最小の ε） | 振れ幅 | 外れ（絶対 / 相対） |",
+             "|---|---|" + "---|" * (len(eps) + 3)]
     for r in rows:
         if r["settled_at_start"]:
-            lines.append(f"| {r['season']} | {r['team']} | （最初から一定。位置 {r['position']:.4f}）" + " | —" * (len(eps) + 1) + " |")
+            lines.append(f"| {r['season']} | {r['team']} | （最初から一定。位置 {r['position']:.4f}）" + " | —" * (len(eps) + 2) + " |")
         else:
             by = {p["eps"]: p for p in r["by_eps"]}
             cells = " | ".join(sci(by[e]["settle"]) for e in reversed(eps))
-            lines.append(f"| {r['season']} | {r['team']} | {cells} | {r['coefficient']:.4f} | {r['abs_miss']:.3f} / {r['rel_miss']:.1e} |")
+            lines.append(f"| {r['season']} | {r['team']} | {cells} | {r['coefficient']:.4f} | {r['amp']:.3f} | {r['abs_miss']:.3f} / {r['rel_miss']:.1e} |")
     return "\n".join(lines) + "\n"
 
 

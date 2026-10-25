@@ -6,6 +6,7 @@ SYNTHETIC: 落ち着く位置が（係数 / ε）に小さな定数を足した�
 """
 import importlib.util
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -55,9 +56,10 @@ def test_coefficient_stays_put_when_eps_gets_ten_times_smaller_and_the_miss_is_r
     assert [p["coefficient"] for p in b["by_eps"]] == pytest.approx([0.0815, 0.0815, 0.0815 + 0.54e-3], rel=1e-5)
     assert b["abs_miss"] == pytest.approx(0.54, abs=1e-6) and b["rel_miss"] == pytest.approx(0.54 / (0.54 + 81.5), rel=1e-5)
     assert by[(2022, "l")]["coefficient"] == pytest.approx(1.595, rel=1e-6)
+    assert abs(by[(2022, "l")]["amp"] - 0.5 * math.exp(1.595)) < 1e-6 and abs(b["amp"] - 0.5 * math.exp(0.0815)) < 1e-6   # 振れ幅 = 0.5 × exp(係数)
     g = by[(2013, "g")]
     assert g["settled_at_start"] and g["position"] == 0.062 and g["coefficient"] is None and g["by_eps"] == []
-    assert g["abs_miss"] is None and g["rel_miss"] is None
+    assert g["abs_miss"] is None and g["rel_miss"] is None and g["amp"] is None
 
 
 def test_coefficient_is_one_over_a_when_eps_starts_with_a_five():
@@ -113,6 +115,6 @@ def test_cli_writes_json_and_markdown_without_a_separate_constant(tmp_path):
     assert data["eps"] == [1e-9, 1e-6, 1e-3] and len(data["units"]) == 2
     md = (tmp_path / "c.md").read_text(encoding="utf-8")
     assert md.startswith("# 落ち着く位置 = 係数 × 10^n") and "ε = 1×10^-9" in md
-    assert "| 2014 | b | 8.20×10^1 | 8.15×10^4 | 8.15×10^7 | 0.0815 |" in md       # 指数が 3 ずつ動き、係数は 8.15（ε = 1e-3 だけ上乗せ分で 8.20）
+    assert "| 2014 | b | 8.20×10^1 | 8.15×10^4 | 8.15×10^7 | 0.0815 | 0.542 |" in md       # 指数が 3 ずつ動き、係数は 8.15（ε = 1e-3 だけ上乗せ分で 8.20）
     assert "K" not in md and "K" not in json.dumps(data)
     assert coef.main(["--rows", files[0], files[0], "--out-json", str(tmp_path / "d.json"), "--out-md", str(tmp_path / "d.md")]) == 2

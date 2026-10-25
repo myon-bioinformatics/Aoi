@@ -17,9 +17,15 @@ Its odds are exactly the product of the dials' odds:
 so, with the other two dials held, raising the converse or the contrapositive raises the original, and raising the
 inverse lowers it. "What does the proposition do when its other forms move?" is answered by turning one dial.
 
-Synthetic only: the units are model checks (the convention of synthetic_league.py), never NPB observations. There is
-no randomness. A dial must be strictly between 0 and 1: at 0 or 1 a cell is empty and the table degenerates. How to
-treat that boundary (the ε question) is not decided, so the box stops with a message instead of substituting a number.
+Where it sits: proposition generation. pythdragoras/rule_search.py ranks a candidate rule by the Matthews correlation
+(MCC) of this same table, counting the rule's precision (= the original's rate) and its recall (= the converse's rate);
+the inverse is the specificity and the contrapositive the negative predictive value. Ranking by the original's own
+accuracy invites tuning toward it, so the box does the opposite: it never touches the original, turns the other three
+forms, and reads out what happens to the original's rate and to the ranking score (``mcc``).
+
+Synthetic only: the units are model checks, never NPB observations. There is no randomness. A dial must be strictly
+between 0 and 1: at 0 or 1 a cell is empty and the table degenerates. How to treat that boundary (the ε question) is
+not decided, so the box stops with a message instead of substituting a number.
 
     python moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168
     python moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --sweep converse=0.3,0.5,0.7,0.9
@@ -83,6 +89,8 @@ def build(*, converse, inverse, contrapositive, n) -> dict:
         "forms": {f: {"n": den, "hold": num, "rate": num / den} for f, (num, den) in forms.items()},
         "counterexamples": {"original": b, "contrapositive": b, "converse": c, "inverse": c},
         "original_rate_exact": odds_original / (1 + odds_original),
+        # the ranking score of proposition generation (rule_search.py): tp = a, fp = b, fn = c, tn = d. All four sums are > 0.
+        "mcc": (a * d - b * c) / math.sqrt((a + b) * (a + c) * (b + d) * (c + d)),
         "dial_error": max(abs(num / den - dials[f]) for f, (num, den) in forms.items() if f in dials),
     }
 
@@ -109,7 +117,8 @@ def units(table: dict) -> list[dict]:
 def readout(table: dict, strength: str = "usually") -> dict:
     """Read the table back through PythDRagoras (propositions.evaluate): the code the cycle itself uses.
 
-    Needs ``PYTHONPATH=<Aoi>/pythdragoras``. Returns each form's n / hold / rate / verdict and the judgement code.
+    Needs ``PYTHONPATH=<Aoi>/pythdragoras``. Returns each form's n / hold / rate / verdict, the original's MCC
+    and the judgement code.
     """
     import polars as pl
     import propositions as pr
@@ -117,19 +126,19 @@ def readout(table: dict, strength: str = "usually") -> dict:
     prop = {"id": "MOSHIMO", "statement": "if A then B (synthetic)", "strength": strength,
             "if": [{"col": "A", "op": "==", "value": 1}], "then": [{"col": "B", "op": "==", "value": 1}]}
     result = pr.evaluate(prop, pl.DataFrame(units(table)))
-    return {"strength": strength, "judgement_code": result["judgement"]["code"],
+    return {"strength": strength, "judgement_code": result["judgement"]["code"], "mcc": result["metrics"]["mcc"],
             "forms": {f["form"]: {k: f[k] for k in ("n", "hold", "rate", "verdict")} for f in result["forms"]}}
 
 
 def render(tables: list[dict], dial: str | None, readouts: list[dict] | None = None) -> str:
-    head = ["n", *(f"{k} (dial)" for k in DIALS), "a", "b", "c", "d", "original (readout)", "original exact"]
+    head = ["n", *(f"{k} (dial)" for k in DIALS), "a", "b", "c", "d", "original (readout)", "original exact", "mcc"]
     if readouts:
         head += ["original verdict", "judgement"]
     lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for i, t in enumerate(tables):
         mark = lambda k: f"**{t['dials'][k]:.3f}**" if k == dial else f"{t['dials'][k]:.3f}"  # noqa: E731
         row = [str(t["n"]), *(mark(k) for k in DIALS), *(str(t["cells"][k]) for k in CELLS),
-               f"{t['forms']['original']['rate']:.3f}", f"{t['original_rate_exact']:.3f}"]
+               f"{t['forms']['original']['rate']:.3f}", f"{t['original_rate_exact']:.3f}", f"{t['mcc']:.3f}"]
         if readouts:
             row += [readouts[i]["forms"]["original"]["verdict"], str(readouts[i]["judgement_code"])]
         lines.append("| " + " | ".join(row) + " |")

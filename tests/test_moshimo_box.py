@@ -33,6 +33,14 @@ def test_table_by_hand():
     assert t["dial_error"] < 1e-12
 
 
+def test_mcc_is_the_generation_ranking_score_of_the_same_table():
+    # rule_search._mcc(tp, fp, fn, tn) with tp = a, fp = b, fn = c, tn = d; precision = original, recall = converse
+    t = mb.build(converse=0.6, inverse=2 / 3, contrapositive=0.8, n=100)  # a=30, b=10, c=20, d=40
+    assert t["mcc"] == pytest.approx((30 * 40 - 10 * 20) / math.sqrt(40 * 50 * 50 * 60))
+    a, b, c, d = (t["cells"][k] for k in "abcd")
+    assert (t["forms"]["original"]["rate"], t["forms"]["converse"]["rate"]) == (a / (a + b), a / (a + c))
+
+
 def test_logit_of_the_original_is_converse_plus_contrapositive_minus_inverse():
     rng = random.Random(20261025)
     for _ in range(200):
@@ -102,6 +110,7 @@ def test_the_real_evaluator_reads_back_the_same_four_forms(strength):
         assert (f["hold"], f["n"]) == (t["forms"][form]["hold"], t["forms"][form]["n"])
         assert f["rate"] == pytest.approx(t["forms"][form]["rate"])
     assert isinstance(r["judgement_code"], int)
+    assert r["mcc"] == pytest.approx(t["mcc"])  # the ranking score of proposition generation, from the evaluator's own metrics
 
 
 def test_cli_prints_a_table_and_writes_json(tmp_path, capsys):

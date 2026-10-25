@@ -1,8 +1,9 @@
 {
-  "rows": 4326,
+  "rows": 4362,
   "iso3": [
     "ARG",
     "AUT",
+    "CZE",
     "FIN",
     "FRA",
     "IRL",
@@ -12,10 +13,11 @@
     "QAT",
     "SGP"
   ],
-  "n_iso3": 10,
+  "n_iso3": 11,
   "by_country": {
     "ARG": 491,
     "AUT": 180,
+    "CZE": 36,
     "FIN": 1692,
     "FRA": 192,
     "IRL": 177,
@@ -26,8 +28,7 @@
     "SGP": 207
   },
   "added_this_commit": {
-    "ARG": 491,
-    "NZL": 820
+    "CZE": 36
   },
-  "new_rows": 1311
+  "new_rows": 36
 }

@@ -12,13 +12,13 @@ Retrieved: 2026-10-25 Asia/Tokyo
 
 ## Closed in this pack (vertical CSV)
 
-SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA, **ARG**, **NZL** — see readme.
+SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA, **ARG**, **NZL**, **CZE** — see readme.
 
 ## SKU family gaps (relative to lane list)
 
 | Family | In this pack | Notes |
 |--------|--------------|-------|
-| coffee / tea | SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA, ARG, NZL | Strongest family |
+| coffee / tea | SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA, ARG, NZL, CZE | Strongest family |
 | soap / detergent | SGP, MYS, QAT, FIN, ARG (soap bars + shampoo; detergent API empty) | FIN is the dense EUZ detergent set |
 | toilet paper | SGP, FIN | MYS no stable TP SKU in selected PriceCatcher codes; ARG TP not in Precios catalog hit |
 | tissue / napkins | MYS (1 month Kleenex); FIN sanitary towels + kitchen towel | Sparse tissue; kitchen towel = paper towel SKU |
@@ -46,6 +46,11 @@ SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA, **ARG**, **NZL** — see readme.
 | FRA | **HIT** (earlier) — INSEE BDM ground coffee 250g (2 idbanks) monthly through 2019-12. |
 | ARG | **HIT** — INDEC IPC-GBA Precios (Pesos) via datos.gob.ar: coffee_ground, shampoo, soap_bar_toilet_125g, soap_bar_laundry_pan (491 rows). Detergente líquido / lavandina / jabón en polvo IDs catalogued with claimed last_value but API returns 0 observations — not loaded / not gap-filled. |
 | NZL | **HIT** — Stats NZ FPI selected prices via figure.nz table BbCZ4OW1Nk3LzCX5: instant coffee 100g, ground coffee 200g, tea bags 100, herbal tea bags 25 (820 rows). Food basket only — no detergent/TP. Takeaway cups skipped. |
+| CZE | **HIT (thin)** — VDB CEN02A42: instant coffee 100g, roasted coffee 100g, black tea 100g — **2025** monthly only (36 rows). Year-switch URL param did not yield other years; CSU attached CSV is staple foods without coffee; non-food product page 404; CSV export endpoint 500. |
+| MEX | INEGI Precios Promedio is interactive JS app; box curl egress fail (000) — no open bulk API secured this turn. |
+| CHL | INE CPI portal only in quick probe — no named absolute household SKU bulk. |
+| POL | api.stat.gov.pl root 404 — no easy absolute household bulk this turn. |
+| TUR/IND | data.tuik.gov.tr curl 000; data.gov.in 503 — not forced. |
 | CAN | StatCan table **18-10-0245-01** right absolute path; **TLS EOF** — not forced. |
 | KOR | 참가격 / data.go.kr — **TLS fail** — not forced. |
 | DEU | Destatis Preismonitor is **% change vs 2020**, not LCU absolute. |
@@ -57,4 +62,4 @@ SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA, **ARG**, **NZL** — see readme.
 | DNK/NOR/AUS/ITA/HKG/ZAF/IDN/PHL | Prior probes: CPI/index or food-only / TLS-403; no new absolute household SKU bulk. |
 | Textile towels / underwear | Still absent outside Aoi JPN/GBR panels. |
 
-**Densify note:** open paths remaining for BM ISO3 after ARG+NZL are thin; stop when further easy probes yield no absolute bulk.
+**Densify stop:** after ARG+NZL+CZE, remaining easy open absolute household SKU paths for BM ISO3 are thin (MEX JS-only, CAN/KOR TLS, DEU %-only, SWE/CHL CPI-only, CZE history not in easy bulk download). No further forced digs.

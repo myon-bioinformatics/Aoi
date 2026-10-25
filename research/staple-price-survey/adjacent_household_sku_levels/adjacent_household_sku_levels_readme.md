@@ -38,8 +38,9 @@ This pack adds **other** NSO absolute retail series not in those panels.
 | **FRA** | `coffee_ground_250g_non_decaf`, `coffee_ground_250g_arabica` | INSEE BDM Prix moyens de vente de détail (idbank 000442545 / 000442546; série arrêtée) | 2012-01–2019-12 monthly (kept ≥2012; series run 1992–2019) |
 | **ARG** | `coffee_ground`, `shampoo`, `soap_bar_toilet_125g`, `soap_bar_laundry_pan` | INDEC IPC-GBA Precios via datos.gob.ar series API (105.1_*) | 2016-04–2026-08 monthly (item-dependent) |
 | **NZL** | `coffee_instant_100g`, `coffee_ground_200g`, `tea_bags_100`, `tea_bags_herbal_25` | Stats NZ FPI selected prices via figure.nz table BbCZ4OW1Nk3LzCX5 | 2006-06–2026-06 (item-dependent; herbal tea shorter) |
+| **CZE** | `coffee_instant_100g`, `coffee_roasted_beans_100g`, `tea_black_bags_100g` | CZSO VDB CEN02A42 average consumer prices | 2025-01–2025-12 monthly |
 
-Build stats: see `_build_stats.json` (**4326** rows; **10** ISO3: ARG, AUT, FIN, FRA, IRL, MYS, NLD, NZL, QAT, SGP).
+Build stats: see `_build_stats.json` (**4362** rows; **11** ISO3: ARG, AUT, CZE, FIN, FRA, IRL, MYS, NLD, NZL, QAT, SGP).
 
 ## Files
 
@@ -61,9 +62,10 @@ Build stats: see `_build_stats.json` (**4326** rows; **10** ISO3: ARG, AUT, FIN,
 - **FRA**: Ground coffee absolute retail only among lane families still in BDM; laundry powder / dishwasher powder séries arrêtées end 1998–99 (not loaded). No TP/tissue/tea/towels/underwear in famille Prix moyens.
 - **ARG**: Loaded four dense IPC-GBA *Precios* (Pesos) series. Detergente líquido / lavandina / jabón en polvo para ropa series IDs exist in the catalog with claimed last values but return **empty** observations via the series API this turn — not gap-filled. Regional IPC price series labeled units=Índice skipped. Toilet paper absolute not secured in catalog search.
 - **NZL**: FPI selected prices are food-basket; coffee/tea bag SKUs only among lane families (no detergent/TP/towels). Takeaway coffee/tea cups skipped. No textile towels/underwear.
+- **CZE**: VDB CEN02A42 food average prices — coffee/tea only among lane; **2025** monthly secured from published table. Multi-year open bulk CSV on CSU product page is staple-food subset (no coffee). Non-food average-price product page 404. Detergent/TP not in CEN02A42.
 
 ## Status (2026-10-25 Asia/Tokyo)
 
-- Densify **resumed** after hygiene tip 34e5c54; pack now **4326** rows / **10** ISO3.
+- Densify **resumed** after hygiene tip 34e5c54; pack now **4362** rows / **11** ISO3.
 - Schema header verified; all `estimated_value` empty; csv/gz match; **0** duplicate keys.
 - Do **not** re-panel Aoi JPN RPS / UK ONS towels/underwear into this pack.

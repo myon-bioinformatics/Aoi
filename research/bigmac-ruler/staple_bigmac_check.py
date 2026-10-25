@@ -13,16 +13,23 @@
 単位は 'per kg' の表記ゆれ（KG / Kg）だけ同一視する。包装単位（5 kg, 1.5 kg など）は使わない。
 結果は暫定の読みであり、判定ではない（点数が少ないうちは判断を保留する）。
 
+系列は (国, variable, 単位, source, note) で1本と数える。note には市場・価格種別・品種が入っているので、
+別の市場や別の品種は別の系列になり、月をまたいで混ぜない。年平均に必要な月数（MIN_MONTHS）は1本の系列の中で数え、
+国ごとに使う系列は1本（年数が最多、同数なら行数が多いもの、なお同数なら系列の文字列が大きいもの）。
+
 ゼロ・NaN・無限大・空欄は、読み込み時（load）と計算結果（compute）で、出なかったときも含めて必ず
 '[zero/NaN log]' として出力する。値は変えず、ε への置き換えもしない（置き方は別に決める）。
-  ZERO / NaN / INF: 記録して値はそのまま使う / BLANK: 数として読めない行は使わず記録する
-  SKIPPED: ゼロのため出さなかった / DROPPED: 失敗して捨てた（ブートストラップ）
+  ZERO / NaN / INF: 記録して値はそのまま持つ / BLANK: 数として読めない行は使わず記録する
+  SKIPPED: 割り算・対数・回帰に渡す前の検査で、0 以下・NaN・inf のため使わなかった入力（どれかを必ず出す）
+           ／ゼロのため比を出さなかった / DROPPED: 失敗して捨てた（ブートストラップ）
+検査（precheck）は派生計算の前に行う。使えない入力を持ち込んだまま割り算や回帰で止まることはない。
 
 usage:
   python research/bigmac-ruler/staple_bigmac_check.py [SURVEY_CSV] --prefix staple_price:rice
       [--exclude-inflation 2.0] [--panel-out PATH]
 
-終了コード: 0 = 実行できた / 66 = パネルが空（docs/propositions.md の 66「入力がない」に合わせる）
+終了コード: 0 = 実行できた / 65 = 検査後のパネルでも計算できなかった（docs/propositions.md の 65「データの誤り」。
+  compute のログと理由を出してから終わる）/ 66 = パネルが空（同じく 66「入力がない」）
 """
 import argparse
 import collections
@@ -78,6 +85,11 @@ class ZeroNaNLog:
                 for k, n in rows]
 
 
+def usable(x):
+    """割り算・対数に渡してよい値か。有限で 0 より大きいときだけ True。"""
+    return x is not None and math.isfinite(x) and x > 0
+
+
 def _num(raw, log, name, where):
     """値の文字列 -> float。数として読めなければ BLANK を記録して None（その行は使わない）。
     ゼロ・NaN・無限大は記録して、値はそのまま返す。"""
@@ -123,7 +135,7 @@ def load_survey(path, log=None):
                 if x is not None:
                     POP[k] = x
     BM = {k: sum(v) / len(v) for k, v in bm.items() if len(v) == 2}   # 年内の2点がそろう年のみ
-    return dict(BM=BM, cur=cur, E=E, C=C, POP=POP, staple=staple)
+    return dict(BM=BM, BMpts=dict(bm), cur=cur, E=E, C=C, POP=POP, staple=staple)
 
 
 def _is_per_kg(unit):
@@ -131,36 +143,97 @@ def _is_per_kg(unit):
     return u.endswith(' per kg') and u.split(' per ')[-1].strip() == 'kg'
 
 
-def build_panel(S, prefix, y0=Y0, y1=Y1, min_months=MIN_MONTHS):
-    """国ごとに1系列（年数が最多、同数なら行数が多いもの）を選び、国×年のパネルを作る。"""
-    months, vals = collections.defaultdict(set), collections.defaultdict(list)
+def precheck(S, log=None, y0=Y0, y1=Y1, prefix=''):
+    """割り算・対数・回帰に渡す前の検査。0 以下・NaN・inf の入力を使わない（値は変えず、置き換えもしない）。
+    解析に使う入力（対象年 y0〜y1、prefix で始まる per kg の主食の行）だけを調べ、外したものは SKIPPED として compute に必ず記録する
+    （使わない行は調べない。読み込み時のログ load には、年や品目に関わらず出ている）。外したあとの S を新しく返し、渡された S は変えない。
+    ビッグマックは年内の2点がそろっていても、どちらかが使えなければその年は使わない（0 と 100 の平均 50 を作らない）。"""
+    log = ZeroNaNLog() if log is None else log
+    out = dict(S)
+
+    def keep(name, d):
+        good = {}
+        for k, x in d.items():
+            if not y0 <= k[1] <= y1 or usable(x):
+                good[k] = x
+            else:
+                log.add('compute', 'input.' + name, 'SKIPPED', '%s %s (%g)' % (k[0], k[1], x))
+        return good
+
+    staple = []
+    for r in S['staple']:
+        x = float(r['value'])
+        used = y0 <= int(r['year']) <= y1 and r['variable'].startswith(prefix) and _is_per_kg(r['unit'])
+        if not used or usable(x):
+            staple.append(r)
+        else:
+            log.add('compute', 'input.staple_price', 'SKIPPED', '%s %s %s (%s)' % (r['country'], r['date'], r['variable'], r['value']))
+    out['staple'] = staple
+    out['E'] = keep('engel_share_food', S['E'])
+    out['C'] = keep('household_consumption_total_lcu', S['C'])
+    out['POP'] = keep('population_total', S['POP'])
+    if 'BMpts' in S:
+        BM, good_pts = {}, {}
+        for k, pts in S['BMpts'].items():
+            if len(pts) == 2 and not (y0 <= k[1] <= y1 and not all(usable(x) for x in pts)):
+                BM[k] = sum(pts) / len(pts)
+                good_pts[k] = pts
+            elif len(pts) != 2:
+                good_pts[k] = pts             # 年内の2点がそろわない年は、これまでどおり使わない（異常値ではない）
+            else:
+                log.add('compute', 'input.bigmac_local_price', 'SKIPPED', '%s %s (%s)' % (k[0], k[1], ', '.join('%g' % x for x in pts)))
+        out['BM'], out['BMpts'] = BM, good_pts      # 外した年は点も残さない（もう一度検査しても同じ記録を重ねない）
+    else:
+        out['BM'] = keep('bigmac_local_price', S['BM'])
+    return out
+
+
+def series_key(r):
+    """系列の識別。国・variable・単位（大文字小文字は同一視）・source・note。note には市場・価格種別・品種が入る。"""
+    return (r['country'], r['variable'], r['unit'].lower(), r.get('source', ''), r.get('note', ''))
+
+
+def build_panel(S, prefix, y0=Y0, y1=Y1, min_months=MIN_MONTHS, log=None):
+    """国ごとに1系列（年数が最多、同数なら行数が多いもの、なお同数なら系列の文字列が大きいもの）を選び、国×年のパネルを作る。
+    月数は1本の系列の中で数える（別の市場・別の品種の月を足して6か月にしない）。同じ系列の同じ日付が重なれば1か月として平均する。
+    パネルに入る数は、すべて有限で 0 より大きい（precheck と、割り算のあとの確認で外す）。"""
+    log = ZeroNaNLog() if log is None else log
+    S = precheck(S, log, y0, y1, prefix)
+    vals = collections.defaultdict(lambda: collections.defaultdict(list))     # (系列, 年) -> {日付: [値]}
     for r in S['staple']:
         if not r['variable'].startswith(prefix) or not _is_per_kg(r['unit']):
             continue
         y = int(r['year'])
         if not y0 <= y <= y1:
             continue
-        key = (r['country'], r['variable'], r['unit'].lower(), y)
-        months[key].add(r['date'])
-        vals[key].append(float(r['value']))
-    ann = {k: sum(v) / len(v) for k, v in vals.items() if len(months[k]) >= min_months}
+        vals[(series_key(r), y)][r['date']].append(float(r['value']))
+    ann = {}
+    for k, by_date in vals.items():
+        if len(by_date) >= min_months:
+            monthly = [sum(xs) / len(xs) for xs in by_date.values()]
+            ann[k] = sum(monthly) / len(monthly)
     years, nrows = collections.Counter(), collections.Counter()
-    for (c, v, u, _y) in ann:
-        years[(c, v, u)] += 1
-    for (c, v, u, _y), xs in vals.items():
-        nrows[(c, v, u)] += len(xs)
-    chosen = {}
-    for (c, v, u), n in years.items():
-        cand = (n, nrows[(c, v, u)], v, u)
-        if c not in chosen or cand > chosen[c]:
-            chosen[c] = cand
+    for (sk, _y) in ann:
+        years[sk] += 1
+    for (sk, _y), by_date in vals.items():
+        nrows[sk] += sum(len(xs) for xs in by_date.values())
+    cands = collections.defaultdict(list)
+    for sk, n in years.items():
+        cands[sk[0]].append((n, nrows[sk], sk[1], sk[2], sk[3], sk[4]))
+    chosen = {c: max(cs) for c, cs in cands.items()}
     panel, dropped = [], collections.Counter()
-    for c, (_n, _rs, v, u) in sorted(chosen.items()):
+    if len(years) > len(chosen):
+        dropped['other_series_not_used'] = len(years) - len(chosen)            # 同じ国の別系列（別の市場など）は混ぜず、使わない
+    for c, cs in sorted(cands.items()):
+        if sum(1 for x in cs if x[:2] == chosen[c][:2]) > 1:
+            dropped['series_tie_broken_by_text:%s' % c] += 1                   # 年数も行数も同じ別系列があり、文字列の順で選んだ国
+    for c, (_n, _rs, v, u, src, note) in sorted(chosen.items()):
         if S['cur'].get(c) != u.split(' ')[0].upper():
             dropped['currency_mismatch:%s' % c] += 1     # 通貨がビッグマックと違う系列は換算せず除く
             continue
+        sk = (c, v, u, src, note)
         for y in range(y0, y1 + 1):
-            k = (c, v, u, y)
+            k = (sk, y)
             if k not in ann:
                 continue
             if (c, y) not in S['BM']:
@@ -172,8 +245,18 @@ def build_panel(S, prefix, y0=Y0, y1=Y1, min_months=MIN_MONTHS):
             else:
                 p, P, e = ann[k], S['BM'][(c, y)], S['E'][(c, y)]
                 cpc = S['C'][(c, y)] / S['POP'][(c, y)]
-                panel.append(dict(country=c, year=y, series=v, price=p, bigmac=P, E=e, C_pc=cpc,
-                                  b=p / P, M=cpc / P, k=(p / P) / (e * cpc / P)))
+                try:
+                    k_ = (p / P) / (e * cpc / P)
+                except ArithmeticError:                  # 分母が 0 に潰れた。下の確認で外す
+                    k_ = math.nan
+                row = dict(country=c, year=y, series=v, price=p, bigmac=P, E=e, C_pc=cpc,
+                           b=p / P, M=cpc / P, k=k_)
+                bad = [n for n in ('price', 'bigmac', 'E', 'C_pc', 'b', 'M', 'k') if not usable(row[n])]
+                if bad:                                  # 割り算でゼロ・無限大・NaN になった行は回帰に渡さない
+                    dropped['unusable_derived:%s' % c] += 1
+                    log.add('compute', 'panel.' + bad[0], 'SKIPPED', '%s %d (%g)' % (c, y, row[bad[0]]))
+                    continue
+                panel.append(row)
     return panel, dropped
 
 
@@ -224,8 +307,13 @@ def analyze(panel, boot=BOOT, seed=SEED):
         except np.linalg.LinAlgError:
             pass
     draws = np.array(draws)
-    ci = {name: tuple(float(v) for v in np.percentile(draws[:, i], [2.5, 97.5]))
-          for name, i in (('beta', 1), ('gamma', 2))}
+    if len(draws) == 0:                    # 1回も当てはめられなかったときは、区間と確率を NaN にして先へ進む（compute に DROPPED が出る）
+        ci = {name: (float('nan'), float('nan')) for name in ('beta', 'gamma')}
+        p_ge_1 = float('nan')
+    else:
+        ci = {name: tuple(float(v) for v in np.percentile(draws[:, i], [2.5, 97.5]))
+              for name, i in (('beta', 1), ('gamma', 2))}
+        p_ge_1 = float((draws[:, 2] >= 1).mean())
     yr = np.array([r['year'] for r in panel], dtype=int)
     by_year = {}
     for y in sorted(set(yr.tolist())):
@@ -240,7 +328,7 @@ def analyze(panel, boot=BOOT, seed=SEED):
                 log_price_over_cpc=_decomp(lp - lC, cs, ucs)),
         a=float(coef[0]), beta=float(coef[1]), gamma=float(coef[2]), r2=r2,
         corr_E_M=float(np.corrcoef(lE, lM)[0, 1]),
-        ci=ci, p_gamma_ge_1=float((draws[:, 2] >= 1).mean()), draws=len(draws), by_year=by_year)
+        ci=ci, p_gamma_ge_1=p_ge_1, draws=len(draws), by_year=by_year)
 
 
 def log_computed(log, panel, res, boot):
@@ -292,7 +380,8 @@ def main(argv=None):
     log = ZeroNaNLog()
     S = load_survey(args.survey_csv, log)
     print('\n'.join(log.lines('load')))      # 読み込み直後に出す（後の計算で止まっても残る）
-    panel, dropped = build_panel(S, args.prefix)
+    S = precheck(S, log, prefix=args.prefix)           # 使えない入力は、割り算・回帰・除外の判定より前に外して SKIPPED を記録する
+    panel, dropped = build_panel(S, args.prefix, log=log)
     excluded = None
     if args.exclude_inflation is not None:
         ratios = {c: bigmac_ratio(S, c, log=log) for c in {r['country'] for r in panel}}
@@ -308,9 +397,14 @@ def main(argv=None):
             w = csv.DictWriter(f, fieldnames=list(panel[0].keys()))
             w.writeheader()
             w.writerows(panel)
-    res = analyze(panel, boot=args.boot)
-    log_computed(log, panel, res, args.boot)
-    report(args.prefix, panel, dropped, excluded, res)
+    try:
+        res = analyze(panel, boot=args.boot)
+        log_computed(log, panel, res, args.boot)
+        report(args.prefix, panel, dropped, excluded, res)
+    except (ArithmeticError, ValueError) as e:          # 検査のあとでも計算できなかった（LinAlgError は ValueError）。ログを出してから終える
+        print('\n'.join(log.lines('compute')))
+        print('cannot compute: %s: %s' % (type(e).__name__, e), file=sys.stderr)
+        return 65
     print('\n'.join(log.lines('compute')))
     return 0
 

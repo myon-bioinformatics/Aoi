@@ -241,6 +241,225 @@ def test_bigmac_ratio_with_a_zero_year_is_skipped_and_logged_not_silent():
     assert "A (2021: 0, 2025: 2)" in "\n".join(log.lines("compute"))
 
 
+# ---- 使えない入力（0・NaN・inf）は、計算に渡す前に外して記録する。止まらない -------------------------
+
+def _write(path, rows):
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(HEADER)
+        w.writerows(rows)
+    return path
+
+
+def _set(rows, country, year, variable, value, *, only_first=False):
+    """(country, year, variable) の行の値を差し替えた新しい行のリスト。only_first なら最初の1行だけ。"""
+    out, done = [], False
+    for r in rows:
+        r = list(r)
+        if r[0] == country and r[2] == year and r[3] == variable and not (only_first and done):
+            r[4] = value
+            done = True
+        out.append(r)
+    return out
+
+
+ANOMALIES = [
+    # (名前, variable, 差し替える値, 1行だけか, compute ログの入力名, 外れる件数)
+    ("staple_zero", RICE, "0", False, "input.staple_price", 12),
+    ("staple_nan", RICE, "nan", False, "input.staple_price", 12),
+    ("staple_inf", RICE, "inf", False, "input.staple_price", 12),
+    ("staple_negative", RICE, "-3", False, "input.staple_price", 12),
+    ("bigmac_both_zero", "bigmac_local_price", "0", False, "input.bigmac_local_price", 1),
+    ("bigmac_one_zero", "bigmac_local_price", "0", True, "input.bigmac_local_price", 1),   # 0 と 100 の平均 50 を作らない
+    ("bigmac_one_nan", "bigmac_local_price", "nan", True, "input.bigmac_local_price", 1),
+    ("engel_zero", "engel_share_food", "0", False, "input.engel_share_food", 1),
+    ("engel_nan", "engel_share_food", "nan", False, "input.engel_share_food", 1),
+    ("consumption_zero", "household_consumption_total_lcu", "0", False, "input.household_consumption_total_lcu", 1),
+    ("consumption_nan", "household_consumption_total_lcu", "nan", False, "input.household_consumption_total_lcu", 1),
+    ("consumption_inf", "household_consumption_total_lcu", "inf", False, "input.household_consumption_total_lcu", 1),
+    ("population_zero", "population_total", "0", False, "input.population_total", 1),
+    ("population_nan", "population_total", "nan", False, "input.population_total", 1),
+    ("population_inf", "population_total", "inf", False, "input.population_total", 1),
+]
+
+
+@pytest.mark.parametrize("name,variable,value,only_first,logname,count", ANOMALIES, ids=[a[0] for a in ANOMALIES])
+def test_cli_with_an_unusable_input_does_not_crash_and_logs_the_skip(tmp_path, capsys, name, variable, value, only_first, logname, count):
+    """対象年に 0・NaN・inf・負がある。traceback で止まらず、compute ログにどれを外したかが残り、その国・年だけがパネルから消える。"""
+    rows = _set(_toy_rows(), "N02", 2023, variable, value, only_first=only_first)
+    path = _write(tmp_path / (name + ".csv"), rows)
+    panel_out = tmp_path / "panel.csv"
+    assert chk.main([str(path), "--prefix", "staple_price:rice", "--boot", "20", "--panel-out", str(panel_out)]) == 0
+    out = capsys.readouterr().out
+    assert "[zero/NaN log] compute: %s SKIPPED x%d" % (logname, count) in out
+    assert "N02" in next(l for l in out.splitlines() if logname in l and l.startswith("[zero/NaN log] compute"))
+    with open(panel_out, encoding="utf-8", newline="") as f:
+        got = {(r["country"], int(r["year"])) for r in csv.DictReader(f)}
+    assert ("N02", 2023) not in got and len(got) == 12 * 5 - 1 - 1              # 基準のパネル（59 行）から、この1行だけが消える
+    assert {("N02", y) for y in (2021, 2022, 2024, 2025)} <= got
+
+
+def test_one_unusable_month_is_skipped_and_the_year_stays(tmp_path, capsys):
+    """主食の価格の1か月だけが 0 なら、その月を外す。残り11か月で年は成り立ち、平均は 0 に引かれない。"""
+    rows = _set(_toy_rows(), "N02", 2023, RICE, "0", only_first=True)
+    path = _write(tmp_path / "one_month.csv", rows)
+    log = chk.ZeroNaNLog()
+    panel, dropped = chk.build_panel(chk.load_survey(str(path)), "staple_price:rice", log=log)
+    assert dict(log.count) == {("compute", "input.staple_price", "SKIPPED"): 1}
+    base, _ = chk.build_panel(chk.load_survey(str(_write(tmp_path / "base.csv", _toy_rows()))), "staple_price:rice")
+    pick = lambda p: next(r["price"] for r in p if r["country"] == "N02" and r["year"] == 2023)
+    assert pick(panel) == pytest.approx(pick(base)) and len(panel) == len(base)
+
+
+def test_anomalies_outside_the_target_years_or_other_staples_are_not_reported_as_skipped(tmp_path):
+    rows = _toy_rows()
+    rows.append(_row("N02", "2010-01-01", "household_consumption_total_lcu", 0.0, "X02"))       # 対象年の外
+    rows.append(_row("N02", "2023-01-01", "staple_price:wheat", 0.0, "X02 per kg"))               # 別の品目
+    rows.append(_row("N02", "2023-01-01", RICE, 0.0, "X02 per 5 kg"))                              # 使わない単位
+    path = _write(tmp_path / "unused.csv", rows)
+    log = chk.ZeroNaNLog()
+    chk.build_panel(chk.load_survey(str(path)), "staple_price:rice", log=log)
+    assert log.lines("compute") == ["[zero/NaN log] compute: none"]
+
+
+def test_precheck_twice_logs_nothing_new_and_keeps_the_input_untouched(tmp_path):
+    rows = _set(_set(_toy_rows(), "N02", 2023, "bigmac_local_price", "0", only_first=True), "N03", 2022, RICE, "nan")
+    S = chk.load_survey(str(_write(tmp_path / "twice.csv", rows)))
+    before = {k: (dict(v) if isinstance(v, dict) else list(v)) for k, v in S.items()}
+    log = chk.ZeroNaNLog()
+    once = chk.precheck(S, log, prefix="staple_price:rice")
+    n = dict(log.count)
+    assert n == {("compute", "input.bigmac_local_price", "SKIPPED"): 1, ("compute", "input.staple_price", "SKIPPED"): 12}
+    chk.precheck(once, log, prefix="staple_price:rice")
+    assert dict(log.count) == n                                   # 2回目は何も重ねない
+    assert S == before and ("N02", 2023) in S["BM"]               # 渡した S は変えない（0 と 0.0 の平均は元のまま残っている）
+
+
+def test_the_inflation_exclusion_does_not_use_a_big_mac_year_with_an_unusable_point(tmp_path, capsys):
+    """INF 国の2021年のビッグマックの1点が 0 → 平均（約半分）で比を作って除外しない。その年を使わず、比は作らず、除外もしない。"""
+    rows = _set(_toy_rows(), "INF", 2021, "bigmac_local_price", "0", only_first=True)
+    path = _write(tmp_path / "inf_zero.csv", rows)
+    panel_out = tmp_path / "panel.csv"
+    assert chk.main([str(path), "--prefix", "staple_price:rice", "--boot", "10",
+                     "--exclude-inflation", "2.0", "--panel-out", str(panel_out)]) == 0
+    out = capsys.readouterr().out
+    assert "excluded (Big Mac ratio >= threshold): []" in out
+    assert "input.bigmac_local_price SKIPPED x1  e.g. INF 2021" in out
+    with open(panel_out, encoding="utf-8", newline="") as f:
+        got = {(r["country"], int(r["year"])) for r in csv.DictReader(f)}
+    assert ("INF", 2021) not in got and {("INF", y) for y in (2022, 2023, 2024, 2025)} <= got
+
+
+def test_a_row_whose_division_underflows_is_skipped_and_logged_not_passed_to_the_fit(tmp_path, capsys):
+    """入力はどれも 0 より大きい有限の数でも、1人あたり消費 = 消費 / 人口 が 0 に潰れる行は、対数・回帰に渡さない。"""
+    rows = _set(_toy_rows(), "N02", 2023, "household_consumption_total_lcu", "1e-320")
+    path = _write(tmp_path / "underflow.csv", rows)
+    log = chk.ZeroNaNLog()
+    panel, dropped = chk.build_panel(chk.load_survey(str(path)), "staple_price:rice", log=log)
+    assert ("N02", 2023) not in {(r["country"], r["year"]) for r in panel} and len(panel) == 12 * 5 - 1 - 1
+    assert dropped["unusable_derived:N02"] == 1 and dict(log.count) == {("compute", "panel.C_pc", "SKIPPED"): 1}
+    assert chk.main([str(path), "--prefix", "staple_price:rice", "--boot", "10"]) == 0
+
+
+def test_all_input_unusable_gives_the_empty_panel_exit_with_the_log(tmp_path, capsys):
+    rows = [_set([r], "N00", r[2], r[3], "0")[0] if r[3] == RICE else r for r in _toy_rows() if r[0] == "N00"]
+    path = _write(tmp_path / "all_zero.csv", rows)
+    assert chk.main([str(path), "--prefix", "staple_price:rice", "--boot", "10"]) == 66
+    cap = capsys.readouterr()
+    assert "[zero/NaN log] compute: input.staple_price SKIPPED x60" in cap.out and "empty panel" in cap.err
+
+
+def test_when_the_fit_cannot_be_computed_the_cli_prints_the_log_and_exits_65(toy, monkeypatch, capsys):
+    def boom(panel, boot=0, seed=0):
+        raise np.linalg.LinAlgError("SVD did not converge")
+    monkeypatch.setattr(chk, "analyze", boom)
+    assert chk.main([str(toy), "--prefix", "staple_price:rice", "--boot", "10"]) == 65
+    cap = capsys.readouterr()
+    assert "[zero/NaN log] compute: none" in cap.out and "cannot compute: LinAlgError" in cap.err
+
+
+def test_no_bootstrap_draw_succeeding_is_logged_not_an_index_error(toy, monkeypatch, capsys):
+    real, calls = chk._fit, {"n": 0}
+
+    def flaky(X, y):
+        calls["n"] += 1
+        if 2 <= calls["n"] <= 11:                      # 点推定（1回目）と年ごとの当てはめは通し、ブートストラップの10回だけ失敗させる
+            raise np.linalg.LinAlgError("x")
+        return real(X, y)
+    monkeypatch.setattr(chk, "_fit", flaky)
+    assert chk.main([str(toy), "--prefix", "staple_price:rice", "--boot", "10"]) == 0
+    out = capsys.readouterr().out
+    assert "compute: bootstrap DROPPED x1  e.g. 10 of 10 draws failed" in out
+    assert "compute: ci.gamma NaN x2  e.g. lo, hi" in out and "compute: fit NaN x1  e.g. p_gamma_ge_1" in out
+
+
+# ---- 系列の識別: 別の市場・別の出どころは、月をまたいで混ぜない ----------------------------------
+
+def _srow(country, date, value, unit, source="test", note=""):
+    return [country, date, int(date[:4]), RICE, "%.12g" % value, unit, source, note, ""]
+
+
+def _mini(years, staple):
+    """国 A（通貨 AAA）が1つだけのCSV行。ビッグマックは2点、E・C・人口は固定。staple は主食の行のリスト。"""
+    rows = []
+    for y in years:
+        rows += [_row("A", "%d-01-01" % y, "engel_share_food", 20.0, "percent"),
+                 _row("A", "%d-01-01" % y, "household_consumption_total_lcu", 5.0e9, "AAA"),
+                 _row("A", "%d-01-01" % y, "population_total", POP, "persons"),
+                 _row("A", "%d-01-01" % y, "bigmac_local_price", 1.98, "AAA"),
+                 _row("A", "%d-07-01" % y, "bigmac_local_price", 2.02, "AAA")]
+    return rows + staple
+
+
+@pytest.mark.parametrize("a,b", [(("test", "market=X"), ("test", "market=Y")),          # note（市場）が違う
+                                 (("src1", "market=X"), ("src2", "market=X"))])         # source（出どころ）が違う
+def test_two_three_month_series_are_not_added_up_to_six_months(tmp_path, a, b):
+    staple = []
+    for y in (2021, 2022):
+        staple += [_srow("A", "%d-%02d-01" % (y, m), 10.0, "AAA per kg", *a) for m in (1, 2, 3)]
+        staple += [_srow("A", "%d-%02d-01" % (y, m), 30.0, "AAA per kg", *b) for m in (4, 5, 6)]
+    path = _write(tmp_path / "split.csv", _mini((2021, 2022), staple))
+    panel, dropped = chk.build_panel(chk.load_survey(str(path)), "staple_price:rice")
+    assert panel == []                                # どちらの系列も3か月。足して6か月にして平均 20 を作らない
+
+
+def test_same_months_in_two_markets_are_not_averaged_and_the_pick_is_reported(tmp_path):
+    staple = []
+    for y in (2021, 2022, 2023):
+        for m in range(1, 13):
+            staple.append(_srow("A", "%d-%02d-01" % (y, m), 10.0, "AAA per kg", note="market=X"))
+            staple.append(_srow("A", "%d-%02d-01" % (y, m), 30.0, "AAA per kg", note="market=Y"))
+    path = _write(tmp_path / "two_markets.csv", _mini((2021, 2022, 2023), staple))
+    panel, dropped = chk.build_panel(chk.load_survey(str(path)), "staple_price:rice")
+    assert [r["price"] for r in panel] == [30.0, 30.0, 30.0]                 # 平均 20 ではなく、1系列の値
+    assert dropped["other_series_not_used"] == 1
+    assert dropped["series_tie_broken_by_text:A"] == 1                       # 年数・行数が同じなので、文字列の順で選んだ（記録に出る）
+
+
+def test_the_series_with_more_years_wins_over_text_order(tmp_path):
+    staple = []
+    for y in (2021, 2022, 2023):
+        for m in range(1, 13):
+            staple.append(_srow("A", "%d-%02d-01" % (y, m), 10.0, "AAA per kg", note="market=X"))
+            if y != 2023:
+                staple.append(_srow("A", "%d-%02d-01" % (y, m), 30.0, "AAA per kg", note="market=Y"))
+    path = _write(tmp_path / "more_years.csv", _mini((2021, 2022, 2023), staple))
+    panel, dropped = chk.build_panel(chk.load_survey(str(path)), "staple_price:rice")
+    assert [r["price"] for r in panel] == [10.0, 10.0, 10.0]
+    assert "series_tie_broken_by_text:A" not in dropped
+
+
+def test_a_duplicated_date_in_one_series_counts_as_one_month(tmp_path):
+    staple = [_srow("A", "2021-%02d-01" % m, 10.0, "AAA per kg") for m in range(1, 7)]
+    staple.append(_srow("A", "2021-06-01", 40.0, "AAA per kg"))               # 6月が2行（10 と 40）→ 6月は 25 の1か月
+    path = _write(tmp_path / "dup.csv", _mini((2021,), staple))
+    panel, _ = chk.build_panel(chk.load_survey(str(path)), "staple_price:rice")
+    assert [r["price"] for r in panel] == [pytest.approx((5 * 10.0 + 25.0) / 6)]
+    staple5 = [_srow("A", "2021-%02d-01" % m, 10.0, "AAA per kg") for m in range(1, 6)] + [_srow("A", "2021-05-01", 10.0, "AAA per kg")]
+    path = _write(tmp_path / "dup5.csv", _mini((2021,), staple5))
+    assert chk.build_panel(chk.load_survey(str(path)), "staple_price:rice")[0] == []      # 5日付 + 重複 = 6行でも5か月
+
+
 # ---- synthetic_staples --------------------------------------------------------------
 
 def test_scaffold_uses_real_covariates_only_with_both_bigmac_points(toy):

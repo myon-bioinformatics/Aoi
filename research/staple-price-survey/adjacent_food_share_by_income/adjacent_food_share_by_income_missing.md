@@ -245,3 +245,19 @@ Pack: **1468 rows / 84 ISO3**.
 
 ### Still-miss Big Mac ISO3 (food×income; excl. Aoi JPN/KOR/TWN/AUS/NZL)
 ARE BHR CHN JOR KWT OMN QAT SAU VEN
+
+## 2026-10-25 ~10:25 JST — BM INC dead-end pass (no new INC rows)
+
+Pack unchanged: **1468 / 84**.
+
+| ISO3 | status | notes |
+|------|--------|-------|
+| JOR | **MISS** (grain) | HEIS 2017 Table 4.10 publishes Food Groups + Grand Total by **absolute JD expenditure bands** (same table → shares computable; e.g. Kingdom clean-food/grand ≈37.3%→28.9% across `<2500`…`12500-<15000`). Bands are **not** equal quintiles/deciles — not loaded as `food_q*`/`food_d*` (no coerce). |
+| CHN | **MISS** | NBS (2024-06 reply) stopped publishing consumption-by-income-grade detail after 2013; pre-2013 yearbook uses 7-level (10/10/20/20/20/10/10) ≠ equal q1–q5. Yearbook 2025 §27 quintile table is **Hong Kong**, not mainland. |
+| SAU | **MISS** | GaStat HIES 2018 national food 17.2% only; Tables 44–45 Low/Medium/High terciles — not coerced. |
+| ARE | **MISS** | SCAD HIES methodology 2024 / Abu Dhabi scope; no open UAE-wide food×equal q/d table. |
+| BHR KWT OMN QAT | **MISS** | No open primary equal-cut food×income PDF pinned this pass. |
+| VEN | **MISS** | No open national food÷total by income q/d. |
+
+### Still-miss Big Mac ISO3 (food×income)
+ARE BHR CHN JOR KWT OMN QAT SAU VEN

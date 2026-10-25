@@ -274,3 +274,22 @@ Pack unchanged: **529 rows / 109 ISO3**. Hours sibling still DEU+BRA (240/2).
 
 ### Still-miss Big Mac ISO3 (urban/rural; excl. Aoi JPN/KOR/TWN/NZL)
 ARE ARG BHR CHE CHL ISR KWT LBN QAT SAU TUR VEN (+ HKG/SGP **N/A**)
+
+## 2026-10-25 ~10:25 JST — JOR UR HIT + BM UR dead-ends
+
+Pack: **531 rows / 109 ISO3** (+2 JOR 2017).
+
+| ISO3 | status | notes |
+|------|--------|-------|
+| JOR | **HIT** +2 (2017) | DOS HEIS 2017 Table 5.1 Relative Importance Urban/Rural; food = Food Commodities − Alc − Tob − Restaurants (25.91 / 31.46); raw `raw/jor/`. (JOR already had 2013 UR; not on prior still-miss list.) |
+| ARG | **MISS** (no rural) | ENGHo 2017–18 = localities ≥2,000; region food % (GBA/Pampeana/…) ≠ urban/rural; CEPALSTAT BADEHOG notes Argentina excluded from rural averages (urban-only surveys). |
+| ISR | **MISS** | CBS HES 2021: Table 8 = income by urban locality type; Table 30 = housing by locality; Intro has **no** consumption-composition × urban/rural localities table. |
+| CHE | **MISS** | FSO HABE publishes Grossregion / Sprachregion / Kanton / income / household type — **no** Stadt/Land or Gemeindetyp food Engel; Wohnstatus = tenure. |
+| CHL | **MISS** (no rural) | EPF urban capitals only (prior). |
+| TUR | **MISS** | No kent-kır HBS pubs after 2014 (prior). |
+| LBN | **MISS** UR | CAS+WB Table A5 = quintiles only (loaded to INC). |
+| ARE BHR KWT QAT SAU VEN | **MISS** | Gulf/VEN open HIES = national / nationality / region; no urban/rural food Engel. |
+| HKG / SGP | **N/A** | city-state. |
+
+### Still-miss Big Mac ISO3 (urban/rural)
+ARE ARG BHR CHE CHL ISR KWT LBN QAT SAU TUR VEN (+ HKG/SGP **N/A**)

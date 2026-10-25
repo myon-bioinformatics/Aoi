@@ -8,7 +8,9 @@ Urban vs rural (or municipal / non-municipal) food expenditure shares of househo
 Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 
 ## Coverage (build 2026-10-25 Asia/Tokyo)
-- **529 rows / 109 ISO3**, years **1988–2025**
+- **531 rows / 109 ISO3**, years **1988–2025**
+
+- **JOR** 2017: DOS HEIS Table 5.1 Relative Importance Urban/Rural — food = Food Commodities − Alcohols − Tobacco − Restaurants and Cafes (25.91 / 31.46); matches 2013 Food Stuff definition; raw `raw/jor/`.
 - ISO3: ARM CAN AUS AUT AZE BEL BGD BGR BOL BRA BTN BWA CHN CIV COL CRI CYP CZE DEU DJI DNK DOM DZA ECU EGY ESP EST ETH EUZ FIN FJI FRA GBR GEO GMB GRC GTM HND HRV HUN IDN IND IRL IRN ITA JOR KEN KGZ KHM KIR LAO LBR LKA LSO LTU LUX LVA MAR MDA MDG MDV MEX MLI MLT MMR MOZ MUS MYS NAM NGA NIC NLD NOR NPL OMN PAK PER PHL POL PRT PRY PSE ROU RUS RWA SDN SLB SLV SVK SVN SWE TCD THA TJK TLS TON TUN TZA UGA UKR URY USA VNM VUT WSM YEM ZAF ZMB
 - `estimated_value` empty on all rows
 

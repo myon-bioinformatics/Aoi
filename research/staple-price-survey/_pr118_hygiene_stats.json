@@ -1,0 +1,45 @@
+{
+  "tip_base": "e731537",
+  "hygiene_date": "2026-10-25 Asia/Tokyo",
+  "household": {
+    "rows": 3015,
+    "iso3": {
+      "AUT": 180,
+      "FIN": 1692,
+      "FRA": 192,
+      "IRL": 177,
+      "MYS": 491,
+      "NLD": 40,
+      "QAT": 36,
+      "SGP": 207
+    }
+  },
+  "hi": {
+    "rows": 3691,
+    "iso3": {
+      "HKG": 190,
+      "MYS": 230,
+      "NZL": 1512,
+      "QAT": 85,
+      "SGP": 1551,
+      "TWN": 123
+    },
+    "nzl_bread_fix": {
+      "keep_700g": 99,
+      "split_600g_cheapest": 241
+    }
+  },
+  "euz": {
+    "rows": 14911,
+    "iso3": {
+      "AUT": 675,
+      "DEU": 107,
+      "ESP": 328,
+      "FIN": 3615,
+      "FRA": 4769,
+      "IRL": 4565,
+      "NLD": 246,
+      "PRT": 606
+    }
+  }
+}

@@ -94,3 +94,54 @@ def test_python_matrix_pins_the_same_required_chromium_selection():
     assert "DRAGOWING_REQUIRE_CHROME=1" in job
     assert "from dragowing.plotly_cdn import fetch_plotly_js" in job
     assert "DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js" in job
+
+
+def test_first_start_context_uses_fresh_jobs_and_unchanged_test_order():
+    text = (ROOT / ".github/workflows/browser-startup-validation.yml").read_text(encoding="utf-8")
+    job = text.split("\n  first-start-context:\n", 1)[1].split("\n  compare:\n", 1)[0]
+    assert "context: [normal, offline]" in job
+    assert "fail-fast: false" in job
+    assert "runs-on: ubuntu-24.04" in job
+    assert "python-version: '3.14'" in job
+    assert "uv sync --locked --python 3.14" in job
+    assert "sudo unshare --net --" in job
+    assert "diagnose_dragowing_browser.py" not in job
+    assert "--runs" not in job and "--timeout" not in job
+    assert '"$chromium" --version' in job
+    assert "-p scripts.observe_dragowing_startup" in job
+    assert "--browser-startup-evidence=build/startup-context/actual-tests.json" in job
+    modules = "dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \\\n            dragowing/tests/test_plotly_cdn.py"
+    assert modules in job
+    assert modules in (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    assert "if: always()" in job and "if-no-files-found: error" in job
+    assert "retention-days: 14" in job
+    assert "'scripts/observe_dragowing_startup.py'" in text
+    assert job.index("Observe the actual tests") < job.index("Preserve first and subsequent")
+
+
+def test_first_start_shell_only_changes_execution_context(tmp_path):
+    script = _selection_step(ROOT / ".github/workflows/browser-startup-validation.yml",
+                             "Observe the actual tests without preceding browser launches", "first-start-context")
+    binary = tmp_path / "bin"
+    binary.mkdir()
+    python = tmp_path / ".venv/bin/python"
+    python.parent.mkdir(parents=True)
+    python.write_text('#!/bin/bash\nprintf "%s\\n" "$@" > "$PWD/args"\nprintf "%s\\n" "$CHROME" "$DRAGOWING_REQUIRE_CHROME" "$DRAGOWING_PINNED_PLOTLY_JS" > "$PWD/env"\n')
+    python.chmod(0o755)
+    for name, body in (("sudo", 'printf "%s\\n" "$@" > "$PWD/sudo-args"; exec "$@"'),
+                       ("unshare", 'test "$1" = --net && test "$2" = --; shift 2; exec "$@"')):
+        path = binary / name
+        path.write_text("#!/bin/bash\n" + body + "\n")
+        path.chmod(0o755)
+    results = []
+    for context in ("normal", "offline"):
+        result = subprocess.run(["/bin/bash", "-e", "-c", script], cwd=tmp_path, capture_output=True, text=True,
+                                env={**os.environ, "STARTUP_CONTEXT": context, "CHROME": "/explicit/chromium",
+                                     "PATH": str(binary) + ":/usr/bin:/bin"})
+        assert result.returncode == 0, result.stderr
+        results.append(((tmp_path / "args").read_text(), (tmp_path / "env").read_text()))
+        assert (tmp_path / "sudo-args").exists() == (context == "offline")
+    assert results[0] == results[1]
+    assert results[0][0].startswith("-m\npytest\n-c\npyproject.toml\n-q\n")
+    assert results[0][1].startswith("/explicit/chromium\n1\n")
+    assert (tmp_path / "sudo-args").read_text().startswith("unshare\n--net\n--\nenv\n")

@@ -662,18 +662,18 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 868,
+      "attribute_uses": 872,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
-        "MonkeyPatch": 1,
-        "StashKey": 2,
+        "MonkeyPatch": 2,
+        "StashKey": 3,
         "UsageError": 10,
         "approx": 239,
         "fail": 24,
-        "fixture": 45,
-        "hookimpl": 3,
+        "fixture": 46,
+        "hookimpl": 4,
         "importorskip": 9,
         "mark.parametrize": 159,
         "mark.skipif": 8,
@@ -795,6 +795,18 @@
           "files": 8,
           "import_sites": 8
         },
+        "scripts": {
+          "attribute_uses": 4,
+          "attributes": {
+            "MonkeyPatch": 1,
+            "StashKey": 1,
+            "fixture": 1,
+            "hookimpl": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        },
         "tests": {
           "attribute_uses": 91,
           "attributes": {
@@ -847,8 +859,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 91,
-      "import_sites": 92
+      "files": 92,
+      "import_sites": 93
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2557,6 +2569,19 @@
       "import_sites": 1,
       "package": "pytest",
       "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
+        "MonkeyPatch": 1,
+        "StashKey": 1,
+        "fixture": 1,
+        "hookimpl": 1
+      },
+      "dynamic_lines": [],
+      "file": "scripts/observe_dragowing_startup.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "scripts"
     },
     {
       "attributes": {

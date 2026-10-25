@@ -368,3 +368,149 @@ def test_cleanup_failure_stops_trials_instead_of_multiplying_leaks(peer, monkeyp
         # this test's owned process only; the diagnostic does not hide the leak.
         for browser in browsers:
             diagnostic.Chrome.close(browser)
+
+
+def test_first_readiness_is_not_overwritten_by_later_version_calls(peer):
+    browser = diagnostic.DiagnosticChrome(peer(), 2)
+    try:
+        browser.start()
+        elapsed = browser.readiness_elapsed_seconds
+        transport = dict(browser.readiness_transport)
+        browser.call("Browser.getVersion")
+        assert browser.readiness_elapsed_seconds == elapsed
+        assert browser.readiness_transport == transport
+        assert transport["phase"] == "response_received"
+        assert transport["received_messages"] == 1
+    finally:
+        browser.close()
+
+
+def test_readiness_timeout_retains_send_vs_receive_stage(peer):
+    report = diagnostic.diagnose(peer("timeout"), runs=1, timeout=0.2)
+    trial = report["trials"][0]
+    assert trial["failure"]["readiness_transport"] == trial["readiness_transport"]
+    assert trial["readiness_transport"]["phase"] == "waiting_reply"
+    assert trial["readiness_transport"]["send_elapsed_seconds"] < 0.2
+    assert trial["readiness_transport"]["received_messages"] == 0
+
+
+def _run_observed_pytest(tmp_path, source, *, enabled=True):
+    root = Path(__file__).resolve().parents[1]
+    testfile = tmp_path / "test_observed.py"
+    testfile.write_text(source, encoding="utf-8")
+    output = tmp_path / "actual-tests.json"
+    args = [sys.executable, "-m", "pytest", "-c", str(root / "pyproject.toml"),
+            "-q", "-p", "scripts.observe_dragowing_startup", str(testfile)]
+    if enabled:
+        args += ["--browser-startup-evidence", str(output)]
+    result = subprocess.run(args, cwd=root, capture_output=True, text=True,
+                            env={**os.environ, "PYTHONPATH": str(root)}, timeout=30)
+    return result, json.loads(output.read_text()) if output.exists() else None
+
+
+def test_pytest_observer_is_inert_without_explicit_output(tmp_path):
+    result, report = _run_observed_pytest(tmp_path, '''
+from dragowing import chrome_pipe, render
+import pytest
+@pytest.fixture
+def chrome_executable():
+    return "/not-executed"
+def test_unmodified(chrome_executable):
+    assert render.Chrome is chrome_pipe.Chrome
+''', enabled=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert report is None
+
+
+def test_pytest_observer_tracks_actual_launches_and_expected_failures(peer, tmp_path):
+    executable, timeout_executable = peer(), peer("timeout")
+    result, report = _run_observed_pytest(tmp_path, f'''
+from dragowing import chrome_pipe, render
+import pytest
+@pytest.fixture
+def chrome_executable():
+    return {executable!r}
+def test_first_and_next(chrome_executable):
+    for _ in range(2):
+        with render.RenderSession(chrome=chrome_executable, timeouts=render.Timeouts(launch=2)) as session:
+            elapsed = session.browser.readiness_elapsed_seconds
+            session.start()
+            session.browser.start()
+            session.browser.call("Browser.getVersion")
+            assert session.browser.readiness_elapsed_seconds == elapsed
+def test_expected_failure(chrome_executable):
+    with pytest.raises(TimeoutError):
+        with render.RenderSession(chrome={timeout_executable!r}, timeouts=render.Timeouts(launch=0.2)):
+            pass
+def test_fake_only_is_not_patched():
+    assert render.Chrome is chrome_pipe.Chrome
+''')
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert report["launch_count"] == 3
+    assert report["pytest_exitstatus"] == 0
+    assert len(report["tests"]) == 2
+    records = [b for test in report["tests"] for b in test["browsers"]]
+    assert [b["launch_ordinal"] for b in records] == [1, 2, 3]
+    assert [b["position"] for b in records] == ["first_in_pytest", "subsequent_in_pytest", "subsequent_in_pytest"]
+    assert [b["timeout_seconds"] for b in records] == [2, 2, 0.2]
+    assert all(b["cleanup"]["profile_removed"] for b in records)
+    assert records[2]["failure"]["stage"] == "readiness"
+    assert records[2]["readiness_transport"]["phase"] == "waiting_reply"
+    assert report["tests"][1]["pytest_outcomes"] == {"setup": "passed", "call": "passed", "teardown": "passed"}
+    assert "do-not-leak" not in json.dumps(report)
+    assert set(report["runtime"]) == {"python", "platform", "machine", "kernel_release", "uid", "euid",
+                                       "network_namespace_inode", "network_interface_count", "loopback_present"}
+
+
+def test_pytest_observer_preserves_failed_test_and_skipped_setup(peer, tmp_path):
+    result, report = _run_observed_pytest(tmp_path, f'''
+from dragowing import chrome_pipe, render
+import pytest
+@pytest.fixture
+def chrome_executable(request):
+    if request.node.name == "test_skipped":
+        pytest.skip("synthetic fixture unavailable")
+    return {peer("timeout")!r}
+def test_failed(chrome_executable):
+    with render.RenderSession(chrome=chrome_executable, timeouts=render.Timeouts(launch=0.2)):
+        pass
+def test_skipped(chrome_executable):
+    assert False
+def test_restored():
+    assert render.Chrome is chrome_pipe.Chrome
+''')
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert report["pytest_exitstatus"] == 1
+    assert report["launch_count"] == 1
+    assert report["tests"][0]["pytest_outcomes"]["call"] == "failed"
+    assert report["tests"][0]["browsers"][0]["failure"]["stage"] == "readiness"
+    assert report["tests"][1]["pytest_outcomes"]["setup"] == "skipped"
+    assert report["tests"][1]["browsers"] == []
+
+
+def test_observer_preserves_restarts_of_one_closed_instance(peer, tmp_path):
+    executable, second_executable = peer(), peer("identity")
+    result, report = _run_observed_pytest(tmp_path, f'''
+from dragowing import render
+import pytest
+@pytest.fixture
+def chrome_executable():
+    return {executable!r}
+def test_restart(chrome_executable):
+    session = render.RenderSession(chrome=chrome_executable, timeouts=render.Timeouts(launch=2))
+    for executable, timeout in [({executable!r}, 2), ({second_executable!r}, 3)]:
+        session.browser.chrome = executable
+        session.timeouts = render.Timeouts(launch=timeout)
+        with session:
+            assert session.browser.product
+''')
+    assert result.returncode == 0, result.stdout + result.stderr
+    records = report["tests"][0]["browsers"]
+    assert report["launch_count"] == 2
+    assert [b["launch_ordinal"] for b in records] == [1, 2]
+    assert [b["executable_path"] for b in records] == [executable, second_executable]
+    assert [b["timeout_seconds"] for b in records] == [2, 3]
+    assert records[0]["cleanup"]["process"]["pid"] != records[1]["cleanup"]["process"]["pid"]
+    assert all(b["readiness_transport"]["received_messages"] == 1 for b in records)
+    assert all(b["readiness_elapsed_seconds"] > 0 for b in records)
+    assert all(b["failure"] is None for b in records)

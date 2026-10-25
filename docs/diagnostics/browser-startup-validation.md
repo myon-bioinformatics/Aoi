@@ -58,6 +58,7 @@ JS の実体パス、サイズ、SHA-256 を JSON に残す。同じ bundle・Py
 - `preflight_failure`: 実行ファイル・JS・出力先などの事前検査失敗。
 - `trials[].cdp_product` / `cdp_protocol_version`: 最初の `Browser.getVersion` が返した識別情報。別の追加 readiness probe は行わない。
 - `readiness_elapsed_seconds`: 起動開始から最初の `Browser.getVersion` の成功 / 失敗まで。起動 cleanup を含めない。spawn 前に失敗した場合は null。
+- `readiness_transport`: 最初の readiness request の `sending_request` / `waiting_reply` / `response_received`、送信所要時間、受信 message 数。既存の send / receive に同じ引数・deadline を渡して観測するだけで、message の本文は記録しない。pipe への書込完了はブラウザが読んだ証明ではない。
 - `render_elapsed_seconds` / `renders`: 描画全体と各画像の所要時間、hash、サイズ、PID、出力パス、残った page 数。起動だけの実行では描画時間は null。
 - `close_elapsed_seconds`: 正常時・例外時に既存 cleanup が使った時間の合計。重複した idempotent close も含む。
 - `failure`: 最初の失敗段階、例外型、bounded message、`last_cdp_method`（最後に呼んだ CDP method で、画像検証エラーなどでは失敗した操作そのものとは限らない）、失敗時の process / reader / resource / stderr snapshot。`readiness`、`session_setup`、`render.figure-0.png` などを区別する。
@@ -115,3 +116,32 @@ JSON、JUnit、人工図の画像を artifact に 14 日間保存する。先行
 通常の offline export CI も Chromium を明示的に選択する。既存の `chrome-export` job ID、JUnit / artifact 名は集計との互換性のため保つ。OS のネットワーク分離、起動引数、タイムアウト、再試行は変更しない。診断も同じ選択済み実行ファイルで前後 10 回の起動と 3 session × 6 画像を測定する。実行ファイル・CDP の版、Plotly.js の hash、段階別時間と cleanup を合わせて確認する。
 
 本番ライブラリの既定選択は DRAgoWing の原本で変更してから、通常の subtree 同期と配布物生成で Aoi に取り込む。この Aoi 側 CI 変更だけでは、まだ取り込まれていない DRAgoWing や既存の配布物が変わったとは扱わない。Chromium への統一は元の 30 秒 timeout の修正完了を意味せず、2 件の cleanup 不具合も別件として残す。
+
+## 最初の実ブラウザ起動を、通常 / offline の同条件で観測する
+
+`first-start-context` は通常ユーザー・通常ネットワークの `normal` と、既存 offline CI と同じ `sudo unshare --net --` の `offline` を、それぞれ独立した新しい runner job で実行する。どちらも Ubuntu 24.04 / Python 3.14、同じ依存・Plotly.js 準備、同じ Chromium 選択と次の module 順序を使う。
+
+1. `dragowing/tests/test_chrome_pipe.py`
+2. `dragowing/tests/test_render.py`
+3. `dragowing/tests/test_export.py`
+4. `dragowing/tests/test_plotly_cdn.py`
+
+最初の実 Chromium は既存の `test_stalled_dbus_does_not_block_browser_get_version` で起動する。先に full browser の診断・描画・warmup を実行しない。通常の選択段階での `--version` と synthetic pipe peer は両方に残す。そのため `first_in_pytest` は「この pytest の最初の実ブラウザ起動」であり、OS / ディスク cache が完全に cold であるという意味ではない。後続の fresh profile は `subsequent_in_pytest` として分け、最初の失敗を後続成功で置き換えない。別 job の既存 10 回事前起動つき全 suite は、warmup のある別条件として読む。
+
+追加するのは Aoi 専用の opt-in plugin だけで、元のテスト・本番 subtree は編集しない。
+
+```sh
+.venv/bin/python -m pytest -c pyproject.toml -q \
+  -p scripts.observe_dragowing_startup \
+  --browser-startup-evidence=build/startup-context/actual-tests.json \
+  dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py \
+  dragowing/tests/test_export.py dragowing/tests/test_plotly_cdn.py
+```
+
+plugin は `chrome_executable` fixture を使う実ブラウザテストだけで `RenderSession` に診断用 subclass を渡す。起動引数・環境生成・通信・deadline・cleanup は既存処理に委譲する。追加起動、追加 CDP probe、`--version`、retry は行わない。既存の launch=8 と全体 <8 秒の assertion も変更せず、JSON の書込はテストの teardown 後に行う。観測用の小さな Python 処理の追加はあるので、元の必須 offline job は変更せず独立した baseline として残す。
+
+`actual-tests.json` には各 test の pytest setup / call / teardown outcome、起動順序、実際の timeout、最初の readiness の時間・送信/待機段階、CDP product、bounded / redacted stderr、cleanup を保存する。意図的に CDP error を起こすテストもあるため、`failure` があることだけで test failure や startup failure と判定しない。pytest outcome、readiness phase、last CDP method を併せて読む。二度目の `Browser.getVersion` は最初の readiness 計測を上書きしない。
+
+runtime は Python / OS、uid / euid、network namespace inode、interface 数、loopback の有無だけを追加する。任意の environment、argv、ネットワークアドレス、ページ内容は収集しない。namespace inode は別 runner 間の共通 ID ではなく、interface 数も単独で isolation の完全な証明ではない。normal と offline の差はユーザーとネットワーク分離を合わせた条件差であり、単独の原因を切り分けた実験ではない。
+
+JSON、JUnit、人工画像は成功 / 失敗の両方で `browser-first-start-{normal,offline}-py3.14` artifact に 14 日間保存する。8 秒や元の 30 秒 timeout の解消を示す修正ではなく、失敗した位置と条件を残す診断である。既存の失敗記録は保持し、transport / cleanup の修正や timeout 延長には進まない。

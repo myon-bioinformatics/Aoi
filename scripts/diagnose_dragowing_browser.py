@@ -93,6 +93,9 @@ class DiagnosticChrome(Chrome):
 
     def __init__(self, chrome: str, timeout: float):
         super().__init__(chrome=chrome, timeout=timeout)
+        self._reset_observation()
+
+    def _reset_observation(self) -> None:
         self.failure: dict | None = None
         self.product: str | None = None
         self.protocol_version: str | None = None
@@ -105,6 +108,9 @@ class DiagnosticChrome(Chrome):
         self._profile_root: str | None = None
         self._process_ref: subprocess.Popen | None = None
         self._reader_ref: threading.Thread | None = None
+        self._observing_readiness = False
+        self.readiness_transport = {"phase": "not_started", "send_elapsed_seconds": None,
+                                    "received_messages": 0}
 
     def record_failure(self, exc: Exception, stage: str | None = None) -> None:
         if self.failure is not None:
@@ -112,7 +118,8 @@ class DiagnosticChrome(Chrome):
         self.failure = _error(exc, stage or self.stage)
         self.failure.update({"last_cdp_method": self.method, "process": _process(self._proc),
                              "reader_alive": bool(self._reader and self._reader.is_alive()),
-                             "resources": _counts(), "stderr_tail": self._stderr()})
+                             "resources": _counts(), "stderr_tail": self._stderr(),
+                             "readiness_transport": dict(self.readiness_transport)})
 
     def _stderr(self) -> str:
         return _tail(Path(self._tmp) / "chrome.err") if self._tmp else self.stderr_tail
@@ -123,6 +130,9 @@ class DiagnosticChrome(Chrome):
         return self._stderr()
 
     def start(self) -> None:
+        if self._proc is not None:
+            return
+        self._reset_observation()
         self._started_at = time.monotonic()
         try:
             super().start()
@@ -150,19 +160,41 @@ class DiagnosticChrome(Chrome):
         self.method = method
         if method == "Target.setDiscoverTargets":
             self.stage = "session_setup"
+        first_readiness = method == "Browser.getVersion" and self.readiness_elapsed_seconds is None
+        self._observing_readiness = first_readiness
         try:
             result = super().call(method, *args, **kwargs)
         except Exception as exc:
             self.record_failure(exc)
             raise
         else:
-            if method == "Browser.getVersion":
+            if first_readiness:
+                self.readiness_transport["phase"] = "response_received"
                 self.product = _safe_text(result.get("product", ""), 256) or None
                 self.protocol_version = _safe_text(result.get("protocolVersion", ""), 128) or None
             return result
         finally:
-            if method == "Browser.getVersion" and self._started_at is not None:
+            if first_readiness and self._started_at is not None:
                 self.readiness_elapsed_seconds = time.monotonic() - self._started_at
+            self._observing_readiness = False
+
+    def _send(self, *args, **kwargs):
+        if not self._observing_readiness:
+            return super()._send(*args, **kwargs)
+        self.readiness_transport["phase"] = "sending_request"
+        started = time.monotonic()
+        try:
+            result = super()._send(*args, **kwargs)
+        finally:
+            self.readiness_transport["send_elapsed_seconds"] = time.monotonic() - started
+        self.readiness_transport["phase"] = "waiting_reply"
+        return result
+
+    def _recv(self, *args, **kwargs):
+        result = super()._recv(*args, **kwargs)
+        if self._observing_readiness:
+            self.readiness_transport["received_messages"] += 1
+        return result
 
     def close(self) -> None:
         # Chrome.start invokes close in its except block. Snapshot now, not after
@@ -366,6 +398,7 @@ def _trial(executable: str, timeout: float, index: int, bundle: Path | None, evi
                                    for key in before}
         trial.update({"cdp_product": browser.product, "cdp_protocol_version": browser.protocol_version,
                       "readiness_elapsed_seconds": browser.readiness_elapsed_seconds,
+                      "readiness_transport": dict(browser.readiness_transport),
                       "close_elapsed_seconds": browser.close_elapsed_seconds,
                       "total_elapsed_seconds": time.monotonic() - started,
                       "stderr_tail": browser.stderr_tail})

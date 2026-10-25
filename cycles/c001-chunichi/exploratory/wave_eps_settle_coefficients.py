@@ -29,16 +29,34 @@ SAME = 1e-9          # 2 つの ε で落ち着く位置が（相対で）これ
 SETTLE = 0.5         # sakanalytics.WAVE_SETTLE（ゆれの幅が半順位を下回る位置）
 
 
+def validate_eps(eps: float) -> None:
+    if isinstance(eps, bool) or not isinstance(eps, (int, float)) or not math.isfinite(eps) or eps <= 0:
+        raise ValueError(f"ε は有限の正数でなければならない: {eps!r}")
+
+
 def load(path: Path) -> tuple[float, dict]:
-    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    eps = {r["eps_provisional"] for r in rows}
+    eps, units = set(), {}
+    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        try:
+            validate_eps(r["eps_provisional"])
+        except ValueError as exc:
+            raise ValueError(f"{path}:{line_number}: {exc}") from exc
+        key = (r["season"], r["team"])
+        if key in units:
+            raise ValueError(f"{path}:{line_number}: 単位が重複している: {key}")
+        eps.add(r["eps_provisional"])
+        units[key] = r
     if len(eps) != 1:
         raise ValueError(f"{path}: ε が 1 つに決まらない {sorted(eps)}")
-    return eps.pop(), {(r["season"], r["team"]): r for r in rows}
+    return eps.pop(), units
 
 
 def eps_form(eps: float) -> tuple[float, int]:
     """ε = a × 10^-n（1 ≤ a < 10）の (a, n)。"""
+    validate_eps(eps)
     n = -math.floor(math.log10(eps) + 1e-12)
     return round(eps * 10 ** n, 12), n
 
@@ -52,10 +70,18 @@ def sci(x: float) -> str:
 def coefficients(by_eps: dict) -> list[dict]:
     """by_eps: {ε: {(season, team): 行}}。減衰 0 だった単位ごとに、ε ごとの落ち着く位置と係数（位置 / 10^n）、
     最小の ε の係数を基準にしたときの外れ（与えた ε のうち最大）を返す。"""
-    eps = sorted(by_eps)
-    if len(eps) < 2:
+    if len(by_eps) < 2:
         raise ValueError("ε が 2 つ以上いる")
+    for e in by_eps:
+        validate_eps(e)
+    eps = sorted(by_eps)
     lo, mid = eps[0], eps[1]
+    units = set(by_eps[lo])
+    for e in eps[1:]:
+        actual = set(by_eps[e])
+        if actual != units:
+            raise ValueError(f"ε={e:g}: 単位集合が ε={lo:g} と一致しない: "
+                             f"欠落={sorted(units - actual)}, 余剰={sorted(actual - units)}")
     a_lo, n_lo = eps_form(lo)
     out = []
     for key in sorted(by_eps[lo]):
@@ -113,11 +139,14 @@ def main(argv=None) -> int:
     ap.add_argument("--out-json", type=Path, required=True)
     ap.add_argument("--out-md", type=Path, required=True)
     args = ap.parse_args(argv)
-    by_eps = dict(load(p) for p in args.rows)
-    if len(by_eps) != len(args.rows):
-        print("同じ ε の行ファイルが重なっている", file=sys.stderr)
+    try:
+        by_eps = dict(load(p) for p in args.rows)
+        if len(by_eps) != len(args.rows):
+            raise ValueError("同じ ε の行ファイルが重なっている")
+        rows = coefficients(by_eps)
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
         return 2
-    rows = coefficients(by_eps)
     args.out_json.write_text(json.dumps({"eps": sorted(by_eps), "units": rows}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     args.out_md.write_text(render(rows, sorted(by_eps)), encoding="utf-8")
     print(f"書き出し: {args.out_json}, {args.out_md}")

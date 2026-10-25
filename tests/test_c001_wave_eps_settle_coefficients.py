@@ -19,6 +19,7 @@ sys.modules["wave_eps_settle_coefficients"] = coef
 spec.loader.exec_module(coef)
 
 EPS = (1e-3, 1e-6, 1e-9)
+INVALID_EPS = (float("nan"), float("inf"), float("-inf"), 0.0, -1e-6)
 
 
 def row(eps, settle, *, committed_decay=0.0, decay=None):
@@ -37,6 +38,73 @@ def table(units, eps_list=EPS):
             r["season"], r["team"] = key
             out[e][key] = r
     return out
+
+
+def write_rows(path, rows):
+    path.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    return path
+
+
+@pytest.mark.parametrize("replacement_settle", [1.0, 2.0])
+def test_load_rejects_identical_and_conflicting_duplicate_units(tmp_path, replacement_settle):
+    path = write_rows(tmp_path / "rows.jsonl", [row(1e-6, 1.0), row(1e-6, replacement_settle)])
+    with pytest.raises(ValueError, match="単位が重複") as exc:
+        coef.load(path)
+    assert f"{path}:2:" in str(exc.value) and "(2024, 'x')" in str(exc.value)
+
+
+def test_load_preserves_distinct_seasons_and_teams_and_ignores_blank_lines(tmp_path):
+    units = table({(2023, "x"): (0.1, 0.5), (2024, "x"): (0.2, 0.5), (2024, "y"): 0.062})[1e-6]
+    path = write_rows(tmp_path / "rows.jsonl", units.values())
+    path.write_text("\n" + path.read_text(encoding="utf-8") + " \n", encoding="utf-8")
+    assert coef.load(path) == (1e-6, units)
+
+
+@pytest.mark.parametrize("eps", INVALID_EPS + (True, None, "0.001"))
+def test_load_rejects_invalid_eps_on_any_row(tmp_path, eps):
+    invalid = row(eps, 2.0)
+    invalid["team"] = "y"
+    path = write_rows(tmp_path / "rows.jsonl", [row(1e-6, 1.0), invalid])
+    with pytest.raises(ValueError, match="有限の正数") as exc:
+        coef.load(path)
+    assert f"{path}:2:" in str(exc.value)
+
+
+@pytest.mark.parametrize("rows", [[], [row(1e-6, 1.0), dict(row(1e-3, 2.0), team="y")]])
+def test_load_requires_exactly_one_eps(tmp_path, rows):
+    with pytest.raises(ValueError, match="ε が 1 つに決まらない"):
+        coef.load(write_rows(tmp_path / "rows.jsonl", rows))
+
+
+@pytest.mark.parametrize("eps", INVALID_EPS)
+def test_numeric_entry_points_reject_nonfinite_and_nonpositive_eps(eps):
+    with pytest.raises(ValueError, match="有限の正数"):
+        coef.eps_form(eps)
+    # Validate the keys before sorting or looking up any wave data.
+    with pytest.raises(ValueError, match="有限の正数"):
+        coef.coefficients({1e-6: {}, eps: {}})
+
+
+@pytest.mark.parametrize("eps", EPS)
+@pytest.mark.parametrize("change", ["missing", "extra", "replacement"])
+@pytest.mark.parametrize("committed_decay", [0.0, 0.5])
+def test_all_eps_must_have_identical_unit_sets_even_for_nonboundary_units(eps, change, committed_decay):
+    t = table({(2014, "b"): (0.1, 0.5), (2024, "x"): (0.2, 0.5)})
+    for rows in t.values():
+        rows[(2024, "x")]["committed_wave_decay"] = committed_decay
+    if change in ("missing", "replacement"):
+        del t[eps][(2024, "x")]
+    if change in ("extra", "replacement"):
+        t[eps][(2024, "y")] = dict(row(eps, 1.0, committed_decay=committed_decay), team="y")
+    with pytest.raises(ValueError, match="単位集合") as exc:
+        coef.coefficients(t)
+    assert "欠落=" in str(exc.value) and "余剰=" in str(exc.value)
+    assert "2024" in str(exc.value)
+
+
+def test_unit_sets_are_validated_before_computing_any_coefficient():
+    with pytest.raises(ValueError, match="単位集合"):
+        coef.coefficients({1e-9: {(2024, "x"): {}}, 1e-6: {}})
 
 
 def test_eps_is_written_as_a_times_ten_to_the_minus_n_and_positions_as_mantissa_times_power_of_ten():
@@ -118,3 +186,47 @@ def test_cli_writes_json_and_markdown_without_a_separate_constant(tmp_path):
     assert "| 2014 | b | 8.20×10^1 | 8.15×10^4 | 8.15×10^7 | 0.0815 | 0.542 |" in md       # 指数が 3 ずつ動き、係数は 8.15（ε = 1e-3 だけ上乗せ分で 8.20）
     assert "K" not in md and "K" not in json.dumps(data)
     assert coef.main(["--rows", files[0], files[0], "--out-json", str(tmp_path / "d.json"), "--out-md", str(tmp_path / "d.md")]) == 2
+
+
+@pytest.mark.parametrize("existing_outputs", [False, True])
+@pytest.mark.parametrize("defect", ["duplicate", "extra", "missing", "repeated_eps", *INVALID_EPS])
+def test_cli_invalid_inputs_do_not_create_or_overwrite_outputs(tmp_path, capsys, defect, existing_outputs):
+    t = table({(2014, "b"): (0.1, 0.5), (2024, "x"): (0.2, 0.5)})
+    inputs = [list(rows.values()) for rows in t.values()]
+    if defect == "duplicate":
+        inputs[0].append(dict(inputs[0][0]))
+    elif defect == "extra":
+        inputs[0].append(dict(row(EPS[0], 2.0), team="y"))
+    elif defect == "missing":
+        inputs[0].pop()
+    elif defect == "repeated_eps":
+        inputs[0] = inputs[1]
+    else:
+        for r in inputs[0]:
+            r["eps_provisional"] = defect
+    files = [str(write_rows(tmp_path / f"rows_{i}.jsonl", rows)) for i, rows in enumerate(inputs)]
+    outputs = [tmp_path / "c.json", tmp_path / "c.md"]
+    if existing_outputs:
+        for path in outputs:
+            path.write_text("unchanged\n", encoding="utf-8")
+    assert coef.main(["--rows", *files, "--out-json", str(outputs[0]), "--out-md", str(outputs[1])]) == 2
+    captured = capsys.readouterr()
+    assert captured.err.strip() and not captured.out
+    for path in outputs:
+        if existing_outputs:
+            assert path.read_text(encoding="utf-8") == "unchanged\n"
+        else:
+            assert not path.exists()
+
+
+def test_committed_inputs_reproduce_existing_json_and_markdown_exactly(tmp_path):
+    exploratory = ROOT / "cycles" / "c001-chunichi" / "exploratory"
+    files = sorted((exploratory / "wave_eps_trial_results").glob("wave_eps_rows_*.jsonl"))
+    by_eps = dict(coef.load(path) for path in files)
+    assert len(files) == len(by_eps) == 3
+    assert all(len(units) == 156 for units in by_eps.values())
+    out_json, out_md = tmp_path / "c.json", tmp_path / "c.md"
+    assert coef.main(["--rows", *map(str, files), "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
+    saved = exploratory / "wave_eps_sensitivity_results"
+    assert out_json.read_bytes() == (saved / "wave_eps_settle_coefficients.json").read_bytes()
+    assert out_md.read_bytes() == (saved / "wave_eps_settle_coefficients.md").read_bytes()

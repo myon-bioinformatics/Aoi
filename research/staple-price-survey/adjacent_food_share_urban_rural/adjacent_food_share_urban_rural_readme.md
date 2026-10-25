@@ -11,7 +11,7 @@ Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 - **531 rows / 109 ISO3**, years **1988–2025**
 
 - **JOR** 2017: DOS HEIS Table 5.1 Relative Importance Urban/Rural — food = Food Commodities − Alcohols − Tobacco − Restaurants and Cafes (25.91 / 31.46); matches 2013 Food Stuff definition; raw `raw/jor/`.
-- ISO3: ARM CAN AUS AUT AZE BEL BGD BGR BOL BRA BTN BWA CHN CIV COL CRI CYP CZE DEU DJI DNK DOM DZA ECU EGY ESP EST ETH EUZ FIN FJI FRA GBR GEO GMB GRC GTM HND HRV HUN IDN IND IRL IRN ITA JOR KEN KGZ KHM KIR LAO LBR LKA LSO LTU LUX LVA MAR MDA MDG MDV MEX MLI MLT MMR MOZ MUS MYS NAM NGA NIC NLD NOR NPL OMN PAK PER PHL POL PRT PRY PSE ROU RUS RWA SDN SLB SLV SVK SVN SWE TCD THA TJK TLS TON TUN TZA UGA UKR URY USA VNM VUT WSM YEM ZAF ZMB
+- ISO3: see the validated current CSV list below (includes XKX).
 - `estimated_value` empty on all rows
 
 ## Sources
@@ -39,3 +39,14 @@ Variables: `engel_share:food_urban`, `engel_share:food_rural`.
 ARG urban-only ENGHo; CHL INE EPF urban capitals only; CHE/TUR not in T226; URY/PAN/ARG/CHL CEPAL National-only for area; HKG/SGP city-state; SAU/ARE national/regional only; PAK **HIT** (HIES 2011-12…2018-19); EGY CAPMAS primary not pinned; VNM/ZAF/AUS/CHN appended earlier;  Aoi skips: JPN/KOR/TWN, AUS/NZL HES; UK ONS LCFS national (GBR here = Eurostat T226).
 
 See `missing.md`.
+
+
+## Validated coverage (current CSV)
+
+<!-- coverage:start -->
+**531 vertical rows** · **109 ISO3** · year span **1988–2025**.
+
+ISO3: ARM, AUS, AUT, AZE, BEL, BGD, BGR, BOL, BRA, BTN, BWA, CAN, CHN, CIV, COL, CRI, CYP, CZE, DEU, DJI, DNK, DOM, DZA, ECU, EGY, ESP, EST, ETH, EUZ, FIN, FJI, FRA, GBR, GEO, GMB, GRC, GTM, HND, HRV, HUN, IDN, IND, IRL, IRN, ITA, JOR, KEN, KGZ, KHM, KIR, LAO, LBR, LKA, LSO, LTU, LUX, LVA, MAR, MDA, MDG, MDV, MEX, MLI, MLT, MMR, MOZ, MUS, MYS, NAM, NGA, NIC, NLD, NOR, NPL, OMN, PAK, PER, PHL, POL, PRT, PRY, PSE, ROU, RUS, RWA, SDN, SLB, SLV, SVK, SVN, SWE, TCD, THA, TJK, TLS, TON, TUN, TZA, UGA, UKR, URY, USA, VNM, VUT, WSM, XKX, YEM, ZAF, ZMB.
+<!-- coverage:end -->
+
+Earlier append counts and source tables describe historical collection steps; current coverage is the validated block above.

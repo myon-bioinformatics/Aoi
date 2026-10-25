@@ -1,4 +1,4 @@
-"""Headless Chrome over --remote-debugging-pipe (POSIX, stdlib only).
+"""Headless Chromium (or an explicitly selected Chrome) over --remote-debugging-pipe (POSIX, stdlib only).
 
 NUL-delimited JSON on fds 3 and 4. Calls are serial; events received before a
 command reply are retained for wait_event(). No preexec_fn runs after fork.
@@ -20,7 +20,9 @@ import time
 from collections import deque
 from pathlib import Path
 
-_NAMES = ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome")
+# Automatic discovery is Chromium-only. Legacy names and explicit Chrome
+# paths remain supported through chrome=, CHROME, and CHROMIUM.
+_NAMES = ("chromium", "chromium-browser")
 # Only the two CDP pipe ends survive into this short-lived exec helper. Duplicate
 # both before assigning 3/4, since either inherited end may already use 3 or 4.
 _HANDOFF = """
@@ -97,7 +99,11 @@ def find_chrome(chrome: str | None = None) -> str:
     hint = chrome or os.environ.get("CHROME") or os.environ.get("CHROMIUM")
     if hint:
         raise RuntimeError("Chrome executable not found or not executable: %s" % hint)
-    raise RuntimeError("Chrome/Chromium was not found on PATH. Set CHROME to the executable.")
+    raise RuntimeError(
+        "Chromium was not found on PATH (chromium, chromium-browser). "
+        "Install Chromium or set CHROMIUM to its executable. "
+        "An explicit chrome= or CHROME override remains supported."
+    )
 
 
 class Chrome:

@@ -8,7 +8,7 @@
 
 > Lay down the record without re-judging it.
 >
-> Renders baseball research records as Plotly.js HTML reports, proposition tables and optional headless-Chrome PNG/SVG exports without Python plotting libraries. Split out from Aoi's dragowing/ (git subtree).
+> Renders baseball research records as Plotly.js HTML reports, proposition tables and optional headless-Chromium PNG/SVG exports without Python plotting libraries. Split out from Aoi's dragowing/ (git subtree).
 
 ![DRAgoWing](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/dragowing.webp)
 
@@ -34,7 +34,7 @@ The text table of the four forms is in [docs/forms.md](docs/forms.md). HTML (tra
 
 It produces `build/dragowing/index.html` and `propositions.html`. The trajectories and team × year in `index.html` are drawn from Plotly JSON specs with the browser's plotly.js (the latest dist on jsDelivr). The Python `plotly` package is not used. `propositions.html` is a list and Markdown tables, without Plotly. Add `--embed` to embed Plotly.js into `index.html`. Page text is converted from Markdown to HTML.
 
-PNG / SVG are optional. With `--png` or `--svg`, they are exported via Chrome. Without Chrome, only HTML is produced, and the tests look only at that.
+PNG / SVG are optional. With `--png` or `--svg`, they are exported via Chromium by default. Install `chromium` / `chromium-browser` or set `CHROMIUM` to its executable. Explicit Chrome overrides remain supported; automatic selection does not fall back to Chrome. See [browser selection and compatibility](docs/export.md).
 
 This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) (see "Relationship with Aoi" below).
 
@@ -61,7 +61,7 @@ python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--colum
 `load_overlap(path, conds, backend="stdlib")` or `--overlap-backend stdlib` selects
 a limited path that does not load NumPy or Polars. The default is the existing `native`.
 Supported input, limitations, and comparison measurements are in [docs/overlap-stdlib.md](docs/overlap-stdlib.md).
-Markdown for HTML, Chrome for image export, and so on are still needed.
+Markdown for HTML, Chromium for image export, and so on are still needed.
 
 ## Layout
 
@@ -74,7 +74,7 @@ Markdown for HTML, Chrome for image export, and so on are still needed.
 | `forms.py` | 2×2 of the four forms and logic notation for conditions ([docs/forms.md](docs/forms.md)) |
 | `overlap.py` | Overlap of condition sets and the B class (masks are rule_search bit matrices) |
 | `plotly_cdn.py` | Plotly.js (jsDelivr) |
-| `chrome_pipe.py`, `render.py`, `export.py` | Optional PNG / SVG export with headless Chrome ([docs/export.md](docs/export.md)) |
+| `chrome_pipe.py`, `render.py`, `export.py` | Optional PNG / SVG export with headless Chromium ([docs/export.md](docs/export.md)) |
 | `html_tag_count.py` | Counts HTML elements without a browser |
 | `research_report.py`, `reports/` | Research summary figures and Markdown report rendering (called from Aoi's workflow) |
 | `docs/` | `forms.md`, `figures.md`, `export.md` |
@@ -124,7 +124,7 @@ AOI_ROOT=$PWD/.test-deps/aoi \
   - QueRyu's `ask` (`queryu/ask` on `PYTHONPATH`; `forms.py` reaches into `queryu`).
   - `tests/test_no_sibling_imports.py` checks that no other Aoi sibling subprojects or `scripts/` are used (`propositions`, `rule_search`, `ask`, plus the `queryu` and `pythdragoras` paths, are known exceptions).
 - `reports/build_reports.py` is an Aoi-side tool (Aoi's DRAgoWing reports workflow checks out `myon-bioinformatics/markdown` and calls it). This repository's CI does not run that workflow.
-- There is no Chrome job. Without Chrome, tests that use Chrome are skipped.
+- The Python matrix explicitly selects Chromium and requires real-browser tests. Missing Chromium fails CI rather than silently falling back to Chrome or skipping. Locally, real-browser tests remain optional unless `DRAGOWING_REQUIRE_CHROME=1` is set.
 
 CI (`.github/workflows/ci.yml`) runs pytest on Python 3.11–3.15. `vendor.lock.json` (`vendor-lock/1`) records repository, ref, commit, source, destination, blob_sha, and sha256, and the copies are in `vendor/aoi/`. CI resolves Aoi's main with `git ls-remote` (overridable with `workflow_dispatch`'s `aoi-ref`), checks repository id `1402862784`, and then compares the copies. A mismatch is a warning on pull requests and a failure on pushes to main and on schedule. In parallel, it resolves the main of the parent myon-bioinformatics/myon-bioinformatics with `git ls-remote` (repository id `638801160`) and verifies that SHA's `pilot/vendor_dispatch.py` against `vendor.lock.json`. `--record` is not passed. Skips are recorded, and it fails if the recorded commit's digest differs.
 

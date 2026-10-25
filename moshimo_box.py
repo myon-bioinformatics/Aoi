@@ -153,9 +153,10 @@ def load_record(path, proposition_id: str) -> dict:
 def anchor(record: dict) -> dict:
     """The dials and n of a real proposition, read from its 2x2 table (metrics tp, fp, fn, tn).
 
-    Feeding the result to ``build`` gives back the proposition's own cells. Refused when a form has no unit to judge.
+    A rule_search row (tp, fp, fn, tn at the top level) works the same. Feeding the result to ``build`` gives back the
+    table's own cells. Refused when a form has no unit to judge.
     """
-    m = record.get("metrics") or {}
+    m = record.get("metrics") or record
     try:
         a, b, c, d = (int(m[k]) for k in ("tp", "fp", "fn", "tn"))
     except (KeyError, TypeError, ValueError):

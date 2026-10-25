@@ -712,24 +712,25 @@
       "import_sites": 41
     },
     "pytest": {
-      "attribute_uses": 899,
+      "attribute_uses": 922,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
-        "MonkeyPatch": 1,
-        "StashKey": 2,
+        "MonkeyPatch": 2,
+        "StashKey": 3,
         "UsageError": 10,
         "approx": 271,
-        "fail": 21,
-        "fixture": 45,
-        "hookimpl": 3,
+        "fail": 24,
+        "fixture": 49,
+        "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 163,
-        "mark.skipif": 8,
+        "mark.parametrize": 167,
+        "mark.skipif": 12,
+        "mark.xfail": 2,
         "param": 1,
-        "raises": 348,
-        "skip": 7,
+        "raises": 350,
+        "skip": 8,
         "warns": 3
       },
       "by_tree": {
@@ -844,21 +845,34 @@
           "files": 10,
           "import_sites": 10
         },
-        "tests": {
-          "attribute_uses": 110,
+        "scripts": {
+          "attribute_uses": 4,
           "attributes": {
-            "approx": 29,
-            "fail": 1,
-            "fixture": 7,
-            "importorskip": 1,
-            "mark.parametrize": 19,
-            "mark.skipif": 2,
-            "raises": 50,
-            "skip": 1
+            "MonkeyPatch": 1,
+            "StashKey": 1,
+            "fixture": 1,
+            "hookimpl": 1
           },
           "dynamic_import_sites": 0,
-          "files": 17,
-          "import_sites": 17
+          "files": 1,
+          "import_sites": 1
+        },
+        "tests": {
+          "attribute_uses": 129,
+          "attributes": {
+            "approx": 29,
+            "fail": 4,
+            "fixture": 10,
+            "importorskip": 1,
+            "mark.parametrize": 23,
+            "mark.skipif": 6,
+            "mark.xfail": 2,
+            "raises": 52,
+            "skip": 2
+          },
+          "dynamic_import_sites": 0,
+          "files": 20,
+          "import_sites": 20
         }
       },
       "declared": [
@@ -893,10 +907,10 @@
           "name": "pytest"
         }
       ],
-      "distinct_attributes": 17,
+      "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 94,
-      "import_sites": 95
+      "files": 98,
+      "import_sites": 99
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2698,6 +2712,19 @@
     },
     {
       "attributes": {
+        "MonkeyPatch": 1,
+        "StashKey": 1,
+        "fixture": 1,
+        "hookimpl": 1
+      },
+      "dynamic_lines": [],
+      "file": "scripts/observe_dragowing_startup.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "scripts"
+    },
+    {
+      "attributes": {
         "__file__": 1,
         "__version__": 1
       },
@@ -2840,6 +2867,44 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_distributions.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fail": 3,
+        "fixture": 2,
+        "mark.parametrize": 4,
+        "mark.skipif": 1,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_dragowing_browser_diagnostics.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "mark.skipif": 1,
+        "mark.xfail": 2,
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_dragowing_browser_resources.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.skipif": 2,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_dragowing_browser_transport.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

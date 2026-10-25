@@ -64,9 +64,22 @@ Zero handling: a "vs. the other teams of the league" column is null (not NaN, no
 | `season_simulator.py`, `season_exact.py` | Outlook for remaining games (standard library) and optional OR-Tools clinch determination ([SEASON_SIMULATOR.md](SEASON_SIMULATOR.md), [SEASON_SIMULATOR_PLAN.md](SEASON_SIMULATOR_PLAN.md)) |
 | `annual_audit.py` | Auditing annual team tables (integer fields and published digits) |
 | `synthetic_league.py`, `league_laboratory.py` | Synthetic leagues with annual stats fixed first, and experiments on them |
+| `moshimo_box.py` | Moshimo Box (もしもボックス): dials for a proposition's converse, inverse and contrapositive rates. The original's rate has no dial; it is read out |
 | `neighbors.py` | Descriptive neighbors that don't use results |
 | `proposition_seed_audit.py`, `synthetic_rule_discovery.py` | Seed sensitivity of propositions, and tracking on synthetic data only (uses PythDRagoras) |
 | `tests/` | pytest |
+
+## Moshimo Box (もしもボックス)
+
+A proposition "if A then B" and its converse, inverse and contrapositive all read the same 2x2 table of units. The box turns **three dials only: converse, inverse, contrapositive**. There is no dial for the original proposition: with the number of units fixed, the three rates fix the table, so the original's rate is a readout, never an input. Its odds are exactly the product of the dials' odds, `logit(original) = logit(converse) + logit(contrapositive) - logit(inverse)`: with the other two dials held, a higher converse or contrapositive raises the original, and a higher inverse lowers it.
+
+```bash
+uv run python moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --sweep converse=0.3,0.5,0.7,0.9
+# read each table back through PythDRagoras' own evaluator (needs PYTHONPATH=<Aoi>/pythdragoras)
+uv run python moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --readout usually
+```
+
+The units are synthetic model checks (no randomness, never NPB observations). A dial must be strictly between 0 and 1; at the boundary a cell is empty, and how to treat that (the ε question) is not decided, so the box stops with a message instead of substituting a number.
 
 ## Tests
 

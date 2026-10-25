@@ -12,17 +12,17 @@ Retrieved: 2026-10-25 Asia/Tokyo
 
 ## Closed in this pack (vertical CSV)
 
-SGP, MYS, IRL, QAT, FIN, AUT, NLD, **FRA** — see readme.
+SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA, **ARG**, **NZL** — see readme.
 
 ## SKU family gaps (relative to lane list)
 
 | Family | In this pack | Notes |
 |--------|--------------|-------|
-| coffee / tea | SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA | Strongest family |
-| soap / detergent | SGP, MYS, QAT, FIN | FIN is the dense EUZ detergent set |
-| toilet paper | SGP, FIN | MYS no stable TP SKU in selected PriceCatcher codes |
+| coffee / tea | SGP, MYS, IRL, QAT, FIN, AUT, NLD, FRA, ARG, NZL | Strongest family |
+| soap / detergent | SGP, MYS, QAT, FIN, ARG (soap bars + shampoo; detergent API empty) | FIN is the dense EUZ detergent set |
+| toilet paper | SGP, FIN | MYS no stable TP SKU in selected PriceCatcher codes; ARG TP not in Precios catalog hit |
 | tissue / napkins | MYS (1 month Kleenex); FIN sanitary towels + kitchen towel | Sparse tissue; kitchen towel = paper towel SKU |
-| towels (textile) | — | Bath/hand towels not in SGP/MYS/QAT/IRL/FIN/AUT/NLD tables; GBR/JPN in Aoi panels |
+| towels (textile) | — | Bath/hand towels not in SGP/MYS/QAT/IRL/FIN/AUT/NLD/ARG/NZL tables; GBR/JPN in Aoi panels |
 | underwear | — | Not in these NSO tables; JPN/GBR gender SKUs in Aoi panels only |
 
 ## Probed / exhausted (no absolute household SKU bulk loaded)
@@ -35,37 +35,26 @@ SGP, MYS, IRL, QAT, FIN, AUT, NLD, **FRA** — see readme.
 | NLD (beyond coffee/tea) | CBS 80345eng is food-only (Beer…Tea); no detergent/TP. |
 | FIN (post-2018) | StatFin Passiivi 011 average commodity prices end 2018; no continuous replacement table secured this turn. |
 | HKG | MDS Table 5.8 path used for rice staples; no household named-retail extract. |
-| NZL | Stats NZ open data gateway 502; figure.nz search 404; FPI selected prices historically food-focused — no household absolute secured. |
 | ARE/BHR/KWT/OMN | Prior staple lane exhausted for open absolute retail bulk; not re-forced. |
 | CAN/DNK/NOR/AUS/CHE | Prior TLS/CPI-only notes; Aoi `hi_staple_levels_alt` / dead-ends — no forced household dig. |
 | TWN | NDC e-invoice path for food staples; 22933 household listing 404 this turn — not forced. |
 
-
-## Probed this densify turn (2026-10-25 Asia/Tokyo) — stop cleanly
+## Probed densify turns (2026-10-25 Asia/Tokyo)
 
 | ISO3 | Status |
 |------|--------|
-| FRA | **HIT** — INSEE BDM ground coffee 250g (2 idbanks) monthly through 2019-12. Laundry/dishwasher powder absolute exist but end 1998–99 — not loaded (below ~2012 preference). No TP/tissue/tea/textile towels/underwear in Prix moyens famille. |
-| CAN | StatCan table **18-10-0245-01** (coffee 340g, tea 20 bags, laundry detergent 4.43 L, shampoo) is the right absolute path, but **TLS EOF** from this box to www150.statcan.gc.ca (zip + WDS) — blocked this stream; not forced via workarounds. |
-| KOR | Korea Consumer Agency 참가격 / data.go.kr 생필품 averages look on-lane (detergent, toilet paper, coffee mix, tissue) but **TLS fail** to data.go.kr / price.go.kr from box — not forced. |
-| DEU | Destatis Preismonitor is **% change vs 2020**, not LCU absolute; Destatis states average absolute consumer prices not in current CPI publication programme. |
+| FRA | **HIT** (earlier) — INSEE BDM ground coffee 250g (2 idbanks) monthly through 2019-12. |
+| ARG | **HIT** — INDEC IPC-GBA Precios (Pesos) via datos.gob.ar: coffee_ground, shampoo, soap_bar_toilet_125g, soap_bar_laundry_pan (491 rows). Detergente líquido / lavandina / jabón en polvo IDs catalogued with claimed last_value but API returns 0 observations — not loaded / not gap-filled. |
+| NZL | **HIT** — Stats NZ FPI selected prices via figure.nz table BbCZ4OW1Nk3LzCX5: instant coffee 100g, ground coffee 200g, tea bags 100, herbal tea bags 25 (820 rows). Food basket only — no detergent/TP. Takeaway cups skipped. |
+| CAN | StatCan table **18-10-0245-01** right absolute path; **TLS EOF** — not forced. |
+| KOR | 참가격 / data.go.kr — **TLS fail** — not forced. |
+| DEU | Destatis Preismonitor is **% change vs 2020**, not LCU absolute. |
 | SWE | SCB open tables are CPI **indices** only for coffee/tea/detergent/TP. |
-| ESP | INE search for precios medios detergente — no named absolute household SKU table; prior staple hit is HBS *valor unitario* food (25169), not detergent/TP. |
-| THA | MOC open data GISProductPrice = agricultural; CPI indexes only; pricemonitor portal up but no open named household absolute bulk secured. |
-| BEL | Statbel search average prices coffee — no absolute named household table secured. |
-| DNK/NOR/AUS/ITA/HKG/ZAF/IDN/PHL | Quick portal probes: CPI/index or food-only / TLS-403; no new absolute household SKU bulk. Prior staple-lane notes stand. |
-| Textile towels / underwear | Still absent outside Aoi JPN/GBR panels after this densify pass. |
+| ESP | INE — no named absolute household SKU table; HBS *valor unitario* food only. |
+| THA | MOC agricultural / CPI indexes; no open named household absolute bulk. |
+| BEL | Statbel — no absolute named household table secured. |
+| PRT | Observatório agroalimentar food-chain only; no detergent/TP absolute open bulk. |
+| DNK/NOR/AUS/ITA/HKG/ZAF/IDN/PHL | Prior probes: CPI/index or food-only / TLS-403; no new absolute household SKU bulk. |
+| Textile towels / underwear | Still absent outside Aoi JPN/GBR panels. |
 
-**Densify stop:** open HI/EUZ/Asia absolute paths for remaining BM ISO3 are thin after this solid try (FRA landed; CAN/KOR blocked by egress TLS). No further forced digs.
-
-## Intentionally not collected
-
-- Numbeo / Starbucks / Coke / IKEA / UBS / USB/DRAM (Aoi lane)
-- Broad CPI / HICP indices
-- Rewrites of Big Mac, `adjacent_hi_staple_levels`, `adjacent_euz_proxy_staple_levels`, hours packs
-- FX unify, unit unify, DIY hours, inventing estimates
-
-## Tip hygiene (2026-10-25 Asia/Tokyo)
-
-- Household densify **PAUSED** at **3015/8**. No further SKU digs; Aoi JPN/GBR panels not re-emitted.
-- Exhaustion bullets above stand (CAN/KOR TLS, DEU Preismonitor %-only, SWE CPI-only, textile towels/underwear absent outside Aoi).
+**Densify note:** open paths remaining for BM ISO3 after ARG+NZL are thin; stop when further easy probes yield no absolute bulk.

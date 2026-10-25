@@ -228,6 +228,12 @@ jobs:
           fetch-depth: 0
       - name: Verify recovered evidence against pinned Git history
         run: python scripts/audit_recovery_provenance.py
+      # sakanalytics/ の Node エントリの一致テスト（子の tests）は、GITHUB_ACTIONS 上では Node 24+ がなければ失敗する（子の CI と同じ）
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+      - name: Require supported Node in parity CI
+        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}

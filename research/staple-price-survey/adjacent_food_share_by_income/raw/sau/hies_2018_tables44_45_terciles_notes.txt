@@ -1,0 +1,8 @@
+GaStat Saudi Arabia Household Income and Expenditure Survey 2018
+Tables 44 (Saudi) / 45 (all HH): Low / Medium / High expenditure groups — SAR averages, not %.
+Computed Food and Beverages / Total:
+Saudi: Low 2125/7099=29.9%, Medium 2334/9585=24.3%, High 2977/24029=12.4%, Total 2621/16125=16.3%
+All: Low 1575/5059=31.1%, Medium 1774/6944=25.5%, High 2769/20522=13.5%, Total 2202/12818=17.2%
+NOT loaded into pack (terciles only; no income/expenditure quintiles or deciles in open PDF).
+PDF local: gastat_hies_2018.pdf
+Retrieved: 2026-10-24 Asia/Tokyo

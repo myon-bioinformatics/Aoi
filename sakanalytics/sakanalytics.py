@@ -113,6 +113,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import operator
 import random
@@ -127,6 +128,21 @@ import polars as pl
 K_FIXED = 1.83
 PYTHAGENPAT_EXP = 0.287
 BINS = (1, 2, 3, 4)  # 4 は「4点以上」
+
+# 名前のなかった許容値（暗黙の ε）に名前をつける。値は変えていない。--meta-out で出力に記録する。
+# ε の数値と扱いは今後決める。ここに置いた値は「今まで使っていた値」の記録で、推奨値ではない。
+EPS_CUBIC_COEF = 1e-12       # cubic_extrema: 3次・2次の係数の絶対値がこれ以下なら、次数を下げて極値を探す
+EPS_FLAT_SLOPE = 1e-9        # _shape: 区間の中央の傾きの絶対値がこれ未満なら "flat"
+EPS_WAVE_SOLVE = 1e-12       # wave_fit: 分母・行列式がこれ以下の波は候補にしない
+EPS_WAVE_TIE = 1e-12         # wave_fit: 誤差の2乗和がこれより大きく小さくならなければ、先に並べた（簡単な）式のままにする
+K_EFF_MIN_LOG_RATIO = 0.02   # k_eff: |log(RF/RA)| がこれ未満なら空（0/0 に近く、値が不安定）
+BREAK_GAP_DECIMALS = 9       # natural_breaks: 勝率の隙間を丸める桁（丸めて同じ差を同じに扱う）
+RATE_DISPLAY_TOL = 0.0005 + 1e-9  # 打撃・守備の率を計算し直した値とページの値（表示3桁）の照合の許容
+TOLERANCES = {
+    "EPS_CUBIC_COEF": EPS_CUBIC_COEF, "EPS_FLAT_SLOPE": EPS_FLAT_SLOPE, "EPS_WAVE_SOLVE": EPS_WAVE_SOLVE,
+    "EPS_WAVE_TIE": EPS_WAVE_TIE, "K_EFF_MIN_LOG_RATIO": K_EFF_MIN_LOG_RATIO,
+    "BREAK_GAP_DECIMALS": BREAK_GAP_DECIMALS, "RATE_DISPLAY_TOL": RATE_DISPLAY_TOL,
+}
 
 
 def to_team_games(games: pl.DataFrame, teams: dict[str, dict]) -> pl.DataFrame:
@@ -286,17 +302,11 @@ def inning_decomposition(st: pl.DataFrame, innings: pl.DataFrame) -> pl.DataFram
         I, S, R = pl.col(f"inn_I{tag}"), pl.col(f"inn_S{tag}"), pl.col(f"inn_R{tag}")
         logs = {"rpi": (R / I).log(), "freq": (S / I).log(), "size": (R / S).log()}
         out = out.with_columns(**{f"_l{k}": v for k, v in logs.items()})
-        out = out.with_columns(**{
-            f"inn_dlog_{k}{tag}": pl.col(f"_l{k}")
-            - (pl.col(f"_l{k}").sum().over(over) - pl.col(f"_l{k}")) / (pl.col(f"_l{k}").count().over(over) - 1)
-            for k in logs
-        }).drop([f"_l{k}" for k in logs])
+        out = out.with_columns(**{f"inn_dlog_{k}{tag}": _vs_others(f"_l{k}", over) for k in logs}).drop([f"_l{k}" for k in logs])
         out = out.with_columns(**{f"inn_freq_minus_size{tag}": pl.col(f"inn_dlog_freq{tag}") - pl.col(f"inn_dlog_size{tag}")})
         if shares:  # 得点した回のうち 1点の回・3点以上の回の割合の、他球団平均との差（R5）
             out = out.with_columns(**{
-                f"inn_d_{k}{tag}": pl.col(f"inn_{k}{tag}")
-                - (pl.col(f"inn_{k}{tag}").sum().over(over) - pl.col(f"inn_{k}{tag}"))
-                / (pl.col(f"inn_{k}{tag}").count().over(over) - 1)
+                f"inn_d_{k}{tag}": _vs_others(f"inn_{k}{tag}", over)
                 for k in ("single_share", "big_share")
             })
     if {"inn_R_home", "inn_R_away"} <= set(out.columns):  # ホームとビジターの和が全体と合うか
@@ -343,16 +353,12 @@ def batting_join(st: pl.DataFrame, bat: pl.DataFrame) -> pl.DataFrame:
     if bad.height:
         raise ValueError(f"打撃成績の試合数・得点が最終スコアと合わない: {bad.select('season', 'team').rows()[:5]}")
     for k in ("avg", "obp", "slg"):
-        off = b.filter((pl.col(f"bat_{k}") - pl.col(k)).abs() > 0.0005 + 1e-9)
+        off = b.filter((pl.col(f"bat_{k}") - pl.col(k)).abs() > RATE_DISPLAY_TOL)
         if off.height:
             raise ValueError(f"打撃成績の {k} を計算し直すとページの値と合わない: {off.select('season', 'team').rows()[:5]}")
     cols = [f"bat_{k}" for k in BATTING_RATES]
     out = st.join(b.select("season", "team", *cols), on=["season", "team"], how="left")
-    return out.with_columns(**{
-        f"bat_d_{k}": pl.col(f"bat_{k}") - (pl.col(f"bat_{k}").sum().over(over) - pl.col(f"bat_{k}"))
-        / (pl.col(f"bat_{k}").count().over(over) - 1)
-        for k in BATTING_RATES
-    })
+    return out.with_columns(**{f"bat_d_{k}": _vs_others(f"bat_{k}", over) for k in BATTING_RATES})
 
 
 
@@ -384,16 +390,12 @@ def fielding_join(st: pl.DataFrame, fld: pl.DataFrame) -> pl.DataFrame:
     bad = f.filter(pl.col("tc") != pl.col("po") + pl.col("a") + pl.col("e"))
     if bad.height:
         raise ValueError(f"守備機会が 刺殺 + 補殺 + 失策 と合わない: {bad.select('season', 'team').rows()[:5]}")
-    off = f.filter((pl.col("fld_fpct") - pl.col("fpct")).abs() > 0.0005 + 1e-9)
+    off = f.filter((pl.col("fld_fpct") - pl.col("fpct")).abs() > RATE_DISPLAY_TOL)
     if off.height:
         raise ValueError(f"守備率を計算し直すとページの値と合わない: {off.select('season', 'team').rows()[:5]}")
     cols = [f"fld_{k}" for k in FIELDING_RATES]
     out = st.join(f.select("season", "team", *cols), on=["season", "team"], how="left")
-    return out.with_columns(**{
-        f"fld_d_{k}": pl.col(f"fld_{k}") - (pl.col(f"fld_{k}").sum().over(over) - pl.col(f"fld_{k}"))
-        / (pl.col(f"fld_{k}").count().over(over) - 1)
-        for k in FIELDING_RATES
-    })
+    return out.with_columns(**{f"fld_d_{k}": _vs_others(f"fld_{k}", over) for k in FIELDING_RATES})
 
 
 def linescore_join(st: pl.DataFrame, tg: pl.DataFrame, ls: pl.DataFrame) -> pl.DataFrame:
@@ -566,8 +568,7 @@ def boundary_features(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
     out = st.select("season", "team", "league", "rank").join(pl.DataFrame(rows, schema=schema), on=["season", "team"], how="left")
     out = out.with_columns(focus_gap=pl.col("vs_battle_wpct") - pl.col("vs_top_wpct"))
     over = ["season", "league"]
-    out = out.with_columns(**{f"{c}_d": pl.col(c) - (pl.col(c).sum().over(over) - pl.col(c)) / (pl.col(c).count().over(over) - 1)
-                              for c in ("max_lose_streak", "vs_lower_wpct")})
+    out = out.with_columns(**{f"{c}_d": _vs_others(c, over) for c in ("max_lose_streak", "vs_lower_wpct")})
     # 3位と4位の間で、相手（4位なら3位、3位なら4位。同率で複数いれば平均）との差
     is34 = pl.col("rank").is_in([3, 4])
     for c in ("vs_lower_wpct", "vs_battle_wpct", "focus_gap"):
@@ -578,10 +579,17 @@ def boundary_features(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
     return out.drop("league", "rank")
 
 
+def _others_mean(x: pl.Expr, over=("season", "league")) -> pl.Expr:
+    """同じ年・同じリーグの、自分を除く他球団の平均。比べる他球団がいなければ空（0 で割った値を残さない）。
+    値が空の球団は数えない（count）。"""
+    n = x.count().over(over)
+    return pl.when(n > 1).then((x.sum().over(over) - x) / (n - 1))
+
+
 def _vs_others(c: str, over=("season", "league")) -> pl.Expr:
-    """同じ年・同じリーグの他球団の平均との差。比べる他球団がいなければ空（0 で割った値を残さない）。"""
-    x, n = pl.col(c), pl.col(c).count().over(over)
-    return pl.when(x.is_not_null() & (n > 1)).then(x - (x.sum().over(over) - x) / (n - 1))
+    """自分の値 − 他球団の平均。自分の値が空、または比べる他球団がいなければ空。"""
+    x = pl.col(c)
+    return pl.when(x.is_not_null()).then(x - _others_mean(x, over))
 
 
 def _wl_sums(pairs, cut: float) -> dict[str, float]:
@@ -710,11 +718,11 @@ def cubic_projection(xs: list[float]) -> list[list[float]]:
 def cubic_extrema(c: list[float], lo: float, hi: float = 1.0) -> list[tuple[float, str]]:
     """3次式の (lo, hi) の中の極大（peak）・極小（valley）を x の小さい順に。f'(x) = c1 + 2c2·x + 3c3·x² の根で、f'' の符号で分ける。"""
     a, b, d = 3 * c[3], 2 * c[2], c[1]
-    if abs(a) > 1e-12:
+    if abs(a) > EPS_CUBIC_COEF:
         disc = b * b - 4 * a * d
         roots = sorted(((-b - math.sqrt(disc)) / (2 * a), (-b + math.sqrt(disc)) / (2 * a))) if disc > 0 else []
     else:
-        roots = [-d / b] if abs(b) > 1e-12 else []
+        roots = [-d / b] if abs(b) > EPS_CUBIC_COEF else []
     return [(r, "peak" if 2 * c[2] + 6 * c[3] * r < 0 else "valley") for r in roots if lo < r < hi]
 
 
@@ -722,7 +730,7 @@ def _shape(c: list[float], lo: float, hi: float = 1.0) -> dict:
     ext = cubic_extrema(c, lo, hi)
     mid = (lo + hi) / 2
     slope_mid = c[1] + 2 * c[2] * mid + 3 * c[3] * mid * mid
-    shape = "-".join(k for _, k in ext) or ("flat" if abs(slope_mid) < 1e-9 else "rise" if slope_mid > 0 else "fall")
+    shape = "-".join(k for _, k in ext) or ("flat" if abs(slope_mid) < EPS_FLAT_SLOPE else "rise" if slope_mid > 0 else "fall")
     peaks = [x for x, k in ext if k == "peak"]
     return {"shape": shape, "peak": bool(peaks), "peak_x": peaks[0] if peaks else None,
             "valley": any(k == "valley" for _, k in ext), "end_slope": c[1] + 2 * c[2] * hi + 3 * c[3] * hi * hi}
@@ -770,18 +778,18 @@ def wave_fit(ys: list[float], basis: list[dict], x0: float, x1: float = 1.0) -> 
         ur = sy - h0 * b["sec"] - ech + h0 * b["sec2"]          # Σ u·r（u = 1 − e·cos、r = y − h0·e·cos）
         rr = sy2 - 2 * h0 * ech + h0 * h0 * b["sec2"]            # Σ r²
         if b["per"] is None:
-            if b["uu"] <= 1e-12:
+            if b["uu"] <= EPS_WAVE_SOLVE:
                 continue
             lim, bb = ur / b["uu"], 0.0
             sse = rr - lim * ur
         else:
             vr = sum(map(operator.mul, b["es"], ys)) - h0 * b["sese"]   # Σ v·r（v = e·sin）
             det = b["uu"] * b["vv"] - b["uv"] ** 2
-            if det <= 1e-12:
+            if det <= EPS_WAVE_SOLVE:
                 continue
             lim, bb = (b["vv"] * ur - b["uv"] * vr) / det, (b["uu"] * vr - b["uv"] * ur) / det
             sse = rr - lim * ur - bb * vr
-        if best is None or sse < best[0] - 1e-12:
+        if best is None or sse < best[0] - EPS_WAVE_TIE:
             best = (sse, b, lim, bb)
     sse, b, lim, bb = best
     amp, t1 = math.hypot(h0 - lim, bb), x1 - x0   # x1: 線の終わり（ふつうはシーズンの最後の日 = 1）
@@ -1446,7 +1454,7 @@ def add_balance(st: pl.DataFrame) -> pl.DataFrame:
                             優位が誤差1つ分以上離れているかの3区分（R34）。試合ごとの列がないシーズン表では作らない
     """
     over = ["season", "league"]
-    others = lambda e: (e.sum().over(over) - e) / (pl.len().over(over) - 1)  # noqa: E731
+    others = lambda e: _others_mean(e, over)  # noqa: E731
     rf_g, ra_g = pl.col("RF") / pl.col("G"), pl.col("RA") / pl.col("G")
     st = st.with_columns(rf_adv=rf_g - others(rf_g), ra_adv=others(ra_g) - ra_g)
     d, a = pl.max_horizontal(-pl.col("rf_adv"), pl.lit(0.0)), pl.col("ra_adv")
@@ -1465,7 +1473,7 @@ def add_balance(st: pl.DataFrame) -> pl.DataFrame:
     # 誤差² = 自分の平均の誤差²（sd² ÷ 試合数）+ 他球団の平均の誤差²の和 ÷ 他球団の数²（各チームの試合は独立とみなす）
     n = pl.len().over(over) - 1
     var = lambda sd: sd.pow(2) / pl.col("G")  # noqa: E731
-    se = lambda sd: (var(sd) + (var(sd).sum().over(over) - var(sd)) / n.pow(2)).sqrt()  # noqa: E731
+    se = lambda sd: pl.when(n > 0).then((var(sd) + (var(sd).sum().over(over) - var(sd)) / n.pow(2)).sqrt())  # noqa: E731
     st = st.with_columns(rf_adv_se=se(pl.col("rf_sd_g")), ra_adv_se=se(pl.col("ra_sd_g")))
     return st.with_columns(rf_zone_se=zone(pl.col("rf_adv") / pl.col("rf_adv_se")),
                            ra_zone_se=zone(pl.col("ra_adv") / pl.col("ra_adv_se")))
@@ -1522,7 +1530,7 @@ def natural_breaks(wpcts: list, n_breaks: int = 1) -> list[int]:
     返り値は「k 位と k+1 位の間」の k（昇順）。差が同じなら上位側を先にとる。データの散らばりだけで決まり、人が決めた区切りを使わない。
     """
     w = sorted((x for x in wpcts if x is not None), reverse=True)
-    gaps = sorted(((round(w[k] - w[k + 1], 9), -k) for k in range(len(w) - 1)), reverse=True)  # 丸めて同じ差を同じに扱う
+    gaps = sorted(((round(w[k] - w[k + 1], BREAK_GAP_DECIMALS), -k) for k in range(len(w) - 1)), reverse=True)  # 丸めて同じ差を同じに扱う
     return sorted(-g[1] + 1 for g in gaps[:n_breaks])
 
 
@@ -1773,7 +1781,7 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFra
             pythag_fixed=1 / (1 + (RA / RF) ** K_FIXED),
             pythag_var=1 / (1 + (RA / RF) ** pl.col("k_var")),
             logit_resid=logit - K_FIXED * log_ratio,
-            k_eff=pl.when(log_ratio.abs() >= 0.02).then(logit / log_ratio),
+            k_eff=pl.when(log_ratio.abs() >= K_EFF_MIN_LOG_RATIO).then(logit / log_ratio),
         )
         .with_columns(resid_fixed=pl.col("wpct") - pl.col("pythag_fixed"),
                       resid_var=pl.col("wpct") - pl.col("pythag_var"))
@@ -1822,10 +1830,27 @@ def add_explanatory(st: pl.DataFrame) -> pl.DataFrame:
                       blowout_net=pl.col("w_4plus").cast(pl.Int64) - pl.col("l_4plus").cast(pl.Int64),
                       rank_wpct_1run=r("wpct_1run", True),
                       home_away_gap=pl.col("rd_home_g") - pl.col("rd_away_g"))
-        .with_columns(home_away_gap_vs_league=pl.col("home_away_gap")
-                      - (pl.col("home_away_gap").sum().over(over) - pl.col("home_away_gap"))
-                      / (pl.len().over(over) - 1))
+        .with_columns(home_away_gap_vs_league=_vs_others("home_away_gap", over))
     )
+
+
+def null_nonfinite(df: pl.DataFrame) -> tuple[pl.DataFrame, dict[str, dict[str, int]]]:
+    """浮動小数点の列の NaN・±inf を空（null）にし、列ごとの数を返す。すべて有限なら何も変えない。
+
+    polars では 0 で割った値は空ではなく NaN / inf になり、`count()` や `is_not_null()` はそれを数えてしまう。
+    書き出し（write_ndjson）は NaN / inf を null にするので、書き出した表では「空」と区別がつかない。
+    ここで先に空にして、数を記録に残す（--meta-out）。
+    """
+    float_cols = [c for c, t in df.schema.items() if t in (pl.Float32, pl.Float64)]
+    report: dict[str, dict[str, int]] = {}
+    for c in float_cols:
+        s = df.get_column(c)
+        nan, inf = int(s.is_nan().sum() or 0), int(s.is_infinite().sum() or 0)
+        if nan or inf:
+            report[c] = {"nan": nan, "inf": inf}
+    if report:
+        df = df.with_columns([pl.when(pl.col(c).is_finite()).then(pl.col(c)) for c in report])
+    return df, report
 
 
 def load_config(path: Path) -> dict:
@@ -1856,6 +1881,9 @@ def main(argv=None) -> int:
     ap.add_argument("--linescore", type=Path, help="試合ごとの得点表の観測（JSONL）。あれば ls_* の失策の差を加える")
     ap.add_argument("--sensitivity-out", type=Path,
                     help="線の始まりの試合数（[trajectory] sensitivity）や終わり（ends、R26）を変えた線の読み（R25）の書き出し先")
+    ap.add_argument("--meta-out", type=Path,
+                    help="実行の記録（JSON）の書き出し先。polars の版、名前をつけた許容値（TOLERANCES）、"
+                         "NaN・inf を空にした列と数、行数・列数")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
@@ -1875,8 +1903,18 @@ def main(argv=None) -> int:
     st = add_league_shape(add_b_paths(add_composites(add_balance(add_persistence(st)))))
     excl = [int(e["season"]) for e in cfg.get("exclude", [])]
     st = add_bands_and_states(st, excl)
+    st, nonfinite = null_nonfinite(st)
+    if nonfinite:  # 黙って空にしない
+        print(f"NaN・inf を空にした列: {len(nonfinite)}（{', '.join(sorted(nonfinite)[:5])}{' ...' if len(nonfinite) > 5 else ''}）。"
+              "詳しくは --meta-out", file=sys.stderr)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     st.write_ndjson(args.out)
+    if args.meta_out:
+        args.meta_out.parent.mkdir(parents=True, exist_ok=True)
+        args.meta_out.write_text(json.dumps({
+            "polars": pl.__version__, "tolerances": TOLERANCES, "nonfinite_nulled": nonfinite,
+            "rows": st.height, "columns": st.width,
+        }, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if args.sensitivity_out:
         traj = cfg.get("trajectory") or {}
         sims, main_games = int(traj.get("sims", TRAJ_SIMS)), int(traj.get("min_games", TRAJ_MIN_GAMES))

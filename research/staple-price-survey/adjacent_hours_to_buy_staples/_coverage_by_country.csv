@@ -1,0 +1,3 @@
+country,n_rows,year_min,year_max,n_years,variables
+BRA,192,2005,2015,11,hours_to_buy:bread_kg;hours_to_buy:flour_kg;hours_to_buy:potato_kg;hours_to_buy:rice_kg
+DEU,48,1970,2024,24,hours_to_buy:potato_kg;hours_to_buy:rye_bread_kg

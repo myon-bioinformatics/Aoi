@@ -17,4 +17,4 @@ package = false
 # サイクルデータと PythDRagoras（propositions）は Aoi に残す。AOI_ROOT と PYTHONPATH で Aoi の main を指す（.github/workflows/ci.yml）
 pythonpath = ["."]
 testpaths = ["tests"]
-norecursedirs = [".test-deps", "build", "reports"]
+norecursedirs = [".test-deps", ".parent-dispatch", "build", "reports"]

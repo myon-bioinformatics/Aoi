@@ -1,0 +1,65 @@
+# 一時的な実行用（このブランチ run/c001-wave-eps だけ。main には入れない）。
+# 取得元（npb.jp）に届くのは Actions の実行環境だけなので、サイクル1の取得ステップと同じコマンドで日程を取り、
+# 波の減衰 0 → ε の試し（cycles/c001-chunichi/exploratory/wave_eps_trial.py）を走らせて、結果だけをこのブランチに書く。
+# 生のページと games.jsonl（data/）はリポジトリに入れない（cycle-c001.yml と同じ方針）。ε の値は暫定で、結論には使わない。
+name: c001 wave epsilon trial (temporary)
+
+on:
+  push:
+    branches: [run/c001-wave-eps]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cycle-c001  # cycle-c001.yml と同じ。取得元に二重アクセスしない
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Fetch calendar pages and build games.jsonl (same command as pipeline step "fetch")
+        run: |
+          uv run python aoi_npb.py calendar --years 2012-2025 --cache data/raw/npb_calendar \
+            --out data/observations/npb_calendar/games.jsonl
+          wc -l data/observations/npb_calendar/games.jsonl
+      - name: Run the epsilon trial
+        id: trial
+        run: |
+          set -o pipefail
+          uv run --locked python cycles/c001-chunichi/exploratory/wave_eps_trial.py \
+            --games data/observations/npb_calendar/games.jsonl \
+            --config cycles/c001-chunichi/analysis.toml \
+            --committed cycles/c001-chunichi/outputs/season.jsonl \
+            --eps 1e-3 1e-6 1e-9 \
+            --outdir cycles/c001-chunichi/exploratory/wave_eps_trial_results 2>&1 | tee wave_eps_trial.log
+      - name: Keep games.jsonl and the manifest as an artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: c001-games
+          path: |
+            data/observations/npb_calendar
+            data/raw/npb_calendar/manifest.jsonl
+            wave_eps_trial.log
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Commit the trial results (not the data)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp wave_eps_trial.log cycles/c001-chunichi/exploratory/wave_eps_trial_results/run.log 2>/dev/null || true
+          git add cycles/c001-chunichi/exploratory/wave_eps_trial_results
+          git diff --cached --quiet || git commit -m "c001 wave epsilon trial: results from Actions (real data)"
+          git push

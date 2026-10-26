@@ -187,3 +187,18 @@ def test_render_says_so_when_nothing_can_be_judged_or_the_smallest_epsilon_fails
 def test_readme_points_to_the_script():
     text = (DIR / "README.md").read_text(encoding="utf-8")
     assert "eps_range_profile.py" in text and "tests/test_epsilon_generality_range.py" in text
+
+
+def test_results_readme_and_files_match_the_json_and_say_it_is_not_a_constant():
+    R = DIR / "results-random"
+    res = {k: json.loads((R / k / "eps_range_profile.json").read_text(encoding="utf-8")) for k in ("staple", "monthly", "daily")}
+    text = (R / "README.md").read_text(encoding="utf-8")
+    assert "## ε が動いた範囲" in text and "定数ではない" in text and "決める値ではありません" in text
+    total = rp.pool([r["total"] for r in res.values()])
+    assert f"{total['boundary']:,}" in text and f"{total['nonboundary']:,}" in text
+    for d in rp.DELTAS:
+        row = f"| {d * 100:g}% | {rp.largest_full(total, d):g} |"
+        assert row in text, row
+    for k, r in res.items():
+        assert r["grid"] == list(rp.GRID)
+        assert (R / k / "eps_range_profile.md").read_text(encoding="utf-8") == rp.render(gen, r), k

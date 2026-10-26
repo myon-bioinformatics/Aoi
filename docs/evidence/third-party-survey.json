@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 999,
+      "attribute_uses": 1001,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -747,11 +747,11 @@
         "fixture": 51,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 199,
+        "mark.parametrize": 200,
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 375,
+        "raises": 376,
         "skip": 8,
         "warns": 3
       },
@@ -880,16 +880,16 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 206,
+          "attribute_uses": 208,
           "attributes": {
             "approx": 41,
             "fail": 10,
             "fixture": 12,
             "importorskip": 1,
-            "mark.parametrize": 55,
+            "mark.parametrize": 56,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 77,
+            "raises": 78,
             "skip": 2
           },
           "dynamic_import_sites": 0,
@@ -2850,8 +2850,8 @@
     {
       "attributes": {
         "approx": 12,
-        "mark.parametrize": 9,
-        "raises": 9
+        "mark.parametrize": 10,
+        "raises": 10
       },
       "dynamic_lines": [],
       "file": "tests/test_c001_wave_eps_settle_coefficients.py",

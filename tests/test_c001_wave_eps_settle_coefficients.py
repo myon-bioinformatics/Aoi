@@ -230,3 +230,40 @@ def test_committed_inputs_reproduce_existing_json_and_markdown_exactly(tmp_path)
     saved = exploratory / "wave_eps_sensitivity_results"
     assert out_json.read_bytes() == (saved / "wave_eps_settle_coefficients.json").read_bytes()
     assert out_md.read_bytes() == (saved / "wave_eps_settle_coefficients.md").read_bytes()
+
+
+def input_files(tmp_path, units):
+    return [str(write_rows(tmp_path / f"rows_{e:g}.jsonl", rows.values())) for e, rows in table(units).items()]
+
+
+@pytest.mark.parametrize("units", [{(2013, "g"): 0.062, (2019, "h"): 0.060}, {}])
+def test_cli_handles_inputs_where_no_unit_moves_with_eps(tmp_path, units):
+    """全単位が最初から一定（または境界の単位が 0）でも、集計対象が空だからといって落ちない。"""
+    files = input_files(tmp_path, units or {(2024, "x"): 0.5})
+    if not units:                                   # 境界の単位が 1 つもない入力
+        for path in files:
+            rows = [json.loads(line) for line in Path(path).read_text(encoding="utf-8").splitlines()]
+            write_rows(Path(path), [dict(r, committed_wave_decay=0.5, eps_wave_decay=0.001) for r in rows])
+    out_json, out_md = tmp_path / "c.json", tmp_path / "c.md"
+    assert coef.main(["--rows", *files, "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
+    data = json.loads(out_json.read_text(encoding="utf-8"))
+    md = out_md.read_text(encoding="utf-8")
+    assert len(data["units"]) == len(units) and all(u["settled_at_start"] for u in data["units"])
+    assert md.count(coef.NONE) == 2 and f"減衰 0 だった単位: {len(units)}。落ち着く位置が最初から ε によらず一定: {len(units)}" in md
+    for r in units:
+        assert f"| {r[0]} | {r[1]} | （最初から一定。位置" in md
+
+
+def test_cli_builds_both_texts_before_writing_either_output(tmp_path, monkeypatch):
+    files = input_files(tmp_path, {(2014, "b"): (0.1, 0.5)})
+    outputs = [tmp_path / "c.json", tmp_path / "c.md"]
+    for path in outputs:
+        path.write_text("unchanged\n", encoding="utf-8")
+
+    def broken(rows, eps):
+        raise RuntimeError("render failed")
+
+    monkeypatch.setattr(coef, "render", broken)
+    with pytest.raises(RuntimeError, match="render failed"):
+        coef.main(["--rows", *files, "--out-json", str(outputs[0]), "--out-md", str(outputs[1])])
+    assert [p.read_text(encoding="utf-8") for p in outputs] == ["unchanged\n", "unchanged\n"]

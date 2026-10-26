@@ -27,6 +27,7 @@ from pathlib import Path
 
 SAME = 1e-9          # 2 つの ε で落ち着く位置が（相対で）これ以下しか違わなければ、ε によらない一定の位置とみなす
 SETTLE = 0.5         # sakanalytics.WAVE_SETTLE（ゆれの幅が半順位を下回る位置）
+NONE = "該当なし（動く単位がない）"
 
 
 def validate_eps(eps: float) -> None:
@@ -118,9 +119,9 @@ def render(rows: list[dict], eps: list[float]) -> str:
              "係数（落ち着く位置 / 10^n）はほとんど動かない。係数は決めた数ではなく行から出てきた数で、a を替えれば 1/a 倍になる。"
              "ε の値は暫定で、結論には使わない。", "",
              f"- 減衰 0 だった単位: {len(rows)}。落ち着く位置が最初から ε によらず一定: {len(rows) - len(moving)}",
-             f"- 係数（最小の ε の行、a = {eps_form(eps[0])[0]:g}）: {min(r['coefficient'] for r in moving):.4f} 〜 {max(r['coefficient'] for r in moving):.4f}",
-             f"- 最小の ε の係数で、ほかの ε の位置を言い当てたときの外れ（最大）: 絶対 {max(r['abs_miss'] for r in moving):.3f}（シーズン 1 つぶんが 1）、"
-             f"相対 {max(r['rel_miss'] for r in moving):.2e}", "",
+             f"- 係数（最小の ε の行、a = {eps_form(eps[0])[0]:g}）: " + (f"{min(r['coefficient'] for r in moving):.4f} 〜 {max(r['coefficient'] for r in moving):.4f}" if moving else NONE),
+             "- 最小の ε の係数で、ほかの ε の位置を言い当てたときの外れ（最大）: " + (f"絶対 {max(r['abs_miss'] for r in moving):.3f}（シーズン 1 つぶんが 1）、"
+                                                                                f"相対 {max(r['rel_miss'] for r in moving):.2e}" if moving else NONE), "",
              "| 年 | 球団 | " + " | ".join(_head(e) for e in reversed(eps)) + " | 係数（最小の ε） | 振れ幅 | 外れ（絶対 / 相対） |",
              "|---|---|" + "---|" * (len(eps) + 3)]
     for r in rows:
@@ -147,8 +148,11 @@ def main(argv=None) -> int:
     except ValueError as exc:
         print(exc, file=sys.stderr)
         return 2
-    args.out_json.write_text(json.dumps({"eps": sorted(by_eps), "units": rows}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    args.out_md.write_text(render(rows, sorted(by_eps)), encoding="utf-8")
+    # 本文は 2 つとも先にメモリ上で作ってから書き出す（途中で例外が出ても、片方だけ新しくなる状態を作らない）。
+    json_text = json.dumps({"eps": sorted(by_eps), "units": rows}, ensure_ascii=False, indent=2) + "\n"
+    md_text = render(rows, sorted(by_eps))
+    args.out_json.write_text(json_text, encoding="utf-8")
+    args.out_md.write_text(md_text, encoding="utf-8")
     print(f"書き出し: {args.out_json}, {args.out_md}")
     return 0
 

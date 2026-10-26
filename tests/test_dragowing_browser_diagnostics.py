@@ -766,3 +766,191 @@ def test_proc_text_is_bounded_and_does_not_retain_permission_errors(monkeypatch)
 
     monkeypatch.setattr("builtins.open", denied)
     assert diagnostic._proc_text(123, "stat") is None
+
+
+def _mock_kernel_stack(monkeypatch, raw):
+    calls = []
+
+    class Handle:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            pass
+
+        def read(self, limit):
+            calls.append(("read", limit))
+            return raw[:limit]
+
+    def open_stack(path, mode, *, buffering):
+        calls.append(("open", path, mode, buffering))
+        return Handle()
+
+    monkeypatch.setattr("builtins.open", open_stack)
+    monkeypatch.setattr(diagnostic.sys, "platform", "linux")
+    return calls
+
+
+def test_kernel_stack_keeps_only_bounded_function_symbols(monkeypatch):
+    raw = (b"[<ffffffff81234567>] folio_wait_bit_common+0x19/0x20\n"
+           b"[<0>] filemap_fault.isra.0+0x1a/0x2b [test_module]\n"
+           b"[<0>] do_user_addr_fault+0x10/0x200\n"
+           b"[<ffffffffdeadbeef>] ffffffffdeadbeef\n"
+           b"/private/secret-page API_KEY=do-not-leak --token=private\n"
+           b"[<0>] /private/path+0x1/0x2\n"
+           b"[<0>] innocent+0x1/0x2 /private/path\n"
+           + b"[<0>] " + b"s" * 129 + b"+0x1/0x2\n")
+    calls = _mock_kernel_stack(monkeypatch, raw)
+    observation = diagnostic._kernel_stack_observation(_SnapshotProcess())
+    assert calls == [("open", "/proc/123/stack", "rb", 0), ("read", 4097)]
+    assert observation == {"status": "ok", "symbols": ["folio_wait_bit_common", "filemap_fault.isra.0",
+                                                        "do_user_addr_fault"],
+                           "truncated": False, "omitted_lines": 5}
+    encoded = json.dumps(observation)
+    for excluded in ("ffffffff", "0x", "test_module", "/private", "do-not-leak", "API_KEY", "--token"):
+        assert excluded not in encoded
+
+
+def test_kernel_stack_limits_frame_count_without_additional_reads(monkeypatch):
+    raw = b"".join(f"[<0>] frame_{index}+0x1/0x2\n".encode() for index in range(40))
+    calls = _mock_kernel_stack(monkeypatch, raw)
+    observation = diagnostic._kernel_stack_observation(_SnapshotProcess())
+    assert observation["status"] == "ok"
+    assert observation["symbols"] == [f"frame_{index}" for index in range(32)]
+    assert observation["truncated"] is True
+    assert calls == [("open", "/proc/123/stack", "rb", 0), ("read", 4097)]
+
+
+def test_kernel_stack_byte_limit_discards_incomplete_final_line(monkeypatch):
+    first = b"[<0>] folio_wait_bit_common+0x1/0x2\n"
+    # The last syntactically valid frame is cut before its newline. It must not
+    # be retained as a complete frame merely because its prefix parses.
+    last = b"[<0>] incomplete_frame+0x1/0x2"
+    padding = b"x" * (4096 - len(first) - len(last) - 1) + b"\n"
+    calls = _mock_kernel_stack(monkeypatch, first + padding + last + b"more-private-data\n")
+    observation = diagnostic._kernel_stack_observation(_SnapshotProcess())
+    assert observation["status"] == "ok"
+    assert observation["symbols"] == ["folio_wait_bit_common"]
+    assert observation["truncated"] is True
+    assert "incomplete_frame" not in json.dumps(observation)
+    assert calls == [("open", "/proc/123/stack", "rb", 0), ("read", 4097)]
+
+
+@pytest.mark.parametrize("raw,status", [(b"", "empty"),
+                                         (b"private unavailable frame\n", "unparseable"),
+                                         (b"x" * 4097, "unparseable"),
+                                         (b"[<0>] function+0x1/0x2\xff\n", "invalid_encoding")])
+def test_kernel_stack_distinguishes_empty_unparseable_and_encoding(monkeypatch, raw, status):
+    _mock_kernel_stack(monkeypatch, raw)
+    observation = diagnostic._kernel_stack_observation(_SnapshotProcess())
+    assert observation["status"] == status
+    assert observation["symbols"] == (None if status == "invalid_encoding" else [])
+    assert observation["truncated"] is (len(raw) > 4096)
+    assert "private" not in json.dumps(observation)
+
+
+@pytest.mark.parametrize("failure,status", [(PermissionError("private permission detail"), "permission_denied"),
+                                             (FileNotFoundError("private missing path"), "unavailable"),
+                                             (OSError("private kernel detail"), "unavailable")])
+@pytest.mark.parametrize("at_read", [False, True])
+def test_kernel_stack_permission_and_io_errors_are_not_retried(monkeypatch, failure, status, at_read):
+    calls = []
+
+    class Handle:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            pass
+
+        def read(self, limit):
+            calls.append(("read", limit))
+            raise failure
+
+    def open_stack(path, mode, *, buffering):
+        calls.append(("open", path, mode, buffering))
+        if at_read:
+            return Handle()
+        raise failure
+
+    monkeypatch.setattr("builtins.open", open_stack)
+    monkeypatch.setattr(diagnostic.sys, "platform", "linux")
+    observation = diagnostic._kernel_stack_observation(_SnapshotProcess())
+    assert observation == {"status": status, "symbols": None, "truncated": False, "omitted_lines": 0}
+    assert calls == [("open", "/proc/123/stack", "rb", 0)] + ([("read", 4097)] if at_read else [])
+    assert "private" not in json.dumps(observation)
+
+
+def test_kernel_stack_does_not_inspect_absent_reaped_or_unsupported_child(monkeypatch):
+    def forbidden(*args, **kwargs):
+        pytest.fail("must not inspect absent, reaped or unsupported child")
+
+    monkeypatch.setattr("builtins.open", forbidden)
+    monkeypatch.setattr(diagnostic.sys, "platform", "linux")
+    for proc in (None, _SnapshotProcess(returncode=0)):
+        observation = diagnostic._kernel_stack_observation(proc)
+        assert observation["status"] == "not_running"
+        assert observation["symbols"] is None
+    monkeypatch.setattr(diagnostic.sys, "platform", "darwin")
+    observation = diagnostic._kernel_stack_observation(_SnapshotProcess())
+    assert observation["status"] == "unsupported"
+    assert observation["symbols"] is None
+
+
+def test_kernel_stack_is_not_read_on_request_or_success(monkeypatch):
+    def forbidden(*args, **kwargs):
+        pytest.fail("kernel stack must only be observed after readiness failure")
+
+    monkeypatch.setattr(diagnostic, "_startup_wait_snapshot", lambda *args: {})
+    monkeypatch.setattr(diagnostic, "_kernel_stack_observation", forbidden)
+    browser = diagnostic.DiagnosticChrome("unused", 8)
+    browser._observe_wait("request_sent")
+    browser._observe_wait("response_received")
+    assert all("kernel_stack" not in snapshot for snapshot in browser.wait_observations)
+
+
+def test_kernel_stack_failure_read_keeps_deadline_exception_and_reports_cost(monkeypatch):
+    clock = [0.0]
+    deadlines = []
+    stack_calls = []
+    original = TimeoutError("original readiness timeout")
+    monkeypatch.setattr(diagnostic.time, "monotonic", lambda: clock[0])
+
+    def send(self, method, params=None, session=None, *, deadline=None):
+        deadlines.append(("send", deadline))
+        return 1
+
+    def recv(self, deadline):
+        deadlines.append(("recv", deadline))
+        clock[0] = deadline
+        raise original
+
+    def snapshot(*args):
+        clock[0] += 3
+        return {}
+
+    def stack(proc):
+        stack_calls.append(proc)
+        clock[0] += 5
+        return {"status": "permission_denied", "symbols": None, "truncated": False, "omitted_lines": 0}
+
+    monkeypatch.setattr(diagnostic.Chrome, "_send", send)
+    monkeypatch.setattr(diagnostic.Chrome, "_recv", recv)
+    monkeypatch.setattr(diagnostic, "_startup_wait_snapshot", snapshot)
+    monkeypatch.setattr(diagnostic, "_kernel_stack_observation", stack)
+    browser = diagnostic.DiagnosticChrome("unused", 8)
+    browser._started_at = 0
+    with pytest.raises(TimeoutError) as captured:
+        browser.call("Browser.getVersion")
+    assert captured.value is original
+    assert deadlines == [("send", 8), ("recv", 8)]
+    assert browser.timeout == 8
+    assert browser.readiness_elapsed_seconds == 8  # terminal evidence does not change the outcome
+    assert clock[0] == 16
+    assert [item["sample_duration_seconds"] for item in browser.wait_observations] == [3, 8]
+    assert [item["phase"] for item in browser.wait_observations] == ["request_sent", "readiness_failure"]
+    assert "kernel_stack" not in browser.wait_observations[0]
+    assert browser.wait_observations[1]["kernel_stack"]["status"] == "permission_denied"
+    browser.record_failure(original)
+    browser._observe_wait("readiness_failure")
+    assert stack_calls == [None]  # no repeated read during failure handling / cleanup

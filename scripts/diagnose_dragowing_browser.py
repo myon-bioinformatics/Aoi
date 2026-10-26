@@ -6,6 +6,7 @@ This module deliberately leaves the production transport and its budgets alone.
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import math
@@ -96,6 +97,53 @@ def _proc_text(pid: int, name: str, limit: int = 4096) -> str | None:
             return handle.read(limit)
     except (OSError, UnicodeError):
         return None
+
+
+def _kernel_stack_observation(proc: subprocess.Popen | None) -> dict:
+    """One data-bounded, existing-permission read of our unreaped child's stack.
+
+    Only symbol names survive parsing; addresses, offsets, module annotations
+    and unknown lines never enter evidence. This is not a hard wall-time bound
+    on the kernel read, so call only after readiness has already failed.
+    """
+    result = {"status": "not_running", "symbols": None, "truncated": False,
+              "omitted_lines": 0}
+    if proc is None or proc.poll() is not None:
+        return result
+    if sys.platform != "linux":
+        result["status"] = "unsupported"
+        return result
+    try:
+        with open(f"/proc/{proc.pid}/stack", "rb", buffering=0) as handle:
+            raw = handle.read(4097)  # One overflow byte; never an unbounded read.
+    except OSError as exc:
+        result["status"] = ("permission_denied" if isinstance(exc, PermissionError)
+                            or exc.errno in (errno.EACCES, errno.EPERM) else "unavailable")
+        return result
+    result["truncated"] = len(raw) > 4096
+    raw = raw[:4096]
+    if result["truncated"]:
+        # Do not accept a partial frame cut at the byte limit.
+        raw = raw[:raw.rfind(b"\n") + 1]
+    try:
+        text = raw.decode("ascii")
+    except UnicodeError:
+        result["status"] = "invalid_encoding"
+        return result
+    symbols = []
+    for line in text.splitlines():
+        match = re.fullmatch(
+            r"\[<[0-9A-Fa-f]+>\] ([A-Za-z_][A-Za-z0-9_.$]{0,127})"
+            r"\+0x[0-9A-Fa-f]+/0x[0-9A-Fa-f]+(?: \[[A-Za-z0-9_]+\])?", line)
+        if match is None:
+            result["omitted_lines"] += 1
+        elif len(symbols) < 32:
+            symbols.append(match[1])
+        else:
+            result["truncated"] = True
+    result["symbols"] = symbols
+    result["status"] = "ok" if symbols else ("unparseable" if text or result["truncated"] else "empty")
+    return result
 
 
 def _pipe_observation(pid: int | None, child_fd: int, parent_fd: int | None) -> dict:
@@ -208,6 +256,8 @@ class DiagnosticChrome(Chrome):
         elapsed = None if self._started_at is None else started - self._started_at
         observed_at = datetime.now(timezone.utc).isoformat()
         snapshot = _startup_wait_snapshot(self._proc, self._w, self._r)
+        if phase == "readiness_failure":
+            snapshot["kernel_stack"] = _kernel_stack_observation(self._proc)
         self.wait_observations.append({"phase": phase, "elapsed_seconds": elapsed,
                                        "observed_at": observed_at, **snapshot,
                                        "sample_duration_seconds": time.monotonic() - started})

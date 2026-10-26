@@ -173,6 +173,14 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 - 予想: (a) 許容をそのままにして倍率を細かく（1e-8〜1e-2）動かすと、式が動き始める倍率が見つかる。(b) 許容に倍率の2乗をかけると、どの倍率でも式は変わらない。(b) で変わるなら仮説は足りない
 - これは基準ではない。(b) で変わらなくても、示せるのは「この許容が、この入力で動きの原因の全部だった」までで、直し方（許容を相対にする、など）は決めない。`sakanalytics` は変更しない（PR #24 は触らない）
 
+#### 主食価格にも当てる（2026-10-27。**走らせる前に書く**）
+
+上の確認を主食価格の月次（N = 24 の窓）にも当てる。物理量では「許容に倍率の2乗をかけると式が動かなくなる」まで確かめたが、主食価格では第 3 回の乱数の倍率（3.83e-22 / 1e-6 / 8.52e-4 以上。許容はそのまま）の結果を見ただけで、細かい格子と、許容に倍率の2乗をかけた場合は見ていない。予想は `posthoc_scale_tolerance.py` の冒頭に書いた（(a') 許容をそのままにすると倍率が小さいほど式が変わった単位は多いか同じで、1e-3 以上では 0。1e-6 は第 3 回と同じ 1056。(b') 許容に倍率の2乗をかけると、どの倍率でも式は変わらない）。登録した基準の外で、`sakanalytics` は変更しない（PR #24 は触らない）。実行は次のとおりで、結果は `results-random/staple/posthoc_scale_tolerance.json`・`.md` に置く。
+
+```sh
+uv run --locked python research/epsilon-generality/posthoc_scale_tolerance.py --staple-csv research/staple-price-survey/staple_survey_vertical.csv --outdir out/posthoc-staple --repo .
+```
+
 ### 再現と置き場所
 
 ```sh

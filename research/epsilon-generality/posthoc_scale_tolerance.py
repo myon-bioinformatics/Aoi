@@ -10,9 +10,22 @@ EPS_WAVE_SOLVE は基準の格子だけで決まり y によらないので、�
   (b) 許容に倍率の2乗をかけると、どの倍率でも式は変わらない（係数は浮動小数点の誤差の範囲）
 (b) で変わるなら、この仮説は足りない。(b) で変わらなくても、それは「この許容が原因の全部」を示すだけで、直し方は決めない。
 
-使い方（リポジトリの直下から）:
+追記（2026-10-27。主食価格の月次に広げる。**走らせる前に書く**。すでに見た部分とまだ見ていない部分を分ける）:
+  すでに見たもの: 第 3 回の乱数の倍率（results-random/staple）。主食価格の N = 24 の窓（単位 2192）で、許容をそのままにしたとき、
+    式が変わった単位は 倍率 3.83e-22 で 2104、1e-06 で 1056（境界の単位 381、係数の相対のずれの最大 1.27）、8.52e-4・1e-3・0.329・1・1.86・6.33・9.97 では 0。
+    物理量の月次・日次と同じ向き（小さい倍率だけ動く）に見えている。
+  まだ見ていないもの: 倍率 1e-8〜1e-2 の細かい格子（1e-5・1e-4 など）、許容に倍率の2乗をかけた場合。
+  予想:
+    (a') 許容をそのままにしたとき、倍率を 1e-8 → 1 と並べて「式が変わった単位」は増えない（単調に非増加）。1e-3 以上では 0。
+         1e-06 は第 3 回と同じ値（式が変わった 1056、境界の単位 381）になる（同じ入力・同じ手順なので、再現の確認）
+    (b') 許容に倍率の2乗をかけると、どの倍率でも式は変わらない（境界かどうかも変わらない。係数は浮動小数点の誤差の範囲）
+  (b') で変わる倍率があれば、この仮説は主食価格では足りない。(a') の並びが単調でなければ、その理由は仮説の外にある。
+  どちらも基準ではない。(b') が通っても言えるのは「この許容が、この入力で動きの原因の全部だった」までで、直し方は決めない。
+
+使い方（リポジトリの直下から。3 つのうち 1 つ以上を指定する）:
   uv run --locked python research/epsilon-generality/posthoc_scale_tolerance.py \\
       --monthly-csv out/physical/physical_monthly_vertical.csv --daily-csv out/physical/physical_daily_vertical.csv \\
+      --staple-csv research/staple-price-survey/staple_survey_vertical.csv \\
       --outdir out/posthoc --repo .
 """
 from __future__ import annotations
@@ -25,6 +38,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+KINDS = (("monthly", "月次", "physical-monthly"), ("daily", "日次", "physical-daily"), ("staple", "主食価格の月次", "staple"))
 FINE = (1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1.0)        # 値の幅 5 にそろえたあとの y と τ にかける倍率。1 が基準
 TIE = 1e-12                                                   # sakanalytics.EPS_WAVE_TIE の今の値（比べるための参照）
 
@@ -75,7 +89,9 @@ def render(res: dict) -> str:
     L = ["# 値の単位を変えたときの許容の確認（事後。登録した基準の外）", "",
          "予想は [posthoc_scale_tolerance.py](../posthoc_scale_tolerance.py) の冒頭に、走らせる前に書いたもの。"
          "倍率 1 が基準。「式が変わった」は選ばれる（減衰, 周期）が倍率 1 と違う単位の数。", ""]
-    for kind, label in (("monthly", "月次"), ("daily", "日次")):
+    for kind, label, _ in KINDS:
+        if kind not in res:
+            continue
         d = res[kind]
         L += [f"## {label}（{d['n']} 点の窓 {d['windows']} 個）", ""]
         for name, title in (("tolerance_unchanged", "許容 EPS_WAVE_TIE をそのまま（1e-12）"),
@@ -90,17 +106,23 @@ def render(res: dict) -> str:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--monthly-csv", type=Path, required=True)
-    ap.add_argument("--daily-csv", type=Path, required=True)
+    ap.add_argument("--monthly-csv", type=Path, default=None)
+    ap.add_argument("--daily-csv", type=Path, default=None)
+    ap.add_argument("--staple-csv", type=Path, default=None, help="主食価格の縦持ちの CSV（research/staple-price-survey/staple_survey_vertical.csv）")
     ap.add_argument("--outdir", type=Path, required=True)
     ap.add_argument("--repo", type=Path, default=Path.cwd())
     args = ap.parse_args(argv)
+    paths = {"monthly": args.monthly_csv, "daily": args.daily_csv, "staple": args.staple_csv}
+    if not any(paths.values()):
+        ap.error("--monthly-csv / --daily-csv / --staple-csv のうち 1 つ以上を指定する")
     gen = load_gen()
     sa, mod = gen.load_modules(args.repo)
     res = {}
-    for kind, path, profile in (("monthly", args.monthly_csv, "physical-monthly"), ("daily", args.daily_csv, "physical-daily")):
+    for kind, _, profile in KINDS:
+        if paths[kind] is None:
+            continue
         p = gen.PROFILES[profile]
-        res[kind] = analyse(gen, sa, mod, gen.read_series(path, p["prefix"], p["cadence"]), p["cadence"])
+        res[kind] = analyse(gen, sa, mod, gen.read_series(paths[kind], p["prefix"], p["cadence"]), p["cadence"])
     args.outdir.mkdir(parents=True, exist_ok=True)
     (args.outdir / "posthoc_scale_tolerance.json").write_text(gen.dumps(res) + "\n", encoding="utf-8")
     (args.outdir / "posthoc_scale_tolerance.md").write_text(render(res), encoding="utf-8")

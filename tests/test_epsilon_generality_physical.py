@@ -463,7 +463,68 @@ def test_posthoc_states_its_prediction_before_the_run_and_the_fine_scales():
     assert ph.FINE == (1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1.0) and ph.TIE == 1e-12
 
 
+def staple_csv(path, n=48, phase=0.3):
+    rows = [dict(r, date=f"{2000 + i // 12}-{i % 12 + 1:02d}-01", variable="staple_price:rice", country="AAA", note="", unit="USD per kg")
+            for i, r in enumerate(vrows(n, values=wave(n, phase)))]
+    return write_rows(path, rows)
+
+
+def test_posthoc_cli_takes_the_staple_input_alone_and_writes_only_that_kind_and_is_reproducible(tmp_path):
+    staple = staple_csv(tmp_path / "s.csv")
+    outs = []
+    for name in ("a", "b"):
+        o = tmp_path / name
+        assert ph.main(["--staple-csv", str(staple), "--outdir", str(o), "--repo", str(ROOT)]) == 0
+        outs.append(o)
+    for n in ("posthoc_scale_tolerance.json", "posthoc_scale_tolerance.md"):
+        assert (outs[0] / n).read_bytes() == (outs[1] / n).read_bytes()
+    res = json.loads((outs[0] / "posthoc_scale_tolerance.json").read_text(encoding="utf-8"))
+    assert list(res) == ["staple"] and res["staple"]["windows"] == 2 and res["staple"]["n"] == 24
+    for name in ("tolerance_unchanged", "tolerance_scaled"):
+        assert list(res["staple"][name]) == ["1e-08", "1e-07", "1e-06", "1e-05", "0.0001", "0.001", "0.01", "1"]
+        assert res["staple"][name]["1"]["units"] == 2 and res["staple"][name]["1"]["forms_changed"] == 0
+    md = (outs[0] / "posthoc_scale_tolerance.md").read_text(encoding="utf-8")
+    assert "## 主食価格の月次（24 点の窓 2 個）" in md and "## 月次（" not in md and "## 日次（" not in md
+    assert md.count("許容に倍率の2乗をかけた") == 1 and gen.SCALES == (1e-6, 1e-3, 1.0, 1e3, 1e6) and sa.EPS_WAVE_TIE == ph.TIE
+
+
+def test_posthoc_cli_with_all_three_inputs_keeps_the_order_monthly_daily_staple(tmp_path):
+    monthly = write_rows(tmp_path / "m.csv", [dict(r, date=f"{2000 + i // 12}-{i % 12 + 1:02d}-01", variable="physical:temp_anomaly", note="GCAG")
+                                               for i, r in enumerate(vrows(48, values=wave(48, 0.2)))])
+    daily = write_rows(tmp_path / "d.csv", vrows(48, values=wave(48, 0.5)))
+    staple = staple_csv(tmp_path / "s.csv")
+    o = tmp_path / "o"
+    assert ph.main(["--staple-csv", str(staple), "--daily-csv", str(daily), "--monthly-csv", str(monthly), "--outdir", str(o), "--repo", str(ROOT)]) == 0
+    res = json.loads((o / "posthoc_scale_tolerance.json").read_text(encoding="utf-8"))
+    assert list(res) == ["monthly", "daily", "staple"]
+    md = (o / "posthoc_scale_tolerance.md").read_text(encoding="utf-8")
+    assert [md.index(h) for h in ("## 月次（", "## 日次（", "## 主食価格の月次（")] == sorted(md.index(h) for h in ("## 月次（", "## 日次（", "## 主食価格の月次（"))
+
+
+def test_posthoc_cli_stops_when_no_input_is_given(tmp_path):
+    with pytest.raises(SystemExit) as e:
+        ph.main(["--outdir", str(tmp_path / "o"), "--repo", str(ROOT)])
+    assert e.value.code == 2 and not (tmp_path / "o").exists()
+
+
+def test_posthoc_states_the_staple_prediction_before_the_run_and_what_was_already_seen():
+    doc = ph.__doc__
+    assert "追記（2026-10-27。主食価格の月次に広げる。**走らせる前に書く**" in doc
+    for needle in ("すでに見たもの", "まだ見ていないもの", "(a')", "(b')", "2104", "1056", "381", "3.83e-22", "8.52e-4"):
+        assert needle in doc, needle
+    assert [k for k, _, _ in ph.KINDS] == ["monthly", "daily", "staple"] and ph.KINDS[2][2] == "staple"
+
+
 # ---- README の登録内容との一致 --------------------------------------------------------------------------------------------
+def test_readme_announces_the_staple_scale_check_before_it_runs_and_points_to_the_prediction():
+    text = (DIR / "README.md").read_text(encoding="utf-8")
+    sec = text[text.index("#### 主食価格にも当てる（2026-10-27。**走らせる前に書く**）"):]
+    sec = sec[:sec.index("### 再現と置き場所")]
+    for needle in ("posthoc_scale_tolerance.py` の冒頭に書いた", "(a')", "(b')", "1056", "--staple-csv research/staple-price-survey/staple_survey_vertical.csv",
+                   "results-random/staple/posthoc_scale_tolerance.json", "PR #24 は触らない"):
+        assert needle in sec, needle
+
+
 def test_readme_physical_section_states_the_pinned_inputs_the_scales_and_the_profiles():
     text = (DIR / "README.md").read_text(encoding="utf-8")
     sec = text[text.index("## 物理量の確認（第 2 回）: 事前登録"):]

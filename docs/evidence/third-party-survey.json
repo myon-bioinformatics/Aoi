@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1131,
+      "attribute_uses": 1134,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -751,7 +751,7 @@
         "mark.skipif": 18,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 419,
+        "raises": 422,
         "skip": 8,
         "warns": 3
       },
@@ -880,7 +880,7 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 338,
+          "attribute_uses": 341,
           "attributes": {
             "approx": 97,
             "fail": 13,
@@ -889,12 +889,12 @@
             "mark.parametrize": 78,
             "mark.skipif": 12,
             "mark.xfail": 2,
-            "raises": 121,
+            "raises": 124,
             "skip": 2
           },
           "dynamic_import_sites": 0,
           "files": 32,
-          "import_sites": 32
+          "import_sites": 33
         }
       },
       "declared": [
@@ -932,7 +932,7 @@
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
       "files": 110,
-      "import_sites": 111
+      "import_sites": 112
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2896,11 +2896,12 @@
     },
     {
       "attributes": {
+        "raises": 1,
         "skip": 1
       },
       "dynamic_lines": [],
       "file": "tests/test_c002_lag1.py",
-      "import_sites": 1,
+      "import_sites": 2,
       "package": "pytest",
       "tree": "tests"
     },
@@ -2918,7 +2919,7 @@
       "attributes": {
         "fail": 1,
         "mark.parametrize": 2,
-        "raises": 5
+        "raises": 6
       },
       "dynamic_lines": [],
       "file": "tests/test_child_registry.py",
@@ -3003,7 +3004,7 @@
       "attributes": {
         "approx": 3,
         "mark.parametrize": 1,
-        "raises": 8
+        "raises": 9
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_physical.py",

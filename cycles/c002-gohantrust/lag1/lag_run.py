@@ -47,7 +47,10 @@ def rolling(win_start, lag, dE=None):
         tr = list(range(first_s, t))
         x = np.array([dE[s - lag] for s in tr])
         y = np.array([Y[s] for s in tr])
-        g = float((x * y).sum() / (x * x).sum())
+        den = float((x * x).sum())
+        if den == 0.0:      # 訓練年の ΔlogE がすべて 0。numpy は警告だけで nan を返し、その年が「負け」に数えられてしまう。値は置き換えず、理由を書いて止める
+            raise ValueError(f"分母ゼロ: 訓練年の ΔlogE がすべて 0 で γ が決まらない（win_start={win_start}, lag={lag}, t={t}）")
+        g = float((x * y).sum()) / den
         yh = g * dE[t - lag]
         drift = float(y.mean())
         yt = Y[t]

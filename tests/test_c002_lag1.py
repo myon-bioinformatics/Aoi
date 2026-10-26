@@ -110,3 +110,20 @@ def test_committed_lag_results_are_what_the_code_produces():
         scope = committed[name]["perm_scope"]
         assert scope["main"] == "used" and scope["years_used"] == list(range(ws + 1, lag_run.LAST))
         assert scope["years_declared"] == list(range(ws + 1, lag_run.LAST + 1))
+
+
+def test_gamma_stops_with_a_reason_when_every_training_dlogE_is_zero():
+    # 分母 Σx² が 0 のとき、numpy は警告だけで nan を返し、その年が「負け」に数えられる。置き換えず、理由を書いて止める
+    import pytest
+
+    zero = {t: 0.0 for t in lag_run.DE}
+    for lag in (0, 1):
+        with pytest.raises(ValueError, match=rf"分母ゼロ.*win_start=2015, lag={lag}, t=\d{{4}}"):
+            lag_run.rolling(2015, lag, dE=zero)
+
+
+def test_gamma_is_still_computed_when_only_some_training_dlogE_are_zero():
+    # E が同じ値の年（ΔlogE = 0）はデータにもある。分母が 0 でなければ、これまでの値のまま
+    assert any(v == 0.0 for v in lag_run.DE.values())
+    rows = lag_run.rolling(2015, 0)
+    assert rows and all(r["gamma"] == r["gamma"] for r in rows)         # nan でない

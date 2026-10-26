@@ -271,3 +271,25 @@ def test_fourth_round_registration_names_the_range_the_seed_and_the_counts():
     sec = text[text.index("## 乱数の ε を範囲から選ぶ確認（第 4 回）"):]
     for needle in ("LO = 8.14×10^-13、HI = 2.22×10^-3", "種: `20261026`", "それぞれ ε を 10 個", "--eps-range <inside|above|below> 8.14e-13 2.22e-3 --coef-seed 20261026", "3 入力の合計 280 件（主食価格 100、物理量の月次 90、日次 90）", "予想（結果を見る前。判定には使わない）"):
         assert needle in sec, needle
+
+
+@pytest.mark.parametrize("mode", gen.MODES)
+def test_fourth_round_results_record_the_registered_values_and_range_and_match_the_readme(mode):
+    import json
+    R = DIR / "results-region"
+    text = (R / "README.md").read_text(encoding="utf-8")
+    rnd_total = rnd_bad = 0
+    for k in ("staple", "monthly", "daily"):
+        j = json.loads((R / mode / k / "eps_generality.json").read_text(encoding="utf-8"))
+        rc = j["random_coefficients"]
+        assert rc["seed"] == 20261026 and [d["value"] for d in rc["eps"]] == REGISTERED_4[mode] and rc["scales"] == []
+        assert rc["regions"] == {"eps": {"mode": mode, "lo": LO, "hi": HI}}
+        assert j["control"]["pass"] and j["repeat_identical"] and "regions" not in j
+        for c in j["criteria"]:
+            if any(f"ε={gen.elabel(e)} " in c["text"] for e in REGISTERED_4[mode]):
+                rnd_total += 1
+                rnd_bad += c["ok"] is not True
+        md = (R / mode / k / "eps_generality.md").read_text(encoding="utf-8")
+        assert f"- εを選んだ範囲: {mode}（8.14×10^-13 〜 2.22×10^-3" in md
+    assert rnd_total == 280 and rnd_bad == {"inside": 0, "above": 11, "below": 0}[mode]
+    assert f"| {mode} | 主食価格 |" in text and "全基準を満たした回はないので、「矛盾する材料はなかった」とは書きません" in text

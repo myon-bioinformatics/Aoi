@@ -34,3 +34,7 @@ Do **not** rebuild. Point to `adjacent_netflix_subscription_levels` (Aoi #118 ti
 - `adjacent_apple_music_subscription_levels_vertical.csv` (+ `.gz`)
 - `adjacent_apple_music_subscription_levels_readme.md` / `adjacent_apple_music_subscription_levels_missing.md`
 - `raw/apple_music_levels.csv`
+
+## Observation contract
+
+See [subscription_contract.md](../subscription_contract.md). `source` is a required series dimension; the observation key is `(country, date, variable, source)`. Cross-source values are separate observations, not independent countries or additive prices. These are reported third-party prices, not verified checkout quotes.

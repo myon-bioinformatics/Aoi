@@ -664,8 +664,30 @@
       "files": 34,
       "import_sites": 39
     },
+    "pycountry": {
+      "attribute_uses": 1,
+      "attributes": {
+        "countries.get": 1
+      },
+      "by_tree": {
+        "research": {
+          "attribute_uses": 1,
+          "attributes": {
+            "countries.get": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 2
+        }
+      },
+      "declared": [],
+      "distinct_attributes": 1,
+      "dynamic_import_sites": 0,
+      "files": 1,
+      "import_sites": 2
+    },
     "pytest": {
-      "attribute_uses": 861,
+      "attribute_uses": 864,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -681,7 +703,7 @@
         "mark.parametrize": 161,
         "mark.skipif": 6,
         "param": 1,
-        "raises": 346,
+        "raises": 349,
         "skip": 6,
         "warns": 3
       },
@@ -798,18 +820,18 @@
           "import_sites": 10
         },
         "tests": {
-          "attribute_uses": 72,
+          "attribute_uses": 75,
           "attributes": {
             "approx": 1,
             "fail": 1,
             "fixture": 4,
             "importorskip": 1,
             "mark.parametrize": 17,
-            "raises": 48
+            "raises": 51
           },
           "dynamic_import_sites": 0,
-          "files": 13,
-          "import_sites": 13
+          "files": 14,
+          "import_sites": 14
         }
       },
       "declared": [
@@ -846,8 +868,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 90,
-      "import_sites": 91
+      "files": 91,
+      "import_sites": 92
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2372,6 +2394,16 @@
     },
     {
       "attributes": {
+        "countries.get": 1
+      },
+      "dynamic_lines": [],
+      "file": "research/staple-price-survey/adjacent_netflix_subscription_levels/build_netflix_subscription_levels.py",
+      "import_sites": 2,
+      "package": "pycountry",
+      "tree": "research"
+    },
+    {
+      "attributes": {
         "col": 1,
         "read_ndjson": 1
       },
@@ -2753,6 +2785,16 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_shrink_module.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 3
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_subscription_contract.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

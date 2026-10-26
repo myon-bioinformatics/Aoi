@@ -15,8 +15,8 @@ Retrieved: 2026-10-26 Asia/Tokyo
 |-------|-------|
 | Variable | `youtube_premium:individual` |
 | Plan | YouTube Premium Individual |
-| Vertical LCU rows | **154** |
-| ISO3 | **58** |
+| Vertical LCU rows | **149** |
+| ISO3 | **57** |
 | Distinct dates | **4** (2026-03-13, 2026-04-10, 2026-07-13, 2026-10-26) |
 | Hist companion | `raw/youtube_premium_levels.csv` |
 
@@ -34,3 +34,13 @@ Do **not** rebuild. Point to `adjacent_netflix_subscription_levels` (Aoi #118 ti
 - `adjacent_youtube_premium_subscription_levels_vertical.csv` (+ `.gz`)
 - `adjacent_youtube_premium_subscription_levels_readme.md` / `adjacent_youtube_premium_subscription_levels_missing.md`
 - `raw/youtube_premium_levels.csv`
+
+## Observation contract
+
+See [subscription_contract.md](../subscription_contract.md). `source` is a required series dimension; the observation key is `(country, date, variable, source)`. Cross-source values are separate observations, not independent countries or additive prices. These are reported third-party prices, not verified checkout quotes.
+
+## Quarantine (2026-10-26)
+
+Five unverified observations are excluded from vertical CSV/gzip and preserved verbatim in `raw/quarantined_vertical.csv`; original raw files are unchanged. MEX: 15.99 MXN on 2026-07-13 and 2026-10-26. DOM: 8.49 DOP on 2026-04-10, 2026-07-13 and 2026-10-26. No replacement price or currency is inferred.
+
+Mexico first-party distributor terms https://www.movistar.com.mx/tyc/youtube-premium (checked 2026-10-26) state MXN 159 monthly, inconsistent with 15.99; this does not establish the historical direct checkout price. YouTube availability help https://support.google.com/youtube/answer/6307365 confirms Dominican Republic availability but does not verify its price/currency. DOM remains unresolved pending dated official billing evidence.

@@ -28,7 +28,7 @@
 
 ## 注意
 
-- この結果は**野球の順位の線だけ**での話です。ε が野球以外の連続データ（主食価格の月次）でも使えるかは、[research/epsilon-generality](../../../../research/epsilon-generality/results/README.md) で別に見ています（境界の単位の割合は野球の約 14% に対し約 36% など、違った点もある）。物理量（気温・CO2・気象の日次/月次）は [第 2 回](../../../../research/epsilon-generality/results-physical/README.md)
+- この結果は**野球の順位の線だけ**での話です。ε が野球以外の連続データ（主食価格の月次）でも使えるかは、[research/epsilon-generality](../../../../research/epsilon-generality/results/README.md) で別に見ています（境界の単位の割合は野球の約 14% に対し約 36% など、違った点もある）。物理量（気温・CO2・気象の日次/月次）は [第 2 回](../../../../research/epsilon-generality/results-physical/README.md)、ε と倍率を乱数で選んだ値での確認は [第 3 回](../../../../research/epsilon-generality/results-random/README.md)
 - 単位は 12、減衰 0 は 1 つ。ε の挙動について、2013〜2025年に見たこと（落ち着く位置が 1/ε に比例し、係数が ε によらない）と**矛盾する材料は 2026年にはなかった**、までしか言えない
 - 再現: 試合の表を作る → 試験 → 感度 → 係数、の順
   ```sh

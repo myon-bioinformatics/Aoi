@@ -233,6 +233,10 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv out/p
 
 `tests/test_epsilon_generality_random.py`。選び方の形と範囲、種で決まること、基準値のつなぎ方、乱数の ε を入れた判定と書き出し、実際の当てはめ（減衰しない波・減衰する波）を確かめる。**テストの乱数の種は実行ごとに変わる**（環境変数 `EPS_COEF_SEED` で固定できる。失敗したときはメッセージの `EPS_COEF_SEED=...` で同じ値を再現できる）。どの種でも成り立つ性質だけを置いている（150 通りの種で、減衰しない波 3 種と減衰する波 1 種の当てはめで、係数のずれが基準値の 1.5% 以下に収まることを、テストを書く前に確かめた）。
 
+### 結果
+
+[results-random/README.md](results-random/README.md)（`staple/`、`monthly/`、`daily/`）。結果を見て上の登録は変えていない。
+
 ### 限界
 
 - 乱数の ε・倍率は 1 つの種の 10 個ずつ。範囲（N = 4〜8、e = -8〜0）と個数は任意の選び方で、別の種で同じになるとは言えない

@@ -13,7 +13,7 @@ README.md に事前に書いた基準（C1〜C5）を、(1) リポジトリに�
 --profile を付けない主食価格の回の出力は、プロファイルを足す前とバイト単位で同じ。
 
 乱数の ε と倍率（README.md の「乱数の ε と倍率の確認」）: --random-eps K / --random-scales K を付けると、決め打ちの ε（1e-3, 1e-6, 1e-9）と倍率に、
-A×10^-N（ε）・A×10^e（倍率）の A と指数を乱数で選んだ値を K 個ずつ足す。--coef-seed に整数か auto を渡す（省略は SEED）。選んだ値と種は結果に書く。
+A×10^-N（ε。0 < ε ≤ 1/100）・A×10^e（倍率）の A（1.00〜9.99）と指数を乱数で選んだ値を K 個ずつ足す。--coef-seed に整数か auto を渡す（省略は SEED）。選んだ値と種は結果に書く。
 これらを付けない出力は、足す前とバイト単位で同じ。
 """
 from __future__ import annotations
@@ -77,34 +77,36 @@ def ekey(e: float) -> str:
     return f"e{e:g}"
 
 
-# ---- 乱数の ε と倍率（README.md の「乱数の ε と倍率の確認」。範囲と基準値の置き方は走らせる前に決めた）-----------------------
+# ---- 乱数の ε と倍率（README.md の「乱数の ε と倍率の確認」。定義と基準値の置き方は走らせる前に決めた）-----------------------
 REF_EPS = EPS[-1]                   # C2 の基準。乱数の ε を足しても変えない
-RANDOM_A = range(11, 100)           # A = 1.1〜9.9（1.0 は人間の都合で選ぶ値なので外す）
-RANDOM_EPS_N = range(4, 9)          # ε = A × 10^-N, N = 4〜8（1e-9 と 1e-3 の間に収まる）
-RANDOM_SCALE_E = range(-8, 1)       # 倍率 = A × 10^e, e = -8〜0
+EPS_LIMIT = 1e-2                    # ε の条件は 0 < ε ≤ 1/100 だけ。float でそのまま与えてもよい（A×10^-N は乱数で選ぶときの作り方）
+A_MIN, A_MAX = 100, 999             # A = 1.00〜9.99（有効数字 3 桁。百分の一の整数で持つ）
+N_MIN, N_CAP = 3, 307               # 乱数で選ぶ ε = A×10^-N は N = 3 から（A×10^-3 は 1/1000 以上 1/100 未満）。N に上限は置かず、A の 3 桁を保ったまま float で表せる 307 で止める（装置の限界）
+E_CAP = 150                         # 倍率 = A×10^e の |e| の上限。y の2乗の和が float で表せる範囲（|e| が 153 を超えると桁あふれする）
+P_STOP = 1 / 6                      # 指数を 1 つずつ増やし、各段で止まる確率（幾何分布、平均 5 段）。上限を置かずに、値が動きうる ε が大きい側に多く当たるようにする
 ANCHOR_CRIT = {"c1": {1e-3: CRIT["c1_eps3"], 1e-6: 1.0, 1e-9: 1.0},          # 決め打ちの ε の基準値（登録した値そのまま）
                "c2": {1e-3: CRIT["c2_eps3"], 1e-6: CRIT["c2_eps6"]},
                "c3": {1e-3: CRIT["c3_eps3"], 1e-6: CRIT["c3_eps6"], 1e-9: CRIT["c3_eps9"]}}
 
 
 def threshold(kind: str, e: float) -> float:
-    """ε の基準値。決め打ちの ε は登録した値そのまま。それ以外（1e-9 < ε < 1e-3）は 1e-6 と 1e-3 の間を log10(ε) でつなぐ
-    （C1 は割合の直線、C2・C3 は値の対数の直線）。ε <= 1e-6 は 1e-6 の値のまま。"""
+    """ε の基準値。決め打ちの ε は登録した値そのまま。それ以外は、1e-6 と 1e-3 の基準値を log10(ε) でつないだ直線（C1 は割合の直線、
+    C2・C3 は値の対数の直線）。1e-3 より大きい ε（< 1/100）は同じ直線の延長、ε <= 1e-6 は 1e-6 の値のまま。定義域は 0 < ε ≤ 1/100（float ならどんな値でも通す）。"""
     t = ANCHOR_CRIT[kind]
     if e in t:
         return t[e]
-    if not REF_EPS < e < 1e-3:
-        raise ValueError(f"基準値を置いた範囲（1e-9 < ε < 1e-3）の外: {e!r}")
+    if not 0.0 < e <= EPS_LIMIT:
+        raise ValueError(f"ε の定義域（0 < ε ≤ 1/100）の外: {e!r}")
     if e <= 1e-6:
         return t[1e-6]
-    f = (math.log10(e) + 6.0) / 3.0                      # 1e-6 で 0、1e-3 で 1
+    f = (math.log10(e) + 6.0) / 3.0                      # 1e-6 で 0、1e-3 で 1、1/100 で 4/3
     lo, hi = t[1e-6], t[1e-3]
     return lo + (hi - lo) * f if kind == "c1" else lo * (hi / lo) ** f
 
 
 def pow10_text(x: float) -> str:
-    """3.7e-05 → 3.7×10^-5"""
-    m, ex = f"{x:.1e}".split("e")
+    """3.07e-05 → 3.07×10^-5"""
+    m, ex = f"{x:.2e}".split("e")
     return f"{m}×10^{int(ex)}"
 
 
@@ -112,12 +114,29 @@ def elabel(e: float) -> str:
     return f"{e:g}" if e in EPS else pow10_text(e)
 
 
+def _steps(rng: random.Random, cap: int) -> int:
+    """各段で確率 P_STOP で止まる回数（0 から。cap まで）。"""
+    n = 0
+    while n < cap and rng.random() >= P_STOP:
+        n += 1
+    return n
+
+
 def draw_coefficients(count: int, seed, kind: str) -> list[dict]:
-    """A×10^x の A（1.1〜9.9）と指数 x を乱数で count 個選ぶ（重複なし）。kind は "eps"（x = -N, N = 4〜8）か "scale"（x = -8〜0）。
+    """A×10^x の A（1.00〜9.99）と指数 x を乱数で count 個選ぶ（値の重複なし。決め打ちの ε・倍率と同じ値は除く）。
+    kind は "eps"（x = -N、N = 3 + 段の数。上限は置かず N_CAP まで）か "scale"（x = ±段の数。|x| は E_CAP まで）。
     {"a", "exp", "value"} のリストを値の大きい順で返す。同じ種なら同じ値。"""
-    exps = [-n for n in RANDOM_EPS_N] if kind == "eps" else list(RANDOM_SCALE_E)
-    picks = random.Random(f"{seed}/{kind}").sample([(a, x) for a in RANDOM_A for x in exps], count)
-    return sorted(({"a": a / 10, "exp": x, "value": float(f"{a // 10}.{a % 10}e{x}")} for a, x in picks), key=lambda d: -d["value"])
+    rng, out, tries = random.Random(f"{seed}/{kind}"), {}, 0
+    while len(out) < count:
+        tries += 1
+        if tries > 10_000 + 100 * count:
+            raise ValueError(f"{count} 個は選べない（{len(out)} 個で止まった）")
+        a = rng.randint(A_MIN, A_MAX)
+        x = -(N_MIN + _steps(rng, N_CAP - N_MIN)) if kind == "eps" else rng.choice((-1, 1)) * _steps(rng, E_CAP)
+        v = float(f"{a // 100}.{a % 100:02d}e{x}")
+        if v not in (EPS if kind == "eps" else SCALES) and v not in out:
+            out[v] = {"a": a / 100, "exp": x, "value": v}
+    return sorted(out.values(), key=lambda d: -d["value"])
 
 
 def load_modules(repo: Path):
@@ -361,7 +380,7 @@ def stats(rows: list[dict], eps: tuple = EPS) -> dict:
     for e in eps:
         k = ekey(e)
         kept = [r for r in B if r[k]["decay"] == e and r[k]["period"] is not None and r[k]["limit"] is not None
-                and r[k]["settle_x"] is not None]
+                and r[k]["settle_x"] is not None and math.isfinite(r[k]["settle_x"])]   # 極小の ε で settle_x が float の範囲を超えたら「残った」に数えない
         out["keep"][k] = {"kept": len(kept), "of": len(B)}
         chg = [r for r in NB if (r[k]["decay"], r[k]["period"]) != (r["decay"], r["period"])]
         out["c3"][k] = {"changed": len(chg), "of": len(NB)}
@@ -541,8 +560,8 @@ def render(res: dict) -> str:
     rc = res.get("random_coefficients")
     if rc:
         L += ["", "## 乱数で選んだ ε と倍率", "",
-              f"種 {rc['seed']}。ε = A×10^-N（A = 1.1〜9.9、N = 4〜8）と倍率 = A×10^e（e = -8〜0）の A と指数を乱数で選び、決め打ちの値に足した。"
-              "乱数の ε の基準値は、登録した 1e-3 と 1e-6 の基準値の間を log10(ε) でつないだもの（1e-6 以下は 1e-6 の値）。", "",
+              f"種 {rc['seed']}。ε = A×10^-N（A = 1.00〜9.99、N = 3 から上限なし）と倍率 = A×10^e（A は同じ、e は 0 から両側へ上限なし）の A と指数を乱数で選び、"
+              "決め打ちの値に足した。ε の条件は 0 < ε ≤ 1/100 だけ。乱数の ε の基準値は、登録した 1e-3 と 1e-6 の基準値を log10(ε) でつないだ直線（1e-3 より大きい側は延長、1e-6 以下は 1e-6 の値）。", "",
               "- ε: " + (", ".join(pow10_text(d["value"]) for d in rc["eps"]) or "なし"),
               "- 倍率: " + (", ".join(pow10_text(d["value"]) for d in rc["scales"]) or "なし")]
     L += ["", "## 係数の範囲（ε=1e-6、境界の単位）", "", "| 窓の長さ | 係数の最小〜最大 | ε で位置が決まった単位のうち「始まりの時点で決まっていた」数（1e-3 / 1e-6 / 1e-9）|", "|---|---|---|"]

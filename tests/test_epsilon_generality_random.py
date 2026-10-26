@@ -31,23 +31,24 @@ SEEDS = (COEF_SEED, "1", "2", "20261026")          # 乱数の種（先頭だけ
 
 # ---- 乱数の選び方 ----------------------------------------------------------------------------------------------------------
 @pytest.mark.parametrize("seed", SEEDS)
-def test_random_eps_are_A_times_power_of_ten_inside_the_registered_range(seed):
+def test_random_eps_are_A_times_power_of_ten_with_three_digits_and_N_from_3(seed):
     d = gen.draw_coefficients(6, seed, "eps")
     assert len(d) == 6 and len({x["value"] for x in d}) == 6, WHY
     for x in d:
-        assert 1.1 <= x["a"] <= 9.9 and abs(x["a"] * 10 - round(x["a"] * 10)) < 1e-9, WHY            # A は小数 1 桁（1.0 は選ばない）
-        assert x["exp"] in range(-8, -3) and x["value"] == float(f"{x['a']}e{x['exp']}"), WHY
-        assert gen.REF_EPS < x["value"] < 1e-3 and x["value"] not in gen.EPS, WHY
+        assert 1.0 <= x["a"] <= 9.99 and abs(x["a"] * 100 - round(x["a"] * 100)) < 1e-9, WHY            # A は 1.00〜9.99（小数第 2 位まで）
+        assert -307 <= x["exp"] <= -3 and x["value"] == float(f"{x['a']:.2f}e{x['exp']}"), WHY
+        assert 0 < x["value"] <= 1e-2 and x["value"] not in gen.EPS and math.isfinite(x["value"]), WHY     # ε の条件は 0 < ε ≤ 1/100 だけ
     assert [x["value"] for x in d] == sorted((x["value"] for x in d), reverse=True), WHY
 
 
 @pytest.mark.parametrize("seed", SEEDS)
-def test_random_scales_are_A_times_power_of_ten_up_to_one(seed):
+def test_random_scales_are_A_times_power_of_ten_on_both_sides_of_one(seed):
     d = gen.draw_coefficients(8, seed, "scale")
     assert len(d) == 8 and len({x["value"] for x in d}) == 8, WHY
     for x in d:
-        assert 1.1 <= x["a"] <= 9.9 and x["exp"] in range(-8, 1) and x["value"] == float(f"{x['a']}e{x['exp']}"), WHY
-        assert 1.1e-8 <= x["value"] <= 9.9, WHY
+        assert 1.0 <= x["a"] <= 9.99 and abs(x["a"] * 100 - round(x["a"] * 100)) < 1e-9, WHY
+        assert abs(x["exp"]) <= 150 and x["value"] == float(f"{x['a']:.2f}e{x['exp']}") and x["value"] not in gen.SCALES, WHY
+        assert 0 < x["value"] < math.inf, WHY
 
 
 def test_draws_depend_only_on_the_seed_and_the_kind():
@@ -58,25 +59,50 @@ def test_draws_depend_only_on_the_seed_and_the_kind():
     assert gen.draw_coefficients(0, 7, "eps") == []
 
 
-def test_draws_are_not_a_grid_of_one_times_power_of_ten():
-    seen_a, seen_exp = set(), set()
-    for seed in range(1, 21):
+def test_draws_are_not_a_grid_and_N_has_no_upper_bound_in_practice():
+    seen_a, seen_exp, seen_scale = set(), set(), set()
+    for seed in range(1, 41):
         for x in gen.draw_coefficients(6, seed, "eps"):
             seen_a.add(x["a"])
             seen_exp.add(x["exp"])
-    assert len(seen_a) > 40 and seen_exp == {-8, -7, -6, -5, -4}          # A が 1.0 に偏らず、指数は 3 刻みに偏らない
+        seen_scale.update(x["exp"] for x in gen.draw_coefficients(6, seed, "scale"))
+    assert len(seen_a) > 100 and -3 in seen_exp, "A が 1 つの値に偏らず、N = 3 も選ばれる"
+    assert min(seen_exp) <= -20 and len({-e for e in seen_exp if e % 3}) >= 5, "N は 8 で切れず、3 刻みにも偏らない"
+    assert min(seen_scale) < 0 < max(seen_scale), "倍率の指数は 0 の両側に出る"
 
 
-def test_asking_for_more_values_than_exist_stops():
-    with pytest.raises(ValueError):
-        gen.draw_coefficients(len(gen.RANDOM_A) * len(gen.RANDOM_EPS_N) + 1, 1, "eps")
-    assert len(gen.draw_coefficients(len(gen.RANDOM_A) * len(gen.RANDOM_EPS_N), 1, "eps")) == 445
+def test_the_ends_of_A_and_N_can_be_drawn(monkeypatch):
+    monkeypatch.setattr(gen, "A_MIN", 999)
+    monkeypatch.setattr(gen, "P_STOP", 1.0)                                      # N = 3 で止まる
+    assert [(x["a"], x["exp"], x["value"]) for x in gen.draw_coefficients(1, 1, "eps")] == [(9.99, -3, 9.99e-3)]
+    monkeypatch.setattr(gen, "A_MIN", 100)
+    monkeypatch.setattr(gen, "A_MAX", 100)
+    monkeypatch.setattr(gen, "P_STOP", 0.0)                                      # 上限まで行く
+    (x,) = gen.draw_coefficients(1, 1, "eps")
+    assert (x["a"], x["exp"]) == (1.0, -gen.N_CAP) and x["value"] == float(f"1.00e-{gen.N_CAP}") > 0
+    (y,) = gen.draw_coefficients(1, 1, "scale")
+    assert y["a"] == 1.0 and abs(y["exp"]) == gen.E_CAP
+
+
+def test_the_caps_are_where_float_stops_carrying_three_digits():
+    assert float(f"1.00e-{gen.N_CAP}") >= sys.float_info.min > float(f"1.00e-{gen.N_CAP + 1}")      # N_CAP の次から A の 3 桁を保てない
+    sse = lambda e: 48 * (5 * 9.99 * 10.0 ** e) * (5 * 9.99 * 10.0 ** e)                   # 48 点・y の幅 5 に倍率 9.99×10^e をかけた 2 乗の和
+    assert sse(gen.E_CAP) < sys.float_info.max and sse(gen.E_CAP + 3) == math.inf
+
+
+def test_asking_for_more_values_than_can_be_drawn_stops(monkeypatch):
+    monkeypatch.setattr(gen, "A_MIN", 100)
+    monkeypatch.setattr(gen, "A_MAX", 100)
+    monkeypatch.setattr(gen, "N_CAP", 4)                                         # 選べるのは 1.00e-4 の 1 つだけ（1e-3 は決め打ち）
+    assert [x["value"] for x in gen.draw_coefficients(1, 1, "eps")] == [1e-4]
+    with pytest.raises(ValueError, match="2 個は選べない"):
+        gen.draw_coefficients(2, 1, "eps")
 
 
 def test_labels_show_A_times_power_of_ten_and_keep_the_registered_spelling():
-    assert gen.pow10_text(3.7e-5) == "3.7×10^-5" and gen.pow10_text(9.9e-4) == "9.9×10^-4" and gen.pow10_text(1.1e-8) == "1.1×10^-8"
-    assert gen.pow10_text(float("4.2e0")) == "4.2×10^0"
-    assert [gen.elabel(e) for e in gen.EPS] == ["0.001", "1e-06", "1e-09"] and gen.elabel(2.5e-7) == "2.5×10^-7"
+    assert gen.pow10_text(3.07e-5) == "3.07×10^-5" and gen.pow10_text(9.99e-4) == "9.99×10^-4" and gen.pow10_text(1.1e-8) == "1.10×10^-8"
+    assert gen.pow10_text(float("4.20e0")) == "4.20×10^0" and gen.pow10_text(float("1.00e-307")) == "1.00×10^-307"
+    assert [gen.elabel(e) for e in gen.EPS] == ["0.001", "1e-06", "1e-09"] and gen.elabel(2.57e-7) == "2.57×10^-7"
 
 
 # ---- 基準値のつなぎ方 --------------------------------------------------------------------------------------------------------
@@ -95,30 +121,46 @@ def test_thresholds_between_the_registered_points_follow_log10_eps():
     assert gen.threshold("c2", 2.5e-5) == pytest.approx(1e-4 * (0.02 / 1e-4) ** f)
     assert gen.threshold("c3", 2.5e-5) == pytest.approx(0.005 * (0.02 / 0.005) ** f)
     assert gen.threshold("c1", 2.5e-5) == pytest.approx(1.0 + (0.98 - 1.0) * f)
-    for e in (5e-7, 1.1e-8, 9.9e-7):                                              # 1e-6 以下は 1e-6 の値のまま
+    for e in (5e-7, 1.1e-8, 9.9e-7, 1e-9, 6.29e-11, 1e-100, 1e-307, 5e-324):          # 1e-6 以下は、どんな float でも 1e-6 の値のまま
         assert (gen.threshold("c1", e), gen.threshold("c2", e), gen.threshold("c3", e)) == (1.0, 1e-4, 0.005)
 
 
+def test_thresholds_above_1e_3_extend_the_same_line_up_to_one_hundredth():
+    f = (math.log10(5e-3) + 6) / 3                                                # 1.2333...（1e-3 で 1、1/100 で 4/3）
+    assert gen.threshold("c1", 5e-3) == pytest.approx(1.0 + (0.98 - 1.0) * f) and gen.threshold("c1", 5e-3) < 0.98
+    assert gen.threshold("c2", 5e-3) == pytest.approx(1e-4 * (0.02 / 1e-4) ** f) and gen.threshold("c2", 5e-3) > 0.02
+    assert gen.threshold("c3", 5e-3) == pytest.approx(0.005 * (0.02 / 0.005) ** f) and gen.threshold("c3", 5e-3) > 0.02
+    top = (gen.threshold("c1", 1e-2), gen.threshold("c2", 1e-2), gen.threshold("c3", 1e-2))                   # 1/100 ちょうども通る
+    assert top == pytest.approx((1.0 - 0.02 * 4 / 3, 1e-4 * 200 ** (4 / 3), 0.005 * 4 ** (4 / 3)))
+    ladder = [2e-3, 3e-3, 5e-3, 8e-3, 9.99e-3, 1e-2]
+    assert [gen.threshold("c1", e) for e in ladder] == sorted((gen.threshold("c1", e) for e in ladder), reverse=True)
+    assert [gen.threshold("c2", e) for e in ladder] == sorted(gen.threshold("c2", e) for e in ladder)
+
+
 @pytest.mark.parametrize("seed", SEEDS)
-def test_thresholds_of_drawn_epsilons_lie_between_the_registered_ones_and_loosen_with_epsilon(seed):
-    es = sorted(x["value"] for x in gen.draw_coefficients(20, seed, "eps"))
-    for kind, lo, hi in (("c1", 0.98, 1.0), ("c2", 1e-4, 0.02), ("c3", 0.005, 0.02)):
+def test_thresholds_of_drawn_epsilons_are_between_the_registered_ones_or_looser_above_1e_3(seed):
+    es = sorted([x["value"] for x in gen.draw_coefficients(20, seed, "eps")] + [2.5e-3, 1e-2])
+    for kind, lo, hi in (("c1", 1.0, 0.98), ("c2", 1e-4, 0.02), ("c3", 0.005, 0.02)):
         t = [gen.threshold(kind, e) for e in es]
-        assert all(min(lo, hi) <= x <= max(lo, hi) for x in t), (kind, WHY)
+        inside = [x for e, x in zip(es, t) if e <= 1e-3]
+        beyond = [x for e, x in zip(es, t) if e > 1e-3]
+        assert all(min(lo, hi) <= x <= max(lo, hi) for x in inside) and beyond, (kind, WHY)
+        assert all((x < hi) if kind == "c1" else (x > hi) for x in beyond), (kind, WHY)        # 1e-3 より大きい側は、1e-3 の基準より緩い
         assert t == sorted(t, reverse=(kind == "c1")), (kind, WHY)               # ε が大きいほど許す幅が広い（C1 は必要な割合が下がる）
 
 
-def test_thresholds_outside_the_registered_range_stop():
-    for bad in (2e-3, 1e-2, 1e-10, 0.0):
-        with pytest.raises(ValueError, match="（1e-9 < ε < 1e-3）の外"):
+def test_thresholds_outside_the_condition_stop():
+    for bad in (1.0000001e-2, 0.5, 1.0, 0.0, -1e-3):
+        with pytest.raises(ValueError, match="0 < ε ≤ 1/100"):
             gen.threshold("c3", bad)
+    gen.threshold("c3", 1e-2)                                                    # 1/100 ちょうどは通る
     with pytest.raises(ValueError):
-        gen.threshold("c2", 1e-9)                                                # 基準の ε は比べる相手で、判定しない
+        gen.threshold("c2", 2e-2)
 
 
 # ---- 判定に乱数の ε を入れる -------------------------------------------------------------------------------------------------
-def er(decay, period=1.0, coef=1.0, at_start=False):
-    return {"decay": decay, "period": period, "rmse": 0.0, "limit": 1.0, "settle_x": 1.0, "coefficient": coef, "at_start": at_start}
+def er(decay, period=1.0, coef=1.0, at_start=False, settle_x=1.0):
+    return {"decay": decay, "period": period, "rmse": 0.0, "limit": 1.0, "settle_x": settle_x, "coefficient": coef, "at_start": at_start}
 
 
 def unit(eps, boundary=True, overrides=None):
@@ -166,7 +208,7 @@ def test_c2_for_a_drawn_epsilon_is_inclusive_at_its_own_threshold_on_both_sides(
 def test_c1_for_a_drawn_epsilon_needs_the_interpolated_share_and_counts_a_lost_wave():
     eps = drawn_eps()
     for e in eps[3:]:
-        need = 1.0 + (0.98 - 1.0) * min(1.0, max(0.0, (math.log10(e) + 6) / 3))          # 登録の 2 点を log10(ε) でつないだ式（threshold とは別に書いた）
+        need = 1.0 + (0.98 - 1.0) * max(0.0, (math.log10(e) + 6) / 3)                  # 登録の 2 点を log10(ε) でつないだ式の延長（threshold とは別に書いた。1e-6 以下は 1e-6 の値）
         for lost in range(0, 4):
             rows = [unit(eps) for _ in range(100 - lost)] + [unit(eps, overrides={gen.ekey(e): dict(decay=1.0)}) for _ in range(lost)]
             c = one(judged(rows, eps), "C1", e)
@@ -177,12 +219,22 @@ def test_c1_for_a_drawn_epsilon_needs_the_interpolated_share_and_counts_a_lost_w
 def test_c3_for_a_drawn_epsilon_counts_changed_forms_against_the_interpolated_share():
     eps = drawn_eps()
     for e in eps[3:]:
-        f = min(1.0, max(0.0, (math.log10(e) + 6) / 3))
+        f = max(0.0, (math.log10(e) + 6) / 3)
         thr = 0.005 * (0.02 / 0.005) ** f
-        for changed in (0, 2, 5, 8, 20):
+        for changed in (0, 2, 5, 8, 20, 30, 40, 60):
             rows = [unit(eps, False) for _ in range(1000 - changed)] + [unit(eps, False, overrides={gen.ekey(e): dict(decay=2.0)}) for _ in range(changed)]
             c = one(judged(rows, eps), "C3", e)
             assert c["ok"] is ((changed / 1000) <= thr), (e, changed, thr, WHY)
+
+
+def test_c1_does_not_count_a_wave_whose_settle_position_left_the_float_range():
+    eps = drawn_eps(k=0) + (1.23e-12, 4.56e-3)
+    for e in eps[3:]:
+        lost = [dict(decay=e, settle_x=v) for v in (math.inf, math.inf, math.inf, math.nan, -math.inf)]
+        rows = [unit(eps) for _ in range(95)] + [unit(eps, overrides={gen.ekey(e): o}) for o in lost]
+        c = one(judged(rows, eps), "C1", e)
+        assert c["ok"] is False and c["threshold"] > 0.95, e                       # 5 本が「残った」に入らない（95/100 は、どの ε の基準にも足りない）
+        assert one(judged([unit(eps) for _ in range(100)], eps), "C1", e)["ok"] is True
 
 
 def test_synthetic_damped_c3_also_covers_the_drawn_epsilons():
@@ -223,7 +275,7 @@ def test_scale_summary_takes_the_scales_it_is_given_and_keeps_the_default():
     xs = [i / 23 for i in range(24)]
     wins = [{"key": "k", "start": "2020-01", "values": wave(1.0, p)} for p in (0.1, 0.7)]
     bases = gen.make_bases(sa, trial, xs)
-    assert list(gen.scale_summary(sa, bases, wins, (3.7e-5, 1.0))) == ["3.7e-05", "1"]
+    assert list(gen.scale_summary(sa, bases, wins, (3.07e-5, 1.0, 9.99e-120))) == ["3.07e-05", "1", "9.99e-120"]
     assert list(gen.scale_summary(sa, bases, wins)) == [f"{f:g}" for f in gen.SCALES]
 
 
@@ -293,7 +345,7 @@ def test_cli_random_scales_alone_add_the_scale_table_without_new_epsilons(tmp_pa
 
 def test_readme_states_the_random_ranges_and_the_threshold_rule():
     text = (DIR / "README.md").read_text(encoding="utf-8")
-    for needle in ("乱数の ε と倍率の確認", "A = 1.1〜9.9", "N = 4〜8", "e = -8〜0", "log10(ε)", "--random-eps", "--coef-seed",
-                   "tests/test_epsilon_generality_random.py", "EPS_COEF_SEED"):
+    for needle in ("乱数の ε と倍率の確認", "A = 1.00〜9.99", "0 < ε ≤ 1/100", "N = 3", "上限は置かない", "log10(ε)", "--random-eps", "--coef-seed",
+                   "tests/test_epsilon_generality_random.py", "EPS_COEF_SEED", "float"):
         assert needle in text, needle
-    assert (gen.RANDOM_A, gen.RANDOM_EPS_N, gen.RANDOM_SCALE_E) == (range(11, 100), range(4, 9), range(-8, 1))
+    assert (gen.A_MIN, gen.A_MAX, gen.N_MIN, gen.N_CAP, gen.E_CAP, gen.EPS_LIMIT, gen.P_STOP) == (100, 999, 3, 307, 150, 1e-2, 1 / 6)

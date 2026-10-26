@@ -8,6 +8,9 @@ README.md に事前に書いた基準（C1〜C5）を、(1) リポジトリに�
 使い方（リポジトリの直下から。polars が入った環境で）:
   uv run --locked python research/epsilon-generality/eps_generality.py \\
       --csv research/staple-price-survey/staple_survey_vertical.csv --outdir /tmp/eps-generality --repo .
+
+物理量の回（README.md の「物理量の確認」）は --profile physical-monthly / physical-daily（入力は fetch_physical.py の出力）。
+--profile を付けない主食価格の回の出力は、プロファイルを足す前とバイト単位で同じ。
 """
 from __future__ import annotations
 
@@ -20,6 +23,7 @@ import random
 import re
 import sys
 from contextlib import contextmanager
+from datetime import date
 from pathlib import Path
 
 # ---- 事前に決めた設定（README.md の「事前登録」と同じ。結果を見て変えない） --------------------------------------------
@@ -43,7 +47,15 @@ CRIT = {"c1_eps3": 0.98,    # C1: 境界の単位のうち ε の波が残る割
 BASEBALL = {"units": 168, "boundary": 24, "coefficient_range": [0.0774, 1.7637], "c3_eps3": "1 単位（2024年ソフトバンク）"}
 
 SOURCES = (("FPMA", "tezamo/FPMA"), ("WFP-yearly", "global-wfp-food-prices"), ("WFP", "wfp-food-prices"),
-           ("BLS", "bls.gov"), ("e-Stat", "e-stat.go.jp"))
+           ("BLS", "bls.gov"), ("e-Stat", "e-stat.go.jp"),
+           ("NOAA-weather", "data/weather.csv"), ("Scripps-CO2", "co2-concentration.csv"), ("global-temp", "datasets/global-temp"))
+# 物理量の回（README.md の「物理量の確認」）。基準は主食価格の回と同じ値で、合成の系列（C5）は入力によらないので省く。
+SCALES = (1e-6, 1e-3, 1.0, 1e3, 1e6)   # 報告だけ（基準なし）: y と τ に同じ倍率をかけて、選ばれる式が動くかを見る
+PROFILES = {
+    "staple": {"prefix": "staple_price:", "cadence": "month", "label": "主食価格の月次", "synth": True, "scales": False},
+    "physical-monthly": {"prefix": "physical:", "cadence": "month", "label": "物理量の月次", "synth": False, "scales": True},
+    "physical-daily": {"prefix": "physical:", "cadence": "day", "label": "物理量の日次", "synth": False, "scales": True},
+}
 SYNTH = (
     {"id": "undamped_p1", "kind": "undamped", "period": 1.0, "decay": 0.0},
     {"id": "undamped_p0.5", "kind": "undamped", "period": 0.5, "decay": 0.0},
@@ -84,26 +96,43 @@ def month_text(i: int) -> str:
     return f"{i // 12:04d}-{i % 12 + 1:02d}"
 
 
-def read_series(path: Path) -> dict:
-    """staple_price:* の行から {(国, 変数, 単位, 出どころ, 注): {月番号: 値}}。月は日にちを無視して数え、同じ月が 2 つあれば止まる。"""
+def day_index(d: str) -> int:
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", d):
+        raise ValueError(f"日付が YYYY-MM-DD でない: {d!r}")
+    return date.fromisoformat(d).toordinal()
+
+
+def day_text(i: int) -> str:
+    return date.fromordinal(i).isoformat()
+
+
+# 刻み: 窓の長さの単位の語、日付 → 通し番号、通し番号 → 窓の最初の日付の文字
+CADENCE = {"month": {"word": "月", "unit": "か月", "index": month_index, "text": month_text},
+           "day": {"word": "日", "unit": "日", "index": day_index, "text": day_text}}
+
+
+def read_series(path: Path, prefix: str = "staple_price:", cadence: str = "month") -> dict:
+    """prefix で始まる変数の行から {(国, 変数, 単位, 出どころ, 注): {通し番号: 値}}。
+    月の刻みでは日にちを無視して月を数え、同じ月（日の刻みなら同じ日）が 2 つあれば止まる。"""
+    c = CADENCE[cadence]
     out: dict = {}
     with path.open(encoding="utf-8", newline="") as f:
         for r in csv.DictReader(f):
-            if not r["variable"].startswith("staple_price:"):
+            if not r["variable"].startswith(prefix):
                 continue
             v = float(r["value"])
             if not math.isfinite(v):
                 raise ValueError(f"値が有限でない: {r}")
             s = out.setdefault((r["country"], r["variable"], r["unit"], r["source"], r["note"]), {})
-            mi = month_index(r["date"])
+            mi = c["index"](r["date"])
             if mi in s:
-                raise ValueError(f"同じ月が 2 つある: {(r['country'], r['variable'], r['date'])}")
+                raise ValueError(f"同じ{c['word']}が 2 つある: {(r['country'], r['variable'], r['date'])}")
             s[mi] = v
     return out
 
 
-def tile(series: dict, n: int) -> list[dict]:
-    """月が途切れずに続く区間ごとに、先頭から n か月ずつ、互いに重ならない窓を並べる（余りは使わない）。"""
+def tile(series: dict, n: int, text=month_text) -> list[dict]:
+    """通し番号が途切れずに続く区間ごとに、先頭から n 点ずつ、互いに重ならない窓を並べる（余りは使わない）。"""
     out = []
     for si, key in enumerate(sorted(series)):
         pts = sorted(series[key].items())
@@ -118,7 +147,7 @@ def tile(series: dict, n: int) -> list[dict]:
         for r in runs:
             for k in range(len(r) // n):
                 w = r[k * n:(k + 1) * n]
-                out.append({"key": key, "si": si, "start": month_text(w[0][0]), "values": [v for _, v in w]})
+                out.append({"key": key, "si": si, "start": text(w[0][0]), "values": [v for _, v in w]})
     return out
 
 
@@ -210,6 +239,35 @@ def tau_summary(sa, bases: dict, windows: list[dict]) -> dict:
                                "coefficient_min": coefs[0] if coefs else None, "coefficient_max": coefs[-1] if coefs else None,
                                "forms_same_as_first_tau": forms == ref_forms}
     return per_tau
+
+
+def scale_summary(sa, bases: dict, windows: list[dict]) -> dict:
+    """報告だけ（基準なし）: 値の単位を変えたとき（y と τ に同じ倍率をかける）、選ばれる式・ε の波・係数が動くか。倍率 1 が基準。
+    sakanalytics の絶対値の許容（EPS_WAVE_TIE など）は値の幅が 5 前後の尺度を前提にしているので、それが効く倍率を見る。"""
+    runs = {}
+    for f in SCALES:
+        rows = []
+        for w in windows:
+            nm = normalize(w["values"])
+            if nm is None:
+                continue
+            rows.append(fit_row(sa, bases, [y * f for y in nm[1]], PRIMARY_TAU * f))
+        runs[f] = rows
+    base, k = runs[1.0], ekey(1e-6)
+    out = {}
+    for f, rows in runs.items():
+        pairs = list(zip(rows, base))
+        both = [(r, b) for r, b in pairs if b["boundary"] and r["boundary"]]
+        devs = [abs(r[k]["coefficient"] - b[k]["coefficient"]) / abs(b[k]["coefficient"]) for r, b in both
+                if r[k]["coefficient"] is not None and b[k]["coefficient"] is not None]
+        out[f"{f:g}"] = {
+            "units": len(rows), "boundary": sum(r["boundary"] for r in rows),
+            "forms_changed": sum((r["decay"], r["period"]) != (b["decay"], b["period"]) for r, b in pairs),
+            "boundary_flag_changed": sum(r["boundary"] != b["boundary"] for r, b in pairs),
+            "eps_wave_kept": sum(1 for r, b in pairs if b["boundary"] and r[k]["decay"] == 1e-6),
+            "at_start_changed": sum(1 for r, b in both if r[k]["at_start"] != b[k]["at_start"]),
+            "coefficient_max_dev": max(devs) if devs else None, "coefficient_n": len(devs)}
+    return out
 
 
 # ---- 合成の系列（答えが分かっている）----------------------------------------------------------------------------------
@@ -361,13 +419,13 @@ def controls(sa, mod, bases_by_n: dict) -> dict:
     return {"eps0_basis_identical": same, "pass": all(same.values())}
 
 
-def compute(sa, mod, series: dict) -> dict:
-    windows_by_n = {n: tile(series, n) for n in LENGTHS}
+def compute(sa, mod, series: dict, profile: str = "staple") -> dict:
+    prof = PROFILES[profile]
+    windows_by_n = {n: tile(series, n, CADENCE[prof["cadence"]]["text"]) for n in LENGTHS}
     bases_by_n = {n: make_bases(sa, mod, [i / (n - 1) for i in range(n)]) for n in LENGTHS}
-    synth_bases = make_bases(sa, mod, [i / (SYNTH_POINTS - 1) for i in range(SYNTH_POINTS)])
     ctrl = controls(sa, mod, bases_by_n)
     real = real_rows(sa, bases_by_n, windows_by_n)
-    synth = synth_rows(sa, synth_bases)
+    synth = synth_rows(sa, make_bases(sa, mod, [i / (SYNTH_POINTS - 1) for i in range(SYNTH_POINTS)])) if prof["synth"] else {}
     sets = {}
     for n, d in real.items():
         st = stats(d["rows"])
@@ -377,11 +435,16 @@ def compute(sa, mod, series: dict) -> dict:
             by_src[g] = {"units": len(sub), "boundary": sum(r["boundary"] for r in sub)}
         sets[str(n)] = {"windows": d["windows"], "constant_windows": d["constant_windows"], "stats": st, "by_source": by_src,
                         "series": len({(r["country"], r["variable"], r["source"]) for r in d["rows"]})}
-    criteria = [c for n in LENGTHS for c in judge_real(sets[str(n)]["stats"], f"N={n}")] + judge_synth(synth)
-    return {"spec_version": SPEC_VERSION, "seed": SEED, "control": ctrl, "sets": sets, "criteria": criteria,
-            "synthetic_forms": reference_info(synth),
-            "tau": tau_summary(sa, bases_by_n[PRIMARY], windows_by_n[PRIMARY]),
-            "rows": {"real": {str(n): d["rows"] for n, d in real.items()}, "synthetic": synth}}
+    criteria = [c for n in LENGTHS for c in judge_real(sets[str(n)]["stats"], f"N={n}")] + (judge_synth(synth) if prof["synth"] else [])
+    res = {"spec_version": SPEC_VERSION, "seed": SEED, "control": ctrl, "sets": sets, "criteria": criteria,
+           "synthetic_forms": reference_info(synth),
+           "tau": tau_summary(sa, bases_by_n[PRIMARY], windows_by_n[PRIMARY])}
+    if profile != "staple":                                  # 主食価格の回の出力にはキーを足さない（バイト単位で同じ）
+        res["profile"] = profile
+    if prof["scales"]:
+        res["scales"] = scale_summary(sa, bases_by_n[PRIMARY], windows_by_n[PRIMARY])
+    res["rows"] = {"real": {str(n): d["rows"] for n, d in real.items()}, "synthetic": synth}
+    return res
 
 
 # ---- 書き出し ---------------------------------------------------------------------------------------------------------
@@ -398,19 +461,21 @@ def fmt(v) -> str:
 
 
 def render(res: dict) -> str:
+    prof = PROFILES[res.get("profile", "staple")]
+    uw = CADENCE[prof["cadence"]]["unit"]
     L = ["# ε の汎用性の確認: 結果（探索）", "",
          "基準は [README.md](../README.md) に事前に書いたもの。結果を見て変えていない。ε の値は暫定で、結論には使わない。", ""]
     ctrl = res["control"]
     L += ["## 対照（C4）", "", f"- ε=0 に差し替えた格子が今のコードの格子と一致: {ctrl['eps0_basis_identical']}（{'通った' if ctrl['pass'] else '**通らなかった**'}）",
           f"- 同じ入力で 2 回走らせた結果の一致: {'一致' if res.get('repeat_identical') else '**一致しなかった**'}", ""]
-    L += ["## 窓（主食価格の月次）", "",
+    L += [f"## 窓（{prof['label']}）", "",
           "| 窓の長さ | 窓の数 | 幅 0 で除いた窓 | 系列の数 | 境界（減衰 0）の単位 | 割合 |", "|---|---|---|---|---|---|"]
     for n in LENGTHS:
         s = res["sets"][str(n)]
         st = s["stats"]
-        L.append(f"| {n} か月 | {s['windows']} | {s['constant_windows']} | {s['series']} | {st['boundary']} / {st['units']} | {fmt(st['boundary_share'])} |")
+        L.append(f"| {n} {uw} | {s['windows']} | {s['constant_windows']} | {s['series']} | {st['boundary']} / {st['units']} | {fmt(st['boundary_share'])} |")
     L += ["", f"野球（2013〜2026年）の境界は {BASEBALL['boundary']} / {BASEBALL['units']}（約 0.143）。", "",
-          "出どころ別（24 か月）の境界の単位:", "", "| 出どころ | 単位 | 境界 |", "|---|---|---|"]
+          f"出どころ別（{PRIMARY} {uw}）の境界の単位:", "", "| 出どころ | 単位 | 境界 |", "|---|---|---|"]
     for g, d in res["sets"][str(PRIMARY)]["by_source"].items():
         L.append(f"| {g} | {d['units']} | {d['boundary']} |")
     L += ["", "## 基準ごとの結果", "", "| 基準 | 対象 | 内容 | 値 | 基準値 | 読み |", "|---|---|---|---|---|---|"]
@@ -421,15 +486,24 @@ def render(res: dict) -> str:
         st = res["sets"][str(n)]["stats"]
         rg = st["coefficient_range_eps6"]
         a = st["at_start"]
-        L.append(f"| {n} か月 | {fmt(rg[0]) + ' 〜 ' + fmt(rg[1]) if rg else '—'} | {a[ekey(1e-3)]} / {a[ekey(1e-6)]} / {a[ekey(1e-9)]} |")
+        L.append(f"| {n} {uw} | {fmt(rg[0]) + ' 〜 ' + fmt(rg[1]) if rg else '—'} | {a[ekey(1e-3)]} / {a[ekey(1e-6)]} / {a[ekey(1e-9)]} |")
     L += ["", f"野球の係数の範囲は {BASEBALL['coefficient_range'][0]}〜{BASEBALL['coefficient_range'][1]}（24 単位）。", "",
-          f"## τ（「決まった」とみなす幅）を変えたとき（{PRIMARY} か月、ε=1e-6）", "",
+          f"## τ（「決まった」とみなす幅）を変えたとき（{PRIMARY} {uw}、ε=1e-6）", "",
           "| τ | 境界の単位 | 始まりの時点で決まっていた | 係数の最小 | 係数の最大 | 式の選び方は最初の τ と同じ |", "|---|---|---|---|---|---|"]
     for t, d in res["tau"].items():
         L.append(f"| {t} | {d['boundary']} | {d['at_start']} | {fmt(d['coefficient_min'])} | {fmt(d['coefficient_max'])} | {d['forms_same_as_first_tau']} |")
-    L += ["", "## 合成の系列で今のコードが選んだ式（参考。基準ではない）", ""]
-    for sid, forms in res["synthetic_forms"].items():
-        L.append(f"- {sid}: " + "、".join(f"{k} × {n}" for k, n in list(forms.items())[:6]))
+    if res["synthetic_forms"]:
+        L += ["", "## 合成の系列で今のコードが選んだ式（参考。基準ではない）", ""]
+        for sid, forms in res["synthetic_forms"].items():
+            L.append(f"- {sid}: " + "、".join(f"{k} × {n}" for k, n in list(forms.items())[:6]))
+    if res.get("scales"):
+        L += ["", f"## 値の単位を変えたとき（{PRIMARY} {uw}、報告だけで基準はない。倍率 1 が基準）", "",
+              "y と τ に同じ倍率をかけて当てはめ直した。「式が変わった」は選ばれる（減衰, 周期）が倍率 1 と違う単位の数。", "",
+              "| 倍率 | 単位 | 境界 | 式が変わった | 境界かどうかが変わった | ε=1e-6 の波が残った（倍率 1 の境界のうち） | 始まりの時点で決まっていたかが変わった | 係数のずれの最大（相対）| 比べた単位 |",
+              "|---|---|---|---|---|---|---|---|---|"]
+        for f, d in res["scales"].items():
+            L.append(f"| {f} | {d['units']} | {d['boundary']} | {d['forms_changed']} | {d['boundary_flag_changed']} | {d['eps_wave_kept']} | "
+                     f"{d['at_start_changed']} | {fmt(d['coefficient_max_dev'])} | {d['coefficient_n']} |")
     judged = [c for c in res["criteria"] if c["ok"] is not None]
     failed = [c for c in judged if not c["ok"]]
     L += ["", "## まとめ", ""]
@@ -439,8 +513,9 @@ def render(res: dict) -> str:
         L.append(f"- 判定できた {len(judged)} 件のうち、満たさなかったのは {len(failed)} 件: "
                  + "、".join(f"{c['id']}（{c['set']}、{c['text'][:24]}…）" for c in failed))
     else:
+        target = prof["label"] + ("と合成の系列" if prof["synth"] else "")
         L.append(f"- 判定できた {len(judged)} 件のすべてを満たした（判定不能 {len(res['criteria']) - len(judged)} 件）。ε の扱いについて、"
-                 "主食価格の月次と合成の系列で**矛盾する材料はなかった**、までしか言えない（「確かめられた」とは書かない）。")
+                 f"{target}で**矛盾する材料はなかった**、までしか言えない（「確かめられた」とは書かない）。")
     return "\n".join(L) + "\n"
 
 
@@ -454,14 +529,16 @@ def jsonl(rows: list[dict]) -> str:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--csv", type=Path, required=True, help="staple_survey_vertical.csv")
+    ap.add_argument("--csv", type=Path, required=True, help="staple_survey_vertical.csv（物理量の回は fetch_physical.py の出力）")
+    ap.add_argument("--profile", choices=sorted(PROFILES), default="staple")
     ap.add_argument("--outdir", type=Path, required=True)
     ap.add_argument("--repo", type=Path, default=Path.cwd())
     args = ap.parse_args(argv)
     sa, mod = load_modules(args.repo)
-    series = read_series(args.csv)
-    res = compute(sa, mod, series)
-    again = compute(sa, mod, series)
+    prof = PROFILES[args.profile]
+    series = read_series(args.csv, prof["prefix"], prof["cadence"])
+    res = compute(sa, mod, series, args.profile)
+    again = compute(sa, mod, series, args.profile)
     res["repeat_identical"] = json.dumps(res, allow_nan=False) == json.dumps(again, allow_nan=False)
     if not res["control"]["pass"] or not res["repeat_identical"]:
         print("対照（C4）が通らない。結果は書かない:", res["control"], res["repeat_identical"], file=sys.stderr)

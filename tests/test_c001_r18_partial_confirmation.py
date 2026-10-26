@@ -154,3 +154,30 @@ def test_cli_needs_exactly_one_source_for_2026(tmp_path):
     assert r18.main([*base, "--games", "g", "--panel", "p"]) == 2
     assert r18.main([*base, "--panel", "p", "--out-panel-2026", str(tmp_path / "p.jsonl")]) == 2
     assert not (tmp_path / "a.md").exists() and not (tmp_path / "p.jsonl").exists()
+
+
+RESULTS = C001 / "exploratory" / "r18_partial_results"
+
+
+def run_saved(tmp_path):
+    out_md, out_json = tmp_path / "r.md", tmp_path / "r.json"
+    code = r18.main(["--panel", str(RESULTS / "r18_partial_panel_2026.jsonl"), "--config", str(C001 / "analysis.toml"),
+                     "--propositions", str(C001 / "propositions.toml"), "--committed", str(C001 / "outputs" / "season.jsonl"),
+                     "--out-md", str(out_md), "--out-json", str(out_json), "--repo", str(ROOT)])
+    return code, out_md, out_json
+
+
+def test_saved_inputs_reproduce_the_saved_results_exactly(tmp_path):
+    code, out_md, out_json = run_saved(tmp_path)
+    assert code == 0
+    assert out_md.read_bytes() == (RESULTS / "r18_partial_confirmation.md").read_bytes()
+    assert out_json.read_bytes() == (RESULTS / "r18_partial_confirmation.json").read_bytes()
+    saved = json.loads(out_json.read_text(encoding="utf-8"))["result"]
+    assert saved["P52"]["2026"]["判例"] == 0 and sum(saved["P52"]["2026"].values()) == 12
+
+
+def test_a_training_count_that_differs_from_the_registered_one_stops_before_writing(tmp_path, monkeypatch, capsys):
+    monkeypatch.setitem(r18.REGISTERED, "P52", dict(r18.REGISTERED["P52"], 判例=11))
+    code, out_md, out_json = run_saved(tmp_path)
+    assert code == 2 and not out_md.exists() and not out_json.exists()
+    assert "P52 判例: 手元 10 ≠ 登録 11" in capsys.readouterr().err

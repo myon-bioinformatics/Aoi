@@ -232,6 +232,28 @@ def test_committed_inputs_reproduce_existing_json_and_markdown_exactly(tmp_path)
     assert out_md.read_bytes() == (saved / "wave_eps_settle_coefficients.md").read_bytes()
 
 
+def test_2026_rows_added_to_the_committed_rows_reproduce_the_saved_coefficients_exactly(tmp_path):
+    """2013〜2025年の 156 単位の行に、2026年の 12 単位の行（wave_eps_2026_results）を足すと、保存済みの 168 単位の表が再現できる。"""
+    exploratory = ROOT / "cycles" / "c001-chunichi" / "exploratory"
+    saved = exploratory / "wave_eps_2026_results"
+    files = []
+    for old in sorted((exploratory / "wave_eps_trial_results").glob("wave_eps_rows_*.jsonl")):
+        new = saved / old.name
+        assert {k[0] for k in coef.load(new)[1]} == {2026} and len(coef.load(new)[1]) == 12
+        merged = tmp_path / old.name
+        merged.write_text(old.read_text(encoding="utf-8") + new.read_text(encoding="utf-8"), encoding="utf-8")
+        files.append(merged)
+    by_eps = dict(coef.load(path) for path in files)
+    assert len(files) == len(by_eps) == 3 and all(len(units) == 168 for units in by_eps.values())
+    out_json, out_md = tmp_path / "c.json", tmp_path / "c.md"
+    assert coef.main(["--rows", *map(str, files), "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
+    assert out_json.read_bytes() == (saved / "wave_eps_settle_coefficients.json").read_bytes()
+    assert out_md.read_bytes() == (saved / "wave_eps_settle_coefficients.md").read_bytes()
+    gate = json.loads((saved / "wave_eps_trial_gate.json").read_text(encoding="utf-8"))
+    assert gate["pass"] and gate["units"] == 168 and gate["rows_differ"] == 0 and gate["new_seasons"] == [2026] and gate["new_units"] == 12
+    assert json.loads((saved / "wave_eps_sensitivity_gate.json").read_text(encoding="utf-8")) == gate
+
+
 def input_files(tmp_path, units):
     return [str(write_rows(tmp_path / f"rows_{e:g}.jsonl", rows.values())) for e, rows in table(units).items()]
 

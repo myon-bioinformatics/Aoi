@@ -1,0 +1,13 @@
+{
+  "units": 168,
+  "not_in_committed": 0,
+  "rows_differ": 0,
+  "sims": 200,
+  "new_seasons": [
+    2026
+  ],
+  "new_units": 12,
+  "new_seasons_with_committed_rows": 0,
+  "new_seasons_without_units": [],
+  "pass": true
+}

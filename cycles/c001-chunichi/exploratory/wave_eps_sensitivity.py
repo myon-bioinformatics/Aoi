@@ -182,10 +182,8 @@ def analyze(sa, tg, sims: int, grid=GRID, min_games=MIN_GAMES, ends=ENDS, varian
             "grid": grid_report(run, *base, grid), "variants": variant_report(run, variants, variant_eps, base)}
 
 
-def gate(ctrl: dict, committed: dict, sims: int) -> dict:
-    missing = [k for k in ctrl if k not in committed]
-    bad = trial.diff_rows(ctrl, {k: committed[k] for k in ctrl if k in committed}) if not missing else {}
-    return {"units": len(ctrl), "not_in_committed": len(missing), "rows_differ": len(bad), "sims": sims, "pass": not missing and not bad}
+def gate(ctrl: dict, committed: dict, sims: int, new_seasons=()) -> dict:
+    return trial.gate(ctrl, committed, sims, new_seasons)
 
 
 def main(argv=None) -> int:
@@ -193,6 +191,8 @@ def main(argv=None) -> int:
     ap.add_argument("--games", type=Path, nargs="+", required=True)
     ap.add_argument("--config", type=Path, required=True)
     ap.add_argument("--committed", type=Path, required=True, help="確定済みの season.jsonl（基準の線の対照の相手）")
+    ap.add_argument("--new-seasons", type=int, nargs="*", default=[],
+                    help="確定済みの season.jsonl にまだ行がない新しい年（例: 2026）。その年の単位は対照から外して数だけ記録する")
     ap.add_argument("--outdir", type=Path, required=True)
     ap.add_argument("--repo", type=Path, default=Path.cwd())
     ap.add_argument("--sims", type=int, help="設定の sims と違う値で走らせる（対照が合わなくなるので、動作確認用）")
@@ -218,7 +218,7 @@ def main(argv=None) -> int:
         r = json.loads(line)
         committed[(r["season"], r["team"])] = r
     run = Runner(sa, tg, sims)
-    g = gate(run(*base), committed, sims)
+    g = gate(run(*base), committed, sims, args.new_seasons)
     (args.outdir / "wave_eps_sensitivity_gate.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
     if not g["pass"]:
         print(f"対照が合わない（{g}）。分析は走らせない。", file=sys.stderr)

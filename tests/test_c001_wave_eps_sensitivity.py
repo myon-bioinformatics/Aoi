@@ -176,3 +176,21 @@ def test_variant_report_counts_kept_added_and_dropped_units_against_the_base_lin
     # a is on the boundary of the base line only: 1 of 2 lines; b of both; membership counts the base boundary units
     members = {m["unit"]: (m["on_boundary_in"], m["present_in"]) for m in v["membership"]}
     assert members == {"1-a": (1, 2), "1-b": (2, 2)} and v["membership_histogram"] == {"1/2": 1, "2/2": 1}
+
+
+def test_cli_accepts_a_new_season_without_committed_rows_and_records_it(tmp_path):
+    _files(tmp_path)
+    empty = tmp_path / "empty_season.jsonl"
+    empty.write_text("", encoding="utf-8")
+    assert sens.main(_argv(tmp_path, empty) + ["--new-seasons", "2024"]) == 0
+    g = json.loads((tmp_path / "out" / "wave_eps_sensitivity_gate.json").read_text(encoding="utf-8"))
+    assert g["pass"] is True and g["new_seasons"] == [2024] and g["new_units"] == 2 and g["units"] == 2
+
+
+def test_cli_still_stops_when_the_named_new_season_has_committed_rows_or_the_season_is_not_in_the_games(tmp_path):
+    _, committed = _files(tmp_path)
+    assert sens.main(_argv(tmp_path, committed) + ["--new-seasons", "2024"]) == 2
+    g = json.loads((tmp_path / "out" / "wave_eps_sensitivity_gate.json").read_text(encoding="utf-8"))
+    assert g["pass"] is False and g["new_seasons_with_committed_rows"] == 2
+    assert not (tmp_path / "out" / "wave_eps_sensitivity.json").exists()
+    assert sens.main(_argv(tmp_path, committed) + ["--new-seasons", "2027"]) == 2

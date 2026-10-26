@@ -90,11 +90,32 @@ def diff_rows(a: dict, b: dict) -> dict:
     return out
 
 
+def gate(ctrl: dict, committed: dict, sims: int, new_seasons=()) -> dict:
+    """対照の関門。new_seasons の年は、確定済みの season.jsonl にまだ行がない新しい年。その年の単位だけは対照の相手がないので
+    比べず、数を記録する。ほかの年は今までどおり全部が確定済みと合う必要がある。新しい年に確定済みの行がある、
+    またはその年の単位が 1 つもない（年の指定まちがい）ときは、関門を通さない。"""
+    new = set(new_seasons)
+    fresh = [k for k in ctrl if k[0] in new]
+    old = {k: v for k, v in ctrl.items() if k[0] not in new}
+    missing = [k for k in old if k not in committed]
+    bad = diff_rows(old, {k: committed[k] for k in old if k in committed}) if not missing else {}
+    in_committed = sorted(k for k in committed if k[0] in new)
+    unknown = sorted(new - {k[0] for k in fresh})
+    g = {"units": len(ctrl), "not_in_committed": len(missing), "rows_differ": len(bad), "sims": sims}
+    if new:
+        g |= {"new_seasons": sorted(new), "new_units": len(fresh), "new_seasons_with_committed_rows": len(in_committed),
+              "new_seasons_without_units": unknown}
+    g["pass"] = not missing and not bad and not in_committed and not unknown
+    return g
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--games", type=Path, nargs="+", required=True)
     ap.add_argument("--config", type=Path, required=True)
     ap.add_argument("--committed", type=Path, required=True, help="確定済みの season.jsonl（対照の相手）")
+    ap.add_argument("--new-seasons", type=int, nargs="*", default=[],
+                    help="確定済みの season.jsonl にまだ行がない新しい年（例: 2026）。その年の単位は対照から外して数だけ記録する")
     ap.add_argument("--eps", type=float, nargs="+", default=[1e-3, 1e-6, 1e-9], help="暫定の ε（記録する。結論には使わない）")
     ap.add_argument("--outdir", type=Path, required=True)
     ap.add_argument("--repo", type=Path, default=Path.cwd())
@@ -120,13 +141,10 @@ def main(argv=None) -> int:
 
     print("対照（今のコード）", file=sys.stderr)
     ctrl = trajectory(sa, tg, sa.wave_basis, sims, min_games, end)
-    missing = [k for k in ctrl if k not in committed]
-    bad = diff_rows(ctrl, {k: committed[k] for k in ctrl if k in committed}) if not missing else {}
-    gate = {"units": len(ctrl), "not_in_committed": len(missing), "rows_differ": len(bad), "sims": sims,
-            "pass": not missing and not bad}
-    (args.outdir / "wave_eps_trial_gate.json").write_text(json.dumps(gate, ensure_ascii=False, indent=2), encoding="utf-8")
-    if not gate["pass"]:
-        print(f"対照が合わない（{gate}）。試しは走らせない。", file=sys.stderr)
+    g = gate(ctrl, committed, sims, args.new_seasons)
+    (args.outdir / "wave_eps_trial_gate.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
+    if not g["pass"]:
+        print(f"対照が合わない（{g}）。試しは走らせない。", file=sys.stderr)
         return 2
 
     zero = sorted(k for k, r in ctrl.items() if r["wave_decay"] == 0.0)
@@ -137,9 +155,10 @@ def main(argv=None) -> int:
 
     lines = [f"# 波の減衰 0 → ε の試し（探索）", "",
              "確定した出力は変更していない。ε の値は暫定の置き場所で、結論には使わない。扱いは今後決める。", "",
-             f"- 単位数: {len(ctrl)}、sims: {sims}、対照（今のコード vs 確定済み season.jsonl）: 一致",
+             f"- 単位数: {len(ctrl)}、sims: {sims}、対照（今のコード vs 確定済み season.jsonl）: 一致"
+             + (f"（{', '.join(map(str, g['new_seasons']))} 年の {g['new_units']} 単位は確定済みの行がなく、対照の外）" if g.get('new_seasons') else ''),
              f"- 減衰 0 の単位: {len(zero)}（確定済みで wave_limit_rank が空欄の単位: "
-             f"{sum(committed[k]['wave_limit_rank'] is None for k in zero)}）",
+             f"{sum(ctrl[k]['wave_limit_rank'] is None for k in zero)}）",
              f"- 暫定の ε: {', '.join(f'{e:g}' for e in args.eps)}", ""]
     lines += ["## 減衰 0 だった単位で、指標が戻るか", "",
               "| ε | 選ばれた式がまだ ε の波 | wave_limit_rank が出る | wave_settle_x が出る | 周期・減衰が別の式に変わった（全単位） | 対照と値が変わった単位（全体） |",

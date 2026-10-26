@@ -248,3 +248,26 @@ def test_readme_describes_the_options_and_points_to_the_tests():
     text = (DIR / "README.md").read_text(encoding="utf-8")
     for needle in ("--eps-range MODE LO HI", "--scale-range MODE LO HI", "**inside**", "**above**", "**below**", "tests/test_epsilon_generality_region.py", "2.22×10^-3", "範囲の既定値は置かない"):
         assert needle in text, needle
+
+
+REGISTERED_4 = {
+    "inside": [4.91e-4, 3.05e-5, 1.65e-5, 3.30e-6, 3.71e-7, 9.99e-8, 8.43e-8, 2.13e-8, 1.88e-8, 3.78e-12],
+    "above": [9.66e-3, 7.79e-3, 6.14e-3, 5.01e-3, 4.94e-3, 4.53e-3, 4.28e-3, 3.36e-3, 3.11e-3, 2.88e-3],
+    "below": [4.91e-13, 3.05e-15, 1.65e-15, 3.30e-16, 3.71e-18, 9.99e-19, 8.43e-19, 2.13e-19, 1.88e-19, 3.78e-29],
+}
+
+
+@pytest.mark.parametrize("mode", gen.MODES)
+def test_fourth_round_values_come_from_the_seed_and_the_rule_and_are_listed_in_the_readme(mode):
+    d = gen.draw_coefficients(10, 20261026, "eps", gen.make_region("eps", mode, LO, HI))
+    assert [x["value"] for x in d] == REGISTERED_4[mode]
+    text = (DIR / "README.md").read_text(encoding="utf-8")
+    assert f"  - {mode}: " + ", ".join(gen.pow10_text(v) for v in REGISTERED_4[mode]) in text
+    assert all(0 < v <= 1e-2 for v in REGISTERED_4[mode])
+
+
+def test_fourth_round_registration_names_the_range_the_seed_and_the_counts():
+    text = (DIR / "README.md").read_text(encoding="utf-8")
+    sec = text[text.index("## 乱数の ε を範囲から選ぶ確認（第 4 回）"):]
+    for needle in ("LO = 8.14×10^-13、HI = 2.22×10^-3", "種: `20261026`", "それぞれ ε を 10 個", "--eps-range <inside|above|below> 8.14e-13 2.22e-3 --coef-seed 20261026", "3 入力の合計 280 件（主食価格 100、物理量の月次 90、日次 90）", "予想（結果を見る前。判定には使わない）"):
+        assert needle in sec, needle

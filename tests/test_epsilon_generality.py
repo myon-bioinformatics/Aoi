@@ -472,3 +472,28 @@ def test_synthetic_noise_has_the_registered_size():
     noise_spec = {s["id"]: s for s in gen.SYNTH}["noise"]
     vals = gen.synth_series(noise_spec, 0)
     assert max(vals) - min(vals) > 1.0
+
+
+def test_compute_counts_five_field_identities_not_reporting_groups(tmp_path, monkeypatch):
+    base = ("AAA", "staple_price:rice", "USD per kg", "https://github.com/tezamo/FPMA (a)", "market=a")
+    keys = [base, base[:2] + ("USD per tonne",) + base[3:],
+            base[:3] + ("https://github.com/tezamo/FPMA (b)", base[4]),
+            base[:4] + ("market=b",)]
+    # An earlier constant series leaves a gap in indices; another has no full window.
+    constant = ("000",) + base[1:]
+    short = ("ZZZ",) + base[1:]
+    rows = [r for key in reversed(keys) for r in month_rows(96, key=key)]
+    rows += month_rows(96, key=constant, values=[1.0] * 96)
+    rows += month_rows(11, key=short)
+    series = gen.read_series(write_csv(tmp_path / "identities.csv", rows))
+    assert set(series) == set(keys + [constant, short])
+    monkeypatch.setattr(gen, "SYNTH", ())
+    result = gen.compute(sa, trial, series)
+    for n in gen.LENGTHS:
+        fitted = result["rows"]["real"][str(n)]
+        assert {r["series_index"] for r in fitted} == {1, 2, 3, 4}
+        assert len({(r["country"], r["variable"], r["source"]) for r in fitted}) == 1
+        assert result["sets"][str(n)]["series"] == 4
+        assert result["sets"][str(n)]["constant_windows"] == 96 // n
+        for window in gen.tile(series, n):
+            assert sorted(series)[window["si"]] == window["key"]

@@ -587,7 +587,9 @@ def compute(sa, mod, series: dict, profile: str = "staple", draws: dict | None =
             sub = [r for r in d["rows"] if r["source"] == g]
             by_src[g] = {"units": len(sub), "boundary": sum(r["boundary"] for r in sub)}
         sets[str(n)] = {"windows": d["windows"], "constant_windows": d["constant_windows"], "stats": st, "by_source": by_src,
-                        "series": len({(r["country"], r["variable"], r["source"]) for r in d["rows"]})}
+                        # tile() assigns one index per sorted five-field input identity;
+                        # source in result rows is only a reporting group.
+                        "series": len({r["series_index"] for r in d["rows"]})}
     criteria = [c for n in LENGTHS for c in judge_real(sets[str(n)]["stats"], f"N={n}", eps)] + (judge_synth(synth, eps) if prof["synth"] else [])
     res = {"spec_version": SPEC_VERSION, "seed": SEED, "control": ctrl, "sets": sets, "criteria": criteria,
            "synthetic_forms": reference_info(synth),

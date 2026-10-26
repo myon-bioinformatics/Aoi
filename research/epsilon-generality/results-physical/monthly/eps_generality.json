@@ -79,7 +79,7 @@
      "boundary": 83
     }
    },
-   "series": 3
+   "series": 4
   },
   "24": {
    "windows": 221,
@@ -149,7 +149,7 @@
      "boundary": 50
     }
    },
-   "series": 3
+   "series": 4
   },
   "48": {
    "windows": 110,
@@ -219,7 +219,7 @@
      "boundary": 16
     }
    },
-   "series": 3
+   "series": 4
   }
  },
  "criteria": [

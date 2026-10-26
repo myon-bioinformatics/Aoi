@@ -11,6 +11,10 @@ README.md に事前に書いた基準（C1〜C5）を、(1) リポジトリに�
 
 物理量の回（README.md の「物理量の確認」）は --profile physical-monthly / physical-daily（入力は fetch_physical.py の出力）。
 --profile を付けない主食価格の回の出力は、プロファイルを足す前とバイト単位で同じ。
+
+乱数の ε と倍率（README.md の「乱数の ε と倍率の確認」）: --random-eps K / --random-scales K を付けると、決め打ちの ε（1e-3, 1e-6, 1e-9）と倍率に、
+A×10^-N（ε）・A×10^e（倍率）の A と指数を乱数で選んだ値を K 個ずつ足す。--coef-seed に整数か auto を渡す（省略は SEED）。選んだ値と種は結果に書く。
+これらを付けない出力は、足す前とバイト単位で同じ。
 """
 from __future__ import annotations
 
@@ -21,6 +25,7 @@ import json
 import math
 import random
 import re
+import secrets
 import sys
 from contextlib import contextmanager
 from datetime import date
@@ -70,6 +75,49 @@ SYNTH = (
 
 def ekey(e: float) -> str:
     return f"e{e:g}"
+
+
+# ---- 乱数の ε と倍率（README.md の「乱数の ε と倍率の確認」。範囲と基準値の置き方は走らせる前に決めた）-----------------------
+REF_EPS = EPS[-1]                   # C2 の基準。乱数の ε を足しても変えない
+RANDOM_A = range(11, 100)           # A = 1.1〜9.9（1.0 は人間の都合で選ぶ値なので外す）
+RANDOM_EPS_N = range(4, 9)          # ε = A × 10^-N, N = 4〜8（1e-9 と 1e-3 の間に収まる）
+RANDOM_SCALE_E = range(-8, 1)       # 倍率 = A × 10^e, e = -8〜0
+ANCHOR_CRIT = {"c1": {1e-3: CRIT["c1_eps3"], 1e-6: 1.0, 1e-9: 1.0},          # 決め打ちの ε の基準値（登録した値そのまま）
+               "c2": {1e-3: CRIT["c2_eps3"], 1e-6: CRIT["c2_eps6"]},
+               "c3": {1e-3: CRIT["c3_eps3"], 1e-6: CRIT["c3_eps6"], 1e-9: CRIT["c3_eps9"]}}
+
+
+def threshold(kind: str, e: float) -> float:
+    """ε の基準値。決め打ちの ε は登録した値そのまま。それ以外（1e-9 < ε < 1e-3）は 1e-6 と 1e-3 の間を log10(ε) でつなぐ
+    （C1 は割合の直線、C2・C3 は値の対数の直線）。ε <= 1e-6 は 1e-6 の値のまま。"""
+    t = ANCHOR_CRIT[kind]
+    if e in t:
+        return t[e]
+    if not REF_EPS < e < 1e-3:
+        raise ValueError(f"基準値を置いた範囲（1e-9 < ε < 1e-3）の外: {e!r}")
+    if e <= 1e-6:
+        return t[1e-6]
+    f = (math.log10(e) + 6.0) / 3.0                      # 1e-6 で 0、1e-3 で 1
+    lo, hi = t[1e-6], t[1e-3]
+    return lo + (hi - lo) * f if kind == "c1" else lo * (hi / lo) ** f
+
+
+def pow10_text(x: float) -> str:
+    """3.7e-05 → 3.7×10^-5"""
+    m, ex = f"{x:.1e}".split("e")
+    return f"{m}×10^{int(ex)}"
+
+
+def elabel(e: float) -> str:
+    return f"{e:g}" if e in EPS else pow10_text(e)
+
+
+def draw_coefficients(count: int, seed, kind: str) -> list[dict]:
+    """A×10^x の A（1.1〜9.9）と指数 x を乱数で count 個選ぶ（重複なし）。kind は "eps"（x = -N, N = 4〜8）か "scale"（x = -8〜0）。
+    {"a", "exp", "value"} のリストを値の大きい順で返す。同じ種なら同じ値。"""
+    exps = [-n for n in RANDOM_EPS_N] if kind == "eps" else list(RANDOM_SCALE_E)
+    picks = random.Random(f"{seed}/{kind}").sample([(a, x) for a in RANDOM_A for x in exps], count)
+    return sorted(({"a": a / 10, "exp": x, "value": float(f"{a // 10}.{a % 10}e{x}")} for a, x in picks), key=lambda d: -d["value"])
 
 
 def load_modules(repo: Path):
@@ -178,9 +226,9 @@ def settle_tolerance(sa, tau: float):
         sa.WAVE_SETTLE = old
 
 
-def make_bases(sa, mod, xs: list[float]) -> dict:
+def make_bases(sa, mod, xs: list[float], eps: tuple = EPS) -> dict:
     """{None: 今のコードの格子, ε: 減衰 0 を ε に差し替えた格子}。x が同じ窓では格子も同じなので、長さごとに 1 回作る。"""
-    return {None: sa.wave_basis(xs)} | {e: mod.make_wave_basis(sa, e)(xs) for e in EPS}
+    return {None: sa.wave_basis(xs)} | {e: mod.make_wave_basis(sa, e)(xs) for e in eps}
 
 
 def fit_row(sa, bases: dict, ys: list[float], tau: float) -> dict:
@@ -189,7 +237,7 @@ def fit_row(sa, bases: dict, ys: list[float], tau: float) -> dict:
     u = res[None]
     row = {"decay": u["decay"], "period": u["period"], "rmse": u["rmse"], "limit": u["limit"], "settle_x": u["settle_x"],
            "boundary": u["decay"] == 0.0}
-    for e in EPS:
+    for e in (k for k in bases if k is not None):                # 格子を作った ε すべて（乱数の ε を含む）
         f = res[e]
         at_start = f["settle_x"] == 0.0
         coef = None if f["settle_x"] is None or at_start else f["settle_x"] * e      # ε = 1×10^-n のとき 位置 = 係数 × 10^n
@@ -225,7 +273,7 @@ def tau_summary(sa, bases: dict, windows: list[dict]) -> dict:
             if nm is None:
                 continue
             r = fit_row(sa, bases, nm[1], tau)
-            forms.append((r["decay"], r["period"], r[ekey(EPS[-1])]["decay"], r[ekey(EPS[-1])]["period"]))
+            forms.append((r["decay"], r["period"], r[ekey(REF_EPS)]["decay"], r[ekey(REF_EPS)]["period"]))
             if r["boundary"]:
                 boundary += 1
                 c = r[ekey(1e-6)]
@@ -241,11 +289,12 @@ def tau_summary(sa, bases: dict, windows: list[dict]) -> dict:
     return per_tau
 
 
-def scale_summary(sa, bases: dict, windows: list[dict]) -> dict:
+def scale_summary(sa, bases: dict, windows: list[dict], scales=None) -> dict:
     """報告だけ（基準なし）: 値の単位を変えたとき（y と τ に同じ倍率をかける）、選ばれる式・ε の波・係数が動くか。倍率 1 が基準。
-    sakanalytics の絶対値の許容（EPS_WAVE_TIE など）は値の幅が 5 前後の尺度を前提にしているので、それが効く倍率を見る。"""
+    sakanalytics の絶対値の許容（EPS_WAVE_TIE など）は値の幅が 5 前後の尺度を前提にしているので、それが効く倍率を見る。
+    scales を渡さなければ SCALES（乱数の倍率を足すときは、倍率 1 を含む値の列を渡す）。"""
     runs = {}
-    for f in SCALES:
+    for f in (SCALES if scales is None else scales):
         rows = []
         for w in windows:
             nm = normalize(w["values"])
@@ -303,13 +352,13 @@ def synth_rows(sa, bases: dict, count: int = N_SYNTH) -> dict:
 
 
 # ---- 基準 -------------------------------------------------------------------------------------------------------------
-def stats(rows: list[dict]) -> dict:
+def stats(rows: list[dict], eps: tuple = EPS) -> dict:
     B = [r for r in rows if r["boundary"]]
     NB = [r for r in rows if not r["boundary"]]
-    ref = ekey(EPS[-1])
+    ref = ekey(REF_EPS)
     out = {"units": len(rows), "boundary": len(B), "nonboundary": len(NB),
            "boundary_share": len(B) / len(rows) if rows else None, "keep": {}, "c2": {}, "c3": {}, "at_start": {}}
-    for e in EPS:
+    for e in eps:
         k = ekey(e)
         kept = [r for r in B if r[k]["decay"] == e and r[k]["period"] is not None and r[k]["limit"] is not None
                 and r[k]["settle_x"] is not None]
@@ -322,7 +371,7 @@ def stats(rows: list[dict]) -> dict:
         devs, mism = [], 0
         for r in B:
             a, b = r[k], r[ref]
-            if a["decay"] != e or b["decay"] != EPS[-1]:
+            if a["decay"] != e or b["decay"] != REF_EPS:
                 continue                                  # ε の波が残らなかった単位は C1 で数える
             if a["at_start"] != b["at_start"]:
                 mism += 1
@@ -340,31 +389,32 @@ def _v(cid: str, tag: str, text: str, value, thr, op: str, ok) -> dict:
     return {"id": cid, "set": tag, "text": text, "value": value, "threshold": thr, "op": op, "ok": ok}
 
 
-def judge_real(st: dict, tag: str) -> list[dict]:
-    """窓（実データ）の C1〜C3。集合が MIN_UNITS 未満なら判定不能（ok = None）。"""
+def judge_real(st: dict, tag: str, eps: tuple = EPS) -> list[dict]:
+    """窓（実データ）の C1〜C3。集合が MIN_UNITS 未満なら判定不能（ok = None）。基準値は threshold()（決め打ちの ε は登録した値）。"""
     out = []
     enough_b, enough_nb = st["boundary"] >= MIN_UNITS, st["nonboundary"] >= MIN_UNITS
-    for e in EPS:
-        k = ekey(e)
-        kp = st["keep"][k]
+    for e in eps:
+        kp = st["keep"][ekey(e)]
         share = kp["kept"] / kp["of"] if kp["of"] else None
-        need = CRIT["c1_eps3"] if e == 1e-3 else 1.0
-        out.append(_v("C1", tag, f"境界の単位で ε={e:g} の波が残る割合", share, need, ">=", (share >= need) if enough_b else None))
-    for e, thr in ((1e-3, CRIT["c2_eps3"]), (1e-6, CRIT["c2_eps6"])):
+        need = threshold("c1", e)
+        out.append(_v("C1", tag, f"境界の単位で ε={elabel(e)} の波が残る割合", share, need, ">=", (share >= need) if enough_b else None))
+    for e in (e for e in eps if e != REF_EPS):
+        thr = threshold("c2", e)
         c2 = st["c2"][ekey(e)]
         ok = None
         if enough_b and c2["max"] is not None:
             ok = c2["max"] <= thr and c2["mismatch"] == 0
-        out.append(_v("C2", tag, f"係数のずれ（ε={e:g} と 1e-9、相対）の最大。比べられない単位 {c2['mismatch']}", c2["max"], thr, "<=", ok))
-    for e, key in ((1e-3, "c3_eps3"), (1e-6, "c3_eps6"), (1e-9, "c3_eps9")):
+        out.append(_v("C2", tag, f"係数のずれ（ε={elabel(e)} と 1e-9、相対）の最大。比べられない単位 {c2['mismatch']}", c2["max"], thr, "<=", ok))
+    for e in eps:
+        thr = threshold("c3", e)
         c3 = st["c3"][ekey(e)]
         share = c3["changed"] / c3["of"] if c3["of"] else None
-        out.append(_v("C3", tag, f"境界でない単位で ε={e:g} のとき選ばれる式が変わる割合", share, CRIT[key], "<=",
-                      (share <= CRIT[key]) if enough_nb else None))
+        out.append(_v("C3", tag, f"境界でない単位で ε={elabel(e)} のとき選ばれる式が変わる割合", share, thr, "<=",
+                      (share <= thr) if enough_nb else None))
     return out
 
 
-def judge_synth(rows_by_spec: dict) -> list[dict]:
+def judge_synth(rows_by_spec: dict, eps: tuple = EPS) -> list[dict]:
     out = []
     und = [r for sid, rows in rows_by_spec.items() if sid.startswith("undamped") for r in rows]
     bnd = [r for r in und if r["boundary"]]
@@ -383,12 +433,12 @@ def judge_synth(rows_by_spec: dict) -> list[dict]:
                   worst, CRIT["c5_amp"], "<=", (not unsettled and max(devs) <= CRIT["c5_amp"]) if (devs or unsettled) else None))
     dmp = [r for sid, rows in rows_by_spec.items() if sid.startswith("damped") for r in rows]
     nb = [r for r in dmp if not r["boundary"]]
-    for e, key in ((1e-3, "c3_eps3"), (1e-6, "c3_eps6"), (1e-9, "c3_eps9")):
-        k = ekey(e)
+    for e in eps:
+        k, thr = ekey(e), threshold("c3", e)
         chg = sum(1 for r in nb if (r[k]["decay"], r[k]["period"]) != (r["decay"], r["period"]))
         share = chg / len(nb) if nb else None
-        out.append(_v("C3", "合成・減衰する", f"減衰する波の系列（境界でないもの）で ε={e:g} のとき選ばれる式が変わる割合", share,
-                      CRIT[key], "<=", (share <= CRIT[key]) if len(nb) >= MIN_UNITS else None))
+        out.append(_v("C3", "合成・減衰する", f"減衰する波の系列（境界でないもの）で ε={elabel(e)} のとき選ばれる式が変わる割合", share,
+                      thr, "<=", (share <= thr) if len(nb) >= MIN_UNITS else None))
     return out
 
 
@@ -419,30 +469,37 @@ def controls(sa, mod, bases_by_n: dict) -> dict:
     return {"eps0_basis_identical": same, "pass": all(same.values())}
 
 
-def compute(sa, mod, series: dict, profile: str = "staple") -> dict:
+def compute(sa, mod, series: dict, profile: str = "staple", draws: dict | None = None) -> dict:
+    """draws = {"seed", "eps": [...], "scales": [...]}（draw_coefficients の結果）を渡すと、決め打ちの ε・倍率に乱数の値を足す。渡さなければ足す前と同じ。"""
     prof = PROFILES[profile]
+    eps = EPS + tuple(d["value"] for d in (draws or {}).get("eps", ()))
+    scales = None
+    if (draws or {}).get("scales"):
+        scales = tuple(sorted(set(SCALES) | {d["value"] for d in draws["scales"]}))
     windows_by_n = {n: tile(series, n, CADENCE[prof["cadence"]]["text"]) for n in LENGTHS}
-    bases_by_n = {n: make_bases(sa, mod, [i / (n - 1) for i in range(n)]) for n in LENGTHS}
+    bases_by_n = {n: make_bases(sa, mod, [i / (n - 1) for i in range(n)], eps) for n in LENGTHS}
     ctrl = controls(sa, mod, bases_by_n)
     real = real_rows(sa, bases_by_n, windows_by_n)
-    synth = synth_rows(sa, make_bases(sa, mod, [i / (SYNTH_POINTS - 1) for i in range(SYNTH_POINTS)])) if prof["synth"] else {}
+    synth = synth_rows(sa, make_bases(sa, mod, [i / (SYNTH_POINTS - 1) for i in range(SYNTH_POINTS)], eps)) if prof["synth"] else {}
     sets = {}
     for n, d in real.items():
-        st = stats(d["rows"])
+        st = stats(d["rows"], eps)
         by_src = {}
         for g in sorted({r["source"] for r in d["rows"]}):
             sub = [r for r in d["rows"] if r["source"] == g]
             by_src[g] = {"units": len(sub), "boundary": sum(r["boundary"] for r in sub)}
         sets[str(n)] = {"windows": d["windows"], "constant_windows": d["constant_windows"], "stats": st, "by_source": by_src,
                         "series": len({(r["country"], r["variable"], r["source"]) for r in d["rows"]})}
-    criteria = [c for n in LENGTHS for c in judge_real(sets[str(n)]["stats"], f"N={n}")] + (judge_synth(synth) if prof["synth"] else [])
+    criteria = [c for n in LENGTHS for c in judge_real(sets[str(n)]["stats"], f"N={n}", eps)] + (judge_synth(synth, eps) if prof["synth"] else [])
     res = {"spec_version": SPEC_VERSION, "seed": SEED, "control": ctrl, "sets": sets, "criteria": criteria,
            "synthetic_forms": reference_info(synth),
            "tau": tau_summary(sa, bases_by_n[PRIMARY], windows_by_n[PRIMARY])}
     if profile != "staple":                                  # 主食価格の回の出力にはキーを足さない（バイト単位で同じ）
         res["profile"] = profile
-    if prof["scales"]:
-        res["scales"] = scale_summary(sa, bases_by_n[PRIMARY], windows_by_n[PRIMARY])
+    if draws:
+        res["random_coefficients"] = draws
+    if prof["scales"] or scales:
+        res["scales"] = scale_summary(sa, bases_by_n[PRIMARY], windows_by_n[PRIMARY], scales)
     res["rows"] = {"real": {str(n): d["rows"] for n, d in real.items()}, "synthetic": synth}
     return res
 
@@ -481,6 +538,13 @@ def render(res: dict) -> str:
     L += ["", "## 基準ごとの結果", "", "| 基準 | 対象 | 内容 | 値 | 基準値 | 読み |", "|---|---|---|---|---|---|"]
     for c in res["criteria"]:
         L.append(f"| {c['id']} | {c['set']} | {c['text']} | {fmt(c['value'])} | {c['op']} {fmt(c['threshold'])} | {verdict_text(c['ok'])} |")
+    rc = res.get("random_coefficients")
+    if rc:
+        L += ["", "## 乱数で選んだ ε と倍率", "",
+              f"種 {rc['seed']}。ε = A×10^-N（A = 1.1〜9.9、N = 4〜8）と倍率 = A×10^e（e = -8〜0）の A と指数を乱数で選び、決め打ちの値に足した。"
+              "乱数の ε の基準値は、登録した 1e-3 と 1e-6 の基準値の間を log10(ε) でつないだもの（1e-6 以下は 1e-6 の値）。", "",
+              "- ε: " + (", ".join(pow10_text(d["value"]) for d in rc["eps"]) or "なし"),
+              "- 倍率: " + (", ".join(pow10_text(d["value"]) for d in rc["scales"]) or "なし")]
     L += ["", "## 係数の範囲（ε=1e-6、境界の単位）", "", "| 窓の長さ | 係数の最小〜最大 | ε で位置が決まった単位のうち「始まりの時点で決まっていた」数（1e-3 / 1e-6 / 1e-9）|", "|---|---|---|"]
     for n in LENGTHS:
         st = res["sets"][str(n)]["stats"]
@@ -502,7 +566,7 @@ def render(res: dict) -> str:
               "| 倍率 | 単位 | 境界 | 式が変わった | 境界かどうかが変わった | ε=1e-6 の波が残った（倍率 1 の境界のうち） | 始まりの時点で決まっていたかが変わった | 係数のずれの最大（相対）| 比べた単位 |",
               "|---|---|---|---|---|---|---|---|---|"]
         for f, d in res["scales"].items():
-            L.append(f"| {f} | {d['units']} | {d['boundary']} | {d['forms_changed']} | {d['boundary_flag_changed']} | {d['eps_wave_kept']} | "
+            L.append(f"| {f if float(f) in SCALES else pow10_text(float(f))} | {d['units']} | {d['boundary']} | {d['forms_changed']} | {d['boundary_flag_changed']} | {d['eps_wave_kept']} | "
                      f"{d['at_start_changed']} | {fmt(d['coefficient_max_dev'])} | {d['coefficient_n']} |")
     judged = [c for c in res["criteria"] if c["ok"] is not None]
     failed = [c for c in judged if not c["ok"]]
@@ -533,12 +597,21 @@ def main(argv=None) -> int:
     ap.add_argument("--profile", choices=sorted(PROFILES), default="staple")
     ap.add_argument("--outdir", type=Path, required=True)
     ap.add_argument("--repo", type=Path, default=Path.cwd())
+    ap.add_argument("--random-eps", type=int, default=0, metavar="K", help="A×10^-N の ε を乱数で K 個足す")
+    ap.add_argument("--random-scales", type=int, default=0, metavar="K", help="A×10^e の倍率を乱数で K 個足す（報告だけ）")
+    ap.add_argument("--coef-seed", default=None, help="乱数の種。整数か auto（実行ごとに変わる）。省略は SEED。選んだ値と種は結果に書く")
     args = ap.parse_args(argv)
+    draws = None
+    if args.random_eps or args.random_scales:
+        seed = SEED if args.coef_seed is None else (secrets.randbelow(10**9) if args.coef_seed == "auto" else int(args.coef_seed))
+        draws = {"seed": seed, "eps": draw_coefficients(args.random_eps, seed, "eps"),
+                 "scales": draw_coefficients(args.random_scales, seed, "scale")}
+        print(f"乱数の種: {seed}", file=sys.stderr)
     sa, mod = load_modules(args.repo)
     prof = PROFILES[args.profile]
     series = read_series(args.csv, prof["prefix"], prof["cadence"])
-    res = compute(sa, mod, series, args.profile)
-    again = compute(sa, mod, series, args.profile)
+    res = compute(sa, mod, series, args.profile, draws)
+    again = compute(sa, mod, series, args.profile, draws)
     res["repeat_identical"] = json.dumps(res, allow_nan=False) == json.dumps(again, allow_nan=False)
     if not res["control"]["pass"] or not res["repeat_identical"]:
         print("対照（C4）が通らない。結果は書かない:", res["control"], res["repeat_identical"], file=sys.stderr)

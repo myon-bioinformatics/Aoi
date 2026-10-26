@@ -13,6 +13,7 @@ import os
 import platform
 import re
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -88,6 +89,91 @@ def _error(exc: Exception, stage: str) -> dict:
     return {"stage": stage, "type": type(exc).__name__, "message": _safe_text(exc)}
 
 
+def _proc_text(pid: int, name: str, limit: int = 4096) -> str | None:
+    """Bounded reads of fixed, caller-selected files for our unreaped child."""
+    try:
+        with open(f"/proc/{pid}/{name}", encoding="utf-8") as handle:
+            return handle.read(limit)
+    except (OSError, UnicodeError):
+        return None
+
+
+def _pipe_observation(pid: int | None, child_fd: int, parent_fd: int | None) -> dict:
+    result = {"parent_inode": None, "child_inode": None, "matches": None,
+              "queued_bytes": None}
+    if parent_fd is None:
+        return result
+    try:
+        info = os.fstat(parent_fd)
+        if not stat.S_ISFIFO(info.st_mode):
+            return result
+        result["parent_inode"] = info.st_ino
+    except OSError:
+        return result
+    try:
+        # Query only the owned endpoint; never read or consume CDP payloads.
+        import array
+        import fcntl
+        import termios
+        count = array.array("i", [0])
+        fcntl.ioctl(parent_fd, termios.FIONREAD, count, True)
+        result["queued_bytes"] = max(0, count[0])
+    except (ImportError, AttributeError, OSError, ValueError, OverflowError):
+        pass
+    if pid is not None:
+        try:
+            target = os.readlink(f"/proc/{pid}/fd/{child_fd}")
+        except OSError:
+            target = ""
+        # Do not retain a file path or any other non-pipe link target.
+        match = re.fullmatch(r"pipe:\[(\d+)\]", target)
+        if match:
+            result["child_inode"] = int(match[1])
+            result["matches"] = result["child_inode"] == result["parent_inode"]
+    return result
+
+
+def _startup_wait_snapshot(proc: subprocess.Popen | None, write_fd: int | None,
+                           read_fd: int | None) -> dict:
+    """Allowlisted counters, wait symbol and owned pipe identities, never contents.
+
+    poll() returning None leaves this child unreaped, so its PID cannot be
+    recycled during the reads. If it exited/reaped, do not inspect that PID.
+    There is no ptrace, new process, retry, sleep or permission adjustment.
+    """
+    alive = proc is not None and proc.poll() is None
+    pid = proc.pid if proc is not None else None
+    result = {"pid": pid, "alive": alive, "state": None, "minor_faults": None,
+              "major_faults": None, "user_ticks": None, "system_ticks": None,
+              "wchan": None, "read_bytes": None, "write_bytes": None}
+    if alive and sys.platform == "linux":
+        raw = _proc_text(pid, "stat")
+        if raw and raw.partition(" ")[0] == str(pid):
+            try:
+                fields = raw.rsplit(")", 1)[1].split()
+                if fields[0] in tuple("RSDZTtXxKWPI"):
+                    result["state"] = fields[0]
+                for key, index in (("minor_faults", 7), ("major_faults", 9),
+                                   ("user_ticks", 11), ("system_ticks", 12)):
+                    if re.fullmatch(r"[0-9]+", fields[index]):
+                        result[key] = int(fields[index])
+            except IndexError:
+                pass
+        wchan = _proc_text(pid, "wchan", 128)
+        if wchan is not None and re.fullmatch(r"[A-Za-z0-9_]{1,127}", wchan.strip()):
+            result["wchan"] = wchan.strip()
+        io = _proc_text(pid, "io")
+        if io:
+            for key in ("read_bytes", "write_bytes"):
+                match = re.search(r"^" + key + r":\s*([0-9]+)\s*$", io, re.MULTILINE)
+                if match:
+                    result[key] = int(match[1])
+    child_pid = pid if alive and sys.platform == "linux" else None
+    result["pipes"] = {"request": _pipe_observation(child_pid, 3, write_fd),
+                       "response": _pipe_observation(child_pid, 4, read_fd)}
+    return result
+
+
 class DiagnosticChrome(Chrome):
     """Observe the existing transport before start() can discard evidence."""
 
@@ -111,10 +197,26 @@ class DiagnosticChrome(Chrome):
         self._observing_readiness = False
         self.readiness_transport = {"phase": "not_started", "send_elapsed_seconds": None,
                                     "received_messages": 0}
+        self.wait_observations: list[dict] = []
+
+    def _observe_wait(self, phase: str) -> None:
+        # Two snapshots only: after sending and at the first reply/failure.
+        # They run under the original deadline, without a sampling thread.
+        if len(self.wait_observations) >= 2:
+            return
+        started = time.monotonic()
+        elapsed = None if self._started_at is None else started - self._started_at
+        observed_at = datetime.now(timezone.utc).isoformat()
+        snapshot = _startup_wait_snapshot(self._proc, self._w, self._r)
+        self.wait_observations.append({"phase": phase, "elapsed_seconds": elapsed,
+                                       "observed_at": observed_at, **snapshot,
+                                       "sample_duration_seconds": time.monotonic() - started})
 
     def record_failure(self, exc: Exception, stage: str | None = None) -> None:
         if self.failure is not None:
             return
+        if self._observing_readiness:
+            self._observe_wait("readiness_failure")
         self.failure = _error(exc, stage or self.stage)
         self.failure.update({"last_cdp_method": self.method, "process": _process(self._proc),
                              "reader_alive": bool(self._reader and self._reader.is_alive()),
@@ -165,16 +267,21 @@ class DiagnosticChrome(Chrome):
         try:
             result = super().call(method, *args, **kwargs)
         except Exception as exc:
+            if first_readiness and self._started_at is not None:
+                self.readiness_elapsed_seconds = time.monotonic() - self._started_at
             self.record_failure(exc)
             raise
         else:
             if first_readiness:
+                if self._started_at is not None:
+                    self.readiness_elapsed_seconds = time.monotonic() - self._started_at
                 self.readiness_transport["phase"] = "response_received"
                 self.product = _safe_text(result.get("product", ""), 256) or None
                 self.protocol_version = _safe_text(result.get("protocolVersion", ""), 128) or None
+                self._observe_wait("response_received")
             return result
         finally:
-            if first_readiness and self._started_at is not None:
+            if first_readiness and self._started_at is not None and self.readiness_elapsed_seconds is None:
                 self.readiness_elapsed_seconds = time.monotonic() - self._started_at
             self._observing_readiness = False
 
@@ -188,6 +295,7 @@ class DiagnosticChrome(Chrome):
         finally:
             self.readiness_transport["send_elapsed_seconds"] = time.monotonic() - started
         self.readiness_transport["phase"] = "waiting_reply"
+        self._observe_wait("request_sent")
         return result
 
     def _recv(self, *args, **kwargs):
@@ -399,6 +507,7 @@ def _trial(executable: str, timeout: float, index: int, bundle: Path | None, evi
         trial.update({"cdp_product": browser.product, "cdp_protocol_version": browser.protocol_version,
                       "readiness_elapsed_seconds": browser.readiness_elapsed_seconds,
                       "readiness_transport": dict(browser.readiness_transport),
+                      "wait_observations": list(browser.wait_observations),
                       "close_elapsed_seconds": browser.close_elapsed_seconds,
                       "total_elapsed_seconds": time.monotonic() - started,
                       "stderr_tail": browser.stderr_tail})

@@ -59,6 +59,8 @@ JS の実体パス、サイズ、SHA-256 を JSON に残す。同じ bundle・Py
 - `trials[].cdp_product` / `cdp_protocol_version`: 最初の `Browser.getVersion` が返した識別情報。別の追加 readiness probe は行わない。
 - `readiness_elapsed_seconds`: 起動開始から最初の `Browser.getVersion` の成功 / 失敗まで。起動 cleanup を含めない。spawn 前に失敗した場合は null。
 - `readiness_transport`: 最初の readiness request の `sending_request` / `waiting_reply` / `response_received`、送信所要時間、受信 message 数。既存の send / receive に同じ引数・deadline を渡して観測するだけで、message の本文は記録しない。pipe への書込完了はブラウザが読んだ証明ではない。
+- `wait_observations`: 最初の readiness request 送信直後と応答 / 失敗時（cleanup 前）の最大 2 snapshot。経過秒、UTC 時刻、観測自身の所要秒を残す。Linux の所有する未回収の子 PID について state、`wchan`、minor / major fault、user / system CPU tick、I/O の `read_bytes` / `write_bytes` だけを読む。同じ PID の 2 点の差が起動中の増分であり、I/O rate を直接測った値ではない。読めない項目は null。`wchan=0` も待機場所が特定できた意味ではない。
+- `wait_observations[].pipes`: 所有する親側 CDP pipe と子の fd 3 / 4 の pipe inode、一致有無、`FIONREAD` による親 endpoint の未読 byte 数。pipe 以外のリンク先は捨て、通信内容は読まない。request の未読量は未消費の要求、response の未読量はその時点で kernel pipe に残る量であり、reader が取り込んだ部分 frame は含まない。0 byte / 0 complete message でも「一切受信していない」とは断定しない。最初の snapshot は exec helper の fd remap より前の場合があるため、初回の不一致だけで transport の欠陥とはしない。snapshot 内の各値も原子的な同時観測ではない。
 - `render_elapsed_seconds` / `renders`: 描画全体と各画像の所要時間、hash、サイズ、PID、出力パス、残った page 数。起動だけの実行では描画時間は null。
 - `close_elapsed_seconds`: 正常時・例外時に既存 cleanup が使った時間の合計。重複した idempotent close も含む。
 - `failure`: 最初の失敗段階、例外型、bounded message、`last_cdp_method`（最後に呼んだ CDP method で、画像検証エラーなどでは失敗した操作そのものとは限らない）、失敗時の process / reader / resource / stderr snapshot。`readiness`、`session_setup`、`render.figure-0.png` などを区別する。
@@ -69,6 +71,8 @@ JS の実体パス、サイズ、SHA-256 を JSON に残す。同じ bundle・Py
 - `passed_runs` / `failed_runs` / `unattempted_runs`: 試行結果と未実施分。試行が全て成功しても `--version` の失敗があれば全体の `ok` は false。
 
 `stderr_tail` はファイル末尾へ seek して最大 4096 bytes だけ読む。production の例外メッセージ生成も、検証用 subclass では同じ bounded reader を通す。`Chrome.start()` が例外時に stderr と一時プロファイルを消す前に snapshot を取る。終了処理後のメッセージは capture 対象外。
+
+wait snapshot も検証用 subclass 内だけで行う。追加 thread / sleep / CDP request / browser 起動はなく、送信後の観測は既存の deadline 内で実行する。応答・失敗までの readiness 時間は終端 snapshot の追加処理前に記録する。proc 読出しはファイルごと最大 4096 文字（wchan は 128 文字）、FD は所有する 2 endpoint と子の 3 / 4 に限定する。終了・permission 不足・未対応の場合は取得不能を null とし、ptrace、security 設定、元の起動引数や timeout を変更しない。実行ファイルの事前 hash / 全読出しも追加しない。D state や fault 増分だけで原因のファイルを特定したとは扱わない。
 
 任意の argv / 環境変数、`/proc/*/cmdline` / `environ`、ユーザーのページや研究データは集めない。ログ中の credential・URL・environment・argument に見える文字列は伏せ、長さを制限する。ただし任意の実行ファイルが出す内容を完全に秘密判定できるわけではない。信頼する実行ファイルだけを指定し、外部に共有する前に診断 JSON を確認する。
 

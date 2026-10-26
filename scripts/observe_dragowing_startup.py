@@ -112,6 +112,7 @@ def _browser_record(browser):
         "cdp_protocol_version": browser.protocol_version,
         "readiness_elapsed_seconds": browser.readiness_elapsed_seconds,
         "readiness_transport": dict(browser.readiness_transport),
+        "wait_observations": list(browser.wait_observations),
         "close_elapsed_seconds": browser.close_elapsed_seconds,
         "failure": browser.failure,
         "stderr_tail": browser.stderr_tail,

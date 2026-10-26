@@ -456,6 +456,10 @@ def test_fake_only_is_not_patched():
     assert all(b["cleanup"]["profile_removed"] for b in records)
     assert records[2]["failure"]["stage"] == "readiness"
     assert records[2]["readiness_transport"]["phase"] == "waiting_reply"
+    assert [[s["phase"] for s in b["wait_observations"]] for b in records] == [
+        ["request_sent", "response_received"], ["request_sent", "response_received"],
+        ["request_sent", "readiness_failure"],
+    ]
     assert report["tests"][1]["pytest_outcomes"] == {"setup": "passed", "call": "passed", "teardown": "passed"}
     assert "do-not-leak" not in json.dumps(report)
     assert set(report["runtime"]) == {"python", "platform", "machine", "kernel_release", "uid", "euid",
@@ -514,3 +518,251 @@ def test_restart(chrome_executable):
     assert all(b["readiness_transport"]["received_messages"] == 1 for b in records)
     assert all(b["readiness_elapsed_seconds"] > 0 for b in records)
     assert all(b["failure"] is None for b in records)
+
+
+def test_startup_wait_observations_do_not_send_extra_cdp_requests(peer, monkeypatch):
+    sent = []
+    original = diagnostic.Chrome._send
+
+    def observe_send(self, method, *args, **kwargs):
+        sent.append(method)
+        return original(self, method, *args, **kwargs)
+
+    monkeypatch.setattr(diagnostic.Chrome, "_send", observe_send)
+    browser = diagnostic.DiagnosticChrome(peer(), 2)
+    try:
+        browser.start()
+        assert sent == ["Browser.getVersion"]
+        snapshots = browser.wait_observations
+        assert [s["phase"] for s in snapshots] == ["request_sent", "response_received"]
+        assert all(s["pid"] == browser._proc.pid for s in snapshots)
+        assert all(s["alive"] is True for s in snapshots)
+        assert 0 <= snapshots[0]["elapsed_seconds"] <= snapshots[1]["elapsed_seconds"]
+        assert all(s["observed_at"] for s in snapshots)
+        assert all(s["sample_duration_seconds"] >= 0 for s in snapshots)
+        before = json.loads(json.dumps(snapshots))
+        browser.start()
+        browser.call("Browser.getVersion")
+        assert browser.wait_observations == before
+        assert sent == ["Browser.getVersion", "Browser.getVersion"]
+    finally:
+        browser.close()
+    assert sent == ["Browser.getVersion", "Browser.getVersion", "Browser.close"]
+
+
+def test_startup_wait_failure_is_captured_before_cleanup_without_retry(peer):
+    report = diagnostic.diagnose(peer("timeout"), runs=1, timeout=0.2)
+    assert report["failed_runs"] == 1
+    trial = report["trials"][0]
+    snapshots = trial["wait_observations"]
+    assert [s["phase"] for s in snapshots] == ["request_sent", "readiness_failure"]
+    assert all(s["alive"] is True for s in snapshots)
+    assert snapshots[-1]["elapsed_seconds"] >= 0.2
+    assert trial["failure"]["stage"] == "readiness"
+    assert trial["cleanup"]["process"]["state"] == "exited"
+    assert trial["cleanup"]["process"]["pid"] == snapshots[-1]["pid"]
+    assert trial["cleanup"]["pipe_descriptors_released"] is True
+    assert "do-not-leak" not in json.dumps(snapshots)
+
+
+def test_startup_wait_observer_keeps_existing_deadline_and_reports_its_cost(monkeypatch):
+    clock = [0.0]
+    deadlines = []
+    monkeypatch.setattr(diagnostic.time, "monotonic", lambda: clock[0])
+
+    def send(self, method, params=None, session=None, *, deadline=None):
+        deadlines.append(("send", deadline))
+        return 1
+
+    def recv(self, deadline):
+        deadlines.append(("recv", deadline))
+        return {"id": 1, "result": {"product": "FakeChrome/123.4"}}
+
+    def snapshot(*args):
+        clock[0] += 3
+        return {}
+
+    monkeypatch.setattr(diagnostic.Chrome, "_send", send)
+    monkeypatch.setattr(diagnostic.Chrome, "_recv", recv)
+    monkeypatch.setattr(diagnostic, "_startup_wait_snapshot", snapshot)
+    browser = diagnostic.DiagnosticChrome("unused", 8)
+    browser._started_at = 0
+    browser.call("Browser.getVersion")
+    assert deadlines == [("send", 8), ("recv", 8)]
+    assert browser.timeout == 8
+    assert browser.readiness_elapsed_seconds == 3  # excludes terminal snapshot cost
+    assert [s["sample_duration_seconds"] for s in browser.wait_observations] == [3, 3]
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux procfs evidence")
+def test_startup_wait_snapshot_matches_only_owned_cdp_pipes(peer):
+    browser = diagnostic.DiagnosticChrome(peer(), 2)
+    try:
+        browser.start()
+        snapshot = diagnostic._startup_wait_snapshot(browser._proc, browser._w, browser._r)
+        assert snapshot["alive"] is True
+        assert snapshot["state"] in {"R", "S", "D", "Z", "T", "t", "I"}
+        for direction in ("request", "response"):
+            pipe = snapshot["pipes"][direction]
+            assert pipe["matches"] is True
+            assert pipe["parent_inode"] == pipe["child_inode"]
+            assert pipe["queued_bytes"] == 0
+        for field in ("minor_faults", "major_faults", "user_ticks", "system_ticks"):
+            assert isinstance(snapshot[field], int) and snapshot[field] >= 0
+    finally:
+        browser.close()
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux FIONREAD evidence")
+def test_startup_wait_queued_byte_observation_does_not_consume_pipe_data(peer, tmp_path):
+    browser = diagnostic.DiagnosticChrome(peer(), 2)
+    read_fd, write_fd = os.pipe()
+    try:
+        browser.start()
+        payload = b"private synthetic bytes\x00"
+        os.write(write_fd, payload)
+        snapshot = diagnostic._startup_wait_snapshot(browser._proc, write_fd, read_fd)
+        for direction in ("request", "response"):
+            assert snapshot["pipes"][direction]["queued_bytes"] == len(payload)
+            assert snapshot["pipes"][direction]["matches"] is False
+        assert payload.decode() not in json.dumps(snapshot)
+        assert os.read(read_fd, len(payload)) == payload
+        with (tmp_path / "private-local-file").open("wb") as regular:
+            regular.write(payload)
+            not_pipe = diagnostic._startup_wait_snapshot(browser._proc, regular.fileno(), regular.fileno())
+        for direction in ("request", "response"):
+            assert not_pipe["pipes"][direction]["parent_inode"] is None
+            assert not_pipe["pipes"][direction]["queued_bytes"] is None
+    finally:
+        os.close(read_fd)
+        os.close(write_fd)
+        browser.close()
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux procfs evidence")
+def test_startup_wait_snapshot_discards_non_pipe_child_target(peer, monkeypatch):
+    browser = diagnostic.DiagnosticChrome(peer(), 2)
+    try:
+        browser.start()
+        with monkeypatch.context() as patch:
+            patch.setattr(diagnostic.os, "readlink", lambda path: "/private/secret-browser-content")
+            snapshot = diagnostic._startup_wait_snapshot(browser._proc, browser._w, browser._r)
+        for direction in ("request", "response"):
+            assert snapshot["pipes"][direction]["child_inode"] is None
+            assert snapshot["pipes"][direction]["matches"] is None
+        assert "secret-browser-content" not in json.dumps(snapshot)
+    finally:
+        browser.close()
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux FIONREAD evidence")
+def test_startup_wait_unavailable_pipe_evidence_is_null_without_permission_retry(peer, monkeypatch):
+    import fcntl
+
+    browser = diagnostic.DiagnosticChrome(peer(), 2)
+    calls = []
+
+    def denied(*args, **kwargs):
+        calls.append(args)
+        raise PermissionError("private denial details")
+
+    try:
+        browser.start()
+        with monkeypatch.context() as patch:
+            patch.setattr(fcntl, "ioctl", denied)
+            patch.setattr(diagnostic.os, "readlink", denied)
+            snapshot = diagnostic._startup_wait_snapshot(browser._proc, browser._w, browser._r)
+        assert len(calls) == 4  # Once per endpoint for ioctl and link; no retries.
+        for direction in ("request", "response"):
+            pipe = snapshot["pipes"][direction]
+            assert isinstance(pipe["parent_inode"], int)
+            assert pipe["child_inode"] is None
+            assert pipe["matches"] is None
+            assert pipe["queued_bytes"] is None
+        assert "private denial" not in json.dumps(snapshot)
+    finally:
+        browser.close()
+
+
+class _SnapshotProcess:
+    pid = 123
+
+    def __init__(self, returncode=None):
+        self.returncode = returncode
+
+    def poll(self):
+        return self.returncode
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux procfs evidence")
+def test_startup_wait_snapshot_extracts_only_fixed_numeric_fields(monkeypatch):
+    fields = ["0"] * 13
+    fields[0] = "D"
+    for index, value in ((7, "12"), (9, "34"), (11, "56"), (12, "78")):
+        fields[index] = value
+    files = {"stat": "123 (private ) process-name) " + " ".join(fields),
+             "wchan": "folio_wait_bit_common\n",
+             "io": "read_bytes: 4096\nwrite_bytes: 8192\nrchar: private-data\n"}
+    calls = []
+
+    def text(pid, name, limit=4096):
+        calls.append((pid, name, limit))
+        return files[name]
+
+    monkeypatch.setattr(diagnostic, "_proc_text", text)
+    snapshot = diagnostic._startup_wait_snapshot(_SnapshotProcess(), None, None)
+    assert {name for _, name, _ in calls} == {"stat", "wchan", "io"}
+    assert all(pid == 123 and limit <= 4096 for pid, _, limit in calls)
+    assert snapshot["state"] == "D"
+    assert [snapshot[k] for k in ("minor_faults", "major_faults", "user_ticks", "system_ticks")] == [12, 34, 56, 78]
+    assert snapshot["wchan"] == "folio_wait_bit_common"
+    assert snapshot["read_bytes"] == 4096 and snapshot["write_bytes"] == 8192
+    assert "private" not in json.dumps(snapshot)
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux procfs evidence")
+@pytest.mark.parametrize("stat_text", [None, "123 malformed", "456 (unrelated process) D",
+                                      "123 (private) S bad", "123 (private) S " + "² " * 12])
+def test_startup_wait_unavailable_or_malformed_fields_are_null(monkeypatch, stat_text):
+    files = {"stat": stat_text, "wchan": "private/path", "io": "read_bytes: invalid\nwrite_bytes: -1\n"}
+    monkeypatch.setattr(diagnostic, "_proc_text", lambda pid, name, limit=4096: files[name])
+    snapshot = diagnostic._startup_wait_snapshot(_SnapshotProcess(), None, None)
+    assert all(snapshot[k] is None for k in ("minor_faults", "major_faults", "user_ticks", "system_ticks",
+                                             "wchan", "read_bytes", "write_bytes"))
+    assert "private" not in json.dumps(snapshot)
+
+
+def test_startup_wait_dead_or_absent_child_does_not_read_proc(monkeypatch):
+    def forbidden(*args, **kwargs):
+        pytest.fail("an exited/reaped child's PID must not be inspected")
+
+    monkeypatch.setattr(diagnostic, "_proc_text", forbidden)
+    monkeypatch.setattr(diagnostic.os, "readlink", forbidden)
+    for proc in (None, _SnapshotProcess(returncode=0)):
+        snapshot = diagnostic._startup_wait_snapshot(proc, None, None)
+        assert snapshot["alive"] is False
+        assert snapshot["state"] is None
+        assert snapshot["wchan"] is None
+        assert snapshot["read_bytes"] is None
+
+
+def test_proc_text_is_bounded_and_does_not_retain_permission_errors(monkeypatch):
+    class Handle:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            pass
+
+        def read(self, limit):
+            assert limit == 17
+            return "x" * limit
+
+    monkeypatch.setattr("builtins.open", lambda *args, **kwargs: Handle())
+    assert diagnostic._proc_text(123, "stat", 17) == "x" * 17
+
+    def denied(*args, **kwargs):
+        raise PermissionError("private denial details")
+
+    monkeypatch.setattr("builtins.open", denied)
+    assert diagnostic._proc_text(123, "stat") is None

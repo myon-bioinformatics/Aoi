@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1029,
+      "attribute_uses": 1036,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -742,7 +742,7 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 290,
+        "approx": 294,
         "fail": 30,
         "fixture": 51,
         "hookimpl": 4,
@@ -751,7 +751,7 @@
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 390,
+        "raises": 393,
         "skip": 8,
         "warns": 3
       },
@@ -880,21 +880,21 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 236,
+          "attribute_uses": 243,
           "attributes": {
-            "approx": 48,
+            "approx": 52,
             "fail": 10,
             "fixture": 12,
             "importorskip": 1,
             "mark.parametrize": 63,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 92,
+            "raises": 95,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 27,
-          "import_sites": 27
+          "files": 28,
+          "import_sites": 28
         }
       },
       "declared": [
@@ -931,8 +931,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 105,
-      "import_sites": 106
+      "files": 106,
+      "import_sites": 107
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2995,6 +2995,17 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 4,
+        "raises": 3
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_posthoc.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

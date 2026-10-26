@@ -79,6 +79,7 @@ def test_tile_makes_non_overlapping_windows_inside_unbroken_runs_and_drops_the_r
 def test_tile_is_sorted_by_series_key_and_a_window_does_not_cross_series():
     series = {"b": {i: 1.0 for i in range(4)}, "a": {i: 2.0 for i in range(4)}}
     assert [w["key"] for w in gen.tile(series, 4)] == ["a", "b"]
+    assert [w["si"] for w in gen.tile(series, 4)] == [0, 1] and [w["si"] for w in gen.tile(series, 2)] == [0, 0, 1, 1]
 
 
 def test_normalize_puts_x_in_unit_interval_and_y_at_zero_start_with_range_five():
@@ -354,6 +355,8 @@ def test_cli_writes_the_summary_report_and_units_and_is_byte_reproducible(tmp_pa
     assert list(res["sets"]["24"]["by_source"]) == ["FPMA"] and res["sets"]["24"]["by_source"]["FPMA"]["units"] == 6
     units = [json.loads(x) for x in (out1 / "eps_generality_units_n24.jsonl").read_text(encoding="utf-8").splitlines()]
     assert len(units) == 6 and {u["country"] for u in units} == {"AAA"} and "rows" not in res
+    assert {u["unit"] for u in units} == {"USD per kg"} and sorted({u["series_index"] for u in units}) == [0, 1, 2]
+    assert [u["series_index"] for u in units] == [0, 0, 1, 1, 2, 2] and [u["start"] for u in units[:2]] == ["2020-01", "2022-01"]
     md = (out1 / "eps_generality.md").read_text(encoding="utf-8")
     assert "確かめられた" not in md.replace("「確かめられた」とは書かない", "")
 

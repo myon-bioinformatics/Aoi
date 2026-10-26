@@ -78,7 +78,18 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
     --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out --repo .
 ```
 
-数分かからない。書き出すもの: `eps_generality.json`（基準・集合ごとの数・τ・合成の式）、`eps_generality.md`（読みやすい表）、`eps_generality_units_n24.jsonl`（24 か月の窓の単位ごとの当てはめ）。C4 が通らなければ何も書かずに止まる。テストは `tests/test_epsilon_generality.py`。
+約 20 秒（ほぼ 2 回走らせるため）。書き出すもの: `eps_generality.json`（基準・集合ごとの数・τ・合成の式）、`eps_generality.md`（読みやすい表）、`eps_generality_units_n24.jsonl`（24 か月の窓の単位ごとの当てはめ）。C4 が通らなければ何も書かずに止まる。テストは `tests/test_epsilon_generality.py`（`posthoc_boundary_forms.py` は `tests/test_epsilon_generality_posthoc.py`）。
+
+## 登録後に足したもの（基準・数・手順は変えていない）
+
+基準・設定をこの文書に置いて GitHub に載せた（コミット cea8c53）。そのスクリプトで実データを 1 回走らせ、結果を見たあとに、次の 2 点を足した。どちらも基準・設定・計算には関わらない（足したあとのスクリプトの `eps_generality.json`・`eps_generality.md` は、足す前の出力とバイト単位で同じ。units の行は 2 つのキーが増えただけ）。
+
+- `eps_generality_units_n24.jsonl` の行に、系列を一意に決める `unit`（単位）と `series_index`（系列の並び順の番号）を足した。同じ国・変数・出どころでも、市場や価格の種類（注）が違う系列があるため（505 系列、注を除くと 464）
+- 結果を見たあとに、基準 C2 を満たさなかった 1 窓の原因を調べるための `posthoc_boundary_forms.py` を足した（下の「事後の確認」）。これは**登録した基準の外**で、`eps_generality.py` の出力は変えない
+
+## 事後の確認（登録した基準の外）
+
+`posthoc_boundary_forms.py` は、結果を見たあとに足したもの。境界の単位のうち、ε=1e-3 / 1e-6 で選ばれる周期が ε=1e-9 のときと違う単位を数え、その単位で 2 つの周期の式の誤差の2乗和を並べ、周期ごとの境界の単位の数を野球の 24 単位と並べる。基準にはしない。結果は `results/posthoc_boundary_forms.md`。
 
 ## 実行の順
 

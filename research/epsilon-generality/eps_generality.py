@@ -105,7 +105,7 @@ def read_series(path: Path) -> dict:
 def tile(series: dict, n: int) -> list[dict]:
     """月が途切れずに続く区間ごとに、先頭から n か月ずつ、互いに重ならない窓を並べる（余りは使わない）。"""
     out = []
-    for key in sorted(series):
+    for si, key in enumerate(sorted(series)):
         pts = sorted(series[key].items())
         runs, run = [], []
         for mi, v in pts:
@@ -118,7 +118,7 @@ def tile(series: dict, n: int) -> list[dict]:
         for r in runs:
             for k in range(len(r) // n):
                 w = r[k * n:(k + 1) * n]
-                out.append({"key": key, "start": month_text(w[0][0]), "values": [v for _, v in w]})
+                out.append({"key": key, "si": si, "start": month_text(w[0][0]), "values": [v for _, v in w]})
     return out
 
 
@@ -180,7 +180,8 @@ def real_rows(sa, bases_by_n: dict, windows_by_n: dict) -> dict:
                 continue
             _, ys, _ = nm
             rows.append({"source": source_group(w["key"][3]), "country": w["key"][0], "variable": w["key"][1],
-                         "start": w["start"]} | fit_row(sa, bases_by_n[n], ys, PRIMARY_TAU))
+                         "unit": w["key"][2], "series_index": w["si"], "start": w["start"]}
+                        | fit_row(sa, bases_by_n[n], ys, PRIMARY_TAU))
         out[n] = {"rows": rows, "constant_windows": skipped, "windows": len(wins)}
     return out
 

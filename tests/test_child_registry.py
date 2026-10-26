@@ -669,6 +669,15 @@ def _materialize_mutant_repo(tmp_path: Path, mutant_source: str) -> Path:
     return repo
 
 
+def _run_mutant(base: Path, mutant_source: str) -> int:
+    """Copy, run the registry tests, and remove the copy afterwards (also on failure).
+    Keeping one full copy of the repository per mutant fills the disk."""
+    try:
+        return _run_registry_tests_in_repo(_materialize_mutant_repo(base, mutant_source))
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+
+
 def _run_registry_tests_in_repo(repo_root: Path) -> int:
     test_file = repo_root / "tests" / "test_child_registry.py"
     env = {**os.environ, "PYTHONPATH": str(repo_root / "scripts")}
@@ -761,8 +770,7 @@ def test_mutation_kind_labels_match_sites():
 
 def test_mutations_all_killed(tmp_path):
     source = SCRIPT.read_text(encoding="utf-8")
-    control_repo = _materialize_mutant_repo(tmp_path / "control", source)
-    control_rc = _run_registry_tests_in_repo(control_repo)
+    control_rc = _run_mutant(tmp_path / "control", source)
     assert control_rc == 0, "unmutated copy must pass the mutation test suite"
     mutants, equivalent = _enumerate_mutants(source)
     site_count = len(_collect_mutation_sites(ast.parse(source)))
@@ -772,8 +780,7 @@ def test_mutations_all_killed(tmp_path):
     killed = 0
     survived = []
     for name, mutant_source, _site in mutants:
-        repo = _materialize_mutant_repo(tmp_path / name, mutant_source)
-        rc = _run_registry_tests_in_repo(repo)
+        rc = _run_mutant(tmp_path / name, mutant_source)
         if rc == 0:
             survived.append(name)
         elif rc == 1:
@@ -782,6 +789,34 @@ def test_mutations_all_killed(tmp_path):
             pytest.fail(f"mutant {name}: pytest exit code {rc}\n")
     assert killed == generated
     assert not survived, f"survived ({len(survived)}): {survived}"
+
+
+def test_mutant_copy_is_removed_after_its_run_even_when_the_run_fails(tmp_path, monkeypatch):
+    mini = tmp_path / "mini"
+    (mini / "scripts").mkdir(parents=True)
+    (mini / "scripts" / "check_child_heads.py").write_text("x = 1\n", encoding="utf-8")
+    (mini / ".venv").mkdir()
+    (mini / ".venv" / "junk").write_text("j", encoding="utf-8")
+    module = sys.modules[__name__]
+    monkeypatch.setattr(module, "ROOT", mini)
+    seen = []
+
+    def fake_run(repo_root, fail=[False]):
+        seen.append(repo_root)
+        assert (repo_root / "scripts" / "check_child_heads.py").read_text(encoding="utf-8") == "y = 2\n"
+        assert not (repo_root / ".venv").exists()
+        if fail[0]:
+            raise RuntimeError("boom")
+        return 1
+
+    monkeypatch.setattr(module, "_run_registry_tests_in_repo", fake_run)
+    assert module._run_mutant(tmp_path / "ok", "y = 2\n") == 1
+    assert not (tmp_path / "ok").exists()
+    fake_run.__defaults__[0][0] = True
+    with pytest.raises(RuntimeError, match="boom"):
+        module._run_mutant(tmp_path / "bad", "y = 2\n")
+    assert not (tmp_path / "bad").exists() and len(seen) == 2
+    assert (mini / "scripts" / "check_child_heads.py").read_text(encoding="utf-8") == "x = 1\n"   # 元は触らない
 
 
 def test_git_runs_non_interactively(monkeypatch):

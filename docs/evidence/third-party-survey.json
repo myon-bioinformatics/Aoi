@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1019,
+      "attribute_uses": 1029,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -742,7 +742,7 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 285,
+        "approx": 290,
         "fail": 30,
         "fixture": 51,
         "hookimpl": 4,
@@ -751,7 +751,7 @@
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 385,
+        "raises": 390,
         "skip": 8,
         "warns": 3
       },
@@ -880,21 +880,21 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 226,
+          "attribute_uses": 236,
           "attributes": {
-            "approx": 43,
+            "approx": 48,
             "fail": 10,
             "fixture": 12,
             "importorskip": 1,
             "mark.parametrize": 63,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 87,
+            "raises": 92,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 26,
-          "import_sites": 26
+          "files": 27,
+          "import_sites": 27
         }
       },
       "declared": [
@@ -931,8 +931,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 104,
-      "import_sites": 105
+      "files": 105,
+      "import_sites": 106
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2984,6 +2984,17 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_dragowing_browser_transport.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 5,
+        "raises": 5
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

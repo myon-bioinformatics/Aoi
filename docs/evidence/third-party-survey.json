@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1082,
+      "attribute_uses": 1103,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -742,16 +742,16 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 320,
+        "approx": 329,
         "fail": 30,
         "fixture": 51,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 212,
+        "mark.parametrize": 215,
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 408,
+        "raises": 417,
         "skip": 8,
         "warns": 3
       },
@@ -880,21 +880,21 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 289,
+          "attribute_uses": 310,
           "attributes": {
-            "approx": 78,
+            "approx": 87,
             "fail": 10,
             "fixture": 12,
             "importorskip": 1,
-            "mark.parametrize": 68,
+            "mark.parametrize": 71,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 110,
+            "raises": 119,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 31,
-          "import_sites": 31
+          "files": 32,
+          "import_sites": 32
         }
       },
       "declared": [
@@ -931,8 +931,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 109,
-      "import_sites": 110
+      "files": 110,
+      "import_sites": 111
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3041,6 +3041,18 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_range.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 9,
+        "mark.parametrize": 3,
+        "raises": 9
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_region.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

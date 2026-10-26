@@ -93,7 +93,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 
 `posthoc_eps_ladder.py` は、第 3 回の結果を見たあとに足したもの。ε を 1e-4〜1/100 の固定の梯子で動かし、C2 の基準（登録した値と、第 3 回で延ばした値）を超える境界の単位と、ε の波が残らない単位を数え、動いた単位の周期・係数を梯子の上で並べる。基準にはしない。結果は `results-random/*/posthoc_eps_ladder.md`。テストは `tests/test_epsilon_generality_ladder.py`。
 
-`eps_range_profile.py` は、第 3 回の結果を見たあとに足したもの。「そのデータで、ε がどこまで動かなかったか」を記録するためのもので、**ε の範囲や定数を決めるものではない**（`--eps-range` のような既定値も置いていない）。境界の単位の係数が基準の ε=1e-9 と相対 10% / 1% / 0.1% / 0.01% 以内に収まった割合と、境界でない単位で選ばれる式が変わらなかった割合を、16 点の ε（1/100〜1e-13）で数え、すべて収まっていた最大の ε と、乱数の選び方（`draw_coefficients`）で ε がその値以下になる確率を並べる。別のデータには別の数字が出る（出てよい）ので、データごとに同じ表を作って並べて見るためのスクリプト。基準にはしない。別のデータには `--csv`（縦持ち）、`--prefix`（変数名の頭）、`--cadence`（month か day）を渡す。結果は `results-random/*/eps_range_profile.md`。テストは `tests/test_epsilon_generality_range.py`。
+`eps_range_profile.py` は、第 3 回の結果を見たあとに足したもの。「そのデータで、ε がどこまで動かなかったか」を記録するためのもので、**ε の範囲や定数を決めるものではない**（範囲の既定値も置いていない）。境界の単位の係数が基準の ε=1e-9 と相対 10% / 1% / 0.1% / 0.01% 以内に収まった割合と、境界でない単位で選ばれる式が変わらなかった割合を、16 点の ε（1/100〜1e-13）で数え、すべて収まっていた最大の ε と、乱数の選び方（`draw_coefficients`）で ε がその値以下になる確率を並べる。別のデータには別の数字が出る（出てよい）ので、データごとに同じ表を作って並べて見るためのスクリプト。基準にはしない。別のデータには `--csv`（縦持ち）、`--prefix`（変数名の頭）、`--cadence`（month か day）を渡す。結果は `results-random/*/eps_range_profile.md`。テストは `tests/test_epsilon_generality_range.py`。
 
 ## 実行の順
 
@@ -251,6 +251,15 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv out/p
 ### 結果
 
 [results-random/README.md](results-random/README.md)（`staple/`、`monthly/`、`daily/`）。結果を見て上の登録は変えていない。
+
+### 範囲を指定して選ぶ（結果を見たあとに足した。登録した値は変えない）
+
+- `eps_generality.py` に `--eps-range MODE LO HI` と `--scale-range MODE LO HI` を足した。範囲は [LO, HI]、MODE は **inside**（LO 以上 HI 以下。両端を含む）、**above**（HI より大きい）、**below**（LO より小さい）。この 3 つは、重なりも抜けもなく分ける。LO と HI は `2.22e-3` でも `2.22×10^-3`（`x` でも可）でも書ける。LO ≤ HI で、ε は HI ≤ 1/100。`--random-eps K`（ε の範囲）、`--random-scales K`（倍率の範囲）と一緒に使う。範囲の既定値は置かない（毎回書く）
+- 選び方: 範囲に入る (A, 指数) の組だけから、上の「選び方」で各指数が選ばれる確率を、範囲の中で比べ直して選ぶ（範囲を決めずに選んで、外れたものを捨てるのと同じ分布。範囲が狭くても選べる）。A は 100〜999 から一様。範囲の端が A の刻み（3 桁）に合っていなくてもよい。決め打ちの値と同じ値と重複は選ばない。範囲に入る値が K 個に足りなければ止まる
+- ε は N = 3〜307 の範囲でしか選べないので、above は N = 3 の側（HI より大きく 9.99×10^-3 まで）、below は N = 307（1.00×10^-307）までで、それより外に出る範囲は空になって止まる。例として LO = 8.14×10^-13、HI = 2.22×10^-3 のとき、規則で選ぶと内側 70.0%、上 14.4%、下 15.6%（データによらない）
+- 指定しなければ出力は足す前とバイト単位で同じで、登録した値（種 `18750922`）も変わらない。指定したときは、結果の `random_coefficients.regions` と md に使った範囲を書く。基準（C1〜C3）は ε の値から決まるので、どの範囲から選んでも同じ規則で当てる
+- 例: `uv run --locked python research/epsilon-generality/eps_generality.py --csv ... --outdir ... --repo . --random-eps 10 --eps-range below 8.14e-13 2.22e-3 --coef-seed 18750922`
+- この機能は第 3 回の結果には使っていない。範囲を選んで走らせる回は、範囲・個数・種を走らせる前に書く。テストは `tests/test_epsilon_generality_region.py`
 
 ### 限界
 

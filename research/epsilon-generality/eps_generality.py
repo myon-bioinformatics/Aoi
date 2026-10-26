@@ -15,6 +15,8 @@ README.md に事前に書いた基準（C1〜C5）を、(1) リポジトリに�
 乱数の ε と倍率（README.md の「乱数の ε と倍率の確認」）: --random-eps K / --random-scales K を付けると、決め打ちの ε（1e-3, 1e-6, 1e-9）と倍率に、
 A×10^-N（ε。0 < ε ≤ 1/100）・A×10^e（倍率）の A（1.00〜9.99）と指数を乱数で選んだ値を K 個ずつ足す。--coef-seed に整数か auto を渡す（省略は SEED）。選んだ値と種は結果に書く。
 これらを付けない出力は、足す前とバイト単位で同じ。
+範囲を指定して選ぶ: --eps-range MODE LO HI / --scale-range MODE LO HI（MODE は inside = LO 以上 HI 以下、above = HI より大きい、below = LO より小さい。
+LO・HI は 2.22e-3 でも 2.22×10^-3 でも書ける）。例: --random-eps 10 --eps-range below 8.14e-13 2.22e-3。範囲に入る値だけを選び、使った範囲は結果に書く。
 """
 from __future__ import annotations
 
@@ -122,21 +124,98 @@ def _steps(rng: random.Random, cap: int) -> int:
     return n
 
 
-def draw_coefficients(count: int, seed, kind: str) -> list[dict]:
+MODES = ("inside", "above", "below")
+_POW10 = re.compile(r"^\s*([0-9]+(?:\.[0-9]+)?)\s*[x×*]\s*10\s*\^\s*([+-]?[0-9]+)\s*$", re.I)
+
+
+def parse_pow10(text: str) -> float:
+    """"2.22×10^-3" / "2.22x10^-3" / "2.22e-3" / "0.00222" → 2.22e-3（A×10^e は文字のまま float にするので、float("2.22e-3") と同じ値）。"""
+    m = _POW10.match(text)
+    v = float(f"{m[1]}e{m[2]}") if m else float(text)
+    if not (math.isfinite(v) and v > 0.0):
+        raise ValueError(f"正の有限な数で指定する: {text!r}")
+    return v
+
+
+def make_region(kind: str, mode: str, lo: float, hi: float) -> dict:
+    """範囲 [lo, hi] と、そのどこから選ぶか。inside: lo 以上 hi 以下、above: hi より大きい、below: lo より小さい。
+    ε（kind "eps"）は hi ≤ 1/100。選ぶ値は A×10^x の形（A は 1.00〜9.99）のままで、範囲の端が A の刻みに合っていなくてもよい。"""
+    if mode not in MODES:
+        raise ValueError(f"どこから選ぶかは {MODES} のどれか: {mode!r}")
+    if not (math.isfinite(lo) and math.isfinite(hi) and 0.0 < lo <= hi):
+        raise ValueError(f"範囲は 0 < LO ≤ HI で指定する: {lo!r}, {hi!r}")
+    if kind == "eps" and hi > EPS_LIMIT:
+        raise ValueError(f"ε の定義域（0 < ε ≤ 1/100）の外: HI={hi!r}")
+    return {"mode": mode, "lo": lo, "hi": hi}
+
+
+def _value(a: int, x: int) -> float:
+    return float(f"{a // 100}.{a % 100:02d}e{x}")
+
+
+def exponent_masses(kind: str) -> dict:
+    """指数 x → 規則（乱数の選び方）で x が選ばれる確率。ε は x = -N、倍率は x = ±段の数（x = 0 は両側から）。"""
+    p = P_STOP
+    if kind == "eps":
+        return {-n: (1 - p) ** (n - N_MIN) * (1.0 if n == N_CAP else p) for n in range(N_MIN, N_CAP + 1)}
+    m = {x: 0.5 * (1 - p) ** abs(x) * (1.0 if abs(x) == E_CAP else p) for x in range(-E_CAP, E_CAP + 1)}
+    m[0] *= 2
+    return m
+
+
+def region_table(kind: str, region: dict) -> list:
+    """範囲に入る (A, x) の組を、指数ごとに [(x, x が選ばれる確率, [A の整数 100〜999 のうち入るもの])] で返す（入るものがない指数は書かない）。
+    端を含む指数だけ A を 1 つずつ確かめ、ほかは全部入るか全部入らないかを端の値で決める。"""
+    lo, hi, mode = region["lo"], region["hi"], region["mode"]
+    ok = (lambda v: lo <= v <= hi) if mode == "inside" else (lambda v: v > hi) if mode == "above" else (lambda v: v < lo)
+    table = []
+    for x, m in exponent_masses(kind).items():
+        v0, v1 = _value(A_MIN, x), _value(A_MAX, x)
+        if any(v0 <= e <= v1 for e in (lo, hi)):
+            a_ok = [a for a in range(A_MIN, A_MAX + 1) if ok(_value(a, x))]
+        else:
+            a_ok = list(range(A_MIN, A_MAX + 1)) if ok(v0) else []
+        if a_ok and m > 0.0:
+            table.append((x, m, a_ok))
+    return table
+
+
+def draw_coefficients(count: int, seed, kind: str, region: dict | None = None) -> list[dict]:
     """A×10^x の A（1.00〜9.99）と指数 x を乱数で count 個選ぶ（値の重複なし。決め打ちの ε・倍率と同じ値は除く）。
     kind は "eps"（x = -N、N = 3 + 段の数。上限は置かず N_CAP まで）か "scale"（x = ±段の数。|x| は E_CAP まで）。
+    region（make_region）を渡すと、その範囲の内側・上・下に入る値だけを選ぶ（規則で選ばれる確率を、範囲に入る値の中で比べ直したもの）。渡さなければ今までと同じ値。
     {"a", "exp", "value"} のリストを値の大きい順で返す。同じ種なら同じ値。"""
     rng, out, tries = random.Random(f"{seed}/{kind}"), {}, 0
+    tab = None if region is None else region_table(kind, region)
+    if tab is not None:
+        pool = sum(len(a_ok) for _, _, a_ok in tab)
+        if count > pool:
+            raise ValueError(f"範囲 {region} に入る値は {pool} 個で、{count} 個は選べない")
+        weights = [m * len(a_ok) for _, m, a_ok in tab]
     while len(out) < count:
         tries += 1
         if tries > 10_000 + 100 * count:
             raise ValueError(f"{count} 個は選べない（{len(out)} 個で止まった）")
-        a = rng.randint(A_MIN, A_MAX)
-        x = -(N_MIN + _steps(rng, N_CAP - N_MIN)) if kind == "eps" else rng.choice((-1, 1)) * _steps(rng, E_CAP)
-        v = float(f"{a // 100}.{a % 100:02d}e{x}")
+        if tab is None:
+            a = rng.randint(A_MIN, A_MAX)
+            x = -(N_MIN + _steps(rng, N_CAP - N_MIN)) if kind == "eps" else rng.choice((-1, 1)) * _steps(rng, E_CAP)
+        else:
+            x, _, a_ok = rng.choices(tab, weights=weights)[0]
+            a = rng.choice(a_ok)
+        v = _value(a, x)
         if v not in (EPS if kind == "eps" else SCALES) and v not in out:
             out[v] = {"a": a / 100, "exp": x, "value": v}
     return sorted(out.values(), key=lambda d: -d["value"])
+
+
+def make_draws(k_eps: int, k_scale: int, seed, eps_range=None, scale_range=None) -> dict:
+    """{"seed", "eps", "scales"}（compute に渡す）。eps_range / scale_range は (mode, lo, hi)。使ったときだけ "regions" を足す。"""
+    regions = {name: make_region(kind, *rg) for name, kind, rg in (("eps", "eps", eps_range), ("scales", "scale", scale_range)) if rg}
+    draws = {"seed": seed, "eps": draw_coefficients(k_eps, seed, "eps", regions.get("eps")),
+             "scales": draw_coefficients(k_scale, seed, "scale", regions.get("scales"))}
+    if regions:
+        draws["regions"] = regions
+    return draws
 
 
 def load_modules(repo: Path):
@@ -564,6 +643,7 @@ def render(res: dict) -> str:
               "決め打ちの値に足した。ε の条件は 0 < ε ≤ 1/100 だけ。乱数の ε の基準値は、登録した 1e-3 と 1e-6 の基準値を log10(ε) でつないだ直線（1e-3 より大きい側は延長、1e-6 以下は 1e-6 の値）。", "",
               "- ε: " + (", ".join(pow10_text(d["value"]) for d in rc["eps"]) or "なし"),
               "- 倍率: " + (", ".join(pow10_text(d["value"]) for d in rc["scales"]) or "なし")]
+        L += region_lines(rc)
     L += ["", "## 係数の範囲（ε=1e-6、境界の単位）", "", "| 窓の長さ | 係数の最小〜最大 | ε で位置が決まった単位のうち「始まりの時点で決まっていた」数（1e-3 / 1e-6 / 1e-9）|", "|---|---|---|"]
     for n in LENGTHS:
         st = res["sets"][str(n)]["stats"]
@@ -602,6 +682,16 @@ def render(res: dict) -> str:
     return "\n".join(L) + "\n"
 
 
+def region_lines(rc: dict) -> list[str]:
+    """乱数の値を範囲を指定して選んだときの、結果の説明の行（指定しなければ空）。"""
+    out = []
+    for name, label in (("eps", "ε"), ("scales", "倍率")):
+        r = (rc.get("regions") or {}).get(name)
+        if r:
+            out.append(f"- {label}を選んだ範囲: {r['mode']}（{pow10_text(r['lo'])} 〜 {pow10_text(r['hi'])}。inside は両端を含み、above は HI より大きく、below は LO より小さい）")
+    return out
+
+
 def dumps(obj) -> str:
     return json.dumps(obj, ensure_ascii=False, indent=1, allow_nan=False)
 
@@ -619,12 +709,22 @@ def main(argv=None) -> int:
     ap.add_argument("--random-eps", type=int, default=0, metavar="K", help="A×10^-N の ε を乱数で K 個足す")
     ap.add_argument("--random-scales", type=int, default=0, metavar="K", help="A×10^e の倍率を乱数で K 個足す（報告だけ）")
     ap.add_argument("--coef-seed", default=None, help="乱数の種。整数か auto（実行ごとに変わる）。省略は SEED。選んだ値と種は結果に書く")
+    for name, what in (("eps", "ε"), ("scale", "倍率")):
+        ap.add_argument(f"--{name}-range", nargs=3, metavar=("MODE", "LO", "HI"),
+                        help=f"乱数の{what}を選ぶ範囲。MODE は inside（LO 以上 HI 以下）/ above（HI より大きい）/ below（LO より小さい）。"
+                             "LO・HI は 2.22e-3 でも 2.22×10^-3 でも書ける。--random-" + ("eps" if name == "eps" else "scales") + " K と一緒に使う。省略は範囲なし（今までと同じ値）")
     args = ap.parse_args(argv)
     draws = None
+    for name, count in (("eps", args.random_eps), ("scale", args.random_scales)):
+        if getattr(args, f"{name}_range") and not count:
+            ap.error(f"--{name}-range は --random-{name}{'s' if name == 'scale' else ''} K（1 以上）と一緒に使う")
     if args.random_eps or args.random_scales:
         seed = SEED if args.coef_seed is None else (secrets.randbelow(10**9) if args.coef_seed == "auto" else int(args.coef_seed))
-        draws = {"seed": seed, "eps": draw_coefficients(args.random_eps, seed, "eps"),
-                 "scales": draw_coefficients(args.random_scales, seed, "scale")}
+        try:
+            ranges = [None if v is None else (v[0], parse_pow10(v[1]), parse_pow10(v[2])) for v in (args.eps_range, args.scale_range)]
+            draws = make_draws(args.random_eps, args.random_scales, seed, *ranges)
+        except ValueError as e:
+            ap.error(str(e))
         print(f"乱数の種: {seed}", file=sys.stderr)
     sa, mod = load_modules(args.repo)
     prof = PROFILES[args.profile]

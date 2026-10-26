@@ -132,6 +132,75 @@ def test_draw_share_follows_the_cap_and_the_stop_probability(monkeypatch):
     assert rp.share_le(gen, 5e-307) == pytest.approx(401 / 900)                       # N = 307 で A = 1.00〜5.00 の 401 通り
 
 
+LO, HI = 8.14e-13, 2.22e-3
+REGION = {"mode": "inside", "lo": LO, "hi": HI}
+
+
+def test_side_of_includes_both_ends_in_inside_and_leaves_them_out_of_above_and_below():
+    assert [rp.side_of(REGION, e) for e in (1e-2, 2.23e-3, HI, 1e-5, LO, 8.13e-13, 1e-20)] == ["above", "above", "inside", "inside", "inside", "below", "below"]
+
+
+def pooled(rows):
+    return rp.pool([rp.coverage_rows(gen, rows)])
+
+
+def test_region_summary_looks_only_at_the_grid_points_on_the_chosen_side():
+    t = pooled([row(devs={5e-3: 0.5, 1e-3: 0.02, 1e-7: 0.2}), row(devs={5e-3: 0.05}), row()])
+    above = rp.region_summary(gen, t, dict(REGION, mode="above"))
+    assert above["eps"] == [1e-2, 5e-3, 3e-3] and above["worst_ok_share"] == {"0.1": pytest.approx(2 / 3), "0.01": pytest.approx(1 / 3), "0.001": pytest.approx(1 / 3), "0.0001": pytest.approx(1 / 3)}
+    assert above["all_within"] == {"0.1": False, "0.01": False, "0.001": False, "0.0001": False}
+    inside = rp.region_summary(gen, t, REGION)
+    assert inside["eps"][0] == 2e-3 and inside["eps"][-1] == 1e-11 and 5e-3 not in inside["eps"]
+    assert inside["worst_ok_share"]["0.1"] == pytest.approx(2 / 3) and inside["all_within"]["0.1"] is False        # 1e-7 で 0.2 ずれる行がある
+    assert inside["worst_ok_share"]["0.01"] == pytest.approx(2 / 3)                                                    # 1e-3 の 0.02 と 1e-7 の 0.2 は、それぞれ別の点で 1 行だけ外れる
+    assert rp.region_summary(gen, t, dict(REGION, mode="below"))["eps"] == [1e-13]
+    below = rp.region_summary(gen, t, {"mode": "below", "lo": 1e-14, "hi": HI})                                       # 1e-14 より小さい格子の ε はない
+    assert below["eps"] == [] and below["worst_ok_share"]["0.1"] is None and below["all_within"]["0.1"] is False and below["max_lost"] is None
+    ok = rp.region_summary(gen, pooled([row(), row()]), REGION)
+    assert all(ok["all_within"].values()) and all(v == 1.0 for v in ok["worst_ok_share"].values())
+
+
+def test_region_summary_counts_lost_and_changed_units_as_the_maximum_over_the_side():
+    t = pooled([row(lost=(1e-2,)), row(boundary=False), row(boundary=False, same=False)])
+    s = rp.region_summary(gen, t, dict(REGION, mode="above"))
+    assert s["max_lost"] == 1 and s["max_nonboundary_changed"] == 1 and s["worst_ok_share"]["0.1"] == 0.0
+    assert rp.region_summary(gen, t, REGION)["max_lost"] == 0
+
+
+def test_region_summary_changed_units_is_the_largest_count_over_the_points_not_the_smallest():
+    r = row(boundary=False)
+    r[gen.ekey(5e-3)] = er(1.0, period=2.0)                                           # 5e-3 のときだけ式が変わる非境界の単位
+    s = rp.region_summary(gen, pooled([row(), r]), dict(REGION, mode="above"))
+    assert s["max_nonboundary_changed"] == 1 and s["eps"] == [1e-2, 5e-3, 3e-3]
+    assert rp.region_summary(gen, pooled([row(), r]), REGION)["max_nonboundary_changed"] == 0
+
+
+def test_region_summary_probabilities_of_the_three_sides_add_up_to_one_and_match_the_rule():
+    t = pooled([row()])
+    p = {m: rp.region_summary(gen, t, dict(REGION, mode=m))["draw_probability"] for m in gen.MODES}
+    assert sum(p.values()) == pytest.approx(1.0, abs=1e-12) and p["inside"] == pytest.approx(0.70017, abs=1e-5)
+    assert p["inside"] == pytest.approx(rp.share_le(gen, HI) - rp.share_le(gen, 8.13e-13), abs=1e-12)
+
+
+def test_region_summary_without_boundary_units_cannot_summarise():
+    s = rp.region_summary(gen, pooled([row(boundary=False)]), REGION)
+    assert s["eps"] and all(v is None for v in s["worst_ok_share"].values()) and not any(s["all_within"].values())
+
+
+def test_render_with_a_range_lists_the_side_and_says_when_it_is_empty():
+    def res_of(rows, region):
+        t = pooled(rows)
+        return {"grid": list(rp.GRID), "deltas": list(rp.DELTAS), "sets": {}, "total": t, "region": region, "region_summary": rp.region_summary(gen, t, region),
+                "full_coverage_max_eps": {format(d, "g"): rp.largest_full(t, d) for d in rp.DELTAS}, "draw_share_le": {format(e, "g"): rp.share_le(gen, e) for e in rp.GRID}}
+    md = rp.render(gen, res_of([row()], dict(REGION, mode="above")))
+    assert "## 指定した範囲: above（8.14×10^-13 〜 2.22×10^-3" in md and "この側にある格子の ε 3 個: 0.01, 0.005, 0.003。" in md and "| 10% | 100.00% | はい |" in md
+    assert "| 0.01 | above |" in md and "| 0.002 | inside |" in md and "| 1e-13 | below |" in md and "ε がこの側に入る確率: 14.4%" in md
+    empty = rp.render(gen, res_of([row()], {"mode": "below", "lo": 1e-14, "hi": HI}))
+    assert "この側にある格子の ε 0 個: なし。" in empty and "まとめられません" in empty and "最悪の収まった割合" not in empty
+    none = rp.render(gen, res_of([row(boundary=False)], REGION))
+    assert "まとめられません" in none
+
+
 def small_csv(tmp_path):
     cols = ["country", "date", "year", "variable", "value", "unit", "source", "note", "estimated_value"]
     rows = []
@@ -187,6 +256,7 @@ def test_render_says_so_when_nothing_can_be_judged_or_the_smallest_epsilon_fails
 def test_readme_points_to_the_script():
     text = (DIR / "README.md").read_text(encoding="utf-8")
     assert "eps_range_profile.py" in text and "tests/test_epsilon_generality_range.py" in text
+    assert "その側の格子の ε について、許容ごとの最悪の収まった割合などをまとめる" in text and "`--eps-range MODE LO HI`（`eps_generality.py` と同じ書き方" in text
 
 
 def test_results_readme_and_files_match_the_json_and_say_it_is_not_a_constant():
@@ -202,3 +272,46 @@ def test_results_readme_and_files_match_the_json_and_say_it_is_not_a_constant():
     for k, r in res.items():
         assert r["grid"] == list(rp.GRID)
         assert (R / k / "eps_range_profile.md").read_text(encoding="utf-8") == rp.render(gen, r), k
+
+
+def test_main_with_a_range_adds_the_ends_and_random_points_and_a_summary(tmp_path):
+    outs = []
+    for name in ("a", "b"):
+        out = tmp_path / name
+        assert rp.main(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--cadence", "month", "--outdir", str(out), "--repo", str(ROOT),
+                        "--eps-range", "below", "8.14×10^-13", "2.22e-3", "--random-eps", "3", "--coef-seed", "7"]) == 0
+        outs.append(out)
+    for n in ("eps_range_profile.json", "eps_range_profile.md"):
+        assert (outs[0] / n).read_bytes() == (outs[1] / n).read_bytes(), n
+    res = json.loads((outs[0] / "eps_range_profile.json").read_text(encoding="utf-8"))
+    drawn = [d["value"] for d in gen.draw_coefficients(3, 7, "eps", gen.make_region("eps", "below", LO, HI))]
+    assert res["region"] == {"mode": "below", "lo": LO, "hi": HI} and len(drawn) == 3 and all(v < LO for v in drawn)
+    assert res["grid"] == sorted(set(rp.GRID) | {LO, HI} | set(drawn), reverse=True)
+    sm = res["region_summary"]
+    assert sm["eps"] == sorted([1e-13] + drawn, reverse=True) and sm["draw_probability"] == pytest.approx(0.15594, abs=2e-5)
+    md = (outs[0] / "eps_range_profile.md").read_text(encoding="utf-8")
+    assert "## 指定した範囲: below（8.14×10^-13 〜 2.22×10^-3" in md and "| ε | 範囲 |" in md and "| 8.14e-13 | inside |" in md and "| 0.0022200000000000002 |" not in md
+
+
+def test_main_without_a_range_has_no_range_section_or_column(tmp_path):
+    out = tmp_path / "plain"
+    assert rp.main(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--cadence", "month", "--outdir", str(out), "--repo", str(ROOT)]) == 0
+    res = json.loads((out / "eps_range_profile.json").read_text(encoding="utf-8"))
+    assert "region" not in res and "region_summary" not in res and res["grid"] == list(rp.GRID)
+    md = (out / "eps_range_profile.md").read_text(encoding="utf-8")
+    assert "指定した範囲" not in md and "| ε | δ=10%" in md
+
+
+@pytest.mark.parametrize("flags", [
+    ("--random-eps", "3"),                                                           # 範囲がない
+    ("--eps-range", "sideways", "1e-5", "1e-3"),
+    ("--eps-range", "inside", "1e-3", "1e-5"),                                       # LO > HI
+    ("--eps-range", "inside", "abc", "1e-3"),
+    ("--eps-range", "inside", "1e-5", "1"),                                          # ε は 1/100 まで
+    ("--eps-range", "above", "1e-3", "9.99e-3", "--random-eps", "1"),                # その側に選べる値がない
+    ("--eps-range", "inside", "1e-5"),                                               # 3 つ要る
+])
+def test_main_refuses_a_bad_range_before_doing_anything(tmp_path, flags):
+    with pytest.raises(SystemExit) as e:
+        rp.main(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--outdir", str(tmp_path / "x"), "--repo", str(ROOT), *flags])
+    assert e.value.code == 2 and not (tmp_path / "x").exists()

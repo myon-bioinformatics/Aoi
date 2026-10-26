@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1113,
+      "attribute_uses": 1125,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -742,16 +742,16 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 329,
+        "approx": 339,
         "fail": 31,
         "fixture": 51,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 218,
+        "mark.parametrize": 219,
         "mark.skipif": 18,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 417,
+        "raises": 418,
         "skip": 8,
         "warns": 3
       },
@@ -880,16 +880,16 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 320,
+          "attribute_uses": 332,
           "attributes": {
-            "approx": 87,
+            "approx": 97,
             "fail": 11,
             "fixture": 12,
             "importorskip": 1,
-            "mark.parametrize": 74,
+            "mark.parametrize": 75,
             "mark.skipif": 12,
             "mark.xfail": 2,
-            "raises": 119,
+            "raises": 120,
             "skip": 2
           },
           "dynamic_import_sites": 0,
@@ -3036,8 +3036,9 @@
     },
     {
       "attributes": {
-        "approx": 11,
-        "raises": 1
+        "approx": 21,
+        "mark.parametrize": 1,
+        "raises": 2
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_range.py",

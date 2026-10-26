@@ -181,6 +181,8 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 uv run --locked python research/epsilon-generality/posthoc_scale_tolerance.py --staple-csv research/staple-price-survey/staple_survey_vertical.csv --outdir out/posthoc-staple --repo .
 ```
 
+**結果（走らせたあとに書く）**: (a')(b') とも予想どおり。許容そのままだと、式が変わった単位は倍率 1e-8 → 1 で 2104 → 2103 → 1056（1e-6。第 3 回と同じ）→ 16（1e-5）→ 0、許容に倍率の2乗をかけると全倍率で 0。表と読み方は [results-random/README.md](results-random/README.md) の「主食価格で、倍率の境目を細かく見た確認」。この入力では、倍率で式が動いたことの原因は絶対値の許容で全部説明できる、までで、他の入力・窓の長さには言えない。
+
 ### 再現と置き場所
 
 ```sh

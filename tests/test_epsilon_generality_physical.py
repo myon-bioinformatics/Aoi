@@ -515,6 +515,39 @@ def test_posthoc_states_the_staple_prediction_before_the_run_and_what_was_alread
     assert [k for k, _, _ in ph.KINDS] == ["monthly", "daily", "staple"] and ph.KINDS[2][2] == "staple"
 
 
+def staple_scale_result():
+    return json.loads((DIR / "results-random" / "staple" / "posthoc_scale_tolerance.json").read_text(encoding="utf-8"))
+
+
+def test_staple_scale_result_follows_the_written_predictions_and_the_md_is_what_render_makes():
+    res = staple_scale_result()
+    assert list(res) == ["staple"] and res["staple"]["windows"] == 2212 and res["staple"]["n"] == 24
+    u, sc = res["staple"]["tolerance_unchanged"], res["staple"]["tolerance_scaled"]
+    assert list(u) == list(sc) == ["1e-08", "1e-07", "1e-06", "1e-05", "0.0001", "0.001", "0.01", "1"]
+    changed = [u[k]["forms_changed"] for k in u]
+    assert all(a >= b for a, b in zip(changed, changed[1:]))                          # (a') 倍率を大きくしていくと、増えない
+    assert all(u[k]["forms_changed"] == 0 for k in ("0.001", "0.01", "1"))              # (a') 1e-3 以上では 0
+    assert (u["1e-06"]["forms_changed"], u["1e-06"]["boundary"]) == (1056, 381)         # (a') 第 3 回と同じ
+    for k, v in sc.items():                                                             # (b') 許容に倍率の2乗をかけると、どの倍率でも動かない
+        assert v["forms_changed"] == 0 and v["boundary_flag_changed"] == 0 and v["coefficient_max_dev"] < 1e-9, k
+    md = (DIR / "results-random" / "staple" / "posthoc_scale_tolerance.md").read_text(encoding="utf-8")
+    assert md == ph.render(res).replace("](../posthoc_scale_tolerance.py)", "](../../posthoc_scale_tolerance.py)")      # 置き場所が 1 階層深いリンクの 1 か所だけ違う
+
+
+def test_staple_scale_result_tables_in_the_readmes_are_the_json_numbers():
+    res = staple_scale_result()["staple"]
+    u, sc = res["tolerance_unchanged"], res["tolerance_scaled"]
+    text = (DIR / "results-random" / "README.md").read_text(encoding="utf-8")
+    sec = text[text.index("### 主食価格で、倍率の境目を細かく見た確認"):]
+    sec = sec[:sec.index("## ε が動いた範囲")]
+    for k in u:
+        row = f"| {k} | {u[k]['boundary']} | {u[k]['forms_changed']} | {u[k]['boundary_flag_changed']} | {sc[k]['forms_changed']} | {sc[k]['boundary_flag_changed']} |"
+        assert row in sec, row
+    assert " → ".join(str(u[k]["forms_changed"]) for k in u) in sec
+    main = (DIR / "README.md").read_text(encoding="utf-8")
+    assert "2104 → 2103 → 1056（1e-6。第 3 回と同じ）→ 16（1e-5）→ 0" in main and (u["1e-05"]["forms_changed"], u["1e-07"]["forms_changed"]) == (16, 2103)
+
+
 # ---- README の登録内容との一致 --------------------------------------------------------------------------------------------
 def test_readme_announces_the_staple_scale_check_before_it_runs_and_points_to_the_prediction():
     text = (DIR / "README.md").read_text(encoding="utf-8")

@@ -89,7 +89,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 
 ## 事後の確認（登録した基準の外）
 
-`posthoc_boundary_forms.py` は、結果を見たあとに足したもの。境界の単位のうち、ε=1e-3 / 1e-6 で選ばれる周期が ε=1e-9 のときと違う単位を数え、その単位で 2 つの周期の式の誤差の2乗和を並べ、周期ごとの境界の単位の数を野球の 24 単位と並べる。基準にはしない。結果は `results/posthoc_boundary_forms.md`。
+`posthoc_boundary_forms.py` は、結果を見たあとに足したもの。境界の単位のうち、ε=1e-3 / 1e-6 で選ばれる周期が ε=1e-9 のときと違う単位を数え、その単位で 2 つの周期の式の誤差の2乗和を並べる。境界でない単位のうち ε=1e-3 / 1e-6 で選ばれる式が今のコードと違う単位についても、今のコードの式・減衰しない波・ε の波の誤差の2乗和を並べる。周期ごとの境界の単位の数を野球の 24 単位と並べる。基準にはしない。結果は `results/posthoc_boundary_forms.md`。
 
 ## 実行の順
 

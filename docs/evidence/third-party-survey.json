@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1036,
+      "attribute_uses": 1039,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -751,7 +751,7 @@
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 393,
+        "raises": 396,
         "skip": 8,
         "warns": 3
       },
@@ -880,7 +880,7 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 243,
+          "attribute_uses": 246,
           "attributes": {
             "approx": 52,
             "fail": 10,
@@ -889,7 +889,7 @@
             "mark.parametrize": 63,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 95,
+            "raises": 98,
             "skip": 2
           },
           "dynamic_import_sites": 0,
@@ -3002,7 +3002,7 @@
     {
       "attributes": {
         "approx": 4,
-        "raises": 3
+        "raises": 6
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_posthoc.py",

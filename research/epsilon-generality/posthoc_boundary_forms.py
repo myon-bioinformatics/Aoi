@@ -9,6 +9,7 @@ eps_generality.py を走らせたあと、基準 C2（窓 12 か月・ε=1e-3）
   2. その単位について、ε ごとに 2 つの周期の誤差の2乗和を、その周期の式だけで当てはめて比べる（差が EPS_WAVE_TIE = 1e-12 より大きいか）
   3. 周期ごとの境界の単位の数を、窓の長さごとに、野球の 24 単位と並べる
   4. 周期が変わった単位を除いたとき、C2 の相対のずれの最大がどうなるか
+  5. 境界でない単位のうち ε=1e-3 / 1e-6 で選ばれる式が変わった単位について、今のコードで選ばれた式・ε の式・減衰しない式の誤差の2乗和を並べる
 
 使い方（リポジトリの直下から）:
   uv run --locked python research/epsilon-generality/posthoc_boundary_forms.py \\
@@ -44,12 +45,24 @@ def changed_period(rows: list[dict]) -> dict:
     return out
 
 
-def sse_of_form(sa, mod, xs: list[float], ys: list[float], eps: float, period: float) -> float:
-    """周期 period・減衰 eps（0 なら今のコードの「減衰しない波」）の式だけで当てはめたときの誤差の2乗和。"""
+def nonboundary_changes(rows: list[dict]) -> dict:
+    """境界でない単位のうち、ε=1e-3 / 1e-6 で選ばれる式（減衰・周期）が今のコードと違うものの添字。"""
+    out = {}
+    for e in gen.EPS[:-1]:
+        k = gen.ekey(e)
+        out[k] = [i for i, r in enumerate(rows)
+                  if not r["boundary"] and (r[k]["decay"], r[k]["period"]) != (r["decay"], r["period"])]
+    return out
+
+
+def sse_of_form(sa, mod, xs: list[float], ys: list[float], eps: float, period, lam=None) -> float:
+    """周期 period・減衰 lam の式だけで当てはめたときの誤差の2乗和。格子は減衰 0 を eps に差し替えたもの（eps = 0 なら今のコードの格子）。
+    lam を省くと lam = eps（差し替えた波、または eps = 0 の「減衰しない波」）。"""
+    lam = eps if lam is None else lam
     basis = mod.make_wave_basis(sa, eps)(xs)
-    cand = [b for b in basis if b["per"] == period and b["lam"] == eps]
+    cand = [b for b in basis if b["per"] == period and b["lam"] == lam]
     if len(cand) != 1:
-        raise ValueError(f"格子に周期 {period}・減衰 {eps} の式が {len(cand)} 個ある")
+        raise ValueError(f"格子に周期 {period}・減衰 {lam} の式が {len(cand)} 個ある")
     f = sa.wave_fit(ys, cand, 0.0, 1.0)
     return len(ys) * f["rmse"] ** 2
 
@@ -64,6 +77,19 @@ def tie_table(sa, mod, ys: list[float], p_small: float, p_large: float) -> list[
         b = sse_of_form(sa, mod, xs, ys, eps, p_large)
         out.append({"eps": eps, "sse_small_eps_period": a, "sse_other_period": b, "diff": b - a})
     return out
+
+
+def form_table(sa, mod, ys: list[float], unmod: tuple, eps: float, eps_period) -> list[dict]:
+    """境界でない単位で式が変わったときの誤差の2乗和。unmod = (減衰, 周期) = 今のコードで選ばれた式。
+    今のコードの式・同じ周期（eps_period）の減衰しない波・ε ごとの同じ周期の ε の波を、その式だけで当てはめて並べる。"""
+    n = len(ys)
+    xs = [i / (n - 1) for i in range(n)]
+    rows = [{"label": "今のコードで選ばれた式", "decay": unmod[0], "period": unmod[1],
+             "sse": sse_of_form(sa, mod, xs, ys, eps, unmod[1], lam=unmod[0])},
+            {"label": "同じ周期の減衰しない波（減衰 0）", "decay": 0.0, "period": eps_period, "sse": sse_of_form(sa, mod, xs, ys, 0.0, eps_period)}]
+    for e in gen.EPS:
+        rows.append({"label": f"同じ周期の ε の波（ε={e:g}）", "decay": e, "period": eps_period, "sse": sse_of_form(sa, mod, xs, ys, e, eps_period)})
+    return rows
 
 
 def corrected_c2(rows: list[dict], skip: set) -> dict:
@@ -94,18 +120,20 @@ def baseball_periods(repo: Path) -> dict:
 
 def analyse(sa, mod, series: dict, repo: Path) -> dict:
     res = gen.compute(sa, mod, series)
-    out = {"by_n": {}, "baseball": baseball_periods(repo), "units": []}
+    out = {"by_n": {}, "baseball": baseball_periods(repo), "units": [], "nonboundary_units": []}
     for n in gen.LENGTHS:
         rows = res["rows"]["real"][str(n)]
         wins = [w for w in gen.tile(series, n) if gen.normalize(w["values"]) is not None]        # real_rows と同じ順・同じ除外
         if len(wins) != len(rows):
             raise ValueError(f"窓の数が合わない: {len(wins)} ≠ {len(rows)}")
         ch = changed_period(rows)
+        nb = nonboundary_changes(rows)
         skip = set().union(*map(set, ch.values()))
         bd = [r for r in rows if r["boundary"]]
         out["by_n"][str(n)] = {
             "boundary": len(bd), "periods": dict(sorted(Counter(r["period"] for r in bd).items())),
-            "changed_period": {k: len(v) for k, v in ch.items()}, "c2_without_changed": corrected_c2(rows, skip)}
+            "changed_period": {k: len(v) for k, v in ch.items()}, "c2_without_changed": corrected_c2(rows, skip),
+            "nonboundary_changed": {k: len(v) for k, v in nb.items()}}
         for k, idx in ch.items():
             for i in idx:
                 r = rows[i]
@@ -118,6 +146,18 @@ def analyse(sa, mod, series: dict, repo: Path) -> dict:
                 out["units"].append({"n": n, "eps": float(k[1:]), "source": r["source"], "country": r["country"], "variable": r["variable"],
                                      "unit": r["unit"], "series_index": r["series_index"], "start": r["start"], "period_at_1e-9": ref, "period_at_eps": other,
                                      "table": tie_table(sa, mod, ys, ref, other)})
+        for k, idx in nb.items():
+            for i in idx:
+                r = rows[i]
+                w = wins[i]
+                if (w["si"], w["start"]) != (r["series_index"], r["start"]):
+                    raise ValueError(f"窓と行が対応しない: {i}")
+                ys = gen.normalize(w["values"])[1]
+                out["nonboundary_units"].append({
+                    "n": n, "eps": float(k[1:]), "source": r["source"], "country": r["country"], "variable": r["variable"],
+                    "unit": r["unit"], "series_index": r["series_index"], "start": r["start"],
+                    "unmodified": [r["decay"], r["period"]], "epsilon_form": [r[k]["decay"], r[k]["period"]],
+                    "table": form_table(sa, mod, ys, (r["decay"], r["period"]), float(k[1:]), r[k]["period"])})
     return out
 
 
@@ -143,6 +183,22 @@ def render(res: dict) -> str:
               "| ε（0 は今のコード） | ε=1e-9 で選ばれた周期の式 | ε で選ばれた周期の式 | 差（後者 − 前者） |", "|---|---|---|---|"]
         for t in u["table"]:
             L.append(f"| {t['eps']:g} | {t['sse_small_eps_period']:.9g} | {t['sse_other_period']:.9g} | {t['diff']:.3g} |")
+        L.append("")
+    L += ["## 境界でない単位で、選ばれる式が変わった単位", ""]
+    cnt = "、".join(f"{n} か月: {d['nonboundary_changed'][gen.ekey(1e-3)]} / {d['nonboundary_changed'][gen.ekey(1e-6)]}"
+                    for n, d in res["by_n"].items())
+    L += [f"ε=1e-3 / 1e-6 のとき今のコードと違う式が選ばれた境界でない単位の数: {cnt}", ""]
+    if not res["nonboundary_units"]:
+        L.append("なし。")
+    for u in res["nonboundary_units"]:
+        L += [f"### {u['n']} か月・ε={u['eps']:g}: {u['source']} {u['country']} {u['variable']}（{u['unit']}、系列 {u['series_index']}）{u['start']} から", "",
+              f"今のコードの式は 減衰 {u['unmodified'][0]:g}・周期 {u['unmodified'][1] if u['unmodified'][1] is None else format(u['unmodified'][1], 'g')}、"
+              f"ε の格子では 減衰 {u['epsilon_form'][0]:g}・周期 {u['epsilon_form'][1] if u['epsilon_form'][1] is None else format(u['epsilon_form'][1], 'g')}。"
+              "それぞれの式だけで当てはめた誤差の2乗和（小さいほどよく合う）:", "",
+              "| 式 | 減衰 | 周期 | 誤差の2乗和 |", "|---|---|---|---|"]
+        for x in u["table"]:
+            per = "なし" if x["period"] is None else f"{x['period']:g}"
+            L.append(f"| {x['label']} | {x['decay']:g} | {per} | {x['sse']:.9g} |")
         L.append("")
     return "\n".join(L) + "\n"
 

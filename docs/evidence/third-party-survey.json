@@ -734,7 +734,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1049,
+      "attribute_uses": 1051,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -742,7 +742,7 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 296,
+        "approx": 297,
         "fail": 30,
         "fixture": 51,
         "hookimpl": 4,
@@ -751,7 +751,7 @@
         "mark.skipif": 12,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 403,
+        "raises": 404,
         "skip": 8,
         "warns": 3
       },
@@ -880,16 +880,16 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 256,
+          "attribute_uses": 258,
           "attributes": {
-            "approx": 54,
+            "approx": 55,
             "fail": 10,
             "fixture": 12,
             "importorskip": 1,
             "mark.parametrize": 64,
             "mark.skipif": 6,
             "mark.xfail": 2,
-            "raises": 105,
+            "raises": 106,
             "skip": 2
           },
           "dynamic_import_sites": 0,
@@ -3001,9 +3001,9 @@
     },
     {
       "attributes": {
-        "approx": 2,
+        "approx": 3,
         "mark.parametrize": 1,
-        "raises": 7
+        "raises": 8
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_physical.py",

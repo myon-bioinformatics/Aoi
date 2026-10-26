@@ -28,6 +28,7 @@ def load(name):
 
 gen = load("eps_generality")
 fp = load("fetch_physical")
+ph = load("posthoc_scale_tolerance")
 sa, trial = gen.load_modules(ROOT)
 COLS = fp.COLS
 
@@ -383,6 +384,85 @@ def test_the_real_pins_are_well_formed():
     assert fp.PINS["weather"]["commit"] == fp.PINS["co2"]["commit"]
 
 
+# ---- 事後: 値の単位と絶対値の許容（posthoc_scale_tolerance.py）------------------------------------------------------------
+def synth_window(sid, i):
+    spec = next(x for x in gen.SYNTH if x["id"] == sid)
+    return {"key": "k", "start": "2020-01", "values": gen.synth_series(spec, i)}
+
+
+def test_posthoc_unscaled_tolerance_moves_the_form_at_a_small_scale_and_a_scaled_tolerance_does_not():
+    bases = gen.make_bases(sa, trial, [i / 23 for i in range(24)])
+    wins = [synth_window("undamped_p1", 7), synth_window("damped_l1", 10)]       # 探して固定した窓（倍率 1e-6 で式が動く）
+    old_tie = sa.EPS_WAVE_TIE
+    for scale_tie, want_changed in ((False, 2), (True, 0)):
+        with ph.patched(gen, sa, (1e-6, 1.0), scale_tie):
+            out = gen.scale_summary(sa, bases, wins)
+        assert out["1"]["forms_changed"] == 0 and out["1e-06"]["forms_changed"] == want_changed, scale_tie
+        if scale_tie:
+            assert out["1e-06"]["boundary_flag_changed"] == 0 and out["1e-06"]["coefficient_max_dev"] < 1e-9
+    assert sa.EPS_WAVE_TIE == old_tie == ph.TIE
+
+
+def test_posthoc_analyse_runs_the_unchanged_tolerance_first_and_the_scaled_one_second():
+    series = {("k", f"physical:{i}", "u", "s", ""): {j: v for j, v in enumerate(synth_window(sid, k)["values"])}
+              for i, (sid, k) in enumerate((("undamped_p1", 7), ("damped_l1", 10)))}
+    res = ph.analyse(gen, sa, trial, series, "month")
+    assert res["windows"] == 2 and res["n"] == 24
+    assert res["tolerance_unchanged"]["1e-06"]["forms_changed"] == 2 and res["tolerance_scaled"]["1e-06"]["forms_changed"] == 0
+    assert res["tolerance_unchanged"]["1"] == res["tolerance_scaled"]["1"]
+
+
+def test_posthoc_patched_restores_everything_even_when_the_body_fails():
+    old = (gen.SCALES, gen.fit_row, sa.EPS_WAVE_TIE)
+    with pytest.raises(RuntimeError):
+        with ph.patched(gen, sa, (0.5, 1.0), True):
+            assert gen.SCALES == (0.5, 1.0) and gen.fit_row is not old[1]
+            raise RuntimeError("x")
+    assert (gen.SCALES, gen.fit_row, sa.EPS_WAVE_TIE) == old
+
+
+def test_posthoc_patched_multiplies_the_tolerance_by_the_square_of_the_scale_only_while_fitting(monkeypatch):
+    seen = []
+    monkeypatch.setattr(gen, "fit_row", lambda sa_, b, ys, tau: seen.append((tau, sa_.EPS_WAVE_TIE)) or {"x": 1})
+    for scale_tie in (True, False):
+        seen.clear()
+        with ph.patched(gen, sa, gen.SCALES, scale_tie):
+            for f in (1e-3, 1.0, 1e3):
+                assert gen.fit_row(sa, None, [0.0], gen.PRIMARY_TAU * f) == {"x": 1}
+                assert sa.EPS_WAVE_TIE == ph.TIE                       # 当てはめの外では元の値
+        want = [ph.TIE * f * f if scale_tie else ph.TIE for f in (1e-3, 1.0, 1e3)]
+        assert [t for _, t in seen] == pytest.approx(want, rel=1e-9)
+    assert sa.EPS_WAVE_TIE == ph.TIE and gen.fit_row is not None
+
+
+def test_posthoc_cli_writes_both_variants_for_both_cadences_and_is_reproducible(tmp_path):
+    monthly = write_rows(tmp_path / "m.csv", [dict(r, date=f"{2000 + i // 12}-{i % 12 + 1:02d}-01", variable="physical:temp_anomaly", note="GCAG")
+                                               for i, r in enumerate(vrows(48, values=wave(48, 0.2)))])
+    daily = write_rows(tmp_path / "d.csv", vrows(48, values=wave(48, 0.5)))
+    outs = []
+    for name in ("a", "b"):
+        o = tmp_path / name
+        assert ph.main(["--monthly-csv", str(monthly), "--daily-csv", str(daily), "--outdir", str(o), "--repo", str(ROOT)]) == 0
+        outs.append(o)
+    for n in ("posthoc_scale_tolerance.json", "posthoc_scale_tolerance.md"):
+        assert (outs[0] / n).read_bytes() == (outs[1] / n).read_bytes()
+    res = json.loads((outs[0] / "posthoc_scale_tolerance.json").read_text(encoding="utf-8"))
+    assert set(res) == {"monthly", "daily"} and all(res[k]["windows"] == 2 and res[k]["n"] == 24 for k in res)
+    for k in res:
+        for name in ("tolerance_unchanged", "tolerance_scaled"):
+            assert list(res[k][name]) == ["1e-08", "1e-07", "1e-06", "1e-05", "0.0001", "0.001", "0.01", "1"]
+            assert res[k][name]["1"]["forms_changed"] == 0 and res[k][name]["1"]["units"] == 2
+    md = (outs[0] / "posthoc_scale_tolerance.md").read_text(encoding="utf-8")
+    assert "## 月次（24 点の窓 2 個）" in md and "## 日次（24 点の窓 2 個）" in md and md.count("許容に倍率の2乗をかけた") == 2
+    assert gen.SCALES == (1e-6, 1e-3, 1.0, 1e3, 1e6) and sa.EPS_WAVE_TIE == ph.TIE                      # 呼んだあとも元のまま
+
+
+def test_posthoc_states_its_prediction_before_the_run_and_the_fine_scales():
+    doc = ph.__doc__
+    assert "予想（走らせる前に書く）" in doc and "(a)" in doc and "(b)" in doc and "EPS_WAVE_SOLVE" in doc
+    assert ph.FINE == (1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1.0) and ph.TIE == 1e-12
+
+
 # ---- README の登録内容との一致 --------------------------------------------------------------------------------------------
 def test_readme_physical_section_states_the_pinned_inputs_the_scales_and_the_profiles():
     text = (DIR / "README.md").read_text(encoding="utf-8")
@@ -393,7 +473,8 @@ def test_readme_physical_section_states_the_pinned_inputs_the_scales_and_the_pro
     for needle in ("SCALES = (1e-6, 1e-3, 1, 1e3, 1e6)", "`physical-monthly`", "`physical-daily`", "444 / 221 / 110", "968 / 480 / 240",
                    "13 / 2 / 0", "5,353 行", "11,688 行", "4f18c60d52e26f1ec84496619ee2aa656ae0e3994373064c8be78fd150ceefc9",
                    "1d1ea18b501abc473a9e27bc388a0433fb89551bbbcef396648c15f41caa9824", "tests/test_epsilon_generality_physical.py",
-                   "基準は置かず、報告だけ", "矛盾する材料はなかった", "約 18% 未満", "results-physical/"):
+                   "基準は置かず、報告だけ", "矛盾する材料はなかった", "約 18% 未満", "results-physical/", "posthoc_scale_tolerance.py",
+                   "走らせる前に", "EPS_WAVE_SOLVE", "直し方"):
         assert needle in sec, needle
     assert "98% 以上" in sec and "20 未満" in sec
     assert gen.CRIT["c1_eps3"] == 0.98 and gen.MIN_UNITS == 20                               # 第 1 回と同じ値のまま

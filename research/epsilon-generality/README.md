@@ -153,6 +153,15 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 - `eps_generality.py`: `--profile`（`staple` が既定、`physical-monthly`、`physical-daily`）。日次の刻み、合成の系列の省略、値の単位の報告を足した。**既定（主食価格の回）の出力は変えていない**: 足したあとのスクリプトで第 1 回を走らせ直し、`results/` の 3 ファイルとバイト単位で同じことを確かめてからコミットした
 - `fetch_physical.py`（新）: 上の 3 ファイルを固定したコミットと sha256 で取り、縦持ちの CSV にする
 - `tests/test_epsilon_generality_physical.py`（新）
+- `posthoc_scale_tolerance.py`（新。**結果を見たあとに足した**。下の「事後の確認」）
+
+### 事後の確認（結果を見たあとに足した。登録した基準の外）
+
+物理量の回を走らせたあと、報告だけにした「値の単位を変えたとき」で、倍率 1e-6 のときだけ選ばれる式が大きく動いたのを見た（月次 221 窓のうち 115、日次 478 窓のうち 272。倍率 1e-3 から 1e6 までは動かなかった）。この動きの理由を確かめるため、**走らせる前に**仮説と予想を `posthoc_scale_tolerance.py` の冒頭に書いて push した。
+
+- 仮説: `sakanalytics` の絶対値の許容 `EPS_WAVE_TIE`（誤差の2乗和の差がこれ以下なら先に並べた式のまま）が、値を c 倍すると c² 倍になる誤差の2乗和の尺度に対して大きくなりすぎ、同点ではない式まで同点にする。`EPS_WAVE_SOLVE` は格子だけで決まり y によらないので、仮説の外
+- 予想: (a) 許容をそのままにして倍率を細かく（1e-8〜1e-2）動かすと、式が動き始める倍率が見つかる。(b) 許容に倍率の2乗をかけると、どの倍率でも式は変わらない。(b) で変わるなら仮説は足りない
+- これは基準ではない。(b) で変わらなくても、示せるのは「この許容が、この入力で動きの原因の全部だった」までで、直し方（許容を相対にする、など）は決めない。`sakanalytics` は変更しない（PR #24 は触らない）
 
 ### 再現と置き場所
 
@@ -160,9 +169,10 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 uv run --locked python research/epsilon-generality/fetch_physical.py --raw-dir out/physraw --outdir out/physical --download
 uv run --locked python research/epsilon-generality/eps_generality.py --csv out/physical/physical_monthly_vertical.csv --profile physical-monthly --outdir out/monthly --repo .
 uv run --locked python research/epsilon-generality/eps_generality.py --csv out/physical/physical_daily_vertical.csv --profile physical-daily --outdir out/daily --repo .
+uv run --locked python research/epsilon-generality/posthoc_scale_tolerance.py --monthly-csv out/physical/physical_monthly_vertical.csv --daily-csv out/physical/physical_daily_vertical.csv --outdir out/posthoc --repo .
 ```
 
-結果は `results-physical/`（`monthly/`、`daily/`、`README.md`）。取り込んだ CSV の sha256 は `results-physical/physical_manifest.json`。
+結果は `results-physical/`（`monthly/`、`daily/`、`posthoc_scale_tolerance.json`・`.md`、`README.md`）。取り込んだ CSV の sha256 は `results-physical/physical_manifest.json`。
 
 ### 限界
 

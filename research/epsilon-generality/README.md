@@ -93,6 +93,8 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 
 `posthoc_eps_ladder.py` は、第 3 回の結果を見たあとに足したもの。ε を 1e-4〜1/100 の固定の梯子で動かし、C2 の基準（登録した値と、第 3 回で延ばした値）を超える境界の単位と、ε の波が残らない単位を数え、動いた単位の周期・係数を梯子の上で並べる。基準にはしない。結果は `results-random/*/posthoc_eps_ladder.md`。テストは `tests/test_epsilon_generality_ladder.py`。
 
+`eps_range_profile.py` は、第 3 回の結果を見たあとに足したもの。「そのデータで、ε がどこまで動かなかったか」を記録するためのもので、**ε の範囲や定数を決めるものではない**（`--eps-range` のような既定値も置いていない）。境界の単位の係数が基準の ε=1e-9 と相対 10% / 1% / 0.1% / 0.01% 以内に収まった割合と、境界でない単位で選ばれる式が変わらなかった割合を、16 点の ε（1/100〜1e-13）で数え、すべて収まっていた最大の ε と、乱数の選び方（`draw_coefficients`）で ε がその値以下になる確率を並べる。別のデータには別の数字が出る（出てよい）ので、データごとに同じ表を作って並べて見るためのスクリプト。基準にはしない。別のデータには `--csv`（縦持ち）、`--prefix`（変数名の頭）、`--cadence`（month か day）を渡す。結果は `results-random/*/eps_range_profile.md`。テストは `tests/test_epsilon_generality_range.py`。
+
 ## 実行の順
 
 1. この文書とスクリプトとテストを先に置く（結果を見ないまま）

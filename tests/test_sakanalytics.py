@@ -536,6 +536,32 @@ def test_add_persistence_adds_the_marks_next_to_the_unchanged_values():
     assert col("t", "rf_low_streak") == [0, 0, 0] and col("t", "rf_low_streak_censored") == [False, False, False]
 
 
+def test_streak_shuffled_rows_do_not_inherit_another_teams_exact_run():
+    from sakanalytics import streak
+    # a ends with an exact run in 2014; b starts in 2015, but has no 2014 observation.
+    # A known false in 2013 does not make c's 2015 run exact across a missing year.
+    st = pl.DataFrame({"team": ["b", "c", "a", "b", "a", "c"],
+                       "season": [2016, 2015, 2014, 2015, 2013, 2013],
+                       "x": [True, True, True, True, False, False]},
+                      schema_overrides={"season": pl.Int32})
+    out = streak(st, pl.col("x"), "s").sort("team", "season")
+    assert out["s"].to_list() == [0, 1, 1, 2, 0, 1]
+    assert out["s_censored"].to_list() == [False, False, True, True, False, True]
+
+
+def test_add_persistence_without_inning_data_handles_nulls_and_empty_input():
+    from sakanalytics import add_persistence
+    st = pl.DataFrame({"team": ["a"] * 4, "season": [2013, 2014, 2015, 2016],
+                       "rank_rf": [5, None, 5, 5]}, schema_overrides={"season": pl.Int32})
+    out = add_persistence(st).sort("season")
+    assert out["rf_low_streak"].to_list() == [1, None, 1, 2]
+    assert out["rf_low_streak_censored"].to_list() == [True, None, True, True]
+    assert "inn_size_low_streak_censored" not in out.columns
+    empty = add_persistence(st.head(0))
+    assert empty.height == 0
+    assert empty.schema["rf_low_streak_censored"] == pl.Boolean
+
+
 def test_log5_properties():
     from sakanalytics import log5
     assert log5(0.5, 0.5) == pytest.approx(0.5)

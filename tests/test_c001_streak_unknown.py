@@ -193,3 +193,80 @@ def test_render_shows_the_three_cells_the_verdict_and_the_pivot_rows():
     assert "| converse | 2・16/16（0） | 2・16/16（0） | 2・16/16（0） | u によらない |" in text
     assert "original: 終了コードは (a) 0・(b) 1・(c) 0。(b) で新しく判例になる行: l-2013。(b) で判例でなくなる行: なし" in text
     assert "converse: 終了コード" not in text
+
+
+# ---- 置いた結果が、スクリプト・予想・README と合っている ------------------------------------------------------------------
+RESULTS = EXPLORATORY / "streak_unknown_results"
+
+
+def results_json():
+    return json.loads((RESULTS / "streak_unknown.json").read_text(encoding="utf-8"))
+
+
+def test_the_committed_results_are_what_the_script_makes_from_the_committed_inputs(result):
+    assert results_json() == json.loads(json.dumps(result))
+    assert (RESULTS / "streak_unknown.md").read_text(encoding="utf-8") == su.render(results_json())
+
+
+def test_the_readme_names_the_inputs_by_their_full_sha256():
+    import hashlib
+    md = (RESULTS / "README.md").read_text(encoding="utf-8")
+    base = ROOT / "cycles" / "c001-chunichi"
+    for path in (base / "outputs" / "season.jsonl", base / "propositions.toml"):
+        assert hashlib.sha256(path.read_bytes()).hexdigest() in md
+
+
+def by_id():
+    return {q["id"]: q for q in results_json()["propositions"]}
+
+
+def test_the_written_predictions_hold_or_fail_in_the_results_json_as_the_readme_says():
+    q, md = by_id(), (RESULTS / "README.md").read_text(encoding="utf-8")
+    res = results_json()
+    assert res["gate"]["ok"] and "4 命題・16 形すべて同じ" in md and sum(len(v["forms"]) for v in q.values()) == 16
+    # (b) inn は 4 行で予想どおり。rf は 0 の予想が外れて 4 行（2012年）
+    assert q["P62"]["unknown_units"] == {"inn_size_low_streak": ["b-2013", "d-2013", "l-2013", "s-2013"]}
+    assert q["P64"]["unknown_units"] == {"rf_low_streak": ["b-2012", "db-2012", "h-2012", "t-2012"]}
+    assert q["P65"]["unknown_units"] == q["P64"]["unknown_units"]
+    assert "rf は外れ" in md
+    # P64 は終了コードが同じでも数は同じではない
+    p64 = q["P64"]["forms"]["original"]
+    assert (p64["a"]["hold"], p64["a"]["n"], p64["b"]["hold"], p64["b"]["n"]) == (22, 26, 25, 30)
+    assert p64["new_counterexamples_b"] == ["h-2012"] and p64["counts_stable"] is False
+    # P63 は d が範囲外なので原命題は 3 行だけ増える
+    p63 = q["P63"]["forms"]["original"]
+    assert (p63["a"]["n"], p63["b"]["n"]) == (7, 10)
+    # (c) P62 の原命題
+    p62 = q["P62"]["forms"]["original"]
+    assert [(p62[t]["code"], p62[t]["hold"], p62[t]["n"]) for t in "ab"] == [(0, 16, 16), (1, 19, 20)]
+    assert p62["a"]["units"] == [] and p62["b"]["units"] == ["l-2013"] and p62["new_counterexamples_b"] == ["l-2013"]
+    # (d) u しだい = P62（原命題・対偶）と P63（対偶）。P64・P65 は u によらない
+    assert q["P62"]["u_dependent_forms"] == ["original", "contrapositive"]
+    assert q["P63"]["u_dependent_forms"] == ["contrapositive"]
+    assert q["P64"]["u_dependent_forms"] == q["P65"]["u_dependent_forms"] == []
+    assert [q[i]["verdict_depends_on_u"] for i in ("P62", "P63", "P64", "P65")] == [True, True, False, False]
+
+
+def test_the_codes_the_readme_quotes_are_the_codes_in_the_json():
+    q = by_id()
+    code = lambda pid, form: [q[pid]["forms"][form][t]["code"] for t in "abc"]
+    assert code("P62", "original") == [0, 1, 5] and code("P62", "contrapositive") == [0, 1, 5]
+    assert code("P63", "contrapositive") == [0, 1, 5] and code("P63", "original") == [4, 4, 4]
+    for pid in ("P62", "P63", "P64", "P65"):
+        assert code(pid, "converse") == [2, 2, 2] and code(pid, "inverse") == [2, 2, 2]
+    for pid in ("P64", "P65"):
+        assert code(pid, "original") == [4, 4, 4] and code(pid, "contrapositive") == [1, 1, 1]
+
+
+def test_the_readme_tables_are_the_rows_the_script_renders():
+    md = (RESULTS / "README.md").read_text(encoding="utf-8")
+    rendered = su.render(results_json())
+    for pid in ("P62", "P63"):
+        section = rendered[rendered.index(f"## {pid} "):]
+        rows = [x for x in section.splitlines()[:12] if x.startswith("| ") and "---" not in x]
+        assert len(rows) == 5 and all(r in md for r in rows)
+
+
+def test_forms_are_shown_in_the_fixed_order_even_after_the_json_sorts_its_keys():
+    forms = {"inverse": 1, "original": 2, "converse": 3, "contrapositive": 4, "held_out": 5}
+    assert su.forms_in_order(forms) == ["original", "contrapositive", "converse", "inverse", "held_out"]

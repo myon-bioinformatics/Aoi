@@ -38,6 +38,7 @@ BIG = 10**6                                   # u が十分大きい: 条件の�
 TREATMENTS = ("a", "b", "c")
 TREATMENT_JA = {"a": "(a) u = 0（現状）", "b": "(b) u が十分大きい", "c": "(c) 不明な行を空にする"}
 GATE_KEYS = ("n", "hold", "undetermined", "code")
+FORM_ORDER = ("original", "contrapositive", "converse", "inverse")   # 表示の順（JSON は キーを並べ替えて書くので、読み戻しても同じ順にする）
 EXIT_GATE = 65                                # pythdragoras の終了コード 65（データの誤り）に合わせる
 
 
@@ -171,9 +172,13 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
     for q in out["propositions"]:
         for by_t in q["forms"].values():
             by_t.update(stability(by_t))
-        q["u_dependent_forms"] = [f for f, v in q["forms"].items() if not v["code_stable"]]
+        q["u_dependent_forms"] = [f for f in forms_in_order(q["forms"]) if not q["forms"][f]["code_stable"]]
         q["verdict_depends_on_u"] = bool(q["u_dependent_forms"])
     return out
+
+
+def forms_in_order(forms: dict) -> list[str]:
+    return sorted(forms, key=lambda f: (FORM_ORDER.index(f) if f in FORM_ORDER else len(FORM_ORDER), f))
 
 
 def render(res: dict) -> str:
@@ -188,10 +193,10 @@ def render(res: dict) -> str:
         L += [f"## {q['id']} {q['statement']}", ""]
         unk = "、".join(f"{c}: {', '.join(v) or 'なし'}" for c, v in q["unknown_units"].items())
         L += [f"不明な行: {unk}", "", "| 形 | " + " | ".join(TREATMENT_JA[t] for t in TREATMENTS) + " | 終了コード |", "|---|---|---|---|---|"]
-        for form, v in q["forms"].items():
+        for form, v in ((f, q["forms"][f]) for f in forms_in_order(q["forms"])):
             cells = [f"{v[t]['code']}・{v[t]['hold']}/{v[t]['n']}（{v[t]['undetermined']}）" for t in TREATMENTS]
             L += [f"| {form} | " + " | ".join(cells) + f" | {'u によらない' if v['code_stable'] else 'u しだい'} |"]
-        for form, v in q["forms"].items():
+        for form, v in ((f, q["forms"][f]) for f in forms_in_order(q["forms"])):
             if not v["code_stable"]:
                 codes = {t: v[t]["code"] for t in TREATMENTS}
                 L += ["", f"- {form}: 終了コードは (a) {codes['a']}・(b) {codes['b']}・(c) {codes['c']}。"

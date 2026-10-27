@@ -895,8 +895,8 @@
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 34,
-          "import_sites": 35
+          "files": 35,
+          "import_sites": 36
         }
       },
       "declared": [
@@ -933,8 +933,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 112,
-      "import_sites": 114
+      "files": 113,
+      "import_sites": 115
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3101,6 +3101,14 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_region.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {},
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_scaleband.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

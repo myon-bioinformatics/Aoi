@@ -183,6 +183,16 @@ uv run --locked python research/epsilon-generality/posthoc_scale_tolerance.py --
 
 **結果（走らせたあとに書く）**: (a')(b') とも予想どおり。許容そのままだと、式が変わった単位は倍率 1e-8 → 1 で 2104 → 2103 → 1056（1e-6。第 3 回と同じ）→ 16（1e-5）→ 0、許容に倍率の2乗をかけると全倍率で 0。表と読み方は [results-random/README.md](results-random/README.md) の「主食価格で、倍率の境目を細かく見た確認」。この入力では、倍率で式が動いたことの原因は絶対値の許容で全部説明できる、までで、他の入力・窓の長さには言えない。
 
+#### 式が変わる ε を窓ごとに探す（2026-10-27。予想は走らせる前に書いて push した）
+
+梯子で式が変わった 3 窓（MDA の小麦粉、NIC の米、Mauna Loa の CO2）について、式が変わる ε を二分で 0.1% の幅に挟み、許容を ×10^±3 にしても動かないか、戻って変わらないか、挟む 2 点の誤差の2乗和の差が小さいかを見る。予想 (a)〜(e) は `posthoc_window_crossing.py` の冒頭に書いた。登録した基準の外で、`sakanalytics` は変更しない（PR #24 は触らない）。テストは `tests/test_epsilon_generality_window_crossing.py`。
+
+```sh
+uv run --locked python research/epsilon-generality/posthoc_window_crossing.py --staple-csv research/staple-price-survey/staple_survey_vertical.csv --physical-monthly-csv out/physical/physical_monthly_vertical.csv --outdir out/crossing --repo .
+```
+
+**結果（走らせたあとに書く）**: 予想 (a)〜(e) はすべて当たり。式が変わる ε は MDA 7.43×10^-4、NIC 5.98×10^-3、Mauna Loa 9.50×10^-3 で、許容を ×10^±3 にしても 0.1% の幅の中で動かず、60 点の並びで戻って変わることもない。登録した ε（最大 1e-3）で式が変わるのは MDA だけで、NIC と Mauna Loa は登録した基準では見えない。表と読み方は [results-random/README.md](results-random/README.md) の「式が変わる ε を窓ごとに探した確認（表 5）」、数は `results-random/window-crossing/`。この 3 窓についてだけで、ε の値の扱いは決めない。
+
 ### 再現と置き場所
 
 ```sh

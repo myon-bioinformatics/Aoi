@@ -259,3 +259,72 @@ def test_the_prediction_is_written_before_the_run_and_names_what_is_not_claimed(
     for tag in ("(a)", "(b)", "(c)", "(d)", "(e)"):
         assert tag in doc
     assert "走らせる前に書く" in doc and "ε の値をどうするかは決めない" in doc and "この 3 窓" in doc
+
+
+# ---- 置いた結果（実データ）が、JSON・予想・READMEと合っている ------------------------------------------------------------
+RESULTS = DIR / "results-random" / "window-crossing"
+README_RANDOM = DIR / "results-random" / "README.md"
+README_MAIN = DIR / "README.md"
+
+
+def results_json():
+    return json.loads((RESULTS / "posthoc_window_crossing.json").read_text(encoding="utf-8"))
+
+
+def sci(x):
+    m, e = f"{x:.2e}".split("e")
+    return f"{m}×10^{int(e)}"
+
+
+def form(f):
+    return f"周期 {'なし' if f[1] is None else format(f[1], 'g')}" + ("" if f[0] == "ε" else f"（減衰 {f[0]:g}）")
+
+
+def readme_row(w):
+    t = w["by_tolerance"]["1e-12"]
+    es = (t["below"] * t["above"]) ** 0.5
+    g = {x["label"]: x for x in w["gaps"]}
+    g9, g3 = g["1e-9"], g["1e-3"]
+    chosen = " / ".join(form(g[k]["chosen"]) for k in ("1e-3", "1e-6", "1e-9"))
+    return (f"| {w['id']}（{w['n']} 点、{w['start']} から） | {w['bracket'][0]:g} / {w['bracket'][1]:g} | {form(w['form_lo'])} → {form(w['form_hi'])} | "
+            f"{sci(es)} | {chosen} | {w['changes_along_grid']} | {sci(w['edge_rel_diff'])} | {g9['diff'] / g9['sse_before'] * 100:.2f}% | "
+            f"{g3['diff']:.3g} / {g9['diff'] * (1 - 1e-3 / es):.3g} |")
+
+
+def test_the_md_in_the_results_is_what_render_makes_from_the_json():
+    assert (RESULTS / "posthoc_window_crossing.md").read_text(encoding="utf-8") == wc.render(results_json())
+
+
+def test_the_written_predictions_hold_in_the_results_json_as_the_readme_says():
+    j = results_json()
+    assert [w["id"] for w in j["windows"]] == [s["id"] for s in wc.WINDOWS] and j["skipped"] == []
+    for w in j["windows"]:
+        spec = next(s for s in wc.WINDOWS if s["id"] == w["id"])
+        assert w["bracket"] == [spec["lo"], spec["hi"]] and w["form_lo"] != w["form_hi"]                              # (a)
+        assert len({(v["below"], v["above"]) for v in w["by_tolerance"].values()}) == 1                                # (b) 0.1% の幅の中で動かない
+        assert w["rel_shift_of_eps_star"] < wc.REL_WIDTH                                                               # (b)
+        assert w["changes_along_grid"] == 1                                                                            # (c)
+        assert w["edge_rel_diff"] < 1e-3                                                                               # (d)
+    chosen = {w["id"]: {g["label"]: g["chosen"] for g in w["gaps"]} for w in j["windows"]}
+    mda, nic, mlo = (chosen[s["id"]] for s in wc.WINDOWS)
+    assert mda["1e-3"] != mda["1e-6"] == mda["1e-9"]                                                                   # (e) 登録した ε で変わるのは MDA の 1e-3 だけ
+    assert nic["1e-3"] == nic["1e-6"] == nic["1e-9"] and mlo["1e-3"] == mlo["1e-6"] == mlo["1e-9"]
+
+
+def test_the_readme_table_rows_and_figures_are_the_json_numbers():
+    j, md = results_json(), README_RANDOM.read_text(encoding="utf-8")
+    for w in j["windows"]:
+        assert readme_row(w) in md
+    edges = [w["edge_rel_diff"] for w in j["windows"]]
+    assert f"誤差の2乗和の {sci(min(edges))}〜{sci(max(edges))} 倍" in md
+    ratios = []
+    for w in j["windows"]:
+        t = w["by_tolerance"]["1e-12"]
+        es = (t["below"] * t["above"]) ** 0.5
+        g = {x["label"]: x for x in w["gaps"]}
+        ratios.append(g["1e-3"]["diff"] / (g["1e-9"]["diff"] * (1 - 1e-3 / es)))
+    assert "（比は " + "、".join(f"{r:.4f}" for r in ratios) + "）" in md
+    main = README_MAIN.read_text(encoding="utf-8")
+    for w, shown in zip(j["windows"], ("7.43×10^-4", "5.98×10^-3", "9.50×10^-3")):
+        t = w["by_tolerance"]["1e-12"]
+        assert sci((t["below"] * t["above"]) ** 0.5) == shown and shown in main and shown in md

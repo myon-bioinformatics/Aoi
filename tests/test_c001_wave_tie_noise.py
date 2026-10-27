@@ -301,3 +301,54 @@ def test_the_prediction_is_written_before_the_run_and_names_the_noise_floor_and_
     for needle in ("(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "0.03・0.001・1e-12", "EPS_WAVE_TIE", "5.2e-12", "2.7e-15", "longdouble", "sakanalytics は変更しない"):
         assert needle in doc, needle
     assert tn.SB_GRID == (0.1, 0.03, 0.01, 0.003, 1e-3, 1e-4, 1e-6, 1e-9, 1e-12) and tn.EPS_OSC == (1e-3, 1e-6, 1e-9)
+
+
+# ---- 置いた結果（実データの走らせた結果）が、JSON・予想・READMEと合っている -------------------------------------------------------
+RESULTS = EXPL / "wave_tie_noise_results"
+
+
+def results_json():
+    return json.loads((RESULTS / "wave_tie_noise.json").read_text(encoding="utf-8"))
+
+
+def sci(x):
+    m, e = f"{x:.3g}".split("e")
+    return f"{m}×10^{int(e)}"
+
+
+def test_the_md_in_the_results_is_what_render_makes_from_the_json():
+    assert (RESULTS / "wave_tie_noise.md").read_text(encoding="utf-8") == tn.render(results_json())
+
+
+def test_the_results_gate_passed_and_the_float64_reimplementation_matched_every_call():
+    j = results_json()
+    assert j["gate"]["pass"] is True and j["gate"]["rows_differ"] == 0 and j["gate"]["units"] == j["units"] == 168
+    assert j["calls"]["float64_reimplementation_mismatch"] == 0
+
+
+def test_the_written_predictions_hold_in_the_results_json_as_the_readme_says():
+    j, rows = results_json(), results_json()["softbank"]["rows"]
+    assert j["softbank"]["line"]["flat"] is True and j["softbank"]["line"]["min"] == j["softbank"]["line"]["max"] == 6 and j["softbank"]["line"]["points"] == 149   # (a)
+    assert all(r["f64"]["sse_spread"] > 1e-12 > r["ld"]["sse_spread"] for r in rows)                                                                                   # (b)
+    assert all(r["ld"]["choice"] == [0.5, None] and r["ld"]["within_tie_of_best"] == r["candidates"] == 55 for r in rows)                                              # (b)
+    control = rows[0]
+    assert control["eps"] is None and [r["eps"] for r in rows if r["f64"]["choice"] != control["f64"]["choice"]] == [0.03, 0.001, 1e-12]                                # (c)
+    assert all(v["ld"]["units"] == 0 for v in j["osc_base"].values())                                                                                                   # (d)
+    c = j["calls"]
+    assert c["decision_differs"] > 0 and c["decision_differs_on_flat_lines"] == c["decision_differs"] and c["flat_lines"] < c["calls"]                                 # (e)
+
+
+def test_the_readme_numbers_are_the_json_numbers():
+    j, md = results_json(), (RESULTS / "README.md").read_text(encoding="utf-8")
+    c, rows = j["calls"], j["softbank"]["rows"]
+    for want in (f"{c['calls']:,}", f"{c['flat_lines']:,}", f"{c['decision_differs']}", f"{c['flat_lines'] / c['calls']:.1%}",
+                 f"{c['decision_differs_on_flat_lines'] / c['flat_lines']:.1%}", f"{c['calls'] - c['flat_lines']:,}",
+                 f"{j['units']} 球団年", f"{j['control_f64_vs_ld']['by_column']['wave_osc_base']['units']} 単位",
+                 sci(min(r["f64"]["sse_spread"] for r in rows)), sci(max(r["f64"]["sse_spread"] for r in rows)),
+                 sci(min(r["ld"]["sse_spread"] for r in rows)), sci(max(r["ld"]["sse_spread"] for r in rows))):
+        assert want in md, want
+    osc = j["osc_base"]
+    assert f"{osc['0.001']['f64']['units']}（1e-3）/ {osc['1e-06']['f64']['units']}（1e-6）/ {osc['1e-09']['f64']['units']}（1e-9）" in md
+    cols = j["control_f64_vs_ld"]["by_column"]
+    assert cols["wave_osc"]["labels"] == cols["wave_period"]["labels"] == ["2018-l", "2024-h"] and cols["wave_rmse"]["labels"] == ["2018-l"]
+    assert "2018-l、2024-h" in md and "`wave_rmse` 1 単位（2018-l）" in md

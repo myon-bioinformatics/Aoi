@@ -76,3 +76,34 @@ def test_epsilon_stays_a_symbol():
     assert not re.search(r"ε\s*[=＝]\s*[0-9]", text)
     assert "記号のまま" in text
     assert "eps_used" in text
+
+
+def test_section4_uses_one_transform_and_constant_scale():
+    text = LOCK.read_text()
+    section = text.split('## 4. 形', 1)[1].split('## 5.', 1)[0]
+    assert 'Δln f(m)' not in section
+    assert 'x_t = Δ f(m_t) = f(m_t) − f(m_{t−1})' in section
+    assert 'ln P_t = ln K + γ f(m_t) + u_t' in section
+    assert 'Δln P_t = Δln K + γ Δf(m_t) + Δu_t' in section
+    assert 'K 一定の仮定で Δln K = 0' in section
+    assert '時変なら Δln K は消えず' in section
+    assert '訂正履歴' in text
+    assert 'b07035d616ce1f33d90576036168ed4bb4dd6672419f2f77e459187e2ca5b089' in STAMP.read_text()
+
+
+def test_synthetic_level_model_difference_for_both_declared_transforms():
+    # 架空値のみ。epsilon=0.01 はテスト用であり研究のepsilonを固定しない。
+    for transform in (lambda m: math.log(max(m, 0.01)), math.log1p):
+        for previous, current in ((0.02, 0.04), (0.04, 0.02), (0.02, 0.02), (0, 0.002), (0, 0.04), (1, 0.1)):
+            gamma = -0.7
+            residual_previous, residual_current = 0.1, -0.2
+            x = transform(current) - transform(previous)
+            def price(m, k, residual):
+                return k * math.exp(gamma * transform(m) + residual)
+            p0 = price(previous, 10, residual_previous)
+            p1 = price(current, 10, residual_current)
+            y = math.log(p1) - math.log(p0)
+            assert math.isclose(y, gamma * x + residual_current - residual_previous, abs_tol=1e-12)
+            assert math.isclose(math.log(100 * p1) - math.log(100 * p0), y, abs_tol=1e-12)
+            changing_k_y = math.log(price(current, 20, residual_current)) - math.log(p0)
+            assert math.isclose(changing_k_y - y, math.log(2), abs_tol=1e-12)

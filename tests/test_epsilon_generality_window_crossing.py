@@ -102,7 +102,8 @@ def test_form_at_labels_a_wave_that_kept_the_epsilon_decay_and_sse_of_scores_it_
     w, lim, bb = 2 * math.pi / per, 3.0, 2.0                          # 始まりが 0 で、減衰が ε の波そのもの（ノイズなし）
     ys = [lim + math.exp(-eps * i / (n - 1)) * ((0.0 - lim) * math.cos(w * i / (n - 1)) + bb * math.sin(w * i / (n - 1))) for i in range(n)]
     f = wc.form_at(sa, trial, ys, eps)
-    assert f == ("ε", per) and wc.sse_of(sa, trial, ys, eps, f) < 1e-18
+    # 浮動小数の足し算の丸めは Python のバージョンで違う（3.11 では 7e-15、3.12 以降はほぼ 0）。試した ほかの式（減衰 3 通り×周期 3 通りと ε 波の周期 5 通り）の誤差は 3.9 以上なので、1e-10 で足りる
+    assert f == ("ε", per) and wc.sse_of(sa, trial, ys, eps, f) < 1e-10
 
 
 def test_sse_of_equals_the_fitted_rmse_for_the_form_that_wave_fit_chose():

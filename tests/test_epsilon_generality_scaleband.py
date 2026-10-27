@@ -99,3 +99,96 @@ def test_the_registered_command_runs_writes_the_registered_scales_and_no_epsilon
     assert rc["seed"] == SEED and rc["eps"] == [] and [d["value"] for d in rc["scales"]] == REGISTERED_5
     assert rc["regions"] == {"scales": {"mode": "inside", "lo": LO, "hi": HI}}
     assert set(j["scales"]) >= {f"{v:g}" for v in REGISTERED_5} and j["control"]["pass"] and j["repeat_identical"]
+
+
+# ---- 置いた結果（実データ）が、登録した値・予想・格子の JSON・READMEと合っている -----------------------------------------------
+RES = DIR / "results-scale-band"
+NAMES = (("staple", "主食価格の月次"), ("monthly", "物理量の月次"), ("daily", "物理量の日次"))
+
+
+def result(k):
+    return json.loads((RES / k / "eps_generality.json").read_text(encoding="utf-8"))
+
+
+def grid_of(k):
+    if k == "staple":
+        return json.loads((DIR / "results-random" / "staple" / "posthoc_scale_tolerance.json").read_text(encoding="utf-8"))["staple"]["tolerance_unchanged"]
+    return json.loads((DIR / "results-physical" / "posthoc_scale_tolerance.json").read_text(encoding="utf-8"))[k]["tolerance_unchanged"]
+
+
+def bracket(v, d):
+    n = lambda key: d[key]["forms_changed"]
+    return (n("0.0001"), n("1e-05")) if v >= 1e-5 else (n("1e-05"), n("1e-06")) if v >= 1e-6 else (n("1e-06"), n("1e-07"))
+
+
+@pytest.mark.parametrize("k", [k for k, _ in NAMES])
+def test_results_record_the_registered_scales_seed_and_range_with_a_passed_control(k):
+    j = result(k)
+    rc = j["random_coefficients"]
+    assert rc["seed"] == SEED and rc["eps"] == [] and [d["value"] for d in rc["scales"]] == REGISTERED_5
+    assert rc["regions"] == {"scales": {"mode": "inside", "lo": LO, "hi": HI}} and "regions" not in j
+    assert j["control"]["pass"] and j["repeat_identical"]
+    assert "- 倍率を選んだ範囲: inside（1.00×10^-7 〜 1.00×10^-4" in (RES / k / "eps_generality.md").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("k", [k for k, _ in NAMES])
+def test_the_registered_predictions_hold_in_the_results(k):
+    j, d = result(k), grid_of(k)
+    rows = [j["scales"][f"{v:g}"] for v in REGISTERED_5]                                               # 大きい順
+    cnt = [r["forms_changed"] for r in rows]
+    assert all(a <= b for a, b in zip(cnt, cnt[1:]))                                                    # (a)
+    assert all(bracket(v, d)[0] <= r["forms_changed"] <= bracket(v, d)[1] for v, r in zip(REGISTERED_5, rows))          # (b)
+    if k == "monthly":
+        assert all(r["forms_changed"] == 0 for v, r in zip(REGISTERED_5, rows) if v >= 1e-5)           # (c)
+    assert all(r["boundary_flag_changed"] == 0 for r in rows if r["forms_changed"] == 0)               # (d)
+
+
+def table_rows(k):
+    j, d = result(k), grid_of(k)
+    out = []
+    for v in REGISTERED_5:
+        r = j["scales"][f"{v:g}"]
+        lo, hi = bracket(v, d)
+        dev = "-" if r["coefficient_max_dev"] is None else f"{r['coefficient_max_dev']:.2e}".replace("e-0", "e-").replace("e+0", "e+")
+        out.append(f"| {gen.pow10_text(v)} | {r['forms_changed']} | {lo}〜{hi} | {r['boundary_flag_changed']} | {r['boundary']} | {dev} |")
+    return out
+
+
+@pytest.mark.parametrize("k,name", NAMES)
+def test_the_readme_tables_are_the_json_numbers(k, name):
+    md = (RES / "README.md").read_text(encoding="utf-8")
+    j = result(k)
+    head = f"### {name}（24 点の窓 {j['scales']['1']['units']} 単位、倍率 1 で境界の単位 {j['scales']['1']['boundary']}）"
+    block = md[md.index(head):]
+    block = block[:block.index("\n\n###")] if "\n\n###" in block else block
+    for row in table_rows(k):
+        assert row in block, row
+
+
+def test_the_readme_figures_in_the_text_are_the_json_numbers():
+    md = (RES / "README.md").read_text(encoding="utf-8")
+    c = {k: {v: result(k)["scales"][f"{v:g}"] for v in REGISTERED_5} for k, _ in NAMES}
+    units = {k: result(k)["scales"]["1"]["units"] for k, _ in NAMES}
+    boundary = {k: result(k)["scales"]["1"]["boundary"] for k, _ in NAMES}
+    assert [c[k][9.57e-5]["forms_changed"] + c[k][5.98e-5]["forms_changed"] for k, _ in NAMES] == [0, 0, 0]
+    assert [c[k][3.16e-5]["forms_changed"] for k, _ in NAMES] == [1, 0, 1]
+    assert f"{c['staple'][8.91e-6]['forms_changed']} / {c['monthly'][8.91e-6]['forms_changed']} / {c['daily'][8.91e-6]['forms_changed']} 単位" in md
+    assert f"{c['staple'][1.92e-6]['forms_changed']} / {c['monthly'][1.92e-6]['forms_changed']} / {c['daily'][1.92e-6]['forms_changed']} 単位" in md
+    for k, _ in NAMES:                                                                                  # 半分を超えるのは 1.92e-6 と 9.50e-7 の間
+        assert c[k][1.92e-6]["forms_changed"] < units[k] / 2 < c[k][9.5e-7]["forms_changed"]
+    assert f"（主食価格 2192 単位の半分は 1096 で、1.92×10^-6 は {c['staple'][1.92e-6]['forms_changed']}、9.50×10^-7 は {c['staple'][9.5e-7]['forms_changed']}。" in md
+    assert units == {"staple": 2192, "monthly": 221, "daily": 478}
+    assert f"{boundary['staple']} / {boundary['monthly']} / {boundary['daily']} 単位" in md
+    assert [c[k][1.03e-7]["boundary"] for k, _ in NAMES] == [0, 0, 0] and [c[k][1.03e-7]["boundary_flag_changed"] for k, _ in NAMES] == [boundary[k] for k, _ in NAMES]
+    last = f"{c['staple'][1.03e-7]['forms_changed']} / {c['monthly'][1.03e-7]['forms_changed']} / {c['daily'][1.03e-7]['forms_changed']}"
+    grid = " / ".join(str(grid_of(k)["1e-07"]["forms_changed"]) for k, _ in NAMES)
+    assert f"式が変わった単位は {last} で、格子の 1×10^-7 の値（{grid}）" in md
+    devs = [c["staple"][v]["coefficient_max_dev"] for v in (1.92e-6, 9.5e-7, 8.63e-7, 7.66e-7)]
+    assert f"{min(devs):.2f}〜{max(devs):.2f}" in md and all(1.27 <= x <= 1.31 for x in devs)
+
+
+def test_the_only_criterion_not_met_is_the_known_hand_set_epsilon_c2_in_the_staple_12_month_window():
+    bad = [(k, c["id"], c["set"]) for k, _ in NAMES for c in result(k)["criteria"] if c["ok"] is not True]
+    assert bad == [("staple", "C2", "N=12")]
+    md = (RES / "README.md").read_text(encoding="utf-8")
+    assert "主食価格の 12 か月の窓の C2（決め打ちの ε=1e-3、第 1 回から同じ）の 1 件だけ" in md

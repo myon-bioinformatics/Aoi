@@ -736,7 +736,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1153,
+      "attribute_uses": 1156,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -749,7 +749,7 @@
         "fixture": 54,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 225,
+        "mark.parametrize": 228,
         "mark.skipif": 18,
         "mark.xfail": 2,
         "param": 1,
@@ -882,13 +882,13 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 360,
+          "attribute_uses": 363,
           "attributes": {
             "approx": 104,
             "fail": 13,
             "fixture": 15,
             "importorskip": 1,
-            "mark.parametrize": 81,
+            "mark.parametrize": 84,
             "mark.skipif": 12,
             "mark.xfail": 2,
             "raises": 130,
@@ -3106,7 +3106,9 @@
       "tree": "tests"
     },
     {
-      "attributes": {},
+      "attributes": {
+        "mark.parametrize": 3
+      },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_scaleband.py",
       "import_sites": 1,

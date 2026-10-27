@@ -526,7 +526,7 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 944,
+      "attribute_uses": 957,
       "attributes": {
         "Boolean": 8,
         "Config.set_tbl_rows": 1,
@@ -535,41 +535,44 @@
         "Float32": 1,
         "Float64": 70,
         "Int32": 30,
-        "Int64": 38,
+        "Int64": 40,
         "Series": 15,
-        "Utf8": 22,
+        "Utf8": 23,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 404,
+        "col": 408,
         "concat": 11,
         "concat_list": 1,
-        "concat_str": 2,
+        "concat_str": 3,
         "exceptions.PolarsError": 1,
         "first": 4,
         "int_range": 1,
         "len": 8,
-        "lit": 28,
+        "lit": 31,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 19,
+        "read_ndjson": 20,
         "sum": 2,
-        "when": 17
+        "when": 18
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 27,
+          "attribute_uses": 40,
           "attributes": {
             "Boolean": 2,
             "DataFrame": 1,
-            "Utf8": 1,
-            "col": 16,
+            "Int64": 2,
+            "Utf8": 2,
+            "col": 20,
             "concat": 1,
-            "lit": 3,
-            "read_ndjson": 3
+            "concat_str": 1,
+            "lit": 6,
+            "read_ndjson": 4,
+            "when": 1
           },
           "dynamic_import_sites": 0,
-          "files": 5,
-          "import_sites": 5
+          "files": 6,
+          "import_sites": 6
         },
         "dragowing": {
           "attribute_uses": 3,
@@ -710,8 +713,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 39,
-      "import_sites": 44
+      "files": 40,
+      "import_sites": 45
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -736,7 +739,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1156,
+      "attribute_uses": 1159,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -746,10 +749,10 @@
         "UsageError": 10,
         "approx": 346,
         "fail": 33,
-        "fixture": 54,
+        "fixture": 55,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 228,
+        "mark.parametrize": 230,
         "mark.skipif": 18,
         "mark.xfail": 2,
         "param": 1,
@@ -882,21 +885,21 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 363,
+          "attribute_uses": 366,
           "attributes": {
             "approx": 104,
             "fail": 13,
-            "fixture": 15,
+            "fixture": 16,
             "importorskip": 1,
-            "mark.parametrize": 84,
+            "mark.parametrize": 86,
             "mark.skipif": 12,
             "mark.xfail": 2,
             "raises": 130,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 35,
-          "import_sites": 36
+          "files": 36,
+          "import_sites": 37
         }
       },
       "declared": [
@@ -933,8 +936,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 113,
-      "import_sites": 115
+      "files": 114,
+      "import_sites": 116
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1198,6 +1201,22 @@
       },
       "dynamic_lines": [],
       "file": "cycles/c001-chunichi/exploratory/r18_partial_confirmation.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "Int64": 2,
+        "Utf8": 1,
+        "col": 4,
+        "concat_str": 1,
+        "lit": 3,
+        "read_ndjson": 1,
+        "when": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/streak_unknown.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "cycles"
@@ -2880,6 +2899,17 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_c001_r18_partial_confirmation.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.parametrize": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_streak_unknown.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

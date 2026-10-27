@@ -526,21 +526,21 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 957,
+      "attribute_uses": 976,
       "attributes": {
-        "Boolean": 8,
+        "Boolean": 11,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 241,
+        "DataFrame": 246,
         "Expr": 13,
         "Float32": 1,
         "Float64": 70,
-        "Int32": 30,
+        "Int32": 32,
         "Int64": 40,
         "Series": 15,
-        "Utf8": 23,
+        "Utf8": 24,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 408,
+        "col": 416,
         "concat": 11,
         "concat_list": 1,
         "concat_str": 3,
@@ -641,21 +641,21 @@
           "import_sites": 2
         },
         "sakanalytics": {
-          "attribute_uses": 674,
+          "attribute_uses": 693,
           "attributes": {
-            "Boolean": 4,
+            "Boolean": 7,
             "Config.set_tbl_rows": 1,
-            "DataFrame": 138,
+            "DataFrame": 143,
             "Expr": 6,
             "Float32": 1,
             "Float64": 67,
-            "Int32": 29,
+            "Int32": 31,
             "Int64": 35,
             "Series": 3,
-            "Utf8": 20,
+            "Utf8": 21,
             "__version__": 2,
             "any_horizontal": 1,
-            "col": 322,
+            "col": 330,
             "concat": 3,
             "concat_list": 1,
             "concat_str": 1,
@@ -739,7 +739,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1159,
+      "attribute_uses": 1168,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -752,8 +752,8 @@
         "fixture": 55,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 230,
-        "mark.skipif": 18,
+        "mark.parametrize": 237,
+        "mark.skipif": 20,
         "mark.xfail": 2,
         "param": 1,
         "raises": 428,
@@ -857,20 +857,20 @@
           "import_sites": 12
         },
         "sakanalytics": {
-          "attribute_uses": 309,
+          "attribute_uses": 318,
           "attributes": {
             "UsageError": 2,
             "approx": 200,
             "fixture": 7,
-            "mark.parametrize": 34,
-            "mark.skipif": 3,
+            "mark.parametrize": 41,
+            "mark.skipif": 5,
             "param": 1,
             "raises": 61,
             "warns": 1
           },
           "dynamic_import_sites": 0,
-          "files": 10,
-          "import_sites": 10
+          "files": 11,
+          "import_sites": 11
         },
         "scripts": {
           "attribute_uses": 4,
@@ -936,8 +936,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 114,
-      "import_sites": 116
+      "files": 115,
+      "import_sites": 117
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2619,7 +2619,7 @@
     },
     {
       "attributes": {
-        "Boolean": 4,
+        "Boolean": 5,
         "Config.set_tbl_rows": 1,
         "DataFrame": 90,
         "Expr": 6,
@@ -2711,6 +2711,17 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 7,
+        "mark.skipif": 2
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/tests/test_node_launcher_regressions.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
         "fixture": 1,
         "mark.parametrize": 5,
         "raises": 8,
@@ -2724,11 +2735,13 @@
     },
     {
       "attributes": {
-        "DataFrame": 43,
-        "Int32": 4,
+        "Boolean": 2,
+        "DataFrame": 48,
+        "Int32": 6,
         "Series": 2,
+        "Utf8": 1,
         "__version__": 1,
-        "col": 37,
+        "col": 45,
         "when": 1
       },
       "dynamic_lines": [],

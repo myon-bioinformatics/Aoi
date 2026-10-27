@@ -23,6 +23,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-10-27: SakAnalytics #25 の先頭 `a64687b720d18aec53b003cf6717ba1ea1fa7332`（`streak()` に、連続の手前の年が不明な行の印 `*_censored` を足す。値は変えない）を、squash なしの `git subtree pull --prefix=sakanalytics`（ブランチ `streak-left-edge-20261027` を指定）で取り込みました。**#25 は子の main に未マージ**なので、登録した SHA は子の main の head ではなく PR の先頭です（`ref` は main のままなので、#25 が入るまで drift が出ます）。登録した `1609008` から、子の main にある #22（共有ランチャーの更新、`8e4bea3`）も同時に入ります。`sakanalytics/` の tree は登録した SHA の tree と同一で、merge commit の第2親はこの SHA です。#25 が子の main に入ったら、登録 SHA を main の merge に更新します（tree が同一かはそのとき確かめます）。
+
 2026-10-25: SakAnalytics #23 の merge `1609008d13a1627a583d7ad06d4e5bcee649b5c9`（ゼロ割りを空にする・許容値に名前をつける・NaN/inf の記録。値は変えない）を、squash なしの `git subtree pull --prefix=sakanalytics` で取り込みました。登録した `61ee074` から 12 コミット進んでいたので、子の #18〜#21（アイコン、vendor-dispatch の検証、英語の残り、`vendor/py_launch.cjs` 経由の Node 24 エントリ）も同時に入ります。`sakanalytics/` の tree は登録した SHA の tree と同一で、merge commit の第2親は子の main の head です。Aoi の clone が浅い（shallow）と「unrelated histories」で止まるので、先に `git fetch --unshallow` します。
 
 2026-10-20: BlueProbe #30 の merge `50a2846d68fcba4acbe7e4abf7fb0130de07de89`（標準ライブラリの html.parser）と QueRyu #16 の merge `fcadaa9aaab30292703459758eae481d0f018f2d` を、squash なしの `git subtree pull --prefix=blueprobe` と `git subtree pull --prefix=queryu` で取り込みました。`blueprobe/` と `queryu/` の tree は登録した SHA の tree と同一です。各 merge commit の第2親は子の main の head です。

@@ -63,7 +63,6 @@
   series_*                         カード（同じ相手・同じ球場で続けての試合）ごとの勝ち数: 負け越したカード、勝ち数の散らばり、
                                    1試合目とそれ以外の勝率の差、3連戦の 0〜3勝の数と、力が一定のときとの比べ（R24。series_features）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
-  inn_size_low_streak_censored / rf_low_streak_censored  その値が下限（手前の年が不明で、本当は n 以上）のとき True。値は変えず、印だけ足した
   rf_adv / ra_adv / run_balance / short_share  得点・失点の優位を1試合あたりの点で（他球団平均との差）。収支と、0〜1 の取り分（R32。add_balance）
   rf_adv_z / ra_adv_z / *_zone     優位を全単位の標準偏差で割ったものと、その3区分（1・0・−1）。|z| < 1 を 0 の近くとして読む（R33）
   rf_sd_g / ra_sd_g / *_adv_se / *_zone_se  試合ごとの点の標準偏差と、優位の誤差・誤差1つ分での3区分（R34）
@@ -1409,32 +1408,20 @@ def opponent_adjusted(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
 
 
 def streak(st: pl.DataFrame, cond: pl.Expr, name: str) -> pl.DataFrame:
-    """条件が、そのシーズンまで何年続けて成り立っているか（同じチーム、連続した年）。成り立たなければ 0、値が空なら空。
-
-    前の年が表にない・値が空のとき、連続は今の年から数え直す（値は 1）。ただし本当は、その前にも続いていたかもしれない。
-    そういう連続の値 n は「n 以上」（本当は n + u、u ≥ 0 は表にない前の年の分）なので、印を `{name}_censored` に付ける。
-      {name}            : 観測した長さ n（前の年が不明なら 0 とみなして数えた値。従来どおり。値は変えていない）
-      {name}_censored   : 連続の手前の年が不明で、n が下限のとき True。手前の年が条件を満たさないと分かっていれば False（n が確定）。
-                          成り立たない年は False、値が空の年は空。u の値は決めない（後から埋める）
-    """
+    """条件が、そのシーズンまで何年続けて成り立っているか（同じチーム、連続した年）。成り立たなければ 0、値が空なら空。"""
     flags = st.select("team", "season", f=cond)
     by = {(r["team"], r["season"]): r["f"] for r in flags.iter_rows(named=True)}
     out = []
     for (team, season), f in sorted(by.items()):
         if f is None:
-            n, cut = None, None
+            n = None
         elif not f:
-            n, cut = 0, False
+            n = 0
         else:
-            prev = out[-1] if out and out[-1][0] == team and out[-1][1] == season - 1 else None
-            if prev is None or prev[2] is None:        # 前の年が表にない・空: 数え直し。手前は不明
-                n, cut = 1, True
-            elif prev[2] == 0:                          # 前の年が成り立たないと分かっている: 確定
-                n, cut = 1, False
-            else:                                       # 連続の途中: 手前の不明さは引き継ぐ
-                n, cut = prev[2] + 1, prev[3]
-        out.append((team, season, n, cut))
-    tbl = pl.DataFrame(out, schema={"team": pl.Utf8, "season": pl.Int32, name: pl.Int64, f"{name}_censored": pl.Boolean}, orient="row")
+            prev = out[-1][2] if out and out[-1][0] == team and out[-1][1] == season - 1 else None
+            n = (prev or 0) + 1
+        out.append((team, season, n))
+    tbl = pl.DataFrame(out, schema={"team": pl.Utf8, "season": pl.Int32, name: pl.Int64}, orient="row")
     return st.join(tbl, on=["team", "season"], how="left")
 
 
@@ -1444,7 +1431,6 @@ def add_persistence(st: pl.DataFrame) -> pl.DataFrame:
       inn_size_rank        : 得点した回の大きさ（inn_dlog_size）のリーグ内の順位（小さいほうが 1）
       inn_size_low_streak  : inn_size_rank が 2 以下の年が、その年まで何年続いているか
       rf_low_streak        : 得点のリーグ順位が 5 位以下の年が、その年まで何年続いているか
-      *_censored           : 連続の手前の年が不明で、上の値が下限（n 以上）のとき True。前の年を 0 とみなした値は従来どおりで、変えていない
     """
     if "inn_dlog_size" in st.columns:
         st = st.with_columns(inn_size_rank=pl.col("inn_dlog_size").rank("min").over(["season", "league"]).cast(pl.Int32))

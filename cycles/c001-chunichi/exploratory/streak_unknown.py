@@ -9,7 +9,7 @@
 列の値だけを変えた 3 つの表を渡す。
   (a) そのまま（u = 0。確定済みの出力と同じ）
   (b) 左端に届く連続の値を十分大きい数にする（u が十分大きい）
-  (c) その命題のどの条件でも真偽が (a) と (b) で違う行（不明な行）の値を空にする（判定できない単位に入る）
+  (c) その命題のいずれかの条件で、非負整数 u によって真偽が変わる行（不明な行）の値を空にする（判定できない単位に入る）
 k = 2 の `>=` なら、n = 1 の行が真になるかは u ≥ 1 かどうかだけで決まるので、(a) と (b) で u のすべての値を尽くす。
 
 予想（走らせる前に書いた。結果を見て変えない。判定には使わない。宣言 §5 と同じ）:
@@ -67,11 +67,24 @@ def conditions_on(p: dict, col: str, P) -> list[dict]:
 
 
 def unknown_rows(p: dict, col: str, edge: dict[tuple, int], P) -> set[tuple]:
-    """n + u の真偽が、すべての u ≥ 0 で同じにならない行。真偽は u = 0 と u が十分大きいときで比べる（条件は単調か、1 点で変わる）。"""
+    """n + u の真偽が、非負整数 u の全域で同じにならない行。
+
+    == / != は中間の 1 点だけで反転し得るため、端点同士ではなく閾値への到達可能性を調べる。
+    BIG は (b) の既存の入力用であり、この判定の上限にはしない。固定済みの宣言・結果は変更しない。
+    """
     out = set()
     for key, n in edge.items():
         for c in conditions_on(p, col, P):
-            if P.OPS[c["op"]](n, c["value"]) != P.OPS[c["op"]](BIG, c["value"]):
+            op, value = c["op"], c["value"]
+            if op in ("==", "!="):
+                changes = value >= n and value % 1 == 0
+            elif op in ("<", ">="):
+                changes = n < value < float("inf")
+            elif op in ("<=", ">"):
+                changes = n <= value < float("inf")
+            else:
+                raise ValueError(f"unsupported streak condition operator: {op}")
+            if changes:
                 out.add(key)
     return out
 

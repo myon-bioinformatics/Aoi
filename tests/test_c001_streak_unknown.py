@@ -49,12 +49,39 @@ def test_a_run_of_zero_or_an_empty_value_is_never_a_left_edge_run():
     (">", 1, 1, True), (">", 1, 2, False),
     ("<", 2, 1, True), ("<", 2, 2, False),
     ("<=", 2, 2, True), ("<=", 2, 3, False),
-    ("==", 2, 2, True), ("==", 2, 1, False),
-    ("!=", 2, 2, True), ("!=", 2, 1, False),
+    ("==", 2, 2, True), ("==", 2, 1, True), ("==", 2, 3, False),
+    ("!=", 2, 2, True), ("!=", 2, 1, True), ("!=", 2, 3, False),
+    ("==", 2.5, 1, False), ("!=", 2.5, 1, False),
+    ("==", 2.0, 1, True), ("!=", 2.0, 1, True),
+    (">=", 2.5, 2, True), ("<", 2.5, 2, True),
+    (">", 2.5, 3, False), ("<=", 2.5, 3, False),
 ])
 def test_a_row_is_unknown_when_u_can_change_the_truth_of_the_condition(op, value, n, unknown):
     p = proposition("c", op, value)
     assert (("x", 2013) in su.unknown_rows(p, "c", {("x", 2013): n}, P)) is unknown
+
+
+@pytest.mark.parametrize("op", list(P.OPS))
+def test_unknown_rows_match_all_integer_truth_values_across_small_synthetic_thresholds(op):
+    for n in range(1, 6):
+        for twice_value in range(-4, 15):
+            value = twice_value / 2
+            # This finite oracle includes every threshold in the fixture and a point beyond all of them.
+            truths = {P.OPS[op](n + u, value) for u in range(10)}
+            got = su.unknown_rows(proposition("c", op, value), "c", {("x", 2013): n}, P)
+            assert bool(got) == (len(truths) == 2), (op, value, n)
+
+
+@pytest.mark.parametrize("op", list(P.OPS))
+def test_unknown_rows_have_no_big_sentinel_ceiling(op):
+    for n, value in ((1, su.BIG), (su.BIG + 1, su.BIG + 2), (10**100, 10**100 + 1)):
+        assert su.unknown_rows(proposition("c", op, value), "c", {("x", 2013): n}, P) == {("x", 2013)}
+
+
+@pytest.mark.parametrize("op", list(P.OPS))
+@pytest.mark.parametrize("value", [float("inf"), float("-inf"), float("nan")])
+def test_nonfinite_thresholds_do_not_invent_reachable_integer_values(op, value):
+    assert su.unknown_rows(proposition("c", op, value), "c", {("x", 2013): 1}, P) == set()
 
 
 def test_unknown_rows_look_at_every_condition_on_the_column_including_the_scope_where_and_then():
@@ -95,6 +122,15 @@ def test_treatment_c_empties_only_the_unknown_rows():
     edge = {"c": {("x", 2013): 1, ("x", 2014): 2, ("y", 2013): 1}}
     out = su.treated(table(), proposition("c", ">=", 2), edge, "c", P, pl)
     assert out["c"].to_list() == [None, 2, 0, None, 0]
+    assert out["c"].dtype == pl.Int64
+
+
+@pytest.mark.parametrize("op", ["==", "!="])
+def test_treatment_c_empties_rows_with_an_interior_equality_crossing(op):
+    edge = {"c": {("x", 2013): 1, ("x", 2014): 2, ("y", 2013): 1}}
+    out = su.treated(table(), proposition("c", op, 2), edge, "c", P, pl)
+    assert out["c"].to_list() == [None, None, 0, None, 0]
+    assert out["other"].to_list() == [1, 2, 3, 4, 5]
     assert out["c"].dtype == pl.Int64
 
 

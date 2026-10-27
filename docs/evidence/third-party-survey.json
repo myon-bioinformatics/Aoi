@@ -739,7 +739,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1168,
+      "attribute_uses": 1173,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -752,7 +752,7 @@
         "fixture": 55,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 237,
+        "mark.parametrize": 242,
         "mark.skipif": 20,
         "mark.xfail": 2,
         "param": 1,
@@ -885,13 +885,13 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 366,
+          "attribute_uses": 371,
           "attributes": {
             "approx": 104,
             "fail": 13,
             "fixture": 16,
             "importorskip": 1,
-            "mark.parametrize": 86,
+            "mark.parametrize": 91,
             "mark.skipif": 12,
             "mark.xfail": 2,
             "raises": 130,
@@ -2917,7 +2917,7 @@
     {
       "attributes": {
         "fixture": 1,
-        "mark.parametrize": 2
+        "mark.parametrize": 7
       },
       "dynamic_lines": [],
       "file": "tests/test_c001_streak_unknown.py",

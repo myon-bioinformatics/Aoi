@@ -57,3 +57,50 @@ def test_known_conflicts_retained_and_outliers_quarantined():
     assert len(bad) == 5
     assert all(row not in active for row in bad)
     assert {r['country'] for r in bad} == {'MEX', 'DOM'}
+
+
+def test_quarantine_exact_identity_and_raw_provenance():
+    """Keep suspect observations recoverable without leaking into analysis."""
+    pack = ROOT / 'adjacent_youtube_premium_subscription_levels'
+    def read(path):
+        with path.open(newline='', encoding='utf-8') as stream:
+            return list(csv.DictReader(stream))
+    bad = read(pack / 'raw/quarantined_vertical.csv')
+    expected = {('DOM', date, '8.49', 'DOP') for date in
+                ('2026-04-10', '2026-07-13', '2026-10-26')}
+    expected |= {('MEX', date, '15.99', 'MXN') for date in
+                 ('2026-07-13', '2026-10-26')}
+    assert {(r['country'], r['date'], r['value'], r['unit'].split()[0])
+            for r in bad} == expected
+    raw = read(pack / 'raw/youtube_premium_levels.csv')
+    for row in bad:
+        matches = [r for r in raw if (r['iso3'], r['date'], r['local_price'],
+                   r['currency'], r['source_url']) ==
+                   (row['country'], row['date'], row['value'],
+                    row['unit'].split()[0], row['source'])]
+        assert len(matches) == 1
+        original = matches[0]
+        assert original['source_label'] in row['note']
+        assert 'retrieved ' + original['retrieved'] in row['note']
+        assert 'source_price_usd=' + original['price_usd'] in row['note']
+        assert row['estimated_value'] == ''
+    active = read(pack / (pack.name + '_vertical.csv'))
+    bad_keys = {tuple(r[k] for k in c.KEY) for r in bad}
+    assert bad_keys.isdisjoint(tuple(r[k] for k in c.KEY) for r in active)
+    assert any(r['country'] == 'MEX' and r['value'] == '159.0' for r in active)
+    before = c.audit(ROOT)
+    # An invalid raw quarantine sentinel must not be opened by audit().
+    from tempfile import TemporaryDirectory
+    import shutil
+    with TemporaryDirectory() as tmp:
+        mirror = Path(tmp) / 'survey'
+        mirror.mkdir()
+        for name in c.PACKS:
+            directory = ROOT / ('adjacent_' + name + '_levels')
+            target = mirror / directory.name
+            target.mkdir()
+            filename = directory.name + '_vertical.csv'
+            shutil.copyfile(directory / filename, target / filename)
+            (target / 'raw').mkdir()
+            (target / 'raw/quarantined_vertical.csv').write_text('invalid raw data')
+        assert c.audit(mirror) == before

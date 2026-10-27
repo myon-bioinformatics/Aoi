@@ -467,3 +467,72 @@ def test_exact_sweep_with_tiny_dials_keeps_finite_tables_and_headroom():
         assert table["original_rate_exact"] == pytest.approx(table["forms"]["original"]["rate"], abs=1e-310)
         assert table["mcc"] == pytest.approx(-math.sqrt((1 - table["dials"]["converse"]) / 2))
         json.dumps({"table": table, "headroom": mb.headroom(table["dials"], 0.5)}, allow_nan=False)
+
+
+@pytest.mark.parametrize('inverse,cp', [(0.5, 5e-324), (math.nextafter(1.0, 0.0), 1e-300)])
+def test_overflowing_relative_ratio_has_finite_exact_table(inverse, cp):
+    t = mb.build(converse=.5, inverse=inverse, contrapositive=cp, n=168, exact=True)
+    assert all(math.isfinite(v) and v > 0 for v in t['cells'].values())
+    assert sum(t['cells'].values()) == pytest.approx(168)
+    assert t['mcc'] == pytest.approx(-math.sqrt((1 - inverse) / 2), rel=1e-8)
+    json.dumps(t, allow_nan=False)
+    with pytest.raises(mb.MoshimoError, match='rounds to 0'):
+        mb.build(converse=.5, inverse=inverse, contrapositive=cp, n=168)
+
+
+def test_unrepresentable_exact_margins_have_reason():
+    with pytest.raises(mb.MoshimoError, match='margins.*float64'):
+        mb.build(converse=5e-324, inverse=.5, contrapositive=5e-324, n=5e-324, exact=True)
+
+
+@pytest.mark.parametrize('exact', [True, False])
+def test_real_ledger_extreme_multiline_cli_sweep(tmp_path, exact):
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    ledger = Path(os.environ['AOI_ROOT']) / 'cycles/c001-chunichi/outputs/propositions.jsonl'
+    out = tmp_path / 'tables.json'
+    args = [sys.executable, str(Path(mb.__file__)), '--ledger', str(ledger), '--id', 'P1',
+            '--sweep', 'contrapositive=0.5,5e-324,1e-300', '--json', str(out)]
+    if exact:
+        args += ['--eps', '1e-6']
+    result = subprocess.run(args, capture_output=True, text=True)
+    assert 'Traceback' not in result.stderr
+    if exact:
+        assert result.returncode == 0, result.stderr
+        data = json.loads(out.read_text())
+        assert len(data['tables']) == 3
+        json.dumps(data, allow_nan=False)
+    else:
+        assert result.returncode == 2
+        assert 'rounds to 0' in result.stderr
+        assert not out.exists()
+
+
+def test_reported_integer_ledger_cli_sweep(tmp_path):
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    ledger = tmp_path / 'ledger.jsonl'
+    ledger.write_text(json.dumps({'id': 'P1', 'metrics': dict(tp=10, fp=10, fn=10, tn=10)}))
+    out = tmp_path / 'tables.json'
+    result = subprocess.run([sys.executable, str(Path(mb.__file__)), '--ledger', str(ledger), '--id', 'P1',
+                             '--eps', '1e-6', '--sweep', 'contrapositive=0.5,5e-324', '--json', str(out)],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert 'Traceback' not in result.stderr
+    assert len(json.loads(out.read_text())['tables']) == 2
+
+
+@pytest.mark.parametrize("exact", [True, False])
+def test_unrepresentable_total_is_controlled(exact):
+    with pytest.raises(mb.MoshimoError, match="finite|float64"):
+        mb.build(converse=.5, inverse=.5, contrapositive=.5, n=10**400, exact=exact)
+
+
+def test_integer_total_beyond_float64_unit_resolution_has_reason():
+    with pytest.raises(mb.MoshimoError, match="float64.*integer total"):
+        mb.build(converse=.6, inverse=.7, contrapositive=.8, n=10**18)

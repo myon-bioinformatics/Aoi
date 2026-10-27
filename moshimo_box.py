@@ -87,7 +87,7 @@ def _odds(p: float) -> float:
 
 
 def _logit(p: float) -> float:
-    return math.log(p / (1 - p))
+    return math.log(p) - math.log1p(-p)
 
 
 def _expit(x: float) -> float:
@@ -116,33 +116,63 @@ def build(*, converse, inverse, contrapositive, n, exact=False) -> dict:
     ``exact=True`` keeps the unrounded solution instead (fractional cells, n any finite number above 0): a table with a
     lifted cell (epsilon.py) has a cell of ε units, which no integer table can hold.
     """
+    try:
+        finite_n = math.isfinite(n) if isinstance(n, (int, float)) else False
+    except OverflowError:
+        finite_n = False
     if exact:
-        if isinstance(n, bool) or not isinstance(n, (int, float)) or not math.isfinite(n) or n <= 0:
+        if isinstance(n, bool) or not isinstance(n, (int, float)) or not finite_n or n <= 0:
             raise MoshimoError(f"n must be a finite number above 0 for an exact table, got {n!r}")
     elif type(n) is not int or n < 4:
         raise MoshimoError(f"n must be an integer of at least 4, got {n!r}")
     dials = {name: _check_dial(name, value)
              for name, value in (("converse", converse), ("inverse", inverse), ("contrapositive", contrapositive))}
-    oc, oi, ocp = (_odds(dials[k]) for k in DIALS)
-    # a/c = oc, d/c = oi, d/b = ocp. Scale c = 1.
-    relative = {"a": oc, "b": oi / ocp, "c": 1.0, "d": oi}
-    total = sum(relative.values())
+    lc, li, lcp = (_logit(dials[k]) for k in DIALS)
+    # a/c = odds(converse), d/c = odds(inverse), d/b = odds(contrapositive).
+    # Normalize in log space: the direct ratio odds(inverse)/odds(contrapositive)
+    # can overflow even though every input probability is valid.
+    logs = dict(zip(CELLS, (lc, li - lcp, 0.0, li)))
+    peak = max(logs.values())
+    shifted = {k: logs[k] - peak for k in CELLS}
+    log_total = math.log(math.fsum(math.exp(v) for v in shifted.values()))
+    try:
+        scale = float(n)
+    except OverflowError:
+        raise MoshimoError("n cannot be represented as a finite float64 table total") from None
+    if not math.isfinite(scale):
+        raise MoshimoError("n cannot be represented as a finite float64 table total")
+    # Include n before exponentiating so a representable subnormal count is
+    # not lost merely because its normalized weight underflows first.
+    expected = {k: math.exp(math.log(scale) + shifted[k] - log_total) for k in CELLS}
     if exact:
-        counts = {k: n * relative[k] / total for k in CELLS}
+        counts = expected
     else:
-        counts = dict(zip(CELLS, sl._apportion([n * relative[k] / total for k in CELLS], n)))
+        try:
+            counts = dict(zip(CELLS, sl._apportion([expected[k] for k in CELLS], n)))
+        except ValueError:
+            raise MoshimoError("float64 cell estimates cannot conserve this integer total; "
+                               "use a smaller n or exact mode") from None
         if min(counts.values()) < 1:
             raise MoshimoError(f"a cell rounds to 0 units with n={n} and dials {dials}; use a larger n or dials further from 0 and 1")
     a, b, c, d = (counts[k] for k in CELLS)
     forms = _form_counts(a, b, c, d)
+    if any(not math.isfinite(den) or den <= 0 for _, den in forms.values()):
+        raise MoshimoError("table margins underflow to zero or overflow in float64; "
+                           "these dials and n cannot represent all four forms; use less extreme dials or a different n")
     rate = {f: num / den for f, (num, den) in forms.items()}
+    # Factor each product by its own margins. No count products or product of
+    # four tiny margins: both can underflow (or overflow) before division.
+    mcc = (math.sqrt(a / (a + b)) * math.sqrt(d / (b + d))
+           * math.sqrt(a / (a + c)) * math.sqrt(d / (c + d))
+           - math.sqrt(b / (a + b)) * math.sqrt(c / (a + c))
+           * math.sqrt(b / (b + d)) * math.sqrt(c / (c + d)))
     return {
         "synthetic": True, "exact": exact, "n": n, "dials": dials, "cells": counts,
         "forms": {f: {"n": den, "hold": num, "rate": num / den} for f, (num, den) in forms.items()},
         "counterexamples": {"original": b, "contrapositive": b, "converse": c, "inverse": c},
         "original_rate_exact": _expit(_logit(dials["converse"]) + _logit(dials["contrapositive"]) - _logit(dials["inverse"])),
         # the ranking score of proposition generation (rule_search.py): tp = a, fp = b, fn = c, tn = d. All four sums are > 0.
-        "mcc": (a * d - b * c) / math.prod(math.sqrt(margin) for margin in (a + b, a + c, b + d, c + d)),
+        "mcc": mcc,
         # the same numerator a*d - b*c over the margins: mcc^2 = informedness * markedness
         "informedness": rate["converse"] + rate["contrapositive"] - 1,
         "markedness": rate["original"] + rate["inverse"] - 1,

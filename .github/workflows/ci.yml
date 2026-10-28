@@ -265,13 +265,23 @@ jobs:
           DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js
         run: |
           mkdir -p build/test-results
-          uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
+          uv run --locked --python "${{ matrix.python }}" pytest -q -p scripts.observe_dragowing_startup \
+            --browser-startup-evidence="build/startup-observation/pytest-${{ matrix.python }}.json" \
+            --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
       - name: Preserve raw JUnit
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: junit-py${{ matrix.python }}
           path: build/test-results/pytest-${{ matrix.python }}.xml
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve actual browser startup observations
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-observation-py${{ matrix.python }}
+          path: build/startup-observation/
           if-no-files-found: warn
           retention-days: 14
       - name: NagoyAction is stdlib-only and the cycle pipeline is runnable

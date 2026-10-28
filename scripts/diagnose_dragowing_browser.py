@@ -235,6 +235,7 @@ class DiagnosticChrome(Chrome):
         self.protocol_version: str | None = None
         self.readiness_elapsed_seconds: float | None = None
         self.close_elapsed_seconds = 0.0
+        self.spawn_elapsed_seconds: float | None = None
         self.stage = "startup"
         self.method: str | None = None
         self.stderr_tail = ""
@@ -295,12 +296,14 @@ class DiagnosticChrome(Chrome):
     def _spawn(self, exe: str) -> None:
         self.stage = "spawn"
         self._profile_root = self._tmp
+        started = time.monotonic()
         try:
             super()._spawn(exe)
         except Exception as exc:
             self.record_failure(exc)
             raise
         finally:
+            self.spawn_elapsed_seconds = time.monotonic() - started
             self._process_ref = self._proc
         self.stage = "readiness"
 
@@ -556,6 +559,7 @@ def _trial(executable: str, timeout: float, index: int, bundle: Path | None, evi
                                    for key in before}
         trial.update({"cdp_product": browser.product, "cdp_protocol_version": browser.protocol_version,
                       "readiness_elapsed_seconds": browser.readiness_elapsed_seconds,
+                      "spawn_elapsed_seconds": browser.spawn_elapsed_seconds,
                       "readiness_transport": dict(browser.readiness_transport),
                       "wait_observations": list(browser.wait_observations),
                       "close_elapsed_seconds": browser.close_elapsed_seconds,

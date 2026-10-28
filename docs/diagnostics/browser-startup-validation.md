@@ -154,3 +154,35 @@ plugin は `chrome_executable` fixture を使う実ブラウザテストだけ�
 runtime は Python / OS、uid / euid、network namespace inode、interface 数、loopback の有無だけを追加する。任意の environment、argv、ネットワークアドレス、ページ内容は収集しない。namespace inode は別 runner 間の共通 ID ではなく、interface 数も単独で isolation の完全な証明ではない。normal と offline の差はユーザーとネットワーク分離を合わせた条件差であり、単独の原因を切り分けた実験ではない。
 
 JSON、JUnit、人工画像は成功 / 失敗の両方で `browser-first-start-{normal,offline}-py3.14` artifact に 14 日間保存する。8 秒や元の 30 秒 timeout の解消を示す修正ではなく、失敗した位置と条件を残す診断である。既存の失敗記録は保持し、transport / cleanup の修正や timeout 延長には進まない。
+
+## 2026-10-28: head 7a613a6 の成功・失敗比較
+
+対象は PR #122、[startup run 40486652453](https://github.com/myon-bioinformatics/Aoi/actions/runs/40486652453) と [CI run 40486653033](https://github.com/myon-bioinformatics/Aoi/actions/runs/40486653033)。以下は保存 JSON と実ジョブログの観測であり、修正後の成功を示す表ではない。
+
+|条件|Browser.getVersion まで|送信時間|終端 state / wchan|major fault 増分|read_bytes 増分|終端 request 未読量|
+|---|---:|---:|---|---:|---:|---:|
+|normal 初回・8秒失敗|8.001813秒|0.000027797秒|D / folio_wait_bit_common|271|26,521,600|51 bytes|
+|offline 初回・8秒失敗|8.001502秒|0.000023655秒|D / folio_wait_bit_common|1,085|129,302,528|51 bytes|
+|成功ジョブ before.json 初回|11.161142秒|0.000041298秒|R / 0|1,859|163,250,176|0 bytes|
+|成功ジョブ after.json 先頭|0.262038秒|0.000045225秒|R / 0|0|0|0 bytes|
+
+出典 artifact: normal `12724803971`、offline `12725586774`、成功ジョブ `12726326049`。別 runner 間の比較であり、同一ホストの制御実験ではない。read_bytes は親 PID のカウンタで、子孫の全 I/O 量やストレージ latency の直接計測ではない。
+
+### 確認済み
+
+- 初回失敗の request_sent snapshot は起動開始から normal 0.000820秒、offline 0.000654秒。Popen と reader 開始、要求の pipe 書込みまでが8秒を消費したわけではない。Popen の返却は実行ファイル全体のロード完了を意味しない。
+- 両失敗の終端では CDP の親子 pipe inode は一致し、要求51 bytesが未消費、response pipe は0 bytes、完成 message受信数は0。主な待ちは要求送信後・最初の CDP 応答前にある。reader 内の部分 frame量は測っていない。
+- offline の kernel stack は `folio_wait_bit_common → filemap_fault → ... → exc_page_fault`。ファイル-backed page fault待ちが失敗時に存在する。normal の stack は permission_denied だが、D state と同じ wchan は取得済み。
+- 同じブラウザ版の成功初回にも多数のmajor faultと読み込みがあり、11.161秒を要した。後続は0.222秒程度、suite後は0.242〜0.280秒。成功ジョブは診断起動10回をsuiteの前に実施しており、初回8秒テストの成功証拠にはならない。
+- Python 3.11通常CIは画像生成前の `RenderSession.__enter__ → Chrome.start → Browser.getVersion` で30秒失敗。PlotlyのJS実行やPNG/SVG生成がタイムアウトしたわけではない。通常CIには当時wait snapshotがなく、同じpage fault原因とまでは確認できない。
+- 成功経路にもno-bus.sockへの接続失敗ログが出る。これだけでD-Bus待ちを原因と断定できない。
+
+### 未解明と今回の変更
+
+待っているファイル、page cache / runnerストレージの状態、待機時間の内訳、Python 3.11失敗との共通原因は未特定。D stateの1点観測だけで8秒全体が同じwaitだったとは言わない。根本修正の根拠がないためproduction transportは変更しない。
+
+検証専用の `spawn_elapsed_seconds` を追加し、既存 `_spawn` の所要時間を成功・失敗とも記録する。これはPython exec helperをPopenして親側pipeを設定するまでで、helperのexec完了やChromium内の初期化完了ではない。追加プロセス、追加CDP要求、再試行、事前ファイル読出し、timeout延長はない。
+
+通常CIのPython 3.11〜3.15にも既存のopt-in observerを有効化し、`browser-observation-py<version>` artifactへ実テストのsnapshotを保存する。Plotly用fixtureはchrome_executableに依存するため、この画像出力テストも観測対象になる。normal/offline専用ジョブの順序・条件・8秒assertは維持する。研究データ・事前宣言・判定条件は変更しない。
+
+ローカル検証（2026-10-28、Python 3.12.14）: 診断・pipeの対象テストは79 passed / 2 deselected。除外2件は実子PIDのproc情報・fd linkを読めることを前提とし、本環境では取得不能。同じ2件が変更前headでも失敗することを確認した。render/export/CDNを含む実行は101 passed / 11 skipped / 上記2 failed。Chromium本体が本環境にないため実画像出力、normal/offline初回、Python 3.11実ブラウザの再検証はGitHub CIが必要で、ローカル成功とは報告しない。

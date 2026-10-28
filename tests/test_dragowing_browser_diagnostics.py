@@ -454,6 +454,7 @@ def test_fake_only_is_not_patched():
     assert [b["position"] for b in records] == ["first_in_pytest", "subsequent_in_pytest", "subsequent_in_pytest"]
     assert [b["timeout_seconds"] for b in records] == [2, 2, 0.2]
     assert all(b["cleanup"]["profile_removed"] for b in records)
+    assert all(0 <= b["spawn_elapsed_seconds"] < b["readiness_elapsed_seconds"] for b in records)
     assert records[2]["failure"]["stage"] == "readiness"
     assert records[2]["readiness_transport"]["phase"] == "waiting_reply"
     assert [[s["phase"] for s in b["wait_observations"]] for b in records] == [
@@ -954,3 +955,30 @@ def test_kernel_stack_failure_read_keeps_deadline_exception_and_reports_cost(mon
     browser.record_failure(original)
     browser._observe_wait("readiness_failure")
     assert stack_calls == [None]  # no repeated read during failure handling / cleanup
+
+
+@pytest.mark.parametrize("fails", [False, True])
+def test_spawn_timing_preserves_single_handoff_and_original_error(monkeypatch, fails):
+    browser = diagnostic.DiagnosticChrome("/explicit/browser", timeout=8)
+    calls = []
+    clock = iter([10.0, 10.125])
+    failure = OSError("synthetic spawn failure")
+
+    def spawn(self, exe):
+        calls.append((self, exe))
+        if fails:
+            raise failure
+
+    monkeypatch.setattr(diagnostic.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(diagnostic.Chrome, "_spawn", spawn)
+    # Failure recording is tested separately; isolate the handoff measurement.
+    monkeypatch.setattr(browser, "record_failure", lambda exc: None)
+    if fails:
+        with pytest.raises(OSError) as caught:
+            browser._spawn("/explicit/browser")
+        assert caught.value is failure
+    else:
+        browser._spawn("/explicit/browser")
+    assert calls == [(browser, "/explicit/browser")]
+    assert browser.spawn_elapsed_seconds == 0.125
+    assert browser.timeout == 8

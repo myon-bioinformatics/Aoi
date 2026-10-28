@@ -739,7 +739,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1175,
+      "attribute_uses": 1183,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -752,11 +752,11 @@
         "fixture": 55,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 243,
+        "mark.parametrize": 247,
         "mark.skipif": 20,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 429,
+        "raises": 433,
         "skip": 8,
         "warns": 3
       },
@@ -795,19 +795,19 @@
           "import_sites": 15
         },
         "dragowing": {
-          "attribute_uses": 68,
+          "attribute_uses": 76,
           "attributes": {
             "UsageError": 2,
             "fail": 2,
             "fixture": 7,
-            "mark.parametrize": 13,
+            "mark.parametrize": 17,
             "mark.skipif": 2,
-            "raises": 39,
+            "raises": 43,
             "skip": 3
           },
           "dynamic_import_sites": 0,
-          "files": 10,
-          "import_sites": 11
+          "files": 11,
+          "import_sites": 12
         },
         "nagoyaction": {
           "attribute_uses": 77,
@@ -936,8 +936,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 115,
-      "import_sites": 117
+      "files": 116,
+      "import_sites": 118
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1305,7 +1305,7 @@
     {
       "attributes": {},
       "dynamic_lines": [
-        77
+        84
       ],
       "file": "dragowing/htmlout.py",
       "import_sites": 0,
@@ -1491,6 +1491,17 @@
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_research_report.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 4,
+        "raises": 4
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_venn.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"

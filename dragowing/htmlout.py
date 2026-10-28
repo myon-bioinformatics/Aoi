@@ -1,4 +1,4 @@
-"""HTML。文章と表は Markdown から作る。Plotly は軌跡と球団×年だけ。"""
+"""HTML。文章と表は Markdown から作る。Plotly は index.html の図（軌跡、球団×年、条件の重なり）だけ。"""
 from __future__ import annotations
 
 import html
@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .figures import heatmap_figure, trajectory_figure
 from .plotly_cdn import plotly_script_tags
+from .venn import venn_figures
 from .forms import (
     COUNTEREXAMPLE_PAIR_LABELS,
     FORM_LABEL,
@@ -58,6 +59,12 @@ _INDEX_MD = """\
 @@HEATMAP@@
 
 ## 条件集合の重なり
+
+@@OVERLAP_NOTE@@
+
+@@OVERLAP_GRID@@
+
+@@OVERLAP_BREAKDOWN@@
 
 @@OVERLAP@@
 
@@ -385,13 +392,30 @@ def heatmap_note(spec: dict, column: str) -> str:
     )
 
 
-def index_body(rows: list[dict], overlap: dict, column: str, team_order=()) -> tuple[str, dict]:
+def overlap_note(grid: dict, breakdown: dict) -> str:
+    n = len(grid["layout"]["meta"]["sets"])
+    meta = breakdown["layout"]["meta"]
+    other = "「その他」の中身はホバーに出る。" if meta["folded"] else ""
+    return (
+        f"集合は {n} 個（S1–S{n}、条件は凡例）。格子のマスは領域で、数は件数（丸めない）、色は件数（濃いほど多い）。"
+        "枠は集合を示す。円は描かない。面積は件数と関係しない。"
+        f"内訳は領域ごとの件数を `{md_inline(meta['by'])}` の値で分けたもので、色は値の昇順で割り当てる。{other}"
+    )
+
+
+def index_body(
+    rows: list[dict], overlap: dict, column: str, team_order=(), by: str = "team", keep: tuple = ()
+) -> tuple[str, dict]:
     trajectory = trajectory_figure(rows)
     heat = heatmap_figure(rows, column, team_order)
+    venn = venn_figures(overlap, by, keep)
     source = (
         _INDEX_MD.replace("@@COLUMN@@", md_inline(column))
         .replace("@@TRAJECTORY@@", figure_block(trajectory, "trajectory"))
         .replace("@@HEATMAP@@", heatmap_note(heat, column) + "\n\n" + figure_block(heat, "heatmap"))
+        .replace("@@OVERLAP_NOTE@@", overlap_note(venn["overlap_grid"], venn["overlap_breakdown"]))
+        .replace("@@OVERLAP_GRID@@", figure_block(venn["overlap_grid"], "overlap_grid"))
+        .replace("@@OVERLAP_BREAKDOWN@@", figure_block(venn["overlap_breakdown"], "overlap_breakdown"))
         .replace("@@OVERLAP@@", overlap_md(overlap))
     )
-    return render_md(source), {"trajectory": trajectory, "heatmap": heat}
+    return render_md(source), {"trajectory": trajectory, "heatmap": heat, **venn}

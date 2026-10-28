@@ -26,7 +26,7 @@ Topics: reports, HTML, visualization
 
 四つの形の文字の表は [docs/forms.md](docs/forms.md)。HTML（軌跡、球団×年、条件の重なり、命題の一覧）は [docs/figures.md](docs/figures.md)。構想図は [docs/images/dragowing.webp](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/images/dragowing.webp)。
 
-`build/dragowing/index.html` と `propositions.html` ができる。`index.html` の軌跡と球団×年は Plotly の JSON 仕様とブラウザの plotly.js（jsDelivr の最新 dist）で描く。Python の `plotly` パッケージは使わない。`propositions.html` は一覧と Markdown の表で、Plotly は使わない。`index.html` に Plotly.js を埋め込むときは `--embed` を付ける。ページの文章は Markdown から HTML にしている。
+`build/dragowing/index.html` と `propositions.html` ができる。`index.html` の軌跡・球団×年・条件の重なり（マスの格子と内訳）は Plotly の JSON 仕様とブラウザの plotly.js（jsDelivr の最新 dist）で描く。Python の `plotly` パッケージは使わない。`propositions.html` は一覧と Markdown の表で、Plotly は使わない。`index.html` に Plotly.js を埋め込むときは `--embed` を付ける。ページの文章は Markdown から HTML にしている。
 
 PNG / SVG は任意である。`--png` や `--svg` を付けると Chrome 経由で書き出す。Chrome が無ければ HTML だけで、テストもそちらだけを見る。
 
@@ -43,10 +43,11 @@ uv sync
 ```
 
 ```bash
-python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--column 列] [--cond col,op,値] [--png] [--svg] [--embed]
+python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--column 列] [--cond col,op,値 ...] [--breakdown 列] [--breakdown-keep 値 ...] [--png] [--svg] [--embed]
 ```
 
 - `--results` は `season.jsonl` と `propositions.jsonl` があるディレクトリ。`--id` で命題を絞り、`--column` で球団×年に置く数値列（既定 `wins_vs_pythag`）を選ぶ。
+- `--cond` を繰り返すと、条件の重なりを B クラスを含め 2〜8 集合で描く（4 集合以上は格子）。`--breakdown` は重なりの内訳を分ける列（既定 `team`）、`--breakdown-keep` は「その他」にまとめず残す値。詳しくは [docs/figures.md](docs/figures.md)。
 - 条件の重なり（`overlap.py`）は [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) の `propositions` と `rule_search` を、四つの形の表（`forms.py`）は [QueRyu](https://github.com/myon-bioinformatics/QueRyu) の `ask`（登録状態）を使います。動かすときはそれらを `PYTHONPATH` に入れます（下の「テスト」と同じ）。
 - このディレクトリはパッケージ `dragowing` の中身なので、`python -m dragowing` はディレクトリ名が `dragowing` に見える親から実行します（下の「テスト」の例）。
 
@@ -64,7 +65,8 @@ HTMLのMarkdown、画像出力のChromeなどは引き続き必要です。
 | `cli.py`・`__main__.py` | `python -m dragowing --results DIR --out DIR` |
 | `records.py` | 結果ディレクトリの JSONL を、記録の順のまま読む |
 | `figures.py` | 記録された値の Plotly 図 JSON（data / layout） |
-| `htmlout.py` | HTML。文章と表は Markdown から作る（Plotly は軌跡と球団×年だけ） |
+| `htmlout.py` | HTML。文章と表は Markdown から作る（Plotly は軌跡・球団×年・条件の重なり） |
+| `venn.py` | 条件の重なり（2〜8 集合）の図。カルノー図の並びのマスの格子と、領域ごとの内訳の積み上げ棒。Plotly の JSON 仕様を返す（`venn_figures`） |
 | `forms.py` | 四つの形の 2×2 と、条件の論理記号（[docs/forms.md](docs/forms.md)） |
 | `overlap.py` | 条件集合と B クラスの重なり（マスクは rule_search のビット行列） |
 | `plotly_cdn.py` | Plotly.js（jsDelivr） |

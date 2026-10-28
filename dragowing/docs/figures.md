@@ -12,7 +12,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --png --svg
 ```
 
-`--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。
+`--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。`--cond` を繰り返すと B クラスを足して 2〜8 個まで使える（4 集合以上は格子で読む。下の「条件の重なり」）。重なりの内訳は `--breakdown 列`（既定 `team`）と `--breakdown-keep 値`（繰り返せる）で選ぶ。
 
 既定では、`index.html` が jsDelivr の Plotly.js（`https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js`、SRI なし）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。Python パッケージ `plotly` は依存に置かない。
 
@@ -20,7 +20,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 | ファイル | 中身 |
 |---|---|
-| `index.html` | 軌跡、球団×年、条件の重なりの件数と単位の表 |
+| `index.html` | 軌跡、球団×年、条件の重なり（格子と内訳）、領域の件数と単位の表 |
 | `propositions.html` | 先頭の一覧と、命題ごとの 2×2、論理記号、反例の表 |
 
 ページの見出し、一覧、2×2、反例の表、論理記号の囲みは Markdown で書き、Python-Markdown で HTML にする。数は変換のあとにもファイルの値のまま残す。丸めない。
@@ -94,6 +94,35 @@ PNG/SVG API と CLI `--png` は `export_draw` と同じ CDN 契約の Plotly.js 
 
 B は `upper_half == false` という集合の表示名である。
 
+集合は B クラスを含めて 2〜8 個（`overlap.MAX_SETS`）。領域は 2^n 個で、件数 0 の領域も 0 のまま置く。
+
+**格子**（`dragowing/venn.py` の `grid_figure`、図の ID は `overlap_grid`）。面積を件数に合わせた円や楕円は、あてはめになるので使わない。2^n 個の領域を 1 マスずつ、カルノー図の並びの格子に置く。
+
+- 行は前半 n÷2 個（切り捨て）の集合、列は残りの集合。軸の並びはグレイ符号で、先頭の集合が入る側から（4 集合なら 10, 11, 01, 00）。隣のマスは 1 つの集合だけ違う。軸のラベルは、集合の番号順に入る(1)・入らない(0)を並べた文字。
+- マスの数は件数で、丸めない。色は件数（一つの色相の薄い→濃い）。数はマスに書き、色の凡例は置かない。
+- 集合は枠で示す。行の集合は横長、列の集合は縦長の長方形で、ラベル `S1`…`Sn` と凡例（条件式）で対応する。格子の並びの性質で、集合の入る範囲が離れた帯になることがある（5 集合以上）。その場合は帯ごとに枠を描く。
+- 枠は格子の外へはみ出して描くため、図形は paper 座標にしている（軸の座標だと格子の外が切れる）。
+
+**内訳**（`breakdown_figure`、図の ID は `overlap_breakdown`）。件数が 1 以上の領域を 1 行にした横の積み上げ棒で、長さが件数。`unit` の列（`team`、`team_name`、`league`、`season`、`upper_half`。CLI の `--breakdown`、既定は `team`）の値で色を分ける。
+
+- 行は件数の降順（同数は領域の並びの順）。行のラベルは領域の桁と括弧の件数。件数 0 の領域は棒にせず、数を図の題に書く（格子とページの表には出ている）。
+- 色は値の昇順で固定の順に割り当てる（件数の順位では塗り替えない）。色を付ける値は 7 個までで、超えた値は灰色の「その他」にまとめ、中身（値と件数）はホバーに出す。`--breakdown-keep d` のように値を指定すると、件数にかかわらず別の色で残す。
+- 図の題と `layout.meta`（`by`、`folded`、`empty_regions`、領域ごとの値別の件数）に、まとめたこと・省いたことを書く。
+
+Python から呼ぶときは、Plotly の JSON 仕様（`data` と `layout`）を返すだけで、`plotly` パッケージも numpy も要らない。仕様は JSON なので、ブラウザの `Plotly.newPlot(id, spec.data, spec.layout)` へそのまま渡せる（Node からも同じ）。
+
+```python
+from dragowing.overlap import finalize_conditions, load_overlap, parse_cond
+from dragowing.records import read_jsonl
+from dragowing.venn import venn_figures
+from dragowing.htmlout import figure_block, standalone
+
+rows = read_jsonl("season.jsonl")
+conds = finalize_conditions([parse_cond(t) for t in ("rd,>,0", "rank_ra,<=,2", "rank_rf,<=,3")], [], rows)  # + B = 4 集合
+figs = venn_figures(load_overlap("season.jsonl", conds, backend="stdlib"), by="team", keep=("d",))
+page = standalone("重なり", figure_block(figs["overlap_grid"], "g") + figure_block(figs["overlap_breakdown"], "b"), plotly=True)
+```
+
 ## 解釈
 
 このページは、保存された数と文字列をマスと点と表に移したものである。
@@ -105,6 +134,8 @@ B は `upper_half == false` という集合の表示名である。
 `wins_vs_pythag` の色は、その数の大小を見やすくしたものである。正や負を、勝ち越しや失敗の判断としては読まない。マスの A と B はクラスの表示名である。ホバーの `rank` は記録された順位で、このページは順位を計算し直さない。
 
 重なりの表は、選んだ条件式が記録の上でどこで同時に真だったかの件数である。式を採用したことや、次に使う規則であることは示さない。
+
+格子の並びや枠の入れ子は、集合どうしの近さや因果を示さない。色の濃さは件数の大小を見やすくしたもので、濃い領域が重要という意味ではない。内訳の色は値の昇順に割り当てただけで、値の良し悪しを表さない。「その他」にまとめたことは件数の話で、その値が重要でないことは示さない。
 
 反例の表の `question` は、保存されている問いの文である。このページはその問いに答えない。
 

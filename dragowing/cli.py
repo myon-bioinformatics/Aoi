@@ -76,7 +76,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--cond",
         action="append",
         dest="conds",
-        help="重なりの条件。col,op,値（JSON）。例: rd,>,0 。省略すると if の先頭2件と B クラス",
+        help="重なりの条件。col,op,値（JSON）。例: rd,>,0 。繰り返せる（B クラスを含めて 2〜8 個）。省略すると if の先頭2件と B クラス",
+    )
+    parser.add_argument(
+        "--breakdown",
+        default="team",
+        help="重なりの内訳を分ける列。team、team_name、league、season、upper_half のどれか。既定は team",
+    )
+    parser.add_argument(
+        "--breakdown-keep",
+        action="append",
+        default=[],
+        help="内訳で「その他」にまとめず別の色で残す値。繰り返せる。例: d（件数にかかわらず残す）",
     )
     parser.add_argument(
         "--chrome",
@@ -106,7 +117,9 @@ def main(argv=None) -> int:
         chosen = select_items(items, present, args.ids)
         conds = finalize_conditions([parse_cond(text) for text in args.conds] if args.conds else None, items, rows)
         overlap = load_overlap(season_path, conds, backend=args.overlap_backend)
-        index_html, index_figures = index_body(rows, overlap, args.column, team_order(args.team_order))
+        index_html, index_figures = index_body(
+            rows, overlap, args.column, team_order(args.team_order), args.breakdown, tuple(args.breakdown_keep)
+        )
         prop_html = propositions_body(chosen)
     except (FileNotFoundError, ValueError, TypeError) as exc:
         print(str(exc), file=sys.stderr)

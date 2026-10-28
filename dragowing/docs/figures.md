@@ -27,6 +27,8 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 文字だけの 2×2 は [forms.md](forms.md) の `dragowing/forms.py` のままである。
 
+文字は図もページも `figures.FONT`（`Meiryo, メイリオ, sans-serif`）で揃える。フォントファイルは同梱しないので、メイリオが入っていない環境（Mac・iPhone・Linux、`--png` / `--svg` を書き出す Chrome も含む）では OS 既定の sans-serif で表示される。字形を完全に揃えたいときは、見る側にメイリオを入れる。
+
 PNG / SVG が要るときだけ `--png` / `--svg` を付ける。Chrome もそのときだけ要る（`--chrome` または `CHROME` 環境変数）。Chrome が無いと HTML は書いたうえで終了コード 2 になる。テストは Chrome も使わない。
 
 `sets.jsonl` はこの結果に無い。条件式のハッセ図（提案の C6）は出していない。成立率をここで新しく計算して色を塗ることもしていない。

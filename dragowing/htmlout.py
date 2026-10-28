@@ -7,7 +7,7 @@ import json
 import re
 from pathlib import Path
 
-from .figures import heatmap_figure, trajectory_figure
+from .figures import FONT, heatmap_figure, trajectory_figure
 from .plotly_cdn import plotly_script_tags
 from .venn import venn_figures
 from .forms import (
@@ -25,7 +25,7 @@ from .forms import (
 
 _STYLE = """
 body { margin: 1.5rem auto; max-width: 1100px; color: #1a1a1a; background: #fff;
-  font-family: "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif; line-height: 1.5; }
+  font-family: @@FONT@@; line-height: 1.5; }
 h1, h2 { font-weight: 650; }
 a { color: #0b57d0; }
 pre { white-space: pre-wrap; background: #f7f7f7; padding: 0.8rem 1rem; }
@@ -36,7 +36,7 @@ caption { text-align: left; font-weight: 650; padding-bottom: 0.25rem; }
 .provenance { color: #333; }
 details { margin: 0.75rem 0 1.1rem; }
 summary { cursor: pointer; }
-"""
+""".replace("@@FONT@@", FONT)
 
 _MD = ["tables", "fenced_code", "attr_list", "md_in_html"]
 _SAFE_ANCHOR = re.compile(r"[A-Za-z][A-Za-z0-9_-]*")

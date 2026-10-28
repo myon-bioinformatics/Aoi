@@ -8,6 +8,7 @@ import random
 import pytest
 
 from dragowing.cli import main
+from dragowing.figures import FONT
 from dragowing.htmlout import embed_json, figure_block, spec_from, standalone
 from dragowing.overlap import B_COND, MAX_SETS, finalize_conditions, load_overlap
 from dragowing.venn import BY_KEYS, MAX_SERIES, breakdown_figure, grid_figure, karnaugh, venn_figures
@@ -188,3 +189,10 @@ def test_cli_draws_five_sets_with_a_breakdown_on_the_recorded_cycle(tmp_path, ao
     for k in range(MAX_SETS):
         too_many += ["--cond", f"rd,>,{k}"]
     assert main(too_many) == 1
+
+
+def test_meiryo_is_the_font_of_the_figures_and_the_page(tmp_path):
+    assert FONT.startswith("Meiryo")
+    fig = venn_figures(make(tmp_path, 4))["overlap_grid"]
+    assert fig["layout"]["font"]["family"] == FONT
+    assert f"font-family: {FONT};" in standalone("t", figure_block(fig, "overlap_grid"), plotly=True)

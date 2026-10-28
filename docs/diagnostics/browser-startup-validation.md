@@ -186,3 +186,18 @@ JSON、JUnit、人工画像は成功 / 失敗の両方で `browser-first-start-{
 通常CIのPython 3.11〜3.15にも既存のopt-in observerを有効化し、`browser-observation-py<version>` artifactへ実テストのsnapshotを保存する。Plotly用fixtureはchrome_executableに依存するため、この画像出力テストも観測対象になる。normal/offline専用ジョブの順序・条件・8秒assertは維持する。研究データ・事前宣言・判定条件は変更しない。
 
 ローカル検証（2026-10-28、Python 3.12.14）: 診断・pipeの対象テストは79 passed / 2 deselected。除外2件は実子PIDのproc情報・fd linkを読めることを前提とし、本環境では取得不能。同じ2件が変更前headでも失敗することを確認した。render/export/CDNを含む実行は101 passed / 11 skipped / 上記2 failed。Chromium本体が本環境にないため実画像出力、normal/offline初回、Python 3.11実ブラウザの再検証はGitHub CIが必要で、ローカル成功とは報告しない。
+
+## 91aadb9 のCI再検証（2026-10-28）
+
+`eb01906` と同一treeをGitHub接続経由で反映したheadが `91aadb97b8350f2b68ce72e1ab521284ad615747`。Draftは維持。
+
+- [初回専用run 40619953090](https://github.com/myon-bioinformatics/Aoi/actions/runs/40619953090): normalは1 failed / 44 passed / 1 skipped、offlineは2 failed / 43 passed / 1 skipped。どちらも8秒のstalled_dbusテストでBrowser.getVersionを待って失敗。offlineは次の静的SVGテストも30秒のBrowser.getVersion待ちで失敗した。
+- normal初回: spawn 0.000631秒、readiness 8.002050秒、送信 0.000031537秒。終端D / folio_wait_bit_common、major fault 1,477、read_bytes 148,111,360。要求は消費済み（0 bytes）で、前回の未消費51 bytesとは異なる。全失敗を「要求を読む前」と一般化できない。
+- offline初回: spawn 0.000419秒、readiness 8.001454秒、送信 0.000024467秒。終端D / folio_wait_bit_common、major fault 265、read_bytes 25,567,232、要求未消費51 bytes。kernel stackは再びfilemap_fault。次の静的SVGテストもspawn 0.000460秒、readiness 30.001123秒、D / filemap_faultで、要求は消費済み。
+- [通常CI run 40619953498](https://github.com/myon-bioinformatics/Aoi/actions/runs/40619953498): Python 3.11〜3.15は各3,148 passed / 39 skipped / 2 xfailed、失敗は各1件の依存調査一覧のstale検査のみ。既存offline画像出力、actionlintも成功。
+- Python 3.11の `test_export_draw_plotly_three_figures_in_one_session` はsetup/call/teardownすべてpassed。保存artifact `12787446644` ではspawn 0.000580秒、readiness 19.907795秒、failureなし。今回の成功だけで起動遅延が解消したとはいえない。
+- normal証拠artifact `12787490101`、offline証拠artifact `12786467854`。ファイルI/O待ちの関与は再確認できたが、待っているファイル・ストレージ・Python版との因果関係は未確定。
+
+一覧staleは追加回帰テストによる `pytest.mark.parametrize` / `pytest.raises` の使用数各+1が原因。`survey_third_party.py --json`で生成メタデータだけ再生成し、関連テスト8件成功。研究データ・依存パッケージ・判定条件は変更しない。
+
+事前診断付きStartup and exportジョブも完了。suiteは同じ一覧staleの1 failed / 3,148 passedのみ。診断はsuite前10/10成功（readiness 0.227〜17.611秒）、suite後10/10成功（0.238〜0.287秒）、3セッション×3図×PNG/SVGの出力も3/3成功（readiness 0.239〜0.255秒）。この成功は初回8秒失敗を取り消すものではない。

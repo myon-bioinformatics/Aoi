@@ -23,6 +23,10 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-10-27: SakAnalytics の登録 SHA は、子の main の第一親の最新の merge `8e4bea3fd36c9bda693bde959a135da9a519fea2`（#22: 共有ランチャーの更新）です。`sakanalytics/` の tree はこの SHA の tree と同一で、取り込み commit の第2親もこの SHA です。登録する `sha` は子の main の第一親にある merge だけです。
+
+2026-10-25: SakAnalytics #23 の merge `1609008d13a1627a583d7ad06d4e5bcee649b5c9`（ゼロ割りを空にする・許容値に名前をつける・NaN/inf の記録。値は変えない）を、squash なしの `git subtree pull --prefix=sakanalytics` で取り込みました。登録した `61ee074` から 12 コミット進んでいたので、子の #18〜#21（アイコン、vendor-dispatch の検証、英語の残り、`vendor/py_launch.cjs` 経由の Node 24 エントリ）も同時に入ります。`sakanalytics/` の tree は登録した SHA の tree と同一で、merge commit の第2親は子の main の head です。Aoi の clone が浅い（shallow）と「unrelated histories」で止まるので、先に `git fetch --unshallow` します。
+
 2026-10-20: BlueProbe #30 の merge `50a2846d68fcba4acbe7e4abf7fb0130de07de89`（標準ライブラリの html.parser）と QueRyu #16 の merge `fcadaa9aaab30292703459758eae481d0f018f2d` を、squash なしの `git subtree pull --prefix=blueprobe` と `git subtree pull --prefix=queryu` で取り込みました。`blueprobe/` と `queryu/` の tree は登録した SHA の tree と同一です。各 merge commit の第2親は子の main の head です。
 
 2026-10-20: 各子の open PR を子ごとの統合 PR（BlueProbe #29、QueRyu #15、PythDRagoras #15、DRAgoWing #8、SakAnalytics #9、NagoyAction #10）にまとめて merge し、6つの子すべてを `git subtree pull`（`--squash` なし）で取り込みました（BlueProbe `27f61b3b10c629ace49ad6c8a2dc9f09ad5e31f3`、QueRyu `0a83400f3a718901815e1d07d2e2d990976839b3`、PythDRagoras `b0f9c3a1ef255f7c0bc38bc7eeff86360403e69f`、DRAgoWing `cd8140ce695ede6add6817cced2ea5c8ee2e161f`、SakAnalytics `3cd2349b8a5d49f4e0de187aac2741566b3d731c`、NagoyAction `a1ee275410f49f7d0ce95c6ff4f16ae5bbc39028`）。各 merge commit の第2親は子の main の head です。

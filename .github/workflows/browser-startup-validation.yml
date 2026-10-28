@@ -1,0 +1,191 @@
+name: Browser startup validation
+
+# Chromium is the default validation browser. Manual Chrome comparison remains
+# available; neither lane changes production timeouts, retries, or launch flags.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/browser-startup-validation.yml'
+      - 'dragowing/**'
+      - 'scripts/diagnose_dragowing_browser.py'
+      - 'scripts/observe_dragowing_startup.py'
+      - 'tests/test_dragowing_browser_*.py'
+      - 'docs/diagnostics/browser-startup-validation.md'
+  workflow_dispatch:
+    inputs:
+      compare-chrome:
+        description: Include an explicit Chrome compatibility comparison
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-startup-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  first-start-context:
+    name: First actual startup (${{ matrix.context }}, Python 3.14)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        context: [normal, offline]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14'
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: '0.13.3'
+          enable-cache: false
+      - name: Prepare the same offline-suite inputs
+        run: |
+          uv sync --locked --python 3.14
+          mkdir -p build/test-assets build/startup-context
+          python -S -c 'from pathlib import Path; from dragowing.plotly_cdn import fetch_plotly_js; Path("build/test-assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
+      - name: Select Chromium without a full browser warmup
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! chromium="$(command -v chromium || command -v chromium-browser)"; then
+            echo '::error::Chromium is required: install chromium or chromium-browser on the runner.'
+            exit 1
+          fi
+          test -x "$chromium"
+          "$chromium" --version
+          printf 'CHROME=%s\n' "$chromium" >> "$GITHUB_ENV"
+      - name: Observe the actual tests without preceding browser launches
+        shell: bash
+        env:
+          STARTUP_CONTEXT: ${{ matrix.context }}
+        run: |
+          set -euo pipefail
+          prefix=()
+          case "$STARTUP_CONTEXT" in
+            offline) prefix=(sudo unshare --net --) ;;
+            normal) ;;
+            *) echo '::error::Unknown startup context'; exit 1 ;;
+          esac
+          "${prefix[@]}" env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1 \
+            DRAGOWING_EXPORT_EVIDENCE_DIR="$PWD/build/startup-context/export-evidence" \
+            DRAGOWING_PINNED_PLOTLY_JS="$PWD/build/test-assets/plotly.min.js" \
+            "$PWD/.venv/bin/python" -m pytest -c pyproject.toml -q \
+            -p scripts.observe_dragowing_startup \
+            --browser-startup-evidence=build/startup-context/actual-tests.json \
+            dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
+            dragowing/tests/test_plotly_cdn.py \
+            --junitxml=build/startup-context/actual-tests.xml
+      - name: Preserve first and subsequent startup evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-first-start-${{ matrix.context }}-py3.14
+          path: build/startup-context/
+          if-no-files-found: error
+          retention-days: 14
+
+  compare:
+    name: Startup and export (${{ matrix.browser }}, Python 3.14)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.compare-chrome && '["chromium","google-chrome"]' || '["chromium"]') }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The full suite includes sakanalytics/ tests that, on GITHUB_ACTIONS, fail without Node 24+
+      # (same requirement as the test job in ci.yml).
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+      - name: Require supported Node in parity CI
+        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14'
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: '0.13.3'
+          enable-cache: false
+      - name: Prepare dependencies and local Plotly.js
+        id: prepare
+        run: |
+          uv sync --locked --python 3.14
+          mkdir -p build/browser-startup/assets
+          python -S -c 'from pathlib import Path; from dragowing.plotly_cdn import fetch_plotly_js; Path("build/browser-startup/assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
+      - name: Select the named browser family without cross-browser fallback
+        id: browser
+        env:
+          BROWSER_NAME: ${{ matrix.browser }}
+        run: |
+          set -euo pipefail
+          if [[ "$BROWSER_NAME" == chromium ]]; then
+            if ! executable="$(command -v chromium || command -v chromium-browser)"; then
+              echo '::error::Chromium is required: install chromium or chromium-browser on the runner.'
+              exit 1
+            fi
+          else
+            if ! executable="$(command -v google-chrome || command -v google-chrome-stable)"; then
+              echo '::error::The requested Chrome comparison requires google-chrome or google-chrome-stable.'
+              exit 1
+            fi
+          fi
+          test -x "$executable"
+          "$executable" --version
+          printf 'executable=%s\n' "$executable" >> "$GITHUB_OUTPUT"
+      - name: Measure ten fresh profiles before the suite
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
+        env:
+          CHROME: ${{ steps.browser.outputs.executable }}
+        run: |
+          .venv/bin/python scripts/diagnose_dragowing_browser.py --chrome "$CHROME" --runs 10 --timeout 30 \
+            --output build/browser-startup/before.json
+      - name: Run the full suite with explicit browser selection
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
+        env:
+          CHROME: ${{ steps.browser.outputs.executable }}
+          DRAGOWING_REQUIRE_CHROME: '1'
+          DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/browser-startup/assets/plotly.min.js
+          DRAGOWING_EXPORT_EVIDENCE_DIR: ${{ github.workspace }}/build/browser-startup/suite-exports
+        # Use the ordinary runner user/network context of the original failure.
+        # Do not introduce sudo/unshare or weaken existing isolation elsewhere.
+        run: |
+          .venv/bin/python -m pytest -q --junitxml=build/browser-startup/full-suite.xml
+      - name: Measure ten fresh profiles after the suite
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
+        env:
+          CHROME: ${{ steps.browser.outputs.executable }}
+        run: |
+          .venv/bin/python scripts/diagnose_dragowing_browser.py --chrome "$CHROME" --runs 10 --timeout 30 \
+            --output build/browser-startup/after.json
+      - name: Validate synthetic PNG and SVG exports in three sessions
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
+        env:
+          CHROME: ${{ steps.browser.outputs.executable }}
+        run: |
+          .venv/bin/python scripts/diagnose_dragowing_browser.py --chrome "$CHROME" --runs 3 --timeout 30 \
+            --plotly-js build/browser-startup/assets/plotly.min.js \
+            --evidence-dir build/browser-startup/diagnostic-exports \
+            --output build/browser-startup/exports.json
+      - name: Preserve startup diagnostics, JUnit, and synthetic images
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-startup-${{ matrix.browser }}-py3.14
+          path: |
+            build/browser-startup/*.json
+            build/browser-startup/*.xml
+            build/browser-startup/suite-exports/
+            build/browser-startup/diagnostic-exports/
+          if-no-files-found: warn
+          retention-days: 14

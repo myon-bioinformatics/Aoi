@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SKIP_DIRS = {".git", ".venv", ".test-deps", "build", "reports", "__pycache__"}
+SKIP_DIRS = {".git", ".venv", ".test-deps", ".parent-dispatch", "build", "reports", "__pycache__"}
 THIRD_PARTY = {"polars", "pytest", "ortools"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "dragowing", "scripts")

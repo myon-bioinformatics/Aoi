@@ -1,0 +1,4 @@
+EGY HIECS 2012/2013 CAPMAS inequality bulletin Table2/App8
+food+drink (الطعام والشراب) % of HH expenditure by per-capita expenditure quintile:
+q1 45.8; q2 43.5; q3 41.5; q4 39.3; q5 30.6; national 37.6
+restaurants/hotels separate; year=2013

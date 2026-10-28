@@ -1,0 +1,4 @@
+{
+  "error_code": "ODSQLError",
+  "message": "ODSQL query is malformed: Field default is not allowed in the current clause. Clause(s) containing the error(s): where."
+}

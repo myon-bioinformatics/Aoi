@@ -1,0 +1,35 @@
+{
+  "odata.metadata":"https://opendata.cbs.nl/ODataApi/OData/80345eng/$metadata#Cbs.OData.WebAPI.DataProperties","value":[
+    {
+      "odata.type":"Cbs.OData.TimeDimension","ID":0,"Position":0,"ParentID":null,"Type":"TimeDimension","Key":"Periods","Title":"Periods","Description":null,"ReleasePolicy":false
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":1,"Position":1,"ParentID":null,"Type":"Topic","Key":"Beer_1","Title":"Beer","Description":"1 liter pilsner beer; from a crate","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":2,"Position":2,"ParentID":null,"Type":"Topic","Key":"Bread_2","Title":"Bread","Description":"From 2010: 1 loaf of sliced wheat bread; before: 1 loaf of (sliced) white bread","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":3,"Position":3,"ParentID":null,"Type":"Topic","Key":"Butter_3","Title":"Butter","Description":" 250 grams unsalted butter","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":4,"Position":4,"ParentID":null,"Type":"Topic","Key":"Cheese_4","Title":"Cheese","Description":"1 kilogram matured Gouda cheese","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":5,"Position":5,"ParentID":null,"Type":"Topic","Key":"Coffee_5","Title":"Coffee","Description":"From 2000: 1 kilogram coffee, extra-fine grind; before: 500 grams coffee","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":6,"Position":6,"ParentID":null,"Type":"Topic","Key":"Eggs_6","Title":"Eggs","Description":"From 2000: 10 free-range eggs, medium size; Before: 1 egg","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":7,"Position":7,"ParentID":null,"Type":"Topic","Key":"Margarine_7","Title":"Margarine","Description":"From 2000: 250 grams spreadable margarine in tubs; before: 500 grams margarine","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Impossible"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":8,"Position":8,"ParentID":null,"Type":"Topic","Key":"Milk_8","Title":"Milk","Description":"From 2000: 1 litre low-fat milk; before: 1 litre whole milk","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":9,"Position":9,"ParentID":null,"Type":"Topic","Key":"PorkSteak_9","Title":"Pork steak","Description":" 1 kilogram pork steak","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":10,"Position":10,"ParentID":null,"Type":"Topic","Key":"Potatoes_10","Title":"Potatoes","Description":" From 2000: 1 kilogram waxy potatoes; before: 1 kilogram potatoes","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":11,"Position":11,"ParentID":null,"Type":"Topic","Key":"Rice_11","Title":"Rice","Description":"1 kilogram white rice; long-grain","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":12,"Position":12,"ParentID":null,"Type":"Topic","Key":"StewingSteak_12","Title":"Stewing steak","Description":"1 kilogram stewing steak","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":13,"Position":13,"ParentID":null,"Type":"Topic","Key":"Sugar_13","Title":"Sugar","Description":"1 kilogram sugar","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    },{
+      "odata.type":"Cbs.OData.Topic","ID":14,"Position":14,"ParentID":null,"Type":"Topic","Key":"Tea_14","Title":"Tea","Description":"From 2000: 25 bags (approximately 2 grams per bag) of  black tea; before: 80 grams English tea","Datatype":"Double","Unit":"euro","Decimals":2,"Default":"Missing"
+    }
+  ]
+}

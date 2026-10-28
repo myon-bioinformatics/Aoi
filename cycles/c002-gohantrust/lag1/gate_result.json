@@ -1,0 +1,19 @@
+{
+ "gate_ok": true,
+ "lines": [
+  "PASS  legacy incl w0=5/5",
+  "PASS  legacy excl w0=4/4",
+  "PASS  legacy incl drift=3/5",
+  "PASS  legacy excl drift=3/4",
+  "PASS  ext incl w0=6/15",
+  "PASS  ext excl w0=5/14",
+  "PASS  legacy gamma 2021 0.266 vs 0.262",
+  "PASS  legacy gamma 2022 0.319 vs 0.316",
+  "PASS  legacy gamma 2023 0.471 vs 0.468",
+  "PASS  legacy gamma 2024 0.553 vs 0.552",
+  "PASS  legacy gamma 2025 1.082 vs 1.081",
+  "PASS  perm p incl 0.0085 vs 0.0065±0.004",
+  "PASS  perm p excl 0.0175 vs 0.021±0.004",
+  "GATE: PASS"
+ ]
+}

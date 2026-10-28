@@ -1,0 +1,338 @@
+{
+ "monthly": {
+  "windows": 221,
+  "n": 24,
+  "tolerance_unchanged": {
+   "1e-08": {
+    "units": 221,
+    "boundary": 0,
+    "forms_changed": 207,
+    "boundary_flag_changed": 85,
+    "eps_wave_kept": 0,
+    "at_start_changed": 0,
+    "coefficient_max_dev": null,
+    "coefficient_n": 0
+   },
+   "1e-07": {
+    "units": 221,
+    "boundary": 0,
+    "forms_changed": 207,
+    "boundary_flag_changed": 85,
+    "eps_wave_kept": 0,
+    "at_start_changed": 0,
+    "coefficient_max_dev": null,
+    "coefficient_n": 0
+   },
+   "1e-06": {
+    "units": 221,
+    "boundary": 47,
+    "forms_changed": 115,
+    "boundary_flag_changed": 38,
+    "eps_wave_kept": 47,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 6.435114990405291e-16,
+    "coefficient_n": 47
+   },
+   "1e-05": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.066947544810515e-16,
+    "coefficient_n": 85
+   },
+   "0.0001": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.066947544810515e-16,
+    "coefficient_n": 85
+   },
+   "0.001": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.617960732662803e-16,
+    "coefficient_n": 85
+   },
+   "0.01": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 6.894368586130243e-16,
+    "coefficient_n": 85
+   },
+   "1": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 0.0,
+    "coefficient_n": 85
+   }
+  },
+  "tolerance_scaled": {
+   "1e-08": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 6.435114990405291e-16,
+    "coefficient_n": 85
+   },
+   "1e-07": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.066947544810515e-16,
+    "coefficient_n": 85
+   },
+   "1e-06": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 6.435114990405291e-16,
+    "coefficient_n": 85
+   },
+   "1e-05": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.066947544810515e-16,
+    "coefficient_n": 85
+   },
+   "0.0001": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.066947544810515e-16,
+    "coefficient_n": 85
+   },
+   "0.001": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.617960732662803e-16,
+    "coefficient_n": 85
+   },
+   "0.01": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 6.894368586130243e-16,
+    "coefficient_n": 85
+   },
+   "1": {
+    "units": 221,
+    "boundary": 85,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 85,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 0.0,
+    "coefficient_n": 85
+   }
+  }
+ },
+ "daily": {
+  "windows": 480,
+  "n": 24,
+  "tolerance_unchanged": {
+   "1e-08": {
+    "units": 478,
+    "boundary": 0,
+    "forms_changed": 470,
+    "boundary_flag_changed": 180,
+    "eps_wave_kept": 0,
+    "at_start_changed": 0,
+    "coefficient_max_dev": null,
+    "coefficient_n": 0
+   },
+   "1e-07": {
+    "units": 478,
+    "boundary": 0,
+    "forms_changed": 470,
+    "boundary_flag_changed": 180,
+    "eps_wave_kept": 0,
+    "at_start_changed": 0,
+    "coefficient_max_dev": null,
+    "coefficient_n": 0
+   },
+   "1e-06": {
+    "units": 478,
+    "boundary": 74,
+    "forms_changed": 272,
+    "boundary_flag_changed": 106,
+    "eps_wave_kept": 74,
+    "at_start_changed": 1,
+    "coefficient_max_dev": 0.4358866614511106,
+    "coefficient_n": 70
+   },
+   "1e-05": {
+    "units": 478,
+    "boundary": 178,
+    "forms_changed": 7,
+    "boundary_flag_changed": 2,
+    "eps_wave_kept": 178,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 5.823345865051462e-15,
+    "coefficient_n": 170
+   },
+   "0.0001": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 2.775948718708656e-15,
+    "coefficient_n": 171
+   },
+   "0.001": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 5.823345865051462e-15,
+    "coefficient_n": 171
+   },
+   "0.01": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 2.775948718708656e-15,
+    "coefficient_n": 171
+   },
+   "1": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 0.0,
+    "coefficient_n": 171
+   }
+  },
+  "tolerance_scaled": {
+   "1e-08": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 2.775948718708656e-15,
+    "coefficient_n": 171
+   },
+   "1e-07": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 2.386885137420518e-15,
+    "coefficient_n": 171
+   },
+   "1e-06": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 2.386885137420518e-15,
+    "coefficient_n": 171
+   },
+   "1e-05": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 5.823345865051462e-15,
+    "coefficient_n": 171
+   },
+   "0.0001": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 2.775948718708656e-15,
+    "coefficient_n": 171
+   },
+   "0.001": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 5.823345865051462e-15,
+    "coefficient_n": 171
+   },
+   "0.01": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 2.775948718708656e-15,
+    "coefficient_n": 171
+   },
+   "1": {
+    "units": 478,
+    "boundary": 180,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 180,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 0.0,
+    "coefficient_n": 171
+   }
+  }
+ }
+}

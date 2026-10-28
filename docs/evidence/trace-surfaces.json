@@ -371,6 +371,7 @@
         "clip",
         "column_stack",
         "concatenate",
+        "corrcoef",
         "divide",
         "einsum",
         "empty",
@@ -395,6 +396,7 @@
         "linalg.svd",
         "log",
         "maximum",
+        "mean",
         "meshgrid",
         "minimum",
         "nan_to_num",
@@ -659,6 +661,7 @@
         "clip",
         "column_stack",
         "concatenate",
+        "corrcoef",
         "divide",
         "einsum",
         "empty",
@@ -683,6 +686,7 @@
         "linalg.svd",
         "log",
         "maximum",
+        "mean",
         "meshgrid",
         "minimum",
         "nan_to_num",
@@ -721,8 +725,7 @@
         "__rtruediv__",
         "__setitem__",
         "__sub__",
-        "astype",
-        "mean"
+        "astype"
       ],
       "first_events": [
         {
@@ -1136,6 +1139,7 @@
         "clip",
         "column_stack",
         "concatenate",
+        "corrcoef",
         "divide",
         "einsum",
         "empty",
@@ -1160,6 +1164,7 @@
         "linalg.svd",
         "log",
         "maximum",
+        "mean",
         "meshgrid",
         "minimum",
         "nan_to_num",
@@ -1194,8 +1199,7 @@
         "__mul__",
         "__setitem__",
         "__sub__",
-        "__truediv__",
-        "mean"
+        "__truediv__"
       ],
       "first_events": [
         {

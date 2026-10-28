@@ -1,0 +1,521 @@
+{
+ "spec_version": 1,
+ "seed": 20261026,
+ "control": {
+  "eps0_basis_identical": {
+   "12": true,
+   "24": true,
+   "48": true,
+   "synthetic24": true
+  },
+  "pass": true
+ },
+ "sets": {
+  "12": {
+   "windows": 444,
+   "constant_windows": 0,
+   "stats": {
+    "units": 444,
+    "boundary": 151,
+    "nonboundary": 293,
+    "boundary_share": 0.3400900900900901,
+    "keep": {
+     "e0.001": {
+      "kept": 151,
+      "of": 151
+     },
+     "e1e-06": {
+      "kept": 151,
+      "of": 151
+     },
+     "e1e-09": {
+      "kept": 151,
+      "of": 151
+     }
+    },
+    "c2": {
+     "e0.001": {
+      "max": 0.0008253731415109614,
+      "n": 151,
+      "mismatch": 0
+     },
+     "e1e-06": {
+      "max": 8.2463680280648e-07,
+      "n": 151,
+      "mismatch": 0
+     }
+    },
+    "c3": {
+     "e0.001": {
+      "changed": 0,
+      "of": 293
+     },
+     "e1e-06": {
+      "changed": 0,
+      "of": 293
+     },
+     "e1e-09": {
+      "changed": 0,
+      "of": 293
+     }
+    },
+    "at_start": {
+     "e0.001": 0,
+     "e1e-06": 0,
+     "e1e-09": 0
+    },
+    "coefficient_range_eps6": [
+     0.31508379379732426,
+     2.2232822042566145
+    ]
+   },
+   "by_source": {
+    "Scripps-CO2": {
+     "units": 122,
+     "boundary": 68
+    },
+    "global-temp": {
+     "units": 322,
+     "boundary": 83
+    }
+   },
+   "series": 4
+  },
+  "24": {
+   "windows": 221,
+   "constant_windows": 0,
+   "stats": {
+    "units": 221,
+    "boundary": 85,
+    "nonboundary": 136,
+    "boundary_share": 0.38461538461538464,
+    "keep": {
+     "e0.001": {
+      "kept": 85,
+      "of": 85
+     },
+     "e1e-06": {
+      "kept": 85,
+      "of": 85
+     },
+     "e1e-09": {
+      "kept": 85,
+      "of": 85
+     }
+    },
+    "c2": {
+     "e0.001": {
+      "max": 0.0010300871592974856,
+      "n": 85,
+      "mismatch": 0
+     },
+     "e1e-06": {
+      "max": 1.029229924805065e-06,
+      "n": 85,
+      "mismatch": 0
+     }
+    },
+    "c3": {
+     "e0.001": {
+      "changed": 0,
+      "of": 136
+     },
+     "e1e-06": {
+      "changed": 0,
+      "of": 136
+     },
+     "e1e-09": {
+      "changed": 0,
+      "of": 136
+     }
+    },
+    "at_start": {
+     "e0.001": 0,
+     "e1e-06": 0,
+     "e1e-09": 0
+    },
+    "coefficient_range_eps6": [
+     0.25878862140315073,
+     1.866981478285958
+    ]
+   },
+   "by_source": {
+    "Scripps-CO2": {
+     "units": 60,
+     "boundary": 35
+    },
+    "global-temp": {
+     "units": 161,
+     "boundary": 50
+    }
+   },
+   "series": 4
+  },
+  "48": {
+   "windows": 110,
+   "constant_windows": 0,
+   "stats": {
+    "units": 110,
+    "boundary": 23,
+    "nonboundary": 87,
+    "boundary_share": 0.20909090909090908,
+    "keep": {
+     "e0.001": {
+      "kept": 23,
+      "of": 23
+     },
+     "e1e-06": {
+      "kept": 23,
+      "of": 23
+     },
+     "e1e-09": {
+      "kept": 23,
+      "of": 23
+     }
+    },
+    "c2": {
+     "e0.001": {
+      "max": 0.005387987956200407,
+      "n": 19,
+      "mismatch": 0
+     },
+     "e1e-06": {
+      "max": 5.384449971789363e-06,
+      "n": 19,
+      "mismatch": 0
+     }
+    },
+    "c3": {
+     "e0.001": {
+      "changed": 0,
+      "of": 87
+     },
+     "e1e-06": {
+      "changed": 0,
+      "of": 87
+     },
+     "e1e-09": {
+      "changed": 0,
+      "of": 87
+     }
+    },
+    "at_start": {
+     "e0.001": 4,
+     "e1e-06": 4,
+     "e1e-09": 4
+    },
+    "coefficient_range_eps6": [
+     0.06466508691195005,
+     1.6726626879346127
+    ]
+   },
+   "by_source": {
+    "Scripps-CO2": {
+     "units": 30,
+     "boundary": 7
+    },
+    "global-temp": {
+     "units": 80,
+     "boundary": 16
+    }
+   },
+   "series": 4
+  }
+ },
+ "criteria": [
+  {
+   "id": "C1",
+   "set": "N=12",
+   "text": "境界の単位で ε=0.001 の波が残る割合",
+   "value": 1.0,
+   "threshold": 0.98,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C1",
+   "set": "N=12",
+   "text": "境界の単位で ε=1e-06 の波が残る割合",
+   "value": 1.0,
+   "threshold": 1.0,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C1",
+   "set": "N=12",
+   "text": "境界の単位で ε=1e-09 の波が残る割合",
+   "value": 1.0,
+   "threshold": 1.0,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C2",
+   "set": "N=12",
+   "text": "係数のずれ（ε=0.001 と 1e-9、相対）の最大。比べられない単位 0",
+   "value": 0.0008253731415109614,
+   "threshold": 0.02,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C2",
+   "set": "N=12",
+   "text": "係数のずれ（ε=1e-06 と 1e-9、相対）の最大。比べられない単位 0",
+   "value": 8.2463680280648e-07,
+   "threshold": 0.0001,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=12",
+   "text": "境界でない単位で ε=0.001 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.02,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=12",
+   "text": "境界でない単位で ε=1e-06 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.005,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=12",
+   "text": "境界でない単位で ε=1e-09 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.005,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C1",
+   "set": "N=24",
+   "text": "境界の単位で ε=0.001 の波が残る割合",
+   "value": 1.0,
+   "threshold": 0.98,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C1",
+   "set": "N=24",
+   "text": "境界の単位で ε=1e-06 の波が残る割合",
+   "value": 1.0,
+   "threshold": 1.0,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C1",
+   "set": "N=24",
+   "text": "境界の単位で ε=1e-09 の波が残る割合",
+   "value": 1.0,
+   "threshold": 1.0,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C2",
+   "set": "N=24",
+   "text": "係数のずれ（ε=0.001 と 1e-9、相対）の最大。比べられない単位 0",
+   "value": 0.0010300871592974856,
+   "threshold": 0.02,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C2",
+   "set": "N=24",
+   "text": "係数のずれ（ε=1e-06 と 1e-9、相対）の最大。比べられない単位 0",
+   "value": 1.029229924805065e-06,
+   "threshold": 0.0001,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=24",
+   "text": "境界でない単位で ε=0.001 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.02,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=24",
+   "text": "境界でない単位で ε=1e-06 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.005,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=24",
+   "text": "境界でない単位で ε=1e-09 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.005,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C1",
+   "set": "N=48",
+   "text": "境界の単位で ε=0.001 の波が残る割合",
+   "value": 1.0,
+   "threshold": 0.98,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C1",
+   "set": "N=48",
+   "text": "境界の単位で ε=1e-06 の波が残る割合",
+   "value": 1.0,
+   "threshold": 1.0,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C1",
+   "set": "N=48",
+   "text": "境界の単位で ε=1e-09 の波が残る割合",
+   "value": 1.0,
+   "threshold": 1.0,
+   "op": ">=",
+   "ok": true
+  },
+  {
+   "id": "C2",
+   "set": "N=48",
+   "text": "係数のずれ（ε=0.001 と 1e-9、相対）の最大。比べられない単位 0",
+   "value": 0.005387987956200407,
+   "threshold": 0.02,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C2",
+   "set": "N=48",
+   "text": "係数のずれ（ε=1e-06 と 1e-9、相対）の最大。比べられない単位 0",
+   "value": 5.384449971789363e-06,
+   "threshold": 0.0001,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=48",
+   "text": "境界でない単位で ε=0.001 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.02,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=48",
+   "text": "境界でない単位で ε=1e-06 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.005,
+   "op": "<=",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "set": "N=48",
+   "text": "境界でない単位で ε=1e-09 のとき選ばれる式が変わる割合",
+   "value": 0.0,
+   "threshold": 0.005,
+   "op": "<=",
+   "ok": true
+  }
+ ],
+ "synthetic_forms": {},
+ "tau": {
+  "0.25": {
+   "boundary": 85,
+   "at_start": 0,
+   "coefficient_min": 0.951935801963096,
+   "coefficient_max": 2.5601286588459033,
+   "forms_same_as_first_tau": true
+  },
+  "0.5": {
+   "boundary": 85,
+   "at_start": 0,
+   "coefficient_min": 0.25878862140315073,
+   "coefficient_max": 1.866981478285958,
+   "forms_same_as_first_tau": true
+  },
+  "1": {
+   "boundary": 85,
+   "at_start": 14,
+   "coefficient_min": 0.0011166258959865942,
+   "coefficient_max": 1.1738342977260126,
+   "forms_same_as_first_tau": true
+  }
+ },
+ "profile": "physical-monthly",
+ "scales": {
+  "1e-06": {
+   "units": 221,
+   "boundary": 47,
+   "forms_changed": 115,
+   "boundary_flag_changed": 38,
+   "eps_wave_kept": 47,
+   "at_start_changed": 0,
+   "coefficient_max_dev": 6.435114990405291e-16,
+   "coefficient_n": 47
+  },
+  "0.001": {
+   "units": 221,
+   "boundary": 85,
+   "forms_changed": 0,
+   "boundary_flag_changed": 0,
+   "eps_wave_kept": 85,
+   "at_start_changed": 0,
+   "coefficient_max_dev": 8.617960732662803e-16,
+   "coefficient_n": 85
+  },
+  "1": {
+   "units": 221,
+   "boundary": 85,
+   "forms_changed": 0,
+   "boundary_flag_changed": 0,
+   "eps_wave_kept": 85,
+   "at_start_changed": 0,
+   "coefficient_max_dev": 0.0,
+   "coefficient_n": 85
+  },
+  "1000": {
+   "units": 221,
+   "boundary": 85,
+   "forms_changed": 0,
+   "boundary_flag_changed": 0,
+   "eps_wave_kept": 85,
+   "at_start_changed": 0,
+   "coefficient_max_dev": 6.435114990405291e-16,
+   "coefficient_n": 85
+  },
+  "1e+06": {
+   "units": 221,
+   "boundary": 85,
+   "forms_changed": 0,
+   "boundary_flag_changed": 0,
+   "eps_wave_kept": 85,
+   "at_start_changed": 0,
+   "coefficient_max_dev": 1.2870229980810582e-15,
+   "coefficient_n": 85
+  }
+ },
+ "repeat_identical": true
+}

@@ -215,7 +215,7 @@ jobs:
     name: pytest (Python ${{ matrix.python }})
     needs: changes
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -228,6 +228,12 @@ jobs:
           fetch-depth: 0
       - name: Verify recovered evidence against pinned Git history
         run: python scripts/audit_recovery_provenance.py
+      # sakanalytics/ の Node エントリの一致テスト（子の tests）は、GITHUB_ACTIONS 上では Node 24+ がなければ失敗する（子の CI と同じ）
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+      - name: Require supported Node in parity CI
+        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
@@ -239,16 +245,43 @@ jobs:
       - run: python -VV
       - name: Compile (syntax errors must never reach main)
         run: python -m compileall -q aoi_paths.py blueprobe queryu sakanalytics pythdragoras nagoyaction dragowing
+      - name: Select required Chromium without Chrome fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! chromium="$(command -v chromium || command -v chromium-browser)"; then
+            echo '::error::Chromium is required: install chromium or chromium-browser on the runner.'
+            exit 1
+          fi
+          test -x "$chromium"
+          "$chromium" --version
+          printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
+      - name: Prepare local Plotly.js for required exports
+        run: |
+          mkdir -p build/test-assets
+          python -S -c 'from pathlib import Path; from dragowing.plotly_cdn import fetch_plotly_js; Path("build/test-assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
       - name: Test with JUnit
+        env:
+          DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js
         run: |
           mkdir -p build/test-results
-          uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
+          uv run --locked --python "${{ matrix.python }}" pytest -q -p scripts.observe_dragowing_startup \
+            --browser-startup-evidence="build/startup-observation/pytest-${{ matrix.python }}.json" \
+            --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
       - name: Preserve raw JUnit
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: junit-py${{ matrix.python }}
           path: build/test-results/pytest-${{ matrix.python }}.xml
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve actual browser startup observations
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-observation-py${{ matrix.python }}
+          path: build/startup-observation/
           if-no-files-found: warn
           retention-days: 14
       - name: NagoyAction is stdlib-only and the cycle pipeline is runnable
@@ -319,11 +352,13 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  # Keep the legacy job/artifact identifiers for existing report consumers.
   chrome-export:
+    # Legacy check name is retained to avoid changing required-check contexts.
     name: Offline Chrome export (Python 3.14)
     needs: changes
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
@@ -337,24 +372,53 @@ jobs:
       - name: Install dependencies before disconnecting the network
         run: |
           uv sync --locked --python 3.14
+      # No browser and no network: the page given to Chromium and the saved PNG/SVG are compared with the figure
+      # spec first, so a red browser step below can be told apart from wrong output. (The same tests also run in
+      # every pytest job; this step only puts them ahead of the browser launch.)
+      - name: Check the drawn output and the page against the figure spec before any browser starts
+        run: |
+          set -euo pipefail
+          .venv/bin/python -m pytest -c pyproject.toml -q tests/test_rendered_output_static.py
       - name: Prepare Plotly.js from jsDelivr before disconnecting the network
         run: |
           mkdir -p build/test-assets
           python -S -c 'from pathlib import Path; from dragowing.plotly_cdn import fetch_plotly_js; Path("build/test-assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
-      - name: Require Chrome and render without a network namespace interface
+      - name: Select required Chromium without Chrome fallback
         shell: bash
         run: |
-          chrome="$(command -v google-chrome || command -v chromium)"
-          "$chrome" --version
+          set -euo pipefail
+          if ! chromium="$(command -v chromium || command -v chromium-browser)"; then
+            echo '::error::Chromium is required: install chromium or chromium-browser on the runner.'
+            exit 1
+          fi
+          test -x "$chromium"
+          "$chromium" --version
+          printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
+      # The runner image's Chromium (/usr/local/share/chromium, ~670 MB) is cold on a fresh VM: reading it took
+      # ~10 s, longer than the 8 s launch budget of test_stalled_dbus_does_not_block_browser_get_version, so the
+      # first launch failed while later launches passed. Read the tree once before the offline run (no browser
+      # launch, nothing about the test or the isolation changes).
+      - name: Read the Chromium files once so the first launch is not a cold start
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$(dirname "$(readlink -f "$CHROME")")"
+          start="$(date +%s)"
+          find "$dir" -type f -print0 | xargs -0 cat > /dev/null
+          echo "Read $(du -sm "$dir" | cut -f1) MB under $dir in $(( $(date +%s) - start )) s"
+      - name: Require Chromium and render without a network namespace interface
+        shell: bash
+        run: |
+          set -euo pipefail
           mkdir -p build/test-results
-          sudo unshare --net -- env CHROME="$chrome" DRAGOWING_REQUIRE_CHROME=1 \
+          sudo unshare --net -- env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1 \
             DRAGOWING_EXPORT_EVIDENCE_DIR="$PWD/build/export-evidence" \
             DRAGOWING_PINNED_PLOTLY_JS="$PWD/build/test-assets/plotly.min.js" \
             "$PWD/.venv/bin/python" -m pytest -c pyproject.toml -q \
             dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
             dragowing/tests/test_plotly_cdn.py \
             --junitxml=build/test-results/chrome-export-3.14.xml
-      - name: Preserve Chrome export JUnit
+      - name: Preserve Chromium export JUnit
         if: always()
         uses: actions/upload-artifact@v7
         with:

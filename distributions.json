@@ -1,6 +1,6 @@
 {
   "schema": "aoi-distributions/1",
-  "source": "334b7f5fd49e0547f97079a37668637b2ad78276",
+  "source": "39e9b441bce20438fee75df795e68a3edb53f8fc",
   "python": "3.12",
   "license": "LICENSE",
   "tool": {

@@ -691,6 +691,65 @@ def _run_registry_tests_in_repo(repo_root: Path) -> int:
     return proc.returncode
 
 
+def _run_registry_tests_with_source(tmp_path: Path, source: str) -> int:
+    # Keep the full repository fixture, but only for this case's lifetime.
+    # TemporaryDirectory also removes a partial copy or a failed subprocess's tree.
+    with tempfile.TemporaryDirectory(prefix="registry-case-", dir=tmp_path) as staging:
+        repo = _materialize_mutant_repo(Path(staging), source)
+        return _run_registry_tests_in_repo(repo)
+
+
+def test_registry_runner_removes_each_case_copy(tmp_path, monkeypatch):
+    source_repo = tmp_path / "source"
+    (source_repo / "scripts").mkdir(parents=True)
+    (source_repo / "scripts" / "check_child_heads.py").write_text("original", encoding="utf-8")
+    (source_repo / "research").mkdir()
+    (source_repo / "research" / "sentinel.txt").write_text("preserved", encoding="utf-8")
+    staging = tmp_path / "staging"
+    staging.mkdir()
+    monkeypatch.setattr(sys.modules[__name__], "ROOT", source_repo)
+    copies = []
+
+    def run(repo):
+        assert all(not previous.exists() for previous in copies)
+        copies.append(repo)
+        assert (repo / "scripts" / "check_child_heads.py").read_text(encoding="utf-8") == "mutant"
+        assert (repo / "research" / "sentinel.txt").read_text(encoding="utf-8") == "preserved"
+        if outcome == "raise":
+            raise RuntimeError("subprocess failed")
+        return outcome
+
+    monkeypatch.setattr(sys.modules[__name__], "_run_registry_tests_in_repo", run)
+    for outcome in (0, 1, 2, "raise"):
+        try:
+            rc = _run_registry_tests_with_source(staging, "mutant")
+        except RuntimeError as exc:
+            assert outcome == "raise" and str(exc) == "subprocess failed"
+        else:
+            assert outcome != "raise", "subprocess error must propagate"
+            assert rc == outcome
+        assert not any(staging.iterdir())
+    assert len(copies) == 4
+    assert (source_repo / "scripts" / "check_child_heads.py").read_text(encoding="utf-8") == "original"
+    assert (source_repo / "research" / "sentinel.txt").read_text(encoding="utf-8") == "preserved"
+
+
+def test_registry_runner_removes_partial_copy(tmp_path, monkeypatch):
+    def fail_copy(source, destination, **kwargs):
+        destination.mkdir()
+        (destination / "partial").write_text("partial", encoding="utf-8")
+        raise OSError("copy failed")
+
+    monkeypatch.setattr(shutil, "copytree", fail_copy)
+    try:
+        _run_registry_tests_with_source(tmp_path, "mutant")
+    except OSError as exc:
+        assert str(exc) == "copy failed"
+    else:
+        raise AssertionError("copy error must propagate")
+    assert not any(tmp_path.iterdir())
+
+
 def _coverage_accounting(tmp_path: Path) -> dict:
     import coverage
 
@@ -770,7 +829,7 @@ def test_mutation_kind_labels_match_sites():
 
 def test_mutations_all_killed(tmp_path):
     source = SCRIPT.read_text(encoding="utf-8")
-    control_rc = _run_mutant(tmp_path / "control", source)
+    control_rc = _run_registry_tests_with_source(tmp_path, source)
     assert control_rc == 0, "unmutated copy must pass the mutation test suite"
     mutants, equivalent = _enumerate_mutants(source)
     site_count = len(_collect_mutation_sites(ast.parse(source)))
@@ -780,7 +839,7 @@ def test_mutations_all_killed(tmp_path):
     killed = 0
     survived = []
     for name, mutant_source, _site in mutants:
-        rc = _run_mutant(tmp_path / name, mutant_source)
+        rc = _run_registry_tests_with_source(tmp_path, mutant_source)
         if rc == 0:
             survived.append(name)
         elif rc == 1:

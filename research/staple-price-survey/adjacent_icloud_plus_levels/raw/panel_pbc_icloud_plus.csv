@@ -1,0 +1,19 @@
+iso2,country,usd_price,local_display,plan,source_url,retrieved
+AU,Australia,1.03,AUD 1.49,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+BR,Brazil,1.17,BRL 5.90,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+CA,Canada,0.91,CAD 1.29,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+CH,Switzerland,1.21,CHF 1,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+CN,China,0.9,¥6,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+DE,Germany,1.11,€0.99,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+DK,Denmark,1.35,kr 9,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+EG,Egypt,0.94,E£49.99,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+FR,France,1.11,€0.99,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+GB,United Kingdom,1.31,£0.99,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+IN,India,0.79,₹75,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+JP,Japan,1.14,¥180,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+KR,South Korea,0.82,"₩1,100",iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+MX,Mexico,0.92,MXN 17,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+NG,Nigeria,0.98,"₦1,300",iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+PK,Pakistan,0.72,Rs 200,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+TR,Türkiye,1.01,₺49.99,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26
+US,United States,0.99,$0.99,iCloud+ 50 GB,https://pricebycountry.com/icloud-plus/,2026-10-26

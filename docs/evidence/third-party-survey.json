@@ -39,28 +39,6 @@
     }
   ],
   "packages": {
-    "DRAgoWing": {
-      "attribute_uses": 1,
-      "attributes": {
-        "dragowing.render_report": 1
-      },
-      "by_tree": {
-        "research": {
-          "attribute_uses": 1,
-          "attributes": {
-            "dragowing.render_report": 1
-          },
-          "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
-        }
-      },
-      "declared": [],
-      "distinct_attributes": 1,
-      "dynamic_import_sites": 0,
-      "files": 1,
-      "import_sites": 1
-    },
     "coverage": {
       "attribute_uses": 1,
       "attributes": {
@@ -2519,16 +2497,6 @@
       "file": "research/gpt-r001-score-allocation/preclinch_dates.py",
       "import_sites": 2,
       "package": "ortools",
-      "tree": "research"
-    },
-    {
-      "attributes": {
-        "dragowing.render_report": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/render_matched_comeback.py",
-      "import_sites": 1,
-      "package": "DRAgoWing",
       "tree": "research"
     },
     {

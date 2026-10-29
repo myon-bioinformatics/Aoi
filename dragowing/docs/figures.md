@@ -27,7 +27,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 
 文字だけの 2×2 は [forms.md](forms.md) の `dragowing/forms.py` のままである。
 
-文字は図もページも `figures.FONT`（`Meiryo, メイリオ, sans-serif`）で揃える。フォントファイルは同梱しないので、メイリオが入っていない環境（Mac・iPhone・Linux、`--png` / `--svg` を書き出す Chrome も含む）では OS 既定の sans-serif で表示される。字形を完全に揃えたいときは、見る側にメイリオを入れる。
+文字は図もページも `figures.FONT`（`Meiryo, メイリオ, sans-serif`）で揃える。研究用の HTML レポート（`research_report.py` と `research/*/outputs/*.html`）と `reports/build_reports.py` のページも同じ指定である（この 2 つは単独で配布・実行されるので、import せず同じ文字列を書き、`tests/test_font.py` で一致を確かめる）。コード（`pre`・`code`）は等幅のままにする。フォントファイルは同梱しないので、メイリオが入っていない環境（Mac・iPhone・Linux、`--png` / `--svg` を書き出す Chrome も含む）では OS 既定の sans-serif で表示される。字形を完全に揃えたいときは、見る側にメイリオを入れる。
 
 PNG / SVG が要るときだけ `--png` / `--svg` を付ける。Chrome もそのときだけ要る（`--chrome` または `CHROME` 環境変数）。Chrome が無いと HTML は書いたうえで終了コード 2 になる。テストは Chrome も使わない。
 

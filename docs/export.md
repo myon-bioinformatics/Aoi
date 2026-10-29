@@ -41,6 +41,27 @@ CHROMIUM=/path/to/chromium DRAGOWING_REQUIRE_CHROME=1 uv run --locked --python 3
 
 In a normal environment without Chromium or an explicit browser override, real-browser tests are skipped with a reason. With `DRAGOWING_REQUIRE_CHROME=1` they fail instead of skipping. Only the Mermaid CDN test requires explicitly setting `DRAGOWING_TEST_NETWORK=1`.
 
-DRAgoWing's Python 3.11–3.15 CI matrix explicitly selects `chromium` / `chromium-browser`, records its version, and sets `DRAGOWING_REQUIRE_CHROME=1`. Missing Chromium fails the selection step. Aoi has a separate network-isolated export job; its historical `chrome-export` job and artifact identifiers are retained for report consumers.
+DRAgoWing's Python 3.11–3.15 CI matrix installs a reviewed Chromium snapshot with the standard-library setup script `scripts/install_ci_chromium.py`, checks its version, and sets `CHROME` and `DRAGOWING_REQUIRE_CHROME=1` explicitly. Download, integrity, extraction or version failures stop the job; there is no fallback to the runner's preinstalled browser or Google Chrome. Local automatic discovery and production runtime dependencies are unchanged. Aoi has a separate network-isolated export job; its historical `chrome-export` identifiers remain independent of this CI setup.
+
+### Managed CI browser provenance and first-start scope
+
+- Chromium version: **156.0.8078.0**, snapshot revision **1706520**.
+- Source commit: [`23b351114f0570483d619b05db197bbc5594dc5a`](https://chromium.googlesource.com/chromium/src/+/23b351114f0570483d619b05db197bbc5594dc5a); its `chrome/VERSION` and commit position match the snapshot's official `REVISIONS`.
+- [Official generation-pinned ZIP](https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1706520%2Fchrome-linux.zip?generation=1790642197733749&alt=media), generation `1790642197733749`, **248486630 bytes**.
+- SHA256: `6b62846a868ea3ee675f77600790877a428dfb2428c940f8eff99db1038f9815`.
+- Locally verified official metadata MD5: `gAHURDw3hLwHmZglzqJUIw==`; all ZIP CRCs passed. 483 members, 702789127 expanded bytes. This is a fixed Chromium snapshot, **not** a stable-channel release.
+
+The installer performs one ordinary archive download, archive integrity verification and safe extraction into a fresh job-owned destination. It rejects unsafe paths, duplicate members, links/special files and excess sizes, strips special permission bits, and never executes Chromium. It refuses to overwrite an existing installation. No package, system configuration, runtime dependency or privilege changes are made.
+
+The existing `--version` selection check remains; the first full browser startup is still the real test, using a fresh process/profile. There is no browser warmup, executable-tree pre-read, retry or timeout increase. The production 30-second launch budget and all existing test assertions remain unchanged. Installation naturally changes file placement/cache state, so results describe **first startup after managed installation**, not an empty OS page cache. This does not establish a fix to the earlier preinstalled-image file-page wait. The version matches the failed runner's logged version; byte identity with its executable is unverified because no historical binary hash was captured. Keep prior failure evidence separate from this provisioning condition.
+
+To prepare the same dependency without launching it:
+
+```bash
+python3 scripts/install_ci_chromium.py --destination /path/to/new/chromium-install
+```
+
+Use the returned `chrome-linux/chrome` path explicitly. The setup script does not download dependencies at library import or runtime. Updating the snapshot requires reviewing the official revision, source version, archive size/hash and regression tests together.
+
 
 The tests check, with the network cut off, the bundled JS version, the same PID across 3 figures × 2 formats, PNG dimensions, CRC, and non-blank decoded data, SVG XML, title, legend, and point count, and that the target count does not grow. They also check missing Chrome, no execute permission, launch failure, no response, a blocked send, early exit, invalid JSON, partial writes, large responses, early events, ready timeouts, and release and reuse after a capture failure. Byte equality of images is not a pass criterion.

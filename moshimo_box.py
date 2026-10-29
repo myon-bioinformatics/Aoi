@@ -190,9 +190,11 @@ def sweep(dial: str, values, *, converse, inverse, contrapositive, n, exact=Fals
 
 def load_record(path, proposition_id: str) -> dict:
     """One record of a propositions.jsonl (the cycle's proposition ledger output) by its id."""
-    for line in Path(path).read_text(encoding="utf-8").splitlines():
+    for line_number, line in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), 1):
         if line.strip():
             record = json.loads(line)
+            if not isinstance(record, dict):
+                raise MoshimoError(f"{path}:{line_number}: ledger record must be a JSON object")
             if record.get("id") == proposition_id:
                 return record
     raise MoshimoError(f"no proposition {proposition_id!r} in {path}")
@@ -382,11 +384,14 @@ def main(argv=None) -> int:
     if heads:
         print("\n" + render_headroom(tables, heads, dial))
     if a.json:
-        a.json.parent.mkdir(parents=True, exist_ok=True)
-        a.json.write_text(json.dumps({"anchor": {"ledger": str(a.ledger), "id": a.id, "eps": a.eps, "lifted_cells": lifted} if a.ledger else None,
-                                      "tables": tables,
-                                      "readouts": readouts, "headroom": heads}, ensure_ascii=False, indent=2,
-                                     allow_nan=False) + "\n", encoding="utf-8")
+        try:
+            a.json.parent.mkdir(parents=True, exist_ok=True)
+            a.json.write_text(json.dumps({"anchor": {"ledger": str(a.ledger), "id": a.id, "eps": a.eps, "lifted_cells": lifted} if a.ledger else None,
+                                          "tables": tables,
+                                          "readouts": readouts, "headroom": heads}, ensure_ascii=False, indent=2,
+                                         allow_nan=False) + "\n", encoding="utf-8")
+        except (ValueError, OSError) as exc:
+            ap.error(f"cannot write JSON output {a.json}: {exc}")
     return 0
 
 

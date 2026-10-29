@@ -536,3 +536,27 @@ def test_unrepresentable_total_is_controlled(exact):
 def test_integer_total_beyond_float64_unit_resolution_has_reason():
     with pytest.raises(mb.MoshimoError, match="float64.*integer total"):
         mb.build(converse=.6, inverse=.7, contrapositive=.8, n=10**18)
+
+
+@pytest.mark.parametrize("record", [None, [], 42, "text"])
+def test_cli_refuses_non_object_ledger_records(tmp_path, capsys, record):
+    ledger = tmp_path / "bad.jsonl"
+    ledger.write_text("\n" + json.dumps(record) + "\n")
+    with pytest.raises(SystemExit) as exc:
+        mb.main(["--ledger", str(ledger), "--id", "X"])
+    assert exc.value.code == 2
+    error = capsys.readouterr().err
+    assert ":2: ledger record must be a JSON object" in error
+    assert "Traceback" not in error
+
+
+def test_cli_output_path_error_is_a_message(tmp_path, capsys):
+    parent = tmp_path / "file"
+    parent.write_text("keep")
+    with pytest.raises(SystemExit) as exc:
+        mb.main(["--converse", "0.6", "--inverse", "0.7", "--contrapositive", "0.8",
+                 "--n", "168", "--json", str(parent / "out.json")])
+    assert exc.value.code == 2
+    error = capsys.readouterr().err
+    assert "cannot write JSON output" in error and "Traceback" not in error
+    assert parent.read_text() == "keep"

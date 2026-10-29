@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 PARENT = "myon-bioinformatics/myon-bioinformatics"
-PARENT_WORKFLOW_PIN = "2192ff22acafdd09e80ac722df91ee937aaedd5e"
+PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
 PARENT_REPOSITORY_ID = "638801160"
 LIVE_PARENT_REF = "${{ steps.parent.outputs.sha }}"
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / ".github/workflows").is_dir())

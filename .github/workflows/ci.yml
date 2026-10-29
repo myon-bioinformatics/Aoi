@@ -24,7 +24,7 @@ concurrency:
 jobs:
   changes:
     name: Change detection
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
 
   vendor-lock:
     name: Vendor lock
@@ -378,7 +378,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
     with:
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
       expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.14/lab-integration-3.14.xml","junit-chrome-export-py3.14/chrome-export-3.14.xml"]'
@@ -388,7 +388,7 @@ jobs:
   actionlint:
     needs: changes
     if: needs.changes.outputs.workflow_changed == 'true'
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
 
 
   research-digest:

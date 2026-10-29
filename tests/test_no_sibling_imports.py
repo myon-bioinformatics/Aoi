@@ -21,6 +21,8 @@ KNOWN_EXCEPTIONS = {
     # PythDRagoras の propositions。PYTHONPATH で渡す
     ("proposition_seed_audit.py", "import:propositions"),
     ("synthetic_rule_discovery.py", "import:propositions"),
+    # もしもボックスの --readout / readout() は、同じ表を PythDRagoras の評価で読み戻す（任意。遅延 import）
+    ("moshimo_box.py", "import:propositions"),
     # proposition_seed_audit は親ディレクトリの pythdragoras/ も探す
     ("proposition_seed_audit.py", "path:pythdragoras"),
 }

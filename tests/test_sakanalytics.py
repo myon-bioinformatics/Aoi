@@ -1405,3 +1405,130 @@ def test_main_writes_the_run_record(tmp_path):
     assert rec["tolerances"] == sa.TOLERANCES and rec["polars"] == pl.__version__
     assert rec["rows"] == len(out.read_text().splitlines()) == 6 and rec["columns"] > 100
     assert isinstance(rec["nonfinite_nulled"], dict)
+
+
+# --- ε for the undamped wave (λ = 0): opt-in, nothing chosen here, the default is unchanged --------------------------
+
+def _undamped_wave():
+    xs = [0.1 + 0.9 * i / 150 for i in range(151)]
+    return xs, _damped(xs, h0=3.0, lim=3.0, lam=0.0, per=0.5, b=2.0)
+
+
+def test_wave_basis_marks_the_lambda_boundary_rows_and_eps_replaces_only_those():
+    from sakanalytics import WAVE_PERIODS, wave_basis
+    xs, _ = _undamped_wave()
+    plain, lifted = wave_basis(xs), wave_basis(xs, 1e-6)
+    boundary = [i for i, r in enumerate(plain) if r["boundary"]]
+    assert len(plain) == len(lifted) and boundary == list(range(len(plain) - 6, len(plain)))  # the last six: one per period
+    assert len(boundary) == sum(1 for p in WAVE_PERIODS if p)
+    assert all(plain[i]["lam"] == 0.0 and plain[i]["per"] is not None for i in boundary)
+    assert all(lifted[i]["lam"] == 1e-6 and lifted[i]["per"] == plain[i]["per"] and lifted[i]["boundary"] for i in boundary)
+    assert all(a == b for i, (a, b) in enumerate(zip(plain, lifted)) if i not in boundary)   # every other row, to the last digit
+    assert all(r["lam"] > 0 for i, r in enumerate(plain) if i not in boundary)
+
+
+def test_wave_fit_of_an_undamped_wave_lands_on_the_boundary_row_with_or_without_eps():
+    from sakanalytics import wave_basis, wave_fit
+    xs, ys = _undamped_wave()
+    plain = wave_fit(ys, wave_basis(xs), xs[0])
+    lifted = wave_fit(ys, wave_basis(xs, 1e-6), xs[0])
+    assert plain["boundary"] and lifted["boundary"] and plain["decay"] == 0.0 and lifted["decay"] == 1e-6
+    assert plain["period"] == lifted["period"] == 0.5
+    assert plain["limit"] is None and lifted["limit"] == pytest.approx(3.0, abs=1e-5)   # λ = ε > 0 converges, far away, at the wave's centre
+
+
+def test_the_lifted_fit_moves_continuously_with_eps_and_never_settles_as_eps_goes_to_zero():
+    from sakanalytics import WAVE_SETTLE, wave_basis, wave_fit
+    xs, ys = _undamped_wave()
+    ref = wave_fit(ys, wave_basis(xs), xs[0])
+    errors, settles = {}, {}
+    for eps in (1e-3, 1e-4, 1e-5):
+        f = wave_fit(ys, wave_basis(xs, eps), xs[0])
+        errors[eps], settles[eps] = abs(f["end"] - ref["end"]), f["settle_x"]
+        # the swing is 2 (= √((h0−L)² + B²)), so it falls below the settle width at x0 + ln(2/WAVE_SETTLE)/ε: far outside the season
+        assert f["settle_x"] > 1 and (f["settle_x"] - xs[0]) * eps == pytest.approx(math.log(2.0 / WAVE_SETTLE), rel=1e-2)
+    assert errors[1e-3] / errors[1e-4] == pytest.approx(10, rel=0.05) and errors[1e-4] / errors[1e-5] == pytest.approx(10, rel=0.05)  # linear in ε
+    assert settles[1e-4] / settles[1e-3] == pytest.approx(10, rel=0.01)   # and the settling point runs off as 1/ε
+
+
+def test_a_damped_wave_does_not_notice_eps():
+    from sakanalytics import wave_basis, wave_fit
+    xs = [0.1 + 0.9 * i / 150 for i in range(151)]
+    ys = _damped(xs, h0=5.0, lim=2.0, lam=3.0, per=0.5, b=1.0)
+    plain = wave_fit(ys, wave_basis(xs), xs[0])
+    assert plain == wave_fit(ys, wave_basis(xs, 1e-6), xs[0]) and plain["boundary"] is False
+
+
+@pytest.mark.parametrize("bad", [0, -1e-6, float("nan"), float("inf"), True])
+def test_a_bad_eps_is_refused_not_ignored(bad):
+    from epsilon import EpsilonError
+    from sakanalytics import season_trajectory, wave_basis
+    with pytest.raises(EpsilonError):
+        wave_basis([0.0, 0.5, 1.0], bad)
+    with pytest.raises(EpsilonError):
+        season_trajectory(to_team_games(games([("2024-04-01", "d", "g", 3, 1)]), TEAMS), sims=1, wave_eps=bad)
+
+
+def _trajectory_games():
+    rows = [(f"2024-04-{i + 1:02d}", "d", "g", 3, 1) if i < 15 else (f"2024-04-{i + 1:02d}", "d", "g", 1, 3) for i in range(30)]
+    return to_team_games(games(rows), TEAMS)
+
+
+def test_season_trajectory_adds_wave_lifted_only_when_eps_is_given_and_changes_nothing_else_here():
+    from sakanalytics import season_trajectory
+    tg = _trajectory_games()
+    plain = season_trajectory(tg, sims=5, min_games=10)
+    lifted = season_trajectory(tg, sims=5, min_games=10, wave_eps=1e-6)
+    assert "wave_lifted" not in plain.columns and lifted.columns == [*plain.columns, "wave_lifted"]
+    assert lifted.schema["wave_lifted"] == pl.Boolean
+    # g's best wave is the undamped one (λ = 0, period 2) and d's is a plain approach: only g's wave sits on the boundary
+    d, g = (plain.filter(pl.col("team") == t).row(0, named=True) for t in ("d", "g"))
+    ld, lg = (lifted.filter(pl.col("team") == t).row(0, named=True) for t in ("d", "g"))
+    assert (g["wave_decay"], g["wave_limit_rank"], ld["wave_lifted"], lg["wave_lifted"]) == (0.0, None, False, True)
+    assert d == {k: v for k, v in ld.items() if k != "wave_lifted"}                      # d: not one value moves
+    assert lg["wave_decay"] == 1e-6 and lg["wave_period"] == g["wave_period"] == 2.0
+    assert lg["wave_limit_rank"] is not None                                              # λ = ε converges, far away
+    assert lg["wave_end_rank"] == pytest.approx(g["wave_end_rank"], abs=1e-4)             # while the line itself hardly moves
+    assert {k for k in g if g[k] != lg[k]} == {"wave_decay", "wave_limit_rank", "wave_rmse", "wave_end_rank"}
+
+
+def _tiny_season(tmp_path):
+    import json
+    teams = {f"a{i}": "C" for i in range(3)} | {f"b{i}": "P" for i in range(3)}
+    rows, n = [], 0
+    for day, (h, a) in enumerate([(h, a) for h in teams for a in teams if h != a and teams[h] == teams[a]] * 2):
+        n += 1
+        rows.append({"key": str(n), "date": f"2024-04-{1 + day % 28:02d}", "home": h, "away": a, "hs": 2 + day % 4, "as": 1 + day % 3})
+    (tmp_path / "games.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    cfg = ["[trajectory]", "min_games = 2", "sims = 5", "", "[teams]"] + [f'{t} = {{ name = "{t}", league = "{lg}" }}' for t, lg in teams.items()]
+    (tmp_path / "analysis.toml").write_text("\n".join(cfg) + "\n", encoding="utf-8")
+    return ["--games", str(tmp_path / "games.jsonl"), "--config", str(tmp_path / "analysis.toml")]
+
+
+def test_cli_records_eps_and_the_boundary_rows_and_the_default_output_is_the_same(tmp_path, capsys):
+    import json
+    import sakanalytics as sa
+    base = _tiny_season(tmp_path)
+    plain, lifted = tmp_path / "plain.jsonl", tmp_path / "lifted.jsonl"
+    meta_plain, meta_lifted = tmp_path / "m1.json", tmp_path / "m2.json"
+    assert sa.main([*base, "--out", str(plain), "--meta-out", str(meta_plain)]) == 0
+    assert sa.main([*base, "--out", str(lifted), "--meta-out", str(meta_lifted), "--wave-eps", "1e-6"]) == 0
+    rec_plain, rec_lifted = (json.loads(p.read_text(encoding="utf-8")) for p in (meta_plain, meta_lifted))
+    assert rec_plain["epsilon"]["wave_lambda"] is None and rec_lifted["epsilon"]["wave_lambda"] == 1e-6
+    for rec in (rec_plain, rec_lifted):
+        e = rec["epsilon"]
+        assert e["wave_fits"] == 6 and 0 <= e["wave_on_boundary"] <= 6
+    rows_plain = [json.loads(line) for line in plain.read_text(encoding="utf-8").splitlines()]
+    rows_lifted = [json.loads(line) for line in lifted.read_text(encoding="utf-8").splitlines()]
+    assert "wave_lifted" not in rows_plain[0] and "wave_lifted" in rows_lifted[0]
+    assert rec_lifted["epsilon"]["wave_on_boundary"] == sum(r["wave_lifted"] for r in rows_lifted)
+    assert rec_plain["epsilon"]["wave_on_boundary"] == sum(r["wave_decay"] == 0.0 for r in rows_plain)
+    assert rec_lifted["columns"] == rec_plain["columns"] + 1
+
+
+@pytest.mark.parametrize("bad", ["0", "-1e-6", "nan", "inf"])
+def test_cli_refuses_a_bad_wave_eps(tmp_path, capsys, bad):
+    import sakanalytics as sa
+    with pytest.raises(SystemExit) as exc:
+        sa.main([*_tiny_season(tmp_path), "--out", str(tmp_path / "o.jsonl"), "--wave-eps", bad])
+    assert exc.value.code == 2 and "--wave-eps" in capsys.readouterr().err

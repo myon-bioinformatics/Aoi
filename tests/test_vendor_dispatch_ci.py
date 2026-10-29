@@ -1,5 +1,6 @@
 """Parent vendor_dispatch verify job stays beside the existing vendor-lock check."""
 import re
+import pytest
 from pathlib import Path
 
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / ".github/workflows/ci.yml").is_file())
@@ -47,14 +48,39 @@ def test_vendor_dispatch_verifies_the_lock_without_record():
     assert "repository: myon-bioinformatics/myon-bioinformatics" not in job
 
 
-def test_python_matrix_requires_chromium_without_implicit_chrome_fallback():
-    job = _job(CI.read_text(encoding="utf-8"), "test")
-    assert 'command -v chromium || command -v chromium-browser' in job
+def _assert_required_managed_chromium(job):
+    install = 'python3 scripts/install_ci_chromium.py --destination "$RUNNER_TEMP/dragowing-chromium"'
+    selection = 'chromium="$RUNNER_TEMP/dragowing-chromium/chrome-linux/chrome"'
+    assert install in job and selection in job
+    assert job.index(install) < job.index(selection) < job.index('"$chromium" --version')
+    assert 'command -v chromium' not in job
+    assert 'Chromium 156.0.8078.0' in job
+    assert 'exit 1' in job
+    assert 'continue-on-error' not in job
     assert 'command -v google-chrome' not in job
-    assert 'Chromium is required:' in job
+    assert 'Installed Chromium version does not match the reviewed snapshot.' in job
     assert 'DRAGOWING_REQUIRE_CHROME=1' in job
     assert 'DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js' in job
     assert 'from plotly_cdn import fetch_plotly_js' in job
     assert 'CHROMIUM=%s' not in job
     assert '"$chromium" --version' in job
     assert '>> "$GITHUB_ENV"' in job
+
+
+def test_python_matrix_requires_chromium_without_implicit_chrome_fallback():
+    _assert_required_managed_chromium(_job(CI.read_text(encoding="utf-8"), "test"))
+
+
+@pytest.mark.parametrize("old,new", [
+    ("python3 scripts/install_ci_chromium.py", "python3 missing-installer.py"),
+    ('chromium="$RUNNER_TEMP/dragowing-chromium/chrome-linux/chrome"', 'chromium=/usr/bin/chromium'),
+    ('Chromium 156.0.8078.0', 'Chromium 155.0.8059.0'),
+    ('DRAGOWING_REQUIRE_CHROME=1', 'DRAGOWING_REQUIRE_CHROME=0'),
+    ('shell: bash', 'continue-on-error: true\n        shell: bash'),
+    ('test -x "$chromium"', 'command -v google-chrome'),
+])
+def test_managed_chromium_contract_rejects_missing_or_weakened_setup(old, new):
+    job = _job(CI.read_text(encoding="utf-8"), "test")
+    assert old in job
+    with pytest.raises(AssertionError):
+        _assert_required_managed_chromium(job.replace(old, new))

@@ -35,6 +35,8 @@ def archive_bytes(extra=(), executable=True):
 
 class ManagedChromiumTests(unittest.TestCase):
     def test_success_installs_once_without_executing(self):
+        self.assertEqual(Path(installer.__file__).resolve(),
+                         (ROOT / "scripts/install_ci_chromium.py").resolve())
         data = archive_bytes([('chrome-linux/resources.pak', stat.S_IFREG | 0o6755, b'data')])
         with tempfile.TemporaryDirectory() as tmp, \
              patch.object(installer, 'ARCHIVE_BYTES', len(data)), \

@@ -15,6 +15,8 @@ THIRD_PARTY = {"polars", "numpy", "markdown", "pytest"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/。dragowing 自身は含めない。
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "sakanalytics", "scripts")
 KNOWN_EXCEPTIONS = {
+    # This fixture loads DRAgoWing’s own ROOT/scripts helper, never Aoi/scripts.
+    ("tests/test_dragowing_managed_chromium.py", "path:scripts/install_ci_chromium.py"),
     # PythDRagoras の propositions と rule_search。PYTHONPATH の pythdragoras
     ("overlap.py", "import:propositions"),
     ("overlap.py", "import:rule_search"),
@@ -93,3 +95,16 @@ def test_detector_catches_imports_and_paths():
             "p = 'scripts/x.py'\nq = '/pythdragoras/'\nr = 'cycles/c001'\ns = 'scriptsx'\n")
     uses = set(_uses(ast.parse(code)))
     assert {"import:sakanalytics", "import:queryu", "import:json", "path:scripts/x.py", "path:pythdragoras"} == uses
+
+
+def test_local_installer_exception_does_not_allow_sibling_imports_or_other_paths():
+    local_test = "tests/test_dragowing_managed_chromium.py"
+    allowed = (local_test, "path:scripts/install_ci_chromium.py")
+    assert allowed in KNOWN_EXCEPTIONS
+    for rel, code in (
+        (local_test, "from scripts import install_ci_chromium"),
+        (local_test, "path = 'scripts/other.py'"),
+        ("tests/other.py", "path = 'scripts/install_ci_chromium.py'"),
+    ):
+        uses = {(rel, use) for use in _uses(ast.parse(code))}
+        assert uses and not uses.intersection(KNOWN_EXCEPTIONS)

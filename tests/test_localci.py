@@ -712,7 +712,7 @@ def test_workflow_delegates_resolution_and_follows_parent_uses_style():
         else:
             assert localci.SHA_RE.fullmatch(ref.lower()), item
     assert "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0" in text
-    assert "astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2" in text
+    assert "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3" in text
     assert "actions/checkout@v7" in text
     assert "actions/upload-artifact@v7" in text
     assert "# v7.0.1" not in text
@@ -723,7 +723,7 @@ def test_workflow_delegates_resolution_and_follows_parent_uses_style():
     setup = [item["ref"] for item in uses if item["repo"] == "actions/setup-python"]
     assert set(setup) == {"6d4fd22b20465ccc0f7354476588e8df7c9ca0e0"}
     uv = [item["ref"] for item in uses if item["repo"] == "astral-sh/setup-uv"]
-    assert set(uv) == {"07a047e608db84b3d8c06cd9a7c7dcc9c355c18e"}
+    assert set(uv) == {"68559e99cc807c1eb7e9238fd43a15bba460eec2"}
     upload = [item["ref"] for item in uses if item["repo"] == "actions/upload-artifact"]
     assert upload == ["v7"]
 

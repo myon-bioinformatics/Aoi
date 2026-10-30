@@ -9,6 +9,8 @@ on:
       - 'dragowing/**'
       - 'scripts/diagnose_dragowing_browser.py'
       - 'scripts/observe_dragowing_startup.py'
+      - 'scripts/run_browser_startup_ci.py'
+      - 'tests/test_browser_startup_ci.py'
       - 'tests/test_dragowing_browser_*.py'
       - 'docs/diagnostics/browser-startup-validation.md'
   workflow_dispatch:
@@ -75,12 +77,7 @@ jobs:
           "${prefix[@]}" env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1 \
             DRAGOWING_EXPORT_EVIDENCE_DIR="$PWD/build/startup-context/export-evidence" \
             DRAGOWING_PINNED_PLOTLY_JS="$PWD/build/test-assets/plotly.min.js" \
-            "$PWD/.venv/bin/python" -m pytest -c pyproject.toml -q \
-            -p scripts.observe_dragowing_startup \
-            --browser-startup-evidence=build/startup-context/actual-tests.json \
-            dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
-            dragowing/tests/test_plotly_cdn.py \
-            --junitxml=build/startup-context/actual-tests.xml
+            "$PWD/.venv/bin/python" -m scripts.run_browser_startup_ci --output build/startup-context
       - name: Preserve first and subsequent startup evidence even on failure
         if: always()
         uses: actions/upload-artifact@v7

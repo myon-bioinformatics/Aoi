@@ -189,3 +189,29 @@ def test_cli_draws_five_sets_with_a_breakdown_on_the_recorded_cycle(tmp_path, ao
         too_many += ["--cond", f"rd,>,{k}"]
     assert main(too_many) == 1
 
+
+
+def test_breakdown_other_hover_preserves_literal_labels(tmp_path):
+    overlap = make(tmp_path, 2, units=MAX_SERIES + 1)
+    for i, unit in enumerate(overlap["units"]):
+        unit["team"] = f"a{i}" if i < MAX_SERIES else "z<b>&value</b>"
+    fig = breakdown_figure(overlap)
+    other = next(t for t in fig["data"] if t["meta"]["role"] == "other")
+    assert any("z&lt;b&gt;&amp;value&lt;/b&gt; 1" in text for text in other["customdata"])
+    assert all("<b>" not in text and "</b>" not in text for text in other["customdata"])
+    # Display escaping must not rewrite source identities or counts.
+    assert other["meta"]["values"] == ["z<b>&value</b>"]
+    assert sum(other["x"]) == 1
+
+
+def test_breakdown_keep_respects_seven_distinct_matched_values(tmp_path):
+    overlap = make(tmp_path, 2, units=MAX_SERIES + 2)
+    values = sorted(unit["team"] for unit in overlap["units"])
+    keep = tuple(values[:MAX_SERIES])
+    fig = breakdown_figure(overlap, keep=keep + keep + ("unknown",))
+    shown = [t["meta"]["value"] for t in fig["data"] if t["meta"]["role"] == "series"]
+    assert shown == list(keep)
+    assert len({t["marker"]["color"] for t in fig["data"] if t["meta"]["role"] == "series"}) == MAX_SERIES
+    assert sum(sum(t["x"]) for t in fig["data"]) == len(overlap["units"])
+    with pytest.raises(ValueError, match="breakdown-keep.*7"):
+        breakdown_figure(overlap, keep=tuple(values[:MAX_SERIES + 1]))

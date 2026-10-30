@@ -24,15 +24,22 @@ def test_lock_matches_vendored_bytes():
     assert lock.problems(ROOT) == []
     document = lock.load_lock(ROOT)
     assert document["schema"] == "vendor-lock/1"
-    names = [Path(entry["path"]).name for entry in document["files"]]
+    names = [Path(entry["source"]).name for entry in document["files"]]
     assert names == ["fetch_module.py", "numpy_min.py"]
     unused = {"shrink_module.py", "shrink_polars.py", "numpy_linalg_min.py", "polars_min.py"}
     assert unused.isdisjoint(names)
     for entry in document["files"]:
-        assert set(entry) == {"path", "sha256", "source"}
-        assert entry["source"] == SOURCE
-        vendored = ROOT / "vendor" / "aoi" / entry["path"]
-        assert hashlib.sha256(vendored.read_bytes()).hexdigest() == entry["sha256"]
+        assert set(entry) == {
+            "repository", "ref", "commit", "source", "destination", "blob_sha", "sha256",
+        }
+        assert entry["repository"] == SOURCE
+        assert entry["ref"] == entry["commit"]
+        assert len(entry["commit"]) == 40
+        vendored = ROOT / entry["destination"]
+        data = vendored.read_bytes()
+        assert hashlib.sha256(data).hexdigest() == entry["sha256"]
+        assert lock.git_blob_sha(data) == entry["blob_sha"]
+        assert entry["destination"] == "vendor/aoi/" + entry["source"]
 
 
 def _tree(tmp_path: Path, payload: bytes, sha: str | None = None) -> Path:

@@ -191,6 +191,8 @@ def breakdown_figure(overlap: dict, by: str = "team", keep: tuple = ()) -> dict:
     totals = Counter(unit[by] for unit in units)
     order = sorted(totals, key=lambda v: (v is None, v))
     forced = [v for v in order if _label(v) in keep]
+    if len(forced) > MAX_SERIES:
+        raise ValueError(f"breakdown-keep で別の色に残せる値は {MAX_SERIES} 個まで")
     rest = sorted((v for v in order if v not in forced), key=lambda v: -totals[v])
     shown = set(forced + rest[: max(0, MAX_SERIES - len(forced))])
     kept = [v for v in order if v in shown]
@@ -210,7 +212,7 @@ def breakdown_figure(overlap: dict, by: str = "team", keep: tuple = ()) -> dict:
                  meta={"role": "series", "value": value})
         )
     if folded:
-        inside = [", ".join(f"{_label(v)} {m[v]}" for v in folded if m[v]) for m in members]
+        inside = [", ".join(f"{_esc(_label(v))} {m[v]}" for v in folded if m[v]) for m in members]
         traces.append(
             dict(type="bar", orientation="h", name="その他", y=labels,
                  x=[sum(m[v] for v in folded) for m in members],

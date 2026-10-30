@@ -38,11 +38,10 @@ jobs:
           gh pr list --state open --limit 100 --json number,headRefOid \
             --jq '.[] | [.number, .headRefOid] | @tsv' | while read -r num sha; do
             verdict=$(gh api "repos/$REPO/commits/$sha/check-runs?per_page=100" \
-              --jq '[.check_runs[] | (.conclusion // "")] as $c
-                    | [.check_runs[] | .status] as $s
-                    | if ($c | any(. == "failure" or . == "timed_out" or . == "action_required")) then "fail"
-                      elif ($s | any(. != "completed")) then "pending"
-                      else "pass" end')
+              --jq 'if any(.check_runs[]; .conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "action_required") then "fail"
+                    elif any(.check_runs[]; .status != "completed") then "pending"
+                    elif (.check_runs | length) == 0 then "pending"
+                    else "pass" end')
             has=$(gh pr view "$num" --json labels --jq '[.labels[].name] | index("status:ci-failing") != null')
             echo "PR #$num head=${sha:0:7} verdict=$verdict labeled=$has"
             case "$verdict" in

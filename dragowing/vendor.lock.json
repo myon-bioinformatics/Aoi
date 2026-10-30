@@ -2,14 +2,22 @@
   "schema": "vendor-lock/1",
   "files": [
     {
-      "path": "scripts/fetch_module.py",
-      "sha256": "9e62b356bd66358111d56fdb714d088091066bc6815383413d665a7abfac9f6f",
-      "source": "myon-bioinformatics/Aoi"
+      "repository": "myon-bioinformatics/Aoi",
+      "ref": "03507f8cfab17af8a61473ac71ba8c5addc1591a",
+      "commit": "03507f8cfab17af8a61473ac71ba8c5addc1591a",
+      "source": "scripts/fetch_module.py",
+      "destination": "vendor/aoi/scripts/fetch_module.py",
+      "blob_sha": "7d7942072d1f55e22da9a74bfa572a6d69c5d6da",
+      "sha256": "9e62b356bd66358111d56fdb714d088091066bc6815383413d665a7abfac9f6f"
     },
     {
-      "path": "shrink/numpy_min.py",
-      "sha256": "0779d22355ec7a3b5f4562226ff1c7862edc1c9cedb6ea04b6cf466afc5a9364",
-      "source": "myon-bioinformatics/Aoi"
+      "repository": "myon-bioinformatics/Aoi",
+      "ref": "03507f8cfab17af8a61473ac71ba8c5addc1591a",
+      "commit": "03507f8cfab17af8a61473ac71ba8c5addc1591a",
+      "source": "shrink/numpy_min.py",
+      "destination": "vendor/aoi/shrink/numpy_min.py",
+      "blob_sha": "41c5d13c79b282e69109ef9c9203d8184b2e9094",
+      "sha256": "0779d22355ec7a3b5f4562226ff1c7862edc1c9cedb6ea04b6cf466afc5a9364"
     }
   ]
 }

@@ -33,11 +33,6 @@ def _is_open(fd):
     return True
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=_KnownResourceLimitation,
-    reason="chrome_pipe._spawn leaks the first pipe pair when the second os.pipe raises EMFILE",
-)
 def test_second_pipe_allocation_failure_closes_first_pair(monkeypatch):
     from dragowing import chrome_pipe
 
@@ -159,11 +154,6 @@ print(json.dumps(outcome))
 """
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=_KnownResourceLimitation,
-    reason="select.select rejects pipe FDs >=1024 and close() repeats that ValueError before cleanup",
-)
 def test_high_descriptors_support_startup_and_close(tmp_path):
     peer = tmp_path / "resource-cdp-peer"
     peer.write_text("#!" + sys.executable + "\n" + textwrap.dedent(r"""

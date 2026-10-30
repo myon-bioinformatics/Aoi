@@ -39,28 +39,6 @@
     }
   ],
   "packages": {
-    "DRAgoWing": {
-      "attribute_uses": 1,
-      "attributes": {
-        "dragowing.render_report": 1
-      },
-      "by_tree": {
-        "research": {
-          "attribute_uses": 1,
-          "attributes": {
-            "dragowing.render_report": 1
-          },
-          "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
-        }
-      },
-      "declared": [],
-      "distinct_attributes": 1,
-      "dynamic_import_sites": 0,
-      "files": 1,
-      "import_sites": 1
-    },
     "coverage": {
       "attribute_uses": 1,
       "attributes": {
@@ -739,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1178,
+      "attribute_uses": 1195,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -749,15 +727,14 @@
         "UsageError": 10,
         "approx": 346,
         "fail": 33,
-        "fixture": 55,
+        "fixture": 56,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 243,
-        "mark.skipif": 20,
-        "mark.xfail": 2,
+        "mark.parametrize": 251,
+        "mark.skipif": 21,
         "param": 1,
-        "raises": 432,
-        "skip": 8,
+        "raises": 440,
+        "skip": 9,
         "warns": 3
       },
       "by_tree": {
@@ -795,19 +772,19 @@
           "import_sites": 15
         },
         "dragowing": {
-          "attribute_uses": 68,
+          "attribute_uses": 87,
           "attributes": {
             "UsageError": 2,
             "fail": 2,
-            "fixture": 7,
-            "mark.parametrize": 13,
-            "mark.skipif": 2,
-            "raises": 39,
-            "skip": 3
+            "fixture": 8,
+            "mark.parametrize": 21,
+            "mark.skipif": 3,
+            "raises": 47,
+            "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 10,
-          "import_sites": 11
+          "files": 14,
+          "import_sites": 15
         },
         "nagoyaction": {
           "attribute_uses": 77,
@@ -885,7 +862,7 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 376,
+          "attribute_uses": 374,
           "attributes": {
             "approx": 104,
             "fail": 13,
@@ -893,7 +870,6 @@
             "importorskip": 1,
             "mark.parametrize": 92,
             "mark.skipif": 12,
-            "mark.xfail": 2,
             "raises": 134,
             "skip": 2
           },
@@ -934,10 +910,10 @@
           "name": "pytest"
         }
       ],
-      "distinct_attributes": 18,
+      "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 116,
-      "import_sites": 118
+      "files": 120,
+      "import_sites": 122
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1305,7 +1281,7 @@
     {
       "attributes": {},
       "dynamic_lines": [
-        77
+        84
       ],
       "file": "dragowing/htmlout.py",
       "import_sites": 0,
@@ -1363,6 +1339,29 @@
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/conftest.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.skipif": 1,
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_browser_resources.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.parametrize": 3,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_browser_selection.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -1491,6 +1490,28 @@
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_research_report.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 1,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_vendor_dispatch_ci.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 4,
+        "raises": 5
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_venn.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -2512,16 +2533,6 @@
     },
     {
       "attributes": {
-        "dragowing.render_report": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/render_matched_comeback.py",
-      "import_sites": 1,
-      "package": "DRAgoWing",
-      "tree": "research"
-    },
-    {
-      "attributes": {
         "DataFrame": 1
       },
       "dynamic_lines": [],
@@ -3055,7 +3066,6 @@
     {
       "attributes": {
         "mark.skipif": 1,
-        "mark.xfail": 2,
         "skip": 1
       },
       "dynamic_lines": [],

@@ -38,7 +38,7 @@ def test_runner_gates_remainder_without_retry_or_warmup(tmp_path, monkeypatch):
         "dragowing/tests/test_render.py",
         "dragowing/tests/test_export.py",
         "dragowing/tests/test_plotly_cdn.py",
-        "-k", "not test_stalled_dbus_does_not_block_browser_get_version",
+        "--deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version",
         f"--junitxml={output / 'actual-tests.xml'}",
     ]
     assert env["CHROME"] == "/usr/bin/chromium"

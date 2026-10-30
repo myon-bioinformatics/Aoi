@@ -278,7 +278,7 @@ jobs:
           DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js
         run: |
           mkdir -p build/test-results
-          uv run --locked --python "${{ matrix.python }}" python -m pytest -c pyproject.toml -q -k 'not test_stalled_dbus_does_not_block_browser_get_version' -p scripts.observe_dragowing_startup \
+          uv run --locked --python "${{ matrix.python }}" python -m pytest -c pyproject.toml -q --deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version -p scripts.observe_dragowing_startup \
             --browser-startup-evidence="build/startup-observation/pytest-${{ matrix.python }}.json" \
             --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
       - name: Preserve raw JUnit
@@ -436,7 +436,7 @@ jobs:
             "$PWD/.venv/bin/python" -m pytest -c pyproject.toml -q \
             dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
             dragowing/tests/test_plotly_cdn.py \
-            -k 'not test_stalled_dbus_does_not_block_browser_get_version' \
+            --deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version \
             --junitxml=build/test-results/chrome-export-3.14.xml
       - name: Preserve Chromium export JUnit
         if: always()

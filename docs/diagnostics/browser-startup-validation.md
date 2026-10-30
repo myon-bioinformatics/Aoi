@@ -133,7 +133,7 @@ normal / offline の切り替えはCLI内部では行わない。GitHub Actions�
 各 fresh job で最初の full browser は既存の
 `test_stalled_dbus_does_not_block_browser_get_version` だけを指定して起動する。
 `Timeouts(launch=8)` と全体 elapsed `<8` の assertion を両方保つ。失敗したら後続の
-suite/exports は実行しない。成功した場合のみ残りを実行し、`-k not …` で同じテストを
+suite/exports は実行しない。成功した場合のみ残りを実行し、`--deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version` で同じテストを
 除くため再試行しない。全 suite のテストを減らしたのではなく、厳しい初回 gate と残りに分ける。
 
 `browser-startup-validation.yml` の全 suite 診断 lane は gate 成功後に、従来の

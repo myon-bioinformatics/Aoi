@@ -7,7 +7,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 NODE = 'dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version'
-EXCLUDE = "-k 'not test_stalled_dbus_does_not_block_browser_get_version'"
+EXCLUDE = "--deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version"
 INSTALL = 'python3 dragowing/scripts/install_ci_chromium.py --destination "$RUNNER_TEMP/aoi-chromium"'
 VERSION = 'Chromium 156.0.8078.0'
 
@@ -43,7 +43,7 @@ def validate(ci, validation):
         gate, remaining = step(lane, first), step(lane, rest)
         assert NODE in gate and gate.count(NODE) == 1
         assert EXCLUDE not in gate and 'test_export.py' not in gate
-        assert EXCLUDE in remaining and NODE not in remaining
+        assert EXCLUDE in remaining and remaining.count(NODE) == 1
         assert lane.index(INSTALL) < lane.index(first) < lane.index(rest)
         assert 'if:' not in gate and 'if:' not in remaining
         assert '|| true' not in gate and '|| true' not in remaining
@@ -195,3 +195,22 @@ def test_matrix_isolated_node_imports_observer_with_root_configuration(tmp_path)
     result = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, timeout=30)
     assert result.returncode == 0, result.stdout + result.stderr
     assert NODE in result.stdout and '1 test collected' in result.stdout
+
+
+def test_exact_deselection_retains_parameterized_gate_contracts():
+    """Collect only: exclude one real gate, never substring-matching guard cases."""
+    import subprocess
+    import sys
+    ci = (ROOT / '.github/workflows/ci.yml').read_text()
+    assert EXCLUDE in step(job(ci, 'test'), 'Test with JUnit')
+    result = subprocess.run(
+        [sys.executable, '-m', 'pytest', '-c', 'pyproject.toml', '--collect-only', '-q',
+         'tests/test_dragowing_browser_managed.py', 'dragowing/tests/test_render.py', EXCLUDE],
+        cwd=ROOT, capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert '1 deselected' in result.stdout
+    selected = result.stdout.splitlines()
+    assert NODE not in selected
+    for lane in ('ci', 'validation'):
+        assert any('test_contract_rejects_gate_and_provenance_weakening[' + lane + '-' + EXCLUDE in line
+                   for line in selected)

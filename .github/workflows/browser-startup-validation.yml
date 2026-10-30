@@ -182,7 +182,7 @@ jobs:
         # Use the ordinary runner user/network context of the original failure.
         # Do not introduce sudo/unshare or weaken existing isolation elsewhere.
         run: |
-          .venv/bin/python -m pytest -q -k 'not test_stalled_dbus_does_not_block_browser_get_version' --junitxml=build/browser-startup/full-suite.xml
+          .venv/bin/python -m pytest -q --deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version --junitxml=build/browser-startup/full-suite.xml
       - name: Measure ten fresh profiles after the suite
         if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' && steps.first.outcome == 'success' }}
         env:

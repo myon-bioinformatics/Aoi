@@ -43,7 +43,7 @@ def main(argv: list[str] | None = None) -> int:
         "dragowing/tests/test_render.py",
         "dragowing/tests/test_export.py",
         "dragowing/tests/test_plotly_cdn.py",
-        "-k", "not test_stalled_dbus_does_not_block_browser_get_version",
+        "--deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version",
         f"--junitxml={output / 'actual-tests.xml'}",
     ]
     return subprocess.call(remaining, env=env)

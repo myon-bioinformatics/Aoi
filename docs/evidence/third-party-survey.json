@@ -662,7 +662,7 @@
       "import_sites": 39
     },
     "pytest": {
-      "attribute_uses": 873,
+      "attribute_uses": 881,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -675,10 +675,10 @@
         "fixture": 43,
         "hookimpl": 3,
         "importorskip": 9,
-        "mark.parametrize": 163,
-        "mark.skipif": 4,
+        "mark.parametrize": 168,
+        "mark.skipif": 6,
         "param": 1,
-        "raises": 355,
+        "raises": 356,
         "skip": 6,
         "warns": 3
       },
@@ -732,18 +732,19 @@
           "import_sites": 11
         },
         "nagoyaction": {
-          "attribute_uses": 77,
+          "attribute_uses": 85,
           "attributes": {
             "MonkeyPatch": 1,
             "fail": 1,
             "fixture": 7,
-            "mark.parametrize": 13,
-            "raises": 54,
+            "mark.parametrize": 18,
+            "mark.skipif": 2,
+            "raises": 55,
             "skip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 12,
-          "import_sites": 12
+          "files": 13,
+          "import_sites": 13
         },
         "pythdragoras": {
           "attribute_uses": 170,
@@ -843,8 +844,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 89,
-      "import_sites": 90
+      "files": 90,
+      "import_sites": 91
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1436,6 +1437,18 @@
       },
       "dynamic_lines": [],
       "file": "nagoyaction/tests/test_nagoyaction.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 5,
+        "mark.skipif": 2,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "nagoyaction/tests/test_nagoyaction_node_entry.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "nagoyaction"

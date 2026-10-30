@@ -79,7 +79,7 @@ def test_nagoyaction_registered_with_exact_ids():
     entry = _load("child-heads.json")["heads"]["myon-bioinformatics/NagoyAction"]
     assert entry["repository_id"] == 1423491480
     assert entry["optional"]["subtree_prefix"] == "nagoyaction"
-    assert entry["sha"] == "dbd7bab6cf6ae2be60806898f5a9236439553d4b"
+    assert entry["sha"] == "c763cc80d3c18a11ae783dc1d8b890d5cbaaea29"
     assert "mirrored_from_parent" not in entry["optional"]  # Aoi の原本を写したファイルはない
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "README.md", "nagoyaction.py"):

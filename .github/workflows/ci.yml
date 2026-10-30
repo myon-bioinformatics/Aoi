@@ -269,7 +269,7 @@ jobs:
           DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js
         run: |
           mkdir -p build/test-results
-          uv run --locked --python "${{ matrix.python }}" pytest -q -p scripts.observe_dragowing_startup \
+          uv run --locked --python "${{ matrix.python }}" python -m pytest -c pyproject.toml -q -p scripts.observe_dragowing_startup \
             --browser-startup-evidence="build/startup-observation/first-start-${{ matrix.python }}.json" \
             dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version \
             --junitxml="build/test-results/first-start-${{ matrix.python }}.xml"
@@ -278,7 +278,7 @@ jobs:
           DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js
         run: |
           mkdir -p build/test-results
-          uv run --locked --python "${{ matrix.python }}" pytest -q -k 'not test_stalled_dbus_does_not_block_browser_get_version' -p scripts.observe_dragowing_startup \
+          uv run --locked --python "${{ matrix.python }}" python -m pytest -c pyproject.toml -q -k 'not test_stalled_dbus_does_not_block_browser_get_version' -p scripts.observe_dragowing_startup \
             --browser-startup-evidence="build/startup-observation/pytest-${{ matrix.python }}.json" \
             --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
       - name: Preserve raw JUnit

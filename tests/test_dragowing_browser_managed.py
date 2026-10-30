@@ -47,6 +47,8 @@ def validate(ci, validation):
         assert lane.index(INSTALL) < lane.index(first) < lane.index(rest)
         assert 'if:' not in gate and 'if:' not in remaining
         assert '|| true' not in gate and '|| true' not in remaining
+    for name in firsts[:1] + rests[:1]:
+        assert 'python -m pytest -c pyproject.toml' in step(lanes[0], name)
     # Offline retains the original privilege/network context; ordinary jobs do not gain it.
     assert 'sudo unshare --net -- env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1' in step(lanes[1], firsts[1])
     assert 'sudo' not in lanes[0]
@@ -99,6 +101,8 @@ def test_every_actual_browser_lane_installs_and_gates():
 
 @pytest.mark.parametrize('target,old,new', [
     ('ci', INSTALL, 'echo installation skipped'),
+    ('ci', 'python -m pytest -c pyproject.toml', 'pytest -c pyproject.toml'),
+    ('ci', 'python -m pytest -c pyproject.toml', 'python -m pytest'),
     ('validation', INSTALL, 'echo installation skipped'),
     ('ci', VERSION, 'Chromium 123'),
     ('validation', VERSION, 'Chromium 123'),
@@ -172,3 +176,22 @@ raise SystemExit(int(os.environ['FAKE_EXIT']))
     assert any(arg.startswith('--browser-startup-evidence=') for arg in call['args'])
     assert any(arg.startswith('--junitxml=') for arg in call['args'])
     assert (tmp_path / 'context.txt').exists() == (lane == 'offline')
+
+
+def test_matrix_isolated_node_imports_observer_with_root_configuration(tmp_path):
+    """Exercise the actual Python entry/config, collecting only: no browser launch."""
+    import shlex
+    import subprocess
+    import sys
+    ci = (ROOT / '.github/workflows/ci.yml').read_text()
+    block = step(job(ci, 'test'), 'Require first actual browser startup within eight seconds')
+    invocation = 'uv run' + block.split('uv run', 1)[1]
+    argv = shlex.split(invocation.replace('${{ matrix.python }}', '3.14').replace('\\\n', ' '))
+    assert argv[:10] == ['uv', 'run', '--locked', '--python', '3.14',
+                        'python', '-m', 'pytest', '-c', 'pyproject.toml']
+    args = [sys.executable, *argv[6:], '--collect-only']
+    args = [f'--browser-startup-evidence={tmp_path / "observation.json"}' if arg.startswith('--browser-startup-evidence=')
+            else f'--junitxml={tmp_path / "collected.xml"}' if arg.startswith('--junitxml=') else arg for arg in args]
+    result = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert NODE in result.stdout and '1 test collected' in result.stdout

@@ -179,6 +179,14 @@ runtime は Python / OS、uid / euid、network namespace inode、interface 数�
 
 JSON、JUnit、人工画像は成功 / 失敗の両方で `browser-first-start-{normal,offline}-py3.14` artifact に 14 日間保存する。8 秒や元の 30 秒 timeout の解消を示す修正ではなく、失敗した位置と条件を残す診断である。既存の失敗記録は保持し、transport / cleanup の修正や timeout 延長には進まない。
 
+
+追加のタイムアウト後診断 `thread_waits` は、ブラウザ主プロセスの
+`/proc/<pid>/task` にある最大64スレッドの状態文字とwchanだけを集計する。
+最初のCDP応答が得られなかった場合にだけ記録し、収集によって8秒判定を
+延長しない。argv、環境、開いているファイル名、スレッド名やスタック全文は
+記録しない。D状態と `filemap_fault` を観測しても、その瞬間の待機理由しか
+分からず、DBusとの因果関係やファイルの特定には使えない。
+
 ## 2026-10-28: head 7a613a6 の成功・失敗比較
 
 対象は PR #122、[startup run 40486652453](https://github.com/myon-bioinformatics/Aoi/actions/runs/40486652453) と [CI run 40486653033](https://github.com/myon-bioinformatics/Aoi/actions/runs/40486653033)。以下は保存 JSON と実ジョブログの観測であり、修正後の成功を示す表ではない。

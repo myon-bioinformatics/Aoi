@@ -83,6 +83,30 @@ stack は主プロセスの一時点だけで、state / wchan / pipe と原子�
 
 この結果は原因確定ではなく観測である。例えば process singleton socket の EPERM は実行環境の制限を示すが、別環境での断続的な `Browser.getVersion` timeout の原因まで示さない。Chrome の成功と Chromium の失敗が 1 回だけあっても、製品差と断定せず、環境・bundle・試行位置と合わせて読む。
 
+## 初回起動テストのCLI（2026-10-30）
+
+GitHub Actionsとローカルの検証コマンドは、リポジトリのルートから実行する
+`scripts.run_browser_startup_ci` に統一する。
+
+```sh
+CHROME="$(command -v chromium)" .venv/bin/python -m scripts.run_browser_startup_ci --output build/startup-context
+```
+
+このCLIは実ブラウザを事前起動せず、従来の4つのテストモジュールを同じ順番で
+`scripts.observe_dragowing_startup` に渡す。8秒の既存の上限・失敗条件、
+実装側の起動引数を変更しない。pytestの終了コードをそのまま返す。
+証拠は `actual-tests.json` と `actual-tests.xml` に出力する。
+
+normal / offline の切り替えはCLI内部では行わない。GitHub Actions側で従来どおり
+独立したUbuntuジョブを使い、offlineジョブだけ `sudo unshare --net --` の中で
+同じCLIを実行する。単一ジョブ内での連続実行はページキャッシュが変化するため、
+独立した初回起動の比較と同一視しない。毎回の失敗artifactsは `if: always()`
+で保持し、warmupを含む別ジョブの成功で初回失敗を隠さない。
+
+`tests/test_browser_startup_ci.py` はブラウザ不要でCLIの呼び出し順序、
+環境変数、成果物パス、終了コードの伝搬を検査する。実Chromiumでの合否判定
+ではなく、実ブラウザ結果はGitHub Actionsのnormal/offlineジョブで確認する。
+
 ## ブラウザなしの回帰テスト
 
 ```sh

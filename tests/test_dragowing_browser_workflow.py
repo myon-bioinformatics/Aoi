@@ -108,10 +108,11 @@ def test_first_start_context_uses_fresh_jobs_and_unchanged_test_order():
     assert "diagnose_dragowing_browser.py" not in job
     assert "--runs" not in job and "--timeout" not in job
     assert '"$chromium" --version' in job
-    assert "-p scripts.observe_dragowing_startup" in job
-    assert "--browser-startup-evidence=build/startup-context/actual-tests.json" in job
+    assert "-m scripts.run_browser_startup_ci --output build/startup-context" in job
+    # The wrapper's exact pytest/plugin/evidence command is executed and checked
+    # in test_browser_startup_ci; the workflow must route through that wrapper.
+    assert "'scripts/run_browser_startup_ci.py'" in text
     modules = "dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \\\n            dragowing/tests/test_plotly_cdn.py"
-    assert modules in job
     assert modules in (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "if: always()" in job and "if-no-files-found: error" in job
     assert "retention-days: 14" in job
@@ -126,7 +127,7 @@ def test_first_start_shell_only_changes_execution_context(tmp_path):
     binary.mkdir()
     python = tmp_path / ".venv/bin/python"
     python.parent.mkdir(parents=True)
-    python.write_text('#!/bin/bash\nprintf "%s\\n" "$@" > "$PWD/args"\nprintf "%s\\n" "$CHROME" "$DRAGOWING_REQUIRE_CHROME" "$DRAGOWING_PINNED_PLOTLY_JS" > "$PWD/env"\n')
+    python.write_text('#!/bin/bash\nprintf "%s\\n" "$@" > "$PWD/args"\nprintf "%s\\n" "$CHROME" "$DRAGOWING_REQUIRE_CHROME" "$DRAGOWING_PINNED_PLOTLY_JS" > "$PWD/env"\nexit "${TEST_EXIT:-0}"\n')
     python.chmod(0o755)
     for name, body in (("sudo", 'printf "%s\\n" "$@" > "$PWD/sudo-args"; exec "$@"'),
                        ("unshare", 'test "$1" = --net && test "$2" = --; shift 2; exec "$@"')):
@@ -142,6 +143,24 @@ def test_first_start_shell_only_changes_execution_context(tmp_path):
         results.append(((tmp_path / "args").read_text(), (tmp_path / "env").read_text()))
         assert (tmp_path / "sudo-args").exists() == (context == "offline")
     assert results[0] == results[1]
-    assert results[0][0].startswith("-m\npytest\n-c\npyproject.toml\n-q\n")
+    assert results[0][0] == "-m\nscripts.run_browser_startup_ci\n--output\nbuild/startup-context\n"
     assert results[0][1].startswith("/explicit/chromium\n1\n")
     assert (tmp_path / "sudo-args").read_text().startswith("unshare\n--net\n--\nenv\n")
+
+    # Wrapper failure must propagate in both contexts, without an automatic retry.
+    for context in ("normal", "offline"):
+        result = subprocess.run(["/bin/bash", "-e", "-c", script], cwd=tmp_path,
+                                capture_output=True, text=True,
+                                env={**os.environ, "STARTUP_CONTEXT": context,
+                                     "CHROME": "/explicit/chromium", "TEST_EXIT": "17",
+                                     "PATH": str(binary) + ":/usr/bin:/bin"})
+        assert result.returncode == 17, result.stderr
+    (tmp_path / "args").unlink()
+    result = subprocess.run(["/bin/bash", "-e", "-c", script], cwd=tmp_path,
+                            capture_output=True, text=True,
+                            env={**os.environ, "STARTUP_CONTEXT": "unknown",
+                                 "CHROME": "/explicit/chromium",
+                                 "PATH": str(binary) + ":/usr/bin:/bin"})
+    assert result.returncode != 0
+    assert "Unknown startup context" in result.stdout
+    assert not (tmp_path / "args").exists()

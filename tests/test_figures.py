@@ -301,7 +301,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     assert "integrity=" not in index
     head = index.split("</head>", 1)[0]
     assert head.count("<script") == 2
-    assert index.count("Plotly.newPlot") == 2
+    assert index.count("Plotly.newPlot") == 4  # 軌跡、球団×年、重なりの格子、重なりの内訳
     assert '"type":"circle"' not in index
     assert "8.4548548226457" in index
     assert "zmin=" in index and "zmax=" in index
@@ -475,7 +475,7 @@ def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
     assert f'src="{PLOTLY_JS_CDN}"' in index
     assert "integrity=" not in index
     assert not (out / "plotly.min.js").exists()
-    assert index.count("Plotly.newPlot") == 2
+    assert index.count("Plotly.newPlot") == 4
     assert '"type":"circle"' not in index
     heat = spec_from(index, "heatmap")
     assert any(cell == 8.4548548226457 for row in heat["data"][0]["z"] for cell in row)

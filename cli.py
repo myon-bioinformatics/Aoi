@@ -54,6 +54,13 @@ def write_svg(spec: dict, path: Path, *, chrome: str | None = None) -> None:
     write_image(spec, path, "svg", chrome=chrome)
 
 
+def team_order(text: str) -> tuple[str, ...]:
+    codes = tuple(code.strip() for code in text.split(",") if code.strip())
+    if len(codes) != len(set(codes)):
+        raise ValueError("--team-order に同じ記号が2回ある")
+    return codes
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="記録された結果を HTML にする。判定はやり直さない。")
     parser.add_argument("--results", type=Path, required=True, help="season.jsonl と propositions.jsonl があるディレクトリ")
@@ -61,15 +68,35 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--id", action="append", dest="ids", help="この命題だけ。繰り返せる。省略すると全部")
     parser.add_argument("--column", default="wins_vs_pythag", help="球団×年に置く数値列。既定は wins_vs_pythag")
     parser.add_argument(
+        "--team-order",
+        default="",
+        help="球団×年で上から並べる球団の記号（カンマ区切り）。例: d,g,s 。省略すると記号順",
+    )
+    parser.add_argument(
         "--cond",
         action="append",
         dest="conds",
-        help="重なりの条件。col,op,値（JSON）。例: rd,>,0 。省略すると if の先頭2件と B クラス",
+        help="重なりの条件。col,op,値（JSON）。例: rd,>,0 。繰り返せる（B クラスを含めて 2〜8 個）。省略すると if の先頭2件と B クラス",
+    )
+    parser.add_argument(
+        "--breakdown",
+        default="team",
+        help="重なりの内訳を分ける列。team、team_name、league、season、upper_half のどれか。既定は team",
+    )
+    parser.add_argument(
+        "--breakdown-keep",
+        action="append",
+        default=[],
+        help="内訳で「その他」にまとめず別の色で残す値。繰り返せる。例: d（件数にかかわらず残す）",
     )
     parser.add_argument(
         "--chrome",
         default=None,
         help="Chrome/Chromium の実行ファイル。省略時は CHROME / CHROMIUM 環境変数、なければ PATH",
+    )
+    parser.add_argument(
+        "--overlap-backend", choices=("native", "stdlib"), default="native",
+        help="重なり計算。stdlib は限定したスカラー列のみ（numpy/polars 不要）。既定は native",
     )
     parser.add_argument("--png", action="store_true", help="PNG も書く。Chrome が要る。既定では HTML だけ")
     parser.add_argument("--svg", action="store_true", help="SVG も書く。Chrome が要る。既定では HTML だけ")
@@ -89,8 +116,10 @@ def main(argv=None) -> int:
         rows = read_jsonl(season_path)
         chosen = select_items(items, present, args.ids)
         conds = finalize_conditions([parse_cond(text) for text in args.conds] if args.conds else None, items, rows)
-        overlap = load_overlap(season_path, conds)
-        index_html, index_figures = index_body(rows, overlap, args.column)
+        overlap = load_overlap(season_path, conds, backend=args.overlap_backend)
+        index_html, index_figures = index_body(
+            rows, overlap, args.column, team_order(args.team_order), args.breakdown, tuple(args.breakdown_keep)
+        )
         prop_html = propositions_body(chosen)
     except (FileNotFoundError, ValueError, TypeError) as exc:
         print(str(exc), file=sys.stderr)

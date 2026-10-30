@@ -102,22 +102,56 @@ def _page_targets(browser):
     return {t["targetId"] for t in browser.call("Target.getTargets")["targetInfos"] if t["type"] == "page"}
 
 
+def _draw(name, value, draw):
+    """Keep ``value`` unless localci has a round seed, then draw another one."""
+    try:
+        import localci
+    except ImportError:
+        return value
+    return localci.substitute(name, value, draw)
+
+
+def _figure_case():
+    # Fixed values are what CI runs. A localci round seed redraws geometry and
+    # the stage budgets; floors stay at the fixed budget so a round cannot
+    # shrink the launch wait back under a cold start.
+    width = int(_draw("width", 400, lambda rng: rng.randrange(320, 721, 40)))
+    height = int(_draw("height", 300, lambda rng: rng.randrange(240, 481, 30)))
+    count = int(_draw("points", 3, lambda rng: rng.randint(3, 5)))
+    color = _draw("color", "red", lambda rng: rng.choice(("red", "blue", "green")))
+    marker = int(_draw("marker", 12, lambda rng: rng.choice((8, 12, 16))))
+
+    def seconds(name, fixed, high):
+        return float(_draw(name, fixed, lambda rng, high=high: rng.randint(fixed, high)))
+
+    timeouts = Timeouts(
+        launch=seconds("launch", 30, 60),
+        load=seconds("load", 30, 60),
+        ready=seconds("ready", 30, 60),
+        capture=seconds("capture", 15, 30),
+    )
+    return width, height, count, color, marker, timeouts
+
+
 def test_export_draw_plotly_three_figures_in_one_session(tmp_path, plotly_chrome_executable):
     evidence = os.environ.get("DRAGOWING_EXPORT_EVIDENCE_DIR")
     if evidence:
         tmp_path = Path(evidence)
         tmp_path.mkdir(parents=True, exist_ok=True)
-    figures = [
-        {
-            "data": [{"type": "scatter", "x": [1, 2, 3], "y": [index, 1, 4],
+    width, height, count, color, marker, timeouts = _figure_case()
+    figures = []
+    for index in range(3):
+        ys = [index, 1, 4]
+        while len(ys) < count:
+            ys.append(ys[-1] + 2 + index)
+        figures.append({
+            "data": [{"type": "scatter", "x": list(range(1, count + 1)), "y": ys,
                       "mode": "lines+markers", "name": "series-%d" % index,
-                      "marker": {"color": "red", "size": 12}}],
-            "layout": {"width": 400, "height": 300, "showlegend": True,
+                      "marker": {"color": color, "size": marker}}],
+            "layout": {"width": width, "height": height, "showlegend": True,
                        "title": {"text": "title-%d" % index}},
-        }
-        for index in range(3)
-    ]
-    with RenderSession(chrome=plotly_chrome_executable, offline=True) as session:
+        })
+    with RenderSession(chrome=plotly_chrome_executable, offline=True, timeouts=timeouts) as session:
         pid = session.browser._proc.pid
         baseline = _page_targets(session.browser)
         if evidence:
@@ -142,9 +176,9 @@ def test_export_draw_plotly_three_figures_in_one_session(tmp_path, plotly_chrome
                     assert "title-%d" % index in text
                     assert "series-%d" % index in text
                     points = [el for el in root.iter() if el.get("class") == "point"]
-                    assert len(points) == 3
+                    assert len(points) == count
                 else:
-                    _check_png(data, 400, 300)
+                    _check_png(data, width, height)
                     png_hashes.add(hashlib.sha256(data).hexdigest())
         assert len(png_hashes) == 3
         # CDP offline mode must actually reject network fetches, while the exact

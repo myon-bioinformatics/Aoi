@@ -115,6 +115,38 @@ def test_startup_failure_cleans_process_thread_and_tempdir(peer, prefix, error, 
     assert session.browser._proc is session.browser._reader is None
 
 
+def test_spawn_disables_dbus_even_if_the_parent_bus_is_stalled(peer, monkeypatch):
+    from dragowing import chrome_pipe
+    captured = {}
+
+    def record(argv, **kwargs):
+        captured["argv"] = argv
+        captured["env"] = kwargs.get("env")
+        raise OSError("cannot spawn")
+
+    monkeypatch.setenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/tmp/stalled-session-bus")
+    monkeypatch.setenv("DBUS_SYSTEM_BUS_ADDRESS", "unix:path=/tmp/stalled-system-bus")
+    monkeypatch.setattr(chrome_pipe.subprocess, "Popen", record)
+    browser = Chrome(peer())
+    with pytest.raises(OSError, match="cannot spawn"):
+        browser.start()
+    env = captured["env"]
+    session = env["DBUS_SESSION_BUS_ADDRESS"]
+    system = env["DBUS_SYSTEM_BUS_ADDRESS"]
+    assert session == system
+    assert session.startswith("unix:path=")
+    socket_path = session.split("=", 1)[1]
+    assert socket_path.endswith(os.path.join("no-bus.sock"))
+    assert not os.path.exists(socket_path)
+    assert "disabled:" not in session
+    assert session != "unix:path=/tmp/stalled-session-bus"
+    assert env["NO_AT_BRIDGE"] == "1"
+    assert "--ozone-platform=headless" in captured["argv"]
+    assert "--password-store=basic" in captured["argv"]
+    assert "--use-mock-keychain" in captured["argv"]
+    assert "--disable-breakpad" in captured["argv"]
+
+
 def test_popen_failure_closes_descriptors(peer, monkeypatch):
     from dragowing import chrome_pipe
     pipe, descriptors = os.pipe, []

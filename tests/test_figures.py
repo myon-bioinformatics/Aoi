@@ -25,6 +25,8 @@ import aoi_paths
 
 ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 RESULTS = aoi_paths.default_cycle_outputs(ROOT)
+# 並び順は呼び出し側（Aoi）の設定。ここではテスト用に同じ並びを渡す
+TEAM_ORDER = ("d", "g", "s", "db", "t", "c", "h", "f", "b", "e", "l", "m")
 _MODULE_PARENT = None
 
 
@@ -192,7 +194,7 @@ def test_trajectory_and_heatmap_keep_source_values_including_a_gap():
     assert dragons["marker"]["color"] == [A_COLOR, B_COLOR]
     assert "spline" not in json.dumps(spec)
     assert "trendline" not in json.dumps(spec)
-    heat = spec_of(heatmap_figure(rows, "wins_vs_pythag"))
+    heat = spec_of(heatmap_figure(rows, "wins_vs_pythag", TEAM_ORDER))
     payload = heat["data"][0]
     assert payload["zsmooth"] is False
     x, y, z = payload["x"], payload["y"], payload["z"]
@@ -299,7 +301,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     assert "integrity=" not in index
     head = index.split("</head>", 1)[0]
     assert head.count("<script") == 2
-    assert index.count("Plotly.newPlot") == 2
+    assert index.count("Plotly.newPlot") == 4  # 軌跡、球団×年、重なりの格子、重なりの内訳
     assert '"type":"circle"' not in index
     assert "8.4548548226457" in index
     assert "zmin=" in index and "zmax=" in index
@@ -402,7 +404,7 @@ def test_real_records_are_copied_into_the_figures():
         assert point["rank_ra"] == row["rank_ra"]
         assert point["upper_half"] is row["upper_half"]
         assert point["team_name"] == row["team_name"]
-    heat = spec_of(heatmap_figure(rows, "wins_vs_pythag"))
+    heat = spec_of(heatmap_figure(rows, "wins_vs_pythag", TEAM_ORDER))
     payload = heat["data"][0]
     assert payload["zsmooth"] is False
     assert payload["y"][0] == "d"
@@ -473,7 +475,7 @@ def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
     assert f'src="{PLOTLY_JS_CDN}"' in index
     assert "integrity=" not in index
     assert not (out / "plotly.min.js").exists()
-    assert index.count("Plotly.newPlot") == 2
+    assert index.count("Plotly.newPlot") == 4
     assert '"type":"circle"' not in index
     heat = spec_from(index, "heatmap")
     assert any(cell == 8.4548548226457 for row in heat["data"][0]["z"] for cell in row)
@@ -611,3 +613,17 @@ def test_cli_reuses_one_session_for_all_figures_and_formats(tmp_path, monkeypatc
     for args, kwargs in calls:
         by_name.setdefault(args[2].stem, set()).add(args[3])
     assert all(formats == {"png", "svg"} for formats in by_name.values())
+
+
+def test_heatmap_team_order_is_an_argument_and_defaults_to_code_order():
+    rows = [season_row(team=t, team_name=t) for t in ("g", "d")]
+    assert spec_of(heatmap_figure(rows, "wins_vs_pythag"))["data"][0]["y"] == ["d", "g"]
+    assert spec_of(heatmap_figure(rows, "wins_vs_pythag", ("g",)))["data"][0]["y"] == ["g", "d"]
+
+
+def test_team_order_option_rejects_duplicates():
+    from dragowing.cli import team_order
+    assert team_order("d, g ,") == ("d", "g")
+    import pytest
+    with pytest.raises(ValueError):
+        team_order("d,d")

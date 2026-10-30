@@ -6,7 +6,9 @@ import json
 A_COLOR = "#1f77b4"
 B_COLOR = "#d62728"
 LINE_COLOR = "#9aa0a6"
-FONT = "Noto Sans JP, Yu Gothic, Meiryo, sans-serif"
+# 図とページで共通。メイリオが無い環境（Mac・iPhone・Linux）では OS 既定の sans-serif になる。
+# メイリオは再配布できないので、フォントファイルは同梱しない。
+FONT = "Meiryo, メイリオ, sans-serif"
 
 # Plotly の Viridis を ``to_dict()`` したときと同じ段。
 _VIRIDIS_SCALE = [
@@ -208,18 +210,15 @@ def _numeric_column(rows: list[dict], column: str) -> None:
             raise ValueError(f"列 {column} は数値ではない")
 
 
-# 上から下。中日 d を最上段にする。括弧内の並びは記録にある記号で、d を先頭に繰り上げたもの。
-_TEAM_TOP_DOWN = ("d", "g", "s", "db", "t", "c", "h", "f", "b", "e", "l", "m")
-
-
 def _exact_text(value) -> str:
     if value is None:
         return "null"
     return json.dumps(value, ensure_ascii=False)
 
 
-def _heatmap_order(teams: list[tuple]) -> list[tuple]:
-    rank = {code: index for index, code in enumerate(_TEAM_TOP_DOWN)}
+def _heatmap_order(teams: list[tuple], team_order=()) -> list[tuple]:
+    """``team_order`` の記号を上から順に。載っていない球団はその下に記号順で並べる。"""
+    rank = {code: index for index, code in enumerate(team_order)}
 
     def key(item):
         code = item[1]
@@ -230,10 +229,13 @@ def _heatmap_order(teams: list[tuple]) -> list[tuple]:
     return sorted(teams, key=key)
 
 
-def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag") -> dict:
-    """C4. 球団 × 年。色は列の値。マスの文字は A/B だけ。数はホバー。"""
+def heatmap_figure(rows: list[dict], column: str = "wins_vs_pythag", team_order=()) -> dict:
+    """C4. 球団 × 年。色は列の値。マスの文字は A/B だけ。数はホバー。
+
+    ``team_order`` は上から並べる球団の記号（呼び出し側の設定。省略すると記号順）。
+    """
     _numeric_column(rows, column)
-    teams = _heatmap_order(list({(row["league"], row["team"], row["team_name"]) for row in rows}))
+    teams = _heatmap_order(list({(row["league"], row["team"], row["team_name"]) for row in rows}), team_order)
     seasons = sorted({row["season"] for row in rows})
     index = {(row["league"], row["team"], row["season"]): row for row in rows}
     codes = [team for _league, team, _name in teams]

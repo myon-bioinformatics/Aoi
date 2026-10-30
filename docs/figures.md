@@ -1,6 +1,6 @@
-# 軌跡・球団×年・条件の重なり・命題の一覧
+# Trajectories, team × year, condition overlap, and the list of propositions
 
-`python -m dragowing` は、`cycles/c001-chunichi/outputs` にすでにある JSONL だけを読む。NPB の取得はしない。判定（`evaluate`）は呼ばない。数を丸めて階級に入れない。回帰、平滑化、あてはめの線は描かない。
+`python -m dragowing` reads only the JSONL already in `cycles/c001-chunichi/outputs`. It does not fetch NPB data. It does not call the judge (`evaluate`). It does not round numbers into bins. It draws no regression, smoothing, or fitted lines.
 
 ```bash
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
@@ -8,103 +8,137 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --column wins_vs_pythag
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --cond 'rd,>,0' --cond 'rank_ra,<=,2'
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --embed
+python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --team-order d,g,s   # top-to-bottom order of team × year; symbol order if omitted
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --png --svg
 ```
 
-`--cond` の値は JSON である（`0`、`true`、`"d"`）。省略すると、`propositions.jsonl` の `if` をファイルの順に見て、`season.jsonl` にある列の原子を 2 個取り、そこに B クラス（`upper_half == false`）を足す。集合は 2 個か 3 個である。
+`--cond` values are JSON (`0`, `true`, `"d"`). If omitted, it looks at the `if` of `propositions.jsonl` in file order, takes 2 atoms on columns present in `season.jsonl`, and adds the B class (`upper_half == false`). That gives 2 or 3 sets. Repeating `--cond` permits 2–8 sets including class B. Select the breakdown with `--breakdown COLUMN` (default `team`) and repeatable `--breakdown-keep VALUE`.
 
-既定では、`index.html` が jsDelivr の Plotly.js（`https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js`、SRI なし）を読む。`propositions.html` は Plotly を読まない。出力先へ `plotly.min.js` はコピーしない。Python パッケージ `plotly` は依存に置かない。
+By default, `index.html` loads Plotly.js from jsDelivr (`https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js`, no SRI). `propositions.html` does not load Plotly. `plotly.min.js` is not copied to the output directory. The Python package `plotly` is not a dependency.
 
-`--embed` を付けると、`index.html` に Plotly.js を埋め込む。`propositions.html` は埋め込まない。
+With `--embed`, Plotly.js is embedded into `index.html`. `propositions.html` is not embedded.
 
-| ファイル | 中身 |
+| File | Contents |
 |---|---|
-| `index.html` | 軌跡、球団×年、条件の重なりの件数と単位の表 |
-| `propositions.html` | 先頭の一覧と、命題ごとの 2×2、論理記号、反例の表 |
+| `index.html` | Trajectories, team × year, condition-overlap grids and breakdown bars, and the table of region counts and units |
+| `propositions.html` | The list at the top, and per-proposition 2×2, logic notation, and counterexample tables |
 
-ページの見出し、一覧、2×2、反例の表、論理記号の囲みは Markdown で書き、Python-Markdown で HTML にする。数は変換のあとにもファイルの値のまま残す。丸めない。
+Page headings, the list, the 2×2, counterexample tables, and the logic-notation box are written in Markdown and converted to HTML with Python-Markdown. Numbers stay exactly as in the files after conversion; they are not rounded.
 
-文字だけの 2×2 は [forms.md](forms.md) の `dragowing/forms.py` のままである。
+The text-only 2×2 remains `dragowing/forms.py` in [forms.md](forms.md).
 
-PNG / SVG が要るときだけ `--png` / `--svg` を付ける。Chrome もそのときだけ要る（`--chrome` または `CHROME` 環境変数）。Chrome が無いと HTML は書いたうえで終了コード 2 になる。テストは Chrome も使わない。
+Figures and pages use `figures.FONT` (`Meiryo, メイリオ, sans-serif`). The standalone research-report and report-page templates repeat the same font string, checked by `tests/test_font.py`; code remains monospace. No font files are distributed. Systems without Meiryo, including Linux image exports, use their default sans-serif font.
 
-`sets.jsonl` はこの結果に無い。条件式のハッセ図（提案の C6）は出していない。成立率をここで新しく計算して色を塗ることもしていない。
+Add `--png` / `--svg` only when PNG / SVG is needed. Chrome is needed only then too (`--chrome` or the `CHROME` environment variable). Without Chrome, the HTML is written and the exit code is 2. The tests do not use Chrome either.
 
-配布契約は web-ui の単一ファイルを `vendor.lock.json` の正確なコミットと
-ファイルハッシュで固定して共用する。版・URL・期待 SHA-256・SRI・8 MiB の上限・
-取得と検証はそこで管理し、DRAgoWing は重複定義しない。
-`--embed` は固定 URL の bytes をハッシュ照合してから UTF-8 に変換し、
-HTML raw-text 終端を検査して埋め込む。HTTP エラー・取得失敗・サイズ超過・
-CDN 内容不一致・改変はエラーで停止し、成功 bytes だけをプロセス内キャッシュに置く。
-版更新は upstream の契約更新と lock 更新を一組で行う。
+`sets.jsonl` is not in these results. The Hasse diagram of condition formulas (proposal C6) is not produced. Hold rates are not newly computed here for coloring.
 
-web-ui の `remote_scripts` / `remote_script_tag` / `fetch_plotly_js` を共用する。
-`plotly_figure` は `ui-panel` と inline 初期化を返すため、既存の
-`application/json` 図形ブロック・ID・CSS・DRAgoWing 初期化は維持する。
-PNG/SVG API と CLI `--png` は `export_draw` と同じ CDN 契約の Plotly.js を一時ディレクトリへコピーして使う。
+The distribution contract shares web-ui's single file, pinned in `vendor.lock.json` by exact commit and
+file hash. Version, URL, expected SHA-256, SRI, the 8 MiB limit,
+and fetching and verification are managed there; DRAgoWing does not define them again.
+`--embed` hash-checks the bytes from the fixed URL, converts them to UTF-8,
+checks for HTML raw-text terminators, and then embeds them. HTTP errors, fetch failures, oversize,
+CDN content mismatch, and tampering stop with an error, and only successful bytes are kept in an in-process cache.
+Version updates are done as a pair: the upstream contract update and the lock update.
 
-## 観測
+web-ui's `remote_scripts` / `remote_script_tag` / `fetch_plotly_js` are shared.
+Since `plotly_figure` returns a `ui-panel` with inline initialization, the existing
+`application/json` figure blocks, IDs, CSS, and DRAgoWing initialization are kept.
+The PNG/SVG API and CLI `--png` copy Plotly.js under the same CDN contract as `export_draw` into a temporary directory and use it.
 
-図に書いてあるのは、記録の列名と値と、次の表示規則だけである。
+## Observation
 
-### 一覧と四つの形（提案 C1）と記号（C2）と反例の表（C7）と 1 ページ（C8）
+The figures show only the record's column names and values, plus the following display rules.
 
-`propositions.html` の先頭は一覧である。1 行が 1 命題で、ID、`statement`、四つの形それぞれの `hold`、反例（`n - hold`）、`rate` を置く。ID は同じページの節へのリンクである。`rate` はファイルの数のまま置く。ここでは計算し直さない。形が無い、または `n` と `hold` から数が決まらないときは `不明` である。
+### The list, the four forms (proposal C1), notation (C2), counterexample tables (C7), and one page (C8)
 
-その下は命題 1 件につき 1 節である。節の見出しの印は `registration_status` と同じ三つのどれかである。
+The top of `propositions.html` is a list. One row is one proposition, with its ID, `statement`, the `hold` of each of the four forms, counterexamples (`n - hold`), and `rate`. The ID links to its section on the same page. `rate` is shown as in the file; it is not recomputed here. When a form is missing, or the count can't be determined from `n` and `hold`, it is `不明` (unknown).
 
-| 記録 | 表示 |
+Below that is one section per proposition. The marker in the section heading is one of the same three values as `registration_status`.
+
+| Record | Display |
 |---|---|
-| `posthoc` が true | 事後構成 |
-| `preregistered` が true、または事前登録の記録がある | 事前登録 |
-| それ以外 | 不明 |
+| `posthoc` is true | 事後構成 (post-hoc) |
+| `preregistered` is true, or there is a preregistration record | 事前登録 (preregistered) |
+| Otherwise | 不明 (unknown) |
 
-2×2 のマスは [forms.md](forms.md) と同じく `n` と `hold` から数える。Markdown の表にする。Plotly の表にはしない。二つの形が食い違うマスは `不一致` である。空で決まらないマスは `不明` である。四つの形はもう一つの 2×2 で、`hold/n（反例 n-hold）` と、記録に `rate` があるときのその数である。`rate` はファイルの数をそのまま置く。パーセントにはしない。
+2×2 cells are counted from `n` and `hold`, as in [forms.md](forms.md). They are rendered as a Markdown table, not a Plotly table. A cell where two forms disagree is `不一致` (mismatch). A cell that is empty and undetermined is `不明`. The four forms are another 2×2, showing `hold/n（反例 n-hold）` (counterexamples n-hold) and, when the record has `rate`, that number. `rate` is shown as in the file, not as a percentage.
 
-論理記号の行は `render_logic` の文字列である。`>` を `<=` に書き換えない。
+The logic-notation line is the `render_logic` string. `>` is not rewritten as `<=`.
 
-反例は形ごとに 1 つの表で、1 行が `counterexamples` の 1 要素である。元と対偶、逆と裏が同じ単位の並びなら 1 表にまとめ、文でそう書く。並びが違うときだけ両方を出し、見出しに `不一致` と書く。表は `<details>` に入れ、初めは畳んである。並びは記録の順で、`|surprise|` の降順、同点は `season`、次に `team` である。行数は配列の長さである。2×2 の反例数は `n - hold` である。列は記録にある `unit`、`season`、`team`、`team_name`、`focus`、`surprise`、`question`、`values`、`context` である。`excluded_counterexamples` と `held_out` も同じ列で別節に置く。空の前件で ¬P 行に置く 0 は `0（前件が空）` と書く。`values` と `context` は JSON の文字のまま置く。
+Counterexamples get one table per form, with one row per element of `counterexamples`. If the original and contrapositive, or the converse and inverse, list the same units, they are merged into one table and the text says so. Only when the lists differ are both shown, with `不一致` in the heading. Tables are inside `<details>`, collapsed initially. Order is the record's order: descending `|surprise|`, ties by `season`, then `team`. The row count is the array length. The counterexample count in the 2×2 is `n - hold`. Columns are the record's `unit`, `season`, `team`, `team_name`, `focus`, `surprise`, `question`, `values`, and `context`. `excluded_counterexamples` and `held_out` go in separate sections with the same columns. The 0 placed in the ¬P row for an empty antecedent is written `0（前件が空）` (antecedent empty). `values` and `context` are shown as JSON text.
 
-`statement` を節に出すときは、フィールド名 `statement:` を付けて記録の文として置く。
+When `statement` is shown in a section, it is placed as the record's sentence with the field name `statement:`.
 
-### 軌跡（提案 C3）
+### Trajectories (proposal C3)
 
-`season.jsonl` の各行を 1 点にする。横は `rank_rf`（得点順位）、縦は `rank_ra`（失点順位）。数値は記録の整数のまま、軸は 1 が原点側である。
+Each row of `season.jsonl` becomes one point. Horizontal is `rank_rf` (runs-scored rank), vertical is `rank_ra` (runs-allowed rank). Values are the record's integers, and 1 is on the origin side of each axis.
 
-点の色は `upper_half` である。`true` を A、`false` を B と書く。`null` は B にしない。
+Point color is `upper_half`. `true` is written A, `false` B. `null` is not made B.
 
-線は、同じ `league` と `team` の行を `season` の昇順で結んだものである。点と点の間に新しい値は置かない。線の形は直線の分だけである。
+Lines connect rows with the same `league` and `team` in ascending `season`. No new values are placed between points. Lines are only straight segments.
 
-パネルは記録の `league` ごと（この結果では C と P）である。順位はリーグの中の数なので、パネルを分けてある。
+Panels are per record `league` (C and P in these results). Ranks are within a league, so the panels are separate.
 
-### 球団×年（提案 C4）
+### Team × year (proposal C4)
 
-図の題は「球団 × 年」である。行のラベルは `team` の記号だけである（`d`、`g`、`s`、`db`、`t`、`c`、`h`、`f`、`b`、`e`、`l`、`m`）。球団名は軸に書かない。上からこの順で、中日 `d` が最上段である。この並びに無い記号は、その後へ記号順で置く。同じ記号が二つのリーグにあるときは `league:team` にして行を分けたままにする。列は `season` の昇順である。既定の列は `wins_vs_pythag`。`--column` で、どの行にも数値（または null）としてある列へ替えられる。文字列の列は拒否する。
+The figure title is "球団 × 年" (team × year). Row labels are only the `team` symbols (`d`, `g`, `s`, `db`, `t`, `c`, `h`, `f`, `b`, `e`, `l`, `m`). Team names are not written on the axis. From the top in this order, Chunichi `d` is the top row. Symbols not in this order follow in symbol order. When the same symbol is in two leagues, it becomes `league:team` and the rows stay separate. Columns are ascending `season`. The default column is `wins_vs_pythag`. `--column` switches to a column present as a number (or null) in every row. String columns are rejected.
 
-色は、そのマスの列の値である（`sigma_band` ではない）。図の近くに `zmin` と `zmax` を置く。マスに書く文字は `A` か `B` の一字だけである。`upper_half == true` を A、`false` を B とする。null のマスには文字を置かない。数はマスに書かない。行が無いマスの値は null のままで、0 にはしない。
+Color is the cell's column value (not `sigma_band`). `zmin` and `zmax` are placed near the figure. The only text in a cell is a single `A` or `B`: `upper_half == true` is A, `false` is B. Null cells get no text. Numbers are not written in cells. Cells with no row stay null, not 0.
 
-ホバーに出すのは `team`、`team_name`、`season`、`class`（A または B）、`rank`（その行に列があるとき）、その列の値である。値と `rank` は記録の数のまま出す。`upper_half` というフィールド名はホバーに出さない。
+The hover shows `team`, `team_name`, `season`, `class` (A or B), `rank` (when the row has the column), and the column's value. Values and `rank` are the record's numbers. The field name `upper_half` is not shown in the hover.
 
-### 条件の重なり（提案 C5）
+### Condition overlap (proposal C5)
 
-条件ごとに `pythdragoras/rule_search.py` の `_mask` と `_masks_to_matrix` でビット行列を作る。件数は、その bool 行列で領域（入っている / 入っていないの組み合わせ）を数えた整数である。null の比較は真に数えない。これは `_mask` が null を立てないのと同じである。
+For each condition, a bit matrix is built with `_mask` and `_masks_to_matrix` from `pythdragoras/rule_search.py`. Counts are integers from counting regions (combinations of in / not in) in that bool matrix. Comparisons with null do not count as true, just as `_mask` does not set bits for null.
 
-円は描かない。件数は領域の表の整数である。下の表の `unit` は `team-season`（例: `d-2012`）で、`team_name` と条件の列の値は `season.jsonl` のその行である。
+No circles are drawn. Counts are the integers in the region table. The `unit` in the table below is `team-season` (e.g. `d-2012`), and `team_name` and the condition columns' values come from that row of `season.jsonl`.
 
-B は `upper_half == false` という集合の表示名である。
+B is the display name of the set `upper_half == false`.
 
-## 解釈
 
-このページは、保存された数と文字列をマスと点と表に移したものである。
+The number of sets, including B, is 2–8 (`overlap.MAX_SETS`). All 2^n regions remain present in the grid, including zero-count regions.
 
-2×2 の数が大きいことを、その命題が正しいことや、次の年も成り立つこととしては読まない。`不明` は「事前登録ではなかった」という意味ではなく、機械的な記録が無い、という表示である。詳しくは [forms.md](forms.md) の解釈と同じである。
+**Grid** (`venn.py::grid_figure`, figure ID `overlap_grid`). Each region occupies one cell in a Karnaugh-style grid; there are no area-fitted circles or ellipses.
 
-軌跡の線は、記録された点の順をつないだものである。傾きを傾向や予測としては読まない。A と B は `upper_half` の表示名で、色が付いている理由の説明ではない。
+- Rows represent the first floor(n/2) sets and columns the rest. Axes follow Gray-code order, starting on the side containing the first set (10, 11, 01, 00 for four sets). Adjacent cells differ by one set. Axis labels list membership bits in set-number order.
+- Cell labels are exact counts. Color intensity also represents count; it does not assign importance. There is no color scale legend.
+- Rectangular outlines identify sets: horizontal for row sets, vertical for column sets, with `S1`…`Sn` labels and condition legends. Disconnected membership bands, possible from five sets onward, get separate outlines. Paper coordinates allow outlines beyond the grid without clipping.
 
-`wins_vs_pythag` の色は、その数の大小を見やすくしたものである。正や負を、勝ち越しや失敗の判断としては読まない。マスの A と B はクラスの表示名である。ホバーの `rank` は記録された順位で、このページは順位を計算し直さない。
+**Breakdown** (`breakdown_figure`, figure ID `overlap_breakdown`). Nonempty regions are horizontal stacked bars whose lengths equal counts, grouped by `team`, `team_name`, `league`, `season`, or `upper_half` (`--breakdown`, default `team`).
 
-重なりの表は、選んだ条件式が記録の上でどこで同時に真だったかの件数である。式を採用したことや、次に使う規則であることは示さない。
+- Rows follow descending count, with ties in region order. Labels include membership bits and count. Empty regions are omitted from bars but counted in the title and retained in the grid/table.
+- Colors follow ascending values, not frequency rank. Up to seven values receive separate colors; the rest become gray “Other”, with constituent values and counts in hover text. `--breakdown-keep d` preserves a requested value separately regardless of count. More than seven distinct requested values present in the data raise an error rather than silently dropping requests; duplicate or absent requests do not consume slots.
+- The title and `layout.meta` record grouping and omissions (`by`, `folded`, `empty_regions`, and per-region value counts).
 
-反例の表の `question` は、保存されている問いの文である。このページはその問いに答えない。
+The Python API returns only Plotly JSON (`data` / `layout`), without Python plotly or NumPy. Pass it directly to `Plotly.newPlot(id, spec.data, spec.layout)`.
 
-候補 ID（`もしかして`）は出さない。問い合わせ側は [ask.md](../../queryu/docs/ask.md)。
+```python
+from dragowing.overlap import finalize_conditions, load_overlap, parse_cond
+from dragowing.records import read_jsonl
+from dragowing.venn import venn_figures
+from dragowing.htmlout import figure_block, standalone
+
+rows = read_jsonl("season.jsonl")
+conds = finalize_conditions([parse_cond(t) for t in ("rd,>,0", "rank_ra,<=,2", "rank_rf,<=,3")], [], rows)  # + B = 4 sets
+figs = venn_figures(load_overlap("season.jsonl", conds, backend="stdlib"), by="team", keep=("d",))
+page = standalone("Overlap", figure_block(figs["overlap_grid"], "g") + figure_block(figs["overlap_breakdown"], "b"), plotly=True)
+```
+
+## Interpretation
+
+This page moves stored numbers and strings into cells, points, and tables.
+
+A large 2×2 count is not read as meaning the proposition is true or will hold next year. `不明` does not mean "it was not preregistered"; it means there is no machine-readable record. See the interpretation in [forms.md](forms.md) for details.
+
+Trajectory lines connect the recorded points in order. Slopes are not read as trends or predictions. A and B are display names of `upper_half`, not an explanation of why the points are colored.
+
+The `wins_vs_pythag` color just makes the size of the number easier to see. Positive or negative is not read as a judgment of winning record or failure. A and B in cells are class display names. The hover's `rank` is the recorded rank; this page does not recompute ranks.
+
+The overlap table counts where the chosen condition formulas were true at the same time in the records. It does not indicate that a formula was adopted or is the rule to use next.
+
+Grid adjacency and nested outlines do not imply similarity or causation. Color intensity does not imply importance; breakdown colors do not rank values as good or bad. Grouping into “Other” concerns counts, not importance.
+
+`question` in counterexample tables is the stored question text. This page does not answer that question.
+
+Candidate IDs (`もしかして`, "did you mean") are not shown. For the query side, see [ask.md](../../queryu/docs/ask.md).

@@ -19,7 +19,7 @@ dev = ["pytest>=9.1.1"]
 package = false
 
 [tool.pytest.ini_options]
-# サイクルデータ、PythDRagoras（propositions, rule_search）、QueRyu（ask）は Aoi に残す。AOI_ROOT と PYTHONPATH で固定 SHA の Aoi を指す（.github/workflows/ci.yml）
+# サイクルデータ、PythDRagoras（propositions, rule_search）、QueRyu（ask）は Aoi に残す。AOI_ROOT と PYTHONPATH で Aoi の main を指す（.github/workflows/ci.yml が実行時に SHA を解決する）
 pythonpath = ["."]
 testpaths = ["tests"]
 norecursedirs = [".test-deps", "build", "reports"]

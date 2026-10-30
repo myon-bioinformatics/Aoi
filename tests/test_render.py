@@ -1,7 +1,11 @@
 """Generic render: pure helpers and Chrome when available."""
 
 import ast
+import os
+import socket
 import sys
+import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -61,6 +65,60 @@ def test_missing_chrome_and_windows(monkeypatch, tmp_path):
         find_chrome(str(exe))
     exe.chmod(0o755)
     assert find_chrome(str(exe)) == str(exe)
+
+
+def test_stalled_dbus_does_not_block_browser_get_version(chrome_executable, monkeypatch):
+    # A bus that accepts and never replies used to swallow the whole launch
+    # budget before Browser.getVersion. The browser must ignore that bus.
+    sock_path = "/tmp/dragowing-stalled-bus-%d.sock" % os.getpid()
+    try:
+        os.unlink(sock_path)
+    except FileNotFoundError:
+        pass
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server.bind(sock_path)
+    server.listen(8)
+    stop = threading.Event()
+
+    def accept():
+        server.settimeout(0.2)
+        while not stop.is_set():
+            try:
+                conn, _ = server.accept()
+            except socket.timeout:
+                continue
+            except OSError:
+                return
+
+            def hold(client=conn):
+                try:
+                    while not stop.is_set():
+                        time.sleep(0.1)
+                finally:
+                    try:
+                        client.close()
+                    except OSError:
+                        pass
+
+            threading.Thread(target=hold, daemon=True).start()
+
+    threading.Thread(target=accept, daemon=True).start()
+    address = "unix:path=" + sock_path
+    monkeypatch.setenv("DBUS_SESSION_BUS_ADDRESS", address)
+    monkeypatch.setenv("DBUS_SYSTEM_BUS_ADDRESS", address)
+    started = time.monotonic()
+    try:
+        with RenderSession(chrome=chrome_executable, timeouts=Timeouts(launch=8)) as session:
+            version = session.browser.call("Browser.getVersion", timeout=8)
+        assert version.get("product") or version.get("protocolVersion")
+        assert time.monotonic() - started < 8
+    finally:
+        stop.set()
+        server.close()
+        try:
+            os.unlink(sock_path)
+        except FileNotFoundError:
+            pass
 
 
 def test_render_static_svg_text_not_png_bytes(tmp_path, chrome_executable):

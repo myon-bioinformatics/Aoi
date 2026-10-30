@@ -1,4 +1,4 @@
-"""Headless Chrome over --remote-debugging-pipe (POSIX, stdlib only).
+"""Headless Chromium (or an explicitly selected Chrome) over --remote-debugging-pipe (POSIX, stdlib only).
 
 NUL-delimited JSON on fds 3 and 4. Calls are serial; events received before a
 command reply are retained for wait_event(). No preexec_fn runs after fork.
@@ -9,7 +9,7 @@ import json
 import math
 import os
 import queue
-import select
+import selectors
 import shutil
 import signal
 import subprocess
@@ -20,7 +20,9 @@ import time
 from collections import deque
 from pathlib import Path
 
-_NAMES = ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome")
+# Automatic discovery is Chromium-only. Legacy names and explicit Chrome
+# paths remain supported through chrome=, CHROME, and CHROMIUM.
+_NAMES = ("chromium", "chromium-browser")
 # Only the two CDP pipe ends survive into this short-lived exec helper. Duplicate
 # both before assigning 3/4, since either inherited end may already use 3 or 4.
 _HANDOFF = """
@@ -58,6 +60,32 @@ def _seconds(value: float) -> float:
     return value
 
 
+def _no_bus_address(directory: str) -> str:
+    """A dbus address whose connect fails immediately.
+
+    ``disabled:`` is not a known address type. libdbus rejects it (``Unknown
+    address type``), and Chrome writes that same value when
+    ``DBUS_SESSION_BUS_ADDRESS`` is unset, then still opens the system bus.
+    A ``unix:path=`` that was never created is a real address, so ``connect``
+    returns ``ENOENT`` instead of waiting on a bus that accepts and does not
+    reply.
+    """
+    return "unix:path=" + os.path.join(directory, "no-bus.sock")
+
+
+def _browser_environment(directory: str) -> dict:
+    """Environment for a headless browser that must not wait on D-Bus."""
+    env = os.environ.copy()
+    address = _no_bus_address(directory)
+    env["DBUS_SESSION_BUS_ADDRESS"] = address
+    env["DBUS_SYSTEM_BUS_ADDRESS"] = address
+    # AT-SPI and GTK portals dial the session bus even after the address above
+    # has failed. Rendering does not use them.
+    env["NO_AT_BRIDGE"] = "1"
+    env["GTK_USE_PORTAL"] = "0"
+    return env
+
+
 def find_chrome(chrome: str | None = None) -> str:
     if sys.platform == "win32":
         raise RuntimeError("Chrome over a debugging pipe is not supported on Windows")
@@ -71,7 +99,11 @@ def find_chrome(chrome: str | None = None) -> str:
     hint = chrome or os.environ.get("CHROME") or os.environ.get("CHROMIUM")
     if hint:
         raise RuntimeError("Chrome executable not found or not executable: %s" % hint)
-    raise RuntimeError("Chrome/Chromium was not found on PATH. Set CHROME to the executable.")
+    raise RuntimeError(
+        "Chromium was not found on PATH (chromium, chromium-browser). "
+        "Install Chromium or set CHROMIUM to its executable. "
+        "An explicit chrome= or CHROME override remains supported."
+    )
 
 
 class Chrome:
@@ -105,6 +137,8 @@ class Chrome:
         try:
             self._spawn(exe)
             self._start_reader()
+            # Readiness gate: the command sits in the pipe until Chrome reads it.
+            # The launch budget must not be spent inside D-Bus (see _no_bus_address).
             self.call("Browser.getVersion", timeout=self.timeout)
         except Exception:
             self.close()
@@ -207,23 +241,36 @@ class Chrome:
 
     def _spawn(self, exe: str) -> None:
         self._err = open(os.path.join(self._tmp, "chrome.err"), "w", encoding="utf-8")
-        read_in, write_in = os.pipe()
-        read_out, write_out = os.pipe()
+        # Keep ownership local until both pipes and the child are ready.
+        allocated = []
         try:
+            read_in, write_in = os.pipe()
+            allocated.extend((read_in, write_in))
+            read_out, write_out = os.pipe()
+            allocated.extend((read_out, write_out))
             args = [exe, "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe",
                     "--disable-dev-shm-usage", "--disable-background-networking", "--no-first-run",
                     "--disable-extensions", "--disable-component-extensions-with-background-pages",
+                    # Keyring, crashpad, portals, and the system bus all block startup
+                    # when the bus accepts and then does not reply. Headless Ozone
+                    # is requested so a missing X server is not required to start.
+                    "--ozone-platform=headless",
+                    "--password-store=basic", "--use-mock-keychain", "--disable-breakpad",
+                    "--disable-sync", "--metrics-recording-only", "--no-default-browser-check",
+                    "--disable-component-update",
+                    "--disable-features=MediaRouter,GlobalMediaControls,HardwareMediaKeyHandling,WebAuthenticationLinux",
                     "--user-data-dir=" + os.path.join(self._tmp, "profile"),
                     "--allow-file-access-from-files", "about:blank"]
             self._proc = subprocess.Popen(
                 [sys.executable, "-S", "-c", _HANDOFF, str(read_in), str(write_out), *args],
                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=self._err,
-                close_fds=True, pass_fds=(read_in, write_out), start_new_session=True)
-        except Exception:
-            os.close(write_in)
-            os.close(read_out)
+                close_fds=True, pass_fds=(read_in, write_out), start_new_session=True,
+                env=_browser_environment(self._tmp))
+        except BaseException:
+            for fd in allocated:
+                os.close(fd)
             raise
-        finally:
+        else:
             os.close(read_in)
             os.close(write_out)
         self._w, self._r = write_in, read_out
@@ -231,27 +278,33 @@ class Chrome:
 
     def _start_reader(self) -> None:
         def loop() -> None:
-            buf = b""
             try:
-                while not self._stop.is_set():
-                    ready, _, _ = select.select([self._r], [], [], 0.2)
-                    if not ready:
-                        continue
-                    chunk = os.read(self._r, 1 << 20)
-                    if not chunk:
-                        self._inbox.put({"__failure__": "Chrome closed the pipe"})
-                        return
-                    buf += chunk
-                    while True:
-                        message, buf = pop_message(buf)
-                        if message is None:
-                            break
-                        self._inbox.put(message)
+                # epoll/kqueue/poll support descriptors beyond select() FD_SETSIZE.
+                with selectors.DefaultSelector() as selector:
+                    selector.register(self._r, selectors.EVENT_READ)
+                    self._read_messages(selector)
             except (OSError, ValueError) as exc:
                 self._inbox.put({"__failure__": "Invalid Chrome pipe: " + str(exc)})
 
         self._reader = threading.Thread(target=loop, name="chrome-pipe-reader", daemon=True)
         self._reader.start()
+
+    def _read_messages(self, selector) -> None:
+        buf = b""
+        while not self._stop.is_set():
+            ready = selector.select(0.2)
+            if not ready:
+                continue
+            chunk = os.read(self._r, 1 << 20)
+            if not chunk:
+                self._inbox.put({"__failure__": "Chrome closed the pipe"})
+                return
+            buf += chunk
+            while True:
+                message, buf = pop_message(buf)
+                if message is None:
+                    break
+                self._inbox.put(message)
 
     def _send(self, method: str, params: dict | None = None, session: str | None = None,
               *, deadline: float | None = None) -> int:
@@ -265,25 +318,27 @@ class Chrome:
             message["sessionId"] = session
         data = memoryview(frame_message(message))
         deadline = deadline if deadline is not None else time.monotonic() + self.timeout
-        while data:
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                self._failure = "Chrome pipe write timed out"
-                raise TimeoutError("Chrome pipe write timed out")
-            _, writable, _ = select.select([], [self._w], [], remaining)
-            if not writable:
-                self._failure = "Chrome pipe write timed out"
-                raise TimeoutError("Chrome pipe write timed out")
-            try:
-                written = os.write(self._w, data)
-            except BlockingIOError:
-                continue
-            except BrokenPipeError as exc:
-                self._failure = "Chrome closed the pipe. " + self._diagnostic()
-                raise RuntimeError(self._failure) from exc
-            if written == 0:
-                raise RuntimeError("Chrome pipe write returned zero bytes")
-            data = data[written:]
+        with selectors.DefaultSelector() as selector:
+            selector.register(self._w, selectors.EVENT_WRITE)
+            while data:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    self._failure = "Chrome pipe write timed out"
+                    raise TimeoutError("Chrome pipe write timed out")
+                writable = selector.select(remaining)
+                if not writable:
+                    self._failure = "Chrome pipe write timed out"
+                    raise TimeoutError("Chrome pipe write timed out")
+                try:
+                    written = os.write(self._w, data)
+                except BlockingIOError:
+                    continue
+                except BrokenPipeError as exc:
+                    self._failure = "Chrome closed the pipe. " + self._diagnostic()
+                    raise RuntimeError(self._failure) from exc
+                if written == 0:
+                    raise RuntimeError("Chrome pipe write returned zero bytes")
+                data = data[written:]
         return self._id
 
     def _diagnostic(self) -> str:
@@ -294,16 +349,25 @@ class Chrome:
                 pass
         return ""
 
+    def _timeout_error(self, message: str) -> TimeoutError:
+        # Capture stderr before start() cleans the temp dir on the way out.
+        if self._proc is not None and self._proc.poll() is None:
+            message += "; the browser process is still running and has not answered"
+        detail = self._diagnostic().strip()
+        if detail:
+            message += "\n" + detail
+        return TimeoutError(message)
+
     def _recv(self, deadline: float) -> dict:
         if self._failure:
             raise RuntimeError(self._failure)
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise TimeoutError("Chrome did not answer within the timeout")
+            raise self._timeout_error("Chrome did not answer within the timeout")
         try:
             message = self._inbox.get(timeout=remaining)
         except queue.Empty as exc:
-            raise TimeoutError("Chrome did not answer within the timeout") from exc
+            raise self._timeout_error("Chrome did not answer within the timeout") from exc
         if "__failure__" in message:
             self._failure = message["__failure__"] + ". " + self._diagnostic()
             raise RuntimeError(self._failure)

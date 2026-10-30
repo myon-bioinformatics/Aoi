@@ -36,7 +36,7 @@ jobs:
             --description "Latest CI run failed; needs a fix" \
             --force
           gh pr list --state open --limit 100 --json number,headRefOid \
-            --jq '.[] | "\(.number) \(.headRefOid)"' | while read -r num sha; do
+            --jq '.[] | [.number, .headRefOid] | @tsv' | while read -r num sha; do
             verdict=$(gh api "repos/$REPO/commits/$sha/check-runs?per_page=100" \
               --jq '[.check_runs[] | (.conclusion // "")] as $c
                     | [.check_runs[] | .status] as $s

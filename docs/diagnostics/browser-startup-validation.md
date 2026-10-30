@@ -85,17 +85,18 @@ stack は主プロセスの一時点だけで、state / wchan / pipe と原子�
 
 ## 初回起動テストのCLI（2026-10-30）
 
-GitHub Actionsとローカルの検証コマンドは、リポジトリのルートから実行する
-`scripts.run_browser_startup_ci` に統一する。
+GitHub Actions の初回 normal/offline 専用ジョブとローカルの同等の検証には、
+リポジトリのルートから `scripts.run_browser_startup_ci` を実行する。
 
 ```sh
-CHROME="$(command -v chromium)" .venv/bin/python -m scripts.run_browser_startup_ci --output build/startup-context
+CHROME=/absolute/path/to/managed/chromium .venv/bin/python -m scripts.run_browser_startup_ci --output build/startup-context
 ```
 
-このCLIは実ブラウザを事前起動せず、従来の4つのテストモジュールを同じ順番で
-`scripts.observe_dragowing_startup` に渡す。8秒の既存の上限・失敗条件、
-実装側の起動引数を変更しない。pytestの終了コードをそのまま返す。
-証拠は `actual-tests.json` と `actual-tests.xml` に出力する。
+この CLI は既存の 8 秒 regression を単独で最初に実行し、失敗ならその終了コードを
+返して終了する。成功したときだけ従来の 4 モジュールを同じ順番で実行し、初回 gate は
+除く（再試行しない）。両コマンドに `scripts.observe_dragowing_startup` を付ける。
+8 秒の既存の上限・失敗条件、実装側の起動引数は変更しない。初回の証拠は
+`first-start.json` / `first-start.xml`、後続は `actual-tests.json` / `actual-tests.xml`。
 
 normal / offline の切り替えはCLI内部では行わない。GitHub Actions側で従来どおり
 独立したUbuntuジョブを使い、offlineジョブだけ `sudo unshare --net --` の中で
@@ -120,18 +121,35 @@ normal / offline の切り替えはCLI内部では行わない。GitHub Actions�
 新しいテストは deterministic な CDP peer を POSIX pipe で動かし、実 Chrome / Chromium やダウンロードを必要としない。起動成功、応答なし、途中終了、不正 JSON、spawn 失敗、`--version` 失敗、実行ファイル / JS 不在、不正 timeout、symlink 名の維持、同一 PID の 6 出力、ready / capture 失敗、stderr の bounded read、cleanup 失敗による後続停止を確認する。実ブラウザの成否は別の CI 実測として扱う。
 
 
-## CI の比較条件
+## CI の比較条件（管理対象 Chromium、2026-10-30）
 
-Aoi の `.github/workflows/browser-startup-validation.yml` は `ubuntu-24.04` / Python 3.14 で、既定では `chromium` のみを検証する。手動実行の `compare-chrome` を有効にした場合だけ `google-chrome` の互換性比較ジョブを追加する。同一系統の実行ファイル名の別名（`google-chrome-stable`、`chromium-browser`）は検索するが、系統間フォールバックはしない。必要なブラウザがなければ明示的なエラーで失敗する。
+通常 CI の Python 3.11〜3.15、offline export、初回 normal/offline、全 suite 診断の
+すべての Chromium lane は、subtree にある `dragowing/scripts/install_ci_chromium.py`
+で同じ公式 snapshot を新しい job 専用ディレクトリへ導入する。固定 archive の size/SHA256
+検証と安全な展開を再利用し、`Chromium 156.0.8078.0` を確認する。preinstalled Chromium
+や Chrome への fallback はしない。以前の offline job の `find … | xargs cat` による
+事前読出しは削除した。installer・本番 transport・launch flags は変更しない。
 
-各ジョブは依存関係とローカル Plotly.js を準備した後、次の順で測る。
+各 fresh job で最初の full browser は既存の
+`test_stalled_dbus_does_not_block_browser_get_version` だけを指定して起動する。
+`Timeouts(launch=8)` と全体 elapsed `<8` の assertion を両方保つ。失敗したら後続の
+suite/exports は実行しない。成功した場合のみ残りを実行し、`--deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version` で同じテストを
+除くため再試行しない。全 suite のテストを減らしたのではなく、厳しい初回 gate と残りに分ける。
 
-1. fresh profile の起動を 10 回。
-2. ブラウザを明示・必須化した Aoi の全 pytest suite。
-3. fresh profile の起動をもう 10 回。
-4. 3 つの独立した session で、それぞれ 3 図 × PNG / SVG を検証。
+`browser-startup-validation.yml` の全 suite 診断 lane は gate 成功後に、従来の
+10 回の fresh-profile 診断 → 残りの全 suite → 10 回の診断 → 3 session の画像検証を行う。
+この後段の成功は、初回 gate の代わりにはならない。手動 `compare-chrome` だけは明示的な
+Chrome 互換性比較を追加でき、通常 Chromium の fallback には使わない。
 
-JSON、JUnit、人工図の画像を artifact に 14 日間保存する。先行の診断・テストが失敗しても、準備とブラウザ選択が成功しジョブがキャンセルされていなければ後段の測定も行う。実際の製品・版・bundle hash は各結果で確認する。通常の runner user / network のまま測り、この追加ジョブは namespace、権限、security 設定を変更しない。本番のブラウザ選択や既存のネットワーク分離 CI も変更しない。
+最初の gate と残りの suite の JUnit/JSON は別ファイルで保存する。通常 CI の
+`failure-identity` は Python 5 版と offline の初回 JUnit も必須として列挙する。
+既存の job ID、suite JUnit 名、artifact 名は保つ。初回失敗で後続 suite のファイルが
+存在しなくても成功にはならない。診断 artifacts は `if: always()` で 14 日間保存する。
+
+これは「検証済み archive を導入した後の最初の full browser」を測る条件であり、空の OS
+page cache や旧 runner image の問題が直ったことの証明ではない。過去の失敗記録は有効のまま。
+normal は通常ユーザー/ネットワーク、offline は既存の `sudo unshare --net --` を維持する。
+security 設定、timeout、retry は変更しない。ローカル contract tests は実ブラウザ CI の代わりではない。
 
 ## 別に確認した resource cleanup の問題
 
@@ -152,26 +170,31 @@ JSON、JUnit、人工図の画像を artifact に 14 日間保存する。先行
 
 ## 最初の実ブラウザ起動を、通常 / offline の同条件で観測する
 
-`first-start-context` は通常ユーザー・通常ネットワークの `normal` と、既存 offline CI と同じ `sudo unshare --net --` の `offline` を、それぞれ独立した新しい runner job で実行する。どちらも Ubuntu 24.04 / Python 3.14、同じ依存・Plotly.js 準備、同じ Chromium 選択と次の module 順序を使う。
+`first-start-context` は `normal` と `offline` を別の fresh runner job で実行する。
+両方とも Ubuntu 24.04 / Python 3.14、同じ依存・Plotly.js・管理対象 Chromium を使う。
+`scripts/run_browser_startup_ci.py` がまず既存の 8 秒 regression だけを実行し、成功した場合だけ
+次の順序で残りを実行する（8 秒 regression 自体は二度目から除く）。
 
 1. `dragowing/tests/test_chrome_pipe.py`
 2. `dragowing/tests/test_render.py`
 3. `dragowing/tests/test_export.py`
 4. `dragowing/tests/test_plotly_cdn.py`
 
-最初の実 Chromium は既存の `test_stalled_dbus_does_not_block_browser_get_version` で起動する。先に full browser の診断・描画・warmup を実行しない。通常の選択段階での `--version` と synthetic pipe peer は両方に残す。そのため `first_in_pytest` は「この pytest の最初の実ブラウザ起動」であり、OS / ディスク cache が完全に cold であるという意味ではない。後続の fresh profile は `subsequent_in_pytest` として分け、最初の失敗を後続成功で置き換えない。別 job の既存 10 回事前起動つき全 suite は、warmup のある別条件として読む。
+先に full-browser 診断・描画・warmup は行わない。通常の導入時の archive 検証・展開と
+`--version` は残す。初回の証拠は `first-start.json` / `first-start.xml`、後続は既存名の
+`actual-tests.json` / `actual-tests.xml` で区別する。observer の `first_in_pytest` は各 pytest
+呼出し内の順番なので、後続ファイルの最初の記録を job 全体の初回と誤解しない。
+初回失敗では wrapper はその終了コードを返し、後続コマンドを呼ばない。
 
-追加するのは Aoi 専用の opt-in plugin だけで、元のテスト・本番 subtree は編集しない。
+observer は Aoi 専用の opt-in plugin で、元のテスト・本番 subtree は編集しない。
 
 ```sh
-.venv/bin/python -m pytest -c pyproject.toml -q \
-  -p scripts.observe_dragowing_startup \
-  --browser-startup-evidence=build/startup-context/actual-tests.json \
-  dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py \
-  dragowing/tests/test_export.py dragowing/tests/test_plotly_cdn.py
+CHROME=/absolute/path/to/managed/chromium \
+  .venv/bin/python -m scripts.run_browser_startup_ci --output build/startup-context
 ```
 
-plugin は `chrome_executable` fixture を使う実ブラウザテストだけで `RenderSession` に診断用 subclass を渡す。起動引数・環境生成・通信・deadline・cleanup は既存処理に委譲する。追加起動、追加 CDP probe、`--version`、retry は行わない。既存の launch=8 と全体 <8 秒の assertion も変更せず、JSON の書込はテストの teardown 後に行う。観測用の小さな Python 処理の追加はあるので、元の必須 offline job は変更せず独立した baseline として残す。
+
+plugin は `chrome_executable` fixture を使う実ブラウザテストだけで `RenderSession` に診断用 subclass を渡す。起動引数・環境生成・通信・deadline・cleanup は既存処理に委譲する。追加起動、追加 CDP probe、`--version`、retry は行わない。既存の launch=8 と全体 <8 秒の assertion も変更せず、JSON の書込はテストの teardown 後に行う。観測用の小さな Python 処理の追加はあるので、従来の必須 offline job の失敗・成功記録は過去の baseline として残す。現在の job は管理対象 Chromium と初回 8 秒 gate を使うため、旧条件と同一とは扱わない。
 
 `actual-tests.json` には各 test の pytest setup / call / teardown outcome、起動順序、実際の timeout、最初の readiness の時間・送信/待機段階、CDP product、bounded / redacted stderr、cleanup を保存する。意図的に CDP error を起こすテストもあるため、`failure` があることだけで test failure や startup failure と判定しない。pytest outcome、readiness phase、last CDP method を併せて読む。二度目の `Browser.getVersion` は最初の readiness 計測を上書きしない。
 

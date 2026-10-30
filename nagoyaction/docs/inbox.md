@@ -1,80 +1,80 @@
-# NagoyAction の質問受付
+# NagoyAction question intake
 
-#10 では、main に **質問受付だけ** を入れる。探索ワーカー、HTML フィードバック、ローカル LLM のモデル取得・Docker 起動はこの PR の対象外とし、main の構成に合わせた後続 PR へ分ける。
+#10 adds **only question intake** to main. The exploration worker, HTML feedback, and local LLM model fetching and Docker startup are out of scope for this PR and split into follow-up PRs fitted to main's layout.
 
-## 使えるコマンド
+## Available commands
 
-| コメント | 動作 |
+| Comment | Behavior |
 |---|---|
-| `/ask E25 に阪神 2015 以外の判例はある？` | 保存済みの結果から回答 |
-| `/ask {"ask":"has_counterexample","target":"E25"}` | 型付き JSON で質問 |
-| `/status` | 受付件数、回答キャッシュ、返信再送待ちを表示 |
-| `/explore ...` | #10 では未導入と明示して終了 |
-| `/stop ...` | #10 では探索未導入のため停止対象なしと返す |
+| `/ask E25 に阪神 2015 以外の判例はある？` | Answers from saved results ("Does E25 have counterexamples other than Hanshin 2015?") |
+| `/ask {"ask":"has_counterexample","target":"E25"}` | Asks with typed JSON |
+| `/status` | Shows intake count, answer cache, and replies awaiting resend |
+| `/explore ...` | Exits stating it is not introduced in #10 |
+| `/stop ...` | Replies that there is nothing to stop, since exploration isn't introduced in #10 |
 
-通常の会話には反応しない。1 コメント 1 コマンド、4000 文字まで。コメント編集は再実行しない。修正した依頼は新しいコメントで投稿する。
+It does not react to ordinary conversation. One command per comment, up to 4000 characters. Comment edits are not re-run. Post a corrected request as a new comment.
 
-## コードと結果を分離する
+## Separating code and results
 
-実行コードは既定ブランチ（main）から checkout する。結果は `AOI_RESULTS_REF` で指定した ref を別ディレクトリへ checkout し、`.aoi-results/<cycle>/` にコピーして **データとしてだけ** 読む。結果側の Python を import したり実行したりしない。
+Execution code is checked out from the default branch (main). Results are checked out from the ref given in `AOI_RESULTS_REF` into a separate directory, copied to `.aoi-results/<cycle>/`, and read **only as data**. Python on the results side is never imported or run.
 
-受付が fingerprint に含めるのは、main に実在する次のコードと、実際に読む結果 JSONL だけである。
+The intake fingerprint includes only the following code that exists on main, plus the results JSONL actually read.
 
 - `queryu/ask/ask.py`
 - `queryu/ask/bank.py`
 - `nagoyaction/inbox/inbox.py`
-- `outputs/sets.jsonl`（存在する場合）
-- `outputs/propositions.jsonl`（存在する場合）
+- `outputs/sets.jsonl` (if present)
+- `outputs/propositions.jsonl` (if present)
 
-`sets.jsonl` と `propositions.jsonl` の両方がない場合は、「ID がない」とは扱わず「結果が読めない」として受付を止める。
+If both `sets.jsonl` and `propositions.jsonl` are missing, it is not treated as "ID not found"; intake stops as 「結果が読めない」 (results unreadable).
 
-片方だけが無いときは受付自体は止まらない。そのファイルを必要とする問い（式の ID には `sets.jsonl`、命題の ID には `propositions.jsonl`）は、`結果が読めない: <ファイル名>` と返し、`判定済みの結果にない` とは書かない。結果 ref の checkout が無いときに、main の `cycles/<cycle>/outputs` へは切り替えない。
+If only one is missing, intake itself does not stop. Questions that need that file (`sets.jsonl` for formula IDs, `propositions.jsonl` for proposition IDs) get `結果が読めない: <file name>`, never `判定済みの結果にない` (not in the judged results). When the results ref checkout is missing, it does not switch to main's `cycles/<cycle>/outputs`.
 
-既知回答と回答キャッシュの鍵は同じ組である。
+Known answers and the answer cache use the same key tuple.
 
 ```text
-(cycle, 結果の SHA とファイルの hash, ask.py と bank.py の hash, Query)
+(cycle, results SHA and file hashes, ask.py and bank.py hashes, Query)
 ```
 
-ディレクトリは `state/<cycle>/<結果SHA>/known` と `state/<cycle>/<結果SHA>/answers` で、呼び出し側が渡す。`answers` の親を `known` と決めて読むことはしない。
+The directories are `state/<cycle>/<results SHA>/known` and `state/<cycle>/<results SHA>/answers`, passed by the caller. It does not read `known` by assuming it is the parent of `answers`.
 
-読めなかった語、または読めた結果に ID が無いときは、返信に `もしかして: …（候補。答えではない）` を最大 5 件付ける。候補は答えにしない。必要なファイルが読めないときは、この行は付けない。閾値は `cycles/<cycle>/ask.toml` の `suggest_threshold`。キーが無ければ、候補は確定しない。
+When there are unread words, or the ID isn't in the readable results, the reply gets up to 5 `もしかして: …（候補。答えではない）` (did you mean: … (candidates, not an answer)). Candidates are not made into answers. When a needed file can't be read, this line is not added. The threshold is `suggest_threshold` in `cycles/<cycle>/ask.toml`. Without the key, no candidate is confirmed.
 
-## 状態と重複防止
+## State and duplicate prevention
 
-状態ブランチはサイクルごとに `aoi-research-state-<cycle>` を使う。受領記録、回答キャッシュ、返信再送待ちを保存する。
+The state branch is `aoi-research-state-<cycle>` per cycle. It stores receipts, the answer cache, and replies awaiting resend.
 
-同じコメント ID の受領記録がすでにあれば計算し直さない。返信が失われた場合は同じ marker を使って再送し、GitHub 上ですでに bot の marker が確認できれば二重投稿しない。
+If a receipt for the same comment ID already exists, it is not recomputed. If a reply was lost, it is resent with the same marker; if the bot's marker is already visible on GitHub, it does not post twice.
 
-受付中の 1 コメントで通常の `Exception` が起きても、そのコメントを「判定不能」として記録し、後続コメントの処理は続ける。`KeyboardInterrupt` / `SystemExit` などは飲み込まない。
+If an ordinary `Exception` occurs for one comment during intake, that comment is recorded as 「判定不能」 (undeterminable) and later comments continue to be processed. `KeyboardInterrupt` / `SystemExit` and the like are not swallowed.
 
-## 初回の本番確認
+## First production check
 
-Issue #9 に受付開始前から置かれている次の 4 コメントを、初回受付の対象にする。
+The following 4 comments, placed on Issue #9 before intake started, are the targets of the first intake.
 
 1. `/ask E25 に阪神 2015 以外の判例はある？`
 2. `/ask {"ask":"has_counterexample","target":"E25"}`
-3. `/ask 判例がただ1つの式は？`
+3. `/ask 判例がただ1つの式は？` ("Which formulas have exactly one counterexample?")
 4. `/status`
 
-受領記録と返信数を照合し、同じ受付を再実行しても返信が増えないことまで確認する。NPB の再取得は行わない。
+Receipts are matched against reply counts, and it is confirmed that re-running the same intake does not add replies. NPB is not refetched.
 
-## 必要な設定
+## Required settings
 
-- `AOI_INBOX_ISSUE`: 受付 Issue 番号
-- `AOI_RESEARCH_CYCLE`: 例 `c001-chunichi`
-- `AOI_RESULTS_REF`: 例 `cycle-001/chunichi`
-- `AOI_INBOX_ALLOWED_ACTORS`: 任意。追加で許可する GitHub login の JSON 配列
+- `AOI_INBOX_ISSUE`: intake issue number
+- `AOI_RESEARCH_CYCLE`: e.g. `c001-chunichi`
+- `AOI_RESULTS_REF`: e.g. `cycle-001/chunichi`
+- `AOI_INBOX_ALLOWED_ACTORS`: optional. JSON array of additionally allowed GitHub logins
 
-workflow は `contents: write`（状態ブランチ）と `issues: write`（返信）を使う。
+The workflow uses `contents: write` (state branch) and `issues: write` (replies).
 
-受付を止めるには `AOI_INBOX_ISSUE` を空にする。
+To stop intake, empty `AOI_INBOX_ISSUE`.
 
-## 後続 PR
+## Follow-up PRs
 
-- 探索（`/explore`、worker、停止、途中保存）
-- DRAgoWing / BlueProbe の HTML フィードバック
-- ローカル LLM のモデル取得、Docker 起動、`when_env` 相当の実行制御
-- 1 コメントに複数コマンドをまとめる機能
+- Exploration (`/explore`, worker, stopping, checkpointing)
+- HTML feedback for DRAgoWing / BlueProbe
+- Local LLM model fetching, Docker startup, and `when_env`-style execution control
+- Combining multiple commands in one comment
 
-これらは main の実ディレクトリ構成・既存 NagoyAction の契約に合わせて別々に導入する。
+These will be introduced separately, fitted to main's actual directory layout and existing NagoyAction contracts.

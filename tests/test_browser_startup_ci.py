@@ -6,36 +6,65 @@ from pathlib import Path
 from scripts import run_browser_startup_ci
 
 
-def test_runner_invokes_real_tests_once_without_warmup(tmp_path, monkeypatch):
+def test_runner_gates_remainder_without_retry_or_warmup(tmp_path, monkeypatch):
     output = tmp_path / "startup evidence"
     calls = []
 
     def fake_call(command, *, env):
         calls.append((command, env))
-        return 17
+        return 0 if len(calls) == 1 else 17
 
     monkeypatch.setenv("CHROME", "/usr/bin/chromium")
     monkeypatch.setenv("DRAGOWING_PINNED_PLOTLY_JS", "/tmp/plotly.js")
     monkeypatch.setattr(run_browser_startup_ci.subprocess, "call", fake_call)
     assert run_browser_startup_ci.main(["--output", str(output)]) == 17
     assert output.is_dir()
-    assert len(calls) == 1
-    command, env = calls[0]
-    assert command[:7] == [
+    assert len(calls) == 2
+    first, first_env = calls[0]
+    assert first == [
         sys.executable, "-m", "pytest", "-c", "pyproject.toml", "-q",
-        "-p",
+        "-p", "scripts.observe_dragowing_startup",
+        f"--browser-startup-evidence={output / 'first-start.json'}",
+        "dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version",
+        f"--junitxml={output / 'first-start.xml'}",
     ]
-    assert "scripts.observe_dragowing_startup" in command
-    assert f"--browser-startup-evidence={output / 'actual-tests.json'}" in command
-    assert f"--junitxml={output / 'actual-tests.xml'}" in command
-    assert command.index("dragowing/tests/test_chrome_pipe.py") < command.index("dragowing/tests/test_render.py")
+    command, env = calls[1]
+    assert first_env == env
+    assert command == [
+        sys.executable, "-m", "pytest", "-c", "pyproject.toml", "-q",
+        "-p", "scripts.observe_dragowing_startup",
+        f"--browser-startup-evidence={output / 'actual-tests.json'}",
+        "dragowing/tests/test_chrome_pipe.py",
+        "dragowing/tests/test_render.py",
+        "dragowing/tests/test_export.py",
+        "dragowing/tests/test_plotly_cdn.py",
+        "--deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version",
+        f"--junitxml={output / 'actual-tests.xml'}",
+    ]
     assert env["CHROME"] == "/usr/bin/chromium"
     assert env["DRAGOWING_REQUIRE_CHROME"] == "1"
     assert env["DRAGOWING_EXPORT_EVIDENCE_DIR"] == str(output / "export-evidence")
     assert env["DRAGOWING_PINNED_PLOTLY_JS"] == "/tmp/plotly.js"
 
 
+def test_runner_stops_after_failed_first_gate(tmp_path, monkeypatch):
+    calls = []
+    def fail(command, *, env):
+        calls.append(command)
+        return 17
+    monkeypatch.setenv("CHROME", "/fixture/chromium")
+    monkeypatch.setattr(run_browser_startup_ci.subprocess, "call", fail)
+    assert run_browser_startup_ci.main(["--output", str(tmp_path)]) == 17
+    assert len(calls) == 1
+    assert "dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version" in calls[0]
+    assert "dragowing/tests/test_export.py" not in calls[0]
+
+
 def test_runner_rejects_implicit_browser_selection(tmp_path, monkeypatch):
+    def unexpected_call(*args, **kwargs):
+        raise AssertionError("missing CHROME must fail before any test process")
+
+    monkeypatch.setattr(run_browser_startup_ci.subprocess, "call", unexpected_call)
     monkeypatch.delenv("CHROME", raising=False)
     try:
         run_browser_startup_ci.main(["--output", str(tmp_path)])

@@ -1,30 +1,19 @@
-# adjacent_netflix_subscription_levels — missing / deferred
+# Missing / thin — adjacent_netflix_subscription_levels
 
-## Big Mac ISO3 with no rows
+## Big Mac ISO3 with zero rows
 
-| ISO3 | Status | Note |
-|------|--------|------|
-| CHN | MISS | Not present in tompec country list (clone efa54e3). Burger Parity has a “Netflix proxy avg” cross-section cell — **not** copied as history. |
-| EUZ | MISS | Big Mac euro-area aggregate. Netflix list prices are national; no official EUZ Netflix SKU. Member-state series exist upstream (DE, FR, ES, …) but those ISO3 are outside `countries_iso3.txt`. |
-| RUS | MISS | Not present in tompec country list this clone. |
+- `CHN`
+- `EUZ`
 
-## Intentionally not loaded
+## Pre-2023 windows
 
-- tompec `price_usd` (source FX) — Season2 no-FX rule.
-- Null / unavailable plans (`price: null`) — omitted, not gap-filled.
-- Non–Big Mac ISO3 (192+ other tompec countries) — filtered out.
-- Burger Parity `prices_all.csv` / `burger_netflix.csv` as panel history — snapshot cross-check only.
-- iPhone / Mac / iPad files under `numeraire_hist_2026-10-25/` — Aoi lane; untouched.
-- Spotify / gym / Starbucks / Uber Burger Parity products — out of scope.
+- **2020-03-10 (fromabroad curated):** 20 ISO3 — ARG, AUS, BRA, CAN, CHE, CHL, COL, DNK, GBR, HUN, IND, ISR, MEX, NOR, NZL, PER, POL, SWE, USA, ZAF
+- **2021-12-28 (Comparitech/Apoorv):** 54 ISO3
+- **2022:** **exhausted / 0 rows** (2026-10-25) — Wayback Comparitech TLS fail; Google Sheets 410 Gone; TNEXT "2022" page is 2023-04-04 with bad LCU quality (rejected); Kaggle only Dec-2021 LCU already loaded; news roundups sparse — stopped per soft-ask (no grind, no fills)
+- **Before 2020:** not collected (owner scope ~2020+)
 
-## Probes deferred
+## Optional still thin
 
-| Path | Why deferred |
-|------|----------------|
-| Official Netflix help/plan pages per country | Not needed; tompec already gives easy multi-date LCU history |
-| Reconstruct EUZ as mean of euro members | Invented aggregate — disallowed |
-| Force-align Burger Parity cells onto nearest tompec date | Would mix sources into one series — cross-check JSON only |
-
-## Cross-check summary
-
-See `_crosscheck_burgerparity.json`. Exact standard-plan LCU matches on at least one tompec date for 10 of 30 Burger Parity Netflix countries that also sit in the Big Mac universe; remaining BM∩BP cells are near-misses (date/definition drift) or CHN miss.
+- Intra-2020 / mid-2021 / all of 2022 monthly density
+- EUZ aggregate (would need a stated euro-area rule; not invented)
+- CHN Netflix list prices (service historically unavailable / not in open LCU tables used)

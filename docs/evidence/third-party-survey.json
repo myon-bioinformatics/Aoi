@@ -717,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1194,
+      "attribute_uses": 1197,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -734,7 +734,7 @@
         "mark.skipif": 21,
         "mark.xfail": 2,
         "param": 1,
-        "raises": 437,
+        "raises": 440,
         "skip": 9,
         "warns": 3
       },
@@ -863,7 +863,7 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 373,
+          "attribute_uses": 376,
           "attributes": {
             "approx": 104,
             "fail": 13,
@@ -872,12 +872,12 @@
             "mark.parametrize": 92,
             "mark.skipif": 12,
             "mark.xfail": 2,
-            "raises": 131,
+            "raises": 134,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 36,
-          "import_sites": 37
+          "files": 37,
+          "import_sites": 38
         }
       },
       "declared": [
@@ -914,8 +914,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 119,
-      "import_sites": 121
+      "files": 120,
+      "import_sites": 122
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3314,6 +3314,16 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_shrink_module.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 3
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_subscription_contract.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

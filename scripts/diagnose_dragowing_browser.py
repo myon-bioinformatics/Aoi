@@ -181,6 +181,54 @@ def _pipe_observation(pid: int | None, child_fd: int, parent_fd: int | None) -> 
     return result
 
 
+
+def _thread_wait_observation(proc: subprocess.Popen | None) -> dict:
+    """Bounded Linux thread states at the *failed* readiness deadline only.
+
+    Capture no arguments, environment, filenames, or stacks. A thread's state
+    and wait channel describe one instant and do not establish causality.
+    """
+    result = {"status": "not_running", "sampled": 0, "truncated": False,
+              "states": {}, "wait_channels": {}}
+    if proc is None or proc.poll() is not None:
+        return result
+    if sys.platform != "linux":
+        result["status"] = "unsupported"
+        return result
+    try:
+        with os.scandir(f"/proc/{proc.pid}/task") as entries:
+            for entry in entries:
+                if not entry.name.isascii() or not entry.name.isdecimal():
+                    continue
+                if result["sampled"] >= 64:
+                    result["truncated"] = True
+                    break
+                raw = _proc_text(proc.pid, f"task/{entry.name}/stat")
+                if not raw:
+                    continue
+                fields = raw.rsplit(")", 1)
+                if len(fields) != 2:
+                    continue
+                parts = fields[1].split()
+                if not parts or parts[0] not in "RSDZTtXxKWPI":
+                    continue
+                state = parts[0]
+                wchan = _proc_text(proc.pid, f"task/{entry.name}/wchan", 128)
+                channel = wchan.strip() if wchan is not None else ""
+                if not re.fullmatch(r"[A-Za-z0-9_]{1,127}", channel):
+                    channel = "unavailable"
+                result["states"][state] = result["states"].get(state, 0) + 1
+                result["wait_channels"][channel] = result["wait_channels"].get(channel, 0) + 1
+                result["sampled"] += 1
+    except OSError:
+        result["status"] = "unavailable"
+        return result
+    result["status"] = "ok" if result["sampled"] else "empty"
+    result["states"] = dict(sorted(result["states"].items()))
+    result["wait_channels"] = dict(sorted(result["wait_channels"].items()))
+    return result
+
+
 def _startup_wait_snapshot(proc: subprocess.Popen | None, write_fd: int | None,
                            read_fd: int | None) -> dict:
     """Allowlisted counters, wait symbol and owned pipe identities, never contents.
@@ -259,6 +307,7 @@ class DiagnosticChrome(Chrome):
         snapshot = _startup_wait_snapshot(self._proc, self._w, self._r)
         if phase == "readiness_failure":
             snapshot["kernel_stack"] = _kernel_stack_observation(self._proc)
+            snapshot["thread_waits"] = _thread_wait_observation(self._proc)
         self.wait_observations.append({"phase": phase, "elapsed_seconds": elapsed,
                                        "observed_at": observed_at, **snapshot,
                                        "sample_duration_seconds": time.monotonic() - started})

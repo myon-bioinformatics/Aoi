@@ -1,0 +1,328 @@
+{
+  "schema": "aoi-2026-annual-recovery/1",
+  "classification": "parsed_official_annual_team_totals_not_synthetic",
+  "verified_on": "2026-10-25",
+  "method": "Read preserved annual rows from two source archives; verify member checksums; reparse all ten saved official 2026 HTML pages with current npb_team_annual parser; compare all 96 category records exactly to saved observations; compare G/W/L/T/RF/RA to both detail and yearly archive tables. No fresh network retrieval.",
+  "source_archives": [
+    {
+      "filename": "aoi_annual_history_1950_2026.zip",
+      "bytes": 4616803,
+      "sha256": "36729babd972aed7939fd66e9c1db142d5f2c680c2da9c105709347a35bdd174",
+      "selected_member": "data/observations/npb_team_annual/annual.jsonl",
+      "selected_member_sha256": "30db9d822a408cb23a40625e32baf134736648443e3d2bb3239c9e05ba187093",
+      "source_pages": [
+        {
+          "key": "2026_c_std",
+          "url": "https://npb.jp/bis/2026/stats/std_c.html",
+          "sha256": "c15dd0588b265ebe67c10cd2f3f4217821cedc6b3f06665b12a4b14592be842d",
+          "bytes": 42691,
+          "fetched_at": "2026-10-15T05:00:18+00:00"
+        },
+        {
+          "key": "2026_c_tmb",
+          "url": "https://npb.jp/bis/2026/stats/tmb_c.html",
+          "sha256": "34e31e58cffd0bff219a94425d747203ad718df6c8efd0e41fda45de9cbf8c71",
+          "bytes": 32312,
+          "fetched_at": "2026-10-15T05:00:21+00:00"
+        },
+        {
+          "key": "2026_c_tmp",
+          "url": "https://npb.jp/bis/2026/stats/tmp_c.html",
+          "sha256": "65228c34c43cb4c300f28a1ba76f1f98378d0a44819ad23dbf05befc8b87d29c",
+          "bytes": 33103,
+          "fetched_at": "2026-10-15T05:00:24+00:00"
+        },
+        {
+          "key": "2026_c_tmf",
+          "url": "https://npb.jp/bis/2026/stats/tmf_c.html",
+          "sha256": "eba4843ff4be02c9e20cf9eb5005cc2c29a044d6388d2e848430487c0dc5b2a4",
+          "bytes": 29704,
+          "fetched_at": "2026-10-15T05:00:27+00:00"
+        },
+        {
+          "key": "2026_p_std",
+          "url": "https://npb.jp/bis/2026/stats/std_p.html",
+          "sha256": "039545ae196c9abceea48698fbd188e359222f2cef3c416a6a2dd45641977d42",
+          "bytes": 42835,
+          "fetched_at": "2026-10-15T05:00:31+00:00"
+        },
+        {
+          "key": "2026_p_tmb",
+          "url": "https://npb.jp/bis/2026/stats/tmb_p.html",
+          "sha256": "b1332f7805e57d32c9a17b6ffe5bfbe5fc5827f48db9aa9c7e5270f3eefcd79e",
+          "bytes": 32340,
+          "fetched_at": "2026-10-15T05:00:34+00:00"
+        },
+        {
+          "key": "2026_p_tmp",
+          "url": "https://npb.jp/bis/2026/stats/tmp_p.html",
+          "sha256": "8385093dbf8b0678bc8ad4bf1452fc7dccca07e0efc5830817d175d143e2e3e9",
+          "bytes": 33074,
+          "fetched_at": "2026-10-15T05:00:37+00:00"
+        },
+        {
+          "key": "2026_p_tmf",
+          "url": "https://npb.jp/bis/2026/stats/tmf_p.html",
+          "sha256": "8cd303427be4f348a0e7e8595c99db054dbfed75b93c45d45587c37243f69e13",
+          "bytes": 29736,
+          "fetched_at": "2026-10-15T05:00:41+00:00"
+        },
+        {
+          "key": "2026_c_archive",
+          "url": "https://npb.jp/bis/yearly/centralleague_2026.html",
+          "sha256": "e08b2d766e82529717659ea8046ba370a42fe281bdfdb349f20c90170b217073",
+          "bytes": 50040,
+          "fetched_at": "2026-10-15T05:09:47+00:00"
+        },
+        {
+          "key": "2026_p_archive",
+          "url": "https://npb.jp/bis/yearly/pacificleague_2026.html",
+          "sha256": "fb32d385ab2d85b1e3427bcc716b1cc17ce1ce7d74f79eee1b986f6a3e61e87a",
+          "bytes": 50568,
+          "fetched_at": "2026-10-15T05:09:50+00:00"
+        }
+      ],
+      "verified_2026_rows": 12,
+      "reparsed_category_records": 96,
+      "source_category_unknowns": 0
+    },
+    {
+      "filename": "aoi_primary_2013_2026.zip",
+      "bytes": 1810205,
+      "sha256": "707f72688c7196d7b6d9d3734fe4447312e022228c5cfef593e6df4526a49468",
+      "selected_member": "data/observations/npb_team_annual/annual.jsonl",
+      "selected_member_sha256": "526ae6bc6c0d58bbfd8c9eea3ff7933aabf6b5db887cc976802c0d39c53778f0",
+      "source_pages": [
+        {
+          "key": "2026_c_std",
+          "url": "https://npb.jp/bis/2026/stats/std_c.html",
+          "sha256": "c15dd0588b265ebe67c10cd2f3f4217821cedc6b3f06665b12a4b14592be842d",
+          "bytes": 42691,
+          "fetched_at": "2026-10-15T05:00:18+00:00"
+        },
+        {
+          "key": "2026_c_tmb",
+          "url": "https://npb.jp/bis/2026/stats/tmb_c.html",
+          "sha256": "34e31e58cffd0bff219a94425d747203ad718df6c8efd0e41fda45de9cbf8c71",
+          "bytes": 32312,
+          "fetched_at": "2026-10-15T05:00:21+00:00"
+        },
+        {
+          "key": "2026_c_tmp",
+          "url": "https://npb.jp/bis/2026/stats/tmp_c.html",
+          "sha256": "65228c34c43cb4c300f28a1ba76f1f98378d0a44819ad23dbf05befc8b87d29c",
+          "bytes": 33103,
+          "fetched_at": "2026-10-15T05:00:24+00:00"
+        },
+        {
+          "key": "2026_c_tmf",
+          "url": "https://npb.jp/bis/2026/stats/tmf_c.html",
+          "sha256": "eba4843ff4be02c9e20cf9eb5005cc2c29a044d6388d2e848430487c0dc5b2a4",
+          "bytes": 29704,
+          "fetched_at": "2026-10-15T05:00:27+00:00"
+        },
+        {
+          "key": "2026_p_std",
+          "url": "https://npb.jp/bis/2026/stats/std_p.html",
+          "sha256": "039545ae196c9abceea48698fbd188e359222f2cef3c416a6a2dd45641977d42",
+          "bytes": 42835,
+          "fetched_at": "2026-10-15T05:00:31+00:00"
+        },
+        {
+          "key": "2026_p_tmb",
+          "url": "https://npb.jp/bis/2026/stats/tmb_p.html",
+          "sha256": "b1332f7805e57d32c9a17b6ffe5bfbe5fc5827f48db9aa9c7e5270f3eefcd79e",
+          "bytes": 32340,
+          "fetched_at": "2026-10-15T05:00:34+00:00"
+        },
+        {
+          "key": "2026_p_tmp",
+          "url": "https://npb.jp/bis/2026/stats/tmp_p.html",
+          "sha256": "8385093dbf8b0678bc8ad4bf1452fc7dccca07e0efc5830817d175d143e2e3e9",
+          "bytes": 33074,
+          "fetched_at": "2026-10-15T05:00:37+00:00"
+        },
+        {
+          "key": "2026_p_tmf",
+          "url": "https://npb.jp/bis/2026/stats/tmf_p.html",
+          "sha256": "8cd303427be4f348a0e7e8595c99db054dbfed75b93c45d45587c37243f69e13",
+          "bytes": 29736,
+          "fetched_at": "2026-10-15T05:00:41+00:00"
+        },
+        {
+          "key": "2026_c_archive",
+          "url": "https://npb.jp/bis/yearly/centralleague_2026.html",
+          "sha256": "e08b2d766e82529717659ea8046ba370a42fe281bdfdb349f20c90170b217073",
+          "bytes": 50040,
+          "fetched_at": "2026-10-15T05:09:47+00:00"
+        },
+        {
+          "key": "2026_p_archive",
+          "url": "https://npb.jp/bis/yearly/pacificleague_2026.html",
+          "sha256": "fb32d385ab2d85b1e3427bcc716b1cc17ce1ce7d74f79eee1b986f6a3e61e87a",
+          "bytes": 50568,
+          "fetched_at": "2026-10-15T05:09:50+00:00"
+        }
+      ],
+      "verified_2026_rows": 12,
+      "reparsed_category_records": 96,
+      "source_category_unknowns": 0
+    }
+  ],
+  "rows": [
+    {
+      "season": 2026,
+      "league": "C",
+      "team": "c",
+      "team_name": "広島東洋カープ",
+      "G": 143,
+      "W": 61,
+      "L": 78,
+      "T": 4,
+      "RF": 431,
+      "RA": 520
+    },
+    {
+      "season": 2026,
+      "league": "C",
+      "team": "d",
+      "team_name": "中日ドラゴンズ",
+      "G": 143,
+      "W": 60,
+      "L": 81,
+      "T": 2,
+      "RF": 478,
+      "RA": 494
+    },
+    {
+      "season": 2026,
+      "league": "C",
+      "team": "db",
+      "team_name": "横浜DeNAベイスターズ",
+      "G": 143,
+      "W": 71,
+      "L": 69,
+      "T": 3,
+      "RF": 557,
+      "RA": 512
+    },
+    {
+      "season": 2026,
+      "league": "C",
+      "team": "g",
+      "team_name": "読売ジャイアンツ",
+      "G": 143,
+      "W": 76,
+      "L": 64,
+      "T": 3,
+      "RF": 486,
+      "RA": 444
+    },
+    {
+      "season": 2026,
+      "league": "C",
+      "team": "s",
+      "team_name": "東京ヤクルトスワローズ",
+      "G": 143,
+      "W": 61,
+      "L": 80,
+      "T": 2,
+      "RF": 449,
+      "RA": 568
+    },
+    {
+      "season": 2026,
+      "league": "C",
+      "team": "t",
+      "team_name": "阪神タイガース",
+      "G": 143,
+      "W": 79,
+      "L": 62,
+      "T": 2,
+      "RF": 518,
+      "RA": 439
+    },
+    {
+      "season": 2026,
+      "league": "P",
+      "team": "b",
+      "team_name": "オリックスバファローズ",
+      "G": 143,
+      "W": 65,
+      "L": 76,
+      "T": 2,
+      "RF": 483,
+      "RA": 605
+    },
+    {
+      "season": 2026,
+      "league": "P",
+      "team": "e",
+      "team_name": "東北楽天ゴールデンイーグルス",
+      "G": 143,
+      "W": 58,
+      "L": 84,
+      "T": 1,
+      "RF": 473,
+      "RA": 555
+    },
+    {
+      "season": 2026,
+      "league": "P",
+      "team": "f",
+      "team_name": "北海道日本ハムファイターズ",
+      "G": 143,
+      "W": 78,
+      "L": 62,
+      "T": 3,
+      "RF": 591,
+      "RA": 529
+    },
+    {
+      "season": 2026,
+      "league": "P",
+      "team": "h",
+      "team_name": "福岡ソフトバンクホークス",
+      "G": 143,
+      "W": 91,
+      "L": 49,
+      "T": 3,
+      "RF": 707,
+      "RA": 452
+    },
+    {
+      "season": 2026,
+      "league": "P",
+      "team": "l",
+      "team_name": "埼玉西武ライオンズ",
+      "G": 143,
+      "W": 79,
+      "L": 60,
+      "T": 4,
+      "RF": 503,
+      "RA": 464
+    },
+    {
+      "season": 2026,
+      "league": "P",
+      "team": "m",
+      "team_name": "千葉ロッテマリーンズ",
+      "G": 143,
+      "W": 63,
+      "L": 77,
+      "T": 3,
+      "RF": 492,
+      "RA": 586
+    }
+  ],
+  "checks": {
+    "teams": 12,
+    "games_per_team": 143,
+    "regular_season_games": 858,
+    "cross_archive_annual_values_matched": 72,
+    "detail_and_archive_comparisons_per_source_archive": 144,
+    "full_html_in_output": false,
+    "synthetic_rows_in_output": false,
+    "game_level_reconciliation_performed": false
+  }
+}

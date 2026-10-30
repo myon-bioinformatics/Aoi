@@ -62,3 +62,5 @@ The list is checked by a test (`nagoyaction/tests/test_docs_masters.py`): a file
 | [distributions.md](distributions.md) | Minimal stdlib API registration, frozen-source regeneration, license notices and subtree boundaries |
 
 重なり計算の軽量経路: [DRAgoWing の backend 契約・検証・測定](../dragowing/docs/overlap-stdlib.md)。明示指定時のみ有効。
+
+ブラウザ起動の切り分け: [Chrome / Chromium の検証手順](diagnostics/browser-startup-validation.md)。検証専用で、マスターファイルではありません。

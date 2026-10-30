@@ -1,0 +1,52 @@
+# adjacent_food_share_urban_rural
+
+Urban vs rural (or municipal / non-municipal) food expenditure shares of household consumption — Engel companion for Big Mac ISO3 coverage.
+
+## Schema
+`country,date,year,variable,value,unit,source,note,estimated_value`
+
+Variables: `engel_share:food_urban`, `engel_share:food_rural`.
+
+## Coverage (build 2026-10-25 Asia/Tokyo)
+- **531 rows / 109 ISO3**, years **1988–2025**
+
+- **JOR** 2017: DOS HEIS Table 5.1 Relative Importance Urban/Rural — food = Food Commodities − Alcohols − Tobacco − Restaurants and Cafes (25.91 / 31.46); matches 2013 Food Stuff definition; raw `raw/jor/`.
+- ISO3: see the validated current CSV list below (includes XKX).
+- `estimated_value` empty on all rows
+
+## Sources
+| Source | Rows | Notes |
+|---|---:|---|
+| Eurostat HBS_STR_T226 | 279 | CP01; PM÷10→%; DEG1=cities→urban; DEG3=rural; +XKX 2015 |
+| CEPALSTAT indicator 5725 | 26 | Urban/Rural; **Total quintile** only |
+| MOSPI HCES Statement 3 | 12 | India (incl. 2023-24) |
+| Azerbaijan SSC HBS (banker.az 2023 + evtes_2025.pdf 2024) | 4 | AZE urban/rural |
+| StatCan The Daily SHS 2019 Table 3 (Wayback pin) | 2 | CAN CMA≥1M vs rural |
+| BLS CE Table 1721 | 8 | USA |
+| BPS Susenas 2020–2023 (Kompas/CNBC→BPS) | 6 | IDN |
+| NSO Thailand SES 2021 Table 6 | 2 | THA municipal/non-municipal |
+| PSA FIES via Bairagi PLOS ONE 2022 | 10 | PHL |
+| DOSM HES Report 2024 | 2 | MYS F&B 14.4 / 23.0 |
+| PBS Pakistan HIES Table 3.7.A/B | 8 | PAK Food & Non-Alc urban/rural 2011-12…2018-19 |
+| DCS Sri Lanka HIES 2016 Table 8 + 2019 Table 10 | 4 | LKA Urban/Rural food ratio |
+| Rosstat HBS R_1-5 (via Roschart) | 4 | RUS Q3 2022–2023 |
+| CAPMAS HIECS 2019/2020 (ERF 3948) | 2 | EGY Urban 28.63 / Rural 36.39 |
+| HCP Morocco ENCDM/ENNVM | 6 | MAR Alimentation urban/rural 2001/2007/2014 |
+| DANE Colombia ENPH 2016-2017 | 2 | COL cabeceras 14.0 / rural disperso 31.2 |
+| INEGI ENIGH 2020/2022/2024 | 6 | MEX alimentos+bebidas+tabaco urban/rural |
+
+## Deliberate misses / skips
+ARG urban-only ENGHo; CHL INE EPF urban capitals only; CHE/TUR not in T226; URY/PAN/ARG/CHL CEPAL National-only for area; HKG/SGP city-state; SAU/ARE national/regional only; PAK **HIT** (HIES 2011-12…2018-19); EGY CAPMAS primary not pinned; VNM/ZAF/AUS/CHN appended earlier;  Aoi skips: JPN/KOR/TWN, AUS/NZL HES; UK ONS LCFS national (GBR here = Eurostat T226).
+
+See `missing.md`.
+
+
+## Validated coverage (current CSV)
+
+<!-- coverage:start -->
+**531 vertical rows** · **109 ISO3** · year span **1988–2025**.
+
+ISO3: ARM, AUS, AUT, AZE, BEL, BGD, BGR, BOL, BRA, BTN, BWA, CAN, CHN, CIV, COL, CRI, CYP, CZE, DEU, DJI, DNK, DOM, DZA, ECU, EGY, ESP, EST, ETH, EUZ, FIN, FJI, FRA, GBR, GEO, GMB, GRC, GTM, HND, HRV, HUN, IDN, IND, IRL, IRN, ITA, JOR, KEN, KGZ, KHM, KIR, LAO, LBR, LKA, LSO, LTU, LUX, LVA, MAR, MDA, MDG, MDV, MEX, MLI, MLT, MMR, MOZ, MUS, MYS, NAM, NGA, NIC, NLD, NOR, NPL, OMN, PAK, PER, PHL, POL, PRT, PRY, PSE, ROU, RUS, RWA, SDN, SLB, SLV, SVK, SVN, SWE, TCD, THA, TJK, TLS, TON, TUN, TZA, UGA, UKR, URY, USA, VNM, VUT, WSM, XKX, YEM, ZAF, ZMB.
+<!-- coverage:end -->
+
+Earlier append counts and source tables describe historical collection steps; current coverage is the validated block above.

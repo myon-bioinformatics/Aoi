@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <title>Gasto total y valor unitario de alimentos, bebidas, tabaco, combustibles y otras fuentes de energía(25169)</title>
+  <meta name="description" content="INE. Instituto Nacional de Estad&iacute;stica. National Statistics Institute. Spanish Statistical Office. El INE elabora y distribuye estadisticas de Espana. Este servidor contiene: Censos de Poblacion y Viviendas 2001, Informacion general, Productos de difusion, Espana en cifras, Datos coyunturales, Datos municipales, etc.. Q2016.es">
+    <meta name="keywords" content=", Códigos de gasto con cantidad física, Gasto total y valor unitario, Encuesta de Presupuestos Familiares (EPF), EPF">
+
+    <script>
+	  var pathJaxi = "/jaxiT3/";
+      var tablaId = 25169;
+      var fechaInicio= "2006-01-01";
+      var fechaFin= "2023-01-01";
+      var idioma = 0;
+      var notas =  2;
+      isLoadData = false;
+      var isMegatabla =false;
+      var sepMil = ".";
+      var sepDec = ",";
+      </script>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="UTF-8">
+<link rel="shortcut icon" href="/menus/img/favicon.ico" type="image/x-icon">
+<link href="/menus/img/favicon.png" rel="apple-touch-icon">
+<link href="/menus/img/apple-touch-icon-57x57-precomposed.png" rel="apple-touch-icon" sizes="57x57">
+<link href="/menus/img/apple-touch-icon-60x60-precomposed.png" rel="apple-touch-icon" sizes="60x60">
+<link href="/menus/img/apple-touch-icon-72x72-precomposed.png" rel="apple-touch-icon" sizes="76x76">
+<link href="/menus/img/apple-touch-icon-76x76-precomposed.png" rel="apple-touch-icon" sizes="76x76">
+<link href="/menus/img/apple-touch-icon-114x114-precomposed.png" rel="apple-touch-icon" sizes="114x114">
+<link href="/menus/img/apple-touch-icon-120x120-precomposed.png" rel="apple-touch-icon" sizes="120x120">
+<link href="/menus/img/apple-touch-icon-144x144-precomposed.png" rel="apple-touch-icon" sizes="144x144">
+<link href="/menus/img/apple-touch-icon-152x152-precomposed.png" rel="apple-touch-icon" sizes="152x152">
+<link href="/menus/img/apple-touch-icon-160x160-precomposed.png" rel="apple-touch-icon" sizes="160x160">
+<link href="/menus/img/apple-touch-icon-180x180-precomposed.png" rel="apple-touch-icon" sizes="180x180">
+<link href="/menus/img/favicon-192x192.png" rel="icon" sizes="192x192">
+<link href="/menus/img/favicon-160x160.png" rel="icon" sizes="160x160">
+<link href="/menus/img/favicon-128x128.png" rel="icon" sizes="128x128">
+<link href="/menus/img/favicon-96x96.png" rel="icon" sizes="96x96">
+<link href="/menus/img/favicon-32x32.png" rel="icon" sizes="32x32">
+<link href="/menus/img/favicon-16x16.png" rel="icon" sizes="16x16">
+<meta property="og:locale" content="es_ES" >
+	<meta property="og:type" content="website">
+<meta property="og:site_name" content="INE">
+<meta property="og:image" content="https://www.ine.es/menus/_b/img/logoINESocial.png">
+<meta property="og:image:secure_url" content="https://www.ine.es/menus/_b/img/logoINESocial.png">
+<meta property="og:image:alt" content="Logo">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="326">
+<meta property="og:image:height" content="126">
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes">
+<meta name="robots" content="index, follow">
+  <script type="application/ld+json" id="Organization">
+{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id" :"https://www.ine.es#Organization",
+    "name": "INE - Instituto Nacional de Estadística",
+    "url": "https://www.ine.es/",
+    "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Madrid, España",
+        "postalCode": "28050",
+        "streetAddress": "Avenida de Manoteras, 50-52"
+    },
+    "contactPoint": [
+        {
+        "@type": "ContactPoint",
+        "contactType" : "Escribir a InfoINE",
+        "url": "https://www.ine.es/infoine/"
+    },
+    {
+        "@type": "ContactPoint",
+        "telephone": "(+34) 91-583-91-00",
+        "faxNumber": "(+34) 91-583-91-58",
+        "contactType" : "Información al público y centralita",
+        "hoursAvailable":[
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [ "Monday", "Tuesday", "Wednesday", "Thursday"],
+                "opens": "09:00",
+                "closes": "14:00"
+            },
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [ "Monday", "Tuesday", "Wednesday", "Thursday"],
+                "opens": "16:00",
+                "closes": "18:00"
+            },
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [ "Friday"],
+                "opens": "09:00",
+                "closes": "14:00"            
+            }
+        ]
+    },
+    {
+        "@type": "ContactPoint",
+        "telephone": "(+34) 91-583-94-38",
+        "faxNumber": "(+34) 91-583-45-65",
+        "contactType" : "Librería Índice",
+        "email": "indice@ine.es"
+    },
+    {
+        "@type": "ContactPoint",
+        "telephone": "(+34) 91-583-94-11",
+        "contactType" : "Biblioteca",
+        "email": "biblioteca@ine.es"
+    }
+    ],
+    "logo": [
+        {
+            "@type": "ImageObject",
+            "@id": "https://www.ine.es/#logo",
+            "url": "https://www.ine.es/menus/_b/img/logoINESocial.png",
+            "width": 326,
+            "height": 125,
+            "name": "Logotipo INE (Instituto Nacional de Estadística)"
+        }
+    ],
+    "sameAs": [
+        "https://twitter.com/es_ine",
+        "https://www.youtube.com/@es_ine",
+        "https://www.instagram.com/es_ine_/",
+        "https://es.linkedin.com/company/ine-es"
+    ]
+}
+ 
+</script><script type="application/ld+json" id="WebSite">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://www.ine.es/#WebSite",            
+    "name": "INE - Instituto Nacional de Estadística",
+    "inLanguage": "es",     
+    "headline": "Instituto Nacional de Estadística",
+    "description" : "El INE elabora y distribuye estadisticas de Espana. Este servidor contiene: Censos de Poblacion y Viviendas 2001, Informacion general, Productos de difusion, Espana en cifras, Datos coyunturales, Datos municipales, etc.. Q2016.es",
+    "url": "https://www.ine.es/", 
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.ine.es/buscar/searchResults.do?L=1&searchString={query}",
+        "query" : "required",
+        "query-input": "required name=query"
+    }
+}</script>
+<script src="/menus/_b/js/general.js?L=0&fp=0&chars=UTF-8"></script>
+<script src="/menus/_b/js/component/ine.js?L=0"></script>
+<script async src="/menus/js/loading.js"></script>
+<link rel="preload" as="style" media="screen" href="/menus/lib/jquery-ui/1.12.1/jquery-ui.css" onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')"  >
+<noscript>
+	<link rel="stylesheet" media="screen" href="/menus/lib/jquery-ui/1.12.1/jquery-ui.css">	
+	</noscript>
+	
+	<script >
+	var sepMil= ".";
+var sepDec= ",";
+var docIsLoaded=false;
+var HM_Menu_Dir="/menus/";
+var HM_Menu_DirVersion="/menus/_b/";
+var HM_imgDir="/menus/img/";
+var HM_DirJs="/menus/js/";
+var HM_idioma="es";
+var HM_idiomaINE="0";
+var othethickbox="";
+var INE_Servidor="";
+var INE_ServidorAbsoluta="https://www.ine.es";
+var HTMLVersion=5;
+var showBtnAddCesta=false;
+var isIE=false;
+var PLOTLY_FORCE = false;
+var PLOTLY_ENABLED = false;	</script>
+	<script src="/menus/lib/jquery.js"></script>	
+	
+	<script async src="/menus/lib/jquery-ui/1.12.1/jquery-ui.js"></script>
+	<link rel="preload" as="style" href="/menus/_b/css/component/components.css?L=0&amp;cbar=1&amp;fadm=1&amp;ilp=1&amp;pnls=1&amp;smap=1&amp;emap=1&amp;sv=2&amp;tbs=1" onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')">
+<noscript>
+    <link rel="stylesheet" href="/menus/_b/css/component/components.css?L=0&amp;cbar=1&amp;fadm=1&amp;ilp=1&amp;pnls=1&amp;smap=1&amp;emap=1&amp;sv=2&amp;tbs=1">
+</noscript>
+<script defer src="/menus/_b/js/component/components.js?L=0&amp;cbar=1&amp;fadm=1&amp;ilp=1&amp;pnls=1&amp;smap=1&amp;emap=1&amp;sv=2&amp;tbs=1"></script><link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/base.css?vnew=0">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/cabecera_pie.css">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/cabecera_pie_print.css" media="print">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/nav.css">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/nav_print.css" media="print">
+<link rel="preload" as="style"  onload="this.rel='stylesheet'; this.removeAttribute('onload'); this.removeAttribute('as')" href="/menus/_b/css/iconos.css"><noscript>
+	<link rel="stylesheet" href="/menus/_b/css/base.css?vnew=0">
+	<link rel="stylesheet" href="/menus/_b/css/cabecera_pie.css">
+	<link rel="stylesheet" href="/menus/_b/css/cabecera_pie_print.css" media="print">
+	<link rel="stylesheet" href="/menus/_b/css/nav.css">
+	<link rel="stylesheet" href="/menus/_b/css/nav_print.css" media="print">
+	<link rel="stylesheet" href="/menus/_b/css/iconos.css">
+</noscript>
+	
+	
+		<script async src="/menus/NC/status.js?L=0"></script>
+	
+	<link rel="stylesheet" href="/menus/lib/jqplot/1.0.9/jquery.jqplot.min.css">
+<script src="/menus/lib/jqplot/1.0.9/jquery.jqplot.min.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.json2.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.barRenderer.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.pointLabels.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.categoryAxisRenderer.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.logAxisRenderer.js" ></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.cursor.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.canvasTextRenderer.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.canvasAxisTickRenderer.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.dateAxisRenderer.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.highlighter.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.canvasOverlay.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.pieRenderer.js"></script>
+<script src="/menus/lib/jqplot/1.0.9/plugins/jqplot.enhancedLegendRenderer.js"></script>	
+	
+	
+	
+	<script async src="/menus/js/cookie.js"></script>
+	
+	<script async src="/menus/plantillas/buscar/js/liveSearch.js" ></script>
+	<script async src="/menus/_b/js/cabecera.js?v=1&qz=0"></script>	
+	<script async src="/ua/urlcorta.js"></script>
+	<script async src="/menus/_b/js/social.js"></script>
+	<script async src="/menus/js/thickboxINE.js"></script>
+	<script>
+var dirPlantilla='/menus//plantillas/jaxiT3/';
+var dirApp='./';
+</script>
+<script src="/menus/js/validators.js"></script>
+<script src="/menus/plantillas/jaxiT3/js/jaxi.js"></script>
+<script src="/menus/plantillas/jaxiT3/js/jaxiT3Json.js"></script><!--[if IE]><script src="/menus/plantillas/jaxiT3/js/excanvas.js"></script><![endif]-->
+<link rel="stylesheet" href="/menus/plantillas/jaxiT3/css/jaxiT3.css"><link rel="stylesheet" href="/menus/css/mapas.css">	
+		
+	
+</head>
+  <body id="t25169">
+    <div class="contenedor">
+	<div class="overlay"></div>
+	<header>
+	
+		 <div class="flex-block-left-auto">
+			<div class="ImagenLogoIne">
+				 <a href="/"><img src="/menus/_b/img/LogoINE.svg" alt="SIGLAS Instituto Nacional de Estad&#237;stica">
+							
+				</a>
+	
+			</div>
+		
+			<div class="MenuDch">
+				<div class="Menu_idioma">
+					
+<div class="Menu_cabeceraIdioma">
+	<ul class="barraIdiomas">
+	
+		<li class="bordeL idioma">
+			<a href="/jaxiT3/Tabla.htm?t=25169&amp;L=1" title="English Page" lang="en" role="button">English</a>
+		</li>
+	</ul>
+</div>
+				</div>
+	
+					<div  class="capa_Menu_cabeceraBuscador">
+					<form name="Menu_cabeceraBuscador" id="Menu_cabeceraBuscador"
+						  action="/buscar/searchResults.do" accept-charset="UTF-8"
+						  onsubmit="return Buscador_Valida();" method="get" class="">
+						<input tabindex="0" placeholder='Escriba el texto para buscar' aria-label='Escriba el texto para buscar' class="Menu_searchString" id="searchString" name="searchString" value="" autocomplete="off" type="search">
+						<button name="Menu_botonBuscador" id="Menu_botonBuscador" aria-label='Acci&#243;n de buscar en el sitio web'></button>
+						<input name="searchType" id="searchType" value="DEF_SEARCH" type="hidden">
+						<input name="startat" id="startat" value="0" type="hidden">
+						<input name="L"  value="0" type="hidden"> </form>
+				</div>
+				
+			</div>
+		
+		</div>
+	</header>
+	
+	
+	<nav aria-label="Menú Principal" class=" main-menu"  >
+	<div>
+		<div class="toggleBtn">
+			<a href="/indiceweb.htm" id="sidebarCollapse" class="btn btn-info no-events" aria-label="Mostrar/ocultar el menú principal de navegación" title="Men&#250; de navegaci&#243;n">
+			<i class="ii ii-bars"></i>
+		</a>
+		<script id="loaderFCPSC">
+			document.head.insertAdjacentHTML("beforeend", `<style id="loaderFCPST">
+				.loaderFCP { background-size: cover; width: 35px; height: 35px; transform: rotate(0deg); animation: rotationLoader 1s linear infinite; display: block; border: 2px solid white; border-radius: 100px; border-color: white white transparent white; }
+				@keyframes rotationLoader { 100% { transform: rotate(360deg); } }
+			</style>`);			document.querySelector(".main-menu .toggleBtn a").onclick=function(){
+				this.children[0].setAttribute("class", "loaderFCP")
+				return false;
+			}
+		</script>
+		
+		<img src="/menus/_b/img/LogoINESiglasMini.svg" class="nav-logo" alt="Instituto Nacional de Estadí­stica">
+		</div>		<div id="sidebarLayer" class="intellimenu-layer" style="display: none;">
+		</div>
+		<ul class="secondList">
+			<li>
+				<a class="tit" href="/dyngs/CEL/index.htm?cid=41" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Censo Electoral" target="_blank">Censo Electoral</a></li>
+			<li>
+				<a class="tit" href="https://sede.ine.gob.es" role="button" aria-haspopup="true" aria-expanded="false"  aria-label="Sede electr&#243;nica" target="_blank" rel="noopener">Sede electr&#243;nica</a>
+			</li>			
+			<li class="dropdown">
+				<a id="shareBtn" data-toggle="drop-down" onclick="this.classList.toggle('active')" href="javascript:void(0)" role="button" aria-haspopup="true" aria-expanded="false"  aria-label="Compartir"> 
+					<span class="tit">Compartir</span>
+					<i class="ii ii-share"></i>
+				</a>
+				<ul class="dropdown-menu" title="Lista de redes para compartir p&#225;gina">
+					<li>
+						<a id="shareTwitter" data-social-text="INE. Instituto Nacional de Estad&#237;stica" data-social-via="es_ine" class="" href="#shareTwitter" target="SocialShared" title="Abre ventana nueva X">
+							<span class="tit">X</span>
+							<i class="ii ii-twitter-x"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareFacebook" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareFacebook" target="SocialShared" title="Abre ventana nueva Facebook">
+							<span class="tit">Facebook</span>
+							<i class="ii ii-facebook"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareLinkedin" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareLinkedin" target="SocialShared" title="Abre ventana nueva Linkedin">
+							<span class="tit">Linkedin</span>
+							<i class="ii ii-linkedin"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareWhatsapp" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareWhatsapp" target="SocialShared" title="Abre ventana nueva WhatsApp">
+							<span class="tit">WhatsApp</span>
+							<i class="ii ii-whatsapp"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareMail" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareMail" target="_self" title="Abre ventana nueva">
+							<span class="tit">Correo Electr&#243;nico</span>
+							<i class="ii ii-mail"></i>
+						</a>
+					</li>
+					<li>
+						<a id="shareClipboard" data-social-text="INE. Instituto Nacional de Estad&#237;stica" href="#shareClipboard" target="_self" title="Abre ventana nueva">
+							<span class="tit">Copiar al portapapeles</span>
+							<i class="ii ii-copy"></i>
+						</a>
+					</li>
+				</ul>
+			</li>
+			
+		</ul>
+	</div>
+</nav>
+	<main>
+	
+	
+	
+<script src="/menus/plantillas/jaxiT3/js/jaxiTabla.js"></script>
+<script>
+	function UrlCorta_InfoPOST(){
+		const form = document.getElementById("tablaForm");
+		const formData = new FormData(form);
+		const serialized = [];
+		for (const [name, value] of formData.entries()) {
+			serialized.push({ name, value });
+		}
+		return serialized;
+	}
+</script>
+<div class="customBar cbMiga AppToolBarImg2">
+	<div class="group">
+			<nav class="cbMigaTitle" aria-label="">
+				<ul class="miga">
+		<li><a href="/dyngs/INEbase/listaoperaciones.htm">INEbase</a></li><li class='medio'><a href="/dyngs/INEbase/categoria.htm?c=Estadistica_P&cid=1254735976608">Condiciones de vida</a></li><li class='medio'><a href="/dyngs/INEbase/operacion.htm?c=Estadistica_C&cid=1254736176806&menu=resultados&idp=1254735976608">Encuesta de presupuestos familiares. Base 2006</a></li><li class="medio"><a href="/dynt3/inebase/index.htm?padre=3776&capsel=3776">Resultados nacionales</a>
+						</li>
+					<li class="medio"><a href="/dynt3/inebase/index.htm?padre=3776&capsel=3864">Cantidades físicas consumidas, gasto y valor unitario</a>
+						</li>
+					</ul></nav>
+		</div>
+	<div class="group">
+			<a href="/dyngs/INEbase/listaoperaciones.htm">
+						<img src="/menus/img/logoinebase.svg" alt="Inicio Inebase">
+					</a>		
+				</div>
+	</div>
+<br class="limpia">
+   	
+   	<form id="tablaForm" name="tablaForm" action="Datos.htm?t=25169" method="POST"
+      onsubmit="return enviarTabla(event, 'tablaForm',25169, timeOutRequests);" >
+    <input type="hidden" name="isPx" id ="isPx" value="false">
+    <input type="hidden" name="L" value="0">
+    <input type="hidden" name="fromTabla" value="1">
+    <input type="hidden" name="formatoVisible" value="1">
+    <input type="hidden" id="oper" name="oper" value="314">
+         <input type="hidden" id="sel_oper" name="sel_oper" class="input_seleccionados" value="1" >
+      <span class="cab1">Cantidades físicas consumidas, gasto y valor unitario</span>
+      <span class="cab2">Cantidades físicas consumidas, gasto y valor unitario</span>
+        <h1 class="cab3">Gasto total y valor unitario de alimentos, bebidas, tabaco, combustibles y otras fuentes de energía</h1>
+      <div id="capaIconos" class="titulo_detalle ii-group">
+          <span id="tablaDetalle"><strong class="paddingRight">Unidades:</strong>  €, Miles €</span>
+          <div class="right">
+          	<a role="button" title="Formatos de descarga disponibles" aria-label="Formatos de descarga disponibles" id="btnDescarga" href="dlgExport.htm?t=25169" class="thickbox">
+          		<i class="ii ii-big ii-download ii-circle"></i>
+          	</a>
+           <a role="button" title="Metodología" aria-label="Metodología" href="/dynt3/metadatos/es/RespuestaDatos.htm?oe=30458" target="_blank">
+        	<i class="ii ii-big ii-metadata ii-circle"></i>
+        </a>
+        </div>
+      </div>
+      <ul class="secciones ii-group" role="menu" data-type="list">
+      <li class="empty " role="menuitem">
+        <span role="button" tabindex=0 title="Plegar/Desplegar" class="title titleOpen texto_variables borderSeccion">Seleccione valores a consultar</span>
+        <ul id="variables" class="variables">
+          <li class="empty" id ="tg85043" >
+    <div class="marcoINE">
+		<fieldset>
+			<legend><label for="cri85043">Códigos de gasto con cantidad física</label></legend>
+               <div class="capaSelecBusqueda">
+	               	<label for="busc_85043" class="oculto">Valores que contienen</label>
+	                <input title="Valores que contienen" size="10" type="text" id="busc_85043" name="busc_85043" class="cajaBusquedaVar" value="" >
+	                <button type="button" title="Valores que contienen" onclick="buscar('sel_85043','cri85043',document.forms['tablaForm'].busc_85043.value,'content');">
+	                	<i class="ii ii-small ii-search"></i>
+	                </button>
+            	</div>
+            	<div class="capaSelecTodosNinguno">
+            		<input type="hidden" name="orden_85043" id="orden_85043" >
+	               	<button type="button" class="opcionesvarDer" title="Seleccionar todos" onclick="todos(true,'cri85043','sel_85043');return false;">
+	               		<i class="ii ii-small ii-select-all"></i>
+	               	</button>
+	               	<button type="button" title="Borrar selección" onclick="todos(false,'cri85043','sel_85043');return false;">
+	               		<i class="ii ii-small ii-select-none"></i>
+	               	</button>
+	               	<button type="button" title="Ordenar" onclick="updateSort(this,'#cri'+85043,'#orden_'+85043)">
+	               		<i class="ii ii-small ii-sort-alpha-asc"></i>
+	               	</button>
+					</div>
+
+				<select id="cri85043" name="cri85043" class="cajaVariables jax_SELECT" multiple="multiple" size="8" onchange="cuantos('sel_85043','cri85043');">
+					<option class="jP_0" value="679453" selected="selected">01.1.1.1 T Arroz (K)</option>
+						<option class="jP_0" value="679454" selected="selected">01.1.1.2 T Harinas y otros cereales (K)</option>
+						<option class="jP_0" value="679455" selected="selected">01.1.1.3 T Pan (K)</option>
+						<option class="jP_0" value="679456" selected="selected">01.1.1.4 T Otros productos de panadería (K)</option>
+						<option class="jP_0" value="679457" selected="selected">01.1.1.5 T Pizzas y quiches (K)</option>
+						<option class="jP_0" value="679458" selected="selected">01.1.1.6 T Pastas alimenticias y cuscús (K)</option>
+						<option class="jP_0" value="679459" selected="selected">01.1.1.7 T Cereales de desayuno (K)</option>
+						<option class="jP_0" value="679460" selected="selected">01.1.1.8 T Otros productos elaborados con cereales n.c.o.p. (K)</option>
+						<option class="jP_0" value="679461" selected="selected">01.1.2.1 T Carne de vacuno (K)</option>
+						<option class="jP_0" value="679462" selected="selected">01.1.2.2 T Carne de porcino (K)</option>
+						<option class="jP_0" value="679463" selected="selected">01.1.2.3 T Carne de ovino y caprino (K)</option>
+						<option class="jP_0" value="679464" selected="selected">01.1.2.4 T Carne de ave (K)</option>
+						<option class="jP_0" value="679465" selected="selected">01.1.2.5 T Otras carnes (K)</option>
+						<option class="jP_0" value="679466" selected="selected">01.1.2.6 T Despojos y menudillos (K)</option>
+						<option class="jP_0" value="679467" selected="selected">01.1.2.7 T Charcutería y carne seca, salada o ahumada (K)</option>
+						<option class="jP_0" value="679468" selected="selected">01.1.2.8 T Carne procesada y otras preparaciones a base de carne (K)</option>
+						<option class="jP_0" value="679469" selected="selected">01.1.3.1 T Pescado fresco o refrigerado (K)</option>
+						<option class="jP_0" value="679470" selected="selected">01.1.3.2 T Pescado congelado (K)</option>
+						<option class="jP_0" value="679471" selected="selected">01.1.3.3 T Marisco fresco o refrigerado  (K)</option>
+						<option class="jP_0" value="679472" selected="selected">01.1.3.4 T Marisco congelado (K)</option>
+						<option class="jP_0" value="679473" selected="selected">01.1.3.5 T Pescado y marisco seco, ahumado o salado (K)</option>
+						<option class="jP_0" value="679474" selected="selected">01.1.3.6 T Pescado y marisco procesado y otras preparaciones de pescado y marisco (K)</option>
+						<option class="jP_0" value="679475" selected="selected">01.1.4.1 T Leche entera (L)</option>
+						<option class="jP_0" value="679476" selected="selected">01.1.4.2 T Leche semidescremada y descremada (L)</option>
+						<option class="jP_0" value="679477" selected="selected">01.1.4.3 T Leche conservada (K)</option>
+						<option class="jP_0" value="679478" selected="selected">01.1.4.4 T Yogures (K)</option>
+						<option class="jP_0" value="679479" selected="selected">01.1.4.5 T Queso (K)</option>
+						<option class="jP_0" value="679480" selected="selected">01.1.4.6 T Otros productos a base de leche (K)</option>
+						<option class="jP_0" value="679481" selected="selected">01.1.4.7 T Huevos (U)</option>
+						<option class="jP_0" value="679482" selected="selected">01.1.5.1 T Mantequilla y otras grasas animales (K)</option>
+						<option class="jP_0" value="679483" selected="selected">01.1.5.2 T Margarina y otras grasas vegetales (K)</option>
+						<option class="jP_0" value="679484" selected="selected">01.1.5.3 T Aceite de oliva (L)</option>
+						<option class="jP_0" value="679485" selected="selected">01.1.5.4 T Otros aceites (L)</option>
+						<option class="jP_0" value="679486" selected="selected">01.1.6.1 T Cítricos (frescos o refrigerados) (K)</option>
+						<option class="jP_0" value="679487" selected="selected">01.1.6.2 T Plátanos (frescos o refrigerados) (K)</option>
+						<option class="jP_0" value="679488" selected="selected">01.1.6.3 T Manzanas (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679489" selected="selected">01.1.6.4 T Peras (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679490" selected="selected">01.1.6.5 T Frutas con hueso (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679491" selected="selected">01.1.6.6 T Bayas (fresas, frambuesas, uvas, etc.) (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679492" selected="selected">01.1.6.7 T Otras frutas (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679493" selected="selected">01.1.6.8 T Frutos secos (K)</option>
+						<option class="jP_0" value="679494" selected="selected">01.1.6.9 T Frutas preparadas, en conserva y congeladas (K)</option>
+						<option class="jP_0" value="679495" selected="selected">01.1.7.1 T Hortalizas de hoja o de tallo (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679496" selected="selected">01.1.7.2 T Bolsas de mezcla de lechugas (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679497" selected="selected">01.1.7.3 T Coles (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679498" selected="selected">01.1.7.4 T Hortalizas cultivadas por su fruto (tomates, judías verdes, calabacines, etc.) (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679499" selected="selected">01.1.7.5 T Hortalizas con raíz o bulbo y setas (frescas o refrigeradas) (K)</option>
+						<option class="jP_0" value="679500" selected="selected">01.1.7.6 T Legumbres y hortalizas secas (K)</option>
+						<option class="jP_0" value="679501" selected="selected">01.1.7.7 T Legumbres y hortalizas procesadas y otras preparaciones a base de legumbres y hortalizas (K)</option>
+						<option class="jP_0" value="679502" selected="selected">01.1.7.8 T Legumbres y hortalizas congeladas (K)</option>
+						<option class="jP_0" value="679503" selected="selected">01.1.7.9 T Aceitunas (K)</option>
+						<option class="jP_0" value="679504" selected="selected">01.1.7.A T Patatas (K)</option>
+						<option class="jP_0" value="679505" selected="selected">01.1.7.B T Snacks (K)</option>
+						<option class="jP_0" value="679506" selected="selected">01.1.7.C T Productos derivados de las patatas, mandioca y otros tubérculos (K)</option>
+						<option class="jP_0" value="679507" selected="selected">01.1.8.1 T Azúcar (K)</option>
+						<option class="jP_0" value="679508" selected="selected">01.1.8.2 T Confitura, mermelada y miel (K)</option>
+						<option class="jP_0" value="679509" selected="selected">01.1.8.3 T Chocolate (K)</option>
+						<option class="jP_0" value="679510" selected="selected">01.1.8.5 T Helados (K)</option>
+						<option class="jP_0" value="679511" selected="selected">01.1.8.6 T Edulcorantes (GR)</option>
+						<option class="jP_0" value="679512" selected="selected">01.2.1.1 T Café, no en cápsulas (K)</option>
+						<option class="jP_0" value="679513" selected="selected">01.2.1.2 T Café en cápsulas (CAP)</option>
+						<option class="jP_0" value="679514" selected="selected">01.2.1.3 T Té e infusiones (GR)</option>
+						<option class="jP_0" value="679515" selected="selected">01.2.1.4 T Bebidas de cacao y chocolate en polvo (K)</option>
+						<option class="jP_0" value="679516" selected="selected">01.2.2.1 T Agua mineral (L)</option>
+						<option class="jP_0" value="679517" selected="selected">01.2.2.2 T Bebidas refrescantes con o sin gas (L)</option>
+						<option class="jP_0" value="679518" selected="selected">01.2.2.3 T Bebidas energéticas (L)</option>
+						<option class="jP_0" value="679519" selected="selected">01.2.2.4 T Bebidas isotónicas (L)</option>
+						<option class="jP_0" value="679520" selected="selected">01.2.2.5 T Zumos de frutas y/o de vegetales (L)</option>
+						<option class="jP_0" value="679521" selected="selected">02.1.1.0 T Espirituosos, licores y similares. Licores sin alcohol (L)</option>
+						<option class="jP_0" value="679522" selected="selected">02.1.2.1 T Vinos de uva (L)</option>
+						<option class="jP_0" value="679523" selected="selected">02.1.2.2 T Otros vinos (L)</option>
+						<option class="jP_0" value="679524" selected="selected">02.1.2.3 T Otras bebidas a base de vino. Vino sin alcohol (L)</option>
+						<option class="jP_0" value="679525" selected="selected">02.1.3.1 T Cerveza (L)</option>
+						<option class="jP_0" value="679526" selected="selected">02.1.3.2 T Cerveza baja en alcohol o sin alcohol (L)</option>
+						<option class="jP_0" value="679527" selected="selected">02.1.3.3 T Bebidas a base de cerveza (L)</option>
+						<option class="jP_0" value="679528" selected="selected">02.2.0.1 T Cigarrillos (U)</option>
+						<option class="jP_0" value="679529" selected="selected">02.2.0.2 T Puros y pequeños cigarros (U)</option>
+						<option class="jP_0" value="679530" selected="selected">04.4.1.0 T Suministro de agua (m3)</option>
+						<option class="jP_0" value="679531" selected="selected">04.5.1.0 T Electricidad (kwh)</option>
+						<option class="jP_0" value="679532" selected="selected">04.5.2.1 T Gas ciudad y natural (m3)</option>
+						<option class="jP_0" value="679533" selected="selected">04.5.2.2 T Gas licuado (butano, propano, etc.) (K)</option>
+						<option class="jP_0" value="679534" selected="selected">04.5.3.0 T Combustibles líquidos (L)</option>
+						<option class="jP_0" value="679535" selected="selected">04.5.4.0 T Combustibles sólidos (K)</option>
+						<option class="jP_0" value="679536" selected="selected">07.2.2.1 T Gasóleo (L)</option>
+						<option class="jP_0" value="679537" selected="selected">07.2.2.2 T Gasolina (L)</option>
+						</select>
+				<div class="capaClear">
+					<div class="capaSeleccionadosEstado">
+						<span class="paddingRight">Seleccionados:</span><span id="sel_85043">85</span>
+					</div>
+					<div class="capaTotalSeleccionadosEstado">
+						<span class="paddingRight">Total:</span><span id="totalvar85043">85</span>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+</li><li class="empty" id ="tg85045" >
+    <div class="marcoINE">
+		<fieldset>
+			<legend><label for="cri85045">Gasto total y valor unitario</label></legend>
+               <div class="capaSelecBusqueda">
+	               	<label for="busc_85045" class="oculto">Valores que contienen</label>
+	                <input title="Valores que contienen" size="10" type="text" id="busc_85045" name="busc_85045" class="cajaBusquedaVar" value="" >
+	                <button type="button" title="Valores que contienen" onclick="buscar('sel_85045','cri85045',document.forms['tablaForm'].busc_85045.value,'content');">
+	                	<i class="ii ii-small ii-search"></i>
+	                </button>
+            	</div>
+            	<div class="capaSelecTodosNinguno">
+            		<input type="hidden" name="orden_85045" id="orden_85045" >
+	               	<button type="button" class="opcionesvarDer" title="Seleccionar todos" onclick="todos(true,'cri85045','sel_85045');return false;">
+	               		<i class="ii ii-small ii-select-all"></i>
+	               	</button>
+	               	<button type="button" title="Borrar selección" onclick="todos(false,'cri85045','sel_85045');return false;">
+	               		<i class="ii ii-small ii-select-none"></i>
+	               	</button>
+	               	<button type="button" title="Ordenar" onclick="updateSort(this,'#cri'+85045,'#orden_'+85045)">
+	               		<i class="ii ii-small ii-sort-alpha-asc"></i>
+	               	</button>
+					</div>
+
+				<select id="cri85045" name="cri85045" class="cajaVariables jax_SELECT" multiple="multiple" size="8" onchange="cuantos('sel_85045','cri85045');">
+					<option class="jP_0" value="679097" selected="selected">Gasto total</option>
+						<option class="jP_0" value="679098" >Valor unitario</option>
+						</select>
+				<div class="capaClear">
+					<div class="capaSeleccionadosEstado">
+						<span class="paddingRight">Seleccionados:</span><span id="sel_85045">1</span>
+					</div>
+					<div class="capaTotalSeleccionadosEstado">
+						<span class="paddingRight">Total:</span><span id="totalvar85045">2</span>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+</li><!-- <span class="texto_periodos">Seleccione las periodos:</span> -->
+                  <li class="empty" id ="caja_periodo"><div class="marcoINE">
+                        <fieldset>
+                          <legend><label for="periodo">Periodo</label> </legend>
+                                  <div class="capaClear"></div>
+                          <div class="capaSelecBusqueda">
+                            <label for="busc_periodo" class="oculto">Valores que comienzan por...</label>
+                            <input size="10" type="text" id="busc_periodo" name="busc_periodo" class="cajaBusquedaVar" value="" title="Valores que comienzan por...">
+                            <button type="button" title="Valores que comienzan por..." onclick="buscar('sel_periodo','periodo',document.forms['tablaForm'].busc_periodo.value,'content');">
+                            	<i class="ii ii-small ii-search"></i>
+                            </button>
+                          </div>
+                                  <div class="capaSelecTodosNinguno">
+                                    <input type="hidden" name="orden_periodo" id="orden_periodo" value="DESC">
+                                      <button type="button" class="opcionesvarDer" title="Seleccionar todos" onclick="todos(true,'periodo','sel_periodo');return false;">
+                              	<i class="ii ii-small ii-select-all"></i>
+                              </button>
+                            <button type="button" title="Borrar selección" onclick="todos(false,'periodo','sel_periodo');return false;">
+                            	<i class="ii ii-small ii-select-none"></i>
+                            </button>
+                            <button type="button" title="Ordenar" onclick="updateSort(this,'#periodo','#orden_periodo')">
+                            	<i class="ii ii-small ii-sort-alpha-asc"></i>
+                            </button>
+
+                          </div>
+
+                          <select id="periodo" name="periodo" class="cajaVariables "  size="8" multiple="multiple" onchange="cuantos('sel_periodo','periodo');">
+
+                            <option title="2023"
+                                  	 data-order="2023~00001"
+                                  	value="28~2023" selected="selected">2023</option>
+                                  <option title="2022"
+                                   data-order="2022~00001"
+                                  value="28~2022">2022</option>
+                                <option title="2021"
+                                   data-order="2021~00001"
+                                  value="28~2021">2021</option>
+                                <option title="2020"
+                                   data-order="2020~00001"
+                                  value="28~2020">2020</option>
+                                <option title="2019"
+                                   data-order="2019~00001"
+                                  value="28~2019">2019</option>
+                                <option title="2018"
+                                   data-order="2018~00001"
+                                  value="28~2018">2018</option>
+                                <option title="2017"
+                                   data-order="2017~00001"
+                                  value="28~2017">2017</option>
+                                <option title="2016"
+                                   data-order="2016~00001"
+                                  value="28~2016">2016</option>
+                                <option title="2015"
+                                   data-order="2015~00001"
+                                  value="28~2015">2015</option>
+                                <option title="2014"
+                                   data-order="2014~00001"
+                                  value="28~2014">2014</option>
+                                <option title="2013"
+                                   data-order="2013~00001"
+                                  value="28~2013">2013</option>
+                                <option title="2012"
+                                   data-order="2012~00001"
+                                  value="28~2012">2012</option>
+                                <option title="2011"
+                                   data-order="2011~00001"
+                                  value="28~2011">2011</option>
+                                <option title="2010"
+                                   data-order="2010~00001"
+                                  value="28~2010">2010</option>
+                                <option title="2009"
+                                   data-order="2009~00001"
+                                  value="28~2009">2009</option>
+                                <option title="2008"
+                                   data-order="2008~00001"
+                                  value="28~2008">2008</option>
+                                <option title="2007"
+                                   data-order="2007~00001"
+                                  value="28~2007">2007</option>
+                                <option title="2006"
+                                   data-order="2006~00001"
+                                  value="28~2006">2006</option>
+                                </select>
+                                  <div class="capaClear"></div>
+                          <div class="capaSeleccionadosEstado">
+                                    <span>Seleccionados:</span><span id="sel_periodo" class="paddingLeft">1</span>
+                                    <!-- <input type="text" id="sel_85045" name="sel_85045" class="input_seleccionados" readonly size="1" value="0" > -->
+                                </div>
+                                <div class="capaTotalSeleccionadosEstado">
+                                    <span>Total:</span><span id="totalvar_Per" class="paddingLeft">18</span>
+                                  </div>
+                                </fieldset>
+                              </div>
+                    </li>
+
+                </ul>
+      </li>
+
+        <li class="empty " id="capaFormato" role="menuitem">
+              <span role="button" tabindex=0 title="Plegar/Desplegar" class="title titleOpen titulo_formato borderSeccion">
+               Elija forma de presentación de la tabla
+</span>
+               <ul>
+               <li>
+               <ul id="capaFilasColumnas" class="floatLeft">
+               <li>
+                 <table class="formato" title="formato">
+                 <tr>
+                 <th  class='celdacabeceravacia'><button type="button" id="swap" class="btn-swap" title="Intercambiar filas por columnas"><i class="ii ii-small ii-sort"></i></button></th>
+                 <th colspan="3" class="tCL_0" id="tCL_col">
+                   <ul id="OrderColumns" class="connectedSortable">
+                            <li>Gasto total y valor unitario<input type="hidden" name="columns" value="85045"><div class="swapContent">
+	<button type="button" class="swapDown swapButtons" tabindex=0 title="Desplazar abajo">
+		<i class="ii ii-small ii-caret-down"></i>
+	</button>
+	<button type="button" class="swapUp swapButtons" tabindex=0 title="Desplazar arriba">
+		<i class="ii ii-small ii-caret-up"></i>
+	</button>
+	<button type="button" class="swapColumn swapChange swapButtons" tabindex=0 title="Pasar a fila">
+		<i class="ii ii-small ii-caret-left"></i>
+	</button>
+	<button type="button" class="swapRown swapChange swapButtons" tabindex=0 title="Pasar a columna">
+		<i class="ii ii-small ii-caret-right"></i>
+	</button></div></li>
+                            	<li>Periodo<input type="hidden" name="columns" value="p_per"><div class="swapContent">
+	<button type="button" class="swapDown swapButtons" tabindex=0 title="Desplazar abajo">
+		<i class="ii ii-small ii-caret-down"></i>
+	</button>
+	<button type="button" class="swapUp swapButtons" tabindex=0 title="Desplazar arriba">
+		<i class="ii ii-small ii-caret-up"></i>
+	</button>
+	<button type="button" class="swapColumn swapChange swapButtons" tabindex=0 title="Pasar a fila">
+		<i class="ii ii-small ii-caret-left"></i>
+	</button>
+	<button type="button" class="swapRown swapChange swapButtons" tabindex=0 title="Pasar a columna">
+		<i class="ii ii-small ii-caret-right"></i>
+	</button></div></li>
+                              </ul>
+                 </th>
+                 </tr>
+                 <tr>
+                 <th rowspan="3" class="tCL_0"  id="tCL_row">
+                 <ul id="OrderRows" class="connectedSortable">
+                      <li>Códigos de gasto con cantidad física<input type="hidden" name="rows" value="85043"><div class="swapContent">
+	<button type="button" class="swapDown swapButtons" tabindex=0 title="Desplazar abajo">
+		<i class="ii ii-small ii-caret-down"></i>
+	</button>
+	<button type="button" class="swapUp swapButtons" tabindex=0 title="Desplazar arriba">
+		<i class="ii ii-small ii-caret-up"></i>
+	</button>
+	<button type="button" class="swapColumn swapChange swapButtons" tabindex=0 title="Pasar a fila">
+		<i class="ii ii-small ii-caret-left"></i>
+	</button>
+	<button type="button" class="swapRown swapChange swapButtons" tabindex=0 title="Pasar a columna">
+		<i class="ii ii-small ii-caret-right"></i>
+	</button></div></li>
+                            </ul>
+                 </th>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 </tr>
+                 <tr>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 </tr>
+                 <tr>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 <td class='dCIe' headers="tCL_row tCL_col">.</td>
+                 </tr>
+               </table>
+              </li>
+            <li>
+                    <div id="capa_tabla_showdec">
+                      <label for="formato_tabla_dec">
+                        <span>Decimales a mostrar:</span>
+                      </label>
+                      <select id="formato_tabla_dec" name="formato_tabla_dec">
+                             <option title="Por defecto" value="">Por defecto</option>
+                            <option title="0" value="0">0</option>
+                                 <option title="1" value="1">1</option>
+                                 <option title="2" value="2">2</option>
+                                 </select>
+                      </div>
+                    </li>
+               </ul>
+            </li>
+            </ul>
+
+
+            </li>
+
+          <li class="seccNotas empty " role="menuitem">
+	        <span role="button" id="tituloNotas" class="title texto_notas">Notas ( 2 )</span>
+        <ul id="capaListadoNotas" class="notas">
+            <li class="empty">
+               Para el cálculo de las unidades de consumo se ha utilizado la escala OCDE modificada. </li>
+             <li class="empty">
+               Por falta de representatividad no pueden facilitarse estimaciones de las celdas sin dato (a puntos)</li>
+             </ul></ul>
+       <div class="capaClear"></div>
+
+       <div id="capaSeparacion"></div>
+         <div id="capaTotalSeriesCeldas" role="status">
+             <span id="totalSeriesCeldas">Total:</span>
+             <span id="NumSeries" class="paddingRight">0</span><span>series</span><span class="paddingBothSides">y </span><span id="NumCeldas" class="paddingRight">0</span><span>datos</span>
+          </div>
+
+
+          <div id="capaBotones">
+                 <input type="hidden" name=totalOps value="4">
+                 <input type="hidden" name="numCri" value="-1">
+                  <input type="submit" class="botonSel" id="botonConsulSele" name="consulsele" value="Consultar selección"
+                      onmouseover="">
+<!-- 				      	 	   		onmouseover="">		 -->
+<input type="submit" class="botonSel all" id="botonConsulTodo" name="ct" value="Consultar todo"
+                          onmouseover="">
+                    </div>
+
+      <div class="capaClear"></div>
+
+
+      </form>
+    </main><footer><div id="pie" class="d2">	<div class="homePie" >
+		<ul>
+			<li><a href="/infoine/">
+				<i class="ii ii-mail"></i> <strong>Contacto</strong></a>
+			</li>
+			<li><a href="/indiceweb.htm">Mapa web</a></li>
+			<li>
+				<a href="/dyngs/AYU/index.htm?cid=125">
+					Aviso legal
+				</a>				
+			</li>
+			<li><a href="/dyngs/AYU/index.htm?cid=127">Accesibilidad</a></li>
+			<li><a href="/prensa/seccion_prensa.htm">Prensa</a></li>
+	
+			<li class="margen_sup20imp"><a href="/dyngs/MYP/index.htm?cid=1">Clasificaciones y est&#225;ndares</a></li>
+			<li><a href="/dyngs/MYP/index.htm?cid=10">Nuevos proyectos</a></li>
+		</ul>
+	</div>
+	<div class="homePie">
+		<ul>
+			<li><a href="/dyngs/INE/index.htm?cid=498">El INE</a></li>
+			<li><a href="/dyngs/INE/index.htm?cid=401">Transparencia</a></li>
+			<li><a href="/dyngs/INE/index.htm?cid=582">El Sistema Estad&#237;stico del Estado</a></li>
+			<li><a href="/dyngs/MYP/es/index.htm?cid=35">Calidad</a></li>
+			<li><a href="/dyngs/INE/index.htm?cid=542">Sistema Estad&#237;stico Europeo</a></li>
+		</ul>
+	</div>
+	
+	<div class="homePie">
+		<ul>
+			<li><a href="/dyngs/FYE/index.htm?cid=1791">Formaci&#243;n y empleo</a></li>
+			<li><a href="/dyngs/FYE/es/index.htm?cid=1802">Pr&#225;cticas universitarias</a></li>
+			<li><a href="/dyngs/FYE/es/index.htm?cid=1802">Becas</a></li>
+			<li><a href="/dyngs/FYE/index.htm?cid=166">Oposiciones</a></li>
+			<li><a href="/dyngs/explica/index.htm?cid=1693" target="_blank"  rel="noopener">Explica</a></li>
+		</ul>
+	</div>
+	
+	<div class="homePie">
+		<ul>
+			<li><a href="/dyngs/SER/index.htm?cid=1550">Atenci&#243;n al p&#250;blico</a></li>
+			<li><a href="/dyngs/DAB/es/index.htm?cid=1722">Datos abiertos</a></li>
+			<li><a href="/dyngs/PUB/index.htm?cid=1440" aria-label="Catalogo de Publicaciones">Publicaciones</a></li>
+			<li><a href="/dyngs/SER/index.htm?cid=1391">Carta de servicios</a></li>
+		</ul>
+	</div>
+	
+	<div class="homePie" >
+		<ul>
+			<li>S&#237;guenos</li>
+			<li><a class="ii ii-twitter-x" href="https://twitter.com/es_ine" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">X</span></a></li>
+			<li><a class="ii ii-youtube" href="https://www.youtube.com/INEDifusion" target="_blank"  rel="noopener" title="Abre ventana nueva"><span class="tit">Youtube</span></a></li>
+			<li><a class="ii ii-instagram" href="https://www.instagram.com/es_ine_/" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">Instagram</span></a></li>
+			<li><a class="ii ii-linkedin" href="https://www.linkedin.com/company/ine-es" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">LinkedIn</span></a></li>
+			<li><a class="ii ii-feed" href="/dyngs/AYU/index.htm?cid=1303" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">Canal RSS</span></a></li>
+			<li><a class="ii ii-github" href="https://github.com/es-ine" target="_blank" rel="noopener" title="Abre ventana nueva"><span class="tit">GitHub</span></a></li>
+		</ul>
+	</div>
+	
+	<div class="homePie copyright">
+		<address aria-label='Direcci&#243;n INE'>
+			<span>
+				&copy; 2026 <a href="https://www.ine.es/" rel="author cc:attributionURL dct:creator" property="cc:attributionName">INE. Instituto Nacional de Estad&#237;stica</a>			
+				<a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;" title ="Este sitio web y su contenido est&#225;n bajo licencia CC BY-SA 4.0">
+					<i class="ii ii-cc ii-normal"></i>
+					<i class="ii ii-by ii-normal"></i>
+				</a>
+			</span>
+			<abbr>Avda. Manoteras, 52 - 28050 - Madrid - Espa&#241;a</abbr>
+			<span><a class='phone' href='tel:+34915839100'>Tlf: (+34) 91 583 91 00</a></span>
+		</address>
+	</div>
+	</div>
+		<!-- boton subir -->
+		
+		<button class="ir-arriba" aria-label="Bot&#243;n para volver arriba" title="Volver arriba">
+			<i class="ii ii-caret-up"></i>
+		</button>
+			
+		<!-- fin boton subir -->
+	</footer>
+	
+		
+			
+			
+			
+			
+			
+		</div>
+		
+		
+		<!-- Codigo de seguimiento de Google Analytics  -->
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script >
+	var script = document.createElement('script');
+       script.defer = true;
+	script.src = 'https://www.googletagmanager.com/gtag/js?id=UA-19028967-1';
+	document.body.append(script);	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+ 
+	gtag('config', 'UA-19028967-1');
+</script>
+		<script src='/menus/_b/js/politicaCookies.js' ></script>
+		
+		
+		
+</body>
+</html>

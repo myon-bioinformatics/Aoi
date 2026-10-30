@@ -6,7 +6,9 @@ import json
 A_COLOR = "#1f77b4"
 B_COLOR = "#d62728"
 LINE_COLOR = "#9aa0a6"
-FONT = "Noto Sans JP, Yu Gothic, Meiryo, sans-serif"
+# 図とページで共通。メイリオが無い環境（Mac・iPhone・Linux）では OS 既定の sans-serif になる。
+# メイリオは再配布できないので、フォントファイルは同梱しない。
+FONT = "Meiryo, メイリオ, sans-serif"
 
 # Plotly の Viridis を ``to_dict()`` したときと同じ段。
 _VIRIDIS_SCALE = [

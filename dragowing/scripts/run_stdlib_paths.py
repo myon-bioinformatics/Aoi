@@ -61,10 +61,20 @@ def _load_py(name: str, path: Path):
     return module
 
 
+def _entry_rel(entry: dict) -> str:
+    """写しの相対パス。古い lock は path、driver の lock は source。"""
+    if isinstance(entry.get("path"), str):
+        return entry["path"]
+    source = entry.get("source")
+    if isinstance(source, str):
+        return source
+    raise SystemExit("vendor.lock.json の path がない")
+
+
 def _vendored(name: str) -> Path:
     """vendor.lock.json の path を vendor/aoi の下で開く。"""
     document = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
-    matches = [entry["path"] for entry in document["files"] if Path(entry["path"]).name == name]
+    matches = [_entry_rel(entry) for entry in document["files"] if Path(_entry_rel(entry)).name == name]
     if len(matches) != 1:
         raise SystemExit(f"vendor.lock.json に {name} が一つない")
     rel = Path(matches[0])

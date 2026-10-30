@@ -1,0 +1,9 @@
+Censtatd Hong Kong 2019/20 Household Expenditure Survey
+Chart 3 / §1.21 — Food % of total household expenditure by EXPENDITURE quartile:
+Q1 (lowest 25%): 42
+Q2: 31
+Q3: 28
+Q4 (highest 25%): 22
+PDF: https://www.censtatd.gov.hk/en/data/stat_report/product/B1060003/att/B10600082020XXXXB0100.pdf
+Retrieved: 2026-10-24 Asia/Tokyo
+Note: expenditure quartiles, not income; Food includes meals out + basic food.

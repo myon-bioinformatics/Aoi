@@ -1,12 +1,12 @@
-# 残り試合・CS確率・優勝マジック
+# Remaining games, CS probability, and title magic numbers
 
-SakAnalytics の単独で使える共有部品。研究用 Draft PR #3 の分析には依存しない。
-[実装前計画](SEASON_SIMULATOR_PLAN.md)に対する実装であり、中日の低迷の原因を確定するものではない。
+Standalone shared components of SakAnalytics. They do not depend on the analysis in research Draft PR #3.
+This is the implementation of the [pre-implementation plan](SEASON_SIMULATOR_PLAN.md); it does not establish the cause of Chunichi's slump.
 
-## すぐ動かす
+## Quick start
 
-Python 3.11〜3.14。確率計算だけなら標準ライブラリで動く。
-数学的な確定判定には OR-Tools を使う。
+Python 3.11–3.14. Probability calculation alone runs on the standard library.
+Mathematical clinch determination uses OR-Tools.
 
 ```sh
 python -m pip install -r sakanalytics/season-requirements.txt
@@ -17,29 +17,29 @@ python sakanalytics/season_simulator.py sakanalytics/season-example.json \
 PYTHONPATH=sakanalytics python -m pytest sakanalytics/tests/test_season_simulator.py -q
 ```
 
-例はすべて架空。A のマジックが 2 → 消滅 → 1 → 0 と変わる。
-`--through` を省略すれば1日のみ。日付はその日の全試合終了後であり、試合途中の点灯時刻ではない。
-`--exact` は確定判定とマジックを追加する。`--solver-seconds` は**1回の制約求解ごと**の上限であり、1日全体の上限ではない。
-6球団・CSありの場合は1日につき24回求解する。既定の10秒を各回で使い切ると、1日分で約240秒にモデル構築などの時間が加わる。
+The example is entirely fictional. A's magic number changes 2 → out → 1 → 0.
+Omitting `--through` gives a single day. A date means after all that day's games, not the time a number lit during a game.
+`--exact` adds clinch determination and magic numbers. `--solver-seconds` is the limit **per constraint solve**, not for the whole day.
+With 6 teams and a CS, there are 24 solves per day. If each uses the default 10 seconds, one day takes about 240 seconds plus model-building time.
 
-## 入力と接続
+## Input and connection
 
-入力 JSON は次の4項目を持つ。形式例は [season-example.json](season-example.json)。
+The input JSON has the following 4 items. See [season-example.json](season-example.json) for an example.
 
-| 項目 | 内容 |
+| Item | Contents |
 |---|---|
-| `teams` | 交流戦の相手を含む全チームID |
-| `rules` | 対象リーグのメンバー、前年の順序、同率規則、CS枠数、規則名と出典 |
-| `schedule_basis` | 日程の出所。その時点で知られていた予定か、後から確定した実施日程か |
-| `games` | 一意な `id`、ISO `date`、`home`、`away`、`result`（H/A/D/null） |
-| `expected_total_games` | (任意) 1球団あたりの予定総試合数（整数、または球団名→整数の辞書）。一致しなければ検証時にエラー |
+| `teams` | All team IDs, including interleague opponents |
+| `rules` | Target league members, previous-year order, tie rules, number of CS slots, rules name and source |
+| `schedule_basis` | Origin of the schedule: the schedule known at the time, or the schedule as actually played, settled later |
+| `games` | Unique `id`, ISO `date`, `home`, `away`, `result` (H/A/D/null) |
+| `expected_total_games` | (Optional) Scheduled total games per team (an integer, or a dict of team name → integer). Validation errors if it doesn't match |
 
-将来の結果が入力にあっても、`snapshot()` が時点後の `result` を取り除く。
-過去日の未確定試合はエラーにする。延期された予定は呼出側で更新する。
-予定の完全性をエンジンが外部照合することはないが、`expected_total_games`（CLI では `--expected-total-games`）を指定することで、全球団の消化済み試合数と残り試合数の合計が予定試合数と一致するかを照合できる。
+Even if future results are in the input, `snapshot()` removes `result` after the point in time.
+Undecided games on past dates are an error. The caller updates postponed games.
+The engine does not check schedule completeness externally, but specifying `expected_total_games` (`--expected-total-games` in the CLI) checks that every team's games played plus remaining games equals the scheduled total.
 
-既存の Aoi の `data/observations/npb_calendar/games.jsonl` も読み込める。
-`games` を含まない設定 JSON を用意し、以下のように渡す。
+It can also read Aoi's existing `data/observations/npb_calendar/games.jsonl`.
+Prepare a settings JSON without `games` and pass it as follows.
 
 ```sh
 python sakanalytics/season_simulator.py /tmp/season-config.json \
@@ -48,101 +48,101 @@ python sakanalytics/season_simulator.py /tmp/season-config.json \
   --output /tmp/september.json
 ```
 
-カレンダー入力は取得側で**公式戦だけに絞った観測**を使う。
-`key/date/home/away/hs/as` を読み、原文を出力へコピーしない。
-このモードの残り日程は実際に消化された日程の遡及利用である。
-当時の予告日程を保存していなければ、厳密なリアルタイム予測の再現とは呼べない。
-生の入力・HTML・試合行はコミットしない。
+Calendar input uses **observations filtered to official games only** on the fetching side.
+It reads `key/date/home/away/hs/as` and does not copy the source text to the output.
+In this mode the remaining schedule is retroactive use of the schedule as actually played.
+Unless the schedule announced at the time was saved, this cannot be called a reproduction of strict real-time prediction.
+Raw input, HTML, and game rows are not committed.
 
-API を他のサブプロジェクトから使う際は `sakanalytics` ディレクトリを Python の検索パスに追加して
-`from season_simulator import ...` とする。既存の `sakanalytics.py` をパッケージへ変更しない。
+To use the API from other subprojects, add the `sakanalytics` directory to Python's search path and
+`from season_simulator import ...`. The existing `sakanalytics.py` is not turned into a package.
 
-## 確率と確定は異なる出力
+## Probability and clinching are different outputs
 
-- `forecast()`：シーズンの残りを共同でシミュレーションし、順位の回数・優勝確率・CS確率・Monte Carlo 95%区間を返す。同じ試合を両球団で別々に抽選しない。
-- `qualification()`：残り結果の整合的な割当てに上位枠が存在するか／枠外が存在するかを調べ、`open / clinched / eliminated / unknown` を返す。CSなしなら `not_held`。
-- `title_magic()`：各球団の自力優勝と優勝保証勝利数を求め、`off / lit / clinched / unknown` を返す。
-- `crossing_events()`：5%・1%・0.1%を下回った時点と、その後に再び上回った時点を残す。観測開始時から下回っている場合は `initial_below` とし、初回到達日とは呼ばない。
-- `magic_events()`：点灯・消滅・再点灯・確定の状態変化を残す。
+- `forecast()`: jointly simulates the rest of the season and returns rank counts, title probability, CS probability, and Monte Carlo 95% intervals. The same game is not drawn separately for each team.
+- `qualification()`: checks whether a consistent assignment of remaining results exists that puts the team in the top slots / outside them, and returns `open / clinched / eliminated / unknown`. `not_held` if there is no CS.
+- `title_magic()`: finds each team's self-controlled title and guaranteed title wins, and returns `off / lit / clinched / unknown`.
+- `crossing_events()`: records when probability fell below 5%, 1%, 0.1%, and when it rose above again afterwards. If below from the start of observation, it is `initial_below`, not called a first-reached date.
+- `magic_events()`: records state changes: lit, out, relit, clinched.
 
-制約ソルバーは対戦カードごとに残りの勝・敗・分を整数で割り当てる。
-実現可能な割当ては witness として返し、別の有理数による順位計算とも照合する。
-時間切れは `unknown`。最大値の探索では、実現例を1つ得ただけで最適値と認めない。
+The constraint solver assigns integer remaining wins, losses, and ties per matchup.
+Feasible assignments are returned as witnesses and cross-checked against a separate rational-number standings calculation.
+A timeout is `unknown`. In searches for a maximum, obtaining one feasible example is not accepted as the optimum.
 
-## マジックの定義
+## Definition of the magic number
 
-この実装の `self_control` は「自分の残り試合を全勝すれば、他カードがどう終わっても優勝する」。
-`lit` はそれを満たす球団がそのリーグで1つだけで、保証勝数まで確定した状態。
-`guaranteed_wins_needed` は「残り試合でその数以上勝てば、他の勝敗・引分・同率順位にかかわらず優勝する」最小勝数。
-優勝できない割当てのうち、自球団の勝数が最大のものを探索して、その数に1を足す。
-全割当てで既に優勝なら 0、残り試合内で保証できなければ null。
+In this implementation, `self_control` means "if the team wins all its remaining games, it wins the title however other matchups end".
+`lit` is the state where exactly one team in the league satisfies that and the guaranteed wins are settled.
+`guaranteed_wins_needed` is the minimum wins such that "winning at least this many remaining games wins the title regardless of other wins, losses, ties, or tie-break order".
+Among assignments where the team does not win the title, it searches for the one with the most wins for the team, and adds 1.
+0 if the team already wins the title under all assignments; null if it cannot be guaranteed within the remaining games.
 
-`magic` は点灯時の保証勝数、確定時は0、消滅・未確定時はnullとする。
-自力優勝が証明できても、最大勝数の探索が `FEASIBLE`（最適値未証明）や `UNKNOWN` なら、数値は未確定である。
-この場合は `self_control=true` を保ち、点灯候補の `status` を `unknown` にする。`magic_events()` にも未確定から点灯への変化が残る。
-新聞の慣用表記と全ケースで同一であることまでは未検証。
-引分や同率規則を省略した式の値と混ぜず、出力に定義を記録する。
-日付ごとに再計算するので、直接対決の結果や他球団の敗戦による減少・消滅を反映する。
+`magic` is the guaranteed wins when lit, 0 when clinched, and null when out or undetermined.
+Even if a self-controlled title is proven, the number is undetermined if the maximum-wins search is `FEASIBLE` (optimum not proven) or `UNKNOWN`.
+In that case `self_control=true` is kept and the lit candidate's `status` is `unknown`. `magic_events()` also records the change from undetermined to lit.
+Identity with newspapers' customary notation in all cases has not been verified.
+It is not mixed with values from formulas that omit ties or tie rules, and the definition is recorded in the output.
+It is recalculated per date, so decreases and going out from head-to-head results or other teams' losses are reflected.
 
-## 順位規則
+## Standings rules
 
-勝率は W/(W+L)。引分は分母に含めず、有理数・整数の比較を使う。
-標準プロファイルは確認済みの次の規則に限定する。
+Winning percentage is W/(W+L). Ties are not in the denominator, and rational/integer comparisons are used.
+Standard profiles are limited to the following confirmed rules.
 
-| プロファイル | 同勝率の場合の優先順 | CS枠 |
+| Profile | Priority when winning pct is equal | CS slots |
 |---|---|---|
-| NPB 2022 セ、2025 セ | 勝利数、当該群との対戦勝率、リーグ内勝率、前年順位 | 3 |
-| NPB 2022 パ | 当該群との対戦勝率、リーグ内勝率、前年順位 | 3 |
+| NPB 2022 Central, 2025 Central | Wins, winning pct against the group, winning pct within the league, previous-year standing | 3 |
+| NPB 2022 Pacific | Winning pct against the group, winning pct within the league, previous-year standing | 3 |
 
-出典：[2022セ](https://npb.jp/games/2022/info_cscl.html)、[2022パ](https://npb.jp/games/2022/info_cspl.html)、[2025セ](https://npb.jp/games/2025/info_cscl.html)。
-この表の NPB のプリセット（`npb_rules()`）は Aoi の `aoi_npb.py` に置く。SakAnalytics は `Rules` を受け取るだけで、リーグ固有の規則を持たない。`npb_rules()` は未確認の年・リーグを拒否する。別の年は出典を確認した `Rules` を明示する。
-前年順位も呼出側から供給する。2020年を通常の3枠に自動変換しない。
+Sources: [2022 Central](https://npb.jp/games/2022/info_cscl.html), [2022 Pacific](https://npb.jp/games/2022/info_cspl.html), [2025 Central](https://npb.jp/games/2025/info_cscl.html).
+The NPB presets in this table (`npb_rules()`) live in Aoi's `aoi_npb.py`. SakAnalytics only receives `Rules` and holds no league-specific rules. `npb_rules()` rejects unconfirmed years and leagues. For other years, pass a `Rules` with a confirmed source explicitly.
+The previous-year standing is also supplied by the caller. 2020 is not automatically converted to the usual 3 slots.
 
-当該群は、勝率（セでは勝数も）が並んだ群全体で固定し、その群との対戦を集計する。
-3球団以上から一部だけ同率で残った場合に、その部分群へ直接対決を再適用するかは、公式原文で追加確認が必要。この実装では再適用しない。
-決着試合が0の率はエンジン上0と定義する。全引分など通常の終了シーズンでない条件では、この規約にも結果が依存する。
-公式文書にある資格決定期限、未消化試合の打切り、特別な裁定を自動で適用する機能は含まない。
-入力した全日程を消化する条件での答えなので、そのような場合は資格判定対象の日程を呼出側で確定させる。
+The group is fixed as the whole group tied on winning pct (and on wins in the Central), and games against that group are aggregated.
+When only part of a group of 3 or more teams remains tied, whether head-to-head is reapplied to that subgroup needs further confirmation in the official text. This implementation does not reapply it.
+The engine defines the rate with 0 decided games as 0. Under conditions that aren't a normal finished season, such as all ties, results also depend on this convention.
+It does not automatically apply qualification deadlines, cancellation of unplayed games, or special rulings in official documents.
+The answer assumes all input games are played, so in such cases the caller settles the schedule subject to qualification.
 
-## 確率モデルと区間の境界
+## Bounds of the probability model and intervals
 
-既定モデルは、時点までの勝敗を20試合分の五分の事前値で平滑化した勝率と、
-Log5型の対戦式を使う。引分率は全入力球団の既消化試合に20試合分・5%の事前値を加えて推定する。
-ホーム効果、球場補正、選手、先発投手、将来の実力変化は入れない。
-API の `probabilities` に試合IDごとの (ホーム勝ち, ビジター勝ち, 引分) を渡せば、別モデルを接続できる。
+The default model uses winning pct smoothed with a prior of 20 games at .500 from wins/losses up to the time,
+and a Log5-style matchup formula. The tie rate is estimated from all input teams' played games plus a prior of 20 games at 5%.
+Home advantage, park factors, players, starting pitchers, and future changes in ability are not included.
+Passing (home win, visitor win, tie) per game ID in the API's `probabilities` connects another model.
 
-出力は条件付き基準モデルの結果であり、予測精度は未較正。
-Monte Carlo区間は反復の有限性だけを表し、モデル誤差や実力推定の不確かさは含まない。
-0回の進出を数学的消滅と読まない。境界付近の閾値通過も区間と一緒に読む。
-球団日が1,100件あっても、同一球団・同一シーズンの日々は独立な1,100例ではない。
-低確率になった時点で打ち切った集計には選択の偏りがあり、シーズン全体・数学的確定日までの集計も残す。
+The output is the result of a conditional baseline model, and its predictive accuracy is uncalibrated.
+Monte Carlo intervals represent only the finiteness of iterations and do not include model error or uncertainty in ability estimates.
+Do not read 0 advancements as mathematical elimination. Read threshold crossings near the boundary together with the intervals.
+Even with 1,100 team-days, days of the same team in the same season are not 1,100 independent examples.
+Aggregates cut off at the point of low probability have selection bias, so aggregates over the whole season and up to the mathematical clinch date are also kept.
 
-## 検証
+## Verification
 
-[2022年接続検証JSON](season-validation-2022.json)は計算による集約値のみ。
-手元の許可済み入力で再実行するには、Aoi のルートで以下を使う（NPB 2022 固有なので Aoi の `scripts/` に移した）。
+The [2022 connection verification JSON](season-validation-2022.json) contains only computed aggregates.
+To rerun with local permitted input, use the following at Aoi's root (moved to Aoi's `scripts/` because it is NPB 2022-specific).
 
 ```sh
 python scripts/season_verify_2022.py data/observations/npb_calendar/games.jsonl \
   --output /tmp/season-validation-2022.json
 ```
 
-- 合成リーグ20条件×3球団で、全列挙27通りと制約充足による上位1・2枠、自力優勝、優勝できない場合の最大勝数を照合。
-- 残り直接対決の結合、セ・パの同率順、3球団同率、リーグ内成績、前年順位、交流戦、引分、時間切れ、未来結果の非参照、日次CLIを検証。
-- 2022年858試合の入力で、中日は9月26日まで進出可能、27日に消滅。139試合消化・残り4。
-- ヤクルトは9月24日保証マジック2、25日優勝確定。
-- 2022年のセ・パ最終順位が[公式セ順位](https://npb.jp/bis/2022/stats/std_c.html)・[公式パ順位](https://npb.jp/bis/2022/stats/std_p.html)と一致。パの同率首位も判定できた。
-- 中日の消滅日は[9月27日の報道](https://www.nikkansports.com/baseball/news/202209270001523.html?mode=all)とも一致。報道日を判定の入力には使っていない。
+- With 20 synthetic league conditions × 3 teams, top 1 and 2 slots, self-controlled title, and maximum wins without the title were cross-checked between full enumeration of 27 cases and constraint satisfaction.
+- Verified the coupling of remaining head-to-head games, Central and Pacific tie order, 3-team ties, in-league records, previous-year standings, interleague play, ties, timeouts, not referring to future results, and the daily CLI.
+- With 858 games of 2022 input, Chunichi could still advance through September 26 and was eliminated on the 27th, with 139 games played and 4 left.
+- Yakult had a guaranteed magic number of 2 on September 24 and clinched the title on the 25th.
+- The 2022 Central and Pacific final standings matched the [official Central standings](https://npb.jp/bis/2022/stats/std_c.html) and [official Pacific standings](https://npb.jp/bis/2022/stats/std_p.html). The Pacific's tie for first was also resolved.
+- Chunichi's elimination date also matched the [September 27 report](https://www.nikkansports.com/baseball/news/202209270001523.html?mode=all). The report date was not used as input to the determination.
 
-接続検証の元データは既存のイニング入力（SHA-256 `0e98d6ce001eaca565378814a551d8b694e66dff7f4ef856d4e636e39bb87beb`）の2022年分を最終スコアへ集計したもの。
-再実行時に観測の行順・付加列が異なるとファイル指紋は変わる。`canonical_games_sha256` と日付ごとの指紋で、使用した試合とスナップショットを別途比較できる。
-専用CIは合成入力だけで動き、生データを取得・公開しない。
-Python 3.11〜3.14のそれぞれで、OR-Toolsあり／なしを別々に実行する。
-未導入時は求解を使うテストだけをスキップし、順位・確率・閾値・入力・CLI・未確定状態のテストは実行する。
-CLIはリポジトリ外の作業ディレクトリからも検証し、確率のみの経路は `python -S` で外部パッケージを無効にする。
+The source data for the connection verification is the 2022 portion of the existing inning input (SHA-256 `0e98d6ce001eaca565378814a551d8b694e66dff7f4ef856d4e636e39bb87beb`) aggregated into final scores.
+If row order or extra columns of the observations differ on rerun, the file fingerprint changes. `canonical_games_sha256` and per-date fingerprints allow separate comparison of the games and snapshots used.
+The dedicated CI runs on synthetic input only, and does not fetch or publish raw data.
+On each of Python 3.11–3.14, it runs separately with and without OR-Tools.
+When it is not installed, only tests that use the solver are skipped; tests for standings, probabilities, thresholds, input, the CLI, and undetermined states run.
+The CLI is also verified from a working directory outside the repository, and the probability-only path disables external packages with `python -S`.
 
-## 残件
+## Remaining work
 
-他年の規則の確認、当時の日程スナップショット、年度を分けた確率較正、閾値の再浮上例、新聞のマジック表記との追加照合。
-（入力予定総試合数を指定して照合するオプション `--expected-total-games` / `expected_total_games` は実装済み。）
-これらは共有エンジンの動作検証と分けて記録する。新しい研究命題の計算は研究計画を先に置く。
+Confirming other years' rules, schedule snapshots from the time, probability calibration split by year, examples of thresholds re-emerging, and further comparison with newspapers' magic number notation.
+(The option to check against a specified scheduled total, `--expected-total-games` / `expected_total_games`, is implemented.)
+These are recorded separately from operational verification of the shared engine. Calculations for new research propositions come after a research plan.

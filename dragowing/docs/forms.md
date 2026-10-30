@@ -1,44 +1,44 @@
-# 四つの形の 2×2 と条件の記号
+# 2×2 of the four forms and condition notation
 
-`dragowing/forms.py` は、判定済みの 1 行（`propositions.jsonl` または `sets.jsonl`）を表示する。ネットワークには出ない。`n` と `hold` から数を作り、成立・不成立の理由は書かない。
+`dragowing/forms.py` displays one judged row (`propositions.jsonl` or `sets.jsonl`). It never goes to the network. It builds counts from `n` and `hold`, and does not write reasons for holding or not holding.
 
 ```bash
 python dragowing/forms.py --results cycles/c001-chunichi/outputs --id P1
 ```
 
-## 観測
+## Observation
 
-2×2 のマスは、各形の `n` と `hold` から次のように数える。
+The cells of the 2×2 are counted from each form's `n` and `hold` as follows.
 
-| マス | 読み |
+| Cell | Reading |
 |---|---|
-| P∧Q | 元の `hold`。逆の `hold` と同じならその数 |
-| P∧¬Q | 元の `n - hold`。対偶の `n - hold` と同じならその数 |
-| ¬P∧Q | 逆の `n - hold`。裏の `n - hold` と同じならその数 |
-| ¬P∧¬Q | 対偶の `hold`。裏の `hold` と同じならその数 |
+| P∧Q | The original's `hold`. That count if it equals the converse's `hold` |
+| P∧¬Q | The original's `n - hold`. That count if it equals the contrapositive's `n - hold` |
+| ¬P∧Q | The converse's `n - hold`. That count if it equals the inverse's `n - hold` |
+| ¬P∧¬Q | The contrapositive's `hold`. That count if it equals the inverse's `hold` |
 
-ここで P は `if` と `if_any`、Q は `then` である。反例の数は `n - hold` で、`counterexamples` の件数ではない（一覧は短く保存されていることがある）。
+Here P is `if` and `if_any`, and Q is `then`. The number of counterexamples is `n - hold`, not the number of `counterexamples` entries (the list may be stored truncated).
 
-二つの形の数が違うときは `不一致` と両方の数を出す。形が無く、空の前件からも決まらないマスは `不明` とする。`if` も `if_any` も空のときは、記録上どの単位も前件を満たすので、¬P のマスに 0 を置く。別の形の数が 0 と違うときは `不一致` のままにする。
+When two forms give different counts, `不一致` (mismatch) is shown with both counts. A cell with no form that cannot be determined from an empty antecedent either is `不明` (unknown). When both `if` and `if_any` are empty, every unit in the record satisfies the antecedent, so 0 goes in the ¬P cells. If another form's count differs from 0, it stays `不一致`.
 
-条件の表示は、記録にある `col` `op` `value` をそのままつなぐ。`if` の条件は `∧`、`if_any` の組の間は `∨`、前件から後件は `→`、逆・裏・対偶で前件か後件をまとめて否定するときは `¬(…)` とする。`¬(rd>0)` を `rd<=0` には書き換えない。
+Conditions are displayed by joining the recorded `col` `op` `value` as-is. `if` conditions are joined with `∧`, `if_any` groups with `∨`, antecedent to consequent with `→`, and when the converse, inverse, or contrapositive negates the antecedent or consequent as a whole, `¬(…)` is used. `¬(rd>0)` is not rewritten as `rd<=0`.
 
-前件が空の場合は P を `⊤（条件なし）`、その否定を `⊥（条件なしの否定）` と表示する。元は `⊤ → Q`、対偶は `¬Q → ⊥` である。逆・裏の論理式も表示するが、既存の評価器がこの場合に保存しない二つの形は「未評価」とする。表示のために再評価はしない。
+When the antecedent is empty, P is shown as `⊤（条件なし）` (no condition) and its negation as `⊥（条件なしの否定）` (negation of no condition). The original is `⊤ → Q` and the contrapositive is `¬Q → ⊥`. The logical formulas for the converse and inverse are shown too, but the two forms the existing evaluator does not store in this case are marked "未評価" (not evaluated). Nothing is re-evaluated for display.
 
-印は各表示の先頭に一つ置く。
+One marker is placed at the start of each display.
 
-| 記録 | 表示 |
+| Record | Display |
 |---|---|
-| `posthoc` が true | 事後構成 |
-| `preregistered` が true、または事前登録の記録がある | 事前登録 |
-| それ以外（項目が無い、`posthoc` が false） | 不明 |
+| `posthoc` is true | 事後構成 (post-hoc) |
+| `preregistered` is true, or there is a preregistration record | 事前登録 (preregistered) |
+| Otherwise (no field, `posthoc` is false) | 不明 (unknown) |
 
-式の ID を指定したときに `sets.jsonl` が無い場合は `結果が読めない` とし、その ID が結果に無いとは書かない。
+When a formula ID is given and `sets.jsonl` does not exist, it shows `結果が読めない` (results unreadable), and does not say the ID is absent from the results.
 
-## 解釈
+## Interpretation
 
-この表は、保存された判定の数をマスに置いたものである。マスが大きいことを、その命題が正しいことや、次の年も成り立つこととしては読まない。`不明` は「事前登録ではなかった」という意味ではなく、機械的な記録が無い、という表示である。
+This table places the stored judgment counts into cells. A large cell is not read as meaning the proposition is true or will hold next year. `不明` does not mean "it was not preregistered"; it means there is no machine-readable record.
 
-候補 ID（`もしかして`）はこの表示には出さない。問い合わせ側の扱いは [ask.md](../../queryu/docs/ask.md)。
+Candidate IDs (`もしかして`, "did you mean") are not shown in this display. Handling on the query side is in [ask.md](../../queryu/docs/ask.md).
 
-HTML（軌跡、球団×年、条件の重なり、命題の一覧）は [figures.md](figures.md)。
+HTML (trajectories, team × year, condition overlap, list of propositions) is in [figures.md](figures.md).

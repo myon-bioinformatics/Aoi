@@ -1,0 +1,764 @@
+{
+  "data": [
+    [
+      "2016-04-01",
+      62.37,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  ],
+  "count": 125,
+  "meta": [
+    {
+      "frequency": "month",
+      "start_date": "2016-04-01",
+      "end_date": "2016-04-01"
+    },
+    {
+      "catalog": {
+        "identifier": "sspm",
+        "title": "Datos Programación Macroeconómica",
+        "description": "Catálogo de datos abiertos de la Subsecretaría de Programación Macroeconómica.",
+        "issued": "2017-09-28",
+        "modified": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+        "license": "Creative Commons Attribution 4.0",
+        "spatial": "ARG",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica.",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "dataset": {
+        "identifier": "101",
+        "title": "Índice de Precios al Consumidor GBA (IPC-GBA). Base diciembre 2016.",
+        "description": "Índice de Precios al Consumidor del Gran Buenos Aires. Apertura por capítulos. Base diciembre 2016.",
+        "superTheme": [
+          "ECON"
+        ],
+        "theme": [
+          {
+            "id": "precios",
+            "label": "Precios",
+            "description": "Series de precios"
+          }
+        ],
+        "keyword": [
+          "precios",
+          "ipc",
+          "gba"
+        ],
+        "accrualPeriodicity": "R/P1M",
+        "issued": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "spatial": "ARG",
+        "temporal": "2016-04-01/2017-06-01",
+        "landingPage": "https://www.economia.gob.ar/datos/",
+        "license": "Creative Commons Attribution 4.0",
+        "source": "Instituto Nacional de Estadística y Censos (INDEC)",
+        "accessLevel": "ABIERTO",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        },
+        "contactPoint": {
+          "fn": "Subsecretaría de Programación Macroeconómica.",
+          "hasEmail": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "distribution": {
+        "identifier": "101.9",
+        "title": "Precios al consumidor de un conjunto de alimentos y bebidas. Base diciembre 2016. Valores mensuales",
+        "description": "Precios al consumidor de un conjunto de alimentos y bebidas. Valores mensuales. (Base diciembre 2016).",
+        "fileName": "precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "format": "CSV",
+        "accessURL": "https://www.economia.gob.ar/datos/",
+        "issued": "2017-09-28",
+        "downloadURL": "https://infra.datos.gob.ar/catalog/sspm/dataset/101/distribution/101.9/download/precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "last_hash": "ad3e32a99ef046289b102c0bdd7e58f2ce694099b17e0bc3c0721ca9223a46921b2541de7d2ac6a832a1ad9cc64fab93002b98d272ade4df6e85b6c84c7ee103",
+        "changed": "False",
+        "frequency": "R/P1M"
+      },
+      "field": {
+        "title": "ipc_2016_cafe_molido",
+        "type": "number",
+        "specialTypeDetail": "",
+        "description": "IPC-GBA. Precios. Café molido. Mensual",
+        "id": "105.1_I2CM_2016_M_20",
+        "units": "Pesos",
+        "time_index_start": "2016-04-01",
+        "time_index_end": "2026-08-01",
+        "frequency": "R/P1M",
+        "time_index_size": "125",
+        "days_without_data": "40",
+        "last_value": "13724.12",
+        "second_to_last_value": "13418.16",
+        "last_pct_change": "0.02280193409528586",
+        "is_updated": "True",
+        "max_value": "13724.12",
+        "min_value": "62.37",
+        "average": "2895.8763999999996",
+        "significant_figures": "2",
+        "hits_total": "785",
+        "hits_30_days": "0",
+        "hits_90_days": "0",
+        "hits_180_days": "0",
+        "available": "true",
+        "is_percentage": false,
+        "representation_mode": "value",
+        "representation_mode_units": "Pesos"
+      }
+    },
+    {
+      "catalog": {
+        "identifier": "sspm",
+        "title": "Datos Programación Macroeconómica",
+        "description": "Catálogo de datos abiertos de la Subsecretaría de Programación Macroeconómica.",
+        "issued": "2017-09-28",
+        "modified": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+        "license": "Creative Commons Attribution 4.0",
+        "spatial": "ARG",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica.",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "dataset": {
+        "identifier": "101",
+        "title": "Índice de Precios al Consumidor GBA (IPC-GBA). Base diciembre 2016.",
+        "description": "Índice de Precios al Consumidor del Gran Buenos Aires. Apertura por capítulos. Base diciembre 2016.",
+        "superTheme": [
+          "ECON"
+        ],
+        "theme": [
+          {
+            "id": "precios",
+            "label": "Precios",
+            "description": "Series de precios"
+          }
+        ],
+        "keyword": [
+          "precios",
+          "ipc",
+          "gba"
+        ],
+        "accrualPeriodicity": "R/P1M",
+        "issued": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "spatial": "ARG",
+        "temporal": "2016-04-01/2017-06-01",
+        "landingPage": "https://www.economia.gob.ar/datos/",
+        "license": "Creative Commons Attribution 4.0",
+        "source": "Instituto Nacional de Estadística y Censos (INDEC)",
+        "accessLevel": "ABIERTO",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        },
+        "contactPoint": {
+          "fn": "Subsecretaría de Programación Macroeconómica.",
+          "hasEmail": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "distribution": {
+        "identifier": "101.9",
+        "title": "Precios al consumidor de un conjunto de alimentos y bebidas. Base diciembre 2016. Valores mensuales",
+        "description": "Precios al consumidor de un conjunto de alimentos y bebidas. Valores mensuales. (Base diciembre 2016).",
+        "fileName": "precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "format": "CSV",
+        "accessURL": "https://www.economia.gob.ar/datos/",
+        "issued": "2017-09-28",
+        "downloadURL": "https://infra.datos.gob.ar/catalog/sspm/dataset/101/distribution/101.9/download/precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "last_hash": "ad3e32a99ef046289b102c0bdd7e58f2ce694099b17e0bc3c0721ca9223a46921b2541de7d2ac6a832a1ad9cc64fab93002b98d272ade4df6e85b6c84c7ee103",
+        "changed": "False",
+        "frequency": "R/P1M"
+      },
+      "field": {
+        "title": "ipc_2016_detergente_liquido",
+        "type": "number",
+        "specialTypeDetail": "",
+        "description": "IPC-GBA. Precios. Detergente líquido. Mensual",
+        "id": "105.1_I2DL_2016_M_27",
+        "units": "Pesos",
+        "time_index_start": "2016-07-01",
+        "time_index_end": "2026-08-01",
+        "frequency": "R/P1M",
+        "time_index_size": "122",
+        "days_without_data": "40",
+        "last_value": "2167.55",
+        "second_to_last_value": "2168.57",
+        "last_pct_change": "-0.0004703560410777019",
+        "is_updated": "True",
+        "max_value": "2168.57",
+        "min_value": "12.04",
+        "average": "507.70647540983606",
+        "significant_figures": "2",
+        "hits_total": "744",
+        "hits_30_days": "0",
+        "hits_90_days": "0",
+        "hits_180_days": "0",
+        "available": "true",
+        "is_percentage": false,
+        "representation_mode": "value",
+        "representation_mode_units": "Pesos"
+      }
+    },
+    {
+      "catalog": {
+        "identifier": "sspm",
+        "title": "Datos Programación Macroeconómica",
+        "description": "Catálogo de datos abiertos de la Subsecretaría de Programación Macroeconómica.",
+        "issued": "2017-09-28",
+        "modified": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+        "license": "Creative Commons Attribution 4.0",
+        "spatial": "ARG",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica.",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "dataset": {
+        "identifier": "101",
+        "title": "Índice de Precios al Consumidor GBA (IPC-GBA). Base diciembre 2016.",
+        "description": "Índice de Precios al Consumidor del Gran Buenos Aires. Apertura por capítulos. Base diciembre 2016.",
+        "superTheme": [
+          "ECON"
+        ],
+        "theme": [
+          {
+            "id": "precios",
+            "label": "Precios",
+            "description": "Series de precios"
+          }
+        ],
+        "keyword": [
+          "precios",
+          "ipc",
+          "gba"
+        ],
+        "accrualPeriodicity": "R/P1M",
+        "issued": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "spatial": "ARG",
+        "temporal": "2016-04-01/2017-06-01",
+        "landingPage": "https://www.economia.gob.ar/datos/",
+        "license": "Creative Commons Attribution 4.0",
+        "source": "Instituto Nacional de Estadística y Censos (INDEC)",
+        "accessLevel": "ABIERTO",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        },
+        "contactPoint": {
+          "fn": "Subsecretaría de Programación Macroeconómica.",
+          "hasEmail": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "distribution": {
+        "identifier": "101.9",
+        "title": "Precios al consumidor de un conjunto de alimentos y bebidas. Base diciembre 2016. Valores mensuales",
+        "description": "Precios al consumidor de un conjunto de alimentos y bebidas. Valores mensuales. (Base diciembre 2016).",
+        "fileName": "precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "format": "CSV",
+        "accessURL": "https://www.economia.gob.ar/datos/",
+        "issued": "2017-09-28",
+        "downloadURL": "https://infra.datos.gob.ar/catalog/sspm/dataset/101/distribution/101.9/download/precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "last_hash": "ad3e32a99ef046289b102c0bdd7e58f2ce694099b17e0bc3c0721ca9223a46921b2541de7d2ac6a832a1ad9cc64fab93002b98d272ade4df6e85b6c84c7ee103",
+        "changed": "False",
+        "frequency": "R/P1M"
+      },
+      "field": {
+        "title": "ipc_2016_champu",
+        "type": "number",
+        "specialTypeDetail": "",
+        "description": "IPC-GBA. Precios. Champú. Mensual",
+        "id": "105.1_I2C_2016_M_15",
+        "units": "Pesos",
+        "available": "true",
+        "time_index_start": "2016-07-01",
+        "time_index_end": "2026-08-01",
+        "frequency": "R/P1M",
+        "time_index_size": "122",
+        "days_without_data": "40",
+        "last_value": "7364.28",
+        "second_to_last_value": "7309.01",
+        "last_pct_change": "0.007561899627993363",
+        "is_updated": "True",
+        "max_value": "7364.28",
+        "min_value": "42.79",
+        "average": "1654.2340163934427",
+        "significant_figures": "2",
+        "hits_total": "687",
+        "hits_30_days": "0",
+        "hits_90_days": "0",
+        "hits_180_days": "0",
+        "is_percentage": false,
+        "representation_mode": "value",
+        "representation_mode_units": "Pesos"
+      }
+    },
+    {
+      "catalog": {
+        "identifier": "sspm",
+        "title": "Datos Programación Macroeconómica",
+        "description": "Catálogo de datos abiertos de la Subsecretaría de Programación Macroeconómica.",
+        "issued": "2017-09-28",
+        "modified": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+        "license": "Creative Commons Attribution 4.0",
+        "spatial": "ARG",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica.",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "dataset": {
+        "identifier": "101",
+        "title": "Índice de Precios al Consumidor GBA (IPC-GBA). Base diciembre 2016.",
+        "description": "Índice de Precios al Consumidor del Gran Buenos Aires. Apertura por capítulos. Base diciembre 2016.",
+        "superTheme": [
+          "ECON"
+        ],
+        "theme": [
+          {
+            "id": "precios",
+            "label": "Precios",
+            "description": "Series de precios"
+          }
+        ],
+        "keyword": [
+          "precios",
+          "ipc",
+          "gba"
+        ],
+        "accrualPeriodicity": "R/P1M",
+        "issued": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "spatial": "ARG",
+        "temporal": "2016-04-01/2017-06-01",
+        "landingPage": "https://www.economia.gob.ar/datos/",
+        "license": "Creative Commons Attribution 4.0",
+        "source": "Instituto Nacional de Estadística y Censos (INDEC)",
+        "accessLevel": "ABIERTO",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        },
+        "contactPoint": {
+          "fn": "Subsecretaría de Programación Macroeconómica.",
+          "hasEmail": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "distribution": {
+        "identifier": "101.9",
+        "title": "Precios al consumidor de un conjunto de alimentos y bebidas. Base diciembre 2016. Valores mensuales",
+        "description": "Precios al consumidor de un conjunto de alimentos y bebidas. Valores mensuales. (Base diciembre 2016).",
+        "fileName": "precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "format": "CSV",
+        "accessURL": "https://www.economia.gob.ar/datos/",
+        "issued": "2017-09-28",
+        "downloadURL": "https://infra.datos.gob.ar/catalog/sspm/dataset/101/distribution/101.9/download/precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "last_hash": "ad3e32a99ef046289b102c0bdd7e58f2ce694099b17e0bc3c0721ca9223a46921b2541de7d2ac6a832a1ad9cc64fab93002b98d272ade4df6e85b6c84c7ee103",
+        "changed": "False",
+        "frequency": "R/P1M"
+      },
+      "field": {
+        "title": "ipc_2016_lavandina",
+        "type": "number",
+        "specialTypeDetail": "",
+        "description": "IPC-GBA. Precios. Lavandina. Mensual",
+        "id": "105.1_I2L_2016_M_18",
+        "units": "Pesos",
+        "time_index_start": "2016-07-01",
+        "time_index_end": "2026-08-01",
+        "frequency": "R/P1M",
+        "time_index_size": "122",
+        "days_without_data": "40",
+        "last_value": "1394.1",
+        "second_to_last_value": "1385.16",
+        "last_pct_change": "0.006454128042969742",
+        "is_updated": "True",
+        "max_value": "1411.3",
+        "min_value": "12.81",
+        "average": "360.1788524590165",
+        "significant_figures": "2",
+        "hits_total": "6059",
+        "hits_30_days": "0",
+        "hits_90_days": "0",
+        "hits_180_days": "0",
+        "available": "true",
+        "is_percentage": false,
+        "representation_mode": "value",
+        "representation_mode_units": "Pesos"
+      }
+    },
+    {
+      "catalog": {
+        "identifier": "sspm",
+        "title": "Datos Programación Macroeconómica",
+        "description": "Catálogo de datos abiertos de la Subsecretaría de Programación Macroeconómica.",
+        "issued": "2017-09-28",
+        "modified": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+        "license": "Creative Commons Attribution 4.0",
+        "spatial": "ARG",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica.",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "dataset": {
+        "identifier": "101",
+        "title": "Índice de Precios al Consumidor GBA (IPC-GBA). Base diciembre 2016.",
+        "description": "Índice de Precios al Consumidor del Gran Buenos Aires. Apertura por capítulos. Base diciembre 2016.",
+        "superTheme": [
+          "ECON"
+        ],
+        "theme": [
+          {
+            "id": "precios",
+            "label": "Precios",
+            "description": "Series de precios"
+          }
+        ],
+        "keyword": [
+          "precios",
+          "ipc",
+          "gba"
+        ],
+        "accrualPeriodicity": "R/P1M",
+        "issued": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "spatial": "ARG",
+        "temporal": "2016-04-01/2017-06-01",
+        "landingPage": "https://www.economia.gob.ar/datos/",
+        "license": "Creative Commons Attribution 4.0",
+        "source": "Instituto Nacional de Estadística y Censos (INDEC)",
+        "accessLevel": "ABIERTO",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        },
+        "contactPoint": {
+          "fn": "Subsecretaría de Programación Macroeconómica.",
+          "hasEmail": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "distribution": {
+        "identifier": "101.9",
+        "title": "Precios al consumidor de un conjunto de alimentos y bebidas. Base diciembre 2016. Valores mensuales",
+        "description": "Precios al consumidor de un conjunto de alimentos y bebidas. Valores mensuales. (Base diciembre 2016).",
+        "fileName": "precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "format": "CSV",
+        "accessURL": "https://www.economia.gob.ar/datos/",
+        "issued": "2017-09-28",
+        "downloadURL": "https://infra.datos.gob.ar/catalog/sspm/dataset/101/distribution/101.9/download/precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "last_hash": "ad3e32a99ef046289b102c0bdd7e58f2ce694099b17e0bc3c0721ca9223a46921b2541de7d2ac6a832a1ad9cc64fab93002b98d272ade4df6e85b6c84c7ee103",
+        "changed": "False",
+        "frequency": "R/P1M"
+      },
+      "field": {
+        "title": "ipc_2016_jabon_tocador",
+        "type": "number",
+        "specialTypeDetail": "",
+        "description": "IPC-GBA. Precios. Jabón de tocador. Mensual",
+        "id": "105.1_I2JT_2016_M_22",
+        "units": "Pesos",
+        "available": "true",
+        "time_index_start": "2016-07-01",
+        "time_index_end": "2026-08-01",
+        "frequency": "R/P1M",
+        "time_index_size": "122",
+        "days_without_data": "40",
+        "last_value": "4543.9",
+        "second_to_last_value": "4413.17",
+        "last_pct_change": "0.02962269751675084",
+        "is_updated": "True",
+        "max_value": "4543.9",
+        "min_value": "12.02",
+        "average": "508.11991803278687",
+        "significant_figures": "2",
+        "hits_total": "672",
+        "hits_30_days": "0",
+        "hits_90_days": "0",
+        "hits_180_days": "0",
+        "is_percentage": false,
+        "representation_mode": "value",
+        "representation_mode_units": "Pesos"
+      }
+    },
+    {
+      "catalog": {
+        "identifier": "sspm",
+        "title": "Datos Programación Macroeconómica",
+        "description": "Catálogo de datos abiertos de la Subsecretaría de Programación Macroeconómica.",
+        "issued": "2017-09-28",
+        "modified": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+        "license": "Creative Commons Attribution 4.0",
+        "spatial": "ARG",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica.",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "dataset": {
+        "identifier": "101",
+        "title": "Índice de Precios al Consumidor GBA (IPC-GBA). Base diciembre 2016.",
+        "description": "Índice de Precios al Consumidor del Gran Buenos Aires. Apertura por capítulos. Base diciembre 2016.",
+        "superTheme": [
+          "ECON"
+        ],
+        "theme": [
+          {
+            "id": "precios",
+            "label": "Precios",
+            "description": "Series de precios"
+          }
+        ],
+        "keyword": [
+          "precios",
+          "ipc",
+          "gba"
+        ],
+        "accrualPeriodicity": "R/P1M",
+        "issued": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "spatial": "ARG",
+        "temporal": "2016-04-01/2017-06-01",
+        "landingPage": "https://www.economia.gob.ar/datos/",
+        "license": "Creative Commons Attribution 4.0",
+        "source": "Instituto Nacional de Estadística y Censos (INDEC)",
+        "accessLevel": "ABIERTO",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        },
+        "contactPoint": {
+          "fn": "Subsecretaría de Programación Macroeconómica.",
+          "hasEmail": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "distribution": {
+        "identifier": "101.9",
+        "title": "Precios al consumidor de un conjunto de alimentos y bebidas. Base diciembre 2016. Valores mensuales",
+        "description": "Precios al consumidor de un conjunto de alimentos y bebidas. Valores mensuales. (Base diciembre 2016).",
+        "fileName": "precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "format": "CSV",
+        "accessURL": "https://www.economia.gob.ar/datos/",
+        "issued": "2017-09-28",
+        "downloadURL": "https://infra.datos.gob.ar/catalog/sspm/dataset/101/distribution/101.9/download/precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "last_hash": "ad3e32a99ef046289b102c0bdd7e58f2ce694099b17e0bc3c0721ca9223a46921b2541de7d2ac6a832a1ad9cc64fab93002b98d272ade4df6e85b6c84c7ee103",
+        "changed": "False",
+        "frequency": "R/P1M"
+      },
+      "field": {
+        "title": "ipc_2016_jabon_pan",
+        "type": "number",
+        "specialTypeDetail": "",
+        "description": "IPC-GBA. Precios. Jabón en pan. Mensual",
+        "id": "105.1_I2JP_2016_M_18",
+        "units": "Pesos",
+        "available": "true",
+        "time_index_start": "2016-07-01",
+        "time_index_end": "2026-08-01",
+        "frequency": "R/P1M",
+        "time_index_size": "122",
+        "days_without_data": "40",
+        "last_value": "1543.45",
+        "second_to_last_value": "1494.88",
+        "last_pct_change": "0.032490902279781686",
+        "is_updated": "True",
+        "max_value": "1543.45",
+        "min_value": "10.84",
+        "average": "349.2797540983606",
+        "significant_figures": "2",
+        "hits_total": "560",
+        "hits_30_days": "0",
+        "hits_90_days": "0",
+        "hits_180_days": "0",
+        "is_percentage": false,
+        "representation_mode": "value",
+        "representation_mode_units": "Pesos"
+      }
+    },
+    {
+      "catalog": {
+        "identifier": "sspm",
+        "title": "Datos Programación Macroeconómica",
+        "description": "Catálogo de datos abiertos de la Subsecretaría de Programación Macroeconómica.",
+        "issued": "2017-09-28",
+        "modified": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "superThemeTaxonomy": "http://datos.gob.ar/superThemeTaxonomy.json",
+        "license": "Creative Commons Attribution 4.0",
+        "spatial": "ARG",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica.",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "dataset": {
+        "identifier": "101",
+        "title": "Índice de Precios al Consumidor GBA (IPC-GBA). Base diciembre 2016.",
+        "description": "Índice de Precios al Consumidor del Gran Buenos Aires. Apertura por capítulos. Base diciembre 2016.",
+        "superTheme": [
+          "ECON"
+        ],
+        "theme": [
+          {
+            "id": "precios",
+            "label": "Precios",
+            "description": "Series de precios"
+          }
+        ],
+        "keyword": [
+          "precios",
+          "ipc",
+          "gba"
+        ],
+        "accrualPeriodicity": "R/P1M",
+        "issued": "2017-09-28",
+        "language": [
+          "SPA"
+        ],
+        "spatial": "ARG",
+        "temporal": "2016-04-01/2017-06-01",
+        "landingPage": "https://www.economia.gob.ar/datos/",
+        "license": "Creative Commons Attribution 4.0",
+        "source": "Instituto Nacional de Estadística y Censos (INDEC)",
+        "accessLevel": "ABIERTO",
+        "publisher": {
+          "name": "Subsecretaría de Programación Macroeconómica",
+          "mbox": "datoseconomicos@mecon.gov.ar"
+        },
+        "contactPoint": {
+          "fn": "Subsecretaría de Programación Macroeconómica.",
+          "hasEmail": "datoseconomicos@mecon.gov.ar"
+        }
+      },
+      "distribution": {
+        "identifier": "101.9",
+        "title": "Precios al consumidor de un conjunto de alimentos y bebidas. Base diciembre 2016. Valores mensuales",
+        "description": "Precios al consumidor de un conjunto de alimentos y bebidas. Valores mensuales. (Base diciembre 2016).",
+        "fileName": "precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "format": "CSV",
+        "accessURL": "https://www.economia.gob.ar/datos/",
+        "issued": "2017-09-28",
+        "downloadURL": "https://infra.datos.gob.ar/catalog/sspm/dataset/101/distribution/101.9/download/precios-al-consumidor-conjunto-alimentos-bebidas-base-diciembre-2016-mensual.csv",
+        "last_hash": "ad3e32a99ef046289b102c0bdd7e58f2ce694099b17e0bc3c0721ca9223a46921b2541de7d2ac6a832a1ad9cc64fab93002b98d272ade4df6e85b6c84c7ee103",
+        "changed": "False",
+        "frequency": "R/P1M"
+      },
+      "field": {
+        "title": "ipc_2016_jabon_polvo_ropa",
+        "type": "number",
+        "specialTypeDetail": "",
+        "description": "IPC-GBA. Precios. Jabón en polvo para ropa. Mensual",
+        "id": "105.1_I2JPR_2016_M_25",
+        "units": "Pesos",
+        "time_index_start": "2016-07-01",
+        "time_index_end": "2026-08-01",
+        "frequency": "R/P1M",
+        "time_index_size": "122",
+        "days_without_data": "40",
+        "last_value": "3503.77",
+        "second_to_last_value": "3399.79",
+        "last_pct_change": "0.03058424196788634",
+        "is_updated": "True",
+        "max_value": "3503.77",
+        "min_value": "38.95",
+        "average": "772.0755737704917",
+        "significant_figures": "2",
+        "hits_total": "632",
+        "hits_30_days": "0",
+        "hits_90_days": "0",
+        "hits_180_days": "0",
+        "available": "true",
+        "is_percentage": false,
+        "representation_mode": "value",
+        "representation_mode_units": "Pesos"
+      }
+    }
+  ],
+  "params": {
+    "ids": "105.1_I2CM_2016_M_20,105.1_I2DL_2016_M_27,105.1_I2C_2016_M_15,105.1_I2L_2016_M_18,105.1_I2JT_2016_M_22,105.1_I2JP_2016_M_18,105.1_I2JPR_2016_M_25",
+    "metadata": "full",
+    "limit": "1",
+    "identifiers": [
+      {
+        "id": "105.1_I2CM_2016_M_20",
+        "distribution": "101.9",
+        "dataset": "101"
+      },
+      {
+        "id": "105.1_I2DL_2016_M_27",
+        "distribution": "101.9",
+        "dataset": "101"
+      },
+      {
+        "id": "105.1_I2C_2016_M_15",
+        "distribution": "101.9",
+        "dataset": "101"
+      },
+      {
+        "id": "105.1_I2L_2016_M_18",
+        "distribution": "101.9",
+        "dataset": "101"
+      },
+      {
+        "id": "105.1_I2JT_2016_M_22",
+        "distribution": "101.9",
+        "dataset": "101"
+      },
+      {
+        "id": "105.1_I2JP_2016_M_18",
+        "distribution": "101.9",
+        "dataset": "101"
+      },
+      {
+        "id": "105.1_I2JPR_2016_M_25",
+        "distribution": "101.9",
+        "dataset": "101"
+      }
+    ]
+  }
+}

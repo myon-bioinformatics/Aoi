@@ -1,0 +1,5 @@
+NIS CSES 2019/20 Table 4 Food shared of total monthly household consumption
+Phnom Penh 39.0 Other urban 41.3 Other rural 46.6
+Urban (PP+OU) from published values: (793+882)/(2033+2135)=40.187≈40.2
+Food share def includes food+non-alc+alcoholic beverages
+PDF: https://nis.gov.kh/nis/CSES/Final%20Report%20of%20Cambodia%20Socio-Economic%20Survey%202019-20_EN.pdf

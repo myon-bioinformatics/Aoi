@@ -1,0 +1,7 @@
+ABS Household Expenditure Survey Australia 2015-16 Summary of Results
+Food and non-alcoholic beverages % of total goods and services expenditure:
+Greater Capital City: 254.96 / 1538.8 = 16.57% → 16.6
+Rest of State: 203.09 / 1213.3 = 16.74% → 16.7
+https://www.abs.gov.au/statistics/economy/finance/household-expenditure-survey-australia-summary-results/latest-release
+Retrieved: 2026-10-24 Asia/Tokyo
+Note: capital/rest is urban proxy, not strict urban/rural; shares nearly identical.

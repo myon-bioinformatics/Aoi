@@ -1,0 +1,604 @@
+{
+  "products": [
+    {
+      "id": "001900",
+      "label_de": "Langkornreis",
+      "label_en": "Long grain rice",
+      "level": 1
+    },
+    {
+      "id": "002000",
+      "label_de": "Weizenmehl",
+      "label_en": "Wheat flour",
+      "level": 1
+    },
+    {
+      "id": "000600",
+      "label_de": "Mischbrot",
+      "label_en": "Rye bread",
+      "level": 1
+    },
+    {
+      "id": "000700",
+      "label_de": "Spezialbrot",
+      "label_en": "Wholemeal bread",
+      "level": 1
+    },
+    {
+      "id": "000800",
+      "label_de": "Weißbrot",
+      "label_en": "White bread",
+      "level": 1
+    },
+    {
+      "id": "000900",
+      "label_de": "Semmel",
+      "label_en": "Bread roll",
+      "level": 1
+    },
+    {
+      "id": "001000",
+      "label_de": "Gebäck",
+      "label_en": "Scone, handmade",
+      "level": 1
+    },
+    {
+      "id": "001110",
+      "label_de": "Laugengebäck",
+      "label_en": "Lye bun",
+      "level": 1
+    },
+    {
+      "id": "001500",
+      "label_de": "Kekse mit Schokoladeanteil",
+      "label_en": "Butter biscuits",
+      "level": 1
+    },
+    {
+      "id": "001600",
+      "label_de": "Haselnussschnitten",
+      "label_en": "Wafers with hazelnut cream",
+      "level": 1
+    },
+    {
+      "id": "001700",
+      "label_de": "Salzstäbchen",
+      "label_en": "Salty sticks",
+      "level": 1
+    },
+    {
+      "id": "002300",
+      "label_de": "Gebäck mit süßer Füllung",
+      "label_en": "Nut cake",
+      "level": 1
+    },
+    {
+      "id": "002400",
+      "label_de": "Topfengolatsche",
+      "label_en": "Curd cheese cake",
+      "level": 1
+    },
+    {
+      "id": "002100",
+      "label_de": "Teigwaren",
+      "label_en": "Pasta",
+      "level": 1
+    },
+    {
+      "id": "001200",
+      "label_de": "Fertigteig",
+      "label_en": "Ready-made dough",
+      "level": 1
+    },
+    {
+      "id": "003100",
+      "label_de": "Rindfleisch, Gulasch",
+      "label_en": "Roast beef",
+      "level": 1
+    },
+    {
+      "id": "003200",
+      "label_de": "Rindsschnitzelfleisch",
+      "label_en": "Beef round",
+      "level": 1
+    },
+    {
+      "id": "003300",
+      "label_de": "Rind-Suppenfleisch",
+      "label_en": "Beef shoulder",
+      "level": 1
+    },
+    {
+      "id": "003500",
+      "label_de": "Bauchfleisch",
+      "label_en": "Pork belly",
+      "level": 1
+    },
+    {
+      "id": "003600",
+      "label_de": "Schopfbraten",
+      "label_en": "Pork chops",
+      "level": 1
+    },
+    {
+      "id": "003700",
+      "label_de": "Schweinsschnitzel",
+      "label_en": "Pork cutlet",
+      "level": 1
+    },
+    {
+      "id": "004800",
+      "label_de": "Putenbrustfleisch",
+      "label_en": "Turkey breast",
+      "level": 1
+    },
+    {
+      "id": "005000",
+      "label_de": "Hühnerfilet",
+      "label_en": "Chicken breast",
+      "level": 1
+    },
+    {
+      "id": "002800",
+      "label_de": "Speck",
+      "label_en": "Bacon",
+      "level": 1
+    },
+    {
+      "id": "004200",
+      "label_de": "Schinken vom Schwein",
+      "label_en": "Pork ham",
+      "level": 1
+    },
+    {
+      "id": "004600",
+      "label_de": "Salami",
+      "label_en": "Salami",
+      "level": 1
+    },
+    {
+      "id": "002600",
+      "label_de": "Faschiertes",
+      "label_en": "Minced meat",
+      "level": 1
+    },
+    {
+      "id": "004000",
+      "label_de": "Würstel",
+      "label_en": "Sausages",
+      "level": 1
+    },
+    {
+      "id": "004100",
+      "label_de": "Dauerhartwurst",
+      "label_en": "Dry sausage",
+      "level": 1
+    },
+    {
+      "id": "004300",
+      "label_de": "Truthahnextrawurst",
+      "label_en": "Turkey sausage",
+      "level": 1
+    },
+    {
+      "id": "004400",
+      "label_de": "Extrawurst",
+      "label_en": "Pork sausage",
+      "level": 1
+    },
+    {
+      "id": "004900",
+      "label_de": "Hühnerfleisch paniert, tiefgekühlt",
+      "label_en": "Breaded chicken meat, deep frozen",
+      "level": 1
+    },
+    {
+      "id": "005200",
+      "label_de": "Dorschfilet, tiefgekühlt",
+      "label_en": "Codfish filet, deep frozen",
+      "level": 1
+    },
+    {
+      "id": "005400",
+      "label_de": "Frischer Fisch",
+      "label_en": "Fresh fish",
+      "level": 1
+    },
+    {
+      "id": "005500",
+      "label_de": "Räucherlachs",
+      "label_en": "Smoked salmon",
+      "level": 1
+    },
+    {
+      "id": "005100",
+      "label_de": "Thunfisch",
+      "label_en": "Tunafish",
+      "level": 1
+    },
+    {
+      "id": "005300",
+      "label_de": "Fischstäbchen, tiefgekühlt",
+      "label_en": "Fish fingers, deep frozen",
+      "level": 1
+    },
+    {
+      "id": "005660",
+      "label_de": "Länger Frisch Milch",
+      "label_en": "Extended shelf life  milk",
+      "level": 1
+    },
+    {
+      "id": "005661",
+      "label_de": "Frischmilch",
+      "label_en": "Fresh milk",
+      "level": 1
+    },
+    {
+      "id": "005900",
+      "label_de": "Schlagobers",
+      "label_en": "Whipped cream",
+      "level": 1
+    },
+    {
+      "id": "006000",
+      "label_de": "Speisetopfen",
+      "label_en": "Curd cheese",
+      "level": 1
+    },
+    {
+      "id": "006600",
+      "label_de": "Emmentaler",
+      "label_en": "Emmentaler",
+      "level": 1
+    },
+    {
+      "id": "006700",
+      "label_de": "Gouda",
+      "label_en": "Gouda",
+      "level": 1
+    },
+    {
+      "id": "006800",
+      "label_de": "Bergkäse",
+      "label_en": "Hard cheese",
+      "level": 1
+    },
+    {
+      "id": "007100",
+      "label_de": "Frischkäse",
+      "label_en": "Fresh cream cheese",
+      "level": 1
+    },
+    {
+      "id": "007200",
+      "label_de": "Mozzarella",
+      "label_en": "Mozzarella",
+      "level": 1
+    },
+    {
+      "id": "005800",
+      "label_de": "Sauerrahm",
+      "label_en": "Sour cream",
+      "level": 1
+    },
+    {
+      "id": "006200",
+      "label_de": "Fruchtjoghurt",
+      "label_en": "Yoghurt fruit flavoured",
+      "level": 1
+    },
+    {
+      "id": "006400",
+      "label_de": "Joghurt natur",
+      "label_en": "Yoghurt",
+      "level": 1
+    },
+    {
+      "id": "005700",
+      "label_de": "Milchmixgetränk",
+      "label_en": "Milk shake",
+      "level": 1
+    },
+    {
+      "id": "006500",
+      "label_de": "Eier",
+      "label_en": "Eggs",
+      "level": 1
+    },
+    {
+      "id": "007800",
+      "label_de": "Olivenöl",
+      "label_en": "Olive oil",
+      "level": 1
+    },
+    {
+      "id": "007300",
+      "label_de": "Butter",
+      "label_en": "Butter",
+      "level": 1
+    },
+    {
+      "id": "007400",
+      "label_de": "Margarine",
+      "label_en": "Margarine",
+      "level": 1
+    },
+    {
+      "id": "009200",
+      "label_de": "Bananen",
+      "label_en": "Bananas",
+      "level": 1
+    },
+    {
+      "id": "010490",
+      "label_de": "Avocado",
+      "label_en": "Avocado",
+      "level": 1
+    },
+    {
+      "id": "009400",
+      "label_de": "Orangen",
+      "label_en": "Oranges",
+      "level": 1
+    },
+    {
+      "id": "009500",
+      "label_de": "Zitronen",
+      "label_en": "Lemons",
+      "level": 1
+    },
+    {
+      "id": "008500",
+      "label_de": "Äpfel",
+      "label_en": "Apples",
+      "level": 1
+    },
+    {
+      "id": "008600",
+      "label_de": "Birnen",
+      "label_en": "Pears",
+      "level": 1
+    },
+    {
+      "id": "008440",
+      "label_de": "Beeren (ohne Erdbeeren)",
+      "label_en": "Berries",
+      "level": 1
+    },
+    {
+      "id": "008900",
+      "label_de": "Trauben",
+      "label_en": "Grapes",
+      "level": 1
+    },
+    {
+      "id": "008100",
+      "label_de": "Rosinen",
+      "label_en": "Raisins",
+      "level": 1
+    },
+    {
+      "id": "008000",
+      "label_de": "Erdnüsse geröstet / gesalzen",
+      "label_en": "Peanuts salted",
+      "level": 1
+    },
+    {
+      "id": "010700",
+      "label_de": "Karfiol",
+      "label_en": "Cauliflower",
+      "level": 1
+    },
+    {
+      "id": "010900",
+      "label_de": "Grüner Blattsalat",
+      "label_en": "Iceberg lettuce",
+      "level": 1
+    },
+    {
+      "id": "010600",
+      "label_de": "Gurken",
+      "label_en": "Cucumbers",
+      "level": 1
+    },
+    {
+      "id": "011000",
+      "label_de": "Paprika",
+      "label_en": "Paprika",
+      "level": 1
+    },
+    {
+      "id": "011400",
+      "label_de": "Tomaten",
+      "label_en": "Tomatoes",
+      "level": 1
+    },
+    {
+      "id": "010500",
+      "label_de": "Champignons",
+      "label_en": "Champignons",
+      "level": 1
+    },
+    {
+      "id": "011700",
+      "label_de": "Zwiebeln",
+      "label_en": "Onions",
+      "level": 1
+    },
+    {
+      "id": "011800",
+      "label_de": "Kartoffeln",
+      "label_en": "Potatoes",
+      "level": 1
+    },
+    {
+      "id": "009900",
+      "label_de": "Mischgemüse, tiefgekühlt",
+      "label_en": "Mixed vegetables, deep frozen",
+      "level": 1
+    },
+    {
+      "id": "010000",
+      "label_de": "Spinat, tiefgekühlt",
+      "label_en": "Spinach, deep frozen",
+      "level": 1
+    },
+    {
+      "id": "010100",
+      "label_de": "Pommes frites, tiefgekühlt",
+      "label_en": "French fries, deep frozen",
+      "level": 1
+    },
+    {
+      "id": "010200",
+      "label_de": "Kartoffelchips",
+      "label_en": "Potatoe chips",
+      "level": 1
+    },
+    {
+      "id": "013200",
+      "label_de": "Kristallzucker",
+      "label_en": "Crystal sugar",
+      "level": 1
+    },
+    {
+      "id": "013000",
+      "label_de": "Marmelade / Konfitüre",
+      "label_en": "Jam",
+      "level": 1
+    },
+    {
+      "id": "012500",
+      "label_de": "Vollmilchschokolade",
+      "label_en": "Milk chocolate",
+      "level": 1
+    },
+    {
+      "id": "012550",
+      "label_de": "Bonbonniere/ Pralinen",
+      "label_en": "Chocolate box",
+      "level": 1
+    },
+    {
+      "id": "012600",
+      "label_de": "Schokoriegel",
+      "label_en": "Chocolate bar",
+      "level": 1
+    },
+    {
+      "id": "014500",
+      "label_de": "Kakaohältiges Getränkepulver",
+      "label_en": "Cocoa instant drink",
+      "level": 1
+    },
+    {
+      "id": "012700",
+      "label_de": "Kaugummi",
+      "label_en": "Chewing gum",
+      "level": 1
+    },
+    {
+      "id": "012800",
+      "label_de": "Fruchtbonbons, -gummi",
+      "label_en": "Fruit drops/ -jelly",
+      "level": 1
+    },
+    {
+      "id": "000100",
+      "label_de": "Pizza, tiefgekühlt",
+      "label_en": "Pizza, deep frozen",
+      "level": 1
+    },
+    {
+      "id": "000200",
+      "label_de": "Süße Knödel, tiefgekühlt",
+      "label_en": "Yeast dumpling, deep frozen",
+      "level": 1
+    },
+    {
+      "id": "003000",
+      "label_de": "Rindsgulaschkonserve",
+      "label_en": "Beef goulash canned",
+      "level": 1
+    },
+    {
+      "id": "014103",
+      "label_de": "Baby-Milchnahrung",
+      "label_en": "Baby food (milk)",
+      "level": 1
+    },
+    {
+      "id": "013900",
+      "label_de": "Senf",
+      "label_en": "Mustard",
+      "level": 1
+    },
+    {
+      "id": "014000",
+      "label_de": "Tomatenketchup",
+      "label_en": "Ketchup",
+      "level": 1
+    },
+    {
+      "id": "014100",
+      "label_de": "Speiseessig",
+      "label_en": "Vinegar",
+      "level": 1
+    },
+    {
+      "id": "013800",
+      "label_de": "Gewürzpaprika",
+      "label_en": "Red pepper",
+      "level": 1
+    },
+    {
+      "id": "015200",
+      "label_de": "Orangensaft",
+      "label_en": "Orange juice",
+      "level": 1
+    },
+    {
+      "id": "014300",
+      "label_de": "Bohnenkaffee",
+      "label_en": "Coffee",
+      "level": 1
+    },
+    {
+      "id": "014301",
+      "label_de": "Kaffeepads/-kapseln",
+      "label_en": "Coffeepads /-caps",
+      "level": 1
+    },
+    {
+      "id": "014302",
+      "label_de": "Löslicher Kaffee",
+      "label_en": "Instant coffee",
+      "level": 1
+    },
+    {
+      "id": "014200",
+      "label_de": "Teebeutel",
+      "label_en": "Tea in bags",
+      "level": 1
+    },
+    {
+      "id": "014800",
+      "label_de": "Mineral-, Tafelwasser",
+      "label_en": "Mineral or table water",
+      "level": 1
+    },
+    {
+      "id": "014900",
+      "label_de": "Kohlensäurehältige Limonade",
+      "label_en": "Soft drink carbonated",
+      "level": 1
+    },
+    {
+      "id": "015000",
+      "label_de": "Colagetränk",
+      "label_en": "Cola",
+      "level": 1
+    }
+  ]
+}

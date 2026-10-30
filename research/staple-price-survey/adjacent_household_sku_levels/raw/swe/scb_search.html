@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head><meta name="viewport" content="width=device-width,&#32;initial-scale=1" /><title>
+	Statistical database - Select table
+</title>
+    <!-- Matomo Tag Manager -->
+    <script>
+        var _mtm = window._mtm = window._mtm || []; _mtm.push({ 'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start' }); var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0]; g.async = true; g.src = 'https://matomo.scb.analys.cloud/js/container_asr3RjOx.js'; s.parentNode.insertBefore(g, s);
+    </script>
+    <!-- End Matomo Tag Manager -->
+  
+
+    <link href="/Resources/scb/css/style.css?v=25.1.0.18647" rel="stylesheet" type="text/css" media="screen" />
+
+    <script src="/Resources/Scripts/jquery-3.5.1.min.js?v=25.1.0.18647"></script>
+    <script src="/Resources/Scripts/jquery-ui.min.js?v=25.1.0.18647"></script>
+    <script src="/Resources/Scripts/pcaxis.web.client.js?v=25.1.0.18647"></script>
+    <script src="/Resources/Scripts/pcaxis.web.controls.js?v=25.1.0.18647"></script>
+    <script src="/Resources/Scripts/jquery.tablesorter.min.js?v=25.1.0.18647"></script>
+    <script src="/Resources/Scripts/jquery.metadata.js?v=25.1.0.18647"></script>
+    <script src="/Resources/Scripts/format.20110630-1100.min.js?v=25.1.0.18647"></script>
+
+    
+</head>
+<body>
+    <div id="pxwebcontent">
+    <form method="post" action="./?rxid=search" id="aspnetForm">
+<input type="hidden" name="ctl00_ContentPlaceHolderMain_TableOfContent1_TableOfContent1_MenuNavigationTree__VIEWSTATE" id="ctl00_ContentPlaceHolderMain_TableOfContent1_TableOfContent1_MenuNavigationTree__VIEWSTATE" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUJMTk1Mjc0MDU3D2QWAmYPZBYEZg9kFgICAQ9kFgJmDxYCHgRUZXh0BSNTdGF0aXN0aWNhbCBkYXRhYmFzZSAtIFNlbGVjdCB0YWJsZWQCAQ9kFhBmD2QWAgIBDxYCHwAFClRvIHRoZSBUb3BkAgEPDxYCHwAFFEp1bXAgdG8gbWFpbiBjb250ZW50FgQeCmFyaWEtbGFiZWwFKlByZXNzIGVudGVyIHRvIGdvIGRpcmVjdGx5IHRvIG1haW4gY29udGVudB4EaHJlZgUKI3B4Y29udGVudGQCAg8PFgIeC05hdmlnYXRlVXJsBRZodHRwOi8vd3d3LnNjYi5zZS9lbl8vZGQCBQ9kFgJmD2QWAmYPZBYIAgEPDxYCHwAFBUxvZ2luZGQCBQ9kFgICAQ9kFgQCAQ8PFgIfAAUIVXNlcm5hbWVkZAIFDw8WAh8ABQhQYXNzd29yZGRkAgcPFgIeB1Zpc2libGVoZAIJDw8WAh8ABRRZb3Ugd2hlcmUgbG9nZ2VkIG91dGRkAgYPZBYCZg9kFgYCAQ8PFgIfAwUWaHR0cDovL3d3dy5zY2Iuc2UvZW5fL2QWAmYPDxYGHghJbWFnZVVybAW/AS9XZWJSZXNvdXJjZS5heGQ/ZD1pSmpycVBqQTRBdDJmU1lYbFRoZXpVWFJteGxibl9CMVh3enhCcXdvQi1Nd2V5TFFYY3A2V1lXSmRZMllXWmpFbjNSS1BuXzYyc1FPTndSbUI2dUF1eWU4UTU1YUhETFVmSDZSRUZDeDNzR3NkdGgtMkFWMl81TkVhVXliQjdITTlwUjFzakpiWTVyVU1Kb3dIc2U3MXcyJnQ9NjM5MjgxMDAwNjExOTM2MzA0Hg1BbHRlcm5hdGVUZXh0BRZJY29uIHJlcHJlc2VudGluZyBob21lHgdUb29sVGlwBQRIb21lZGQCAw8PFgIfBGdkZAIFDw8WBh4IQ3NzQ2xhc3MFFmJyZWFkY3J1bWJfdGV4dF9ub2xpbmsfAAUVU3RhdGlzdGljYWwgZGF0YWJhc2UgHgRfIVNCAgJkZAIHDw8WAh8ABRVTdGF0aXN0aWNhbCBkYXRhYmFzZSBkZAIIDw8WAh8EZ2QWAmYPZBYMZg8PFgIfAAVgVGhlIDMgc3RlcHMgYXJlIENob29zZSB0YWJsZSwgQ2hvb3NlIHZhcmlhYmxlIGFuZCBTaG93IHJlc3VsdC4gWW91IGFyZSBjdXJyZW50bHkgYXQgQ2hvb3NlIHRhYmxlFgIeBWNsYXNzBRFzY3JlZW5yZWFkZXItb25seWQCAQ8PFgQfCAVLZmxleC1jb2x1bW4ganVzdGlmeS1zcGFjZS1iZXR3ZWVuIGFsaWduLWNlbnRlciBuYXZpZ2F0aW9uLWxpbmsgZmlyc3QgYWN0aXZlHwkCAhYEHgthcmlhLWhpZGRlbgUEdHJ1ZR8BBRRCYWNrIHRvIENob29zZSB0YWJsZRYEZg8PFgIfBQU2fi9SZXNvdXJjZXMvSW1hZ2VzL3N2Zy9OYXZpZ2F0aW9uRmxvdy9TdGVwMV9hY3RpdmUuc3ZnZGQCAQ8PFgYfCAUncHh3ZWItbGluayBoZWFkZXIgbmF2LXN0ZXAgZmlyc3QgYWN0aXZlHwAFDENob29zZSB0YWJsZR8JAgJkZAICDxYCHwAFLzxociBhcmlhLWhpZGRlbj0idHJ1ZSIgY2xhc3M9Im5hdi1oci1sZWZ0IGVuIi8+ZAIDDw8WBB8IBUVmbGV4LWNvbHVtbiBqdXN0aWZ5LXNwYWNlLWJldHdlZW4gYWxpZ24tY2VudGVyIG5hdmlnYXRpb24tbGluayBmdXR1cmUfCQICFgQfCwUEdHJ1ZR8BBRdCYWNrIHRvIENob29zZSB2YXJpYWJsZRYEZg8PFgIfBQU2fi9SZXNvdXJjZXMvSW1hZ2VzL3N2Zy9OYXZpZ2F0aW9uRmxvdy9TdGVwMl9mdXR1cmUuc3ZnZGQCAQ8PFgYfCAUocHh3ZWItbGluayBoZWFkZXIgbmF2LXN0ZXAgc2Vjb25kIGZ1dHVyZR8ABQ9DaG9vc2UgdmFyaWFibGUfCQICZGQCBA8WAh8ABTA8aHIgYXJpYS1oaWRkZW49InRydWUiIGNsYXNzPSJuYXYtaHItcmlnaHQgZW4iLz5kAgUPDxYEHwgFS2ZsZXgtY29sdW1uIGp1c3RpZnktc3BhY2UtYmV0d2VlbiBhbGlnbi1jZW50ZXIgdGhpcmQgbmF2aWdhdGlvbi1saW5rIGZ1dHVyZR8JAgIWAh8LBQR0cnVlFgRmDw8WAh8FBTZ+L1Jlc291cmNlcy9JbWFnZXMvc3ZnL05hdmlnYXRpb25GbG93L1N0ZXAzX2Z1dHVyZS5zdmdkZAIBDw8WBh8IBRVuYXYtc3RlcCB0aGlyZCBmdXR1cmUfAAULU2hvdyByZXN1bHQfCQICZGQCCg9kFghmDw8WAh8EaGQWAgIBD2QWCAIBDw8WAh8ABSBTZWFyY2ggaW4gU3RhdGlzdGljYWwgZGF0YWJhc2UgOmRkAgUPDxYCHwAFBlNlYXJjaGRkAgcPDxYCHwBlZGQCCQ8WAh4FVmFsdWUFBFRydWVkAgEPFgIfAAX6ATxzZWN0aW9uIGFyaWEtbGFiZWw9IlVzZXIgbWFudWFsIGZvciB0aGlzIHBhZ2UiPjxzcGFuIGNsYXNzPSJzY3JlZW5yZWFkZXItb25seSI+WW91IGFyZSBub3cgaW4gdGhlIGZpcnN0IG1haW4gcGFnZSBvZiBQeFdlYiwgd2hlcmUgdGhlIGdvYWwgaXMgdG8gc2VsZWN0IGEgdGFibGUuIFlvdSBtYXkgZmluZCB5b3VyIHRhYmxlIGJ5IHNlYWNoIG9yIGJ5IGRyaWxsaW5nIGRvd24gaW4gdGhlIG1lbnUgdGhyZWUuPC9zcGFuPjwvc2VjdGlvbj5kAgIPZBYCZg9kFgJmD2QWBAIBDw8WAh8ABTRKYXZhc2NyaXB0IGlzIGRpc2FibGVkLCBjbGljayB0byBsb2FkIHRoZSB3aG9sZSB0cmVlZGQCAw9kFgICARA8KwAJAgAPFgQeC0V4cGFuZERlcHRoZh4NTmV2ZXJFeHBhbmRlZGRkCBQrABMFTzA6MCwwOjEsMDoyLDA6MywwOjQsMDo1LDA6NiwwOjcsMDo4LDA6OSwwOjEwLDA6MTEsMDoxMiwwOjEzLDA6MTQsMDoxNSwwOjE2LDA6MTcUKwACFggfAAUhQWdyaWN1bHR1cmUsIGZvcmVzdHJ5IGFuZCBmaXNoZXJ5HwwFCVNUQVJUX19KTx4QUG9wdWxhdGVPbkRlbWFuZGceDFNlbGVjdEFjdGlvbgsqLlN5c3RlbS5XZWIuVUkuV2ViQ29udHJvbHMuVHJlZU5vZGVTZWxlY3RBY3Rpb24BZBQrAAIWCB8ABRNCdXNpbmVzcyBhY3Rpdml0aWVzHwwFCVNUQVJUX19OVh8PZx8QCysEAWQUKwACFggfAAUJRGVtb2NyYWN5HwwFCVNUQVJUX19NRR8PZx8QCysEAWQUKwACFggfAAUWRWR1Y2F0aW9uIGFuZCByZXNlYXJjaB8MBQlTVEFSVF9fVUYfD2cfEAsrBAFkFCsAAhYIHwAFBkVuZXJneR8MBQlTVEFSVF9fRU4fD2cfEAsrBAFkFCsAAhYIHwAFC0Vudmlyb25tZW50HwwFCVNUQVJUX19NSR8PZx8QCysEAWQUKwACFggfAAURRmluYW5jaWFsIG1hcmtldHMfDAUJU1RBUlRfX0ZNHw9nHxALKwQBZBQrAAIWCB8ABRJHZW5lcmFsIHN0YXRpc3RpY3MfDAUJU1RBUlRfX0FBHw9nHxALKwQBZBQrAAIWCB8ABRJIb3VzZWhvbGQgZmluYW5jZXMfDAUJU1RBUlRfX0hFHw9nHxALKwQBZBQrAAIWCB8ABSJIb3VzaW5nLCBjb25zdHJ1Y3Rpb24gYW5kIGJ1aWxkaW5nHwwFCVNUQVJUX19CTx8PZx8QCysEAWQUKwACFggfAAUNTGFib3VyIG1hcmtldB8MBQlTVEFSVF9fQU0fD2cfEAsrBAFkFCsAAhYIHwAFEUxpdmluZyBjb25kaXRpb25zHwwFCVNUQVJUX19MRR8PZx8QCysEAWQUKwACFggfAAURTmF0aW9uYWwgYWNjb3VudHMfDAUJU1RBUlRfX05SHw9nHxALKwQBZBQrAAIWCB8ABQpQb3B1bGF0aW9uHwwFCVNUQVJUX19CRR8PZx8QCysEAWQUKwACFggfAAUWUHJpY2VzIGFuZCBDb25zdW1wdGlvbh8MBQlTVEFSVF9fUFIfD2cfEAsrBAFkFCsAAhYIHwAFD1B1YmxpYyBmaW5hbmNlcx8MBQlTVEFSVF9fT0UfD2cfEAsrBAFkFCsAAhYIHwAFG1RyYWRlIGluIGdvb2RzIGFuZCBzZXJ2aWNlcx8MBQlTVEFSVF9fSEEfD2cfEAsrBAFkFCsAAhYIHwAFHFRyYW5zcG9ydCBhbmQgY29tbXVuaWNhdGlvbnMfDAUJU1RBUlRfX1RLHw9nHxALKwQBZAVtY3RsMDBfQ29udGVudFBsYWNlSG9sZGVyTWFpbl9UYWJsZU9mQ29udGVudDFfVGFibGVPZkNvbnRlbnQxX01lbnVOYXZpZ2F0aW9uVHJlZV9fVklFV1NUQVRFfG5ubm5ubm5ubm5ubm5ubm5ubmQCBQ8PFgIfBGhkFgJmDw8WAh8ABTZDaGFyYWN0ZXIgaW4gYnJhY2tldHMgc2hvd3MgdGhlIGxvd2VzdCByZWdpb25hbCBsZXZlbC5kZBgFBR5fX0NvbnRyb2xzUmVxdWlyZVBvc3RCYWNrS2V5X18WAQVPY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyTWFpbiRUYWJsZU9mQ29udGVudDEkVGFibGVPZkNvbnRlbnQxJE1lbnVOYXZpZ2F0aW9uVHJlZQUyY3RsMDAkQ29udGVudFBsYWNlSG9sZGVyTWFpbiRUYWJsZUxpc3QxJFRhYmxlTGlzdDEPMt0CAAEAAAD/////AQAAAAAAAAAEAQAAAH9TeXN0ZW0uQ29sbGVjdGlvbnMuR2VuZXJpYy5MaXN0YDFbW1N5c3RlbS5PYmplY3QsIG1zY29ybGliLCBWZXJzaW9uPTQuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49Yjc3YTVjNTYxOTM0ZTA4OV1dAwAAAAZfaXRlbXMFX3NpemUIX3ZlcnNpb24FAAAICAkCAAAAAgAAAAIAAAAQAgAAAAQAAAAJAwAAAA0DDAQAAABGUENBeGlzLldlYi5Db3JlLCBWZXJzaW9uPTEuMS4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbAUDAAAAIlBDQXhpcy5XZWIuQ29yZS5FbnVtcy5EYXRhYmFzZVR5cGUBAAAAB3ZhbHVlX18ACAQAAAABAAAAC2QFPGN0bDAwJENvbnRlbnRQbGFjZUhvbGRlck1haW4kVGFibGVPZkNvbnRlbnQxJFRhYmxlT2ZDb250ZW50MQ8ymwUAAQAAAP////8BAAAAAAAAAAQBAAAAf1N5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkxpc3RgMVtbU3lzdGVtLk9iamVjdCwgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5XV0DAAAABl9pdGVtcwVfc2l6ZQhfdmVyc2lvbgUAAAgICQIAAAAXAAAAFwAAABACAAAAIAAAAAkDAAAABgQAAAAMRGVmYXVsdC5hc3B4BgUAAAAJTWVudS5hc3B4BgYAAAAOU2VsZWN0aW9uLmFzcHgGBwAAABBmaWxlTW9kaWZpZWQuZ2lmBggAAAAPZmlsZVVwZGF0ZWQuZ2lmBgkAAAALcmVmcmVzaC5wbmcGCgAAAAxmaWxlU2l6ZS5naWYIAQEIAQEIAQEIAQAIAQEIAQAIAQAIAQEIAQEIAQAIAQAIAQEIAQEJCwAAAA0KDAwAAABKUENBeGlzLldlYi5Db250cm9scywgVmVyc2lvbj0xLjEuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAwAAACNQQ0F4aXMuV2ViLkNvbnRyb2xzLlVybExpbmtNb2RlVHlwZQEAAAAHdmFsdWVfXwAIDAAAAAAAAAAMDQAAAEZQQ0F4aXMuV2ViLkNvcmUsIFZlcnNpb249MS4xLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1udWxsBQsAAAAiUENBeGlzLldlYi5Db3JlLkVudW1zLkRhdGFiYXNlVHlwZQEAAAAHdmFsdWVfXwAIDQAAAAEAAAALZAUxY3RsMDAkbmF2aWdhdGlvbkZsb3dDb250cm9sJG5hdmlnYXRpb25GbG93Q29udHJvbA8ywgMAAQAAAP////8BAAAAAAAAAAQBAAAAf1N5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkxpc3RgMVtbU3lzdGVtLk9iamVjdCwgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5XV0DAAAABl9pdGVtcwVfc2l6ZQhfdmVyc2lvbgUAAAgICQIAAAALAAAACwAAABACAAAAEAAAAAgBAAYDAAAAA3NzZAYEAAAAFVN0YXRpc3RpY2FsIGRhdGFiYXNlIA0CBgUAAAAJTWVudS5hc3B4BgYAAAAOU2VsZWN0aW9uLmFzcHgGBwAAAAdweF9wYXRoBggAAAAGbGF5b3V0CQkAAAANBgwKAAAARlBDQXhpcy5XZWIuQ29yZSwgVmVyc2lvbj0xLjEuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFCQAAACJQQ0F4aXMuV2ViLkNvcmUuRW51bXMuRGF0YWJhc2VUeXBlAQAAAAd2YWx1ZV9fAAgKAAAAAAAAAAtkBR1jdGwwMCRicmVhZGNydW1iMSRicmVhZGNydW1iMQ8y7gMAAQAAAP////8BAAAAAAAAAAQBAAAAf1N5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkxpc3RgMVtbU3lzdGVtLk9iamVjdCwgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5XV0DAAAABl9pdGVtcwVfc2l6ZQhfdmVyc2lvbgUAAAgICQIAAAAPAAAADwAAABACAAAAEAAAAAYDAAAAA3NzZAYEAAAAFVN0YXRpc3RpY2FsIGRhdGFiYXNlIA0CBgUAAAAWaHR0cDovL3d3dy5zY2Iuc2UvZW5fLwgBAQYGAAAABEhvbWUIAQEGBwAAAAlNZW51LmFzcHgGCAAAAA5TZWxlY3Rpb24uYXNweAYJAAAAB3B4X3BhdGgGCgAAAAZsYXlvdXQJCwAAAAgBAA0CDAwAAABGUENBeGlzLldlYi5Db3JlLCBWZXJzaW9uPTEuMS4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbAULAAAAIlBDQXhpcy5XZWIuQ29yZS5FbnVtcy5EYXRhYmFzZVR5cGUBAAAAB3ZhbHVlX18ACAwAAAAAAAAAC2TjIXVR2bMNNkWu/I8404A8dFpVwUShTXlXCTea9XwOCA==" />
+
+
+<script src="/WebResource.axd?d=Ge_Ur9MhL2AVmhij5wOfW7bBEZO4Q7TkRyhaY1rN1uH6D-qHX1Ew-QNr80_EIpkILZQkah9UnLAPTXClm_YOjUGCR0t1nLe21a8_5mj2GQ9RWuzvGY4PwnniYezL9UAYDKVbUkvRNcbvI70-Q2Pr-w2&amp;t=639281000586935255" type="text/javascript"></script>
+<script src="/WebResource.axd?d=x6I6MXD2uGh-aSvTzIzIPbWlLhAOF_KGAKz4LERVe8RtxATi99JFHkI4_njDWwaHIgarQyPNhqB3OQ3B91q_D6PCS5jC--gwP2hFb50LFHRiIZAjWg4b6NRB3m0YYiAU-zMQ_6mY1M7dI44SDMC_TQ2&amp;t=639281000586935255" type="text/javascript"></script>
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="8A99A23D" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdABWfDTJQFINB7EabUBNwvsgBbyRaBr53VB+931b/QR7uAdhAo/Fmrs+CoAAuvHBGYy/Sky1YCQCjDGfIdP0psJlvjyyXR2DHdUxzJLA00pUHVKaDIhPzl6I9gbAPHsk1OvRGNE+bgSAzUJ9NmfDGFgKUQuP6EsL9YnSaxPtWC9LZrOZHboO329HE6roeu/7MoF0EddOEvqzCc3CIQZEsgnx4wRtcaTwwujv9U7PjNueYwEXNRexTdJTdBixUFkQhGmc0OmwFXkiSqZ+PpZIzsx/YN6PzG/kskBnRi4dVFc/zPnPgICKgGYGwISc8ZNn2TOH/oxTa2uZz9X+pyMyFw+l8sBeUbYPpVwKkDMUXRGm9Y/G3HS6F8kwItVLujdsNmV2q8xJIq6NRiVr/YvZs0SVvcVZ3soV3BwdzCmf4MoFRLfrGuF8pFVxYpG2IXyC9sFuQxAkn/Ul6JcsJfj/49C3z1dyArWX1MQapCt6s+mC0Eg==" />
+        <a id="ctl00_ToTheTopButton" class="top-link&#32;pxweb-btn&#32;negative&#32;hide" href="javascript:__doPostBack(&#39;ctl00$ToTheTopButton&#39;,&#39;&#39;)">
+            <svg class="icon-top-link-button" viewBox="0 0 24 24" width="40" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" >
+                <circle cx="12" cy="12" r="10"></circle><polyline points="16 12 12 8 8 12"></polyline><line x1="12" y1="16" x2="12" y2="8"></line>
+            </svg>To the Top</a>
+        <div id="wrap">
+            <header id="header">
+              <div class="header flex-row flex-wrap justify-space-between">
+                <a id="ctl00_SkipToMain" class="screenreader-only&#32;pxweb-link" aria-label="Press&#32;enter&#32;to&#32;go&#32;directly&#32;to&#32;main&#32;content" href="#pxcontent">Jump to main content</a>
+                <div class="headerleft flex-row">
+                    <a id="ctl00_LogoLink" href="http://www.scb.se/en_/"><img src="../../../Resources/Images/SCB-logo.png" id="ctl00_imgSiteLogo" alt="Logo&#32;for&#32;Statistics&#32;Sweden" class="imgSiteLogo" /></a>
+                    <span class="siteLogoText">Statistical Database</span>
+                      
+                </div>
+                <div class="headerright">
+                                    
+                    <div class="px-external-search-div flex-column">
+                        <div class="pxweb-link">
+                            <a href="https://scb.se/en/finding-statistics/search/?tab=ssd" class="px-external-search">
+                                <span class="link-text px-external-search">Search</span>
+                            </a>
+                        </div>
+                    </div>
+                
+                    <div class="px-change-lang-div flex-column">
+                          <div class="pxweb-link"> <a class="px-change-lang" href="/pxweb/sv/ssd/?rxid=search"> <span lang="sv" class="link-text px-change-lang">Svenska</span></a> </div> 
+                    </div>
+                </div>
+              </div>
+            
+           
+            
+            </header>
+            <div id="ctl00_breadcrumb1">
+	
+
+<nav id="breadcrumb" aria-label="breadcrumb">
+    <a id="ctl00_breadcrumb1_breadcrumb1_lnkHome" href="http://www.scb.se/en_/"><img id="ctl00_breadcrumb1_breadcrumb1_imgHome" title="Home" class="breadcrumb_homebutton" src="/WebResource.axd?d=iJjrqPjA4At2fSYXlThezUXRmxlbn_B1XwzxBqwoB-MweyLQXcp6WYWJdY2YWZjEn3RKPn_62sQONwRmB6uAuye8Q55aHDLUfH6REFCx3sGsdth-2AV2_5NEaUybB7HM9pR1sjJbY5rUMJowHse71w2&amp;t=639281000611936304" alt="Icon&#32;representing&#32;home" /></a>
+    <span id="ctl00_breadcrumb1_breadcrumb1_lblSep1" class="breadcrumb_sep">/</span>
+    <a id="ctl00_breadcrumb1_breadcrumb1_lnkDb" class="breadcrumb_text_nolink">Statistical database </a>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+      
+</nav>
+
+
+
+
+</div>
+            <main id="place-holder">            
+            <h1 id="ctl00_lblH1Title" class="h1title">
+	Statistical database 
+</h1>
+            <div id="ctl00_navigationFlowControl">
+	
+ <section aria-label="Overview of the three steps in the process to get the data.">
+   <span id="ctl00_navigationFlowControl_navigationFlowControl_ExplainAriaLabel" class="screenreader-only">The 3 steps are Choose table, Choose variable and Show result. You are currently at Choose table</span>
+  
+   <div id="navigationFlow"> 
+    <div class="navigationFlowArea flex-row justify-center align-flex-start">
+      <a id="ctl00_navigationFlowControl_navigationFlowControl_firstStepLink" class="flex-column&#32;justify-space-between&#32;align-center&#32;navigation-link&#32;first&#32;active" aria-hidden="true" aria-label="Back&#32;to&#32;Choose&#32;table"><img id="ctl00_navigationFlowControl_navigationFlowControl_firstStepImage" class="nav-pic" aria-hidden="true" alt="" src="../../../Resources/Images/svg/NavigationFlow/Step1_active.svg" /><span id="ctl00_navigationFlowControl_navigationFlowControl_firstStepLabel" class="pxweb-link&#32;header&#32;nav-step&#32;first&#32;active">Choose table</span></a> 
+   
+      <hr aria-hidden="true" class="nav-hr-left en"/>
+
+      <a id="ctl00_navigationFlowControl_navigationFlowControl_secondStepLink" class="flex-column&#32;justify-space-between&#32;align-center&#32;navigation-link&#32;future" aria-hidden="true" aria-label="Back&#32;to&#32;Choose&#32;variable"><img id="ctl00_navigationFlowControl_navigationFlowControl_secondStepImage" class="nav-pic" aria-hidden="true" alt="" src="../../../Resources/Images/svg/NavigationFlow/Step2_future.svg" /><span id="ctl00_navigationFlowControl_navigationFlowControl_secondStepLabel" class="pxweb-link&#32;header&#32;nav-step&#32;second&#32;future">Choose variable</span></a>
+  
+      <hr aria-hidden="true" class="nav-hr-right en"/>
+
+      <a id="ctl00_navigationFlowControl_navigationFlowControl_thirdStepLink" class="flex-column&#32;justify-space-between&#32;align-center&#32;third&#32;navigation-link&#32;future" aria-hidden="true"><img id="ctl00_navigationFlowControl_navigationFlowControl_thirdStepImage" class="nav-pic" aria-hidden="true" alt="" src="../../../Resources/Images/svg/NavigationFlow/Step3_future.svg" /><span id="ctl00_navigationFlowControl_navigationFlowControl_thirdStepLabel" class="nav-step&#32;third&#32;future">Show result</span></a>
+    </div>
+   </div>      
+ </section>
+
+</div> 
+            <div id="table-title">
+                <div id="place-holder-title">
+                    
+                    
+                </div>
+            </div>
+           
+            
+                
+    <div><span class="font-heading">The Statistical Database is updated Monday-Friday 8.00.</span></div>
+    <div class="GetStarted">
+
+        <H3>The Statistical Database is getting a new look</H3> The updated interface makes it easier to find the right table with fewer clicks.<UL><LI>Want to see what it will look like? <a href="https://statistikdatabasen2.scb.se/en/">Try the new interface here!</A></LI><LI>We would like to hear your thoughts. Send your feedback to: <a href="mailto:px@scb.se">px@scb.se</A></LI></UL><H3>Do you usually make API requests to fetch data?</H3>It is possible to convert API queries from PxWebApi v1 to PxWebApi v2. <a href="https://www.scb.se/PxWebApi_v2-en">Read more about the new API</A><BR />
+    </div>
+
+
+    <div class="menuTopLeftContent">
+        
+    </div>
+    <div class="menuTopRightContent">
+    </div>
+    <div class="break"></div>
+    <div id="pxcontent"> 
+        <section aria-label="User manual for this page"><span class="screenreader-only">You are now in the first main page of PxWeb, where the goal is to select a table. You may find your table by seach or by drilling down in the menu three.</span></section>
+    </div>    
+    <div id="ctl00_ContentPlaceHolderMain_TableOfContent1">
+	<div id="ctl00_ContentPlaceHolderMain_TableOfContent1_TableOfContent1_TableOfContentPanel">
+		
+    <div id="TableOfContent">
+        <input type="submit" name="ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$ActionButton" value="Javascript&#32;is&#32;disabled,&#32;click&#32;to&#32;load&#32;the&#32;whole&#32;tree" id="ctl00_ContentPlaceHolderMain_TableOfContent1_TableOfContent1_ActionButton" class="tableofcontent_action" />
+        <div id="ctl00_ContentPlaceHolderMain_TableOfContent1_TableOfContent1_MenuTreeviewPanel">
+			
+            
+			<div class="AspNet-TreeView" id="ctl00_ContentPlaceHolderMain_TableOfContent1_TableOfContent1_MenuNavigationTree">
+					<ul id="ctl00_ContentPlaceHolderMain_TableOfContent1_TableOfContent1_MenuNavigationTree_UL">
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__JO')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__JO')">
+								Agriculture, forestry and fishery</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__NV')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__NV')">
+								Business activities</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__ME')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__ME')">
+								Democracy</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__UF')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__UF')">
+								Education and research</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__EN')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__EN')">
+								Energy</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__MI')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__MI')">
+								Environment</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__FM')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__FM')">
+								Financial markets</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__AA')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__AA')">
+								General statistics</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__HE')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__HE')">
+								Household finances</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__BO')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__BO')">
+								Housing, construction and building</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__AM')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__AM')">
+								Labour market</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__LE')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__LE')">
+								Living conditions</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__NR')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__NR')">
+								National accounts</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__BE')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__BE')">
+								Population</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__PR')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__PR')">
+								Prices and Consumption</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__OE')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__OE')">
+								Public finances</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__HA')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__HA')">
+								Trade in goods and services</a>
+						</li>
+						<li class="AspNet-TreeView-Root">
+							<span class="AspNet-TreeView-Expand" aria-expanded="false" onclick="__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__TK')" tabindex="0">&nbsp;</span>
+							<a href="javascript:__doPostBack('ctl00$ContentPlaceHolderMain$TableOfContent1$TableOfContent1$MenuNavigationTree','pSTART__TK')">
+								Transport and communications</a>
+						</li>
+					</ul>
+
+			</div>
+        
+		</div>
+
+        <div id="ctl00_ContentPlaceHolderMain_TableOfContent1_TableOfContent1_MenulistPanel">
+			
+            
+            
+            
+        
+		</div>
+    </div>
+
+	</div>
+
+<script>
+
+    jQuery(document).ready(function () {
+        jQuery('a[rel="_blank"]').each(function () {
+            jQuery(this).attr('target', '_blank');
+        });
+    });
+
+</script>
+
+</div>
+    <div id="ctl00_ContentPlaceHolderMain_TableList1">
+
+</div>
+
+    
+
+    <div>
+        
+    </div>
+
+            </main>
+            
+            <footer id="pxfooter">
+                
+                    <div id="sitemap_en" class="row inverted footer-bottom centered-container" role="contentinfo">
+                            <div class="three columns">
+                                <h2>Help</h2>
+                                <ul>
+                                    <li><a href="https://www.scb.se/en/statistical-database/get-started-with-the-statistical-database/">Get started</a></li>
+                                    <li><a href="https://www.scb.se/en/statistical-database/tips-and-help/">Choose variables</a></li>
+                                    <li><a href="https://www.scb.se/en/statistical-database/save-retrireval/">Save your search</a></li>
+                                    <li><a href="https://scb.se/en/services/open-data-api/api-for-the-statistical-database/">Use the API</a></li>
+                                </ul>
+                            </div>
+                
+                            <div class="three columns">
+                                <h2>About the content</h2>
+                                <ul>
+                                    <li><a href="https://www.scb.se/en/About-us/about-the-website-and-terms-of-use/">Terms of use</a></li>
+                                    <li><a href="https://www.scb.se/en/About-us/accesibilit/">Accessibility</a></li>
+                                    <li><a href="https://www.scb.se/en/About-us/about-the-website-and-terms-of-use/cookies/">About cookies</a></li>
+                                    <li><a href="https://www.scb.se/en/About-us/personal-data/">Personal data</a></li>
+                                </ul>
+                            </div>
+    
+                            <div class="three columns">
+                                <h2>Highlighted</h2>
+                                <ul>
+                                    <li><a href="https://www.scb.se/en/services/open-data-api/">Open data from Statistics Sweden</a></li>
+                                    <li><a href="https://www.scb.se/en/services/ordering-data-and-statistics/">Order data and statistics</a></li>
+                                </ul>
+                            </div>
+    
+                            <div class="three columns">
+                                <h2>About us</h2>
+                                <ul>
+                                    <li><a href="https://www.scb.se/en/About-us/contact-us2/statistics-service/">Contact us</a></li>
+                                    <li><a href="https://www.scb.se/aboutscb">About Statistics Sweden</a>
+                                </ul>
+                            </div>
+                    </div>
+                    <div class="copyright inverted">
+                        <img class="footer_logo" src="/resources/scb/assets/SCB_logotyp_vit.png" alt="Statistics Sweden logo">
+                        <div class="footer-vision">Our main task is to supply users and customers with statistics for decision making, debate and research.</div>
+                    </div>
+                
+                
+  
+            </footer>
+        </div>
+    
+
+<script type="text/javascript">
+//<![CDATA[
+PCAxis_HideElement(".tableofcontent_action");//]]>
+</script>
+</form>
+</div>
+    <script>
+        "use strict";
+        // Set a variable for our button element.
+        var scrollToTopButton = document.getElementById('ctl00_ToTheTopButton');
+        var lastScrollYPos = 0;
+
+        scrollToTopButton.className = "top-link pxweb-btn negative hidden";
+
+        // Let's set up a function that shows our scroll-to-top button if we scroll beyond the height of the initial window.
+        var scrollFunc = function scrollFunc(lastScrollYPos) {
+            // Get the current scroll value
+            var y = window.pageYOffset; // If the scroll value is greater than the window height, let's add a class to the scroll-to-top button to show it!
+
+            if (y > 300 && y < lastScrollYPos) {
+                scrollToTopButton.className = "top-link pxweb-btn negative show";
+            } else {
+                scrollToTopButton.className = "top-link pxweb-btn negative hidden";
+                scrollToTopButton.blur();
+            }
+        };
+
+        window.addEventListener('scroll', function (e) {
+            scrollFunc(lastScrollYPos);
+            lastScrollYPos = window.scrollY;
+        });
+
+        scrollToTopButton.onclick = function (e) {
+            e.preventDefault();
+            document.documentElement.scrollTop = 0;
+        };
+</script>
+</body>
+</html>
+
+

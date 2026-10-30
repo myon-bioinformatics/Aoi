@@ -1,0 +1,192 @@
+{
+ "by_n": {
+  "12": {
+   "boundary": 1817,
+   "periods": {
+    "0.25": 12,
+    "0.3333333333333333": 20,
+    "0.5": 53,
+    "0.75": 173,
+    "1.0": 278,
+    "2.0": 1281
+   },
+   "changed_period": {
+    "e0.001": 1,
+    "e1e-06": 0
+   },
+   "c2_without_changed": {
+    "e0.001": {
+     "max": 0.002656838767469524,
+     "n": 1814
+    },
+    "e1e-06": {
+     "max": 2.6550425577034512e-06,
+     "n": 1814
+    }
+   },
+   "nonboundary_changed": {
+    "e0.001": 1,
+    "e1e-06": 0
+   }
+  },
+  "24": {
+   "boundary": 778,
+   "periods": {
+    "0.25": 3,
+    "0.3333333333333333": 6,
+    "0.5": 57,
+    "0.75": 67,
+    "1.0": 85,
+    "2.0": 560
+   },
+   "changed_period": {
+    "e0.001": 0,
+    "e1e-06": 0
+   },
+   "c2_without_changed": {
+    "e0.001": {
+     "max": 0.009884115251333215,
+     "n": 777
+    },
+    "e1e-06": {
+     "max": 9.877337432040436e-06,
+     "n": 777
+    }
+   },
+   "nonboundary_changed": {
+    "e0.001": 0,
+    "e1e-06": 0
+   }
+  },
+  "48": {
+   "boundary": 375,
+   "periods": {
+    "0.25": 10,
+    "0.3333333333333333": 2,
+    "0.5": 14,
+    "0.75": 28,
+    "1.0": 57,
+    "2.0": 264
+   },
+   "changed_period": {
+    "e0.001": 0,
+    "e1e-06": 0
+   },
+   "c2_without_changed": {
+    "e0.001": {
+     "max": 0.001364227852208201,
+     "n": 373
+    },
+    "e1e-06": {
+     "max": 1.3629357286120384e-06,
+     "n": 373
+    }
+   },
+   "nonboundary_changed": {
+    "e0.001": 0,
+    "e1e-06": 0
+   }
+  }
+ },
+ "baseball": {
+  "units": 168,
+  "boundary": 24,
+  "periods": {
+   "0.75": 3,
+   "1.0": 4,
+   "2.0": 17
+  }
+ },
+ "units": [
+  {
+   "n": 12,
+   "eps": 0.001,
+   "source": "WFP-yearly",
+   "country": "MDA",
+   "variable": "staple_price:wheat_flour_high_quality_kg",
+   "unit": "MDL per KG",
+   "series_index": 294,
+   "start": "2024-01",
+   "period_at_1e-9": 1.0,
+   "period_at_eps": 2.0,
+   "table": [
+    {
+     "eps": 0.0,
+     "sse_small_eps_period": 4.828400353885557,
+     "sse_other_period": 4.833639782866214,
+     "diff": 0.005239428980657657
+    },
+    {
+     "eps": 0.001,
+     "sse_small_eps_period": 4.8365096704584545,
+     "sse_other_period": 4.8346933485786385,
+     "diff": -0.001816321879815952
+    },
+    {
+     "eps": 1e-06,
+     "sse_small_eps_period": 4.828408458711772,
+     "sse_other_period": 4.833640834388106,
+     "diff": 0.005232375676333945
+    },
+    {
+     "eps": 1e-09,
+     "sse_small_eps_period": 4.828400361990381,
+     "sse_other_period": 4.833639783917718,
+     "diff": 0.005239421927337062
+    }
+   ]
+  }
+ ],
+ "nonboundary_units": [
+  {
+   "n": 12,
+   "eps": 0.001,
+   "source": "FPMA",
+   "country": "AZE",
+   "variable": "staple_price:bread_high_grade_flour_kg",
+   "unit": "AZN per Kg",
+   "series_index": 20,
+   "start": "2016-02",
+   "unmodified": [
+    0.5,
+    2.0
+   ],
+   "epsilon_form": [
+    0.001,
+    2.0
+   ],
+   "table": [
+    {
+     "label": "今のコードで選ばれた式",
+     "decay": 0.5,
+     "period": 2.0,
+     "sse": 2.4193664164805764
+    },
+    {
+     "label": "同じ周期の減衰しない波（減衰 0）",
+     "decay": 0.0,
+     "period": 2.0,
+     "sse": 2.4194392429455966
+    },
+    {
+     "label": "同じ周期の ε の波（ε=0.001）",
+     "decay": 0.001,
+     "period": 2.0,
+     "sse": 2.41932398107293
+    },
+    {
+     "label": "同じ周期の ε の波（ε=1e-06）",
+     "decay": 1e-06,
+     "period": 2.0,
+     "sse": 2.419439127487575
+    },
+    {
+     "label": "同じ周期の ε の波（ε=1e-09）",
+     "decay": 1e-09,
+     "period": 2.0,
+     "sse": 2.4194392428301317
+    }
+   ]
+  }
+ ]
+}

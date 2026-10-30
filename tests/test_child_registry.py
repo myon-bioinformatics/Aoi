@@ -105,7 +105,7 @@ def test_dragowing_registered_with_exact_ids():
     assert entry["optional"]["repository_created_at"] == "2026-10-17T21:45:31Z"
     assert entry["optional"]["subtree_prefix"] == "dragowing"
     assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
-    assert entry["sha"] == "beaf7cd5e5800ca3a52d6cb2ed6b66aa8897c7d2"
+    assert entry["sha"] == "a71ad693e8a867bd5475095b66ba8998c5d9a556"
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "tests/conftest.py", "tests/test_no_sibling_imports.py"):
         assert (ROOT / "dragowing" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
@@ -669,6 +669,15 @@ def _materialize_mutant_repo(tmp_path: Path, mutant_source: str) -> Path:
     return repo
 
 
+def _run_mutant(base: Path, mutant_source: str) -> int:
+    """Copy, run the registry tests, and remove the copy afterwards (also on failure).
+    Keeping one full copy of the repository per mutant fills the disk."""
+    try:
+        return _run_registry_tests_in_repo(_materialize_mutant_repo(base, mutant_source))
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+
+
 def _run_registry_tests_in_repo(repo_root: Path) -> int:
     test_file = repo_root / "tests" / "test_child_registry.py"
     env = {**os.environ, "PYTHONPATH": str(repo_root / "scripts")}
@@ -680,6 +689,65 @@ def _run_registry_tests_in_repo(repo_root: Path) -> int:
         text=True,
     )
     return proc.returncode
+
+
+def _run_registry_tests_with_source(tmp_path: Path, source: str) -> int:
+    # Keep the full repository fixture, but only for this case's lifetime.
+    # TemporaryDirectory also removes a partial copy or a failed subprocess's tree.
+    with tempfile.TemporaryDirectory(prefix="registry-case-", dir=tmp_path) as staging:
+        repo = _materialize_mutant_repo(Path(staging), source)
+        return _run_registry_tests_in_repo(repo)
+
+
+def test_registry_runner_removes_each_case_copy(tmp_path, monkeypatch):
+    source_repo = tmp_path / "source"
+    (source_repo / "scripts").mkdir(parents=True)
+    (source_repo / "scripts" / "check_child_heads.py").write_text("original", encoding="utf-8")
+    (source_repo / "research").mkdir()
+    (source_repo / "research" / "sentinel.txt").write_text("preserved", encoding="utf-8")
+    staging = tmp_path / "staging"
+    staging.mkdir()
+    monkeypatch.setattr(sys.modules[__name__], "ROOT", source_repo)
+    copies = []
+
+    def run(repo):
+        assert all(not previous.exists() for previous in copies)
+        copies.append(repo)
+        assert (repo / "scripts" / "check_child_heads.py").read_text(encoding="utf-8") == "mutant"
+        assert (repo / "research" / "sentinel.txt").read_text(encoding="utf-8") == "preserved"
+        if outcome == "raise":
+            raise RuntimeError("subprocess failed")
+        return outcome
+
+    monkeypatch.setattr(sys.modules[__name__], "_run_registry_tests_in_repo", run)
+    for outcome in (0, 1, 2, "raise"):
+        try:
+            rc = _run_registry_tests_with_source(staging, "mutant")
+        except RuntimeError as exc:
+            assert outcome == "raise" and str(exc) == "subprocess failed"
+        else:
+            assert outcome != "raise", "subprocess error must propagate"
+            assert rc == outcome
+        assert not any(staging.iterdir())
+    assert len(copies) == 4
+    assert (source_repo / "scripts" / "check_child_heads.py").read_text(encoding="utf-8") == "original"
+    assert (source_repo / "research" / "sentinel.txt").read_text(encoding="utf-8") == "preserved"
+
+
+def test_registry_runner_removes_partial_copy(tmp_path, monkeypatch):
+    def fail_copy(source, destination, **kwargs):
+        destination.mkdir()
+        (destination / "partial").write_text("partial", encoding="utf-8")
+        raise OSError("copy failed")
+
+    monkeypatch.setattr(shutil, "copytree", fail_copy)
+    try:
+        _run_registry_tests_with_source(tmp_path, "mutant")
+    except OSError as exc:
+        assert str(exc) == "copy failed"
+    else:
+        raise AssertionError("copy error must propagate")
+    assert not any(tmp_path.iterdir())
 
 
 def _coverage_accounting(tmp_path: Path) -> dict:
@@ -761,8 +829,7 @@ def test_mutation_kind_labels_match_sites():
 
 def test_mutations_all_killed(tmp_path):
     source = SCRIPT.read_text(encoding="utf-8")
-    control_repo = _materialize_mutant_repo(tmp_path / "control", source)
-    control_rc = _run_registry_tests_in_repo(control_repo)
+    control_rc = _run_registry_tests_with_source(tmp_path, source)
     assert control_rc == 0, "unmutated copy must pass the mutation test suite"
     mutants, equivalent = _enumerate_mutants(source)
     site_count = len(_collect_mutation_sites(ast.parse(source)))
@@ -772,8 +839,7 @@ def test_mutations_all_killed(tmp_path):
     killed = 0
     survived = []
     for name, mutant_source, _site in mutants:
-        repo = _materialize_mutant_repo(tmp_path / name, mutant_source)
-        rc = _run_registry_tests_in_repo(repo)
+        rc = _run_registry_tests_with_source(tmp_path, mutant_source)
         if rc == 0:
             survived.append(name)
         elif rc == 1:
@@ -782,6 +848,34 @@ def test_mutations_all_killed(tmp_path):
             pytest.fail(f"mutant {name}: pytest exit code {rc}\n")
     assert killed == generated
     assert not survived, f"survived ({len(survived)}): {survived}"
+
+
+def test_mutant_copy_is_removed_after_its_run_even_when_the_run_fails(tmp_path, monkeypatch):
+    mini = tmp_path / "mini"
+    (mini / "scripts").mkdir(parents=True)
+    (mini / "scripts" / "check_child_heads.py").write_text("x = 1\n", encoding="utf-8")
+    (mini / ".venv").mkdir()
+    (mini / ".venv" / "junk").write_text("j", encoding="utf-8")
+    module = sys.modules[__name__]
+    monkeypatch.setattr(module, "ROOT", mini)
+    seen = []
+
+    def fake_run(repo_root, fail=[False]):
+        seen.append(repo_root)
+        assert (repo_root / "scripts" / "check_child_heads.py").read_text(encoding="utf-8") == "y = 2\n"
+        assert not (repo_root / ".venv").exists()
+        if fail[0]:
+            raise RuntimeError("boom")
+        return 1
+
+    monkeypatch.setattr(module, "_run_registry_tests_in_repo", fake_run)
+    assert module._run_mutant(tmp_path / "ok", "y = 2\n") == 1
+    assert not (tmp_path / "ok").exists()
+    fake_run.__defaults__[0][0] = True
+    with pytest.raises(RuntimeError, match="boom"):
+        module._run_mutant(tmp_path / "bad", "y = 2\n")
+    assert not (tmp_path / "bad").exists() and len(seen) == 2
+    assert (mini / "scripts" / "check_child_heads.py").read_text(encoding="utf-8") == "x = 1\n"   # 元は触らない
 
 
 def test_git_runs_non_interactively(monkeypatch):

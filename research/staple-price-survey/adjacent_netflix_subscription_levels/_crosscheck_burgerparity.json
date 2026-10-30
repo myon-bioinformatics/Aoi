@@ -1,0 +1,430 @@
+{
+  "role": "snapshot_crosscheck_only_not_history",
+  "prices_all": "/workspace/aoi-phase2/raw/numeraire_hist_2026-10-25/prices_all.csv",
+  "burgerparity_netflix_n": 30,
+  "exact_lcu_match_any_tompec_date": 10,
+  "near_no_exact": 12,
+  "missing_in_tompec": 8,
+  "exact": [
+    {
+      "iso3": "IDN",
+      "burgerparity_local": 120000.0,
+      "currency": "IDR",
+      "tompec_dates_matching": [
+        "2023-04-19",
+        "2023-10-21",
+        "2023-12-26",
+        "2024-03-06",
+        "2024-04-07",
+        "2024-05-04",
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30",
+        "2024-10-24",
+        "2024-12-15",
+        "2025-01-18",
+        "2025-02-18",
+        "2025-03-17",
+        "2025-03-30",
+        "2025-05-21",
+        "2025-07-28",
+        "2025-08-27",
+        "2025-09-28",
+        "2025-11-04",
+        "2025-11-30",
+        "2025-12-26",
+        "2026-01-23",
+        "2026-03-06",
+        "2026-04-09",
+        "2026-05-27",
+        "2026-07-16",
+        "2026-08-27",
+        "2026-09-28"
+      ],
+      "last_match_date": "2026-09-28"
+    },
+    {
+      "iso3": "BRA",
+      "burgerparity_local": 44.9,
+      "currency": "BRL",
+      "tompec_dates_matching": [
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30",
+        "2024-10-24",
+        "2024-12-15",
+        "2025-01-18",
+        "2025-02-18",
+        "2025-03-17",
+        "2025-03-30",
+        "2025-05-21",
+        "2025-07-28",
+        "2025-08-27",
+        "2025-09-28",
+        "2025-11-04",
+        "2025-11-30",
+        "2025-12-26",
+        "2026-01-23",
+        "2026-03-06",
+        "2026-04-09",
+        "2026-05-27",
+        "2026-07-16",
+        "2026-08-27",
+        "2026-09-28"
+      ],
+      "last_match_date": "2026-09-28"
+    },
+    {
+      "iso3": "JPN",
+      "burgerparity_local": 1490.0,
+      "currency": "JPY",
+      "tompec_dates_matching": [
+        "2023-01-07",
+        "2023-04-19",
+        "2023-10-21",
+        "2023-12-26",
+        "2024-03-06",
+        "2024-04-07",
+        "2024-05-04",
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30"
+      ],
+      "last_match_date": "2024-09-30"
+    },
+    {
+      "iso3": "KOR",
+      "burgerparity_local": 13500.0,
+      "currency": "KRW",
+      "tompec_dates_matching": [
+        "2023-01-07",
+        "2023-04-19",
+        "2023-10-21",
+        "2023-12-26",
+        "2024-03-06",
+        "2024-04-07",
+        "2024-05-04",
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30",
+        "2024-10-24",
+        "2024-12-15",
+        "2025-01-18",
+        "2025-02-18",
+        "2025-03-17",
+        "2025-03-30",
+        "2025-05-21",
+        "2025-07-28",
+        "2025-08-27",
+        "2025-09-28",
+        "2025-11-04",
+        "2025-11-30",
+        "2025-12-26",
+        "2026-01-23",
+        "2026-03-06",
+        "2026-04-09",
+        "2026-05-27",
+        "2026-07-16",
+        "2026-08-27",
+        "2026-09-28"
+      ],
+      "last_match_date": "2026-09-28"
+    },
+    {
+      "iso3": "POL",
+      "burgerparity_local": 43.0,
+      "currency": "PLN",
+      "tompec_dates_matching": [
+        "2023-01-07",
+        "2023-04-19",
+        "2023-10-21",
+        "2023-12-26",
+        "2024-03-06",
+        "2024-04-07",
+        "2024-05-04",
+        "2024-07-15",
+        "2024-08-19"
+      ],
+      "last_match_date": "2024-08-19"
+    },
+    {
+      "iso3": "CAN",
+      "burgerparity_local": 16.49,
+      "currency": "CAD",
+      "tompec_dates_matching": [
+        "2023-01-07",
+        "2023-04-19",
+        "2023-10-21",
+        "2023-12-26",
+        "2024-03-06",
+        "2024-04-07",
+        "2024-05-04",
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30",
+        "2024-10-24",
+        "2024-12-15",
+        "2025-01-18"
+      ],
+      "last_match_date": "2025-01-18"
+    },
+    {
+      "iso3": "AUS",
+      "burgerparity_local": 18.99,
+      "currency": "AUD",
+      "tompec_dates_matching": [
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30",
+        "2024-10-24",
+        "2024-12-15",
+        "2025-01-18",
+        "2025-02-18",
+        "2025-03-17",
+        "2025-03-30",
+        "2025-05-21",
+        "2025-07-28"
+      ],
+      "last_match_date": "2025-07-28"
+    },
+    {
+      "iso3": "MEX",
+      "burgerparity_local": 219.0,
+      "currency": "MXN",
+      "tompec_dates_matching": [
+        "2023-01-07",
+        "2023-04-19",
+        "2023-10-21",
+        "2023-12-26",
+        "2024-03-06",
+        "2024-04-07",
+        "2024-05-04",
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30",
+        "2024-10-24"
+      ],
+      "last_match_date": "2024-10-24"
+    },
+    {
+      "iso3": "GBR",
+      "burgerparity_local": 10.99,
+      "currency": "GBP",
+      "tompec_dates_matching": [
+        "2023-01-07",
+        "2023-04-19",
+        "2023-10-21",
+        "2023-12-26",
+        "2024-03-06",
+        "2024-04-07",
+        "2024-05-04",
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30",
+        "2024-10-24",
+        "2024-12-15",
+        "2025-01-18"
+      ],
+      "last_match_date": "2025-01-18"
+    },
+    {
+      "iso3": "USA",
+      "burgerparity_local": 15.49,
+      "currency": "USD",
+      "tompec_dates_matching": [
+        "2023-01-07",
+        "2023-04-19",
+        "2023-10-21",
+        "2023-12-26",
+        "2024-03-06",
+        "2024-04-07",
+        "2024-05-04",
+        "2024-07-15",
+        "2024-08-19",
+        "2024-09-30",
+        "2024-10-24",
+        "2024-12-15",
+        "2025-01-18"
+      ],
+      "last_match_date": "2025-01-18"
+    }
+  ],
+  "near": [
+    {
+      "iso3": "ARG",
+      "burgerparity_local": 5499.0,
+      "currency": "ARS",
+      "nearest_tompec": {
+        "date": "2023-12-26",
+        "price": 4199.0,
+        "currency": "ARS"
+      }
+    },
+    {
+      "iso3": "IND",
+      "burgerparity_local": 649.0,
+      "currency": "INR",
+      "nearest_tompec": {
+        "date": "2023-01-07",
+        "price": 499.0,
+        "currency": "INR"
+      }
+    },
+    {
+      "iso3": "TUR",
+      "burgerparity_local": 349.99,
+      "currency": "TRY",
+      "nearest_tompec": {
+        "date": "2025-07-28",
+        "price": 289.99,
+        "currency": "TRY"
+      }
+    },
+    {
+      "iso3": "THA",
+      "burgerparity_local": 329.0,
+      "currency": "THB",
+      "nearest_tompec": {
+        "date": "2023-01-07",
+        "price": 349.0,
+        "currency": "THB"
+      }
+    },
+    {
+      "iso3": "SAU",
+      "burgerparity_local": 39.99,
+      "currency": "SAR",
+      "nearest_tompec": {
+        "date": "2023-01-07",
+        "price": 43.0,
+        "currency": "SAR"
+      }
+    },
+    {
+      "iso3": "ZAF",
+      "burgerparity_local": 199.0,
+      "currency": "ZAR",
+      "nearest_tompec": {
+        "date": "2025-05-21",
+        "price": 179.0,
+        "currency": "ZAR"
+      }
+    },
+    {
+      "iso3": "NOR",
+      "burgerparity_local": 119.0,
+      "currency": "NOK",
+      "nearest_tompec": {
+        "date": "2023-01-07",
+        "price": 109.0,
+        "currency": "NOK"
+      }
+    },
+    {
+      "iso3": "SWE",
+      "burgerparity_local": 119.0,
+      "currency": "SEK",
+      "nearest_tompec": {
+        "date": "2023-01-07",
+        "price": 129.0,
+        "currency": "SEK"
+      }
+    },
+    {
+      "iso3": "SGP",
+      "burgerparity_local": 15.98,
+      "currency": "SGD",
+      "nearest_tompec": {
+        "date": "2023-01-07",
+        "price": 17.48,
+        "currency": "SGD"
+      }
+    },
+    {
+      "iso3": "NZL",
+      "burgerparity_local": 22.99,
+      "currency": "NZD",
+      "nearest_tompec": {
+        "date": "2024-03-06",
+        "price": 20.99,
+        "currency": "NZD"
+      }
+    },
+    {
+      "iso3": "CHE",
+      "burgerparity_local": 12.95,
+      "currency": "CHF",
+      "nearest_tompec": {
+        "date": "2023-01-07",
+        "price": 18.9,
+        "currency": "CHF"
+      }
+    },
+    {
+      "iso3": "ARE",
+      "burgerparity_local": 54.99,
+      "currency": "AED",
+      "nearest_tompec": {
+        "date": "2024-12-15",
+        "price": 49.0,
+        "currency": "AED"
+      }
+    }
+  ],
+  "missing": [
+    {
+      "iso3": "CHN",
+      "reason": "in_bm_but_no_tompec_standard_series"
+    },
+    {
+      "iso3": "ESP",
+      "reason": "outside_bigmac_iso3_universe",
+      "burgerparity_local": 12.99,
+      "currency": "EUR",
+      "note": "Burger Parity lists this ISO3; Season2 panel filters to countries_iso3.txt (EU members → EUZ aggregate in Big Mac)."
+    },
+    {
+      "iso3": "ITA",
+      "reason": "outside_bigmac_iso3_universe",
+      "burgerparity_local": 12.99,
+      "currency": "EUR",
+      "note": "Burger Parity lists this ISO3; Season2 panel filters to countries_iso3.txt (EU members → EUZ aggregate in Big Mac)."
+    },
+    {
+      "iso3": "PRT",
+      "reason": "outside_bigmac_iso3_universe",
+      "burgerparity_local": 12.99,
+      "currency": "EUR",
+      "note": "Burger Parity lists this ISO3; Season2 panel filters to countries_iso3.txt (EU members → EUZ aggregate in Big Mac)."
+    },
+    {
+      "iso3": "FRA",
+      "reason": "outside_bigmac_iso3_universe",
+      "burgerparity_local": 13.49,
+      "currency": "EUR",
+      "note": "Burger Parity lists this ISO3; Season2 panel filters to countries_iso3.txt (EU members → EUZ aggregate in Big Mac)."
+    },
+    {
+      "iso3": "DEU",
+      "reason": "outside_bigmac_iso3_universe",
+      "burgerparity_local": 13.99,
+      "currency": "EUR",
+      "note": "Burger Parity lists this ISO3; Season2 panel filters to countries_iso3.txt (EU members → EUZ aggregate in Big Mac)."
+    },
+    {
+      "iso3": "IRL",
+      "reason": "outside_bigmac_iso3_universe",
+      "burgerparity_local": 13.99,
+      "currency": "EUR",
+      "note": "Burger Parity lists this ISO3; Season2 panel filters to countries_iso3.txt (EU members → EUZ aggregate in Big Mac)."
+    },
+    {
+      "iso3": "NLD",
+      "reason": "outside_bigmac_iso3_universe",
+      "burgerparity_local": 13.99,
+      "currency": "EUR",
+      "note": "Burger Parity lists this ISO3; Season2 panel filters to countries_iso3.txt (EU members → EUZ aggregate in Big Mac)."
+    }
+  ],
+  "note": "Burger Parity prices_all.csv is a single cross-section reference; tompec JSON is the historical panel source for 2023+. Mismatches expected when observation dates / plan definitions diverge. No values copied from prices_all into the vertical panel."
+}

@@ -1,0 +1,32 @@
+{
+ "inputs": {
+  "weather": {
+   "url": "https://raw.githubusercontent.com/vega/vega-datasets/5448e25297c8f705be78e879d5423d55d04dc6f1/data/weather.csv",
+   "sha256": "27219f1ca8dbd94c9b6f4b9f4f52ab2f1eb33dfdcf719cd9fc6481ed50b74549",
+   "license": "other-pd（U.S. Government Dataset）",
+   "origin": "NOAA Climate Data Online（シアトルとニューヨークの日次、2012〜2015）"
+  },
+  "co2": {
+   "url": "https://raw.githubusercontent.com/vega/vega-datasets/5448e25297c8f705be78e879d5423d55d04dc6f1/data/co2-concentration.csv",
+   "sha256": "c1a4a970864145940a28225cae288618b156cb32f9a2a1b6606ba7124134febb",
+   "license": "CC-BY-4.0",
+   "origin": "Scripps CO2 Program（マウナ・ロア、月次、1958〜2020）"
+  },
+  "global-temp": {
+   "url": "https://raw.githubusercontent.com/datasets/global-temp/44571fe8c15e228c156bb19308e5ccc1e31cf9f7/data/monthly.csv",
+   "sha256": "d61b268c8f4d1934c0a20297d4036a68f93a06f15442164637d3994c18a15186",
+   "license": "CC-BY-4.0",
+   "origin": "Source 列の GCAG と GISTEMP（全球の月次の気温偏差。上流は確かめていない）"
+  }
+ },
+ "outputs": {
+  "physical_monthly_vertical.csv": {
+   "rows": 5353,
+   "sha256": "4f18c60d52e26f1ec84496619ee2aa656ae0e3994373064c8be78fd150ceefc9"
+  },
+  "physical_daily_vertical.csv": {
+   "rows": 11688,
+   "sha256": "1d1ea18b501abc473a9e27bc388a0433fb89551bbbcef396648c15f41caa9824"
+  }
+ }
+}

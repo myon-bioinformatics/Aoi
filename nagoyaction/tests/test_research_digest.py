@@ -237,11 +237,30 @@ def test_markdown_vendor_pin_matches_bytes_and_license():
     assert {entry["destination"] for entry in entries} == {
         "vendor/markdown.py", "vendor/markdown-LICENSE"
     }
+    # The standalone child CI still uses the adopted Aoi main while the parent
+    # vendor-refresh PR is reviewed. Accept only these two verified epochs;
+    # unchanged LICENSE provenance stays at its existing revision.
+    approved = {
+        "markdown.py": {
+            ("aa5bccfcaf11f17473c7f1ff502509dfa1547660",
+             "769e9f9087fc0ce1abd397841c1335b2dceeb0d0",
+             "fa375892faefb7749253d10bfffc6e38978a17bb7396df2b1deb7b63764c6c8e"),
+            ("e8d97fdc21d16f2cf9581bcfbd41bb39ec446023",
+             "9294cabc0d72f457cc2a563812bc31f5848167b4",
+             "56e41cac2e1708b9ffc2c85ed62eac7ec9dd500b48a4c3687dfab13479e0ba7b"),
+        },
+        "LICENSE": {
+            ("aa5bccfcaf11f17473c7f1ff502509dfa1547660",
+             "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
+             "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"),
+        },
+    }
     for entry in entries:
+        assert entry["ref"] == entry["commit"]
+        assert (entry["commit"], entry["blob_sha"], entry["sha256"]) in approved[entry["source"]]
         raw = (ROOT / entry["destination"]).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == entry["sha256"]
         assert hashlib.sha1(f"blob {len(raw)}\0".encode() + raw).hexdigest() == entry["blob_sha"]
-        assert entry["commit"] == "aa5bccfcaf11f17473c7f1ff502509dfa1547660"
 
 
 def test_explicit_findings_conflict_requires_same_line_id_and_code(tmp_path):

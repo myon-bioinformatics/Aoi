@@ -1,9 +1,18 @@
+import json
+import os
 import subprocess
+import sys
+import threading
 import urllib.error
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 import pytest
 
 import linkcheck as lc
+
+HERE = Path(__file__).resolve().parents[1]
+LINKCHECK = HERE / "linkcheck.py"
 
 
 def repo(tmp_path, files: dict[str, str], untracked: dict[str, str] | None = None):
@@ -101,3 +110,165 @@ def test_repository_links_are_all_valid():
     root = __import__("pathlib").Path(__file__).resolve().parents[2]
     broken = [r for r in lc.check_local(root, lc.tracked_files(root)) if r["status"] == "broken"]
     assert broken == []
+
+
+def run_linkcheck(args, *, cwd=None, env=None):
+    return subprocess.run(
+        [sys.executable, "-S", str(LINKCHECK), *args],
+        cwd=cwd, env=env, capture_output=True, text=True,
+    )
+
+
+def init_repo(path: Path, files: dict[str, str]) -> Path:
+    subprocess.run(["git", "init", "-q", str(path)], check=True)
+    for name, text in files.items():
+        dest = path / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(text, encoding="utf-8")
+    subprocess.run(["git", "add", *files], cwd=path, check=True)
+    return path
+
+
+def test_help_documents_every_flag_and_the_unverified_exit():
+    proc = run_linkcheck(["--help"])
+    assert proc.returncode == 0, proc.stderr
+    text = proc.stdout
+    assert "--root" in text and "git ls-files" in text
+    assert "--remote" in text and "gh api" in text
+    assert "--ref" in text and "git ref" in text
+    assert "--external" in text and "404" in text and "410" in text
+    assert "--json" in text and "nagoyaction-linkcheck/1" in text and "nagoyaction-error/1" in text
+    assert "--strict" in text and "終了コード 3" in text
+    assert "終了コード:" in text
+    assert "Aoi" in text and "Links" in text and "--strict なし" in text
+
+
+def test_cli_broken_link_exits_1_with_structured_json(tmp_path):
+    root = init_repo(tmp_path, {"README.md": "[x](missing.md)\n"})
+    proc = run_linkcheck(["--root", str(root), "--json"], cwd=Path("/"))
+    assert proc.returncode == 1, proc.stderr
+    doc = json.loads(proc.stdout)
+    err = json.loads(proc.stderr)
+    assert doc["schema"] == "nagoyaction-linkcheck/1"
+    assert doc["ok"] is False and doc["exit"] == 1 and doc["strict"] is False
+    assert doc["counts"]["broken"] == 1 and doc["counts"]["remote_unverified"] == 0
+    assert doc["results"][0]["status"] == "broken"
+    assert err == {
+        "schema": "nagoyaction-error/1",
+        "tool": "linkcheck",
+        "ok": False,
+        "exit": 1,
+        "error": {"code": "broken", "message": "broken が 1 件"},
+    }
+    assert "[broken]" not in proc.stdout
+
+
+def test_cli_usage_and_git_errors_are_structured_only_with_json(tmp_path):
+    usage = run_linkcheck(["--json", "--remote", "o/r"])
+    assert usage.returncode == 2 and usage.stdout == ""
+    err = json.loads(usage.stderr)
+    assert err["schema"] == "nagoyaction-error/1"
+    assert err["tool"] == "linkcheck" and err["exit"] == 2
+    assert err["error"]["code"] == "usage" and "--ref" in err["error"]["message"]
+
+    text = run_linkcheck(["--remote", "o/r"])
+    assert text.returncode == 2
+    assert "nagoyaction-error" not in text.stderr
+    assert "--ref" in text.stderr
+
+    git = run_linkcheck(["--json", "--root", str(tmp_path)])
+    assert git.returncode == 2 and git.stdout == ""
+    assert json.loads(git.stderr)["error"]["code"] == "git"
+
+
+def _http_server():
+    class Handler(BaseHTTPRequestHandler):
+        def do_HEAD(self):
+            code = 404 if self.path == "/missing" else 403
+            self.send_response(code)
+            self.end_headers()
+
+        def log_message(self, fmt, *args):
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return server
+
+
+def test_cli_unverified_is_exit_3_only_when_strict(tmp_path):
+    server = _http_server()
+    port = server.server_address[1]
+    base = f"http://127.0.0.1:{port}"
+    try:
+        denied = init_repo(tmp_path / "denied", {"README.md": f"[d]({base}/denied)\n"})
+        loose = run_linkcheck(["--root", str(denied), "--external", "--json"])
+        assert loose.returncode == 0, loose.stderr
+        body = json.loads(loose.stdout)
+        assert body["exit"] == 0 and body["ok"] is True and body["counts"]["unverified"] == 1
+        assert loose.stderr == ""
+
+        hint = run_linkcheck(["--root", str(denied), "--external"])
+        assert hint.returncode == 0
+        assert "[unverified]" in hint.stdout and "remote_unverified=0" in hint.stdout
+        assert "--strict" in hint.stdout and "終了コード 3" in hint.stdout
+
+        strict = run_linkcheck(["--root", str(denied), "--external", "--strict", "--json"])
+        assert strict.returncode == 3, strict.stderr
+        err = json.loads(strict.stderr)
+        assert err["error"]["code"] == "unverified" and err["exit"] == 3
+        assert json.loads(strict.stdout)["strict"] is True and json.loads(strict.stdout)["exit"] == 3
+
+        mixed = init_repo(tmp_path / "mixed", {"README.md": f"[d]({base}/denied) [m]({base}/missing)\n"})
+        both = run_linkcheck(["--root", str(mixed), "--external", "--strict"])
+        assert both.returncode == 1
+        assert "[broken]" in both.stdout
+        assert "nagoyaction-error" not in both.stderr
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def _fake_gh(directory: Path, script: str) -> dict[str, str]:
+    bindir = directory / "bin"
+    bindir.mkdir()
+    gh = bindir / "gh"
+    gh.write_text(script, encoding="utf-8")
+    gh.chmod(0o755)
+    env = os.environ.copy()
+    env["PATH"] = str(bindir) + os.pathsep + env.get("PATH", "")
+    return env
+
+
+def test_cli_remote_unverified_is_exit_3_only_with_strict(tmp_path):
+    root = init_repo(tmp_path / "repo", {"README.md": "[a](a.md)\n", "a.md": ""})
+    env = _fake_gh(tmp_path, "#!/bin/sh\necho HTTP 401 >&2\nexit 1\n")
+    loose = run_linkcheck(
+        ["--root", str(root), "--remote", "o/r", "--ref", "main", "--json"], env=env,
+    )
+    assert loose.returncode == 0, loose.stderr
+    doc = json.loads(loose.stdout)
+    assert doc["counts"]["remote_unverified"] == 1
+    assert doc["results"][0]["status"] == "ok" and doc["results"][0]["remote"] == "unverified"
+    assert loose.stderr == ""
+
+    strict = run_linkcheck(
+        ["--root", str(root), "--remote", "o/r", "--ref", "main", "--strict"], env=env,
+    )
+    assert strict.returncode == 3, strict.stdout
+    assert "[unverified]" in strict.stdout
+    assert "終了コード 3" in strict.stderr
+
+
+def test_cli_remote_404_stays_broken_under_strict(tmp_path):
+    root = init_repo(tmp_path / "repo", {"README.md": "[a](a.md)\n", "a.md": ""})
+    env = _fake_gh(tmp_path, "#!/bin/sh\necho 'gh: Not Found (HTTP 404)' >&2\nexit 1\n")
+    proc = run_linkcheck(
+        ["--root", str(root), "--remote", "o/r", "--ref", "main", "--strict", "--json"], env=env,
+    )
+    assert proc.returncode == 1, proc.stdout
+    doc = json.loads(proc.stdout)
+    err = json.loads(proc.stderr)
+    assert doc["results"][0]["status"] == "broken"
+    assert err["error"]["code"] == "broken" and err["exit"] == 1

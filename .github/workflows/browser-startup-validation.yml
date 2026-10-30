@@ -51,17 +51,21 @@ jobs:
           uv sync --locked --python 3.14
           mkdir -p build/test-assets build/startup-context
           python -S -c 'from pathlib import Path; from dragowing.plotly_cdn import fetch_plotly_js; Path("build/test-assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
+      - name: Install pinned official Chromium without a browser warmup
+        run: python3 dragowing/scripts/install_ci_chromium.py --destination "$RUNNER_TEMP/aoi-chromium"
       - name: Select Chromium without a full browser warmup
         shell: bash
         run: |
           set -euo pipefail
-          if ! chromium="$(command -v chromium || command -v chromium-browser)"; then
-            echo '::error::Chromium is required: install chromium or chromium-browser on the runner.'
+          chromium="$RUNNER_TEMP/aoi-chromium/chrome-linux/chrome"
+          test -x "$chromium"
+          actual_version="$("$chromium" --version)"
+          printf '%s\n' "$actual_version"
+          if [[ "$actual_version" != 'Chromium 156.0.8078.0' && "$actual_version" != 'Chromium 156.0.8078.0 '* ]]; then
+            echo '::error::Installed Chromium version does not match the reviewed snapshot.'
             exit 1
           fi
-          test -x "$chromium"
-          "$chromium" --version
-          printf 'CHROME=%s\n' "$chromium" >> "$GITHUB_ENV"
+          printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
       - name: Observe the actual tests without preceding browser launches
         shell: bash
         env:
@@ -120,6 +124,9 @@ jobs:
           uv sync --locked --python 3.14
           mkdir -p build/browser-startup/assets
           python -S -c 'from pathlib import Path; from dragowing.plotly_cdn import fetch_plotly_js; Path("build/browser-startup/assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
+      - name: Install pinned Chromium for the default validation lane
+        if: matrix.browser == 'chromium'
+        run: python3 dragowing/scripts/install_ci_chromium.py --destination "$RUNNER_TEMP/aoi-chromium"
       - name: Select the named browser family without cross-browser fallback
         id: browser
         env:
@@ -127,28 +134,46 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$BROWSER_NAME" == chromium ]]; then
-            if ! executable="$(command -v chromium || command -v chromium-browser)"; then
-              echo '::error::Chromium is required: install chromium or chromium-browser on the runner.'
+            executable="$RUNNER_TEMP/aoi-chromium/chrome-linux/chrome"
+            test -x "$executable"
+            actual_version="$("$executable" --version)"
+            if [[ "$actual_version" != 'Chromium 156.0.8078.0' && "$actual_version" != 'Chromium 156.0.8078.0 '* ]]; then
+              echo '::error::Installed Chromium version does not match the reviewed snapshot.'
               exit 1
             fi
-          else
+          elif [[ "$BROWSER_NAME" == google-chrome ]]; then
+            # Explicit manual compatibility comparison only, never a fallback.
             if ! executable="$(command -v google-chrome || command -v google-chrome-stable)"; then
               echo '::error::The requested Chrome comparison requires google-chrome or google-chrome-stable.'
               exit 1
             fi
+            "$executable" --version
+          else
+            echo '::error::Unknown browser family'
+            exit 1
           fi
           test -x "$executable"
-          "$executable" --version
           printf 'executable=%s\n' "$executable" >> "$GITHUB_OUTPUT"
+      - name: Require first full-suite browser startup within eight seconds
+        id: first
+        env:
+          CHROME: ${{ steps.browser.outputs.executable }}
+          DRAGOWING_REQUIRE_CHROME: '1'
+          DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/browser-startup/assets/plotly.min.js
+        run: |
+          .venv/bin/python -m pytest -q -p scripts.observe_dragowing_startup \
+            --browser-startup-evidence=build/browser-startup/first-start.json \
+            dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version \
+            --junitxml=build/browser-startup/first-start.xml
       - name: Measure ten fresh profiles before the suite
-        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' && steps.first.outcome == 'success' }}
         env:
           CHROME: ${{ steps.browser.outputs.executable }}
         run: |
           .venv/bin/python scripts/diagnose_dragowing_browser.py --chrome "$CHROME" --runs 10 --timeout 30 \
             --output build/browser-startup/before.json
       - name: Run the full suite with explicit browser selection
-        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' && steps.first.outcome == 'success' }}
         env:
           CHROME: ${{ steps.browser.outputs.executable }}
           DRAGOWING_REQUIRE_CHROME: '1'
@@ -157,16 +182,16 @@ jobs:
         # Use the ordinary runner user/network context of the original failure.
         # Do not introduce sudo/unshare or weaken existing isolation elsewhere.
         run: |
-          .venv/bin/python -m pytest -q --junitxml=build/browser-startup/full-suite.xml
+          .venv/bin/python -m pytest -q -k 'not test_stalled_dbus_does_not_block_browser_get_version' --junitxml=build/browser-startup/full-suite.xml
       - name: Measure ten fresh profiles after the suite
-        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' && steps.first.outcome == 'success' }}
         env:
           CHROME: ${{ steps.browser.outputs.executable }}
         run: |
           .venv/bin/python scripts/diagnose_dragowing_browser.py --chrome "$CHROME" --runs 10 --timeout 30 \
             --output build/browser-startup/after.json
       - name: Validate synthetic PNG and SVG exports in three sessions
-        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.browser.outcome == 'success' && steps.first.outcome == 'success' }}
         env:
           CHROME: ${{ steps.browser.outputs.executable }}
         run: |

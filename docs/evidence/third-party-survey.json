@@ -717,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1203,
+      "attribute_uses": 1207,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -730,10 +730,10 @@
         "fixture": 56,
         "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 256,
+        "mark.parametrize": 259,
         "mark.skipif": 23,
         "param": 1,
-        "raises": 441,
+        "raises": 442,
         "skip": 9,
         "warns": 3
       },
@@ -863,20 +863,20 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 374,
+          "attribute_uses": 378,
           "attributes": {
             "approx": 104,
             "fail": 13,
             "fixture": 16,
             "importorskip": 1,
-            "mark.parametrize": 92,
+            "mark.parametrize": 95,
             "mark.skipif": 12,
-            "raises": 134,
+            "raises": 135,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 37,
-          "import_sites": 38
+          "files": 38,
+          "import_sites": 39
         }
       },
       "declared": [
@@ -913,8 +913,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 121,
-      "import_sites": 123
+      "files": 122,
+      "import_sites": 124
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3072,6 +3072,17 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_dragowing_browser_diagnostics.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 3,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_dragowing_browser_managed.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

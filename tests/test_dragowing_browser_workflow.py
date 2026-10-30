@@ -15,43 +15,46 @@ def _selection_step(path, title, job_name):
     return "\n".join(line.removeprefix("          ") for line in script.splitlines()) + "\n"
 
 
-def _select(tmp_path, names, job_name):
+def _select(tmp_path, job_name, *, installed=True, version="Chromium 156.0.8078.0"):
     tmp_path.mkdir()
     binary = tmp_path / "bin"
     binary.mkdir()
-    for name in names:
+    # System browsers must never be a fallback, even if they exist.
+    for name in ("chromium", "chromium-browser", "google-chrome"):
         path = binary / name
-        path.write_text("#!/bin/sh\necho 'Chromium 123.4'\n", encoding="utf-8")
+        path.write_text("#!/bin/sh\nexit 99\n", encoding="utf-8")
         path.chmod(0o755)
+    executable = tmp_path / "aoi-chromium/chrome-linux/chrome"
+    if installed:
+        executable.parent.mkdir(parents=True)
+        executable.write_text("#!/bin/sh\ntest \"$1\" = --version || exit 98\necho '" + version + "'\n", encoding="utf-8")
+        executable.chmod(0o755)
     output = tmp_path / "environment"
-    env = {**os.environ, "PATH": str(binary), "GITHUB_ENV": str(output)}
+    env = {**os.environ, "PATH": str(binary), "RUNNER_TEMP": str(tmp_path), "GITHUB_ENV": str(output)}
     script = _selection_step(ROOT / ".github/workflows/ci.yml", "Select required Chromium without Chrome fallback", job_name)
     result = subprocess.run(["/bin/bash", "--noprofile", "--norc", "-c", script], env=env, capture_output=True, text=True)
-    return result, output
+    return result, output, executable
 
 
-def test_ci_prefers_chromium_and_records_selected_path(tmp_path):
+def test_ci_selects_only_the_managed_chromium(tmp_path):
     for job_name in ("test", "chrome-export"):
-        work = tmp_path / job_name
-        result, output = _select(work, ["google-chrome", "chromium", "chromium-browser"], job_name)
+        result, output, executable = _select(tmp_path / job_name, job_name)
         assert result.returncode == 0, result.stderr
-        assert "Chromium 123.4" in result.stdout
-        assert output.read_text() == "CHROME=" + str(work / "bin/chromium") + "\nDRAGOWING_REQUIRE_CHROME=1\n"
+        assert output.read_text() == f"CHROME={executable}\nDRAGOWING_REQUIRE_CHROME=1\n"
 
 
-def test_ci_accepts_chromium_alias(tmp_path):
+def test_ci_rejects_wrong_installed_version(tmp_path):
     for job_name in ("test", "chrome-export"):
-        work = tmp_path / job_name
-        result, output = _select(work, ["chromium-browser"], job_name)
-        assert result.returncode == 0, result.stderr
-        assert output.read_text() == "CHROME=" + str(work / "bin/chromium-browser") + "\nDRAGOWING_REQUIRE_CHROME=1\n"
-
-
-def test_ci_rejects_chrome_only_runner(tmp_path):
-    for job_name in ("test", "chrome-export"):
-        result, output = _select(tmp_path / job_name, ["google-chrome", "google-chrome-stable", "chrome"], job_name)
+        result, output, _ = _select(tmp_path / job_name, job_name, version="Chromium 123.4")
         assert result.returncode != 0
-        assert "::error::Chromium is required:" in result.stdout
+        assert "does not match the reviewed snapshot" in result.stdout
+        assert not output.exists()
+
+
+def test_ci_rejects_system_browsers_when_managed_install_is_missing(tmp_path):
+    for job_name in ("test", "chrome-export"):
+        result, output, _ = _select(tmp_path / job_name, job_name, installed=False)
+        assert result.returncode != 0
         assert not output.exists()
 
 
@@ -73,7 +76,7 @@ def test_diagnostics_use_chromium_by_default_with_manual_chrome_comparison():
     assert "compare-chrome:\n" in text
     assert "type: boolean\n        required: false\n        default: false" in text
     assert "fromJSON(github.event_name == 'workflow_dispatch' && inputs.compare-chrome && '[\"chromium\",\"google-chrome\"]' || '[\"chromium\"]')" in text
-    assert "Chromium is required:" in text
+    assert "Installed Chromium version does not match the reviewed snapshot." in text
     assert "The requested Chrome comparison requires" in text
     assert text.count('--chrome "$CHROME"') == 3
     assert text.count('--runs 10 --timeout 30') == 2
@@ -88,7 +91,9 @@ def test_python_matrix_pins_the_same_required_chromium_selection():
     text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     job = text.split("\n  test:\n", 1)[1].split("\n  lab-integration:\n", 1)[0]
     assert "runs-on: ubuntu-24.04" in job
-    assert "command -v chromium || command -v chromium-browser" in job
+    assert 'chromium="$RUNNER_TEMP/aoi-chromium/chrome-linux/chrome"' in job
+    assert "dragowing/scripts/install_ci_chromium.py" in job
+    assert "command -v" not in job
     assert "command -v google-chrome" not in job
     assert "CHROMIUM=%s" not in job
     assert "DRAGOWING_REQUIRE_CHROME=1" in job

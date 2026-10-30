@@ -43,3 +43,38 @@ def test_runner_rejects_implicit_browser_selection(tmp_path, monkeypatch):
         assert exc.code == 2
     else:
         raise AssertionError("CHROME must be explicitly configured")
+
+
+def test_timeout_thread_snapshot_is_bounded_and_redacted(monkeypatch):
+    from contextlib import nullcontext
+    from types import SimpleNamespace
+    from scripts import diagnose_dragowing_browser as diagnostic
+
+    class Child:
+        pid = 42
+
+        def poll(self):
+            return None
+
+    def fake_stat(pid, path, limit=4096):
+        if path == "task/101/stat":
+            return "101 (browser thread) S 1 0"
+        if path == "task/102/stat":
+            return "102 (other thread) D 1 0"
+        if path == "task/101/wchan":
+            return "futex_wait_queue"
+        if path == "task/102/wchan":
+            return "filemap_fault"
+        return None
+
+    monkeypatch.setattr(diagnostic.sys, "platform", "linux")
+    monkeypatch.setattr(diagnostic.os, "scandir", lambda path: nullcontext([
+        SimpleNamespace(name="101"), SimpleNamespace(name="102"),
+    ]))
+    monkeypatch.setattr(diagnostic, "_proc_text", fake_stat)
+    result = diagnostic._thread_wait_observation(Child())
+    assert result == {
+        "status": "ok", "sampled": 2, "truncated": False,
+        "states": {"D": 1, "S": 1},
+        "wait_channels": {"filemap_fault": 1, "futex_wait_queue": 1},
+    }

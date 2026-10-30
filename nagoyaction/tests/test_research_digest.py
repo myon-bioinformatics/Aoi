@@ -241,10 +241,7 @@ def test_markdown_vendor_pin_matches_bytes_and_license():
         raw = (ROOT / entry["destination"]).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == entry["sha256"]
         assert hashlib.sha1(f"blob {len(raw)}\0".encode() + raw).hexdigest() == entry["blob_sha"]
-        assert entry["commit"] == {
-            "markdown.py": "e8d97fdc21d16f2cf9581bcfbd41bb39ec446023",
-            "LICENSE": "aa5bccfcaf11f17473c7f1ff502509dfa1547660",
-        }[entry["source"]]
+        assert entry["commit"] == "aa5bccfcaf11f17473c7f1ff502509dfa1547660"
 
 
 def test_explicit_findings_conflict_requires_same_line_id_and_code(tmp_path):

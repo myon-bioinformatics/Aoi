@@ -12,7 +12,7 @@ python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
 python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --png --svg
 ```
 
-`--cond` values are JSON (`0`, `true`, `"d"`). If omitted, it looks at the `if` of `propositions.jsonl` in file order, takes 2 atoms on columns present in `season.jsonl`, and adds the B class (`upper_half == false`). That gives 2 or 3 sets.
+`--cond` values are JSON (`0`, `true`, `"d"`). If omitted, it looks at the `if` of `propositions.jsonl` in file order, takes 2 atoms on columns present in `season.jsonl`, and adds the B class (`upper_half == false`). That gives 2 or 3 sets. Repeating `--cond` permits 2–8 sets including class B. Select the breakdown with `--breakdown COLUMN` (default `team`) and repeatable `--breakdown-keep VALUE`.
 
 By default, `index.html` loads Plotly.js from jsDelivr (`https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js`, no SRI). `propositions.html` does not load Plotly. `plotly.min.js` is not copied to the output directory. The Python package `plotly` is not a dependency.
 
@@ -20,12 +20,14 @@ With `--embed`, Plotly.js is embedded into `index.html`. `propositions.html` is 
 
 | File | Contents |
 |---|---|
-| `index.html` | Trajectories, team × year, and the table of condition-overlap counts and units |
+| `index.html` | Trajectories, team × year, condition-overlap grids and breakdown bars, and the table of region counts and units |
 | `propositions.html` | The list at the top, and per-proposition 2×2, logic notation, and counterexample tables |
 
 Page headings, the list, the 2×2, counterexample tables, and the logic-notation box are written in Markdown and converted to HTML with Python-Markdown. Numbers stay exactly as in the files after conversion; they are not rounded.
 
 The text-only 2×2 remains `dragowing/forms.py` in [forms.md](forms.md).
+
+Figures and pages use `figures.FONT` (`Meiryo, メイリオ, sans-serif`). The standalone research-report and report-page templates repeat the same font string, checked by `tests/test_font.py`; code remains monospace. No font files are distributed. Systems without Meiryo, including Linux image exports, use their default sans-serif font.
 
 Add `--png` / `--svg` only when PNG / SVG is needed. Chrome is needed only then too (`--chrome` or the `CHROME` environment variable). Without Chrome, the HTML is written and the exit code is 2. The tests do not use Chrome either.
 
@@ -94,6 +96,35 @@ No circles are drawn. Counts are the integers in the region table. The `unit` in
 
 B is the display name of the set `upper_half == false`.
 
+
+The number of sets, including B, is 2–8 (`overlap.MAX_SETS`). All 2^n regions remain present in the grid, including zero-count regions.
+
+**Grid** (`venn.py::grid_figure`, figure ID `overlap_grid`). Each region occupies one cell in a Karnaugh-style grid; there are no area-fitted circles or ellipses.
+
+- Rows represent the first floor(n/2) sets and columns the rest. Axes follow Gray-code order, starting on the side containing the first set (10, 11, 01, 00 for four sets). Adjacent cells differ by one set. Axis labels list membership bits in set-number order.
+- Cell labels are exact counts. Color intensity also represents count; it does not assign importance. There is no color scale legend.
+- Rectangular outlines identify sets: horizontal for row sets, vertical for column sets, with `S1`…`Sn` labels and condition legends. Disconnected membership bands, possible from five sets onward, get separate outlines. Paper coordinates allow outlines beyond the grid without clipping.
+
+**Breakdown** (`breakdown_figure`, figure ID `overlap_breakdown`). Nonempty regions are horizontal stacked bars whose lengths equal counts, grouped by `team`, `team_name`, `league`, `season`, or `upper_half` (`--breakdown`, default `team`).
+
+- Rows follow descending count, with ties in region order. Labels include membership bits and count. Empty regions are omitted from bars but counted in the title and retained in the grid/table.
+- Colors follow ascending values, not frequency rank. Up to seven values receive separate colors; the rest become gray “Other”, with constituent values and counts in hover text. `--breakdown-keep d` preserves a requested value separately regardless of count. More than seven distinct requested values present in the data raise an error rather than silently dropping requests; duplicate or absent requests do not consume slots.
+- The title and `layout.meta` record grouping and omissions (`by`, `folded`, `empty_regions`, and per-region value counts).
+
+The Python API returns only Plotly JSON (`data` / `layout`), without Python plotly or NumPy. Pass it directly to `Plotly.newPlot(id, spec.data, spec.layout)`.
+
+```python
+from dragowing.overlap import finalize_conditions, load_overlap, parse_cond
+from dragowing.records import read_jsonl
+from dragowing.venn import venn_figures
+from dragowing.htmlout import figure_block, standalone
+
+rows = read_jsonl("season.jsonl")
+conds = finalize_conditions([parse_cond(t) for t in ("rd,>,0", "rank_ra,<=,2", "rank_rf,<=,3")], [], rows)  # + B = 4 sets
+figs = venn_figures(load_overlap("season.jsonl", conds, backend="stdlib"), by="team", keep=("d",))
+page = standalone("Overlap", figure_block(figs["overlap_grid"], "g") + figure_block(figs["overlap_breakdown"], "b"), plotly=True)
+```
+
 ## Interpretation
 
 This page moves stored numbers and strings into cells, points, and tables.
@@ -105,6 +136,8 @@ Trajectory lines connect the recorded points in order. Slopes are not read as tr
 The `wins_vs_pythag` color just makes the size of the number easier to see. Positive or negative is not read as a judgment of winning record or failure. A and B in cells are class display names. The hover's `rank` is the recorded rank; this page does not recompute ranks.
 
 The overlap table counts where the chosen condition formulas were true at the same time in the records. It does not indicate that a formula was adopted or is the rule to use next.
+
+Grid adjacency and nested outlines do not imply similarity or causation. Color intensity does not imply importance; breakdown colors do not rank values as good or bad. Grouping into “Other” concerns counts, not importance.
 
 `question` in counterexample tables is the stored question text. This page does not answer that question.
 

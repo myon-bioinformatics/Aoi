@@ -70,7 +70,7 @@ def page(title, body, md):
     return ('<!doctype html><html lang="ja"><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>' + html.escape(title) + '</title><style>' + md.default_stylesheet() + '''
-body{margin:0;background:#f4f6fa;color:#182b43;font-family:system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:24px}article{background:white;padding:22px;border:1px solid #dde3eb;border-radius:8px;overflow-wrap:anywhere}pre,.scroll{overflow-x:auto}.pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}.pair>*{min-width:0}.old{border-top:5px solid #ad4c40}.new{border-top:5px solid #27715c}nav{margin-bottom:16px}table.diff{font-size:13px;white-space:pre}.diff_add{background:#d5f3df}.diff_sub{background:#f8d9d4}.diff_chg{background:#fff0b3}footer{overflow-wrap:anywhere;font-size:13px}h1{font-size:26px}@media(max-width:700px){main{padding:12px}.pair{grid-template-columns:1fr}article{padding:12px}}
+body{margin:0;background:#f4f6fa;color:#182b43;font-family:Meiryo,メイリオ,sans-serif}main{max-width:1200px;margin:auto;padding:24px}article{background:white;padding:22px;border:1px solid #dde3eb;border-radius:8px;overflow-wrap:anywhere}pre,.scroll{overflow-x:auto}.pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}.pair>*{min-width:0}.old{border-top:5px solid #ad4c40}.new{border-top:5px solid #27715c}nav{margin-bottom:16px}table.diff{font-size:13px;white-space:pre}.diff_add{background:#d5f3df}.diff_sub{background:#f8d9d4}.diff_chg{background:#fff0b3}footer{overflow-wrap:anywhere;font-size:13px}h1{font-size:26px}@media(max-width:700px){main{padding:12px}.pair{grid-template-columns:1fr}article{padding:12px}}
 </style><main>''' + body + '</main></html>')
 
 

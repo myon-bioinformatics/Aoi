@@ -32,7 +32,7 @@ Turns recorded results (`season.jsonl` and `propositions.jsonl`) into figures an
 
 The text table of the four forms is in [docs/forms.md](docs/forms.md). HTML (trajectories, team × year, condition overlap, list of propositions) is in [docs/figures.md](docs/figures.md). The concept figure is [docs/images/dragowing.webp](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/images/dragowing.webp).
 
-It produces `build/dragowing/index.html` and `propositions.html`. The trajectories and team × year in `index.html` are drawn from Plotly JSON specs with the browser's plotly.js (the latest dist on jsDelivr). The Python `plotly` package is not used. `propositions.html` is a list and Markdown tables, without Plotly. Add `--embed` to embed Plotly.js into `index.html`. Page text is converted from Markdown to HTML.
+It produces `build/dragowing/index.html` and `propositions.html`. The trajectories, team × year, and condition overlap (grid and breakdown) in `index.html` are drawn from Plotly JSON specs with the browser's plotly.js (the latest dist on jsDelivr). The Python `plotly` package is not used. `propositions.html` is a list and Markdown tables, without Plotly. Add `--embed` to embed Plotly.js into `index.html`. Page text is converted from Markdown to HTML.
 
 PNG / SVG are optional. With `--png` or `--svg`, they are exported via Chromium by default. Install `chromium` / `chromium-browser` or set `CHROMIUM` to its executable. Explicit Chrome overrides remain supported; automatic selection does not fall back to Chrome. See [browser selection and compatibility](docs/export.md).
 
@@ -49,10 +49,11 @@ uv sync
 ```
 
 ```bash
-python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--column COLUMN] [--cond col,op,VALUE] [--png] [--svg] [--embed]
+python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--column COLUMN] [--cond col,op,VALUE ...] [--breakdown COLUMN] [--breakdown-keep VALUE ...] [--png] [--svg] [--embed]
 ```
 
 - `--results` is a directory containing `season.jsonl` and `propositions.jsonl`. `--id` narrows propositions, and `--column` chooses the numeric column for team × year (default `wins_vs_pythag`).
+- Repeat `--cond` to display 2–8 sets including class B. `--breakdown` selects the breakdown column (default `team`); repeat `--breakdown-keep` to keep values separate from “Other”. See [docs/figures.md](docs/figures.md).
 - Condition overlap (`overlap.py`) uses `propositions` and `rule_search` from [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras), and the four-forms table (`forms.py`) uses `ask` (registration status) from [QueRyu](https://github.com/myon-bioinformatics/QueRyu). Put them on `PYTHONPATH` to run (same as "Tests" below).
 - This directory is the contents of the `dragowing` package, so run `python -m dragowing` from a parent where the directory appears as `dragowing` (see the example under "Tests").
 
@@ -70,7 +71,8 @@ Markdown for HTML, Chromium for image export, and so on are still needed.
 | `cli.py`, `__main__.py` | `python -m dragowing --results DIR --out DIR` |
 | `records.py` | Reads the results directory's JSONL in record order |
 | `figures.py` | Plotly figure JSON (data / layout) of recorded values |
-| `htmlout.py` | HTML. Text and tables are built from Markdown (Plotly only for trajectories and team × year) |
+| `htmlout.py` | HTML. Text and tables are built from Markdown (Plotly for trajectories, team × year, and condition overlap) |
+| `venn.py` | Condition-overlap grids for 2–8 sets in Gray-code order, and per-region stacked breakdown bars; returns Plotly JSON (`venn_figures`) |
 | `forms.py` | 2×2 of the four forms and logic notation for conditions ([docs/forms.md](docs/forms.md)) |
 | `overlap.py` | Overlap of condition sets and the B class (masks are rule_search bit matrices) |
 | `plotly_cdn.py` | Plotly.js (jsDelivr) |

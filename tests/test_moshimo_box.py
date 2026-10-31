@@ -486,13 +486,12 @@ def test_unrepresentable_exact_margins_have_reason():
 
 
 @pytest.mark.parametrize('exact', [True, False])
-def test_real_ledger_extreme_multiline_cli_sweep(tmp_path, exact):
-    import os
+def test_real_ledger_extreme_multiline_cli_sweep(tmp_path, exact, aoi_root):
     import subprocess
     import sys
     from pathlib import Path
 
-    ledger = Path(os.environ['AOI_ROOT']) / 'cycles/c001-chunichi/outputs/propositions.jsonl'
+    ledger = aoi_root / 'cycles/c001-chunichi/outputs/propositions.jsonl'
     out = tmp_path / 'tables.json'
     args = [sys.executable, str(Path(mb.__file__)), '--ledger', str(ledger), '--id', 'P1',
             '--sweep', 'contrapositive=0.5,5e-324,1e-300', '--json', str(out)]

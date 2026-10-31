@@ -1,0 +1,65 @@
+name: numpy_min backends
+
+# shrink/numpy_min.py の2つの経路を、本番と同じ python:3.13-slim（Debian 13）で確かめる。
+# - lapack: apt で liblapack3 / libblas3（と依存の libgfortran5）だけを版固定・--no-install-recommends で入れ、
+#   ctypes で dgesdd / cblas_?gemm を呼ぶ経路が numpy と一致すること
+# - stdlib: 何も入れず、ライブラリが見つからないこと・標準ライブラリだけの経路が numpy と一致すること
+# 版を上げるとき: `apt-cache policy liblapack3 libblas3 libgfortran5` で新しい版を見て、下の PKGS を書き換える。
+on:
+  pull_request:
+    paths:
+      - scripts/shrink_module.py
+      - shrink/numpy_min.py
+      - tests/test_numpy_min_suggest.py
+      - tests/test_shrink_module.py
+      - tests/test_numpy_linalg_min.py
+      - .github/workflows/numpy-min-backends.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: numpy_min on ${{ matrix.lane }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: python:3.13-slim@sha256:aaf08c5490d52cd92bc27142a5215b1e47355a5eaf9adfad2a0fbc022d0b5490
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [lapack, stdlib]
+    env:
+      PKGS: liblapack3=3.12.1-6 libblas3=3.12.1-6 libgfortran5=14.2.0-19
+      NUMPY_MIN_EXPECT: ${{ matrix.lane }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Install liblapack3 / libblas3 (pinned, minimal)
+        if: matrix.lane == 'lapack'
+        run: |
+          apt-get update -q
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends $PKGS
+          dpkg-query -W liblapack3 libblas3 libgfortran5
+      - name: Libraries are absent
+        if: matrix.lane == 'stdlib'
+        run: |
+          python3 - <<'PY'
+          import ctypes, ctypes.util
+          for name in ("lapack", "blas"):
+              assert ctypes.util.find_library(name) is None, name
+              try:
+                  ctypes.CDLL(f"lib{name}.so.3")
+              except OSError:
+                  continue
+              raise SystemExit(f"lib{name}.so.3 が読めてしまう")
+          PY
+      - run: uv sync --locked --python "$(command -v python3)"
+      - name: numpy_min backend and comparison with numpy
+        run: uv run --locked --python "$(command -v python3)" pytest -q -rs tests/test_numpy_min_suggest.py tests/test_shrink_module.py

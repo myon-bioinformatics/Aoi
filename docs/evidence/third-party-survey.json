@@ -717,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1214,
+      "attribute_uses": 1221,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -727,14 +727,14 @@
         "UsageError": 10,
         "approx": 346,
         "fail": 33,
-        "fixture": 56,
+        "fixture": 57,
         "hookimpl": 4,
-        "importorskip": 9,
-        "mark.parametrize": 259,
+        "importorskip": 10,
+        "mark.parametrize": 262,
         "mark.skipif": 23,
         "param": 1,
         "raises": 449,
-        "skip": 9,
+        "skip": 11,
         "warns": 3
       },
       "by_tree": {
@@ -863,20 +863,20 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 385,
+          "attribute_uses": 392,
           "attributes": {
             "approx": 104,
             "fail": 13,
-            "fixture": 16,
-            "importorskip": 1,
-            "mark.parametrize": 95,
+            "fixture": 17,
+            "importorskip": 2,
+            "mark.parametrize": 98,
             "mark.skipif": 12,
             "raises": 142,
-            "skip": 2
+            "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 39,
-          "import_sites": 40
+          "files": 40,
+          "import_sites": 41
         }
       },
       "declared": [
@@ -913,8 +913,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 123,
-      "import_sites": 125
+      "files": 124,
+      "import_sites": 126
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3199,6 +3199,19 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_window_crossing.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "importorskip": 1,
+        "mark.parametrize": 3,
+        "skip": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_numpy_min_suggest.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

@@ -47,3 +47,8 @@ def test_frozen_source_fetch_survives_rewritten_shallow_history(tmp_path):
     assert git(checkout, 'rev-parse', 'HEAD').stdout == head
     assert (checkout / 'distributions.json').read_text() == manifest
     assert git(checkout, 'status', '--porcelain').stdout == ''
+
+    snapshot = tmp_path / 'frozen-snapshot'
+    subprocess.run(['git', 'clone', '-q', '--shared', '--no-checkout', str(checkout), str(snapshot)], check=True)
+    git(snapshot, 'checkout', '--detach', approved)
+    assert (snapshot / 'snapshot').read_text() == 'approved source\n'

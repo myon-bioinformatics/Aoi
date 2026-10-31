@@ -19,7 +19,7 @@
     },
     {
       "path": "scripts/shrink_polars.py",
-      "sha256": "f8067cdc585a4cbe8f03c27a3e2a1486b835d7537541b0cd4229b25d7c663c84",
+      "sha256": "75ebfd7936ce82007c984725e23ecf3e5819072b86cc297150ad121c0b7eee96",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/NagoyAction"

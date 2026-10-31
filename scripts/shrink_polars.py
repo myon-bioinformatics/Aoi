@@ -31,7 +31,8 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
 import shrink_module as sm  # noqa: E402
 
 # 入口と実行する仕事はリポジトリごとの設定に置く（このスクリプトには特定のリポジトリの名前を書かない）。
@@ -42,6 +43,7 @@ import shrink_module as sm  # noqa: E402
 #    "workload": "shrink.polars_workload:run"}  trace / absent で動かす関数。run(root) -> {"regions", "units"}
 CONFIG_PATH = ROOT / "shrink" / "shrink_polars.json"
 CONFIG: dict = {}
+_LOADED: list[Path] = []  # いま CONFIG に入っている設定ファイル（同じファイルを読み直さない）
 
 
 def load_config(path: Path | str | None = None) -> dict:
@@ -50,6 +52,9 @@ def load_config(path: Path | str | None = None) -> dict:
     target = Path(path or os.environ.get("SHRINK_POLARS_CONFIG") or CONFIG_PATH)
     if not target.is_absolute():
         target = ROOT / target
+    if _LOADED == [target]:
+        return CONFIG
+    _LOADED[:] = [target]
     data = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
     CONFIG.clear()
     CONFIG.update(data)
@@ -503,7 +508,8 @@ def _run_workload() -> dict:
     spec = CONFIG.get("workload")
     if not spec:
         raise SystemExit("設定ファイルに workload（module:function）が無い")
-    sys.path[:0] = [str(ROOT / rel) if rel else str(ROOT) for rel in CONFIG.get("sys_path", [""])]
+    wanted = [str(ROOT / rel) if rel else str(ROOT) for rel in CONFIG.get("sys_path", [""])]
+    sys.path[:0] = [p for p in dict.fromkeys(wanted) if p not in sys.path]  # 何度呼んでも同じ項目を重ねない
     module_name, _, func = spec.partition(":")
     return getattr(importlib.import_module(module_name), func)(ROOT)
 

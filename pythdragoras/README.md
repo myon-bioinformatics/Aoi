@@ -1,12 +1,18 @@
 # PythDRagoras
 
+<p align="center">
+  <img src="docs/brand/icon.png" alt="PythDRagoras icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+
 > Propositions, precedents, objections.
 >
 > Tests explanations as propositions with counterexamples, rule search and sensitivity analysis for NPB baseball outcomes. Split out from Aoi's pythdragoras/ (git subtree).
 
 ![PythDRagoras](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/pythdragoras.webp)
 
-*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+*Concept image (a figure for sharing the idea; not the actual data or HTML structure)*
 
 ## Role in Aoi
 
@@ -20,21 +26,21 @@
 
 Topics: mathematics, visualization, education support
 
-## 概要
+## Overview
 
-PythDRagoras は、説明を「もし A ならば B」の命題として書き、反例と異議を必ず並べて検証するツールです。答えを出すことより、説明が足りなくなる場所を見つけることを目的にしています。
+PythDRagoras is a tool that writes explanations as "if A then B" propositions and always verifies them with counterexamples and objections laid out side by side. Its aim is less to produce answers than to find where explanations fall short.
 
-- **命題と「異議あり」**: 元の命題・対偶・逆・裏の4つの形で判定します。判定の基準は結果を見る前に宣言し、反例が1件でもあれば「支持」でも判例を並べます（下の「命題と「異議あり」」）。
-- **条件の探索**: 候補条件の組み合わせを総当たりで探し、目的の状態をどれだけ言い当てるかで並べます（`rule_search.py`）。
-- **感度分析**: 指標・重み・境界や、試合ごとの得失点を動かしたときの変化を調べます（`season_sensitivity.py`・`score_sensitivity.py`）。
-- 除外には理由を必須にし、何を・なぜ除いたかを結果に残します。外部の主張は観測ではなく claim として登録します。
+- **Propositions and "objection" (異議あり)**: judged in four forms: the original proposition, contrapositive, converse, and inverse. Judgement criteria are declared before seeing results, and if there is even one counterexample, counterexamples are listed even when the verdict is "supported" ("Propositions and "objection"" below).
+- **Condition search**: exhaustively searches combinations of candidate conditions and ranks them by how well they predict the target state (`rule_search.py`).
+- **Sensitivity analysis**: examines changes when metrics, weights, and boundaries, or per-game runs scored and allowed, are varied (`season_sensitivity.py`, `score_sensitivity.py`).
+- Exclusions require a reason, and what was excluded and why is kept in the results. External assertions are registered as claims, not observations.
 
-思想は Aoi の [docs/PythDRagoras.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/PythDRagoras.md)、命題の仕様は [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md)。
-[Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) から独立したリポジトリです（下の「Aoi との関係」）。
+The philosophy is in Aoi's [docs/PythDRagoras.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/PythDRagoras.md), and the proposition spec in [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md).
+This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) (see "Relationship with Aoi" below).
 
-## インストールと使い方
+## Installation and usage
 
-Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存は polars と numpy だけです（`pyproject.toml`。ortools は使っていません）。
+Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). The only runtime dependencies are polars and numpy (`pyproject.toml`; ortools is not used).
 
 ```bash
 git clone https://github.com/myon-bioinformatics/PythDRagoras.git
@@ -43,37 +49,38 @@ uv sync
 uv run python pythdragoras.py --help
 ```
 
-分析の入力（サイクルデータ `cycles/` など）は Aoi に置いています。パスは呼び出し側（Aoi の `aoi_paths.py`）が解決して渡します。littlebit の CLI は `--cycle-dir`、または `--root` / `AOI_ROOT` と `AOI_RESEARCH_CYCLE` を受け取り、配置は探しません。実際のコマンド例は後半の「詳しい仕様と研究での使い方」にあります。
+Analysis inputs (cycle data `cycles/`, etc.) live in Aoi. Paths are resolved and passed in by the caller (Aoi's `aoi_paths.py`). The littlebit CLIs take `--cycle-dir`, or `--root` / `AOI_ROOT` and `AOI_RESEARCH_CYCLE`, and do not search for the layout. Actual command examples are in "Detailed spec and research usage" later on.
 
-## 構成
+## Layout
 
-| ファイル | 中身 |
+| File | Contents |
 |---|---|
-| `pythdragoras.py` | シーズン表から残差・順位の偏り・命題を検証する CLI（`apply_exclusions`・`cumulative_test`・`rank_test`・`summary_markdown`） |
-| `propositions.py` | 命題・判例・異議あり（仕様は [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md)） |
-| `sets.py` | 登録した命題の条件を集合として名前で呼び、∩・∪・¬ の式を命題として判定する |
-| `rule_search.py` | 条件の組み合わせ（「または」でつないだ「かつ」の組）を総当たりで探す |
-| `season_sensitivity.py` | 年成績の指標・重み・境界を動かす感度探索（標準ライブラリだけ） |
-| `score_sensitivity.py` | 試合ごとの得失点を1軸だけ変える感度分析（差分更新） |
-| `littlebit_approx.py`・`littlebit_prune.py`・`littlebit_holdout.py` | 候補の 0/1 行列から潜在パターンを条件候補にする探索と、その検証（実験） |
-| `littlebit_survey.py` | 乗算・浮動小数なしの画像の領域・重心推定（実験、単一ファイル） |
-| `registration_audit.py` | 来歴ラベル（事前登録か posthoc か）の監査 |
-| `next_seeds.py` | 元の命題と逆の判定を並べ、次の命題の種を表示する（判定ではない） |
+| `pythdragoras.py` | CLI that verifies residuals, rank bias, and propositions from the season table (`apply_exclusions`, `cumulative_test`, `rank_test`, `summary_markdown`) |
+| `propositions.py` | Propositions, counterexamples, objections (spec in [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md)) |
+| `sets.py` | Names the conditions of registered propositions as sets, and judges ∩, ∪, ¬ expressions as propositions |
+| `rule_search.py` | Exhaustively searches combinations of conditions ("or" of "and" groups) |
+| `season_sensitivity.py` | Sensitivity search varying annual-stat metrics, weights, and boundaries (standard library only) |
+| `score_sensitivity.py` | Sensitivity analysis varying per-game runs on one axis only (incremental updates) |
+| `littlebit_approx.py`, `littlebit_prune.py`, `littlebit_holdout.py` | Search that turns latent patterns of a candidate 0/1 matrix into candidate conditions, and its verification (experimental) |
+| `littlebit_survey.py` | Image region and centroid estimation without multiplication or floating point (experimental, single file) |
+| `bitwise_surrogate.py` | Bitmask evaluator for candidate rules (`evaluate_fast`). Packs the conditions once and rechecks `rule_search` results and proposition antecedents with the same truth values (nulls stay undetermined). From a false-positive row it proposes a forbidden (NOT) condition as the next proposition to test; it never changes a verdict. The dropped repair and the measurements are in [docs/bitwise-surrogate-repair.md](docs/bitwise-surrogate-repair.md) |
+| `registration_audit.py` | Audits provenance labels (pre-registered or posthoc) |
+| `next_seeds.py` | Lays out judgements of the original proposition and its converse and shows seeds for next propositions (not a judgement) |
 
-`pythdragoras.py` などの主な関数:
+Main functions in `pythdragoras.py` and others:
 
-| 関数 | 中身 |
+| Function | Contents |
 |---|---|
-| `apply_exclusions` | 分析から除くシーズンを適用する。理由のない除外は受け付けず、何を・なぜ除いたかを結果に残す |
-| `cumulative_test` | 期待勝率からのずれの累積を z 値にする（固定指数・可変指数の両方） |
-| `rank_test` | 順位が下位に偏る珍しさ。帰無仮説（各シーズン独立に一様）と、全球団の実際の記録との比較を並べる |
-| `summary_markdown` | 検証記録。原因は書かない。競合仮説の状態を並べる |
-| `propositions.py` | 命題・判例・異議あり（仕様は [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md)） |
-| `littlebit_approx.py` | 候補の 0/1 行列から潜在パターンを条件候補にする（探索。判定は `rule_search.py`） |
+| `apply_exclusions` | Applies seasons excluded from analysis. Exclusions without a reason are rejected, and what was excluded and why is kept in the results |
+| `cumulative_test` | Turns the cumulative deviation from expected winning percentage into a z value (both fixed and variable exponent) |
+| `rank_test` | How unusual a bias toward low ranks is. Shows comparisons with the null hypothesis (each season independent and uniform) and with all teams' actual records side by side |
+| `summary_markdown` | Verification record. Does not write causes. Lists the status of competing hypotheses |
+| `propositions.py` | Propositions, counterexamples, objections (spec in [docs/propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md)) |
+| `littlebit_approx.py` | Turns latent patterns of a candidate 0/1 matrix into candidate conditions (search; judgement is `rule_search.py`) |
 
-## テスト
+## Tests
 
-サイクルデータ（`cycles/`）、`scripts/`、SakAnalytics は Aoi に残します。コピーはせず、CI は実行時に Aoi の main を解決して checkout します。手元では main を使います。
+Cycle data (`cycles/`), `scripts/`, and SakAnalytics stay in Aoi. They are not copied; CI resolves Aoi's main at run time and checks it out. Locally, use main.
 
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
@@ -82,108 +89,108 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
   uv run pytest -q --junitxml=reports/junit.xml
 ```
 
-CI（`.github/workflows/ci.yml`）は Python 3.11–3.15 で同じことをします。`workflow_dispatch` の `aoi_ref` で ref を指定できます。解決した SHA はジョブの summary に残します。
+CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. A ref can be given via `aoi_ref` in `workflow_dispatch`. The resolved SHA is left in the job summary.
 
-- テストは `AOI_ROOT` だけで Aoi を受け取り、データの場所は Aoi の `aoi_paths.py` に聞きます。このリポジトリに `aoi_paths.py` は置きません。
-- `AOI_ROOT` が Aoi を指していないと、pytest は最初に止まって理由を出します。
-- 実行時の依存は polars と numpy だけです（ortools は使っていません）。
-- テストは、これに加えて `AOI_ROOT` の Aoi を使います。
-  - SakAnalytics: `tests/test_propositions.py:195`（`PYTHONPATH` の `sakanalytics`）。
-  - Aoi の `scripts/`: `tests/test_c001_replay_compare.py:7`（`compare_c001_replay`）と `tests/test_c001_exploratory_candidates.py:14`（`check_c001_exploratory_candidates.py`）。
-  - これ以外に Aoi の兄弟サブプロジェクトと `scripts/` を使わないことは、`tests/test_no_sibling_imports.py` で確かめます（上の3つは既知の例外）。
+- Tests receive Aoi only through `AOI_ROOT` and ask Aoi's `aoi_paths.py` for data locations. No `aoi_paths.py` is kept in this repository.
+- If `AOI_ROOT` doesn't point to Aoi, pytest stops at the start and gives the reason.
+- The only runtime dependencies are polars and numpy (ortools is not used).
+- In addition, tests use Aoi at `AOI_ROOT`.
+  - SakAnalytics: `tests/test_propositions.py:195` (`sakanalytics` on `PYTHONPATH`).
+  - Aoi's `scripts/`: `tests/test_c001_replay_compare.py:7` (`compare_c001_replay`) and `tests/test_c001_exploratory_candidates.py:14` (`check_c001_exploratory_candidates.py`).
+  - `tests/test_no_sibling_imports.py` confirms that no other Aoi sibling subprojects or `scripts/` are used (the three above are known exceptions).
 
-## Aoi との関係
+## Relationship with Aoi
 
-このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) から独立したものです。
-親は Aoi（Aoi の親は [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)）。Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録され、tree は登録した時点の Aoi の `pythdragoras/` と同じです（`.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、この README も含む）。`git subtree` で同期します（下の「Aoi との同期」。手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
-この README は Aoi の `pythdragoras/README.md` と同じファイルです。Aoi の中の文書・データへのリンクは、どちらで読んでも開けるように GitHub の URL で書いています。
+This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras).
+The parent is Aoi (Aoi's parent is [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)). It is registered in Aoi's [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json), and its tree equals Aoi's `pythdragoras/` at registration time (including `.github/`, `pyproject.toml`, `uv.lock`, `conftest.py`, `.gitignore`, and this README). It syncs with `git subtree` ("Syncing with Aoi" below; the full procedure is in Aoi's [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)).
+This README is the same file as Aoi's `pythdragoras/README.md`. Links to documents and data inside Aoi are written as GitHub URLs so they open from either place.
 
-### サイクルのパス
+### Cycle paths
 
-`aoi_paths.py` は Aoi 直下の 1 か所だけに置きます（このリポジトリには置きません）。`littlebit_approx.py` と `littlebit_holdout.py` は配置を推定しません。サイクルのフォルダは `--cycle-dir` で渡します。省略するときは `--root` または環境変数 `AOI_ROOT` と、環境変数 `AOI_RESEARCH_CYCLE`（`<root>/cycles/<名前>`）です。
+`aoi_paths.py` lives in only one place, Aoi's top level (not in this repository). `littlebit_approx.py` and `littlebit_holdout.py` do not guess the layout. The cycle folder is passed with `--cycle-dir`. When omitted, use `--root` or the `AOI_ROOT` environment variable plus the `AOI_RESEARCH_CYCLE` environment variable (`<root>/cycles/<name>`).
 
-この 2 ファイルの SHA-256 は、Aoi の `cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json` で固定しています。子の CI は checkout した Aoi の `source_sha256` と `source_divergence` をそのまま読みます。pull request ではソースのバイトが違うとき警告だけにし、main への push と schedule では落ちます。フラグが無いときも落ちます。証跡の `evidence_sha256`、入力、`holdout.json` / `holdout.md` は動かしません。
+The SHA-256 of these 2 files is pinned in Aoi's `cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.provenance.json`. The child's CI reads `source_sha256` and `source_divergence` from the checked-out Aoi as-is. On pull requests a source byte difference is only a warning; on push to main and on schedule it fails. It also fails when the flag is missing. The evidence's `evidence_sha256`, inputs, and `holdout.json` / `holdout.md` are not changed.
 
-### Aoi との同期
+### Syncing with Aoi
 
-このリポジトリは Aoi の `pythdragoras/` の subtree です。除外するファイルはなく、Aoi の `pythdragoras/` の tree とこのリポジトリの tree は同じです。Aoi の中では `pythdragoras/.github/` は動かず（GitHub が読むのはリポジトリ直下の `.github/` だけ）、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめます。
+This repository is a subtree of Aoi's `pythdragoras/`. No files are excluded, and the tree of Aoi's `pythdragoras/` equals this repository's tree. Inside Aoi, `pythdragoras/.github/` does not run (GitHub reads only the repository root's `.github/`), and `pythdragoras/conftest.py` checks `AOI_ROOT` the same way under Aoi's pytest.
 
-- 履歴は Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7`（main、#51 のマージコミット）の `pythdragoras/` から `git filter-branch --subdirectory-filter pythdragoras` で切り出しました（先頭 `12522c890e64313005e2bb3cad07d90365d4cf60`、tree `873bd0d947a99da043e314cb11762189540c6b98`）。git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭を返したためです（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)）。
-- この履歴は Aoi の履歴とつながっていないので、Aoi に一度だけ join を入れます（Aoi PR #52）。`git-subtree-split:` にこのリポジトリの main のコミットを書いた squash コミット（tree はこのリポジトリと同じ）を、Aoi の tree を変えないマージの2つ目の親にします。join 以降は `git subtree` が join を起点にするので、#74 の止まる範囲をたどりません。
-- join は2つ目の親として残す必要があります。join を含む Aoi の PR は squash せず、merge commit で入れます（squash すると2つ目の親が消え、`git subtree pull` と `split` が止まります）。
-- `git-subtree-split:` のコミットはこのリポジトリの main にある必要があります。このリポジトリの PR を squash マージして main の sha が変わったときは、Aoi で同じ tree の join を入れ直します。
+- The history was split out from `pythdragoras/` in Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` (main, the merge commit of #51) with `git filter-branch --subdirectory-filter pythdragoras` (head `12522c890e64313005e2bb3cad07d90365d4cf60`, tree `873bd0d947a99da043e314cb11762189540c6b98`). This is because `git subtree split --prefix=pythdragoras` in git 2.47.3 stopped at 506 of Aoi's 585 commits and returned an old head from 10/4 ([gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)).
+- This history is not connected to Aoi's history, so a join is added to Aoi once (Aoi PR #52). A squash commit with this repository's main commit in `git-subtree-split:` (tree equal to this repository) becomes the second parent of a merge that doesn't change Aoi's tree. After the join, `git subtree` starts from it, so it doesn't walk the range where #74 stops.
+- The join must remain as the second parent. Aoi PRs containing a join are merged with a merge commit, not squashed (squashing drops the second parent and `git subtree pull` and `split` stop).
+- The `git-subtree-split:` commit must be on this repository's main. When squash-merging a PR here changes main's sha, a join with the same tree is re-added in Aoi.
 
-子 → Aoi（Aoi の main から作ったブランチで）:
+Child → Aoi (on a branch made from Aoi's main):
 
 ```bash
 git subtree pull --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main --squash
-test "$(git rev-parse HEAD:pythdragoras)" = "$(git rev-parse FETCH_HEAD^{tree})"   # Aoi 側に未同期の変更がないとき
+test "$(git rev-parse HEAD:pythdragoras)" = "$(git rev-parse FETCH_HEAD^{tree})"   # when Aoi has no unsynced changes
 ```
 
-Aoi → 子（Aoi の main で）:
+Aoi → child (on Aoi's main):
 
 ```bash
-git fetch https://github.com/myon-bioinformatics/PythDRagoras.git main   # split の起点のコミットを手元に置く
+git fetch https://github.com/myon-bioinformatics/PythDRagoras.git main   # bring the split's starting commit local
 git subtree split --prefix=pythdragoras -b sync/pythdragoras
 test "$(git rev-parse sync/pythdragoras^{tree})" = "$(git rev-parse HEAD:pythdragoras)"
-git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragoras:refs/heads/<新しいブランチ>
+git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragoras:refs/heads/<new-branch>
 ```
 
-- push したブランチからこのリポジトリに PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、Aoi 側の起点をこのリポジトリの main に付け直します（squash マージでは split のコミットが main に残らないため）。
-- gh_identity#74 が直るまで、Aoi に対して gh_identity の `subtree-sync --write` は使いません。`--write` なしの計画だけにし、tree の一致は上の `test` で確かめます。
-- Aoi の `scripts/check_child_heads.py --fail-on-diff` が、Aoi の `child-heads.json` に登録した sha の tree と Aoi の `pythdragoras/` を比べます。
+- Open a PR to this repository from the pushed branch. After merging, do the "child → Aoi" pull in Aoi to reattach Aoi's starting point to this repository's main (squash merges don't keep the split commits on main).
+- Until gh_identity#74 is fixed, gh_identity's `subtree-sync --write` is not used against Aoi. Use only the plan without `--write`, and check tree equality with the `test` above.
+- Aoi's `scripts/check_child_heads.py --fail-on-diff` compares the tree of the sha registered in Aoi's `child-heads.json` with Aoi's `pythdragoras/`.
 
-## 関連サブプロジェクト
+## Related subprojects
 
-親の [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクトは、それぞれ独立したリポジトリになっています。Aoi の中の場所（subtree）とあわせて載せます。一覧と登録の詳細は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md) です。
+Each subproject of the parent [Aoi](https://github.com/myon-bioinformatics/Aoi) is its own repository. They are listed with their location in Aoi (subtree). The list and registration details are in Aoi's [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md).
 
-| リポジトリ | Aoi の中の場所 | 役割 |
+| Repository | Location in Aoi | Role |
 |---|---|---|
-| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
-| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
-| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
-| **PythDRagoras**（このリポジトリ） | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
-| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
-| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
+| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | Observation and extraction (reads saved HTML/CSS/DOM and records what is there) |
+| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | Fetching and building observation datasets (caches with provenance) |
+| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | Metrics and statistics from observation data (team × season metrics, outlook for remaining games) |
+| **PythDRagoras** (this repository) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | Verifying explanations (propositions, counterexamples, objections) |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | Pipeline execution and automation (the same definition locally and on GitHub Actions) |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | Figures and reports (Plotly.js HTML, the four-forms table) |
 
-## ライセンス
+## License
 
-MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+MIT License ([LICENSE](LICENSE)). Same contents as Aoi's `LICENSE`.
 
 ---
 
-# 詳しい仕様と研究での使い方（NPB）
+# Detailed spec and research usage (NPB)
 
-以下は Aoi の研究サイクル（中日・NPB のデータ）での使い方と、各機能の詳しい仕様です。コマンド例のパス（`pythdragoras/…`・`cycles/…`）は Aoi のルートからの場所です。
+The following covers usage in Aoi's research cycle (Chunichi and NPB data) and the detailed spec of each feature. Paths in the command examples (`pythdragoras/…`, `cycles/…`) are locations from Aoi's root.
 
-## 命題と「異議あり」
+## Propositions and "objection" (異議あり)
 
-説明を「もし A ならば B」の命題として書き、元の命題・対偶・逆・裏の4つの形で判定する。
-判定の基準は、結果を見る前に言葉で宣言する（必ず / ほとんど 0.90 / 概ね 0.75 / 多くの場合 0.50）。
+Explanations are written as "if A then B" propositions and judged in four forms: the original, contrapositive, converse, and inverse.
+Judgement criteria are declared in words before seeing results (always (必ず) / almost (ほとんど) 0.90 / mostly (概ね) 0.75 / often (多くの場合) 0.50).
 
 ```text
-判定（上から順に最初に当てはまるもの）
-  n < min_n                      → 判断保留
-  必ず かつ 反例なし / あり        → 支持 / 棄却
-  区間の下限 ≥ 基準                → 支持
-  区間が基準をまたぐ              → 判断保留
-  区間の上限 < 基準 かつ 関係あり   → 修正（主張が強すぎる）
-  区間の上限 < 基準 かつ 関係なし   → 棄却
+Judgement (the first that applies, from the top)
+  n < min_n                                    → suspended (判断保留)
+  always and no counterexample / some          → supported (支持) / rejected (棄却)
+  interval lower bound ≥ criterion             → supported
+  interval straddles the criterion             → suspended
+  interval upper bound < criterion, related    → revise (修正; the claim is too strong)
+  interval upper bound < criterion, unrelated  → rejected
 ```
 
-反例が1件でもあれば、判定が「支持」でも **異議あり** として判例を並べる。支持された説明の中の反例こそが、説明が足りなくなる場所だからである。
-除外したシーズンの判例は、統計からは外しても「除外中の判例」として必ず表示する。
+If there is even one counterexample, the counterexamples are listed as an **objection** (異議あり) even when the verdict is "supported". The counterexamples inside a supported explanation are exactly where the explanation falls short.
+Counterexamples in excluded seasons are always shown as "counterexamples under exclusion", even though they are left out of the statistics.
 
-外部の主張（記事・レポート・他のAI）は、観測ではなく claim として登録し、パイプラインで再現できるかを確かめる。
+External assertions (articles, reports, other AIs) are registered as claims, not observations, and checked for reproducibility in the pipeline.
 
-## 潜在パターンを条件候補にする
+## Turning latent patterns into candidate conditions
 
-`littlebit_approx.py` は、人が書いた候補条件のマスクを単位 × 条件の 0/1 行列にして、LittleBit 式（`littlebit_prune.littlebit`）で分解する。各潜在軸を「この単位はパターンに乗るか」という 1 本の条件にして `search` に渡す。成立と反例の数え方は `search` のビット演算のままである。目的の列は因子に渡さない。足した条件には `source=littlebit-approx`、rank、seed、元の条件と重み、`posthoc=true` を付ける。登録区分は `registration_audit.classify` に従い、この作り方では posthoc になる。
+`littlebit_approx.py` turns human-written candidate condition masks into a unit × condition 0/1 matrix and decomposes it with the LittleBit formula (`littlebit_prune.littlebit`). Each latent axis becomes one condition, "does this unit follow the pattern", and is passed to `search`. Counting of holds and counterexamples remains `search`'s bit operations. The target column is not passed to the factors. Added conditions carry `source=littlebit-approx`, rank, seed, the original conditions and weights, and `posthoc=true`. The registration category follows `registration_audit.classify`, and this construction is posthoc.
 
-手順と、落とす軸・残差の手がかりの規則は [docs/littlebit-approx.md](docs/littlebit-approx.md)。c001 での並びは `cycles/c001-chunichi/outputs/exploratory/littlebit-approx/` に置く。確かめの記録は `confirmation.md` に置く。
+The procedure and the rules for dropped axes and residual clues are in [docs/littlebit-approx.md](docs/littlebit-approx.md). The c001 rankings are under `cycles/c001-chunichi/outputs/exploratory/littlebit-approx/`. Confirmation records are in `confirmation.md`.
 
-帰無仮説は各シーズンを独立とみなすため、前年からの戦力の持ち越しを無視し、珍しさを過大に見積もる。
-そのため、同じ期間の全球団との比較（経験的基準）を必ず並べる。
+The null hypothesis treats each season as independent, so it ignores team strength carried over from the previous year and overestimates how unusual things are.
+For that reason a comparison with all teams over the same period (an empirical baseline) is always shown alongside.
 
 ```bash
 uv run python pythdragoras/pythdragoras.py --season cycles/c001-chunichi/outputs/season.jsonl \
@@ -192,11 +199,11 @@ uv run python pythdragoras/pythdragoras.py --season cycles/c001-chunichi/outputs
   --outdir cycles/c001-chunichi/outputs
 ```
 
-## 年単位から始める差分探索（season_sensitivity.py）
+## Incremental search starting from seasons (season_sensitivity.py)
 
-先に年成績の指標・重み・境界を動かし、変化と安定性を調べる。
-有望な候補や説明の破れる年が見えてから、次節の試合単位へ進む。
-このCLIは標準ライブラリだけで動作し、SciPyを必要としない。
+First vary the annual-stat metrics, weights, and boundaries, and examine changes and stability.
+Once promising candidates or years where the explanation breaks are visible, move on to the per-game level in the next section.
+This CLI runs on the standard library alone and does not need SciPy.
 
 ```bash
 python -S pythdragoras/season_sensitivity.py \
@@ -207,28 +214,28 @@ python -S pythdragoras/season_sensitivity.py \
   --markdown cycles/c001-chunichi/outputs/season_sensitivity.md
 ```
 
-`x + weight × y >= threshold` を設定し、片方を固定した感度曲線を計算する。
-条件付き確率・MCC・基準との差、有限差分の傾き・変化・格子上の極値・最大値の区間・台形面積を出す。
-閾値の移動では、境界を越えたチーム×年だけ混同行列の件数を更新する。
-滑らかな関数の微分や極値を推定したとは扱わない。計算式と候補条件はTOMLに保存する。
+It sets `x + weight × y >= threshold` and computes sensitivity curves with one side fixed.
+It outputs conditional probabilities, MCC, the difference from the baseline, finite-difference slopes, changes, extrema on the grid, the interval of the maximum, and trapezoidal area.
+When moving the threshold, only team × years that cross the boundary update the confusion-matrix counts.
+This is not treated as estimating derivatives or extrema of a smooth function. Formulas and candidate conditions are saved in TOML.
 
-年をまたいで同じ球団が含まれるため、独立標本の有意差検定は行わない。
-1年の全球団を外して選び直す検証と、2026を選択から分離した照合を残す。
-欠損した列・検証年・指標が外れるチーム×年も列挙し、中日の年次推移は欠年をつながない。
-期待する6球団の不足、重複した球団×年、順位同率の未定義な扱いはエラーにする。
-候補は探索的な関連であり、原因・CS出場確率・命題の支持を自動判定しない。
+Because the same team appears across years, significance tests for independent samples are not done.
+It keeps a check that reselects after leaving out all teams of one year, and a match with 2026 kept out of selection.
+Missing columns, verification years, and team × years where metrics are missing are also listed, and Chunichi's year-by-year trend does not connect across missing years.
+Shortfalls from the expected 6 teams, duplicate team × years, and undefined handling of tied ranks are errors.
+Candidates are exploratory associations; causes, CS qualification probability, and support for propositions are not judged automatically.
 
-初回の結果・定義・読み方は [年単位の探索記録](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/research/R27-season-sensitivity.md)、
-年別表は [実測結果](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/outputs/season_sensitivity.md)。
-2026は既知の結果を含む回顧的照合であり、完全な盲検ではない。
-通常の年表に2026を取り込んだ後は補助入力を外す。
+The first results, definitions, and reading are in [the season-level search record](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/research/R27-season-sensitivity.md),
+and the per-year table in [the measured results](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/outputs/season_sensitivity.md).
+2026 is a retrospective match that includes known results, not fully blind.
+After 2026 is merged into the regular season table, the auxiliary input is removed.
 
-## 次段階: 試合ごとの得失点変更（score_sensitivity.py）
+## Next stage: changing per-game runs (score_sensitivity.py)
 
-NNUEの「変更箇所だけ更新する」考え方を参考に、試合の寄与を引いて新しい寄与を足す。
-ニューラルネットや学習済み重みは使わない。対象は SakAnalytics と同じ試合原票。
-RF・RA・W・L・T を差分更新し、派生値だけを再評価するため、各変更の更新量は試合数によらない。
-探索全体は、対象試合数 × ステップ数 × 2軸に比例する。
+Borrowing NNUE's idea of "update only what changed", it subtracts a game's contribution and adds the new one.
+No neural net or trained weights are used. The target is the same raw game records as SakAnalytics.
+RF, RA, W, L, and T are updated incrementally and only derived values are re-evaluated, so the update cost of each change does not depend on the number of games.
+The whole search is proportional to target games × steps × 2 axes.
 
 ```bash
 uv run python pythdragoras/score_sensitivity.py \
@@ -237,62 +244,77 @@ uv run python pythdragoras/score_sensitivity.py \
   --max-step 3 --out cycles/c001-chunichi/outputs/score_sensitivity.json
 ```
 
-`--team` で任意の設定済みチームを選べる。既定は `[focus].team`。
+`--team` selects any configured team. The default is `[focus].team`.
 
-| 出力 | 意味 |
+| Output | Meaning |
 |---|---|
-| `baseline` | 変更前の得失点、勝敗、勝率、指数1.83の期待勝率・期待勝利数 |
-| `curve` | 各試合の得点を0〜3点増やす、または失点を0〜3点減らした結果。常に一方の軸だけ変更 |
-| `delta` | 同じシーズンの基準値との差 |
-| `timeline` | 日付・key順に1試合ずつ適用した途中経過、当該変更の差分、基準との差分 |
-| `changed_runs` | 実際に変更した得失点の合計。失点は0で止める |
-| `candidates` | 探索年の各試合1点改善で、変更1点あたりの勝ち越し増加が大きい順の命題候補 |
+| `baseline` | Runs scored/allowed, wins/losses, winning percentage, and expected winning percentage and expected wins with exponent 1.83, before changes |
+| `curve` | Results of adding 0–3 runs scored to each game, or removing 0–3 runs allowed. Always only one axis changed |
+| `delta` | Difference from the same season's baseline |
+| `timeline` | Progress applying one game at a time in date/key order, the difference of that change, and the difference from baseline |
+| `changed_runs` | Total runs actually changed. Runs allowed stop at 0 |
+| `candidates` | Proposition candidates, in descending order of increase in games over .500 per changed run, from 1-run improvements to each game in search years |
 
-候補条件は既定で「探索年が3年以上あり、すべての探索年で勝ち越しが増加」。
-`--min-seasons` で指定し、選択条件とともに結果に残す。2点・3点の結果を見て選択条件を変えない。
-`[[exclude]]` は理由付きで適用し、`[confirm].seasons` は曲線を出すが候補の選択・順位には使わない。
-候補は `propositions.toml` に自動登録しない。独立した年での検証と、人による命題の具体化が必要。
+The default candidate condition is "3 or more search years, and games over .500 increase in every search year".
+It is set with `--min-seasons` and kept in the results along with the selection condition. The selection condition is not changed after seeing the 2- and 3-run results.
+`[[exclude]]` is applied with reasons, and `[confirm].seasons` produce curves but are not used for candidate selection or ranking.
+Candidates are not registered in `propositions.toml` automatically. Verification in independent years and human refinement of the proposition are needed.
 
-たとえば0対1の敗戦は、RFを1点増やすと引き分け、2点増やすと勝利となる。
-増えた点数と勝利数の関係には段差があるため、期待勝率の滑らかな変化と実際の勝敗変化を両方残す。
-全試合が引き分けなら勝率は未定義（null）、双方の総得点が0なら期待勝率もnullとする。
+For example, a 0–1 loss becomes a tie with RF +1 and a win with +2.
+The relation between added runs and wins has steps, so both the smooth change in expected winning percentage and the actual change in wins/losses are kept.
+If every game is a tie, winning percentage is undefined (null); if both teams' total runs are 0, expected winning percentage is null too.
 
-これは**最終スコアを変更する感度分析**であり、得点改善を実現する戦術・選手能力の因果効果ではない。
-相手の同一試合の得失点も対になるが、全球団の順位は再計算しない。
-イニング・延長・サヨナラ・その後の采配は再現せず、Aクラス確率も推定しない。
-`timeline` は変更の適用順であり、将来の成績予測や実際のシーズン途中成績ではない。
-入力範囲はユーザーが用意した原票そのもの。シーズン完結性は自動保証しないため、未完了年を含めるときは明示的に除外または検証用年に設定する。
+This is a **sensitivity analysis that changes final scores**, not the causal effect of tactics or player ability that would actually improve scoring.
+The opponent's runs in the same game are paired, but the standings of all teams are not recomputed.
+Innings, extra innings, walk-offs, and subsequent managerial decisions are not reproduced, and A-class probability is not estimated.
+`timeline` is the order changes are applied, not a forecast of future performance or actual mid-season records.
+The input range is exactly the raw records the user prepared. Season completeness is not guaranteed automatically, so when including an unfinished year, explicitly exclude it or set it as a verification year.
 
-検証: ランダムな80試合について、RF/RA両軸・4ステップの**各編集時点**を独立した全件再計算と照合。
-引き分け、0失点、チームの向き、重複・不正原票、除外、検証用年からの選択漏洩、CLIも検証する。
+Verification: for 80 random games, **each edit point** of both RF/RA axes and 4 steps is checked against an independent full recomputation.
+Ties, 0 runs allowed, team orientation, duplicate/invalid raw records, exclusions, selection leakage from verification years, and the CLI are also tested.
 
-## LittleBit 3-way survey（実験、`littlebit_survey.py`）
+## LittleBit 3-way survey (experimental, `littlebit_survey.py`)
 
-乗算と浮動小数を使わずに、画像の領域と重心をどこまで推定できるかを測る実験です。標準ライブラリだけの単一ファイルで、`pythdragoras.py` などの既存の処理は変えていません。
+An experiment measuring how well image regions and centroids can be estimated without multiplication or floating point. It is a single standard-library-only file and does not change existing processing such as `pythdragoras.py`.
 
-- **Way1**: 8x8 パッチ（4 画素ずつずらして重ねる）の行と列に、8 点 FWHT（加算・減算だけ）をかけます。AC 成分の L1 エネルギーを測り、パッチ平均（DC >> 6）との差を三値スピン（+1 / 0 / -1、閾値 24）にします。エネルギーが 512 未満、または有効スピンが 0 のパッチは飛ばします。
-- **Way2**: 有効スピンの画素を 8 ビット回転と明暗反転で揺らし、そのパッチのエネルギー変化 ΔE（2 つの和）が 64 以上の画素を候補にします。刻み 1/2/4 の右・下の近傍に同じ符号の候補があればリンクを張ります。リンクが 2 本未満の候補は孤立ノイズとして捨てます。
-- **Way3**: Way2 のリンク履歴だけから領域を再構成します（画像は見ない）。行と列を走査し、+ のノードで内側に入り、- のノードで外側に出ます。行走査と列走査の両方で内側になった画素を領域とし、重心は整数の (分子, 分母) で返します。
-- **コアの約束**: Way1〜3 のコア関数（`CORE_FUNCTIONS`）は `*`・`/`・`**` と浮動小数を使いません。添字は行オフセットを足し合わせて作ります。テストで AST を検査します。比を小数にするのは表示（`--report`）のときだけです。乱数の seed は固定です。
+- **Way1**: applies an 8-point FWHT (additions and subtractions only) to rows and columns of 8x8 patches (overlapping, shifted by 4 pixels). It measures the L1 energy of the AC components and turns the difference from the patch mean (DC >> 6) into ternary spins (+1 / 0 / -1, threshold 24). Patches with energy under 512, or with 0 valid spins, are skipped.
+- **Way2**: perturbs valid-spin pixels with 8-bit rotation and brightness inversion, and makes pixels whose patch energy change ΔE (sum of 2) is 64 or more into candidates. Links are made when a same-sign candidate is a right/down neighbor at step 1/2/4. Candidates with fewer than 2 links are dropped as isolated noise.
+- **Way3**: reconstructs regions from Way2's link history alone (without looking at the image). It scans rows and columns, entering the inside at + nodes and leaving at - nodes. Pixels inside on both row and column scans form the region, and the centroid is returned as an integer (numerator, denominator).
+- **Core promise**: Way1–3 core functions (`CORE_FUNCTIONS`) use no `*`, `/`, `**`, or floating point. Indices are built by adding row offsets. Tests check the AST. Ratios become decimals only for display (`--report`). Random seeds are fixed.
 
 ```bash
 python littlebit_survey.py --report
 ```
 
-### 合格線とその根拠
+### Pass lines and their basis
 
-64x64 の合成画像 6 種類で測りました。テストは固定 seed（11〜16）で行い、合格線は seed 1〜30 で測った最小値から余裕を取って決めました。
+Measured on 6 kinds of 64x64 synthetic images. Tests use fixed seeds (11–16), and pass lines were set with margin from the minimums measured over seeds 1–30.
 
-| シナリオ | 内容 | seed 1〜30 の IoU 最小 | 重心誤差の最大 (px) | 合格線（IoU / skip 率 / 重心誤差） |
+| Scenario | Contents | Min IoU over seeds 1–30 | Max centroid error (px) | Pass line (IoU / skip rate / centroid error) |
 |---|---|---:|---:|---|
-| Dense Object | 塗りつぶした楕円 | 0.986 | 0.18 | ≥ 0.95 / ≥ 0.70 / ≤ 0.5 |
-| Thin Skeleton | 2 px 幅の線 3 本 | 0.935 | 0.43 | ≥ 0.90 / ≥ 0.65 / ≤ 1.0 |
-| Hollow Ring | 中空の輪（穴は空のまま） | 0.996 | 0.03 | ≥ 0.95 / ≥ 0.35 / ≤ 0.5 |
-| High Noise Dark | 暗い背景、ゆらぎ ±8、3% の白点ノイズ | 0.961 | 0.60 | ≥ 0.90 / — / ≤ 1.0 |
-| Low Contrast | 明暗差 60 の楕円 | 0.996 | 0.04 | ≥ 0.95 / ≥ 0.70 / ≤ 0.5 |
-| Multi Blob | 離れた楕円 2 個 | 0.986 | 0.36 | ≥ 0.95 / ≥ 0.65 / ≤ 1.0 |
+| Dense Object | Filled ellipse | 0.986 | 0.18 | ≥ 0.95 / ≥ 0.70 / ≤ 0.5 |
+| Thin Skeleton | 3 lines, 2 px wide | 0.935 | 0.43 | ≥ 0.90 / ≥ 0.65 / ≤ 1.0 |
+| Hollow Ring | Hollow ring (hole left empty) | 0.996 | 0.03 | ≥ 0.95 / ≥ 0.35 / ≤ 0.5 |
+| High Noise Dark | Dark background, ±8 jitter, 3% white-dot noise | 0.961 | 0.60 | ≥ 0.90 / — / ≤ 1.0 |
+| Low Contrast | Ellipse with contrast 60 | 0.996 | 0.04 | ≥ 0.95 / ≥ 0.70 / ≤ 0.5 |
+| Multi Blob | 2 separate ellipses | 0.986 | 0.36 | ≥ 0.95 / ≥ 0.65 / ≤ 1.0 |
 
-- skip 率は内部が一様なパッチほど高くなります。輪は縁が長いので低く（0.44）、ノイズの多い画像では白点のせいでほとんど飛ばせません（0.06〜0.18）。そのため High Noise Dark には skip 率の合格線を設けていません。
-- High Noise Dark では、孤立ノイズを捨てる処理（リンク 2 本以上）をやめると IoU が 0.987 から 0.840 に下がります。テストでも、捨てる処理があるほうが IoU が 0.05 以上高いことを確認しています。
-- 再構成した領域を (3, 2) ずらすと、どのシナリオでも IoU は下がります（線は 0.07 前後まで下がり、塗りつぶした形は 0.6〜0.74 程度）。
-- 6 シナリオとも固定の合成画像による測定で、実際の画像での性能は保証しません。
+- The skip rate is higher the more uniform a patch's interior. Rings have long edges, so it is low (0.44), and noisy images can hardly skip because of the white dots (0.06–0.18). So High Noise Dark has no skip-rate pass line.
+- On High Noise Dark, removing the isolated-noise drop (2+ links) lowers IoU from 0.987 to 0.840. Tests also confirm that IoU is at least 0.05 higher with the drop.
+- Shifting the reconstructed region by (3, 2) lowers IoU in every scenario (lines drop to around 0.07, filled shapes to about 0.6–0.74).
+- All 6 scenarios are measurements on fixed synthetic images; performance on real images is not guaranteed.
+
+## Node entry (Node 24+)
+
+- `node littlebit_survey.cjs <args>` runs `littlebit_survey.py` (interpreter override: `LITTLEBIT_SURVEY_PYTHON`).
+- `node season_sensitivity.cjs <args>` runs `season_sensitivity.py` (interpreter override: `SEASON_SENSITIVITY_PYTHON`).
+- `node score_sensitivity.cjs <args>` runs `score_sensitivity.py` (interpreter override: `SCORE_SENSITIVITY_PYTHON`).
+
+Each entry uses the vendored shared launcher `vendor/py_launch.cjs` (pinned in `vendor.lock.json`).
+Arguments, stdin/stdout/stderr and the exit code are passed through unchanged; Python runs with `-S`, including interpreter discovery.
+The launcher is copied from the merged [Aoi #117](https://github.com/myon-bioinformatics/Aoi/pull/117)
+commit `bb5eb56f216eeff9135b7aa178197a79df152396`, not directly from Aoi's parent.
+SIGINT and SIGTERM continue to be forwarded while the Python child is alive, even after an earlier signal was handled or ignored.
+Launcher failures (no Python 3.9+, spawn error, signal) exit 2. Set `PY_LAUNCH_ERROR_FORMAT=json` for a single structured error on stderr; signal failures report the signal that actually terminated the child.
+
+Regression tests cover every thin entry with acknowledged repeated signals, text/JSON errors, and a hostile `sitecustomize` hook. They also test `noSite` and `isolated` discovery independently without changing the entries' `noSite: true` configuration or the Node 24+ floor.

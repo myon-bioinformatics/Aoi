@@ -11,7 +11,7 @@
     },
     {
       "path": "scripts/shrink_module.py",
-      "sha256": "f798ba054ce65ffd717fce21fb429ec15ee4084084ca969e768675db9811922c",
+      "sha256": "8ccbaca8156708cd29dc5789ea7b0807c14af560e0b2fdbc5c11d07be8b363ed",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/NagoyAction"
@@ -33,7 +33,7 @@
     },
     {
       "path": "shrink/numpy_min.py",
-      "sha256": "0779d22355ec7a3b5f4562226ff1c7862edc1c9cedb6ea04b6cf466afc5a9364",
+      "sha256": "7c1f86ebb012ad355db3f690bea39916aa7d927967b519dfaf5acf54879c5a4c",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/DRAgoWing"

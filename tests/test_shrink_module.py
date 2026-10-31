@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import shrink_module as sm  # noqa: E402
 
 ENTRY = "dragowing/overlap.py:load_overlap"
+ENTRIES = [ENTRY, "queryu/ask/suggest.py:suggest"]
 
 
 def _min():
@@ -28,14 +29,25 @@ def test_analyze_follows_into_rule_search():
 
 
 def test_generated_file_is_current():
-    out = subprocess.run([sys.executable, "scripts/shrink_module.py", "generate", "numpy", ENTRY,
+    out = subprocess.run([sys.executable, "scripts/shrink_module.py", "generate", "numpy", *ENTRIES,
                           "--out", "shrink/numpy_min.py", "--check"], cwd=ROOT, capture_output=True, text=True)
     assert out.returncode == 0, out.stderr
 
 
 def test_generate_refuses_unknown_names():
-    with pytest.raises(SystemExit, match="linalg.svd"):
-        sm.generate_numpy(["linalg.svd"], ["x.py:f"])
+    with pytest.raises(SystemExit, match="fft.fft"):
+        sm.generate_numpy(["fft.fft", "zeros"], ["x.py:f"])
+
+
+def test_analyze_reaches_suggest_index():
+    used, visited = sm.analyze("numpy", ["queryu/ask/suggest.py:suggest"])
+    assert "queryu/ask/suggest.py:Index" in visited
+    assert {"linalg.svd", "linalg.norm", "argsort", "packbits", "nan_to_num", "divide", "int8", "float32"} <= set(used)
+
+
+def test_generated_keeps_only_requested_linalg():
+    text = sm.generate_numpy(["linalg.norm", "zeros"], ["x.py:f"])
+    assert "staticmethod(norm)" in text and "def svd(" not in text and "def lstsq(" not in text
 
 
 np = pytest.importorskip("numpy")

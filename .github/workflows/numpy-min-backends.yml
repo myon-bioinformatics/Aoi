@@ -4,7 +4,7 @@ name: numpy_min backends
 # - lapack: apt で liblapack3 / libblas3（と依存の libgfortran5）だけを版固定・--no-install-recommends で入れ、
 #   ctypes で dgesdd / cblas_?gemm を呼ぶ経路が numpy と一致すること
 # - stdlib: 何も入れず、ライブラリが見つからないこと・標準ライブラリだけの経路が numpy と一致すること
-# 版を上げるとき: `apt-cache policy liblapack3 libblas3 libgfortran5` で新しい版を見て、下の PKGS を書き換える。
+# 版を上げるとき: `apt-cache policy liblapack3 libblas3 libgfortran5` で新しい版を見て、下の apt-get install の pkg=version を書き換える。
 on:
   pull_request:
     paths:
@@ -31,7 +31,6 @@ jobs:
       matrix:
         lane: [lapack, stdlib]
     env:
-      PKGS: liblapack3=3.12.1-6 libblas3=3.12.1-6 libgfortran5=14.2.0-19
       NUMPY_MIN_EXPECT: ${{ matrix.lane }}
     steps:
       - uses: actions/checkout@v7
@@ -45,7 +44,8 @@ jobs:
         if: matrix.lane == 'lapack'
         run: |
           apt-get update -q
-          DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends $PKGS
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends \
+            liblapack3=3.12.1-6 libblas3=3.12.1-6 libgfortran5=14.2.0-19
           dpkg-query -W liblapack3 libblas3 libgfortran5
       - name: Libraries are absent
         if: matrix.lane == 'stdlib'

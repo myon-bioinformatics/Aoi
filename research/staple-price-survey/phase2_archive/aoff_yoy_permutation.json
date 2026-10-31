@@ -1,0 +1,97 @@
+{
+  "design": {
+    "form": "aoff_yoy",
+    "model": "yhat = gamma_hat * dlogE",
+    "baseline_zero": "yhat=0",
+    "baseline_const_drift": "yhat = mean_train(dlogP)",
+    "min_train": 5,
+    "test_years_include": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "test_years_exclude": [
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "panel_used": "gohantrust_panel_aoki_pre_extend_backup.csv",
+    "note": "Existing YoY window only; extended 2005–2025 panel NOT used for this diagnostic."
+  },
+  "observed": {
+    "wins_include": "5/5",
+    "wins_exclude": "4/4",
+    "const_drift_wins_include": "3/5",
+    "const_drift_wins_exclude": "2/4",
+    "aoff_beats_const_drift_include": "3/5",
+    "aoff_beats_const_drift_exclude": "3/4",
+    "gamma_hat_by_t": {
+      "2021": 0.26203319,
+      "2022": 0.31631137,
+      "2023": 0.46834725,
+      "2024": 0.55169223,
+      "2025": 1.08071239
+    },
+    "yhat_by_t": {
+      "2021": -0.00287425,
+      "2022": -0.00705556,
+      "2023": 0.02066573,
+      "2024": 0.00983435,
+      "2025": 0.01139602
+    },
+    "abs_yhat_by_t": {
+      "2021": 0.00287425,
+      "2022": 0.00705556,
+      "2023": 0.02066573,
+      "2024": 0.00983435,
+      "2025": 0.01139602
+    },
+    "train_mean_dlogP_by_t": {
+      "2021": 0.03310677,
+      "2022": 0.02240064,
+      "2023": 0.01214806,
+      "2024": 0.01513815,
+      "2025": 0.04248662
+    }
+  },
+  "permutation": {
+    "B": 2000,
+    "seed": 20261024,
+    "shuffle": "permute dlogE across YoY years 2016–2025; y stays with calendar year; re-fit rolling",
+    "frac_shuffles_ge_5_of_5": 0.0065,
+    "frac_shuffles_ge_4_of_4_exclude": 0.021,
+    "one_sided_p_wins_ge_observed_include": 0.0065,
+    "one_sided_p_wins_ge_observed_exclude": 0.021,
+    "observed_wins_percentile_include": 99.35,
+    "observed_wins_percentile_exclude": 97.9,
+    "null_wins_include_mean": 1.9595,
+    "null_wins_include_median": 2.0,
+    "null_wins_exclude_mean": 1.557,
+    "null_wins_exclude_median": 2.0,
+    "null_win_count_hist_include": {
+      "0": 145,
+      "1": 558,
+      "2": 700,
+      "3": 440,
+      "4": 144,
+      "5": 13
+    },
+    "null_win_count_hist_exclude": {
+      "0": 269,
+      "1": 710,
+      "2": 701,
+      "3": 278,
+      "4": 42
+    }
+  },
+  "interpretation": [
+    "γ̂ not ≈0 (range [0.262, 1.081]); slope uses E variation in train.",
+    "|ŷ| still small vs |y| (median |ŷ|=0.0098, median |y|=0.0494); year-wins vs zero can arise from mild same-sign shrinkage even with nonzero γ̂.",
+    "Permutation: only 0.006 of shuffles achieve ≥5/5 (one-sided p=0.0065) → some evidence that the ΔlogE series (not just |ŷ|≈0) contributes. Next candidate (not run here): lag ΔlogE_{t−1}."
+  ],
+  "next_step_if_E_info_remains": "Compare lag dlogE_{t-1} with the same zero-baseline and permutation design (not run in this task).",
+  "bootstrap_caveat_for_aoff": "When all 5 include-window signs of log_err_ratio are negative, the bootstrap median CI excluding 0 is automatic and adds little beyond the sign test. CI is informative when signs mix."
+}

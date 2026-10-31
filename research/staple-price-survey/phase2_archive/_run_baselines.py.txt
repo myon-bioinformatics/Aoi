@@ -1,0 +1,219 @@
+import csv, json, math
+from pathlib import Path
+from statistics import mean
+import numpy as np
+
+panel_path = Path("/workspace/aoi-phase2/gohantrust_panel_aoki.csv")
+rows = list(csv.DictReader(panel_path.open()))
+
+def getf(r, *keys):
+    for k in keys:
+        if k in r and r[k] not in ("", None):
+            return float(r[k])
+    raise KeyError(keys)
+
+years = []
+for r in rows:
+    y = int(float(r["year"]))
+    P = getf(r, "P_yen", "P")
+    A = getf(r, "Aoki_A", "Aoki", "A")
+    E = getf(r, "E")
+    q = getf(r, "q") if r.get("q") not in (None, "") else 5.0
+    years.append({"year": y, "P": P, "A": A, "E": E, "q": q})
+years.sort(key=lambda d: d["year"])
+by_y = {d["year"]: d for d in years}
+
+train = [d for d in years if 2015 <= d["year"] <= 2021]
+test_full = [d for d in years if 2022 <= d["year"] <= 2025]
+test_hold = [d for d in years if 2022 <= d["year"] <= 2024]
+
+def K100(d):
+    return d["P"] / (d["q"] * (100 - d["A"]) * d["E"])
+
+def K200(d):
+    return d["P"] / (d["q"] * (200 - d["A"]) * d["E"])
+
+Khat100 = mean(K100(d) for d in train)
+Khat200 = mean(K200(d) for d in train)
+
+X = np.array([d["A"] for d in train])
+Y = np.array([math.log(d["P"] / (d["q"] * d["E"])) for d in train])
+A_m, Y_m = X.mean(), Y.mean()
+s = float(((X - A_m) * (Y - Y_m)).sum() / ((X - A_m) ** 2).sum())
+c = float(Y_m - s * A_m)
+beta = -s
+Khat_exp = math.exp(c)
+Khat_aoff = mean(d["P"] / (d["q"] * d["E"]) for d in train)
+P_train_mean = mean(d["P"] for d in train)
+
+pcts = []
+for i in range(1, len(years)):
+    if years[i]["year"] <= 2021 and years[i - 1]["year"] >= 2015:
+        pcts.append(years[i]["P"] / years[i - 1]["P"] - 1)
+g = mean(pcts)
+
+def pred(form, d):
+    if form == "primary_100":
+        return Khat100 * d["q"] * (100 - d["A"]) * d["E"]
+    if form == "alt200":
+        return Khat200 * d["q"] * (200 - d["A"]) * d["E"]
+    if form == "exp_ols":
+        return Khat_exp * d["q"] * math.exp(-beta * d["A"]) * d["E"]
+    if form == "aoff":
+        return Khat_aoff * d["q"] * d["E"]
+    if form == "naive":
+        return by_y[d["year"] - 1]["P"]
+    if form == "mean_bl":
+        return P_train_mean
+    if form == "drift_bl":
+        return by_y[d["year"] - 1]["P"] * (1 + g)
+    raise ValueError(form)
+
+forms = ["primary_100", "alt200", "exp_ols", "aoff", "naive", "mean_bl", "drift_bl"]
+
+def eval_window(test, label):
+    out_rows = []
+    summary = {}
+    for form in forms:
+        abs_errs = []
+        year_wins = []
+        for d in test:
+            ph = pred(form, d)
+            pn = pred("naive", d)
+            ae = abs(ph - d["P"])
+            an = abs(pn - d["P"])
+            abs_errs.append(ae)
+            if form != "naive":
+                year_wins.append({
+                    "year": d["year"],
+                    "abs_e_model": round(ae, 4),
+                    "abs_e_naive": round(an, 4),
+                    "beats_naive_year": ae < an,
+                    "P": d["P"],
+                    "P_hat": round(ph, 4),
+                })
+            out_rows.append({
+                "window": label,
+                "form": form,
+                "year": d["year"],
+                "P": d["P"],
+                "P_hat": round(ph, 4),
+                "abs_e": round(ae, 4),
+                "abs_e_naive": round(an, 4),
+                "beats_naive_year": (ae < an) if form != "naive" else "",
+            })
+        if form != "naive":
+            wins = sum(1 for x in year_wins if x["beats_naive_year"])
+            n = len(year_wins)
+            mae = mean(abs_errs)
+            mae_n = mean(abs(pred("naive", d) - d["P"]) for d in test)
+            summary[form] = {
+                "mae": round(mae, 4),
+                "mae_naive": round(mae_n, 4),
+                "mae_beats_naive": mae < mae_n,
+                "years_win": wins,
+                "years_n": n,
+                "criterion1_all_years": all(x["beats_naive_year"] for x in year_wins),
+                "criterion2_majority": wins > n / 2,
+                "year_detail": year_wins,
+            }
+        else:
+            summary[form] = {"mae": round(mean(abs_errs), 4)}
+    return out_rows, summary
+
+rows_h, sum_h = eval_window(test_hold, "holdout_2022_2024")
+rows_f, sum_f = eval_window(test_full, "full_2022_2025")
+
+d25 = by_y[2025]
+alone = {}
+for form in ["primary_100", "alt200", "exp_ols", "aoff", "mean_bl", "drift_bl"]:
+    ae = abs(pred(form, d25) - d25["P"])
+    an = abs(pred("naive", d25) - d25["P"])
+    alone[form] = {"abs_e": round(ae, 4), "abs_e_naive": round(an, 4), "beats_naive": ae < an}
+
+coeffs = {
+    "Khat100": Khat100,
+    "Khat200": Khat200,
+    "beta_exp": beta,
+    "Khat_exp": Khat_exp,
+    "Khat_aoff": Khat_aoff,
+    "P_train_mean": P_train_mean,
+    "drift_g": g,
+    "train": "2015-2021",
+}
+
+out_dir = Path("/workspace/aoi-phase2")
+with (out_dir / "baselines_year_wins.csv").open("w", newline="") as f:
+    w = csv.DictWriter(f, fieldnames=list(rows_h[0].keys()))
+    w.writeheader()
+    w.writerows(rows_h + rows_f)
+
+summary = {
+    "coeffs": coeffs,
+    "holdout_2022_2024": sum_h,
+    "full_2022_2025": sum_f,
+    "year_2025_alone": alone,
+}
+(out_dir / "baselines_year_wins_summary.json").write_text(
+    json.dumps(summary, indent=2, ensure_ascii=False)
+)
+
+def yn(b):
+    return "Y" if b else "N"
+
+def winjp(b):
+    return "勝" if b else "負"
+
+lines = []
+lines.append("# ベースライン追加と年次勝敗（基準1/2用）\n\n")
+lines.append("**日付:** 2026-10-24（Asia/Tokyo）\n\n")
+lines.append("**訓練:** 2015–2021。係数は訓練のみ。\n\n")
+lines.append(f"- 平均ベースライン: train mean P = {P_train_mean:.2f}\n")
+lines.append(f"- ドリフト付き: P_hat = P_(t-1)*(1+g), g={g:.6f}\n")
+lines.append(f"- Aなし: P=K*q*E, K={Khat_aoff:.4f}\n")
+lines.append(f"- exp OLS: beta={beta:.6f}, K={Khat_exp:.4f}\n\n")
+lines.append("## 判定への当てはめ\n\n")
+lines.append("- **基準1（主）:** OOSの全年で |e_model| < |e_naive|\n")
+lines.append("- **基準2（補助）:** OOS年の過半数で同上（3年なら2勝以上。偶然に弱い）\n")
+lines.append("- MAE合計は参考。採用の正は基準1を主（myon 2026-10-24）。\n\n")
+
+for label, sm in [("Holdout 2022–2024", sum_h), ("Full 2022–2025", sum_f)]:
+    lines.append(f"## {label}\n\n")
+    lines.append("| form | MAE | MAE naive | MAE勝 | 年勝/n | 基準1全年 | 基準2過半数 |\n")
+    lines.append("|---|---:|---:|---|---:|---|---|\n")
+    for form in ["primary_100", "alt200", "exp_ols", "aoff", "mean_bl", "drift_bl"]:
+        s = sm[form]
+        lines.append(
+            f"| {form} | {s['mae']:.1f} | {s['mae_naive']:.1f} | {yn(s['mae_beats_naive'])} | "
+            f"{s['years_win']}/{s['years_n']} | {yn(s['criterion1_all_years'])} | {yn(s['criterion2_majority'])} |\n"
+        )
+    lines.append("\n### 年次（主要形 vs naive）\n\n")
+    for form in ["primary_100", "alt200", "exp_ols", "aoff", "mean_bl", "drift_bl"]:
+        lines.append(f"**{form}**\n\n")
+        lines.append("| year | |e|model | |e|naive | 年勝 |\n")
+        lines.append("|---:|---:|---:|---|\n")
+        for x in sm[form]["year_detail"]:
+            lines.append(
+                f"| {x['year']} | {x['abs_e_model']:.1f} | {x['abs_e_naive']:.1f} | {winjp(x['beats_naive_year'])} |\n"
+            )
+        lines.append("\n")
+
+lines.append("## 2025単年（除外の両建て用）\n\n")
+lines.append("| form | |e| | |e|naive | vs naive |\n")
+lines.append("|---|---:|---:|---|\n")
+for form, v in alone.items():
+    lines.append(f"| {form} | {v['abs_e']:.1f} | {v['abs_e_naive']:.1f} | {winjp(v['beats_naive'])} |\n")
+
+lines.append("\n## 数値側の一行\n\n")
+lines.append(
+    "基準1（全年）では holdout / full とも政治殻は未達（alt200/exp は holdout で2/3だが2023負け）。"
+    "基準2なら holdout で alt200・exp・aoff・mean が過半数。"
+    "Aなしと平均ベースラインが holdout で強いので、政治項の追加価値は基準1ではまだ出ていない。\n"
+)
+
+(out_dir / "report_baselines_criteria.md").write_text("".join(lines))
+print(json.dumps({
+    "coeffs": coeffs,
+    "holdout": {k: {"c1": sum_h[k]["criterion1_all_years"], "c2": sum_h[k]["criterion2_majority"], "wins": f"{sum_h[k]['years_win']}/{sum_h[k]['years_n']}"} for k in sum_h if k != "naive"},
+    "full": {k: {"c1": sum_f[k]["criterion1_all_years"], "c2": sum_f[k]["criterion2_majority"], "wins": f"{sum_f[k]['years_win']}/{sum_f[k]['years_n']}"} for k in sum_f if k != "naive"},
+}, indent=2, ensure_ascii=False))

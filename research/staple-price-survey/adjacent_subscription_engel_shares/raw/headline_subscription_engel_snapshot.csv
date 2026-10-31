@@ -1,0 +1,13 @@
+country,year,metric,value,unit,share_of_spend_pct,share_of_income_pct,percent_reporting,source,label_note
+USA,2024,streaming_video_rental_download_mean,185.02,USD_annual_per_CU_all,0.2356,0.1776,36.82,BLS CE Table 2500 2024,"Rental, streaming, and downloading videos; includes non-subscribers in mean"
+USA,2024,streaming_downloading_audio_mean,34.59,USD_annual_per_CU_all,0.044,0.0332,18.27,BLS CE Table 2500 2024,Streaming and downloading audio
+USA,2024,cable_satellite_tv_services_mean,454.09,USD_annual_per_CU_all,0.5782,0.4357,33.46,BLS CE Table 2500 2024,Cable and satellite television services
+USA,2024,video_plus_audio_streaming_like,219.61,USD_annual_per_CU_all,0.2796,0.2107,,BLS CE Table 2500 2024 (sum of two lines),Sum of video streaming/rental/download + audio streaming/download lines
+USA,2024,entertainment_total,3609.0,USD_annual_per_CU_all,4.595,3.463,,BLS CE,Broad entertainment basket
+EU27,2020,tv_radio_fees_subscriptions_hire,153.0,PPS_annual_per_household,0.575,,,Eurostat cult_pcs_hbs,"Includes licence fees, cable/pay-TV, streaming per Eurostat culture definition; not SVOD-only"
+EU27,2020,cultural_goods_services_total,731.0,PPS_annual_per_household,2.747,,,Eurostat cult_pcs_hbs,Culture basket share of total consumption
+EU27,2022,CP094_recreational_cultural_services,3.0,pct_of_HFCE,3.0,,,Eurostat nama_10_co3_p3,NAMA HFCE share; broader than subscriptions
+EU27,2025,paid_svod_like_prevalence,32.68,pct_of_internet_users,,,32.68,Eurostat isoc_ec_ibgs I_BFLMS2,PREVALENCE only: film/series/sports streaming paid subscription
+EU27,2025,paid_music_streaming_prevalence,23.03,pct_of_internet_users,,,23.03,Eurostat isoc_ec_ibgs I_BMUSS2,PREVALENCE only
+JPN,2024,download_music_video_apps_net_shopping,269.0,JPY_monthly_per_hh_twoplus,,,,MIC 家計消費状況調査 2024概況,Internet-shopping channel only; not full SVOD billings
+CAN,2024,cable_satellite_program_distribution_incl_streaming,11.3,CAD_billion_annual_aggregate,,,,StatCan Plus 2025-07-02 / HFCE,National aggregate; mixes cable+streaming

@@ -1,0 +1,133 @@
+import csv, json, math, random
+from pathlib import Path
+from statistics import median, mean
+
+OUT = Path("/workspace/aoi-phase2")
+rows = list(csv.DictReader((OUT / "rolling_origin_year_wins.csv").open()))
+forms = ["primary_100", "alt200", "exp_neg", "aoff", "prop_A"]
+EPS = 1e-9
+out_rows = []
+by_form = {f: [] for f in forms}
+for r in rows:
+    em = max(float(r["abs_e_model"]), EPS)
+    en = max(float(r["abs_e_naive"]), EPS)
+    lr = math.log(em / en)
+    rec = {
+        "t": int(r["t"]),
+        "form": r["form"],
+        "abs_e_model": float(r["abs_e_model"]),
+        "abs_e_naive": float(r["abs_e_naive"]),
+        "log_err_ratio": round(lr, 6),
+        "model_better": lr < 0,
+        "in_excl_aggregate": r["in_excl_aggregate"] == "True",
+    }
+    out_rows.append(rec)
+    by_form[r["form"]].append(rec)
+
+
+def boot_median_ci(xs, B=2000, seed=20261024):
+    rng = random.Random(seed)
+    n = len(xs)
+    if n == 0:
+        return None
+    boots = []
+    for _ in range(B):
+        sample = [xs[rng.randrange(n)] for _ in range(n)]
+        boots.append(median(sample))
+    boots.sort()
+    lo = boots[int(0.025 * B)]
+    hi = boots[min(int(0.975 * B), B - 1)]
+    return {
+        "median": round(median(xs), 6),
+        "ci95_lo": round(lo, 6),
+        "ci95_hi": round(hi, 6),
+        "includes_0": lo <= 0 <= hi,
+        "B": B,
+        "seed": seed,
+    }
+
+
+summary = {
+    "note": "Continuous companion. NOT a locked adopt rule. Negative log_err_ratio => model better.",
+    "forms": {},
+}
+for f in forms:
+    full = by_form[f]
+    excl = [x for x in by_form[f] if x["t"] != 2025]
+    blocks = {}
+    for key, recs in (("include_2025", full), ("exclude_2025", excl)):
+        xs = [x["log_err_ratio"] for x in recs]
+        blocks[key] = {
+            "n": len(xs),
+            "years_neg_ratio": sum(1 for x in recs if x["model_better"]),
+            "median_log_err_ratio": round(median(xs), 6),
+            "mean_log_err_ratio": round(mean(xs), 6),
+            "min": round(min(xs), 6),
+            "max": round(max(xs), 6),
+            "boot_median_ci95": boot_median_ci(xs),
+        }
+    summary["forms"][f] = blocks
+
+with (OUT / "rolling_log_err_ratio.csv").open("w", newline="") as fh:
+    w = csv.DictWriter(fh, fieldnames=list(out_rows[0].keys()))
+    w.writeheader()
+    w.writerows(out_rows)
+(OUT / "rolling_log_err_ratio_summary.json").write_text(
+    json.dumps(summary, indent=2, ensure_ascii=False)
+)
+
+lines = []
+lines.append("# ローリング結果の連続指標（参考・判定ロック前）\n\n")
+lines.append("**日付:** 2026-10-24（Asia/Tokyo）\n\n")
+lines.append(
+    "**位置づけ:** 7点で「政治項は通らなかった」と切らない。"
+    "判断材料の補足。採用規則は未ロック。\n\n"
+)
+lines.append(
+    "**定義:** log_err_ratio = log(|e_model| / |e_naive|)。"
+    "負ならその年はモデルがナイーブより小さい誤差。\n\n"
+)
+lines.append(
+    "**ブートストラップ:** 中央値の95% CI（B=2000, seed=20261024）。"
+    "CIが0を含めば差ありとは言えない（保留）。\n\n"
+)
+lines.append(
+    "| form | 窓 | n | 負の比の年数 | median | CI95 | 0を含む |\n"
+)
+lines.append("|---|---|---:|---:|---:|---|---|\n")
+for f in forms:
+    for key in ("include_2025", "exclude_2025"):
+        s = summary["forms"][f][key]
+        b = s["boot_median_ci95"]
+        incl = "Y" if b["includes_0"] else "N"
+        lines.append(
+            f"| {f} | {key} | {s['n']} | {s['years_neg_ratio']} | "
+            f"{s['median_log_err_ratio']:.3f} | "
+            f"[{b['ci95_lo']:.3f}, {b['ci95_hi']:.3f}] | {incl} |\n"
+        )
+lines.append("\n## 読み（数値のみ・結論ではない）\n\n")
+lines.append(
+    "- CI が 0 を含む形は、連続指標でも「ナイーブより良い」とは言えない（保留）。\n"
+)
+lines.append(
+    "- 符号の過半数で A-off が ≥4 でも、大きさ込みでは保留になり得る。両方を並べる。\n"
+)
+lines.append(
+    "- 試した形の数は記録して、勝ちの重みを割り引いて読む。\n"
+)
+(OUT / "report_rolling_continuous.md").write_text("".join(lines))
+
+for f in forms:
+    b = summary["forms"][f]["include_2025"]["boot_median_ci95"]
+    print(
+        f,
+        "med",
+        b["median"],
+        "CI",
+        b["ci95_lo"],
+        b["ci95_hi"],
+        "incl0",
+        b["includes_0"],
+        "neg_years",
+        summary["forms"][f]["include_2025"]["years_neg_ratio"],
+    )

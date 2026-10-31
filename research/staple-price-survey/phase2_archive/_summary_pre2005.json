@@ -1,0 +1,175 @@
+{
+  "timestamp": "2026-10-24 19:17 (Asia/Tokyo)",
+  "complete_years_added": [
+    2002,
+    2003,
+    2004
+  ],
+  "panel_n": 24,
+  "panel_year_min": 2002,
+  "panel_year_max": 2025,
+  "rice_meta": {
+    "2000": {
+      "unit": "10Kg",
+      "spec": "国内産, 精米,単一品種, コシヒカリを除く",
+      "item_name": "うるち米(単一品種,｢コシヒカリ｣以外)",
+      "n_cities": 71,
+      "same_def_5kg": false,
+      "P_annual": 4685.6
+    },
+    "2001": {
+      "unit": "10Kg",
+      "spec": "国内産, 精米,単一品種, コシヒカリを除く",
+      "item_name": "うるち米(単一品種,｢コシヒカリ｣以外)",
+      "n_cities": 71,
+      "same_def_5kg": false,
+      "P_annual": 4523.8
+    },
+    "2002": {
+      "unit": "１袋･1pouch",
+      "spec": "国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",
+      "item_name": "うるち米(単一品種,｢コシヒカリ｣以外)",
+      "n_cities": 71,
+      "same_def_5kg": true,
+      "P_annual": 2293.3
+    },
+    "2003": {
+      "unit": "1袋･1pouch",
+      "spec": "国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く",
+      "item_name": "うるち米（単一品種，｢コシヒカリ｣以外）",
+      "n_cities": 71,
+      "same_def_5kg": true,
+      "P_annual": 2365.0
+    },
+    "2004": {
+      "unit": "1袋･1pouch",
+      "spec": "国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く",
+      "item_name": "うるち米（単一品種，｢コシヒカリ｣以外）",
+      "n_cities": 71,
+      "same_def_5kg": true,
+      "P_annual": 2610.1
+    },
+    "2005": {
+      "unit": "1袋･1pouch",
+      "spec": "国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く",
+      "item_name": "うるち米（単一品種，｢コシヒカリ｣以外）",
+      "n_cities": 71,
+      "same_def_5kg": true,
+      "P_annual": 2224.2
+    }
+  },
+  "coverage": [
+    {
+      "year": 1998,
+      "P": false,
+      "E": false,
+      "cabinet": true,
+      "ruling": true,
+      "complete": false,
+      "status": "partial",
+      "ruling_first": "LDP",
+      "n_months_pol": 8,
+      "P_yen": NaN,
+      "E_val": NaN,
+      "P_unit": "",
+      "P_same_def_5kg": false,
+      "notes": "P: e-Stat item1002 annual files from 2000; E: 二人以上全国 series from 2000; NHK bunken paired months=8; NHK monthly starts 1998-04; Jul-1998 cabinet blank on page"
+    },
+    {
+      "year": 1999,
+      "P": false,
+      "E": false,
+      "cabinet": true,
+      "ruling": true,
+      "complete": false,
+      "status": "partial",
+      "ruling_first": "LDP",
+      "n_months_pol": 12,
+      "P_yen": NaN,
+      "E_val": NaN,
+      "P_unit": "",
+      "P_same_def_5kg": false,
+      "notes": "P: e-Stat item1002 annual files from 2000; E: 二人以上全国 series from 2000; NHK bunken paired months=12"
+    },
+    {
+      "year": 2000,
+      "P": false,
+      "E": true,
+      "cabinet": true,
+      "ruling": true,
+      "complete": false,
+      "status": "partial",
+      "ruling_first": "LDP",
+      "n_months_pol": 11,
+      "P_yen": 4685.6,
+      "E_val": 0.233,
+      "P_unit": "10Kg",
+      "P_same_def_5kg": false,
+      "notes": "P: unit=10Kg (10kg) — NOT same as panel 5kg pouch; E: OK; NHK bunken paired months=11; 2000-06 missing on bunken page"
+    },
+    {
+      "year": 2001,
+      "P": false,
+      "E": true,
+      "cabinet": true,
+      "ruling": true,
+      "complete": false,
+      "status": "partial",
+      "ruling_first": "LDP",
+      "n_months_pol": 11,
+      "P_yen": 4523.8,
+      "E_val": 0.23199999999999998,
+      "P_unit": "10Kg",
+      "P_same_def_5kg": false,
+      "notes": "P: unit=10Kg (10kg) — NOT same as panel 5kg pouch; E: OK; NHK bunken paired months=11; 2001-07 missing on bunken page (参院選月)"
+    },
+    {
+      "year": 2002,
+      "P": true,
+      "E": true,
+      "cabinet": true,
+      "ruling": true,
+      "complete": true,
+      "status": "complete",
+      "ruling_first": "LDP",
+      "n_months_pol": 12,
+      "P_yen": 2293.3,
+      "E_val": 0.233,
+      "P_unit": "１袋･1pouch",
+      "P_same_def_5kg": true,
+      "notes": "P: item1002 5kg pouch OK; E: OK; NHK bunken paired months=12"
+    },
+    {
+      "year": 2003,
+      "P": true,
+      "E": true,
+      "cabinet": true,
+      "ruling": true,
+      "complete": true,
+      "status": "complete",
+      "ruling_first": "LDP",
+      "n_months_pol": 12,
+      "P_yen": 2365.0,
+      "E_val": 0.23199999999999998,
+      "P_unit": "1袋･1pouch",
+      "P_same_def_5kg": true,
+      "notes": "P: item1002 5kg pouch OK; E: OK; NHK bunken paired months=12"
+    },
+    {
+      "year": 2004,
+      "P": true,
+      "E": true,
+      "cabinet": true,
+      "ruling": true,
+      "complete": true,
+      "status": "complete",
+      "ruling_first": "LDP",
+      "n_months_pol": 12,
+      "P_yen": 2610.1,
+      "E_val": 0.23,
+      "P_unit": "1袋･1pouch",
+      "P_same_def_5kg": true,
+      "notes": "P: item1002 5kg pouch OK; E: OK; NHK bunken paired months=12; 2004-07 NHK method 名簿法→固定RDD"
+    }
+  ]
+}

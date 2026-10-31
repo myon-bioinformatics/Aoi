@@ -1,0 +1,305 @@
+#!/usr/bin/env python3
+"""aoff_yoy shrinkage / constant-drift / permutation diagnostics.
+Uses EXISTING YoY design only (train 2016..t-1, t=2021–2025).
+Does NOT re-run YoY on the 2005–2025 extended panel.
+Reads pre-extend backup so numbers match the locked YoY run.
+"""
+from __future__ import annotations
+
+import csv
+import json
+import math
+import random
+from pathlib import Path
+from statistics import mean, median
+
+import numpy as np
+
+OUT = Path("/workspace/aoi-phase2")
+# Prefer pre-extend backup so diagnostics match the locked YoY (2015–2025) run.
+PANEL = OUT / "gohantrust_panel_aoki_pre_extend_backup.csv"
+if not PANEL.exists():
+    PANEL = OUT / "gohantrust_panel_aoki.csv"
+
+SEED = 20261024
+B = 2000
+MIN_TRAIN = 5
+TEST_YEARS = [2021, 2022, 2023, 2024, 2025]
+EPS_DEN = 1e-15
+
+
+def load_panel(path: Path):
+    rows = list(csv.DictReader(path.open()))
+    years = []
+    for r in rows:
+        y = int(float(r["year"]))
+        # Lock to pre-extend window used by the YoY run.
+        if y < 2015 or y > 2025:
+            continue
+        years.append(
+            {
+                "year": y,
+                "P": float(r.get("P_yen") or r["P"]),
+                "E": float(r["E"]),
+                "A": float(r.get("Aoki_A") or r.get("Aoki") or r["A"]),
+            }
+        )
+    years.sort(key=lambda d: d["year"])
+    return years
+
+
+def build_yoy(years):
+    by_y = {d["year"]: d for d in years}
+    yoy = []
+    for t in sorted(by_y):
+        if t - 1 not in by_y:
+            continue
+        cur, prev = by_y[t], by_y[t - 1]
+        if cur["P"] <= 0 or prev["P"] <= 0 or cur["E"] <= 0 or prev["E"] <= 0:
+            continue
+        yoy.append(
+            {
+                "year": t,
+                "y": math.log(cur["P"] / prev["P"]),
+                "dlogE": math.log(cur["E"] / prev["E"]),
+            }
+        )
+    return yoy
+
+
+def fit_gamma(train_y, train_x):
+    denom = float(np.sum(np.asarray(train_x, dtype=float) ** 2))
+    if abs(denom) < EPS_DEN:
+        return 0.0
+    return float(np.sum(np.asarray(train_y, dtype=float) * np.asarray(train_x, dtype=float)) / denom)
+
+
+def year_win(yhat, y):
+    return abs(yhat - y) < abs(y)
+
+
+def run_aoff_rolling(yoy, dlogE_by_year=None):
+    """Rolling aoff; optional override map year->dlogE (for permutation)."""
+    by = {d["year"]: dict(d) for d in yoy}
+    if dlogE_by_year is not None:
+        for yr, v in dlogE_by_year.items():
+            if yr in by:
+                by[yr]["dlogE"] = v
+    rows = []
+    for t in TEST_YEARS:
+        train_years = [yy for yy in range(2016, t) if yy in by]
+        if len(train_years) < MIN_TRAIN:
+            continue
+        train = [by[yy] for yy in train_years]
+        test = by[t]
+        ys = [d["y"] for d in train]
+        xs = [d["dlogE"] for d in train]
+        g = fit_gamma(ys, xs)
+        yhat = g * test["dlogE"]
+        drift = mean(ys)  # constant-drift baseline: mean train ΔlogP
+        yhat_drift = drift
+        rows.append(
+            {
+                "t": t,
+                "gamma_hat": g,
+                "y": test["y"],
+                "dlogE": test["dlogE"],
+                "yhat": yhat,
+                "abs_yhat": abs(yhat),
+                "year_win_vs_zero": year_win(yhat, test["y"]),
+                "train_mean_dlogP": drift,
+                "yhat_const_drift": yhat_drift,
+                "year_win_const_drift_vs_zero": year_win(yhat_drift, test["y"]),
+                "aoff_beats_const_drift": abs(yhat - test["y"]) < abs(yhat_drift - test["y"]),
+                "n_train": len(train),
+                "train_start": train_years[0],
+                "train_end": train_years[-1],
+            }
+        )
+    return rows
+
+
+def count_wins(rows, exclude_2025=False):
+    recs = [r for r in rows if (not exclude_2025 or r["t"] != 2025)]
+    w = sum(1 for r in recs if r["year_win_vs_zero"])
+    return len(recs), w
+
+
+def permute_dlogE(yoy, rng: random.Random):
+    years = [d["year"] for d in yoy]
+    vals = [d["dlogE"] for d in yoy]
+    rng.shuffle(vals)
+    return dict(zip(years, vals))
+
+
+def main():
+    years = load_panel(PANEL)
+    yoy = build_yoy(years)
+    # Restrict YoY pool to 2016–2025 (same as locked run)
+    yoy = [d for d in yoy if 2016 <= d["year"] <= 2025]
+    assert [d["year"] for d in yoy] == list(range(2016, 2026)), [d["year"] for d in yoy]
+
+    obs = run_aoff_rolling(yoy)
+    n_inc, w_inc = count_wins(obs, False)
+    n_exc, w_exc = count_wins(obs, True)
+
+    # Constant-drift aggregate
+    drift_inc = sum(1 for r in obs if r["year_win_const_drift_vs_zero"])
+    drift_exc = sum(1 for r in obs if r["t"] != 2025 and r["year_win_const_drift_vs_zero"])
+    aoff_beats_drift_inc = sum(1 for r in obs if r["aoff_beats_const_drift"])
+    aoff_beats_drift_exc = sum(1 for r in obs if r["t"] != 2025 and r["aoff_beats_const_drift"])
+
+    # Permutation: shuffle ΔlogE across YoY years, re-run rolling
+    rng = random.Random(SEED)
+    ge_5 = 0
+    ge_4_excl = 0
+    win_counts_inc = []
+    win_counts_exc = []
+    for _ in range(B):
+        mp = permute_dlogE(yoy, rng)
+        rows_b = run_aoff_rolling(yoy, dlogE_by_year=mp)
+        _, wb = count_wins(rows_b, False)
+        _, we = count_wins(rows_b, True)
+        win_counts_inc.append(wb)
+        win_counts_exc.append(we)
+        if wb >= 5:
+            ge_5 += 1
+        if we >= 4:
+            ge_4_excl += 1
+
+    # one-sided p: fraction of shuffles with wins >= observed
+    p_inc = sum(1 for w in win_counts_inc if w >= w_inc) / B
+    p_exc = sum(1 for w in win_counts_exc if w >= w_exc) / B
+    # percentile of observed among null (higher wins = more extreme in "good" direction)
+    # empirical cdf: proportion of null < observed; percentile rank
+    pct_inc = 100.0 * sum(1 for w in win_counts_inc if w < w_inc) / B
+    pct_exc = 100.0 * sum(1 for w in win_counts_exc if w < w_exc) / B
+
+    # Write gamma table
+    gamma_fields = [
+        "t",
+        "gamma_hat",
+        "y",
+        "dlogE",
+        "yhat",
+        "abs_yhat",
+        "year_win_vs_zero",
+        "train_mean_dlogP",
+        "yhat_const_drift",
+        "year_win_const_drift_vs_zero",
+        "aoff_beats_const_drift",
+        "n_train",
+        "train_start",
+        "train_end",
+    ]
+    with (OUT / "aoff_yoy_gamma_table.csv").open("w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=gamma_fields)
+        w.writeheader()
+        for r in obs:
+            out = {k: r[k] for k in gamma_fields}
+            for k in ("gamma_hat", "y", "dlogE", "yhat", "abs_yhat", "train_mean_dlogP", "yhat_const_drift"):
+                out[k] = round(float(out[k]), 8)
+            w.writerow(out)
+
+    # Interpret shrinkage
+    gammas = [r["gamma_hat"] for r in obs]
+    abs_yhats = [r["abs_yhat"] for r in obs]
+    abs_ys = [abs(r["y"]) for r in obs]
+    gamma_near_zero = all(abs(g) < 0.05 for g in gammas)
+    yhat_small_vs_y = median(abs_yhats) < 0.25 * median(abs_ys)
+
+    interpretation_bits = []
+    if gamma_near_zero:
+        interpretation_bits.append(
+            "γ̂≈0 for all t → predictions near zero; wins vs zero-baseline may be pure shrinkage."
+        )
+    else:
+        interpretation_bits.append(
+            f"γ̂ not ≈0 (range [{min(gammas):.3f}, {max(gammas):.3f}]); slope uses E variation in train."
+        )
+    if yhat_small_vs_y:
+        interpretation_bits.append(
+            f"|ŷ| still small vs |y| (median |ŷ|={median(abs_yhats):.4f}, median |y|={median(abs_ys):.4f}); "
+            "year-wins vs zero can arise from mild same-sign shrinkage even with nonzero γ̂."
+        )
+    frac_5 = ge_5 / B
+    frac_4 = ge_4_excl / B
+    if frac_5 >= 0.10:
+        interpretation_bits.append(
+            f"Permutation: {frac_5:.3f} of shuffles also achieve ≥5/5 → E timing may not be necessary; shrinkage concern remains."
+        )
+    else:
+        interpretation_bits.append(
+            f"Permutation: only {frac_5:.3f} of shuffles achieve ≥5/5 (one-sided p={p_inc:.4f}) → "
+            "some evidence that the ΔlogE series (not just |ŷ|≈0) contributes. "
+            "Next candidate (not run here): lag ΔlogE_{t−1}."
+        )
+
+    perm = {
+        "design": {
+            "form": "aoff_yoy",
+            "model": "yhat = gamma_hat * dlogE",
+            "baseline_zero": "yhat=0",
+            "baseline_const_drift": "yhat = mean_train(dlogP)",
+            "min_train": MIN_TRAIN,
+            "test_years_include": TEST_YEARS,
+            "test_years_exclude": [t for t in TEST_YEARS if t != 2025],
+            "panel_used": str(PANEL.name),
+            "note": "Existing YoY window only; extended 2005–2025 panel NOT used for this diagnostic.",
+        },
+        "observed": {
+            "wins_include": f"{w_inc}/{n_inc}",
+            "wins_exclude": f"{w_exc}/{n_exc}",
+            "const_drift_wins_include": f"{drift_inc}/{n_inc}",
+            "const_drift_wins_exclude": f"{drift_exc}/{n_exc}",
+            "aoff_beats_const_drift_include": f"{aoff_beats_drift_inc}/{n_inc}",
+            "aoff_beats_const_drift_exclude": f"{aoff_beats_drift_exc}/{n_exc}",
+            "gamma_hat_by_t": {str(r["t"]): round(r["gamma_hat"], 8) for r in obs},
+            "yhat_by_t": {str(r["t"]): round(r["yhat"], 8) for r in obs},
+            "abs_yhat_by_t": {str(r["t"]): round(r["abs_yhat"], 8) for r in obs},
+            "train_mean_dlogP_by_t": {str(r["t"]): round(r["train_mean_dlogP"], 8) for r in obs},
+        },
+        "permutation": {
+            "B": B,
+            "seed": SEED,
+            "shuffle": "permute dlogE across YoY years 2016–2025; y stays with calendar year; re-fit rolling",
+            "frac_shuffles_ge_5_of_5": round(frac_5, 6),
+            "frac_shuffles_ge_4_of_4_exclude": round(frac_4, 6),
+            "one_sided_p_wins_ge_observed_include": round(p_inc, 6),
+            "one_sided_p_wins_ge_observed_exclude": round(p_exc, 6),
+            "observed_wins_percentile_include": round(pct_inc, 3),
+            "observed_wins_percentile_exclude": round(pct_exc, 3),
+            "null_wins_include_mean": round(mean(win_counts_inc), 4),
+            "null_wins_include_median": median(win_counts_inc),
+            "null_wins_exclude_mean": round(mean(win_counts_exc), 4),
+            "null_wins_exclude_median": median(win_counts_exc),
+            "null_win_count_hist_include": {str(k): win_counts_inc.count(k) for k in range(0, 6)},
+            "null_win_count_hist_exclude": {str(k): win_counts_exc.count(k) for k in range(0, 5)},
+        },
+        "interpretation": interpretation_bits,
+        "next_step_if_E_info_remains": "Compare lag dlogE_{t-1} with the same zero-baseline and permutation design (not run in this task).",
+        "bootstrap_caveat_for_aoff": (
+            "When all 5 include-window signs of log_err_ratio are negative, the bootstrap median CI "
+            "excluding 0 is automatic and adds little beyond the sign test. CI is informative when signs mix."
+        ),
+    }
+
+    (OUT / "aoff_yoy_permutation.json").write_text(
+        json.dumps(perm, indent=2, ensure_ascii=False)
+    )
+
+    print("PANEL", PANEL.name)
+    print("OBS wins", f"{w_inc}/{n_inc}", f"excl {w_exc}/{n_exc}")
+    print("DRIFT wins", f"{drift_inc}/{n_inc}", f"excl {drift_exc}/{n_exc}")
+    print("aoff beats drift", f"{aoff_beats_drift_inc}/{n_inc}", f"excl {aoff_beats_drift_exc}/{n_exc}")
+    print("gamma", [round(r["gamma_hat"], 4) for r in obs])
+    print("yhat", [round(r["yhat"], 5) for r in obs])
+    print("abs_yhat", [round(r["abs_yhat"], 5) for r in obs])
+    print("frac>=5/5", frac_5, "p_inc", p_inc, "pct", pct_inc)
+    print("frac>=4/4", frac_4, "p_exc", p_exc, "pct", pct_exc)
+    for line in interpretation_bits:
+        print("INT:", line)
+
+
+if __name__ == "__main__":
+    main()

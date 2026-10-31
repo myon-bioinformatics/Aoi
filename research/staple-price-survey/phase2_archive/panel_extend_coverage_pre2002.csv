@@ -1,0 +1,8 @@
+year,P,E,cabinet,ruling,complete,status,ruling_first,n_months_pol,P_yen,E_val,P_unit,P_scaled_5kg_eq,E_break,notes
+1998,False,True,True,True,False,partial,LDP,8,,0.238,,False,excl_farm,P: e-Stat item1002 annual file set starts 1999 (no 1998 annual); E: a18-1 農林漁家除く Food/CE=23.8% (BREAK vs 2000+含む); NHK bunken n=8 from 1998-04; Jul-1998 cabinet blank
+1999,True,True,True,True,True,complete_with_flags,LDP,12,2449.6,0.237,10Kg,True,excl_farm,P: item1002 10Kg halved→5kg-eq; E: a18-1 農林漁家除く Food/CE=23.7% (BREAK); NHK n=12
+2000,True,True,True,True,True,complete_with_flags,LDP,11,2342.8,0.233,10Kg,True,,P: item1002 10Kg halved→5kg-eq; E: 二人以上全国 2000～ OK; NHK n=11 gap=2000-06
+2001,True,True,True,True,True,complete_with_flags,LDP,11,2261.9,0.232,10Kg,True,,P: item1002 10Kg halved→5kg-eq; E: OK; NHK n=11 gap=2001-07; 7 months A≥100 (annual A=83.2 still <100)
+2002,True,True,True,True,True,complete,LDP,12,2293.3,0.233,1袋･5kg,False,,unchanged; 5kg pouch
+2003,True,True,True,True,True,complete,LDP,12,2365.0,0.232,1袋･5kg,False,,unchanged
+2004,True,True,True,True,True,complete,LDP,12,2610.1,0.23,1袋･5kg,False,,unchanged; 2004-07 NHK 名簿→RDD

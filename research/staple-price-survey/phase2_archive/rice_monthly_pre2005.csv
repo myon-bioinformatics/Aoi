@@ -1,0 +1,85 @@
+year,month,P_yen,n_cities,item,item_label,unit,spec,agg,source
+1999,1,4955.1,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,2,4966.1,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,3,4960.7,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,4,4957.7,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,5,4947.1,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,6,4931.3,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,7,4914.6,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,8,4915.2,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,9,4892.5,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,10,4810.2,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,11,4781.4,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+1999,12,4758.2,70,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_1999
+2000,1,4742.6,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,2,4749.4,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,3,4738.0,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,4,4722.7,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,5,4724.2,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,6,4741.3,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,7,4723.0,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,8,4730.7,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,9,4682.4,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,10,4598.3,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,11,4543.8,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2000,12,4531.3,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2000
+2001,1,4522.8,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,2,4517.5,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,3,4514.3,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,4,4511.0,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,5,4499.5,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,6,4512.3,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,7,4514.7,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,8,4536.8,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,9,4540.5,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,10,4548.6,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,11,4536.4,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2001,12,4531.5,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",10Kg,"国内産, 精米,単一品種, コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2001
+2002,1,2296.3,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,2,2292.9,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,3,2295.5,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,4,2293.0,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,5,2300.4,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,6,2298.3,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,7,2297.1,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,8,2292.6,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,9,2292.6,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,10,2288.8,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,11,2287.3,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2002,12,2284.5,71,1002,"うるち米(単一品種,｢コシヒカリ｣以外)",１袋･1pouch,"国内産, 精米,単一品種, （産地,産年が同一のもの）,袋入り（５kg入り),コシヒカリを除く",mean_of_city_monthly,e-stat_retail_price_annual_xls_2002
+2003,1,2279.7,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,2,2273.0,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,3,2268.7,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,4,2262.4,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,5,2256.5,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,6,2254.6,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,7,2257.8,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,8,2269.1,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,9,2313.7,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,10,2517.5,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,11,2673.9,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2003,12,2753.3,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2003
+2004,1,2871.0,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,2,2893.6,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,3,2824.1,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,4,2722.5,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,5,2674.9,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,6,2645.0,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,7,2604.4,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,8,2576.6,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,9,2492.4,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,10,2391.0,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,11,2332.3,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2004,12,2293.0,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2004
+2005,1,2270.3,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,2,2257.5,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,3,2243.0,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,4,2237.0,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,5,2224.4,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,6,2223.6,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,7,2221.6,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,8,2210.8,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,9,2214.9,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,10,2212.1,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,11,2190.4,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005
+2005,12,2185.0,71,1002,うるち米（単一品種，｢コシヒカリ｣以外）,1袋･1pouch,国内産，精米，単一品種（産地，産年が同一のもの），袋入り（５kg入り），コシヒカリを除く,mean_of_city_monthly,e-stat_retail_price_annual_xls_2005

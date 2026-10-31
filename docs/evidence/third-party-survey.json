@@ -664,6 +664,28 @@
       "files": 34,
       "import_sites": 39
     },
+    "pycountry": {
+      "attribute_uses": 1,
+      "attributes": {
+        "countries.get": 1
+      },
+      "by_tree": {
+        "research": {
+          "attribute_uses": 1,
+          "attributes": {
+            "countries.get": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 2
+        }
+      },
+      "declared": [],
+      "distinct_attributes": 1,
+      "dynamic_import_sites": 0,
+      "files": 1,
+      "import_sites": 2
+    },
     "pytest": {
       "attribute_uses": 861,
       "attributes": {
@@ -2368,6 +2390,16 @@
       "file": "research/gpt-r001-score-allocation/verify_prediction_independent.py",
       "import_sites": 1,
       "package": "pandas",
+      "tree": "research"
+    },
+    {
+      "attributes": {
+        "countries.get": 1
+      },
+      "dynamic_lines": [],
+      "file": "research/staple-price-survey/adjacent_netflix_subscription_levels/build_netflix_subscription_levels.py",
+      "import_sites": 2,
+      "package": "pycountry",
       "tree": "research"
     },
     {

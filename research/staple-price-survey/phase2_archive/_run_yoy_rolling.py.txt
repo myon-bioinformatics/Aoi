@@ -1,0 +1,428 @@
+#!/usr/bin/env python3
+"""YoY rolling GohanTrust — runs AFTER yoy_prelock_2026-10-24.md."""
+import csv, json, math, random
+from pathlib import Path
+from statistics import median, mean
+import numpy as np
+
+OUT = Path("/workspace/aoi-phase2")
+rows = list(csv.DictReader((OUT / "gohantrust_panel_aoki.csv").open()))
+
+def getf(r, *keys):
+    for k in keys:
+        if k in r and r[k] not in ("", None):
+            return float(r[k])
+    raise KeyError(keys)
+
+years = []
+for r in rows:
+    years.append({
+        "year": int(float(r["year"])),
+        "P": getf(r, "P_yen", "P"),
+        "A": getf(r, "Aoki_A", "Aoki", "A"),
+        "E": getf(r, "E"),
+        "q": getf(r, "q_kg", "q") if r.get("q_kg") not in (None, "") or r.get("q") not in (None, "") else 5.0,
+    })
+years.sort(key=lambda d: d["year"])
+by_y = {d["year"]: d for d in years}
+
+# Build YoY observations for calendar years with lag
+yoy = []  # list of dicts keyed by year t (the end year of the change)
+for t in sorted(by_y):
+    if t - 1 not in by_y:
+        continue
+    cur, prev = by_y[t], by_y[t - 1]
+    if cur["P"] <= 0 or prev["P"] <= 0 or cur["E"] <= 0 or prev["E"] <= 0:
+        continue
+    if cur["A"] <= 0 or prev["A"] <= 0:
+        continue
+    if (100 - cur["A"]) <= 0 or (100 - prev["A"]) <= 0:
+        continue
+    if (200 - cur["A"]) <= 0 or (200 - prev["A"]) <= 0:
+        continue
+    rec = {
+        "year": t,
+        "y": math.log(cur["P"] / prev["P"]),
+        "dlogE": math.log(cur["E"] / prev["E"]),
+        "dlog100A": math.log((100 - cur["A"]) / (100 - prev["A"])),
+        "dlog200A": math.log((200 - cur["A"]) / (200 - prev["A"])),
+        "dlogA": math.log(cur["A"] / prev["A"]),
+        "neg_dA": -(cur["A"] - prev["A"]),
+        "P": cur["P"],
+        "A": cur["A"],
+        "E": cur["E"],
+    }
+    yoy.append(rec)
+
+by_yoy = {d["year"]: d for d in yoy}
+yoy_years = [d["year"] for d in yoy]  # 2016..2025
+
+# §4 exclusion check (same price facts)
+P2025 = by_y[2025]["P"]
+P_max_pre = max(by_y[y]["P"] for y in range(2015, 2025))
+pct_2025 = P2025 / by_y[2024]["P"] - 1
+pcts_pre = [by_y[y]["P"] / by_y[y - 1]["P"] - 1 for y in range(2016, 2025)]
+pct_max_pre = max(pcts_pre)
+excl_ok = (P2025 > P_max_pre) and (pct_2025 > pct_max_pre)
+excl_check = {
+    "P_2025": P2025,
+    "max_P_2015_2024": P_max_pre,
+    "P_2025_gt_max": P2025 > P_max_pre,
+    "pct_2025": pct_2025,
+    "max_pct_2016_2024": pct_max_pre,
+    "pct_2025_gt_max": pct_2025 > pct_max_pre,
+    "exclusion_applies": excl_ok,
+}
+
+FORMS = ["aoff_yoy", "primary_yoy", "alt200_yoy", "exp_neg_yoy", "prop_A_yoy"]
+MIN_TRAIN = 5
+TEST_YEARS = [t for t in range(2021, 2026) if t in by_yoy]
+
+EPS_DEN = 1e-15
+
+
+def design_row(d, form):
+    if form == "aoff_yoy":
+        return np.array([d["dlogE"]], dtype=float)
+    if form == "primary_yoy":
+        return np.array([d["dlog100A"], d["dlogE"]], dtype=float)
+    if form == "alt200_yoy":
+        return np.array([d["dlog200A"], d["dlogE"]], dtype=float)
+    if form == "exp_neg_yoy":
+        return np.array([d["neg_dA"], d["dlogE"]], dtype=float)
+    if form == "prop_A_yoy":
+        return np.array([d["dlogA"], d["dlogE"]], dtype=float)
+    raise ValueError(form)
+
+
+def fit_no_intercept(train, form):
+    X = np.vstack([design_row(d, form) for d in train])
+    Y = np.array([d["y"] for d in train], dtype=float)
+    if form == "aoff_yoy":
+        denom = float((X[:, 0] ** 2).sum())
+        if abs(denom) < EPS_DEN:
+            gamma = 0.0
+        else:
+            gamma = float((Y * X[:, 0]).sum() / denom)
+        return {"alpha": None, "gamma": gamma, "coeffs": np.array([gamma])}
+    # 2-regressor through origin
+    # normal eq: (X'X) b = X'Y
+    XtX = X.T @ X
+    XtY = X.T @ Y
+    try:
+        b, residuals, rank, s = np.linalg.lstsq(X, Y, rcond=None)
+        b = np.asarray(b, dtype=float).ravel()
+    except Exception:
+        b = np.zeros(X.shape[1])
+    return {"alpha": float(b[0]), "gamma": float(b[1]), "coeffs": b}
+
+
+def predict(d, form, fit):
+    x = design_row(d, form)
+    return float(x @ fit["coeffs"])
+
+
+win_rows = []
+coeff_rows = []
+
+for t in TEST_YEARS:
+    train = [d for d in yoy if 2016 <= d["year"] <= t - 1]
+    n_train = len(train)
+    if n_train < MIN_TRAIN:
+        continue  # should not happen for t>=2021
+    test_d = by_yoy[t]
+    y = test_d["y"]
+    for form in FORMS:
+        fit = fit_no_intercept(train, form)
+        yhat = predict(test_d, form, fit)
+        e_m = abs(yhat - y)
+        e_n = abs(y)  # zero baseline
+        year_win = e_m < e_n
+        win_rows.append({
+            "t": t,
+            "form": form,
+            "y": round(y, 8),
+            "yhat": round(yhat, 8),
+            "abs_e_model": round(e_m, 8),
+            "abs_e_naive": round(e_n, 8),
+            "year_win": year_win,
+            "n_train": n_train,
+            "train_end": t - 1,
+            "in_excl_aggregate": t != 2025,
+            "A": test_d["A"],
+            "E": test_d["E"],
+            "dlogE": round(test_d["dlogE"], 8),
+        })
+        coeff_rows.append({
+            "t": t,
+            "form": form,
+            "train_start": 2016,
+            "train_end": t - 1,
+            "n_train": n_train,
+            "alpha": None if fit["alpha"] is None else round(fit["alpha"], 8),
+            "gamma": round(fit["gamma"], 8),
+        })
+
+# Summaries
+def count_wins(form, exclude_2025):
+    recs = [r for r in win_rows if r["form"] == form]
+    if exclude_2025:
+        recs = [r for r in recs if r["t"] != 2025]
+    n = len(recs)
+    w = sum(1 for r in recs if r["year_win"])
+    return n, w, w == n, w >= (3 if (not exclude_2025 and n == 5) or (exclude_2025 and n == 4) else math.ceil(n / 2 + 0.5))
+
+
+# crit2: ≥3/5 include, ≥3/4 exclude
+summary = {
+    "prelock": "yoy_prelock_2026-10-24.md",
+    "target": "y_t = log(P_t/P_{t-1})",
+    "baseline": "yhat = 0",
+    "min_train": MIN_TRAIN,
+    "test_years_include": [r["t"] for r in win_rows if r["form"] == FORMS[0]],
+    "forms_tried": FORMS,
+    "n_forms_tried": len(FORMS),
+    "exclusion_check": excl_check,
+    "criteria": {
+        "crit1_all_wins": {"include": "5/5", "exclude": "4/4"},
+        "crit2_majority": {"include": ">=3/5", "exclude": ">=3/4"},
+    },
+    "forms": {},
+    "language_note": "CI includes 0 => 検出できず/判断保留. CI excludes 0 and median>0 => モデルが悪い; median<0 => モデルが良い. NOT locked adopt rule.",
+}
+
+for form in FORMS:
+    block = {}
+    for key, excl in (("include_2025", False), ("exclude_2025", True)):
+        recs = [r for r in win_rows if r["form"] == form and (not excl or r["t"] != 2025)]
+        n = len(recs)
+        w = sum(1 for r in recs if r["year_win"])
+        thresh = 3 if (key == "include_2025" and n == 5) or (key == "exclude_2025" and n == 4) else math.ceil(n / 2)
+        # for n=5 thresh=3; n=4 thresh=3
+        if key == "include_2025":
+            thresh = 3
+        else:
+            thresh = 3
+        block[key] = {
+            "n": n,
+            "wins": w,
+            "win_rate": round(w / n, 4) if n else None,
+            "crit1_all_wins": w == n and n > 0,
+            "crit2_majority": w >= thresh,
+            "majority_threshold": thresh,
+            "years_won": [r["t"] for r in recs if r["year_win"]],
+            "years_lost": [r["t"] for r in recs if not r["year_win"]],
+        }
+    summary["forms"][form] = block
+
+with (OUT / "yoy_rolling_year_wins.csv").open("w", newline="") as fh:
+    w = csv.DictWriter(fh, fieldnames=list(win_rows[0].keys()))
+    w.writeheader()
+    w.writerows(win_rows)
+
+with (OUT / "yoy_rolling_coeffs.csv").open("w", newline="") as fh:
+    w = csv.DictWriter(fh, fieldnames=list(coeff_rows[0].keys()))
+    w.writeheader()
+    w.writerows(coeff_rows)
+
+(OUT / "yoy_rolling_summary.json").write_text(
+    json.dumps(summary, indent=2, ensure_ascii=False)
+)
+
+# Continuous companion
+EPS = 1e-12
+out_lr = []
+by_form = {f: [] for f in FORMS}
+for r in win_rows:
+    em = max(r["abs_e_model"], EPS)
+    en = max(r["abs_e_naive"], EPS)
+    lr = math.log(em / en)
+    rec = {
+        "t": r["t"],
+        "form": r["form"],
+        "abs_e_model": r["abs_e_model"],
+        "abs_e_naive": r["abs_e_naive"],
+        "log_err_ratio": round(lr, 6),
+        "model_better": lr < 0,
+        "in_excl_aggregate": r["in_excl_aggregate"],
+    }
+    out_lr.append(rec)
+    by_form[r["form"]].append(rec)
+
+
+def boot_median_ci(xs, B=2000, seed=20261024):
+    rng = random.Random(seed)
+    n = len(xs)
+    if n == 0:
+        return None
+    boots = []
+    for _ in range(B):
+        sample = [xs[rng.randrange(n)] for _ in range(n)]
+        boots.append(median(sample))
+    boots.sort()
+    lo = boots[int(0.025 * B)]
+    hi = boots[min(int(0.975 * B), B - 1)]
+    return {
+        "median": round(median(xs), 6),
+        "ci95_lo": round(lo, 6),
+        "ci95_hi": round(hi, 6),
+        "includes_0": lo <= 0 <= hi,
+        "B": B,
+        "seed": seed,
+    }
+
+
+lr_summary = {
+    "note": "YoY continuous companion. NOT a locked adopt rule. e_naive=|y| (zero baseline). Negative log_err_ratio => model better.",
+    "bootstrap_caveat": "n=5 (include) / n=4 (exclude) bootstrap is weak; resamples same points only.",
+    "forms": {},
+}
+for f in FORMS:
+    full = by_form[f]
+    excl = [x for x in by_form[f] if x["t"] != 2025]
+    blocks = {}
+    for key, recs in (("include_2025", full), ("exclude_2025", excl)):
+        xs = [x["log_err_ratio"] for x in recs]
+        blocks[key] = {
+            "n": len(xs),
+            "years_neg_ratio": sum(1 for x in recs if x["model_better"]),
+            "median_log_err_ratio": round(median(xs), 6),
+            "mean_log_err_ratio": round(mean(xs), 6),
+            "min": round(min(xs), 6),
+            "max": round(max(xs), 6),
+            "boot_median_ci95": boot_median_ci(xs),
+        }
+    # sign agreement
+    mi = blocks["include_2025"]["median_log_err_ratio"]
+    me = blocks["exclude_2025"]["median_log_err_ratio"]
+    ci_i = blocks["include_2025"]["boot_median_ci95"]["includes_0"]
+    ci_e = blocks["exclude_2025"]["boot_median_ci95"]["includes_0"]
+    sign_i = 0 if mi == 0 else (1 if mi > 0 else -1)
+    sign_e = 0 if me == 0 else (1 if me > 0 else -1)
+    blocks["sign_agreement"] = {
+        "median_sign_agree": sign_i == sign_e,
+        "ci_includes_0_agree": ci_i == ci_e,
+        "both_agree": (sign_i == sign_e) and (ci_i == ci_e),
+    }
+    lr_summary["forms"][f] = blocks
+
+with (OUT / "yoy_log_err_ratio.csv").open("w", newline="") as fh:
+    w = csv.DictWriter(fh, fieldnames=list(out_lr[0].keys()))
+    w.writeheader()
+    w.writerows(out_lr)
+(OUT / "yoy_log_err_ratio_summary.json").write_text(
+    json.dumps(lr_summary, indent=2, ensure_ascii=False)
+)
+
+
+def reading(b):
+    """Language rule: 検出できず vs naiveより悪い."""
+    if b["includes_0"]:
+        return "検出できず／判断保留"
+    if b["median"] > 0:
+        return "モデルが悪い"
+    if b["median"] < 0:
+        return "モデルが良い"
+    return "検出できず／判断保留"
+
+
+# report_yoy_rolling.md
+lines = []
+lines.append("# 前年比（YoY）ローリング検証結果（数値・Grok）\n\n")
+lines.append("**実行日:** 2026-10-24（Asia/Tokyo）\n\n")
+lines.append("**実行前ロック:** `yoy_prelock_2026-10-24.md`（計算より先に作成済み）\n\n")
+lines.append("**役割:** 数値 = Grok / 判定・解釈 = Claude。採用規則は未ロック。\n\n")
+lines.append("## 0. 設計要約\n\n")
+lines.append("- Target: \(y_t=\\log(P_t/P_{t-1})\)；Baseline: \(\\hat y=0\)\n")
+lines.append("- Min train ≥5 YoY 点 ⇒ テスト年 2021–2025（含む n=5 / 除外 n=4）\n")
+lines.append("- 年勝: \(|\\hat y-y|<|y|\)\n")
+lines.append("- 試した形の数: **5**（softplus は本ラン外）\n")
+lines.append("- 言語: CIが0を含む → **検出できず／判断保留**。CIが0を除外し中央値<0 → **モデルが良い**、中央値>0 → **モデルが悪い**。「政治項は通らなかった」とは書かない。\n\n")
+
+lines.append("## 1. 2025除外指定の検証（価格事実）\n\n")
+lines.append(f"- P_2025={excl_check['P_2025']} > max_2015_2024={excl_check['max_P_2015_2024']}: **{excl_check['P_2025_gt_max']}**\n")
+lines.append(f"- pct_2025={excl_check['pct_2025']:.4f} > max_pct_pre={excl_check['max_pct_2016_2024']:.4f}: **{excl_check['pct_2025_gt_max']}**\n")
+lines.append(f"- exclusion_applies: **{excl_check['exclusion_applies']}**\n\n")
+
+lines.append("## 2. 年次勝敗（含む版 n=5）\n\n")
+lines.append("| form | wins | crit1 (5/5) | crit2 (≥3/5) | years_won | years_lost |\n")
+lines.append("|---|---:|---|---|---|---|\n")
+for form in FORMS:
+    s = summary["forms"][form]["include_2025"]
+    lines.append(
+        f"| {form} | {s['wins']}/{s['n']} | {s['crit1_all_wins']} | {s['crit2_majority']} | "
+        f"{s['years_won']} | {s['years_lost']} |\n"
+    )
+
+lines.append("\n## 3. 年次勝敗（除外版 n=4）\n\n")
+lines.append("| form | wins | crit1 (4/4) | crit2 (≥3/4) | years_won | years_lost |\n")
+lines.append("|---|---:|---|---|---|---|\n")
+for form in FORMS:
+    s = summary["forms"][form]["exclude_2025"]
+    lines.append(
+        f"| {form} | {s['wins']}/{s['n']} | {s['crit1_all_wins']} | {s['crit2_majority']} | "
+        f"{s['years_won']} | {s['years_lost']} |\n"
+    )
+
+lines.append("\n## 4. 年×形 詳細\n\n")
+lines.append("| t | form | y | yhat | |e_m| | |e_n|=|y| | year_win | n_train |\n")
+lines.append("|---:|---|---:|---:|---:|---:|---|---:|\n")
+for r in win_rows:
+    lines.append(
+        f"| {r['t']} | {r['form']} | {r['y']:.6f} | {r['yhat']:.6f} | "
+        f"{r['abs_e_model']:.6f} | {r['abs_e_naive']:.6f} | {r['year_win']} | {r['n_train']} |\n"
+    )
+
+lines.append("\n## 5. 連続指標 log_err_ratio（参考・未ロック）\n\n")
+lines.append("定義: log(|e_m|/|e_n|)、e_n=|y|。ブートストラップ中央値95% CI（B=2000, seed=20261024）。\n")
+lines.append("**弱点:** n=5/4 の復元抽出のみ。情報は増えない。\n\n")
+lines.append("| form | 窓 | n | 負の比の年数 | median | CI95 | 0を含む | 読み |\n")
+lines.append("|---|---|---:|---:|---:|---|---|---|\n")
+for f in FORMS:
+    for key in ("include_2025", "exclude_2025"):
+        s = lr_summary["forms"][f][key]
+        b = s["boot_median_ci95"]
+        incl = "Y" if b["includes_0"] else "N"
+        lines.append(
+            f"| {f} | {key} | {s['n']} | {s['years_neg_ratio']} | "
+            f"{s['median_log_err_ratio']:.3f} | "
+            f"[{b['ci95_lo']:.3f}, {b['ci95_hi']:.3f}] | {incl} | {reading(b)} |\n"
+        )
+
+lines.append("\n### 符号一致（include ↔ exclude）\n\n")
+lines.append("| form | median符号一致 | CI含0一致 | 両一致 |\n")
+lines.append("|---|---|---|---|\n")
+for f in FORMS:
+    sa = lr_summary["forms"][f]["sign_agreement"]
+    lines.append(
+        f"| {f} | {sa['median_sign_agree']} | {sa['ci_includes_0_agree']} | {sa['both_agree']} |\n"
+    )
+
+lines.append("\n## 6. 数値メモ（結論ではない）\n\n")
+lines.append("- 基準1を満たす形があるかは上表の crit1 列を参照。満たさなければ「全年勝ちなし」。\n")
+lines.append("- CIが0を含む形は連続指標では**検出できず／判断保留**。過半数勝ちと矛盾し得る。両方を並べる。\n")
+lines.append("- 「政治項は通らなかった」とは書かない。判断材料が足りない場合は保留。\n")
+lines.append("- 試行数=5。勝ちの重みを割り引いて読む。\n")
+lines.append("- softplus・古い年次の実データ追加は本ラン外。\n")
+
+(OUT / "report_yoy_rolling.md").write_text("".join(lines))
+
+print("TEST_YEARS", TEST_YEARS)
+print("yoy_years", yoy_years)
+print("excl_ok", excl_ok)
+for form in FORMS:
+    si = summary["forms"][form]["include_2025"]
+    se = summary["forms"][form]["exclude_2025"]
+    bi = lr_summary["forms"][form]["include_2025"]["boot_median_ci95"]
+    be = lr_summary["forms"][form]["exclude_2025"]["boot_median_ci95"]
+    sa = lr_summary["forms"][form]["sign_agreement"]
+    print(
+        form,
+        f"wins_inc={si['wins']}/{si['n']}",
+        f"wins_exc={se['wins']}/{se['n']}",
+        f"CI_inc0_inc={bi['includes_0']} med={bi['median']}",
+        f"CI_inc0_exc={be['includes_0']} med={be['median']}",
+        f"sign_agree={sa['both_agree']}",
+        f"read_inc={reading(bi)}",
+        f"read_exc={reading(be)}",
+    )

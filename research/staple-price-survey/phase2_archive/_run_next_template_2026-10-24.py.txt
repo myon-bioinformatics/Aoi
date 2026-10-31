@@ -1,0 +1,616 @@
+#!/usr/bin/env python3
+"""Next-run template 2026-10-24: m/m_eff, Δe sign test, drift+sign-match, win margins (yen).
+
+Does NOT overwrite legacy CSVs. Writes next_template_* artifacts only.
+No adoption verdict — numbers only.
+"""
+from __future__ import annotations
+
+import csv
+import json
+import math
+from collections import defaultdict
+from math import comb
+from pathlib import Path
+from statistics import mean
+
+import numpy as np
+
+OUT = Path("/workspace/aoi-phase2")
+PANEL = OUT / "gohantrust_panel_aoki.csv"
+M_PER_FORM = 20
+N_FORMS = 5
+M_EFF = M_PER_FORM * N_FORMS  # 100
+MIN_TRAIN = 5
+EPS_DEN = 1e-15
+
+LEVEL_FORMS = ["primary_100", "alt200", "exp_neg", "aoff", "prop_A"]
+YOY_FORMS = ["aoff_yoy", "primary_yoy", "alt200_yoy", "exp_neg_yoy", "prop_A_yoy"]
+SHELL_LEVEL = ["primary_100", "alt200", "exp_neg", "prop_A"]
+SHELL_YOY = ["primary_yoy", "alt200_yoy", "exp_neg_yoy", "prop_A_yoy"]
+
+
+def getf(r, *keys):
+    for k in keys:
+        if k in r and r[k] not in ("", None):
+            return float(r[k])
+    raise KeyError(keys)
+
+
+def load_years():
+    rows = list(csv.DictReader(PANEL.open()))
+    years = []
+    for r in rows:
+        years.append(
+            {
+                "year": int(float(r["year"])),
+                "P": getf(r, "P_yen", "P"),
+                "A": getf(r, "Aoki_A", "Aoki", "A"),
+                "E": getf(r, "E"),
+                "q": getf(r, "q_kg", "q") if r.get("q_kg") not in (None, "") or r.get("q") not in (None, "") else 5.0,
+            }
+        )
+    years.sort(key=lambda d: d["year"])
+    return years
+
+
+def primary_domain_ok(d):
+    return (100.0 - d["A"]) > 0
+
+
+def binom_onesided_p(wins, n):
+    if n <= 0:
+        return None
+    return sum(comb(n, k) for k in range(wins, n + 1)) / (2 ** n)
+
+
+def fit_level(train, test_d, form):
+    q, A, E = test_d["q"], test_d["A"], test_d["E"]
+    if form == "primary_100":
+        train_ok = [d for d in train if primary_domain_ok(d)]
+        if not train_ok:
+            return None, None
+        K = mean([d["P"] / (d["q"] * (100 - d["A"]) * d["E"]) for d in train_ok])
+        return K * q * (100 - A) * E, K
+    if form == "alt200":
+        K = mean([d["P"] / (d["q"] * (200 - d["A"]) * d["E"]) for d in train])
+        return K * q * (200 - A) * E, K
+    if form == "prop_A":
+        K = mean([d["P"] / (d["q"] * d["A"] * d["E"]) for d in train])
+        return K * q * A * E, K
+    if form == "aoff":
+        K = mean([d["P"] / (d["q"] * d["E"]) for d in train])
+        return K * q * E, K
+    if form == "exp_neg":
+        X = np.array([d["A"] for d in train], dtype=float)
+        Y = np.array([math.log(d["P"] / (d["q"] * d["E"])) for d in train], dtype=float)
+        if len(train) < 2 or np.allclose(X, X[0]):
+            c, beta = float(Y.mean()), 0.0
+        else:
+            Xm, Ym = X.mean(), Y.mean()
+            s = float(((X - Xm) * (Y - Ym)).sum() / ((X - Xm) ** 2).sum())
+            c = float(Ym - s * Xm)
+            beta = -s
+        K = math.exp(c)
+        return K * q * math.exp(-beta * A) * E, K
+    raise ValueError(form)
+
+
+def build_yoy(years):
+    by_y = {d["year"]: d for d in years}
+    yoy = []
+    for t in sorted(by_y):
+        if t - 1 not in by_y:
+            continue
+        cur, prev = by_y[t], by_y[t - 1]
+        if cur["P"] <= 0 or prev["P"] <= 0 or cur["E"] <= 0 or prev["E"] <= 0:
+            continue
+        if cur["A"] <= 0 or prev["A"] <= 0:
+            continue
+        primary_ok = (100 - cur["A"]) > 0 and (100 - prev["A"]) > 0
+        alt200_ok = (200 - cur["A"]) > 0 and (200 - prev["A"]) > 0
+        rec = {
+            "year": t,
+            "y": math.log(cur["P"] / prev["P"]),
+            "dlogE": math.log(cur["E"] / prev["E"]),
+            "dlog100A": math.log((100 - cur["A"]) / (100 - prev["A"])) if primary_ok else None,
+            "dlog200A": math.log((200 - cur["A"]) / (200 - prev["A"])) if alt200_ok else None,
+            "dlogA": math.log(cur["A"] / prev["A"]),
+            "neg_dA": -(cur["A"] - prev["A"]),
+            "P": cur["P"],
+            "P_prev": prev["P"],
+            "A": cur["A"],
+            "E": cur["E"],
+            "primary_ok": primary_ok,
+            "alt200_ok": alt200_ok,
+        }
+        yoy.append(rec)
+    return yoy
+
+
+def form_ok_yoy(d, form):
+    if form == "primary_yoy":
+        return d["primary_ok"]
+    if form == "alt200_yoy":
+        return d["alt200_ok"]
+    return True
+
+
+def design_row(d, form):
+    if form == "aoff_yoy":
+        return np.array([d["dlogE"]], dtype=float)
+    if form == "primary_yoy":
+        return np.array([d["dlog100A"], d["dlogE"]], dtype=float)
+    if form == "alt200_yoy":
+        return np.array([d["dlog200A"], d["dlogE"]], dtype=float)
+    if form == "exp_neg_yoy":
+        return np.array([d["neg_dA"], d["dlogE"]], dtype=float)
+    if form == "prop_A_yoy":
+        return np.array([d["dlogA"], d["dlogE"]], dtype=float)
+    raise ValueError(form)
+
+
+def fit_yoy(train, form):
+    X = np.vstack([design_row(d, form) for d in train])
+    Y = np.array([d["y"] for d in train], dtype=float)
+    if form == "aoff_yoy":
+        denom = float((X[:, 0] ** 2).sum())
+        gamma = 0.0 if abs(denom) < EPS_DEN else float((Y * X[:, 0]).sum() / denom)
+        return {"coeffs": np.array([gamma]), "gamma": gamma}
+    b = np.asarray(np.linalg.lstsq(X, Y, rcond=None)[0], dtype=float).ravel()
+    return {"coeffs": b, "gamma": float(b[1]), "alpha": float(b[0])}
+
+
+def run_level(years, panel_start, test_years, window_label):
+    by_y = {d["year"]: d for d in years}
+    rows = []
+    for t in test_years:
+        train = [d for d in years if panel_start <= d["year"] <= t - 1]
+        if len(train) < MIN_TRAIN:
+            # legacy level historically kept t=2019 with n=4; match prior: allow if window=legacy and n>=4
+            if not (window_label == "legacy" and len(train) >= 4):
+                continue
+        test_d = by_y[t]
+        naive = by_y[t - 1]["P"]
+        ae_naive = abs(naive - test_d["P"])
+        for form in LEVEL_FORMS:
+            if form == "primary_100" and not primary_domain_ok(test_d):
+                rows.append(
+                    {
+                        "window": window_label,
+                        "target": "level",
+                        "t": t,
+                        "form": form,
+                        "P": test_d["P"],
+                        "P_hat": "",
+                        "P_naive": naive,
+                        "abs_e_model": "",
+                        "abs_e_naive": round(ae_naive, 6),
+                        "margin_yen": "",
+                        "year_win": "",
+                        "n_train": len(train),
+                        "status": "NA_domain_primary",
+                        "in_excl_aggregate": t != 2025,
+                    }
+                )
+                continue
+            Ph, K = fit_level(train, test_d, form)
+            if Ph is None:
+                continue
+            ae = abs(Ph - test_d["P"])
+            margin = ae_naive - ae  # positive => model better
+            rows.append(
+                {
+                    "window": window_label,
+                    "target": "level",
+                    "t": t,
+                    "form": form,
+                    "P": test_d["P"],
+                    "P_hat": round(Ph, 6),
+                    "P_naive": naive,
+                    "abs_e_model": round(ae, 6),
+                    "abs_e_naive": round(ae_naive, 6),
+                    "margin_yen": round(margin, 6),
+                    "year_win": ae < ae_naive,
+                    "n_train": len(train),
+                    "status": "ok",
+                    "in_excl_aggregate": t != 2025,
+                    "K": round(K, 6) if K is not None else "",
+                }
+            )
+    return rows
+
+
+def run_yoy(yoy, train_start, test_years, window_label):
+    by = {d["year"]: d for d in yoy}
+    rows = []
+    for t in test_years:
+        if t not in by:
+            continue
+        test_d = by[t]
+        for form in YOY_FORMS:
+            train = [d for d in yoy if train_start <= d["year"] <= t - 1 and form_ok_yoy(d, form)]
+            n_train = len(train)
+            if n_train < MIN_TRAIN:
+                rows.append(
+                    {
+                        "window": window_label,
+                        "target": "yoy",
+                        "t": t,
+                        "form": form,
+                        "y": round(test_d["y"], 8),
+                        "yhat": "",
+                        "yhat_drift": "",
+                        "abs_e_model": "",
+                        "abs_e_naive": round(abs(test_d["y"]), 8),
+                        "abs_e_drift": "",
+                        "margin_log": "",
+                        "margin_yen": "",
+                        "year_win": "",
+                        "win_vs_drift": "",
+                        "sign_match": "",
+                        "n_train": n_train,
+                        "status": "insufficient_train",
+                        "in_excl_aggregate": t != 2025,
+                    }
+                )
+                continue
+            if not form_ok_yoy(test_d, form):
+                rows.append(
+                    {
+                        "window": window_label,
+                        "target": "yoy",
+                        "t": t,
+                        "form": form,
+                        "y": round(test_d["y"], 8),
+                        "yhat": "",
+                        "yhat_drift": "",
+                        "abs_e_model": "",
+                        "abs_e_naive": round(abs(test_d["y"]), 8),
+                        "abs_e_drift": "",
+                        "margin_log": "",
+                        "margin_yen": "",
+                        "year_win": "",
+                        "win_vs_drift": "",
+                        "sign_match": "",
+                        "n_train": n_train,
+                        "status": "NA_domain",
+                        "in_excl_aggregate": t != 2025,
+                    }
+                )
+                continue
+            fit = fit_yoy(train, form)
+            y = test_d["y"]
+            yhat = float(design_row(test_d, form) @ fit["coeffs"])
+            drift = mean([d["y"] for d in train])
+            e_m = abs(yhat - y)
+            e_n = abs(y)  # zero baseline
+            e_d = abs(drift - y)
+            # yen: implied P from yhat vs actual; naive = no change = P_prev
+            P, P_prev = test_d["P"], test_d["P_prev"]
+            P_hat = P_prev * math.exp(yhat)
+            ae_yen_m = abs(P_hat - P)
+            ae_yen_n = abs(P_prev - P)
+            margin_yen = ae_yen_n - ae_yen_m
+            sign_match = ""
+            if abs(y) > 0:
+                sign_match = (1 if yhat > 0 else -1 if yhat < 0 else 0) == (1 if y > 0 else -1 if y < 0 else 0)
+            rows.append(
+                {
+                    "window": window_label,
+                    "target": "yoy",
+                    "t": t,
+                    "form": form,
+                    "y": round(y, 8),
+                    "yhat": round(yhat, 8),
+                    "yhat_drift": round(drift, 8),
+                    "abs_e_model": round(e_m, 8),
+                    "abs_e_naive": round(e_n, 8),
+                    "abs_e_drift": round(e_d, 8),
+                    "margin_log": round(e_n - e_m, 8),
+                    "margin_yen": round(margin_yen, 6),
+                    "year_win": e_m < e_n,
+                    "win_vs_drift": e_m < e_d,
+                    "sign_match": sign_match,
+                    "n_train": n_train,
+                    "status": "ok",
+                    "in_excl_aggregate": t != 2025,
+                    "P": P,
+                    "P_prev": P_prev,
+                    "P_hat": round(P_hat, 6),
+                }
+            )
+    return rows
+
+
+def agg_wins(rows, form, exclude_2025):
+    recs = [
+        r
+        for r in rows
+        if r["form"] == form
+        and r.get("status") == "ok"
+        and r["year_win"] != ""
+        and (not exclude_2025 or r["t"] != 2025)
+    ]
+    n = len(recs)
+    w = sum(1 for r in recs if r["year_win"] is True or r["year_win"] == True)
+    p = binom_onesided_p(w, n) if n else None
+    return {
+        "n": n,
+        "wins": w,
+        "crit1_all": w == n and n > 0,
+        "crit2_majority": w > n / 2 if n else False,
+        "sign_p": None if p is None else round(p, 6),
+        "p_adj_m20": None if p is None else round(min(1.0, M_PER_FORM * p), 6),
+        "p_adj_meff100": None if p is None else round(min(1.0, M_EFF * p), 6),
+        "years_won": [r["t"] for r in recs if r["year_win"]],
+        "years_lost": [r["t"] for r in recs if not r["year_win"]],
+        "mean_margin_yen": round(mean([float(r["margin_yen"]) for r in recs]), 4) if recs else None,
+    }
+
+
+def delta_e_sign_test(rows, shell_forms, aoff_form, window, target, exclude_2025):
+    """One-sided: H1 shell beats aoff more often (Δe<0)."""
+    by_t_form = {}
+    for r in rows:
+        if r.get("status") != "ok":
+            continue
+        if exclude_2025 and r["t"] == 2025:
+            continue
+        if r["window"] != window or r["target"] != target:
+            continue
+        by_t_form[(r["t"], r["form"])] = r
+
+    out = []
+    for shell in shell_forms:
+        deltas = []
+        years = []
+        for t in sorted({t for (t, f) in by_t_form if f == shell}):
+            rs = by_t_form.get((t, shell))
+            ra = by_t_form.get((t, aoff_form))
+            if rs is None or ra is None:
+                continue
+            if rs["abs_e_model"] == "" or ra["abs_e_model"] == "":
+                continue
+            de = float(rs["abs_e_model"]) - float(ra["abs_e_model"])
+            if de == 0:
+                continue
+            deltas.append(de)
+            years.append({"t": t, "delta_e": round(de, 8), "shell_better": de < 0})
+        n = len(deltas)
+        wins = sum(1 for d in deltas if d < 0)  # shell better
+        p = binom_onesided_p(wins, n) if n else None
+        out.append(
+            {
+                "window": window,
+                "target": target,
+                "exclude_2025": exclude_2025,
+                "shell": shell,
+                "aoff": aoff_form,
+                "n_nonzero": n,
+                "n_shell_better": wins,
+                "n_aoff_better": n - wins,
+                "sign_p_onesided_shell_better": None if p is None else round(p, 6),
+                "p_adj_m20": None if p is None else round(min(1.0, M_PER_FORM * p), 6),
+                "p_adj_meff100": None if p is None else round(min(1.0, M_EFF * p), 6),
+                "years": years,
+            }
+        )
+    return out
+
+
+def yoy_extras(rows, form, window, exclude_2025):
+    recs = [
+        r
+        for r in rows
+        if r["form"] == form
+        and r["window"] == window
+        and r.get("status") == "ok"
+        and (not exclude_2025 or r["t"] != 2025)
+    ]
+    n = len(recs)
+    drift_w = sum(1 for r in recs if r["win_vs_drift"] is True)
+    sm_recs = [r for r in recs if r["sign_match"] != ""]
+    sm = sum(1 for r in sm_recs if r["sign_match"] is True)
+    return {
+        "n": n,
+        "wins_vs_drift": drift_w,
+        "drift_crit2": drift_w > n / 2 if n else False,
+        "sign_match_years": sm,
+        "sign_match_denom": len(sm_recs),  # y!=0
+    }
+
+
+def write_csv(path, rows, fieldnames=None):
+    if not rows:
+        path.write_text("")
+        return
+    fn = fieldnames or list(rows[0].keys())
+    # union keys
+    keys = []
+    seen = set()
+    for r in rows:
+        for k in r:
+            if k not in seen:
+                seen.add(k)
+                keys.append(k)
+    with path.open("w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=keys, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+
+
+def main():
+    years = load_years()
+    yoy = build_yoy(years)
+
+    level_legacy = run_level(years, 2015, list(range(2019, 2026)), "legacy")
+    level_ext = run_level(years, 2005, list(range(2010, 2026)), "extended")
+    yoy_legacy = run_yoy(yoy, 2016, list(range(2021, 2026)), "legacy")
+    yoy_ext = run_yoy(yoy, 2006, list(range(2011, 2026)), "extended")
+
+    all_level = level_legacy + level_ext
+    all_yoy = yoy_legacy + yoy_ext
+
+    # year-win tables with margins
+    write_csv(OUT / "next_template_level_year_wins.csv", all_level)
+    write_csv(OUT / "next_template_yoy_year_wins.csv", all_yoy)
+
+    # Δe long table
+    de_long = []
+    for window, rows, shells, aoff, target in [
+        ("legacy", level_legacy, SHELL_LEVEL, "aoff", "level"),
+        ("extended", level_ext, SHELL_LEVEL, "aoff", "level"),
+        ("legacy", yoy_legacy, SHELL_YOY, "aoff_yoy", "yoy"),
+        ("extended", yoy_ext, SHELL_YOY, "aoff_yoy", "yoy"),
+    ]:
+        by_t = defaultdict(dict)
+        for r in rows:
+            if r.get("status") != "ok":
+                continue
+            by_t[r["t"]][r["form"]] = r
+        for t, fmap in sorted(by_t.items()):
+            ra = fmap.get(aoff)
+            if not ra:
+                continue
+            for sh in shells:
+                rs = fmap.get(sh)
+                if not rs:
+                    continue
+                de = float(rs["abs_e_model"]) - float(ra["abs_e_model"])
+                de_long.append(
+                    {
+                        "window": window,
+                        "target": target,
+                        "t": t,
+                        "shell": sh,
+                        "abs_e_shell": rs["abs_e_model"],
+                        "abs_e_aoff": ra["abs_e_model"],
+                        "delta_e": round(de, 8),
+                        "shell_better": de < 0,
+                        "tie": de == 0,
+                        "margin_yen_shell": rs.get("margin_yen", ""),
+                        "margin_yen_aoff": ra.get("margin_yen", ""),
+                        "in_excl_aggregate": t != 2025,
+                    }
+                )
+    write_csv(OUT / "next_template_delta_e_vs_aoff.csv", de_long)
+
+    # Δe sign tests
+    de_tests = []
+    for window, rows, shells, aoff, target in [
+        ("legacy", all_level, SHELL_LEVEL, "aoff", "level"),
+        ("extended", all_level, SHELL_LEVEL, "aoff", "level"),
+        ("legacy", all_yoy, SHELL_YOY, "aoff_yoy", "yoy"),
+        ("extended", all_yoy, SHELL_YOY, "aoff_yoy", "yoy"),
+    ]:
+        for excl in (False, True):
+            de_tests.extend(delta_e_sign_test(rows, shells, aoff, window, target, excl))
+
+    # flatten years for CSV summary
+    de_sum_rows = []
+    for d in de_tests:
+        de_sum_rows.append(
+            {
+                "window": d["window"],
+                "target": d["target"],
+                "exclude_2025": d["exclude_2025"],
+                "shell": d["shell"],
+                "n_nonzero": d["n_nonzero"],
+                "n_shell_better": d["n_shell_better"],
+                "n_aoff_better": d["n_aoff_better"],
+                "sign_p_onesided_shell_better": d["sign_p_onesided_shell_better"],
+                "p_adj_m20": d["p_adj_m20"],
+                "p_adj_meff100": d["p_adj_meff100"],
+                "years_shell_better": ";".join(str(y["t"]) for y in d["years"] if y["shell_better"]),
+                "years_aoff_better": ";".join(str(y["t"]) for y in d["years"] if not y["shell_better"]),
+            }
+        )
+    write_csv(OUT / "next_template_delta_e_sign_tests.csv", de_sum_rows)
+
+    # form summaries
+    form_summary = {"m_per_form": M_PER_FORM, "m_eff_best_form": M_EFF, "n_forms": N_FORMS, "level": {}, "yoy": {}}
+    for window, rows in [("legacy", level_legacy), ("extended", level_ext)]:
+        form_summary["level"][window] = {}
+        for form in LEVEL_FORMS:
+            form_summary["level"][window][form] = {
+                "include_2025": agg_wins(rows, form, False),
+                "exclude_2025": agg_wins(rows, form, True),
+                "wins_vs_drift": "N/A",
+                "sign_match": "N/A",
+            }
+    for window, rows in [("legacy", yoy_legacy), ("extended", yoy_ext)]:
+        form_summary["yoy"][window] = {}
+        for form in YOY_FORMS:
+            form_summary["yoy"][window][form] = {
+                "include_2025": {**agg_wins(rows, form, False), **yoy_extras(rows, form, window, False)},
+                "exclude_2025": {**agg_wins(rows, form, True), **yoy_extras(rows, form, window, True)},
+            }
+
+    # drift / sign-match compact CSV
+    drift_rows = []
+    for window in ("legacy", "extended"):
+        for form in YOY_FORMS:
+            for excl_key, excl in (("include", False), ("exclude", True)):
+                ex = yoy_extras(
+                    yoy_legacy if window == "legacy" else yoy_ext, form, window, excl
+                )
+                aw = agg_wins(yoy_legacy if window == "legacy" else yoy_ext, form, excl)
+                drift_rows.append(
+                    {
+                        "window": window,
+                        "form": form,
+                        "exclude_2025": excl,
+                        "wins_vs_zero": f"{aw['wins']}/{aw['n']}",
+                        "wins_vs_drift": f"{ex['wins_vs_drift']}/{ex['n']}",
+                        "drift_majority": ex["drift_crit2"],
+                        "sign_match": f"{ex['sign_match_years']}/{ex['sign_match_denom']}",
+                        "mean_margin_yen": aw["mean_margin_yen"],
+                    }
+                )
+    write_csv(OUT / "next_template_drift_signmatch.csv", drift_rows)
+
+    summary = {
+        "date_jst": "2026-10-24",
+        "template_points": [
+            "m=20 per form; m_eff=100 best-form claim; n_forms=5",
+            "Δe sign test shell vs aoff (declared this round)",
+            "drift baseline wins (YoY) + sign-match year counts",
+            "win margins in yen",
+        ],
+        "m_per_form": M_PER_FORM,
+        "m_eff_best_form": M_EFF,
+        "n_forms": N_FORMS,
+        "adoption": "deferred_to_Claude",
+        "no_softplus_lag_encode": True,
+        "forms": form_summary,
+        "delta_e_sign_tests": de_tests,
+        "k_shift_aoff_overlap_verified": {
+            "abs_range": "+95.4 to +162.1",
+            "pct_range": "≈6.0% to 10.4%",
+            "y2025": "+95.4 (6.0%)",
+            "source": "aoff_overlap_year_flips_2019_2025.csv",
+        },
+        "fragility_examples_level_legacy_aoff": {
+            "2020": {"abs_e_model": 5.251247, "abs_e_naive": 11.7, "margin_yen": 6.448753},
+            "2021": {"abs_e_model": 47.030846, "abs_e_naive": 66.3, "margin_yen": 19.269154},
+            "k8pct_forecast_shift_yen_approx": 173,
+        },
+        "kinkyu_2009_note": "political-shell year-win counts move ±1; aoff unchanged; do not over-read political win counts",
+    }
+    (OUT / "next_template_summary.json").write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False, default=str)
+    )
+    print("Wrote next_template_* artifacts")
+    # quick console
+    for d in de_tests:
+        if d["exclude_2025"]:
+            continue
+        print(
+            f"Δe {d['window']:9} {d['target']:5} {d['shell']:12} "
+            f"{d['n_shell_better']}/{d['n_nonzero']} p={d['sign_p_onesided_shell_better']}"
+        )
+
+
+if __name__ == "__main__":
+    main()

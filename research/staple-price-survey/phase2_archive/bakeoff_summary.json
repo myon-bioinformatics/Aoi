@@ -1,0 +1,1067 @@
+{
+  "panel": "/workspace/aoi-phase2/gohantrust_panel_aoki.csv",
+  "q_fixed": 5,
+  "n_years_panel": 11,
+  "note_overfit": "n=11; β and K estimated train-only (2015-2021, n=7). Fixed-β grid is secondary.",
+  "alt200_role": "comparison_only (ε-like shift); not primary",
+  "decisions": {
+    "holdout_excl_2025": {
+      "winners_vs_naive": [
+        "alt200",
+        "exp_ols"
+      ],
+      "verdict": "form_dependent",
+      "ja": "効き方は形に依存する",
+      "mae_table": {
+        "primary_100": {
+          "mae_model": 1473.9657,
+          "mae_naive": 264.0333,
+          "beats": false
+        },
+        "alt200": {
+          "mae_model": 103.2061,
+          "mae_naive": 264.0333,
+          "beats": true
+        },
+        "exp_ols": {
+          "mae_model": 130.4141,
+          "mae_naive": 264.0333,
+          "beats": true
+        }
+      }
+    },
+    "baseline_incl_2025": {
+      "winners_vs_naive": [
+        "alt200",
+        "exp_ols"
+      ],
+      "verdict": "form_dependent",
+      "ja": "効き方は形に依存する",
+      "mae_table": {
+        "primary_100": {
+          "mae_model": 1356.2753,
+          "mae_naive": 676.225,
+          "beats": false
+        },
+        "alt200": {
+          "mae_model": 617.2647,
+          "mae_naive": 676.225,
+          "beats": true
+        },
+        "exp_ols": {
+          "mae_model": 651.1704,
+          "mae_naive": 676.225,
+          "beats": true
+        }
+      }
+    }
+  },
+  "forms": [
+    {
+      "window": "holdout_excl_2025",
+      "form": "primary_100",
+      "label": "P = K·q·(100−A)·E",
+      "role": "primary",
+      "sign": "same",
+      "secondary": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 87.96894614,
+      "K_train_mean": 87.96894614,
+      "K_train_min": 64.29377422,
+      "K_train_max": 116.8288526,
+      "beta_train": null,
+      "c_train": null,
+      "mae_model": 1473.96568412,
+      "mae_naive": 264.03333333,
+      "medae_model": 1375.43844562,
+      "medae_naive": 101.0,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1531.512962,
+          "P_naive": 2096.8,
+          "abs_e_model": 464.287038,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 3444.538446,
+          "P_naive": 1995.8,
+          "abs_e_model": 1375.438446,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 5269.071568,
+          "P_naive": 2069.1,
+          "abs_e_model": 2582.171568,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "holdout_excl_2025",
+      "form": "alt200",
+      "label": "P = K·q·(200−A)·E",
+      "role": "comparison_only",
+      "sign": "same",
+      "secondary": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 13.27066752,
+      "K_train_mean": 13.27066752,
+      "K_train_min": 12.43559208,
+      "K_train_max": 14.20895566,
+      "beta_train": null,
+      "c_train": null,
+      "mae_model": 103.20606028,
+      "mae_naive": 264.03333333,
+      "medae_model": 14.22803786,
+      "medae_naive": 101.0,
+      "beats_naive": true,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1996.03712,
+          "P_naive": 2096.8,
+          "abs_e_model": 0.23712,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2364.253023,
+          "P_naive": 1995.8,
+          "abs_e_model": 295.153023,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 2672.671962,
+          "P_naive": 2069.1,
+          "abs_e_model": 14.228038,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "holdout_excl_2025",
+      "form": "prop_A",
+      "label": "P = K·q·A·E",
+      "role": "opposite_sign",
+      "sign": "opposite",
+      "secondary": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 19.31569769,
+      "K_train_mean": 19.31569769,
+      "K_train_min": 16.98039331,
+      "K_train_max": 21.34784884,
+      "beta_train": null,
+      "c_train": null,
+      "mae_model": 496.04557371,
+      "mae_naive": 264.03333333,
+      "medae_model": 236.90729025,
+      "medae_naive": 101.0,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 2232.70729,
+          "P_naive": 2096.8,
+          "abs_e_model": 236.90729,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 1928.550725,
+          "P_naive": 1995.8,
+          "abs_e_model": 140.549275,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 1576.219844,
+          "P_naive": 2069.1,
+          "abs_e_model": 1110.680156,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "holdout_excl_2025",
+      "form": "exp_ols",
+      "label": "P = K·q·exp(−βA)·E (OLS train)",
+      "role": "primary_candidate",
+      "sign": "same_if_beta_pos",
+      "secondary": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 2568.30861835,
+      "beta_train": 0.00603829,
+      "c_train": 7.85100284,
+      "slope_s": -0.00603829,
+      "note": "log(P/(qE))=c - βA; β=-s from free OLS. If β<0, estimated direction is high-A→higher-P.",
+      "mae_model": 130.41409775,
+      "mae_naive": 264.03333333,
+      "medae_model": 121.41165238,
+      "medae_naive": 101.0,
+      "beats_naive": true,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 2021.093362,
+          "P_naive": 2096.8,
+          "abs_e_model": 25.293362,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2313.637279,
+          "P_naive": 1995.8,
+          "abs_e_model": 244.537279,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 2565.488348,
+          "P_naive": 2069.1,
+          "abs_e_model": 121.411652,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "holdout_excl_2025",
+      "form": "exp_plus_constrained",
+      "label": "P = K·q·exp(+βA)·E (β≥0 train; 0 if free slope≤0)",
+      "role": "opposite_sign",
+      "sign": "opposite",
+      "secondary": false,
+      "identical_predictions_to_exp_ols": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 1569.49815467,
+      "beta_train": 0.0,
+      "c_train": 7.3585112,
+      "mae_model": 223.39836395,
+      "mae_naive": 264.03333333,
+      "medae_model": 112.50243499,
+      "medae_naive": 101.0,
+      "beats_naive": true,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 2087.432546,
+          "P_naive": 2096.8,
+          "abs_e_model": 91.632546,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2181.602435,
+          "P_naive": 1995.8,
+          "abs_e_model": 112.502435,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 2220.839889,
+          "P_naive": 2069.1,
+          "abs_e_model": 466.060111,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "holdout_excl_2025",
+      "form": "exp_fixed_beta_0.01",
+      "label": "P = K·q·exp(−0.01·A)·E (β fixed, K=train mean)",
+      "role": "sensitivity",
+      "sign": "same",
+      "secondary": true,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 3551.82215692,
+      "beta_train": 0.01,
+      "mae_model": 163.12601425,
+      "mae_naive": 264.03333333,
+      "medae_model": 136.35446897,
+      "medae_naive": 101.0,
+      "beats_naive": true,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1980.877043,
+          "P_naive": 2096.8,
+          "abs_e_model": 14.922957,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2407.200617,
+          "P_naive": 1995.8,
+          "abs_e_model": 338.100617,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 2823.254469,
+          "P_naive": 2069.1,
+          "abs_e_model": 136.354469,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "holdout_excl_2025",
+      "form": "exp_fixed_beta_0.02",
+      "label": "P = K·q·exp(−0.02·A)·E (β fixed, K=train mean)",
+      "role": "sensitivity",
+      "sign": "same",
+      "secondary": true,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 8037.2037018,
+      "beta_train": 0.02,
+      "mae_model": 534.95863155,
+      "mae_naive": 264.03333333,
+      "medae_model": 586.80369503,
+      "medae_naive": 101.0,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1879.602215,
+          "P_naive": 2096.8,
+          "abs_e_model": 116.197785,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2655.903695,
+          "P_naive": 1995.8,
+          "abs_e_model": 586.803695,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 3588.774415,
+          "P_naive": 2069.1,
+          "abs_e_model": 901.874415,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "holdout_excl_2025",
+      "form": "exp_fixed_beta_0.05",
+      "label": "P = K·q·exp(−0.05·A)·E (β fixed, K=train mean)",
+      "role": "sensitivity",
+      "sign": "same",
+      "secondary": true,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 93758.5583821,
+      "beta_train": 0.05,
+      "mae_model": 2211.90252833,
+      "mae_naive": 264.03333333,
+      "medae_model": 1522.24468787,
+      "medae_naive": 101.0,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1616.724021,
+          "P_naive": 2096.8,
+          "abs_e_model": 379.075979,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 3591.344688,
+          "P_naive": 1995.8,
+          "abs_e_model": 1522.244688,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 7421.286918,
+          "P_naive": 2069.1,
+          "abs_e_model": 4734.386918,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "holdout_excl_2025",
+      "form": "exp_fixed_beta_0.1",
+      "label": "P = K·q·exp(−0.1·A)·E (β fixed, K=train mean)",
+      "role": "sensitivity",
+      "sign": "same",
+      "secondary": true,
+      "train_years": "2015-2021",
+      "test_years": "2022-2024",
+      "K_hat_train": 5753605.91661701,
+      "beta_train": 0.1,
+      "mae_model": 9167.35637699,
+      "mae_naive": 264.03333333,
+      "medae_model": 4004.10091879,
+      "medae_naive": 101.0,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1286.288572,
+          "P_naive": 2096.8,
+          "abs_e_model": 709.511428,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 6073.200919,
+          "P_naive": 1995.8,
+          "abs_e_model": 4004.100919,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 25475.356784,
+          "P_naive": 2069.1,
+          "abs_e_model": 22788.456784,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "primary_100",
+      "label": "P = K·q·(100−A)·E",
+      "role": "primary",
+      "sign": "same",
+      "secondary": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 87.96894614,
+      "K_train_mean": 87.96894614,
+      "K_train_min": 64.29377422,
+      "K_train_max": 116.8288526,
+      "beta_train": null,
+      "c_train": null,
+      "mae_model": 1356.2752623,
+      "mae_naive": 676.225,
+      "medae_model": 1189.32122122,
+      "medae_naive": 359.4,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1531.512962,
+          "P_naive": 2096.8,
+          "abs_e_model": 464.287038,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 3444.538446,
+          "P_naive": 1995.8,
+          "abs_e_model": 1375.438446,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 5269.071568,
+          "P_naive": 2069.1,
+          "abs_e_model": 2582.171568,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 3596.496003,
+          "P_naive": 2686.9,
+          "abs_e_model": 1003.203997,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "alt200",
+      "label": "P = K·q·(200−A)·E",
+      "role": "comparison_only",
+      "sign": "same",
+      "secondary": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 13.27066752,
+      "K_train_mean": 13.27066752,
+      "K_train_min": 12.43559208,
+      "K_train_max": 14.20895566,
+      "beta_train": null,
+      "c_train": null,
+      "mae_model": 617.26468414,
+      "mae_naive": 676.225,
+      "medae_model": 154.6905305,
+      "medae_naive": 359.4,
+      "beats_naive": true,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1996.03712,
+          "P_naive": 2096.8,
+          "abs_e_model": 0.23712,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2364.253023,
+          "P_naive": 1995.8,
+          "abs_e_model": 295.153023,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 2672.671962,
+          "P_naive": 2069.1,
+          "abs_e_model": 14.228038,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 2440.259444,
+          "P_naive": 2686.9,
+          "abs_e_model": 2159.440556,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "prop_A",
+      "label": "P = K·q·A·E",
+      "role": "opposite_sign",
+      "sign": "opposite",
+      "secondary": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 19.31569769,
+      "K_train_mean": 19.31569769,
+      "K_train_min": 16.98039331,
+      "K_train_max": 21.34784884,
+      "beta_train": null,
+      "c_train": null,
+      "mae_model": 1028.84728537,
+      "mae_naive": 676.225,
+      "medae_model": 673.79372309,
+      "medae_naive": 359.4,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 2232.70729,
+          "P_naive": 2096.8,
+          "abs_e_model": 236.90729,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 1928.550725,
+          "P_naive": 1995.8,
+          "abs_e_model": 140.549275,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 1576.219844,
+          "P_naive": 2069.1,
+          "abs_e_model": 1110.680156,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 1972.44758,
+          "P_naive": 2686.9,
+          "abs_e_model": 2627.25242,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "exp_ols",
+      "label": "P = K·q·exp(−βA)·E (OLS train)",
+      "role": "primary_candidate",
+      "sign": "same_if_beta_pos",
+      "secondary": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 2568.30861835,
+      "beta_train": 0.00603829,
+      "c_train": 7.85100284,
+      "slope_s": -0.00603829,
+      "note": "log(P/(qE))=c - βA; β=-s from free OLS. If β<0, estimated direction is high-A→higher-P.",
+      "mae_model": 651.17035955,
+      "mae_naive": 676.225,
+      "medae_model": 182.97446555,
+      "medae_naive": 359.4,
+      "beats_naive": true,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 2021.093362,
+          "P_naive": 2096.8,
+          "abs_e_model": 25.293362,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2313.637279,
+          "P_naive": 1995.8,
+          "abs_e_model": 244.537279,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 2565.488348,
+          "P_naive": 2069.1,
+          "abs_e_model": 121.411652,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 2386.260855,
+          "P_naive": 2686.9,
+          "abs_e_model": 2213.439145,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "exp_plus_constrained",
+      "label": "P = K·q·exp(+βA)·E (β≥0 train; 0 if free slope≤0)",
+      "role": "opposite_sign",
+      "sign": "opposite",
+      "secondary": false,
+      "identical_predictions_to_exp_ols": false,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 1569.49815467,
+      "beta_train": 0.0,
+      "c_train": 7.3585112,
+      "mae_model": 756.37818267,
+      "mae_naive": 676.225,
+      "medae_model": 289.28127307,
+      "medae_naive": 359.4,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 2087.432546,
+          "P_naive": 2096.8,
+          "abs_e_model": 91.632546,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2181.602435,
+          "P_naive": 1995.8,
+          "abs_e_model": 112.502435,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 2220.839889,
+          "P_naive": 2069.1,
+          "abs_e_model": 466.060111,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 2244.382361,
+          "P_naive": 2686.9,
+          "abs_e_model": 2355.317639,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "exp_fixed_beta_0.01",
+      "label": "P = K·q·exp(−0.01·A)·E (β fixed, K=train mean)",
+      "role": "sensitivity",
+      "sign": "same",
+      "secondary": true,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 3551.82215692,
+      "beta_train": 0.01,
+      "mae_model": 650.54560195,
+      "mae_naive": 676.225,
+      "medae_model": 237.22754291,
+      "medae_naive": 359.4,
+      "beats_naive": true,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1980.877043,
+          "P_naive": 2096.8,
+          "abs_e_model": 14.922957,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2407.200617,
+          "P_naive": 1995.8,
+          "abs_e_model": 338.100617,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 2823.254469,
+          "P_naive": 2069.1,
+          "abs_e_model": 136.354469,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 2486.895635,
+          "P_naive": 2686.9,
+          "abs_e_model": 2112.804365,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "exp_fixed_beta_0.02",
+      "label": "P = K·q·exp(−0.02·A)·E (β fixed, K=train mean)",
+      "role": "sensitivity",
+      "sign": "same",
+      "secondary": true,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 8037.2037018,
+      "beta_train": 0.02,
+      "mae_model": 862.29876387,
+      "mae_naive": 676.225,
+      "medae_model": 744.33905479,
+      "medae_naive": 359.4,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1879.602215,
+          "P_naive": 2096.8,
+          "abs_e_model": 116.197785,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 2655.903695,
+          "P_naive": 1995.8,
+          "abs_e_model": 586.803695,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 3588.774415,
+          "P_naive": 2069.1,
+          "abs_e_model": 901.874415,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 2755.380839,
+          "P_naive": 2686.9,
+          "abs_e_model": 1844.319161,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "exp_fixed_beta_0.05",
+      "label": "P = K·q·exp(−0.05·A)·E (β fixed, K=train mean)",
+      "role": "sensitivity",
+      "sign": "same",
+      "secondary": true,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 93758.5583821,
+      "beta_train": 0.05,
+      "mae_model": 1865.57647213,
+      "mae_naive": 676.225,
+      "medae_model": 1174.4214957,
+      "medae_naive": 359.4,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1616.724021,
+          "P_naive": 2096.8,
+          "abs_e_model": 379.075979,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 3591.344688,
+          "P_naive": 1995.8,
+          "abs_e_model": 1522.244688,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 7421.286918,
+          "P_naive": 2069.1,
+          "abs_e_model": 4734.386918,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 3773.101696,
+          "P_naive": 2686.9,
+          "abs_e_model": 826.598304,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    },
+    {
+      "window": "baseline_incl_2025",
+      "form": "exp_fixed_beta_0.1",
+      "label": "P = K·q·exp(−0.1·A)·E (β fixed, K=train mean)",
+      "role": "sensitivity",
+      "sign": "same",
+      "secondary": true,
+      "train_years": "2015-2021",
+      "test_years": "2022-2025",
+      "K_hat_train": 5753605.91661701,
+      "beta_train": 0.1,
+      "mae_model": 7354.58545188,
+      "mae_naive": 676.225,
+      "medae_model": 2960.18679766,
+      "medae_naive": 359.4,
+      "beats_naive": false,
+      "year_detail": [
+        {
+          "year": 2022,
+          "P": 1995.8,
+          "P_hat": 1286.288572,
+          "P_naive": 2096.8,
+          "abs_e_model": 709.511428,
+          "abs_e_naive": 101.0,
+          "A": 86.91,
+          "E": 0.266
+        },
+        {
+          "year": 2023,
+          "P": 2069.1,
+          "P_hat": 6073.200919,
+          "P_naive": 1995.8,
+          "abs_e_model": 4004.100919,
+          "abs_e_naive": 73.3,
+          "A": 71.83,
+          "E": 0.278
+        },
+        {
+          "year": 2024,
+          "P": 2686.9,
+          "P_hat": 25475.356784,
+          "P_naive": 2069.1,
+          "abs_e_model": 22788.456784,
+          "abs_e_naive": 617.8,
+          "A": 57.67,
+          "E": 0.283
+        },
+        {
+          "year": 2025,
+          "P": 4599.7,
+          "P_hat": 6515.972677,
+          "P_naive": 2686.9,
+          "abs_e_model": 1916.272677,
+          "abs_e_naive": 1912.8,
+          "A": 71.41,
+          "E": 0.286
+        }
+      ]
+    }
+  ]
+}

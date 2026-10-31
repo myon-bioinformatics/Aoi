@@ -1,0 +1,5 @@
+year,item,city,avg,note
+2003,1003,徳島,3800.0,5kg-labeled but avg>=3200 (likely unflagged 10kg)
+2003,1005,福島,3647.0,5kg-labeled but avg>=3200 (likely unflagged 10kg)
+2003,1005,金沢,3687.0,5kg-labeled but avg>=3200 (likely unflagged 10kg)
+2004,1003,富山,3838.0,5kg-labeled but avg>=3200 (likely unflagged 10kg)

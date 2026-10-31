@@ -1,0 +1,373 @@
+#!/usr/bin/env python3
+"""Extended YoY rolling — AFTER extend_rerun_prelock. Does NOT overwrite legacy."""
+import csv, json, math, random
+from pathlib import Path
+from statistics import median, mean
+from math import comb
+import numpy as np
+
+OUT = Path("/workspace/aoi-phase2")
+rows = list(csv.DictReader((OUT / "gohantrust_panel_aoki.csv").open()))
+
+def getf(r, *keys):
+    for k in keys:
+        if k in r and r[k] not in ("", None):
+            return float(r[k])
+    raise KeyError(keys)
+
+years = []
+for r in rows:
+    years.append({
+        "year": int(float(r["year"])),
+        "P": getf(r, "P_yen", "P"),
+        "A": getf(r, "Aoki_A", "Aoki", "A"),
+        "E": getf(r, "E"),
+        "q": 5.0,
+    })
+years.sort(key=lambda d: d["year"])
+by_y = {d["year"]: d for d in years}
+
+def ok_pos(x):
+    return x is not None and x > 0
+
+# Build base YoY for all years with P,E >0 (form-specific domain later)
+yoy_base = []
+for t in sorted(by_y):
+    if t - 1 not in by_y:
+        continue
+    cur, prev = by_y[t], by_y[t - 1]
+    if not (ok_pos(cur["P"]) and ok_pos(prev["P"]) and ok_pos(cur["E"]) and ok_pos(prev["E"])):
+        continue
+    if not (ok_pos(cur["A"]) and ok_pos(prev["A"])):
+        continue
+    rec = {
+        "year": t,
+        "y": math.log(cur["P"] / prev["P"]),
+        "dlogE": math.log(cur["E"] / prev["E"]),
+        "neg_dA": -(cur["A"] - prev["A"]),
+        "dlogA": math.log(cur["A"] / prev["A"]) if ok_pos(cur["A"]) and ok_pos(prev["A"]) else None,
+        "P": cur["P"], "A": cur["A"], "E": cur["E"],
+        "A_prev": prev["A"],
+    }
+    # primary shell domain: both (100-A_t) and (100-A_{t-1}) > 0
+    if (100 - cur["A"]) > 0 and (100 - prev["A"]) > 0:
+        rec["dlog100A"] = math.log((100 - cur["A"]) / (100 - prev["A"]))
+        rec["primary_ok"] = True
+    else:
+        rec["dlog100A"] = None
+        rec["primary_ok"] = False
+    # alt200: (200-A)>0 always for our range
+    if (200 - cur["A"]) > 0 and (200 - prev["A"]) > 0:
+        rec["dlog200A"] = math.log((200 - cur["A"]) / (200 - prev["A"]))
+        rec["alt200_ok"] = True
+    else:
+        rec["dlog200A"] = None
+        rec["alt200_ok"] = False
+    yoy_base.append(rec)
+
+by_yoy = {d["year"]: d for d in yoy_base}
+
+P2025 = by_y[2025]["P"]
+P_max_pre = max(by_y[y]["P"] for y in range(2015, 2025))
+pct_2025 = P2025 / by_y[2024]["P"] - 1
+pcts_pre = [by_y[y]["P"] / by_y[y - 1]["P"] - 1 for y in range(2016, 2025)]
+pct_max_pre = max(pcts_pre)
+excl_ok = (P2025 > P_max_pre) and (pct_2025 > pct_max_pre)
+excl_check = {
+    "P_2025": P2025, "max_P_2015_2024": P_max_pre, "P_2025_gt_max": P2025 > P_max_pre,
+    "pct_2025": pct_2025, "max_pct_2016_2024": pct_max_pre, "pct_2025_gt_max": pct_2025 > pct_max_pre,
+    "exclusion_applies": excl_ok,
+}
+
+FORMS = ["aoff_yoy", "primary_yoy", "alt200_yoy", "exp_neg_yoy", "prop_A_yoy"]
+M_FORMS = len(FORMS)
+MIN_TRAIN = 5
+TEST_YEARS = list(range(2011, 2026))
+EPS_DEN = 1e-15
+YOY_TRAIN_START = 2006  # first YoY year available from 2005 panel
+
+def form_ok(d, form):
+    if form == "primary_yoy":
+        return d["primary_ok"]
+    if form == "alt200_yoy":
+        return d["alt200_ok"]
+    return True
+
+def design_row(d, form):
+    if form == "aoff_yoy":
+        return np.array([d["dlogE"]], dtype=float)
+    if form == "primary_yoy":
+        return np.array([d["dlog100A"], d["dlogE"]], dtype=float)
+    if form == "alt200_yoy":
+        return np.array([d["dlog200A"], d["dlogE"]], dtype=float)
+    if form == "exp_neg_yoy":
+        return np.array([d["neg_dA"], d["dlogE"]], dtype=float)
+    if form == "prop_A_yoy":
+        return np.array([d["dlogA"], d["dlogE"]], dtype=float)
+    raise ValueError(form)
+
+def fit_no_intercept(train, form):
+    X = np.vstack([design_row(d, form) for d in train])
+    Y = np.array([d["y"] for d in train], dtype=float)
+    if form == "aoff_yoy":
+        denom = float((X[:, 0] ** 2).sum())
+        gamma = 0.0 if abs(denom) < EPS_DEN else float((Y * X[:, 0]).sum() / denom)
+        return {"alpha": None, "gamma": gamma, "coeffs": np.array([gamma])}
+    b = np.asarray(np.linalg.lstsq(X, Y, rcond=None)[0], dtype=float).ravel()
+    return {"alpha": float(b[0]), "gamma": float(b[1]), "coeffs": b}
+
+def predict(d, form, fit):
+    return float(design_row(d, form) @ fit["coeffs"])
+
+def binom_onesided_p(wins, n):
+    if n <= 0:
+        return None
+    return sum(comb(n, k) for k in range(wins, n + 1)) / (2 ** n)
+
+win_rows = []
+coeff_rows = []
+primary_na_years = []
+
+for t in TEST_YEARS:
+    if t not in by_yoy:
+        continue
+    test_d = by_yoy[t]
+    for form in FORMS:
+        train_pool = [d for d in yoy_base if YOY_TRAIN_START <= d["year"] <= t - 1 and form_ok(d, form)]
+        n_train = len(train_pool)
+        if n_train < MIN_TRAIN:
+            win_rows.append({
+                "t": t, "form": form, "y": round(test_d["y"], 8), "yhat": "",
+                "abs_e_model": "", "abs_e_naive": round(abs(test_d["y"]), 8),
+                "year_win": "", "n_train": n_train, "train_end": t - 1,
+                "in_excl_aggregate": t != 2025, "A": test_d["A"], "E": test_d["E"],
+                "dlogE": round(test_d["dlogE"], 8), "status": "insufficient_train",
+            })
+            continue
+        if not form_ok(test_d, form):
+            if form == "primary_yoy":
+                primary_na_years.append(t)
+            win_rows.append({
+                "t": t, "form": form, "y": round(test_d["y"], 8), "yhat": "",
+                "abs_e_model": "", "abs_e_naive": round(abs(test_d["y"]), 8),
+                "year_win": "", "n_train": n_train, "train_end": t - 1,
+                "in_excl_aggregate": t != 2025, "A": test_d["A"], "E": test_d["E"],
+                "dlogE": round(test_d["dlogE"], 8), "status": "NA_domain_primary" if form == "primary_yoy" else "NA_domain",
+            })
+            coeff_rows.append({
+                "t": t, "form": form, "train_start": YOY_TRAIN_START, "train_end": t - 1,
+                "n_train": n_train, "alpha": "", "gamma": "", "status": "NA_domain",
+            })
+            continue
+        fit = fit_no_intercept(train_pool, form)
+        yhat = predict(test_d, form, fit)
+        y = test_d["y"]
+        e_m = abs(yhat - y)
+        e_n = abs(y)
+        year_win = e_m < e_n
+        win_rows.append({
+            "t": t, "form": form, "y": round(y, 8), "yhat": round(yhat, 8),
+            "abs_e_model": round(e_m, 8), "abs_e_naive": round(e_n, 8),
+            "year_win": year_win, "n_train": n_train, "train_end": t - 1,
+            "in_excl_aggregate": t != 2025, "A": test_d["A"], "E": test_d["E"],
+            "dlogE": round(test_d["dlogE"], 8), "status": "ok",
+        })
+        coeff_rows.append({
+            "t": t, "form": form, "train_start": YOY_TRAIN_START, "train_end": t - 1,
+            "n_train": n_train,
+            "alpha": "" if fit["alpha"] is None else round(fit["alpha"], 8),
+            "gamma": round(fit["gamma"], 8), "status": "ok",
+        })
+
+primary_na_years = sorted(set(primary_na_years))
+
+def agg_form(form, exclude_2025):
+    recs = [r for r in win_rows if r["form"] == form and r["status"] == "ok"]
+    if exclude_2025:
+        recs = [r for r in recs if r["t"] != 2025]
+    n = len(recs)
+    w = sum(1 for r in recs if r["year_win"] is True)
+    p = binom_onesided_p(w, n) if n else None
+    p_adj = None if p is None else min(1.0, M_FORMS * p)
+    return {
+        "n": n, "wins": w,
+        "win_rate": round(w / n, 4) if n else None,
+        "crit1_all_wins": w == n and n > 0,
+        "crit2_majority": (w > n / 2) if n else False,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": None if p is None else round(p, 6),
+        "p_adj_m_times_p": None if p_adj is None else round(p_adj, 6),
+        "m_forms": M_FORMS,
+        "years_won": [r["t"] for r in recs if r["year_win"] is True],
+        "years_lost": [r["t"] for r in recs if r["year_win"] is False],
+    }
+
+summary = {
+    "prelock": "extend_rerun_prelock_2026-10-24.md",
+    "judgment_rules": "judgment_rules_small_n_2026-10-24.md",
+    "target": "y_t = log(P_t/P_{t-1})",
+    "baseline": "yhat = 0",
+    "min_train": MIN_TRAIN,
+    "test_years_nominal": TEST_YEARS,
+    "yoy_train_start": YOY_TRAIN_START,
+    "forms_tried": FORMS,
+    "m_forms": M_FORMS,
+    "primary_yoy_NA_test_years": primary_na_years,
+    "primary_yoy_NA_reason": "Δlog(100-A) undefined when A_t>=100 or A_{t-1}>=100 (2013 annual A=100.87 → t=2013 and t=2014)",
+    "exclusion_check": excl_check,
+    "forms": {},
+    "legacy_untouched": [
+        "yoy_rolling_year_wins.csv", "yoy_rolling_coeffs.csv", "yoy_rolling_summary.json",
+        "report_yoy_rolling.md", "yoy_log_err_ratio.csv", "yoy_log_err_ratio_summary.json",
+    ],
+}
+for form in FORMS:
+    summary["forms"][form] = {
+        "include_2025": agg_form(form, False),
+        "exclude_2025": agg_form(form, True),
+    }
+
+with (OUT / "yoy_rolling_extended_year_wins.csv").open("w", newline="") as fh:
+    w = csv.DictWriter(fh, fieldnames=list(win_rows[0].keys()))
+    w.writeheader(); w.writerows(win_rows)
+with (OUT / "yoy_rolling_extended_coeffs.csv").open("w", newline="") as fh:
+    w = csv.DictWriter(fh, fieldnames=list(coeff_rows[0].keys()))
+    w.writeheader(); w.writerows(coeff_rows)
+(OUT / "yoy_rolling_extended_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False))
+
+# Continuous companion
+EPS = 1e-12
+out_lr = []
+by_form = {f: [] for f in FORMS}
+for r in win_rows:
+    if r["status"] != "ok":
+        continue
+    em = max(r["abs_e_model"], EPS)
+    en = max(r["abs_e_naive"], EPS)
+    lr = math.log(em / en)
+    rec = {
+        "t": r["t"], "form": r["form"],
+        "abs_e_model": r["abs_e_model"], "abs_e_naive": r["abs_e_naive"],
+        "log_err_ratio": round(lr, 6), "model_better": lr < 0,
+        "in_excl_aggregate": r["in_excl_aggregate"],
+    }
+    out_lr.append(rec)
+    by_form[r["form"]].append(rec)
+
+def boot_median_ci(xs, B=2000, seed=20261024):
+    rng = random.Random(seed)
+    n = len(xs)
+    if n == 0:
+        return None
+    boots = sorted(median([xs[rng.randrange(n)] for _ in range(n)]) for _ in range(B))
+    lo = boots[int(0.025 * B)]
+    hi = boots[min(int(0.975 * B), B - 1)]
+    return {
+        "median": round(median(xs), 6), "ci95_lo": round(lo, 6), "ci95_hi": round(hi, 6),
+        "includes_0": lo <= 0 <= hi, "B": B, "seed": seed,
+    }
+
+def reading(b):
+    if b is None or b["includes_0"]:
+        return "検出できず"
+    if b["median"] > 0:
+        return "モデルが悪い"
+    if b["median"] < 0:
+        return "モデルが良い"
+    return "検出できず"
+
+lr_summary = {
+    "note": "Extended YoY continuous companion. Negative log_err_ratio => model better. NOT locked adopt.",
+    "bootstrap_caveat": "Resamples same points only; weak when n small. All-same-sign ≈ sign test.",
+    "forms": {},
+}
+for f in FORMS:
+    full = by_form[f]
+    excl = [x for x in by_form[f] if x["t"] != 2025]
+    blocks = {}
+    for key, recs in (("include_2025", full), ("exclude_2025", excl)):
+        xs = [x["log_err_ratio"] for x in recs]
+        b = boot_median_ci(xs) if xs else None
+        blocks[key] = {
+            "n": len(xs),
+            "years_neg_ratio": sum(1 for x in recs if x["model_better"]),
+            "median_log_err_ratio": None if not xs else round(median(xs), 6),
+            "mean_log_err_ratio": None if not xs else round(mean(xs), 6),
+            "boot_median_ci95": b,
+            "reading": reading(b),
+        }
+    mi = blocks["include_2025"]["median_log_err_ratio"]
+    me = blocks["exclude_2025"]["median_log_err_ratio"]
+    def sgn(v):
+        if v is None or v == 0: return 0
+        return 1 if v > 0 else -1
+    ci_i = blocks["include_2025"]["boot_median_ci95"]
+    ci_e = blocks["exclude_2025"]["boot_median_ci95"]
+    blocks["sign_agreement"] = {
+        "median_sign_agree": sgn(mi) == sgn(me),
+        "ci_includes_0_agree": (None if ci_i is None else ci_i["includes_0"]) == (None if ci_e is None else ci_e["includes_0"]),
+    }
+    lr_summary["forms"][f] = blocks
+
+with (OUT / "yoy_log_err_ratio_extended.csv").open("w", newline="") as fh:
+    if out_lr:
+        w = csv.DictWriter(fh, fieldnames=list(out_lr[0].keys()))
+        w.writeheader(); w.writerows(out_lr)
+(OUT / "yoy_log_err_ratio_extended_summary.json").write_text(json.dumps(lr_summary, indent=2, ensure_ascii=False))
+
+# report
+lines = []
+lines.append("# 延長前年比（YoY）ローリング結果（数値・Grok）\n\n")
+lines.append("**実行日:** 2026-10-24（Asia/Tokyo）\n\n")
+lines.append("**実行前ロック:** `extend_rerun_prelock_2026-10-24.md`\n\n")
+lines.append("**判断枠:** `judgment_rules_small_n_2026-10-24.md`\n\n")
+lines.append("**レガシー YoY ファイルは未変更。**\n\n")
+lines.append("## 0. 設計\n\n")
+lines.append("- Target: log(P_t/P_{t−1})；Baseline: 0\n")
+lines.append("- テスト **2011–2025**；YoY 訓練点 ≥5（訓練開始 2006）\n")
+lines.append(f"- primary_yoy NA テスト年: **{primary_na_years}**（2013 A≥100 で Δlog(100−A) が t=2013 と t=2014 で未定義）\n")
+lines.append("- 過半数: wins > n/2；m=5；片側 p と p_adj=min(1,m·p) 併記\n")
+lines.append("- 言語: モデルが良い / 悪い / 検出できず\n\n")
+lines.append(f"## 1. 除外指定 exclusion_applies={excl_ok}\n\n")
+for title, key in [("含む版", "include_2025"), ("除外版", "exclude_2025")]:
+    lines.append(f"### {title}\n\n")
+    lines.append("| form | wins | crit1 | crit2 | sign_p | p_adj(m=5) | years_won | years_lost |\n")
+    lines.append("|---|---:|---|---|---:|---:|---|---|\n")
+    for form in FORMS:
+        s = summary["forms"][form][key]
+        lines.append(
+            f"| {form} | {s['wins']}/{s['n']} | {s['crit1_all_wins']} | {s['crit2_majority']} | "
+            f"{s['sign_p_onesided']} | {s['p_adj_m_times_p']} | {s['years_won']} | {s['years_lost']} |\n"
+        )
+    lines.append("\n")
+
+lines.append("## 2. 連続指標（参考）\n\n")
+lines.append("| form | 窓 | n | median | CI95 | 0含む | 読み |\n")
+lines.append("|---|---|---:|---:|---|---|---|\n")
+for f in FORMS:
+    for key in ("include_2025", "exclude_2025"):
+        s = lr_summary["forms"][f][key]
+        b = s["boot_median_ci95"]
+        if b is None:
+            lines.append(f"| {f} | {key} | 0 | — | — | — | — |\n")
+        else:
+            lines.append(
+                f"| {f} | {key} | {s['n']} | {s['median_log_err_ratio']:.3f} | "
+                f"[{b['ci95_lo']:.3f}, {b['ci95_hi']:.3f}] | "
+                f"{'Y' if b['includes_0'] else 'N'} | {s['reading']} |\n"
+            )
+
+lines.append("\n## 3. 備考（定義事実のみ）\n\n")
+lines.append("- 政党・政権の因果評価はしない（judgment_rules §5–6）\n")
+lines.append("- 2005–2014 E 狭い → 延長前半だけの γ̂/順列は検出力弱い（未検討リスト：その区間での採択）\n")
+lines.append("- 除外 n が小さいときの全年勝ち p は含む版より弱い（例: 4/4 → p=0.0625）\n")
+
+(OUT / "report_yoy_rolling_extended.md").write_text("".join(lines))
+
+print("primary_na", primary_na_years)
+for form in FORMS:
+    si = summary["forms"][form]["include_2025"]
+    se = summary["forms"][form]["exclude_2025"]
+    ri = lr_summary["forms"][form]["include_2025"]["reading"]
+    print(form, f"inc={si['wins']}/{si['n']} p={si['sign_p_onesided']} padj={si['p_adj_m_times_p']}",
+          f"exc={se['wins']}/{se['n']} p={se['sign_p_onesided']}", f"read_inc={ri}")

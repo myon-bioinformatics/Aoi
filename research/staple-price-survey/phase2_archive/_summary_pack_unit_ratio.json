@@ -1,0 +1,110 @@
+{
+  "panel_item_1002_overlap_years": "none",
+  "proxy_items": [
+    "1003",
+    "1005"
+  ],
+  "method": "cross-city: footnote a)=10kg raw published vs other cities 5kg pouch (same year, same item family)",
+  "annual": [
+    {
+      "year": 2002,
+      "item": "1003",
+      "scope": "cross_city_annual",
+      "n5": 65,
+      "n5_raw": 65,
+      "n10": 2,
+      "mean_P5": 2072.28,
+      "median_P5": 2052.0,
+      "mean_P10": 4163.0,
+      "median_P10": 4163.0,
+      "R_mean": 2.0089,
+      "R_median": 2.0288,
+      "ypk5_mean": 414.46,
+      "ypk10_mean": 416.3,
+      "source_file": "raw/rice_annual_2002.xls",
+      "note": "10kg cities marked footnote a); 5kg pool excludes avg>=3200"
+    },
+    {
+      "year": 2002,
+      "item": "1005",
+      "scope": "cross_city_annual",
+      "n5": 31,
+      "n5_raw": 31,
+      "n10": 3,
+      "mean_P5": 1801.55,
+      "median_P5": 1816.0,
+      "mean_P10": 3648.33,
+      "median_P10": 3665.0,
+      "R_mean": 2.0251,
+      "R_median": 2.0182,
+      "ypk5_mean": 360.31,
+      "ypk10_mean": 364.83,
+      "source_file": "raw/rice_annual_2002.xls",
+      "note": "10kg cities marked footnote a); 5kg pool excludes avg>=3200"
+    },
+    {
+      "year": 2003,
+      "item": "1003",
+      "scope": "cross_city_annual",
+      "n5": 65,
+      "n5_raw": 66,
+      "n10": 2,
+      "mean_P5": 2074.37,
+      "median_P5": 2053.0,
+      "mean_P10": 4005.5,
+      "median_P10": 4005.5,
+      "R_mean": 1.9309,
+      "R_median": 1.951,
+      "ypk5_mean": 414.87,
+      "ypk10_mean": 400.55,
+      "source_file": "raw/rice_annual_2003.xls",
+      "note": "10kg cities marked footnote a); 5kg pool excludes avg>=3200"
+    },
+    {
+      "year": 2004,
+      "item": "1003",
+      "scope": "cross_city_annual",
+      "n5": 66,
+      "n5_raw": 67,
+      "n10": 2,
+      "mean_P5": 2261.59,
+      "median_P5": 2251.5,
+      "mean_P10": 4233.0,
+      "median_P10": 4233.0,
+      "R_mean": 1.8717,
+      "R_median": 1.8801,
+      "ypk5_mean": 452.32,
+      "ypk10_mean": 423.3,
+      "source_file": "raw/rice_annual_2004.xls",
+      "note": "10kg cities marked footnote a); 5kg pool excludes avg>=3200"
+    }
+  ],
+  "monthly_n": 48,
+  "monthly_R_mean": 1.9591,
+  "monthly_R_median": 1.99,
+  "monthly_R_min": 1.8432,
+  "monthly_R_max": 2.0459,
+  "conclusion_R_approx_2": false,
+  "mean_annual_R": 1.9592,
+  "mean_annual_R_median": 1.9695,
+  "conclusion": "÷2 is splice convention only; equal ¥/kg not confirmed; R span 1.81–2.03",
+  "R_report_span": [
+    1.81,
+    2.03
+  ],
+  "R_outlier_as_10kg": {
+    "2003_1003_tokushima": 1.898,
+    "2004_1003_toyama": 1.813,
+    "verified_from": [
+      "pack_unit_ratio_overlap_annual.csv",
+      "pack_unit_ratio_outliers.csv"
+    ]
+  },
+  "note_2002_R": "sibling items 1003/1005 only; not panel item 1002; 2002-01 brand change at splice",
+  "sensitivity_prelock": "pack_ratio_sensitivity_prelock_2026-10-24.md (NOT RUN)",
+  "judgment_windows_unchanged": [
+    "2005",
+    "2010",
+    "2015+"
+  ]
+}

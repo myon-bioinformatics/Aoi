@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
-"""Fetch a pure-Python wheel from PyPI and import it without pip or uv.
+"""CDN のように、pure-Python の配布物を pip/uv なしで取って import する（実験）。
 
-The JSON API selects the latest release (or ``--version``). A ``py3-none-any``
-or ``py2.py3-none-any`` wheel is cached only after its sha256 matches the
-digest PyPI publishes. The wheel zip can sit on ``sys.path`` (zipimport).
+標準ライブラリだけで動く。PyPI JSON API で最新版（または --version）の
+``py3-none-any`` または ``py2.py3-none-any`` wheel を選び、PyPI が公開する sha256 を
+照合してキャッシュに置く。pure-Python の wheel は zip のまま ``sys.path`` に載せれば import できる。
 
-Runtime dependencies are refused. Extras are not selected. An environment
-marker is evaluated first, so a requirement such as
-``typing_extensions>=4.0; python_version < "3.11"`` is inactive on
-Python 3.11 and newer. A marker this module cannot evaluate is treated as
-active. Transitive dependencies are not installed.
+    python scripts/fetch_module.py resolve markdown            # version と sha256 を表示
+    python scripts/fetch_module.py fetch markdown --cache .cdn  # wheel のパスを表示
+    PYTHONPATH="$(python scripts/fetch_module.py fetch markdown --cache .cdn)" python -c 'import markdown'
 
-    python scripts/fetch_module.py resolve pypdf
-    python scripts/fetch_module.py fetch pypdf --cache build/cdn-cache
+ワンライナー（sha256 照合つき）:
+
+    python -c "import json,hashlib,urllib.request as u;f=[x for x in json.load(u.urlopen('https://pypi.org/pypi/markdown/json'))['urls'] if x['filename'].endswith('py3-none-any.whl')][0];b=u.urlopen(f['url']).read();assert hashlib.sha256(b).hexdigest()==f['digests']['sha256'];open(f['filename'],'wb').write(b);print(f['filename'])"
+
+制限: compiled な wheel（selectolax など）は拒否する。requires_dist のうち、extra を
+選んでいないもの、および環境マーカーがこのインタプリタで偽のものは実行時の依存に数えない
+（例: ``typing_extensions>=4.0; python_version < "3.11"`` は Python 3.11 以降では依存にならない）。
+``and`` / ``or`` は三値で評価する。``and`` は1つでも偽なら偽、``or`` は1つでも真なら真。
+真か偽かが決まらないマーカーは有効（依存あり）として拒否する。依存の解決はしない。
 """
 from __future__ import annotations
 
@@ -63,7 +68,7 @@ def _format_full_version(info) -> str:
 
 
 def marker_environment(overrides: dict | None = None) -> dict:
-    """Marker values for this interpreter. ``extra`` stays empty (no extra selected)."""
+    """このインタプリタのマーカー値。extra は空（extra は選ばない）。"""
     env = {
         "implementation_name": sys.implementation.name,
         "implementation_version": _format_full_version(sys.implementation.version),
@@ -89,7 +94,7 @@ def _canonicalize(value: str) -> str:
 
 
 def _version_key(value: str):
-    """Plain release key, or None. Trailing zeros do not affect equality."""
+    """普通のリリース番号の比較鍵。普通でなければ None。末尾の 0 は等しさに効かない。"""
     text = value.strip()
     if not _RELEASE.fullmatch(text):
         return None
@@ -292,7 +297,7 @@ def _atom(node, env: dict) -> tuple[str, bool]:
 
 
 def marker_applies(marker: str, env: dict | None = None) -> bool:
-    """True when ``marker`` matches. ``env`` None uses this interpreter."""
+    """マーカーが合うとき True。env を省くとこのインタプリタ。"""
     environment = marker_environment() if env is None else dict(env)
     environment.setdefault("extra", "")
     return _eval(_Parser(_tokenize(marker)).parse(), environment)
@@ -305,7 +310,7 @@ def _split_marker(requirement: str) -> str | None:
 
 
 def runtime_requirements(info: dict, env: dict | None = None) -> list[str]:
-    """Requirements that apply here. An inactive marker is not a runtime dependency."""
+    """この場で効く依存。マーカーが偽なら実行時の依存に数えない。"""
     environment = marker_environment(env)
     active = []
     for raw in info.get("requires_dist") or []:
@@ -349,7 +354,7 @@ def _sha256(path: Path) -> str:
 
 
 def fetch(spec: dict, cache: Path) -> Path:
-    """Reuse a cached wheel when its sha256 matches; otherwise download and verify."""
+    """キャッシュにあり sha256 が合えばそれを使い、なければ取って照合する。"""
     cache.mkdir(parents=True, exist_ok=True)
     dest = cache / spec["filename"]
     if dest.exists() and _sha256(dest) == spec["sha256"]:
@@ -365,7 +370,7 @@ def fetch(spec: dict, cache: Path) -> Path:
 
 
 def extract(wheel: Path, out: Path) -> Path:
-    """Extract importable files, omitting ``*.dist-info`` and ``*.data``."""
+    """wheel から import に要るファイルだけ（*.dist-info と *.data を除く）を out に展開する。"""
     out.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(wheel) as archive:
         for name in archive.namelist():
@@ -376,8 +381,8 @@ def extract(wheel: Path, out: Path) -> Path:
     return out
 
 
-def ensure(package: str, cache: str | os.PathLike = "build/cdn-cache", version: str | None = None):
-    """Put the fetched wheel at the front of ``sys.path`` and import ``package``."""
+def ensure(package: str, cache: str | os.PathLike = ".cdn-cache", version: str | None = None):
+    """取ってきた wheel を sys.path の先頭に置いて import する。"""
     import importlib
 
     wheel = fetch(resolve(package, version), Path(cache))
@@ -390,7 +395,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("command", choices=["resolve", "fetch"])
     parser.add_argument("package")
     parser.add_argument("--version")
-    parser.add_argument("--cache", default="build/cdn-cache")
+    parser.add_argument("--cache", default=".cdn-cache")
     parser.add_argument("--extract", help="extract the wheel into this directory instead of printing its path")
     parser.add_argument("--github-output", action="store_true")
     args = parser.parse_args(argv)

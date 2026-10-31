@@ -717,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1357,
+      "attribute_uses": 1359,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -730,10 +730,10 @@
         "fixture": 56,
         "hookimpl": 4,
         "importorskip": 11,
-        "mark.parametrize": 304,
+        "mark.parametrize": 305,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 498,
+        "raises": 499,
         "skip": 10,
         "warns": 3
       },
@@ -865,15 +865,15 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 385,
+          "attribute_uses": 387,
           "attributes": {
             "approx": 104,
             "fail": 13,
             "fixture": 16,
             "importorskip": 1,
-            "mark.parametrize": 95,
+            "mark.parametrize": 96,
             "mark.skipif": 12,
-            "raises": 142,
+            "raises": 143,
             "skip": 2
           },
           "dynamic_import_sites": 0,
@@ -3018,8 +3018,8 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
-        "raises": 1
+        "mark.parametrize": 4,
+        "raises": 2
       },
       "dynamic_lines": [],
       "file": "tests/test_aoi_parent_workflow_pins.py",

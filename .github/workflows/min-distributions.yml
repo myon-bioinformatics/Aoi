@@ -22,10 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
       - name: Resolve parent main and QueRyu subtree head
@@ -98,7 +98,7 @@ jobs:
             echo "repository_id ${PARENT_REPOSITORY_ID}"
             echo "myon-bioinformatics/QueRyu ${queryu_sha}"
           } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/myon-bioinformatics
           ref: ${{ steps.resolved.outputs.parent_sha }}
@@ -106,7 +106,7 @@ jobs:
           sparse-checkout: tools/minpy.py
           sparse-checkout-cone-mode: false
           persist-credentials: false
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/QueRyu
           ref: ${{ steps.resolved.outputs.queryu_sha }}
@@ -141,8 +141,31 @@ jobs:
           Path(".test-deps/frozen-minpy.py").write_bytes(data)
           print("Verified frozen distribution compiler: " + commit)
           PYCODE
+      - name: Restore approved frozen QueRyu source
+        run: |
+          python -S - <<'PYCODE'
+          import json
+          from pathlib import Path
+          import re
+          import subprocess
+
+          source = json.loads(Path("distributions.json").read_text())["projects"]["queryu"]
+          commit = source.get("commit", "")
+          if (source.get("repository") != "myon-bioinformatics/QueRyu"
+                  or not re.fullmatch(r"[0-9a-f]{40}", commit)):
+              raise SystemExit("invalid approved frozen QueRyu identity")
+          checkout = ".test-deps/distribution-sources/queryu"
+          subprocess.run(["git", "-C", checkout, "fetch", "--depth=1", "origin", commit], check=True, timeout=90)
+          actual = subprocess.check_output(["git", "-C", checkout, "rev-parse", "FETCH_HEAD"], text=True, timeout=30).strip()
+          if actual != commit:
+              raise SystemExit("frozen QueRyu commit mismatch")
+          target = Path(".test-deps/frozen-distribution-sources/queryu").resolve()
+          target.parent.mkdir(parents=True, exist_ok=True)
+          subprocess.run(["git", "-C", checkout, "worktree", "add", "--detach", str(target), actual], check=True, timeout=90)
+          print("Verified frozen QueRyu source: " + commit)
+          PYCODE
       - name: Regenerate and compare every committed artifact and license
-        run: python -S scripts/build_distributions.py --minpy .test-deps/frozen-minpy.py --sources .test-deps/distribution-sources --check
+        run: python -S scripts/build_distributions.py --minpy .test-deps/frozen-minpy.py --sources .test-deps/frozen-distribution-sources --check
       - name: Compare resolved parent tool provenance
         env:
           PARENT_SHA: ${{ steps.resolved.outputs.parent_sha }}
@@ -199,7 +222,7 @@ jobs:
         run: python -m pytest -c pyproject.toml tests/test_distributions.py tests/test_distribution_kernels.py -q --junitxml=build/distributions-junit.xml
       - name: Preserve distribution JUnit
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-min-distributions
           path: build/distributions-junit.xml

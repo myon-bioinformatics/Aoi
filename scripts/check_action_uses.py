@@ -3,10 +3,9 @@
 
 親 myon-bioinformatics/myon-bioinformatics の active workflow（2026-10-20）:
 
-- actions/setup-python と actions/setup-node は、そのリリースの 40 桁 commit SHA
-  と `# vX.Y.Z`。例: setup-python v7.0.0、setup-node v7.1.0。
-- それ以外の actions/* は動くメジャータグ `@vN` だけ。SHA もパッチタグも付けない。
-  checkout は @v7、upload-artifact は @v7、download-artifact は @v8。
+- actions/*（checkout、setup-*、cache、upload/download-artifact などすべて）は、
+  そのリリースの 40 桁 commit SHA と `# vX.Y.Z`（2026-10-31 myon さんの判断で統一）。
+  例: checkout v7.0.1、setup-python v7.1.0、setup-node v7.1.0。
 - 同じリポジトリの reusable workflow は相対パス。
 - 他リポジトリの reusable workflow は 40 桁 SHA。
 - 更新は Dependabot の github-actions（毎月、Asia/Tokyo、PR は 5 件まで）。
@@ -36,7 +35,6 @@ from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 HEX40 = re.compile(r"^[0-9a-fA-F]{40}$")
-MAJOR = re.compile(r"^v[0-9]+$")
 PATCH = re.compile(r"^v[0-9]+\.[0-9]+\.[0-9]+$")
 USES_LINE = re.compile(r"^[ \t]*(?:-[ \t]*)?uses:[ \t]*(?P<value>\S.*?)\s*$")
 SETUP_SHA = (
@@ -86,6 +84,10 @@ def _iter_uses(root: Path):
             yield path, lineno, raw, comment
 
 
+def _needs_sha(action: str) -> bool:
+    return action in SETUP_SHA or action == "actions" or action.startswith("actions/")
+
+
 def _style_problem(raw: str, comment: str) -> str | None:
     if raw.startswith("./") or raw.startswith("docker://"):
         return None
@@ -101,13 +103,9 @@ def _style_problem(raw: str, comment: str) -> str | None:
         ):
             return None
         return "親の reusable workflow は .github/workflows/*.yml@40桁SHA"
-    if action in SETUP_SHA or action.startswith("actions/setup-"):
+    if _needs_sha(action):
         if not HEX40.fullmatch(rev) or not PATCH.fullmatch(comment):
-            return "setup は 40 桁 SHA と # vX.Y.Z"
-        return None
-    if action == "actions" or action.startswith("actions/"):
-        if comment or not MAJOR.fullmatch(rev):
-            return "actions/*（setup 以外）は @vN だけ"
+            return "actions/* と setup は 40 桁 SHA と # vX.Y.Z"
         return None
     return "親の active workflow に無い action"
 
@@ -166,14 +164,14 @@ def github_tag_commit(repository: str, tag: str) -> str:
 
 
 def hash_problems(root: Path, resolve=github_tag_commit) -> list[str]:
-    """setup の SHA が、コメントのリリースタグの commit と一致するか。"""
+    """actions/* と setup の SHA が、コメントのリリースタグの commit と一致するか。"""
     found: list[str] = []
     resolved: dict[tuple[str, str], str] = {}
     for path, lineno, raw, comment in _iter_uses(root):
         if "@" not in raw:
             continue
         action, rev = raw.rsplit("@", 1)
-        if action not in SETUP_SHA and not action.startswith("actions/setup-"):
+        if not _needs_sha(action):
             continue
         if not HEX40.fullmatch(rev) or not PATCH.fullmatch(comment):
             continue
@@ -195,7 +193,7 @@ def main(argv: list[str] | None = None, resolve=github_tag_commit) -> int:
     parser.add_argument(
         "--check-hashes",
         action="store_true",
-        help="setup の SHA をリリースタグの commit と照合する",
+        help="actions/* と setup の SHA をリリースタグの commit と照合する",
     )
     args = parser.parse_args(argv)
     root = args.root.resolve()

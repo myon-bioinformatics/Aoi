@@ -20,7 +20,7 @@ def test_live_workflows_match_parent_style():
     assert uses.style_problems(ROOT) == []
 
 
-def test_checkout_sha_and_setup_tag_are_rejected(tmp_path):
+def test_tag_refs_are_rejected_for_all_actions(tmp_path):
     _write(
         tmp_path,
         "\n".join(
@@ -28,7 +28,7 @@ def test_checkout_sha_and_setup_tag_are_rejected(tmp_path):
                 "jobs:",
                 "  a:",
                 "    steps:",
-                f"      - uses: actions/checkout@{SHA} # v7.0.1",
+                f"      - uses: actions/checkout@{SHA}",
                 "      - uses: actions/setup-python@v7",
                 "      - uses: astral-sh/setup-uv@v10.3.0",
                 "      - uses: actions/upload-artifact@v7.0.2",
@@ -39,8 +39,7 @@ def test_checkout_sha_and_setup_tag_are_rejected(tmp_path):
     )
     found = uses.style_problems(tmp_path)
     assert len(found) == 5
-    assert any("actions/*（setup 以外）は @vN だけ" in item for item in found)
-    assert any("setup は 40 桁 SHA と # vX.Y.Z" in item for item in found)
+    assert all("actions/* と setup は 40 桁 SHA と # vX.Y.Z" in item for item in found)
 
 
 def test_parent_style_refs_pass(tmp_path):
@@ -55,8 +54,8 @@ def test_parent_style_refs_pass(tmp_path):
                 + " # actionlint v1.7.12",
                 "  local:",
                 "    steps:",
-                "      - uses: actions/checkout@v7",
-                "      - uses: actions/cache/restore@v6",
+                f"      - uses: actions/checkout@{OTHER} # v7.0.1",
+                f"      - uses: actions/cache/restore@{SHA} # v6.1.0",
                 f"      - uses: actions/setup-python@{SHA} # v7.0.0",
                 f"      - uses: astral-sh/setup-uv@{OTHER} # v10.3.0",
                 "      - uses: ./.github/actions/local",

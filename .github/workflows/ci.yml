@@ -88,8 +88,8 @@ jobs:
             echo "myon-bioinformatics/myon-bioinformatics ${sha}"
             echo "repository_id ${PARENT_REPOSITORY_ID}"
           } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/checkout@v7
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/myon-bioinformatics
           ref: ${{ steps.parent.outputs.sha }}
@@ -170,8 +170,8 @@ jobs:
             echo "myon-bioinformatics/myon-bioinformatics ${sha}"
             echo "repository_id ${PARENT_REPOSITORY_ID}"
           } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/checkout@v7
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/myon-bioinformatics
           ref: ${{ steps.parent.outputs.sha }}
@@ -223,7 +223,7 @@ jobs:
         # failure-identity の expected-reports と揃えること
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Verify recovered evidence against pinned Git history
@@ -234,7 +234,7 @@ jobs:
           node-version: '26'
       - name: Require supported Node in parity CI
         run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -283,7 +283,7 @@ jobs:
             --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
       - name: Preserve raw JUnit
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python }}
           path: |
@@ -293,7 +293,7 @@ jobs:
           retention-days: 14
       - name: Preserve actual browser startup observations
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-observation-py${{ matrix.python }}
           path: build/startup-observation/
@@ -316,17 +316,17 @@ jobs:
       AOI_LAB_SOURCE_ROOT: ${{ github.workspace }}/.test-deps/lab/src
       PYTHONPATH: ${{ github.workspace }}/queryu:${{ github.workspace }}/.test-deps/lab/src
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # Test-only source checkout. Keep html_snapshot and css_inspect together;
       # never copy a single module or install lab as an Aoi runtime dependency.
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/mcp-toolcall-lab
           # LAB_SHA: past-pattern snapshot of mcp-toolcall-lab used as verification test data
           ref: 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
           path: .test-deps/lab
           persist-credentials: false
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
@@ -360,7 +360,7 @@ jobs:
             --junitxml=build/test-results/lab-integration-3.14.xml
       - name: Preserve raw integration JUnit
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-lab-integration-py3.14
           path: build/test-results/lab-integration-3.14.xml
@@ -376,8 +376,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
@@ -440,7 +440,7 @@ jobs:
             --junitxml=build/test-results/chrome-export-3.14.xml
       - name: Preserve Chromium export JUnit
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-chrome-export-py3.14
           path: |
@@ -451,7 +451,7 @@ jobs:
 
       - name: Preserve rendered PNG and SVG evidence
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: chrome-export-evidence
           path: build/export-evidence
@@ -484,8 +484,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
@@ -498,7 +498,7 @@ jobs:
         run: uv run --locked --python 3.14 python nagoyaction/research_digest.py cycles/c001-chunichi --check
       - name: Preserve generated research digest
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: research-digest-c001
           path: |
@@ -512,7 +512,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Registry, drift and subtree diff

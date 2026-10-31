@@ -692,7 +692,7 @@ def _matmul_py(left: ndarray, right: ndarray):
         if dtype == "float32":
             out = [_f32(value) for value in out]
         elif dtype == "int64":
-            out = [int(round(value)) for value in out]
+            out = [int(_b.round(value)) for value in out]
         return ndarray(out, (rows, cols), dtype)
     if left.ndim == 2 and right.ndim == 1:
         rows, shared = left.shape
@@ -838,14 +838,6 @@ def absolute(x):
 
 
 builtins_abs = _b.abs
-
-
-def round(a, decimals=0, out=None):
-    del out
-    source = asarray(a)
-    kind = source.dtype if _is_float(source.dtype) else "float64"
-    places = int(decimals)
-    return ndarray([_cast(_b.round(float(value), places), kind) for value in source._data], source.shape, kind)
 
 
 def where(cond, x=None, y=None):
@@ -1096,6 +1088,36 @@ def _jacobi(gram):
     return values, basis
 
 
+def _complete_zero_columns(data, rows, cols, missing):
+    """Complete exact-zero singular-vector columns, preserving every other column.
+
+    Standard-axis candidates are reorthogonalized twice. Choose the largest
+    residual deterministically; no rank threshold or singular value is changed.
+    """
+    missing = set(missing)
+    if not missing:
+        return
+    fixed = [j for j in range(cols) if j not in missing]
+    for col in sorted(missing):
+        best, best_norm = None, -1.0
+        for axis in range(rows):
+            candidate = [float(i == axis) for i in range(rows)]
+            for _ in range(2):
+                for other in fixed:
+                    dot = _math.fsum(candidate[i] * data[i * cols + other] for i in range(rows))
+                    for i in range(rows):
+                        candidate[i] -= dot * data[i * cols + other]
+            norm = _math.fsum(v * v for v in candidate)
+            if norm > best_norm:
+                best, best_norm = candidate, norm
+        if best_norm <= 0.0:
+            raise ValueError("cannot complete zero singular-vector basis")
+        scale = 1.0 / _math.sqrt(best_norm)
+        for i in range(rows):
+            data[i * cols + col] = best[i] * scale
+        fixed.append(col)
+
+
 def _svd_onesided(data, rows: int, cols: int):
     """片側 Jacobi。小さい特異値も潰さない（lstsq / pinv の階数判定、c001 の 200 未満）。"""
     transposed = rows < cols
@@ -1161,6 +1183,7 @@ def _svd_onesided(data, rows: int, cols: int):
             left[i * k + new] = data[i * cols + old] * scale
         for j in range(cols):
             vt[new * cols + j] = vectors[j * cols + old]
+    _complete_zero_columns(left, rows, k, [i for i, sigma in enumerate(singular) if sigma == 0.0])
     _positive_columns(left, vt, rows, cols, k)
     if transposed:
         # 転置の SVD を戻す。元の形は (cols, rows) だったので U と Vt を入れ替える。
@@ -1200,6 +1223,10 @@ def _svd_gram(data, rows: int, cols: int):
         k = rows
         left = basis  # rows × rows、列が U
         largest = singular[0] if singular else 0.0
+        # A positive singular value must not be paired with a zero factor.
+        # Only this affected Gram path pays for the existing one-sided solver.
+        if _b.any(0.0 < sigma <= largest * _SIGMA_KEEP for sigma in singular):
+            return _svd_onesided(data, rows, cols)
         vt = [0.0] * (k * cols)
         for comp in range(k):
             if singular[comp] <= largest * _SIGMA_KEEP:
@@ -1210,6 +1237,11 @@ def _svd_gram(data, rows: int, cols: int):
                 for i in range(rows):
                     total += left[i * k + comp] * data[i * cols + j]
                 vt[comp * cols + j] = total * scale
+        missing = [i for i, sigma in enumerate(singular) if sigma == 0.0]
+        if missing:
+            right = _transpose_flat(vt, k, cols)
+            _complete_zero_columns(right, cols, k, missing)
+            vt = _transpose_flat(right, cols, k)
         _positive_columns(left, vt, rows, cols, k)
         return left, singular, vt
     gram = [[0.0] * cols for _ in range(cols)]
@@ -1223,6 +1255,8 @@ def _svd_gram(data, rows: int, cols: int):
     singular = [_math.sqrt(value) if value > 0.0 else 0.0 for value in values]
     k = cols
     largest = singular[0] if singular else 0.0
+    if _b.any(0.0 < sigma <= largest * _SIGMA_KEEP for sigma in singular):
+        return _svd_onesided(data, rows, cols)
     left = [0.0] * (rows * k)
     for comp in range(k):
         if singular[comp] <= largest * _SIGMA_KEEP:
@@ -1238,6 +1272,7 @@ def _svd_gram(data, rows: int, cols: int):
     for comp in range(k):
         for j in range(cols):
             vt[comp * cols + j] = basis[j * k + comp]
+    _complete_zero_columns(left, rows, k, [i for i, sigma in enumerate(singular) if sigma == 0.0])
     _positive_columns(left, vt, rows, cols, k)
     return left, singular, vt
 

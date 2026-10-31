@@ -549,3 +549,7 @@ records scope; `declared_without_imports` then means absent **within selected
 sources**, not unused throughout Aoi. Empty filtered selections and invalid roots/patterns
 exit 2; stale `--check` output exits 1. With no filters, the existing report and
 committed-evidence checks are unchanged.
+
+### Lightweight NumPy compatibility
+
+`shrink/numpy_min.py` uses the explicit [v2 decomposition acceptance contract](docs/numpy-min-acceptance-v2.md). Passing its tests does not guarantee NumPy-identical candidate scores or rankings; historical failures and backend differences remain recorded.

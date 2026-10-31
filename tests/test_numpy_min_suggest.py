@@ -1,7 +1,8 @@
 """生成した shrink/numpy_min.py を、queryu/ask/suggest.py が使う範囲で本物の numpy と比べる。
 
-SVD は符号が決まらないので、再構成 U·diag(S)·Vt と特異値（端から端までは Zf·Zfᵀ）で比べる。許容誤差はそれぞれの assert に明記する。
-実データの端から端までの比較は、c001 の命題の先頭 40 件だけ（全件は CPython で数分かかる）。
+Acceptance v2 checks decomposition correctness, not backend-identical scores/rankings.
+See docs/numpy-min-acceptance-v2.md. Historical corpus assertions remain in
+scripts/legacy_numpy_min_parity.py; they are not silently marked passed.
 """
 import importlib.util
 import json
@@ -89,6 +90,7 @@ def test_svd_economy_reconstruction_and_singular_values(mn, backend, shape):
     _close(s, rs, 1e-9)
     U, S, Vt = (np.asarray(x.tolist()) for x in (u, s, vt))
     np.testing.assert_allclose(U @ np.diag(S) @ Vt, a, rtol=0, atol=1e-9)
+    np.testing.assert_allclose(U.T @ U, np.eye(U.shape[1]), rtol=0, atol=1e-9)
     # 行は正規直交
     np.testing.assert_allclose(Vt @ Vt.T, np.eye(Vt.shape[0]), rtol=0, atol=1e-9)
 
@@ -136,60 +138,6 @@ def test_log_nan_to_num_and_transpose(mn, backend):
     assert _m(mn, m).T.tolist() == np.asarray(m).T.tolist()
 
 
-def test_suggest_on_c001_subset_matches_numpy(tmp_path):
-    """suggest.Index を c001 の命題の先頭 40 件で、本物の numpy と numpy_min で作って比べる。"""
-    script = tmp_path / "run.py"
-    script.write_text(
-        "import json, sys\n"
-        "from pathlib import Path\n"
-        "sys.path.insert(0, str(Path(sys.argv[1]) / 'queryu' / 'ask'))\n"
-        "import numpy, suggest\n"
-        "docs = suggest.load_docs(Path(sys.argv[1]) / 'cycles/c001-chunichi/outputs')[:40]\n"
-        "qs = ['得失点差がプラスなら上位か', '連勝が続くと首位になるか', 'ホームで勝つ確率']\n"
-        "out = {'numpy': numpy.__name__ + ':' + str(getattr(numpy, '__version__', '')), 'runs': [],\n"
-        "       'backend': getattr(numpy, 'BACKEND', 'numpy')}\n"
-        "for dim in (8, 32):\n"
-        "    idx = suggest.Index(docs, dim=dim)\n"
-        "    for mode in ('float', 'binary'):\n"
-        "        for q in qs:\n"
-        "            out['runs'].append(idx.query(q, mode, 5))\n"
-        "    # SVD の各次元の符号は決まらないので、符号に依らない Zf·Zfᵀ と bits の大きさで比べる\n"
-        "    z = idx.Zf.tolist()\n"
-        "    out.setdefault('gram', []).append([[sum(p * q for p, q in zip(r, t)) for t in z] for r in z])\n"
-        "    out.setdefault('bits_shape', []).append(list(idx.bits.shape))\n"
-        "print(json.dumps(out))\n",
-        encoding="utf-8",
-    )
-    # numpy の wheel の OpenBLAS は CPU ごとに計算核を選び、float32 の丸めが runner の CPU で変わる
-    # （AVX-512 の SkylakeX と AVX2 の Haswell で実測の最大差が違った）。比べる相手を揃えるため Haswell に固定する
-    ref_env = {**os.environ, "OPENBLAS_CORETYPE": "Haswell", "OPENBLAS_NUM_THREADS": "1"}
-    real = subprocess.run([sys.executable, str(script), str(ROOT)], capture_output=True, text=True, check=True,
-                          env=ref_env)
-    shim = tmp_path / "shim"
-    shim.mkdir()
-    (shim / "numpy.py").write_text((ROOT / "shrink" / "numpy_min.py").read_text(encoding="utf-8"), encoding="utf-8")
-    got = subprocess.run([sys.executable, str(script), str(ROOT)], capture_output=True, text=True, check=True,
-                         env={"PYTHONPATH": str(shim), "PATH": "",
-                              **{k: os.environ[k] for k in ("NUMPY_MIN_PURE",) if k in os.environ}})
-    a, b = json.loads(real.stdout), json.loads(got.stdout)
-    assert b["numpy"].endswith(":0+min")
-    assert a["bits_shape"] == b["bits_shape"]
-    # 許容誤差は numpy 2.5.4（uv.lock、OPENBLAS_CORETYPE=Haswell）と比べた実測の最大値そのもの（丸めない）。
-    # lapack: float32 の SVD は numpy と同じ sgesdd だが、numpy の wheel は OpenBLAS の sgesdd、
-    # こちらは Debian の参照 LAPACK 3.12.1 の sgesdd。float32 の計算順の違いが Zf とスコアに出る
-    # （dgesdd で解いて float32 に戻していたときは、スコア差の最大 1.41833292e-06 だった）。
-    # stdlib: float64 で解いて float32 に戻す。
-    gram_atol, score_atol = {
-        "lapack": (6.08561626694315e-06, 7.598784890094912e-06),
-        "stdlib": (9.38496750535478e-07, 6.854534149169922e-07),
-    }[b["backend"]]
-    gram_max = float(np.max(np.abs(np.asarray(b["gram"]) - np.asarray(a["gram"]))))
-    score_max = max(abs(p[1] - q[1]) for x, y in zip(a["runs"], b["runs"]) for p, q in zip(x, y))
-    print("numpy_min measured", b["backend"], "gram_max", repr(gram_max), "score_max", repr(score_max))
-    np.testing.assert_allclose(b["gram"], a["gram"], rtol=0, atol=gram_atol)
-    for x, y in zip(a["runs"], b["runs"], strict=True):
-        assert [i for i, _ in x] == [i for i, _ in y]
-        np.testing.assert_allclose([s for _, s in y], [s for _, s in x], rtol=0, atol=score_atol)
 
 
 @backends
@@ -251,3 +199,97 @@ def test_lapack_info_sign_gives_distinct_errors(monkeypatch):
     with pytest.raises(ValueError, match="did not converge") as err:
         mod._svd_lapack(a, True)
     assert not isinstance(err.value, mod.LinAlgIllegalArgument)
+
+
+@backends
+def test_integer_matmul_uses_builtin_round(mn, backend):
+    dtype = "int64"
+    left, right = [[1, 2], [3, 4]], [[5], [6]]
+    got = mn.asarray(left, dtype=dtype) @ mn.asarray(right, dtype=dtype)
+    want = np.asarray(left, dtype=dtype) @ np.asarray(right, dtype=dtype)
+    assert got.tolist() == want.tolist()
+    assert got.dtype == want.dtype.name
+
+
+@pytest.mark.parametrize("values", [
+    [[0.0, 0.0], [0.0, 0.0]],
+    [[1.0, 0.0], [0.0, 0.0]],
+    [[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+    [[1.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+])
+@pytest.mark.parametrize("algorithm", ["_svd_onesided", "_svd_gram"])
+def test_exact_zero_singular_vectors_are_orthonormal(values, algorithm):
+    """Reconstruction alone cannot detect zero-filled null-space vectors."""
+    a = np.asarray(values)
+    rows, cols = a.shape
+    k = min(rows, cols)
+    u, s, vt = getattr(MODS["stdlib"], algorithm)(a.ravel().tolist(), rows, cols)
+    U, S, Vt = np.asarray(u).reshape(rows, k), np.asarray(s), np.asarray(vt).reshape(k, cols)
+    np.testing.assert_allclose(U.T @ U, np.eye(k), rtol=0, atol=1e-12)
+    np.testing.assert_allclose(Vt @ Vt.T, np.eye(k), rtol=0, atol=1e-12)
+    np.testing.assert_allclose(U @ np.diag(S) @ Vt, a, rtol=0, atol=1e-12)
+    np.testing.assert_array_equal(S, np.linalg.svd(a, compute_uv=False))
+
+
+def test_zero_completion_preserves_existing_directions():
+    values = [0.6, 0.0, 0.8, 0.0, 0.0, 0.0]
+    original = values[::2]
+    MODS["stdlib"]._complete_zero_columns(values, 3, 2, [1])
+    assert values[::2] == original
+    q = np.asarray(values).reshape(3, 2)
+    np.testing.assert_allclose(q.T @ q, np.eye(2), rtol=0, atol=1e-12)
+
+
+@backends
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+@pytest.mark.parametrize("scale", [0.125, 1.0, 8.0])
+@pytest.mark.parametrize("values,exact_values", [
+    ([[3., 0.], [0., 1.]], [3., 1.]),
+    ([[1., 0.], [0., 1.]], [1., 1.]),  # repeated values: do not compare vectors
+    ([[1., 0.], [0., 0.]], [1., 0.]),
+    ([[0., 0.], [0., 0.]], [0., 0.]),
+    ([[3., 0., 0.], [0., 1., 0.]], [3., 1.]),
+    ([[3., 0.], [0., 1.], [0., 0.]], [3., 1.]),
+    ([[3., 4.], [0., 0.]], [5., 0.]),
+    ([[3., 0.], [4., 0.], [0., 0.]], [5., 0.]),
+])
+def test_v2_scaled_decomposition_contract(mn, backend, dtype, scale, values, exact_values):
+    """Predeclared normalized-residual policy, not a fitted corpus maximum."""
+    a = np.asarray(values, dtype=dtype) * scale
+    u, s, vt = mn.linalg.svd(_m(mn, a, dtype), full_matrices=False)
+    U, S, Vt = (np.asarray(x.tolist(), dtype=np.float64) for x in (u, s, vt))
+    k = min(a.shape)
+    assert all(x.dtype == dtype for x in (u, s, vt))
+    assert U.shape == (a.shape[0], k) and Vt.shape == (k, a.shape[1])
+    assert np.isfinite(U).all() and np.isfinite(S).all() and np.isfinite(Vt).all()
+    assert np.all(S >= 0) and np.all(S[:-1] >= S[1:])
+    eps = np.finfo(dtype).eps
+    budget = 32 * max(a.shape) * eps
+    norm_a = float(np.linalg.norm(a.astype(np.float64), ord=1))
+    residual = float(np.linalg.norm(U @ np.diag(S) @ Vt - a, ord=1))
+    if norm_a == 0:
+        assert residual == 0 and np.all(S == 0)
+    else:
+        assert residual / norm_a <= budget
+    assert np.linalg.norm(U.T @ U - np.eye(k), ord=1) <= budget
+    assert np.linalg.norm(Vt @ Vt.T - np.eye(k), ord=1) <= budget
+    # Exact singular values of these diagonal/rectangular fixtures, not a backend oracle.
+    exact = np.asarray(exact_values) * scale
+    assert np.max(np.abs(S - exact), initial=0) <= budget * norm_a
+
+
+def test_v2_binary_rotation_counterexample_is_retained():
+    """Exact-arithmetic mechanism behind the saved three-document observation."""
+    z = np.eye(2)
+    query = np.asarray([1., 0.])
+    rotation = np.asarray([[0.6, 0.8], [-0.8, 0.6]])
+
+    def score(rows, q):
+        signs = np.sign(rows)
+        signs[signs == 0] = 1
+        scales = np.abs(rows).mean(0)
+        return ((signs * scales) @ q) / np.linalg.norm(scales)
+
+    np.testing.assert_allclose(z @ z.T, (z @ rotation) @ (z @ rotation).T, atol=1e-15)
+    # Same Gram/float geometry does NOT imply the same compressed binary scores.
+    assert not np.allclose(score(z, query), score(z @ rotation, query @ rotation))

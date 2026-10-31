@@ -2,8 +2,8 @@ name: numpy_min backends
 
 # shrink/numpy_min.py の2つの経路を、本番と同じ python:3.13-slim（Debian 13）で確かめる。
 # - lapack: apt で liblapack3 / libblas3（と依存の libgfortran5）だけを版固定・--no-install-recommends で入れ、
-#   ctypes で dgesdd / cblas_?gemm を呼ぶ経路が numpy と一致すること
-# - stdlib: 何も入れず、ライブラリが見つからないこと・標準ライブラリだけの経路が numpy と一致すること
+#   ctypes の sgesdd/dgesdd・cblas_?gemm 経路を decomposition-v2 の演算契約で検査すること
+# - stdlib: 何も入れず、ライブラリが見つからないこと・標準ライブラリだけの経路を同じ演算契約で検査すること
 # 版を上げるとき: `apt-cache policy liblapack3 libblas3 libgfortran5` で新しい版を見て、下の apt-get install の pkg=version を書き換える。
 on:
   pull_request:
@@ -11,6 +11,7 @@ on:
       - scripts/shrink_module.py
       - shrink/numpy_min.py
       - tests/test_numpy_min_suggest.py
+      - tests/test_numpy_min_gram_fallback.py
       - tests/test_shrink_module.py
       - tests/test_numpy_linalg_min.py
       - .github/workflows/numpy-min-backends.yml
@@ -33,7 +34,7 @@ jobs:
     env:
       NUMPY_MIN_EXPECT: ${{ matrix.lane }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
@@ -61,14 +62,14 @@ jobs:
               raise SystemExit(f"lib{name}.so.3 が読めてしまう")
           PY
       - run: uv sync --locked --python "$(command -v python3)"
-      - name: numpy_min backend and comparison with numpy
+      - name: numpy_min backend decomposition-v2 checks
         shell: bash
         # BLAS / LAPACK の xerbla は引数の誤りで exit(0) するので、終了コードだけでは落ちたことが分からない。
         # pytest の最後の集計行が出ていること、"illegal value" が出ていないことも確かめる
         run: |
           set -o pipefail
           uv run --locked --python "$(command -v python3)" pytest -q -rsP -p no:cacheprovider \
-            tests/test_numpy_min_suggest.py tests/test_shrink_module.py 2>&1 | tee pytest.log
+            tests/test_numpy_min_suggest.py tests/test_numpy_min_gram_fallback.py tests/test_shrink_module.py 2>&1 | tee pytest.log
           grep -Eq '^[0-9]+ passed' pytest.log || grep -Eq '^=+ [0-9]+ passed' pytest.log
           if grep -Eq ' failed| error' pytest.log; then exit 1; fi
           if grep -qi 'illegal value' pytest.log; then exit 1; fi

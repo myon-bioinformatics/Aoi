@@ -51,11 +51,11 @@ jobs:
       SOURCE_ATTEMPT: ${{ inputs.source_attempt }}
       SOURCE_ARTIFACT_ID: ${{ inputs.source_artifact_id }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.14.8'
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
@@ -85,7 +85,7 @@ jobs:
           .venv/bin/python scripts/research_checkpoint.py seal
           --state "$RUNNER_TEMP/aoi-research-state" --output "$RUNNER_TEMP/aoi-research-export"
       - name: Preserve verified checkpoint
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: research-checkpoint-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/aoi-research-export/*.json

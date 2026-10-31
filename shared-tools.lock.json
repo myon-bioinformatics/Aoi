@@ -49,7 +49,7 @@
     },
     {
       "path": "vendor/py_launch.cjs",
-      "sha256": "a78fe656cde285a83501b9b19d97b9ebde6f9637919b3adb95c50eb254154536",
+      "sha256": "f55418550baba981ccf3151eb55d64cce29c5ab7d31dcf0867284dde7dcafd60",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/NagoyAction",

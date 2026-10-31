@@ -1,42 +1,42 @@
-# npb_game_linescore: 試合ごとの得点表（R H E）
+# npb_game_linescore: per-game line scores (R H E)
 
-## 取得元
+## Source
 
-日程（`npb_calendar`）の観測にある試合のリンク `https://npb.jp/bis/{年}/games/s{試合ID}.html`。1試合1ページ。チームの記録だけを読む（個人の記録は読まない方針）。
+The game links in the schedule (`npb_calendar`) observations, `https://npb.jp/bis/{year}/games/s{game ID}.html`. One page per game. Only team records are read (policy of not reading individual records).
 
-## 確認した形
+## Confirmed shape
 
-WebFetch で 2024年の1試合を確認した（2026-10-05）。得点表は2行（ビジター・ホーム）で、チーム名は2文字を1文字空けて書き（「中 日」）、巨人は「読売」。最後の3つのセルが R（得点）・H（安打）・E（失策）。回ごとの失策や、どの選手の失策かはページにない。
+One 2024 game was checked with WebFetch (2026-10-05). The line score has 2 rows (visitor, home); two-character team names are written with a space between (`中 日`), and Giants is `読売` (Yomiuri). The last 3 cells are R (runs), H (hits), E (errors). Errors per inning, or which player made them, are not on the page.
 
-## 量と取り方
+## Volume and fetching
 
-1年 約860ページ。1ページ3秒の間隔で約45分。14年すべてだと約12,000ページ・約10時間になるので、ユーザーと決めて、まず 2025年だけ取る（`pipeline.toml` の `linescore_years`）。形と照合が通ってから年を広げる。
+About 860 pages per year. At 3-second intervals per page, about 45 minutes. All 14 years would be about 12,000 pages and about 10 hours, so as decided with the user, only 2025 is fetched first (`linescore_years` in `pipeline.toml`). Years are expanded after the shape and cross-checks pass.
 
-## 1回目の取得（2026-10-05、2025年 858ページ）
+## First fetch (2026-10-05, 2025, 858 pages)
 
-- 858ページを1回だけ取り、保存した（HTTP 858回、以後は保存したページから読み直す）
-- 読めたのは84試合だけだった。さらに、選手の成績の行（投手名の行など）を「得点表の形なのに知らないチーム名」として unknown に大量に入れていた（32,370）
-- 選手の行は方針として読まないので、unknown にも入れないように直した。読めなかったページには、チーム名のセルの位置と行のセルの数だけを counts に残し、形を確かめる
+- The 858 pages were fetched once and saved (858 HTTP requests; after that, reread from the saved pages)
+- Only 84 games were readable. In addition, player stat rows (pitcher name rows, etc.) were put into unknown en masse as "line-score-shaped but with an unknown team name" (32,370)
+- Player rows are not read by policy, so it was fixed not to put them into unknown either. For unreadable pages, only the position of the team name cell and the number of cells per row are kept in counts to check the shape
 
-## 読み直し（保存したページから、取得元には出ない）
+## Rereads (from saved pages, without going to the source)
 
-| 回 | 読めた試合 | 手がかり | 直したこと |
+| Run | Games read | Clue | Fix |
 |---|---|---|---|
-| 1 | 84 | 選手の行を unknown に 32,370 | 選手の行を読まない・残さない |
-| 2 | 84 | チーム名の行が1つのページ 404、0 のページ 370 | 得点表の形の行の先頭の名前を候補として残す |
-| 3 | 84 | 北海道日本ハム・千葉ロッテ・埼玉西武・広島東洋・東京ヤクルト | 観測した正式名称として足す |
-| 4 | 460 | 東北楽天・横浜DeNA・福岡ソフトバンク | 同じく足す |
-| 5 | **858（全試合）** | 未知 0 | `--strict` に替えて measure へ |
+| 1 | 84 | 32,370 player rows in unknown | Don't read or keep player rows |
+| 2 | 84 | 404 pages with one team name row, 370 with none | Keep the leading name of line-score-shaped rows as candidates |
+| 3 | 84 | 北海道日本ハム, 千葉ロッテ, 埼玉西武, 広島東洋, 東京ヤクルト | Add as observed official names |
+| 4 | 460 | 東北楽天, 横浜DeNA, 福岡ソフトバンク | Add likewise |
+| 5 | **858 (all games)** | 0 unknown | Switch to `--strict` and go to measure |
 
-得点表のチーム名は、2文字の球団（中日・読売・阪神）は1文字空けた略称、ほかは正式名称（「広島東洋」「横浜DeNA」など）で書かれていた。
+In line scores, team names were written as abbreviations with a space between for two-character teams (`中日`, `読売`, `阪神`), and as official names for the others (`広島東洋`, `横浜DeNA`, etc.).
 
-## 解析の契約
+## Parsing contract
 
-1. 最後の3つのセルが整数の行を得点表の行とみなし、先頭のセルのチーム名（空白を除く）を既知の表記と全体一致で比べる（「読売」は巨人）
-2. 選手の行（投手・打者の成績）は読まず、unknown にも counts にも入れない（個人の記録は扱わない）。読めないページは形の手がかり（チーム名のセルの位置・行のセルの数）だけを counts に残す
-3. 1ページでチーム名から始まり R・H・E で終わる行が2つ（2チーム）でなければ、そのページは読まない
-4. 照合（これから SakAnalytics で）: R が日程の観測の得点と一致すること
+1. Rows whose last 3 cells are integers are treated as line score rows, and the team name in the first cell (spaces removed) is compared by full match with known notations (`読売` is the Giants)
+2. Player rows (pitching and batting stats) are not read, and are put in neither unknown nor counts (individual records are not handled). For unreadable pages, only shape clues (position of the team name cell, number of cells per row) are kept in counts
+3. If a page doesn't have exactly 2 rows (2 teams) starting with a team name and ending with R, H, E, that page isn't read
+4. Cross-check (to be done in SakAnalytics): R must match the runs in the schedule observations
 
-## パイプラインでの扱い
+## Handling in the pipeline
 
-最初は `preview_linescore`（`--strict` なし）で形を確かめ、全試合が読めてから `inspect_linescore`（`--strict`）に替えて `linescore_join` に渡した。
+Initially the shape was checked with `preview_linescore` (without `--strict`); once all games were readable it switched to `inspect_linescore` (`--strict`) and passed to `linescore_join`.

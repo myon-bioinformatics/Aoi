@@ -1,6 +1,7 @@
 """Independent arithmetic oracle plus protocol and measurement checks."""
 import importlib.util
 import math
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -14,6 +15,7 @@ def load(name):
     return module
 
 
+@unittest.skipUnless(sys.platform == 'linux', 'Linux-only measurement harness')
 class MeasurementTests(unittest.TestCase):
     def test_disk_bytes_exclude_base_interpreter_symlink(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -22,11 +24,13 @@ class MeasurementTests(unittest.TestCase):
             (path / 'link').symlink_to(path / 'file')
             self.assertEqual(load('benchmark').directory_bytes(path), 3)
 
+    @unittest.skipUnless(sys.platform == 'linux', 'Linux /proc RSS experiment')
     def test_rss_is_actual_resident_memory(self):
         import os
         self.assertGreater(load('benchmark').resident('self'), 0)
 
 
+@unittest.skipUnless(sys.platform == 'linux', 'Linux-only experiment worker')
 class ResearchOracleTests(unittest.TestCase):
     def test_real_polars_agrees_with_independent_scalar_math(self):
         worker = load('workload')

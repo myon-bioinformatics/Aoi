@@ -66,3 +66,21 @@ See `docs/evidence/nano-cumulative-local.json` for source/manifest identities,
 versions, raw samples, packages, outputs/errors and any unmeasured fields.
 The local execution environment is not a GitHub runner. GitHub measurements
 are separate workflow artifacts, not inferred from local results.
+
+| Local measurement | Feature | Development |
+|---|---:|---:|
+| Installed packages | 2 | 18 |
+| Install seconds (one sample) | 13.021 | 14.018 |
+| Venv apparent bytes | 191,678,259 | 265,930,735 |
+| Interpreter startup median (seconds) | 0.00989 | 0.01120 |
+| Startup + research median (seconds) | 0.10945 | 0.11305 |
+| Four-worker sum RSS at barrier (bytes) | 304,283,648 | 305,094,656 |
+
+All four input cases matched in output and errors across both environments,
+repeats and parallel processes. Manifest and lock bytes were unchanged.
+The venv footprint decreased about 27.9%; this slice showed little difference
+in resident memory. Installation and startup differences are observations from
+this run, not evidence of a repeatable speedup. Peak parallel PSS/cgroup memory,
+CPU scaling and large-data throughput remain **unmeasured**. Local validation:
+4 new unittest cases and 25 existing PythDRagoras tests passed in the full locked
+development environment. GitHub CI status must be checked separately.

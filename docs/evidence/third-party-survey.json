@@ -35,7 +35,7 @@
     },
     {
       "file": "scripts/fetch_module.py",
-      "line": 394
+      "line": 385
     }
   ],
   "packages": {
@@ -717,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1207,
+      "attribute_uses": 1214,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -733,7 +733,7 @@
         "mark.parametrize": 259,
         "mark.skipif": 23,
         "param": 1,
-        "raises": 442,
+        "raises": 449,
         "skip": 9,
         "warns": 3
       },
@@ -863,7 +863,7 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 378,
+          "attribute_uses": 385,
           "attributes": {
             "approx": 104,
             "fail": 13,
@@ -871,12 +871,12 @@
             "importorskip": 1,
             "mark.parametrize": 95,
             "mark.skipif": 12,
-            "raises": 135,
+            "raises": 142,
             "skip": 2
           },
           "dynamic_import_sites": 0,
-          "files": 38,
-          "import_sites": 39
+          "files": 39,
+          "import_sites": 40
         }
       },
       "declared": [
@@ -913,8 +913,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 122,
-      "import_sites": 124
+      "files": 123,
+      "import_sites": 125
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3310,6 +3310,16 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_shared_fetch_module.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 7
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_shared_fetch_module_extended.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

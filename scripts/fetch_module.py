@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
-"""CDN のように、pure-Python の配布物を pip/uv なしで取って import する（実験）。
+"""Fetch a pure-Python wheel from PyPI and import it without pip or uv.
 
-標準ライブラリだけで動く。PyPI JSON API で最新版（または --version）の
-``py3-none-any`` または ``py2.py3-none-any`` wheel を選び、PyPI が公開する sha256 を
-照合してキャッシュに置く。pure-Python の wheel は zip のまま ``sys.path`` に載せれば import できる。
+The JSON API selects the latest release (or ``--version``). A ``py3-none-any``
+or ``py2.py3-none-any`` wheel is cached only after its sha256 matches the
+digest PyPI publishes. The wheel zip can sit on ``sys.path`` (zipimport).
 
-    python scripts/fetch_module.py resolve markdown            # version と sha256 を表示
-    python scripts/fetch_module.py fetch markdown --cache .cdn  # wheel のパスを表示
-    PYTHONPATH="$(python scripts/fetch_module.py fetch markdown --cache .cdn)" python -c 'import markdown'
+Runtime dependencies are refused. Extras are not selected. An environment
+marker is evaluated first, so a requirement such as
+``typing_extensions>=4.0; python_version < "3.11"`` is inactive on
+Python 3.11 and newer. A marker this module cannot evaluate is treated as
+active. Transitive dependencies are not installed.
 
-ワンライナー（sha256 照合つき）:
-
-    python -c "import json,hashlib,urllib.request as u;f=[x for x in json.load(u.urlopen('https://pypi.org/pypi/markdown/json'))['urls'] if x['filename'].endswith('py3-none-any.whl')][0];b=u.urlopen(f['url']).read();assert hashlib.sha256(b).hexdigest()==f['digests']['sha256'];open(f['filename'],'wb').write(b);print(f['filename'])"
-
-制限: compiled な wheel（selectolax など）は拒否する。requires_dist のうち、extra を
-選んでいないもの、および環境マーカーがこのインタプリタで偽のものは実行時の依存に数えない。
-``and`` の一方が選んでいない extra で偽なら、もう一方が評価できなくてもその依存は飛ばす。
-``or`` は真か偽かが決まらないとき有効（依存あり）として拒否する。依存の解決はしない。
+    python scripts/fetch_module.py resolve pypdf
+    python scripts/fetch_module.py fetch pypdf --cache build/cdn-cache
 """
 from __future__ import annotations
 
@@ -54,7 +50,7 @@ _ENV_KEYS = {
 
 def _get(url: str) -> bytes:
     if not url.startswith("https://"):
-        raise ValueError(f"https 以外は取らない: {url}")
+        raise ValueError(f"https only: {url}")
     with urllib.request.urlopen(url, timeout=60) as resp:
         return resp.read()
 
@@ -67,7 +63,7 @@ def _format_full_version(info) -> str:
 
 
 def marker_environment(overrides: dict | None = None) -> dict:
-    """このインタプリタのマーカー値。extra は空（extra は選ばない）。"""
+    """Marker values for this interpreter. ``extra`` stays empty (no extra selected)."""
     env = {
         "implementation_name": sys.implementation.name,
         "implementation_version": _format_full_version(sys.implementation.version),
@@ -93,7 +89,7 @@ def _canonicalize(value: str) -> str:
 
 
 def _version_key(value: str):
-    """普通のリリース番号の比較鍵。末尾の 0 は落としてから比べる。"""
+    """Plain release key, or None. Trailing zeros do not affect equality."""
     text = value.strip()
     if not _RELEASE.fullmatch(text):
         return None
@@ -261,32 +257,23 @@ class _Parser:
         raise ValueError("unsupported marker syntax")
 
 
-def _eval_bool(children, env: dict, *, kind: str) -> bool:
-    """Evaluate ``and`` / ``or`` so a decided child wins over an unevaluable one.
-
-    An unselected ``extra == "name"`` is false. That makes an ``and`` false even
-    when another clause uses a pre-release comparison this evaluator refuses.
-    An ``or`` stays unevaluable unless some clause is true or every clause is false.
-    """
-    decisive = False if kind == "and" else True
-    pending: ValueError | None = None
-    for child in children:
-        try:
-            value = _eval(child, env)
-        except ValueError as exc:
-            pending = exc
-            continue
-        if value == decisive:
-            return decisive
-    if pending is not None:
-        raise pending
-    return not decisive
-
-
 def _eval(node, env: dict) -> bool:
     kind = node[0]
     if kind in ("or", "and"):
-        return _eval_bool(node[1], env, kind=kind)
+        # 三値: and は偽が1つでもあれば偽、or は真が1つでもあれば真。決まらない側の ValueError は、結果が決まらないときだけ出す。
+        decisive = kind == "or"
+        error = None
+        for child in node[1]:
+            try:
+                value = _eval(child, env)
+            except ValueError as exc:
+                error = error or exc
+                continue
+            if value is decisive:
+                return decisive
+        if error is not None:
+            raise error
+        return not decisive
     op, left, right = node[1], node[2], node[3]
     left_value, left_extra = _atom(left, env)
     right_value, right_extra = _atom(right, env)
@@ -305,7 +292,7 @@ def _atom(node, env: dict) -> tuple[str, bool]:
 
 
 def marker_applies(marker: str, env: dict | None = None) -> bool:
-    """マーカーが合うとき True。env を省くとこのインタプリタ。"""
+    """True when ``marker`` matches. ``env`` None uses this interpreter."""
     environment = marker_environment() if env is None else dict(env)
     environment.setdefault("extra", "")
     return _eval(_Parser(_tokenize(marker)).parse(), environment)
@@ -318,11 +305,7 @@ def _split_marker(requirement: str) -> str | None:
 
 
 def runtime_requirements(info: dict, env: dict | None = None) -> list[str]:
-    """この場で効く依存。マーカーが偽なら実行時の依存に数えない。
-
-    選んでいない extra との ``and`` は、他の節が評価できなくても偽である。
-    真偽が決まらないマーカーは有効とみなす。
-    """
+    """Requirements that apply here. An inactive marker is not a runtime dependency."""
     environment = marker_environment(env)
     active = []
     for raw in info.get("requires_dist") or []:
@@ -345,13 +328,20 @@ def resolve(package: str, version: str | None = None, *, allow_deps: bool = Fals
     info = meta["info"]
     deps = runtime_requirements(info, env)
     if deps and not allow_deps:
-        raise SystemExit(f"{package} {info['version']} は実行時の依存を持つ（未対応）: {deps}")
-    wheels = [f for f in meta["urls"] if f["packagetype"] == "bdist_wheel" and PURE.search(f["filename"])]
+        raise SystemExit(f"{package} {info['version']} は実行時の依存がある（未対応）: {deps}")
+    wheels = [item for item in meta["urls"] if item["packagetype"] == "bdist_wheel" and PURE.search(item["filename"])]
     if not wheels:
         raise SystemExit(f"{package} {info['version']} に pure-Python の wheel がない（compiled は未対応）")
-    f = wheels[0]
-    return {"package": package, "version": info["version"], "filename": f["filename"],
-            "url": f["url"], "sha256": f["digests"]["sha256"]}
+    chosen = wheels[0]
+    if Path(chosen["filename"]).name != chosen["filename"]:
+        raise SystemExit(f"unsafe wheel filename: {chosen['filename']}")
+    return {
+        "package": package,
+        "version": info["version"],
+        "filename": chosen["filename"],
+        "url": chosen["url"],
+        "sha256": chosen["digests"]["sha256"],
+    }
 
 
 def _sha256(path: Path) -> str:
@@ -359,7 +349,7 @@ def _sha256(path: Path) -> str:
 
 
 def fetch(spec: dict, cache: Path) -> Path:
-    """キャッシュにあり sha256 が合えばそれを使い、なければ取って照合する。"""
+    """Reuse a cached wheel when its sha256 matches; otherwise download and verify."""
     cache.mkdir(parents=True, exist_ok=True)
     dest = cache / spec["filename"]
     if dest.exists() and _sha256(dest) == spec["sha256"]:
@@ -367,7 +357,7 @@ def fetch(spec: dict, cache: Path) -> Path:
     data = _get(spec["url"])
     got = hashlib.sha256(data).hexdigest()
     if got != spec["sha256"]:
-        raise SystemExit(f"sha256 が一致しない: {spec['filename']} {got} != {spec['sha256']}")
+        raise SystemExit(f"sha256 mismatch: {spec['filename']} {got} != {spec['sha256']}")
     tmp = dest.with_suffix(".part")
     tmp.write_bytes(data)
     tmp.replace(dest)
@@ -375,44 +365,45 @@ def fetch(spec: dict, cache: Path) -> Path:
 
 
 def extract(wheel: Path, out: Path) -> Path:
-    """wheel から import に要るファイルだけ（*.dist-info を除く）を out に展開する。"""
+    """Extract importable files, omitting ``*.dist-info`` and ``*.data``."""
     out.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(wheel) as z:
-        for name in z.namelist():
+    with zipfile.ZipFile(wheel) as archive:
+        for name in archive.namelist():
             top = name.split("/", 1)[0]
             if top.endswith((".dist-info", ".data")) or ".." in name.split("/"):
                 continue
-            z.extract(name, out)
+            archive.extract(name, out)
     return out
 
 
-def ensure(package: str, cache: str | os.PathLike = ".cdn-cache", version: str | None = None):
-    """取ってきた wheel を sys.path の先頭に置いて import する。"""
+def ensure(package: str, cache: str | os.PathLike = "build/cdn-cache", version: str | None = None):
+    """Put the fetched wheel at the front of ``sys.path`` and import ``package``."""
     import importlib
+
     wheel = fetch(resolve(package, version), Path(cache))
     sys.path.insert(0, str(wheel))
     return importlib.import_module(package)
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("command", choices=["resolve", "fetch"])
-    p.add_argument("package")
-    p.add_argument("--version")
-    p.add_argument("--cache", default=".cdn-cache")
-    p.add_argument("--extract", help="wheel を zip のまま使わず、このディレクトリに展開する")
-    p.add_argument("--github-output", action="store_true", help="resolve の結果を $GITHUB_OUTPUT に書く")
-    a = p.parse_args(argv)
-    spec = resolve(a.package, a.version)
-    if a.command == "resolve":
-        if a.github_output:
-            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-                for k in ("version", "filename", "sha256"):
-                    fh.write(f"{k}={spec[k]}\n")
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("command", choices=["resolve", "fetch"])
+    parser.add_argument("package")
+    parser.add_argument("--version")
+    parser.add_argument("--cache", default="build/cdn-cache")
+    parser.add_argument("--extract", help="extract the wheel into this directory instead of printing its path")
+    parser.add_argument("--github-output", action="store_true")
+    args = parser.parse_args(argv)
+    spec = resolve(args.package, args.version)
+    if args.command == "resolve":
+        if args.github_output:
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+                for key in ("version", "filename", "sha256"):
+                    handle.write(f"{key}={spec[key]}\n")
         print(json.dumps(spec, indent=1))
         return 0
-    wheel = fetch(spec, Path(a.cache))
-    print(extract(wheel, Path(a.extract)) if a.extract else wheel)
+    wheel = fetch(spec, Path(args.cache))
+    print(extract(wheel, Path(args.extract)) if args.extract else wheel)
     return 0
 
 

@@ -3,7 +3,7 @@
   "files": [
     {
       "path": "scripts/fetch_module.py",
-      "sha256": "9e62b356bd66358111d56fdb714d088091066bc6815383413d665a7abfac9f6f",
+      "sha256": "277d3b662c6897544ce0a2e81d5200e6ca8329d8fddde95ab525afe452af53c9",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/DRAgoWing",

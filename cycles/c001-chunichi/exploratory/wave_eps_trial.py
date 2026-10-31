@@ -39,23 +39,27 @@ def same(a, b) -> bool:
     return abs(a - b) <= TOL * max(1.0, abs(a), abs(b))
 
 
-def entry(lam, per, t):
-    """sakanalytics.wave_basis の1格子分。式は同じ（self-check で eps=0 のとき完全に一致することを確かめる）。"""
+def entry(lam, per, t, boundary=False):
+    """sakanalytics.wave_basis の1格子分。式は同じ（self-check で eps=0 のとき完全に一致することを確かめる）。
+
+    boundary: 減衰しない波の行（λ の境界）か。sakanalytics.wave_basis の各行の "boundary" と同じ意味。
+    """
     w = 2 * math.pi / per if per else 0.0
     ec = [math.exp(-lam * u) * math.cos(w * u) for u in t]
     es = [math.exp(-lam * u) * math.sin(w * u) for u in t]
     sec, sec2, sese = sum(ec), sum(e * e for e in ec), sum(a * b for a, b in zip(ec, es))
     return {"lam": lam, "per": per, "w": w, "ec": ec, "es": es, "sec": sec, "sec2": sec2, "sese": sese,
-            "uu": len(t) - 2 * sec + sec2, "uv": sum(es) - sese, "vv": sum(e * e for e in es)}
+            "uu": len(t) - 2 * sec + sec2, "uv": sum(es) - sese, "vv": sum(e * e for e in es), "boundary": boundary}
 
 
 def make_wave_basis(sa, eps: float):
     orig = sa.wave_basis
 
-    def wave_basis_eps(xs):
+    def wave_basis_eps(xs, _eps=None):
+        # _eps: sakanalytics.season_trajectory が wave_basis(xs, wave_eps) と2つ目を渡すため受ける。ε はこの関数に固定済みなので使わない
         t = [x - xs[0] for x in xs]
         kept = [b for b in orig(xs) if b["lam"] != 0.0]          # λ > 0 の格子は元のまま
-        tail = [entry(eps, per, t) for per in sa.WAVE_PERIODS if per]  # 末尾の「減衰しない波」だけ ε に差し替える
+        tail = [entry(eps, per, t, True) for per in sa.WAVE_PERIODS if per]  # 末尾の「減衰しない波」だけ ε に差し替える
         return kept + tail
 
     return wave_basis_eps

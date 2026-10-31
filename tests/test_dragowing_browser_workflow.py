@@ -63,11 +63,11 @@ def test_offline_ci_keeps_isolation_and_report_contract():
     job = text.split("\n  chrome-export:\n", 1)[1].split("\n  failure-identity:\n", 1)[0]
     assert "runs-on: ubuntu-24.04" in job
     assert 'sudo unshare --net -- env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1' in job
-    assert "--junitxml=build/test-results/chrome-export-3.14.xml" in job
-    assert "name: junit-chrome-export-py3.14" in job
+    assert "--junitxml=build/test-results/chrome-export-3.15.xml" in job
+    assert "name: junit-chrome-export-py3.15" in job
     assert "name: chrome-export-evidence" in job
-    assert "name: Offline Chrome export (Python 3.14)" in job
-    assert '"junit-chrome-export-py3.14/chrome-export-3.14.xml"' in text
+    assert "name: Offline Chrome export (Python 3.15)" in job
+    assert '"junit-chrome-export-py3.15/chrome-export-3.15.xml"' in text
     assert "needs: [changes, test, lab-integration, chrome-export]" in text
 
 
@@ -107,8 +107,8 @@ def test_first_start_context_uses_fresh_jobs_and_unchanged_test_order():
     assert "context: [normal, offline]" in job
     assert "fail-fast: false" in job
     assert "runs-on: ubuntu-24.04" in job
-    assert "python-version: '3.14'" in job
-    assert "uv sync --locked --python 3.14" in job
+    assert "python-version: '3.15'" in job
+    assert "uv sync --locked --python 3.15" in job
     assert "sudo unshare --net --" in job
     assert "diagnose_dragowing_browser.py" not in job
     assert "--runs" not in job and "--timeout" not in job

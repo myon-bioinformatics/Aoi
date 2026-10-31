@@ -1,129 +1,131 @@
-# 問い合わせ（`queryu/ask/ask.py`）
+# Queries (`queryu/ask/ask.py`)
 
-日本語の問い（「E25 に阪神 2015 以外の判例はある？」）を決まった型（`Query`）に直し、PythDRagoras が判定済みの結果（`propositions.jsonl`・`sets.jsonl`）から答える。ネットワークに出ない。モデルも API キーも使わない。
+Turns a Japanese question (「E25 に阪神 2015 以外の判例はある？」, "Does E25 have counterexamples other than Hanshin 2015?") into a fixed type (`Query`) and answers it from results PythDRagoras has already judged (`propositions.jsonl`, `sets.jsonl`). It never goes to the network. It uses no model and no API key.
 
-## 考え方（Jev の「型で縛った選択」から拾ったもの）
+## Approach (taken from Jev's "choices constrained by types")
 
-| Jev | ここ |
+| Jev | Here |
 |---|---|
-| 戻り値の型が問いの種類になる（はい・いいえ、選択肢、点数） | `Query` の各項目が、選べる値の決まった選択（`ask`・`kind`・`form` は enum、ID と単位は形の決まった文字列） |
-| 許した値の中からしか答えない | 読み取りは登録済みの値（命題・式の ID、球団名、4つの形、問いの種類）だけを選ぶ。読めなかった語は `unread` に返す（黙って捨てない） |
-| 数え上げ・算術は苦手 | 数（%・年）は正規表現で読む。判例の有無・数・成立率は数え直さず、判定済みの結果を引く |
+| The return type becomes the kind of question (yes/no, choices, scores) | Each `Query` field is a choice from fixed values (`ask`, `kind`, and `form` are enums; IDs and units are strings with a fixed shape) |
+| Only answers from allowed values | Reading picks only registered values (proposition/formula IDs, team names, the 4 forms, question kinds). Unread words are returned in `unread` (not silently dropped) |
+| Bad at counting and arithmetic | Numbers (%, years) are read with regular expressions. Whether counterexamples exist, their count, and hold rates are not recounted; they are looked up from judged results |
 
-役割: **読み取り**（問い → Query）と**答え**（Query → 判定済みの結果）を分ける。読み取りは取り替えられる:
+Role: separate **reading** (question → Query) from **answering** (Query → judged results). Reading is swappable:
 
-1. いま: 古典的な読み取り（正規表現と語の一覧）
-2. あとで: `--schema` の JSON Schema を llama.cpp（`json_schema` で出力を縛る）や MCP のツールの引数に渡し、ローカルの LLM に Query を選ばせる。選んだ Query は `--query` で直接渡す。答えは同じ関数が出すので、同じ Query なら同じ答え
+1. Now: classic reading (regular expressions and word lists)
+2. Later: pass the `--schema` JSON Schema to llama.cpp (constraining output with `json_schema`) or as MCP tool arguments, and let a local LLM choose the Query. The chosen Query is passed directly with `--query`. The same function produces the answer, so the same Query gives the same answer
 
 ## Query
 
-| 項目 | 値 |
+| Field | Values |
 |---|---|
-| `ask` | `has_counterexample`（はい・いいえ）・`counterexamples`（一覧）・`unique_exception`（判例がちょうど1つ）・`rate`（成立率の条件） |
-| `target` | `P96`・`E25` など。なければすべて |
-| `kind` | `any`・`proposition`（「命題」）・`expression`（「式」） |
-| `form` | `original`・`contrapositive`（対偶）・`converse`（逆。「逆に」は形として読まない）・`inverse`（裏） |
-| `exclude` | 判例から除く単位（「阪神 2015 以外」→ `t-2015`） |
-| `about` | この単位・球団が判例にいるものだけ（`t-2015`・`d`） |
-| `min_rate`・`max_rate` | 成立率（「95% 以上」「8割以上」） |
+| `ask` | `has_counterexample` (yes/no), `counterexamples` (list), `unique_exception` (exactly 1 counterexample), `rate` (hold-rate condition) |
+| `target` | `P96`, `E25`, etc. All if absent |
+| `kind` | `any`, `proposition` (「命題」), `expression` (「式」) |
+| `form` | `original`, `contrapositive` (対偶), `converse` (逆; 「逆に」 is not read as a form), `inverse` (裏) |
+| `exclude` | Units excluded from counterexamples (「阪神 2015 以外」 → `t-2015`) |
+| `about` | Only those where this unit or team is a counterexample (`t-2015`, `d`) |
+| `min_rate`, `max_rate` | Hold rate (「95% 以上」, 「8割以上」) |
 
-## 使い方
+## Usage
 
 ```
 python queryu/ask/ask.py "判例がただ1つの式は？"
 python queryu/ask/ask.py "P96 の対偶の判例" --json
 python queryu/ask/ask.py --query '{"ask": "has_counterexample", "target": "E26"}'
 python queryu/ask/ask.py --schema
-python queryu/ask/ask.py "中日が判例の命題" --results <結果フォルダ> --teams <球団表.json> --log <ログ.jsonl>
+python queryu/ask/ask.py "中日が判例の命題" --results <results-folder> --teams <teams.json> --log <log.jsonl>
 ```
 
-「式」を含む問いは `sets.jsonl` がある結果ディレクトリで実行する。main の `outputs` だけを渡すと、そのファイルが無いので `結果が読めない` になる。
+Run questions that include 「式」 (formula) in a results directory that has `sets.jsonl`. Passing only main's `outputs` gives `結果が読めない` (results unreadable), because that file is not there.
 
-- `--log` は問いの原文と読み取った Query を1行ずつ残す（再現のため）
-- 判例の一覧が判定の出力で省かれている場合は「一覧は一部」と出す
-- `--results` は必須。サイクルの `pipeline.toml` や結果 ref からの解決は Aoi の `aoi_paths.py` がして、決まったフォルダを渡す
-- `--teams` は球団名 → コードの JSON。渡さなければ球団名は読まず unread に返す（Aoi は NPB の表を渡す）
-- `--cycle-dir` があればその `ask.toml` を、なければ結果フォルダの親の `ask.toml` を読む
-- 終了コード: 0 = 答えた、1 = 判定不能（結果が読めない、ID が結果にない、読めなかった語）、2 = `--query` が型の外
+- `--log` records the original question and the parsed Query one line each (for reproducibility)
+- If the counterexample list was truncated in the judge's output, it prints 「一覧は一部」 (partial list)
+- `--results` is required. Resolving from a cycle's `pipeline.toml` or a results ref is done by Aoi's `aoi_paths.py`, which passes the resolved folder
+- `--teams` is JSON mapping team names → codes. If not given, team names are not read and are returned as unread (Aoi passes the NPB table)
+- With `--cycle-dir`, its `ask.toml` is read; otherwise the `ask.toml` in the results folder's parent
+- Exit codes: 0 = answered, 1 = undeterminable (results unreadable, ID not in results, unread words), 2 = `--query` outside the type
 
-未対応の語・条件が残った場合も終了コード1で解釈確認を求め、条件を捨てて回答しない。
+If unsupported words or conditions remain, it also exits 1 and asks for clarification, rather than dropping conditions and answering.
 
-### 未解釈入力の証跡（Issue #30）
+### Evidence for uninterpreted input (Issue #30)
 
-`parse_input()` は読み取り用の NFKC・空白正規化と、保存する原文を分ける。
-`parse()` の既存の `(Query, unread)` 契約は維持する。
-CLI の JSON・`--log` の JSONL・受付の受領記録には同じ証跡を持たせる。
+`parse_input()` separates the NFKC and whitespace normalization used for reading from the stored original text.
+The existing `(Query, unread)` contract of `parse()` is kept.
+The CLI JSON, the `--log` JSONL, and intake receipts carry the same evidence.
 
-| 項目 | 意味 |
+| Field | Meaning |
 |---|---|
-| `raw_text` | 正規化前の問い全体。受付では `/ask` の引数（コマンド本文全体は受領記録の `body`） |
-| `unread_spans` | 未解釈の範囲の `start`・`end`・`raw_text`。0始まり、終了位置を含まない Python Unicode code point 単位。常に `raw_text[start:end]` が範囲の原文と一致する。UTF-8 byte・UTF-16 offset ではない |
-| `parse_status` | 機械値 `parsed` / `undetermined`。`parsed` は構文が読めたという意味で、研究上の成立判定ではない |
-| `parse_diagnostics` | 安定した `code` と人間向けの `explanation`。説明文で機械判定しない |
-| `unread` | 互換性のための人間向け表示。原文・span の正本ではない |
+| `raw_text` | The whole question before normalization. For intake, the `/ask` argument (the whole command text is the receipt's `body`) |
+| `unread_spans` | `start`, `end`, and `raw_text` of uninterpreted ranges. 0-based, end-exclusive, in Python Unicode code points. `raw_text[start:end]` always equals the range's original text. Not UTF-8 bytes or UTF-16 offsets |
+| `parse_status` | Machine value `parsed` / `undetermined`. `parsed` means the syntax was read, not a research judgment of holding |
+| `parse_diagnostics` | A stable `code` and a human-readable `explanation`. The explanation text is not used for machine decisions |
+| `unread` | Human-readable display kept for compatibility. Not the source of truth for original text or spans |
 
-Q5 `P121 は 2026 年で確かめられた？` は `parse_status=undetermined`。
-`unread_spans` は `{start: 7, end: 20, raw_text: "2026 年で確かめられた"}` を保持する。
-理由コードは `unrecognized_ask`・`unsupported_text`。回答は引き続き「判定不能」で、
-P121 の既存結果・2026 年の暫定結果には対応付けない。
-未解釈入力を止めた回答は機械値 `status=undetermined` と `reason_codes` を持ち、
-日本語の `answer`・`error`・`unread` は表示として別に保持する。
+Q5 `P121 は 2026 年で確かめられた？` ("Was P121 confirmed in 2026?") is `parse_status=undetermined`.
+`unread_spans` holds `{start: 7, end: 20, raw_text: "2026 年で確かめられた"}`.
+Reason codes are `unrecognized_ask` and `unsupported_text`. The answer is still 「判定不能」 (undeterminable),
+and it is not mapped to P121's existing results or provisional 2026 results.
+An answer stopped by uninterpreted input carries the machine values `status=undetermined` and `reason_codes`,
+while the Japanese `answer`, `error`, and `unread` are kept separately for display.
 
-助詞は残った範囲全体が既知の接続表現の場合か、空白で区切られた先頭の助詞の場合に限って扱う。
-未知語の途中の「か」「で」等は削らない。「とか」等の未知の条件も、文字を消して空にしない。
-未解釈入力は既知回答・回答キャッシュの読取りと書込みを迂回し、候補は候補としてだけ提示する。
-新しい証跡も `ask.py` 内に置くため、既存の回答コード hash で古いキャッシュを無効にする。
-取得計画・正式評価器・研究データは変更しない。
+Particles are handled only when the whole remaining range is a known connective, or when it is a leading particle separated by whitespace.
+Characters such as 「か」 or 「で」 in the middle of unknown words are not stripped. Unknown conditions such as 「とか」 are not emptied by deleting characters either.
+Uninterpreted input bypasses reads and writes of known answers and the answer cache, and candidates are presented only as candidates.
+The new evidence also lives in `ask.py`, so the existing answer-code hash invalidates old caches.
+Fetch plans, the official evaluator, and research data are unchanged.
 
-結果なし・該当する形なし・判定不能単位が残る場合には、反例が確認できないことを
-「いいえ」と断定しない。不完全な反例一覧を使った除外や球団指定も同様に扱う。
-反例数は `n - hold`。`undetermined` は `n` の外に数えられているため二重に引かない。
+When there are no results, no matching form, or undeterminable units remain, the inability to confirm a counterexample
+is not asserted as 「いいえ」 (no). Exclusions and team filters using an incomplete counterexample list are handled the same way.
+The counterexample count is `n - hold`. `undetermined` is counted outside `n`, so it is not subtracted twice.
 
-コメント受付・探索の運用は [NagoyAction](../../nagoyaction/docs/inbox.md)。
+Comment intake and search operations are in [NagoyAction](../../nagoyaction/docs/inbox.md).
 
-## 候補の提示（`queryu/ask/suggest.py`）
+## Presenting candidates (`queryu/ask/suggest.py`)
 
-ID が書いていない問いについて、登録済みの命題・式の文に近いものを最大5件出す。文字 1〜3-gram の TF-IDF を SVD で落とし、任意で符号と次元スケールに圧縮した索引も使える。
+For questions without an ID, it lists up to 5 registered proposition/formula sentences that are close. It reduces character 1–3-gram TF-IDF with SVD, and can optionally use an index compressed to signs and per-dimension scales.
 
-これは答えではない。`ask.py` の読み取り（`parse`）も答え（`answer`）も呼ばない。1位の類似度が閾値未満なら「判定不能」で、候補は確定しない。閾値以上でも status は「要確認」で、選ばれた ID は置かない。1位を `ask.py` に渡して自動で答えない。
+This is not an answer. It calls neither `ask.py`'s reading (`parse`) nor answering (`answer`). If the top similarity is below the threshold, it is 「判定不能」 and no candidate is confirmed. Even at or above the threshold, the status is 「要確認」 (needs confirmation) and no chosen ID is set. The top candidate is never passed to `ask.py` to answer automatically.
 
-閾値の既定値はない。試作では、手書きの範囲外の問いの最高類似度のすぐ上に置いた。その小さな集合に合わせた値で、過学習の恐れがある。隣り合う ID（内容の近い命題・式）を取り違えることもある。問いに ID が書いてあるときは索引を使わず、その ID を返す。書いてある ID と、問いが指しているものが違うこともある。
+There is no default threshold. In the prototype it was set just above the highest similarity of hand-written out-of-scope questions. That value fits a small set and risks overfitting. Neighboring IDs (propositions/formulas with similar content) can also be confused. When the question contains an ID, the index is not used and that ID is returned. The written ID may differ from what the question actually refers to.
 
-補足: 類似度が同じ候補は文書の並び順で出す（安定ソート）。問いに書いてある ID が読み込んだ命題・式に無いときは、`known: false` と note で知らせる（`selected` は書いてある ID のまま）。
+Note: candidates with the same similarity are listed in document order (stable sort). When an ID written in the question is not among the loaded propositions/formulas, it reports `known: false` with a note (`selected` stays as the written ID).
 
-## 判定不能のときの候補（もしかして）
+## Candidates when undeterminable (did you mean)
 
-読めなかった語があるとき、または指定した ID が読めた結果の中に無いとき、返信の末尾に最大 5 件を足す。
+When there are unread words, or the specified ID is not among the readable results, up to 5 are appended to the end of the reply.
 
 ```text
 もしかして: P46 / P47（候補。答えではない）
 ```
 
-### 観測
+(「もしかして」 = "did you mean"; 「候補。答えではない」 = "candidates, not an answer".)
 
-- 候補は `queryu/ask/suggest.py` の類似度から取る。問いに書いてある ID は、その ID を繰り返すためではなく、文の残りで近い ID を並べるために外す。
-- 類似度の閾値は `cycles/<cycle>/ask.toml` の `suggest_threshold`。`--suggest-threshold` を渡したときはその数。
-- c001 の `ask.toml` には、このキーを置いていない。
+### Observation
 
-### 解釈
+- Candidates come from `queryu/ask/suggest.py` similarity. An ID written in the question is excluded, not to repeat that ID but to rank IDs close to the rest of the sentence.
+- The similarity threshold is `suggest_threshold` in `cycles/<cycle>/ask.toml`, or the number passed with `--suggest-threshold`.
+- c001's `ask.toml` does not have this key.
 
-- この行は候補の一覧であり、判定ではない。`answer` も `Query.target` も、候補では書き換えない。
-- キーが無いあいだは、どの候補も「閾値を超えた」とは扱わない。試作で手書きの問いに合わせた類似度は、サイクルの設定に写さない。
-- 必要な結果ファイルが無いときは「結果が読めない」とし、候補は出さない。ID が無い、とは分けて書く。未対応語のため解釈確認になった問いでも、読み取った Query に必要なファイルが不足していれば候補を出さない。
+### Interpretation
 
-## 結果が読めない
+- This line is a list of candidates, not a judgment. Neither `answer` nor `Query.target` is rewritten by candidates.
+- While the key is absent, no candidate is treated as "above the threshold". Similarities fitted to hand-written questions in the prototype are not copied into cycle settings.
+- When a needed results file is missing, it says 「結果が読めない」 and shows no candidates. This is written separately from "the ID doesn't exist". Even for questions sent to clarification because of unsupported words, no candidates are shown if files needed by the parsed Query are missing.
 
-`E25` のように式の ID は `sets.jsonl` を必要とする。命題の ID は `propositions.jsonl` を必要とする。ID のない「命題と式」の問いは両方を必要とする。
+## Results unreadable
 
-### 観測
+A formula ID such as `E25` needs `sets.jsonl`. A proposition ID needs `propositions.jsonl`. A "propositions and formulas" question without an ID needs both.
 
-- main の `cycles/c001-chunichi/outputs` には `propositions.jsonl` があり、`sets.jsonl` は無い。
-- 必要なファイルが無いときのエラーは `結果が読めない: sets.jsonl` のように、ファイル名を含む。
-- ファイルはあり、その中に ID が無いときだけ `判定済みの結果にない` になる。
+### Observation
 
-### 解釈
+- main's `cycles/c001-chunichi/outputs` has `propositions.jsonl` but not `sets.jsonl`.
+- The error when a needed file is missing includes the file name, as in `結果が読めない: sets.jsonl`.
+- Only when the file exists but the ID is not in it does it say `判定済みの結果にない` (not in the judged results).
 
-- ファイルが無いことを「その ID は判定済みでない」とは読まない。式の結果は、Issue #9 のとおり結果 ref の checkout（`.aoi-results/<cycle>/outputs`）から読む。
-- 指定した結果フォルダが無いとき、別のフォルダへは切り替えない。`sets.jsonl` をこのリポジトリに作って埋めもしない。
+### Interpretation
 
-四つの形の表と条件の記号は [DRAgoWing](../../dragowing/docs/forms.md)。
+- A missing file is not read as "that ID has not been judged". Formula results are read from the results ref checkout (`.aoi-results/<cycle>/outputs`), as in Issue #9.
+- When the specified results folder doesn't exist, it does not switch to another folder. Nor does it create and fill `sets.jsonl` in this repository.
+
+The four-forms table and condition notation are in [DRAgoWing](../../dragowing/docs/forms.md).

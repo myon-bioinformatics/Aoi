@@ -38,8 +38,8 @@ jobs:
       matrix:
         context: [normal, offline]
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.14'
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
@@ -84,7 +84,7 @@ jobs:
             "$PWD/.venv/bin/python" -m scripts.run_browser_startup_ci --output build/startup-context
       - name: Preserve first and subsequent startup evidence even on failure
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-first-start-${{ matrix.context }}-py3.14
           path: build/startup-context/
@@ -100,7 +100,7 @@ jobs:
       matrix:
         browser: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.compare-chrome && '["chromium","google-chrome"]' || '["chromium"]') }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -111,7 +111,7 @@ jobs:
           node-version: '26'
       - name: Require supported Node in parity CI
         run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.14'
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
@@ -201,7 +201,7 @@ jobs:
             --output build/browser-startup/exports.json
       - name: Preserve startup diagnostics, JUnit, and synthetic images
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-startup-${{ matrix.browser }}-py3.14
           path: |

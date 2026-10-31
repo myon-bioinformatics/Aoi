@@ -1,6 +1,6 @@
 {
   "schema": "aoi-distributions/1",
-  "source": "bfbd1210336b299b15cdac406e5d51446ee5dda4",
+  "source": "263960704e45862e3dd7fce111f7dbcc8dc980d5",
   "python": "3.12",
   "license": "LICENSE",
   "tool": {
@@ -31,7 +31,7 @@
       "output": "dist/queryu_min.py",
       "api": "verified offline cache and html-snapshot/1",
       "repository": "myon-bioinformatics/QueRyu",
-      "commit": "a0fd3aa9d8891ad6ab543d30a6287a6c6dd09b07"
+      "commit": "d344dba18b442c8386e67d9be69a6974e4214ac9"
     },
     "sakanalytics": {
       "prefix": "sakanalytics",

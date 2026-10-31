@@ -340,3 +340,35 @@ raise SystemExit("evaluate returned")
     out = subprocess.run([sys.executable, "-c", code, str(ROOT)], cwd=ROOT, capture_output=True, text=True)
     assert out.returncode == 0, out.stderr
     assert "polars_min に ~ はない" in out.stdout
+
+
+def test_load_config_does_not_reread_the_same_file_and_run_workload_does_not_repeat_sys_path(tmp_path, monkeypatch):
+    cfg = tmp_path / "cfg.json"
+    cfg.write_text(json.dumps({"entries": ["a.py:f"], "sys_path": ["", ""], "workload": "json:dumps"}), encoding="utf-8")
+    try:
+        assert sp.load_config(cfg)["entries"] == ["a.py:f"]
+        cfg.write_text(json.dumps({"entries": ["b.py:g"]}), encoding="utf-8")
+        assert sp.load_config(cfg)["entries"] == ["a.py:f"]          # 同じファイルは読み直さない
+        monkeypatch.setattr(sys, "path", [p for p in sys.path if p != str(ROOT)])
+        monkeypatch.setattr(sp, "importlib", type("I", (), {"import_module": staticmethod(lambda name: type("M", (), {"dumps": staticmethod(lambda root: {})}))}))
+        sp._run_workload()
+        sp._run_workload()
+        assert sys.path.count(str(ROOT)) == 1
+    finally:
+        sp.load_config(sp.CONFIG_PATH)
+
+
+@pytest.mark.parametrize("invalid", ["{", '{"entries": null}'])
+def test_failed_config_load_is_not_cached_or_partially_applied(tmp_path, invalid):
+    cfg = tmp_path / "broken.json"
+    cfg.write_text(invalid, encoding="utf-8")
+    before = (dict(sp.CONFIG), list(sp.DEFAULT_ENTRIES), list(sp._LOADED))
+    for _ in range(2):
+        with pytest.raises((json.JSONDecodeError, TypeError)):
+            sp.load_config(cfg)
+        assert (sp.CONFIG, sp.DEFAULT_ENTRIES, sp._LOADED) == before
+    cfg.write_text(json.dumps({"entries": ["fixed.py:f"]}), encoding="utf-8")
+    try:
+        assert sp.load_config(cfg)["entries"] == ["fixed.py:f"]
+    finally:
+        sp.load_config(sp.CONFIG_PATH)

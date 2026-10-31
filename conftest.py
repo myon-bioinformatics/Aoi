@@ -144,6 +144,7 @@ _DISTINCT_BASENAMES = frozenset({
     # it once, then aborts when the next copy does not match.
     'test_no_sibling_imports.py',
     'test_vendor_lock.py',
+    'test_node_launcher_regressions.py',
 })
 
 

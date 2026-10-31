@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """shared-tools.lock.json の sha256 を、Aoi に置いた共有ツールのバイトと照合する。
 
-schema は vendor-lock/1。各エントリは path、sha256、source（Aoi）、consumer の子。
+schema は vendor-lock/1。各エントリは path、sha256、source（Aoi）、実際に使っている子（consumers、空も可）。
 子の main の SHA は lock に書かない。--resolve-consumers のときだけ git ls-remote で
 取り、child-heads.json の repository_id と GitHub の id を照合して、SHA を出す。
 """
@@ -20,14 +20,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 LOCK_NAME = "shared-tools.lock.json"
 SOURCE = "myon-bioinformatics/Aoi"
-CONSUMERS = (
-    "myon-bioinformatics/DRAgoWing",
-    "myon-bioinformatics/BlueProbe",
-    "myon-bioinformatics/NagoyAction",
-    "myon-bioinformatics/QueRyu",
-    "myon-bioinformatics/PythDRagoras",
-    "myon-bioinformatics/SakAnalytics",
-)
 HEX64 = re.compile(r"[0-9a-f]{64}")
 HEX40 = re.compile(r"[0-9a-f]{40}")
 ENTRY_KEYS = {"path", "sha256", "source", "consumers"}
@@ -61,8 +53,6 @@ def problems(root: Path, lock: dict | None = None) -> list[str]:
         heads = json.loads(heads_path.read_text(encoding="utf-8"))["heads"]
     except (OSError, json.JSONDecodeError, KeyError) as exc:
         return [f"child-heads.json を読めない: {exc}"]
-    if set(heads) != set(CONSUMERS):
-        found.append("child-heads.json の子と consumer の一覧が違う")
     paths = []
     for index, entry in enumerate(files):
         where = f"files[{index}]"
@@ -76,8 +66,10 @@ def problems(root: Path, lock: dict | None = None) -> list[str]:
         paths.append(path)
         if entry["source"] != SOURCE:
             found.append(f"{path}: source は {SOURCE}")
-        if entry["consumers"] != list(CONSUMERS):
-            found.append(f"{path}: consumers は登録した子の一覧")
+        consumers = entry["consumers"]
+        if (not isinstance(consumers, list) or len(set(consumers)) != len(consumers)
+                or not set(consumers) <= set(heads) or consumers != sorted(consumers)):
+            found.append(f"{path}: consumers は child-heads.json の子から重複なしで昇順")
         sha = entry["sha256"]
         if not isinstance(sha, str) or not HEX64.fullmatch(sha):
             found.append(f"{path}: sha256 は 64 桁の hex")
@@ -126,9 +118,7 @@ def resolve_consumers(root: Path) -> str:
     """子の最新 main を解決し、repository id を照合して Markdown を返す。"""
     lock = load_lock(root)
     heads = json.loads((root / "child-heads.json").read_text(encoding="utf-8"))["heads"]
-    consumers = lock["files"][0]["consumers"]
-    if any(entry["consumers"] != consumers for entry in lock["files"]):
-        raise SystemExit("lock の consumers がエントリ間で違う")
+    consumers = sorted({name for entry in lock["files"] for name in entry["consumers"]})
     checkout = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, check=True, env=_git_env(),
     ).stdout.strip()

@@ -3,7 +3,7 @@
 This is an as-is archive of Aoi phase-2 tidy outputs from the Grok Bot box (`/workspace/aoi-phase2`, top level), taken on 2026-10-31 (Asia/Tokyo). It holds panels, readmes, run scripts, summaries and handoff notes. The data is unedited, and the values are kept in their source units with no FX conversion.
 
 - Raw source dumps (`raw/` and `scratch/`, about 2 GB, some files over 100 MB) are left out because of their size.
-- `faostat_trade_unit_values_staples_panel.csv` and `faostat_food_trade_indices_panel.csv` are committed only as `.csv.gz` (gzip -n), because each is about 100 MB.
+- Every file over 200 KB is stored gzipped (`gzip -n -9`, `.gz`) to keep the checkout small; CI ran out of disk with the uncompressed archive. This includes `faostat_trade_unit_values_staples_panel.csv` and `faostat_food_trade_indices_panel.csv` are committed only as `.csv.gz` (gzip -n), because each is about 100 MB.
 - Backups (`*_backup.csv`) are included. No file was byte-identical to one already tracked, so nothing was dropped.
 - The `_run_*.py.txt` scripts are historical drivers, renamed to `.py.txt` so the import inventory and lint checks skip them. Their paths and dependencies refer to the phase-2 box layout, so they are not expected to run in this repository.
 

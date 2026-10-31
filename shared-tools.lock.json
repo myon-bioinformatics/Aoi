@@ -6,12 +6,7 @@
       "sha256": "9e62b356bd66358111d56fdb714d088091066bc6815383413d665a7abfac9f6f",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
-        "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/BlueProbe",
-        "myon-bioinformatics/NagoyAction",
-        "myon-bioinformatics/QueRyu",
-        "myon-bioinformatics/PythDRagoras",
-        "myon-bioinformatics/SakAnalytics"
+        "myon-bioinformatics/DRAgoWing"
       ]
     },
     {
@@ -19,12 +14,7 @@
       "sha256": "f798ba054ce65ffd717fce21fb429ec15ee4084084ca969e768675db9811922c",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
-        "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/BlueProbe",
-        "myon-bioinformatics/NagoyAction",
-        "myon-bioinformatics/QueRyu",
-        "myon-bioinformatics/PythDRagoras",
-        "myon-bioinformatics/SakAnalytics"
+        "myon-bioinformatics/NagoyAction"
       ]
     },
     {
@@ -32,38 +22,21 @@
       "sha256": "1d8df5102a16a50c8a3a89f2b730bec21d0b1dc76106d1cb2bafeee81915ebc5",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
-        "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/BlueProbe",
-        "myon-bioinformatics/NagoyAction",
-        "myon-bioinformatics/QueRyu",
-        "myon-bioinformatics/PythDRagoras",
-        "myon-bioinformatics/SakAnalytics"
+        "myon-bioinformatics/NagoyAction"
       ]
     },
     {
       "path": "shrink/numpy_linalg_min.py",
       "sha256": "346bca19a4f3d2671cb2ff1fef2fba11db3d6194a8cf3249b9243516a03cbe33",
       "source": "myon-bioinformatics/Aoi",
-      "consumers": [
-        "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/BlueProbe",
-        "myon-bioinformatics/NagoyAction",
-        "myon-bioinformatics/QueRyu",
-        "myon-bioinformatics/PythDRagoras",
-        "myon-bioinformatics/SakAnalytics"
-      ]
+      "consumers": []
     },
     {
       "path": "shrink/numpy_min.py",
       "sha256": "0779d22355ec7a3b5f4562226ff1c7862edc1c9cedb6ea04b6cf466afc5a9364",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
-        "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/BlueProbe",
-        "myon-bioinformatics/NagoyAction",
-        "myon-bioinformatics/QueRyu",
-        "myon-bioinformatics/PythDRagoras",
-        "myon-bioinformatics/SakAnalytics"
+        "myon-bioinformatics/DRAgoWing"
       ]
     },
     {
@@ -71,12 +44,7 @@
       "sha256": "7c3539937b266e8d11452b3621050aab7d60ae8bb05dc79ffdc12874386cf4e1",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
-        "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/BlueProbe",
-        "myon-bioinformatics/NagoyAction",
-        "myon-bioinformatics/QueRyu",
-        "myon-bioinformatics/PythDRagoras",
-        "myon-bioinformatics/SakAnalytics"
+        "myon-bioinformatics/NagoyAction"
       ]
     },
     {
@@ -84,10 +52,7 @@
       "sha256": "a78fe656cde285a83501b9b19d97b9ebde6f9637919b3adb95c50eb254154536",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
-        "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/BlueProbe",
         "myon-bioinformatics/NagoyAction",
-        "myon-bioinformatics/QueRyu",
         "myon-bioinformatics/PythDRagoras",
         "myon-bioinformatics/SakAnalytics"
       ]

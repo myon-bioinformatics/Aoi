@@ -67,7 +67,7 @@ jobs:
         # pytest の最後の集計行が出ていること、"illegal value" が出ていないことも確かめる
         run: |
           set -o pipefail
-          uv run --locked --python "$(command -v python3)" pytest -q -rs -p no:cacheprovider \
+          uv run --locked --python "$(command -v python3)" pytest -q -rsP -p no:cacheprovider \
             tests/test_numpy_min_suggest.py tests/test_shrink_module.py 2>&1 | tee pytest.log
           grep -Eq '^[0-9]+ passed' pytest.log || grep -Eq '^=+ [0-9]+ passed' pytest.log
           if grep -Eq ' failed| error' pytest.log; then exit 1; fi

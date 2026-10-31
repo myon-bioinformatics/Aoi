@@ -179,6 +179,9 @@ def test_suggest_on_c001_subset_matches_numpy(tmp_path):
         "lapack": (5.759655420350951e-06, 7.688191857257998e-06),
         "stdlib": (1.8712230849260436e-06, 5.960464477539062e-07),
     }[b["backend"]]
+    gram_max = float(np.max(np.abs(np.asarray(b["gram"]) - np.asarray(a["gram"]))))
+    score_max = max(abs(p[1] - q[1]) for x, y in zip(a["runs"], b["runs"]) for p, q in zip(x, y))
+    print("numpy_min measured", b["backend"], "gram_max", repr(gram_max), "score_max", repr(score_max))
     np.testing.assert_allclose(b["gram"], a["gram"], rtol=0, atol=gram_atol)
     for x, y in zip(a["runs"], b["runs"], strict=True):
         assert [i for i, _ in x] == [i for i, _ in y]

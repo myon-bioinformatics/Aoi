@@ -1,5 +1,4 @@
 """Local rollout contract; adopted vendor locks are deliberately independent."""
-import json
 import re
 from pathlib import Path
 
@@ -50,8 +49,11 @@ def test_vendor_dispatch_verifies_the_lock_without_recording():
     assert 'python-version: "3.12"' in text
     assert "uv run --locked --python" in text
     assert "pytest" in text
-    lock = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
-    assert lock == {"schema": "vendor-lock/1", "files": []}
+
+
+def test_no_vendor_lock_is_kept():
+    # The lock had no rows, so it was removed. The workflow step that still names it is removed in a follow-up.
+    assert not (ROOT / "vendor.lock.json").exists()
 
 
 def test_setup_actions_use_latest_full_shas_and_other_actions_use_major_tags():

@@ -1,0 +1,216 @@
+{
+  "prelock": "yoy_prelock_2026-10-24.md",
+  "target": "y_t = log(P_t/P_{t-1})",
+  "baseline": "yhat = 0",
+  "min_train": 5,
+  "test_years_include": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "forms_tried": [
+    "aoff_yoy",
+    "primary_yoy",
+    "alt200_yoy",
+    "exp_neg_yoy",
+    "prop_A_yoy"
+  ],
+  "n_forms_tried": 5,
+  "exclusion_check": {
+    "P_2025": 4599.7,
+    "max_P_2015_2024": 2686.9,
+    "P_2025_gt_max": true,
+    "pct_2025": 0.7118984703561724,
+    "max_pct_2016_2024": 0.2985839253781839,
+    "pct_2025_gt_max": true,
+    "exclusion_applies": true
+  },
+  "criteria": {
+    "crit1_all_wins": {
+      "include": "5/5",
+      "exclude": "4/4"
+    },
+    "crit2_majority": {
+      "include": ">=3/5",
+      "exclude": ">=3/4"
+    }
+  },
+  "forms": {
+    "aoff_yoy": {
+      "include_2025": {
+        "n": 5,
+        "wins": 5,
+        "win_rate": 1.0,
+        "crit1_all_wins": true,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "years_lost": []
+      },
+      "exclude_2025": {
+        "n": 4,
+        "wins": 4,
+        "win_rate": 1.0,
+        "crit1_all_wins": true,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2021,
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": []
+      }
+    },
+    "primary_yoy": {
+      "include_2025": {
+        "n": 5,
+        "wins": 3,
+        "win_rate": 0.6,
+        "crit1_all_wins": false,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": [
+          2021,
+          2025
+        ]
+      },
+      "exclude_2025": {
+        "n": 4,
+        "wins": 3,
+        "win_rate": 0.75,
+        "crit1_all_wins": false,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": [
+          2021
+        ]
+      }
+    },
+    "alt200_yoy": {
+      "include_2025": {
+        "n": 5,
+        "wins": 3,
+        "win_rate": 0.6,
+        "crit1_all_wins": false,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": [
+          2021,
+          2025
+        ]
+      },
+      "exclude_2025": {
+        "n": 4,
+        "wins": 3,
+        "win_rate": 0.75,
+        "crit1_all_wins": false,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": [
+          2021
+        ]
+      }
+    },
+    "exp_neg_yoy": {
+      "include_2025": {
+        "n": 5,
+        "wins": 3,
+        "win_rate": 0.6,
+        "crit1_all_wins": false,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": [
+          2021,
+          2025
+        ]
+      },
+      "exclude_2025": {
+        "n": 4,
+        "wins": 3,
+        "win_rate": 0.75,
+        "crit1_all_wins": false,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": [
+          2021
+        ]
+      }
+    },
+    "prop_A_yoy": {
+      "include_2025": {
+        "n": 5,
+        "wins": 3,
+        "win_rate": 0.6,
+        "crit1_all_wins": false,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": [
+          2021,
+          2025
+        ]
+      },
+      "exclude_2025": {
+        "n": 4,
+        "wins": 3,
+        "win_rate": 0.75,
+        "crit1_all_wins": false,
+        "crit2_majority": true,
+        "majority_threshold": 3,
+        "years_won": [
+          2022,
+          2023,
+          2024
+        ],
+        "years_lost": [
+          2021
+        ]
+      }
+    }
+  },
+  "language_note": "CI includes 0 => 検出できず/判断保留. CI excludes 0 and median>0 => naiveより悪い. NOT locked adopt rule."
+}

@@ -1,0 +1,358 @@
+{
+  "prelock": "extend_rerun_prelock_2026-10-24.md",
+  "judgment_rules": "judgment_rules_small_n_2026-10-24.md",
+  "target": "y_t = log(P_t/P_{t-1})",
+  "baseline": "yhat = 0",
+  "min_train": 5,
+  "test_years_nominal": [
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "yoy_train_start": 2006,
+  "forms_tried": [
+    "aoff_yoy",
+    "primary_yoy",
+    "alt200_yoy",
+    "exp_neg_yoy",
+    "prop_A_yoy"
+  ],
+  "m_forms": 5,
+  "primary_yoy_NA_test_years": [
+    2013,
+    2014
+  ],
+  "primary_yoy_NA_reason": "Δlog(100-A) undefined when A_t>=100 or A_{t-1}>=100 (2013 annual A=100.87 → t=2013 and t=2014)",
+  "exclusion_check": {
+    "P_2025": 4599.7,
+    "max_P_2015_2024": 2686.9,
+    "P_2025_gt_max": true,
+    "pct_2025": 0.7118984703561724,
+    "max_pct_2016_2024": 0.2985839253781839,
+    "pct_2025_gt_max": true,
+    "exclusion_applies": true
+  },
+  "forms": {
+    "aoff_yoy": {
+      "include_2025": {
+        "n": 15,
+        "wins": 6,
+        "win_rate": 0.4,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.849121,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2012,
+          2014,
+          2015,
+          2017,
+          2025
+        ],
+        "years_lost": [
+          2013,
+          2016,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024
+        ]
+      },
+      "exclude_2025": {
+        "n": 14,
+        "wins": 5,
+        "win_rate": 0.3571,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.910217,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2012,
+          2014,
+          2015,
+          2017
+        ],
+        "years_lost": [
+          2013,
+          2016,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024
+        ]
+      }
+    },
+    "primary_yoy": {
+      "include_2025": {
+        "n": 13,
+        "wins": 4,
+        "win_rate": 0.3077,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.953857,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2012,
+          2015,
+          2024
+        ],
+        "years_lost": [
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2025
+        ]
+      },
+      "exclude_2025": {
+        "n": 12,
+        "wins": 4,
+        "win_rate": 0.3333,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.927002,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2012,
+          2015,
+          2024
+        ],
+        "years_lost": [
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023
+        ]
+      }
+    },
+    "alt200_yoy": {
+      "include_2025": {
+        "n": 15,
+        "wins": 5,
+        "win_rate": 0.3333,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.940765,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2014,
+          2015,
+          2017,
+          2025
+        ],
+        "years_lost": [
+          2012,
+          2013,
+          2016,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024
+        ]
+      },
+      "exclude_2025": {
+        "n": 14,
+        "wins": 4,
+        "win_rate": 0.2857,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.971313,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2014,
+          2015,
+          2017
+        ],
+        "years_lost": [
+          2012,
+          2013,
+          2016,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024
+        ]
+      }
+    },
+    "exp_neg_yoy": {
+      "include_2025": {
+        "n": 15,
+        "wins": 5,
+        "win_rate": 0.3333,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.940765,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2014,
+          2015,
+          2017,
+          2025
+        ],
+        "years_lost": [
+          2012,
+          2013,
+          2016,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024
+        ]
+      },
+      "exclude_2025": {
+        "n": 14,
+        "wins": 4,
+        "win_rate": 0.2857,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.971313,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2014,
+          2015,
+          2017
+        ],
+        "years_lost": [
+          2012,
+          2013,
+          2016,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024
+        ]
+      }
+    },
+    "prop_A_yoy": {
+      "include_2025": {
+        "n": 15,
+        "wins": 4,
+        "win_rate": 0.2667,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.982422,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2014,
+          2015,
+          2017
+        ],
+        "years_lost": [
+          2012,
+          2013,
+          2016,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "exclude_2025": {
+        "n": 14,
+        "wins": 4,
+        "win_rate": 0.2857,
+        "crit1_all_wins": false,
+        "crit2_majority": false,
+        "majority_rule": "wins > n/2",
+        "sign_p_onesided": 0.971313,
+        "p_adj_m_times_p": 1.0,
+        "m_forms": 5,
+        "years_won": [
+          2011,
+          2014,
+          2015,
+          2017
+        ],
+        "years_lost": [
+          2012,
+          2013,
+          2016,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024
+        ]
+      }
+    }
+  },
+  "legacy_untouched": [
+    "yoy_rolling_year_wins.csv",
+    "yoy_rolling_coeffs.csv",
+    "yoy_rolling_summary.json",
+    "report_yoy_rolling.md",
+    "yoy_log_err_ratio.csv",
+    "yoy_log_err_ratio_summary.json"
+  ]
+}

@@ -1,0 +1,27 @@
+year,E_fraction,E_pct,household,region,source
+1998,0.23800000000000002,23.8,二人以上の世帯（農林漁家世帯を除く）,全国,stat.go.jp_kakei_longtime_a18-1_Food_over_CE; break_vs_2000plus_incl_farm
+1999,0.237,23.7,二人以上の世帯（農林漁家世帯を除く）,全国,stat.go.jp_kakei_longtime_a18-1_Food_over_CE; break_vs_2000plus_incl_farm
+2000,0.233,23.3,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2001,0.2319999999999999,23.2,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2002,0.233,23.3,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2003,0.2319999999999999,23.2,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2004,0.23,23.0,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2005,0.2289999999999999,22.9,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2006,0.231,23.1,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2007,0.23,23.0,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2008,0.2319999999999999,23.2,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2009,0.2339999999999999,23.4,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2010,0.233,23.3,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2011,0.236,23.6,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2012,0.235,23.5,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2013,0.236,23.6,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2014,0.24,24.0,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2015,0.25,25.0,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2016,0.258,25.8,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2017,0.257,25.7,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2018,0.257,25.7,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2019,0.257,25.7,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2020,0.275,27.5,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2021,0.272,27.2,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2022,0.266,26.6,二人以上の世帯,全国,e-stat_kakei_longtime_rehost
+2023,0.278,27.8,二人以上の世帯,全国,e-stat_kakei_longtime_rehost

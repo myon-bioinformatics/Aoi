@@ -1,0 +1,5 @@
+year,item,scope,n5,n5_raw,n10,mean_P5,median_P5,mean_P10,median_P10,R_mean,R_median,ypk5_mean,ypk10_mean,source_file,note
+2002,1003,cross_city_annual,65,65,2,2072.28,2052.0,4163.0,4163.0,2.0089,2.0288,414.46,416.3,raw/rice_annual_2002.xls,10kg cities marked footnote a); 5kg pool excludes avg>=3200
+2002,1005,cross_city_annual,31,31,3,1801.55,1816.0,3648.33,3665.0,2.0251,2.0182,360.31,364.83,raw/rice_annual_2002.xls,10kg cities marked footnote a); 5kg pool excludes avg>=3200
+2003,1003,cross_city_annual,65,66,2,2074.37,2053.0,4005.5,4005.5,1.9309,1.951,414.87,400.55,raw/rice_annual_2003.xls,10kg cities marked footnote a); 5kg pool excludes avg>=3200
+2004,1003,cross_city_annual,66,67,2,2261.59,2251.5,4233.0,4233.0,1.8717,1.8801,452.32,423.3,raw/rice_annual_2004.xls,10kg cities marked footnote a); 5kg pool excludes avg>=3200

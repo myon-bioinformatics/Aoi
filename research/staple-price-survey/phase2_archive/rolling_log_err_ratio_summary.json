@@ -1,0 +1,175 @@
+{
+  "note": "Continuous companion. NOT a locked adopt rule. Negative log_err_ratio => model better.",
+  "forms": {
+    "primary_100": {
+      "include_2025": {
+        "n": 7,
+        "years_neg_ratio": 1,
+        "median_log_err_ratio": 1.525382,
+        "mean_log_err_ratio": 1.813734,
+        "min": -0.454617,
+        "max": 3.59329,
+        "boot_median_ci95": {
+          "median": 1.525382,
+          "ci95_lo": 0.992178,
+          "ci95_hi": 3.02263,
+          "includes_0": false,
+          "B": 2000,
+          "seed": 20261024
+        }
+      },
+      "exclude_2025": {
+        "n": 6,
+        "years_neg_ratio": 0,
+        "median_log_err_ratio": 2.067238,
+        "mean_log_err_ratio": 2.191792,
+        "min": 0.992178,
+        "max": 3.59329,
+        "boot_median_ci95": {
+          "median": 2.067238,
+          "ci95_lo": 1.200179,
+          "ci95_hi": 3.30796,
+          "includes_0": false,
+          "B": 2000,
+          "seed": 20261024
+        }
+      }
+    },
+    "alt200": {
+      "include_2025": {
+        "n": 7,
+        "years_neg_ratio": 2,
+        "median_log_err_ratio": 0.907333,
+        "mean_log_err_ratio": -0.203628,
+        "min": -6.054309,
+        "max": 3.08686,
+        "boot_median_ci95": {
+          "median": 0.907333,
+          "ci95_lo": -2.487769,
+          "ci95_hi": 1.594967,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        }
+      },
+      "exclude_2025": {
+        "n": 6,
+        "years_neg_ratio": 2,
+        "median_log_err_ratio": 1.150073,
+        "mean_log_err_ratio": -0.260017,
+        "min": -6.054309,
+        "max": 3.08686,
+        "boot_median_ci95": {
+          "median": 1.150073,
+          "ci95_lo": -4.271039,
+          "ci95_hi": 2.340914,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        }
+      }
+    },
+    "exp_neg": {
+      "include_2025": {
+        "n": 7,
+        "years_neg_ratio": 2,
+        "median_log_err_ratio": 1.243862,
+        "mean_log_err_ratio": 0.870126,
+        "min": -1.384579,
+        "max": 3.012704,
+        "boot_median_ci95": {
+          "median": 1.243862,
+          "ci95_lo": -0.380242,
+          "ci95_hi": 2.173489,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        }
+      },
+      "exclude_2025": {
+        "n": 6,
+        "years_neg_ratio": 2,
+        "median_log_err_ratio": 1.259307,
+        "mean_log_err_ratio": 0.989997,
+        "min": -1.384579,
+        "max": 3.012704,
+        "boot_median_ci95": {
+          "median": 1.259307,
+          "ci95_lo": -0.88241,
+          "ci95_hi": 2.593096,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        }
+      }
+    },
+    "aoff": {
+      "include_2025": {
+        "n": 7,
+        "years_neg_ratio": 4,
+        "median_log_err_ratio": -0.070019,
+        "mean_log_err_ratio": 0.325524,
+        "min": -0.801123,
+        "max": 3.194977,
+        "boot_median_ci95": {
+          "median": -0.070019,
+          "ci95_lo": -0.343386,
+          "ci95_hi": 0.338731,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        }
+      },
+      "exclude_2025": {
+        "n": 6,
+        "years_neg_ratio": 4,
+        "median_log_err_ratio": -0.153428,
+        "mean_log_err_ratio": 0.347057,
+        "min": -0.801123,
+        "max": 3.194977,
+        "boot_median_ci95": {
+          "median": -0.153428,
+          "ci95_lo": -0.572254,
+          "ci95_hi": 1.766854,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        }
+      }
+    },
+    "prop_A": {
+      "include_2025": {
+        "n": 7,
+        "years_neg_ratio": 0,
+        "median_log_err_ratio": 0.818201,
+        "mean_log_err_ratio": 1.157905,
+        "min": 0.265648,
+        "max": 3.302924,
+        "boot_median_ci95": {
+          "median": 0.818201,
+          "ci95_lo": 0.56317,
+          "ci95_hi": 1.711053,
+          "includes_0": false,
+          "B": 2000,
+          "seed": 20261024
+        }
+      },
+      "exclude_2025": {
+        "n": 6,
+        "years_neg_ratio": 0,
+        "median_log_err_ratio": 0.835374,
+        "mean_log_err_ratio": 1.306614,
+        "min": 0.56317,
+        "max": 3.302924,
+        "boot_median_ci95": {
+          "median": 0.835374,
+          "ci95_lo": 0.577479,
+          "ci95_hi": 2.506988,
+          "includes_0": false,
+          "B": 2000,
+          "seed": 20261024
+        }
+      }
+    }
+  }
+}

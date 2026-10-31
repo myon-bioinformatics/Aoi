@@ -1,0 +1,24 @@
+family,series,source,landed,n,iso3,median,cv,p90_p10,min,max
+Electronics,iPhone 15 (Burger Parity),Burger Parity USD snapshot,NEW panel iphone_15_burgerparity,30,30,966.605,0.19143297443956847,1.4134592345727421,798.72,1754.97
+Food service,Starbucks Tall Latte (Burger Parity),Burger Parity USD snapshot,already starbucks_latte_burgerparity,30,30,4.55,0.21223468672132714,1.663895486935867,2.97,7.62
+Digital sub,Netflix standard (Burger Parity),Burger Parity USD snapshot,NEW panel netflix_standard_burgerparity,30,30,11.85,0.22907733651791143,1.9263047469184367,5.17,15.49
+Food service,Big Mac (Burger Parity ref),Burger Parity USD snapshot,Season2 owns Big Mac — not duplicated,30,30,5.075,0.23173957870675635,1.8637212196639703,2.45,7.73
+Apparel,Numbeo Nike mid-range shoes,Numbeo crowd USD,NEW focused numbeo_nike_shoes_crowd,102,102,94.56,0.2457472838382584,1.8116465256797583,39.16,172.44
+Apparel,Numbeo Zara/H&M summer dress,Numbeo crowd USD,NEW focused numbeo_zara_hm_dress_crowd,102,102,41.980000000000004,0.2777148275452576,2.041411101375291,14.72,85.36
+Energy,Gasoline (Burger Parity),Burger Parity USD snapshot,overlap Numbeo gasoline; not new panel,30,30,1.34,0.3013892229653573,2.1961231470923606,0.62,2.15
+Vehicles,Numbeo Toyota Corolla equiv (ex-Singapore),Numbeo crowd USD,same panel; tax/COE outlier removed for screen,101,101,29855.87,0.30266254944580123,1.861361265351018,14902.83,73500.0
+Vehicles,Numbeo VW Golf equiv (ex-Singapore),Numbeo crowd USD,same panel; tax/COE outlier removed for screen,101,101,29927.02,0.3252998959121161,2.005879917695395,11269.5,70000.0
+Food/service,"Numbeo Milk (regular), (1 liter)",Numbeo crowd USD,already numbeo_staples_restaurant_crowd,102,101,1.4249999999999998,0.3460695516871991,2.3865363735070577,0.49,2.98
+Service,Gym membership (Burger Parity),Burger Parity USD snapshot,SKIP — not durable / higher CV,30,30,33.45,0.3759678508349225,2.4875454545454554,16.83,74.0
+Food/service,Numbeo McMeal at McDonalds (or Equivalent Combo,Numbeo crowd USD,already numbeo_staples_restaurant_crowd,102,101,8.36,0.39935622816633937,2.646651740280888,3.21,24.18
+Food/service,Numbeo Cappuccino (regular),Numbeo crowd USD,already numbeo_staples_restaurant_crowd,102,101,2.885,0.4048049365564844,2.9676840215439855,0.81,6.5
+Food,Coca-Cola 330ml (Burger Parity),Burger Parity USD snapshot,already coca_cola_330ml_burgerparity,30,30,1.46,0.40758354219971926,3.82982456140351,0.47,2.46
+Energy,Numbeo Gasoline 1L,Numbeo crowd USD,parent clothing panel; energy,102,102,1.475,0.4104384359579537,3.326687116564417,0.29,4.1
+Apparel,Numbeo Levi's 501 jeans,Numbeo crowd USD,parent clothing panel only,102,102,62.35,0.4278272476932151,4.070767381286315,16.23,149.75
+Food,Bread (Burger Parity),Burger Parity USD snapshot,Season2/food lane; higher CV,30,30,1.45,0.4744727049177214,3.8203434610303835,0.47,3.49
+Vehicles,Numbeo Toyota Corolla equiv,Numbeo crowd USD,already numbeo_new_car_crowd,102,102,30117.475,0.4766255239117268,1.9020583716168262,14902.83,152613.96
+Digital sub,Spotify (Burger Parity),Burger Parity USD snapshot,SKIP land — high CV (regional pricing),30,30,8.295,0.4887766202428972,5.651322233104799,1.39,14.5
+Vehicles,Numbeo VW Golf equiv,Numbeo crowd USD,already numbeo_new_car_crowd,102,102,29939.684999999998,0.49257974269807103,2.0666694820734905,11269.5,156629.34
+Transit,Uber 5km (Burger Parity),Burger Parity USD snapshot,SKIP — transit deferred,30,30,7.54,0.5140217838561607,4.788555194805196,1.58,15.68
+Electronics global,hblok DRAM USD/MB,hblok global,already dram_memory_hblok — NOT multi-country (no CV),342,0,,,,,
+Electronics global,hblok USB flash USD/MB,hblok/NewEgg global,already usb_flash_hblok — NOT multi-country (no CV),96,0,,,,,

@@ -1,0 +1,6 @@
+country,year,item,value,unit,source,notes
+CAN,2004,cable_satellite_other_program_distribution_incl_streaming,5.3,CAD_billion_annual_household_aggregate_SA_current,Statistics Canada Plus article 2025-07-02 citing HFCE,"aggregate, not per household"
+CAN,2014,cable_satellite_other_program_distribution_incl_streaming,10.0,CAD_billion_annual_household_aggregate_SA_current,Statistics Canada Plus article 2025-07-02 citing HFCE,
+CAN,2019,cable_satellite_other_program_distribution_incl_streaming,10.8,CAD_billion_annual_household_aggregate_SA_current,Statistics Canada Plus article 2025-07-02 citing HFCE,
+CAN,2023,cable_satellite_other_program_distribution_incl_streaming,11.4,CAD_billion_annual_household_aggregate_SA_current,Statistics Canada Plus article 2025-07-02 citing HFCE,
+CAN,2024,cable_satellite_other_program_distribution_incl_streaming,11.3,CAD_billion_annual_household_aggregate_SA_current,Statistics Canada Plus article 2025-07-02 citing HFCE,

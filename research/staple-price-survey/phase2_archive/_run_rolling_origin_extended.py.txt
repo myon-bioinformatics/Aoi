@@ -1,0 +1,291 @@
+#!/usr/bin/env python3
+"""Extended LEVEL rolling — AFTER extend_rerun_prelock. Does NOT overwrite legacy files."""
+import csv, json, math
+from pathlib import Path
+from statistics import mean
+import numpy as np
+
+OUT = Path("/workspace/aoi-phase2")
+rows = list(csv.DictReader((OUT / "gohantrust_panel_aoki.csv").open()))
+
+def getf(r, *keys):
+    for k in keys:
+        if k in r and r[k] not in ("", None):
+            return float(r[k])
+    raise KeyError(keys)
+
+years = []
+for r in rows:
+    years.append({
+        "year": int(float(r["year"])),
+        "P": getf(r, "P_yen", "P"),
+        "A": getf(r, "Aoki_A", "Aoki", "A"),
+        "E": getf(r, "E"),
+        "q": getf(r, "q_kg", "q") if r.get("q_kg") not in (None, "") or r.get("q") not in (None, "") else 5.0,
+    })
+years.sort(key=lambda d: d["year"])
+by_y = {d["year"]: d for d in years}
+
+def primary_domain_ok(d):
+    return (100.0 - d["A"]) > 0
+
+# price-fact exclusion check (same as legacy)
+P2025 = by_y[2025]["P"]
+P_max_pre = max(by_y[y]["P"] for y in range(2015, 2025))
+pct_2025 = P2025 / by_y[2024]["P"] - 1
+pcts_pre = [by_y[y]["P"] / by_y[y - 1]["P"] - 1 for y in range(2016, 2025)]
+pct_max_pre = max(pcts_pre)
+excl_ok = (P2025 > P_max_pre) and (pct_2025 > pct_max_pre)
+excl_check = {
+    "P_2025": P2025,
+    "max_P_2015_2024": P_max_pre,
+    "P_2025_gt_max": P2025 > P_max_pre,
+    "pct_2025": pct_2025,
+    "max_pct_2016_2024": pct_max_pre,
+    "pct_2025_gt_max": pct_2025 > pct_max_pre,
+    "exclusion_applies": excl_ok,
+}
+
+FORMS = ["primary_100", "alt200", "exp_neg", "aoff", "prop_A"]
+TEST_YEARS = list(range(2010, 2026))  # prelock
+MIN_TRAIN = 5
+PANEL_START = 2005
+M_FORMS = len(FORMS)
+
+
+def fit_and_predict(train, test_d, form):
+    q = test_d["q"]
+    A, E, P = test_d["A"], test_d["E"], test_d["P"]
+    coeffs = {"form": form, "n_train": len(train)}
+
+    if form == "primary_100":
+        train_ok = [d for d in train if primary_domain_ok(d)]
+        if not train_ok:
+            return None, {"form": form, "n_train": 0, "K": None, "beta": None, "skip": "no_train_in_domain"}
+        Ks = [d["P"] / (d["q"] * (100 - d["A"]) * d["E"]) for d in train_ok]
+        K = mean(Ks)
+        Ph = K * q * (100 - A) * E
+        coeffs.update({"K": K, "beta": None, "n_train_domain": len(train_ok)})
+    elif form == "alt200":
+        Ks = [d["P"] / (d["q"] * (200 - d["A"]) * d["E"]) for d in train]
+        K = mean(Ks)
+        Ph = K * q * (200 - A) * E
+        coeffs.update({"K": K, "beta": None})
+    elif form == "prop_A":
+        Ks = [d["P"] / (d["q"] * d["A"] * d["E"]) for d in train]
+        K = mean(Ks)
+        Ph = K * q * A * E
+        coeffs.update({"K": K, "beta": None})
+    elif form == "aoff":
+        Ks = [d["P"] / (d["q"] * d["E"]) for d in train]
+        K = mean(Ks)
+        Ph = K * q * E
+        coeffs.update({"K": K, "beta": None})
+    elif form == "exp_neg":
+        X = np.array([d["A"] for d in train], dtype=float)
+        Y = np.array([math.log(d["P"] / (d["q"] * d["E"])) for d in train], dtype=float)
+        if len(train) < 2 or np.allclose(X, X[0]):
+            c = float(Y.mean()); beta = 0.0
+        else:
+            Xm, Ym = X.mean(), Y.mean()
+            s = float(((X - Xm) * (Y - Ym)).sum() / ((X - Xm) ** 2).sum())
+            c = float(Ym - s * Xm)
+            beta = -s
+        K = math.exp(c)
+        Ph = K * q * math.exp(-beta * A) * E
+        coeffs.update({"K": K, "beta": beta, "c": c, "slope_s": -beta})
+    else:
+        raise ValueError(form)
+    return Ph, coeffs
+
+
+def binom_onesided_p(wins, n):
+    """P(X>=wins) under Binomial(n, 0.5), one-sided."""
+    if n <= 0:
+        return None
+    # exact: sum_{k=wins}^n C(n,k) / 2^n
+    from math import comb
+    return sum(comb(n, k) for k in range(wins, n + 1)) / (2 ** n)
+
+
+win_rows = []
+coeff_rows = []
+primary_dropped_test = []
+
+for t in TEST_YEARS:
+    train_all = [d for d in years if PANEL_START <= d["year"] <= t - 1]
+    if len(train_all) < MIN_TRAIN:
+        continue
+    test_d = by_y[t]
+    naive = by_y[t - 1]["P"]
+    ae_naive = abs(naive - test_d["P"])
+    for form in FORMS:
+        if form == "primary_100" and not primary_domain_ok(test_d):
+            primary_dropped_test.append(t)
+            win_rows.append({
+                "t": t, "form": form, "P": test_d["P"], "A": test_d["A"], "E": test_d["E"],
+                "P_hat": "", "P_naive": naive, "abs_e_model": "", "abs_e_naive": round(ae_naive, 6),
+                "year_win": "", "n_train": len(train_all), "train_end": t - 1,
+                "in_excl_aggregate": t != 2025, "status": "NA_domain_primary",
+            })
+            coeff_rows.append({
+                "t": t, "form": form, "train_start": PANEL_START, "train_end": t - 1,
+                "n_train": len(train_all), "K": "", "beta": "", "c": "", "status": "NA_domain_primary",
+            })
+            continue
+        Ph, coeffs = fit_and_predict(train_all, test_d, form)
+        if Ph is None:
+            continue
+        ae = abs(Ph - test_d["P"])
+        beat = ae < ae_naive
+        win_rows.append({
+            "t": t, "form": form, "P": test_d["P"], "A": test_d["A"], "E": test_d["E"],
+            "P_hat": round(Ph, 6), "P_naive": naive,
+            "abs_e_model": round(ae, 6), "abs_e_naive": round(ae_naive, 6),
+            "year_win": beat, "n_train": coeffs.get("n_train_domain", len(train_all)),
+            "train_end": t - 1, "in_excl_aggregate": t != 2025, "status": "ok",
+        })
+        coeff_rows.append({
+            "t": t, "form": form, "train_start": PANEL_START, "train_end": t - 1,
+            "n_train": coeffs.get("n_train_domain", len(train_all)),
+            "K": "" if coeffs.get("K") is None else f"{coeffs['K']:.8g}",
+            "beta": "" if coeffs.get("beta") is None else f"{coeffs['beta']:.8g}",
+            "c": "" if coeffs.get("c") is None else f"{coeffs['c']:.8g}",
+            "status": "ok",
+        })
+
+primary_dropped_test = sorted(set(primary_dropped_test))
+
+
+def aggregate(rows, form, years_set, label):
+    sub = [r for r in rows if r["form"] == form and r["t"] in years_set and r["status"] == "ok"]
+    wins = sum(1 for r in sub if r["year_win"] is True)
+    n = len(sub)
+    p = binom_onesided_p(wins, n) if n else None
+    p_adj = None if p is None else min(1.0, M_FORMS * p)
+    mae_m = mean(r["abs_e_model"] for r in sub) if sub else None
+    mae_n = mean(r["abs_e_naive"] for r in sub) if sub else None
+    # majority: wins > n/2
+    maj = (wins > n / 2) if n else False
+    return {
+        "window": label,
+        "n": n,
+        "years_win": wins,
+        "criterion1_all": wins == n and n > 0,
+        "criterion2_majority": maj,
+        "majority_rule": "wins > n/2",
+        "majority_threshold_exclusive": n / 2,
+        "sign_p_onesided": None if p is None else round(p, 6),
+        "p_adj_m_times_p": None if p_adj is None else round(p_adj, 6),
+        "m_forms": M_FORMS,
+        "mae_model": None if mae_m is None else round(mae_m, 4),
+        "mae_naive": None if mae_n is None else round(mae_n, 4),
+        "years_won": [r["t"] for r in sub if r["year_win"] is True],
+        "years_lost": [r["t"] for r in sub if r["year_win"] is False],
+        "year_detail": [
+            {"t": r["t"], "year_win": r["year_win"], "abs_e_model": r["abs_e_model"], "abs_e_naive": r["abs_e_naive"]}
+            for r in sub
+        ],
+    }
+
+years_inc = set(TEST_YEARS)
+years_exc = set(y for y in TEST_YEARS if y != 2025)
+agg_full = {f: aggregate(win_rows, f, years_inc, "include_2025") for f in FORMS}
+agg_excl = {f: aggregate(win_rows, f, years_exc, "exclude_2025") for f in FORMS}
+
+with (OUT / "rolling_origin_extended_year_wins.csv").open("w", newline="") as f:
+    w = csv.DictWriter(f, fieldnames=list(win_rows[0].keys()))
+    w.writeheader(); w.writerows(win_rows)
+
+with (OUT / "rolling_origin_extended_coeffs.csv").open("w", newline="") as f:
+    w = csv.DictWriter(f, fieldnames=list(coeff_rows[0].keys()))
+    w.writeheader(); w.writerows(coeff_rows)
+
+summary = {
+    "prelock": "extend_rerun_prelock_2026-10-24.md",
+    "panel": "gohantrust_panel_aoki.csv 2005-2025",
+    "exclusion_check": excl_check,
+    "forms": FORMS,
+    "m_forms": M_FORMS,
+    "test_years_nominal": TEST_YEARS,
+    "primary_test_years_dropped_domain": primary_dropped_test,
+    "majority_rule": "wins > n/2",
+    "min_train": MIN_TRAIN,
+    "train_window": "2005..t-1",
+    "include_2025": agg_full,
+    "exclude_2025": agg_excl,
+    "language": "モデルが良い / モデルが悪い / 検出できず",
+    "legacy_untouched": [
+        "rolling_origin_year_wins.csv",
+        "rolling_origin_coeffs.csv",
+        "rolling_origin_summary.json",
+        "report_rolling_origin.md",
+    ],
+}
+(OUT / "rolling_origin_extended_summary.json").write_text(
+    json.dumps(summary, indent=2, ensure_ascii=False)
+)
+
+def yn(b):
+    return "Y" if b else "N"
+
+def wjp(b):
+    if b == "" or b is None:
+        return "NA"
+    return "勝" if b else "負"
+
+L = []
+L.append("# 延長ローリング・オリジン（水準）結果（数値・Grok）\n\n")
+L.append("**実行日:** 2026-10-24（Asia/Tokyo）\n\n")
+L.append("**実行前ロック:** `extend_rerun_prelock_2026-10-24.md`（18:49:30 JST）\n\n")
+L.append("**判断枠:** `judgment_rules_small_n_2026-10-24.md`（p / p_adj 併記）\n\n")
+L.append("**レガシーファイルは未変更。** 本ファイルは延長版のみ。\n\n")
+L.append("## 設計\n\n")
+L.append("- パネル 2005–2025；テスト **2010–2025**；訓練 2005..t−1；min train ≥5\n")
+L.append("- Naive: P_{t−1}；年勝: |e_m|<|e_n|\n")
+L.append("- 過半数: **wins > n/2**；2025 含む／除外 両建て\n")
+L.append(f"- primary_100: (100−A)≤0 の年は K=NA。テスト除外年: **{primary_dropped_test}**；訓練平均からも除外\n")
+L.append(f"- 試した形 m={M_FORMS}\n")
+L.append("- 言語: モデルが良い / 悪い / 検出できず。「通らなかった」とは書かない\n\n")
+L.append("## 除外指定（価格事実）\n\n")
+L.append(f"- exclusion_applies = **{excl_ok}**\n\n")
+L.append("## 集計\n\n")
+for title, agg in [("含む版（2025含む）", agg_full), ("除外版（2025除外）", agg_excl)]:
+    L.append(f"### {title}\n\n")
+    L.append("| form | 年勝 | crit1 | crit2 (>n/2) | sign_p | p_adj(m=5) | MAE_m | MAE_n |\n")
+    L.append("|---|---:|---|---|---:|---:|---:|---:|\n")
+    for form in FORMS:
+        s = agg[form]
+        L.append(
+            f"| {form} | {s['years_win']}/{s['n']} | {yn(s['criterion1_all'])} | "
+            f"{yn(s['criterion2_majority'])} | {s['sign_p_onesided']} | {s['p_adj_m_times_p']} | "
+            f"{s['mae_model']} | {s['mae_naive']} |\n"
+        )
+    L.append("\n")
+
+L.append("## 年次勝敗表\n\n")
+L.append("| t | naive\\|e\\| | primary_100 | alt200 | exp_neg | aoff | prop_A |\n")
+L.append("|---:|---:|---|---|---|---|---|\n")
+for t in TEST_YEARS:
+    cells = [str(t)]
+    ae_n = next(r["abs_e_naive"] for r in win_rows if r["t"] == t)
+    cells.append(f"{ae_n:.1f}")
+    for form in FORMS:
+        r = next(x for x in win_rows if x["t"] == t and x["form"] == form)
+        if r["status"] != "ok":
+            cells.append("NA")
+        else:
+            cells.append(f"{wjp(r['year_win'])} ({r['abs_e_model']:.0f})")
+    L.append("| " + " | ".join(cells) + " |\n")
+
+L.append("\n## 備考（定義事実のみ・因果なし）\n\n")
+L.append("- 2013 primary は定義域除外（A=100.87）。価格ショック除外とは別枠\n")
+L.append("- 2009/2012/2013 は構造変化の候補年として比較 handoff で並べる（政権因果の評価はしない）\n")
+L.append("- 2005–2014 の E は狭い → その区間だけの検出力注記は handoff へ\n")
+
+(OUT / "report_rolling_origin_extended.md").write_text("".join(L))
+print(json.dumps({
+    "primary_dropped": primary_dropped_test,
+    "full": {f: f"{agg_full[f]['years_win']}/{agg_full[f]['n']} p={agg_full[f]['sign_p_onesided']} padj={agg_full[f]['p_adj_m_times_p']} maj={agg_full[f]['criterion2_majority']}" for f in FORMS},
+    "excl": {f: f"{agg_excl[f]['years_win']}/{agg_excl[f]['n']} p={agg_excl[f]['sign_p_onesided']} padj={agg_excl[f]['p_adj_m_times_p']} maj={agg_excl[f]['criterion2_majority']}" for f in FORMS},
+}, indent=2, ensure_ascii=False))

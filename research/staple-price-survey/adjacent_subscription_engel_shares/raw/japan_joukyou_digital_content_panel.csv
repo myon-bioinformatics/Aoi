@@ -1,0 +1,9 @@
+country,year,month,item,value,unit,basket,household,source,notes
+JPN,2023,,download_music_video_apps,234,JPY_monthly_per_household,net_shopping_digital_content,two_or_more_persons,MIC Japan Survey of Household Economy 2024 overview (家計消費状況調査),ダウンロード版の音楽・映像、アプリなど; internet shopping channel only; not all SVOD billed elsewhere
+JPN,2024,,download_music_video_apps,269,JPY_monthly_per_household,net_shopping_digital_content,two_or_more_persons,MIC Japan Survey of Household Economy 2024 overview (家計消費状況調査),same
+JPN,2023,,e_books,210,JPY_monthly_per_household,net_shopping_digital_content,two_or_more_persons,MIC Japan Survey of Household Economy 2024 overview,
+JPN,2024,,e_books,256,JPY_monthly_per_household,net_shopping_digital_content,two_or_more_persons,MIC Japan Survey of Household Economy 2024 overview,
+JPN,2023,,culture_related_net_shopping_total,2200,JPY_monthly_per_household,net_shopping_culture,two_or_more_persons,MIC Japan Survey of Household Economy 2024 overview,教養関係費
+JPN,2024,,culture_related_net_shopping_total,2417,JPY_monthly_per_household,net_shopping_culture,two_or_more_persons,MIC Japan Survey of Household Economy 2024 overview,教養関係費
+JPN,2023,,net_shopping_total,23021,JPY_monthly_per_household,net_shopping_all,two_or_more_persons,MIC Japan Survey of Household Economy 2024 overview,
+JPN,2024,,net_shopping_total,24928,JPY_monthly_per_household,net_shopping_all,two_or_more_persons,MIC Japan Survey of Household Economy 2024 overview,

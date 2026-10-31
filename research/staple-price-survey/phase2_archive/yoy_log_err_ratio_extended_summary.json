@@ -1,0 +1,186 @@
+{
+  "note": "Extended YoY continuous companion. Negative log_err_ratio => model better. NOT locked adopt.",
+  "bootstrap_caveat": "Resamples same points only; weak when n small. All-same-sign ≈ sign test.",
+  "forms": {
+    "aoff_yoy": {
+      "include_2025": {
+        "n": 15,
+        "years_neg_ratio": 6,
+        "median_log_err_ratio": 0.0,
+        "mean_log_err_ratio": 0.197528,
+        "boot_median_ci95": {
+          "median": 0.0,
+          "ci95_lo": -0.087931,
+          "ci95_hi": 0.207367,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "exclude_2025": {
+        "n": 14,
+        "years_neg_ratio": 5,
+        "median_log_err_ratio": 0.004656,
+        "mean_log_err_ratio": 0.212052,
+        "boot_median_ci95": {
+          "median": 0.004656,
+          "ci95_lo": -0.088862,
+          "ci95_hi": 0.279674,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "sign_agreement": {
+        "median_sign_agree": false,
+        "ci_includes_0_agree": true
+      }
+    },
+    "primary_yoy": {
+      "include_2025": {
+        "n": 13,
+        "years_neg_ratio": 4,
+        "median_log_err_ratio": 0.110664,
+        "mean_log_err_ratio": 0.279467,
+        "boot_median_ci95": {
+          "median": 0.110664,
+          "ci95_lo": -0.007095,
+          "ci95_hi": 0.360391,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "exclude_2025": {
+        "n": 12,
+        "years_neg_ratio": 4,
+        "median_log_err_ratio": 0.11095,
+        "mean_log_err_ratio": 0.300457,
+        "boot_median_ci95": {
+          "median": 0.11095,
+          "ci95_lo": -0.02378,
+          "ci95_hi": 0.52475,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "sign_agreement": {
+        "median_sign_agree": true,
+        "ci_includes_0_agree": true
+      }
+    },
+    "alt200_yoy": {
+      "include_2025": {
+        "n": 15,
+        "years_neg_ratio": 5,
+        "median_log_err_ratio": 0.070251,
+        "mean_log_err_ratio": 0.218133,
+        "boot_median_ci95": {
+          "median": 0.070251,
+          "ci95_lo": -0.003476,
+          "ci95_hi": 0.515344,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "exclude_2025": {
+        "n": 14,
+        "years_neg_ratio": 4,
+        "median_log_err_ratio": 0.070916,
+        "mean_log_err_ratio": 0.233962,
+        "boot_median_ci95": {
+          "median": 0.070916,
+          "ci95_lo": -0.015708,
+          "ci95_hi": 0.515344,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "sign_agreement": {
+        "median_sign_agree": true,
+        "ci_includes_0_agree": true
+      }
+    },
+    "exp_neg_yoy": {
+      "include_2025": {
+        "n": 15,
+        "years_neg_ratio": 5,
+        "median_log_err_ratio": 0.070819,
+        "mean_log_err_ratio": 0.233019,
+        "boot_median_ci95": {
+          "median": 0.070819,
+          "ci95_lo": -0.000325,
+          "ci95_hi": 0.502795,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "exclude_2025": {
+        "n": 14,
+        "years_neg_ratio": 4,
+        "median_log_err_ratio": 0.075842,
+        "mean_log_err_ratio": 0.249687,
+        "boot_median_ci95": {
+          "median": 0.075842,
+          "ci95_lo": -0.025838,
+          "ci95_hi": 0.502795,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "sign_agreement": {
+        "median_sign_agree": true,
+        "ci_includes_0_agree": true
+      }
+    },
+    "prop_A_yoy": {
+      "include_2025": {
+        "n": 15,
+        "years_neg_ratio": 4,
+        "median_log_err_ratio": 0.106948,
+        "mean_log_err_ratio": 0.248982,
+        "boot_median_ci95": {
+          "median": 0.106948,
+          "ci95_lo": 0.004295,
+          "ci95_hi": 0.470259,
+          "includes_0": false,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "モデルが悪い"
+      },
+      "exclude_2025": {
+        "n": 14,
+        "years_neg_ratio": 4,
+        "median_log_err_ratio": 0.125337,
+        "mean_log_err_ratio": 0.266459,
+        "boot_median_ci95": {
+          "median": 0.125337,
+          "ci95_lo": -0.045563,
+          "ci95_hi": 0.503458,
+          "includes_0": true,
+          "B": 2000,
+          "seed": 20261024
+        },
+        "reading": "検出できず"
+      },
+      "sign_agreement": {
+        "median_sign_agree": true,
+        "ci_includes_0_agree": false
+      }
+    }
+  }
+}

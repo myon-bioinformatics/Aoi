@@ -1,0 +1,81 @@
+{
+  "definition": "Aoki_A = cabinet_support + ruling_first_party_support (LDP or DPJ by month); Wikipedia 青木の法則",
+  "identity_primary": "P = K * q * (100 - A) * E",
+  "identity_alt": "P = K_alt * q * (200 - A) * E  # exploratory, keeps positive when A in (100,200)",
+  "year_min": 2005,
+  "year_max": 2025,
+  "n_years": 21,
+  "Aoki_mean": 76.38428571428571,
+  "Aoki_min": 44.17,
+  "Aoki_max": 100.87,
+  "n_years_A_ge_100": 1,
+  "n_months_A_ge_100": 16,
+  "n_months_A_total_paired": 249,
+  "K_primary_n": 21,
+  "K_primary_mean": -17.919028571428566,
+  "K_primary_min": -2101.5975,
+  "K_primary_max": 175.8488,
+  "K_hat_train_2015_2021": 87.96801607679662,
+  "oos_mae_model_P": 1356.1902791414893,
+  "oos_mae_naive_P": 676.225,
+  "oos_detail": [
+    {
+      "year": 2022,
+      "P": 1995.8,
+      "P_hat": 1531.6917652611749,
+      "P_naive": 2096.8,
+      "e_model": 464.1082347388251,
+      "e_naive": 101.00000000000023,
+      "K": 114.62264828206744,
+      "A": 86.90833333333335
+    },
+    {
+      "year": 2023,
+      "P": 2069.1,
+      "P_hat": 3444.0944427667164,
+      "P_naive": 1995.8,
+      "e_model": 1374.9944427667165,
+      "e_naive": 73.29999999999995,
+      "K": 52.84832489038353,
+      "A": 71.83333333333333
+    },
+    {
+      "year": 2024,
+      "P": 2686.9,
+      "P_hat": 5269.4307763602455,
+      "P_naive": 2069.1,
+      "e_model": 2582.5307763602455,
+      "e_naive": 617.8000000000002,
+      "K": 44.855179321666064,
+      "A": 57.666666666666664
+    },
+    {
+      "year": 2025,
+      "P": 4599.7,
+      "P_hat": 3596.5723372998295,
+      "P_naive": 2686.9,
+      "e_model": 1003.1276627001703,
+      "e_naive": 1912.7999999999997,
+      "K": 112.50336309159839,
+      "A": 71.4090909090909
+    }
+  ],
+  "prev_cabinet_only_mae_model_P": 740.2310901169058,
+  "prev_cabinet_only_mae_naive_P": 676.1875000000001,
+  "K_alt_mean": 14.328780952380953,
+  "n_years_pre2015_added": 10,
+  "prev_n_years_before_extend": 11,
+  "panel_extend_note": "2005-2014 added 2026-10-24 Asia/Tokyo; 2015-2025 preserved; YoY/rolling not re-run",
+  "ruling_first_years_pre2015": {
+    "2005": "LDP",
+    "2006": "LDP",
+    "2007": "LDP",
+    "2008": "LDP",
+    "2009": "LDP",
+    "2010": "DPJ",
+    "2011": "DPJ",
+    "2012": "DPJ",
+    "2013": "LDP",
+    "2014": "LDP"
+  }
+}

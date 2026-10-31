@@ -160,7 +160,11 @@ def test_suggest_on_c001_subset_matches_numpy(tmp_path):
         "print(json.dumps(out))\n",
         encoding="utf-8",
     )
-    real = subprocess.run([sys.executable, str(script), str(ROOT)], capture_output=True, text=True, check=True)
+    # numpy の wheel の OpenBLAS は CPU ごとに計算核を選び、float32 の丸めが runner の CPU で変わる
+    # （AVX-512 の SkylakeX と AVX2 の Haswell で実測の最大差が違った）。比べる相手を揃えるため Haswell に固定する
+    ref_env = {**os.environ, "OPENBLAS_CORETYPE": "Haswell", "OPENBLAS_NUM_THREADS": "1"}
+    real = subprocess.run([sys.executable, str(script), str(ROOT)], capture_output=True, text=True, check=True,
+                          env=ref_env)
     shim = tmp_path / "shim"
     shim.mkdir()
     (shim / "numpy.py").write_text((ROOT / "shrink" / "numpy_min.py").read_text(encoding="utf-8"), encoding="utf-8")
@@ -170,14 +174,14 @@ def test_suggest_on_c001_subset_matches_numpy(tmp_path):
     a, b = json.loads(real.stdout), json.loads(got.stdout)
     assert b["numpy"].endswith(":0+min")
     assert a["bits_shape"] == b["bits_shape"]
-    # 許容誤差は numpy 2.5.4（uv.lock）と比べた実測の最大値そのもの（丸めない）。
+    # 許容誤差は numpy 2.5.4（uv.lock、OPENBLAS_CORETYPE=Haswell）と比べた実測の最大値そのもの（丸めない）。
     # lapack: float32 の SVD は numpy と同じ sgesdd だが、numpy の wheel は OpenBLAS の sgesdd、
     # こちらは Debian の参照 LAPACK 3.12.1 の sgesdd。float32 の計算順の違いが Zf とスコアに出る
     # （dgesdd で解いて float32 に戻していたときは、スコア差の最大 1.41833292e-06 だった）。
     # stdlib: float64 で解いて float32 に戻す。
     gram_atol, score_atol = {
-        "lapack": (5.759655420350951e-06, 7.688191857257998e-06),
-        "stdlib": (1.8712230849260436e-06, 5.960464477539062e-07),
+        "lapack": (6.08561626694315e-06, 7.598784890094912e-06),
+        "stdlib": (9.38496750535478e-07, 6.854534149169922e-07),
     }[b["backend"]]
     gram_max = float(np.max(np.abs(np.asarray(b["gram"]) - np.asarray(a["gram"]))))
     score_max = max(abs(p[1] - q[1]) for x, y in zip(a["runs"], b["runs"]) for p, q in zip(x, y))

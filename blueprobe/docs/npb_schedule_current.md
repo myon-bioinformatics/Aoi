@@ -1,44 +1,44 @@
-# npb_schedule_current: 今季の日程・結果（進行中のシーズン）
+# npb_schedule_current: this season's schedule and results (season in progress)
 
-## 取得元
+## Source
 
-`https://npb.jp/games/{年}/schedule_{月}_detail.html`（3〜11月）。1ページ = 1か月・12球団の試合。
+`https://npb.jp/games/{year}/schedule_{month}_detail.html` (March–November). 1 page = 1 month, games of all 12 teams.
 
-過去の年の日程（`npb_calendar`、`/bis/{年}/calendar/index_{月}.html`）は、今季の分はまだ作られていない。2026年は9ページすべてが 404 だった（2026-10-06 のパイプライン実行）。
+Past years' schedules (`npb_calendar`, `/bis/{year}/calendar/index_{month}.html`) haven't been created yet for this season. For 2026 all 9 pages were 404 (pipeline run on 2026-10-06).
 
-## 確認した形
+## Confirmed shape
 
-WebFetch で 2026年9月を確認した（2026-10-06）。WebFetch はページを文章に変換するので、タグの並びは見えない。見えたのは:
+September 2026 was checked with WebFetch (2026-10-06). WebFetch converts the page to prose, so the tag order isn't visible. What was visible:
 
-- 1試合 = 「巨人 [4 - 3](https://npb.jp/scores/2026/0901/g-db-20/) DeNA」。リンク文字列がスコアだけ
-- リンク先 `/scores/{年}/{月日}/{ホーム}-{ビジター}-{番号}/`。先のコードが文字列の先のチーム（ホーム）と一致した（6組すべて）
-- コード: g・s・db・d・t・c（セ）、h・f・b・e・l・m（パ）。`npb_calendar` の記録と同じコード
+- 1 game = `巨人 [4 - 3](https://npb.jp/scores/2026/0901/g-db-20/) DeNA`. The link text is only the score
+- Link target `/scores/{year}/{MMDD}/{home}-{visitor}-{number}/`. The first code matched the team written first (home) (all 6 games)
+- Codes: g, s, db, d, t, c (Central), h, f, b, e, l, m (Pacific). The same codes as `npb_calendar`'s records
 
-チームは URL のコードから読み、文字列の球団名は読まない。記録の形（key 以外）は `npb_calendar` と同じなので、SakAnalytics は2つをつないで読める（`--games` に2つ並べる。同じ key が出たら止まる）。
+Teams are read from the URL codes, not from the team names in the text. The record shape (other than key) is the same as `npb_calendar`, so SakAnalytics can read the two joined (list both in `--games`; it stops if the same key appears).
 
-## 採用しないもの
+## Not accepted
 
-| 区分 | 中身 |
+| Category | Contents |
 |---|---|
-| `scheduled:<月>` | 試合のリンクだが結果がない（数字がない、または「- （球場）18:00」） |
-| `cancelled` | 中止・ノーゲーム |
-| `non_regular` | スコアの形だが試合のリンクではない |
-| `non_regular:オールスター` | コードが cl・pl |
-| unknown | 知らないチームコード、数字はあるがスコアの形でない（途中経過など） |
+| `scheduled:<month>` | A game link without a result (no digits, or `- （球場）18:00` "- (stadium) 18:00") |
+| `cancelled` | `中止` (cancelled), `ノーゲーム` (no game) |
+| `non_regular` | Score form but not a game link |
+| `non_regular:オールスター` | Code is cl or pl (All-Star) |
+| unknown | Unknown team codes, or digits that aren't in score form (in-progress scores, etc.) |
 
-CS・日本シリーズが同じリンクの形で載るかは未確認。`check()` は、1球団の試合数が 143 を超える、同じ日に同じ球団の試合が2つ、同じ組み合わせが公式戦の数（同じリーグ 25、交流戦 3）を超える、のどれかで ok=False にする。進行中なので 143 に届かないのは正常。
+Whether CS and the Japan Series appear in the same link form is unconfirmed. `check()` returns ok=False if a team has more than 143 games, a team has 2 games on the same day, or a pairing exceeds the official count (25 within a league, 3 interleague). Since the season is in progress, falling short of 143 is normal.
 
-### 実ページで見た表記（preview_2026、2026-10-06）
+### Notations seen on real pages (preview_2026, 2026-10-06)
 
-1回目の preview: 9ページ、採用 854試合、中止 41、未知 20。12球団の試合数は 140〜143（143 を終えた球団は 7）。中日は 60勝81敗2分で、外部の報告（C26）と一致した。
-未知の 20件は2つの形だった（観測した表記として足し、`--strict` に替えた）:
+First preview: 9 pages, 854 games accepted, 41 cancelled, 20 unknown. The 12 teams' game counts were 140–143 (7 teams had finished 143). Chunichi was 60–81–2, matching the external report (C26).
+The 20 unknowns were of two forms (added as observed notations, then switched to `--strict`):
 
-- 結果前の試合: リンク文字列が「- （ZOZOマリン）18:00」の形（空白・改行つき）→ `scheduled:<月>`
-- オールスター: リンク先のコードが `cl-pl`・`pl-cl` → `non_regular:オールスター`
+- Games before results: link text of the form `- （ZOZOマリン）18:00` (with spaces and line breaks) → `scheduled:<month>`
+- All-Star: link target codes `cl-pl` and `pl-cl` → `non_regular:オールスター`
 
-## 使い方の約束
+## Usage commitments
 
-- 2026年の暫定（R74）だけに使う。本体（2013〜2025年）には入れない
-- R18: 全球団が 143試合を終えてから本体に取り込む。そのときは、公式戦の後のページ（CS が載るかもしれない）を人が確かめる
-- 進行中のシーズンのページは、QueRyu が更新を確認する（If-Modified-Since）。台帳（`outputs/fetched/npb_schedule_current.jsonl`）に来歴が残る
-- 最初は preview（`--strict` なし）で形を確かめる。実ページの表記を見てから `--strict` に替える
+- Used only for the 2026 provisional figures (R74). Not included in the main body (2013–2025)
+- R18: brought into the main body after all teams finish 143 games. At that time, a person checks the pages after the official games (CS may appear)
+- For pages of a season in progress, QueRyu checks for updates (If-Modified-Since). Provenance stays in the ledger (`outputs/fetched/npb_schedule_current.jsonl`)
+- First check the shape with preview (without `--strict`). Switch to `--strict` after seeing the real pages' notation

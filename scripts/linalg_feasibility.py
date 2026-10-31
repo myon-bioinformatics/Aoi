@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """queryu と pythdragoras の重い numpy が、標準ライブラリだけで置き換えられるかを調べる（実験）。
 
-shrink/numpy_min.py は load_overlap の生成物のままにして、こちらは別ファイルで調べる。
+shrink/numpy_min.py は scripts/shrink_module.py の生成物（load_overlap と queryu の suggest が入口）。こちらは別ファイルで調べる。
 
     python scripts/linalg_feasibility.py ast
     python scripts/linalg_feasibility.py trace --scope fixture

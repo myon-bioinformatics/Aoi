@@ -30,11 +30,13 @@ def _arr(value, dtype="float64"):
     return mn.array(np.asarray(value).tolist(), dtype=dtype)
 
 
-def test_numpy_min_load_overlap_file_is_untouched():
+def test_numpy_min_is_the_generated_file():
+    # numpy_min.py は生成物。load_overlap と suggest の2つの入口から作る（手では直さない）
     text = (ROOT / "shrink" / "numpy_min.py").read_text(encoding="utf-8")
     assert text.startswith("\"\"\"numpy の最小版。scripts/shrink_module.py が生成した。手で直さない。")
-    assert "dragowing/overlap.py:load_overlap" in text
-    assert "linalg" not in text
+    assert "入口: dragowing/overlap.py:load_overlap, queryu/ask/suggest.py:suggest\n" in text
+    assert "staticmethod(svd)" in text and "staticmethod(norm)" in text
+    assert "def lstsq(" not in text and "def einsum(" not in text
 
 
 def test_svd_economy_matches_singular_values_and_reconstruction():

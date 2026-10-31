@@ -717,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1359,
+      "attribute_uses": 1380,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -727,14 +727,14 @@
         "UsageError": 10,
         "approx": 387,
         "fail": 33,
-        "fixture": 56,
+        "fixture": 57,
         "hookimpl": 4,
-        "importorskip": 11,
-        "mark.parametrize": 305,
+        "importorskip": 14,
+        "mark.parametrize": 318,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 499,
-        "skip": 10,
+        "raises": 501,
+        "skip": 12,
         "warns": 3
       },
       "by_tree": {
@@ -853,32 +853,33 @@
           "import_sites": 14
         },
         "scripts": {
-          "attribute_uses": 4,
+          "attribute_uses": 5,
           "attributes": {
             "MonkeyPatch": 1,
             "StashKey": 1,
             "fixture": 1,
-            "hookimpl": 1
+            "hookimpl": 1,
+            "importorskip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
+          "files": 2,
+          "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 387,
+          "attribute_uses": 407,
           "attributes": {
             "approx": 104,
             "fail": 13,
-            "fixture": 16,
-            "importorskip": 1,
-            "mark.parametrize": 96,
+            "fixture": 17,
+            "importorskip": 3,
+            "mark.parametrize": 109,
             "mark.skipif": 12,
-            "raises": 143,
-            "skip": 2
+            "raises": 145,
+            "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 39,
-          "import_sites": 40
+          "files": 41,
+          "import_sites": 42
         }
       },
       "declared": [
@@ -915,8 +916,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 131,
-      "import_sites": 133
+      "files": 134,
+      "import_sites": 136
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2974,6 +2975,16 @@
     },
     {
       "attributes": {
+        "importorskip": 1
+      },
+      "dynamic_lines": [],
+      "file": "scripts/legacy_numpy_min_parity.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "scripts"
+    },
+    {
+      "attributes": {
         "MonkeyPatch": 1,
         "StashKey": 1,
         "fixture": 1,
@@ -3340,6 +3351,31 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_epsilon_generality_window_crossing.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "importorskip": 1,
+        "mark.parametrize": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_numpy_min_gram_fallback.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "importorskip": 1,
+        "mark.parametrize": 11,
+        "raises": 2,
+        "skip": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_numpy_min_suggest.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

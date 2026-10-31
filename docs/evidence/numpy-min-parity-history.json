@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "contract": "numpy-min-decomposition-v2",
+  "status": "historical observations; not current pass claims",
+  "new_corpus_measurements_for_v2": false,
+  "failed_ci": {
+    "run_id": 41173732025,
+    "head": "b0a1b75c544a700a077087d2607f7a2115694206",
+    "stdlib": {
+      "job_id": 124456870621,
+      "metric": "suggestion score index 2",
+      "got": 0.23430263996124268,
+      "numpy": 0.23430198431015015,
+      "absolute_difference_from_log": "6.55651093e-7",
+      "then_acceptance_limit": 5.960464477539062e-07,
+      "outcome": "failed"
+    },
+    "lapack": {
+      "job_id": 124456870822,
+      "metric": "Gram [0,6,14] and symmetric element",
+      "got": -0.22185709547645313,
+      "numpy": -0.22186318109272007,
+      "absolute_difference_from_log": "6.08561627e-6",
+      "then_acceptance_limit": 5.759655420350951e-06,
+      "outcome": "failed"
+    },
+    "all_then_acceptance_limits": {
+      "source": "tests/test_numpy_min_suggest.py at b0a1b75c544a700a077087d2607f7a2115694206",
+      "lapack": {
+        "gram_atol": 5.759655420350951e-06,
+        "score_atol": 7.688191857257998e-06
+      },
+      "stdlib": {
+        "gram_atol": 1.8712230849260436e-06,
+        "score_atol": 5.960464477539062e-07
+      }
+    }
+  },
+  "saved_binary_counterexample": {
+    "documents": [
+      [
+        "1",
+        "a"
+      ],
+      [
+        "2",
+        "b"
+      ],
+      [
+        "3",
+        "c"
+      ]
+    ],
+    "dimension": 3,
+    "query": "a",
+    "mode": "binary",
+    "numpy_scores_approximate": [
+      0.75593,
+      -0.75593,
+      -0.75593
+    ],
+    "stdlib_scores_approximate": [
+      0.94491,
+      0.18898,
+      -0.18898
+    ],
+    "observation": "Different second-ranked ID; saved prior observation, not rerun for v2",
+    "limitation": "Repeated singular-value bases can rotate; coordinate-sign compression is not invariant"
+  }
+}

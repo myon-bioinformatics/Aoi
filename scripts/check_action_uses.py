@@ -175,9 +175,11 @@ def hash_problems(root: Path, resolve=github_tag_commit) -> list[str]:
             continue
         if not HEX40.fullmatch(rev) or not PATCH.fullmatch(comment):
             continue
-        key = (action, comment)
+        # A subaction such as actions/cache/restore shares its repository tag.
+        repository = "/".join(action.split("/")[:2])
+        key = (repository, comment)
         if key not in resolved:
-            resolved[key] = resolve(action, comment).lower()
+            resolved[key] = resolve(repository, comment).lower()
         if resolved[key] != rev.lower():
             rel = path.relative_to(root).as_posix()
             found.append(

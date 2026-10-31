@@ -139,3 +139,14 @@ def test_short_sha_is_rejected(tmp_path):
     found = uses.style_problems(tmp_path)
     assert len(found) == 1
     assert "40 桁 SHA" in found[0]
+
+
+def test_subactions_resolve_one_repository_tag(tmp_path):
+    _write(tmp_path, f"steps:\n  - uses: actions/cache/restore@{SHA} # v6.1.0\n"
+                    f"  - uses: actions/cache/save@{SHA} # v6.1.0\n")
+    calls = []
+    def resolve(repository, tag):
+        calls.append((repository, tag))
+        return SHA
+    assert uses.hash_problems(tmp_path, resolve) == []
+    assert calls == [("actions/cache", "v6.1.0")]

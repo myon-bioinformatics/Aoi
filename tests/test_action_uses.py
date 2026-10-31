@@ -132,3 +132,10 @@ def test_api_failure_exits_two_unless_warn(tmp_path, capsys):
     err = capsys.readouterr().err
     assert "::error::" in err
     assert "::warning::" in err
+
+
+def test_short_sha_is_rejected(tmp_path):
+    _write(tmp_path, f"steps:\n  - uses: actions/checkout@{SHA[:7]} # v7.0.1\n")
+    found = uses.style_problems(tmp_path)
+    assert len(found) == 1
+    assert "40 桁 SHA" in found[0]

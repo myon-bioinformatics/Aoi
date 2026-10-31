@@ -1,6 +1,9 @@
 {
-  "rows": 1995,
-  "variables": 38,
+  "rows": 2012,
+  "observed_rows": 1998,
+  "missing_value_rows": 14,
+  "conflicting_keys": 3,
+  "variables": 40,
   "countries": 46,
   "years": [
     "1984",

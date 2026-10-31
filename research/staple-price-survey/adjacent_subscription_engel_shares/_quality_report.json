@@ -1,0 +1,6019 @@
+{
+  "missing_values": [
+    {
+      "country": "USA",
+      "date": "2024-12-31",
+      "year": "2024",
+      "variable": "bls_ce:audio_and_visual_equipment_and_services:percent_reporting",
+      "value": "",
+      "unit": "pct_of_consumer_units",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "note": "raw/bls_ce_streaming_audio_panel.csv data record 2; missing published value (raw token: 'n.a.')",
+      "estimated_value": ""
+    },
+    {
+      "country": "USA",
+      "date": "2024-12-31",
+      "year": "2024",
+      "variable": "bls_ce:entertainment:percent_reporting",
+      "value": "",
+      "unit": "pct_of_consumer_units",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "note": "raw/bls_ce_streaming_audio_panel.csv data record 1; missing published value (raw token: 'n.a.')",
+      "estimated_value": ""
+    },
+    {
+      "country": "NLD",
+      "date": "2010-12-31",
+      "year": "2010",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "value": "",
+      "unit": "pct_of_total_consumption",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "raw/eurostat_hbs_fees_share_of_total_panel.csv data record 68; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "NOR",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "value": "",
+      "unit": "pct_of_total_consumption",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "raw/eurostat_hbs_fees_share_of_total_panel.csv data record 72; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "PRT",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "value": "",
+      "unit": "pct_of_total_consumption",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "raw/eurostat_hbs_fees_share_of_total_panel.csv data record 78; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "ROU",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "value": "",
+      "unit": "pct_of_total_consumption",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "raw/eurostat_hbs_fees_share_of_total_panel.csv data record 81; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "NLD",
+      "date": "2010-12-31",
+      "year": "2010",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "value": "",
+      "unit": "PPS_annual_per_household",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "TV/radio licence fees, subscriptions, hire (CP09423_09424); not SVOD-only; raw/eurostat_hbs_fees_share_of_total_panel.csv data record 68; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "NOR",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "value": "",
+      "unit": "PPS_annual_per_household",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "TV/radio licence fees, subscriptions, hire (CP09423_09424); not SVOD-only; raw/eurostat_hbs_fees_share_of_total_panel.csv data record 72; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "PRT",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "value": "",
+      "unit": "PPS_annual_per_household",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "TV/radio licence fees, subscriptions, hire (CP09423_09424); not SVOD-only; raw/eurostat_hbs_fees_share_of_total_panel.csv data record 78; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "ROU",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "value": "",
+      "unit": "PPS_annual_per_household",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "TV/radio licence fees, subscriptions, hire (CP09423_09424); not SVOD-only; raw/eurostat_hbs_fees_share_of_total_panel.csv data record 81; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "NLD",
+      "date": "2010-12-31",
+      "year": "2010",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "value": "",
+      "unit": "pct_of_total_consumption",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "raw/eurostat_hbs_fees_share_of_total_panel.csv data record 68; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "NOR",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "value": "",
+      "unit": "pct_of_total_consumption",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "raw/eurostat_hbs_fees_share_of_total_panel.csv data record 72; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "PRT",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "value": "",
+      "unit": "pct_of_total_consumption",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "raw/eurostat_hbs_fees_share_of_total_panel.csv data record 78; missing published value (raw token: '')",
+      "estimated_value": ""
+    },
+    {
+      "country": "ROU",
+      "date": "2020-12-31",
+      "year": "2020",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "value": "",
+      "unit": "pct_of_total_consumption",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "note": "raw/eurostat_hbs_fees_share_of_total_panel.csv data record 81; missing published value (raw token: '')",
+      "estimated_value": ""
+    }
+  ],
+  "conflicts": [
+    {
+      "country": "USA",
+      "year": "2024",
+      "variable": "bls_ce:entertainment:mean",
+      "alternatives": [
+        {
+          "country": "USA",
+          "date": "2024-12-31",
+          "year": "2024",
+          "variable": "bls_ce:entertainment:mean",
+          "value": "3609.0",
+          "unit": "USD_annual_per_consumer_unit",
+          "source": "BLS CE API series CXUENTRTAINLB0101M, CXUTVAUDIOLB0101M, CXUTOTALEXPLB0101M, CXUINCBEFTXLB0101M",
+          "note": "raw/bls_ce_entertainment_shares_panel.csv data record 39",
+          "estimated_value": ""
+        },
+        {
+          "country": "USA",
+          "date": "2024-12-31",
+          "year": "2024",
+          "variable": "bls_ce:entertainment:mean",
+          "value": "3609.38",
+          "unit": "USD_annual_per_consumer_unit",
+          "source": "BLS CE Table 2500 detailed means 2024",
+          "note": "mean over all CUs incl. non-purchasers; raw/bls_ce_streaming_audio_panel.csv data record 1",
+          "estimated_value": ""
+        }
+      ]
+    },
+    {
+      "country": "USA",
+      "year": "2024",
+      "variable": "bls_ce:entertainment:share_of_income",
+      "alternatives": [
+        {
+          "country": "USA",
+          "date": "2024-12-31",
+          "year": "2024",
+          "variable": "bls_ce:entertainment:share_of_income",
+          "value": "3.463",
+          "unit": "pct_of_income_before_taxes",
+          "source": "BLS CE API series CXUENTRTAINLB0101M, CXUTVAUDIOLB0101M, CXUTOTALEXPLB0101M, CXUINCBEFTXLB0101M",
+          "note": "raw/bls_ce_entertainment_shares_panel.csv data record 39",
+          "estimated_value": ""
+        },
+        {
+          "country": "USA",
+          "date": "2024-12-31",
+          "year": "2024",
+          "variable": "bls_ce:entertainment:share_of_income",
+          "value": "3.4637",
+          "unit": "pct_of_income_before_taxes",
+          "source": "BLS CE Table 2500 detailed means 2024",
+          "note": "raw/bls_ce_streaming_audio_panel.csv data record 1",
+          "estimated_value": ""
+        }
+      ]
+    },
+    {
+      "country": "USA",
+      "year": "2024",
+      "variable": "bls_ce:entertainment:share_of_spend",
+      "alternatives": [
+        {
+          "country": "USA",
+          "date": "2024-12-31",
+          "year": "2024",
+          "variable": "bls_ce:entertainment:share_of_spend",
+          "value": "4.595",
+          "unit": "pct_of_total_expenditures",
+          "source": "BLS CE API series CXUENTRTAINLB0101M, CXUTVAUDIOLB0101M, CXUTOTALEXPLB0101M, CXUINCBEFTXLB0101M",
+          "note": "raw/bls_ce_entertainment_shares_panel.csv data record 39",
+          "estimated_value": ""
+        },
+        {
+          "country": "USA",
+          "date": "2024-12-31",
+          "year": "2024",
+          "variable": "bls_ce:entertainment:share_of_spend",
+          "value": "4.5959",
+          "unit": "pct_of_total_expenditures",
+          "source": "BLS CE Table 2500 detailed means 2024",
+          "note": "raw/bls_ce_streaming_audio_panel.csv data record 1",
+          "estimated_value": ""
+        }
+      ]
+    }
+  ],
+  "series_coverage": [
+    {
+      "country": "ALB",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ALB",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ALB",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ALB",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ALB",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ALB",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "AUT",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BEL",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BGR",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BIH",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BIH",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BIH",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BIH",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BIH",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "BIH",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CAN",
+      "variable": "statcan:cable_satellite_other_program_distribution_incl_streaming",
+      "source": "Statistics Canada Plus article 2025-07-02 citing HFCE",
+      "observed_years": [
+        2004,
+        2014,
+        2019,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": [
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2015,
+        2016,
+        2017,
+        2018,
+        2020,
+        2021,
+        2022
+      ]
+    },
+    {
+      "country": "CHE",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CHE",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CHE",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CHE",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CHE",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CYP",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "CZE",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DEU",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "DNK",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA12",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA12",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA19",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA19",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA20",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EA20",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ESP",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EST",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "EU27",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FIN",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "FRA",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "GBR",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "GBR",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "GBR",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "GRC",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HRV",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "HUN",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "IRL",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ISL",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ISL",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ITA",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "JPN",
+      "variable": "mic_joukyou:culture_related_net_shopping_total",
+      "source": "MIC Japan Survey of Household Economy 2024 overview",
+      "observed_years": [
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "JPN",
+      "variable": "mic_joukyou:download_music_video_apps",
+      "source": "MIC Japan Survey of Household Economy 2024 overview (家計消費状況調査)",
+      "observed_years": [
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "JPN",
+      "variable": "mic_joukyou:e_books",
+      "source": "MIC Japan Survey of Household Economy 2024 overview",
+      "observed_years": [
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "JPN",
+      "variable": "mic_joukyou:net_shopping_total",
+      "source": "MIC Japan Survey of Household Economy 2024 overview",
+      "observed_years": [
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LTU",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LUX",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "LVA",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MKD",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MLT",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MNE",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "MNE",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "MNE",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "MNE",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MNE",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MNE",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MNE",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "MNE",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NLD",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "NOR",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "POL",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "PRT",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "ROU",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SRB",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVK",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SVN",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_nama:cp094:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "SWE",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "TUR",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "TUR",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "TUR",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2010,
+        2015,
+        2020
+      ],
+      "absent_years_within_observed_span": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "country": "TUR",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "TUR",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "TUR",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "TUR",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "TUR",
+      "variable": "eurostat_nama:cp09:share_of_hfce",
+      "source": "Eurostat nama_10_co3_p3",
+      "observed_years": [
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:audio_and_visual_equipment_and_services:mean",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:audio_and_visual_equipment_and_services:share_of_income",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:audio_and_visual_equipment_and_services:share_of_spend",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:av_equipment_services:mean",
+      "source": "BLS CE API series CXUENTRTAINLB0101M, CXUTVAUDIOLB0101M, CXUTOTALEXPLB0101M, CXUINCBEFTXLB0101M",
+      "observed_years": [
+        1984,
+        1985,
+        1986,
+        1987,
+        1988,
+        1989,
+        1990,
+        1991,
+        1992,
+        1993,
+        1996,
+        1997,
+        1998,
+        1999,
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": [
+        1994,
+        1995
+      ]
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:av_equipment_services:share_of_spend",
+      "source": "BLS CE API series CXUENTRTAINLB0101M, CXUTVAUDIOLB0101M, CXUTOTALEXPLB0101M, CXUINCBEFTXLB0101M",
+      "observed_years": [
+        1984,
+        1985,
+        1986,
+        1987,
+        1988,
+        1989,
+        1990,
+        1991,
+        1992,
+        1993,
+        1996,
+        1997,
+        1998,
+        1999,
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": [
+        1994,
+        1995
+      ]
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:cable_and_satellite_television_services:mean",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:cable_and_satellite_television_services:percent_reporting",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:cable_and_satellite_television_services:share_of_income",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:cable_and_satellite_television_services:share_of_spend",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:entertainment:mean",
+      "source": "BLS CE API series CXUENTRTAINLB0101M, CXUTVAUDIOLB0101M, CXUTOTALEXPLB0101M, CXUINCBEFTXLB0101M",
+      "observed_years": [
+        1984,
+        1985,
+        1986,
+        1987,
+        1988,
+        1989,
+        1990,
+        1991,
+        1992,
+        1993,
+        1996,
+        1997,
+        1998,
+        1999,
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": [
+        1994,
+        1995
+      ]
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:entertainment:mean",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:entertainment:share_of_income",
+      "source": "BLS CE API series CXUENTRTAINLB0101M, CXUTVAUDIOLB0101M, CXUTOTALEXPLB0101M, CXUINCBEFTXLB0101M",
+      "observed_years": [
+        1984,
+        1985,
+        1986,
+        1987,
+        1988,
+        1989,
+        1990,
+        1991,
+        1992,
+        1993,
+        1996,
+        1997,
+        1998,
+        1999,
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": [
+        1994,
+        1995
+      ]
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:entertainment:share_of_income",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:entertainment:share_of_spend",
+      "source": "BLS CE API series CXUENTRTAINLB0101M, CXUTVAUDIOLB0101M, CXUTOTALEXPLB0101M, CXUINCBEFTXLB0101M",
+      "observed_years": [
+        1984,
+        1985,
+        1986,
+        1987,
+        1988,
+        1989,
+        1990,
+        1991,
+        1992,
+        1993,
+        1996,
+        1997,
+        1998,
+        1999,
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "absent_years_within_observed_span": [
+        1994,
+        1995
+      ]
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:entertainment:share_of_spend",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:rental_streaming_and_downloading_videos:mean",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:rental_streaming_and_downloading_videos:percent_reporting",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:rental_streaming_and_downloading_videos:share_of_income",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:rental_streaming_and_downloading_videos:share_of_spend",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:satellite_radio_services:mean",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:satellite_radio_services:percent_reporting",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:satellite_radio_services:share_of_income",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:satellite_radio_services:share_of_spend",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:streaming_and_downloading_audio:mean",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:streaming_and_downloading_audio:percent_reporting",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:streaming_and_downloading_audio:share_of_income",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "USA",
+      "variable": "bls_ce:streaming_and_downloading_audio:share_of_spend",
+      "source": "BLS CE Table 2500 detailed means 2024",
+      "observed_years": [
+        2024
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "XKX",
+      "variable": "eurostat_hbs:culture:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "XKX",
+      "variable": "eurostat_hbs:fees_subscriptions:mean",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "XKX",
+      "variable": "eurostat_hbs:fees_subscriptions:share_of_spend",
+      "source": "Eurostat cult_pcs_hbs (HBS)",
+      "observed_years": [
+        2015
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "XKX",
+      "variable": "eurostat_isoc:I_BCS2:online_purchase_cultural_services_agg",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "XKX",
+      "variable": "eurostat_isoc:I_BFLMS2:paid_subscription_film_series_sports_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "XKX",
+      "variable": "eurostat_isoc:I_BGAMSS:paid_subscription_gaming_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    },
+    {
+      "country": "XKX",
+      "variable": "eurostat_isoc:I_BMUSS2:paid_subscription_music_streaming",
+      "source": "Eurostat isoc_ec_ibgs",
+      "observed_years": [
+        2024,
+        2025
+      ],
+      "absent_years_within_observed_span": []
+    }
+  ],
+  "coverage_note": "Absent years describe gaps between observed endpoints; they do not assert annual collection or expected coverage. No missing rows are imputed."
+}

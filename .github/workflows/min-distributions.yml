@@ -141,24 +141,6 @@ jobs:
           Path(".test-deps/frozen-minpy.py").write_bytes(data)
           print("Verified frozen distribution compiler: " + commit)
           PYCODE
-      - name: Fetch approved frozen Aoi source
-        run: |
-          python -S - <<'PYCODE'
-          import json
-          from pathlib import Path
-          import re
-          import subprocess
-
-          source = json.loads(Path("distributions.json").read_text())["source"]
-          if not isinstance(source, str) or not re.fullmatch(r"[0-9a-f]{40}", source):
-              raise SystemExit("invalid approved distribution source SHA")
-          # A rewritten PR history may no longer contain this frozen snapshot.
-          # Fetch exactly the approved commit; never move the pin or checkout.
-          subprocess.run(["git", "fetch", "--depth=1", "origin", source + ":refs/heads/aoi-frozen-distribution-source"], check=True, timeout=90)
-          actual = subprocess.check_output(["git", "rev-parse", "FETCH_HEAD"], text=True, timeout=30).strip()
-          if actual != source:
-              raise SystemExit("frozen distribution source commit mismatch")
-          PYCODE
       - name: Regenerate and compare every committed artifact and license
         run: python -S scripts/build_distributions.py --minpy .test-deps/frozen-minpy.py --sources .test-deps/distribution-sources --check
       - name: Compare resolved parent tool provenance

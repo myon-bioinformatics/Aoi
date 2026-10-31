@@ -29,7 +29,7 @@ def test_vendor_dispatch_verifies_lock_without_recording():
     at = chr(64)
     assert f"actions/checkout{at}v7" in job
     assert f"actions/setup-python{at}6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0" in job
-    assert f"astral-sh/setup-uv{at}07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2" in job
+    assert f"astral-sh/setup-uv{at}68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3" in job
     assert 'python-version: "3.12"' in job
     assert "git ls-remote" in job
     assert 'PARENT_REPOSITORY_ID: "638801160"' in job

@@ -4,7 +4,7 @@ This pack holds Engel-like subscription and AV-content spending data: household 
 
 - **Schema (vertical):** `country,date,year,variable,value,unit,source,note,estimated_value`. `date` is the year-end placeholder `YYYY-12-31`.
 - **Values are kept as published:** USD, PPS, JPY or CAD, or percent. No FX conversion is applied, and `estimated_value` is always empty.
-- **Build:** `python3 build_subscription_engel_shares.py`. It uses only the standard library, reads the tidy panels in `raw/`, and writes `*_vertical.csv`, `*_vertical.csv.gz` (gzip mtime=0) and `_build_stats.json`, plus `_quality_report.json`.
+- **Build:** `python3 build_subscription_engel_shares.py`. It uses only the standard library, reads the tidy panels in `raw/`, and writes `*_vertical.csv`, `*_vertical.csv.gz` (gzip mtime=0, compresslevel=9) and `_build_stats.json`, plus `_quality_report.json`.
 
 ## Sources
 | prefix | source | coverage |

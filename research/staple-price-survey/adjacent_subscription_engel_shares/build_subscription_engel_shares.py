@@ -102,7 +102,8 @@ def main():
     w = csv.DictWriter(buf, fieldnames=COLS, lineterminator="\n"); w.writeheader(); w.writerows(rows)
     data = buf.getvalue().encode("utf-8")
     (HERE / f"{NAME}_vertical.csv").write_bytes(data)
-    with gzip.GzipFile(HERE / f"{NAME}_vertical.csv.gz", "wb", mtime=0) as g:
+    # Python 3.15 changed the default level; pin it for cross-version rebuilds.
+    with gzip.GzipFile(HERE / f"{NAME}_vertical.csv.gz", "wb", compresslevel=9, mtime=0) as g:
         g.write(data)
     quality = quality_report(rows)
     (HERE / "_quality_report.json").write_text(

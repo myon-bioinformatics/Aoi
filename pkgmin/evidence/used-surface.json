@@ -37,6 +37,10 @@
     {
       "file": "scripts/fetch_module.py",
       "line": 394
+    },
+    {
+      "file": "scripts/shrink_polars.py",
+      "line": 508
     }
   ],
   "packages": {

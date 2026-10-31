@@ -504,21 +504,21 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 957,
+      "attribute_uses": 966,
       "attributes": {
         "Boolean": 8,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 241,
+        "DataFrame": 246,
         "Expr": 13,
         "Float32": 1,
         "Float64": 70,
         "Int32": 30,
-        "Int64": 40,
+        "Int64": 41,
         "Series": 15,
         "Utf8": 23,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 408,
+        "col": 410,
         "concat": 11,
         "concat_list": 1,
         "concat_str": 3,
@@ -529,7 +529,7 @@
         "lit": 31,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 20,
+        "read_ndjson": 21,
         "sum": 2,
         "when": 18
       },
@@ -575,29 +575,29 @@
           "import_sites": 2
         },
         "pythdragoras": {
-          "attribute_uses": 223,
+          "attribute_uses": 232,
           "attributes": {
             "Boolean": 2,
-            "DataFrame": 90,
+            "DataFrame": 95,
             "Expr": 6,
             "Float64": 3,
             "Int32": 1,
-            "Int64": 3,
+            "Int64": 4,
             "Series": 11,
             "Utf8": 1,
             "__version__": 2,
-            "col": 64,
+            "col": 66,
             "concat": 7,
             "concat_str": 1,
             "first": 2,
             "len": 2,
             "lit": 16,
-            "read_ndjson": 9,
+            "read_ndjson": 10,
             "when": 3
           },
           "dynamic_import_sites": 0,
-          "files": 17,
-          "import_sites": 17
+          "files": 19,
+          "import_sites": 19
         },
         "research": {
           "attribute_uses": 2,
@@ -691,8 +691,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 40,
-      "import_sites": 45
+      "files": 42,
+      "import_sites": 47
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -717,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1226,
+      "attribute_uses": 1251,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -730,10 +730,10 @@
         "fixture": 57,
         "hookimpl": 4,
         "importorskip": 10,
-        "mark.parametrize": 265,
-        "mark.skipif": 23,
+        "mark.parametrize": 281,
+        "mark.skipif": 28,
         "param": 1,
-        "raises": 451,
+        "raises": 455,
         "skip": 11,
         "warns": 3
       },
@@ -802,22 +802,22 @@
           "import_sites": 13
         },
         "pythdragoras": {
-          "attribute_uses": 170,
+          "attribute_uses": 195,
           "attributes": {
             "UsageError": 2,
             "approx": 42,
             "fail": 2,
             "fixture": 6,
             "importorskip": 1,
-            "mark.parametrize": 37,
-            "mark.skipif": 1,
-            "raises": 75,
+            "mark.parametrize": 53,
+            "mark.skipif": 6,
+            "raises": 79,
             "skip": 2,
             "warns": 2
           },
           "dynamic_import_sites": 0,
-          "files": 17,
-          "import_sites": 17
+          "files": 22,
+          "import_sites": 22
         },
         "queryu": {
           "attribute_uses": 84,
@@ -913,8 +913,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 124,
-      "import_sites": 126
+      "files": 129,
+      "import_sites": 131
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1696,6 +1696,16 @@
     },
     {
       "attributes": {
+        "read_ndjson": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/bitwise_surrogate.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
         "UsageError": 2,
         "fixture": 1
       },
@@ -1897,6 +1907,28 @@
     },
     {
       "attributes": {
+        "DataFrame": 5,
+        "Int64": 1,
+        "col": 2
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_bitwise_surrogate.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "raises": 4
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_bitwise_surrogate.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
         "fixture": 1,
         "raises": 3,
         "skip": 1
@@ -2086,6 +2118,17 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 3,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_littlebit_survey_node_entry.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
         "DataFrame": 1
       },
       "dynamic_lines": [],
@@ -2101,6 +2144,17 @@
       },
       "dynamic_lines": [],
       "file": "pythdragoras/tests/test_next_seeds.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 7,
+        "mark.skipif": 2
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_node_launcher_regressions.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "pythdragoras"
@@ -2239,12 +2293,34 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 3,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_score_sensitivity_node_entry.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
         "approx": 1,
         "mark.parametrize": 1,
         "raises": 2
       },
       "dynamic_lines": [],
       "file": "pythdragoras/tests/test_season_sensitivity.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 3,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_season_sensitivity_node_entry.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "pythdragoras"

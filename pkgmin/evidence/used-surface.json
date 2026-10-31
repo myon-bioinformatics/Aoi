@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "files_scanned": 336,
+  "files_scanned": 432,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
@@ -37,6 +37,10 @@
     {
       "file": "scripts/fetch_module.py",
       "line": 390
+    },
+    {
+      "file": "scripts/shrink_polars.py",
+      "line": 515
     }
   ],
   "packages": {

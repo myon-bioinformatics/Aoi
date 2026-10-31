@@ -84,3 +84,15 @@ def test_vendor_path_mismatch_is_reported():
             entry["sha256"] = "0" * 64
     found = lock.problems(ROOT, document)
     assert any(item.startswith("vendor/py_launch.cjs: sha256 が違う") for item in found)
+
+
+def test_consumers_outside_child_heads_or_unsorted_are_reported():
+    import copy
+    data = lock.load_lock(lock.ROOT)
+    bad = copy.deepcopy(data)
+    bad["files"][0]["consumers"] = ["myon-bioinformatics/NotAChild"]
+    assert any("consumers" in p for p in lock.problems(lock.ROOT, bad))
+    bad["files"][0]["consumers"] = ["myon-bioinformatics/SakAnalytics", "myon-bioinformatics/DRAgoWing"]
+    assert any("consumers" in p for p in lock.problems(lock.ROOT, bad))
+    bad["files"][0]["consumers"] = []
+    assert not any(p.startswith(bad["files"][0]["path"]) for p in lock.problems(lock.ROOT, bad))

@@ -1,0 +1,7 @@
+{
+  "name": "pythdragoras",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  }
+}

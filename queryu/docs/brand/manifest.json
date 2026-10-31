@@ -1,0 +1,27 @@
+{
+  "source": "User-supplied project artwork sheet, 2026-10-23",
+  "source_dimensions": [
+    1536,
+    1024
+  ],
+  "coordinate_convention": "left, top, right-exclusive, bottom-exclusive",
+  "project": {
+    "label": "QueRyu",
+    "icon": [
+      1248,
+      351,
+      1415,
+      518
+    ],
+    "icon_sha256": "d20ab35748a55e2dd0d56de9aec085eb6a44631ec330afc6aa7648875f5205ea",
+    "icon_rgb_sha256": "3a6e57953ea2d547f0980e40f55ed492c92afab0d7f7eead00b3f446432d559b",
+    "favicon_sha256": "96dcc84e2d0beb64dfc13b7f25b217f86e7da09a98c62a8340cbf97ad7b1cc23",
+    "favicon_rgb_sha256": "49304a05c9ebedb63721f7e339084b255e73d5eb13815598e1b0d826390e0d9c",
+    "favicon_source": "docs/brand/icon.png resampled to 64x64 with LANCZOS",
+    "favicon_size": [
+      64,
+      64
+    ],
+    "favicon_background": "#fbfafa"
+  }
+}

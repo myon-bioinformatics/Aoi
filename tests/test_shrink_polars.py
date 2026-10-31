@@ -356,3 +356,19 @@ def test_load_config_does_not_reread_the_same_file_and_run_workload_does_not_rep
         assert sys.path.count(str(ROOT)) == 1
     finally:
         sp.load_config(sp.CONFIG_PATH)
+
+
+@pytest.mark.parametrize("invalid", ["{", '{"entries": null}'])
+def test_failed_config_load_is_not_cached_or_partially_applied(tmp_path, invalid):
+    cfg = tmp_path / "broken.json"
+    cfg.write_text(invalid, encoding="utf-8")
+    before = (dict(sp.CONFIG), list(sp.DEFAULT_ENTRIES), list(sp._LOADED))
+    for _ in range(2):
+        with pytest.raises((json.JSONDecodeError, TypeError)):
+            sp.load_config(cfg)
+        assert (sp.CONFIG, sp.DEFAULT_ENTRIES, sp._LOADED) == before
+    cfg.write_text(json.dumps({"entries": ["fixed.py:f"]}), encoding="utf-8")
+    try:
+        assert sp.load_config(cfg)["entries"] == ["fixed.py:f"]
+    finally:
+        sp.load_config(sp.CONFIG_PATH)

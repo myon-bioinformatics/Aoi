@@ -198,3 +198,45 @@ def test_distribution_live_provenance_event_policy(tmp_path, monkeypatch, event,
     assert (checkout / "minpy.py").read_bytes() == live
     assert (tmp_path / ".test-deps/frozen-minpy.py").read_bytes() == frozen
     assert (tmp_path / "distributions.json").read_text() == manifest
+
+
+@pytest.mark.parametrize("fault", [None, "repository", "commit", "identity"])
+def test_frozen_queryu_is_separate_from_live_checkout(tmp_path, monkeypatch, fault):
+    import json
+    import subprocess
+    import textwrap
+
+    text = (ROOT / ".github/workflows/min-distributions.yml").read_text()
+    step = text.split("      - name: Restore approved frozen QueRyu source\n", 1)[1]
+    program = textwrap.dedent(step.split("<<'PYCODE'\n", 1)[1].split("\n          PYCODE", 1)[0])
+    source = {"repository": "myon-bioinformatics/QueRyu", "commit": "a" * 40}
+    if fault in {"repository", "commit"}:
+        source[fault] = "untrusted"
+    monkeypatch.chdir(tmp_path)
+    manifest = json.dumps({"projects": {"queryu": source}})
+    (tmp_path / "distributions.json").write_text(manifest)
+    calls = []
+    live = ".test-deps/distribution-sources/queryu"
+    def run(argv, **kwargs):
+        calls.append(argv)
+        assert argv[:3] == ["git", "-C", live]
+        if argv[3] == "fetch":
+            assert argv[4:] == ["--depth=1", "origin", "a" * 40]
+        else:
+            assert argv[3:] == ["worktree", "add", "--detach",
+                str(tmp_path / ".test-deps/frozen-distribution-sources/queryu"), "a" * 40]
+    def observe(argv, **kwargs):
+        assert argv == ["git", "-C", live, "rev-parse", "FETCH_HEAD"]
+        return ("b" if fault == "identity" else "a") * 40 + "\n"
+    monkeypatch.setattr(subprocess, "run", run)
+    monkeypatch.setattr(subprocess, "check_output", observe)
+    if fault:
+        with pytest.raises(SystemExit):
+            exec(compile(program, "frozen-queryu", "exec"), {})
+        assert len(calls) == (1 if fault == "identity" else 0)
+    else:
+        exec(compile(program, "frozen-queryu", "exec"), {})
+        assert len(calls) == 2
+    assert (tmp_path / "distributions.json").read_text() == manifest
+    assert "--sources .test-deps/frozen-distribution-sources --check" in text
+    assert "ref: ${{ steps.resolved.outputs.queryu_sha }}" in text

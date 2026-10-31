@@ -504,21 +504,21 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 966,
+      "attribute_uses": 1007,
       "attributes": {
-        "Boolean": 8,
+        "Boolean": 14,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 246,
+        "DataFrame": 258,
         "Expr": 13,
         "Float32": 1,
         "Float64": 70,
-        "Int32": 30,
+        "Int32": 34,
         "Int64": 41,
         "Series": 15,
-        "Utf8": 23,
+        "Utf8": 24,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 410,
+        "col": 425,
         "concat": 11,
         "concat_list": 1,
         "concat_str": 3,
@@ -526,10 +526,10 @@
         "first": 4,
         "int_range": 1,
         "len": 8,
-        "lit": 31,
+        "lit": 33,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 21,
+        "read_ndjson": 22,
         "sum": 2,
         "when": 18
       },
@@ -619,37 +619,37 @@
           "import_sites": 2
         },
         "sakanalytics": {
-          "attribute_uses": 674,
+          "attribute_uses": 715,
           "attributes": {
-            "Boolean": 4,
+            "Boolean": 10,
             "Config.set_tbl_rows": 1,
-            "DataFrame": 138,
+            "DataFrame": 150,
             "Expr": 6,
             "Float32": 1,
             "Float64": 67,
-            "Int32": 29,
+            "Int32": 33,
             "Int64": 35,
             "Series": 3,
-            "Utf8": 20,
+            "Utf8": 21,
             "__version__": 2,
             "any_horizontal": 1,
-            "col": 322,
+            "col": 337,
             "concat": 3,
             "concat_list": 1,
             "concat_str": 1,
             "first": 2,
             "int_range": 1,
             "len": 6,
-            "lit": 9,
+            "lit": 11,
             "max_horizontal": 1,
             "read_csv": 1,
-            "read_ndjson": 4,
+            "read_ndjson": 5,
             "sum": 2,
             "when": 14
           },
           "dynamic_import_sites": 0,
-          "files": 4,
-          "import_sites": 9
+          "files": 6,
+          "import_sites": 11
         },
         "tests": {
           "attribute_uses": 6,
@@ -691,8 +691,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 42,
-      "import_sites": 47
+      "files": 44,
+      "import_sites": 49
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -717,7 +717,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1260,
+      "attribute_uses": 1380,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -725,16 +725,16 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 346,
+        "approx": 387,
         "fail": 33,
         "fixture": 57,
         "hookimpl": 4,
-        "importorskip": 12,
-        "mark.parametrize": 288,
+        "importorskip": 14,
+        "mark.parametrize": 318,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 455,
-        "skip": 11,
+        "raises": 501,
+        "skip": 12,
         "warns": 3
       },
       "by_tree": {
@@ -835,20 +835,22 @@
           "import_sites": 12
         },
         "sakanalytics": {
-          "attribute_uses": 318,
+          "attribute_uses": 436,
           "attributes": {
             "UsageError": 2,
-            "approx": 200,
+            "approx": 241,
             "fixture": 7,
-            "mark.parametrize": 41,
+            "importorskip": 2,
+            "mark.parametrize": 70,
             "mark.skipif": 5,
             "param": 1,
-            "raises": 61,
+            "raises": 106,
+            "skip": 1,
             "warns": 1
           },
           "dynamic_import_sites": 0,
-          "files": 11,
-          "import_sites": 11
+          "files": 14,
+          "import_sites": 14
         },
         "scripts": {
           "attribute_uses": 5,
@@ -864,15 +866,15 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 405,
+          "attribute_uses": 407,
           "attributes": {
             "approx": 104,
             "fail": 13,
             "fixture": 17,
             "importorskip": 3,
-            "mark.parametrize": 108,
+            "mark.parametrize": 109,
             "mark.skipif": 12,
-            "raises": 144,
+            "raises": 145,
             "skip": 4
           },
           "dynamic_import_sites": 0,
@@ -914,8 +916,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 131,
-      "import_sites": 133
+      "files": 134,
+      "import_sites": 136
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2709,6 +2711,29 @@
     },
     {
       "attributes": {
+        "DataFrame": 1
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/moshimo_box.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
+        "DataFrame": 3,
+        "col": 2,
+        "lit": 2,
+        "read_ndjson": 1
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/moshimo_pool.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
         "DataFrame": 2,
         "col": 6
       },
@@ -2720,9 +2745,9 @@
     },
     {
       "attributes": {
-        "Boolean": 4,
+        "Boolean": 6,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 90,
+        "DataFrame": 91,
         "Expr": 6,
         "Float32": 1,
         "Float64": 67,
@@ -2732,7 +2757,7 @@
         "Utf8": 20,
         "__version__": 1,
         "any_horizontal": 1,
-        "col": 278,
+        "col": 280,
         "concat": 3,
         "concat_list": 1,
         "concat_str": 1,
@@ -2799,6 +2824,17 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 2,
+        "raises": 4
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/tests/test_epsilon.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
         "approx": 3,
         "fixture": 3,
         "mark.parametrize": 3,
@@ -2806,6 +2842,33 @@
       },
       "dynamic_lines": [],
       "file": "sakanalytics/tests/test_league_laboratory.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
+        "approx": 33,
+        "importorskip": 1,
+        "mark.parametrize": 21,
+        "raises": 32
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/tests/test_moshimo_box.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
+        "approx": 2,
+        "importorskip": 1,
+        "mark.parametrize": 4,
+        "raises": 6,
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/tests/test_moshimo_pool.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "sakanalytics"
@@ -2836,11 +2899,13 @@
     },
     {
       "attributes": {
-        "DataFrame": 43,
-        "Int32": 4,
+        "Boolean": 4,
+        "DataFrame": 50,
+        "Int32": 8,
         "Series": 2,
+        "Utf8": 1,
         "__version__": 1,
-        "col": 37,
+        "col": 48,
         "when": 1
       },
       "dynamic_lines": [],
@@ -2851,9 +2916,9 @@
     },
     {
       "attributes": {
-        "approx": 195,
-        "mark.parametrize": 5,
-        "raises": 8
+        "approx": 201,
+        "mark.parametrize": 7,
+        "raises": 11
       },
       "dynamic_lines": [],
       "file": "sakanalytics/tests/test_sakanalytics.py",
@@ -2964,8 +3029,8 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
-        "raises": 1
+        "mark.parametrize": 4,
+        "raises": 2
       },
       "dynamic_lines": [],
       "file": "tests/test_aoi_parent_workflow_pins.py",

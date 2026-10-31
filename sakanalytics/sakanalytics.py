@@ -63,6 +63,7 @@
   series_*                         カード（同じ相手・同じ球場で続けての試合）ごとの勝ち数: 負け越したカード、勝ち数の散らばり、
                                    1試合目とそれ以外の勝率の差、3連戦の 0〜3勝の数と、力が一定のときとの比べ（R24。series_features）
   inn_size_rank / inn_size_low_streak / rf_low_streak  低いままの状態が何年続いているか（R14。add_persistence）
+  inn_size_low_streak_censored / rf_low_streak_censored  その値が下限（手前の年が不明で、本当は n 以上）のとき True。値は変えず、印だけ足した
   rf_adv / ra_adv / run_balance / short_share  得点・失点の優位を1試合あたりの点で（他球団平均との差）。収支と、0〜1 の取り分（R32。add_balance）
   rf_adv_z / ra_adv_z / *_zone     優位を全単位の標準偏差で割ったものと、その3区分（1・0・−1）。|z| < 1 を 0 の近くとして読む（R33）
   rf_sd_g / ra_sd_g / *_adv_se / *_zone_se  試合ごとの点の標準偏差と、優位の誤差・誤差1つ分での3区分（R34）
@@ -124,6 +125,8 @@ from datetime import date
 from pathlib import Path
 
 import polars as pl
+
+from epsilon import check_eps, lift
 
 K_FIXED = 1.83
 PYTHAGENPAT_EXP = 0.287
@@ -741,25 +744,30 @@ WAVE_PERIODS = (None, 2.0, 1.0, 0.75, 0.5, 1 / 3, 0.25)    # 波の周期（シ�
 WAVE_SETTLE = 0.5                                          # ゆれの幅が半順位を下回ったら「順位が決まった」とみなす
 
 
-def wave_basis(xs: list[float]) -> list[dict]:
+def wave_basis(xs: list[float], eps: float | None = None) -> list[dict]:
     """減衰する波 h(x) = L + e^(−λt)·((h0 − L)·cos ωt + B·sin ωt)（t = x − 線の始まり）を当てるための、格子ごとの量。
 
     h0 は線の始まり（全球団が決めた試合数に届いた日）の値そのもので、当てはめで動かさない（切片を置かない）。
     λ と周期は格子から選び、L（収束する先）と B（始まりの傾きを決める量）は最小二乗で決める。どの格子でも連続で微分できる。
+
+    eps: 減衰しない波の行（λ = 0、格子の境界）の λ を ε に置き換える。None なら今までどおり λ = 0（出力は変わらない）。
+    ε の値は決めていないので、呼ぶ側が渡す。どの行が境界の行かは各行の "boundary" に残す（ε の有無によらない）。
+    sin・cos の角（ω·t）は境界ではない（最初の点で sin 0 = 0 は正しい値）ので、ε にしない。
     """
     t = [x - xs[0] for x in xs]
+    undamped, _ = lift(0.0, eps, lo=0.0)  # 減衰しない波の λ: 0.0 のまま、または ε
     # 同じ当てはまりなら簡単なほうを選ぶ順: 波なしで近づく → 減衰する波 → 減衰しない波（始まりの値のまま動かない線は候補にしない）
-    grid = ([(lam, None) for lam in WAVE_DECAYS if lam > 0]
-            + [(lam, per) for lam in WAVE_DECAYS if lam > 0 for per in WAVE_PERIODS if per]
-            + [(0.0, per) for per in WAVE_PERIODS if per])
+    grid = ([(lam, None, False) for lam in WAVE_DECAYS if lam > 0]
+            + [(lam, per, False) for lam in WAVE_DECAYS if lam > 0 for per in WAVE_PERIODS if per]
+            + [(undamped, per, True) for per in WAVE_PERIODS if per])
     out = []
-    for lam, per in grid:
+    for lam, per, boundary in grid:
         w = 2 * math.pi / per if per else 0.0
         ec = [math.exp(-lam * u) * math.cos(w * u) for u in t]
         es = [math.exp(-lam * u) * math.sin(w * u) for u in t]
         sec, sec2, sese = sum(ec), sum(e * e for e in ec), sum(a * b for a, b in zip(ec, es))
         out.append({"lam": lam, "per": per, "w": w, "ec": ec, "es": es, "sec": sec, "sec2": sec2, "sese": sese,
-                    "uu": len(t) - 2 * sec + sec2, "uv": sum(es) - sese, "vv": sum(e * e for e in es)})
+                    "uu": len(t) - 2 * sec + sec2, "uv": sum(es) - sese, "vv": sum(e * e for e in es), "boundary": boundary})
     return out
 
 
@@ -768,7 +776,8 @@ def wave_fit(ys: list[float], basis: list[dict], x0: float, x1: float = 1.0) -> 
 
     返り値: limit（x → ∞ で収束する先 L。λ = 0 なら収束しないので空）、end（最後の日 x = 1 の値）、decay（λ）、
     period（周期。波がなければ空）、settle_x（ゆれの幅 e^(−λt)·√((h0 − L)² + B²) が WAVE_SETTLE を下回る位置。
-    1 を超えればシーズン中には決まらない。減衰しなければ空）、rmse
+    1 を超えればシーズン中には決まらない。減衰しなければ空）、rmse、boundary（選ばれたのが減衰しない波の行 = λ の境界の行か。
+    ε に置き換えた格子でも真）
     """
     h0, n = ys[0], len(ys)
     sy, sy2 = sum(ys), sum(y * y for y in ys)
@@ -799,7 +808,7 @@ def wave_fit(ys: list[float], basis: list[dict], x0: float, x1: float = 1.0) -> 
         settle = x0 + math.log(amp / WAVE_SETTLE) / b["lam"] if b["lam"] > 0 else None
     end = lim + math.exp(-b["lam"] * t1) * ((h0 - lim) * math.cos(b["w"] * t1) + bb * math.sin(b["w"] * t1))
     return {"limit": lim if b["lam"] > 0 else None, "end": end, "decay": b["lam"], "period": b["per"],
-            "settle_x": settle, "rmse": math.sqrt(max(sse, 0.0) / n)}
+            "settle_x": settle, "rmse": math.sqrt(max(sse, 0.0) / n), "boundary": b["boundary"]}
 
 
 def _clinch_days(days: list[list[tuple]], winners: list, members_by_league: dict) -> dict:
@@ -1063,7 +1072,7 @@ def _season_paths(days: list[list[tuple]], grid: dict, winners: list) -> dict:
 
 
 def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = TRAJ_MIN_GAMES,
-                      end: str = "season") -> pl.DataFrame:
+                      end: str = "season", wave_eps: float | None = None) -> pl.DataFrame:
     """R22: シーズンの中の順位と貯金の線を3次式でならし、山（極大）と谷（極小）があるかを見る。
 
     横軸は日付（そのリーグの最初の試合の日 0 〜 最後の試合の日 1）。リーグの全球団が min_games 試合に届いた日から最後の日まで、
@@ -1086,9 +1095,12 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
       wave_settle_pct : 力が一定のシーズンのうち、決まった位置が実際より早かった割合（同じなら半分数える。小さいほど実際が早い）
       wave_osc_base   : 力が一定のシーズンのうち、波のある式が選ばれた割合
       wave_limit_rank_h1 : 前半（横軸 0.5 まで）の線だけから当てた波が収束する先の順位（前半でもう行き先が見えていたか）
+      wave_lifted     : （wave_eps を渡したときだけ出る列）選ばれた波が、λ = 0 を ε に置き換えた行か。ε の値は決めていないので
+                    呼ぶ側が渡す。None なら列は増えず、出力は今までと同じ（減衰しない波は wave_decay = 0 で分かる）
     R26: traj_wl_peak_after_clinch : 上位半分に入るのが確定した球団で、貯金の線の山が確定より後にあるか（山がなければ偽）
          traj_wl_peak_after_clinch_base : 力が一定のシーズンで、同じ確定の日より後に貯金の山ができた割合
     """
+    wave_eps = check_eps(wave_eps, "wave_eps")
     league_of = {(s, t): lg for s, t, lg in tg.select("season", "team", "league").unique().iter_rows()}
     rows = []
     for (season,), sg in tg.filter(pl.col("is_home")).sort("date").group_by(["season"], maintain_order=True):
@@ -1131,8 +1143,8 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
             half = sum(x <= 0.5 for x in xs)  # 前半（横軸 0.5 まで）だけから当てる波（行き先がもう見えていたか）
             grid[lg] = {"teams": members, "index": set(idx), "lo": xs[0], "hi": xs[-1], "xs": xs, "date": dates[idx[0]],
                         "half": half}
-            proj[lg], waves[lg] = cubic_projection(xs), wave_basis(xs)
-            waves[(lg, "h1")] = wave_basis(xs[:half]) if half >= 3 else None
+            proj[lg], waves[lg] = cubic_projection(xs), wave_basis(xs, wave_eps)
+            waves[(lg, "h1")] = wave_basis(xs[:half], wave_eps) if half >= 3 else None
             for t in members:  # 上位半分に入るのが確定した日の位置（その後の山は、決まった後の試合での山）
                 if t in clinch["in"]:
                     clinch_x[t] = (date.fromisoformat(dates[clinch["in"][t][0]]).toordinal() - o[lg_days[0]]) / (
@@ -1188,6 +1200,8 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
                         "wave_settle_pct": (sum(v < mine for v in settles[t]) + 0.5 * sum(v == mine for v in settles[t]))
                         / sims if sims else None,
                         "wave_osc_base": base[(t, "wave", "osc")] / sims if sims else None}
+                if wave_eps is not None:
+                    row["wave_lifted"] = bool(wv["boundary"])
                 rows.append(row)
     schema = {"season": pl.Int32, "team": pl.Utf8, "traj_start_games": pl.Int64, "traj_start_x": pl.Float64,
               "traj_start_date": pl.Utf8, "traj_end": pl.Utf8, "traj_end_x": pl.Float64}
@@ -1200,6 +1214,8 @@ def season_trajectory(tg: pl.DataFrame, sims: int = TRAJ_SIMS, min_games: int = 
                "wave_rmse": pl.Float64, "wave_settle_pct": pl.Float64, "wave_osc_base": pl.Float64,
                "wave_limit_rank_h1": pl.Float64, "traj_wl_peak_after_clinch": pl.Boolean,
                "traj_wl_peak_after_clinch_base": pl.Float64}
+    if wave_eps is not None:
+        schema["wave_lifted"] = pl.Boolean
     return pl.DataFrame(rows, schema=schema)
 
 
@@ -1408,20 +1424,32 @@ def opponent_adjusted(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
 
 
 def streak(st: pl.DataFrame, cond: pl.Expr, name: str) -> pl.DataFrame:
-    """条件が、そのシーズンまで何年続けて成り立っているか（同じチーム、連続した年）。成り立たなければ 0、値が空なら空。"""
+    """条件が、そのシーズンまで何年続けて成り立っているか（同じチーム、連続した年）。成り立たなければ 0、値が空なら空。
+
+    前の年が表にない・値が空のとき、連続は今の年から数え直す（値は 1）。ただし本当は、その前にも続いていたかもしれない。
+    そういう連続の値 n は「n 以上」（本当は n + u、u ≥ 0 は表にない前の年の分）なので、印を `{name}_censored` に付ける。
+      {name}            : 観測した長さ n（前の年が不明なら 0 とみなして数えた値。従来どおり。値は変えていない）
+      {name}_censored   : 連続の手前の年が不明で、n が下限のとき True。手前の年が条件を満たさないと分かっていれば False（n が確定）。
+                          成り立たない年は False、値が空の年は空。u の値は決めない（後から埋める）
+    """
     flags = st.select("team", "season", f=cond)
     by = {(r["team"], r["season"]): r["f"] for r in flags.iter_rows(named=True)}
     out = []
     for (team, season), f in sorted(by.items()):
         if f is None:
-            n = None
+            n, cut = None, None
         elif not f:
-            n = 0
+            n, cut = 0, False
         else:
-            prev = out[-1][2] if out and out[-1][0] == team and out[-1][1] == season - 1 else None
-            n = (prev or 0) + 1
-        out.append((team, season, n))
-    tbl = pl.DataFrame(out, schema={"team": pl.Utf8, "season": pl.Int32, name: pl.Int64}, orient="row")
+            prev = out[-1] if out and out[-1][0] == team and out[-1][1] == season - 1 else None
+            if prev is None or prev[2] is None:        # 前の年が表にない・空: 数え直し。手前は不明
+                n, cut = 1, True
+            elif prev[2] == 0:                          # 前の年が成り立たないと分かっている: 確定
+                n, cut = 1, False
+            else:                                       # 連続の途中: 手前の不明さは引き継ぐ
+                n, cut = prev[2] + 1, prev[3]
+        out.append((team, season, n, cut))
+    tbl = pl.DataFrame(out, schema={"team": pl.Utf8, "season": pl.Int32, name: pl.Int64, f"{name}_censored": pl.Boolean}, orient="row")
     return st.join(tbl, on=["team", "season"], how="left")
 
 
@@ -1431,6 +1459,7 @@ def add_persistence(st: pl.DataFrame) -> pl.DataFrame:
       inn_size_rank        : 得点した回の大きさ（inn_dlog_size）のリーグ内の順位（小さいほうが 1）
       inn_size_low_streak  : inn_size_rank が 2 以下の年が、その年まで何年続いているか
       rf_low_streak        : 得点のリーグ順位が 5 位以下の年が、その年まで何年続いているか
+      *_censored           : 連続の手前の年が不明で、上の値が下限（n 以上）のとき True。前の年を 0 とみなした値は従来どおりで、変えていない
     """
     if "inn_dlog_size" in st.columns:
         st = st.with_columns(inn_size_rank=pl.col("inn_dlog_size").rank("min").over(["season", "league"]).cast(pl.Int32))
@@ -1751,7 +1780,7 @@ def _spread(col: pl.Expr, name: str) -> list[pl.Expr]:
     ]
 
 
-def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFrame:
+def season_table(tg: pl.DataFrame, trajectory: dict | None = None, wave_eps: float | None = None) -> pl.DataFrame:
     m = pl.col("rf") - pl.col("ra")
     win, loss, margin = m > 0, m < 0, m.abs()
     bins = []
@@ -1797,7 +1826,7 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None) -> pl.DataFra
     traj = trajectory or {}  # 分析設定の [trajectory]（線の始まりの試合数・力が一定のシーズンの作り直しの回数）
     sims = int(traj.get("sims", TRAJ_SIMS))
     st = st.join(season_trajectory(tg, sims=sims, min_games=int(traj.get("min_games", TRAJ_MIN_GAMES)),
-                                   end=str(traj.get("end", "season"))), on=["season", "team"], how="left")
+                                   end=str(traj.get("end", "season")), wave_eps=wave_eps), on=["season", "team"], how="left")
     st = st.join(series_features(tg, sims=sims), on=["season", "team"], how="left")
     st = st.join(clinch_dates(tg), on=["season", "team"], how="left")
     st = st.join(standing_lock(tg), on=["season", "team"], how="left")
@@ -1853,6 +1882,15 @@ def null_nonfinite(df: pl.DataFrame) -> tuple[pl.DataFrame, dict[str, dict[str, 
     return df, report
 
 
+def wave_boundary_rows(st: pl.DataFrame, eps: float | None) -> dict:
+    """波を当てた行のうち、選ばれたのが減衰しない波（λ の境界の行）だった数。ε の有無によらず数える（見つけるだけ）。"""
+    if "wave_decay" not in st.columns:
+        return {"wave_fits": None, "wave_on_boundary": None}
+    fitted = st.filter(pl.col("wave_decay").is_not_null())
+    on = fitted["wave_lifted"].sum() if eps is not None else fitted.filter(pl.col("wave_decay") == 0.0).height
+    return {"wave_fits": fitted.height, "wave_on_boundary": int(on or 0)}
+
+
 def load_config(path: Path) -> dict:
     with path.open("rb") as f:
         return tomllib.load(f)
@@ -1883,12 +1921,19 @@ def main(argv=None) -> int:
                     help="線の始まりの試合数（[trajectory] sensitivity）や終わり（ends、R26）を変えた線の読み（R25）の書き出し先")
     ap.add_argument("--meta-out", type=Path,
                     help="実行の記録（JSON）の書き出し先。polars の版、名前をつけた許容値（TOLERANCES）、"
-                         "NaN・inf を空にした列と数、行数・列数")
+                         "NaN・inf を空にした列と数、行数・列数、ε（wave_eps）と λ の境界の行の数")
+    ap.add_argument("--wave-eps", type=float, metavar="EPS",
+                    help="波の当てはめで、減衰しない波（λ = 0、格子の境界）の λ を ε に置き換える。ε の値は決めていないので、"
+                         "渡したときだけ置き換える（渡さなければ出力は今までと同じ）。wave_lifted の列が増える")
     args = ap.parse_args(argv)
+    try:
+        wave_eps = check_eps(args.wave_eps, "--wave-eps")
+    except ValueError as exc:
+        ap.error(str(exc))
 
     cfg = load_config(args.config)
     tg = to_team_games(read_games(args.games), cfg["teams"])
-    st = season_table(tg, trajectory=cfg.get("trajectory"))
+    st = season_table(tg, trajectory=cfg.get("trajectory"), wave_eps=wave_eps)
     if args.innings:
         raw = pl.read_csv(args.innings)
         if "year" in raw.columns:  # PR #3 の形式: year, team, venue, role, window, ...
@@ -1913,13 +1958,14 @@ def main(argv=None) -> int:
         args.meta_out.parent.mkdir(parents=True, exist_ok=True)
         args.meta_out.write_text(json.dumps({
             "polars": pl.__version__, "tolerances": TOLERANCES, "nonfinite_nulled": nonfinite,
+            "epsilon": {"wave_lambda": wave_eps, **wave_boundary_rows(st, wave_eps)},
             "rows": st.height, "columns": st.width,
         }, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if args.sensitivity_out:
         traj = cfg.get("trajectory") or {}
         sims, main_games = int(traj.get("sims", TRAJ_SIMS)), int(traj.get("min_games", TRAJ_MIN_GAMES))
         variants = [(int(m), "season") for m in traj.get("sensitivity", [])] + [(main_games, str(e)) for e in traj.get("ends", [])]
-        parts = [season_trajectory(tg, sims=sims, min_games=m, end=e) for m, e in variants]
+        parts = [season_trajectory(tg, sims=sims, min_games=m, end=e, wave_eps=wave_eps) for m, e in variants]
         if parts:
             st.select("season", "team", "team_name", "league", "rank", "upper_half").join(
                 pl.concat(parts), on=["season", "team"], how="inner").write_ndjson(args.sensitivity_out)

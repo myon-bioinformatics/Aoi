@@ -141,8 +141,31 @@ jobs:
           Path(".test-deps/frozen-minpy.py").write_bytes(data)
           print("Verified frozen distribution compiler: " + commit)
           PYCODE
+      - name: Restore approved frozen QueRyu source
+        run: |
+          python -S - <<'PYCODE'
+          import json
+          from pathlib import Path
+          import re
+          import subprocess
+
+          source = json.loads(Path("distributions.json").read_text())["projects"]["queryu"]
+          commit = source.get("commit", "")
+          if (source.get("repository") != "myon-bioinformatics/QueRyu"
+                  or not re.fullmatch(r"[0-9a-f]{40}", commit)):
+              raise SystemExit("invalid approved frozen QueRyu identity")
+          checkout = ".test-deps/distribution-sources/queryu"
+          subprocess.run(["git", "-C", checkout, "fetch", "--depth=1", "origin", commit], check=True, timeout=90)
+          actual = subprocess.check_output(["git", "-C", checkout, "rev-parse", "FETCH_HEAD"], text=True, timeout=30).strip()
+          if actual != commit:
+              raise SystemExit("frozen QueRyu commit mismatch")
+          target = Path(".test-deps/frozen-distribution-sources/queryu").resolve()
+          target.parent.mkdir(parents=True, exist_ok=True)
+          subprocess.run(["git", "-C", checkout, "worktree", "add", "--detach", str(target), actual], check=True, timeout=90)
+          print("Verified frozen QueRyu source: " + commit)
+          PYCODE
       - name: Regenerate and compare every committed artifact and license
-        run: python -S scripts/build_distributions.py --minpy .test-deps/frozen-minpy.py --sources .test-deps/distribution-sources --check
+        run: python -S scripts/build_distributions.py --minpy .test-deps/frozen-minpy.py --sources .test-deps/frozen-distribution-sources --check
       - name: Compare resolved parent tool provenance
         env:
           PARENT_SHA: ${{ steps.resolved.outputs.parent_sha }}

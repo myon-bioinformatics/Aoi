@@ -9,7 +9,7 @@ AT = chr(64)
 SETUP_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1",
     "actions/setup-python": "6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
-    "astral-sh/setup-uv": "07a047e608db84b3d8c06cd9a7c7dcc9c355c18e",
+    "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2",
 }
 
 

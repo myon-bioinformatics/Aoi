@@ -144,7 +144,7 @@ def finish(sa, c: dict, ys: list[float], x0: float, x1: float) -> dict:
         settle = x0 + math.log(amp / sa.WAVE_SETTLE) / b["lam"] if b["lam"] > 0 else None
     end = lim + math.exp(-b["lam"] * t1) * ((h0 - lim) * math.cos(b["w"] * t1) + bb * math.sin(b["w"] * t1))
     return {"limit": lim if b["lam"] > 0 else None, "end": end, "decay": b["lam"], "period": b["per"],
-            "settle_x": settle, "rmse": math.sqrt(max(float(c["sse"]), 0.0) / len(ys))}
+            "settle_x": settle, "rmse": math.sqrt(max(float(c["sse"]), 0.0) / len(ys)), "boundary": b["boundary"]}
 
 
 def fit_f64(sa, ys, basis, x0, x1=1.0) -> dict:

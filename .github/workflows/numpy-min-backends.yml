@@ -62,4 +62,13 @@ jobs:
           PY
       - run: uv sync --locked --python "$(command -v python3)"
       - name: numpy_min backend and comparison with numpy
-        run: uv run --locked --python "$(command -v python3)" pytest -q -rs tests/test_numpy_min_suggest.py tests/test_shrink_module.py
+        shell: bash
+        # BLAS / LAPACK の xerbla は引数の誤りで exit(0) するので、終了コードだけでは落ちたことが分からない。
+        # pytest の最後の集計行が出ていること、"illegal value" が出ていないことも確かめる
+        run: |
+          set -o pipefail
+          uv run --locked --python "$(command -v python3)" pytest -q -rs -p no:cacheprovider \
+            tests/test_numpy_min_suggest.py tests/test_shrink_module.py 2>&1 | tee pytest.log
+          grep -Eq '^[0-9]+ passed' pytest.log || grep -Eq '^=+ [0-9]+ passed' pytest.log
+          if grep -Eq ' failed| error' pytest.log; then exit 1; fi
+          if grep -qi 'illegal value' pytest.log; then exit 1; fi

@@ -146,7 +146,8 @@ def test_suggest_on_c001_subset_matches_numpy(tmp_path):
         "import numpy, suggest\n"
         "docs = suggest.load_docs(Path(sys.argv[1]) / 'cycles/c001-chunichi/outputs')[:40]\n"
         "qs = ['得失点差がプラスなら上位か', '連勝が続くと首位になるか', 'ホームで勝つ確率']\n"
-        "out = {'numpy': numpy.__name__ + ':' + str(getattr(numpy, '__version__', '')), 'runs': []}\n"
+        "out = {'numpy': numpy.__name__ + ':' + str(getattr(numpy, '__version__', '')), 'runs': [],\n"
+        "       'backend': getattr(numpy, 'BACKEND', 'numpy')}\n"
         "for dim in (8, 32):\n"
         "    idx = suggest.Index(docs, dim=dim)\n"
         "    for mode in ('float', 'binary'):\n"
@@ -169,9 +170,77 @@ def test_suggest_on_c001_subset_matches_numpy(tmp_path):
     a, b = json.loads(real.stdout), json.loads(got.stdout)
     assert b["numpy"].endswith(":0+min")
     assert a["bits_shape"] == b["bits_shape"]
-    # Zf は float32。32 次元の内積に積もる丸め分（実測の最大 1.87122308e-06）まで許す
-    np.testing.assert_allclose(b["gram"], a["gram"], rtol=0, atol=5e-6)
+    # 許容誤差は numpy 2.5.4（uv.lock）と比べた実測の最大値そのもの（丸めない）。
+    # lapack: float32 の SVD は numpy と同じ sgesdd だが、numpy の wheel は OpenBLAS の sgesdd、
+    # こちらは Debian の参照 LAPACK 3.12.1 の sgesdd。float32 の計算順の違いが Zf とスコアに出る
+    # （dgesdd で解いて float32 に戻していたときは、スコア差の最大 1.41833292e-06 だった）。
+    # stdlib: float64 で解いて float32 に戻す。
+    gram_atol, score_atol = {
+        "lapack": (5.759655420350951e-06, 7.688191857257998e-06),
+        "stdlib": (1.8712230849260436e-06, 5.960464477539062e-07),
+    }[b["backend"]]
+    np.testing.assert_allclose(b["gram"], a["gram"], rtol=0, atol=gram_atol)
     for x, y in zip(a["runs"], b["runs"], strict=True):
         assert [i for i, _ in x] == [i for i, _ in y]
-        # float32 の丸め分だけ違ってよい（lapack 経路の実測の最大 1.41833292e-06）
-        np.testing.assert_allclose([s for _, s in y], [s for _, s in x], rtol=0, atol=5e-6)
+        np.testing.assert_allclose([s for _, s in y], [s for _, s in x], rtol=0, atol=score_atol)
+
+
+@backends
+@pytest.mark.parametrize("left,right", [((3, 0), (0, 2)), ((0, 3), (3, 2)), ((3, 2), (2, 0)), ((2, 0), (0,))])
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_matmul_with_empty_dimension_matches_numpy(mn, backend, left, right, dtype):
+    """次元が 0 の行列積は BLAS を呼ばずにゼロを返す（cblas は lda=0 で xerbla が exit してしまう）。"""
+    want = np.zeros(left, dtype=dtype) @ np.zeros(right, dtype=dtype)
+    got = mn.zeros(left, dtype=dtype) @ mn.zeros(right, dtype=dtype)
+    assert got.shape == want.shape and got.dtype == want.dtype.name
+    assert got.tolist() == want.tolist()
+
+
+@backends
+def test_empty_matmul_does_not_kill_the_process(mn, backend):
+    """BLAS が exit すると例外にならず終了コード 0 で抜けるので、別プロセスで最後の行まで届くかを見る。"""
+    code = ("import importlib.util, sys\n"
+            f"spec = importlib.util.spec_from_file_location('m', {str(ROOT / 'shrink' / 'numpy_min.py')!r})\n"
+            "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)\n"
+            "print(m.BACKEND)\n"
+            "for l, r in [((3, 0), (0, 2)), ((0, 3), (3, 2)), ((2, 0), (0,))]:\n"
+            "    (m.zeros(l) @ m.zeros(r)).tolist()\n"
+            "print('reached-end')\n")
+    env = {k: v for k, v in os.environ.items() if k != "NUMPY_MIN_PURE"}
+    if backend == "stdlib":
+        env["NUMPY_MIN_PURE"] = "1"
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, env=env)
+    assert out.returncode == 0, out.stderr
+    assert out.stdout.split() == [backend, "reached-end"], out.stdout + out.stderr
+    assert "illegal" not in (out.stdout + out.stderr)
+
+
+@backends
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_svd_singular_values_only_matches_numpy(mn, backend, dtype):
+    x = np.asarray(random.Random(3).choices(range(-9, 10), k=35), dtype=dtype).reshape(7, 5) / 3
+    want = np.linalg.svd(x, compute_uv=False)
+    got = mn.linalg.svd(_m(mn, x, dtype), full_matrices=False, compute_uv=False)
+    assert got.dtype == dtype
+    _close(got, want, 1e-5 if dtype == "float32" else 1e-12)
+
+
+def test_lapack_info_sign_gives_distinct_errors(monkeypatch):
+    """info<0 は引数の誤り（LinAlgIllegalArgument）、info>0 は収束しなかった（ValueError）。"""
+    mod = _load(False)
+
+    class Fake:
+        def __init__(self, value):
+            self.value = value
+
+        def dgesdd_(self, *args):
+            args[13]._obj.value = self.value  # info
+
+    a = mod.asarray([[1.0, 2.0], [3.0, 4.0]])
+    monkeypatch.setattr(mod, "_lapack", Fake(-4))
+    with pytest.raises(mod.LinAlgIllegalArgument, match="argument 4 had an illegal value"):
+        mod._svd_lapack(a, True)
+    monkeypatch.setattr(mod, "_lapack", Fake(2))
+    with pytest.raises(ValueError, match="did not converge") as err:
+        mod._svd_lapack(a, True)
+    assert not isinstance(err.value, mod.LinAlgIllegalArgument)

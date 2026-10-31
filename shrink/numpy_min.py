@@ -43,7 +43,7 @@ def _load_lib(env, name, soname, symbols):
     return None
 
 
-_lapack = _load_lib("NUMPY_MIN_LAPACK", "lapack", "liblapack.so.3", ("dgesdd_",))
+_lapack = _load_lib("NUMPY_MIN_LAPACK", "lapack", "liblapack.so.3", ("dgesdd_", "sgesdd_"))
 
 
 _blas = _load_lib("NUMPY_MIN_BLAS", "blas", "libblas.so.3", ("cblas_sgemm", "cblas_dgemm"))
@@ -645,6 +645,10 @@ def _matmul(left: ndarray, right: ndarray):
             cols = right.shape[1] if right.ndim == 2 else 1
             if right.shape[0] != shared:
                 raise ValueError("matmul の内側次元が違う")
+            if rows * cols * shared == 0:
+                # 次元が 0 だと cblas が lda などを不正とみなし、xerbla が終了コード 0 で exit してしまう。
+                # BLAS を呼ばず、numpy と同じくゼロの配列を返す
+                return ndarray([_cast(0, dtype)] * (rows * cols), (rows, cols) if right.ndim == 2 else (rows,), dtype)
             code = "f" if dtype == "float32" else "d"
             scalar = _ct.c_float if code == "f" else _ct.c_double
             a, ta = _buf([float(v) for v in left._data], code)
@@ -1259,34 +1263,48 @@ def svd(a, full_matrices=True, compute_uv=True, hermitian=False):
     return _svd_py(source, full_matrices, compute_uv, hermitian)
 
 
+class LinAlgIllegalArgument(ValueError):
+    """LAPACK が info<0（引数が不正）を返した。収束しなかった（info>0）とは別。"""
+
+
 def _svd_lapack(source, compute_uv):
-    """numpy の svd_s と同じ dgesdd（jobz='S'）。float32 の入力も float64 で解いて戻す。"""
+    """numpy の svd と同じドライバ: float32 は sgesdd、それ以外は float64 にして dgesdd。
+    compute_uv=False は jobz='N'、そうでなければ jobz='S'（full_matrices=False）。"""
     rows, cols = source.shape
     k = min(rows, cols)
-    kind = "float32" if source.dtype == "float32" else "float64"
+    single = source.dtype == "float32"
+    kind = "float32" if single else "float64"
+    code = "f" if single else "d"
+    real = _ct.c_float if single else _ct.c_double
+    name = "sgesdd" if single else "dgesdd"
+    driver = getattr(_lapack, name + "_")
+    jobz = b"S" if compute_uv else b"N"
     # 行優先の A（rows×cols）は、列優先では Aᵀ（cols×rows）。Aᵀ = U′SV′ᵀ なので
     # A の U は VT′ の並び、A の Vt は U′ の並びのまま読める（転置のコピーが要らない）
     m, n = cols, rows
-    a, ta = _buf([float(v) for v in source._data], "d")
-    s, ts = _buf([0.0] * k, "d")
-    u, tu = _buf([0.0] * (m * k), "d")
-    vt, tvt = _buf([0.0] * (k * n), "d")
+    ldu, ldvt = (m, k) if compute_uv else (1, 1)
+    a, ta = _buf([float(v) for v in source._data], code)
+    s, ts = _buf([0.0] * k, code)
+    u, tu = _buf([0.0] * (m * k if compute_uv else 1), code)
+    vt, tvt = _buf([0.0] * (k * n if compute_uv else 1), code)
     iwork = (_ct.c_int * (8 * k))()
     info = _ct.c_int()
     i = lambda v: _ct.byref(_ct.c_int(v))
 
     def call(work, lwork):
         # Fortran の文字引数は参照で渡し、最後に隠れた長さ引数を付ける
-        _lapack.dgesdd_(_ct.c_char_p(b"S"), i(m), i(n), ta.from_buffer(a), i(m), ts.from_buffer(s),
-                        tu.from_buffer(u), i(m), tvt.from_buffer(vt), i(k), work, i(lwork),
-                        iwork, _ct.byref(info), _ct.c_size_t(1))
+        driver(_ct.c_char_p(jobz), i(m), i(n), ta.from_buffer(a), i(m), ts.from_buffer(s),
+               tu.from_buffer(u), i(ldu), tvt.from_buffer(vt), i(ldvt), work, i(lwork),
+               iwork, _ct.byref(info), _ct.c_size_t(1))
+        if info.value < 0:
+            raise LinAlgIllegalArgument(f"{name}: argument {-info.value} had an illegal value")
+        if info.value > 0:
+            raise ValueError(f"SVD did not converge ({name} info={info.value})")
 
-    query = _ct.c_double()
+    query = real()
     call(_ct.byref(query), -1)
-    lwork = int(query.value)
-    call((_ct.c_double * lwork)(), lwork)
-    if info.value:
-        raise ValueError(f"SVD did not converge (dgesdd info={info.value})")
+    lwork = max(1, int(query.value))
+    call((real * lwork)(), lwork)
     cast = lambda values: [_cast(v, kind) for v in values]
     sing = ndarray(cast(s), (k,), kind)
     if not compute_uv:

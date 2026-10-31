@@ -1,0 +1,27 @@
+{
+  "source": "User-supplied project artwork sheet, 2026-10-23",
+  "source_dimensions": [
+    1536,
+    1024
+  ],
+  "coordinate_convention": "left, top, right-exclusive, bottom-exclusive",
+  "project": {
+    "label": "PythDRagoras",
+    "icon": [
+      941,
+      350,
+      1110,
+      519
+    ],
+    "icon_sha256": "eb462ce7f62297751cdc25a852e3c6aaaa64e2fab90b17cd0089a634c40a9858",
+    "icon_rgb_sha256": "efa9c6b0cc30d675c50a7e888ccd743709d88b60f9de200a390596dba9e2daa7",
+    "favicon_sha256": "65b3e15b198019207643761feb9feeebfaecf72f09494f8014ef21b128c78b61",
+    "favicon_rgb_sha256": "ce165637125d9764eda5ea8a85606a1eed569013aef6cba44d42718a47ee63df",
+    "favicon_source": "docs/brand/icon.png resampled to 64x64 with LANCZOS",
+    "favicon_size": [
+      64,
+      64
+    ],
+    "favicon_background": "#fafafa"
+  }
+}

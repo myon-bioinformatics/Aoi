@@ -289,7 +289,7 @@ def test_trusted_canary_bootstrap_is_immutable():
     assert "actions/setup-python" not in text
     assert 'python-version: "3.14.8"' in text
     assert "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3" in text
-    assert 'version: "0.13.3"' in text
+    assert 'version: "latest"' in text
     assert "pip install" not in text
     assert "uv sync --frozen" in text
 

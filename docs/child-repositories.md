@@ -23,7 +23,7 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
-2026-10-27: SakAnalytics の登録 SHA は、子の main の第一親の最新の merge `79e9dcfd220150ea31e9b5a3cced32e2c1f305bb`（#22: 共有ランチャーの更新）です。`sakanalytics/` の tree はこの SHA の tree と同一で、取り込み commit の第2親もこの SHA です。登録する `sha` は子の main の第一親にある merge だけです。
+2026-10-27: SakAnalytics の登録 SHA は、子の main の第一親の最新のコミット `87564cc7fec5b26f140f8cda8e064891a33a4be4`（#28: setup-uv を v10.3.3 に固定し setup-node を 24 に揃える）です。`sakanalytics/` の tree はこの SHA の tree と同一で、取り込み commit の第2親もこの SHA です。登録する `sha` は子の main の第一親にある merge だけです。
 
 2026-10-25: SakAnalytics #23 の merge `1609008d13a1627a583d7ad06d4e5bcee649b5c9`（ゼロ割りを空にする・許容値に名前をつける・NaN/inf の記録。値は変えない）を、squash なしの `git subtree pull --prefix=sakanalytics` で取り込みました。登録した `61ee074` から 12 コミット進んでいたので、子の #18〜#21（アイコン、vendor-dispatch の検証、英語の残り、`vendor/py_launch.cjs` 経由の Node 24 エントリ）も同時に入ります。`sakanalytics/` の tree は登録した SHA の tree と同一で、merge commit の第2親は子の main の head です。Aoi の clone が浅い（shallow）と「unrelated histories」で止まるので、先に `git fetch --unshallow` します。
 

@@ -552,4 +552,4 @@ committed-evidence checks are unchanged.
 
 ### Lightweight NumPy compatibility
 
-`shrink/numpy_min.py` uses the explicit [v2 decomposition acceptance contract](docs/numpy-min-acceptance-v2.md). Passing its tests does not guarantee NumPy-identical candidate scores or rankings; historical failures and backend differences remain recorded.
+`shrink/numpy_min.py` uses the explicit [v2 decomposition acceptance contract](docs/contracts/numpy-min-acceptance-v2.md). Passing its tests does not guarantee NumPy-identical candidate scores or rankings; historical failures and backend differences remain recorded.

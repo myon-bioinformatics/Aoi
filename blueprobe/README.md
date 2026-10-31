@@ -1,12 +1,18 @@
 # BlueProbe
 
+<p align="center">
+  <img src="docs/brand/icon.png" alt="BlueProbe icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+
 > Observe first, interpret later.
 >
 > HTML/CSS/DOM structure observation and extraction for NPB baseball pages (split out from Aoi/blueprobe).
 
 ![BlueProbe](docs/images/blueprobe.webp)
 
-*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+*Concept image (a figure for sharing the idea; not the actual data or HTML structure)*
 
 ## Role in Aoi
 
@@ -20,147 +26,147 @@
 
 Topics: web crawling, information gathering, research support
 
-## 概要
+## Overview
 
-BlueProbe は、取得済みの Web ページ（HTML/CSS/DOM）を読み、**何がそこにあるか**を記録する観測・抽出のツールです。勝敗や原因の判断はしません。
+BlueProbe is an observation and extraction tool that reads fetched web pages (HTML/CSS/DOM) and records **what is there**. It does not judge wins, losses, or causes.
 
-- 取得元に依存しない部分（表記の正規化、報告の契約、キャッシュだけを読むオフライン再解析）を `blueprobe.py` に置きます。
-- 取得元ごとの読み方は別モジュール（`<name>.py`）に分け、`pages()` と `parse()` を書けばそのまま使えます（下の「取得元を足す」）。
-- 採用したものだけでなく、採用しなかったものの件数と、どの区分にも当たらなかった原文（`unknown`）も返します。
-- 再解析ではネットワークに出ません。取得は [QueRyu](https://github.com/myon-bioinformatics/QueRyu) が担い、BlueProbe はその保存本文を読みます。
+- Parts independent of the source (notation normalization, the report contract, offline reparsing that reads only the cache) live in `blueprobe.py`.
+- How to read each source is split into separate modules (`<name>.py`); writing `pages()` and `parse()` is enough to use it (see "Adding a source" below).
+- It returns not only what was accepted, but also counts of what wasn't, and the source text that matched no category (`unknown`).
+- Reparsing does not access the network. Fetching is handled by [QueRyu](https://github.com/myon-bioinformatics/QueRyu); BlueProbe reads its saved bodies.
 
-保存済みWeb画面の座標・操作履歴をブラウザなしで整理する入口は
-[`web_observations.py`](docs/web-portability.md)。Dart／Kotlin／Swiftのソースと
-ビルド設定のハッシュ一覧も作れる。保存観測の解析と、現在の実装の実行検証は区別する。
+The entry point for organizing coordinates and interaction history of saved web screens without a browser is
+[`web_observations.py`](docs/web-portability.md). It can also build a hash list of Dart/Kotlin/Swift sources and
+build settings. Parsing saved observations is kept distinct from verifying execution of the current implementation.
 
-[Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) から独立したリポジトリです（下の「Aoi との関係」）。
+This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) (see "Relationship with Aoi" below).
 
-## インストールと使い方
+## Installation and usage
 
-Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使います。実行時の依存はありません（`pyproject.toml`）。`selectolax` は開発時の照合だけで、標準ライブラリの HTML 木と Lexbor の結果を比べます。
+Uses Python 3.11+ and [uv](https://docs.astral.sh/uv/). There are no runtime dependencies (`pyproject.toml`). `selectolax` is only for cross-checking during development, comparing the standard library's HTML tree with Lexbor's results.
 
 ```bash
 git clone https://github.com/myon-bioinformatics/BlueProbe.git
 cd BlueProbe
 uv sync
-uv run python blueprobe.py --source <取得元のモジュール名> --cache <QueRyu のキャッシュ> --out observed.md
+uv run python blueprobe.py --source <source module name> --cache <QueRyu cache> --out observed.md
 ```
 
-キャッシュだけを読み、ネットワークには出ない。未知の表記があれば件数を表示する（`--strict` で終了コード1）。
+It reads only the cache and does not access the network. If there are unknown notations, it shows the count (exit code 1 with `--strict`).
 
-## 構成
+## Layout
 
-| ファイル | 役割 |
+| File | Role |
 |---|---|
-| `blueprobe.py` | 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析（`inspect`）、DOM パターン表（`--list-patterns`）、文書分類（`classify_document` / `--classify`）、`html.parser` の HTML 木。詳しくは [docs/dom_patterns.md](docs/dom_patterns.md) |
-| `html_source.py` | 保存HTMLを、信頼したオフライン抽出関数へ渡す汎用の取得元（`HtmlSource`） |
-| `snapshot_source.py` | 保存済み本文の供給元の契約（`SnapshotSupplier`）と QueRyu 用アダプタ（`QueRyuCacheSource`） |
-| `heading_observations.py` | 保存済み HTML の見出し階層（`<h1>`〜`<h6>`）とランドマーク構造の観測 |
-| `web_observations.py` | 保存済みWeb画面の観測とソース一覧の整理（ブラウザ・SDKなし） |
-| `docs/contract/v1/` | 報告と snapshot 記録の契約（追加はv1のまま、破壊的変更はv2） |
-| `docs/boundaries.md` | BlueProbe / QueRyu / web-ui の責務の境界（提案） |
-| `docs/antipatterns.md` | 繰り返しそうな失敗とその約束 |
-| `tests/cases/*.jsonl` | 表記揺れのコーパス（xprobe と同じ id / category / value / reason 形式） |
+| `blueprobe.py` | Source-independent parts: normalization, the report contract, offline reparsing (`inspect`), the DOM pattern table (`--list-patterns`), document classification (`classify_document` / `--classify`), and the `html.parser` HTML tree. Details in [docs/dom_patterns.md](docs/dom_patterns.md) |
+| `html_source.py` | A generic source (`HtmlSource`) that passes saved HTML to a trusted offline extraction function |
+| `snapshot_source.py` | The contract for suppliers of saved bodies (`SnapshotSupplier`) and the QueRyu adapter (`QueRyuCacheSource`) |
+| `heading_observations.py` | Observing the heading hierarchy (`<h1>`–`<h6>`) and landmark structure of saved HTML |
+| `web_observations.py` | Organizing observations of saved web screens and source lists (no browser or SDK) |
+| `docs/contract/v1/` | Contracts for reports and snapshot records (additions stay in v1; breaking changes go to v2) |
+| `docs/boundaries.md` | Boundaries of responsibility between BlueProbe / QueRyu / web-ui (proposal) |
+| `docs/antipatterns.md` | Failures likely to recur, and the commitments against them |
+| `tests/cases/*.jsonl` | Corpus of notation variants (same id / category / value / reason format as xprobe) |
 
-NPB（日本プロ野球）向けの取得元は、後半の「NPB（プロ野球）の取得元」にまとめています。
+Sources for NPB (Nippon Professional Baseball) are collected in "NPB (professional baseball) sources" later on.
 
-## 取得元を足す
+## Adding a source
 
-`<name>.py`（Aoi では `blueprobe/<name>.py`）に次の2つを書けば、QueRyu と `inspect` からそのまま使える。
+Write the following two in `<name>.py` (`blueprobe/<name>.py` in Aoi), and it can be used directly from QueRyu and `inspect`.
 
 ```python
 def pages(scope) -> list[tuple[str, str, str]]: ...   # (key, url, group)
-def parse(html: str, url: str) -> dict: ...          # new_report() の形で返す
-def check(records) -> list[str]: ...                 # 任意。既知値との照合
+def parse(html: str, url: str) -> dict: ...          # return in the new_report() shape
+def check(records) -> list[str]: ...                 # optional; check against known values
 ```
 
-正規表現は狭く、全体一致で書く。新しい表記を見つけたら、広げる前にコーパスへケースを足す。
+Write regexes narrowly, as full matches. When you find a new notation, add a case to the corpus before widening.
 
-## 報告の契約
+## Report contract
 
-1ページを読んだ結果は、採用したものだけでなく、採用しなかったものも返す。
+The result of reading one page returns not only what was accepted, but also what wasn't.
 
 ```text
-records : 採用した観測（原文と派生値を並べる）
-counts  : 採用しなかったものの区分ごとの件数（例: cancelled, non_regular）
-unknown : どの区分にも当たらなかったもの。原文を残す → 表記の変化を疑う
+records : accepted observations (source text and derived values side by side)
+counts  : counts per category of what wasn't accepted (e.g. cancelled, non_regular)
+unknown : what matched no category; keep the source text → suspect a notation change
 ```
 
-## テスト
+## Tests
 
 ```bash
-PYTHONPATH=<Aoi のルート>/queryu uv run pytest -q
+PYTHONPATH=<Aoi root>/queryu uv run pytest -q
 ```
 
-キャッシュ連携テストは QueRyu（`Aoi/queryu`）を使う。CI（`.github/workflows/ci.yml`、Python 3.11–3.15）は実行時に Aoi の main を解決して `.test-deps/aoi` に checkout し、解決した SHA をジョブサマリへ残す。`workflow_dispatch` の `aoi_ref` で ref を上書きできる。
-`PYTHONPATH` に `queryu` を足す。任意の lab 統合テストは後半の「過去パターンのスナップショットでオフライン統合テストを再現する」。
+Cache integration tests use QueRyu (`Aoi/queryu`). CI (`.github/workflows/ci.yml`, Python 3.11–3.15) resolves Aoi's main at run time, checks it out to `.test-deps/aoi`, and leaves the resolved SHA in the job summary. The ref can be overridden with `aoi_ref` in `workflow_dispatch`.
+Add `queryu` to `PYTHONPATH`. The optional lab integration tests are in "Reproducing offline integration tests with a snapshot of past patterns" later on.
 
-## Aoi との関係
+## Relationship with Aoi
 
-このリポジトリは [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト
-[`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) から、履歴を保ったまま独立させたもの。
-Aoi 側の `blueprobe/` とは `git subtree` で同期し続ける（どちらで変更しても、もう一方へ反映する）。
-登録は他の subtree 子と同様、[Aoi](https://github.com/myon-bioinformatics/Aoi) 直下の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に載せます。親 [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics) の `child-heads.json` には登録しません。Aoi と BlueProbe のあいだでは vendor lock を使いません（一覧と手順は Aoi の [docs/child-repositories.md#blueprobe](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md#blueprobe)）。
+This repository was split out, preserving history, from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject
+[`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe).
+It keeps syncing with Aoi's `blueprobe/` via `git subtree` (a change made on either side is reflected to the other).
+Like the other subtree children, it is registered in [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) at the top of [Aoi](https://github.com/myon-bioinformatics/Aoi). It is not registered in the parent [myon-bioinformatics](https://github.com/myon-bioinformatics/myon-bioinformatics)'s `child-heads.json`. No vendor lock is used between Aoi and BlueProbe (the list and procedure are in Aoi's [docs/child-repositories.md#blueprobe](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md#blueprobe)).
 
-独立の目的は、HTML/CSS/DOM の構造を見て観測・抽出する知見を、リポジトリ横断でここに集めること。
-BlueProbe の実行コードは他リポジトリの実装に依存せず、必要な情報は参照先と契約を揃えて扱う。
-各リポジトリ側でのリファクタリングはそれぞれで行ってよい。
+The purpose of splitting out is to gather here, across repositories, the know-how for observing and extracting by looking at HTML/CSS/DOM structure.
+BlueProbe's runtime code does not depend on other repositories' implementations; needed information is handled by aligning references and contracts.
+Each repository may refactor on its own side.
 
-### 同期
+### Syncing
 
 ```bash
-# BlueProbe → Aoi（Aoi のルートで。子の main を `blueprobe/` に取り込む）
+# BlueProbe → Aoi (at Aoi's root; brings the child's main into `blueprobe/`)
 git subtree pull --prefix=blueprobe https://github.com/myon-bioinformatics/BlueProbe.git main
 ```
 
-Aoi → BlueProbe・登録した `sha` の更新は、上の child-repositories の BlueProbe 節に従います。
+Aoi → BlueProbe and updating the registered `sha` follow the BlueProbe section of child-repositories above.
 
-`pyproject.toml`・`conftest.py`・`docs/images/`・`.github/` は独立リポジトリ側だけのファイル。
+`pyproject.toml`, `conftest.py`, `docs/images/`, and `.github/` exist only on the standalone repository side.
 
-## 関連サブプロジェクト
+## Related subprojects
 
-親の [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクトは、それぞれ独立したリポジトリになっています。Aoi の中の場所（subtree）とあわせて載せます。一覧と登録の詳細は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md) です。
+Each subproject of the parent [Aoi](https://github.com/myon-bioinformatics/Aoi) is its own repository. They are listed with their location in Aoi (subtree). The list and registration details are in Aoi's [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md).
 
-| リポジトリ | Aoi の中の場所 | 役割 |
+| Repository | Location in Aoi | Role |
 |---|---|---|
-| **BlueProbe**（このリポジトリ） | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
-| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
-| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
-| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
-| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
-| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
+| **BlueProbe** (this repository) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | Observation and extraction (reads saved HTML/CSS/DOM and records what is there) |
+| [QueRyu](https://github.com/myon-bioinformatics/QueRyu) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | Fetching and building observation datasets (caches with provenance) |
+| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | Metrics and statistics from observation data (team × season metrics, outlook for remaining games) |
+| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | Verifying explanations (propositions, counterexamples, objections) |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | Pipeline execution and automation (the same definition locally and on GitHub Actions) |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | Figures and reports (Plotly.js HTML, the four-forms table) |
 
-## 参照・整合する関連リポジトリ
+## Related repositories referenced and aligned with
 
-| リポジトリ | 見るところ | 内容 |
+| Repository | Where to look | Contents |
 |---|---|---|
-| [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/adapters/html_snapshot.py`, `css_inspect.py`, `source_access.py`, `docs/source-access.md` | 保存HTMLのオフライン抽出・CSS検査・取得元アクセス（過去パターンのスナップショットを SHA で取得して任意接続） |
-| [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/page_text.py`, `examples/capture_browser_dom.py`, `docs/dom-capture.md`, `fixtures/page_text/` | ページ本文抽出とブラウザDOM採取 |
-| [web-ui](https://github.com/myon-bioinformatics/web-ui) | `docs/local-dom-lab.md`, `tool/serve_dom_lab.py`, `tests/integration/test_gradio_dom.py` | ローカルDOMラボと DOM 証跡 |
-| [flutter_navigation_basic](https://github.com/myon-bioinformatics/flutter_navigation_basic) | `e2e/tests/*.spec.ts` | Flutter Web 画面の DOM 観測（Playwright） |
+| [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/adapters/html_snapshot.py`, `css_inspect.py`, `source_access.py`, `docs/source-access.md` | Offline extraction of saved HTML, CSS inspection, source access (a snapshot of past patterns fetched by SHA, connected optionally) |
+| [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/page_text.py`, `examples/capture_browser_dom.py`, `docs/dom-capture.md`, `fixtures/page_text/` | Page body text extraction and browser DOM capture |
+| [web-ui](https://github.com/myon-bioinformatics/web-ui) | `docs/local-dom-lab.md`, `tool/serve_dom_lab.py`, `tests/integration/test_gradio_dom.py` | Local DOM lab and DOM evidence |
+| [flutter_navigation_basic](https://github.com/myon-bioinformatics/flutter_navigation_basic) | `e2e/tests/*.spec.ts` | DOM observation of Flutter Web screens (Playwright) |
 
-揃え方: 参照先で新しい抽出の工夫や失敗を見つけたら、まずここのコーパス（`tests/cases/`）か `docs/antipatterns.md` に観測として残し、それから実装を合わせる。
+How to align: when you find a new extraction technique or failure in a referenced repository, first record it as an observation here in the corpus (`tests/cases/`) or `docs/antipatterns.md`, then align the implementation.
 
-## ライセンス
+## License
 
-MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+MIT License ([LICENSE](LICENSE)). Same contents as Aoi's `LICENSE`.
 
-## 今後の検討
+## Future considerations
 
-他リポジトリが、BlueProbe の中核となる表記正規化・抽出の関数だけを最小の単一ファイルモジュールとして置く可能性はある。
-その場合でも、このリポジトリ全体を vendor することはしない。現時点では未定。
+Other repositories might place only BlueProbe's core notation normalization and extraction functions as a minimal single-file module.
+Even then, this whole repository will not be vendored. Undecided for now.
 
 ---
 
-# 詳しい使い方とNPB向けの内容
+# Detailed usage and NPB-specific content
 
-## 保存HTMLの共通抽出へ接続する
+## Connecting to shared extraction of saved HTML
 
-`html_source.HtmlSource(selector=..., extractor=...)` は、取得済みHTMLを信頼した
-オフライン抽出関数へ渡し、既存の `inspect()` の報告形式に変換する。
-取得・キャッシュ・NPB固有の観測は引き続き既存モジュールが担当する。
-抽出できない構造は `extraction_failed` と原文付き `unknown` に残す。
-同じページの抽出条件変更や再実行では、リンク先・CSSを含めて通信しない。
+`html_source.HtmlSource(selector=..., extractor=...)` passes fetched HTML to a trusted
+offline extraction function and converts the result into the existing `inspect()` report format.
+Fetching, caching, and NPB-specific observation continue to be handled by the existing modules.
+Structures that can't be extracted are kept as `extraction_failed` and `unknown` with source text.
+Changing extraction conditions or rerunning on the same page makes no network requests, including for linked resources and CSS.
 
 ```python
 from html_source import HtmlSource
@@ -170,29 +176,29 @@ source = HtmlSource(selector="main#calendar > .day", extractor=extract)
 rows = inspect(source, saved_pages, records_out)
 ```
 
-上記はマージ済みの lab PR [#110](https://github.com/myon-bioinformatics/mcp-toolcall-lab/pull/110)・
-[#111](https://github.com/myon-bioinformatics/mcp-toolcall-lab/pull/111) の抽出関数を使う任意の接続例。
-BlueProbeはそのパッケージを自動インストールしない。通常のNPB解析に新しい依存はない。
-`--source html_source` はlabの抽出モジュールが利用可能な環境でgeneric抽出を行う。
-selectorはタグ、`#id`、`.class`、子要素 `>`、子孫の限定的な構文で、
-CSSの描画・JavaScript実行・HTML5ブラウザDOM再構築を意味しない。
-全CSS構文への対応やPages上のPython実行は保証しない。
+The above is an optional connection example using the extraction functions from the merged lab PRs [#110](https://github.com/myon-bioinformatics/mcp-toolcall-lab/pull/110) and
+[#111](https://github.com/myon-bioinformatics/mcp-toolcall-lab/pull/111).
+BlueProbe does not install that package automatically. Normal NPB parsing has no new dependencies.
+`--source html_source` does generic extraction in environments where lab's extraction module is available.
+The selector is a limited syntax of tags, `#id`, `.class`, child `>`, and descendants;
+it does not imply CSS rendering, JavaScript execution, or HTML5 browser DOM reconstruction.
+Support for all CSS syntax and Python execution on Pages are not guaranteed.
 
-### 検証済みキャッシュから snapshot を再利用する
+### Reusing snapshots from a verified cache
 
-供給元は差し替えられる（契約は [docs/contract/v1/snapshot.md](docs/contract/v1/snapshot.md)）。
-任意の供給元は `inspect_snapshots(source, supplier)`、QueRyu は `inspect_queryu_cache`。
-旧名 `inspect_cache` は互換のため残す（非推奨）。
+The supplier is replaceable (the contract is [docs/contract/v1/snapshot.md](docs/contract/v1/snapshot.md)).
+Any supplier uses `inspect_snapshots(source, supplier)`; QueRyu uses `inspect_queryu_cache`.
+The old name `inspect_cache` is kept for compatibility (deprecated).
 
-`inspect_queryu_cache(source, cache, entries=None, records_out=None)` は QueRyu の照合済み
-本文を読む。既定では最新行、`entries` を指定すると選んだ取得時点の行を使う。
-NPB parser には原文HTMLをそのまま渡す。snapshot対応の `HtmlSource` には
-`Cache.snapshot()` の envelope を渡し、既存の
-`mcp_toolcall_lab.source_access.extract_snapshot` で検証・抽出する。
-独自 validator や HTML parser は増やさない。
-ここでの再解析はHTML構造の抽出・観測値の読み取りを指す。集計・指標計算は
-[SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics)、仮説評価は
-[PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) が担う。
+`inspect_queryu_cache(source, cache, entries=None, records_out=None)` reads QueRyu's verified
+bodies. By default it uses the latest rows; specifying `entries` uses rows from the selected fetch points.
+NPB parsers are passed the source HTML as is. A snapshot-aware `HtmlSource` is passed
+the `Cache.snapshot()` envelope, which is verified and extracted with the existing
+`mcp_toolcall_lab.source_access.extract_snapshot`.
+No custom validator or HTML parser is added.
+Reparsing here means extracting HTML structure and reading observed values. Aggregation and metric calculation are handled by
+[SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics), and hypothesis evaluation by
+[PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras).
 
 ```python
 from blueprobe import inspect_queryu_cache
@@ -204,50 +210,50 @@ rows = inspect_queryu_cache(HtmlSource(selector=".calendar a"), Cache("data/raw/
                      records_out=records)
 ```
 
-`--source html_source --cache ...` の CLI もこの経路を使う。
-`derived` は従来の抽出結果を維持し、`snapshot` に共有検証が返す属性、
-`cache_entry` に元の来歴を残す。任意の注入関数は
-`HtmlSource(snapshot_extractor=...)` で明示する。引数は snapshot 辞書と抽出条件、
-戻り値は lab と同じ `snapshot` / `extraction` の辞書。
-従来の `parse(html, url)` / `extractor=...` は raw HTML 用として残し、
-保存済みバイトの照合を行ったことにはしない。
+The `--source html_source --cache ...` CLI also uses this path.
+`derived` keeps the conventional extraction result, `snapshot` keeps the attributes returned by shared verification,
+and `cache_entry` keeps the original provenance. An optional injected function is
+specified explicitly with `HtmlSource(snapshot_extractor=...)`. Its arguments are the snapshot dict and extraction conditions,
+and its return value is a `snapshot` / `extraction` dict, the same as lab's.
+The conventional `parse(html, url)` / `extractor=...` are kept for raw HTML,
+and are not counted as having verified saved bytes.
 
-QueRyu の hash/長さ不一致は抽出前にエラーで止まり、欠けた過去本文を自動取得しない。
-lab は schema・URL形式・上限サイズ・decoded content hash を検査するが、
-URLや取得時刻の真実性・応答の真正性までは検証しない。来歴が不明なら不明のまま残す。
-ソースcheckout・CI runner identityの実行管理は NagoyAction 側の責務であり、
-BlueProbe runtime に checkout検証や runner は追加しない。
+QueRyu hash/length mismatches stop with an error before extraction, and missing past bodies are not fetched automatically.
+lab checks schema, URL format, maximum size, and decoded content hash,
+but does not verify the truth of the URL or fetch time, or the authenticity of the response. Unknown provenance stays unknown.
+Execution management of source checkouts and CI runner identity is NagoyAction's responsibility;
+no checkout verification or runner is added to the BlueProbe runtime.
 
-### CSSを読む・既存NPB解析と比べる
+### Reading CSS and comparing with existing NPB parsing
 
 `HtmlSource(include_css=True, stylesheets={saved_url: saved_css}, extractor=extract)`
-で埋め込み・inline・明示した保存CSSの宣言を読む。色番号、CSS変数、重要指定、
-条件付きルール、selectorとHTML要素の一致をderived側に残す。
-外部stylesheetと@importは取得せず未読参照として残す。CSSごとのハッシュも残す。
-未対応selectorはunsupported、一致なしはunmatchedと区別する。
-表示色・継承・詳細度・変数解決・画面サイズ条件は計算せず、computed_stylesはfalse。
-CSSが読めたことを、画面を再現できたこととして扱わない。
+reads declarations from embedded, inline, and explicitly given saved CSS. Color values, CSS variables, important flags,
+conditional rules, and matches between selectors and HTML elements are kept on the derived side.
+External stylesheets and @import are not fetched and are kept as unread references. Per-CSS hashes are kept too.
+Unsupported selectors are distinguished as unsupported, and no matches as unmatched.
+Display colors, inheritance, specificity, variable resolution, and screen-size conditions are not computed; computed_styles is false.
+Being able to read CSS is not treated as being able to reproduce the screen.
 
-`html_compare.compare_calendar()` は、保存HTMLからselectorで読んだリンク群と、
-既存 `npb_calendar.parse()` が採用した試合URLを比較する。
-採用試合の欠落、リンク重複、抽出失敗を返す。元HTMLをNPB parserにそのまま渡すので、
-大会見出し・中止・未知表記の判定は既存処理が保持する。
-`complete_for_adopted_games` は既存parserが採用した試合に対する被覆だけを意味し、
-parser自身が未知の試合を取りこぼしていないという証明ではない。
-NPB保存fixtureの4試合・中止1件・非公式戦1件を用いて比較する。
-同じ原文を何度再解析しても新規GETはしない。labなしの通常NPBテストは従来どおり動く。
+`html_compare.compare_calendar()` compares the links read by selector from saved HTML with
+the game URLs accepted by the existing `npb_calendar.parse()`.
+It returns missing accepted games, duplicate links, and extraction failures. The source HTML is passed as is to the NPB parser, so
+judgement of tournament headings, cancellations, and unknown notations stays with the existing processing.
+`complete_for_adopted_games` means only coverage of the games the existing parser accepted;
+it is not proof that the parser itself didn't miss unknown games.
+The comparison uses the saved NPB fixture's 4 games, 1 cancellation, and 1 non-official game.
+Reparsing the same source text any number of times makes no new GETs. Normal NPB tests without lab work as before.
 
-### 過去パターンのスナップショットでオフライン統合テストを再現する
+### Reproducing offline integration tests with a snapshot of past patterns
 
-CI の `Offline lab integration (Python 3.14)` は、過去に作ったパターン集合の検証用テストデータとして、lab のマージコミット
-`6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90` を SHA で取得し `.test-deps/lab` に checkout する。
-`src` をテスト時の `PYTHONPATH` に追加し、事前確認で SHA と
-`html_snapshot`・`css_inspect`・`source_access` の import 元を照合する。import 元は
-実テスト内でも確認する。単一ファイルのコピー、lab の自動インストール、実行時の取得はしない。
-通常の Python 3.11–3.15 のテスト行列は lab なしで維持し、統合テストは 3.14 のみで行う。
-全 Python 版での lab 統合を検証したという意味ではない。
+CI's `Offline lab integration (Python 3.14)` fetches lab's merge commit
+`6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90` by SHA as verification test data for past patterns, and checks it out to `.test-deps/lab`.
+It adds `src` to `PYTHONPATH` at test time, and a pre-check verifies the SHA and the import origins of
+`html_snapshot`, `css_inspect`, and `source_access`. Import origins are
+also checked inside the actual tests. No single-file copies, automatic lab installation, or fetching at run time.
+The normal Python 3.11–3.15 test matrix stays without lab, and integration tests run only on 3.14.
+This does not mean lab integration was verified on all Python versions.
 
-このリポジトリのルートで実行する（Aoi では Aoi のルートで、テストパスに `blueprobe/` を付ける）（clone はテスト前の準備で、抽出中の通信ではない）。
+Run at this repository's root (in Aoi, at Aoi's root, prefixing test paths with `blueprobe/`) (the clone is preparation before testing, not network access during extraction).
 
 ```bash
 git clone https://github.com/myon-bioinformatics/mcp-toolcall-lab.git .test-deps/lab
@@ -271,95 +277,95 @@ uv run --python 3.14 pytest -q --require-lab-integration \
   tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
   tests/test_blueprobe_html_source.py::test_verified_cache_real_lab_snapshot_replay \
   --junitxml=build/test-results/lab-integration-3.14.xml
-# lab ありの全テスト
+# all tests with lab
 uv run --python 3.14 pytest -q --require-lab-integration
-# lab なしの通常テスト。別途 lab をインストールしていない環境で実行する。
+# normal tests without lab. Run in an environment where lab is not installed separately.
 unset PYTHONPATH AOI_LAB_SOURCE_ROOT
 uv run --python 3.14 pytest -q
 ```
 
-`--require-lab-integration` は実 extractor の3テストを必須にし、未収集・skip・
-import 失敗を成功扱いにしない。通常モードでは lab がない場合のみ任意統合の3件を skip する。
-これらのテストは socket 接続を遮断し、31行の抽出、保存 NPB HTML の4試合の被覆、
-重複、中止1件・非公式戦1件、保存外部 CSS、未対応 selector、再実行の一致を検証する。
-外部 CSS のリンクや `@import` を自動取得しないことも確認する。
-統合 JUnit は失敗時も保存し、集約側は通常5件と統合1件の計6レポートを必須にする。
+`--require-lab-integration` makes the 3 real-extractor tests mandatory, and does not treat not-collected, skip,
+or import failure as success. In normal mode, the 3 optional integration tests are skipped only when lab is absent.
+These tests block socket connections and verify extraction of 31 rows, coverage of 4 games in saved NPB HTML,
+duplicates, 1 cancellation and 1 non-official game, saved external CSS, unsupported selectors, and identical reruns.
+They also confirm that external CSS links and `@import` are not fetched automatically.
+The integration JUnit is saved even on failure, and the aggregator requires 6 reports in total: 5 normal and 1 integration.
 
-以下は PR #15 時点の過去のローカル検証（2026-10-09、Python 3.14.8、過去パターンの lab スナップショット、Aoi の locked 依存）:
+The following is past local verification as of PR #15 (2026-10-09, Python 3.14.8, lab snapshot of past patterns, Aoi's locked dependencies):
 
-- 実 extractor の必須2テスト: 2 passed / 0 skipped
-- lab ありの全テスト: 533 passed / 24 skipped
-- lab なしの全テスト: 531 passed / 26 skipped
+- The 2 mandatory real-extractor tests: 2 passed / 0 skipped
+- All tests with lab: 533 passed / 24 skipped
+- All tests without lab: 531 passed / 26 skipped
 
-共通の24 skip は任意の season simulator 用依存がないためで、この統合とは別のもの。
-当時の lab なしではさらに実 extractor の2テストを skip した。初回 PR 本文の `284 passed` は
-過去の検証記録であり、現在の全テスト件数として扱わない。CI の結果は
-[PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15) の最新実行で確認する。
+The common 24 skips are due to missing optional season simulator dependencies, unrelated to this integration.
+Without lab at that time, the 2 real-extractor tests were also skipped. The `284 passed` in the first PR body is
+a past verification record and is not treated as the current total test count. Check CI results in
+the latest run of [PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15).
 
-## NPB（プロ野球）の取得元
+## NPB (professional baseball) sources
 
-| ファイル | 役割 |
+| File | Role |
 |---|---|
-| `npb_calendar.py` | 取得元: npb.jp の月別公式戦カレンダー |
-| `docs/npb_calendar.md` | その取得元で、どの年の何を確認したか（観測と未確認を分ける） |
-| `npb_team_annual.py` | 取得元: npb.jp の年度別チーム表（1950年以降の要約、2005年以降の詳細表） |
-| `npb_team_batting.py` | 取得元: npb.jp の年度別チーム打撃成績（[docs/npb_team_batting.md](docs/npb_team_batting.md)） |
-| `npb_team_fielding.py` | 取得元: npb.jp の年度別チーム守備成績（[docs/npb_team_fielding.md](docs/npb_team_fielding.md)） |
-| `npb_game_linescore.py` | 取得元: npb.jp の試合ページ得点表（R・H・E）（[docs/npb_game_linescore.md](docs/npb_game_linescore.md)） |
-| `npb_schedule_current.py` | 取得元: npb.jp の今季月別日程・結果（[docs/npb_schedule_current.md](docs/npb_schedule_current.md)） |
-| `html_compare.py` | 保存HTMLの構造的な被覆と、既存のNPB観測との比較（オフライン） |
+| `npb_calendar.py` | Source: npb.jp's monthly official game calendar |
+| `docs/npb_calendar.md` | What was checked for which year in that source (observed and unconfirmed kept separate) |
+| `npb_team_annual.py` | Source: npb.jp's annual team tables (summaries from 1950, detailed tables from 2005) |
+| `npb_team_batting.py` | Source: npb.jp's annual team batting stats ([docs/npb_team_batting.md](docs/npb_team_batting.md)) |
+| `npb_team_fielding.py` | Source: npb.jp's annual team fielding stats ([docs/npb_team_fielding.md](docs/npb_team_fielding.md)) |
+| `npb_game_linescore.py` | Source: npb.jp's game page line scores (R, H, E) ([docs/npb_game_linescore.md](docs/npb_game_linescore.md)) |
+| `npb_schedule_current.py` | Source: npb.jp's current-season monthly schedule and results ([docs/npb_schedule_current.md](docs/npb_schedule_current.md)) |
+| `html_compare.py` | Structural coverage of saved HTML, and comparison with existing NPB observations (offline) |
 
 ```bash
 uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
 ```
 
-### NPB年間チーム表
+### NPB annual team tables
 
-`npb_team_annual.py` は1950年以降の両リーグの年度別要約表と、2005年以降の詳細な勝敗・打撃・投手・守備表を読む。
-個人表は抽出しない。未掲載の古い項目を0で補わず、未知の列は `unknown` に残す。観測のみで、率の再計算や表間の一致判定は行わない。
+`npb_team_annual.py` reads both leagues' annual summary tables from 1950, and detailed win/loss, batting, pitching, and fielding tables from 2005.
+Individual tables are not extracted. Old items that weren't published are not filled with 0, and unknown columns are kept in `unknown`. Observation only; no recomputing rates or checking agreement between tables.
 
-## 保存済み HTML の絵文字観測（`emoji_observations.py`）
+## Emoji observation in saved HTML (`emoji_observations.py`)
 
 ```sh
-python emoji_observations.py page.html            # identity ごとの件数・表記・場所
-python emoji_observations.py page.html --json     # 1 出現 1 行の records と summary
+python emoji_observations.py page.html            # counts, forms, and locations per identity
+python emoji_observations.py page.html --json     # records (one row per occurrence) and summary
 ```
 
-本文・`<title>`・説明系の `<meta>`・属性（`aria-label` `title` `alt` `placeholder` など）に出る絵文字を、
-要素の位置（`html > body > nav > button`）、前後30文字の原文、操作要素の中か・そのラベル・`aria-hidden` とともに記録する。
-`script` `style` `template` `noscript` `svg` の中身と入力値（`value`）は表示文字ではないので読まない。
-上限を超えたら `unknown` に残す（黙って捨てない）。良し悪しは判断しない（例: ラベルのないボタンの中の絵文字は `unlabelled_control` として数えるだけ）。
-`observe_snapshot()` は QueRyu の `html-snapshot/1` を受け取り、`response_sha256`・`fetched_at` を各記録に引き継ぐ。
+Emoji in the body, `<title>`, descriptive `<meta>`, and attributes (`aria-label`, `title`, `alt`, `placeholder`, etc.) are recorded
+with the element's position (`html > body > nav > button`), 30 characters of source text before and after, whether it is inside a control, that control's label, and `aria-hidden`.
+Contents of `script`, `style`, `template`, `noscript`, `svg` and input values (`value`) are not displayed text, so they aren't read.
+Anything over the limit is kept in `unknown` (not silently discarded). No judgement of good or bad (e.g. emoji inside a button without a label are just counted as `unlabelled_control`).
+`observe_snapshot()` accepts QueRyu's `html-snapshot/1` and carries `response_sha256` and `fetched_at` into each record.
 
-判定は UTS #51 の形と Extended_Pictographic（Unicode 16.0）で、xprobe の `emoji_sequences` と同じ契約。
-他リポジトリのコードは import せず、`tests/cases/emoji_corpus.txt` と xprobe で作った期待値
-（`emoji_corpus.expected.json`、xprobe のコミットを記録）で揃える。名前の付与は QueRyu の `emoji_names.json` 側。
+Detection uses UTS #51 forms and Extended_Pictographic (Unicode 16.0), the same contract as xprobe's `emoji_sequences`.
+No code from other repositories is imported; alignment is via `tests/cases/emoji_corpus.txt` and expected values built with xprobe
+(`emoji_corpus.expected.json`, recording the xprobe commit). Naming is on QueRyu's `emoji_names.json` side.
 
-## 操作要素・画像の名前の観測（`accessible_names.py`）
+## Observing names of controls and images (`accessible_names.py`)
 
 ```sh
-python accessible_names.py page.html                         # 名前・出どころ・区分の件数
-python accessible_names.py tests/cases/pages/github-io-html-import.json   # btk-browser-dom/1：aria スナップショットとも突き合わせる
+python accessible_names.py page.html                         # counts of names, origins, and categories
+python accessible_names.py tests/cases/pages/github-io-html-import.json   # btk-browser-dom/1: also checks against the aria snapshot
 ```
 
-ボタン・リンク・入力・タブ・画像などの名前を、出どころ（`aria-labelledby` / `aria-label` / `label` / `value` / `alt` / 本文 / `title` / `placeholder`）とともに記録し、
-`empty_name`・`emoji_only_name`・`aria_hidden_control`・`image_without_alt`・`placeholder_only`・`ambiguous_link_name`（同じ名前で行き先が違うリンク）を数える。
-名前の計算は W3C accname の**近似**（`ACCNAME_APPROXIMATION_AS_SPEC`）で、CSS は評価しない。100% の一致は目標にせず、ずれは観測としてアンチパターン集に足していく。
+Names of buttons, links, inputs, tabs, images, etc. are recorded with their origin (`aria-labelledby` / `aria-label` / `label` / `value` / `alt` / body text / `title` / `placeholder`),
+and `empty_name`, `emoji_only_name`, `aria_hidden_control`, `image_without_alt`, `placeholder_only`, and `ambiguous_link_name` (links with the same name but different destinations) are counted.
+Name computation is an **approximation** of W3C accname (`ACCNAME_APPROXIMATION_AS_SPEC`), and CSS is not evaluated. 100% agreement is not the goal; discrepancies are added to the antipatterns as observations.
 
-`tests/cases/pages/` は、github.io（`myon-bioinformatics.github.io`）と web-ui の実ページ5件を、各リポジトリのコミットから
-ローカル HTTP で配信して Chromium で描画し、browser-test-kit の `capture()`（`btk-browser-dom/1`）で採った DOM と aria スナップショット。
-来歴（リポジトリ・コミット・パス・公開 URL・遮断した外部リクエスト）は各 JSON の `provenance` にある。公開サイトそのものではなくコミットからの描画で、
-`*.github.io` に届かない環境でも同じものを再現できる。突き合わせ結果は 49 件一致・CSS 由来の差 6 件・不一致 0 件（テストで固定）。
+`tests/cases/pages/` holds DOM and aria snapshots of 5 real pages from github.io (`myon-bioinformatics.github.io`) and web-ui, served over local HTTP from each repository's commit,
+rendered in Chromium, and captured with browser-test-kit's `capture()` (`btk-browser-dom/1`).
+Provenance (repository, commit, path, public URL, blocked external requests) is in each JSON's `provenance`. They are renders from commits rather than the public sites themselves,
+so the same thing can be reproduced in environments that can't reach `*.github.io`. The check results are 49 matches, 6 CSS-derived differences, 0 mismatches (pinned in tests).
 
-## 見出し階層・ランドマーク構造の観測（`heading_observations.py`）
+## Observing heading hierarchy and landmark structure (`heading_observations.py`)
 
 ```sh
-python heading_observations.py page.html                        # 見出しレベル・ランドマーク・フラグ件数
+python heading_observations.py page.html                        # heading levels, landmarks, flag counts
 python heading_observations.py tests/cases/pages/web-ui-examples-index.json --json
 ```
 
-HTML 内の見出し（`<h1>`〜`<h6>`）およびランドマーク領域（`<main>`、`<nav>`、`<header>`、`<footer>`、`<aside>`、名前のある `<section>` や明示的な ARIA ロール）を観測する。
-レベル、テキスト、DOM パス、包含ランドマーク、非表示状態のほか、構造上の状態区分として `empty_heading`（空の見出し）、`skipped_heading_level`（レベルのスキップ）、`multiple_h1`（複数の h1）、`missing_main_landmark`（メインランドマークの欠落）、`unlabelled_landmark`（未ラベルのランドマーク）、`heading_outside_landmark`（ランドマーク外の見出し）を記録する。
-ネットワークには出ず、判断や変更は行わない。
+Observes headings (`<h1>`–`<h6>`) and landmark regions (`<main>`, `<nav>`, `<header>`, `<footer>`, `<aside>`, named `<section>`, and explicit ARIA roles) in HTML.
+Besides level, text, DOM path, containing landmark, and hidden state, it records structural categories: `empty_heading`, `skipped_heading_level`, `multiple_h1`, `missing_main_landmark`, `unlabelled_landmark`, and `heading_outside_landmark`.
+It does not access the network, and makes no judgements or changes.
 
-静的な構造観測であり、ブラウザのアクセシビリティツリー全体の再現ではない。`article` と名前のない `section` はランドマークに数えず、`main` / `article` / `aside` / `nav` / `section` 内の `header` / `footer` はページ全体のランドマークに数えない（[HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)）。`aria-level` は 1 以上の整数のときだけ使い、それ以外（空・0・負・不正値）は HTML の見出しレベル（h1〜h6）に、`role="heading"` なら ARIA の既定値 2 にフォールバックする。木構造と名前の計算は `accessible_names.py` と共有する。`missing_main_landmark` はページ単位の記録（`type: "page"`）としても残す。
+This is static structural observation, not a reproduction of the browser's whole accessibility tree. `article` and unnamed `section` are not counted as landmarks, and `header` / `footer` inside `main` / `article` / `aside` / `nav` / `section` are not counted as page-wide landmarks ([HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)). `aria-level` is used only when it is an integer of 1 or more; otherwise (empty, 0, negative, invalid) it falls back to the HTML heading level (h1–h6), or to the ARIA default of 2 for `role="heading"`. Tree structure and name computation are shared with `accessible_names.py`. `missing_main_landmark` is also kept as a page-level record (`type: "page"`).

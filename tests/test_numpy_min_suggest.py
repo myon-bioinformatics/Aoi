@@ -1,7 +1,7 @@
 """生成した shrink/numpy_min.py を、queryu/ask/suggest.py が使う範囲で本物の numpy と比べる。
 
 Acceptance v2 checks decomposition correctness, not backend-identical scores/rankings.
-See docs/numpy-min-acceptance-v2.md. Historical corpus assertions remain in
+See docs/contracts/numpy-min-acceptance-v2.md. Historical corpus assertions remain in
 scripts/legacy_numpy_min_parity.py; they are not silently marked passed.
 """
 import importlib.util

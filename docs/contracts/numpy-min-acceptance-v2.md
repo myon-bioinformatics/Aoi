@@ -40,7 +40,7 @@ contract and can fail. It is **not** xfailed, skipped, or silently made green.
 Running it is a new corpus measurement and requires separate authorization.
 
 Earlier failed thresholds and actual failures are recorded in
-[`evidence/numpy-min-parity-history.json`](evidence/numpy-min-parity-history.json).
+[`evidence/numpy-min-parity-history.json`](../evidence/numpy-min-parity-history.json).
 They remain failed observations. No new c001 results were collected for v2.
 
 Repeated singular values allow rotated bases. Binary compression uses coordinate

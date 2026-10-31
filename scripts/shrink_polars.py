@@ -54,11 +54,12 @@ def load_config(path: Path | str | None = None) -> dict:
         target = ROOT / target
     if _LOADED == [target]:
         return CONFIG
-    _LOADED[:] = [target]
     data = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
+    entries = list(data.get("entries", []))
     CONFIG.clear()
     CONFIG.update(data)
-    DEFAULT_ENTRIES[:] = list(data.get("entries", []))
+    DEFAULT_ENTRIES[:] = entries
+    _LOADED[:] = [target]
     return CONFIG
 
 

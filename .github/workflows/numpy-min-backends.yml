@@ -1,6 +1,6 @@
 name: numpy_min backends
 
-# shrink/numpy_min.py の2つの経路を、本番と同じ python:3.13-slim（Debian 13）で確かめる。
+# shrink/numpy_min.py の2つの経路を、公式の最新イメージ python:3.15-slim（Debian 13、3.15.2）で確かめる。
 # - lapack: apt で liblapack3 / libblas3（と依存の libgfortran5）だけを版固定・--no-install-recommends で入れ、
 #   ctypes の sgesdd/dgesdd・cblas_?gemm 経路を decomposition-v2 の演算契約で検査すること
 # - stdlib: 何も入れず、ライブラリが見つからないこと・標準ライブラリだけの経路を同じ演算契約で検査すること
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
-      image: python:3.13-slim@sha256:aaf08c5490d52cd92bc27142a5215b1e47355a5eaf9adfad2a0fbc022d0b5490
+      image: python:3.15-slim@sha256:94d3426f1def7db4a106a232ac121bfd975393e5dfd40a619b955fae45fe7913
     strategy:
       fail-fast: false
       matrix:

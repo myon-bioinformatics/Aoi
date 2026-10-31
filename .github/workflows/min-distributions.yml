@@ -28,7 +28,9 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "0.13.3"
-          python-version: "3.15"
+          # distributions.json の "python" と一致させる再現用の固定。build_distributions.py が
+          # 記録された major.minor 以外を拒否するので、3.15 へ上げるときは dist/ を再生成して同時に更新する。
+          python-version: "3.12"
           activate-environment: true
           enable-cache: false
       - name: Resolve parent main and QueRyu subtree head

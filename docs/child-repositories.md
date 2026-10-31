@@ -138,6 +138,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 ## BlueProbe
 
+2026-10-31: main `0d202048cc820d5c237023109c38a51ec4771fd6`（#41: 空の vendor lock と vendor-dispatch ジョブの削除。#40: setup-uv v10.3.3 固定などを含む）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。merge commit の第2親はこの SHA で、subtree の tree はこの SHA の tree と同一です。
+
 2026-10-22: main `0fb5b53160b421463bbc385fc705594472347dcc` (English README tagline and "Role in Aoi" section, plus pending parent-pin and CI changes) was brought in with a non-squash `git subtree pull --prefix=blueprobe`. The merge commit's second parent is this SHA, and the subtree's tree is identical to the registered SHA's tree.
 
 2026-10-20: main `f0763c4de0a2976bb243cd7d780c8b5ae0c22ba4`（#32: `social_timeline`・`ecommerce_product`・`forum_qa`・`dashboard_grid` のプリセットと `classify_document` / `--classify`。観測のみで変換はしない）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。実行時の依存はありません。

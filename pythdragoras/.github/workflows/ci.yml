@@ -21,7 +21,7 @@ jobs:
   changes:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
 
   test:
     if: >-
@@ -118,11 +118,16 @@ jobs:
           ref: ${{ env.AOI_SHA }}
           path: .test-deps/aoi
           persist-credentials: false
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+      - name: Require supported Node in parity CI
+        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: "0.13.3"
           enable-cache: false
@@ -140,6 +145,107 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  # Parent main is resolved at runtime. Reusable workflow pins stay on the rollout commit.
+  # Verify mode checks recorded digests. Skip rows are reported by the driver and do not fail the job.
+  vendor-dispatch:
+    name: Vendor dispatch
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Resolve parent main
+        id: parent
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PARENT_REPOSITORY: myon-bioinformatics/myon-bioinformatics
+          PARENT_REPOSITORY_ID: "638801160"
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          repository="${PARENT_REPOSITORY}"
+          repository_id="${PARENT_REPOSITORY_ID}"
+          url="https://github.com/${repository}"
+          curl_args=(
+            -fsSL
+            -H "Accept: application/vnd.github+json"
+            -H "User-Agent: pythdragoras-ci"
+            -H "X-GitHub-Api-Version: 2022-11-28"
+          )
+          if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+            curl_args+=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+          fi
+          meta="$(curl "${curl_args[@]}" "https://api.github.com/repos/${repository}")"
+          PARENT_REPOSITORY="$repository" PARENT_REPOSITORY_ID="$repository_id" python3 -c '
+          import json, os, sys
+          meta = json.load(sys.stdin)
+          expected_name = os.environ["PARENT_REPOSITORY"]
+          expected_id = int(os.environ["PARENT_REPOSITORY_ID"])
+          if type(meta.get("id")) is not int or meta["id"] != expected_id:
+              raise SystemExit("parent repository id mismatch")
+          if meta.get("full_name") != expected_name:
+              raise SystemExit("parent repository name mismatch")
+          ' <<<"$meta"
+          ref="refs/heads/main"
+          listing="$(git ls-remote -- "$url" "$ref")"
+          sha=""
+          while IFS=$'\t' read -r got_sha got_ref; do
+            [[ -z "${got_sha:-}" ]] && continue
+            if [[ "$got_ref" == "$ref" ]]; then
+              sha="$got_sha"
+              break
+            fi
+          done <<<"$listing"
+          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Could not resolve ${url} ${ref}" >&2
+            exit 1
+          fi
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Parent"
+            echo "Resolved \`${ref}\` of \`${repository}\` (${repository_id}) to \`${sha}\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/myon-bioinformatics
+          ref: ${{ steps.parent.outputs.sha }}
+          path: .parent-driver
+          persist-credentials: false
+          sparse-checkout: pilot
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.13.3"
+          enable-cache: false
+      - name: Verify vendor lock
+        env:
+          PARENT_SHA: ${{ steps.parent.outputs.sha }}
+        run: |
+          set -euo pipefail
+          got=$(git -C .parent-driver rev-parse HEAD)
+          if [[ "$got" != "$PARENT_SHA" ]]; then
+            echo "parent checkout does not match the resolved sha" >&2
+            exit 1
+          fi
+          node_major=$(node -p "process.versions.node.split('.')[0]")
+          if [[ "$node_major" -lt 24 ]]; then
+            echo "node ${node_major} is older than 24" >&2
+            exit 1
+          fi
+          python - <<'PY'
+          import sys
+          if sys.version_info < (3, 11):
+              raise SystemExit("uv lane requires Python 3.11 or newer")
+          PY
+          command -v uv >/dev/null
+          python .parent-driver/pilot/vendor_dispatch.py --manifest vendor.lock.json
+
   failure-identity:
     needs: [changes, test]
     if: >-
@@ -150,7 +256,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
     with:
       expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
       artifact-pattern: junit-*
@@ -162,4 +268,4 @@ jobs:
     if: needs.changes.outputs.workflow_changed == 'true'
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@2192ff22acafdd09e80ac722df91ee937aaedd5e
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77

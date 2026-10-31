@@ -1,41 +1,41 @@
-# npb_team_fielding: チーム守備成績
+# npb_team_fielding: team fielding stats
 
-## 取得元
+## Source
 
-`https://npb.jp/bis/{年}/stats/tmf_c.html`（セ・リーグ）、`tmf_p.html`（パ・リーグ）。1ページ = 1年・1リーグの6球団。2012〜2025年で28ページ。チームの記録（個人の記録は使わない方針の範囲内）。
+`https://npb.jp/bis/{year}/stats/tmf_c.html` (Central League), `tmf_p.html` (Pacific League). 1 page = 1 year, 1 league, 6 teams. 28 pages for 2012–2025. Team records (within the policy of not using individual records).
 
-## 確認した形
+## Confirmed shape
 
-WebFetch で 2025年・2018年のセ・リーグを確認した（2026-10-05）。WebFetch はページを文章に変換するので、セルの中の空白や改行は正確には見えない。
+The 2025 and 2018 Central League pages were checked with WebFetch (2026-10-05). WebFetch converts the page to prose, so spaces and line breaks inside cells aren't visible accurately.
 
-| 見出し | 列 |
+| Heading | Column |
 |---|---|
-| チーム | （チーム名） |
-| 守備率 | `fpct` |
-| 試合 | `g` |
-| 守備機会 | `tc` |
-| 刺殺 | `po` |
-| 補殺 | `a` |
-| 失策 | `e` |
-| 併殺（2列にまたがり、下の行が「参加」「球団」） | `dp_part`・`dp` |
-| 捕逸 | `pb` |
+| チーム (team) | (team name) |
+| 守備率 (fielding pct) | `fpct` |
+| 試合 (games) | `g` |
+| 守備機会 (total chances) | `tc` |
+| 刺殺 (putouts) | `po` |
+| 補殺 (assists) | `a` |
+| 失策 (errors) | `e` |
+| 併殺 (double plays; spans 2 columns, lower row `参加` "participated" and `球団` "team") | `dp_part`, `dp` |
+| 捕逸 (passed balls) | `pb` |
 
-2018年は打撃と同じく、見出しの語の中と2文字のチーム名に空白が入る（「失 策」「中 日」）。
+In 2018, as with batting, there are spaces inside heading words and two-character team names (`失 策`, `中 日`).
 
-### 実ページで見た別の表記（preview_fielding、全28ページ）
+### Other notations seen on real pages (preview_fielding, all 28 pages)
 
-1回目の preview では、28ページすべてで表が読めず、未知の表記として止まった（黙って読まなかった）:
+In the first preview, the table couldn't be read on any of the 28 pages, and it stopped on unknown notations (it didn't silently skip them):
 
-- 2012〜2024年: 「守機備会」（「守備／機会」を2段に組んだセルを、空白を除いて読むとこの順になる）→ `tc` に寄せた
-- 2025年: 「併殺・参加」「併殺・球団」（またがる見出しではなく別々のセル）→ `dp_part`・`dp` に寄せた
-- 2012〜2024年の「併殺」（2列にまたがる見出しと下の行）は、1回目から読めていた
+- 2012–2024: `守機備会` (a cell with `守備／機会` set in two lines reads in this order once spaces are removed) → mapped to `tc`
+- 2025: `併殺・参加`, `併殺・球団` (separate cells rather than a spanning heading) → mapped to `dp_part`, `dp`
+- The 2012–2024 `併殺` (a heading spanning 2 columns plus a lower row) was readable from the first run
 
-## 解析の契約
+## Parsing contract
 
-打撃（[npb_team_batting.md](npb_team_batting.md)）と同じ。加えて、横に2列以上またがる見出しがあれば次の行を下の見出しとして読み、親の名前に続けた名前（「併殺参加」）で比べる。下の行が読めなければ unknown に入れ、列の位置を推測しない。
+Same as batting ([npb_team_batting.md](npb_team_batting.md)). In addition, if a heading spans 2 or more columns horizontally, the next row is read as the lower headings and compared by the name joined after the parent's name (`併殺参加`). If the lower row can't be read, it goes into unknown and column positions aren't guessed.
 
-## パイプラインでの扱い
+## Handling in the pipeline
 
-最初は `preview_fielding`（`--strict` なし）で形を確かめた。2回目で 12球団 × 14年（2012〜2025年）がすべて読め、未知の表記は 0 になったので、`inspect_fielding`（`--strict`）に替えて SakAnalytics の `fielding_join` に渡す。照合: 試合数がカレンダー由来の値と一致、守備機会 = 刺殺 + 補殺 + 失策、守備率を計算し直すとページの値と表示桁で一致。合わなければ止まる。
+Initially the shape was checked with `preview_fielding` (without `--strict`). In the second run, all 12 teams × 14 years (2012–2025) were readable and unknown notations reached 0, so it switched to `inspect_fielding` (`--strict`) and passes to SakAnalytics' `fielding_join`. Cross-check: games match the calendar-derived values, total chances = putouts + assists + errors, and recomputed fielding pct matches the page's value at the displayed digits. Stops if they don't match.
 
-`outputs/season.jsonl` には率（`fld_fpct`・`fld_e_g`・`fld_dp_g`・`fld_pb_g`・`fld_a_po`）と他球団との差（`fld_d_*`）だけを出し、原票の数は出さない。
+`outputs/season.jsonl` contains only rates (`fld_fpct`, `fld_e_g`, `fld_dp_g`, `fld_pb_g`, `fld_a_po`) and differences from other teams (`fld_d_*`), not the raw counts.

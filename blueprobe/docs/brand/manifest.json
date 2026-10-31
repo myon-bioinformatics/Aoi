@@ -1,0 +1,27 @@
+{
+  "source": "User-supplied project artwork sheet, 2026-10-23",
+  "source_dimensions": [
+    1536,
+    1024
+  ],
+  "coordinate_convention": "left, top, right-exclusive, bottom-exclusive",
+  "project": {
+    "label": "BlueProbe",
+    "icon": [
+      640,
+      70,
+      809,
+      239
+    ],
+    "icon_sha256": "7d5a5234a5b9cd488b7f9a4dcfddb20728ac69a9459e28eb6ed9b40f2ca992a9",
+    "icon_rgb_sha256": "d881445322790acea27cb7dc52b53982fa20e62280964722d6015bdfa3b7ed6e",
+    "favicon_sha256": "6f42fed835567c9fb06432b2a8314c4622d4f6ae76cabb977b97a93c23ec5e48",
+    "favicon_rgb_sha256": "92ee4910713ce72c6a05dc577bc4417aa56d21c4f935ee249222cc5a4f4cc55f",
+    "favicon_source": "docs/brand/icon.png resampled to 64x64 with LANCZOS",
+    "favicon_size": [
+      64,
+      64
+    ],
+    "favicon_background": "#fafafa"
+  }
+}

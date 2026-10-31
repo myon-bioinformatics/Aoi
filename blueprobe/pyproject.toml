@@ -15,4 +15,4 @@ package = false
 pythonpath = ["."]
 testpaths = ["tests"]
 # JUnit の出力先は CI で指定する（docs/ci/）
-norecursedirs = [".test-deps", "build"]
+norecursedirs = [".test-deps", ".vendor-dispatch-tools", "build"]

@@ -10,6 +10,7 @@ def test_holdout_job_provisions_node_before_parity_tests():
     version = job.index("node-version: '26'", setup)
     guard = job.index('run: node -e "if (+process.versions.node.split(\'.\')[0] < 24) process.exit(1)"', version)
     suite = job.index('uv run --locked --python 3.14.8 pytest')
+    assert job.count("uses: actions/setup-node@") == 1
     assert setup < version < guard < suite
     assert 'pythdragoras/tests -k littlebit' in job[suite:]
     # Provisioning Node must not weaken the independent provenance guard.

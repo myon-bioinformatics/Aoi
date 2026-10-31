@@ -1,0 +1,67 @@
+name: One-shot SakAnalytics 29 object transport
+on:
+  push:
+    branches: [transport/sak29-bootstrap-20261031]
+    paths: [.github/workflows/sak29-object-transport.yml]
+permissions: {}
+concurrency:
+  group: sak29-object-transport-20261031
+  cancel-in-progress: false
+jobs:
+  transport:
+    if: >-
+      github.repository == 'myon-bioinformatics/Aoi' &&
+      github.repository_id == '1402862784' &&
+      github.ref == 'refs/heads/transport/sak29-bootstrap-20261031' &&
+      github.event_name == 'push' &&
+      github.event.before == 'd90bf4df0cd69cf2b8357921af798c926d093c20' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Import only the approved original objects into a new transport ref
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GIT_TERMINAL_PROMPT: '0'
+        run: |
+          set -euo pipefail
+          base=d90bf4df0cd69cf2b8357921af798c926d093c20
+          base_tree=aa61e838e140fb49ed4ad08ffa28f216af5a2dff
+          child=1c10c7f622dec31be74327cd800dd59ee32bae3b
+          child_tree=08c29e184707306e4fa3f6c72e4d4cb037477dab
+          target=refs/heads/transport/sak29-objects-20261031
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git show -s --format=%P HEAD)" = "$base"
+          test "$(git diff --name-only "$base" HEAD)" = '.github/workflows/sak29-object-transport.yml'
+          test "$(git rev-parse "$base^{tree}")" = "$base_tree"
+          git fetch --no-tags --no-recurse-submodules https://github.com/myon-bioinformatics/SakAnalytics.git "$child"
+          test "$(git rev-parse FETCH_HEAD)" = "$child"
+          test "$(git rev-parse "$child^{tree}")" = "$child_tree"
+          test "$(git show -s --format=%P "$child")" = '87564cc7fec5b26f140f8cda8e064891a33a4be4 8d36a51fed388c26d7591ba28c575137d36a11ca'
+          existing=$(git ls-remote https://github.com/myon-bioinformatics/Aoi.git "$target")
+          test "$existing" = "$(printf '%s\t%s' "$base" "$target")"
+          # This is only an object-transport record, NOT a subtree adoption.
+          # Its tree is byte-identical to the approved Aoi base: no child workflows execute.
+          transport=$(printf '%s\n' 'Transport original SakAnalytics 29 history; unchanged Aoi base tree' |
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit-tree "$base_tree" -p "$base" -p "$child")
+          test "$(git rev-parse "$transport^{tree}")" = "$base_tree"
+          test "$(git show -s --format=%P "$transport")" = "$base $child"
+          # Token stays in this process environment only; no git credential/config file is written.
+          authorization=$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)
+          printf '::add-mask::%s\n' "$authorization"
+          GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $authorization" \
+            git push https://github.com/myon-bioinformatics/Aoi.git "$transport:$target"
+          unset authorization GITHUB_TOKEN
+          test "$(git ls-remote https://github.com/myon-bioinformatics/Aoi.git "$target" | cut -f1)" = "$transport"
+          printf 'Transport ref: `%s`\nCommit: `%s`\nOriginal child: `%s`\nUnchanged Aoi tree: `%s`\n' \
+            "$target" "$transport" "$child" "$base_tree" >> "$GITHUB_STEP_SUMMARY"

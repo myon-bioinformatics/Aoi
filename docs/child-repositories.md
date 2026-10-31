@@ -23,6 +23,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-10-27: SakAnalytics の登録 SHA は、子の main の第一親の最新の merge `8e4bea3fd36c9bda693bde959a135da9a519fea2`（#22: 共有ランチャーの更新）です。`sakanalytics/` の tree はこの SHA の tree と同一で、取り込み commit の第2親もこの SHA です。登録する `sha` は子の main の第一親にある merge だけです。
+
 2026-10-25: SakAnalytics #23 の merge `1609008d13a1627a583d7ad06d4e5bcee649b5c9`（ゼロ割りを空にする・許容値に名前をつける・NaN/inf の記録。値は変えない）を、squash なしの `git subtree pull --prefix=sakanalytics` で取り込みました。登録した `61ee074` から 12 コミット進んでいたので、子の #18〜#21（アイコン、vendor-dispatch の検証、英語の残り、`vendor/py_launch.cjs` 経由の Node 24 エントリ）も同時に入ります。`sakanalytics/` の tree は登録した SHA の tree と同一で、merge commit の第2親は子の main の head です。Aoi の clone が浅い（shallow）と「unrelated histories」で止まるので、先に `git fetch --unshallow` します。
 
 2026-10-20: BlueProbe #30 の merge `50a2846d68fcba4acbe7e4abf7fb0130de07de89`（標準ライブラリの html.parser）と QueRyu #16 の merge `fcadaa9aaab30292703459758eae481d0f018f2d` を、squash なしの `git subtree pull --prefix=blueprobe` と `git subtree pull --prefix=queryu` で取り込みました。`blueprobe/` と `queryu/` の tree は登録した SHA の tree と同一です。各 merge commit の第2親は子の main の head です。
@@ -135,6 +137,8 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 - 同期は PythDRagoras の手順の `pythdragoras` を `dragowing`、リポジトリを DRAgoWing に読み替えます（`--squash` なし）。
 
 ## BlueProbe
+
+2026-10-31: main `0d202048cc820d5c237023109c38a51ec4771fd6`（#41: 空の vendor lock と vendor-dispatch ジョブの削除。#40: setup-uv v10.3.3 固定などを含む）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。merge commit の第2親はこの SHA で、subtree の tree はこの SHA の tree と同一です。
 
 2026-10-22: main `0fb5b53160b421463bbc385fc705594472347dcc` (English README tagline and "Role in Aoi" section, plus pending parent-pin and CI changes) was brought in with a non-squash `git subtree pull --prefix=blueprobe`. The merge commit's second parent is this SHA, and the subtree's tree is identical to the registered SHA's tree.
 

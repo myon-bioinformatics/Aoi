@@ -1,0 +1,170 @@
+{
+ "staple": {
+  "windows": 2212,
+  "n": 24,
+  "tolerance_unchanged": {
+   "1e-08": {
+    "units": 2192,
+    "boundary": 0,
+    "forms_changed": 2104,
+    "boundary_flag_changed": 778,
+    "eps_wave_kept": 0,
+    "at_start_changed": 0,
+    "coefficient_max_dev": null,
+    "coefficient_n": 0
+   },
+   "1e-07": {
+    "units": 2192,
+    "boundary": 0,
+    "forms_changed": 2103,
+    "boundary_flag_changed": 778,
+    "eps_wave_kept": 0,
+    "at_start_changed": 0,
+    "coefficient_max_dev": null,
+    "coefficient_n": 0
+   },
+   "1e-06": {
+    "units": 2192,
+    "boundary": 381,
+    "forms_changed": 1056,
+    "boundary_flag_changed": 397,
+    "eps_wave_kept": 381,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 1.2738493791716483,
+    "coefficient_n": 381
+   },
+   "1e-05": {
+    "units": 2192,
+    "boundary": 772,
+    "forms_changed": 16,
+    "boundary_flag_changed": 6,
+    "eps_wave_kept": 772,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 7.097083344403001e-15,
+    "coefficient_n": 771
+   },
+   "0.0001": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 7.097083344403001e-15,
+    "coefficient_n": 777
+   },
+   "0.001": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.46465488488647e-16,
+    "coefficient_n": 777
+   },
+   "0.01": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 4.3578559385228525e-15,
+    "coefficient_n": 777
+   },
+   "1": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 0.0,
+    "coefficient_n": 777
+   }
+  },
+  "tolerance_scaled": {
+   "1e-08": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 1.3082679934357756e-15,
+    "coefficient_n": 777
+   },
+   "1e-07": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 2.0019555306774342e-15,
+    "coefficient_n": 777
+   },
+   "1e-06": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 4.3578559385228525e-15,
+    "coefficient_n": 777
+   },
+   "1e-05": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 7.097083344403001e-15,
+    "coefficient_n": 777
+   },
+   "0.0001": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 7.097083344403001e-15,
+    "coefficient_n": 777
+   },
+   "0.001": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 8.46465488488647e-16,
+    "coefficient_n": 777
+   },
+   "0.01": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 4.3578559385228525e-15,
+    "coefficient_n": 777
+   },
+   "1": {
+    "units": 2192,
+    "boundary": 778,
+    "forms_changed": 0,
+    "boundary_flag_changed": 0,
+    "eps_wave_kept": 778,
+    "at_start_changed": 0,
+    "coefficient_max_dev": 0.0,
+    "coefficient_n": 777
+   }
+  }
+ }
+}

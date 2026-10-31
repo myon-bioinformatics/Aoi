@@ -1,18 +1,18 @@
-# BlueProbe 契約 v1
+# BlueProbe contract v1
 
-状態: **stable**（初版 1.0.0）
+Status: **stable** (first release 1.0.0)
 
-BlueProbe と、それを使う側（Aoi の QueRyu・SakAnalytics、各リポジトリ）とのあいだの互換面。
-決め方は [web-ui contract/v1](https://github.com/myon-bioinformatics/web-ui/tree/main/contract/v1) に揃える。
+The compatibility surface between BlueProbe and its users (Aoi's QueRyu and SakAnalytics, and each repository).
+How it is decided follows [web-ui contract/v1](https://github.com/myon-bioinformatics/web-ui/tree/main/contract/v1).
 
-## 安定性の約束
+## Stability promise
 
-- v1 の中では、安定項目を**消さない・意味を変えない**
-- 項目の追加は v1 のまま行ってよい（読む側は知らない項目を無視する）
-- 削除・意味の変更・必須化は v2 として `docs/contract/v2/` を新しく作る
-- パッチ番号は互換の目印に使わない。互換の単位は `v1` / `v2`
+- Within v1, stable items are **not removed and their meaning is not changed**
+- Items may be added within v1 (readers ignore items they don't know)
+- Removal, change of meaning, or making something required creates a new `docs/contract/v2/` as v2
+- Patch numbers are not used as compatibility markers. The unit of compatibility is `v1` / `v2`
 
-| 文書 | 対象 |
+| Document | Covers |
 |---|---|
-| [report.md](report.md) | 1ページを読んだ結果（records / counts / unknown）と集計行 |
-| [snapshot.md](snapshot.md) | 保存済み本文の供給元と `html-snapshot/1` の記録 |
+| [report.md](report.md) | The result of reading one page (records / counts / unknown) and summary rows |
+| [snapshot.md](snapshot.md) | Suppliers of saved bodies and the `html-snapshot/1` record |

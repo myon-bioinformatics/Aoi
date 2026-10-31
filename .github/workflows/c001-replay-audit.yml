@@ -19,28 +19,28 @@ jobs:
       UV_PYTHON_DOWNLOADS: never
     steps:
       - name: Keep the PR harness checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Read the research past-pattern snapshot separately
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # past-pattern snapshot of this repository, fetched by SHA for verification test data
           ref: 0723d1137fc8448fbabb7bbe5fc14333ddfaabe2
           path: research
           persist-credentials: false
       - name: Read GHI past-pattern snapshot (no forked transport)
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/gh_identity
           # past-pattern snapshot of gh_identity, fetched by SHA for verification test data
           ref: fc2c527257b12eb99c00637bbae74f8988fd6bf4
           path: .ghi
           persist-credentials: false
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.14"
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "0.13.3"
           enable-cache: false
@@ -95,7 +95,7 @@ jobs:
           PY
       - name: Preserve replay evidence even when a calculation fails
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: c001-saved-input-replay-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.AUDIT_DIR }}/

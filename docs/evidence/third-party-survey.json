@@ -35,32 +35,10 @@
     },
     {
       "file": "scripts/fetch_module.py",
-      "line": 394
+      "line": 390
     }
   ],
   "packages": {
-    "DRAgoWing": {
-      "attribute_uses": 1,
-      "attributes": {
-        "dragowing.render_report": 1
-      },
-      "by_tree": {
-        "research": {
-          "attribute_uses": 1,
-          "attributes": {
-            "dragowing.render_report": 1
-          },
-          "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
-        }
-      },
-      "declared": [],
-      "distinct_attributes": 1,
-      "dynamic_import_sites": 0,
-      "files": 1,
-      "import_sites": 1
-    },
     "coverage": {
       "attribute_uses": 1,
       "attributes": {
@@ -180,29 +158,32 @@
       "import_sites": 2
     },
     "numpy": {
-      "attribute_uses": 241,
+      "attribute_uses": 320,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
         "abs": 7,
+        "allclose": 3,
         "any": 2,
         "arange": 7,
         "argpartition": 1,
         "argsort": 2,
-        "array": 13,
-        "array_equal": 2,
+        "array": 28,
+        "array_equal": 3,
         "asarray": 5,
         "ascontiguousarray": 1,
         "bitwise_count": 2,
         "bool_": 1,
         "ceil": 1,
         "clip": 4,
-        "column_stack": 1,
-        "concatenate": 3,
+        "column_stack": 4,
+        "concatenate": 8,
+        "corrcoef": 3,
         "divide": 1,
         "einsum": 1,
-        "empty": 2,
+        "empty": 3,
         "errstate": 2,
+        "exp": 2,
         "flatnonzero": 2,
         "float32": 4,
         "float64": 24,
@@ -217,38 +198,57 @@
         "int8": 1,
         "integer": 1,
         "isfinite": 1,
-        "linalg.lstsq": 2,
+        "linalg.LinAlgError": 3,
+        "linalg.lstsq": 5,
         "linalg.norm": 6,
         "linalg.pinv": 1,
         "linalg.svd": 2,
-        "log": 4,
+        "log": 13,
+        "longdouble": 1,
         "maximum": 7,
+        "mean": 2,
+        "median": 7,
         "meshgrid": 1,
         "minimum": 5,
         "nan_to_num": 2,
         "ndarray": 22,
         "nonzero": 4,
-        "ones": 3,
+        "ones": 6,
         "ones_like": 1,
         "packbits": 3,
         "partition": 2,
+        "percentile": 4,
         "random.Generator": 1,
         "random.PCG64": 1,
-        "random.default_rng": 4,
+        "random.default_rng": 10,
         "round": 5,
         "shape": 1,
-        "sign": 6,
+        "sign": 8,
         "sort": 1,
-        "sqrt": 4,
+        "sqrt": 5,
         "sum": 1,
         "triu_indices": 2,
         "uint8": 2,
         "unpackbits": 2,
-        "where": 9,
-        "zeros": 14,
+        "where": 13,
+        "zeros": 15,
         "zeros_like": 1
       },
       "by_tree": {
+        "cycles": {
+          "attribute_uses": 15,
+          "attributes": {
+            "array": 7,
+            "corrcoef": 2,
+            "longdouble": 1,
+            "mean": 2,
+            "random.default_rng": 1,
+            "sign": 2
+          },
+          "dynamic_import_sites": 0,
+          "files": 2,
+          "import_sites": 2
+        },
         "dragowing": {
           "attribute_uses": 5,
           "attributes": {
@@ -353,23 +353,49 @@
           "import_sites": 2
         },
         "research": {
-          "attribute_uses": 7,
+          "attribute_uses": 60,
           "attributes": {
-            "array": 2,
-            "column_stack": 1,
-            "linalg.lstsq": 1,
-            "log": 1,
-            "ones": 2
+            "array": 9,
+            "column_stack": 4,
+            "concatenate": 5,
+            "corrcoef": 1,
+            "empty": 1,
+            "exp": 1,
+            "linalg.LinAlgError": 1,
+            "linalg.lstsq": 4,
+            "log": 10,
+            "median": 5,
+            "ones": 5,
+            "percentile": 4,
+            "random.default_rng": 4,
+            "sqrt": 1,
+            "where": 4,
+            "zeros": 1
           },
           "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
+          "files": 3,
+          "import_sites": 3
         },
         "shrink": {
           "attribute_uses": 2,
           "attributes": {
             "__file__": 1,
             "__version__": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        },
+        "tests": {
+          "attribute_uses": 11,
+          "attributes": {
+            "allclose": 3,
+            "array": 1,
+            "array_equal": 1,
+            "exp": 1,
+            "linalg.LinAlgError": 2,
+            "median": 2,
+            "random.default_rng": 1
           },
           "dynamic_import_sites": 0,
           "files": 1,
@@ -413,10 +439,10 @@
           "name": "numpy"
         }
       ],
-      "distinct_attributes": 65,
+      "distinct_attributes": 73,
       "dynamic_import_sites": 0,
-      "files": 16,
-      "import_sites": 16
+      "files": 21,
+      "import_sites": 21
     },
     "ortools": {
       "attribute_uses": 2,
@@ -478,50 +504,53 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 934,
+      "attribute_uses": 966,
       "attributes": {
         "Boolean": 8,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 236,
+        "DataFrame": 246,
         "Expr": 13,
         "Float32": 1,
         "Float64": 70,
         "Int32": 30,
-        "Int64": 38,
+        "Int64": 41,
         "Series": 15,
-        "Utf8": 22,
+        "Utf8": 23,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 401,
+        "col": 410,
         "concat": 11,
         "concat_list": 1,
-        "concat_str": 2,
+        "concat_str": 3,
         "exceptions.PolarsError": 1,
         "first": 4,
         "int_range": 1,
         "len": 8,
-        "lit": 27,
+        "lit": 31,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 18,
+        "read_ndjson": 21,
         "sum": 2,
-        "when": 17
+        "when": 18
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 22,
+          "attribute_uses": 40,
           "attributes": {
             "Boolean": 2,
             "DataFrame": 1,
-            "Utf8": 1,
-            "col": 13,
+            "Int64": 2,
+            "Utf8": 2,
+            "col": 20,
             "concat": 1,
-            "lit": 2,
-            "read_ndjson": 2
+            "concat_str": 1,
+            "lit": 6,
+            "read_ndjson": 4,
+            "when": 1
           },
           "dynamic_import_sites": 0,
-          "files": 2,
-          "import_sites": 2
+          "files": 6,
+          "import_sites": 6
         },
         "dragowing": {
           "attribute_uses": 3,
@@ -546,29 +575,29 @@
           "import_sites": 2
         },
         "pythdragoras": {
-          "attribute_uses": 223,
+          "attribute_uses": 232,
           "attributes": {
             "Boolean": 2,
-            "DataFrame": 90,
+            "DataFrame": 95,
             "Expr": 6,
             "Float64": 3,
             "Int32": 1,
-            "Int64": 3,
+            "Int64": 4,
             "Series": 11,
             "Utf8": 1,
             "__version__": 2,
-            "col": 64,
+            "col": 66,
             "concat": 7,
             "concat_str": 1,
             "first": 2,
             "len": 2,
             "lit": 16,
-            "read_ndjson": 9,
+            "read_ndjson": 10,
             "when": 3
           },
           "dynamic_import_sites": 0,
-          "files": 17,
-          "import_sites": 17
+          "files": 19,
+          "import_sites": 19
         },
         "research": {
           "attribute_uses": 2,
@@ -623,13 +652,14 @@
           "import_sites": 9
         },
         "tests": {
-          "attribute_uses": 1,
+          "attribute_uses": 6,
           "attributes": {
+            "DataFrame": 5,
             "exceptions.PolarsError": 1
           },
           "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
+          "files": 3,
+          "import_sites": 3
         }
       },
       "declared": [
@@ -661,8 +691,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 34,
-      "import_sites": 39
+      "files": 42,
+      "import_sites": 47
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -687,24 +717,24 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 861,
+      "attribute_uses": 1239,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
-        "MonkeyPatch": 1,
-        "StashKey": 2,
+        "MonkeyPatch": 2,
+        "StashKey": 3,
         "UsageError": 10,
-        "approx": 243,
-        "fail": 21,
-        "fixture": 42,
-        "hookimpl": 3,
+        "approx": 346,
+        "fail": 33,
+        "fixture": 56,
+        "hookimpl": 4,
         "importorskip": 9,
-        "mark.parametrize": 161,
-        "mark.skipif": 6,
+        "mark.parametrize": 275,
+        "mark.skipif": 28,
         "param": 1,
-        "raises": 346,
-        "skip": 6,
+        "raises": 453,
+        "skip": 9,
         "warns": 3
       },
       "by_tree": {
@@ -742,51 +772,52 @@
           "import_sites": 15
         },
         "dragowing": {
-          "attribute_uses": 68,
+          "attribute_uses": 87,
           "attributes": {
             "UsageError": 2,
             "fail": 2,
-            "fixture": 7,
-            "mark.parametrize": 13,
-            "mark.skipif": 2,
-            "raises": 39,
-            "skip": 3
+            "fixture": 8,
+            "mark.parametrize": 21,
+            "mark.skipif": 3,
+            "raises": 47,
+            "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 10,
-          "import_sites": 11
+          "files": 14,
+          "import_sites": 15
         },
         "nagoyaction": {
-          "attribute_uses": 77,
+          "attribute_uses": 85,
           "attributes": {
             "MonkeyPatch": 1,
             "fail": 1,
             "fixture": 7,
-            "mark.parametrize": 13,
-            "raises": 54,
+            "mark.parametrize": 18,
+            "mark.skipif": 2,
+            "raises": 55,
             "skip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 12,
-          "import_sites": 12
+          "files": 13,
+          "import_sites": 13
         },
         "pythdragoras": {
-          "attribute_uses": 170,
+          "attribute_uses": 195,
           "attributes": {
             "UsageError": 2,
             "approx": 42,
             "fail": 2,
             "fixture": 6,
             "importorskip": 1,
-            "mark.parametrize": 37,
-            "mark.skipif": 1,
-            "raises": 75,
+            "mark.parametrize": 53,
+            "mark.skipif": 6,
+            "raises": 79,
             "skip": 2,
             "warns": 2
           },
           "dynamic_import_sites": 0,
-          "files": 17,
-          "import_sites": 17
+          "files": 22,
+          "import_sites": 22
         },
         "queryu": {
           "attribute_uses": 84,
@@ -804,34 +835,48 @@
           "import_sites": 12
         },
         "sakanalytics": {
-          "attribute_uses": 309,
+          "attribute_uses": 318,
           "attributes": {
             "UsageError": 2,
             "approx": 200,
             "fixture": 7,
-            "mark.parametrize": 34,
-            "mark.skipif": 3,
+            "mark.parametrize": 41,
+            "mark.skipif": 5,
             "param": 1,
             "raises": 61,
             "warns": 1
           },
           "dynamic_import_sites": 0,
-          "files": 10,
-          "import_sites": 10
+          "files": 11,
+          "import_sites": 11
         },
-        "tests": {
-          "attribute_uses": 72,
+        "scripts": {
+          "attribute_uses": 4,
           "attributes": {
-            "approx": 1,
-            "fail": 1,
-            "fixture": 4,
-            "importorskip": 1,
-            "mark.parametrize": 17,
-            "raises": 48
+            "MonkeyPatch": 1,
+            "StashKey": 1,
+            "fixture": 1,
+            "hookimpl": 1
           },
           "dynamic_import_sites": 0,
-          "files": 13,
-          "import_sites": 13
+          "files": 1,
+          "import_sites": 1
+        },
+        "tests": {
+          "attribute_uses": 385,
+          "attributes": {
+            "approx": 104,
+            "fail": 13,
+            "fixture": 16,
+            "importorskip": 1,
+            "mark.parametrize": 95,
+            "mark.skipif": 12,
+            "raises": 142,
+            "skip": 2
+          },
+          "dynamic_import_sites": 0,
+          "files": 39,
+          "import_sites": 40
         }
       },
       "declared": [
@@ -868,8 +913,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 90,
-      "import_sites": 91
+      "files": 128,
+      "import_sites": 130
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1127,6 +1172,63 @@
     },
     {
       "attributes": {
+        "col": 2,
+        "lit": 1,
+        "read_ndjson": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/r18_partial_confirmation.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "Int64": 2,
+        "Utf8": 1,
+        "col": 4,
+        "concat_str": 1,
+        "lit": 3,
+        "read_ndjson": 1,
+        "when": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/streak_unknown.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {},
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/wave_eps_trial.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "array": 3,
+        "longdouble": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/wave_tie_noise.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "col": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/wave_tie_noise.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
         "Boolean": 2,
         "col": 9,
         "concat": 1,
@@ -1154,6 +1256,20 @@
     },
     {
       "attributes": {
+        "array": 4,
+        "corrcoef": 2,
+        "mean": 2,
+        "random.default_rng": 1,
+        "sign": 2
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c002-gohantrust/lag1/lag_run.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
         "UsageError": 2,
         "fixture": 1
       },
@@ -1166,7 +1282,7 @@
     {
       "attributes": {},
       "dynamic_lines": [
-        77
+        84
       ],
       "file": "dragowing/htmlout.py",
       "import_sites": 0,
@@ -1224,6 +1340,29 @@
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/conftest.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.skipif": 1,
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_browser_resources.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.parametrize": 3,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_browser_selection.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -1358,6 +1497,28 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 1,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_vendor_dispatch_ci.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 4,
+        "raises": 5
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_venn.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
         "MonkeyPatch": 1
       },
       "dynamic_lines": [],
@@ -1467,6 +1628,18 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 5,
+        "mark.skipif": 2,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "nagoyaction/tests/test_nagoyaction_node_entry.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "nagoyaction"
+    },
+    {
+      "attributes": {
         "mark.parametrize": 1
       },
       "dynamic_lines": [],
@@ -1520,6 +1693,16 @@
       "import_sites": 1,
       "package": "polars",
       "tree": "nagoyaction"
+    },
+    {
+      "attributes": {
+        "read_ndjson": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/bitwise_surrogate.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "pythdragoras"
     },
     {
       "attributes": {
@@ -1724,6 +1907,28 @@
     },
     {
       "attributes": {
+        "DataFrame": 5,
+        "Int64": 1,
+        "col": 2
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_bitwise_surrogate.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "raises": 4
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_bitwise_surrogate.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
         "fixture": 1,
         "raises": 3,
         "skip": 1
@@ -1913,6 +2118,17 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 3,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_littlebit_survey_node_entry.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
         "DataFrame": 1
       },
       "dynamic_lines": [],
@@ -1928,6 +2144,17 @@
       },
       "dynamic_lines": [],
       "file": "pythdragoras/tests/test_next_seeds.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 7,
+        "mark.skipif": 2
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_node_launcher_regressions.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "pythdragoras"
@@ -2066,12 +2293,34 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 3,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_score_sensitivity_node_entry.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
         "approx": 1,
         "mark.parametrize": 1,
         "raises": 2
       },
       "dynamic_lines": [],
       "file": "pythdragoras/tests/test_season_sensitivity.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 3,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_season_sensitivity_node_entry.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "pythdragoras"
@@ -2270,6 +2519,49 @@
     },
     {
       "attributes": {
+        "array": 5,
+        "column_stack": 1,
+        "concatenate": 2,
+        "corrcoef": 1,
+        "linalg.LinAlgError": 1,
+        "linalg.lstsq": 1,
+        "log": 1,
+        "ones": 1,
+        "percentile": 1,
+        "random.default_rng": 1,
+        "sqrt": 1,
+        "where": 1
+      },
+      "dynamic_lines": [],
+      "file": "research/bigmac-ruler/staple_bigmac_check.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "research"
+    },
+    {
+      "attributes": {
+        "array": 2,
+        "column_stack": 2,
+        "concatenate": 3,
+        "empty": 1,
+        "exp": 1,
+        "linalg.lstsq": 2,
+        "log": 8,
+        "median": 5,
+        "ones": 2,
+        "percentile": 3,
+        "random.default_rng": 3,
+        "where": 3,
+        "zeros": 1
+      },
+      "dynamic_lines": [],
+      "file": "research/bigmac-ruler/synthetic_staples.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "research"
+    },
+    {
+      "attributes": {
         "Client": 1
       },
       "dynamic_lines": [],
@@ -2326,16 +2618,6 @@
       "file": "research/gpt-r001-score-allocation/preclinch_dates.py",
       "import_sites": 2,
       "package": "ortools",
-      "tree": "research"
-    },
-    {
-      "attributes": {
-        "dragowing.render_report": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/render_matched_comeback.py",
-      "import_sites": 1,
-      "package": "DRAgoWing",
       "tree": "research"
     },
     {
@@ -2529,6 +2811,17 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 7,
+        "mark.skipif": 2
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/tests/test_node_launcher_regressions.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
         "fixture": 1,
         "mark.parametrize": 5,
         "raises": 8,
@@ -2616,6 +2909,19 @@
     },
     {
       "attributes": {
+        "MonkeyPatch": 1,
+        "StashKey": 1,
+        "fixture": 1,
+        "hookimpl": 1
+      },
+      "dynamic_lines": [],
+      "file": "scripts/observe_dragowing_startup.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "scripts"
+    },
+    {
+      "attributes": {
         "__file__": 1,
         "__version__": 1
       },
@@ -2658,6 +2964,136 @@
     },
     {
       "attributes": {
+        "allclose": 3,
+        "array": 1,
+        "array_equal": 1,
+        "exp": 1,
+        "linalg.LinAlgError": 2,
+        "median": 2,
+        "random.default_rng": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_bigmac_ruler.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 12,
+        "fixture": 1,
+        "mark.parametrize": 2,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_bigmac_ruler.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 3,
+        "raises": 7
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_games_table_from_observed.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 2,
+        "mark.parametrize": 4,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_r18_partial_confirmation.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.parametrize": 7
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_streak_unknown.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "DataFrame": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_wave_eps_sensitivity.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 4,
+        "fixture": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_wave_eps_sensitivity.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 12,
+        "mark.parametrize": 10,
+        "raises": 10
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_wave_eps_settle_coefficients.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "DataFrame": 3
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_wave_tie_noise.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 1,
+        "fixture": 1,
+        "mark.parametrize": 1,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_wave_tie_noise.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 1,
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c002_lag1.py",
+      "import_sites": 2,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
         "Coverage": 1
       },
       "dynamic_lines": [],
@@ -2670,7 +3106,7 @@
       "attributes": {
         "fail": 1,
         "mark.parametrize": 2,
-        "raises": 5
+        "raises": 6
       },
       "dynamic_lines": [],
       "file": "tests/test_child_registry.py",
@@ -2704,6 +3140,160 @@
     },
     {
       "attributes": {
+        "fail": 6,
+        "fixture": 2,
+        "mark.parametrize": 9,
+        "mark.skipif": 7,
+        "raises": 3
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_dragowing_browser_diagnostics.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 3,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_dragowing_browser_managed.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "mark.skipif": 1,
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_dragowing_browser_resources.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.skipif": 2,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_dragowing_browser_transport.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 5,
+        "raises": 5
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 3,
+        "mark.parametrize": 1,
+        "raises": 9
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_physical.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 4,
+        "raises": 6
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_posthoc.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 12,
+        "mark.parametrize": 4,
+        "raises": 3
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_random.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 21,
+        "mark.parametrize": 1,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_range.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 9,
+        "mark.parametrize": 5,
+        "raises": 9
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_region.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 3
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_scaleband.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 6,
+        "fixture": 2,
+        "mark.parametrize": 2,
+        "raises": 5
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_epsilon_generality_window_crossing.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fail": 6,
+        "fixture": 1,
+        "mark.parametrize": 8,
+        "raises": 9
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_recovered_zip.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
         "mark.parametrize": 1
       },
       "dynamic_lines": [],
@@ -2718,6 +3308,18 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_recovery_provenance.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.parametrize": 12,
+        "raises": 5
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_rendered_output_static.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"
@@ -2769,10 +3371,44 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 2,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_season_2026.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
         "raises": 10
       },
       "dynamic_lines": [],
       "file": "tests/test_shared_fetch_module.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 7
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_shared_fetch_module_extended.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "approx": 12,
+        "mark.parametrize": 1,
+        "mark.skipif": 1,
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_shrink_index.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"
@@ -2785,6 +3421,16 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_shrink_module.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 3
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_subscription_contract.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

@@ -1,12 +1,18 @@
 # QueRyu
 
+<p align="center">
+  <img src="docs/brand/icon.png" alt="QueRyu icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+
 > Reproducible fetching builds reliable understanding.
 >
 > Polite web fetching with conditional-GET caching and provenance for building NPB baseball observation datasets (split out from Aoi/queryu).
 
 ![QueRyu](https://github.com/myon-bioinformatics/Aoi/raw/main/docs/images/queryu.webp)
 
-*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+*Concept image (a figure for sharing the idea; not the actual data or HTML structure)*
 
 ## Role in Aoi
 
@@ -20,21 +26,21 @@
 
 Topics: datasets, fetch support, automation
 
-## 概要
+## Overview
 
-取得と、観測データセットの作成を担う。取得元への負荷を抑え、いつ・どこから・どのコードで取ったかを必ず残す。
+Handles fetching and building observation datasets. It keeps the load on sources low and always records when, from where, and with which code each page was fetched.
 
-- **キャッシュと来歴**: 取得したページを保存し、取得ごとに1行の来歴（URL・時刻・SHA-256・ETag・コードの版）を追記する。304 や 404 も「確認した」記録として残す。
-- **取得元への配慮**: キャッシュ優先・条件付きGET・直列・既定3秒の間隔。`--plan` で、取得せずに件数と待ち時間を見積もる。
-- **観測データセット**: 取得元（[BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) の source）のページから、1記録1行の JSONL と manifest を作る。
-- **問い合わせ**（`ask/`）: 日本語の問いを決まった型に直し、PythDRagoras が判定済みの結果から答える（[docs/ask.md](docs/ask.md)）。
+- **Cache and provenance**: saves fetched pages and appends one provenance line per fetch (URL, time, SHA-256, ETag, code version). 304s and 404s are also kept as "checked" records.
+- **Care for sources**: cache first, conditional GETs, serial requests, and a default 3-second interval. `--plan` estimates counts and waiting time without fetching.
+- **Observation datasets**: builds one-record-per-line JSONL and a manifest from a source's pages (a [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) source).
+- **Queries** (`ask/`): turns Japanese questions into a fixed type and answers from results PythDRagoras has already judged ([docs/ask.md](docs/ask.md)).
 
-[Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクト [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) から独立したリポジトリです（下の「Aoi との関係」）。
+This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) (see "Relationship with Aoi" below).
 
-## インストールと使い方
+## Installation and usage
 
-Python 3.11 以上と [uv](https://docs.astral.sh/uv/) を使う。実行時の依存は numpy（`ask/suggest.py`）。
-抽出（`blueprobe`・`npb_calendar`・`npb_team_annual`）は [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) を checkout して `PYTHONPATH` に渡す。Aoi の `blueprobe/` は使わない。
+Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). The runtime dependency is numpy (`ask/suggest.py`).
+Extraction (`blueprobe`, `npb_calendar`, `npb_team_annual`) checks out [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) and passes it on `PYTHONPATH`. Aoi's `blueprobe/` is not used.
 
 ```bash
 git clone https://github.com/myon-bioinformatics/QueRyu.git
@@ -44,105 +50,105 @@ uv sync
 PYTHONPATH=../BlueProbe uv run python queryu.py --help
 ```
 
-`queryu.py` の主な引数は `--source`・`--years`・`--cache`・`--out`・`--wait`・`--offline`・`--plan`・`--freeze`。データセットを作る例は下の「データセット」にある。
+The main arguments of `queryu.py` are `--source`, `--years`, `--cache`, `--out`, `--wait`, `--offline`, `--plan`, and `--freeze`. An example of building a dataset is under "Datasets" below.
 
-## 構成
+## Layout
 
-| ファイル | 中身 |
+| File | Contents |
 |---|---|
-| `queryu.py` | CLI。`Cache`（保存と来歴）・`PoliteFetcher`（負荷を抑えた取得）・`build()`（観測データセット） |
-| `cache_core.py` | 標準ライブラリだけのオフラインのキャッシュ・スナップショット API（下の「Stdlib cache distribution」） |
-| `frozen_seasons.json` | 再確認しないシーズンの手動の凍結リスト |
-| `ask/` | 問い合わせ（`ask.py`）・確認用の命題 ID の候補（`suggest.py`）・登録済みの問いの一覧（`bank.py`） |
-| `docs/ask.md` | 問い合わせの仕様 |
+| `queryu.py` | CLI. `Cache` (storage and provenance), `PoliteFetcher` (low-load fetching), `build()` (observation datasets) |
+| `cache_core.py` | Standard-library-only offline cache/snapshot API ("Stdlib cache distribution" below) |
+| `frozen_seasons.json` | Manual freeze list of seasons that are not rechecked |
+| `ask/` | Queries (`ask.py`), proposition ID candidates for confirmation (`suggest.py`), list of registered questions (`bank.py`) |
+| `docs/ask.md` | Query spec |
 | `tests/` | pytest |
 
-## 取得元への配慮
+## Care for sources
 
-- 取得済みのページは再取得しない。今年以降で、凍結リストに無い年は更新を確認する。保存済みの `Last-Modified` / `ETag` があれば条件付きGET、無ければ条件なしのGETとなる
-- カレンダーの key が `年_月` のページは、実行日より後の月を取らない。`年_リーグ` のような月でない key はそのまま
-- シーズンを再確認の対象から外すときは `--freeze 年` で `frozen_seasons.json` に足す。年は1900〜2100の整数。不正な入力や `--out` 不足では凍結リストを書き換えない。終了した年を日付から推測して足すことはしない
-- 存在しないページ（404）も「空」として記録する。再確認の対象年では404も再確認し、凍結した年では再取得しない
-- 直列で、既定3秒の間隔を空ける。`--wait` は0以上の有限の秒数。5xx は保存しない
-- `--offline` ではネットワークに一切出ない（キャッシュにないページは止まる）
-- `--plan` はネットワークに出ない。キャッシュの来歴だけを数える
+- Pages already fetched are not refetched. For this year onward, years not on the freeze list are checked for updates. A conditional GET is used if a saved `Last-Modified` / `ETag` exists, otherwise an unconditional GET
+- For calendar pages whose key is `year_month`, months after the run date are not fetched. Non-month keys such as `year_league` are used as-is
+- To remove a season from rechecking, add it to `frozen_seasons.json` with `--freeze YEAR`. The year is an integer from 1900 to 2100. Invalid input or a missing `--out` does not rewrite the freeze list. Finished years are not added by guessing from the date
+- Nonexistent pages (404) are also recorded as "empty". In years subject to rechecking, 404s are rechecked too; frozen years are not refetched
+- Serial, with a default 3-second interval. `--wait` is a finite number of seconds, 0 or more. 5xx responses are not saved
+- `--offline` never goes to the network (it stops at pages not in the cache)
+- `--plan` never goes to the network. It only counts cache provenance
 
-### 観測（`--plan` の件数）
+### Observation (`--plan` counts)
 
-| 表示 | 数えているもの |
+| Label | What it counts |
 |---|---|
-| キャッシュ済み（再確認しない） | 来歴があり、その年は再確認の対象ではない |
-| 条件付きGET | 再確認対象の来歴に、空でない `ETag` または `Last-Modified` がある |
-| 再確認（条件なし） | 再確認対象の来歴に、どちらの更新確認ヘッダーも無い |
-| 新規 | 来歴がない |
-| 未来の月（取得しない） | `年_月` の key で、実行日より後の月 |
-| オフラインで不足するページ | `--offline --plan` のとき、来歴がないページの件数 |
+| キャッシュ済み（再確認しない） (cached, not rechecked) | Has provenance, and that year is not subject to rechecking |
+| 条件付きGET (conditional GET) | Provenance subject to rechecking has a non-empty `ETag` or `Last-Modified` |
+| 再確認（条件なし） (recheck, unconditional) | Provenance subject to rechecking has neither update-check header |
+| 新規 (new) | No provenance |
+| 未来の月（取得しない） (future month, not fetched) | A `year_month` key for a month after the run date |
+| オフラインで不足するページ (pages missing offline) | With `--offline --plan`, the number of pages without provenance |
 
-凍結リストの初期値は空である（`queryu/frozen_seasons.json`）。
+The freeze list starts empty (`queryu/frozen_seasons.json`).
 
-### 解釈（待ち時間）
+### Interpretation (waiting time)
 
-オンラインの見積もりは、間隔 × max(0, 条件付きGET + 再確認（条件なし） + 新規 − 1) 秒である。最初のリクエストの前には間隔を空けない、という取得の手順から出している。数えているのは、その間隔を足した待ち時間である。
+The online estimate is interval × max(0, conditional GET + recheck (unconditional) + new − 1) seconds. This comes from the fetch procedure, which does not wait before the first request. What is counted is the waiting time from adding those intervals.
 
-`--offline --plan` は再確認対象年でも保存済みページを使うので、HTTP件数と待ち時間を0とする。「新規」は不足するページの数であり、オフラインで取得するという意味ではない。本文は検証せず来歴だけを数えるため、計画はキャッシュ本文の正常性を保証しない。
+`--offline --plan` uses saved pages even for years subject to rechecking, so the HTTP count and waiting time are 0. "New" is the number of missing pages, not a claim that they will be fetched offline. Since it counts only provenance without validating bodies, the plan does not guarantee the cached bodies are sound.
 
-## 来歴
+## Provenance
 
-キャッシュの `manifest.jsonl` に、取得ごとに1行を追記する。304（更新なし）も「確認した」記録として残す。
+One line per fetch is appended to the cache's `manifest.jsonl`. 304 (not modified) is also kept as a "checked" record.
 
 ```text
 key, url, group, status, file, sha256, bytes, fetched_at, last_modified, etag, code_version
 ```
 
-`code_version` は git のコミット。測れなければ `null` のまま（推測で埋めない）。
+`code_version` is the git commit. If it can't be measured it stays `null` (not filled in by guessing).
 
-## データセット
+## Datasets
 
-`data/observations/<source>/<entity>.jsonl`（1記録1行、`key` で一意）と、隣の `.manifest.json`（取得元・範囲・正規化の内容・採用しなかった件数・未知の件数・SHA-256・コードの版）。
-生の観測を含むので `data/` は git に入れない。
+`data/observations/<source>/<entity>.jsonl` (one record per line, unique by `key`) and the adjacent `.manifest.json` (source, range, normalization details, count not adopted, count unknown, SHA-256, code version).
+Because it contains raw observations, `data/` is not committed to git.
 
 ```bash
 PYTHONPATH=../BlueProbe uv run python queryu.py --source npb_calendar --years 2012-2025 \
   --cache data/raw/npb_calendar --out data/observations/npb_calendar/games.jsonl [--offline]
 ```
 
-Aoi のルートから動かすときは `uv run python queryu/queryu.py ...`。
+When running from Aoi's root, use `uv run python queryu/queryu.py ...`.
 
-## 保存本文の照合と履歴
+## Verifying saved bodies and history
 
-新しい `Cache.put()` は本文を `blobs/<sha256>.html.gz` に保存する。同じ本文は
-共有するが、取得ごとの manifest 行（URL・時刻・ETag など）は毎回残す。
-一時ファイルの完成後に既存ファイルを上書きしない形で公開し、その後に来歴を追記する。
-同じ key を更新しても、以前の行が指す本文は残る。key はファイル名に使わない。
-既存 blob が壊れている場合は再保存で修復せず、エラーで止める。
-自動削除・保持期限・既存キャッシュの一括移行は実装していない。
-中断で来歴のない blob が残る場合も、勝手に削除しない。
+The new `Cache.put()` saves bodies to `blobs/<sha256>.html.gz`. Identical bodies are
+shared, but the per-fetch manifest line (URL, time, ETag, etc.) is kept every time.
+After a temporary file is complete, it is published without overwriting an existing file, and then provenance is appended.
+Updating the same key keeps the bodies earlier lines point to. Keys are not used as file names.
+If an existing blob is corrupt, it is not repaired by re-saving; it stops with an error.
+Automatic deletion, retention periods, and bulk migration of existing caches are not implemented.
+Blobs left without provenance by an interruption are not deleted automatically either.
 
-`Cache.body_bytes(entry)` は gzip 展開後の**保存した元バイト列**を、来歴に既にある
-`sha256` と `bytes` の両方に照合する。`Cache.body(entry)` はその後で UTF-8 を
-厳密に decode する。照合失敗を再取得で隠さず、ネットワークへ取りに行かない。
-絶対パス・親ディレクトリ参照・キャッシュ外への symlink は拒否する。
-ファイルと来歴を同時に書き換えられる攻撃者に対する署名・真正性の保証ではない。
+`Cache.body_bytes(entry)` checks the gzip-decompressed **original saved bytes** against both the
+`sha256` and `bytes` already in the provenance. `Cache.body(entry)` then strictly decodes
+UTF-8. Verification failures are not hidden by refetching, and it never goes to the network.
+Absolute paths, parent-directory references, and symlinks outside the cache are rejected.
+This is not a signature or authenticity guarantee against an attacker who can rewrite both files and provenance.
 
-旧形式の `<key>.html.gz` と manifest は変更しない。保存済みの hash と長さがあり、
-現在の本文と一致する行はそのまま読める。hash/長さがない・不正な行は明示的に拒否する。
-読み込み時に新しい hash を作って「検証済み」に昇格させない。旧方式で既に上書きされた
-過去の本文は復元できず、対応する古い行は照合失敗になる場合がある。
-新方式導入後の保存でも旧ファイルを上書きしない。履歴を使うときは、その取得の
-manifest 行を選んで `body()` または `snapshot()` に渡す。
+Old-format `<key>.html.gz` files and manifests are unchanged. Lines with a saved hash and length
+that match the current body can be read as-is. Lines without, or with invalid, hash/length are explicitly rejected.
+No new hash is created at read time to promote a line to "verified". Past bodies already overwritten under the
+old scheme cannot be restored, and the corresponding old lines may fail verification.
+Saves after the new scheme was introduced do not overwrite old files either. To use history, choose that fetch's
+manifest line and pass it to `body()` or `snapshot()`.
 
-`Cache.snapshot(entry)` は元バイト列の照合後に `html-snapshot/1` へ変換する。
-`response_sha256` は保存した元バイト列、`content_sha256` は decode 済みHTMLを
-UTF-8 にした値の hash。現行の厳密な UTF-8 保存では一致するが、意味は別々に扱う。
-元の `url`・`fetched_at` を引き継ぎ、取得時刻が不明なら `null` のままにする。
-独自項目を含む元の行全体は `cache_entry` に保存し、補完した来歴と混同しない。
-これだけでは URL・取得時刻の真実性や HTTP 応答の真正性は証明しない。
+`Cache.snapshot(entry)` converts to `html-snapshot/1` after verifying the original bytes.
+`response_sha256` is the hash of the saved original bytes, and `content_sha256` the hash of the decoded HTML
+re-encoded as UTF-8. With the current strict UTF-8 storage they match, but their meanings are treated separately.
+The original `url` and `fetched_at` are carried over; if the fetch time is unknown it stays `null`.
+The whole original line, including custom fields, is saved in `cache_entry` and not confused with filled-in provenance.
+This alone does not prove the truth of the URL or fetch time, or the authenticity of the HTTP response.
 
-責務は、取得・保存本文・照合・履歴が QueRyu、HTML構造の抽出・観測値の読み取りが
-[BlueProbe](https://github.com/myon-bioinformatics/BlueProbe)、集計・指標計算が [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics)、
-仮説評価が [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)。実行元やソースの identity 確認・
-CI runner・証跡の実行管理は [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) が担う。この変更では新しい runner や
-実行証明を追加しない。
+Responsibilities: fetching, saved bodies, verification, and history are QueRyu's; extracting HTML structure and reading observed values are
+[BlueProbe](https://github.com/myon-bioinformatics/BlueProbe)'s; aggregation and metric calculation are [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics)'s;
+hypothesis evaluation is [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras)'s. Identity checks of the executor and source,
+CI runners, and execution management of evidence are handled by [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction). This change adds no new runner or
+execution attestation.
 
 ## Stdlib cache distribution
 
@@ -158,33 +164,33 @@ Acquisition uses the existing synchronous urllib client; no asynchronous support
 is claimed by the min artifact. Whole-tree subtree synchronization remains the
 Aoi/QueRyu development relationship. MIT notices are kept in `LICENSE`.
 
-## キャッシュの照会・受け渡し・並行取得（`cache_share.py`）
+## Querying, handing over, and concurrently fetching the cache (`cache_share.py`)
 
-`cache_core.Cache` の上に載る stdlib のみのモジュール。取得済みの本文を、取り直さずに
-抽出側（BlueProbe など）や他の checkout・他の人へ渡すためのもの。
+A stdlib-only module on top of `cache_core.Cache`. It hands fetched bodies, without refetching, to
+the extraction side (BlueProbe, etc.), other checkouts, or other people.
 
 - `query(cache, key=, url=, group=, status=, since=, until=, history=)`:
-  manifest の行を絞り込む。`key`／`url` は glob（`cal:2024_*`）、`since`／`until`
-  は `fetched_at` の範囲（両端を含む）。既定ではキーごとに最新の 1 行を返す。`until`
-  と組み合わせると「その時点の最新」になり、`history=True` なら全取得履歴を返す。
+  filters manifest lines. `key` / `url` are globs (`cal:2024_*`), and `since` / `until`
+  are a `fetched_at` range (inclusive at both ends). By default it returns the latest line per key. Combined with `until`
+  it gives "the latest as of that time", and `history=True` returns the full fetch history.
 - `export_bundle(cache, rows, path)` / `import_bundle(cache, path)`:
-  照合済みの gzip 本文と行を 1 つの `.tar`（`queryu-bundle/1`）にまとめて受け渡す。
-  - 書き出し時には本文を照合する。既存のファイルは上書きしない。
-  - 取り込み時には全本文の sha256 とバイト数を再照合する。不一致、パス逸脱、
-    通常ファイル以外のメンバーが一つでもあれば、何も書かずに失敗する。
-  - 既存の blob と、同じ (key, sha256, fetched_at) の行は追加しない。
-  - 取り込んだ行は元の来歴を保ったまま、`imported_from`（バンドルの SHA-256）を持つ。
+  packs verified gzip bodies and lines into a single `.tar` (`queryu-bundle/1`) for handover.
+  - Bodies are verified on export. Existing files are not overwritten.
+  - On import, every body's sha256 and byte count are re-verified. If there is any mismatch, path escape,
+    or non-regular-file member, it fails without writing anything.
+  - Existing blobs and lines with the same (key, sha256, fetched_at) are not added.
+  - Imported lines keep their original provenance and carry `imported_from` (the bundle's SHA-256).
 - `iter_snapshots(cache, rows)` / `aiter_snapshots(cache, rows, concurrency=4)`:
-  `html-snapshot/1` を同期ジェネレータまたは async イテレータで供給する。async 版は
-  照合と展開をスレッドで行い、順序は入力のまま保つ。
+  supplies `html-snapshot/1` as a sync generator or an async iterator. The async version
+  does verification and decompression in threads and keeps the input order.
 - `fetch_many(cache, [(key, url, group), ...], client=, wait=3.0, max_hosts=4)`:
-  複数ホストを並行して取得する。
-  - 同じホストへのリクエストは指定順に 1 件ずつ送り、間を `wait` 秒空ける。
-    `PoliteFetcher` と同じ配慮。
-  - 異なるホスト同士は互いを待たない。
-  - 200 と 404 は `Cache.put`（来歴つき）で保存し、それ以外の status は本文なしで記録する。
-  - 例外は `status: null` と `error` として返し、他のホストの取得は続ける。
-  - manifest への書き込みはロックで 1 つずつ行う。
+  fetches from several hosts concurrently.
+  - Requests to the same host are sent one at a time in the given order, `wait` seconds apart,
+    with the same care as `PoliteFetcher`.
+  - Different hosts do not wait for each other.
+  - 200 and 404 are saved with `Cache.put` (with provenance); other statuses are recorded without a body.
+  - Exceptions are returned as `status: null` and `error`, and fetching from other hosts continues.
+  - Writes to the manifest are done one at a time under a lock.
 
 ```bash
 python cache_share.py --cache data/cache query --group npb_calendar --since 2026-01-01
@@ -193,14 +199,14 @@ python cache_share.py --cache other/cache import share.tar
 python cache_share.py --cache data/cache verify --group npb_calendar
 ```
 
-- `verify_cache(cache, entries=None)` / `verify`: 本文のある行（既定では全履歴）について、gzip 本文と
-  記録された sha256・バイト数を照合し、`{"total", "verified", "corrupted", "errors"}` を JSON で出す。
-  `verify` は query と同じ絞り込みを受け付ける。終了コードは、全件一致で 0、不一致が 1 件でもあれば 1、
-  対象が 0 件なら 3（指定ミスに気づけるよう、stderr に注記を出す）。
+- `verify_cache(cache, entries=None)` / `verify`: for lines with a body (the full history by default), checks the gzip body against
+  the recorded sha256 and byte count, and outputs `{"total", "verified", "corrupted", "errors"}` as JSON.
+  `verify` accepts the same filters as query. The exit code is 0 if everything matches, 1 if there is even one mismatch,
+  and 3 if there are no targets (with a note on stderr so a mistaken filter is noticed).
 
-## テスト
+## Tests
 
-サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi と BlueProbe の最新の main を checkout して渡す。CI は実行時に `git ls-remote` で main の SHA を解決し、解決した SHA をジョブサマリーへ書く。古い実行を再現するときは workflow_dispatch の ref を指定する。
+Cycle data (`cycles/`), blueprobe fixtures, and `nagoyaction/inbox` stay in Aoi. Tests check out the latest main of Aoi and BlueProbe and pass them in. CI resolves main's SHA with `git ls-remote` at run time and writes the resolved SHA to the job summary. To reproduce an old run, specify the ref in workflow_dispatch.
 
 ```sh
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
@@ -208,65 +214,65 @@ git clone https://github.com/myon-bioinformatics/BlueProbe.git ../BlueProbe
 AOI_ROOT=../Aoi PYTHONPATH=../BlueProbe uv run --locked pytest -q
 ```
 
-CI は Python 3.11–3.15 で同じことをする。
+CI does the same on Python 3.11–3.15.
 
-## Aoi との関係
+## Relationship with Aoi
 
-[Aoi](https://github.com/myon-bioinformatics/Aoi) の [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) から独立したリポジトリ。直接の親は Aoi で、`queryu/` との差分は Aoi 側で確かめる。
-初回の `main`（`35a08024dc0040566068ba513074e3d8326897d4`）は Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7` の `queryu/` を履歴ごと切り出したもの（tree `c995b928f46b297025d9cddaeee3df04b322405b`）。
-Aoi の [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) に登録されている（手順の全体は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)）。
+A repository split out from [Aoi](https://github.com/myon-bioinformatics/Aoi)'s [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu). Its direct parent is Aoi, and differences from `queryu/` are checked on the Aoi side.
+The first `main` (`35a08024dc0040566068ba513074e3d8326897d4`) is `queryu/` from Aoi `85243d6d1285e3bf4667e1447308543c7d648ab7`, split out with its history (tree `c995b928f46b297025d9cddaeee3df04b322405b`).
+It is registered in Aoi's [`child-heads.json`](https://github.com/myon-bioinformatics/Aoi/blob/main/child-heads.json) (the full procedure is in Aoi's [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md)).
 
-- サイクルデータ（`cycles/`）・blueprobe の fixture・`nagoyaction/inbox` は Aoi に残す。テストは Aoi を checkout して `AOI_ROOT=<Aoi のルート>` を渡す
-- Aoi の配置（`AOI_ROOT`・サイクル名・`pipeline.toml`・結果 ref）は QueRyu では解決しない。Aoi の `aoi_paths.py` が解決して `--results`・`--cycle-dir`・`--teams`・`--month-key` で渡す。球団表と年間ページの範囲（旧 `annual_scope.py`）も Aoi に置く
-- Aoi との同期: Aoi 側で一度だけ `git subtree add` をして履歴をつなぎ、そのあとは subtree で同期する。Aoi と QueRyu の間では vendor lock を使わない（Aoi の `queryu/aoi_paths.py` が Aoi 直下の `aoi_paths.py` と同じ blob であることは、Aoi 側で確かめる）
-- この README は Aoi の `queryu/README.md` と同じ内容から始まっている。Aoi の中の文書へのリンクは、どちらで読んでも開けるように GitHub の URL で書く
+- Cycle data (`cycles/`), blueprobe fixtures, and `nagoyaction/inbox` stay in Aoi. Tests check out Aoi and pass `AOI_ROOT=<Aoi root>`
+- Aoi's layout (`AOI_ROOT`, cycle names, `pipeline.toml`, results refs) is not resolved in QueRyu. Aoi's `aoi_paths.py` resolves it and passes `--results`, `--cycle-dir`, `--teams`, and `--month-key`. The team table and the range of annual pages (formerly `annual_scope.py`) also live in Aoi
+- Syncing with Aoi: Aoi does `git subtree add` once to connect the histories, and after that syncs via subtree. No vendor lock is used between Aoi and QueRyu (that Aoi's `queryu/aoi_paths.py` is the same blob as the top-level `aoi_paths.py` is checked on the Aoi side)
+- This README starts from the same contents as Aoi's `queryu/README.md`. Links to documents inside Aoi are written as GitHub URLs so they open from either place
 
-## 関連サブプロジェクト
+## Related subprojects
 
-親の [Aoi](https://github.com/myon-bioinformatics/Aoi) のサブプロジェクトは、それぞれ独立したリポジトリになっています。Aoi の中の場所（subtree）とあわせて載せます。一覧と登録の詳細は Aoi の [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md) です。
+Each subproject of the parent [Aoi](https://github.com/myon-bioinformatics/Aoi) is its own repository. They are listed with their location in Aoi (subtree). The list and registration details are in Aoi's [docs/child-repositories.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/child-repositories.md).
 
-| リポジトリ | Aoi の中の場所 | 役割 |
+| Repository | Location in Aoi | Role |
 |---|---|---|
-| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | 観測と抽出（保存した HTML/CSS/DOM を読み、何があるかを記録する） |
-| **QueRyu**（このリポジトリ） | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | 取得と観測データセットの作成（来歴つきのキャッシュ） |
-| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | 観測データからの指標と統計（チーム×シーズンの指標、残り試合の見通し） |
-| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | 説明の検証（命題・反例・異議あり） |
-| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | パイプラインの実行と自動化（同じ定義をローカルと GitHub Actions で） |
-| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | 図とレポート（Plotly.js の HTML、四つの形の表） |
+| [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) | Observation and extraction (reads saved HTML/CSS/DOM and records what is there) |
+| **QueRyu** (this repository) | [`queryu/`](https://github.com/myon-bioinformatics/Aoi/tree/main/queryu) | Fetching and building observation datasets (caches with provenance) |
+| [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) | Metrics and statistics from observation data (team × season metrics, outlook for remaining games) |
+| [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](https://github.com/myon-bioinformatics/Aoi/tree/main/pythdragoras) | Verifying explanations (propositions, counterexamples, objections) |
+| [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](https://github.com/myon-bioinformatics/Aoi/tree/main/nagoyaction) | Pipeline execution and automation (the same definition locally and on GitHub Actions) |
+| [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) | Figures and reports (Plotly.js HTML, the four-forms table) |
 
-## 絵文字の名前（npm 経由の Unicode データと、オフライン用の集積）
+## Emoji names (Unicode data via npm, and an offline collection)
 
-unicode.org はサンドボックスや CI から届かないことが多いが、npm レジストリには届く。
-`emoji_data.py`（標準ライブラリのみ）は、unicode.org の emoji-test.txt（CLDR の短い名前・グループ・版）を
-JSON にした `unicode-emoji-json` を npm から一度だけ取得し、QueRyu の `Cache` に来歴つきで保存する。
+unicode.org is often unreachable from sandboxes and CI, but the npm registry is reachable.
+`emoji_data.py` (standard library only) fetches `unicode-emoji-json`, which is unicode.org's emoji-test.txt (CLDR short names, groups, versions)
+as JSON, from npm just once, and saves it in QueRyu's `Cache` with provenance.
 
 ```sh
-python emoji_data.py --cache data/raw/npm --names emoji_names.json --use inventory.json   # 取得（初回のみ）＋集積
-python emoji_data.py --cache data/raw/npm --offline --lookup "TEXT"                       # キャッシュだけで引く
-python emoji_data.py --names emoji_names.json --lookup "TEXT"                             # 集積表だけで引く（ネットワーク・キャッシュ不要）
+python emoji_data.py --cache data/raw/npm --names emoji_names.json --use inventory.json   # fetch (first time only) + collect
+python emoji_data.py --cache data/raw/npm --offline --lookup "TEXT"                       # look up from the cache only
+python emoji_data.py --names emoji_names.json --lookup "TEXT"                             # look up from the collected table only (no network or cache needed)
 ```
 
-- 版は `名前@x.y.z` で固定（`latest` は使わない）。レジストリの版メタデータから tarball を得て、レジストリのホストにあることと sha512 `integrity` を確かめてから保存する。`--offline` ではネットワークに出ず、未取得なら止まる
-- `emoji_names.json`（`queryu.emoji-names/1`）は、実際に使った絵文字の名前を集積してコミットする表。`--use` に xprobe `--emoji` の JSON（`xprobe.emoji-inventory.v1`）か絵文字の配列を渡すと、無い分だけ足す。既存の項目は消さず、書き換えない（手で直した名前も残る）。取得元（パッケージ・版・tarball の SHA-256・取得時刻）を `sources` に残す
-- キーは U+FE0F を除いた形（xprobe `emoji_identity`・browser-test-kit `route_trail.py` と同じ）。肌の色・髪の部品つきの変種が表に無ければ、元の絵文字の名前＋部品の名前（`thumbs up: medium skin tone`）にする
-- 初期の表は、Flutter・browser-test-kit・web-ui・markdown・gh_identity・親・BlueProbe・Aoi などの既存ファイルに出てくる 287 種類（xprobe の集計 5,934 ファイル）から作った。名前の無い 1 件（♭ U+266D、絵文字ではない記号）は足していない
-- 保存本文のファイル名は既存の `Cache.put` の規則（`blobs/<sha256>.html.gz`）のまま。中身は tarball のバイト列で、照合は他の保存本文と同じ
+- The version is fixed as `name@x.y.z` (`latest` is not used). It gets the tarball from the registry's version metadata, confirms it is on the registry host and matches the sha512 `integrity`, and then saves it. `--offline` never goes to the network and stops if not yet fetched
+- `emoji_names.json` (`queryu.emoji-names/1`) is a committed table collecting the names of emoji actually used. Passing xprobe `--emoji` JSON (`xprobe.emoji-inventory.v1`) or an array of emoji to `--use` adds only what is missing. Existing entries are never removed or rewritten (hand-corrected names stay). The source (package, version, tarball SHA-256, fetch time) is kept in `sources`
+- Keys are the form without U+FE0F (same as xprobe `emoji_identity` and browser-test-kit `route_trail.py`). If a variant with skin-tone or hair components is not in the table, it becomes the base emoji's name plus the component names (`thumbs up: medium skin tone`)
+- The initial table was built from 287 kinds that appear in existing files of Flutter, browser-test-kit, web-ui, markdown, gh_identity, the parent, BlueProbe, Aoi, and others (xprobe's tally of 5,934 files). The 1 item without a name (♭ U+266D, a symbol, not an emoji) was not added
+- Saved body file names follow the existing `Cache.put` rule (`blobs/<sha256>.html.gz`). The contents are the tarball bytes, verified the same way as other saved bodies
 
-## ライセンス
+## License
 
-MIT License（[LICENSE](LICENSE)）。Aoi の `LICENSE` と同じ内容です。
+MIT License ([LICENSE](LICENSE)). Same contents as Aoi's `LICENSE`.
 
 ---
 
-# NPB（プロ野球）向けの取得
+# Fetching for NPB (Japanese professional baseball)
 
-以下は Aoi の研究サイクル（中日・NPB のデータ）で使っている取得元の内容です。
+The following describes the sources used in Aoi's research cycle (Chunichi and NPB data).
 
-## 年間チーム成績の追加取得
+## Additional fetching of annual team stats
 
-`--source npb_team_annual --years 2013-2026` で、両リーグの年度別チーム表を取得できる。
-2005年以降は詳細な勝敗・打撃・投手・守備の全掲載列も取得し、年度別要約表と区別して保持する。
-主対象・合格判定は2013〜2026年。2013年以前は任意の参考資料として通常のデータから分ける。
-年間キャッシュの主対象の検証・コピー（旧 `annual_scope.py`）は NPB 固有なので Aoi の `annual_scope.py` に移した。
-データセットのmanifestには、解析に用いたsourceモジュール自体の `source_code_sha256` も残す。
-範囲・照合・再実行は [c001の取得・架空検証記録](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/annual-history-synthetic.md)。
+`--source npb_team_annual --years 2013-2026` fetches both leagues' per-year team tables.
+For 2005 onward it also fetches all listed columns of detailed win-loss, batting, pitching, and fielding, kept separate from the per-year summary tables.
+The main target and pass criteria are 2013–2026. Years before 2013 are optional reference material, kept apart from regular data.
+Verification and copying of the annual cache's main target (formerly `annual_scope.py`) is NPB-specific, so it moved to Aoi's `annual_scope.py`.
+The dataset manifest also records `source_code_sha256` of the source module itself used for parsing.
+Range, verification, and re-runs are in [c001's fetch and synthetic verification record](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/annual-history-synthetic.md).

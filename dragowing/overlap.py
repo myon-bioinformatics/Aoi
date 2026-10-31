@@ -16,6 +16,13 @@ from .forms import _atom
 from .records import read_jsonl
 
 B_COND = {"col": "upper_half", "op": "==", "value": False}
+# 領域は 2^n 個。8 個で 256 領域（格子 16×16）が、図で読める上限。計算はもっと多くても動く。
+MAX_SETS = 8
+
+
+def _check_count(conds: list[dict]) -> None:
+    if not 2 <= len(conds) <= MAX_SETS:
+        raise ValueError(f"条件集合は 2 個から {MAX_SETS} 個にする（B クラスを含む）。受け取った数: {len(conds)}")
 
 
 def _engines():
@@ -88,8 +95,7 @@ def default_conditions(items: list[dict], rows: list[dict]) -> list[dict]:
         if "upper_half" not in have:
             raise ValueError("upper_half が season.jsonl にない")
         chosen.append(dict(B_COND))
-    if not 2 <= len(chosen) <= 3:
-        raise ValueError("条件集合は 2 個か 3 個にする（B クラスを含む）")
+    _check_count(chosen)
     return chosen
 
 
@@ -101,8 +107,7 @@ def finalize_conditions(user: list[dict] | None, items: list[dict], rows: list[d
         if not rows or "upper_half" not in rows[0]:
             raise ValueError("upper_half が season.jsonl にない")
         chosen.append(dict(B_COND))
-    if not 2 <= len(chosen) <= 3:
-        raise ValueError("条件集合は 2 個か 3 個にする（B クラスを含む）")
+    _check_count(chosen)
     return chosen
 
 

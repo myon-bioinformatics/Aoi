@@ -1,0 +1,548 @@
+{
+  "added_october_4_to_8_urls": [
+    "https://npb.jp/scores/2026/1004/db-t-25/",
+    "https://npb.jp/scores/2026/1004/m-e-25/",
+    "https://npb.jp/scores/2026/1004/s-c-25/",
+    "https://npb.jp/scores/2026/1005/e-h-25/",
+    "https://npb.jp/scores/2026/1005/m-l-24/",
+    "https://npb.jp/scores/2026/1006/m-l-25/",
+    "https://npb.jp/scores/2026/1006/t-c-24/",
+    "https://npb.jp/scores/2026/1007/t-c-25/",
+    "https://npb.jp/scores/2026/1008/t-s-25/"
+  ],
+  "annual_comparisons": [
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "b"
+    },
+    {
+      "annual_value": 65,
+      "field": "W",
+      "games_value": 65,
+      "match": true,
+      "team": "b"
+    },
+    {
+      "annual_value": 76,
+      "field": "L",
+      "games_value": 76,
+      "match": true,
+      "team": "b"
+    },
+    {
+      "annual_value": 2,
+      "field": "T",
+      "games_value": 2,
+      "match": true,
+      "team": "b"
+    },
+    {
+      "annual_value": 483,
+      "field": "RF",
+      "games_value": 483,
+      "match": true,
+      "team": "b"
+    },
+    {
+      "annual_value": 605,
+      "field": "RA",
+      "games_value": 605,
+      "match": true,
+      "team": "b"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "c"
+    },
+    {
+      "annual_value": 61,
+      "field": "W",
+      "games_value": 61,
+      "match": true,
+      "team": "c"
+    },
+    {
+      "annual_value": 78,
+      "field": "L",
+      "games_value": 78,
+      "match": true,
+      "team": "c"
+    },
+    {
+      "annual_value": 4,
+      "field": "T",
+      "games_value": 4,
+      "match": true,
+      "team": "c"
+    },
+    {
+      "annual_value": 431,
+      "field": "RF",
+      "games_value": 431,
+      "match": true,
+      "team": "c"
+    },
+    {
+      "annual_value": 520,
+      "field": "RA",
+      "games_value": 520,
+      "match": true,
+      "team": "c"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "d"
+    },
+    {
+      "annual_value": 60,
+      "field": "W",
+      "games_value": 60,
+      "match": true,
+      "team": "d"
+    },
+    {
+      "annual_value": 81,
+      "field": "L",
+      "games_value": 81,
+      "match": true,
+      "team": "d"
+    },
+    {
+      "annual_value": 2,
+      "field": "T",
+      "games_value": 2,
+      "match": true,
+      "team": "d"
+    },
+    {
+      "annual_value": 478,
+      "field": "RF",
+      "games_value": 478,
+      "match": true,
+      "team": "d"
+    },
+    {
+      "annual_value": 494,
+      "field": "RA",
+      "games_value": 494,
+      "match": true,
+      "team": "d"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "db"
+    },
+    {
+      "annual_value": 71,
+      "field": "W",
+      "games_value": 71,
+      "match": true,
+      "team": "db"
+    },
+    {
+      "annual_value": 69,
+      "field": "L",
+      "games_value": 69,
+      "match": true,
+      "team": "db"
+    },
+    {
+      "annual_value": 3,
+      "field": "T",
+      "games_value": 3,
+      "match": true,
+      "team": "db"
+    },
+    {
+      "annual_value": 557,
+      "field": "RF",
+      "games_value": 557,
+      "match": true,
+      "team": "db"
+    },
+    {
+      "annual_value": 512,
+      "field": "RA",
+      "games_value": 512,
+      "match": true,
+      "team": "db"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "e"
+    },
+    {
+      "annual_value": 58,
+      "field": "W",
+      "games_value": 58,
+      "match": true,
+      "team": "e"
+    },
+    {
+      "annual_value": 84,
+      "field": "L",
+      "games_value": 84,
+      "match": true,
+      "team": "e"
+    },
+    {
+      "annual_value": 1,
+      "field": "T",
+      "games_value": 1,
+      "match": true,
+      "team": "e"
+    },
+    {
+      "annual_value": 473,
+      "field": "RF",
+      "games_value": 473,
+      "match": true,
+      "team": "e"
+    },
+    {
+      "annual_value": 555,
+      "field": "RA",
+      "games_value": 555,
+      "match": true,
+      "team": "e"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "f"
+    },
+    {
+      "annual_value": 78,
+      "field": "W",
+      "games_value": 78,
+      "match": true,
+      "team": "f"
+    },
+    {
+      "annual_value": 62,
+      "field": "L",
+      "games_value": 62,
+      "match": true,
+      "team": "f"
+    },
+    {
+      "annual_value": 3,
+      "field": "T",
+      "games_value": 3,
+      "match": true,
+      "team": "f"
+    },
+    {
+      "annual_value": 591,
+      "field": "RF",
+      "games_value": 591,
+      "match": true,
+      "team": "f"
+    },
+    {
+      "annual_value": 529,
+      "field": "RA",
+      "games_value": 529,
+      "match": true,
+      "team": "f"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "g"
+    },
+    {
+      "annual_value": 76,
+      "field": "W",
+      "games_value": 76,
+      "match": true,
+      "team": "g"
+    },
+    {
+      "annual_value": 64,
+      "field": "L",
+      "games_value": 64,
+      "match": true,
+      "team": "g"
+    },
+    {
+      "annual_value": 3,
+      "field": "T",
+      "games_value": 3,
+      "match": true,
+      "team": "g"
+    },
+    {
+      "annual_value": 486,
+      "field": "RF",
+      "games_value": 486,
+      "match": true,
+      "team": "g"
+    },
+    {
+      "annual_value": 444,
+      "field": "RA",
+      "games_value": 444,
+      "match": true,
+      "team": "g"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "h"
+    },
+    {
+      "annual_value": 91,
+      "field": "W",
+      "games_value": 91,
+      "match": true,
+      "team": "h"
+    },
+    {
+      "annual_value": 49,
+      "field": "L",
+      "games_value": 49,
+      "match": true,
+      "team": "h"
+    },
+    {
+      "annual_value": 3,
+      "field": "T",
+      "games_value": 3,
+      "match": true,
+      "team": "h"
+    },
+    {
+      "annual_value": 707,
+      "field": "RF",
+      "games_value": 707,
+      "match": true,
+      "team": "h"
+    },
+    {
+      "annual_value": 452,
+      "field": "RA",
+      "games_value": 452,
+      "match": true,
+      "team": "h"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "l"
+    },
+    {
+      "annual_value": 79,
+      "field": "W",
+      "games_value": 79,
+      "match": true,
+      "team": "l"
+    },
+    {
+      "annual_value": 60,
+      "field": "L",
+      "games_value": 60,
+      "match": true,
+      "team": "l"
+    },
+    {
+      "annual_value": 4,
+      "field": "T",
+      "games_value": 4,
+      "match": true,
+      "team": "l"
+    },
+    {
+      "annual_value": 503,
+      "field": "RF",
+      "games_value": 503,
+      "match": true,
+      "team": "l"
+    },
+    {
+      "annual_value": 464,
+      "field": "RA",
+      "games_value": 464,
+      "match": true,
+      "team": "l"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "m"
+    },
+    {
+      "annual_value": 63,
+      "field": "W",
+      "games_value": 63,
+      "match": true,
+      "team": "m"
+    },
+    {
+      "annual_value": 77,
+      "field": "L",
+      "games_value": 77,
+      "match": true,
+      "team": "m"
+    },
+    {
+      "annual_value": 3,
+      "field": "T",
+      "games_value": 3,
+      "match": true,
+      "team": "m"
+    },
+    {
+      "annual_value": 492,
+      "field": "RF",
+      "games_value": 492,
+      "match": true,
+      "team": "m"
+    },
+    {
+      "annual_value": 586,
+      "field": "RA",
+      "games_value": 586,
+      "match": true,
+      "team": "m"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "s"
+    },
+    {
+      "annual_value": 61,
+      "field": "W",
+      "games_value": 61,
+      "match": true,
+      "team": "s"
+    },
+    {
+      "annual_value": 80,
+      "field": "L",
+      "games_value": 80,
+      "match": true,
+      "team": "s"
+    },
+    {
+      "annual_value": 2,
+      "field": "T",
+      "games_value": 2,
+      "match": true,
+      "team": "s"
+    },
+    {
+      "annual_value": 449,
+      "field": "RF",
+      "games_value": 449,
+      "match": true,
+      "team": "s"
+    },
+    {
+      "annual_value": 568,
+      "field": "RA",
+      "games_value": 568,
+      "match": true,
+      "team": "s"
+    },
+    {
+      "annual_value": 143,
+      "field": "G",
+      "games_value": 143,
+      "match": true,
+      "team": "t"
+    },
+    {
+      "annual_value": 79,
+      "field": "W",
+      "games_value": 79,
+      "match": true,
+      "team": "t"
+    },
+    {
+      "annual_value": 62,
+      "field": "L",
+      "games_value": 62,
+      "match": true,
+      "team": "t"
+    },
+    {
+      "annual_value": 2,
+      "field": "T",
+      "games_value": 2,
+      "match": true,
+      "team": "t"
+    },
+    {
+      "annual_value": 518,
+      "field": "RF",
+      "games_value": 518,
+      "match": true,
+      "team": "t"
+    },
+    {
+      "annual_value": 439,
+      "field": "RA",
+      "games_value": 439,
+      "match": true,
+      "team": "t"
+    }
+  ],
+  "annual_values_matched": 72,
+  "finalised_october_3_urls": [
+    "https://npb.jp/scores/2026/1003/e-b-25/",
+    "https://npb.jp/scores/2026/1003/g-db-25/"
+  ],
+  "games": 858,
+  "games_by_update_date": {
+    "20261003": 2,
+    "20261004": 3,
+    "20261005": 2,
+    "20261006": 2,
+    "20261007": 1,
+    "20261008": 1
+  },
+  "games_per_team": 143,
+  "input_sha256": {
+    "observed/annual_totals.json": "a8b55d5bd6f6b098943ccdaffd0e07d9e4c2591745d90c948a709d344721b7ee",
+    "observed/game_updates.jsonl": "2b21f0fbac3999a24cd1acbf572e9db3a65a7006fe26902d84486906acd2ff54",
+    "original_games_raw.json": "dc75aff5f5f0898716539f2be8f38e0c5aa59f22c994b439c2381fb650c92cdb",
+    "provenance/acquisition.jsonl": "a4b974ae1e55d59ecffdca7537e5e11e06e498c1254aa44744bedcb6b2c5ff45"
+  },
+  "original_final_regular_games": 847,
+  "original_source_rewritten": false,
+  "postseason_included": false,
+  "raw_html_published": false,
+  "research_panel_recomputed": false,
+  "schema": "aoi-2026-regular-season-reconciliation/1",
+  "synthetic_included": false,
+  "teams": 12
+}

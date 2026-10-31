@@ -1,8 +1,8 @@
-# Chrome による PNG / SVG 出力
+# PNG / SVG export with Chromium
 
-画像出力 API は Python の `plotly` パッケージも kaleido も使わない。Plotly.js は HTML と同じ jsDelivr URL（`dragowing/plotly_cdn.py` の `PLOTLY_JS_CDN`）から取得し、各書き出し用の一時ディレクトリへコピーして `file:` URL で読み込む。CLI の `--png` も同じ `export_draw` 経路である。
+The image export API uses neither the Python `plotly` package nor kaleido. Plotly.js is fetched from the same jsDelivr URL as the HTML (`PLOTLY_JS_CDN` in `dragowing/plotly_cdn.py`), copied into a temporary directory for each export, and loaded via a `file:` URL. The CLI's `--png` uses the same `export_draw` path.
 
-元の PR #44・#43・#42 の変更は、PR 整理で同じ統合ブランチに取り込んでいる。既存の HTML の既定出力、研究記録、整数得点、正式判定器には触れない。
+The changes from the original PRs #44, #43, and #42 were brought into the same combined branch during PR cleanup. The existing default HTML output, research records, integer scores, and the official judge are not touched.
 
 ```python
 from dragowing.export import PLOTLY, export_draw, plotly_figure_content
@@ -15,28 +15,53 @@ with RenderSession(offline=True) as session:
         export_draw(PLOTLY, plotly_figure_content(fig), f"example.{fmt}", fmt, session=session)
 ```
 
-`PLOTLY` は Mermaid と同様にブラウザ側の JS で描く汎用 `DrawConfig` である。オフライン検証では環境変数 `DRAGOWING_PINNED_PLOTLY_JS` に、事前に検証済みの `plotly.min.js` を置ける。図のデータもローカルに用意する必要がある（外部 URL の地図・画像・フォント等を自動取得する機能ではない）。
+`PLOTLY` is a generic `DrawConfig` that draws with browser-side JS, like Mermaid. For offline verification, a pre-verified `plotly.min.js` can be supplied via the `DRAGOWING_PINNED_PLOTLY_JS` environment variable. The figure data must also be available locally (this is not a feature that automatically fetches maps, images, fonts, etc. from external URLs).
 
-HTML の外部タグと `--embed` も同じ jsDelivr 配布を使う（SRI / SHA-256 固定は行わない。web-ui 側は別 PR）。
+The HTML's external tag and `--embed` also use the same jsDelivr distribution (no SRI / SHA-256 pinning; the web-ui side is a separate PR).
 
-`Plotly.newPlot` の Promise 完了を待つ。PNG は図のコンテナ全体をスクリーンショットにし、SVG はローカルの `Plotly.toImage` で全レイヤーを直列化する。最初の `svg.main-svg` だけを取得すると欠落するタイトル・凡例も含める。SVG の WebGL 部分等の扱いは Plotly.js の仕様による。
+It waits for the `Plotly.newPlot` Promise to complete. PNG takes a screenshot of the whole figure container, and SVG serializes all layers with the local `Plotly.toImage`. This includes titles and legends that would be missing if only the first `svg.main-svg` were taken. Handling of WebGL parts in SVG follows the Plotly.js spec.
 
-パイプ通信は Python 標準ライブラリのみ。POSIX の Chrome/Chromium を使い、Windows のパイプは未対応。引数 `chrome=`、環境変数 `CHROME` / `CHROMIUM`、PATH の順に検索する。実行権限のないファイルもエラーとする。Kaleido / choreographer はこの API には不要である。
+Pipe communication uses only the Python standard library. It uses POSIX Chromium; Windows pipes are not supported. Automatic discovery searches `chromium`, then `chromium-browser` on PATH. It never silently falls back to Google Chrome. If Chromium is absent, image export raises an error explaining how to install or select it. HTML-only output does not require a browser.
 
-起動した Chrome には D-Bus を使わせない。子プロセスの `DBUS_SESSION_BUS_ADDRESS` と `DBUS_SYSTEM_BUS_ADDRESS` は、作らない unix ソケットへの `unix:path=` である。`connect` は `ENOENT` ですぐ戻る。`disabled:` は libdbus が知らないアドレス型で、`Unknown address type` とだけ出てからプロセスが生きたまま起動の上限まで黙ることがある。変数を消すと Chrome 自身がセッション側へ `disabled:` を書き、システムバスにはまだ繋ぐ。キーリング、crashpad、ポータル、AT-SPI も止める。図の描画に D-Bus は要らない。応答がないままプロセスが生きているときは、その旨と stderr をタイムアウトに付ける。
+Explicit selection remains backward compatible: `chrome=` takes precedence; otherwise nonempty `CHROME` and `CHROMIUM` variables are tried in that order. If an explicit selection is present, PATH defaults are not tried. An explicit Google Chrome executable is still supported for compatibility and comparison. The `Chrome` / `find_chrome` names, `chrome=` argument, and `DRAGOWING_REQUIRE_CHROME` flag remain unchanged. Files without execute permission are an error. Kaleido / choreographer are not needed for this API.
 
-`Timeouts(launch=30, load=30, ready=30, capture=15)` で各段階の上限を指定できる。通信の送信側も上限内に収め、部分書き込みを最後まで送る。起動時に `Browser.getVersion` を確認する。JSON 不正、EOF、起動失敗は例外にする。タイムアウト・取得失敗を成功や空画像として扱わない。各描画の成功・失敗のどちらでも target を閉じ、破棄イベントまで待つ。close 失敗時にはブラウザ全体を終了する。
+This standardizes browser selection, not startup timing. Launch flags, D-Bus isolation, timeouts, retry behavior, and cleanup are unchanged. Chromium can still have slow cold starts; changing the browser does not establish that a previous timeout is fixed.
 
-`RenderSession(offline=True)` は描画ページの CDP ネットワークを無効にする。既定の汎用レンダラのネットワーク動作は変えない。`MERMAID` は引き続き CDN を使うサンプル設定であり、オフライン対応の対象は `PLOTLY` である。
+The launched Chrome is not allowed to use D-Bus. The child process's `DBUS_SESSION_BUS_ADDRESS` and `DBUS_SYSTEM_BUS_ADDRESS` are `unix:path=` pointing at a unix socket that is never created, so `connect` returns immediately with `ENOENT`. `disabled:` is an address type libdbus doesn't know; it may print only `Unknown address type` and then sit silent with the process alive until the launch limit. If the variables are removed, Chrome itself writes `disabled:` for the session bus and still connects to the system bus. Keyring, crashpad, portals, and AT-SPI are also stopped. Drawing figures does not need D-Bus. When the process is alive but not responding, the timeout carries that fact and stderr.
 
-## 検証
+`Timeouts(launch=30, load=30, ready=30, capture=15)` sets the limit for each stage. The sending side of communication also stays within the limits and sends partial writes to completion. `Browser.getVersion` is checked at launch. Invalid JSON, EOF, and launch failures raise exceptions. Timeouts and capture failures are never treated as success or an empty image. The target is closed after each drawing, whether it succeeds or fails, and the destroy event is awaited. If close fails, the whole browser is shut down.
+
+`RenderSession(offline=True)` disables CDP networking for the drawing page. The default generic renderer's network behavior is unchanged. `MERMAID` remains a sample config that uses the CDN; offline support targets `PLOTLY`.
+
+## Verification
 
 ```bash
-CHROME=/path/to/chrome DRAGOWING_REQUIRE_CHROME=1 uv run --locked --python 3.14 pytest -q dragowing/tests
+CHROMIUM=/path/to/chromium DRAGOWING_REQUIRE_CHROME=1 uv run --locked --python 3.14 pytest -q dragowing/tests
 ```
 
-Chrome がない通常環境では実ブラウザのテストを理由付きで skip する。`DRAGOWING_REQUIRE_CHROME=1` のときは skip せず失敗する。Mermaid の CDN テストだけは `DRAGOWING_TEST_NETWORK=1` の明示指定が必要。
+In a normal environment without Chromium or an explicit browser override, real-browser tests are skipped with a reason. With `DRAGOWING_REQUIRE_CHROME=1` they fail instead of skipping. Only the Mermaid CDN test requires explicitly setting `DRAGOWING_TEST_NETWORK=1`.
 
-CI の専用ジョブは依存導入後、`sudo unshare --net` でネットワークを分離し、実 Chrome を必須としてパイプ・PNG/SVG テストを実行する。JUnit は `junit-chrome-export-py3.14` として保存する。通常の Python 3.11–3.15 マトリクスも維持する。
+DRAgoWing's Python 3.11–3.15 CI matrix installs a reviewed Chromium snapshot with the standard-library setup script `scripts/install_ci_chromium.py`, checks its version, and sets `CHROME` and `DRAGOWING_REQUIRE_CHROME=1` explicitly. Download, integrity, extraction or version failures stop the job; there is no fallback to the runner's preinstalled browser or Google Chrome. Local automatic discovery and production runtime dependencies are unchanged. Aoi has a separate network-isolated export job; its historical `chrome-export` identifiers remain independent of this CI setup.
 
-テストはネットワーク遮断中の同梱 JS バージョン、3 図 × 2 形式の同一 PID、PNG の寸法・CRC・展開データの非空白性、SVG の XML・タイトル・凡例・点数、target 数が増えないことを確認する。Chrome 不在・実行権限なし・起動失敗・応答なし・送信詰まり・途中終了・不正 JSON・部分書き込み・大きな応答・早着イベント・ready タイムアウト・capture 失敗後の解放と再利用も確認する。画像のバイト一致は判定基準にしない。
+### Managed CI browser provenance and first-start scope
+
+- Chromium version: **156.0.8078.0**, snapshot revision **1706520**.
+- Source commit: [`23b351114f0570483d619b05db197bbc5594dc5a`](https://chromium.googlesource.com/chromium/src/+/23b351114f0570483d619b05db197bbc5594dc5a); its `chrome/VERSION` and commit position match the snapshot's official `REVISIONS`.
+- [Official generation-pinned ZIP](https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1706520%2Fchrome-linux.zip?generation=1790642197733749&alt=media), generation `1790642197733749`, **248486630 bytes**.
+- SHA256: `6b62846a868ea3ee675f77600790877a428dfb2428c940f8eff99db1038f9815`.
+- Locally verified official metadata MD5: `gAHURDw3hLwHmZglzqJUIw==`; all ZIP CRCs passed. 483 members, 702789127 expanded bytes. This is a fixed Chromium snapshot, **not** a stable-channel release.
+
+The installer performs one ordinary archive download, archive integrity verification and safe extraction into a fresh job-owned destination. It rejects unsafe paths, duplicate members, links/special files and excess sizes, strips special permission bits, and never executes Chromium. It refuses to overwrite an existing installation. No package, system configuration, runtime dependency or privilege changes are made.
+
+The existing `--version` selection check remains; the first full browser startup is still the real test, using a fresh process/profile. There is no browser warmup, executable-tree pre-read, retry or timeout increase. The production 30-second launch budget and all existing test assertions remain unchanged. Installation naturally changes file placement/cache state, so results describe **first startup after managed installation**, not an empty OS page cache. This does not establish a fix to the earlier preinstalled-image file-page wait. The version matches the failed runner's logged version; byte identity with its executable is unverified because no historical binary hash was captured. Keep prior failure evidence separate from this provisioning condition.
+
+To prepare the same dependency without launching it:
+
+```bash
+python3 scripts/install_ci_chromium.py --destination /path/to/new/chromium-install
+```
+
+Use the returned `chrome-linux/chrome` path explicitly. The setup script does not download dependencies at library import or runtime. Updating the snapshot requires reviewing the official revision, source version, archive size/hash and regression tests together.
+
+
+The tests check, with the network cut off, the bundled JS version, the same PID across 3 figures × 2 formats, PNG dimensions, CRC, and non-blank decoded data, SVG XML, title, legend, and point count, and that the target count does not grow. They also check missing Chrome, no execute permission, launch failure, no response, a blocked send, early exit, invalid JSON, partial writes, large responses, early events, ready timeouts, and release and reuse after a capture failure. Byte equality of images is not a pass criterion.

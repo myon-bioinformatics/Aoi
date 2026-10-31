@@ -31,7 +31,7 @@
       "output": "dist/queryu_min.py",
       "api": "verified offline cache and html-snapshot/1",
       "repository": "myon-bioinformatics/QueRyu",
-      "commit": "a0fd3aa9d8891ad6ab543d30a6287a6c6dd09b07"
+      "commit": "d344dba18b442c8386e67d9be69a6974e4214ac9"
     },
     "sakanalytics": {
       "prefix": "sakanalytics",

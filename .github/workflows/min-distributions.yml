@@ -154,7 +154,7 @@ jobs:
               raise SystemExit("invalid approved distribution source SHA")
           # A rewritten PR history may no longer contain this frozen snapshot.
           # Fetch exactly the approved commit; never move the pin or checkout.
-          subprocess.run(["git", "fetch", "--depth=1", "origin", source], check=True, timeout=90)
+          subprocess.run(["git", "fetch", "--depth=1", "origin", source + ":refs/heads/aoi-frozen-distribution-source"], check=True, timeout=90)
           actual = subprocess.check_output(["git", "rev-parse", "FETCH_HEAD"], text=True, timeout=30).strip()
           if actual != source:
               raise SystemExit("frozen distribution source commit mismatch")

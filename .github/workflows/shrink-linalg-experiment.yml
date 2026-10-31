@@ -30,24 +30,22 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.14"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "0.13.3"
           enable-cache: false
-      - run: uv sync --locked --python 3.14
+          python-version: "3.15"
+      - run: uv sync --locked --python 3.15
       - name: Stand-in matches numpy on small cases and the fixture path
-        run: uv run --locked --python 3.14 pytest -q tests/test_numpy_linalg_min.py
+        run: uv run --locked --python 3.15 pytest -q tests/test_numpy_linalg_min.py
       - name: AST reachability
-        run: uv run --locked --python 3.14 python scripts/linalg_feasibility.py ast
+        run: uv run --locked --python 3.15 python scripts/linalg_feasibility.py ast
       - name: Trace real numpy call shapes on c001
-        run: uv run --locked --python 3.14 python scripts/linalg_feasibility.py trace --scope c001
+        run: uv run --locked --python 3.15 python scripts/linalg_feasibility.py trace --scope c001
       - name: Absent numpy fails on the first attribute
-        run: uv run --locked --python 3.14 python scripts/linalg_feasibility.py absent
+        run: uv run --locked --python 3.15 python scripts/linalg_feasibility.py absent
       - name: c001 paths with real numpy
-        run: uv run --locked --python 3.14 python shrink/run_linalg.py --numpy real --scope c001 reference.json
+        run: uv run --locked --python 3.15 python shrink/run_linalg.py --numpy real --scope c001 reference.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: linalg-reference
@@ -67,13 +65,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: ${{ matrix.python }}
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "0.13.3"
           enable-cache: false
+          python-version: "${{ matrix.python }}"
       - name: Install locked runtime deps except numpy
         run: uv sync --locked --no-dev --no-install-package numpy --python "${{ matrix.python }}"
       - name: numpy is not installed

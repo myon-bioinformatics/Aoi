@@ -73,8 +73,8 @@ def validate(ci, validation):
         assert f'"junit-py{version}/pytest-{version}.xml"' in ci
     assert 'build/test-results/first-start-${{ matrix.python }}.xml' in lanes[0]
     for name in ('chrome-export', 'chrome-first-start'):
-        assert f'"junit-chrome-export-py3.14/{name}-3.14.xml"' in ci
-        assert f'build/test-results/{name}-3.14.xml' in lanes[1]
+        assert f'"junit-chrome-export-py3.15/{name}-3.15.xml"' in ci
+        assert f'build/test-results/{name}-3.15.xml' in lanes[1]
     assert 'path: build/startup-context/' in lanes[2] and 'if-no-files-found: error' in lanes[2]
     assert 'build/browser-startup/*.xml' in compare and 'build/browser-startup/*.json' in compare
 
@@ -114,7 +114,7 @@ def test_every_actual_browser_lane_installs_and_gates():
     ('ci', 'test -x "$chromium"', 'test -x "$chromium"\n          cat "$chromium" > /dev/null'),
     ('ci', 'name: Test with JUnit', 'name: Test with JUnit\n        if: always()'),
     ('ci', '"junit-py3.11/first-start-3.11.xml"', '"missing.xml"'),
-    ('ci', '"junit-chrome-export-py3.14/chrome-first-start-3.14.xml"', '"missing.xml"'),
+    ('ci', '"junit-chrome-export-py3.15/chrome-first-start-3.15.xml"', '"missing.xml"'),
 ])
 def test_contract_rejects_gate_and_provenance_weakening(target, old, new):
     ci = (ROOT / '.github/workflows/ci.yml').read_text()

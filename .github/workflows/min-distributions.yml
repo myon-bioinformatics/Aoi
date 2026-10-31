@@ -25,9 +25,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          python-version: '3.12'
+          version: "0.13.3"
+          # distributions.json の "python" と一致させる再現用の固定。build_distributions.py が
+          # 記録された major.minor 以外を拒否するので、3.15 へ上げるときは dist/ を再生成して同時に更新する。
+          python-version: "3.12"
+          activate-environment: true
+          enable-cache: false
       - name: Resolve parent main and QueRyu subtree head
         id: resolved
         env:
@@ -217,7 +222,7 @@ jobs:
               if strict:
                   raise SystemExit(1)
           PY
-      - run: python -m pip install pytest
+      - run: uv pip install pytest
       - name: Exercise isolated single-file APIs
         run: python -m pytest -c pyproject.toml tests/test_distributions.py tests/test_distribution_kernels.py -q --junitxml=build/distributions-junit.xml
       - name: Preserve distribution JUnit

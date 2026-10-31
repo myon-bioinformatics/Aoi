@@ -282,11 +282,12 @@ def test_trusted_canary_bootstrap_is_immutable():
     uses = re.findall(r"^\s*(?:-\s*)?uses:\s*(\S+)", text, re.MULTILINE)
     assert uses == [
         "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
-        "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
         "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2",
         "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
     ]
-    assert "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0" in text
+    # The interpreter comes from uv (exact patch), not from a second setup action.
+    assert "actions/setup-python" not in text
+    assert 'python-version: "3.14.8"' in text
     assert "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3" in text
     assert 'version: "0.13.3"' in text
     assert "pip install" not in text

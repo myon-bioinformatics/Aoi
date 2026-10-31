@@ -1,34 +1,34 @@
-# 責務の境界: BlueProbe / QueRyu / web-ui
+# Boundaries of responsibility: BlueProbe / QueRyu / web-ui
 
-> 提案。web-ui や Aoi のコードはここでは動かさない。合意できたものから、各リポジトリで移す。
+> A proposal. web-ui and Aoi code are not moved here. Whatever is agreed is moved within each repository.
 
-| | 担うこと | 担わないこと |
+| | Responsible for | Not responsible for |
 |---|---|---|
-| **QueRyu**（Aoi/queryu） | 取得（間隔・条件付きGET・404 の記録）、キャッシュ、来歴（manifest）、データセットの書き出し | 本文の読み方（parser）、表記の判断 |
-| **BlueProbe** | 保存済み本文を**見に行く**: HTML/CSS/DOM 構造の観測、抽出、表記の正規化、報告の契約、観測証跡の形式 | 取得・キャッシュ・ネットワーク、勝敗や原因の判断 |
-| **web-ui** | Python から HTML を**出す側**: `web_ui.render_document`、共有 CSS/JS、HTML 構造の契約（contract/v1） | 外部ページの観測・抽出の方法論 |
+| **QueRyu** (Aoi/queryu) | Fetching (intervals, conditional GET, recording 404s), caching, provenance (manifest), writing datasets | How to read the body (parser), judging notation |
+| **BlueProbe** | **Looking at** saved bodies: observing HTML/CSS/DOM structure, extraction, notation normalization, the report contract, the format of observation evidence | Fetching, caching, network, judging wins/losses or causes |
+| **web-ui** | The side that **emits** HTML from Python: `web_ui.render_document`, shared CSS/JS, the HTML structure contract (contract/v1) | Methodology for observing and extracting external pages |
 
-## つなぎ目
+## Seams
 
-- QueRyu → BlueProbe: 供給元の契約（[snapshot.md](contract/v1/snapshot.md)）。QueRyu は供給元の一つ
-- BlueProbe → QueRyu / SakAnalytics: 報告の契約（[report.md](contract/v1/report.md)）
-- web-ui → BlueProbe: web-ui が出す HTML は contract/v1 の構造を持つので、BlueProbe からは「読む対象の一つ」になる
+- QueRyu → BlueProbe: the supplier contract ([snapshot.md](contract/v1/snapshot.md)). QueRyu is one supplier
+- BlueProbe → QueRyu / SakAnalytics: the report contract ([report.md](contract/v1/report.md))
+- web-ui → BlueProbe: HTML emitted by web-ui has the contract/v1 structure, so to BlueProbe it is "one of the things to read"
 
-## BlueProbe 側へ寄せたいもの（提案）
+## What we'd like to move to BlueProbe (proposal)
 
-| 今の場所 | 内容 | 提案 |
+| Current location | Contents | Proposal |
 |---|---|---|
-| web-ui `docs/evidence/*-dom.json` | 観測した DOM の証跡（`source_url`, `observed_date`, `http_response.sha256`, `region`, `raw_html` / `dom_html` / `text_content` / `inner_text` / `page_text` を並べる） | 形式の定義を BlueProbe の契約（`dom-evidence/1` など）として持つ。web-ui の証跡はその形式に従う側にする |
-| web-ui `docs/local-dom-lab.md`, `tests/integration/test_gradio_dom.py` | 描画後の `innerText` と保存 DOM の抽出結果の比較 | 「観測の比較」の考え方は BlueProbe の文書に。Gradio での配信・ブラウザ起動は web-ui に残す |
-| browser-test-kit `scripts/page_text.py` | 本文抽出 | コピーしない。固定 SHA で参照し、BlueProbe 側に比較の観測を残す |
+| web-ui `docs/evidence/*-dom.json` | Evidence of observed DOM (listing `source_url`, `observed_date`, `http_response.sha256`, `region`, `raw_html` / `dom_html` / `text_content` / `inner_text` / `page_text`) | BlueProbe holds the format definition as a contract (e.g. `dom-evidence/1`). web-ui's evidence follows that format |
+| web-ui `docs/local-dom-lab.md`, `tests/integration/test_gradio_dom.py` | Comparing rendered `innerText` with extraction results from saved DOM | The idea of "comparing observations" goes in BlueProbe's docs. Serving with Gradio and launching browsers stay in web-ui |
+| browser-test-kit `scripts/page_text.py` | Body text extraction | Don't copy. Reference it at a pinned SHA and keep the comparison observations on the BlueProbe side |
 
-web-ui に残すもの: 配信（Gradio/HTML の生成）、CSS/テーマ、HTML 構造の契約。
+What stays in web-ui: serving (generating Gradio/HTML), CSS/themes, the HTML structure contract.
 
-## 未決: 「見に行く」側の持ち主
+## Open: owner of the "looking" side
 
-`inspect_cache` は当面 DeprecationWarning を出したまま残す。
+`inspect_cache` stays for now, still emitting a DeprecationWarning.
 
-「取りに行く・見に行く」側（保存済み本文の供給、および mcp-toolcall-lab の snapshot 証跡＝`html-snapshot/1` の生成と照合）は、
-BlueProbe より QueRyu が持つほうが自然かもしれない。QueRyu はすでに取得・来歴・`Cache.snapshot()` を持つため。
-その場合 BlueProbe は「読む・観測を報告する」に絞り、供給元の契約（`docs/contract/v1/snapshot.md`）だけを持つ。
-どちらに置くかは未決（open question）。
+The "fetching and looking" side (supplying saved bodies, and generating and checking mcp-toolcall-lab's snapshot evidence = `html-snapshot/1`)
+may be more naturally owned by QueRyu than BlueProbe, since QueRyu already has fetching, provenance, and `Cache.snapshot()`.
+In that case BlueProbe narrows to "reading and reporting observations" and holds only the supplier contract (`docs/contract/v1/snapshot.md`).
+Where to put it is undecided (open question).

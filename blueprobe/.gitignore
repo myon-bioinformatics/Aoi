@@ -1,5 +1,6 @@
 .venv/
 .test-deps/
+.vendor-dispatch-tools/
 __pycache__/
 build/
 .pytest_cache/

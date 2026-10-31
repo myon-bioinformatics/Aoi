@@ -1,10 +1,11 @@
 # CI
 
-実行定義は `.github/workflows/ci.yml`。
+The run definition is `.github/workflows/ci.yml`.
 
-- **Aoi**: 実行時に `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main` で main の SHA を解決し、公開ページの repository id を照合してから `.test-deps/aoi` に checkout する。解決した SHA はジョブサマリに残す。`workflow_dispatch` の `aoi_ref` で ref を上書きできる。コミット SHA はファイルに固定しない。
-- **mcp-toolcall-lab**: `LAB_SHA` は、過去に作ったパターン集合を検証するためのスナップショット。SHA で取得し、検証用テストデータとして使う。この照合はどのイベントでも失敗にする。
-- **ソースハッシュ**: 浮動のソースハッシュ照合を足す場合、`pull_request` では報告のみ、`main` への push と `schedule` では失敗にする。Aoi のソースハッシュは記録しない。
-- **JUnit XML**: `pytest -q --junitxml=reports/junit.xml`、artifact 名 `junit-py<python>`、保持 14 日。集約は組織親の `reusable-junit-identity.yml`。
-- **lint**: ruff は足さない。`python -m compileall` で構文だけ確かめる。
-- **実行時**: 標準ライブラリのみ。依存の上限は置かない。
+- **Aoi**: at run time, resolves main's SHA with `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main`, checks the repository id on the public page, then checks out to `.test-deps/aoi`. The resolved SHA is left in the job summary. The ref can be overridden with `aoi_ref` in `workflow_dispatch`. Commit SHAs are not pinned in files.
+- **Parent vendor dispatch**: removed. `vendor.lock.json` had no registered rows, so the lock and the `vendor-dispatch` job that verified it (`pilot/vendor_dispatch.py --manifest vendor.lock.json`) were both removed.
+- **mcp-toolcall-lab**: `LAB_SHA` is a snapshot for verifying past patterns. It is fetched by SHA and used as verification test data. This check fails on every event.
+- **Source hashes**: if a floating source-hash check is added, it only reports on `pull_request` and fails on push to `main` and on `schedule`. Aoi's source hashes are not recorded.
+- **JUnit XML**: `pytest -q --junitxml=reports/junit.xml`, artifact name `junit-py<python>`, retained 14 days. Aggregation is the org parent's `reusable-junit-identity.yml`.
+- **lint**: ruff is not added. `python -m compileall` checks syntax only.
+- **Runtime**: standard library only. No upper bounds on dependencies.

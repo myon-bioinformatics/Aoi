@@ -232,7 +232,7 @@ jobs:
           fi
           node_major=$(node -p "process.versions.node.split('.')[0]")
           if [[ "$node_major" -lt 24 ]]; then
-            echo "node ${node_major} is older than 24" >&2
+            echo "node ${node_major} is older than 26" >&2
             exit 1
           fi
           python - <<'PY'

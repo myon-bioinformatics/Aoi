@@ -133,8 +133,7 @@ Cycle data (`cycles/`) and [PythDRagoras](https://github.com/myon-bioinformatics
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
 git -C .test-deps/aoi checkout main
-AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
-  uv run --locked pytest -q --junitxml=reports/junit.xml
+AOI_ROOT=$PWD/.test-deps/aoi uv run --locked pytest -q --junitxml=reports/junit.xml
 ```
 
 - CLIs take paths such as `--cycle-dir` explicitly. Tests receive Aoi only through `AOI_ROOT` and ask Aoi's `aoi_paths.py` for data locations.
@@ -142,7 +141,7 @@ AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/pythdragoras \
 - The only runtime dependency is polars. ortools is optional; exact solving runs only when `season-requirements.txt` is installed, and otherwise those tests are skipped.
 - In addition, tests use Aoi at `AOI_ROOT`.
   - Cycle data in `cycles/`.
-  - PythDRagoras's `propositions`: `proposition_seed_audit.py` and `synthetic_rule_discovery.py` (`pythdragoras` on `PYTHONPATH`).
+  - PythDRagoras's `propositions`: `proposition_seed_audit.py` and `synthetic_rule_discovery.py` (`pythdragoras` is put on the path by `conftest.py`, not by `PYTHONPATH`).
   - `tests/test_no_sibling_imports.py` confirms that no other Aoi sibling subprojects or `scripts/` are used (`propositions` is the known exception).
 
 CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. The default ref is `refs/heads/main`, overridable via `aoi_ref` in `workflow_dispatch`. The resolved SHA is left in the job summary. pytest is `uv run pytest`.

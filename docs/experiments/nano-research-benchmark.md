@@ -4,7 +4,7 @@ This opt-in Linux experiment runs the actual
 `pythdragoras/pythdragoras.py:cumulative_test` implementation with Polars. It is
 not another stdlib replacement, nor a benchmark of the whole Aoi research suite.
 Existing dependencies, lock, full development/oracle tests and CI remain intact.
-Parent PR #195 is separate and stays Draft.
+Parent PR #195 is separate; this experiment does not depend on its review state.
 
 ## Reproduce
 

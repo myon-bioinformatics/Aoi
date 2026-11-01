@@ -504,11 +504,11 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1007,
+      "attribute_uses": 1009,
       "attributes": {
         "Boolean": 14,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 258,
+        "DataFrame": 259,
         "Expr": 13,
         "Float32": 1,
         "Float64": 70,
@@ -526,7 +526,7 @@
         "first": 4,
         "int_range": 1,
         "len": 8,
-        "lit": 33,
+        "lit": 34,
         "max_horizontal": 1,
         "read_csv": 1,
         "read_ndjson": 22,
@@ -651,6 +651,16 @@
           "files": 6,
           "import_sites": 11
         },
+        "scripts": {
+          "attribute_uses": 2,
+          "attributes": {
+            "DataFrame": 1,
+            "lit": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        },
         "tests": {
           "attribute_uses": 6,
           "attributes": {
@@ -691,8 +701,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 44,
-      "import_sites": 49
+      "files": 45,
+      "import_sites": 50
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -2981,6 +2991,17 @@
       "file": "scripts/legacy_numpy_min_parity.py",
       "import_sites": 1,
       "package": "pytest",
+      "tree": "scripts"
+    },
+    {
+      "attributes": {
+        "DataFrame": 1,
+        "lit": 1
+      },
+      "dynamic_lines": [],
+      "file": "scripts/nano/workload.py",
+      "import_sites": 1,
+      "package": "polars",
       "tree": "scripts"
     },
     {

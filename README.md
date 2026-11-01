@@ -57,6 +57,13 @@ python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--colum
 - Condition overlap (`overlap.py`) uses `propositions` and `rule_search` from [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras), and the four-forms table (`forms.py`) uses `ask` (registration status) from [QueRyu](https://github.com/myon-bioinformatics/QueRyu). Put them on `PYTHONPATH` to run (same as "Tests" below).
 - This directory is the contents of the `dragowing` package, so run `python -m dragowing` from a parent where the directory appears as `dragowing` (see the example under "Tests").
 
+## Optional HTML-only environment
+
+[Prepare the pinned HTML-only environment](docs/nano-environment.md) with the
+shared parent exporter. It keeps the existing stdlib overlap path and real
+Markdown dependency; native/image-export modes and the full test environment
+remain separate and unchanged.
+
 ## Making only the overlap computation lightweight
 
 `load_overlap(path, conds, backend="stdlib")` or `--overlap-backend stdlib` selects

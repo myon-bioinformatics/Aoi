@@ -38,7 +38,7 @@ def test_vendor_dispatch_verifies_the_lock_without_record():
     assert SETUP_NODE in job
     assert SETUP_PYTHON in job
     assert SETUP_UV in job
-    assert 'node-version: "24"' in job
+    assert 'node-version: "26"' in job
     assert 'python-version: "3.12"' in job
     assert "git ls-remote https://github.com/myon-bioinformatics/myon-bioinformatics refs/heads/main" in job
     assert 'PARENT_REPOSITORY_ID: "638801160"' in job

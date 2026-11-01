@@ -85,17 +85,16 @@ Cycle data (`cycles/`), `scripts/`, and SakAnalytics stay in Aoi. They are not c
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
 git -C .test-deps/aoi checkout main
-AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
-  uv run pytest -q --junitxml=reports/junit.xml
+AOI_ROOT=$PWD/.test-deps/aoi uv run pytest -q --junitxml=reports/junit.xml
 ```
 
 CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. A ref can be given via `aoi_ref` in `workflow_dispatch`. The resolved SHA is left in the job summary.
 
-- Tests receive Aoi only through `AOI_ROOT` and ask Aoi's `aoi_paths.py` for data locations. No `aoi_paths.py` is kept in this repository.
+- Tests receive Aoi only through `AOI_ROOT` (the one env var CI sets). `conftest.py` adds the `sakanalytics` path from it, and `PYTHONPATH` is not set by hand. Tests ask Aoi's `aoi_paths.py` for data locations. No `aoi_paths.py` is kept in this repository.
 - If `AOI_ROOT` doesn't point to Aoi, pytest stops at the start and gives the reason.
 - The only runtime dependencies are polars and numpy (ortools is not used).
 - In addition, tests use Aoi at `AOI_ROOT`.
-  - SakAnalytics: `tests/test_propositions.py:195` (`sakanalytics` on `PYTHONPATH`).
+  - SakAnalytics: `tests/test_propositions.py:195` (`sakanalytics`, put on the path by `conftest.py`).
   - Aoi's `scripts/`: `tests/test_c001_replay_compare.py:7` (`compare_c001_replay`) and `tests/test_c001_exploratory_candidates.py:14` (`check_c001_exploratory_candidates.py`).
   - `tests/test_no_sibling_imports.py` confirms that no other Aoi sibling subprojects or `scripts/` are used (the three above are known exceptions).
 

@@ -59,8 +59,6 @@ jobs:
           cd research
           uv sync --frozen
       - name: Replay questions and sets from saved inputs without fetching data
-        env:
-          UV_OFFLINE: "true"
         run: |
           set -o pipefail
           python -S scripts/run_c001_replay_stage.py replay --audit "$AUDIT_DIR" 2>&1 | tee "$AUDIT_DIR/replay.log"

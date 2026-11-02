@@ -3,17 +3,17 @@
   "files": [
     {
       "repository": "myon-bioinformatics/Aoi",
-      "ref": "70c08f29c2142f78aad63507f2d09915d6909e21",
-      "commit": "70c08f29c2142f78aad63507f2d09915d6909e21",
+      "ref": "827387a2c9339edd45b3ee2fc9d18120695166a0",
+      "commit": "827387a2c9339edd45b3ee2fc9d18120695166a0",
       "source": "LICENSE",
       "destination": "vendor/aoi-LICENSE",
       "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
       "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
     },
     {
-      "repository": "myon-bioinformatics/myon-bioinformatics",
-      "ref": "1f6f1e345f640827703e2872151a73b4cbdfd382",
-      "commit": "1f6f1e345f640827703e2872151a73b4cbdfd382",
+      "repository": "myon-bioinformatics/Aoi",
+      "ref": "827387a2c9339edd45b3ee2fc9d18120695166a0",
+      "commit": "827387a2c9339edd45b3ee2fc9d18120695166a0",
       "source": "vendor/py_launch.cjs",
       "destination": "vendor/py_launch.cjs",
       "blob_sha": "4a35b158b4a4cbd3a5d672ded1337a138a44bbd2",

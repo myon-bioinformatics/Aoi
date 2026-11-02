@@ -1,0 +1,42 @@
+name: Nano research environment comparison
+on:
+  pull_request:
+    paths:
+      - 'scripts/nano/**'
+      - 'tests/test_nano_benchmark.py'
+      - 'pythdragoras/pythdragoras.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/nano-benchmark.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: 'latest'
+          enable-cache: false
+          python-version: '3.12'
+      - name: Compare independent locked environments with fresh caches
+        run: python scripts/nano/benchmark.py --output "$RUNNER_TEMP/nano-comparison"
+      - name: Independent oracle and existing research tests in full development environment
+        run: |
+          "$RUNNER_TEMP/nano-comparison/development/venv/bin/python" -m unittest discover -s tests -p test_nano_benchmark.py
+          "$RUNNER_TEMP/nano-comparison/development/venv/bin/python" -m pytest -x -q pythdragoras/tests/test_pythdragoras.py
+      - name: Upload measurements and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nano-comparison
+          path: |
+            ${{ runner.temp }}/nano-comparison/result.json
+            ${{ runner.temp }}/nano-comparison/*/requirements.txt
+            ${{ runner.temp }}/nano-comparison/*/*.log
+          if-no-files-found: warn

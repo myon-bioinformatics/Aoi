@@ -64,3 +64,5 @@ The list is checked by a test (`nagoyaction/tests/test_docs_masters.py`): a file
 重なり計算の軽量経路: [DRAgoWing の backend 契約・検証・測定](../dragowing/docs/overlap-stdlib.md)。明示指定時のみ有効。
 
 ブラウザ起動の切り分け: [Chrome / Chromium の検証手順](diagnostics/browser-startup-validation.md)。検証専用で、マスターファイルではありません。
+
+機能別の研究環境比較: [固定 lock による導入・出力一致・資源計測](experiments/nano-research-benchmark.md)。限定した機能の実験であり、マスターファイルではありません。

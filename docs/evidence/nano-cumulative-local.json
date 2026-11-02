@@ -1,0 +1,682 @@
+{
+  "schema": "aoi-nano-benchmark/1",
+  "input_sha256": {
+    "uv.lock": "c7b36d70d9ae8f47dfbd77570c3901f6d14114eefa9430e1a624b46343f8a73d",
+    "pyproject.toml": "7f4033fcce6e113fcdf0eb74962f4ec9bc7083f83831ff171977eced550e2495"
+  },
+  "source_commit": "385e14a09ad56b69c57ec1cbae04c16299d387c5",
+  "workload_sha256": "fda43026d4a8d361f402225bf12dfafcd7d39502f9beac58ef01ec56389e2023",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.39",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "uv": "uv 0.13.4 (x86_64-unknown-linux-gnu)",
+  "workers": 4,
+  "repeats": 3,
+  "environments": {
+    "feature": {
+      "requirements_sha256": "83ab4ef65d5998e05755ddd71e742561a02abf9b8a5d0ba81d47b14c645d8a47",
+      "install_seconds": 13.020680887013441,
+      "installed_bytes": 191678259,
+      "startup_workload_seconds_median": 0.10944598699279595,
+      "single": [
+        {
+          "wall_seconds": 0.3554953949933406,
+          "sum_resident_bytes_at_barrier": 82935808,
+          "process_peak_rss_bytes": [
+            82493440
+          ],
+          "cases": {
+            "bad-type": {
+              "error": {
+                "message": "`sum` operation not supported for dtype `str`",
+                "type": "InvalidOperationError"
+              },
+              "output": null
+            },
+            "empty": {
+              "error": null,
+              "output": []
+            },
+            "missing-column": {
+              "error": {
+                "message": "unable to find column \"W\"; valid columns: [\"team\", \"team_name\", \"L\", \"pythag_fixed\", \"pythag_var\"]\n\nDid you mean \"L\"?",
+                "type": "ColumnNotFoundError"
+              },
+              "output": null
+            },
+            "valid": {
+              "error": null,
+              "output": [
+                {
+                  "excess_wins": -14.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.010201734437134726,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -2.5689154519615083
+                },
+                {
+                  "excess_wins": 4.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.604672039565806,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": 0.5176936354326797
+                },
+                {
+                  "excess_wins": -8.0,
+                  "model": "var",
+                  "p_two_sided": 0.13603712811414367,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -1.4907119849998598
+                },
+                {
+                  "excess_wins": -4.400000000000006,
+                  "model": "var",
+                  "p_two_sided": 0.5659414553281163,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": -0.5740389334947211
+                }
+              ]
+            }
+          }
+        },
+        {
+          "wall_seconds": 0.10944598699279595,
+          "sum_resident_bytes_at_barrier": 75894784,
+          "process_peak_rss_bytes": [
+            75661312
+          ],
+          "cases": {
+            "bad-type": {
+              "error": {
+                "message": "`sum` operation not supported for dtype `str`",
+                "type": "InvalidOperationError"
+              },
+              "output": null
+            },
+            "empty": {
+              "error": null,
+              "output": []
+            },
+            "missing-column": {
+              "error": {
+                "message": "unable to find column \"W\"; valid columns: [\"team\", \"team_name\", \"L\", \"pythag_fixed\", \"pythag_var\"]\n\nDid you mean \"L\"?",
+                "type": "ColumnNotFoundError"
+              },
+              "output": null
+            },
+            "valid": {
+              "error": null,
+              "output": [
+                {
+                  "excess_wins": -14.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.010201734437134726,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -2.5689154519615083
+                },
+                {
+                  "excess_wins": 4.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.604672039565806,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": 0.5176936354326797
+                },
+                {
+                  "excess_wins": -8.0,
+                  "model": "var",
+                  "p_two_sided": 0.13603712811414367,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -1.4907119849998598
+                },
+                {
+                  "excess_wins": -4.400000000000006,
+                  "model": "var",
+                  "p_two_sided": 0.5659414553281163,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": -0.5740389334947211
+                }
+              ]
+            }
+          }
+        },
+        {
+          "wall_seconds": 0.10695555500569753,
+          "sum_resident_bytes_at_barrier": 76238848,
+          "process_peak_rss_bytes": [
+            76005376
+          ],
+          "cases": {
+            "bad-type": {
+              "error": {
+                "message": "`sum` operation not supported for dtype `str`",
+                "type": "InvalidOperationError"
+              },
+              "output": null
+            },
+            "empty": {
+              "error": null,
+              "output": []
+            },
+            "missing-column": {
+              "error": {
+                "message": "unable to find column \"W\"; valid columns: [\"team\", \"team_name\", \"L\", \"pythag_fixed\", \"pythag_var\"]\n\nDid you mean \"L\"?",
+                "type": "ColumnNotFoundError"
+              },
+              "output": null
+            },
+            "valid": {
+              "error": null,
+              "output": [
+                {
+                  "excess_wins": -14.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.010201734437134726,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -2.5689154519615083
+                },
+                {
+                  "excess_wins": 4.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.604672039565806,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": 0.5176936354326797
+                },
+                {
+                  "excess_wins": -8.0,
+                  "model": "var",
+                  "p_two_sided": 0.13603712811414367,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -1.4907119849998598
+                },
+                {
+                  "excess_wins": -4.400000000000006,
+                  "model": "var",
+                  "p_two_sided": 0.5659414553281163,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": -0.5740389334947211
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "parallel": {
+        "wall_seconds": 0.15272322899545543,
+        "sum_resident_bytes_at_barrier": 304283648,
+        "process_peak_rss_bytes": [
+          76398592,
+          75907072,
+          76353536,
+          74625024
+        ],
+        "cases": {
+          "bad-type": {
+            "error": {
+              "message": "`sum` operation not supported for dtype `str`",
+              "type": "InvalidOperationError"
+            },
+            "output": null
+          },
+          "empty": {
+            "error": null,
+            "output": []
+          },
+          "missing-column": {
+            "error": {
+              "message": "unable to find column \"W\"; valid columns: [\"team\", \"team_name\", \"L\", \"pythag_fixed\", \"pythag_var\"]\n\nDid you mean \"L\"?",
+              "type": "ColumnNotFoundError"
+            },
+            "output": null
+          },
+          "valid": {
+            "error": null,
+            "output": [
+              {
+                "excess_wins": -14.0,
+                "model": "fixed",
+                "p_two_sided": 0.010201734437134726,
+                "seasons": 1,
+                "team": "B",
+                "team_name": "Beta",
+                "z": -2.5689154519615083
+              },
+              {
+                "excess_wins": 4.0,
+                "model": "fixed",
+                "p_two_sided": 0.604672039565806,
+                "seasons": 2,
+                "team": "A",
+                "team_name": "Alpha",
+                "z": 0.5176936354326797
+              },
+              {
+                "excess_wins": -8.0,
+                "model": "var",
+                "p_two_sided": 0.13603712811414367,
+                "seasons": 1,
+                "team": "B",
+                "team_name": "Beta",
+                "z": -1.4907119849998598
+              },
+              {
+                "excess_wins": -4.400000000000006,
+                "model": "var",
+                "p_two_sided": 0.5659414553281163,
+                "seasons": 2,
+                "team": "A",
+                "team_name": "Alpha",
+                "z": -0.5740389334947211
+              }
+            ]
+          }
+        }
+      },
+      "status": "measured",
+      "cache_bytes_after_install": 192389348,
+      "packages": [
+        {
+          "name": "polars",
+          "version": "2.0.0"
+        },
+        {
+          "name": "polars-runtime-32",
+          "version": "2.0.0"
+        }
+      ],
+      "interpreter_startup_seconds": [
+        0.010924151007202454,
+        0.00969635600631591,
+        0.009893317008391023
+      ]
+    },
+    "development": {
+      "requirements_sha256": "47b2571a299da0344409922a59a8340788feeeb7508237701559eddffe7debd0",
+      "install_seconds": 14.017774973995984,
+      "installed_bytes": 265930735,
+      "startup_workload_seconds_median": 0.11304818300413899,
+      "single": [
+        {
+          "wall_seconds": 0.4164064020005753,
+          "sum_resident_bytes_at_barrier": 81612800,
+          "process_peak_rss_bytes": [
+            81334272
+          ],
+          "cases": {
+            "bad-type": {
+              "error": {
+                "message": "`sum` operation not supported for dtype `str`",
+                "type": "InvalidOperationError"
+              },
+              "output": null
+            },
+            "empty": {
+              "error": null,
+              "output": []
+            },
+            "missing-column": {
+              "error": {
+                "message": "unable to find column \"W\"; valid columns: [\"team\", \"team_name\", \"L\", \"pythag_fixed\", \"pythag_var\"]\n\nDid you mean \"L\"?",
+                "type": "ColumnNotFoundError"
+              },
+              "output": null
+            },
+            "valid": {
+              "error": null,
+              "output": [
+                {
+                  "excess_wins": -14.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.010201734437134726,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -2.5689154519615083
+                },
+                {
+                  "excess_wins": 4.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.604672039565806,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": 0.5176936354326797
+                },
+                {
+                  "excess_wins": -8.0,
+                  "model": "var",
+                  "p_two_sided": 0.13603712811414367,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -1.4907119849998598
+                },
+                {
+                  "excess_wins": -4.400000000000006,
+                  "model": "var",
+                  "p_two_sided": 0.5659414553281163,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": -0.5740389334947211
+                }
+              ]
+            }
+          }
+        },
+        {
+          "wall_seconds": 0.1072354810021352,
+          "sum_resident_bytes_at_barrier": 79015936,
+          "process_peak_rss_bytes": [
+            78745600
+          ],
+          "cases": {
+            "bad-type": {
+              "error": {
+                "message": "`sum` operation not supported for dtype `str`",
+                "type": "InvalidOperationError"
+              },
+              "output": null
+            },
+            "empty": {
+              "error": null,
+              "output": []
+            },
+            "missing-column": {
+              "error": {
+                "message": "unable to find column \"W\"; valid columns: [\"team\", \"team_name\", \"L\", \"pythag_fixed\", \"pythag_var\"]\n\nDid you mean \"L\"?",
+                "type": "ColumnNotFoundError"
+              },
+              "output": null
+            },
+            "valid": {
+              "error": null,
+              "output": [
+                {
+                  "excess_wins": -14.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.010201734437134726,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -2.5689154519615083
+                },
+                {
+                  "excess_wins": 4.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.604672039565806,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": 0.5176936354326797
+                },
+                {
+                  "excess_wins": -8.0,
+                  "model": "var",
+                  "p_two_sided": 0.13603712811414367,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -1.4907119849998598
+                },
+                {
+                  "excess_wins": -4.400000000000006,
+                  "model": "var",
+                  "p_two_sided": 0.5659414553281163,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": -0.5740389334947211
+                }
+              ]
+            }
+          }
+        },
+        {
+          "wall_seconds": 0.11304818300413899,
+          "sum_resident_bytes_at_barrier": 75231232,
+          "process_peak_rss_bytes": [
+            74895360
+          ],
+          "cases": {
+            "bad-type": {
+              "error": {
+                "message": "`sum` operation not supported for dtype `str`",
+                "type": "InvalidOperationError"
+              },
+              "output": null
+            },
+            "empty": {
+              "error": null,
+              "output": []
+            },
+            "missing-column": {
+              "error": {
+                "message": "unable to find column \"W\"; valid columns: [\"team\", \"team_name\", \"L\", \"pythag_fixed\", \"pythag_var\"]\n\nDid you mean \"L\"?",
+                "type": "ColumnNotFoundError"
+              },
+              "output": null
+            },
+            "valid": {
+              "error": null,
+              "output": [
+                {
+                  "excess_wins": -14.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.010201734437134726,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -2.5689154519615083
+                },
+                {
+                  "excess_wins": 4.0,
+                  "model": "fixed",
+                  "p_two_sided": 0.604672039565806,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": 0.5176936354326797
+                },
+                {
+                  "excess_wins": -8.0,
+                  "model": "var",
+                  "p_two_sided": 0.13603712811414367,
+                  "seasons": 1,
+                  "team": "B",
+                  "team_name": "Beta",
+                  "z": -1.4907119849998598
+                },
+                {
+                  "excess_wins": -4.400000000000006,
+                  "model": "var",
+                  "p_two_sided": 0.5659414553281163,
+                  "seasons": 2,
+                  "team": "A",
+                  "team_name": "Alpha",
+                  "z": -0.5740389334947211
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "parallel": {
+        "wall_seconds": 0.13685968400386628,
+        "sum_resident_bytes_at_barrier": 305094656,
+        "process_peak_rss_bytes": [
+          76177408,
+          75833344,
+          75943936,
+          75722752
+        ],
+        "cases": {
+          "bad-type": {
+            "error": {
+              "message": "`sum` operation not supported for dtype `str`",
+              "type": "InvalidOperationError"
+            },
+            "output": null
+          },
+          "empty": {
+            "error": null,
+            "output": []
+          },
+          "missing-column": {
+            "error": {
+              "message": "unable to find column \"W\"; valid columns: [\"team\", \"team_name\", \"L\", \"pythag_fixed\", \"pythag_var\"]\n\nDid you mean \"L\"?",
+              "type": "ColumnNotFoundError"
+            },
+            "output": null
+          },
+          "valid": {
+            "error": null,
+            "output": [
+              {
+                "excess_wins": -14.0,
+                "model": "fixed",
+                "p_two_sided": 0.010201734437134726,
+                "seasons": 1,
+                "team": "B",
+                "team_name": "Beta",
+                "z": -2.5689154519615083
+              },
+              {
+                "excess_wins": 4.0,
+                "model": "fixed",
+                "p_two_sided": 0.604672039565806,
+                "seasons": 2,
+                "team": "A",
+                "team_name": "Alpha",
+                "z": 0.5176936354326797
+              },
+              {
+                "excess_wins": -8.0,
+                "model": "var",
+                "p_two_sided": 0.13603712811414367,
+                "seasons": 1,
+                "team": "B",
+                "team_name": "Beta",
+                "z": -1.4907119849998598
+              },
+              {
+                "excess_wins": -4.400000000000006,
+                "model": "var",
+                "p_two_sided": 0.5659414553281163,
+                "seasons": 2,
+                "team": "A",
+                "team_name": "Alpha",
+                "z": -0.5740389334947211
+              }
+            ]
+          }
+        }
+      },
+      "status": "measured",
+      "cache_bytes_after_install": 271719636,
+      "packages": [
+        {
+          "name": "anyio",
+          "version": "4.15.1"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.10.19"
+        },
+        {
+          "name": "coverage",
+          "version": "7.16.2"
+        },
+        {
+          "name": "h11",
+          "version": "0.16.0"
+        },
+        {
+          "name": "httpcore",
+          "version": "1.0.9"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.3.1"
+        },
+        {
+          "name": "markdown",
+          "version": "3.11.2"
+        },
+        {
+          "name": "numpy",
+          "version": "2.5.4"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.7.0"
+        },
+        {
+          "name": "polars",
+          "version": "2.0.0"
+        },
+        {
+          "name": "polars-runtime-32",
+          "version": "2.0.0"
+        },
+        {
+          "name": "pygments",
+          "version": "2.21.0"
+        },
+        {
+          "name": "pytest",
+          "version": "9.1.1"
+        },
+        {
+          "name": "selectolax",
+          "version": "1.0.1"
+        },
+        {
+          "name": "typing-extensions",
+          "version": "4.16.0"
+        }
+      ],
+      "interpreter_startup_seconds": [
+        0.011394238987122662,
+        0.011197288011317141,
+        0.010927929994068108
+      ]
+    }
+  },
+  "equivalent": true,
+  "inputs_unchanged": true
+}

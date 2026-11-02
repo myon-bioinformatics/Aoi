@@ -3,6 +3,10 @@
 c001 全体の SVD はこのファイルでは走らせない。
 """
 import importlib.util
+import ast
+import copy
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -200,7 +204,9 @@ def test_min_refuses_when_numpy_is_installed(tmp_path):
     assert "numpy が入っている" in proc.stderr
 
 
-def test_fixture_code_paths_match_numpy(tmp_path):
+@pytest.fixture(scope="module", params=["auto", "stdlib"])
+def fixture_payloads(tmp_path_factory, request):
+    tmp_path = tmp_path_factory.mktemp("linalg-" + request.param)
     script = str(ROOT / "shrink" / "run_linalg.py")
     real = tmp_path / "real.json"
     got = tmp_path / "got.json"
@@ -212,6 +218,7 @@ def test_fixture_code_paths_match_numpy(tmp_path):
     second = subprocess.run(
         [sys.executable, script, "--numpy", "min", "--allow-installed", "--scope", "fixture", str(got)],
         cwd=ROOT, capture_output=True, text=True, check=False,
+        env={**os.environ, "NUMPY_MIN_PURE": "1" if request.param == "stdlib" else ""},
     )
     assert second.returncode == 0, second.stderr
     assert second.stdout.strip().endswith("numpy_linalg_min.py") or "numpy_linalg_min.py" in second.stdout
@@ -222,3 +229,102 @@ def test_fixture_code_paths_match_numpy(tmp_path):
     assert compared.returncode == 0, compared.stdout + compared.stderr
 
 
+
+    return json.loads(real.read_text()), json.loads(got.read_text())
+
+
+def _harness():
+    spec = importlib.util.spec_from_file_location("test_run_linalg", ROOT / "shrink" / "run_linalg.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_fixture_code_paths_match_numpy(fixture_payloads):
+    real, mini = fixture_payloads
+    harness = _harness()
+    assert harness.compare(real, mini) == []
+    for consumer, operations in harness.REQUIRED_CALLS.items():
+        r = real["backend_evidence"]["consumers"][consumer]
+        m = mini["backend_evidence"]["consumers"][consumer]
+        assert r["identity"]["kind"] == "real"
+        assert r["identity"]["sha256"] != m["identity"]["sha256"]
+        for op in operations:
+            assert r["calls"][op] > 0 and m["calls"][op] > 0
+    assert mini["backend_evidence"]["consumers"]["suggest"]["identity"]["file"].endswith("queryu/vendor/aoi/shrink/numpy_min.py")
+
+
+@pytest.mark.parametrize("damage", ["same-real", "same-min", "missing", "missing-consumer", "zero-call", "missing-call", "bool-call", "fake-kind", "fake-hash", "fake-module", "fake-mini-module", "fake-mini-version", "wrong-suggest"])
+def test_compare_rejects_invalid_execution_evidence(fixture_payloads, damage):
+    real, mini = copy.deepcopy(fixture_payloads)
+    if damage == "same-real":
+        mini = copy.deepcopy(real)
+    elif damage == "same-min":
+        real = copy.deepcopy(mini)
+    elif damage == "missing":
+        del mini["backend_evidence"]
+    elif damage == "missing-consumer":
+        del mini["backend_evidence"]["consumers"]["suggest"]
+    else:
+        row = mini["backend_evidence"]["consumers"]["suggest"]
+        if damage == "zero-call":
+            row["calls"]["linalg.svd"] = 0
+        elif damage == "missing-call":
+            del row["calls"]["linalg.svd"]
+        elif damage == "bool-call":
+            row["calls"]["linalg.svd"] = True
+        elif damage == "fake-kind":
+            row["identity"]["kind"] = "real"
+        elif damage == "fake-hash":
+            row["identity"]["sha256"] = "0" * 64
+        elif damage == "fake-module":
+            real["backend_evidence"]["consumers"]["suggest"]["identity"]["module"] = "queryu_numpy_min"
+        elif damage == "fake-mini-module":
+            row["identity"]["module"] = "unrelated"
+        elif damage == "fake-mini-version":
+            row["identity"]["version"] = ""
+        elif damage == "wrong-suggest":
+            row["identity"] = copy.deepcopy(mini["backend_evidence"]["consumers"]["harness"]["identity"])
+    assert _harness().compare(real, mini)
+
+
+@pytest.mark.parametrize("loader", ["_load_numpy_metadata", "_load_numpy_min_fake", "_load_numpy_min"])
+def test_ast_does_not_infer_numpy_from_loader_name(loader):
+    tree = ast.parse(f"def {loader}(): return object()\nnp = {loader}()\ndef run(): return np.linalg.svd([])\n")
+    module = lf._Module(Path("unrelated.py"), tree)
+    assert not module.numpy_aliases
+
+
+def test_ast_keeps_ordinary_numpy_aliases():
+    module = lf._Module(Path("ordinary.py"), ast.parse("import numpy as num\nfrom numpy.linalg import svd as decompose\n"))
+    assert module.numpy_aliases == {"num"}
+    assert module.numpy_names == {"decompose": "linalg.svd"}
+
+
+def test_real_collection_rebinds_production_suggest_and_restores_it(monkeypatch):
+    harness = _harness()
+    harness._prepare("real", allow_installed=True)
+    import suggest
+    import littlebit_prune
+    original = suggest.np
+    assert original is not np
+    observed = {}
+    def check(scope, backend, lp, rs, module):
+        observed["suggest"] = module.np._source
+        observed["littlebit"] = lp.np._source
+        raise RuntimeError("stop before numerical work")
+    monkeypatch.setattr(harness, "_collect", check)
+    with pytest.raises(RuntimeError, match="stop before"):
+        harness.collect("fixture", "real")
+    assert observed == {"suggest": np, "littlebit": np}
+    assert suggest.np is original
+    assert littlebit_prune.np is np
+
+
+def test_ast_rejects_decoy_loader_with_supported_names_in_dead_code():
+    tree = ast.parse((ROOT / "queryu" / "ask" / "suggest.py").read_text())
+    loader = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_load_numpy_min")
+    loader.body = [ast.If(test=ast.Constant(False), body=loader.body, orelse=[]),
+                   ast.Return(value=ast.Call(func=ast.Name(id="object", ctx=ast.Load()), args=[], keywords=[]))]
+    assert not lf._vendored_numpy_loader(tree)
+    assert not lf._Module(Path("decoy.py"), tree).numpy_aliases

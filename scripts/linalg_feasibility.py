@@ -13,8 +13,7 @@ ast はクラスのメソッド、``self.method``、``import mod as alias``、``
 shrink_module.analyze はモジュール直下の関数と ``mod.func`` だけなので、suggest.Index の svd を落とす。
 
 trace は本物の numpy の svd / lstsq / pinv / norm / einsum を包み、実際の shape と時間を出す。
-absent は中身のない numpy を先に入れ、最初に足りない属性のトレースバックを出して終了する
-（足りない numpy 属性なら終了コード 0）。
+absent は使えない numpy を先に入れ、製品の QueRyu Index が numpy に触れず動くことを確かめる。
 """
 from __future__ import annotations
 
@@ -112,6 +111,36 @@ def _attr_chain(node: ast.AST) -> list[str] | None:
     return None
 
 
+def _vendored_numpy_loader(tree: ast.Module) -> bool:
+    """Recognize the supported explicit vendor loader, not arbitrary _load_numpy* names.
+
+    This is static reachability classification, not runtime provenance validation.
+    """
+    loader = next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_load_numpy_min"), None)
+    if loader is None:
+        return False
+    # Deliberately support this one loader contract, not arbitrary dynamic Python.
+    # Exact statement structure rejects decoy constants/calls in dead branches.
+    expected = ast.parse("""
+name = "queryu_numpy_min"
+if name in sys.modules:
+    return sys.modules[name]
+path = Path(__file__).resolve().parents[1] / "vendor" / "aoi" / "shrink" / "numpy_min.py"
+spec = importlib.util.spec_from_file_location(name, path)
+module = importlib.util.module_from_spec(spec)
+sys.modules[name] = module
+spec.loader.exec_module(module)
+return module
+""").body
+    body = loader.body
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        body = body[1:]  # The loader's explanatory docstring does not affect binding.
+    return ([ast.dump(n) for n in body] == [ast.dump(n) for n in expected]
+            and not loader.args.args and not loader.args.kwonlyargs
+            and loader.args.vararg is None and loader.args.kwarg is None)
+
+
+
 class _Module:
     def __init__(self, path: Path, tree: ast.Module):
         self.path = path
@@ -148,7 +177,9 @@ class _Module:
                 isinstance(node, ast.Assign)
                 and isinstance(node.value, ast.Call)
                 and isinstance(node.value.func, ast.Name)
-                and node.value.func.id.startswith("_load_numpy")
+                and node.value.func.id == "_load_numpy_min"
+                and not node.value.args and not node.value.keywords
+                and _vendored_numpy_loader(tree)
             ):
                 # 同梱の numpy 代替を読み込む `np = _load_numpy_min()` も numpy として扱う。
                 for target in node.targets:
@@ -359,8 +390,8 @@ def _trace(scope: str) -> int:
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     mod._prepare("real", allow_installed=True)
-    payload = mod.collect(scope)
-    print(json.dumps({"scope": scope, "calls": log, "seconds": payload["meta"]["seconds"]}, ensure_ascii=False))
+    payload = mod.collect(scope, "real")
+    print(json.dumps({"scope": scope, "calls": log, "seconds": payload["meta"]["seconds"], "backend_evidence": payload["backend_evidence"]}, ensure_ascii=False))
     names = {row["fn"] for row in log}
     if scope == "fixture":
         need = {"linalg.svd", "linalg.lstsq", "linalg.norm", "einsum", "linalg.pinv"}

@@ -91,6 +91,14 @@ That surface is small enough to be a `polars_min` for **this entry**. It is not 
 
 ## numpy — (b) on `load_overlap`, (c) on the linalg paths
 
+2026-11-02 update: the observations below remain the historical study. QueRyu now
+loads its shipped `numpy_min` privately, so the current production `suggest_index`
+trace records zero installed-NumPy calls. Its original NumPy trace is preserved in
+[`suggest-numpy-trace-history.json`](../evidence/suggest-numpy-trace-history.json).
+The separate linalg comparison explicitly binds real NumPy versus the shipped
+mini and checks each consumer’s implementation identity and executed calls; an
+empty production NumPy trace is not evidence of numerical equivalence.
+
 No pure-Python wheel (numpy 2.5.4). #89 already generates `shrink/numpy_min.py` for `dragowing/overlap.py:load_overlap` and checks it byte-for-byte with numpy uninstalled.
 
 The new trace is a check on that boundary, not a new shrink. Wrap of the same c001 `load_overlap` saw:

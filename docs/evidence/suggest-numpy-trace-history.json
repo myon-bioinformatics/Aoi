@@ -1,0 +1,493 @@
+{
+  "schema": "trace-surface-history/1",
+  "source_commit": "d799e6a35c2956871a12057a9824e3c9b89038b0",
+  "note": "Historical production NumPy trace before QueRyu adopted its private shipped numpy_min loader. Preserved unchanged; the current production wrapper sees zero installed-NumPy calls. Actual comparison-arm identities and executed calls are checked separately by shrink/run_linalg.py. This is not numerical parity evidence.",
+  "runs": [
+    {
+      "driver": "suggest_index",
+      "mode": "wrap",
+      "package": "numpy",
+      "command": [
+        "python",
+        "scripts/trace_drivers.py",
+        "suggest_index"
+      ],
+      "status": 0,
+      "exception": null,
+      "dynamic_attributes": [
+        "T",
+        "__add__",
+        "__eq__",
+        "__getitem__",
+        "__gt__",
+        "__iter__",
+        "__matmul__",
+        "__mul__",
+        "__radd__",
+        "__rtruediv__",
+        "__setitem__",
+        "__sub__",
+        "abs",
+        "any",
+        "astype",
+        "divide",
+        "float32",
+        "int8",
+        "linalg",
+        "log",
+        "mean",
+        "norm",
+        "packbits",
+        "shape",
+        "sign",
+        "sum",
+        "svd",
+        "zeros",
+        "zeros_like"
+      ],
+      "ast_attributes": [
+        "__file__",
+        "__version__",
+        "abs",
+        "any",
+        "arange",
+        "argpartition",
+        "argsort",
+        "array",
+        "array_equal",
+        "asarray",
+        "ascontiguousarray",
+        "bitwise_count",
+        "bool_",
+        "ceil",
+        "clip",
+        "column_stack",
+        "concatenate",
+        "corrcoef",
+        "divide",
+        "einsum",
+        "empty",
+        "errstate",
+        "flatnonzero",
+        "float32",
+        "float64",
+        "floating",
+        "floor",
+        "frombuffer",
+        "full_like",
+        "generic",
+        "hstack",
+        "inf",
+        "int64",
+        "int8",
+        "integer",
+        "isfinite",
+        "linalg.lstsq",
+        "linalg.norm",
+        "linalg.pinv",
+        "linalg.svd",
+        "log",
+        "maximum",
+        "mean",
+        "meshgrid",
+        "minimum",
+        "nan_to_num",
+        "ndarray",
+        "nonzero",
+        "ones",
+        "ones_like",
+        "packbits",
+        "partition",
+        "random.Generator",
+        "random.PCG64",
+        "random.default_rng",
+        "round",
+        "shape",
+        "sign",
+        "sort",
+        "sqrt",
+        "sum",
+        "triu_indices",
+        "uint8",
+        "unpackbits",
+        "where",
+        "zeros",
+        "zeros_like"
+      ],
+      "missed_by_ast": [
+        "T",
+        "__add__",
+        "__eq__",
+        "__getitem__",
+        "__gt__",
+        "__iter__",
+        "__matmul__",
+        "__mul__",
+        "__radd__",
+        "__rtruediv__",
+        "__setitem__",
+        "__sub__",
+        "astype"
+      ],
+      "first_events": [
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "zeros",
+          "file": "queryu/ask/suggest.py",
+          "line": 88
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "float32",
+          "file": "queryu/ask/suggest.py",
+          "line": 88
+        },
+        {
+          "op": "call",
+          "qual": "numpy.zeros",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 88
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "log",
+          "file": "queryu/ask/suggest.py",
+          "line": 91
+        },
+        {
+          "op": "call",
+          "qual": "numpy.log",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 91
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.zeros()",
+          "name": "__setitem__",
+          "file": "queryu/ask/suggest.py",
+          "line": 91
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.zeros()",
+          "name": "__gt__",
+          "file": "queryu/ask/suggest.py",
+          "line": 94
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.zeros().__gt__",
+          "name": "sum",
+          "file": "queryu/ask/suggest.py",
+          "line": 94
+        },
+        {
+          "op": "call",
+          "qual": "numpy.zeros().__gt__.sum",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 94
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.zeros().__gt__.sum()",
+          "name": "__radd__",
+          "file": "queryu/ask/suggest.py",
+          "line": 95
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.zeros().__gt__.sum().__radd__",
+          "name": "__rtruediv__",
+          "file": "queryu/ask/suggest.py",
+          "line": 95
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.log()",
+          "name": "__add__",
+          "file": "queryu/ask/suggest.py",
+          "line": 95
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.zeros()",
+          "name": "__mul__",
+          "file": "queryu/ask/suggest.py",
+          "line": 96
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "linalg",
+          "file": "queryu/ask/suggest.py",
+          "line": 68
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.linalg",
+          "name": "norm",
+          "file": "queryu/ask/suggest.py",
+          "line": 68
+        },
+        {
+          "op": "call",
+          "qual": "numpy.linalg.norm",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 68
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "divide",
+          "file": "queryu/ask/suggest.py",
+          "line": 69
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "zeros_like",
+          "file": "queryu/ask/suggest.py",
+          "line": 69
+        },
+        {
+          "op": "call",
+          "qual": "numpy.zeros_like",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 69
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.linalg.norm()",
+          "name": "__gt__",
+          "file": "queryu/ask/suggest.py",
+          "line": 69
+        },
+        {
+          "op": "call",
+          "qual": "numpy.divide",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 69
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.zeros_like()",
+          "name": "mean",
+          "file": "queryu/ask/suggest.py",
+          "line": 98
+        },
+        {
+          "op": "call",
+          "qual": "numpy.zeros_like().mean",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 98
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.zeros_like()",
+          "name": "__sub__",
+          "file": "queryu/ask/suggest.py",
+          "line": 99
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.zeros_like().__sub__",
+          "name": "shape",
+          "file": "queryu/ask/suggest.py",
+          "line": 100
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "any",
+          "file": "queryu/ask/suggest.py",
+          "line": 100
+        },
+        {
+          "op": "call",
+          "qual": "numpy.any",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 100
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.linalg",
+          "name": "svd",
+          "file": "queryu/ask/suggest.py",
+          "line": 101
+        },
+        {
+          "op": "call",
+          "qual": "numpy.linalg.svd",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 101
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.linalg.svd()",
+          "name": "__iter__",
+          "file": "queryu/ask/suggest.py",
+          "line": 101
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.linalg.svd()[]",
+          "name": "shape",
+          "file": "queryu/ask/suggest.py",
+          "line": 102
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.linalg.svd()[]",
+          "name": "__getitem__",
+          "file": "queryu/ask/suggest.py",
+          "line": 103
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.linalg.svd()[].__getitem__",
+          "name": "T",
+          "file": "queryu/ask/suggest.py",
+          "line": 103
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.linalg.svd()[].__getitem__.T",
+          "name": "astype",
+          "file": "queryu/ask/suggest.py",
+          "line": 103
+        },
+        {
+          "op": "call",
+          "qual": "numpy.linalg.svd()[].__getitem__.T.astype",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 103
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.zeros_like().__sub__",
+          "name": "__matmul__",
+          "file": "queryu/ask/suggest.py",
+          "line": 129
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "sign",
+          "file": "queryu/ask/suggest.py",
+          "line": 108
+        },
+        {
+          "op": "call",
+          "qual": "numpy.sign",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 108
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.sign()",
+          "name": "__eq__",
+          "file": "queryu/ask/suggest.py",
+          "line": 109
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.sign()",
+          "name": "__setitem__",
+          "file": "queryu/ask/suggest.py",
+          "line": 109
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "abs",
+          "file": "queryu/ask/suggest.py",
+          "line": 110
+        },
+        {
+          "op": "call",
+          "qual": "numpy.abs",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 110
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.abs()",
+          "name": "mean",
+          "file": "queryu/ask/suggest.py",
+          "line": 110
+        },
+        {
+          "op": "call",
+          "qual": "numpy.abs().mean",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 110
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "packbits",
+          "file": "queryu/ask/suggest.py",
+          "line": 111
+        },
+        {
+          "op": "dunder",
+          "qual": "numpy.sign()",
+          "name": "__gt__",
+          "file": "queryu/ask/suggest.py",
+          "line": 111
+        },
+        {
+          "op": "call",
+          "qual": "numpy.packbits",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 111
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.sign()",
+          "name": "astype",
+          "file": "queryu/ask/suggest.py",
+          "line": 112
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy",
+          "name": "int8",
+          "file": "queryu/ask/suggest.py",
+          "line": 112
+        },
+        {
+          "op": "call",
+          "qual": "numpy.sign().astype",
+          "name": "",
+          "file": "queryu/ask/suggest.py",
+          "line": 112
+        },
+        {
+          "op": "getattr",
+          "qual": "numpy.linalg.svd()[].__getitem__.T.astype()",
+          "name": "shape",
+          "file": "scripts/trace_drivers.py",
+          "line": 43
+        }
+      ]
+    }
+  ]
+}

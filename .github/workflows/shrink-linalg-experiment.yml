@@ -1,8 +1,9 @@
 name: Shrink linalg experiment
 
-# 実験: suggest の SVD と littlebit / ビット行列を、標準ライブラリだけの shrink/numpy_linalg_min.py で動かす。
+# 実験: suggest は同梱 numpy_min、littlebit / ビット行列は実験用 numpy_linalg_min。
 # 本物の numpy で基準を作り、numpy を入れない環境で同じ実コード（c001）を1回走らせて許容誤差で比べる。
-# 既存のワークフローには触れない。c001 の pure-Python SVD は数十秒なので、通常の pytest には入れない。
+# c001 は通常の pytest には入れない。同梱 mini の実際の backend は比較証跡に記録する。
+# NumPy 未導入と native LAPACK 不在は別条件。stdlib/LAPACK の契約検査は numpy-min-backends.yml。
 on:
   pull_request:
     paths:
@@ -11,6 +12,8 @@ on:
       - scripts/linalg_feasibility.py
       - tests/test_numpy_linalg_min.py
       - queryu/ask/suggest.py
+      - queryu/vendor/aoi/shrink/numpy_min.py
+      - queryu/vendor.lock.json
       - pythdragoras/littlebit_prune.py
       - pythdragoras/littlebit_approx.py
       - pythdragoras/littlebit_holdout.py
@@ -42,7 +45,7 @@ jobs:
         run: uv run --locked --python 3.15 python scripts/linalg_feasibility.py ast
       - name: Trace real numpy call shapes on c001
         run: uv run --locked --python 3.15 python scripts/linalg_feasibility.py trace --scope c001
-      - name: Absent numpy fails on the first attribute
+      - name: Production QueRyu works without importing numpy
         run: uv run --locked --python 3.15 python scripts/linalg_feasibility.py absent
       - name: c001 paths with real numpy
         run: uv run --locked --python 3.15 python shrink/run_linalg.py --numpy real --scope c001 reference.json
@@ -53,7 +56,7 @@ jobs:
           if-no-files-found: error
 
   without-numpy:
-    name: Real c001 paths on numpy_linalg_min (numpy not installed)
+    name: Real c001 paths on shipped suggest mini and experimental linalg mini
     needs: reference
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -77,7 +80,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: linalg-reference
-      - name: c001 paths with numpy_linalg_min
+      - name: c001 paths with shipped suggest mini and experimental linalg mini
         run: .venv/bin/python shrink/run_linalg.py --numpy min --scope c001 got.json
       - name: Within tolerance of the real-numpy result
         run: .venv/bin/python shrink/run_linalg.py --compare reference.json got.json

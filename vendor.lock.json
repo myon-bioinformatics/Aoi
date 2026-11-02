@@ -3,8 +3,8 @@
   "files": [
     {
       "repository": "myon-bioinformatics/Aoi",
-      "ref": "70c08f29c2142f78aad63507f2d09915d6909e21",
-      "commit": "70c08f29c2142f78aad63507f2d09915d6909e21",
+      "ref": "827387a2c9339edd45b3ee2fc9d18120695166a0",
+      "commit": "827387a2c9339edd45b3ee2fc9d18120695166a0",
       "source": "LICENSE",
       "destination": "vendor/aoi-LICENSE",
       "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
@@ -12,12 +12,12 @@
     },
     {
       "repository": "myon-bioinformatics/Aoi",
-      "ref": "70c08f29c2142f78aad63507f2d09915d6909e21",
-      "commit": "70c08f29c2142f78aad63507f2d09915d6909e21",
+      "ref": "827387a2c9339edd45b3ee2fc9d18120695166a0",
+      "commit": "827387a2c9339edd45b3ee2fc9d18120695166a0",
       "source": "vendor/py_launch.cjs",
       "destination": "vendor/py_launch.cjs",
-      "blob_sha": "ca71c805f316c5cdd0753d55c2a70aa8119cf3ac",
-      "sha256": "f55418550baba981ccf3151eb55d64cce29c5ab7d31dcf0867284dde7dcafd60"
+      "blob_sha": "4a35b158b4a4cbd3a5d672ded1337a138a44bbd2",
+      "sha256": "f900e2662e7065a087897f4b927815d34a81f0e9ca811c0412151b38a218a501"
     }
   ]
 }

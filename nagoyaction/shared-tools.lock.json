@@ -3,12 +3,12 @@
   "files": [
     {
       "path": "vendor/aoi/scripts/shrink_module.py",
-      "sha256": "f798ba054ce65ffd717fce21fb429ec15ee4084084ca969e768675db9811922c",
+      "sha256": "8ccbaca8156708cd29dc5789ea7b0807c14af560e0b2fdbc5c11d07be8b363ed",
       "source": "myon-bioinformatics/Aoi"
     },
     {
       "path": "vendor/aoi/scripts/shrink_polars.py",
-      "sha256": "1d8df5102a16a50c8a3a89f2b730bec21d0b1dc76106d1cb2bafeee81915ebc5",
+      "sha256": "f2bc5fb606a1d4239e68dfe0abd296e5bbbd56a3b5f8883a958afb23265c71af",
       "source": "myon-bioinformatics/Aoi"
     },
     {

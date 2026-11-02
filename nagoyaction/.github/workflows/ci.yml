@@ -32,13 +32,15 @@ jobs:
       web_ui_sha: ${{ steps.resolve.outputs.web_ui_sha }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Setup Python
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
+          version: "latest"
           python-version: "3.11"
+          activate-environment: true
+          enable-cache: false
       - name: Resolve referenced repositories
         id: resolve
         env:
@@ -58,17 +60,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.12"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          version: "0.13.3"
+          version: "latest"
           enable-cache: false
-      - uses: actions/checkout@v7
+          python-version: "3.15"
+          activate-environment: true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
           ref: ${{ needs.resolve-aoi.outputs.sha }}
@@ -130,23 +131,21 @@ jobs:
         # Aoi の CI と同じ。failure-identity の expected-reports と揃えること
         python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '26'
       - name: Require supported Node in parity CI
-        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: ${{ matrix.python }}
-          allow-prereleases: true
+        run: node -e "if (+process.versions.node.split('.')[0] < 26) process.exit(1)"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          version: "0.13.3"
+          version: "latest"
           enable-cache: false
-      - uses: actions/checkout@v7
+          python-version: "${{ matrix.python }}"
+          activate-environment: true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
           ref: ${{ needs.resolve-aoi.outputs.sha }}
@@ -191,7 +190,7 @@ jobs:
         run: uv run --locked --python "${{ matrix.python }}" pytest -q -c pyproject.toml nagoyaction/tests --junitxml="$GITHUB_WORKSPACE/reports/junit.xml"
       - name: Preserve JUnit report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python }}
           path: reports/junit.xml
@@ -213,17 +212,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.12"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          version: "0.13.3"
+          version: "latest"
           enable-cache: false
-      - uses: actions/checkout@v7
+          python-version: "3.15"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
           ref: ${{ needs.resolve-aoi.outputs.sha }}
@@ -249,15 +246,15 @@ jobs:
       - name: Vendored polars_min equivalence, then record real collect
         working-directory: .test-deps/aoi
         run: |
-          uv sync --locked --python 3.12
+          uv sync --locked --python 3.15
           test -f nagoyaction/vendor/aoi/shrink/polars_min.py
           test -f nagoyaction/vendor/aoi/scripts/shrink_module.py
           test -f nagoyaction/vendor/aoi/scripts/shrink_polars.py
-          uv run --locked --python 3.12 pytest -q -c pyproject.toml nagoyaction/tests/test_vendor_aoi.py
-          uv run --locked --python 3.12 python nagoyaction/scripts/collect_with_polars_min.py --deps real "$GITHUB_WORKSPACE/reference.json"
+          uv run --locked --python 3.15 pytest -q -c pyproject.toml nagoyaction/tests/test_vendor_aoi.py
+          uv run --locked --python 3.15 python nagoyaction/scripts/collect_with_polars_min.py --deps real "$GITHUB_WORKSPACE/reference.json"
       - name: Reinstall locked runtime deps except polars and its compiled runtime
         working-directory: .test-deps/aoi
-        run: uv sync --locked --no-dev --no-install-package polars --no-install-package polars-runtime-32 --python 3.12
+        run: uv sync --locked --no-dev --no-install-package polars --no-install-package polars-runtime-32 --python 3.15
       - name: polars is not installed
         working-directory: .test-deps/aoi
         run: |
@@ -298,18 +295,16 @@ jobs:
     timeout-minutes: 40
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Setup Python
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.11"
       - name: Setup uv
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          version: "0.13.3"
+          version: "latest"
           enable-cache: false
+          python-version: "3.11"
+          activate-environment: true
       - name: Run local CI
         env:
           GITHUB_TOKEN: ${{ github.token }}

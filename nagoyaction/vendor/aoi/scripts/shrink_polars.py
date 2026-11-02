@@ -15,13 +15,15 @@ polars は Rust 拡張なので wheel を削れない。scripts/shrink_module.py
     python scripts/shrink_polars.py generate --out shrink/polars_min.py [--check]
 
 analyze は import した関数をたどらない。``_mask`` は ``_cond`` を ``from propositions import`` しているので、
-入口に ``pythdragoras/propositions.py:_cond`` を別に渡す。c001 の load_overlap は条件を1個ずつ
+入口に ``pythdragoras/propositions.py:_cond`` を別に渡す（入口と trace / absent の仕事は shrink/shrink_polars.json に書く）。c001 の load_overlap は条件を1個ずつ
 ``_mask`` に渡すので ``&`` は実行されない。``_cond`` がつなぐ演算子としては実装し、同値テストで確かめる。
 """
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
+import json
 import sys
 import traceback
 import types
@@ -29,14 +31,40 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
 import shrink_module as sm  # noqa: E402
 
-# _cond は import 越しなので、load_overlap の解析だけでは列に出ない。
-DEFAULT_ENTRIES = [
-    "dragowing/overlap.py:load_overlap",
-    "pythdragoras/propositions.py:_cond",
-]
+# 入口と実行する仕事はリポジトリごとの設定に置く（このスクリプトには特定のリポジトリの名前を書かない）。
+# 既定は <リポジトリ>/shrink/shrink_polars.json。--config か SHRINK_POLARS_CONFIG で差し替える。
+#   {"entries": ["pkg/mod.py:func", ...],      analyze / generate / trace の入口
+#    "survey_prefix": "pkg/",                  survey で polars_min の対象として分ける接頭辞
+#    "sys_path": ["", "sub"],                 trace / absent で ROOT からの相対で sys.path に足す
+#    "workload": "shrink.polars_workload:run"}  trace / absent で動かす関数。run(root) -> {"regions", "units"}
+CONFIG_PATH = ROOT / "shrink" / "shrink_polars.json"
+CONFIG: dict = {}
+_LOADED: list[Path] = []  # いま CONFIG に入っている設定ファイル（同じファイルを読み直さない）
+
+
+def load_config(path: Path | str | None = None) -> dict:
+    import os
+
+    target = Path(path or os.environ.get("SHRINK_POLARS_CONFIG") or CONFIG_PATH)
+    if not target.is_absolute():
+        target = ROOT / target
+    if _LOADED == [target]:
+        return CONFIG
+    data = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
+    entries = list(data.get("entries", []))
+    CONFIG.clear()
+    CONFIG.update(data)
+    DEFAULT_ENTRIES[:] = entries
+    _LOADED[:] = [target]
+    return CONFIG
+
+
+DEFAULT_ENTRIES: list[str] = []
+load_config()
 KNOWN = {"DataFrame", "Expr", "Series", "col", "lit", "read_ndjson"}
 # ast では見えない。c001 が実際に踏むものと、_cond の演算子。
 METHOD_SURFACE = (
@@ -471,7 +499,20 @@ def generate_polars(names: list[str], sources: list[str]) -> str:
 
 
 def _entries(given: list[str]) -> list[str]:
-    return given or list(DEFAULT_ENTRIES)
+    entries = given or list(DEFAULT_ENTRIES)
+    if not entries:
+        raise SystemExit("入口が無い。引数で渡すか、設定ファイルの entries に書く")
+    return entries
+
+
+def _run_workload() -> dict:
+    spec = CONFIG.get("workload")
+    if not spec:
+        raise SystemExit("設定ファイルに workload（module:function）が無い")
+    wanted = [str(ROOT / rel) if rel else str(ROOT) for rel in CONFIG.get("sys_path", [""])]
+    sys.path[:0] = [p for p in dict.fromkeys(wanted) if p not in sys.path]  # 何度呼んでも同じ項目を重ねない
+    module_name, _, func = spec.partition(":")
+    return getattr(importlib.import_module(module_name), func)(ROOT)
 
 
 def _print_uses(title: str, files: dict[str, Counter]) -> None:
@@ -485,25 +526,26 @@ def _print_uses(title: str, files: dict[str, Counter]) -> None:
 
 
 def cmd_survey() -> int:
+    prefix = CONFIG.get("survey_prefix", "")
     found = sm.survey("polars")
-    drag = {k: v for k, v in found.items() if k.startswith("dragowing/")}
-    rest = {k: v for k, v in found.items() if not k.startswith("dragowing/")}
-    _print_uses("dragowing/ (module attributes only; methods are invisible to ast):", drag)
+    drag = {k: v for k, v in found.items() if k.startswith(prefix)}
+    rest = {k: v for k, v in found.items() if not k.startswith(prefix)}
+    _print_uses(f"{prefix or '(all)'} (module attributes only; methods are invisible to ast):", drag)
     names = Counter()
     for counts in drag.values():
         names += counts
-    print("dragowing AST names: " + ", ".join(f"{k}×{v}" for k, v in names.most_common()))
+    print(f"{prefix or '(all)'} AST names: " + ", ".join(f"{k}×{v}" for k, v in names.most_common()))
     total = Counter()
     for counts in found.values():
         total += counts
     print(f"repo TOTAL: {sum(total.values())} uses of {len(total)} names across {len(found)} files")
-    _print_uses("outside dragowing/ (not in polars_min):", rest)
+    _print_uses(f"outside {prefix or '(all)'} (not in polars_min):", rest)
     return 0
 
 
 def cmd_analyze(entries: list[str]) -> int:
-    alone, visited = sm.analyze("polars", ["dragowing/overlap.py:load_overlap"])
-    print("load_overlap alone does not follow `from propositions import _cond`")
+    alone, visited = sm.analyze("polars", entries[:1])
+    print(f"{entries[0]} alone does not follow imported functions")
     print("  reached:", ", ".join(visited))
     print("  uses:", ", ".join(f"{k}×{v}" for k, v in sorted(alone.items())) or "(none)")
     used, visited = sm.analyze("polars", entries)
@@ -578,13 +620,7 @@ def cmd_trace() -> int:
         patch_method(pl.Series, "to_list")
         for name in ("__lt__", "__le__", "__gt__", "__ge__", "__eq__", "__ne__", "__and__"):
             patch_method(pl.Expr, name)
-        sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
-        from dragowing.overlap import default_conditions, load_overlap
-        from dragowing.records import read_jsonl
-
-        season = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
-        props = ROOT / "cycles/c001-chunichi/outputs/propositions.jsonl"
-        result = load_overlap(season, default_conditions(read_jsonl(props), read_jsonl(season)))
+        result = _run_workload()
     finally:
         for obj, name, old in reversed(saved):
             setattr(obj, name, old)
@@ -705,17 +741,9 @@ def cmd_absent() -> int:
     module = _PolarsModule("polars")
     module.__file__ = str(ROOT / "shrink" / "polars_min.py")
     sys.modules["polars"] = module
-    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
-    from dragowing.overlap import default_conditions, load_overlap
-    from dragowing.records import read_jsonl
-
-    season = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
-    props = ROOT / "cycles/c001-chunichi/outputs/propositions.jsonl"
-    rows = read_jsonl(season)
-    conds = default_conditions(read_jsonl(props), rows)
     for step in range(1, 40):
         try:
-            result = load_overlap(season, conds)
+            result = _run_workload()
         except AttributeError as exc:
             key = exc.args[0] if exc.args else ""
             if not isinstance(key, str) or key in _ALLOW:
@@ -735,7 +763,7 @@ def cmd_absent() -> int:
         print(f"succeeded regions={len(result['regions'])} units={len(result['units'])}")
         print("discovered: " + ", ".join(sorted(_ALLOW)))
         return 0
-    print("gave up before load_overlap succeeded", file=sys.stderr)
+    print("gave up before the workload succeeded", file=sys.stderr)
     return 1
 
 
@@ -745,7 +773,9 @@ def main(argv=None) -> int:
     parser.add_argument("entries", nargs="*")
     parser.add_argument("--out")
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--config", help="入口と workload の JSON（既定 shrink/shrink_polars.json）")
     args = parser.parse_args(argv)
+    load_config(args.config)
     if args.command == "survey":
         return cmd_survey()
     entries = _entries(args.entries)

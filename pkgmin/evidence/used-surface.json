@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "files_scanned": 432,
+  "files_scanned": 447,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
@@ -28,7 +28,11 @@
     },
     {
       "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
-      "line": 394
+      "line": 390
+    },
+    {
+      "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",
+      "line": 515
     },
     {
       "file": "queryu/conftest.py",

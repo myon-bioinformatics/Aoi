@@ -27,7 +27,11 @@
     },
     {
       "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
-      "line": 394
+      "line": 390
+    },
+    {
+      "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",
+      "line": 515
     },
     {
       "file": "queryu/conftest.py",
@@ -158,17 +162,17 @@
       "import_sites": 2
     },
     "numpy": {
-      "attribute_uses": 320,
+      "attribute_uses": 291,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
-        "abs": 7,
-        "allclose": 3,
-        "any": 2,
+        "abs": 6,
+        "allclose": 5,
+        "any": 1,
         "arange": 7,
         "argpartition": 1,
-        "argsort": 2,
-        "array": 28,
+        "argsort": 1,
+        "array": 30,
         "array_equal": 3,
         "asarray": 5,
         "ascontiguousarray": 1,
@@ -179,43 +183,39 @@
         "column_stack": 4,
         "concatenate": 8,
         "corrcoef": 3,
-        "divide": 1,
         "einsum": 1,
         "empty": 3,
         "errstate": 2,
         "exp": 2,
         "flatnonzero": 2,
-        "float32": 4,
+        "float32": 1,
         "float64": 24,
         "floating": 1,
         "floor": 1,
         "frombuffer": 2,
-        "full_like": 1,
         "generic": 1,
         "hstack": 2,
-        "inf": 5,
+        "inf": 2,
         "int64": 12,
-        "int8": 1,
         "integer": 1,
         "isfinite": 1,
         "linalg.LinAlgError": 3,
         "linalg.lstsq": 5,
-        "linalg.norm": 6,
+        "linalg.norm": 2,
         "linalg.pinv": 1,
         "linalg.svd": 2,
-        "log": 13,
+        "log": 10,
         "longdouble": 1,
         "maximum": 7,
         "mean": 2,
         "median": 7,
         "meshgrid": 1,
         "minimum": 5,
-        "nan_to_num": 2,
-        "ndarray": 22,
+        "nan_to_num": 1,
+        "ndarray": 17,
         "nonzero": 4,
         "ones": 6,
-        "ones_like": 1,
-        "packbits": 3,
+        "packbits": 2,
         "partition": 2,
         "percentile": 4,
         "random.Generator": 1,
@@ -223,16 +223,15 @@
         "random.default_rng": 10,
         "round": 5,
         "shape": 1,
-        "sign": 8,
+        "sign": 7,
         "sort": 1,
-        "sqrt": 5,
+        "sqrt": 4,
         "sum": 1,
         "triu_indices": 2,
         "uint8": 2,
         "unpackbits": 2,
         "where": 13,
-        "zeros": 15,
-        "zeros_like": 1
+        "zeros": 12
       },
       "by_tree": {
         "cycles": {
@@ -326,31 +325,16 @@
           "import_sites": 9
         },
         "queryu": {
-          "attribute_uses": 35,
+          "attribute_uses": 6,
           "attributes": {
-            "abs": 1,
-            "any": 1,
-            "argsort": 1,
-            "divide": 1,
-            "float32": 4,
-            "full_like": 1,
-            "inf": 3,
-            "int8": 1,
-            "linalg.norm": 4,
-            "linalg.svd": 1,
-            "log": 3,
-            "nan_to_num": 1,
-            "ndarray": 5,
-            "ones_like": 1,
-            "packbits": 1,
-            "sign": 1,
-            "sqrt": 1,
-            "zeros": 3,
-            "zeros_like": 1
+            "allclose": 2,
+            "array": 2,
+            "float32": 1,
+            "linalg.svd": 1
           },
           "dynamic_import_sites": 0,
-          "files": 2,
-          "import_sites": 2
+          "files": 1,
+          "import_sites": 1
         },
         "research": {
           "attribute_uses": 60,
@@ -435,14 +419,14 @@
         },
         {
           "file": "queryu/pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:dev",
           "name": "numpy"
         }
       ],
-      "distinct_attributes": 73,
+      "distinct_attributes": 68,
       "dynamic_import_sites": 0,
-      "files": 21,
-      "import_sites": 21
+      "files": 20,
+      "import_sites": 20
     },
     "ortools": {
       "attribute_uses": 2,
@@ -717,7 +701,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1380,
+      "attribute_uses": 1390,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -725,17 +709,18 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 387,
-        "fail": 33,
+        "approx": 389,
+        "fail": 34,
         "fixture": 57,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 318,
+        "mark.parametrize": 322,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 501,
-        "skip": 12,
-        "warns": 3
+        "raises": 502,
+        "skip": 13,
+        "warns": 3,
+        "xfail": 1
       },
       "by_tree": {
         "aoi": {
@@ -772,19 +757,19 @@
           "import_sites": 15
         },
         "dragowing": {
-          "attribute_uses": 87,
+          "attribute_uses": 90,
           "attributes": {
             "UsageError": 2,
             "fail": 2,
             "fixture": 8,
-            "mark.parametrize": 21,
+            "mark.parametrize": 23,
             "mark.skipif": 3,
-            "raises": 47,
+            "raises": 48,
             "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 14,
-          "import_sites": 15
+          "files": 15,
+          "import_sites": 16
         },
         "nagoyaction": {
           "attribute_uses": 85,
@@ -820,19 +805,22 @@
           "import_sites": 22
         },
         "queryu": {
-          "attribute_uses": 84,
+          "attribute_uses": 91,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
             "UsageError": 4,
-            "fail": 7,
+            "approx": 2,
+            "fail": 8,
             "fixture": 4,
-            "mark.parametrize": 17,
-            "raises": 50
+            "mark.parametrize": 19,
+            "raises": 50,
+            "skip": 1,
+            "xfail": 1
           },
           "dynamic_import_sites": 1,
-          "files": 12,
-          "import_sites": 12
+          "files": 13,
+          "import_sites": 13
         },
         "sakanalytics": {
           "attribute_uses": 436,
@@ -914,10 +902,10 @@
           "name": "pytest"
         }
       ],
-      "distinct_attributes": 17,
+      "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 134,
-      "import_sites": 136
+      "files": 136,
+      "import_sites": 138
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1494,6 +1482,17 @@
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_research_report.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 2,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_stdlib_paths.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -2351,31 +2350,6 @@
     },
     {
       "attributes": {
-        "abs": 1,
-        "any": 1,
-        "argsort": 1,
-        "divide": 1,
-        "float32": 4,
-        "inf": 3,
-        "int8": 1,
-        "linalg.norm": 4,
-        "linalg.svd": 1,
-        "log": 3,
-        "nan_to_num": 1,
-        "ndarray": 5,
-        "packbits": 1,
-        "sign": 1,
-        "zeros": 3,
-        "zeros_like": 1
-      },
-      "dynamic_lines": [],
-      "file": "queryu/ask/suggest.py",
-      "import_sites": 1,
-      "package": "numpy",
-      "tree": "queryu"
-    },
-    {
-      "attributes": {
         "ExitCode.OK": 1,
         "ExitCode.TESTS_FAILED": 1,
         "UsageError": 4,
@@ -2418,18 +2392,6 @@
       "file": "queryu/tests/test_fetch_plan.py",
       "import_sites": 1,
       "package": "pytest",
-      "tree": "queryu"
-    },
-    {
-      "attributes": {
-        "full_like": 1,
-        "ones_like": 1,
-        "sqrt": 1
-      },
-      "dynamic_lines": [],
-      "file": "queryu/tests/test_id_suggest.py",
-      "import_sites": 1,
-      "package": "numpy",
       "tree": "queryu"
     },
     {
@@ -2483,6 +2445,33 @@
       },
       "dynamic_lines": [],
       "file": "queryu/tests/test_queryu_emoji_data.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "queryu"
+    },
+    {
+      "attributes": {
+        "allclose": 2,
+        "array": 2,
+        "float32": 1,
+        "linalg.svd": 1
+      },
+      "dynamic_lines": [],
+      "file": "queryu/tests/test_queryu_numpy_min.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "queryu"
+    },
+    {
+      "attributes": {
+        "approx": 2,
+        "fail": 1,
+        "mark.parametrize": 2,
+        "skip": 1,
+        "xfail": 1
+      },
+      "dynamic_lines": [],
+      "file": "queryu/tests/test_queryu_numpy_min.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "queryu"

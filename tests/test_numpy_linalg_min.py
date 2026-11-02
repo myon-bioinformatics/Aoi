@@ -163,13 +163,31 @@ def test_ast_reaches_the_heavy_calls_and_not_bitmatrix_svd():
     assert any(item.endswith("Index.query") for item in visited)
 
 
-def test_absent_probe_exits_on_missing_numpy_attribute():
+def test_absent_probe_runs_queryu_index_without_numpy():
     proc = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "linalg_feasibility.py"), "absent"],
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     assert proc.returncode == 0, proc.stderr
-    assert "numpy.zeros" in proc.stderr
+    assert "ran without touching numpy" in proc.stdout
+
+
+def test_absent_probe_fails_if_queryu_imports_numpy(tmp_path):
+    """QueRyu が import numpy に戻ったら probe が失敗することを確かめる。"""
+    import shutil
+    work = tmp_path / "repo"
+    for part in ("scripts", "queryu", "pythdragoras", "vendor"):
+        if (ROOT / part).exists():
+            shutil.copytree(ROOT / part, work / part)
+    target = work / "queryu" / "ask" / "suggest.py"
+    text = target.read_text(encoding="utf-8")
+    target.write_text(text.replace("np = _load_numpy_min()", "import numpy as np", 1), encoding="utf-8")
+    proc = subprocess.run(
+        [sys.executable, str(work / "scripts" / "linalg_feasibility.py"), "absent"],
+        cwd=work, capture_output=True, text=True, check=False,
+    )
+    assert proc.returncode == 1, proc.stdout + proc.stderr
+    assert "touched numpy" in proc.stderr
 
 
 def test_min_refuses_when_numpy_is_installed(tmp_path):

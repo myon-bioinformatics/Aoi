@@ -144,6 +144,16 @@ class _Module:
                     if stem == "numpy":
                         attr = alias.name if node.module == "numpy" else f"{node.module.split('.', 1)[1]}.{alias.name}"
                         self.numpy_names[local] = attr
+            elif (
+                isinstance(node, ast.Assign)
+                and isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Name)
+                and node.value.func.id.startswith("_load_numpy")
+            ):
+                # 同梱の numpy 代替を読み込む `np = _load_numpy_min()` も numpy として扱う。
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        self.numpy_aliases.add(target.id)
 
 
 def _index(root: Path) -> dict[str, list[_Module]]:
@@ -280,7 +290,19 @@ class _Proxy(types.ModuleType):
 
 
 def _absent_child() -> int:
-    proxy = _Proxy("numpy")
+    """numpy を使えない proxy に差し替えても QueRyu の Index が動くことを確かめる。
+
+    QueRyu は同梱の numpy_min を使うので、本物の numpy に触れたら失敗にする。
+    """
+    touched: list[str] = []
+
+    class _Watch(_Proxy):
+        def __getattr__(self, item):
+            if not item.startswith("__"):
+                touched.append(f"{self.__name__}.{item}")
+            return super().__getattr__(item)
+
+    proxy = _Watch("numpy")
     proxy.__file__ = "<absent numpy>"
     proxy.__package__ = "numpy"
     sys.modules["numpy"] = proxy
@@ -291,13 +313,14 @@ def _absent_child() -> int:
         suggest.Index([("P1", "得失点差がプラスなら上位半分である")], dim=4)
     except AttributeError:
         traceback.print_exc()
-        text = traceback.format_exc()
-        if "numpy." in text:
-            print("absent-probe: first failure is a missing numpy attribute")
-            return 0
+        print("absent-probe: Index touched numpy", file=sys.stderr)
         return 1
-    print("absent-probe: Index ran without touching numpy", file=sys.stderr)
-    return 1
+    leaked = [name for name, mod in vars(suggest).items() if mod is proxy]
+    if touched or leaked:
+        print(f"absent-probe: Index touched numpy: {touched or leaked}", file=sys.stderr)
+        return 1
+    print("absent-probe: Index ran without touching numpy")
+    return 0
 
 
 def _wrap(np, log: list[dict]) -> None:

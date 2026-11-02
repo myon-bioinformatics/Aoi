@@ -11,13 +11,13 @@
       "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
     },
     {
-      "repository": "myon-bioinformatics/Aoi",
-      "ref": "70c08f29c2142f78aad63507f2d09915d6909e21",
-      "commit": "70c08f29c2142f78aad63507f2d09915d6909e21",
+      "repository": "myon-bioinformatics/myon-bioinformatics",
+      "ref": "1f6f1e345f640827703e2872151a73b4cbdfd382",
+      "commit": "1f6f1e345f640827703e2872151a73b4cbdfd382",
       "source": "vendor/py_launch.cjs",
       "destination": "vendor/py_launch.cjs",
-      "blob_sha": "ca71c805f316c5cdd0753d55c2a70aa8119cf3ac",
-      "sha256": "f55418550baba981ccf3151eb55d64cce29c5ab7d31dcf0867284dde7dcafd60"
+      "blob_sha": "4a35b158b4a4cbd3a5d672ded1337a138a44bbd2",
+      "sha256": "f900e2662e7065a087897f4b927815d34a81f0e9ca811c0412151b38a218a501"
     }
   ]
 }

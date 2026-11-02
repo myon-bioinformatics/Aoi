@@ -13,8 +13,7 @@ ast はクラスのメソッド、``self.method``、``import mod as alias``、``
 shrink_module.analyze はモジュール直下の関数と ``mod.func`` だけなので、suggest.Index の svd を落とす。
 
 trace は本物の numpy の svd / lstsq / pinv / norm / einsum を包み、実際の shape と時間を出す。
-absent は中身のない numpy を先に入れ、最初に足りない属性のトレースバックを出して終了する
-（足りない numpy 属性なら終了コード 0）。
+absent は使えない numpy を先に入れ、製品の QueRyu Index が numpy に触れず動くことを確かめる。
 """
 from __future__ import annotations
 
@@ -112,6 +111,36 @@ def _attr_chain(node: ast.AST) -> list[str] | None:
     return None
 
 
+def _vendored_numpy_loader(tree: ast.Module) -> bool:
+    """Recognize the supported explicit vendor loader, not arbitrary _load_numpy* names.
+
+    This is static reachability classification, not runtime provenance validation.
+    """
+    loader = next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_load_numpy_min"), None)
+    if loader is None:
+        return False
+    # Deliberately support this one loader contract, not arbitrary dynamic Python.
+    # Exact statement structure rejects decoy constants/calls in dead branches.
+    expected = ast.parse("""
+name = "queryu_numpy_min"
+if name in sys.modules:
+    return sys.modules[name]
+path = Path(__file__).resolve().parents[1] / "vendor" / "aoi" / "shrink" / "numpy_min.py"
+spec = importlib.util.spec_from_file_location(name, path)
+module = importlib.util.module_from_spec(spec)
+sys.modules[name] = module
+spec.loader.exec_module(module)
+return module
+""").body
+    body = loader.body
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        body = body[1:]  # The loader's explanatory docstring does not affect binding.
+    return ([ast.dump(n) for n in body] == [ast.dump(n) for n in expected]
+            and not loader.args.args and not loader.args.kwonlyargs
+            and loader.args.vararg is None and loader.args.kwarg is None)
+
+
+
 class _Module:
     def __init__(self, path: Path, tree: ast.Module):
         self.path = path
@@ -144,6 +173,18 @@ class _Module:
                     if stem == "numpy":
                         attr = alias.name if node.module == "numpy" else f"{node.module.split('.', 1)[1]}.{alias.name}"
                         self.numpy_names[local] = attr
+            elif (
+                isinstance(node, ast.Assign)
+                and isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Name)
+                and node.value.func.id == "_load_numpy_min"
+                and not node.value.args and not node.value.keywords
+                and _vendored_numpy_loader(tree)
+            ):
+                # 同梱の numpy 代替を読み込む `np = _load_numpy_min()` も numpy として扱う。
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        self.numpy_aliases.add(target.id)
 
 
 def _index(root: Path) -> dict[str, list[_Module]]:
@@ -280,7 +321,19 @@ class _Proxy(types.ModuleType):
 
 
 def _absent_child() -> int:
-    proxy = _Proxy("numpy")
+    """numpy を使えない proxy に差し替えても QueRyu の Index が動くことを確かめる。
+
+    QueRyu は同梱の numpy_min を使うので、本物の numpy に触れたら失敗にする。
+    """
+    touched: list[str] = []
+
+    class _Watch(_Proxy):
+        def __getattr__(self, item):
+            if not item.startswith("__"):
+                touched.append(f"{self.__name__}.{item}")
+            return super().__getattr__(item)
+
+    proxy = _Watch("numpy")
     proxy.__file__ = "<absent numpy>"
     proxy.__package__ = "numpy"
     sys.modules["numpy"] = proxy
@@ -291,13 +344,14 @@ def _absent_child() -> int:
         suggest.Index([("P1", "得失点差がプラスなら上位半分である")], dim=4)
     except AttributeError:
         traceback.print_exc()
-        text = traceback.format_exc()
-        if "numpy." in text:
-            print("absent-probe: first failure is a missing numpy attribute")
-            return 0
+        print("absent-probe: Index touched numpy", file=sys.stderr)
         return 1
-    print("absent-probe: Index ran without touching numpy", file=sys.stderr)
-    return 1
+    leaked = [name for name, mod in vars(suggest).items() if mod is proxy]
+    if touched or leaked:
+        print(f"absent-probe: Index touched numpy: {touched or leaked}", file=sys.stderr)
+        return 1
+    print("absent-probe: Index ran without touching numpy")
+    return 0
 
 
 def _wrap(np, log: list[dict]) -> None:
@@ -336,8 +390,8 @@ def _trace(scope: str) -> int:
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     mod._prepare("real", allow_installed=True)
-    payload = mod.collect(scope)
-    print(json.dumps({"scope": scope, "calls": log, "seconds": payload["meta"]["seconds"]}, ensure_ascii=False))
+    payload = mod.collect(scope, "real")
+    print(json.dumps({"scope": scope, "calls": log, "seconds": payload["meta"]["seconds"], "backend_evidence": payload["backend_evidence"]}, ensure_ascii=False))
     names = {row["fn"] for row in log}
     if scope == "fixture":
         need = {"linalg.svd", "linalg.lstsq", "linalg.norm", "einsum", "linalg.pinv"}

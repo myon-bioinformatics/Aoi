@@ -30,7 +30,7 @@ def load_overlap() -> None:
 
 
 def suggest_index() -> None:
-    """QueRyu ask/suggest.Index, which calls numpy.linalg.svd."""
+    """Production QueRyu Index uses private shipped mini; installed NumPy stays untouched."""
     sys.path[:0] = [str(ROOT / "queryu" / "ask")]
     from suggest import Index
 

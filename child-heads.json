@@ -8,7 +8,7 @@
         "subtree_prefix": "blueprobe"
       },
       "repository_id": 1418210841,
-      "sha": "0d202048cc820d5c237023109c38a51ec4771fd6"
+      "sha": "2ea993aaa1416ff9006eba4ebe2fed6d0b49668e"
     },
     "myon-bioinformatics/DRAgoWing": {
       "optional": {
@@ -40,7 +40,7 @@
         "subtree_prefix": "queryu"
       },
       "repository_id": 1423051557,
-      "sha": "98e2337ebbfd014feeaf5d85db03927e6d0e81c0"
+      "sha": "4c59cb00ca2ba898573e4af95bc4a63492aa5eb9"
     },
     "myon-bioinformatics/SakAnalytics": {
       "optional": {

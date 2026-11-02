@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""suggest / littlebit / ビット行列を、本物の numpy と numpy_linalg_min で動かし、許容誤差で比べる（実験）。
+"""suggest は同梱 numpy_min、littlebit / ビット行列は numpy_linalg_min を本物の numpy と比べる（実験）。
 
     python shrink/run_linalg.py --numpy real --scope fixture out.json
     python shrink/run_linalg.py --numpy min  --scope fixture out.json
@@ -14,6 +14,8 @@ CI の numpy なしジョブは --allow-installed を付けない。
 from __future__ import annotations
 
 import argparse
+import hashlib
+import functools
 import importlib.util
 import json
 import math
@@ -23,6 +25,132 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MIN_FILE = ROOT / "shrink" / "numpy_linalg_min.py"
+SUGGEST_MIN_FILE = ROOT / "queryu" / "vendor" / "aoi" / "shrink" / "numpy_min.py"
+EVIDENCE_SCHEMA = "linalg-consumers/1"
+REQUIRED_CALLS = {
+    "suggest": ("linalg.svd", "linalg.norm"),
+    "littlebit_prune": ("linalg.svd", "linalg.lstsq", "einsum"),
+    "rule_search": ("frombuffer", "unpackbits"),
+    "harness": ("linalg.svd", "linalg.pinv"),
+}
+
+
+def _identity(module, expected: Path | None) -> dict:
+    path = Path(module.__file__).resolve()
+    if expected is not None:
+        if path != expected.resolve():
+            raise ValueError(f"unexpected backend: {path}; expected {expected}")
+        kind = "shipped-min" if expected == SUGGEST_MIN_FILE else "experimental-min"
+    else:
+        if module.__name__ != "numpy" or path.name != "__init__.py" or path.parent.name != "numpy":
+            raise ValueError(f"not real NumPy: {path}")
+        kind = "real"
+    return {"kind": kind, "file": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "module": module.__name__, "version": str(getattr(module, "__version__", "")),
+            "backend": str(getattr(module, "BACKEND", "numpy" if kind == "real" else "stdlib"))}
+
+
+class _Observed:
+    """Consumer-local delegation: never mutate the shared backend or its linalg object."""
+    def __init__(self, source, record, prefix=""):
+        self._source, self._record, self._prefix = source, record, prefix
+
+    def __getattr__(self, name):
+        value = getattr(self._source, name)
+        key = self._prefix + name
+        if key == "linalg":
+            return _Observed(value, self._record, "linalg.")
+        monitored = {op for ops in REQUIRED_CALLS.values() for op in ops}
+        if key not in monitored:
+            return value
+        @functools.wraps(value)
+        def call(*args, **kwargs):
+            result = value(*args, **kwargs)
+            counts = self._record["calls"]
+            counts[key] = counts.get(key, 0) + 1
+            return result
+        return call
+
+
+def collect(scope: str, which: str) -> dict:
+    import numpy as np
+    import littlebit_prune as lp
+    import rule_search as rs
+    import suggest
+
+    if which not in {"real", "min"}:
+        raise ValueError(f"unknown arm: {which}")
+    # Validate the production binding before overriding only the reference arm.
+    shipped = suggest._load_numpy_min()
+    _identity(shipped, SUGGEST_MIN_FILE)
+    selected = np if which == "real" else shipped
+    modules = {"suggest": suggest, "littlebit_prune": lp, "rule_search": rs}
+    originals = {name: module.np for name, module in modules.items()}
+    evidence = {"schema": EVIDENCE_SCHEMA, "arm": which, "consumers": {}}
+    proxies = {}
+    for name in REQUIRED_CALLS:
+        backend = selected if name == "suggest" else np
+        expected = None if which == "real" else (SUGGEST_MIN_FILE if name == "suggest" else MIN_FILE)
+        record = {"identity": _identity(backend, expected), "calls": {}}
+        evidence["consumers"][name] = record
+        proxies[name] = _Observed(backend, record)
+    try:
+        for name, module in modules.items():
+            module.np = proxies[name]
+        payload = _collect(scope, proxies["harness"], lp, rs, suggest)
+        payload["backend_evidence"] = evidence
+        errors = _evidence_errors(payload, which)
+        if errors:
+            raise ValueError("; ".join(errors))
+        return payload
+    finally:
+        for name, module in modules.items():
+            module.np = originals[name]
+
+
+def _evidence_errors(payload: dict, arm: str) -> list[str]:
+    evidence = payload.get("backend_evidence")
+    if not isinstance(evidence, dict) or evidence.get("schema") != EVIDENCE_SCHEMA or evidence.get("arm") != arm:
+        return [f"{arm}: missing or invalid backend evidence"]
+    consumers = evidence.get("consumers")
+    if not isinstance(consumers, dict) or set(consumers) != set(REQUIRED_CALLS):
+        return [f"{arm}: missing or invalid consumers"]
+    errors = []
+    real_identity = None
+    for name, operations in REQUIRED_CALLS.items():
+        row = consumers[name]
+        identity = row.get("identity") if isinstance(row, dict) else None
+        calls = row.get("calls") if isinstance(row, dict) else None
+        if not isinstance(identity, dict) or set(identity) != {"kind", "file", "sha256", "module", "version", "backend"} or not all(isinstance(v, str) for v in identity.values()):
+            errors.append(f"{arm}.{name}: invalid identity")
+            continue
+        path = Path(identity["file"])
+        digest = identity["sha256"]
+        if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+            errors.append(f"{arm}.{name}: invalid source hash")
+        if arm == "real":
+            if identity["kind"] != "real" or identity["module"] != "numpy" or identity["backend"] != "numpy" or not identity["version"] or path.name != "__init__.py" or path.parent.name != "numpy":
+                errors.append(f"{arm}.{name}: not real NumPy")
+            if real_identity is None:
+                real_identity = identity
+            elif identity != real_identity:
+                errors.append(f"{arm}.{name}: inconsistent real NumPy identity")
+        else:
+            expected = SUGGEST_MIN_FILE if name == "suggest" else MIN_FILE
+            kind = "shipped-min" if name == "suggest" else "experimental-min"
+            # Paths differ across CI runners; verify repository-relative suffix and exact bytes.
+            if identity["kind"] != kind or not path.as_posix().endswith("/" + expected.relative_to(ROOT).as_posix()) or digest != hashlib.sha256(expected.read_bytes()).hexdigest():
+                errors.append(f"{arm}.{name}: unexpected mini implementation")
+            if identity["version"] != ("0+min" if name == "suggest" else "0+linalg"):
+                errors.append(f"{arm}.{name}: invalid mini version")
+            if identity["module"] != ("queryu_numpy_min" if name == "suggest" else "numpy"):
+                errors.append(f"{arm}.{name}: invalid mini module")
+            if identity["backend"] not in ({"lapack", "stdlib"} if name == "suggest" else {"stdlib"}):
+                errors.append(f"{arm}.{name}: invalid mini backend")
+        if not isinstance(calls, dict) or any(type(calls.get(op)) is not int or calls[op] <= 0 for op in operations):
+            errors.append(f"{arm}.{name}: missing executed calls")
+    return errors
+
 
 # 余弦・特異値・再構成。因子の符号は一意でないので比べない。
 SUGGEST_RTOL, SUGGEST_ATOL = 1e-4, 1e-4
@@ -94,14 +222,8 @@ def _timed(bucket: dict, name: str, fn):
     return value
 
 
-def collect(scope: str) -> dict:
-    """numpy は呼び出す前に本物かスタンドインが入っている。"""
-    import numpy as np
+def _collect(scope: str, np, lp, rs, suggest) -> dict:
     import polars as pl
-
-    import littlebit_prune as lp
-    import rule_search as rs
-    import suggest
 
     seconds: dict[str, float] = {}
     if scope == "fixture":
@@ -215,7 +337,16 @@ def _hits(ref: list, got: list, path: str) -> list[str]:
 
 
 def compare(ref: dict, got: dict) -> list[str]:
-    bad: list[str] = []
+    bad = _evidence_errors(ref, "real") + _evidence_errors(got, "min")
+    if bad:
+        return bad
+    for name in REQUIRED_CALLS:
+        left = ref["backend_evidence"]["consumers"][name]["identity"]
+        right = got["backend_evidence"]["consumers"][name]["identity"]
+        if left["sha256"] == right["sha256"] or left["file"] == right["file"]:
+            bad.append(f"{name}: same implementation on both arms")
+    if bad:
+        return bad
     if ref.get("scope") != got.get("scope"):
         bad.append(f"scope {ref.get('scope')} と {got.get('scope')}")
     for key in ("n_docs", "vocab", "dim", "sizes"):
@@ -260,7 +391,7 @@ def main(argv=None) -> int:
         raise SystemExit("--numpy と出力先、または --compare が必要")
     _prepare(args.numpy, args.allow_installed)
     import numpy
-    payload = collect(args.scope)
+    payload = collect(args.scope, args.numpy)
     Path(args.out).write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True), encoding="utf-8")
     seconds = payload["meta"]["seconds"]
     print(

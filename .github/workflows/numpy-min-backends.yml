@@ -8,6 +8,10 @@ name: numpy_min backends
 on:
   pull_request:
     paths:
+      - queryu/ask/suggest.py
+      - queryu/vendor/aoi/shrink/numpy_min.py
+      - queryu/vendor.lock.json
+      - queryu/tests/test_queryu_numpy_min.py
       - scripts/shrink_module.py
       - shrink/numpy_min.py
       - tests/test_numpy_min_suggest.py
@@ -33,6 +37,7 @@ jobs:
         lane: [lapack, stdlib]
     env:
       NUMPY_MIN_EXPECT: ${{ matrix.lane }}
+      QUERYU_EXPECT_BACKEND: ${{ matrix.lane }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -69,7 +74,8 @@ jobs:
         run: |
           set -o pipefail
           uv run --locked --python "$(command -v python3)" pytest -q -rsP -p no:cacheprovider \
-            tests/test_numpy_min_suggest.py tests/test_numpy_min_gram_fallback.py tests/test_shrink_module.py 2>&1 | tee pytest.log
+            tests/test_numpy_min_suggest.py tests/test_numpy_min_gram_fallback.py tests/test_shrink_module.py \
+            queryu/tests/test_queryu_numpy_min.py 2>&1 | tee pytest.log
           grep -Eq '^[0-9]+ passed' pytest.log || grep -Eq '^=+ [0-9]+ passed' pytest.log
           if grep -Eq ' failed| error' pytest.log; then exit 1; fi
           if grep -qi 'illegal value' pytest.log; then exit 1; fi

@@ -96,7 +96,11 @@ def test_committed_traces_keep_the_names_the_report_cites():
 
     numpy_overlap = runs[("wrap", "numpy", "load_overlap")]
     assert {"reshape", "astype", "__and__", "__invert__"} <= set(numpy_overlap["missed_by_ast"])
-    assert "svd" in runs[("wrap", "numpy", "suggest_index")]["dynamic_attributes"]
+    suggest = runs[("wrap", "numpy", "suggest_index")]
+    assert suggest["status"] == 0 and suggest["exception"] is None
+    assert suggest["dynamic_attributes"] == [] and suggest["first_events"] == []
+    history = json.loads((ROOT / "docs/evidence/suggest-numpy-trace-history.json").read_text())
+    assert "svd" in history["runs"][0]["dynamic_attributes"]
     assert "lstsq" in runs[("wrap", "numpy", "littlebit_svd")]["dynamic_attributes"]
 
     assert {"css", "text", "attributes", "tag"} <= set(runs[("wrap", "selectolax", "selectolax_css")]["missed_by_ast"])

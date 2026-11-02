@@ -23,6 +23,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-11-02: Node 26 対応の子 PR を通常マージし、main CI の成功を確認した4つの merge を、fetch 後の `git subtree merge`（squash なし）で取り込みました。DRAgoWing `434fd1376454fbe537e7a22ca4552302d9cd2d73`、NagoyAction `9df163e502c4fd3cc7e3f35fab276cfb1d0db8b4`、PythDRagoras `e6e6036eb9ae52bdd738b10f644c13edfe31e0f3`、SakAnalytics `f3edc2707a87009912fbc01ef6c83259bd637669` をそれぞれ取り込み commit の第2親として保持し、prefix の tree は登録 SHA と完全一致しています。CI の Python provider の衝突は採用済みの子側（setup-uv / Python 3.15）へ揃え、子の過去の変更・履歴を保持しました。ランチャーは Aoi #149 の merge `827387a2c9339edd45b3ee2fc9d18120695166a0` から配布し、NagoyAction の launcher と LICENSE は同じ Aoi commit に固定しています。
+
 2026-10-31: SakAnalytics の登録 SHA は、子の main の第一親の最新のコミット `1c10c7f622dec31be74327cd800dd59ee32bae3b`（#29: moshimo のテストで aoi_root フィクスチャを使う）です。`sakanalytics/` の tree はこの SHA の tree と同一で、取り込み commit の第2親もこの SHA です。登録する `sha` は子の main の第一親にある merge だけです。
 
 2026-10-25: SakAnalytics #23 の merge `1609008d13a1627a583d7ad06d4e5bcee649b5c9`（ゼロ割りを空にする・許容値に名前をつける・NaN/inf の記録。値は変えない）を、squash なしの `git subtree pull --prefix=sakanalytics` で取り込みました。登録した `61ee074` から 12 コミット進んでいたので、子の #18〜#21（アイコン、vendor-dispatch の検証、英語の残り、`vendor/py_launch.cjs` 経由の Node 24 エントリ）も同時に入ります。`sakanalytics/` の tree は登録した SHA の tree と同一で、merge commit の第2親は子の main の head です。Aoi の clone が浅い（shallow）と「unrelated histories」で止まるので、先に `git fetch --unshallow` します。

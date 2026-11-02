@@ -6,8 +6,7 @@ from pathlib import Path
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / ".github/workflows/ci.yml").is_file())
 CI = ROOT / ".github/workflows/ci.yml"
 SETUP_NODE = "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0"
-SETUP_PYTHON = "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0"
-SETUP_UV = "astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2"
+SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3"
 
 
 def _job(text: str, name: str) -> str:
@@ -34,12 +33,12 @@ def test_vendor_dispatch_verifies_the_lock_without_record():
     assert 'uv run --locked --python "${{ matrix.python }}" pytest' in text
     job = _job(text, "vendor-dispatch")
     assert "needs: changes" in job
-    assert "actions/checkout@v7" in job
+    assert "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1" in job
     assert SETUP_NODE in job
-    assert SETUP_PYTHON in job
+    assert "actions/setup-python" not in text
     assert SETUP_UV in job
-    assert 'node-version: "24"' in job
-    assert 'python-version: "3.12"' in job
+    assert 'node-version: "26"' in job
+    assert 'python-version: "3.15"' in job
     assert "git ls-remote https://github.com/myon-bioinformatics/myon-bioinformatics refs/heads/main" in job
     assert 'PARENT_REPOSITORY_ID: "638801160"' in job
     assert "python -S" not in job

@@ -27,7 +27,11 @@
     },
     {
       "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
-      "line": 394
+      "line": 390
+    },
+    {
+      "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",
+      "line": 515
     },
     {
       "file": "queryu/conftest.py",
@@ -504,11 +508,11 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1007,
+      "attribute_uses": 1009,
       "attributes": {
         "Boolean": 14,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 258,
+        "DataFrame": 259,
         "Expr": 13,
         "Float32": 1,
         "Float64": 70,
@@ -526,7 +530,7 @@
         "first": 4,
         "int_range": 1,
         "len": 8,
-        "lit": 33,
+        "lit": 34,
         "max_horizontal": 1,
         "read_csv": 1,
         "read_ndjson": 22,
@@ -651,6 +655,16 @@
           "files": 6,
           "import_sites": 11
         },
+        "scripts": {
+          "attribute_uses": 2,
+          "attributes": {
+            "DataFrame": 1,
+            "lit": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        },
         "tests": {
           "attribute_uses": 6,
           "attributes": {
@@ -691,8 +705,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 44,
-      "import_sites": 49
+      "files": 45,
+      "import_sites": 50
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -717,7 +731,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1380,
+      "attribute_uses": 1384,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -727,13 +741,13 @@
         "UsageError": 10,
         "approx": 387,
         "fail": 33,
-        "fixture": 57,
+        "fixture": 58,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 318,
+        "mark.parametrize": 320,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 501,
+        "raises": 502,
         "skip": 12,
         "warns": 3
       },
@@ -772,19 +786,19 @@
           "import_sites": 15
         },
         "dragowing": {
-          "attribute_uses": 87,
+          "attribute_uses": 90,
           "attributes": {
             "UsageError": 2,
             "fail": 2,
             "fixture": 8,
-            "mark.parametrize": 21,
+            "mark.parametrize": 23,
             "mark.skipif": 3,
-            "raises": 47,
+            "raises": 48,
             "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 14,
-          "import_sites": 15
+          "files": 15,
+          "import_sites": 16
         },
         "nagoyaction": {
           "attribute_uses": 85,
@@ -866,11 +880,11 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 407,
+          "attribute_uses": 408,
           "attributes": {
             "approx": 104,
             "fail": 13,
-            "fixture": 17,
+            "fixture": 18,
             "importorskip": 3,
             "mark.parametrize": 109,
             "mark.skipif": 12,
@@ -916,8 +930,8 @@
       ],
       "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 134,
-      "import_sites": 136
+      "files": 135,
+      "import_sites": 137
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1494,6 +1508,17 @@
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_research_report.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 2,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_stdlib_paths.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -2985,6 +3010,17 @@
     },
     {
       "attributes": {
+        "DataFrame": 1,
+        "lit": 1
+      },
+      "dynamic_lines": [],
+      "file": "scripts/nano/workload.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "scripts"
+    },
+    {
+      "attributes": {
         "MonkeyPatch": 1,
         "StashKey": 1,
         "fixture": 1,
@@ -3181,6 +3217,7 @@
     {
       "attributes": {
         "fail": 1,
+        "fixture": 1,
         "mark.parametrize": 2,
         "raises": 6
       },

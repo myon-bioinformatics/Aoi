@@ -99,7 +99,7 @@ python localci.py resolve                     # only resolve SHAs; CI's resolve 
 Checks that pass with fixed values are switched to other values from that round's seed with `substitute(name, value, draw)`. In pytest, `-p localci_pytest` does the same via monkeypatch. Rounds can also be chosen with the plugin alone.
 
 ```bash
-pytest -p localci_pytest --localci-repeat 10 --localci-round 3 --localci-seed 7
+uv run --with pytest pytest -p localci_pytest --localci-repeat 10 --localci-round 3 --localci-seed 7
 ```
 
 The references resolved are Aoi, `myon-bioinformatics/myon-bioinformatics`, the vendored `markdown` and `web-ui`, and the repositories listed in the repository root's `vendor.lock.json`. SHAs are not written in source. The GitHub Actions resolve job calls `python localci.py resolve --github-output` and passes the job output `sha` (Aoi) to checkout. Reusable workflow `uses:` can't be expressions, so they stay as pins in the file and localci compares them with the latest release.
@@ -155,7 +155,7 @@ git -C ../Aoi add -A nagoyaction
 cd ../Aoi && uv run --locked pytest -q -c pyproject.toml nagoyaction/tests
 ```
 
-CI does the same on Python 3.11–3.15.
+CI does the same on Python 3.11–3.15. Python is provisioned with `astral-sh/setup-uv` (not `actions/setup-python`); fixed lanes run on 3.15, the matrix keeps the compatibility range.
 
 ## Relationship with Aoi
 
@@ -198,7 +198,7 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --of
 python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run  # only show what would be done
 ```
 
-## Node entry (Node 24+)
+## Node entry (Node 26+)
 
 `node nagoyaction.cjs <args>` runs `nagoyaction.py` through the vendored shared launcher
 `vendor/py_launch.cjs`, taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. Arguments, stdin/stdout/stderr and the
@@ -209,6 +209,11 @@ set `PY_LAUNCH_ERROR_FORMAT=json` for a structured launcher error on stderr (ind
 the tool's `--json` flag).
 
 The launcher and license are pinned to Aoi's accepting main merge commit
-[`bb5eb56`](https://github.com/myon-bioinformatics/Aoi/commit/bb5eb56f216eeff9135b7aa178197a79df152396),
-not to the root repository or an unmerged PR head. `shared-tools.lock.json` remains the separate,
-unchanged lock for the polars shrink tools under `vendor/aoi/`.
+[`827387a`](https://github.com/myon-bioinformatics/Aoi/commit/9e0147a17695ce63fa73daf75d8195a4f49095bb),
+not to the root repository or an unmerged PR head. `shared-tools.lock.json` remains the separate
+lock for the polars shrink tools under `vendor/aoi/`.
+
+The shared launcher also supports direct use:
+`node vendor/py_launch.cjs [--env-var NAME] [--site] [--] SCRIPT.py [ARGS...]`.
+Direct use defaults to `-S`; `--site` explicitly enables site-packages. The existing
+`nagoyaction.cjs` entry still always requests `noSite: true`.

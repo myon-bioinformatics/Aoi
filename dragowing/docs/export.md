@@ -36,7 +36,7 @@ The launched Chrome is not allowed to use D-Bus. The child process's `DBUS_SESSI
 ## Verification
 
 ```bash
-CHROMIUM=/path/to/chromium DRAGOWING_REQUIRE_CHROME=1 uv run --locked --python 3.14 pytest -q dragowing/tests
+CHROMIUM=/path/to/chromium DRAGOWING_REQUIRE_CHROME=1 uv run --locked --python 3.15 pytest -q dragowing/tests
 ```
 
 In a normal environment without Chromium or an explicit browser override, real-browser tests are skipped with a reason. With `DRAGOWING_REQUIRE_CHROME=1` they fail instead of skipping. Only the Mermaid CDN test requires explicitly setting `DRAGOWING_TEST_NETWORK=1`.

@@ -57,6 +57,13 @@ python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--colum
 - Condition overlap (`overlap.py`) uses `propositions` and `rule_search` from [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras), and the four-forms table (`forms.py`) uses `ask` (registration status) from [QueRyu](https://github.com/myon-bioinformatics/QueRyu). Put them on `PYTHONPATH` to run (same as "Tests" below).
 - This directory is the contents of the `dragowing` package, so run `python -m dragowing` from a parent where the directory appears as `dragowing` (see the example under "Tests").
 
+## Optional HTML-only environment
+
+[Prepare the pinned HTML-only environment](docs/nano-environment.md) with the
+shared parent exporter. It keeps the existing stdlib overlap path and real
+Markdown dependency; native/image-export modes and the full test environment
+remain separate and unchanged.
+
 ## Making only the overlap computation lightweight
 
 `load_overlap(path, conds, backend="stdlib")` or `--overlap-backend stdlib` selects
@@ -128,7 +135,7 @@ AOI_ROOT=$PWD/.test-deps/aoi \
 - `reports/build_reports.py` is an Aoi-side tool (Aoi's DRAgoWing reports workflow checks out `myon-bioinformatics/markdown` and calls it). This repository's CI does not run that workflow.
 - The Python matrix explicitly selects Chromium and requires real-browser tests. Missing Chromium fails CI rather than silently falling back to Chrome or skipping. Locally, real-browser tests remain optional unless `DRAGOWING_REQUIRE_CHROME=1` is set.
 
-CI (`.github/workflows/ci.yml`) runs pytest on Python 3.11–3.15. `vendor.lock.json` (`vendor-lock/1`) records repository, ref, commit, source, destination, blob_sha, and sha256, and the copies are in `vendor/aoi/`. CI resolves Aoi's main with `git ls-remote` (overridable with `workflow_dispatch`'s `aoi-ref`), checks repository id `1402862784`, and then compares the copies. A mismatch is a warning on pull requests and a failure on pushes to main and on schedule. In parallel, it resolves the main of the parent myon-bioinformatics/myon-bioinformatics with `git ls-remote` (repository id `638801160`) and verifies that SHA's `pilot/vendor_dispatch.py` against `vendor.lock.json`. `--record` is not passed. Skips are recorded, and it fails if the recorded commit's digest differs.
+CI (`.github/workflows/ci.yml`) runs pytest on Python 3.11–3.15. Python is provisioned with `astral-sh/setup-uv`; the fixed lanes (`vendor-lock`, `vendor-dispatch`) run on 3.15 and the matrix keeps the compatibility range. `vendor.lock.json` (`vendor-lock/1`) records repository, ref, commit, source, destination, blob_sha, and sha256, and the copies are in `vendor/aoi/`. CI resolves Aoi's main with `git ls-remote` (overridable with `workflow_dispatch`'s `aoi-ref`), checks repository id `1402862784`, and then compares the copies. A mismatch is a warning on pull requests and a failure on pushes to main and on schedule. In parallel, it resolves the main of the parent myon-bioinformatics/myon-bioinformatics with `git ls-remote` (repository id `638801160`) and verifies that SHA's `pilot/vendor_dispatch.py` against `vendor.lock.json`. `--record` is not passed. Skips are recorded, and it fails if the recorded commit's digest differs.
 
 ## Relationship with Aoi
 

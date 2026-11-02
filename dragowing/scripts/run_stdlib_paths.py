@@ -87,7 +87,18 @@ def _preload_numpy_min():
     """rule_search の `import numpy` が最小版を見るように、先に載せる。"""
     if "rule_search" in sys.modules or "dragowing.overlap" in sys.modules:
         raise SystemExit("numpy_min を載せる前に overlap か rule_search が import されている")
-    module = _load_py("numpy", _vendored("numpy_min.py"))
+    # This path is the stdlib substitute, not an opt-in native backend.
+    # Called during single-threaded CLI startup, before overlap/rule_search.
+    # Restrict only module initialization, then restore the caller environment.
+    previous = os.environ.get("NUMPY_MIN_PURE")
+    os.environ["NUMPY_MIN_PURE"] = "1"
+    try:
+        module = _load_py("numpy", _vendored("numpy_min.py"))
+    finally:
+        if previous is None:
+            os.environ.pop("NUMPY_MIN_PURE", None)
+        else:
+            os.environ["NUMPY_MIN_PURE"] = previous
     if not Path(module.__file__ or "").name == "numpy_min.py":
         raise SystemExit(f"numpy_min ではない: {module.__file__}")
     return module

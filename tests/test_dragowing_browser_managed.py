@@ -49,9 +49,19 @@ def validate(ci, validation):
         assert '|| true' not in gate and '|| true' not in remaining
     for name in firsts[:1] + rests[:1]:
         assert 'python -m pytest -c pyproject.toml' in step(lanes[0], name)
-    # Offline retains the original privilege/network context; ordinary jobs do not gain it.
+    # Browser/tests retain their privilege context. Only approved pinned apt
+    # provisioning may use sudo in the ordinary job; never browser/test execution.
     assert 'sudo unshare --net -- env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1' in step(lanes[1], firsts[1])
-    assert 'sudo' not in lanes[0]
+    runtime = step(lanes[0], 'Install pinned native runtime for the full suite (Ubuntu 24.04)')
+    assert 'sudo' not in lanes[0].replace(runtime, '', 1)
+    joined = re.sub(r'\\\n\s*', ' ', runtime)
+    privileged = [' '.join(line.split()) for line in joined.splitlines() if 'sudo' in line]
+    packages = 'liblapack3=3.12.0-3build1.1 libblas3=3.12.0-3build1.1'
+    assert privileged == [
+        'sudo apt-get update -q',
+        'sudo apt-get install --simulate --no-install-recommends --no-remove ' + packages,
+        'sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends --no-remove ' + packages,
+    ]
     wrapper = step(lanes[2], 'Observe the actual tests without preceding browser launches')
     assert '-m scripts.run_browser_startup_ci --output build/startup-context' in wrapper
     assert 'offline) prefix=(sudo unshare --net --)' in wrapper and 'normal) ;;' in wrapper
@@ -101,6 +111,10 @@ def test_every_actual_browser_lane_installs_and_gates():
 
 @pytest.mark.parametrize('target,old,new', [
     ('ci', INSTALL, 'echo installation skipped'),
+    ('ci', INSTALL, 'sudo ' + INSTALL),
+    ('ci', 'python -m pytest -c pyproject.toml', 'sudo python -m pytest -c pyproject.toml'),
+    ('ci', 'sudo apt-get update -q', 'sudo apt-get update -q; sudo unshare --net true'),
+    ('ci', 'liblapack3=3.12.0-3build1.1', 'liblapack3'),
     ('ci', 'python -m pytest -c pyproject.toml', 'pytest -c pyproject.toml'),
     ('ci', 'python -m pytest -c pyproject.toml', 'python -m pytest'),
     ('validation', INSTALL, 'echo installation skipped'),

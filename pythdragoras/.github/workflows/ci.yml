@@ -122,7 +122,7 @@ jobs:
         with:
           node-version: '26'
       - name: Require supported Node in parity CI
-        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
+        run: node -e "if (+process.versions.node.split('.')[0] < 26) process.exit(1)"
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python }}
@@ -215,7 +215,7 @@ jobs:
           sparse-checkout: pilot
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "24"
+          node-version: "26"
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
@@ -234,8 +234,8 @@ jobs:
             exit 1
           fi
           node_major=$(node -p "process.versions.node.split('.')[0]")
-          if [[ "$node_major" -lt 24 ]]; then
-            echo "node ${node_major} is older than 24" >&2
+          if [[ "$node_major" -lt 26 ]]; then
+            echo "node ${node_major} is older than 26" >&2
             exit 1
           fi
           python - <<'PY'

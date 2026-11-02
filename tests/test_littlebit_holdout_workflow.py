@@ -8,7 +8,7 @@ def test_holdout_job_provisions_node_before_parity_tests():
     job = workflow.split('\n  provenance:\n', 1)[1]
     setup = job.index('uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1')
     version = job.index("node-version: '26'", setup)
-    guard = job.index('run: node -e "if (+process.versions.node.split(\'.\')[0] < 24) process.exit(1)"', version)
+    guard = job.index('run: node -e "if (+process.versions.node.split(\'.\')[0] < 26) process.exit(1)"', version)
     suite = job.index('uv run --locked --python 3.14.8 pytest')
     assert job.count("uses: actions/setup-node@") == 1
     assert setup < version < guard < suite

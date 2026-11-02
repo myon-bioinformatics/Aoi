@@ -103,13 +103,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # The full suite includes sakanalytics/ tests that, on GITHUB_ACTIONS, fail without Node 24+
+      # The full suite includes sakanalytics/ tests that, on GITHUB_ACTIONS, fail without Node 26+
       # (same requirement as the test job in ci.yml).
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '26'
       - name: Require supported Node in parity CI
-        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
+        run: node -e "if (+process.versions.node.split('.')[0] < 26) process.exit(1)"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: 'latest'

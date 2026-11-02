@@ -209,7 +209,7 @@ set `PY_LAUNCH_ERROR_FORMAT=json` for a structured launcher error on stderr (ind
 the tool's `--json` flag).
 
 The launcher and license are pinned to Aoi's accepting main merge commit
-[`827387a`](https://github.com/myon-bioinformatics/Aoi/commit/827387a2c9339edd45b3ee2fc9d18120695166a0),
+[`827387a`](https://github.com/myon-bioinformatics/Aoi/commit/9e0147a17695ce63fa73daf75d8195a4f49095bb),
 not to the root repository or an unmerged PR head. `shared-tools.lock.json` remains the separate
 lock for the polars shrink tools under `vendor/aoi/`.
 

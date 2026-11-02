@@ -122,7 +122,7 @@ jobs:
         with:
           node-version: '26'
       - name: Require supported Node in parity CI
-        run: node -e "if (+process.versions.node.split('.')[0] < 26) process.exit(1)"
+        run: node -e "if (+process.versions.node.split('.')[0] < 24) process.exit(1)"
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python }}
@@ -135,6 +135,7 @@ jobs:
       - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
           AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
+          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/sakanalytics
       - name: Preserve JUnit report
         if: always()
         uses: actions/upload-artifact@v7
@@ -214,7 +215,7 @@ jobs:
           sparse-checkout: pilot
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "26"
+          node-version: "24"
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"

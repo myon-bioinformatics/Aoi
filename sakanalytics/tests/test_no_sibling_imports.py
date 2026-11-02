@@ -18,8 +18,7 @@ SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "dragowing
 # 読むのはテストのデータの場所だけ。CLI は --cycle-dir を受け取る。
 AOI_PROVIDED = {"aoi_paths"}
 KNOWN_EXCEPTIONS = {
-    # PythDRagoras の propositions。conftest.py が AOI_ROOT から sys.path に入れる（import はしない）
-    ("conftest.py", "path:pythdragoras"),
+    # PythDRagoras の propositions。PYTHONPATH で渡す
     ("proposition_seed_audit.py", "import:propositions"),
     ("synthetic_rule_discovery.py", "import:propositions"),
     # もしもボックスの --readout / readout() は、同じ表を PythDRagoras の評価で読み戻す（任意。遅延 import）

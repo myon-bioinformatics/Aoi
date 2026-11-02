@@ -1,22 +1,9 @@
-"""PythDRagoras 単独リポジトリ用。サイクルデータ・scripts/・sakanalytics は Aoi に残す。
-
-Aoi の場所は AOI_ROOT だけで渡す。sakanalytics への import 経路はここで作り、子プロセスにも PYTHONPATH で渡す。
-"""
+"""PythDRagoras 単独リポジトリ用。サイクルデータ・scripts/・sakanalytics は Aoi に残す（AOI_ROOT）。"""
 import os
 import sys
 from pathlib import Path
 
 import pytest
-
-
-def _export_path(path: Path) -> None:
-    text = str(path)
-    if text not in sys.path:
-        sys.path.append(text)
-    # CLI のテストは子プロセスで動くので、同じ import 経路を環境変数にも入れる
-    current = [p for p in os.environ.get("PYTHONPATH", "").split(os.pathsep) if p]
-    if text not in current:
-        os.environ["PYTHONPATH"] = os.pathsep.join([*current, text])
 
 
 def _root() -> Path:
@@ -32,7 +19,6 @@ def _root() -> Path:
     # テストのデータの場所（既定のサイクル）は Aoi の aoi_paths.py に聞く。このリポジトリには置かない
     if str(root) not in sys.path:
         sys.path.append(str(root))
-    _export_path(root / "sakanalytics")
     return root
 
 
@@ -44,7 +30,8 @@ def pytest_configure(config):
     if not (root / "cycles").is_dir():
         raise pytest.UsageError(
             f"Aoi のデータが見つからない（{root} に cycles/ がない）。"
-            "Aoi を checkout して AOI_ROOT=<Aoi のルート> を渡す（.github/workflows/ci.yml と同じ）"
+            "Aoi を checkout して AOI_ROOT=<Aoi のルート>、"
+            "PYTHONPATH=<Aoi のルート>/sakanalytics を渡す（.github/workflows/ci.yml と同じ）"
         )
 
 

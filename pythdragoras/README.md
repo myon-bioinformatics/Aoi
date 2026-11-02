@@ -85,16 +85,17 @@ Cycle data (`cycles/`), `scripts/`, and SakAnalytics stay in Aoi. They are not c
 ```bash
 git clone https://github.com/myon-bioinformatics/Aoi.git .test-deps/aoi
 git -C .test-deps/aoi checkout main
-AOI_ROOT=$PWD/.test-deps/aoi uv run pytest -q --junitxml=reports/junit.xml
+AOI_ROOT=$PWD/.test-deps/aoi PYTHONPATH=$PWD/.test-deps/aoi/sakanalytics \
+  uv run pytest -q --junitxml=reports/junit.xml
 ```
 
 CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. A ref can be given via `aoi_ref` in `workflow_dispatch`. The resolved SHA is left in the job summary.
 
-- Tests receive Aoi only through `AOI_ROOT` (the one env var CI sets). `conftest.py` adds the `sakanalytics` path from it, and `PYTHONPATH` is not set by hand. Tests ask Aoi's `aoi_paths.py` for data locations. No `aoi_paths.py` is kept in this repository.
+- Tests receive Aoi only through `AOI_ROOT` and ask Aoi's `aoi_paths.py` for data locations. No `aoi_paths.py` is kept in this repository.
 - If `AOI_ROOT` doesn't point to Aoi, pytest stops at the start and gives the reason.
 - The only runtime dependencies are polars and numpy (ortools is not used).
 - In addition, tests use Aoi at `AOI_ROOT`.
-  - SakAnalytics: `tests/test_propositions.py:195` (`sakanalytics`, put on the path by `conftest.py`).
+  - SakAnalytics: `tests/test_propositions.py:195` (`sakanalytics` on `PYTHONPATH`).
   - Aoi's `scripts/`: `tests/test_c001_replay_compare.py:7` (`compare_c001_replay`) and `tests/test_c001_exploratory_candidates.py:14` (`check_c001_exploratory_candidates.py`).
   - `tests/test_no_sibling_imports.py` confirms that no other Aoi sibling subprojects or `scripts/` are used (the three above are known exceptions).
 
@@ -303,7 +304,7 @@ Measured on 6 kinds of 64x64 synthetic images. Tests use fixed seeds (11–16), 
 - Shifting the reconstructed region by (3, 2) lowers IoU in every scenario (lines drop to around 0.07, filled shapes to about 0.6–0.74).
 - All 6 scenarios are measurements on fixed synthetic images; performance on real images is not guaranteed.
 
-## Node entry (Node 26+)
+## Node entry (Node 24+)
 
 - `node littlebit_survey.cjs <args>` runs `littlebit_survey.py` (interpreter override: `LITTLEBIT_SURVEY_PYTHON`).
 - `node season_sensitivity.cjs <args>` runs `season_sensitivity.py` (interpreter override: `SEASON_SENSITIVITY_PYTHON`).
@@ -316,4 +317,4 @@ commit `bb5eb56f216eeff9135b7aa178197a79df152396`, not directly from Aoi's paren
 SIGINT and SIGTERM continue to be forwarded while the Python child is alive, even after an earlier signal was handled or ignored.
 Launcher failures (no Python 3.9+, spawn error, signal) exit 2. Set `PY_LAUNCH_ERROR_FORMAT=json` for a single structured error on stderr; signal failures report the signal that actually terminated the child.
 
-Regression tests cover every thin entry with acknowledged repeated signals, text/JSON errors, and a hostile `sitecustomize` hook. They also test `noSite` and `isolated` discovery independently without changing the entries' `noSite: true` configuration or the Node 26+ floor.
+Regression tests cover every thin entry with acknowledged repeated signals, text/JSON errors, and a hostile `sitecustomize` hook. They also test `noSite` and `isolated` discovery independently without changing the entries' `noSite: true` configuration or the Node 24+ floor.

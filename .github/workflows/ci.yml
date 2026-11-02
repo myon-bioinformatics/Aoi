@@ -244,7 +244,7 @@ jobs:
           set -euo pipefail
           python -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'
           node_major=$(node -p "process.versions.node.split('.')[0]")
-          if [[ "$node_major" -lt 24 ]]; then
+          if [[ "$node_major" -lt 26 ]]; then
             echo "node is older than 26"
             exit 1
           fi

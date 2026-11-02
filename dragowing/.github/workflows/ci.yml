@@ -164,7 +164,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "26"
+          node-version: "24"
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
@@ -249,7 +249,7 @@ jobs:
           uv --version
           python -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'
           node_major=$(node -p "process.versions.node.split('.')[0]")
-          [[ "$node_major" -ge 26 ]]
+          [[ "$node_major" -ge 24 ]]
           python .test-deps/parent/pilot/vendor_dispatch.py --manifest vendor.lock.json
 
   test:

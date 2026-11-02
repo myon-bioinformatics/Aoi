@@ -35,11 +35,11 @@ def _node() -> str | None:
     except (OSError, subprocess.SubprocessError):
         return None
     match = re.match(r"v(\d+)", out.strip())
-    return node if match and int(match.group(1)) >= 26 else None
+    return node if match and int(match.group(1)) >= 24 else None
 
 
 NODE = _node()
-needs_node = pytest.mark.skipif(NODE is None, reason="Node 26+ not available (set NODE)")
+needs_node = pytest.mark.skipif(NODE is None, reason="Node 24+ not available (set NODE)")
 
 
 def test_ci_requires_node_for_node_entry_parity():
@@ -54,7 +54,7 @@ def test_ci_requires_node_for_node_entry_parity():
     # Enforce Node availability for the actual Actions "test" matrix, where
     # setup-node is installed and all parity tests must execute.
     if os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("GITHUB_JOB") == "test":
-        assert NODE is not None, "Node 26+ is required for the Node parity suite"
+        assert NODE is not None, "Node 24+ is required for the Node parity suite"
 
 
 def _env() -> dict[str, str]:
@@ -110,7 +110,7 @@ def test_entry_uses_shared_launcher_only():
     assert "child_process" not in text
     assert f'"{TOOL}.py"' in text
     pkg = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
-    assert pkg["engines"]["node"] == ">=26"
+    assert pkg["engines"]["node"] == ">=24"
 
 
 @needs_node
@@ -174,7 +174,7 @@ def test_node_probe_rejects_missing_or_old(monkeypatch, tmp_path):
     assert _node() is None
     monkeypatch.setenv("NODE", str(tmp_path / "no-such-node"))
     assert _node() is None
-    monkeypatch.setenv("NODE", sys.executable)  # prints "Python 3.x", not v26+
+    monkeypatch.setenv("NODE", sys.executable)  # prints "Python 3.x", not v24+
     assert _node() is None
 
 
@@ -182,7 +182,7 @@ def test_ci_guard_fails_without_node_in_actions_test_job(monkeypatch):
     monkeypatch.setenv("GITHUB_ACTIONS", "true")
     monkeypatch.setenv("GITHUB_JOB", "test")
     monkeypatch.setitem(globals(), "NODE", None)
-    with pytest.raises(AssertionError, match="Node 26\\+ is required"):
+    with pytest.raises(AssertionError, match="Node 24\\+ is required"):
         test_ci_requires_node_for_node_entry_parity()
 
 

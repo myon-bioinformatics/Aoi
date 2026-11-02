@@ -245,12 +245,12 @@ Reparsing the same source text any number of times makes no new GETs. Normal NPB
 
 ### Reproducing offline integration tests with a snapshot of past patterns
 
-CI's `Offline lab integration (Python 3.14)` fetches lab's merge commit
+CI's `Offline lab integration (Python 3.15)` fetches lab's merge commit
 `6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90` by SHA as verification test data for past patterns, and checks it out to `.test-deps/lab`.
 It adds `src` to `PYTHONPATH` at test time, and a pre-check verifies the SHA and the import origins of
 `html_snapshot`, `css_inspect`, and `source_access`. Import origins are
 also checked inside the actual tests. No single-file copies, automatic lab installation, or fetching at run time.
-The normal Python 3.11–3.15 test matrix stays without lab, and integration tests run only on 3.14.
+The normal Python 3.11–3.15 test matrix stays without lab, and integration tests run only on 3.15.
 This does not mean lab integration was verified on all Python versions.
 
 Run at this repository's root (in Aoi, at Aoi's root, prefixing test paths with `blueprobe/`) (the clone is preparation before testing, not network access during extraction).
@@ -261,7 +261,7 @@ git -C .test-deps/lab checkout --detach 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
 test "$(git -C .test-deps/lab rev-parse HEAD)" = 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
 export AOI_LAB_SOURCE_ROOT="$PWD/.test-deps/lab/src"
 export PYTHONPATH="$AOI_LAB_SOURCE_ROOT"
-uv run --python 3.14 python - <<'PY'
+uv run --python 3.15 python - <<'PY'
 import os
 from pathlib import Path
 from mcp_toolcall_lab.adapters import css_inspect, html_snapshot
@@ -272,16 +272,16 @@ for module in (html_snapshot, css_inspect):
     assert Path(module.__file__).resolve() == expected, module.__file__
 assert Path(source_access.__file__).resolve() == root / 'mcp_toolcall_lab/source_access.py'
 PY
-uv run --python 3.14 pytest -q --require-lab-integration \
+uv run --python 3.15 pytest -q --require-lab-integration \
   tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows \
   tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
   tests/test_blueprobe_html_source.py::test_verified_cache_real_lab_snapshot_replay \
-  --junitxml=build/test-results/lab-integration-3.14.xml
+  --junitxml=build/test-results/lab-integration-3.15.xml
 # all tests with lab
-uv run --python 3.14 pytest -q --require-lab-integration
+uv run --python 3.15 pytest -q --require-lab-integration
 # normal tests without lab. Run in an environment where lab is not installed separately.
 unset PYTHONPATH AOI_LAB_SOURCE_ROOT
-uv run --python 3.14 pytest -q
+uv run --python 3.15 pytest -q
 ```
 
 `--require-lab-integration` makes the 3 real-extractor tests mandatory, and does not treat not-collected, skip,

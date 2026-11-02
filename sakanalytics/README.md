@@ -269,7 +269,7 @@ The regular c001 pipeline also reads the diagnostics with `--seed-evaluation` an
 Seed variation is measured only within groups with the same year, proposition definition, and generation conditions, kept separate from the effects of changing conditions.
 Synthetic input covers 13 propositions; propositions lacking needed columns or a mapping to real teams stay unevaluated.
 
-## Node entry (Node 24+)
+## Node entry (Node 26+)
 
 - `node synthetic_league.cjs <args>` runs `synthetic_league.py` (interpreter override: `SYNTHETIC_LEAGUE_PYTHON`).
 - `node annual_audit.cjs <args>` runs `annual_audit.py` (interpreter override: `ANNUAL_AUDIT_PYTHON`).
@@ -281,4 +281,4 @@ commit `bb5eb56f216eeff9135b7aa178197a79df152396`, not directly from Aoi's paren
 SIGINT and SIGTERM continue to be forwarded while the Python child is alive, even after an earlier signal was handled or ignored.
 Launcher failures (no Python 3.9+, spawn error, signal) exit 2. Set `PY_LAUNCH_ERROR_FORMAT=json` for a single structured error on stderr; signal failures report the signal that actually terminated the child.
 
-Regression tests cover every thin entry with acknowledged repeated signals, text/JSON errors, and a hostile `sitecustomize` hook. They also test `noSite` and `isolated` discovery independently without changing the entries' `noSite: true` configuration or the Node 24+ floor.
+Regression tests cover every thin entry with acknowledged repeated signals, text/JSON errors, and a hostile `sitecustomize` hook. They also test `noSite` and `isolated` discovery independently without changing the entries' `noSite: true` configuration or the Node 26+ floor.

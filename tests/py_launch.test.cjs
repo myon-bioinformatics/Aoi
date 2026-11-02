@@ -10,10 +10,10 @@ const launcher = require("../vendor/py_launch.cjs");
 const LAUNCHER = path.join(__dirname, "..", "vendor", "py_launch.cjs");
 const PYTHON = process.env.PY_LAUNCH_TEST_PYTHON || (process.platform === "win32" ? "python" : "python3");
 
-test("the shared launcher keeps Node 24 as its minimum", () => {
-  assert.deepEqual(launcher.MIN_NODE, [24, 0]);
-  assert.throws(() => launcher.assertNodeVersion("23.9.0"), { code: "ENODEVERSION" });
-  assert.doesNotThrow(() => launcher.assertNodeVersion("24.0.0"));
+test("the shared launcher keeps Node 26 as its minimum", () => {
+  assert.deepEqual(launcher.MIN_NODE, [26, 0]);
+  assert.throws(() => launcher.assertNodeVersion("25.9.0"), { code: "ENODEVERSION" });
+  assert.doesNotThrow(() => launcher.assertNodeVersion("26.0.0"));
   assert.doesNotThrow(() => launcher.assertNodeVersion("26.0.0"));
 });
 

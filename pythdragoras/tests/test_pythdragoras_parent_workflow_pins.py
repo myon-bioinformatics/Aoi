@@ -51,7 +51,7 @@ def test_vendor_dispatch_verifies_lock_on_resolved_parent_main():
     assert "--manifest vendor.lock.json" in text
     assert "--record" not in text
     assert 'node-version: "26"' in text
-    assert 'python-version: "3.12"' in text
+    assert 'python-version: "3.15"' in text
     assert "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0" in text
     assert "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1" in text
     for line in text.splitlines():
@@ -61,3 +61,20 @@ def test_vendor_dispatch_verifies_lock_on_resolved_parent_main():
     lock = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
     assert lock["schema"] == "vendor-lock/1"
     assert isinstance(lock["files"], list)
+
+
+def test_vendor_dispatch_node_floor_matches_setup_node():
+    """Execute the defensive guard at the Node 26 boundary."""
+    import subprocess
+
+    text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    job = text.split("\n  vendor-dispatch:", 1)[1]
+    guard = re.search(r'if \[\[ "\$node_major" -lt \d+ \]\]; then\n.*?\n          fi', job, re.S)
+    assert guard is not None
+    assert 'node-version: "26"' in job
+    for major, expected in ((24, 1), (25, 1), (26, 0), (27, 0)):
+        result = subprocess.run(
+            ["bash", "-c", f"node_major={major}\n" + guard.group()],
+            capture_output=True, text=True, check=False,
+        )
+        assert result.returncode == expected, (major, result.stdout, result.stderr)

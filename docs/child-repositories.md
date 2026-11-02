@@ -23,6 +23,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 `sha` の更新は PR で行い、自動マージはしない。
 
+2026-11-02 追補: 子側で採用された provenance 更新 SakAnalytics #35 `95cfacd4f8aeb29eda0696a61f503e25a8789fce`、PythDRagoras #36 `9fb998c6db1be112cacda5d5963b9b751fd3c4e4`、NagoyAction #37 `da68f374ad1ae7c786f926190b98c94920d91420` も、履歴を保持した `git subtree merge`（squash なし）で取り込みました。各子側の採用 commit は下記の旧登録 commit を第一親に持つ squash commit で、Aoi 側の取り込み commit は新しい採用 commit を第2親に保持します。現在の登録と prefix tree は新しい採用 commit に一致します。ランチャーのバイトは変わらず、固定参照は Aoi #150 `9e0147a17695ce63fa73daf75d8195a4f49095bb` へ進み、NagoyAction の LICENSE も同じ参照です。子の README・テスト・lock は採用済みの内容をそのまま保持しています。DRAgoWing の登録は `434fd1376454fbe537e7a22ca4552302d9cd2d73` のままです。
+
 2026-11-02: Node 26 対応の子 PR を通常マージし、main CI の成功を確認した4つの merge を、fetch 後の `git subtree merge`（squash なし）で取り込みました。DRAgoWing `434fd1376454fbe537e7a22ca4552302d9cd2d73`、NagoyAction `9df163e502c4fd3cc7e3f35fab276cfb1d0db8b4`、PythDRagoras `e6e6036eb9ae52bdd738b10f644c13edfe31e0f3`、SakAnalytics `f3edc2707a87009912fbc01ef6c83259bd637669` をそれぞれ取り込み commit の第2親として保持し、prefix の tree は登録 SHA と完全一致しています。CI の Python provider の衝突は採用済みの子側（setup-uv / Python 3.15）へ揃え、子の過去の変更・履歴を保持しました。ランチャーは Aoi #149 の merge `827387a2c9339edd45b3ee2fc9d18120695166a0` から配布し、NagoyAction の launcher と LICENSE は同じ Aoi commit に固定しています。
 
 2026-10-31: SakAnalytics の登録 SHA は、子の main の第一親の最新のコミット `1c10c7f622dec31be74327cd800dd59ee32bae3b`（#29: moshimo のテストで aoi_root フィクスチャを使う）です。`sakanalytics/` の tree はこの SHA の tree と同一で、取り込み commit の第2親もこの SHA です。登録する `sha` は子の main の第一親にある merge だけです。

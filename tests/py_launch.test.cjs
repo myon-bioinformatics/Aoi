@@ -12,9 +12,12 @@ const PYTHON = process.env.PY_LAUNCH_TEST_PYTHON || (process.platform === "win32
 
 test("the shared launcher keeps Node 26 as its minimum", () => {
   assert.deepEqual(launcher.MIN_NODE, [26, 0]);
-  assert.throws(() => launcher.assertNodeVersion("25.9.0"), { code: "ENODEVERSION" });
-  assert.doesNotThrow(() => launcher.assertNodeVersion("26.0.0"));
-  assert.doesNotThrow(() => launcher.assertNodeVersion("26.0.0"));
+  for (const version of ["24.0.0", "24.99.0", "25.0.0", "25.99.0"]) {
+    assert.throws(() => launcher.assertNodeVersion(version), { code: "ENODEVERSION" });
+  }
+  for (const version of ["26.0.0", "26.1.0", "27.0.0"]) {
+    assert.doesNotThrow(() => launcher.assertNodeVersion(version));
+  }
 });
 
 function runWithSiteHook(mode, flags) {

@@ -106,4 +106,48 @@ class Tests(unittest.TestCase):
         with patch.dict('os.environ',{'GH_REPO':R}), patch('add_ci_label.subprocess.run') as run:
             with self.assertRaises(ValueError):request('repos/foreign/repo/pulls/1')
             run.assert_not_called()
+class ScanTests(unittest.TestCase):
+    def test_empty_scan_is_explicit_and_never_writes(self):
+        from add_ci_label import scan
+        from io import StringIO
+        from contextlib import redirect_stdout
+        writes = []
+        out = StringIO()
+        with redirect_stdout(out):
+            scan(R, lambda path: ([], None), lambda *a: writes.append(a))
+        self.assertEqual(out.getvalue(), 'SCAN open_prs=0\n')
+        self.assertEqual(writes, [])
+
+    def test_scan_rechecks_each_pr_and_reports_invalid_evidence(self):
+        from add_ci_label import scan
+        from io import StringIO
+        from contextlib import redirect_stdout
+        out = StringIO()
+        def get(path):
+            if '/pulls?' in path:
+                return [{'id': 1, 'number': 7}, {'id': 2, 'number': 8}], None
+            raise OSError('unavailable')
+        with redirect_stdout(out), patch('add_ci_label.process', side_effect=['HOLD', OSError()]) as proc:
+            scan(R, get, lambda *a: self.fail('unexpected write'))
+        self.assertEqual([c.args[1] for c in proc.call_args_list], [7, 8])
+        self.assertIn('SCAN open_prs=2', out.getvalue())
+        self.assertIn('8 HOLD: incomplete or invalid evidence', out.getvalue())
+
+    def test_workflow_trust_boundary_and_fallback(self):
+        import yaml
+        path = Path(__file__).resolve().parents[1] / '.github/workflows/ci-status-label.yml'
+        w = yaml.safe_load(path.read_text())
+        triggers = w.get('on', w.get(True))
+        self.assertEqual(triggers['schedule'], [{'cron': '23 */6 * * *'}])
+        self.assertEqual(triggers['workflow_run']['types'], ['completed'])
+        self.assertIn('!CI failure label (add only)', triggers['workflow_run']['workflows'])
+        self.assertIn('!Aoi question inbox', triggers['workflow_run']['workflows'])
+        self.assertEqual(triggers['pull_request_target']['types'], ['opened', 'reopened', 'synchronize', 'ready_for_review'])
+        step = w['jobs']['label']['steps'][0]
+        self.assertEqual(step['with']['ref'], '${{ github.event.repository.default_branch }}')
+        self.assertFalse(step['with']['persist-credentials'])
+        self.assertFalse(w['concurrency']['cancel-in-progress'])
+        self.assertEqual(w['permissions']['issues'], 'write')
+        self.assertNotIn('pull_request', triggers)
+
 if __name__=='__main__':unittest.main()

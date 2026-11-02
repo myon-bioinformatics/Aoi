@@ -27,6 +27,12 @@ SHA = "a" * 40
 NAME = "o/child"
 
 
+@pytest.fixture(autouse=True)
+def _git_uses_only_local_fixture_protocol(monkeypatch):
+    """Mutating the offline flag must never turn unit tests into network requests."""
+    monkeypatch.setenv("GIT_ALLOW_PROTOCOL", "file")
+
+
 def _load(name):
     return json.loads((ROOT / name).read_text(encoding="utf-8"))
 

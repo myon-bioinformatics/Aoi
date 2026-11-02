@@ -84,3 +84,10 @@ jobs:
         run: .venv/bin/python shrink/run_linalg.py --numpy min --scope c001 got.json
       - name: Within tolerance of the real-numpy result
         run: .venv/bin/python shrink/run_linalg.py --compare reference.json got.json
+      - name: Preserve actual mini backend identities and executed calls
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linalg-mini-${{ matrix.python }}
+          path: got.json
+          if-no-files-found: warn

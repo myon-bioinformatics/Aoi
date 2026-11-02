@@ -216,6 +216,9 @@ jobs:
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      NUMPY_MIN_EXPECT: lapack
+      QUERYU_EXPECT_BACKEND: lapack
     strategy:
       fail-fast: false
       matrix:
@@ -240,6 +243,48 @@ jobs:
           python-version: "${{ matrix.python }}"
           activate-environment: true
       - run: python -VV
+      # The ordinary suite uses native acceleration; the isolated stdlib lane
+      # still proves operation without LAPACK/BLAS. No test or timeout is relaxed.
+      - name: Install pinned native runtime for the full suite (Ubuntu 24.04)
+        shell: bash
+        run: |
+          set -euo pipefail
+          . /etc/os-release
+          [[ "$ID" == ubuntu && "$VERSION_ID" == 24.04 && "$(dpkg --print-architecture)" == amd64 ]]
+          # Ubuntu noble-updates runtime packages, not development headers.
+          # https://packages.ubuntu.com/eu/noble-updates/liblapack3
+          # https://packages.ubuntu.com/libblas3
+          sudo apt-get update -q
+          apt-cache policy liblapack3 libblas3 libgfortran5
+          sudo apt-get install --simulate --no-install-recommends --no-remove \
+            liblapack3=3.12.0-3build1.1 libblas3=3.12.0-3build1.1
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends --no-remove \
+            liblapack3=3.12.0-3build1.1 libblas3=3.12.0-3build1.1
+          dpkg-query -W liblapack3 libblas3 libgfortran5
+          for name in lapack blas; do
+            package="lib${name}3"
+            [[ "$(dpkg-query -W -f='${Version}' "$package")" == 3.12.0-3build1.1 ]]
+            mapfile -t paths < <(dpkg-query -L "$package" | grep "/lib${name}\.so\.3$")
+            [[ "${#paths[@]}" == 1 && -f "${paths[0]}" ]]
+            printf 'NUMPY_MIN_%s=%s\n' "${name^^}" "${paths[0]}" >> "$GITHUB_ENV"
+          done
+      - name: Verify and log the actual shipped mini backend before the full suite
+        run: |
+          python -S - <<'PY'
+          import hashlib, json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('queryu/ask').resolve()))
+          import suggest
+          module = suggest.np
+          source = Path(module.__file__).resolve()
+          assert source == Path('queryu/vendor/aoi/shrink/numpy_min.py').resolve()
+          assert module.BACKEND == 'lapack', module.BACKEND
+          assert module._lapack._name == os.environ['NUMPY_MIN_LAPACK']
+          assert module._blas._name == os.environ['NUMPY_MIN_BLAS']
+          print(json.dumps({'backend': module.BACKEND, 'source': str(source),
+                            'sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+                            'lapack': module._lapack._name, 'blas': module._blas._name}))
+          PY
       - name: Compile (syntax errors must never reach main)
         run: python -m compileall -q aoi_paths.py blueprobe queryu sakanalytics pythdragoras nagoyaction dragowing
       - name: Install pinned official Chromium without a browser warmup

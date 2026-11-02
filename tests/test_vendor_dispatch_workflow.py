@@ -80,3 +80,20 @@ def test_vendor_dispatch_verifies_the_lock_without_record():
 def test_action_with_sha_but_no_version_comment_fails():
     line = "uses: actions/checkout" + AT + ACTION_PINS["actions/checkout"]
     assert not _pin_ok(line), line
+
+
+def test_vendor_dispatch_node_floor_matches_setup_node():
+    """Execute the defensive guard at the Node 26 boundary."""
+    import subprocess
+
+    text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    job = text.split("\n  vendor-dispatch:", 1)[1]
+    guard = re.search(r'if \[\[ "\$node_major" -lt \d+ \]\]; then\n.*?\n          fi', job, re.S)
+    assert guard is not None
+    assert 'node-version: "26"' in job
+    for major, expected in ((24, 1), (25, 1), (26, 0), (27, 0)):
+        result = subprocess.run(
+            ["bash", "-c", f"node_major={major}\n" + guard.group()],
+            capture_output=True, text=True, check=False,
+        )
+        assert result.returncode == expected, (major, result.stdout, result.stderr)

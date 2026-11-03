@@ -209,9 +209,3 @@ Local example (point the output at an empty directory):
 git clone https://github.com/myon-bioinformatics/markdown.git .deps/markdown
 python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --output build/dragowing --previous-ref HEAD~1
 ```
-
-## Focused test discovery
-
-See [standard-library discovery commands](docs/unittest-discovery.md) for
-validated `python -S -m unittest discover` recipes, filename/name filtering,
-and the boundary with the full pytest suite.

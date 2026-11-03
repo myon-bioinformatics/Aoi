@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".github" / "scripts"))
 import copy
+import re
+import ast
 import unittest
 from unittest.mock import patch
 from types import SimpleNamespace
@@ -133,6 +135,21 @@ class ScanTests(unittest.TestCase):
         self.assertIn('SCAN open_prs=2', out.getvalue())
         self.assertIn('8 HOLD: incomplete or invalid evidence', out.getvalue())
 
+    def test_completion_allowlist_matches_workflow_inventory(self):
+        workflows = Path(__file__).resolve().parents[1] / '.github/workflows'
+        text = (workflows / 'ci-status-label.yml').read_text(encoding='utf-8')
+        block = text.split('    workflows:\n', 1)[1].split('    types:', 1)[0]
+        allowed = [ast.literal_eval(line.removeprefix('      - '))
+                   for line in block.splitlines() if line.strip()]
+        names = [re.search(r'^name: (.+)$', path.read_text(encoding='utf-8'), re.M)[1]
+                 for path in workflows.glob('*.yml')]
+        excluded = {'CI failure label (add only)', 'Aoi question inbox'}
+        self.assertEqual(len(names), len(set(names)), 'Workflow names must be unique')
+        self.assertEqual(len(allowed), len(set(allowed)))
+        self.assertEqual(set(allowed), set(names) - excluded)
+        self.assertTrue(excluded.isdisjoint(allowed))
+        self.assertFalse(any(any(c in name for c in '*?![') for name in allowed))
+
     def test_workflow_trust_boundary_and_fallback(self):
         # This is an exact contract for one security-sensitive workflow, not a
         # YAML parser. Ignore only empty/comment-only lines; preserve indentation,
@@ -147,7 +164,30 @@ on:
   schedule:
     - cron: '23 */6 * * *'
   workflow_run:
-    workflows: ['*', '!CI failure label (add only)', '!Aoi question inbox']
+    workflows:
+      - 'Action uses'
+      - 'Browser startup validation'
+      - 'c001 offline replay audit'
+      - 'cache keepalive'
+      - 'CDN module experiment'
+      - 'CI'
+      - 'cycle c001 (chunichi)'
+      - 'DRAgoWing reports'
+      - 'Links'
+      - 'LittleBit holdout drift'
+      - 'Minimal stdlib distributions'
+      - 'Nano research environment comparison'
+      - 'numpy_min backends'
+      - 'requests tqdm biopython surface'
+      - 'Shared Python launcher'
+      - 'Aoi manual research checkpoint canary'
+      - 'Season simulator'
+      - 'Shared tool lock'
+      - 'Shrink linalg experiment'
+      - 'Shrink module experiment'
+      - 'Shrink polars experiment'
+      - 'Stdlib feasibility survey'
+      - 'Third-party min experiment'
     types: [completed]
   pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review]

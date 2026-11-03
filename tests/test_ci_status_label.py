@@ -134,20 +134,52 @@ class ScanTests(unittest.TestCase):
         self.assertIn('8 HOLD: incomplete or invalid evidence', out.getvalue())
 
     def test_workflow_trust_boundary_and_fallback(self):
-        import yaml
+        # This is an exact contract for one security-sensitive workflow, not a
+        # YAML parser. Ignore only empty/comment-only lines; preserve indentation,
+        # duplicate keys, expressions, and every executable step.
         path = Path(__file__).resolve().parents[1] / '.github/workflows/ci-status-label.yml'
-        w = yaml.safe_load(path.read_text())
-        triggers = w.get('on', w.get(True))
-        self.assertEqual(triggers['schedule'], [{'cron': '23 */6 * * *'}])
-        self.assertEqual(triggers['workflow_run']['types'], ['completed'])
-        self.assertIn('!CI failure label (add only)', triggers['workflow_run']['workflows'])
-        self.assertIn('!Aoi question inbox', triggers['workflow_run']['workflows'])
-        self.assertEqual(triggers['pull_request_target']['types'], ['opened', 'reopened', 'synchronize', 'ready_for_review'])
-        step = w['jobs']['label']['steps'][0]
-        self.assertEqual(step['with']['ref'], '${{ github.event.repository.default_branch }}')
-        self.assertFalse(step['with']['persist-credentials'])
-        self.assertFalse(w['concurrency']['cancel-in-progress'])
-        self.assertEqual(w['permissions']['issues'], 'write')
-        self.assertNotIn('pull_request', triggers)
+        actual = '\n'.join(
+            line.rstrip() for line in path.read_text(encoding='utf-8').splitlines()
+            if line.strip() and not line.lstrip().startswith('#')
+        )
+        expected = """name: CI failure label (add only)
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_run:
+    workflows: ['*', '!CI failure label (add only)', '!Aoi question inbox']
+    types: [completed]
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+permissions:
+  contents: read
+  checks: read
+  actions: read
+  pull-requests: read
+  issues: write
+concurrency:
+  group: ci-failure-label-add-only
+  cancel-in-progress: false
+jobs:
+  label:
+    if: >-
+      (github.event_name == 'pull_request_target' ||
+       github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) &&
+      (github.event_name != 'workflow_run' ||
+       contains(fromJSON('["failure","timed_out","action_required","startup_failure"]'), github.event.workflow_run.conclusion))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Add confirmed latest-head failure labels; hold all removals
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 -B .github/scripts/add_ci_label.py"""
+        self.assertEqual(actual, expected)
 
 if __name__=='__main__':unittest.main()

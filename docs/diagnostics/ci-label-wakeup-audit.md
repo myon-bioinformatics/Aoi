@@ -73,7 +73,11 @@ Validation: python tests/test_ci_status_label.py (18 tests), including existing
 provenance/head/rerun races and new empty/nonempty scanner and workflow trust
 boundary tests.
 
+Workflow name filters support glob patterns including `*` and `!` exclusions;
+see the official `on.workflow_run.workflows` syntax reference below. This does
+not replace the still-pending post-merge observation of the event path.
+
 References:
 - https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows
-- https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+- https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_runworkflows
 

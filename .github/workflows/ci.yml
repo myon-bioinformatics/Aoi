@@ -391,10 +391,22 @@ jobs:
           assert Path(source_access.__file__).resolve() == root / "mcp_toolcall_lab/source_access.py"
           print(source_access.__name__, source_access.__file__)
           PYCODE
+      # Install once from the full lock, retaining the AnyIO pytest plugin.
+      # These omissions belong only to this three-test offline lane.
+      - name: Prepare and verify the locked lab-only environment
+        run: |
+          time uv sync --locked --python 3.15 \
+            --no-install-package certifi --no-install-package h11 \
+            --no-install-package httpcore --no-install-package httpx \
+            --no-install-package markdown --no-install-package numpy \
+            --no-install-package polars --no-install-package polars-runtime-32
+          python scripts/check_lab_nano_environment.py --output build/test-results/lab-environment.json
+          uv pip check --offline
+          du -sk .venv "$(uv cache dir)"
       - name: Require real offline extractor tests with JUnit
         run: |
           mkdir -p build/test-results
-          uv run --locked --python 3.15 pytest -q --require-blueprobe-lab-integration \
+          uv run --locked --no-sync --python 3.15 pytest -q --require-blueprobe-lab-integration \
             blueprobe/tests/test_blueprobe_html_source.py::test_optional_real_lab_extractor_reuses_all_calendar_rows \
             blueprobe/tests/test_blueprobe_html_compare.py::test_real_saved_npb_fixture_coverage_and_css \
             blueprobe/tests/test_blueprobe_html_source.py::test_verified_cache_real_lab_snapshot_replay \
@@ -406,6 +418,15 @@ jobs:
           name: junit-lab-integration-py3.15
           path: build/test-results/lab-integration-3.15.xml
           if-no-files-found: error
+          retention-days: 14
+
+      - name: Preserve lab dependency evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lab-environment-py3.15
+          path: build/test-results/lab-environment.json
+          if-no-files-found: warn
           retention-days: 14
 
   # Keep the legacy job/artifact identifiers for existing report consumers.

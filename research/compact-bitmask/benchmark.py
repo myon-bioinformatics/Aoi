@@ -24,11 +24,13 @@ def run():
     compact = CompactRule(rule)
     projected = [compact.layout.project(row) for row in rows]
     expected = [rule.evaluate_fast(row) for row in rows]
-    assert [compact.evaluate_dense(row) for row in projected] == expected
+    if [compact.evaluate_dense(row) for row in projected] != expected:
+        raise SystemExit("dense evaluation mismatch")
     raw = b''.join(row.to_bytes(32, 'little') for row in rows)
     packed = b''.join(layout.encode(row) for row in rows)
     schema = json.dumps({'version': 1, 'positions': layout.positions}, separators=(',', ':')).encode()
-    assert [layout.decode(packed[i:i+1]) for i in range(len(rows))] == rows
+    if [layout.decode(packed[i:i+1]) for i in range(len(rows))] != rows:
+        raise SystemExit("packed roundtrip mismatch")
 
     def measure(fn):
         fn()  # warmup
@@ -37,7 +39,8 @@ def run():
             start = time.perf_counter_ns()
             result = fn()
             samples.append(time.perf_counter_ns() - start)
-            assert result == expected
+            if result != expected:
+                raise SystemExit("timed evaluation mismatch")
         return {'samples_ns': samples, 'median_ns': statistics.median(samples)}
 
     result = {

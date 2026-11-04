@@ -247,7 +247,7 @@ jobs:
           uv --version
           python -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'
           node_major=$(node -p "process.versions.node.split('.')[0]")
-          [[ "$node_major" -ge 24 ]]
+          [[ "$node_major" -ge 26 ]]
           python .test-deps/parent/pilot/vendor_dispatch.py --manifest vendor.lock.json
 
   test:

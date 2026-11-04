@@ -21,15 +21,17 @@ def discover(rows, excluded=(), limit=20):
     pairs = {}
     if features:
         for left in usable:
-            options = []
+            best = None
             for right in usable:
                 if left['league'] != right['league'] or left['upper_half'] == right['upper_half']:
                     continue
                 ids = sorted([f"{left['team']}-{left['season']}", f"{right['team']}-{right['season']}"])
                 distance = math.sqrt(sum(((left[k]-right[k])/scales[k])**2 for k in features)/len(features))
-                options.append((distance, ids, right))
-            if options:
-                distance, ids, right = min(options, key=lambda x: (x[0], x[1]))
+                candidate = (distance, ids, right)
+                if best is None or (distance, ids) < (best[0], best[1]):
+                    best = candidate
+            if best is not None:
+                distance, ids, right = best
                 pairs[tuple(ids)] = {'units': ids, 'distance': distance,
                     'values': {f"{r['team']}-{r['season']}": {k: r[k] for k in features} for r in (left, right)},
                     'upper_half': {f"{r['team']}-{r['season']}": r['upper_half'] for r in (left, right)}}

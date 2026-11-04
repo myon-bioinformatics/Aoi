@@ -21,11 +21,18 @@ def select_items(items: list[dict], present: dict[str, bool], ids: list[str] | N
     if not ids:
         return list(items)
     chosen = []
+    # Index only conventional string IDs, and only for batches of at least eight lookups.
+    # Unusual record IDs keep the original equality-based behavior.
+    index = None
+    if len(ids) >= 8 and all(type(item.get("id")) in (str, type(None)) for item in items):
+        index = {}
+        for item in items:
+            index.setdefault(item.get("id"), []).append(item)
     for ident in ids:
         needed = "sets.jsonl" if ident.startswith("E") else "propositions.jsonl" if ident.startswith("P") else None
         if needed and not present.get(needed):
             raise FileNotFoundError(f"結果が読めない: {needed}")
-        hit = [item for item in items if item.get("id") == ident]
+        hit = index.get(ident, []) if index is not None else [item for item in items if item.get("id") == ident]
         if not hit:
             raise ValueError(f"{ident} は判定済みの結果にない")
         chosen.extend(hit)

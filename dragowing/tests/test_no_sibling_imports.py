@@ -15,6 +15,8 @@ THIRD_PARTY = {"polars", "numpy", "markdown", "pytest"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/。dragowing 自身は含めない。
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "sakanalytics", "scripts")
 KNOWN_EXCEPTIONS = {
+    # The benchmark regression loads this repository's own scripts helper.
+    ("tests/test_benchmark_validation.py", "path:scripts/benchmark_overlap.py"),
     # This fixture loads DRAgoWing’s own ROOT/scripts helper, never Aoi/scripts.
     ("tests/test_dragowing_managed_chromium.py", "path:scripts/install_ci_chromium.py"),
     # PythDRagoras の propositions と rule_search。PYTHONPATH の pythdragoras
@@ -105,6 +107,18 @@ def test_local_installer_exception_does_not_allow_sibling_imports_or_other_paths
         (local_test, "from scripts import install_ci_chromium"),
         (local_test, "path = 'scripts/other.py'"),
         ("tests/other.py", "path = 'scripts/install_ci_chromium.py'"),
+    ):
+        uses = {(rel, use) for use in _uses(ast.parse(code))}
+        assert uses and not uses.intersection(KNOWN_EXCEPTIONS)
+
+
+def test_benchmark_exception_is_limited_to_the_local_helper():
+    local_test = "tests/test_benchmark_validation.py"
+    assert (local_test, "path:scripts/benchmark_overlap.py") in KNOWN_EXCEPTIONS
+    for rel, code in (
+        (local_test, "from scripts import benchmark_overlap"),
+        (local_test, "path = 'scripts/other.py'"),
+        ("tests/other.py", "path = 'scripts/benchmark_overlap.py'"),
     ):
         uses = {(rel, use) for use in _uses(ast.parse(code))}
         assert uses and not uses.intersection(KNOWN_EXCEPTIONS)

@@ -52,6 +52,11 @@ uv sync
 uv run python blueprobe.py --source <source module name> --cache <QueRyu cache> --out observed.md
 ```
 
+For focused work on saved-screen, heading, emoji, and accessible-name observations,
+[the optional observation-test environment](docs/nano-observation-tests.md) runs the existing
+49 selected tests without installing the unrelated Lexbor oracle. Keep the full development
+environment and CI for parser parity and cross-repository integration.
+
 It reads only the cache and does not access the network. If there are unknown notations, it shows the count (exit code 1 with `--strict`).
 
 ## Layout

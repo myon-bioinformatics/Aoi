@@ -7,6 +7,8 @@ dependencies = []
 
 [dependency-groups]
 dev = ["pytest>=8", "selectolax>=1"]
+# Saved-observation tests only; the full dev group retains the Lexbor oracle.
+observation-test = ["pytest>=8"]
 
 [tool.uv]
 package = false

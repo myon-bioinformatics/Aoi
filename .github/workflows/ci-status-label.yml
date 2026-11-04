@@ -1,7 +1,35 @@
 name: CI failure label (add only)
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '23 */6 * * *'
+  workflow_run:
+    workflows:
+      - 'Action uses'
+      - 'Browser startup validation'
+      - 'c001 offline replay audit'
+      - 'cache keepalive'
+      - 'CDN module experiment'
+      - 'CI'
+      - 'cycle c001 (chunichi)'
+      - 'DRAgoWing reports'
+      - 'Links'
+      - 'LittleBit holdout drift'
+      - 'Minimal stdlib distributions'
+      - 'Nano research environment comparison'
+      - 'numpy_min backends'
+      - 'requests tqdm biopython surface'
+      - 'Shared Python launcher'
+      - 'Aoi manual research checkpoint canary'
+      - 'Season simulator'
+      - 'Shared tool lock'
+      - 'Shrink linalg experiment'
+      - 'Shrink module experiment'
+      - 'Shrink polars experiment'
+      - 'Stdlib feasibility survey'
+      - 'Third-party min experiment'
+    types: [completed]
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,13 +42,18 @@ concurrency:
   cancel-in-progress: false
 jobs:
   label:
-    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    # Event payloads only wake the scanner; never authorize a label write.
+    if: >-
+      (github.event_name == 'pull_request_target' ||
+       github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) &&
+      (github.event_name != 'workflow_run' ||
+       contains(fromJSON('["failure","timed_out","action_required","startup_failure"]'), github.event.workflow_run.conclusion))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - name: Add confirmed latest-head failure labels; hold all removals
         env:

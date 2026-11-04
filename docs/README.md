@@ -66,3 +66,7 @@ The list is checked by a test (`nagoyaction/tests/test_docs_masters.py`): a file
 ブラウザ起動の切り分け: [Chrome / Chromium の検証手順](diagnostics/browser-startup-validation.md)。検証専用で、マスターファイルではありません。
 
 機能別の研究環境比較: [固定 lock による導入・出力一致・資源計測](experiments/nano-research-benchmark.md)。限定した機能の実験であり、マスターファイルではありません。
+
+CI ラベルの起動監査: [イベント起動と定期走査の記録](diagnostics/ci-label-wakeup-audit.md)。観測時点の運用監査であり、マスターファイルではありません。
+
+CI ラベルの完了通知対象: [明示 allowlist と検証範囲の記録](diagnostics/ci-label-completion-allowlist-audit.md)。観測時点の運用監査であり、マスターファイルではありません。

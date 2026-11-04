@@ -96,10 +96,15 @@ def process(repo, number, get, write):
     return 'ADD'
 
 
-if __name__ == '__main__':
-    repo = os.environ['GH_REPO']
-    for pr in open_pulls(repo, request):
+def scan(repo, get, write):
+    pulls = open_pulls(repo, get)
+    print(f'SCAN open_prs={len(pulls)}')
+    for pr in pulls:
         try:
-            print(pr['number'], process(repo, pr['number'], request, request))
+            print(pr['number'], process(repo, pr['number'], get, write))
         except (ValueError, TypeError, KeyError, AttributeError, OSError, subprocess.CalledProcessError):
             print(pr.get('number'), 'HOLD: incomplete or invalid evidence')
+
+
+if __name__ == '__main__':
+    scan(os.environ['GH_REPO'], request, request)

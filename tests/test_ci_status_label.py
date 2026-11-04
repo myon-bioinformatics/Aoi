@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".github" / "scripts"))
 import copy
+import re
+import ast
 import unittest
 from unittest.mock import patch
 from types import SimpleNamespace
@@ -106,4 +108,118 @@ class Tests(unittest.TestCase):
         with patch.dict('os.environ',{'GH_REPO':R}), patch('add_ci_label.subprocess.run') as run:
             with self.assertRaises(ValueError):request('repos/foreign/repo/pulls/1')
             run.assert_not_called()
+class ScanTests(unittest.TestCase):
+    def test_empty_scan_is_explicit_and_never_writes(self):
+        from add_ci_label import scan
+        from io import StringIO
+        from contextlib import redirect_stdout
+        writes = []
+        out = StringIO()
+        with redirect_stdout(out):
+            scan(R, lambda path: ([], None), lambda *a: writes.append(a))
+        self.assertEqual(out.getvalue(), 'SCAN open_prs=0\n')
+        self.assertEqual(writes, [])
+
+    def test_scan_rechecks_each_pr_and_reports_invalid_evidence(self):
+        from add_ci_label import scan
+        from io import StringIO
+        from contextlib import redirect_stdout
+        out = StringIO()
+        def get(path):
+            if '/pulls?' in path:
+                return [{'id': 1, 'number': 7}, {'id': 2, 'number': 8}], None
+            raise OSError('unavailable')
+        with redirect_stdout(out), patch('add_ci_label.process', side_effect=['HOLD', OSError()]) as proc:
+            scan(R, get, lambda *a: self.fail('unexpected write'))
+        self.assertEqual([c.args[1] for c in proc.call_args_list], [7, 8])
+        self.assertIn('SCAN open_prs=2', out.getvalue())
+        self.assertIn('8 HOLD: incomplete or invalid evidence', out.getvalue())
+
+    def test_completion_allowlist_matches_workflow_inventory(self):
+        workflows = Path(__file__).resolve().parents[1] / '.github/workflows'
+        text = (workflows / 'ci-status-label.yml').read_text(encoding='utf-8')
+        block = text.split('    workflows:\n', 1)[1].split('    types:', 1)[0]
+        allowed = [ast.literal_eval(line.removeprefix('      - '))
+                   for line in block.splitlines() if line.strip()]
+        names = [re.search(r'^name: (.+)$', path.read_text(encoding='utf-8'), re.M)[1]
+                 for path in workflows.glob('*.yml')]
+        excluded = {'CI failure label (add only)', 'Aoi question inbox'}
+        self.assertEqual(len(names), len(set(names)), 'Workflow names must be unique')
+        self.assertEqual(len(allowed), len(set(allowed)))
+        self.assertEqual(set(allowed), set(names) - excluded)
+        self.assertTrue(excluded.isdisjoint(allowed))
+        self.assertFalse(any(any(c in name for c in '*?![') for name in allowed))
+
+    def test_workflow_trust_boundary_and_fallback(self):
+        # This is an exact contract for one security-sensitive workflow, not a
+        # YAML parser. Ignore only empty/comment-only lines; preserve indentation,
+        # duplicate keys, expressions, and every executable step.
+        path = Path(__file__).resolve().parents[1] / '.github/workflows/ci-status-label.yml'
+        actual = '\n'.join(
+            line.rstrip() for line in path.read_text(encoding='utf-8').splitlines()
+            if line.strip() and not line.lstrip().startswith('#')
+        )
+        expected = """name: CI failure label (add only)
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_run:
+    workflows:
+      - 'Action uses'
+      - 'Browser startup validation'
+      - 'c001 offline replay audit'
+      - 'cache keepalive'
+      - 'CDN module experiment'
+      - 'CI'
+      - 'cycle c001 (chunichi)'
+      - 'DRAgoWing reports'
+      - 'Links'
+      - 'LittleBit holdout drift'
+      - 'Minimal stdlib distributions'
+      - 'Nano research environment comparison'
+      - 'numpy_min backends'
+      - 'requests tqdm biopython surface'
+      - 'Shared Python launcher'
+      - 'Aoi manual research checkpoint canary'
+      - 'Season simulator'
+      - 'Shared tool lock'
+      - 'Shrink linalg experiment'
+      - 'Shrink module experiment'
+      - 'Shrink polars experiment'
+      - 'Stdlib feasibility survey'
+      - 'Third-party min experiment'
+    types: [completed]
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+permissions:
+  contents: read
+  checks: read
+  actions: read
+  pull-requests: read
+  issues: write
+concurrency:
+  group: ci-failure-label-add-only
+  cancel-in-progress: false
+jobs:
+  label:
+    if: >-
+      (github.event_name == 'pull_request_target' ||
+       github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) &&
+      (github.event_name != 'workflow_run' ||
+       contains(fromJSON('["failure","timed_out","action_required","startup_failure"]'), github.event.workflow_run.conclusion))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Add confirmed latest-head failure labels; hold all removals
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 -B .github/scripts/add_ci_label.py"""
+        self.assertEqual(actual, expected)
+
 if __name__=='__main__':unittest.main()

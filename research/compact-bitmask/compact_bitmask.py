@@ -8,7 +8,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from bitwise_surrogate import BitwiseSymbolicSurrogate, _mask_value, iter_bits
+from bitwise_surrogate import BitwiseSymbolicSurrogate, iter_bits
+
+
+def _mask_value(value, name):
+    if type(value) is not int or value < 0:
+        raise ValueError("%s must be a nonnegative int" % name)
+    return value
 
 
 @dataclass(frozen=True)

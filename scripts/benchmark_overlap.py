@@ -44,7 +44,8 @@ def worker(args):
         started = time.perf_counter()
         result = load_overlap(args.results / 'season.jsonl', conds, backend=args.worker)
         durations.append(time.perf_counter() - started)
-        assert result == cold
+        if not (result == cold):
+            raise SystemExit('benchmark_overlap: result mismatch')
     text = json.dumps(cold, ensure_ascii=False, sort_keys=True, allow_nan=False)
     rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     print(json.dumps(dict(
@@ -81,7 +82,8 @@ def main():
             measurement = json.loads(proc.stdout)
             measurement['process_wall_seconds'] = time.perf_counter() - started
             measurements.append(measurement)
-    assert len({m['canonical_sha256'] for m in measurements}) == 1, 'backend JSON differs'
+    if not (len({m['canonical_sha256'] for m in measurements}) == 1):
+        raise SystemExit('backend JSON differs')
     metrics = ('cold_seconds', 'warm_median_seconds', 'python_peak_bytes',
                'process_peak_rss_bytes', 'process_wall_seconds')
     print(json.dumps(dict(

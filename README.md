@@ -553,3 +553,9 @@ committed-evidence checks are unchanged.
 ### Lightweight NumPy compatibility
 
 `shrink/numpy_min.py` uses the explicit [v2 decomposition acceptance contract](docs/contracts/numpy-min-acceptance-v2.md). Passing its tests does not guarantee NumPy-identical candidate scores or rankings; historical failures and backend differences remain recorded.
+
+## Focused test discovery
+
+See [standard-library discovery commands](docs/unittest-discovery.md) for
+validated `python -S -m unittest discover` recipes, filename/name filtering,
+and the boundary with the full pytest suite.

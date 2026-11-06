@@ -20,7 +20,7 @@
       "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
     },
     {
-      "repository": "myon-bioinformatics/web-ui",
+      "repository": "myon-bioinformatics/PySaiyanWeBoo",
       "ref": "267af7fd2d4968c3ea75e2df4e93ff7fb4414005",
       "commit": "267af7fd2d4968c3ea75e2df4e93ff7fb4414005",
       "source": "web_ui.py",
@@ -29,7 +29,7 @@
       "sha256": "f7464ad834989777cb4b2861949c3386f154299d5f740eb0d34cd621c80c225a"
     },
     {
-      "repository": "myon-bioinformatics/web-ui",
+      "repository": "myon-bioinformatics/PySaiyanWeBoo",
       "ref": "573b4ca07a916c4a44695dbd5739da36b902d8f2",
       "commit": "573b4ca07a916c4a44695dbd5739da36b902d8f2",
       "source": "LICENSE",

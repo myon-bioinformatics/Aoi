@@ -64,7 +64,7 @@ It reads only the cache and does not access the network. If there are unknown no
 | `heading_observations.py` | Observing the heading hierarchy (`<h1>`–`<h6>`) and landmark structure of saved HTML |
 | `web_observations.py` | Organizing observations of saved web screens and source lists (no browser or SDK) |
 | `docs/contract/v1/` | Contracts for reports and snapshot records (additions stay in v1; breaking changes go to v2) |
-| `docs/boundaries.md` | Boundaries of responsibility between BlueProbe / QueRyu / web-ui (proposal) |
+| `docs/boundaries.md` | Boundaries of responsibility between BlueProbe / QueRyu / PySaiyanWeBoo (proposal) |
 | `docs/antipatterns.md` | Failures likely to recur, and the commitments against them |
 | `tests/cases/*.jsonl` | Corpus of notation variants (same id / category / value / reason format as xprobe) |
 
@@ -141,8 +141,8 @@ Each subproject of the parent [Aoi](https://github.com/myon-bioinformatics/Aoi) 
 | Repository | Where to look | Contents |
 |---|---|---|
 | [mcp-toolcall-lab](https://github.com/myon-bioinformatics/mcp-toolcall-lab) | `src/mcp_toolcall_lab/adapters/html_snapshot.py`, `css_inspect.py`, `source_access.py`, `docs/source-access.md` | Offline extraction of saved HTML, CSS inspection, source access (a snapshot of past patterns fetched by SHA, connected optionally) |
-| [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit) | `scripts/page_text.py`, `examples/capture_browser_dom.py`, `docs/dom-capture.md`, `fixtures/page_text/` | Page body text extraction and browser DOM capture |
-| [web-ui](https://github.com/myon-bioinformatics/web-ui) | `docs/local-dom-lab.md`, `tool/serve_dom_lab.py`, `tests/integration/test_gradio_dom.py` | Local DOM lab and DOM evidence |
+| [BrowserTestKit](https://github.com/myon-bioinformatics/BrowserTestKit) | `scripts/page_text.py`, `examples/capture_browser_dom.py`, `docs/dom-capture.md`, `fixtures/page_text/` | Page body text extraction and browser DOM capture |
+| [PySaiyanWeBoo](https://github.com/myon-bioinformatics/PySaiyanWeBoo) | `docs/local-dom-lab.md`, `tool/serve_dom_lab.py`, `tests/integration/test_gradio_dom.py` | Local DOM lab and DOM evidence |
 | [flutter_navigation_basic](https://github.com/myon-bioinformatics/flutter_navigation_basic) | `e2e/tests/*.spec.ts` | DOM observation of Flutter Web screens (Playwright) |
 
 How to align: when you find a new extraction technique or failure in a referenced repository, first record it as an observation here in the corpus (`tests/cases/`) or `docs/antipatterns.md`, then align the implementation.
@@ -352,8 +352,8 @@ Names of buttons, links, inputs, tabs, images, etc. are recorded with their orig
 and `empty_name`, `emoji_only_name`, `aria_hidden_control`, `image_without_alt`, `placeholder_only`, and `ambiguous_link_name` (links with the same name but different destinations) are counted.
 Name computation is an **approximation** of W3C accname (`ACCNAME_APPROXIMATION_AS_SPEC`), and CSS is not evaluated. 100% agreement is not the goal; discrepancies are added to the antipatterns as observations.
 
-`tests/cases/pages/` holds DOM and aria snapshots of 5 real pages from github.io (`myon-bioinformatics.github.io`) and web-ui, served over local HTTP from each repository's commit,
-rendered in Chromium, and captured with browser-test-kit's `capture()` (`btk-browser-dom/1`).
+`tests/cases/pages/` holds DOM and aria snapshots of 5 real pages from github.io (`myon-bioinformatics.github.io`) and PySaiyanWeBoo, served over local HTTP from each repository's commit,
+rendered in Chromium, and captured with BrowserTestKit's `capture()` (`btk-browser-dom/1`).
 Provenance (repository, commit, path, public URL, blocked external requests) is in each JSON's `provenance`. They are renders from commits rather than the public sites themselves,
 so the same thing can be reproduced in environments that can't reach `*.github.io`. The check results are 49 matches, 6 CSS-derived differences, 0 mismatches (pinned in tests).
 

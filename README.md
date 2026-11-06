@@ -83,6 +83,9 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 | [`research/`](research/) | Standalone research notes (for example [`research/gpt-r001-score-allocation/`](research/gpt-r001-score-allocation/README.md)) |
 | [`research_loop/`](research_loop/README.md) | Automated exploration and HTML observation that connect several subprojects |
 | [`scripts/`](scripts/) | Repository-level tools (child registry check, distribution build, c001 replay and publication) |
+| [`shrink/`](shrink/) | Stdlib-only minimal NumPy and polars stand-ins (`numpy_min.py`, `numpy_linalg_min.py`, `polars_min.py`) that are distributed to the subtree children; see [Lightweight NumPy compatibility](#lightweight-numpy-compatibility) |
+| [`mindeps/`](mindeps/LIMITS.md) | Opt-in minimal httpx and selectolax stand-ins with runners; [what they can and cannot replace](mindeps/LIMITS.md) |
+| [`pkgmin/`](pkgmin/LIMITS.md) | Minimal requests, tqdm and biopython stand-ins and the used-surface measurement; [limits](pkgmin/LIMITS.md) |
 | [`dist/`](dist/), [`distributions/`](distributions/), `distributions.json` | Single-file stdlib distributions (`*_min.py`); see [docs/distributions.md](docs/distributions.md) |
 | [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash. `vendor/py_launch.cjs` is the canonical copy of the parent repository's Node launcher (Node >= 26) that Aoi's children vendor from Aoi |
 | `shared-tools.lock.json` | Stdlib-shrink tools and `vendor/py_launch.cjs` that Aoi distributes to its subtree children, verified by hash |
@@ -90,6 +93,7 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 | [`tests/`](tests/) | Repository-level tests (each subproject keeps its own `tests/`) |
 | `child-heads.json` | Registered heads of the child repositories; see [docs/child-repositories.md](docs/child-repositories.md) |
 | `aoi_paths.py`, `aoi_npb.py` | Parent-owned paths and NPB settings passed to the child APIs; see [NPB commands](cycles/c001-chunichi/npb-configuration.md) |
+| `annual_scope.py` | NPB-specific: copies only the primary years from an annual cache and keeps history as reference |
 
 ## Child Repositories
 

@@ -254,8 +254,8 @@ python emoji_data.py --names emoji_names.json --lookup "TEXT"                   
 
 - The version is fixed as `name@x.y.z` (`latest` is not used). It gets the tarball from the registry's version metadata, confirms it is on the registry host and matches the sha512 `integrity`, and then saves it. `--offline` never goes to the network and stops if not yet fetched
 - `emoji_names.json` (`queryu.emoji-names/1`) is a committed table collecting the names of emoji actually used. Passing xprobe `--emoji` JSON (`xprobe.emoji-inventory.v1`) or an array of emoji to `--use` adds only what is missing. Existing entries are never removed or rewritten (hand-corrected names stay). The source (package, version, tarball SHA-256, fetch time) is kept in `sources`
-- Keys are the form without U+FE0F (same as xprobe `emoji_identity` and browser-test-kit `route_trail.py`). If a variant with skin-tone or hair components is not in the table, it becomes the base emoji's name plus the component names (`thumbs up: medium skin tone`)
-- The initial table was built from 287 kinds that appear in existing files of Flutter, browser-test-kit, web-ui, markdown, gh_identity, the parent, BlueProbe, Aoi, and others (xprobe's tally of 5,934 files). The 1 item without a name (♭ U+266D, a symbol, not an emoji) was not added
+- Keys are the form without U+FE0F (same as xprobe `emoji_identity` and BrowserTestKit `route_trail.py`). If a variant with skin-tone or hair components is not in the table, it becomes the base emoji's name plus the component names (`thumbs up: medium skin tone`)
+- The initial table was built from 287 kinds that appear in existing files of Flutter, BrowserTestKit, PySaiyanWeBoo, markdown, gh_identity, the parent, BlueProbe, Aoi, and others (xprobe's tally of 5,934 files). The 1 item without a name (♭ U+266D, a symbol, not an emoji) was not added
 - Saved body file names follow the existing `Cache.put` rule (`blobs/<sha256>.html.gz`). The contents are the tarball bytes, verified the same way as other saved bodies
 
 ## License

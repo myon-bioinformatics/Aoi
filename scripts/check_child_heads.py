@@ -1,8 +1,9 @@
 """Aoi の子リポジトリ（subtree で切り出したもの）の登録と差分を確かめる（stdlib のみ、書き込みなし）。
 
-- child-heads.json（child-heads/1）の形を確かめる。
-- 子の main の今の SHA と、登録した SHA のずれ（drift）を出す。
-- 登録した SHA の子の tree と、Aoi の subtree_prefix の tree の差分を、blob と mode で出す。
+- child-heads.json（child-heads/1）の形を確かめる。sha は書かない（履歴から導く）。
+- 子の main の第一親をたどり、Aoi の subtree_prefix と同じ tree を持つ最新のコミットを「同期済みの sha」（synced_sha）にする。
+- 子の main の今の SHA（live_sha）と synced_sha のずれ（drift）を出す。
+- 同じ tree の状態が子の履歴になければ、子の main の tree との差分を、blob と mode で出す。
   子は prefix の純粋な subtree（除外するファイルはない）。not_in_parent / child_preamble は受け付けない。
 - mirrored_from_parent（prefix の下のパス → Aoi の原本のパス）は、Aoi の中で blob と mode が原本と
   同じかを確かめ、違えば失敗にする（共有するルートのファイルを子に通常のファイルとして置くとき）。
@@ -23,7 +24,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-HEX40 = re.compile(r"[0-9a-f]{40}")
 REPO = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 URL_TEMPLATE = "https://github.com/{repository}.git"
 UNSUPPORTED = ("not_in_parent", "child_preamble")
@@ -62,8 +62,10 @@ def validate_heads(doc: dict) -> dict:
     for name, entry in doc["heads"].items():
         if not REPO.fullmatch(name):
             raise ValueError(f"expected owner/repository: {name}")
-        if not isinstance(entry, dict) or not isinstance(entry.get("sha"), str) or not HEX40.fullmatch(entry["sha"]):
-            raise ValueError(f"{name}: sha must be 40 hex")
+        if not isinstance(entry, dict):
+            raise ValueError(f"{name}: entry must be an object")
+        if "sha" in entry:
+            raise ValueError(f"{name}: sha is derived from the child history; remove it")
         if type(entry.get("repository_id")) is not int or entry["repository_id"] < 1:
             raise ValueError(f"{name}: repository_id must be a positive int")
         optional = entry.get("optional")
@@ -113,21 +115,38 @@ def _mirrors(whole: dict, prefix: str, mirrors: dict) -> dict[str, str]:
     return result
 
 
-def _child(name: str, entry: dict, parent_tree: dict, *, ref: str, url_template: str, row: dict) -> None:
-    url = url_template.format(repository=name)
-    live = _git("ls-remote", url, f"refs/heads/{ref}", timeout=120).split()
-    row["live_sha"] = live[0] if live else None
-    row["drift"] = row["live_sha"] != entry["sha"]
+def _synced_sha(url: str, ref: str, tree_id: str | None) -> str | None:
+    # 子の ref の第一親をたどり、tree が tree_id と同じ最新のコミットを返す（なければ None）。
+    # コミットだけ取る（--filter=tree:0）。%T はコミットに書いてあるので tree は要らない。
     with tempfile.TemporaryDirectory() as tmp:
         bare = Path(tmp)
         _git("init", "-q", "--bare", str(bare))
-        _git("fetch", "-q", "--depth=1", url, entry["sha"], cwd=bare)
-        child_tree = _tree(bare, entry["sha"])
-    row["diff"] = {
-        "only_in_parent": sorted(parent_tree.keys() - child_tree.keys()),
-        "only_in_child": sorted(child_tree.keys() - parent_tree.keys()),
-        "different": sorted(p for p in parent_tree.keys() & child_tree.keys() if parent_tree[p] != child_tree[p]),
-    }
+        _git("fetch", "-q", "--no-tags", "--filter=tree:0", url, f"refs/heads/{ref}", cwd=bare)
+        rows = (line.split() for line in _git("log", "--first-parent", "--format=%H %T", "FETCH_HEAD", cwd=bare).splitlines())
+        return next((commit for commit, tree in rows if tree == tree_id), None)
+
+
+def _child(name: str, parent_tree: dict, tree_id: str | None, *, ref: str, url_template: str, row: dict) -> None:
+    url = url_template.format(repository=name)
+    live = _git("ls-remote", url, f"refs/heads/{ref}", timeout=120).split()
+    row["live_sha"] = live[0] if live else None
+    if not live:
+        raise RuntimeError(f"ref {ref} not found")
+    row["synced_sha"] = _synced_sha(url, ref, tree_id)
+    row["drift"] = row["synced_sha"] not in (None, row["live_sha"])  # 追いついていない状態があるときだけ drift
+    if row["synced_sha"]:
+        row["diff"] = {"only_in_parent": [], "only_in_child": [], "different": []}
+    else:  # 同じ tree の状態が子の履歴にない: 子の main との差分を出す
+        with tempfile.TemporaryDirectory() as tmp:
+            bare = Path(tmp)
+            _git("init", "-q", "--bare", str(bare))
+            _git("fetch", "-q", "--depth=1", url, row["live_sha"], cwd=bare)
+            child_tree = _tree(bare, row["live_sha"])
+        row["diff"] = {
+            "only_in_parent": sorted(parent_tree.keys() - child_tree.keys()),
+            "only_in_child": sorted(child_tree.keys() - parent_tree.keys()),
+            "different": sorted(p for p in parent_tree.keys() & child_tree.keys() if parent_tree[p] != child_tree[p]),
+        }
     row["identical"] = not any(row["diff"].values())
 
 
@@ -137,14 +156,15 @@ def check(root: Path, heads: dict, *, network: bool, url_template: str = URL_TEM
     for name, entry in sorted(heads["heads"].items()):
         optional = entry["optional"]
         prefix = optional["subtree_prefix"]
-        row = {"repository": name, "recorded_sha": entry["sha"], "prefix": prefix}
+        row = {"repository": name, "prefix": prefix}
         parent_tree = {p[len(prefix) + 1:]: b for p, b in whole.items() if p.startswith(prefix + "/")}
+        tree_id = _git("rev-parse", f"HEAD:{prefix}", cwd=root).strip() if parent_tree else None
         row["mirrors"] = _mirrors(whole, prefix, optional.get("mirrored_from_parent", {}))
         if not parent_tree:
             row["error"] = "prefix_not_found"
         if network:
             try:
-                _child(name, entry, parent_tree, ref=heads["ref"], url_template=url_template, row=row)
+                _child(name, parent_tree, tree_id, ref=heads["ref"], url_template=url_template, row=row)
             except (RuntimeError, subprocess.SubprocessError, OSError) as error:
                 row["error"] = "fetch_failed: " + str(error)
         report["children"].append(row)
@@ -168,6 +188,8 @@ def main(argv=None) -> int:
     ap.add_argument("--url-template", default=URL_TEMPLATE, help="子の URL。{repository} を owner/repository にする")
     ap.add_argument("--fail-on-drift", action="store_true")
     ap.add_argument("--fail-on-diff", action="store_true")
+    ap.add_argument("--print-synced", metavar="OWNER/REPO",
+                    help="その子の synced_sha（Aoi の prefix と同じ tree の最新コミット）だけを出す")
     args = ap.parse_args(argv)
     root = args.root.resolve()
     try:
@@ -177,6 +199,14 @@ def main(argv=None) -> int:
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         print("check-child-heads: " + str(error), file=sys.stderr)
         return 2
+    if args.print_synced:
+        row = next((c for c in report["children"] if c["repository"] == args.print_synced), {})
+        if not row.get("synced_sha"):
+            print(f"check-child-heads: no synced sha for {args.print_synced}: {row.get('error', 'no matching tree')}",
+                  file=sys.stderr)
+            return 1
+        print(row["synced_sha"])
+        return 0
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 1 if failed(report, fail_on_drift=args.fail_on_drift, fail_on_diff=args.fail_on_diff) else 0
 

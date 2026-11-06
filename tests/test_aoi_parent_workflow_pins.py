@@ -104,8 +104,6 @@ def test_distribution_parent_resolution_does_not_use_frozen_compiler(tmp_path, m
     monkeypatch.chdir(tmp_path)
     manifest = json.dumps({"tool": {"commit": frozen}})
     (tmp_path / "distributions.json").write_text(manifest)
-    (tmp_path / "child-heads.json").write_text(json.dumps({"heads": {
-        "myon-bioinformatics/QueRyu": {"sha": queryu}}}))
     tools = tmp_path / "bin"
     tools.mkdir()
     git = tools / "git"
@@ -116,7 +114,7 @@ def test_distribution_parent_resolution_does_not_use_frozen_compiler(tmp_path, m
     git.chmod(0o755)
     # Mock only the repository-identity HTTP response; run the workflow's Python.
     python = tools / "python"
-    python.write_text(f"#!{sys.executable}\n" + '''import io, json, sys, urllib.request
+    python.write_text(f"#!{sys.executable}\n" + '''import io, json, os, sys, urllib.request
 
 def response(request, timeout):
     assert request.full_url == "https://api.github.com/repos/myon-bioinformatics/myon-bioinformatics"
@@ -124,6 +122,12 @@ def response(request, timeout):
 
 urllib.request.urlopen = response
 assert sys.argv[1] == "-S"
+if sys.argv[2] == "scripts/check_child_heads.py":
+    # QueRyu の sha は子の履歴から導く。導出そのものは test_child_registry.py が確かめる。ここでは呼び方だけ記録する。
+    with open(os.environ["PY_CALLS"], "a") as handle:
+        handle.write(" ".join(sys.argv[1:]) + "\\n")
+    print(os.environ["QUERYU_SYNCED"])
+    raise SystemExit(0)
 if sys.argv[2] == "-":
     exec(compile(sys.stdin.read(), "workflow-identity", "exec"), {})
 else:
@@ -135,6 +139,7 @@ else:
     for key, value in {"PARENT_REF": "", "QUERYU_REF": "", "GITHUB_TOKEN": "",
                        "PARENT_REPOSITORY_ID": "638801160", "GIT_CALLS": str(tmp_path / "git-calls"),
                        "GITHUB_OUTPUT": str(tmp_path / "output"),
+                       "PY_CALLS": str(tmp_path / "py-calls"), "QUERYU_SYNCED": queryu,
                        "GITHUB_STEP_SUMMARY": str(tmp_path / "summary")}.items():
         monkeypatch.setenv(key, value)
     result = subprocess.run(["bash", "-c", program], capture_output=True, text=True, timeout=10)
@@ -142,6 +147,8 @@ else:
     assert (tmp_path / "output").read_text().splitlines() == [
         "parent_sha=" + live, "queryu_sha=" + queryu]
     assert "refs/heads/main" in (tmp_path / "git-calls").read_text()
+    assert (tmp_path / "py-calls").read_text().splitlines() == [
+        "-S scripts/check_child_heads.py --print-synced myon-bioinformatics/QueRyu"]
     summary = (tmp_path / "summary").read_text()
     assert live in summary and "repository_id 638801160" in summary
     assert frozen not in summary

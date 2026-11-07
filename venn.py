@@ -5,8 +5,7 @@ n 個の集合の 2^n 領域を 1 つずつ置く。空の領域も 0 のまま�
 """
 from __future__ import annotations
 
-from collections import Counter
-from math import ceil
+from collections import Counter; from math import ceil
 
 from .figures import FONT, _base_layout, _exact_text
 

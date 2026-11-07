@@ -14,14 +14,7 @@ AOI_ROOT は Aoi の checkout（cycles/ があること）。rule_search は PYT
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import importlib.machinery
-import importlib.util
-import json
-import os
-import sys
-import types
+import argparse, hashlib, importlib.machinery, importlib.util, json, os, sys, types
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -1,6 +1,5 @@
 """代替の入口は、markdown と numpy が入った環境では動かない。"""
-import subprocess
-import sys
+import ctypes, ctypes.util, importlib.util, os, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,10 +19,6 @@ def test_min_refuses_while_markdown_and_numpy_are_installed(tmp_path):
     assert not (tmp_path / "out.json").exists()
 
 
-import ctypes
-import ctypes.util
-import importlib.util
-import os
 import pytest
 
 

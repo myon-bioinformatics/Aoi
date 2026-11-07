@@ -3,11 +3,7 @@
 このディレクトリはパッケージ dragowing の中身（__init__.py は置かない）。
 Aoi では同じディレクトリがすでに dragowing として import できるので、登録は何もしない。
 """
-import importlib.machinery
-import importlib.util
-import os
-import sys
-import types
+import importlib.machinery, importlib.util, os, sys, types
 from pathlib import Path
 
 import pytest

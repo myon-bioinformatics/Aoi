@@ -8,8 +8,7 @@
 Plotly.js の URL（3.6.0、SRI なし）は当時のまま。web-ui の固定（plotly_cdn）に寄せるかは別に決める。
 文字は figures.FONT と同じ（メイリオ先頭）。単独のモジュールとして配布されるので import せず書き、tests/test_font.py で一致を確かめる。
 """
-import html
-import json
+import html, json
 
 PLOTLY_URL = 'https://cdn.plot.ly/plotly-3.6.0.min.js'
 

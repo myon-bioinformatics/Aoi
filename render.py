@@ -2,15 +2,8 @@
 
 from __future__ import annotations
 
-import base64
-import json
-import math
-import os
-import shutil
-import sys
-import tempfile
-from dataclasses import dataclass
-from pathlib import Path
+import base64, json, math, os, shutil, sys, tempfile
+from dataclasses import dataclass; from pathlib import Path
 
 from .chrome_pipe import Chrome, _seconds
 

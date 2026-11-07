@@ -2,8 +2,7 @@
 
 load_overlap は stdlib の経路だけを使う。numpy・polars・Chrome は要らない。
 """
-import json
-import random
+import json, random
 
 import pytest
 

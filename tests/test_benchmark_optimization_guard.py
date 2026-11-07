@@ -1,8 +1,6 @@
 """Parity guards must execute without requiring git history, even under -O."""
+import subprocess, sys, unittest
 from pathlib import Path
-import subprocess
-import sys
-import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 

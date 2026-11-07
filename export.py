@@ -2,14 +2,8 @@
 
 from __future__ import annotations
 
-import html as html_lib
-import json
-import os
-import shutil
-import tempfile
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Callable
+import html as html_lib, json, os, shutil, tempfile
+from dataclasses import dataclass; from pathlib import Path; from typing import Callable
 
 from .plotly_cdn import fetch_plotly_js
 from .render import RenderSession, Timeouts

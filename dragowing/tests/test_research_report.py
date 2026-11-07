@@ -40,3 +40,9 @@ def test_real_aggregate_mapping():
     assert render_report(spec)==render_report(spec)
     early['rows'].append(early['rows'][0])
     with pytest.raises(ValueError):module.build_spec(early,late)
+
+
+def test_plotly_url_matches_plotly_cdn():
+    """research_report stays import-free, so the shared Plotly.js URL is checked by value."""
+    from dragowing import plotly_cdn, research_report
+    assert research_report.PLOTLY_URL == plotly_cdn.PLOTLY_JS_CDN

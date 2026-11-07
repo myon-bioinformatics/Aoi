@@ -5,13 +5,13 @@
 `dragowing` の import がこのファイルに取られて、パッケージ側（chrome_pipe・export・plotly_cdn）が読めなくなる。
 そのため `dragowing.research_report` にした。使う側: `dragowing/reports/research.py`、
 `research/gpt-r001-score-allocation/render_*.py`、`research_loop/feedback.py`（research.build 経由）。
-Plotly.js の URL（3.6.0、SRI なし）は当時のまま。web-ui の固定（plotly_cdn）に寄せるかは別に決める。
+Plotly.js の URL は plotly_cdn.PLOTLY_JS_CDN と同じ文字列（jsDelivr の版未固定、SRI なし）。ここは import せず書き、tests/test_research_report.py で一致を確かめる。
 文字は figures.FONT と同じ（メイリオ先頭）。単独のモジュールとして配布されるので import せず書き、tests/test_font.py で一致を確かめる。
 """
 import html
 import json
 
-PLOTLY_URL = 'https://cdn.plot.ly/plotly-3.6.0.min.js'
+PLOTLY_URL = 'https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js'
 
 
 def render_report(spec):

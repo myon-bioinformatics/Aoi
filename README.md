@@ -124,11 +124,11 @@ The copy inside Aoi and the standalone repository can drift between syncs; the r
 
 ⏭️ The 41 skips are the existing opt-ins (season requirements, cross-repository integration, local-only expectations, network).
 
-🔁 Re-record (`$PLOTLY` = a directory holding `plotly-3.6.0.min.js`, e.g. from `npm pack plotly.js-dist-min@3.6.0`):
+🔁 Re-record (`$NPM` = a directory holding `plotly.js-dist-min/plotly.min.js`, e.g. from `npm pack plotly.js-dist-min`):
 
 ```sh
 python ../BrowserTestKit/tools/evidence_gif.py docs/evidence/browser.gif --serve . \
-  --map "https://cdn.plot.ly=$PLOTLY" --plan docs/evidence/browser.json
+  --map "https://cdn.jsdelivr.net/npm=$NPM" --plan docs/evidence/browser.json
 ```
 
 ## Tests

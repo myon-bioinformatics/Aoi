@@ -356,8 +356,8 @@ def test_discount_rate_or_value_is_told_apart_by_dimension(reg):
     # 支払ったあとから割引値が出る: 定価 − 支払額。率も同時に出る
     paid = ev("700 JPY", reg)
     assert same(ev(price, reg) - paid, ev("300 JPY", reg))
-    assert (ev(price, reg) - paid) / ev(price, reg) == ev("30 pct", reg) or \
-        ((ev(price, reg) - paid) / ev(price, reg)).m == F(3, 10)
+    rate = (ev(price, reg) - paid) / ev(price, reg)
+    assert rate.d == u.DIM0 and rate.m == F(3, 10) and rate.r == 0
     # 個数と率: 3 個 x 298 円 から 10 % 引き = 804.6 円（厳密）
     assert same(ev("3 * 298 JPY * (1 - 10 pct)", reg), u.Q(F("804.6"), u.Z, ev("1 JPY", reg).d))
 
@@ -482,3 +482,80 @@ def test_cli_equation_json(capsys):
     rec = json.loads(out)
     assert code == 0 and rec["kind"] == "eq" and rec["equal"] is True and rec["dimensionless"] is True
     assert cli(["1 kWh = 3.6e6 W"], capsys)[0] == 65
+
+
+# ---- 支払い: 精算済み・まだ払う分（残）・払いすぎた分（余剰） ------------------------------------------------------
+def settle(reg, payable, paid):
+    """`支払うべき額 = 支払額` を突き合わせる。order が 0 なら精算済み、1 なら残（支払うべき額 > 支払額）、
+    -1 なら余剰（払いすぎ）。戻り値は (状態, 金額)。金額は厳密な分数で、残・余剰は正、精算済みは 0。"""
+    _, rec = u.run("%s = %s" % (payable, paid), reg)
+    assert rec["dimensionless"] is False and rec["dim_left"] == rec["dim_right"] == "JPY"
+    assert rec["diff_rad"] == "0"                                  # 金額はすべて厳密
+    return {0: "settled", 1: "remaining", -1: "surplus"}[rec["order"]], abs(F(rec["diff_mid"]))
+
+
+@pytest.mark.parametrize("payable,paid,state,amount", [
+    # 定価 1000 円、20 % 引き（率）= 800 円
+    ("1000 JPY * (1 - 20 pct)", "800 JPY", "settled", 0),
+    ("1000 JPY * (1 - 20 pct)", "700 JPY", "remaining", 100),
+    ("1000 JPY * (1 - 20 pct)", "1000 JPY", "surplus", 200),
+    # 定価 1000 円、300 円引き（値）= 700 円
+    ("1000 JPY - 300 JPY", "700 JPY", "settled", 0),
+    ("1000 JPY - 300 JPY", "500 JPY", "remaining", 200),
+    ("1000 JPY - 300 JPY", "1000 JPY", "surplus", 300),
+    # 3 個 x 298 円 から 10 % 引き = 804.6 円（小数の金額も厳密）
+    ("3 item * 298 JPY/item * (1 - 10 pct)", "804.6 JPY", "settled", 0),
+    ("3 item * 298 JPY/item * (1 - 10 pct)", "800 JPY", "remaining", F("4.6")),
+    ("3 item * 298 JPY/item * (1 - 10 pct)", "1000 JPY", "surplus", F("195.4")),
+    # 割引なし
+    ("1000 JPY", "1000 JPY", "settled", 0),
+    ("1000 JPY", "1 JPY", "remaining", 999),
+])
+def test_surplus_and_remaining_payment_are_recognized(payable, paid, state, amount, reg):
+    reg.add_dim("JPY")
+    reg.add_dim("item")
+    assert settle(reg, payable, paid) == (state, amount)
+
+
+@pytest.mark.parametrize("seed", SEEDS)
+def test_settlement_state_is_consistent_for_random_payments(seed, reg):
+    rng = random.Random(seed)
+    reg.add_dim("JPY")
+    for _ in range(200):
+        price, hundredths = rng.randint(1, 10 ** 6), rng.randint(0, 10 ** 4)       # 割引率は 0.00..100.00 %
+        payable = price * (1 - F(hundredths, 10 ** 4))
+        paid = payable + F(rng.randint(-5 * 10 ** 5, 5 * 10 ** 5), rng.randint(1, 100))
+        if rng.random() < 0.2:
+            paid = payable                                                       # 精算済みも混ぜる
+        want = "settled" if paid == payable else "remaining" if payable > paid else "surplus"
+        got, amount = settle(reg, "%d JPY * (1 - %d.%02d pct)" % (price, *divmod(hundredths, 100)),
+                             "(%d/%d) JPY" % (paid.numerator, paid.denominator))
+        assert (got, amount) == (want, abs(payable - paid))
+
+
+def test_settlement_rejects_mixing_rate_and_amount(reg):
+    reg.add_dim("JPY")
+    with pytest.raises(u.CalcError):
+        u.run("1000 JPY * (1 - 20 pct) = 20 pct", reg)             # 支払うべき額（金額）と率は比べない
+    with pytest.raises(u.CalcError):
+        u.run("1000 JPY * (1 - 20 pct) = 800", reg)                # 単位のない数とも比べない
+
+
+def test_discount_value_and_rate_come_out_after_settlement(reg):
+    reg.add_dim("JPY")
+    assert settle(reg, "1000 JPY * (1 - 20 pct)", "800 JPY") == ("settled", 0)
+    list_price, paid = ev("1000 JPY", reg), ev("800 JPY", reg)
+    assert same(list_price - paid, ev("200 JPY", reg))             # 精算済みなら 定価 − 支払額 が割引値
+    rate = (list_price - paid) / list_price
+    assert rate.d == u.DIM0 and rate.m == F(1, 5) and rate.r == 0  # 率も同時に出る（20 %）
+    assert u.run("200 JPY / 1000 JPY -> pct", reg)[1]["mid"] == "20"
+
+
+def test_cli_settlement_json(capsys):
+    args = ["--dim", "JPY", "--json"]
+    for expr, order in (("1000 JPY * (1 - 20 pct) = 800 JPY", 0), ("1000 JPY * (1 - 20 pct) = 700 JPY", 1),
+                        ("1000 JPY * (1 - 20 pct) = 1000 JPY", -1)):
+        code, out = cli(args + [expr], capsys)
+        rec = json.loads(out)
+        assert code == 0 and rec["order"] == order and rec["equal"] is (order == 0)
+    assert cli(args + ["1000 JPY * (1 - 20 pct) = 20 pct"], capsys)[0] == 65

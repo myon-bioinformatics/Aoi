@@ -634,24 +634,25 @@ def render(x, label, sig, steps):
 
 
 def _run_eq(e, text, reg, sig, steps):
-    """左辺 = 右辺: 次元の一致（両辺とも無次元ならそれも知らせる）と、値が等しいか。"""
+    """左辺 = 右辺: 次元の一致（両辺とも無次元ならそれも知らせる）と、値が等しいか・どちらが大きいか。"""
     dl, dr = reg.dim_str(e.l.d), reg.dim_str(e.r.d)
     if e.l.d != e.r.d:
         raise CalcError('🧭 左辺 %s ≠ 右辺 %s' % (dl, dr))
     free = e.l.d == DIM0
     diff = e.l - e.r
     equal = (diff.m == 0) if not diff.r else (False if abs(diff.m) > diff.r else None)   # None = 範囲が重なり判定できない
+    order = None if equal is None else 0 if equal else 1 if diff.m > 0 else -1             # 1: 左辺 > 右辺、-1: 左辺 < 右辺
     lines = ['🧭 左辺 %s  右辺 %s  ✅' % (dl, dr) + ('（両辺とも単位なし）' if free else '')]
     if equal:
         lines.append('✅ 左辺 = 右辺' + ('（厳密）' if not diff.r else ''))
     else:
-        lines.append('❓ 誤差の範囲が重なり、等しいか判定できない' if equal is None else '≠ 左辺 − 右辺')
+        lines.append('❓ 誤差の範囲が重なり、等しいか判定できない' if equal is None else '≠ 左辺 %s 右辺（差 = 左辺 − 右辺）' % '><'[order < 0])
         label = '' if free else reg.alias.get(e.l.d) or dl
         lines.extend(render(Q(diff.m, diff.r, DIM0, diff.n), label, sig, steps)[0])
     if steps:
         lines.extend('🪜 ' + n for n in diff.n)
     rec = {'ok': True, 'expr': text, 'kind': 'eq', 'dim_left': dl, 'dim_right': dr, 'dimensionless': free,
-           'equal': equal, 'diff_mid': _fs(diff.m), 'diff_rad': _fs(diff.r), 'notes': list(diff.n)}
+           'equal': equal, 'order': order, 'diff_mid': _fs(diff.m), 'diff_rad': _fs(diff.r), 'notes': list(diff.n)}
     return lines, rec
 
 

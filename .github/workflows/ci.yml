@@ -182,9 +182,12 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
-          enable-cache: false
           python-version: "3.15"
           activate-environment: true
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - name: Verify vendor lock with the parent dispatch driver
         env:
           PARENT_SHA: ${{ steps.parent.outputs.sha }}
@@ -239,9 +242,12 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
-          enable-cache: false
           python-version: "${{ matrix.python }}"
           activate-environment: true
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - run: python -VV
       - name: Compact bitmask contracts without site packages
         run: python -S -m unittest discover -s research/compact-bitmask/tests -v
@@ -376,9 +382,12 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
-          enable-cache: false
           python-version: "3.15"
           activate-environment: true
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - name: Verify past-pattern snapshot and all import origins
         run: |
           test "$(git -C .test-deps/lab rev-parse HEAD)" = "$LAB_SHA"
@@ -447,9 +456,12 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
-          enable-cache: false
           python-version: "3.15"
           activate-environment: true
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - name: Install dependencies before disconnecting the network
         run: |
           uv sync --locked --python 3.15
@@ -554,8 +566,11 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
-          enable-cache: false
           python-version: "3.15"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - name: Generate digest from committed records only
         run: uv run --locked --python 3.15 python nagoyaction/research_digest.py cycles/c001-chunichi
       - name: Verify reproducibility

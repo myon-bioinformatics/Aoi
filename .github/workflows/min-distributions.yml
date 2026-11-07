@@ -93,8 +93,10 @@ jobs:
           if [[ -n "${QUERYU_REF}" ]]; then
             queryu_sha=$(resolve_head https://github.com/myon-bioinformatics/QueRyu.git "$QUERYU_REF")
           else
-            # sha は child-heads.json に書かない。queryu/ の tree と同じ tree を持つ QueRyu main の第一親コミットを履歴から導く。
-            queryu_sha=$(python -S scripts/check_child_heads.py --print-synced myon-bioinformatics/QueRyu)
+            # sha は child-heads.json に書かない。queryu/ の tree と同じ tree を持つ QueRyu main のコミットを履歴から導く。
+            # まだ無いとき（Aoi の queryu/ が子より先に変わる PR など）は QueRyu main の先頭を使う。
+            queryu_sha=$(python -S scripts/check_child_heads.py --print-synced myon-bioinformatics/QueRyu \
+              || resolve_head https://github.com/myon-bioinformatics/QueRyu.git main)
             if [[ ! "$queryu_sha" =~ ^[0-9a-f]{40}$ ]]; then
               echo "could not derive the QueRyu commit that matches queryu/" >&2
               exit 1

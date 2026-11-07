@@ -86,7 +86,8 @@ def _distribution_step(name):
     return step, textwrap.dedent(step.split("        run: |\n", 1)[1])
 
 
-def test_distribution_parent_resolution_does_not_use_frozen_compiler(tmp_path, monkeypatch):
+@pytest.mark.parametrize("synced", [True, False])
+def test_distribution_parent_resolution_does_not_use_frozen_compiler(tmp_path, monkeypatch, synced):
     """A conflict-free merge must still resolve live main, not tool.commit."""
     import json
     import os
@@ -100,7 +101,7 @@ def test_distribution_parent_resolution_does_not_use_frozen_compiler(tmp_path, m
     name = next(line.removeprefix("      - name: ") for line in text.splitlines()
                 if line.startswith("      - name: Resolve "))
     _, program = _distribution_step(name)
-    live, frozen, queryu = "b" * 40, "a" * 40, "c" * 40
+    live, frozen, queryu, queryu_head = "b" * 40, "a" * 40, "c" * 40, "d" * 40
     monkeypatch.chdir(tmp_path)
     manifest = json.dumps({"tool": {"commit": frozen}})
     (tmp_path / "distributions.json").write_text(manifest)
@@ -108,9 +109,12 @@ def test_distribution_parent_resolution_does_not_use_frozen_compiler(tmp_path, m
     tools.mkdir()
     git = tools / "git"
     git.write_text("#!/bin/sh\n"
-                   'test "$*" = "ls-remote https://github.com/myon-bioinformatics/myon-bioinformatics.git refs/heads/main" || exit 91\n'
                    'printf "%s\\n" "$*" >> "$GIT_CALLS"\n'
-                   f"printf '{live}\\trefs/heads/main\\n'\n")
+                   'case "$*" in\n'
+                   f'"ls-remote https://github.com/myon-bioinformatics/myon-bioinformatics.git refs/heads/main") printf "{live}\\trefs/heads/main\\n";;\n'
+                   f'"ls-remote https://github.com/myon-bioinformatics/QueRyu.git refs/heads/main") printf "{queryu_head}\\trefs/heads/main\\n";;\n'
+                   "*) exit 91;;\n"
+                   "esac\n")
     git.chmod(0o755)
     # Mock only the repository-identity HTTP response; run the workflow's Python.
     python = tools / "python"
@@ -126,6 +130,9 @@ if sys.argv[2] == "scripts/check_child_heads.py":
     # QueRyu の sha は子の履歴から導く。導出そのものは test_child_registry.py が確かめる。ここでは呼び方だけ記録する。
     with open(os.environ["PY_CALLS"], "a") as handle:
         handle.write(" ".join(sys.argv[1:]) + "\\n")
+    if not os.environ["QUERYU_SYNCED"]:
+        print("check-child-heads: no synced sha for myon-bioinformatics/QueRyu: no matching tree", file=sys.stderr)
+        raise SystemExit(1)
     print(os.environ["QUERYU_SYNCED"])
     raise SystemExit(0)
 if sys.argv[2] == "-":
@@ -139,13 +146,13 @@ else:
     for key, value in {"PARENT_REF": "", "QUERYU_REF": "", "GITHUB_TOKEN": "",
                        "PARENT_REPOSITORY_ID": "638801160", "GIT_CALLS": str(tmp_path / "git-calls"),
                        "GITHUB_OUTPUT": str(tmp_path / "output"),
-                       "PY_CALLS": str(tmp_path / "py-calls"), "QUERYU_SYNCED": queryu,
+                       "PY_CALLS": str(tmp_path / "py-calls"), "QUERYU_SYNCED": queryu if synced else "",
                        "GITHUB_STEP_SUMMARY": str(tmp_path / "summary")}.items():
         monkeypatch.setenv(key, value)
     result = subprocess.run(["bash", "-c", program], capture_output=True, text=True, timeout=10)
     assert result.returncode == 0, result.stderr
     assert (tmp_path / "output").read_text().splitlines() == [
-        "parent_sha=" + live, "queryu_sha=" + queryu]
+        "parent_sha=" + live, "queryu_sha=" + (queryu if synced else queryu_head)]
     assert "refs/heads/main" in (tmp_path / "git-calls").read_text()
     assert (tmp_path / "py-calls").read_text().splitlines() == [
         "-S scripts/check_child_heads.py --print-synced myon-bioinformatics/QueRyu"]

@@ -240,7 +240,7 @@ def audit_files(observations, expected_years, baseline=None, rules: AuditRules |
     return r
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--observations',type=Path,required=True)
     p.add_argument('--years',required=True)
@@ -248,7 +248,7 @@ def main():
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--annual-out',type=Path,required=True)
     p.add_argument('--rules',type=Path,help='league assumptions as JSON (AuditRules); omitted means none')
-    a=p.parse_args()
+    a=p.parse_args(argv)
     start,end=map(int,a.years.split('-'))
     r=audit_files(a.observations,range(start,end+1),a.baseline,load_rules(a.rules) if a.rules else None)
     for path in (a.out,a.annual_out):path.parent.mkdir(parents=True,exist_ok=True)

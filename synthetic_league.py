@@ -440,7 +440,7 @@ def calibration_mean(rows):
     return statistics.median(r['RF']/r['G'] for r in rows)
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--seeds',type=int,default=1,help='14-year batches per profile; default 1')
     p.add_argument('--mean-runs',type=float,default=4.)
@@ -450,7 +450,7 @@ def main():
     p.add_argument('--calibration-years',default='2013-2026')
     p.add_argument('--witness-dir',type=Path)
     p.add_argument('--out',type=Path,required=True)
-    a=p.parse_args()
+    a=p.parse_args(argv)
     if a.seeds<1:p.error('seeds must be positive')
     calibration=None
     if a.calibrate_annual:

@@ -17,10 +17,8 @@ URL : 日程（npb_calendar）の観測に入っている試合のリンク（ht
 
 from __future__ import annotations
 
-import json
-import re
-from pathlib import Path
-from urllib.parse import urlsplit
+import json, re
+from pathlib import Path; from urllib.parse import urlsplit
 
 from blueprobe import HtmlTree, new_report, normalize
 from npb_calendar import GAME_PATH, LEAGUE, TEAM_NAME

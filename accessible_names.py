@@ -14,13 +14,8 @@ CSS（::before / ::after の content、display:none）を評価しないため�
 """
 from __future__ import annotations
 
-import argparse
-import json
-import re
-import sys
-from collections import Counter
-from html.parser import HTMLParser
-from pathlib import Path
+import argparse, json, re, sys
+from collections import Counter; from html.parser import HTMLParser; from pathlib import Path
 
 from blueprobe import new_report
 from emoji_observations import emoji_sequences

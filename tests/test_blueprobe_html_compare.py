@@ -1,7 +1,5 @@
-from hashlib import sha256
-from pathlib import Path
 import socket
-from unittest.mock import Mock
+from hashlib import sha256; from pathlib import Path; from unittest.mock import Mock
 
 import pytest
 

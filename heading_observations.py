@@ -11,13 +11,8 @@
 """
 from __future__ import annotations
 
-import argparse
-import json
-import re
-import sys
-from collections import Counter
-from html.parser import HTMLParser
-from pathlib import Path
+import argparse, json, re, sys
+from collections import Counter; from html.parser import HTMLParser; from pathlib import Path
 
 from accessible_names import _Tree, _flat, _name, _path, _text, _walk  # one shared tree and name logic
 from blueprobe import new_report

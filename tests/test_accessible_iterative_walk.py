@@ -1,9 +1,6 @@
 """Stdlib deep-DOM regression and preorder parity."""
-from pathlib import Path
-import random
-import sys
-import unittest
-from unittest.mock import patch
+import random, sys, unittest
+from pathlib import Path; from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import accessible_names as names
 

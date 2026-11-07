@@ -1,5 +1,4 @@
-import json
-import os
+import json, os
 from pathlib import Path
 DATA = {'nodeids': [], 'phases': [], 'plugins': []}
 def pytest_collection_finish(session):

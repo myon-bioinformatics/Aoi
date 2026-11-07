@@ -53,7 +53,7 @@ def test_blueprobe_registered_with_exact_ids():
     assert entry["optional"]["repository_created_at"] == "2026-10-14T01:27:17Z"
     assert entry["optional"]["subtree_prefix"] == "blueprobe"
     assert "mirrored_from_parent" not in entry["optional"]
-    assert "sha" not in entry  # 履歴から導く
+    assert entry["sha"] == "2ea993aaa1416ff9006eba4ebe2fed6d0b49668e"
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "blueprobe.py", "web_observations.py"):
         assert (ROOT / "blueprobe" / path).is_file(), path
@@ -76,7 +76,7 @@ def test_queryu_registered_with_exact_ids():
     assert entry["repository_id"] == 1423051557
     assert entry["optional"]["subtree_prefix"] == "queryu"
     assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
-    assert "sha" not in entry  # 履歴から導く
+    assert entry["sha"] == "4c59cb00ca2ba898573e4af95bc4a63492aa5eb9"
     for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore", "cache_share.py", "emoji_data.py"):
         assert (ROOT / "queryu" / path).is_file(), path
 
@@ -85,7 +85,7 @@ def test_nagoyaction_registered_with_exact_ids():
     entry = _load("child-heads.json")["heads"]["myon-bioinformatics/NagoyAction"]
     assert entry["repository_id"] == 1423491480
     assert entry["optional"]["subtree_prefix"] == "nagoyaction"
-    assert "sha" not in entry  # 履歴から導く
+    assert entry["sha"] == "da68f374ad1ae7c786f926190b98c94920d91420"
     assert "mirrored_from_parent" not in entry["optional"]  # Aoi の原本を写したファイルはない
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "README.md", "nagoyaction.py"):
@@ -111,7 +111,7 @@ def test_dragowing_registered_with_exact_ids():
     assert entry["optional"]["repository_created_at"] == "2026-10-17T21:45:31Z"
     assert entry["optional"]["subtree_prefix"] == "dragowing"
     assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
-    assert "sha" not in entry  # 履歴から導く
+    assert entry["sha"] == "0474a53c80df052722fbc9a8f95d14016cc11f2e"
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "tests/conftest.py", "tests/test_no_sibling_imports.py"):
         assert (ROOT / "dragowing" / path).is_file(), path  # 純粋な subtree：子のルートのファイルも Aoi に置く
@@ -173,11 +173,11 @@ def _url(tmp_path):
     return (tmp_path / "remotes").as_uri() + "/{repository}.git"
 
 
-def _heads(_sha=None, **optional):
-    """_sha は呼び出しをそろえるためだけに受ける。登録には書かない（sha は履歴から導く）。"""
+def _heads(sha, **optional):
     base = {"subtree_prefix": "sub"}
     base.update(optional)
-    return {"schema": "child-heads/1", "ref": "main", "heads": {NAME: {"repository_id": 7, "optional": base}}}
+    return {"schema": "child-heads/1", "ref": "main", "heads": {NAME: {"sha": sha, "repository_id": 7,
+                                                                        "optional": base}}}
 
 
 def _parent(tmp_path, files):
@@ -204,9 +204,10 @@ def _run(tmp_path, root, heads, *, network=True):
     (lambda d: d.update(heads={}), 'child heads must be a nonempty object'),
     (lambda d: d.update(heads=[]), 'child heads must be a nonempty object'),
     (lambda d: d["heads"].update({"no-slash": d["heads"][NAME]}), 'expected owner/repository: no-slash'),
-    (lambda d: d["heads"][NAME].update(sha="a" * 40), 'o/child: sha is derived from the child history; remove it'),
-    (lambda d: d["heads"][NAME].update(sha=1), 'o/child: sha is derived from the child history; remove it'),
-    (lambda d: d["heads"].update({NAME: "x"}), 'o/child: entry must be an object'),
+    (lambda d: d["heads"][NAME].update(sha="A" * 40), 'o/child: sha must be 40 hex'),
+    (lambda d: d["heads"][NAME].update(sha=1), 'o/child: sha must be 40 hex'),
+    (lambda d: d["heads"][NAME].pop("sha"), 'o/child: sha must be 40 hex'),
+    (lambda d: d["heads"].update({NAME: "x"}), 'o/child: sha must be 40 hex'),
     (lambda d: d["heads"][NAME].update(repository_id=0), 'o/child: repository_id must be a positive int'),
     (lambda d: d["heads"][NAME].update(repository_id=True), 'o/child: repository_id must be a positive int'),
     (lambda d: d["heads"][NAME].update(repository_id="7"), 'o/child: repository_id must be a positive int'),
@@ -343,85 +344,24 @@ def test_diff_categories_and_mode(tmp_path):
     root = _parent(tmp_path, {"sub/same": "s", "sub/blob": "parent", "sub/mode": "m", "sub/parent_only": "p"})
     report = _run(tmp_path, root, _heads(sha))
     row = report["children"][0]
-    assert row["drift"] is False and row["live_sha"] != sha and row["synced_sha"] is None  # 追いつく状態がなければ drift ではなく diff
-    assert row["diff"] == {"only_in_parent": ["parent_only"], "only_in_child": ["child_only", "later"],
+    assert row["drift"] is True and row["live_sha"] != sha
+    assert row["diff"] == {"only_in_parent": ["parent_only"], "only_in_child": ["child_only"],
                            "different": ["blob", "mode"]}
     assert row["identical"] is False
-    assert {k: row[k] for k in ("repository", "prefix")} == {"repository": NAME, "prefix": "sub"}
+    assert {k: row[k] for k in ("repository", "recorded_sha", "prefix")} == {"repository": NAME, "recorded_sha": sha,
+                                                                            "prefix": "sub"}
     assert not cch.failed(report, fail_on_drift=False, fail_on_diff=False)
-    assert not cch.failed(report, fail_on_drift=True, fail_on_diff=False)
+    assert cch.failed(report, fail_on_drift=True, fail_on_diff=False)
     assert cch.failed(report, fail_on_drift=False, fail_on_diff=True)
 
 
-def test_synced_sha_is_newest_matching_state_while_child_is_ahead(tmp_path):
-    first = _child(tmp_path, {"a": "1"})
-    work = tmp_path / "work" / NAME
-    _commit(work, {"a": "2"})
-    _git(work, "push", "-q", str(tmp_path / "remotes" / f"{NAME}.git"), "HEAD:main")
-    root = _parent(tmp_path, {"sub/a": "1"})  # Aoi は一つ前の状態に追いついている
-    report = _run(tmp_path, root, _heads())
-    row = report["children"][0]
-    assert row["synced_sha"] == first and row["live_sha"] != first
-    assert row["drift"] is True and row["identical"] is True
-    assert row["diff"] == {"only_in_parent": [], "only_in_child": [], "different": []}
-    assert cch.failed(report, fail_on_drift=True, fail_on_diff=False)  # drift だけが失敗の理由
-    assert not cch.failed(report, fail_on_drift=False, fail_on_diff=True)
-    assert not cch.failed(report, fail_on_drift=False, fail_on_diff=False)
-
-
-def test_synced_sha_ignores_states_that_are_not_on_the_first_parent_line(tmp_path):
-    base = _child(tmp_path, {"a": "1"})
-    work = tmp_path / "work" / NAME
-    _git(work, "checkout", "-q", "-b", "topic")
-    topic = _commit(work, {"a": "side"})
-    _git(work, "checkout", "-q", "main")
-    _commit(work, {"b": "2"})
-    _git(work, "merge", "-q", "--no-ff", "-m", "m", "topic")
-    _git(work, "push", "-q", str(tmp_path / "remotes" / f"{NAME}.git"), "HEAD:main")
-    # 側枝の途中状態（a=side だけ）と同じ tree は、main の状態ではないので同期済みとは見ない
-    root = _parent(tmp_path, {"sub/a": "side"})
-    row = _run(tmp_path, root, _heads())["children"][0]
-    assert topic != base and row["synced_sha"] is None and row["identical"] is False
-
-
-def test_print_synced_prints_only_the_sha(tmp_path, capsys):
-    sha = _child(tmp_path, {"a": "a"})
-    root = _write_root(tmp_path, _heads(), files={"sub/a": "a"})
-    rc, out, err = _main(capsys, "--root", root, "--url-template", _url(tmp_path), "--print-synced", NAME)
-    assert (rc, out.strip(), err) == (0, sha, "")
-
-
-def test_print_synced_failure_messages(tmp_path, capsys):
-    _child(tmp_path, {"a": "a"})
-    root = _write_root(tmp_path, _heads(), files={"sub/a": "a"})
-    rc, out, err = _main(capsys, "--root", root, "--url-template", _url(tmp_path), "--print-synced", "o/other")
-    assert (rc, out, err) == (1, "", "check-child-heads: no synced sha for o/other: no matching tree\n")
-    changed = _write_root(tmp_path / "x", _heads(), files={"sub/a": "changed"})
-    rc, out, err = _main(capsys, "--root", changed, "--url-template", _url(tmp_path), "--print-synced", NAME)
-    assert (rc, out, err) == (1, "", f"check-child-heads: no synced sha for {NAME}: no matching tree\n")
-    heads = _heads()
-    heads["heads"]["o/gone"] = {"repository_id": 8, "optional": {"subtree_prefix": "sub"}}
-    gone = _write_root(tmp_path / "y", heads, files={"sub/a": "a"})
-    rc, out, err = _main(capsys, "--root", gone, "--url-template", _url(tmp_path), "--print-synced", "o/gone")
-    assert rc == 1 and out == "" and err.startswith("check-child-heads: no synced sha for o/gone: fetch_failed: ")
-
-
-def test_registered_children_share_agent_rules_and_dependabot():
-    heads = json.loads((ROOT / "child-heads.json").read_text(encoding="utf-8"))["heads"]
-    prefixes = [entry["optional"]["subtree_prefix"] for entry in heads.values()]
-    for name in ("AGENTS.md", "CLAUDE.md", ".github/dependabot.yml"):
-        assert len({(ROOT / p / name).read_bytes() for p in prefixes}) == 1, name
-
-
-def test_missing_ref_is_a_per_child_error(tmp_path):
+def test_missing_ref_is_drift_with_null_live_sha(tmp_path):
     sha = _child(tmp_path, {"a": "a"})
     root = _parent(tmp_path, {"sub/a": "a"})
     heads = _heads(sha)
     heads["ref"] = "gone"
-    report = _run(tmp_path, root, heads)
-    row = report["children"][0]
-    assert row["live_sha"] is None and row["error"] == "fetch_failed: ref gone not found"
-    assert cch.failed(report, fail_on_drift=False, fail_on_diff=False)
+    row = _run(tmp_path, root, heads)["children"][0]
+    assert row["live_sha"] is None and row["drift"] is True and row["identical"] is True
 
 
 def test_prefix_not_found_and_missing_repository_continue_per_child(tmp_path):
@@ -429,8 +369,8 @@ def test_prefix_not_found_and_missing_repository_continue_per_child(tmp_path):
     root = _parent(tmp_path, {"sub/a": "a", "other/a": "a"})
     heads = _heads(sha)
     heads["heads"]["o/good"] = heads["heads"].pop(NAME)
-    heads["heads"]["o/missing"] = {"repository_id": 8, "optional": {"subtree_prefix": "other"}}
-    heads["heads"]["o/noprefix"] = {"repository_id": 9, "optional": {"subtree_prefix": "nope"}}
+    heads["heads"]["o/missing"] = {"sha": SHA, "repository_id": 8, "optional": {"subtree_prefix": "other"}}
+    heads["heads"]["o/noprefix"] = {"sha": SHA, "repository_id": 9, "optional": {"subtree_prefix": "nope"}}
     report = _run(tmp_path, root, heads)
     rows = {r["repository"]: r for r in report["children"]}
     assert list(rows) == ["o/good", "o/missing", "o/noprefix"]
@@ -569,9 +509,6 @@ def test_default_root_is_repository():
     assert out.stdout.startswith("usage:") and cch.__doc__.splitlines()[0] in out.stdout
     assert "形と Aoi 側だけ確かめる（GitHub に取りに行かない）" in out.stdout
     assert "子の URL。{repository} を owner/repository にする" in out.stdout
-    flat = " ".join(out.stdout.split())  # argparse は空白で折り返すので、空白をそろえて比べる
-    assert "--print-synced OWNER/REPO" in flat
-    assert "その子の synced_sha（Aoi の prefix と同じ tree の最新コミット）だけを出す" in flat
 
 
 def test_check_does_not_mutate_inputs(tmp_path):

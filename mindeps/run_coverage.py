@@ -31,7 +31,7 @@ def exercise() -> None:
     good = {
         "schema": "child-heads/1", "ref": "main",
         "heads": {"myon-bioinformatics/BlueProbe": {
-            "repository_id": 1,
+            "sha": "a" * 40, "repository_id": 1,
             "optional": {"subtree_prefix": "blueprobe", "mirrored_from_parent": {"README.md": "README.md"}},
         }},
     }
@@ -41,27 +41,26 @@ def exercise() -> None:
         {"schema": "child-heads/1", "ref": "", "heads": {"a/b": {}}},
         {"schema": "child-heads/1", "ref": "m\n", "heads": {"a/b": {}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {}},
-        {"schema": "child-heads/1", "ref": "main", "heads": {"a/b": "not-an-object"}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "bad": {"repository_id": 1, "optional": {"subtree_prefix": "x"}}}},
+            "bad": {"sha": "a" * 40, "repository_id": 1, "optional": {"subtree_prefix": "x"}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"sha": "a" * 40, "repository_id": 1, "optional": {"subtree_prefix": "x"}}}},
+            "a/b": {"sha": "zz", "repository_id": 1, "optional": {"subtree_prefix": "x"}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"repository_id": 0, "optional": {"subtree_prefix": "x"}}}},
+            "a/b": {"sha": "a" * 40, "repository_id": 0, "optional": {"subtree_prefix": "x"}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"repository_id": True, "optional": {"subtree_prefix": "x"}}}},
+            "a/b": {"sha": "a" * 40, "repository_id": True, "optional": {"subtree_prefix": "x"}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"repository_id": 1, "optional": {}}}},
+            "a/b": {"sha": "a" * 40, "repository_id": 1, "optional": {}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"repository_id": 1, "optional": {"subtree_prefix": "/abs"}}}},
+            "a/b": {"sha": "a" * 40, "repository_id": 1, "optional": {"subtree_prefix": "/abs"}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"repository_id": 1, "optional": {"subtree_prefix": "a/../b"}}}},
+            "a/b": {"sha": "a" * 40, "repository_id": 1, "optional": {"subtree_prefix": "a/../b"}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"repository_id": 1, "optional": {"subtree_prefix": "x", "not_in_parent": []}}}},
+            "a/b": {"sha": "a" * 40, "repository_id": 1, "optional": {"subtree_prefix": "x", "not_in_parent": []}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"repository_id": 1, "optional": {"subtree_prefix": "x", "mirrored_from_parent": []}}}},
+            "a/b": {"sha": "a" * 40, "repository_id": 1, "optional": {"subtree_prefix": "x", "mirrored_from_parent": []}}}},
         {"schema": "child-heads/1", "ref": "main", "heads": {
-            "a/b": {"repository_id": 1, "optional": {"subtree_prefix": "x", "mirrored_from_parent": {"": "a"}}}}},
+            "a/b": {"sha": "a" * 40, "repository_id": 1, "optional": {"subtree_prefix": "x", "mirrored_from_parent": {"": "a"}}}}},
     ]
     for doc in samples:
         try:

@@ -45,7 +45,7 @@ figure = series_figure([p["threshold"] for p in curve],
 
 - `source`: Aoiの入口と元モジュールを凍結したcommit。成果物を含める後続commitから参照し、自己参照を避ける。
 - `tool`: 親の `tools/minpy.py` の取得元commitとSHA-256。実行前に照合する。
-- `projects`: 入口・検索パス・出力・提供範囲。QueRyuのcache coreだけは、Aoiの `queryu/` と同じ tree を持つ QueRyu main のコミット（`check_child_heads.py --print-synced myon-bioinformatics/QueRyu` で履歴から導く）を `repository` / `commit` に記録する。この `commit` は手で固定する値で、導出で自動更新はしない。
+- `projects`: 入口・検索パス・出力・提供範囲。QueRyuのcache coreだけは `child-heads.json` に登録した sha を `repository` / `commit` に記録する。
 - 生成はPython 3.12で固定。同じツール・ソースから全ファイルを再生成し、バイト一致を確認する。元コードが変わった場合はソースのcommitを更新して再生成する。入口だけでなく検索ディレクトリ内の依存核の変更・未追跡ファイルも検出して停止する。
 
 ```sh
@@ -53,12 +53,12 @@ python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py
 python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py --sources /checkouts --check
 ```
 
-`/checkouts/queryu` は、`queryu/` と同じ tree を持つ QueRyu のコミット（`--print-synced` で導く）の checkout である。親の `tools/minpy.py` は実行時に `git ls-remote` で myon-bioinformatics/myon-bioinformatics の最新 main を解決し、repository id `638801160` を確かめてからその SHA を checkout する。解決した SHA と checkout の SHA-256 はジョブの summary に残す。reusable workflow の uses は動的にできないので、検証済みの40桁SHA `9e3da7ae1846e9604ebc24bb5178f7de094a4e77` のままにする。最新 main の `tools/minpy.py` SHA-256 を `distributions.json` の `tool.sha256` と照合する。不一致は pull request では警告にし、main への push と schedule では失敗にする。pull request 以外のイベントも失敗にする。配布物の再現は `tool.commit` と `tool.sha256` で承認済みコンパイラを取得し、commit と SHA-256 を検証してから `.test-deps/frozen-minpy.py` へ保存して使う。この実行前の検証はどのイベントでも失敗にする。親 main の更新だけでは配布 manifest・承認済みコンパイラ・成果物を書き換えない。`workflow_dispatch` では親 ref と QueRyu ref を上書きできる。`--check` は成果物を書き換えず、実行するコンパイラの SHA-256 を import 前に再検証する。隔離テストはコピーした5本だけを `python -I -S` で読み、キャッシュ改ざん拒否・BlueProbe連携・期間比較・近傍・閾値・来歴・HTML生成を実行する。
+`/checkouts/queryu` は `child-heads.json` に登録した QueRyu の sha の checkout である。親の `tools/minpy.py` は実行時に `git ls-remote` で myon-bioinformatics/myon-bioinformatics の最新 main を解決し、repository id `638801160` を確かめてからその SHA を checkout する。解決した SHA と checkout の SHA-256 はジョブの summary に残す。reusable workflow の uses は動的にできないので、検証済みの40桁SHA `9e3da7ae1846e9604ebc24bb5178f7de094a4e77` のままにする。最新 main の `tools/minpy.py` SHA-256 を `distributions.json` の `tool.sha256` と照合する。不一致は pull request では警告にし、main への push と schedule では失敗にする。pull request 以外のイベントも失敗にする。配布物の再現は `tool.commit` と `tool.sha256` で承認済みコンパイラを取得し、commit と SHA-256 を検証してから `.test-deps/frozen-minpy.py` へ保存して使う。この実行前の検証はどのイベントでも失敗にする。親 main の更新だけでは配布 manifest・承認済みコンパイラ・成果物を書き換えない。`workflow_dispatch` では親 ref と QueRyu ref を上書きできる。`--check` は成果物を書き換えず、実行するコンパイラの SHA-256 を import 前に再検証する。隔離テストはコピーした5本だけを `python -I -S` で読み、キャッシュ改ざん拒否・BlueProbe連携・期間比較・近傍・閾値・来歴・HTML生成を実行する。
 
 ## subtreeとの関係
 
 開発履歴の同期は全体subtree、他プロジェクトへの小さな配布は上記minAPIであり、それぞれ独立した契約である。subtreeの子を丸ごとvendor lockに重複登録しない。minAPIを別の利用者がvendorするときは、その利用者が配布ファイルと通知を固定する。
 
-`child-heads.json` に登録した子は、履歴から導いた同期済みcommitとprefixの完全一致を維持する（shaは書かない）。QueRyuのcache coreを使うmin配布と全体subtree同期は独立した検証である。全体subtreeの初回joinでは、QueRyu main `5ce256d77d64b33d4c71c2cbb84fe201f9637567` を `git subtree add` で Aoi の `queryu/` に取り込み、登録SHA・tree・mirrorの一致を確認した。min配布の QueRyu checkout は、その後 `queryu/` と同じ tree を持つコミット（`--print-synced` で導く）に合わせる。SakAnalyticsとDRAgoWingの公開リポジトリ新規作成も、この登録だけでは実行していない。
+既存の `child-heads.json` はその登録SHAとprefixの完全一致を維持する。QueRyuのcache coreを使うmin配布と全体subtree同期は独立した検証である。全体subtreeの初回joinでは、QueRyu main `5ce256d77d64b33d4c71c2cbb84fe201f9637567` を `git subtree add` で Aoi の `queryu/` に取り込み、登録SHA・tree・mirrorの一致を確認した。min配布の QueRyu checkout は、その後 `child-heads.json` の sha に合わせる。SakAnalyticsとDRAgoWingの公開リポジトリ新規作成も、この登録だけでは実行していない。
 
 Aoi → 子の書き込みは親PR #102で比較ref必須になった `gh_ops.py subtree-push` を使う。指定refがない・比較対象を選べない・取得できない・祖先でない場合は止める。検証済みSHAだけを新しいブランチへ空の期待値のlease付きで送り、PRで確認する。既定ブランチへ直接pushしない。joinを含むAoi統合PRはmerge commitで履歴を残す。

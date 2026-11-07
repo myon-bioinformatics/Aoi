@@ -7,8 +7,8 @@
     真の値との差 δ を丸めずに厳密な値で出す（根は [下限, 上限] の誤差球、表示は余りの分数）。
   * 次元は 8bit x 32 スロットを 1 つの int に詰める。掛け算 = 足し算、割り算 = 引き算、一致 = int の比較。
     入力（足し引き・冪・// %）でも出力（-> 単位）でも次元を守り、守れなければ止まる。
-  * 単位は表（Reg）で持つ。SI 基本単位から始め、--dim / -D で通貨・個数のような次元と単位を足せる。
-    SI の単位も足した単位も同じ仕組みで、為替・株価・個数販売のための別経路は置かない。
+  * 単位は表（Reg）で持つ。SI 基本単位と、SI 2019 の定義値から厳密に決まる定数（R_gas, N_A, k_B …）で始め、
+    SI 以外の単位や個数・金額のような次元は --dim / -D で足せる。足した単位も同じ仕組みで、別経路は置かない。
 
   python research/unitcalc/unitcalc.py "3 kW * 2 h -> kWh"     # 式は引用符で囲む（* のため）
   python research/unitcalc/unitcalc.py --steps "2 m^2 ^ (1/2)" # 近似の途中式も出す
@@ -175,7 +175,7 @@ class Q:
         return Q(F(s.m // o.m), Z, d_div(s.d, o.d))
 
     def __mod__(s, o):
-        """余り = s − (s // o) x o。次元は s のまま（o が割合・レートでもよい）。"""
+        """余り = s − (s // o) x o。次元は s のまま（o が 円/個 のような割合でもよい）。"""
         o = _q(o)
         _exact(s, o)
         return Q(s.m - (s.m // o.m) * o.m, Z, s.d)
@@ -267,6 +267,14 @@ def _root(x, q):
     return Q(-m if neg else m, r, d, _nn(x.n, (note,)))
 
 
+class Eq:
+    """左辺 = 右辺（式の形だけ。次元と値の確認は run が行う）。"""
+    __slots__ = ('l', 'r')
+
+    def __init__(s, l, r):
+        s.l, s.r = l, r
+
+
 # ---- 単位表 ----------------------------------------------------------------------------------------------
 BASE = ['kg', 'm', 's', 'A', 'K', 'mol', 'cd']
 PREFIX = {'y': F(1, 10 ** 24), 'z': F(1, 10 ** 21), 'a': F(1, 10 ** 18), 'f': F(1, 10 ** 15), 'p': F(1, 10 ** 12),
@@ -285,9 +293,18 @@ TABLE = [
     ('H', 1, dict(kg=1, m=2, s=-2, A=-2), 1), ('Hz', 1, dict(s=-1), 1), ('rad', 1, {}, 1), ('sr', 1, {}, 1),
     ('L', F(1, 1000), dict(m=3), 1), ('t', 1000, dict(kg=1), 1), ('eV', F('1.602176634e-19'), _J, 1),
     ('cal', F('4.184'), _J, 1), ('Wh', 3600, _J, 1), ('bar', 100000, _PA, 1), ('atm', 101325, _PA, 0),
+    ('Torr', F(101325, 760), _PA, 0), ('mmHg', F('133.322387415'), _PA, 0), ('pct', F(1, 100), {}, 0),
+    ('ppm', F(1, 10 ** 6), {}, 0),
     ('min', 60, dict(s=1), 0), ('h', 3600, dict(s=1), 0), ('d', 86400, dict(s=1), 0),
     ('in', F('0.0254'), dict(m=1), 0), ('ft', F('0.3048'), dict(m=1), 0), ('yd', F('0.9144'), dict(m=1), 0),
     ('mi', F('1609.344'), dict(m=1), 0), ('lb', F('0.45359237'), dict(kg=1), 0),
+]
+# SI 2019 の定義値（厳密）。名前は単位と衝突しないよう添字つき。R_gas と F_Far は定義値の積で、これも厳密
+CONSTS = [
+    ('c_0', F(299792458), dict(m=1, s=-1)), ('h_P', F('6.62607015e-34'), dict(kg=1, m=2, s=-1)),
+    ('k_B', F('1.380649e-23'), dict(kg=1, m=2, s=-2, K=-1)), ('N_A', F('6.02214076e23'), dict(mol=-1)),
+    ('q_e', F('1.602176634e-19'), dict(A=1, s=1)), ('g_n', F('9.80665'), dict(m=1, s=-2)),
+    ('T_0', F('273.15'), dict(K=1)),                              # 0 °C の定義（温度の値。差ではない）
 ]
 SYN = {'\u03a9': 'ohm', '\u2126': 'ohm', 'l': 'L'}
 AFFINE = ('degC', '°C', '℃', 'degF', '°F', '℉')
@@ -307,6 +324,10 @@ class Reg:
         s.t = {}
         for sym, k, ex, pre in TABLE:
             s.t[sym] = (Q(F(k), Z, s.dim(**ex)), bool(pre))
+        for sym, k, ex in CONSTS:
+            s.t[sym] = (Q(k, Z, s.dim(**ex)), False)
+        s.t['R_gas'] = (s.t['N_A'][0] * s.t['k_B'][0], False)
+        s.t['F_Far'] = (s.t['N_A'][0] * s.t['q_e'][0], False)
         s.alias = {}
         for sym in ALIAS_ORDER:
             s.alias.setdefault(s.t[sym][0].d, sym)
@@ -318,7 +339,7 @@ class Reg:
         return d_pack(es)
 
     def add_dim(s, name):
-        """新しい基本次元（通貨・個数など）。同名の単位（倍率 1）も同時にできる。"""
+        """新しい基本次元（個数・金額など）。同名の単位（倍率 1）も同時にできる。"""
         s._free(name)
         if len(s.names) >= SLOTS:
             raise CalcError('次元スロットが満杯（%d）' % SLOTS)
@@ -354,12 +375,12 @@ class Reg:
 
     def dim_str(s, d):
         parts = [s.names[i] + (sup(e) if e != 1 else '') for i, e in enumerate(d_unpack(d)) if e and i < len(s.names)]
-        return '·'.join(parts) or '1'
+        return '·'.join(parts) or '無次元'
 
 
 # ---- 構文 ------------------------------------------------------------------------------------------------
 _TOK = re.compile(r'\s*(?:(?P<n>\d+\.?\d*(?:[eE][+-]?\d+)?|\.\d+(?:[eE][+-]?\d+)?)|(?P<i>[^\W\d][\w°]*)'
-                  r'|(?P<o>->|//|[-+*/^%(),]))')
+                  r'|(?P<o>->|//|==|[-+*/^%(),=]))')
 _SUPD = str.maketrans('⁰¹²³⁴⁵⁶⁷⁸⁹', '0123456789')
 FUNCS = {'sqrt': F(1, 2), 'cbrt': F(1, 3)}
 
@@ -394,9 +415,12 @@ class Parser:
             raise ParseError("'%s' が必要" % v)
 
     def stmt(s):
-        """式 [-> 単位 | to 単位]。戻り値は (量, 目標の単位 Q か None, 目標の表記)。"""
+        """式 [-> 単位 | to 単位]、または 左辺 = 右辺。戻り値は (量 か Eq, 目標の単位 Q か None, 目標の表記)。"""
         x, tgt, label = s.expr(), None, ''
-        if s.peek()[1] in ('->', 'to'):
+        if s.peek()[1] in ('=', '=='):
+            s.take()
+            x = Eq(x, s.expr())
+        elif s.peek()[1] in ('->', 'to'):
             s.take()
             a = s.i
             if s.peek()[0] != 'i':
@@ -483,19 +507,30 @@ class Parser:
         return x
 
     def unit_chain(s):
-        """単位名 [^冪] (* | /) 単位名 ...。演算子の次が単位名のときだけ続く（'10 m / 2 s' は 10 m と 2 s に分かれる）。"""
+        """単位名 [^冪] (* | /) 単位名 ...。演算子の次が単位名（または単位名で始まる括弧）のときだけ続く。
+        '10 m / 2 s' や '10 m / (2 s)' は数で始まるので 10 m と 2 s に分かれ、'J/(mol*K)' は 1 つの単位になる。"""
         u = s.unit_term()
-        while s.peek()[1] in ('*', '/') and s.peek(1)[0] == 'i' and s.peek(1)[1] not in FUNCS and s.peek(1)[1] != 'to':
+        while s.peek()[1] in ('*', '/') and s.unit_next():
             op = s.take()[1]
             v = s.unit_term()
             u = u * v if op == '*' else u / v
         return u
 
+    def unit_next(s):
+        k, v = s.peek(1)
+        if v == '(':
+            k, v = s.peek(2)
+        return k == 'i' and v not in FUNCS and v != 'to'
+
     def unit_term(s):
         k, v = s.take()
-        if k != 'i':
+        if v == '(':
+            u = s.unit_chain()
+            s.want(')')
+        elif k == 'i':
+            u = s.reg.unit(v)
+        else:
             raise ParseError('単位名が必要')
-        u = s.reg.unit(v)
         if s.peek()[1] == '^':
             s.take()
             u = u ** s.exponent()
@@ -595,12 +630,36 @@ def render(x, label, sig, steps):
         lines.append('≈ %s %s' % (text, label))
         lines.append('δ ∈ [%s, %s] %s' % (_bound(lo, False), _bound(hi, True), label))
         rec.update(shown=text, delta_lo=_fs(lo), delta_hi=_fs(hi))
+    return [ln.rstrip() for ln in lines], rec
+
+
+def _run_eq(e, text, reg, sig, steps):
+    """左辺 = 右辺: 次元の一致（両辺とも無次元ならそれも知らせる）と、値が等しいか。"""
+    dl, dr = reg.dim_str(e.l.d), reg.dim_str(e.r.d)
+    if e.l.d != e.r.d:
+        raise CalcError('🧭 左辺 %s ≠ 右辺 %s' % (dl, dr))
+    free = e.l.d == DIM0
+    diff = e.l - e.r
+    equal = (diff.m == 0) if not diff.r else (False if abs(diff.m) > diff.r else None)   # None = 範囲が重なり判定できない
+    lines = ['🧭 左辺 %s  右辺 %s  ✅' % (dl, dr) + ('（両辺とも単位なし）' if free else '')]
+    if equal:
+        lines.append('✅ 左辺 = 右辺' + ('（厳密）' if not diff.r else ''))
+    else:
+        lines.append('❓ 誤差の範囲が重なり、等しいか判定できない' if equal is None else '≠ 左辺 − 右辺')
+        label = '' if free else reg.alias.get(e.l.d) or dl
+        lines.extend(render(Q(diff.m, diff.r, DIM0, diff.n), label, sig, steps)[0])
+    if steps:
+        lines.extend('🪜 ' + n for n in diff.n)
+    rec = {'ok': True, 'expr': text, 'kind': 'eq', 'dim_left': dl, 'dim_right': dr, 'dimensionless': free,
+           'equal': equal, 'diff_mid': _fs(diff.m), 'diff_rad': _fs(diff.r), 'notes': list(diff.n)}
     return lines, rec
 
 
 def run(text, reg, sig=15, steps=False):
     """1 つの式を計算して (行, 辞書) を返す。入力の誤りは CalcError。"""
     x, tgt, label = evaluate(text, reg)
+    if isinstance(x, Eq):
+        return _run_eq(x, text, reg, sig, steps)
     if tgt is not None:
         if x.d != tgt.d:
             raise CalcError('🧭 出力の次元が合わない: 結果 %s ≠ 単位 %s' % (reg.dim_str(x.d), reg.dim_str(tgt.d)))
@@ -610,10 +669,11 @@ def run(text, reg, sig=15, steps=False):
         v, dstr = Q(x.m, x.r, DIM0, x.n), reg.dim_str(x.d)
         label = reg.alias.get(x.d) or ('' if x.d == DIM0 else dstr)
     lines, rec = render(v, label, sig, steps)
-    lines.append('🧭 %s ✅' % dstr)
+    free = x.d == DIM0
+    lines.append('🧭 %s ✅' % dstr + ('（単位なし）' if free else ''))
     if steps:
         lines.extend('🪜 ' + n for n in x.n)
-    rec.update(ok=True, expr=text, dim=dstr)
+    rec.update(ok=True, expr=text, dim=dstr, dimensionless=free)
     if rec['exact'] and F(rec['mid']) != v.m:
         raise AssertionError('内部の不変条件: mid が値と一致しない')
     return lines, rec
@@ -622,7 +682,7 @@ def run(text, reg, sig=15, steps=False):
 def main(argv=None, stdin=None):
     ap = argparse.ArgumentParser(description='単位付きの厳密計算（式は引用符で囲む）')
     ap.add_argument('expr', nargs='*')
-    ap.add_argument('--dim', action='append', default=[], metavar='NAME', help='基本次元を足す（通貨・個数など）')
+    ap.add_argument('--dim', action='append', default=[], metavar='NAME', help='基本次元を足す（個数・金額など）')
     ap.add_argument('-D', '--define', action='append', default=[], metavar='NAME=式', help="単位を足す 例: -D 'dozen=12 item'")
     ap.add_argument('--digits', type=int, default=15, help='表示の有効桁（既定 15）')
     ap.add_argument('--bits', type=int, default=64, help='根の有効ビット（既定 64）')

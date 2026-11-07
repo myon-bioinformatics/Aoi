@@ -266,31 +266,100 @@ def test_divmod_identity(seed, reg):
         assert 0 <= (a % b).m < b.m
 
 
-# ---- 次元の追加（為替・株価・個数販売のための土台。為替の値そのものはここでは扱わない） ---------------------------------
+# ---- 係数探し: SI の定義値から厳密に決まる定数と、SI 以外の単位への換算 ----------------------------------------
+def test_defined_constants_and_their_products_are_exact(reg):
+    assert ev("R_gas", reg).m == F("8.31446261815324")             # N_A x k_B。定義値の積なので厳密
+    assert ev("R_gas", reg).r == 0
+    assert same(ev("R_gas", reg), ev("N_A * k_B", reg))
+    assert same(ev("F_Far", reg), ev("N_A * q_e", reg))
+    assert same(ev("R_gas", reg), ev("1 J/(mol*K)", reg) * F("8.31446261815324"))
+    assert ev("F_Far", reg).m == F("6.02214076e23") * F("1.602176634e-19")
+    assert ev("c_0", reg).m == 299792458 and ev("g_n", reg).m == F("9.80665")
+    assert same(ev("k_B * T_0", reg), ev("1.380649e-23 J/K * 273.15 K", reg))   # 温度の値としての 0 °C
+    with pytest.raises(u.CalcError):
+        reg.define("R_gas", ev("1 m", reg))                        # 定数の名前は上書きしない
+    with pytest.raises(u.CalcError):
+        u.run("R_gas + 1 J", reg)                                  # 次元が違う（J/(mol·K) と J）
+
+
+@pytest.mark.parametrize("target,lo,hi", [
+    ("J/(mol*K)", "8.31446261815324", "8.31446261815324"),
+    ("L*atm/(mol*K)", "0.082057366080959", "0.082057366080961"),    # 知られている値 0.082057366080960
+    ("cal/(mol*K)", "1.98720425864082", "1.98720425864084"),
+    ("L*Torr/(mol*K)", "62.36359822152", "62.36359822153"),
+    ("L*mmHg/(mol*K)", "62.36358933681", "62.36358933682"),
+])
+def test_gas_constant_in_other_unit_systems(target, lo, hi, reg):
+    _, rec = u.run("R_gas -> " + target, reg, 15)
+    assert F(lo) <= F(rec["mid"]) <= F(hi)
+    assert rec["exact"]                                            # 値は厳密な分数。表示だけが有限桁（δ が出る）
+    assert F(rec["shown"].translate(SUPD).replace("×10", "e")) + F(rec["delta"]) == F(rec["mid"])
+
+
+def test_molar_volume_and_coefficient_search(reg):
+    _, rec = u.run("R_gas * T_0 / 1 atm -> L/mol", reg)             # 標準モル体積（0 °C, 1 atm）
+    assert F("22.41396954") < F(rec["mid"]) < F("22.41396955")
+    # 係数探し: PV = k nT の k を測定値から作ると、次元は R と一致し、値の比は 1 に近い
+    k = ev("(101325 Pa * 22.414 L) / (1 mol * 273.15 K)", reg)
+    assert k.d == ev("R_gas", reg).d
+    ratio = k / ev("R_gas", reg)
+    assert ratio.d == u.DIM0 and abs(ratio.m - 1) < F(1, 10 ** 5)
+    # 定数との比が無次元なら係数として噛み合う。無次元でなければ、残った次元を知らせる
+    assert u.run("(101325 Pa * 22.414 L) / (1 mol * 273.15 K) / R_gas", reg)[1]["dimensionless"] is True
+    rec = u.run("(101325 Pa * 22.414 L) / R_gas", reg)[1]
+    assert rec["dimensionless"] is False and rec["dim"] == "K·mol"
+
+
+def test_unit_groups_in_parentheses(reg):
+    assert same(ev("3 W/(m^2*K) * 2 m^2 * 5 K", reg), ev("30 W", reg))
+    assert same(ev("10 m / (2 s)", reg), ev("5 m/s", reg))        # 数で始まる括弧は単位の連なりではない
+    assert same(ev("2 m / (sqrt(4) s)", reg), ev("1 m/s", reg))
+    assert same(ev("1 J/(kg*K)", reg), ev("1 m^2/(s^2*K)", reg))
+    assert u.run("1 J/(kg*K) -> cal/(g*K)", reg)[1]["unit"] == "cal/(g*K)"
+    with pytest.raises(u.CalcError):
+        ev("1 J/(kg*K", reg)
+
+
+# ---- SI 以外・個数・金額（買い物の例）。為替は扱わない -------------------------------------------------------
 def test_added_dimensions_follow_the_same_rules(reg):
-    for name in ("JPY", "USD", "item", "share"):
+    for name in ("JPY", "item"):
         reg.add_dim(name)
     reg.define("dozen", ev("12 item", reg))
     assert same(ev("3 dozen", reg), ev("36 item", reg))
-    # 通貨どうしはレート（JPY/USD の量）を掛けて初めて行き来できる。黙って混ぜない
-    assert same(ev("100 USD * 150.25 JPY/USD", reg), ev("15025 JPY", reg))
-    with pytest.raises(u.CalcError):
-        u.run("100 USD + 1 JPY", reg)
-    with pytest.raises(u.CalcError):
-        u.run("100 USD -> JPY", reg)
-    # 株価と個数
-    assert same(ev("250 share * 1234.5 JPY/share", reg), ev("308625 JPY", reg))
-    assert same(ev("1000 JPY // 300 JPY/item", reg), ev("3 item", reg))
-    assert same(ev("1000 JPY % 300 JPY/item", reg), ev("100 JPY", reg))
+    assert same(ev("3 item * 298 JPY/item", reg), ev("894 JPY", reg))
+    assert same(ev("1000 JPY // 300 JPY/item", reg), ev("3 item", reg))   # 買える個数
+    assert same(ev("1000 JPY % 300 JPY/item", reg), ev("100 JPY", reg))   # あまり
     assert u.run("1000 JPY // 300 JPY/item -> dozen", reg)[1]["mid"] == "1/4"
-    # SI と混ぜても次元は守られる（円/個 を m で割れない、などは別の次元になるだけ）
-    assert ev("5 JPY/item / 2 m", reg).d != ev("5 JPY/item", reg).d
+    with pytest.raises(u.CalcError):
+        u.run("1 JPY + 1 item", reg)                               # 金額と個数は足せない
     with pytest.raises(u.CalcError):
         reg.add_dim("JPY")                                         # 重複
     with pytest.raises(u.CalcError):
         reg.add_dim("m")
     with pytest.raises(u.CalcError):
-        u.run("1 kJPY", reg)                                       # 接頭辞は付けない（通貨に k を勝手に当てない）
+        reg.add_dim("kg")                                          # 接頭辞つきで読める名前も使用済み
+    with pytest.raises(u.CalcError):
+        u.run("1 kJPY", reg)                                       # 追加した名前に接頭辞は付かない
+
+
+def test_discount_rate_or_value_is_told_apart_by_dimension(reg):
+    reg.add_dim("JPY")
+    price = "1000 JPY"
+    assert same(ev(price + " * (1 - 20 pct)", reg), ev("800 JPY", reg))      # 割引率（無次元）
+    assert same(ev(price + " - 300 JPY", reg), ev("700 JPY", reg))           # 割引値（金額）
+    assert u.run("300 JPY / " + price + " -> pct", reg)[1]["mid"] == "30"    # 値 → 率
+    assert same(ev(price + " * 30 pct", reg), ev("300 JPY", reg))            # 率 → 値
+    with pytest.raises(u.CalcError):
+        u.run(price + " - 20 pct", reg)                            # 率を値として引かない
+    with pytest.raises(u.CalcError):
+        u.run(price + " * (1 - 300 JPY)", reg)                     # 値を率として掛けない
+    # 支払ったあとから割引値が出る: 定価 − 支払額。率も同時に出る
+    paid = ev("700 JPY", reg)
+    assert same(ev(price, reg) - paid, ev("300 JPY", reg))
+    assert (ev(price, reg) - paid) / ev(price, reg) == ev("30 pct", reg) or \
+        ((ev(price, reg) - paid) / ev(price, reg)).m == F(3, 10)
+    # 個数と率: 3 個 x 298 円 から 10 % 引き = 804.6 円（厳密）
+    assert same(ev("3 * 298 JPY * (1 - 10 pct)", reg), u.Q(F("804.6"), u.Z, ev("1 JPY", reg).d))
 
 
 def test_dimension_slots_run_out(reg):
@@ -371,3 +440,45 @@ def test_cli_steps_lists_the_derivation(capsys):
     assert code == 0 and json.loads(out)["notes"]
     code, out = cli(["--steps", "10 J / 3 s -> W"], capsys)
     assert code == 0 and "🪜" in out
+
+
+# ---- 次元の知らせ: 無次元（単位なし）と 左辺 = 右辺 ---------------------------------------------------------------
+def test_dimensionless_results_are_reported(reg):
+    for text, free in (("7 h // 2 h", True), ("3 m / 2 m", True), ("20 pct", True), ("sqrt(2)", True),
+                       ("3 m", False), ("1 kWh -> J", False), ("1 Hz * 1 s", True)):
+        lines, rec = u.run(text, reg)
+        assert rec["dimensionless"] is free, text
+        assert ("単位なし" in lines[-1]) is free, text
+
+
+def test_equation_reports_dimensions_of_both_sides(reg):
+    lines, rec = u.run("1 kWh = 3.6e6 J", reg)
+    assert rec["equal"] is True and rec["dimensionless"] is False and rec["dim_left"] == rec["dim_right"]
+    _, rec = u.run("7 h // 2 h = 3", reg)
+    assert rec["equal"] is True and rec["dimensionless"] is True and rec["dim_left"] == rec["dim_right"] == "無次元"
+    _, rec = u.run("1 m / 3 m = 1/3", reg)
+    assert rec["equal"] is True and rec["dimensionless"] is True
+    _, rec = u.run("R_gas * T_0 * 1 mol = 101325 Pa * 22.41396954 L", reg)
+    assert rec["equal"] is False and F(rec["diff_mid"]) > 0 and rec["diff_rad"] == "0"   # 厳密に異なる（差は厳密な分数）
+    with pytest.raises(u.CalcError):
+        u.run("1 kWh = 3.6e6 W", reg)                              # 左辺と右辺の次元が違う
+    with pytest.raises(u.CalcError):
+        u.run("1 m = 1", reg)                                      # 片方だけ無次元でも止まる
+    with pytest.raises(u.CalcError):
+        u.run("1 m = 1 m -> m", reg)                               # 等式に換算先は付けない
+
+
+def test_equation_with_enclosures_never_claims_equality(reg):
+    _, rec = u.run("sqrt(2) * sqrt(2) = 2", reg)
+    assert rec["equal"] is None and F(rec["diff_rad"]) > 0         # 範囲が重なる = 判定できない（等しいとも言わない）
+    _, rec = u.run("sqrt(2 m^2) = 1.5 m", reg)
+    assert rec["equal"] is False                                   # 範囲が離れていれば異なると言える
+    _, rec = u.run("sqrt(2 m^2) = 1.4 m", reg)
+    assert rec["equal"] is False
+
+
+def test_cli_equation_json(capsys):
+    code, out = cli(["--json", "7 h // 2 h = 3"], capsys)
+    rec = json.loads(out)
+    assert code == 0 and rec["kind"] == "eq" and rec["equal"] is True and rec["dimensionless"] is True
+    assert cli(["1 kWh = 3.6e6 W"], capsys)[0] == 65

@@ -7,10 +7,10 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for k in ['innings','result','cutoff']:p.add_argument('--'+k,type=Path,required=True)
-    a=p.parse_args()
+    a=p.parse_args(argv)
     pages=defaultdict(dict)
     with gzip.open(a.innings,'rt') as f:
         for r in csv.DictReader(f):

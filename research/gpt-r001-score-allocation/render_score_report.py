@@ -77,11 +77,11 @@ def build_spec(early, late):
     return dict(title='中日の得点は、いつ生まれるか',intro='序盤から6・7回までの得点と、その後の反撃を、同年の他セ5球団と比べる。初期表示は2022年・7回終了。',notes='既存の検証済み集計を可視化。2020年は参考、2026年は対象外。他5球団は分子・分母を合算。先発交代は観測していないため、回の区切りを先発・救援の効果とは解釈しない。',controls=[dict(id='year',label='年',options=[dict(value=str(y),label=str(y)+('（参考）' if y==2020 else '')) for y in range(2013,2026)]),dict(id='cutoff',label='切点',options=[dict(value=str(c),label=f'{c}回終了') for c in [6,7]])],default='2022|7',frames=frames,provenance='')
 
 
-def main():
+def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--inputs',type=Path,default=Path(__file__).parent/'outputs')
     parser.add_argument('--output',type=Path,default=Path(__file__).parent/'outputs'/'score_timing.html')
-    args=parser.parse_args()
+    args=parser.parse_args(argv)
     paths=[args.inputs/f'{name}.json' for name in ['early_scoring','late_reaction']]
     spec=build_spec(*(json.loads(p.read_text()) for p in paths))
     spec['provenance']=' | '.join(f'{p.name} SHA-256: {hashlib.sha256(p.read_bytes()).hexdigest()}' for p in paths)

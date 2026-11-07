@@ -7,10 +7,10 @@ from collections import defaultdict
 from pathlib import Path
 
 
-def main():
+def main(argv=None):
     ap=argparse.ArgumentParser(description=__doc__)
     for k in ['innings','result','cutoff']:ap.add_argument('--'+k,type=Path,required=True)
-    a=ap.parse_args();x=json.loads(a.result.read_text());old=json.loads(a.cutoff.read_text())
+    a=ap.parse_args(argv);x=json.loads(a.result.read_text());old=json.loads(a.cutoff.read_text())
     om={(r['year'],r['team']):r for r in old['rows']};cells=0
     for r in x['rows']:
         for c in ['6','7']:

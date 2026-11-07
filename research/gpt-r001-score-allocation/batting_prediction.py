@@ -75,13 +75,13 @@ def evaluate(rows, mode):
         predictions=predictions)
 
 
-def main():
+def main(argv=None):
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--season',type=Path,required=True)
     ap.add_argument('--part5',type=Path,required=True)
     ap.add_argument('--previous-batting',type=Path,required=True)
     ap.add_argument('--out',type=Path,required=True)
-    args=ap.parse_args()
+    args=ap.parse_args(argv)
     raw=args.season.read_bytes()
     blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
     if blob!='fd76d410b7d8d9438237abc751820dcbf95c05e4':raise ValueError('season blob mismatch')

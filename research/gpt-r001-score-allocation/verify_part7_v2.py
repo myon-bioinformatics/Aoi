@@ -196,12 +196,12 @@ def verify(source, previous=None):
     return dict(schema='aoi-part7-v2-reception/1',status='aggregate_checks_passed',scope='provided half CSV; raw HTML parser not independently rerun',inputs={p:sha(source/p) for p in files},diagnostics=diagnostics,incomplete_reasons=reasons,ranges=bounds,previous=old_check,official_validation=validation,propositions=checks,counterexample_rows=counterexample_total,offense_decomposition=decomp,limitations=['min allocation is not event identification','trajectory permutation assumes within-league exchangeability','algebraic components are not causal contributions','2026 provisional; source event audit not included'])
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('source',type=Path,help='extracted part7 directory')
     p.add_argument('--previous',type=Path,help='v1 part7 directory, optional')
     p.add_argument('--output',type=Path,required=True)
-    args=p.parse_args()
+    args=p.parse_args(argv)
     result=verify(args.source,args.previous)
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(result,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')

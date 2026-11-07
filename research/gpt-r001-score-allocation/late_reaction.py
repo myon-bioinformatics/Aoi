@@ -84,12 +84,12 @@ def window(gs,c):
     return result
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for k in ['innings','season','out']:p.add_argument('--'+k,type=Path,required=True)
     p.add_argument('--plan-commit',required=True)
     p.add_argument('--csv',type=Path)
-    a=p.parse_args()
+    a=p.parse_args(argv)
     if hashlib.sha256(a.innings.read_bytes()).hexdigest()!=INPUT_SHA:raise ValueError('inning hash mismatch')
     raw=a.season.read_bytes()
     if hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()!=SEASON_BLOB:raise ValueError('season blob mismatch')

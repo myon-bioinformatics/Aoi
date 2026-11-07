@@ -12,9 +12,9 @@ from statistics import mean
 from inning_features import HERE,ROOT,CL,digest,require,write_csv
 
 
-def main():
+def main(argv=None):
     ap=argparse.ArgumentParser();ap.add_argument('--share',type=Path,required=True)
-    p=ap.parse_args().share
+    p=ap.parse_args(argv).share
     with gzip.open(HERE/'outputs/inning_features/team_year_metrics.csv.gz','rt') as f:
         metrics=list(csv.DictReader(f))
     innings={(int(r['year']),r['team'],r['role']):r for r in metrics if r['venue']=='all' and r['window']=='all'}

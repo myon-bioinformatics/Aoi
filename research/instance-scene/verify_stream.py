@@ -27,7 +27,12 @@ def verify(root):
     return actual
 
 
-if __name__ == '__main__':
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else list(argv)
     parser = argparse.ArgumentParser()
     parser.add_argument('--ironmate-root', required=True)
-    print(json.dumps(verify(parser.parse_args().ironmate_root)))
+    print(json.dumps(verify(parser.parse_args(argv).ironmate_root)))
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

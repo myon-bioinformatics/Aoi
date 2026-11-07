@@ -136,11 +136,11 @@ def analyze(rows):
     return yearly,pooled,cases
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('innings','season','out','csv'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--plan-commit',required=True)
-    a=p.parse_args()
+    a=p.parse_args(argv)
     rows,eligible,n=build(a.innings,a.season)
     yearly,pooled,cases=analyze(rows)
     result=dict(schema='aoi-matched-comeback/1',plan_commit=a.plan_commit,

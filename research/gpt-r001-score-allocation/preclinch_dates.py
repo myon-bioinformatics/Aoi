@@ -122,10 +122,10 @@ def small_check():
     return checks
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for k in ('innings','season','out'):p.add_argument('--'+k,type=Path,required=True)
-    p.add_argument('--plan-commit',required=True);a=p.parse_args()
+    p.add_argument('--plan-commit',required=True);a=p.parse_args(argv)
     build(a.innings,a.season) # pinned hashes and 936 annual checks before date calculation
     test_count=small_check();games,_=read_input(a.innings);results=[]
     for year in range(2013,2026):

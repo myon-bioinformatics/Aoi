@@ -94,13 +94,13 @@ def regression(rows):
     return out
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--part5', type=Path, required=True, help='extracted Part5 directory')
     ap.add_argument('--part6', type=Path, required=True, help='original extracted Part6 directory')
     ap.add_argument('--replay', type=Path, required=True, help='Part6 directory after replay of p6/p6b/p6c')
     ap.add_argument('--out', type=Path, default=Path(__file__).parent/'outputs/part6_verification.json')
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
     matched = {p.name:compare_csv(p, args.replay/p.name) for p in sorted(args.part6.glob('*.csv'))}
     require(len(matched) == 10, 'expected 10 CSVs')
     _, rows = read_csv(args.part5/'team_season_relative.csv')

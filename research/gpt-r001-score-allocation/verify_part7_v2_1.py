@@ -65,12 +65,12 @@ def verify(source, previous):
                              'original v2 report and finite z at p=1 unchanged; errata takes precedence'])
 
 
-def main():
+def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('source', type=Path)
     p.add_argument('--previous', required=True, type=Path)
     p.add_argument('--output', required=True, type=Path)
-    a = p.parse_args()
+    a = p.parse_args(argv)
     result = verify(a.source, a.previous)
     a.output.parent.mkdir(parents=True, exist_ok=True)
     a.output.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True)+'\n')

@@ -82,12 +82,12 @@ def verify_observations(cache_root, observations):
     return dict(pages=len(latest),records=len(rows),parser_sha256=parser_sha)
 
 
-def main():
+def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--cache', type=Path, required=True)
     p.add_argument('--out', type=Path)
     p.add_argument('--verify-observations',type=Path,help='replay primary HTML into this saved dataset; requires existing BlueProbe dependencies')
-    a = p.parse_args()
+    a = p.parse_args(argv)
     if a.verify_observations:
         if a.out:p.error('choose verification or copying')
         print('primary source replay:',verify_observations(a.cache,a.verify_observations))

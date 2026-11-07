@@ -69,10 +69,10 @@ def verify(innings, output):
                 scope='separate CSV off-row replay and rational weighting; same source, not independent HTML acquisition')
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for k in ('innings','result','out'):p.add_argument('--'+k,type=Path,required=True)
-    a=p.parse_args();report=verify(a.innings,a.result)
+    a=p.parse_args(argv);report=verify(a.innings,a.result)
     a.out.write_text(json.dumps(report,ensure_ascii=False,sort_keys=True,indent=2)+'\n')
     print(json.dumps(report,ensure_ascii=False))
 

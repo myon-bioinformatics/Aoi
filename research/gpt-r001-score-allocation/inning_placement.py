@@ -52,13 +52,13 @@ def summary(games):
     return result
 
 
-def main():
+def main(argv=None):
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--innings',type=Path,required=True)
     ap.add_argument('--season',type=Path,required=True)
     ap.add_argument('--prediction',type=Path,required=True)
     ap.add_argument('--out',type=Path,required=True)
-    args=ap.parse_args()
+    args=ap.parse_args(argv)
     if sha(args.innings)!='0e98d6ce001eaca565378814a551d8b694e66dff7f4ef856d4e636e39bb87beb':raise ValueError('inning input hash mismatch')
     raw=args.season.read_bytes()
     if hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()!='fd76d410b7d8d9438237abc751820dcbf95c05e4':raise ValueError('season input blob mismatch')

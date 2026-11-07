@@ -569,3 +569,59 @@ def test_difference_sign_is_explicit(reg):
         lines, rec = u.run(expr, reg)
         assert any(ln.startswith(head) for ln in lines), (expr, lines)
         assert rec["order"] == sign and (F(rec["diff_mid"]) > 0) == (sign > 0)        # JSON は order と diff_mid の符号
+
+
+# CLI validation and bounded failure must preserve machine-readable batch output.
+def test_definition_checks_target_dimension(capsys):
+    code, out = cli(["--json", "-D", "foo=1 m -> s", "1 foo"], capsys)
+    assert code == 65 and not json.loads(out)["ok"]
+    code, out = cli(["--json", "-D", "foo=1 m -> cm", "1 foo -> m"], capsys)
+    assert code == 0 and F(json.loads(out)["mid"]) == 1
+
+
+@pytest.mark.parametrize("flag,value", [("--digits", "0"), ("--digits", "-1"),
+    ("--digits", "1001"), ("--bits", "0"), ("--bits", "-1"), ("--bits", "4097")])
+def test_invalid_precision_is_json_input_error(flag, value, capsys):
+    code, out = cli(["--json", flag, value, "sqrt(2)"], capsys)
+    assert code == 65 and not json.loads(out)["ok"]
+
+
+@pytest.mark.parametrize("flag,value", [("--digits", "1"), ("--digits", "1000"),
+    ("--bits", "1"), ("--bits", "4096")])
+def test_precision_boundaries(flag, value, capsys):
+    code, out = cli(["--json", flag, value, "sqrt(2)"], capsys)
+    assert code == 0 and json.loads(out)["ok"]
+
+
+@pytest.mark.parametrize("bad", ["1e1000^10", "(2^10000)^10000", "9" * 3501,
+    "1" * (u.MAX_EXPR_CHARS + 1), "(" * 129 + "1" + ")" * 129,
+    "+" * 2000 + "1"])
+def test_resource_error_continues_json_batch(bad, capsys):
+    code, out = cli(["--json"], capsys, stdin=bad + "\n0.1 m + 0.2 m\n")
+    rows = [json.loads(line) for line in out.splitlines()]
+    assert code == 65 and [r["ok"] for r in rows] == [False, True]
+    assert F(rows[1]["mid"]) == F(3, 10)
+
+
+def test_large_but_bounded_exact_value(capsys):
+    code, out = cli(["--json", "2^10000"], capsys)
+    assert code == 0 and F(json.loads(out)["mid"]) == 2**10000
+
+
+def test_root_intermediate_budget(capsys):
+    code, out = cli(["--json", "--bits", "4096", "2^(1/64)"], capsys)
+    assert code == 65 and not json.loads(out)["ok"]
+
+
+def test_large_display_remainder_does_not_change_global_limit(capsys):
+    limit = sys.get_int_max_str_digits()
+    code, out = cli(["--json", "1/(2^10000+1)"], capsys)
+    rec = json.loads(out)
+    assert code == 0 and rec["exact"] and "/" in rec["delta"]
+    assert len(rec["delta"]) > 4300
+    assert sys.get_int_max_str_digits() == limit
+
+
+def test_definition_rejects_equation_without_exception(capsys):
+    code, out = cli(['--json', '-D', 'foo=1 m = 1 m', '1 foo'], capsys)
+    assert code == 65 and not json.loads(out)['ok']

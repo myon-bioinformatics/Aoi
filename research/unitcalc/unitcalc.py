@@ -25,6 +25,10 @@ import re
 import sys
 from fractions import Fraction as F
 
+MAX_VALUE_BITS = 12000  # 有理数の分子・分母。巨大演算と整数文字列変換を制限する
+MAX_EXPR_CHARS = 16384
+MAX_NESTING = 128
+
 PREC = 64   # 根を求める有効ビット数。CLI の --bits が書き換える
 
 # ---- 次元: 1 スロット 8bit x 32。指数 e は e+32 を 0..63 で持つ（-32..31）。bit7 は桁上がり防止のガード --------
@@ -124,6 +128,9 @@ class Q:
     __slots__ = ('m', 'r', 'd', 'n')
 
     def __init__(s, m, r=Z, d=DIM0, n=()):
+        for value in (m, r):
+            if max(value.numerator.bit_length(), value.denominator.bit_length()) > MAX_VALUE_BITS:
+                raise DomainError("数値が大きすぎる")
         s.m, s.r, s.d, s.n = m, r, d, n
 
     def __repr__(s):
@@ -208,6 +215,8 @@ def _inv(o):
 
 def _ipow(x, p, d):
     if not x.r:
+        if (max(x.m.numerator.bit_length(), x.m.denominator.bit_length()) - 1) * abs(p) > MAX_VALUE_BITS:
+            raise DomainError("冪の結果が大きすぎる")
         return Q(x.m ** p, Z, d, x.n)
     res, b, k = Q(F(1), Z, DIM0, x.n), (x if p >= 0 else _inv(x)), abs(p)
     while k:                                  # 二乗の繰り返し（指数のビットを下から見る）
@@ -257,6 +266,8 @@ def _root(x, q):
     e2 = hi.numerator.bit_length() - hi.denominator.bit_length()    # ≈ log2(hi)（±1）
     k = PREC - e2 // q                                              # 根が約 PREC ビットになるずらし幅
     sh = q * k
+    if max(hi.numerator.bit_length() + max(sh, 0), hi.denominator.bit_length() + max(-sh, 0)) > MAX_VALUE_BITS:
+        raise DomainError("根の中間値が大きすぎる")
     nlo, nhi = _scaled(lo, sh), _scaled(hi, sh)
     rlo, rhi = _iroot(nlo, q), _iroot(nhi, q)
     note = '%s(%s): N=⌊x·2^%d⌋=%d  r=⌊N^(1/%d)⌋=%d  N−r^%d=%d  → 真の値 ∈ [%d, %d]/2^%d' % (
@@ -386,6 +397,13 @@ FUNCS = {'sqrt': F(1, 2), 'cbrt': F(1, 3)}
 
 
 def tokenize(text):
+    if len(text) > MAX_EXPR_CHARS:
+        raise ParseError("式が長すぎる")
+    depth = 0
+    for ch in text:
+        depth += (ch == "(") - (ch == ")")
+        if depth > MAX_NESTING:
+            raise ParseError("括弧が深すぎる")
     text = text.translate({ord('×'): '*', ord('·'): '*', ord('⋅'): '*', ord('÷'): '/', ord('−'): '-', ord('→'): '->'})
     text = re.sub('(⁻?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)', lambda m: '^' + ('-' if m.group(1) else '') + m.group(2).translate(_SUPD), text)
     out, pos = [], 0
@@ -475,6 +493,8 @@ class Parser:
 
     @staticmethod
     def num(v):
+        if len(v) > 3500:
+            raise ParseError("数値リテラルが長すぎる")
         m = re.search('[eE]([+-]?\\d+)$', v)
         if m and abs(int(m.group(1))) > 1000:
             raise ParseError('10 の冪が大きすぎる: %s' % v)
@@ -545,6 +565,8 @@ def evaluate(text, reg):
         raise CalcError('🧭 %s ≠ %s  (%s)' % (reg.dim_str(e.a), reg.dim_str(e.b), e.op)) from None
     except ZeroDivisionError as e:
         raise CalcError(str(e)) from None
+    except RecursionError:
+        raise ParseError("式の入れ子が深すぎる") from None
 
 
 # ---- 出力 ------------------------------------------------------------------------------------------------
@@ -580,8 +602,19 @@ def _fmt(q, s, strip):
     return ds[0] + ('.' + ds[1:] if len(ds) > 1 else '') + '×10' + sup(e)
 
 
+def _integer_text(n):
+    # Bounded arithmetic can still create a larger exact display remainder.
+    # Convert in small chunks without changing Python's process-wide safety limit.
+    sign, n = ('-', -n) if n < 0 else ('', n)
+    chunks = []
+    while n >= 10 ** 1000:
+        n, tail = divmod(n, 10 ** 1000)
+        chunks.append(str(tail).zfill(1000))
+    return sign + str(n) + ''.join(reversed(chunks))
+
+
 def _fs(f):
-    return str(f.numerator) if f.denominator == 1 else '%d/%d' % (f.numerator, f.denominator)
+    return _integer_text(f.numerator) if f.denominator == 1 else _integer_text(f.numerator) + '/' + _integer_text(f.denominator)
 
 
 def _bound(a, up):
@@ -698,14 +731,20 @@ def main(argv=None, stdin=None):
     PREC = a.bits
     reg, code = Reg(), 0
     try:
+        if not 1 <= a.digits <= 1000 or not 1 <= a.bits <= 4096:
+            raise CalcError("digits は 1..1000、bits は 1..4096 が必要")
         for name in a.dim:
             reg.add_dim(name)
         for d in a.define:
             name, _, text = d.partition('=')
             x, tgt, _l = evaluate(text, reg)
+            if isinstance(x, Eq):
+                raise CalcError("単位定義には量が必要（等式は使用できない）")
+            if tgt is not None and x.d != tgt.d:
+                raise CalcError("単位定義の出力次元が合わない")
             reg.define(name.strip(), x)
     except CalcError as e:
-        print('❌ %s' % e)
+        print(json.dumps({'ok': False, 'error': str(e)}, ensure_ascii=False) if a.json else '❌ %s' % e)
         return 65
     exprs = [' '.join(a.expr).strip()] if a.expr else [ln.strip() for ln in (stdin or sys.stdin) if ln.strip() and not ln.lstrip().startswith('#')]
     exprs = [e for e in exprs if e]

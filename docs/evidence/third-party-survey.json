@@ -711,7 +711,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1391,
+      "attribute_uses": 1436,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -721,13 +721,13 @@
         "UsageError": 10,
         "approx": 389,
         "fail": 34,
-        "fixture": 58,
+        "fixture": 59,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 322,
+        "mark.parametrize": 338,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 502,
+        "raises": 530,
         "skip": 13,
         "warns": 3,
         "xfail": 1
@@ -864,20 +864,20 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 408,
+          "attribute_uses": 453,
           "attributes": {
             "approx": 104,
             "fail": 13,
-            "fixture": 18,
+            "fixture": 19,
             "importorskip": 3,
-            "mark.parametrize": 109,
+            "mark.parametrize": 125,
             "mark.skipif": 12,
-            "raises": 145,
+            "raises": 173,
             "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 41,
-          "import_sites": 42
+          "files": 42,
+          "import_sites": 43
         }
       },
       "declared": [
@@ -914,8 +914,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 136,
-      "import_sites": 138
+      "files": 137,
+      "import_sites": 139
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3543,6 +3543,18 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_subscription_contract.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "fixture": 1,
+        "mark.parametrize": 16,
+        "raises": 28
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_unitcalc.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

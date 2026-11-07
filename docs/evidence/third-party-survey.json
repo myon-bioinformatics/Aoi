@@ -711,7 +711,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1391,
+      "attribute_uses": 1392,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -724,7 +724,7 @@
         "fixture": 58,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 322,
+        "mark.parametrize": 323,
         "mark.skipif": 28,
         "param": 1,
         "raises": 502,
@@ -864,13 +864,13 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 408,
+          "attribute_uses": 409,
           "attributes": {
             "approx": 104,
             "fail": 13,
             "fixture": 18,
             "importorskip": 3,
-            "mark.parametrize": 109,
+            "mark.parametrize": 110,
             "mark.skipif": 12,
             "raises": 145,
             "skip": 4
@@ -3039,7 +3039,7 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 4,
+        "mark.parametrize": 5,
         "raises": 2
       },
       "dynamic_lines": [],

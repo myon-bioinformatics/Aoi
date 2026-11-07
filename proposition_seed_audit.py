@@ -5,15 +5,8 @@ features/identity adapters are explicit None, not failed or invariant outcomes.
 """
 from __future__ import annotations
 
-import argparse
-from collections import defaultdict
-import gzip
-import hashlib
-import json
-from pathlib import Path
-import statistics
-import sys
-import tomllib
+import argparse, gzip, hashlib, json, statistics, sys, tomllib
+from collections import defaultdict; from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'pythdragoras'))
 import polars as pl

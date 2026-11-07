@@ -5,17 +5,8 @@ coefficients are declared assumptions, not inferred true team abilities.
 """
 from __future__ import annotations
 
-import argparse
-from collections import Counter, defaultdict
-from copy import deepcopy
-import hashlib
-import gzip
-import io
-import json
-import math
-from pathlib import Path
-import random
-import tomllib
+import argparse, gzip, hashlib, io, json, math, random, tomllib
+from collections import Counter, defaultdict; from copy import deepcopy; from pathlib import Path
 
 import synthetic_league as sl
 

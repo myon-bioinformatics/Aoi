@@ -5,8 +5,7 @@
 モジュールだけ。既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の sakanalytics/ でも同じ結果になる。
 """
-import ast
-import sys
+import ast, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]

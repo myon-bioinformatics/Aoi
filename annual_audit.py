@@ -5,13 +5,8 @@ A mismatch is evidence to inspect; never repaired to make totals pass.
 """
 from __future__ import annotations
 
-import argparse
-from collections import Counter, defaultdict
-from decimal import Decimal, ROUND_HALF_UP, ROUND_DOWN
-import hashlib
-import json
-from pathlib import Path
-from typing import TypedDict
+import argparse, hashlib, json
+from collections import Counter, defaultdict; from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP; from pathlib import Path; from typing import TypedDict
 
 
 class AuditRules(TypedDict, total=False):

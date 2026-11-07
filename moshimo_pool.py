@@ -25,15 +25,8 @@ with a strictly higher MCC, so tied formulas share a rank.
 """
 from __future__ import annotations
 
-import argparse
-import bisect
-import itertools
-import json
-import math
-import operator
-import tomllib
-from collections import Counter
-from pathlib import Path
+import argparse, bisect, itertools, json, math, operator, tomllib
+from collections import Counter; from pathlib import Path
 
 import polars as pl
 

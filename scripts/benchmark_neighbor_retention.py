@@ -1,12 +1,5 @@
 """Run from repository root: python -S -m scripts.benchmark_neighbor_retention."""
-import json
-import random
-import statistics
-import subprocess
-import sys
-import time
-import tracemalloc
-import types
+import json, random, statistics, subprocess, sys, time, tracemalloc, types
 import neighbors
 
 

@@ -1,12 +1,6 @@
 """Synthetic fixtures only. Exhaustion is independent of the constraint model."""
-from dataclasses import replace
-from itertools import product
-from importlib.util import find_spec
-import json
-from pathlib import Path
-import random
-import subprocess
-import sys
+import json, random, subprocess, sys
+from dataclasses import replace; from importlib.util import find_spec; from itertools import product; from pathlib import Path
 
 import pytest
 

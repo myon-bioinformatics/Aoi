@@ -6,16 +6,8 @@ scores; round-robin pair counts. Infeasible means within this family only.
 """
 from __future__ import annotations
 
-import argparse
-from collections import Counter, defaultdict, deque
-from fractions import Fraction
-import hashlib
-import json
-import math
-import platform
-from pathlib import Path
-import random
-import statistics
+import argparse, hashlib, json, math, platform, random, statistics
+from collections import Counter, defaultdict, deque; from fractions import Fraction; from pathlib import Path
 
 
 class InfeasibleScenario(ValueError):

@@ -1,15 +1,15 @@
 {
   "schema": "btk-evidence-gif/1",
   "gif": "browser.gif",
-  "bytes": 252803,
-  "sha256": "c3519e4b0596f998da61c1b53d26bd263610b29bc3dd5082b29dc4d31ac831a0",
+  "bytes": 252351,
+  "sha256": "b89c8a5efb2bd9bcd555266172d9e53f6a93b709dcf08938d794359074f42b63",
   "frames": 12,
   "canvas": "720x512",
   "browser": "chromium 153.0.8010.12",
-  "recorded": "2026-11-08",
+  "recorded": "2026-11-07",
   "commit": "0d7bfc6287186852cdff85d5d363cffff5aacde6",
   "mapped": [
-    "https://cdn.jsdelivr.net/npm/"
+    "https://cdn.plot.ly/"
   ],
   "summary": {
     "pass": 8,

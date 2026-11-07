@@ -2,6 +2,12 @@
   "schema": "vendor-lock/1",
   "files": [
     {
+      "path": "scripts/child_checks.py",
+      "sha256": "69d6694890da674890eaed5a58e20ed43f2ae7c8c94b892d5f2d15178552de4d",
+      "source": "myon-bioinformatics/Aoi",
+      "consumers": []
+    },
+    {
       "path": "scripts/fetch_module.py",
       "sha256": "0fe92150a293cdb6e9e135d93b7c15cd62796f9296ad52e6e87b32d5bf779d26",
       "source": "myon-bioinformatics/Aoi",

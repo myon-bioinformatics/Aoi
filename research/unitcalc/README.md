@@ -10,7 +10,7 @@
 |---|---|
 | [`unitcalc.py`](unitcalc.py) | 実装（次元・量・単位表・構文・表示・CLI）。標準ライブラリのみ |
 | [`benchmark.py`](benchmark.py) | 速さの目安。生サンプルを JSON で出す |
-| `tests/test_unitcalc.py` | 契約と反例（163 件） |
+| `tests/test_unitcalc.py` | 契約と反例（164 件） |
 
 ```bash
 python research/unitcalc/unitcalc.py "3 kW * 2 h -> kWh"      # 式は引用符で囲む
@@ -113,11 +113,11 @@ unitcalc --dim JPY --dim item "1000 JPY % 300 JPY/item"    # 100 JPY（あまり
 | 率 → 値 | `1000 JPY * 30 pct` → 300 JPY |
 | 支払ったあとの割引値 | `1000 JPY - 700 JPY` → 300 JPY（率は上の「値 → 率」） |
 | 精算済み | `1000 JPY * (1 - 20 pct) = 800 JPY` → `✅ 左辺 = 右辺`（`order` 0） |
-| まだ払う分（残） | `1000 JPY * (1 - 20 pct) = 700 JPY` → `≠ 左辺 > 右辺`、差 100 JPY（`order` 1） |
-| 払いすぎた分（余剰） | `1000 JPY * (1 - 20 pct) = 1000 JPY` → `≠ 左辺 < 右辺`、差 −200 JPY（`order` -1） |
+| まだ払う分（残） | `1000 JPY * (1 - 20 pct) = 700 JPY` → `≠ 左辺 > 右辺`、`Δ +100 JPY`（`order` 1） |
+| 払いすぎた分（余剰） | `1000 JPY * (1 - 20 pct) = 1000 JPY` → `≠ 左辺 < 右辺`、`Δ -200 JPY`（`order` -1） |
 | 個数と率 | `3 * 298 JPY * (1 - 10 pct)` → 804.6 JPY（厳密） |
 
-左辺を支払うべき額、右辺を支払額に置くと、`order` が 0 / 1 / -1 で精算済み / 残 / 余剰になる（金額は厳密な分数。`test_surplus_and_remaining_payment_are_recognized` と乱数の `test_settlement_state_is_consistent_for_random_payments` で確認）。通貨ごとの次元・レート・株価は入れない。`kg` や `mm` のように接頭辞つきで読める名前は、`--dim` / `-D` で上書きできない。`shrink-index`（総量 = 枚数 × 1枚の重さ）や `bigmac-ruler`（kg あたり、換算なし）への採用は別の変更で、この変更は既存コードを触らない。
+左辺を支払うべき額、右辺を支払額に置くと、差 `Δ = 左辺 − 右辺` の符号が **＋ なら残、− なら余剰**（`order` 1 / -1。精算済みは 0）になる。符号は表示で必ず付ける（金額は厳密な分数。`test_surplus_and_remaining_payment_are_recognized` と乱数の `test_settlement_state_is_consistent_for_random_payments` で確認）。通貨ごとの次元・レート・株価は入れない。`kg` や `mm` のように接頭辞つきで読める名前は、`--dim` / `-D` で上書きできない。`shrink-index`（総量 = 枚数 × 1枚の重さ）や `bigmac-ruler`（kg あたり、換算なし）への採用は別の変更で、この変更は既存コードを触らない。
 
 ## 実測
 
@@ -142,7 +142,7 @@ unitcalc --dim JPY --dim item "1000 JPY % 300 JPY/item"    # 100 JPY（あまり
 - 単位の倍率は定義値が厳密なものだけ（SI 接頭辞と上の一覧。`cal` は熱化学カロリー、`mmHg` は 13595.1 kg/m³ × g_n × 1 mm の慣習値）。年・月・ガロンなど定義が複数あるものは入れていない（`-D` で足せる）。
 - 比較演算子（`<` `>`）は未実装。誤差球どうしの比較は、重なるときに「判定できない」を返す設計が必要で、別の変更にする。
 - 次元スロットは 32（SI 7 + 追加 25）。指数は −32..31。超えると 65。
-- 検証した環境: Linux・CPython 3.11 と 3.13（`tests/test_unitcalc.py` 163 件）。他の版・OS は未確認。
+- 検証した環境: Linux・CPython 3.11 と 3.13（`tests/test_unitcalc.py` 164 件）。他の版・OS は未確認。
 
 ## 終了コード
 

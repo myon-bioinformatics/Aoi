@@ -559,3 +559,13 @@ def test_cli_settlement_json(capsys):
         rec = json.loads(out)
         assert code == 0 and rec["order"] == order and rec["equal"] is (order == 0)
     assert cli(args + ["1000 JPY * (1 - 20 pct) = 20 pct"], capsys)[0] == 65
+
+
+def test_difference_sign_is_explicit(reg):
+    reg.add_dim("JPY")
+    for expr, head, sign in (("1000 JPY * (1 - 20 pct) = 700 JPY", "Δ +100", 1),
+                             ("1000 JPY * (1 - 20 pct) = 1000 JPY", "Δ -200", -1),
+                             ("sqrt(2 m^2) = 1.5 m", "Δ ≈ -0.08", -1), ("sqrt(2 m^2) = 1.3 m", "Δ ≈ +0.1", 1)):
+        lines, rec = u.run(expr, reg)
+        assert any(ln.startswith(head) for ln in lines), (expr, lines)
+        assert rec["order"] == sign and (F(rec["diff_mid"]) > 0) == (sign > 0)        # JSON は order と diff_mid の符号

@@ -646,9 +646,13 @@ def _run_eq(e, text, reg, sig, steps):
     if equal:
         lines.append('✅ 左辺 = 右辺' + ('（厳密）' if not diff.r else ''))
     else:
-        lines.append('❓ 誤差の範囲が重なり、等しいか判定できない' if equal is None else '≠ 左辺 %s 右辺（差 = 左辺 − 右辺）' % '><'[order < 0])
+        lines.append('❓ 誤差の範囲が重なり、等しいか判定できない' if equal is None else '≠ 左辺 %s 右辺（Δ = 左辺 − 右辺）' % '><'[order < 0])
         label = '' if free else reg.alias.get(e.l.d) or dl
-        lines.extend(render(Q(diff.m, diff.r, DIM0, diff.n), label, sig, steps)[0])
+        dl_ = render(Q(diff.m, diff.r, DIM0, diff.n), label, sig, steps)[0]
+        mark, _, rest = dl_[0].partition(' ')
+        # 差の行は符号を必ず付ける（＋ = 左辺が大きい、− = 右辺が大きい）
+        dl_[0] = 'Δ ' + (mark + ' ' if mark == '≈' else '') + ('+' if diff.m > 0 else '') + rest
+        lines.extend(dl_)
     if steps:
         lines.extend('🪜 ' + n for n in diff.n)
     rec = {'ok': True, 'expr': text, 'kind': 'eq', 'dim_left': dl, 'dim_right': dr, 'dimensionless': free,

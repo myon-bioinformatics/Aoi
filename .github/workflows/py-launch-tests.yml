@@ -1,4 +1,4 @@
-name: Shared Python launcher
+name: py_launch tests
 
 on:
   pull_request:

@@ -15,6 +15,7 @@ def test_lock_matches_shared_tool_bytes():
     paths = [entry["path"] for entry in document["files"]]
     assert paths == sorted(paths)
     assert paths == [
+        "scripts/child_checks.py",
         "scripts/fetch_module.py",
         "scripts/shrink_module.py",
         "scripts/shrink_polars.py",

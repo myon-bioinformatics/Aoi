@@ -43,6 +43,20 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 2026-10-18: 子の README（各子の main）を Aoi の prefix にそのままコピーし、`pythdragoras/`・`sakanalytics/` に子と同じ `LICENSE` を置いて、5つの子の `sha` を各子の main（DRAgoWing `a060e79`、NagoyAction `9ee99dc`、PythDRagoras `7ea1438`、QueRyu `096bef9`、sakanalytics `887444d`）に更新しました。README と LICENSE だけの差分なので `git subtree pull` はしていません（tree は一致）。次の `git subtree pull --squash` は同じ変更を両側に持つ状態からの取り込みになります。
 
+## 子の共通ルール
+
+6つの子は独立したリポジトリにもなる（親 myon-bioinformatics から見ると孫）ので、次を揃えています。
+
+- `AGENTS.md` / `CLAUDE.md`: 原本は親の `templates/`。末尾の「Aoi sub-project」節だけが差分で、6つとも同じ中身。Aoi のルートには置かない（子だけの例外）。
+- `.github/dependabot.yml`: 6つで同一。
+- `uses:` の書き方: `scripts/check_action_uses.py` が Aoi 自身と、`child-heads.json` に登録した子の workflow を見る。
+- 6つとも `ci.yml` は `permissions: contents: read`、`changes`、`failure-identity`、`actionlint`、`compileall` を持つ。
+- 上の同一性は `tests/test_child_registry.py` が見る。
+
+意図して違うもの: Aoi を解決するジョブの名前（他のジョブが `needs.<名前>.outputs` で参照するので揃えない）、`vendor-dispatch` は PythDRagoras・SakAnalytics・DRAgoWing のみ（QueRyu は `numpy_min` のずれ、NagoyAction は `vendor-aoi` で見る）、DRAgoWing の `test` だけ runner が `ubuntu-24.04`（理由は workflow に書かれていない）。
+
+トップ直下の補助 `.py` を用途別フォルダへ寄せる整理は未実施です。`dist/`・`distributions.json`・他の子・`research/`・`tests/` からの参照に響くので、子ごとの PR で、参照を調べてから行います。
+
 ## subtree の同期（決定）
 
 同期の方法は決まりました。Aoi 側で子ごとに一度だけ subtree add（join）をして履歴をつなぎ、そのあとは `git subtree pull` / `split` で同期します。Aoi と子の間では `vendor-consumers.json` を使いません。共有する stdlib-shrink の道具と `vendor/py_launch.cjs` は `shared-tools.lock.json` で配ります。`aoi_paths.py` と `aoi_npb.py` は Aoi だけに置き、解決したパス・設定を子へ引数で渡します（[親のNPBコマンド](../cycles/c001-chunichi/npb-configuration.md)）。子のtreeは登録SHAと完全一致させます。手順は PythDRagoras のものを子ごとに読み替えます。

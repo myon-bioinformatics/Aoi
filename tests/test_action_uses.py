@@ -1,4 +1,5 @@
 """scripts/check_action_uses.py が親の uses の書き方を守る。"""
+import json
 import sys
 from pathlib import Path
 
@@ -18,6 +19,24 @@ def _write(root: Path, text: str) -> None:
 
 def test_live_workflows_match_parent_style():
     assert uses.style_problems(ROOT) == []
+
+
+def test_registered_children_workflows_are_checked(tmp_path):
+    heads = {"heads": {"o/child": {"optional": {"subtree_prefix": "sub"}}}}
+    (tmp_path / "child-heads.json").write_text(json.dumps(heads), encoding="utf-8")
+    _write(tmp_path, f"jobs:\n  a:\n    steps:\n      - uses: actions/checkout@{SHA} # v7.0.1\n")
+    assert uses.style_problems(tmp_path) == []
+    child = tmp_path / "sub" / ".github" / "workflows"
+    child.mkdir(parents=True)
+    (child / "ci.yml").write_text("jobs:\n  a:\n    steps:\n      - uses: actions/checkout@v7\n", encoding="utf-8")
+    problems = uses.style_problems(tmp_path)
+    assert len(problems) == 1 and problems[0].startswith("sub/.github/workflows/ci.yml:4: ")
+
+
+def test_live_scan_covers_every_registered_child():
+    heads = json.loads((ROOT / "child-heads.json").read_text(encoding="utf-8"))["heads"]
+    scanned = {path.relative_to(ROOT).parts[0] for path, *_ in uses._iter_uses(ROOT)}
+    assert {entry["optional"]["subtree_prefix"] for entry in heads.values()} <= scanned
 
 
 def test_tag_refs_are_rejected_for_all_actions(tmp_path):

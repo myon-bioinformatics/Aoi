@@ -406,6 +406,13 @@ def test_print_synced_failure_messages(tmp_path, capsys):
     assert rc == 1 and out == "" and err.startswith("check-child-heads: no synced sha for o/gone: fetch_failed: ")
 
 
+def test_registered_children_share_agent_rules_and_dependabot():
+    heads = json.loads((ROOT / "child-heads.json").read_text(encoding="utf-8"))["heads"]
+    prefixes = [entry["optional"]["subtree_prefix"] for entry in heads.values()]
+    for name in ("AGENTS.md", "CLAUDE.md", ".github/dependabot.yml"):
+        assert len({(ROOT / p / name).read_bytes() for p in prefixes}) == 1, name
+
+
 def test_missing_ref_is_a_per_child_error(tmp_path):
     sha = _child(tmp_path, {"a": "a"})
     root = _parent(tmp_path, {"sub/a": "a"})

@@ -36,7 +36,8 @@
       "sha256": "7c1f86ebb012ad355db3f690bea39916aa7d927967b519dfaf5acf54879c5a4c",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
-        "myon-bioinformatics/DRAgoWing"
+        "myon-bioinformatics/DRAgoWing",
+        "myon-bioinformatics/QueRyu"
       ]
     },
     {

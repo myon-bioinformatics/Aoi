@@ -33,8 +33,8 @@ jobs:
         run: uv sync --locked --python 3.15
       - name: Survey and traces, packages not required
         run: uv run --locked --python 3.15 pytest -q tests/test_pkgmin_surface.py
-      - name: Install requests, tqdm, and biopython at lower bounds
-        run: uv pip install 'requests>=2.31.0' 'tqdm>=4.66.0' 'biopython>=1.83'
+      - name: Install requests, tqdm, and biopython (pinned, hash-checked; not declared in pyproject.toml)
+        run: uv pip install --require-hashes -r pkgmin/real-packages.txt
       - name: Equivalence against the installed packages
         env:
           PKGMIN_REQUIRE_REAL: "1"
@@ -43,8 +43,8 @@ jobs:
         run: .venv/bin/python pkgmin/run_paths.py --inject none "${{ runner.temp }}/reference.json"
       - name: Wrap trace sees no project use
         run: .venv/bin/python pkgmin/trace_used.py expect-unused
-      - name: Uninstall the three packages
-        run: uv pip uninstall requests tqdm biopython
+      - name: Remove the three packages (sync back to the default groups; uv sync is exact)
+        run: uv sync --locked --python 3.15
       - name: The packages are not installed
         shell: bash
         run: |

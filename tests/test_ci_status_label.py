@@ -179,7 +179,7 @@ on:
       - 'Nano research environment comparison'
       - 'numpy_min backends'
       - 'requests tqdm biopython surface'
-      - 'Shared Python launcher'
+      - 'py_launch tests'
       - 'Aoi manual research checkpoint canary'
       - 'Season simulator'
       - 'Shared tool lock'

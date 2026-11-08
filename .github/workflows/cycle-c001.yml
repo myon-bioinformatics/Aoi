@@ -10,6 +10,10 @@ on:
   # main に入るまでは手動実行のボタンが出ないので、専用ブランチへのプッシュでも起動できるようにする
   push:
     branches: [run/c001]
+    paths-ignore:
+      - '.github/workflows/cache-keepalive.yml'
+      - '.github/workflows/cycle-c001.yml'
+      - 'test_cache_keepalive.py'
   workflow_dispatch:
     inputs:
       offline:

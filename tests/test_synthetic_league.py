@@ -1,9 +1,5 @@
-from copy import deepcopy
-from collections import Counter
-import json
-from pathlib import Path
-import subprocess
-import sys
+import json, subprocess, sys
+from collections import Counter; from copy import deepcopy; from pathlib import Path
 import pytest
 from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan,period_experiment,validate_period,calibration_mean,_flow)
 

@@ -1,9 +1,6 @@
 """Model assumptions, conserved game witnesses, frozen evaluation and units."""
-from copy import deepcopy
-import hashlib
-import json
-from pathlib import Path
-import tomllib
+import hashlib, json, tomllib
+from copy import deepcopy; from pathlib import Path
 
 import pytest
 

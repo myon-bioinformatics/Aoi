@@ -1,5 +1,4 @@
-from copy import deepcopy
-from functools import partial
+from copy import deepcopy; from functools import partial
 import pytest
 from annual_audit import audit as generic_audit
 

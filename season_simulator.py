@@ -1,16 +1,8 @@
 """Regular-season forecasts; no network access and no results after the cutoff."""
 from __future__ import annotations
 
-import argparse
-from dataclasses import asdict, dataclass
-from datetime import date, timedelta
-from fractions import Fraction
-import hashlib
-import json
-import math
-from pathlib import Path
-import platform
-import random
+import argparse, hashlib, json, math, platform, random
+from dataclasses import asdict, dataclass; from datetime import date, timedelta; from fractions import Fraction; from pathlib import Path
 
 
 @dataclass(frozen=True)

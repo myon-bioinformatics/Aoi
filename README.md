@@ -328,10 +328,10 @@ Synthetic input covers 13 propositions; propositions lacking needed columns or a
 
 ## Node entry (Node 26+)
 
-- `node synthetic_league.cjs <args>` runs `synthetic_league.py` (interpreter override: `SYNTHETIC_LEAGUE_PYTHON`).
-- `node annual_audit.cjs <args>` runs `annual_audit.py` (interpreter override: `ANNUAL_AUDIT_PYTHON`).
+- `node vendor/py_launch.cjs --env-var SYNTHETIC_LEAGUE_PYTHON -- synthetic_league.py <args>`
+- `node vendor/py_launch.cjs --env-var ANNUAL_AUDIT_PYTHON -- annual_audit.py <args>`
 
-Each entry uses the vendored shared launcher `vendor/py_launch.cjs` (pinned in `vendor.lock.json`).
+There are no per-tool `.cjs` wrappers: each command calls the vendored shared launcher `vendor/py_launch.cjs` (pinned in `vendor.lock.json`) directly, and `--env-var` names the interpreter override. A Node older than 26 exits 2.
 Arguments, stdin/stdout/stderr and the exit code are passed through unchanged; Python runs with `-S`, including interpreter discovery.
 The launcher is copied from the merged [Aoi #149](https://github.com/myon-bioinformatics/Aoi/pull/149)
 commit `9e0147a17695ce63fa73daf75d8195a4f49095bb`, not directly from Aoi's parent.

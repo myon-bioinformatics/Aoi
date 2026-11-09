@@ -7,9 +7,7 @@
 """
 from __future__ import annotations
 
-import argparse
-import json
-import sys
+import argparse, json, sys
 from pathlib import Path
 
 FORM_ORDER = ("original", "converse", "inverse", "contrapositive")

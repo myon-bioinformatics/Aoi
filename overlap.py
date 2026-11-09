@@ -5,10 +5,8 @@
 """
 from __future__ import annotations
 
-import json
+import json, operator
 from pathlib import Path
-
-import operator
 
 OPS = {"<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
 

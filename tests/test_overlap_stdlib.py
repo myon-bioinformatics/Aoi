@@ -1,10 +1,6 @@
 """明示的 stdlib backend の native との一致・境界と import 分離。"""
-import json
-import os
+import json, os, random, subprocess, sys
 from pathlib import Path
-import random
-import subprocess
-import sys
 
 import pytest
 

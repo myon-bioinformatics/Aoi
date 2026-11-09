@@ -4,8 +4,7 @@ HTML を書く。PNG / SVG は --png / --svg と Chrome があるときだけ。
 """
 from __future__ import annotations
 
-import argparse
-import sys
+import argparse, sys
 from pathlib import Path
 
 from .chrome_pipe import find_chrome

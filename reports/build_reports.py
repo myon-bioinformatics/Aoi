@@ -1,18 +1,6 @@
 """Build Markdown reports and rendered/source comparisons using upstream markdown.py."""
-import argparse
-import difflib
-import hashlib
-import html
-from html.parser import HTMLParser
-import importlib.util
-import json
-import os
-from pathlib import Path, PurePosixPath
-import re
-import shutil
-import subprocess
-import sys
-from urllib.parse import urljoin
+import argparse, difflib, hashlib, html, importlib.util, json, os, re, shutil, subprocess, sys
+from html.parser import HTMLParser; from pathlib import Path, PurePosixPath; from urllib.parse import urljoin
 
 REPOSITORY = 'myon-bioinformatics/Aoi'
 

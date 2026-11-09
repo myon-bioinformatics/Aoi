@@ -1,11 +1,8 @@
 """DRAgoWing Plotly.js CDN adapter (jsDelivr, no hash pin)."""
 from __future__ import annotations
 
-import io
-import os
-from pathlib import Path
-import urllib.error
-from unittest.mock import patch
+import io, os, urllib.error
+from pathlib import Path; from unittest.mock import patch
 
 import pytest
 

@@ -6,17 +6,8 @@ stdout だけに記録する。入力ファイルは変更しない。Linux/macO
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import importlib.machinery
-import json
+import argparse, hashlib, importlib.machinery, json, platform, statistics, subprocess, sys, time, types
 from pathlib import Path
-import platform
-import statistics
-import subprocess
-import sys
-import time
-import types
 
 
 def worker(args):

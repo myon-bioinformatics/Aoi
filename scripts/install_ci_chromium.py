@@ -5,16 +5,8 @@ privilege changes or existing-install refresh. See docs/export.md for provenance
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import json
-import os
+import argparse, hashlib, json, os, stat, tempfile, time, urllib.request, zipfile
 from pathlib import Path, PurePosixPath
-import stat
-import tempfile
-import time
-import urllib.request
-import zipfile
 
 REVISION = '1706520'
 VERSION = '156.0.8078.0'

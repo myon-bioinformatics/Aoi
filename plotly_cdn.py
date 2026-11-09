@@ -5,9 +5,7 @@ separately; this module uses the versionless jsDelivr dist URL directly.
 """
 from __future__ import annotations
 
-import re
-import urllib.error
-import urllib.request
+import re, urllib.error, urllib.request
 from html import escape
 PLOTLY_JS_CDN = "https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js"
 PLOTLY_JS_MAX_BYTES = 8 * 1024 * 1024

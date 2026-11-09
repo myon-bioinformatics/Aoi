@@ -1,7 +1,5 @@
 """Exercise real POSIX pipes with a deterministic CDP peer, without Chrome."""
-import os
-import sys
-import time
+import os, sys, time
 from pathlib import Path
 
 import pytest

@@ -1,14 +1,6 @@
 """図のデータは season.jsonl / propositions.jsonl の値と一致する。丸めない。"""
-import ast
-import html
-import json
-import operator
-import os
-import subprocess
-import sys
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+import ast, html, json, operator, os, subprocess, sys, tempfile
+from pathlib import Path; from unittest.mock import MagicMock, patch
 
 import pytest
 

@@ -19,16 +19,8 @@ Aoi の原則との対応:
 
 from __future__ import annotations
 
-import argparse
-import importlib
-import re
-import sys
-import unicodedata
-from collections import Counter
-from collections.abc import Iterable, Iterator
-from html.parser import HTMLParser
-from pathlib import Path
-from typing import TypedDict
+import argparse, importlib, re, sys, unicodedata
+from collections import Counter; from collections.abc import Iterable, Iterator; from html.parser import HTMLParser; from pathlib import Path; from typing import TypedDict
 
 NORMALIZATION = "nul->U+FFFD, NFKC, collapse-whitespace"
 

@@ -1,10 +1,6 @@
 """Seven alternating traversal comparisons; no HTML parsing in timed region."""
-import json
+import json, statistics, sys, time, tracemalloc
 from pathlib import Path
-import statistics
-import sys
-import time
-import tracemalloc
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import accessible_names as names
 

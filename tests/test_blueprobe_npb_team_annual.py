@@ -1,6 +1,5 @@
 """Real team-table fixtures plus adversarial layouts; no live HTTP in tests."""
-import hashlib
-import json
+import hashlib, json
 from pathlib import Path
 import pytest
 from npb_team_annual import parse, pages

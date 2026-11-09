@@ -12,14 +12,8 @@ aria-hidden・ラベルの有無）出ているかを、原文の抜粋ととも
 """
 from __future__ import annotations
 
-import argparse
-import json
-import re
-import sys
-import unicodedata
-from collections import Counter
-from html.parser import HTMLParser
-from pathlib import Path
+import argparse, json, re, sys, unicodedata
+from collections import Counter; from html.parser import HTMLParser; from pathlib import Path
 
 from blueprobe import new_report
 

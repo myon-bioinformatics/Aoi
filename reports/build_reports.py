@@ -155,13 +155,13 @@ def build(root, upstream, output, previous_ref=None):
     return manifest
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument('--markdown-root', type=Path, required=True)
     parser.add_argument('--output', type=Path, default=Path('build/dragowing'))
     parser.add_argument('--previous-ref')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     result = build(args.root, args.markdown_root, args.output, args.previous_ref)
     print(json.dumps({'documents':len(result['documents']), 'markdown_commit':result['markdown_commit'], 'previous_status':result['previous_status']}))
 

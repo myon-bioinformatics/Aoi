@@ -118,10 +118,10 @@ def install(destination: Path) -> Path:
     return destination / 'chrome-linux/chrome'
 
 
-def main() -> None:
+def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--destination', type=Path, required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     executable = install(args.destination)
     print(json.dumps({'revision': REVISION, 'expected_version': VERSION,
                       'archive_sha256': SHA256, 'generation': GENERATION,

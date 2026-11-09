@@ -1,6 +1,5 @@
 """Deterministic descriptive neighbors; no outcome-derived distance features."""
-import math
-import statistics
+import math, statistics
 
 FEATURES = ("rf_adv", "ra_adv", "vs_lower_wpct")
 

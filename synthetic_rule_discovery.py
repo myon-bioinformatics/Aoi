@@ -7,13 +7,8 @@ freeze its JSON registry before evaluating independent seeds and profiles.
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-from itertools import combinations
-import json
-import math
-from pathlib import Path
-import statistics
+import argparse, hashlib, json, math, statistics
+from itertools import combinations; from pathlib import Path
 
 import polars as pl
 from propositions import _antecedent, load

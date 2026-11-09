@@ -1,9 +1,5 @@
-import hashlib
-import json
-import os
+import hashlib, json, os, shutil, warnings
 from pathlib import Path
-import shutil
-import warnings
 
 import pytest
 

@@ -32,7 +32,10 @@ jobs:
           # 記録された major.minor 以外を拒否するので、3.15 へ上げるときは dist/ を再生成して同時に更新する。
           python-version: "3.12"
           activate-environment: true
-          enable-cache: false
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - name: Resolve parent main and QueRyu subtree head
         id: resolved
         env:

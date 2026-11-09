@@ -91,7 +91,7 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 | `shared-tools.lock.json` | Stdlib-shrink tools and `vendor/py_launch.cjs` that Aoi distributes to its subtree children, verified by hash |
 | [`docs/`](docs/) | Philosophy, principles, method and specifications |
 | [`tests/`](tests/) | Repository-level tests (each subproject keeps its own `tests/`) |
-| `child-heads.json` | Registered heads of the child repositories; see [docs/child-repositories.md](docs/child-repositories.md) |
+| `child-heads.json` | Registered child repositories (ID and subtree prefix; the synced commit is derived from the child's history); see [docs/child-repositories.md](docs/child-repositories.md) |
 | `aoi_paths.py`, `aoi_npb.py` | Parent-owned paths and NPB settings passed to the child APIs; see [NPB commands](cycles/c001-chunichi/npb-configuration.md) |
 | `annual_scope.py` | NPB-specific: copies only the primary years from an annual cache and keeps history as reference |
 
@@ -108,7 +108,7 @@ Each subproject lives in Aoi as a directory and is also published as a standalon
 | DRAgoWing | [myon-bioinformatics/DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](dragowing/) | Aoi `child-heads.json` |
 | NagoyAction | [myon-bioinformatics/NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](nagoyaction/) | Aoi `child-heads.json` |
 
-The copy inside Aoi and the standalone repository can drift between syncs; the registered heads are checked with `python -S scripts/check_child_heads.py --fail-on-diff`.
+The copy inside Aoi and the standalone repository can drift between syncs; the registered children are checked with `python -S scripts/check_child_heads.py --fail-on-diff`.
 
 ## Tests
 

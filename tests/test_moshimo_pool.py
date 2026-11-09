@@ -1,6 +1,4 @@
-import itertools
-import json
-import operator
+import itertools, json, operator
 from pathlib import Path
 
 import pytest

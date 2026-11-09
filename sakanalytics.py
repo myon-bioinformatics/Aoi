@@ -113,16 +113,8 @@
 
 from __future__ import annotations
 
-import argparse
-import json
-import math
-import operator
-import random
-import sys
-import tomllib
-from collections import Counter
-from datetime import date
-from pathlib import Path
+import argparse, json, math, operator, random, sys, tomllib
+from collections import Counter; from datetime import date; from pathlib import Path
 
 import polars as pl
 

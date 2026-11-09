@@ -1,7 +1,4 @@
-import inspect
-import json
-import math
-import random
+import inspect, json, math, random
 
 import pytest
 

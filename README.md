@@ -63,7 +63,7 @@ It reads only the cache and does not access the network. If there are unknown no
 
 | File | Role |
 |---|---|
-| `blueprobe.py` | Source-independent parts: normalization, the report contract, offline reparsing (`inspect`), the DOM pattern table (`--list-patterns`), document classification (`classify_document` / `--classify`), and the `html.parser` HTML tree. Details in [docs/dom_patterns.md](docs/dom_patterns.md) |
+| `blueprobe.py` | Source-independent parts: normalization, the report contract, offline reparsing (`inspect`), the DOM pattern table (`--list-patterns`), document classification (`classify_document` / `--classify`), and the `html.parser` HTML tree. Details in [docs/dom-patterns.md](docs/dom-patterns.md) |
 | `html_source.py` | A generic source (`HtmlSource`) that passes saved HTML to a trusted offline extraction function |
 | `snapshot_source.py` | The contract for suppliers of saved bodies (`SnapshotSupplier`) and the QueRyu adapter (`QueRyuCacheSource`) |
 | `heading_observations.py` | Observing the heading hierarchy (`<h1>`–`<h6>`) and landmark structure of saved HTML |
@@ -312,12 +312,12 @@ the latest run of [PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15).
 | File | Role |
 |---|---|
 | `npb_calendar.py` | Source: npb.jp's monthly official game calendar |
-| `docs/npb_calendar.md` | What was checked for which year in that source (observed and unconfirmed kept separate) |
+| `docs/npb-calendar.md` | What was checked for which year in that source (observed and unconfirmed kept separate) |
 | `npb_team_annual.py` | Source: npb.jp's annual team tables (summaries from 1950, detailed tables from 2005) |
-| `npb_team_batting.py` | Source: npb.jp's annual team batting stats ([docs/npb_team_batting.md](docs/npb_team_batting.md)) |
-| `npb_team_fielding.py` | Source: npb.jp's annual team fielding stats ([docs/npb_team_fielding.md](docs/npb_team_fielding.md)) |
-| `npb_game_linescore.py` | Source: npb.jp's game page line scores (R, H, E) ([docs/npb_game_linescore.md](docs/npb_game_linescore.md)) |
-| `npb_schedule_current.py` | Source: npb.jp's current-season monthly schedule and results ([docs/npb_schedule_current.md](docs/npb_schedule_current.md)) |
+| `npb_team_batting.py` | Source: npb.jp's annual team batting stats ([docs/npb-team-batting.md](docs/npb-team-batting.md)) |
+| `npb_team_fielding.py` | Source: npb.jp's annual team fielding stats ([docs/npb-team-fielding.md](docs/npb-team-fielding.md)) |
+| `npb_game_linescore.py` | Source: npb.jp's game page line scores (R, H, E) ([docs/npb-game-linescore.md](docs/npb-game-linescore.md)) |
+| `npb_schedule_current.py` | Source: npb.jp's current-season monthly schedule and results ([docs/npb-schedule-current.md](docs/npb-schedule-current.md)) |
 | `html_compare.py` | Structural coverage of saved HTML, and comparison with existing NPB observations (offline) |
 
 ```bash

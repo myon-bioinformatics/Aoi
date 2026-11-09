@@ -858,7 +858,7 @@ def classify_document(html: str) -> DocumentClassification:
 
     Only observes: candidate patterns (nodes with visible text only), landmarks,
     structured-data signals, declarative shadow roots, and table kinds.
-    Downstream converters consume this dict (see docs/dom_patterns.md).
+    Downstream converters consume this dict (see docs/dom-patterns.md).
     """
     empty_sd: StructuredData = {"json_ld_types": [], "json_ld_invalid": 0, "microdata_types": [],
                                 "itemprops": [], "opengraph": {}}

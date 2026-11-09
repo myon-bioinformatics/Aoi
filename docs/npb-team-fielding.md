@@ -32,7 +32,7 @@ In the first preview, the table couldn't be read on any of the 28 pages, and it 
 
 ## Parsing contract
 
-Same as batting ([npb_team_batting.md](npb_team_batting.md)). In addition, if a heading spans 2 or more columns horizontally, the next row is read as the lower headings and compared by the name joined after the parent's name (`併殺参加`). If the lower row can't be read, it goes into unknown and column positions aren't guessed.
+Same as batting ([npb-team-batting.md](npb-team-batting.md)). In addition, if a heading spans 2 or more columns horizontally, the next row is read as the lower headings and compared by the name joined after the parent's name (`併殺参加`). If the lower row can't be read, it goes into unknown and column positions aren't guessed.
 
 ## Handling in the pipeline
 

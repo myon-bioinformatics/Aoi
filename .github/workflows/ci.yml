@@ -22,7 +22,7 @@ jobs:
       contents: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
 
-  resolve-aoi:
+  resolve-vendor:
     needs: changes
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
@@ -84,7 +84,7 @@ jobs:
 
   test:
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-    needs: [changes, resolve-aoi]
+    needs: [changes, resolve-vendor]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -109,7 +109,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
-          ref: ${{ needs.resolve-aoi.outputs.sha }}
+          ref: ${{ needs.resolve-vendor.outputs.sha }}
           path: .test-deps/aoi
           persist-credentials: false
       - run: python -m compileall -q -x '\.test-deps' .
@@ -151,7 +151,7 @@ jobs:
   # vendor_sync.py の python -S 検査はこのリポジトリには無い。
   # pilot/vendor_dispatch.py は vendor.lock.json を検証する。記録フラグは付けない。
   vendor-dispatch:
-    name: vendor lock dispatch
+    name: Vendor dispatch
     needs: changes
     if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest

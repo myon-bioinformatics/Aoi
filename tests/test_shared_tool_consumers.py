@@ -120,6 +120,34 @@ class ConsumerTests(unittest.TestCase):
         self.assertTrue(checker.problems(self.root))
         self.assertEqual(checker.main(['--root', str(self.root), '--warn']), 0)
 
+    def test_duplicate_consumer(self):
+        self.shared['files'][0]['consumers'] *= 2
+        self.save('shared-tools.lock.json', self.shared)
+        self.assertTrue(checker.problems(self.root))
+
+    def test_duplicate_destination(self):
+        self.child['files'] *= 2
+        self.save('child/shared-tools.lock.json', self.child)
+        self.assertTrue(any('duplicate child lock destination' in x for x in checker.problems(self.root)))
+
+    def test_internal_symlink_copy(self):
+        file = self.root / 'child' / self.dest
+        file.rename(file.with_name('target.py'))
+        file.symlink_to('target.py')
+        self.assertTrue(any('symlink child copy' in x for x in checker.problems(self.root)))
+
+    def test_external_symlink_copy(self):
+        file = self.root / 'child' / self.dest
+        file.unlink()
+        file.symlink_to(self.root / self.source)
+        self.assertTrue(any('unsafe source/destination' in x for x in checker.problems(self.root)))
+
+    def test_symlink_directory(self):
+        directory = self.root / 'child/vendor/aoi/scripts'
+        directory.rename(directory.with_name('actual'))
+        directory.symlink_to('actual', target_is_directory=True)
+        self.assertTrue(any('symlink child copy' in x for x in checker.problems(self.root)))
+
     def test_unused_tool(self):
         self.shared['files'].append(dict(path='scripts/unused.py', sha256=self.digest(b'unused'), source=checker.SOURCE, consumers=[]))
         self.write('scripts/unused.py', b'unused')

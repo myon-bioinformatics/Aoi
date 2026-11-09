@@ -27,6 +27,15 @@ def inside(root, value):
     return relative(value) and (root / value).resolve().is_relative_to(root.resolve())
 
 
+def has_symlink(root, value):
+    path = root
+    for part in value.split('/'):
+        path = path / part
+        if path.is_symlink():
+            return True
+    return False
+
+
 def problems(root: Path) -> list[str]:
     # Invalid local metadata must remain an ordinary diagnostic, including --warn.
     try:
@@ -50,7 +59,7 @@ def _problems(root: Path) -> list[str]:
     actual = {path: set() for path in shared}
     for repo, head in heads.items():
         prefix = head.get('optional', {}).get('subtree_prefix')
-        if not inside(root, prefix):
+        if not inside(root, prefix) or has_symlink(root, prefix):
             found.append(f'{repo}: invalid subtree_prefix')
             continue
         child = root / prefix
@@ -59,8 +68,8 @@ def _problems(root: Path) -> list[str]:
             lockfile = child / filename
             if not lockfile.exists() and not lockfile.is_symlink():
                 continue
-            if not inside(child, filename):
-                found.append(f'{prefix}/{filename}: lock resolves outside child')
+            if not inside(child, filename) or has_symlink(child, filename):
+                found.append(f'{prefix}/{filename}: lock resolves outside child or is a symlink')
                 continue
             try:
                 document = json.loads(lockfile.read_text())
@@ -96,6 +105,8 @@ def _problems(root: Path) -> list[str]:
                     file = child / destination
                     if not isinstance(sha, str) or not HEX64.fullmatch(sha):
                         found.append(f'{prefix}/{destination}: invalid child sha256')
+                    elif has_symlink(child, destination):
+                        found.append(f'{prefix}/{destination}: symlink child copy')
                     elif not file.is_file():
                         found.append(f'{prefix}/{destination}: missing child copy')
                     elif hashlib.sha256(file.read_bytes()).hexdigest() != sha:
@@ -103,7 +114,7 @@ def _problems(root: Path) -> list[str]:
             except (OSError, ValueError, TypeError) as exc:
                 found.append(f'{prefix}/{filename}: {exc}')
         for file in (child / 'vendor/aoi').rglob('*'):
-            if file.is_file() and '__pycache__' not in file.parts and file.suffix != '.pyc':
+            if (file.is_file() or file.is_symlink()) and '__pycache__' not in file.parts and file.suffix != '.pyc':
                 destination = file.relative_to(child).as_posix()
                 if destination not in registered:
                     found.append(f'{prefix}/{destination}: copy missing from child shared-tool locks')

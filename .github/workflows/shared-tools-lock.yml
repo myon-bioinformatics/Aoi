@@ -29,12 +29,13 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
-          python-version: "3.15"
-          activate-environment: true
           enable-cache: true
-          # Pull requests restore the cache and never write it; only main saves it.
           save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           prune-cache: true
+          python-version: "3.15"
+          activate-environment: true
+      - name: Test consumer integrity checker
+        run: python -S tests/test_shared_tool_consumers.py
       - name: Resolve consumer mains
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -58,7 +59,7 @@ jobs:
             strict=1
           fi
           if [[ "$strict" == "1" ]]; then
-            python -S scripts/check_shared_tools_lock.py
+            python -S scripts/check_shared_tool_consumers.py
           else
-            python -S scripts/check_shared_tools_lock.py --warn
+            python -S scripts/check_shared_tool_consumers.py --warn
           fi

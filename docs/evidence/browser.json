@@ -1,0 +1,167 @@
+{
+  "schema": "btk-evidence-gif/1",
+  "gif": "browser.gif",
+  "bytes": 252351,
+  "sha256": "b89c8a5efb2bd9bcd555266172d9e53f6a93b709dcf08938d794359074f42b63",
+  "frames": 12,
+  "canvas": "720x512",
+  "browser": "chromium 153.0.8010.12",
+  "recorded": "2026-11-07",
+  "commit": "0d7bfc6287186852cdff85d5d363cffff5aacde6",
+  "mapped": [
+    "https://cdn.plot.ly/"
+  ],
+  "summary": {
+    "pass": 8,
+    "fail": 0
+  },
+  "shots": [
+    {
+      "label": "📊 終盤を迎える状態 (game_state)",
+      "url": "/research/gpt-r001-score-allocation/outputs/game_state.html",
+      "viewport": "1280x800",
+      "steps": [
+        "eval ⚙️",
+        "scroll 800"
+      ],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": []
+    },
+    {
+      "label": "📊 得点のタイミング (score_timing)",
+      "url": "/research/gpt-r001-score-allocation/outputs/score_timing.html",
+      "viewport": "1280x800",
+      "steps": [
+        "scroll 800"
+      ],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": []
+    },
+    {
+      "label": "📊 確定までの流れ (preclinch_flow)",
+      "url": "/research/gpt-r001-score-allocation/outputs/preclinch_flow.html",
+      "viewport": "1280x800",
+      "steps": [
+        "scroll 800"
+      ],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": []
+    },
+    {
+      "label": "📊 同点差からの終盤 (matched_comeback)",
+      "url": "/research/gpt-r001-score-allocation/outputs/matched_comeback.html",
+      "viewport": "1280x800",
+      "steps": [],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": []
+    },
+    {
+      "label": "📱 得点のタイミング",
+      "url": "/research/gpt-r001-score-allocation/outputs/score_timing.html",
+      "viewport": "392x848",
+      "steps": [],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": []
+    },
+    {
+      "label": "🐉 DRAgoWing figure-0",
+      "url": "/tests/fixtures/rendered_plotly/figure-0.svg",
+      "viewport": "1280x800",
+      "steps": [],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": []
+    },
+    {
+      "label": "🐉 DRAgoWing figure-1",
+      "url": "/tests/fixtures/rendered_plotly/figure-1.svg",
+      "viewport": "1280x800",
+      "steps": [],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": []
+    },
+    {
+      "label": "🐉 DRAgoWing figure-2",
+      "url": "/tests/fixtures/rendered_plotly/figure-2.svg",
+      "viewport": "1280x800",
+      "steps": [],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": []
+    }
+  ],
+  "plan": [
+    {
+      "label": "📊 終盤を迎える状態 (game_state)",
+      "url": "/research/gpt-r001-score-allocation/outputs/game_state.html",
+      "viewport": "1280x800",
+      "steps": [
+        {
+          "eval": "(() => { const s = document.querySelector('select'); s.selectedIndex = s.options.length - 1; s.dispatchEvent(new Event('change', {bubbles: true})); })()"
+        },
+        {
+          "scroll": 800
+        }
+      ]
+    },
+    {
+      "label": "📊 得点のタイミング (score_timing)",
+      "url": "/research/gpt-r001-score-allocation/outputs/score_timing.html",
+      "viewport": "1280x800",
+      "steps": [
+        {
+          "scroll": 800
+        }
+      ]
+    },
+    {
+      "label": "📊 確定までの流れ (preclinch_flow)",
+      "url": "/research/gpt-r001-score-allocation/outputs/preclinch_flow.html",
+      "viewport": "1280x800",
+      "steps": [
+        {
+          "scroll": 800
+        }
+      ]
+    },
+    {
+      "label": "📊 同点差からの終盤 (matched_comeback)",
+      "url": "/research/gpt-r001-score-allocation/outputs/matched_comeback.html",
+      "viewport": "1280x800"
+    },
+    {
+      "label": "📱 得点のタイミング",
+      "url": "/research/gpt-r001-score-allocation/outputs/score_timing.html",
+      "viewport": "392x848"
+    },
+    {
+      "label": "🐉 DRAgoWing figure-0",
+      "url": "/tests/fixtures/rendered_plotly/figure-0.svg",
+      "viewport": "1280x800"
+    },
+    {
+      "label": "🐉 DRAgoWing figure-1",
+      "url": "/tests/fixtures/rendered_plotly/figure-1.svg",
+      "viewport": "1280x800"
+    },
+    {
+      "label": "🐉 DRAgoWing figure-2",
+      "url": "/tests/fixtures/rendered_plotly/figure-2.svg",
+      "viewport": "1280x800"
+    }
+  ]
+}

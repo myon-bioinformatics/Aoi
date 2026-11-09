@@ -1,8 +1,8 @@
 # Aoi の子リポジトリ
 
-Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ形（`child-heads/1`）を、Aoi 直下に置きます。BlueProbe・PythDRagoras・QueRyu・NagoyAction・SakAnalytics・DRAgoWing の親は Aoi です（myon-bioinformatics からは孫）。
+Aoi のサブプロジェクトを独立させたリポジトリの登録です。親 myon-bioinformatics の `child-heads.json` と同じ `child-heads/1` の形から、手で書く `sha` を除いたものを Aoi 直下に置きます。BlueProbe・PythDRagoras・QueRyu・NagoyAction・SakAnalytics・DRAgoWing の親は Aoi です（myon-bioinformatics からは孫）。
 
-| 子 | prefix | 登録した main |
+| 子 | prefix | 同期した子の commit |
 |---|---|---|
 | [BlueProbe](https://github.com/myon-bioinformatics/BlueProbe) | [`blueprobe/`](../blueprobe/) | `child-heads.json` の `sha` |
 | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](../pythdragoras/) | `child-heads.json` の `sha` |
@@ -11,17 +11,22 @@ Aoi のサブプロジェクトを独立させたリポジトリの登録です�
 | [SakAnalytics](https://github.com/myon-bioinformatics/SakAnalytics) | [`sakanalytics/`](../sakanalytics/) | `child-heads.json` の `sha` |
 | [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](../dragowing/) | `child-heads.json` の `sha` |
 
-- `child-heads.json`: 子ごとに `sha`（子の main）、`repository_id`、`optional` に次を書く。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
+- `child-heads.json`: 子ごとに `repository_id` と `optional` を書く。`sha` は書かない（書くと検証が拒否する）。同期した子の commit は、Aoi の prefix の tree と同じ tree を持つ子 main の第一親コミットを履歴から導く（`python -S scripts/check_child_heads.py --print-synced OWNER/REPO`）。子は prefix の純粋な subtree で、除外するファイルはない（`not_in_parent` / `child_preamble` は受け付けない）。子の `.github/`、`pyproject.toml`、`uv.lock`、`conftest.py`、`.gitignore`、README も Aoi の prefix の下に置く。Aoi では `pythdragoras/.github/` は動かず、`pythdragoras/conftest.py` は Aoi の pytest でも同じように `AOI_ROOT` を確かめる。
   - `subtree_prefix`: Aoi の中の場所。
   - `mirrored_from_parent`: checker が対応する任意の mirror 宣言。現在は登録していない。Aoi 固有の配置設定は親だけが持ち、子へ引数で渡す。
 - Aoi と subtree 子の間では `vendor-consumers.json` を置かない。共有する stdlib-shrink の道具だけは Aoi が原本で、[`shared-tools.lock.json`](../shared-tools.lock.json)（`vendor-lock/1`）に path、sha256、source（Aoi）、consumer の子を1本ずつ書く。子はその lock のバイトを受け取る。subtree の tree 一致とは別の契約である。Node から単一ファイルの Python ツールを呼ぶ `vendor/py_launch.cjs` も同じ lock で配る。Aoi は親から `vendor.lock.json` で取り込み、子は Aoi の最新版のマージコミットに pin して Aoi から受け取る（親 → Aoi → 子）。子が親から直接取り込まない。
-- `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と登録した `sha` のずれ（drift）、登録した `sha` の子の tree と Aoi の prefix の tree の差分（blob と mode、除外なし）。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
+- `scripts/check_child_heads.py`: 形の確認、`mirrored_from_parent`、子の main と、履歴から導いた同期済み commit のずれ（drift: 同期済み commit が子の main の先頭より古い）、同期済み commit の子の tree と Aoi の prefix の tree の差分（blob と mode、除外なし）。同じ tree の commit が子の履歴にない間（Aoi が先行している、子の PR が未マージなど）は同期済み commit が無く、drift ではなく子の先頭の tree との差分として出る。子ごとの取得の失敗（リポジトリがない、タイムアウトなど）はその子の `error` にして続ける。書き込みはしない。`--offline` で形と Aoi 側だけ。
 
 ```bash
 python -S scripts/check_child_heads.py --fail-on-diff
 ```
 
-`sha` の更新は PR で行い、自動マージはしない。
+同期した commit は `child-heads.json` に残らないので、`sha` を更新する PR はない。subtree の同期そのものは従来どおり PR で行い、自動マージはしない。
+
+### 子の検査の本体 `scripts/child_checks.py`（shared-tools.lock）
+
+6つの子が conftest.py と tests に同じ中身で持っている検査（AOI_ROOT の解決と import 経路、親ワークフローの pin、兄弟・scripts/ への参照禁止、Node 入口と Python の一致）の本体は Aoi の `scripts/child_checks.py` が原本で、`shared-tools.lock.json` で `vendor/aoi/scripts/child_checks.py` として子に配る（numpy_min・py_launch.cjs と同じ契約。標準ライブラリだけ、pytest を import しない）。子に残すのは子ごとに違う値（PIN、第三者依存、既知の例外、Node の入口名）と、本体を呼ぶ数行だけ。採用前に `tests/test_child_checks.py` が各 prefix で子の現在の検査と同じ答えになることを確かめる。採用した子は lock の `consumers` に足す。
+
 
 2026-11-02（#152）: 残る BlueProbe `2ea993aaa1416ff9006eba4ebe2fed6d0b49668e` と QueRyu `4c59cb00ca2ba898573e4af95bc4a63492aa5eb9` を、子の main の第一親の最新コミットに squash なしの `git subtree pull` で同期しました。DRAgoWing・NagoyAction・PythDRagoras・SakAnalytics は上記と同じ登録（`434fd137`・`da68f374`・`9fb998c6`・`95cfacd4`）です。QueRyu #32 で同梱の `numpy_min` を `_load_numpy_min()` で読むようになったため、`scripts/linalg_feasibility.py` と `scripts/shrink_module.py` はこれを numpy として扱います。各 prefix の tree は登録 SHA の tree と同一です。この PR は squash せず merge commit で入れます。
 
@@ -50,7 +55,7 @@ python -S scripts/check_child_heads.py --fail-on-diff
 PythDRagoras の main は `git filter-branch --subdirectory-filter pythdragoras` で切り出したので（git 2.47.3 の `git subtree split --prefix=pythdragoras` は Aoi の 585 コミット中 506 で止まり、10/4 の古い先頭 `f599f60d419f15cd5e9ff386d92b77b3f6467b4e` を返す。join 前は split が古い tree で止まる（[gh_identity#74](https://github.com/myon-bioinformatics/gh_identity/issues/74)））、Aoi の履歴とつながっていません。そのため Aoi に一度だけ join を入れます。
 
 - 2026-10-19 に、旧 `pythdragoras/` を消してから `git subtree add --prefix=pythdragoras https://github.com/myon-bioinformatics/PythDRagoras.git main`（`--squash` なし）で join を入れ直しました。merge commit の第2親は PythDRagoras main の head で、PythDRagoras の全履歴が Aoi につながります（BlueProbe #64・QueRyu #68・NagoyAction #69 と同じ。手組みの2親マージや squash 由来の join は使いません。以前の squash の join と `Squashed 'pythdragoras/' changes` のコミットは履歴に残りますが、起点にはしません）。
-- 登録する `sha` は PythDRagoras の main にあるコミットにします。子の PR も squash せず merge commit で入れます。
+- 同期した commit は、PythDRagoras の main の第一親にあるコミットとして導きます。子の PR も squash せず merge commit で入れます。
 - join は2つ目の親として残す必要があります。**join を含む Aoi の PR は squash せず、merge commit で入れます**。squash すると2つ目の親が消え、`git subtree pull` と `split` が止まります。
 - join 以降は `git subtree` が join を起点にするので、join 以前に split が古く止まっていた範囲をたどりません。
 
@@ -72,7 +77,7 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 - push したブランチから PythDRagoras に PR を作ります。マージしたら、Aoi で「子 → Aoi」の pull をして、起点を PythDRagoras の main に付け直します（squash マージでは split のコミットが main に残らないため）。
 - **Aoi → 子への push（同期）は、親リポジトリ myon-bioinformatics の `gh_ops.py` `subtree-push` で行います**（[myon-bioinformatics#98](https://github.com/myon-bioinformatics/myon-bioinformatics/pull/98)）。gh_identity は検索・存在確認・fetch など書き込みをしない操作に限定し、add/commit/push など重い書き込みは親の gh_ops が担います。tree の一致は上の `test` と `check_child_heads.py` で確かめます。
-- `check_child_heads.py --fail-on-diff` は、登録した `sha` の tree と Aoi の `pythdragoras/` を比べます。
+- `check_child_heads.py --fail-on-diff` は、履歴から導いた同期済み commit の tree と Aoi の `pythdragoras/` を比べます。
 - Aoi の直下から `pytest pythdragoras/tests` のようにパスだけ渡すと、pytest は `pythdragoras/pyproject.toml` を設定ファイルに選びます（rootdir が `pythdragoras/`）。Aoi の設定で動かすときは `pytest -c pyproject.toml pythdragoras/tests`。引数なしの `pytest`（CI）は Aoi の設定のままです。
 
 ## QueRyu

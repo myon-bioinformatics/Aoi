@@ -1,0 +1,8 @@
+# The real packages pkgmin/ stands in for, as pkgmin-stdlib.yml installs them.
+# Kept outside pyproject.toml on purpose: the survey must keep finding them undeclared.
+# Compile (uv.lock as constraints, so numpy/certifi stay at the locked versions):
+#   uv export --locked --format requirements-txt --no-hashes --no-emit-project --all-groups -o /tmp/c.txt
+#   uv pip compile pkgmin/real-packages.in --generate-hashes --python-version 3.15 -c /tmp/c.txt -o pkgmin/real-packages.txt
+requests>=2.31.0
+tqdm>=4.66.0
+biopython>=1.83

@@ -110,6 +110,27 @@ Each subproject lives in Aoi as a directory and is also published as a standalon
 
 The copy inside Aoi and the standalone repository can drift between syncs; the registered children are checked with `python -S scripts/check_child_heads.py --fail-on-diff`.
 
+## 🎞️ Browser evidence
+
+![The four gpt-r001 research reports (with a no-reload period switch) and DRAgoWing's rendered figures in Chromium](docs/evidence/browser.gif)
+
+🗓️ 2026-11-07 · 🧭 Chromium 153 · 🐧 Linux · receipt [`docs/evidence/browser.json`](docs/evidence/browser.json) · covers DRAgoWing and BlueProbe too
+
+| 🧪 Suite | ✅ | ⏭️ | 📝 |
+| --- | ---: | ---: | --- |
+| `pytest` (whole repository, `DRAGOWING_REQUIRE_CHROME=1`) | 3916 | 41 | Plotly.js from npm (jsDelivr unreachable here) |
+| `scripts/diagnose_dragowing_browser.py --runs 10` | 10 | | readiness 0.121–0.179 s |
+| 🎞️ evidence GIF shots | 8 | | |
+
+⏭️ The 41 skips are the existing opt-ins (season requirements, cross-repository integration, local-only expectations, network).
+
+🔁 Re-record (`$PLOTLY` = a directory holding `plotly-3.6.0.min.js`, e.g. from `npm pack plotly.js-dist-min@3.6.0`):
+
+```sh
+python ../BrowserTestKit/tools/evidence_gif.py docs/evidence/browser.gif --serve . \
+  --map "https://cdn.plot.ly=$PLOTLY" --plan docs/evidence/browser.json
+```
+
 ## Tests
 
 ```bash

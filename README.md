@@ -405,3 +405,24 @@ integration and log diagnosis are not implemented here.
 - The parent dashboard owns fleet-wide comparison, display, prioritization and
   history. No dashboard, QueRyu, xprobe or Err-o-RoadRunner integration is
   supplied by this adapter yet.
+
+### Staged handoff
+
+1. Consume the existing parent audit snapshot first. Preserve its repository,
+   head SHA, observation time, raw record, truncation and errors; keep the parent
+   collection and Pages publishing unchanged while verifying the adapter.
+2. For GitHub-specific discovery and bounded job logs, evaluate the existing
+   `gh_identity` run, jobs and job-log APIs with explicit run/attempt identity.
+   Its workflow-scoped discovery plan is not yet a guarantee of implementation.
+3. Use xprobe for bounded local searches and JUnit identities, and pass failure
+   evidence to Err-o-RoadRunner for interpretation. Keep complete/partial and
+   missing evidence visible at every handoff.
+4. Use QueRyu's fetching and provenance where compatible with the source and
+   data-sensitivity requirements; avoid a second GitHub collection solely to
+   populate the dashboard. Consider NagoyAction for orchestration once the
+   inputs and output contracts are verified.
+5. Connect verified observations to the parent dashboard, compare results with
+   the existing collector, and migrate one responsibility at a time only after
+   parity checks. No component is retired by this experimental adapter.
+
+These are proposed stages; this PR implements only the offline adapter in step 1.

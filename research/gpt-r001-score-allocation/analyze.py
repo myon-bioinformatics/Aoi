@@ -114,14 +114,14 @@ def lag_summary(rows, exclude_2020=False):
     return {"n": len(pairs), "pearson_r": r}
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--games", type=Path, required=True)
     ap.add_argument("--replicates", type=int, default=4000)
     ap.add_argument("--seed", type=int, default=20261003)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--verification", type=Path, default=Path(__file__).parent / "outputs/official_verification.json")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
     if args.replicates < 2:
         ap.error("at least two replicates required")
     meta_path = args.games.with_suffix(".manifest.json")

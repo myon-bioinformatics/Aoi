@@ -138,10 +138,10 @@ def outputs():
     }
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="compare without writing")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     for path, content in outputs().items():
         if args.check:
             if path.read_text(encoding="utf-8") != content:

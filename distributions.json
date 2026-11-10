@@ -5,9 +5,9 @@
   "license": "LICENSE",
   "tool": {
     "repository": "myon-bioinformatics/myon-bioinformatics",
-    "commit": "8ee167358018439be59cbcff1774cad256e932a5",
+    "commit": "d8ff83b6762eb5d5c896316ebb0186f5f2338dca",
     "source": "tools/minpy.py",
-    "sha256": "1acd095a6c3aea0449defc2673129834c61dc52fa8e93307fa3828c10ec98395"
+    "sha256": "4c3c6890495fbbca9b4539474ff9f56cd2eaff7c66feae219f6e5a8a463839e1"
   },
   "projects": {
     "blueprobe": {

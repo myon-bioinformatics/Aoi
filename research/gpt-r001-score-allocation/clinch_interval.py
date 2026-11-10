@@ -100,11 +100,11 @@ def scoring(path):
     return rows,input_rows
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--inning',type=Path,required=True);p.add_argument('--objections',type=Path,required=True)
     p.add_argument('--plan-commit',required=True);p.add_argument('--output',type=Path,required=True)
-    a=p.parse_args();rows,raw=scoring(a.inning)
+    a=p.parse_args(argv);rows,raw=scoring(a.inning)
     out=dict(plan_commit=a.plan_commit,cutoff_date=CUT,input_sha256=INPUT_SHA,objections_blob=OBJECT_BLOB,
              input_rows=raw,scoring_rows=rows,interval_rows=intervals(a.objections.read_text(encoding='utf-8')))
     a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(out,ensure_ascii=False,sort_keys=True,indent=2)+'\n',encoding='utf-8')

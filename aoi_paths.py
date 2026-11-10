@@ -126,7 +126,12 @@ def ask_main(argv: list[str], *, root: Path | None = None) -> int:
     return ask.main([*defaults, *argv])
 
 
-if __name__ == "__main__":
-    if sys.argv[1:2] != ["ask"]:
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else list(argv)
+    if argv[:1] != ["ask"]:
         raise SystemExit("usage: python aoi_paths.py ask \"問い\" [ask.py の引数]")
-    raise SystemExit(ask_main(sys.argv[2:]))
+    return ask_main(argv[1:])
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

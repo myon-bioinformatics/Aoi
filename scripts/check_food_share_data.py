@@ -89,6 +89,10 @@ def validate(base=BASE):
     return True
 
 
-if __name__ == '__main__':
+def main(argv=None):
     validate()
     print('Food-share classification, preservation, gzip and coverage: OK')
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

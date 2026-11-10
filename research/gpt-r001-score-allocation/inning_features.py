@@ -201,11 +201,11 @@ def aggregate(sequences):
     return result
 
 
-def main():
+def main(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument('--share', type=Path, required=True)
     p.add_argument('--out', type=Path, default=HERE/'outputs/inning_features')
-    args = p.parse_args()
+    args = p.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
     source = args.share/'team_half_innings.csv.gz'
     official = args.share/'official_check.csv'

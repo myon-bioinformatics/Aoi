@@ -31,16 +31,26 @@ def evaluate(case):
         return {'output': None, 'error': {'type': type(exc).__name__, 'message': str(exc)}}
 
 
-if __name__ == '__main__':
-    def resident(_):
-        for line in Path('/proc/self/status').read_text().splitlines():
-            if line.startswith('VmRSS:'):
-                return int(line.split()[1]) * 1024
-        raise RuntimeError('VmRSS unavailable')
-    print(json.dumps({'cases': {c: evaluate(c) for c in ('valid', 'missing-column', 'bad-type', 'empty')},
-                      'resident_bytes': resident('self'),
-                      'peak_rss_bytes': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024},
-                     sort_keys=True, allow_nan=False), flush=True)
+def resident(_):
+    for line in Path('/proc/self/status').read_text().splitlines():
+        if line.startswith('VmRSS:'):
+            return int(line.split()[1]) * 1024
+    raise RuntimeError('VmRSS unavailable')
+
+
+def report():
+    return {'cases': {c: evaluate(c) for c in ('valid', 'missing-column', 'bad-type', 'empty')},
+            'resident_bytes': resident('self'),
+            'peak_rss_bytes': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024}
+
+
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else list(argv)
+    print(json.dumps(report(), sort_keys=True, allow_nan=False), flush=True)
     # Hold all independently launched processes at the same post-workload barrier.
-    if '--hold' in sys.argv:
+    if '--hold' in argv:
         sys.stdin.readline()
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

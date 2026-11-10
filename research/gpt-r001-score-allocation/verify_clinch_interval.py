@@ -6,10 +6,10 @@ from pathlib import Path
 from statistics import NormalDist
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--result',type=Path,required=True);p.add_argument('--prior-dir',type=Path,required=True)
-    a=p.parse_args();d=json.loads(a.result.read_text());early=json.loads((a.prior_dir/'early_scoring.json').read_text());late=json.loads((a.prior_dir/'late_reaction.json').read_text())
+    a=p.parse_args(argv);d=json.loads(a.result.read_text());early=json.loads((a.prior_dir/'early_scoring.json').read_text());late=json.loads((a.prior_dir/'late_reaction.json').read_text())
     er={(v['year'],v['team']):v for v in early['rows']};lr={(v['year'],v['team']):v for v in late['rows']};checks=0
     rows={(v['phase'],v['group'],v['cut']):v for v in d['scoring_rows']}
     for group,teams in [('中日',['d']),('他セ5球団',['c','db','g','s','t'])]:

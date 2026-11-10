@@ -92,11 +92,11 @@ def analyze(rows):
     return comparisons,cases
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for k in ('innings','season','out','csv'):p.add_argument('--'+k,type=Path,required=True)
     p.add_argument('--plan-commit',required=True)
-    a=p.parse_args();rows,excluded,n=build(a.innings,a.season);comparisons,cases=analyze(rows)
+    a=p.parse_args(argv);rows,excluded,n=build(a.innings,a.season);comparisons,cases=analyze(rows)
     result=dict(schema='aoi-game-state/1',plan_commit=a.plan_commit,input_sha256=INPUT_SHA,season_blob=SEASON_BLOB,input_rows=n,
                 annual_checks=936,excluded=excluded,comparisons=comparisons,primary_cases=cases,
                 scope='descriptive all-team score-state distributions; no causal or opponent-strength adjustment')

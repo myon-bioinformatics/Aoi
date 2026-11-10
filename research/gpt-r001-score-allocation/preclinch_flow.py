@@ -55,10 +55,10 @@ def analyze(rows):
             for p,ys in periods for c in (6,7)]
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for k in ('innings','season','dates','out','csv'):p.add_argument('--'+k,type=Path,required=True)
-    a=p.parse_args();build(a.innings,a.season)
+    a=p.parse_args(argv);build(a.innings,a.season)
     ds=json.loads(a.dates.read_text());require(all(y['exact'] for y in ds['years']),'unresolved dates')
     dates={y['year']:y['date'] for y in ds['years']}
     games,n=read_input(a.innings);rows=aggregate(games,dates)

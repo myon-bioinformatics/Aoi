@@ -7,11 +7,11 @@ from collections import defaultdict
 from pathlib import Path
 
 
-def main():
+def main(argv=None):
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--innings',type=Path,required=True)
     ap.add_argument('--result',type=Path,required=True)
-    a=ap.parse_args()
+    a=ap.parse_args(argv)
     raw=defaultdict(dict)
     with gzip.open(a.innings,'rt') as f:
         for r in csv.DictReader(f):

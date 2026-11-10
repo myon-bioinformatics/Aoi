@@ -55,6 +55,20 @@ sakanalytics-boundary 0 --lo 0 --eps 0.1
 
 Omit `--eps` to detect a boundary without changing the value. Regenerate after changing `epsilon.py`. The generated tool has no third-party runtime dependencies; building it requires setuptools.
 
+Examples (after installation; replace `sakanalytics-boundary` with `python build/sakanalytics-stdlib-tool/sakanalytics.py` to run the file directly):
+
+```bash
+sakanalytics-boundary 0 --lo 0
+# {"original": 0.0, "value": 0.0, "boundary": true}
+sakanalytics-boundary 0 --lo 0 --eps 0.1
+# {"original": 0.0, "value": 0.1, "boundary": true}
+sakanalytics-boundary 0.5 --lo 0 --hi 1
+# {"original": 0.5, "value": 0.5, "boundary": false}
+sakanalytics-boundary 0 --lo 0 --eps -1  # invalid epsilon: exit 2
+```
+
+For team-season analysis and simulation, use the existing full application described below; this small tool only checks exact numeric boundaries.
+
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). The only runtime dependency is polars. ortools is optional; exact solving (`season_exact.py`) runs only when `season-requirements.txt` is installed.
 
 ```bash

@@ -42,6 +42,19 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 
 ## Installation and usage
 
+### Standalone boundary check
+
+For a general numeric boundary check, generate a stdlib-only `sakanalytics.py` from the canonical `epsilon.py`. This provides only boundary detection and optional epsilon adjustment, not the full statistics application.
+
+```bash
+python scripts/build_stdlib_tool.py build/sakanalytics-stdlib-tool
+python build/sakanalytics-stdlib-tool/sakanalytics.py 0 --lo 0 --eps 0.1
+uv tool install ./build/sakanalytics-stdlib-tool
+sakanalytics-boundary 0 --lo 0 --eps 0.1
+```
+
+Omit `--eps` to detect a boundary without changing the value. Regenerate after changing `epsilon.py`. The generated tool has no third-party runtime dependencies; building it requires setuptools.
+
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). The only runtime dependency is polars. ortools is optional; exact solving (`season_exact.py`) runs only when `season-requirements.txt` is installed.
 
 ```bash

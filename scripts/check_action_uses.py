@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Aoi の GitHub Actions uses を親リポジトリの書き方と照合する。
 
+検査するのは Aoi 自身の .github/workflows と、child-heads.json に登録した子（prefix）の
+.github/workflows。子は独立したリポジトリにもなるので、同じ書き方に揃える。
+
 親 myon-bioinformatics/myon-bioinformatics の active workflow（2026-10-20）:
 
 - actions/*（checkout、setup-*、cache、upload/download-artifact などすべて）は、
@@ -67,11 +70,22 @@ def _split_uses(value: str) -> tuple[str, str]:
     return text, ""
 
 
+def _workflow_dirs(root: Path):
+    """Aoi 自身と、child-heads.json の子（subtree の prefix）の workflow ディレクトリ。"""
+    yield root / ".github" / "workflows"
+    heads = root / "child-heads.json"
+    if heads.is_file():
+        for entry in json.loads(heads.read_text(encoding="utf-8"))["heads"].values():
+            yield root / entry["optional"]["subtree_prefix"] / ".github" / "workflows"
+
+
 def _iter_uses(root: Path):
-    workflow_dir = root / ".github" / "workflows"
-    if not workflow_dir.is_dir():
-        return
-    paths = sorted(workflow_dir.glob("*.yml")) + sorted(workflow_dir.glob("*.yaml"))
+    paths = [
+        path
+        for workflow_dir in _workflow_dirs(root)
+        if workflow_dir.is_dir()
+        for path in sorted(workflow_dir.glob("*.yml")) + sorted(workflow_dir.glob("*.yaml"))
+    ]
     for path in paths:
         lines = path.read_text(encoding="utf-8").splitlines()
         for lineno, line in enumerate(lines, 1):

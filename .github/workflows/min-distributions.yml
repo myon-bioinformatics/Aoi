@@ -32,7 +32,10 @@ jobs:
           # 記録された major.minor 以外を拒否するので、3.15 へ上げるときは dist/ を再生成して同時に更新する。
           python-version: "3.12"
           activate-environment: true
-          enable-cache: false
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - name: Resolve parent main and QueRyu subtree head
         id: resolved
         env:
@@ -93,7 +96,14 @@ jobs:
           if [[ -n "${QUERYU_REF}" ]]; then
             queryu_sha=$(resolve_head https://github.com/myon-bioinformatics/QueRyu.git "$QUERYU_REF")
           else
-            queryu_sha=$(python -S -c 'import json,re,sys; sha=json.load(open("child-heads.json"))["heads"]["myon-bioinformatics/QueRyu"]["sha"]; ok=isinstance(sha,str) and re.fullmatch(r"[0-9a-f]{40}", sha); sys.exit("QueRyu sha in child-heads.json must be a full commit") if not ok else print(sha)')
+            # sha は child-heads.json に書かない。queryu/ の tree と同じ tree を持つ QueRyu main のコミットを履歴から導く。
+            # まだ無いとき（Aoi の queryu/ が子より先に変わる PR など）は QueRyu main の先頭を使う。
+            queryu_sha=$(python -S scripts/check_child_heads.py --print-synced myon-bioinformatics/QueRyu \
+              || resolve_head https://github.com/myon-bioinformatics/QueRyu.git main)
+            if [[ ! "$queryu_sha" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "could not derive the QueRyu commit that matches queryu/" >&2
+              exit 1
+            fi
           fi
           echo "parent_sha=${parent_sha}" >> "$GITHUB_OUTPUT"
           echo "queryu_sha=${queryu_sha}" >> "$GITHUB_OUTPUT"
@@ -222,9 +232,9 @@ jobs:
               if strict:
                   raise SystemExit(1)
           PY
-      - run: uv pip install pytest
       - name: Exercise isolated single-file APIs
-        run: python -m pytest -c pyproject.toml tests/test_distributions.py tests/test_distribution_kernels.py -q --junitxml=build/distributions-junit.xml
+        # Only the locked dev group (pytest): the distributions must not see the runtime group.
+        run: uv run --locked --only-group dev python -m pytest -c pyproject.toml tests/test_distributions.py tests/test_distribution_kernels.py -q --junitxml=build/distributions-junit.xml
       - name: Preserve distribution JUnit
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

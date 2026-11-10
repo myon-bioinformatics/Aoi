@@ -83,13 +83,17 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 | [`research/`](research/) | Standalone research notes (for example [`research/gpt-r001-score-allocation/`](research/gpt-r001-score-allocation/README.md)) |
 | [`research_loop/`](research_loop/README.md) | Automated exploration and HTML observation that connect several subprojects |
 | [`scripts/`](scripts/) | Repository-level tools (child registry check, distribution build, c001 replay and publication) |
+| [`shrink/`](shrink/) | Stdlib-only minimal NumPy and polars stand-ins (`numpy_min.py`, `numpy_linalg_min.py`, `polars_min.py`) that are distributed to the subtree children; see [Lightweight NumPy compatibility](#lightweight-numpy-compatibility) |
+| [`mindeps/`](mindeps/LIMITS.md) | Opt-in minimal httpx and selectolax stand-ins with runners; [what they can and cannot replace](mindeps/LIMITS.md) |
+| [`pkgmin/`](pkgmin/LIMITS.md) | Minimal requests, tqdm and biopython stand-ins and the used-surface measurement; [limits](pkgmin/LIMITS.md) |
 | [`dist/`](dist/), [`distributions/`](distributions/), `distributions.json` | Single-file stdlib distributions (`*_min.py`); see [docs/distributions.md](docs/distributions.md) |
 | [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash. `vendor/py_launch.cjs` is the canonical copy of the parent repository's Node launcher (Node >= 26) that Aoi's children vendor from Aoi |
 | `shared-tools.lock.json` | Stdlib-shrink tools and `vendor/py_launch.cjs` that Aoi distributes to its subtree children, verified by hash |
 | [`docs/`](docs/) | Philosophy, principles, method and specifications |
 | [`tests/`](tests/) | Repository-level tests (each subproject keeps its own `tests/`) |
-| `child-heads.json` | Registered heads of the child repositories; see [docs/child-repositories.md](docs/child-repositories.md) |
+| `child-heads.json` | Registered child repositories (ID and subtree prefix; the synced commit is derived from the child's history); see [docs/child-repositories.md](docs/child-repositories.md) |
 | `aoi_paths.py`, `aoi_npb.py` | Parent-owned paths and NPB settings passed to the child APIs; see [NPB commands](cycles/c001-chunichi/npb-configuration.md) |
+| `annual_scope.py` | NPB-specific: copies only the primary years from an annual cache and keeps history as reference |
 
 ## Child Repositories
 
@@ -104,7 +108,28 @@ Each subproject lives in Aoi as a directory and is also published as a standalon
 | DRAgoWing | [myon-bioinformatics/DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) | [`dragowing/`](dragowing/) | Aoi `child-heads.json` |
 | NagoyAction | [myon-bioinformatics/NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](nagoyaction/) | Aoi `child-heads.json` |
 
-The copy inside Aoi and the standalone repository can drift between syncs; the registered heads are checked with `python -S scripts/check_child_heads.py --fail-on-diff`.
+The copy inside Aoi and the standalone repository can drift between syncs; the registered children are checked with `python -S scripts/check_child_heads.py --fail-on-diff`.
+
+## 🎞️ Browser evidence
+
+![The four gpt-r001 research reports (with a no-reload period switch) and DRAgoWing's rendered figures in Chromium](docs/evidence/browser.gif)
+
+🗓️ 2026-11-07 · 🧭 Chromium 153 · 🐧 Linux · receipt [`docs/evidence/browser.json`](docs/evidence/browser.json) · covers DRAgoWing and BlueProbe too
+
+| 🧪 Suite | ✅ | ⏭️ | 📝 |
+| --- | ---: | ---: | --- |
+| `pytest` (whole repository, `DRAGOWING_REQUIRE_CHROME=1`) | 3916 | 41 | Plotly.js from npm (jsDelivr unreachable here) |
+| `scripts/diagnose_dragowing_browser.py --runs 10` | 10 | | readiness 0.121–0.179 s |
+| 🎞️ evidence GIF shots | 8 | | |
+
+⏭️ The 41 skips are the existing opt-ins (season requirements, cross-repository integration, local-only expectations, network).
+
+🔁 Re-record (`$PLOTLY` = a directory holding `plotly-3.6.0.min.js`, e.g. from `npm pack plotly.js-dist-min@3.6.0`):
+
+```sh
+python ../BrowserTestKit/tools/evidence_gif.py docs/evidence/browser.gif --serve . \
+  --map "https://cdn.plot.ly=$PLOTLY" --plan docs/evidence/browser.json
+```
 
 ## Tests
 

@@ -374,3 +374,21 @@ Besides level, text, DOM path, containing landmark, and hidden state, it records
 It does not access the network, and makes no judgements or changes.
 
 This is static structural observation, not a reproduction of the browser's whole accessibility tree. `article` and unnamed `section` are not counted as landmarks, and `header` / `footer` inside `main` / `article` / `aside` / `nav` / `section` are not counted as page-wide landmarks ([HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)). `aria-level` is used only when it is an integer of 1 or more; otherwise (empty, 0, negative, invalid) it falls back to the HTML heading level (h1–h6), or to the ARIA default of 2 for `role="heading"`. Tree structure and name computation are shared with `accessible_names.py`. `missing_main_landmark` is also kept as a page-level record (`type: "page"`).
+
+## Repository observations from a parent audit (experimental)
+
+`github_observations.py` reads a saved `parent-audit/1` snapshot produced by
+myon-bioinformatics' `ci_status.py`. It extracts one repository's Issue and PR
+observations, including CI state and head SHA, into BlueProbe's `records`,
+`counts`, and `unknown` structure, preserving the original rows as evidence.
+It does not contact GitHub or infer root causes.
+
+```bash
+python github_observations.py audit.json Err-o-RoadRunner > observations.json
+```
+
+A missing repository, missing/incomplete collection metadata, or reported
+collection error is recorded as unknown and causes exit code 2. The snapshot
+only covers its recorded sources and observation time; no records do not prove
+that the repository has no defects. This is an offline adapter; dashboard
+integration and log diagnosis are not implemented here.

@@ -392,3 +392,16 @@ collection error is recorded as unknown and causes exit code 2. The snapshot
 only covers its recorded sources and observation time; no records do not prove
 that the repository has no defects. This is an offline adapter; dashboard
 integration and log diagnosis are not implemented here.
+
+### Component boundaries
+
+- The parent audit collector is the existing GitHub API producer; this adapter
+  reads its saved snapshot. Do not fetch the same pages again to display them.
+- QueRyu owns reusable fetching, cache and provenance where those capabilities
+  are appropriate. Its present APIs do not by themselves establish authenticated
+  GitHub pagination, log access or safe storage of sensitive logs.
+- xprobe owns bounded file search, named error patterns and JUnit failure
+  identities. Err-o-RoadRunner interprets failure evidence and offers hints.
+- The parent dashboard owns fleet-wide comparison, display, prioritization and
+  history. No dashboard, QueRyu, xprobe or Err-o-RoadRunner integration is
+  supplied by this adapter yet.

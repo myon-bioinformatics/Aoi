@@ -12,7 +12,7 @@ class StandaloneBoundaryTest(unittest.TestCase):
     def test_detect_and_optionally_lift(self):
         with tempfile.TemporaryDirectory() as temp:
             target = Path(temp) / "tool"
-            subprocess.run([sys.executable, str(ROOT / "scripts/build_stdlib_tool.py"), str(target)], check=True)
+            subprocess.run([sys.executable, str(ROOT / "build_stdlib_tool.py"), str(target)], check=True)
             script = target / "sakanalytics.py"
             def run(*args):
                 return subprocess.run([sys.executable, "-I", str(script), *args], capture_output=True, text=True, cwd=temp)

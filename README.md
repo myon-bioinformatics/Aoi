@@ -47,7 +47,7 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 For a general numeric boundary check, generate a stdlib-only `sakanalytics.py` from the canonical `epsilon.py`. This provides only boundary detection and optional epsilon adjustment, not the full statistics application.
 
 ```bash
-python scripts/build_stdlib_tool.py build/sakanalytics-stdlib-tool
+python build_stdlib_tool.py build/sakanalytics-stdlib-tool
 python build/sakanalytics-stdlib-tool/sakanalytics.py 0 --lo 0 --eps 0.1
 uv tool install ./build/sakanalytics-stdlib-tool
 sakanalytics-boundary 0 --lo 0 --eps 0.1

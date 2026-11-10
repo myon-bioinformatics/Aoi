@@ -20,13 +20,20 @@ def observe(snapshot: dict, repository: str) -> dict:
     report = new_report()
     if repository not in snapshot["repositories"]:
         report["unknown"].append({"key": repository, "reason": "repository not listed in snapshot"})
-    if snapshot.get("truncated") is not False:
-        report["unknown"].append({"key": repository, "reason": "snapshot may be truncated"})
+    truncated = snapshot.get("truncated")
+    if not isinstance(truncated, list) or not all(isinstance(name, str) for name in truncated):
+        report["unknown"].append({"key": repository, "reason": "snapshot truncation list unavailable or invalid"})
+    elif repository in truncated:
+        report["unknown"].append({"key": repository, "reason": "repository observation truncated"})
     errors = snapshot.get("errors")
     if not isinstance(errors, list):
         report["unknown"].append({"key": repository, "reason": "snapshot error list unavailable"})
-    elif errors:
-        report["unknown"].append({"key": repository, "reason": "snapshot reports collection errors", "raw": errors})
+    elif any(not isinstance(error, dict) or not isinstance(error.get("repository"), str) for error in errors):
+        report["unknown"].append({"key": repository, "reason": "invalid collection error entries"})
+    else:
+        relevant = [error for error in errors if error["repository"] == repository]
+        if relevant:
+            report["unknown"].append({"key": repository, "reason": "repository collection failed", "raw": relevant})
     for index, item in enumerate(snapshot["records"]):
         if not isinstance(item, dict):
             report["unknown"].append({"key": str(index), "reason": "invalid record", "raw": item})

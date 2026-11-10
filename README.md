@@ -54,6 +54,18 @@ dragowing-html page.html --tag p
 
 The tool project contains only `dragowing.py` and build metadata, and its runtime has no external Python dependencies. The repository's existing rendering entry and its dependencies remain separate. Rebuild the tool project after changing `dragowing.py`.
 
+For example, after installing the tool:
+
+```bash
+printf '<p>one</p><p>two</p><img src="x">' | dragowing-html
+# {"img": 1, "p": 2}
+printf '<p>one</p><p>two</p><img src="x">' | dragowing-html --tag p
+# {"p": 2}
+dragowing-html missing.html  # reports a read error; exit 1
+```
+
+Without installation, replace `dragowing-html` with `python dragowing.py`. This counts opening tags in saved HTML; to render reports or export figures, use the full DRAgoWing application below.
+
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). Runtime dependencies are polars, numpy, and markdown. Figures use the browser's plotly.js; neither matplotlib nor Python plotly is installed. HTTP uses only the standard library's urllib (no httpx).
 
 ```bash

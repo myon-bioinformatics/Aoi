@@ -63,10 +63,10 @@ def verify(innings, result, cells):
                 independence='same source CSV, independent aggregation; not independent raw acquisition')
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for k in ('innings','result','cells','out'):p.add_argument('--'+k,type=Path,required=True)
-    a=p.parse_args();v=verify(a.innings,a.result,a.cells);a.out.write_text(json.dumps(v,indent=2)+'\n');print(v)
+    a=p.parse_args(argv);v=verify(a.innings,a.result,a.cells);a.out.write_text(json.dumps(v,indent=2)+'\n');print(v)
 
 
 if __name__=='__main__':main()

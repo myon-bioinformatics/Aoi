@@ -28,13 +28,13 @@ def center(rows, field):
     return [r[field]-mean(groups[r['team']]) for r in rows]
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--season', type=Path, required=True)
     ap.add_argument('--part5', type=Path, required=True, help='team_season_relative.csv')
     ap.add_argument('--out', type=Path, required=True)
     ap.add_argument('--season-blob', help='expected Git blob SHA of the season input')
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
     season = [json.loads(s) for s in args.season.read_text().splitlines()]
     raw = args.season.read_bytes()
     blob = hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()

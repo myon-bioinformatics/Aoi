@@ -145,7 +145,8 @@ def benchmark(output, uv, repeats=3, workers=4):
     return result
 
 
-if __name__ == '__main__':
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else list(argv)
     import signal
     signal.alarm(1800)
     parser = argparse.ArgumentParser(description=__doc__)
@@ -153,7 +154,11 @@ if __name__ == '__main__':
     parser.add_argument('--uv', default='uv')
     parser.add_argument('--repeats', type=int, default=3)
     parser.add_argument('--workers', type=int, default=4)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     report = benchmark(args.output, args.uv, args.repeats, args.workers)
     print(json.dumps({'result': str(args.output / 'result.json'), 'equivalent': report['equivalent']}))
-    sys.exit(0 if report['equivalent'] and report['inputs_unchanged'] else 1)
+    return 0 if report['equivalent'] and report['inputs_unchanged'] else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

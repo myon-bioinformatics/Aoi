@@ -35,9 +35,9 @@ def build(x):
                   dict(id='cutoff',label='切点',options=[dict(value=str(c),label=str(c)+'回') for c in (6,7)])],default='2019|7',frames=frames)
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--input',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
-    a=p.parse_args();a.output.write_text(render_report(build(json.loads(a.input.read_text()))))
+    a=p.parse_args(argv);a.output.write_text(render_report(build(json.loads(a.input.read_text()))))
 
 
 if __name__=='__main__':main()

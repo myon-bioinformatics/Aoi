@@ -109,14 +109,14 @@ class Parser(argparse.ArgumentParser):
         self.exit(64, json.dumps(dict(exit_code=64,error=message))+"\n")
 
 
-def main():
+def main(argv=None):
     ap=Parser(description=__doc__)
     ap.add_argument('stage',choices=['analyze','judge'])
     ap.add_argument('--games',type=Path,default=ROOT/'data/observations/r001/games.jsonl')
     ap.add_argument('--verification',type=Path,default=HERE/'outputs/official_verification.json')
     ap.add_argument('--propositions',type=Path,default=HERE/'tail_propositions.toml')
     ap.add_argument('--out',type=Path,default=HERE/'outputs')
-    args=ap.parse_args()
+    args=ap.parse_args(argv)
     try:
         return analyze(args) if args.stage=='analyze' else judge(args)
     except FileNotFoundError as e:

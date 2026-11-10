@@ -63,10 +63,10 @@ def verify(innings,csv_path,result_path,previous):
                 scope='independent accumulation of same shared CSV; no separate raw HTML retrieval')
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('innings','csv','result','previous','out'):p.add_argument('--'+name,type=Path,required=True)
-    a=p.parse_args();r=verify(a.innings,a.csv,a.result,a.previous);a.out.write_text(json.dumps(r,ensure_ascii=False,indent=2,sort_keys=True)+'\n');print(r)
+    a=p.parse_args(argv);r=verify(a.innings,a.csv,a.result,a.previous);a.out.write_text(json.dumps(r,ensure_ascii=False,indent=2,sort_keys=True)+'\n');print(r)
 
 
 if __name__=='__main__':main()

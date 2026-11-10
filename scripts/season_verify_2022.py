@@ -63,9 +63,14 @@ def verify(path):
     return result
 
 
-if __name__ == '__main__':
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else list(argv)
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('calendar_jsonl', type=Path)
     p.add_argument('--output', type=Path, required=True)
-    args = p.parse_args()
+    args = p.parse_args(argv)
     args.output.write_text(json.dumps(verify(args.calendar_jsonl), ensure_ascii=False, indent=2) + '\n')
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

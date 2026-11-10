@@ -45,13 +45,13 @@ def summarize(rows):
                                     counterexamples=sum(r['rps_log']>=0 for r in obp_low)))
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--season', type=Path, required=True)
     ap.add_argument('--batting-result', type=Path, required=True)
     ap.add_argument('--part5', type=Path, required=True)
     ap.add_argument('--out', type=Path, required=True)
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
     previous = json.loads(args.batting_result.read_text())
     assert sha(args.part5) == previous['source_sha256']['part5'], 'Part5 input hash mismatch'
     with args.part5.open(encoding='utf-8-sig',newline='') as f:

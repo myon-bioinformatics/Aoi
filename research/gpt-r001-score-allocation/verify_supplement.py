@@ -14,10 +14,10 @@ def read(path):
         return list(csv.DictReader(f))
 
 
-def main():
+def main(argv=None):
     ap=argparse.ArgumentParser()
     ap.add_argument('--share',type=Path,required=True)
-    args=ap.parse_args();p=args.share
+    args=ap.parse_args(argv);p=args.share
     manifest={}
     for line in (p/'MANIFEST.sha256').read_text().splitlines():
         m=re.fullmatch(r'([0-9a-f]{64})  (.+)  \((\d+) bytes\)',line)

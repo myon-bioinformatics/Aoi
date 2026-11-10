@@ -52,8 +52,8 @@ def parse(html,g):
     return result
 
 
-def main():
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--fetch',action='store_true');args=ap.parse_args()
+def main(argv=None):
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--fetch',action='store_true');args=ap.parse_args(argv)
     data=ROOT/'data/observations/r001/games.jsonl'
     expected='7b1b6dfdd41cafbdf851cdb8bcd2cae981adb338570dd66de75881bfe35ee8d9'
     if sha(data)!=expected:

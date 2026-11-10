@@ -37,10 +37,10 @@ def build(result):
                 dict(id='metric',label='経過',options=[dict(value=k,label=v) for k,v in labels.items()])],frames=frames)
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--input',required=True,type=Path);p.add_argument('--output',required=True,type=Path)
-    a=p.parse_args();a.output.write_text(render_report(build(json.loads(a.input.read_text()))))
+    a=p.parse_args(argv);a.output.write_text(render_report(build(json.loads(a.input.read_text()))))
 
 
 if __name__=='__main__':main()

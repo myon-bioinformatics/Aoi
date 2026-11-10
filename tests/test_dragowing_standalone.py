@@ -27,6 +27,6 @@ class StandaloneTest(unittest.TestCase):
     def test_generated_tool_project_has_single_module(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "tool"
-            subprocess.run([sys.executable, str(ROOT / "scripts/build_stdlib_tool.py"), str(target)], check=True)
+            subprocess.run([sys.executable, str(ROOT / "build_stdlib_tool.py"), str(target)], check=True)
             self.assertEqual((target / "dragowing.py").read_bytes(), (ROOT / "dragowing.py").read_bytes())
             self.assertIn('dragowing-html = "dragowing:main"', (target / "pyproject.toml").read_text())

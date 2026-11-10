@@ -40,6 +40,20 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 
 ## Installation and usage
 
+### Standalone HTML inspection
+
+`dragowing.py` is a standalone standard-library tool for counting elements in any saved UTF-8 HTML document; it does not render reports or replace the full DRAgoWing application.
+
+```bash
+python dragowing.py page.html --tag p --tag img
+cat page.html | python dragowing.py --tag p
+python scripts/build_stdlib_tool.py build/dragowing-stdlib-tool
+uv tool install ./build/dragowing-stdlib-tool
+dragowing-html page.html --tag p
+```
+
+The tool project contains only `dragowing.py` and build metadata, and its runtime has no external Python dependencies. The repository's existing rendering entry and its dependencies remain separate. Rebuild the tool project after changing `dragowing.py`.
+
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). Runtime dependencies are polars, numpy, and markdown. Figures use the browser's plotly.js; neither matplotlib nor Python plotly is installed. HTTP uses only the standard library's urllib (no httpx).
 
 ```bash

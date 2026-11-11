@@ -23,6 +23,7 @@ def test_lock_matches_shared_tool_bytes():
         "shrink/numpy_min.py",
         "shrink/polars_min.py",
         "vendor/py_launch.cjs",
+        "vendor/uv_tool_build.py",
     ]
 
 

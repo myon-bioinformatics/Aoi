@@ -42,6 +42,33 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 
 ## Installation and usage
 
+### Standalone statistics and boundary checks
+
+Generate a stdlib-only `sakanalytics.py` that provides descriptive statistics, two-group comparisons, and boundary detection with optional epsilon adjustment from the canonical `epsilon.py`. This lightweight tool is separate from the full statistics application; it does not provide team-season analysis, simulation, or sequence convergence detection.
+
+```bash
+python build_stdlib_tool.py build/sakanalytics-stdlib-tool
+python build/sakanalytics-stdlib-tool/sakanalytics.py 0 --lo 0 --eps 0.1
+uv tool install ./build/sakanalytics-stdlib-tool
+sakanalytics-boundary 0 --lo 0 --eps 0.1
+```
+
+Omit `--eps` to detect a boundary without changing the value. Regenerate after changing `epsilon.py`. The generated tool has no third-party runtime dependencies; building it requires setuptools.
+
+Examples (after installation; replace `sakanalytics-boundary` with `python build/sakanalytics-stdlib-tool/sakanalytics.py` to run the file directly):
+
+```bash
+sakanalytics-boundary 0 --lo 0
+# {"original": 0.0, "value": 0.0, "boundary": true}
+sakanalytics-boundary 0 --lo 0 --eps 0.1
+# {"original": 0.0, "value": 0.1, "boundary": true}
+sakanalytics-boundary 0.5 --lo 0 --hi 1
+# {"original": 0.5, "value": 0.5, "boundary": false}
+sakanalytics-boundary 0 --lo 0 --eps -1  # invalid epsilon: exit 2
+```
+
+The generated tool also provides `sakanalytics describe` and `sakanalytics compare`, including comma-separated and CSV input, as illustrated below. For team-season analysis and simulation, use the existing full application described below.
+
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). The only runtime dependency is polars. ortools is optional; exact solving (`season_exact.py`) runs only when `season-requirements.txt` is installed.
 
 ```bash
@@ -339,3 +366,36 @@ SIGINT and SIGTERM continue to be forwarded while the Python child is alive, eve
 Launcher failures (no Python 3.9+, spawn error, signal) exit 2. Set `PY_LAUNCH_ERROR_FORMAT=json` for a single structured error on stderr; signal failures report the signal that actually terminated the child.
 
 Regression tests cover every thin entry with acknowledged repeated signals, text/JSON errors, and a hostile `sitecustomize` hook. They also test `noSite` and `isolated` discovery independently without changing the entries' `noSite: true` configuration or the Node 26+ floor.
+
+### 軽量な単一ファイル版の利用例（生成後）
+
+Python 3.11 以上で次を実行します。生成先は存在しないディレクトリを指定します。
+
+```sh
+python build_stdlib_tool.py /tmp/sakanalytics-tool
+python /tmp/sakanalytics-tool/sakanalytics.py describe 45 52 48 61 50
+python /tmp/sakanalytics-tool/sakanalytics.py compare --before 45 52 48 --after 40 44 46
+```
+
+最初の例は件数 5、平均 51.2、中央値 50 をJSONで返します。`population_stddev` は母標準偏差です。比較元の平均がゼロなら増減率は `null` と理由で返します。数列の収束判定はこの軽量版にはまだ含まれません。
+
+生成したディレクトリを使い `uv tool install /tmp/sakanalytics-tool` で登録すると、`sakanalytics --help` から同じ機能を利用できます。単一ファイルの実行時に外部ライブラリは不要です。生成とインストールにはそれぞれリポジトリとビルド環境が必要です。
+
+### カンマ区切りとCSVの入力
+
+```sh
+# 引数にカンマ区切りをそのまま渡す
+sakanalytics describe 45,52,48,61,50
+sakanalytics compare --before 45,52,48 --after 40,44,46
+
+# 標準入力は - で受け取る（カンマ・空白・改行区切り）
+printf '45,52,48\n61,50\n' | sakanalytics describe -
+
+# ファイル全体が数値のみなら --file で読み込む
+sakanalytics describe --file numbers.csv
+
+# ヘッダー付きCSVは対象列を指定
+sakanalytics describe --file measurements.csv --column duration
+```
+
+空欄・不正な値・NaN・無限大は黙って除外せず、エラーにします。ヘッダー付きファイルでは `--column` を指定してください。区切りのカンマを含む数値（例: 桁区切りの1,000）は２つの値として解釈されます。比較では各組に数値か `-` を指定でき、標準入力を使えるのは１組だけです。

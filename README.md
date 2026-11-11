@@ -366,3 +366,17 @@ SIGINT and SIGTERM continue to be forwarded while the Python child is alive, eve
 Launcher failures (no Python 3.9+, spawn error, signal) exit 2. Set `PY_LAUNCH_ERROR_FORMAT=json` for a single structured error on stderr; signal failures report the signal that actually terminated the child.
 
 Regression tests cover every thin entry with acknowledged repeated signals, text/JSON errors, and a hostile `sitecustomize` hook. They also test `noSite` and `isolated` discovery independently without changing the entries' `noSite: true` configuration or the Node 26+ floor.
+
+### 軽量な単一ファイル版の利用例（生成後）
+
+Python 3.11 以上で次を実行します。生成先は存在しないディレクトリを指定します。
+
+```sh
+python build_stdlib_tool.py /tmp/sakanalytics-tool
+python /tmp/sakanalytics-tool/sakanalytics.py describe 45 52 48 61 50
+python /tmp/sakanalytics-tool/sakanalytics.py compare --before 45 52 48 --after 40 44 46
+```
+
+最初の例は件数 5、平均 51.2、中央値 50 をJSONで返します。`population_stddev` は母標準偏差です。比較元の平均がゼロなら増減率は `null` と理由で返します。数列の収束判定やCSV入力はこの軽量版にはまだ含まれません。
+
+生成したディレクトリを使い `uv tool install /tmp/sakanalytics-tool` で登録すると、`sakanalytics --help` から同じ機能を利用できます。単一ファイルの実行時に外部ライブラリは不要です。生成とインストールにはそれぞれリポジトリとビルド環境が必要です。

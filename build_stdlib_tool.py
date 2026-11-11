@@ -15,30 +15,61 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.scripts]
+sakanalytics = "sakanalytics:main"
 sakanalytics-boundary = "sakanalytics:main"
 
 [tool.setuptools]
 py-modules = ["sakanalytics"]
 '''
 CLI = '''
+def describe(values):
+    import statistics
+    if not values or any(not math.isfinite(v) for v in values):
+        raise ValueError("provide at least one finite number")
+    return {"count": len(values), "sum": sum(values), "mean": statistics.mean(values),
+            "median": statistics.median(values), "min": min(values), "max": max(values),
+            "population_stddev": statistics.pstdev(values)}
+
+
 def main(argv=None):
     import argparse
     import json
-    parser = argparse.ArgumentParser(description="Check a numeric boundary and optionally move inside by epsilon.")
-    parser.add_argument("value", type=float)
-    parser.add_argument("--lo", type=float)
-    parser.add_argument("--hi", type=float)
-    parser.add_argument("--eps", type=float)
+    import sys
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] not in ("describe", "compare", "boundary", "-h", "--help"):
+        argv.insert(0, "boundary")
+    parser = argparse.ArgumentParser(description="Summarize and compare numbers or check boundaries.")
+    sub = parser.add_subparsers(dest="command", required=True)
+    desc = sub.add_parser("describe")
+    desc.add_argument("values", type=float, nargs="+")
+    comp = sub.add_parser("compare")
+    comp.add_argument("--before", type=float, nargs="+", required=True)
+    comp.add_argument("--after", type=float, nargs="+", required=True)
+    boundary = sub.add_parser("boundary")
+    boundary.add_argument("value", type=float)
+    boundary.add_argument("--lo", type=float)
+    boundary.add_argument("--hi", type=float)
+    boundary.add_argument("--eps", type=float)
     args = parser.parse_args(argv)
-    if not math.isfinite(args.value) or any(x is not None and not math.isfinite(x) for x in (args.lo, args.hi)):
-        parser.error("value and bounds must be finite")
-    if args.lo is not None and args.hi is not None and args.lo >= args.hi:
-        parser.error("lo must be less than hi")
     try:
-        result, hit = lift(args.value, args.eps, lo=args.lo, hi=args.hi)
-    except EpsilonError as exc:
+        if args.command == "describe":
+            result = describe(args.values)
+        elif args.command == "compare":
+            before, after = describe(args.before), describe(args.after)
+            delta = after["mean"] - before["mean"]
+            result = {"before": before, "after": after, "mean_difference": delta,
+                      "mean_relative_change": delta / before["mean"] if before["mean"] else None,
+                      "none_reason": None if before["mean"] else "before_mean_zero"}
+        else:
+            if not math.isfinite(args.value) or any(x is not None and not math.isfinite(x) for x in (args.lo, args.hi)):
+                parser.error("value and bounds must be finite")
+            if args.lo is not None and args.hi is not None and args.lo >= args.hi:
+                parser.error("lo must be less than hi")
+            value, hit = lift(args.value, args.eps, lo=args.lo, hi=args.hi)
+            result = {"original": args.value, "value": value, "boundary": hit}
+        print(json.dumps(result, allow_nan=False))
+    except (ValueError, EpsilonError, OverflowError) as exc:
         parser.error(str(exc))
-    print(json.dumps({"original": args.value, "value": result, "boundary": hit}, allow_nan=False))
     return 0
 
 if __name__ == "__main__":

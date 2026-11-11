@@ -1,5 +1,20 @@
 # Aoi
 
+## Aoi entry files for child projects
+
+From an Aoi checkout, the named Python entry files forward arguments to the corresponding child under this checkout. Run them from any working directory; input and output paths are resolved relative to the caller's working directory.
+
+```bash
+python BlueProbe.py --help
+python QueRyu.py --help
+python NagoyAction.py --help
+python SakAnalytics.py --help
+python PythDRagoras.py --help
+python DRAgoWing.py --help
+```
+
+These launchers use only the Python standard library, but are not self-contained copies of the children: the Aoi checkout and any dependencies required by the selected backend must exist. They do not install dependencies. The capabilities and arguments are those of the child version synced in Aoi, not unmerged child pull requests. They are not yet included in Aoi's uv tool distribution.
+
 <p align="center">
   <img src="docs/brand/icon.png" alt="Aoi icon" width="160" />
 </p>

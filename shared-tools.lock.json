@@ -63,6 +63,12 @@
         "myon-bioinformatics/PythDRagoras",
         "myon-bioinformatics/SakAnalytics"
       ]
+    },
+    {
+      "path": "vendor/uv_tool_build.py",
+      "sha256": "b798ce5d5c5adf9a40bffccc6db81b5c58afd7ecdc3fdd27ec2152b2f775afe8",
+      "source": "myon-bioinformatics/Aoi",
+      "consumers": []
     }
   ]
 }

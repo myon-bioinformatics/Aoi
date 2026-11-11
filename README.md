@@ -43,6 +43,32 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 
 ## Installation and usage
 
+### Observe a URL
+
+`blueprobe.py` can fetch one HTTP(S) page with `curl` and print a JSON structural classification. It uses Python's standard library and a separate `curl` executable; JavaScript is not executed.
+
+```bash
+python blueprobe.py https://openai.com --out observation.json
+```
+
+The JSON contains the URL, content SHA-256, byte count and structural classification. `--out` is optional; the report is also printed to stdout. For an interoperable QueRyu cache, place its `cache_core.py` on `PYTHONPATH` and provide `--cache`:
+
+```bash
+PYTHONPATH=../QueRyu python blueprobe.py https://openai.com --cache ./cache --out observation.json
+```
+
+Only UTF-8 HTTP 200 responses up to 10 MiB are accepted. The URL mode currently does not record response headers, perform conditional requests, or reuse cached content; QueRyu's acquisition API remains responsible for those capabilities. An unavailable cache component is reported before fetching.
+
+To install the single-file URL/classification tool with uv from a checkout:
+
+```bash
+python build_stdlib_tool.py build/blueprobe-stdlib-tool
+uv tool install ./build/blueprobe-stdlib-tool
+blueprobe https://openai.com --out observation.json
+```
+
+This generated tool has no third-party Python runtime dependencies; building it requires setuptools. Rebuild after changing `blueprobe.py`. Source modules and `cache_core.py` are not packaged in the generated tool and must be supplied separately for operations that need them.
+
 Uses Python 3.11+ and [uv](https://docs.astral.sh/uv/). There are no runtime dependencies (`pyproject.toml`). `selectolax` is only for cross-checking during development, comparing the standard library's HTML tree with Lexbor's results.
 
 ```bash
@@ -395,10 +421,21 @@ integration and log diagnosis are not implemented here.
 
 ### Component boundaries
 
+BlueProbe owns URL acquisition, structural observation and cache creation through
+QueRyu's `cache_core.Cache` component. QueRyu owns cache integrity, provenance,
+reuse and data extraction; xprobe owns bounded searches. ErrorRoadRunner owns
+error diagnosis. The offline audit adapter only selects existing observations;
+it does not become a second GitHub collector.
+
+A successful adapter exit means the snapshot was read completely for the target,
+not that its CI passed. `FAILED` and `INCOMPLETE` CI values remain unchanged.
+Missing observation time, owner, or PR CI/head identity is marked `unknown`.
+
+
 - The parent audit collector is the existing GitHub API producer; this adapter
   reads its saved snapshot. Do not fetch the same pages again to display them.
-- QueRyu owns reusable fetching, cache and provenance where those capabilities
-  are appropriate. Its present APIs do not by themselves establish authenticated
+- QueRyu supplies reusable cache, extraction and provenance components.
+  BlueProbe uses them for cache creation without copying their implementation. Its present APIs do not by themselves establish authenticated
   GitHub pagination, log access or safe storage of sensitive logs.
 - xprobe owns bounded file search, named error patterns and JUnit failure
   identities. Err-o-RoadRunner interprets failure evidence and offers hints.

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 from pathlib import Path
 import sys
@@ -18,6 +19,15 @@ def observe(snapshot: dict, repository: str) -> dict:
     if not isinstance(snapshot.get("records"), list) or not isinstance(snapshot.get("repositories"), list):
         raise ValueError("snapshot records and repositories must be lists")
     report = new_report()
+    generated_at = snapshot.get("generated_at")
+    try:
+        observed = datetime.datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+        if observed.tzinfo is None:
+            raise ValueError("observation time requires a timezone")
+    except (AttributeError, TypeError, ValueError):
+        report["unknown"].append({"key": repository, "reason": "snapshot observation time unavailable or invalid"})
+    if not isinstance(snapshot.get("owner"), str) or not snapshot["owner"].strip():
+        report["unknown"].append({"key": repository, "reason": "snapshot owner unavailable or invalid"})
     if repository not in snapshot["repositories"]:
         report["unknown"].append({"key": repository, "reason": "repository not listed in snapshot"})
     truncated = snapshot.get("truncated")
@@ -44,6 +54,9 @@ def observe(snapshot: dict, repository: str) -> dict:
         if kind not in ("issue", "pr") or not isinstance(item.get("id"), str):
             report["unknown"].append({"key": str(index), "reason": "unsupported record", "raw": item})
             continue
+        if kind == "pr" and (not isinstance(item.get("ci"), str) or not item["ci"]
+                             or not isinstance(item.get("head_sha"), str) or not item["head_sha"]):
+            report["unknown"].append({"key": item["id"], "reason": "PR CI or head identity unavailable", "raw": item})
         report["records"].append({"key": item["id"], "raw": item,
                                   "derived": {"repository": repository, "kind": kind,
                                               "observed_ci": item.get("ci"),

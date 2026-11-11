@@ -51,11 +51,13 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 python blueprobe.py https://openai.com --out observation.json
 ```
 
-The JSON contains the URL, content SHA-256, byte count and structural classification. `--out` is optional; the report is also printed to stdout. For an interoperable QueRyu cache, place its `cache_core.py` on `PYTHONPATH` and provide `--cache`:
+The JSON contains the URL, content SHA-256, byte count and structural classification. `--out` is optional; the report is also printed to stdout. For an interoperable QueRyu cache, provide `--cache` and pass the Aoi checkout as `AOI_ROOT` (BlueProbe then uses `AOI_ROOT/queryu`). `PYTHONPATH` is no longer required; a QueRyu already importable from `PYTHONPATH` is still used as is and never replaced:
 
 ```bash
-PYTHONPATH=../QueRyu python blueprobe.py https://openai.com --cache ./cache --out observation.json
+AOI_ROOT=/path/to/Aoi python blueprobe.py https://openai.com --cache ./cache --out observation.json
 ```
+
+The same applies to re-reading a QueRyu cache with `--source ... --cache ...`. Without `AOI_ROOT`, BlueProbe looks next to itself only when it sits inside an Aoi checkout (`pyproject.toml` and `cycles/`), like QueRyu; a standalone checkout never reads a neighbouring `../queryu`. When QueRyu cannot be found, the command exits with code 2 and says to pass `AOI_ROOT`.
 
 Only UTF-8 HTTP 200 responses up to 10 MiB are accepted. The URL mode currently does not record response headers, perform conditional requests, or reuse cached content; QueRyu's acquisition API remains responsible for those capabilities. An unavailable cache component is reported before fetching.
 

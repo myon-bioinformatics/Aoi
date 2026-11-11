@@ -19,7 +19,7 @@ Aoi の原則との対応:
 
 from __future__ import annotations
 
-import argparse, importlib, re, sys, unicodedata
+import argparse, importlib, importlib.util, os, re, sys, unicodedata
 from collections import Counter; from collections.abc import Iterable, Iterator; from html.parser import HTMLParser; from pathlib import Path; from typing import TypedDict
 
 NORMALIZATION = "nul->U+FFFD, NFKC, collapse-whitespace"
@@ -92,6 +92,24 @@ def inspect_snapshots(source, supplier, entries=None, records_out=None) -> list[
 
     parser = (lambda snapshot, url: snapshot_parser(snapshot)) if snapshot_parser is not None else source.parse
     return _inspect(parser, pages(), records_out)
+
+
+def aoi_sibling_path(module: str, sibling: str = "queryu", *, here: Path | None = None, env=None) -> None:
+    """``module`` が import できないときだけ、Aoi の checkout の ``sibling/`` を ``sys.path`` に足す。
+
+    Aoi の場所は ``AOI_ROOT``（pyproject.toml と cycles/ がある）で受け取る。``AOI_ROOT`` がないときは、
+    このファイルの親が Aoi の checkout（Aoi に subtree として入っている）のときだけ使う（QueRyu と同じ）。
+    単独の BlueProbe では足さない。PYTHONPATH などで import できるものは隣で上書きしない。
+    """
+    if importlib.util.find_spec(module) is not None:
+        return
+    env = os.environ if env is None else env
+    value = env.get("AOI_ROOT")
+    root = Path(value).expanduser().resolve() if value else Path(here or __file__).resolve().parent.parent
+    candidate = root / sibling
+    if (root / "pyproject.toml").is_file() and (root / "cycles").is_dir() and candidate.is_dir():
+        if str(candidate) not in sys.path:
+            sys.path.insert(0, str(candidate))
 
 
 def inspect_queryu_cache(source, cache, entries=None, records_out=None) -> list[dict]:
@@ -996,12 +1014,14 @@ def _observe_url(url: str, cache: Path | None = None, out: Path | None = None) -
         print("curl is required to fetch a URL", file=sys.stderr)
         return 127
     if cache is not None:
+        aoi_sibling_path("cache_core")
         try:
             from cache_core import Cache
         except ModuleNotFoundError as error:
             if error.name != "cache_core":
                 raise
-            print("--cache requires QueRyu cache_core.py on PYTHONPATH", file=sys.stderr)
+            print("--cache requires QueRyu cache_core.py: pass AOI_ROOT=<Aoi root> (uses its queryu/) "
+                  "or put cache_core.py on PYTHONPATH", file=sys.stderr)
             return 2
     with tempfile.TemporaryDirectory(prefix="blueprobe-") as tmp:
         body = Path(tmp) / "body"
@@ -1097,7 +1117,15 @@ def main(argv=None) -> int:
     if not manifest.exists():
         print(f"no cache manifest: {manifest}", file=sys.stderr)
         return 1
-    from queryu import Cache
+    aoi_sibling_path("queryu")
+    try:
+        from queryu import Cache
+    except ModuleNotFoundError as error:
+        if error.name != "queryu":
+            raise
+        print("--cache requires QueRyu: pass AOI_ROOT=<Aoi root> (uses its queryu/) "
+              "or put queryu on PYTHONPATH", file=sys.stderr)
+        return 2
     records: list = []
     rows = inspect_queryu_cache(source, Cache(args.cache), records_out=records)
     checks = source.check(records) if hasattr(source, "check") else None
@@ -1116,6 +1144,5 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    sys.path[:0] = [str(Path(__file__).resolve().parent),
-                    str(Path(__file__).resolve().parents[1] / "queryu")]
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     raise SystemExit(main())

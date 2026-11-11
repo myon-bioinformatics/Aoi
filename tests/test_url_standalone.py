@@ -55,8 +55,11 @@ class UrlStandaloneTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             script = Path(tmp) / "blueprobe.py"
             shutil.copy2(ROOT / "blueprobe.py", script)
+            # This test deliberately has no QueRyu component. -I ignores PYTHONPATH,
+            # but not the application's explicit AOI_ROOT lookup.
+            env = {key: value for key, value in os.environ.items() if key != "AOI_ROOT"}
             result = subprocess.run([sys.executable, "-I", str(script), "http://127.0.0.1:1/", "--cache", str(Path(tmp) / "cache")],
-                                    capture_output=True, text=True, timeout=10)
+                                    env=env, capture_output=True, text=True, timeout=10)
             self.assertEqual(result.returncode, 2)
             self.assertIn("cache_core.py", result.stderr)
             self.assertFalse((Path(tmp) / "cache").exists())

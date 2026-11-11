@@ -975,8 +975,79 @@ def _nearest(node: _Element, tag: str) -> _Element | None:
     return current
 
 
+def _observe_url(url: str, cache: Path | None = None, out: Path | None = None) -> int:
+    """Fetch one HTTP(S) page with curl and classify its saved HTML."""
+    import hashlib
+    import json
+    import shutil
+    import subprocess
+    import tempfile
+    from urllib.parse import urlsplit
+
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        print("invalid URL", file=sys.stderr)
+        return 2
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username is not None:
+        print("URL must be HTTP(S) without embedded credentials", file=sys.stderr)
+        return 2
+    if not shutil.which("curl"):
+        print("curl is required to fetch a URL", file=sys.stderr)
+        return 127
+    if cache is not None:
+        try:
+            from cache_core import Cache
+        except ModuleNotFoundError as error:
+            if error.name != "cache_core":
+                raise
+            print("--cache requires QueRyu cache_core.py on PYTHONPATH", file=sys.stderr)
+            return 2
+    with tempfile.TemporaryDirectory(prefix="blueprobe-") as tmp:
+        body = Path(tmp) / "body"
+        try:
+            result = subprocess.run(["curl", "--fail", "--silent", "--show-error", "--location",
+                                     "--proto", "=http,https", "--proto-redir", "=http,https",
+                                     "--max-time", "30", "--max-filesize", "10485760", "--output", str(body),
+                                     "--write-out", "%{http_code}", "--", url], capture_output=True, text=True, timeout=35)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            print(f"curl failed: {error}", file=sys.stderr)
+            return 1
+        if result.returncode:
+            print(f"curl failed (exit {result.returncode}): {result.stderr.strip()}", file=sys.stderr)
+            return result.returncode
+        if result.stdout.strip() != "200":
+            print(f"expected HTTP 200, got {result.stdout.strip() or 'unknown'}", file=sys.stderr)
+            return 1
+        raw = body.read_bytes()
+        if len(raw) > 10485760:
+            print("response exceeds 10 MiB", file=sys.stderr)
+            return 1
+        try:
+            html = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            print("response is not UTF-8 HTML", file=sys.stderr)
+            return 1
+        report = {"url": url, "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw),
+                  "classification": classify_document(html)}
+        rendered = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
+        try:
+            if cache is not None:
+                # Cache integrity and provenance are owned by QueRyu's standalone cache component.
+                Cache(cache).put(url, url, "url", 200, raw, {})
+            if out is not None:
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_text(rendered, encoding="utf-8")
+        except (OSError, ValueError) as error:
+            print(f"failed to save observation: {error}", file=sys.stderr)
+            return 1
+        print(rendered, end="")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="取得済みページをオフラインで再解析する")
+    ap.add_argument("url", nargs="?", help="HTTP(S) URL to fetch and classify with curl")
     ap.add_argument("--source", help="取得元モジュール名 (例: npb_calendar, html_source)")
     patterns = ap.add_mutually_exclusive_group()
     patterns.add_argument("--pattern", help="html_source 専用の DOM パターンキー（一覧: --list-patterns）")
@@ -987,6 +1058,11 @@ def main(argv=None) -> int:
     patterns.add_argument("--classify", type=Path, metavar="HTML",
                           help="保存済み HTML ファイル1つを分類し、derived を JSON で表示する（ネットワークなし）")
     args = ap.parse_args(argv)
+
+    if args.url:
+        if args.source or args.pattern or args.list_patterns or args.classify or args.strict:
+            ap.error("URL cannot be combined with source, pattern, classify, list-patterns or strict")
+        return _observe_url(args.url, args.cache, args.out)
 
     if args.classify is not None:
         import json

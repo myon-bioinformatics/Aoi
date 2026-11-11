@@ -43,6 +43,32 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 
 ## Installation and usage
 
+### Observe a URL
+
+`blueprobe.py` can fetch one HTTP(S) page with `curl` and print a JSON structural classification. It uses Python's standard library and a separate `curl` executable; JavaScript is not executed.
+
+```bash
+python blueprobe.py https://openai.com --out observation.json
+```
+
+The JSON contains the URL, content SHA-256, byte count and structural classification. `--out` is optional; the report is also printed to stdout. For an interoperable QueRyu cache, place its `cache_core.py` on `PYTHONPATH` and provide `--cache`:
+
+```bash
+PYTHONPATH=../QueRyu python blueprobe.py https://openai.com --cache ./cache --out observation.json
+```
+
+Only UTF-8 HTTP 200 responses up to 10 MiB are accepted. The URL mode currently does not record response headers, perform conditional requests, or reuse cached content; QueRyu's acquisition API remains responsible for those capabilities. An unavailable cache component is reported before fetching.
+
+To install the single-file URL/classification tool with uv from a checkout:
+
+```bash
+python build_stdlib_tool.py build/blueprobe-stdlib-tool
+uv tool install ./build/blueprobe-stdlib-tool
+blueprobe https://openai.com --out observation.json
+```
+
+This generated tool has no third-party Python runtime dependencies; building it requires setuptools. Rebuild after changing `blueprobe.py`. Source modules and `cache_core.py` are not packaged in the generated tool and must be supplied separately for operations that need them.
+
 Uses Python 3.11+ and [uv](https://docs.astral.sh/uv/). There are no runtime dependencies (`pyproject.toml`). `selectolax` is only for cross-checking during development, comparing the standard library's HTML tree with Lexbor's results.
 
 ```bash
@@ -374,3 +400,66 @@ Besides level, text, DOM path, containing landmark, and hidden state, it records
 It does not access the network, and makes no judgements or changes.
 
 This is static structural observation, not a reproduction of the browser's whole accessibility tree. `article` and unnamed `section` are not counted as landmarks, and `header` / `footer` inside `main` / `article` / `aside` / `nav` / `section` are not counted as page-wide landmarks ([HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)). `aria-level` is used only when it is an integer of 1 or more; otherwise (empty, 0, negative, invalid) it falls back to the HTML heading level (h1–h6), or to the ARIA default of 2 for `role="heading"`. Tree structure and name computation are shared with `accessible_names.py`. `missing_main_landmark` is also kept as a page-level record (`type: "page"`).
+
+## Repository observations from a parent audit (experimental)
+
+`github_observations.py` reads a saved `parent-audit/1` snapshot produced by
+myon-bioinformatics' `ci_status.py`. It extracts one repository's Issue and PR
+observations, including CI state and head SHA, into BlueProbe's `records`,
+`counts`, and `unknown` structure, preserving the original rows as evidence.
+It does not contact GitHub or infer root causes.
+
+```bash
+python github_observations.py audit.json Err-o-RoadRunner > observations.json
+```
+
+A missing repository, missing/incomplete collection metadata, or reported
+collection error is recorded as unknown and causes exit code 2. The snapshot
+only covers its recorded sources and observation time; no records do not prove
+that the repository has no defects. This is an offline adapter; dashboard
+integration and log diagnosis are not implemented here.
+
+### Component boundaries
+
+BlueProbe owns URL acquisition, structural observation and cache creation through
+QueRyu's `cache_core.Cache` component. QueRyu owns cache integrity, provenance,
+reuse and data extraction; xprobe owns bounded searches. ErrorRoadRunner owns
+error diagnosis. The offline audit adapter only selects existing observations;
+it does not become a second GitHub collector.
+
+A successful adapter exit means the snapshot was read completely for the target,
+not that its CI passed. `FAILED` and `INCOMPLETE` CI values remain unchanged.
+Missing observation time, owner, or PR CI/head identity is marked `unknown`.
+
+
+- The parent audit collector is the existing GitHub API producer; this adapter
+  reads its saved snapshot. Do not fetch the same pages again to display them.
+- QueRyu supplies reusable cache, extraction and provenance components.
+  BlueProbe uses them for cache creation without copying their implementation. Its present APIs do not by themselves establish authenticated
+  GitHub pagination, log access or safe storage of sensitive logs.
+- xprobe owns bounded file search, named error patterns and JUnit failure
+  identities. Err-o-RoadRunner interprets failure evidence and offers hints.
+- The parent dashboard owns fleet-wide comparison, display, prioritization and
+  history. No dashboard, QueRyu, xprobe or Err-o-RoadRunner integration is
+  supplied by this adapter yet.
+
+### Staged handoff
+
+1. Consume the existing parent audit snapshot first. Preserve its repository,
+   head SHA, observation time, raw record, truncation and errors; keep the parent
+   collection and Pages publishing unchanged while verifying the adapter.
+2. For GitHub-specific discovery and bounded job logs, evaluate the existing
+   `gh_identity` run, jobs and job-log APIs with explicit run/attempt identity.
+   Its workflow-scoped discovery plan is not yet a guarantee of implementation.
+3. Use xprobe for bounded local searches and JUnit identities, and pass failure
+   evidence to Err-o-RoadRunner for interpretation. Keep complete/partial and
+   missing evidence visible at every handoff.
+4. Use QueRyu's fetching and provenance where compatible with the source and
+   data-sensitivity requirements; avoid a second GitHub collection solely to
+   populate the dashboard. Consider NagoyAction for orchestration once the
+   inputs and output contracts are verified.
+5. Connect verified observations to the parent dashboard, compare results with
+   the existing collector, and migrate one responsibility at a time only after
+   parity checks. No component is retired by this experimental adapter.
+
+These are proposed stages; this PR implements only the offline adapter in step 1.

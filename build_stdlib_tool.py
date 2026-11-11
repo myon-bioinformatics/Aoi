@@ -81,7 +81,23 @@ def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv and argv[0] not in ("describe", "compare", "boundary", "-h", "--help"):
         argv.insert(0, "boundary")
-    parser = argparse.ArgumentParser(description="Summarize and compare numbers or check boundaries.")
+    class NumericArgumentParser(argparse.ArgumentParser):
+        def _parse_optional(self, token):
+            # argparse only recognizes a narrow set of negative-number spellings.
+            # Keep finite numeric lists (including scientific notation) as values,
+            # without swallowing unknown flags such as --befor or -x.
+            # A trailing comma can continue in the next shell argument; the
+            # complete joined input is still validated after argument parsing.
+            if token.startswith("-") and not token.startswith("--"):
+                try:
+                    parse_numbers([token.rstrip(",")])
+                except ValueError:
+                    pass
+                else:
+                    return None
+            return super()._parse_optional(token)
+
+    parser = NumericArgumentParser(description="Summarize and compare numbers or check boundaries.")
     sub = parser.add_subparsers(dest="command", required=True)
     desc = sub.add_parser("describe")
     desc.add_argument("values", nargs="*", help="numbers separated by spaces or commas; - reads stdin")

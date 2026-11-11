@@ -50,3 +50,27 @@ class StandaloneExamples(unittest.TestCase):
         for value in ("1,,2", "1,bad,3", "1,nan", "1,inf"):
             self.assertEqual(self.run_cli("describe", value).returncode, 2)
         self.assertEqual(self.run_cli("describe", "--column", "value").returncode, 2)
+
+    def test_negative_comma_values_and_exponents(self):
+        self.assertEqual(self.call("describe", "-1,-2")["mean"], -1.5)
+        self.assertEqual(self.call("describe", "-1,", "-2")["mean"], -1.5)
+        self.assertEqual(self.call("describe", "-1e3", "2e3")["mean"], 500)
+        self.assertEqual(self.call("compare", "--before", "-1,-2", "--after", "3,4")["mean_difference"], 5)
+        self.assertEqual(self.call("boundary", "-1e3", "--lo", "-1e3")["value"], -1000)
+        self.assertEqual(self.run_cli("describe", "--unknown").returncode, 2)
+        self.assertEqual(self.run_cli("describe", "-x").returncode, 2)
+
+    def test_csv_column_selection_and_invalid_structure(self):
+        path = Path(self.temp.name) / "data.csv"
+        path.write_text("label,value,unused\na,1,ignored\nb,2,also ignored\n", encoding="utf-8")
+        self.assertEqual(self.call("describe", "--file", str(path), "--column", "value")["mean"], 1.5)
+        for content, error in (
+            ("value,value\n1,2\n", "duplicate"),
+            ("label,value\na\n", "missing"),
+            ("label,value\na,nan\n", "non-finite"),
+        ):
+            path.write_text(content, encoding="utf-8")
+            result = self.run_cli("describe", "--file", str(path), "--column", "value")
+            self.assertEqual(result.returncode, 2)
+            self.assertIn(error, result.stderr)
+        self.assertEqual(self.run_cli("describe", "1e308", "1e308").returncode, 2)

@@ -19,7 +19,7 @@ dev = ["pytest>=9.1.1"]
 package = false
 
 [tool.pytest.ini_options]
-# サイクルデータ、PythDRagoras（propositions, rule_search）、QueRyu（ask）は Aoi に残す。AOI_ROOT と PYTHONPATH で Aoi の main を指す（.github/workflows/ci.yml が実行時に SHA を解決する）
+# サイクルデータ、PythDRagoras（propositions, rule_search）、QueRyu（ask）は Aoi に残す。AOI_ROOT で Aoi の main を指す（実行時は aoi_sibling.py が AOI_ROOT から探す。兄弟を直接 import するテストには PYTHONPATH も渡す。.github/workflows/ci.yml が実行時に SHA を解決する）
 pythonpath = ["."]
 testpaths = ["tests"]
 norecursedirs = [".test-deps", "build", "reports"]

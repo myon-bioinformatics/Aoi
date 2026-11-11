@@ -80,8 +80,8 @@ python -m dragowing --results <DIR> --out build/dragowing [--id ID ...] [--colum
 
 - `--results` is a directory containing `season.jsonl` and `propositions.jsonl`. `--id` narrows propositions, and `--column` chooses the numeric column for team × year (default `wins_vs_pythag`).
 - Repeat `--cond` to display 2–8 sets including class B. `--breakdown` selects the breakdown column (default `team`); repeat `--breakdown-keep` to keep values separate from “Other”. See [docs/figures.md](docs/figures.md).
-- Condition overlap (`overlap.py`) uses `propositions` and `rule_search` from [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras), and the four-forms table (`forms.py`) uses `ask` (registration status) from [QueRyu](https://github.com/myon-bioinformatics/QueRyu). Put them on `PYTHONPATH` to run (same as "Tests" below).
-- This directory is the contents of the `dragowing` package, so run `python -m dragowing` from a parent where the directory appears as `dragowing` (see the example under "Tests").
+- Condition overlap (`overlap.py`) uses `propositions` and `rule_search` from [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras), and the four-forms table (`forms.py`) uses `ask` (registration status) from [QueRyu](https://github.com/myon-bioinformatics/QueRyu). They are found at run time from the Aoi checkout passed as `AOI_ROOT` (`AOI_ROOT/pythdragoras`, `AOI_ROOT/queryu/ask`), so `PYTHONPATH` is not required. A module already importable from `PYTHONPATH` is used as is and never replaced. Without `AOI_ROOT`, DRAgoWing looks next to itself only when it sits inside an Aoi checkout (`pyproject.toml` and `cycles/`), like QueRyu; a standalone checkout never reads a neighbouring directory. When a module is still missing, the error names `AOI_ROOT`.
+- This directory is the contents of the `dragowing` package, so run `python -m dragowing` from a parent where the directory appears as `dragowing` (see the example under "Tests"), or run the file directly without `PYTHONPATH`: `AOI_ROOT=/path/to/Aoi python /path/to/dragowing/__main__.py --results ...` (`__main__.py` registers its directory as the `dragowing` package).
 
 ## Optional HTML-only environment
 
@@ -155,9 +155,9 @@ AOI_ROOT=$PWD/.test-deps/aoi \
 
 - In addition, the tests use the following from the Aoi at `AOI_ROOT`:
   - Output in `cycles/` (`cycles/c001-chunichi/outputs`).
-  - PythDRagoras's `propositions` and `rule_search` (`pythdragoras` on `PYTHONPATH`; `overlap.py` reaches into `pythdragoras`).
-  - QueRyu's `ask` (`queryu/ask` on `PYTHONPATH`; `forms.py` reaches into `queryu`).
-  - `tests/test_no_sibling_imports.py` checks that no other Aoi sibling subprojects or `scripts/` are used (`propositions`, `rule_search`, `ask`, plus the `queryu` and `pythdragoras` paths, are known exceptions).
+  - PythDRagoras's `propositions` and `rule_search` (`pythdragoras` on `PYTHONPATH` for tests that import them directly; `overlap.py` finds `AOI_ROOT/pythdragoras` through `aoi_sibling.py`).
+  - QueRyu's `ask` (`queryu/ask` on `PYTHONPATH` for tests that import it directly; `forms.py` finds `AOI_ROOT/queryu/ask` through `aoi_sibling.py`).
+  - `tests/test_no_sibling_imports.py` checks that no other Aoi sibling subprojects or `scripts/` are used (the `queryu/ask` and `pythdragoras` paths given to `aoi_sibling.py`, and imports in the tests, are known exceptions).
 - `reports/build_reports.py` is an Aoi-side tool (Aoi's DRAgoWing reports workflow checks out `myon-bioinformatics/markdown` and calls it). This repository's CI does not run that workflow.
 - The Python matrix explicitly selects Chromium and requires real-browser tests. Missing Chromium fails CI rather than silently falling back to Chrome or skipping. Locally, real-browser tests remain optional unless `DRAGOWING_REQUIRE_CHROME=1` is set.
 

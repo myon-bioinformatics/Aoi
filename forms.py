@@ -14,21 +14,13 @@ FORM_ORDER = ("original", "converse", "inverse", "contrapositive")
 
 
 def registration_status(item: dict) -> str:
-    """QueRyu ``ask`` is a sibling checkout or ``queryu/ask`` on ``PYTHONPATH``."""
-    import sys
+    """QueRyu ``ask`` comes from ``AOI_ROOT/queryu/ask`` (or ``PYTHONPATH`` when already importable)."""
+    try:
+        from .aoi_sibling import import_aoi_sibling
+    except ImportError:  # python dragowing/forms.py や、最上位の forms として読んだとき
+        from aoi_sibling import import_aoi_sibling
 
-    if "ask" not in sys.modules:
-        here = Path(__file__).resolve()
-        for root in (here.parent, *here.parents):
-            ask_dir = root / "queryu" / "ask"
-            if (ask_dir / "ask.py").is_file():
-                path = str(ask_dir)
-                if path not in sys.path:
-                    sys.path.insert(0, path)
-                break
-    from ask import registration_status as ask_registration_status
-
-    return ask_registration_status(item)
+    return import_aoi_sibling("ask", "queryu/ask").registration_status(item)
 
 FORM_LABEL = {
     "original": "元 P→Q",

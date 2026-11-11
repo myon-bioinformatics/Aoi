@@ -22,6 +22,49 @@ sakanalytics-boundary = "sakanalytics:main"
 py-modules = ["sakanalytics"]
 '''
 CLI = '''
+def parse_numbers(chunks):
+    values = []
+    # Rejoin shell-split arguments so `1, 2` works without quotes.
+    for line in " ".join(chunks).splitlines():
+        for field in line.split(","):
+            if not field.strip():
+                raise ValueError("empty value in input; remove missing fields")
+            for token in field.split():
+                try:
+                    number = float(token)
+                except ValueError:
+                    raise ValueError("invalid number: " + repr(token)) from None
+                if not math.isfinite(number):
+                    raise ValueError("number must be finite: " + repr(token))
+                values.append(number)
+    if not values:
+        raise ValueError("provide at least one number")
+    return values
+
+
+def read_csv_column(path, column):
+    import csv
+    with open(path, encoding="utf-8-sig", newline="") as stream:
+        rows = csv.DictReader(stream)
+        if not rows.fieldnames or column not in rows.fieldnames:
+            raise ValueError("CSV column not found: " + repr(column))
+        if len(set(rows.fieldnames)) != len(rows.fieldnames):
+            raise ValueError("duplicate CSV column names")
+        values = []
+        for line, row in enumerate(rows, 2):
+            cell = row.get(column)
+            if cell is None or not cell.strip():
+                raise ValueError("missing value in CSV row " + str(line))
+            try:
+                number = float(cell.strip())
+            except ValueError:
+                raise ValueError("invalid number in CSV row " + str(line) + ": " + repr(cell)) from None
+            if not math.isfinite(number):
+                raise ValueError("non-finite number in CSV row " + str(line))
+            values.append(number)
+        return values
+
+
 def describe(values):
     import statistics
     if not values or any(not math.isfinite(v) for v in values):
@@ -41,10 +84,12 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Summarize and compare numbers or check boundaries.")
     sub = parser.add_subparsers(dest="command", required=True)
     desc = sub.add_parser("describe")
-    desc.add_argument("values", type=float, nargs="+")
+    desc.add_argument("values", nargs="*", help="numbers separated by spaces or commas; - reads stdin")
+    desc.add_argument("--file", help="read a CSV file")
+    desc.add_argument("--column", help="CSV header to analyze (requires --file)")
     comp = sub.add_parser("compare")
-    comp.add_argument("--before", type=float, nargs="+", required=True)
-    comp.add_argument("--after", type=float, nargs="+", required=True)
+    comp.add_argument("--before", nargs="+", required=True)
+    comp.add_argument("--after", nargs="+", required=True)
     boundary = sub.add_parser("boundary")
     boundary.add_argument("value", type=float)
     boundary.add_argument("--lo", type=float)
@@ -53,9 +98,26 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == "describe":
-            result = describe(args.values)
+            if args.file and args.values:
+                parser.error("use numbers or --file, not both")
+            if args.column and not args.file:
+                parser.error("--column requires --file")
+            if args.file:
+                if args.column:
+                    values = read_csv_column(args.file, args.column)
+                else:
+                    with open(args.file, encoding="utf-8-sig") as stream:
+                        values = parse_numbers([stream.read()])
+            else:
+                if args.values.count("-") > 1:
+                    parser.error("stdin can only be read once")
+                values = parse_numbers([sys.stdin.read() if value == "-" else value for value in args.values])
+            result = describe(values)
         elif args.command == "compare":
-            before, after = describe(args.before), describe(args.after)
+            if (args.before + args.after).count("-") > 1:
+                parser.error("stdin can only be read once")
+            before = describe(parse_numbers([sys.stdin.read() if x == "-" else x for x in args.before]))
+            after = describe(parse_numbers([sys.stdin.read() if x == "-" else x for x in args.after]))
             delta = after["mean"] - before["mean"]
             result = {"before": before, "after": after, "mean_difference": delta,
                       "mean_relative_change": delta / before["mean"] if before["mean"] else None,
@@ -68,7 +130,7 @@ def main(argv=None):
             value, hit = lift(args.value, args.eps, lo=args.lo, hi=args.hi)
             result = {"original": args.value, "value": value, "boundary": hit}
         print(json.dumps(result, allow_nan=False))
-    except (ValueError, EpsilonError, OverflowError) as exc:
+    except (ValueError, EpsilonError, OverflowError, OSError) as exc:
         parser.error(str(exc))
     return 0
 

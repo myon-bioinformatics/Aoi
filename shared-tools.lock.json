@@ -66,7 +66,7 @@
     },
     {
       "path": "vendor/uv_tool_build.py",
-      "sha256": "b798ce5d5c5adf9a40bffccc6db81b5c58afd7ecdc3fdd27ec2152b2f775afe8",
+      "sha256": "1309ff9277b5dd3a67b5b54645a3dfdda58eed3cbe1db775f7fc57630e2833ce",
       "source": "myon-bioinformatics/Aoi",
       "consumers": []
     }

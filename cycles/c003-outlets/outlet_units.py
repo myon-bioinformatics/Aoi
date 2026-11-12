@@ -39,7 +39,12 @@ H_FINE = [1 / 256]  # 第5弾で足す刻み
 CHAIN3B_PAIRS = [(0.25, 0.75), (0.75, 0.25), (1.5, 4.0), (4.0, 1.5), (0.4, 2.5), (6.0, 0.2)]  # 第5弾 chain3b: (τ2/τ, τ3/τ)
 CHAIN3B_SPANS = [1.0, 3.0]
 CHAIN4_SETS = [(0.5, 1 / 3, 0.25), (2.0, 0.5, 3.0), (1 / 3, 3.0, 0.5), (3.0, 5.0, 2.0)]  # 第5弾 chain4: (τ2/τ, τ3/τ, τ4/τ)
-FLOW_KINDS = ("flow", "combo", "chain3", "ring", "chain3b", "chain4")  # エンジンの inflows（end・uniform_in）で進める組
+EDGE3_FLIP = [(1.5, 4.0), (4.0, 1.5), (0.4, 2.5)]  # 第6弾 edge3: end のずれが 0 を横切る時刻のある組
+EDGE3_AROUND = [0.8, 0.9, 0.95, 0.98, 1.02, 1.05, 1.1, 1.2]  # 横切る時刻の何倍で測るか
+EDGE3_PLAIN, EDGE3_SPANS = [(0.25, 0.75), (6.0, 0.2)], [1.0, 2.0, 3.0]  # 横切らない組と、測る時刻 / τ
+EDGE2_RATIOS, EDGE2_SPAN = [0.2, 0.6, 1.25, 5.0], 1.5  # 第6弾 edge2: τ2/τ と、測る時刻 / τ
+CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2")  # 1 列につながった槽（stages に τ_i/τ）
+FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS)  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
 TOL_CHECK = 1e-9  # 検算で許す err の差
@@ -126,7 +131,32 @@ def plan(h_extra: list[float]) -> list[dict]:
                     add("chain3b", "eq", 1, method, h, stages=[r2, r3], tau2_ratio=r2, tau3_ratio=r3, span_ratio=sp)
         for r2, r3, r4 in CHAIN4_SETS:
             add("chain4", "eq", 1, "end", h, stages=[r2, r3, r4], tau2_ratio=r2, tau3_ratio=r3, tau4_ratio=r4)
+    for h in hs + H_FINE:  # 第6弾
+        for method in ("end", "uniform_in"):
+            for pair, spans in [(pr, [round(flip_time(pr) * a, 6) for a in EDGE3_AROUND]) for pr in EDGE3_FLIP] + \
+                    [(pr, EDGE3_SPANS) for pr in EDGE3_PLAIN]:
+                for sp in spans:
+                    add("edge3", "eq", 1, method, h, stages=list(pair), tau2_ratio=pair[0], tau3_ratio=pair[1],
+                        span_ratio=sp)
+        for ratio in EDGE2_RATIOS:
+            add("edge2", "eq", 1, "uniform_in", h, stages=[ratio], tau2_ratio=ratio, span_ratio=EDGE2_SPAN)
     return out
+
+
+def flip_time(pair) -> float:
+    """3 段目の end のずれ（G_eff の式の 1 次の項）が 0 を横切る時刻 / τ。式だけから二分法で出す。"""
+    rates = [1.0 / TAU, 1.0 / (TAU * pair[0]), 1.0 / (TAU * pair[1])]
+
+    def lead(sp: float) -> float:
+        return stage_prediction(rates, TAU * 1e-4, sp * TAU)
+
+    a, b = 0.5, 4.0
+    if lead(a) * lead(b) > 0:
+        raise ValueError(f"no sign change for {pair}")
+    for _ in range(60):
+        c = (a + b) / 2.0
+        a, b = (c, b) if lead(a) * lead(c) > 0 else (a, c)
+    return (a + b) / 2.0
 
 
 def stage_rates(u: dict) -> list[float]:
@@ -182,13 +212,32 @@ def stage_prediction(rates: list[float], dt: float, t: float) -> float:
     return _expm([[v * t for v in row] for row in eff])[m - 1][0] / exact - 1.0
 
 
+def uniform_prediction(rates: list[float], dt: float, t: float) -> float:
+    """uniform の扱いで最後の槽に出るずれの予想。G_eff = G + dt²·H（dt の 1 次の項は無い）。
+    H: 次の槽へ k_i²·k_{i+1}/12、2 つ先へ −k_i·k_{i+1}·(k_i − 2·k_{i+2})/12、3 つ先へ −k_i·k_{i+1}·k_{i+2}/6。"""
+    m = len(rates)
+    g = [[0.0] * m for _ in range(m)]
+    eff = [[0.0] * m for _ in range(m)]
+    for i, k in enumerate(rates):
+        g[i][i] = eff[i][i] = -k
+        if i + 1 < m:
+            g[i + 1][i] = k
+            eff[i + 1][i] = k + dt * dt * k * k * rates[i + 1] / 12.0
+        if i + 2 < m:
+            eff[i + 2][i] = -dt * dt * k * rates[i + 1] * (k - 2.0 * rates[i + 2]) / 12.0
+        if i + 3 < m:
+            eff[i + 3][i] = -dt * dt * k * rates[i + 1] * rates[i + 2] / 6.0
+    exact = _expm([[v * t for v in row] for row in g])[m - 1][0]
+    return _expm([[v * t for v in row] for row in eff])[m - 1][0] / exact - 1.0
+
+
 def base(u: dict) -> str:
     """native の単位は、同じ条件の組（valve・mixed・gentle）の式で答えを出す。"""
     return u.get("base") or u["kind"]
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] == "chain3b":
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -214,7 +263,7 @@ def exact_left(u: dict, t: float) -> float:
         return V0 * math.exp(-k * t)
     if base(u) in ("chain", "chain2"):
         return chain_exact(u, t)
-    if u["kind"] in ("chain3b", "chain4"):
+    if u["kind"] in CHAIN_KINDS:
         return bateman_last(stage_rates(u), t)
     if u["kind"] == "combo":  # V∞ + (V0 − V∞)·e^(−K·t)、V∞ = (入る速さ − 出る速さ)/K
         settle = V0 * (COMBO_IN - COMBO_OUT)
@@ -239,7 +288,7 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
-    if u["kind"] in ("combo", "chain3", "ring", "chain3b", "chain4"):
+    if u["kind"] in ("combo", "chain3", "ring", *CHAIN_KINDS):
         return flow_recurrence(u, steps, dt)
     if base(u) in ("chain", "chain2", "fed"):  # 入る量 → 槽 B（弁 1 本）
         k2 = 1.0 / (TAU * u["tau2_ratio"])
@@ -288,7 +337,7 @@ def flow_recurrence(u: dict, steps: int, dt: float) -> float:
         x = rate * dt
         return 1.0 + math.expm1(-x) / x if uniform else 0.0
 
-    if u["kind"] in ("chain3b", "chain4"):  # 何段でも: 入った量のうち同じステップに出る分は、下の槽の入る量に数えない
+    if u["kind"] in CHAIN_KINDS:  # 何段でも: 入った量のうち同じステップに出る分は、下の槽の入る量に数えない
         rates = stage_rates(u)
         gains = [-math.expm1(-r * dt) for r in rates]
         x = [V0] + [0.0] * (len(rates) - 1)
@@ -353,9 +402,9 @@ def label(u: dict) -> tuple[str, str]:
     if u["kind"] == "chain3":
         return (f"chain3-r{u['tau2_ratio']:.3g}-r{u['tau3_ratio']:.3g}-{u['method']}",
                 f"3 段 τ2/τ={u['tau2_ratio']:.3g} τ3/τ={u['tau3_ratio']:.3g} {u['method']} h={u['h']:.6g}")
-    if u["kind"] in ("chain3b", "chain4"):
+    if u["kind"] in CHAIN_KINDS:
         ratios = "-".join(f"r{r:.3g}" for r in u["stages"])
-        tail = f"-s{u['span_ratio']:g}" if u["kind"] == "chain3b" else ""
+        tail = f"-s{u['span_ratio']:.6g}" if u["kind"] in ("chain3b", "edge3") else ""
         return (f"{u['kind']}-{ratios}{tail}-{u['method']}",
                 f"{len(u['stages']) + 1} 段 τ比 {'・'.join(f'{r:.3g}' for r in u['stages'])}{tail} {u['method']} h={u['h']:.6g}")
     if u["kind"] == "ring":
@@ -425,7 +474,7 @@ def run_flow_engine(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict
     k = 1.0 / TAU
     net = ffs["Network"](dt=dt, inflows="uniform" if u["method"] == "uniform_in" else "end")
     watch = "second"
-    if u["kind"] in ("chain3b", "chain4"):
+    if u["kind"] in CHAIN_KINDS:
         names = [f"t{i}" for i in range(len(u["stages"]) + 1)]
         watch = names[-1]
         net.tank(names[0], 1.0, volume=V0)
@@ -528,7 +577,8 @@ def derive(units: list[dict], log=print) -> None:
         for col in ("err_pred", "fo_rel", "ceil_ratio", "corr_gain", "drop_from_fewer", "halving_ratio", "src_same",
                     "euler_ratio", "so_rel", "disc_gap", "joint_ratio", "first_err_abs", "chain_halving",
                     "chain_pred_rel", "fed_gap", "gain_vs_independent", "uniform_halving",
-                    "native_gap", "chain3_pred_rel", "gain_vs_end", "flow_halving", "stage_fit", "sign_ok"):
+                    "native_gap", "chain3_pred_rel", "gain_vs_end", "flow_halving", "stage_fit", "sign_ok",
+                    "uni_fit", "uni_fit2", "h_star", "h_ratio"):
             u[col] = None
         for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio"):
             u.setdefault(col, None)
@@ -600,7 +650,22 @@ def derive(units: list[dict], log=print) -> None:
             pred = stage_prediction(rates, u["dt"], u["t"])
             u["stage_fit"] = abs(u["err"] - pred) / (u["dt"] / 2.0 * sum(rates[1:]))
             u["sign_ok"] = u["err"] * pred > 0.0
-        if u["kind"] in ("combo", "chain3", "ring", "chain3b") and u["uniform_in"]:
+        if u["kind"] == "edge2":  # 第6弾: 2 段目の uniform のずれ k1·k2·dt²/12
+            rates = stage_rates(u)
+            pred = rates[0] * rates[1] * u["dt"] ** 2 / 12.0
+            u["uni_fit2"] = abs(u["err"] - pred) / pred
+        if u["kind"] == "edge3" and u["uniform_in"]:  # 第6弾: G_eff(uniform) の式と、式から出した境目
+            rates = stage_rates(u)
+            u["uni_fit"] = abs(u["err"] - uniform_prediction(rates, u["dt"], u["t"])) / ((u["dt"] * max(rates)) ** 2 / 12.0)
+            tiny = TAU * 1e-4
+            lead_end = stage_prediction(rates, tiny, u["t"]) / tiny
+            lead_uni = uniform_prediction(rates, tiny, u["t"]) / tiny ** 2
+            if lead_uni == 0.0:
+                log(f"ε: {u['team_name']} の uniform の 2 次の係数が 0。ε = {EPS} に置く")
+                lead_uni = EPS
+            u["h_star"] = abs(lead_end / lead_uni) / TAU
+            u["h_ratio"] = u["h"] / u["h_star"] if u["h_star"] else None
+        if u["kind"] in ("combo", "chain3", "ring", "chain3b", "edge3") and u["uniform_in"]:
             twin = by[(u["team"].replace("-uniform_in", "-end"), u["h"])]
             mine = u["err_abs"]
             if mine == 0.0:

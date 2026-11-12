@@ -37,6 +37,8 @@ EXPECTED = {
     "O42": (4, 0), "O43": (3, 1), "O44": (4, 0),
     # 第5弾（propositions_r5.toml）
     "O45": (3, 0), "O46": (4, 0), "O49": (3, 0), "O47": (3, 0), "O48": (3, 0),
+    # 第6弾（propositions_r6.toml）
+    "O50": (4, 0), "O51": (3, 0), "O52": (3, 8), "O53": (3, 18),
 }
 TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
@@ -45,7 +47,7 @@ def test_prelock_hash_matches_stamp():
     # 命題を書き換えたら、固定時のハッシュと合わなくなる（変えるときは新しい id を足し、スタンプも理由つきで更新する）
     stamp = (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
     for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml",
-                 "propositions_r5.toml"):
+                 "propositions_r5.toml", "propositions_r6.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -56,6 +58,9 @@ def test_later_rounds_stay_outside_earlier_scopes():
     r3 = [u for u in units if u["native"] or u["chain2"] or u["fed"]]
     r4 = [u for u in units if u["flow"] or u["combo"] or u["chain3"] or u["ring"]]
     r5 = [u for u in units if u["chain3b"] or u["chain4"]]
+    r6 = [u for u in units if u["edge3"] or u["edge2"]]
+    assert len(r6) == 704 and not any(u["chain3b"] or u["chain4"] or u["chain3"] or u["chain2"] for u in r6)
+    units = [u for u in units if not (u["edge3"] or u["edge2"])]
     assert (len(units) - len(r2) - len(r3) - len(r4) - len(r5), len(r2), len(r3), len(r4), len(r5)) == (338, 140, 460, 450, 308)
     assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3 + r4 + r5)
     assert not any(u["gentle"] or u["chain"] for u in r3 + r4 + r5)
@@ -72,6 +77,13 @@ def test_stage_prediction_reduces_to_known_forms():
     c = units_mod.bateman_last([k1, k2, k3], t) / units_mod.V0
     closed = dt / 2 * ((k2 + k3) - k2 * p13 / c)
     assert abs(units_mod.stage_prediction([k1, k2, k3], dt, t) / closed - 1) < 0.01
+
+
+def test_uniform_prediction_reduces_to_the_two_stage_form():
+    # 2 段なら k1·k2·dt²/12（時刻によらない）
+    k1, k2, dt = 1 / 32, 3 / 32, 0.125
+    for t in (16.0, 64.0):
+        assert abs(units_mod.uniform_prediction([k1, k2], dt, t) / (k1 * k2 * dt * dt / 12) - 1) < 1e-3
 
 
 def test_every_unit_keeps_the_total():

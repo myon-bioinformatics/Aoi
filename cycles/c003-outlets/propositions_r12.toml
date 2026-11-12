@@ -1,0 +1,135 @@
+# サイクル3の命題・第12弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第11弾のファイルは変更しない。
+#
+# 主題: (1) 第9弾（枝分かれ・合流・ポンプ・輪）の保留 6 件を、第11弾の書き方（両側に単位がある形）で問い直す。
+#       (2) 「抑える処理は起きない」（O66・O72・O78。保留）を、起きる条件まで含めて問う。
+#       (3) 入口のはしごと出口のはしごを 1 つの式にまとめる。係数の並びの違い
+#           （入口 1/2・1/12・1/72・1/720、出口 1/2・1/6・1/24・1/120）が何から来るか。
+#
+# 記録: 2026-11-13 08:17 JST（時刻の道具の値）に書いた。このとき第12弾の単位（pipe2・coarse2・tlad の組）・列・漸化式のコードはまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第11弾の結果すべて。
+#   紙の上で導いたこと（データに当てはめた係数は無い。どの単位とも照らしていない）:
+#   (3) まとめる式。ステップの途中で槽に出入りする流れ r(u)（0 ≤ u ≤ dt）があるとき、速さ k の弁が同じステップのうちに
+#       取り分を変える量は F[r] = ∫ r(u)·(1 − e^(−k·(dt − u))) du。入ってくる流れなら取り分は + F、他の出口が取る流れなら − F。
+#       入口の「同じステップに出る分」も、出口の「他の出口のぶんの引き算」も、この同じ F で書ける（第8弾・第10弾・第11弾の式はどれもこの形）。
+#       r を近似 r~ に替えたときのずれは F[r − r~]。重み 1 − e^(−k·(dt − u)) ≈ k·(dt − u) で先頭の項を出すと:
+#         最初の値だけを知る（r~ = u の p − 1 次までのテイラー）  → r^(p)·k·dt^(p+2)/(p+2)!          … 1/2・1/6・1/24・1/120
+#         合計も知る（∫r~ = ∫r。uniform・ramp・quad）              → r'·k·dt³/12、r''·k·dt⁴/72、r'''·k·dt⁵/720 … 1/12・1/72・1/720
+#       つまり係数の違いは「入口か出口か」ではなく「最初の値だけを知るか、ステップの合計も知るか」で決まる、という見込み。
+#       確かめ方: 入口の側に「最初の値だけを知る」入れ方 tay1〜tay3 を作る（上の弁の速さ k1·V1·e^(−k1·u) を u の p − 1 次まで知り、
+#       同じステップに出る分 = F[r~]。届く量の合計 I は使わない。0〜I に抑える）。数式処理で 2 段について展開すると
+#       G_eff の (2,1) の先頭は k1·k2·(−k1)^p·dt^(p+1)/(p+2)!（p = 0 は end と同じ）。2 段目のずれは k2·(−k1)^p·dt^(p+1)/(p+2)!。
+#   (2) 抑える条件（2 段・ramp。x = dt/τ1、y = dt/τ2）。同じステップに出る分 / 届く量 = a + b/g で、どのステップでも同じ値。
+#       g = 1 − e^(−x)、φ0 = (1 − e^(−y))/y、φ1 = (y − (1 − e^(−y)))/y²。0 より小さくなることは無い（φ0 − 2·φ1 < 0）。
+#       届く量を超えるのは x/g > 2·φ1/|φ0 − 2·φ1| のとき。左辺 / 右辺 を clamp_margin と呼ぶ（1 より大きければ抑える見込み）。
+#       刻みが上下の槽の時定数の 3 倍前後より粗いときだけ起きる（たとえば x = 3・y = 3.6 で 1.05、x = 2・y = 7 で 0.97）。
+#   単位の組を決めるために、式だけを使って計算したもの（データは使っていない）:
+#     pipe2 の枝分かれ・合流の組は、1 列の槽の式（枝分かれは鎖と同じ、合流は 2 本の鎖の足し算）で、
+#       end のずれが 0 を横切る近くでないことを確かめた（刻み半分での比 1.86〜2.23）。ポンプと輪は式が無いので確かめていない。
+#     coarse2 の格子 64 点のうち、式で抑える見込みは 29 点。
+#   境の値（0.9〜1.1・h の範囲）は人が決めた仮置きで、結果に合わせて動かさない。
+#
+# 第12弾で足す単位（前の弾の命題の範囲には入らない組）。刻みは第11弾と同じ 14 通り（coarse2 を除く）。
+#   pipe2 = 第9弾と同じ 4 つの形の、新しい組。入れ方は end・uniform（エンジン本体）と ramp（Q48 の整数の漸化式）。
+#     branch (s, τB/τ, τC/τ) = (3/5, 3, 1/2)・(7/20, 3/5, 5/2)・(9/20, 3/2, 2/5)、merge (τB/τ, τC/τ, τD/τ) = (1/2, 3, 2/5)・(5/2, 3/5, 3/2)・(3, 5/4, 1/2)、
+#     pumpfed (τB/τ, τC/τ) = (3, 1/2)・(3/5, 5/2)・(3/2, 2/5)、どれも t ≈ τ・2.5τ。ring τ2/τ = 3/5・3・3/2、t ≈ 0.5τ・1.5τ。
+#   coarse2 = 2 段の槽・ramp・6 ステップ。x = dt/τ1 ∈ {0.5, 1, 2, 3, 4, 5, 6, 8}、y = dt/τ2 ∈ {0.4, 0.9, 1.8, 2.7, 3.6, 5.5, 7, 11} の 64 点。
+#   tlad = 2 段の槽。τ2/τ = 3/5・3/2・3、t ≈ τ・2τ。入れ方は tay1・tay2・tay3（最初の値だけ）と uniform・ramp・quad（合計も知る）。
+# 第12弾で足す列:
+#   pipe2・coarse2・tlad = 組。is_best = 同じ条件の 3 つの入れ方のうち、ずれの大きさが最小か（pipe2）
+#   order_expected・order_round = 第11弾と同じ作り方（pipe2: end 1・uniform 2・ramp 3）
+#   clamp_margin・clamp_pred（clamp_margin > 1）・was_clamped（抑えた回数 > 0）（coarse2）
+#   start_only = 入れ方が tay1〜tay3 か。p = 見込みの次数 − 1（tay p は p、uniform 1・ramp 2・quad 3）
+#   coef_start = |err| / (k2·k1^p·dt^(p+1)/(p+2)!)、coef_total = |err| / (k2·k1^p·dt^(p+1)·m_p)、m = 1/12・1/72・1/720（tlad）
+
+# ---- (1) 第9弾の問い直し ----
+
+[[proposition]]
+id = "O92"
+statement = "枝分かれ・合流・ポンプ・輪のどれでも、入る量をステップの終わりにまとめて入れる（end）なら、ずれの次数は 1 である"
+strength = "always"
+parent = "O71"
+change = "新しい組（pipe2）で、入れ方を end・uniform・ramp の 3 つにして、入れ方ごとの命題に分け、逆も同じ範囲で問う"
+scope = { where = [{ col = "pipe2", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "order_expected", op = "==", value = 1 }]
+then = [{ col = "order_round", op = "==", value = 1 }]
+surprise = "order_round"
+context = ["h", "order_expected", "shape", "pipe_set", "span_ratio", "err"]
+falsifier = "次数が 1 でない end の単位、または次数が 1 の他の入れ方の単位があれば、その形を書く"
+
+[[proposition]]
+id = "O93"
+statement = "枝分かれ・合流・ポンプ・輪のどれでも、入る速さを一定と見なす（uniform）なら、ずれの次数は 2 である"
+strength = "always"
+parent = "O71"
+change = "O92 と同じ替え方"
+scope = { where = [{ col = "pipe2", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "order_expected", op = "==", value = 2 }]
+then = [{ col = "order_round", op = "==", value = 2 }]
+surprise = "order_round"
+context = ["h", "order_expected", "shape", "pipe_set", "span_ratio", "err"]
+falsifier = "次数が 2 でない uniform の単位、または次数が 2 の他の入れ方の単位があれば、その形を書く"
+
+[[proposition]]
+id = "O94"
+statement = "枝分かれ・合流・ポンプ・輪のどれでも、入る速さを直線と見なす（ramp）なら、ずれの次数は 3 である"
+strength = "always"
+parent = "O71"
+change = "O92 と同じ替え方"
+scope = { where = [{ col = "pipe2", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "order_expected", op = "==", value = 3 }]
+then = [{ col = "order_round", op = "==", value = 3 }]
+surprise = "order_round"
+context = ["h", "order_expected", "shape", "pipe_set", "span_ratio", "err"]
+falsifier = "次数が 3 でない ramp の単位、または次数が 3 の他の入れ方の単位があれば、その形を書く"
+
+[[proposition]]
+id = "O95"
+statement = "枝分かれ・合流・ポンプ・輪のどれでも、刻みが時定数の 1/8 以下なら、3 つの入れ方のうちずれが最小なのは ramp である"
+strength = "always"
+parent = "O67"
+change = "4 つの形をまとめ、uniform だけでなく end とも比べ、逆（最小なら ramp）も問う"
+scope = { where = [{ col = "pipe2", op = "==", value = true }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "ramp", op = "==", value = true }]
+then = [{ col = "is_best", op = "==", value = true }]
+surprise = "err_abs"
+context = ["h", "shape", "pipe_set", "span_ratio", "err"]
+falsifier = "ramp が最小でない単位があれば、end や uniform のずれが 0 を横切る近くかどうかを書く"
+
+# ---- (2) 抑える処理が起きる条件 ----
+
+[[proposition]]
+id = "O96"
+statement = "2 段の槽の ramp で、式 x/g > 2·φ1/|φ0 − 2·φ1| が成り立つなら、同じステップに出る分を抑える処理が起きる（成り立たなければ起きない）"
+strength = "always"
+parent = "O66"
+change = "刻みを時定数の 0.5〜8 倍まで粗くし、起きる側の単位も作った"
+scope = { where = [{ col = "coarse2", op = "==", value = true }] }
+if = [{ col = "clamp_pred", op = "==", value = true }]
+then = [{ col = "was_clamped", op = "==", value = true }]
+surprise = "clamp_margin"
+context = ["h", "tau2_ratio", "clamp_margin", "ramp_clamped"]
+falsifier = "式と合わない単位があれば、その x・y と、丸めが効いたかどうかを書く"
+
+# ---- (3) 2 つのはしごをまとめる ----
+
+[[proposition]]
+id = "O97"
+statement = "入口の側でも、ステップ最初の値だけを知る入れ方なら、2 段目のずれの係数は出口と同じ 1/(p+2)! になる（刻みは時定数の 1/128〜1/32、比 0.9〜1.1）"
+strength = "always"
+scope = { where = [{ col = "tlad", op = "==", value = true }, { col = "h", op = ">=", value = 0.0078125 }, { col = "h", op = "<=", value = 0.03125 }] }
+if = [{ col = "start_only", op = "==", value = true }]
+then = [{ col = "coef_start", op = ">=", value = 0.9 }, { col = "coef_start", op = "<=", value = 1.1 }]
+surprise = "coef_start"
+context = ["h", "order_expected", "tau2_ratio", "span_ratio", "err", "coef_total"]
+falsifier = "係数が合わない単位があれば、まとめる式 F の見込みが違う。段と刻みを書く"
+
+[[proposition]]
+id = "O98"
+statement = "入口の側で、ステップの合計も知る入れ方（uniform・ramp・quad）なら、2 段目のずれの係数は 1/12・1/72・1/720 になる（同じ範囲、比 0.9〜1.1）"
+strength = "always"
+scope = { where = [{ col = "tlad", op = "==", value = true }, { col = "h", op = ">=", value = 0.0078125 }, { col = "h", op = "<=", value = 0.03125 }] }
+if = [{ col = "start_only", op = "==", value = false }]
+then = [{ col = "coef_total", op = ">=", value = 0.9 }, { col = "coef_total", op = "<=", value = 1.1 }]
+surprise = "coef_total"
+context = ["h", "order_expected", "tau2_ratio", "span_ratio", "err", "coef_start"]
+falsifier = "係数が合わない単位があれば、段と刻みを書く（quad の細かい刻みは丸めに近い）"

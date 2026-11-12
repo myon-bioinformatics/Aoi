@@ -20,7 +20,7 @@
       "blocks": [
         {
           "type": "output",
-          "text": "git clone https://github.com/myon-bioinformatics/Aoi.git\ncd Aoi\nuv sync\nuv run --locked pytest -q"
+          "text": "git clone https://github.com/myon-bioinformatics/Aoi.git\ncd Aoi\nuv sync --locked\nuv run --locked pytest -q"
         }
       ]
     },
@@ -39,7 +39,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ python BlueProbe.py --help"
+              "text": "$ uv run --locked python BlueProbe.py --help"
             },
             {
               "type": "links",
@@ -59,7 +59,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ python QueRyu.py --help"
+              "text": "$ uv run --locked python QueRyu.py --help"
             },
             {
               "type": "links",
@@ -79,7 +79,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ python SakAnalytics.py --help"
+              "text": "$ uv run --locked python SakAnalytics.py --help"
             },
             {
               "type": "links",
@@ -99,7 +99,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ python PythDRagoras.py --help"
+              "text": "$ uv run --locked python PythDRagoras.py --help"
             },
             {
               "type": "links",
@@ -119,7 +119,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ python DRAgoWing.py --help"
+              "text": "$ uv run --locked python DRAgoWing.py --help"
             },
             {
               "type": "links",
@@ -139,7 +139,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ python NagoyAction.py --help"
+              "text": "$ uv run --locked python NagoyAction.py --help"
             },
             {
               "type": "links",
@@ -160,7 +160,7 @@
       "blocks": [
         {
           "type": "output",
-          "text": "$ python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml\n$ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run"
+          "text": "$ uv run --locked python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml\n$ uv run --locked python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run"
         }
       ]
     },

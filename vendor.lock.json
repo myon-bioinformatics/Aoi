@@ -48,12 +48,12 @@
     },
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
-      "ref": "6ada7edc8e05ea71450ab307ad86a8d36cf6151e",
-      "commit": "6ada7edc8e05ea71450ab307ad86a8d36cf6151e",
+      "ref": "d77b295112008928659fb5f2e7ae22f969838980",
+      "commit": "d77b295112008928659fb5f2e7ae22f969838980",
       "source": "tools/uv_tool_build.py",
       "destination": "vendor/uv_tool_build.py",
-      "blob_sha": "87e3eaa595b28e7304cac4f713aded537de4670c",
-      "sha256": "b798ce5d5c5adf9a40bffccc6db81b5c58afd7ecdc3fdd27ec2152b2f775afe8"
+      "blob_sha": "98d9e6fc55624e5341371ca828b59d0a0897e5f6",
+      "sha256": "1309ff9277b5dd3a67b5b54645a3dfdda58eed3cbe1db775f7fc57630e2833ce"
     }
   ]
 }

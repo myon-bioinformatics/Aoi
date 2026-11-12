@@ -1,0 +1,104 @@
+# サイクル3の命題・第9弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第8弾のファイルは変更しない。
+#
+# 主題: 第8弾で 1 列の槽について確かめた入れ方 ramp（入る速さを直線と見なす）を、枝分かれ・合流・ポンプ・輪に広げられるか。
+#
+# 記録: 2026-11-12 21:20 JST ごろに書いた。このとき第9弾の単位（pipe の組）・列・漸化式のコードはまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第8弾の結果すべて（ramp は 1 列の槽で 3 乗になり、抑える処理は起きなかった）。
+#   広げ方（決め方。データに当てはめた係数は無い）:
+#     槽に届く量の「ステップ最初の速さ」r0 = 入ってくる弁それぞれの k·V（上の槽のステップ最初の量）の合計 + 入ってくるポンプの速さ。
+#     ステップの合計 I = 入ってくる管の量の合計（上の槽が後から増やした分も数える。上の槽から順に決める）。
+#     槽から出る弁が何本あっても、出口の速さの合計 L で 1 つにまとめる（第3弾の厳密な取り方）。
+#       同じステップに出る分 = I·(1 − 2·E1/dt²) − r0·(E0 − 2·E1/dt)、E0 = (1 − e^(−L·dt))/L、E1 = dt/L − (1 − e^(−L·dt))/L²。
+#       0 より小さければ 0、I より大きければ I に抑える。出口どうしは速さの比で分ける。
+#     輪（2 つの槽が互いに入れ合う）は順番が決まらないので、2 つの槽の出る量を連立の式として同時に解く（2 元 1 次。閉じた式）。
+#   この広げ方の式は、紙の上で展開していない。1 列の槽からの類推で「3 乗になる」と見込んでいるだけで、輪は見込みが立っていない。
+#   境の値（h ≤ 1/8・1/32、6〜10）は人が決めた仮置きで、結果に合わせて動かさない。刻みを半分にしたときの比は、3 乗なら 8。
+#
+# 第9弾で足す単位（前の弾の命題の範囲には入らない組）: pipe。刻みは今までの 10 個と 1/256。
+#   入れ方は uniform（エンジン本体）と ramp（エンジンと同じ固定小数点 Q48 の整数の漸化式。エンジンには入れていない）。
+#   branch = 槽 A（弁 2 本。B へ行く割合 s）→ B → C → 受け。測るのは C。(s, τB/τ, τC/τ) = (1/2, 2, 3/4)・(1/4, 2/5, 3/2)・(7/10, 5/4, 5/2)。t ≈ τ・2.5τ
+#   merge  = 槽 A と槽 B（どちらも最初に V0）→ C → D → 受け。測るのは D。(τB/τ, τC/τ, τD/τ) = (2, 1/2, 3/2)・(2/5, 3, 3/4)・(3/2, 3/5, 5/2)。t ≈ τ・2.5τ
+#   pumpfed = ポンプ（速さ V0/τ）→ B → C → 受け。測るのは C。(τB/τ, τC/τ) = (2, 3/4)・(2/5, 3/2)・(5/4, 5/2)。t ≈ τ・2.5τ
+#   ring   = 槽 A ⇄ 槽 B。測るのは B。τ2/τ = 2/5・2・5/4。t ≈ 0.5τ・1.5τ（行き渡る途中）
+# 第9弾で足す列:
+#   pipe・p_branch・p_merge・p_pump・p_ring = 組と形
+#   gain_vs_uniform = 第8弾と同じ作り方
+#   ramp_halving = err / 刻みが半分の単位の err（ramp）。has_half = 刻みが半分の単位があるか
+#   ramp_clamped = 第8弾と同じ
+
+[[proposition]]
+id = "O67"
+statement = "槽の出口が枝分かれしていても、ramp にすると、刻みが時定数の 1/8 以下なら、下の槽のずれは uniform より小さい"
+strength = "always"
+parent = "O64"
+change = "1 列の槽を、上の槽の出口が 2 本に分かれる配管に替えた"
+scope = { where = [{ col = "p_branch", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "gain_vs_uniform", op = ">", value = 1.0 }]
+surprise = "gain_vs_uniform"
+context = ["h", "span_ratio", "err", "ramp_clamped"]
+falsifier = "uniform より大きい単位があれば、出口をまとめる決め方を見直す"
+
+[[proposition]]
+id = "O68"
+statement = "2 つの槽から 1 つの槽へ合流していても、ramp にすると、刻みが時定数の 1/8 以下なら、下の槽のずれは uniform より小さい"
+strength = "always"
+parent = "O64"
+change = "1 列の槽を、2 つの槽が 1 つの槽に流れ込む配管に替えた（最初の速さは 2 本の合計）"
+scope = { where = [{ col = "p_merge", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "gain_vs_uniform", op = ">", value = 1.0 }]
+surprise = "gain_vs_uniform"
+context = ["h", "span_ratio", "err", "ramp_clamped"]
+falsifier = "uniform より大きい単位があれば、最初の速さを合計で取る決め方を見直す"
+
+[[proposition]]
+id = "O69"
+statement = "いちばん上がポンプでも、ramp にすると、刻みが時定数の 1/8 以下なら、2 つ下の槽のずれは uniform より小さい"
+strength = "always"
+parent = "O64"
+change = "いちばん上の槽をポンプに替えた（最初の速さはポンプの速さ）"
+scope = { where = [{ col = "p_pump", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "gain_vs_uniform", op = ">", value = 1.0 }]
+surprise = "gain_vs_uniform"
+context = ["h", "span_ratio", "err", "ramp_clamped"]
+falsifier = "uniform より大きい単位があれば、ポンプの下での決め方を見直す"
+
+[[proposition]]
+id = "O70"
+statement = "2 つの槽が輪になっていても、出る量を連立の式で同時に解く ramp にすると、刻みが時定数の 1/8 以下なら、行き渡る途中のずれは uniform より小さい"
+strength = "always"
+parent = "O64"
+change = "1 列の槽を輪に替え、上から順に決める代わりに 2 つの槽を同時に解く"
+scope = { where = [{ col = "p_ring", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "gain_vs_uniform", op = ">", value = 1.0 }]
+surprise = "gain_vs_uniform"
+context = ["h", "span_ratio", "err", "ramp_clamped"]
+falsifier = "uniform より大きい単位があれば、輪では ramp を勧めないと書く"
+note = "見込みが立っていない命題"
+
+[[proposition]]
+id = "O71"
+statement = "枝分かれ・合流・ポンプ・輪のどれでも、ramp のずれは、刻みが時定数の 1/32 以下なら、刻みを半分にすると 1/6〜1/10 になる（3 乗なら 1/8）"
+strength = "always"
+scope = { where = [{ col = "pipe", op = "==", value = true }, { col = "ramp", op = "==", value = true }, { col = "has_half", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "ramp_halving", op = ">=", value = 6.0 }, { col = "ramp_halving", op = "<=", value = 10.0 }]
+surprise = "ramp_halving"
+context = ["h", "span_ratio", "err", "p_branch", "p_merge", "p_pump", "p_ring"]
+falsifier = "比が 4 に近い単位があれば 2 乗の項が残っている。その形を書く"
+
+[[proposition]]
+id = "O72"
+statement = "枝分かれ・合流・ポンプ・輪のどれでも、ramp で、刻みが時定数の 1/8 以下なら、同じステップに出る分を抑えることは起きない"
+strength = "always"
+parent = "O66"
+change = "1 列の槽を 4 つの形の配管に替えた"
+scope = { where = [{ col = "pipe", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "ramp_clamped", op = "==", value = 0 }]
+surprise = "ramp_clamped"
+context = ["h", "span_ratio", "p_branch", "p_merge", "p_pump", "p_ring"]
+falsifier = "抑えた単位があれば、その形と刻みを書く"

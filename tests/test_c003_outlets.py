@@ -29,22 +29,32 @@ EXPECTED = {
     # 第2弾（propositions_r2.toml）
     "O16": (4, 0), "O17": (3, 8), "O18": (3, 20), "O19": (4, 0), "O20": (3, 30), "O21": (0, 0), "O22": (4, 0),
     "O23": (3, 50), "O24": (4, 0), "O25": (4, 0),
+    # 第3弾（propositions_r3.toml）
+    "O26": (4, 0), "O27": (3, 0), "O28": (3, 30), "O29": (4, 0), "O30": (4, 0), "O31": (3, 80), "O32": (4, 0),
+    "O33": (4, 0), "O34": (4, 0),
 }
 
 
 def test_prelock_hash_matches_stamp():
     # 命題を書き換えたら、固定時のハッシュと合わなくなる（変えるときは新しい id を足し、スタンプも理由つきで更新する）
     stamp = (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
-    for name in ("propositions.toml", "propositions_r2.toml"):
+    for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
-def test_round_one_units_are_untouched_by_round_two():
-    # 第2弾で足した組は、第1弾の命題の範囲（valve_only・mixed・pump_only・has_delay）に入らない
+def test_later_rounds_stay_outside_earlier_scopes():
+    # 後の弾で足した組は、前の弾の命題の範囲（組の真偽の列）に入らない
     units = units_mod.read_units()
-    new = [u for u in units if u["gentle"] or u["chain"]]
-    assert len(new) == 140 and len(units) - len(new) == 338
-    assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in new)
+    r2 = [u for u in units if u["gentle"] or u["chain"]]
+    r3 = [u for u in units if u["native"] or u["chain2"] or u["fed"]]
+    assert (len(units) - len(r2) - len(r3), len(r2), len(r3)) == (338, 140, 460)
+    assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3)
+    assert not any(u["gentle"] or u["chain"] for u in r3)
+
+
+def test_every_unit_keeps_the_total():
+    # O15 の列。エンジンの単位も、整数の漸化式で進めた単位（uniform・through）も 0
+    assert {u["conservation_q"] for u in units_mod.read_units()} == {0}
 
 
 def test_units_match_provenance():

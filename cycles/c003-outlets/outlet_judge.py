@@ -2,7 +2,7 @@
 
     python cycles/c003-outlets/outlet_judge.py [--report-only]
 
-入力は units.jsonl（outlet_units.py make が書く）と propositions.toml・propositions_r2.toml（事前登録）。結果は outputs/ に書く。
+入力は units.jsonl（outlet_units.py make が書く）と propositions.toml・propositions_r2.toml・propositions_r3.toml（事前登録）。結果は outputs/ に書く。
 終了コードは docs/propositions.md の表どおり（最初に 0 でなかった命題のコード）。--report-only は異議（1〜6）で失敗にしない。
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ import outlet_units  # noqa: E402
 import propositions as pr  # noqa: E402
 
 OUT = HERE / "outputs"
-DROP = ("shares", "kind", "split", "method", "first_left")  # 列にしない（リスト）か、真偽の列に直してあるもの
+DROP = ("shares", "kind", "split", "method", "first_left", "base")  # 列にしない（リスト）か、真偽の列に直してあるもの
 
 
 def table(units: list[dict]) -> pl.DataFrame:
@@ -39,7 +39,7 @@ def code_version() -> str | None:
     return r.stdout.strip() or None
 
 
-PROPS = (HERE / "propositions.toml", HERE / "propositions_r2.toml")  # 事前登録の順。第2弾は第1弾の id を parent に持てる
+PROPS = (HERE / "propositions.toml", HERE / "propositions_r2.toml", HERE / "propositions_r3.toml")  # 事前登録の順。後の弾は前の id を parent に持てる
 
 
 def load_props(paths=PROPS) -> tuple[list[dict], str]:

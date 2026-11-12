@@ -30,6 +30,8 @@ COUNTS = [1, 2, 3, 4, 8, 16]
 PUMP_SHARE = 1 / 8  # 混ざる槽・足りているポンプ: q = V0·K·PUMP_SHARE
 GENTLE_SHARE, GENTLE_SPAN = 1 / 64, 0.5  # 第2弾 gentle: 弱いポンプを t ≈ τ/2 で測る（厳密な残りが大きい）
 CHAIN_RATIOS = [0.25, 0.5, 0.75, 2.0, 4.0]  # 第2弾 chain: 2 段目の時定数 τ2 / τ
+CHAIN2_RATIOS, CHAIN2_SPANS = [1 / 3, 1.5, 3.0, 8.0], [1.0, 3.0]  # 第3弾 chain2: 別の τ2 と別の時刻
+FED_RATIOS = [0.25, 1.0, 4.0]  # 第3弾 fed: ポンプ（速さ V0/TAU）→ 槽（弁 1 本、τ2）
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
 TOL_CHECK = 1e-9  # 検算で許す err の差
@@ -76,18 +78,41 @@ def plan(h_extra: list[float]) -> list[dict]:
     for ratio in CHAIN_RATIOS:
         for h in hs:
             add("chain", "eq", 1, "independent", h, tau2_ratio=ratio)
+    for h in hs:  # 第3弾
+        for n in (2, 3, 4, 8, 16):
+            for split in ("eq", "skew"):
+                add("native", split, n, "exact", h, base="valve")
+        for base_kind in ("mixed", "gentle"):
+            for n in (1, 2, 4):
+                add("native", "eq", n, "exact", h, base=base_kind)
+    for method in ("independent", "uniform", "through"):
+        for ratio in CHAIN2_RATIOS:
+            for sp in CHAIN2_SPANS:
+                for h in hs:
+                    add("chain2", "eq", 1, method, h, tau2_ratio=ratio, span_ratio=sp)
+    for method in ("independent", "uniform"):
+        for ratio in FED_RATIOS:
+            for h in hs:
+                add("fed", "eq", 1, method, h, tau2_ratio=ratio)
     return out
 
 
+def base(u: dict) -> str:
+    """native の単位は、同じ条件の組（valve・mixed・gentle）の式で答えを出す。"""
+    return u.get("base") or u["kind"]
+
+
 def span(u: dict) -> float:
-    return GENTLE_SPAN if u["kind"] == "gentle" else SPAN
+    if u["kind"] == "chain2":
+        return u["span_ratio"]
+    return GENTLE_SPAN if base(u) == "gentle" else SPAN
 
 
 def pump_rate(u: dict) -> float:
     k = 1.0 / TAU
     if u["kind"] == "pump":
         return V0 * k * (1.0 if u["starved"] else PUMP_SHARE)
-    return V0 * k * {"mixed": PUMP_SHARE, "gentle": GENTLE_SHARE}.get(u["kind"], 0.0)
+    return V0 * k * {"mixed": PUMP_SHARE, "gentle": GENTLE_SHARE, "fed": 1.0}.get(base(u), 0.0)
 
 
 def chain_exact(u: dict, t: float) -> float:
@@ -98,11 +123,14 @@ def chain_exact(u: dict, t: float) -> float:
 
 def exact_left(u: dict, t: float) -> float:
     k = 1.0 / TAU
-    if u["kind"] in ("valve", "delay"):
+    if base(u) in ("valve", "delay"):
         return V0 * math.exp(-k * t)
-    if u["kind"] == "chain":
+    if u["kind"] in ("chain", "chain2"):
         return chain_exact(u, t)
     q = pump_rate(u)
+    if u["kind"] == "fed":  # 槽の量 q·τ2·(1 − e^(−t/τ2))
+        tau2 = TAU * u["tau2_ratio"]
+        return q * tau2 * -math.expm1(-t / tau2)
     if u["kind"] == "pump":
         return max(0.0, V0 - q * t)
     return max(0.0, (V0 + q / k) * math.exp(-k * t) - q / k)  # 空になった後は 0
@@ -111,11 +139,14 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
-    if u["kind"] == "chain":  # 2 段: どちらの弁もステップ最初の量を見る
-        g1, g2 = -math.expm1(-k * dt), -math.expm1(-dt / (TAU * u["tau2_ratio"]))
+    if u["kind"] in ("chain", "chain2", "fed"):  # 入る量 → 槽 B（弁 1 本）
+        k2 = 1.0 / (TAU * u["tau2_ratio"])
+        g1, g2 = -math.expm1(-k * dt), -math.expm1(-k2 * dt)
         a, b = V0, 0.0
         for _ in range(steps):
-            a, b = a - a * g1, b - b * g2 + a * g1
+            inflow = pump_rate(u) * dt if u["kind"] == "fed" else a * g1
+            out = b * g2 + inflow * through_share(u, k, k2, dt, a)
+            a, b = a - a * g1, b + inflow - min(out, b + inflow)
         return b
     rates = [s * k for s in u["shares"]]
     q = pump_rate(u)
@@ -127,11 +158,22 @@ def recurrence_left(u: dict, steps: int, dt: float) -> float:
             take = v * sum(-math.expm1(-r * dt) for r in rates)
         else:
             take = v * -math.expm1(-k * dt) if rates else 0.0
-        if u["method"] == "affine":
+        if u["method"] in ("affine", "exact"):
             v = max(0.0, (v + q / k) * math.exp(-k * dt) - q / k)
         else:
             v = max(0.0, v - take - q * dt)
     return v
+
+
+def through_share(u: dict, k1: float, k2: float, dt: float, upstream: float) -> float:
+    """このステップに入った量のうち、同じステップの中で出ていく割合（independent は 0）。"""
+    if u["method"] == "uniform":  # 一定の速さで入ると見なす
+        x = k2 * dt
+        return 1.0 + math.expm1(-x) / x
+    if u["method"] == "through":  # 2 段の閉じた式: 入った量 A·(1 − e^(−k1·dt)) のうち槽に残るのは A·k1/(k2 − k1)·(e^(−k1·dt) − e^(−k2·dt))
+        stays = k1 / (k2 - k1) * (math.exp(-k1 * dt) - math.exp(-k2 * dt))
+        return max(0.0, 1.0 - stays / -math.expm1(-k1 * dt))
+    return 0.0
 
 
 def _err(left: float, exact: float) -> float:
@@ -140,12 +182,20 @@ def _err(left: float, exact: float) -> float:
 
 def label(u: dict) -> tuple[str, str]:
     kind = {"valve": "弁", "delay": "弁+遅れ", "mixed": "弁+ポンプ", "pump": "ポンプ", "gentle": "弁+弱いポンプ",
-            "chain": "2 段"}[u["kind"]]
+            "chain": "2 段"}.get(u["kind"], u["kind"])
     split = "" if u["split"] == "eq" else " 偏り"
     tail = " 不足" if u.get("starved") else ""
     family = f"{u['kind']}-{u['split']}-n{u['n']}-{u['method']}" + ("-short" if u.get("starved") else "")
     if u["kind"] == "chain":
         return f"chain-r{u['tau2_ratio']:g}", f"{kind} τ2/τ={u['tau2_ratio']:g} h={u['h']:.6g}"
+    if u["kind"] == "chain2":
+        return (f"chain2-r{u['tau2_ratio']:.3g}-s{u['span_ratio']:g}-{u['method']}",
+                f"2 段 τ2/τ={u['tau2_ratio']:.3g} t={u['span_ratio']:g}τ {u['method']} h={u['h']:.6g}")
+    if u["kind"] == "fed":
+        return f"fed-r{u['tau2_ratio']:g}-{u['method']}", f"ポンプ → 槽 τ2/τ={u['tau2_ratio']:g} {u['method']} h={u['h']:.6g}"
+    if u["kind"] == "native":
+        return (f"native-{u['base']}-{u['split']}-n{u['n']}",
+                f"エンジン既定 {u['base']}{split} {u['n']} 本 h={u['h']:.6g}")
     return family, f"{kind}{split} {u['n']} 本{tail} {u['method']} h={u['h']:.6g}"
 
 
@@ -157,12 +207,18 @@ def run_engine(u: dict, ffs: dict) -> dict:
     t = steps * dt
     k = 1.0 / TAU
     delay = DELAY if u["kind"] == "delay" else 0.0
-    net = Network(dt=dt)
-    net.tank("pool", 1.0, volume=V0)
+    if u["method"] in ("uniform", "through"):
+        return run_recurrence_q(u, ffs, steps, dt, t)
+    # 第1弾・第2弾の組は「別々に取る」エンジンで作る（エンジンの既定が厳密になった後も同じ値になるように）
+    net = Network(dt=dt, outlets="exact" if u["kind"] == "native" else "independent")
+    net.tank("pool", 1.0, volume=1024.0 * V0 if u["kind"] == "fed" else V0)
     q = pump_rate(u)
-    if u["kind"] == "chain":
+    if u["kind"] in ("chain", "chain2", "fed"):
         net.tank("second", 1.0).tank("sink", 1.0)
-        net.valve("pool", "second", tau=TAU)
+        if u["kind"] == "fed":
+            net.pump("pool", "second", rate=q)
+        else:
+            net.valve("pool", "second", tau=TAU)
         net.valve("second", "sink", tau=TAU * u["tau2_ratio"])
         res = net.run(t)
         return {"steps": steps, "dt": dt, "t": t, "left_q": res["volumes_q"]["second"],
@@ -173,12 +229,12 @@ def run_engine(u: dict, ffs: dict) -> dict:
             net.tank(f"out-{i}", 1.0)
             net.pump("pool", f"out-{i}", rate=q / u["n"])
     else:
-        if u["kind"] in ("mixed", "gentle"):
+        if base(u) in ("mixed", "gentle"):
             net.tank("pumped", 1.0)
             pump = net.pump("pool", "pumped", rate=q)
         for i, share in enumerate(u["shares"]):
             net.tank(f"out-{i}", 1.0)
-            if u["method"] == "independent":
+            if u["method"] in ("independent", "exact"):
                 net.valve("pool", f"out-{i}", tau=TAU / share, delay=delay)
             elif u["method"] == "joint":
                 net.link("valve_joint", "pool", f"out-{i}", delay=delay, k_total=lag_gain(dt, TAU), share_q=to_q(share))
@@ -191,6 +247,30 @@ def run_engine(u: dict, ffs: dict) -> dict:
         lag = max(abs(round((ln["first_arrival"] - ln["first_flow"]) / dt) - round(delay / dt)) for ln in res["links"])
     return {"steps": steps, "dt": dt, "t": t, "left_q": res["volumes_q"]["pool"], "left": res["volumes_q"]["pool"] / ffs["one"],
             "conservation_q": res["conservation_error_q"], "lag_err_steps": lag}
+
+
+def run_recurrence_q(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
+    """uniform・through: エンジンと同じ固定小数点（Q48、床）の整数で、入る量 → 槽 B → 受け を進める。
+    エンジンは出る量をステップ最初の量までに抑えるので、この 2 つは法則を足すだけでは入らない。"""
+    to_q, qmul, lag_gain = ffs["to_q"], ffs["qmul"], ffs["lag_gain"]
+    k1, k2 = 1.0 / TAU, 1.0 / (TAU * u["tau2_ratio"])
+    g1, g2 = lag_gain(dt, TAU), lag_gain(dt, TAU * u["tau2_ratio"])
+    a, b, sink = (0 if u["kind"] == "fed" else to_q(V0)), 0, 0  # fed は槽 A を使わない（入る量はポンプ）
+    start = a
+    pump_amount = qmul(to_q(pump_rate(u)), to_q(dt))
+    share_q = to_q(through_share(u, k1, k2, dt, 0.0))
+    for _ in range(steps):
+        if u["kind"] == "fed":
+            inflow, start = pump_amount, start + pump_amount  # 外から入った分を総量に数える
+        else:
+            inflow = qmul(a, g1)
+            a -= inflow
+        out = min(qmul(b, g2) + qmul(inflow, share_q), b + inflow)
+        b += inflow - out
+        sink += out
+    total = a + b + sink
+    return {"steps": steps, "dt": dt, "t": t, "left_q": b, "left": b / ffs["one"], "first_left": a / ffs["one"],
+            "conservation_q": total - start, "lag_err_steps": None}
 
 
 def load_ffs(path: Path) -> dict:
@@ -207,7 +287,7 @@ def load_ffs(path: Path) -> dict:
         total = fixedq.qmul(net.nodes[ln["src"]]["v"] + ln["q_over_k"], ln["k_total"]) - ln["pump_amount"]
         return fixedq.qmul(max(total, 0), ln["share_q"])
 
-    return {"Network": network.Network, "one": fixedq.ONE, "to_q": fixedq.to_q, "lag_gain": fixedq.lag_gain,
+    return {"Network": network.Network, "one": fixedq.ONE, "qmul": fixedq.qmul, "to_q": fixedq.to_q, "lag_gain": fixedq.lag_gain,
             "random_scales": fixedq.random_scales}
 
 
@@ -220,16 +300,18 @@ def derive(units: list[dict], log=print) -> None:
         u["exact"] = exact
         u["err"] = _err(u["left"], exact)
         u["err_abs"] = abs(u["err"])
-        for flag in ("valve", "pump", "mixed", "delay", "gentle", "chain"):
+        for flag in ("valve", "pump", "mixed", "delay", "gentle", "chain", "native", "chain2", "fed"):
             u[{"valve": "valve_only", "pump": "pump_only", "delay": "has_delay"}.get(flag, flag)] = u["kind"] == flag
-        for m in ("independent", "joint", "affine"):
+        for m in ("independent", "joint", "affine", "uniform", "through"):
             u[m] = u["method"] == m
         u["equal_split"] = u["split"] == "eq"
         u["starved"] = bool(u.get("starved"))
         for col in ("err_pred", "fo_rel", "ceil_ratio", "corr_gain", "drop_from_fewer", "halving_ratio", "src_same",
-                    "euler_ratio", "so_rel", "disc_gap", "joint_ratio", "first_err_abs", "chain_halving"):
+                    "euler_ratio", "so_rel", "disc_gap", "joint_ratio", "first_err_abs", "chain_halving",
+                    "chain_pred_rel", "fed_gap", "gain_vs_independent", "uniform_halving"):
             u[col] = None
         u.setdefault("tau2_ratio", None)
+        u.setdefault("span_ratio", None)
         u["has_half"] = False
         by[(u["team"], u["h"])] = u
         if u["kind"] != "valve":
@@ -268,6 +350,22 @@ def derive(units: list[dict], log=print) -> None:
         if u["kind"] == "gentle" and u["method"] == "joint":
             twin = by[(f"gentle-eq-n{u['n']}-independent", u["h"])]
             u["joint_ratio"] = u["err"] / twin["err"]
+        if u["kind"] in ("chain2", "fed") and u["method"] == "independent":
+            x = u["dt"] / (TAU * u["tau2_ratio"])
+            if u["kind"] == "chain2":
+                u["chain_pred_rel"] = abs(u["err"] - x / 2.0) / (x / 2.0)
+            else:
+                u["fed_gap"] = abs(u["err"] - (x / -math.expm1(-x) - 1.0))
+        if u["method"] == "uniform":
+            twin = by[(u["team"].replace("-uniform", "-independent"), u["h"])]
+            mine = u["err_abs"]
+            if mine == 0.0:
+                log(f"ε: {u['team_name']} の err が 0。ε = {EPS} に置く")
+                mine = EPS
+            u["gain_vs_independent"] = twin["err_abs"] / mine
+            half = by.get((u["team"], u["h"] / 2.0))
+            if u["kind"] == "chain2" and half is not None and half["err"] != 0.0:
+                u["has_half"], u["uniform_halving"] = True, u["err"] / half["err"]
         if u["kind"] == "chain":
             u["first_err_abs"] = abs(u["first_left"] / (V0 * math.exp(-k * u["t"])) - 1.0)
             half = by.get((u["team"], u["h"] / 2.0))

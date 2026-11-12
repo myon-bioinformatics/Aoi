@@ -8,3 +8,5 @@ propositions_r4.toml sha256 979ef93849c07d91ed1d78e19d7bc99dfa0abbeaa4da815d3650
 固定: 2026-11-12 JST（エンジンへの実装と第4弾の単位・列を作る前のコミット）
 propositions_r5.toml sha256 f2694adb6359096c378f4f083dfb3037a82e0e208b1370c9139bd5380a566eb1
 固定: 2026-11-12 JST（第5弾の単位と列を作る前のコミット）
+propositions_r6.toml sha256 48d78ce33a454c9159a7b92f04e350fdbbe01f44a939e4baf0020fdb1f9c1715
+固定: 2026-11-12 JST（第6弾の単位と列を作る前のコミット）

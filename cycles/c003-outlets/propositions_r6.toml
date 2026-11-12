@@ -1,0 +1,84 @@
+# サイクル3の命題・第6弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第5弾のファイルは変更しない。
+#
+# 主題: 刻みが粗いとき、uniform（入る量が一定の速さで入ると見なす）のずれが end（今までの扱い）より大きくなる境目を、式から出す。
+#
+# 記録: 2026-11-12 20:15 JST に書いた。このとき第6弾の単位（edge2・edge3 の組）と列はまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第5弾の結果すべて。とくに
+#     O48 の裏側（chain3b の h = 1/2 と 0.74 で、uniform が end より大きい単位が 3 件）、
+#     O42（輪の h = 1/4・τ2/τ = 4 で uniform が 0.2 倍。end のずれが 0 を横切る所）、
+#     O46（3 段目の end のずれは、同じ組でも時刻で向きが変わる）。
+#   紙の上で導いた式（1 列につながった槽、どの槽も弁 1 本。エンジンの uniform の 1 ステップを連続の式に読み替える。
+#   展開は数式処理で dt の 2 次まで行った。データに当てはめた係数は無い）:
+#     G_eff(uniform) = G + dt²·H。dt の 1 次の項は無い（2 次の方式）。H の成分は
+#       次の槽へ          H[i+1][i] = k_i²·k_{i+1}/12
+#       2 つ先の槽へ      H[i+2][i] = −k_i·k_{i+1}·(k_i − 2·k_{i+2})/12
+#       3 つ先の槽へ      H[i+3][i] = −k_i·k_{i+1}·k_{i+2}/6
+#     2 段目のずれは k1·k2·dt²/12（時刻によらない）。
+#   境目の式: end のずれ ≈ a1(t)·dt（第5弾の G_eff(end)）、uniform のずれ ≈ b2(t)·dt²。大きさが並ぶ刻みは dt* = |a1/b2|。
+#     end のずれが 0 を横切る時刻（a1 = 0）の近くでは dt* が 0 に近づき、どんなに細かい刻みでも uniform のほうが大きくなる。
+#     つまり「逆効果」は uniform が悪くなるのではなく、end のずれがたまたま打ち消し合う所で起きる、という予想。
+#   式を導いた後に 1 件だけ照らした: 第3弾の chain2・uniform の τ2/τ = 1/3・h = 1/128 の単位で、式 k1·k2·dt²/12 は 1.53e-5、
+#     単位は 1.5e-5（最大値として見ていた値）。3 段の式はどの単位とも照らしていない。
+#   単位の組を決めるために、式だけを使って計算したもの（データは使っていない）: 3 つの組で end のずれが 0 を横切る時刻
+#     （t/τ = 2.4038・1.5771・1.3600）と、その前後の時刻での境目 dt*。h ≥ 2·h* に当たる単位が 10 件以上になるように時刻を選んだ。
+#   境の値（5 %・h ≤ 1/32・境目の 1/2 倍と 2 倍）は人が決めた仮置きで、結果に合わせて動かさない。
+#
+# 第6弾で足す単位（前の弾の命題の範囲には入らない組）。エンジン本体（FluidFullSpeedSimulation の main）で進める:
+#   edge3 = 3 段の槽。刻み 11 通り、入る量の扱いは end と uniform。
+#           向きが変わる 3 組 (τ2/τ, τ3/τ) = (3/2, 4)・(4, 3/2)・(2/5, 5/2) は、0 を横切る時刻 t0 の 0.8・0.9・0.95・0.98・1.02・1.05・1.1・1.2 倍で測る。
+#           向きが変わらない 2 組 (1/4, 3/4)・(6, 1/5) は t ≈ τ・2τ・3τ で測る
+#   edge2 = 2 段の槽。τ2/τ = 1/5・3/5・5/4・5、t ≈ 1.5τ、刻み 11 通り。uniform だけ
+# 第6弾で足す列:
+#   uni_fit   = |err − G_eff(uniform) の式の予想| / ((dt·k_max)²/12)。k_max は鎖の中でいちばん速い槽の速さ（edge3 の uniform）
+#   uni_fit2  = |err − k1·k2·dt²/12| / (k1·k2·dt²/12)（edge2）
+#   h_star・h_ratio = 式から出した境目 |a1/b2|/τ（その単位が実際に測った時刻で）と、h / h_star（edge3 の uniform）
+#   gain_vs_end = |同じ条件の end の err| / |この単位の err|（1 より小さければ uniform のほうが大きい）
+
+# ---- uniform の残りのずれの式 ----
+
+[[proposition]]
+id = "O50"
+statement = "槽が 2 段つながるとき、刻みが時定数の 1/32 以下なら、エンジンの uniform の 2 段目のずれは k1·k2·dt²/12 と 5 % 以内で合う"
+strength = "always"
+scope = { where = [{ col = "edge2", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "uni_fit2", op = "<=", value = 0.05 }]
+surprise = "uni_fit2"
+context = ["h", "tau2_ratio", "err"]
+falsifier = "外れる単位があれば、uniform の 1 ステップを連続の式に読み替えた展開（dt の 2 次まで）を見直す"
+
+[[proposition]]
+id = "O51"
+statement = "槽が 3 段つながるとき、刻みが時定数の 1/32 以下なら、エンジンの uniform の 3 段目のずれは G_eff(uniform) の式と合う（差は目安 (dt·k_max)²/12 の 5 % 以内）"
+strength = "always"
+scope = { where = [{ col = "edge3", op = "==", value = true }, { col = "uniform_in", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "uni_fit", op = "<=", value = 0.05 }]
+surprise = "uni_fit"
+context = ["h", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "外れる単位があれば、H の 2 つ先の槽への項を見直す"
+
+# ---- 逆効果になる境目 ----
+
+[[proposition]]
+id = "O52"
+statement = "槽が 3 段つながるとき、刻みが式から出した境目の半分以下なら、uniform のずれは end より小さい"
+strength = "always"
+scope = { where = [{ col = "edge3", op = "==", value = true }, { col = "uniform_in", op = "==", value = true }] }
+if = [{ col = "h_ratio", op = "<=", value = 0.5 }]
+then = [{ col = "gain_vs_end", op = ">", value = 1.0 }]
+surprise = "gain_vs_end"
+context = ["h", "h_star", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "境目の半分以下で uniform のほうが大きい単位があれば、境目の式（1 次と 2 次の項だけで比べる）は粗い刻みで足りないと書く"
+
+[[proposition]]
+id = "O53"
+statement = "槽が 3 段つながるとき、刻みが式から出した境目の 2 倍以上なら、uniform のずれは end より大きい"
+strength = "always"
+scope = { where = [{ col = "edge3", op = "==", value = true }, { col = "uniform_in", op = "==", value = true }] }
+if = [{ col = "h_ratio", op = ">=", value = 2.0 }]
+then = [{ col = "gain_vs_end", op = "<", value = 1.0 }]
+surprise = "gain_vs_end"
+context = ["h", "h_star", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "境目の 2 倍以上で uniform のほうが小さい単位があれば、境目の式は上側では当たらないと書く"
+note = "逆（uniform のほうが大きいなら、刻みは境目の 2 倍以上）の判例は、境目の近く（1/2〜2 倍）で大きくなった単位を示す"

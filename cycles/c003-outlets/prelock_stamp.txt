@@ -1,2 +1,4 @@
 propositions.toml sha256 fe1b9dc9eaabdcb01b07c68361eb71f9b3b904a79d7f6e1ee53e7e63a6239240
 固定: 2026-11-12 JST、コミット b126b0d（単位を作る前）
+propositions_r2.toml sha256 4cf78382fb29c2a8ea77b6c98bf7d6a11535738e04e62db643791dac7e56647e
+固定: 2026-11-12 JST（第2弾の単位と列を作る前のコミット）

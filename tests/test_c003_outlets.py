@@ -46,6 +46,8 @@ EXPECTED = {
     "O62": (4, 0), "O63": (3, 0), "O64": (4, 0), "O65": (3, 1), "O66": (4, 0),
     # 第9弾（propositions_r9.toml）
     "O67": (4, 0), "O68": (4, 0), "O69": (4, 0), "O70": (4, 0), "O71": (4, 0), "O72": (4, 0),
+    # 第10弾（propositions_r10.toml）
+    "O73": (4, 0), "O74": (4, 0), "O75": (4, 0), "O76": (4, 0), "O77": (4, 0), "O78": (4, 0),
 }
 TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
@@ -55,7 +57,8 @@ def test_prelock_hash_matches_stamp():
     stamp = (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
     for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml",
                  "propositions_r5.toml", "propositions_r6.toml",
-                 "propositions_r7.toml", "propositions_r8.toml", "propositions_r9.toml"):
+                 "propositions_r7.toml", "propositions_r8.toml", "propositions_r9.toml",
+                 "propositions_r10.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -78,7 +81,9 @@ def test_later_rounds_stay_outside_earlier_scopes():
     assert len(r9) == 528 and not any(u["vary"] or u["cross3c"] or u["cross4"] or u["ring"] or u["flow"] for u in r9)
     assert all(u["p_branch"] + u["p_merge"] + u["p_pump"] + u["p_ring"] == 1 for u in r9)
     units = [u for u in units if not (u["edge3"] or u["edge2"] or u["cross3"] or u["cross3c"] or u["cross4"] or u["vary"]
-                                      or u["pipe"])]
+                                      or u["pipe"] or u["ladder"])]
+    r10 = [u for u in units_mod.read_units() if u["ladder"]]
+    assert len(r10) == 264 and not any(u["vary"] or u["pipe"] or u["chain3b"] or u["edge2"] for u in r10)
     assert (len(units) - len(r2) - len(r3) - len(r4) - len(r5), len(r2), len(r3), len(r4), len(r5)) == (338, 140, 460, 450, 308)
     assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3 + r4 + r5)
     assert not any(u["gentle"] or u["chain"] for u in r3 + r4 + r5)

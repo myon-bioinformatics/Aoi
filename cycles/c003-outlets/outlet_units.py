@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import math
+from fractions import Fraction
 import random
 import subprocess
 import sys
@@ -58,7 +59,9 @@ PIPE_SETS = {  # 第9弾 pipe: 形ごとの組と、測る時刻 / τ
     "ring": ([(0.4,), (2.0,), (1.25,)], [0.5, 1.5]),  # (τ2/τ,)
 }
 CROSS_KINDS = ("cross3", "cross3c", "cross4")  # 式で end のずれが 0 を横切るステップの前後を測る組
-CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary")  # 1 列につながった槽（stages に τ_i/τ）
+LADDER_SETS = [((0.4,), 1.5), ((0.75,), 1.5), ((2.0,), 1.5), ((3.0,), 1.5), ((2.0, 0.75), 2.0), ((0.4, 1.5), 2.0)]  # 第10弾 ladder
+LADDER_ORDER = {"end": 1, "uniform_in": 2, "ramp": 3, "quad": 4}  # 入る速さの見なし方と、見込みのずれの次数
+CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder")  # 1 列につながった槽（stages に τ_i/τ）
 FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, "pipe")  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
@@ -184,6 +187,11 @@ def plan(h_extra: list[float]) -> list[dict]:
                 for h in hs + H_FINE:
                     for method in ("uniform_in", "ramp"):
                         add("pipe", "eq", 1, method, h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp)
+    for st, sp in LADDER_SETS:  # 第10弾
+        for h in hs + H_FINE:
+            for method in LADDER_ORDER:
+                add("ladder", "eq", 1, method, h, stages=list(st), tau2_ratio=st[0],
+                    tau3_ratio=st[1] if len(st) > 1 else None, span_ratio=sp)
     return out
 
 
@@ -359,19 +367,35 @@ def ramp_prediction(rates: list[float], dt: float, t: float) -> float:
     return _shifted_prediction(rates, t, shift)
 
 
-def variant_coeffs(rates: list[float], dt: float, method: str) -> list[tuple[float, float]]:
-    """槽 i（i ≥ 1）が同じステップに出す分 = a·I + b·V_{i−1}（I は届く量、V_{i−1} は上の槽のステップ最初の量）。
-    cascade: a = 1 − (1 − e^(−x))/x、b = 0。ramp: a = 1 − 2·E1/dt²、b = −k_{i−1}·(E0 − 2·E1/dt)（b は 0 以上）。"""
-    out = [(0.0, 0.0)]
+def _quad_series(x: float, weights) -> float:
+    """Σ_j (−x)^j·Σ_n w_n·n!/(n + 1 + j)!（E_n/dt^(n+1) の級数を、打ち消し合う定数項を分数で先に引いてから足す）。"""
+    total, power = 0.0, 1.0
+    for j in range(60):
+        coeff = sum(Fraction(w) * math.factorial(n) / math.factorial(n + 1 + j) for n, w in weights)
+        total += float(coeff) * power
+        power *= -x
+    return total
+
+
+def variant_coeffs(rates: list[float], dt: float, method: str) -> list[tuple[float, float, float]]:
+    """槽 i（i ≥ 1）が同じステップに出す分 = a·I + b·V_{i−1} + c·V'_{i−1}（I は届く量、V_{i−1}・V'_{i−1} は上の槽のステップ最初・最後の量）。
+    cascade: a = 1 − (1 − e^(−x))/x、b = c = 0。ramp: a = 1 − 2·E1/dt²、b = −k_{i−1}·(E0 − 2·E1/dt)（b は 0 以上）、c = 0。
+    quad: 残る分 = I·(6·E1/dt² − 6·E2/dt³) + r0·(E0 − 4·E1/dt + 3·E2/dt²) + r1·(−2·E1/dt + 3·E2/dt²)。"""
+    out = [(0.0, 0.0, 0.0)]
     for i in range(1, len(rates)):
         k = rates[i]
         x = k * dt
         if method == "cascade":
-            out.append((1.0 + math.expm1(-x) / x, 0.0))
+            out.append((1.0 + math.expm1(-x) / x, 0.0, 0.0))
+            continue
+        if method == "quad":
+            up = rates[i - 1] * dt
+            out.append((1.0 - _quad_series(x, [(1, 6), (2, -6)]),
+                        -up * _quad_series(x, [(0, 1), (1, -4), (2, 3)]), -up * _quad_series(x, [(1, -2), (2, 3)])))
             continue
         e0 = -math.expm1(-x) / k
         e1 = (x + math.expm1(-x)) / (k * k)
-        out.append((1.0 - 2.0 * e1 / (dt * dt), -rates[i - 1] * (e0 - 2.0 * e1 / dt)))
+        out.append((1.0 - 2.0 * e1 / (dt * dt), -rates[i - 1] * (e0 - 2.0 * e1 / dt), 0.0))
     return out
 
 
@@ -384,8 +408,9 @@ def variant_recurrence(u: dict, steps: int, dt: float) -> float:
     for _ in range(steps):
         out = [x[0] * gains[0]]
         for i in range(1, len(rates)):
-            a, b = coeffs[i]
-            extra = min(max(out[i - 1] * a + x[i - 1] * b, 0.0), out[i - 1])
+            a, b, c = coeffs[i]
+            end_up = x[i - 1] - out[i - 1] + (out[i - 2] if i >= 2 else 0.0)
+            extra = min(max(out[i - 1] * a + x[i - 1] * b + end_up * c, 0.0), out[i - 1])
             out.append(x[i] * gains[i] + extra)
         x = [x[i] - out[i] + (out[i - 1] if i else 0.0) for i in range(len(rates))]
     return x[-1]
@@ -506,7 +531,7 @@ def base(u: dict) -> str:
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", "pipe"):
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", "pipe", "ladder"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -562,7 +587,7 @@ def recurrence_left(u: dict, steps: int, dt: float) -> float:
     if u["kind"] == "pipe":
         spec = pipe_spec(u)
         return pipe_run(spec, u["method"], steps, dt)["v"][spec["watch"]]
-    if u["method"] in ("cascade", "ramp"):
+    if u["method"] in ("cascade", "ramp", "quad"):
         return variant_recurrence(u, steps, dt)
     if u["kind"] in ("combo", "chain3", "ring", *CHAIN_KINDS):
         return flow_recurrence(u, steps, dt)
@@ -686,7 +711,7 @@ def label(u: dict) -> tuple[str, str]:
         tail = f"-s{u['span_ratio']:.6g}" if u["kind"] in ("chain3b", "edge3") else ""
         if u["kind"] in CROSS_KINDS:
             tail = f"-n{u['fixed_steps']}"
-        if u["kind"] == "vary":
+        if u["kind"] in ("vary", "ladder"):
             tail = f"-s{u['span_ratio']:g}"
         return (f"{u['kind']}-{ratios}{tail}-{u['method']}",
                 f"{len(u['stages']) + 1} 段 τ比 {'・'.join(f'{r:.3g}' for r in u['stages'])}{tail} {u['method']} h={u['h']:.6g}")
@@ -711,7 +736,7 @@ def run_engine(u: dict, ffs: dict) -> dict:
         return run_recurrence_q(u, ffs, steps, dt, t)
     if u["kind"] == "pipe":
         return run_pipe(u, ffs, steps, dt, t)
-    if u["method"] in ("cascade", "ramp"):
+    if u["method"] in ("cascade", "ramp", "quad"):
         return run_variant_q(u, ffs, steps, dt, t)
     if u["kind"] in FLOW_KINDS:
         return run_flow_engine(u, ffs, steps, dt, t)
@@ -833,14 +858,15 @@ def run_variant_q(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
     to_q, qmul, lag_gain = ffs["to_q"], ffs["qmul"], ffs["lag_gain"]
     rates = stage_rates(u)
     gains = [lag_gain(dt, 1.0 / r) for r in rates]
-    coeffs = [(to_q(a), to_q(b)) for a, b in variant_coeffs(rates, dt, u["method"])]
+    coeffs = [tuple(to_q(v) for v in row) for row in variant_coeffs(rates, dt, u["method"])]
     x = [to_q(V0)] + [0] * len(rates)  # 最後は受け
     start, clamped = x[0], 0
     for _ in range(steps):
         out = [qmul(x[0], gains[0])]
         for i in range(1, len(rates)):
-            a, b = coeffs[i]
-            raw = qmul(out[i - 1], a) + qmul(x[i - 1], b)
+            a, b, c = coeffs[i]
+            end_up = x[i - 1] - out[i - 1] + (out[i - 2] if i >= 2 else 0)
+            raw = qmul(out[i - 1], a) + qmul(x[i - 1], b) + qmul(end_up, c)
             extra = min(max(raw, 0), out[i - 1])
             clamped += extra != raw
             out.append(qmul(x[i], gains[i]) + extra)
@@ -905,7 +931,7 @@ def derive(units: list[dict], log=print) -> None:
         u["err_abs"] = abs(u["err"])
         for flag in ("valve", "pump", "mixed", "delay", "gentle", "chain", "native", "chain2", "fed", *FLOW_KINDS):
             u[{"valve": "valve_only", "pump": "pump_only", "delay": "has_delay"}.get(flag, flag)] = u["kind"] == flag
-        for m in ("independent", "joint", "affine", "uniform", "through", "cascade", "ramp"):
+        for m in ("independent", "joint", "affine", "uniform", "through", "cascade", "ramp", "quad"):
             u[m] = u["method"] == m
         u["equal_split"] = u["split"] == "eq"
         u["starved"] = bool(u.get("starved"))
@@ -914,12 +940,14 @@ def derive(units: list[dict], log=print) -> None:
                     "chain_pred_rel", "fed_gap", "gain_vs_independent", "uniform_halving",
                     "native_gap", "chain3_pred_rel", "gain_vs_end", "flow_halving", "stage_fit", "sign_ok",
                     "uni_fit", "uni_fit2", "h_star", "h_ratio", "end2_fit", "pred_margin",
-                    "gain_vs_uniform", "casc_fit", "ramp_fit", "ramp_clamped", "ramp_halving"):
+                    "gain_vs_uniform", "casc_fit", "ramp_fit", "ramp_clamped", "ramp_halving",
+                    "order_expected", "order_est", "order_gap", "quad_fit2", "gain_vs_ramp", "quad_clamped"):
             u[col] = None
         for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio"):
             u.setdefault(col, None)
         for shape, col in (("branch", "p_branch"), ("merge", "p_merge"), ("pumpfed", "p_pump"), ("ring", "p_ring")):
             u[col] = u.get("shape") == shape
+        u["two_stage"] = u["kind"] == "ladder" and len(u["stages"]) == 1
         u["uniform_in"] = u["method"] == "uniform_in"
         u["from_pump"] = u["kind"] == "flow" and u["base"] == "fed"
         u["settled"] = u["kind"] == "ring" and u["span_ratio"] == RING_SPANS[-1]
@@ -1013,6 +1041,30 @@ def derive(units: list[dict], log=print) -> None:
             half = by.get((u["team"], u["h"] / 2.0))
             if half is not None and half["err"] != 0.0:
                 u["has_half"], u["ramp_halving"] = True, u["err"] / half["err"]
+        if u["kind"] == "ladder":  # 第10弾: 次数の見積もり
+            u["order_expected"] = LADDER_ORDER[u["method"]]
+            half = by.get((u["team"], u["h"] / 2.0))
+            if half is not None:
+                u["has_half"] = True
+                ratio = u["err"] / half["err"] if half["err"] != 0.0 else 0.0
+                if ratio > 0.0:
+                    u["order_est"] = math.log2(ratio)
+                    u["order_gap"] = abs(u["order_est"] - u["order_expected"])
+                else:
+                    u["order_gap"] = 99.0
+            if u["method"] in ("ramp", "quad"):
+                u[u["method"] + "_clamped"] = u.pop("clamped")
+            if u["method"] == "quad":
+                twin = by[(u["team"].replace("-quad", "-ramp"), u["h"])]
+                mine = u["err_abs"]
+                if mine == 0.0:
+                    log(f"ε: {u['team_name']} の err が 0。ε = {EPS} に置く")
+                    mine = EPS
+                u["gain_vs_ramp"] = twin["err_abs"] / mine
+                if u["two_stage"]:
+                    rates = stage_rates(u)
+                    pred = rates[0] ** 3 * rates[1] * u["dt"] ** 4 / 720.0
+                    u["quad_fit2"] = abs(u["err"] + pred) / pred
         u.pop("clamped", None)
         if u["kind"] in CROSS_KINDS:  # 第7弾・第8弾: end の 2 次までの式と、2 つの式の予想の比
             rates = stage_rates(u)

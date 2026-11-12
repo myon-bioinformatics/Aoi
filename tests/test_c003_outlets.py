@@ -26,13 +26,25 @@ judge_mod = _load("outlet_judge")
 EXPECTED = {
     "O1": (0, 0), "O2": (0, 0), "O6": (4, 0), "O3": (3, 34), "O4": (3, 0), "O5": (3, 2), "O7": (4, 0), "O8": (3, 0),
     "O9": (4, 0), "O10": (3, 27), "O11": (4, 0), "O12": (4, 0), "O13": (4, 0), "O14": (4, 0), "O15": (4, 0),
+    # 第2弾（propositions_r2.toml）
+    "O16": (4, 0), "O17": (3, 8), "O18": (3, 20), "O19": (4, 0), "O20": (3, 30), "O21": (0, 0), "O22": (4, 0),
+    "O23": (3, 50), "O24": (4, 0), "O25": (4, 0),
 }
 
 
 def test_prelock_hash_matches_stamp():
     # 命題を書き換えたら、固定時のハッシュと合わなくなる（変えるときは新しい id を足し、スタンプも理由つきで更新する）
-    digest = hashlib.sha256((C003 / "propositions.toml").read_bytes()).hexdigest()
-    assert digest in (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
+    stamp = (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
+    for name in ("propositions.toml", "propositions_r2.toml"):
+        assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
+
+
+def test_round_one_units_are_untouched_by_round_two():
+    # 第2弾で足した組は、第1弾の命題の範囲（valve_only・mixed・pump_only・has_delay）に入らない
+    units = units_mod.read_units()
+    new = [u for u in units if u["gentle"] or u["chain"]]
+    assert len(new) == 140 and len(units) - len(new) == 338
+    assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in new)
 
 
 def test_units_match_provenance():

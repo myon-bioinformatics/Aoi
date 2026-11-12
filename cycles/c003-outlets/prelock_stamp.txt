@@ -12,3 +12,5 @@ propositions_r6.toml sha256 48d78ce33a454c9159a7b92f04e350fdbbe01f44a939e4baf002
 固定: 2026-11-12 JST（第6弾の単位と列を作る前のコミット）
 propositions_r7.toml sha256 5556274c957d24664410bd3ba66d9da981e4711d07d879399bf6345540bc26db
 固定: 2026-11-12 JST（第7弾の単位と列を作る前のコミット）
+propositions_r8.toml sha256 08960d4226cc86abb0d1d2a5125038f62d71efad3a696b89204d235a0fadfdc7
+固定: 2026-11-12 JST（第8弾の単位と列を作る前のコミット）

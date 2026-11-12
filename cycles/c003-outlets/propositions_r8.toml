@@ -1,0 +1,158 @@
+# サイクル3の命題・第8弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第7弾のファイルは変更しない。
+#
+# 主題: (1) 第7弾で当たった境目の式を、粗い刻み（時定数の 1/8 より粗い）と 4 段で確かめる。
+#       (2) uniform に残る 2 乗のずれを、入れ方を変えて消せるか確かめる。
+#
+# 記録: 2026-11-12 20:47 JST（時刻の道具の値）に書いた。このとき第8弾の単位（cross3c・cross4・vary の組）と列はまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第7弾の結果すべて。
+#   紙の上で導いた式（数式処理で dt について展開。データに当てはめた係数は無い。どの単位とも照らしていない）:
+#     入れ方 cascade = uniform と同じ式で、上の槽が後から増やした分も下の槽の「入る量 I」に数える（上の槽から順に決める）。
+#       G_eff(cascade) = G + dt²·Hc。Hc: 次の槽へ k_i²·k_{i+1}/12、2 つ先へ −k_i·k_{i+1}·(k_i + k_{i+2})/12、3 つ先へ k_i·k_{i+1}·k_{i+2}/12。
+#       つまり式の上では 2 乗の項は消えない（次の槽への項は uniform と同じ。変わるのは 2 つ先・3 つ先の項だけ）。
+#     入れ方 ramp = cascade の順で、入る速さを「一定」でなく「直線」と見なす。ステップ最初の速さは上の弁の k_{i−1}·V_{i−1}、
+#       ステップの合計は I。槽に残る分 = r0·E0 + c·E1、E0 = (1 − e^(−x))/k、E1 = dt/k − (1 − e^(−x))/k²、c = 2·(I/dt − r0)/dt、x = k·dt。
+#       同じステップに出る分 = I − 残る分。0 より小さければ 0、I より大きければ I に抑える（抑えた回数を数える）。
+#       G_eff(ramp) = G + dt³·Hr（dt の 1 次と 2 次の項は無い）。Hr: 次の槽へ −k_i³·k_{i+1}/72、
+#       2 つ先へ k_i·k_{i+1}·(k_i² + k_i·k_{i+2} + k_{i+1}·k_{i+2})/72、3 つ先へ −k_i·k_{i+1}·k_{i+2}·(k_i + k_{i+1} + k_{i+3})/72。
+#   単位の組を決めるために、式だけを使って計算したもの（データは使っていない）:
+#     cross3c: 第7弾の 5 つの組で、刻み 1/4・0.343・1/2・0.74 でも end の 2 次までの式が 0 を横切ること（t/τ = 0.98〜2.23）。
+#     cross4: 4 段の組を式で探し、end の式が t/τ = 0.5〜4 で 0 を横切る組から 4 つ選んだ。
+#   境の値（1.25・0.8・5 %・10 %・h ≤ 1/8・1/32・1/64）は人が決めた仮置きで、結果に合わせて動かさない。
+#     ramp の式の合い方だけ h ≤ 1/64・10 % にした。理由は O54 の判例（式の次の次数の項が、5 % の境より大きかった）で、
+#     3 次の式の次の項は (dt·k_max) 倍ほどになるはずだから。これも結果を見る前に決めた。
+#
+# 第8弾で足す単位（前の弾の命題の範囲には入らない組）:
+#   cross3c = cross3 と同じ 5 つの組・同じ測り方（式で end のずれが 0 を横切るステップ n0 の −2〜+2 と 0.7·n0・1.3·n0。1 より小さければ 1）。
+#             刻みは 1/4・0.343・1/2・0.74。エンジン本体の end と uniform。同じ刻みで同じステップ数は 1 つだけ作る。
+#   cross4  = 4 段の槽。(τ2/τ, τ3/τ, τ4/τ) = (3/10, 2, 3/5)・(4, 3/2, 3/5)・(5/2, 3/5, 3/2)・(3/5, 5, 2)。刻みは cross3 と同じ 7 つ（1/8 以下）。
+#             測り方も cross3 と同じ。エンジン本体の end と uniform。
+#   vary    = 3 段 (τ2/τ, τ3/τ) = (2, 3/4)・(2/5, 3/2)・(4, 3/10)・(5/4, 5/2)、測る時刻 1τ・2τ・3τ。
+#             4 段 (1/2, 2, 3/4)・(3, 2/5, 3/2)、測る時刻 1.5τ・3τ。刻みは今までの 10 個と 1/256。
+#             入れ方は uniform（エンジン本体）・cascade・ramp（この 2 つはエンジンと同じ固定小数点 Q48 の整数の漸化式。エンジンには入れていない）。
+# 第8弾で足す列:
+#   pred_margin・gain_vs_end = 第7弾と同じ作り方（cross3c・cross4）
+#   gain_vs_uniform = |同じ条件の uniform の err| / |この単位の err|（vary の cascade・ramp。1 より大きければ uniform より小さい）
+#   casc_fit    = |err − G_eff(cascade) の式の予想| / ((dt·k_max)²/12)
+#   ramp_fit    = |err − G_eff(ramp) の式の予想| / ((dt·k_max)³/72)
+#   ramp_clamped = ramp で、同じステップに出る分を 0 か I に抑えた回数（全ステップ・全槽の合計）
+
+[[proposition]]
+id = "O57"
+statement = "槽が 3 段つながり、刻みが時定数の 1/8 より粗いときも、式が「uniform のずれは end の 1.25 倍以上」と言う単位では、uniform のずれは実際に end より大きい"
+strength = "always"
+parent = "O55"
+change = "刻みを 1/4・0.343・1/2・0.74 に替えた（組と測り方は同じ）"
+scope = { where = [{ col = "cross3c", op = "==", value = true }, { col = "uniform_in", op = "==", value = true }] }
+if = [{ col = "pred_margin", op = ">=", value = 1.25 }]
+then = [{ col = "gain_vs_end", op = "<", value = 1.0 }]
+surprise = "gain_vs_end"
+context = ["h", "pred_margin", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "uniform のほうが小さい単位があれば、境目の式は粗い刻みでは使えないと書く"
+note = "式は dt の 2 次までなので、粗い刻みでは外れてもおかしくない"
+
+[[proposition]]
+id = "O58"
+statement = "槽が 3 段つながり、刻みが時定数の 1/8 より粗いときも、式が「uniform のずれは end の 0.8 倍以下」と言う単位では、uniform のずれは実際に end より小さい"
+strength = "always"
+parent = "O56"
+change = "O57 と同じ替え方"
+scope = { where = [{ col = "cross3c", op = "==", value = true }, { col = "uniform_in", op = "==", value = true }] }
+if = [{ col = "pred_margin", op = "<=", value = 0.8 }]
+then = [{ col = "gain_vs_end", op = ">", value = 1.0 }]
+surprise = "gain_vs_end"
+context = ["h", "pred_margin", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "uniform のほうが大きい単位があれば、境目の式は粗い刻みでは使えないと書く"
+
+[[proposition]]
+id = "O59"
+statement = "槽が 4 段つながるとき、式が「uniform のずれは end の 1.25 倍以上」と言う単位では、uniform のずれは実際に end より大きい"
+strength = "always"
+parent = "O55"
+change = "3 段を 4 段に替えた（刻みは 1/8 以下のまま）"
+scope = { where = [{ col = "cross4", op = "==", value = true }, { col = "uniform_in", op = "==", value = true }] }
+if = [{ col = "pred_margin", op = ">=", value = 1.25 }]
+then = [{ col = "gain_vs_end", op = "<", value = 1.0 }]
+surprise = "gain_vs_end"
+context = ["h", "pred_margin", "tau2_ratio", "tau3_ratio", "tau4_ratio", "span_ratio", "err"]
+falsifier = "uniform のほうが小さい単位があれば、3 つ先への項（H2・H の最後の項）を見直す"
+
+[[proposition]]
+id = "O60"
+statement = "槽が 4 段つながるとき、式が「uniform のずれは end の 0.8 倍以下」と言う単位では、uniform のずれは実際に end より小さい"
+strength = "always"
+parent = "O56"
+change = "O59 と同じ替え方"
+scope = { where = [{ col = "cross4", op = "==", value = true }, { col = "uniform_in", op = "==", value = true }] }
+if = [{ col = "pred_margin", op = "<=", value = 0.8 }]
+then = [{ col = "gain_vs_end", op = ">", value = 1.0 }]
+surprise = "gain_vs_end"
+context = ["h", "pred_margin", "tau2_ratio", "tau3_ratio", "tau4_ratio", "span_ratio", "err"]
+falsifier = "uniform のほうが大きい単位があれば、3 つ先への項を見直す"
+
+[[proposition]]
+id = "O61"
+statement = "上の槽が後から増やした分も下の槽の「入る量」に数える入れ方（cascade）にすると、刻みが時定数の 1/8 以下なら、最後の槽のずれは uniform より小さい"
+strength = "always"
+scope = { where = [{ col = "vary", op = "==", value = true }, { col = "cascade", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "gain_vs_uniform", op = ">", value = 1.0 }]
+surprise = "gain_vs_uniform"
+context = ["h", "tau2_ratio", "tau3_ratio", "tau4_ratio", "span_ratio", "err"]
+falsifier = "uniform より大きい単位があれば、数え方を変えるだけでは直らないと書く"
+note = "第7弾の後に出した候補そのまま。紙の上の式は「2 乗の項は消えない」と言っているので、外れる見込みが高い"
+
+[[proposition]]
+id = "O62"
+statement = "cascade の最後の槽のずれは、刻みが時定数の 1/32 以下なら、式 G + dt²·Hc と合う（差は目安 (dt·k_max)²/12 の 5 % 以内）"
+strength = "always"
+scope = { where = [{ col = "vary", op = "==", value = true }, { col = "cascade", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "casc_fit", op = "<=", value = 0.05 }]
+surprise = "casc_fit"
+context = ["h", "tau2_ratio", "tau3_ratio", "tau4_ratio", "span_ratio", "err"]
+falsifier = "外れる単位があれば、Hc の展開を見直す"
+
+[[proposition]]
+id = "O63"
+statement = "入る速さを直線と見なす入れ方（ramp）の最後の槽のずれは、刻みが時定数の 1/64 以下なら、3 乗の式 G + dt³·Hr と合う（差は目安 (dt·k_max)³/72 の 10 % 以内）"
+strength = "always"
+scope = { where = [{ col = "vary", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.015625 }]
+then = [{ col = "ramp_fit", op = "<=", value = 0.10 }]
+surprise = "ramp_fit"
+context = ["h", "tau2_ratio", "tau3_ratio", "tau4_ratio", "span_ratio", "err"]
+falsifier = "外れる単位があれば、2 乗の項が残っているか、Hr の展開が違う"
+note = "合えば、ramp では dt の 1 次と 2 次のずれが消えている"
+
+[[proposition]]
+id = "O64"
+statement = "ramp にすると、刻みが時定数の 1/8 以下なら、最後の槽のずれは uniform より小さい"
+strength = "always"
+scope = { where = [{ col = "vary", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "gain_vs_uniform", op = ">", value = 1.0 }]
+surprise = "gain_vs_uniform"
+context = ["h", "tau2_ratio", "tau3_ratio", "tau4_ratio", "span_ratio", "err", "ramp_clamped"]
+falsifier = "uniform より大きい単位があれば、その条件（uniform のずれが 0 を横切る近くかどうか）を書く"
+
+[[proposition]]
+id = "O65"
+statement = "ramp にすると、刻みが時定数の 1/8 より粗くても、最後の槽のずれは uniform より小さい"
+strength = "always"
+scope = { where = [{ col = "vary", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = ">", value = 0.125 }]
+then = [{ col = "gain_vs_uniform", op = ">", value = 1.0 }]
+surprise = "gain_vs_uniform"
+context = ["h", "tau2_ratio", "tau3_ratio", "tau4_ratio", "span_ratio", "err", "ramp_clamped"]
+falsifier = "uniform より大きい単位があれば、ramp は粗い刻みでは勧めないと書く"
+
+[[proposition]]
+id = "O66"
+statement = "ramp で、刻みが時定数の 1/8 以下なら、同じステップに出る分を 0 か I に抑えることは起きない"
+strength = "always"
+scope = { where = [{ col = "vary", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "ramp_clamped", op = "==", value = 0 }]
+surprise = "ramp_clamped"
+context = ["h", "tau2_ratio", "tau3_ratio", "tau4_ratio", "span_ratio"]
+falsifier = "抑えた単位があれば、直線と見なす入れ方がそのままでは成り立たない条件を書く"

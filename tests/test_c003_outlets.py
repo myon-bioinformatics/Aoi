@@ -32,13 +32,17 @@ EXPECTED = {
     # 第3弾（propositions_r3.toml）
     "O26": (4, 0), "O27": (3, 0), "O28": (3, 30), "O29": (4, 0), "O30": (4, 0), "O31": (3, 80), "O32": (4, 0),
     "O33": (4, 0), "O34": (4, 0),
+    # 第4弾（propositions_r4.toml）
+    "O35": (4, 0), "O36": (4, 0), "O37": (4, 0), "O38": (4, 0), "O39": (3, 12), "O40": (3, 0), "O41": (4, 0),
+    "O42": (4, 0), "O43": (3, 1), "O44": (4, 0),
 }
+TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
 
 def test_prelock_hash_matches_stamp():
     # 命題を書き換えたら、固定時のハッシュと合わなくなる（変えるときは新しい id を足し、スタンプも理由つきで更新する）
     stamp = (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
-    for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml"):
+    for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -47,9 +51,11 @@ def test_later_rounds_stay_outside_earlier_scopes():
     units = units_mod.read_units()
     r2 = [u for u in units if u["gentle"] or u["chain"]]
     r3 = [u for u in units if u["native"] or u["chain2"] or u["fed"]]
-    assert (len(units) - len(r2) - len(r3), len(r2), len(r3)) == (338, 140, 460)
-    assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3)
-    assert not any(u["gentle"] or u["chain"] for u in r3)
+    r4 = [u for u in units if u["flow"] or u["combo"] or u["chain3"] or u["ring"]]
+    assert (len(units) - len(r2) - len(r3) - len(r4), len(r2), len(r3), len(r4)) == (338, 140, 460, 450)
+    assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3 + r4)
+    assert not any(u["gentle"] or u["chain"] for u in r3 + r4)
+    assert not any(u["native"] or u["chain2"] or u["fed"] for u in r4)
 
 
 def test_every_unit_keeps_the_total():
@@ -83,7 +89,9 @@ def test_original_form_is_supported_where_no_counterexample():
     # コード 4 の命題は、元の命題は支持で、対偶に当たる単位（B でない単位）が 0 件のため保留になっている
     for r in judge_mod.evaluate_all(outdir=None):
         code, cx = EXPECTED[r["id"]]
-        if code == 4:
+        if code == 4 and r["id"] in TOO_FEW:
+            assert r["forms"][0]["hold"] == r["forms"][0]["n"] < 10 and r["judgement"]["form"] == "original", r["id"]
+        elif code == 4:
             assert r["forms"][0]["hold"] == r["forms"][0]["n"] >= 10, r["id"]
             assert r["judgement"]["form"] != "original", r["id"]
 

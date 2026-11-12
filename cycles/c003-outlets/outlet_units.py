@@ -32,6 +32,10 @@ GENTLE_SHARE, GENTLE_SPAN = 1 / 64, 0.5  # 第2弾 gentle: 弱いポンプを t 
 CHAIN_RATIOS = [0.25, 0.5, 0.75, 2.0, 4.0]  # 第2弾 chain: 2 段目の時定数 τ2 / τ
 CHAIN2_RATIOS, CHAIN2_SPANS = [1 / 3, 1.5, 3.0, 8.0], [1.0, 3.0]  # 第3弾 chain2: 別の τ2 と別の時刻
 FED_RATIOS = [0.25, 1.0, 4.0]  # 第3弾 fed: ポンプ（速さ V0/TAU）→ 槽（弁 1 本、τ2）
+COMBO_IN, COMBO_OUT = 1 / 4, 1 / 8  # 第4弾 combo: 入るポンプ・出るポンプの速さ（V0·K の何倍か）
+CHAIN3_RATIOS = [(0.5, 1 / 3), (2.0, 0.5), (1 / 3, 3.0), (3.0, 5.0)]  # 第4弾 chain3: (τ2/τ, τ3/τ)
+RING_RATIOS, RING_SPANS = [0.25, 0.5, 2.0, 4.0], [2.0, 40.0]  # 第4弾 ring: τ2/τ と、測る時刻 / T（T = τ·τ2/(τ + τ2)）
+FLOW_KINDS = ("flow", "combo", "chain3", "ring")  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
 TOL_CHECK = 1e-9  # 検算で許す err の差
@@ -94,6 +98,23 @@ def plan(h_extra: list[float]) -> list[dict]:
         for ratio in FED_RATIOS:
             for h in hs:
                 add("fed", "eq", 1, method, h, tau2_ratio=ratio)
+    for h in hs:  # 第4弾
+        for ratio in FED_RATIOS:
+            add("flow", "eq", 1, "uniform_in", h, base="fed", tau2_ratio=ratio)
+        for ratio in CHAIN2_RATIOS:
+            for sp in CHAIN2_SPANS:
+                add("flow", "eq", 1, "uniform_in", h, base="chain2", tau2_ratio=ratio, span_ratio=sp)
+    for method in ("end", "uniform_in"):
+        for h in hs:
+            for n in (1, 2, 4):
+                for split in ("eq", "skew"):
+                    if n > 1 or split == "eq":
+                        add("combo", split, n, method, h)
+            for r2, r3 in CHAIN3_RATIOS:
+                add("chain3", "eq", 1, method, h, tau2_ratio=r2, tau3_ratio=r3)
+            for ratio in RING_RATIOS:
+                for sp in RING_SPANS:
+                    add("ring", "eq", 1, method, h, tau2_ratio=ratio, span_ratio=sp)
     return out
 
 
@@ -103,8 +124,10 @@ def base(u: dict) -> str:
 
 
 def span(u: dict) -> float:
-    if u["kind"] == "chain2":
+    if base(u) == "chain2":
         return u["span_ratio"]
+    if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
+        return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
     return GENTLE_SPAN if base(u) == "gentle" else SPAN
 
 
@@ -112,7 +135,7 @@ def pump_rate(u: dict) -> float:
     k = 1.0 / TAU
     if u["kind"] == "pump":
         return V0 * k * (1.0 if u["starved"] else PUMP_SHARE)
-    return V0 * k * {"mixed": PUMP_SHARE, "gentle": GENTLE_SHARE, "fed": 1.0}.get(base(u), 0.0)
+    return V0 * k * {"mixed": PUMP_SHARE, "gentle": GENTLE_SHARE, "fed": 1.0, "combo": COMBO_OUT}.get(base(u), 0.0)
 
 
 def chain_exact(u: dict, t: float) -> float:
@@ -125,10 +148,21 @@ def exact_left(u: dict, t: float) -> float:
     k = 1.0 / TAU
     if base(u) in ("valve", "delay"):
         return V0 * math.exp(-k * t)
-    if u["kind"] in ("chain", "chain2"):
+    if base(u) in ("chain", "chain2"):
         return chain_exact(u, t)
+    if u["kind"] == "combo":  # V∞ + (V0 − V∞)·e^(−K·t)、V∞ = (入る速さ − 出る速さ)/K
+        settle = V0 * (COMBO_IN - COMBO_OUT)
+        return settle + (V0 - settle) * math.exp(-k * t)
+    if u["kind"] == "chain3":  # 3 段の Bateman
+        k2, k3 = k / u["tau2_ratio"], k / u["tau3_ratio"]
+        rates = (k, k2, k3)
+        return V0 * k * k2 * sum(math.exp(-rates[i] * t) / math.prod(rates[m] - rates[i] for m in range(3) if m != i)
+                                 for i in range(3))
+    if u["kind"] == "ring":  # 槽 B の量 V0·k1/(k1 + k2)·(1 − e^(−(k1 + k2)·t))
+        k2 = k / u["tau2_ratio"]
+        return V0 * k / (k + k2) * -math.expm1(-(k + k2) * t)
     q = pump_rate(u)
-    if u["kind"] == "fed":  # 槽の量 q·τ2·(1 − e^(−t/τ2))
+    if base(u) == "fed":  # 槽の量 q·τ2·(1 − e^(−t/τ2))
         tau2 = TAU * u["tau2_ratio"]
         return q * tau2 * -math.expm1(-t / tau2)
     if u["kind"] == "pump":
@@ -139,12 +173,14 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
-    if u["kind"] in ("chain", "chain2", "fed"):  # 入る量 → 槽 B（弁 1 本）
+    if u["kind"] in ("combo", "chain3", "ring"):
+        return flow_recurrence(u, steps, dt)
+    if base(u) in ("chain", "chain2", "fed"):  # 入る量 → 槽 B（弁 1 本）
         k2 = 1.0 / (TAU * u["tau2_ratio"])
         g1, g2 = -math.expm1(-k * dt), -math.expm1(-k2 * dt)
         a, b = V0, 0.0
         for _ in range(steps):
-            inflow = pump_rate(u) * dt if u["kind"] == "fed" else a * g1
+            inflow = pump_rate(u) * dt if base(u) == "fed" else a * g1
             out = b * g2 + inflow * through_share(u, k, k2, dt, a)
             a, b = a - a * g1, b + inflow - min(out, b + inflow)
         return b
@@ -167,13 +203,52 @@ def recurrence_left(u: dict, steps: int, dt: float) -> float:
 
 def through_share(u: dict, k1: float, k2: float, dt: float, upstream: float) -> float:
     """このステップに入った量のうち、同じステップの中で出ていく割合（independent は 0）。"""
-    if u["method"] == "uniform":  # 一定の速さで入ると見なす
+    if u["method"] in ("uniform", "uniform_in"):  # 一定の速さで入ると見なす
         x = k2 * dt
         return 1.0 + math.expm1(-x) / x
     if u["method"] == "through":  # 2 段の閉じた式: 入った量 A·(1 − e^(−k1·dt)) のうち槽に残るのは A·k1/(k2 − k1)·(e^(−k1·dt) − e^(−k2·dt))
         stays = k1 / (k2 - k1) * (math.exp(-k1 * dt) - math.exp(-k2 * dt))
         return max(0.0, 1.0 - stays / -math.expm1(-k1 * dt))
     return 0.0
+
+
+def flow_recurrence(u: dict, steps: int, dt: float) -> float:
+    """第4弾の検算（float）。エンジンの入れ方どおり: まず今までどおりの量を決め、次に「このステップに届く量 I」の
+    うち弁から同じステップに出る分を足す。足した分は下の槽の I に数えない。"""
+    k = 1.0 / TAU
+    uniform = u["method"] == "uniform_in"
+
+    def through(rate: float) -> float:
+        x = rate * dt
+        return 1.0 + math.expm1(-x) / x if uniform else 0.0
+
+    if u["kind"] == "combo":
+        v, big_l = V0, k * dt
+        phi = -math.expm1(-big_l)
+        inflow, pumped = V0 * k * COMBO_IN * dt, V0 * k * COMBO_OUT * dt
+        for _ in range(steps):
+            out = max(0.0, (v + pumped / big_l) * phi - pumped)
+            target = v * phi + (inflow - pumped) * (1.0 - phi / big_l)
+            extra = min(max(max(target, 0.0) - out, 0.0), inflow) if uniform else 0.0
+            v = v - out - extra - min(pumped, v - out) + inflow
+        return v
+    k2 = k / u["tau2_ratio"]
+    g1, g2 = -math.expm1(-k * dt), -math.expm1(-k2 * dt)
+    if u["kind"] == "ring":
+        a, b = V0, 0.0
+        for _ in range(steps):
+            fa, fb = a * g1, b * g2
+            ea, eb = fb * through(k), fa * through(k2)
+            a, b = a - fa - ea + fb + eb, b - fb - eb + fa + ea
+        return b
+    k3 = k / u["tau3_ratio"]
+    g3 = -math.expm1(-k3 * dt)
+    a, b, c = V0, 0.0, 0.0
+    for _ in range(steps):
+        fa, fb, fc = a * g1, b * g2, c * g3
+        eb, ec = fa * through(k2), fb * through(k3)
+        a, b, c = a - fa, b - fb - eb + fa, c - fc - ec + fb + eb
+    return c
 
 
 def _err(left: float, exact: float) -> float:
@@ -193,6 +268,19 @@ def label(u: dict) -> tuple[str, str]:
                 f"2 段 τ2/τ={u['tau2_ratio']:.3g} t={u['span_ratio']:g}τ {u['method']} h={u['h']:.6g}")
     if u["kind"] == "fed":
         return f"fed-r{u['tau2_ratio']:g}-{u['method']}", f"ポンプ → 槽 τ2/τ={u['tau2_ratio']:g} {u['method']} h={u['h']:.6g}"
+    if u["kind"] == "flow":
+        tail = f"-s{u['span_ratio']:g}" if u["base"] == "chain2" else ""
+        return (f"flow-{u['base']}-r{u['tau2_ratio']:.3g}{tail}",
+                f"エンジン uniform {u['base']} τ2/τ={u['tau2_ratio']:.3g}{tail} h={u['h']:.6g}")
+    if u["kind"] == "combo":
+        return (f"combo-{u['split']}-n{u['n']}-{u['method']}",
+                f"入るポンプ + 弁{split} {u['n']} 本 + 出るポンプ {u['method']} h={u['h']:.6g}")
+    if u["kind"] == "chain3":
+        return (f"chain3-r{u['tau2_ratio']:.3g}-r{u['tau3_ratio']:.3g}-{u['method']}",
+                f"3 段 τ2/τ={u['tau2_ratio']:.3g} τ3/τ={u['tau3_ratio']:.3g} {u['method']} h={u['h']:.6g}")
+    if u["kind"] == "ring":
+        return (f"ring-r{u['tau2_ratio']:g}-s{u['span_ratio']:g}-{u['method']}",
+                f"輪 τ2/τ={u['tau2_ratio']:g} t={u['span_ratio']:g}T {u['method']} h={u['h']:.6g}")
     if u["kind"] == "native":
         return (f"native-{u['base']}-{u['split']}-n{u['n']}",
                 f"エンジン既定 {u['base']}{split} {u['n']} 本 h={u['h']:.6g}")
@@ -209,6 +297,8 @@ def run_engine(u: dict, ffs: dict) -> dict:
     delay = DELAY if u["kind"] == "delay" else 0.0
     if u["method"] in ("uniform", "through"):
         return run_recurrence_q(u, ffs, steps, dt, t)
+    if u["kind"] in FLOW_KINDS:
+        return run_flow_engine(u, ffs, steps, dt, t)
     # 第1弾・第2弾の組は「別々に取る」エンジンで作る（エンジンの既定が厳密になった後も同じ値になるように）
     net = Network(dt=dt, outlets="exact" if u["kind"] == "native" else "independent")
     net.tank("pool", 1.0, volume=1024.0 * V0 if u["kind"] == "fed" else V0)
@@ -247,6 +337,42 @@ def run_engine(u: dict, ffs: dict) -> dict:
         lag = max(abs(round((ln["first_arrival"] - ln["first_flow"]) / dt) - round(delay / dt)) for ln in res["links"])
     return {"steps": steps, "dt": dt, "t": t, "left_q": res["volumes_q"]["pool"], "left": res["volumes_q"]["pool"] / ffs["one"],
             "conservation_q": res["conservation_error_q"], "lag_err_steps": lag}
+
+
+def run_flow_engine(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
+    """第4弾: エンジン本体の inflows（end・uniform）で進める。outlets は既定（exact）。"""
+    k = 1.0 / TAU
+    net = ffs["Network"](dt=dt, inflows="uniform" if u["method"] == "uniform_in" else "end")
+    watch = "second"
+    if u["kind"] == "combo":
+        watch = "pool"
+        net.tank("sea", 1.0, volume=1024.0 * V0).tank("pool", 1.0, volume=V0).tank("pumped", 1.0)
+        net.pump("sea", "pool", rate=V0 * k * COMBO_IN)
+        for i, share in enumerate(u["shares"]):
+            net.tank(f"out-{i}", 1.0)
+            net.valve("pool", f"out-{i}", tau=TAU / share)
+        net.pump("pool", "pumped", rate=V0 * k * COMBO_OUT)
+    elif u["kind"] == "ring":
+        net.tank("pool", 1.0, volume=V0).tank("second", 1.0)
+        net.valve("pool", "second", tau=TAU)
+        net.valve("second", "pool", tau=TAU * u["tau2_ratio"])
+    elif u["kind"] == "chain3":
+        watch = "third"
+        net.tank("pool", 1.0, volume=V0).tank("second", 1.0).tank("third", 1.0).tank("sink", 1.0)
+        net.valve("pool", "second", tau=TAU)
+        net.valve("second", "third", tau=TAU * u["tau2_ratio"])
+        net.valve("third", "sink", tau=TAU * u["tau3_ratio"])
+    else:  # flow: 第3弾の fed・chain2 と同じ配管
+        net.tank("pool", 1.0, volume=1024.0 * V0 if u["base"] == "fed" else V0).tank("second", 1.0).tank("sink", 1.0)
+        if u["base"] == "fed":
+            net.pump("pool", "second", rate=pump_rate(u))
+        else:
+            net.valve("pool", "second", tau=TAU)
+        net.valve("second", "sink", tau=TAU * u["tau2_ratio"])
+    res = net.run(t)
+    return {"steps": steps, "dt": dt, "t": t, "left_q": res["volumes_q"][watch],
+            "left": res["volumes_q"][watch] / ffs["one"], "first_left": res["volumes_q"]["pool"] / ffs["one"],
+            "conservation_q": res["conservation_error_q"], "lag_err_steps": None}
 
 
 def run_recurrence_q(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
@@ -300,7 +426,7 @@ def derive(units: list[dict], log=print) -> None:
         u["exact"] = exact
         u["err"] = _err(u["left"], exact)
         u["err_abs"] = abs(u["err"])
-        for flag in ("valve", "pump", "mixed", "delay", "gentle", "chain", "native", "chain2", "fed"):
+        for flag in ("valve", "pump", "mixed", "delay", "gentle", "chain", "native", "chain2", "fed", *FLOW_KINDS):
             u[{"valve": "valve_only", "pump": "pump_only", "delay": "has_delay"}.get(flag, flag)] = u["kind"] == flag
         for m in ("independent", "joint", "affine", "uniform", "through"):
             u[m] = u["method"] == m
@@ -308,10 +434,14 @@ def derive(units: list[dict], log=print) -> None:
         u["starved"] = bool(u.get("starved"))
         for col in ("err_pred", "fo_rel", "ceil_ratio", "corr_gain", "drop_from_fewer", "halving_ratio", "src_same",
                     "euler_ratio", "so_rel", "disc_gap", "joint_ratio", "first_err_abs", "chain_halving",
-                    "chain_pred_rel", "fed_gap", "gain_vs_independent", "uniform_halving"):
+                    "chain_pred_rel", "fed_gap", "gain_vs_independent", "uniform_halving",
+                    "native_gap", "chain3_pred_rel", "gain_vs_end", "flow_halving"):
             u[col] = None
-        u.setdefault("tau2_ratio", None)
-        u.setdefault("span_ratio", None)
+        for col in ("tau2_ratio", "span_ratio", "tau3_ratio"):
+            u.setdefault(col, None)
+        u["uniform_in"] = u["method"] == "uniform_in"
+        u["from_pump"] = u["kind"] == "flow" and u["base"] == "fed"
+        u["settled"] = u["kind"] == "ring" and u["span_ratio"] == RING_SPANS[-1]
         u["has_half"] = False
         by[(u["team"], u["h"])] = u
         if u["kind"] != "valve":
@@ -366,6 +496,22 @@ def derive(units: list[dict], log=print) -> None:
             half = by.get((u["team"], u["h"] / 2.0))
             if u["kind"] == "chain2" and half is not None and half["err"] != 0.0:
                 u["has_half"], u["uniform_halving"] = True, u["err"] / half["err"]
+        if u["kind"] == "flow":  # 第3弾の整数の漸化式（uniform）と比べる
+            twin = by[(u["team"].replace("flow-", "") + "-uniform", u["h"])]
+            u["native_gap"] = abs(u["err"] - twin["err"])
+        if u["kind"] == "chain3" and not u["uniform_in"]:
+            pred = u["dt"] / (2.0 * TAU * u["tau2_ratio"]) + u["dt"] / (2.0 * TAU * u["tau3_ratio"])
+            u["chain3_pred_rel"] = abs(u["err"] - pred) / pred
+        if u["kind"] in ("combo", "chain3", "ring") and u["uniform_in"]:
+            twin = by[(u["team"].replace("-uniform_in", "-end"), u["h"])]
+            mine = u["err_abs"]
+            if mine == 0.0:
+                log(f"ε: {u['team_name']} の err が 0。ε = {EPS} に置く")
+                mine = EPS
+            u["gain_vs_end"] = twin["err_abs"] / mine
+            half = by.get((u["team"], u["h"] / 2.0))
+            if u["kind"] == "chain3" and half is not None and half["err"] != 0.0:
+                u["has_half"], u["flow_halving"] = True, u["err"] / half["err"]
         if u["kind"] == "chain":
             u["first_err_abs"] = abs(u["first_left"] / (V0 * math.exp(-k * u["t"])) - 1.0)
             half = by.get((u["team"], u["h"] / 2.0))

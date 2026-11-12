@@ -48,6 +48,10 @@ EXPECTED = {
     "O67": (4, 0), "O68": (4, 0), "O69": (4, 0), "O70": (4, 0), "O71": (4, 0), "O72": (4, 0),
     # 第10弾（propositions_r10.toml）
     "O73": (4, 0), "O74": (4, 0), "O75": (4, 0), "O76": (4, 0), "O77": (4, 0), "O78": (4, 0),
+    # 第11弾（propositions_r11.toml）。両側に単位がある形で書いた命題は、4 つの形とも異議なし（コード 0）
+    "O79": (0, 0), "O80": (0, 0), "O81": (0, 0), "O82": (0, 0), "O83": (0, 0), "O84": (0, 0),
+    "O85": (3, 0), "O86": (3, 0), "O87": (3, 0),
+    "O88": (0, 0), "O89": (0, 0), "O90": (0, 0), "O91": (0, 0),
 }
 TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
@@ -58,7 +62,7 @@ def test_prelock_hash_matches_stamp():
     for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml",
                  "propositions_r5.toml", "propositions_r6.toml",
                  "propositions_r7.toml", "propositions_r8.toml", "propositions_r9.toml",
-                 "propositions_r10.toml"):
+                 "propositions_r10.toml", "propositions_r11.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -81,7 +85,10 @@ def test_later_rounds_stay_outside_earlier_scopes():
     assert len(r9) == 528 and not any(u["vary"] or u["cross3c"] or u["cross4"] or u["ring"] or u["flow"] for u in r9)
     assert all(u["p_branch"] + u["p_merge"] + u["p_pump"] + u["p_ring"] == 1 for u in r9)
     units = [u for u in units if not (u["edge3"] or u["edge2"] or u["cross3"] or u["cross3c"] or u["cross4"] or u["vary"]
-                                      or u["pipe"] or u["ladder"])]
+                                      or u["pipe"] or u["ladder"] or u["olad"] or u["ilad"])]
+    r11 = [u for u in units_mod.read_units() if u["olad"] or u["ilad"]]
+    assert len(r11) == 1428 and not any(u["ladder"] or u["valve_only"] or u["independent"] or u["two_stage"] for u in r11)
+    assert len({(u["team"], u["h"]) for u in r11}) == len(r11)  # 同じ計算を 2 度数えない
     r10 = [u for u in units_mod.read_units() if u["ladder"]]
     assert len(r10) == 264 and not any(u["vary"] or u["pipe"] or u["chain3b"] or u["edge2"] for u in r10)
     assert (len(units) - len(r2) - len(r3) - len(r4) - len(r5), len(r2), len(r3), len(r4), len(r5)) == (338, 140, 460, 450, 308)

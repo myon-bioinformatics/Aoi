@@ -67,8 +67,22 @@ OLAD_SPANS = [1.5, 3.0]  # 測る時刻 / τ（第1弾の 2τ と重ならない
 OLAD_LEVELS = (0, 1, 2, 3)  # 他の出口がステップの中で取る速さを、s の何次まで知っているか（0 は知らない）
 ILAD_SETS = [((0.5,), 1.0), ((0.5,), 2.5), ((1.25,), 1.0), ((1.25,), 2.5), ((2.5,), 1.0), ((2.5,), 2.5), ((4.0,), 1.0),
              ((4.0,), 2.5), ((3.0, 0.5), 2.5), ((0.6, 2.5), 2.5), ((0.3, 1.25), 1.5)]  # 第11弾 ilad: 入口のはしごの新しい組
-CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder", "ilad")  # 1 列につながった槽（stages に τ_i/τ）
-FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, "pipe", "olad")  # エンジンの inflows（end・uniform_in）で進める組
+PIPE2_SETS = {  # 第12弾 pipe2: 第9弾と同じ形の、新しい組
+    "branch": ([(0.6, 3.0, 0.5), (0.35, 0.6, 2.5), (0.45, 1.5, 0.4)], [1.0, 2.5]),
+    "merge": ([(0.5, 3.0, 0.4), (2.5, 0.6, 1.5), (3.0, 1.25, 0.5)], [1.0, 2.5]),
+    "pumpfed": ([(3.0, 0.5), (0.6, 2.5), (1.5, 0.4)], [1.0, 2.5]),
+    "ring": ([(0.6,), (3.0,), (1.5,)], [0.5, 1.5]),
+}
+PIPE_KINDS = ("pipe", "pipe2")
+COARSE2_X = [0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0]  # 第12弾 coarse2: x = dt/τ1
+COARSE2_Y = [0.4, 0.9, 1.8, 2.7, 3.6, 5.5, 7.0, 11.0]  # y = dt/τ2
+COARSE2_STEPS = 6
+TLAD_RATIOS, TLAD_SPANS = [0.6, 1.5, 3.0], [1.0, 2.0]  # 第12弾 tlad: 2 段の τ2/τ と、測る時刻 / τ
+TLAD_ORDER = {"tay1": 2, "tay2": 3, "tay3": 4, "uniform_in": 2, "ramp": 3, "quad": 4}  # tay は「最初の値だけを知る」入れ方
+TOTAL_COEF = {1: 1.0 / 12.0, 2: 1.0 / 72.0, 3: 1.0 / 720.0}  # 合計も知る入れ方の、2 段目のずれの係数
+VARIANT_METHODS = ("cascade", "ramp", "quad", "tay1", "tay2", "tay3")  # 整数の漸化式で進める入れ方（エンジンには入れていない）
+CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder", "ilad", "coarse2", "tlad")  # 1 列につながった槽（stages に τ_i/τ）
+FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, *PIPE_KINDS, "olad")  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
 TOL_CHECK = 1e-9  # 検算で許す err の差
@@ -210,6 +224,21 @@ def plan(h_extra: list[float]) -> list[dict]:
             for method in LADDER_ORDER:
                 add("ilad", "eq", 1, method, h, stages=list(st), tau2_ratio=st[0],
                     tau3_ratio=st[1] if len(st) > 1 else None, span_ratio=sp)
+    for shape, (sets, spans) in PIPE2_SETS.items():  # 第12弾
+        for idx, params in enumerate(sets):
+            for sp in spans:
+                for h in hs11:
+                    for method in ("end", "uniform_in", "ramp"):
+                        add("pipe2", "eq", 1, method, h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp)
+    for x in COARSE2_X:
+        for y in COARSE2_Y:
+            add("coarse2", "eq", 1, "ramp", x, stages=[x / y], tau2_ratio=x / y, span_ratio=COARSE2_STEPS * x,
+                fixed_steps=COARSE2_STEPS)
+    for ratio in TLAD_RATIOS:
+        for sp in TLAD_SPANS:
+            for h in hs11:
+                for method in TLAD_ORDER:
+                    add("tlad", "eq", 1, method, h, stages=[ratio], tau2_ratio=ratio, span_ratio=sp)
     return out
 
 
@@ -406,6 +435,13 @@ def variant_coeffs(rates: list[float], dt: float, method: str) -> list[tuple[flo
         if method == "cascade":
             out.append((1.0 + math.expm1(-x) / x, 0.0, 0.0))
             continue
+        if method.startswith("tay"):  # 最初の値だけを知る: 同じステップに出る分 = F[r~]（届く量の合計 I は使わない。2 段だけ）
+            if i != 1:
+                raise ValueError("tay は上の槽に入る量が無い 2 段だけ")
+            up = rates[0] * dt
+            out.append((0.0, -sum(up * (-up) ** n / math.factorial(n) * (_quad_series(x, [(n, 1)]) - 1.0 / (n + 1))
+                                  for n in range(int(method[-1]))), 0.0))
+            continue
         if method == "quad":
             up = rates[i - 1] * dt
             out.append((1.0 - _quad_series(x, [(1, 6), (2, -6)]),
@@ -526,6 +562,9 @@ def pipe_run(spec: dict, method: str, steps: int, dt: float, conv=float, mul=lam
                 if pl is None:
                     continue
                 base_out = mul(v[name], pl["gain"])
+                if method == "end":  # 入る量はステップの終わりに入る。同じステップには出ない
+                    flow.update(split(name, base_out))
+                    continue
                 arrive = sum(((counted if method == "uniform_in" else flow)[ln] for ln in pl["ins"]), pl["pump"])
                 if method == "uniform_in":
                     extra = mul(arrive, pl["theta"])
@@ -565,7 +604,7 @@ def base(u: dict) -> str:
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", "pipe", "ladder", "ilad", "olad"):
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -587,7 +626,7 @@ def chain_exact(u: dict, t: float) -> float:
 
 def exact_left(u: dict, t: float) -> float:
     k = 1.0 / TAU
-    if u["kind"] == "pipe":
+    if u["kind"] in PIPE_KINDS:
         return pipe_exact(u, t)
     if base(u) in ("valve", "delay", "olad"):
         return V0 * math.exp(-k * t)
@@ -618,12 +657,12 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
-    if u["kind"] == "pipe":
+    if u["kind"] in PIPE_KINDS:
         spec = pipe_spec(u)
         return pipe_run(spec, u["method"], steps, dt)["v"][spec["watch"]]
     if u["kind"] == "olad":  # 抑えが起きなければ、残りは V0·(1 − Σ割合)^N（漸化式でなく累乗で検算する）
         return V0 * (1.0 - sum(olad_coeffs([s * k for s in u["shares"]], dt, u["level"]))) ** steps
-    if u["method"] in ("cascade", "ramp", "quad"):
+    if u["method"] in VARIANT_METHODS:
         return variant_recurrence(u, steps, dt)
     if u["kind"] in ("combo", "chain3", "ring", *CHAIN_KINDS):
         return flow_recurrence(u, steps, dt)
@@ -742,15 +781,15 @@ def label(u: dict) -> tuple[str, str]:
     if u["kind"] == "olad":
         return (f"olad-g{u['share_set']}-n{u['n']}-s{u['span_ratio']:g}-known{u['level']}",
                 f"出口 {u['n']} 本（組 {u['share_set']}）t={u['span_ratio']:g}τ 段 {u['level']} h={u['h']:.6g}")
-    if u["kind"] == "pipe":
-        return (f"pipe-{u['shape']}-p{u['pipe_set']}-s{u['span_ratio']:g}-{u['method']}",
+    if u["kind"] in PIPE_KINDS:
+        return (f"{u['kind']}-{u['shape']}-p{u['pipe_set']}-s{u['span_ratio']:g}-{u['method']}",
                 f"{u['shape']} 組 {u['pipe_set']} t={u['span_ratio']:g}τ {u['method']} h={u['h']:.6g}")
     if u["kind"] in CHAIN_KINDS:
         ratios = "-".join(f"r{r:.3g}" for r in u["stages"])
         tail = f"-s{u['span_ratio']:.6g}" if u["kind"] in ("chain3b", "edge3") else ""
         if u["kind"] in CROSS_KINDS:
             tail = f"-n{u['fixed_steps']}"
-        if u["kind"] in ("vary", "ladder", "ilad"):
+        if u["kind"] in ("vary", "ladder", "ilad", "tlad"):
             tail = f"-s{u['span_ratio']:g}"
         return (f"{u['kind']}-{ratios}{tail}-{u['method']}",
                 f"{len(u['stages']) + 1} 段 τ比 {'・'.join(f'{r:.3g}' for r in u['stages'])}{tail} {u['method']} h={u['h']:.6g}")
@@ -773,11 +812,11 @@ def run_engine(u: dict, ffs: dict) -> dict:
     delay = DELAY if u["kind"] == "delay" else 0.0
     if u["method"] in ("uniform", "through"):
         return run_recurrence_q(u, ffs, steps, dt, t)
-    if u["kind"] == "pipe":
+    if u["kind"] in PIPE_KINDS:
         return run_pipe(u, ffs, steps, dt, t)
     if u["kind"] == "olad":
         return run_olad(u, ffs, steps, dt, t)
-    if u["method"] in ("cascade", "ramp", "quad"):
+    if u["method"] in VARIANT_METHODS:
         return run_variant_q(u, ffs, steps, dt, t)
     if u["kind"] in FLOW_KINDS:
         return run_flow_engine(u, ffs, steps, dt, t)
@@ -928,7 +967,7 @@ def run_pipe(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
         return {"steps": steps, "dt": dt, "t": t, "left_q": res["v"][spec["watch"]], "left": res["v"][spec["watch"]] / one,
                 "first_left": res["v"][spec["tanks"][0]] / one, "conservation_q": sum(res["v"].values()) - start,
                 "lag_err_steps": None, "clamped": res["clamped"]}
-    net = ffs["Network"](dt=dt, inflows="uniform")
+    net = ffs["Network"](dt=dt, inflows="uniform" if u["method"] == "uniform_in" else "end")
     for name in spec["tanks"]:
         net.tank(name, 1.0, volume=spec["vol"].get(name, 0.0))
     if spec["pumps"]:
@@ -1013,12 +1052,13 @@ def derive(units: list[dict], log=print) -> None:
                     "uni_fit", "uni_fit2", "h_star", "h_ratio", "end2_fit", "pred_margin",
                     "gain_vs_uniform", "casc_fit", "ramp_fit", "ramp_clamped", "ramp_halving",
                     "order_expected", "order_est", "order_gap", "quad_fit2", "gain_vs_ramp", "quad_clamped",
-                    "order_round", "olad_pred_abs", "olad_fit", "olad_clamped", "level_even"):
+                    "order_round", "olad_pred_abs", "olad_fit", "olad_clamped", "level_even",
+                    "is_best", "clamp_margin", "clamp_pred", "was_clamped", "start_only", "coef_start", "coef_total"):
             u[col] = None
         for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio", "level"):
             u.setdefault(col, None)
         for shape, col in (("branch", "p_branch"), ("merge", "p_merge"), ("pumpfed", "p_pump"), ("ring", "p_ring")):
-            u[col] = u.get("shape") == shape
+            u[col] = u["kind"] == "pipe" and u.get("shape") == shape  # pipe2 は第9弾の命題の範囲に入れない
         u["two_stage"] = u["kind"] == "ladder" and len(u["stages"]) == 1
         u["uniform_in"] = u["method"] == "uniform_in"
         u["from_pump"] = u["kind"] == "flow" and u["base"] == "fed"
@@ -1121,8 +1161,27 @@ def derive(units: list[dict], log=print) -> None:
             u["olad_fit"] = abs(u["err"] - pred) / abs(pred) if pred != 0.0 else None
             u["olad_clamped"] = u.pop("clamped")
             u["level_even"] = p % 2 == 0
-        if u["kind"] in ("ladder", "ilad", "olad"):  # 第10弾・第11弾: 次数の見積もり
-            u["order_expected"] = u["level"] + 1 if u["kind"] == "olad" else LADDER_ORDER[u["method"]]
+        if u["kind"] == "pipe2":  # 第12弾: 同じ条件の 3 つの入れ方のうち、ずれが最小か
+            stem = u["team"][: -len(u["method"])]
+            u["is_best"] = u["err_abs"] == min(by[(stem + m, u["h"])]["err_abs"] for m in ("end", "uniform_in", "ramp"))
+            if u["method"] == "ramp":
+                u["ramp_clamped"] = u.pop("clamped")
+        if u["kind"] == "coarse2":  # 第12弾: 抑える条件の式
+            x, y = u["h"], u["h"] / u["stages"][0]
+            f0, f1 = -math.expm1(-y) / y, (y + math.expm1(-y)) / (y * y)
+            u["clamp_margin"] = (x / -math.expm1(-x)) / (2.0 * f1 / abs(f0 - 2.0 * f1))
+            u["clamp_pred"] = u["clamp_margin"] > 1.0
+            u["ramp_clamped"] = u.pop("clamped")
+            u["was_clamped"] = u["ramp_clamped"] > 0
+        if u["kind"] == "tlad":  # 第12弾: 2 段目のずれの係数
+            rates, p = stage_rates(u), TLAD_ORDER[u["method"]] - 1
+            scale = rates[1] * rates[0] ** p * u["dt"] ** (p + 1)
+            u["start_only"] = u["method"].startswith("tay")
+            u["coef_start"] = u["err_abs"] / (scale / math.factorial(p + 2))
+            u["coef_total"] = u["err_abs"] / (scale * TOTAL_COEF[p])
+        if u["kind"] in ("ladder", "ilad", "olad", "pipe2", "tlad"):  # 第10弾〜第12弾: 次数の見積もり
+            u["order_expected"] = (u["level"] + 1 if u["kind"] == "olad" else
+                                   TLAD_ORDER[u["method"]] if u["kind"] == "tlad" else LADDER_ORDER[u["method"]])
             half = by.get((u["team"], u["h"] / 2.0))
             if half is not None:
                 u["has_half"] = True

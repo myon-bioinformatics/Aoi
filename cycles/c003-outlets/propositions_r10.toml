@@ -1,0 +1,102 @@
+# サイクル3の命題・第10弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第9弾のファイルは変更しない。
+#
+# 主題: ステップの中で何が起きているか。「1 ステップのあいだに入ってくる速さ」をどこまで細かく見るかで、ずれの次数が 1 つずつ上がるか。
+#
+# 記録: 2026-11-12 21:55 JST ごろに書いた。このとき第10弾の単位（ladder の組）・列・quad の漸化式のコードはまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第9弾の結果すべて。
+#   入る速さの見なし方のはしご（上から順に細かい）:
+#     end     = ステップの終わりにまとめて入る                          → ずれは刻みの 1 乗（第3弾・第5弾）
+#     uniform = 一定の速さで入る（合計 I だけを使う）                    → 2 乗（第3弾・第6弾）
+#     ramp    = 直線（合計 I と、ステップ最初の速さ r0）                 → 3 乗（第8弾・第9弾）
+#     quad    = 2 次の曲線（合計 I、最初の速さ r0、最後の速さ r1）       → 今回足す。r1 = 上の弁の k·V（上の槽のステップ最後の量）
+#   quad の式: 速さ r(s) = r0 + c1·s + c2·s²、c2 = −6·(I − (r0 + r1)·dt/2)/dt³、c1 = (r1 − r0)/dt − c2·dt。
+#     槽に残る分 = r0·E0 + c1·E1 + c2·E2、E_n = ∫ s^n·e^(−k·(dt − s)) ds（0〜dt）。同じステップに出る分 = I − 残る分（0〜I に抑える）。
+#   紙の上で導いた式（数式処理で 3 段まで展開。データに当てはめた係数は無い。どの単位とも照らしていない）:
+#     G_eff(quad) = G + dt⁴·Hq（1 次〜3 次の項は無い）。Hq: 次の槽へ −k_i⁴·k_{i+1}/720、
+#       2 つ先へ k_i·k_{i+1}·(k_i³ + k_i²·k_{i+2} + k_i·k_{i+1}·k_{i+2} + k_{i+1}²·k_{i+2})/720。
+#     2 段目のずれの並び: uniform は k1·k2·dt²/12、ramp は −k1²·k2·dt³/72、quad は −k1³·k2·dt⁴/720。
+#   境の値（0.25・10 %・h の範囲）は人が決めた仮置きで、結果に合わせて動かさない。
+#     次数の見積もりは h = 1/32〜1/8 で見る（もっと細かいと quad のずれが固定小数点の丸めに近づくはず。これも結果を見る前に決めた）。
+#
+# 第10弾で足す単位（前の弾の命題の範囲には入らない組）: ladder。刻みは今までの 10 個と 1/256。
+#   2 段: τ2/τ = 2/5・3/4・2・3、t ≈ 1.5τ。3 段: (τ2/τ, τ3/τ) = (2, 3/4)・(2/5, 3/2)、t ≈ 2τ。
+#   入れ方は end・uniform（エンジン本体）と ramp・quad（エンジンと同じ固定小数点 Q48 の整数の漸化式。エンジンには入れていない）。
+# 第10弾で足す列:
+#   ladder・two_stage・quad = 組、2 段かどうか、入れ方が quad か
+#   order_expected = 見込みの次数（end 1、uniform 2、ramp 3、quad 4）
+#   order_est = log2(err / 刻みが半分の単位の err)。向きが逆なら出せないので order_gap を 99 にする
+#   order_gap = |order_est − order_expected|。has_half = 刻みが半分の単位があるか
+#   quad_fit2 = |err − (−k1³·k2·dt⁴/720)| / (k1³·k2·dt⁴/720)（2 段の quad）
+#   gain_vs_ramp = |同じ条件の ramp の err| / |この単位の err|（quad）
+#   quad_clamped = quad で、同じステップに出る分を 0 か I に抑えた回数
+
+[[proposition]]
+id = "O73"
+statement = "槽が 2 段のとき、入る速さの見なし方を 1 段細かくするごとに、ずれの次数は 1 つ上がる（end 1、uniform 2、ramp 3、quad 4。見積もりとの差は 0.25 以内）"
+strength = "always"
+scope = { where = [{ col = "ladder", op = "==", value = true }, { col = "two_stage", op = "==", value = true }, { col = "has_half", op = "==", value = true }] }
+if = [{ col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "order_gap", op = "<=", value = 0.25 }]
+surprise = "order_gap"
+context = ["h", "order_expected", "order_est", "tau2_ratio", "err"]
+falsifier = "外れる単位があれば、その入れ方と刻みを書く"
+
+[[proposition]]
+id = "O74"
+statement = "槽が 3 段のときも、入る速さの見なし方を 1 段細かくするごとに、ずれの次数は 1 つ上がる（見積もりとの差は 0.25 以内）"
+strength = "always"
+parent = "O73"
+change = "2 段を 3 段に替えた"
+scope = { where = [{ col = "ladder", op = "==", value = true }, { col = "two_stage", op = "==", value = false }, { col = "has_half", op = "==", value = true }] }
+if = [{ col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "order_gap", op = "<=", value = 0.25 }]
+surprise = "order_gap"
+context = ["h", "order_expected", "order_est", "tau2_ratio", "tau3_ratio", "err"]
+falsifier = "外れる単位があれば、ずれが 0 を横切る近くかどうかを書く"
+note = "3 段ではずれが 0 を横切る時刻があるので（第5弾〜第7弾）、外れる単位が出てもおかしくない"
+
+[[proposition]]
+id = "O75"
+statement = "槽が 2 段のとき、quad の 2 段目のずれは、刻みが時定数の 1/128〜1/32 なら −k1³·k2·dt⁴/720 と合う（差は 10 % 以内）"
+strength = "always"
+scope = { where = [{ col = "ladder", op = "==", value = true }, { col = "two_stage", op = "==", value = true }, { col = "quad", op = "==", value = true }] }
+if = [{ col = "h", op = ">=", value = 0.0078125 }, { col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "quad_fit2", op = "<=", value = 0.10 }]
+surprise = "quad_fit2"
+context = ["h", "tau2_ratio", "err"]
+falsifier = "外れる単位があれば、Hq の展開を見直すか、丸めが効いているかを書く"
+
+[[proposition]]
+id = "O76"
+statement = "quad にすると、刻みが時定数の 1/8 以下・1/64 以上なら、最後の槽のずれは ramp より小さい"
+strength = "always"
+scope = { where = [{ col = "ladder", op = "==", value = true }, { col = "quad", op = "==", value = true }] }
+if = [{ col = "h", op = ">=", value = 0.015625 }, { col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "gain_vs_ramp", op = ">", value = 1.0 }]
+surprise = "gain_vs_ramp"
+context = ["h", "tau2_ratio", "tau3_ratio", "err", "quad_clamped"]
+falsifier = "ramp より大きい単位があれば、その条件を書く"
+
+[[proposition]]
+id = "O77"
+statement = "quad にすると、刻みが時定数の 1/8 より粗くても、最後の槽のずれは ramp より小さい"
+strength = "always"
+scope = { where = [{ col = "ladder", op = "==", value = true }, { col = "quad", op = "==", value = true }] }
+if = [{ col = "h", op = ">", value = 0.125 }]
+then = [{ col = "gain_vs_ramp", op = ">", value = 1.0 }]
+surprise = "gain_vs_ramp"
+context = ["h", "tau2_ratio", "tau3_ratio", "err", "quad_clamped"]
+falsifier = "ramp より大きい単位があれば、細かく見なすほど良いとは限らない条件として書く"
+
+[[proposition]]
+id = "O78"
+statement = "quad で、刻みが時定数の 1/8 以下なら、同じステップに出る分を抑えることは起きない"
+strength = "always"
+parent = "O66"
+change = "ramp を quad に替えた"
+scope = { where = [{ col = "ladder", op = "==", value = true }, { col = "quad", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "quad_clamped", op = "==", value = 0 }]
+surprise = "quad_clamped"
+context = ["h", "tau2_ratio", "tau3_ratio"]
+falsifier = "抑えた単位があれば、その刻みと組を書く"

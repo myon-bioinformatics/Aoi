@@ -52,7 +52,7 @@ uv run python cycles/c003-outlets/outlet_judge.py --report-only                 
 
 `joint` と `affine` は、単位を作るスクリプトがエンジンの登録口（`register_law`）に法則を足して計算している。`affine` と同じ取り方は、その後エンジンの既定（`outlets="exact"`）として入った（FluidFullSpeedSimulation #16。第3弾の `native` で確かめ直した）。
 第3弾の `uniform` と `through` は、スクリプトがエンジンと同じ固定小数点（Q48、床）の整数で漸化式を進めている（エンジンは出る量をステップ最初の量までに抑えるので、法則を足すだけでは入らない）。
-第4弾では `uniform` をエンジン本体に入れた（`Network(inflows="uniform")`、FluidFullSpeedSimulation のブランチ feat/uniform-inflows）。入れ方: まず今までどおり全部の管の量を決め、次に槽ごとに「このステップに届く量 I」を使って弁の合計を V·Φ + (I − P)·(1 − Φ/L) まで増やす（増やす分は I まで。増やした分は下の槽の I に数えない）。
+第4弾では `uniform` をエンジン本体に入れた（`Network(inflows="uniform")`。その後 FluidFullSpeedSimulation #17 で既定になった）。入れ方: まず今までどおり全部の管の量を決め、次に槽ごとに「このステップに届く量 I」を使って弁の合計を V·Φ + (I − P)·(1 − Φ/L) まで増やす（増やす分は I まで。増やした分は下の槽の I に数えない）。
 
 ## 列
 
@@ -228,7 +228,7 @@ uv run python cycles/c003-outlets/outlet_judge.py --report-only                 
 - O1・O2・O6 と O4・O7 の細かい刻みの側は、E29 の数字を知ったうえで書いた追試（`propositions.toml` の冒頭に記録）
 - 単位を作った後、判定の前に、検算が 3 件の食い違いを止めた（弁 + ポンプ・affine・h = 0.74）。原因は厳密な答えの側の誤りで、槽が空になった後を 0 で止めていなかった。厳密な答えと検算の漸化式を 0 で止めるよう直して作り直した。命題の結果を見る前の訂正
 - 単位の名前は PythDRagoras の `team`・`season`・`team_name` に合わせている（野球の列名のまま）
-- エンジンは FluidFullSpeedSimulation のブランチ feat/uniform-inflows の a3231a1（main 6062ef4 に `inflows` の切り替えを足したもの。`inflows` の既定は end のままで、第1弾〜第3弾の単位はそれで作る）。第1弾・第2弾の組は `outlets="independent"` を指定して作るので、作り直しても 478 単位の値は 1 つも変わらない（bcea72f・5c5e1dc で作った値と同じ）
+- エンジンは FluidFullSpeedSimulation の main 2a02cf3（既定が `outlets="exact"`・`inflows="uniform"` になった後）。第4弾の判定は、まだ `inflows` の既定が end だったブランチの a3231a1 で作った単位で行い、その後 main で作り直して 1388 単位の値が 1 つも変わらないことを確かめた。第1弾〜第3弾の組は `inflows="end"` を指定して作る。第1弾・第2弾の組は `outlets="independent"` を指定して作るので、作り直しても 478 単位の値は 1 つも変わらない（bcea72f・5c5e1dc で作った値と同じ）
 - 第3弾の判定を見た後の訂正が 1 つある。最初の判定で O15（総量）に判例が 30 件出た。原因は単位を作るスクリプトの数え方の誤りで、fed・uniform の漸化式が、使わない槽 A の最初の量を総量に数えていた（ずれはどれもちょうど −128）。数え方を直して作り直した。変わったのはその 30 単位の `conservation_q` と `first_left` だけで、err と他の命題の結果は変わらない
 - 検算（素の漸化式）が比べるのは err だけで、総量の列は比べていない。上の誤りが検算をすり抜けたのはそのため
 - 第4弾の検算は、エンジンの入れ方（先に全部の量を決め、後から弁を増やす）を float で書き直したもの。エンジンと同じ考え方の別実装で、式そのものの正しさは厳密な解との比べ（err）が担う

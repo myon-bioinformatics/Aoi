@@ -300,7 +300,8 @@ def run_engine(u: dict, ffs: dict) -> dict:
     if u["kind"] in FLOW_KINDS:
         return run_flow_engine(u, ffs, steps, dt, t)
     # 第1弾・第2弾の組は「別々に取る」エンジンで作る（エンジンの既定が厳密になった後も同じ値になるように）
-    net = Network(dt=dt, outlets="exact" if u["kind"] == "native" else "independent")
+    # inflows も今までの扱い（end）を指定する（エンジンの既定が uniform になった後も同じ値になるように）
+    net = Network(dt=dt, outlets="exact" if u["kind"] == "native" else "independent", inflows="end")
     net.tank("pool", 1.0, volume=1024.0 * V0 if u["kind"] == "fed" else V0)
     q = pump_rate(u)
     if u["kind"] in ("chain", "chain2", "fed"):

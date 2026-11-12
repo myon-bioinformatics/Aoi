@@ -35,6 +35,8 @@ EXPECTED = {
     # 第4弾（propositions_r4.toml）
     "O35": (4, 0), "O36": (4, 0), "O37": (4, 0), "O38": (4, 0), "O39": (3, 12), "O40": (3, 0), "O41": (4, 0),
     "O42": (4, 0), "O43": (3, 1), "O44": (4, 0),
+    # 第5弾（propositions_r5.toml）
+    "O45": (3, 0), "O46": (4, 0), "O49": (3, 0), "O47": (3, 0), "O48": (3, 0),
 }
 TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
@@ -42,7 +44,8 @@ TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足
 def test_prelock_hash_matches_stamp():
     # 命題を書き換えたら、固定時のハッシュと合わなくなる（変えるときは新しい id を足し、スタンプも理由つきで更新する）
     stamp = (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
-    for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml"):
+    for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml",
+                 "propositions_r5.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -52,10 +55,23 @@ def test_later_rounds_stay_outside_earlier_scopes():
     r2 = [u for u in units if u["gentle"] or u["chain"]]
     r3 = [u for u in units if u["native"] or u["chain2"] or u["fed"]]
     r4 = [u for u in units if u["flow"] or u["combo"] or u["chain3"] or u["ring"]]
-    assert (len(units) - len(r2) - len(r3) - len(r4), len(r2), len(r3), len(r4)) == (338, 140, 460, 450)
-    assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3 + r4)
-    assert not any(u["gentle"] or u["chain"] for u in r3 + r4)
-    assert not any(u["native"] or u["chain2"] or u["fed"] for u in r4)
+    r5 = [u for u in units if u["chain3b"] or u["chain4"]]
+    assert (len(units) - len(r2) - len(r3) - len(r4) - len(r5), len(r2), len(r3), len(r4), len(r5)) == (338, 140, 460, 450, 308)
+    assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3 + r4 + r5)
+    assert not any(u["gentle"] or u["chain"] for u in r3 + r4 + r5)
+    assert not any(u["native"] or u["chain2"] or u["fed"] for u in r4 + r5)
+    assert not any(u["flow"] or u["combo"] or u["chain3"] or u["ring"] for u in r5)
+
+
+def test_stage_prediction_reduces_to_known_forms():
+    # 2 段なら dt/(2·τ2)（O27）。3 段は (dt/2)·[(k2 + k3) − k2·P13/C]（README の式）
+    import math
+    k1, k2, k3, dt, t = 1 / 32, 3 / 32, 1 / 96, 0.125, 64.0
+    assert abs(units_mod.stage_prediction([k1, k2], dt, t) / (k2 * dt / 2) - 1) < 0.01
+    p13 = k1 / (k3 - k1) * (math.exp(-k1 * t) - math.exp(-k3 * t))
+    c = units_mod.bateman_last([k1, k2, k3], t) / units_mod.V0
+    closed = dt / 2 * ((k2 + k3) - k2 * p13 / c)
+    assert abs(units_mod.stage_prediction([k1, k2, k3], dt, t) / closed - 1) < 0.01
 
 
 def test_every_unit_keeps_the_total():

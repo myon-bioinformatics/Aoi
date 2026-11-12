@@ -1,0 +1,149 @@
+# サイクル3の命題・第2弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾は propositions.toml（変更しない）。
+#
+# 記録: 2026-11-12 17:10 JST に書いた。このとき第2弾の単位（gentle・chain の組）と、第2弾で足す列
+#       （euler_ratio・so_rel・disc_gap・joint_ratio・first_err_abs・chain_halving）はまだ作っていない。
+#   書く前に見ていたもの: 第1弾の結果すべて（README の「結果」「判例が教えること」）。とくに
+#     1 次の式の外れ方が刻みにほぼ比例（最大 0.26·h ほど）、頭打ちを 16 本・h = 1/2 で 1.8 % 超えた、
+#     弁 + ポンプの槽は joint でもずれる（2 本・h = 1/128 で independent −3.0 %、joint −1.6 %）。
+#   見ていないもの: 2 次の式・前進オイラーの形・離散の閉じた式との差、残りが大きい混ざる槽、2 段の槽。
+#   O18・O19 は「未検討」に置いた着想（結果を見て出た着想）を命題にしたもの。式は紙の上で導いたもので、
+#     データに当てはめた係数は使っていない。O21 は第1弾の判例を見て作った命題なので、第1弾と別の単位（gentle）だけで確かめる。
+#   境の値（1e-9・0.5 %・5 %・h ≤ 1/8・h ≤ 1/32・1.9〜2.1）は人が決めた仮置きで、結果に合わせて動かさない。
+#
+# 第2弾で足す単位（第1弾の命題の範囲には入らない組。valve_only・mixed・pump_only・has_delay はどれも偽）:
+#   gentle = 弁 1・2・4 本 + 弱いポンプ（q = 最初の量·K/64）を t ≈ τ/2 で測る。厳密な残りは最初の量の 6 割ほど
+#   chain  = 槽 A（弁 1 本、時定数 τ）→ 槽 B（弁 1 本、時定数 τ2）→ 受け。τ2 は τ の 1/4・1/2・3/4・2・4 倍。
+#            t ≈ 2τ の槽 B の量を Bateman の式と比べる。方式は independent（出口が 1 本ずつなので joint・affine でも同じ）
+# 第2弾で足す列:
+#   euler_ratio   = |err| / |(1 − K·dt)^N / e^(−K·t) − 1|（出口を無限に細かく分けたときの形に対する割合）
+#   so_rel        = |err − err2| / |err2|。err2 = exp(−t·dt·(K² − S2)/2 − t·dt²·(K³/3 − K·S2/2 + S3/6)) − 1、S2 = Σk_i²、S3 = Σk_i³
+#   disc_gap      = |err − ((1 − Σ(1 − e^(−k_i·dt)))^N / e^(−K·t) − 1)|
+#   joint_ratio   = joint の err / 同じ本数・刻みの independent の err（joint の単位だけ）
+#   first_err_abs = chain の槽 A の |err|
+#   chain_halving・has_half = chain の err / 同じ τ2 で刻みが半分の単位の err と、その単位があるか
+
+# ---- 式を置き直す ----
+
+[[proposition]]
+id = "O16"
+statement = "弁だけの槽を今の方式で進めるとき、2 本以上でも、ずれの大きさは出口を無限に細かく分けたときの形 (1 − K·dt)^N を超えない"
+strength = "always"
+parent = "O5"
+change = "頭打ちを 1 次の見積もり t·dt·K²/2 から、n → ∞ の厳密な形に置き直した（O5 の判例 2 件を受けて）"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = []
+then = [{ col = "euler_ratio", op = "<=", value = 1.0 }]
+surprise = "euler_ratio"
+context = ["h", "n", "equal_split", "err"]
+falsifier = "超える単位があれば、1 − e^(−x) ≤ x から導いた上限の出し方を見直す"
+note = "1 − e^(−x) ≤ x なので 1 ステップの残り 1 − Σ(1 − e^(−k_i·dt)) ≥ 1 − K·dt。紙の上では必ず成り立つはずの命題"
+
+[[proposition]]
+id = "O17"
+statement = "弁だけの槽を今の方式で進めるとき、2 本以上で刻みが時定数の 1/8 以下なら、ずれは 2 次の式と 0.5 % 以内で合う"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = [{ col = "h", op = "<=", value = 0.125 }]
+then = [{ col = "so_rel", op = "<=", value = 0.005 }]
+surprise = "so_rel"
+context = ["h", "n", "equal_split", "err"]
+falsifier = "h ≤ 1/8 で 0.5 % を超える単位があれば、2 次の項の導き方か境を見直す"
+note = "2 次の式は ln(1 ステップの残り) を dt の 3 次まで展開したもの。係数はデータに当てはめていない"
+
+[[proposition]]
+id = "O18"
+statement = "弁だけの槽を今の方式で進めるとき、2 本以上なら、ずれは 2 次の式と 5 % 以内で合う（刻みの条件なし）"
+strength = "always"
+parent = "O3"
+change = "1 次の式を 2 次の式に置き直した（O3 の判例 34 件を受けて）。5 % と範囲は同じ"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = []
+then = [{ col = "so_rel", op = "<=", value = 0.05 }]
+surprise = "so_rel"
+context = ["h", "n", "equal_split", "err"]
+falsifier = "5 % を超える単位があれば、2 次でも粗い刻みには足りないと書く"
+
+[[proposition]]
+id = "O19"
+statement = "弁だけの槽を今の方式で進めるとき、残りは離散の閉じた式 (1 − Σ(1 − e^(−k_i·dt)))^N と一致する（何本でも、どの刻みでも）"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }] }
+if = []
+then = [{ col = "disc_gap", op = "<", value = 1e-9 }]
+surprise = "disc_gap"
+context = ["h", "n", "equal_split", "err"]
+falsifier = "合わない単位があれば、エンジンの 1 ステップの取り方の説明（どの弁もステップ最初の量を見る）を見直す"
+note = "1 次・2 次の式はこの閉じた式の近似。ずれの説明そのものを問う命題"
+
+# ---- 直す方式はどこまで届くか ----
+
+[[proposition]]
+id = "O20"
+statement = "弁と弱いポンプが混ざる槽で、厳密な残りが大きいときなら、弁をまとめて取る方式（joint）で残りは厳密である"
+strength = "always"
+parent = "O10"
+change = "範囲を、厳密な残りが最初の量の 6 割ほど残る条件（gentle）に替えた。O10 は残りが 2.7 % で、割合のずれが大きく出ていた"
+scope = { where = [{ col = "gentle", op = "==", value = true }, { col = "joint", op = "==", value = true }] }
+if = []
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "n", "err"]
+falsifier = "ずれる単位があれば、joint が足りないのは残りの小ささのせいではないと書く"
+note = "破れると見込んで書いている"
+
+[[proposition]]
+id = "O21"
+statement = "弁と弱いポンプが混ざる槽では、弁が 1 本なら joint のずれは今の方式と同じである"
+strength = "always"
+scope = { where = [{ col = "gentle", op = "==", value = true }, { col = "joint", op = "==", value = true }] }
+if = [{ col = "n", op = "==", value = 1 }]
+then = [{ col = "joint_ratio", op = ">=", value = 0.999999 }, { col = "joint_ratio", op = "<=", value = 1.000001 }]
+surprise = "joint_ratio"
+context = ["h", "n", "err"]
+falsifier = "弁 1 本で joint が違う値になれば、joint の定義（弁どうしだけをまとめる）を見直す"
+note = "第1弾の判例（joint でずれが半分ほどになった）を見て作った命題。逆（同じなら 1 本）の判例が無ければ、弁が 2 本以上のとき joint は必ず値を変える"
+
+[[proposition]]
+id = "O22"
+statement = "弁と弱いポンプが混ざる槽は、1 ステップを厳密に解く方式（affine）なら残りは厳密である"
+strength = "always"
+scope = { where = [{ col = "gentle", op = "==", value = true }, { col = "affine", op = "==", value = true }] }
+if = []
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "n", "err"]
+falsifier = "ずれる単位があれば、O11 の支持は範囲（残りが小さい条件）に寄っていたと書く"
+
+[[proposition]]
+id = "O23"
+statement = "槽が 2 段つながるとき、出口が 1 本ずつなら 2 段目の量も厳密である"
+strength = "always"
+scope = { where = [{ col = "chain", op = "==", value = true }] }
+if = []
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "tau2_ratio", "err"]
+falsifier = "ずれる単位があれば、出口の数とは別のずれ（上の槽から入ってくる量を同じステップの中で知らない）があると書く"
+note = "破れると見込んで書いている。直す方式（joint・affine）は 1 つの槽の出口どうしを揃えるだけで、槽と槽のあいだには届かない"
+
+[[proposition]]
+id = "O24"
+statement = "槽が 2 段つながるとき、1 段目（入ってくる管のない槽）の量は厳密である"
+strength = "always"
+scope = { where = [{ col = "chain", op = "==", value = true }] }
+if = []
+then = [{ col = "first_err_abs", op = "<", value = 1e-9 }]
+surprise = "first_err_abs"
+context = ["h", "tau2_ratio"]
+falsifier = "ずれる単位があれば、O1（出口 1 本なら厳密）を見直す"
+
+[[proposition]]
+id = "O25"
+statement = "槽が 2 段つながるとき、刻みが時定数の 1/32 以下なら、刻みを半分にすると 2 段目のずれも半分になる（比 1.9〜2.1）"
+strength = "always"
+scope = { where = [{ col = "chain", op = "==", value = true }, { col = "has_half", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "chain_halving", op = ">=", value = 1.9 }, { col = "chain_halving", op = "<=", value = 2.1 }]
+surprise = "chain_halving"
+context = ["h", "tau2_ratio", "err"]
+falsifier = "比が外れる単位があれば、槽と槽のあいだのずれは 1 次ではないと書く"

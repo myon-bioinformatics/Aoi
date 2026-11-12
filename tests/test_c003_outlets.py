@@ -26,13 +26,100 @@ judge_mod = _load("outlet_judge")
 EXPECTED = {
     "O1": (0, 0), "O2": (0, 0), "O6": (4, 0), "O3": (3, 34), "O4": (3, 0), "O5": (3, 2), "O7": (4, 0), "O8": (3, 0),
     "O9": (4, 0), "O10": (3, 27), "O11": (4, 0), "O12": (4, 0), "O13": (4, 0), "O14": (4, 0), "O15": (4, 0),
+    # 第2弾（propositions_r2.toml）
+    "O16": (4, 0), "O17": (3, 8), "O18": (3, 20), "O19": (4, 0), "O20": (3, 30), "O21": (0, 0), "O22": (4, 0),
+    "O23": (3, 50), "O24": (4, 0), "O25": (4, 0),
+    # 第3弾（propositions_r3.toml）
+    "O26": (4, 0), "O27": (3, 0), "O28": (3, 30), "O29": (4, 0), "O30": (4, 0), "O31": (3, 80), "O32": (4, 0),
+    "O33": (4, 0), "O34": (4, 0),
+    # 第4弾（propositions_r4.toml）
+    "O35": (4, 0), "O36": (4, 0), "O37": (4, 0), "O38": (4, 0), "O39": (3, 12), "O40": (3, 0), "O41": (4, 0),
+    "O42": (4, 0), "O43": (3, 1), "O44": (4, 0),
+    # 第5弾（propositions_r5.toml）
+    "O45": (3, 0), "O46": (4, 0), "O49": (3, 0), "O47": (3, 0), "O48": (3, 0),
+    # 第6弾（propositions_r6.toml）
+    "O50": (4, 0), "O51": (3, 0), "O52": (3, 8), "O53": (3, 18),
+    # 第7弾（propositions_r7.toml）
+    "O54": (3, 6), "O55": (3, 0), "O56": (3, 0),
+    # 第8弾（propositions_r8.toml）
+    "O57": (3, 9), "O58": (3, 2), "O59": (3, 0), "O60": (3, 0), "O61": (3, 14),
+    "O62": (4, 0), "O63": (3, 0), "O64": (4, 0), "O65": (3, 1), "O66": (4, 0),
+    # 第9弾（propositions_r9.toml）
+    "O67": (4, 0), "O68": (4, 0), "O69": (4, 0), "O70": (4, 0), "O71": (4, 0), "O72": (4, 0),
+    # 第10弾（propositions_r10.toml）
+    "O73": (4, 0), "O74": (4, 0), "O75": (4, 0), "O76": (4, 0), "O77": (4, 0), "O78": (4, 0),
 }
+TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
 
 def test_prelock_hash_matches_stamp():
     # 命題を書き換えたら、固定時のハッシュと合わなくなる（変えるときは新しい id を足し、スタンプも理由つきで更新する）
-    digest = hashlib.sha256((C003 / "propositions.toml").read_bytes()).hexdigest()
-    assert digest in (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
+    stamp = (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
+    for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml",
+                 "propositions_r5.toml", "propositions_r6.toml",
+                 "propositions_r7.toml", "propositions_r8.toml", "propositions_r9.toml",
+                 "propositions_r10.toml"):
+        assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
+
+
+def test_later_rounds_stay_outside_earlier_scopes():
+    # 後の弾で足した組は、前の弾の命題の範囲（組の真偽の列）に入らない
+    units = units_mod.read_units()
+    r2 = [u for u in units if u["gentle"] or u["chain"]]
+    r3 = [u for u in units if u["native"] or u["chain2"] or u["fed"]]
+    r4 = [u for u in units if u["flow"] or u["combo"] or u["chain3"] or u["ring"]]
+    r5 = [u for u in units if u["chain3b"] or u["chain4"]]
+    r6 = [u for u in units if u["edge3"] or u["edge2"]]
+    assert len(r6) == 704 and not any(u["chain3b"] or u["chain4"] or u["chain3"] or u["chain2"] for u in r6)
+    r7 = [u for u in units if u["cross3"]]
+    assert len(r7) == 490 and not any(u["edge3"] or u["edge2"] or u["chain3b"] or u["chain3"] for u in r7)
+    assert len({(u["h"], u["tau2_ratio"], u["steps"], u["uniform_in"]) for u in r7}) == len(r7)  # 同じ計算を 2 度数えない
+    r8 = [u for u in units if u["cross3c"] or u["cross4"] or u["vary"]]
+    assert len(r8) == 1108 and not any(u["cross3"] or u["edge3"] or u["edge2"] or u["chain3b"] or u["chain4"] for u in r8)
+    assert len({(u["team"], u["h"], u["steps"]) for u in r8}) == len(r8)  # 同じ計算を 2 度数えない
+    r9 = [u for u in units if u["pipe"]]
+    assert len(r9) == 528 and not any(u["vary"] or u["cross3c"] or u["cross4"] or u["ring"] or u["flow"] for u in r9)
+    assert all(u["p_branch"] + u["p_merge"] + u["p_pump"] + u["p_ring"] == 1 for u in r9)
+    units = [u for u in units if not (u["edge3"] or u["edge2"] or u["cross3"] or u["cross3c"] or u["cross4"] or u["vary"]
+                                      or u["pipe"] or u["ladder"])]
+    r10 = [u for u in units_mod.read_units() if u["ladder"]]
+    assert len(r10) == 264 and not any(u["vary"] or u["pipe"] or u["chain3b"] or u["edge2"] for u in r10)
+    assert (len(units) - len(r2) - len(r3) - len(r4) - len(r5), len(r2), len(r3), len(r4), len(r5)) == (338, 140, 460, 450, 308)
+    assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3 + r4 + r5)
+    assert not any(u["gentle"] or u["chain"] for u in r3 + r4 + r5)
+    assert not any(u["native"] or u["chain2"] or u["fed"] for u in r4 + r5)
+    assert not any(u["flow"] or u["combo"] or u["chain3"] or u["ring"] for u in r5)
+
+
+def test_stage_prediction_reduces_to_known_forms():
+    # 2 段なら dt/(2·τ2)（O27）。3 段は (dt/2)·[(k2 + k3) − k2·P13/C]（README の式）
+    import math
+    k1, k2, k3, dt, t = 1 / 32, 3 / 32, 1 / 96, 0.125, 64.0
+    assert abs(units_mod.stage_prediction([k1, k2], dt, t) / (k2 * dt / 2) - 1) < 0.01
+    p13 = k1 / (k3 - k1) * (math.exp(-k1 * t) - math.exp(-k3 * t))
+    c = units_mod.bateman_last([k1, k2, k3], t) / units_mod.V0
+    closed = dt / 2 * ((k2 + k3) - k2 * p13 / c)
+    assert abs(units_mod.stage_prediction([k1, k2, k3], dt, t) / closed - 1) < 0.01
+
+
+def test_uniform_prediction_reduces_to_the_two_stage_form():
+    # 2 段なら k1·k2·dt²/12（時刻によらない）
+    k1, k2, dt = 1 / 32, 3 / 32, 0.125
+    for t in (16.0, 64.0):
+        assert abs(units_mod.uniform_prediction([k1, k2], dt, t) / (k1 * k2 * dt * dt / 12) - 1) < 1e-3
+
+
+def test_boundary_formula_never_lands_on_the_wrong_side():
+    # 第7弾: 式が言い切った単位（比 ≥ 1.25 か ≤ 0.8）で、実際の大小が逆だったものは無い
+    decided = [u for u in units_mod.read_units() if u["cross3"] and u["uniform_in"]
+               and (u["pred_margin"] >= 1.25 or u["pred_margin"] <= 0.8)]
+    assert len(decided) == 233
+    assert all((u["pred_margin"] >= 1.25) == (u["gain_vs_end"] < 1.0) for u in decided)
+
+
+def test_every_unit_keeps_the_total():
+    # O15 の列。エンジンの単位も、整数の漸化式で進めた単位（uniform・through）も 0
+    assert {u["conservation_q"] for u in units_mod.read_units()} == {0}
 
 
 def test_units_match_provenance():
@@ -61,7 +148,9 @@ def test_original_form_is_supported_where_no_counterexample():
     # コード 4 の命題は、元の命題は支持で、対偶に当たる単位（B でない単位）が 0 件のため保留になっている
     for r in judge_mod.evaluate_all(outdir=None):
         code, cx = EXPECTED[r["id"]]
-        if code == 4:
+        if code == 4 and r["id"] in TOO_FEW:
+            assert r["forms"][0]["hold"] == r["forms"][0]["n"] < 10 and r["judgement"]["form"] == "original", r["id"]
+        elif code == 4:
             assert r["forms"][0]["hold"] == r["forms"][0]["n"] >= 10, r["id"]
             assert r["judgement"]["form"] != "original", r["id"]
 

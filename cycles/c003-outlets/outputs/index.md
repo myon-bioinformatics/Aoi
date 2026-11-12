@@ -1,12 +1,12 @@
 # 命題の一覧（自動生成）
 
-命題ファイル SHA-256: `fe1b9dc9eaabdcb01b07c68361eb71f9b3b904a79d7f6e1ee53e7e63a6239240` / コード: `b126b0d`
+命題ファイル SHA-256: `552bb27c0675d995126857bfdee795de8852f3bca3ba97ca0082388bbc19355c` / コード: `a48502a`
 
 各形のセルは「終了コード・成立率（単位数）」。0 異議なし、1 例外あり、2 主張が強すぎる、3 不成立、4 判断保留、5 判定できない単位。
 σ は、元の命題の成立数が強さの基準（概ね 0.75・多くの場合 0.5 など）から標準偏差いくつ分上（＋）か下（−）か。終了コードの判定（95% の区間、両側でおよそ ±2σ）とは別に、±1σ・±2σ・±3σ で読むための値。
 判例と根拠は objections.md、規則は docs/propositions.md。
 
-総合の終了コードの内訳: exit 0 異議なし 2件、exit 3 異議あり（不成立） 5件、exit 4 待った！判断保留 8件
+総合の終了コードの内訳: exit 0 異議なし 3件、exit 3 異議あり（不成立） 32件、exit 4 待った！判断保留 43件
 
 | id | 識別子 | 強さ | 元の命題 | σ | 対偶 | 逆 | 裏 | きっかけ以外 | 総合 | 親 |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -24,7 +24,70 @@
 | O12 | `[where:pump_only==true] * => err_abs<1e-09` | 必ず | 0・1.00（16） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
 | O13 | `[where:has_delay==true] * => src_same==true` | 必ず | 0・1.00（12） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
 | O14 | `[where:has_delay==true] * => lag_err_steps==0` | 必ず | 0・1.00（12） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
-| O15 | `[all] * => conservation_q==0` | 必ず | 0・1.00（338） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O15 | `[all] * => conservation_q==0` | 必ず | 0・1.00（4790） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O16 | `[where:independent==true, where:n>=2, where:valve_only==true] * => euler_ratio<=1.0` | 必ず | 0・1.00（100） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 | O5 |
+| O17 | `[where:independent==true, where:n>=2, where:valve_only==true] h<=0.125 => so_rel<=0.005` | 必ず | 3・0.87（60） | — | 3・0.83（48） | 0・1.00（52） | 0・1.00（40） | — | **3** 異議あり（不成立） |  |
+| O18 | `[where:independent==true, where:n>=2, where:valve_only==true] * => so_rel<=0.05` | 必ず | 3・0.80（100） | — | 3・0.00（20） | — | — | — | **3** 異議あり（不成立） | O3 |
+| O19 | `[where:independent==true, where:valve_only==true] * => disc_gap<1e-09` | 必ず | 0・1.00（110） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O20 | `[where:gentle==true, where:joint==true] * => err_abs<1e-09` | 必ず | 3・0.00（30） | — | 3・0.00（30） | — | — | — | **3** 異議あり（不成立） | O10 |
+| O21 | `[where:gentle==true, where:joint==true] n==1 => joint_ratio<=1.000001 & joint_ratio>=0.999999` | 必ず | 0・1.00（10） | — | 0・1.00（20） | 0・1.00（10） | 0・1.00（20） | — | **0** 異議なし |  |
+| O22 | `[where:affine==true, where:gentle==true] * => err_abs<1e-09` | 必ず | 0・1.00（30） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O23 | `[where:chain==true] * => err_abs<1e-09` | 必ず | 3・0.00（50） | — | 3・0.00（50） | — | — | — | **3** 異議あり（不成立） |  |
+| O24 | `[where:chain==true] * => first_err_abs<1e-09` | 必ず | 0・1.00（50） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O25 | `[where:chain==true, where:has_half==true] h<=0.03125 => chain_halving<=2.1 & chain_halving>=1.9` | 必ず | 0・1.00（10） | — | 4・1.00（9） | 3・0.48（21） | 3・0.45（20） | — | **4** 待った！判断保留 |  |
+| O26 | `[where:native==true] * => err_abs<1e-09` | 必ず | 0・1.00（160） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O27 | `[where:chain2==true, where:independent==true] h<=0.03125 => chain_pred_rel<=0.05` | 必ず | 0・1.00（24） | — | 0・1.00（32） | 3・0.50（48） | 3・0.57（56） | — | **3** 異議あり（不成立） |  |
+| O28 | `[where:fed==true, where:independent==true] * => err_abs<1e-09` | 必ず | 3・0.00（30） | — | 3・0.00（30） | — | — | — | **3** 異議あり（不成立） |  |
+| O29 | `[where:fed==true, where:independent==true] * => fed_gap<1e-09` | 必ず | 0・1.00（30） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O30 | `[where:fed==true, where:uniform==true] * => err_abs<1e-09` | 必ず | 0・1.00（30） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O31 | `[where:chain2==true, where:uniform==true] * => err_abs<1e-09` | 必ず | 3・0.00（80） | — | 3・0.00（80） | — | — | — | **3** 異議あり（不成立） |  |
+| O32 | `[where:chain2==true, where:uniform==true] h<=0.03125 => gain_vs_independent>=10` | 必ず | 0・1.00（24） | — | 4・1.00（6） | 3・0.32（74） | 3・0.11（56） | — | **4** 待った！判断保留 |  |
+| O33 | `[where:chain2==true, where:has_half==true, where:uniform==true] h<=0.03125 => uniform_halving<=4.2 & uniform_halving>=3.8` | 必ず | 0・1.00（16） | — | 4・-（0） | 3・0.33（48） | 3・0.00（32） | — | **4** 待った！判断保留 |  |
+| O34 | `[where:chain2==true, where:through==true] * => err_abs<1e-09` | 必ず | 0・1.00（80） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O35 | `[where:flow==true, where:from_pump==true] * => err_abs<1e-09` | 必ず | 0・1.00（30） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O36 | `[where:flow==true, where:from_pump==false] * => native_gap<1e-09` | 必ず | 0・1.00（80） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O37 | `[where:combo==true, where:uniform_in==true] * => err_abs<1e-09` | 必ず | 0・1.00（50） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O38 | `[where:combo==true, where:uniform_in==false] * => err_abs>=1e-09` | 必ず | 0・1.00（50） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O39 | `[where:chain3==true, where:uniform_in==false] h<=0.03125 => chain3_pred_rel<=0.05` | 必ず | 3・0.00（12） | — | 3・0.68（38） | 4・0.00（2） | 3・0.93（28） | — | **3** 異議あり（不成立） |  |
+| O40 | `[where:chain3==true, where:uniform_in==true] h<=0.03125 => gain_vs_end>=10` | 必ず | 0・1.00（12） | — | 0・1.00（11） | 3・0.41（29） | 3・0.39（28） | — | **3** 異議あり（不成立） |  |
+| O41 | `[where:chain3==true, where:has_half==true, where:uniform_in==true] h<=0.03125 => flow_halving<=4.2 & flow_halving>=3.8` | 必ず | 4・1.00（8） | — | 4・1.00（5） | 3・0.42（19） | 3・0.31（16） | — | **4** 待った！判断保留 |  |
+| O42 | `[where:ring==true, where:settled==false, where:uniform_in==true] h<=0.03125 => gain_vs_end>=10` | 必ず | 0・1.00（12） | — | 4・1.00（8） | 3・0.38（32） | 3・0.29（28） | — | **4** 待った！判断保留 |  |
+| O43 | `[where:ring==true, where:settled==true, where:uniform_in==true] * => err_abs<1e-09` | 必ず | 3・0.97（40） | — | 4・0.00（1） | — | — | — | **3** 異議あり（不成立） |  |
+| O44 | `[where:ring==true, where:settled==true, where:uniform_in==false] * => err_abs>=1e-09` | 必ず | 0・1.00（40） | — | 4・-（0） | — | — | — | **4** 待った！判断保留 |  |
+| O45 | `[where:chain3b==true, where:uniform_in==false] h<=0.03125 => stage_fit<=0.05` | 必ず | 0・1.00（48） | — | 0・1.00（43） | 3・0.54（89） | 3・0.51（84） | — | **3** 異議あり（不成立） | O39 |
+| O46 | `[where:chain3b==true, where:uniform_in==false] h<=0.03125 => sign_ok==true` | 必ず | 0・1.00（48） | — | 4・1.00（3） | 3・0.37（129） | 3・0.04（84） | — | **4** 待った！判断保留 |  |
+| O49 | `[where:chain4==true] h<=0.03125 => stage_fit<=0.05` | 必ず | 0・1.00（16） | — | 0・1.00（15） | 3・0.55（29） | 3・0.54（28） | — | **3** 異議あり（不成立） |  |
+| O47 | `[where:chain3b==true, where:has_half==true, where:uniform_in==true] h<=0.03125 => flow_halving<=4.2 & flow_halving>=3.8` | 必ず | 0・1.00（36） | — | 0・1.00（22） | 3・0.58（62） | 3・0.46（48） | — | **3** 異議あり（不成立） | O41 |
+| O48 | `[where:chain3b==true, where:uniform_in==true] h<=0.03125 => gain_vs_end>=10` | 必ず | 0・1.00（48） | — | 0・1.00（34） | 3・0.49（98） | 3・0.40（84） | — | **3** 異議あり（不成立） |  |
+| O50 | `[where:edge2==true] h<=0.03125 => uni_fit2<=0.05` | 必ず | 0・1.00（16） | — | 4・-（0） | 3・0.36（44） | 3・0.00（28） | — | **4** 待った！判断保留 |  |
+| O51 | `[where:edge3==true, where:uniform_in==true] h<=0.03125 => uni_fit<=0.05` | 必ず | 0・1.00（120） | — | 0・1.00（84） | 3・0.49（246） | 3・0.40（210） | — | **3** 異議あり（不成立） |  |
+| O52 | `[where:edge3==true, where:uniform_in==true] h_ratio<=0.5 => gain_vs_end>1.0` | 必ず | 3・0.97（250） | — | 3・0.74（31） | 3・0.81（299） | 3・0.29（80） | — | **3** 異議あり（不成立） |  |
+| O53 | `[where:edge3==true, where:uniform_in==true] h_ratio>=2.0 => gain_vs_end<1.0` | 必ず | 3・0.36（28） | — | 3・0.94（299） | 3・0.32（31） | 3・0.93（302） | — | **3** 異議あり（不成立） |  |
+| O54 | `[where:cross3==true, where:uniform_in==false] h<=0.03125 => end2_fit<=0.05` | 必ず | 3・0.96（140） | — | 3・0.92（73） | 3・0.78（172） | 3・0.64（105） | — | **3** 異議あり（不成立） |  |
+| O55 | `[where:cross3==true, where:uniform_in==true] pred_margin>=1.25 => gain_vs_end<1.0` | 必ず | 0・1.00（19） | — | 0・1.00（222） | 3・0.83（23） | 3・0.98（226） | — | **3** 異議あり（不成立） | O53 |
+| O56 | `[where:cross3==true, where:uniform_in==true] pred_margin<=0.8 => gain_vs_end>1.0` | 必ず | 0・1.00（214） | — | 0・1.00（23） | 3・0.96（222） | 3・0.74（31） | — | **3** 異議あり（不成立） | O52 |
+| O57 | `[where:cross3c==true, where:uniform_in==true] pred_margin>=1.25 => gain_vs_end<1.0` | 必ず | 3・0.18（11） | — | 3・0.90（87） | 4・0.29（7） | 3・0.94（83） | — | **3** 異議あり（不成立） | O55 |
+| O58 | `[where:cross3c==true, where:uniform_in==true] pred_margin<=0.8 => gain_vs_end>1.0` | 必ず | 3・0.97（78） | — | 4・0.71（7） | 3・0.87（87） | 3・0.31（16） | — | **3** 異議あり（不成立） | O56 |
+| O59 | `[where:cross4==true, where:uniform_in==true] pred_margin>=1.25 => gain_vs_end<1.0` | 必ず | 0・1.00（18） | — | 0・1.00（173） | 3・0.78（23） | 3・0.97（178） | — | **3** 異議あり（不成立） | O55 |
+| O60 | `[where:cross4==true, where:uniform_in==true] pred_margin<=0.8 => gain_vs_end>1.0` | 必ず | 0・1.00（168） | — | 0・1.00（23） | 3・0.97（173） | 3・0.82（28） | — | **3** 異議あり（不成立） | O56 |
+| O61 | `[where:cascade==true, where:vary==true] h<=0.125 => gain_vs_uniform>1.0` | 必ず | 3・0.88（112） | — | 3・0.44（25） | 3・0.65（151） | 3・0.17（64） | — | **3** 異議あり（不成立） |  |
+| O62 | `[where:cascade==true, where:vary==true] h<=0.03125 => casc_fit<=0.05` | 必ず | 0・1.00（64） | — | 4・1.00（7） | 3・0.38（169） | 3・0.06（112） | — | **4** 待った！判断保留 |  |
+| O63 | `[where:ramp==true, where:vary==true] h<=0.015625 => ramp_fit<=0.1` | 必ず | 0・1.00（48） | — | 0・1.00（17） | 3・0.30（159） | 3・0.13（128） | — | **3** 異議あり（不成立） |  |
+| O64 | `[where:ramp==true, where:vary==true] h<=0.125 => gain_vs_uniform>1.0` | 必ず | 0・1.00（112） | — | 4・1.00（1） | 3・0.64（175） | 3・0.02（64） | — | **4** 待った！判断保留 |  |
+| O65 | `[where:ramp==true, where:vary==true] h>0.125 => gain_vs_uniform>1.0` | 必ず | 3・0.98（64） | — | 4・0.00（1） | 3・0.36（175） | 3・0.00（112） | — | **3** 異議あり（不成立） |  |
+| O66 | `[where:ramp==true, where:vary==true] h<=0.125 => ramp_clamped==0` | 必ず | 0・1.00（112） | — | 4・-（0） | 3・0.64（176） | 3・0.00（64） | — | **4** 待った！判断保留 |  |
+| O67 | `[where:p_branch==true, where:ramp==true] h<=0.125 => gain_vs_uniform>1.0` | 必ず | 0・1.00（42） | — | 4・1.00（1） | 3・0.65（65） | 3・0.04（24） | — | **4** 待った！判断保留 | O64 |
+| O68 | `[where:p_merge==true, where:ramp==true] h<=0.125 => gain_vs_uniform>1.0` | 必ず | 0・1.00（42） | — | 4・-（0） | 3・0.64（66） | 3・0.00（24） | — | **4** 待った！判断保留 | O64 |
+| O69 | `[where:p_pump==true, where:ramp==true] h<=0.125 => gain_vs_uniform>1.0` | 必ず | 0・1.00（42） | — | 4・-（0） | 3・0.64（66） | 3・0.00（24） | — | **4** 待った！判断保留 | O64 |
+| O70 | `[where:p_ring==true, where:ramp==true] h<=0.125 => gain_vs_uniform>1.0` | 必ず | 0・1.00（42） | — | 4・-（0） | 3・0.64（66） | 3・0.00（24） | — | **4** 待った！判断保留 | O64 |
+| O71 | `[where:has_half==true, where:pipe==true, where:ramp==true] h<=0.03125 => ramp_halving<=10.0 & ramp_halving>=6.0` | 必ず | 0・1.00（72） | — | 4・1.00（5） | 3・0.44（163） | 3・0.05（96） | — | **4** 待った！判断保留 |  |
+| O72 | `[where:pipe==true, where:ramp==true] h<=0.125 => ramp_clamped==0` | 必ず | 0・1.00（168） | — | 4・-（0） | 3・0.64（264） | 3・0.00（96） | — | **4** 待った！判断保留 | O66 |
+| O73 | `[where:has_half==true, where:ladder==true, where:two_stage==true] h<=0.125 & h>=0.03125 => order_gap<=0.25` | 必ず | 0・1.00（48） | — | 4・1.00（3） | 3・0.44（109） | 3・0.05（64） | — | **4** 待った！判断保留 |  |
+| O74 | `[where:has_half==true, where:ladder==true, where:two_stage==false] h<=0.125 & h>=0.03125 => order_gap<=0.25` | 必ず | 0・1.00（24） | — | 4・1.00（1） | 3・0.44（55） | 3・0.03（32） | — | **4** 待った！判断保留 | O73 |
+| O75 | `[where:ladder==true, where:quad==true, where:two_stage==true] h<=0.03125 & h>=0.0078125 => quad_fit2<=0.1` | 必ず | 0・1.00（12） | — | 4・1.00（3） | 3・0.29（41） | 3・0.09（32） | — | **4** 待った！判断保留 |  |
+| O76 | `[where:ladder==true, where:quad==true] h<=0.125 & h>=0.015625 => gain_vs_ramp>1.0` | 必ず | 0・1.00（30） | — | 4・-（0） | 3・0.45（66） | 3・0.00（36） | — | **4** 待った！判断保留 |  |
+| O77 | `[where:ladder==true, where:quad==true] h>0.125 => gain_vs_ramp>1.0` | 必ず | 0・1.00（24） | — | 4・-（0） | 3・0.36（66） | 3・0.00（42） | — | **4** 待った！判断保留 |  |
+| O78 | `[where:ladder==true, where:quad==true] h<=0.125 => quad_clamped==0` | 必ず | 0・1.00（42） | — | 4・-（0） | 3・0.64（66） | 3・0.00（24） | — | **4** 待った！判断保留 | O66 |
 
 ## 全命題の共通評価軸
 
@@ -49,3 +112,66 @@ seed比較は命題定義・年・生成条件ごと。試したseed内の不変
 | **O13** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
 | **O14** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
 | **O15** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O16** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O17** | 0.867 | 1.000 | 0.929 | 0.920 | 0.917 | 0.850 | None (not_evaluated) |
+| **O18** | 0.800 | 1.000 | 0.889 | 0.800 | 0.500 | None | None (not_evaluated) |
+| **O19** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O20** | 0.000 | None | 0.000 | 0.000 | None | None | None (not_evaluated) |
+| **O21** | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | None (not_evaluated) |
+| **O22** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O23** | 0.000 | None | 0.000 | 0.000 | None | None | None (not_evaluated) |
+| **O24** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O25** | 1.000 | 0.476 | 0.645 | 0.633 | 0.738 | 0.463 | None (not_evaluated) |
+| **O26** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O27** | 1.000 | 0.500 | 0.667 | 0.700 | 0.750 | 0.535 | None (not_evaluated) |
+| **O28** | 0.000 | None | 0.000 | 0.000 | None | None | None (not_evaluated) |
+| **O29** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O30** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O31** | 0.000 | None | 0.000 | 0.000 | None | None | None (not_evaluated) |
+| **O32** | 1.000 | 0.324 | 0.490 | 0.375 | 0.662 | 0.186 | None (not_evaluated) |
+| **O33** | 1.000 | 0.333 | 0.500 | 0.333 | None | None | None (not_evaluated) |
+| **O34** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O35** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O36** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O37** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O38** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O39** | 0.000 | 0.000 | 0.000 | 0.650 | 0.342 | -0.150 | None (not_evaluated) |
+| **O40** | 1.000 | 0.414 | 0.585 | 0.575 | 0.707 | 0.403 | None (not_evaluated) |
+| **O41** | 1.000 | 0.421 | 0.593 | 0.542 | 0.711 | 0.363 | None (not_evaluated) |
+| **O42** | 1.000 | 0.375 | 0.545 | 0.500 | 0.688 | 0.327 | None (not_evaluated) |
+| **O43** | 0.975 | 1.000 | 0.987 | 0.975 | 0.500 | None | None (not_evaluated) |
+| **O44** | 1.000 | 1.000 | 1.000 | 1.000 | None | None | None (not_evaluated) |
+| **O45** | 1.000 | 0.539 | 0.701 | 0.689 | 0.770 | 0.525 | None (not_evaluated) |
+| **O46** | 1.000 | 0.372 | 0.542 | 0.386 | 0.686 | 0.115 | None (not_evaluated) |
+| **O49** | 1.000 | 0.552 | 0.711 | 0.705 | 0.776 | 0.544 | None (not_evaluated) |
+| **O47** | 1.000 | 0.581 | 0.735 | 0.690 | 0.790 | 0.516 | None (not_evaluated) |
+| **O48** | 1.000 | 0.490 | 0.658 | 0.621 | 0.745 | 0.445 | None (not_evaluated) |
+| **O50** | 1.000 | 0.364 | 0.533 | 0.364 | None | None | None (not_evaluated) |
+| **O51** | 1.000 | 0.488 | 0.656 | 0.618 | 0.744 | 0.442 | None (not_evaluated) |
+| **O52** | 0.968 | 0.809 | 0.882 | 0.803 | 0.776 | 0.375 | None (not_evaluated) |
+| **O53** | 0.357 | 0.323 | 0.339 | 0.882 | 0.631 | 0.275 | None (not_evaluated) |
+| **O54** | 0.957 | 0.779 | 0.859 | 0.820 | 0.848 | 0.644 | None (not_evaluated) |
+| **O55** | 1.000 | 0.826 | 0.905 | 0.984 | 0.913 | 0.901 | None (not_evaluated) |
+| **O56** | 1.000 | 0.964 | 0.982 | 0.967 | 0.982 | 0.846 | None (not_evaluated) |
+| **O57** | 0.182 | 0.286 | 0.222 | 0.851 | 0.591 | 0.149 | None (not_evaluated) |
+| **O58** | 0.974 | 0.874 | 0.921 | 0.862 | 0.794 | 0.411 | None (not_evaluated) |
+| **O59** | 1.000 | 0.783 | 0.878 | 0.974 | 0.891 | 0.872 | None (not_evaluated) |
+| **O60** | 1.000 | 0.971 | 0.985 | 0.974 | 0.986 | 0.893 | None (not_evaluated) |
+| **O61** | 0.875 | 0.649 | 0.745 | 0.619 | 0.545 | 0.065 | None (not_evaluated) |
+| **O62** | 1.000 | 0.379 | 0.549 | 0.403 | 0.689 | 0.154 | None (not_evaluated) |
+| **O63** | 1.000 | 0.302 | 0.464 | 0.369 | 0.651 | 0.200 | None (not_evaluated) |
+| **O64** | 1.000 | 0.640 | 0.780 | 0.642 | 0.820 | 0.100 | None (not_evaluated) |
+| **O65** | 0.984 | 0.360 | 0.527 | 0.358 | 0.180 | -0.100 | None (not_evaluated) |
+| **O66** | 1.000 | 0.636 | 0.778 | 0.636 | None | None | None (not_evaluated) |
+| **O67** | 1.000 | 0.646 | 0.785 | 0.652 | 0.823 | 0.164 | None (not_evaluated) |
+| **O68** | 1.000 | 0.636 | 0.778 | 0.636 | None | None | None (not_evaluated) |
+| **O69** | 1.000 | 0.636 | 0.778 | 0.636 | None | None | None (not_evaluated) |
+| **O70** | 1.000 | 0.636 | 0.778 | 0.636 | None | None | None (not_evaluated) |
+| **O71** | 1.000 | 0.442 | 0.613 | 0.458 | 0.721 | 0.152 | None (not_evaluated) |
+| **O72** | 1.000 | 0.636 | 0.778 | 0.636 | None | None | None (not_evaluated) |
+| **O73** | 1.000 | 0.440 | 0.611 | 0.455 | 0.720 | 0.144 | None (not_evaluated) |
+| **O74** | 1.000 | 0.436 | 0.608 | 0.446 | 0.718 | 0.117 | None (not_evaluated) |
+| **O75** | 1.000 | 0.293 | 0.453 | 0.341 | 0.646 | 0.166 | None (not_evaluated) |
+| **O76** | 1.000 | 0.455 | 0.625 | 0.455 | None | None | None (not_evaluated) |
+| **O77** | 1.000 | 0.364 | 0.533 | 0.364 | None | None | None (not_evaluated) |
+| **O78** | 1.000 | 0.636 | 0.778 | 0.636 | None | None | None (not_evaluated) |

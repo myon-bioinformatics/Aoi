@@ -1,2 +1,20 @@
 propositions.toml sha256 fe1b9dc9eaabdcb01b07c68361eb71f9b3b904a79d7f6e1ee53e7e63a6239240
 固定: 2026-11-12 JST、コミット b126b0d（単位を作る前）
+propositions_r2.toml sha256 4cf78382fb29c2a8ea77b6c98bf7d6a11535738e04e62db643791dac7e56647e
+固定: 2026-11-12 JST（第2弾の単位と列を作る前のコミット）
+propositions_r3.toml sha256 8cc8c59a970c7a58ba2d3bb74ecc39e7a0b9cabce95b432da4792ea2486e5f17
+固定: 2026-11-12 JST（第3弾の単位と列を作る前のコミット）
+propositions_r4.toml sha256 979ef93849c07d91ed1d78e19d7bc99dfa0abbeaa4da815d3650a8a5e2cb06d8
+固定: 2026-11-12 JST（エンジンへの実装と第4弾の単位・列を作る前のコミット）
+propositions_r5.toml sha256 f2694adb6359096c378f4f083dfb3037a82e0e208b1370c9139bd5380a566eb1
+固定: 2026-11-12 JST（第5弾の単位と列を作る前のコミット）
+propositions_r6.toml sha256 48d78ce33a454c9159a7b92f04e350fdbbe01f44a939e4baf0020fdb1f9c1715
+固定: 2026-11-12 JST（第6弾の単位と列を作る前のコミット）
+propositions_r7.toml sha256 5556274c957d24664410bd3ba66d9da981e4711d07d879399bf6345540bc26db
+固定: 2026-11-12 JST（第7弾の単位と列を作る前のコミット）
+propositions_r8.toml sha256 08960d4226cc86abb0d1d2a5125038f62d71efad3a696b89204d235a0fadfdc7
+固定: 2026-11-12 JST（第8弾の単位と列を作る前のコミット）
+propositions_r9.toml sha256 c55eb47352bb9ef4ebb87465b03101b0eef368392157d5710f2a3017a4a8c544
+固定: 2026-11-12 JST（第9弾の単位・列・漸化式のコードを作る前のコミット）
+propositions_r10.toml sha256 60e4df993777b07d694f6d9dae7282bd276f682b7c71903d9da79be408fea0ab
+固定: 2026-11-12 JST（第10弾の単位・列・quad の漸化式のコードを作る前のコミット）

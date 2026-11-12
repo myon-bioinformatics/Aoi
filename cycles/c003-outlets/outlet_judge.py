@@ -2,7 +2,7 @@
 
     python cycles/c003-outlets/outlet_judge.py [--report-only]
 
-入力は units.jsonl（outlet_units.py make が書く）と propositions.toml（事前登録）。結果は outputs/ に書く。
+入力は units.jsonl（outlet_units.py make が書く）と propositions.toml と propositions_r2〜r7.toml（事前登録）。結果は outputs/ に書く。
 終了コードは docs/propositions.md の表どおり（最初に 0 でなかった命題のコード）。--report-only は異議（1〜6）で失敗にしない。
 """
 from __future__ import annotations
@@ -12,6 +12,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -25,7 +26,7 @@ import outlet_units  # noqa: E402
 import propositions as pr  # noqa: E402
 
 OUT = HERE / "outputs"
-DROP = ("shares", "kind", "split", "method")  # 列にしない（リスト）か、真偽の列に直してあるもの
+DROP = ("shares", "kind", "split", "method", "first_left", "base", "stages")  # 列にしない（リスト）か、真偽の列に直してあるもの
 
 
 def table(units: list[dict]) -> pl.DataFrame:
@@ -38,12 +39,26 @@ def code_version() -> str | None:
     return r.stdout.strip() or None
 
 
-def evaluate_all(units_path: Path = outlet_units.UNITS, props_path: Path = HERE / "propositions.toml",
-                 outdir: Path | None = OUT) -> list[dict]:
+PROPS = (HERE / "propositions.toml", HERE / "propositions_r2.toml", HERE / "propositions_r3.toml",
+         HERE / "propositions_r4.toml", HERE / "propositions_r5.toml",
+         HERE / "propositions_r6.toml", HERE / "propositions_r7.toml", HERE / "propositions_r8.toml", HERE / "propositions_r9.toml", HERE / "propositions_r10.toml")  # 事前登録の順。後の弾は前の id を parent に持てる
+
+
+def load_props(paths=PROPS) -> tuple[list[dict], str]:
+    """事前登録のファイルを順につないで 1 つとして読む（同じ問いの重なりと parent は全体で確かめる）。"""
+    text = "\n".join(Path(p).read_text(encoding="utf-8") for p in paths)
+    with tempfile.TemporaryDirectory() as tmp:
+        joined = Path(tmp) / "propositions.toml"
+        joined.write_text(text, encoding="utf-8")
+        return pr.load(joined)
+
+
+def evaluate_all(units_path: Path = outlet_units.UNITS, props_paths=PROPS, outdir: Path | None = OUT) -> list[dict]:
     """判定して結果を返す。outdir があれば propositions.jsonl・objections.md・index.md・ledger.jsonl を書く。"""
-    props, sha = pr.load(props_path)
+    props, sha = load_props(props_paths)
     st = table(outlet_units.read_units(units_path))
-    meta = {"sha256": sha, "code_version": code_version(), "file": str(props_path.relative_to(ROOT))}
+    meta = {"sha256": sha, "code_version": code_version(),
+            "file": " + ".join(str(Path(p).relative_to(ROOT)) for p in props_paths)}
     results = [{**pr.evaluate(p, st), "meta": meta} for p in props]
     if outdir is None:
         return results

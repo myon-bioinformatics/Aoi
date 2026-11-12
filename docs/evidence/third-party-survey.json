@@ -72,21 +72,21 @@
       "import_sites": 1
     },
     "fixedq": {
-      "attribute_uses": 8,
+      "attribute_uses": 9,
       "attributes": {
         "ONE": 1,
         "lag_gain": 1,
-        "qmul": 4,
+        "qmul": 5,
         "random_scales": 1,
         "to_q": 1
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 8,
+          "attribute_uses": 9,
           "attributes": {
             "ONE": 1,
             "lag_gain": 1,
-            "qmul": 4,
+            "qmul": 5,
             "random_scales": 1,
             "to_q": 1
           },
@@ -1337,7 +1337,7 @@
       "attributes": {
         "ONE": 1,
         "lag_gain": 1,
-        "qmul": 4,
+        "qmul": 5,
         "random_scales": 1,
         "to_q": 1
       },

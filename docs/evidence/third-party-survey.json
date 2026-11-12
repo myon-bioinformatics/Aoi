@@ -71,6 +71,36 @@
       "files": 1,
       "import_sites": 1
     },
+    "fixedq": {
+      "attribute_uses": 8,
+      "attributes": {
+        "ONE": 1,
+        "lag_gain": 1,
+        "qmul": 4,
+        "random_scales": 1,
+        "to_q": 1
+      },
+      "by_tree": {
+        "cycles": {
+          "attribute_uses": 8,
+          "attributes": {
+            "ONE": 1,
+            "lag_gain": 1,
+            "qmul": 4,
+            "random_scales": 1,
+            "to_q": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        }
+      },
+      "declared": [],
+      "distinct_attributes": 5,
+      "dynamic_import_sites": 0,
+      "files": 1,
+      "import_sites": 1
+    },
     "httpx": {
       "attribute_uses": 3,
       "attributes": {
@@ -160,6 +190,30 @@
       "dynamic_import_sites": 0,
       "files": 1,
       "import_sites": 2
+    },
+    "network": {
+      "attribute_uses": 3,
+      "attributes": {
+        "Network": 1,
+        "register_law": 2
+      },
+      "by_tree": {
+        "cycles": {
+          "attribute_uses": 3,
+          "attributes": {
+            "Network": 1,
+            "register_law": 2
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        }
+      },
+      "declared": [],
+      "distinct_attributes": 2,
+      "dynamic_import_sites": 0,
+      "files": 1,
+      "import_sites": 1
     },
     "numpy": {
       "attribute_uses": 291,
@@ -488,11 +542,11 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1009,
+      "attribute_uses": 1011,
       "attributes": {
         "Boolean": 14,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 259,
+        "DataFrame": 261,
         "Expr": 13,
         "Float32": 1,
         "Float64": 70,
@@ -519,10 +573,10 @@
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 40,
+          "attribute_uses": 42,
           "attributes": {
             "Boolean": 2,
-            "DataFrame": 1,
+            "DataFrame": 3,
             "Int64": 2,
             "Utf8": 2,
             "col": 20,
@@ -533,8 +587,8 @@
             "when": 1
           },
           "dynamic_import_sites": 0,
-          "files": 6,
-          "import_sites": 6
+          "files": 7,
+          "import_sites": 7
         },
         "dragowing": {
           "attribute_uses": 3,
@@ -685,8 +739,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 45,
-      "import_sites": 50
+      "files": 46,
+      "import_sites": 51
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -1267,6 +1321,41 @@
       "file": "cycles/c002-gohantrust/lag1/lag_run.py",
       "import_sites": 1,
       "package": "numpy",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "DataFrame": 2
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c003-outlets/outlet_judge.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "ONE": 1,
+        "lag_gain": 1,
+        "qmul": 4,
+        "random_scales": 1,
+        "to_q": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c003-outlets/outlet_units.py",
+      "import_sites": 1,
+      "package": "fixedq",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "Network": 1,
+        "register_law": 2
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c003-outlets/outlet_units.py",
+      "import_sites": 1,
+      "package": "network",
       "tree": "cycles"
     },
     {

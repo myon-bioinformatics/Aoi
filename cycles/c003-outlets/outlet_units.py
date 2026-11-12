@@ -51,9 +51,15 @@ CROSS4_SETS = [(0.3, 2.0, 0.6), (4.0, 1.5, 0.6), (2.5, 0.6, 1.5), (0.6, 5.0, 2.0
 VARY_SETS = [((2.0, 0.75), [1.0, 2.0, 3.0]), ((0.4, 1.5), [1.0, 2.0, 3.0]), ((4.0, 0.3), [1.0, 2.0, 3.0]),
              ((1.25, 2.5), [1.0, 2.0, 3.0]), ((0.5, 2.0, 0.75), [1.5, 3.0]), ((3.0, 0.4, 1.5), [1.5, 3.0])]  # 第8弾 vary
 VARY_METHODS = ("uniform_in", "cascade", "ramp")  # cascade・ramp は整数の漸化式（エンジンには入れていない）
+PIPE_SETS = {  # 第9弾 pipe: 形ごとの組と、測る時刻 / τ
+    "branch": ([(0.5, 2.0, 0.75), (0.25, 0.4, 1.5), (0.7, 1.25, 2.5)], [1.0, 2.5]),  # (B へ行く割合, τB/τ, τC/τ)
+    "merge": ([(2.0, 0.5, 1.5), (0.4, 3.0, 0.75), (1.5, 0.6, 2.5)], [1.0, 2.5]),  # (τB/τ, τC/τ, τD/τ)
+    "pumpfed": ([(2.0, 0.75), (0.4, 1.5), (1.25, 2.5)], [1.0, 2.5]),  # (τB/τ, τC/τ)
+    "ring": ([(0.4,), (2.0,), (1.25,)], [0.5, 1.5]),  # (τ2/τ,)
+}
 CROSS_KINDS = ("cross3", "cross3c", "cross4")  # 式で end のずれが 0 を横切るステップの前後を測る組
 CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary")  # 1 列につながった槽（stages に τ_i/τ）
-FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS)  # エンジンの inflows（end・uniform_in）で進める組
+FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, "pipe")  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
 TOL_CHECK = 1e-9  # 検算で許す err の差
@@ -172,6 +178,12 @@ def plan(h_extra: list[float]) -> list[dict]:
                 for method in VARY_METHODS:
                     add("vary", "eq", 1, method, h, stages=list(st), tau2_ratio=st[0], tau3_ratio=st[1],
                         tau4_ratio=st[2] if len(st) > 2 else None, span_ratio=sp)
+    for shape, (sets, spans) in PIPE_SETS.items():  # 第9弾
+        for idx, params in enumerate(sets):
+            for sp in spans:
+                for h in hs + H_FINE:
+                    for method in ("uniform_in", "ramp"):
+                        add("pipe", "eq", 1, method, h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp)
     return out
 
 
@@ -379,13 +391,122 @@ def variant_recurrence(u: dict, steps: int, dt: float) -> float:
     return x[-1]
 
 
+def pipe_spec(u: dict) -> dict:
+    """pipe の配管。tanks は上から順、links は (元, 先, 速さ)、pumps は (先, 速さ)（外から入る）。"""
+    k, p = 1.0 / TAU, u["pipe_params"]
+    if u["shape"] == "branch":
+        return {"tanks": ["a", "b", "c", "side", "sink"], "vol": {"a": V0}, "watch": "c", "pumps": [],
+                "links": [("a", "b", k * p[0]), ("a", "side", k * (1.0 - p[0])), ("b", "c", k / p[1]), ("c", "sink", k / p[2])]}
+    if u["shape"] == "merge":
+        return {"tanks": ["a", "b", "c", "d", "sink"], "vol": {"a": V0, "b": V0}, "watch": "d", "pumps": [],
+                "links": [("a", "c", k), ("b", "c", k / p[0]), ("c", "d", k / p[1]), ("d", "sink", k / p[2])]}
+    if u["shape"] == "pumpfed":
+        return {"tanks": ["b", "c", "sink"], "vol": {}, "watch": "c", "pumps": [("b", V0 * k)],
+                "links": [("b", "c", k / p[0]), ("c", "sink", k / p[1])]}
+    return {"tanks": ["a", "b"], "vol": {"a": V0}, "watch": "b", "pumps": [], "ring": True,
+            "links": [("a", "b", k), ("b", "a", k / p[0])]}
+
+
+def pipe_exact(u: dict, t: float) -> float:
+    k, p = 1.0 / TAU, u["pipe_params"]
+    if u["shape"] == "branch":  # 割合 s だけが B → C へ進む 3 段
+        return p[0] * bateman_last([k, k / p[1], k / p[2]], t)
+    if u["shape"] == "merge":  # 2 本の 3 段の足し算
+        return bateman_last([k, k / p[1], k / p[2]], t) + bateman_last([k / p[0], k / p[1], k / p[2]], t)
+    if u["shape"] == "pumpfed":  # C = q·[1/kC − e^(−kB·t)/(kC − kB) + kB·e^(−kC·t)/(kC·(kC − kB))]
+        kb, kc = k / p[0], k / p[1]
+        return V0 * k * (1.0 / kc - math.exp(-kb * t) / (kc - kb) + kb * math.exp(-kc * t) / (kc * (kc - kb)))
+    k2 = k / p[0]
+    return V0 * k / (k + k2) * -math.expm1(-(k + k2) * t)
+
+
+def _ramp_ab(rate: float, dt: float) -> tuple[float, float]:
+    """同じステップに出る分 = a·I + b·r0（I は届く量、r0 は届く速さのステップ最初の値）。b は 0 以上で、時間の単位を持つ。"""
+    x = rate * dt
+    e0 = -math.expm1(-x) / rate
+    e1 = (x + math.expm1(-x)) / (rate * rate)
+    return 1.0 - 2.0 * e1 / (dt * dt), -(e0 - 2.0 * e1 / dt)
+
+
+def pipe_run(spec: dict, method: str, steps: int, dt: float, conv=float, mul=lambda a, b: a * b) -> dict:
+    """pipe を進める。conv・mul を替えると、float（検算）でも固定小数点の整数でも同じ手順で進む。
+    uniform_in: エンジンの入れ方（入る量は一定の速さ。増やした分は下の槽の入る量に数えない）。
+    ramp: 入る速さは直線。上の槽から順に決め、増やした分も下の槽の入る量に数える。輪は 2 つの槽を同時に解く。"""
+    tanks, links = spec["tanks"], spec["links"]
+    v = {name: conv(spec["vol"].get(name, 0.0)) for name in tanks}
+    zero = conv(0.0)
+    plan_, clamped, pumped_in = {}, 0, zero
+    for name in tanks:
+        outs = [ln for ln in links if ln[0] == name]
+        if not outs:
+            continue
+        total = sum(ln[2] for ln in outs)
+        a, b = _ramp_ab(total, dt)
+        x = total * dt
+        plan_[name] = {"outs": outs, "gain": conv(-math.expm1(-x)), "theta": conv(1.0 + math.expm1(-x) / x), "a": conv(a),
+                       "b": {ln: conv(b * ln[2]) for ln in links if ln[1] == name},
+                       "pump": sum((conv(q * dt) for dst, q in spec["pumps"] if dst == name), zero),
+                       "pump_b": sum((conv(b * q) for dst, q in spec["pumps"] if dst == name), zero),
+                       "shares": [conv(ln[2] / total) for ln in outs[:-1]], "ins": [ln for ln in links if ln[1] == name]}
+
+    def split(name, total):
+        left, out = total, {}
+        for ln, share in zip(plan_[name]["outs"][:-1], plan_[name]["shares"]):
+            out[ln] = mul(total, share)
+            left -= out[ln]
+        out[plan_[name]["outs"][-1]] = left
+        return out
+
+    ring_scale = None
+    if spec.get("ring") and method == "ramp":
+        ring_scale = conv(1.0 / (1.0 - _ramp_ab(links[0][2], dt)[0] * _ramp_ab(links[1][2], dt)[0]))
+    for _ in range(steps):
+        flow, counted = {}, {}
+        if ring_scale is not None:  # out_a = base_a + a_a·out_b + b_a·V_b、out_b = base_b + a_b·out_a + b_b·V_a を同時に解く
+            (la, lb), pa, pb = links, plan_["a"], plan_["b"]
+            base_a, base_b = mul(v["a"], pa["gain"]), mul(v["b"], pb["gain"])
+            rhs_a = base_a + mul(v["b"], pa["b"][lb])
+            rhs_b = base_b + mul(v["a"], pb["b"][la])
+            out_a = mul(rhs_a + mul(rhs_b, pa["a"]), ring_scale)
+            raw_b = mul(out_a, pb["a"]) + mul(v["a"], pb["b"][la])
+            extra_b = min(max(raw_b, zero), out_a)
+            out_b = base_b + extra_b
+            extra_a = min(max(out_a - base_a, zero), out_b)
+            clamped += (extra_b != raw_b) + (extra_a != out_a - base_a)
+            flow = {la: base_a + extra_a, lb: out_b}
+        else:
+            if method == "uniform_in":  # エンジンは先に全部の槽の今までどおりの量を決める
+                for name, pl in plan_.items():
+                    counted.update(split(name, mul(v[name], pl["gain"])))
+            for name in tanks:
+                pl = plan_.get(name)
+                if pl is None:
+                    continue
+                base_out = mul(v[name], pl["gain"])
+                arrive = sum(((counted if method == "uniform_in" else flow)[ln] for ln in pl["ins"]), pl["pump"])
+                if method == "uniform_in":
+                    extra = mul(arrive, pl["theta"])
+                else:
+                    raw = mul(arrive, pl["a"]) + sum((mul(v[ln[0]], pl["b"][ln]) for ln in pl["ins"]), pl["pump_b"])
+                    extra = min(max(raw, zero), arrive)
+                    clamped += extra != raw
+                flow.update(split(name, base_out + extra))
+        for dst, _ in spec["pumps"]:
+            v[dst] += plan_[dst]["pump"]
+            pumped_in += plan_[dst]["pump"]
+        for (src, dst, _), amount in flow.items():
+            v[src] -= amount
+            v[dst] += amount
+    return {"v": v, "clamped": clamped, "pumped_in": pumped_in}
+
+
 def base(u: dict) -> str:
     """native の単位は、同じ条件の組（valve・mixed・gentle）の式で答えを出す。"""
     return u.get("base") or u["kind"]
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary"):
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", "pipe"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -407,6 +528,8 @@ def chain_exact(u: dict, t: float) -> float:
 
 def exact_left(u: dict, t: float) -> float:
     k = 1.0 / TAU
+    if u["kind"] == "pipe":
+        return pipe_exact(u, t)
     if base(u) in ("valve", "delay"):
         return V0 * math.exp(-k * t)
     if base(u) in ("chain", "chain2"):
@@ -436,6 +559,9 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
+    if u["kind"] == "pipe":
+        spec = pipe_spec(u)
+        return pipe_run(spec, u["method"], steps, dt)["v"][spec["watch"]]
     if u["method"] in ("cascade", "ramp"):
         return variant_recurrence(u, steps, dt)
     if u["kind"] in ("combo", "chain3", "ring", *CHAIN_KINDS):
@@ -552,6 +678,9 @@ def label(u: dict) -> tuple[str, str]:
     if u["kind"] == "chain3":
         return (f"chain3-r{u['tau2_ratio']:.3g}-r{u['tau3_ratio']:.3g}-{u['method']}",
                 f"3 段 τ2/τ={u['tau2_ratio']:.3g} τ3/τ={u['tau3_ratio']:.3g} {u['method']} h={u['h']:.6g}")
+    if u["kind"] == "pipe":
+        return (f"pipe-{u['shape']}-p{u['pipe_set']}-s{u['span_ratio']:g}-{u['method']}",
+                f"{u['shape']} 組 {u['pipe_set']} t={u['span_ratio']:g}τ {u['method']} h={u['h']:.6g}")
     if u["kind"] in CHAIN_KINDS:
         ratios = "-".join(f"r{r:.3g}" for r in u["stages"])
         tail = f"-s{u['span_ratio']:.6g}" if u["kind"] in ("chain3b", "edge3") else ""
@@ -580,6 +709,8 @@ def run_engine(u: dict, ffs: dict) -> dict:
     delay = DELAY if u["kind"] == "delay" else 0.0
     if u["method"] in ("uniform", "through"):
         return run_recurrence_q(u, ffs, steps, dt, t)
+    if u["kind"] == "pipe":
+        return run_pipe(u, ffs, steps, dt, t)
     if u["method"] in ("cascade", "ramp"):
         return run_variant_q(u, ffs, steps, dt, t)
     if u["kind"] in FLOW_KINDS:
@@ -720,6 +851,31 @@ def run_variant_q(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
             "conservation_q": sum(x) - start, "lag_err_steps": None, "clamped": clamped}
 
 
+def run_pipe(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
+    """第9弾: uniform はエンジン本体、ramp はエンジンと同じ固定小数点（Q48、床）の整数の漸化式。"""
+    spec = pipe_spec(u)
+    one = ffs["one"]
+    if u["method"] == "ramp":
+        res = pipe_run(spec, "ramp", steps, dt, conv=ffs["to_q"], mul=ffs["qmul"])
+        start = sum(ffs["to_q"](x) for x in spec["vol"].values()) + res["pumped_in"]
+        return {"steps": steps, "dt": dt, "t": t, "left_q": res["v"][spec["watch"]], "left": res["v"][spec["watch"]] / one,
+                "first_left": res["v"][spec["tanks"][0]] / one, "conservation_q": sum(res["v"].values()) - start,
+                "lag_err_steps": None, "clamped": res["clamped"]}
+    net = ffs["Network"](dt=dt, inflows="uniform")
+    for name in spec["tanks"]:
+        net.tank(name, 1.0, volume=spec["vol"].get(name, 0.0))
+    if spec["pumps"]:
+        net.tank("sea", 1.0, volume=1024.0 * V0)
+    for dst, q in spec["pumps"]:
+        net.pump("sea", dst, rate=q)
+    for src, dst, rate in spec["links"]:
+        net.valve(src, dst, tau=1.0 / rate)
+    res = net.run(t)
+    return {"steps": steps, "dt": dt, "t": t, "left_q": res["volumes_q"][spec["watch"]],
+            "left": res["volumes_q"][spec["watch"]] / one, "first_left": res["volumes_q"][spec["tanks"][0]] / one,
+            "conservation_q": res["conservation_error_q"], "lag_err_steps": None}
+
+
 def load_ffs(path: Path) -> dict:
     sys.path.insert(0, str(path))
     import fixedq
@@ -758,10 +914,12 @@ def derive(units: list[dict], log=print) -> None:
                     "chain_pred_rel", "fed_gap", "gain_vs_independent", "uniform_halving",
                     "native_gap", "chain3_pred_rel", "gain_vs_end", "flow_halving", "stage_fit", "sign_ok",
                     "uni_fit", "uni_fit2", "h_star", "h_ratio", "end2_fit", "pred_margin",
-                    "gain_vs_uniform", "casc_fit", "ramp_fit", "ramp_clamped"):
+                    "gain_vs_uniform", "casc_fit", "ramp_fit", "ramp_clamped", "ramp_halving"):
             u[col] = None
         for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio"):
             u.setdefault(col, None)
+        for shape, col in (("branch", "p_branch"), ("merge", "p_merge"), ("pumpfed", "p_pump"), ("ring", "p_ring")):
+            u[col] = u.get("shape") == shape
         u["uniform_in"] = u["method"] == "uniform_in"
         u["from_pump"] = u["kind"] == "flow" and u["base"] == "fed"
         u["settled"] = u["kind"] == "ring" and u["span_ratio"] == RING_SPANS[-1]
@@ -844,6 +1002,17 @@ def derive(units: list[dict], log=print) -> None:
             else:
                 u["ramp_fit"] = abs(u["err"] - ramp_prediction(rates, u["dt"], u["t"])) / (scale ** 3 / 72.0)
                 u["ramp_clamped"] = u.pop("clamped")
+        if u["kind"] == "pipe" and u["method"] == "ramp":  # 第9弾
+            twin = by[(u["team"].replace("-ramp", "-uniform_in"), u["h"])]
+            mine = u["err_abs"]
+            if mine == 0.0:
+                log(f"ε: {u['team_name']} の err が 0。ε = {EPS} に置く")
+                mine = EPS
+            u["gain_vs_uniform"] = twin["err_abs"] / mine
+            u["ramp_clamped"] = u.pop("clamped")
+            half = by.get((u["team"], u["h"] / 2.0))
+            if half is not None and half["err"] != 0.0:
+                u["has_half"], u["ramp_halving"] = True, u["err"] / half["err"]
         u.pop("clamped", None)
         if u["kind"] in CROSS_KINDS:  # 第7弾・第8弾: end の 2 次までの式と、2 つの式の予想の比
             rates = stage_rates(u)

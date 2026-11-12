@@ -44,6 +44,8 @@ EXPECTED = {
     # 第8弾（propositions_r8.toml）
     "O57": (3, 9), "O58": (3, 2), "O59": (3, 0), "O60": (3, 0), "O61": (3, 14),
     "O62": (4, 0), "O63": (3, 0), "O64": (4, 0), "O65": (3, 1), "O66": (4, 0),
+    # 第9弾（propositions_r9.toml）
+    "O67": (4, 0), "O68": (4, 0), "O69": (4, 0), "O70": (4, 0), "O71": (4, 0), "O72": (4, 0),
 }
 TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
@@ -53,7 +55,7 @@ def test_prelock_hash_matches_stamp():
     stamp = (C003 / "prelock_stamp.txt").read_text(encoding="utf-8")
     for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml",
                  "propositions_r5.toml", "propositions_r6.toml",
-                 "propositions_r7.toml", "propositions_r8.toml"):
+                 "propositions_r7.toml", "propositions_r8.toml", "propositions_r9.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -72,7 +74,11 @@ def test_later_rounds_stay_outside_earlier_scopes():
     r8 = [u for u in units if u["cross3c"] or u["cross4"] or u["vary"]]
     assert len(r8) == 1108 and not any(u["cross3"] or u["edge3"] or u["edge2"] or u["chain3b"] or u["chain4"] for u in r8)
     assert len({(u["team"], u["h"], u["steps"]) for u in r8}) == len(r8)  # 同じ計算を 2 度数えない
-    units = [u for u in units if not (u["edge3"] or u["edge2"] or u["cross3"] or u["cross3c"] or u["cross4"] or u["vary"])]
+    r9 = [u for u in units if u["pipe"]]
+    assert len(r9) == 528 and not any(u["vary"] or u["cross3c"] or u["cross4"] or u["ring"] or u["flow"] for u in r9)
+    assert all(u["p_branch"] + u["p_merge"] + u["p_pump"] + u["p_ring"] == 1 for u in r9)
+    units = [u for u in units if not (u["edge3"] or u["edge2"] or u["cross3"] or u["cross3c"] or u["cross4"] or u["vary"]
+                                      or u["pipe"])]
     assert (len(units) - len(r2) - len(r3) - len(r4) - len(r5), len(r2), len(r3), len(r4), len(r5)) == (338, 140, 460, 450, 308)
     assert not any(u["valve_only"] or u["mixed"] or u["pump_only"] or u["has_delay"] for u in r2 + r3 + r4 + r5)
     assert not any(u["gentle"] or u["chain"] for u in r3 + r4 + r5)

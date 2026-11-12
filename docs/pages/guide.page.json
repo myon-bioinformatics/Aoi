@@ -1,0 +1,187 @@
+{
+  "schema": "web-ui-page/1",
+  "title": "Aoi 利用ガイド",
+  "theme": "auto",
+  "description": "観測・計測・問い直しのための仮説駆動の研究フレームワーク。野球は実験室で、主題は「説明」そのもの。",
+  "icon": "./icon.png",
+  "favicon": "./favicon.png",
+  "blocks": [
+    {
+      "type": "badges",
+      "items": [
+        "🐍 Python 3.11+",
+        "📦 uv",
+        "🧩 子プロジェクト 6"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "📥 取得",
+      "blocks": [
+        {
+          "type": "output",
+          "text": "git clone https://github.com/myon-bioinformatics/Aoi.git\ncd Aoi\nuv sync --locked\nuv run --locked pytest -q"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "🧩 子プロジェクト",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Aoi のチェックアウトから、名前つきの入口ファイルで各子プロジェクトを呼べます（引数はそのまま渡します）。"
+        },
+        {
+          "type": "card",
+          "title": "🔭 BlueProbe",
+          "text": "観測と抽出",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ uv run --locked python BlueProbe.py --help"
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "📦 BlueProbe",
+                  "href": "https://github.com/myon-bioinformatics/BlueProbe"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "📥 QueRyu",
+          "text": "取得と観測データセット",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ uv run --locked python QueRyu.py --help"
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "📦 QueRyu",
+                  "href": "https://github.com/myon-bioinformatics/QueRyu"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "📊 SakAnalytics",
+          "text": "チームとシーズンの分析",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ uv run --locked python SakAnalytics.py --help"
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "📦 SakAnalytics",
+                  "href": "https://github.com/myon-bioinformatics/SakAnalytics"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "📐 PythDRagoras",
+          "text": "命題・証明・座標分解",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ uv run --locked python PythDRagoras.py --help"
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "📦 PythDRagoras",
+                  "href": "https://github.com/myon-bioinformatics/PythDRagoras"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "🪽 DRAgoWing",
+          "text": "可視化とレポート",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ uv run --locked python DRAgoWing.py --help"
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "📦 DRAgoWing",
+                  "href": "https://github.com/myon-bioinformatics/DRAgoWing"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "⚙️ NagoyAction",
+          "text": "自動化とオーケストレーション",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ uv run --locked python NagoyAction.py --help"
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "📦 NagoyAction",
+                  "href": "https://github.com/myon-bioinformatics/NagoyAction"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "🔁 研究サイクルを回す",
+      "blocks": [
+        {
+          "type": "output",
+          "text": "$ uv run --locked python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml\n$ uv run --locked python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "🔗 リンク",
+      "blocks": [
+        {
+          "type": "links",
+          "items": [
+            {
+              "label": "📦 リポジトリ",
+              "href": "https://github.com/myon-bioinformatics/Aoi"
+            },
+            {
+              "label": "📖 README",
+              "href": "https://github.com/myon-bioinformatics/Aoi#readme"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

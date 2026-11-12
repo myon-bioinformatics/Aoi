@@ -17,6 +17,7 @@ on:
       - 'Minimal stdlib distributions'
       - 'Nano research environment comparison'
       - 'numpy_min backends'
+      - 'Pages'
       - 'requests tqdm biopython surface'
       - 'py_launch tests'
       - 'Aoi manual research checkpoint canary'

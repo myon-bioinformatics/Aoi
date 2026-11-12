@@ -1,0 +1,2 @@
+propositions.toml sha256 fe1b9dc9eaabdcb01b07c68361eb71f9b3b904a79d7f6e1ee53e7e63a6239240
+固定: 2026-11-12 JST、コミット b126b0d（単位を作る前）

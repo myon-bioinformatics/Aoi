@@ -1,0 +1,199 @@
+# サイクル3の命題（事前登録）。形式と判定規則は docs/propositions.md。
+#
+# 題材: 1 つの槽から出口が何本か出ているとき、刻み dt で進める計算の「残り」が厳密な答えからどれだけ外れるか。
+#       出典は FluidFullSpeedSimulation の E29 🚿 outlet-count（PR #15）。
+#
+# 記録: 2026-11-12 15:43 JST に書いた。このとき Aoi 側の単位（units.jsonl）はまだ作っていない。
+#   書く前に見ていた数字（E29）: τ 30 日・dt 0.25 日（h = dt/τ = 1/120）・t = 4τ・等分で、
+#     残りのずれ 1 本 −1e-14、2 本 −0.83 %、3 本 −1.11 %、4 本 −1.25 %、8 本 −1.46 %、刻みを半分にすると半分、
+#     ポンプは何本でも同じ。O1・O2・O6 と、O4・O7 の細かい刻みの側は、これを知ったうえで書いている（追試）。
+#   見ていないもの: 粗い刻み（h > 1/120）の数字、16 本、等分でない組の細かい数字以外、
+#     まとめて取る方式（joint・affine）の結果、ポンプと弁が混ざる槽、槽が足りなくなるポンプ、遅れの管。
+#     O3・O5・O8〜O15 は結果を知らずに書いている。
+#   境の値（1e-9・5 %・h ≤ 1/32・10 倍・1.9〜2.1）は人が決めた仮置きで、結果に合わせて動かさない。
+# 変更: 結果を見てから基準・範囲・条件を変えるときは、新しい id を作り、この命題は残す。
+#
+# 単位: 1 回の計算（槽 1 つ・出口の組・刻み・方式）。列の定義は README.md の「列」。
+#   方式 independent = 今のエンジン（弁はどれもステップ最初の量の 1 − e^(−k·dt) を取る）
+#        joint       = 同じ槽の弁をまとめ、合計で 1 − e^(−K·dt) を取ってから速さの比で分ける
+#        affine      = ポンプも含めて dV/dt = −K·V − q を 1 ステップぶん厳密に解き、ポンプは q·dt、残りを弁へ分ける
+#   err = 計算の残り / 厳密な残り − 1（厳密な残りが 0 のときは差そのもの）
+
+# ---- 分かっていること（E29 の追試） ----
+
+[[proposition]]
+id = "O1"
+statement = "弁だけの槽を今の方式で進めるとき、出口が 1 本なら残りは厳密である"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }] }
+if = [{ col = "n", op = "==", value = 1 }]
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "n", "equal_split"]
+falsifier = "出口 1 本で 1e-9 以上ずれる単位が 1 つでもあれば、弁 1 本の厳密さ（1 − e^(−dt/τ)）の前提を見直す"
+note = "逆（厳密なら 1 本）は「2 本以上なら必ずずれる」と同じことを別の向きから問う"
+
+[[proposition]]
+id = "O2"
+statement = "弁だけの槽を今の方式で進めるとき、出口が 2 本以上なら残りは厳密な答えより少ない（速く空く）"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }] }
+if = [{ col = "n", op = ">=", value = 2 }]
+then = [{ col = "err", op = "<", value = -1e-9 }]
+surprise = "err"
+context = ["h", "n", "equal_split"]
+falsifier = "2 本以上で残りが多い（遅く空く）か、ずれない単位があれば、取りすぎの説明（互いの取り分を知らずに取る）を見直す"
+
+[[proposition]]
+id = "O6"
+statement = "弁だけの槽を今の方式で進めるとき、合計の速さと刻みが同じなら、出口を増やすほど残りは少なくなる"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "equal_split", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = []
+then = [{ col = "drop_from_fewer", op = "<", value = 0 }]
+surprise = "drop_from_fewer"
+context = ["h", "n", "err"]
+falsifier = "本数を増やして残りが増える（か変わらない）組があれば、(1 − 1/n) の単調さを見直す"
+note = "drop_from_fewer = この単位の err − 同じ刻みで 1 つ少ない本数（1→2→3→4→8→16 の並び）の err。単位どうしの比べを列にしたもの"
+
+# ---- 1 次の式はどこまで使えるか ----
+
+[[proposition]]
+id = "O3"
+statement = "弁だけの槽を今の方式で進めるとき、2 本以上なら、ずれは 1 次の式 −t·dt·(K² − Σk_i²)/2 と 5 % 以内で合う"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = []
+then = [{ col = "fo_rel", op = "<=", value = 0.05 }]
+surprise = "fo_rel"
+context = ["h", "n", "equal_split", "err", "err_pred"]
+falsifier = "5 % を超える単位があれば、1 次の式が使える刻みの範囲を条件として持つ命題（O4）に譲る"
+note = "刻みの条件を付けない強い主張。粗い刻みで破れると見込んで書いている（どこで止まるかを判例で見るため）"
+
+[[proposition]]
+id = "O4"
+statement = "弁だけの槽を今の方式で進めるとき、2 本以上で刻みが時定数の 1/32 以下なら、ずれは 1 次の式と 5 % 以内で合う"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "fo_rel", op = "<=", value = 0.05 }]
+surprise = "fo_rel"
+context = ["h", "n", "equal_split", "err", "err_pred"]
+falsifier = "h ≤ 1/32 で 5 % を超える単位があれば、境（1/32）か式を見直す"
+note = "逆（5 % 以内なら h ≤ 1/32）の判例は、もっと粗い刻みでも 1 次の式が使える単位を示す"
+
+[[proposition]]
+id = "O5"
+statement = "弁だけの槽を今の方式で進めるとき、2 本以上でも、ずれの大きさは頭打ち t·dt·K²/2 を超えない"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = []
+then = [{ col = "ceil_ratio", op = "<=", value = 1.0 }]
+surprise = "ceil_ratio"
+context = ["h", "n", "equal_split", "err"]
+falsifier = "頭打ちを超える単位があれば、頭打ちは 1 次の見積もりにすぎないと書き直す"
+note = "ceil_ratio = |err| / (t·dt·K²/2)。頭打ちは n → ∞ の 1 次の項。高次の項で超えるかどうかは見ていない"
+
+[[proposition]]
+id = "O7"
+statement = "弁だけの槽を今の方式で進めるとき、2 本以上で刻みが 1/32 以下なら、刻みを半分にするとずれも半分になる（比 1.9〜2.1）"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "n", op = ">=", value = 2 }, { col = "has_half", op = "==", value = true }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "halving_ratio", op = ">=", value = 1.9 }, { col = "halving_ratio", op = "<=", value = 2.1 }]
+surprise = "halving_ratio"
+context = ["h", "n", "equal_split", "err"]
+falsifier = "細かい刻みで比が 1.9〜2.1 を外れる単位があれば、1 次という読みを見直す"
+note = "halving_ratio = この単位の err / 同じ組で刻みが半分の単位の err。半分の刻みの単位がある組だけ（has_half）"
+
+[[proposition]]
+id = "O8"
+statement = "弁だけの槽を今の方式で進めるとき、2 本以上で刻みが 1/32 以下なら、1 次の式で残りを直すとずれは 1/10 以下になる"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "independent", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "corr_gain", op = ">=", value = 10 }]
+surprise = "corr_gain"
+context = ["h", "n", "equal_split", "err"]
+falsifier = "直しても 1/10 にならない単位があれば、(1 − 1/n) を補正の変数として式に入れる案は弱いと書く"
+note = "corr_gain = |err| / |直した後の err|。直し方: 残りに e^(+t·dt·(K² − Σk_i²)/2) を掛ける。分母が 0 のときは ε = 1e-15 に置き、ログに残す"
+
+# ---- 直す方式（結果を知らずに書いた） ----
+
+[[proposition]]
+id = "O9"
+statement = "弁だけの槽は、弁をまとめて取る方式（joint）なら、何本でもどの刻みでも残りは厳密である"
+strength = "always"
+scope = { where = [{ col = "valve_only", op = "==", value = true }, { col = "joint", op = "==", value = true }] }
+if = []
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "n", "equal_split"]
+falsifier = "joint で 1e-9 以上ずれる単位があれば、まとめ方（合計の割合を速さの比で分ける）を見直す"
+
+[[proposition]]
+id = "O10"
+statement = "弁とポンプが混ざる槽でも、弁をまとめて取る方式（joint）なら残りは厳密である"
+strength = "always"
+scope = { where = [{ col = "mixed", op = "==", value = true }, { col = "joint", op = "==", value = true }] }
+if = []
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "n", "err"]
+falsifier = "ずれる単位があれば、弁だけをまとめても足りない（ポンプとの取り合いが残る）と書き、affine（O11）を見る"
+note = "破れると見込んで書いている。弁をまとめても、ポンプはステップ最初の量を知らずに一定量を取るため"
+
+[[proposition]]
+id = "O11"
+statement = "弁とポンプが混ざる槽は、1 ステップを厳密に解く方式（affine）なら、何本でもどの刻みでも残りは厳密である"
+strength = "always"
+scope = { where = [{ col = "mixed", op = "==", value = true }, { col = "affine", op = "==", value = true }] }
+if = []
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "n", "err"]
+falsifier = "ずれる単位があれば、dV/dt = −K·V − q の 1 ステップの解の入れ方を見直す"
+
+[[proposition]]
+id = "O12"
+statement = "ポンプだけの槽は、何本に分けても、槽が途中で足りなくなっても、残りは厳密である"
+strength = "always"
+scope = { where = [{ col = "pump_only", op = "==", value = true }] }
+if = []
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "n", "starved"]
+falsifier = "ずれる単位があれば、足りない槽を分け合う処理か、足りているあいだの切り捨てを見直す"
+
+# ---- 遅れの管 ----
+
+[[proposition]]
+id = "O13"
+statement = "出口に遅れの管があっても、槽の残りは遅れのない同じ組と 1 ulp も違わない"
+strength = "always"
+scope = { where = [{ col = "has_delay", op = "==", value = true }] }
+if = []
+then = [{ col = "src_same", op = "==", value = true }]
+context = ["h", "n", "joint"]
+falsifier = "違う単位があれば、遅れは届く時刻だけを変えるという前提を見直す"
+
+[[proposition]]
+id = "O14"
+statement = "遅れの管を通った量が届くのは、出てからちょうど遅れのステップ数の後である"
+strength = "always"
+scope = { where = [{ col = "has_delay", op = "==", value = true }] }
+if = []
+then = [{ col = "lag_err_steps", op = "==", value = 0 }]
+context = ["h", "n", "joint"]
+falsifier = "1 ステップでもずれる単位があれば、遅れの管の数え方を見直す"
+
+# ---- 総量 ----
+
+[[proposition]]
+id = "O15"
+statement = "どの単位でも、槽と管の中の合計は最初から 1 ulp も変わらない"
+strength = "always"
+if = []
+then = [{ col = "conservation_q", op = "==", value = 0 }]
+context = ["h", "n"]
+falsifier = "0 でない単位があれば、その方式は採らない"

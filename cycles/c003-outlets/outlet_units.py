@@ -46,7 +46,13 @@ EDGE2_RATIOS, EDGE2_SPAN = [0.2, 0.6, 1.25, 5.0], 1.5  # 第6弾 edge2: τ2/τ �
 CROSS3_PAIRS = [(5.0, 2.0), (0.3, 2.0), (3.0, 1.25), (0.5, 3.0), (0.6, 2.5)]  # 第7弾 cross3: (τ2/τ, τ3/τ)
 CROSS3_H = [1 / 256, 1 / 128, 1 / 64, 1 / 32, 0.0478, 1 / 16, 1 / 8]  # 粗い刻みは使わない
 CROSS3_OFFSETS, CROSS3_FAR = (-2, -1, 0, 1, 2), (0.7, 1.3)  # 0 を横切るステップ n0 からのずれと、n0 の何倍か
-CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", "cross3")  # 1 列につながった槽（stages に τ_i/τ）
+CROSS3C_H = [1 / 4, 0.343, 1 / 2, 0.74]  # 第8弾 cross3c: 粗い刻み（組と測り方は cross3 と同じ）
+CROSS4_SETS = [(0.3, 2.0, 0.6), (4.0, 1.5, 0.6), (2.5, 0.6, 1.5), (0.6, 5.0, 2.0)]  # 第8弾 cross4: (τ2/τ, τ3/τ, τ4/τ)
+VARY_SETS = [((2.0, 0.75), [1.0, 2.0, 3.0]), ((0.4, 1.5), [1.0, 2.0, 3.0]), ((4.0, 0.3), [1.0, 2.0, 3.0]),
+             ((1.25, 2.5), [1.0, 2.0, 3.0]), ((0.5, 2.0, 0.75), [1.5, 3.0]), ((3.0, 0.4, 1.5), [1.5, 3.0])]  # 第8弾 vary
+VARY_METHODS = ("uniform_in", "cascade", "ramp")  # cascade・ramp は整数の漸化式（エンジンには入れていない）
+CROSS_KINDS = ("cross3", "cross3c", "cross4")  # 式で end のずれが 0 を横切るステップの前後を測る組
+CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary")  # 1 列につながった槽（stages に τ_i/τ）
 FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS)  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
@@ -151,12 +157,27 @@ def plan(h_extra: list[float]) -> list[dict]:
                 for method in ("end", "uniform_in"):
                     add("cross3", "eq", 1, method, h, stages=list(pair), tau2_ratio=pair[0], tau3_ratio=pair[1],
                         span_ratio=steps * h, fixed_steps=steps)
+    for kind, sets, grid in (("cross3c", CROSS3_PAIRS, CROSS3C_H), ("cross4", CROSS4_SETS, CROSS3_H)):  # 第8弾
+        for st in sets:
+            for h in grid:
+                n0 = crossing_step(st, h)
+                wanted = {max(1, n0 + d) for d in CROSS3_OFFSETS} | {max(1, round(f * n0)) for f in CROSS3_FAR}
+                for steps in sorted(wanted):
+                    for method in ("end", "uniform_in"):
+                        add(kind, "eq", 1, method, h, stages=list(st), tau2_ratio=st[0], tau3_ratio=st[1],
+                            tau4_ratio=st[2] if len(st) > 2 else None, span_ratio=steps * h, fixed_steps=steps)
+    for st, spans in VARY_SETS:
+        for sp in spans:
+            for h in hs + H_FINE:
+                for method in VARY_METHODS:
+                    add("vary", "eq", 1, method, h, stages=list(st), tau2_ratio=st[0], tau3_ratio=st[1],
+                        tau4_ratio=st[2] if len(st) > 2 else None, span_ratio=sp)
     return out
 
 
 def crossing_step(pair, h: float) -> int:
     """刻み h のとき、end の 3 段目のずれ（2 次までの式）が 0 を横切るステップ。式だけから二分法で出す。"""
-    rates = [1.0 / TAU, 1.0 / (TAU * pair[0]), 1.0 / (TAU * pair[1])]
+    rates = [1.0 / TAU] + [1.0 / (TAU * r) for r in pair]
     dt = h * TAU
 
     def value(sp: float) -> float:
@@ -281,13 +302,90 @@ def uniform_prediction(rates: list[float], dt: float, t: float) -> float:
     return _expm([[v * t for v in row] for row in eff])[m - 1][0] / exact - 1.0
 
 
+def _shifted_prediction(rates: list[float], t: float, shift) -> float:
+    """G_eff = G + (shift(i, d) を i 段目から d 段先への項に足した行列) で進めた最後の槽の量 / 厳密な量 − 1。"""
+    m = len(rates)
+    g = [[0.0] * m for _ in range(m)]
+    eff = [[0.0] * m for _ in range(m)]
+    for i, k in enumerate(rates):
+        g[i][i] = eff[i][i] = -k
+        if i + 1 < m:
+            g[i + 1][i] = k
+        for d in (1, 2, 3):
+            if i + d < m:
+                eff[i + d][i] = g[i + d][i] + shift(i, d)
+    exact = _expm([[v * t for v in row] for row in g])[m - 1][0]
+    return _expm([[v * t for v in row] for row in eff])[m - 1][0] / exact - 1.0
+
+
+def cascade_prediction(rates: list[float], dt: float, t: float) -> float:
+    """cascade の予想。G_eff = G + dt²·Hc。
+    Hc: 次の槽へ k_i²·k_{i+1}/12、2 つ先へ −k_i·k_{i+1}·(k_i + k_{i+2})/12、3 つ先へ k_i·k_{i+1}·k_{i+2}/12。"""
+    def shift(i, d):
+        k, k1 = rates[i], rates[i + 1]
+        if d == 1:
+            return dt * dt * k * k * k1 / 12.0
+        if d == 2:
+            return -dt * dt * k * k1 * (k + rates[i + 2]) / 12.0
+        return dt * dt * k * k1 * rates[i + 2] / 12.0
+
+    return _shifted_prediction(rates, t, shift)
+
+
+def ramp_prediction(rates: list[float], dt: float, t: float) -> float:
+    """ramp の予想。G_eff = G + dt³·Hr。
+    Hr: 次の槽へ −k_i³·k_{i+1}/72、2 つ先へ k_i·k_{i+1}·(k_i² + k_i·k_{i+2} + k_{i+1}·k_{i+2})/72、
+    3 つ先へ −k_i·k_{i+1}·k_{i+2}·(k_i + k_{i+1} + k_{i+3})/72。"""
+    def shift(i, d):
+        k, k1 = rates[i], rates[i + 1]
+        if d == 1:
+            return -dt ** 3 * k ** 3 * k1 / 72.0
+        if d == 2:
+            return dt ** 3 * k * k1 * (k * k + k * rates[i + 2] + k1 * rates[i + 2]) / 72.0
+        return -dt ** 3 * k * k1 * rates[i + 2] * (k + k1 + rates[i + 3]) / 72.0
+
+    return _shifted_prediction(rates, t, shift)
+
+
+def variant_coeffs(rates: list[float], dt: float, method: str) -> list[tuple[float, float]]:
+    """槽 i（i ≥ 1）が同じステップに出す分 = a·I + b·V_{i−1}（I は届く量、V_{i−1} は上の槽のステップ最初の量）。
+    cascade: a = 1 − (1 − e^(−x))/x、b = 0。ramp: a = 1 − 2·E1/dt²、b = −k_{i−1}·(E0 − 2·E1/dt)（b は 0 以上）。"""
+    out = [(0.0, 0.0)]
+    for i in range(1, len(rates)):
+        k = rates[i]
+        x = k * dt
+        if method == "cascade":
+            out.append((1.0 + math.expm1(-x) / x, 0.0))
+            continue
+        e0 = -math.expm1(-x) / k
+        e1 = (x + math.expm1(-x)) / (k * k)
+        out.append((1.0 - 2.0 * e1 / (dt * dt), -rates[i - 1] * (e0 - 2.0 * e1 / dt)))
+    return out
+
+
+def variant_recurrence(u: dict, steps: int, dt: float) -> float:
+    """cascade・ramp の検算（float）。上の槽から順に出る量を決め、増やした分も下の槽の入る量に数える。"""
+    rates = stage_rates(u)
+    gains = [-math.expm1(-r * dt) for r in rates]
+    coeffs = variant_coeffs(rates, dt, u["method"])
+    x = [V0] + [0.0] * (len(rates) - 1)
+    for _ in range(steps):
+        out = [x[0] * gains[0]]
+        for i in range(1, len(rates)):
+            a, b = coeffs[i]
+            extra = min(max(out[i - 1] * a + x[i - 1] * b, 0.0), out[i - 1])
+            out.append(x[i] * gains[i] + extra)
+        x = [x[i] - out[i] + (out[i - 1] if i else 0.0) for i in range(len(rates))]
+    return x[-1]
+
+
 def base(u: dict) -> str:
     """native の単位は、同じ条件の組（valve・mixed・gentle）の式で答えを出す。"""
     return u.get("base") or u["kind"]
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", "cross3"):
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -338,6 +436,8 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
+    if u["method"] in ("cascade", "ramp"):
+        return variant_recurrence(u, steps, dt)
     if u["kind"] in ("combo", "chain3", "ring", *CHAIN_KINDS):
         return flow_recurrence(u, steps, dt)
     if base(u) in ("chain", "chain2", "fed"):  # 入る量 → 槽 B（弁 1 本）
@@ -455,8 +555,10 @@ def label(u: dict) -> tuple[str, str]:
     if u["kind"] in CHAIN_KINDS:
         ratios = "-".join(f"r{r:.3g}" for r in u["stages"])
         tail = f"-s{u['span_ratio']:.6g}" if u["kind"] in ("chain3b", "edge3") else ""
-        if u["kind"] == "cross3":
+        if u["kind"] in CROSS_KINDS:
             tail = f"-n{u['fixed_steps']}"
+        if u["kind"] == "vary":
+            tail = f"-s{u['span_ratio']:g}"
         return (f"{u['kind']}-{ratios}{tail}-{u['method']}",
                 f"{len(u['stages']) + 1} 段 τ比 {'・'.join(f'{r:.3g}' for r in u['stages'])}{tail} {u['method']} h={u['h']:.6g}")
     if u["kind"] == "ring":
@@ -478,6 +580,8 @@ def run_engine(u: dict, ffs: dict) -> dict:
     delay = DELAY if u["kind"] == "delay" else 0.0
     if u["method"] in ("uniform", "through"):
         return run_recurrence_q(u, ffs, steps, dt, t)
+    if u["method"] in ("cascade", "ramp"):
+        return run_variant_q(u, ffs, steps, dt, t)
     if u["kind"] in FLOW_KINDS:
         return run_flow_engine(u, ffs, steps, dt, t)
     # 第1弾・第2弾の組は「別々に取る」エンジンで作る（エンジンの既定が厳密になった後も同じ値になるように）
@@ -593,6 +697,29 @@ def run_recurrence_q(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dic
             "conservation_q": total - start, "lag_err_steps": None}
 
 
+def run_variant_q(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
+    """cascade・ramp: エンジンと同じ固定小数点（Q48、床）の整数で、1 列の槽を進める。抑えた回数も数える。"""
+    to_q, qmul, lag_gain = ffs["to_q"], ffs["qmul"], ffs["lag_gain"]
+    rates = stage_rates(u)
+    gains = [lag_gain(dt, 1.0 / r) for r in rates]
+    coeffs = [(to_q(a), to_q(b)) for a, b in variant_coeffs(rates, dt, u["method"])]
+    x = [to_q(V0)] + [0] * len(rates)  # 最後は受け
+    start, clamped = x[0], 0
+    for _ in range(steps):
+        out = [qmul(x[0], gains[0])]
+        for i in range(1, len(rates)):
+            a, b = coeffs[i]
+            raw = qmul(out[i - 1], a) + qmul(x[i - 1], b)
+            extra = min(max(raw, 0), out[i - 1])
+            clamped += extra != raw
+            out.append(qmul(x[i], gains[i]) + extra)
+        for i, amount in enumerate(out):
+            x[i] -= amount
+            x[i + 1] += amount
+    return {"steps": steps, "dt": dt, "t": t, "left_q": x[-2], "left": x[-2] / ffs["one"], "first_left": x[0] / ffs["one"],
+            "conservation_q": sum(x) - start, "lag_err_steps": None, "clamped": clamped}
+
+
 def load_ffs(path: Path) -> dict:
     sys.path.insert(0, str(path))
     import fixedq
@@ -622,7 +749,7 @@ def derive(units: list[dict], log=print) -> None:
         u["err_abs"] = abs(u["err"])
         for flag in ("valve", "pump", "mixed", "delay", "gentle", "chain", "native", "chain2", "fed", *FLOW_KINDS):
             u[{"valve": "valve_only", "pump": "pump_only", "delay": "has_delay"}.get(flag, flag)] = u["kind"] == flag
-        for m in ("independent", "joint", "affine", "uniform", "through"):
+        for m in ("independent", "joint", "affine", "uniform", "through", "cascade", "ramp"):
             u[m] = u["method"] == m
         u["equal_split"] = u["split"] == "eq"
         u["starved"] = bool(u.get("starved"))
@@ -630,7 +757,8 @@ def derive(units: list[dict], log=print) -> None:
                     "euler_ratio", "so_rel", "disc_gap", "joint_ratio", "first_err_abs", "chain_halving",
                     "chain_pred_rel", "fed_gap", "gain_vs_independent", "uniform_halving",
                     "native_gap", "chain3_pred_rel", "gain_vs_end", "flow_halving", "stage_fit", "sign_ok",
-                    "uni_fit", "uni_fit2", "h_star", "h_ratio", "end2_fit", "pred_margin"):
+                    "uni_fit", "uni_fit2", "h_star", "h_ratio", "end2_fit", "pred_margin",
+                    "gain_vs_uniform", "casc_fit", "ramp_fit", "ramp_clamped"):
             u[col] = None
         for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio"):
             u.setdefault(col, None)
@@ -702,7 +830,22 @@ def derive(units: list[dict], log=print) -> None:
             pred = stage_prediction(rates, u["dt"], u["t"])
             u["stage_fit"] = abs(u["err"] - pred) / (u["dt"] / 2.0 * sum(rates[1:]))
             u["sign_ok"] = u["err"] * pred > 0.0
-        if u["kind"] == "cross3":  # 第7弾: end の 2 次までの式と、2 つの式の予想の比
+        if u["kind"] == "vary" and u["method"] in ("cascade", "ramp"):  # 第8弾: uniform と比べる・式と比べる
+            rates = stage_rates(u)
+            twin = by[(u["team"].replace("-" + u["method"], "-uniform_in"), u["h"])]
+            mine = u["err_abs"]
+            if mine == 0.0:
+                log(f"ε: {u['team_name']} の err が 0。ε = {EPS} に置く")
+                mine = EPS
+            u["gain_vs_uniform"] = twin["err_abs"] / mine
+            scale = u["dt"] * max(rates)
+            if u["method"] == "cascade":
+                u["casc_fit"] = abs(u["err"] - cascade_prediction(rates, u["dt"], u["t"])) / (scale ** 2 / 12.0)
+            else:
+                u["ramp_fit"] = abs(u["err"] - ramp_prediction(rates, u["dt"], u["t"])) / (scale ** 3 / 72.0)
+                u["ramp_clamped"] = u.pop("clamped")
+        u.pop("clamped", None)
+        if u["kind"] in CROSS_KINDS:  # 第7弾・第8弾: end の 2 次までの式と、2 つの式の予想の比
             rates = stage_rates(u)
             pred_end = end_prediction2(rates, u["dt"], u["t"])
             if u["uniform_in"]:
@@ -727,7 +870,7 @@ def derive(units: list[dict], log=print) -> None:
                 lead_uni = EPS
             u["h_star"] = abs(lead_end / lead_uni) / TAU
             u["h_ratio"] = u["h"] / u["h_star"] if u["h_star"] else None
-        if u["kind"] in ("combo", "chain3", "ring", "chain3b", "edge3", "cross3") and u["uniform_in"]:
+        if u["kind"] in ("combo", "chain3", "ring", "chain3b", "edge3", *CROSS_KINDS) and u["uniform_in"]:
             twin = by[(u["team"].replace("-uniform_in", "-end"), u["h"])]
             mine = u["err_abs"]
             if mine == 0.0:

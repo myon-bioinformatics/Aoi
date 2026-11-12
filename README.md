@@ -1,5 +1,7 @@
 # Aoi
 
+📘 [利用ガイド / Usage guide](https://myon-bioinformatics.github.io/Aoi/) (GitHub Pages)
+
 ## Aoi entry files for child projects
 
 From an Aoi checkout, the named Python entry files forward arguments to the corresponding child under this checkout. Run them from any working directory; input and output paths are resolved relative to the caller's working directory.

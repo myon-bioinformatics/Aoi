@@ -54,6 +54,8 @@ EXPECTED = {
     "O88": (0, 0), "O89": (0, 0), "O90": (0, 0), "O91": (0, 0),
     # 第12弾（propositions_r12.toml）
     "O92": (3, 3), "O93": (0, 0), "O94": (0, 0), "O95": (0, 0), "O96": (0, 0), "O97": (0, 0), "O98": (3, 2),
+    # 第13弾（propositions_r13.toml）
+    "O99": (0, 0), "O100": (3, 1), "O101": (3, 0), "O102": (3, 0), "O103": (3, 1),
 }
 TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
@@ -64,7 +66,8 @@ def test_prelock_hash_matches_stamp():
     for name in ("propositions.toml", "propositions_r2.toml", "propositions_r3.toml", "propositions_r4.toml",
                  "propositions_r5.toml", "propositions_r6.toml",
                  "propositions_r7.toml", "propositions_r8.toml", "propositions_r9.toml",
-                 "propositions_r10.toml", "propositions_r11.toml", "propositions_r12.toml"):
+                 "propositions_r10.toml", "propositions_r11.toml", "propositions_r12.toml",
+                 "propositions_r13.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -88,7 +91,10 @@ def test_later_rounds_stay_outside_earlier_scopes():
     assert all(u["p_branch"] + u["p_merge"] + u["p_pump"] + u["p_ring"] == 1 for u in r9)
     units = [u for u in units if not (u["edge3"] or u["edge2"] or u["cross3"] or u["cross3c"] or u["cross4"] or u["vary"]
                                       or u["pipe"] or u["ladder"] or u["olad"] or u["ilad"] or u["pipe2"] or u["coarse2"]
-                                      or u["tlad"])]
+                                      or u["tlad"] or u["pipe3"] or u["rnd"])]
+    r13 = [u for u in units_mod.read_units() if u["pipe3"] or u["rnd"]]
+    assert len(r13) == 1512 and not any(u["pipe"] or u["pipe2"] or u["tlad"] or u["ladder"] or u["vary"] for u in r13)
+    assert len({(u["team"], u["h"], u["steps"]) for u in r13}) == len(r13)  # 同じ計算を 2 度数えない
     r12 = [u for u in units_mod.read_units() if u["pipe2"] or u["coarse2"] or u["tlad"]]
     assert len(r12) == 1576 and not any(u["pipe"] or u["p_branch"] or u["p_ring"] or u["ladder"] or u["ilad"] or u["vary"]
                                         for u in r12)

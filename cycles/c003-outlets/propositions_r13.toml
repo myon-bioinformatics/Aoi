@@ -1,0 +1,103 @@
+# サイクル3の命題・第13弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第12弾のファイルは変更しない。
+#
+# 主題: (1) end のずれが向きを変える時刻を、ポンプと輪でも式で先に言う（O92 の判例 3 件を先に言い当てられるか）。
+#       (2) 丸めの底を、ステップ数と槽の量から先に見積もる。
+#
+# 記録: 2026-11-13 08:48 JST（時刻の道具の値）に書いた。このとき第13弾の単位（pipe3・rnd の組）・列・漸化式のコードはまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第12弾の結果すべて。
+#   (1) 紙の上で導いた式（データに当てはめた係数は無い）。
+#     end の入れ方の 1 ステップは、どんな配管でも M = I + (S − I)·(I − D)。
+#       S = 行き先の割合の行列（S[先][元] = その弁の速さ / 元の槽の出口の速さの合計）、Λ = 出口の速さの合計の対角、D = diag(e^(−Λ·dt))、G = (S − I)·Λ。
+#     G_eff = log(M)/dt = G + dt·H1 + dt²·H2 + …
+#       H1 = −((S − I)·Λ² + G²)/2 = −G·S·Λ/2、H2 = (S − I)·Λ³/6 + (G·(S − I)·Λ² + (S − I)·Λ²·G)/4 + G³/3。
+#       1 列の槽に当てはめると第5弾・第6弾の H1・H2 と同じになる（H1 は次の槽へ k_i·k_{i+1}/2、H2 は k_i·k_{i+1}·(k_i + k_{i+1})/12）。
+#     ポンプ（速さ q。ステップの終わりに q·dt 入る）は、速さを q_eff = (I − G_eff·dt/2 + G_eff²·dt²/12)·q に替えた連続の式と同じ
+#       （Σ M^j·dt = ∫e^(G_eff·s)ds · x/(e^x − 1)、x = G_eff·dt から）。槽 1 つなら第3弾の x/(1 − e^(−x)) − 1 ≈ x/2 と合う。
+#     式の見込み end_pred = [G_eff（dt² まで）と q_eff（dt² まで）で進めた量] / 厳密な量 − 1。
+#   書く前に、見えている単位と照らしたもの（当てはめではなく、式をそのまま当てた確かめ）:
+#     第12弾 pipe2 のポンプと輪の end（168 件）で、式と実際の向きが合うのは 167 件。
+#     次数を問うた 48 件（O92 の範囲）では、式の見込みの次数（四捨五入）が 1 のものは 45 件で実際も 1、
+#     1 でないものは 3 件で、O92 の判例 3 件とぴったり同じ単位だった。
+#   単位の組を決めるために、式だけを使って計算したもの（データは使っていない）:
+#     pipe3 の 12 組・29 時刻・4 刻み（1392 件）で、式の見込みの向きは正 805 件・負 587 件。
+#     次数を問う 1044 件のうち、式の見込みの次数が 1 でないものは 28 件（向きを変える時刻の隣）。
+#   (2) 丸めの見積もり（紙の上。エンジンと同じ固定小数点 Q48 = 2^-48 刻み）。
+#     丸めは 2 か所で入る。係数を整数にするとき（to_q。四捨五入なので 1 つの係数につき ±2^-49 以内）と、
+#     掛け算のたび（qmul。切り捨てなので 1 回につき 0〜2^-48、平均 2^-49 を失う。量の単位）。
+#     係数の丸めは、毎ステップ同じ向きに効くので N ステップで N 倍になる。量の大きさによらない（比のずれ）。
+#     掛け算の切り捨ては、測る槽の量 V（量の単位）に対する比で効くので、V が小さいほど大きい。
+#     見積もり round_est = N·2^-49·(1 + n_mul/V)。N = ステップ数、n_mul = 1 ステップの掛け算の数（ramp 4、quad 5）、V = 測る槽の厳密な量。
+#     2 つが同じ大きさになるのは V が n_mul のあたり（量の単位で 1〜10）。それよりずっと大きければ係数の丸めが主、ずっと小さければ切り捨てが主、という見込み。
+#     いままで見えていた丸めの底（V0 = 128 で、ずれ 3e-12 あたりから。第10弾〜第12弾）は N·2^-49 = 5e-13〜1.4e-12（N = 256〜768）と同じ桁。
+#   境の値（1e-9、その 1/10 と 10 倍、0.5、量の大小の分け方）は人が決めた仮置きで、結果に合わせて動かさない。
+#
+# 第13弾で足す単位（前の弾の命題の範囲には入らない組）:
+#   pipe3 = ポンプ → B → C（測るのは C）の 6 組 (τB/τ, τC/τ) = (1/2, 2)・(5/2, 2/5)・(5/4, 4/5)・(2/5, 3/2)・(2, 3)・(4/5, 5/2) と、
+#           輪 A ⇄ B（測るのは B）の 6 組 τ2/τ = 5/2・1/2・5/4・4・4/5・2。測る時刻 t = 0.5τ〜4τ を 0.125τ 刻みで 29 個。刻み 1/8・1/16・1/32・1/64。
+#           入れ方は end（エンジン本体）。
+#   rnd   = 2 段の槽、τ2/τ = 3/5・3/2、t = 2τ、入れ方は ramp・quad（Q48 の整数の漸化式）。刻み 1/16〜1/512 の 6 通り。
+#           最初の量 V0 = 8192・128・2^-8・2^-16・2^-24 の 5 通り（今までは 128 だけ）。
+# 第13弾で足す列:
+#   pipe3・rnd = 組。end_pred = 式の見込み。pred_order_one = 式の見込みの次数（log2(end_pred(h)/end_pred(h/2)) を四捨五入）が 1 か
+#   order_round = 第11弾と同じ作り方（pipe3）
+#   round_part = (整数の漸化式の量 − 同じ式の float の量) / 厳密な量、round_part_abs = その大きさ
+#   coef_part = (係数だけ丸めた float の量 − float の量) / 厳密な量、floor_part = round_part − coef_part
+#   coef_share = |coef_part| / (|coef_part| + |floor_part|)、big_volume = V0 が 64 以上か、round_est = 上の見積もり
+
+[[proposition]]
+id = "O99"
+statement = "ポンプの下の槽と輪で、式の見込みが正なら、end の実際のずれも正である（負なら負）"
+strength = "always"
+scope = { where = [{ col = "pipe3", op = "==", value = true }] }
+if = [{ col = "end_pred", op = ">", value = 0.0 }]
+then = [{ col = "err", op = ">", value = 0.0 }]
+surprise = "err"
+context = ["h", "shape", "pipe_set", "span_ratio", "end_pred"]
+falsifier = "向きが合わない単位があれば、向きを変える時刻から何ステップ離れているかを書く"
+
+[[proposition]]
+id = "O100"
+statement = "ポンプの下の槽と輪で、式の見込みの次数が 1 なら、end の実際の次数も 1 である（1 でないなら 1 でない）"
+strength = "always"
+parent = "O92"
+change = "O92 の判例の読み（向きを変える所の隣では次数が 1 にならない）を、式で先に言う形にした。新しい組と時刻で問う"
+scope = { where = [{ col = "pipe3", op = "==", value = true }, { col = "has_half", op = "==", value = true }] }
+if = [{ col = "pred_order_one", op = "==", value = true }]
+then = [{ col = "order_round", op = "==", value = 1 }]
+surprise = "order_round"
+context = ["h", "shape", "pipe_set", "span_ratio", "err", "end_pred"]
+falsifier = "式と合わない単位があれば、式の 3 次の項が効く粗い刻みかどうかを書く"
+
+[[proposition]]
+id = "O101"
+statement = "丸めの見積もり N·2^-49·(1 + n_mul/V) が 1e-10 以下なら、実際の丸めのずれは 1e-9 未満である"
+strength = "always"
+scope = { where = [{ col = "rnd", op = "==", value = true }] }
+if = [{ col = "round_est", op = "<=", value = 1e-10 }]
+then = [{ col = "round_part_abs", op = "<", value = 1e-9 }]
+surprise = "round_part_abs"
+context = ["h", "v0", "steps", "round_est", "coef_share", "tau2_ratio"]
+falsifier = "1e-9 以上の単位があれば、係数の丸めの効き方（感度）が見積もりより大きい。その入れ方を書く"
+
+[[proposition]]
+id = "O102"
+statement = "丸めの見積もりが 1e-8 以上なら、実際の丸めのずれは 1e-9 以上である"
+strength = "always"
+scope = { where = [{ col = "rnd", op = "==", value = true }] }
+if = [{ col = "round_est", op = ">=", value = 1e-8 }]
+then = [{ col = "round_part_abs", op = ">=", value = 1e-9 }]
+surprise = "round_part_abs"
+context = ["h", "v0", "steps", "round_est", "coef_share", "tau2_ratio"]
+falsifier = "1e-9 未満の単位があれば、切り捨てどうしが打ち消し合っている。その条件を書く"
+
+[[proposition]]
+id = "O103"
+statement = "槽の量が大きい（V0 が 64 以上）なら、丸めのずれの半分以上は係数の丸めから来る（小さければ、半分以上は掛け算の切り捨てから来る）"
+strength = "always"
+scope = { where = [{ col = "rnd", op = "==", value = true }] }
+if = [{ col = "big_volume", op = "==", value = true }]
+then = [{ col = "coef_share", op = ">=", value = 0.5 }]
+surprise = "coef_share"
+context = ["h", "v0", "steps", "round_est", "round_part_abs", "tau2_ratio"]
+falsifier = "合わない単位があれば、係数の丸めがたまたま小さい（または大きい）組かどうかを書く"
+note = "V0 = 1 の近く（2 つが同じ大きさになる見込みの所）の単位は作っていない"

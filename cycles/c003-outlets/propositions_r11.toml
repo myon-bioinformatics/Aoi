@@ -1,0 +1,196 @@
+# サイクル3の命題・第11弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第10弾のファイルは変更しない。
+#
+# 主題: (1) 第10弾のはしごを、出口の側に当てはめる。第1弾のずれ（出口どうしが互いを知らない）も、
+#           「他の出口について知っていること」を 1 段増やすごとに次数が 1 つ上がるか。
+#       (2) 第9弾・第10弾の命題がどれも保留になった欠け（対偶に当たる単位が無い）を、命題の形で直す。
+#           「A なら B」だけでなく「B なら A」も成り立つ形（両側に単位がある形）で書き、入口のはしごを新しい組で問い直す。
+#
+# 記録: 2026-11-13 03:59 JST（時刻の道具の値）に書いた。このとき第11弾の単位（olad・ilad の組）・列・漸化式のコードはまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第10弾の結果すべて。
+#   出口のはしご（槽 1 つ、弁 n 本、速さ k_i、合計 K）。弁 i は自分の減り方 e^(−k_i·s) は厳密に知っている。
+#     他の出口がステップの中で取る速さは、本当は (K − k_i)·V·e^(−K·s)。これを s の何次まで知っているかで段を決める:
+#       段 0 = 他の出口を知らない（第1弾の「別々に取る」。エンジンの outlets="independent"）
+#       段 1 = 最初の速さ (K − k_i)·V だけ（一定と見なす）
+#       段 2 = 最初の速さと、その変わり方（直線）   段 3 = 2 次の曲線まで
+#     弁 i が 1 ステップに取る割合 = (1 − e^(−k_i·dt)) − (K − k_i)·Σ_{n<段} ((−K)^n/n!)·[dt^(n+1)/(n+1) − E_n(k_i)]、
+#       E_n(k) = ∫ u^n·e^(−k·(dt − u)) du（0〜dt。第8弾・第10弾と同じもの）。取る量は 0 以上、合計は槽の量以下に抑える（抑えた回数を数える）。
+#   紙の上で導いた式（数式処理で 1 本・2 本・3 本について確かめた。データに当てはめた係数は無い。どの単位とも照らしていない）:
+#     1 ステップの残りの差 = −(−K)^p·(K² − Σk_i²)·dt^(p+2)/(p+2)!（p = 段）。
+#     t まで進めたずれの見込み pred = −t·dt^(p+1)·(−K)^p·(K² − Σk_i²)/(p+2)!。
+#     つまり次数は 段 + 1、向きは段が偶数なら負（速く空く）・奇数なら正、出口が 1 本ならどの段でも 0。p = 0 は第1弾の式と同じ。
+#   単位の組を決めるために、式だけを使って計算したもの（データは使っていない）:
+#     ilad の 3 段の組は、end と uniform の式のずれが 0 を横切る近くでないものを選んだ（(3/2, 4)・t ≈ 2.5τ は外した）。
+#     厳密さの境 1e-9（O1 と同じ）に対して、段 3 のずれの見込みは h = 1/32 で 2e-9 以上、h = 1/64 では 1e-9 を下回る組がある。
+#       だから O79 の範囲は h ≥ 1/32 にし、境をまたぐ所は O86・O87 で別に問う。
+#     段 3 のずれの見込みは h = 1/256 で 1e-12 ほどになり、固定小数点の丸めに近い（第10弾の quad と同じ）。
+#       だから向き・次数・式の合い方は h ≥ 1/128（次数は半分の刻みも使うので h ≥ 1/64）で問う。
+#   境の値（1e-9・2 倍の余裕 5e-10 と 2e-9・10 %・h の範囲）は人が決めた仮置きで、結果に合わせて動かさない。
+#
+# 第11弾で足す単位（前の弾の命題の範囲には入らない組）。刻みは今までの 10 個と 1/256、それに 2 の累乗でない 3 つの半分（0.1715・0.0239・0.37）。
+#   olad = 槽 1 つ・弁 n 本。割合の組: 1 本、等分 2・3・5 本、(7/10, 3/10)・(9/10, 1/10)・(1/2, 3/10, 1/5)・(2/5, 3/10, 1/5, 1/10)。
+#          測る時刻 t ≈ 1.5τ・3τ（第1弾の 2τ と重ならない）。段 0〜3（1 本の組は段で計算が変わらないので段 0 だけ）。
+#          段 0 はエンジン本体（outlets="independent"）、段 1〜3 はエンジンと同じ固定小数点 Q48 の整数の漸化式（エンジンには入れていない）。
+#   ilad = 入口のはしごの新しい組。2 段 τ2/τ = 1/2・5/4・5/2・4（t ≈ τ・2.5τ）、
+#          3 段 (τ2/τ, τ3/τ) = (3, 1/2)・(3/5, 5/2)（t ≈ 2.5τ）・(3/10, 5/4)（t ≈ 1.5τ）。入れ方は第10弾と同じ end・uniform・ramp・quad。
+# 第11弾で足す列:
+#   olad・ilad = 組。level = 段（olad）。level_even = 段が偶数か
+#   order_expected = 見込みの次数（olad は 段 + 1、ilad は end 1・uniform 2・ramp 3・quad 4）
+#   order_round = log2(err / 刻みが半分の単位の err) を四捨五入した整数（向きが逆なら −1）
+#   olad_pred_abs = |pred|、olad_fit = |err − pred| / |pred|、olad_clamped = 抑えた回数
+
+# ---- 出口のはしご ----
+
+[[proposition]]
+id = "O79"
+statement = "弁だけの槽では、他の出口をどの段まで知っていても、出口が 1 本なら残りは厳密である（刻みは時定数の 1/32 以上）"
+strength = "always"
+parent = "O1"
+change = "方式を段 0〜3 に広げ、測る時刻を 1.5τ・3τ に替えた。逆（厳密なら 1 本）も同じ範囲で問う"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "h", op = ">=", value = 0.03125 }] }
+if = [{ col = "n", op = "==", value = 1 }]
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "n", "level", "span_ratio", "olad_pred_abs"]
+falsifier = "1 本で 1e-9 以上ずれる単位、または 2 本以上で 1e-9 未満の単位があれば、その段と刻みを書く"
+
+[[proposition]]
+id = "O80"
+statement = "出口が 2 本以上のとき、段が偶数なら残りは厳密より少なく（速く空く）、奇数なら多い"
+strength = "always"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "n", op = ">=", value = 2 }, { col = "h", op = ">=", value = 0.0078125 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "level_even", op = "==", value = true }]
+then = [{ col = "err", op = "<", value = 0.0 }]
+surprise = "err"
+context = ["h", "n", "level", "span_ratio", "equal_split"]
+falsifier = "向きが逆の単位があれば、式の (−K)^p の向きを見直す"
+
+[[proposition]]
+id = "O81"
+statement = "出口が 2 本以上のとき、他の出口を知らない（段 0）なら、ずれの次数は 1 である"
+strength = "always"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "n", op = ">=", value = 2 }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.015625 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "level", op = "==", value = 0 }]
+then = [{ col = "order_round", op = "==", value = 1 }]
+surprise = "order_round"
+context = ["h", "n", "level", "span_ratio", "err"]
+falsifier = "次数が 1 でない段 0 の単位、または次数が 1 の他の段の単位があれば書く"
+
+[[proposition]]
+id = "O82"
+statement = "出口が 2 本以上のとき、他の出口の最初の速さだけを知っている（段 1）なら、ずれの次数は 2 である"
+strength = "always"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "n", op = ">=", value = 2 }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.015625 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "level", op = "==", value = 1 }]
+then = [{ col = "order_round", op = "==", value = 2 }]
+surprise = "order_round"
+context = ["h", "n", "level", "span_ratio", "err"]
+falsifier = "次数が 2 でない段 1 の単位、または次数が 2 の他の段の単位があれば書く"
+
+[[proposition]]
+id = "O83"
+statement = "出口が 2 本以上のとき、他の出口の速さを直線まで知っている（段 2）なら、ずれの次数は 3 である"
+strength = "always"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "n", op = ">=", value = 2 }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.015625 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "level", op = "==", value = 2 }]
+then = [{ col = "order_round", op = "==", value = 3 }]
+surprise = "order_round"
+context = ["h", "n", "level", "span_ratio", "err"]
+falsifier = "次数が 3 でない段 2 の単位、または次数が 3 の他の段の単位があれば書く"
+
+[[proposition]]
+id = "O84"
+statement = "出口が 2 本以上のとき、他の出口の速さを 2 次の曲線まで知っている（段 3）なら、ずれの次数は 4 である"
+strength = "always"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "n", op = ">=", value = 2 }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.015625 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "level", op = "==", value = 3 }]
+then = [{ col = "order_round", op = "==", value = 4 }]
+surprise = "order_round"
+context = ["h", "n", "level", "span_ratio", "err"]
+falsifier = "次数が 4 でない段 3 の単位、または次数が 4 の他の段の単位があれば書く"
+
+[[proposition]]
+id = "O85"
+statement = "出口が 2 本以上のとき、刻みが時定数の 1/128〜1/32 なら、ずれは式 −t·dt^(p+1)·(−K)^p·(K² − Σk_i²)/(p+2)! と合う（差は 10 % 以内。p は段）"
+strength = "always"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = [{ col = "h", op = ">=", value = 0.0078125 }, { col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "olad_fit", op = "<=", value = 0.10 }]
+surprise = "olad_fit"
+context = ["h", "n", "level", "span_ratio", "err", "olad_pred_abs"]
+falsifier = "外れる単位があれば、段と刻みを書く（式は 1 ステップの差を t/dt 倍しただけなので、ずれが大きい段 0 で外れやすいはず）"
+
+[[proposition]]
+id = "O86"
+statement = "出口が 2 本以上のとき、式の見込みが 5e-10 以下なら、実際のずれは 1e-9 未満である（要る段と刻みを式で先に言える）"
+strength = "always"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = [{ col = "olad_pred_abs", op = "<=", value = 5e-10 }]
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err_abs"
+context = ["h", "n", "level", "span_ratio", "olad_pred_abs"]
+falsifier = "1e-9 以上ずれる単位があれば、丸めが効いているか、式の次の項が効いているかを書く"
+
+[[proposition]]
+id = "O87"
+statement = "出口が 2 本以上のとき、式の見込みが 2e-9 以上なら、実際のずれは 1e-9 以上である"
+strength = "always"
+scope = { where = [{ col = "olad", op = "==", value = true }, { col = "n", op = ">=", value = 2 }] }
+if = [{ col = "olad_pred_abs", op = ">=", value = 2e-9 }]
+then = [{ col = "err_abs", op = ">=", value = 1e-9 }]
+surprise = "err_abs"
+context = ["h", "n", "level", "span_ratio", "olad_pred_abs"]
+falsifier = "1e-9 未満の単位があれば、粗い刻みで式が大きく外れる所かどうかを書く"
+
+# ---- 入口のはしごの問い直し（両側に単位がある形） ----
+
+[[proposition]]
+id = "O88"
+statement = "槽が 1 列のとき、入る量をステップの終わりにまとめて入れる（end）なら、ずれの次数は 1 である"
+strength = "always"
+parent = "O73"
+change = "新しい組（ilad）で、入れ方ごとの命題に分け、逆も同じ範囲で問う"
+scope = { where = [{ col = "ilad", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "order_expected", op = "==", value = 1 }]
+then = [{ col = "order_round", op = "==", value = 1 }]
+surprise = "order_round"
+context = ["h", "order_expected", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "次数が 1 でない end の単位、または次数が 1 の他の入れ方の単位があれば書く"
+
+[[proposition]]
+id = "O89"
+statement = "槽が 1 列のとき、入る速さを一定と見なす（uniform）なら、ずれの次数は 2 である"
+strength = "always"
+parent = "O73"
+change = "O88 と同じ替え方"
+scope = { where = [{ col = "ilad", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "order_expected", op = "==", value = 2 }]
+then = [{ col = "order_round", op = "==", value = 2 }]
+surprise = "order_round"
+context = ["h", "order_expected", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "次数が 2 でない uniform の単位、または次数が 2 の他の入れ方の単位があれば書く"
+
+[[proposition]]
+id = "O90"
+statement = "槽が 1 列のとき、入る速さを直線と見なす（ramp）なら、ずれの次数は 3 である"
+strength = "always"
+parent = "O73"
+change = "O88 と同じ替え方"
+scope = { where = [{ col = "ilad", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "order_expected", op = "==", value = 3 }]
+then = [{ col = "order_round", op = "==", value = 3 }]
+surprise = "order_round"
+context = ["h", "order_expected", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "次数が 3 でない ramp の単位、または次数が 3 の他の入れ方の単位があれば書く"
+
+[[proposition]]
+id = "O91"
+statement = "槽が 1 列のとき、入る速さを 2 次の曲線と見なす（quad）なら、ずれの次数は 4 である"
+strength = "always"
+parent = "O73"
+change = "O88 と同じ替え方"
+scope = { where = [{ col = "ilad", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "h", op = ">=", value = 0.03125 }, { col = "h", op = "<=", value = 0.125 }] }
+if = [{ col = "order_expected", op = "==", value = 4 }]
+then = [{ col = "order_round", op = "==", value = 4 }]
+surprise = "order_round"
+context = ["h", "order_expected", "tau2_ratio", "tau3_ratio", "span_ratio", "err"]
+falsifier = "次数が 4 でない quad の単位、または次数が 4 の他の入れ方の単位があれば書く"

@@ -100,6 +100,12 @@ SERIES_TERMS = 6  # 式の展開で持つ dt の次数（dt^0〜dt^5。G_eff は
 ENG_SETS = [("chain", (0.6,)), ("chain", (2.0,)), ("chain", (2.0, 0.75)), ("chain", (0.4, 1.5)),
             ("branch", (0.5, 2.0, 0.75)), ("branch", (0.25, 0.4, 1.5))]  # 第15弾 eng: エンジン本体を 2 つの丸め方で進める
 ENG_SPANS, ENG_H, ENG_V0 = [1.5, 3.0], [1 / 128, 1 / 512], [128.0, 2.0 ** -12]
+ENG2_SETS = [("mixed", (1.0, 8.0), [0.5, 1.0]), ("mixed", (0.6, 0.4, 4.0), [0.5, 1.0]),  # (弁の割合…, ポンプの速さ = V0/(τ·最後の数))
+             ("midpump", (2.0, 0.75), [1.5, 3.0]), ("midpump", (0.4, 1.5), [1.5, 3.0]),  # (τB/τ, τC/τ)。B からポンプ V0/(16τ)
+             ("sched", (0.6,), [1.5, 3.0]), ("sched", (2.0,), [1.5, 3.0])]  # (τB/τ,)。A の弁の開き具合が 1 → 1/4（t = 3τ）へ下がる
+OVAL_OPENINGS, OVAL_SPANS = [1.0, 0.75, 0.5, 0.25, 0.125], [1.5, 3.0]  # 第17弾 oval: 弁 1 本の開き具合と、測る時刻 / τ
+OVAL_H = [1 / 8, 1 / 16, 1 / 32, 1 / 64, 1 / 128, 1 / 256]
+SCHED_CAM = [[0.0, 1.0], [3.0, 0.25]]  # 第16弾 sched: 時計の槽の水位（= t/τ）→ 開き具合
 FORM_CHAINS = [((0.6,), ("end", "uniform_in", "ramp", "quad")), ((2.0,), ("end", "uniform_in", "ramp", "quad")),
                ((2.0, 0.75), ("end", "uniform_in", "cascade", "ramp", "quad")),
                ((0.4, 1.5), ("end", "uniform_in", "cascade", "ramp", "quad"))]  # 第15弾 formc: 1 列の槽
@@ -114,7 +120,7 @@ TLAD_ORDER = {"tay1": 2, "tay2": 3, "tay3": 4, "uniform_in": 2, "ramp": 3, "quad
 TOTAL_COEF = {1: 1.0 / 12.0, 2: 1.0 / 72.0, 3: 1.0 / 720.0}  # 合計も知る入れ方の、2 段目のずれの係数
 VARIANT_METHODS = ("cascade", "ramp", "quad", "tay1", "tay2", "tay3")  # 整数の漸化式で進める入れ方（エンジンには入れていない）
 CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder", "ilad", "coarse2", "tlad", "rnd", "rnd2", "formc")  # 1 列につながった槽（stages に τ_i/τ）
-FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, *PIPE_KINDS, "olad", "eng")  # エンジンの inflows（end・uniform_in）で進める組
+FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, *PIPE_KINDS, "olad", "eng", "eng2", "oval")  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
 TOL_CHECK = 1e-9  # 検算で許す err の差
@@ -313,6 +319,18 @@ def plan(h_extra: list[float]) -> list[dict]:
             for h in FORM_H:
                 for method in ("end", "uniform_in", "ramp"):
                     add("formp", "eq", 1, method, h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp)
+    for idx, (shape, params, spans) in enumerate(ENG2_SETS):  # 第16弾
+        for sp in spans:
+            for v0 in ENG_V0:
+                for h in ENG_H:
+                    for rounding in ("q48", "carry64"):
+                        add("eng2", "eq", 1, "uniform_in", h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp,
+                            v0=v0, rounding=rounding)
+    for opening in OVAL_OPENINGS:  # 第17弾
+        for sp in OVAL_SPANS:
+            for h in OVAL_H:
+                for mode in ("independent",) if opening == 1.0 else ("exact", "independent"):  # 全開は 2 通りが同じ計算
+                    add("oval", "eq", 1, mode, h, opening=opening, span_ratio=sp)
     return out
 
 
@@ -761,6 +779,120 @@ def hp_uniform(spec: dict, taus: dict, steps: int, dt: float) -> Decimal:
     return v[spec["watch"]]
 
 
+def sched_openings(steps: int, h: float) -> list[int]:
+    """第16弾 sched: 弁の開き具合の並び（Q の整数）。時計の槽の水位 n·h を、エンジンのカムと同じ整数の補間で読む。"""
+    one = 1 << 48
+    (x0, y0), (x1, y1) = [(int(x * one), int(y * one)) for x, y in SCHED_CAM]
+    level = int(h * one)
+    return [min(max(y0 + (y1 - y0) * (min(n * level, x1) - x0) // (x1 - x0), 0), one) for n in range(steps)]
+
+
+def eng2_reference(u: dict, steps: int, dt: float, num=float):
+    """第16弾: エンジンと同じ式（uniform・槽ごとに厳密）で進めた、測る槽の量。num を Decimal にすると 60 桁の計算になる。"""
+    exp = (lambda x: x.exp()) if num is Decimal else math.exp
+    d, v0, p = num(dt), num(u["v0"]), u["pipe_params"]
+
+    def coef(x):  # (Φ, 入った量のうち同じステップに出る割合 1 − Φ/L)
+        gain = 1 - exp(-x)
+        return gain, 1 - gain / x
+
+    if u["shape"] == "mixed":  # 弁の合計 = V·Φ − P·(1 − Φ/L)、ポンプは P
+        gain, through = coef(sum(d / num(TAU / share) for share in p[:-1]))
+        pump, v = v0 * d / num(TAU * p[-1]), v0
+        for _ in range(steps):
+            v = v - (v * gain - pump * through) - pump
+        return v
+    if u["shape"] == "midpump":
+        (ga, _), (gb, tb), (gc, tc) = coef(d / num(TAU)), coef(d / num(TAU * p[0])), coef(d / num(TAU * p[1]))
+        pump, a, b, c = v0 * d / num(TAU * 16.0), v0, v0 / 2, num(0)
+        for _ in range(steps):
+            out_a = a * ga
+            base_b = b * gb - pump * tb
+            out_b = base_b + out_a * tb  # V·Φ + (I − P)·(1 − Φ/L)
+            out_c = c * gc + base_b * tc  # 下の槽の「入る量」には、増やした分を数えない
+            a, b, c = a - out_a, b + out_a - out_b - pump, c + out_b - out_c
+        return c
+    gb, tb = coef(d / num(TAU * p[0]))
+    a, b = v0, num(0)
+    for opening in sched_openings(steps, u["h"]):
+        out_a = a * (1 - exp(-(num(opening) / num(1 << 48)) * d / num(TAU)))
+        a, b = a - out_a, b + out_a - (b * gb + out_a * tb)
+    return b
+
+
+def eng2_exact(u: dict, t: float) -> float:
+    """第16弾: 連続の式の量（ずれ err の相手。丸めの比べには使わない）。"""
+    k, p, v0 = 1.0 / TAU, u["pipe_params"], u["v0"]
+    if u["shape"] == "mixed":
+        return v0 * ((1.0 + 1.0 / p[-1]) * math.exp(-k * t) - 1.0 / p[-1])
+    if u["shape"] == "midpump":
+        k2, k3, q = k / p[0], k / p[1], v0 * k / 16.0
+        gen = [[-k * t, 0.0, 0.0, 0.0], [k * t, -k2 * t, 0.0, -q * t], [0.0, k2 * t, -k3 * t, 0.0], [0.0] * 4]
+        e = _expm(gen)[2]
+        return e[0] * v0 + e[1] * v0 / 2.0 + e[3]
+    kb, n = k / p[0], max(int(4096 * t / TAU), 1)  # sched: 開き具合 o(t) = max(1 − t/(4τ), 1/4)。RK4 で積分する
+    step = t / n
+
+    def rate(time, a, b):
+        o = max(1.0 - 0.25 * time * k, 0.25)
+        return -o * k * a, o * k * a - kb * b
+
+    a, b = v0, 0.0
+    for i in range(n):
+        t0 = i * step
+        a1, b1 = rate(t0, a, b)
+        a2, b2 = rate(t0 + step / 2, a + step / 2 * a1, b + step / 2 * b1)
+        a3, b3 = rate(t0 + step / 2, a + step / 2 * a2, b + step / 2 * b2)
+        a4, b4 = rate(t0 + step, a + step * a3, b + step * b3)
+        a, b = a + step / 6 * (a1 + 2 * a2 + 2 * a3 + a4), b + step / 6 * (b1 + 2 * b2 + 2 * b3 + b4)
+    return b
+
+
+def run_eng2(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
+    """第16弾: ポンプが出ている槽・開き具合が動く弁のある配管を、エンジン本体の rounding = q48 / carry64 で進める。"""
+    p, v0 = u["pipe_params"], u["v0"]
+    # sched の q48 は、第16弾のとき（弁 1 本の槽を法則のまま取っていた既定）の値のままにする。エンジンを直した後は independent がそれに当たる
+    law = u["shape"] == "sched" and u["rounding"] == "q48"
+    net = ffs["Network"](dt=dt, rounding=u["rounding"], outlets="independent" if law else "exact")
+    watch, moving = "a", None
+    if u["shape"] == "mixed":
+        net.tank("a", 1.0, volume=v0)
+        net.tank("sink", 1.0)
+        for share in p[:-1]:
+            net.valve("a", "sink", tau=TAU / share)
+        net.pump("a", "sink", rate=v0 / (TAU * p[-1]))
+    elif u["shape"] == "midpump":
+        for name, vol in (("a", v0), ("b", v0 / 2.0), ("c", 0.0), ("sink", 0.0)):
+            net.tank(name, 1.0, volume=vol)
+        net.valve("a", "b", tau=TAU)
+        net.valve("b", "c", tau=TAU * p[0])
+        net.pump("b", "sink", rate=v0 / (TAU * 16.0))
+        net.valve("c", "sink", tau=TAU * p[1])
+        watch = "c"
+    else:
+        for name, vol in (("sea", 1024.0), ("clock", 0.0), ("a", v0), ("b", 0.0), ("sink", 0.0)):
+            net.tank(name, 1.0, volume=vol)
+        net.pump("sea", "clock", rate=1.0 / TAU)
+        moving = net.valve("a", "b", tau=TAU, sensor="clock", cam=SCHED_CAM)
+        net.valve("b", "sink", tau=TAU * p[0])
+        watch = "b"
+    start, seen = net.total_q(), []
+    for n in range(steps):
+        net.step(n)
+        if moving is not None:
+            seen.append(moving["last_opening"])
+    if moving is not None and seen != sched_openings(steps, u["h"]):
+        raise ValueError("sched: 開き具合の並びがエンジンと合わない")
+    left_q = net.nodes[watch]["v"]
+    with localcontext() as ctx:
+        ctx.prec = 60
+        true_q = eng2_reference(u, steps, dt, Decimal) * (1 << 48)
+        ulps = float(abs(Decimal(left_q) - true_q))
+        part = float((Decimal(left_q) - true_q) / (1 << 48)) / eng2_exact(u, t)
+    return {"steps": steps, "dt": dt, "t": t, "left_q": left_q, "left": left_q / ffs["one"], "lag_err_steps": None,
+            "conservation_q": net.total_q() - start, "round_ulps": ulps, "round_part": part}
+
+
 def run_eng(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
     """第15弾: エンジン本体（uniform・槽ごとに厳密）を rounding = q48 / carry64 で進め、60 桁の小数の値と比べる。"""
     spec = pipe_spec(u)
@@ -971,7 +1103,7 @@ def base(u: dict) -> str:
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad", "rnd", "rnd2", "eng", "formc"):
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad", "rnd", "rnd2", "eng", "eng2", "formc", "oval"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -993,6 +1125,10 @@ def chain_exact(u: dict, t: float) -> float:
 
 def exact_left(u: dict, t: float) -> float:
     k = 1.0 / TAU
+    if u["kind"] == "oval":
+        return V0 * math.exp(-u["opening"] * t / TAU)
+    if u["kind"] == "eng2":
+        return eng2_exact(u, t)
     if u["kind"] == "eng":
         return pipe_exact(u, t) * u["v0"] / V0
     if u["kind"] in PIPE_KINDS:
@@ -1026,6 +1162,11 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
+    if u["kind"] == "oval":  # 法則のまま: 1 ステップの残りは 1 − k·o。槽ごとに厳密: e^(−o·dt/τ)
+        keep = 1.0 + math.expm1(-dt / TAU) * u["opening"] if u["method"] == "independent" else math.exp(-u["opening"] * dt / TAU)
+        return V0 * keep ** steps
+    if u["kind"] == "eng2":
+        return eng2_reference(u, steps, dt)
     if u["kind"] in (*PIPE_KINDS, "eng"):
         spec = pipe_spec(u)
         return pipe_run(spec, u["method"], steps, dt)["v"][spec["watch"]] * (u.get("v0") or V0) / V0
@@ -1150,6 +1291,12 @@ def label(u: dict) -> tuple[str, str]:
     if u["kind"] == "olad":
         return (f"olad-g{u['share_set']}-n{u['n']}-s{u['span_ratio']:g}-known{u['level']}",
                 f"出口 {u['n']} 本（組 {u['share_set']}）t={u['span_ratio']:g}τ 段 {u['level']} h={u['h']:.6g}")
+    if u["kind"] == "oval":
+        return (f"oval-o{u['opening']:g}-s{u['span_ratio']:g}-{u['method']}",
+                f"弁 1 本 開き具合 {u['opening']:g} t={u['span_ratio']:g}τ {u['method']} h={u['h']:.6g}")
+    if u["kind"] == "eng2":
+        return (f"eng2-{u['shape']}-p{u['pipe_set']}-s{u['span_ratio']:g}-v{math.log2(u['v0']):g}-{u['rounding']}",
+                f"エンジン {u['shape']} 組 {u['pipe_set']} t={u['span_ratio']:g}τ V0=2^{math.log2(u['v0']):g} {u['rounding']} h={u['h']:.6g}")
     if u["kind"] == "eng":
         return (f"eng-p{u['pipe_set']}-s{u['span_ratio']:g}-v{math.log2(u['v0']):g}-{u['rounding']}",
                 f"エンジン {u['shape']} 組 {u['pipe_set']} t={u['span_ratio']:g}τ V0=2^{math.log2(u['v0']):g} {u['rounding']} h={u['h']:.6g}")
@@ -1196,6 +1343,16 @@ def run_engine(u: dict, ffs: dict) -> dict:
         return run_rnd2(u, steps, dt, t)
     if u["kind"] == "eng":
         return run_eng(u, ffs, steps, dt, t)
+    if u["kind"] == "eng2":
+        return run_eng2(u, ffs, steps, dt, t)
+    if u["kind"] == "oval":  # 第17弾: 弁 1 本の槽を、槽ごとに厳密（既定）か法則のままで進める
+        net = ffs["Network"](dt=dt, outlets=u["method"])
+        net.tank("a", 1.0, volume=V0)
+        net.tank("sink", 1.0)
+        net.valve("a", "sink", tau=TAU, opening=u["opening"])
+        res = net.run(t)
+        return {"steps": steps, "dt": dt, "t": t, "left_q": res["volumes_q"]["a"], "left": res["volumes_q"]["a"] / ffs["one"],
+                "conservation_q": res["conservation_error_q"], "lag_err_steps": None}
     if u["kind"] == "rnd":  # 第13弾: 丸めのずれを、係数の丸めと掛け算の切り捨てに分ける
         res = run_variant_q(u, ffs, steps, dt, t)
         exact = exact_left(u, t)
@@ -1444,10 +1601,10 @@ def derive(units: list[dict], log=print) -> None:
                     "is_best", "clamp_margin", "clamp_pred", "was_clamped", "start_only", "coef_start", "coef_total",
                     "end_pred", "pred_order_one", "round_part_abs", "floor_part", "coef_share", "big_volume", "round_est",
                     "c64", "carry", "c64carry", "is_best_round", "coef_ratio", "floor_est", "floor_ratio", "series_pred",
-                    "series_pred_abs", "carry64", "series_order", "series_exact"):
+                    "series_pred_abs", "carry64", "series_order", "series_exact", "law_mode", "full_open", "oval_fit"):
             u[col] = None
         for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio", "level", "round_part", "coef_part", "v0", "err_hp", "arith", "round_ulps",
-                    "rounding"):
+                    "rounding", "opening"):
             u.setdefault(col, None)
         for shape, col in (("branch", "p_branch"), ("merge", "p_merge"), ("pumpfed", "p_pump"), ("ring", "p_ring")):
             u[col] = u["kind"] == "pipe" and u.get("shape") == shape  # pipe2 は第9弾の命題の範囲に入れない
@@ -1572,7 +1729,12 @@ def derive(units: list[dict], log=print) -> None:
             u["start_only"] = u["method"].startswith("tay")
             u["coef_start"] = u["err_abs"] / (scale / math.factorial(p + 2))
             u["coef_total"] = u["err_abs"] / (scale * TOTAL_COEF[p])
-        if u["kind"] == "eng":  # 第15弾: エンジン本体の丸め方
+        if u["kind"] == "oval":  # 第17弾: 法則のままのずれの式 o·(1 − o)·(t/τ)·(dt/τ)/2
+            u["law_mode"], u["full_open"] = u["method"] == "independent", u["opening"] == 1.0
+            if u["law_mode"] and not u["full_open"]:
+                pred = u["opening"] * (1.0 - u["opening"]) * u["t"] * k * u["dt"] * k / 2.0
+                u["oval_fit"] = abs(u["err"] - pred) / pred
+        if u["kind"] in ("eng", "eng2"):  # 第15弾・第16弾: エンジン本体の丸め方
             u["carry64"] = u["rounding"] == "carry64"
             other = by[(u["team"].replace(f"-{u['rounding']}", "-q48" if u["carry64"] else "-carry64"), u["h"])]
             u["is_best_round"] = u["round_ulps"] < other["round_ulps"]

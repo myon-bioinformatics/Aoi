@@ -61,6 +61,10 @@ EXPECTED = {
     "O108": (0, 0), "O109": (0, 0), "O110": (3, 0), "O111": (3, 0),
     # 第15弾（propositions_r15.toml）
     "O112": (0, 0), "O113": (0, 0), "O114": (0, 0), "O115": (0, 0), "O116": (0, 0), "O117": (0, 0), "O118": (0, 0),
+    # 第16弾（propositions_r16.toml）
+    "O119": (0, 0), "O120": (0, 0),
+    # 第17弾（propositions_r17.toml）。O123 は範囲の外でも式が合い、対偶に当たる単位が無い（保留）
+    "O121": (0, 0), "O122": (0, 0), "O123": (4, 0),
 }
 TOO_FEW = {"O41"}  # 元の命題に当たる単位が 8 件（min_n = 10 に足りない）。元の命題そのものが判断保留
 
@@ -73,7 +77,7 @@ def test_prelock_hash_matches_stamp():
                  "propositions_r7.toml", "propositions_r8.toml", "propositions_r9.toml",
                  "propositions_r10.toml", "propositions_r11.toml", "propositions_r12.toml",
                  "propositions_r13.toml", "propositions_r14.toml",
-                 "propositions_r15.toml"):
+                 "propositions_r15.toml", "propositions_r16.toml", "propositions_r17.toml"):
         assert hashlib.sha256((C003 / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -98,7 +102,13 @@ def test_later_rounds_stay_outside_earlier_scopes():
     units = [u for u in units if not (u["edge3"] or u["edge2"] or u["cross3"] or u["cross3c"] or u["cross4"] or u["vary"]
                                       or u["pipe"] or u["ladder"] or u["olad"] or u["ilad"] or u["pipe2"] or u["coarse2"]
                                       or u["tlad"] or u["pipe3"] or u["rnd"] or u["rnd2"] or u["pipe4"]
-                                      or u["eng"] or u["form"])]
+                                      or u["eng"] or u["form"] or u["eng2"] or u["oval"])]
+    r17 = [u for u in units_mod.read_units() if u["oval"]]
+    assert len(r17) == 108 and not any(u["eng2"] or u["valve_only"] or u["olad"] for u in r17)
+    assert len({(u["team"], u["h"], u["steps"]) for u in r17}) == len(r17)
+    r16 = [u for u in units_mod.read_units() if u["eng2"]]
+    assert len(r16) == 96 and not any(u["eng"] or u["form"] for u in r16)
+    assert len({(u["team"], u["h"], u["steps"]) for u in r16}) == len(r16)
     r15 = [u for u in units_mod.read_units() if u["eng"] or u["form"]]
     assert len(r15) == 336 and not any(u["rnd2"] or u["pipe4"] or u["pipe"] or u["ladder"] or u["tlad"] for u in r15)
     assert len({(u["team"], u["h"], u["steps"]) for u in r15}) == len(r15)  # 同じ計算を 2 度数えない

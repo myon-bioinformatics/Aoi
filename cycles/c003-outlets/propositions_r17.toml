@@ -1,0 +1,58 @@
+# サイクル3の命題・第17弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第16弾のファイルは変更しない。
+#
+# 主題: 第16弾で見つかった欠け（既定のエンジンで、開き具合が 1 でない弁 1 本の槽が厳密でない）を直し、命題で確かめる。
+#
+# 記録: 2026-11-13 14:22 JST（時刻の道具の値）に書いた。このとき第17弾の単位（oval の組）と列はまだ作っていない。
+#   エンジンの直し（FluidFullSpeedSimulation のブランチ fix/single-valve-opening、c621d5e）は、この命題を書く前に作ってある。
+#   書く前に見ていたもの: 第1弾〜第16弾の結果すべて。それに、エンジン側で直接確かめた 3 つの値:
+#     直す前（法則のまま）: 開き具合 1/2・t = 2τ で、ずれは h = 1/8 のとき +3.2 %、h = 1/64 のとき +0.39 %（第16弾の診断）。
+#     直した後（既定）: 開き具合 1/2・t = 2τ・h = 1/8 で、ずれは 1e-12 未満（エンジンのテスト）。
+#   直し方: 槽ごとに厳密に解く設定（outlets="exact"。既定）で、弁 1 本・ポンプ無しの槽を飛ばすのは全開のときだけにする。
+#     開き具合が 1 でなければ、弁の取る量を V·(1 − e^(−開き具合·dt/τ)) に置き直す。法則のまま（V·k·開き具合、k = 1 − e^(−dt/τ)）は
+#     outlets="independent" で残る。
+#   紙の上の式（データに当てはめた係数は無い）: 法則のままだと 1 ステップの残りは 1 − k·o、厳密は e^(−o·x)（x = dt/τ、o = 開き具合）。
+#     ln の差は o·(1 − o)·x²/2 なので、t まで進めたずれは pred = o·(1 − o)·(t/τ)·(dt/τ)/2（正。遅く空く）。o = 1 なら 0。
+#   境の値（1e-9・10 %・h ≤ 1/32）は人が決めた仮置きで、結果に合わせて動かさない。1e-9 は O1 と同じ。
+#
+# 第17弾で足す単位（前の弾の命題の範囲には入らない組）: oval。槽 1 つ・弁 1 本（ポンプ無し）。測るのは槽の残り。
+#   開き具合 o = 3/4・1/2・1/4・1/8 を、槽ごとに厳密（exact。既定）と法則のまま（independent）の 2 通りで。
+#   開き具合 1 は、2 通りが同じ計算になるので法則のまま（independent）だけ作る。
+#   測る時刻 t = 1.5τ・3τ、刻み 1/8・1/16・1/32・1/64・1/128・1/256。エンジン本体（q48）。
+# 第17弾で足す列:
+#   oval = 組。opening = 開き具合。law_mode = 法則のまま（independent）か。full_open = 開き具合が 1 か
+#   oval_fit = |err − pred| / pred（法則のまま・開き具合が 1 でない単位）
+
+[[proposition]]
+id = "O121"
+statement = "開き具合が 1 でない弁 1 本の槽は、槽ごとに厳密に解く設定（既定）なら残りが厳密である（法則のままなら厳密でない）"
+strength = "always"
+scope = { where = [{ col = "oval", op = "==", value = true }, { col = "full_open", op = "==", value = false }] }
+if = [{ col = "law_mode", op = "==", value = false }]
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "opening", "span_ratio"]
+falsifier = "既定で 1e-9 以上ずれる単位、または法則のままで 1e-9 未満の単位があれば、開き具合と刻みを書く"
+
+[[proposition]]
+id = "O122"
+statement = "法則のままの弁 1 本の槽は、開き具合が 1 なら残りが厳密である（1 でなければ厳密でない）"
+strength = "always"
+parent = "O1"
+change = "出口の本数でなく、弁 1 本の開き具合で分けた"
+scope = { where = [{ col = "oval", op = "==", value = true }, { col = "law_mode", op = "==", value = true }] }
+if = [{ col = "full_open", op = "==", value = true }]
+then = [{ col = "err_abs", op = "<", value = 1e-9 }]
+surprise = "err"
+context = ["h", "opening", "span_ratio"]
+falsifier = "全開で 1e-9 以上ずれる単位、または開き具合が 1 でないのに 1e-9 未満の単位があれば書く"
+
+[[proposition]]
+id = "O123"
+statement = "法則のままで開き具合が 1 でないとき、刻みが時定数の 1/32 以下なら、ずれは o·(1 − o)·(t/τ)·(dt/τ)/2 と合う（差は 10 % 以内）"
+strength = "always"
+scope = { where = [{ col = "oval", op = "==", value = true }, { col = "law_mode", op = "==", value = true }, { col = "full_open", op = "==", value = false }] }
+if = [{ col = "h", op = "<=", value = 0.03125 }]
+then = [{ col = "oval_fit", op = "<=", value = 0.10 }]
+surprise = "oval_fit"
+context = ["h", "opening", "span_ratio", "err"]
+falsifier = "外れる単位があれば、開き具合と刻みを書く"

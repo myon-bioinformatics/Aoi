@@ -542,7 +542,7 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1011,
+      "attribute_uses": 1013,
       "attributes": {
         "Boolean": 14,
         "Config.set_tbl_rows": 1,
@@ -556,7 +556,7 @@
         "Utf8": 24,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 425,
+        "col": 426,
         "concat": 11,
         "concat_list": 1,
         "concat_str": 3,
@@ -567,28 +567,28 @@
         "lit": 34,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 22,
+        "read_ndjson": 23,
         "sum": 2,
         "when": 18
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 42,
+          "attribute_uses": 44,
           "attributes": {
             "Boolean": 2,
             "DataFrame": 3,
             "Int64": 2,
             "Utf8": 2,
-            "col": 20,
+            "col": 21,
             "concat": 1,
             "concat_str": 1,
             "lit": 6,
-            "read_ndjson": 4,
+            "read_ndjson": 5,
             "when": 1
           },
           "dynamic_import_sites": 0,
-          "files": 7,
-          "import_sites": 7
+          "files": 8,
+          "import_sites": 8
         },
         "dragowing": {
           "attribute_uses": 3,
@@ -739,8 +739,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 46,
-      "import_sites": 51
+      "files": 47,
+      "import_sites": 52
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -1224,6 +1224,17 @@
       "import_sites": 1,
       "package": "pytest",
       "tree": "aoi"
+    },
+    {
+      "attributes": {
+        "col": 1,
+        "read_ndjson": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/kind_reask.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "cycles"
     },
     {
       "attributes": {

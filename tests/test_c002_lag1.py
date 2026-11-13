@@ -127,3 +127,46 @@ def test_gamma_is_still_computed_when_only_some_training_dlogE_are_zero():
     assert any(v == 0.0 for v in lag_run.DE.values())
     rows = lag_run.rolling(2015, 0)
     assert rows and all(r["gamma"] == r["gamma"] for r in rows)         # nan でない
+
+
+# ---- L1r（入力差し替えの再検証、lag_reverify_prelock_2026-11-13.md）----------------------------------
+
+def test_reverify_prelock_hash_matches_stamp():
+    digest = hashlib.sha256((LAG1 / "lag_reverify_prelock_2026-11-13.md").read_bytes()).hexdigest()
+    assert digest in (LAG1 / "lag_prelock_timestamp.txt").read_text()
+
+
+def test_estat_inputs_pass_gate_g2():
+    # 宣言 §2 G2: P は各年 0.05 % 以内、E は公表刻みの半分（0.0005）以内で転記値と合う
+    p, e = lag_run.estat_inputs()
+    assert sorted(p) == sorted(lag_run.P_TRANSCRIBED) == list(range(2005, 2026))
+    for t in p:
+        assert abs(p[t] / lag_run.P_TRANSCRIBED[t] - 1) <= 5e-4, t
+        assert abs(e[t] - lag_run.E_TRANSCRIBED[t]) <= 5e-4, t
+
+
+def test_estat_inputs_remove_the_zeros_made_by_rounding():
+    # 転記値（0.1 ポイント刻み）では ΔlogE_2018 = ΔlogE_2019 = 0。実額の比では 0 にならない（宣言 §1.1）
+    assert [t for t, v in lag_run.logdiff(lag_run.E_TRANSCRIBED).items() if v == 0.0] == [2018, 2019]
+    _, e = lag_run.estat_inputs()
+    assert all(v != 0.0 for v in lag_run.logdiff(e).values())
+
+
+def test_set_inputs_rejects_unknown_names_and_the_default_is_transcribed():
+    import pytest
+
+    with pytest.raises(ValueError):
+        lag_run.set_inputs("tokyo")
+    assert lag_run.P == lag_run.P_TRANSCRIBED and lag_run.E == lag_run.E_TRANSCRIBED
+
+
+def test_committed_estat_results_are_what_the_code_produces():
+    import json
+
+    committed = json.loads((LAG1 / "lag_results_estat.json").read_text(encoding="utf-8"))
+    ok, lines = lag_run.reverify_gate()
+    assert ok and committed["gate_ok"] and committed["gate_lines"] == lines
+    fresh = json.loads(json.dumps(lag_run.run_reverify(), default=float))
+    for key in ("inputs", "main", "same_year_record", "decomposition"):
+        assert fresh[key] == committed[key], key
+    assert lag_run.P == lag_run.P_TRANSCRIBED                          # 走らせたあと既定の入力に戻っている

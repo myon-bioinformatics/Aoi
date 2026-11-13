@@ -137,7 +137,7 @@ and fixture are outside the venv and must remain available.
 PYTHONDONTWRITEBYTECODE=1 \
 PYTHONPATH="$WORK/src:$WORK/src/queryu/ask" \
   "$WORK/html-venv/bin/python" -m dragowing \
-  --results "$WORK/src/aoi/cycles/c001-chunichi/outputs" \
+  "$WORK/src/aoi/cycles/c001-chunichi/outputs" \
   --out "$WORK/html-output" --overlap-backend stdlib
 test -s "$WORK/html-output/index.html"
 test -s "$WORK/html-output/propositions.html"

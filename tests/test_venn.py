@@ -169,7 +169,7 @@ def test_condition_count_is_two_to_max_sets():
 def test_cli_draws_five_sets_with_a_breakdown_on_the_recorded_cycle(tmp_path, aoi_root):
     out = tmp_path / "out"
     conds = ["rd,>,0", "rank_ra,<=,2", "rank_rf,<=,3", "wins_vs_pythag,<,0"]  # + B クラス = 5 集合
-    args = ["--results", str(aoi_root / "cycles/c001-chunichi/outputs"), "--out", str(out), "--id", "P1",
+    args = [str(aoi_root / "cycles/c001-chunichi/outputs"), "--out", str(out), "--id", "P1",
             "--breakdown", "team", "--breakdown-keep", "d", "--overlap-backend", "stdlib"]
     for text in conds:
         args += ["--cond", text]
@@ -183,7 +183,7 @@ def test_cli_draws_five_sets_with_a_breakdown_on_the_recorded_cycle(tmp_path, ao
     assert "d" in [t["name"] for t in breakdown["data"]]  # 中日は件数にかかわらず残る
     assert '"type":"circle"' not in index
     # 条件が多すぎるときは図を書かずに止まる
-    too_many = ["--results", str(aoi_root / "cycles/c001-chunichi/outputs"), "--out", str(tmp_path / "x")]
+    too_many = [str(aoi_root / "cycles/c001-chunichi/outputs"), "--out", str(tmp_path / "x")]
     for k in range(MAX_SETS):
         too_many += ["--cond", f"rd,>,{k}"]
     assert main(too_many) == 1

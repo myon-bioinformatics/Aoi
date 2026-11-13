@@ -105,10 +105,24 @@ def _patterns(n_sets: int):
         yield tuple(bool(bits & (1 << i)) for i in range(n_sets))
 
 
+def resolve_backend(backend: str) -> str:
+    """auto を native か stdlib に決める。native は numpy・polars・PythDRagoras の rule_search が読めるときだけ。"""
+    if backend != "auto":
+        return backend
+    try:
+        import numpy, polars  # noqa: F401
+
+        _engines()
+    except ImportError:
+        return "stdlib"
+    return "native"
+
+
 def load_overlap(path: Path, conds: list[dict], *, backend: str = "native") -> dict:
-    """条件行列と領域の件数。backend="stdlib" だけがライブラリ不要の限定経路。"""
-    if backend not in ("native", "stdlib"):
-        raise ValueError(f"overlap backend は native か stdlib: {backend}")
+    """条件行列と領域の件数。backend="stdlib" だけがライブラリ不要の限定経路。auto は resolve_backend で決める。"""
+    if backend not in ("auto", "native", "stdlib"):
+        raise ValueError(f"overlap backend は auto・native・stdlib のどれか: {backend}")
+    backend = resolve_backend(backend)
     path = Path(path)
     labeled = [{**cond, "label": label_of(cond)} for cond in conds]
     if backend == "stdlib":

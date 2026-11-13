@@ -139,7 +139,7 @@ def test_explicit_selection_preserves_installed_modules(tmp_path):
     assert all(sys.modules[name] is module for name, module in before.items())
     assert rule_search.np is numpy and rule_search.pl is polars
     with pytest.raises(ValueError, match='backend'):
-        load_overlap(path, [], backend='auto')
+        load_overlap(path, [], backend='fast')
 
 
 def test_stdlib_in_fresh_process_with_all_third_party_imports_blocked(tmp_path, aoi_root):
@@ -163,8 +163,8 @@ rows = read_jsonl(data / 'season.jsonl')
 conds = default_conditions(read_jsonl(data / 'propositions.jsonl'), rows)
 assert parse_cond('rd,>,0') == {'col': 'rd', 'op': '>', 'value': 0}
 assert finalize_conditions(conds, [], rows) == conds
-assert build_parser().parse_args(['--results', str(data), '--out', 'unused', '--overlap-backend', 'stdlib']).overlap_backend == 'stdlib'
-assert build_parser().parse_args(['--results', str(data), '--out', 'unused']).overlap_backend == 'native'
+assert build_parser().parse_args([str(data), '--out', 'unused', '--overlap-backend', 'stdlib']).overlap_backend == 'stdlib'
+assert build_parser().parse_args([str(data), '--out', 'unused']).overlap_backend == 'auto'
 result = load_overlap(data / 'season.jsonl', conds, backend='stdlib')
 assert sys.path == before
 assert not blocked.intersection(sys.modules)
@@ -199,7 +199,30 @@ def test_cli_stdlib_writes_same_html(tmp_path, aoi_root):
     from dragowing.cli import main
     data = aoi_root / 'cycles/c001-chunichi/outputs'
     native, light = tmp_path / 'native', tmp_path / 'stdlib'
-    assert main(['--results', str(data), '--out', str(native), '--id', 'P1']) == 0
-    assert main(['--results', str(data), '--out', str(light), '--id', 'P1', '--overlap-backend', 'stdlib']) == 0
+    assert main([str(data), '--out', str(native), '--id', 'P1']) == 0
+    assert main([str(data), '--out', str(light), '--id', 'P1', '--overlap-backend', 'stdlib']) == 0
     for name in ('index.html', 'propositions.html'):
         assert (light / name).read_bytes() == (native / name).read_bytes()
+
+
+def test_auto_backend_falls_back_to_stdlib_without_numpy(monkeypatch, aoi_root):
+    from dragowing.overlap import resolve_backend
+    assert resolve_backend('auto') == 'native'
+    assert (resolve_backend('native'), resolve_backend('stdlib')) == ('native', 'stdlib')
+    monkeypatch.setitem(sys.modules, 'numpy', None)
+    assert resolve_backend('auto') == 'stdlib'
+    data = aoi_root / 'cycles/c001-chunichi/outputs'
+    conds = default_conditions(read_jsonl(data / 'propositions.jsonl'), read_jsonl(data / 'season.jsonl'))
+    assert payload(load_overlap(data / 'season.jsonl', conds, backend='auto')) == payload(
+        load_overlap(data / 'season.jsonl', conds, backend='stdlib'))
+
+
+def test_cli_defaults_to_build_dragowing_and_lists_what_it_wrote(tmp_path, monkeypatch, capsys, aoi_root):
+    from dragowing.cli import main
+    monkeypatch.chdir(tmp_path)
+    assert main([str(aoi_root / 'cycles/c001-chunichi/outputs'), '--id', 'P1']) == 0
+    lines = capsys.readouterr().out.splitlines()
+    out = Path('build/dragowing')
+    assert [(out / name).is_file() for name in ('index.html', 'propositions.html')] == [True, True]
+    assert 'native' in lines[0] and 'markdown' in lines[0]
+    assert [str(out / 'index.html') in lines[1], str(out / 'propositions.html') in lines[2]] == [True, True]

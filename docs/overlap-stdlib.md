@@ -3,7 +3,8 @@
 `load_overlap(path, conds)` uses NumPy, Polars, and PythDRagoras's
 `rule_search` as before. Only with `load_overlap(path, conds, backend="stdlib")` does it
 return a dict of the same shape using dedicated row evaluation. The CLI option is `--overlap-backend stdlib`.
-Unspecified means `native`, and an unknown backend is an error. Unsupported input is never silently sent back to native.
+Unspecified means `native` for `load_overlap`. The CLI default `auto` picks `native` when NumPy, Polars and
+`rule_search` import and `stdlib` otherwise, before any row is read, and prints the choice. An unknown backend is an error. Unsupported input is never silently sent back to native.
 
 ```python
 from pathlib import Path
@@ -17,7 +18,7 @@ result = load_overlap(results / "season.jsonl", conditions, backend="stdlib")
 ```
 
 ```sh
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --overlap-backend stdlib
+python -m dragowing cycles/c001-chunichi/outputs --overlap-backend stdlib
 ```
 
 It works whether or not NumPy and Polars are installed. They are not loaded when the module is

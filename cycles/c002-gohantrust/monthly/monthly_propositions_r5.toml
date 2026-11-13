@@ -1,0 +1,40 @@
+# サイクル2 月次の命題・第5弾。事前宣言 monthly_prelock_r5_2026-11-13.md と一緒に固定した（判定の前。2025 年の国民経済計算の値を取る前）。
+
+[[proposition]]
+id = "C2Y5fx"
+statement = "段 5 の見込みも、E の年の変化の実測も、年平均の標本のばらつき（1 標準誤差）以上の年では、E の年の変化は見込みの向きに動く（2001〜2024 年）"
+strength = "always"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "Y" }, { col = "acy5", op = ">=", value = 1 }, { col = "ayE", op = ">=", value = 1 }] }
+then = [{ col = "agree5", op = "==", value = true }]
+parent = "C2Y5x"
+change = "範囲に、E の年の変化の大きさが σ_Y 以上の年だけ、を足した（結論の側の大きさで選ぶ。向きでは選ばない）。強さ・結論は親のまま"
+surprise = "u5"
+context = ["c4", "q", "c5", "ayE", "qF_hh", "gap"]
+falsifier = "見込みの向きと E の年の変化の向きが逆の年が 1 つでもある"
+note = "単位は暦年。帯は σ_Y = 0.0063。段 5 は c5 = c4 − q（食料の量は一定、q は国全体の 1 人当たり実質の消費の伸び）。会計上のつながりを含む。年次の E の動きは L1 の入力として見えていた。第4弾の判例 2013 年（E の実測 0.7σ_Y）を見たあとに作った命題で、2001〜2024 年の答えは宣言の前に分かっている。確かめは 2025 年以降の年"
+
+[[proposition]]
+id = "C2Y5"
+statement = "段 5 の見込みが、年平均の標本のばらつき（1 標準誤差）以上の年では、E の年の変化は見込みの向きに動く（2001〜2025 年）"
+strength = "always"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "Y" }, { col = "acy5", op = ">=", value = 1 }] }
+then = [{ col = "agree5", op = "==", value = true }]
+parent = "C2Y5x"
+change = "範囲に 2025 年を足した。2025 年の q は、内閣府の国民経済計算の同じ公表の 2024・2025 年の比で作る（宣言 r5 §5）。強さ・結論は親のまま"
+surprise = "u5"
+context = ["c4", "q", "c5", "ayE", "qF_hh", "gap"]
+falsifier = "見込みの向きと E の年の変化の向きが逆の年が 1 つでもある"
+note = "単位は暦年。帯は σ_Y = 0.0063。段 5 は c5 = c4 − q（食料の量は一定、q は国全体の 1 人当たり実質の消費の伸び）。会計上のつながりを含む。年次の E の動きは L1 の入力として見えていた。2025 年は段 5 を作るときに使っていない初めての単位"
+
+[[proposition]]
+id = "C2Y5f"
+statement = "段 5 の見込みも、E の年の変化の実測も、年平均の標本のばらつき（1 標準誤差）以上の年では、E の年の変化は見込みの向きに動く（2001〜2025 年）"
+strength = "always"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "Y" }, { col = "acy5", op = ">=", value = 1 }, { col = "ayE", op = ">=", value = 1 }] }
+then = [{ col = "agree5", op = "==", value = true }]
+parent = "C2Y5fx"
+change = "範囲に 2025 年を足した（宣言 r5 §5）。強さ・結論は親のまま"
+surprise = "u5"
+context = ["c4", "q", "c5", "ayE", "qF_hh", "gap"]
+falsifier = "見込みの向きと E の年の変化の向きが逆の年が 1 つでもある"
+note = "単位は暦年。帯は σ_Y = 0.0063。段 5 は c5 = c4 − q（食料の量は一定、q は国全体の 1 人当たり実質の消費の伸び）。会計上のつながりを含む。年次の E の動きは L1 の入力として見えていた。2025 年は段 5 を作るときに使っていない初めての単位"

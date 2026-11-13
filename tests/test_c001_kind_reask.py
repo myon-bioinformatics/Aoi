@@ -84,7 +84,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -171,6 +171,84 @@ def test_the_one_sided_gap_disappears_with_eight_inning_scores():
     assert RES["third"]["reading"] == 1                                    # 8 回までで負が 65 % 以下 → 打ち切りが主な理由
     assert abs(RES["third"]["variants"]["eight"]["median_gap"]) < 0.01 < -RES["third"]["variants"]["full"]["median_gap"]
     assert [x["ok"] for x in RES["third"]["predictions"]] == [True, True, False, True]   # ビジターだけ 70 % 未満、は外れ
+
+
+# ---- 第4弾 A: 2026年の表に、セ・リーグの打撃の列を足す ------------------------------------------------------------------
+CONFIRM4 = {r["id"]: r for r in RES["fourth"]["confirm"]["rows"]}
+
+
+def test_central_batting_is_filled_in_only_after_it_agrees_with_the_panel():
+    ov = RES["fourth"]["confirm"]["overlay"]
+    assert ov["agrees_with_panel"] and len(ov["teams"]) == 6 and ov["columns"] == ["bat_d_iso", "bat_d_obp", "bat_iso", "bat_obp"]
+    counts = {i: tuple(CONFIRM4[i]["counts"][k] for k in COUNT_KEYS) for i in ("K31", "K32")}
+    assert counts == {"K31": (2, 0, 1, 3, 6), "K32": (2, 0, 2, 2, 6)}
+    assert CONFIRM4["K32"]["reading"] == 1 and CONFIRM4["K32"]["units"]["counter"] == []
+    changed = sorted(i for i in CONFIRM if CONFIRM4[i]["counts"] != CONFIRM[i]["counts"])
+    assert changed == ["K31", "K32"]                                       # ほかの命題と、第2弾 A の値は変わらない
+
+
+def test_central_batting_is_not_used_when_a_total_disagrees(tmp_path):
+    src = ROOT / "cycles" / "c001-chunichi" / "references" / "season-2026-central-summary.jsonl"
+    rows = [json.loads(x) for x in src.read_text(encoding="utf-8").splitlines()]
+    rows[0]["RF"] += 1                                                     # 得点が 2026年の表と合わない
+    bad = tmp_path / "central.jsonl"
+    bad.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+    res = kr.analyze(ROOT, central=bad)
+    row = {r["id"]: r for r in res["fourth"]["confirm"]["rows"]}["K32"]
+    assert res["fourth"]["confirm"]["overlay"]["agrees_with_panel"] is False
+    assert row["counts"]["undetermined"] == 12 and row["reading"] == 0
+
+
+# ---- 第4弾 B: 8 回までの得点で作り直した列で P85 を問い直す --------------------------------------------------------------
+def test_chunichi_is_no_longer_one_sided_on_the_eight_inning_column():
+    q = {x["id"]: x for x in RES["fourth"]["propositions"]}
+    assert (q["E85"]["forms"]["original"]["hold"], q["E85"]["forms"]["original"]["n"], q["E85"]["judgement"]["code"]) == (5, 12, 3)
+    assert tuple(q["KE85"]["forms"][f]["code"] for f in kr.FORM_ORDER) == (3, 3, 3, 3)
+    assert (q["KE85"]["held_out"]["hold"], q["KE85"]["held_out"]["n"], q["KE85"]["reading"]) == (28, 60, 4)
+    assert (q["DE85"]["chunichi"], q["DE85"]["others"], q["DE85"]["reading"]) == ({"hold": 5, "n": 12}, {"hold": 28, "n": 60}, 2)
+    assert q["DE85"]["fisher_p"] >= 0.05 and tuple(q["DE85"]["forms"]) == ("original", "contrapositive")
+
+
+# ---- 第4弾 C: 片寄りを、延長の分と 9 回の終わり方の分に分ける --------------------------------------------------------------
+def test_most_of_the_one_sided_gap_comes_from_extra_innings():
+    sp, third = RES["fourth"]["split"], RES["third"]
+    assert sum(sp["endings"].values()) == third["games"] and sp["endings"]["extra"] == 1019
+    assert third["variants"]["eight"]["negative"] < sp["nine"]["negative"] == 93 < third["variants"]["full"]["negative"]
+    assert sp["reading"] == 3 and sp["share_of_gap_from_extras"] > 0.5 > sp["share_of_gap_from_ninth"]
+    assert abs(sp["share_of_gap_from_extras"] + sp["share_of_gap_from_ninth"] - 1) < 1e-8
+    assert [x["ok"] for x in RES["fourth"]["predictions"]] == [True, True, True, True, True, False, False]
+
+
+# ---- 第5弾: 4 つの「実際 − 見込み」の列の片寄りと、列の値だけを替えたときの判定 ------------------------------------------
+FIFTH = {r["id"]: r for r in RES["fifth"]["propositions"]}
+
+
+def test_only_the_win_runs_column_is_one_sided():
+    s5, bias = RES["fifth"]["summary"], RES["fifth"]["bias"]
+    assert (s5["one_sided_full"], s5["one_sided_nine"], s5["one_sided_eight"]) == (["wl_rf_win_gap"], [], [])
+    pos = {c: tuple(bias[c][k]["positive"] for k in ("full", "nine", "eight")) for c in ("wl_rf_win_gap", "wl_rf_loss_gap")}
+    assert pos == {"wl_rf_win_gap": (11, 51, 73), "wl_rf_loss_gap": (86, 74, 65)}
+    assert all(v["units"] == 144 for by_table in bias.values() for v in by_table.values())
+
+
+def test_swapping_the_column_values_changes_some_exit_codes():
+    assert RES["fifth"]["gate"] == {"ok": True, "problems": []}
+    got = {i: [(r["treatments"][t]["forms"]["original"]["hold"], r["treatments"][t]["forms"]["original"]["n"],
+                r["treatments"][t]["judgement"]) for t in "abcd"] for i, r in FIFTH.items()}
+    assert got == {"P85": [(12, 13, 4), (11, 12, 4), (7, 12, 4), (5, 12, 3)], "P86": [(11, 13, 4), (11, 12, 4), (8, 12, 4), (8, 12, 4)],
+                   "P87": [(6, 13, 3), (6, 12, 3), (7, 12, 4), (6, 12, 3)], "K85": [(69, 78, 1), (64, 72, 1), (41, 72, 3), (33, 72, 3)],
+                   "K86": [(53, 78, 4), (50, 72, 4), (41, 72, 3), (35, 72, 3)], "D86": [(11, 12, 4), (11, 12, 4), (8, 12, 4), (8, 12, 4)]}
+    assert RES["fifth"]["summary"]["changed_c"] == ["P87", "K85", "K86", "D86"]
+    assert RES["fifth"]["summary"]["changed_d"] == ["P85", "K85", "K86"]
+    assert [x["ok"] for x in RES["fifth"]["predictions"]] == [True] * 6
+
+
+def test_the_eight_inning_treatment_agrees_with_the_round_four_propositions():
+    # 列を替えた P85・K85 は、8 回までの列で書いた E85・KE85 と同じ数になる
+    q = {x["id"]: x["forms"]["original"] for x in RES["fourth"]["propositions"]}
+    for old_id, new_id in (("P85", "E85"), ("K85", "KE85")):
+        d = FIFTH[old_id]["treatments"]["d"]["forms"]["original"]
+        assert (d["hold"], d["n"]) == (q[new_id]["hold"], q[new_id]["n"])
 
 
 def test_main_writes_both_files_and_returns_zero(tmp_path):

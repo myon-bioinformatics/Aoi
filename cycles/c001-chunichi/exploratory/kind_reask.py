@@ -51,6 +51,10 @@
   読み（判定ではない）: 補った表で alloc_net_strat の A − B が 0.20 以下なら 1（主に道具の側）、0.30 以上なら 3（9 回裏が無いことでは
   説明できない）、間は 2（両方）
 
+第8弾（宣言は kind_reask_results/README.md の「第8弾」の節。計算の前のコミットで固定）:
+  配分の効果の強さに沿った寄りの 9 回の分を、勝ち越し（8 回終了時か 9 回終了時か）と見込み（8 回までか 9 回までの得点か）の
+  4 通りで分ける。読み: (9, 8) で A − B が 0.30 以上かつ (8, 9) で 0.20 以下なら 1（勝ち負けの側）、逆なら 3（得点の分布の側）、ほかは 2
+
 ゲート（通らなければ、命題の結果は出さずに止まる）:
   正本の命題ファイルの sha256 が保存された値と同じ。つなげたファイルが読み込める。
   K・D の命題が branch 側（from-cycle-001/propositions.toml）のどれとも同じ問いでない。
@@ -659,6 +663,85 @@ def round_seven(repo: Path, full, more: dict, skip: list[int], pl) -> dict:
             "top9_mean": filled["top9_mean"], "home_away": home_away, "imputed": filled_lean, "reading": reading, "predictions": preds}
 
 
+def round_eight(full, more: dict, skip: list[int], pl, upper: dict | None = None) -> dict:
+    """第8弾: 配分の効果（ホーム・ビジター別の合計）を、勝ち越しと見込みを別々の回までの得点で作った 4 通りで並べる。
+
+    8 回に届いた試合だけを使う。(r, d) = 勝ち越しを r 回終了時、見込みを d 回までの得点の分布で。
+    8 回終了時の状態（リード・同点・ビハインド）ごとの 9 回終了時の結果も、A・B クラスで数える。
+    upper は {(年, 球団): 上の群か}。渡さなければ最終順位（upper_half）。第9弾は、ここに別の群の決め方を渡す。
+    """
+    import sakanalytics as SA
+    t = more["tables"]["full"].filter(pl.col("rf8").is_not_null() & pl.col("ra8").is_not_null())
+    upper = upper or {(r["season"], r["team"]): r["upper_half"] for r in full.select("season", "team", "upper_half").to_dicts()}
+    cells = {k: {} for k in ("8,8", "8,9", "9,8", "9,9")}
+    states = {c: {s: Counter() for s in ("lead", "tie", "behind")} for c in ("A", "B")}
+    for (season, team), g in t.group_by(["season", "team"], maintain_order=True):
+        net, exp = {"8": 0, "9": 0}, {"8": 0.0, "9": 0.0}
+        for venue in (True, False):
+            part = g.filter(pl.col("is_home") == venue)
+            for n in ("8", "9"):
+                rf, ra = part[f"rf{n}"].to_list(), part[f"ra{n}"].to_list()
+                net[n] += sum(_sign(a - b) for a, b in zip(rf, ra))
+                exp[n] += SA.allocation(rf, ra)[0]
+        for k in cells:
+            cells[k][(season, team)] = {"alloc_net_strat": net[k[0]] - exp[k[2]]}
+        if season not in skip:
+            cls = "A" if upper[(season, team)] else "B"
+            for a8, b8, a9, b9 in zip(g["rf8"].to_list(), g["ra8"].to_list(), g["rf9"].to_list(), g["ra9"].to_list()):
+                states[cls][("behind", "tie", "lead")[_sign(a8 - b8) + 1]][("loss", "tie", "win")[_sign(a9 - b9) + 1]] += 1
+    eight = {(r["season"], r["team"]): r["alloc_net_strat"] for r in SA.allocation_table(more["tables"]["eight"]).to_dicts()}
+    worst = max(abs(cells["8,8"][k]["alloc_net_strat"] - v) for k, v in eight.items())
+    problems = [] if worst <= 1e-9 and set(eight) == set(cells["8,8"]) else [f"(8, 8) が第6弾の 8 回までの値と合わない（差の最大 {worst:.1e}）"]
+    leans = {k: lean(v, "alloc_net_strat", upper, skip) for k, v in cells.items()}
+    ab = {k: v["a_minus_b"] for k, v in leans.items()}
+    reading = 1 if ab["9,8"] >= 0.30 and ab["8,9"] <= 0.20 else 3 if ab["8,9"] >= 0.30 and ab["9,8"] <= 0.20 else 2
+    rates = {}
+    for cls, by in states.items():
+        rates[cls] = {"lead_games": sum(by["lead"].values()), "lead_held": round(by["lead"]["win"] / sum(by["lead"].values()), 9),
+                      "tie_games": sum(by["tie"].values()), "tie_decided": by["tie"]["win"] + by["tie"]["loss"],
+                      "tie_won": round(by["tie"]["win"] / (by["tie"]["win"] + by["tie"]["loss"]), 9),
+                      "behind_games": sum(by["behind"].values()), "behind_won": round(by["behind"]["win"] / sum(by["behind"].values()), 9),
+                      "counts": {s: dict(sorted(c.items())) for s, c in by.items()}}
+    preds = [
+        {"id": "H1", "text": "ゲートが通る。(9, 9) の A − B は 0.30 以上", "ok": not problems and ab["9,9"] >= 0.30, "got": ab["9,9"]},
+        {"id": "H2", "text": "(9, 8) の A − B は 0.30 以上", "ok": ab["9,8"] >= 0.30, "got": ab["9,8"]},
+        {"id": "H3", "text": "(8, 9) の A − B は 0.20 以下", "ok": ab["8,9"] <= 0.20, "got": ab["8,9"]},
+        {"id": "H4", "text": "読みは「勝ち負けの側」", "ok": reading == 1, "got": reading},
+        {"id": "H5", "text": "A クラスは B クラスより、リードを守った割合も、同点から勝った割合も高い",
+         "ok": rates["A"]["lead_held"] > rates["B"]["lead_held"] and rates["A"]["tie_won"] > rates["B"]["tie_won"],
+         "got": {c: [rates[c]["lead_held"], rates[c]["tie_won"]] for c in rates}},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "games": t.height // 2, "cells": leans, "reading": reading,
+            "states": rates, "predictions": preds}
+
+
+def round_nine(full, more: dict, skip: list[int], pl, eighth: dict) -> dict:
+    """第9弾: 第8弾の 4 通りを、最終順位を使わない群（得失点差でリーグ 3 位以内・前の年の A クラス）で分け直す。"""
+    rows = full.select("season", "team", "upper_half", "rank_rd").to_dicts()
+    final = {(r["season"], r["team"]): r["upper_half"] for r in rows}
+    groups = {"final": final, "run_diff": {(r["season"], r["team"]): r["rank_rd"] <= 3 for r in rows},
+              "previous": {(s, t): final[(s - 1, t)] for (s, t) in final if (s - 1, t) in final}}
+    out = {}
+    for name, upper in groups.items():
+        r = round_eight(full, more, skip, pl, upper)
+        out[name] = {"upper_units": sum(upper[k] for k in upper if k[0] not in skip and k[0] >= 2013),
+                     "cells": r["cells"], "states": r["states"]}
+    same = out["final"]["cells"] == eighth["cells"] and out["final"]["states"] == eighth["states"]
+    problems = [] if same else ["最終順位で分けた値が第8弾と違う"]
+    ab = {g: out[g]["cells"]["9,9"]["a_minus_b"] for g in ("run_diff", "previous")}
+    reading = 1 if min(ab.values()) >= 0.30 else 3 if max(ab.values()) <= 0.15 else 2
+    held = out["run_diff"]["states"]
+    preds = [
+        {"id": "I1", "text": "ゲートが通る", "ok": same, "got": same},
+        {"id": "I2", "text": "得失点差で分けると、(9, 9) の上 − 下は 0.15 以下", "ok": ab["run_diff"] <= 0.15, "got": ab["run_diff"]},
+        {"id": "I3", "text": "前の年で分けると、(9, 9) の上 − 下は 0.15 以下", "ok": ab["previous"] <= 0.15, "got": ab["previous"]},
+        {"id": "I4", "text": "読みは「群の決め方」", "ok": reading == 3, "got": reading},
+        {"id": "I5", "text": "リードを守った割合は、得失点差で分けても、上の群のほうが 1 ポイント以上高い",
+         "ok": held["A"]["lead_held"] - held["B"]["lead_held"] >= 0.01, "got": [held["A"]["lead_held"], held["B"]["lead_held"]]},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "groups": out, "reading": reading, "predictions": preds}
+
+
 def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None = None, props: Path | None = None,
             extra: Path | None = None, stored: Path | None = None, branch: Path | None = None,
             second: Path | None = None, panel: Path | None = None, fourth: Path | None = None,
@@ -689,7 +772,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                       "sixth_propositions": rel(sixth, repo),
                       "sixth_propositions_sha256": hashlib.sha256(sixth.read_bytes()).hexdigest()},
            "gate": {"ok": True, "problems": []}, "propositions": [], "predictions": [], "summary": {}, "second": {}, "third": {},
-           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}}
+           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}, "eighth": {}, "ninth": {}}
     problems = out["gate"]["problems"]
     stored_sha = {r["meta"]["sha256"] for r in stored_rows.values()}
     if sha not in stored_sha:
@@ -778,6 +861,8 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
     out["sixth"] = round_six(repo, config, full, (included, excluded), focus, fs, gs, evaluated, out["fourth"], more,
                              [*P.load(props)[0], *ks, *ds], stored_rows, [int(e["season"]) for e in exclusions], panel, P, pl)
     out["seventh"] = round_seven(repo, full, more, [int(e["season"]) for e in exclusions], pl)
+    out["eighth"] = round_eight(full, more, [int(e["season"]) for e in exclusions], pl)
+    out["ninth"] = round_nine(full, more, [int(e["season"]) for e in exclusions], pl, out["eighth"])
     return out
 
 
@@ -980,6 +1065,38 @@ def render(res: dict) -> str:
           f"## 第7弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f7['predictions'])}/{len(f7['predictions'])}", ""]
     for x in f7["predictions"]:
         L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f8 = res["eighth"]
+    L += ["", "# 第8弾: 配分の効果に残った寄りを、勝ち負けの側と得点の分布の側に分ける", "",
+          f"ゲート（(8, 8) が第6弾の 8 回までの値と同じ）: {'通った' if f8['gate']['ok'] else '通らなかった'}。8 回に届いた {f8['games']} 試合。", "",
+          "各セルは alloc_net_strat の「正の単位の割合（A クラス・B クラス）」と A − B。", "",
+          "| | 見込みを 8 回までの得点で | 見込みを 9 回までの得点で |", "|---|---|---|",
+          f"| 勝ち越しを 8 回終了時で | {cell7(f8['cells']['8,8'])} | {cell7(f8['cells']['8,9'])} |",
+          f"| 勝ち越しを 9 回終了時で | {cell7(f8['cells']['9,8'])} | {cell7(f8['cells']['9,9'])} |", "",
+          f"読み（判定ではない）: **{f8['reading']}** " + {1: "勝ち負けの側", 2: "両方", 3: "得点の分布の側"}[f8["reading"]], "",
+          "8 回終了時の状態ごとの、9 回終了時の結果:", "",
+          "| クラス | リードの試合 | 守った割合 | 同点の試合（9 回で決まった数） | 決まった中で勝った割合 | ビハインドの試合 | 勝った割合 |", "|---|---|---|---|---|---|---|"]
+    for cls, v in f8["states"].items():
+        L += [f"| {cls} | {v['lead_games']} | {v['lead_held']:.3f} | {v['tie_games']}（{v['tie_decided']}） | {v['tie_won']:.3f} "
+              f"| {v['behind_games']} | {v['behind_won']:.3f} |"]
+    L += ["", f"## 第8弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f8['predictions'])}/{len(f8['predictions'])}", ""]
+    for x in f8["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f9 = res["ninth"]
+    gname = {"final": "最終順位（第8弾）", "run_diff": "得失点差でリーグ 3 位以内", "previous": "前の年の A クラス"}
+    L += ["", "# 第9弾: 最終順位を使わない強さで群を分ける", "",
+          f"ゲート（最終順位で分けた値が第8弾と同じ）: {'通った' if f9['gate']['ok'] else '通らなかった'}。", "",
+          "各セルは alloc_net_strat の、正の単位の割合の「上の群 − 下の群」。(勝ち越しの回, 見込みの回)。", "",
+          "| 群の決め方 | 上の群の単位 | (8, 8) | (8, 9) | (9, 8) | (9, 9) | リードを守った（上・下） | ビハインドから勝った（上・下） |", "|---|---|---|---|---|---|---|---|"]
+    for g, v in f9["groups"].items():
+        st = v["states"]
+        L += [f"| {gname[g]} | {v['upper_units']} | " + " | ".join(f"{v['cells'][k]['a_minus_b']:+.2f}" for k in ("8,8", "8,9", "9,8", "9,9"))
+              + f" | {st['A']['lead_held']:.3f}・{st['B']['lead_held']:.3f} | {st['A']['behind_won']:.3f}・{st['B']['behind_won']:.3f} |"]
+    L += ["", f"読み（判定ではない）: **{f9['reading']}** " + {1: "力", 2: "両方、または決まらない", 3: "群の決め方"}[f9["reading"]], "",
+          f"## 第9弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f9['predictions'])}/{len(f9['predictions'])}", ""]
+    for x in f9["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
     return "\n".join(L) + "\n"
 
 
@@ -987,7 +1104,7 @@ def render(res: dict) -> str:
 GIF_RECEIPT_SCHEMA = "aoi-c001-season-sim-gif/1"
 GLYPHS = {"0": "111101101101111", "1": "010110010010111", "2": "111001111100111", "3": "111001111001111",
           "4": "101101111001001", "5": "111100111001111", "6": "111100111101111", "7": "111001010010010",
-          "8": "111101111101111", "9": "111101111001111", "C": "111100100100111", "P": "111101111100100"}   # 3×5 のドットの字
+          "8": "111101111101111", "9": "111101111001111", "+": "000010111010000", "C": "111100100100111", "P": "111101111100100"}   # 3×5 のドットの字
 # 色番号: 0 地 / 1 墨 / 2 A クラス / 3 B クラス / 4 中日 / 5 K51 が成り立つ / 6 成り立たない / 7 補助線・除外の年
 GIF_PALETTE = [(255, 255, 255), (51, 51, 51), (99, 179, 255), (176, 176, 176), (11, 60, 140), (91, 189, 62), (204, 61, 0),
                (221, 221, 221)]
@@ -1014,19 +1131,8 @@ def season_sim_years(repo: Path, pl) -> list[dict]:
 
 def season_sim_grid(years: list[dict], i: int) -> list[bytearray]:
     """i 年目のコマ（256×160 の色番号）。上に年、左がセ・右がパ、下に K51 が成り立った球団の数を年ごとに積む帯。"""
-    W, H, TOP, BASE = 256, 160, 32, 128
-    g = [bytearray(W) for _ in range(H)]
-
-    def rect(x0, y0, x1, y1, c):
-        for y in range(max(y0, 0), min(y1, H)):
-            g[y][max(x0, 0):min(x1, W)] = bytes([c]) * (min(x1, W) - max(x0, 0))
-
-    def text(s, x, y, k, c=1):
-        for ch in s:
-            for n, bit in enumerate(GLYPHS[ch]):
-                if bit == "1":
-                    rect(x + n % 3 * k, y + n // 3 * k, x + (n % 3 + 1) * k, y + (n // 3 + 1) * k, c)
-            x += 4 * k
+    W, TOP, BASE = 256, 32, 128
+    g, rect, text = _canvas()
 
     yr = years[i]
     text(str(yr["season"]), (W - 45) // 2, 6, 3)
@@ -1060,6 +1166,65 @@ def season_sim_grid(years: list[dict], i: int) -> list[bytearray]:
     return g
 
 
+def _canvas():
+    """256×160 の色番号の盤と、四角・ドットの字を描く関数。"""
+    W, H = 256, 160
+    g = [bytearray(W) for _ in range(H)]
+
+    def rect(x0, y0, x1, y1, c):
+        for y in range(max(y0, 0), min(y1, H)):
+            g[y][max(x0, 0):min(x1, W)] = bytes([c]) * (min(x1, W) - max(x0, 0))
+
+    def text(s, x, y, k, c=1):
+        for ch in s:
+            for n, bit in enumerate(GLYPHS[ch]):
+                if bit == "1":
+                    rect(x + n % 3 * k, y + n // 3 * k, x + (n % 3 + 1) * k, y + (n // 3 + 1) * k, c)
+            x += 4 * k
+    return g, rect, text
+
+
+def summary_grids(years: list[dict], res: dict) -> list[list[bytearray]]:
+    """年のコマの後に切り替わる、まとめの 2 コマ。
+
+    1 枚目（中日の 15 年）: 年ごとの中日の「作り直しで A クラスに入る確率」の棒と、その下に最終順位。A クラスの年は水色、
+      分析から除いた年は灰色、K51 が成り立たない年は棒の頭が赤。
+    2 枚目（列の片寄り）: 「勝ち試合の得点 − 見込み」が負になった球団年の数（144 中）を、そのまま（9+）・延長を外す（9）・
+      9 回も外す（8）で。点線が半分（72）。棒の下の 12 個の点は、同じ作り方で中日が「見込みより少ない」になった年の数。
+    """
+    TOP, BASE = 32, 120
+    g1, rect, text = _canvas()
+    text(str(years[0]["season"]), 8, 8, 2)
+    text(str(years[-1]["season"]), 256 - 8 - 30, 8, 2)
+    for x in range(8, 248, 2):
+        g1[(TOP + BASE) // 2][x] = 1
+    rect(8, BASE, 248, BASE + 1, 1)
+    for n, yr in enumerate(years):
+        t = next(t for ts in yr["leagues"].values() for t in ts if t["team"] == "d")
+        bx, h = 10 + n * 16, round(t["p"] * (BASE - TOP))
+        rect(bx, BASE - h, bx + 12, BASE, 7 if yr["excluded"] else 2 if t["upper"] else 4)
+        if not t["ok"] and not yr["excluded"]:
+            rect(bx, BASE - max(h, 3), bx + 12, BASE - max(h, 3) + 3, 6)
+        text(str(t["rank"]), bx + 3, BASE + 6, 2, 2 if t["upper"] else 1)
+    g2, rect, text = _canvas()
+    third, units = res["third"], res["third"]["units"]
+    p85 = {r["id"]: r for r in res["fifth"]["propositions"]}["P85"]["treatments"]
+    bars = (("9+", third["variants"]["full"]["negative"], p85["b"]["forms"]["original"]),
+            ("9", res["fourth"]["split"]["nine"]["negative"], p85["c"]["forms"]["original"]),
+            ("8", third["variants"]["eight"]["negative"], p85["d"]["forms"]["original"]))
+    for x in range(24, 232, 2):
+        g2[BASE - (BASE - TOP) // 2][x] = 1
+    rect(24, BASE, 232, BASE + 1, 1)
+    for n, (label, neg, d) in enumerate(bars):
+        bx, h = 40 + n * 64, round(neg / units * (BASE - TOP))
+        rect(bx, BASE - h, bx + 48, BASE, 6 if neg / units > 0.65 else 5)
+        text(str(neg), bx + 24 - len(str(neg)) * 4 + 1, BASE - h - 14, 2)
+        text(label, bx + 24 - len(label) * 4 + 1, BASE + 5, 2)
+        for i in range(d["n"]):                                              # 中日の年: 成り立った年を紺で
+            rect(bx + i * 4, BASE + 20, bx + i * 4 + 3, BASE + 26, 4 if i < d["hold"] else 7)
+    return [g1, g2]
+
+
 def season_sim_gif(repo: Path, ffs: Path, out_dir: Path, file_prefix: str = "", file_suffix: str = "", scale: int = 2) -> dict:
     """年次シミュレーションの GIF と、隣に受領記録 <name>.json を書く（FluidFullSpeedSimulation の pixelwater で）。"""
     import subprocess
@@ -1068,8 +1233,11 @@ def season_sim_gif(repo: Path, ffs: Path, out_dir: Path, file_prefix: str = "", 
         sys.path.insert(0, str(ffs))
     import pixelwater as PW
     years = season_sim_years(repo, pl)
-    delays = [150] * (len(years) - 1) + [400]
-    data = PW._gif([season_sim_grid(years, i) for i in range(len(years))], GIF_PALETTE, scale=scale, delays=delays)
+    res = json.loads((HERE / "kind_reask_results" / "kind_reask.json").read_text(encoding="utf-8"))
+    # 切り替わる契機: 年のコマは 1.5 秒ずつ。最後の年（まだ使っていない 2026年）で 4 秒止まり、まとめの 2 コマ（5 秒ずつ）へ切り替わって、先頭に戻る
+    delays = [150] * (len(years) - 1) + [400, 500, 500]
+    grids = [season_sim_grid(years, i) for i in range(len(years))] + summary_grids(years, res)
+    data = PW._gif(grids, GIF_PALETTE, scale=scale, delays=delays)
     out_dir.mkdir(parents=True, exist_ok=True)
     stem = PW.file_stem("c001", "sim-p-upper", None, 0, out_dir, file_prefix, file_suffix,
                         conditions=f"y{years[0]['season']}-{years[-1]['season']}")
@@ -1080,19 +1248,23 @@ def season_sim_gif(repo: Path, ffs: Path, out_dir: Path, file_prefix: str = "", 
     commit = subprocess.run(["git", "-C", str(ffs), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip() or None
     receipt = {
         "schema": GIF_RECEIPT_SCHEMA, "files": {"gif": {"name": gif.name, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}},
-        "frames": len(years), "canvas": f"{256 * scale}x{160 * scale}",
+        "frames": len(grids), "canvas": f"{256 * scale}x{160 * scale}",
+        "scenes": [{"name": "years", "frames": len(years)}, {"name": "chunichi", "frames": 1}, {"name": "win_runs_gap", "frames": 1}],
         "plan": {"years": [years[0]["season"], years[-1]["season"]], "scale": scale, "delays_cs": delays, "palette": GIF_PALETTE},
         "inputs": {"season": sha(repo / "cycles/c001-chunichi/outputs/season.jsonl"),
-                   "panel_2026": sha(HERE / "r18_partial_results/r18_partial_panel_2026.jsonl")},
+                   "panel_2026": sha(HERE / "r18_partial_results/r18_partial_panel_2026.jsonl"),
+                   "results": sha(HERE / "kind_reask_results/kind_reask.json")},
         "ffs": {"commit": commit, "pixelwater_sha256": sha(Path(PW.__file__))},
         "summary": {"k51_2012_2025": [sum(y["consistent"] for y in train), sum(y["units"] for y in train)],
-                    "k51_2026": [years[-1]["consistent"], years[-1]["units"]]},
+                    "k51_2026": [years[-1]["consistent"], years[-1]["units"]],
+                    "win_runs_gap_negative": [res["third"]["variants"]["full"]["negative"], res["fourth"]["split"]["nine"]["negative"],
+                                              res["third"]["variants"]["eight"]["negative"], res["third"]["units"]]},
         "years": [{"season": y["season"], "excluded": y["excluded"], "consistent": y["consistent"], "units": y["units"],
                    "chunichi": next(t for ts in y["leagues"].values() for t in ts if t["team"] == "d")} for y in years],
     }
     js = stem.with_name(f"{stem.name}.json")
     js.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return {"gif": str(gif), "json": str(js), "frames": len(years), "summary": receipt["summary"]}
+    return {"gif": str(gif), "json": str(js), "frames": len(grids), "summary": receipt["summary"]}
 
 
 def main(argv=None) -> int:
@@ -1117,7 +1289,7 @@ def main(argv=None) -> int:
     args.outdir.mkdir(parents=True, exist_ok=True)
     (args.outdir / "kind_reask.json").write_text(json.dumps(res, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     (args.outdir / "kind_reask.md").write_text(render(res), encoding="utf-8")
-    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh") for x in (res[k].get("gate") or {}).get("problems", [])]
+    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh", "eighth", "ninth") for x in (res[k].get("gate") or {}).get("problems", [])]
     if problems:
         print("ゲートが通らなかった:", *problems, sep="\n  ", file=sys.stderr)
         return EXIT_GATE

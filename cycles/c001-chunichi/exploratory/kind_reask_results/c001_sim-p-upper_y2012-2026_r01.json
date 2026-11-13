@@ -3,12 +3,26 @@
   "files": {
     "gif": {
       "name": "c001_sim-p-upper_y2012-2026_r01.gif",
-      "bytes": 60985,
-      "sha256": "5d8af4ae78ecc72b0435c9a98268c7908982673c724947c0b4ec0ecc409c1aed"
+      "bytes": 66888,
+      "sha256": "12647da34763875bae16653a7a4d551288add22f9eeb3de7f770494037ce07b1"
     }
   },
-  "frames": 15,
+  "frames": 17,
   "canvas": "512x320",
+  "scenes": [
+    {
+      "name": "years",
+      "frames": 15
+    },
+    {
+      "name": "chunichi",
+      "frames": 1
+    },
+    {
+      "name": "win_runs_gap",
+      "frames": 1
+    }
+  ],
   "plan": {
     "years": [
       2012,
@@ -30,7 +44,9 @@
       150,
       150,
       150,
-      400
+      400,
+      500,
+      500
     ],
     "palette": [
       [
@@ -77,7 +93,8 @@
   },
   "inputs": {
     "season": "8ddba36adfbd06db5c7510f91953184233801c596f87d4fe9bd66fc1b9573a93",
-    "panel_2026": "0cf01501b48ac2b4cb6f3e8ad9aa5a90dd526ebfbf8837e19b15d566954a339b"
+    "panel_2026": "0cf01501b48ac2b4cb6f3e8ad9aa5a90dd526ebfbf8837e19b15d566954a339b",
+    "results": "fd2553760ac3d67ffa0b4d27cc954f350f7ec6b47ba0bf722dc47e746a5417b5"
   },
   "ffs": {
     "commit": "8ae5b7c488273226da215ca78b3c4e910c913c57",
@@ -91,6 +108,12 @@
     "k51_2026": [
       12,
       12
+    ],
+    "win_runs_gap_negative": [
+      133,
+      93,
+      71,
+      144
     ]
   },
   "years": [

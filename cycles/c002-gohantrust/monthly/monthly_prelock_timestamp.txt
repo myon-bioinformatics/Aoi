@@ -6,3 +6,8 @@
 2026-11-13 20:20:32 JST (final, before judging the r2 propositions)
 0a0e0673413c83ba4718695c191273dca48d7461e65f6a1f0fc9a778ecfa8e91  monthly_prelock_r2_2026-11-13.md
 e091a768a863dfbbaef1e70b9373edb43aebfd56866e6fd727bab919b6ab270b  monthly_propositions_r2.toml
+
+# 第3弾（族 A の E を米・穀類の寄与に、族 Y）
+2026-11-13 21:12:13 JST (final, before judging the r3 propositions)
+67580b48e457600d8f446855385773680d605a10458ee0c4346e5746ccc07100  monthly_prelock_r3_2026-11-13.md
+bea3dabc8aa3f36fd42862c186604dd3919137f4ac8aecaae6b805629a2a1ce5  monthly_propositions_r3.toml

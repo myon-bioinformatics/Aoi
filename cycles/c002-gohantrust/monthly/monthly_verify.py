@@ -22,7 +22,7 @@ SIGMA = math.sqrt(2 * (R_CE ** 2 + R_FOOD ** 2))
 
 
 def read():
-    P, H, C = {}, {}, {}
+    P, H, C, HY, CY = {}, {}, {}, {}, {}
     with gzip.open(ARCHIVE / "japan_retail_price_rice_panel.csv.gz", "rt", encoding="utf-8") as f:
         for r in csv.DictReader(f):
             if r["item_code"] == "1002" and r["variable"].endswith("_mean_city_yen_per_5kg"):
@@ -34,7 +34,12 @@ def read():
         for r in csv.DictReader(f):
             if r["frequency"] == "monthly":
                 C[(r["series_id"], int(r["year"]), int(r["month"]))] = float(r["index_value"])
-    return P, H, C
+            elif r["frequency"] == "annual_calendar_mean" and int(r["n_months"]) == 12:
+                CY[(r["series_id"], int(r["year"]))] = float(r["index_value"])
+    with open(ARCHIVE / "engel_food_panel_annual.csv", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            HY[int(r["year"])] = r
+    return P, H, C, HY, CY
 
 
 def back(ym, n):
@@ -70,10 +75,25 @@ def ols(rows):
     return my - sum(b[j] * mz[j] for j in range(k)), b
 
 
-def units_a(P, H):
+def share_effect(s, ratio, e0):
+    """量を固定して、割合 s の分類の値段だけが ratio 倍: F → F(1 + s(ratio−1))、C → C(1 + e0 s (ratio−1))"""
+    return math.log((1 + s * (ratio - 1)) / (1 + e0 * s * (ratio - 1)))
+
+
+def rice_cereal_effect(P, H, C, t):
+    """第3弾: 月 t の米（小売価格）と穀類（物価指数）の寄与。重みは 12 か月前"""
+    b = back(t, 12)
+    food = float(H[b]["food_yen_month"])
+    e0 = E(H, b)
+    return (share_effect(float(H[b]["rice_yen_month"]) / food, P[t] / P[b], e0),
+            share_effect(float(H[b]["cereals_yen_month"]) / food, C[("cereals", *t)] / C[("cereals", *b)], e0))
+
+
+def units_a(P, H, C):
     def pair(s):
         p1 = back(s, 1)
-        return (math.log(P[s] / P[p1]), math.log(P[p1] / P[back(s, 2)]), math.log(E(H, p1) / E(H, back(s, 13))))
+        return (math.log(P[s] / P[p1]), math.log(P[p1] / P[back(s, 2)]), math.log(E(H, p1) / E(H, back(s, 13))),
+                *rice_cereal_effect(P, H, C, p1))
     allm = list(months((2001, 2), (2025, 12)))
     pr = {s: pair(s) for s in allm}
     out = {}
@@ -81,14 +101,22 @@ def units_a(P, H):
         if t < (2006, 2):
             continue
         tr = [pr[s] for s in allm[:i]]
-        y, m, x = pr[t]
+        y, m, x, xr, xc = pr[t]
         f1 = math.fsum(r[0] for r in tr) / len(tr)
         a2, (r2,) = ols([(r[0], r[1]) for r in tr])
-        a3, (r3, g3) = ols(tr)
+        a3, (r3, g3) = ols([r[:3] for r in tr])
+        alt = {}
+        for j, name, v in ((3, "r", xr), (4, "c", xc)):
+            aa, (rr, gg) = ols([(r[0], r[1], r[j]) for r in tr])
+            alt[f"a3{name}"] = abs(y - (aa + rr * m + gg * v))
+            alt[f"x{name}"] = v
         f2, f3 = a2 + r2 * m, a3 + r3 * m + g3 * x
         e = [abs(y), abs(y - f1), abs(y - f2), abs(y - f3)]
         tau = 0.001 / E(H, back(t, 1))
+        ar, ac = alt["a3r"], alt["a3c"]
         out[t] = {"family": "A", "ax": abs(x) / tau, "axs": abs(x) / SIGMA,
+                  "xr": xr, "xc": xc, "axr": abs(xr) / tau, "axc": abs(xc) / tau, "a3r": ar < e[2], "a3c": ac < e[2],
+                  "gains_rc": (e[2] - ar, e[2] - ac),
                   "a1": e[1] < e[0], "a2": e[2] < e[1], "a3": e[3] < e[2],
                   "gains": (e[0] - e[1], e[1] - e[2], e[2] - e[3]), "y": y, "x": x}
     return out
@@ -119,6 +147,34 @@ def units_b(P, H, C):
     return out
 
 
+SIGMA_Y = math.sqrt(2 * (0.004 ** 2 + 0.002 ** 2))   # 第3弾の族 Y（宣言 r3 §2）
+
+
+def units_y(P, HY, CY):
+    """族 Y: 族 B を暦年で。P の年平均は分数で取る"""
+    from fractions import Fraction
+
+    def p_year(y):
+        return float(sum(Fraction(P[(y, m)]) for m in range(1, 13)) / 12)
+
+    def ey(y):
+        return float(HY[y]["food_yen_month"]) / float(HY[y]["ce_yen_month"])
+
+    out = {}
+    for t in range(2001, 2026):
+        e0, food = ey(t - 1), float(HY[t - 1]["food_yen_month"])
+        rel = {s: CY[(s, t)] / CY[(s, t - 1)] for s in ("cereals", "food", "all_items")}
+        c = [share_effect(float(HY[t - 1]["rice_yen_month"]) / food, p_year(t) / p_year(t - 1), e0),
+             share_effect(float(HY[t - 1]["cereals_yen_month"]) / food, rel["cereals"], e0),
+             share_effect(1.0, rel["food"], e0), math.log(rel["food"] / rel["all_items"])]
+        ye = math.log(ey(t) / e0)
+        row = {"family": "Y", "yE": ye, "ayE": abs(ye) / SIGMA_Y}
+        for i in range(4):
+            row[f"c{i + 1}"], row[f"acy{i + 1}"] = c[i], abs(c[i]) / SIGMA_Y
+        out[(t, 0)] = row
+    return out
+
+
 def holds(row, conds):
     ops = {">": lambda a, b: a > b, ">=": lambda a, b: a >= b, "<": lambda a, b: a < b,
            "<=": lambda a, b: a <= b, "==": lambda a, b: a == b, "!=": lambda a, b: a != b}
@@ -137,13 +193,15 @@ def forms(p, U):
     res = {}
     for name, (X, Y) in f.items():
         n = sum(X.values())
-        res[name] = (n, sum(X[t] and Y[t] for t in X), sorted(f"m{t[1]:02d}-{t[0]}" for t in X if X[t] and not Y[t]))
+        res[name] = (n, sum(X[t] and Y[t] for t in X),
+                     sorted((f"m{t[1]:02d}-{t[0]}" if t[1] else f"y-{t[0]}") for t in X if X[t] and not Y[t]))
     return res
 
 
 def main():
-    P, H, C = read()
-    U = {**{("A",) + t: r for t, r in units_a(P, H).items()}, **{("B",) + t: r for t, r in units_b(P, H, C).items()}}
+    P, H, C, HY, CY = read()
+    U = {**{("A",) + t: r for t, r in units_a(P, H, C).items()}, **{("B",) + t: r for t, r in units_b(P, H, C).items()},
+         **{("Y",) + t: r for t, r in units_y(P, HY, CY).items()}}
     bad = 0
     # 単位の値（monthly_run.py の units.jsonl と）
     got = {}
@@ -157,10 +215,18 @@ def main():
     for key, r in U.items():
         g = got[key]
         for c in ("ax", "axs", "yE", "c1", "c2", "c3", "c4", "ac1", "ac2", "ac3", "ac4",
-                  "acs1", "acs2", "acs3", "acs4", "y", "x"):
+                  "acs1", "acs2", "acs3", "acs4", "y", "x", "xr", "xc", "axr", "axc", "ayE",
+                  "acy1", "acy2", "acy3", "acy4"):
             if c in r and not math.isclose(r[c], g[c], rel_tol=1e-9, abs_tol=1e-12):
                 print(f"NG: {key} {c} {r[c]} vs {g[c]}")
                 bad += 1
+        for c, gain in (("a3r", 0), ("a3c", 1)):
+            if c in r and r[c] != g[c]:
+                if abs(r["gains_rc"][gain]) < 1e-12:
+                    ties += 1
+                else:
+                    print(f"NG: {key} {c}")
+                    bad += 1
         for i, c in enumerate(("a1", "a2", "a3")):
             if c in r and r[c] != g[c]:
                 if abs(r["gains"][i]) < 1e-12:
@@ -172,10 +238,10 @@ def main():
             if c in r and r[c] != g[c]:
                 print(f"NG: {key} {c}")
                 bad += 1
-    print(f"units: {len(U)}（A {sum(k[0] == 'A' for k in U)}、B {sum(k[0] == 'B' for k in U)}）、"
+    print(f"units: {len(U)}（A {sum(k[0] == 'A' for k in U)}、B {sum(k[0] == 'B' for k in U)}、Y {sum(k[0] == 'Y' for k in U)}）、"
           f"値と真偽の照合 {'OK' if bad == 0 else 'NG'}、同点に近くて照合を外したもの {ties}")
     # 4 つの形の件数と判例（propositions.jsonl と）
-    props = [p for f in ("monthly_propositions.toml", "monthly_propositions_r2.toml")
+    props = [p for f in ("monthly_propositions.toml", "monthly_propositions_r2.toml", "monthly_propositions_r3.toml")
              for p in tomllib.loads((HERE / f).read_text(encoding="utf-8"))["proposition"]]
     res = {json.loads(x)["id"]: json.loads(x) for x in (OUT / "propositions.jsonl").read_text(encoding="utf-8").splitlines()}
     for p in props:
@@ -188,7 +254,8 @@ def main():
     stamp = (HERE / "monthly_prelock_timestamp.txt").read_text(encoding="utf-8")
     fixed = all(hashlib.sha256((HERE / f).read_bytes()).hexdigest() in stamp
                 for f in ("monthly_propositions.toml", "monthly_prelock_2026-11-13.md",
-                          "monthly_propositions_r2.toml", "monthly_prelock_r2_2026-11-13.md"))
+                          "monthly_propositions_r2.toml", "monthly_prelock_r2_2026-11-13.md",
+                          "monthly_propositions_r3.toml", "monthly_prelock_r3_2026-11-13.md"))
     bad += not fixed
     print(f"prelock / propositions sha256 は固定時と同じ: {'OK' if fixed else 'NG'}")
     print("VERIFY:", "ALL OK" if bad == 0 else f"{bad} NG")

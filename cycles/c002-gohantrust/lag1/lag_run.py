@@ -66,7 +66,7 @@ def estat_inputs():
         m = months.get(t, {})
         if sorted(m) != list(range(1, 13)):     # 12 か月そろわない年は作らない（宣言 §1）
             raise ValueError(f"P_{t}: 月次が 12 か月そろわない（{sorted(m)}）")
-        p[t] = sum(m[k] for k in range(1, 13)) / 12
+        p[t] = math.fsum(m[k] for k in range(1, 13)) / 12   # 版によらず同じ値（3.12 から sum の足し方が変わった）
         food, ce = food_ce[t]
         e[t] = food / ce
     return p, e

@@ -268,8 +268,7 @@
         "nan_to_num": 1,
         "ndarray": 17,
         "nonzero": 4,
-        "ones": 6,
-        "ones_like": 1,
+        "ones": 7,
         "packbits": 2,
         "partition": 2,
         "percentile": 4,
@@ -298,7 +297,7 @@
             "linalg.lstsq": 2,
             "longdouble": 1,
             "mean": 2,
-            "ones_like": 1,
+            "ones": 1,
             "random.default_rng": 1,
             "sign": 2
           },
@@ -481,7 +480,7 @@
           "name": "numpy"
         }
       ],
-      "distinct_attributes": 69,
+      "distinct_attributes": 68,
       "dynamic_import_sites": 0,
       "files": 21,
       "import_sites": 21
@@ -771,7 +770,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1443,
+      "attribute_uses": 1428,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -781,13 +780,13 @@
         "UsageError": 10,
         "approx": 389,
         "fail": 34,
-        "fixture": 59,
+        "fixture": 58,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 341,
+        "mark.parametrize": 337,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 534,
+        "raises": 524,
         "skip": 13,
         "warns": 3,
         "xfail": 1
@@ -924,20 +923,20 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 460,
+          "attribute_uses": 445,
           "attributes": {
             "approx": 104,
             "fail": 13,
-            "fixture": 19,
+            "fixture": 18,
             "importorskip": 3,
-            "mark.parametrize": 128,
+            "mark.parametrize": 124,
             "mark.skipif": 12,
-            "raises": 177,
+            "raises": 167,
             "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 44,
-          "import_sites": 46
+          "files": 43,
+          "import_sites": 45
         }
       },
       "declared": [
@@ -974,8 +973,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 139,
-      "import_sites": 142
+      "files": 138,
+      "import_sites": 141
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1350,7 +1349,7 @@
         "array": 3,
         "column_stack": 2,
         "linalg.lstsq": 2,
-        "ones_like": 1
+        "ones": 1
       },
       "dynamic_lines": [],
       "file": "cycles/c002-gohantrust/monthly/monthly_run.py",
@@ -3577,18 +3576,6 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_rendered_output_static.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "tests"
-    },
-    {
-      "attributes": {
-        "fixture": 1,
-        "mark.parametrize": 4,
-        "raises": 10
-      },
-      "dynamic_lines": [],
-      "file": "tests/test_research_checkpoint.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

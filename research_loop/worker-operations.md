@@ -2,11 +2,9 @@
 
 The unsupported scheduled worker was removed on 2026-10-18 after failed runs.
 The question inbox remains independently operational. This change implements the
-missing worker in its owner repository, NagoyAction. A separate manual checkpoint
-canary workflow is now implemented with two disabled-by-default gates; **no
-variable is enabled, no research run is dispatched and no schedule is restored**.
-See [checkpoint protocol](checkpoint-canary.md) for transport,
-review requirements, offline evidence and remaining live-validation limits.
+missing worker in its owner repository, NagoyAction. The manual checkpoint canary
+(a dispatch-only workflow that was never enabled) was removed on 2026-11-13;
+**no variable is enabled, no research run is dispatched and no schedule is restored**.
 
 ## Implementation and ownership
 

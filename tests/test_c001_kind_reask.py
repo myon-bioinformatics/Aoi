@@ -3,6 +3,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 EXPLORATORY = ROOT / "cycles" / "c001-chunichi" / "exploratory"
 RESULTS = EXPLORATORY / "kind_reask_results"
@@ -27,6 +29,7 @@ def _load():
 
 
 kr = _load()
+pl, P, _ = kr.load_modules(ROOT)
 RES = kr.analyze(ROOT)
 
 
@@ -84,7 +87,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -125,13 +128,26 @@ def _panel_with(tmp_path, changes):
     return path
 
 
+C001 = ROOT / "cycles" / "c001-chunichi"
+KS = {p["id"]: p for p in kr.load_joined(C001 / "propositions.toml", [RESULTS / "kind_reask_propositions.toml"], P)[0]}
+FULL = pl.read_ndjson(C001 / "outputs" / "season.jsonl")
+TRAINED = {q["id"]: {f: {"n": v["n"], "hold": v["hold"]} for f, v in q["forms"].items()} for q in RES["propositions"]}
+
+
+def _confirm(pid, **kw):
+    """全体を走らせ直さず、2026年の数え方（confirm_new_season）だけを呼ぶ。"""
+    res = kr.confirm_new_season([KS[pid]], TRAINED, [pid], FULL, kw.pop("panel", EXPLORATORY / "r18_partial_results" /
+                                "r18_partial_panel_2026.jsonl"), P, pl, **kw)
+    return res, res["rows"][0]
+
+
 def test_reading_turns_to_two_only_when_counterexamples_exceed_what_the_training_rate_allows(tmp_path):
     # B クラスの 6 単位のうち 1 つが判例（学習データの率 9/78 なら珍しくない）→ 1。4 つなら 0.05 未満 → 2
-    one = kr.analyze(ROOT, panel=_panel_with(tmp_path, {"c": {"sim_p_upper": 0.9}}))
-    row = {r["id"]: r for r in one["second"]["confirm"]["rows"]}["K51"]
+    _, row = _confirm("K51")
+    assert row["counts"] == CONFIRM["K51"]["counts"]                       # 全体を走らせたときと同じ
+    _, row = _confirm("K51", panel=_panel_with(tmp_path, {"c": {"sim_p_upper": 0.9}}))
     assert row["counts"]["counter"] == 1 and row["sides"]["counter"]["p_at_least"] > 0.05 and row["reading"] == 1
-    four = kr.analyze(ROOT, panel=_panel_with(tmp_path, {t: {"sim_p_upper": 0.9} for t in ("c", "s", "b", "m")}))
-    row = {r["id"]: r for r in four["second"]["confirm"]["rows"]}["K51"]
+    _, row = _confirm("K51", panel=_panel_with(tmp_path, {t: {"sim_p_upper": 0.9} for t in ("c", "s", "b", "m")}))
     assert row["counts"]["counter"] == 4 and row["sides"]["counter"]["p_at_least"] < 0.05 and row["reading"] == 2
 
 
@@ -193,9 +209,10 @@ def test_central_batting_is_not_used_when_a_total_disagrees(tmp_path):
     rows[0]["RF"] += 1                                                     # 得点が 2026年の表と合わない
     bad = tmp_path / "central.jsonl"
     bad.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
-    res = kr.analyze(ROOT, central=bad)
-    row = {r["id"]: r for r in res["fourth"]["confirm"]["rows"]}["K32"]
-    assert res["fourth"]["confirm"]["overlay"]["agrees_with_panel"] is False
+    good, row = _confirm("K32", overlay=src)
+    assert good["overlay"]["agrees_with_panel"] and row["counts"] == CONFIRM4["K32"]["counts"]
+    res, row = _confirm("K32", overlay=bad)
+    assert res["overlay"]["agrees_with_panel"] is False
     assert row["counts"]["undetermined"] == 12 and row["reading"] == 0
 
 
@@ -251,7 +268,145 @@ def test_the_eight_inning_treatment_agrees_with_the_round_four_propositions():
         assert (d["hold"], d["n"]) == (q[new_id]["hold"], q[new_id]["n"])
 
 
-def test_main_writes_both_files_and_returns_zero(tmp_path):
+# ---- 第6弾 A: 試合の表から作った 8 回までの列 ----------------------------------------------------------------------
+SIXTH = {q["id"]: q for q in RES["sixth"]["propositions"]}
+
+
+def test_the_tool_column_matches_the_exploratory_one_and_round_four():
+    six = RES["sixth"]
+    assert six["gate"] == {"ok": True, "problems": []}
+    assert six["eighth"]["units"] == 156 and six["eighth"]["units_2026"] == 12 and six["eighth"]["max_abs_diff_vs_round_four"] == 0
+    assert len(six["eighth"]["columns"]) == 12 and all(c.endswith("8") for c in six["eighth"]["columns"])
+    old = {q["id"]: q for q in RES["fourth"]["propositions"]}
+    for i in ("E85", "KE85", "DE85"):
+        assert {f: (v["n"], v["hold"], v["code"]) for f, v in SIXTH[i]["forms"].items()} == \
+            {f: (v["n"], v["hold"], v["code"]) for f, v in old[i]["forms"].items()}
+
+
+def test_loss_side_propositions_on_the_eight_inning_column():
+    got = {i: (SIXTH[i]["forms"]["original"]["hold"], SIXTH[i]["forms"]["original"]["n"], SIXTH[i]["judgement"]["code"])
+           for i in ("E86", "KE86", "DE86")}
+    assert got == {"E86": (8, 12, 4), "KE86": (35, 72, 3), "DE86": (8, 12, 4)}
+    assert SIXTH["KE86"]["reading"] == 4 and SIXTH["DE86"]["reading"] == 2 and 0.14 < SIXTH["DE86"]["fisher_p"] < 0.15
+
+
+def test_new_season_records_on_the_eight_inning_column():
+    rows = {r["id"]: r for r in RES["sixth"]["confirm_2026"]["rows"]}
+    assert all(r["role"] == "record" and r["reading"] is None for r in rows.values())
+    assert rows["E85"]["units"]["counter"] == ["d-2026"] and rows["E86"]["units"]["hold"] == ["d-2026"]
+    assert (rows["KE85"]["counts"]["hold"], rows["KE86"]["counts"]["hold"]) == (3, 4)
+    assert all(r["counts"]["undetermined"] == 0 for r in rows.values())
+
+
+def test_eighth_split_uses_eight_inning_scores_by_hand():
+    import sakanalytics as SA
+    teams = {"d": {"name": "中日", "league": "C"}, "g": {"name": "巨人", "league": "C"}}
+    rows = [("2024-04-01", 1, 0, 0, 0), ("2024-04-02", 5, 4, 5, 4), ("2024-04-03", 0, 3, 0, 3), ("2024-04-04", 2, 6, None, None)]
+    games = [{"key": str(i), "date": d, "home": "d", "away": "g", "hs": hs, "as": as_, "hs8": h8, "as8": a8}
+             for i, (d, hs, as_, h8, a8) in enumerate(rows)]
+    got = kr.eighth_split(games, teams, pl, SA).filter(pl.col("team") == "d").row(0, named=True)
+    # 8 回までの得点だけの 3 試合（1 試合目は 0-0 の引き分け、4 試合目は 8 回に届かず数えない）で、同じ関数を回した値と同じ
+    plain = SA.to_team_games(pl.DataFrame([{"key": str(i), "date": d, "home": "d", "away": "g", "hs": h, "as": a}
+                                           for i, (d, h, a) in enumerate([("2024-04-01", 0, 0), ("2024-04-02", 5, 4), ("2024-04-03", 0, 3)])]), teams)
+    want = SA.win_loss_split(plain).filter(pl.col("team") == "d").row(0, named=True)
+    assert {k[:-1]: v for k, v in got.items() if k.endswith("8")} == {k: v for k, v in want.items() if k.startswith("wl_")}
+
+
+# ---- 第6弾 B: 配分の効果と作り直しの列 ------------------------------------------------------------------------------------
+def test_allocation_leans_with_strength_and_the_lean_is_not_from_extra_innings():
+    bias = RES["sixth"]["paired"]["bias"]
+    assert not any(v["one_sided"] for by_table in bias.values() for v in by_table.values())
+    strat = [round(bias["alloc_net_strat"][k]["a_minus_b"], 3) for k in ("full", "nine", "eight")]
+    assert strat == [0.347, 0.347, 0.139]                                  # 延長を外しても変わらず、9 回も外すと下がる
+    assert [bias["wpct_minus_sim"][k]["strength_sided"] for k in ("full", "nine", "eight")] == [False, True, False]
+
+
+def test_swapping_allocation_and_simulation_columns():
+    pb = RES["sixth"]["paired"]
+    assert len(pb["propositions"]) == 13 and len(pb["columns"]) == 25
+    assert pb["changed_c"] == ["P13", "P52"]
+    assert pb["changed_d"] == ["P13", "P14", "P50", "P52", "P56", "P60", "K51"]
+    p52 = {r["id"]: r for r in pb["propositions"]}["P52"]["treatments"]
+    assert [p52[t]["judgement"] for t in "abcd"] == [1, 1, 1, 1]          # 式1 の総合の判定は変わらない
+    assert [x["ok"] for x in RES["sixth"]["predictions"]] == [True, True, True, True, True, False, False, True, False]
+
+
+# ---- 第7弾: 配分の効果の強さに沿った寄りを分ける ---------------------------------------------------------------------------
+def test_home_and_away_allocation_lean_and_the_imputed_ninth():
+    f7 = RES["seventh"]
+    assert f7["gate"] == {"ok": True, "problems": []} and f7["imputed_games"] == 4866 and f7["games"] == 11028
+    share = {c: [f7["home_away"][c][k]["share_positive"] for k in ("full", "eight")] + [f7["imputed"][c]["share_positive"]]
+             for c in ("alloc_net_home", "alloc_net_away")}
+    assert [round(v, 2) for v in share["alloc_net_home"]] == [0.76, 0.5, 0.61]
+    assert [round(v, 2) for v in share["alloc_net_away"]] == [0.26, 0.47, 0.38]
+    assert f7["home_away"]["alloc_net_home"]["full"]["one_sided"] and not f7["imputed"]["alloc_net_home"]["one_sided"]
+    assert round(f7["imputed"]["alloc_net_strat"]["a_minus_b"], 3) == 0.333 and f7["reading"] == 3
+    assert [x["ok"] for x in f7["predictions"]] == [True, False, False, True, False]
+
+
+def test_imputed_allocation_by_hand():
+    # 1 試合: ホーム d が 9 回表の時点で 2-1 で勝っていて、9 回裏に入らなかった。補う点の分布はこの年・リーグの 9 回表の得点（0 か 1）
+    teams = {"d": {"name": "中日", "league": "C"}, "g": {"name": "巨人", "league": "C"}}
+    games = [{"key": "a", "date": "2024-04-01", "home": "d", "away": "g", "hs": 2, "as": 1},
+             {"key": "b", "date": "2024-04-02", "home": "d", "away": "g", "hs": 0, "as": 3}]
+    innings = {"a": {"home": [0, 0, 0, 0, 2, 0, 0, 0, "X"], "away": [0, 0, 0, 0, 0, 0, 0, 1, 0]},
+               "b": {"home": [0] * 9, "away": [0, 0, 0, 0, 0, 0, 0, 2, 1]}}
+    plain = kr.imputed_allocation(games, innings, teams, impute=False)["units"][(2024, "d")]
+    filled = kr.imputed_allocation(games, innings, teams)
+    # 補わない: 得点 {2, 0}・失点 {1, 3} の 4 組で勝ち 1・負け 3 → 見込み −1、実際は 1 勝 1 敗で 0 → 配分の効果 +1
+    assert (plain["alloc_net_home"], plain["alloc_net_away"], plain["alloc_net_strat"]) == (1.0, 0.0, 1.0)
+    # 補う: 9 回表の得点は 0 と 1 が半分ずつ。得点 2 は 2 か 3 になり、失点 3 との組は半分が引き分け → 見込み −0.75、配分の効果 +0.75
+    assert filled["units"][(2024, "d")]["alloc_net_home"] == 0.75 and filled["imputed_games"] == 1
+    assert filled["top9_mean"] == {"2024-C": 0.5}
+
+
+# ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------
+GIF = RESULTS / "c001_sim-p-upper_y2012-2026_r01.gif"
+
+
+def test_season_sim_years_count_k51_the_same_way_as_round_one():
+    years = kr.season_sim_years(ROOT, pl)
+    assert [y["season"] for y in years] == list(range(2012, 2027)) and [y["season"] for y in years if y["excluded"]] == [2020]
+    assert all(len(y["leagues"][lg]) == 6 for y in years for lg in ("C", "P"))
+    k51 = {f: (v["hold"], v["n"]) for f, v in {q["id"]: q for q in RES["propositions"]}["K51"]["forms"].items()}
+    train = [y for y in years if not y["excluded"] and y["season"] <= 2025]
+    assert sum(y["consistent"] for y in train) == k51["original"][0] + k51["inverse"][0] == 137     # B で 0.5 未満 + A で 0.5 以上
+    assert years[-1]["consistent"] == 12                                                           # 2026年
+    d = [next(t for t in y["leagues"]["C"] if t["team"] == "d") for y in years]
+    assert [y["season"] for y, t in zip(years, d) if not t["upper"] and not t["ok"]] == [2014, 2019]
+
+
+def test_saved_gif_matches_its_receipt_and_the_data():
+    import hashlib
+    data = GIF.read_bytes()
+    receipt = json.loads(GIF.with_suffix(".json").read_text(encoding="utf-8"))
+    assert receipt["schema"] == kr.GIF_RECEIPT_SCHEMA and receipt["files"]["gif"]["sha256"] == hashlib.sha256(data).hexdigest()
+    assert data[:6] == b"GIF89a" and int.from_bytes(data[6:8], "little") == 512 and int.from_bytes(data[8:10], "little") == 320
+    assert data.count(b"\x21\xf9\x04") == receipt["frames"] == 15                                       # 1 年 1 コマ
+    assert receipt["summary"] == {"k51_2012_2025": [137, 156], "k51_2026": [12, 12]}
+    assert receipt["plan"]["palette"] == [list(c) for c in kr.GIF_PALETTE]
+    years = kr.season_sim_years(ROOT, pl)
+    assert [(y["season"], y["consistent"]) for y in receipt["years"]] == [(y["season"], y["consistent"]) for y in years]
+
+
+def test_season_sim_grid_shapes_and_marks():
+    years = kr.season_sim_years(ROOT, pl)
+    g = kr.season_sim_grid(years, len(years) - 1)
+    assert len(g) == 160 and {len(r) for r in g} == {256}
+    assert max(max(r) for r in g) < len(kr.GIF_PALETTE)
+    assert sum(r.count(4) for r in g) > 0                                     # 中日の棒
+    assert sum(r.count(7) for r in g) > 0                                     # 除外した 2020年の帯
+
+
+def test_main_needs_ffs_for_the_gif(capsys):
+    with pytest.raises(SystemExit):
+        kr.main(["--gif-dir", "x"])
+    with pytest.raises(SystemExit):
+        kr.main([])
+
+
+def test_main_writes_both_files_and_returns_zero(tmp_path, monkeypatch):
+    monkeypatch.setattr(kr, "analyze", lambda repo: RES)                   # 全体の計算は RES で済ませてある
     assert kr.main(["--outdir", str(tmp_path)]) == 0
     assert json.loads((tmp_path / "kind_reask.json").read_text(encoding="utf-8"))["summary"]["count"] == 22
     assert (tmp_path / "kind_reask.md").stat().st_size > 0

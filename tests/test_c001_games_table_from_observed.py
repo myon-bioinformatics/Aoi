@@ -164,3 +164,14 @@ def test_saved_observations_reproduce_the_confirmed_team_totals(tmp_path):
     assert len(rows) == 11028 + 858
     assert len({r["key"] for r in rows}) == len(rows)
     assert len(gt.team_totals(rows)) == 156 + 12
+
+
+def test_eight_inning_scores_are_written_only_when_asked():
+    x = raw(1) | {"home_inn": "[0, 0, 1, 0, 1, 0, 2, 0, 'X']", "away_inn": [0, 0, 0, 0, 0, 0, 1, 0, 0]}
+    short = raw(2) | {"home_inn": "[0, 0, 0, 0, 0]", "away_inn": "[0, 0, 0, 0, 1]"}       # 8 回に届かない（降雨など）
+    plain = gt.from_games_raw([x, short], G)
+    assert all("hs8" not in r for r in plain)                                             # 既定は今までと同じ
+    with8 = gt.from_games_raw([x, short], G, eighth=True)
+    assert [(r["hs8"], r["as8"]) for r in with8] == [(4, 1), (None, None)]
+    assert [{k: v for k, v in r.items() if k not in ("hs8", "as8")} for r in with8] == plain
+    assert gt.first8([1, 2, 3, 4, 5, 6, 7, 8, "X"]) == 36 and gt.first8("[1, 2]") is None and gt.first8(None) is None

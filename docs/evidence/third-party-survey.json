@@ -542,7 +542,7 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1013,
+      "attribute_uses": 1015,
       "attributes": {
         "Boolean": 14,
         "Config.set_tbl_rows": 1,
@@ -564,16 +564,16 @@
         "first": 4,
         "int_range": 1,
         "len": 8,
-        "lit": 34,
+        "lit": 35,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 23,
+        "read_ndjson": 24,
         "sum": 2,
         "when": 18
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 44,
+          "attribute_uses": 46,
           "attributes": {
             "Boolean": 2,
             "DataFrame": 3,
@@ -582,8 +582,8 @@
             "col": 21,
             "concat": 1,
             "concat_str": 1,
-            "lit": 6,
-            "read_ndjson": 5,
+            "lit": 7,
+            "read_ndjson": 6,
             "when": 1
           },
           "dynamic_import_sites": 0,
@@ -1228,7 +1228,8 @@
     {
       "attributes": {
         "col": 1,
-        "read_ndjson": 1
+        "lit": 1,
+        "read_ndjson": 2
       },
       "dynamic_lines": [],
       "file": "cycles/c001-chunichi/exploratory/kind_reask.py",

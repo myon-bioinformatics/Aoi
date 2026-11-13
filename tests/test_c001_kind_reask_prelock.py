@@ -3,7 +3,8 @@ import hashlib
 from pathlib import Path
 
 RESULTS = Path(__file__).resolve().parent.parent / "cycles" / "c001-chunichi" / "exploratory" / "kind_reask_results"
-LOCKED = (RESULTS / "kind_reask_prelock_2026-11-13.md", RESULTS / "kind_reask_propositions.toml")
+LOCKED = (RESULTS / "kind_reask_prelock_2026-11-13.md", RESULTS / "kind_reask_propositions.toml",
+          RESULTS / "kind_reask_r2_propositions.toml")       # 第2弾は、命題ファイルの冒頭が宣言
 STAMP = RESULTS / "kind_reask_prelock_timestamp.txt"
 
 

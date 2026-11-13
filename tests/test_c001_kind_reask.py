@@ -84,6 +84,78 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
+    assert res["second"] == {}
+
+
+# ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
+CONFIRM = {r["id"]: r for r in RES["second"]["confirm"]["rows"]}
+COUNT_KEYS = ("hold", "counter", "converse_counter", "neither", "undetermined")
+
+
+def test_round_two_leaves_round_one_untouched_and_confirms_only_the_reading_one_propositions():
+    assert RES["second"]["summary"]["confirm_targets"] == ["K32", "K51"]
+    assert sorted(i for i, r in CONFIRM.items() if r["role"] == "confirm") == ["K32", "K51"]
+    assert RES["second"]["confirm"]["seasons"] == [2026] and len(RES["second"]["confirm"]["units"]) == 12
+    assert len(CONFIRM) == 25                                              # K の 22 件と D の 3 件
+
+
+def test_new_season_counts_and_readings():
+    counts = {i: tuple(CONFIRM[i]["counts"][k] for k in COUNT_KEYS) for i in ("K32", "K51", "K85", "K97", "K102", "D86", "D102")}
+    assert counts == {"K32": (0, 0, 0, 0, 12), "K51": (6, 0, 0, 6, 0), "K85": (6, 0, 6, 0, 0), "K97": (6, 0, 5, 1, 0),
+                      "K102": (1, 5, 0, 6, 0), "D86": (1, 0, 2, 3, 0), "D102": (0, 1, 1, 4, 0)}
+    assert RES["second"]["summary"]["confirm_readings"] == {"K32": 0, "K51": 1}
+    assert all(r["reading"] is None for r in CONFIRM.values() if r["role"] == "record")
+    blank = sorted(i for i, r in CONFIRM.items() if i.startswith("K") and r["counts"]["undetermined"] == r["in_scope"])
+    assert blank == sorted(["K25", "K26", "K27", "K28", "K29", "K31", "K32", "K40", "K45", "K46"])   # イニング・打撃の列が無い
+
+
+def test_expected_counts_come_from_the_training_rates():
+    side = CONFIRM["K51"]["sides"]
+    assert side["counter"]["n"] == 6 and abs(side["counter"]["expected"] - 6 * 9 / 78) < 1e-8            # 学習データ: 78 中 69
+    assert side["converse_counter"]["n"] == 6 and abs(side["converse_counter"]["expected"] - 6 * 10 / 78) < 1e-8   # 裏: 78 中 68
+
+
+def _panel_with(tmp_path, changes):
+    rows = [json.loads(x) for x in (EXPLORATORY / "r18_partial_results" / "r18_partial_panel_2026.jsonl").read_text().splitlines()]
+    for r in rows:
+        if r["team"] in changes:
+            r.update(changes[r["team"]])
+    path = tmp_path / "panel.jsonl"
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+    return path
+
+
+def test_reading_turns_to_two_only_when_counterexamples_exceed_what_the_training_rate_allows(tmp_path):
+    # B クラスの 6 単位のうち 1 つが判例（学習データの率 9/78 なら珍しくない）→ 1。4 つなら 0.05 未満 → 2
+    one = kr.analyze(ROOT, panel=_panel_with(tmp_path, {"c": {"sim_p_upper": 0.9}}))
+    row = {r["id"]: r for r in one["second"]["confirm"]["rows"]}["K51"]
+    assert row["counts"]["counter"] == 1 and row["sides"]["counter"]["p_at_least"] > 0.05 and row["reading"] == 1
+    four = kr.analyze(ROOT, panel=_panel_with(tmp_path, {t: {"sim_p_upper": 0.9} for t in ("c", "s", "b", "m")}))
+    row = {r["id"]: r for r in four["second"]["confirm"]["rows"]}["K51"]
+    assert row["counts"]["counter"] == 4 and row["sides"]["counter"]["p_at_least"] < 0.05 and row["reading"] == 2
+
+
+# ---- 第2弾 B: 中日と、中日以外の同じ種類の差 ---------------------------------------------------------------------------
+def test_difference_rows_compare_chunichi_with_the_rest_of_the_same_kind():
+    got = {d["id"]: ((d["chunichi"]["hold"], d["chunichi"]["n"]), (d["others"]["hold"], d["others"]["n"]), d["reading"],
+                     d["judgement"]["code"], tuple(d["forms"])) for d in RES["second"]["difference"]}
+    assert got == {"D40": ((9, 11), (23, 41), 2, 4, ("original", "contrapositive")),
+                   "D86": ((11, 12), (42, 66), 2, 4, ("original", "contrapositive")),
+                   "D102": ((8, 12), (25, 66), 2, 4, ("original", "contrapositive"))}
+    ps = {d["id"]: d["fisher_p"] for d in RES["second"]["difference"]}
+    assert 0.05 <= ps["D86"] < ps["D102"] < ps["D40"] < 0.12              # どれも 0.05 に届かない（D86 は 0.05002）
+
+
+def test_difference_counts_agree_with_round_one():
+    # 中日以外の同じ種類 = 第1弾の「きっかけ以外」の元の命題と同じ単位
+    held = {q["parent"]: (q["held_out"]["hold"], q["held_out"]["n"]) for q in RES["propositions"]}
+    for d in RES["second"]["difference"]:
+        assert (d["others"]["hold"], d["others"]["n"]) == held[d["parent"]]
+
+
+def test_round_two_predictions_are_recorded_by_number():
+    assert RES["second"]["summary"]["predictions"] == 6
+    assert [x["ok"] for x in RES["second"]["predictions"]] == [True] * 6
 
 
 def test_main_writes_both_files_and_returns_zero(tmp_path):

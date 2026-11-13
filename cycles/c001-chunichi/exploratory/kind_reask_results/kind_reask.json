@@ -10,9 +10,13 @@
   ],
   "kind_propositions": "cycles/c001-chunichi/exploratory/kind_reask_results/kind_reask_propositions.toml",
   "kind_propositions_sha256": "9e2b85729851ff6a2c723470ef88820a1a50fa4cf3d689ab87609679258af281",
+  "panel": "cycles/c001-chunichi/exploratory/r18_partial_results/r18_partial_panel_2026.jsonl",
+  "panel_sha256": "0cf01501b48ac2b4cb6f3e8ad9aa5a90dd526ebfbf8837e19b15d566954a339b",
   "propositions": "cycles/c001-chunichi/propositions.toml",
   "propositions_sha256": "0074801d0ede337a76c98624e8d206912ad0ee42a89fecde9d8eb7646d52a35a",
   "season": "cycles/c001-chunichi/outputs/season.jsonl",
+  "second_propositions": "cycles/c001-chunichi/exploratory/kind_reask_results/kind_reask_r2_propositions.toml",
+  "second_propositions_sha256": "4be4ca19aea273182a0bbbbd73ca620953f4e821d31febc208639e2ebab5b495",
   "stored": "cycles/c001-chunichi/outputs/propositions.jsonl"
  },
  "predictions": [
@@ -5578,6 +5582,1628 @@
    "units": 156
   }
  ],
+ "second": {
+  "confirm": {
+   "missing_columns": 72,
+   "missing_prefixes": [
+    "bat",
+    "inn"
+   ],
+   "rows": [
+    {
+     "counts": {
+      "converse_counter": 4,
+      "counter": 0,
+      "hold": 4,
+      "neither": 4,
+      "undetermined": 0
+     },
+     "id": "K17",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 5.230769231,
+       "got": 4,
+       "n": 8,
+       "new_where_none_trained": false,
+       "p_at_least": 0.898289121,
+       "trained_rate": 0.6538461538461539
+      },
+      "counter": {
+       "expected": 1.230769231,
+       "got": 0,
+       "n": 4,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.3076923076923077
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "d-2026",
+       "db-2026",
+       "f-2026",
+       "m-2026"
+      ],
+      "counter": [],
+      "hold": [
+       "b-2026",
+       "c-2026",
+       "e-2026",
+       "s-2026"
+      ],
+      "neither": [
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "t-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K25",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.32291666666666663
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.3125
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K26",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.34375
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.33333333333333337
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K27",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.34375
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.1875
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K28",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.33333333333333337
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.29166666666666663
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K29",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.34375
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.29166666666666663
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K31",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.34615384615384615
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.13461538461538458
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K32",
+     "in_scope": 12,
+     "reading": 0,
+     "role": "confirm",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.2692307692307693
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.038461538461538436
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K40",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.4326923076923077
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.3846153846153846
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K45",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.5096153846153846
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.3846153846153846
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 12
+     },
+     "id": "K46",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.28846153846153844
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.09615384615384615
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "db-2026",
+       "e-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "m-2026",
+       "s-2026",
+       "t-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 6,
+      "neither": 6,
+      "undetermined": 0
+     },
+     "id": "K51",
+     "in_scope": 12,
+     "reading": 1,
+     "role": "confirm",
+     "sides": {
+      "converse_counter": {
+       "expected": 0.769230769,
+       "got": 0,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.1282051282051282
+      },
+      "counter": {
+       "expected": 0.692307692,
+       "got": 0,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.11538461538461542
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "e-2026",
+       "m-2026",
+       "s-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "t-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 3,
+      "counter": 4,
+      "hold": 2,
+      "neither": 3,
+      "undetermined": 0
+     },
+     "id": "K69",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 3.076923077,
+       "got": 3,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.679969945,
+       "trained_rate": 0.5128205128205128
+      },
+      "counter": {
+       "expected": 2.384615385,
+       "got": 4,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.175674346,
+       "trained_rate": 0.39743589743589747
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "h-2026",
+       "l-2026",
+       "t-2026"
+      ],
+      "counter": [
+       "b-2026",
+       "c-2026",
+       "e-2026",
+       "m-2026"
+      ],
+      "hold": [
+       "d-2026",
+       "s-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "f-2026",
+       "g-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 6,
+      "counter": 0,
+      "hold": 6,
+      "neither": 0,
+      "undetermined": 0
+     },
+     "id": "K85",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 5.769230769,
+       "got": 6,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.790314526,
+       "trained_rate": 0.9615384615384616
+      },
+      "counter": {
+       "expected": 0.692307692,
+       "got": 0,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.11538461538461542
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "db-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "t-2026"
+      ],
+      "counter": [],
+      "hold": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "e-2026",
+       "m-2026",
+       "s-2026"
+      ],
+      "neither": [],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 4,
+      "counter": 3,
+      "hold": 3,
+      "neither": 2,
+      "undetermined": 0
+     },
+     "id": "K86",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 2.923076923,
+       "got": 4,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.320030055,
+       "trained_rate": 0.4871794871794872
+      },
+      "counter": {
+       "expected": 1.923076923,
+       "got": 3,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.294550506,
+       "trained_rate": 0.3205128205128205
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "db-2026",
+       "f-2026",
+       "g-2026",
+       "t-2026"
+      ],
+      "counter": [
+       "b-2026",
+       "m-2026",
+       "s-2026"
+      ],
+      "hold": [
+       "c-2026",
+       "d-2026",
+       "e-2026"
+      ],
+      "neither": [
+       "h-2026",
+       "l-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 2,
+      "counter": 3,
+      "hold": 3,
+      "neither": 4,
+      "undetermined": 0
+     },
+     "id": "K88",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 2.384615385,
+       "got": 2,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.762711006,
+       "trained_rate": 0.39743589743589747
+      },
+      "counter": {
+       "expected": 2.923076923,
+       "got": 3,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.63191409,
+       "trained_rate": 0.4871794871794872
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "g-2026",
+       "l-2026"
+      ],
+      "counter": [
+       "c-2026",
+       "d-2026",
+       "e-2026"
+      ],
+      "hold": [
+       "b-2026",
+       "m-2026",
+       "s-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "f-2026",
+       "h-2026",
+       "t-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 5,
+      "counter": 0,
+      "hold": 6,
+      "neither": 1,
+      "undetermined": 0
+     },
+     "id": "K97",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 4.461538462,
+       "got": 5,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.518790905,
+       "trained_rate": 0.7435897435897436
+      },
+      "counter": {
+       "expected": 1.384615385,
+       "got": 0,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.23076923076923073
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "t-2026"
+      ],
+      "counter": [],
+      "hold": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "e-2026",
+       "m-2026",
+       "s-2026"
+      ],
+      "neither": [
+       "db-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 1,
+      "counter": 3,
+      "hold": 3,
+      "neither": 5,
+      "undetermined": 0
+     },
+     "id": "K99",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 3.538461538,
+       "got": 1,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.995232044,
+       "trained_rate": 0.5897435897435898
+      },
+      "counter": {
+       "expected": 2.846153846,
+       "got": 3,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.607027798,
+       "trained_rate": 0.47435897435897434
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "f-2026"
+      ],
+      "counter": [
+       "c-2026",
+       "d-2026",
+       "e-2026"
+      ],
+      "hold": [
+       "b-2026",
+       "m-2026",
+       "s-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "t-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 5,
+      "hold": 1,
+      "neither": 6,
+      "undetermined": 0
+     },
+     "id": "K102",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 2.076923077,
+       "got": 0,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.34615384615384615
+      },
+      "counter": {
+       "expected": 3.461538462,
+       "got": 5,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.199113738,
+       "trained_rate": 0.5769230769230769
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "e-2026",
+       "s-2026"
+      ],
+      "hold": [
+       "m-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026",
+       "t-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 4,
+      "counter": 4,
+      "hold": 2,
+      "neither": 2,
+      "undetermined": 0
+     },
+     "id": "K106",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 3.461538462,
+       "got": 4,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.496555249,
+       "trained_rate": 0.5769230769230769
+      },
+      "counter": {
+       "expected": 2.923076923,
+       "got": 4,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.320030055,
+       "trained_rate": 0.4871794871794872
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "db-2026",
+       "f-2026",
+       "g-2026",
+       "t-2026"
+      ],
+      "counter": [
+       "b-2026",
+       "c-2026",
+       "e-2026",
+       "s-2026"
+      ],
+      "hold": [
+       "d-2026",
+       "m-2026"
+      ],
+      "neither": [
+       "h-2026",
+       "l-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 4,
+      "counter": 4,
+      "hold": 2,
+      "neither": 2,
+      "undetermined": 0
+     },
+     "id": "K108",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 2.615384615,
+       "got": 4,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.232446921,
+       "trained_rate": 0.4358974358974359
+      },
+      "counter": {
+       "expected": 2.923076923,
+       "got": 4,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.320030055,
+       "trained_rate": 0.4871794871794872
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026"
+      ],
+      "counter": [
+       "b-2026",
+       "d-2026",
+       "e-2026",
+       "s-2026"
+      ],
+      "hold": [
+       "c-2026",
+       "m-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "t-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 2,
+      "counter": 2,
+      "hold": 4,
+      "neither": 4,
+      "undetermined": 0
+     },
+     "id": "K110",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 3.384615385,
+       "got": 2,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.939876641,
+       "trained_rate": 0.5641025641025641
+      },
+      "counter": {
+       "expected": 2.846153846,
+       "got": 2,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.864697003,
+       "trained_rate": 0.47435897435897434
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "g-2026",
+       "l-2026"
+      ],
+      "counter": [
+       "c-2026",
+       "m-2026"
+      ],
+      "hold": [
+       "b-2026",
+       "d-2026",
+       "e-2026",
+       "s-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "f-2026",
+       "h-2026",
+       "t-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 4
+     },
+     "id": "D40",
+     "in_scope": 4,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": null,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": null
+      },
+      "counter": {
+       "expected": 0.0,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": 0.18181818181818177
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [],
+      "neither": [],
+      "undetermined": [
+       "b-2026",
+       "c-2026",
+       "e-2026",
+       "s-2026"
+      ]
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 2,
+      "counter": 0,
+      "hold": 1,
+      "neither": 3,
+      "undetermined": 0
+     },
+     "id": "D86",
+     "in_scope": 6,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": null,
+       "got": 2,
+       "n": 5,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": null
+      },
+      "counter": {
+       "expected": 0.083333333,
+       "got": 0,
+       "n": 1,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.08333333333333337
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "c-2026",
+       "e-2026"
+      ],
+      "counter": [],
+      "hold": [
+       "d-2026"
+      ],
+      "neither": [
+       "b-2026",
+       "m-2026",
+       "s-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 1,
+      "counter": 1,
+      "hold": 0,
+      "neither": 4,
+      "undetermined": 0
+     },
+     "id": "D102",
+     "in_scope": 6,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": null,
+       "got": 1,
+       "n": 5,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": null
+      },
+      "counter": {
+       "expected": 0.333333333,
+       "got": 1,
+       "n": 1,
+       "new_where_none_trained": false,
+       "p_at_least": 0.333333333,
+       "trained_rate": 0.33333333333333337
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "m-2026"
+      ],
+      "counter": [
+       "d-2026"
+      ],
+      "hold": [],
+      "neither": [
+       "b-2026",
+       "c-2026",
+       "e-2026",
+       "s-2026"
+      ],
+      "undetermined": []
+     }
+    }
+   ],
+   "seasons": [
+    2026
+   ],
+   "units": [
+    "b-2026",
+    "c-2026",
+    "d-2026",
+    "db-2026",
+    "e-2026",
+    "f-2026",
+    "g-2026",
+    "h-2026",
+    "l-2026",
+    "m-2026",
+    "s-2026",
+    "t-2026"
+   ]
+  },
+  "difference": [
+   {
+    "chunichi": {
+     "hold": 9,
+     "n": 11
+    },
+    "definition_sha256": "c1b6d9825d3ef671bbd774b1f95025202b639d3f56309d496c90c63bed62e1c3",
+    "fisher_p": 0.11172391853284136,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.7884615384615384,
+      "ci": [
+       0.698966,
+       0.972134
+      ],
+      "code": 4,
+      "fisher_p": 0.11172391853284136,
+      "hold": 18,
+      "n": 20,
+      "rate": 0.9,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2014"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "original": {
+      "base_rate": 0.6153846153846154,
+      "ci": [
+       0.523019,
+       0.948632
+      ],
+      "code": 4,
+      "fisher_p": 0.11172391853284136,
+      "hold": 9,
+      "n": 11,
+      "rate": 0.8181818181818182,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2014"
+      ],
+      "verdict": "Inconclusive"
+     }
+    },
+    "id": "D40",
+    "judgement": {
+     "code": 4,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[where:rank_rf>=5] team==\"d\" => bat_d_walk_share<0",
+    "others": {
+     "hold": 23,
+     "n": 41
+    },
+    "parent": "P40",
+    "parent_original": {
+     "hold": 9,
+     "n": 11
+    },
+    "reading": 2,
+    "signature": "4fcee03f18405316",
+    "skipped_forms": [
+     "converse",
+     "inverse"
+    ],
+    "statement": "得点がリーグ5位以下のチーム・シーズンの中で、中日は、出塁のうち四死球による割合が他球団より低い",
+    "strength": "usually",
+    "units": 52
+   },
+   {
+    "chunichi": {
+     "hold": 11,
+     "n": 12
+    },
+    "definition_sha256": "6926e5cc3279026d0be1ff0e6acbf77a3a88c616d0ff8ef1c546670b3afafc0b",
+    "fisher_p": 0.050019079815112194,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.8461538461538461,
+      "ci": [
+       0.804559,
+       0.992904
+      ],
+      "code": 1,
+      "fisher_p": 0.050019079815112194,
+      "hold": 24,
+      "n": 25,
+      "rate": 0.96,
+      "undetermined": 0,
+      "units": [
+       "d-2013"
+      ],
+      "verdict": "Supported"
+     },
+     "original": {
+      "base_rate": 0.6794871794871795,
+      "ci": [
+       0.64612,
+       0.985135
+      ],
+      "code": 4,
+      "fisher_p": 0.050019079815112194,
+      "hold": 11,
+      "n": 12,
+      "rate": 0.9166666666666666,
+      "undetermined": 0,
+      "units": [
+       "d-2013"
+      ],
+      "verdict": "Inconclusive"
+     }
+    },
+    "id": "D86",
+    "judgement": {
+     "code": 4,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[where:upper_half==false] team==\"d\" => wl_rf_loss_gap>0",
+    "others": {
+     "hold": 42,
+     "n": 66
+    },
+    "parent": "P86",
+    "parent_original": {
+     "hold": 11,
+     "n": 13
+    },
+    "reading": 2,
+    "signature": "a27074043f1ba8c2",
+    "skipped_forms": [
+     "converse",
+     "inverse"
+    ],
+    "statement": "B クラスのチーム・シーズンの中で、中日は、負け試合の得点が、自分の得点・失点の分布から見込まれるより多い",
+    "strength": "usually",
+    "units": 78
+   },
+   {
+    "chunichi": {
+     "hold": 8,
+     "n": 12
+    },
+    "definition_sha256": "e106044b4a6f92f7fd3ff9e2448d45f4fe2ab5fd212c058ccd166a20775c99a3",
+    "fisher_p": 0.06255067783376742,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.8461538461538461,
+      "ci": [
+       0.792664,
+       0.964889
+      ],
+      "code": 1,
+      "fisher_p": 0.06255067783376742,
+      "hold": 41,
+      "n": 45,
+      "rate": 0.9111111111111111,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2015",
+       "d-2016",
+       "d-2017"
+      ],
+      "verdict": "Supported"
+     },
+     "original": {
+      "base_rate": 0.4230769230769231,
+      "ci": [
+       0.390622,
+       0.86188
+      ],
+      "code": 4,
+      "fisher_p": 0.06255067783376742,
+      "hold": 8,
+      "n": 12,
+      "rate": 0.6666666666666666,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2015",
+       "d-2016",
+       "d-2017"
+      ],
+      "verdict": "Inconclusive"
+     }
+    },
+    "id": "D102",
+    "judgement": {
+     "code": 4,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[where:upper_half==false] team==\"d\" => wave_settle_pct<0.5",
+    "others": {
+     "hold": 25,
+     "n": 66
+    },
+    "parent": "P102",
+    "parent_original": {
+     "hold": 8,
+     "n": 12
+    },
+    "reading": 2,
+    "signature": "9ce4f8cb5ba8a726",
+    "skipped_forms": [
+     "converse",
+     "inverse"
+    ],
+    "statement": "B クラスのチーム・シーズンの中で、中日は、順位が決まった位置（波のゆれの幅が半順位を下回る位置）が、力が一定のときの半分より早い",
+    "strength": "more_often_than_not",
+    "units": 78
+   }
+  ],
+  "predictions": [
+   {
+    "got": {
+     "converse_counter": 0,
+     "counter": 0,
+     "hold": 6,
+     "neither": 6,
+     "reading": 1,
+     "undetermined": 0
+    },
+    "id": "A1",
+    "ok": true,
+    "text": "K51: 成立 6・判例 0・逆の判例 0・どちらも当たらない 6。読みは 1（学習データと矛盾しない）"
+   },
+   {
+    "got": {
+     "converse_counter": 0,
+     "counter": 0,
+     "hold": 0,
+     "neither": 0,
+     "undetermined": 12
+    },
+    "id": "A2",
+    "ok": true,
+    "text": "K32: 12 単位とも判定不能"
+   },
+   {
+    "got": [
+     "K25",
+     "K26",
+     "K27",
+     "K28",
+     "K29",
+     "K31",
+     "K32",
+     "K40",
+     "K45",
+     "K46"
+    ],
+    "id": "A3",
+    "ok": true,
+    "text": "全単位が判定不能なのは K25〜K29・K31・K32・K40・K45・K46 の 10 件。残り 12 件は判定できる"
+   },
+   {
+    "got": {
+     "converse_counter": 6,
+     "counter": 0,
+     "hold": 6,
+     "neither": 0,
+     "undetermined": 0
+    },
+    "id": "A4",
+    "ok": true,
+    "text": "K85: 結論は 12 単位のうち 10 以上で成り立ち、A クラスと B クラスで 1 単位より大きくは違わない"
+   },
+   {
+    "got": {
+     "D102": 0.06255067783376742,
+     "D40": 0.11172391853284136,
+     "D86": 0.050019079815112194
+    },
+    "id": "B1",
+    "ok": true,
+    "text": "D40・D86・D102 の fisher_p は、3 件とも 0.05 に届かない"
+   },
+   {
+    "got": "D40",
+    "id": "B2",
+    "ok": true,
+    "text": "0.05 に最も遠いのは D40"
+   }
+  ],
+  "summary": {
+   "confirm_readings": {
+    "K32": 0,
+    "K51": 1
+   },
+   "confirm_targets": [
+    "K32",
+    "K51"
+   ],
+   "difference_readings": {
+    "D102": 2,
+    "D40": 2,
+    "D86": 2
+   },
+   "predictions": 6,
+   "predictions_ok": 6
+  }
+ },
  "summary": {
   "all_forms_ge_min_n": 22,
   "by_reading": {

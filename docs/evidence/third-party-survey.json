@@ -542,11 +542,11 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1023,
+      "attribute_uses": 1027,
       "attributes": {
         "Boolean": 14,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 262,
+        "DataFrame": 264,
         "Expr": 13,
         "Float32": 1,
         "Float64": 70,
@@ -556,7 +556,7 @@
         "Utf8": 24,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 432,
+        "col": 434,
         "concat": 11,
         "concat_list": 1,
         "concat_str": 3,
@@ -573,14 +573,14 @@
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 54,
+          "attribute_uses": 58,
           "attributes": {
             "Boolean": 2,
-            "DataFrame": 4,
+            "DataFrame": 6,
             "Int32": 1,
             "Int64": 2,
             "Utf8": 2,
-            "col": 27,
+            "col": 29,
             "concat": 1,
             "concat_str": 1,
             "lit": 7,
@@ -1228,9 +1228,9 @@
     },
     {
       "attributes": {
-        "DataFrame": 1,
+        "DataFrame": 3,
         "Int32": 1,
-        "col": 7,
+        "col": 9,
         "lit": 1,
         "read_ndjson": 2
       },

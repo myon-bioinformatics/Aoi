@@ -306,7 +306,8 @@ def main():
                           "monthly_propositions_r2.toml", "monthly_prelock_r2_2026-11-13.md",
                           "monthly_propositions_r3.toml", "monthly_prelock_r3_2026-11-13.md",
                           "monthly_propositions_r4.toml", "monthly_prelock_r4_2026-11-13.md",
-                          "monthly_propositions_r5.toml", "monthly_prelock_r5_2026-11-13.md"))
+                          "monthly_propositions_r5.toml", "monthly_prelock_r5_2026-11-13.md",
+                          "monthly_propositions_r6.toml", "monthly_prelock_r6_2026-11-13.md"))
     bad += not fixed
     print(f"prelock / propositions sha256 は固定時と同じ: {'OK' if fixed else 'NG'}")
     print("VERIFY:", "ALL OK" if bad == 0 else f"{bad} NG")

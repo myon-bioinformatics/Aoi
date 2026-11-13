@@ -84,7 +84,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {}
+    assert res["second"] == {} and res["third"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -156,6 +156,21 @@ def test_difference_counts_agree_with_round_one():
 def test_round_two_predictions_are_recorded_by_number():
     assert RES["second"]["summary"]["predictions"] == 6
     assert [x["ok"] for x in RES["second"]["predictions"]] == [True] * 6
+
+
+# ---- 第3弾: 勝ち試合の得点 − 見込みが片側に寄る理由 --------------------------------------------------------------------
+def test_stored_win_gap_is_rebuilt_from_the_saved_games():
+    third = RES["third"]
+    assert third["gate"]["ok"] and third["gate"]["compared"] == 156 and third["gate"]["max_abs_diff"] <= 1e-9
+    assert third["units"] == 144 and third["games"] == 11028 and third["games_short_of_eight"] == 48
+
+
+def test_the_one_sided_gap_disappears_with_eight_inning_scores():
+    neg = {k: v["negative"] for k, v in RES["third"]["variants"].items()}
+    assert neg == {"full": 133, "home": 128, "away": 101, "eight": 71}
+    assert RES["third"]["reading"] == 1                                    # 8 回までで負が 65 % 以下 → 打ち切りが主な理由
+    assert abs(RES["third"]["variants"]["eight"]["median_gap"]) < 0.01 < -RES["third"]["variants"]["full"]["median_gap"]
+    assert [x["ok"] for x in RES["third"]["predictions"]] == [True, True, False, True]   # ビジターだけ 70 % 未満、は外れ
 
 
 def test_main_writes_both_files_and_returns_zero(tmp_path):

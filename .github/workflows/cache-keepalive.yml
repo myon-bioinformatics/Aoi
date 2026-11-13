@@ -9,7 +9,6 @@ on:
   pull_request:
     paths:
       - '.github/workflows/cache-keepalive.yml'
-      - '.github/workflows/cycle-c001.yml'
       - 'scripts/check_c001_saved_inputs.py'
       - 'scripts/reconcile_season_2026.py'
       - 'tests/test_c001_saved_inputs.py'

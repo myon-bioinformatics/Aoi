@@ -188,7 +188,8 @@ def test_monthly_prelock_and_propositions_hash_match_stamp():
     stamp = (MONTHLY / "monthly_prelock_timestamp.txt").read_text(encoding="utf-8")
     for name in ("monthly_prelock_2026-11-13.md", "monthly_propositions.toml",
                  "monthly_prelock_r2_2026-11-13.md", "monthly_propositions_r2.toml",
-                 "monthly_prelock_r3_2026-11-13.md", "monthly_propositions_r3.toml"):
+                 "monthly_prelock_r3_2026-11-13.md", "monthly_propositions_r3.toml",
+                 "monthly_prelock_r4_2026-11-13.md", "monthly_propositions_r4.toml"):
         assert hashlib.sha256((MONTHLY / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -245,6 +246,10 @@ def test_monthly_exit_codes_are_reproduced(tmp_path):
     assert all(codes[f"C2B{k}s{v}"] == 3 for k in (3, 4) for v in ("", "x"))
     assert codes["C2A3r"] == codes["C2A3c"] == codes["C2A3cx"] == 1                        # 第3弾: 米・穀類の寄与は支持
     assert all(codes[pid] == 3 for pid in ("C2Y3", "C2Y3x", "C2Y4", "C2Y4x", "C2Y3f", "C2Y4f", "C2Y4fx"))
+    assert all(codes[pid] == 3 for pid in ("C2Y4ax", "C2Y5x", "C2Y6x"))                     # 第4弾: 量の段も判例あり
+    assert codes["C2YL5x"] == codes["C2YL6x"] == 4
+    c5 = next(r for r in committed if r["id"] == "C2Y5x")["forms"][0]
+    assert (c5["hold"], c5["n"], [c["unit"] for c in c5["counterexamples"]]) == (15, 16, ["y-2013"])
 
 
 def test_monthly_contribution_is_exact_not_linear():
@@ -285,6 +290,20 @@ def test_monthly_r3_counts_are_the_ones_in_the_prelock():
     for k, (up, down, band) in want.items():
         y = c["Y"]["incl2025"][f"step{k}"]
         assert (y["up(c>=sigmaY)"], y["down(c<=-sigmaY)"], y["band"]) == (up, down, band), k
+
+
+def test_monthly_r4_quantity_step_counts_and_source():
+    # 宣言 r4 §1・§4: q は世界銀行の名目 ÷ 総合の物価指数 ÷ 人口、η は USDA ERS 2005 年の日本の値。件数は宣言どおり
+    run = _load_monthly("monthly_run")
+    d = run.load()
+    assert d["eta_food"] == 0.492
+    qty = run.count(d)["Y"]["quantity"]
+    assert qty["units"] == 24 and qty["years"] == [2001, 2024]
+    for k, want in {4: (10, 1, 13), 5: (8, 8, 8), 6: (9, 4, 11)}.items():
+        s = qty[f"step{k}"]
+        assert (s["up(c>=sigmaY)"], s["down(c<=-sigmaY)"], s["band"]) == want, k
+    y2025 = next(r for r in run.y_conditions(d) if r["k"] == 2025)
+    assert y2025["q"] is None and y2025["c5"] is None                                     # 2025 年の値はまだない（埋めない）
 
 
 def test_monthly_separate_implementation_agrees():

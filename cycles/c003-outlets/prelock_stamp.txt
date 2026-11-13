@@ -28,3 +28,5 @@ propositions_r14.toml sha256 b77d9ab130f52ceb109ceb18f3889a4540f718292a20588ed1c
 固定: 2026-11-13 JST（第14弾の単位・列・漸化式のコードを作る前のコミット）
 propositions_r15.toml sha256 40092cbb8cf3f40a1fb16d7ec9ffcabcfb72a9a7c811332f79859d4ebc2ac3dd
 固定: 2026-11-13 JST（第15弾の単位・列・エンジンの変更を作る前のコミット）
+propositions_r16.toml sha256 fc364dcbf9230e69da1bc6d61bb5a2b295d0c7a559d6a6ac5d56709a2f7e20e7
+固定: 2026-11-13 JST（第16弾の単位・列・エンジンの変更を作る前のコミット）

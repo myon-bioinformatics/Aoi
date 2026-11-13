@@ -7258,5 +7258,80 @@
   ],
   "predictions": 7,
   "predictions_ok": 6
+ },
+ "third": {
+  "games": 11028,
+  "games_short_of_eight": 48,
+  "gate": {
+   "compared": 156,
+   "max_abs_diff": 0.0,
+   "ok": true
+  },
+  "predictions": [
+   {
+    "got": {
+     "compared": 156,
+     "max_abs_diff": 0.0,
+     "ok": true
+    },
+    "id": "C1",
+    "ok": true,
+    "text": "保存された wl_rf_win_gap（2013〜2025年の 156 単位）を 1e-9 以内で作り直せる"
+   },
+   {
+    "got": 0.888888889,
+    "id": "C2",
+    "ok": true,
+    "text": "ホームだけ: 負の単位が 85 % 以上"
+   },
+   {
+    "got": 0.701388889,
+    "id": "C3",
+    "ok": false,
+    "text": "ビジターだけ: 負の単位は 70 % 未満"
+   },
+   {
+    "got": 0.493055556,
+    "id": "C4",
+    "ok": true,
+    "text": "8 回まで: 負の単位は 35〜65 %"
+   }
+  ],
+  "reading": 1,
+  "units": 144,
+  "variants": {
+   "away": {
+    "loss_gap_positive": 95,
+    "max_gap": 0.88033033,
+    "median_gap": -0.136912584,
+    "min_gap": -0.757083251,
+    "negative": 101,
+    "share_negative": 0.701388889
+   },
+   "eight": {
+    "loss_gap_positive": 65,
+    "max_gap": 0.422090613,
+    "median_gap": 0.000559201,
+    "min_gap": -0.415999775,
+    "negative": 71,
+    "share_negative": 0.493055556
+   },
+   "full": {
+    "loss_gap_positive": 86,
+    "max_gap": 0.294514538,
+    "median_gap": -0.199271122,
+    "min_gap": -0.554458615,
+    "negative": 133,
+    "share_negative": 0.923611111
+   },
+   "home": {
+    "loss_gap_positive": 63,
+    "max_gap": 0.25879405,
+    "median_gap": -0.26188462,
+    "min_gap": -0.817824941,
+    "negative": 128,
+    "share_negative": 0.888888889
+   }
+  }
  }
 }

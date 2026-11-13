@@ -22,6 +22,11 @@
   B. 「範囲 = 種類、もし = 中日」の形の命題（D40・D86・D102）。差は元の命題の fisher_p で読む
      （0.05 未満なら「同じ種類の中でも、中日は多い」、0.05 以上なら「差は偶然の幅の中」）
 
+第3弾（宣言は kind_reask_results/README.md の「第3弾」の節。計算の前のコミットで固定）:
+  K85 の結論の列 wl_rf_win_gap（勝ち試合の得点 − 見込み）が、ほぼ全単位で負になる理由。保存済みの試合の記録から試合の表を作り、
+  同じ sakanalytics.win_loss_split に、そのまま・ホームだけ・ビジターだけ・8 回まで、の 4 通りを渡す。
+  読み（判定ではない）: 8 回までで負の単位が 65 % 以下なら 1（打ち切りが主な理由）、80 % 以上なら 3（打ち切りでは説明できない）、間は 2
+
 ゲート（通らなければ、命題の結果は出さずに止まる）:
   正本の命題ファイルの sha256 が保存された値と同じ。つなげたファイルが読み込める。
   K・D の命題が branch 側（from-cycle-001/propositions.toml）のどれとも同じ問いでない。
@@ -32,6 +37,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import sys
@@ -199,6 +205,61 @@ def predictions_r2(confirm: dict, diff: list[dict]) -> list[dict]:
     ]
 
 
+def win_runs_gap(repo: Path, full, skip: list[int], pl) -> dict:
+    """第3弾: 勝ち試合の得点 − 見込み（wl_rf_win_gap）を、4 通りの試合の表で作り直す。skip は分析から除く年。"""
+    for d in (HERE, repo / "sakanalytics"):
+        if str(d) not in sys.path:
+            sys.path.insert(0, str(d))
+    import games_table_from_observed as GT
+    import sakanalytics as SA
+    raw = json.loads((repo / "cycles/c001-chunichi/recovered-inputs/observed/games_raw.json").read_text(encoding="utf-8"))
+    table = full.select("season", "team", "league", "G", "wl_rf_win_gap").to_dicts()
+    league = {(r["season"], r["team"]): r["league"] for r in table}
+    games = GT.from_games_raw(raw, GT.games_per_team(table))                 # 2013〜2025年の公式戦（試合数は確定済みの G と一致）
+    by_key = {x["url"].rsplit("/", 1)[-1].removesuffix(".html"): x for x in raw if GT.FIRST <= x["year"] <= GT.LAST}
+
+    def first8(v):                                                           # 1〜8 回の得点。8 回に届かない試合は空
+        v = ast.literal_eval(v) if isinstance(v, str) else v
+        return sum(v[:8]) if len(v) >= 8 and all(isinstance(x, int) for x in v[:8]) else None
+
+    rows = []
+    for gm in games:
+        x, season = by_key[gm["key"]], int(gm["date"][:4])
+        h8, a8 = first8(x["home_inn"]), first8(x["away_inn"])
+        for team, rf, ra, f8, r8, is_home in ((gm["home"], gm["hs"], gm["as"], h8, a8, True), (gm["away"], gm["as"], gm["hs"], a8, h8, False)):
+            rows.append({"season": season, "team": team, "league": league[(season, team)], "rf": rf, "ra": ra,
+                         "rf8": f8, "ra8": r8, "is_home": is_home})
+    tg = pl.DataFrame(rows, schema_overrides={"season": pl.Int32})
+    whole = tg.filter(pl.col("rf8").is_not_null() & pl.col("ra8").is_not_null())
+    tables = {"full": tg, "home": tg.filter(pl.col("is_home")), "away": tg.filter(~pl.col("is_home")),
+              "eight": whole.with_columns(rf=pl.col("rf8"), ra=pl.col("ra8"))}
+    out = {"units": 0, "games": len(games), "games_short_of_eight": len(games) - whole.height // 2, "variants": {}}
+    for name, t in tables.items():
+        got = {(r["season"], r["team"]): r for r in SA.win_loss_split(t).to_dicts()}
+        if name == "full":                                                   # ゲート: 保存された値を作り直せるか（除く年も含めて比べる）
+            diffs = [abs(got[k]["wl_rf_win_gap"] - r["wl_rf_win_gap"]) for r in table
+                     if (k := (r["season"], r["team"])) in got and r["wl_rf_win_gap"] is not None]
+            out["gate"] = {"compared": len(diffs), "max_abs_diff": round(max(diffs), 12), "ok": max(diffs) <= 1e-9}
+        win = sorted(v["wl_rf_win_gap"] for k, v in got.items() if k[0] not in skip)
+        loss = [v["wl_rf_loss_gap"] for k, v in got.items() if k[0] not in skip]
+        out["units"] = len(win)
+        mid = (win[(len(win) - 1) // 2] + win[len(win) // 2]) / 2
+        out["variants"][name] = {"negative": sum(x < 0 for x in win), "share_negative": round(sum(x < 0 for x in win) / len(win), 9),
+                                 "median_gap": round(mid, 9), "min_gap": round(win[0], 9), "max_gap": round(win[-1], 9),
+                                 "loss_gap_positive": sum(x > 0 for x in loss)}
+    v = out["variants"]
+    share = v["eight"]["share_negative"]
+    out["reading"] = 1 if share <= 0.65 else 3 if share >= 0.80 else 2
+    out["predictions"] = [
+        {"id": "C1", "text": "保存された wl_rf_win_gap（2013〜2025年の 156 単位）を 1e-9 以内で作り直せる",
+         "ok": out["gate"]["ok"] and out["gate"]["compared"] == 156, "got": out["gate"]},
+        {"id": "C2", "text": "ホームだけ: 負の単位が 85 % 以上", "ok": v["home"]["share_negative"] >= 0.85, "got": v["home"]["share_negative"]},
+        {"id": "C3", "text": "ビジターだけ: 負の単位は 70 % 未満", "ok": v["away"]["share_negative"] < 0.70, "got": v["away"]["share_negative"]},
+        {"id": "C4", "text": "8 回まで: 負の単位は 35〜65 %", "ok": 0.35 <= share <= 0.65, "got": share},
+    ]
+    return out
+
+
 def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None = None, props: Path | None = None,
             extra: Path | None = None, stored: Path | None = None, branch: Path | None = None,
             second: Path | None = None, panel: Path | None = None) -> dict:
@@ -219,7 +280,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                       "second_propositions": rel(second, repo),
                       "second_propositions_sha256": hashlib.sha256(second.read_bytes()).hexdigest(),
                       "panel": rel(panel, repo), "panel_sha256": hashlib.sha256(panel.read_bytes()).hexdigest()},
-           "gate": {"ok": True, "problems": []}, "propositions": [], "predictions": [], "summary": {}, "second": {}}
+           "gate": {"ok": True, "problems": []}, "propositions": [], "predictions": [], "summary": {}, "second": {}, "third": {}}
     problems = out["gate"]["problems"]
     stored_sha = {r["meta"]["sha256"] for r in stored_rows.values()}
     if sha not in stored_sha:
@@ -294,6 +355,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                                  "confirm_readings": {r["id"]: r["reading"] for r in confirm["rows"] if r["role"] == "confirm"},
                                  "difference_readings": {d["id"]: d["reading"] for d in diff},
                                  "predictions_ok": sum(x["ok"] for x in preds), "predictions": len(preds)}}
+    out["third"] = win_runs_gap(repo, full, [int(e["season"]) for e in exclusions], pl)
     return out
 
 
@@ -355,6 +417,22 @@ def render(res: dict) -> str:
     ts = two["summary"]
     L += ["", f"## 第2弾の予想の当たり外れ（判定には使わない）: {ts['predictions_ok']}/{ts['predictions']}", ""]
     for x in two["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    t = res["third"]
+    names = {"full": "そのまま", "home": "ホームだけ", "away": "ビジターだけ", "eight": "8 回まで"}
+    L += ["", "# 第3弾: 勝ち試合の得点 − 見込み（wl_rf_win_gap）が片側に寄る理由", "",
+          f"保存済みの試合の記録 {t['games']} 試合（8 回に届かない {t['games_short_of_eight']} 試合は「8 回まで」から外す）。単位は {t['units']} 球団年。",
+          f"ゲート（保存された値を作り直せるか）: {t['gate']['compared']} 単位、差の最大 {t['gate']['max_abs_diff']:.1e}。", "",
+          "| 表 | 負の単位 | 割合 | 差の中央値 | 最小 | 最大 | 負け試合の差が正の単位 |", "|---|---|---|---|---|---|---|"]
+    for k, name in names.items():
+        v = t["variants"][k]
+        L += [f"| {name} | {v['negative']}/{t['units']} | {v['share_negative']:.2f} | {v['median_gap']:+.3f} | {v['min_gap']:+.3f} | {v['max_gap']:+.3f} "
+              f"| {v['loss_gap_positive']}/{t['units']} |"]
+    L += ["", f"読み（判定ではない）: **{t['reading']}** "
+          + {1: "打ち切りが主な理由", 2: "打ち切りは理由の一部", 3: "打ち切りでは説明できない"}[t["reading"]], "",
+          f"## 第3弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in t['predictions'])}/{len(t['predictions'])}", ""]
+    for x in t["predictions"]:
         L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
     return "\n".join(L) + "\n"
 

@@ -30,3 +30,5 @@ propositions_r15.toml sha256 40092cbb8cf3f40a1fb16d7ec9ffcabcfb72a9a7c811332f798
 固定: 2026-11-13 JST（第15弾の単位・列・エンジンの変更を作る前のコミット）
 propositions_r16.toml sha256 fc364dcbf9230e69da1bc6d61bb5a2b295d0c7a559d6a6ac5d56709a2f7e20e7
 固定: 2026-11-13 JST（第16弾の単位・列・エンジンの変更を作る前のコミット）
+propositions_r17.toml sha256 3e5c5a536ca0241427fa9811b99121f5e1caec9db9272de822946535d4ffc439
+固定: 2026-11-13 JST（第17弾の単位と列を作る前のコミット。エンジンの直しは先に作ってある）

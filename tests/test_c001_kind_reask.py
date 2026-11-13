@@ -27,6 +27,7 @@ def _load():
 
 
 kr = _load()
+pl, P, _ = kr.load_modules(ROOT)
 RES = kr.analyze(ROOT)
 
 
@@ -84,7 +85,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -125,13 +126,26 @@ def _panel_with(tmp_path, changes):
     return path
 
 
+C001 = ROOT / "cycles" / "c001-chunichi"
+KS = {p["id"]: p for p in kr.load_joined(C001 / "propositions.toml", [RESULTS / "kind_reask_propositions.toml"], P)[0]}
+FULL = pl.read_ndjson(C001 / "outputs" / "season.jsonl")
+TRAINED = {q["id"]: {f: {"n": v["n"], "hold": v["hold"]} for f, v in q["forms"].items()} for q in RES["propositions"]}
+
+
+def _confirm(pid, **kw):
+    """全体を走らせ直さず、2026年の数え方（confirm_new_season）だけを呼ぶ。"""
+    res = kr.confirm_new_season([KS[pid]], TRAINED, [pid], FULL, kw.pop("panel", EXPLORATORY / "r18_partial_results" /
+                                "r18_partial_panel_2026.jsonl"), P, pl, **kw)
+    return res, res["rows"][0]
+
+
 def test_reading_turns_to_two_only_when_counterexamples_exceed_what_the_training_rate_allows(tmp_path):
     # B クラスの 6 単位のうち 1 つが判例（学習データの率 9/78 なら珍しくない）→ 1。4 つなら 0.05 未満 → 2
-    one = kr.analyze(ROOT, panel=_panel_with(tmp_path, {"c": {"sim_p_upper": 0.9}}))
-    row = {r["id"]: r for r in one["second"]["confirm"]["rows"]}["K51"]
+    _, row = _confirm("K51")
+    assert row["counts"] == CONFIRM["K51"]["counts"]                       # 全体を走らせたときと同じ
+    _, row = _confirm("K51", panel=_panel_with(tmp_path, {"c": {"sim_p_upper": 0.9}}))
     assert row["counts"]["counter"] == 1 and row["sides"]["counter"]["p_at_least"] > 0.05 and row["reading"] == 1
-    four = kr.analyze(ROOT, panel=_panel_with(tmp_path, {t: {"sim_p_upper": 0.9} for t in ("c", "s", "b", "m")}))
-    row = {r["id"]: r for r in four["second"]["confirm"]["rows"]}["K51"]
+    _, row = _confirm("K51", panel=_panel_with(tmp_path, {t: {"sim_p_upper": 0.9} for t in ("c", "s", "b", "m")}))
     assert row["counts"]["counter"] == 4 and row["sides"]["counter"]["p_at_least"] < 0.05 and row["reading"] == 2
 
 
@@ -193,9 +207,10 @@ def test_central_batting_is_not_used_when_a_total_disagrees(tmp_path):
     rows[0]["RF"] += 1                                                     # 得点が 2026年の表と合わない
     bad = tmp_path / "central.jsonl"
     bad.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
-    res = kr.analyze(ROOT, central=bad)
-    row = {r["id"]: r for r in res["fourth"]["confirm"]["rows"]}["K32"]
-    assert res["fourth"]["confirm"]["overlay"]["agrees_with_panel"] is False
+    good, row = _confirm("K32", overlay=src)
+    assert good["overlay"]["agrees_with_panel"] and row["counts"] == CONFIRM4["K32"]["counts"]
+    res, row = _confirm("K32", overlay=bad)
+    assert res["overlay"]["agrees_with_panel"] is False
     assert row["counts"]["undetermined"] == 12 and row["reading"] == 0
 
 
@@ -251,7 +266,57 @@ def test_the_eight_inning_treatment_agrees_with_the_round_four_propositions():
         assert (d["hold"], d["n"]) == (q[new_id]["hold"], q[new_id]["n"])
 
 
-def test_main_writes_both_files_and_returns_zero(tmp_path):
+# ---- 第6弾 A: 道具（sakanalytics）の 8 回までの列 ----------------------------------------------------------------------
+SIXTH = {q["id"]: q for q in RES["sixth"]["propositions"]}
+
+
+def test_the_tool_column_matches_the_exploratory_one_and_round_four():
+    six = RES["sixth"]
+    assert six["gate"] == {"ok": True, "problems": []}
+    assert six["eighth"]["units"] == 156 and six["eighth"]["units_2026"] == 12 and six["eighth"]["max_abs_diff_vs_round_four"] == 0
+    assert len(six["eighth"]["columns"]) == 12 and all(c.endswith("8") for c in six["eighth"]["columns"])
+    old = {q["id"]: q for q in RES["fourth"]["propositions"]}
+    for i in ("E85", "KE85", "DE85"):
+        assert {f: (v["n"], v["hold"], v["code"]) for f, v in SIXTH[i]["forms"].items()} == \
+            {f: (v["n"], v["hold"], v["code"]) for f, v in old[i]["forms"].items()}
+
+
+def test_loss_side_propositions_on_the_eight_inning_column():
+    got = {i: (SIXTH[i]["forms"]["original"]["hold"], SIXTH[i]["forms"]["original"]["n"], SIXTH[i]["judgement"]["code"])
+           for i in ("E86", "KE86", "DE86")}
+    assert got == {"E86": (8, 12, 4), "KE86": (35, 72, 3), "DE86": (8, 12, 4)}
+    assert SIXTH["KE86"]["reading"] == 4 and SIXTH["DE86"]["reading"] == 2 and 0.14 < SIXTH["DE86"]["fisher_p"] < 0.15
+
+
+def test_new_season_records_on_the_eight_inning_column():
+    rows = {r["id"]: r for r in RES["sixth"]["confirm_2026"]["rows"]}
+    assert all(r["role"] == "record" and r["reading"] is None for r in rows.values())
+    assert rows["E85"]["units"]["counter"] == ["d-2026"] and rows["E86"]["units"]["hold"] == ["d-2026"]
+    assert (rows["KE85"]["counts"]["hold"], rows["KE86"]["counts"]["hold"]) == (3, 4)
+    assert all(r["counts"]["undetermined"] == 0 for r in rows.values())
+
+
+# ---- 第6弾 B: 配分の効果と作り直しの列 ------------------------------------------------------------------------------------
+def test_allocation_leans_with_strength_and_the_lean_is_not_from_extra_innings():
+    bias = RES["sixth"]["paired"]["bias"]
+    assert not any(v["one_sided"] for by_table in bias.values() for v in by_table.values())
+    strat = [round(bias["alloc_net_strat"][k]["a_minus_b"], 3) for k in ("full", "nine", "eight")]
+    assert strat == [0.347, 0.347, 0.139]                                  # 延長を外しても変わらず、9 回も外すと下がる
+    assert [bias["wpct_minus_sim"][k]["strength_sided"] for k in ("full", "nine", "eight")] == [False, True, False]
+
+
+def test_swapping_allocation_and_simulation_columns():
+    pb = RES["sixth"]["paired"]
+    assert len(pb["propositions"]) == 13 and len(pb["columns"]) == 25
+    assert pb["changed_c"] == ["P13", "P52"]
+    assert pb["changed_d"] == ["P13", "P14", "P50", "P52", "P56", "P60", "K51"]
+    p52 = {r["id"]: r for r in pb["propositions"]}["P52"]["treatments"]
+    assert [p52[t]["judgement"] for t in "abcd"] == [1, 1, 1, 1]          # 式1 の総合の判定は変わらない
+    assert [x["ok"] for x in RES["sixth"]["predictions"]] == [True, True, True, True, True, False, False, True, False]
+
+
+def test_main_writes_both_files_and_returns_zero(tmp_path, monkeypatch):
+    monkeypatch.setattr(kr, "analyze", lambda repo: RES)                   # 全体の計算は RES で済ませてある
     assert kr.main(["--outdir", str(tmp_path)]) == 0
     assert json.loads((tmp_path / "kind_reask.json").read_text(encoding="utf-8"))["summary"]["count"] == 22
     assert (tmp_path / "kind_reask.md").stat().st_size > 0

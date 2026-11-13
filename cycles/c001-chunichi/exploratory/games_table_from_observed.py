@@ -10,6 +10,9 @@
   - 2026年: season-2026/observed/games.jsonl（確定した 858 試合）をそのまま変換する。key は URL から `s<年><月日>-<ホーム>-<ビジター>-<回戦>`。
     2026年は games_raw.json の最後が 10月3日までなので、こちらを使う。
 
+--with-eighth を渡すと、回ごとの得点から両チームの 8 回までの得点（hs8・as8）も書く（8 回に届かない試合は空）。
+sakanalytics は、これがあるときだけ wl_*8 の列を足す。既定では書かない（今までと同じ出力）。
+
 作った表の球団年ごとの G/W/L/T/RF/RA は、確定済みの値（2013〜2025年は season.jsonl、2026年は season-2026/derived/team_totals.jsonl）と
 全部一致しなければ、書き出さずに止まる（--check-totals を渡したとき）。
 
@@ -23,6 +26,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import sys
@@ -47,6 +51,18 @@ def _row(key: str, date8: str, home: str, away: str, hs, as_, where: str) -> dic
             "hs": _score(hs, where), "as": _score(as_, where)}
 
 
+def first8(innings) -> int | None:
+    """回ごとの得点（リストか、その文字列）の 1〜8 回の和。8 回に届かない・数でない回があれば空。"""
+    v = ast.literal_eval(innings) if isinstance(innings, str) else innings
+    return sum(v[:8]) if isinstance(v, list) and len(v) >= 8 and all(type(x) is int for x in v[:8]) else None
+
+
+def _with_eighth(row: dict, x: dict) -> dict:
+    h8, a8 = first8(x.get("home_inn")), first8(x.get("away_inn"))
+    both = h8 is not None and a8 is not None
+    return row | {"hs8": h8 if both else None, "as8": a8 if both else None}
+
+
 def games_per_team(season_rows: list[dict]) -> dict:
     """確定済み season.jsonl の {(season, team): G}。"""
     out = {}
@@ -55,8 +71,8 @@ def games_per_team(season_rows: list[dict]) -> dict:
     return out
 
 
-def from_games_raw(raw: list[dict], g: dict, first: int = FIRST, last: int = LAST) -> list[dict]:
-    """games_raw.json から first〜last 年の公式戦を採る。g は {(年, 球団): 試合数}。"""
+def from_games_raw(raw: list[dict], g: dict, first: int = FIRST, last: int = LAST, eighth: bool = False) -> list[dict]:
+    """games_raw.json から first〜last 年の公式戦を採る。g は {(年, 球団): 試合数}。eighth なら hs8・as8 も書く。"""
     rows = [x for x in raw if x.get("status") == "final" and first <= x["year"] <= last and x.get("home") and x.get("away")]
     rows.sort(key=lambda x: (x["date"], x["url"]))
     seen, taken, out = Counter(), set(), []
@@ -72,15 +88,16 @@ def from_games_raw(raw: list[dict], g: dict, first: int = FIRST, last: int = LAS
         taken.add(key)
         seen[(y, h)] += 1
         seen[(y, a)] += 1
-        out.append(_row(key, x["date"], h, a, x["home_R"], x["away_R"], x["url"]))
+        row = _row(key, x["date"], h, a, x["home_R"], x["away_R"], x["url"])
+        out.append(_with_eighth(row, x) if eighth else row)
     short = sorted(k for k, n in g.items() if first <= k[0] <= last and seen[k] != n)
     if short:
         raise ValueError(f"試合数に届かない球団年がある: {short[:5]}（{len(short)} 件）")
     return out
 
 
-def from_season_games(rows: list[dict]) -> list[dict]:
-    """season-2026/observed/games.jsonl（確定した公式戦）を試合表の形にする。"""
+def from_season_games(rows: list[dict], eighth: bool = False) -> list[dict]:
+    """season-2026/observed/games.jsonl（確定した公式戦）を試合表の形にする。eighth なら hs8・as8 も書く。"""
     out, taken = [], set()
     for x in rows:
         if x.get("status") != "final":
@@ -95,7 +112,8 @@ def from_season_games(rows: list[dict]) -> list[dict]:
         if key in taken:
             raise ValueError(f"{x['url']}: key が重複している: {key}")
         taken.add(key)
-        out.append(_row(key, x["date"], x["home"], x["away"], x["home_R"], x["away_R"], x["url"]))
+        row = _row(key, x["date"], x["home"], x["away"], x["home_R"], x["away_R"], x["url"])
+        out.append(_with_eighth(row, x) if eighth else row)
     out.sort(key=lambda r: (r["date"], r["key"]))
     return out
 
@@ -137,6 +155,7 @@ def main(argv=None) -> int:
     ap.add_argument("--season-jsonl", type=Path, help="確定済みの season.jsonl（--games-raw のとき、年ごとの試合数 G と照合に使う）")
     ap.add_argument("--season-2026", type=Path, help="season-2026/observed/games.jsonl")
     ap.add_argument("--totals-2026", type=Path, help="season-2026/derived/team_totals.jsonl（あれば 2026年の G/W/L/T/RF/RA と照合する）")
+    ap.add_argument("--with-eighth", action="store_true", help="両チームの 8 回までの得点（hs8・as8）も書く（sakanalytics の wl_*8 の入力）")
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args(argv)
     if not args.games_raw and not args.season_2026:
@@ -150,10 +169,10 @@ def main(argv=None) -> int:
         if args.games_raw:
             season = _jsonl(args.season_jsonl)
             g = games_per_team(season)
-            games += from_games_raw(json.loads(args.games_raw.read_text(encoding="utf-8")), g)
+            games += from_games_raw(json.loads(args.games_raw.read_text(encoding="utf-8")), g, eighth=args.with_eighth)
             expected |= {(int(r["season"]), r["team"]): r for r in season if FIRST <= int(r["season"]) <= LAST}
         if args.season_2026:
-            games += from_season_games(_jsonl(args.season_2026))
+            games += from_season_games(_jsonl(args.season_2026), eighth=args.with_eighth)
             if args.totals_2026:
                 expected |= {(int(r["season"]), r["team"]): r for r in _jsonl(args.totals_2026)}
         problems = check_totals(games, expected)

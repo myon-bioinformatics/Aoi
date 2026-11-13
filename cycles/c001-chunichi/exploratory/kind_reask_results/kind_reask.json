@@ -2703,6 +2703,8 @@
   "season": "cycles/c001-chunichi/outputs/season.jsonl",
   "second_propositions": "cycles/c001-chunichi/exploratory/kind_reask_results/kind_reask_r2_propositions.toml",
   "second_propositions_sha256": "4be4ca19aea273182a0bbbbd73ca620953f4e821d31febc208639e2ebab5b495",
+  "sixth_propositions": "cycles/c001-chunichi/exploratory/kind_reask_results/kind_reask_r6_propositions.toml",
+  "sixth_propositions_sha256": "3bb8150f9098849d5c61322505056d8f4e8376800e3cb01c470a8f091be7072e",
   "stored": "cycles/c001-chunichi/outputs/propositions.jsonl"
  },
  "predictions": [
@@ -9889,6 +9891,3054 @@
    "predictions": 6,
    "predictions_ok": 6
   }
+ },
+ "sixth": {
+  "confirm_2026": {
+   "missing_columns": 84,
+   "missing_prefixes": [
+    "bat",
+    "inn",
+    "wl"
+   ],
+   "rows": [
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 1,
+      "hold": 0,
+      "neither": 0,
+      "undetermined": 0
+     },
+     "id": "E85",
+     "in_scope": 1,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": null,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": null
+      },
+      "counter": {
+       "expected": 0.583333333,
+       "got": 1,
+       "n": 1,
+       "new_where_none_trained": false,
+       "p_at_least": 0.583333333,
+       "trained_rate": 0.5833333333333333
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [
+       "d-2026"
+      ],
+      "hold": [],
+      "neither": [],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 3,
+      "counter": 3,
+      "hold": 3,
+      "neither": 3,
+      "undetermined": 0
+     },
+     "id": "KE85",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 3.166666667,
+       "got": 3,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.706783967,
+       "trained_rate": 0.5277777777777778
+      },
+      "counter": {
+       "expected": 3.25,
+       "got": 3,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.730781409,
+       "trained_rate": 0.5416666666666667
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "f-2026",
+       "g-2026",
+       "t-2026"
+      ],
+      "counter": [
+       "d-2026",
+       "e-2026",
+       "m-2026"
+      ],
+      "hold": [
+       "b-2026",
+       "c-2026",
+       "s-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "h-2026",
+       "l-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 3,
+      "counter": 1,
+      "hold": 0,
+      "neither": 2,
+      "undetermined": 0
+     },
+     "id": "DE85",
+     "in_scope": 6,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": null,
+       "got": 3,
+       "n": 5,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": null
+      },
+      "counter": {
+       "expected": 0.583333333,
+       "got": 1,
+       "n": 1,
+       "new_where_none_trained": false,
+       "p_at_least": 0.583333333,
+       "trained_rate": 0.5833333333333333
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "b-2026",
+       "c-2026",
+       "s-2026"
+      ],
+      "counter": [
+       "d-2026"
+      ],
+      "hold": [],
+      "neither": [
+       "e-2026",
+       "m-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 0,
+      "counter": 0,
+      "hold": 1,
+      "neither": 0,
+      "undetermined": 0
+     },
+     "id": "E86",
+     "in_scope": 1,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": null,
+       "got": 0,
+       "n": 0,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": null
+      },
+      "counter": {
+       "expected": 0.333333333,
+       "got": 0,
+       "n": 1,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.33333333333333337
+      }
+     },
+     "units": {
+      "converse_counter": [],
+      "counter": [],
+      "hold": [
+       "d-2026"
+      ],
+      "neither": [],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 1,
+      "counter": 2,
+      "hold": 4,
+      "neither": 5,
+      "undetermined": 0
+     },
+     "id": "KE86",
+     "in_scope": 12,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": 2.5,
+       "got": 1,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.960599588,
+       "trained_rate": 0.41666666666666663
+      },
+      "counter": {
+       "expected": 3.083333333,
+       "got": 2,
+       "n": 6,
+       "new_where_none_trained": false,
+       "p_at_least": 0.903110131,
+       "trained_rate": 0.5138888888888888
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "t-2026"
+      ],
+      "counter": [
+       "m-2026",
+       "s-2026"
+      ],
+      "hold": [
+       "b-2026",
+       "c-2026",
+       "d-2026",
+       "e-2026"
+      ],
+      "neither": [
+       "db-2026",
+       "f-2026",
+       "g-2026",
+       "h-2026",
+       "l-2026"
+      ],
+      "undetermined": []
+     }
+    },
+    {
+     "counts": {
+      "converse_counter": 3,
+      "counter": 0,
+      "hold": 1,
+      "neither": 2,
+      "undetermined": 0
+     },
+     "id": "DE86",
+     "in_scope": 6,
+     "reading": null,
+     "role": "record",
+     "sides": {
+      "converse_counter": {
+       "expected": null,
+       "got": 3,
+       "n": 5,
+       "new_where_none_trained": false,
+       "p_at_least": null,
+       "trained_rate": null
+      },
+      "counter": {
+       "expected": 0.333333333,
+       "got": 0,
+       "n": 1,
+       "new_where_none_trained": false,
+       "p_at_least": 1.0,
+       "trained_rate": 0.33333333333333337
+      }
+     },
+     "units": {
+      "converse_counter": [
+       "b-2026",
+       "c-2026",
+       "e-2026"
+      ],
+      "counter": [],
+      "hold": [
+       "d-2026"
+      ],
+      "neither": [
+       "m-2026",
+       "s-2026"
+      ],
+      "undetermined": []
+     }
+    }
+   ],
+   "seasons": [
+    2026
+   ],
+   "units": [
+    "b-2026",
+    "c-2026",
+    "d-2026",
+    "db-2026",
+    "e-2026",
+    "f-2026",
+    "g-2026",
+    "h-2026",
+    "l-2026",
+    "m-2026",
+    "s-2026",
+    "t-2026"
+   ]
+  },
+  "eighth": {
+   "columns": [
+    "wl_rf_loss8",
+    "wl_rf_loss_exp8",
+    "wl_rf_loss_gap8",
+    "wl_rf_win8",
+    "wl_rf_win_exp8",
+    "wl_rf_win_gap8",
+    "wl_wpct_high8",
+    "wl_wpct_high_exp8",
+    "wl_wpct_high_gap8",
+    "wl_wpct_low8",
+    "wl_wpct_low_exp8",
+    "wl_wpct_low_gap8"
+   ],
+   "max_abs_diff_vs_round_four": 0.0,
+   "units": 156,
+   "units_2026": 12
+  },
+  "gate": {
+   "ok": true,
+   "problems": []
+  },
+  "paired": {
+   "bias": {
+    "alloc_net": {
+     "eight": {
+      "a_minus_b": 0.138888889,
+      "median": 0.028169014,
+      "one_sided": false,
+      "share_positive": 0.513888889,
+      "share_positive_a": 0.583333333,
+      "share_positive_b": 0.444444444,
+      "strength_sided": false,
+      "units": 144
+     },
+     "full": {
+      "a_minus_b": 0.347222222,
+      "median": 0.087412587,
+      "one_sided": false,
+      "share_positive": 0.506944444,
+      "share_positive_a": 0.680555556,
+      "share_positive_b": 0.333333333,
+      "strength_sided": true,
+      "units": 144
+     },
+     "nine": {
+      "a_minus_b": 0.361111111,
+      "median": 0.237058081,
+      "one_sided": false,
+      "share_positive": 0.513888889,
+      "share_positive_a": 0.694444444,
+      "share_positive_b": 0.333333333,
+      "strength_sided": true,
+      "units": 144
+     }
+    },
+    "alloc_net_opp": {
+     "eight": {
+      "a_minus_b": 0.152777778,
+      "median": 0.125,
+      "one_sided": false,
+      "share_positive": 0.506944444,
+      "share_positive_a": 0.583333333,
+      "share_positive_b": 0.430555556,
+      "strength_sided": false,
+      "units": 144
+     },
+     "full": {
+      "a_minus_b": 0.277777778,
+      "median": 0.038461538,
+      "one_sided": false,
+      "share_positive": 0.5,
+      "share_positive_a": 0.638888889,
+      "share_positive_b": 0.361111111,
+      "strength_sided": false,
+      "units": 144
+     },
+     "nine": {
+      "a_minus_b": 0.263888889,
+      "median": 0.573717949,
+      "one_sided": false,
+      "share_positive": 0.534722222,
+      "share_positive_a": 0.666666667,
+      "share_positive_b": 0.402777778,
+      "strength_sided": false,
+      "units": 144
+     }
+    },
+    "alloc_net_strat": {
+     "eight": {
+      "a_minus_b": 0.138888889,
+      "median": -0.007531299,
+      "one_sided": false,
+      "share_positive": 0.5,
+      "share_positive_a": 0.569444444,
+      "share_positive_b": 0.430555556,
+      "strength_sided": false,
+      "units": 144
+     },
+     "full": {
+      "a_minus_b": 0.347222222,
+      "median": 0.094874804,
+      "one_sided": false,
+      "share_positive": 0.506944444,
+      "share_positive_a": 0.680555556,
+      "share_positive_b": 0.333333333,
+      "strength_sided": true,
+      "units": 144
+     },
+     "nine": {
+      "a_minus_b": 0.347222222,
+      "median": 0.331083725,
+      "one_sided": false,
+      "share_positive": 0.520833333,
+      "share_positive_a": 0.694444444,
+      "share_positive_b": 0.347222222,
+      "strength_sided": true,
+      "units": 144
+     }
+    },
+    "wpct_minus_sim": {
+     "eight": {
+      "a_minus_b": 0.125,
+      "median": -0.000794878,
+      "one_sided": false,
+      "share_positive": 0.479166667,
+      "share_positive_a": 0.541666667,
+      "share_positive_b": 0.416666667,
+      "strength_sided": false,
+      "units": 144
+     },
+     "full": {
+      "a_minus_b": 0.194444444,
+      "median": -2.0008e-05,
+      "one_sided": false,
+      "share_positive": 0.5,
+      "share_positive_a": 0.597222222,
+      "share_positive_b": 0.402777778,
+      "strength_sided": false,
+      "units": 144
+     },
+     "nine": {
+      "a_minus_b": 0.361111111,
+      "median": 0.001203397,
+      "one_sided": false,
+      "share_positive": 0.541666667,
+      "share_positive_a": 0.722222222,
+      "share_positive_b": 0.361111111,
+      "strength_sided": true,
+      "units": 144
+     }
+    }
+   },
+   "changed_c": [
+    "P13",
+    "P52"
+   ],
+   "changed_d": [
+    "P13",
+    "P14",
+    "P50",
+    "P52",
+    "P56",
+    "P60",
+    "K51"
+   ],
+   "columns": [
+    "alloc_exp_net",
+    "alloc_exp_net_away",
+    "alloc_exp_net_home",
+    "alloc_exp_net_opp",
+    "alloc_exp_net_strat",
+    "alloc_net",
+    "alloc_net_away",
+    "alloc_net_home",
+    "alloc_net_opp",
+    "alloc_net_strat",
+    "alloc_same_sign",
+    "alloc_var",
+    "alloc_var_away",
+    "alloc_var_home",
+    "alloc_var_opp",
+    "alloc_var_strat",
+    "alloc_z",
+    "alloc_z_abs",
+    "alloc_z_away",
+    "alloc_z_home",
+    "alloc_z_next",
+    "alloc_z_opp",
+    "alloc_z_strat",
+    "sim_p_upper",
+    "sim_wpct"
+   ],
+   "propositions": [
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [],
+     "id": "P12",
+     "key": "[all] alloc_z>=1 => alloc_z_next>0",
+     "statement": "配分効果がはっきりプラスのシーズン（alloc_z ≥ 1）の翌年も、配分効果はプラスである（配分はチームの特徴として続く）",
+     "treatments": {
+      "a": {
+       "fisher_p": 0.41678061444730463,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 59,
+         "n": 72,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 3,
+         "hold": 15,
+         "n": 72,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 4,
+         "hold": 59,
+         "n": 116,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 4,
+         "hold": 15,
+         "n": 28,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "b": {
+       "fisher_p": 0.44332656767095685,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 54,
+         "n": 65,
+         "undetermined": 24
+        },
+        "converse": {
+         "code": 3,
+         "hold": 13,
+         "n": 67,
+         "undetermined": 24
+        },
+        "inverse": {
+         "code": 4,
+         "hold": 54,
+         "n": 108,
+         "undetermined": 24
+        },
+        "original": {
+         "code": 4,
+         "hold": 13,
+         "n": 24,
+         "undetermined": 24
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "c": {
+       "fisher_p": 0.5,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 56,
+         "n": 66,
+         "undetermined": 24
+        },
+        "converse": {
+         "code": 3,
+         "hold": 11,
+         "n": 66,
+         "undetermined": 24
+        },
+        "inverse": {
+         "code": 4,
+         "hold": 56,
+         "n": 111,
+         "undetermined": 24
+        },
+        "original": {
+         "code": 4,
+         "hold": 11,
+         "n": 21,
+         "undetermined": 24
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "d": {
+       "fisher_p": 0.4002415463795946,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 58,
+         "n": 66,
+         "undetermined": 24
+        },
+        "converse": {
+         "code": 3,
+         "hold": 10,
+         "n": 66,
+         "undetermined": 24
+        },
+        "inverse": {
+         "code": 4,
+         "hold": 58,
+         "n": 114,
+         "undetermined": 24
+        },
+        "original": {
+         "code": 4,
+         "hold": 10,
+         "n": 18,
+         "undetermined": 24
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [
+      "converse"
+     ],
+     "changed_forms_d": [
+      "converse"
+     ],
+     "id": "P13",
+     "key": "[all] alloc_z_abs>=1 => alloc_same_sign==true",
+     "statement": "配分効果がはっきり出たシーズン（|alloc_z| ≥ 1）は、ホームとビジターで配分効果の符号がそろう",
+     "treatments": {
+      "a": {
+       "fisher_p": 1.4228657354746146e-08,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 77,
+         "n": 99,
+         "undetermined": 0
+        },
+        "converse": {
+         "code": 1,
+         "hold": 39,
+         "n": 57,
+         "undetermined": 0
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 77,
+         "n": 95,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 1,
+         "hold": 39,
+         "n": 61,
+         "undetermined": 0
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "b": {
+       "fisher_p": 1.4329587208163079e-08,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 74,
+         "n": 93,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 1,
+         "hold": 35,
+         "n": 51,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 74,
+         "n": 90,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 35,
+         "n": 54,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "c": {
+       "fisher_p": 6.481303198625422e-07,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 74,
+         "n": 87,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 4,
+         "hold": 31,
+         "n": 57,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 74,
+         "n": 100,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 31,
+         "n": 44,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "d": {
+       "fisher_p": 7.353448995695591e-07,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 67,
+         "n": 73,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 4,
+         "hold": 31,
+         "n": 71,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 67,
+         "n": 107,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 31,
+         "n": 37,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [
+      "original"
+     ],
+     "id": "P14",
+     "key": "[all] team==\"d\" => alloc_net>=0",
+     "statement": "中日は、得点・失点の配分（どの試合で組み合わさったか）で勝ち越し数を失っていない（alloc_net ≥ 0）",
+     "treatments": {
+      "a": {
+       "fisher_p": 0.8770152541495547,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 70,
+         "n": 78,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 3,
+         "hold": 5,
+         "n": 13,
+         "undetermined": 0
+        }
+       },
+       "held_out": null,
+       "judgement": 3
+      },
+      "b": {
+       "fisher_p": 0.9416600182879175,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 63,
+         "n": 71,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 3,
+         "hold": 4,
+         "n": 12,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 3
+      },
+      "c": {
+       "fisher_p": 0.9473264539887205,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 62,
+         "n": 70,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 3,
+         "hold": 4,
+         "n": 12,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 3
+      },
+      "d": {
+       "fisher_p": 0.421725192491318,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 65,
+         "n": 70,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 4,
+         "hold": 7,
+         "n": 12,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [
+      "contrapositive",
+      "converse",
+      "inverse",
+      "original"
+     ],
+     "id": "P50",
+     "key": "[all] sim_p_upper>=0.5 => upper_half==true",
+     "statement": "得点・失点の分布だけからシーズンを作り直したときに A クラスに入る確率が 0.5 以上なら、実際も A クラス",
+     "treatments": {
+      "a": {
+       "fisher_p": 4.064770426435075e-23,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 69,
+         "n": 78,
+         "undetermined": 0
+        },
+        "converse": {
+         "code": 1,
+         "hold": 68,
+         "n": 78,
+         "undetermined": 0
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 69,
+         "n": 79,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 1,
+         "hold": 68,
+         "n": 77,
+         "undetermined": 0
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "b": {
+       "fisher_p": 7.100194148136655e-22,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 63,
+         "n": 72,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 1,
+         "hold": 64,
+         "n": 72,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 63,
+         "n": 71,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 64,
+         "n": 73,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "c": {
+       "fisher_p": 3.1970708621401357e-20,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 63,
+         "n": 72,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 1,
+         "hold": 62,
+         "n": 72,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 63,
+         "n": 73,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 62,
+         "n": 71,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "d": {
+       "fisher_p": 3.294629870367691e-17,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 61,
+         "n": 72,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 4,
+         "hold": 60,
+         "n": 72,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 4,
+         "hold": 61,
+         "n": 73,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 4,
+         "hold": 60,
+         "n": 71,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [],
+     "id": "P51",
+     "key": "[team=d] * => sim_p_upper<0.5",
+     "statement": "中日は、得点・失点の分布だけからシーズンを作り直すと、A クラスに入る確率が 0.5 未満",
+     "treatments": {
+      "a": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 3,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 4,
+         "hold": 10,
+         "n": 13,
+         "undetermined": 0
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "b": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 2,
+         "undetermined": 1
+        },
+        "original": {
+         "code": 4,
+         "hold": 10,
+         "n": 12,
+         "undetermined": 1
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "c": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 2,
+         "undetermined": 1
+        },
+        "original": {
+         "code": 4,
+         "hold": 10,
+         "n": 12,
+         "undetermined": 1
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "d": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 2,
+         "undetermined": 1
+        },
+        "original": {
+         "code": 4,
+         "hold": 10,
+         "n": 12,
+         "undetermined": 1
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [
+      "contrapositive"
+     ],
+     "changed_forms_d": [
+      "contrapositive"
+     ],
+     "id": "P52",
+     "key": "[all] ((alloc_z_strat<-1) | (sim_p_upper<0.4)) => upper_half==false",
+     "statement": "得点・失点の分布から見た A クラスの確率が4割未満、または得点と失点の組み合わせ方が偶然の範囲を超えて不利（alloc_z_strat < −1）なら、B クラス",
+     "treatments": {
+      "a": {
+       "fisher_p": 6.332898122198844e-27,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 68,
+         "n": 78,
+         "undetermined": 0
+        },
+        "converse": {
+         "code": 1,
+         "hold": 73,
+         "n": 78,
+         "undetermined": 0
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 68,
+         "n": 73,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 1,
+         "hold": 73,
+         "n": 83,
+         "undetermined": 0
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "b": {
+       "fisher_p": 8.422022300789803e-26,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 63,
+         "n": 72,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 1,
+         "hold": 68,
+         "n": 72,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 63,
+         "n": 67,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 68,
+         "n": 77,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "c": {
+       "fisher_p": 4.577197033852136e-22,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 61,
+         "n": 72,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 1,
+         "hold": 66,
+         "n": 72,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 61,
+         "n": 67,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 66,
+         "n": 77,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "d": {
+       "fisher_p": 1.8831418114500126e-19,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 61,
+         "n": 72,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 1,
+         "hold": 63,
+         "n": 72,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 61,
+         "n": 70,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 63,
+         "n": 74,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [
+      "original"
+     ],
+     "id": "P56",
+     "key": "[where:rank<=4, where:rank>=3] sim_p_upper>=0.5 => upper_half==true",
+     "statement": "3位と4位のチームの間では、得点・失点の分布から見た A クラスの見込みが 0.5 以上なら3位",
+     "treatments": {
+      "a": {
+       "fisher_p": 0.0009535292460051787,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 18,
+         "n": 26,
+         "undetermined": 0
+        },
+        "converse": {
+         "code": 1,
+         "hold": 20,
+         "n": 26,
+         "undetermined": 0
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 18,
+         "n": 24,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 1,
+         "hold": 20,
+         "n": 28,
+         "undetermined": 0
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "b": {
+       "fisher_p": 0.001578479576349926,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 16,
+         "n": 24,
+         "undetermined": 4
+        },
+        "converse": {
+         "code": 1,
+         "hold": 19,
+         "n": 24,
+         "undetermined": 4
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 16,
+         "n": 21,
+         "undetermined": 4
+        },
+        "original": {
+         "code": 1,
+         "hold": 19,
+         "n": 27,
+         "undetermined": 4
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "c": {
+       "fisher_p": 0.004207366095580754,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 16,
+         "n": 24,
+         "undetermined": 4
+        },
+        "converse": {
+         "code": 1,
+         "hold": 18,
+         "n": 24,
+         "undetermined": 4
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 16,
+         "n": 22,
+         "undetermined": 4
+        },
+        "original": {
+         "code": 1,
+         "hold": 18,
+         "n": 26,
+         "undetermined": 4
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "d": {
+       "fisher_p": 0.009465139134042412,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 15,
+         "n": 24,
+         "undetermined": 4
+        },
+        "converse": {
+         "code": 1,
+         "hold": 18,
+         "n": 24,
+         "undetermined": 4
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 15,
+         "n": 21,
+         "undetermined": 4
+        },
+        "original": {
+         "code": 4,
+         "hold": 18,
+         "n": 27,
+         "undetermined": 4
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [
+      "converse",
+      "inverse"
+     ],
+     "id": "P60",
+     "key": "[all] alloc_z_strat<-1 => vs_lower_wpct_d<0",
+     "statement": "得点と失点の組み合わせ方がランダムな基準より不利（alloc_z_strat < −1）なら、下位の相手との勝率が他球団平均より低い",
+     "treatments": {
+      "a": {
+       "fisher_p": 0.0011479479301155066,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 75,
+         "n": 82,
+         "undetermined": 0
+        },
+        "converse": {
+         "code": 2,
+         "hold": 21,
+         "n": 74,
+         "undetermined": 0
+        },
+        "inverse": {
+         "code": 2,
+         "hold": 75,
+         "n": 128,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 4,
+         "hold": 21,
+         "n": 28,
+         "undetermined": 0
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "b": {
+       "fisher_p": 0.004609737444465777,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 70,
+         "n": 77,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 2,
+         "hold": 18,
+         "n": 67,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 2,
+         "hold": 70,
+         "n": 119,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 4,
+         "hold": 18,
+         "n": 25,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "c": {
+       "fisher_p": 0.014040680928847693,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 70,
+         "n": 77,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 2,
+         "hold": 16,
+         "n": 67,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 2,
+         "hold": 70,
+         "n": 121,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 4,
+         "hold": 16,
+         "n": 23,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      },
+      "d": {
+       "fisher_p": 0.05703697316238125,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 71,
+         "n": 77,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 3,
+         "hold": 12,
+         "n": 67,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 3,
+         "hold": 71,
+         "n": 126,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 4,
+         "hold": 12,
+         "n": 18,
+         "undetermined": 12
+        }
+       },
+       "held_out": null,
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [],
+     "id": "P77",
+     "key": "[where:rank==4, where:sim_p_upper>=0.5] * => pair34_net<0",
+     "statement": "4位で、得点・失点の分布から見た A クラスの見込みが 0.5 以上だったチームは、3位との直接対決で負け越している",
+     "treatments": {
+      "a": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 4,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 4,
+         "hold": 4,
+         "n": 8,
+         "undetermined": 0
+        }
+       },
+       "held_out": {
+        "hold": 3,
+        "n": 7,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "b": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 4,
+         "undetermined": 2
+        },
+        "original": {
+         "code": 4,
+         "hold": 4,
+         "n": 8,
+         "undetermined": 2
+        }
+       },
+       "held_out": {
+        "hold": 3,
+        "n": 7,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "c": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 4,
+         "undetermined": 2
+        },
+        "original": {
+         "code": 4,
+         "hold": 4,
+         "n": 8,
+         "undetermined": 2
+        }
+       },
+       "held_out": {
+        "hold": 3,
+        "n": 7,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "d": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 4,
+         "undetermined": 2
+        },
+        "original": {
+         "code": 4,
+         "hold": 5,
+         "n": 9,
+         "undetermined": 2
+        }
+       },
+       "held_out": {
+        "hold": 5,
+        "n": 9,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [],
+     "id": "P78",
+     "key": "[where:rank==4, where:sim_p_upper>=0.5] * => opp_conv_top<0",
+     "statement": "4位で、得点・失点の分布から見た A クラスの見込みが 0.5 以上だったチームは、強い相手との試合で点の差どおりに勝てていない",
+     "treatments": {
+      "a": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 1,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 4,
+         "hold": 7,
+         "n": 8,
+         "undetermined": 0
+        }
+       },
+       "held_out": {
+        "hold": 6,
+        "n": 7,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "b": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 1,
+         "undetermined": 2
+        },
+        "original": {
+         "code": 4,
+         "hold": 7,
+         "n": 8,
+         "undetermined": 2
+        }
+       },
+       "held_out": {
+        "hold": 6,
+        "n": 7,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "c": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 1,
+         "undetermined": 2
+        },
+        "original": {
+         "code": 4,
+         "hold": 7,
+         "n": 8,
+         "undetermined": 2
+        }
+       },
+       "held_out": {
+        "hold": 6,
+        "n": 7,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "d": {
+       "fisher_p": 1.0,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 0,
+         "n": 3,
+         "undetermined": 2
+        },
+        "original": {
+         "code": 4,
+         "hold": 6,
+         "n": 9,
+         "undetermined": 2
+        }
+       },
+       "held_out": {
+        "hold": 6,
+        "n": 9,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [],
+     "id": "P95",
+     "key": "[all] ((alloc_z_strat<-1) | (opp_conv_top<-2) | (sim_p_upper<0.4)) => upper_half==false",
+     "statement": "得点・失点の分布から見た A クラスの見込みが4割未満、または組み合わせ方が基準より不利（alloc_z_strat < −1）、または強い相手との試合で点の差どおりに勝てていない（opp_conv_top < −2）なら、B クラス",
+     "treatments": {
+      "a": {
+       "fisher_p": 5.0223858399775535e-23,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 60,
+         "n": 78,
+         "undetermined": 0
+        },
+        "converse": {
+         "code": 1,
+         "hold": 75,
+         "n": 78,
+         "undetermined": 0
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 60,
+         "n": 63,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 4,
+         "hold": 75,
+         "n": 93,
+         "undetermined": 0
+        }
+       },
+       "held_out": {
+        "hold": 74,
+        "n": 92,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "b": {
+       "fisher_p": 5.595645174267683e-23,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 57,
+         "n": 74,
+         "undetermined": 8
+        },
+        "converse": {
+         "code": 1,
+         "hold": 72,
+         "n": 74,
+         "undetermined": 8
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 57,
+         "n": 59,
+         "undetermined": 8
+        },
+        "original": {
+         "code": 4,
+         "hold": 72,
+         "n": 89,
+         "undetermined": 8
+        }
+       },
+       "held_out": {
+        "hold": 71,
+        "n": 88,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "c": {
+       "fisher_p": 2.249786981558432e-19,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 55,
+         "n": 74,
+         "undetermined": 8
+        },
+        "converse": {
+         "code": 1,
+         "hold": 70,
+         "n": 74,
+         "undetermined": 8
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 55,
+         "n": 59,
+         "undetermined": 8
+        },
+        "original": {
+         "code": 4,
+         "hold": 70,
+         "n": 89,
+         "undetermined": 8
+        }
+       },
+       "held_out": {
+        "hold": 69,
+        "n": 88,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      },
+      "d": {
+       "fisher_p": 6.801088068707182e-17,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 54,
+         "n": 74,
+         "undetermined": 8
+        },
+        "converse": {
+         "code": 1,
+         "hold": 68,
+         "n": 74,
+         "undetermined": 8
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 54,
+         "n": 60,
+         "undetermined": 8
+        },
+        "original": {
+         "code": 4,
+         "hold": 68,
+         "n": 88,
+         "undetermined": 8
+        }
+       },
+       "held_out": {
+        "hold": 67,
+        "n": 87,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [],
+     "id": "P96",
+     "key": "[all] ((alloc_z_strat<-1 & rd<50) | (rd<-50) | (sim_p_upper<0.5 & wins_vs_pythag<0)) => upper_half==false",
+     "statement": "得失点差が −50 未満、または分布から見た A クラスの見込みが5割未満で期待勝利数を下回った、または得失点差が +50 未満で組み合わせ方が基準より不利なら、B クラス（誤りのほとんどない式）",
+     "treatments": {
+      "a": {
+       "fisher_p": 4.747180033002879e-32,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 77,
+         "n": 78,
+         "undetermined": 0
+        },
+        "converse": {
+         "code": 1,
+         "hold": 68,
+         "n": 78,
+         "undetermined": 0
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 77,
+         "n": 87,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 1,
+         "hold": 68,
+         "n": 69,
+         "undetermined": 0
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "b": {
+       "fisher_p": 2.1092894409021751e-29,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 71,
+         "n": 72,
+         "undetermined": 10
+        },
+        "converse": {
+         "code": 1,
+         "hold": 64,
+         "n": 74,
+         "undetermined": 10
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 71,
+         "n": 81,
+         "undetermined": 10
+        },
+        "original": {
+         "code": 1,
+         "hold": 64,
+         "n": 65,
+         "undetermined": 10
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "c": {
+       "fisher_p": 4.36844514359204e-27,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 70,
+         "n": 72,
+         "undetermined": 10
+        },
+        "converse": {
+         "code": 1,
+         "hold": 63,
+         "n": 74,
+         "undetermined": 10
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 70,
+         "n": 81,
+         "undetermined": 10
+        },
+        "original": {
+         "code": 1,
+         "hold": 63,
+         "n": 65,
+         "undetermined": 10
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      },
+      "d": {
+       "fisher_p": 2.1092894409021751e-29,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 71,
+         "n": 72,
+         "undetermined": 10
+        },
+        "converse": {
+         "code": 1,
+         "hold": 64,
+         "n": 74,
+         "undetermined": 10
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 71,
+         "n": 81,
+         "undetermined": 10
+        },
+        "original": {
+         "code": 1,
+         "hold": 64,
+         "n": 65,
+         "undetermined": 10
+        }
+       },
+       "held_out": null,
+       "judgement": 1
+      }
+     }
+    },
+    {
+     "changed_forms_c": [],
+     "changed_forms_d": [
+      "contrapositive",
+      "converse",
+      "inverse",
+      "original"
+     ],
+     "id": "K51",
+     "key": "[all] upper_half==false => sim_p_upper<0.5",
+     "statement": "B クラスのチーム・シーズンなら、得点・失点の分布だけからシーズンを作り直したときに A クラスに入る確率が 0.5 未満",
+     "treatments": {
+      "a": {
+       "fisher_p": 4.064770426435075e-23,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 68,
+         "n": 77,
+         "undetermined": 0
+        },
+        "converse": {
+         "code": 1,
+         "hold": 69,
+         "n": 79,
+         "undetermined": 0
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 68,
+         "n": 78,
+         "undetermined": 0
+        },
+        "original": {
+         "code": 1,
+         "hold": 69,
+         "n": 78,
+         "undetermined": 0
+        }
+       },
+       "held_out": {
+        "hold": 59,
+        "n": 66,
+        "verdict": "Supported"
+       },
+       "judgement": 1
+      },
+      "b": {
+       "fisher_p": 7.100194148136655e-22,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 64,
+         "n": 73,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 1,
+         "hold": 63,
+         "n": 71,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 64,
+         "n": 72,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 63,
+         "n": 72,
+         "undetermined": 12
+        }
+       },
+       "held_out": {
+        "hold": 53,
+        "n": 60,
+        "verdict": "Supported"
+       },
+       "judgement": 1
+      },
+      "c": {
+       "fisher_p": 3.1970708621401357e-20,
+       "forms": {
+        "contrapositive": {
+         "code": 1,
+         "hold": 62,
+         "n": 71,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 1,
+         "hold": 63,
+         "n": 73,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 1,
+         "hold": 62,
+         "n": 72,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 1,
+         "hold": 63,
+         "n": 72,
+         "undetermined": 12
+        }
+       },
+       "held_out": {
+        "hold": 53,
+        "n": 60,
+        "verdict": "Supported"
+       },
+       "judgement": 1
+      },
+      "d": {
+       "fisher_p": 3.294629870367691e-17,
+       "forms": {
+        "contrapositive": {
+         "code": 4,
+         "hold": 60,
+         "n": 71,
+         "undetermined": 12
+        },
+        "converse": {
+         "code": 4,
+         "hold": 61,
+         "n": 73,
+         "undetermined": 12
+        },
+        "inverse": {
+         "code": 4,
+         "hold": 60,
+         "n": 72,
+         "undetermined": 12
+        },
+        "original": {
+         "code": 4,
+         "hold": 61,
+         "n": 72,
+         "undetermined": 12
+        }
+       },
+       "held_out": {
+        "hold": 51,
+        "n": 60,
+        "verdict": "Inconclusive"
+       },
+       "judgement": 4
+      }
+     }
+    }
+   ]
+  },
+  "predictions": [
+   {
+    "got": 0.0,
+    "id": "A1",
+    "ok": true,
+    "text": "ゲート: 道具の wl_rf_win_gap8 が第4弾の値と差 0、E85・KE85・DE85 は第4弾と同じ"
+   },
+   {
+    "got": {
+     "DE86": 0.14590492761522109,
+     "E86": 8,
+     "KE86": 35
+    },
+    "id": "A2",
+    "ok": true,
+    "text": "E86 は 12 中 8・終了コード 4、KE86 は 72 中 35・終了コード 3、DE86 の fisher_p は 0.146"
+   },
+   {
+    "got": {
+     "KE85": {
+      "converse_counter": 3,
+      "counter": 3,
+      "hold": 3,
+      "neither": 3,
+      "undetermined": 0
+     },
+     "KE86": {
+      "converse_counter": 1,
+      "counter": 2,
+      "hold": 4,
+      "neither": 5,
+      "undetermined": 0
+     }
+    },
+    "id": "A3",
+    "ok": true,
+    "text": "2026年の B クラス 6 単位で、8 回までの勝ち試合の得点が負なのは 2〜4、負け試合の得点が正なのも 2〜4"
+   },
+   {
+    "got": {
+     "max_abs_diff_below_1e-12": true
+    },
+    "id": "B1",
+    "ok": true,
+    "text": "ゲート: 「そのまま」の alloc_*・sim_* が保存された値と同じ"
+   },
+   {
+    "got": {
+     "alloc_net": 0.506944444,
+     "alloc_net_opp": 0.5,
+     "alloc_net_strat": 0.506944444,
+     "wpct_minus_sim": 0.5
+    },
+    "id": "B2",
+    "ok": true,
+    "text": "「そのまま」で、4 つの量はどれも全体では片寄っていない"
+   },
+   {
+    "got": {
+     "alloc_net_strat": 0.347222222,
+     "wpct_minus_sim": 0.194444444
+    },
+    "id": "B3",
+    "ok": false,
+    "text": "「そのまま」で、alloc_net_strat と「勝率 − sim_wpct」は強さに沿った寄り（A − B が 0.30 以上）"
+   },
+   {
+    "got": [
+     0.347222222,
+     0.347222222
+    ],
+    "id": "B4",
+    "ok": false,
+    "text": "「9 回まで」で、alloc_net_strat の A − B は「そのまま」より小さい"
+   },
+   {
+    "got": [
+     "P13",
+     "P52"
+    ],
+    "id": "B5",
+    "ok": true,
+    "text": "13 件のうち、(c) で判定が変わるのは 2 件以上"
+   },
+   {
+    "got": true,
+    "id": "B6",
+    "ok": false,
+    "text": "P52（式1）は (c) でも終了コードが変わらない"
+   }
+  ],
+  "propositions": [
+   {
+    "definition_sha256": "b741d7760c29928be5775afe618748fa6409a2580e29cc8c726acba275b396d7",
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.0,
+      "ci": [
+       0.0,
+       0.35433
+      ],
+      "code": 4,
+      "fisher_p": 1.0,
+      "hold": 0,
+      "n": 7,
+      "rate": 0.0,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2014",
+       "d-2015",
+       "d-2016",
+       "d-2019",
+       "d-2021",
+       "d-2023"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "original": {
+      "base_rate": 0.4166666666666667,
+      "ci": [
+       0.19326,
+       0.680489
+      ],
+      "code": 3,
+      "fisher_p": 1.0,
+      "hold": 5,
+      "n": 12,
+      "rate": 0.4166666666666667,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2014",
+       "d-2015",
+       "d-2016",
+       "d-2019",
+       "d-2021",
+       "d-2023"
+      ],
+      "verdict": "Rejected"
+     }
+    },
+    "id": "E85",
+    "judgement": {
+     "code": 3,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[team=d, seasons=2013-2025] * => wl_rf_win_gap8<0",
+    "parent": "P85",
+    "signature": "b4ce3744075ce91f",
+    "statement": "中日は、8 回までの得点で見て、勝ち試合の得点が、自分の得点・失点の分布から見込まれるより少ない",
+    "units": 12
+   },
+   {
+    "definition_sha256": "bad644ad621397cd993ce40b12c00a5cdc2ae1b7d0039c50d00232e1ae57a21b",
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.5,
+      "ci": [
+       0.35592,
+       0.579011
+      ],
+      "code": 3,
+      "fisher_p": 0.8413609981335559,
+      "hold": 34,
+      "n": 73,
+      "rate": 0.4657534246575342,
+      "undetermined": 0,
+      "units": [
+       "b-2013",
+       "b-2015",
+       "b-2016",
+       "b-2017",
+       "b-2024",
+       "c-2019",
+       "c-2021",
+       "c-2022",
+       "c-2024",
+       "d-2013",
+       "d-2014",
+       "d-2015",
+       "d-2016",
+       "d-2019",
+       "d-2021",
+       "d-2023",
+       "db-2013",
+       "db-2018",
+       "db-2021",
+       "e-2014",
+       "e-2015",
+       "e-2018",
+       "e-2022",
+       "e-2024",
+       "f-2019",
+       "f-2022",
+       "f-2023",
+       "g-2017",
+       "h-2013",
+       "h-2021",
+       "l-2014",
+       "l-2016",
+       "m-2019",
+       "m-2022",
+       "m-2025",
+       "s-2016",
+       "s-2017",
+       "s-2019",
+       "t-2016"
+      ],
+      "verdict": "Rejected"
+     },
+     "converse": {
+      "base_rate": 0.5,
+      "ci": [
+       0.353584,
+       0.579608
+      ],
+      "code": 3,
+      "fisher_p": 0.8413609981335559,
+      "hold": 33,
+      "n": 71,
+      "rate": 0.4647887323943662,
+      "undetermined": 0,
+      "units": [
+       "c-2017",
+       "c-2018",
+       "c-2023",
+       "db-2016",
+       "db-2017",
+       "db-2019",
+       "db-2023",
+       "db-2025",
+       "e-2013",
+       "e-2019",
+       "f-2014",
+       "f-2018",
+       "f-2024",
+       "g-2013",
+       "g-2015",
+       "g-2019",
+       "g-2021",
+       "g-2024",
+       "h-2014",
+       "h-2016",
+       "h-2017",
+       "h-2019",
+       "h-2024",
+       "l-2019",
+       "m-2013",
+       "m-2015",
+       "m-2016",
+       "m-2021",
+       "m-2024",
+       "s-2018",
+       "s-2021",
+       "s-2022",
+       "t-2014",
+       "t-2021",
+       "t-2022",
+       "t-2023",
+       "t-2024",
+       "t-2025"
+      ],
+      "verdict": "Rejected"
+     },
+     "inverse": {
+      "base_rate": 0.5069444444444444,
+      "ci": [
+       0.361265,
+       0.585993
+      ],
+      "code": 3,
+      "fisher_p": 0.8413609981335559,
+      "hold": 34,
+      "n": 72,
+      "rate": 0.4722222222222222,
+      "undetermined": 0,
+      "units": [
+       "c-2017",
+       "c-2018",
+       "c-2023",
+       "db-2016",
+       "db-2017",
+       "db-2019",
+       "db-2023",
+       "db-2025",
+       "e-2013",
+       "e-2019",
+       "f-2014",
+       "f-2018",
+       "f-2024",
+       "g-2013",
+       "g-2015",
+       "g-2019",
+       "g-2021",
+       "g-2024",
+       "h-2014",
+       "h-2016",
+       "h-2017",
+       "h-2019",
+       "h-2024",
+       "l-2019",
+       "m-2013",
+       "m-2015",
+       "m-2016",
+       "m-2021",
+       "m-2024",
+       "s-2018",
+       "s-2021",
+       "s-2022",
+       "t-2014",
+       "t-2021",
+       "t-2022",
+       "t-2023",
+       "t-2024",
+       "t-2025"
+      ],
+      "verdict": "Rejected"
+     },
+     "original": {
+      "base_rate": 0.4930555555555556,
+      "ci": [
+       0.348286,
+       0.572601
+      ],
+      "code": 3,
+      "fisher_p": 0.8413609981335559,
+      "hold": 33,
+      "n": 72,
+      "rate": 0.4583333333333333,
+      "undetermined": 0,
+      "units": [
+       "b-2013",
+       "b-2015",
+       "b-2016",
+       "b-2017",
+       "b-2024",
+       "c-2019",
+       "c-2021",
+       "c-2022",
+       "c-2024",
+       "d-2013",
+       "d-2014",
+       "d-2015",
+       "d-2016",
+       "d-2019",
+       "d-2021",
+       "d-2023",
+       "db-2013",
+       "db-2018",
+       "db-2021",
+       "e-2014",
+       "e-2015",
+       "e-2018",
+       "e-2022",
+       "e-2024",
+       "f-2019",
+       "f-2022",
+       "f-2023",
+       "g-2017",
+       "h-2013",
+       "h-2021",
+       "l-2014",
+       "l-2016",
+       "m-2019",
+       "m-2022",
+       "m-2025",
+       "s-2016",
+       "s-2017",
+       "s-2019",
+       "t-2016"
+      ],
+      "verdict": "Rejected"
+     }
+    },
+    "held_out": {
+     "base_rate": null,
+     "ci": [
+      0.346279,
+      0.591066
+     ],
+     "code": null,
+     "fisher_p": 0.808897511699456,
+     "hold": 28,
+     "n": 60,
+     "rate": 0.4666666666666667,
+     "undetermined": 0,
+     "units": [
+      "b-2013",
+      "b-2015",
+      "b-2016",
+      "b-2017",
+      "b-2024",
+      "c-2019",
+      "c-2021",
+      "c-2022",
+      "c-2024",
+      "db-2013",
+      "db-2018",
+      "db-2021",
+      "e-2014",
+      "e-2015",
+      "e-2018",
+      "e-2022",
+      "e-2024",
+      "f-2019",
+      "f-2022",
+      "f-2023",
+      "g-2017",
+      "h-2013",
+      "h-2021",
+      "l-2014",
+      "l-2016",
+      "m-2019",
+      "m-2022",
+      "m-2025",
+      "s-2016",
+      "s-2017",
+      "s-2019",
+      "t-2016"
+     ],
+     "verdict": "Rejected"
+    },
+    "id": "KE85",
+    "judgement": {
+     "code": 3,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[seasons=2013-2025] upper_half==false => wl_rf_win_gap8<0",
+    "parent": "K85",
+    "reading": 4,
+    "signature": "f5e109757f5c876d",
+    "statement": "B クラスのチーム・シーズンなら、8 回までの得点で見て、勝ち試合の得点が、自分の得点・失点の分布から見込まれるより少ない",
+    "units": 144
+   },
+   {
+    "chunichi": {
+     "hold": 5,
+     "n": 12
+    },
+    "definition_sha256": "f20ea2e618cbc909a9a6df91a6e247a998ce1ef0f20c58ab535a56be9c12341a",
+    "fisher_p": 0.7351702367479844,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.8333333333333334,
+      "ci": [
+       0.67332,
+       0.910227
+      ],
+      "code": 4,
+      "fisher_p": 0.7351702367479844,
+      "hold": 32,
+      "n": 39,
+      "rate": 0.8205128205128205,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2014",
+       "d-2015",
+       "d-2016",
+       "d-2019",
+       "d-2021",
+       "d-2023"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "original": {
+      "base_rate": 0.4583333333333333,
+      "ci": [
+       0.19326,
+       0.680489
+      ],
+      "code": 3,
+      "fisher_p": 0.7351702367479844,
+      "hold": 5,
+      "n": 12,
+      "rate": 0.4166666666666667,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2014",
+       "d-2015",
+       "d-2016",
+       "d-2019",
+       "d-2021",
+       "d-2023"
+      ],
+      "verdict": "Rejected"
+     }
+    },
+    "id": "DE85",
+    "judgement": {
+     "code": 3,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[seasons=2013-2025, where:upper_half==false] team==\"d\" => wl_rf_win_gap8<0",
+    "others": {
+     "hold": 28,
+     "n": 60
+    },
+    "parent": "E85",
+    "parent_original": {
+     "hold": 5,
+     "n": 12
+    },
+    "reading": 2,
+    "signature": "97436416abda6d7b",
+    "skipped_forms": [
+     "converse",
+     "inverse"
+    ],
+    "statement": "B クラスのチーム・シーズンの中で、中日は、8 回までの得点で見て、勝ち試合の得点が見込みより少ない",
+    "strength": "usually",
+    "units": 72
+   },
+   {
+    "definition_sha256": "fb42487fd25004d0c3f70a9540c70b752fa2f518280a94feae7f80f5439ef456",
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.0,
+      "ci": [
+       0.0,
+       0.489891
+      ],
+      "code": 4,
+      "fisher_p": 1.0,
+      "hold": 0,
+      "n": 4,
+      "rate": 0.0,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2017",
+       "d-2018",
+       "d-2019"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "original": {
+      "base_rate": 0.6666666666666666,
+      "ci": [
+       0.390622,
+       0.86188
+      ],
+      "code": 4,
+      "fisher_p": 1.0,
+      "hold": 8,
+      "n": 12,
+      "rate": 0.6666666666666666,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2017",
+       "d-2018",
+       "d-2019"
+      ],
+      "verdict": "Inconclusive"
+     }
+    },
+    "id": "E86",
+    "judgement": {
+     "code": 4,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[team=d, seasons=2013-2025] * => wl_rf_loss_gap8>0",
+    "parent": "P86",
+    "signature": "96571f3dc12eb140",
+    "statement": "中日は、8 回までの得点で見て、負け試合の得点が、自分の得点・失点の分布から見込まれるより多い",
+    "units": 12
+   },
+   {
+    "definition_sha256": "5ba5ae29a7430a0935d84d5b10445b48770f5d84b3db24eb44003b1ff998f071",
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.5,
+      "ci": [
+       0.422714,
+       0.637642
+      ],
+      "code": 3,
+      "fisher_p": 0.25155730230693646,
+      "hold": 42,
+      "n": 79,
+      "rate": 0.5316455696202531,
+      "undetermined": 0,
+      "units": [
+       "b-2013",
+       "b-2016",
+       "b-2017",
+       "b-2018",
+       "b-2024",
+       "c-2024",
+       "d-2013",
+       "d-2017",
+       "d-2018",
+       "d-2019",
+       "db-2014",
+       "db-2021",
+       "e-2014",
+       "e-2015",
+       "e-2016",
+       "e-2018",
+       "e-2023",
+       "e-2024",
+       "f-2013",
+       "f-2019",
+       "f-2021",
+       "g-2017",
+       "g-2022",
+       "g-2023",
+       "l-2014",
+       "l-2021",
+       "l-2023",
+       "l-2024",
+       "m-2018",
+       "m-2022",
+       "m-2025",
+       "s-2016",
+       "s-2017",
+       "s-2019",
+       "s-2024",
+       "s-2025",
+       "t-2016"
+      ],
+      "verdict": "Rejected"
+     },
+     "converse": {
+      "base_rate": 0.5,
+      "ci": [
+       0.418534,
+       0.654097
+      ],
+      "code": 3,
+      "fisher_p": 0.25155730230693646,
+      "hold": 35,
+      "n": 65,
+      "rate": 0.5384615384615384,
+      "undetermined": 0,
+      "units": [
+       "b-2022",
+       "c-2013",
+       "c-2014",
+       "c-2017",
+       "c-2018",
+       "db-2025",
+       "e-2017",
+       "e-2019",
+       "f-2014",
+       "g-2013",
+       "g-2015",
+       "g-2016",
+       "g-2018",
+       "g-2019",
+       "g-2021",
+       "g-2025",
+       "h-2014",
+       "h-2015",
+       "h-2016",
+       "h-2017",
+       "h-2024",
+       "h-2025",
+       "m-2021",
+       "s-2015",
+       "s-2021",
+       "t-2019",
+       "t-2021",
+       "t-2023",
+       "t-2024",
+       "t-2025"
+      ],
+      "verdict": "Rejected"
+     },
+     "inverse": {
+      "base_rate": 0.5486111111111112,
+      "ci": [
+       0.468077,
+       0.690148
+      ],
+      "code": 3,
+      "fisher_p": 0.25155730230693646,
+      "hold": 42,
+      "n": 72,
+      "rate": 0.5833333333333334,
+      "undetermined": 0,
+      "units": [
+       "b-2022",
+       "c-2013",
+       "c-2014",
+       "c-2017",
+       "c-2018",
+       "db-2025",
+       "e-2017",
+       "e-2019",
+       "f-2014",
+       "g-2013",
+       "g-2015",
+       "g-2016",
+       "g-2018",
+       "g-2019",
+       "g-2021",
+       "g-2025",
+       "h-2014",
+       "h-2015",
+       "h-2016",
+       "h-2017",
+       "h-2024",
+       "h-2025",
+       "m-2021",
+       "s-2015",
+       "s-2021",
+       "t-2019",
+       "t-2021",
+       "t-2023",
+       "t-2024",
+       "t-2025"
+      ],
+      "verdict": "Rejected"
+     },
+     "original": {
+      "base_rate": 0.4513888888888889,
+      "ci": [
+       0.374327,
+       0.599302
+      ],
+      "code": 3,
+      "fisher_p": 0.25155730230693646,
+      "hold": 35,
+      "n": 72,
+      "rate": 0.4861111111111111,
+      "undetermined": 0,
+      "units": [
+       "b-2013",
+       "b-2016",
+       "b-2017",
+       "b-2018",
+       "b-2024",
+       "c-2024",
+       "d-2013",
+       "d-2017",
+       "d-2018",
+       "d-2019",
+       "db-2014",
+       "db-2021",
+       "e-2014",
+       "e-2015",
+       "e-2016",
+       "e-2018",
+       "e-2023",
+       "e-2024",
+       "f-2013",
+       "f-2019",
+       "f-2021",
+       "g-2017",
+       "g-2022",
+       "g-2023",
+       "l-2014",
+       "l-2021",
+       "l-2023",
+       "l-2024",
+       "m-2018",
+       "m-2022",
+       "m-2025",
+       "s-2016",
+       "s-2017",
+       "s-2019",
+       "s-2024",
+       "s-2025",
+       "t-2016"
+      ],
+      "verdict": "Rejected"
+     }
+    },
+    "held_out": {
+     "base_rate": null,
+     "ci": [
+      0.330937,
+      0.575081
+     ],
+     "code": null,
+     "fisher_p": 0.4171888625928162,
+     "hold": 27,
+     "n": 60,
+     "rate": 0.45,
+     "undetermined": 0,
+     "units": [
+      "b-2013",
+      "b-2016",
+      "b-2017",
+      "b-2018",
+      "b-2024",
+      "c-2024",
+      "db-2014",
+      "db-2021",
+      "e-2014",
+      "e-2015",
+      "e-2016",
+      "e-2018",
+      "e-2023",
+      "e-2024",
+      "f-2013",
+      "f-2019",
+      "f-2021",
+      "g-2017",
+      "g-2022",
+      "g-2023",
+      "l-2014",
+      "l-2021",
+      "l-2023",
+      "l-2024",
+      "m-2018",
+      "m-2022",
+      "m-2025",
+      "s-2016",
+      "s-2017",
+      "s-2019",
+      "s-2024",
+      "s-2025",
+      "t-2016"
+     ],
+     "verdict": "Rejected"
+    },
+    "id": "KE86",
+    "judgement": {
+     "code": 3,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[seasons=2013-2025] upper_half==false => wl_rf_loss_gap8>0",
+    "parent": "K86",
+    "reading": 4,
+    "signature": "c1b68abc31e3da56",
+    "statement": "B クラスのチーム・シーズンなら、8 回までの得点で見て、負け試合の得点が、自分の得点・失点の分布から見込まれるより多い",
+    "units": 144
+   },
+   {
+    "chunichi": {
+     "hold": 8,
+     "n": 12
+    },
+    "definition_sha256": "4e785846cfdf2991fcba3a03ef53ba7823083f0bc085390e714ed6e29acd5e3a",
+    "fisher_p": 0.14590492761522109,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.8333333333333334,
+      "ci": [
+       0.752915,
+       0.957148
+      ],
+      "code": 1,
+      "fisher_p": 0.14590492761522109,
+      "hold": 33,
+      "n": 37,
+      "rate": 0.8918918918918919,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2017",
+       "d-2018",
+       "d-2019"
+      ],
+      "verdict": "Supported"
+     },
+     "original": {
+      "base_rate": 0.4861111111111111,
+      "ci": [
+       0.390622,
+       0.86188
+      ],
+      "code": 4,
+      "fisher_p": 0.14590492761522109,
+      "hold": 8,
+      "n": 12,
+      "rate": 0.6666666666666666,
+      "undetermined": 0,
+      "units": [
+       "d-2013",
+       "d-2017",
+       "d-2018",
+       "d-2019"
+      ],
+      "verdict": "Inconclusive"
+     }
+    },
+    "id": "DE86",
+    "judgement": {
+     "code": 4,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[seasons=2013-2025, where:upper_half==false] team==\"d\" => wl_rf_loss_gap8>0",
+    "others": {
+     "hold": 27,
+     "n": 60
+    },
+    "parent": "E86",
+    "parent_original": {
+     "hold": 8,
+     "n": 12
+    },
+    "reading": 2,
+    "signature": "25c6e41887f659ae",
+    "skipped_forms": [
+     "converse",
+     "inverse"
+    ],
+    "statement": "B クラスのチーム・シーズンの中で、中日は、8 回までの得点で見て、負け試合の得点が見込みより多い",
+    "strength": "usually",
+    "units": 72
+   }
+  ]
  },
  "summary": {
   "all_forms_ge_min_n": 22,

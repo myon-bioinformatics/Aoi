@@ -214,7 +214,22 @@ def test_monthly_exit_codes_are_reproduced(tmp_path):
         return {r["id"]: (r["judgement"]["code"], [(f["form"], f["n"], f["hold"], f["code"]) for f in r["forms"]]) for r in rs}
 
     assert key(fresh) == key(committed)
-    assert (tmp_path / "units.jsonl").read_bytes() == (MONTHLY / "outputs" / "units.jsonl").read_bytes()
+    # LAPACK/BLAS may differ in final bits across platforms. Preserve the recorded
+    # evidence; require exact schema, identifiers and non-regression fields.
+    # Only continuous least-squares fields get a tight numerical tolerance.
+    import math
+    regression_fields = {"f2", "f3", "rho", "gamma", "gain2", "gain3"}
+    actual_units = [json.loads(x) for x in (tmp_path / "units.jsonl").read_text().splitlines()]
+    saved_units = [json.loads(x) for x in (MONTHLY / "outputs" / "units.jsonl").read_text().splitlines()]
+    assert len(actual_units) == len(saved_units)
+    for actual, saved in zip(actual_units, saved_units):
+        assert actual.keys() == saved.keys()
+        for field, value in saved.items():
+            if field in regression_fields:
+                assert math.isfinite(value) and math.isfinite(actual[field])
+                assert math.isclose(actual[field], value, rel_tol=1e-12, abs_tol=1e-14), field
+            else:
+                assert actual[field] == value, field
     codes = {r["id"]: r["judgement"]["code"] for r in committed}
     assert codes["C2A2"] == codes["C2A2x"] == 1 and codes["C2L2"] == codes["C2L2x"] == 1   # 支持（例外あり）
     assert all(codes[f"C2B{k}{v}"] == 3 for k in range(1, 5) for v in ("", "x"))           # 向きは 4 段とも判例あり

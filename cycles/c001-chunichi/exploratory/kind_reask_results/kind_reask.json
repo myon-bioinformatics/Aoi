@@ -1,4 +1,149 @@
 {
+ "eighth": {
+  "cells": {
+   "8,8": {
+    "a_minus_b": 0.138888889,
+    "median": -0.007531299,
+    "one_sided": false,
+    "share_positive": 0.5,
+    "share_positive_a": 0.569444444,
+    "share_positive_b": 0.430555556,
+    "strength_sided": false,
+    "units": 144
+   },
+   "8,9": {
+    "a_minus_b": 0.097222222,
+    "median": -0.195609648,
+    "one_sided": false,
+    "share_positive": 0.479166667,
+    "share_positive_a": 0.527777778,
+    "share_positive_b": 0.430555556,
+    "strength_sided": false,
+    "units": 144
+   },
+   "9,8": {
+    "a_minus_b": 0.416666667,
+    "median": -0.089542812,
+    "one_sided": false,
+    "share_positive": 0.486111111,
+    "share_positive_a": 0.694444444,
+    "share_positive_b": 0.277777778,
+    "strength_sided": true,
+    "units": 144
+   },
+   "9,9": {
+    "a_minus_b": 0.375,
+    "median": 0.340669014,
+    "one_sided": false,
+    "share_positive": 0.534722222,
+    "share_positive_a": 0.722222222,
+    "share_positive_b": 0.347222222,
+    "strength_sided": true,
+    "units": 144
+   }
+  },
+  "games": 10980,
+  "gate": {
+   "ok": true,
+   "problems": []
+  },
+  "predictions": [
+   {
+    "got": 0.375,
+    "id": "H1",
+    "ok": true,
+    "text": "ゲートが通る。(9, 9) の A − B は 0.30 以上"
+   },
+   {
+    "got": 0.416666667,
+    "id": "H2",
+    "ok": true,
+    "text": "(9, 8) の A − B は 0.30 以上"
+   },
+   {
+    "got": 0.097222222,
+    "id": "H3",
+    "ok": true,
+    "text": "(8, 9) の A − B は 0.20 以下"
+   },
+   {
+    "got": 1,
+    "id": "H4",
+    "ok": true,
+    "text": "読みは「勝ち負けの側」"
+   },
+   {
+    "got": {
+     "A": [
+      0.943863179,
+      0.51048951
+     ],
+     "B": [
+      0.926267281,
+      0.489559165
+     ]
+    },
+    "id": "H5",
+    "ok": true,
+    "text": "A クラスは B クラスより、リードを守った割合も、同点から勝った割合も高い"
+   }
+  ],
+  "reading": 1,
+  "states": {
+   "A": {
+    "behind_games": 4113,
+    "behind_won": 0.03646973,
+    "counts": {
+     "behind": {
+      "loss": 3795,
+      "tie": 168,
+      "win": 150
+     },
+     "lead": {
+      "loss": 128,
+      "tie": 151,
+      "win": 4691
+     },
+     "tie": {
+      "loss": 210,
+      "tie": 751,
+      "win": 219
+     }
+    },
+    "lead_games": 4970,
+    "lead_held": 0.943863179,
+    "tie_decided": 429,
+    "tie_games": 1180,
+    "tie_won": 0.51048951
+   },
+   "B": {
+    "behind_games": 4980,
+    "behind_won": 0.02248996,
+    "counts": {
+     "behind": {
+      "loss": 4715,
+      "tie": 153,
+      "win": 112
+     },
+     "lead": {
+      "loss": 134,
+      "tie": 170,
+      "win": 3819
+     },
+     "tie": {
+      "loss": 220,
+      "tie": 731,
+      "win": 211
+     }
+    },
+    "lead_games": 4123,
+    "lead_held": 0.926267281,
+    "tie_decided": 431,
+    "tie_games": 1162,
+    "tie_won": 0.489559165
+   }
+  }
+ },
  "fifth": {
   "bias": {
    "wl_rf_loss_gap": {

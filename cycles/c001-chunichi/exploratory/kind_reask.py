@@ -51,6 +51,10 @@
   読み（判定ではない）: 補った表で alloc_net_strat の A − B が 0.20 以下なら 1（主に道具の側）、0.30 以上なら 3（9 回裏が無いことでは
   説明できない）、間は 2（両方）
 
+第8弾（宣言は kind_reask_results/README.md の「第8弾」の節。計算の前のコミットで固定）:
+  配分の効果の強さに沿った寄りの 9 回の分を、勝ち越し（8 回終了時か 9 回終了時か）と見込み（8 回までか 9 回までの得点か）の
+  4 通りで分ける。読み: (9, 8) で A − B が 0.30 以上かつ (8, 9) で 0.20 以下なら 1（勝ち負けの側）、逆なら 3（得点の分布の側）、ほかは 2
+
 ゲート（通らなければ、命題の結果は出さずに止まる）:
   正本の命題ファイルの sha256 が保存された値と同じ。つなげたファイルが読み込める。
   K・D の命題が branch 側（from-cycle-001/propositions.toml）のどれとも同じ問いでない。
@@ -659,6 +663,57 @@ def round_seven(repo: Path, full, more: dict, skip: list[int], pl) -> dict:
             "top9_mean": filled["top9_mean"], "home_away": home_away, "imputed": filled_lean, "reading": reading, "predictions": preds}
 
 
+def round_eight(full, more: dict, skip: list[int], pl) -> dict:
+    """第8弾: 配分の効果（ホーム・ビジター別の合計）を、勝ち越しと見込みを別々の回までの得点で作った 4 通りで並べる。
+
+    8 回に届いた試合だけを使う。(r, d) = 勝ち越しを r 回終了時、見込みを d 回までの得点の分布で。
+    8 回終了時の状態（リード・同点・ビハインド）ごとの 9 回終了時の結果も、A・B クラスで数える。
+    """
+    import sakanalytics as SA
+    t = more["tables"]["full"].filter(pl.col("rf8").is_not_null() & pl.col("ra8").is_not_null())
+    upper = {(r["season"], r["team"]): r["upper_half"] for r in full.select("season", "team", "upper_half").to_dicts()}
+    cells = {k: {} for k in ("8,8", "8,9", "9,8", "9,9")}
+    states = {c: {s: Counter() for s in ("lead", "tie", "behind")} for c in ("A", "B")}
+    for (season, team), g in t.group_by(["season", "team"], maintain_order=True):
+        net, exp = {"8": 0, "9": 0}, {"8": 0.0, "9": 0.0}
+        for venue in (True, False):
+            part = g.filter(pl.col("is_home") == venue)
+            for n in ("8", "9"):
+                rf, ra = part[f"rf{n}"].to_list(), part[f"ra{n}"].to_list()
+                net[n] += sum(_sign(a - b) for a, b in zip(rf, ra))
+                exp[n] += SA.allocation(rf, ra)[0]
+        for k in cells:
+            cells[k][(season, team)] = {"alloc_net_strat": net[k[0]] - exp[k[2]]}
+        if season not in skip:
+            cls = "A" if upper[(season, team)] else "B"
+            for a8, b8, a9, b9 in zip(g["rf8"].to_list(), g["ra8"].to_list(), g["rf9"].to_list(), g["ra9"].to_list()):
+                states[cls][("behind", "tie", "lead")[_sign(a8 - b8) + 1]][("loss", "tie", "win")[_sign(a9 - b9) + 1]] += 1
+    eight = {(r["season"], r["team"]): r["alloc_net_strat"] for r in SA.allocation_table(more["tables"]["eight"]).to_dicts()}
+    worst = max(abs(cells["8,8"][k]["alloc_net_strat"] - v) for k, v in eight.items())
+    problems = [] if worst <= 1e-9 and set(eight) == set(cells["8,8"]) else [f"(8, 8) が第6弾の 8 回までの値と合わない（差の最大 {worst:.1e}）"]
+    leans = {k: lean(v, "alloc_net_strat", upper, skip) for k, v in cells.items()}
+    ab = {k: v["a_minus_b"] for k, v in leans.items()}
+    reading = 1 if ab["9,8"] >= 0.30 and ab["8,9"] <= 0.20 else 3 if ab["8,9"] >= 0.30 and ab["9,8"] <= 0.20 else 2
+    rates = {}
+    for cls, by in states.items():
+        rates[cls] = {"lead_games": sum(by["lead"].values()), "lead_held": round(by["lead"]["win"] / sum(by["lead"].values()), 9),
+                      "tie_games": sum(by["tie"].values()), "tie_decided": by["tie"]["win"] + by["tie"]["loss"],
+                      "tie_won": round(by["tie"]["win"] / (by["tie"]["win"] + by["tie"]["loss"]), 9),
+                      "behind_games": sum(by["behind"].values()), "behind_won": round(by["behind"]["win"] / sum(by["behind"].values()), 9),
+                      "counts": {s: dict(sorted(c.items())) for s, c in by.items()}}
+    preds = [
+        {"id": "H1", "text": "ゲートが通る。(9, 9) の A − B は 0.30 以上", "ok": not problems and ab["9,9"] >= 0.30, "got": ab["9,9"]},
+        {"id": "H2", "text": "(9, 8) の A − B は 0.30 以上", "ok": ab["9,8"] >= 0.30, "got": ab["9,8"]},
+        {"id": "H3", "text": "(8, 9) の A − B は 0.20 以下", "ok": ab["8,9"] <= 0.20, "got": ab["8,9"]},
+        {"id": "H4", "text": "読みは「勝ち負けの側」", "ok": reading == 1, "got": reading},
+        {"id": "H5", "text": "A クラスは B クラスより、リードを守った割合も、同点から勝った割合も高い",
+         "ok": rates["A"]["lead_held"] > rates["B"]["lead_held"] and rates["A"]["tie_won"] > rates["B"]["tie_won"],
+         "got": {c: [rates[c]["lead_held"], rates[c]["tie_won"]] for c in rates}},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "games": t.height // 2, "cells": leans, "reading": reading,
+            "states": rates, "predictions": preds}
+
+
 def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None = None, props: Path | None = None,
             extra: Path | None = None, stored: Path | None = None, branch: Path | None = None,
             second: Path | None = None, panel: Path | None = None, fourth: Path | None = None,
@@ -689,7 +744,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                       "sixth_propositions": rel(sixth, repo),
                       "sixth_propositions_sha256": hashlib.sha256(sixth.read_bytes()).hexdigest()},
            "gate": {"ok": True, "problems": []}, "propositions": [], "predictions": [], "summary": {}, "second": {}, "third": {},
-           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}}
+           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}, "eighth": {}}
     problems = out["gate"]["problems"]
     stored_sha = {r["meta"]["sha256"] for r in stored_rows.values()}
     if sha not in stored_sha:
@@ -778,6 +833,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
     out["sixth"] = round_six(repo, config, full, (included, excluded), focus, fs, gs, evaluated, out["fourth"], more,
                              [*P.load(props)[0], *ks, *ds], stored_rows, [int(e["season"]) for e in exclusions], panel, P, pl)
     out["seventh"] = round_seven(repo, full, more, [int(e["season"]) for e in exclusions], pl)
+    out["eighth"] = round_eight(full, more, [int(e["season"]) for e in exclusions], pl)
     return out
 
 
@@ -980,6 +1036,23 @@ def render(res: dict) -> str:
           f"## 第7弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f7['predictions'])}/{len(f7['predictions'])}", ""]
     for x in f7["predictions"]:
         L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f8 = res["eighth"]
+    L += ["", "# 第8弾: 配分の効果に残った寄りを、勝ち負けの側と得点の分布の側に分ける", "",
+          f"ゲート（(8, 8) が第6弾の 8 回までの値と同じ）: {'通った' if f8['gate']['ok'] else '通らなかった'}。8 回に届いた {f8['games']} 試合。", "",
+          "各セルは alloc_net_strat の「正の単位の割合（A クラス・B クラス）」と A − B。", "",
+          "| | 見込みを 8 回までの得点で | 見込みを 9 回までの得点で |", "|---|---|---|",
+          f"| 勝ち越しを 8 回終了時で | {cell7(f8['cells']['8,8'])} | {cell7(f8['cells']['8,9'])} |",
+          f"| 勝ち越しを 9 回終了時で | {cell7(f8['cells']['9,8'])} | {cell7(f8['cells']['9,9'])} |", "",
+          f"読み（判定ではない）: **{f8['reading']}** " + {1: "勝ち負けの側", 2: "両方", 3: "得点の分布の側"}[f8["reading"]], "",
+          "8 回終了時の状態ごとの、9 回終了時の結果:", "",
+          "| クラス | リードの試合 | 守った割合 | 同点の試合（9 回で決まった数） | 決まった中で勝った割合 | ビハインドの試合 | 勝った割合 |", "|---|---|---|---|---|---|---|"]
+    for cls, v in f8["states"].items():
+        L += [f"| {cls} | {v['lead_games']} | {v['lead_held']:.3f} | {v['tie_games']}（{v['tie_decided']}） | {v['tie_won']:.3f} "
+              f"| {v['behind_games']} | {v['behind_won']:.3f} |"]
+    L += ["", f"## 第8弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f8['predictions'])}/{len(f8['predictions'])}", ""]
+    for x in f8["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
     return "\n".join(L) + "\n"
 
 
@@ -1117,7 +1190,7 @@ def main(argv=None) -> int:
     args.outdir.mkdir(parents=True, exist_ok=True)
     (args.outdir / "kind_reask.json").write_text(json.dumps(res, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     (args.outdir / "kind_reask.md").write_text(render(res), encoding="utf-8")
-    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh") for x in (res[k].get("gate") or {}).get("problems", [])]
+    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh", "eighth") for x in (res[k].get("gate") or {}).get("problems", [])]
     if problems:
         print("ゲートが通らなかった:", *problems, sep="\n  ", file=sys.stderr)
         return EXIT_GATE

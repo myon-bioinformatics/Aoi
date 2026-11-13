@@ -87,7 +87,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -358,6 +358,19 @@ def test_imputed_allocation_by_hand():
     # 補う: 9 回表の得点は 0 と 1 が半分ずつ。得点 2 は 2 か 3 になり、失点 3 との組は半分が引き分け → 見込み −0.75、配分の効果 +0.75
     assert filled["units"][(2024, "d")]["alloc_net_home"] == 0.75 and filled["imputed_games"] == 1
     assert filled["top9_mean"] == {"2024-C": 0.5}
+
+
+# ---- 第8弾: 勝ち負けの側と得点の分布の側 -----------------------------------------------------------------------------------
+def test_the_remaining_lean_comes_from_results_not_from_run_distributions():
+    f8 = RES["eighth"]
+    assert f8["gate"] == {"ok": True, "problems": []} and f8["games"] == 10980
+    ab = {k: round(v["a_minus_b"], 3) for k, v in f8["cells"].items()}
+    assert ab == {"8,8": 0.139, "8,9": 0.097, "9,8": 0.417, "9,9": 0.375} and f8["reading"] == 1
+    assert ab["8,8"] == round(RES["sixth"]["paired"]["bias"]["alloc_net_strat"]["eight"]["a_minus_b"], 3)
+    a, b = f8["states"]["A"], f8["states"]["B"]
+    assert (a["lead_games"], b["lead_games"], a["tie_decided"], b["tie_decided"]) == (4970, 4123, 429, 431)
+    assert a["lead_held"] > b["lead_held"] and a["behind_won"] > b["behind_won"]
+    assert [x["ok"] for x in f8["predictions"]] == [True] * 5
 
 
 # ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------

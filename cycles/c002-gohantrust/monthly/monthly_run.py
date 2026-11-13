@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""サイクル2 月次の命題（族 A: 予測のはしご、族 B: 恒等式の言い切り）。事前宣言: monthly_prelock_2026-11-13.md
+"""サイクル2 月次の命題（族 A: 予測のはしご、族 B: 恒等式の言い切り）。
+事前宣言: monthly_prelock_2026-11-13.md（第1弾）、monthly_prelock_r2_2026-11-13.md（第2弾: 帯を標本誤差に）
 
   uv run --locked python -I cycles/c002-gohantrust/monthly/monthly_run.py count   # 条件の側の件数だけ（結論は計算しない）
   uv run --locked python -I cycles/c002-gohantrust/monthly/monthly_run.py judge   # 単位を作り、命題を判定して outputs/ に書く
@@ -17,6 +18,7 @@ import json
 import math
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -27,7 +29,7 @@ ARCHIVE = ROOT / "research" / "staple-price-survey" / "phase2_archive"
 RICE = ARCHIVE / "japan_retail_price_rice_panel.csv.gz"      # 小売物価統計調査 うるち米 銘柄 1002 都市平均（円/5kg）
 ENGEL = ARCHIVE / "engel_food_panel_monthly.csv.gz"           # 家計調査 用途分類 二人以上 全国（円/月）
 CPI = ARCHIVE / "japan_cpi_food_cereals_panel.csv.gz"         # 消費者物価指数 2025 年基準 全国（総合・食料・穀類）
-PROPS = HERE / "monthly_propositions.toml"
+PROPS = (HERE / "monthly_propositions.toml", HERE / "monthly_propositions_r2.toml")   # 事前登録の順。r2 は第1弾の id を parent に持つ
 OUT = HERE / "outputs"
 
 # 宣言 §2・§3 の範囲（月は 12·年 + 月 − 1 の整数で持つ）
@@ -36,6 +38,11 @@ A_TRAIN0 = 2001 * 12 + 1                          # 族 A の訓練の最初の�
 A_MIN_TRAIN = 60
 B_FIRST, B_LAST = 2001 * 12 + 0, 2025 * 12 + 11   # 族 B の月 2001-01 〜 2025-12
 TICK = 0.001                                      # E の公表刻み（0.1 ポイント）
+# 第2弾の帯: 家計調査の標本誤差から作る ln E の前年比の標準誤差（宣言 r2 §1・§2）。
+# 消費支出の月の標準誤差率 1.5 %（家計調査の概要 2025 年 表3 の中央値）、食料はその 0.9/1.7 倍（平成16年10月の表の比）。
+# F と C の相関を 0 とした上限、12 か月離れた月は別の世帯（6 か月で交替）なので √2 倍
+SE_CE, SE_FOOD_RATIO = 0.015, 0.9 / 1.7
+SIGMA = math.sqrt(2) * math.hypot(SE_CE, SE_CE * SE_FOOD_RATIO)
 
 LOG: list[str] = []
 
@@ -98,7 +105,7 @@ def a_conditions(d: dict) -> list[dict]:
         e1 = engel(d, t - 1)
         x = math.log(e1 / engel(d, t - 13))
         tau = TICK / e1
-        rows.append({"k": t, "x": x, "tau": tau, "ax": abs(x) / tau})
+        rows.append({"k": t, "x": x, "tau": tau, "ax": abs(x) / tau, "axs": abs(x) / SIGMA})
     return rows
 
 
@@ -134,7 +141,7 @@ def a_units(d: dict) -> list[dict]:
         yy, mm = ym(t)
         out.append({
             "family": "A", "team": f"m{mm:02d}", "team_name": f"{yy}年{mm}月", "season": yy, "month": mm,
-            "y": y, "m_prev": m, "x": x, "tau": c["tau"], "ax": c["ax"],
+            "y": y, "m_prev": m, "x": x, "tau": c["tau"], "ax": c["ax"], "axs": c["axs"],
             "f1": f1, "f2": f2, "f3": f3, "rho": float(b2[1]), "gamma": float(b3[2]), "n_train": len(tr),
             "a1": e1 < e0, "a2": e2 < e1, "a3": e3 < e2,
             "gain1": e0 - e1, "gain2": e1 - e2, "gain3": e2 - e3,
@@ -170,6 +177,7 @@ def b_conditions(d: dict) -> list[dict]:
         for i, v in enumerate(c, 1):
             row[f"c{i}"] = v
             row[f"ac{i}"] = abs(v) / tau
+            row[f"acs{i}"] = abs(v) / SIGMA
         rows.append(row)
     return rows
 
@@ -185,7 +193,7 @@ def b_units(d: dict) -> list[dict]:
         row = {"family": "B", "team": f"m{mm:02d}", "team_name": f"{yy}年{mm}月", "season": yy, "month": mm,
                "yE": ye, "tau": c["tau"], "e0": c["e0"], "s_rice": c["s_rice"], "s_cereals": c["s_cereals"]}
         for i in range(1, 5):
-            row[f"c{i}"], row[f"ac{i}"] = c[f"c{i}"], c[f"ac{i}"]
+            row[f"c{i}"], row[f"ac{i}"], row[f"acs{i}"] = c[f"c{i}"], c[f"ac{i}"], c[f"acs{i}"]
             row[f"u{i}"] = ye - c[f"c{i}"]
             row[f"l{i}"] = u[i] < u[i - 1]          # 段 i の残りが段 i−1 より小さい
         row["u0"] = ye
@@ -201,14 +209,19 @@ def count(d: dict) -> dict:
     for label, last in (("incl2025", 2025), ("excl2025", 2024)):
         aa = [r for r in a if ym(r["k"])[0] <= last]
         res["A"][label] = {"units": len(aa), "say(ax>=1)": sum(r["ax"] >= 1 for r in aa),
-                           "band(ax<1)": sum(r["ax"] < 1 for r in aa)}
+                           "band(ax<1)": sum(r["ax"] < 1 for r in aa),
+                           "say(axs>=1)": sum(r["axs"] >= 1 for r in aa), "band(axs<1)": sum(r["axs"] < 1 for r in aa)}
         bb = [r for r in b_conditions(d) if ym(r["k"])[0] <= last]
         res["B"][label] = {"units": len(bb)}
         for i in range(1, 5):
             res["B"][label][f"step{i}"] = {
                 "up(c>=tau)": sum(r[f"c{i}"] >= r["tau"] for r in bb),
                 "down(c<=-tau)": sum(r[f"c{i}"] <= -r["tau"] for r in bb),
-                "band": sum(abs(r[f"c{i}"]) < r["tau"] for r in bb)}
+                "band": sum(abs(r[f"c{i}"]) < r["tau"] for r in bb),
+                "up(c>=sigma)": sum(r[f"c{i}"] >= SIGMA for r in bb),
+                "down(c<=-sigma)": sum(r[f"c{i}"] <= -SIGMA for r in bb),
+                "band_sigma": sum(abs(r[f"c{i}"]) < SIGMA for r in bb)}
+    res["sigma"] = SIGMA
     return res
 
 
@@ -224,9 +237,13 @@ def judge(d: dict, outdir: Path = OUT) -> list[dict]:
     upath = outdir / "units.jsonl"
     upath.write_text("".join(json.dumps(u, ensure_ascii=False) + "\n" for u in units), encoding="utf-8")
     st = pl.DataFrame(units, infer_schema_length=None)
-    props, sha = pr.load(PROPS)
+    with tempfile.TemporaryDirectory() as tmp:          # 事前登録のファイルを順につないで 1 つとして読む（parent と同じ問いの検査を全体で）
+        joined = Path(tmp) / "propositions.toml"
+        joined.write_text("\n".join(p.read_text(encoding="utf-8") for p in PROPS), encoding="utf-8")
+        props, sha = pr.load(joined)
     ver = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"], capture_output=True, text=True)
-    meta = {"sha256": sha, "code_version": ver.stdout.strip() or None, "file": str(PROPS.relative_to(ROOT))}
+    meta = {"sha256": sha, "code_version": ver.stdout.strip() or None,
+            "file": " + ".join(str(p.relative_to(ROOT)) for p in PROPS)}
     results = [{**pr.evaluate(p, st), "meta": meta} for p in props]
     data_sha = hashlib.sha256(upath.read_bytes()).hexdigest()
     ledger = pr.update_ledger(outdir / "ledger.jsonl", results, data_sha, meta["code_version"])

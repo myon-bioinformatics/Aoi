@@ -15,6 +15,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ARCHIVE = HERE.parents[2] / "research" / "staple-price-survey" / "phase2_archive"
 OUT = HERE / "outputs"
+# 第2弾の帯（宣言 r2 §2）を、monthly_run.py とは別の書き方で: 分散を足して平方根、前年比で 2 倍の分散
+R_CE = 1.5 / 100
+R_FOOD = R_CE * 0.9 / 1.7
+SIGMA = math.sqrt(2 * (R_CE ** 2 + R_FOOD ** 2))
 
 
 def read():
@@ -84,7 +88,8 @@ def units_a(P, H):
         f2, f3 = a2 + r2 * m, a3 + r3 * m + g3 * x
         e = [abs(y), abs(y - f1), abs(y - f2), abs(y - f3)]
         tau = 0.001 / E(H, back(t, 1))
-        out[t] = {"family": "A", "ax": abs(x) / tau, "a1": e[1] < e[0], "a2": e[2] < e[1], "a3": e[3] < e[2],
+        out[t] = {"family": "A", "ax": abs(x) / tau, "axs": abs(x) / SIGMA,
+                  "a1": e[1] < e[0], "a2": e[2] < e[1], "a3": e[3] < e[2],
                   "gains": (e[0] - e[1], e[1] - e[2], e[2] - e[3]), "y": y, "x": x}
     return out
 
@@ -109,6 +114,7 @@ def units_b(P, H, C):
         row = {"family": "B", "yE": ye}
         for i in range(4):
             row[f"c{i + 1}"], row[f"ac{i + 1}"], row[f"l{i + 1}"] = c[i], abs(c[i]) / tau, res[i + 1] < res[i]
+            row[f"acs{i + 1}"] = abs(c[i]) / SIGMA
         out[t] = row
     return out
 
@@ -150,7 +156,8 @@ def main():
     ties = 0
     for key, r in U.items():
         g = got[key]
-        for c in ("ax", "yE", "c1", "c2", "c3", "c4", "ac1", "ac2", "ac3", "ac4", "y", "x"):
+        for c in ("ax", "axs", "yE", "c1", "c2", "c3", "c4", "ac1", "ac2", "ac3", "ac4",
+                  "acs1", "acs2", "acs3", "acs4", "y", "x"):
             if c in r and not math.isclose(r[c], g[c], rel_tol=1e-9, abs_tol=1e-12):
                 print(f"NG: {key} {c} {r[c]} vs {g[c]}")
                 bad += 1
@@ -168,7 +175,8 @@ def main():
     print(f"units: {len(U)}（A {sum(k[0] == 'A' for k in U)}、B {sum(k[0] == 'B' for k in U)}）、"
           f"値と真偽の照合 {'OK' if bad == 0 else 'NG'}、同点に近くて照合を外したもの {ties}")
     # 4 つの形の件数と判例（propositions.jsonl と）
-    props = tomllib.loads((HERE / "monthly_propositions.toml").read_text(encoding="utf-8"))["proposition"]
+    props = [p for f in ("monthly_propositions.toml", "monthly_propositions_r2.toml")
+             for p in tomllib.loads((HERE / f).read_text(encoding="utf-8"))["proposition"]]
     res = {json.loads(x)["id"]: json.loads(x) for x in (OUT / "propositions.jsonl").read_text(encoding="utf-8").splitlines()}
     for p in props:
         fam = p["scope"]["where"][0]["value"]
@@ -177,10 +185,10 @@ def main():
         ok = mine == theirs
         bad += not ok
         print(f"{p['id']:7s} forms {'OK' if ok else 'NG'}  " + "  ".join(f"{k}:{v[1]}/{v[0]}" for k, v in mine.items()))
-    sha = hashlib.sha256((HERE / "monthly_propositions.toml").read_bytes()).hexdigest()
-    sha2 = hashlib.sha256((HERE / "monthly_prelock_2026-11-13.md").read_bytes()).hexdigest()
     stamp = (HERE / "monthly_prelock_timestamp.txt").read_text(encoding="utf-8")
-    fixed = sha in stamp and sha2 in stamp
+    fixed = all(hashlib.sha256((HERE / f).read_bytes()).hexdigest() in stamp
+                for f in ("monthly_propositions.toml", "monthly_prelock_2026-11-13.md",
+                          "monthly_propositions_r2.toml", "monthly_prelock_r2_2026-11-13.md"))
     bad += not fixed
     print(f"prelock / propositions sha256 は固定時と同じ: {'OK' if fixed else 'NG'}")
     print("VERIFY:", "ALL OK" if bad == 0 else f"{bad} NG")

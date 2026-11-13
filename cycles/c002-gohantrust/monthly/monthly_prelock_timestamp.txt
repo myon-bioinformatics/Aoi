@@ -1,3 +1,8 @@
 2026-11-13 18:47:45 JST (final, before computing any conclusion-side value)
 27ad845206f409c7134ee7af7ec4561e9b3e8cb8bc94fbca51a5f3e6fae0100a  monthly_prelock_2026-11-13.md
 97b83e984ee6791e88198119fc602d280e38755997509e53471ed186561244e2  monthly_propositions.toml
+
+# 第2弾（帯を標本誤差に）
+2026-11-13 20:20:32 JST (final, before judging the r2 propositions)
+0a0e0673413c83ba4718695c191273dca48d7461e65f6a1f0fc9a778ecfa8e91  monthly_prelock_r2_2026-11-13.md
+e091a768a863dfbbaef1e70b9373edb43aebfd56866e6fd727bab919b6ab270b  monthly_propositions_r2.toml

@@ -97,7 +97,15 @@ PIPE4_SETS = {  # 第14弾 pipe4: uniform・ramp の、どんな配管でも書�
 PIPE4_TIMES = [0.5 + 0.25 * i for i in range(15)]
 PIPE4_H = [1 / 8, 1 / 16, 1 / 32]
 SERIES_TERMS = 6  # 式の展開で持つ dt の次数（dt^0〜dt^5。G_eff は dt^4 まで）
-PIPE_KINDS = ("pipe", "pipe2", "pipe3", "pipe4")
+ENG_SETS = [("chain", (0.6,)), ("chain", (2.0,)), ("chain", (2.0, 0.75)), ("chain", (0.4, 1.5)),
+            ("branch", (0.5, 2.0, 0.75)), ("branch", (0.25, 0.4, 1.5))]  # 第15弾 eng: エンジン本体を 2 つの丸め方で進める
+ENG_SPANS, ENG_H, ENG_V0 = [1.5, 3.0], [1 / 128, 1 / 512], [128.0, 2.0 ** -12]
+FORM_CHAINS = [((0.6,), ("end", "uniform_in", "ramp", "quad")), ((2.0,), ("end", "uniform_in", "ramp", "quad")),
+               ((2.0, 0.75), ("end", "uniform_in", "cascade", "ramp", "quad")),
+               ((0.4, 1.5), ("end", "uniform_in", "cascade", "ramp", "quad"))]  # 第15弾 formc: 1 列の槽
+FORM_PIPES = [("pump1", (0.5,)), ("pump1", (2.0,)), ("pumpfed", (0.5, 2.0)), ("pumpfed", (2.5, 0.4))]  # 第15弾 formp
+FORM_SPANS, FORM_H = [1.0, 2.5], [1 / 8, 1 / 16, 1 / 32, 1 / 64]
+PIPE_KINDS = ("pipe", "pipe2", "pipe3", "pipe4", "formp")
 COARSE2_X = [0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0]  # 第12弾 coarse2: x = dt/τ1
 COARSE2_Y = [0.4, 0.9, 1.8, 2.7, 3.6, 5.5, 7.0, 11.0]  # y = dt/τ2
 COARSE2_STEPS = 6
@@ -105,8 +113,8 @@ TLAD_RATIOS, TLAD_SPANS = [0.6, 1.5, 3.0], [1.0, 2.0]  # 第12弾 tlad: 2 段の
 TLAD_ORDER = {"tay1": 2, "tay2": 3, "tay3": 4, "uniform_in": 2, "ramp": 3, "quad": 4}  # tay は「最初の値だけを知る」入れ方
 TOTAL_COEF = {1: 1.0 / 12.0, 2: 1.0 / 72.0, 3: 1.0 / 720.0}  # 合計も知る入れ方の、2 段目のずれの係数
 VARIANT_METHODS = ("cascade", "ramp", "quad", "tay1", "tay2", "tay3")  # 整数の漸化式で進める入れ方（エンジンには入れていない）
-CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder", "ilad", "coarse2", "tlad", "rnd", "rnd2")  # 1 列につながった槽（stages に τ_i/τ）
-FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, *PIPE_KINDS, "olad")  # エンジンの inflows（end・uniform_in）で進める組
+CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder", "ilad", "coarse2", "tlad", "rnd", "rnd2", "formc")  # 1 列につながった槽（stages に τ_i/τ）
+FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, *PIPE_KINDS, "olad", "eng")  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
 TOL_CHECK = 1e-9  # 検算で許す err の差
@@ -286,6 +294,25 @@ def plan(h_extra: list[float]) -> list[dict]:
                 for h in PIPE4_H:
                     for method in ("uniform_in", "ramp"):
                         add("pipe4", "eq", 1, method, h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp)
+    for idx, (shape, params) in enumerate(ENG_SETS):  # 第15弾
+        for sp in ENG_SPANS:
+            for v0 in ENG_V0:
+                for h in ENG_H:
+                    for rounding in ("q48", "carry64"):
+                        more = ({"stages": list(params), "tau2_ratio": params[0], "tau3_ratio": params[1] if len(params) > 1 else None}
+                                if shape == "chain" else {"pipe_params": list(params)})
+                        add("eng", "eq", 1, "uniform_in", h, shape=shape, pipe_set=idx + 1, span_ratio=sp, v0=v0, rounding=rounding, **more)
+    for st, methods in FORM_CHAINS:
+        for sp in FORM_SPANS:
+            for h in FORM_H:
+                for method in methods:
+                    add("formc", "eq", 1, method, h, shape="chain", stages=list(st), tau2_ratio=st[0],
+                        tau3_ratio=st[1] if len(st) > 1 else None, span_ratio=sp)
+    for idx, (shape, params) in enumerate(FORM_PIPES):
+        for sp in FORM_SPANS:
+            for h in FORM_H:
+                for method in ("end", "uniform_in", "ramp"):
+                    add("formp", "eq", 1, method, h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp)
     return out
 
 
@@ -522,7 +549,7 @@ def variant_recurrence(u: dict, steps: int, dt: float, gains=None, quant=None) -
 
 def pipe_spec(u: dict) -> dict:
     """pipe の配管。tanks は上から順、links は (元, 先, 速さ)、pumps は (先, 速さ)（外から入る）。"""
-    k, p = 1.0 / TAU, u["pipe_params"]
+    k, p = 1.0 / TAU, u.get("pipe_params")
     if u["shape"] == "branch":
         return {"tanks": ["a", "b", "c", "side", "sink"], "vol": {"a": V0}, "watch": "c", "pumps": [],
                 "links": [("a", "b", k * p[0]), ("a", "side", k * (1.0 - p[0])), ("b", "c", k / p[1]), ("c", "sink", k / p[2])]}
@@ -532,12 +559,19 @@ def pipe_spec(u: dict) -> dict:
     if u["shape"] == "pumpfed":
         return {"tanks": ["b", "c", "sink"], "vol": {}, "watch": "c", "pumps": [("b", V0 * k)],
                 "links": [("b", "c", k / p[0]), ("c", "sink", k / p[1])]}
+    if u["shape"] == "pump1":  # 第15弾: ポンプ → 槽 1 つ
+        return {"tanks": ["b", "sink"], "vol": {}, "watch": "b", "pumps": [("b", V0 * k)], "links": [("b", "sink", k / p[0])]}
+    if u["shape"] == "chain":  # 第15弾: 1 列の槽を、配管の形で書いたもの
+        rates = stage_rates(u)
+        names = [f"t{i}" for i in range(len(rates))] + ["sink"]
+        return {"tanks": names, "vol": {"t0": V0}, "watch": names[-2], "pumps": [],
+                "links": [(names[i], names[i + 1], rates[i]) for i in range(len(rates))]}
     return {"tanks": ["a", "b"], "vol": {"a": V0}, "watch": "b", "pumps": [], "ring": True,
             "links": [("a", "b", k), ("b", "a", k / p[0])]}
 
 
 def pipe_exact(u: dict, t: float) -> float:
-    k, p = 1.0 / TAU, u["pipe_params"]
+    k, p = 1.0 / TAU, u.get("pipe_params")
     if u["shape"] == "branch":  # 割合 s だけが B → C へ進む 3 段
         return p[0] * bateman_last([k, k / p[1], k / p[2]], t)
     if u["shape"] == "merge":  # 2 本の 3 段の足し算
@@ -545,6 +579,10 @@ def pipe_exact(u: dict, t: float) -> float:
     if u["shape"] == "pumpfed":  # C = q·[1/kC − e^(−kB·t)/(kC − kB) + kB·e^(−kC·t)/(kC·(kC − kB))]
         kb, kc = k / p[0], k / p[1]
         return V0 * k * (1.0 / kc - math.exp(-kb * t) / (kc - kb) + kb * math.exp(-kc * t) / (kc * (kc - kb)))
+    if u["shape"] == "pump1":  # B = (q/kB)·(1 − e^(−kB·t))
+        return V0 * p[0] * -math.expm1(-k / p[0] * t)
+    if u["shape"] == "chain":
+        return bateman_last(stage_rates(u), t)
     k2 = k / p[0]
     return V0 * k / (k + k2) * -math.expm1(-(k + k2) * t)
 
@@ -629,6 +667,32 @@ def step_series(spec: dict, method: str) -> dict:
         theta = diag(lambda m: 0.0 if m == 0 else -((-1.0) ** m) / math.factorial(m + 1))
         core = _poly_mul(_poly_add(const(eye), _poly_mul(theta, const(route))), one_minus_d)
         force = _poly_add(const(eye), _poly_mul(const(si), theta))
+    elif method == "cascade":  # 第15弾。増やした分も下の槽の入る量に数える: out = (I − D)V + Θ·S·out
+        theta = diag(lambda m: 0.0 if m == 0 else -((-1.0) ** m) / math.factorial(m + 1))
+        theta_route = _poly_mul(theta, const(route))
+        inv = term = const(eye)
+        for _ in range(SERIES_TERMS):
+            term = _poly_mul(term, theta_route)
+            inv = _poly_add(inv, term)
+        core = _poly_mul(inv, one_minus_d)
+        force = _poly_add(const(eye), _poly_mul(const(si), _poly_mul(inv, theta)))
+    elif method == "quad":  # 第15弾。out = (I − D)V + A·S·out + B0·SΛ·V + B1·SΛ·(V + (S − I)·out)。外から入る分は入れていない
+        def e_mix(*terms):  # Σ 重み·E_k/dt^(k+1)、E_k/dt^(k+1) = k!·Σ_j (−x)^j/(k+1+j)!
+            return lambda m: sum(w * math.factorial(k) * (-1.0) ** m / math.factorial(k + 1 + m) for w, k in terms)
+
+        a = diag(lambda m: (1.0 if m == 0 else 0.0) - e_mix((6.0, 1), (-6.0, 2))(m))
+        b0_dt = diag(lambda m: -e_mix((1.0, 0), (-4.0, 1), (3.0, 2))(m))
+        b1_dt = diag(lambda m: -e_mix((-2.0, 1), (3.0, 2))(m))
+        route_lam = [[route[i][j] * lam[j] for j in range(n)] for i in range(n)]
+        back = [zero] + _poly_mul(b1_dt, const(_matmul(route_lam, si)))[: SERIES_TERMS - 1]
+        loop = _poly_add(_poly_mul(a, const(route)), back)
+        inv = term = const(eye)
+        for _ in range(SERIES_TERMS):
+            term = _poly_mul(term, loop)
+            inv = _poly_add(inv, term)
+        start_rate = [zero] + _poly_mul(_poly_add(b0_dt, b1_dt), const(route_lam))[: SERIES_TERMS - 1]
+        core = _poly_mul(inv, _poly_add(one_minus_d, start_rate))
+        force = const(eye)
     else:  # ramp
         a = diag(lambda m: 0.0 if m == 0 else -2.0 * (-1.0) ** m / math.factorial(m + 2))
         b_dt = diag(lambda m: 0.0 if m == 0 else -((-1.0) ** m) * (1 / math.factorial(m + 1) - 2 / math.factorial(m + 2)))  # B/dt
@@ -673,6 +737,52 @@ def series_formula(spec: dict, series: dict, dt: float, t: float) -> float:
         return sum(e[j] * v0[j] for j in range(n)) + e[n]
 
     return watch(ge, qe) / watch(g, q) - 1.0
+
+
+def hp_uniform(spec: dict, taus: dict, steps: int, dt: float) -> Decimal:
+    """uniform の入れ方（エンジンと同じ規則）を 60 桁の小数で進めた、測る槽の量。taus は管ごとの時定数（エンジンに渡す値そのまま）。"""
+    d = Decimal(dt)
+    v = {name: Decimal(spec["vol"].get(name, 0.0)) for name in spec["tanks"]}
+    plan_ = {}
+    for name in spec["tanks"]:
+        outs = [ln for ln in spec["links"] if ln[0] == name]
+        if outs:
+            x = sum(d / Decimal(taus[ln]) for ln in outs)
+            gain = 1 - (-x).exp()
+            plan_[name] = (outs, gain, 1 - gain / x, [d / Decimal(taus[ln]) / x for ln in outs])
+    for _ in range(steps):
+        base = {ln: v[name] * gain * share for name, (outs, gain, _, shares) in plan_.items() for ln, share in zip(outs, shares)}
+        arrive = {name: sum((amount for ln, amount in base.items() if ln[1] == name), Decimal(0)) for name in plan_}
+        flow = {ln: base[ln] + arrive[name] * through * share
+                for name, (outs, _, through, shares) in plan_.items() for ln, share in zip(outs, shares)}
+        for (src, dst, _), amount in flow.items():
+            v[src] -= amount
+            v[dst] += amount
+    return v[spec["watch"]]
+
+
+def run_eng(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
+    """第15弾: エンジン本体（uniform・槽ごとに厳密）を rounding = q48 / carry64 で進め、60 桁の小数の値と比べる。"""
+    spec = pipe_spec(u)
+    taus = {ln: 1.0 / ln[2] for ln in spec["links"]}
+    scale = u["v0"] / V0
+    net = ffs["Network"](dt=dt, rounding=u["rounding"])
+    for name in spec["tanks"]:
+        net.tank(name, 1.0, volume=spec["vol"].get(name, 0.0) * scale)
+    for ln in spec["links"]:
+        net.valve(ln[0], ln[1], tau=taus[ln])
+    res = net.run(t)
+    left_q = res["volumes_q"][spec["watch"]]
+    key = ("eng", u["shape"], tuple(u.get("stages") or u["pipe_params"]), steps, dt)
+    with localcontext() as ctx:
+        ctx.prec = 60
+        if key not in _HP_CACHE:
+            _HP_CACHE[key] = hp_uniform(spec, taus, steps, dt)
+        true_q = _HP_CACHE[key] * Decimal(scale) * (1 << 48)
+        ulps = float(abs(Decimal(left_q) - true_q))
+        part = float((Decimal(left_q) - true_q) / (1 << 48)) / exact_left(u, t)
+    return {"steps": steps, "dt": dt, "t": t, "left_q": left_q, "left": left_q / ffs["one"], "lag_err_steps": None,
+            "conservation_q": res["conservation_error_q"], "round_ulps": ulps, "round_part": part}
 
 
 def hp_coeffs(u: dict, dt: float) -> tuple:
@@ -861,7 +971,7 @@ def base(u: dict) -> str:
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad", "rnd", "rnd2"):
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad", "rnd", "rnd2", "eng", "formc"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -883,6 +993,8 @@ def chain_exact(u: dict, t: float) -> float:
 
 def exact_left(u: dict, t: float) -> float:
     k = 1.0 / TAU
+    if u["kind"] == "eng":
+        return pipe_exact(u, t) * u["v0"] / V0
     if u["kind"] in PIPE_KINDS:
         return pipe_exact(u, t)
     if base(u) in ("valve", "delay", "olad"):
@@ -914,9 +1026,9 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
-    if u["kind"] in PIPE_KINDS:
+    if u["kind"] in (*PIPE_KINDS, "eng"):
         spec = pipe_spec(u)
-        return pipe_run(spec, u["method"], steps, dt)["v"][spec["watch"]]
+        return pipe_run(spec, u["method"], steps, dt)["v"][spec["watch"]] * (u.get("v0") or V0) / V0
     if u["kind"] == "olad":  # 抑えが起きなければ、残りは V0·(1 − Σ割合)^N（漸化式でなく累乗で検算する）
         return V0 * (1.0 - sum(olad_coeffs([s * k for s in u["shares"]], dt, u["level"]))) ** steps
     if u["method"] in VARIANT_METHODS:
@@ -1038,6 +1150,9 @@ def label(u: dict) -> tuple[str, str]:
     if u["kind"] == "olad":
         return (f"olad-g{u['share_set']}-n{u['n']}-s{u['span_ratio']:g}-known{u['level']}",
                 f"出口 {u['n']} 本（組 {u['share_set']}）t={u['span_ratio']:g}τ 段 {u['level']} h={u['h']:.6g}")
+    if u["kind"] == "eng":
+        return (f"eng-p{u['pipe_set']}-s{u['span_ratio']:g}-v{math.log2(u['v0']):g}-{u['rounding']}",
+                f"エンジン {u['shape']} 組 {u['pipe_set']} t={u['span_ratio']:g}τ V0=2^{math.log2(u['v0']):g} {u['rounding']} h={u['h']:.6g}")
     if u["kind"] in PIPE_KINDS:
         return (f"{u['kind']}-{u['shape']}-p{u['pipe_set']}-s{u['span_ratio']:g}-{u['method']}",
                 f"{u['shape']} 組 {u['pipe_set']} t={u['span_ratio']:g}τ {u['method']} h={u['h']:.6g}")
@@ -1046,7 +1161,7 @@ def label(u: dict) -> tuple[str, str]:
         tail = f"-s{u['span_ratio']:.6g}" if u["kind"] in ("chain3b", "edge3") else ""
         if u["kind"] in CROSS_KINDS:
             tail = f"-n{u['fixed_steps']}"
-        if u["kind"] in ("vary", "ladder", "ilad", "tlad"):
+        if u["kind"] in ("vary", "ladder", "ilad", "tlad", "formc"):
             tail = f"-s{u['span_ratio']:g}"
         if u["kind"] == "rnd":
             tail = f"-v{math.log2(u['v0']):g}"
@@ -1079,6 +1194,8 @@ def run_engine(u: dict, ffs: dict) -> dict:
         return run_olad(u, ffs, steps, dt, t)
     if u["kind"] == "rnd2":
         return run_rnd2(u, steps, dt, t)
+    if u["kind"] == "eng":
+        return run_eng(u, ffs, steps, dt, t)
     if u["kind"] == "rnd":  # 第13弾: 丸めのずれを、係数の丸めと掛け算の切り捨てに分ける
         res = run_variant_q(u, ffs, steps, dt, t)
         exact = exact_left(u, t)
@@ -1327,13 +1444,15 @@ def derive(units: list[dict], log=print) -> None:
                     "is_best", "clamp_margin", "clamp_pred", "was_clamped", "start_only", "coef_start", "coef_total",
                     "end_pred", "pred_order_one", "round_part_abs", "floor_part", "coef_share", "big_volume", "round_est",
                     "c64", "carry", "c64carry", "is_best_round", "coef_ratio", "floor_est", "floor_ratio", "series_pred",
-                    "series_pred_abs"):
+                    "series_pred_abs", "carry64", "series_order", "series_exact"):
             u[col] = None
-        for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio", "level", "round_part", "coef_part", "v0", "err_hp", "arith"):
+        for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio", "level", "round_part", "coef_part", "v0", "err_hp", "arith", "round_ulps",
+                    "rounding"):
             u.setdefault(col, None)
         for shape, col in (("branch", "p_branch"), ("merge", "p_merge"), ("pumpfed", "p_pump"), ("ring", "p_ring")):
             u[col] = u["kind"] == "pipe" and u.get("shape") == shape  # pipe2 は第9弾の命題の範囲に入れない
         u["two_stage"] = u["kind"] == "ladder" and len(u["stages"]) == 1
+        u["form"] = u["kind"] in ("formc", "formp")
         u["uniform_in"] = u["method"] == "uniform_in"
         u["from_pump"] = u["kind"] == "flow" and u["base"] == "fed"
         u["settled"] = u["kind"] == "ring" and u["span_ratio"] == RING_SPANS[-1]
@@ -1453,6 +1572,24 @@ def derive(units: list[dict], log=print) -> None:
             u["start_only"] = u["method"].startswith("tay")
             u["coef_start"] = u["err_abs"] / (scale / math.factorial(p + 2))
             u["coef_total"] = u["err_abs"] / (scale * TOTAL_COEF[p])
+        if u["kind"] == "eng":  # 第15弾: エンジン本体の丸め方
+            u["carry64"] = u["rounding"] == "carry64"
+            other = by[(u["team"].replace(f"-{u['rounding']}", "-q48" if u["carry64"] else "-carry64"), u["h"])]
+            u["is_best_round"] = u["round_ulps"] < other["round_ulps"]
+            u["round_part_abs"] = abs(u["round_part"])
+        if u["form"]:  # 第15弾: 式の見込みの次数（式は dt^4 まで。5 以上は「式の範囲では厳密」）
+            spec = pipe_spec(u)
+            key = (u["kind"], tuple(u.get("stages") or u["pipe_params"]), u.get("shape"), u["method"])
+            if key not in series_cache:
+                series_cache[key] = step_series(spec, u["method"])
+            u["series_pred"] = series_formula(spec, series_cache[key], u["dt"], u["t"])
+            half_pred = series_formula(spec, series_cache[key], u["dt"] / 2.0, u["t"])
+            ratio = u["series_pred"] / half_pred if half_pred != 0.0 else 0.0
+            guess = round(math.log2(ratio)) if ratio > 0.0 else 0
+            u["series_exact"] = abs(u["series_pred"]) < 1e-13 or guess >= 5
+            u["series_order"] = None if u["series_exact"] else guess
+            if u["method"] in ("ramp", "quad") and "clamped" in u:
+                u[u["method"] + "_clamped"] = u.pop("clamped")
         if u["kind"] == "rnd2":  # 第14弾: 丸め方ごとの、丸めのずれの内訳
             u["c64"], u["carry"], u["c64carry"] = "c64" in u["arith"], "carry" in u["arith"], u["arith"] == "c64carry"
             u["big_volume"] = u["v0"] >= 64.0
@@ -1488,8 +1625,8 @@ def derive(units: list[dict], log=print) -> None:
             u["coef_share"] = abs(u["coef_part"]) / both if both else None
             u["big_volume"] = u["v0"] >= 64.0
             u["round_est"] = u["steps"] * 2.0 ** -49 * (1.0 + RND_MULS[u["method"]] / u["exact"])
-        if u["kind"] in ("ladder", "ilad", "olad", "pipe2", "tlad", "pipe3"):  # 第10弾〜第13弾: 次数の見積もり
-            u["order_expected"] = (u["level"] + 1 if u["kind"] == "olad" else
+        if u["kind"] in ("ladder", "ilad", "olad", "pipe2", "tlad", "pipe3", "formc", "formp"):  # 第10弾〜第15弾: 次数の見積もり
+            u["order_expected"] = (u["level"] + 1 if u["kind"] == "olad" else (u["series_order"] or 0) if u["form"] else
                                    TLAD_ORDER[u["method"]] if u["kind"] == "tlad" else LADDER_ORDER[u["method"]])
             half = by.get((u["team"], u["h"] / 2.0))
             if half is not None:

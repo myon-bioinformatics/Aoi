@@ -1,4 +1,838 @@
 {
+ "fifth": {
+  "bias": {
+   "wl_rf_loss_gap": {
+    "eight": {
+     "median": -0.016163491,
+     "one_sided": false,
+     "positive": 65,
+     "share_positive": 0.451388889,
+     "units": 144
+    },
+    "full": {
+     "median": 0.03006769,
+     "one_sided": false,
+     "positive": 86,
+     "share_positive": 0.597222222,
+     "units": 144
+    },
+    "nine": {
+     "median": 0.001835573,
+     "one_sided": false,
+     "positive": 74,
+     "share_positive": 0.513888889,
+     "units": 144
+    }
+   },
+   "wl_rf_win_gap": {
+    "eight": {
+     "median": 0.000559201,
+     "one_sided": false,
+     "positive": 73,
+     "share_positive": 0.506944444,
+     "units": 144
+    },
+    "full": {
+     "median": -0.199271122,
+     "one_sided": true,
+     "positive": 11,
+     "share_positive": 0.076388889,
+     "units": 144
+    },
+    "nine": {
+     "median": -0.053580033,
+     "one_sided": false,
+     "positive": 51,
+     "share_positive": 0.354166667,
+     "units": 144
+    }
+   },
+   "wl_wpct_high_gap": {
+    "eight": {
+     "median": 0.001743504,
+     "one_sided": false,
+     "positive": 75,
+     "share_positive": 0.520833333,
+     "units": 144
+    },
+    "full": {
+     "median": -0.000768031,
+     "one_sided": false,
+     "positive": 71,
+     "share_positive": 0.493055556,
+     "units": 144
+    },
+    "nine": {
+     "median": -0.001736615,
+     "one_sided": false,
+     "positive": 71,
+     "share_positive": 0.493055556,
+     "units": 144
+    }
+   },
+   "wl_wpct_low_gap": {
+    "eight": {
+     "median": 0.002883982,
+     "one_sided": false,
+     "positive": 75,
+     "share_positive": 0.520833333,
+     "units": 144
+    },
+    "full": {
+     "median": 0.005121979,
+     "one_sided": false,
+     "positive": 79,
+     "share_positive": 0.548611111,
+     "units": 144
+    },
+    "nine": {
+     "median": 0.00428886,
+     "one_sided": false,
+     "positive": 78,
+     "share_positive": 0.541666667,
+     "units": 144
+    }
+   }
+  },
+  "gate": {
+   "ok": true,
+   "problems": []
+  },
+  "predictions": [
+   {
+    "got": [],
+    "id": "F1",
+    "ok": true,
+    "text": "ゲート: (a) で P85・P86・P87 の各形の数と終了コードが、保存された値と同じ"
+   },
+   {
+    "got": 0.513888889,
+    "id": "F2",
+    "ok": true,
+    "text": "負け試合の得点: 9 回までで正の単位は 45〜60 %"
+   },
+   {
+    "got": {
+     "wl_wpct_high_gap": 0.493055556,
+     "wl_wpct_low_gap": 0.548611111
+    },
+    "id": "F3",
+    "ok": true,
+    "text": "勝率の 2 つの列は、そのままで片寄っていない"
+   },
+   {
+    "got": {
+     "hold": 8,
+     "n": 12
+    },
+    "id": "F4",
+    "ok": true,
+    "text": "P86: 8 回までの値でも、中日の 12 単位のうち 8 以上で成り立つ"
+   },
+   {
+    "got": 0.14590492761522109,
+    "id": "F5",
+    "ok": true,
+    "text": "D86: 8 回までの値で、fisher_p は 0.05 以上"
+   },
+   {
+    "got": [
+     "P85",
+     "K85",
+     "K86"
+    ],
+    "id": "F6",
+    "ok": true,
+    "text": "6 件のうち、(d) で判定が変わるのは 3 件以上"
+   }
+  ],
+  "propositions": [
+   {
+    "changed_forms_c": [],
+    "changed_forms_d": [
+     "original"
+    ],
+    "id": "P85",
+    "key": "[team=d] * => wl_rf_win_gap<0",
+    "statement": "中日は、勝ち試合の得点が、自分の得点・失点の分布から見込まれるより少ない（勝つときは投手戦で勝っている）",
+    "treatments": {
+     "a": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 1,
+        "undetermined": 0
+       },
+       "original": {
+        "code": 4,
+        "hold": 12,
+        "n": 13,
+        "undetermined": 0
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "b": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 1,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 4,
+        "hold": 11,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "c": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 5,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 4,
+        "hold": 7,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "d": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 7,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 3,
+        "hold": 5,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 3
+     }
+    }
+   },
+   {
+    "changed_forms_c": [],
+    "changed_forms_d": [],
+    "id": "P86",
+    "key": "[team=d] * => wl_rf_loss_gap>0",
+    "statement": "中日は、負け試合の得点が、自分の得点・失点の分布から見込まれるより多い（点を取っても負けている）",
+    "treatments": {
+     "a": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 2,
+        "undetermined": 0
+       },
+       "original": {
+        "code": 4,
+        "hold": 11,
+        "n": 13,
+        "undetermined": 0
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "b": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 1,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 4,
+        "hold": 11,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "c": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 4,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 4,
+        "hold": 8,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "d": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 4,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 4,
+        "hold": 8,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     }
+    }
+   },
+   {
+    "changed_forms_c": [
+     "original"
+    ],
+    "changed_forms_d": [],
+    "id": "P87",
+    "key": "[team=d] * => wl_wpct_high_gap<0",
+    "statement": "中日は、両チームの合計得点がリーグの中央値より多い試合の勝率が、見込みより低い（点の多い試合を制せない）",
+    "treatments": {
+     "a": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 7,
+        "undetermined": 0
+       },
+       "original": {
+        "code": 3,
+        "hold": 6,
+        "n": 13,
+        "undetermined": 0
+       }
+      },
+      "held_out": null,
+      "judgement": 3
+     },
+     "b": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 6,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 3,
+        "hold": 6,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 3
+     },
+     "c": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 5,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 4,
+        "hold": 7,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "d": {
+      "fisher_p": 1.0,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 0,
+        "n": 6,
+        "undetermined": 1
+       },
+       "original": {
+        "code": 3,
+        "hold": 6,
+        "n": 12,
+        "undetermined": 1
+       }
+      },
+      "held_out": null,
+      "judgement": 3
+     }
+    }
+   },
+   {
+    "changed_forms_c": [
+     "original"
+    ],
+    "changed_forms_d": [
+     "original"
+    ],
+    "id": "K85",
+    "key": "[all] upper_half==false => wl_rf_win_gap<0",
+    "statement": "B クラスのチーム・シーズンなら、勝ち試合の得点が、自分の得点・失点の分布から見込まれるより少ない",
+    "treatments": {
+     "a": {
+      "fisher_p": 0.9842396620555826,
+      "forms": {
+       "contrapositive": {
+        "code": 3,
+        "hold": 3,
+        "n": 12,
+        "undetermined": 0
+       },
+       "converse": {
+        "code": 3,
+        "hold": 69,
+        "n": 144,
+        "undetermined": 0
+       },
+       "inverse": {
+        "code": 3,
+        "hold": 3,
+        "n": 78,
+        "undetermined": 0
+       },
+       "original": {
+        "code": 1,
+        "hold": 69,
+        "n": 78,
+        "undetermined": 0
+       }
+      },
+      "held_out": {
+       "hold": 58,
+       "n": 66,
+       "verdict": "Supported"
+      },
+      "judgement": 1
+     },
+     "b": {
+      "fisher_p": 0.9722777454383752,
+      "forms": {
+       "contrapositive": {
+        "code": 3,
+        "hold": 3,
+        "n": 11,
+        "undetermined": 12
+       },
+       "converse": {
+        "code": 3,
+        "hold": 64,
+        "n": 133,
+        "undetermined": 12
+       },
+       "inverse": {
+        "code": 3,
+        "hold": 3,
+        "n": 72,
+        "undetermined": 12
+       },
+       "original": {
+        "code": 1,
+        "hold": 64,
+        "n": 72,
+        "undetermined": 12
+       }
+      },
+      "held_out": {
+       "hold": 53,
+       "n": 60,
+       "verdict": "Supported"
+      },
+      "judgement": 1
+     },
+     "c": {
+      "fisher_p": 0.9819825029039165,
+      "forms": {
+       "contrapositive": {
+        "code": 3,
+        "hold": 20,
+        "n": 51,
+        "undetermined": 12
+       },
+       "converse": {
+        "code": 3,
+        "hold": 41,
+        "n": 93,
+        "undetermined": 12
+       },
+       "inverse": {
+        "code": 3,
+        "hold": 20,
+        "n": 72,
+        "undetermined": 12
+       },
+       "original": {
+        "code": 3,
+        "hold": 41,
+        "n": 72,
+        "undetermined": 12
+       }
+      },
+      "held_out": {
+       "hold": 34,
+       "n": 60,
+       "verdict": "Rejected"
+      },
+      "judgement": 3
+     },
+     "d": {
+      "fisher_p": 0.8413609981335559,
+      "forms": {
+       "contrapositive": {
+        "code": 3,
+        "hold": 34,
+        "n": 73,
+        "undetermined": 12
+       },
+       "converse": {
+        "code": 3,
+        "hold": 33,
+        "n": 71,
+        "undetermined": 12
+       },
+       "inverse": {
+        "code": 3,
+        "hold": 34,
+        "n": 72,
+        "undetermined": 12
+       },
+       "original": {
+        "code": 3,
+        "hold": 33,
+        "n": 72,
+        "undetermined": 12
+       }
+      },
+      "held_out": {
+       "hold": 28,
+       "n": 60,
+       "verdict": "Rejected"
+      },
+      "judgement": 3
+     }
+    }
+   },
+   {
+    "changed_forms_c": [
+     "contrapositive",
+     "converse",
+     "inverse",
+     "original"
+    ],
+    "changed_forms_d": [
+     "contrapositive",
+     "converse",
+     "inverse",
+     "original"
+    ],
+    "id": "K86",
+    "key": "[all] upper_half==false => wl_rf_loss_gap>0",
+    "statement": "B クラスのチーム・シーズンなら、負け試合の得点が、自分の得点・失点の分布から見込まれるより多い",
+    "treatments": {
+     "a": {
+      "fisher_p": 0.01132580246141625,
+      "forms": {
+       "contrapositive": {
+        "code": 2,
+        "hold": 40,
+        "n": 65,
+        "undetermined": 0
+       },
+       "converse": {
+        "code": 2,
+        "hold": 53,
+        "n": 91,
+        "undetermined": 0
+       },
+       "inverse": {
+        "code": 2,
+        "hold": 40,
+        "n": 78,
+        "undetermined": 0
+       },
+       "original": {
+        "code": 4,
+        "hold": 53,
+        "n": 78,
+        "undetermined": 0
+       }
+      },
+      "held_out": {
+       "hold": 42,
+       "n": 66,
+       "verdict": "Rejected"
+      },
+      "judgement": 4
+     },
+     "b": {
+      "fisher_p": 0.013394316721192899,
+      "forms": {
+       "contrapositive": {
+        "code": 2,
+        "hold": 36,
+        "n": 58,
+        "undetermined": 12
+       },
+       "converse": {
+        "code": 2,
+        "hold": 50,
+        "n": 86,
+        "undetermined": 12
+       },
+       "inverse": {
+        "code": 2,
+        "hold": 36,
+        "n": 72,
+        "undetermined": 12
+       },
+       "original": {
+        "code": 4,
+        "hold": 50,
+        "n": 72,
+        "undetermined": 12
+       }
+      },
+      "held_out": {
+       "hold": 39,
+       "n": 60,
+       "verdict": "Inconclusive"
+      },
+      "judgement": 4
+     },
+     "c": {
+      "fisher_p": 0.1215387728059187,
+      "forms": {
+       "contrapositive": {
+        "code": 3,
+        "hold": 39,
+        "n": 70,
+        "undetermined": 12
+       },
+       "converse": {
+        "code": 3,
+        "hold": 41,
+        "n": 74,
+        "undetermined": 12
+       },
+       "inverse": {
+        "code": 3,
+        "hold": 39,
+        "n": 72,
+        "undetermined": 12
+       },
+       "original": {
+        "code": 3,
+        "hold": 41,
+        "n": 72,
+        "undetermined": 12
+       }
+      },
+      "held_out": {
+       "hold": 33,
+       "n": 60,
+       "verdict": "Rejected"
+      },
+      "judgement": 3
+     },
+     "d": {
+      "fisher_p": 0.25155730230693646,
+      "forms": {
+       "contrapositive": {
+        "code": 3,
+        "hold": 42,
+        "n": 79,
+        "undetermined": 12
+       },
+       "converse": {
+        "code": 3,
+        "hold": 35,
+        "n": 65,
+        "undetermined": 12
+       },
+       "inverse": {
+        "code": 3,
+        "hold": 42,
+        "n": 72,
+        "undetermined": 12
+       },
+       "original": {
+        "code": 3,
+        "hold": 35,
+        "n": 72,
+        "undetermined": 12
+       }
+      },
+      "held_out": {
+       "hold": 27,
+       "n": 60,
+       "verdict": "Rejected"
+      },
+      "judgement": 3
+     }
+    }
+   },
+   {
+    "changed_forms_c": [
+     "contrapositive"
+    ],
+    "changed_forms_d": [],
+    "id": "D86",
+    "key": "[where:upper_half==false] team==\"d\" => wl_rf_loss_gap>0",
+    "statement": "B クラスのチーム・シーズンの中で、中日は、負け試合の得点が、自分の得点・失点の分布から見込まれるより多い",
+    "treatments": {
+     "a": {
+      "fisher_p": 0.050019079815112194,
+      "forms": {
+       "contrapositive": {
+        "code": 1,
+        "hold": 24,
+        "n": 25,
+        "undetermined": 0
+       },
+       "original": {
+        "code": 4,
+        "hold": 11,
+        "n": 12,
+        "undetermined": 0
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "b": {
+      "fisher_p": 0.06139194498995331,
+      "forms": {
+       "contrapositive": {
+        "code": 1,
+        "hold": 21,
+        "n": 22,
+        "undetermined": 6
+       },
+       "original": {
+        "code": 4,
+        "hold": 11,
+        "n": 12,
+        "undetermined": 6
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "c": {
+      "fisher_p": 0.33901429876907213,
+      "forms": {
+       "contrapositive": {
+        "code": 4,
+        "hold": 27,
+        "n": 31,
+        "undetermined": 6
+       },
+       "original": {
+        "code": 4,
+        "hold": 8,
+        "n": 12,
+        "undetermined": 6
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     },
+     "d": {
+      "fisher_p": 0.14590492761522109,
+      "forms": {
+       "contrapositive": {
+        "code": 1,
+        "hold": 33,
+        "n": 37,
+        "undetermined": 6
+       },
+       "original": {
+        "code": 4,
+        "hold": 8,
+        "n": 12,
+        "undetermined": 6
+       }
+      },
+      "held_out": null,
+      "judgement": 4
+     }
+    }
+   }
+  ],
+  "summary": {
+   "changed_c": [
+    "P87",
+    "K85",
+    "K86",
+    "D86"
+   ],
+   "changed_d": [
+    "P85",
+    "K85",
+    "K86"
+   ],
+   "one_sided_eight": [],
+   "one_sided_full": [
+    "wl_rf_win_gap"
+   ],
+   "one_sided_nine": [],
+   "propositions": [
+    "P85",
+    "P86",
+    "P87",
+    "K85",
+    "K86",
+    "D86"
+   ]
+  }
+ },
  "fourth": {
   "confirm": {
    "missing_columns": 72,

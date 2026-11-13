@@ -33,6 +33,11 @@
   C. 「9 回まで」（延長に入った試合だけ 9 回終了時の得点に替えた表）を足して、片寄りを延長の分と 9 回の終わり方の分に分ける
      読み（判定ではない）: 9 回までで負の単位が 80 % 以上なら 1（主に 9 回の終わり方）、65 % 以下なら 3（主に延長）、間は 2（両方）
 
+第5弾（宣言は kind_reask_results/README.md の「第5弾」の節。計算の前のコミットで固定。新しい命題もファイルも足さない）:
+  1. win_loss_split の 4 つの「実際 − 見込み」の列を、そのまま・9 回まで・8 回までの表で見る（正の単位が 35〜65 % の外なら片寄り）
+  2. その列を使う命題（P85・P86・P87・K85・K86・D86）に、列の値だけを替えた表を渡し、終了コードが変わるものを数える
+     (a) そのまま / (b) 2012年を空にする / (c) 9 回までの値 / (d) 8 回までの値。変わる = どれかの形の終了コードが (b) と違う
+
 ゲート（通らなければ、命題の結果は出さずに止まる）:
   正本の命題ファイルの sha256 が保存された値と同じ。つなげたファイルが読み込める。
   K・D の命題が branch 側（from-cycle-001/propositions.toml）のどれとも同じ問いでない。
@@ -281,6 +286,8 @@ def win_runs_gap(repo: Path, full, skip: list[int], pl) -> tuple[dict, dict]:
         stats = {"negative": sum(x < 0 for x in win), "share_negative": round(sum(x < 0 for x in win) / len(win), 9),
                  "median_gap": round(mid, 9), "min_gap": round(win[0], 9), "max_gap": round(win[-1], 9),
                  "loss_gap_positive": sum(x > 0 for x in loss)}
+        if name in ("full", "nine", "eight"):
+            more.setdefault("units", {})[name] = got                         # 第5弾の材料: 単位ごとの 4 つの列
         if name == "nine":                                                   # 第4弾 C の表。第3弾の出力には入れない
             more["nine"] = stats
             continue
@@ -337,6 +344,68 @@ def round_four(fs: list[dict], evaluated: dict[str, dict], confirm: dict, third:
     return {"confirm": confirm, "propositions": list(props.values()), "split": split, "predictions": preds}
 
 
+def round_five(props: list[dict], stored: dict, tables: tuple, focus, units: dict, skip: list[int], P, pl) -> dict:
+    """第5弾: 「実際 − 見込み」の 4 つの列の片寄りと、列の値だけを替えたときに終了コードが変わる命題。
+
+    units は {表の名前: {(年, 球団): win_loss_split の行}}。tables は（分析に入る単位, 除外した年の単位）。
+    """
+    cols = ("wl_rf_win_gap", "wl_rf_loss_gap", "wl_wpct_low_gap", "wl_wpct_high_gap")
+    bias = {}
+    for col in cols:
+        bias[col] = {}
+        for name in ("full", "nine", "eight"):
+            vals = sorted(r[col] for k, r in units[name].items() if k[0] not in skip and r[col] is not None)
+            share = sum(x > 0 for x in vals) / len(vals)
+            bias[col][name] = {"units": len(vals), "positive": sum(x > 0 for x in vals), "share_positive": round(share, 9),
+                               "median": round((vals[(len(vals) - 1) // 2] + vals[len(vals) // 2]) / 2, 9),
+                               "one_sided": not 0.35 <= share <= 0.65}
+
+    def swapped(df, name):                       # 列の値だけを替えた表。記録の無い年（2012年）は空になる
+        if name is None:
+            return df
+        rows = [{"season": k[0], "team": k[1], **{c: r[c] for c in cols}} for k, r in sorted(units[name].items())]
+        new = pl.DataFrame(rows, schema_overrides=dict.fromkeys(cols, pl.Float64)).cast({"season": df.schema["season"]})
+        return df.drop(cols).join(new, on=["season", "team"], how="left")
+
+    treatments = {"a": None, "b": "full", "c": "nine", "d": "eight"}
+    used = [p for p in props if {c["col"] for c in [*P._if_conds(p), *p["then"], *(p.get("scope") or {}).get("where", [])]} & set(cols)]
+    rows, problems = [], []
+    for p in used:
+        per = {}
+        for t, name in treatments.items():
+            r = P.evaluate(p, *(swapped(df, name) for df in tables), focus)
+            per[t] = {"forms": {f["form"]: {k: f[k] for k in ("n", "hold", "undetermined", "code")} for f in r["forms"]},
+                      "fisher_p": r["forms"][0]["fisher_p"], "judgement": r["judgement"]["code"],
+                      "held_out": {k: r["held_out"][k] for k in ("n", "hold", "verdict")} if r["held_out"] else None}
+        if p["id"] in stored:                    # ゲート: 正本の命題は、(a) が保存された判定と同じ
+            want = {f["form"]: {k: f[k] for k in ("n", "hold", "undetermined", "code")} for f in stored[p["id"]]["forms"]}
+            if per["a"]["forms"] != want:
+                problems.append(f"{p['id']}: (a) が保存された判定と違う")
+        diff = lambda t: sorted(f for f, v in per[t]["forms"].items() if v["code"] != per["b"]["forms"][f]["code"])  # noqa: E731
+        rows.append({"id": p["id"], "statement": p["statement"], "key": P.identity(p)["key"], "treatments": per,
+                     "changed_forms_c": diff("c"), "changed_forms_d": diff("d")})
+    by = {r["id"]: r for r in rows}
+    summary = {"propositions": [r["id"] for r in rows], "changed_c": [r["id"] for r in rows if r["changed_forms_c"]],
+               "changed_d": [r["id"] for r in rows if r["changed_forms_d"]],
+               "one_sided_full": [c for c in cols if bias[c]["full"]["one_sided"]],
+               "one_sided_nine": [c for c in cols if bias[c]["nine"]["one_sided"]],
+               "one_sided_eight": [c for c in cols if bias[c]["eight"]["one_sided"]]}
+    loss9, p86 = bias["wl_rf_loss_gap"]["nine"]["share_positive"], by["P86"]["treatments"]["d"]["forms"]["original"]
+    preds = [
+        {"id": "F1", "text": "ゲート: (a) で P85・P86・P87 の各形の数と終了コードが、保存された値と同じ", "ok": not problems, "got": problems},
+        {"id": "F2", "text": "負け試合の得点: 9 回までで正の単位は 45〜60 %", "ok": 0.45 <= loss9 <= 0.60, "got": loss9},
+        {"id": "F3", "text": "勝率の 2 つの列は、そのままで片寄っていない",
+         "ok": not bias["wl_wpct_low_gap"]["full"]["one_sided"] and not bias["wl_wpct_high_gap"]["full"]["one_sided"],
+         "got": {c: bias[c]["full"]["share_positive"] for c in cols[2:]}},
+        {"id": "F4", "text": "P86: 8 回までの値でも、中日の 12 単位のうち 8 以上で成り立つ", "ok": p86["n"] == 12 and p86["hold"] >= 8,
+         "got": {k: p86[k] for k in ("hold", "n")}},
+        {"id": "F5", "text": "D86: 8 回までの値で、fisher_p は 0.05 以上", "ok": by["D86"]["treatments"]["d"]["fisher_p"] >= ALPHA,
+         "got": by["D86"]["treatments"]["d"]["fisher_p"]},
+        {"id": "F6", "text": "6 件のうち、(d) で判定が変わるのは 3 件以上", "ok": len(summary["changed_d"]) >= 3, "got": summary["changed_d"]},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "bias": bias, "propositions": rows, "summary": summary, "predictions": preds}
+
+
 def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None = None, props: Path | None = None,
             extra: Path | None = None, stored: Path | None = None, branch: Path | None = None,
             second: Path | None = None, panel: Path | None = None, fourth: Path | None = None,
@@ -364,7 +433,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                       "fourth_propositions_sha256": hashlib.sha256(fourth.read_bytes()).hexdigest(),
                       "central": rel(central, repo), "central_sha256": hashlib.sha256(central.read_bytes()).hexdigest()},
            "gate": {"ok": True, "problems": []}, "propositions": [], "predictions": [], "summary": {}, "second": {}, "third": {},
-           "fourth": {}}
+           "fourth": {}, "fifth": {}}
     problems = out["gate"]["problems"]
     stored_sha = {r["meta"]["sha256"] for r in stored_rows.values()}
     if sha not in stored_sha:
@@ -448,6 +517,8 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
     evaluated |= {p["id"]: P.evaluate(p, *with8, focus) for p in fs}
     confirm4 = confirm_new_season([*ks, *ds], trained, targets, full, panel, P, pl, overlay=central)
     out["fourth"] = round_four(fs, evaluated, confirm4, out["third"], more)
+    out["fifth"] = round_five([*P.load(props)[0], *ks, *ds], stored_rows, (included, excluded), focus, more["units"],
+                              [int(e["season"]) for e in exclusions], P, pl)
     return out
 
 
@@ -563,6 +634,33 @@ def render(res: dict) -> str:
           f"読み（判定ではない）: **{sp['reading']}** " + {1: "主に 9 回の終わり方", 2: "両方", 3: "主に延長"}[sp["reading"]], "",
           f"## 第4弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f4['predictions'])}/{len(f4['predictions'])}", ""]
     for x in f4["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f5 = res["fifth"]
+    col_ja = {"wl_rf_win_gap": "勝ち試合の得点", "wl_rf_loss_gap": "負け試合の得点", "wl_wpct_low_gap": "点の少ない試合の勝率",
+              "wl_wpct_high_gap": "点の多い試合の勝率"}
+    L += ["", "# 第5弾 1: 「実際 − 見込み」の 4 つの列の片寄り", "",
+          "各セルは「正の単位 / 単位（割合）・中央値」。割合が 35〜65 % の外なら片寄り（★）。", "",
+          "| 列 | そのまま | 9 回まで | 8 回まで |", "|---|---|---|---|"]
+    for col, by_table in f5["bias"].items():
+        cell = lambda v: f"{v['positive']}/{v['units']}（{v['share_positive']:.2f}）・{v['median']:+.3f}{' ★' if v['one_sided'] else ''}"  # noqa: E731
+        L += [f"| {col_ja[col]} `{col}` | " + " | ".join(cell(by_table[k]) for k in ("full", "nine", "eight")) + " |"]
+    L += ["", "# 第5弾 2: 列の値だけを替えたときの判定", "",
+          f"ゲート（(a) が保存された判定と同じか）: {'通った' if f5['gate']['ok'] else '通らなかった'}。",
+          "各セルは元の命題の「終了コード・hold/n（判定できない単位）」と、［総合の終了コード］。"
+          "(a) そのまま、(b) 2012年を空にする、(c) 9 回までの値、(d) 8 回までの値。", "",
+          "| 命題 | (a) | (b) | (c) | (d) | (c) で変わる形 | (d) で変わる形 |", "|---|---|---|---|---|---|---|"]
+    for r in f5["propositions"]:
+        cell = lambda t: (lambda o, j: f"{o['code']}・{o['hold']}/{o['n']}（{o['undetermined']}）［{j}］")(  # noqa: E731
+            r["treatments"][t]["forms"]["original"], r["treatments"][t]["judgement"])
+        names = lambda fs_: "、".join(FORM_JA[f] for f in fs_) or "なし"  # noqa: E731
+        L += [f"| {r['id']} {r['statement']} | " + " | ".join(cell(t) for t in "abcd")
+              + f" | {names(r['changed_forms_c'])} | {names(r['changed_forms_d'])} |"]
+    s5 = f5["summary"]
+    L += ["", f"判定が変わる命題: (c) 9 回までで {len(s5['changed_c'])}/{len(s5['propositions'])} 件（{'、'.join(s5['changed_c']) or 'なし'}）、"
+          f"(d) 8 回までで {len(s5['changed_d'])}/{len(s5['propositions'])} 件（{'、'.join(s5['changed_d']) or 'なし'}）。", "",
+          f"## 第5弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f5['predictions'])}/{len(f5['predictions'])}", ""]
+    for x in f5["predictions"]:
         L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
     return "\n".join(L) + "\n"
 

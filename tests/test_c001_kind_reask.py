@@ -84,7 +84,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -217,6 +217,38 @@ def test_most_of_the_one_sided_gap_comes_from_extra_innings():
     assert sp["reading"] == 3 and sp["share_of_gap_from_extras"] > 0.5 > sp["share_of_gap_from_ninth"]
     assert abs(sp["share_of_gap_from_extras"] + sp["share_of_gap_from_ninth"] - 1) < 1e-8
     assert [x["ok"] for x in RES["fourth"]["predictions"]] == [True, True, True, True, True, False, False]
+
+
+# ---- 第5弾: 4 つの「実際 − 見込み」の列の片寄りと、列の値だけを替えたときの判定 ------------------------------------------
+FIFTH = {r["id"]: r for r in RES["fifth"]["propositions"]}
+
+
+def test_only_the_win_runs_column_is_one_sided():
+    s5, bias = RES["fifth"]["summary"], RES["fifth"]["bias"]
+    assert (s5["one_sided_full"], s5["one_sided_nine"], s5["one_sided_eight"]) == (["wl_rf_win_gap"], [], [])
+    pos = {c: tuple(bias[c][k]["positive"] for k in ("full", "nine", "eight")) for c in ("wl_rf_win_gap", "wl_rf_loss_gap")}
+    assert pos == {"wl_rf_win_gap": (11, 51, 73), "wl_rf_loss_gap": (86, 74, 65)}
+    assert all(v["units"] == 144 for by_table in bias.values() for v in by_table.values())
+
+
+def test_swapping_the_column_values_changes_some_exit_codes():
+    assert RES["fifth"]["gate"] == {"ok": True, "problems": []}
+    got = {i: [(r["treatments"][t]["forms"]["original"]["hold"], r["treatments"][t]["forms"]["original"]["n"],
+                r["treatments"][t]["judgement"]) for t in "abcd"] for i, r in FIFTH.items()}
+    assert got == {"P85": [(12, 13, 4), (11, 12, 4), (7, 12, 4), (5, 12, 3)], "P86": [(11, 13, 4), (11, 12, 4), (8, 12, 4), (8, 12, 4)],
+                   "P87": [(6, 13, 3), (6, 12, 3), (7, 12, 4), (6, 12, 3)], "K85": [(69, 78, 1), (64, 72, 1), (41, 72, 3), (33, 72, 3)],
+                   "K86": [(53, 78, 4), (50, 72, 4), (41, 72, 3), (35, 72, 3)], "D86": [(11, 12, 4), (11, 12, 4), (8, 12, 4), (8, 12, 4)]}
+    assert RES["fifth"]["summary"]["changed_c"] == ["P87", "K85", "K86", "D86"]
+    assert RES["fifth"]["summary"]["changed_d"] == ["P85", "K85", "K86"]
+    assert [x["ok"] for x in RES["fifth"]["predictions"]] == [True] * 6
+
+
+def test_the_eight_inning_treatment_agrees_with_the_round_four_propositions():
+    # 列を替えた P85・K85 は、8 回までの列で書いた E85・KE85 と同じ数になる
+    q = {x["id"]: x["forms"]["original"] for x in RES["fourth"]["propositions"]}
+    for old_id, new_id in (("P85", "E85"), ("K85", "KE85")):
+        d = FIFTH[old_id]["treatments"]["d"]["forms"]["original"]
+        assert (d["hold"], d["n"]) == (q[new_id]["hold"], q[new_id]["n"])
 
 
 def test_main_writes_both_files_and_returns_zero(tmp_path):

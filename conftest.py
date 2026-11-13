@@ -145,6 +145,8 @@ _DISTINCT_BASENAMES = frozenset({
     'test_no_sibling_imports.py',
     'test_vendor_lock.py',
     'test_node_launcher_regressions.py',
+    # DRAgoWing と SakAnalytics が、別々の中身で同じ名前の検査を持つ（SakAnalytics #36）。
+    'test_benchmark_optimization_guard.py',
 })
 
 

@@ -39,7 +39,7 @@
      (a) そのまま / (b) 2012年を空にする / (c) 9 回までの値 / (d) 8 回までの値。変わる = どれかの形の終了コードが (b) と違う
 
 第6弾（宣言は kind_reask_results/kind_reask_r6_propositions.toml の冒頭。刻印は同じ timestamp ファイル）:
-  A. 8 回までの得点で作り直した wl_*8 の列（eighth_split。games_table_from_observed の --with-eighth の表から）で、E85・KE85・DE85 を評価し直し、
+  A. 8 回までの得点で作り直した wl_*8 の列（sakanalytics.win_loss_split_eighth。games_table_from_observed の --with-eighth の表から）で、E85・KE85・DE85 を評価し直し、
      E86・KE86・DE86 を足す。2026年の 858 試合からも同じ列を作り、6 命題を confirm_units で数える（記録のみ）
   B. 配分の効果（allocation_table）と作り直し（rank_probability）を、そのまま・9 回まで・8 回までの表で作り直す。
      読み: 正の単位が 35〜65 % の外なら片寄り、A クラスで正の割合 − B クラスで正の割合 が 0.30 以上なら強さに沿った寄り。
@@ -461,24 +461,6 @@ def round_five(props: list[dict], stored: dict, tables: tuple, focus, units: dic
     return {"gate": {"ok": not problems, "problems": problems}, "bias": bias, "propositions": rows, "summary": summary, "predictions": preds}
 
 
-def eighth_split(games: list[dict], teams: dict, pl, SA):
-    """試合の表（games_table_from_observed の eighth=True。hs8・as8 つき）から、win_loss_split を 8 回までの得点で作り直す。
-
-    列名の後ろに 8 を付ける。8 回に届かない試合は数えない。勝ち負けも 8 回までの得点で付け直す。
-    sakanalytics/ は子リポジトリ SakAnalytics の写し（docs/child-repositories.md）なので、Aoi の中では直接足さず、同じ計算をここで行う。
-    """
-    rows = []
-    for gm in games:
-        if gm["hs8"] is None or gm["as8"] is None:
-            continue
-        for team, opp, rf, ra, home in ((gm["home"], gm["away"], gm["hs8"], gm["as8"], True),
-                                        (gm["away"], gm["home"], gm["as8"], gm["hs8"], False)):
-            rows.append({"season": int(gm["date"][:4]), "team": team, "opp": opp, "league": teams[team]["league"],
-                         "rf": rf, "ra": ra, "is_home": home})
-    out = SA.win_loss_split(pl.DataFrame(rows, schema_overrides={"season": pl.Int32}))
-    return out.rename({c: f"{c}8" for c in out.columns if c.startswith("wl_")})
-
-
 PAIRED = ("alloc_net", "alloc_net_strat", "alloc_net_opp", "wpct_minus_sim")   # 第6弾 B で寄りを見る量（実際 − 見込み）
 
 
@@ -505,7 +487,7 @@ def paired_columns(t, pl, SA) -> dict:
 
 def round_six(repo: Path, config: Path, full, tables: tuple, focus, fs: list[dict], gs: list[dict], evaluated: dict,
               round4: dict, more: dict, props: list[dict], stored: dict, skip: list[int], panel: Path, P, pl) -> dict:
-    """第6弾。A: 試合の表から作り直した wl_*8 の列（eighth_split）で E85〜DE86、2026年は記録のみ。
+    """第6弾。A: 試合の表から作り直した wl_*8 の列（sakanalytics.win_loss_split_eighth）で E85〜DE86、2026年は記録のみ。
     B: 配分の効果と作り直しの列の、延長による寄りと、その列を使う命題の判定の変化。"""
     import games_table_from_observed as GT
     import sakanalytics as SA
@@ -513,9 +495,10 @@ def round_six(repo: Path, config: Path, full, tables: tuple, focus, fs: list[dic
     teams = SA.load_config(config)["teams"]
     raw = json.loads((base / "recovered-inputs/observed/games_raw.json").read_text(encoding="utf-8"))
     g = GT.games_per_team(full.select("season", "team", "G").to_dicts())
-    hist = eighth_split(GT.from_games_raw(raw, g, eighth=True), teams, pl, SA)
+    # sakanalytics の win_loss_split_eighth（SakAnalytics #43 を取り込んだ後は、道具の関数をそのまま使う）
+    hist = SA.win_loss_split_eighth(SA.to_team_games(pl.DataFrame(GT.from_games_raw(raw, g, eighth=True)), teams))
     rows26 = [json.loads(x) for x in (base / "season-2026/observed/games.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
-    new26 = eighth_split(GT.from_season_games(rows26, eighth=True), teams, pl, SA)
+    new26 = SA.win_loss_split_eighth(SA.to_team_games(pl.DataFrame(GT.from_season_games(rows26, eighth=True)), teams))
 
     # ---- A: ゲート（第4弾の、別の道筋で作った値と同じか）と、6 命題
     mine = {(r["season"], r["team"]): r["wl_rf_win_gap8"] for r in more["gap8"]}

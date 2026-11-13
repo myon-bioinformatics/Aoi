@@ -54,9 +54,7 @@ not decided, so the box stops with a message instead of substituting a number.
 """
 from __future__ import annotations
 
-import argparse
-import json
-import math
+import argparse, json, math
 from pathlib import Path
 
 import synthetic_league as sl

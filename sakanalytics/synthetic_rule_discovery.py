@@ -7,13 +7,8 @@ freeze its JSON registry before evaluating independent seeds and profiles.
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-from itertools import combinations
-import json
-import math
-from pathlib import Path
-import statistics
+import argparse, hashlib, json, math, statistics
+from itertools import combinations; from pathlib import Path
 
 import polars as pl
 from propositions import _antecedent, load
@@ -166,7 +161,7 @@ def evaluate(rows, props, registry):
                 interpretation='Exploratory retrospective rules, model conditional; no real-world causal verdict or acceptance change.',groups=groups)
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('mode',choices=['features','discover','evaluate'])
     p.add_argument('--input',type=Path,required=True)
@@ -174,7 +169,7 @@ def main():
     p.add_argument('--cycle-dir',type=Path,help='サイクルのフォルダ（呼び出し側が解決して渡す）。--propositions がなければ必須')
     p.add_argument('--registry',type=Path)
     p.add_argument('--propositions',type=Path,default=None)
-    a=p.parse_args()
+    a=p.parse_args(argv)
     if a.propositions is None and a.cycle_dir is None and a.mode!='features':
         p.error('--propositions か --cycle-dir が要る')
     propositions = a.propositions or (a.cycle_dir / 'propositions.toml' if a.cycle_dir else None)

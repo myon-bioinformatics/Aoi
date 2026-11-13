@@ -571,28 +571,29 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1051,
+      "attribute_uses": 1070,
       "attributes": {
         "Boolean": 15,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 269,
+        "DataFrame": 272,
         "Expr": 13,
         "Float32": 1,
         "Float64": 72,
-        "Int32": 37,
+        "Int32": 36,
         "Int64": 41,
-        "Series": 15,
+        "Series": 17,
         "Utf8": 24,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 445,
+        "col": 454,
         "concat": 12,
         "concat_list": 1,
         "concat_str": 3,
         "exceptions.PolarsError": 1,
         "first": 4,
-        "int_range": 1,
-        "len": 8,
+        "format": 2,
+        "int_range": 3,
+        "len": 10,
         "lit": 35,
         "max_horizontal": 1,
         "read_csv": 1,
@@ -605,9 +606,9 @@
           "attribute_uses": 82,
           "attributes": {
             "Boolean": 3,
-            "DataFrame": 11,
+            "DataFrame": 12,
             "Float64": 2,
-            "Int32": 3,
+            "Int32": 2,
             "Int64": 2,
             "Utf8": 2,
             "col": 40,
@@ -688,27 +689,28 @@
           "import_sites": 2
         },
         "sakanalytics": {
-          "attribute_uses": 715,
+          "attribute_uses": 734,
           "attributes": {
             "Boolean": 10,
             "Config.set_tbl_rows": 1,
-            "DataFrame": 150,
+            "DataFrame": 152,
             "Expr": 6,
             "Float32": 1,
             "Float64": 67,
             "Int32": 33,
             "Int64": 35,
-            "Series": 3,
+            "Series": 5,
             "Utf8": 21,
             "__version__": 2,
             "any_horizontal": 1,
-            "col": 337,
+            "col": 346,
             "concat": 3,
             "concat_list": 1,
             "concat_str": 1,
             "first": 2,
-            "int_range": 1,
-            "len": 6,
+            "format": 2,
+            "int_range": 3,
+            "len": 8,
             "lit": 11,
             "max_horizontal": 1,
             "read_csv": 1,
@@ -768,7 +770,7 @@
           "name": "polars"
         }
       ],
-      "distinct_attributes": 26,
+      "distinct_attributes": 27,
       "dynamic_import_sites": 1,
       "files": 48,
       "import_sites": 53
@@ -796,7 +798,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1430,
+      "attribute_uses": 1431,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -804,12 +806,12 @@
         "MonkeyPatch": 2,
         "StashKey": 3,
         "UsageError": 10,
-        "approx": 389,
+        "approx": 392,
         "fail": 34,
         "fixture": 58,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 337,
+        "mark.parametrize": 335,
         "mark.skipif": 28,
         "param": 1,
         "raises": 526,
@@ -918,13 +920,13 @@
           "import_sites": 13
         },
         "sakanalytics": {
-          "attribute_uses": 436,
+          "attribute_uses": 437,
           "attributes": {
             "UsageError": 2,
-            "approx": 241,
+            "approx": 244,
             "fixture": 7,
             "importorskip": 2,
-            "mark.parametrize": 70,
+            "mark.parametrize": 68,
             "mark.skipif": 5,
             "param": 1,
             "raises": 106,
@@ -1271,9 +1273,9 @@
     {
       "attributes": {
         "Boolean": 1,
-        "DataFrame": 7,
+        "DataFrame": 8,
         "Float64": 2,
-        "Int32": 3,
+        "Int32": 2,
         "col": 20,
         "concat": 1,
         "lit": 1,
@@ -2918,7 +2920,7 @@
       "attributes": {
         "Boolean": 6,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 91,
+        "DataFrame": 93,
         "Expr": 6,
         "Float32": 1,
         "Float64": 67,
@@ -2928,7 +2930,7 @@
         "Utf8": 20,
         "__version__": 1,
         "any_horizontal": 1,
-        "col": 280,
+        "col": 284,
         "concat": 3,
         "concat_list": 1,
         "concat_str": 1,
@@ -2984,7 +2986,7 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
+        "mark.parametrize": 2,
         "mark.skipif": 1
       },
       "dynamic_lines": [],
@@ -3073,10 +3075,13 @@
         "Boolean": 4,
         "DataFrame": 50,
         "Int32": 8,
-        "Series": 2,
+        "Series": 4,
         "Utf8": 1,
         "__version__": 1,
-        "col": 48,
+        "col": 53,
+        "format": 2,
+        "int_range": 2,
+        "len": 2,
         "when": 1
       },
       "dynamic_lines": [],
@@ -3087,7 +3092,7 @@
     },
     {
       "attributes": {
-        "approx": 201,
+        "approx": 204,
         "mark.parametrize": 7,
         "raises": 11
       },
@@ -3125,7 +3130,7 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
+        "mark.parametrize": 2,
         "mark.skipif": 1
       },
       "dynamic_lines": [],

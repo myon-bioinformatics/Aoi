@@ -5,13 +5,8 @@ A mismatch is evidence to inspect; never repaired to make totals pass.
 """
 from __future__ import annotations
 
-import argparse
-from collections import Counter, defaultdict
-from decimal import Decimal, ROUND_HALF_UP, ROUND_DOWN
-import hashlib
-import json
-from pathlib import Path
-from typing import TypedDict
+import argparse, hashlib, json
+from collections import Counter, defaultdict; from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP; from pathlib import Path; from typing import TypedDict
 
 
 class AuditRules(TypedDict, total=False):
@@ -240,7 +235,7 @@ def audit_files(observations, expected_years, baseline=None, rules: AuditRules |
     return r
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--observations',type=Path,required=True)
     p.add_argument('--years',required=True)
@@ -248,7 +243,7 @@ def main():
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--annual-out',type=Path,required=True)
     p.add_argument('--rules',type=Path,help='league assumptions as JSON (AuditRules); omitted means none')
-    a=p.parse_args()
+    a=p.parse_args(argv)
     start,end=map(int,a.years.split('-'))
     r=audit_files(a.observations,range(start,end+1),a.baseline,load_rules(a.rules) if a.rules else None)
     for path in (a.out,a.annual_out):path.parent.mkdir(parents=True,exist_ok=True)

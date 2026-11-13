@@ -150,8 +150,37 @@ def units_b(P, H, C):
 SIGMA_Y = math.sqrt(2 * (0.004 ** 2 + 0.002 ** 2))   # 第3弾の族 Y（宣言 r3 §2）
 
 
+def read_quantity():
+    """第4弾: 国全体の家計最終消費支出（名目）・人口と、日本の食料の所得弾力性（別の読み方）"""
+    hf, pop, eta = {}, {}, None
+    with open(ARCHIVE.parent / "staple_survey_B_C_bigmac.csv", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["country"] != "JPN":
+                continue
+            if r["variable"] == "household_consumption_total_lcu":
+                hf[int(r["year"])] = float(r["value"])
+            elif r["variable"] == "population_total":
+                pop[int(r["year"])] = float(r["value"])
+    with gzip.open(ARCHIVE.parent / "reinforcement" / "reinforcement_vertical.csv.gz", "rt", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["country"] == "JPN" and r["variable"] == "income_elasticity_food_broad_usda2005":
+                eta = float(r["value"])
+    esri = {}
+    if (HERE / "esri_private_consumption.csv").exists():
+        with open(HERE / "esri_private_consumption.csv", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                esri[int(r["year"])] = float(r["value_billion_yen"])
+    kcal = {}
+    with gzip.open(ARCHIVE / "fao_fbsh_kcal_supply_panel.csv.gz", "rt", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["iso3"] == "JPN" and r["variable"] == "fbsh_kcal_cap_day_total":
+                kcal[int(r["year"])] = float(r["value"])
+    return hf, pop, eta, esri, kcal
+
+
 def units_y(P, HY, CY):
     """族 Y: 族 B を暦年で。P の年平均は分数で取る"""
+    hf, pop, eta, esri, kcal = read_quantity()
     from fractions import Fraction
 
     def p_year(y):
@@ -171,6 +200,24 @@ def units_y(P, HY, CY):
         row = {"family": "Y", "yE": ye, "ayE": abs(ye) / SIGMA_Y}
         for i in range(4):
             row[f"c{i + 1}"], row[f"acy{i + 1}"] = c[i], abs(c[i]) / SIGMA_Y
+        f0, f1 = float(HY[t - 1]["food_yen_month"]), float(HY[t]["food_yen_month"])
+        k0, k1 = float(HY[t - 1]["ce_yen_month"]), float(HY[t]["ce_yen_month"])
+        row["qF_hh"] = math.log(f1 / f0 / rel["food"])
+        row["qC_hh"] = math.log(k1 / k0 / rel["all_items"])
+        nominal = (hf[t] / hf[t - 1]) if (t in hf and t - 1 in hf) else (
+            esri[t] / esri[t - 1] if (t in esri and t - 1 in esri) else None)
+        if nominal is not None:   # 量の段: 実質の 1 人当たりの伸びを、比を掛け合わせてから対数にする書き方で
+            q = math.log(nominal / rel["all_items"] / (pop[t] / pop[t - 1]))
+            row["gap"] = row["qC_hh"] - q
+            if t in kcal and t - 1 in kcal:
+                row["qf"] = math.log(kcal[t] / kcal[t - 1])
+                row["c7"] = c[3] - q + row["qf"]
+                row["acy7"] = abs(row["c7"]) / SIGMA_Y
+                row["agree7"] = (row["c7"] > 0) == (ye > 0)
+            c5, c6 = c[3] - q, c[3] - q + eta * q
+            row |= {"q": q, "c5": c5, "c6": c6, "acy5": abs(c5) / SIGMA_Y, "acy6": abs(c6) / SIGMA_Y,
+                    "agree4": (c[3] > 0) == (ye > 0), "agree5": (c5 > 0) == (ye > 0), "agree6": (c6 > 0) == (ye > 0),
+                    "l5": abs(ye - c5) < abs(ye - c[3]), "l6": abs(ye - c6) < abs(ye - c5)}
         out[(t, 0)] = row
     return out
 
@@ -216,7 +263,8 @@ def main():
         g = got[key]
         for c in ("ax", "axs", "yE", "c1", "c2", "c3", "c4", "ac1", "ac2", "ac3", "ac4",
                   "acs1", "acs2", "acs3", "acs4", "y", "x", "xr", "xc", "axr", "axc", "ayE",
-                  "acy1", "acy2", "acy3", "acy4"):
+                  "acy1", "acy2", "acy3", "acy4", "q", "c5", "c6", "acy5", "acy6",
+                  "qf", "c7", "acy7", "qF_hh", "qC_hh", "gap"):
             if c in r and not math.isclose(r[c], g[c], rel_tol=1e-9, abs_tol=1e-12):
                 print(f"NG: {key} {c} {r[c]} vs {g[c]}")
                 bad += 1
@@ -234,14 +282,15 @@ def main():
                 else:
                     print(f"NG: {key} {c}")
                     bad += 1
-        for c in ("l1", "l2", "l3", "l4"):
+        for c in ("l1", "l2", "l3", "l4", "l5", "l6", "agree4", "agree5", "agree6", "agree7"):
             if c in r and r[c] != g[c]:
                 print(f"NG: {key} {c}")
                 bad += 1
     print(f"units: {len(U)}（A {sum(k[0] == 'A' for k in U)}、B {sum(k[0] == 'B' for k in U)}、Y {sum(k[0] == 'Y' for k in U)}）、"
           f"値と真偽の照合 {'OK' if bad == 0 else 'NG'}、同点に近くて照合を外したもの {ties}")
     # 4 つの形の件数と判例（propositions.jsonl と）
-    props = [p for f in ("monthly_propositions.toml", "monthly_propositions_r2.toml", "monthly_propositions_r3.toml")
+    props = [p for f in ("monthly_propositions.toml", "monthly_propositions_r2.toml", "monthly_propositions_r3.toml",
+                         "monthly_propositions_r4.toml", "monthly_propositions_r5.toml")
              for p in tomllib.loads((HERE / f).read_text(encoding="utf-8"))["proposition"]]
     res = {json.loads(x)["id"]: json.loads(x) for x in (OUT / "propositions.jsonl").read_text(encoding="utf-8").splitlines()}
     for p in props:
@@ -255,7 +304,9 @@ def main():
     fixed = all(hashlib.sha256((HERE / f).read_bytes()).hexdigest() in stamp
                 for f in ("monthly_propositions.toml", "monthly_prelock_2026-11-13.md",
                           "monthly_propositions_r2.toml", "monthly_prelock_r2_2026-11-13.md",
-                          "monthly_propositions_r3.toml", "monthly_prelock_r3_2026-11-13.md"))
+                          "monthly_propositions_r3.toml", "monthly_prelock_r3_2026-11-13.md",
+                          "monthly_propositions_r4.toml", "monthly_prelock_r4_2026-11-13.md",
+                          "monthly_propositions_r5.toml", "monthly_prelock_r5_2026-11-13.md"))
     bad += not fixed
     print(f"prelock / propositions sha256 は固定時と同じ: {'OK' if fixed else 'NG'}")
     print("VERIFY:", "ALL OK" if bad == 0 else f"{bad} NG")

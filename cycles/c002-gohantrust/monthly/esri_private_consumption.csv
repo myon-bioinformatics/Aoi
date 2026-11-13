@@ -1,0 +1,3 @@
+year,value_billion_yen,series,release,url,retrieved,note
+2024,336602.0,民間最終消費支出（名目、暦年）,四半期別GDP速報 2026年4-6月期 2次速報,https://www.esri.cao.go.jp/jp/sna/data/data_list/sokuhou/files/2026/qe262_2/tables/gaku-mcy2622.csv,2026-11-13,WebFetch の読み取りから転記（作業場所から統計局・内閣府の CSV は直接開けないため）。同じ表の 2004 年 288414.1 は世界銀行の値と一致
+2025,350908.3,民間最終消費支出（名目、暦年）,四半期別GDP速報 2026年4-6月期 2次速報,https://www.esri.cao.go.jp/jp/sna/data/data_list/sokuhou/files/2026/qe262_2/tables/gaku-mcy2622.csv,2026-11-13,同上。2025 年の q はこの公表の 2025 ÷ 2024 の比だけで作る（世界銀行の 2024 年と混ぜない）

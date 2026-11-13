@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """サイクル2 月次の命題（族 A: 予測のはしご、族 B: 恒等式の言い切り）。
 事前宣言: monthly_prelock_2026-11-13.md（第1弾）、monthly_prelock_r2_2026-11-13.md（第2弾: 帯を標本誤差に）、
-monthly_prelock_r3_2026-11-13.md（第3弾: 族 A の E を米・穀類の寄与に、族 B を年の単位で＝族 Y）
+monthly_prelock_r3_2026-11-13.md（第3弾: 族 A の E を米・穀類の寄与に、族 B を年の単位で＝族 Y）、
+monthly_prelock_r4_2026-11-13.md（第4弾: 族 Y に量の段＝国全体の実質の消費の伸びと、食料の支出弾力性）
 
   uv run --locked python -I cycles/c002-gohantrust/monthly/monthly_run.py count   # 条件の側の件数だけ（結論は計算しない）
   uv run --locked python -I cycles/c002-gohantrust/monthly/monthly_run.py judge   # 単位を作り、命題を判定して outputs/ に書く
@@ -30,9 +31,11 @@ ARCHIVE = ROOT / "research" / "staple-price-survey" / "phase2_archive"
 RICE = ARCHIVE / "japan_retail_price_rice_panel.csv.gz"      # 小売物価統計調査 うるち米 銘柄 1002 都市平均（円/5kg）
 ENGEL = ARCHIVE / "engel_food_panel_monthly.csv.gz"           # 家計調査 用途分類 二人以上 全国（円/月）
 ENGEL_YEAR = ARCHIVE / "engel_food_panel_annual.csv"          # 同じ長期時系列の年平均（族 Y）
+MACRO = ARCHIVE.parent / "staple_survey_B_C_bigmac.csv"       # 世界銀行 家計最終消費支出（名目）・人口（族 Y の量の段）
+REINF = ARCHIVE.parent / "reinforcement" / "reinforcement_vertical.csv.gz"   # USDA ERS の所得弾力性（日本の食料）
 CPI = ARCHIVE / "japan_cpi_food_cereals_panel.csv.gz"         # 消費者物価指数 2025 年基準 全国（総合・食料・穀類）
 PROPS = (HERE / "monthly_propositions.toml", HERE / "monthly_propositions_r2.toml",
-         HERE / "monthly_propositions_r3.toml")   # 事前登録の順。後の弾は前の id を parent に持てる
+         HERE / "monthly_propositions_r3.toml", HERE / "monthly_propositions_r4.toml")   # 事前登録の順。後の弾は前の id を parent に持てる
 OUT = HERE / "outputs"
 
 # 宣言 §2・§3 の範囲（月は 12·年 + 月 − 1 の整数で持つ）
@@ -104,7 +107,18 @@ def load() -> dict:
         for r in csv.DictReader(f):
             hh_year[int(r["year"])] = {
                 c: float(r[c]) for c in ("food_yen_month", "ce_yen_month", "rice_yen_month", "cereals_yen_month")}
-    return {"P": rice, "hh": hh, "cpi": cpi, "cpi_year": cpi_year, "hh_year": hh_year}
+    macro = {"hfce": {}, "pop": {}}                      # 第4弾: 量の段。家計調査とは別の出所（国民経済計算・人口）
+    with open(MACRO, encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["country"] == "JPN" and r["variable"] in ("household_consumption_total_lcu", "population_total"):
+                macro["hfce" if r["variable"].startswith("household") else "pop"][int(r["year"])] = float(r["value"])
+    eta_food = None
+    with gzip.open(REINF, "rt", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["country"] == "JPN" and r["variable"] == "income_elasticity_food_broad_usda2005":
+                eta_food = float(r["value"])
+    return {"P": rice, "hh": hh, "cpi": cpi, "cpi_year": cpi_year, "hh_year": hh_year,
+            "macro": macro, "eta_food": eta_food}
 
 
 def engel(d: dict, k: int) -> float:
@@ -250,9 +264,19 @@ def y_conditions(d: dict) -> list[dict]:
         rel = {s: cy[s][t] / cy[s][t - 1] for s in ("cereals", "food", "all_items")}
         c = [_contrib(s_r, p_year(t) / p_year(t - 1) - 1, e0), _contrib(s_c, rel["cereals"] - 1, e0),
              _contrib(1.0, rel["food"] - 1, e0), math.log(rel["food"]) - math.log(rel["all_items"])]
-        row = {"k": t, "e0": e0, "s_rice": s_r, "s_cereals": s_c}
+        # 第4弾（宣言 r4 §2）: 量の段。q = 国全体の 1 人当たり実質の消費の伸び（名目 ÷ 総合の物価指数 ÷ 人口）。
+        # 段 5 は食料の量が一定、段 6 は食料の量が支出弾力性 η のぶん付いていく。年がそろわない（2025 年）ときは None
+        mac = d["macro"]
+        if t in mac["hfce"] and t - 1 in mac["hfce"]:
+            q = (math.log(mac["hfce"][t] / mac["hfce"][t - 1]) - math.log(rel["all_items"])
+                 - math.log(mac["pop"][t] / mac["pop"][t - 1]))
+            c += [c[3] - q, c[3] - (1 - d["eta_food"]) * q]
+        else:
+            q = None
+            c += [None, None]
+        row = {"k": t, "e0": e0, "s_rice": s_r, "s_cereals": s_c, "q": q}
         for i, v in enumerate(c, 1):
-            row[f"c{i}"], row[f"acy{i}"] = v, abs(v) / SIGMA_YEAR
+            row[f"c{i}"], row[f"acy{i}"] = v, (abs(v) / SIGMA_YEAR if v is not None else None)
         rows.append(row)
     return rows
 
@@ -265,9 +289,20 @@ def y_units(d: dict) -> list[dict]:
         ye = math.log((hy[t]["food_yen_month"] / hy[t]["ce_yen_month"]) / c["e0"])
         watch(k_of(t, 1), yE_year=ye, **{f"c{i}_year": c[f"c{i}"] for i in range(1, 5)})
         row = {"family": "Y", "team": "y", "team_name": f"{t}年", "season": t, "month": 0,
-               "yE": ye, "ayE": abs(ye) / SIGMA_YEAR, "e0": c["e0"], "s_rice": c["s_rice"], "s_cereals": c["s_cereals"]}
-        for i in range(1, 5):
-            row[f"c{i}"], row[f"acy{i}"], row[f"u{i}"] = c[f"c{i}"], c[f"acy{i}"], ye - c[f"c{i}"]
+               "yE": ye, "ayE": abs(ye) / SIGMA_YEAR, "e0": c["e0"], "s_rice": c["s_rice"], "s_cereals": c["s_cereals"],
+               "q": c["q"]}
+        for i in range(1, 7):
+            v = c[f"c{i}"]
+            row[f"c{i}"], row[f"acy{i}"], row[f"u{i}"] = v, c[f"acy{i}"], (ye - v if v is not None else None)
+        for i in (4, 5, 6):                             # 第4弾: 見込みの向きと E の向きが同じか（上げ・下げをまとめた形）
+            v = c[f"c{i}"]
+            row[f"agree{i}"] = ((v > 0) == (ye > 0)) if v is not None else None
+        if c["c5"] is None:
+            watch(k_of(t, 1), q_year=None)                 # 量の段が作れない年（国民経済計算の値がまだない）を記録する
+            row["l5"] = row["l6"] = None
+        else:                                           # 段 5 は段 4 より、段 6 は段 5 より残りが小さいか
+            row["l5"] = abs(row["u5"]) < abs(row["u4"])
+            row["l6"] = abs(row["u6"]) < abs(row["u5"])
         out.append(row)
     return out
 
@@ -303,6 +338,12 @@ def count(d: dict) -> dict:
                          "down(c<=-sigmaY)": sum(r[f"c{i}"] <= -SIGMA_YEAR for r in yy),
                          "band": sum(abs(r[f"c{i}"]) < SIGMA_YEAR for r in yy)} for i in range(1, 5)}
     res["sigma_year"] = SIGMA_YEAR
+    # 第4弾（宣言 r4 §4）。量の段は国民経済計算の値がそろう 2001〜2024 年だけ
+    yy = [r for r in y_conditions(d) if r["c5"] is not None]
+    res["Y"]["quantity"] = {"units": len(yy), "years": [yy[0]["k"], yy[-1]["k"]], "eta_food": d["eta_food"]} | {
+        f"step{i}": {"up(c>=sigmaY)": sum(r[f"c{i}"] >= SIGMA_YEAR for r in yy),
+                     "down(c<=-sigmaY)": sum(r[f"c{i}"] <= -SIGMA_YEAR for r in yy),
+                     "band": sum(abs(r[f"c{i}"]) < SIGMA_YEAR for r in yy)} for i in (4, 5, 6)}
     return res
 
 

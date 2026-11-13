@@ -187,7 +187,8 @@ def _load_monthly(name):
 def test_monthly_prelock_and_propositions_hash_match_stamp():
     stamp = (MONTHLY / "monthly_prelock_timestamp.txt").read_text(encoding="utf-8")
     for name in ("monthly_prelock_2026-11-13.md", "monthly_propositions.toml",
-                 "monthly_prelock_r2_2026-11-13.md", "monthly_propositions_r2.toml"):
+                 "monthly_prelock_r2_2026-11-13.md", "monthly_propositions_r2.toml",
+                 "monthly_prelock_r3_2026-11-13.md", "monthly_propositions_r3.toml"):
         assert hashlib.sha256((MONTHLY / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -224,7 +225,8 @@ def test_monthly_exit_codes_are_reproduced(tmp_path):
     # evidence; require exact schema, identifiers and non-regression fields.
     # Only continuous least-squares fields get a tight numerical tolerance.
     import math
-    regression_fields = {"f2", "f3", "rho", "gamma", "gain2", "gain3"}
+    regression_fields = {"f2", "f3", "rho", "gamma", "gain2", "gain3",
+                         "f3r", "f3c", "gamma_r", "gamma_c", "gain3r", "gain3c"}   # 第3弾の最小二乗の列も同じ扱い
     actual_units = [json.loads(x) for x in (tmp_path / "units.jsonl").read_text().splitlines()]
     saved_units = [json.loads(x) for x in (MONTHLY / "outputs" / "units.jsonl").read_text().splitlines()]
     assert len(actual_units) == len(saved_units)
@@ -241,6 +243,8 @@ def test_monthly_exit_codes_are_reproduced(tmp_path):
     assert all(codes[f"C2B{k}{v}"] == 3 for k in range(1, 5) for v in ("", "x"))           # 向きは 4 段とも判例あり
     assert codes["C2A3s"] == codes["C2A3sx"] == 3                                           # 第2弾: σ の帯でも E の段は棄却
     assert all(codes[f"C2B{k}s{v}"] == 3 for k in (3, 4) for v in ("", "x"))
+    assert codes["C2A3r"] == codes["C2A3c"] == codes["C2A3cx"] == 1                        # 第3弾: 米・穀類の寄与は支持
+    assert all(codes[pid] == 3 for pid in ("C2Y3", "C2Y3x", "C2Y4", "C2Y4x", "C2Y3f", "C2Y4f", "C2Y4fx"))
 
 
 def test_monthly_contribution_is_exact_not_linear():
@@ -266,6 +270,21 @@ def test_monthly_sigma_band_comes_from_the_published_rates():
     for k, (up, down) in want.items():
         b = c["B"]["incl2025"][f"step{k}"]
         assert (b["up(c>=sigma)"], b["down(c<=-sigma)"]) == (up, down), k
+
+
+def test_monthly_r3_counts_are_the_ones_in_the_prelock():
+    # 宣言 r3 §5 の表（族 A は条件の側、族 Y は年の帯 σ_Y = √2·√(0.4² + 0.2²) %）
+    import math
+
+    run = _load_monthly("monthly_run")
+    assert abs(run.SIGMA_YEAR - math.sqrt(2) * math.hypot(0.004, 0.002)) < 1e-15
+    c = run.count(run.load())
+    assert (c["A"]["incl2025"]["say(axr>=1)"], c["A"]["excl2025"]["say(axr>=1)"]) == (16, 4)
+    assert (c["A"]["incl2025"]["say(axc>=1)"], c["A"]["excl2025"]["say(axc>=1)"]) == (43, 31)
+    want = {1: (1, 1, 23), 2: (1, 0, 24), 3: (11, 2, 12), 4: (11, 1, 13)}
+    for k, (up, down, band) in want.items():
+        y = c["Y"]["incl2025"][f"step{k}"]
+        assert (y["up(c>=sigmaY)"], y["down(c<=-sigmaY)"], y["band"]) == (up, down, band), k
 
 
 def test_monthly_separate_implementation_agrees():

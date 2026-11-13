@@ -216,7 +216,7 @@
       "import_sites": 1
     },
     "numpy": {
-      "attribute_uses": 299,
+      "attribute_uses": 302,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
@@ -226,7 +226,7 @@
         "arange": 7,
         "argpartition": 1,
         "argsort": 1,
-        "array": 33,
+        "array": 34,
         "array_equal": 3,
         "asarray": 5,
         "ascontiguousarray": 1,
@@ -234,7 +234,7 @@
         "bool_": 1,
         "ceil": 1,
         "clip": 4,
-        "column_stack": 6,
+        "column_stack": 7,
         "concatenate": 8,
         "corrcoef": 3,
         "einsum": 1,
@@ -254,7 +254,7 @@
         "integer": 1,
         "isfinite": 1,
         "linalg.LinAlgError": 3,
-        "linalg.lstsq": 7,
+        "linalg.lstsq": 8,
         "linalg.norm": 2,
         "linalg.pinv": 1,
         "linalg.svd": 2,
@@ -289,12 +289,12 @@
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 23,
+          "attribute_uses": 26,
           "attributes": {
-            "array": 10,
-            "column_stack": 2,
+            "array": 11,
+            "column_stack": 3,
             "corrcoef": 2,
-            "linalg.lstsq": 2,
+            "linalg.lstsq": 3,
             "longdouble": 1,
             "mean": 2,
             "ones": 1,
@@ -1385,9 +1385,9 @@
     },
     {
       "attributes": {
-        "array": 3,
-        "column_stack": 2,
-        "linalg.lstsq": 2,
+        "array": 4,
+        "column_stack": 3,
+        "linalg.lstsq": 3,
         "ones": 1
       },
       "dynamic_lines": [],

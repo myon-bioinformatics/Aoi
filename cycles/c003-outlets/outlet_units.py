@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import math
+from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from fractions import Fraction
 import random
 import subprocess
@@ -83,7 +84,20 @@ RND_RATIOS, RND_SPAN = [0.6, 1.5], 2.0  # 第13弾 rnd: 2 段の τ2/τ と、�
 RND_H = [1 / 16, 1 / 32, 1 / 64, 1 / 128, 1 / 256, 1 / 512]
 RND_V0 = [8192.0, 128.0, 2.0 ** -8, 2.0 ** -16, 2.0 ** -24]  # 最初の量（今までは V0 = 128 だけ）
 RND_MULS = {"ramp": 4, "quad": 5}  # 1 ステップの掛け算の数（係数が 0 でないもの）
-PIPE_KINDS = ("pipe", "pipe2", "pipe3")
+RND2_RATIOS, RND2_SPANS = [0.4, 0.5, 0.6, 0.75, 1.25], [1.5, 3.0]  # 第14弾 rnd2: 2 段の τ2/τ と、測る時刻 / τ
+RND2_H = [1 / 32, 1 / 128, 1 / 512]
+RND2_V0 = [8192.0, 128.0, 2.0 ** -12, 2.0 ** -20]
+RND2_ARITH = {"q48": (0, False), "c64": (16, False), "carry": (0, True), "c64carry": (16, True)}  # (係数に足す桁, 繰り越すか)
+PIPE4_SETS = {  # 第14弾 pipe4: uniform・ramp の、どんな配管でも書ける式を確かめる
+    "branch": [(0.5, 2.0, 4.0), (0.55, 2.5, 3.0), (0.75, 1.25, 0.4)],
+    "merge": [(0.4, 2.0, 0.6), (3.0, 0.5, 1.25), (2.5, 3.0, 4.0)],
+    "pumpfed": [(0.5, 2.0), (2.5, 0.4), (1.25, 0.8)],
+    "ring": [(2.5,), (0.5,), (1.25,)],
+}
+PIPE4_TIMES = [0.5 + 0.25 * i for i in range(15)]
+PIPE4_H = [1 / 8, 1 / 16, 1 / 32]
+SERIES_TERMS = 6  # 式の展開で持つ dt の次数（dt^0〜dt^5。G_eff は dt^4 まで）
+PIPE_KINDS = ("pipe", "pipe2", "pipe3", "pipe4")
 COARSE2_X = [0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0]  # 第12弾 coarse2: x = dt/τ1
 COARSE2_Y = [0.4, 0.9, 1.8, 2.7, 3.6, 5.5, 7.0, 11.0]  # y = dt/τ2
 COARSE2_STEPS = 6
@@ -91,7 +105,7 @@ TLAD_RATIOS, TLAD_SPANS = [0.6, 1.5, 3.0], [1.0, 2.0]  # 第12弾 tlad: 2 段の
 TLAD_ORDER = {"tay1": 2, "tay2": 3, "tay3": 4, "uniform_in": 2, "ramp": 3, "quad": 4}  # tay は「最初の値だけを知る」入れ方
 TOTAL_COEF = {1: 1.0 / 12.0, 2: 1.0 / 72.0, 3: 1.0 / 720.0}  # 合計も知る入れ方の、2 段目のずれの係数
 VARIANT_METHODS = ("cascade", "ramp", "quad", "tay1", "tay2", "tay3")  # 整数の漸化式で進める入れ方（エンジンには入れていない）
-CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder", "ilad", "coarse2", "tlad", "rnd")  # 1 列につながった槽（stages に τ_i/τ）
+CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder", "ilad", "coarse2", "tlad", "rnd", "rnd2")  # 1 列につながった槽（stages に τ_i/τ）
 FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, *PIPE_KINDS, "olad")  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
@@ -259,6 +273,19 @@ def plan(h_extra: list[float]) -> list[dict]:
             for h in RND_H:
                 for method in RND_MULS:
                     add("rnd", "eq", 1, method, h, stages=[ratio], tau2_ratio=ratio, span_ratio=RND_SPAN, v0=v0)
+    for ratio in RND2_RATIOS:  # 第14弾
+        for sp in RND2_SPANS:
+            for v0 in RND2_V0:
+                for h in RND2_H:
+                    for method in RND_MULS:
+                        for arith in RND2_ARITH:
+                            add("rnd2", "eq", 1, method, h, stages=[ratio], tau2_ratio=ratio, span_ratio=sp, v0=v0, arith=arith)
+    for shape, sets in PIPE4_SETS.items():
+        for idx, params in enumerate(sets):
+            for sp in PIPE4_TIMES:
+                for h in PIPE4_H:
+                    for method in ("uniform_in", "ramp"):
+                        add("pipe4", "eq", 1, method, h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp)
     return out
 
 
@@ -558,6 +585,177 @@ def end_formula(spec: dict, dt: float, t: float) -> float:
     return watch(ge, qe) / watch(g, q) - 1.0
 
 
+def _poly_mul(p, q):
+    """dt の多項式（行列の係数の並び）どうしの掛け算。SERIES_TERMS より高い次数は捨てる。"""
+    n = len(p[0])
+    out = [[[0.0] * n for _ in range(n)] for _ in range(SERIES_TERMS)]
+    for i, a in enumerate(p):
+        for j, b in enumerate(q[: SERIES_TERMS - i]):
+            if any(any(r) for r in a) and any(any(r) for r in b):
+                out[i + j] = [[x + y for x, y in zip(r1, r2)] for r1, r2 in zip(out[i + j], _matmul(a, b))]
+    return out
+
+
+def _poly_add(p, q, w=1.0):
+    return [[[a + w * b for a, b in zip(r1, r2)] for r1, r2 in zip(m1, m2)] for m1, m2 in zip(p, q)]
+
+
+def step_series(spec: dict, method: str) -> dict:
+    """1 ステップの行列 M を dt の多項式で持ち、G_eff = log(M)/dt の係数（G、H1、H2、…）を出す。どんな配管でも同じ手順。
+    end:     M = I + (S − I)(I − D)
+    uniform: M = I + (S − I)(I + ΘS)(I − D)、外から入る分 (I + (S − I)Θ)q
+    ramp:    M = I + (S − I)(I − AS)^(-1)[(I − D) + B·S·Λ]、外から入る分 [I + (S − I)(I − AS)^(-1)(A + B/dt)]q
+    D = diag(e^(−x))、Θ = diag(1 − (1 − e^(−x))/x)、A = diag(1 − 2E1/dt²)、B = diag(−(E0 − 2E1/dt))、x = Λ·dt。"""
+    names = spec["tanks"]
+    n, idx = len(names), {name: i for i, name in enumerate(names)}
+    lam = [sum(ln[2] for ln in spec["links"] if ln[0] == name) for name in names]
+    route = [[0.0] * n for _ in range(n)]
+    for src, dst, rate in spec["links"]:
+        route[idx[dst]][idx[src]] += rate / lam[idx[src]]
+    eye = [[float(i == j) for j in range(n)] for i in range(n)]
+    zero = [[0.0] * n for _ in range(n)]
+
+    def const(m):
+        return [m] + [zero] * (SERIES_TERMS - 1)
+
+    def diag(coef):  # Σ_m coef(m)·(λ·dt)^m の対角
+        return [[[coef(m) * lam[i] ** m if i == j else 0.0 for j in range(n)] for i in range(n)] for m in range(SERIES_TERMS)]
+
+    si = [[route[i][j] - eye[i][j] for j in range(n)] for i in range(n)]
+    one_minus_d = diag(lambda m: 0.0 if m == 0 else -((-1.0) ** m) / math.factorial(m))
+    if method == "end":
+        core, force = one_minus_d, const(eye)
+    elif method == "uniform_in":
+        theta = diag(lambda m: 0.0 if m == 0 else -((-1.0) ** m) / math.factorial(m + 1))
+        core = _poly_mul(_poly_add(const(eye), _poly_mul(theta, const(route))), one_minus_d)
+        force = _poly_add(const(eye), _poly_mul(const(si), theta))
+    else:  # ramp
+        a = diag(lambda m: 0.0 if m == 0 else -2.0 * (-1.0) ** m / math.factorial(m + 2))
+        b_dt = diag(lambda m: 0.0 if m == 0 else -((-1.0) ** m) * (1 / math.factorial(m + 1) - 2 / math.factorial(m + 2)))  # B/dt
+        a_route = _poly_mul(a, const(route))
+        inv = term = const(eye)
+        for _ in range(SERIES_TERMS):  # (I − AS)^(-1) = Σ (AS)^n
+            term = _poly_mul(term, a_route)
+            inv = _poly_add(inv, term)
+        route_lam = [[route[i][j] * lam[j] for j in range(n)] for i in range(n)]
+        start_rate = [zero] + _poly_mul(b_dt, const(route_lam))[: SERIES_TERMS - 1]  # B·S·Λ = dt·(B/dt)·S·Λ
+        core = _poly_mul(inv, _poly_add(one_minus_d, start_rate))
+        force = _poly_add(const(eye), _poly_mul(const(si), _poly_mul(inv, _poly_add(a, b_dt))))
+    m_minus_i = _poly_mul(const(si), core)
+    log_m, power = [zero] * SERIES_TERMS, const(eye)
+    for k in range(1, SERIES_TERMS):
+        power = _poly_mul(power, m_minus_i)
+        log_m = _poly_add(log_m, power, (-1.0) ** (k + 1) / k)
+    return {"geff": log_m[1:], "force": force, "names": names, "idx": idx,
+            "q": [sum(rate for dst, rate in spec["pumps"] if dst == name) for name in names]}
+
+
+def series_formula(spec: dict, series: dict, dt: float, t: float) -> float:
+    """式の見込み = [G_eff（dt^4 まで）と q_eff で進めた量] / 厳密な量 − 1。"""
+    names, idx, q = series["names"], series["idx"], series["q"]
+    n = len(names)
+
+    def at(poly):
+        return [[sum(poly[m][i][j] * dt ** m for m in range(len(poly))) for j in range(n)] for i in range(n)]
+
+    ge, g, force = at(series["geff"]), series["geff"][0], at(series["force"])
+    x = [[v * dt for v in row] for row in ge]
+    x2 = _matmul(x, x)
+    x4 = _matmul(x2, x2)
+    bern = [[float(i == j) - x[i][j] / 2.0 + x2[i][j] / 12.0 - x4[i][j] / 720.0 for j in range(n)] for i in range(n)]
+    fq = [sum(force[i][j] * q[j] for j in range(n)) for i in range(n)]
+    qe = [sum(bern[i][j] * fq[j] for j in range(n)) for i in range(n)]
+    v0 = [spec["vol"].get(name, 0.0) for name in names]
+
+    def watch(gen, push):
+        aug = [[gen[i][j] * t for j in range(n)] + [push[i] * t] for i in range(n)] + [[0.0] * (n + 1)]
+        e = _expm(aug)[idx[spec["watch"]]]
+        return sum(e[j] * v0[j] for j in range(n)) + e[n]
+
+    return watch(ge, qe) / watch(g, q) - 1.0
+
+
+def hp_coeffs(u: dict, dt: float) -> tuple:
+    """2 段の ramp・quad の係数（g1、g2、a、b、c）を 60 桁の小数で出す。float の variant_coeffs とは別の式の書き方。"""
+    k1, d = 1 / Decimal(TAU), Decimal(dt)
+    k2 = 1 / (Decimal(TAU) * Decimal(u["stages"][0]))
+    g1, g2 = 1 - (-k1 * d).exp(), 1 - (-k2 * d).exp()
+    e0 = g2 / k2
+    e1 = d / k2 - e0 / k2
+    if u["method"] == "ramp":
+        return g1, g2, 1 - 2 * e1 / (d * d), -k1 * (e0 - 2 * e1 / d), Decimal(0)
+    e2 = d * d / k2 - 2 * e1 / k2
+    return (g1, g2, 1 - (6 * e1 / d ** 2 - 6 * e2 / d ** 3), -k1 * (e0 - 4 * e1 / d + 3 * e2 / d ** 2),
+            -k1 * (-2 * e1 / d + 3 * e2 / d ** 2))
+
+
+def hp_run(coefs: tuple, steps: int) -> Decimal:
+    """2 段の槽を 60 桁の小数で進める（最初の量 1。丸めは無いに等しい）。測る槽の量を返す。"""
+    g1, g2, a, b, c = coefs
+    v1, v2 = Decimal(1), Decimal(0)
+    for _ in range(steps):
+        out1 = v1 * g1
+        extra = min(max(out1 * a + v1 * b + (v1 - out1) * c, Decimal(0)), out1)
+        v1, v2 = v1 - out1, v2 + out1 - (v2 * g2 + extra)
+    return v2
+
+
+def int_run(coefs: tuple, steps: int, v0: float, bits: int, carry: bool) -> dict:
+    """2 段の槽を整数で進める。量は 2^-48 刻み、係数は 2^-(48 + bits) 刻み（四捨五入）。
+    carry なら、掛け算の切り捨ての残りを掛け算の場所ごとに持ち、次のステップの同じ掛け算に足す。"""
+    scale = 48 + bits
+    g1, g2, a, b, c = (int((cf * (1 << scale)).to_integral_value(rounding=ROUND_HALF_EVEN)) for cf in coefs)
+    mask, acc = (1 << scale) - 1, [0] * 5
+
+    def mul(site, v, coef):
+        if not carry:
+            return (v * coef) >> scale
+        acc[site] += v * coef
+        out = acc[site] >> scale
+        acc[site] &= mask
+        return out
+
+    v1, v2, sink, clamped = int(v0 * (1 << 48)), 0, 0, 0
+    start = v1
+    for _ in range(steps):
+        out1 = mul(0, v1, g1)
+        raw = mul(1, out1, a) + mul(2, v1, b) + mul(3, v1 - out1, c)
+        extra = min(max(raw, 0), out1)
+        clamped += extra != raw
+        out2 = mul(4, v2, g2) + extra
+        v1, v2, sink = v1 - out1, v2 + out1 - out2, sink + out2
+    return {"left_q": v2, "conservation_q": v1 + v2 + sink - start, "clamped": clamped,
+            "coefs": tuple(Decimal(x) / (1 << scale) for x in (g1, g2, a, b, c))}
+
+
+_HP_CACHE: dict = {}
+
+
+def run_rnd2(u: dict, steps: int, dt: float, t: float) -> dict:
+    """第14弾: 丸め方 4 つを、60 桁の小数の漸化式と比べる。丸めのずれを、係数の丸めの分と切り捨ての分に分ける。"""
+    bits, carry = RND2_ARITH[u["arith"]]
+    with localcontext() as ctx:
+        ctx.prec = 60
+        coefs = hp_coeffs(u, dt)
+        plain = variant_coeffs(stage_rates(u), dt, u["method"])[1]
+        if any(abs(float(hp) - fl) > 1e-12 * max(1.0, abs(fl)) for hp, fl in zip(coefs[2:], plain)):
+            raise ValueError(f"係数が float と 60 桁で合わない: {u['method']} dt={dt}")
+        res = int_run(coefs, steps, u["v0"], bits, carry)
+        key = (u["stages"][0], u["method"], steps, dt)
+        if key not in _HP_CACHE:
+            k1, k2 = 1 / Decimal(TAU), 1 / (Decimal(TAU) * Decimal(u["stages"][0]))
+            _HP_CACHE[key] = (hp_run(coefs, steps), k1 / (k2 - k1) * ((-k1 * Decimal(t)).exp() - (-k2 * Decimal(t)).exp()))
+        if key + (bits,) not in _HP_CACHE:
+            _HP_CACHE[key + (bits,)] = hp_run(res.pop("coefs"), steps)
+        res.pop("coefs", None)
+        true_left, exact = _HP_CACHE[key]
+        left = Decimal(res["left_q"]) / (1 << 48) / Decimal(u["v0"])  # 最初の量 1 あたり
+        res.update(steps=steps, dt=dt, t=t, left=float(left * Decimal(u["v0"])), lag_err_steps=None,
+                   err_hp=float(left / exact - 1), round_part=float((left - true_left) / exact),
+                   coef_part=float((_HP_CACHE[key + (bits,)] - true_left) / exact))
+    return res
+
+
 def _ramp_ab(rate: float, dt: float) -> tuple[float, float]:
     """同じステップに出る分 = a·I + b·r0（I は届く量、r0 は届く速さのステップ最初の値）。b は 0 以上で、時間の単位を持つ。"""
     x = rate * dt
@@ -663,7 +861,7 @@ def base(u: dict) -> str:
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad", "rnd"):
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad", "rnd", "rnd2"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -852,6 +1050,8 @@ def label(u: dict) -> tuple[str, str]:
             tail = f"-s{u['span_ratio']:g}"
         if u["kind"] == "rnd":
             tail = f"-v{math.log2(u['v0']):g}"
+        if u["kind"] == "rnd2":
+            tail = f"-s{u['span_ratio']:g}-v{math.log2(u['v0']):g}-{u['arith']}"
         return (f"{u['kind']}-{ratios}{tail}-{u['method']}",
                 f"{len(u['stages']) + 1} 段 τ比 {'・'.join(f'{r:.3g}' for r in u['stages'])}{tail} {u['method']} h={u['h']:.6g}")
     if u["kind"] == "ring":
@@ -877,6 +1077,8 @@ def run_engine(u: dict, ffs: dict) -> dict:
         return run_pipe(u, ffs, steps, dt, t)
     if u["kind"] == "olad":
         return run_olad(u, ffs, steps, dt, t)
+    if u["kind"] == "rnd2":
+        return run_rnd2(u, steps, dt, t)
     if u["kind"] == "rnd":  # 第13弾: 丸めのずれを、係数の丸めと掛け算の切り捨てに分ける
         res = run_variant_q(u, ffs, steps, dt, t)
         exact = exact_left(u, t)
@@ -1102,7 +1304,7 @@ def load_ffs(path: Path) -> dict:
 def derive(units: list[dict], log=print) -> None:
     """err と、単位どうしを比べる列を足す。"""
     k = 1.0 / TAU
-    by = {}
+    by, series_cache = {}, {}
     for u in units:
         exact = exact_left(u, u["t"])
         u["exact"] = exact
@@ -1123,9 +1325,11 @@ def derive(units: list[dict], log=print) -> None:
                     "order_expected", "order_est", "order_gap", "quad_fit2", "gain_vs_ramp", "quad_clamped",
                     "order_round", "olad_pred_abs", "olad_fit", "olad_clamped", "level_even",
                     "is_best", "clamp_margin", "clamp_pred", "was_clamped", "start_only", "coef_start", "coef_total",
-                    "end_pred", "pred_order_one", "round_part_abs", "floor_part", "coef_share", "big_volume", "round_est"):
+                    "end_pred", "pred_order_one", "round_part_abs", "floor_part", "coef_share", "big_volume", "round_est",
+                    "c64", "carry", "c64carry", "is_best_round", "coef_ratio", "floor_est", "floor_ratio", "series_pred",
+                    "series_pred_abs"):
             u[col] = None
-        for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio", "level", "round_part", "coef_part", "v0"):
+        for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio", "level", "round_part", "coef_part", "v0", "err_hp", "arith"):
             u.setdefault(col, None)
         for shape, col in (("branch", "p_branch"), ("merge", "p_merge"), ("pumpfed", "p_pump"), ("ring", "p_ring")):
             u[col] = u["kind"] == "pipe" and u.get("shape") == shape  # pipe2 は第9弾の命題の範囲に入れない
@@ -1249,6 +1453,28 @@ def derive(units: list[dict], log=print) -> None:
             u["start_only"] = u["method"].startswith("tay")
             u["coef_start"] = u["err_abs"] / (scale / math.factorial(p + 2))
             u["coef_total"] = u["err_abs"] / (scale * TOTAL_COEF[p])
+        if u["kind"] == "rnd2":  # 第14弾: 丸め方ごとの、丸めのずれの内訳
+            u["c64"], u["carry"], u["c64carry"] = "c64" in u["arith"], "carry" in u["arith"], u["arith"] == "c64carry"
+            u["big_volume"] = u["v0"] >= 64.0
+            u["round_part_abs"] = abs(u["round_part"])
+            u["floor_part"] = u["round_part"] - u["coef_part"]
+            u["coef_ratio"] = abs(u["coef_part"]) / (u["steps"] * 2.0 ** -49)
+            k2 = stage_rates(u)[1]
+            u["floor_est"] = ((RND_MULS[u["method"]] - 2) * 2.0 ** -49 * (-math.expm1(-k2 * u["t"]) / (k2 * u["dt"])) / u["exact"])
+            u["floor_ratio"] = abs(u["floor_part"]) / u["floor_est"]
+            rivals = [by[(u["team"].replace(f"-{u['arith']}-", f"-{name}-"), u["h"])] for name in RND2_ARITH]
+            u["is_best_round"] = abs(u["round_part"]) == min(abs(r["round_part"]) for r in rivals)
+            if u["method"] == "quad":
+                u["coef_total"] = abs(u["err_hp"]) / (k2 * k ** 3 * u["dt"] ** 4 * TOTAL_COEF[3])
+        if u["kind"] == "pipe4":  # 第14弾: uniform・ramp の式の見込み
+            spec = pipe_spec(u)
+            key = (u["shape"], u["pipe_set"], u["method"])
+            if key not in series_cache:
+                series_cache[key] = step_series(spec, u["method"])
+            u["series_pred"] = series_formula(spec, series_cache[key], u["dt"], u["t"])
+            u["series_pred_abs"] = abs(u["series_pred"])
+            if u["method"] == "ramp":
+                u["ramp_clamped"] = u.pop("clamped")
         if u["kind"] == "pipe3":  # 第13弾: end の式の見込みと、見込みの次数
             spec = pipe_spec(u)
             u["end_pred"] = end_formula(spec, u["dt"], u["t"])

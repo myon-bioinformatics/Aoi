@@ -268,8 +268,7 @@
         "nan_to_num": 1,
         "ndarray": 17,
         "nonzero": 4,
-        "ones": 6,
-        "ones_like": 1,
+        "ones": 7,
         "packbits": 2,
         "partition": 2,
         "percentile": 4,
@@ -298,7 +297,7 @@
             "linalg.lstsq": 2,
             "longdouble": 1,
             "mean": 2,
-            "ones_like": 1,
+            "ones": 1,
             "random.default_rng": 1,
             "sign": 2
           },
@@ -481,7 +480,7 @@
           "name": "numpy"
         }
       ],
-      "distinct_attributes": 69,
+      "distinct_attributes": 68,
       "dynamic_import_sites": 0,
       "files": 21,
       "import_sites": 21
@@ -1349,7 +1348,7 @@
         "array": 3,
         "column_stack": 2,
         "linalg.lstsq": 2,
-        "ones_like": 1
+        "ones": 1
       },
       "dynamic_lines": [],
       "file": "cycles/c002-gohantrust/monthly/monthly_run.py",

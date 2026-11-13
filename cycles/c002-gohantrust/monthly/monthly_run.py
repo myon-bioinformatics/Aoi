@@ -122,7 +122,7 @@ def a_units(d: dict) -> list[dict]:
         Y = np.array([p[0] for p in tr])
         M = np.array([p[1] for p in tr])
         X = np.array([p[2] for p in tr])
-        one = np.ones_like(Y)
+        one = np.ones(len(Y))
         y, m, x = pairs[t]
         f1 = float(Y.mean())
         b2 = np.linalg.lstsq(np.column_stack([one, M]), Y, rcond=None)[0]

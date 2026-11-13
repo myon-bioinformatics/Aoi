@@ -45,6 +45,12 @@
      読み: 正の単位が 35〜65 % の外なら片寄り、A クラスで正の割合 − B クラスで正の割合 が 0.30 以上なら強さに沿った寄り。
      その列を使う命題に、列の値だけを替えた表を渡し、終了コードが変わるものを数える（第5弾と同じ）
 
+第7弾（宣言は kind_reask_results/README.md の「第7弾」の節。計算の前のコミットで固定）:
+  配分の効果の強さに沿った寄りを、ホーム・ビジター別（alloc_net_home・away）と、9 回裏が無かった試合のホームの得点に
+  同じリーグ・同じ年の 9 回表の得点の分布を補った見込み（imputed_allocation）で分ける。
+  読み（判定ではない）: 補った表で alloc_net_strat の A − B が 0.20 以下なら 1（主に道具の側）、0.30 以上なら 3（9 回裏が無いことでは
+  説明できない）、間は 2（両方）
+
 ゲート（通らなければ、命題の結果は出さずに止まる）:
   正本の命題ファイルの sha256 が保存された値と同じ。つなげたファイルが読み込める。
   K・D の命題が branch 側（from-cycle-001/propositions.toml）のどれとも同じ問いでない。
@@ -56,6 +62,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+from collections import Counter
 import hashlib
 import json
 import sys
@@ -456,6 +463,18 @@ def eighth_split(games: list[dict], teams: dict, pl, SA):
 PAIRED = ("alloc_net", "alloc_net_strat", "alloc_net_opp", "wpct_minus_sim")   # 第6弾 B で寄りを見る量（実際 − 見込み）
 
 
+def lean(units: dict, col: str, upper: dict, skip: list[int]) -> dict:
+    """正の単位の割合を、全体・A クラス・B クラスで。全体が 35〜65 % の外なら片寄り、A − B が 0.30 以上なら強さに沿った寄り（第6・7弾）。"""
+    vals = [(r[col], upper[k]) for k, r in units.items() if k[0] not in skip and r[col] is not None]
+    share = lambda xs: sum(x > 0 for x in xs) / len(xs)  # noqa: E731
+    all_, a_, b_ = share([v for v, _ in vals]), share([v for v, u in vals if u]), share([v for v, u in vals if not u])
+    xs = sorted(v for v, _ in vals)
+    return {"units": len(vals), "share_positive": round(all_, 9), "share_positive_a": round(a_, 9),
+            "share_positive_b": round(b_, 9), "a_minus_b": round(a_ - b_, 9),
+            "median": round((xs[(len(xs) - 1) // 2] + xs[len(xs) // 2]) / 2, 9),
+            "one_sided": not 0.35 <= all_ <= 0.65, "strength_sided": a_ - b_ >= 0.30}
+
+
 def paired_columns(t, pl, SA) -> dict:
     """第6弾 B: 1 つの試合の表から、配分の効果（alloc_*）と作り直し（sim_*）の列、実際の勝率 − sim_wpct を単位ごとに作る。"""
     a = SA.allocation_table(t).join(SA.rank_probability(t), on=["season", "team"], how="left")
@@ -512,18 +531,7 @@ def round_six(repo: Path, config: Path, full, tables: tuple, focus, fs: list[dic
     if worst > 1e-9:
         problems.append(f"alloc_*・sim_* の差の最大が {worst:.1e}")
     upper = {k: r["upper_half"] for k, r in stored_rows.items()}
-    bias = {}
-    for col in PAIRED:
-        bias[col] = {}
-        for name in ("full", "nine", "eight"):
-            vals = [(r[col], upper[k]) for k, r in units[name].items() if k[0] not in skip and r[col] is not None]
-            share = lambda xs: sum(x > 0 for x in xs) / len(xs)  # noqa: E731
-            all_, a_, b_ = share([v for v, _ in vals]), share([v for v, u in vals if u]), share([v for v, u in vals if not u])
-            xs = sorted(v for v, _ in vals)
-            bias[col][name] = {"units": len(vals), "share_positive": round(all_, 9), "share_positive_a": round(a_, 9),
-                               "share_positive_b": round(b_, 9), "a_minus_b": round(a_ - b_, 9),
-                               "median": round((xs[(len(xs) - 1) // 2] + xs[len(xs) // 2]) / 2, 9),
-                               "one_sided": not 0.35 <= all_ <= 0.65, "strength_sided": a_ - b_ >= 0.30}
+    bias = {col: {name: lean(units[name], col, upper, skip) for name in ("full", "nine", "eight")} for col in PAIRED}
     schema = {c: (pl.Boolean if c == "alloc_same_sign" else pl.Float64) for c in names}
     rows, swap_problems = swap_judge(props, schema, units, stored, tables, focus, P, pl)
     problems += swap_problems
@@ -562,6 +570,86 @@ def round_six(repo: Path, config: Path, full, tables: tuple, focus, fs: list[dic
             "predictions": preds}
 
 
+def _sign(x) -> int:
+    return (x > 0) - (x < 0)
+
+
+def imputed_allocation(games: list[dict], innings: dict, teams: dict, impute: bool = True) -> dict:
+    """第7弾: 9 回裏が無かった試合（ホームの 9 回裏が X）で、ホームの得点に 9 回裏の点を補った配分の効果。
+
+    補う点の分布は、同じリーグ（ホームのチームのリーグ）・同じ年の 9 回表の得点の分布。勝ち負けは変わらないので、
+    実際の勝ち越しはそのまま。見込み（組み合わせだけランダム。sakanalytics.allocation と同じ式）に、点ごとの重みを入れる。
+    impute=False なら補わない（保存された alloc_net_* と同じになるはず。ゲート）。サヨナラの試合は補わない。
+    戻り値: {(年, 球団): {"alloc_net_home", "alloc_net_away", "alloc_net_strat"}} と、補った試合の数・9 回表の平均。
+    """
+    top9: dict[tuple, Counter] = {}
+    for gm in games:
+        a = innings[gm["key"]]["away"]
+        if len(a) >= 9 and type(a[8]) is int:
+            top9.setdefault((int(gm["date"][:4]), teams[gm["home"]]["league"]), Counter())[a[8]] += 1
+    dist = {k: {v: c / sum(cnt.values()) for v, c in cnt.items()} for k, cnt in top9.items()}
+    parts: dict[tuple, dict] = {}                # (年, 球団, "home"/"away") → {"rf": Counter, "ra": Counter, "net": int, "n": int}
+    imputed = 0
+    for gm in games:
+        season, h = int(gm["date"][:4]), innings[gm["key"]]["home"]
+        cut = impute and len(h) == 9 and h[8] == "X"                         # ホームは 9 回表の時点で勝っていて、9 回裏に入らなかった
+        imputed += cut
+        add = dist[(season, teams[gm["home"]]["league"])] if cut else {0: 1.0}
+        for team, rf, ra, side in ((gm["home"], gm["hs"], gm["as"], "home"), (gm["away"], gm["as"], gm["hs"], "away")):
+            q = parts.setdefault((season, team, side), {"rf": Counter(), "ra": Counter(), "net": 0, "n": 0})
+            q["net"] += _sign(rf - ra)
+            q["n"] += 1
+            for k, w in add.items():             # 補う点はホームの得点に入る（ホームから見れば得点、ビジターから見れば失点）
+                q["rf"][rf + (k if side == "home" else 0)] += w
+                q["ra"][ra + (k if side == "away" else 0)] += w
+    out = {}
+    for (season, team, side), q in parts.items():
+        exp = sum(wx * wy * _sign(x - y) for x, wx in q["rf"].items() for y, wy in q["ra"].items()) / q["n"]
+        out.setdefault((season, team), {})[f"alloc_net_{side}"] = q["net"] - exp
+    for r in out.values():                       # 試合の無い側は 0（sakanalytics.allocation の空の場合と同じ）
+        r["alloc_net_strat"] = r.setdefault("alloc_net_home", 0.0) + r.setdefault("alloc_net_away", 0.0)
+    means = {f"{s}-{lg}": round(sum(v * w for v, w in d.items()), 9) for (s, lg), d in sorted(dist.items())}
+    return {"units": out, "imputed_games": imputed, "top9_mean": means}
+
+
+def round_seven(repo: Path, full, more: dict, skip: list[int], pl) -> dict:
+    """第7弾: 配分の効果の強さに沿った寄りを、ホーム・ビジター別と、9 回裏を補った見込みで分ける。"""
+    import games_table_from_observed as GT
+    import sakanalytics as SA
+    base = repo / "cycles/c001-chunichi"
+    teams = SA.load_config(base / "analysis.toml")["teams"]
+    raw = json.loads((base / "recovered-inputs/observed/games_raw.json").read_text(encoding="utf-8"))
+    games = GT.from_games_raw(raw, GT.games_per_team(full.select("season", "team", "G").to_dicts()))
+    lit = lambda v: ast.literal_eval(v) if isinstance(v, str) else v  # noqa: E731
+    innings = {x["url"].rsplit("/", 1)[-1].removesuffix(".html"): {"home": lit(x["home_inn"]), "away": lit(x["away_inn"])}
+               for x in raw if GT.FIRST <= x["year"] <= GT.LAST}
+    cols = ("alloc_net_home", "alloc_net_away", "alloc_net_strat")
+    stored = {(r["season"], r["team"]): r for r in full.select("season", "team", "upper_half", *cols).to_dicts()}
+    upper = {k: r["upper_half"] for k, r in stored.items()}
+    plain, filled = imputed_allocation(games, innings, teams, impute=False), imputed_allocation(games, innings, teams)
+    worst = max(abs(plain["units"][k][c] - stored[k][c]) for k in plain["units"] for c in cols)
+    problems = [] if worst <= 1e-9 and set(plain["units"]) <= set(stored) else [f"補わない見込みが保存された値と合わない（差の最大 {worst:.1e}）"]
+    tables = {k: {(r["season"], r["team"]): r for r in SA.allocation_table(more["tables"][k]).to_dicts()} for k in ("full", "nine", "eight")}
+    home_away = {c: {k: lean(tables[k], c, upper, skip) for k in ("full", "nine", "eight")} for c in cols}
+    filled_lean = {c: lean(filled["units"], c, upper, skip) for c in cols}
+    ab = filled_lean["alloc_net_strat"]["a_minus_b"]
+    reading = 1 if ab <= 0.20 else 3 if ab >= 0.30 else 2
+    ha = lambda c, k: home_away[c][k]["a_minus_b"]  # noqa: E731
+    preds = [
+        {"id": "G1", "text": "ゲート: 補わない見込みが、保存された alloc_net_home・away・strat と 1e-9 以内で一致", "ok": not problems,
+         "got": {"max_abs_diff_below_1e-9": worst <= 1e-9}},
+        {"id": "G2", "text": "そのままの表で、alloc_net_home と alloc_net_away の A − B はどちらも 0.20 以上",
+         "ok": ha("alloc_net_home", "full") >= 0.20 and ha("alloc_net_away", "full") >= 0.20,
+         "got": {c: ha(c, "full") for c in cols[:2]}},
+        {"id": "G3", "text": "8 回までの表で、alloc_net_home と alloc_net_away の A − B はどちらもそのままより小さい",
+         "ok": all(ha(c, "eight") < ha(c, "full") for c in cols[:2]), "got": {c: [ha(c, "full"), ha(c, "eight")] for c in cols[:2]}},
+        {"id": "G4", "text": "補った表で、alloc_net_strat の A − B は 0.14 より大きく 0.35 より小さい", "ok": 0.14 < ab < 0.35, "got": ab},
+        {"id": "G5", "text": "読みは「両方」", "ok": reading == 2, "got": reading},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "imputed_games": filled["imputed_games"], "games": len(games),
+            "top9_mean": filled["top9_mean"], "home_away": home_away, "imputed": filled_lean, "reading": reading, "predictions": preds}
+
+
 def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None = None, props: Path | None = None,
             extra: Path | None = None, stored: Path | None = None, branch: Path | None = None,
             second: Path | None = None, panel: Path | None = None, fourth: Path | None = None,
@@ -592,7 +680,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                       "sixth_propositions": rel(sixth, repo),
                       "sixth_propositions_sha256": hashlib.sha256(sixth.read_bytes()).hexdigest()},
            "gate": {"ok": True, "problems": []}, "propositions": [], "predictions": [], "summary": {}, "second": {}, "third": {},
-           "fourth": {}, "fifth": {}, "sixth": {}}
+           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}}
     problems = out["gate"]["problems"]
     stored_sha = {r["meta"]["sha256"] for r in stored_rows.values()}
     if sha not in stored_sha:
@@ -680,6 +768,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                               [int(e["season"]) for e in exclusions], P, pl)
     out["sixth"] = round_six(repo, config, full, (included, excluded), focus, fs, gs, evaluated, out["fourth"], more,
                              [*P.load(props)[0], *ks, *ds], stored_rows, [int(e["season"]) for e in exclusions], panel, P, pl)
+    out["seventh"] = round_seven(repo, full, more, [int(e["season"]) for e in exclusions], pl)
     return out
 
 
@@ -865,6 +954,23 @@ def render(res: dict) -> str:
           f"## 第6弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f6['predictions'])}/{len(f6['predictions'])}", ""]
     for x in f6["predictions"]:
         L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f7 = res["seventh"]
+    names7 = {"alloc_net_home": "ホームの試合", "alloc_net_away": "ビジターの試合", "alloc_net_strat": "合計（ホーム + ビジター）"}
+    cell7 = lambda v: (f"{v['share_positive']:.2f}（A {v['share_positive_a']:.2f}・B {v['share_positive_b']:.2f}）・A − B {v['a_minus_b']:+.2f}"  # noqa: E731
+                       f"{' ★' if v['one_sided'] else ''}{' ▲' if v['strength_sided'] else ''}")
+    L += ["", "# 第7弾: 配分の効果の強さに沿った寄りを分ける", "",
+          f"ゲート（補わない見込みが保存された値と同じ）: {'通った' if f7['gate']['ok'] else '通らなかった'}。"
+          f"9 回裏が無かった {f7['imputed_games']} 試合（{f7['games']} 試合中）に、同じリーグ・同じ年の 9 回表の得点の分布を補った。", "",
+          "各セルは「正の単位の割合（A クラス・B クラス）」と A − B。★ は全体の片寄り、▲ は強さに沿った寄り。", "",
+          "| 配分の効果 | そのまま | 9 回まで | 8 回まで | 9 回裏を補う |", "|---|---|---|---|---|"]
+    for c, name in names7.items():
+        L += [f"| {name} `{c}` | " + " | ".join(cell7(f7["home_away"][c][k]) for k in ("full", "nine", "eight")) + f" | {cell7(f7['imputed'][c])} |"]
+    L += ["", f"読み（判定ではない）: **{f7['reading']}** "
+          + {1: "主に道具の側（9 回裏が無いことによる打ち切り）", 2: "両方", 3: "9 回裏が無いことでは説明できない（チームの側か、サヨナラ）"}[f7["reading"]], "",
+          f"## 第7弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f7['predictions'])}/{len(f7['predictions'])}", ""]
+    for x in f7["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
     return "\n".join(L) + "\n"
 
 
@@ -877,7 +983,7 @@ def main(argv=None) -> int:
     args.outdir.mkdir(parents=True, exist_ok=True)
     (args.outdir / "kind_reask.json").write_text(json.dumps(res, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     (args.outdir / "kind_reask.md").write_text(render(res), encoding="utf-8")
-    problems = res["gate"]["problems"] + (res["sixth"].get("gate") or {}).get("problems", [])
+    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh") for x in (res[k].get("gate") or {}).get("problems", [])]
     if problems:
         print("ゲートが通らなかった:", *problems, sep="\n  ", file=sys.stderr)
         return EXIT_GATE

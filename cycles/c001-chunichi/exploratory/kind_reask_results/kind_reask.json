@@ -9892,6 +9892,219 @@
    "predictions_ok": 6
   }
  },
+ "seventh": {
+  "games": 11028,
+  "gate": {
+   "ok": true,
+   "problems": []
+  },
+  "home_away": {
+   "alloc_net_away": {
+    "eight": {
+     "a_minus_b": 0.152777778,
+     "median": -0.132629108,
+     "one_sided": false,
+     "share_positive": 0.465277778,
+     "share_positive_a": 0.541666667,
+     "share_positive_b": 0.388888889,
+     "strength_sided": false,
+     "units": 144
+    },
+    "full": {
+     "a_minus_b": 0.180555556,
+     "median": -3.485915493,
+     "one_sided": true,
+     "share_positive": 0.256944444,
+     "share_positive_a": 0.347222222,
+     "share_positive_b": 0.166666667,
+     "strength_sided": false,
+     "units": 144
+    },
+    "nine": {
+     "a_minus_b": 0.180555556,
+     "median": -2.676056338,
+     "one_sided": true,
+     "share_positive": 0.284722222,
+     "share_positive_a": 0.375,
+     "share_positive_b": 0.194444444,
+     "strength_sided": false,
+     "units": 144
+    }
+   },
+   "alloc_net_home": {
+    "eight": {
+     "a_minus_b": 0.166666667,
+     "median": 0.040873016,
+     "one_sided": false,
+     "share_positive": 0.5,
+     "share_positive_a": 0.583333333,
+     "share_positive_b": 0.416666667,
+     "strength_sided": false,
+     "units": 144
+    },
+    "full": {
+     "a_minus_b": 0.166666667,
+     "median": 3.430555556,
+     "one_sided": true,
+     "share_positive": 0.763888889,
+     "share_positive_a": 0.847222222,
+     "share_positive_b": 0.680555556,
+     "strength_sided": false,
+     "units": 144
+    },
+    "nine": {
+     "a_minus_b": 0.138888889,
+     "median": 2.510465571,
+     "one_sided": true,
+     "share_positive": 0.736111111,
+     "share_positive_a": 0.805555556,
+     "share_positive_b": 0.666666667,
+     "strength_sided": false,
+     "units": 144
+    }
+   },
+   "alloc_net_strat": {
+    "eight": {
+     "a_minus_b": 0.138888889,
+     "median": -0.007531299,
+     "one_sided": false,
+     "share_positive": 0.5,
+     "share_positive_a": 0.569444444,
+     "share_positive_b": 0.430555556,
+     "strength_sided": false,
+     "units": 144
+    },
+    "full": {
+     "a_minus_b": 0.347222222,
+     "median": 0.094874804,
+     "one_sided": false,
+     "share_positive": 0.506944444,
+     "share_positive_a": 0.680555556,
+     "share_positive_b": 0.333333333,
+     "strength_sided": true,
+     "units": 144
+    },
+    "nine": {
+     "a_minus_b": 0.347222222,
+     "median": 0.331083725,
+     "one_sided": false,
+     "share_positive": 0.520833333,
+     "share_positive_a": 0.694444444,
+     "share_positive_b": 0.347222222,
+     "strength_sided": true,
+     "units": 144
+    }
+   }
+  },
+  "imputed": {
+   "alloc_net_away": {
+    "a_minus_b": 0.236111111,
+    "median": -1.824396447,
+    "one_sided": false,
+    "share_positive": 0.381944444,
+    "share_positive_a": 0.5,
+    "share_positive_b": 0.263888889,
+    "strength_sided": false,
+    "units": 144
+   },
+   "alloc_net_home": {
+    "a_minus_b": 0.333333333,
+    "median": 1.74933061,
+    "one_sided": false,
+    "share_positive": 0.611111111,
+    "share_positive_a": 0.777777778,
+    "share_positive_b": 0.444444444,
+    "strength_sided": true,
+    "units": 144
+   },
+   "alloc_net_strat": {
+    "a_minus_b": 0.333333333,
+    "median": 0.028876712,
+    "one_sided": false,
+    "share_positive": 0.5,
+    "share_positive_a": 0.666666667,
+    "share_positive_b": 0.333333333,
+    "strength_sided": true,
+    "units": 144
+   }
+  },
+  "imputed_games": 4866,
+  "predictions": [
+   {
+    "got": {
+     "max_abs_diff_below_1e-9": true
+    },
+    "id": "G1",
+    "ok": true,
+    "text": "ゲート: 補わない見込みが、保存された alloc_net_home・away・strat と 1e-9 以内で一致"
+   },
+   {
+    "got": {
+     "alloc_net_away": 0.180555556,
+     "alloc_net_home": 0.166666667
+    },
+    "id": "G2",
+    "ok": false,
+    "text": "そのままの表で、alloc_net_home と alloc_net_away の A − B はどちらも 0.20 以上"
+   },
+   {
+    "got": {
+     "alloc_net_away": [
+      0.180555556,
+      0.152777778
+     ],
+     "alloc_net_home": [
+      0.166666667,
+      0.166666667
+     ]
+    },
+    "id": "G3",
+    "ok": false,
+    "text": "8 回までの表で、alloc_net_home と alloc_net_away の A − B はどちらもそのままより小さい"
+   },
+   {
+    "got": 0.333333333,
+    "id": "G4",
+    "ok": true,
+    "text": "補った表で、alloc_net_strat の A − B は 0.14 より大きく 0.35 より小さい"
+   },
+   {
+    "got": 3,
+    "id": "G5",
+    "ok": false,
+    "text": "読みは「両方」"
+   }
+  ],
+  "reading": 3,
+  "top9_mean": {
+   "2013-C": 0.347222222,
+   "2013-P": 0.354988399,
+   "2014-C": 0.527906977,
+   "2014-P": 0.387470998,
+   "2015-C": 0.411214953,
+   "2015-P": 0.343457944,
+   "2016-C": 0.38317757,
+   "2016-P": 0.34965035,
+   "2017-C": 0.401869159,
+   "2017-P": 0.384074941,
+   "2018-C": 0.459016393,
+   "2018-P": 0.481308411,
+   "2019-C": 0.414519906,
+   "2019-P": 0.458823529,
+   "2020-C": 0.388268156,
+   "2020-P": 0.410614525,
+   "2021-C": 0.381176471,
+   "2021-P": 0.417249417,
+   "2022-C": 0.316159251,
+   "2022-P": 0.323943662,
+   "2023-C": 0.349765258,
+   "2023-P": 0.37995338,
+   "2024-C": 0.295508274,
+   "2024-P": 0.377358491,
+   "2025-C": 0.342723005,
+   "2025-P": 0.301401869
+  }
+ },
  "sixth": {
   "confirm_2026": {
    "missing_columns": 84,

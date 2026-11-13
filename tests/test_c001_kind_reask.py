@@ -85,7 +85,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -327,6 +327,35 @@ def test_swapping_allocation_and_simulation_columns():
     p52 = {r["id"]: r for r in pb["propositions"]}["P52"]["treatments"]
     assert [p52[t]["judgement"] for t in "abcd"] == [1, 1, 1, 1]          # 式1 の総合の判定は変わらない
     assert [x["ok"] for x in RES["sixth"]["predictions"]] == [True, True, True, True, True, False, False, True, False]
+
+
+# ---- 第7弾: 配分の効果の強さに沿った寄りを分ける ---------------------------------------------------------------------------
+def test_home_and_away_allocation_lean_and_the_imputed_ninth():
+    f7 = RES["seventh"]
+    assert f7["gate"] == {"ok": True, "problems": []} and f7["imputed_games"] == 4866 and f7["games"] == 11028
+    share = {c: [f7["home_away"][c][k]["share_positive"] for k in ("full", "eight")] + [f7["imputed"][c]["share_positive"]]
+             for c in ("alloc_net_home", "alloc_net_away")}
+    assert [round(v, 2) for v in share["alloc_net_home"]] == [0.76, 0.5, 0.61]
+    assert [round(v, 2) for v in share["alloc_net_away"]] == [0.26, 0.47, 0.38]
+    assert f7["home_away"]["alloc_net_home"]["full"]["one_sided"] and not f7["imputed"]["alloc_net_home"]["one_sided"]
+    assert round(f7["imputed"]["alloc_net_strat"]["a_minus_b"], 3) == 0.333 and f7["reading"] == 3
+    assert [x["ok"] for x in f7["predictions"]] == [True, False, False, True, False]
+
+
+def test_imputed_allocation_by_hand():
+    # 1 試合: ホーム d が 9 回表の時点で 2-1 で勝っていて、9 回裏に入らなかった。補う点の分布はこの年・リーグの 9 回表の得点（0 か 1）
+    teams = {"d": {"name": "中日", "league": "C"}, "g": {"name": "巨人", "league": "C"}}
+    games = [{"key": "a", "date": "2024-04-01", "home": "d", "away": "g", "hs": 2, "as": 1},
+             {"key": "b", "date": "2024-04-02", "home": "d", "away": "g", "hs": 0, "as": 3}]
+    innings = {"a": {"home": [0, 0, 0, 0, 2, 0, 0, 0, "X"], "away": [0, 0, 0, 0, 0, 0, 0, 1, 0]},
+               "b": {"home": [0] * 9, "away": [0, 0, 0, 0, 0, 0, 0, 2, 1]}}
+    plain = kr.imputed_allocation(games, innings, teams, impute=False)["units"][(2024, "d")]
+    filled = kr.imputed_allocation(games, innings, teams)
+    # 補わない: 得点 {2, 0}・失点 {1, 3} の 4 組で勝ち 1・負け 3 → 見込み −1、実際は 1 勝 1 敗で 0 → 配分の効果 +1
+    assert (plain["alloc_net_home"], plain["alloc_net_away"], plain["alloc_net_strat"]) == (1.0, 0.0, 1.0)
+    # 補う: 9 回表の得点は 0 と 1 が半分ずつ。得点 2 は 2 か 3 になり、失点 3 との組は半分が引き分け → 見込み −0.75、配分の効果 +0.75
+    assert filled["units"][(2024, "d")]["alloc_net_home"] == 0.75 and filled["imputed_games"] == 1
+    assert filled["top9_mean"] == {"2024-C": 0.5}
 
 
 def test_main_writes_both_files_and_returns_zero(tmp_path, monkeypatch):

@@ -11,3 +11,5 @@ fb8ec6445d88657a0f5767c9a50e2675294ea3f01ea0b1646991a09766cfbb2a  kind_reask_r4_
 904df1aa8fb057bf3248da9aa819ed3e4993575336bc3bebea85ae4cc5863d08  kind_reask_r10_propositions.toml
 2026-11-14 06:07:43 JST (round 11: final, before the round-11 script and any computation of A and B)
 8f3fbe3b76b794b5f9efad4167354c4a49e9ef88965e4a2c3ee1597476b69741  kind_reask_r11_propositions.toml
+2026-11-14 06:46:20 JST (round 12: final, before the round-12 script and any computation of the propositions; only the cell sizes of the conditions were counted)
+358e1078a1937a495ebe8209244e93c6352759386f2076ced92b93612f97c0d1  kind_reask_r12_propositions.toml

@@ -11,3 +11,13 @@ e091a768a863dfbbaef1e70b9373edb43aebfd56866e6fd727bab919b6ab270b  monthly_propos
 2026-11-13 21:12:13 JST (final, before judging the r3 propositions)
 67580b48e457600d8f446855385773680d605a10458ee0c4346e5746ccc07100  monthly_prelock_r3_2026-11-13.md
 bea3dabc8aa3f36fd42862c186604dd3919137f4ac8aecaae6b805629a2a1ce5  monthly_propositions_r3.toml
+
+# 第4弾（族 Y に量の段）
+2026-11-13 21:53:20 JST (final, before judging the r4 propositions)
+5ab97a5c945d86da7e5b58d1fc9357aea6c2413365449f7d6bda3158159e08e7  monthly_prelock_r4_2026-11-13.md
+faf8ee5fdec6aee99252cfc6f9b97eb3b7b7522bbccc8ca3565370a965658910  monthly_propositions_r4.toml
+
+# 第5弾（2013 年・言い切れなかった 3 年・2025 年の確かめ）
+2026-11-13 22:19:29 JST (final, before fetching the 2025 national accounts value and before judging r5)
+733fab209f86addb0e28fe594534c7ae5ca920cd79f0e8363bb48b8e68a08c60  monthly_prelock_r5_2026-11-13.md
+0f921d82c18129df3274f56997a16a0bb9a38bf0d863605cbe1ae9f64c9dd5ac  monthly_propositions_r5.toml

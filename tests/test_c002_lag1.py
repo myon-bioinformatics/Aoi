@@ -188,7 +188,9 @@ def test_monthly_prelock_and_propositions_hash_match_stamp():
     stamp = (MONTHLY / "monthly_prelock_timestamp.txt").read_text(encoding="utf-8")
     for name in ("monthly_prelock_2026-11-13.md", "monthly_propositions.toml",
                  "monthly_prelock_r2_2026-11-13.md", "monthly_propositions_r2.toml",
-                 "monthly_prelock_r3_2026-11-13.md", "monthly_propositions_r3.toml"):
+                 "monthly_prelock_r3_2026-11-13.md", "monthly_propositions_r3.toml",
+                 "monthly_prelock_r4_2026-11-13.md", "monthly_propositions_r4.toml",
+                 "monthly_prelock_r5_2026-11-13.md", "monthly_propositions_r5.toml"):
         assert hashlib.sha256((MONTHLY / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -245,6 +247,13 @@ def test_monthly_exit_codes_are_reproduced(tmp_path):
     assert all(codes[f"C2B{k}s{v}"] == 3 for k in (3, 4) for v in ("", "x"))
     assert codes["C2A3r"] == codes["C2A3c"] == codes["C2A3cx"] == 1                        # 第3弾: 米・穀類の寄与は支持
     assert all(codes[pid] == 3 for pid in ("C2Y3", "C2Y3x", "C2Y4", "C2Y4x", "C2Y3f", "C2Y4f", "C2Y4fx"))
+    assert all(codes[pid] == 3 for pid in ("C2Y4ax", "C2Y5x", "C2Y6x"))                     # 第4弾: 量の段も判例あり
+    assert codes["C2YL5x"] == codes["C2YL6x"] == 4
+    c5 = next(r for r in committed if r["id"] == "C2Y5x")["forms"][0]
+    assert (c5["hold"], c5["n"], [c["unit"] for c in c5["counterexamples"]]) == (15, 16, ["y-2013"])
+    assert codes["C2Y5"] == 3 and codes["C2Y5fx"] == codes["C2Y5f"] == 4                    # 第5弾（対偶の単位が 0 なので 4）
+    f5 = next(r for r in committed if r["id"] == "C2Y5f")["forms"][0]
+    assert (f5["hold"], f5["n"], f5["counterexamples"]) == (11, 11, [])
 
 
 def test_monthly_contribution_is_exact_not_linear():
@@ -285,6 +294,45 @@ def test_monthly_r3_counts_are_the_ones_in_the_prelock():
     for k, (up, down, band) in want.items():
         y = c["Y"]["incl2025"][f"step{k}"]
         assert (y["up(c>=sigmaY)"], y["down(c<=-sigmaY)"], y["band"]) == (up, down, band), k
+
+
+def test_monthly_r4_quantity_step_counts_and_source():
+    # 宣言 r4 §1・§4: q は世界銀行の名目 ÷ 総合の物価指数 ÷ 人口、η は USDA ERS 2005 年の日本の値。件数は宣言どおり
+    run = _load_monthly("monthly_run")
+    d = run.load()
+    assert d["eta_food"] == 0.492
+    qty = run.count(d)["Y"]["quantity"]
+    assert qty["units"] == 24 and qty["years"] == [2001, 2024]
+    for k, want in {4: (10, 1, 13), 5: (8, 8, 8), 6: (9, 4, 11)}.items():
+        s = qty[f"step{k}"]
+        assert (s["up(c>=sigmaY)"], s["down(c<=-sigmaY)"], s["band"]) == want, k
+    assert 2025 not in d["macro"]["hfce"]                      # 世界銀行の値は 2024 年まで（2025 年は第5弾で内閣府の表から。埋めない）
+
+
+def test_monthly_r5_first_check_of_2025():
+    # 宣言 r5 §5: 2025 年の q は内閣府の同じ公表の 2025 ÷ 2024 だけで作る。2024 年までは世界銀行のまま
+    import math
+
+    run = _load_monthly("monthly_run")
+    d = run.load()
+    assert d["macro"]["esri"] == {2024: 336602.0, 2025: 350908.3}
+    rows = {r["k"]: r for r in run.y_conditions(d)}
+    rel_a = d["cpi_year"]["all_items"][2025] / d["cpi_year"]["all_items"][2024]
+    pop = d["macro"]["pop"][2025] / d["macro"]["pop"][2024]
+    assert abs(rows[2025]["q"] - (math.log(350908.3 / 336602.0) - math.log(rel_a) - math.log(pop))) < 1e-15
+    assert rows[2025]["c5"] >= run.SIGMA_YEAR                                             # 上げを言い切る
+    y2025 = next(u for u in run.y_units(d) if u["season"] == 2025)
+    assert y2025["agree5"] is True and y2025["yE"] > 0
+    # 2004 年は世界銀行と内閣府の表で一致していた（転記の確かめ）
+    assert d["macro"]["hfce"][2004] == 288414100000000.0
+
+
+def test_monthly_residual_split_is_an_identity():
+    # 宣言 r5 §3.2: 段 5 の残り yE − c5 = qF_hh − gap（恒等式）
+    run = _load_monthly("monthly_run")
+    for u in run.y_units(run.load()):
+        if u["c5"] is not None:
+            assert abs((u["yE"] - u["c5"]) - (u["qF_hh"] - u["gap"])) < 1e-12, u["season"]
 
 
 def test_monthly_separate_implementation_agrees():

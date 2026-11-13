@@ -68,6 +68,11 @@
   B. 配分が不利 ⇒ 翌年 A クラス（M52A）。その年の B クラス・A クラスに分けた形（M52B・M52U）。
      読みは第10弾 B のまま。条件に当たる単位が min_n 未満なら 5（保留）
 
+第12弾（宣言は kind_reask_results/kind_reask_r12_propositions.toml の冒頭。刻印は同じ timestamp ファイル）:
+  「B クラスの中で、配分が不利 ⇒ 翌年 A に戻る」（M52B）を、配分（不利か）と分布（sim_p_upper が 0.32 以上か）の 4 つのマスに分ける。
+  G52H・G52L は分布をそろえて配分を、G52U・G52N は配分をそろえて分布を問う。読み: fisher_p が 0.05 未満の命題が
+  配分の側だけなら 1、分布の側だけなら 3、両方なら 2、どちらにも無ければ 4（分けられない）
+
 ゲート（通らなければ、命題の結果は出さずに止まる）:
   正本の命題ファイルの sha256 が保存された値と同じ。つなげたファイルが読み込める。
   K・D の命題が branch 側（from-cycle-001/propositions.toml）のどれとも同じ問いでない。
@@ -988,11 +993,49 @@ def round_eleven(repo: Path, full, tables: tuple, focus, es: list[dict], ts: lis
             "propositions": props, "chunichi_condition_units": mine, "predictions": preds}
 
 
+def round_twelve(full, tables: tuple, focus, ws: list[dict], eleventh: dict, P, pl) -> dict:
+    """第12弾: B クラスの中で翌年 A に戻るのは、配分の巡り合わせか、分布がもともと良かったからか。4 つのマスに分けて問う。"""
+    got, with_next = next_year_rows(ws, full, tables, focus, P, pl)
+    props = [row | {"reading": 5 if row["forms"]["original"]["n"] < r["min_n"] else row["reading"]} for row, r in got]
+    q = {x["id"]: x for x in props}
+    line = next(c["value"] for c in ws[0]["scope"]["where"] if c["col"] == "sim_p_upper")       # 宣言の線（0.32）は命題から読む
+    b = with_next[0].filter(~pl.col("upper_half") & pl.col("upper_half_next").is_not_null() & pl.col("season").is_between(2012, 2024))
+    cells = {}
+    for at in (0.30, line, 0.35):                # 線を前後にずらして同じ表を数える（読むのは line だけ）
+        t = b.group_by((pl.col("alloc_z_strat") < -1).alias("unfav"), (pl.col("sim_p_upper") >= at).alias("high")).agg(
+            n=pl.len(), next_upper=pl.col("upper_half_next").sum())
+        got_cells = {(r["unfav"], r["high"]): r for r in t.to_dicts()}
+        cells[format(at, ".2f")] = [{"unfav": u, "high": h, "n": got_cells[(u, h)]["n"], "next_upper": got_cells[(u, h)]["next_upper"],
+                                    "rate": round(got_cells[(u, h)]["next_upper"] / got_cells[(u, h)]["n"], 9)}
+                                   for u in (False, True) for h in (False, True)]
+    main = cells[format(line, ".2f")]
+    m52b = {x["id"]: x for x in eleventh["propositions"]}["M52B"]["forms"]
+    side = lambda u: (sum(c["next_upper"] for c in main if c["unfav"] == u), sum(c["n"] for c in main if c["unfav"] == u))  # noqa: E731
+    problems = []
+    if [c["n"] for c in main] != [38, 10, 12, 12]:
+        problems.append("第12弾: マスの単位の数が、宣言の前に数えた 38・10・12・12 と違う")
+    if side(True) != (m52b["original"]["hold"], m52b["original"]["n"]) or side(False)[1] != m52b["inverse"]["n"]:
+        problems.append("第12弾: マスを足した数が、第11弾の M52B と違う")
+    hit = lambda i: q[i]["reading"] == 1         # noqa: E731  fisher_p が ALPHA 未満（単位が足りない命題は数えない）
+    alloc, dist = hit("G52H") or hit("G52L"), hit("G52U") or hit("G52N")
+    reading_ = 2 if alloc and dist else 1 if alloc else 3 if dist else 4
+    rate = {(c["unfav"], c["high"]): c["rate"] for c in main}
+    preds = [
+        {"id": "R1", "text": "翌年 A の割合は、「不利・高い」が最も高く、「不利でない・低い」が最も低い",
+         "ok": rate[(True, True)] == max(rate.values()) and rate[(False, False)] == min(rate.values()), "got": [c["rate"] for c in main]},
+        {"id": "R2", "text": "G52N の fisher_p は 0.05 未満", "ok": q["G52N"]["fisher_p"] < ALPHA, "got": q["G52N"]["fisher_p"]},
+        {"id": "R3", "text": "G52L の fisher_p は 0.05 以上", "ok": q["G52L"]["fisher_p"] >= ALPHA, "got": q["G52L"]["fisher_p"]},
+        {"id": "R4", "text": "読みは 3（分布がもともと良かった）", "ok": reading_ == 3, "got": reading_},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "line": line, "cells": cells, "propositions": props,
+            "sides": {"allocation": alloc, "distribution": dist}, "reading": reading_, "predictions": preds}
+
+
 def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None = None, props: Path | None = None,
             extra: Path | None = None, stored: Path | None = None, branch: Path | None = None,
             second: Path | None = None, panel: Path | None = None, fourth: Path | None = None,
             central: Path | None = None, sixth: Path | None = None, tenth: Path | None = None,
-            eleventh: Path | None = None) -> dict:
+            eleventh: Path | None = None, twelfth: Path | None = None) -> dict:
     pl, P, PD = load_modules(repo)
     base = repo / "cycles" / "c001-chunichi"
     season, config = season or base / "outputs" / "season.jsonl", config or base / "analysis.toml"
@@ -1006,6 +1049,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
     sixth = sixth or HERE / "kind_reask_results" / "kind_reask_r6_propositions.toml"
     tenth = tenth or HERE / "kind_reask_results" / "kind_reask_r10_propositions.toml"
     eleventh = eleventh or HERE / "kind_reask_results" / "kind_reask_r11_propositions.toml"
+    twelfth = twelfth or HERE / "kind_reask_results" / "kind_reask_r12_propositions.toml"
     stored_rows = {r["id"]: r for r in map(json.loads, stored.read_text(encoding="utf-8").splitlines())}
     sha = hashlib.sha256(props.read_bytes()).hexdigest()
     out = {"inputs": {"season": rel(season, repo), "propositions": rel(props, repo), "propositions_sha256": sha,
@@ -1023,20 +1067,22 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                       "tenth_propositions": rel(tenth, repo),
                       "tenth_propositions_sha256": hashlib.sha256(tenth.read_bytes()).hexdigest(),
                       "eleventh_propositions": rel(eleventh, repo),
-                      "eleventh_propositions_sha256": hashlib.sha256(eleventh.read_bytes()).hexdigest()},
+                      "eleventh_propositions_sha256": hashlib.sha256(eleventh.read_bytes()).hexdigest(),
+                      "twelfth_propositions": rel(twelfth, repo),
+                      "twelfth_propositions_sha256": hashlib.sha256(twelfth.read_bytes()).hexdigest()},
            "gate": {"ok": True, "problems": []}, "propositions": [], "predictions": [], "summary": {}, "second": {}, "third": {},
-           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}, "eighth": {}, "ninth": {}, "tenth": {}, "eleventh": {}}
+           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}, "eighth": {}, "ninth": {}, "tenth": {}, "eleventh": {}, "twelfth": {}}
     problems = out["gate"]["problems"]
     stored_sha = {r["meta"]["sha256"] for r in stored_rows.values()}
     if sha not in stored_sha:
         problems.append(f"命題ファイルの sha256 {sha} が保存された値 {sorted(stored_sha)} にない")
     try:
-        ks, ds, fs, gs, ns, vs = load_joined(props, [extra, second, fourth, sixth, tenth, eleventh], P)
+        ks, ds, fs, gs, ns, vs, ws = load_joined(props, [extra, second, fourth, sixth, tenth, eleventh, twelfth], P)
     except P.PropositionError as e:
         problems.append(f"つなげた命題ファイルが読み込めない: {e}")
-        ks, ds, fs, gs, ns, vs = [], [], [], [], [], []
+        ks, ds, fs, gs, ns, vs, ws = [], [], [], [], [], [], []
     branch_sig = {P.identity(p)["signature"]: p["id"] for p in P.load(branch)[0]} if branch.exists() else {}
-    for p in [*ks, *ds, *fs, *gs, *ns, *vs]:
+    for p in [*ks, *ds, *fs, *gs, *ns, *vs, *ws]:
         other = branch_sig.get(P.identity(p)["signature"])
         if other:
             problems.append(f"{p['id']}: branch 側の {other} と同じ問い（{P.identity(p)['key']}）")
@@ -1121,6 +1167,7 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
     ts = [p for p in vs if p["then"][0]["col"] == "wl_rf_win_gap_t1"]       # 第11弾 A の命題（θ = 1 の列）。残りが B
     out["eleventh"] = round_eleven(repo, full, (included, excluded), focus, fs, ts, [p for p in vs if p not in ts], more,
                                    out["third"], out["fourth"], out["tenth"], evaluated, [int(e["season"]) for e in exclusions], P, pl)
+    out["twelfth"] = round_twelve(full, (included, excluded), focus, ws, out["eleventh"], P, pl)
     return out
 
 
@@ -1419,6 +1466,24 @@ def render(res: dict) -> str:
           "", f"## 第11弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f11['predictions'])}/{len(f11['predictions'])}", ""]
     for x in f11["predictions"]:
         L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f12 = res["twelfth"]
+    L += ["", "# 第12弾: B クラスの中で翌年 A に戻るのは、配分の巡り合わせか、分布がもともと良かったからか", "",
+          f"ゲート（マスの単位の数が宣言と同じ。足すと第11弾の M52B と同じ）: {'通った' if f12['gate']['ok'] else '通らなかった'}。", "",
+          "マスごとの「翌年 A クラス / 単位」（B クラスの 72 単位。高い = sim_p_upper が線以上）", "",
+          "| 分布の線 | 不利でない・低い | 不利でない・高い | 不利・低い | 不利・高い |", "|---|---|---|---|---|"]
+    for at, cs in f12["cells"].items():
+        L += [f"| {at}{'（宣言の線）' if float(at) == f12['line'] else '（並べるだけ）'} | "
+              + " | ".join(f"{c['next_upper']}/{c['n']}（{c['rate']:.2f}）" for c in cs) + " |"]
+    L += ["", "| 命題 | 元 | 対偶 | 逆 | 裏 | fisher_p | 読み | 総合 |", "|---|---|---|---|---|---|---|---|"]
+    for x in f12["propositions"]:
+        L += [f"| {x['id']} {x['statement']} | " + " | ".join(_cell(x["forms"][f]) for f in FORM_ORDER)
+              + f" | {x['fisher_p']:.2g} | **{x['reading']}** {({1: 'そろえても効く', 2: '効くとは言えない', 5: '保留（単位が少ない）'})[x['reading']]} | {x['judgement']['code']} |"]
+    L += ["", f"読み（判定ではない）: **{f12['reading']}** "
+          + {1: "配分の巡り合わせ", 2: "両方", 3: "分布がもともと良かった", 4: "分けられない"}[f12["reading"]], "",
+          f"## 第12弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f12['predictions'])}/{len(f12['predictions'])}", ""]
+    for x in f12["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
     return "\n".join(L) + "\n"
 
 
@@ -1611,7 +1676,7 @@ def main(argv=None) -> int:
     args.outdir.mkdir(parents=True, exist_ok=True)
     (args.outdir / "kind_reask.json").write_text(json.dumps(res, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     (args.outdir / "kind_reask.md").write_text(render(res), encoding="utf-8")
-    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh", "eighth", "ninth", "tenth", "eleventh") for x in (res[k].get("gate") or {}).get("problems", [])]
+    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth") for x in (res[k].get("gate") or {}).get("problems", [])]
     if problems:
         print("ゲートが通らなかった:", *problems, sep="\n  ", file=sys.stderr)
         return EXIT_GATE

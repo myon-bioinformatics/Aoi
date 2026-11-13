@@ -4621,7 +4621,9 @@
   "sixth_propositions_sha256": "3bb8150f9098849d5c61322505056d8f4e8376800e3cb01c470a8f091be7072e",
   "stored": "cycles/c001-chunichi/outputs/propositions.jsonl",
   "tenth_propositions": "cycles/c001-chunichi/exploratory/kind_reask_results/kind_reask_r10_propositions.toml",
-  "tenth_propositions_sha256": "904df1aa8fb057bf3248da9aa819ed3e4993575336bc3bebea85ae4cc5863d08"
+  "tenth_propositions_sha256": "904df1aa8fb057bf3248da9aa819ed3e4993575336bc3bebea85ae4cc5863d08",
+  "twelfth_propositions": "cycles/c001-chunichi/exploratory/kind_reask_results/kind_reask_r12_propositions.toml",
+  "twelfth_propositions_sha256": "358e1078a1937a495ebe8209244e93c6352759386f2076ced92b93612f97c0d1"
  },
  "ninth": {
   "gate": {
@@ -17038,6 +17040,567 @@
     "negative": 128,
     "share_negative": 0.888888889
    }
+  }
+ },
+ "twelfth": {
+  "cells": {
+   "0.30": [
+    {
+     "high": false,
+     "n": 35,
+     "next_upper": 9,
+     "rate": 0.257142857,
+     "unfav": false
+    },
+    {
+     "high": true,
+     "n": 13,
+     "next_upper": 6,
+     "rate": 0.461538462,
+     "unfav": false
+    },
+    {
+     "high": false,
+     "n": 9,
+     "next_upper": 4,
+     "rate": 0.444444444,
+     "unfav": true
+    },
+    {
+     "high": true,
+     "n": 15,
+     "next_upper": 11,
+     "rate": 0.733333333,
+     "unfav": true
+    }
+   ],
+   "0.32": [
+    {
+     "high": false,
+     "n": 38,
+     "next_upper": 10,
+     "rate": 0.263157895,
+     "unfav": false
+    },
+    {
+     "high": true,
+     "n": 10,
+     "next_upper": 5,
+     "rate": 0.5,
+     "unfav": false
+    },
+    {
+     "high": false,
+     "n": 12,
+     "next_upper": 6,
+     "rate": 0.5,
+     "unfav": true
+    },
+    {
+     "high": true,
+     "n": 12,
+     "next_upper": 9,
+     "rate": 0.75,
+     "unfav": true
+    }
+   ],
+   "0.35": [
+    {
+     "high": false,
+     "n": 43,
+     "next_upper": 12,
+     "rate": 0.279069767,
+     "unfav": false
+    },
+    {
+     "high": true,
+     "n": 5,
+     "next_upper": 3,
+     "rate": 0.6,
+     "unfav": false
+    },
+    {
+     "high": false,
+     "n": 14,
+     "next_upper": 7,
+     "rate": 0.5,
+     "unfav": true
+    },
+    {
+     "high": true,
+     "n": 10,
+     "next_upper": 8,
+     "rate": 0.8,
+     "unfav": true
+    }
+   ]
+  },
+  "gate": {
+   "ok": true,
+   "problems": []
+  },
+  "line": 0.32,
+  "predictions": [
+   {
+    "got": [
+     0.263157895,
+     0.5,
+     0.5,
+     0.75
+    ],
+    "id": "R1",
+    "ok": true,
+    "text": "翌年 A の割合は、「不利・高い」が最も高く、「不利でない・低い」が最も低い"
+   },
+   {
+    "got": 0.14619192015124333,
+    "id": "R2",
+    "ok": false,
+    "text": "G52N の fisher_p は 0.05 未満"
+   },
+   {
+    "got": 0.12045503129127197,
+    "id": "R3",
+    "ok": true,
+    "text": "G52L の fisher_p は 0.05 以上"
+   },
+   {
+    "got": 4,
+    "id": "R4",
+    "ok": false,
+    "text": "読みは 3（分布がもともと良かった）"
+   }
+  ],
+  "propositions": [
+   {
+    "definition_sha256": "d81851ad15b75aebaf7f2e44fa7b68672c77776caa5bf6897a2576940e83c296",
+    "fisher_p": 0.22136222910216719,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.45454545454545453,
+      "ci": [
+       0.305742,
+       0.863156
+      ],
+      "code": 4,
+      "fisher_p": 0.22136222910216719,
+      "hold": 5,
+      "n": 8,
+      "rate": 0.625,
+      "undetermined": 0,
+      "units": [
+       "d-2015",
+       "l-2015",
+       "l-2023"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "converse": {
+      "base_rate": 0.5454545454545454,
+      "ci": [
+       0.387644,
+       0.836553
+      ],
+      "code": 4,
+      "fisher_p": 0.22136222910216719,
+      "hold": 9,
+      "n": 14,
+      "rate": 0.6428571428571429,
+      "undetermined": 0,
+      "units": [
+       "c-2012",
+       "e-2012",
+       "g-2023",
+       "m-2022",
+       "t-2016"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "inverse": {
+      "base_rate": 0.36363636363636365,
+      "ci": [
+       0.236593,
+       0.763407
+      ],
+      "code": 4,
+      "fisher_p": 0.22136222910216719,
+      "hold": 5,
+      "n": 10,
+      "rate": 0.5,
+      "undetermined": 0,
+      "units": [
+       "c-2012",
+       "e-2012",
+       "g-2023",
+       "m-2022",
+       "t-2016"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "original": {
+      "base_rate": 0.6363636363636364,
+      "ci": [
+       0.467695,
+       0.911058
+      ],
+      "code": 4,
+      "fisher_p": 0.22136222910216719,
+      "hold": 9,
+      "n": 12,
+      "rate": 0.75,
+      "undetermined": 0,
+      "units": [
+       "d-2015",
+       "l-2015",
+       "l-2023"
+      ],
+      "verdict": "Inconclusive"
+     }
+    },
+    "id": "G52H",
+    "judgement": {
+     "code": 4,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[seasons=2012-2024, where:sim_p_upper>=0.32, where:upper_half==false] alloc_z_strat<-1 => upper_half_next==true",
+    "parent": "M52B",
+    "reading": 2,
+    "signature": "853a3c76071b3a56",
+    "statement": "B クラスで、得点・失点の分布から見た A クラスの確率が 0.32 以上の単位の中で、配分が不利（alloc_z_strat < −1）なら、翌年は A クラスに戻る",
+    "units": 22
+   },
+   {
+    "definition_sha256": "d003a7540b3d439d8cfa8b2eca0e52a9b380dd2f7ef90af1598b66d1e0b95a54",
+    "fisher_p": 0.12045503129127197,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.76,
+      "ci": [
+       0.664863,
+       0.91651
+      ],
+      "code": 4,
+      "fisher_p": 0.12045503129127197,
+      "hold": 28,
+      "n": 34,
+      "rate": 0.8235294117647058,
+      "undetermined": 0,
+      "units": [
+       "b-2015",
+       "db-2012",
+       "l-2024",
+       "s-2013",
+       "s-2019",
+       "s-2023"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "converse": {
+      "base_rate": 0.24,
+      "ci": [
+       0.184812,
+       0.61359
+      ],
+      "code": 3,
+      "fisher_p": 0.12045503129127197,
+      "hold": 6,
+      "n": 16,
+      "rate": 0.375,
+      "undetermined": 0,
+      "units": [
+       "c-2022",
+       "db-2015",
+       "db-2018",
+       "db-2021",
+       "e-2016",
+       "f-2013",
+       "f-2017",
+       "l-2021",
+       "m-2014",
+       "t-2018"
+      ],
+      "verdict": "Rejected"
+     },
+     "inverse": {
+      "base_rate": 0.68,
+      "ci": [
+       0.579912,
+       0.850284
+      ],
+      "code": 4,
+      "fisher_p": 0.12045503129127197,
+      "hold": 28,
+      "n": 38,
+      "rate": 0.7368421052631579,
+      "undetermined": 0,
+      "units": [
+       "c-2022",
+       "db-2015",
+       "db-2018",
+       "db-2021",
+       "e-2016",
+       "f-2013",
+       "f-2017",
+       "l-2021",
+       "m-2014",
+       "t-2018"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "original": {
+      "base_rate": 0.32,
+      "ci": [
+       0.253782,
+       0.746218
+      ],
+      "code": 3,
+      "fisher_p": 0.12045503129127197,
+      "hold": 6,
+      "n": 12,
+      "rate": 0.5,
+      "undetermined": 0,
+      "units": [
+       "b-2015",
+       "db-2012",
+       "l-2024",
+       "s-2013",
+       "s-2019",
+       "s-2023"
+      ],
+      "verdict": "Rejected"
+     }
+    },
+    "id": "G52L",
+    "judgement": {
+     "code": 3,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[seasons=2012-2024, where:sim_p_upper<0.32, where:upper_half==false] alloc_z_strat<-1 => upper_half_next==true",
+    "parent": "M52B",
+    "reading": 2,
+    "signature": "a0304acf44633c7e",
+    "statement": "B クラスで、得点・失点の分布から見た A クラスの確率が 0.32 未満の単位の中で、配分が不利（alloc_z_strat < −1）なら、翌年は A クラスに戻る",
+    "units": 50
+   },
+   {
+    "definition_sha256": "04a34f422ad734798f87ef0bf15c65aa05ba2eeac4d3958b9e2ebf59ca9a1eea",
+    "fisher_p": 0.20016152914254948,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.5,
+      "ci": [
+       0.354202,
+       0.879416
+      ],
+      "code": 4,
+      "fisher_p": 0.20016152914254948,
+      "hold": 6,
+      "n": 9,
+      "rate": 0.6666666666666666,
+      "undetermined": 0,
+      "units": [
+       "d-2015",
+       "l-2015",
+       "l-2023"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "converse": {
+      "base_rate": 0.5,
+      "ci": [
+       0.357468,
+       0.801755
+      ],
+      "code": 4,
+      "fisher_p": 0.20016152914254948,
+      "hold": 9,
+      "n": 15,
+      "rate": 0.6,
+      "undetermined": 0,
+      "units": [
+       "b-2013",
+       "e-2018",
+       "f-2023",
+       "s-2014",
+       "s-2017",
+       "t-2012"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "inverse": {
+      "base_rate": 0.375,
+      "ci": [
+       0.253782,
+       0.746218
+      ],
+      "code": 3,
+      "fisher_p": 0.20016152914254948,
+      "hold": 6,
+      "n": 12,
+      "rate": 0.5,
+      "undetermined": 0,
+      "units": [
+       "b-2013",
+       "e-2018",
+       "f-2023",
+       "s-2014",
+       "s-2017",
+       "t-2012"
+      ],
+      "verdict": "Rejected"
+     },
+     "original": {
+      "base_rate": 0.625,
+      "ci": [
+       0.467695,
+       0.911058
+      ],
+      "code": 4,
+      "fisher_p": 0.20016152914254948,
+      "hold": 9,
+      "n": 12,
+      "rate": 0.75,
+      "undetermined": 0,
+      "units": [
+       "d-2015",
+       "l-2015",
+       "l-2023"
+      ],
+      "verdict": "Inconclusive"
+     }
+    },
+    "id": "G52U",
+    "judgement": {
+     "code": 4,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[seasons=2012-2024, where:alloc_z_strat<-1, where:upper_half==false] sim_p_upper>=0.32 => upper_half_next==true",
+    "parent": "M52B",
+    "reading": 2,
+    "signature": "3d9451d29c2990d3",
+    "statement": "B クラスで、配分が不利（alloc_z_strat < −1）だった単位の中で、得点・失点の分布から見た A クラスの確率が 0.32 以上なら、翌年は A クラスに戻る",
+    "units": 24
+   },
+   {
+    "definition_sha256": "4642eee7728d9d773c5ecff48b0bdf886dc9b8e4139db7f2c0cc0ffddd9cc126",
+    "fisher_p": 0.14619192015124333,
+    "forms": {
+     "contrapositive": {
+      "base_rate": 0.7916666666666666,
+      "ci": [
+       0.690801,
+       0.933495
+      ],
+      "code": 4,
+      "fisher_p": 0.14619192015124333,
+      "hold": 28,
+      "n": 33,
+      "rate": 0.8484848484848485,
+      "undetermined": 0,
+      "units": [
+       "b-2018",
+       "c-2019",
+       "c-2024",
+       "d-2014",
+       "e-2022"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "converse": {
+      "base_rate": 0.20833333333333334,
+      "ci": [
+       0.151763,
+       0.582865
+      ],
+      "code": 3,
+      "fisher_p": 0.14619192015124333,
+      "hold": 5,
+      "n": 15,
+      "rate": 0.3333333333333333,
+      "undetermined": 0,
+      "units": [
+       "c-2022",
+       "db-2015",
+       "db-2018",
+       "db-2021",
+       "e-2016",
+       "f-2013",
+       "f-2017",
+       "l-2021",
+       "m-2014",
+       "t-2018"
+      ],
+      "verdict": "Rejected"
+     },
+     "inverse": {
+      "base_rate": 0.6875,
+      "ci": [
+       0.579912,
+       0.850284
+      ],
+      "code": 4,
+      "fisher_p": 0.14619192015124333,
+      "hold": 28,
+      "n": 38,
+      "rate": 0.7368421052631579,
+      "undetermined": 0,
+      "units": [
+       "c-2022",
+       "db-2015",
+       "db-2018",
+       "db-2021",
+       "e-2016",
+       "f-2013",
+       "f-2017",
+       "l-2021",
+       "m-2014",
+       "t-2018"
+      ],
+      "verdict": "Inconclusive"
+     },
+     "original": {
+      "base_rate": 0.3125,
+      "ci": [
+       0.236593,
+       0.763407
+      ],
+      "code": 4,
+      "fisher_p": 0.14619192015124333,
+      "hold": 5,
+      "n": 10,
+      "rate": 0.5,
+      "undetermined": 0,
+      "units": [
+       "b-2018",
+       "c-2019",
+       "c-2024",
+       "d-2014",
+       "e-2022"
+      ],
+      "verdict": "Inconclusive"
+     }
+    },
+    "id": "G52N",
+    "judgement": {
+     "code": 4,
+     "form": "original",
+     "stage": "none"
+    },
+    "key": "[seasons=2012-2024, where:alloc_z_strat>=-1, where:upper_half==false] sim_p_upper>=0.32 => upper_half_next==true",
+    "parent": "M52B",
+    "reading": 2,
+    "signature": "238fb1c2aba844b7",
+    "statement": "B クラスで、配分が不利でなかった（alloc_z_strat >= −1）単位の中で、得点・失点の分布から見た A クラスの確率が 0.32 以上なら、翌年は A クラスに戻る",
+    "units": 48
+   }
+  ],
+  "reading": 4,
+  "sides": {
+   "allocation": false,
+   "distribution": false
   }
  }
 }

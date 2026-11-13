@@ -87,7 +87,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {} and res["tenth"] == {} and res["eleventh"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {} and res["tenth"] == {} and res["eleventh"] == {} and res["twelfth"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -458,6 +458,27 @@ def test_unfavourable_allocation_raises_the_share_that_returns_to_the_upper_half
     assert f11["chunichi_condition_units"] == [{"unit": "d-2015", "upper_half": False, "upper_half_next": False},
                                                {"unit": "d-2019", "upper_half": False, "upper_half_next": True}]
     assert [x["ok"] for x in f11["predictions"]] == [True] * 5 + [False] + [True] * 3
+
+
+# ---- 第12弾: 戻るのは配分の巡り合わせか、分布がもともと良かったからか -----------------------------------------------------
+def test_the_return_cannot_be_split_between_allocation_and_distribution():
+    f12 = RES["twelfth"]
+    assert f12["gate"] == {"ok": True, "problems": []} and f12["line"] == 0.32
+    main = [(c["unfav"], c["high"], c["next_upper"], c["n"]) for c in f12["cells"]["0.32"]]
+    assert main == [(False, False, 10, 38), (False, True, 5, 10), (True, False, 6, 12), (True, True, 9, 12)]
+    assert sum(c[2] for c in main if c[0]) == 15 and sum(c[3] for c in main if c[0]) == 24      # 足すと M52B（24 中 15）
+    q = {x["id"]: x for x in f12["propositions"]}
+    got = {i: (v["forms"]["original"]["hold"], v["forms"]["original"]["n"], v["reading"]) for i, v in q.items()}
+    assert got == {"G52H": (9, 12, 2), "G52L": (6, 12, 2), "G52U": (9, 12, 2), "G52N": (5, 10, 2)}
+    assert all(v["fisher_p"] >= kr.ALPHA for v in q.values())
+    assert f12["sides"] == {"allocation": False, "distribution": False} and f12["reading"] == 4
+    assert [x["ok"] for x in f12["predictions"]] == [True, False, True, False]
+
+
+def test_moving_the_distribution_line_keeps_the_order_of_the_four_cells():
+    for at, cells in RES["twelfth"]["cells"].items():           # 線を 0.30・0.35 にずらしても、両方そろったマスが最も高く、どちらも無いマスが最も低い
+        rate = [c["rate"] for c in cells]
+        assert rate[0] == min(rate) and rate[3] == max(rate) and sum(c["n"] for c in cells) == 72, at
 
 
 # ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------

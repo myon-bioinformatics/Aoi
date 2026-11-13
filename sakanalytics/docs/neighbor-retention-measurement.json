@@ -1,0 +1,27 @@
+{
+  "baseline_sha": "95cfacd4f8aeb29eda0696a61f503e25a8789fce",
+  "seed": 20261104,
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "rows": 200,
+  "samples_ns": {
+    "baseline": [
+      25358391,
+      26221972,
+      25400885
+    ],
+    "current": [
+      25819405,
+      26692180,
+      25405283
+    ]
+  },
+  "median_ns": {
+    "baseline": 25400885,
+    "current": 25819405
+  },
+  "one_run_peak_bytes": {
+    "baseline": 216288,
+    "current": 191770
+  },
+  "parity": "complete report equality including 30 smaller subsets"
+}

@@ -1,16 +1,8 @@
 """Regular-season forecasts; no network access and no results after the cutoff."""
 from __future__ import annotations
 
-import argparse
-from dataclasses import asdict, dataclass
-from datetime import date, timedelta
-from fractions import Fraction
-import hashlib
-import json
-import math
-from pathlib import Path
-import platform
-import random
+import argparse, hashlib, json, math, platform, random
+from dataclasses import asdict, dataclass; from datetime import date, timedelta; from fractions import Fraction; from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -299,7 +291,7 @@ def magic_events(rows):
     return events
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input', type=Path)
     parser.add_argument('--calendar-jsonl', type=Path, help='regular-season calendar rows as JSONL (key, date, home, away, hs, as; local only)')
@@ -312,7 +304,7 @@ def main():
     parser.add_argument('--solver-seconds', type=float, default=10)
     parser.add_argument('--expected-total-games', type=int, help='verify each team total scheduled games match this integer')
     parser.add_argument('--output', type=Path, required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     data = json.loads(args.input.read_text())
     if args.calendar_jsonl:
         if args.season is None or 'games' in data:

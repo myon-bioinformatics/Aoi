@@ -103,6 +103,8 @@ ENG_SPANS, ENG_H, ENG_V0 = [1.5, 3.0], [1 / 128, 1 / 512], [128.0, 2.0 ** -12]
 ENG2_SETS = [("mixed", (1.0, 8.0), [0.5, 1.0]), ("mixed", (0.6, 0.4, 4.0), [0.5, 1.0]),  # (弁の割合…, ポンプの速さ = V0/(τ·最後の数))
              ("midpump", (2.0, 0.75), [1.5, 3.0]), ("midpump", (0.4, 1.5), [1.5, 3.0]),  # (τB/τ, τC/τ)。B からポンプ V0/(16τ)
              ("sched", (0.6,), [1.5, 3.0]), ("sched", (2.0,), [1.5, 3.0])]  # (τB/τ,)。A の弁の開き具合が 1 → 1/4（t = 3τ）へ下がる
+OVAL_OPENINGS, OVAL_SPANS = [1.0, 0.75, 0.5, 0.25, 0.125], [1.5, 3.0]  # 第17弾 oval: 弁 1 本の開き具合と、測る時刻 / τ
+OVAL_H = [1 / 8, 1 / 16, 1 / 32, 1 / 64, 1 / 128, 1 / 256]
 SCHED_CAM = [[0.0, 1.0], [3.0, 0.25]]  # 第16弾 sched: 時計の槽の水位（= t/τ）→ 開き具合
 FORM_CHAINS = [((0.6,), ("end", "uniform_in", "ramp", "quad")), ((2.0,), ("end", "uniform_in", "ramp", "quad")),
                ((2.0, 0.75), ("end", "uniform_in", "cascade", "ramp", "quad")),
@@ -118,7 +120,7 @@ TLAD_ORDER = {"tay1": 2, "tay2": 3, "tay3": 4, "uniform_in": 2, "ramp": 3, "quad
 TOTAL_COEF = {1: 1.0 / 12.0, 2: 1.0 / 72.0, 3: 1.0 / 720.0}  # 合計も知る入れ方の、2 段目のずれの係数
 VARIANT_METHODS = ("cascade", "ramp", "quad", "tay1", "tay2", "tay3")  # 整数の漸化式で進める入れ方（エンジンには入れていない）
 CHAIN_KINDS = ("chain3b", "chain4", "edge3", "edge2", *CROSS_KINDS, "vary", "ladder", "ilad", "coarse2", "tlad", "rnd", "rnd2", "formc")  # 1 列につながった槽（stages に τ_i/τ）
-FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, *PIPE_KINDS, "olad", "eng", "eng2")  # エンジンの inflows（end・uniform_in）で進める組
+FLOW_KINDS = ("flow", "combo", "chain3", "ring", *CHAIN_KINDS, *PIPE_KINDS, "olad", "eng", "eng2", "oval")  # エンジンの inflows（end・uniform_in）で進める組
 DELAY = TAU / 4
 EPS = 1e-15  # 割る数が 0 のときに置く値（置いたら log に残す）
 TOL_CHECK = 1e-9  # 検算で許す err の差
@@ -324,6 +326,11 @@ def plan(h_extra: list[float]) -> list[dict]:
                     for rounding in ("q48", "carry64"):
                         add("eng2", "eq", 1, "uniform_in", h, shape=shape, pipe_set=idx + 1, pipe_params=list(params), span_ratio=sp,
                             v0=v0, rounding=rounding)
+    for opening in OVAL_OPENINGS:  # 第17弾
+        for sp in OVAL_SPANS:
+            for h in OVAL_H:
+                for mode in ("independent",) if opening == 1.0 else ("exact", "independent"):  # 全開は 2 通りが同じ計算
+                    add("oval", "eq", 1, mode, h, opening=opening, span_ratio=sp)
     return out
 
 
@@ -844,7 +851,9 @@ def eng2_exact(u: dict, t: float) -> float:
 def run_eng2(u: dict, ffs: dict, steps: int, dt: float, t: float) -> dict:
     """第16弾: ポンプが出ている槽・開き具合が動く弁のある配管を、エンジン本体の rounding = q48 / carry64 で進める。"""
     p, v0 = u["pipe_params"], u["v0"]
-    net = ffs["Network"](dt=dt, rounding=u["rounding"])
+    # sched の q48 は、第16弾のとき（弁 1 本の槽を法則のまま取っていた既定）の値のままにする。エンジンを直した後は independent がそれに当たる
+    law = u["shape"] == "sched" and u["rounding"] == "q48"
+    net = ffs["Network"](dt=dt, rounding=u["rounding"], outlets="independent" if law else "exact")
     watch, moving = "a", None
     if u["shape"] == "mixed":
         net.tank("a", 1.0, volume=v0)
@@ -1094,7 +1103,7 @@ def base(u: dict) -> str:
 
 
 def span(u: dict) -> float:
-    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad", "rnd", "rnd2", "eng", "eng2", "formc"):
+    if base(u) == "chain2" or u["kind"] in ("chain3b", "edge3", "edge2", *CROSS_KINDS, "vary", *PIPE_KINDS, "ladder", "ilad", "olad", "coarse2", "tlad", "rnd", "rnd2", "eng", "eng2", "formc", "oval"):
         return u["span_ratio"]
     if u["kind"] == "ring":  # T = τ·τ2/(τ + τ2) の何倍か
         return u["span_ratio"] * u["tau2_ratio"] / (1.0 + u["tau2_ratio"])
@@ -1116,6 +1125,8 @@ def chain_exact(u: dict, t: float) -> float:
 
 def exact_left(u: dict, t: float) -> float:
     k = 1.0 / TAU
+    if u["kind"] == "oval":
+        return V0 * math.exp(-u["opening"] * t / TAU)
     if u["kind"] == "eng2":
         return eng2_exact(u, t)
     if u["kind"] == "eng":
@@ -1151,6 +1162,9 @@ def exact_left(u: dict, t: float) -> float:
 def recurrence_left(u: dict, steps: int, dt: float) -> float:
     """エンジンを使わない検算: 槽の残りだけを float の漸化式で進める（遅れは槽の残りに効かない）。"""
     k = 1.0 / TAU
+    if u["kind"] == "oval":  # 法則のまま: 1 ステップの残りは 1 − k·o。槽ごとに厳密: e^(−o·dt/τ)
+        keep = 1.0 + math.expm1(-dt / TAU) * u["opening"] if u["method"] == "independent" else math.exp(-u["opening"] * dt / TAU)
+        return V0 * keep ** steps
     if u["kind"] == "eng2":
         return eng2_reference(u, steps, dt)
     if u["kind"] in (*PIPE_KINDS, "eng"):
@@ -1277,6 +1291,9 @@ def label(u: dict) -> tuple[str, str]:
     if u["kind"] == "olad":
         return (f"olad-g{u['share_set']}-n{u['n']}-s{u['span_ratio']:g}-known{u['level']}",
                 f"出口 {u['n']} 本（組 {u['share_set']}）t={u['span_ratio']:g}τ 段 {u['level']} h={u['h']:.6g}")
+    if u["kind"] == "oval":
+        return (f"oval-o{u['opening']:g}-s{u['span_ratio']:g}-{u['method']}",
+                f"弁 1 本 開き具合 {u['opening']:g} t={u['span_ratio']:g}τ {u['method']} h={u['h']:.6g}")
     if u["kind"] == "eng2":
         return (f"eng2-{u['shape']}-p{u['pipe_set']}-s{u['span_ratio']:g}-v{math.log2(u['v0']):g}-{u['rounding']}",
                 f"エンジン {u['shape']} 組 {u['pipe_set']} t={u['span_ratio']:g}τ V0=2^{math.log2(u['v0']):g} {u['rounding']} h={u['h']:.6g}")
@@ -1328,6 +1345,14 @@ def run_engine(u: dict, ffs: dict) -> dict:
         return run_eng(u, ffs, steps, dt, t)
     if u["kind"] == "eng2":
         return run_eng2(u, ffs, steps, dt, t)
+    if u["kind"] == "oval":  # 第17弾: 弁 1 本の槽を、槽ごとに厳密（既定）か法則のままで進める
+        net = ffs["Network"](dt=dt, outlets=u["method"])
+        net.tank("a", 1.0, volume=V0)
+        net.tank("sink", 1.0)
+        net.valve("a", "sink", tau=TAU, opening=u["opening"])
+        res = net.run(t)
+        return {"steps": steps, "dt": dt, "t": t, "left_q": res["volumes_q"]["a"], "left": res["volumes_q"]["a"] / ffs["one"],
+                "conservation_q": res["conservation_error_q"], "lag_err_steps": None}
     if u["kind"] == "rnd":  # 第13弾: 丸めのずれを、係数の丸めと掛け算の切り捨てに分ける
         res = run_variant_q(u, ffs, steps, dt, t)
         exact = exact_left(u, t)
@@ -1576,10 +1601,10 @@ def derive(units: list[dict], log=print) -> None:
                     "is_best", "clamp_margin", "clamp_pred", "was_clamped", "start_only", "coef_start", "coef_total",
                     "end_pred", "pred_order_one", "round_part_abs", "floor_part", "coef_share", "big_volume", "round_est",
                     "c64", "carry", "c64carry", "is_best_round", "coef_ratio", "floor_est", "floor_ratio", "series_pred",
-                    "series_pred_abs", "carry64", "series_order", "series_exact"):
+                    "series_pred_abs", "carry64", "series_order", "series_exact", "law_mode", "full_open", "oval_fit"):
             u[col] = None
         for col in ("tau2_ratio", "span_ratio", "tau3_ratio", "tau4_ratio", "level", "round_part", "coef_part", "v0", "err_hp", "arith", "round_ulps",
-                    "rounding"):
+                    "rounding", "opening"):
             u.setdefault(col, None)
         for shape, col in (("branch", "p_branch"), ("merge", "p_merge"), ("pumpfed", "p_pump"), ("ring", "p_ring")):
             u[col] = u["kind"] == "pipe" and u.get("shape") == shape  # pipe2 は第9弾の命題の範囲に入れない
@@ -1704,6 +1729,11 @@ def derive(units: list[dict], log=print) -> None:
             u["start_only"] = u["method"].startswith("tay")
             u["coef_start"] = u["err_abs"] / (scale / math.factorial(p + 2))
             u["coef_total"] = u["err_abs"] / (scale * TOTAL_COEF[p])
+        if u["kind"] == "oval":  # 第17弾: 法則のままのずれの式 o·(1 − o)·(t/τ)·(dt/τ)/2
+            u["law_mode"], u["full_open"] = u["method"] == "independent", u["opening"] == 1.0
+            if u["law_mode"] and not u["full_open"]:
+                pred = u["opening"] * (1.0 - u["opening"]) * u["t"] * k * u["dt"] * k / 2.0
+                u["oval_fit"] = abs(u["err"] - pred) / pred
         if u["kind"] in ("eng", "eng2"):  # 第15弾・第16弾: エンジン本体の丸め方
             u["carry64"] = u["rounding"] == "carry64"
             other = by[(u["team"].replace(f"-{u['rounding']}", "-q48" if u["carry64"] else "-carry64"), u["h"])]

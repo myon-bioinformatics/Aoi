@@ -319,6 +319,8 @@ def y_units(d: dict) -> list[dict]:
             v = c[f"c{i}"]
             row[f"c{i}"], row[f"acy{i}"], row[f"u{i}"] = v, c[f"acy{i}"], (ye - v if v is not None else None)
         row["qf"] = c["qf"]
+        if c["qf"] is not None:
+            watch(k_of(t, 1), qf_year=c["qf"])            # FAO の熱量が前の年と同じならゼロ（値は変えずに記録）
         # 第5弾 §4 の診断（判定に使わない）: 段 5 の残り yE − c5 = (家計調査の実質の食料の伸び) − (家計調査と国全体の実質の消費の伸びの差)。恒等式
         h0, h1 = hy[t - 1], hy[t]
         rel_f, rel_a = d["cpi_year"]["food"][t] / d["cpi_year"]["food"][t - 1], d["cpi_year"]["all_items"][t] / d["cpi_year"]["all_items"][t - 1]

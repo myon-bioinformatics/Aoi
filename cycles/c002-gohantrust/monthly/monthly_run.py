@@ -2,7 +2,8 @@
 """サイクル2 月次の命題（族 A: 予測のはしご、族 B: 恒等式の言い切り）。
 事前宣言: monthly_prelock_2026-11-13.md（第1弾）、monthly_prelock_r2_2026-11-13.md（第2弾: 帯を標本誤差に）、
 monthly_prelock_r3_2026-11-13.md（第3弾: 族 A の E を米・穀類の寄与に、族 B を年の単位で＝族 Y）、
-monthly_prelock_r4_2026-11-13.md（第4弾: 族 Y に量の段＝国全体の実質の消費の伸びと、食料の支出弾力性）
+monthly_prelock_r4_2026-11-13.md（第4弾: 族 Y に量の段＝国全体の実質の消費の伸びと、食料の支出弾力性）、
+monthly_prelock_r5_2026-11-13.md（第5弾: 2013 年の判例・言い切れなかった 3 年・2025 年の初めての確かめ）
 
   uv run --locked python -I cycles/c002-gohantrust/monthly/monthly_run.py count   # 条件の側の件数だけ（結論は計算しない）
   uv run --locked python -I cycles/c002-gohantrust/monthly/monthly_run.py judge   # 単位を作り、命題を判定して outputs/ に書く
@@ -33,9 +34,12 @@ ENGEL = ARCHIVE / "engel_food_panel_monthly.csv.gz"           # 家計調査 用
 ENGEL_YEAR = ARCHIVE / "engel_food_panel_annual.csv"          # 同じ長期時系列の年平均（族 Y）
 MACRO = ARCHIVE.parent / "staple_survey_B_C_bigmac.csv"       # 世界銀行 家計最終消費支出（名目）・人口（族 Y の量の段）
 REINF = ARCHIVE.parent / "reinforcement" / "reinforcement_vertical.csv.gz"   # USDA ERS の所得弾力性（日本の食料）
+FAO_KCAL = ARCHIVE / "fao_fbsh_kcal_supply_panel.csv.gz"     # 第5弾: FAO 食料需給表（旧）1 人 1 日の供給熱量（日本は 2013 年まで）
+ESRI = HERE / "esri_private_consumption.csv"                  # 第5弾: 内閣府 国民経済計算の暦年 民間最終消費支出（名目）。2025 年の確かめ用
 CPI = ARCHIVE / "japan_cpi_food_cereals_panel.csv.gz"         # 消費者物価指数 2025 年基準 全国（総合・食料・穀類）
 PROPS = (HERE / "monthly_propositions.toml", HERE / "monthly_propositions_r2.toml",
-         HERE / "monthly_propositions_r3.toml", HERE / "monthly_propositions_r4.toml")   # 事前登録の順。後の弾は前の id を parent に持てる
+         HERE / "monthly_propositions_r3.toml", HERE / "monthly_propositions_r4.toml",
+         HERE / "monthly_propositions_r5.toml")   # 事前登録の順。後の弾は前の id を parent に持てる
 OUT = HERE / "outputs"
 
 # 宣言 §2・§3 の範囲（月は 12·年 + 月 − 1 の整数で持つ）
@@ -117,8 +121,19 @@ def load() -> dict:
         for r in csv.DictReader(f):
             if r["country"] == "JPN" and r["variable"] == "income_elasticity_food_broad_usda2005":
                 eta_food = float(r["value"])
+    esri = {}                                           # 世界銀行の値がまだない年（2025 年）だけ、同じ公表の前の年との比で使う（宣言 r5 §5）
+    if ESRI.exists():
+        with open(ESRI, encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                esri[int(r["year"])] = float(r["value_billion_yen"])
+    macro["esri"] = esri
+    kcal = {}
+    with gzip.open(FAO_KCAL, "rt", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["iso3"] == "JPN" and r["variable"] == "fbsh_kcal_cap_day_total":
+                kcal[int(r["year"])] = float(r["value"])
     return {"P": rice, "hh": hh, "cpi": cpi, "cpi_year": cpi_year, "hh_year": hh_year,
-            "macro": macro, "eta_food": eta_food}
+            "macro": macro, "eta_food": eta_food, "kcal": kcal}
 
 
 def engel(d: dict, k: int) -> float:
@@ -268,13 +283,22 @@ def y_conditions(d: dict) -> list[dict]:
         # 段 5 は食料の量が一定、段 6 は食料の量が支出弾力性 η のぶん付いていく。年がそろわない（2025 年）ときは None
         mac = d["macro"]
         if t in mac["hfce"] and t - 1 in mac["hfce"]:
-            q = (math.log(mac["hfce"][t] / mac["hfce"][t - 1]) - math.log(rel["all_items"])
-                 - math.log(mac["pop"][t] / mac["pop"][t - 1]))
+            nominal = mac["hfce"][t] / mac["hfce"][t - 1]
+        elif t in mac["esri"] and t - 1 in mac["esri"]:   # 第5弾: 世界銀行にない年は、内閣府の同じ公表の 2 年の比
+            nominal = mac["esri"][t] / mac["esri"][t - 1]
+        else:
+            nominal = None
+        if nominal is not None:
+            q = math.log(nominal) - math.log(rel["all_items"]) - math.log(mac["pop"][t] / mac["pop"][t - 1])
             c += [c[3] - q, c[3] - (1 - d["eta_food"]) * q]
         else:
             q = None
             c += [None, None]
-        row = {"k": t, "e0": e0, "s_rice": s_r, "s_cereals": s_c, "q": q}
+        # 第5弾（宣言 r5 §3）: 段 7 = 段 5 の「食料の量は一定」を、FAO の 1 人当たり供給熱量の伸び qf に替える
+        kc = d["kcal"]
+        qf = math.log(kc[t] / kc[t - 1]) if (t in kc and t - 1 in kc) else None
+        c.append(c[4] + qf if (qf is not None and c[4] is not None) else None)
+        row = {"k": t, "e0": e0, "s_rice": s_r, "s_cereals": s_c, "q": q, "qf": qf}
         for i, v in enumerate(c, 1):
             row[f"c{i}"], row[f"acy{i}"] = v, (abs(v) / SIGMA_YEAR if v is not None else None)
         rows.append(row)
@@ -291,10 +315,17 @@ def y_units(d: dict) -> list[dict]:
         row = {"family": "Y", "team": "y", "team_name": f"{t}年", "season": t, "month": 0,
                "yE": ye, "ayE": abs(ye) / SIGMA_YEAR, "e0": c["e0"], "s_rice": c["s_rice"], "s_cereals": c["s_cereals"],
                "q": c["q"]}
-        for i in range(1, 7):
+        for i in range(1, 8):
             v = c[f"c{i}"]
             row[f"c{i}"], row[f"acy{i}"], row[f"u{i}"] = v, c[f"acy{i}"], (ye - v if v is not None else None)
-        for i in (4, 5, 6):                             # 第4弾: 見込みの向きと E の向きが同じか（上げ・下げをまとめた形）
+        row["qf"] = c["qf"]
+        # 第5弾 §4 の診断（判定に使わない）: 段 5 の残り yE − c5 = (家計調査の実質の食料の伸び) − (家計調査と国全体の実質の消費の伸びの差)。恒等式
+        h0, h1 = hy[t - 1], hy[t]
+        rel_f, rel_a = d["cpi_year"]["food"][t] / d["cpi_year"]["food"][t - 1], d["cpi_year"]["all_items"][t] / d["cpi_year"]["all_items"][t - 1]
+        row["qF_hh"] = math.log(h1["food_yen_month"] / h0["food_yen_month"]) - math.log(rel_f)
+        row["qC_hh"] = math.log(h1["ce_yen_month"] / h0["ce_yen_month"]) - math.log(rel_a)
+        row["gap"] = row["qC_hh"] - c["q"] if c["q"] is not None else None
+        for i in (4, 5, 6, 7):                          # 第4弾: 見込みの向きと E の向きが同じか（上げ・下げをまとめた形）
             v = c[f"c{i}"]
             row[f"agree{i}"] = ((v > 0) == (ye > 0)) if v is not None else None
         if c["c5"] is None:
@@ -339,11 +370,16 @@ def count(d: dict) -> dict:
                          "band": sum(abs(r[f"c{i}"]) < SIGMA_YEAR for r in yy)} for i in range(1, 5)}
     res["sigma_year"] = SIGMA_YEAR
     # 第4弾（宣言 r4 §4）。量の段は国民経済計算の値がそろう 2001〜2024 年だけ
-    yy = [r for r in y_conditions(d) if r["c5"] is not None]
+    yy = [r for r in y_conditions(d) if r["c5"] is not None and r["k"] <= 2024]   # 宣言 r4 の範囲（2025 年は第5弾）
     res["Y"]["quantity"] = {"units": len(yy), "years": [yy[0]["k"], yy[-1]["k"]], "eta_food": d["eta_food"]} | {
         f"step{i}": {"up(c>=sigmaY)": sum(r[f"c{i}"] >= SIGMA_YEAR for r in yy),
                      "down(c<=-sigmaY)": sum(r[f"c{i}"] <= -SIGMA_YEAR for r in yy),
                      "band": sum(abs(r[f"c{i}"]) < SIGMA_YEAR for r in yy)} for i in (4, 5, 6)}
+    y7 = [r for r in y_conditions(d) if r["c7"] is not None]   # 第5弾 §3: FAO の熱量がそろう年
+    res["Y"]["food_kcal"] = {"units": len(y7), "years": [y7[0]["k"], y7[-1]["k"]]} | {
+        f"step{i}": {"up(c>=sigmaY)": sum(r[f"c{i}"] >= SIGMA_YEAR for r in y7),
+                     "down(c<=-sigmaY)": sum(r[f"c{i}"] <= -SIGMA_YEAR for r in y7),
+                     "band": sum(abs(r[f"c{i}"]) < SIGMA_YEAR for r in y7)} for i in (5, 7)}
     return res
 
 

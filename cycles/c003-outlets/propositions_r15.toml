@@ -1,0 +1,130 @@
+# サイクル3の命題・第15弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第14弾のファイルは変更しない。
+#
+# 主題: (1) 第14弾の丸め方 c64carry（係数を 2^-64 刻みにして、掛け算の切り捨ての残りを繰り越す）を、エンジン本体に入れられるか。
+#       (2) 式の手順（step_series）を cascade・quad にも広げ、配管ごとに「どの入れ方が何乗か」を式だけで言う。
+#
+# 記録: 2026-11-13 11:17 JST（時刻の道具の値）に書いた。このとき第15弾の単位（eng・form の組）・列・エンジンの変更はまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第14弾の結果すべて。
+#   (1) エンジンに入れる形（これから FluidFullSpeedSimulation に作る。作る前に決めたこと）:
+#     Network(rounding="q48" | "carry64")。既定は q48 で、今までと 1 目盛りも変わらない（今ある 11346 単位が全部同じ値になることで確かめる）。
+#     carry64 は「弁だけが出ていて、開き具合が一定の槽」に効く。それ以外の槽（ポンプ・浮きで動く弁・ほかの出口）は q48 のまま。
+#       槽ごとに L = Σ 開き具合·dt/τ（分数で厳密）、Φ = 1 − e^(−L)、分け前 = 速さの比、入った量のうち同じステップに出る割合 = 1 − Φ/L を
+#       2^-64 刻みで持つ（指数関数は整数の級数で出す。float を通さない）。
+#       掛け算は 4 か所（今までどおりの量・その分け前・増やす分・その分け前）で、切り捨ての残りを場所ごとに持ち、次のステップへ繰り越す。
+#       量は 2^-48 刻みの整数のまま。管を流れる量も整数なので、総量は変わらないはず。
+#     紙の上の見込み: 繰り越しの残りは 1 か所につき 1 目盛り未満で積もらない。係数の丸めは N·2^-65 ほど（V0 = 128 で 1 目盛りの数分の 1）。
+#       だから測る槽の量は、60 桁の小数で進めた値から数目盛り以内。q48 は、量が大きいと係数の丸め（数百目盛り〜）、小さいと切り捨て（十数目盛り〜）が積もる。
+#   (2) 式（紙の上。第14弾の step_series に 2 つ足す）:
+#       cascade: out = (I − D)V + Θ·S·out から M = I + (S − I)(I − Θ·S)^(-1)(I − D)
+#       quad:    out = (I − D)V + A·S·out + B0·SΛ·V + B1·SΛ·(V + (S − I)·out)。A・B0・B1 は E0・E1・E2 の級数（外から入る分は入れていない）
+#       1 列の槽（4 段）に当てると、cascade は第8弾の Hc、quad は第10弾の Hq と同じ数になり、最初に残る次数は cascade 2・quad 4 になることを確かめた。
+#     式の見込みの次数 series_order = log2(式の見込み(h) / 式の見込み(h/2)) の四捨五入。
+#       式は dt^4 までしか持たないので、5 以上と出たら「式の範囲では厳密」（series_exact）と読む。
+#       たとえばポンプ → 槽 1 つの uniform・ramp は、式の上で G_eff = G、q_eff = q になり、ずれの項が残らない（第3弾・第4弾の「ポンプの下は厳密」と同じ）。
+#   単位の組を決めるために、式だけを使って計算したもの（データは使っていない）:
+#     form の 180 件（次数を問う刻み 1/8・1/16・1/32）で、式の見込みの次数は 1 が 47、2 が 48、3 が 36、4 が 24、厳密が 24、どれでもない（0）が 1 件。
+#   境の値（8 目盛り・1e-11）は人が決めた仮置きで、結果に合わせて動かさない。
+#
+# 第15弾で足す単位（前の弾の命題の範囲には入らない組）:
+#   eng  = エンジン本体（inflows="uniform"、outlets="exact"）を rounding = q48 と carry64 で進める。
+#          2 段（τ2/τ = 3/5・2）、3 段 (2, 3/4)・(2/5, 3/2)、枝分かれ (1/2, 2, 3/4)・(1/4, 2/5, 3/2)。t = 1.5τ・3τ、刻み 1/128・1/512、V0 = 128・2^-12。
+#          比べる相手は、同じ式（uniform）を 60 桁の小数で進めた値。
+#   form = 2 段（τ2/τ = 3/5・2: end・uniform・ramp・quad）、3 段 (2, 3/4)・(2/5, 3/2)（end・uniform・cascade・ramp・quad）、
+#          ポンプ → 槽 1 つ（τB/τ = 1/2・2: end・uniform・ramp）、ポンプ → B → C (1/2, 2)・(5/2, 2/5)（end・uniform・ramp）。
+#          t = τ・2.5τ、刻み 1/8・1/16・1/32・1/64。end・uniform はエンジン本体、ほかは Q48 の整数の漸化式。
+# 第15弾で足す列:
+#   eng・form = 組。carry64 = 丸め方が carry64 か。round_ulps = |整数の量 − 60 桁の値| を目盛り（2^-48）で数えたもの
+#   is_best_round = 同じ条件の 2 つの丸め方のうち、丸めのずれが小さいほうか（eng）
+#   series_pred = 式の見込み、series_order = 式の見込みの次数（厳密なら 0 でなく series_exact を真にする）、series_exact
+#   order_round = 第11弾と同じ作り方（form）
+
+# ---- (1) エンジンの丸め方 ----
+
+[[proposition]]
+id = "O112"
+statement = "エンジン本体で、丸め方を carry64 にすると、丸めのずれは q48 より小さい"
+strength = "always"
+parent = "O105"
+change = "2 段の整数の漸化式を、エンジン本体（uniform・槽ごとに厳密）に替えた。3 段と枝分かれも入れた"
+scope = { where = [{ col = "eng", op = "==", value = true }] }
+if = [{ col = "carry64", op = "==", value = true }]
+then = [{ col = "is_best_round", op = "==", value = true }]
+surprise = "round_ulps"
+context = ["h", "v0", "steps", "tau2_ratio", "tau3_ratio", "shape", "span_ratio"]
+falsifier = "q48 のほうが小さい単位があれば、何目盛りの差かを書く"
+
+[[proposition]]
+id = "O113"
+statement = "エンジン本体で、丸め方を carry64 にすると、測る槽の量は 60 桁の小数で進めた値から 8 目盛り以内である（q48 は 8 目盛りより大きくずれる）"
+strength = "always"
+scope = { where = [{ col = "eng", op = "==", value = true }] }
+if = [{ col = "carry64", op = "==", value = true }]
+then = [{ col = "round_ulps", op = "<=", value = 8.0 }]
+surprise = "round_ulps"
+context = ["h", "v0", "steps", "tau2_ratio", "tau3_ratio", "shape", "span_ratio"]
+falsifier = "carry64 で 8 目盛りを超える単位、または q48 で 8 目盛り以内の単位があれば、槽の量と段数を書く"
+
+# ---- (2) 配管ごとに、どの入れ方が何乗かを式だけで言う ----
+
+[[proposition]]
+id = "O114"
+statement = "式の見込みの次数が 1 なら、実際の次数も 1 である（1 でないなら 1 でない）"
+strength = "always"
+parent = "O100"
+change = "end だけだった式を uniform・cascade・ramp・quad に広げ、次数ごとの命題にした"
+scope = { where = [{ col = "form", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "series_exact", op = "==", value = false }] }
+if = [{ col = "series_order", op = "==", value = 1 }]
+then = [{ col = "order_round", op = "==", value = 1 }]
+surprise = "order_round"
+context = ["h", "shape", "tau2_ratio", "tau3_ratio", "span_ratio", "err", "series_pred"]
+falsifier = "式と合わない単位があれば、ずれが向きを変える所の隣かどうかを書く"
+
+[[proposition]]
+id = "O115"
+statement = "式の見込みの次数が 2 なら、実際の次数も 2 である（2 でないなら 2 でない）"
+strength = "always"
+parent = "O100"
+change = "O114 と同じ"
+scope = { where = [{ col = "form", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "series_exact", op = "==", value = false }] }
+if = [{ col = "series_order", op = "==", value = 2 }]
+then = [{ col = "order_round", op = "==", value = 2 }]
+surprise = "order_round"
+context = ["h", "shape", "tau2_ratio", "tau3_ratio", "span_ratio", "err", "series_pred"]
+falsifier = "式と合わない単位があれば書く"
+
+[[proposition]]
+id = "O116"
+statement = "式の見込みの次数が 3 なら、実際の次数も 3 である（3 でないなら 3 でない）"
+strength = "always"
+parent = "O100"
+change = "O114 と同じ"
+scope = { where = [{ col = "form", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "series_exact", op = "==", value = false }] }
+if = [{ col = "series_order", op = "==", value = 3 }]
+then = [{ col = "order_round", op = "==", value = 3 }]
+surprise = "order_round"
+context = ["h", "shape", "tau2_ratio", "tau3_ratio", "span_ratio", "err", "series_pred"]
+falsifier = "式と合わない単位があれば書く"
+
+[[proposition]]
+id = "O117"
+statement = "式の見込みの次数が 4 なら、実際の次数も 4 である（4 でないなら 4 でない）"
+strength = "always"
+parent = "O100"
+change = "O114 と同じ"
+scope = { where = [{ col = "form", op = "==", value = true }, { col = "has_half", op = "==", value = true }, { col = "series_exact", op = "==", value = false }] }
+if = [{ col = "series_order", op = "==", value = 4 }]
+then = [{ col = "order_round", op = "==", value = 4 }]
+surprise = "order_round"
+context = ["h", "shape", "tau2_ratio", "tau3_ratio", "span_ratio", "err", "series_pred"]
+falsifier = "式と合わない単位があれば、丸めの底に近い刻みかどうかを書く"
+
+[[proposition]]
+id = "O118"
+statement = "式の範囲でずれの項が残らない（厳密）配管と入れ方なら、実際のずれは 1e-11 未満である（項が残るなら 1e-11 以上）"
+strength = "always"
+scope = { where = [{ col = "form", op = "==", value = true }] }
+if = [{ col = "series_exact", op = "==", value = true }]
+then = [{ col = "err_abs", op = "<", value = 1e-11 }]
+surprise = "err_abs"
+context = ["h", "shape", "tau2_ratio", "tau3_ratio", "span_ratio", "series_pred"]
+falsifier = "厳密のはずで 1e-11 以上ずれる単位、または項が残るのに 1e-11 未満の単位があれば書く"

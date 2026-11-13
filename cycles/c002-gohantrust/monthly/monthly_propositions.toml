@@ -1,0 +1,255 @@
+# サイクル2 月次の命題。事前宣言 monthly_prelock_2026-11-13.md と一緒に固定した（計算の前）。
+# 族 A: 予測のはしご（翌月の米価の変化）。族 B: 恒等式の言い切り（E の前年比）と、そのはしご。
+# ID の C2 はサイクル2、A/B/L は族と種類、数字は段、末尾 x は 2025 を除く版。
+
+[[proposition]]
+id = "C2A1"
+statement = "翌月の米価の変化を、過去の平均の変化（ドリフト）で見込むと、ゼロ変化より誤差が小さい月が半分を超える（2025 を含む）"
+strength = "more_often_than_not"
+scope = { seasons = "2006-2025", where = [{ col = "family", op = "==", value = "A" }] }
+then = [{ col = "a1", op = "==", value = true }]
+surprise = "gain1"
+context = ["y", "f1"]
+falsifier = "誤差が小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "単位は目標の月。訓練は起点の月までに結果が分かった目標月だけ（最小 60 点、2001-02 から）。月どうしの誤差は独立ではないので、区間は広めに読む。公表の遅れは扱わない"
+
+[[proposition]]
+id = "C2A1x"
+statement = "翌月の米価の変化を、過去の平均の変化（ドリフト）で見込むと、ゼロ変化より誤差が小さい月が半分を超える（2025 を除く）"
+strength = "more_often_than_not"
+scope = { seasons = "2006-2024", where = [{ col = "family", op = "==", value = "A" }] }
+then = [{ col = "a1", op = "==", value = true }]
+surprise = "gain1"
+context = ["y", "f1"]
+falsifier = "誤差が小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "単位は目標の月。訓練は起点の月までに結果が分かった目標月だけ（最小 60 点、2001-02 から）。月どうしの誤差は独立ではないので、区間は広めに読む。公表の遅れは扱わない"
+
+[[proposition]]
+id = "C2A2"
+statement = "先月の米価の変化を足すと、ドリフトだけより誤差が小さい月が半分を超える（2025 を含む）"
+strength = "more_often_than_not"
+scope = { seasons = "2006-2025", where = [{ col = "family", op = "==", value = "A" }] }
+then = [{ col = "a2", op = "==", value = true }]
+surprise = "gain2"
+context = ["y", "m_prev", "rho", "f1", "f2"]
+falsifier = "誤差が小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "単位は目標の月。訓練は起点の月までに結果が分かった目標月だけ（最小 60 点、2001-02 から）。月どうしの誤差は独立ではないので、区間は広めに読む。公表の遅れは扱わない"
+
+[[proposition]]
+id = "C2A2x"
+statement = "先月の米価の変化を足すと、ドリフトだけより誤差が小さい月が半分を超える（2025 を除く）"
+strength = "more_often_than_not"
+scope = { seasons = "2006-2024", where = [{ col = "family", op = "==", value = "A" }] }
+then = [{ col = "a2", op = "==", value = true }]
+surprise = "gain2"
+context = ["y", "m_prev", "rho", "f1", "f2"]
+falsifier = "誤差が小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "単位は目標の月。訓練は起点の月までに結果が分かった目標月だけ（最小 60 点、2001-02 から）。月どうしの誤差は独立ではないので、区間は広めに読む。公表の遅れは扱わない"
+
+[[proposition]]
+id = "C2A3"
+statement = "E の前年比が公表値の 1 刻み（0.1 ポイント）以上動いた月なら、E の前年比を足すと、先月の米価の変化までより誤差が小さい月が半分を超える（2025 を含む）"
+strength = "more_often_than_not"
+scope = { seasons = "2006-2025", where = [{ col = "family", op = "==", value = "A" }] }
+if = [{ col = "ax", op = ">=", value = 1 }]
+then = [{ col = "a3", op = "==", value = true }]
+surprise = "gain3"
+context = ["y", "x", "gamma", "f2", "f3", "ax"]
+falsifier = "誤差が小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "単位は目標の月。訓練は起点の月までに結果が分かった目標月だけ（最小 60 点、2001-02 から）。月どうしの誤差は独立ではないので、区間は広めに読む。公表の遅れは扱わない"
+
+[[proposition]]
+id = "C2A3x"
+statement = "E の前年比が公表値の 1 刻み（0.1 ポイント）以上動いた月なら、E の前年比を足すと、先月の米価の変化までより誤差が小さい月が半分を超える（2025 を除く）"
+strength = "more_often_than_not"
+scope = { seasons = "2006-2024", where = [{ col = "family", op = "==", value = "A" }] }
+if = [{ col = "ax", op = ">=", value = 1 }]
+then = [{ col = "a3", op = "==", value = true }]
+surprise = "gain3"
+context = ["y", "x", "gamma", "f2", "f3", "ax"]
+falsifier = "誤差が小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "単位は目標の月。訓練は起点の月までに結果が分かった目標月だけ（最小 60 点、2001-02 から）。月どうしの誤差は独立ではないので、区間は広めに読む。公表の遅れは扱わない"
+
+[[proposition]]
+id = "C2B1"
+statement = "米（小売価格 銘柄 1002）の前年比から量を固定して見込んだ E の動きが 1 刻み以上の月では、E の前年比はその向きに動く（2025 を含む）"
+strength = "always"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "B" }, { col = "ac1", op = ">=", value = 1 }] }
+if = [{ col = "c1", op = ">", value = 0 }]
+then = [{ col = "yE", op = ">", value = 0 }]
+surprise = "u1"
+context = ["c1", "c2", "c3", "c4", "tau"]
+falsifier = "見込みの向きと E の前年比の向きが逆の月が 1 つでもある"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2B1x"
+statement = "米（小売価格 銘柄 1002）の前年比から量を固定して見込んだ E の動きが 1 刻み以上の月では、E の前年比はその向きに動く（2025 を除く）"
+strength = "always"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "B" }, { col = "ac1", op = ">=", value = 1 }] }
+if = [{ col = "c1", op = ">", value = 0 }]
+then = [{ col = "yE", op = ">", value = 0 }]
+surprise = "u1"
+context = ["c1", "c2", "c3", "c4", "tau"]
+falsifier = "見込みの向きと E の前年比の向きが逆の月が 1 つでもある"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2B2"
+statement = "穀類（消費者物価指数）の前年比から量を固定して見込んだ E の動きが 1 刻み以上の月では、E の前年比はその向きに動く（2025 を含む）"
+strength = "always"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "B" }, { col = "ac2", op = ">=", value = 1 }] }
+if = [{ col = "c2", op = ">", value = 0 }]
+then = [{ col = "yE", op = ">", value = 0 }]
+surprise = "u2"
+context = ["c1", "c2", "c3", "c4", "tau"]
+falsifier = "見込みの向きと E の前年比の向きが逆の月が 1 つでもある"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2B2x"
+statement = "穀類（消費者物価指数）の前年比から量を固定して見込んだ E の動きが 1 刻み以上の月では、E の前年比はその向きに動く（2025 を除く）"
+strength = "always"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "B" }, { col = "ac2", op = ">=", value = 1 }] }
+if = [{ col = "c2", op = ">", value = 0 }]
+then = [{ col = "yE", op = ">", value = 0 }]
+surprise = "u2"
+context = ["c1", "c2", "c3", "c4", "tau"]
+falsifier = "見込みの向きと E の前年比の向きが逆の月が 1 つでもある"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2B3"
+statement = "食料（消費者物価指数）の前年比から量を固定して見込んだ E の動きが 1 刻み以上の月では、E の前年比はその向きに動く（2025 を含む）"
+strength = "always"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "B" }, { col = "ac3", op = ">=", value = 1 }] }
+if = [{ col = "c3", op = ">", value = 0 }]
+then = [{ col = "yE", op = ">", value = 0 }]
+surprise = "u3"
+context = ["c1", "c2", "c3", "c4", "tau"]
+falsifier = "見込みの向きと E の前年比の向きが逆の月が 1 つでもある"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2B3x"
+statement = "食料（消費者物価指数）の前年比から量を固定して見込んだ E の動きが 1 刻み以上の月では、E の前年比はその向きに動く（2025 を除く）"
+strength = "always"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "B" }, { col = "ac3", op = ">=", value = 1 }] }
+if = [{ col = "c3", op = ">", value = 0 }]
+then = [{ col = "yE", op = ">", value = 0 }]
+surprise = "u3"
+context = ["c1", "c2", "c3", "c4", "tau"]
+falsifier = "見込みの向きと E の前年比の向きが逆の月が 1 つでもある"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2B4"
+statement = "食料と総合（消費者物価指数。食料の相対価格）の前年比から量を固定して見込んだ E の動きが 1 刻み以上の月では、E の前年比はその向きに動く（2025 を含む）"
+strength = "always"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "B" }, { col = "ac4", op = ">=", value = 1 }] }
+if = [{ col = "c4", op = ">", value = 0 }]
+then = [{ col = "yE", op = ">", value = 0 }]
+surprise = "u4"
+context = ["c1", "c2", "c3", "c4", "tau"]
+falsifier = "見込みの向きと E の前年比の向きが逆の月が 1 つでもある"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2B4x"
+statement = "食料と総合（消費者物価指数。食料の相対価格）の前年比から量を固定して見込んだ E の動きが 1 刻み以上の月では、E の前年比はその向きに動く（2025 を除く）"
+strength = "always"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "B" }, { col = "ac4", op = ">=", value = 1 }] }
+if = [{ col = "c4", op = ">", value = 0 }]
+then = [{ col = "yE", op = ">", value = 0 }]
+surprise = "u4"
+context = ["c1", "c2", "c3", "c4", "tau"]
+falsifier = "見込みの向きと E の前年比の向きが逆の月が 1 つでもある"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2L1"
+statement = "E の前年比から米（小売価格 銘柄 1002）の寄与を引くと、何も引かない（ゼロ）より残りが小さい月が半分を超える（2025 を含む）"
+strength = "more_often_than_not"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "B" }] }
+then = [{ col = "l1", op = "==", value = true }]
+surprise = "u1"
+context = ["yE", "c1", "tau"]
+falsifier = "残りが小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2L1x"
+statement = "E の前年比から米（小売価格 銘柄 1002）の寄与を引くと、何も引かない（ゼロ）より残りが小さい月が半分を超える（2025 を除く）"
+strength = "more_often_than_not"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "B" }] }
+then = [{ col = "l1", op = "==", value = true }]
+surprise = "u1"
+context = ["yE", "c1", "tau"]
+falsifier = "残りが小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2L2"
+statement = "E の前年比から穀類（消費者物価指数）の寄与を引くと、段 1より残りが小さい月が半分を超える（2025 を含む）"
+strength = "more_often_than_not"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "B" }] }
+then = [{ col = "l2", op = "==", value = true }]
+surprise = "u2"
+context = ["yE", "c2", "tau"]
+falsifier = "残りが小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2L2x"
+statement = "E の前年比から穀類（消費者物価指数）の寄与を引くと、段 1より残りが小さい月が半分を超える（2025 を除く）"
+strength = "more_often_than_not"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "B" }] }
+then = [{ col = "l2", op = "==", value = true }]
+surprise = "u2"
+context = ["yE", "c2", "tau"]
+falsifier = "残りが小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2L3"
+statement = "E の前年比から食料（消費者物価指数）の寄与を引くと、段 2より残りが小さい月が半分を超える（2025 を含む）"
+strength = "more_often_than_not"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "B" }] }
+then = [{ col = "l3", op = "==", value = true }]
+surprise = "u3"
+context = ["yE", "c3", "tau"]
+falsifier = "残りが小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2L3x"
+statement = "E の前年比から食料（消費者物価指数）の寄与を引くと、段 2より残りが小さい月が半分を超える（2025 を除く）"
+strength = "more_often_than_not"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "B" }] }
+then = [{ col = "l3", op = "==", value = true }]
+surprise = "u3"
+context = ["yE", "c3", "tau"]
+falsifier = "残りが小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2L4"
+statement = "E の前年比から食料と総合（消費者物価指数。食料の相対価格）の寄与を引くと、段 3より残りが小さい月が半分を超える（2025 を含む）"
+strength = "more_often_than_not"
+scope = { seasons = "2001-2025", where = [{ col = "family", op = "==", value = "B" }] }
+then = [{ col = "l4", op = "==", value = true }]
+surprise = "u4"
+context = ["yE", "c4", "tau"]
+falsifier = "残りが小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"
+
+[[proposition]]
+id = "C2L4x"
+statement = "E の前年比から食料と総合（消費者物価指数。食料の相対価格）の寄与を引くと、段 3より残りが小さい月が半分を超える（2025 を除く）"
+strength = "more_often_than_not"
+scope = { seasons = "2001-2024", where = [{ col = "family", op = "==", value = "B" }] }
+then = [{ col = "l4", op = "==", value = true }]
+surprise = "u4"
+context = ["yE", "c4", "tau"]
+falsifier = "残りが小さくなる月の割合の 95% 区間の上端が 0.5 を下回る"
+note = "量を固定して値段だけ動かしたときの、会計上の寄与（式）で E の向きを言い切る。E は食料を含むので、会計上つながっている。予測ではなく、式の言い切りが当たるかを見る。重みは 12 か月前の値"

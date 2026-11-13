@@ -1,0 +1,3 @@
+2026-11-13 18:47:45 JST (final, before computing any conclusion-side value)
+27ad845206f409c7134ee7af7ec4561e9b3e8cb8bc94fbca51a5f3e6fae0100a  monthly_prelock_2026-11-13.md
+97b83e984ee6791e88198119fc602d280e38755997509e53471ed186561244e2  monthly_propositions.toml

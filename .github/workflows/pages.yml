@@ -1,9 +1,9 @@
 name: Pages
 
 # Publishes the usage guide: docs/pages/guide.page.json (a web-ui-page/1 spec, data only) rendered at build
-# time by PySaiyanWeBoo's web_ui.page_document — no HTML, CSS or JS lives in this repository.
+# time by PySaiyanWeBoo's pysaiyanweboo.page_document — no HTML, CSS or JS lives in this repository.
 # Pull requests build the page (an invalid spec fails here); only main deploys.
-# Move the web_ui pin by changing WEB_UI below.
+# Move the PySaiyanWeBoo pin by changing PYSAIYANWEBOO below.
 on:
   push:
     branches: [main]
@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  WEB_UI: "pysaiyanweboo @ git+https://github.com/myon-bioinformatics/PySaiyanWeBoo@187102817d4955234d4edc1d3bd681edc59dc198"
+  PYSAIYANWEBOO: "pysaiyanweboo @ git+https://github.com/myon-bioinformatics/PySaiyanWeBoo@bbe5c0b0087f40ff3fffd53bec5111c2ba2d747d"
 
 jobs:
   build:
@@ -43,7 +43,7 @@ jobs:
       - name: Build the guide
         run: |
           mkdir -p _site
-          uv run --no-project --with "$WEB_UI" python -m web_ui --page docs/pages/guide.page.json > _site/index.html
+          uv run --no-project --with "$PYSAIYANWEBOO" python -m pysaiyanweboo --page docs/pages/guide.page.json > _site/index.html
           cp docs/brand/icon.png docs/brand/favicon.png _site/
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: github.ref == 'refs/heads/main'

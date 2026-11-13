@@ -55,8 +55,17 @@
   正本の命題ファイルの sha256 が保存された値と同じ。つなげたファイルが読み込める。
   K・D の命題が branch 側（from-cycle-001/propositions.toml）のどれとも同じ問いでない。
 
+年次シミュレーションの GIF（c1 の成果発表用。判定ではない）:
+  各年のリーグごとに、最終順位の順に 6 球団を並べ、得点・失点の分布だけからシーズンを作り直したときに A クラスに入る確率
+  （sim_p_upper）を棒にする。左の 3 本が A クラス。第1弾の K51（B クラス ⇔ この確率が 0.5 未満）が、年ごとにどれだけ成り立ったかを
+  下の帯に積む。2012〜2025年は確定済みの season.jsonl、2026年（まだ使っていない年）は R18 の部分実行の表から。
+  GIF の書き出し・読み戻し・名前の付け方は FluidFullSpeedSimulation の pixelwater（_gif・file_stem）を、作業ツリーの場所を
+  --ffs で渡して使う（サイクル3 の outlet_units.py と同じ持ち込み方。リポジトリをまたいで再利用し、ここでは書かない）。
+
 使い方（リポジトリの直下から）:
   python cycles/c001-chunichi/exploratory/kind_reask.py --outdir cycles/c001-chunichi/exploratory/kind_reask_results
+  python cycles/c001-chunichi/exploratory/kind_reask.py --gif-dir cycles/c001-chunichi/exploratory/kind_reask_results \
+      --ffs <FluidFullSpeedSimulation の作業ツリー>
 """
 from __future__ import annotations
 
@@ -974,11 +983,136 @@ def render(res: dict) -> str:
     return "\n".join(L) + "\n"
 
 
+# ---- 年次シミュレーションの GIF -----------------------------------------------------------------------------------------
+GIF_RECEIPT_SCHEMA = "aoi-c001-season-sim-gif/1"
+GLYPHS = {"0": "111101101101111", "1": "010110010010111", "2": "111001111100111", "3": "111001111001111",
+          "4": "101101111001001", "5": "111100111001111", "6": "111100111101111", "7": "111001010010010",
+          "8": "111101111101111", "9": "111101111001111", "C": "111100100100111", "P": "111101111100100"}   # 3×5 のドットの字
+# 色番号: 0 地 / 1 墨 / 2 A クラス / 3 B クラス / 4 中日 / 5 K51 が成り立つ / 6 成り立たない / 7 補助線・除外の年
+GIF_PALETTE = [(255, 255, 255), (51, 51, 51), (99, 179, 255), (176, 176, 176), (11, 60, 140), (91, 189, 62), (204, 61, 0),
+               (221, 221, 221)]
+
+
+def season_sim_years(repo: Path, pl) -> list[dict]:
+    """GIF の材料: 年ごと・リーグごとに、最終順位の順の 6 球団（作り直しで A に入る確率・A クラスか・K51 が成り立つか）。"""
+    base = repo / "cycles" / "c001-chunichi"
+    cols = ("season", "team", "league", "rank", "upper_half", "sim_p_upper")
+    full = pl.read_ndjson(base / "outputs" / "season.jsonl").select(cols)
+    new = pl.read_ndjson(HERE / "r18_partial_results" / "r18_partial_panel_2026.jsonl").select(cols).cast(full.schema)
+    excluded = {int(e["season"]) for e in tomllib.loads((base / "analysis.toml").read_text(encoding="utf-8")).get("exclude", [])}
+    rows = pl.concat([full, new]).sort("season", "league", "rank", "team").to_dicts()
+    years = []
+    for season in sorted({r["season"] for r in rows}):
+        leagues = {lg: [{"team": r["team"], "rank": r["rank"], "upper": r["upper_half"], "p": round(r["sim_p_upper"], 9),
+                         "ok": (r["sim_p_upper"] < 0.5) == (not r["upper_half"])}
+                        for r in rows if r["season"] == season and r["league"] == lg] for lg in ("C", "P")}
+        units = [t for ts in leagues.values() for t in ts]
+        years.append({"season": season, "excluded": season in excluded, "leagues": leagues,
+                      "consistent": sum(t["ok"] for t in units), "units": len(units)})
+    return years
+
+
+def season_sim_grid(years: list[dict], i: int) -> list[bytearray]:
+    """i 年目のコマ（256×160 の色番号）。上に年、左がセ・右がパ、下に K51 が成り立った球団の数を年ごとに積む帯。"""
+    W, H, TOP, BASE = 256, 160, 32, 128
+    g = [bytearray(W) for _ in range(H)]
+
+    def rect(x0, y0, x1, y1, c):
+        for y in range(max(y0, 0), min(y1, H)):
+            g[y][max(x0, 0):min(x1, W)] = bytes([c]) * (min(x1, W) - max(x0, 0))
+
+    def text(s, x, y, k, c=1):
+        for ch in s:
+            for n, bit in enumerate(GLYPHS[ch]):
+                if bit == "1":
+                    rect(x + n % 3 * k, y + n // 3 * k, x + (n % 3 + 1) * k, y + (n // 3 + 1) * k, c)
+            x += 4 * k
+
+    yr = years[i]
+    text(str(yr["season"]), (W - 45) // 2, 6, 3)
+    text("C", 8, 8, 2)
+    text("P", W - 8 - 6, 8, 2)                                               # 年の数字と重ならないように右の端へ
+    for x0, lg in ((8, "C"), (136, "P")):
+        for n, t in enumerate(yr["leagues"][lg]):
+            bx, h = x0 + 5 + n * 18, round(t["p"] * (BASE - TOP))
+            rect(bx, BASE - h, bx + 12, BASE, 4 if t["team"] == "d" else 2 if t["upper"] else 3)
+            if not t["ok"]:                                                  # K51 が成り立たない球団は、棒の頭を赤に
+                rect(bx, BASE - max(h, 3), bx + 12, BASE - max(h, 3) + 3, 6)
+            if t["team"] == "d":
+                rect(bx + 3, BASE + 3, bx + 9, BASE + 6, 4)
+        rect(x0, BASE, x0 + 112, BASE + 1, 1)                                # 地の線
+        for x in range(x0, x0 + 112, 2):                                     # 0.5 の線
+            g[(TOP + BASE) // 2][x] = 1
+        for y in range(TOP, BASE, 2):                                        # A クラスと B クラスの境
+            g[y][x0 + 56] = 1
+    for n, past in enumerate(years):                                         # 下の帯: 年ごとに、K51 が成り立った球団の数
+        cx = (W - (len(years) * 12 - 4)) // 2 + n * 12
+        if n > i:
+            rect(cx, 151, cx + 8, 152, 7)
+            continue
+        if past["excluded"]:
+            rect(cx, 140, cx + 8, 152, 7)
+        else:
+            rect(cx, 152 - past["consistent"], cx + 8, 152, 5)
+            rect(cx, 152 - past["units"], cx + 8, 152 - past["consistent"], 6)
+        if n == i:
+            rect(cx, 154, cx + 8, 155, 1)
+    return g
+
+
+def season_sim_gif(repo: Path, ffs: Path, out_dir: Path, file_prefix: str = "", file_suffix: str = "", scale: int = 2) -> dict:
+    """年次シミュレーションの GIF と、隣に受領記録 <name>.json を書く（FluidFullSpeedSimulation の pixelwater で）。"""
+    import subprocess
+    pl, _, _ = load_modules(repo)
+    if str(ffs) not in sys.path:
+        sys.path.insert(0, str(ffs))
+    import pixelwater as PW
+    years = season_sim_years(repo, pl)
+    delays = [150] * (len(years) - 1) + [400]
+    data = PW._gif([season_sim_grid(years, i) for i in range(len(years))], GIF_PALETTE, scale=scale, delays=delays)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stem = PW.file_stem("c001", "sim-p-upper", None, 0, out_dir, file_prefix, file_suffix,
+                        conditions=f"y{years[0]['season']}-{years[-1]['season']}")
+    gif = stem.with_name(f"{stem.name}.gif")
+    gif.write_bytes(data)
+    train = [y for y in years if not y["excluded"] and y["season"] <= 2025]
+    sha = lambda f: hashlib.sha256(Path(f).read_bytes()).hexdigest()  # noqa: E731
+    commit = subprocess.run(["git", "-C", str(ffs), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip() or None
+    receipt = {
+        "schema": GIF_RECEIPT_SCHEMA, "files": {"gif": {"name": gif.name, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}},
+        "frames": len(years), "canvas": f"{256 * scale}x{160 * scale}",
+        "plan": {"years": [years[0]["season"], years[-1]["season"]], "scale": scale, "delays_cs": delays, "palette": GIF_PALETTE},
+        "inputs": {"season": sha(repo / "cycles/c001-chunichi/outputs/season.jsonl"),
+                   "panel_2026": sha(HERE / "r18_partial_results/r18_partial_panel_2026.jsonl")},
+        "ffs": {"commit": commit, "pixelwater_sha256": sha(Path(PW.__file__))},
+        "summary": {"k51_2012_2025": [sum(y["consistent"] for y in train), sum(y["units"] for y in train)],
+                    "k51_2026": [years[-1]["consistent"], years[-1]["units"]]},
+        "years": [{"season": y["season"], "excluded": y["excluded"], "consistent": y["consistent"], "units": y["units"],
+                   "chunichi": next(t for ts in y["leagues"].values() for t in ts if t["team"] == "d")} for y in years],
+    }
+    js = stem.with_name(f"{stem.name}.json")
+    js.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return {"gif": str(gif), "json": str(js), "frames": len(years), "summary": receipt["summary"]}
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--repo", type=Path, default=ROOT)
-    ap.add_argument("--outdir", type=Path, required=True)
+    ap.add_argument("--outdir", type=Path, help="判定の結果（kind_reask.json・kind_reask.md）の書き出し先")
+    ap.add_argument("--gif-dir", type=Path, help="年次シミュレーションの GIF と受領記録の書き出し先（--ffs が要る）")
+    ap.add_argument("--ffs", type=Path, help="FluidFullSpeedSimulation の作業ツリー（GIF の書き出しに pixelwater を使う）")
+    ap.add_argument("--gif-file-prefix", default="", help="GIF の名前の前に付ける文字")
+    ap.add_argument("--gif-file-suffix", default="", help="GIF の名前の後ろ（_r<NN> の後）に付ける文字")
     args = ap.parse_args(argv)
+    if not args.outdir and not args.gif_dir:
+        ap.error("--outdir か --gif-dir のどちらかが要る")
+    if args.gif_dir and not args.ffs:
+        ap.error("--gif-dir には --ffs が要る")
+    if args.gif_dir:
+        made = season_sim_gif(args.repo, args.ffs, args.gif_dir, args.gif_file_prefix, args.gif_file_suffix)
+        print(f"🎞️ {made['gif']}（{made['frames']} コマ）")
+    if not args.outdir:
+        return 0
     res = analyze(args.repo)
     args.outdir.mkdir(parents=True, exist_ok=True)
     (args.outdir / "kind_reask.json").write_text(json.dumps(res, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")

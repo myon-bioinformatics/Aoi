@@ -1,0 +1,293 @@
+{
+  "schema": "aoi-c001-season-sim-gif/1",
+  "files": {
+    "gif": {
+      "name": "c001_sim-p-upper_y2012-2026_r01.gif",
+      "bytes": 60985,
+      "sha256": "5d8af4ae78ecc72b0435c9a98268c7908982673c724947c0b4ec0ecc409c1aed"
+    }
+  },
+  "frames": 15,
+  "canvas": "512x320",
+  "plan": {
+    "years": [
+      2012,
+      2026
+    ],
+    "scale": 2,
+    "delays_cs": [
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      150,
+      400
+    ],
+    "palette": [
+      [
+        255,
+        255,
+        255
+      ],
+      [
+        51,
+        51,
+        51
+      ],
+      [
+        99,
+        179,
+        255
+      ],
+      [
+        176,
+        176,
+        176
+      ],
+      [
+        11,
+        60,
+        140
+      ],
+      [
+        91,
+        189,
+        62
+      ],
+      [
+        204,
+        61,
+        0
+      ],
+      [
+        221,
+        221,
+        221
+      ]
+    ]
+  },
+  "inputs": {
+    "season": "8ddba36adfbd06db5c7510f91953184233801c596f87d4fe9bd66fc1b9573a93",
+    "panel_2026": "0cf01501b48ac2b4cb6f3e8ad9aa5a90dd526ebfbf8837e19b15d566954a339b"
+  },
+  "ffs": {
+    "commit": "8ae5b7c488273226da215ca78b3c4e910c913c57",
+    "pixelwater_sha256": "3fd048a5b03245c48bdf3f654eaaaf182199b9874776c771807dae25134f7447"
+  },
+  "summary": {
+    "k51_2012_2025": [
+      137,
+      156
+    ],
+    "k51_2026": [
+      12,
+      12
+    ]
+  },
+  "years": [
+    {
+      "season": 2012,
+      "excluded": false,
+      "consistent": 10,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 2,
+        "upper": true,
+        "p": 0.939403909,
+        "ok": true
+      }
+    },
+    {
+      "season": 2013,
+      "excluded": false,
+      "consistent": 10,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 4,
+        "upper": false,
+        "p": 0.111892868,
+        "ok": true
+      }
+    },
+    {
+      "season": 2014,
+      "excluded": false,
+      "consistent": 10,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 4,
+        "upper": false,
+        "p": 0.543290943,
+        "ok": false
+      }
+    },
+    {
+      "season": 2015,
+      "excluded": false,
+      "consistent": 8,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 5,
+        "upper": false,
+        "p": 0.347489883,
+        "ok": true
+      }
+    },
+    {
+      "season": 2016,
+      "excluded": false,
+      "consistent": 12,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 6,
+        "upper": false,
+        "p": 0.140010516,
+        "ok": true
+      }
+    },
+    {
+      "season": 2017,
+      "excluded": false,
+      "consistent": 10,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 5,
+        "upper": false,
+        "p": 0.019915501,
+        "ok": true
+      }
+    },
+    {
+      "season": 2018,
+      "excluded": false,
+      "consistent": 12,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 5,
+        "upper": false,
+        "p": 0.195129685,
+        "ok": true
+      }
+    },
+    {
+      "season": 2019,
+      "excluded": false,
+      "consistent": 8,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 5,
+        "upper": false,
+        "p": 0.626948928,
+        "ok": false
+      }
+    },
+    {
+      "season": 2020,
+      "excluded": true,
+      "consistent": 7,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 3,
+        "upper": true,
+        "p": 0.37102031,
+        "ok": false
+      }
+    },
+    {
+      "season": 2021,
+      "excluded": false,
+      "consistent": 11,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 5,
+        "upper": false,
+        "p": 0.086744954,
+        "ok": true
+      }
+    },
+    {
+      "season": 2022,
+      "excluded": false,
+      "consistent": 12,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 6,
+        "upper": false,
+        "p": 0.113338603,
+        "ok": true
+      }
+    },
+    {
+      "season": 2023,
+      "excluded": false,
+      "consistent": 10,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 6,
+        "upper": false,
+        "p": 0.03127154,
+        "ok": true
+      }
+    },
+    {
+      "season": 2024,
+      "excluded": false,
+      "consistent": 12,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 6,
+        "upper": false,
+        "p": 0.054364208,
+        "ok": true
+      }
+    },
+    {
+      "season": 2025,
+      "excluded": false,
+      "consistent": 12,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 4,
+        "upper": false,
+        "p": 0.177099009,
+        "ok": true
+      }
+    },
+    {
+      "season": 2026,
+      "excluded": false,
+      "consistent": 12,
+      "units": 12,
+      "chunichi": {
+        "team": "d",
+        "rank": 6,
+        "upper": false,
+        "p": 0.381663145,
+        "ok": true
+      }
+    }
+  ]
+}

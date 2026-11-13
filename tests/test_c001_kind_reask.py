@@ -3,6 +3,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 EXPLORATORY = ROOT / "cycles" / "c001-chunichi" / "exploratory"
 RESULTS = EXPLORATORY / "kind_reask_results"
@@ -356,6 +358,51 @@ def test_imputed_allocation_by_hand():
     # 補う: 9 回表の得点は 0 と 1 が半分ずつ。得点 2 は 2 か 3 になり、失点 3 との組は半分が引き分け → 見込み −0.75、配分の効果 +0.75
     assert filled["units"][(2024, "d")]["alloc_net_home"] == 0.75 and filled["imputed_games"] == 1
     assert filled["top9_mean"] == {"2024-C": 0.5}
+
+
+# ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------
+GIF = RESULTS / "c001_sim-p-upper_y2012-2026_r01.gif"
+
+
+def test_season_sim_years_count_k51_the_same_way_as_round_one():
+    years = kr.season_sim_years(ROOT, pl)
+    assert [y["season"] for y in years] == list(range(2012, 2027)) and [y["season"] for y in years if y["excluded"]] == [2020]
+    assert all(len(y["leagues"][lg]) == 6 for y in years for lg in ("C", "P"))
+    k51 = {f: (v["hold"], v["n"]) for f, v in {q["id"]: q for q in RES["propositions"]}["K51"]["forms"].items()}
+    train = [y for y in years if not y["excluded"] and y["season"] <= 2025]
+    assert sum(y["consistent"] for y in train) == k51["original"][0] + k51["inverse"][0] == 137     # B で 0.5 未満 + A で 0.5 以上
+    assert years[-1]["consistent"] == 12                                                           # 2026年
+    d = [next(t for t in y["leagues"]["C"] if t["team"] == "d") for y in years]
+    assert [y["season"] for y, t in zip(years, d) if not t["upper"] and not t["ok"]] == [2014, 2019]
+
+
+def test_saved_gif_matches_its_receipt_and_the_data():
+    import hashlib
+    data = GIF.read_bytes()
+    receipt = json.loads(GIF.with_suffix(".json").read_text(encoding="utf-8"))
+    assert receipt["schema"] == kr.GIF_RECEIPT_SCHEMA and receipt["files"]["gif"]["sha256"] == hashlib.sha256(data).hexdigest()
+    assert data[:6] == b"GIF89a" and int.from_bytes(data[6:8], "little") == 512 and int.from_bytes(data[8:10], "little") == 320
+    assert data.count(b"\x21\xf9\x04") == receipt["frames"] == 15                                       # 1 年 1 コマ
+    assert receipt["summary"] == {"k51_2012_2025": [137, 156], "k51_2026": [12, 12]}
+    assert receipt["plan"]["palette"] == [list(c) for c in kr.GIF_PALETTE]
+    years = kr.season_sim_years(ROOT, pl)
+    assert [(y["season"], y["consistent"]) for y in receipt["years"]] == [(y["season"], y["consistent"]) for y in years]
+
+
+def test_season_sim_grid_shapes_and_marks():
+    years = kr.season_sim_years(ROOT, pl)
+    g = kr.season_sim_grid(years, len(years) - 1)
+    assert len(g) == 160 and {len(r) for r in g} == {256}
+    assert max(max(r) for r in g) < len(kr.GIF_PALETTE)
+    assert sum(r.count(4) for r in g) > 0                                     # 中日の棒
+    assert sum(r.count(7) for r in g) > 0                                     # 除外した 2020年の帯
+
+
+def test_main_needs_ffs_for_the_gif(capsys):
+    with pytest.raises(SystemExit):
+        kr.main(["--gif-dir", "x"])
+    with pytest.raises(SystemExit):
+        kr.main([])
 
 
 def test_main_writes_both_files_and_returns_zero(tmp_path, monkeypatch):

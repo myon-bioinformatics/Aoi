@@ -544,8 +544,34 @@
       "files": 1,
       "import_sites": 1
     },
+    "pixelwater": {
+      "attribute_uses": 3,
+      "attributes": {
+        "__file__": 1,
+        "_gif": 1,
+        "file_stem": 1
+      },
+      "by_tree": {
+        "cycles": {
+          "attribute_uses": 3,
+          "attributes": {
+            "__file__": 1,
+            "_gif": 1,
+            "file_stem": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        }
+      },
+      "declared": [],
+      "distinct_attributes": 3,
+      "dynamic_import_sites": 0,
+      "files": 1,
+      "import_sites": 1
+    },
     "polars": {
-      "attribute_uses": 1042,
+      "attribute_uses": 1045,
       "attributes": {
         "Boolean": 15,
         "Config.set_tbl_rows": 1,
@@ -560,7 +586,7 @@
         "__version__": 4,
         "any_horizontal": 1,
         "col": 442,
-        "concat": 11,
+        "concat": 12,
         "concat_list": 1,
         "concat_str": 3,
         "exceptions.PolarsError": 1,
@@ -570,13 +596,13 @@
         "lit": 35,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 24,
+        "read_ndjson": 26,
         "sum": 2,
         "when": 18
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 73,
+          "attribute_uses": 76,
           "attributes": {
             "Boolean": 3,
             "DataFrame": 9,
@@ -585,10 +611,10 @@
             "Int64": 2,
             "Utf8": 2,
             "col": 37,
-            "concat": 1,
+            "concat": 2,
             "concat_str": 1,
             "lit": 7,
-            "read_ndjson": 6,
+            "read_ndjson": 8,
             "when": 1
           },
           "dynamic_import_sites": 0,
@@ -770,7 +796,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1428,
+      "attribute_uses": 1430,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -786,7 +812,7 @@
         "mark.parametrize": 337,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 524,
+        "raises": 526,
         "skip": 13,
         "warns": 3,
         "xfail": 1
@@ -923,7 +949,7 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 445,
+          "attribute_uses": 447,
           "attributes": {
             "approx": 104,
             "fail": 13,
@@ -931,12 +957,12 @@
             "importorskip": 3,
             "mark.parametrize": 124,
             "mark.skipif": 12,
-            "raises": 167,
+            "raises": 169,
             "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 43,
-          "import_sites": 45
+          "files": 44,
+          "import_sites": 46
         }
       },
       "declared": [
@@ -973,8 +999,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 138,
-      "import_sites": 141
+      "files": 139,
+      "import_sites": 142
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1232,13 +1258,26 @@
     },
     {
       "attributes": {
+        "__file__": 1,
+        "_gif": 1,
+        "file_stem": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/kind_reask.py",
+      "import_sites": 1,
+      "package": "pixelwater",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
         "Boolean": 1,
         "DataFrame": 5,
         "Float64": 2,
         "Int32": 2,
         "col": 17,
+        "concat": 1,
         "lit": 1,
-        "read_ndjson": 2
+        "read_ndjson": 4
       },
       "dynamic_lines": [],
       "file": "cycles/c001-chunichi/exploratory/kind_reask.py",
@@ -3217,6 +3256,16 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_c001_games_table_from_observed.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_kind_reask.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

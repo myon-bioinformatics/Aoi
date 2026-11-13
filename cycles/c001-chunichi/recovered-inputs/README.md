@@ -49,7 +49,7 @@
 
 ## 保存入力からの通常実行（2026-11-08）
 
-通常のActions「cycle c001 (saved inputs)」と週2回の定期検証は、次の標準ライブラリだけのコマンドを使います。キャッシュのrestore/saveやrun/c001へのdispatch、NPBへのリクエストは行いません。
+週2回の定期検証（Actions「c001 saved input verification」、手動実行も可）は、次の標準ライブラリだけのコマンドを使います。キャッシュのrestore/saveやrun/c001へのdispatch、NPBへのリクエストは行いません。
 
 ```sh
 python -S scripts/check_c001_saved_inputs.py

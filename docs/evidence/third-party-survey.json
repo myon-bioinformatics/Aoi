@@ -766,7 +766,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1442,
+      "attribute_uses": 1427,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -776,13 +776,13 @@
         "UsageError": 10,
         "approx": 389,
         "fail": 34,
-        "fixture": 59,
+        "fixture": 58,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 341,
+        "mark.parametrize": 337,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 533,
+        "raises": 523,
         "skip": 13,
         "warns": 3,
         "xfail": 1
@@ -919,20 +919,20 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 459,
+          "attribute_uses": 444,
           "attributes": {
             "approx": 104,
             "fail": 13,
-            "fixture": 19,
+            "fixture": 18,
             "importorskip": 3,
-            "mark.parametrize": 128,
+            "mark.parametrize": 124,
             "mark.skipif": 12,
-            "raises": 176,
+            "raises": 166,
             "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 44,
-          "import_sites": 45
+          "files": 43,
+          "import_sites": 44
         }
       },
       "declared": [
@@ -969,8 +969,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 139,
-      "import_sites": 141
+      "files": 138,
+      "import_sites": 140
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3547,18 +3547,6 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_rendered_output_static.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "tests"
-    },
-    {
-      "attributes": {
-        "fixture": 1,
-        "mark.parametrize": 4,
-        "raises": 10
-      },
-      "dynamic_lines": [],
-      "file": "tests/test_research_checkpoint.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

@@ -186,7 +186,8 @@ def _load_monthly(name):
 
 def test_monthly_prelock_and_propositions_hash_match_stamp():
     stamp = (MONTHLY / "monthly_prelock_timestamp.txt").read_text(encoding="utf-8")
-    for name in ("monthly_prelock_2026-11-13.md", "monthly_propositions.toml"):
+    for name in ("monthly_prelock_2026-11-13.md", "monthly_propositions.toml",
+                 "monthly_prelock_r2_2026-11-13.md", "monthly_propositions_r2.toml"):
         assert hashlib.sha256((MONTHLY / name).read_bytes()).hexdigest() in stamp, name
 
 
@@ -194,11 +195,16 @@ def test_monthly_condition_counts_are_the_ones_in_the_prelock():
     # 宣言 §4 の表（条件の側だけで数えた件数）
     run = _load_monthly("monthly_run")
     c = run.count(run.load())
-    assert c["A"]["incl2025"] == {"units": 239, "say(ax>=1)": 203, "band(ax<1)": 36}
-    assert c["A"]["excl2025"] == {"units": 227, "say(ax>=1)": 196, "band(ax<1)": 31}
+    def pick(d, keys):
+        return {k: d[k] for k in keys}
+
+    a_keys = ("units", "say(ax>=1)", "band(ax<1)")
+    assert pick(c["A"]["incl2025"], a_keys) == {"units": 239, "say(ax>=1)": 203, "band(ax<1)": 36}
+    assert pick(c["A"]["excl2025"], a_keys) == {"units": 227, "say(ax>=1)": 196, "band(ax<1)": 31}
     want = {1: (27, 15, 23, 250), 2: (51, 39, 10, 239), 3: (178, 166, 57, 65), 4: (181, 169, 37, 82)}
     for k, (up_in, up_ex, down, band) in want.items():
-        assert c["B"]["incl2025"][f"step{k}"] == {"up(c>=tau)": up_in, "down(c<=-tau)": down, "band": band}
+        assert pick(c["B"]["incl2025"][f"step{k}"], ("up(c>=tau)", "down(c<=-tau)", "band")) == {
+            "up(c>=tau)": up_in, "down(c<=-tau)": down, "band": band}
         assert c["B"]["excl2025"][f"step{k}"]["up(c>=tau)"] == up_ex
 
 
@@ -233,6 +239,8 @@ def test_monthly_exit_codes_are_reproduced(tmp_path):
     codes = {r["id"]: r["judgement"]["code"] for r in committed}
     assert codes["C2A2"] == codes["C2A2x"] == 1 and codes["C2L2"] == codes["C2L2x"] == 1   # 支持（例外あり）
     assert all(codes[f"C2B{k}{v}"] == 3 for k in range(1, 5) for v in ("", "x"))           # 向きは 4 段とも判例あり
+    assert codes["C2A3s"] == codes["C2A3sx"] == 3                                           # 第2弾: σ の帯でも E の段は棄却
+    assert all(codes[f"C2B{k}s{v}"] == 3 for k in (3, 4) for v in ("", "x"))
 
 
 def test_monthly_contribution_is_exact_not_linear():
@@ -243,6 +251,21 @@ def test_monthly_contribution_is_exact_not_linear():
     assert run._contrib(0.04, 0.0, 0.28) == 0.0
     assert abs(run._contrib(0.04, 1e-6, 0.28) - (1 - 0.28) * 0.04 * 1e-6) < 1e-15
     assert abs(run._contrib(0.04, 0.65, 0.28) - (math.log(1.026) - math.log(1 + 0.28 * 0.026))) < 1e-15
+
+
+def test_monthly_sigma_band_comes_from_the_published_rates():
+    # 宣言 r2 §2: σ = √2·√(r_C² + r_F²)、r_C = 1.5 %、r_F = r_C·0.9/1.7。件数（§3）も宣言どおり
+    import math
+
+    run = _load_monthly("monthly_run")
+    assert abs(run.SIGMA - math.sqrt(2) * math.hypot(0.015, 0.015 * 0.9 / 1.7)) < 1e-15
+    assert abs(run.SIGMA - 0.0240) < 5e-5
+    c = run.count(run.load())
+    assert (c["A"]["incl2025"]["say(axs>=1)"], c["A"]["excl2025"]["say(axs>=1)"]) == (98, 96)
+    want = {1: (0, 1), 2: (0, 0), 3: (64, 2), 4: (43, 1)}
+    for k, (up, down) in want.items():
+        b = c["B"]["incl2025"][f"step{k}"]
+        assert (b["up(c>=sigma)"], b["down(c<=-sigma)"]) == (up, down), k
 
 
 def test_monthly_separate_implementation_agrees():

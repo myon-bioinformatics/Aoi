@@ -266,7 +266,7 @@ def test_the_eight_inning_treatment_agrees_with_the_round_four_propositions():
         assert (d["hold"], d["n"]) == (q[new_id]["hold"], q[new_id]["n"])
 
 
-# ---- 第6弾 A: 道具（sakanalytics）の 8 回までの列 ----------------------------------------------------------------------
+# ---- 第6弾 A: 試合の表から作った 8 回までの列 ----------------------------------------------------------------------
 SIXTH = {q["id"]: q for q in RES["sixth"]["propositions"]}
 
 
@@ -294,6 +294,20 @@ def test_new_season_records_on_the_eight_inning_column():
     assert rows["E85"]["units"]["counter"] == ["d-2026"] and rows["E86"]["units"]["hold"] == ["d-2026"]
     assert (rows["KE85"]["counts"]["hold"], rows["KE86"]["counts"]["hold"]) == (3, 4)
     assert all(r["counts"]["undetermined"] == 0 for r in rows.values())
+
+
+def test_eighth_split_uses_eight_inning_scores_by_hand():
+    import sakanalytics as SA
+    teams = {"d": {"name": "中日", "league": "C"}, "g": {"name": "巨人", "league": "C"}}
+    rows = [("2024-04-01", 1, 0, 0, 0), ("2024-04-02", 5, 4, 5, 4), ("2024-04-03", 0, 3, 0, 3), ("2024-04-04", 2, 6, None, None)]
+    games = [{"key": str(i), "date": d, "home": "d", "away": "g", "hs": hs, "as": as_, "hs8": h8, "as8": a8}
+             for i, (d, hs, as_, h8, a8) in enumerate(rows)]
+    got = kr.eighth_split(games, teams, pl, SA).filter(pl.col("team") == "d").row(0, named=True)
+    # 8 回までの得点だけの 3 試合（1 試合目は 0-0 の引き分け、4 試合目は 8 回に届かず数えない）で、同じ関数を回した値と同じ
+    plain = SA.to_team_games(pl.DataFrame([{"key": str(i), "date": d, "home": "d", "away": "g", "hs": h, "as": a}
+                                           for i, (d, h, a) in enumerate([("2024-04-01", 0, 0), ("2024-04-02", 5, 4), ("2024-04-03", 0, 3)])]), teams)
+    want = SA.win_loss_split(plain).filter(pl.col("team") == "d").row(0, named=True)
+    assert {k[:-1]: v for k, v in got.items() if k.endswith("8")} == {k: v for k, v in want.items() if k.startswith("wl_")}
 
 
 # ---- 第6弾 B: 配分の効果と作り直しの列 ------------------------------------------------------------------------------------

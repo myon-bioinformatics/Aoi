@@ -216,7 +216,7 @@
       "import_sites": 1
     },
     "numpy": {
-      "attribute_uses": 291,
+      "attribute_uses": 299,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
@@ -226,7 +226,7 @@
         "arange": 7,
         "argpartition": 1,
         "argsort": 1,
-        "array": 30,
+        "array": 33,
         "array_equal": 3,
         "asarray": 5,
         "ascontiguousarray": 1,
@@ -234,7 +234,7 @@
         "bool_": 1,
         "ceil": 1,
         "clip": 4,
-        "column_stack": 4,
+        "column_stack": 6,
         "concatenate": 8,
         "corrcoef": 3,
         "einsum": 1,
@@ -254,7 +254,7 @@
         "integer": 1,
         "isfinite": 1,
         "linalg.LinAlgError": 3,
-        "linalg.lstsq": 5,
+        "linalg.lstsq": 7,
         "linalg.norm": 2,
         "linalg.pinv": 1,
         "linalg.svd": 2,
@@ -268,7 +268,7 @@
         "nan_to_num": 1,
         "ndarray": 17,
         "nonzero": 4,
-        "ones": 6,
+        "ones": 7,
         "packbits": 2,
         "partition": 2,
         "percentile": 4,
@@ -289,18 +289,21 @@
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 15,
+          "attribute_uses": 23,
           "attributes": {
-            "array": 7,
+            "array": 10,
+            "column_stack": 2,
             "corrcoef": 2,
+            "linalg.lstsq": 2,
             "longdouble": 1,
             "mean": 2,
+            "ones": 1,
             "random.default_rng": 1,
             "sign": 2
           },
           "dynamic_import_sites": 0,
-          "files": 2,
-          "import_sites": 2
+          "files": 3,
+          "import_sites": 3
         },
         "dragowing": {
           "attribute_uses": 5,
@@ -479,8 +482,8 @@
       ],
       "distinct_attributes": 68,
       "dynamic_import_sites": 0,
-      "files": 20,
-      "import_sites": 20
+      "files": 21,
+      "import_sites": 21
     },
     "ortools": {
       "attribute_uses": 2,
@@ -541,23 +544,49 @@
       "files": 1,
       "import_sites": 1
     },
-    "polars": {
-      "attribute_uses": 1029,
+    "pixelwater": {
+      "attribute_uses": 3,
       "attributes": {
-        "Boolean": 14,
+        "__file__": 1,
+        "_gif": 1,
+        "file_stem": 1
+      },
+      "by_tree": {
+        "cycles": {
+          "attribute_uses": 3,
+          "attributes": {
+            "__file__": 1,
+            "_gif": 1,
+            "file_stem": 1
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 1
+        }
+      },
+      "declared": [],
+      "distinct_attributes": 3,
+      "dynamic_import_sites": 0,
+      "files": 1,
+      "import_sites": 1
+    },
+    "polars": {
+      "attribute_uses": 1045,
+      "attributes": {
+        "Boolean": 15,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 265,
+        "DataFrame": 267,
         "Expr": 13,
         "Float32": 1,
-        "Float64": 71,
-        "Int32": 35,
+        "Float64": 72,
+        "Int32": 36,
         "Int64": 41,
         "Series": 15,
         "Utf8": 24,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 434,
-        "concat": 11,
+        "col": 442,
+        "concat": 12,
         "concat_list": 1,
         "concat_str": 3,
         "exceptions.PolarsError": 1,
@@ -567,30 +596,30 @@
         "lit": 35,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 24,
+        "read_ndjson": 26,
         "sum": 2,
         "when": 18
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 60,
+          "attribute_uses": 76,
           "attributes": {
-            "Boolean": 2,
-            "DataFrame": 7,
-            "Float64": 1,
-            "Int32": 1,
+            "Boolean": 3,
+            "DataFrame": 9,
+            "Float64": 2,
+            "Int32": 2,
             "Int64": 2,
             "Utf8": 2,
-            "col": 29,
-            "concat": 1,
+            "col": 37,
+            "concat": 2,
             "concat_str": 1,
             "lit": 7,
-            "read_ndjson": 6,
+            "read_ndjson": 8,
             "when": 1
           },
           "dynamic_import_sites": 0,
-          "files": 8,
-          "import_sites": 8
+          "files": 9,
+          "import_sites": 9
         },
         "dragowing": {
           "attribute_uses": 3,
@@ -741,8 +770,8 @@
       ],
       "distinct_attributes": 26,
       "dynamic_import_sites": 1,
-      "files": 47,
-      "import_sites": 52
+      "files": 48,
+      "import_sites": 53
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -767,7 +796,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1427,
+      "attribute_uses": 1430,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -783,7 +812,7 @@
         "mark.parametrize": 337,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 523,
+        "raises": 526,
         "skip": 13,
         "warns": 3,
         "xfail": 1
@@ -920,7 +949,7 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 444,
+          "attribute_uses": 447,
           "attributes": {
             "approx": 104,
             "fail": 13,
@@ -928,12 +957,12 @@
             "importorskip": 3,
             "mark.parametrize": 124,
             "mark.skipif": 12,
-            "raises": 166,
+            "raises": 169,
             "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 43,
-          "import_sites": 44
+          "files": 44,
+          "import_sites": 46
         }
       },
       "declared": [
@@ -970,8 +999,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 138,
-      "import_sites": 140
+      "files": 139,
+      "import_sites": 142
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1229,12 +1258,26 @@
     },
     {
       "attributes": {
-        "DataFrame": 4,
-        "Float64": 1,
-        "Int32": 1,
-        "col": 9,
+        "__file__": 1,
+        "_gif": 1,
+        "file_stem": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c001-chunichi/exploratory/kind_reask.py",
+      "import_sites": 1,
+      "package": "pixelwater",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "Boolean": 1,
+        "DataFrame": 5,
+        "Float64": 2,
+        "Int32": 2,
+        "col": 17,
+        "concat": 1,
         "lit": 1,
-        "read_ndjson": 2
+        "read_ndjson": 4
       },
       "dynamic_lines": [],
       "file": "cycles/c001-chunichi/exploratory/kind_reask.py",
@@ -1338,6 +1381,29 @@
       "file": "cycles/c002-gohantrust/lag1/lag_run.py",
       "import_sites": 1,
       "package": "numpy",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "array": 3,
+        "column_stack": 2,
+        "linalg.lstsq": 2,
+        "ones": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c002-gohantrust/monthly/monthly_run.py",
+      "import_sites": 1,
+      "package": "numpy",
+      "tree": "cycles"
+    },
+    {
+      "attributes": {
+        "DataFrame": 1
+      },
+      "dynamic_lines": [],
+      "file": "cycles/c002-gohantrust/monthly/monthly_run.py",
+      "import_sites": 1,
+      "package": "polars",
       "tree": "cycles"
     },
     {
@@ -3196,6 +3262,16 @@
     },
     {
       "attributes": {
+        "raises": 2
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_c001_kind_reask.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
         "approx": 2,
         "mark.parametrize": 4,
         "raises": 2
@@ -3275,12 +3351,12 @@
     },
     {
       "attributes": {
-        "raises": 1,
+        "raises": 2,
         "skip": 1
       },
       "dynamic_lines": [],
       "file": "tests/test_c002_lag1.py",
-      "import_sites": 2,
+      "import_sites": 3,
       "package": "pytest",
       "tree": "tests"
     },

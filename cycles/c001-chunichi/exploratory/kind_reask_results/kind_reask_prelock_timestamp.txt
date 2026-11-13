@@ -5,3 +5,5 @@
 4be4ca19aea273182a0bbbbd73ca620953f4e821d31febc208639e2ebab5b495  kind_reask_r2_propositions.toml
 2026-11-13 18:01:02 JST (round 4: final, before the round-4 script and any computation of A, B and C)
 fb8ec6445d88657a0f5767c9a50e2675294ea3f01ea0b1646991a09766cfbb2a  kind_reask_r4_propositions.toml
+2026-11-13 18:51:04 JST (round 6: final, before the round-6 script, the sakanalytics change and any computation of A and B)
+3bb8150f9098849d5c61322505056d8f4e8376800e3cb01c470a8f091be7072e  kind_reask_r6_propositions.toml

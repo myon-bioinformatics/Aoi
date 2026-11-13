@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """サイクル2 月次の命題（族 A: 予測のはしご、族 B: 恒等式の言い切り）。
-事前宣言: monthly_prelock_2026-11-13.md（第1弾）、monthly_prelock_r2_2026-11-13.md（第2弾: 帯を標本誤差に）
+事前宣言: monthly_prelock_2026-11-13.md（第1弾）、monthly_prelock_r2_2026-11-13.md（第2弾: 帯を標本誤差に）、
+monthly_prelock_r3_2026-11-13.md（第3弾: 族 A の E を米・穀類の寄与に、族 B を年の単位で＝族 Y）
 
   uv run --locked python -I cycles/c002-gohantrust/monthly/monthly_run.py count   # 条件の側の件数だけ（結論は計算しない）
   uv run --locked python -I cycles/c002-gohantrust/monthly/monthly_run.py judge   # 単位を作り、命題を判定して outputs/ に書く
 
-単位は 1 か月。列 team は暦の月（m01〜m12）、season は年、family は族（A / B）。
+単位は 1 か月（族 A・B）か 1 年（族 Y）。列 team は暦の月（m01〜m12）か y、season は年、family は族（A / B / Y）。
 ゼロ・NaN が出たときは、値を変えずにログに出す（ε の方針。置き換えはしない）。
 """
 from __future__ import annotations
@@ -28,8 +29,10 @@ ROOT = HERE.parents[2]
 ARCHIVE = ROOT / "research" / "staple-price-survey" / "phase2_archive"
 RICE = ARCHIVE / "japan_retail_price_rice_panel.csv.gz"      # 小売物価統計調査 うるち米 銘柄 1002 都市平均（円/5kg）
 ENGEL = ARCHIVE / "engel_food_panel_monthly.csv.gz"           # 家計調査 用途分類 二人以上 全国（円/月）
+ENGEL_YEAR = ARCHIVE / "engel_food_panel_annual.csv"          # 同じ長期時系列の年平均（族 Y）
 CPI = ARCHIVE / "japan_cpi_food_cereals_panel.csv.gz"         # 消費者物価指数 2025 年基準 全国（総合・食料・穀類）
-PROPS = (HERE / "monthly_propositions.toml", HERE / "monthly_propositions_r2.toml")   # 事前登録の順。r2 は第1弾の id を parent に持つ
+PROPS = (HERE / "monthly_propositions.toml", HERE / "monthly_propositions_r2.toml",
+         HERE / "monthly_propositions_r3.toml")   # 事前登録の順。後の弾は前の id を parent に持てる
 OUT = HERE / "outputs"
 
 # 宣言 §2・§3 の範囲（月は 12·年 + 月 − 1 の整数で持つ）
@@ -43,6 +46,9 @@ TICK = 0.001                                      # E の公表刻み（0.1 ポ�
 # F と C の相関を 0 とした上限、12 か月離れた月は別の世帯（6 か月で交替）なので √2 倍
 SE_CE, SE_FOOD_RATIO = 0.015, 0.9 / 1.7
 SIGMA = math.sqrt(2) * math.hypot(SE_CE, SE_CE * SE_FOOD_RATIO)
+# 第3弾の族 Y の帯: 年平均の標準誤差率（家計調査の概要 2025 年 表2: 消費支出 0.4 %、食料 0.2 %）から同じ作り方（宣言 r3 §2）
+SIGMA_YEAR = math.sqrt(2) * math.hypot(0.004, 0.002)
+Y_FIRST, Y_LAST = 2001, 2025
 
 LOG: list[str] = []
 
@@ -84,11 +90,21 @@ def load() -> dict:
             hh[k_of(int(r["year"]), int(r["month"]))] = {
                 c: float(r[c]) for c in ("food_yen_month", "ce_yen_month", "rice_yen_month", "cereals_yen_month")}
     cpi = {"all_items": {}, "food": {}, "cereals": {}}
+    cpi_year = {"all_items": {}, "food": {}, "cereals": {}}
     with gzip.open(CPI, "rt", encoding="utf-8") as f:
         for r in csv.DictReader(f):
-            if r["frequency"] == "monthly" and r["series_id"] in cpi:
+            if r["series_id"] not in cpi:
+                continue
+            if r["frequency"] == "monthly":
                 cpi[r["series_id"]][k_of(int(r["year"]), int(r["month"]))] = float(r["index_value"])
-    return {"P": rice, "hh": hh, "cpi": cpi}
+            elif r["frequency"] == "annual_calendar_mean" and r["n_months"] == "12":   # 12 か月そろった年だけ
+                cpi_year[r["series_id"]][int(r["year"])] = float(r["index_value"])
+    hh_year = {}
+    with open(ENGEL_YEAR, encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            hh_year[int(r["year"])] = {
+                c: float(r[c]) for c in ("food_yen_month", "ce_yen_month", "rice_yen_month", "cereals_yen_month")}
+    return {"P": rice, "hh": hh, "cpi": cpi, "cpi_year": cpi_year, "hh_year": hh_year}
 
 
 def engel(d: dict, k: int) -> float:
@@ -99,13 +115,17 @@ def engel(d: dict, k: int) -> float:
 # ---------- 族 A: 予測のはしご（宣言 §2）----------
 
 def a_conditions(d: dict) -> list[dict]:
-    """族 A の条件の側だけ（x と刻み）。結論（翌月の米価の変化）は計算しない。"""
+    """族 A の条件の側だけ（x と刻み）。結論（翌月の米価の変化）は計算しない。
+    xr・xc は第3弾: E の動きのうち、起点の月の米（c1）・穀類（c2）の寄与だけ（族 B の式。宣言 r3 §3）。"""
+    bc = {r["k"]: r for r in b_conditions(d)}
     rows = []
     for t in range(A_FIRST, A_LAST + 1):
         e1 = engel(d, t - 1)
         x = math.log(e1 / engel(d, t - 13))
         tau = TICK / e1
-        rows.append({"k": t, "x": x, "tau": tau, "ax": abs(x) / tau, "axs": abs(x) / SIGMA})
+        xr, xc = bc[t - 1]["c1"], bc[t - 1]["c2"]
+        rows.append({"k": t, "x": x, "tau": tau, "ax": abs(x) / tau, "axs": abs(x) / SIGMA,
+                     "xr": xr, "xc": xc, "axr": abs(xr) / tau, "axc": abs(xc) / tau})
     return rows
 
 
@@ -120,6 +140,8 @@ def _a_pair(d: dict, s: int) -> tuple[float, float, float]:
 
 def a_units(d: dict) -> list[dict]:
     pairs = {s: _a_pair(d, s) for s in range(A_TRAIN0, A_LAST + 1)}
+    bc = {r["k"]: r for r in b_conditions(d)}
+    xrc = {s: (bc[s - 1]["c1"], bc[s - 1]["c2"]) for s in range(A_TRAIN0, A_LAST + 1)}   # 第3弾の x の替わり
     out = []
     for c in a_conditions(d):
         t = c["k"]
@@ -137,11 +159,19 @@ def a_units(d: dict) -> list[dict]:
         f2 = float(b2[0] + b2[1] * m)
         f3 = float(b3[0] + b3[1] * m + b3[2] * x)
         e0, e1, e2, e3 = abs(y), abs(y - f1), abs(y - f2), abs(y - f3)
+        alt = {}
+        for j, name in ((0, "r"), (1, "c")):                # 第3弾: 段 3 の x を米・穀類の寄与に替える
+            XA = np.array([xrc[s][j] for s in range(A_TRAIN0, t)])
+            bb = np.linalg.lstsq(np.column_stack([one, M, XA]), Y, rcond=None)[0]
+            fa = float(bb[0] + bb[1] * m + bb[2] * xrc[t][j])
+            alt |= {f"f3{name}": fa, f"gamma_{name}": float(bb[2]),
+                    f"a3{name}": abs(y - fa) < e2, f"gain3{name}": e2 - abs(y - fa)}
         watch(t, y=y, m=m, x=x)
         yy, mm = ym(t)
         out.append({
             "family": "A", "team": f"m{mm:02d}", "team_name": f"{yy}年{mm}月", "season": yy, "month": mm,
             "y": y, "m_prev": m, "x": x, "tau": c["tau"], "ax": c["ax"], "axs": c["axs"],
+            "xr": c["xr"], "xc": c["xc"], "axr": c["axr"], "axc": c["axc"], **alt,
             "f1": f1, "f2": f2, "f3": f3, "rho": float(b2[1]), "gamma": float(b3[2]), "n_train": len(tr),
             "a1": e1 < e0, "a2": e2 < e1, "a3": e3 < e2,
             "gain1": e0 - e1, "gain2": e1 - e2, "gain3": e2 - e3,
@@ -201,6 +231,47 @@ def b_units(d: dict) -> list[dict]:
     return out
 
 
+# ---------- 族 Y: 族 B を年の単位で（宣言 r3 §2・§4）----------
+
+def y_conditions(d: dict) -> list[dict]:
+    """族 Y の条件の側だけ（年の式の見込み c1〜c4 と帯）。結論（E の前年比）は計算しない。
+    重みは前の年の年平均、値段は年平均（P は 12 か月の平均、物価指数は暦年の平均）。"""
+    rows = []
+    hy, cy, P = d["hh_year"], d["cpi_year"], d["P"]
+
+    def p_year(y):
+        return math.fsum(P[k_of(y, m)] for m in range(1, 13)) / 12
+
+    for t in range(Y_FIRST, Y_LAST + 1):
+        h0 = hy[t - 1]
+        e0 = h0["food_yen_month"] / h0["ce_yen_month"]
+        s_r = h0["rice_yen_month"] / h0["food_yen_month"]
+        s_c = h0["cereals_yen_month"] / h0["food_yen_month"]
+        rel = {s: cy[s][t] / cy[s][t - 1] for s in ("cereals", "food", "all_items")}
+        c = [_contrib(s_r, p_year(t) / p_year(t - 1) - 1, e0), _contrib(s_c, rel["cereals"] - 1, e0),
+             _contrib(1.0, rel["food"] - 1, e0), math.log(rel["food"]) - math.log(rel["all_items"])]
+        row = {"k": t, "e0": e0, "s_rice": s_r, "s_cereals": s_c}
+        for i, v in enumerate(c, 1):
+            row[f"c{i}"], row[f"acy{i}"] = v, abs(v) / SIGMA_YEAR
+        rows.append(row)
+    return rows
+
+
+def y_units(d: dict) -> list[dict]:
+    hy = d["hh_year"]
+    out = []
+    for c in y_conditions(d):
+        t = c["k"]
+        ye = math.log((hy[t]["food_yen_month"] / hy[t]["ce_yen_month"]) / c["e0"])
+        watch(k_of(t, 1), yE_year=ye, **{f"c{i}_year": c[f"c{i}"] for i in range(1, 5)})
+        row = {"family": "Y", "team": "y", "team_name": f"{t}年", "season": t, "month": 0,
+               "yE": ye, "ayE": abs(ye) / SIGMA_YEAR, "e0": c["e0"], "s_rice": c["s_rice"], "s_cereals": c["s_cereals"]}
+        for i in range(1, 5):
+            row[f"c{i}"], row[f"acy{i}"], row[f"u{i}"] = c[f"c{i}"], c[f"acy{i}"], ye - c[f"c{i}"]
+        out.append(row)
+    return out
+
+
 # ---------- 件数（宣言 §4。条件の側だけ）----------
 
 def count(d: dict) -> dict:
@@ -222,6 +293,16 @@ def count(d: dict) -> dict:
                 "down(c<=-sigma)": sum(r[f"c{i}"] <= -SIGMA for r in bb),
                 "band_sigma": sum(abs(r[f"c{i}"]) < SIGMA for r in bb)}
     res["sigma"] = SIGMA
+    # 第3弾（宣言 r3 §5）。族 A は x の替わり（米・穀類の寄与）の言い切る月、族 Y は年の帯の件数
+    for label, last in (("incl2025", 2025), ("excl2025", 2024)):
+        aa = [r for r in a if ym(r["k"])[0] <= last]
+        res["A"][label] |= {f"say(ax{j}>=1)": sum(r[f"ax{j}"] >= 1 for r in aa) for j in ("r", "c")}
+        yy = [r for r in y_conditions(d) if r["k"] <= last]
+        res.setdefault("Y", {})[label] = {"units": len(yy)} | {
+            f"step{i}": {"up(c>=sigmaY)": sum(r[f"c{i}"] >= SIGMA_YEAR for r in yy),
+                         "down(c<=-sigmaY)": sum(r[f"c{i}"] <= -SIGMA_YEAR for r in yy),
+                         "band": sum(abs(r[f"c{i}"]) < SIGMA_YEAR for r in yy)} for i in range(1, 5)}
+    res["sigma_year"] = SIGMA_YEAR
     return res
 
 
@@ -232,7 +313,7 @@ def judge(d: dict, outdir: Path = OUT) -> list[dict]:
     import polars as pl
     import propositions as pr
 
-    units = a_units(d) + b_units(d)
+    units = a_units(d) + b_units(d) + y_units(d)
     outdir.mkdir(parents=True, exist_ok=True)
     upath = outdir / "units.jsonl"
     upath.write_text("".join(json.dumps(u, ensure_ascii=False) + "\n" for u in units), encoding="utf-8")

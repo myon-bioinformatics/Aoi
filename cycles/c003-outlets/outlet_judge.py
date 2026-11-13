@@ -41,7 +41,7 @@ def code_version() -> str | None:
 
 PROPS = (HERE / "propositions.toml", HERE / "propositions_r2.toml", HERE / "propositions_r3.toml",
          HERE / "propositions_r4.toml", HERE / "propositions_r5.toml",
-         HERE / "propositions_r6.toml", HERE / "propositions_r7.toml", HERE / "propositions_r8.toml", HERE / "propositions_r9.toml", HERE / "propositions_r10.toml", HERE / "propositions_r11.toml", HERE / "propositions_r12.toml", HERE / "propositions_r13.toml", HERE / "propositions_r14.toml")  # 事前登録の順。後の弾は前の id を parent に持てる
+         HERE / "propositions_r6.toml", HERE / "propositions_r7.toml", HERE / "propositions_r8.toml", HERE / "propositions_r9.toml", HERE / "propositions_r10.toml", HERE / "propositions_r11.toml", HERE / "propositions_r12.toml", HERE / "propositions_r13.toml", HERE / "propositions_r14.toml", HERE / "propositions_r15.toml")  # 事前登録の順。後の弾は前の id を parent に持てる
 
 
 def load_props(paths=PROPS) -> tuple[list[dict], str]:

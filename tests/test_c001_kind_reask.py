@@ -111,8 +111,8 @@ def test_new_season_counts_and_readings():
 
 def test_expected_counts_come_from_the_training_rates():
     side = CONFIRM["K51"]["sides"]
-    assert side["counter"]["n"] == 6 and abs(side["counter"]["expected"] - 6 * 9 / 78) < 1e-12            # 学習データ: 78 中 69
-    assert side["converse_counter"]["n"] == 6 and abs(side["converse_counter"]["expected"] - 6 * 10 / 78) < 1e-12   # 裏: 78 中 68
+    assert side["counter"]["n"] == 6 and abs(side["counter"]["expected"] - 6 * 9 / 78) < 1e-8            # 学習データ: 78 中 69
+    assert side["converse_counter"]["n"] == 6 and abs(side["converse_counter"]["expected"] - 6 * 10 / 78) < 1e-8   # 裏: 78 中 68
 
 
 def _panel_with(tmp_path, changes):

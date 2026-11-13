@@ -145,8 +145,10 @@ def confirm_new_season(props: list[dict], trained: dict[str, dict], targets: lis
                                    ("converse_counter", "inverse", c["converse_counter"], c["converse_counter"] + c["neither"])):
             f = trained[p["id"]].get(form)
             rate = None if f is None or not f["n"] else 1 - f["hold"] / f["n"]      # 学習データでの判例の率
-            sides[side] = {"n": n, "got": got, "trained_rate": rate, "expected": None if rate is None else n * rate,
-                           "p_at_least": None if rate is None else P.sigma_stats(got, n, rate)["p_above"],
+            tail = None if rate is None else P.sigma_stats(got, n, rate)["p_above"]
+            # 浮動小数の和は Python の版で最後の桁が変わる（3.12 から sum が補正つき）。保存する値は 9 桁に丸める
+            sides[side] = {"n": n, "got": got, "trained_rate": rate, "expected": None if rate is None else round(n * rate, 9),
+                           "p_at_least": None if tail is None else round(tail, 9),
                            "new_where_none_trained": bool(got) and rate == 0}
         row = {"id": p["id"], "role": "confirm" if p["id"] in targets else "record", "in_scope": len(check["units"]),
                "counts": c, "units": units, "sides": sides, "reading": None}

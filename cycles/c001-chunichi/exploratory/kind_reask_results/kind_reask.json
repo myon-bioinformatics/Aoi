@@ -5604,19 +5604,19 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 5.230769230769231,
+       "expected": 5.230769231,
        "got": 4,
        "n": 8,
        "new_where_none_trained": false,
-       "p_at_least": 0.8982891207510607,
+       "p_at_least": 0.898289121,
        "trained_rate": 0.6538461538461539
       },
       "counter": {
-       "expected": 1.2307692307692308,
+       "expected": 1.230769231,
        "got": 0,
        "n": 4,
        "new_where_none_trained": false,
-       "p_at_least": 0.9999999999999999,
+       "p_at_least": 1.0,
        "trained_rate": 0.3076923076923077
       }
      },
@@ -6167,15 +6167,15 @@
      "role": "confirm",
      "sides": {
       "converse_counter": {
-       "expected": 0.7692307692307692,
+       "expected": 0.769230769,
        "got": 0,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.9999999999999999,
+       "p_at_least": 1.0,
        "trained_rate": 0.1282051282051282
       },
       "counter": {
-       "expected": 0.6923076923076925,
+       "expected": 0.692307692,
        "got": 0,
        "n": 6,
        "new_where_none_trained": false,
@@ -6219,19 +6219,19 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 3.0769230769230766,
+       "expected": 3.076923077,
        "got": 3,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.6799699445349865,
+       "p_at_least": 0.679969945,
        "trained_rate": 0.5128205128205128
       },
       "counter": {
-       "expected": 2.384615384615385,
+       "expected": 2.384615385,
        "got": 4,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.17567434611040725,
+       "p_at_least": 0.175674346,
        "trained_rate": 0.39743589743589747
       }
      },
@@ -6273,15 +6273,15 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 5.769230769230769,
+       "expected": 5.769230769,
        "got": 6,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.790314525730146,
+       "p_at_least": 0.790314526,
        "trained_rate": 0.9615384615384616
       },
       "counter": {
-       "expected": 0.6923076923076925,
+       "expected": 0.692307692,
        "got": 0,
        "n": 6,
        "new_where_none_trained": false,
@@ -6325,19 +6325,19 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 2.9230769230769234,
+       "expected": 2.923076923,
        "got": 4,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.3200300554650135,
+       "p_at_least": 0.320030055,
        "trained_rate": 0.4871794871794872
       },
       "counter": {
-       "expected": 1.923076923076923,
+       "expected": 1.923076923,
        "got": 3,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.2945505056076318,
+       "p_at_least": 0.294550506,
        "trained_rate": 0.3205128205128205
       }
      },
@@ -6379,19 +6379,19 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 2.384615384615385,
+       "expected": 2.384615385,
        "got": 2,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.7627110063075221,
+       "p_at_least": 0.762711006,
        "trained_rate": 0.39743589743589747
       },
       "counter": {
-       "expected": 2.9230769230769234,
+       "expected": 2.923076923,
        "got": 3,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.6319140898080303,
+       "p_at_least": 0.63191409,
        "trained_rate": 0.4871794871794872
       }
      },
@@ -6433,15 +6433,15 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 4.461538461538462,
+       "expected": 4.461538462,
        "got": 5,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.5187909052181763,
+       "p_at_least": 0.518790905,
        "trained_rate": 0.7435897435897436
       },
       "counter": {
-       "expected": 1.3846153846153844,
+       "expected": 1.384615385,
        "got": 0,
        "n": 6,
        "new_where_none_trained": false,
@@ -6486,19 +6486,19 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 3.5384615384615383,
+       "expected": 3.538461538,
        "got": 1,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.9952320438373631,
+       "p_at_least": 0.995232044,
        "trained_rate": 0.5897435897435898
       },
       "counter": {
-       "expected": 2.846153846153846,
+       "expected": 2.846153846,
        "got": 3,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.6070277979119519,
+       "p_at_least": 0.607027798,
        "trained_rate": 0.47435897435897434
       }
      },
@@ -6540,7 +6540,7 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 2.0769230769230766,
+       "expected": 2.076923077,
        "got": 0,
        "n": 6,
        "new_where_none_trained": false,
@@ -6548,11 +6548,11 @@
        "trained_rate": 0.34615384615384615
       },
       "counter": {
-       "expected": 3.4615384615384612,
+       "expected": 3.461538462,
        "got": 5,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.19911373836731464,
+       "p_at_least": 0.199113738,
        "trained_rate": 0.5769230769230769
       }
      },
@@ -6593,19 +6593,19 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 3.4615384615384612,
+       "expected": 3.461538462,
        "got": 4,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.4965552487678712,
+       "p_at_least": 0.496555249,
        "trained_rate": 0.5769230769230769
       },
       "counter": {
-       "expected": 2.9230769230769234,
+       "expected": 2.923076923,
        "got": 4,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.3200300554650135,
+       "p_at_least": 0.320030055,
        "trained_rate": 0.4871794871794872
       }
      },
@@ -6647,19 +6647,19 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 2.6153846153846154,
+       "expected": 2.615384615,
        "got": 4,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.23244692099078937,
+       "p_at_least": 0.232446921,
        "trained_rate": 0.4358974358974359
       },
       "counter": {
-       "expected": 2.9230769230769234,
+       "expected": 2.923076923,
        "got": 4,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.3200300554650135,
+       "p_at_least": 0.320030055,
        "trained_rate": 0.4871794871794872
       }
      },
@@ -6701,19 +6701,19 @@
      "role": "record",
      "sides": {
       "converse_counter": {
-       "expected": 3.3846153846153846,
+       "expected": 3.384615385,
        "got": 2,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.939876641389802,
+       "p_at_least": 0.939876641,
        "trained_rate": 0.5641025641025641
       },
       "counter": {
-       "expected": 2.846153846153846,
+       "expected": 2.846153846,
        "got": 2,
        "n": 6,
        "new_where_none_trained": false,
-       "p_at_least": 0.8646970031574359,
+       "p_at_least": 0.864697003,
        "trained_rate": 0.47435897435897434
       }
      },
@@ -6806,7 +6806,7 @@
        "trained_rate": null
       },
       "counter": {
-       "expected": 0.08333333333333337,
+       "expected": 0.083333333,
        "got": 0,
        "n": 1,
        "new_where_none_trained": false,
@@ -6853,11 +6853,11 @@
        "trained_rate": null
       },
       "counter": {
-       "expected": 0.33333333333333337,
+       "expected": 0.333333333,
        "got": 1,
        "n": 1,
        "new_where_none_trained": false,
-       "p_at_least": 0.33333333333333337,
+       "p_at_least": 0.333333333,
        "trained_rate": 0.33333333333333337
       }
      },

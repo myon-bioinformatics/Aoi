@@ -87,7 +87,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {} and res["tenth"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {} and res["tenth"] == {} and res["eleventh"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -412,6 +412,52 @@ def test_formula_one_routes_differ_when_the_consequence_is_next_year():
     got = {i: (v["forms"]["original"]["hold"], v["forms"]["original"]["n"], v["reading"], v["judgement"]["code"]) for i, v in q.items()}
     assert got == {"N0": (42, 72, 1, 2), "N52": (44, 76, 1, 2), "N52A": (9, 27, 2, 3), "N52S": (43, 65, 1, 4), "R52A": (16, 28, 2, 3)}
     assert [x["ok"] for x in RES["tenth"]["predictions"]] == [True] * 8 + [False]
+
+
+# ---- 第11弾: 列を直す形を決める・配分が不利 ⇒ 翌年 A クラス ---------------------------------------------------------------
+def test_only_the_tie_weight_column_passes_all_three_lines():
+    f11 = RES["eleventh"]
+    assert f11["gate"] == {"ok": True, "problems": []}
+    got = {n: (c["negative"], c["unbiased"], c["stable"], c["keeps_order"], c["usable"]) for n, c in f11["candidates"].items()}
+    assert got == {"t1": (76, True, True, True, True), "eight": (71, True, True, False, False)}
+    assert f11["candidates"]["t1"]["rho_original"] >= 0.95 and f11["candidates"]["eight"]["rho_original"] < 0.80
+    assert f11["between"]["same_thing"] is False and f11["between"]["sign_agreement"] < 0.75
+    assert f11["decision"] == {"rule": 4, "choice": "t1"}                    # 使えるのは片方だけ
+
+
+def test_the_two_columns_give_the_same_exit_codes_and_readings_on_the_same_shapes():
+    f11 = RES["eleventh"]
+    assert [(x["t1"], x["eight"], x["same"]) for x in f11["shapes"]] == [(a, b, True) for a, b in kr.SHAPES]
+    q = {x["id"]: x for n in ("t1", "eight") for x in f11["column_propositions"][n]}
+    got = {i: (v["forms"]["original"]["hold"], v["forms"]["original"]["n"], v["judgement"]["code"]) for i, v in q.items()}
+    assert got == {"T85": (4, 12, 3), "KT85": (31, 72, 3), "DT85": (4, 12, 3), "E85": (5, 12, 3), "KE85": (33, 72, 3), "DE85": (5, 12, 3)}
+    assert (q["KT85"]["reading"], q["DT85"]["reading"]) == (4, 2) and q["DT85"]["fisher_p"] >= kr.ALPHA
+    saved = {x["id"]: x for x in RES["fourth"]["propositions"]}             # 8 回までの 3 命題は、第4弾の値そのまま
+    assert all(q[i]["forms"] == saved[i]["forms"] for i in ("E85", "KE85", "DE85"))
+
+
+def test_shaking_the_boundary_moves_signs_on_the_eight_inning_column_only():
+    f11 = RES["eleventh"]
+    assert f11["eps"]["small"] == sorted(RES["tenth"]["eps"]["drawn"]) and f11["eps"]["all"] == RES["tenth"]["eps"]["all"]   # 新しい値は引かない
+    for n, flips in (("t1", lambda v: v <= 2), ("eight", lambda v: v >= 20)):
+        small = [x for x in f11["candidates"][n]["shakes"] if x["small"]]
+        assert len(small) == 5 and all(flips(x["sign_flips"]) and not x["changed_forms"] for x in small)
+    big = {n: [x["changed_forms"] for x in f11["candidates"][n]["shakes"] if not x["small"]] for n in ("t1", "eight")}
+    assert all(big["t1"]) and big["eight"][0] == [] and all(big["eight"][1:])   # 大きくずらせば、どちらも終了コードが変わる
+
+
+def test_unfavourable_allocation_raises_the_share_that_returns_to_the_upper_half():
+    f11 = RES["eleventh"]
+    q = {x["id"]: x for x in f11["propositions"]}
+    got = {i: (v["forms"]["original"]["hold"], v["forms"]["original"]["n"], v["reading"], v["judgement"]["code"]) for i, v in q.items()}
+    assert got == {"M52A": (18, 27, 1, 4), "M52B": (15, 24, 1, 4), "M52U": (3, 3, 5, 4)}
+    n52a = {x["id"]: x for x in RES["tenth"]["propositions"]}["N52A"]["forms"]["original"]
+    assert q["M52A"]["forms"]["original"]["hold"] + n52a["hold"] == n52a["n"] == 27          # N52A の裏側
+    assert q["M52B"]["forms"]["original"]["n"] + q["M52U"]["forms"]["original"]["n"] == 27   # その年の B クラスと A クラスに分かれる
+    assert q["M52B"]["forms"]["inverse"]["n"] - q["M52B"]["forms"]["inverse"]["hold"] == 15  # 不利でない B クラスは 48 中 15 が翌年 A
+    assert f11["chunichi_condition_units"] == [{"unit": "d-2015", "upper_half": False, "upper_half_next": False},
+                                               {"unit": "d-2019", "upper_half": False, "upper_half_next": True}]
+    assert [x["ok"] for x in f11["predictions"]] == [True] * 5 + [False] + [True] * 3
 
 
 # ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------

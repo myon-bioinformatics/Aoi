@@ -571,24 +571,25 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1070,
+      "attribute_uses": 1079,
       "attributes": {
         "Boolean": 15,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 272,
+        "DataFrame": 274,
         "Expr": 13,
         "Float32": 1,
-        "Float64": 72,
-        "Int32": 36,
+        "Float64": 73,
+        "Int32": 37,
         "Int64": 41,
         "Series": 17,
         "Utf8": 24,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 454,
+        "col": 458,
         "concat": 12,
         "concat_list": 1,
         "concat_str": 3,
+        "corr": 1,
         "exceptions.PolarsError": 1,
         "first": 4,
         "format": 2,
@@ -603,17 +604,18 @@
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 82,
+          "attribute_uses": 91,
           "attributes": {
             "Boolean": 3,
-            "DataFrame": 12,
-            "Float64": 2,
-            "Int32": 2,
+            "DataFrame": 14,
+            "Float64": 3,
+            "Int32": 3,
             "Int64": 2,
             "Utf8": 2,
-            "col": 40,
+            "col": 44,
             "concat": 2,
             "concat_str": 1,
+            "corr": 1,
             "lit": 7,
             "read_ndjson": 8,
             "when": 1
@@ -770,7 +772,7 @@
           "name": "polars"
         }
       ],
-      "distinct_attributes": 27,
+      "distinct_attributes": 28,
       "dynamic_import_sites": 1,
       "files": 48,
       "import_sites": 53
@@ -1273,11 +1275,12 @@
     {
       "attributes": {
         "Boolean": 1,
-        "DataFrame": 8,
-        "Float64": 2,
-        "Int32": 2,
-        "col": 20,
+        "DataFrame": 10,
+        "Float64": 3,
+        "Int32": 3,
+        "col": 24,
         "concat": 1,
+        "corr": 1,
         "lit": 1,
         "read_ndjson": 4
       },

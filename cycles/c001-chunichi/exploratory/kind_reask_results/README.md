@@ -385,7 +385,7 @@ C の 2 つが外れたのは、9 回の終わり方が主な理由だと考え�
 - **`games_table_from_observed.py`**（Aoi の探索の道具）: `--with-eighth` を渡すと、回ごとの得点から両チームの 8 回までの得点（`hs8`・`as8`）を書きます。既定では書きません。
 - **`kind_reask.py` の `eighth_split`**: その表から、`sakanalytics.win_loss_split` を 8 回までの得点でもう一度回し、列名の後ろに 8 を付けた 12 列（`wl_rf_win_gap8`・`wl_rf_loss_gap8` など）を作ります。`sakanalytics` 本体は変えていません。
 - **保存済みの年次表も書き換えていません。** `outputs/season.jsonl` は LittleBit holdout の固定入力、`from-cycle-001/outputs/season.jsonl` は回収入力との照合がハッシュで固定しているためです。
-- 道具（SakAnalytics）に入れる変更は、子リポジトリへの PR として別に用意します。
+- 道具（SakAnalytics）に入れる変更は、子リポジトリの PR（SakAnalytics #43）で入り、Aoi に取り込みました。取り込んだ後は、`eighth_split` をやめて `sakanalytics.win_loss_split_eighth` をそのまま呼んでいます（結果はバイト単位で同じ）。
 
 ゲート: こうして作った `wl_rf_win_gap8` は、第4弾で別の道筋（第3弾の表）から作った値と差 0（156 単位）。E85・KE85・DE85 をこの列で評価し直すと、第4弾と同じ数・終了コードでした。
 

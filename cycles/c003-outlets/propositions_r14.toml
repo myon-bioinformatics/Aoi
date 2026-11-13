@@ -1,0 +1,153 @@
+# サイクル3の命題・第14弾（事前登録）。形式と判定規則は docs/propositions.md。第1弾〜第13弾のファイルは変更しない。
+#
+# 主題: (1) 丸めの底を下げる入れ方を試す（係数の桁を増やす・掛け算の切り捨ての残りを次のステップへ繰り越す）。
+#           あわせて第13弾の弱い点 2 つ（見積もりが緩い・rnd が検算になっていない）を直す。
+#       (2) uniform と ramp の式も、どんな配管でも書ける形にする（第13弾でできたのは end だけ）。
+#
+# 記録: 2026-11-13 10:00 JST（時刻の道具の値）に書いた。このとき第14弾の単位（rnd2・pipe4 の組）・列・漸化式のコードはまだ作っていない。
+#   書く前に見ていたもの: 第1弾〜第13弾の結果すべて。
+#   (1) 丸め。今まで（q48）: 係数も量も 2^-48 刻み。係数は四捨五入、掛け算は切り捨て。
+#     入れ方 c64      = 係数だけ 2^-64 刻みにする（量は 2^-48 のまま。掛け算の結果を 2^-48 に切り捨てる）
+#     入れ方 carry    = 掛け算の切り捨ての残りを、掛け算の場所ごとに持っておき、次のステップの同じ掛け算に足す（係数は 2^-48 のまま）
+#     入れ方 c64carry = 両方
+#     測り方を替える: 比べる相手を float の漸化式でなく、同じ式を 60 桁の小数（decimal）で進めた値にする。
+#       float は有効 53 ビットで、V0 = 128 の Q48（55 ビット）より粗いので、底を下げた後は相手にならないため。
+#       これで rnd2 の検算は「60 桁の漸化式」と「float の漸化式」という別実装どうしの比べになる（第13弾の欠けを直す）。
+#     紙の上の見込み（データに当てはめた係数は無い）:
+#       係数の丸めの分は N·2^-49 ほど（q48・carry）。c64・c64carry では 2^-16 倍になる。
+#       切り捨ての分（繰り越し無し）は floor_est = (n_mul − 2)·2^-49·N_eff / V、N_eff = (1 − e^(−k2·t))/(k2·dt)。
+#         わけ: 上の槽から出る量の切り捨てで測る槽は 1 回ぶん少なく受け取り、測る槽の掛け算（n_mul − 1 回）の切り捨てで 1 回ぶんずつ多く残る。
+#         差し引き n_mul − 2 回ぶんが毎ステップ積もり、測る槽の出口で e^(−k2·(t − s)) だけ減る。
+#         第13弾の見積もり n_mul·N は、この打ち消しと減り方を入れていなかった（実際は見積もりの 0.17〜0.42 倍だった）。
+#         この直し方は第13弾の比を見た後に考えた。上の式を第13弾の 4 つの条件に当てると 0.15〜0.33 倍になる（暗算。単位とは照らしていない）。
+#       繰り越しを入れると、切り捨ての残りは掛け算 1 か所につき 2^-48 未満のまま積もらない。
+#       だから V0 = 128 の quad は、c64carry にしたときだけ h = 1/512 でも 4 乗の係数（1/720）に戻る見込み。
+#         打ち切りのずれは 1.6e-14〜5e-14、c64 だけだと切り捨ての分が 2e-14〜1e-13 残り、carry だけだと係数の分が 1e-12 ほど残る。
+#   (2) どんな配管でも書ける式（紙の上。S = 行き先の割合、Λ = 出口の速さの合計、x = Λ·dt、D = diag(e^(−x))）。
+#       end:     M = I + (S − I)(I − D)                         （第13弾）
+#       uniform: M = I + (S − I)(I + Θ·S)(I − D)、Θ = diag(1 − (1 − e^(−x))/x)。外から入る分は (I + (S − I)·Θ)·q
+#       ramp:    M = I + (S − I)(I − A·S)^(-1)[(I − D) + B·S·Λ]、A = diag(1 − 2·E1/dt²)、B = diag(−(E0 − 2·E1/dt))。
+#                外から入る分は [I + (S − I)(I − A·S)^(-1)(A + B/dt)]·q
+#       G_eff = log(M)/dt を dt の多項式として展開し（行列の係数を dt^4 まで）、q_eff = (I − X/2 + X²/12 − X⁴/720)·(外から入る分)、X = G_eff·dt。
+#       1 列の槽に当てると、end の H1・H2、uniform の H（第6弾）、ramp の Hr（第8弾）と同じ数になることを確かめた（4 段。数値で 7 桁）。
+#   書く前に、見えている単位と照らしたもの（当てはめではなく、式をそのまま当てた確かめ）:
+#     第12弾 pipe2 の h ≤ 1/8 の単位で、式と実際の向きは end・uniform・ramp とも 192 件すべて合う。
+#     式と実際の差（実際のずれに対する比）の中央値は end 3e-8、uniform 5e-7、ramp 5e-4（最大は 0.2 %、0.05 %、27 %）。
+#   単位の組を決めるために、式だけを使って計算したもの（データは使っていない）:
+#     pipe4 の 1080 件で、式の見込みの向きは uniform が正 368・負 172、ramp が正 354・負 186。
+#       uniform の向きが時刻で変わる組（枝分かれで下の槽が遅い組）を式で探して入れた。
+#     式の見込みの大きさは 5e-7 以下 187 件、2e-6 以上 761 件、あいだ 132 件。
+#   境の値（0.9〜1.1・0.5〜2・1/1000・1e-6 とその 1/2・2 倍・量の大小の分け方）は人が決めた仮置きで、結果に合わせて動かさない。
+#
+# 第14弾で足す単位（前の弾の命題の範囲には入らない組）:
+#   rnd2  = 2 段の槽。τ2/τ = 2/5・1/2・3/5・3/4・5/4、t = 1.5τ・3τ、入れ方（見なし方）は ramp・quad、刻み 1/32・1/128・1/512、
+#           最初の量 V0 = 8192・128・2^-12・2^-20、丸め方は q48・c64・carry・c64carry。どれも整数の漸化式（エンジンには入れていない）。
+#   pipe4 = 枝分かれ (s, τB/τ, τC/τ) = (1/2, 2, 4)・(11/20, 5/2, 3)・(3/4, 5/4, 2/5)、合流 (τB/τ, τC/τ, τD/τ) = (2/5, 2, 3/5)・(3, 1/2, 5/4)・(5/2, 3, 4)、
+#           ポンプ (τB/τ, τC/τ) = (1/2, 2)・(5/2, 2/5)・(5/4, 4/5)、輪 τ2/τ = 5/2・1/2・5/4。t = 0.5τ〜4τ を 0.25τ 刻みで 15 個、刻み 1/8・1/16・1/32。
+#           入れ方は uniform（エンジン本体）と ramp（Q48 の整数の漸化式）。
+# 第14弾で足す列:
+#   rnd2・pipe4 = 組。c64・carry・c64carry = 丸め方。is_best_round = 同じ条件の 4 つの丸め方のうち、丸めのずれの大きさが最小か
+#   round_part = (整数の漸化式の量 − 60 桁の漸化式の量) / 厳密な量。coef_part = 係数だけ丸めた 60 桁の漸化式との差。floor_part = round_part − coef_part
+#   coef_ratio = |coef_part| / (N·2^-49)、floor_est = 上の式、floor_ratio = |floor_part| / floor_est、big_volume = V0 が 64 以上か
+#   coef_total = |err| / (k2·k1³·dt⁴/720)（rnd2 の quad。err は 60 桁の厳密な量との比）
+#   series_pred = 式の見込み（G_eff を dt^4 まで）、series_pred_abs = その大きさ（pipe4）
+
+# ---- (1) 丸めの底を下げる ----
+
+[[proposition]]
+id = "O104"
+statement = "V0 = 128・刻み 1/512 の quad は、係数の桁を増やして繰り越しも入れた（c64carry）ときだけ、ずれの係数が 1/720 に戻る（比 0.9〜1.1）"
+strength = "always"
+parent = "O98"
+change = "O98 の判例（丸めの底で係数が崩れる）を、丸め方を替えて問い直す。刻みはさらに細かい 1/512"
+scope = { where = [{ col = "rnd2", op = "==", value = true }, { col = "quad", op = "==", value = true }, { col = "v0", op = "==", value = 128.0 }, { col = "h", op = "<=", value = 0.001953125 }] }
+if = [{ col = "c64carry", op = "==", value = true }]
+then = [{ col = "coef_total", op = ">=", value = 0.9 }, { col = "coef_total", op = "<=", value = 1.1 }]
+surprise = "coef_total"
+context = ["tau2_ratio", "span_ratio", "c64", "carry", "err", "round_part"]
+falsifier = "c64carry で戻らない単位、または他の丸め方で戻る単位があれば、係数の分と切り捨ての分のどちらが残ったかを書く"
+
+[[proposition]]
+id = "O105"
+statement = "槽の量が大きい（V0 が 64 以上）とき、4 つの丸め方のうち丸めのずれが最小なのは c64carry である"
+strength = "always"
+scope = { where = [{ col = "rnd2", op = "==", value = true }, { col = "big_volume", op = "==", value = true }] }
+if = [{ col = "c64carry", op = "==", value = true }]
+then = [{ col = "is_best_round", op = "==", value = true }]
+surprise = "round_part"
+context = ["h", "v0", "steps", "tau2_ratio", "span_ratio", "ramp", "quad"]
+falsifier = "c64carry が最小でない単位があれば、どの丸め方が最小だったかと、その差が何目盛りかを書く"
+
+[[proposition]]
+id = "O106"
+statement = "槽の量が小さい（V0 が 2^-12 以下）とき、繰り越しを入れない丸め方なら、切り捨ての分は見積もり (n_mul − 2)·2^-49·N_eff/V の 0.5〜2 倍である（繰り越しを入れると 0.5 倍より小さい）"
+strength = "always"
+parent = "O102"
+change = "見積もりに、切り捨てどうしの打ち消しと測る槽の減り方を入れ、余裕を 10 倍から 2 倍に狭めた"
+scope = { where = [{ col = "rnd2", op = "==", value = true }, { col = "big_volume", op = "==", value = false }] }
+if = [{ col = "carry", op = "==", value = false }]
+then = [{ col = "floor_ratio", op = ">=", value = 0.5 }, { col = "floor_ratio", op = "<=", value = 2.0 }]
+surprise = "floor_ratio"
+context = ["h", "v0", "steps", "tau2_ratio", "span_ratio", "ramp", "quad", "c64"]
+falsifier = "外れる単位があれば、上の槽に残った分が後から流れ込む効き方（式に入れていない）かどうかを書く"
+
+[[proposition]]
+id = "O107"
+statement = "槽の量が大きい（V0 が 64 以上）とき、係数の桁を増やした丸め方なら、係数の丸めの分は N·2^-49 の 1/1000 以下である（増やさなければ 1/1000 より大きい）"
+strength = "always"
+scope = { where = [{ col = "rnd2", op = "==", value = true }, { col = "big_volume", op = "==", value = true }] }
+if = [{ col = "c64", op = "==", value = true }]
+then = [{ col = "coef_ratio", op = "<=", value = 0.001 }]
+surprise = "coef_ratio"
+context = ["h", "v0", "steps", "tau2_ratio", "span_ratio", "ramp", "quad", "carry"]
+falsifier = "外れる単位があれば、係数の丸めがたまたま小さい（q48）か、効き方が大きい（c64）かを書く"
+
+# ---- (2) どんな配管でも書ける式 ----
+
+[[proposition]]
+id = "O108"
+statement = "枝分かれ・合流・ポンプ・輪で、uniform の式の見込みが正なら、実際のずれも正である（負なら負）"
+strength = "always"
+parent = "O99"
+change = "end を uniform に替え、形を 4 つに広げた"
+scope = { where = [{ col = "pipe4", op = "==", value = true }, { col = "uniform_in", op = "==", value = true }] }
+if = [{ col = "series_pred", op = ">", value = 0.0 }]
+then = [{ col = "err", op = ">", value = 0.0 }]
+surprise = "err"
+context = ["h", "shape", "pipe_set", "span_ratio", "series_pred"]
+falsifier = "向きが合わない単位があれば、向きを変える時刻から何ステップ離れているかを書く"
+
+[[proposition]]
+id = "O109"
+statement = "枝分かれ・合流・ポンプ・輪で、ramp の式の見込みが正なら、実際のずれも正である（負なら負）"
+strength = "always"
+parent = "O99"
+change = "end を ramp に替え、形を 4 つに広げた"
+scope = { where = [{ col = "pipe4", op = "==", value = true }, { col = "ramp", op = "==", value = true }] }
+if = [{ col = "series_pred", op = ">", value = 0.0 }]
+then = [{ col = "err", op = ">", value = 0.0 }]
+surprise = "err"
+context = ["h", "shape", "pipe_set", "span_ratio", "series_pred"]
+falsifier = "向きが合わない単位があれば、向きを変える時刻から何ステップ離れているかを書く"
+
+[[proposition]]
+id = "O110"
+statement = "枝分かれ・合流・ポンプ・輪で、式の見込みの大きさが 5e-7 以下なら、実際のずれは 1e-6 未満である（uniform と ramp）"
+strength = "always"
+scope = { where = [{ col = "pipe4", op = "==", value = true }] }
+if = [{ col = "series_pred_abs", op = "<=", value = 5e-7 }]
+then = [{ col = "err_abs", op = "<", value = 1e-6 }]
+surprise = "err_abs"
+context = ["h", "shape", "pipe_set", "span_ratio", "series_pred", "uniform_in"]
+falsifier = "1e-6 以上の単位があれば、式の次の項が効く粗い刻みかどうかを書く"
+
+[[proposition]]
+id = "O111"
+statement = "枝分かれ・合流・ポンプ・輪で、式の見込みの大きさが 2e-6 以上なら、実際のずれは 1e-6 以上である（uniform と ramp）"
+strength = "always"
+scope = { where = [{ col = "pipe4", op = "==", value = true }] }
+if = [{ col = "series_pred_abs", op = ">=", value = 2e-6 }]
+then = [{ col = "err_abs", op = ">=", value = 1e-6 }]
+surprise = "err_abs"
+context = ["h", "shape", "pipe_set", "span_ratio", "series_pred", "uniform_in"]
+falsifier = "1e-6 未満の単位があれば、式の次の項が効く粗い刻みかどうかを書く"

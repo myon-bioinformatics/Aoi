@@ -1,4 +1,4 @@
-"""cycles/c002-gohantrust/lag1 の確認。事前宣言の固定、再現ゲート、テスト年の構成、符号検定。"""
+"""cycles/c002-gohantrust の確認。lag1（事前宣言の固定、再現ゲート、テスト年の構成、符号検定、L1r）と monthly（月次の命題）。"""
 import hashlib
 import importlib.util
 from pathlib import Path
@@ -170,3 +170,66 @@ def test_committed_estat_results_are_what_the_code_produces():
     for key in ("inputs", "main", "same_year_record", "decomposition"):
         assert fresh[key] == committed[key], key
     assert lag_run.P == lag_run.P_TRANSCRIBED                          # 走らせたあと既定の入力に戻っている
+
+
+# ---- 月次の命題（cycles/c002-gohantrust/monthly、monthly_prelock_2026-11-13.md）--------------------------
+
+MONTHLY = LAG1.parent / "monthly"
+
+
+def _load_monthly(name):
+    spec = importlib.util.spec_from_file_location(f"c002_{name}", MONTHLY / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_monthly_prelock_and_propositions_hash_match_stamp():
+    stamp = (MONTHLY / "monthly_prelock_timestamp.txt").read_text(encoding="utf-8")
+    for name in ("monthly_prelock_2026-11-13.md", "monthly_propositions.toml"):
+        assert hashlib.sha256((MONTHLY / name).read_bytes()).hexdigest() in stamp, name
+
+
+def test_monthly_condition_counts_are_the_ones_in_the_prelock():
+    # 宣言 §4 の表（条件の側だけで数えた件数）
+    run = _load_monthly("monthly_run")
+    c = run.count(run.load())
+    assert c["A"]["incl2025"] == {"units": 239, "say(ax>=1)": 203, "band(ax<1)": 36}
+    assert c["A"]["excl2025"] == {"units": 227, "say(ax>=1)": 196, "band(ax<1)": 31}
+    want = {1: (27, 15, 23, 250), 2: (51, 39, 10, 239), 3: (178, 166, 57, 65), 4: (181, 169, 37, 82)}
+    for k, (up_in, up_ex, down, band) in want.items():
+        assert c["B"]["incl2025"][f"step{k}"] == {"up(c>=tau)": up_in, "down(c<=-tau)": down, "band": band}
+        assert c["B"]["excl2025"][f"step{k}"]["up(c>=tau)"] == up_ex
+
+
+def test_monthly_exit_codes_are_reproduced(tmp_path):
+    # 置いてある判定（終了コードと 4 つの形の件数）が、コードを走らせ直した結果と同じ。表示の文字は比べない
+    import json
+
+    run = _load_monthly("monthly_run")
+    fresh = run.judge(run.load(), outdir=tmp_path)
+    committed = [json.loads(x) for x in (MONTHLY / "outputs" / "propositions.jsonl").read_text(encoding="utf-8").splitlines()]
+
+    def key(rs):
+        return {r["id"]: (r["judgement"]["code"], [(f["form"], f["n"], f["hold"], f["code"]) for f in r["forms"]]) for r in rs}
+
+    assert key(fresh) == key(committed)
+    assert (tmp_path / "units.jsonl").read_bytes() == (MONTHLY / "outputs" / "units.jsonl").read_bytes()
+    codes = {r["id"]: r["judgement"]["code"] for r in committed}
+    assert codes["C2A2"] == codes["C2A2x"] == 1 and codes["C2L2"] == codes["C2L2x"] == 1   # 支持（例外あり）
+    assert all(codes[f"C2B{k}{v}"] == 3 for k in range(1, 5) for v in ("", "x"))           # 向きは 4 段とも判例あり
+
+
+def test_monthly_contribution_is_exact_not_linear():
+    # 量を固定した会計上の寄与は ln(1+s·g) − ln(1+E·s·g)。g が小さいと (1−E)·s·g に近づく
+    import math
+
+    run = _load_monthly("monthly_run")
+    assert run._contrib(0.04, 0.0, 0.28) == 0.0
+    assert abs(run._contrib(0.04, 1e-6, 0.28) - (1 - 0.28) * 0.04 * 1e-6) < 1e-15
+    assert abs(run._contrib(0.04, 0.65, 0.28) - (math.log(1.026) - math.log(1 + 0.28 * 0.026))) < 1e-15
+
+
+def test_monthly_separate_implementation_agrees():
+    verify = _load_monthly("monthly_verify")
+    assert verify.main() == 0

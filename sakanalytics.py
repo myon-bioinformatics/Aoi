@@ -48,6 +48,8 @@
                                    env = 得点の差 − 失点の差（試合全体の点の多さ。負なら点の入りにくい試合）
   wl_rf_win / wl_rf_loss (+ _exp / _gap)  勝ち試合・負け試合の得点／試合と、得点・失点の組み合わせだけをランダムにしたときの見込み、その差（R20）
   wl_wpct_low / wl_wpct_high (+ _exp / _gap)  両チームの合計得点が、リーグの試合の中央値以下／より多い試合の勝率と、その見込み・差（R20）
+  wl_*8（日程に hs8・as8 があるとき） 上の 12 列を、両チームの 8 回までの得点で作り直したもの。延長と 9 回の終わり方で
+                                   見込みとの差が片側に寄るのを除く（c001 の探索 kind_reask 第3〜6弾）。無ければ列を足さない
   course_wpct_h1 / _h2 / _diff     前半・後半の勝率と、後半 − 前半（R20）
   course_rank_q1 / _h1 / _q3       試合数の 1/4・1/2・3/4 までの勝率での順位（R20）
   course_fade                      最終順位 − course_rank_h1（正なら前半の位置より下で終わった、R20）
@@ -145,8 +147,11 @@ def to_team_games(games: pl.DataFrame, teams: dict[str, dict]) -> pl.DataFrame:
     unknown = (set(games["home"]) | set(games["away"])) - set(teams)
     if unknown:  # 黙って捨てない
         raise ValueError(f"teams に定義のないチーム: {sorted(unknown)}")
-    home = games.select("date", team="home", opp="away", rf="hs", ra="as", is_home=pl.lit(True))
-    away = games.select("date", team="away", opp="home", rf="as", ra="hs", is_home=pl.lit(False))
+    eighth = "hs8" in games.columns   # 8 回までの得点（あるときだけ。win_loss_split_eighth が使う）
+    home = games.select("date", team="home", opp="away", rf="hs", ra="as", is_home=pl.lit(True),
+                        **({"rf8": "hs8", "ra8": "as8"} if eighth else {}))
+    away = games.select("date", team="away", opp="home", rf="as", ra="hs", is_home=pl.lit(False),
+                        **({"rf8": "as8", "ra8": "hs8"} if eighth else {}))
     return (
         pl.concat([home, away])
         .with_columns(
@@ -638,6 +643,18 @@ def win_loss_split(tg: pl.DataFrame) -> pl.DataFrame:
     schema = {"season": pl.Int32, "team": pl.Utf8,
               **{f"wl_{n}{s}": pl.Float64 for n, _, _ in keys for s in ("", "_exp", "_gap")}}
     return pl.DataFrame(rows, schema=schema)
+
+
+def win_loss_split_eighth(tg: pl.DataFrame) -> pl.DataFrame:
+    """win_loss_split を、両チームの 8 回までの得点（rf8・ra8）で作り直す。列名の後ろに 8 を付ける。
+
+    最終の得点で作ると、見込み（組み合わせだけランダム）との差が片側に寄る。9 回で同点の試合が延長で 1 点差の勝ち負けに変わり、
+    9 回裏が無い・サヨナラで攻撃が打ち切られるため（c001 の探索 kind_reask 第3〜5弾。勝ち試合の得点の差は 144 球団年中 133 が負、
+    8 回までで作ると 71）。8 回に届かない試合は数えない。勝ち負けも 8 回までの得点で付け直す。
+    """
+    t = tg.filter(pl.col("rf8").is_not_null() & pl.col("ra8").is_not_null()).with_columns(rf=pl.col("rf8"), ra=pl.col("ra8"))
+    out = win_loss_split(t)
+    return out.rename({c: f"{c}8" for c in out.columns if c.startswith("wl_")})
 
 
 def season_course(tg: pl.DataFrame, st: pl.DataFrame) -> pl.DataFrame:
@@ -1814,6 +1831,8 @@ def season_table(tg: pl.DataFrame, trajectory: dict | None = None, wave_eps: flo
     st = st.join(boundary_features(tg, st), on=["season", "team"], how="left")
     st = st.join(opponent_adjusted(tg, st), on=["season", "team"], how="left")
     st = st.join(win_loss_split(tg), on=["season", "team"], how="left")
+    if "rf8" in tg.columns:   # 日程に 8 回までの得点があるときだけ
+        st = st.join(win_loss_split_eighth(tg), on=["season", "team"], how="left")
     st = st.join(season_course(tg, st), on=["season", "team"], how="left")
     traj = trajectory or {}  # 分析設定の [trajectory]（線の始まりの試合数・力が一定のシーズンの作り直しの回数）
     sims = int(traj.get("sims", TRAJ_SIMS))
@@ -1891,7 +1910,10 @@ def load_config(path: Path) -> dict:
 def read_games(paths) -> pl.DataFrame:
     """日程の観測を1つ以上読んでつなぐ。取得元ごとの余分な列は落とし、同じ試合（key）の重なりは止める。"""
     cols = ["key", "date", "home", "away", "hs", "as"]
-    parts = [pl.read_ndjson(p, infer_schema_length=None).select(cols) for p in paths]
+    frames = [pl.read_ndjson(p, infer_schema_length=None) for p in paths]
+    if all({"hs8", "as8"} <= set(f.columns) for f in frames):   # 8 回までの得点は、すべての観測にあるときだけ残す
+        cols += ["hs8", "as8"]
+    parts = [f.select(cols) for f in frames]
     games = pl.concat(parts, how="vertical_relaxed")
     dup = games.filter(pl.col("key").is_duplicated()).get_column("key")
     if dup.len():

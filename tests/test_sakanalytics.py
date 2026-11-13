@@ -656,6 +656,30 @@ def test_win_loss_split_pairs_runs_within_home_and_away_only():
     assert (d["wl_rf_win"], d["wl_rf_win_exp"], d["wl_rf_win_gap"]) == pytest.approx((3.5, 3.5, 0.0))
 
 
+def test_win_loss_split_eighth_uses_eight_inning_scores_and_is_off_without_them(tmp_path):
+    from sakanalytics import read_games, win_loss_split, win_loss_split_eighth
+    rows = [("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 5, 4), ("2024-04-03", "d", "g", 0, 3), ("2024-04-04", "d", "g", 2, 6)]
+    plain = games(rows)
+    # 8 回までの得点: 1 試合目は 8 回まで 0-0（9 回に決まった）、4 試合目は 8 回に届かない（空。数えない）
+    eight = plain.with_columns(hs8=pl.Series([0, 5, 0, None]), as8=pl.Series([0, 4, 3, None]))
+    assert "wl_rf_win_gap8" not in season_table(to_team_games(plain, TEAMS)).columns   # 既定は今までと同じ
+    tg = to_team_games(eight, TEAMS)
+    st = season_table(tg)
+    d = win_loss_split_eighth(tg).filter(pl.col("team") == "d").row(0, named=True)
+    want = win_loss_split(to_team_games(games([("2024-04-01", "d", "g", 0, 0), ("2024-04-02", "d", "g", 5, 4),
+                                                ("2024-04-03", "d", "g", 0, 3)]), TEAMS)).filter(pl.col("team") == "d").row(0, named=True)
+    assert {k[:-1]: v for k, v in d.items() if k.endswith("8")} == pytest.approx({k: v for k, v in want.items() if k.startswith("wl_")})
+    assert st.filter(pl.col("team") == "d")["wl_rf_win_gap8"].item() == pytest.approx(d["wl_rf_win_gap8"])
+    assert st.filter(pl.col("team") == "d")["wl_rf_win_gap"].item() == pytest.approx(  # 最終の得点の列は変わらない
+        season_table(to_team_games(plain, TEAMS)).filter(pl.col("team") == "d")["wl_rf_win_gap"].item())
+    # read_games は、8 回までの得点がすべての観測にあるときだけ残す
+    a, b = tmp_path / "a.jsonl", tmp_path / "b.jsonl"
+    eight.with_columns(key=pl.format("k{}", pl.int_range(pl.len()))).write_ndjson(a)
+    plain.with_columns(key=pl.format("j{}", pl.int_range(pl.len()))).write_ndjson(b)
+    assert {"hs8", "as8"} <= set(read_games([a]).columns)
+    assert not {"hs8", "as8"} & set(read_games([a, b]).columns)
+
+
 def test_season_course_by_hand():
     st = season_table(to_team_games(games([("2024-04-01", "d", "g", 3, 2), ("2024-04-02", "d", "g", 5, 1),
                                            ("2024-04-03", "d", "g", 1, 4), ("2024-04-04", "d", "g", 0, 2)]), TEAMS))

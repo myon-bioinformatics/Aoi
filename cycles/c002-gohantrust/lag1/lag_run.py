@@ -4,17 +4,20 @@
 使い方:
   python3 lag_run.py gate   # 同年版で Grok の結果を再現できるか確認（再現ゲート）
   python3 lag_run.py lag    # ゲートを通った場合のみ、遅れ版を実行
+  python3 lag_run.py lag --inputs estat   # L1r: 入力を一次資料の値に差し替えて再走（lag_reverify_prelock_2026-11-13.md）
 """
+import argparse
+import csv
+import gzip
 import json
 import math
-import sys
 from pathlib import Path
 
 import numpy as np
 
 HERE = Path(__file__).resolve().parent  # 出力はこのスクリプトの隣に書く（実行場所に依らない）
 
-# Grok 報告書から転記（P_yen, E）。2016–2022 の P は整数丸め。
+# Grok 報告書から転記（P_yen, E）。2016–2022 の P は整数丸め。既定の入力（L1）。
 P = {2005: 2224.2, 2006: 2138.7, 2007: 2104.0, 2008: 2078.3, 2009: 2090.4,
      2010: 1996.7, 2011: 1896.3, 2012: 2082.7, 2013: 2157.5, 2014: 2006.5,
      2015: 1833.1, 2016: 1913, 2017: 2033, 2018: 2158, 2019: 2151, 2020: 2163,
@@ -24,10 +27,17 @@ E = {2005: 0.229, 2006: 0.231, 2007: 0.230, 2008: 0.232, 2009: 0.234,
      2015: 0.250, 2016: 0.258, 2017: 0.257, 2018: 0.257, 2019: 0.257,
      2020: 0.275, 2021: 0.272, 2022: 0.266, 2023: 0.278, 2024: 0.283,
      2025: 0.286}
+P_TRANSCRIBED, E_TRANSCRIBED = dict(P), dict(E)
 LAST = 2025
 MIN_TRAIN = 5
 B = 2000
 SEED = 20261024
+
+# L1r（入力差し替え）の一次資料。宣言 §1
+ARCHIVE = HERE.parents[2] / "research" / "staple-price-survey" / "phase2_archive"
+RICE_PANEL = ARCHIVE / "japan_retail_price_rice_panel.csv.gz"
+ENGEL_PANEL = ARCHIVE / "engel_food_panel_annual.csv"
+INPUTS = ("transcribed", "estat", "estat_p", "estat_e")   # estat_p / estat_e は分解（宣言 §4）用
 
 
 def logdiff(d):
@@ -36,6 +46,41 @@ def logdiff(d):
 
 Y = logdiff(P)
 DE = logdiff(E)
+
+
+def estat_inputs():
+    """一次資料から P と E を作る（L1r 宣言 §1）。
+    P: 小売物価統計調査うるち米 銘柄 1002 都市平均（円/5kg）の、暦年 12 か月の単純平均。
+    E: 家計調査 用途分類 二人以上 全国の 食料 ÷ 消費支出（年平均 1 か月、丸めない）。"""
+    months = {}
+    with gzip.open(RICE_PANEL, "rt", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["variable"] == "japan_rps_uruchi_rice_mean_city_yen_per_5kg" and r["item_code"] == "1002":
+                months.setdefault(int(r["year"]), {})[int(r["month"])] = float(r["value"])
+    food_ce = {}
+    with open(ENGEL_PANEL, encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            food_ce[int(r["year"])] = (float(r["food_yen_month"]), float(r["ce_yen_month"]))
+    p, e = {}, {}
+    for t in P_TRANSCRIBED:
+        m = months.get(t, {})
+        if sorted(m) != list(range(1, 13)):     # 12 か月そろわない年は作らない（宣言 §1）
+            raise ValueError(f"P_{t}: 月次が 12 か月そろわない（{sorted(m)}）")
+        p[t] = sum(m[k] for k in range(1, 13)) / 12
+        food, ce = food_ce[t]
+        e[t] = food / ce
+    return p, e
+
+
+def set_inputs(name):
+    """P・E と、そこから作る Y・DE を差し替える。既定は "transcribed"（L1 の転記値）。"""
+    global P, E, Y, DE
+    if name not in INPUTS:
+        raise ValueError(name)
+    p_src, e_src = (estat_inputs() if name != "transcribed" else (None, None))
+    P = dict(p_src if name in ("estat", "estat_p") else P_TRANSCRIBED)
+    E = dict(e_src if name in ("estat", "estat_e") else E_TRANSCRIBED)
+    Y, DE = logdiff(P), logdiff(E)
 
 
 def rolling(win_start, lag, dE=None):
@@ -183,18 +228,79 @@ def run_lag():
     return out
 
 
-if __name__ == "__main__":
-    mode = sys.argv[1] if len(sys.argv) > 1 else "gate"
+def reverify_gate():
+    """L1r 宣言 §2 のゲート。G1: 既定の入力で、置いてある lag_results.json と L1 の再現ゲートが再現する。
+    G2: 差し替え入力が転記値と、P は各年 0.05 % 以内、E は 0.0005 以内で合う。"""
+    lines, ok = [], True
+    set_inputs("transcribed")
+    g_ok, _, _ = gate()
+    committed = json.loads((HERE / "lag_results.json").read_text(encoding="utf-8"))
+    same = json.loads(json.dumps(run_lag(), default=float)) == committed
+    checks = [("G1 L1 replication gate (transcribed inputs)", g_ok),
+              ("G1 committed lag_results.json values reproduced", same)]
+    p, e = estat_inputs()
+    for t in sorted(P_TRANSCRIBED):
+        dp, de = abs(p[t] / P_TRANSCRIBED[t] - 1), abs(e[t] - E_TRANSCRIBED[t])
+        checks.append((f"G2 {t} P {p[t]:.2f} vs {P_TRANSCRIBED[t]} ({dp:.5%}) E {e[t]:.6f} vs {E_TRANSCRIBED[t]}",
+                       dp <= 0.0005 and de <= 0.0005))
+    for name, c in checks:
+        lines.append(f"{'PASS' if c else 'FAIL'}  {name}")
+        ok &= c
+    lines.append("L1r GATE: " + ("PASS" if ok else "FAIL"))
+    return ok, lines
+
+
+def run_reverify():
+    """L1r: 入力を差し替えて L1 と同じ手順を走らせる（宣言 §3）。分解（§4）と同年版の記録（§2）を添える。
+    終わったら既定の入力に戻す。"""
+    try:
+        set_inputs("estat")
+        out = dict(inputs=dict(P=P, E=E), main=run_lag(),
+                   same_year_record={name: rolling(ws, 0) for name, ws in (("extended", 2005), ("legacy", 2015))},
+                   decomposition={})
+        for name in ("estat_p", "estat_e"):
+            set_inputs(name)
+            rows = rolling(2005, 1)
+            out["decomposition"][name] = dict(
+                rows=rows, incl2025=summarize(rows, False), excl2025=summarize(rows, True))
+        return out
+    finally:
+        set_inputs("transcribed")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="遅れ版（ΔlogE_{t-1}）ローリング検証")
+    ap.add_argument("mode", nargs="?", default="gate", choices=("gate", "lag"),
+                    help="gate: ゲートだけ / lag: ゲートを通ったら本計算")
+    ap.add_argument("--inputs", default="transcribed", choices=("transcribed", "estat"),
+                    help="transcribed: L1 の転記値（既定） / estat: L1r の一次資料の値")
+    a = ap.parse_args(argv)
+    if a.inputs == "estat":
+        ok, lines = reverify_gate()
+        print("\n".join(lines))
+        if a.mode == "lag":
+            if not ok:
+                print("ゲート不合格のため L1r は実行しない（L1r 宣言 §2）")
+                return 2
+            res = dict(gate_ok=ok, gate_lines=lines, **run_reverify())
+            json.dump(res, open(HERE / "lag_results_estat.json", "w"), indent=1, ensure_ascii=False, default=float)
+            print("lag_results_estat.json を書き出した")
+        return 0
     ok, lines, detail = gate()
     print("\n".join(lines))
     for x in detail["legacy"]:
         print(f"  legacy same-year t={x['t']} gamma={x['gamma']:.3f} yhat={x['yhat']:+.4f} y={x['y']:+.4f}"
               f" drift={x['drift']:+.4f} win0={x['win0']} wind={x['wind']}")
     json.dump(dict(gate_ok=ok, lines=lines), open(HERE / "gate_result.json", "w"), indent=1, ensure_ascii=False)
-    if mode == "lag":
+    if a.mode == "lag":
         if not ok:
             print("ゲート不合格のため遅れ版は実行しない（事前宣言 §3）")
-            sys.exit(2)
+            return 2
         res = run_lag()
         json.dump(res, open(HERE / "lag_results.json", "w"), indent=1, ensure_ascii=False, default=float)
         print("lag_results.json を書き出した")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

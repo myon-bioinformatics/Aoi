@@ -21,3 +21,8 @@ faf8ee5fdec6aee99252cfc6f9b97eb3b7b7522bbccc8ca3565370a965658910  monthly_propos
 2026-11-13 22:19:29 JST (final, before fetching the 2025 national accounts value and before judging r5)
 733fab209f86addb0e28fe594534c7ae5ca920cd79f0e8363bb48b8e68a08c60  monthly_prelock_r5_2026-11-13.md
 0f921d82c18129df3274f56997a16a0bb9a38bf0d863605cbe1ae9f64c9dd5ac  monthly_propositions_r5.toml
+
+# 第6弾（2026 年の 2 回目の確かめ・2025 年の確報での作り直しを、値が出る前に固定）
+2026-11-13 23:14:11 JST (final, before the 2026 annual values are published; nothing judged)
+97d13f39e4158b4a9650c559a302bf29560a7862175ffdeda2078f27046980f0  monthly_prelock_r6_2026-11-13.md
+c3e983778dbed490eceabeb7da194abdf412dd22fd4db65987a58a40039159ba  monthly_propositions_r6.toml

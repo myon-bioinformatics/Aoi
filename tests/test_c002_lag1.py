@@ -190,7 +190,8 @@ def test_monthly_prelock_and_propositions_hash_match_stamp():
                  "monthly_prelock_r2_2026-11-13.md", "monthly_propositions_r2.toml",
                  "monthly_prelock_r3_2026-11-13.md", "monthly_propositions_r3.toml",
                  "monthly_prelock_r4_2026-11-13.md", "monthly_propositions_r4.toml",
-                 "monthly_prelock_r5_2026-11-13.md", "monthly_propositions_r5.toml"):
+                 "monthly_prelock_r5_2026-11-13.md", "monthly_propositions_r5.toml",
+                 "monthly_prelock_r6_2026-11-13.md", "monthly_propositions_r6.toml"):
         assert hashlib.sha256((MONTHLY / name).read_bytes()).hexdigest() in stamp, name
 
 

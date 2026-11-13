@@ -87,7 +87,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -373,6 +373,19 @@ def test_the_remaining_lean_comes_from_results_not_from_run_distributions():
     assert [x["ok"] for x in f8["predictions"]] == [True] * 5
 
 
+# ---- 第9弾: 最終順位を使わない強さで群を分ける -----------------------------------------------------------------------------
+def test_the_lean_disappears_when_groups_do_not_use_the_final_rank():
+    f9 = RES["ninth"]
+    assert f9["gate"] == {"ok": True, "problems": []} and f9["reading"] == 3
+    ab = {g: round(v["cells"]["9,9"]["a_minus_b"], 3) for g, v in f9["groups"].items()}
+    assert ab == {"final": 0.375, "run_diff": 0.082, "previous": 0.014}
+    assert f9["groups"]["final"]["cells"] == RES["eighth"]["cells"]
+    assert [v["upper_units"] for v in f9["groups"].values()] == [72, 73, 72]
+    held = f9["groups"]["run_diff"]["states"]
+    assert held["A"]["lead_held"] - held["B"]["lead_held"] > 0.01           # 守る割合の差は、得失点差で分けても残る
+    assert [x["ok"] for x in f9["predictions"]] == [True] * 5
+
+
 # ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------
 GIF = RESULTS / "c001_sim-p-upper_y2012-2026_r01.gif"
 
@@ -395,8 +408,9 @@ def test_saved_gif_matches_its_receipt_and_the_data():
     receipt = json.loads(GIF.with_suffix(".json").read_text(encoding="utf-8"))
     assert receipt["schema"] == kr.GIF_RECEIPT_SCHEMA and receipt["files"]["gif"]["sha256"] == hashlib.sha256(data).hexdigest()
     assert data[:6] == b"GIF89a" and int.from_bytes(data[6:8], "little") == 512 and int.from_bytes(data[8:10], "little") == 320
-    assert data.count(b"\x21\xf9\x04") == receipt["frames"] == 15                                       # 1 年 1 コマ
-    assert receipt["summary"] == {"k51_2012_2025": [137, 156], "k51_2026": [12, 12]}
+    assert data.count(b"\x21\xf9\x04") == receipt["frames"] == 17                                       # 1 年 1 コマ + まとめ 2 枚
+    assert [s["frames"] for s in receipt["scenes"]] == [15, 1, 1] and receipt["plan"]["delays_cs"][-3:] == [400, 500, 500]
+    assert receipt["summary"] == {"k51_2012_2025": [137, 156], "k51_2026": [12, 12], "win_runs_gap_negative": [133, 93, 71, 144]}
     assert receipt["plan"]["palette"] == [list(c) for c in kr.GIF_PALETTE]
     years = kr.season_sim_years(ROOT, pl)
     assert [(y["season"], y["consistent"]) for y in receipt["years"]] == [(y["season"], y["consistent"]) for y in years]
@@ -409,6 +423,14 @@ def test_season_sim_grid_shapes_and_marks():
     assert max(max(r) for r in g) < len(kr.GIF_PALETTE)
     assert sum(r.count(4) for r in g) > 0                                     # 中日の棒
     assert sum(r.count(7) for r in g) > 0                                     # 除外した 2020年の帯
+
+
+def test_summary_grids_draw_chunichi_and_the_one_sided_column():
+    g1, g2 = kr.summary_grids(kr.season_sim_years(ROOT, pl), RES)
+    assert all(len(g) == 160 and {len(r) for r in g} == {256} for g in (g1, g2))
+    assert sum(r.count(6) for r in g1) == 2 * 12 * 3                          # 中日の 2014年・2019年の棒の頭
+    dots = [sum(1 for x in range(40 + n * 64, 40 + n * 64 + 48, 4) if g2[142][x] == 4) for n in range(3)]
+    assert dots == [11, 7, 5]                                                 # 棒の下の点: 中日の年
 
 
 def test_main_needs_ffs_for_the_gif(capsys):

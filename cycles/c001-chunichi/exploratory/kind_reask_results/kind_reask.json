@@ -2852,6 +2852,347 @@
   "sixth_propositions_sha256": "3bb8150f9098849d5c61322505056d8f4e8376800e3cb01c470a8f091be7072e",
   "stored": "cycles/c001-chunichi/outputs/propositions.jsonl"
  },
+ "ninth": {
+  "gate": {
+   "ok": true,
+   "problems": []
+  },
+  "groups": {
+   "final": {
+    "cells": {
+     "8,8": {
+      "a_minus_b": 0.138888889,
+      "median": -0.007531299,
+      "one_sided": false,
+      "share_positive": 0.5,
+      "share_positive_a": 0.569444444,
+      "share_positive_b": 0.430555556,
+      "strength_sided": false,
+      "units": 144
+     },
+     "8,9": {
+      "a_minus_b": 0.097222222,
+      "median": -0.195609648,
+      "one_sided": false,
+      "share_positive": 0.479166667,
+      "share_positive_a": 0.527777778,
+      "share_positive_b": 0.430555556,
+      "strength_sided": false,
+      "units": 144
+     },
+     "9,8": {
+      "a_minus_b": 0.416666667,
+      "median": -0.089542812,
+      "one_sided": false,
+      "share_positive": 0.486111111,
+      "share_positive_a": 0.694444444,
+      "share_positive_b": 0.277777778,
+      "strength_sided": true,
+      "units": 144
+     },
+     "9,9": {
+      "a_minus_b": 0.375,
+      "median": 0.340669014,
+      "one_sided": false,
+      "share_positive": 0.534722222,
+      "share_positive_a": 0.722222222,
+      "share_positive_b": 0.347222222,
+      "strength_sided": true,
+      "units": 144
+     }
+    },
+    "states": {
+     "A": {
+      "behind_games": 4113,
+      "behind_won": 0.03646973,
+      "counts": {
+       "behind": {
+        "loss": 3795,
+        "tie": 168,
+        "win": 150
+       },
+       "lead": {
+        "loss": 128,
+        "tie": 151,
+        "win": 4691
+       },
+       "tie": {
+        "loss": 210,
+        "tie": 751,
+        "win": 219
+       }
+      },
+      "lead_games": 4970,
+      "lead_held": 0.943863179,
+      "tie_decided": 429,
+      "tie_games": 1180,
+      "tie_won": 0.51048951
+     },
+     "B": {
+      "behind_games": 4980,
+      "behind_won": 0.02248996,
+      "counts": {
+       "behind": {
+        "loss": 4715,
+        "tie": 153,
+        "win": 112
+       },
+       "lead": {
+        "loss": 134,
+        "tie": 170,
+        "win": 3819
+       },
+       "tie": {
+        "loss": 220,
+        "tie": 731,
+        "win": 211
+       }
+      },
+      "lead_games": 4123,
+      "lead_held": 0.926267281,
+      "tie_decided": 431,
+      "tie_games": 1162,
+      "tie_won": 0.489559165
+     }
+    },
+    "upper_units": 72
+   },
+   "previous": {
+    "cells": {
+     "8,8": {
+      "a_minus_b": 0.055555556,
+      "median": -0.007531299,
+      "one_sided": false,
+      "share_positive": 0.5,
+      "share_positive_a": 0.527777778,
+      "share_positive_b": 0.472222222,
+      "strength_sided": false,
+      "units": 144
+     },
+     "8,9": {
+      "a_minus_b": 0.013888889,
+      "median": -0.195609648,
+      "one_sided": false,
+      "share_positive": 0.479166667,
+      "share_positive_a": 0.486111111,
+      "share_positive_b": 0.472222222,
+      "strength_sided": false,
+      "units": 144
+     },
+     "9,8": {
+      "a_minus_b": 0.055555556,
+      "median": -0.089542812,
+      "one_sided": false,
+      "share_positive": 0.486111111,
+      "share_positive_a": 0.513888889,
+      "share_positive_b": 0.458333333,
+      "strength_sided": false,
+      "units": 144
+     },
+     "9,9": {
+      "a_minus_b": 0.013888889,
+      "median": 0.340669014,
+      "one_sided": false,
+      "share_positive": 0.534722222,
+      "share_positive_a": 0.541666667,
+      "share_positive_b": 0.527777778,
+      "strength_sided": false,
+      "units": 144
+     }
+    },
+    "states": {
+     "A": {
+      "behind_games": 4404,
+      "behind_won": 0.029291553,
+      "counts": {
+       "behind": {
+        "loss": 4101,
+        "tie": 174,
+        "win": 129
+       },
+       "lead": {
+        "loss": 137,
+        "tie": 155,
+        "win": 4406
+       },
+       "tie": {
+        "loss": 221,
+        "tie": 723,
+        "win": 209
+       }
+      },
+      "lead_games": 4698,
+      "lead_held": 0.937845892,
+      "tie_decided": 430,
+      "tie_games": 1153,
+      "tie_won": 0.486046512
+     },
+     "B": {
+      "behind_games": 4689,
+      "behind_won": 0.028364257,
+      "counts": {
+       "behind": {
+        "loss": 4409,
+        "tie": 147,
+        "win": 133
+       },
+       "lead": {
+        "loss": 125,
+        "tie": 166,
+        "win": 4104
+       },
+       "tie": {
+        "loss": 209,
+        "tie": 759,
+        "win": 221
+       }
+      },
+      "lead_games": 4395,
+      "lead_held": 0.933788396,
+      "tie_decided": 430,
+      "tie_games": 1189,
+      "tie_won": 0.513953488
+     }
+    },
+    "upper_units": 72
+   },
+   "run_diff": {
+    "cells": {
+     "8,8": {
+      "a_minus_b": -0.041674706,
+      "median": -0.007531299,
+      "one_sided": false,
+      "share_positive": 0.5,
+      "share_positive_a": 0.479452055,
+      "share_positive_b": 0.521126761,
+      "strength_sided": false,
+      "units": 144
+     },
+     "8,9": {
+      "a_minus_b": -0.027204322,
+      "median": -0.195609648,
+      "one_sided": false,
+      "share_positive": 0.479166667,
+      "share_positive_a": 0.465753425,
+      "share_positive_b": 0.492957746,
+      "strength_sided": false,
+      "units": 144
+     },
+     "9,8": {
+      "a_minus_b": 0.125409994,
+      "median": -0.089542812,
+      "one_sided": false,
+      "share_positive": 0.486111111,
+      "share_positive_a": 0.547945205,
+      "share_positive_b": 0.422535211,
+      "strength_sided": false,
+      "units": 144
+     },
+     "9,9": {
+      "a_minus_b": 0.082384719,
+      "median": 0.340669014,
+      "one_sided": false,
+      "share_positive": 0.534722222,
+      "share_positive_a": 0.575342466,
+      "share_positive_b": 0.492957746,
+      "strength_sided": false,
+      "units": 144
+     }
+    },
+    "states": {
+     "A": {
+      "behind_games": 4211,
+      "behind_won": 0.035383519,
+      "counts": {
+       "behind": {
+        "loss": 3887,
+        "tie": 175,
+        "win": 149
+       },
+       "lead": {
+        "loss": 132,
+        "tie": 160,
+        "win": 4723
+       },
+       "tie": {
+        "loss": 207,
+        "tie": 758,
+        "win": 214
+       }
+      },
+      "lead_games": 5015,
+      "lead_held": 0.941774676,
+      "tie_decided": 421,
+      "tie_games": 1179,
+      "tie_won": 0.508313539
+     },
+     "B": {
+      "behind_games": 4882,
+      "behind_won": 0.023146252,
+      "counts": {
+       "behind": {
+        "loss": 4623,
+        "tie": 146,
+        "win": 113
+       },
+       "lead": {
+        "loss": 130,
+        "tie": 161,
+        "win": 3787
+       },
+       "tie": {
+        "loss": 223,
+        "tie": 724,
+        "win": 216
+       }
+      },
+      "lead_games": 4078,
+      "lead_held": 0.928641491,
+      "tie_decided": 439,
+      "tie_games": 1163,
+      "tie_won": 0.492027335
+     }
+    },
+    "upper_units": 73
+   }
+  },
+  "predictions": [
+   {
+    "got": true,
+    "id": "I1",
+    "ok": true,
+    "text": "ゲートが通る"
+   },
+   {
+    "got": 0.082384719,
+    "id": "I2",
+    "ok": true,
+    "text": "得失点差で分けると、(9, 9) の上 − 下は 0.15 以下"
+   },
+   {
+    "got": 0.013888889,
+    "id": "I3",
+    "ok": true,
+    "text": "前の年で分けると、(9, 9) の上 − 下は 0.15 以下"
+   },
+   {
+    "got": 3,
+    "id": "I4",
+    "ok": true,
+    "text": "読みは「群の決め方」"
+   },
+   {
+    "got": [
+     0.941774676,
+     0.928641491
+    ],
+    "id": "I5",
+    "ok": true,
+    "text": "リードを守った割合は、得失点差で分けても、上の群のほうが 1 ポイント以上高い"
+   }
+  ],
+  "reading": 3
+ },
  "predictions": [
   {
    "got": {

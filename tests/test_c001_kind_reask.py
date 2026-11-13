@@ -87,7 +87,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {} and res["tenth"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -384,6 +384,48 @@ def test_the_lean_disappears_when_groups_do_not_use_the_final_rank():
     held = f9["groups"]["run_diff"]["states"]
     assert held["A"]["lead_held"] - held["B"]["lead_held"] > 0.01           # 守る割合の差は、得失点差で分けても残る
     assert [x["ok"] for x in f9["predictions"]] == [True] * 5
+
+
+# ---- 第10弾: 境界を動かす・式1 を別の物差しで ----------------------------------------------------------------------------
+def test_the_boundary_is_a_step_at_extra_innings_and_smooth_in_the_tie_weight():
+    f10 = RES["tenth"]
+    assert f10["gate"] == {"ok": True, "problems": []}
+    one = {r["label"]: r["negative"] for r in f10["dial_innings"]}
+    assert [one[str(n)] for n in range(1, 11)] == [69, 63, 82, 81, 81, 77, 73, 71, 93, 133]
+    small = min(f10["eps"]["all"])
+    assert one[f"8+{small:g}"] == 77 and one[f"9+{small:g}"] == 132          # 8 回の後はなだらか、9 回の後は段
+    two = [r["negative"] for r in f10["dial_ties"]]
+    assert two[0] == 133 and two[-1] == 76 and two == sorted(two, reverse=True)
+    assert {k: v["first_theta_within"] for k, v in f10["lines"].items()} == {"0.6": 1.0, "0.65": 0.75, "0.7": 0.75}
+    assert f10["lines"]["0.6"]["first_x_above"] == "9" and f10["lines"]["0.7"]["first_x_above"] == f"9+{small:g}"
+
+
+def test_epsilon_values_are_drawn_with_a_seed_and_lie_between_zero_and_one():
+    eps = RES["tenth"]["eps"]
+    assert eps["seed"] == 20261113 and len(eps["drawn"]) == 5 and set(eps["drawn"]) < set(eps["all"]) and len(eps["all"]) == 8
+    assert all(0 < e < 1 for e in eps["all"]) and {0.25, 0.5, 0.75} < set(eps["all"])
+
+
+def test_score_upto_and_tie_weight_by_hand():
+    gm, inn = {"hs": 4, "as": 3}, {"home": [0, 0, 1, 0, 1, 0, 0, 1, 0, 1], "away": [0, 0, 0, 2, 0, 0, 0, 0, 1, 0]}   # 延長 10 回で決着
+    assert kr.score_upto(gm, inn, 8) == (3, 2) and kr.score_upto(gm, inn, 8, 0.5) == (3.0, 2.5)
+    assert kr.score_upto(gm, inn, 9) == (3, 3) and kr.score_upto(gm, inn, 9, 0.5) == (3.5, 3.0) and kr.score_upto(gm, inn, 10) == (4, 3)
+    assert kr.score_upto({"hs": 1, "as": 0}, {"home": [1, 0, 0, 0, 0], "away": [0, 0, 0, 0, 0]}, 8) is None           # 8 回に届かない
+    x = {"home": [0, 0, 0, 0, 2, 0, 0, 0, "X"], "away": [0, 0, 0, 0, 0, 0, 0, 1, 0]}
+    assert kr.score_upto({"hs": 2, "as": 1}, x, 8, 0.5) == (2.0, 1.0)                                                # 9 回裏が無ければ 0
+    # 得点 {1, 1, 0}・失点 {0, 1, 3}（全部ホーム）。勝ちの組は (1, 0) の重み 2/3。同点の組は (1, 1) の 2/3 と (0, 0) の 1/3。
+    # θ = 1 なら、同点の半分が「1 点足した勝ち」になる: 勝ちの重み 2/3 + 1/3 + 1/6 = 7/6、得点の和 2/3 + 2/3 + 1/6 = 3/2 → 見込み 9/7
+    t = pl.DataFrame([{"season": 2024, "team": "d", "rf": 1, "ra": 0, "is_home": True}, {"season": 2024, "team": "d", "rf": 0, "ra": 1, "is_home": True},
+                      {"season": 2024, "team": "d", "rf": 1, "ra": 3, "is_home": True}])
+    assert abs(kr.tie_weighted_gap(t, 1.0)[(2024, "d")] - (1 - 9 / 7)) < 1e-12
+    assert kr.tie_weighted_gap(t, 0.0)[(2024, "d")] == 0.0                   # θ = 0: 勝ちの組は (1, 0) だけ → 見込みも 1 点
+
+
+def test_formula_one_routes_differ_when_the_consequence_is_next_year():
+    q = {x["id"]: x for x in RES["tenth"]["propositions"]}
+    got = {i: (v["forms"]["original"]["hold"], v["forms"]["original"]["n"], v["reading"], v["judgement"]["code"]) for i, v in q.items()}
+    assert got == {"N0": (42, 72, 1, 2), "N52": (44, 76, 1, 2), "N52A": (9, 27, 2, 3), "N52S": (43, 65, 1, 4), "R52A": (16, 28, 2, 3)}
+    assert [x["ok"] for x in RES["tenth"]["predictions"]] == [True] * 8 + [False]
 
 
 # ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------

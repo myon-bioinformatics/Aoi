@@ -141,7 +141,7 @@ uv run --locked python research/epsilon-generality/eps_posthoc.py window_crossin
 
 ### 主食価格で、倍率の境目を細かく見た確認（事後。登録した基準の外）
 
-`eps_posthoc.py scale_tolerance`（コミット 2843767。予想 (a')(b') は走らせる前に冒頭へ書いてプッシュ）を主食価格の月次（24 点の窓 2,212 個、単位 2,192）に当てました。物理量の月次・日次では報告済みの確認で、主食価格では第 3 回の乱数の倍率（3.83×10^-22 / 1e-6 / 8.52×10^-4 以上）の結果しかなかったので、境目の中を足しました。結果は [staple/posthoc_scale_tolerance.md](staple/posthoc_scale_tolerance.md)（スクリプトの出力のまま。違うのは、置き場所が 1 階層深いので、先頭のスクリプトへのリンク `../posthoc_scale_tolerance.py` を `../../posthoc_scale_tolerance.py` に直した 1 か所だけ）。
+`eps_posthoc.py scale_tolerance`（コミット 2843767。予想 (a')(b') は走らせる前に冒頭へ書いてプッシュ）を主食価格の月次（24 点の窓 2,212 個、単位 2,192）に当てました。物理量の月次・日次では報告済みの確認で、主食価格では第 3 回の乱数の倍率（3.83×10^-22 / 1e-6 / 8.52×10^-4 以上）の結果しかなかったので、境目の中を足しました。結果は [staple/posthoc_scale_tolerance.md](staple/posthoc_scale_tolerance.md)（スクリプトの出力のまま。違うのは、置き場所が 1 階層深いので、先頭のスクリプトへのリンク `../eps_posthoc.py` を `../../eps_posthoc.py` に直した 1 か所だけ）。
 
 | 倍率 | 境界の単位（許容そのまま） | 許容そのまま: 式が変わった | 境界かどうかが変わった | 許容に倍率の2乗: 式が変わった | 境界かどうかが変わった |
 |---|---|---|---|---|---|

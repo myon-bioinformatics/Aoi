@@ -2,20 +2,20 @@
 
 📘 [利用ガイド / Usage guide](https://myon-bioinformatics.github.io/Aoi/) (GitHub Pages)
 
-## Aoi entry files for child projects
+## Running the child projects from Aoi
 
-From an Aoi checkout, the lowercase entry files in `entries/` forward arguments to the corresponding child under this checkout. They set `AOI_ROOT` so the child can find siblings; they do not construct `PYTHONPATH`. `entries/` is not on the import path, so the files do not shadow subtree folders such as `blueprobe/`. Run them from any working directory; input and output paths are resolved relative to the caller's working directory.
+Each child's file named after the project (`blueprobe/blueprobe.py`, `queryu/queryu.py`, …) is a generic single file and does not look for its siblings. `aoi.py` supplies them: it runs the child with the Aoi root and the import paths that pytest uses (`pyproject.toml`), from any working directory, with paths resolved against the caller's directory.
 
 ```bash
-python entries/blueprobe.py --help
-python entries/queryu.py --help
-python entries/nagoyaction.py --help
-python entries/sakanalytics.py --help
-python entries/pythdragoras.py --help
-python entries/dragowing.py --help
+python aoi.py blueprobe --help
+python aoi.py queryu --help
+python aoi.py nagoyaction --help
+python aoi.py sakanalytics --help
+python aoi.py pythdragoras --help
+python aoi.py dragowing --help          # dragowing.py; the HTML report is python aoi.py -m dragowing
 ```
 
-`aoi.py` runs any child file with Aoi's settings (the Aoi root, the cycle name and the import paths that pytest uses), so the children themselves stay generic. Nothing is saved; `eval "$(python aoi.py)"` applies the same settings to the current shell only.
+`aoi.py` runs any child file with Aoi's settings (the Aoi root, the cycle name and the import paths that pytest uses), so the children themselves stay generic. Nothing is saved; `eval "$(python aoi.py)"` applies the same settings to the current shell only, and `import aoi` to the current Python process (the paths go after what is already first).
 
 ```bash
 python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan

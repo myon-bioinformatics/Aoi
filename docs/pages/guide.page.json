@@ -39,7 +39,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ uv run --locked python entries/blueprobe.py --help"
+              "text": "$ uv run --locked python aoi.py blueprobe --help"
             },
             {
               "type": "links",
@@ -59,7 +59,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ uv run --locked python entries/queryu.py --help"
+              "text": "$ uv run --locked python aoi.py queryu --help"
             },
             {
               "type": "links",
@@ -79,7 +79,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ uv run --locked python entries/sakanalytics.py --help"
+              "text": "$ uv run --locked python aoi.py sakanalytics --help"
             },
             {
               "type": "links",
@@ -99,7 +99,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ uv run --locked python entries/pythdragoras.py --help"
+              "text": "$ uv run --locked python aoi.py pythdragoras --help"
             },
             {
               "type": "links",
@@ -119,7 +119,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ uv run --locked python entries/dragowing.py --help"
+              "text": "$ uv run --locked python aoi.py dragowing --help"
             },
             {
               "type": "links",
@@ -139,7 +139,7 @@
           "blocks": [
             {
               "type": "output",
-              "text": "$ uv run --locked python entries/nagoyaction.py --help"
+              "text": "$ uv run --locked python aoi.py nagoyaction --help"
             },
             {
               "type": "links",

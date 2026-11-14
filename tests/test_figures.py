@@ -331,7 +331,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     )
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
-    assert str(tmp_path / "mod" / "index.html") in proc.stdout
+    assert (tmp_path / "mod" / "index.html").resolve().as_uri() in proc.stdout
     monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
     with pytest.raises(PngUnavailable, match="Chrome"):
         write_png(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.png")

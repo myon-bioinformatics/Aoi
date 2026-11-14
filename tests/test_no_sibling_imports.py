@@ -29,6 +29,9 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_aoi_sibling.py", "path:queryu"),
     ("tests/test_figures.py", "import:ask"),
     ("tests/test_forms.py", "import:ask"),
+    # 上のテストが直接 import する兄弟を、conftest.py が AOI_ROOT から sys.path に足す（PYTHONPATH は要らない）
+    ("conftest.py", "path:pythdragoras"),
+    ("conftest.py", "path:queryu/ask"),
     # テストのデータの場所は AOI_ROOT の Aoi の aoi_paths に聞く（conftest.py が AOI_ROOT を sys.path に足す）
     ("tests/test_figures.py", "import:aoi_paths"),
     ("tests/test_forms.py", "import:aoi_paths"),

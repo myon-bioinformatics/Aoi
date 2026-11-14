@@ -1,7 +1,7 @@
 # Optional, pinned HTML-only environment
 
 This opt-in recipe keeps DRAgoWing's real HTML implementation and existing
-`--overlap-backend stdlib` path. It installs only the locked Markdown 3.11.2
+stdlib overlap path, which the CLI always uses. It installs only the locked Markdown 3.11.2
 dependency for that feature, not the native NumPy/Polars backend, dev tools,
 Chromium, or a replacement implementation. The repository's dependencies,
 tests, CI and vendor registrations are unchanged.
@@ -138,7 +138,7 @@ PYTHONDONTWRITEBYTECODE=1 \
 PYTHONPATH="$WORK/src:$WORK/src/queryu/ask" \
   "$WORK/html-venv/bin/python" -m dragowing \
   "$WORK/src/aoi/cycles/c001-chunichi/outputs" \
-  --out "$WORK/html-output" --overlap-backend stdlib
+  --out "$WORK/html-output"
 test -s "$WORK/html-output/index.html"
 test -s "$WORK/html-output/propositions.html"
 ```

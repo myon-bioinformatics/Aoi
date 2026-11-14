@@ -170,7 +170,7 @@ def test_cli_draws_five_sets_with_a_breakdown_on_the_recorded_cycle(tmp_path, ao
     out = tmp_path / "out"
     conds = ["rd,>,0", "rank_ra,<=,2", "rank_rf,<=,3", "wins_vs_pythag,<,0"]  # + B クラス = 5 集合
     args = [str(aoi_root / "cycles/c001-chunichi/outputs"), "--out", str(out), "--id", "P1",
-            "--breakdown", "team", "--breakdown-keep", "d", "--overlap-backend", "stdlib"]
+            "--breakdown", "team", "--breakdown-keep", "d"]
     for text in conds:
         args += ["--cond", text]
     assert main(args) == 0

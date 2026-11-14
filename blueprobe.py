@@ -11,12 +11,12 @@
 汎用の取得元 html_source（HtmlSource）と、保存済みページの供給元の契約（SnapshotSupplier）はここにある。
 
 標準ライブラリだけで動く観測ツールも同じファイルにある（Python からは blueprobe.<tool>.observe(...)）:
-  🔎 python blueprobe.py URL | --classify HTML | --source NAME --cache DIR   ページの構造
-  🏷️ python blueprobe.py names PAGE      操作要素・画像の名前（accname の近似）
-  🧭 python blueprobe.py headings PAGE   見出し階層とランドマーク
-  😀 python blueprobe.py emoji PAGE      絵文字の位置と表記
-  🌐 python blueprobe.py web DIR         保存済み Web 観測とソース一覧
-  🐙 python blueprobe.py github SNAPSHOT REPOSITORY   親の監査から Issue・CI の観測
+  \U0001f50e python blueprobe.py URL | --classify HTML | --source NAME --cache DIR   ページの構造
+  \U0001f3f7️ python blueprobe.py names PAGE      操作要素・画像の名前（accname の近似）
+  \U0001f9ed python blueprobe.py headings PAGE   見出し階層とランドマーク
+  \U0001f600 python blueprobe.py emoji PAGE      絵文字の位置と表記
+  \U0001f310 python blueprobe.py web DIR         保存済み Web 観測とソース一覧
+  \U0001f419 python blueprobe.py github SNAPSHOT REPOSITORY   親の監査から Issue・CI の観測
 
 DOM パターン表と、その判定に使う HTML 木もここにある。木は html.parser で組み立てる。
 
@@ -1353,7 +1353,7 @@ def _emoji_summarize(report: dict) -> list[dict]:
 
 
 def _emoji_main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="blueprobe.py emoji", description="😀 保存済み HTML の絵文字を観測する（ネットワークに出ない）")
+    ap = argparse.ArgumentParser(prog="blueprobe.py emoji", description="\U0001f600 保存済み HTML の絵文字を観測する（ネットワークに出ない）")
     ap.add_argument("html", type=Path)
     ap.add_argument("--url")
     ap.add_argument("--json", action="store_true", help="records と summary を JSON で出す")
@@ -1685,7 +1685,7 @@ def _names_summarize(report: dict) -> dict:
 
 
 def _names_main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="blueprobe.py names", description="🏷️ 保存済み HTML の操作要素・画像の名前を観測する（近似・ネットワークに出ない）")
+    ap = argparse.ArgumentParser(prog="blueprobe.py names", description="\U0001f3f7️ 保存済み HTML の操作要素・画像の名前を観測する（近似・ネットワークに出ない）")
     ap.add_argument("path", type=Path, help="HTML、または btk-browser-dom/1 / html-snapshot/1 の JSON")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
@@ -1890,7 +1890,7 @@ def _headings_summarize(report: dict) -> dict:
 
 
 def _headings_main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="blueprobe.py headings", description="🧭 保存済み HTML の見出し階層とランドマーク構造を観測する（ネットワークに出ない）")
+    ap = argparse.ArgumentParser(prog="blueprobe.py headings", description="\U0001f9ed 保存済み HTML の見出し階層とランドマーク構造を観測する（ネットワークに出ない）")
     ap.add_argument("path", type=Path, help="HTML、または btk-browser-dom/1 / html-snapshot/1 の JSON")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
@@ -2042,7 +2042,7 @@ def _web_observe(root: Path, *, source_root: Path | None = None) -> dict:
 
 
 def _web_main(argv=None):
-    parser = argparse.ArgumentParser(prog="blueprobe.py web", description="🌐 Read saved Web observations and source inventories, without a browser or SDK.")
+    parser = argparse.ArgumentParser(prog="blueprobe.py web", description="\U0001f310 Read saved Web observations and source inventories, without a browser or SDK.")
     parser.add_argument("observations", type=Path)
     parser.add_argument("--source-root", type=Path)
     args = parser.parse_args(argv)
@@ -2115,7 +2115,7 @@ def _github_observe(snapshot: dict, repository: str) -> dict:
 
 
 def _github_main(argv=None):
-    parser = argparse.ArgumentParser(prog="blueprobe.py github", description="🐙 Extract repository-scoped issue and CI observations from a saved parent audit.")
+    parser = argparse.ArgumentParser(prog="blueprobe.py github", description="\U0001f419 Extract repository-scoped issue and CI observations from a saved parent audit.")
     parser.add_argument("snapshot", type=Path)
     parser.add_argument("repository", help="repository name as listed in parent-audit/1")
     args = parser.parse_args(argv)
@@ -2142,8 +2142,8 @@ def main(argv=None) -> int:
     tool = globals().get(argv[0]) if argv else None
     if isinstance(tool, SimpleNamespace):  # names / headings / emoji / web / github
         return tool.main(argv[1:])
-    ap = argparse.ArgumentParser(description="🔎 取得済みページをオフラインで再解析する",
-                                 epilog="🧰 tools: 🏷️ names · 🧭 headings · 😀 emoji · 🌐 web · 🐙 github "
+    ap = argparse.ArgumentParser(description="\U0001f50e 取得済みページをオフラインで再解析する",
+                                 epilog="\U0001f9f0 tools: \U0001f3f7️ names · \U0001f9ed headings · \U0001f600 emoji · \U0001f310 web · \U0001f419 github "
                                         "（python blueprobe.py <tool> --help）")
     ap.add_argument("url", nargs="?", help="HTTP(S) URL to fetch and classify with curl")
     ap.add_argument("--source", help="取得元モジュール名 (例: npb_calendar, html_source)")

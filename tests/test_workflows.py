@@ -566,51 +566,53 @@ def test_holdout_job_provisions_node_before_parity_tests():
     assert 'HOLDOUT_SOURCE_PROVENANCE:' not in job
 
 
-# ═══ · named child entries ═══════════════════════════════════════════════════════════════════════════════
-# Named entry files dispatch to Aoi children without requiring external libraries.
+# ═══ · child entries through aoi.py ══════════════════════════════════════════════════════════════════════
+# `python aoi.py <name>` runs the child's same-named single file with Aoi's settings. The import paths
+# (pyproject.toml) and AOI_ROOT come from aoi.py, so the child does not look for its siblings itself.
 
-ENTRIES = {
-    "blueprobe": ("blueprobe", "blueprobe.py"),
-    "queryu": ("queryu", "queryu.py"),
-    "nagoyaction": ("nagoyaction", "nagoyaction.py"),
-    "sakanalytics": ("sakanalytics", "sakanalytics.py"),
-    "pythdragoras": ("pythdragoras", "pythdragoras.py"),
-    "dragowing": ("dragowing", "__main__.py"),
-}
+CHILDREN = ("blueprobe", "queryu", "nagoyaction", "sakanalytics", "pythdragoras", "dragowing")
 
 
-class NamedChildEntriesTest(unittest.TestCase):
-    def test_forwards_argv_cwd_and_exit_code(self):
+class ChildEntriesThroughAoiTest(unittest.TestCase):
+    def _root(self, temp: str) -> Path:
+        root = Path(temp) / "aoi"
+        root.mkdir()
+        for name in ("aoi.py", "aoi_paths.py", "pyproject.toml"):
+            shutil.copy2(ROOT / name, root / name)
+        return root
+
+    def test_forwards_argv_cwd_exit_code_and_the_sibling_paths(self):
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp) / "aoi"
-            root.mkdir()
+            root = self._root(temp)
             work = Path(temp) / "work"
             work.mkdir()
-            for name, (directory, filename) in ENTRIES.items():
-                with self.subTest(entry=name):
-                    (root / "entries").mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(ROOT / "entries" / (name + ".py"), root / "entries" / (name + ".py"))
-                    target = root / directory / filename
+            for name in CHILDREN:
+                with self.subTest(child=name):
+                    target = root / name / f"{name}.py"
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_text('import json, os, sys\nprint(json.dumps({"args": sys.argv[1:], "cwd": os.getcwd(), "AOI_ROOT": os.environ.get("AOI_ROOT"), "PYTHONPATH": os.environ.get("PYTHONPATH", "")}))\nsys.exit(7)\n')
-                    env = dict(os.environ, PYTHONPATH="")
-                    env.pop("AOI_ROOT", None)
-                    result = subprocess.run([sys.executable, str(root / "entries" / (name + ".py")), "x y", "--option"],
+                    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT")}
+                    result = subprocess.run([sys.executable, str(root / "aoi.py"), name, "x y", "--option"],
                                             cwd=work, env=env, capture_output=True, text=True)
                     self.assertEqual(result.returncode, 7, result.stderr)
-                    self.assertEqual(json.loads(result.stdout), {
-                        "args": ["x y", "--option"], "cwd": str(work),
-                        "AOI_ROOT": str(root), "PYTHONPATH": "",
-                    })
+                    seen = json.loads(result.stdout)
+                    self.assertEqual((seen["args"], seen["cwd"], seen["AOI_ROOT"]), (["x y", "--option"], str(work), str(root.resolve())))
+                    self.assertIn(str((root / "blueprobe").resolve()), seen["PYTHONPATH"].split(os.pathsep))
 
     def test_missing_child_has_actionable_error(self):
         with tempfile.TemporaryDirectory() as temp:
-            entry = Path(temp) / "entries" / "blueprobe.py"
-            entry.parent.mkdir(parents=True)
-            shutil.copy2(ROOT / "entries" / "blueprobe.py", entry)
-            result = subprocess.run([sys.executable, str(entry), "--help"], capture_output=True, text=True)
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("complete Aoi checkout", result.stderr)
+            root = self._root(temp)
+            result = subprocess.run([sys.executable, str(root / "aoi.py"), "blueprobe", "--help"], capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("blueprobe.py", result.stderr)
+
+    def test_import_aoi_adds_the_sibling_paths_after_what_is_already_first(self):
+        env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT")}
+        code = "import sys; first = sys.path[0]; import aoi, blueprobe, propositions; print(sys.path[0] == first, blueprobe.__file__)"
+        run = subprocess.run([sys.executable, "-c", code], cwd=ROOT, env=env, capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        same_first, blueprobe_file = run.stdout.split()
+        self.assertEqual((same_first, Path(blueprobe_file)), ("True", ROOT / "blueprobe" / "blueprobe.py"))
 
 
 # ═══ · shared tools lock ═════════════════════════════════════════════════════════════════════════════════

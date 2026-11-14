@@ -1,9 +1,20 @@
 {
-  "declared_without_imports": [],
+  "declared_without_imports": [
+    {
+      "declared": [
+        {
+          "file": "pyproject.toml",
+          "kind": "group:dev",
+          "name": "editables"
+        }
+      ],
+      "name": "editables"
+    }
+  ],
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
-      "line": 65
+      "line": 57
     },
     {
       "file": "dist/blueprobe_min.py",
@@ -24,6 +35,10 @@
     {
       "file": "dist/sakanalytics_min.py",
       "line": 119
+    },
+    {
+      "file": "dragowing/aoi_sibling.py",
+      "line": 35
     },
     {
       "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
@@ -801,7 +816,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1438,
+      "attribute_uses": 1444,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -814,11 +829,11 @@
         "fixture": 59,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 337,
+        "mark.parametrize": 340,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 529,
-        "skip": 14,
+        "raises": 531,
+        "skip": 15,
         "warns": 3,
         "xfail": 1
       },
@@ -840,7 +855,7 @@
           "import_sites": 1
         },
         "blueprobe": {
-          "attribute_uses": 67,
+          "attribute_uses": 69,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -849,22 +864,23 @@
             "fixture": 4,
             "hookimpl": 1,
             "importorskip": 6,
-            "mark.parametrize": 30,
-            "raises": 19
+            "mark.parametrize": 31,
+            "raises": 19,
+            "skip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 15,
-          "import_sites": 15
+          "files": 17,
+          "import_sites": 17
         },
         "dragowing": {
-          "attribute_uses": 90,
+          "attribute_uses": 94,
           "attributes": {
             "UsageError": 2,
             "fail": 2,
             "fixture": 8,
-            "mark.parametrize": 23,
+            "mark.parametrize": 25,
             "mark.skipif": 3,
-            "raises": 48,
+            "raises": 50,
             "skip": 4
           },
           "dynamic_import_sites": 0,
@@ -977,6 +993,11 @@
           "name": "pytest"
         },
         {
+          "file": "blueprobe/pyproject.toml",
+          "kind": "group:observation-test",
+          "name": "pytest"
+        },
+        {
           "file": "dragowing/pyproject.toml",
           "kind": "group:dev",
           "name": "pytest"
@@ -1004,8 +1025,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 140,
-      "import_sites": 143
+      "files": 142,
+      "import_sites": 145
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1091,6 +1112,16 @@
       },
       "dynamic_lines": [],
       "file": "blueprobe/tests/test_blueprobe_accessible_names.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "blueprobe"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 1
+      },
+      "dynamic_lines": [],
+      "file": "blueprobe/tests/test_blueprobe_aoi_sibling.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "blueprobe"
@@ -1230,6 +1261,16 @@
       },
       "dynamic_lines": [],
       "file": "blueprobe/tests/test_blueprobe_pattern_cli.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "blueprobe"
+    },
+    {
+      "attributes": {
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "blueprobe/tests/test_github_observations.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "blueprobe"
@@ -1462,7 +1503,7 @@
     {
       "attributes": {},
       "dynamic_lines": [
-        84
+        81
       ],
       "file": "dragowing/htmlout.py",
       "import_sites": 0,
@@ -1632,8 +1673,8 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 7,
-        "raises": 8
+        "mark.parametrize": 9,
+        "raises": 10
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_overlap_stdlib.py",

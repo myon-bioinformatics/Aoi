@@ -242,6 +242,9 @@ def test_pattern_cli_replays_real_saved_html(tmp_path, monkeypatch, capsys, lab_
         return result
 
     monkeypatch.setattr(lab_source_access, 'extract_snapshot', observe)
+    if pattern.startswith('npb_'):
+        from npb_patterns import DOM_PATTERNS
+        monkeypatch.setitem(blueprobe.DOM_PATTERNS, pattern, DOM_PATTERNS[pattern])
     args = ['--source', 'html_source', '--pattern', pattern, '--cache', str(tmp_path), '--strict']
     for _ in range(2):
         assert blueprobe.main(args) == 0

@@ -8,7 +8,7 @@
 
 > Observe first, interpret later.
 >
-> HTML/CSS/DOM structure observation and extraction for NPB baseball pages (split out from Aoi/blueprobe).
+> Generic HTML/CSS/DOM structure observation and extraction; optional NPB sources remain separate.
 
 ![BlueProbe](docs/images/blueprobe.webp)
 
@@ -103,7 +103,7 @@ It reads only the cache and does not access the network. If there are unknown no
 |---|---|
 | `blueprobe.py` | Source-independent parts: normalization, the report contract, offline reparsing (`inspect`), the DOM pattern table (`--list-patterns`), document classification (`classify_document` / `--classify`), and the `html.parser` HTML tree. Details in [docs/dom-patterns.md](docs/dom-patterns.md) |
 | `blueprobe.py` (cont.) | The generic source `HtmlSource` (`--source html_source`), the saved-body supplier contract (`SnapshotSupplier`, `QueRyuCacheSource`), and the tools `names` / `headings` / `emoji` / `web` / `github` |
-| `npb/` | NPB sources (`npb_calendar` … `npb_schedule_current`) and `html_compare` (comparison with NPB observations). Loaded by name: `python blueprobe.py` puts `npb/` on the path, tests list it in `pyproject.toml`, and inside Aoi `aoi.py` does |
+| `npb/` | NPB sources (`npb_calendar` … `npb_schedule_current`) and `html_compare` (comparison with NPB observations). Loaded by name: set `PYTHONPATH=npb` explicitly; tests list it in `pyproject.toml`, and inside Aoi `aoi.py` does |
 | `docs/contract/v1/` | Contracts for reports and snapshot records (additions stay in v1; breaking changes go to v2) |
 | `docs/boundaries.md` | Boundaries of responsibility between BlueProbe / QueRyu / web-ui (proposal) |
 | `docs/antipatterns.md` | Failures likely to recur, and the commitments against them |
@@ -357,7 +357,7 @@ the latest run of [PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15).
 | `npb/html_compare.py` | Structural coverage of saved HTML, and comparison with existing NPB observations (offline) |
 
 ```bash
-uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
+PYTHONPATH=npb uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
 ```
 
 ### NPB annual team tables
@@ -473,3 +473,9 @@ Missing observation time, owner, or PR CI/head identity is marked `unknown`.
    parity checks. No component is retired by this experimental adapter.
 
 These are proposed stages; this PR implements only the offline adapter in step 1.
+
+### Generic standalone boundary
+
+`blueprobe.py` contains no NPB presets or automatic NPB path setup. Existing NPB source/data and historical observations remain in the repository. For optional NPB sources use `PYTHONPATH=npb python blueprobe.py --source npb_calendar ...`; QueRyu must also be available for cache operations. The preserved NPB DOM presets are available explicitly through `npb_patterns.get_pattern(key)` or `npb_patterns.html_source(key)` after adding `npb/` to the module path. These helpers never change the generic registry. They are not copied into the generic tool distribution.
+
+Research and internal analysis stay outside the root entry: baseball-specific sources and comparisons in `npb/`, benchmarks and observation experiments in `scripts/`, and historical evidence in `docs/`. The root `conftest.py` is pytest configuration, not a distributed module. Local-file classification and observation require neither curl nor sibling modules; fetching a URL uses the existing optional curl subprocess.

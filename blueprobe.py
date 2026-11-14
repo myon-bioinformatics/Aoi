@@ -5,7 +5,7 @@
   - Report: 1ページを読んだ結果の契約。採用したもの以外も必ず数える
   - inspect(): 取得済みのページを再解析して集計する。ネットワークには出ない
 
-取得元ごとの読み方は別モジュール（例: npb/npb_calendar.py）に置き、次の2つを持たせる:
+取得元ごとの読み方は別モジュールに置き、次の2つを持たせる:
   pages(scope)        -> [(key, url, group)]   取得すべきページの一覧
   parse(html, url)    -> Report               1ページの観測結果
 汎用の取得元 html_source（HtmlSource）と、保存済みページの供給元の契約（SnapshotSupplier）はここにある。
@@ -61,7 +61,7 @@ def merge(total: dict, part: dict, key: str = "key") -> dict:
 
 
 def load_source(name: str):
-    """取得元を名前で読み込む。html_source はこのファイルの HtmlSource、ほかは <name>.py（例: npb/）。"""
+    """取得元を名前で読み込む。html_source はこのファイルの HtmlSource、ほかは <name>.py。"""
     if not re.fullmatch(r"[a-z][a-z0-9_]*", name):
         raise ValueError(f"invalid source name: {name!r}")
     return HtmlSource() if name == "html_source" else importlib.import_module(name)
@@ -301,7 +301,7 @@ class _HtmlBuilder(HTMLParser):
 
 
 class HtmlTree:
-    """html.parser tree with the CSS subset the pattern table and NPB readers use.
+    """html.parser tree with the CSS subset the pattern table and source readers use.
 
     Supported: a tag, ``#id``, ``.class``, ``[attr]``, ``[attr=value]``,
     descendant whitespace, and the child combinator ``>``. Anything else raises
@@ -533,7 +533,6 @@ CATEGORIES: list[DomCategory] = [
     {"key": "documentation", "label": "技術ドキュメント・解説ページ (Documentation)"},
     {"key": "portfolio_bio", "label": "ポートフォリオ・自己紹介・Profile 領域"},
     {"key": "reader_view", "label": "テキスト重視リーダービュー (Reader View)"},
-    {"key": "npb_sports", "label": "NPB（プロ野球）公式日程・成績表"},
     {"key": "social", "label": "SNS・タイムライン・コメントスレッド (Feed / Thread)"},
     {"key": "ecommerce", "label": "EC 商品詳細・商品一覧 (Product)"},
     {"key": "forum", "label": "Q&A・フォーラム (Question / Answer)"},
@@ -581,22 +580,6 @@ DOM_PATTERNS: dict[str, DomPattern] = {
         "selector": "#reader-content, .reader-view, article, main",
         "description": "リーダーモードやノイズを除去したテキスト閲覧領域",
         "example_sites": ["Reader View", "Web Clipper", "Simplified Article"],
-    },
-    "npb_calendar": {
-        "key": "npb_calendar",
-        "label": "NPB Schedule Calendar Table",
-        "category": "npb_sports",
-        "selector": "#calendar, .calendar, table.calendar",
-        "description": "プロ野球（NPB）公式戦の月別・チーム別日程カレンダー表",
-        "example_sites": ["npb.jp bis calendar"],
-    },
-    "npb_linescore": {
-        "key": "npb_linescore",
-        "label": "NPB Game Linescore Table",
-        "category": "npb_sports",
-        "selector": "table.score_table, .linescore, #linescore",
-        "description": "プロ野球（NPB）試合ページの得点表（ラン・ヒット・エラー）",
-        "example_sites": ["npb.jp linescore"],
     },
     "generic_main": {
         "key": "generic_main",
@@ -1057,7 +1040,7 @@ def _observe_url(url: str, cache: Path | None = None, out: Path | None = None) -
 # ──── snapshot supplier ───────────────────────────────────────────────────────────────────────────────────
 # 保存済みページの供給元（snapshot supplier）の契約と、QueRyu 用アダプタ。
 #
-# BlueProbe は取得もキャッシュもしない。保存済みの本文を「供給元」から受け取り、
+# この snapshot 供給元の経路では取得もキャッシュもしない。保存済みの本文を受け取り、
 # 読むだけにする。QueRyu はその供給元の一つ。契約は docs/contract/v1/snapshot.md。
 #
 # 供給元（SnapshotSupplier）が持つもの:
@@ -2146,7 +2129,7 @@ def main(argv=None) -> int:
                                  epilog="\U0001f9f0 tools: \U0001f3f7️ names · \U0001f9ed headings · \U0001f600 emoji · \U0001f310 web · \U0001f419 github "
                                         "（python blueprobe.py <tool> --help）")
     ap.add_argument("url", nargs="?", help="HTTP(S) URL to fetch and classify with curl")
-    ap.add_argument("--source", help="取得元モジュール名 (例: npb_calendar, html_source)")
+    ap.add_argument("--source", help="取得元モジュール名 (例: html_source)")
     patterns = ap.add_mutually_exclusive_group()
     patterns.add_argument("--pattern", help="html_source 専用の DOM パターンキー（一覧: --list-patterns）")
     ap.add_argument("--cache", type=Path, help="QueRyu のキャッシュディレクトリ")
@@ -2220,6 +2203,7 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    _here = Path(__file__).resolve().parent
-    sys.path[:0] = [str(_here), str(_here / "npb")]  # 取得元（npb/ の npb_calendar など）を名前で読む
+    # Colocated optional components are enabled only for an explicit cache request.
+    if any(arg == "--cache" or arg.startswith("--cache=") for arg in sys.argv[1:]):
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
     raise SystemExit(main())

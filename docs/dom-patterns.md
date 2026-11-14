@@ -1,6 +1,6 @@
 # DOM structure patterns and preset design
 
-The whole implementation is the single file [`blueprobe.py`](../blueprobe.py) (types are TypedDicts in the same file). At run time it uses only the standard library's `html.parser`; selectolax is only for cross-checking in tests.
+The generic implementation is the single file [`blueprobe.py`](../blueprobe.py) (types are TypedDicts in the same file). At run time it uses only the standard library's `html.parser`; selectolax is only for cross-checking in tests.
 
 When BlueProbe extracts specific main content from the DOM structure of saved HTML, instead of specifying CSS selectors directly,
 it lets you select and classify DOM pattern identifiers that can be chosen from a dropdown/preset (`github_readme`, `portfolio_profile`, etc.).
@@ -14,8 +14,6 @@ it lets you select and classify DOM pattern identifiers that can be chosen from 
 | `documentation_main` | `documentation` | Documentation Main Section | `main, [role='main'], article.doc-content, .docs-content, .md-content` | Read the Docs, Docusaurus |
 | `portfolio_profile` | `portfolio_bio` | Portfolio / Profile Section | `section#about, #about, .profile, .portfolio, section.bio, #portfolio` | Portfolios and self-introductions |
 | `reader_page` | `reader_view` | Distraction-free Reader View | `#reader-content, .reader-view, article, main` | Reader mode and web clips |
-| `npb_calendar` | `npb_sports` | NPB Schedule Calendar Table | `#calendar, .calendar, table.calendar` | NPB official game calendar tables |
-| `npb_linescore` | `npb_sports` | NPB Game Linescore Table | `table.score_table, .linescore, #linescore` | NPB game line score tables |
 | `generic_main` | `generic` | Generic Main Region | `main, #main, #content, .main-content` | main of general web pages |
 | `social_timeline` | `social` | Social Timeline / Comment Thread | `[role='feed'], [role='feed'] > article, .timeline, .thread-comments, .comment-list` | Social media timelines and comment sections |
 | `ecommerce_product` | `ecommerce` | E-commerce Product Detail / Grid | `[itemtype='https://schema.org/Product'], [itemtype='http://schema.org/Product'], [itemprop='price'], .product-detail, .product-grid` | Product details and product listings |
@@ -24,6 +22,21 @@ it lets you select and classify DOM pattern identifiers that can be chosen from 
 
 Every selector stays within what `HtmlTree` accepts (tags, `#id`, `.class`, `[attr]`, `[attr=value]`, descendants, `>`).
 Partial matches like `[itemtype*=...]` aren't available, so schema.org URLs are listed as exact matches.
+
+## Optional NPB research presets
+
+The generic registry and CLI do not load baseball presets. They are kept in
+[`npb/npb_patterns.py`](../npb/npb_patterns.py) for explicit research use:
+
+| Pattern key (`key`) | Category | Label | CSS selector (`selector`) | Example targets |
+|---|---|---|---|---|
+| `npb_calendar` | `npb_sports` | NPB Schedule Calendar Table | `#calendar, .calendar, table.calendar` | NPB official game calendar tables |
+| `npb_linescore` | `npb_sports` | NPB Game Linescore Table | `table.score_table, .linescore, #linescore` | NPB game line score tables |
+
+With the repository root and `npb/` on the Python module path,
+`npb_patterns.html_source("npb_calendar")` builds an explicit source without
+changing generic classification. The single-file distribution does not include
+the research presets.
 
 ## Usage
 
@@ -68,7 +81,7 @@ Reparsing uses saved bodies and verified snapshots and does not refetch over the
 
 The default extractor requires a `mcp-toolcall-lab` that supports comma-separated selectors
 and `[role='main']` ([compatibility fix PR #140](https://github.com/myon-bioinformatics/mcp-toolcall-lab/pull/140)).
-CI pins a commit with that support and reparses all 8 presets with the real extractor.
+The real-extractor integration checks use a pinned commit with that support.
 
 ## Document classification (`classify_document`) and output contract
 

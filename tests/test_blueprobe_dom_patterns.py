@@ -28,8 +28,8 @@ def test_list_patterns_and_categories_structure():
     assert "documentation_main" in keys
     assert "portfolio_profile" in keys
     assert "reader_page" in keys
-    assert "npb_calendar" in keys
-    assert "npb_linescore" in keys
+    assert "npb_calendar" not in keys
+    assert "npb_linescore" not in keys
     assert "generic_main" in keys
 
     for p in patterns:
@@ -132,3 +132,58 @@ def test_detect_pattern_empty_or_no_match():
     keys = [m["pattern"]["key"] for m in matches]
     assert "github_readme" not in keys
     assert "portfolio_profile" not in keys
+
+
+def test_optional_npb_presets_preserved():
+    import npb_patterns
+    assert set(npb_patterns.DOM_PATTERNS) == {"npb_calendar", "npb_linescore"}
+    for pattern in npb_patterns.DOM_PATTERNS.values():
+        source = HtmlSource(selector=pattern["selector"])
+        assert source.selector == pattern["selector"]
+
+
+def test_isolated_generic_cli_has_no_npb(tmp_path):
+    import subprocess, sys
+    from pathlib import Path
+    source = Path(blueprobe.__file__).read_bytes()
+    assert b'npb' not in source.lower()
+    entry = tmp_path / "blueprobe.py"
+    entry.write_bytes(source)
+    for args in (["--help"], ["--list-patterns"]):
+        result = subprocess.run([sys.executable, "-I", "-S", str(entry), *args], cwd=tmp_path, capture_output=True, text=True)
+        assert result.returncode == 0, result.stderr
+        assert "npb" not in result.stdout.lower()
+
+
+@pytest.mark.parametrize("args", [[], ["--classify", "page.html"], ["names", "page.html", "--json"], ["headings", "page.html", "--json"], ["emoji", "page.html", "--json"]])
+def test_isolated_stdlib_default_and_local_html(tmp_path, args):
+    import json, os, subprocess, sys
+    from pathlib import Path
+    entry = tmp_path / "blueprobe.py"
+    entry.write_bytes(Path(blueprobe.__file__).read_bytes())
+    (tmp_path / "page.html").write_text('<main><h1>Title</h1><button>Go</button><p>😀</p></main>', encoding="utf-8")
+    # A sibling optional component must not be imported by generic local commands.
+    (tmp_path / "cache_core.py").write_text("raise AssertionError('unexpected optional import')\n")
+    # Empty PATH proves these commands do not need curl or sibling executables.
+    result = subprocess.run([sys.executable, "-I", "-S", str(entry), *args], cwd=tmp_path,
+                            env={**os.environ, "PATH": "", "PYTHONPATH": ""}, capture_output=True, text=True)
+    if not args:
+        assert result.returncode == 2
+        assert "--source and --cache are required" in result.stderr
+        assert "Traceback" not in result.stderr
+    else:
+        assert result.returncode == 0, result.stderr
+        assert isinstance(json.loads(result.stdout), (dict, list))
+
+
+def test_research_lookup_does_not_mutate_generic_registry():
+    import npb_patterns
+    before = blueprobe.list_patterns()
+    assert npb_patterns.get_pattern("npb_linescore")["selector"] == "table.score_table, .linescore, #linescore"
+    metadata = npb_patterns.get_pattern("npb_linescore")
+    metadata["example_sites"].clear()
+    assert npb_patterns.get_pattern("npb_linescore")["example_sites"]
+    npb_patterns.html_source("npb_linescore")
+    assert blueprobe.list_patterns() == before
+    with pytest.raises(ValueError, match="unknown pattern key"):
+        blueprobe.get_pattern("npb_linescore")

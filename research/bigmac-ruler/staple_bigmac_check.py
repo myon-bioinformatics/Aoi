@@ -18,7 +18,8 @@
 国ごとに使う系列は1本（年数が最多、同数なら行数が多いもの、なお同数なら系列の文字列が大きいもの）。
 
 ゼロ・NaN・無限大・空欄は、読み込み時（load）と計算結果（compute）で、出なかったときも含めて必ず
-'[zero/NaN log]' として出力する。値は変えず、ε への置き換えもしない（置き方は別に決める）。
+'[zero/NaN log]' として出力する。値は変えず、ε への置き換えもしない（0 が出た所には、置くならどうするかを
+'[ε]' の行で知らせる。ε の決め方は research/shrink-index/shrink_index.py の ZeroNaNLog の説明）。
   ZERO / NaN / INF: 記録して値はそのまま持つ / BLANK: 数として読めない行は使わず記録する
   SKIPPED: 割り算・対数・回帰に渡す前の検査で、0 以下・NaN・inf のため使わなかった入力（どれかを必ず出す）
            ／ゼロのため比を出さなかった / DROPPED: 失敗して捨てた（ブートストラップ）
@@ -65,7 +66,7 @@ def _num(raw, log, name, where):
         return None
     kind = kind_of(x)
     if kind:
-        log.add('load', name, kind, where)
+        log.add('load', name, kind, where, scaled=True)     # 価格・支出・人口・食費割合（%）
     return x
 
 
@@ -300,14 +301,15 @@ def log_computed(log, panel, res, boot):
     """パネルと推定の結果にゼロ・NaN・無限大がないか調べて記録する（値は変えない）。
     ブートストラップで失敗して捨てた回数も記録する（以前は黙って捨てていた）。"""
     for k in ('price', 'bigmac', 'E', 'C_pc', 'b', 'M', 'k'):
-        log.scan('compute', 'panel.' + k, {'%s %s' % (r['country'], r['year']): r[k] for r in panel})
-    log.scan('compute', 'fit', {n: res[n] for n in ('a', 'beta', 'gamma', 'r2', 'corr_E_M', 'p_gamma_ge_1')})
+        log.scan('compute', 'panel.' + k, {'%s %s' % (r['country'], r['year']): r[k] for r in panel}, scaled=True)   # 価格・%・何個分など、どれも桁がある
+    log.scan('compute', 'fit', {n: res[n] for n in ('a', 'beta', 'gamma', 'r2', 'corr_E_M', 'p_gamma_ge_1')},
+             signed=lambda w: w in ('a', 'beta', 'gamma', 'corr_E_M'))
     for n, xs in res['sd'].items():
         log.scan('compute', 'sd.' + n, dict(zip(('pooled', 'between', 'within'), xs)))
     for n, xs in res['ci'].items():
-        log.scan('compute', 'ci.' + n, dict(zip(('lo', 'hi'), xs)))
+        log.scan('compute', 'ci.' + n, dict(zip(('lo', 'hi'), xs)), signed=True)
     for y, v in res['by_year'].items():
-        log.scan('compute', 'by_year', {'%d %s' % (y, n): v[n] for n in ('beta', 'gamma', 'r2')})
+        log.scan('compute', 'by_year', {'%d %s' % (y, n): v[n] for n in ('beta', 'gamma', 'r2')}, signed=lambda w: not w.endswith('r2'))
     if res['draws'] < boot:
         log.add('compute', 'bootstrap', 'DROPPED', '%d of %d draws failed (LinAlgError)' % (boot - res['draws'], boot))
 

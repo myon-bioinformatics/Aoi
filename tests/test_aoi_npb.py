@@ -110,3 +110,26 @@ def test_parent_calendar_pipeline_uses_shared_npb_settings():
         if step["name"] in ("fetch", "observe"):
             assert step["run"][3:5] == ["aoi_npb.py", "calendar"]
             assert "--month-key" not in step["run"]
+
+
+def test_aoi_entry_runs_a_child_with_the_paths_pytest_uses(tmp_path):
+    import shlex, tomllib
+    import aoi
+    root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+    env = aoi.environment({"PYTHONPATH": "kept"})
+    declared = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["tool"]["pytest"]["ini_options"]["pythonpath"]
+    assert env["PYTHONPATH"].split(os.pathsep) == [*(str((root / p).resolve()) for p in declared), "kept"]
+    assert (env["AOI_ROOT"], env["AOI_RESEARCH_CYCLE"]) == (str(root), aoi_paths.DEFAULT_CYCLE)
+    assert aoi.command(["QueRyu", "--help"]) == [sys.executable, str(root / "queryu/queryu.py"), "--help"]
+    assert aoi.command(["-m", "dragowing"]) == [sys.executable, "-m", "dragowing"]
+    with pytest.raises(SystemExit):
+        aoi.command(["no_such_child"])
+    # 子プロセス: 別の作業フォルダから、PYTHONPATH なしで起動しても兄弟（blueprobe）を import できる
+    clean = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE")}
+    run = subprocess.run([sys.executable, str(root / "aoi.py"), "queryu", "--source", "npb_calendar", "--years", "2024",
+                          "--cache", str(tmp_path / "cache"), "--offline", "--plan"],
+                         cwd=tmp_path, env=clean, capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr
+    # 引数なし: このシェルだけに効く export を出す（保存はしない）
+    shown = subprocess.run([sys.executable, str(root / "aoi.py")], env=clean, capture_output=True, text=True, check=True).stdout
+    assert shown.splitlines()[0] == f"export AOI_ROOT={shlex.quote(str(root))}"

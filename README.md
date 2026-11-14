@@ -15,6 +15,13 @@ python PythDRagoras.py --help
 python DRAgoWing.py --help
 ```
 
+`aoi.py` runs any child file with Aoi's settings (the Aoi root, the cycle name and the import paths that pytest uses), so the children themselves stay generic. Nothing is saved; `eval "$(python aoi.py)"` applies the same settings to the current shell only.
+
+```bash
+python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan
+python aoi.py sakanalytics/moshimo_box.py --ledger cycles/c001-chunichi/outputs/propositions.jsonl --id P1
+```
+
 These launchers use only the Python standard library, but are not self-contained copies of the children: the Aoi checkout and any dependencies required by the selected backend must exist. They do not install dependencies. The capabilities and arguments are those of the child version synced in Aoi, not unmerged child pull requests. They are not yet included in Aoi's uv tool distribution.
 
 <p align="center">

@@ -12,7 +12,7 @@ python aoi.py queryu --help
 python aoi.py nagoyaction --help
 python aoi.py sakanalytics --help
 python aoi.py pythdragoras --help
-python aoi.py dragowing --help          # dragowing.py; the HTML report is python aoi.py -m dragowing
+python aoi.py dragowing --help          # dragowing.py; the HTML report is python aoi.py dragowing/__main__.py RESULTS
 ```
 
 `aoi.py` runs any child file with Aoi's settings (the Aoi root, the cycle name and the import paths that pytest uses), so the children themselves stay generic. Nothing is saved; `eval "$(python aoi.py)"` applies the same settings to the current shell only, and `import aoi` to the current Python process (the paths go after what is already first).

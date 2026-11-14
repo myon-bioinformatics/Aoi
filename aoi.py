@@ -1,8 +1,8 @@
 """Aoi entry: decide where things are, then run a child project's Python file (stdlib only).
 
   python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan
-  python aoi.py pythdragoras/npb/season_sensitivity.py --season ... --config ...
-  python aoi.py -m dragowing cycles/c001-chunichi/outputs
+  python aoi.py pythdragoras/season_sensitivity.py --season ... --config ...
+  python aoi.py dragowing/__main__.py cycles/c001-chunichi/outputs   # the DRAgoWing report (-m dragowing is dragowing.py)
   eval "$(python aoi.py)"      # the same settings for this shell only (nothing is saved)
   import aoi                   # the same settings for this Python process (sys.path and AOI_ROOT)
 

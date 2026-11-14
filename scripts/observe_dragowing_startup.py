@@ -15,6 +15,9 @@ from pathlib import Path
 
 import pytest
 
+import aoi_paths
+
+aoi_paths.keep_dragowing_as_package()
 from dragowing import render
 from scripts.diagnose_dragowing_browser import DiagnosticChrome, _safe_text
 

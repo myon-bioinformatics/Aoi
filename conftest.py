@@ -1,13 +1,41 @@
 """Optional cross-repository integration with an explicit fail-closed mode."""
 from importlib import import_module
+import importlib.machinery
 import importlib.util
 import os
 import sys
+import types
 from pathlib import Path
 
 import pytest
 
 import aoi_paths
+
+
+def _keep_dragowing_as_package() -> None:
+    """Keep ``import dragowing`` as the package under Aoi.
+
+    DRAgoWing's standalone entry is ``dragowing/dragowing.py``. pytest's pythonpath
+    includes ``dragowing/``, so the default import would load that file and hide
+    ``dragowing.figures`` and the rest of the package. Child tests still import
+    ``forms`` / ``records`` as top-level modules, so the path entry stays.
+    """
+    root = Path(__file__).resolve().parent / "dragowing"
+    if not root.is_dir():
+        return
+    existing = sys.modules.get("dragowing")
+    if existing is not None and getattr(existing, "__path__", None):
+        return
+    pkg = types.ModuleType("dragowing")
+    pkg.__path__ = [str(root)]
+    pkg.__package__ = "dragowing"
+    spec = importlib.machinery.ModuleSpec("dragowing", loader=None, is_package=True)
+    spec.submodule_search_locations = pkg.__path__
+    pkg.__spec__ = spec
+    sys.modules["dragowing"] = pkg
+
+
+_keep_dragowing_as_package()
 
 # 子（queryu/ など）の conftest.py は Aoi の場所を AOI_ROOT で受け取る。Aoi の中ではここで入れる
 os.environ.setdefault("AOI_ROOT", str(aoi_paths.resolve_aoi_root(anchor=Path(__file__))))

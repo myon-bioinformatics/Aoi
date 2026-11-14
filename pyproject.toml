@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 # git から入るのは標準ライブラリの共有モジュールだけ。研究用ライブラリは下のグループ。
 
 [dependency-groups]
-dev = ["pytest>=8", "coverage>=7", "selectolax>=1"]
+dev = ["pytest>=8", "coverage>=7", "selectolax>=1", "editables>=0.3"]
 runtime = [
     "polars>=2",
     "httpx>=0.28",
@@ -27,6 +27,9 @@ default-groups = ["dev", "runtime"]
 
 [tool.hatch.build.targets.wheel]
 packages = []
+# Editable でリポジトリ根を sys.path に足さない。足すと blueprobe/ や queryu/ が
+# 名前空間パッケージになり、子の aoi_sibling_path が本物のモジュールを足せなくなる。
+dev-mode-exact = true
 
 [tool.hatch.build.targets.wheel.force-include]
 "scripts/fetch_module.py" = "fetch_module.py"

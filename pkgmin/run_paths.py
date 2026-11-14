@@ -142,7 +142,7 @@ def build() -> dict:
         "acquisition_plan": plan,
         "classify": classified,
         "doctor": checks,
-        "imports": [_try_import(name) for name in ("collect", "verify", "observe", "inning_pilot")],
+        "imports": [_try_import(name) for name in ("fetch",)],        # 旧 collect・verify・observe・inning_pilot（今は fetch.py の処理）
         "pipeline": shown,
         "urllib_get": _urllib_get(),
     }

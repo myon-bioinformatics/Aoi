@@ -66,25 +66,25 @@
 
 ## 再現・確認
 
-- [集計コード](matched_comeback.py)、[独立照合](verify_matched_comeback.py)、[集約JSON](outputs/matched_comeback.json)、[層別CSV](outputs/matched_comeback_cells.csv)、[照合JSON](outputs/matched_comeback_verification.json)。試合行・回行は新規出力へ転載していない。
+- [集計コード](analyses.py)、[独立照合](recheck.py)、[集約JSON](outputs/matched_comeback.json)、[層別CSV](outputs/matched_comeback_cells.csv)、[照合JSON](outputs/matched_comeback_verification.json)。試合行・回行は新規出力へ転載していない。
 - 固定イニング入力から年計156球団年×6=936項目が既存seasonと一致。各経過・勝敗の和と到達順序の制約を確認。
 - 別実装で元CSVのoff行を表→裏へ逐次再生し、11,028試合、4,706層×12整数=56,472値を一致確認。重み付け比較1,800項目は有理数で一致。同じ元CSVを使う確認で、原HTMLの独立取得ではない。
 - 小例で表の逆転後に再逆転される経過、同点を飛び越す複数得点、延長、未実施の裏、切点で終了した試合の除外を確認。保存セルの到達数を1増やした検査では独立照合が停止した。
 - 中日主期間1,718試合のうち7回比較で次回まで継続しない3試合を対象外とした。6回では切点まで未実施1、切点後の表なし1。短縮試合の完了を推測で補わない。
 
 ```sh
-python research/gpt-r001-score-allocation/matched_comeback.py \
+python research/gpt-r001-score-allocation/analyses.py matched_comeback \
   --innings /path/to/team_half_innings.csv.gz --season /path/to/fixed-season.jsonl \
   --plan-commit 76e621e386fb54c16575d659a9b05340517a5f46 \
   --out /tmp/matched_comeback.json --csv /tmp/matched_comeback_cells.csv
-python research/gpt-r001-score-allocation/verify_matched_comeback.py \
+python research/gpt-r001-score-allocation/recheck.py matched_comeback \
   --innings /path/to/team_half_innings.csv.gz --result /tmp/matched_comeback.json \
   --out /tmp/matched_comeback_verification.json
 ```
 
 ## 可視化と次の問い
 
-[DRAgoWing / Plotly HTML](outputs/matched_comeback.html)で6/7回と同点以上・リード・勝利を切り替え、年別率と差を見られる。[描画アダプター](render_matched_comeback.py)は保存済み集約値を読む。図の取得にはネット接続が必要で、数値表はオフラインでも残る。2020*は参考と明示した。Chromiumで6選択・1200px/390px表示・数値表を確認。実行環境のCDN接続は失敗したため描画検査では既取得の同版Plotly.jsを供給し、CDN不通時の数値表表示も確認した。
+[DRAgoWing / Plotly HTML](outputs/matched_comeback.html)で6/7回と同点以上・リード・勝利を切り替え、年別率と差を見られる。[描画アダプター](render_score_report.py)は保存済み集約値を読む。図の取得にはネット接続が必要で、数値表はオフラインでも残る。2020*は参考と明示した。Chromiumで6選択・1200px/390px表示・数値表を確認。実行環境のCDN接続は失敗したため描画検査では既取得の同版Plotly.jsを供給し、CDN不通時の数値表表示も確認した。
 
 Blocking：今回の固定比較・再計算に未解決の不一致なし。Should / 研究残件：小さい層での率の不安定さ、相手強度・その時点までの試合展開・投手起用、以後の試合終了による機会差。到達率は自軍の得点と相手の追加点の両方で決まり、自軍の攻撃だけの指標ではない。
 

@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "files_scanned": 450,
+  "files_scanned": 379,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
-      "line": 65
+      "line": 57
     },
     {
       "file": "dist/blueprobe_min.py",
@@ -25,6 +25,10 @@
     {
       "file": "dist/sakanalytics_min.py",
       "line": 119
+    },
+    {
+      "file": "dragowing/aoi_sibling.py",
+      "line": 35
     },
     {
       "file": "dragowing/vendor/aoi/scripts/fetch_module.py",

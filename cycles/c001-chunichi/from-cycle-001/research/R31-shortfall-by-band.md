@@ -1,6 +1,6 @@
 # R31: 中日の得点の不足は、どの帯で、どれだけ大きくなったか（研究計画）
 
-記録: 2026-10-05。計算を始める前に書いた。スクリプト [r31_balance.py](r31_balance.py) は書いたが、まだ実行していない。
+記録: 2026-10-05。計算を始める前に書いた。スクリプト [research.py r31](research.py) は書いたが、まだ実行していない。
 
 見ているもの: R3 の期間平均（中日の低得点の年 11単位で床 −0.08・中 −0.24・天井 −0.28・合計 −0.60）と、R3 の計算後の記述「2021〜2024年は床の不足も −0.10〜−0.20」。R29・R30 の結果（中日の片側だけ上位の B は 2019年を除いて得失点差マイナス、2021〜2023年は −73〜−108）。年ごとの帯の値の表、失点の優位の値は見ていない。
 
@@ -21,7 +21,7 @@ R29・R30 で、中日の問いは「なぜ失点1〜3位でも得失点差が�
 - 期間は先に決める: 2013〜2019年と 2021〜2025年（2020年は除く）
 
 ```bash
-python cycles/c001-chunichi/research/r31_balance.py cycles/c001-chunichi/outputs/season.jsonl
+python cycles/c001-chunichi/from-cycle-001/research/research.py r31 cycles/c001-chunichi/outputs/season.jsonl
 ```
 
 ## 読み方（先に決める）
@@ -36,7 +36,7 @@ python cycles/c001-chunichi/research/r31_balance.py cycles/c001-chunichi/outputs
 - 失点の優位は失点の総量だけで、守備と投手は分けない
 - 記述であり、「なぜ打てなかったか」（選手・起用）は言わない
 
-## 結果（2026-10-05、`r31_balance.py` を実行。`season.jsonl` は既存のまま、npb.jp へのリクエストは 0）
+## 結果（2026-10-05、`research.py r31` を実行。`season.jsonl` は既存のまま、npb.jp へのリクエストは 0）
 
 単位はどれも1試合あたりの点。得点の不足と失点の優位は、同じ年・同じリーグの他球団の平均との差。
 

@@ -1,6 +1,6 @@
 # 波の減衰 0 → ε の感度: 実データでの結果（探索・暫定）
 
-`../wave_eps_sensitivity.py` を実データで走らせた結果です。確定済みの出力（`outputs/season.jsonl` など）は変更していません。**ε の値は暫定の置き場所で、結論には使いません。扱いは今後決めます。** 試合データそのものはコミットしていません（`wave_*` の派生値と集計だけ）。
+`../wave_eps.py sensitivity` を実データで走らせた結果です。確定済みの出力（`outputs/season.jsonl` など）は変更していません。**ε の値は暫定の置き場所で、結論には使いません。扱いは今後決めます。** 試合データそのものはコミットしていません（`wave_*` の派生値と集計だけ）。
 
 入力の出どころと照合は、同じ階層の `../wave_eps_trial_results/README.md` と同じです（[PR #127](https://github.com/myon-bioinformatics/Aoi/pull/127) の `games_raw.json` から 2013〜2025 年の公式戦 11,028 試合を取り出したローカルの表）。
 
@@ -8,7 +8,7 @@
 
 - `wave_eps_sensitivity.md` / `.json`: ε の格子（0.1〜1e-12 の 9 通り）と、線の始まり・終わりを動かした 8 通りの結果
 - `wave_eps_boundary_membership.jsonl`: 基準の境界の 23 単位が、動かした 8 本の線のうち何本で境界に残るか
-- `wave_eps_settle_coefficients.md` / `.json`: 落ち着く位置を「係数 × 10^n」（ε = a × 10^-n）で書いたときの、ε ごとの位置・単位ごとの係数・最小の ε の係数で言い当てたときの外れ（`../wave_eps_settle_coefficients.py` を `../wave_eps_trial_results/wave_eps_rows_*.jsonl` に走らせたもの）
+- `wave_eps_settle_coefficients.md` / `.json`: 落ち着く位置を「係数 × 10^n」（ε = a × 10^-n）で書いたときの、ε ごとの位置・単位ごとの係数・最小の ε の係数で言い当てたときの外れ（`../wave_eps.py settle_coefficients` を `../wave_eps_trial_results/wave_eps_rows_*.jsonl` に走らせたもの）
 - `wave_eps_sensitivity_gate.json`: 対照の関門（ε なしの実行 vs 確定済み `season.jsonl`）。156 単位、違う行 0、pass
 
 ## 結果（要点）
@@ -22,4 +22,4 @@
 
 - 実データは NPB 2013〜2025 の 1 組だけで、減衰 0 の単位は 23 と少ない。
 - 最初の試験（`../wave_eps_trial_results/`）は Aoi の main にある sakanalytics、この感度は #124 の枝にある版で走らせた。どちらも対照の関門を通り、ε = 1e-6 で結果は一致する。
-- 再現: `uv run --locked python cycles/c001-chunichi/exploratory/wave_eps_sensitivity.py --games games.jsonl --config cycles/c001-chunichi/analysis.toml --committed cycles/c001-chunichi/outputs/season.jsonl --outdir <出力先> --repo .`
+- 再現: `uv run --locked python cycles/c001-chunichi/exploratory/wave_eps.py sensitivity --games games.jsonl --config cycles/c001-chunichi/analysis.toml --committed cycles/c001-chunichi/outputs/season.jsonl --outdir <出力先> --repo .`

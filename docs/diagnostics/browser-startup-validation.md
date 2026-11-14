@@ -1,6 +1,6 @@
 # Browser.getVersion 起動診断（検証専用）
 
-`python scripts/diagnose_dragowing_browser.py` は、Chrome / Chromium の選択と、選択済みの実行ファイルが CDP に応答するまでの問題を分けて記録する。標準ライブラリだけで動き、研究データは読まない。既存の `Chrome`、`RenderSession`、`export_draw` を使う検証用モジュールであり、本番の起動引数、再試行、タイムアウト、ブラウザ選択は変更しない。
+`python scripts/dragowing_browser.py diagnose` は、Chrome / Chromium の選択と、選択済みの実行ファイルが CDP に応答するまでの問題を分けて記録する。標準ライブラリだけで動き、研究データは読まない。既存の `Chrome`、`RenderSession`、`export_draw` を使う検証用モジュールであり、本番の起動引数、再試行、タイムアウト、ブラウザ選択は変更しない。
 
 通常の画像テストと異なり、ブラウザ不在を skip しない。指定した実行ファイル・JS がない、バージョン取得に失敗した、1 回でも試行が失敗した場合は終了コード 1。引数の構文や上限値の誤りは argparse の終了コード 2。
 
@@ -9,11 +9,11 @@
 Aoi のルートから、使用する実行ファイルの絶対パスを必ず渡す。
 
 ```sh
-python -S scripts/diagnose_dragowing_browser.py \
+python -S scripts/dragowing_browser.py diagnose \
   --chrome /usr/bin/google-chrome --runs 5 --timeout 30 \
   --output build/browser-validation/chrome-startup.json
 
-python -S scripts/diagnose_dragowing_browser.py \
+python -S scripts/dragowing_browser.py diagnose \
   --chrome /usr/bin/chromium --runs 5 --timeout 30 \
   --output build/browser-validation/chromium-startup.json
 ```
@@ -32,7 +32,7 @@ python -S scripts/diagnose_dragowing_browser.py \
 信頼できるローカルの Plotly.js を事前に用意し、`--plotly-js` と `--evidence-dir` を両方指定する。このコマンドは JS をダウンロードせず、環境変数で指定された別の JS にもフォールバックしない。
 
 ```sh
-python -S scripts/diagnose_dragowing_browser.py \
+python -S scripts/dragowing_browser.py diagnose \
   --chrome /usr/bin/google-chrome --runs 3 --timeout 30 \
   --plotly-js /absolute/path/to/plotly.min.js \
   --evidence-dir build/browser-validation/chrome-images \
@@ -86,10 +86,10 @@ stack は主プロセスの一時点だけで、state / wchan / pipe と原子�
 ## 初回起動テストのCLI（2026-10-30）
 
 GitHub Actions の初回 normal/offline 専用ジョブとローカルの同等の検証には、
-リポジトリのルートから `scripts.run_browser_startup_ci` を実行する。
+リポジトリのルートから `scripts.dragowing_browser startup_ci` を実行する。
 
 ```sh
-CHROME=/absolute/path/to/managed/chromium .venv/bin/python -m scripts.run_browser_startup_ci --output build/startup-context
+CHROME=/absolute/path/to/managed/chromium .venv/bin/python -m scripts.dragowing_browser startup_ci --output build/startup-context
 ```
 
 この CLI は既存の 8 秒 regression を単独で最初に実行し、失敗ならその終了コードを
@@ -112,10 +112,8 @@ normal / offline の切り替えはCLI内部では行わない。GitHub Actions�
 
 ```sh
 .venv/bin/python -m pytest -c pyproject.toml -q \
-  tests/test_dragowing_browser_diagnostics.py \
-  dragowing/tests/test_chrome_pipe.py \
-  tests/test_dragowing_browser_transport.py \
-  tests/test_dragowing_browser_resources.py
+  tests/test_dragowing_browser.py \
+  dragowing/tests/test_chrome_pipe.py
 ```
 
 新しいテストは deterministic な CDP peer を POSIX pipe で動かし、実 Chrome / Chromium やダウンロードを必要としない。起動成功、応答なし、途中終了、不正 JSON、spawn 失敗、`--version` 失敗、実行ファイル / JS 不在、不正 timeout、symlink 名の維持、同一 PID の 6 出力、ready / capture 失敗、stderr の bounded read、cleanup 失敗による後続停止を確認する。実ブラウザの成否は別の CI 実測として扱う。
@@ -153,7 +151,7 @@ security 設定、timeout、retry は変更しない。ローカル contract tes
 
 ## 別に確認した resource cleanup の問題
 
-`test_dragowing_browser_resources.py` は 2 件の既存不具合を deterministic に再現する strict xfail テストである。
+`test_dragowing_browser.py` の resources の節（旧 `test_dragowing_browser_resources.py`）は、2 件の既存不具合を deterministic に再現する strict xfail テストである。
 
 - 2 本目の `os.pipe()` が EMFILE を返したとき、先に確保した pipe pair が未追跡のまま残る。
 - pipe fd が 1024 以上になると `select.select` が拒否し、`close()` も同じ ValueError を繰り返して cleanup に到達しない。
@@ -172,7 +170,7 @@ security 設定、timeout、retry は変更しない。ローカル contract tes
 
 `first-start-context` は `normal` と `offline` を別の fresh runner job で実行する。
 両方とも Ubuntu 24.04 / Python 3.14、同じ依存・Plotly.js・管理対象 Chromium を使う。
-`scripts/run_browser_startup_ci.py` がまず既存の 8 秒 regression だけを実行し、成功した場合だけ
+`scripts/dragowing_browser.py startup_ci` がまず既存の 8 秒 regression だけを実行し、成功した場合だけ
 次の順序で残りを実行する（8 秒 regression 自体は二度目から除く）。
 
 1. `dragowing/tests/test_chrome_pipe.py`
@@ -190,7 +188,7 @@ observer は Aoi 専用の opt-in plugin で、元のテスト・本番 subtree 
 
 ```sh
 CHROME=/absolute/path/to/managed/chromium \
-  .venv/bin/python -m scripts.run_browser_startup_ci --output build/startup-context
+  .venv/bin/python -m scripts.dragowing_browser startup_ci --output build/startup-context
 ```
 
 

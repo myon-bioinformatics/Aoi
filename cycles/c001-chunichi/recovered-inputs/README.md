@@ -52,7 +52,7 @@
 週2回の定期検証（Actions「c001 saved input verification」、手動実行も可）は、次の標準ライブラリだけのコマンドを使います。キャッシュのrestore/saveやrun/c001へのdispatch、NPBへのリクエストは行いません。
 
 ```sh
-python -S scripts/check_c001_saved_inputs.py
+python -S scripts/research_inputs.py saved_inputs
 ```
 
 保存された試合JSONと年次パネルのハッシュ・バイト数、年次単位の重複を検査し、既存の2026年再集計処理で858試合・12球団・年次72値とコミット済み出力を照合します。欠損、改変、古い出力は失敗します。結果JSONをActions artifactへ保存し、元入力と固定済み研究結果は書き換えません。
@@ -65,7 +65,7 @@ python -S scripts/check_c001_saved_inputs.py
 
 リポジトリ直下で次を実行すると、元ZIPを変更せず、選んだ2ファイルだけをgit管理外 `data/recovered-inputs/` に復元します。既存ファイルの不一致では停止します。これはデータのコピー手順であり、利用条件や再配布権限を新たに付与するものではありません。
 
-[stdlib-only検査helper](../../../scripts/recovered_zip.py) は、読み込むZIPの全メンバーを先に検査します。絶対パス、`.` / `..` / 空要素、バックスラッシュ、Windowsのdrive・ADS・予約名、NUL等の制御文字、名前の重複・別名、ファイルとディレクトリの衝突、symlink・device等の特殊型を拒否し、安全な名前への書き換えはしません。Unix型ビット未指定の通常ファイルと、末尾 `/` の空ディレクトリは受け入れます。CIは公開する3つのZIP（架空専用ZIPを含む）と架空MANIFESTの元パスを同じ条件で検証します。このhelperは展開器ではなく、以下も固定の出力先にだけコピーします。`extract()` / `extractall()` は使いません。
+[stdlib-only検査helper](../../../scripts/research_inputs.py) は、読み込むZIPの全メンバーを先に検査します。絶対パス、`.` / `..` / 空要素、バックスラッシュ、Windowsのdrive・ADS・予約名、NUL等の制御文字、名前の重複・別名、ファイルとディレクトリの衝突、symlink・device等の特殊型を拒否し、安全な名前への書き換えはしません。Unix型ビット未指定の通常ファイルと、末尾 `/` の空ディレクトリは受け入れます。CIは公開する3つのZIP（架空専用ZIPを含む）と架空MANIFESTの元パスを同じ条件で検証します。このhelperは展開器ではなく、以下も固定の出力先にだけコピーします。`extract()` / `extractall()` は使いません。
 
 ```python
 import hashlib
@@ -73,7 +73,7 @@ import io
 import json
 from pathlib import Path
 
-from scripts.recovered_zip import validated_zip
+from scripts.research_inputs import validated_zip
 
 catalog = json.loads(Path("cycles/c001-chunichi/recovered-inputs/manifest.json").read_text())
 root = Path("data/recovered-inputs")

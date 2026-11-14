@@ -88,8 +88,8 @@
 再計算：
 
 ```sh
-python research/gpt-r001-score-allocation/inning_cutoff.py --innings /path/team_half_innings.csv.gz --season /path/season.jsonl --out /tmp/inning_cutoff.json
-python research/gpt-r001-score-allocation/verify_cutoff_independent.py --innings /path/team_half_innings.csv.gz --result /tmp/inning_cutoff.json
+python research/gpt-r001-score-allocation/analyses.py inning_cutoff --innings /path/team_half_innings.csv.gz --season /path/season.jsonl --out /tmp/inning_cutoff.json
+python research/gpt-r001-score-allocation/recheck.py cutoff_independent --innings /path/team_half_innings.csv.gz --result /tmp/inning_cutoff.json
 ```
 
 `outputs/inning_cutoff.json` の `cell_columns` が各セル配列の列定義。勝率=W/(W+L)、後半得点率=late_RF/late_off_innings、後半得失点差平均=late_net_sum/G、母分散=late_net_sum_squares/G−平均²。分母0は未定義。試合ごとの生行・URLは新規出力へ含めない。

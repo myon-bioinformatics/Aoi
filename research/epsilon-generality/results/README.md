@@ -1,6 +1,6 @@
 # ε の汎用性の確認: 結果（探索）
 
-[README.md](../README.md) に事前に書いた基準を、主食価格の月次の窓と合成の系列に当てた結果です。スクリプトは `eps_generality.py`・`posthoc_boundary_forms.py`（コミット 9841b28 の版）。**基準は結果を見て変えていません。** ε の値は暫定で、結論には使いません。
+[README.md](../README.md) に事前に書いた基準を、主食価格の月次の窓と合成の系列に当てた結果です。スクリプトは `eps_generality.py`・`eps_posthoc.py boundary_forms`（コミット 9841b28 の版）。**基準は結果を見て変えていません。** ε の値は暫定で、結論には使いません。
 
 ## 要点
 
@@ -101,5 +101,5 @@
 
 ```sh
 uv run --locked python research/epsilon-generality/eps_generality.py --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out --repo .      # 約 20 秒
-uv run --locked python research/epsilon-generality/posthoc_boundary_forms.py --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out --repo .   # 約 10 秒
+uv run --locked python research/epsilon-generality/eps_posthoc.py boundary_forms --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out --repo .   # 約 10 秒
 ```

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""collect.py / verify.py / inning_pilot.py と同じ httpx.Client で PoliteFetcher を動かす（実験）。
+"""research/gpt-r001-score-allocation/fetch.py（collect・verify・inning_pilot）と同じ httpx.Client で PoliteFetcher を動かす（実験）。
 
     python mindeps/run_httpx.py --impl real out.json
     python mindeps/run_httpx.py --impl min  out.json   # httpx が入っていない環境
@@ -28,6 +28,13 @@ def install_httpx_min() -> None:
     module = importlib.util.module_from_spec(spec)
     sys.modules["httpx"] = module
     spec.loader.exec_module(module)
+
+
+def install_selectolax_min_for_fetch() -> None:
+    """fetch.py は import 時に selectolax も読む（まとめる前の collect.py は読まなかった）。selectolax が無いときだけ min を置く。"""
+    if importlib.util.find_spec("selectolax") is None:
+        import run_selectolax
+        run_selectolax.install_selectolax_min()
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -68,12 +75,12 @@ class _Handler(BaseHTTPRequestHandler):
 
 
 def outcomes() -> dict:
-    """collect.py の with httpx.Client(...) as client を、ローカル URL に対して実行する。"""
+    """fetch.py の collect の with httpx.Client(...) as client を、ローカル URL に対して実行する。"""
     import httpx
     from queryu import Cache, PoliteFetcher, UA
 
     # 研究スクリプトの import が、この Client で通ることを確かめる。main は npb.jp へ行くので呼ばない。
-    import collect  # noqa: F401
+    import fetch  # noqa: F401
 
     _Handler.seen = []
     server = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
@@ -83,7 +90,7 @@ def outcomes() -> dict:
     try:
         import tempfile
         cache = Cache(Path(tempfile.mkdtemp(prefix="httpx-min-")))
-        # collect.py / verify.py / inning_pilot.py と同じ引数。
+        # fetch.py の collect・verify・inning_pilot と同じ引数。
         with httpx.Client(headers={"User-Agent": UA}, timeout=45, follow_redirects=True) as client:
             fetcher = PoliteFetcher(cache, wait=0, client=client)
             pages = {
@@ -120,6 +127,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if args.impl == "min":
         install_httpx_min()
+        install_selectolax_min_for_fetch()
     elif importlib.util.find_spec("httpx") is None:
         raise SystemExit("httpx が無い。--impl real は httpx のある環境で動かす")
     result = outcomes()

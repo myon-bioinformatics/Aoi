@@ -81,4 +81,4 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv <入�
     --random-scales 10 --scale-range inside 1e-7 1e-4 --coef-seed 20261027
 ```
 
-主食価格は `research/staple-price-survey/staple_survey_vertical.csv`、物理量は `fetch_physical.py` の出力（[../results-physical/physical_manifest.json](../results-physical/physical_manifest.json) の SHA-256 と一致するもの）。数十秒〜2 分。表の数と本文の数は `eps_generality.json` と事後の格子の JSON の数と同じで、[tests/test_epsilon_generality_scaleband.py](../../../tests/test_epsilon_generality_scaleband.py) が確かめています。
+主食価格は `research/staple-price-survey/staple_survey_vertical.csv`、物理量は `fetch_physical.py` の出力（[../results-physical/physical_manifest.json](../results-physical/physical_manifest.json) の SHA-256 と一致するもの）。数十秒〜2 分。表の数と本文の数は `eps_generality.json` と事後の格子の JSON の数と同じで、[tests/test_epsilon_generality.py](../../../tests/test_epsilon_generality.py) が確かめています。

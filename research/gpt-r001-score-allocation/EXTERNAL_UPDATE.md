@@ -6,7 +6,7 @@
 
 固定済みの2013〜2025年のNPB公式最終スコアから、中日の年別指標を再計算し、13年の単純平均を比較した。得点／試合3.338、失点／試合3.805、得失点差／試合−0.467、ピタゴラス差+1.693、1点差勝率.495、3点差以上勝率.421、ホーム勝率.517、ビジター勝率.389、勝利中1点差比率.330、勝利中4点以上比率.290の10項目すべてが表示桁まで一致した。
 
-実行: `python research/gpt-r001-score-allocation/compare_external.py`
+実行: `python research/gpt-r001-score-allocation/analyses.py compare_external`
 
 全精度と対象データハッシュは `outputs/external_comparison.json`。これは提示された10項目の照合であり、全表の検証ではない。イニング履歴、12球団順位、標準化差、2026年を独立検証したことにはならない。
 

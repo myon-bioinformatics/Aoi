@@ -1,6 +1,6 @@
 # 補足パッケージの確認と未確認事項の更新
 
-2026-10-03、ユーザー経由で `aoi_supplement_share.zip` を受領。36ファイル（MANIFEST自身を含む）。新しいネットワーク取得を行わず、`verify_supplement.py` で提供ファイル間と既存データの対応を確認した。記録は [supplement_validation.json](outputs/supplement_validation.json)。
+2026-10-03、ユーザー経由で `aoi_supplement_share.zip` を受領。36ファイル（MANIFEST自身を含む）。新しいネットワーク取得を行わず、`recheck.py supplement` で提供ファイル間と既存データの対応を確認した。記録は [supplement_validation.json](outputs/supplement_validation.json)。
 
 ## 今回確認できたこと
 
@@ -38,7 +38,7 @@
 N回戦番号・x文字列は提供者がHTMLから抽出した観測であり、生HTMLそのものは今回も未受領。ここで確認したのは抽出値と他データとの整合性であり、全ページをこちらで再読したという意味ではない。また、打撃回配列の一致は同じ取得工程に由来する二つの表現の一致でもあり、完全に独立した二つの観測とは呼ばない。
 
 ```sh
-python research/gpt-r001-score-allocation/verify_supplement.py --share /path/to/aoi_supplement_share
+python research/gpt-r001-score-allocation/recheck.py supplement --share /path/to/aoi_supplement_share
 ```
 
 実データでexit=0。欠落ファイルは66、入力不整合は65。元ファイルを変更せず、提供パッケージのMANIFESTと確認コードのハッシュを出力に保持する。

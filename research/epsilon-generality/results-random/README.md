@@ -85,7 +85,7 @@ N = 24 の窓での C2 の最大ずれ（基準の ε=1e-9 との相対）。C1 
 
 ## 式が変わる ε を窓ごとに探した確認（表 5。事後。登録した基準の外）
 
-事後の梯子（表 4）で、ε を上げると選ばれる式が変わった単位は 3 つだけでした（主食価格の MDA の小麦粉と NIC の米、物理量の月次の Mauna Loa）。この 3 窓について、梯子の隣り合う 2 点の間を ε の対数で二分し、式が変わる ε（ε\*）を 0.1% の幅で挟みました。許容 `EPS_WAVE_TIE` を ×10^±3 にして繰り返し、梯子の下の点から 1/100 までを ε の対数で 60 点に分けた並びで式が戻って変わらないかと、ε\* を挟む 2 点で 2 つの式の誤差の2乗和がどれだけ違うかも見ています。予想 (a)〜(e) は [posthoc_window_crossing.py](../posthoc_window_crossing.py) の冒頭に、**走らせる前に**書いて push してから走らせました（commit 65f8ce8）。窓は梯子の結果を見て選んだもので、無作為ではありません。基準はなく、ε の値や `EPS_WAVE_TIE` をどうするかは決めません。
+事後の梯子（表 4）で、ε を上げると選ばれる式が変わった単位は 3 つだけでした（主食価格の MDA の小麦粉と NIC の米、物理量の月次の Mauna Loa）。この 3 窓について、梯子の隣り合う 2 点の間を ε の対数で二分し、式が変わる ε（ε\*）を 0.1% の幅で挟みました。許容 `EPS_WAVE_TIE` を ×10^±3 にして繰り返し、梯子の下の点から 1/100 までを ε の対数で 60 点に分けた並びで式が戻って変わらないかと、ε\* を挟む 2 点で 2 つの式の誤差の2乗和がどれだけ違うかも見ています。予想 (a)〜(e) は [eps_posthoc.py の window_crossing](../eps_posthoc.py) の冒頭に、**走らせる前に**書いて push してから走らせました（commit 65f8ce8）。窓は梯子の結果を見て選んだもので、無作為ではありません。基準はなく、ε の値や `EPS_WAVE_TIE` をどうするかは決めません。
 
 入力は主食価格の `staple_survey_vertical.csv`（SHA-256 `7ef5a8374f237609395b890b5b3fa4bae28e8509fb4ba9ca0ee5e0a884c70d22`）と物理量の月次 `physical_monthly_vertical.csv`（`4f18c60d52e26f1ec84496619ee2aa656ae0e3994373064c8be78fd150ceefc9`。[results-physical/physical_manifest.json](../results-physical/physical_manifest.json) と一致）。
 
@@ -114,7 +114,7 @@ N = 24 の窓での C2 の最大ずれ（基準の ε=1e-9 との相対）。C1 
 限界: 窓は梯子で動いた 3 つだけで、ε\* はこの窓のこの値の数字です（定数ではありません）。主食価格 2 窓（12 点）と物理量 1 窓（48 点）で、日次や 24 点の窓は動いた単位がなく、見ていません。再現:
 
 ```sh
-uv run --locked python research/epsilon-generality/posthoc_window_crossing.py --staple-csv research/staple-price-survey/staple_survey_vertical.csv --physical-monthly-csv out/physical/physical_monthly_vertical.csv --outdir out/crossing --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py window_crossing --staple-csv research/staple-price-survey/staple_survey_vertical.csv --physical-monthly-csv out/physical/physical_monthly_vertical.csv --outdir out/crossing --repo .
 ```
 
 ## 値の単位を変えたとき（表 3。報告だけで基準はない）
@@ -141,7 +141,7 @@ uv run --locked python research/epsilon-generality/posthoc_window_crossing.py --
 
 ### 主食価格で、倍率の境目を細かく見た確認（事後。登録した基準の外）
 
-`posthoc_scale_tolerance.py`（コミット 2843767。予想 (a')(b') は走らせる前に冒頭へ書いてプッシュ）を主食価格の月次（24 点の窓 2,212 個、単位 2,192）に当てました。物理量の月次・日次では報告済みの確認で、主食価格では第 3 回の乱数の倍率（3.83×10^-22 / 1e-6 / 8.52×10^-4 以上）の結果しかなかったので、境目の中を足しました。結果は [staple/posthoc_scale_tolerance.md](staple/posthoc_scale_tolerance.md)（スクリプトの出力のまま。違うのは、置き場所が 1 階層深いので、先頭のスクリプトへのリンク `../posthoc_scale_tolerance.py` を `../../posthoc_scale_tolerance.py` に直した 1 か所だけ）。
+`eps_posthoc.py scale_tolerance`（コミット 2843767。予想 (a')(b') は走らせる前に冒頭へ書いてプッシュ）を主食価格の月次（24 点の窓 2,212 個、単位 2,192）に当てました。物理量の月次・日次では報告済みの確認で、主食価格では第 3 回の乱数の倍率（3.83×10^-22 / 1e-6 / 8.52×10^-4 以上）の結果しかなかったので、境目の中を足しました。結果は [staple/posthoc_scale_tolerance.md](staple/posthoc_scale_tolerance.md)（スクリプトの出力のまま。違うのは、置き場所が 1 階層深いので、先頭のスクリプトへのリンク `../eps_posthoc.py` を `../../eps_posthoc.py` に直した 1 か所だけ）。
 
 | 倍率 | 境界の単位（許容そのまま） | 許容そのまま: 式が変わった | 境界かどうかが変わった | 許容に倍率の2乗: 式が変わった | 境界かどうかが変わった |
 |---|---|---|---|---|---|
@@ -161,7 +161,7 @@ uv run --locked python research/epsilon-generality/posthoc_window_crossing.py --
 
 ## ε が動いた範囲（事後。今回のデータでの記録で、定数ではない）
 
-`eps_range_profile.py`（コミット a4e2e0b。走らせる前に追加してプッシュ）で、ε を 1/100〜1e-13 の 16 点で動かしたとき、結果がどこまで動かなかったかを数えました。**これは今回の 3 入力で ε が動いた範囲の記録で、ε の範囲や既定値を決めるものではありません。** ε は 0 に近い値なので、乱数で選ぶと「大きい側」と「小さい側」の両方に無視できない割合が出ます（下の重み）。どこまで動かないかはデータごとに違うので、同じ表をデータごとに作って並べて見るためのものです（別のデータの出し方は下の「再現」）。登録した基準の外で、判定はしません。
+`eps_posthoc.py range_profile`（コミット a4e2e0b。走らせる前に追加してプッシュ）で、ε を 1/100〜1e-13 の 16 点で動かしたとき、結果がどこまで動かなかったかを数えました。**これは今回の 3 入力で ε が動いた範囲の記録で、ε の範囲や既定値を決めるものではありません。** ε は 0 に近い値なので、乱数で選ぶと「大きい側」と「小さい側」の両方に無視できない割合が出ます（下の重み）。どこまで動かないかはデータごとに違うので、同じ表をデータごとに作って並べて見るためのものです（別のデータの出し方は下の「再現」）。登録した基準の外で、判定はしません。
 
 数えたのは、窓の長さ 12 / 24 / 48 の合計で、境界の単位（減衰 0 で当てはまる単位）3,849 個と、境界でない単位 6,442 個です（主食価格 2,970 / 4,873、物理量の月次 259 / 516、物理量の日次 620 / 1,053）。「収まった」は、基準の ε=1e-9 のときの係数との相対のずれが δ 以内、という意味で、真の値との差ではありません。両方とも始まりで落ち着く単位（主食価格 5、物理量の月次 4、物理量の日次 23）は、C2 と同じく比べず、収まったに入れています。
 
@@ -235,18 +235,18 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv out/p
     --random-eps 10 --random-scales 10 --coef-seed 18750922 --outdir out/random/monthly --repo .
 uv run --locked python research/epsilon-generality/eps_generality.py --csv out/physical/physical_daily_vertical.csv --profile physical-daily \
     --random-eps 10 --random-scales 10 --coef-seed 18750922 --outdir out/random/daily --repo .
-uv run --locked python research/epsilon-generality/posthoc_eps_ladder.py --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out/random/staple --repo .
-uv run --locked python research/epsilon-generality/posthoc_eps_ladder.py --csv out/physical/physical_monthly_vertical.csv --profile physical-monthly --outdir out/random/monthly --repo .
-uv run --locked python research/epsilon-generality/posthoc_eps_ladder.py --csv out/physical/physical_daily_vertical.csv --profile physical-daily --outdir out/random/daily --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py eps_ladder --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out/random/staple --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py eps_ladder --csv out/physical/physical_monthly_vertical.csv --profile physical-monthly --outdir out/random/monthly --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py eps_ladder --csv out/physical/physical_daily_vertical.csv --profile physical-daily --outdir out/random/daily --repo .
 ```
 
 ε が動いた範囲の記録（別のデータにも使える。`--prefix` と `--cadence` で変数と刻みを指定する）:
 
 ```sh
-uv run --locked python research/epsilon-generality/eps_range_profile.py --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out/random/staple --repo .
-uv run --locked python research/epsilon-generality/eps_range_profile.py --csv out/physical/physical_monthly_vertical.csv --profile physical-monthly --outdir out/random/monthly --repo .
-uv run --locked python research/epsilon-generality/eps_range_profile.py --csv out/physical/physical_daily_vertical.csv --profile physical-daily --outdir out/random/daily --repo .
-uv run --locked python research/epsilon-generality/eps_range_profile.py --csv <縦持ちの CSV> --prefix <変数名の頭> --cadence month --outdir out/range/<名前> --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py range_profile --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out/random/staple --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py range_profile --csv out/physical/physical_monthly_vertical.csv --profile physical-monthly --outdir out/random/monthly --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py range_profile --csv out/physical/physical_daily_vertical.csv --profile physical-daily --outdir out/random/daily --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py range_profile --csv <縦持ちの CSV> --prefix <変数名の頭> --cadence month --outdir out/range/<名前> --repo .
 ```
 
 

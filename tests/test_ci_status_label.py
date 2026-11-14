@@ -9,7 +9,7 @@ from unittest.mock import patch
 from types import SimpleNamespace
 from add_ci_label import request
 from add_ci_label import confirmed_failure, process
-from ci_label_api import pages, open_pulls
+from add_ci_label import pages, open_pulls
 R='owner/repo'; H='a'*40; B='repos/'+R
 class Tests(unittest.TestCase):
     def setUp(self):

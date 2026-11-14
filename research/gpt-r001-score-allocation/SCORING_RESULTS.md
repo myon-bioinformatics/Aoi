@@ -31,7 +31,7 @@
 
 ## 検査と再現
 
-`python research/gpt-r001-score-allocation/scoring.py`
+`python research/gpt-r001-score-allocation/analyses.py scoring`
 
 実行はexit=0。固定済みデータのハッシュ・未知0件・156球団年の公式年計照合を確認したうえで、全セルの度数から試合数と得点を再構成した。過去のホーム／ビジター集計の平均得点とも全78球団年で一致を確認した。出力は `outputs/scoring_distribution.json` で、入力・コード・探索計画のハッシュを含む。これは観測集計の正常終了であり、新しい因果命題の合格を意味しない。
 

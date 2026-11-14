@@ -50,12 +50,12 @@ RPS=inn_R/inn_Sを分数として同年・同リーグの6球団で比較し、�
 
 ## 再現と限界
 
-[hypothesis_followup.py](hypothesis_followup.py)は標準ライブラリのみ。入力Git blob、168球団年の一意性、イニング得点と年計の一致、同リーグ6球団、144球団年・120ペアを確認。不正入力blobでは出力前に停止。
+[analyses.py hypothesis_followup](analyses.py)は標準ライブラリのみ。入力Git blob、168球団年の一意性、イニング得点と年計の一致、同リーグ6球団、144球団年・120ペアを確認。不正入力blobでは出力前に停止。
 
 [出力JSON](outputs/hypothesis_followup.json)には全分割表のTP/FP/FN/TN事例、持続条件の120ペア、2020の12例、主条件と感度、入力/コードハッシュを保持する。再実行でJSONバイト一致。独立pandas計算で120ペア、持続条件の表と接戦の全6表を照合した。これらの研究検証は通常pytest CIとは別。
 
 ```sh
-python research/gpt-r001-score-allocation/hypothesis_followup.py \
+python research/gpt-r001-score-allocation/analyses.py hypothesis_followup \
   --season /path/to/season.jsonl \
   --out research/gpt-r001-score-allocation/outputs/hypothesis_followup.json
 ```

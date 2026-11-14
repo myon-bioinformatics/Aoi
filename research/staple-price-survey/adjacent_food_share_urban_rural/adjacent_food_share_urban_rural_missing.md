@@ -11,7 +11,7 @@
 | SAU / ARE / SGP / HKG | **MISS / N/A** | no open UR primary / city-state |
 | CHE | **MISS** UR | HABE Grossregion ≠ urban/rural; Einkommensklasse absolute CHF bands (INC already loaded) |
 
-Current CSV: **109 ISO3 · 531 rows** (validated by `scripts/check_food_share_data.py`). Earlier append counts below are historical.
+Current CSV: **109 ISO3 · 531 rows** (validated by `scripts/research_inputs.py food_share`). Earlier append counts below are historical.
 
 | ISO3 | Status |
 |---|---|

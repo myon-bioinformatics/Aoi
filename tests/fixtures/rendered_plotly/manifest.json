@@ -10,6 +10,6 @@
     "figure-2.svg": "6a1129cbc15bdc0c17cea631d7a4697e5c6daf7ef3aa8b92ff13a6dd996212ac"
   },
   "plotly_js": "4.1.2",
-  "regenerate": "python scripts/render_static_fixtures.py --chrome <chromium> --plotly-js <plotly.min.js>",
+  "regenerate": "python scripts/dragowing_browser.py render_fixtures --chrome <chromium> --plotly-js <plotly.min.js>",
   "schema": "aoi-rendered-plotly-fixtures/1"
 }

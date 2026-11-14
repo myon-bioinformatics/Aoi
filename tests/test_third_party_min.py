@@ -26,10 +26,9 @@ def test_ast_surface_is_the_calls_the_mins_implement():
     assert "Client" in found["attrs"]["httpx"]
     assert any("markdown" in item for item in found["dynamic"])
     absent = trace.absent_traces()
-    assert "selectolax" in absent["selectolax:research/gpt-r001-score-allocation/observe.py"]
-    assert "httpx" in absent["httpx:research/gpt-r001-score-allocation/collect.py"]
-    # inning_pilot は httpx を main() の中でだけ import する。
-    assert absent["httpx:research/gpt-r001-score-allocation/inning_pilot.py"] == "imported"
+    # fetch.py は collect・observe・verify・inning_pilot をまとめたもの。冒頭で selectolax と httpx の両方を読む
+    assert "selectolax" in absent["selectolax:research/gpt-r001-score-allocation/fetch.py"]
+    assert "httpx" in absent["httpx:research/gpt-r001-score-allocation/fetch.py"]
 
 
 def test_selectolax_min_matches_real_research_functions():
@@ -119,16 +118,14 @@ def test_min_cli_refuses_when_the_real_package_is_installed(tmp_path):
 
 
 def test_client_call_shape_is_shared_by_the_research_scripts():
-    """実行している Client(...) が、3本の研究スクリプトの呼び出しと同じである。"""
+    """実行している Client(...) が、研究スクリプト（fetch.py の collect・verify・inning_pilot）の 3 つの呼び出しと同じである。"""
     expected = {"headers", "timeout", "follow_redirects"}
-    for rel in (
-        "research/gpt-r001-score-allocation/collect.py",
-        "research/gpt-r001-score-allocation/verify.py",
-        "research/gpt-r001-score-allocation/inning_pilot.py",
-    ):
-        tree = ast.parse((ROOT / rel).read_text(encoding="utf-8"))
-        calls = []
-        for node in ast.walk(tree):
+    tree = ast.parse((ROOT / "research/gpt-r001-score-allocation/fetch.py").read_text(encoding="utf-8"))
+    calls = {}
+    for fn in tree.body:
+        if not isinstance(fn, ast.FunctionDef):
+            continue
+        for node in ast.walk(fn):
             func = getattr(node, "func", None)
             if not isinstance(node, ast.Call) or not isinstance(func, ast.Attribute) or func.attr != "Client":
                 continue
@@ -136,8 +133,9 @@ def test_client_call_shape_is_shared_by_the_research_scripts():
                 continue
             keys = {kw.arg for kw in node.keywords}
             constants = {kw.arg: ast.literal_eval(kw.value) for kw in node.keywords if kw.arg != "headers"}
-            calls.append((keys, constants))
-        assert calls == [(expected, {"timeout": 45, "follow_redirects": True})], rel
+            calls.setdefault(fn.name, []).append((keys, constants))
+    assert calls == {name: [(expected, {"timeout": 45, "follow_redirects": True})]
+                     for name in ("collect_main", "verify_main", "inning_pilot_main")}
 
 
 def test_coverage_runner_uses_canonical_marker_evaluation():

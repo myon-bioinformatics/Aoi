@@ -35,14 +35,14 @@ It is not a lexbor replacement. html.parser does not do HTML5 recovery, and the 
 
 `httpx` 0.28.1 is pure Python, but `fetch_module` rejects it because of runtime dependencies: `anyio`, `certifi`, `httpcore`, `idna`. Fetching the wheel alone cannot import it. There is no dependency resolver in `fetch_module`.
 
-The only call sites are `collect.py`, `verify.py`, and `inning_pilot.py` (the last one only inside `main`, so a blocked import of the module succeeds). Each one is:
+The only call sites are `fetch.py collect`, `fetch.py verify`, and `fetch.py inning_pilot` (the last one only inside `main`, so a blocked import of the module succeeds). Each one is:
 
 ```python
 with httpx.Client(headers={"User-Agent": UA}, timeout=45, follow_redirects=True) as client:
     fetcher = PoliteFetcher(cache, wait=..., client=client)
 ```
 
-Proxying that client through `PoliteFetcher` touched only `Client` as a context manager, `get(url, headers=)`, `status_code`, `content`, `headers.get` (`etag`, `last-modified`), and `raise_for_status`. `httpx_min` covers that, including redirects, 404, 304, and 500, against a local server. QueRyu already speaks urllib; this is the same shape under the `httpx` name so those three scripts import.
+Proxying that client through `PoliteFetcher` touched only `Client` as a context manager, `get(url, headers=)`, `status_code`, `content`, `headers.get` (`etag`, `last-modified`), and `raise_for_status`. `httpx_min` covers that, including redirects, 404, 304, and 500, against a local server. QueRyu already speaks urllib; this is the same shape under the `httpx` name so those three scripts import. Since the four r001 fetch scripts became `fetch.py`, importing it also imports `selectolax` (the former `observe.py`), so `run_httpx.py --impl min` puts `selectolax_min` in place too when `selectolax` is missing (only for that import).
 
 Not covered, because nothing in the tree calls them: HTTP/2, streaming, auth, cookies, multipart, proxies as `httpx.Proxy` objects, and `httpx.Timeout` objects. `timeout=` has to be a number of seconds. Connection failures raise urllib's `URLError`, not `httpx.ConnectError`. The scripts do not catch either.
 
@@ -70,11 +70,11 @@ A stdlib `selectolax_min` cannot be the oracle in `blueprobe/tests/test_blueprob
 
 ### pandas
 
-`research/gpt-r001-score-allocation/verify_prediction_independent.py` imports pandas and calls `numpy.linalg.lstsq` on grouped columns (`read_json`, `groupby`, `transform`, `to_numpy`). pandas 3.0.6 has no usable `fetch_module` result: it requires `numpy` and `python-dateutil`. The script is the linear-algebra verification, which is out of this change.
+`research/gpt-r001-score-allocation/recheck.py prediction_independent` imports pandas and calls `numpy.linalg.lstsq` on grouped columns (`read_json`, `groupby`, `transform`, `to_numpy`). pandas 3.0.6 has no usable `fetch_module` result: it requires `numpy` and `python-dateutil`. The script is the linear-algebra verification, which is out of this change.
 
 ### ortools
 
-`sakanalytics/season_exact.py` and `research/gpt-r001-score-allocation/preclinch_dates.py` build a CP-SAT model (`CpModel`, `CpSolver`, `OPTIMAL` / `FEASIBLE` / `INFEASIBLE`). ortools 9.15.6755 publishes no pure wheel (platform wheels only) and depends on `absl-py`, `numpy`, `pandas`, `protobuf`, and others. A stdlib subset cannot stand in for the native solver. It is also not declared in `sakanalytics/pyproject.toml`; the import is inside the function that solves.
+`sakanalytics/season_exact.py` and `research/gpt-r001-score-allocation/analyses.py preclinch_dates` build a CP-SAT model (`CpModel`, `CpSolver`, `OPTIMAL` / `FEASIBLE` / `INFEASIBLE`). ortools 9.15.6755 publishes no pure wheel (platform wheels only) and depends on `absl-py`, `numpy`, `pandas`, `protobuf`, and others. A stdlib subset cannot stand in for the native solver. It is also not declared in `sakanalytics/pyproject.toml`; the import is inside the function that solves.
 
 ### polars and numpy
 
@@ -90,4 +90,4 @@ Dev-only. `fetch_module` rejects pytest 9.1.1 because it depends on `iniconfig`,
 
 ### DRAgoWing
 
-`research/gpt-r001-score-allocation/render_matched_comeback.py` imports `DRAgoWing.dragowing`, the old capitalized path. That is a local import path, not a third-party package.
+`research/gpt-r001-score-allocation/render_score_report.py matched_comeback` imports `DRAgoWing.dragowing`, the old capitalized path. That is a local import path, not a third-party package.

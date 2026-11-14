@@ -98,15 +98,11 @@ def absent_traces() -> dict[str, str]:
     """パッケージを塞いで研究スクリプトを import し、出た例外の先頭を返す。"""
     targets = {
         "selectolax": [
-            "research/gpt-r001-score-allocation/observe.py",
-            "research/gpt-r001-score-allocation/verify.py",
-            "research/gpt-r001-score-allocation/inning_pilot.py",
+            "research/gpt-r001-score-allocation/fetch.py",   # observe・verify・inning_pilot
             "blueprobe/tests/test_blueprobe_html_parity.py",
         ],
         "httpx": [
-            "research/gpt-r001-score-allocation/collect.py",
-            "research/gpt-r001-score-allocation/verify.py",
-            "research/gpt-r001-score-allocation/inning_pilot.py",
+            "research/gpt-r001-score-allocation/fetch.py",   # collect・verify・inning_pilot
         ],
     }
     code = r"""

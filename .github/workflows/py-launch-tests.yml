@@ -40,4 +40,4 @@ jobs:
           save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           prune-cache: true
       - run: node --test tests/py_launch.test.cjs
-      - run: python -S scripts/check_shared_tools_lock.py
+      - run: python -S scripts/repo_checks.py shared_tools_lock

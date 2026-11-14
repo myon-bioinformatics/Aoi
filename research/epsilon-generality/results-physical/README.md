@@ -1,6 +1,6 @@
 # ε の汎用性の確認（第 2 回）: 物理量の結果（探索）
 
-事前登録は [../README.md](../README.md) の「物理量の確認（第 2 回）: 事前登録」（コミット e55721a）。スクリプトは `eps_generality.py`・`fetch_physical.py`（e55721a の版）と `posthoc_scale_tolerance.py`（2332224 の版。予想を走らせる前に書いて push した）。**登録した基準・入力・設定は結果を見て変えていません。** ε の値は暫定で、結論には使いません。
+事前登録は [../README.md](../README.md) の「物理量の確認（第 2 回）: 事前登録」（コミット e55721a）。スクリプトは `eps_generality.py`・`fetch_physical.py`（e55721a の版）と `eps_posthoc.py scale_tolerance`（2332224 の版。予想を走らせる前に書いて push した）。**登録した基準・入力・設定は結果を見て変えていません。** ε の値は暫定で、結論には使いません。
 
 入力は登録した sha256 のとおりでした（月次 `4f18c60d…`、日次 `1d1ea18b…`。[physical_manifest.json](physical_manifest.json)）。なお `monthly/`・`daily/` の `eps_generality.md` 冒頭の「[README.md](../README.md)」は、このファイルを指します（基準は上の階層の README.md）。
 
@@ -47,7 +47,7 @@
 
 ## 事後の確認: 動きの理由（登録した基準の外）
 
-走らせる前に書いた予想（[posthoc_scale_tolerance.py](../posthoc_scale_tolerance.py) の冒頭）は、(a) 許容をそのままにして倍率を細かく動かすと、動き始める倍率が見つかる、(b) 許容に倍率の2乗をかけると、どの倍率でも式は変わらない、でした。結果は [posthoc_scale_tolerance.md](posthoc_scale_tolerance.md)。**(a)(b) とも予想のとおりでした。**
+走らせる前に書いた予想（[eps_posthoc.py の scale_tolerance](../eps_posthoc.py) の冒頭）は、(a) 許容をそのままにして倍率を細かく動かすと、動き始める倍率が見つかる、(b) 許容に倍率の2乗をかけると、どの倍率でも式は変わらない、でした。結果は [posthoc_scale_tolerance.md](posthoc_scale_tolerance.md)。**(a)(b) とも予想のとおりでした。**
 
 式が変わった単位の数（24 点の窓。許容 `EPS_WAVE_TIE` = 1e-12 のまま / 許容に倍率の2乗をかけたとき）:
 
@@ -92,5 +92,5 @@
 uv run --locked python research/epsilon-generality/fetch_physical.py --raw-dir out/physraw --outdir out/physical --download
 uv run --locked python research/epsilon-generality/eps_generality.py --csv out/physical/physical_monthly_vertical.csv --profile physical-monthly --outdir out/monthly --repo .   # 約 3 秒
 uv run --locked python research/epsilon-generality/eps_generality.py --csv out/physical/physical_daily_vertical.csv --profile physical-daily --outdir out/daily --repo .       # 約 6 秒
-uv run --locked python research/epsilon-generality/posthoc_scale_tolerance.py --monthly-csv out/physical/physical_monthly_vertical.csv --daily-csv out/physical/physical_daily_vertical.csv --outdir out/posthoc --repo .   # 約 6 秒
+uv run --locked python research/epsilon-generality/eps_posthoc.py scale_tolerance --monthly-csv out/physical/physical_monthly_vertical.csv --daily-csv out/physical/physical_daily_vertical.csv --outdir out/posthoc --repo .   # 約 6 秒
 ```

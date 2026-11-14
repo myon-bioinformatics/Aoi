@@ -143,7 +143,7 @@ The copy inside Aoi and the standalone repository can drift between syncs; the r
 | 🧪 Suite | ✅ | ⏭️ | 📝 |
 | --- | ---: | ---: | --- |
 | `pytest` (whole repository, `DRAGOWING_REQUIRE_CHROME=1`) | 3916 | 41 | Plotly.js from npm (jsDelivr unreachable here) |
-| `scripts/diagnose_dragowing_browser.py --runs 10` | 10 | | readiness 0.121–0.179 s |
+| `scripts/dragowing_browser.py diagnose --runs 10` | 10 | | readiness 0.121–0.179 s |
 | 🎞️ evidence GIF shots | 8 | | |
 
 ⏭️ The 41 skips are the existing opt-ins (season requirements, cross-repository integration, local-only expectations, network).
@@ -161,7 +161,7 @@ python ../BrowserTestKit/tools/evidence_gif.py docs/evidence/browser.gif --serve
 uv run --locked pytest -q                         # tests/ and every subproject's tests/ (pyproject.toml testpaths)
 python -S nagoyaction/linkcheck.py                # Markdown links and images (tracked files, exact case)
 python -S scripts/check_child_heads.py --fail-on-diff   # child repositories vs. their directories in Aoi
-python -S scripts/check_shared_tools_lock.py            # shared tools (stdlib-shrink, py_launch.cjs, uv_tool_build.py) vs. shared-tools.lock.json
+python -S scripts/repo_checks.py shared_tools_lock  # shared tools (stdlib-shrink, py_launch.cjs, uv_tool_build.py) vs. shared-tools.lock.json
 node --test tests/py_launch.test.cjs                    # shared launcher: safe discovery and repeated signal forwarding (Node >= 26)
 ```
 

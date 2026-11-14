@@ -1,4 +1,7 @@
-"""Repository and workflow contracts: action uses, paths, vendor dispatch, DRAgoWing browser lanes and fonts, the lab lane, holdout parity, child entries and the shared tools lock."""
+"""Repository and workflow contracts: action uses, paths, vendor dispatch, DRAgoWing browser lanes and fonts, the lab lane, holdout parity, child entries and the shared tools lock.
+
+旧 test_aoi_parent_workflow_pins.py もここにまとめた（節の頭に旧ファイルの名前を書いた）。
+"""
 
 import contextlib
 import importlib.util
@@ -15,18 +18,19 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from dragowing.figures import FONT
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
+import aoi_paths  # noqa: E402
+import pytest  # noqa: E402
+import repo_checks as uses  # noqa: E402
+import repo_checks as lock  # noqa: E402
+from dragowing.figures import FONT  # noqa: E402
 
-import aoi_paths
-import check_action_uses as uses
-import check_shared_tools_lock as lock
 
+# ==== workflows（旧 test_workflows.py）
 
-# ═══ · action uses ═══════════════════════════════════════════════════════════════════════════════════════
-# scripts/check_action_uses.py が親の uses の書き方を守る。
+WORKFLOWS_ROOT = Path(__file__).resolve().parents[1]
+
 
 SHA = "5fda3b95a4ea91299a34e894583c3862153e4b97"
 OTHER = "1c37ad07a6a961277cf70c0d37d6f313000f5884"
@@ -39,7 +43,7 @@ def _write(root: Path, text: str) -> None:
 
 
 def test_live_workflows_match_parent_style():
-    assert uses.style_problems(ROOT) == []
+    assert uses.style_problems(WORKFLOWS_ROOT) == []
 
 
 def test_registered_children_workflows_are_checked(tmp_path):
@@ -55,8 +59,8 @@ def test_registered_children_workflows_are_checked(tmp_path):
 
 
 def test_live_scan_covers_every_registered_child():
-    heads = json.loads((ROOT / "child-heads.json").read_text(encoding="utf-8"))["heads"]
-    scanned = {path.relative_to(ROOT).parts[0] for path, *_ in uses._iter_uses(ROOT)}
+    heads = json.loads((WORKFLOWS_ROOT / "child-heads.json").read_text(encoding="utf-8"))["heads"]
+    scanned = {path.relative_to(WORKFLOWS_ROOT).parts[0] for path, *_ in uses._iter_uses(WORKFLOWS_ROOT)}
     assert {entry["optional"]["subtree_prefix"] for entry in heads.values()} <= scanned
 
 
@@ -116,9 +120,9 @@ def test_hash_mismatch_warns_on_pull_request_and_fails_when_strict(tmp_path, cap
         return OTHER
 
     assert uses.hash_problems(tmp_path, resolve)[0].endswith(f"commit {OTHER} と違う")
-    assert uses.main(["--root", str(tmp_path), "--check-hashes", "--warn"], resolve=resolve) == 0
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes", "--warn"], resolve=resolve) == 0
     assert "::warning::" in capsys.readouterr().err
-    assert uses.main(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 1
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 1
 
 
 def test_matching_release_hash_passes(tmp_path, capsys):
@@ -139,7 +143,7 @@ def test_matching_release_hash_passes(tmp_path, capsys):
         calls.append((repository, tag))
         return {"actions/setup-python": SHA, "astral-sh/setup-uv": OTHER}[repository]
 
-    assert uses.main(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 0
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 0
     assert calls == [
         ("actions/setup-python", "v7.0.0"),
         ("astral-sh/setup-uv", "v10.3.0"),
@@ -167,8 +171,8 @@ def test_api_failure_exits_two_unless_warn(tmp_path, capsys):
     def resolve(repository, tag):
         raise uses.HashCheckError("GitHub API HTTP 403 for tags")
 
-    assert uses.main(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 2
-    assert uses.main(["--root", str(tmp_path), "--check-hashes", "--warn"], resolve=resolve) == 0
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 2
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes", "--warn"], resolve=resolve) == 0
     err = capsys.readouterr().err
     assert "::error::" in err
     assert "::warning::" in err
@@ -191,8 +195,6 @@ def test_subactions_resolve_one_repository_tag(tmp_path):
     assert uses.hash_problems(tmp_path, resolve) == []
     assert calls == [("actions/cache", "v6.1.0")]
 
-
-# ═══ · aoi paths ═════════════════════════════════════════════════════════════════════════════════════════
 
 def test_resolve_aoi_root_from_subproject_anchor():
     anchor = Path(__file__).resolve().parent.parent / "queryu" / "ask" / "ask.py"
@@ -222,10 +224,7 @@ def test_cycle_name_env(monkeypatch):
     assert aoi_paths.cycle_name() == aoi_paths.DEFAULT_CYCLE
 
 
-# ═══ · aoi vendor dispatch ci ════════════════════════════════════════════════════════════════════════════
-# CI keeps the python -S vendor sync check and adds a verify-only dispatch job.
-
-CI = ROOT / ".github" / "workflows" / "ci.yml"
+CI = WORKFLOWS_ROOT / ".github" / "workflows" / "ci.yml"
 
 
 def _job(name: str) -> str:
@@ -266,9 +265,6 @@ def test_vendor_dispatch_verifies_lock_without_recording():
     assert "needs:" not in job
 
 
-# ═══ · dragowing browser workflow ════════════════════════════════════════════════════════════════════════
-# Chromium CI selection fails closed without changing legacy report identity.
-
 def _selection_step(path, title, job_name):
     text = path.read_text(encoding="utf-8")
     text = text.split("\n  " + job_name + ":\n", 1)[1]
@@ -294,7 +290,7 @@ def _select(tmp_path, job_name, *, installed=True, version="Chromium 156.0.8078.
         executable.chmod(0o755)
     output = tmp_path / "environment"
     env = {**os.environ, "PATH": str(binary), "RUNNER_TEMP": str(tmp_path), "GITHUB_ENV": str(output)}
-    script = _selection_step(ROOT / ".github/workflows/ci.yml", "Select required Chromium without Chrome fallback", job_name)
+    script = _selection_step(WORKFLOWS_ROOT / ".github/workflows/ci.yml", "Select required Chromium without Chrome fallback", job_name)
     result = subprocess.run(["/bin/bash", "--noprofile", "--norc", "-c", script], env=env, capture_output=True, text=True)
     return result, output, executable
 
@@ -322,7 +318,7 @@ def test_ci_rejects_system_browsers_when_managed_install_is_missing(tmp_path):
 
 
 def test_offline_ci_keeps_isolation_and_report_contract():
-    text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    text = (WORKFLOWS_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     job = text.split("\n  chrome-export:\n", 1)[1].split("\n  failure-identity:\n", 1)[0]
     assert "runs-on: ubuntu-24.04" in job
     assert 'sudo unshare --net -- env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1' in job
@@ -335,7 +331,7 @@ def test_offline_ci_keeps_isolation_and_report_contract():
 
 
 def test_diagnostics_use_chromium_by_default_with_manual_chrome_comparison():
-    text = (ROOT / ".github/workflows/browser-startup-validation.yml").read_text(encoding="utf-8")
+    text = (WORKFLOWS_ROOT / ".github/workflows/browser-startup-validation.yml").read_text(encoding="utf-8")
     assert "compare-chrome:\n" in text
     assert "type: boolean\n        required: false\n        default: false" in text
     assert "fromJSON(github.event_name == 'workflow_dispatch' && inputs.compare-chrome && '[\"chromium\",\"google-chrome\"]' || '[\"chromium\"]')" in text
@@ -351,7 +347,7 @@ def test_diagnostics_use_chromium_by_default_with_manual_chrome_comparison():
 
 
 def test_python_matrix_pins_the_same_required_chromium_selection():
-    text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    text = (WORKFLOWS_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     job = text.split("\n  test:\n", 1)[1].split("\n  lab-integration:\n", 1)[0]
     assert "runs-on: ubuntu-24.04" in job
     assert 'chromium="$RUNNER_TEMP/aoi-chromium/chrome-linux/chrome"' in job
@@ -365,7 +361,7 @@ def test_python_matrix_pins_the_same_required_chromium_selection():
 
 
 def test_first_start_context_uses_fresh_jobs_and_unchanged_test_order():
-    text = (ROOT / ".github/workflows/browser-startup-validation.yml").read_text(encoding="utf-8")
+    text = (WORKFLOWS_ROOT / ".github/workflows/browser-startup-validation.yml").read_text(encoding="utf-8")
     job = text.split("\n  first-start-context:\n", 1)[1].split("\n  compare:\n", 1)[0]
     assert "context: [normal, offline]" in job
     assert "fail-fast: false" in job
@@ -373,15 +369,15 @@ def test_first_start_context_uses_fresh_jobs_and_unchanged_test_order():
     assert "python-version: '3.15'" in job
     assert "uv sync --locked --python 3.15" in job
     assert "sudo unshare --net --" in job
-    assert "diagnose_dragowing_browser.py" not in job
+    assert "dragowing_browser.py diagnose" not in job
     assert "--runs" not in job and "--timeout" not in job
     assert '"$chromium" --version' in job
-    assert "-m scripts.run_browser_startup_ci --output build/startup-context" in job
+    assert "-m scripts.dragowing_browser startup_ci --output build/startup-context" in job
     # The wrapper's exact pytest/plugin/evidence command is executed and checked
     # in test_browser_startup_ci; the workflow must route through that wrapper.
-    assert "'scripts/run_browser_startup_ci.py'" in text
+    assert "'scripts/dragowing_browser.py'" in text
     modules = "dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \\\n            dragowing/tests/test_plotly_cdn.py"
-    assert modules in (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    assert modules in (WORKFLOWS_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "if: always()" in job and "if-no-files-found: error" in job
     assert "retention-days: 14" in job
     assert "'scripts/observe_dragowing_startup.py'" in text
@@ -389,7 +385,7 @@ def test_first_start_context_uses_fresh_jobs_and_unchanged_test_order():
 
 
 def test_first_start_shell_only_changes_execution_context(tmp_path):
-    script = _selection_step(ROOT / ".github/workflows/browser-startup-validation.yml",
+    script = _selection_step(WORKFLOWS_ROOT / ".github/workflows/browser-startup-validation.yml",
                              "Observe the actual tests without preceding browser launches", "first-start-context")
     binary = tmp_path / "bin"
     binary.mkdir()
@@ -411,7 +407,7 @@ def test_first_start_shell_only_changes_execution_context(tmp_path):
         results.append(((tmp_path / "args").read_text(), (tmp_path / "env").read_text()))
         assert (tmp_path / "sudo-args").exists() == (context == "offline")
     assert results[0] == results[1]
-    assert results[0][0] == "-m\nscripts.run_browser_startup_ci\n--output\nbuild/startup-context\n"
+    assert results[0][0] == "-m\nscripts.dragowing_browser\nstartup_ci\n--output\nbuild/startup-context\n"
     assert results[0][1].startswith("/explicit/chromium\n1\n")
     assert (tmp_path / "sudo-args").read_text().startswith("unshare\n--net\n--\nenv\n")
 
@@ -434,14 +430,11 @@ def test_first_start_shell_only_changes_execution_context(tmp_path):
     assert not (tmp_path / "args").exists()
 
 
-# ═══ · dragowing research font ═══════════════════════════════════════════════════════════════════════════
-# Aoi-owned committed research outputs follow DRAgoWing fonts.
-
 TIGHT = FONT.replace(" ", "")
 
 
 def test_committed_research_reports_use_the_font():
-    pages = sorted(ROOT.glob("research/*/outputs/*.html"))
+    pages = sorted(WORKFLOWS_ROOT.glob("research/*/outputs/*.html"))
     assert pages  # 検証が空振りしない
     for path in pages:
         text = path.read_text(encoding="utf-8")
@@ -450,10 +443,7 @@ def test_committed_research_reports_use_the_font():
             assert "system-ui" not in text, path
 
 
-# ═══ · lab nano environment ══════════════════════════════════════════════════════════════════════════════
-# The narrow lab lane must preserve its plugins, lock and complete test guard.
-
-SPEC = importlib.util.spec_from_file_location('lab_nano_check', ROOT / 'scripts/check_lab_nano_environment.py')
+SPEC = importlib.util.spec_from_file_location('lab_nano_check', WORKFLOWS_ROOT / 'scripts/repo_checks.py')
 CHECK = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(CHECK)
 
@@ -507,7 +497,7 @@ class LabEnvironmentTests(unittest.TestCase):
                  patch.object(CHECK.sys, 'version_info', python_version), \
                  patch.object(CHECK.sys, 'prefix', str(root / 'environment')), \
                  contextlib.redirect_stdout(io.StringIO()):
-                status = CHECK.main(['--lock', str(lock), '--output', str(output)])
+                status = CHECK.lab_nano_environment(['--lock', str(lock), '--output', str(output)])
             return status, json.loads(output.read_text())
 
     def test_cli_writes_success_evidence(self):
@@ -526,7 +516,7 @@ class LabEnvironmentTests(unittest.TestCase):
                 self.assertTrue(report['errors'])
 
     def test_workflow_locks_once_then_runs_without_resync(self):
-        text = (ROOT / '.github/workflows/ci.yml').read_text()
+        text = (WORKFLOWS_ROOT / '.github/workflows/ci.yml').read_text()
         lane = text.split('  lab-integration:', 1)[1].split('  chrome-export:', 1)[0]
         omitted = re.findall(r'--no-install-package ([\w-]+)', lane)
         self.assertEqual(set(omitted), CHECK.OMITTED)
@@ -539,17 +529,14 @@ class LabEnvironmentTests(unittest.TestCase):
                      'test_real_saved_npb_fixture_coverage_and_css',
                      'test_verified_cache_real_lab_snapshot_replay'):
             self.assertIn('::' + node, lane)
-        self.assertIn('scripts/check_lab_nano_environment.py --output', lane)
+        self.assertIn('scripts/repo_checks.py lab_nano_environment --output', lane)
         self.assertIn('uv pip check --offline', lane)
-        self.assertLess(lane.index('uv sync'), lane.index('check_lab_nano_environment.py'))
-        self.assertLess(lane.index('check_lab_nano_environment.py'), lane.index('uv run'))
+        self.assertLess(lane.index('uv sync'), lane.index('repo_checks.py lab_nano_environment'))
+        self.assertLess(lane.index('repo_checks.py lab_nano_environment'), lane.index('uv run'))
         self.assertIn('timeout-minutes: 10', lane)
         self.assertIn('AOI_LAB_SOURCE_ROOT', lane)
         self.assertIn('if-no-files-found: error', lane)
 
-
-# ═══ · littlebit holdout workflow ════════════════════════════════════════════════════════════════════════
-# The focused holdout job also runs PythDRagoras's Node parity suite.
 
 def test_holdout_job_provisions_node_before_parity_tests():
     workflow = (Path(__file__).resolve().parents[1] /
@@ -578,7 +565,7 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
         root = Path(temp) / "aoi"
         root.mkdir()
         for name in ("aoi.py", "aoi_paths.py", "pyproject.toml"):
-            shutil.copy2(ROOT / name, root / name)
+            shutil.copy2(WORKFLOWS_ROOT / name, root / name)
         return root
 
     def test_forwards_argv_cwd_exit_code_and_the_sibling_paths(self):
@@ -609,18 +596,15 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
     def test_import_aoi_adds_the_sibling_paths_after_what_is_already_first(self):
         env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT")}
         code = "import sys; first = sys.path[0]; import aoi, blueprobe, propositions; print(sys.path[0] == first, blueprobe.__file__)"
-        run = subprocess.run([sys.executable, "-c", code], cwd=ROOT, env=env, capture_output=True, text=True)
+        run = subprocess.run([sys.executable, "-c", code], cwd=WORKFLOWS_ROOT, env=env, capture_output=True, text=True)
         self.assertEqual(run.returncode, 0, run.stderr)
         same_first, blueprobe_file = run.stdout.split()
-        self.assertEqual((same_first, Path(blueprobe_file)), ("True", ROOT / "blueprobe" / "blueprobe.py"))
+        self.assertEqual((same_first, Path(blueprobe_file)), ("True", WORKFLOWS_ROOT / "blueprobe" / "blueprobe.py"))
 
-
-# ═══ · shared tools lock ═════════════════════════════════════════════════════════════════════════════════
-# shared-tools.lock.json と scripts/check_shared_tools_lock.py。
 
 def test_lock_matches_shared_tool_bytes():
-    assert lock.problems(ROOT) == []
-    document = lock.load_lock(ROOT)
+    assert lock.shared_tools_lock_problems(WORKFLOWS_ROOT) == []
+    document = lock.load_lock(WORKFLOWS_ROOT)
     assert document["schema"] == "vendor-lock/1"
     paths = [entry["path"] for entry in document["files"]]
     assert paths == sorted(paths)
@@ -638,14 +622,14 @@ def test_lock_matches_shared_tool_bytes():
 
 
 def test_hash_mismatch_is_reported():
-    document = lock.load_lock(ROOT)
+    document = lock.load_lock(WORKFLOWS_ROOT)
     document["files"][0]["sha256"] = "0" * 64
-    found = lock.problems(ROOT, document)
+    found = lock.shared_tools_lock_problems(WORKFLOWS_ROOT, document)
     assert any("sha256 が違う" in item for item in found)
 
 
 def test_warn_exits_zero_when_the_lock_disagrees(capsys):
-    document = json.loads((ROOT / "shared-tools.lock.json").read_text(encoding="utf-8"))
+    document = json.loads((WORKFLOWS_ROOT / "shared-tools.lock.json").read_text(encoding="utf-8"))
     document["files"][0]["sha256"] = "0" * 64
     original = lock.load_lock
 
@@ -654,33 +638,33 @@ def test_warn_exits_zero_when_the_lock_disagrees(capsys):
 
     lock.load_lock = fake
     try:
-        assert lock.main(["--warn", "--root", str(ROOT)]) == 0
+        assert lock.shared_tools_lock(["--warn", "--root", str(WORKFLOWS_ROOT)]) == 0
     finally:
         lock.load_lock = original
     assert "sha256 が違う" in capsys.readouterr().err
 
 
 def test_strict_exits_one_when_the_lock_disagrees(capsys):
-    document = json.loads((ROOT / "shared-tools.lock.json").read_text(encoding="utf-8"))
+    document = json.loads((WORKFLOWS_ROOT / "shared-tools.lock.json").read_text(encoding="utf-8"))
     document["schema"] = "other"
-    original = lock.problems
+    original = lock.shared_tools_lock_problems
 
     def fake(root, parsed=None):
         return ["broken"]
 
-    lock.problems = fake
+    lock.shared_tools_lock_problems = fake
     try:
-        assert lock.main(["--root", str(ROOT)]) == 1
+        assert lock.shared_tools_lock(["--root", str(WORKFLOWS_ROOT)]) == 1
     finally:
-        lock.problems = original
+        lock.shared_tools_lock_problems = original
     assert "broken" in capsys.readouterr().err
     assert document["schema"] == "other"
 
 
 def test_py_launch_is_shared_from_the_vendored_parent_copy():
     """vendor/py_launch.cjs は vendor.lock.json で親から取り込んだバイトを子へ配る。"""
-    shared = {e["path"]: e for e in lock.load_lock(ROOT)["files"]}
-    vendored = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))["files"]
+    shared = {e["path"]: e for e in lock.load_lock(WORKFLOWS_ROOT)["files"]}
+    vendored = json.loads((WORKFLOWS_ROOT / "vendor.lock.json").read_text(encoding="utf-8"))["files"]
     parent = [e for e in vendored if e["destination"] == "vendor/py_launch.cjs"]
     assert len(parent) == 1
     assert parent[0]["repository"] == "myon-bioinformatics/myon-bioinformatics"
@@ -690,11 +674,11 @@ def test_py_launch_is_shared_from_the_vendored_parent_copy():
 
 
 def test_vendor_path_mismatch_is_reported():
-    document = lock.load_lock(ROOT)
+    document = lock.load_lock(WORKFLOWS_ROOT)
     for entry in document["files"]:
         if entry["path"] == "vendor/py_launch.cjs":
             entry["sha256"] = "0" * 64
-    found = lock.problems(ROOT, document)
+    found = lock.shared_tools_lock_problems(WORKFLOWS_ROOT, document)
     assert any(item.startswith("vendor/py_launch.cjs: sha256 が違う") for item in found)
 
 
@@ -703,11 +687,267 @@ def test_consumers_outside_child_heads_or_unsorted_are_reported():
     data = lock.load_lock(lock.ROOT)
     bad = copy.deepcopy(data)
     bad["files"][0]["consumers"] = ["myon-bioinformatics/NotAChild"]
-    assert any("consumers" in p for p in lock.problems(lock.ROOT, bad))
+    assert any("consumers" in p for p in lock.shared_tools_lock_problems(lock.ROOT, bad))
     bad["files"][0]["consumers"] = ["myon-bioinformatics/SakAnalytics", "myon-bioinformatics/DRAgoWing"]
-    assert any("consumers" in p for p in lock.problems(lock.ROOT, bad))
+    assert any("consumers" in p for p in lock.shared_tools_lock_problems(lock.ROOT, bad))
     bad["files"][0]["consumers"] = []
-    assert not any(p.startswith(bad["files"][0]["path"]) for p in lock.problems(lock.ROOT, bad))
+    assert not any(p.startswith(bad["files"][0]["path"]) for p in lock.shared_tools_lock_problems(lock.ROOT, bad))
+
+
+# ==== pins（旧 test_aoi_parent_workflow_pins.py）
+# Local rollout contract; adopted vendor locks are deliberately independent.
+
+
+PARENT = "myon-bioinformatics/myon-bioinformatics"
+PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
+PINS_ROOT = next(p for p in Path(__file__).resolve().parents if (p / ".github/workflows").is_dir())
+
+
+def test_parent_reusable_workflow_uses_are_one_full_sha():
+    """Parent reusable-workflow uses refs are the reviewed 40-character SHA.
+
+    Runtime tool checkouts are resolved separately and are outside this contract.
+    """
+    at = chr(64)
+    pattern = re.compile(
+        r"uses:\s*['\"]?"
+        + re.escape(PARENT)
+        + r"/\.github/workflows/[^\s'\"]+"
+        + at
+        + r"([^\s'\"]+)"
+    )
+    pins = []
+    for path in sorted((PINS_ROOT / ".github/workflows").glob("*")):
+        if path.suffix not in (".yml", ".yaml"):
+            continue
+        pins.extend(pattern.findall(path.read_text(encoding="utf-8")))
+    assert pins, "parent reusable workflow uses must remain observable"
+    assert set(pins) == {PARENT_WORKFLOW_PIN}, pins
+
+
+@pytest.mark.parametrize("fault", [None, "repository", "source", "commit", "sha256", "identity", "payload"])
+def test_frozen_distribution_compiler_checks_identity_before_saving(tmp_path, monkeypatch, fault):
+    """Run the workflow adapter offline, including its refusal paths."""
+    import hashlib
+    import json
+    import subprocess
+    import textwrap
+
+    text = (PINS_ROOT / ".github/workflows/min-distributions.yml").read_text()
+    step = text.split("      - name: Restore approved frozen distribution compiler\n", 1)[1]
+    program = textwrap.dedent(step.split("<<'PYCODE'\n", 1)[1].split("\n          PYCODE", 1)[0])
+    payload = b"raise RuntimeError('compiler bytes must not execute while being fetched')\n"
+    tool = {"repository": PARENT, "source": "tools/minpy.py", "commit": "a" * 40,
+            "sha256": hashlib.sha256(payload).hexdigest()}
+    if fault in {"repository", "source", "commit", "sha256"}:
+        tool[fault] = "untrusted"
+    manifest = json.dumps({"tool": tool})
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "distributions.json").write_text(manifest)
+    (tmp_path / ".test-deps").mkdir()
+    calls = []
+
+    def fetch(argv, **kwargs):
+        calls.append(argv)
+        assert argv == ["git", "-C", ".test-deps/distribution-tools", "fetch", "--depth=1", "origin", "a" * 40]
+
+    def observe(argv, **kwargs):
+        if argv[-1] == "FETCH_HEAD":
+            return ("b" * 40 if fault == "identity" else "a" * 40) + "\n"
+        assert argv[-1] == "a" * 40 + ":tools/minpy.py"
+        return b"changed" if fault == "payload" else payload
+
+    monkeypatch.setattr(subprocess, "run", fetch)
+    monkeypatch.setattr(subprocess, "check_output", observe)
+    if fault:
+        with pytest.raises(SystemExit):
+            exec(compile(program, "min-distributions.yml", "exec"), {})
+        assert not (tmp_path / ".test-deps/frozen-minpy.py").exists()
+    else:
+        exec(compile(program, "min-distributions.yml", "exec"), {})
+        assert (tmp_path / ".test-deps/frozen-minpy.py").read_bytes() == payload
+    assert (tmp_path / "distributions.json").read_text() == manifest
+    if fault in {"repository", "source", "commit", "sha256"}:
+        assert calls == []
+
+
+def _distribution_step(name):
+    """Read the actual shell adapter without adding a test-time YAML dependency."""
+    import textwrap
+
+    text = (PINS_ROOT / ".github/workflows/min-distributions.yml").read_text()
+    step = text.split("      - name: " + name + "\n", 1)[1].split("\n      - ", 1)[0]
+    return step, textwrap.dedent(step.split("        run: |\n", 1)[1])
+
+
+@pytest.mark.parametrize("synced", [True, False])
+def test_distribution_parent_resolution_does_not_use_frozen_compiler(tmp_path, monkeypatch, synced):
+    """A conflict-free merge must still resolve live main, not tool.commit."""
+    import json
+    import os
+    import subprocess
+    import sys
+
+    text = (PINS_ROOT / ".github/workflows/min-distributions.yml").read_text()
+    # The checkout and provenance gate must consume the live resolver output.
+    assert "ref: ${{ steps.resolved.outputs.parent_sha }}\n          path: .test-deps/distribution-tools" in text
+    assert "PARENT_SHA: ${{ steps.resolved.outputs.parent_sha }}" in text
+    name = next(line.removeprefix("      - name: ") for line in text.splitlines()
+                if line.startswith("      - name: Resolve "))
+    _, program = _distribution_step(name)
+    live, frozen, queryu, queryu_head = "b" * 40, "a" * 40, "c" * 40, "d" * 40
+    monkeypatch.chdir(tmp_path)
+    manifest = json.dumps({"tool": {"commit": frozen}})
+    (tmp_path / "distributions.json").write_text(manifest)
+    tools = tmp_path / "bin"
+    tools.mkdir()
+    git = tools / "git"
+    git.write_text("#!/bin/sh\n"
+                   'printf "%s\\n" "$*" >> "$GIT_CALLS"\n'
+                   'case "$*" in\n'
+                   f'"ls-remote https://github.com/myon-bioinformatics/myon-bioinformatics.git refs/heads/main") printf "{live}\\trefs/heads/main\\n";;\n'
+                   f'"ls-remote https://github.com/myon-bioinformatics/QueRyu.git refs/heads/main") printf "{queryu_head}\\trefs/heads/main\\n";;\n'
+                   "*) exit 91;;\n"
+                   "esac\n")
+    git.chmod(0o755)
+    # Mock only the repository-identity HTTP response; run the workflow's Python.
+    python = tools / "python"
+    python.write_text(f"#!{sys.executable}\n" + '''import io, json, os, sys, urllib.request
+
+def response(request, timeout):
+    assert request.full_url == "https://api.github.com/repos/myon-bioinformatics/myon-bioinformatics"
+    return io.StringIO(json.dumps({"id": 638801160, "full_name": "myon-bioinformatics/myon-bioinformatics"}))
+
+urllib.request.urlopen = response
+assert sys.argv[1] == "-S"
+if sys.argv[2] == "scripts/check_child_heads.py":
+    # QueRyu の sha は子の履歴から導く。導出そのものは test_child_registry.py が確かめる。ここでは呼び方だけ記録する。
+    with open(os.environ["PY_CALLS"], "a") as handle:
+        handle.write(" ".join(sys.argv[1:]) + "\\n")
+    if not os.environ["QUERYU_SYNCED"]:
+        print("check-child-heads: no synced sha for myon-bioinformatics/QueRyu: no matching tree", file=sys.stderr)
+        raise SystemExit(1)
+    print(os.environ["QUERYU_SYNCED"])
+    raise SystemExit(0)
+if sys.argv[2] == "-":
+    exec(compile(sys.stdin.read(), "workflow-identity", "exec"), {})
+else:
+    assert sys.argv[2] == "-c"
+    exec(compile(sys.argv[3], "workflow-ref", "exec"), {})
+''')
+    python.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tools) + os.pathsep + os.environ["PATH"])
+    for key, value in {"PARENT_REF": "", "QUERYU_REF": "", "GITHUB_TOKEN": "",
+                       "PARENT_REPOSITORY_ID": "638801160", "GIT_CALLS": str(tmp_path / "git-calls"),
+                       "GITHUB_OUTPUT": str(tmp_path / "output"),
+                       "PY_CALLS": str(tmp_path / "py-calls"), "QUERYU_SYNCED": queryu if synced else "",
+                       "GITHUB_STEP_SUMMARY": str(tmp_path / "summary")}.items():
+        monkeypatch.setenv(key, value)
+    result = subprocess.run(["bash", "-c", program], capture_output=True, text=True, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "output").read_text().splitlines() == [
+        "parent_sha=" + live, "queryu_sha=" + (queryu if synced else queryu_head)]
+    assert "refs/heads/main" in (tmp_path / "git-calls").read_text()
+    assert (tmp_path / "py-calls").read_text().splitlines() == [
+        "-S scripts/check_child_heads.py --print-synced myon-bioinformatics/QueRyu"]
+    summary = (tmp_path / "summary").read_text()
+    assert live in summary and "repository_id 638801160" in summary
+    assert frozen not in summary
+    assert (tmp_path / "distributions.json").read_text() == manifest
+
+
+@pytest.mark.parametrize("event", ["pull_request", "push", "schedule", "workflow_dispatch"])
+@pytest.mark.parametrize("mismatch", [False, True])
+def test_distribution_live_provenance_event_policy(tmp_path, monkeypatch, event, mismatch):
+    """Frozen bytes cannot mask live drift; PR warns, all other events fail."""
+    import hashlib
+    import json
+    import os
+    import subprocess
+    import sys
+
+    _, program = _distribution_step("Compare resolved parent tool provenance")
+    frozen = b"approved compiler\n"
+    live = b"different live compiler\n" if mismatch else frozen
+    live_sha, frozen_sha = "b" * 40, "a" * 40
+    manifest = json.dumps({"tool": {"repository": PARENT, "source": "tools/minpy.py",
+        "commit": frozen_sha, "sha256": hashlib.sha256(frozen).hexdigest()}})
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "distributions.json").write_text(manifest)
+    checkout = tmp_path / ".test-deps/distribution-tools/tools"
+    checkout.mkdir(parents=True)
+    (checkout / "minpy.py").write_bytes(live)
+    (tmp_path / ".test-deps/frozen-minpy.py").write_bytes(frozen)
+    tools = tmp_path / "bin"
+    tools.mkdir()
+    git = tools / "git"
+    git.write_text("#!/bin/sh\n"
+                   'test "$*" = "-C .test-deps/distribution-tools rev-parse HEAD" || exit 91\n'
+                   f"printf '{live_sha}\\n'\n")
+    git.chmod(0o755)
+    (tools / "python").symlink_to(sys.executable)
+    monkeypatch.setenv("PATH", str(tools) + os.pathsep + os.environ["PATH"])
+    monkeypatch.setenv("PARENT_SHA", live_sha)
+    monkeypatch.setenv("EVENT_NAME", event)
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(tmp_path / "summary"))
+    result = subprocess.run(["bash", "-c", program], capture_output=True, text=True, timeout=10)
+    strict = event != "pull_request"
+    assert result.returncode == (1 if mismatch and strict else 0), result.stderr
+    summary = (tmp_path / "summary").read_text()
+    assert f"- resolved_sha: `{live_sha}`" in summary
+    assert f"- approved_commit: `{frozen_sha}`" in summary
+    assert f"- checkout_sha256: `{hashlib.sha256(live).hexdigest()}`" in summary
+    assert "- mode: " + ("strict" if strict else "report-only") in summary
+    assert "- result: " + ("mismatch" if mismatch else "match") in summary
+    if mismatch:
+        assert ("::error::" if strict else "::warning::") in result.stderr
+    else:
+        assert not result.stderr
+    assert (checkout / "minpy.py").read_bytes() == live
+    assert (tmp_path / ".test-deps/frozen-minpy.py").read_bytes() == frozen
+    assert (tmp_path / "distributions.json").read_text() == manifest
+
+
+@pytest.mark.parametrize("fault", [None, "repository", "commit", "identity"])
+def test_frozen_queryu_is_separate_from_live_checkout(tmp_path, monkeypatch, fault):
+    import json
+    import subprocess
+    import textwrap
+
+    text = (PINS_ROOT / ".github/workflows/min-distributions.yml").read_text()
+    step = text.split("      - name: Restore approved frozen QueRyu source\n", 1)[1]
+    program = textwrap.dedent(step.split("<<'PYCODE'\n", 1)[1].split("\n          PYCODE", 1)[0])
+    source = {"repository": "myon-bioinformatics/QueRyu", "commit": "a" * 40}
+    if fault in {"repository", "commit"}:
+        source[fault] = "untrusted"
+    monkeypatch.chdir(tmp_path)
+    manifest = json.dumps({"projects": {"queryu": source}})
+    (tmp_path / "distributions.json").write_text(manifest)
+    calls = []
+    live = ".test-deps/distribution-sources/queryu"
+    def run(argv, **kwargs):
+        calls.append(argv)
+        assert argv[:3] == ["git", "-C", live]
+        if argv[3] == "fetch":
+            assert argv[4:] == ["--depth=1", "origin", "a" * 40]
+        else:
+            assert argv[3:] == ["worktree", "add", "--detach",
+                str(tmp_path / ".test-deps/frozen-distribution-sources/queryu"), "a" * 40]
+    def observe(argv, **kwargs):
+        assert argv == ["git", "-C", live, "rev-parse", "FETCH_HEAD"]
+        return ("b" if fault == "identity" else "a") * 40 + "\n"
+    monkeypatch.setattr(subprocess, "run", run)
+    monkeypatch.setattr(subprocess, "check_output", observe)
+    if fault:
+        with pytest.raises(SystemExit):
+            exec(compile(program, "frozen-queryu", "exec"), {})
+        assert len(calls) == (1 if fault == "identity" else 0)
+    else:
+        exec(compile(program, "frozen-queryu", "exec"), {})
+        assert len(calls) == 2
+    assert (tmp_path / "distributions.json").read_text() == manifest
+    assert "--sources .test-deps/frozen-distribution-sources --check" in text
+    assert "ref: ${{ steps.resolved.outputs.queryu_sha }}" in text
 
 
 if __name__ == "__main__":

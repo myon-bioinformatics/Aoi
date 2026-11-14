@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 from dragowing.export import PLOTLY, plotly_figure_content
-from scripts import diagnose_dragowing_browser as diagnostic
+from scripts import dragowing_browser as diagnostic
 from scripts import rendered_output_checks as checks
 from scripts.rendered_output_checks import OutputMismatch
 
@@ -41,7 +41,7 @@ def test_manifest_matches_the_current_figures_and_files():
     manifest = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["schema"] == "aoi-rendered-plotly-fixtures/1"
     assert manifest["figures_sha256"] == checks.figures_digest(FIGURES), \
-        "the synthetic figures changed: run scripts/render_static_fixtures.py"
+        "the synthetic figures changed: run scripts/dragowing_browser.py render_fixtures"
     on_disk = {p.name for p in FIXTURES.iterdir()} - {"manifest.json"}
     assert on_disk == set(manifest["files"]) == {"figure-%d.%s" % (i, f) for i in INDEXES for f in CHECK}
     for name, digest in manifest["files"].items():

@@ -175,7 +175,7 @@ run = ["uv", "run", "python", "sakanalytics/sakanalytics.py",
 
 [[step]]
 name = "provisional_check"
-run = ["uv", "run", "python", "cycles/c001-chunichi/from-cycle-001/research/r75_provisional.py", "{out}/provisional/season.jsonl",
+run = ["uv", "run", "python", "cycles/c001-chunichi/from-cycle-001/research/research.py", "r75", "{out}/provisional/season.jsonl",
        "cycles/c001-chunichi/from-cycle-001/propositions.toml", "cycles/c001-chunichi/sets.toml",
        "--out", "{out}/provisional/check.md"]
 

@@ -115,7 +115,7 @@ AST on that path had counted `asarray`, `ones`, `flatnonzero`, `frombuffer`, `ui
 
 ## selectolax — (c)
 
-Compiled Lexbor. `fetch_module` finds no pure wheel (1.0.1). Every import is `from selectolax.lexbor import LexborHTMLParser`: eight in `blueprobe/tests/test_blueprobe_html_parity.py`, one each in the R001 research scripts `verify.py`, `observe.py`, `inning_pilot.py`. `blueprobe.py` parses with `html.parser`. selectolax is the test oracle, which is why a parity test exists: the two parsers are not the same function.
+Compiled Lexbor. `fetch_module` finds no pure wheel (1.0.1). Every import is `from selectolax.lexbor import LexborHTMLParser`: eight in `blueprobe/tests/test_blueprobe_html_parity.py`, one each in the R001 research scripts `fetch.py verify`, `fetch.py observe`, `fetch.py inning_pilot`. `blueprobe.py` parses with `html.parser`. selectolax is the test oracle, which is why a parity test exists: the two parsers are not the same function.
 
 Wrap of the same calls the parity test makes (`css`, `text(deep=True)`, `attributes`, `tag`) logged those four methods and nothing else that would make a smaller wrapper. The stub died earlier, at `list(parser.css("a"))`, with `StubGap` on iteration: the AST name `LexborHTMLParser` never mentioned `css`. A stdlib file can wrap `html.parser`. It cannot be Lexbor, and the production path does not need it to be.
 
@@ -123,17 +123,17 @@ Wrap of the same calls the parity test makes (`css`, `text(deep=True)`, `attribu
 
 The wheel is pure Python, and `fetch_module` still rejects it: runtime dependencies are anyio, certifi, httpcore, idna. Class **(a)** does not apply. Fetching httpx without those does not import.
 
-All three import sites are research scripts (`collect.py`, `verify.py`, `inning_pilot.py`). Each one builds `httpx.Client(headers=..., timeout=..., follow_redirects=True)` and passes it to QueRyu's `PoliteFetcher`. The fetcher's own default is `UrllibClient` in `queryu/queryu.py`, which is stdlib and already returns the same `status_code` / `content` / `headers` / `raise_for_status` object.
+All three import sites are research scripts (`fetch.py collect`, `fetch.py verify`, `fetch.py inning_pilot`). Each one builds `httpx.Client(headers=..., timeout=..., follow_redirects=True)` and passes it to QueRyu's `PoliteFetcher`. The fetcher's own default is `UrllibClient` in `queryu/queryu.py`, which is stdlib and already returns the same `status_code` / `content` / `headers` / `raise_for_status` object.
 
 Wrap of `PoliteFetcher.get` against a local server, with a real httpx client, logged `Client`, `__enter__`, `__exit__`, `get`, `status_code`, `content`, `headers`. The stub died on the truth of `status_code == 200` after logging `get` and `status_code`. That is the whole used surface. It is the `UrllibClient` surface. A new `httpx_min` would duplicate that client for the three research scripts; it would not be httpx (HTTP/2, streaming, auth, custom transports). Class **(b)** for the duck type, and only because those scripts insist on constructing `httpx.Client`. Class **(c)** for the library. QueRyu's production fetcher does not import httpx. httpx is declared on Aoi's root `pyproject.toml`, not on QueRyu's.
 
 ## pandas — (c)
 
-One script, `research/gpt-r001-score-allocation/verify_prediction_independent.py`, and it is not a locked dependency. AST sees `pd.read_json` only. The rest is method syntax (`groupby`, `transform`, boolean indexing, `.iloc`, `.to_numpy`). Pandas is not installed here, so there is no wrap. Absent mode raises `ModuleNotFoundError` at `import pandas`. The stub, driven through the same operations on a three-row frame, logged `DataFrame`, `groupby`, `transform`, `__getitem__`, `__setitem__`, `__ge__`, `__sub__`, `__truediv__`, `copy`, and the column names, then `StubGap` on item assignment. That is a dataframe engine plus the numpy `lstsq` the same script calls. `fetch_module` rejects pandas for its numpy and python-dateutil dependencies. Not a shrink candidate.
+One script, `research/gpt-r001-score-allocation/recheck.py prediction_independent`, and it is not a locked dependency. AST sees `pd.read_json` only. The rest is method syntax (`groupby`, `transform`, boolean indexing, `.iloc`, `.to_numpy`). Pandas is not installed here, so there is no wrap. Absent mode raises `ModuleNotFoundError` at `import pandas`. The stub, driven through the same operations on a three-row frame, logged `DataFrame`, `groupby`, `transform`, `__getitem__`, `__setitem__`, `__ge__`, `__sub__`, `__truediv__`, `copy`, and the column names, then `StubGap` on item assignment. That is a dataframe engine plus the numpy `lstsq` the same script calls. `fetch_module` rejects pandas for its numpy and python-dateutil dependencies. Not a shrink candidate.
 
 ## ortools — (c)
 
-Optional. `sakanalytics/season_exact.py` and `research/gpt-r001-score-allocation/preclinch_dates.py` import `ortools.sat.python.cp_model` inside the solver function. Forecasts in `season_simulator.py` are stdlib; the requirements file says the exact solver is optional. ortools is not installed in the lock. Absent mode fails at `import ortools`. The stub walks `ortools.sat.python.cp_model.CpModel` and `__version__` without ever building a model, which is as far as a stub can go: the next real step is CP-SAT. `fetch_module` rejects the distribution (absl, numpy, pandas, protobuf, …). A pure-Python CP-SAT is not a min module.
+Optional. `sakanalytics/season_exact.py` and `research/gpt-r001-score-allocation/analyses.py preclinch_dates` import `ortools.sat.python.cp_model` inside the solver function. Forecasts in `season_simulator.py` are stdlib; the requirements file says the exact solver is optional. ortools is not installed in the lock. Absent mode fails at `import ortools`. The stub walks `ortools.sat.python.cp_model.CpModel` and `__version__` without ever building a model, which is as far as a stub can go: the next real step is CP-SAT. `fetch_module` rejects the distribution (absl, numpy, pandas, protobuf, …). A pure-Python CP-SAT is not a min module.
 
 ## pytest and coverage
 
@@ -141,7 +141,7 @@ pytest is the test runner (83 files). coverage is imported once, in `tests/test_
 
 ## Not distributions
 
-`research/gpt-r001-score-allocation/render_matched_comeback.py` does `from DRAgoWing.dragowing import render_report`. That is the package name from before the subtree move. The module is `dragowing.research_report`. It is not on PyPI.
+`research/gpt-r001-score-allocation/render_score_report.py matched_comeback` does `from DRAgoWing.dragowing import render_report`. That is the package name from before the subtree move. The module is `dragowing.research_report`. It is not on PyPI.
 
 `blueprobe/html_source.py` imports `mcp_toolcall_lab` inside a function, gated by an environment variable and a checkout path. It is an optional lab, not a dependency of the runtime parser.
 

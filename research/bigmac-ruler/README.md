@@ -21,7 +21,7 @@ The default input is `research/staple-price-survey/staple_survey_vertical.csv` (
 
 ## Zero / NaN log
 
-`staple_bigmac_check.py` always prints `[zero/NaN log]` lines, once for loading (`load`) and once for the computed results (`compute`), and prints `none` when nothing happened. Values are never changed and nothing is replaced by an epsilon (how to place epsilon is decided separately).
+`staple_bigmac_check.py` always prints `[zero/NaN log]` lines, once for loading (`load`) and once for the computed results (`compute`), and prints `none` when nothing happened. Values are never changed and nothing is replaced by an epsilon. Where a 0 shows up, a `[ε]` line says how an epsilon would be placed there, without placing it: epsilon is a small value with 0 < ε < 1 that stands in for 0 only (never for NaN, inf or a blank); it is used as is for quantities near 1 (probabilities, 0–1 ratios, levels), as typical value × ε for quantities with units or scale (g, yen, pieces, %), or after log(1+x); quantities with a sign (rates, coefficients, correlations) are not replaced; its value is not fixed but drawn as A×10^-N with random A and N, checking that the conclusion does not move (`research/epsilon-generality`). The logger (`kind_of`, `ZeroNaNLog`) is the one in `research/shrink-index/shrink_index.py`, so the rule lives in one place.
 
 | Kind | Meaning |
 |---|---|

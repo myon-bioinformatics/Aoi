@@ -12,7 +12,7 @@ Schema v2 retains all original observations and source/note text. `legacy_variab
 
 `quartile` = four 25% groups; `quintile` = five 20% groups; `decile` = ten 10% groups. Swiss CHF income brackets are `income_class` (five classes, no equal-population claim). `welfare` preserves the published bien-être label without inventing an income basis. Full source definitions remain in `note`; the broad stratifier alone does not establish international comparability. IND MPCE fractiles are expenditure strata, including the legacy quintile note that calls them income.
 
-`classification.json` records reviewed source contracts, explicitly published partial series, and a SHA-256 of every original field/row. Missing intermediate groups remain missing: no gap filling. `estimated_value` stays unchanged. Run `python scripts/check_food_share_data.py` to verify classification, keys, preservation, CSV/gzip equality, and current README coverage.
+`classification.json` records reviewed source contracts, explicitly published partial series, and a SHA-256 of every original field/row. Missing intermediate groups remain missing: no gap filling. `estimated_value` stays unchanged. Run `python scripts/research_inputs.py food_share` to verify classification, keys, preservation, CSV/gzip equality, and current README coverage.
 
 ## Intentional skips (Aoi / Season2 lanes)
 

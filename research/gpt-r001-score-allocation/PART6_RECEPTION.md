@@ -53,7 +53,7 @@ CR1はサンドイッチ分散に `m/(m−1) × (n−1)/(n−p)` を掛けた単
 ## 証跡と再実行
 
 - [part6_verification.json](outputs/part6_verification.json)：提供14ファイル・Part5入力・確認コードのSHA-256、10CSVの行数、追加相関、回帰感度。
-- [verify_part6.py](verify_part6.py)：標準ライブラリだけでCSV比較と追加相関・回帰感度を計算する。提供スクリプトの自動実行はしない。再実行には原ZIPとPart5/Part4の共有入力が必要。
+- [recheck.py part6](recheck.py)：標準ライブラリだけでCSV比較と追加相関・回帰感度を計算する。提供スクリプトの自動実行はしない。再実行には原ZIPとPart5/Part4の共有入力が必要。
 - 提供CSVは再計算CSVと許容差内で比較したもの。原ZIPの保存ハッシュと再計算値の一致を、新しい情報源による独立観測と呼ばない。
 
 隔離した作業ディレクトリで `part4/team_half_innings.csv.gz`、`part5/team_season_relative.csv`、`part6/`（提供コードのコピー）の相対配置を用意し、Part6ディレクトリ内で次を順に実行する。元のZIPや展開資料は上書きしない。
@@ -67,7 +67,7 @@ python p6c.py
 その後、リポジトリルートで元のPart6と再計算したPart6を区別して指定する。
 
 ```sh
-python research/gpt-r001-score-allocation/verify_part6.py \
+python research/gpt-r001-score-allocation/recheck.py part6 \
   --part5 /path/to/original/part5 \
   --part6 /path/to/original/part6 \
   --replay /path/to/replayed/part6

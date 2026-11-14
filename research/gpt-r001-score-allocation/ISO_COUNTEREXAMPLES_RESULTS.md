@@ -48,7 +48,7 @@ SRは同じイニング集計から得られるので、この予測指標の独
 
 ## 再現・証跡
 
-- [iso_counterexamples.py](iso_counterexamples.py)：stdlibのみ。前回の入力SHA-256を検査し、156球団年、32反例の継続性、対数分解恒等式を確認。
+- [analyses.py iso_counterexamples](analyses.py)：stdlibのみ。前回の入力SHA-256を検査し、156球団年、32反例の継続性、対数分解恒等式を確認。
 - [iso_counterexamples.json](outputs/counterexamples/iso_counterexamples.json)：全7範囲の比較・二値表・層別差、入力/コードSHA-256。
 - [iso_counterexamples.csv](outputs/counterexamples/iso_counterexamples.csv)：低ISO82件を全件保持。
 - [ISO_COUNTEREXAMPLES_PLAN.txt](ISO_COUNTEREXAMPLES_PLAN.txt)：今回の計算前に固定した比較。
@@ -56,7 +56,7 @@ SRは同じイニング集計から得られるので、この予測指標の独
 再実行でCSV/JSONはバイト一致。別のpandas計算で群数・8平均・22層と平均差を照合して一致。Part5の不正入力では出力ディレクトリを作る前に停止。これらの研究検証は通常pytest CIとは別である。
 
 ```sh
-python research/gpt-r001-score-allocation/iso_counterexamples.py \
+python research/gpt-r001-score-allocation/analyses.py iso_counterexamples \
   --season /path/to/season.jsonl \
   --batting-result research/gpt-r001-score-allocation/outputs/batting_size.json \
   --part5 /path/to/team_season_relative.csv \

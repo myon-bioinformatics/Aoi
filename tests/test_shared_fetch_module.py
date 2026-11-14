@@ -1,5 +1,8 @@
 """Aoi の fetch_module 試験。ファイル名は test_fetch_module.py にしない。
 
+Ironmate から移したときの写し（旧 test_shared_fetch_module_extended.py）は、ここの検査と変数の名前しか違わなかった
+ので消した。違いは test_only_https の確かめ（エラーの文に https が入ること）だけで、それはここに入れた。
+
 DRAgoWing の subtree が同じ basename を持ち、pytest の既定の import mode は衝突で収集を止める。
 """
 import hashlib
@@ -62,8 +65,9 @@ def test_rejects_bad_hash_compiled_and_runtime_deps(monkeypatch, tmp_path):
 
 
 def test_only_https():
-    with pytest.raises(ValueError):
-        fm._get("http://pypi.org/pypi/markdown/json")
+    for url in ("http://pypi.org/pypi/markdown/json", "http://pypi.org/pypi/pypdf/json"):
+        with pytest.raises(ValueError, match="https"):
+            fm._get(url)
 
 
 def test_accepts_py2_py3_none_any_wheel(monkeypatch):

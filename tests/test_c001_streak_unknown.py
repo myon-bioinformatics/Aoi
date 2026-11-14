@@ -1,9 +1,17 @@
-"""cycles/c001-chunichi/exploratory/streak_unknown.py の確認。左端に届く連続、不明な行、3 つの表、ゲート。"""
+"""cycles/c001-chunichi/exploratory/streak_unknown.py の確認。左端に届く連続、不明な行、3 つの表、ゲート。
+
+旧 test_c001_streak_unknown_prelock.py もここにまとめた（節の頭に旧ファイルの名前を書いた）。
+"""
+
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
 
 import pytest
+
+
+# ==== streak（旧 test_c001_streak_unknown.py）
 
 ROOT = Path(__file__).resolve().parent.parent
 EXPLORATORY = ROOT / "cycles" / "c001-chunichi" / "exploratory"
@@ -232,21 +240,21 @@ def test_render_shows_the_three_cells_the_verdict_and_the_pivot_rows():
 
 
 # ---- 置いた結果が、スクリプト・予想・README と合っている ------------------------------------------------------------------
-RESULTS = EXPLORATORY / "streak_unknown_results"
+STREAK_RESULTS = EXPLORATORY / "streak_unknown_results"
 
 
 def results_json():
-    return json.loads((RESULTS / "streak_unknown.json").read_text(encoding="utf-8"))
+    return json.loads((STREAK_RESULTS / "streak_unknown.json").read_text(encoding="utf-8"))
 
 
 def test_the_committed_results_are_what_the_script_makes_from_the_committed_inputs(result):
     assert results_json() == json.loads(json.dumps(result))
-    assert (RESULTS / "streak_unknown.md").read_text(encoding="utf-8") == su.render(results_json())
+    assert (STREAK_RESULTS / "streak_unknown.md").read_text(encoding="utf-8") == su.render(results_json())
 
 
 def test_the_readme_names_the_inputs_by_their_full_sha256():
     import hashlib
-    md = (RESULTS / "README.md").read_text(encoding="utf-8")
+    md = (STREAK_RESULTS / "README.md").read_text(encoding="utf-8")
     base = ROOT / "cycles" / "c001-chunichi"
     for path in (base / "outputs" / "season.jsonl", base / "propositions.toml"):
         assert hashlib.sha256(path.read_bytes()).hexdigest() in md
@@ -257,7 +265,7 @@ def by_id():
 
 
 def test_the_written_predictions_hold_or_fail_in_the_results_json_as_the_readme_says():
-    q, md = by_id(), (RESULTS / "README.md").read_text(encoding="utf-8")
+    q, md = by_id(), (STREAK_RESULTS / "README.md").read_text(encoding="utf-8")
     res = results_json()
     assert res["gate"]["ok"] and "4 命題・16 形すべて同じ" in md and sum(len(v["forms"]) for v in q.values()) == 16
     # (b) inn は 4 行で予想どおり。rf は 0 の予想が外れて 4 行（2012年）
@@ -295,7 +303,7 @@ def test_the_codes_the_readme_quotes_are_the_codes_in_the_json():
 
 
 def test_the_readme_tables_are_the_rows_the_script_renders():
-    md = (RESULTS / "README.md").read_text(encoding="utf-8")
+    md = (STREAK_RESULTS / "README.md").read_text(encoding="utf-8")
     rendered = su.render(results_json())
     for pid in ("P62", "P63"):
         section = rendered[rendered.index(f"## {pid} "):]
@@ -306,3 +314,19 @@ def test_the_readme_tables_are_the_rows_the_script_renders():
 def test_forms_are_shown_in_the_fixed_order_even_after_the_json_sorts_its_keys():
     forms = {"inverse": 1, "original": 2, "converse": 3, "contrapositive": 4, "held_out": 5}
     assert su.forms_in_order(forms) == ["original", "contrapositive", "converse", "inverse", "held_out"]
+
+
+# ==== prelock（旧 test_c001_streak_unknown_prelock.py）
+# cycles/c001-chunichi/exploratory/streak_unknown_results の事前宣言の固定を確かめる。
+
+
+PRELOCK_RESULTS = Path(__file__).resolve().parent.parent / "cycles" / "c001-chunichi" / "exploratory" / "streak_unknown_results"
+LOCK = PRELOCK_RESULTS / "streak_unknown_prelock_2026-10-27.md"
+STAMP = PRELOCK_RESULTS / "streak_unknown_prelock_timestamp.txt"
+
+
+def test_prelock_hash_matches_stamp():
+    # 事前宣言を書き換えたら、固定時のハッシュと合わなくなる
+    stamp = STAMP.read_text()
+    assert hashlib.sha256(LOCK.read_bytes()).hexdigest() in stamp
+    assert LOCK.name in stamp and "JST" in stamp

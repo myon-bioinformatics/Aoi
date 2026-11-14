@@ -49,7 +49,7 @@ jobs:
             strict=1
           fi
           if [[ "$strict" == "1" ]]; then
-            python -S scripts/check_action_uses.py --check-hashes
+            python -S scripts/repo_checks.py action_uses --check-hashes
           else
-            python -S scripts/check_action_uses.py --check-hashes --warn
+            python -S scripts/repo_checks.py action_uses --check-hashes --warn
           fi

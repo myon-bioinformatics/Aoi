@@ -13,7 +13,7 @@
 - `propositions.toml` は P115 以降を含む branch 側の命題定義
 - `outputs/season.jsonl` は同じ168球団年に、後から足した派生列を加えた表。共有列の差は浮動小数の最終桁で、係数や判定の再基準化はしていません
 - `analysis.toml` は 2026年の確かめ対象に branch 側の命題IDを足した版
-- `pipeline.toml` は branch 側の実行定義。当時は PascalCase の入口（`BlueProbe/` など）を呼んでいたが、#48 でそれらのフォルダが消えたため、小文字の入口を呼ぶ形にした。branch 側で中身が違う `analysis.toml`・`propositions.toml`・`outputs/`・`research/r75_provisional.py` はこのディレクトリを指し、正本の `outputs/` には書かない。取得の手順が使う `queryu/queryu.py --ledger` は、今の `queryu/` にはまだない（QueRyu 側の作業）
+- `pipeline.toml` は branch 側の実行定義。当時は PascalCase の入口（`BlueProbe/` など）を呼んでいたが、#48 でそれらのフォルダが消えたため、小文字の入口を呼ぶ形にした。branch 側で中身が違う `analysis.toml`・`propositions.toml`・`outputs/`・`research/research.py r75` はこのディレクトリを指し、正本の `outputs/` には書かない。取得の手順が使う `queryu/queryu.py --ledger` は、今の `queryu/` にはまだない（QueRyu 側の作業）
 - `outputs/` の index・objections・ledger・summary・propositions.jsonl・run.txt・observed.md は branch 側の生成物
 - `research/` は branch 側の R27 以降。正本の R27（年次感度）・R28（P96）・R29（リーグ実験）とは別の研究で、同じ番号を後から付けたものです。番号は歴史どおり残し、正本のダイジェスト対象には混ぜていません
 

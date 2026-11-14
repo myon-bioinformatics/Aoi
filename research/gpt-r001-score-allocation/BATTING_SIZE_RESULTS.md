@@ -46,12 +46,12 @@ ISOが他5球団平均未満の82球団年のうち、RPSも所属リーグ合�
 
 既存run/c001の `season.jsonl`（168球団年）を読む。使用したGit blobは `c93086b34805838bc52adc2f7021096e8ec5062b`。Part5との結合範囲156球団年についてG/W/L/T/R/RAの936項目、イニング総得点とRPS、ISO=長打率−打率、6打撃指標の相対差を確認した。既存派生値の整合確認であり、打撃ページ28件の原HTMLを今回再解析したという意味ではない。
 
-- [batting_size.py](batting_size.py)：標準ライブラリだけの再計算。入力Git blob検査と球団年整合チェック、不一致時停止。
+- [analyses.py batting_size](analyses.py)：標準ライブラリだけの再計算。入力Git blob検査と球団年整合チェック、不一致時停止。
 - [batting_size.json](outputs/batting_size.json)：入力/コードSHA-256、全比較、13年の中日推移、55反例。生HTMLや打席単位データは転載しない。
 - 36個の単純相関を別のNumPy計算と照合し、絶対差1e-12未満で一致した。p値・通常独立標本の信頼区間を追加していない。
 
 ```sh
-python research/gpt-r001-score-allocation/batting_size.py \
+python research/gpt-r001-score-allocation/analyses.py batting_size \
   --season /path/to/season.jsonl \
   --season-blob c93086b34805838bc52adc2f7021096e8ec5062b \
   --part5 /path/to/team_season_relative.csv \

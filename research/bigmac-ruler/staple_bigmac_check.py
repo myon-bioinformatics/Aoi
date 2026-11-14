@@ -18,7 +18,8 @@
 国ごとに使う系列は1本（年数が最多、同数なら行数が多いもの、なお同数なら系列の文字列が大きいもの）。
 
 ゼロ・NaN・無限大・空欄は、読み込み時（load）と計算結果（compute）で、出なかったときも含めて必ず
-'[zero/NaN log]' として出力する。値は変えず、ε への置き換えもしない（置き方は別に決める）。
+'[zero/NaN log]' として出力する。値は変えず、ε への置き換えもしない（0 が出た所には、置くならどうするかを
+'[ε]' の行で知らせる。ε の決め方は research/shrink-index/shrink_index.py の ZeroNaNLog の説明）。
   ZERO / NaN / INF: 記録して値はそのまま持つ / BLANK: 数として読めない行は使わず記録する
   SKIPPED: 割り算・対数・回帰に渡す前の検査で、0 以下・NaN・inf のため使わなかった入力（どれかを必ず出す）
            ／ゼロのため比を出さなかった / DROPPED: 失敗して捨てた（ブートストラップ）
@@ -36,53 +37,18 @@ import collections
 import csv
 import math
 import sys
+from pathlib import Path
 
 import numpy as np
+
+# ゼロ・NaN・無限大の記録（kind_of・ZeroNaNLog）は shrink_index.py と同じものを使う（ε の置き方が決まったら、そこ 1 か所で変える）
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'shrink-index'))
+from shrink_index import ZeroNaNLog, kind_of  # noqa: E402
 
 DEFAULT_CSV = 'research/staple-price-survey/staple_survey_vertical.csv'
 Y0, Y1 = 2021, 2025
 MIN_MONTHS = 6          # 年平均に必要な月数（先に宣言。結果を見て変えない）
 SEED, BOOT = 20261024, 4000
-
-
-def kind_of(x):
-    """'NaN' / 'INF' / 'ZERO'、どれでもなければ None。"""
-    if x is None:
-        return None
-    if x != x:
-        return 'NaN'
-    if x in (math.inf, -math.inf):
-        return 'INF'
-    return 'ZERO' if x == 0 else None
-
-
-class ZeroNaNLog:
-    """ゼロ・NaN・無限大・空欄・ゼロでのスキップが出たことを数え、必ず出力する。値は変えない。
-    （同じ 40 行を research/shrink-index/shrink_index.py にも置いている。共通部品にするかは ε の扱いが決まってから）"""
-
-    def __init__(self):
-        self.count = collections.Counter()
-        self.examples = collections.defaultdict(list)
-
-    def add(self, stage, name, kind, where=''):
-        key = (stage, name, kind)
-        self.count[key] += 1
-        if len(self.examples[key]) < 3:
-            self.examples[key].append(where if isinstance(where, str) else ' '.join(map(str, where)))
-
-    def scan(self, stage, name, values):
-        """{場所: 値} か値のリストを調べて、ゼロ・NaN・無限大を記録する。"""
-        for where, x in (values.items() if isinstance(values, dict) else enumerate(values)):
-            kind = kind_of(x)
-            if kind:
-                self.add(stage, name, kind, str(where))
-
-    def lines(self, stage):
-        rows = [(k, n) for k, n in sorted(self.count.items()) if k[0] == stage]
-        if not rows:
-            return ['[zero/NaN log] %s: none' % stage]
-        return ['[zero/NaN log] %s: %s %s x%d  e.g. %s' % (stage, k[1], k[2], n, ', '.join(self.examples[k]))
-                for k, n in rows]
 
 
 def usable(x):
@@ -100,7 +66,7 @@ def _num(raw, log, name, where):
         return None
     kind = kind_of(x)
     if kind:
-        log.add('load', name, kind, where)
+        log.add('load', name, kind, where, scaled=True)     # 価格・支出・人口・食費割合（%）
     return x
 
 
@@ -335,14 +301,15 @@ def log_computed(log, panel, res, boot):
     """パネルと推定の結果にゼロ・NaN・無限大がないか調べて記録する（値は変えない）。
     ブートストラップで失敗して捨てた回数も記録する（以前は黙って捨てていた）。"""
     for k in ('price', 'bigmac', 'E', 'C_pc', 'b', 'M', 'k'):
-        log.scan('compute', 'panel.' + k, {'%s %s' % (r['country'], r['year']): r[k] for r in panel})
-    log.scan('compute', 'fit', {n: res[n] for n in ('a', 'beta', 'gamma', 'r2', 'corr_E_M', 'p_gamma_ge_1')})
+        log.scan('compute', 'panel.' + k, {'%s %s' % (r['country'], r['year']): r[k] for r in panel}, scaled=True)   # 価格・%・何個分など、どれも桁がある
+    log.scan('compute', 'fit', {n: res[n] for n in ('a', 'beta', 'gamma', 'r2', 'corr_E_M', 'p_gamma_ge_1')},
+             signed=lambda w: w in ('a', 'beta', 'gamma', 'corr_E_M'))
     for n, xs in res['sd'].items():
         log.scan('compute', 'sd.' + n, dict(zip(('pooled', 'between', 'within'), xs)))
     for n, xs in res['ci'].items():
-        log.scan('compute', 'ci.' + n, dict(zip(('lo', 'hi'), xs)))
+        log.scan('compute', 'ci.' + n, dict(zip(('lo', 'hi'), xs)), signed=True)
     for y, v in res['by_year'].items():
-        log.scan('compute', 'by_year', {'%d %s' % (y, n): v[n] for n in ('beta', 'gamma', 'r2')})
+        log.scan('compute', 'by_year', {'%d %s' % (y, n): v[n] for n in ('beta', 'gamma', 'r2')}, signed=lambda w: not w.endswith('r2'))
     if res['draws'] < boot:
         log.add('compute', 'bootstrap', 'DROPPED', '%d of %d draws failed (LinAlgError)' % (boot - res['draws'], boot))
 

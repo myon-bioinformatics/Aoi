@@ -1,6 +1,6 @@
 """vendor/uv_tool_build.py: 親の共通 uv tool ビルダーの Aoi 側コピーが動くこと。
 
-バイトの一致は tests/test_vendor_lock.py と scripts/check_shared_tools_lock.py が見る。
+バイトの一致は tests/test_vendor_lock.py と scripts/repo_checks.py shared_tools_lock が見る。
 ここは Aoi の子エントリで build できることと、大文字のエントリを拒むことだけ確かめる。
 """
 from __future__ import annotations

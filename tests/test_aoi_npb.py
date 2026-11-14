@@ -1,16 +1,24 @@
-"""Aoi-side NPB config and layout that the children no longer hold."""
+"""Aoi-side NPB config and layout that the children no longer hold.
+
+旧 test_annual_scope.py もここにまとめた（節の頭に旧ファイルの名前を書いた）。
+"""
+
 import hashlib
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
-
-import pytest
+from pathlib import Path
 
 import aoi_npb
 import aoi_paths
+import pytest
+from annual_scope import primary_cache, PRIMARY_YEARS
+from npb_team_annual import pages
+from queryu import Cache
 
+
+# ==== npb（旧 test_aoi_npb.py）
 
 def test_npb_rules_presets_live_in_aoi():
     with pytest.raises(ValueError):
@@ -133,3 +141,30 @@ def test_aoi_entry_runs_a_child_with_the_paths_pytest_uses(tmp_path):
     # 引数なし: このシェルだけに効く export を出す（保存はしない）
     shown = subprocess.run([sys.executable, str(root / "aoi.py")], env=clean, capture_output=True, text=True, check=True).stdout
     assert shown.splitlines()[0] == f"export AOI_ROOT={shlex.quote(str(root))}"
+
+
+# ==== scope（旧 test_annual_scope.py）
+
+def test_only_primary_cache_is_copied_and_reference_input_is_unchanged(tmp_path):
+    cache = Cache(tmp_path/'reference')
+    for year in (2012, *PRIMARY_YEARS):
+        for lg in ('c', 'p'):
+            for cat in ('std', 'tmb', 'tmp', 'tmf', 'archive'):
+                key=f'{year}_{lg}_{cat}'
+                url=next(url for k,url,_ in pages([year]) if k==key)
+                cache.put(key,url,str(year),200,b'<html>team</html>',{})
+    original = cache.manifest.read_bytes()
+    out = tmp_path/'primary'
+    assert primary_cache(cache.root, out) == 140
+    assert cache.manifest.read_bytes() == original
+    selected = Cache(out).latest()
+    assert len(selected) == 140
+    assert all(int(e['group']) in PRIMARY_YEARS for e in selected.values())
+    for entry in selected.values():assert Cache(out).body_bytes(entry) == b'<html>team</html>'
+    with pytest.raises(ValueError, match='empty'):primary_cache(cache.root, out)
+
+
+def test_missing_primary_year_is_not_filled_from_reference_years(tmp_path):
+    cache = Cache(tmp_path/'reference')
+    cache.put('2012_c_std', 'https://npb.jp/2012', '2012', 200, b'<html></html>', {})
+    with pytest.raises(ValueError, match='140'):primary_cache(cache.root, tmp_path/'primary')

@@ -200,6 +200,8 @@ def test_main_prints_the_log_for_load_and_compute(toy, capsys):
     out = capsys.readouterr().out
     assert "[zero/NaN log] load: none" in out
     assert "[zero/NaN log] compute: fit ZERO x1  e.g. p_gamma_ge_1" in out   # 計算結果の 0（確率が 0）も出る
+    assert "[ε] compute: fit ZERO x1 -> " + chk.ZeroNaNLog.EPS_PLAIN in out     # 確率の 0 は ε のまま置ける（値は変えない）
+    assert "[ε] load:" not in out
     assert out.index("[zero/NaN log] load") < out.index("panel rows")        # 読み込みのログは先に出る
 
 

@@ -51,7 +51,7 @@ candidates. Candidate contradictions can produce an exploratory empty-set
 diagnostic; this differs from missing input/configuration errors, which refuse
 initialization and produce no checkpoint.
 
-`tests/test_research_input_bundle.py` runs the real public CLI, confirms bounded
+`tests/test_recovered_inputs.py` runs the real public CLI, confirms bounded
 startup/evaluation, compares five units in one invocation with two plus three
 units across restart, checks source hashes are unchanged, and rejects corrupted
 hashes and semantically invalid re-pinned inputs before checkpoint creation.

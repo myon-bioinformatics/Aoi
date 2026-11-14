@@ -64,10 +64,10 @@
 リポジトリルートから（`$INNINGS` と `$SEASON` は取得済み非公開入力、`$PYTHON_EXACT` はOR-Tools入りPythonを指す）：
 
 ```bash
-$PYTHON_EXACT research/gpt-r001-score-allocation/preclinch_dates.py --innings "$INNINGS" --season "$SEASON" --out research/gpt-r001-score-allocation/outputs/preclinch_dates.json --plan-commit 53f1c66fab63bf07bdb04559ccf67d41a9beda3a
-python research/gpt-r001-score-allocation/preclinch_flow.py --innings "$INNINGS" --season "$SEASON" --dates research/gpt-r001-score-allocation/outputs/preclinch_dates.json --out research/gpt-r001-score-allocation/outputs/preclinch_flow.json --csv research/gpt-r001-score-allocation/outputs/preclinch_flow_cells.csv
-python research/gpt-r001-score-allocation/verify_preclinch_flow.py --innings "$INNINGS" --result research/gpt-r001-score-allocation/outputs/preclinch_flow.json --cells research/gpt-r001-score-allocation/outputs/preclinch_flow_cells.csv --out research/gpt-r001-score-allocation/outputs/preclinch_flow_verification.json
-python research/gpt-r001-score-allocation/render_preclinch_flow.py --input research/gpt-r001-score-allocation/outputs/preclinch_flow.json --output research/gpt-r001-score-allocation/outputs/preclinch_flow.html
+$PYTHON_EXACT research/gpt-r001-score-allocation/analyses.py preclinch_dates --innings "$INNINGS" --season "$SEASON" --out research/gpt-r001-score-allocation/outputs/preclinch_dates.json --plan-commit 53f1c66fab63bf07bdb04559ccf67d41a9beda3a
+python research/gpt-r001-score-allocation/analyses.py preclinch_flow --innings "$INNINGS" --season "$SEASON" --dates research/gpt-r001-score-allocation/outputs/preclinch_dates.json --out research/gpt-r001-score-allocation/outputs/preclinch_flow.json --csv research/gpt-r001-score-allocation/outputs/preclinch_flow_cells.csv
+python research/gpt-r001-score-allocation/recheck.py preclinch_flow --innings "$INNINGS" --result research/gpt-r001-score-allocation/outputs/preclinch_flow.json --cells research/gpt-r001-score-allocation/outputs/preclinch_flow_cells.csv --out research/gpt-r001-score-allocation/outputs/preclinch_flow_verification.json
+python research/gpt-r001-score-allocation/render_score_report.py preclinch_flow --input research/gpt-r001-score-allocation/outputs/preclinch_flow.json --output research/gpt-r001-score-allocation/outputs/preclinch_flow.html
 ```
 
 ## 次の命題・残件

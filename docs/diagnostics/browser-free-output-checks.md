@@ -14,11 +14,11 @@
 
 ## 基準にする画像
 
-`tests/fixtures/rendered_plotly/` に、診断用の合成図 3 点（`scripts/diagnose_dragowing_browser.py` の `_figures()`）を実際の Chromium で描いた PNG と SVG を置いている。記録は `manifest.json`（図の仕様の SHA-256、Plotly.js と Chromium の版、各ファイルの SHA-256）。
+`tests/fixtures/rendered_plotly/` に、診断用の合成図 3 点（`scripts/dragowing_browser.py diagnose` の `_figures()`）を実際の Chromium で描いた PNG と SVG を置いている。記録は `manifest.json`（図の仕様の SHA-256、Plotly.js と Chromium の版、各ファイルの SHA-256）。
 
 - これは「保存した観測」で、バイト単位の再現は求めない。PNG の画素は Chromium の版に、SVG は Plotly.js の版（と描くたびに変わる id）に依存する。テストは仕様との一致だけを見る。
 - 合成図を変えると `manifest.json` の図の SHA-256 が合わなくなり、`test_manifest_matches_the_current_figures_and_files` が再生成を促す。
-- 作り直し: `python scripts/render_static_fixtures.py --chrome <chromium の絶対パス> --plotly-js <plotly.min.js>`。保存の前に同じ検査を通し、通らない出力は保存しない。
+- 作り直し: `python scripts/dragowing_browser.py render_fixtures --chrome <chromium の絶対パス> --plotly-js <plotly.min.js>`。保存の前に同じ検査を通し、通らない出力は保存しない。
 
 ## 検査そのものの確かさ
 

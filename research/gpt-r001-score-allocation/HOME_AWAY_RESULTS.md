@@ -53,6 +53,6 @@
 
 ## 再現・検査
 
-`python research/gpt-r001-score-allocation/home_away.py`
+`python research/gpt-r001-score-allocation/analyses.py home_away`
 
 同じ検証済み入力を用い、取得処理は行わない。データ・コード・事前の探索計画のSHAは `outputs/home_away_summary.json`。全公式戦の各球団年の開きは既存R001出力と一致し、各主催区分の得失点率を試合数で重み付けすると公式年計を再構成できることを確認した。全セルで成分和と開きの一致を確認している。

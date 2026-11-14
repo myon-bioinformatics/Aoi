@@ -79,18 +79,18 @@ S1「ビハインド割合が高い」、S2「リード割合が低い」、S3�
 
 ## 証跡・確認
 
-- [集計](game_state.py)、[別実装の照合](verify_game_state.py)、[集約JSON](outputs/game_state.json)、[正確な点差別CSV](outputs/game_state_cells.csv)、[照合JSON](outputs/game_state_verification.json)。公開するのは層別集計のみで、試合・半回行は転載しない。
+- [集計](analyses.py)、[別実装の照合](recheck.py)、[集約JSON](outputs/game_state.json)、[正確な点差別CSV](outputs/game_state_cells.csv)、[照合JSON](outputs/game_state_verification.json)。公開するのは層別集計のみで、試合・半回行は転載しない。
 - 年計156球団年×6=936項目が固定seasonと一致。7群→3状態→全体の和、W+L+T=Gを確認。
 - 元CSVのoff行から別実装でスコアを積み上げ、11,028試合・10,041層×8整数=80,328値を照合。集約23,760群の件数と率、前研究のビハインド4,706層との一致を確認。同じ共有CSVでの確認で、原HTMLを別取得した検証ではない。
 - 勝数を1増やした作業コピーでは独立照合が停止。Chromiumで28選択・1200px/390px・数値表を確認し、JavaScriptエラーなし。描画検査には既取得の同版Plotly.jsを供給し、CDN不通時も数値表が残ることを確認。
 - 研究計算は通常pytestとは別。元入力のハッシュが違う場合は出力前に停止する。
 
 ```sh
-python research/gpt-r001-score-allocation/game_state.py \
+python research/gpt-r001-score-allocation/analyses.py game_state \
   --innings /path/to/team_half_innings.csv.gz --season /path/to/fixed-season.jsonl \
   --plan-commit c2527e96297d09976e525e9d84e2a2a8f9553ca0 \
   --out /tmp/game_state.json --csv /tmp/game_state_cells.csv
-python research/gpt-r001-score-allocation/verify_game_state.py \
+python research/gpt-r001-score-allocation/recheck.py game_state \
   --innings /path/to/team_half_innings.csv.gz --csv /tmp/game_state_cells.csv \
   --result /tmp/game_state.json --previous /path/to/matched_comeback.json \
   --out /tmp/game_state_verification.json
@@ -98,7 +98,7 @@ python research/gpt-r001-score-allocation/verify_game_state.py \
 
 ## 可視化・残件
 
-[DRAgoWing / Plotly](outputs/game_state.html)は期間と6/7回を選び、7分類の構成と各点差からの最終W/Gを示す。全図に勝・敗・分と分母付き数値表を併設。[描画コード](render_game_state.py)は保存集計だけを読む。
+[DRAgoWing / Plotly](outputs/game_state.html)は期間と6/7回を選び、7分類の構成と各点差からの最終W/Gを示す。全図に勝・敗・分と分母付き数値表を併設。[描画コード](render_score_report.py)は保存集計だけを読む。
 
 Blocking：今回の集計と文章対応に不一致なし。Should/研究残件：少数群の不安定さ、相手強度、リード幅の違い、短縮試合と実攻撃機会、勝率と順位規則の違い。7回の状態はそれ以前の攻守双方の結果であり、攻撃だけの原因として扱わない。
 

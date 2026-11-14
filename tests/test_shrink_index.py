@@ -268,7 +268,24 @@ def test_report_logs_zero_totals_flat_zero_rates_and_skipped_unit_prices(tmp_pat
     assert "[zero/NaN log] compute: total g ZERO x2  e.g. 2001, 2002" in out
     assert "[zero/NaN log] compute: rate per year ZERO x1  e.g. 2001-2002" in out    # 総量が変わらない区間
     assert "[zero/NaN log] compute: unit price SKIPPED x2  e.g. total q is 0 in 2001, total q is 0 in 2002" in out
+    # 0 が出た所には置き方を知らせる（値は変えない）。g は桁がある、変化率は符号がある
+    assert "[ε] load: p:pieces ZERO x2 -> " + si.ZeroNaNLog.EPS_SCALED in out
+    assert "[ε] compute: total g ZERO x2 -> " + si.ZeroNaNLog.EPS_SCALED in out
+    assert "[ε] compute: rate per year ZERO x1 -> " + si.ZeroNaNLog.EPS_SIGNED in out
     assert out.index("[zero/NaN log] load") < out.index("total g")                    # 読み込みのログは先に出る
+
+
+def test_eps_lines_cover_zero_only_and_leave_values_alone():
+    log = si.ZeroNaNLog()
+    values = {2001: 0.0, 2002: math.nan, 2003: math.inf, 2004: 0.5}
+    log.scan("compute", "danger D_t", values)
+    assert values == {2001: 0.0, 2002: values[2002], 2003: math.inf, 2004: 0.5}       # 何も置き換えない
+    lines = log.lines("compute")
+    assert [l for l in lines if l.startswith("[ε]")] == ["[ε] compute: danger D_t ZERO x1 -> " + si.ZeroNaNLog.EPS_PLAIN]
+    log.scan("compute", "fit", {"beta": 0.0, "r2": 0.0}, signed=lambda where: where == "beta")
+    assert "[ε] compute: fit ZERO x1 -> " + si.ZeroNaNLog.EPS_SIGNED in log.lines("compute")
+    assert "[ε] compute: fit ZERO x1 -> " + si.ZeroNaNLog.EPS_PLAIN in log.lines("compute")
+    assert not any(l.startswith("[ε]") for l in log.lines("load"))
 
 
 def test_report_logs_a_zero_base_level_as_skipped_and_the_value_stays_none(tmp_path, capsys):

@@ -1,6 +1,6 @@
 # R60: 何試合目の順位表で、最後の A・B がおおよそ分かるか（研究計画）
 
-記録: 2026-10-05。計算を始める前に書いた。列（`lock_g`・`lock_x`・`lg_set_lock_x`・`q_wl_1〜4`・`lone_down_n`）はテストを通して push した（d12b16b）。実データでの値は、Actions で `season.jsonl` を作り直すまで見ていない。スクリプト [r60_settle.py](r60_settle.py) も同じく、まだ実行していない。
+記録: 2026-10-05。計算を始める前に書いた。列（`lock_g`・`lock_x`・`lg_set_lock_x`・`q_wl_1〜4`・`lone_down_n`）はテストを通して push した（d12b16b）。実データでの値は、Actions で `season.jsonl` を作り直すまで見ていない。スクリプト [research.py r60](research.py) も同じく、まだ実行していない。
 
 ## 位置づけ（ユーザーの見立て）
 
@@ -30,7 +30,7 @@
 4. **自分だけが負け越した区間**: `lone_down_n ≥ 1` の単位の数と A・B の内訳。中日の年を書く
 5. 阪神 2015年・巨人 2017・2018年の N と区間の並び
 
-## 結果（2026-10-05、Actions の実行 `1578234` で作り直した `season.jsonl` に `r60_settle.py` を実行）
+## 結果（2026-10-05、Actions の実行 `1578234` で作り直した `season.jsonl` に `research.py r60` を実行）
 
 ### 1. N の分布
 

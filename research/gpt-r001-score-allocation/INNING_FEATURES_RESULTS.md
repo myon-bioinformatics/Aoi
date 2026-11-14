@@ -70,8 +70,8 @@
 リポジトリのルートから、共有ZIPを展開したディレクトリを指定する。新スクリプトはPython標準ライブラリのみ使用する。
 
 ```sh
-python -m unittest discover -s research/gpt-r001-score-allocation -p 'test_inning_features.py'
-python research/gpt-r001-score-allocation/inning_features.py --share /path/to/aoi_inning_share
+python -m unittest discover -s research/gpt-r001-score-allocation -p 'test_r001.py'
+python research/gpt-r001-score-allocation/analyses.py inning_features --share /path/to/aoi_inning_share
 ```
 
 前提は既存の `data/observations/r001/games.jsonl`。欠落時は66、不正入力・照合不一致は65で停止する。元の共有CSVを変更せず、ハッシュを保存する。全研究テストには既存研究のrequirements.txtも必要。

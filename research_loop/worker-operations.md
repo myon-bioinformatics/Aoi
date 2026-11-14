@@ -92,6 +92,6 @@ Input bundle review is a prerequisite, not authorization to reactivate Actions.
 Validation command:
 
 ```bash
-uv run --frozen pytest -q tests/test_research_worker_gate.py \
-  nagoyaction/tests/test_worker.py nagoyaction/tests/test_inbox.py tests/test_research_loop.py
+uv run --frozen pytest -q tests/test_research_loop.py \
+  nagoyaction/tests/test_worker.py nagoyaction/tests/test_inbox.py
 ```

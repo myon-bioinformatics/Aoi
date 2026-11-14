@@ -18,7 +18,8 @@ q_d（人が食べられない大きさ）はデータから決めない。--dan
 直線回帰も、丸めた数字での結論も、ここには置かない。
 
 ゼロ・NaN・無限大・空欄は、読み込み時（load）と計算結果（compute）で、出なかったときも含めて必ず
-'[zero/NaN log] ...' として出力する。値は変えず、ε への置き換えもしない（置き方は別に決める）。
+'[zero/NaN log] ...' として出力する。値は変えず、ε への置き換えもしない（0 が出た所には、置くならどうするかを
+'[ε] ...' の行で知らせる。ε の決め方は ZeroNaNLog の説明）。
   ZERO / NaN / INF: 記録して値はそのまま使う / BLANK: 数として読めない行は使わず記録する
   SKIPPED: ゼロのため出さなかった（水準・単価）
 
@@ -51,31 +52,50 @@ def kind_of(x):
 
 class ZeroNaNLog:
     """ゼロ・NaN・無限大・空欄・ゼロでのスキップが出たことを数え、必ず出力する。値は変えない。
-    （同じ 40 行を research/bigmac-ruler/staple_bigmac_check.py にも置いている。共通部品にするかは ε の扱いが決まってから）"""
+    （research/bigmac-ruler/staple_bigmac_check.py もここから読む。ε の置き方を変えるときは、ここ 1 か所で変える）
+
+    ε の決め方（2026-11-14）: 0 < ε < 1 の小さな値で、0 の代わりに置く。
+      - 置き換えるのは 0 だけ。NaN・無限大・空欄は「欠けている」ので置き換えない
+      - 大きさが 1 前後の量（確率・0〜1 の比・基準年に対する水準）には ε のまま。単位や桁のある量（g・円・個・%）には
+        「典型値 × ε」か、log(1+x) の後に置く（定規の最小目盛りは定規の長さで決まるのと同じ）
+      - 符号のある量（変化率・係数・相関）は置き換えない（+ε にすると向きが付く）
+      - 値は決め打ちしない。A×10^-N の A と N を乱数で選んで何通りか試し、結論が変わらないことを確かめる
+        （research/epsilon-generality の仕組み）
+    ここでは置き換えず、0 が出た所に「[ε]」の行で置き方を知らせるだけ。この 2 本は log(1+x) で最初から 0 を
+    避けているので、置き換えは要らない。"""
+
+    EPS_PLAIN = 'ε のまま（大きさが 1 前後の量）'
+    EPS_SCALED = '典型値×ε（単位や桁のある量。log(1+x) の後なら ε のまま）'
+    EPS_SIGNED = '置き換えない（符号のある量。+ε にすると向きが付く）'
 
     def __init__(self):
         self.count = collections.Counter()
         self.examples = collections.defaultdict(list)
+        self.eps = collections.Counter()          # (stage, name, 置き方) -> 0 の数
 
-    def add(self, stage, name, kind, where=''):
+    def add(self, stage, name, kind, where='', scaled=False, signed=False):
+        """scaled: 単位や桁のある量か。signed: 符号のある量か（0 の置き方を知らせるのに使う。値は変えない）。"""
         key = (stage, name, kind)
         self.count[key] += 1
         if len(self.examples[key]) < 3:
             self.examples[key].append(where if isinstance(where, str) else ' '.join(map(str, where)))
+        if kind == 'ZERO':
+            self.eps[(stage, name, self.EPS_SIGNED if signed else self.EPS_SCALED if scaled else self.EPS_PLAIN)] += 1
 
-    def scan(self, stage, name, values):
-        """{場所: 値} か値のリストを調べて、ゼロ・NaN・無限大を記録する。"""
+    def scan(self, stage, name, values, scaled=False, signed=False):
+        """{場所: 値} か値のリストを調べて、ゼロ・NaN・無限大を記録する。signed は真偽か、場所を受けて真偽を返す関数。"""
         for where, x in (values.items() if isinstance(values, dict) else enumerate(values)):
             kind = kind_of(x)
             if kind:
-                self.add(stage, name, kind, str(where))
+                self.add(stage, name, kind, str(where), scaled, signed(str(where)) if callable(signed) else signed)
 
     def lines(self, stage):
         rows = [(k, n) for k, n in sorted(self.count.items()) if k[0] == stage]
         if not rows:
             return ['[zero/NaN log] %s: none' % stage]
         return ['[zero/NaN log] %s: %s %s x%d  e.g. %s' % (stage, k[1], k[2], n, ', '.join(self.examples[k]))
-                for k, n in rows]
+                for k, n in rows] + ['[ε] %s: %s ZERO x%d -> %s' % (stage, k[1], n, k[2])
+                                     for k, n in sorted(self.eps.items()) if k[0] == stage]
 
 
 def load(path, log=None):
@@ -94,7 +114,7 @@ def load(path, log=None):
                 continue
             kind = kind_of(v)
             if kind:
-                log.add('load', r['variable'], kind, str(y))
+                log.add('load', r['variable'], kind, str(y), scaled=True)     # 枚数・g・円
             old = out[product][measure].get(y)
             if old is not None and old != v and not (old != old and v != v):   # NaN 同士は食い違いにしない
                 raise ValueError('conflict %s:%s %d: %g vs %g' % (product, measure, y, old, v))
@@ -170,7 +190,7 @@ def report(product, m, assume=None, danger_total=None, whatif=False, log=None):
     print('pieces        ', pieces)
     print('g per piece   ', dict(sorted(m.get('grams_per_piece', {}).items())))
     print('total g       ', _r(q, 2), ('  ASSUMED g/piece in %s' % sorted(assumed)) if assumed else '')
-    log.scan('compute', 'total g', q)
+    log.scan('compute', 'total g', q, scaled=True)
     observed_q = {y: v for y, v in q.items() if y not in assumed}
     print('evidence      %s (%d observed points, MIN_POINTS=%d)' % (
         evidence(observed_q), len(observed_q), MIN_POINTS))
@@ -189,7 +209,7 @@ def report(product, m, assume=None, danger_total=None, whatif=False, log=None):
         log.scan('compute', 'total level', sl)
     rs = rates(q)
     print('rate per year ', [(a, b, round(r, 5)) for a, b, r in rs])
-    log.scan('compute', 'rate per year', {'%d-%d' % (a, b): r for a, b, r in rs})
+    log.scan('compute', 'rate per year', {'%d-%d' % (a, b): r for a, b, r in rs}, signed=True)
     if danger_total is not None:
         dd = {y: danger(v, danger_total) for y, v in q.items()}
         print('danger D_t    ', _r(dd), '(q_d=%g g, set by hand)' % danger_total)

@@ -1,5 +1,5 @@
 """明示的 stdlib backend の native との一致・境界と import 分離。"""
-import json, os, random, subprocess, sys
+import json, os, random, subprocess, sys, tempfile
 from pathlib import Path
 
 import pytest
@@ -163,8 +163,7 @@ rows = read_jsonl(data / 'season.jsonl')
 conds = default_conditions(read_jsonl(data / 'propositions.jsonl'), rows)
 assert parse_cond('rd,>,0') == {'col': 'rd', 'op': '>', 'value': 0}
 assert finalize_conditions(conds, [], rows) == conds
-assert build_parser().parse_args(['--results', str(data), '--out', 'unused', '--overlap-backend', 'stdlib']).overlap_backend == 'stdlib'
-assert build_parser().parse_args(['--results', str(data), '--out', 'unused']).overlap_backend == 'native'
+assert build_parser().parse_args([str(data)]).out is None
 result = load_overlap(data / 'season.jsonl', conds, backend='stdlib')
 assert sys.path == before
 assert not blocked.intersection(sys.modules)
@@ -196,10 +195,84 @@ def test_unicode_surrogates_are_outside_supported_domain(tmp_path, target):
 
 
 def test_cli_stdlib_writes_same_html(tmp_path, aoi_root):
-    from dragowing.cli import main
+    import dragowing.cli as cli
     data = aoi_root / 'cycles/c001-chunichi/outputs'
     native, light = tmp_path / 'native', tmp_path / 'stdlib'
-    assert main(['--results', str(data), '--out', str(native), '--id', 'P1']) == 0
-    assert main(['--results', str(data), '--out', str(light), '--id', 'P1', '--overlap-backend', 'stdlib']) == 0
+    assert cli.main([str(data), '--out', str(light), '--id', 'P1']) == 0
+    assert cli.main([str(data), '--out', str(native), '--id', 'P1', '--overlap-backend', 'native']) == 0
+    legacy = tmp_path / 'legacy'
+    assert cli.main(['--results', str(data), '--out', str(legacy), '--id', 'P1', '--overlap-backend', 'stdlib']) == 0
     for name in ('index.html', 'propositions.html'):
         assert (light / name).read_bytes() == (native / name).read_bytes()
+        assert (legacy / name).read_bytes() == (light / name).read_bytes()
+
+
+
+def test_cli_never_imports_numpy_or_polars(tmp_path, aoi_root):
+    code = '''
+import importlib.abc, sys, types
+from pathlib import Path
+root, data, out = map(Path, sys.argv[1:])
+pkg = types.ModuleType('dragowing'); pkg.__path__ = [str(root)]; sys.modules['dragowing'] = pkg
+blocked = {'numpy', 'polars', 'propositions', 'rule_search'}
+class Block(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, *args):
+        if fullname.split('.')[0] in blocked:
+            raise AssertionError('unexpected import: ' + fullname)
+sys.meta_path.insert(0, Block())
+from dragowing.cli import main
+assert main([str(data), '--out', str(out)]) == 0
+'''
+    proc = subprocess.run([sys.executable, '-c', code, str(REPO), str(aoi_root / 'cycles/c001-chunichi/outputs'), str(tmp_path)],
+                          capture_output=True, text=True, check=False)
+    assert proc.returncode == 0, proc.stderr
+    assert (tmp_path / 'index.html').is_file()
+
+
+def test_cli_without_out_writes_a_new_temp_dir_and_prints_links(tmp_path, monkeypatch, capsys, aoi_root):
+    from dragowing.cli import main
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path))
+    assert main([str(aoi_root / 'cycles/c001-chunichi/outputs'), '--id', 'P1']) == 0
+    [out] = tmp_path.glob('dragowing-*')
+    stdout = capsys.readouterr().out
+    assert [(out / name).resolve().as_uri() in stdout for name in ('index.html', 'propositions.html')] == [True, True]
+    assert 'markdown' in stdout.splitlines()[0]
+
+
+@pytest.mark.parametrize("args, expected", [
+    (["data"], "stdlib"),
+    (["--results", "data"], "native"),
+    (["--results", "data", "--overlap-backend", "stdlib"], "stdlib"),
+    (["data", "--overlap-backend", "native"], "native"),
+    (["--results", "data", "--overlap-backend", "native"], "native"),
+])
+def test_cli_compatible_spellings_dispatch_backend(args, expected, monkeypatch):
+    import dragowing.cli as cli
+    class ReachedBackend(Exception):
+        pass
+    monkeypatch.setattr(cli, "load_items", lambda path: ([], []))
+    monkeypatch.setattr(cli, "read_jsonl", lambda path: [])
+    monkeypatch.setattr(cli, "select_items", lambda *args: [])
+    monkeypatch.setattr(cli, "finalize_conditions", lambda *args: [])
+    def capture(path, conditions, backend):
+        assert path == Path("data/season.jsonl")
+        assert backend == expected
+        raise ReachedBackend
+    monkeypatch.setattr(cli, "load_overlap", capture)
+    with pytest.raises(ReachedBackend):
+        cli.main(args)
+
+
+@pytest.mark.parametrize("args", [[], ["data", "--results", "other"]])
+def test_cli_rejects_missing_or_ambiguous_results(args):
+    from dragowing.cli import main
+    with pytest.raises(SystemExit) as exc:
+        main(args)
+    assert exc.value.code == 2
+
+
+def test_pinned_nano_recipe_keeps_historical_cli():
+    text = (REPO / "docs/nano-environment.md").read_text()
+    assert "be2185b142aebcbedee97688fe08ee0092179472" in text
+    assert '--results "$WORK/src/aoi/cycles/c001-chunichi/outputs"' in text
+    assert '--out "$WORK/html-output" --overlap-backend stdlib' in text

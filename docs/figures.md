@@ -3,13 +3,13 @@
 `python -m dragowing` reads only the JSONL already in `cycles/c001-chunichi/outputs`. It does not fetch NPB data. It does not call the judge (`evaluate`). It does not round numbers into bins. It draws no regression, smoothing, or fitted lines.
 
 ```bash
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --id P1
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --column wins_vs_pythag
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --cond 'rd,>,0' --cond 'rank_ra,<=,2'
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --embed
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --team-order d,g,s   # top-to-bottom order of team × year; symbol order if omitted
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --png --svg
+python -m dragowing cycles/c001-chunichi/outputs
+python -m dragowing cycles/c001-chunichi/outputs --id P1
+python -m dragowing cycles/c001-chunichi/outputs --column wins_vs_pythag
+python -m dragowing cycles/c001-chunichi/outputs --cond 'rd,>,0' --cond 'rank_ra,<=,2'
+python -m dragowing cycles/c001-chunichi/outputs --embed
+python -m dragowing cycles/c001-chunichi/outputs --team-order d,g,s   # top-to-bottom order of team × year; symbol order if omitted
+python -m dragowing cycles/c001-chunichi/outputs --png --svg
 ```
 
 `--cond` values are JSON (`0`, `true`, `"d"`). If omitted, it looks at the `if` of `propositions.jsonl` in file order, takes 2 atoms on columns present in `season.jsonl`, and adds the B class (`upper_half == false`). That gives 2 or 3 sets. Repeating `--cond` permits 2–8 sets including class B. Select the breakdown with `--breakdown COLUMN` (default `team`) and repeatable `--breakdown-keep VALUE`.

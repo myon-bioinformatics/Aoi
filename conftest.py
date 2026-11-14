@@ -47,6 +47,10 @@ def _root() -> Path:
     # テストのデータの場所（既定のサイクル）は Aoi の aoi_paths.py に聞く。DRAgoWing には置かない
     if str(root) not in sys.path:
         sys.path.append(str(root))
+    # テストが直接 import する兄弟（PythDRagoras・QueRyu の ask）も AOI_ROOT から。PYTHONPATH は要らない
+    from dragowing.aoi_sibling import aoi_sibling_path
+    for module, sibling in (("propositions", "pythdragoras"), ("rule_search", "pythdragoras"), ("ask", "queryu/ask")):
+        aoi_sibling_path(module, sibling, env={"AOI_ROOT": str(root)})
     return root
 
 
@@ -58,9 +62,7 @@ def pytest_configure(config):
     if not (root / "cycles").is_dir():
         raise pytest.UsageError(
             f"Aoi のデータが見つからない（{root} に cycles/ がない）。"
-            "Aoi を checkout して AOI_ROOT=<Aoi のルート>、"
-            "PYTHONPATH=<Aoi のルート>/pythdragoras:<Aoi のルート>/queryu/ask を渡す"
-            "（.github/workflows/ci.yml と同じ）"
+            "Aoi を checkout して AOI_ROOT=<Aoi のルート> を渡す（.github/workflows/ci.yml と同じ）"
         )
 
 

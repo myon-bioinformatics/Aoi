@@ -6,7 +6,8 @@ RESULTS = Path(__file__).resolve().parent.parent / "cycles" / "c001-chunichi" / 
 LOCKED = (RESULTS / "kind_reask_prelock_2026-11-13.md", RESULTS / "kind_reask_propositions.toml",
           RESULTS / "kind_reask_r2_propositions.toml",       # 第2弾・第4弾は、命題ファイルの冒頭が宣言
           RESULTS / "kind_reask_r4_propositions.toml", RESULTS / "kind_reask_r6_propositions.toml",
-          RESULTS / "kind_reask_r10_propositions.toml", RESULTS / "kind_reask_r11_propositions.toml")
+          RESULTS / "kind_reask_r10_propositions.toml", RESULTS / "kind_reask_r11_propositions.toml",
+          RESULTS / "kind_reask_r12_propositions.toml")
 STAMP = RESULTS / "kind_reask_prelock_timestamp.txt"
 
 

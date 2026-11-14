@@ -14,11 +14,11 @@
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
-      "line": 57
+      "line": 67
     },
     {
       "file": "dist/blueprobe_min.py",
-      "line": 118
+      "line": 117
     },
     {
       "file": "dist/dragowing_min.py",
@@ -816,7 +816,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1435,
+      "attribute_uses": 1437,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -827,19 +827,19 @@
         "approx": 392,
         "fail": 34,
         "fixture": 59,
-        "hookimpl": 4,
+        "hookimpl": 5,
         "importorskip": 14,
         "mark.parametrize": 340,
         "mark.skipif": 26,
         "param": 1,
-        "raises": 524,
+        "raises": 525,
         "skip": 15,
         "warns": 3,
         "xfail": 1
       },
       "by_tree": {
         "aoi": {
-          "attribute_uses": 14,
+          "attribute_uses": 15,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -847,7 +847,7 @@
             "StashKey": 1,
             "fail": 4,
             "fixture": 3,
-            "hookimpl": 2,
+            "hookimpl": 3,
             "importorskip": 1
           },
           "dynamic_import_sites": 0,
@@ -855,7 +855,7 @@
           "import_sites": 1
         },
         "blueprobe": {
-          "attribute_uses": 69,
+          "attribute_uses": 70,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -865,12 +865,12 @@
             "hookimpl": 1,
             "importorskip": 6,
             "mark.parametrize": 31,
-            "raises": 19,
+            "raises": 20,
             "skip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 17,
-          "import_sites": 17
+          "files": 16,
+          "import_sites": 16
         },
         "dragowing": {
           "attribute_uses": 94,
@@ -1025,8 +1025,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 125,
-      "import_sites": 128
+      "files": 124,
+      "import_sites": 127
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1080,6 +1080,17 @@
   "sites": [
     {
       "attributes": {
+        "adapters.html_snapshot.extract": 1,
+        "source_access.extract_snapshot": 1
+      },
+      "dynamic_lines": [],
+      "file": "blueprobe/blueprobe.py",
+      "import_sites": 2,
+      "package": "mcp_toolcall_lab",
+      "tree": "blueprobe"
+    },
+    {
+      "attributes": {
         "ExitCode.OK": 1,
         "ExitCode.TESTS_FAILED": 1,
         "StashKey": 1,
@@ -1096,32 +1107,11 @@
     },
     {
       "attributes": {
-        "adapters.html_snapshot.extract": 1,
-        "source_access.extract_snapshot": 1
-      },
-      "dynamic_lines": [],
-      "file": "blueprobe/html_source.py",
-      "import_sites": 2,
-      "package": "mcp_toolcall_lab",
-      "tree": "blueprobe"
-    },
-    {
-      "attributes": {
         "mark.parametrize": 1,
         "raises": 2
       },
       "dynamic_lines": [],
       "file": "blueprobe/tests/test_blueprobe_accessible_names.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "blueprobe"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 1
-      },
-      "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_aoi_sibling.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "blueprobe"
@@ -1150,8 +1140,8 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 1,
-        "raises": 3
+        "mark.parametrize": 2,
+        "raises": 4
       },
       "dynamic_lines": [],
       "file": "blueprobe/tests/test_blueprobe_dom_patterns.py",
@@ -1293,7 +1283,7 @@
         "StashKey": 1,
         "fail": 4,
         "fixture": 3,
-        "hookimpl": 2,
+        "hookimpl": 3,
         "importorskip": 1
       },
       "dynamic_lines": [],

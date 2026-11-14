@@ -5,7 +5,7 @@ from links would lose competition headings and cancellation context.
 """
 from collections import Counter
 
-from html_source import HtmlSource
+from blueprobe import HtmlSource
 
 
 def compare_calendar(html, url, *, selector='.calendar a', extractor=None,

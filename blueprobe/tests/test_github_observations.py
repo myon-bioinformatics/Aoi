@@ -1,4 +1,4 @@
-import github_observations as obs
+from blueprobe import github as obs
 
 
 def snapshot():

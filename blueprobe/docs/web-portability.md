@@ -5,7 +5,7 @@ Fetching and interaction stay with browser-test-kit and the existing Flutter col
 coverage of the 215 routes stay with Flutter's existing `python/check_web_observations.py`.
 
 ```sh
-python -S web_observations.py /path/to/saved-pages --source-root /path/to/flutter_navigation_basic > observed.json
+python -S blueprobe.py web /path/to/saved-pages --source-root /path/to/flutter_navigation_basic > observed.json
 ```
 
 Replace `/path/to/saved-pages` with an existing directory where the fetched artifacts were extracted,

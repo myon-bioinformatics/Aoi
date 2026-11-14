@@ -1,6 +1,6 @@
 # CI failure labels: conservative addition only
 
-Implementation: `.github/workflows/ci-status-label.yml`, `.github/scripts/add_ci_label.py`, `.github/scripts/ci_label_api.py`, `tests/test_ci_status_label.py`, and `docs/diagnostics/ci-status-label.md`.
+Implementation: `.github/workflows/ci-status-label.yml`, `.github/scripts/add_ci_label.py`（読み取りだけのページ送りも同じファイル）, `tests/test_ci_status_label.py`, and `docs/diagnostics/ci-status-label.md`.
 
 Schedule/manual only, manual default branch guard, immutable event SHA checkout, no PR checkout or PR code execution. Token is passed only to reviewed default-branch runner; explicit GH_REPO scopes every API request. Existing label is used; no label definition update/force, deletion, closure, merge or approval API. Trusted code must first land on default branch through separate review/authorization; manual runs before that are not deployment evidence.
 

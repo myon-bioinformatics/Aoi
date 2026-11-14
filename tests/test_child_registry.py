@@ -1,9 +1,13 @@
 """子リポジトリの登録（child-heads.json）と scripts/check_child_heads.py。
 
 ネットワークは使わない。子はローカルの bare リポジトリ（file://）。
+
+旧 test_child_checks.py もここにまとめた（節の頭に旧ファイルの名前を書いた）。
 """
+
 import ast
 import copy
+import importlib.util
 import json
 import os
 import re
@@ -14,14 +18,17 @@ import sys
 import tempfile
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "check_child_heads.py"
 sys.path.insert(0, str(ROOT / "scripts"))
 
-
 import check_child_heads as cch  # noqa: E402
+import child_checks  # noqa: E402
+import pytest  # noqa: E402
+
+
+# ==== registry（旧 test_child_registry.py）
+
+SCRIPT = ROOT / "scripts" / "check_child_heads.py"
 
 SHA = "a" * 40
 NAME = "o/child"
@@ -33,14 +40,12 @@ def _git_uses_only_local_fixture_protocol(monkeypatch):
     monkeypatch.setenv("GIT_ALLOW_PROTOCOL", "file")
 
 
-def _load(name):
+def registry__load(name):
     return json.loads((ROOT / name).read_text(encoding="utf-8"))
 
 
-# --- このリポジトリの登録 -------------------------------------------------------------------
-
 def test_child_heads_shape_and_prefixes_exist():
-    heads = cch.validate_heads(_load("child-heads.json"))
+    heads = cch.validate_heads(registry__load("child-heads.json"))
     assert heads["ref"] == "main"
     for name, entry in heads["heads"].items():
         prefix = entry["optional"]["subtree_prefix"]
@@ -48,7 +53,7 @@ def test_child_heads_shape_and_prefixes_exist():
 
 
 def test_blueprobe_registered_with_exact_ids():
-    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/BlueProbe"]
+    entry = registry__load("child-heads.json")["heads"]["myon-bioinformatics/BlueProbe"]
     assert entry["repository_id"] == 1418210841
     assert entry["optional"]["repository_created_at"] == "2026-10-14T01:27:17Z"
     assert entry["optional"]["subtree_prefix"] == "blueprobe"
@@ -62,7 +67,7 @@ def test_blueprobe_registered_with_exact_ids():
 
 
 def test_pythdragoras_registered_with_exact_ids_and_mirrors():
-    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/PythDRagoras"]
+    entry = registry__load("child-heads.json")["heads"]["myon-bioinformatics/PythDRagoras"]
     assert entry["repository_id"] == 1423045231
     assert entry["optional"]["subtree_prefix"] == "pythdragoras"
     assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
@@ -72,7 +77,7 @@ def test_pythdragoras_registered_with_exact_ids_and_mirrors():
 
 
 def test_queryu_registered_with_exact_ids():
-    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/QueRyu"]
+    entry = registry__load("child-heads.json")["heads"]["myon-bioinformatics/QueRyu"]
     assert entry["repository_id"] == 1423051557
     assert entry["optional"]["subtree_prefix"] == "queryu"
     assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
@@ -82,7 +87,7 @@ def test_queryu_registered_with_exact_ids():
 
 
 def test_nagoyaction_registered_with_exact_ids():
-    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/NagoyAction"]
+    entry = registry__load("child-heads.json")["heads"]["myon-bioinformatics/NagoyAction"]
     assert entry["repository_id"] == 1423491480
     assert entry["optional"]["subtree_prefix"] == "nagoyaction"
     assert "sha" not in entry  # 履歴から導く
@@ -94,7 +99,7 @@ def test_nagoyaction_registered_with_exact_ids():
 
 
 def test_sakanalytics_registered_with_exact_ids():
-    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/SakAnalytics"]
+    entry = registry__load("child-heads.json")["heads"]["myon-bioinformatics/SakAnalytics"]
     assert entry["repository_id"] == 1423489570
     assert entry["optional"]["repository_created_at"] == "2026-10-17T15:50:27Z"
     assert entry["optional"]["subtree_prefix"] == "sakanalytics"
@@ -106,7 +111,7 @@ def test_sakanalytics_registered_with_exact_ids():
 
 
 def test_dragowing_registered_with_exact_ids():
-    entry = _load("child-heads.json")["heads"]["myon-bioinformatics/DRAgoWing"]
+    entry = registry__load("child-heads.json")["heads"]["myon-bioinformatics/DRAgoWing"]
     assert entry["repository_id"] == 1423772286
     assert entry["optional"]["repository_created_at"] == "2026-10-17T21:45:31Z"
     assert entry["optional"]["subtree_prefix"] == "dragowing"
@@ -119,7 +124,7 @@ def test_dragowing_registered_with_exact_ids():
 
 
 def test_registered_mirrors_are_blob_identical_to_aoi_originals():
-    report = cch.check(ROOT, cch.validate_heads(_load("child-heads.json")), network=False)
+    report = cch.check(ROOT, cch.validate_heads(registry__load("child-heads.json")), network=False)
     for row in report["children"]:
         assert set(row["mirrors"].values()) <= {"identical"}, row
 
@@ -132,8 +137,6 @@ def test_offline_cli_passes():
     assert report["schema"] == "aoi-child-heads-check/1"
     assert [c["repository"] for c in report["children"]] == ["myon-bioinformatics/BlueProbe", "myon-bioinformatics/DRAgoWing", "myon-bioinformatics/NagoyAction", "myon-bioinformatics/PythDRagoras", "myon-bioinformatics/QueRyu", "myon-bioinformatics/SakAnalytics"]
 
-
-# --- ローカルの Git -------------------------------------------------------------------------
 
 def _git(cwd, *args):
     return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "init.defaultBranch=main",
@@ -189,8 +192,6 @@ def _parent(tmp_path, files):
 def _run(tmp_path, root, heads, *, network=True):
     return cch.check(root, cch.validate_heads(heads), network=network, url_template=_url(tmp_path))
 
-
-# --- 形 ----------------------------------------------------------------------------------
 
 @pytest.mark.parametrize(("mutate", "message"), [
     (lambda d: [], 'expected child-heads/1'),
@@ -299,8 +300,6 @@ def test_git_error_message(tmp_path):
         cch._git("rev-parse", "nope", cwd=tmp_path)
 
 
-# --- mirrors（Aoi 内のコピーと原本）------------------------------------------------------------
-
 def test_mirrors_states():
     whole = {"p.py": ("100644", "1"), "sub/p.py": ("100644", "1"), "sub/q.py": ("100644", "2"),
              "q.py": ("100644", "3"), "x.py": ("100755", "4"), "sub/x.py": ("100644", "4"), "m.py": ("100644", "5")}
@@ -321,8 +320,6 @@ def test_mirror_drift_fails_offline_and_identical_passes(tmp_path):
     assert report["children"][0]["mirrors"] == {"p.py": "different"}
     assert cch.failed(report, fail_on_drift=False, fail_on_diff=False)
 
-
-# --- drift / diff ------------------------------------------------------------------------
 
 def test_identical_pure_subtree_with_mirror(tmp_path):
     sha = _child(tmp_path, {"a.py": "a", "README.md": "r", "p.py": "p", "pyproject.toml": "c",
@@ -469,8 +466,6 @@ def test_default_url_is_github():
     assert cch.URL_TEMPLATE.format(repository="o/c") == "https://github.com/o/c.git"
 
 
-# --- CLI ---------------------------------------------------------------------------------
-
 def _write_root(tmp_path, heads, files=None, *, legacy_vendor=False):
     root = tmp_path / "cli"
     payload = {"child-heads.json": json.dumps(heads)}
@@ -574,8 +569,6 @@ def test_check_does_not_mutate_inputs(tmp_path):
     _run(tmp_path, root, heads, network=False)
     assert heads == before
 
-
-# --- coverage / mutation (targets scripts/check_child_heads.py) ---------------------------
 
 _COVERAGE_TEST_FILTER = (
     "not test_mutations_all_killed and not test_check_child_heads_line_and_branch_coverage "
@@ -958,3 +951,91 @@ def test_git_runs_non_interactively(monkeypatch):
     monkeypatch.setenv("GIT_SSH_COMMAND", "ssh -i key")
     cch._git_bytes("ls-remote", "x")
     assert seen["env"]["GIT_SSH_COMMAND"] == "ssh -i key"  # a user's own SSH command is kept
+
+
+# ==== checks（旧 test_child_checks.py）
+# scripts/child_checks.py（子へ配る検査の本体）が、各子が今持っている同じ検査と同じ答えを出す。
+#
+# 子が採用（tests を数行にする）する前に、Aoi 側で各 prefix に対して結果の一致を確かめておく。
+
+
+PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
+PIN_CHILDREN = ("blueprobe", "queryu", "sakanalytics", "pythdragoras", "nagoyaction", "dragowing")
+# 子の tests/test_no_sibling_imports.py の定数（採用後は子にこれだけが残る）
+SIBLING_CHILDREN = {
+    "sakanalytics": dict(third_party={"polars", "pytest", "ortools"}),
+    "pythdragoras": dict(third_party={"polars", "numpy", "pytest"}),
+    "dragowing": dict(third_party={"polars", "numpy", "markdown", "pytest"}, aoi_provided=(),
+                      extra_local=("dragowing", "reports")),
+}
+LIVE_REF = "${{ steps.parent.outputs.sha }}"  # pythdragoras だけが親の main を実行時に解決する
+
+
+def checks__load(path: Path):
+    spec = importlib.util.spec_from_file_location(path.stem + "_" + path.parent.parent.name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.mark.parametrize("child", PIN_CHILDREN)
+def test_parent_pins_match_each_child_copy(child):
+    pins = child_checks.parent_workflow_pins(ROOT / child)
+    live = [p for p in pins if p == LIVE_REF]
+    pins = [p for p in pins if p != LIVE_REF]
+    assert pins and set(pins) == {PIN}, pins
+    assert live == ([LIVE_REF] if child == "pythdragoras" else [])
+
+
+@pytest.mark.parametrize("child", sorted(SIBLING_CHILDREN))
+def test_sibling_uses_match_each_child_copy(child):
+    own = checks__load(ROOT / child / "tests" / "test_no_sibling_imports.py")
+    found = child_checks.sibling_uses(ROOT / child, me=child, skip_dirs=own.SKIP_DIRS,
+                                     exclude=(ROOT / child / "tests" / "test_no_sibling_imports.py").resolve(),
+                                     **SIBLING_CHILDREN[child])
+    assert found == own.find_uses()
+    assert found - own.KNOWN_EXCEPTIONS == set()
+    assert own.KNOWN_EXCEPTIONS - found == set()
+
+
+def test_aoi_root_from_env_accepts_only_aoi(tmp_path):
+    assert child_checks.aoi_root_from_env({"AOI_ROOT": str(ROOT)}) == ROOT
+    with pytest.raises(ValueError):
+        child_checks.aoi_root_from_env({})
+    with pytest.raises(ValueError):
+        child_checks.aoi_root_from_env({"AOI_ROOT": str(tmp_path)})
+
+
+def test_export_path_touches_sys_path_and_pythonpath_once(tmp_path, monkeypatch):
+    env = {}
+    monkeypatch.setattr(sys, "path", list(sys.path))
+    child_checks.export_path(tmp_path, env)
+    child_checks.export_path(tmp_path, env)
+    assert sys.path.count(str(tmp_path)) == 1
+    assert env["PYTHONPATH"].split(os.pathsep) == [str(tmp_path)]
+
+
+def test_launch_env_sets_tool_python_and_drops_error_format():
+    env = child_checks.launch_env("score_sensitivity", "py", {"PY_LAUNCH_ERROR_FORMAT": "x", "KEEP": "1"})
+    assert env == {"SCORE_SENSITIVITY_PYTHON": "py", "KEEP": "1"}
+
+
+def test_find_node_rejects_old_major(tmp_path):
+    fake = tmp_path / "node"
+    fake.write_text("#!/bin/sh\necho v24.0.0\n", encoding="utf-8")
+    fake.chmod(0o755)
+    assert child_checks.find_node(env={"NODE": str(fake)}) is None
+    assert child_checks.find_node(min_major=24, env={"NODE": str(fake)}) == str(fake)
+
+
+def test_cli_lists_pins_and_uses(capsys):
+    assert child_checks.main(["pins", str(ROOT / "queryu")]) == 0
+    assert set(capsys.readouterr().out.split()) == {PIN}
+    assert child_checks.main(["uses", str(ROOT / "pythdragoras")]) == 0
+    assert "import:sakanalytics" in capsys.readouterr().out
+    assert child_checks.main(["nope"]) == 2
+
+
+def test_shared_tools_lock_lists_child_checks():
+    lock = json.loads((ROOT / "shared-tools.lock.json").read_text(encoding="utf-8"))
+    assert any(e["path"] == "scripts/child_checks.py" for e in lock["files"])

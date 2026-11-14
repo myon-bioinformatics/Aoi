@@ -78,7 +78,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
     --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out --repo .
 ```
 
-約 20 秒（ほぼ 2 回走らせるため）。書き出すもの: `eps_generality.json`（基準・集合ごとの数・τ・合成の式）、`eps_generality.md`（読みやすい表）、`eps_generality_units_n24.jsonl`（24 か月の窓の単位ごとの当てはめ）。C4 が通らなければ何も書かずに止まる。テストは `tests/test_epsilon_generality.py`（`eps_posthoc.py boundary_forms` は `tests/test_epsilon_generality_posthoc.py`）。
+約 20 秒（ほぼ 2 回走らせるため）。書き出すもの: `eps_generality.json`（基準・集合ごとの数・τ・合成の式）、`eps_generality.md`（読みやすい表）、`eps_generality_units_n24.jsonl`（24 か月の窓の単位ごとの当てはめ）。C4 が通らなければ何も書かずに止まる。テストは `tests/test_epsilon_generality.py`（`eps_posthoc.py boundary_forms` は同じファイルの posthoc の節）。
 
 ## 登録後に足したもの（基準・数・手順は変えていない）
 
@@ -97,9 +97,9 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 
 `eps_posthoc.py boundary_forms` は、結果を見たあとに足したもの。境界の単位のうち、ε=1e-3 / 1e-6 で選ばれる周期が ε=1e-9 のときと違う単位を数え、その単位で 2 つの周期の式の誤差の2乗和を並べる。境界でない単位のうち ε=1e-3 / 1e-6 で選ばれる式が今のコードと違う単位についても、今のコードの式・減衰しない波・ε の波の誤差の2乗和を並べる。周期ごとの境界の単位の数を野球の 24 単位と並べる。基準にはしない。結果は `results/posthoc_boundary_forms.md`。
 
-`eps_posthoc.py eps_ladder` は、第 3 回の結果を見たあとに足したもの。ε を 1e-4〜1/100 の固定の梯子で動かし、C2 の基準（登録した値と、第 3 回で延ばした値）を超える境界の単位と、ε の波が残らない単位を数え、動いた単位の周期・係数を梯子の上で並べる。基準にはしない。結果は `results-random/*/posthoc_eps_ladder.md`。テストは `tests/test_epsilon_generality_ladder.py`。
+`eps_posthoc.py eps_ladder` は、第 3 回の結果を見たあとに足したもの。ε を 1e-4〜1/100 の固定の梯子で動かし、C2 の基準（登録した値と、第 3 回で延ばした値）を超える境界の単位と、ε の波が残らない単位を数え、動いた単位の周期・係数を梯子の上で並べる。基準にはしない。結果は `results-random/*/posthoc_eps_ladder.md`。テストは `tests/test_epsilon_generality.py` の ladder の節。
 
-`eps_posthoc.py range_profile` は、第 3 回の結果を見たあとに足したもの。「そのデータで、ε がどこまで動かなかったか」を記録するためのもので、**ε の範囲や定数を決めるものではない**（範囲の既定値も置いていない）。境界の単位の係数が基準の ε=1e-9 と相対 10% / 1% / 0.1% / 0.01% 以内に収まった割合と、境界でない単位で選ばれる式が変わらなかった割合を、16 点の ε（1/100〜1e-13）で数え、すべて収まっていた最大の ε と、乱数の選び方（`draw_coefficients`）で ε がその値以下になる確率を並べる。別のデータには別の数字が出る（出てよい）ので、データごとに同じ表を作って並べて見るためのスクリプト。基準にはしない。別のデータには `--csv`（縦持ち）、`--prefix`（変数名の頭）、`--cadence`（month か day）を渡す。範囲を指定するときは `--eps-range MODE LO HI`（`eps_generality.py` と同じ書き方。MODE は inside / above / below）を付ける。LO と HI を格子に足し、その側の格子の ε について、許容ごとの最悪の収まった割合などをまとめる（`--random-eps K` と `--coef-seed` で、その側から ε を乱数で K 個選んで格子に足せる）。付けなければ出力は変わらない。結果は `results-random/*/eps_range_profile.md`。テストは `tests/test_epsilon_generality_range.py`。
+`eps_posthoc.py range_profile` は、第 3 回の結果を見たあとに足したもの。「そのデータで、ε がどこまで動かなかったか」を記録するためのもので、**ε の範囲や定数を決めるものではない**（範囲の既定値も置いていない）。境界の単位の係数が基準の ε=1e-9 と相対 10% / 1% / 0.1% / 0.01% 以内に収まった割合と、境界でない単位で選ばれる式が変わらなかった割合を、16 点の ε（1/100〜1e-13）で数え、すべて収まっていた最大の ε と、乱数の選び方（`draw_coefficients`）で ε がその値以下になる確率を並べる。別のデータには別の数字が出る（出てよい）ので、データごとに同じ表を作って並べて見るためのスクリプト。基準にはしない。別のデータには `--csv`（縦持ち）、`--prefix`（変数名の頭）、`--cadence`（month か day）を渡す。範囲を指定するときは `--eps-range MODE LO HI`（`eps_generality.py` と同じ書き方。MODE は inside / above / below）を付ける。LO と HI を格子に足し、その側の格子の ε について、許容ごとの最悪の収まった割合などをまとめる（`--random-eps K` と `--coef-seed` で、その側から ε を乱数で K 個選んで格子に足せる）。付けなければ出力は変わらない。結果は `results-random/*/eps_range_profile.md`。テストは `tests/test_epsilon_generality.py` の range の節。
 
 ## 実行の順
 
@@ -162,7 +162,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 
 - `eps_generality.py`: `--profile`（`staple` が既定、`physical-monthly`、`physical-daily`）。日次の刻み、合成の系列の省略、値の単位の報告を足した。**既定（主食価格の回）の出力は変えていない**: 足したあとのスクリプトで第 1 回を走らせ直し、`results/` の 3 ファイルとバイト単位で同じことを確かめてからコミットした
 - `fetch_physical.py`（新）: 上の 3 ファイルを固定したコミットと sha256 で取り、縦持ちの CSV にする
-- `tests/test_epsilon_generality_physical.py`（新）
+- `tests/test_epsilon_generality.py` の physical の節（新。足したときは `test_epsilon_generality_physical.py` という別のファイル）
 - `eps_posthoc.py scale_tolerance`（新。**結果を見たあとに足した**。下の「事後の確認」）
 
 ### 事後の確認（結果を見たあとに足した。登録した基準の外）
@@ -185,7 +185,7 @@ uv run --locked python research/epsilon-generality/eps_posthoc.py scale_toleranc
 
 #### 式が変わる ε を窓ごとに探す（2026-10-27。予想は走らせる前に書いて push した）
 
-梯子で式が変わった 3 窓（MDA の小麦粉、NIC の米、Mauna Loa の CO2）について、式が変わる ε を二分で 0.1% の幅に挟み、許容を ×10^±3 にしても動かないか、戻って変わらないか、挟む 2 点の誤差の2乗和の差が小さいかを見る。予想 (a)〜(e) は `eps_posthoc.py window_crossing` の冒頭に書いた。登録した基準の外で、`sakanalytics` は変更しない（PR #24 は触らない）。テストは `tests/test_epsilon_generality_window_crossing.py`。
+梯子で式が変わった 3 窓（MDA の小麦粉、NIC の米、Mauna Loa の CO2）について、式が変わる ε を二分で 0.1% の幅に挟み、許容を ×10^±3 にしても動かないか、戻って変わらないか、挟む 2 点の誤差の2乗和の差が小さいかを見る。予想 (a)〜(e) は `eps_posthoc.py window_crossing` の冒頭に書いた。登録した基準の外で、`sakanalytics` は変更しない（PR #24 は触らない）。テストは `tests/test_epsilon_generality.py` の window の節。
 
 ```sh
 uv run --locked python research/epsilon-generality/eps_posthoc.py window_crossing --staple-csv research/staple-price-survey/staple_survey_vertical.csv --physical-monthly-csv out/physical/physical_monthly_vertical.csv --outdir out/crossing --repo .
@@ -272,7 +272,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv out/p
 
 ### テスト
 
-`tests/test_epsilon_generality_random.py`。選び方の形と範囲（A の 3 桁、N = 3 から・上限なし、倍率の両側）、端（A = 1.00・9.99、N = 3・上限）、種で決まること、基準値のつなぎ方（1e-3 より上の延長と 1/100 ちょうどを含む）、乱数の ε を入れた判定と書き出し、実際の当てはめ（減衰しない波・減衰する波）を確かめる。**テストの乱数の種は実行ごとに変わる**（環境変数 `EPS_COEF_SEED` で固定できる。失敗したときはメッセージの `EPS_COEF_SEED=...` で同じ値を再現できる）。どの種でも成り立つ性質だけを置いている。
+`tests/test_epsilon_generality.py` の random の節。選び方の形と範囲（A の 3 桁、N = 3 から・上限なし、倍率の両側）、端（A = 1.00・9.99、N = 3・上限）、種で決まること、基準値のつなぎ方（1e-3 より上の延長と 1/100 ちょうどを含む）、乱数の ε を入れた判定と書き出し、実際の当てはめ（減衰しない波・減衰する波）を確かめる。**テストの乱数の種は実行ごとに変わる**（環境変数 `EPS_COEF_SEED` で固定できる。失敗したときはメッセージの `EPS_COEF_SEED=...` で同じ値を再現できる）。どの種でも成り立つ性質だけを置いている。
 
 ### 結果
 
@@ -285,7 +285,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv out/p
 - ε は N = 3〜307 の範囲でしか選べないので、above は N = 3 の側（HI より大きく 9.99×10^-3 まで）、below は N = 307（1.00×10^-307）までで、それより外に出る範囲は空になって止まる。例として LO = 8.14×10^-13、HI = 2.22×10^-3 のとき、規則で選ぶと内側 70.0%、上 14.4%、下 15.6%（データによらない）
 - 指定しなければ出力は足す前とバイト単位で同じで、登録した値（種 `18750922`）も変わらない。指定したときは、結果の `random_coefficients.regions` と md に使った範囲を書く。基準（C1〜C3）は ε の値から決まるので、どの範囲から選んでも同じ規則で当てる
 - 例: `uv run --locked python research/epsilon-generality/eps_generality.py --csv ... --outdir ... --repo . --random-eps 10 --eps-range below 8.14e-13 2.22e-3 --coef-seed 18750922`
-- この機能は第 3 回の結果には使っていない。範囲を選んで走らせる回は、範囲・個数・種を走らせる前に書く。テストは `tests/test_epsilon_generality_region.py`
+- この機能は第 3 回の結果には使っていない。範囲を選んで走らせる回は、範囲・個数・種を走らせる前に書く。テストは `tests/test_epsilon_generality.py` の region の節
 
 ### 限界
 
@@ -333,7 +333,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv <入�
 
 ### テスト
 
-`tests/test_epsilon_generality_region.py` が、上の値が種と規則から出ることを確かめる。
+`tests/test_epsilon_generality.py` の region の節が、上の値が種と規則から出ることを確かめる。
 
 ### 結果
 
@@ -379,7 +379,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv <入�
 
 ### テスト
 
-`tests/test_epsilon_generality_scaleband.py` が、上の倍率が種と規則から出ること、予想の数が事後の格子の JSON と合うことを確かめる。
+`tests/test_epsilon_generality.py` の scaleband の節が、上の倍率が種と規則から出ること、予想の数が事後の格子の JSON と合うことを確かめる。
 
 ### 結果
 

@@ -1,4 +1,7 @@
-"""Research inputs: food-share classification snapshots, recovered input identity checks and the standalone subscription-pack regressions."""
+"""Research inputs: food-share classification snapshots, recovered input identity checks and the standalone subscription-pack regressions.
+
+旧 test_c001_saved_inputs.py もここにまとめた（節の頭に旧ファイルの名前を書いた）。
+"""
 
 import copy
 import csv
@@ -12,13 +15,16 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-ROOT = Path(__file__).resolve().parents[1]
+from scripts import research_inputs as saved
 from scripts.research_inputs import validate_member_path, validated_zip
 
 
-# ═══ · food share data ═══════════════════════════════════════════════════════════════════════════════════
-# Snapshot and adversarial regressions for research food-share classification.
+# ==== inputs（旧 test_research_inputs.py）
+
+ROOT = Path(__file__).resolve().parents[1]
+
 
 spec = importlib.util.spec_from_file_location('food_share_check', ROOT / 'scripts/research_inputs.py')
 check = importlib.util.module_from_spec(spec)
@@ -103,9 +109,6 @@ class FoodShareTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'CSV/gzip mismatch'):
                 check.validate(base)
 
-
-# ═══ · recovered inputs ══════════════════════════════════════════════════════════════════════════════════
-# Offline identity/classification checks, not independent NPB source verification.
 
 RECOVERY = ROOT / "cycles/c001-chunichi/recovered-inputs"
 CATALOG = json.loads((RECOVERY / "manifest.json").read_text(encoding="utf-8"))
@@ -244,9 +247,42 @@ def test_synthetic_archive_has_only_classified_preserved_synthetic_members():
         assert game_files == 162 and game_records == 110016
 
 
-# ═══ · staple subscription evidence ══════════════════════════════════════════════════════════════════════
-# Collect the standalone subscription-pack regressions in ordinary repository CI.
-
 _PACK = (Path(__file__).resolve().parents[1] / 'research' / 'staple-price-survey'
          / 'adjacent_subscription_engel_shares')
 EvidenceTests = runpy.run_path(str(_PACK / 'test_subscription_engel_shares.py'))['EvidenceTests']
+
+
+# ==== saved（旧 test_c001_saved_inputs.py）
+
+class SavedInputTests(unittest.TestCase):
+    def test_saved_inputs_replay_without_network(self):
+        with patch('socket.socket', side_effect=AssertionError('network forbidden')):
+            result = saved.check()
+        self.assertEqual(result['annual_units'], 168)
+        self.assertEqual(result['annual_values_matched'], 72)
+        self.assertFalse(result['raw_source_replayed'])
+
+    def test_missing_input_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(FileNotFoundError):
+                saved.verify_payload(Path(directory) / 'missing', {})
+
+    def test_corrupt_input_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'saved.json'
+            path.write_bytes(b'{}')
+            expected = {'bytes': 2, 'sha256': hashlib.sha256(b'[]').hexdigest()}
+            with self.assertRaises(ValueError):
+                saved.verify_payload(path, expected)
+
+    def test_stale_outputs_fail(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'output'
+            path.write_text('stale')
+            with patch.object(saved, 'outputs', return_value={path: 'expected'}):
+                with self.assertRaisesRegex(ValueError, 'Stale'):
+                    saved.check()
+
+
+if __name__ == "__main__":
+    unittest.main()

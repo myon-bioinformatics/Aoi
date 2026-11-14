@@ -10,7 +10,7 @@ on:
     paths:
       - '.github/workflows/cache-keepalive.yml'
       - 'scripts/research_inputs.py'
-      - 'tests/test_c001_saved_inputs.py'
+      - 'tests/test_research_inputs.py'
       - 'cycles/c001-chunichi/recovered-inputs/**'
       - 'cycles/c001-chunichi/season-2026/**'
       - 'cycles/c001-chunichi/from-cycle-001/outputs/season.jsonl'
@@ -33,7 +33,7 @@ jobs:
           python-version: '3.15'
           activate-environment: true
       - name: Test saved-input failures and offline replay (stdlib only)
-        run: python -S -m unittest discover -s tests -p test_c001_saved_inputs.py -v
+        run: python -S -m unittest discover -s tests -p test_research_inputs.py -v
       - name: Verify preserved inputs and replay saved 2026 observations
         shell: bash
         run: |

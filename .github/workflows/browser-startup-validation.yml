@@ -10,7 +10,7 @@ on:
       - 'scripts/dragowing_browser.py'
       - 'scripts/observe_dragowing_startup.py'
       - 'tests/test_browser_startup_ci.py'
-      - 'tests/test_dragowing_browser_*.py'
+      - 'tests/test_dragowing_browser.py'
       - 'docs/diagnostics/browser-startup-validation.md'
   workflow_dispatch:
     inputs:

@@ -20,7 +20,7 @@
 ```sh
 python scripts/research_inputs.py season_2026
 python scripts/research_inputs.py season_2026 --check
-pytest -q tests/test_season_2026.py
+pytest -q tests/test_recovered_inputs.py
 ```
 
 照合は球団ごとの143試合、勝敗分と得失点、URL重複、終了状態、日付範囲、イニング合計を検査します。保存済み847試合を今回すべて公式ページから再取得した独立検証ではありません。年次合計一致だけでイニング単位の正しさや研究上の主張を保証しません。再取得した全文HTMLはこの変更の公開対象外です。

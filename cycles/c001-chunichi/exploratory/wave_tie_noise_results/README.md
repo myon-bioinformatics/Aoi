@@ -62,4 +62,4 @@ uv run --locked python cycles/c001-chunichi/exploratory/wave_tie_noise.py \
     --committed cycles/c001-chunichi/outputs/season.jsonl --new-seasons 2026 --outdir out/wave-tie-noise --repo .
 ```
 
-約 6 分かかります（`season_trajectory` を、対照の確認 1 回と本番 8 回の 9 回走らせるため）。表の数と本文の数は `wave_tie_noise.json` の数と同じで、[tests/test_c001_wave_tie_noise.py](../../../../tests/test_c001_wave_tie_noise.py) が確かめています。
+約 6 分かかります（`season_trajectory` を、対照の確認 1 回と本番 8 回の 9 回走らせるため）。表の数と本文の数は `wave_tie_noise.json` の数と同じで、[tests/test_c001_wave.py](../../../../tests/test_c001_wave.py) が確かめています。

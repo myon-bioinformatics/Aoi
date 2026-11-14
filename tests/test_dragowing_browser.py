@@ -1,19 +1,28 @@
-"""Diagnostic evidence with real pipes and a deterministic, local CDP peer."""
+"""DRAgoWing のブラウザーの管の検査（POSIX の管を使う。旧 3 本をまとめた。節の頭に旧ファイルの名前を書いた）。
+"""
+
+import errno
 import json
 import os
 import subprocess
 import sys
+import textwrap
 from pathlib import Path
 
 import pytest
-
+from dragowing.chrome_pipe import Chrome
 from scripts import dragowing_browser as diagnostic
 
-pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="POSIX debugging pipes")
+
+# ==== diagnostics（旧 test_dragowing_browser_diagnostics.py）
+# Diagnostic evidence with real pipes and a deterministic, local CDP peer.
+
+
+pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="POSIX pipe transport")
 
 
 @pytest.fixture
-def peer(tmp_path):
+def diagnostics_peer(tmp_path):
     def create(mode="ok"):
         path = tmp_path / ("fake-browser-" + mode)
         path.write_text("#!" + sys.executable + "\nMODE = " + repr(mode) + r'''
@@ -132,8 +141,8 @@ def assert_clean(trial):
     assert trial["close_elapsed_seconds"] >= 0
 
 
-def test_repeated_startup_uses_explicit_resolved_binary(peer, monkeypatch, tmp_path):
-    executable = peer()
+def test_repeated_startup_uses_explicit_resolved_binary(diagnostics_peer, monkeypatch, tmp_path):
+    executable = diagnostics_peer()
     link = tmp_path / "explicit-link"
     link.symlink_to(executable)
     monkeypatch.setenv("CHROME", "/unrelated/should-not-be-selected")
@@ -160,8 +169,8 @@ def test_repeated_startup_uses_explicit_resolved_binary(peer, monkeypatch, tmp_p
 
 @pytest.mark.parametrize("mode, error", [("timeout", "TimeoutError"), ("early_exit", "RuntimeError"),
                                           ("malformed", "RuntimeError"), ("missing_product", "RuntimeError")])
-def test_startup_failure_keeps_precleanup_evidence_and_repeats(peer, mode, error):
-    report = diagnostic.diagnose(peer(mode), runs=2, timeout=0.25)
+def test_startup_failure_keeps_precleanup_evidence_and_repeats(diagnostics_peer, mode, error):
+    report = diagnostic.diagnose(diagnostics_peer(mode), runs=2, timeout=0.25)
     assert not report["ok"] and report["failed_runs"] == 2
     for trial in report["trials"]:
         failure = trial["failure"]
@@ -182,11 +191,11 @@ def test_startup_failure_keeps_precleanup_evidence_and_repeats(peer, mode, error
             assert trial["cleanup"]["process"]["returncode"] == 9
 
 
-def test_spawn_failure_preserves_type_and_cleans_profile(peer, monkeypatch):
+def test_spawn_failure_preserves_type_and_cleans_profile(diagnostics_peer, monkeypatch):
     def fail(self, exe):
         raise OSError("synthetic spawn failure")
     monkeypatch.setattr(diagnostic.Chrome, "_spawn", fail)
-    report = diagnostic.diagnose(peer(), runs=1, timeout=1)
+    report = diagnostic.diagnose(diagnostics_peer(), runs=1, timeout=1)
     trial = report["trials"][0]
     assert trial["failure"]["stage"] == "spawn"
     assert trial["failure"]["type"] == "OSError"
@@ -196,8 +205,8 @@ def test_spawn_failure_preserves_type_and_cleans_profile(peer, monkeypatch):
 
 
 @pytest.mark.parametrize("mode", ["version_timeout", "version_failure"])
-def test_version_probe_failure_is_not_confused_with_readiness(peer, mode):
-    report = diagnostic.diagnose(peer(mode), runs=1, timeout=0.25)
+def test_version_probe_failure_is_not_confused_with_readiness(diagnostics_peer, mode):
+    report = diagnostic.diagnose(diagnostics_peer(mode), runs=1, timeout=0.25)
     assert not report["ok"]
     assert report["chrome"]["version"]["failure"]["stage"] == "version"
     assert report["trials"][0]["ok"]
@@ -214,11 +223,11 @@ def test_missing_browser_and_no_path_fallback(tmp_path):
     assert diagnostic.diagnose(str(not_executable))["preflight_failure"]["stage"] == "resolve_browser"
 
 
-def test_missing_empty_or_unpaired_bundle_fails_before_launch(peer, tmp_path, monkeypatch):
+def test_missing_empty_or_unpaired_bundle_fails_before_launch(diagnostics_peer, tmp_path, monkeypatch):
     def unexpected(*args, **kwargs):
         pytest.fail("preflight failure must not launch the version probe")
     monkeypatch.setattr(diagnostic, "_version", unexpected)
-    executable = peer()
+    executable = diagnostics_peer()
     report = diagnostic.diagnose(executable, plotly_js=str(tmp_path / "missing.js"), evidence_dir=str(tmp_path / "images"))
     assert report["preflight_failure"]["stage"] == "bundle" and not report["trials"]
     empty = tmp_path / "empty.js"
@@ -229,11 +238,11 @@ def test_missing_empty_or_unpaired_bundle_fails_before_launch(peer, tmp_path, mo
         assert diagnostic.diagnose(executable, **kwargs)["preflight_failure"]["stage"] == "arguments"
 
 
-def test_six_exports_reuse_browser_and_only_local_bundle(peer, bundle, tmp_path, monkeypatch):
+def test_six_exports_reuse_browser_and_only_local_bundle(diagnostics_peer, bundle, tmp_path, monkeypatch):
     def no_fetch(*args, **kwargs):
         pytest.fail("diagnostics must never fetch a bundle")
     monkeypatch.setattr("dragowing.export.fetch_plotly_js", no_fetch)
-    report = diagnostic.diagnose(peer(), runs=2, timeout=2, plotly_js=bundle, evidence_dir=str(tmp_path / "images"))
+    report = diagnostic.diagnose(diagnostics_peer(), runs=2, timeout=2, plotly_js=bundle, evidence_dir=str(tmp_path / "images"))
     assert report["ok"] and report["mode"] == "plotly"
     assert report["plotly_js"]["bytes"] > 0 and len(report["plotly_js"]["sha256"]) == 64
     for trial in report["trials"]:
@@ -253,8 +262,8 @@ def test_six_exports_reuse_browser_and_only_local_bundle(peer, bundle, tmp_path,
     ("ready_timeout", "render.figure-0.png", "Runtime.evaluate"),
     ("invalid_png", "render.figure-0.png", "Target.closeTarget"),
 ])
-def test_render_failure_has_stage_and_cleans_resources(peer, bundle, tmp_path, mode, stage, method):
-    report = diagnostic.diagnose(peer(mode), runs=1, timeout=0.25,
+def test_render_failure_has_stage_and_cleans_resources(diagnostics_peer, bundle, tmp_path, mode, stage, method):
+    report = diagnostic.diagnose(diagnostics_peer(mode), runs=1, timeout=0.25,
                                  plotly_js=bundle, evidence_dir=str(tmp_path / "images"))
     assert not report["ok"]
     trial = report["trials"][0]
@@ -296,8 +305,8 @@ def test_cli_writes_json_and_returns_failure_without_browser(tmp_path):
     assert json.loads(output.read_text())["preflight_failure"]["stage"] == "resolve_browser"
 
 
-def test_cli_success_and_stdout(peer, capsys):
-    assert diagnostic.diagnose_cli(["--chrome", peer(), "--runs", "1", "--timeout", "2", "--output", "-"]) == 0
+def test_cli_success_and_stdout(diagnostics_peer, capsys):
+    assert diagnostic.diagnose_cli(["--chrome", diagnostics_peer(), "--runs", "1", "--timeout", "2", "--output", "-"]) == 0
     assert json.loads(capsys.readouterr().out)["ok"]
 
 
@@ -316,8 +325,8 @@ def test_cli_help_runs_without_site_packages_from_other_directory(tmp_path):
     assert "--plotly-js" in result.stdout
 
 
-def test_symlink_invocation_is_not_replaced_with_realpath(peer, tmp_path):
-    target = peer("identity")
+def test_symlink_invocation_is_not_replaced_with_realpath(diagnostics_peer, tmp_path):
+    target = diagnostics_peer("identity")
     link = tmp_path / "keep-this-wrapper-name"
     link.symlink_to(target)
     report = diagnostic.diagnose(str(link), runs=1, timeout=2)
@@ -327,31 +336,31 @@ def test_symlink_invocation_is_not_replaced_with_realpath(peer, tmp_path):
     assert report["chrome"]["resolved_path"] == target
 
 
-def test_summary_on_stdout_with_file_output(peer, tmp_path, capsys):
-    assert diagnostic.diagnose_cli(["--chrome", peer(), "--runs", "1", "--timeout", "2",
+def test_summary_on_stdout_with_file_output(diagnostics_peer, tmp_path, capsys):
+    assert diagnostic.diagnose_cli(["--chrome", diagnostics_peer(), "--runs", "1", "--timeout", "2",
                             "--output", str(tmp_path / "evidence.json")]) == 0
     summary = capsys.readouterr().out
     assert "FakeChrome/123.4" in summary and "1 passed, 0 failed" in summary
     assert "readiness min/max" in summary and "failed stages: none" in summary
 
 
-def test_timeout_never_calls_unbounded_parent_diagnostic(peer, monkeypatch):
+def test_timeout_never_calls_unbounded_parent_diagnostic(diagnostics_peer, monkeypatch):
     def forbidden(*args, **kwargs):
         pytest.fail("production full-file diagnostic must not be called by the validation subclass")
     monkeypatch.setattr(diagnostic.Chrome, "_diagnostic", forbidden)
-    report = diagnostic.diagnose(peer("timeout"), runs=1, timeout=0.25)
+    report = diagnostic.diagnose(diagnostics_peer("timeout"), runs=1, timeout=0.25)
     assert report["trials"][0]["failure"]["type"] == "TimeoutError"
     assert "bounded-stderr-marker" in report["trials"][0]["failure"]["stderr_tail"]
 
 
-def test_cleanup_failure_stops_trials_instead_of_multiplying_leaks(peer, monkeypatch):
+def test_cleanup_failure_stops_trials_instead_of_multiplying_leaks(diagnostics_peer, monkeypatch):
     browsers = []
     def fail(self):
         browsers.append(self)
         raise OSError("synthetic cleanup failure")
     monkeypatch.setattr(diagnostic.DiagnosticChrome, "close", fail)
     try:
-        report = diagnostic.diagnose(peer(), runs=3, timeout=2)
+        report = diagnostic.diagnose(diagnostics_peer(), runs=3, timeout=2)
         assert not report["ok"]
         assert report["stopped_early_reason"] == "cleanup_left_resources"
         assert report["unattempted_runs"] == 2
@@ -370,8 +379,8 @@ def test_cleanup_failure_stops_trials_instead_of_multiplying_leaks(peer, monkeyp
             diagnostic.Chrome.close(browser)
 
 
-def test_first_readiness_is_not_overwritten_by_later_version_calls(peer):
-    browser = diagnostic.DiagnosticChrome(peer(), 2)
+def test_first_readiness_is_not_overwritten_by_later_version_calls(diagnostics_peer):
+    browser = diagnostic.DiagnosticChrome(diagnostics_peer(), 2)
     try:
         browser.start()
         elapsed = browser.readiness_elapsed_seconds
@@ -385,8 +394,8 @@ def test_first_readiness_is_not_overwritten_by_later_version_calls(peer):
         browser.close()
 
 
-def test_readiness_timeout_retains_send_vs_receive_stage(peer):
-    report = diagnostic.diagnose(peer("timeout"), runs=1, timeout=0.2)
+def test_readiness_timeout_retains_send_vs_receive_stage(diagnostics_peer):
+    report = diagnostic.diagnose(diagnostics_peer("timeout"), runs=1, timeout=0.2)
     trial = report["trials"][0]
     assert trial["failure"]["readiness_transport"] == trial["readiness_transport"]
     assert trial["readiness_transport"]["phase"] == "waiting_reply"
@@ -422,8 +431,8 @@ def test_unmodified(chrome_executable):
     assert report is None
 
 
-def test_pytest_observer_tracks_actual_launches_and_expected_failures(peer, tmp_path):
-    executable, timeout_executable = peer(), peer("timeout")
+def test_pytest_observer_tracks_actual_launches_and_expected_failures(diagnostics_peer, tmp_path):
+    executable, timeout_executable = diagnostics_peer(), diagnostics_peer("timeout")
     result, report = _run_observed_pytest(tmp_path, f'''
 from dragowing import chrome_pipe, render
 import pytest
@@ -467,7 +476,7 @@ def test_fake_only_is_not_patched():
                                        "network_namespace_inode", "network_interface_count", "loopback_present"}
 
 
-def test_pytest_observer_preserves_failed_test_and_skipped_setup(peer, tmp_path):
+def test_pytest_observer_preserves_failed_test_and_skipped_setup(diagnostics_peer, tmp_path):
     result, report = _run_observed_pytest(tmp_path, f'''
 from dragowing import chrome_pipe, render
 import pytest
@@ -475,7 +484,7 @@ import pytest
 def chrome_executable(request):
     if request.node.name == "test_skipped":
         pytest.skip("synthetic fixture unavailable")
-    return {peer("timeout")!r}
+    return {diagnostics_peer("timeout")!r}
 def test_failed(chrome_executable):
     with render.RenderSession(chrome=chrome_executable, timeouts=render.Timeouts(launch=0.2)):
         pass
@@ -493,8 +502,8 @@ def test_restored():
     assert report["tests"][1]["browsers"] == []
 
 
-def test_observer_preserves_restarts_of_one_closed_instance(peer, tmp_path):
-    executable, second_executable = peer(), peer("identity")
+def test_observer_preserves_restarts_of_one_closed_instance(diagnostics_peer, tmp_path):
+    executable, second_executable = diagnostics_peer(), diagnostics_peer("identity")
     result, report = _run_observed_pytest(tmp_path, f'''
 from dragowing import render
 import pytest
@@ -521,7 +530,7 @@ def test_restart(chrome_executable):
     assert all(b["failure"] is None for b in records)
 
 
-def test_startup_wait_observations_do_not_send_extra_cdp_requests(peer, monkeypatch):
+def test_startup_wait_observations_do_not_send_extra_cdp_requests(diagnostics_peer, monkeypatch):
     sent = []
     original = diagnostic.Chrome._send
 
@@ -530,7 +539,7 @@ def test_startup_wait_observations_do_not_send_extra_cdp_requests(peer, monkeypa
         return original(self, method, *args, **kwargs)
 
     monkeypatch.setattr(diagnostic.Chrome, "_send", observe_send)
-    browser = diagnostic.DiagnosticChrome(peer(), 2)
+    browser = diagnostic.DiagnosticChrome(diagnostics_peer(), 2)
     try:
         browser.start()
         assert sent == ["Browser.getVersion"]
@@ -551,8 +560,8 @@ def test_startup_wait_observations_do_not_send_extra_cdp_requests(peer, monkeypa
     assert sent == ["Browser.getVersion", "Browser.getVersion", "Browser.close"]
 
 
-def test_startup_wait_failure_is_captured_before_cleanup_without_retry(peer):
-    report = diagnostic.diagnose(peer("timeout"), runs=1, timeout=0.2)
+def test_startup_wait_failure_is_captured_before_cleanup_without_retry(diagnostics_peer):
+    report = diagnostic.diagnose(diagnostics_peer("timeout"), runs=1, timeout=0.2)
     assert report["failed_runs"] == 1
     trial = report["trials"][0]
     snapshots = trial["wait_observations"]
@@ -596,8 +605,8 @@ def test_startup_wait_observer_keeps_existing_deadline_and_reports_its_cost(monk
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux procfs evidence")
-def test_startup_wait_snapshot_matches_only_owned_cdp_pipes(peer):
-    browser = diagnostic.DiagnosticChrome(peer(), 2)
+def test_startup_wait_snapshot_matches_only_owned_cdp_pipes(diagnostics_peer):
+    browser = diagnostic.DiagnosticChrome(diagnostics_peer(), 2)
     try:
         browser.start()
         snapshot = diagnostic._startup_wait_snapshot(browser._proc, browser._w, browser._r)
@@ -615,8 +624,8 @@ def test_startup_wait_snapshot_matches_only_owned_cdp_pipes(peer):
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux FIONREAD evidence")
-def test_startup_wait_queued_byte_observation_does_not_consume_pipe_data(peer, tmp_path):
-    browser = diagnostic.DiagnosticChrome(peer(), 2)
+def test_startup_wait_queued_byte_observation_does_not_consume_pipe_data(diagnostics_peer, tmp_path):
+    browser = diagnostic.DiagnosticChrome(diagnostics_peer(), 2)
     read_fd, write_fd = os.pipe()
     try:
         browser.start()
@@ -641,8 +650,8 @@ def test_startup_wait_queued_byte_observation_does_not_consume_pipe_data(peer, t
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux procfs evidence")
-def test_startup_wait_snapshot_discards_non_pipe_child_target(peer, monkeypatch):
-    browser = diagnostic.DiagnosticChrome(peer(), 2)
+def test_startup_wait_snapshot_discards_non_pipe_child_target(diagnostics_peer, monkeypatch):
+    browser = diagnostic.DiagnosticChrome(diagnostics_peer(), 2)
     try:
         browser.start()
         with monkeypatch.context() as patch:
@@ -657,10 +666,10 @@ def test_startup_wait_snapshot_discards_non_pipe_child_target(peer, monkeypatch)
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux FIONREAD evidence")
-def test_startup_wait_unavailable_pipe_evidence_is_null_without_permission_retry(peer, monkeypatch):
+def test_startup_wait_unavailable_pipe_evidence_is_null_without_permission_retry(diagnostics_peer, monkeypatch):
     import fcntl
 
-    browser = diagnostic.DiagnosticChrome(peer(), 2)
+    browser = diagnostic.DiagnosticChrome(diagnostics_peer(), 2)
     calls = []
 
     def denied(*args, **kwargs):
@@ -982,3 +991,305 @@ def test_spawn_timing_preserves_single_handoff_and_original_error(monkeypatch, f
     assert calls == [(browser, "/explicit/browser")]
     assert browser.spawn_elapsed_seconds == 0.125
     assert browser.timeout == 8
+
+
+# ==== resources（旧 test_dragowing_browser_resources.py）
+# Known pipe-resource defects, independent of any real-browser CI failure.
+#
+# These strict expected failures describe healthy behavior. Remove the matching
+# xfail when the production transport is fixed; an unexpected pass must not hide it.
+
+
+class _KnownResourceLimitation(AssertionError):
+    """Only the reproduced defect, not a harness/setup failure, may xfail."""
+
+
+def _is_open(fd):
+    try:
+        os.fstat(fd)
+    except OSError as exc:
+        if exc.errno == errno.EBADF:
+            return False
+        raise
+    return True
+
+
+def test_second_pipe_allocation_failure_closes_first_pair(monkeypatch):
+    from dragowing import chrome_pipe
+
+    real_pipe = os.pipe
+    allocated = []
+    calls = 0
+    error = None
+    leaked = []
+    browser = Chrome(sys.executable, timeout=1)
+
+    def fail_second_pipe():
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError(errno.EMFILE, "injected second pipe allocation failure")
+        pair = real_pipe()
+        allocated.extend(pair)
+        return pair
+
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(chrome_pipe.os, "pipe", fail_second_pipe)
+            try:
+                browser.start()
+            except OSError as exc:
+                error = exc
+        leaked = [fd for fd in allocated if _is_open(fd)]
+    finally:
+        # The transport does not retain these descriptors on this failure path.
+        # Release them ourselves before the expected-failure assertion below.
+        for fd in allocated:
+            if _is_open(fd):
+                os.close(fd)
+        browser.close()
+
+    assert calls == 2 and len(allocated) == 2
+    assert error is not None and error.errno == errno.EMFILE
+    assert all(not _is_open(fd) for fd in allocated)
+    assert browser._proc is browser._tmp is browser._err is None
+    if leaked:
+        raise _KnownResourceLimitation(f"second pipe failure left descriptors open: {leaked}")
+
+
+_HIGH_FD_PROBE = r"""
+import errno, importlib.util, json, os, resource, select, signal, sys, tempfile
+
+spec = importlib.util.spec_from_file_location("chrome_pipe_resource_probe", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+tempfile.tempdir = sys.argv[3]
+browser = module.Chrome(sys.argv[2], timeout=1)
+held = []
+outcome = {}
+proc = None
+profile = None
+
+def error_record(exc):
+    return {"type": type(exc).__name__, "message": str(exc)}
+
+def alarm(_signum, _frame):
+    raise TimeoutError("high-FD resource probe exceeded its own ten-second budget")
+
+signal.signal(signal.SIGALRM, alarm)
+signal.alarm(10)
+try:
+    soft, _hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    if soft != resource.RLIM_INFINITY and soft < 1100:
+        outcome["skip"] = "soft descriptor limit below 1100; no resource limit is changed"
+    else:
+        try:
+            while not held or held[-1] < 1030:
+                held.append(os.open(os.devnull, os.O_RDONLY))
+        except OSError as exc:
+            if exc.errno not in (errno.EMFILE, errno.ENFILE):
+                raise
+            outcome["skip"] = "insufficient descriptors for the bounded high-FD probe"
+        if "skip" not in outcome:
+            try:
+                select.select([held[-1]], [], [], 0)
+            except ValueError:
+                pass
+            else:
+                outcome["skip"] = "this platform's select accepts the bounded probe descriptor"
+        if "skip" not in outcome:
+            outcome["highest_held_fd"] = held[-1]
+            outcome["start_error"] = None
+            try:
+                browser.start()
+            except Exception as exc:
+                outcome["start_error"] = error_record(exc)
+            proc, profile = browser._proc, browser._tmp
+            outcome["close_error"] = None
+            try:
+                browser.close()
+            except Exception as exc:
+                outcome["close_error"] = error_record(exc)
+            outcome["process_alive_after_close"] = proc is not None and proc.poll() is None
+            outcome["profile_exists_after_close"] = profile is not None and os.path.exists(profile)
+finally:
+    # Do not depend on the broken graceful-close path for harness cleanup.
+    # The deterministic peer has no descendants. Reap it before asking close()
+    # to dispose of descriptors, its reader, stderr and the temporary profile.
+    proc = browser._proc or proc
+    if proc is not None:
+        if proc.poll() is None:
+            proc.kill()
+        proc.wait(timeout=3)
+    browser.close()
+    for fd in held:
+        os.close(fd)
+    signal.alarm(0)
+
+outcome["cleanup_complete"] = (
+    browser._proc is browser._reader is browser._w is browser._r is browser._tmp is None
+    and (proc is None or proc.poll() is not None)
+    and (profile is None or not os.path.exists(profile))
+)
+print(json.dumps(outcome))
+"""
+
+
+def test_high_descriptors_support_startup_and_close(tmp_path):
+    peer = tmp_path / "resource-cdp-peer"
+    peer.write_text("#!" + sys.executable + "\n" + textwrap.dedent(r"""
+        import json, os, signal
+        signal.alarm(10)
+        pending = b""
+        while True:
+            chunk = os.read(3, 65536)
+            if not chunk:
+                break
+            pending += chunk
+            while b"\0" in pending:
+                raw, pending = pending.split(b"\0", 1)
+                message = json.loads(raw)
+                if message["method"] == "Browser.close":
+                    raise SystemExit(0)
+                reply = json.dumps({"id": message["id"], "result": {}}).encode() + b"\0"
+                while reply:
+                    reply = reply[os.write(4, reply):]
+    """), encoding="utf-8")
+    peer.chmod(0o755)
+    source = Path(__file__).resolve().parents[1] / "dragowing" / "chrome_pipe.py"
+    completed = subprocess.run(
+        [sys.executable, "-I", "-S", "-c", _HIGH_FD_PROBE, str(source), str(peer), str(tmp_path)],
+        capture_output=True, text=True, timeout=20, check=False,
+    )
+    # Harness errors are regular failures, never absorbed by the xfail marker.
+    assert completed.returncode == 0, completed.stderr
+    outcome = json.loads(completed.stdout)
+    assert outcome["cleanup_complete"], outcome
+    if "skip" in outcome:
+        pytest.skip(outcome["skip"])
+    assert outcome["highest_held_fd"] >= 1030
+    start_error = outcome["start_error"]
+    close_error = outcome["close_error"]
+    assert close_error is None or (
+        close_error["type"] == "ValueError"
+        and "filedescriptor out of range" in close_error["message"]
+    ), outcome
+    if (start_error is not None and start_error["type"] == "ValueError"
+            and "filedescriptor out of range" in start_error["message"]):
+        raise _KnownResourceLimitation(json.dumps(outcome, sort_keys=True))
+    assert start_error is None, outcome
+    assert outcome["close_error"] is None, outcome
+    assert not outcome["process_alive_after_close"], outcome
+    assert not outcome["profile_exists_after_close"], outcome
+
+
+# ==== transport（旧 test_dragowing_browser_transport.py）
+# Exercise real POSIX pipes with a deterministic CDP peer, without Chrome.
+
+
+@pytest.fixture
+def transport_peer(tmp_path):
+    def create(prefix="", after_handshake=""):
+        path = tmp_path / "cdp-peer"
+        path.write_text("#!" + sys.executable + "\n" + prefix + '''
+import json, os, sys, time
+buf = b""
+def send(obj):
+    data = json.dumps(obj, ensure_ascii=False).encode() + b"\\0"
+    while data:
+        data = data[os.write(4, data):]
+while True:
+    chunk = os.read(3, 65536)
+    if not chunk:
+        break
+    buf += chunk
+    while b"\\0" in buf:
+        raw, buf = buf.split(b"\\0", 1)
+        msg = json.loads(raw)
+        method = msg["method"]
+        if method == "Browser.close":
+            sys.exit(0)
+        if method == "Crash":
+            print("peer crashed", file=sys.stderr, flush=True)
+            sys.exit(7)
+        if method == "Malformed":
+            os.write(4, b"not-json\\0")
+            continue
+        if method == "Never":
+            continue
+        if method == "Page.navigate":
+            send({"method":"Page.loadEventFired", "sessionId":"other"})
+            send({"method":"Page.loadEventFired", "sessionId":"page"})
+        send({"id": msg["id"], "result": msg.get("params", {})})
+        if method == "Browser.getVersion":
+''' + ("            " + after_handshake if after_handshake else "            pass") + "\n")
+        path.chmod(0o755)
+        return str(path)
+    return create
+
+
+def test_stderr_pressure_before_readiness_does_not_block(transport_peer):
+    # Exceeds a pipe's capacity before the peer reads Browser.getVersion.
+    # This must remain a regular file, not an undrained subprocess.PIPE.
+    prefix = (
+        "import os, stat\n"
+        "assert stat.S_ISREG(os.fstat(2).st_mode)\n"
+        "data = b'x' * (2 * 1024 * 1024) + b'\\nstderr-pressure-marker\\n'\n"
+        "while data:\n"
+        "    data = data[os.write(2, data):]\n"
+    )
+    with Chrome(transport_peer(prefix=prefix), timeout=5) as browser:
+        assert browser.call("Echo", {"ready": True}) == {"ready": True}
+        assert "stderr-pressure-marker" in browser._diagnostic()
+
+
+def test_fragmented_utf8_replies_preserve_frames_and_events(transport_peer):
+    # Split JSON, multi-byte UTF-8, and the NUL delimiter at arbitrary reads.
+    prefix = (
+        "import os\n"
+        "original_write = os.write\n"
+        "def fragmented_write(fd, data):\n"
+        "    return original_write(fd, data[:1] if fd == 4 else data)\n"
+        "os.write = fragmented_write\n"
+    )
+    with Chrome(transport_peer(prefix=prefix), timeout=5) as browser:
+        payload = {"text": "日本語 / café / \u0000"}
+        assert browser.call("Echo", payload) == payload
+        browser.call("Page.navigate", session="page")
+        assert browser.wait_event("Page.loadEventFired", "page")["sessionId"] == "page"
+        assert browser.wait_event("Page.loadEventFired", "other")["sessionId"] == "other"
+
+
+def test_delayed_readiness_is_accepted_within_launch_budget(transport_peer):
+    with Chrome(transport_peer(prefix="import time; time.sleep(0.1)\n"), timeout=3) as browser:
+        assert browser.call("Echo", {"delayed": True}) == {"delayed": True}
+
+
+def test_startup_timeout_retains_stderr_before_cleanup(transport_peer):
+    executable = transport_peer(prefix=(
+        "import sys, time\n"
+        "print('startup-stalled-marker', file=sys.stderr, flush=True)\n"
+        "time.sleep(60)\n"
+    ))
+    browser = Chrome(executable, timeout=0.3)
+    with pytest.raises(TimeoutError) as failure:
+        browser.start()
+    assert "still running" in str(failure.value)
+    assert "startup-stalled-marker" in str(failure.value)
+    assert browser._proc is browser._reader is browser._w is browser._r is None
+    assert browser._tmp is browser._err is None
+
+
+@pytest.mark.skipif(not Path('/proc/self/fd').is_dir(), reason="Linux descriptor accounting")
+def test_repeated_sessions_do_not_accumulate_descriptors_or_profiles(transport_peer):
+    executable = transport_peer()
+    before = len(list(Path('/proc/self/fd').iterdir()))
+    directories = []
+    browser = Chrome(executable, timeout=3)
+    for index in range(12):
+        with browser:
+            directories.append(Path(browser._tmp))
+            assert browser.call("Echo", {"round": index}) == {"round": index}
+        assert browser._proc is browser._reader is browser._w is browser._r is None
+    assert all(not path.exists() for path in directories)
+    assert len(list(Path('/proc/self/fd').iterdir())) == before

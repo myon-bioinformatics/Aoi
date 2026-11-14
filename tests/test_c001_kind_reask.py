@@ -1,13 +1,21 @@
-"""cycles/c001-chunichi/exploratory/kind_reask.py の確認。ゲート、4 つの形の件数、終了コード、読み。表示の文字は比べない。"""
+"""cycles/c001-chunichi/exploratory/kind_reask.py の確認。ゲート、4 つの形の件数、終了コード、読み。表示の文字は比べない。
+
+旧 test_c001_kind_reask_prelock.py もここにまとめた（節の頭に旧ファイルの名前を書いた）。
+"""
+
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
 
 import pytest
 
+
+# ==== kind（旧 test_c001_kind_reask.py）
+
 ROOT = Path(__file__).resolve().parent.parent
 EXPLORATORY = ROOT / "cycles" / "c001-chunichi" / "exploratory"
-RESULTS = EXPLORATORY / "kind_reask_results"
+KIND_RESULTS = EXPLORATORY / "kind_reask_results"
 CANON_SHA = "0074801d0ede337a76c98624e8d206912ad0ee42a89fecde9d8eb7646d52a35a"
 
 # 命題: (総合の終了コード, 元・対偶・逆・裏の終了コード, きっかけ以外の読み)
@@ -39,7 +47,7 @@ def test_gate_passes_and_the_canonical_file_is_untouched():
 
 
 def test_saved_result_is_what_the_script_produces():
-    saved = json.loads((RESULTS / "kind_reask.json").read_text(encoding="utf-8"))
+    saved = json.loads((KIND_RESULTS / "kind_reask.json").read_text(encoding="utf-8"))
     assert saved == json.loads(json.dumps(RES, ensure_ascii=False, sort_keys=True))
 
 
@@ -129,7 +137,7 @@ def _panel_with(tmp_path, changes):
 
 
 C001 = ROOT / "cycles" / "c001-chunichi"
-KS = {p["id"]: p for p in kr.load_joined(C001 / "propositions.toml", [RESULTS / "kind_reask_propositions.toml"], P)[0]}
+KS = {p["id"]: p for p in kr.load_joined(C001 / "propositions.toml", [KIND_RESULTS / "kind_reask_propositions.toml"], P)[0]}
 FULL = pl.read_ndjson(C001 / "outputs" / "season.jsonl")
 TRAINED = {q["id"]: {f: {"n": v["n"], "hold": v["hold"]} for f, v in q["forms"].items()} for q in RES["propositions"]}
 
@@ -509,7 +517,7 @@ def test_tie_split_by_hand():
 
 
 # ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------
-GIF = RESULTS / "c001_sim-p-upper_y2012-2026_r01.gif"
+GIF = KIND_RESULTS / "c001_sim-p-upper_y2012-2026_r01.gif"
 
 
 def test_season_sim_years_count_k51_the_same_way_as_round_one():
@@ -567,3 +575,25 @@ def test_main_writes_both_files_and_returns_zero(tmp_path, monkeypatch):
     assert kr.main(["--outdir", str(tmp_path)]) == 0
     assert json.loads((tmp_path / "kind_reask.json").read_text(encoding="utf-8"))["summary"]["count"] == 22
     assert (tmp_path / "kind_reask.md").stat().st_size > 0
+
+
+# ==== prelock（旧 test_c001_kind_reask_prelock.py）
+# cycles/c001-chunichi/exploratory/kind_reask_results の事前宣言と命題の固定を確かめる。
+
+
+PRELOCK_RESULTS = Path(__file__).resolve().parent.parent / "cycles" / "c001-chunichi" / "exploratory" / "kind_reask_results"
+LOCKED = (PRELOCK_RESULTS / "kind_reask_prelock_2026-11-13.md", PRELOCK_RESULTS / "kind_reask_propositions.toml",
+          PRELOCK_RESULTS / "kind_reask_r2_propositions.toml",       # 第2弾・第4弾は、命題ファイルの冒頭が宣言
+          PRELOCK_RESULTS / "kind_reask_r4_propositions.toml", PRELOCK_RESULTS / "kind_reask_r6_propositions.toml",
+          PRELOCK_RESULTS / "kind_reask_r10_propositions.toml", PRELOCK_RESULTS / "kind_reask_r11_propositions.toml",
+          PRELOCK_RESULTS / "kind_reask_r12_propositions.toml")
+STAMP = PRELOCK_RESULTS / "kind_reask_prelock_timestamp.txt"
+
+
+def test_prelock_hashes_match_stamp():
+    # 宣言か命題を書き換えたら、固定時のハッシュと合わなくなる
+    stamp = STAMP.read_text()
+    for path in LOCKED:
+        assert hashlib.sha256(path.read_bytes()).hexdigest() in stamp
+        assert path.name in stamp
+    assert "JST" in stamp

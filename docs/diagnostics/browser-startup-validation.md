@@ -112,10 +112,8 @@ normal / offline の切り替えはCLI内部では行わない。GitHub Actions�
 
 ```sh
 .venv/bin/python -m pytest -c pyproject.toml -q \
-  tests/test_dragowing_browser_diagnostics.py \
-  dragowing/tests/test_chrome_pipe.py \
-  tests/test_dragowing_browser_transport.py \
-  tests/test_dragowing_browser_resources.py
+  tests/test_dragowing_browser.py \
+  dragowing/tests/test_chrome_pipe.py
 ```
 
 新しいテストは deterministic な CDP peer を POSIX pipe で動かし、実 Chrome / Chromium やダウンロードを必要としない。起動成功、応答なし、途中終了、不正 JSON、spawn 失敗、`--version` 失敗、実行ファイル / JS 不在、不正 timeout、symlink 名の維持、同一 PID の 6 出力、ready / capture 失敗、stderr の bounded read、cleanup 失敗による後続停止を確認する。実ブラウザの成否は別の CI 実測として扱う。
@@ -153,7 +151,7 @@ security 設定、timeout、retry は変更しない。ローカル contract tes
 
 ## 別に確認した resource cleanup の問題
 
-`test_dragowing_browser_resources.py` は 2 件の既存不具合を deterministic に再現する strict xfail テストである。
+`test_dragowing_browser.py` の resources の節（旧 `test_dragowing_browser_resources.py`）は、2 件の既存不具合を deterministic に再現する strict xfail テストである。
 
 - 2 本目の `os.pipe()` が EMFILE を返したとき、先に確保した pipe pair が未追跡のまま残る。
 - pipe fd が 1024 以上になると `select.select` が拒否し、`close()` も同じ ValueError を繰り返して cleanup に到達しない。

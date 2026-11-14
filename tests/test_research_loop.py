@@ -2,18 +2,24 @@
 
 元のテストのうち、旧 inbox.py（worker の autonomous=True など）に依存するものは、
 今の nagoyaction/inbox/inbox.py がその機能を持たないため移していない（PR 本文の「未接続」を参照）。
-"""
-import json
-import sys
-from pathlib import Path
 
-import pytest
+旧 test_research_worker_gate.py もここにまとめた（節の頭に旧ファイルの名前を書いた）。
+"""
+
+import json
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "research_loop"))
 
-from exploration import Explorer, atomic_json, plan, read_state, save_state, snapshot  # noqa: E402
+import pytest  # noqa: E402
+from exploration import atomic_json, Explorer, plan, read_state, save_state, snapshot  # noqa: E402
 
+
+# ==== loop（旧 test_research_loop.py）
 
 def item(n=2, hold=1, unknown=0, listed=("t-2015",)):
     return {"id": "E1", "forms": [{"form": "original", "n": n, "hold": hold, "undetermined": unknown,
@@ -167,3 +173,59 @@ def test_neighbor_feedback_html_roundtrip_and_restart(cycle, tmp_path):
         inspect('<script id="report-data">{"research_observations":{"version":99}}</script>')
     with pytest.raises(ValueError, match='一意'):
         inspect('<script src="https://example.invalid"></script>')
+
+
+# ==== gate（旧 test_research_worker_gate.py）
+# Keep Actions activation deferred while NagoyAction's offline worker is reviewed.
+#
+# No live Actions entry point is restored before exact-head CI, independent review
+# and a separate canary decision. The question inbox remains independent.
+
+
+WORKFLOWS = ROOT / ".github" / "workflows"
+
+
+def test_worker_has_no_actions_entry_point_before_canary_review():
+    # Check all live workflows, not only the former research-worker filename:
+    # otherwise a renamed cron job could reproduce the failure.
+    assert not (WORKFLOWS / "research-worker.yml").exists()
+    for workflow in (*WORKFLOWS.glob("*.yml"), *WORKFLOWS.glob("*.yaml")):
+        assert "nagoyaction/pipelines/research.toml" not in workflow.read_text(
+            encoding="utf-8"
+        ), workflow.name
+
+
+def test_inbox_schedule_and_intake_pipeline_are_preserved():
+    workflow = (WORKFLOWS / "research-inbox.yml").read_text(encoding="utf-8")
+    assert "schedule:" in workflow
+    assert "vars.AOI_INBOX_ISSUE" in workflow
+    assert "nagoyaction/pipelines/inbox.toml" in workflow
+    assert "nagoyaction/pipelines/research.toml" not in workflow
+
+    with (ROOT / "nagoyaction/pipelines/inbox.toml").open("rb") as source:
+        pipeline = tomllib.load(source)
+    assert len(pipeline["step"]) == 1
+    assert pipeline["step"][0]["name"] == "intake"
+    assert pipeline["step"][0]["run"] == [
+        "python", "nagoyaction/inbox/inbox.py", "intake"
+    ]
+
+
+def test_research_cli_requires_explicit_enablement():
+    import os
+    for enabled in ("", "0"):
+        completed = subprocess.run(
+            [sys.executable, str(ROOT / "nagoyaction/inbox/inbox.py"), "worker", "--seconds", "1"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10, check=False,
+            env={**os.environ, "AOI_RESEARCH_ENABLED": enabled, "AOI_INBOX_ISSUE": "1"},
+        )
+        assert completed.returncode == 1
+        assert "worker disabled" in completed.stderr
+
+
+def test_owner_pipeline_is_offline_and_bounded():
+    with (ROOT / "nagoyaction/pipelines/research.toml").open("rb") as source:
+        pipeline = tomllib.load(source)
+    assert len(pipeline["step"]) == 1
+    assert pipeline["step"][0]["network"] is False
+    assert "18000" not in pipeline["step"][0]["run"]

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "files_scanned": 379,
+  "files_scanned": 371,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
-      "line": 57
+      "line": 67
     },
     {
       "file": "dist/blueprobe_min.py",
-      "line": 118
+      "line": 117
     },
     {
       "file": "dist/dragowing_min.py",

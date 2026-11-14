@@ -12,6 +12,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+
+def _cache_core(queryu):
+    """QueRyu の cache_core.py（core/ にある。前の配置では直下）。"""
+    return next(p for p in (Path(queryu) / "core" / "cache_core.py", Path(queryu) / "cache_core.py") if p.is_file())
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/missing":
@@ -87,7 +92,7 @@ class UrlStandaloneTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             shutil.copy2(ROOT / "blueprobe.py", root / "blueprobe.py")
-            shutil.copy2(Path(queryu) / "cache_core.py", root / "cache_core.py")
+            shutil.copy2(_cache_core(queryu), root / "cache_core.py")
             cache, url = root / "cache", f"http://127.0.0.1:{server.server_port}/"
             result = subprocess.run([sys.executable, "-I", str(root / "blueprobe.py"), url, "--cache", str(cache)],
                                     capture_output=True, text=True, timeout=10)
@@ -102,7 +107,7 @@ class UrlStandaloneTest(unittest.TestCase):
         if not queryu:
             self.skipTest("set QUERYU_ROOT to a QueRyu checkout")
         import importlib.util
-        spec = importlib.util.spec_from_file_location('review_cache_core', Path(queryu) / 'cache_core.py')
+        spec = importlib.util.spec_from_file_location('review_cache_core', _cache_core(queryu))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -111,7 +116,7 @@ class UrlStandaloneTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             shutil.copy2(ROOT / "blueprobe.py", root / "blueprobe.py")
-            shutil.copy2(Path(queryu) / "cache_core.py", root / "cache_core.py")
+            shutil.copy2(_cache_core(queryu), root / "cache_core.py")
             cache, url = root / "cache", f"http://127.0.0.1:{server.server_port}/"
             try:
                 result = subprocess.run([sys.executable, '-I', str(root / 'blueprobe.py'), url, '--cache', str(cache)],

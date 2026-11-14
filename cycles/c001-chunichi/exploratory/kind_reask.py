@@ -61,6 +61,23 @@
   B. 式1（P52）の結論を、翌年の B クラス・得失点差の順位に替えた命題（N0・N52・N52A・N52S・R52A）。
      読み（判定ではない）: 元の命題の fisher_p が 0.05 未満なら 1（条件が結論の割合を上げている）、そうでなければ 2
 
+第11弾（宣言は kind_reask_results/kind_reask_r11_propositions.toml の冒頭。刻印は同じ timestamp ファイル）:
+  A. 列を直す形を決める。θ = 1 の列（T85・KT85・DT85）と 8 回までの列（第4弾の E85・KE85・DE85）を同じ形で並べる。
+     使える = 片寄りなし（負の割合 0.35〜0.65）・揺らしても同じ（θ = 1 − ε、8 + ε。小さい ε の 5 つで各形の終了コードが同じ）・
+     元の並びを保つ（元の列との順位相関 0.80 以上）。両方使えて結論が同じなら θ = 1、違えば未決、片方だけならその列
+  B. 配分が不利 ⇒ 翌年 A クラス（M52A）。その年の B クラス・A クラスに分けた形（M52B・M52U）。
+     読みは第10弾 B のまま。条件に当たる単位が min_n 未満なら 5（保留）
+
+第12弾（宣言は kind_reask_results/kind_reask_r12_propositions.toml の冒頭。刻印は同じ timestamp ファイル）:
+  「B クラスの中で、配分が不利 ⇒ 翌年 A に戻る」（M52B）を、配分（不利か）と分布（sim_p_upper が 0.32 以上か）の 4 つのマスに分ける。
+  G52H・G52L は分布をそろえて配分を、G52U・G52N は配分をそろえて分布を問う。読み: fisher_p が 0.05 未満の命題が
+  配分の側だけなら 1、分布の側だけなら 3、両方なら 2、どちらにも無ければ 4（分けられない）
+
+第13弾（宣言は kind_reask_results/README.md の「第13弾」の節。計算の前のコミットで固定）:
+  見込みの同点を決めるときの、負け試合の側の置き方。つまみ 1: 延長で負けた側が足す点 λ。つまみ 2: 負けの側だけの重み θ負。
+  4 つの列（勝ち・負けの得点の差、勝率の 2 つ）がどれも 0.35〜0.65 なら「通る」。決め方: λ > 0 で通る最小の値、
+  無ければ θ負 = 0（通っていれば）、どちらも無ければ勧めない
+
 ゲート（通らなければ、命題の結果は出さずに止まる）:
   正本の命題ファイルの sha256 が保存された値と同じ。つなげたファイルが読み込める。
   K・D の命題が branch 側（from-cycle-001/propositions.toml）のどれとも同じ問いでない。
@@ -84,6 +101,7 @@ import ast
 from collections import Counter
 import hashlib
 import json
+import statistics
 import sys
 import tempfile
 import tomllib
@@ -781,13 +799,43 @@ def tie_weighted_gap(t, theta: float) -> dict:
     return out
 
 
+def upto_gaps(games: list[dict], innings: dict, teams: dict, n: int, eps: float, pl) -> tuple[dict, int]:
+    """x = n + eps 回までの得点（score_upto）で作り直した「勝ち試合の得点 − 見込み」。({(年, 球団): 差}, 使った試合の数)。"""
+    import sakanalytics as SA
+    rows = []
+    for gm in games:
+        sc = score_upto(gm, innings[gm["key"]], n, eps)
+        if sc is None:
+            continue
+        for team, rf, ra, home in ((gm["home"], sc[0], sc[1], True), (gm["away"], sc[1], sc[0], False)):
+            rows.append({"season": int(gm["date"][:4]), "team": team, "league": teams[team]["league"], "rf": rf, "ra": ra, "is_home": home})
+    got = SA.win_loss_split(pl.DataFrame(rows, schema_overrides={"season": pl.Int32}))
+    return {(r["season"], r["team"]): r["wl_rf_win_gap"] for r in got.to_dicts()}, len(rows) // 2
+
+
+def next_year_rows(ps: list[dict], full, tables: tuple, focus, P, pl) -> tuple[list[tuple[dict, dict]], list]:
+    """翌年の A/B クラス（upper_half_next）の列を足した表で命題を判定する（第10弾 B・第11弾 B）。
+    戻り値は（[(まとめの行, evaluate の結果)], 列を足した表）。読み: 元の命題の fisher_p が ALPHA 未満なら 1、そうでなければ 2。"""
+    nxt = {(r["season"] - 1, r["team"]): r["upper_half"] for r in full.select("season", "team", "upper_half").to_dicts()}
+    add = pl.DataFrame([{"season": s, "team": t, "upper_half_next": v} for (s, t), v in nxt.items()]).cast({"season": full.schema["season"]})
+    with_next = [t.join(add, on=["season", "team"], how="left") for t in tables]
+    rows = []
+    for p in ps:
+        r = P.evaluate(p, *with_next, focus)
+        o = r["forms"][0]
+        rows.append(({"id": p["id"], "statement": p["statement"], "key": r["key"], "signature": r["signature"],
+                      "definition_sha256": r["definition_sha256"], "parent": p.get("parent"), "units": r["units"],
+                      "forms": {f["form"]: form_summary(f) for f in r["forms"]}, "fisher_p": o["fisher_p"],
+                      "reading": 1 if o["fisher_p"] < ALPHA else 2, "judgement": {k: r["judgement"][k] for k in ("code", "stage", "form")}}, r))
+    return rows, with_next
+
+
 def round_ten(repo: Path, full, tables: tuple, focus, ns: list[dict], more: dict, third: dict, fourth: dict, skip: list[int],
               P, pl) -> dict:
     """第10弾。A: 境界を動かす（x 回まで・同点の重み θ・線をずらす）。B: 式1 を翌年・得失点差で問い直す。"""
     import random
 
     import epsilon as EPS
-    import sakanalytics as SA
     games, innings, teams = games_with_innings(repo, full)
     rng = random.Random(20261113)
     drawn = [float(f"{rng.uniform(1, 10):.3f}e-{rng.randint(1, 6)}") for _ in range(5)]
@@ -800,16 +848,8 @@ def round_ten(repo: Path, full, tables: tuple, focus, ns: list[dict], more: dict
                 "median_gap": round((v[(len(v) - 1) // 2] + v[len(v) // 2]) / 2, 9)}
 
     def dial_one(n: int, eps: float = 0.0) -> dict:
-        rows = []
-        for gm in games:
-            sc = score_upto(gm, innings[gm["key"]], n, eps)
-            if sc is None:
-                continue
-            for team, rf, ra, home in ((gm["home"], sc[0], sc[1], True), (gm["away"], sc[1], sc[0], False)):
-                rows.append({"season": int(gm["date"][:4]), "team": team, "league": teams[team]["league"], "rf": rf, "ra": ra, "is_home": home})
-        got = SA.win_loss_split(pl.DataFrame(rows, schema_overrides={"season": pl.Int32}))
-        return {"x": n + eps, "label": f"{n}+{eps:g}" if eps else str(n), "games": len(rows) // 2,
-                **share({(r["season"], r["team"]): r["wl_rf_win_gap"] for r in got.to_dicts()})}
+        gaps, used = upto_gaps(games, innings, teams, n, eps, pl)
+        return {"x": n + eps, "label": f"{n}+{eps:g}" if eps else str(n), "games": used, **share(gaps)}
 
     points = [(n, 0.0) for n in range(1, 9)] + [(8, e) for e in eps_all] + [(9, 0.0)] + [(9, e) for e in eps_all] + [(10, 0.0)]
     one = [dial_one(n, e) for n, e in points]
@@ -823,17 +863,7 @@ def round_ten(repo: Path, full, tables: tuple, focus, ns: list[dict], more: dict
                             "first_theta_within": next((r["theta"] for r in two if r["share_negative"] <= line), None)}
 
     # ---- B: 式1 を、翌年の B クラス・得失点差の順位で問い直す
-    nxt = {(r["season"] - 1, r["team"]): r["upper_half"] for r in full.select("season", "team", "upper_half").to_dicts()}
-    add = pl.DataFrame([{"season": s, "team": t, "upper_half_next": v} for (s, t), v in nxt.items()]).cast({"season": full.schema["season"]})
-    with_next = [t.join(add, on=["season", "team"], how="left") for t in tables]
-    props = []
-    for p in ns:
-        r = P.evaluate(p, *with_next, focus)
-        o = r["forms"][0]
-        props.append({"id": p["id"], "statement": p["statement"], "key": r["key"], "signature": r["signature"],
-                      "definition_sha256": r["definition_sha256"], "parent": p.get("parent"), "units": r["units"],
-                      "forms": {f["form"]: form_summary(f) for f in r["forms"]}, "fisher_p": o["fisher_p"],
-                      "reading": 1 if o["fisher_p"] < ALPHA else 2, "judgement": {k: r["judgement"][k] for k in ("code", "stage", "form")}})
+    props = [row for row, _ in next_year_rows(ns, full, tables, focus, P, pl)[0]]
     q = {x["id"]: x for x in props}
     mid, late = [r for r in one if 8 < r["x"] < 9], [r for r in one if 9 < r["x"] < 10]
     th65 = lines["0.65"]["first_theta_within"]
@@ -859,10 +889,238 @@ def round_ten(repo: Path, full, tables: tuple, focus, ns: list[dict], more: dict
             "dial_innings": one, "dial_ties": two, "lines": lines, "propositions": props, "predictions": preds}
 
 
+SHAPES = (("T85", "E85"), ("KT85", "KE85"), ("DT85", "DE85"))   # 第11弾 A: 同じ形の命題の組（θ = 1 の列, 8 回までの列）
+
+
+def round_eleven(repo: Path, full, tables: tuple, focus, es: list[dict], ts: list[dict], ms: list[dict], more: dict, third: dict,
+                 fourth: dict, tenth: dict, evaluated: dict, skip: list[int], P, pl) -> dict:
+    """第11弾。A: 列を直す形（θ = 1 と 8 回まで）を同じ命題で並べ、先に決めた線で決める。B: 配分が不利 ⇒ 翌年 A クラス。"""
+    games, innings, teams = games_with_innings(repo, full)
+    small, eps_all = sorted(tenth["eps"]["drawn"]), tenth["eps"]["all"]
+    cands = {"t1": ("wl_rf_win_gap_t1", ts, lambda e: tie_weighted_gap(more["tables"]["full"], 1.0 - e)),
+             "eight": ("wl_rf_win_gap8", es, lambda e: upto_gaps(games, innings, teams, 8, e, pl)[0])}
+    orig = {k: r["wl_rf_win_gap"] for k, r in more["units"]["full"].items()}
+    keys = sorted(k for k in orig if k[0] not in skip)
+
+    def judged(name: str, gaps: dict) -> dict[str, dict]:
+        col, ps, _ = cands[name]
+        add = pl.DataFrame([{"season": k[0], "team": k[1], col: v} for k, v in sorted(gaps.items())],
+                           schema_overrides={"season": pl.Int32, col: pl.Float64}).cast({"season": full.schema["season"]})
+        ev = dict(evaluated)
+        for p in ps:
+            ev[p["id"]] = P.evaluate(p, *(t.join(add, on=["season", "team"], how="left") for t in tables), focus)
+        return summarize_props(ps, ev)
+
+    def codes(rows: dict[str, dict]) -> dict:
+        return {i: {"forms": {f: v["code"] for f, v in q["forms"].items()}, "judgement": q["judgement"]["code"], "reading": q.get("reading")}
+                for i, q in rows.items()}
+
+    def spearman(a: dict, b: dict) -> float:
+        return round(pl.DataFrame({"a": [a[k] for k in keys], "b": [b[k] for k in keys]}).select(pl.corr("a", "b", method="spearman")).item(), 6)
+
+    base, rows, cand = {}, {}, {}
+    for name, (col, ps, moved) in cands.items():
+        base[name] = moved(0.0)
+        rows[name] = judged(name, base[name])
+        was = codes(rows[name])
+        shakes = []
+        for e in eps_all:                         # 境界をわざとずらす: θ = 1 − ε、x = 8 + ε
+            g = moved(e)
+            got = codes(judged(name, g))
+            shakes.append({"eps": e, "small": e in small, "negative": sum(g[k] < 0 for k in keys),
+                           "sign_flips": sum((g[k] < 0) != (base[name][k] < 0) for k in keys),
+                           "changed_forms": sorted(f"{i}:{f}" for i, q in got.items() for f, c in q["forms"].items() if c != was[i]["forms"][f]),
+                           "changed_readings": sorted(i for i, q in got.items()
+                                                      if (q["judgement"], q["reading"]) != (was[i]["judgement"], was[i]["reading"]))})
+        neg = sum(base[name][k] < 0 for k in keys)
+        c = {"column": col, "units": len(keys), "negative": neg, "share_negative": round(neg / len(keys), 9),
+             "rho_original": spearman(base[name], orig), "shakes": shakes}
+        c |= {"unbiased": 0.35 <= c["share_negative"] <= 0.65, "stable": not any(x["changed_forms"] for x in shakes if x["small"]),
+              "keeps_order": c["rho_original"] >= 0.80}
+        cand[name] = c | {"usable": c["unbiased"] and c["stable"] and c["keeps_order"]}
+    agree = round(sum((base["t1"][k] < 0) == (base["eight"][k] < 0) for k in keys) / len(keys), 9)
+    between = {"sign_agreement": agree, "rho": spearman(base["t1"], base["eight"])}
+    between["same_thing"] = agree >= 0.75 and between["rho"] >= 0.80
+    was = {n: codes(rows[n]) for n in rows}
+    shapes = [{"t1": a, "eight": b, "judgement": [was["t1"][a]["judgement"], was["eight"][b]["judgement"]],
+               "reading": [was["t1"][a]["reading"], was["eight"][b]["reading"]],
+               "same": (was["t1"][a]["judgement"], was["t1"][a]["reading"]) == (was["eight"][b]["judgement"], was["eight"][b]["reading"])}
+              for a, b in SHAPES]
+    usable = [n for n in cand if cand[n]["usable"]]
+    if len(usable) == 2:                          # 決め方 2・3
+        decision = {"rule": 2, "choice": "t1"} if all(x["same"] for x in shapes) else {"rule": 3, "choice": None}
+    else:                                         # 決め方 4
+        decision = {"rule": 4, "choice": usable[0] if usable else None}
+    saved = {q["id"]: {f: (v["n"], v["hold"], v["code"]) for f, v in q["forms"].items()} for q in fourth["propositions"]}
+    again = {i: {f: (v["n"], v["hold"], v["code"]) for f, v in q["forms"].items()} for i, q in rows["eight"].items()}
+    gap8 = {(r["season"], r["team"]): r["wl_rf_win_gap8"] for r in more["gap8"]}
+    problems = []
+    if cand["t1"]["negative"] != tenth["dial_ties"][-1]["negative"] or cand["eight"]["negative"] != third["variants"]["eight"]["negative"]:
+        problems.append("第11弾: θ = 1 か 8 回までの負の数が、第10弾・第3弾と違う")
+    if max(abs(base["eight"][k] - gap8[k]) for k in keys) > 1e-9 or again != saved:
+        problems.append("第11弾: 8 回までの列か、その 3 命題が、第4弾と違う")
+
+    # ---- B: 配分が不利 ⇒ 翌年 A クラス
+    got, with_next = next_year_rows(ms, full, tables, focus, P, pl)
+    props = [row | {"reading": 5 if row["forms"]["original"]["n"] < r["min_n"] else row["reading"]} for row, r in got]
+    q = {x["id"]: x for x in props}
+    cond = with_next[0].filter((pl.col("alloc_z_strat") < -1) & pl.col("upper_half_next").is_not_null()
+                               & pl.col("season").is_between(2012, 2024))
+    mine = [{"unit": f"{r['team']}-{r['season']}", "upper_half": r["upper_half"], "upper_half_next": r["upper_half_next"]}
+            for r in cond.filter(pl.col("team") == focus).sort("season").select("season", "team", "upper_half", "upper_half_next").to_dicts()]
+    t85, m = rows["t1"]["T85"]["forms"]["original"], {i: q[i]["forms"] for i in q}
+    sm = {n: [x for x in cand[n]["shakes"] if x["small"]] for n in cand}
+    preds = [
+        {"id": "Q1", "text": "ゲート: θ = 1 の列の負の数は 76、8 回までは 71", "ok": not problems and (cand["t1"]["negative"], cand["eight"]["negative"]) == (76, 71),
+         "got": [cand["t1"]["negative"], cand["eight"]["negative"]]},
+        {"id": "Q2", "text": "θ = 1 の列は元の列との順位相関が 0.80 以上で、8 回までの列より高い",
+         "ok": cand["t1"]["rho_original"] >= 0.80 and cand["t1"]["rho_original"] > cand["eight"]["rho_original"],
+         "got": {n: cand[n]["rho_original"] for n in cand}},
+        {"id": "Q3", "text": "2 つの候補で符号が同じ球団年の割合は 0.65〜0.85", "ok": 0.65 <= agree <= 0.85, "got": agree},
+        {"id": "Q4", "text": "T85: 中日の 12 単位のうち負は 4〜8。終了コードは 0・1 にならない",
+         "ok": t85["n"] == 12 and 4 <= t85["hold"] <= 8 and t85["code"] not in (0, 1), "got": {k: t85[k] for k in ("hold", "n", "code")}},
+        {"id": "Q5", "text": "DT85 の fisher_p は 0.05 以上。KT85 の読みは 1 にならない",
+         "ok": rows["t1"]["DT85"]["fisher_p"] >= ALPHA and rows["t1"]["KT85"]["reading"] != 1,
+         "got": {"DT85": rows["t1"]["DT85"]["fisher_p"], "KT85": rows["t1"]["KT85"]["reading"]}},
+        {"id": "Q6", "text": "揺らし: θ = 1 − ε は 5 つとも終了コードが変わらない。8 + ε は、どれかで変わる",
+         "ok": cand["t1"]["stable"] and not cand["eight"]["stable"],
+         "got": {n: [x["changed_forms"] for x in sm[n]] for n in cand}},
+        {"id": "L1", "text": "M52A: 元 27 中 18・対偶 72 中 63・逆 72 中 18・裏 117 中 63。fisher_p は 0.10 未満",
+         "ok": [(m["M52A"][f]["hold"], m["M52A"][f]["n"]) for f in FORM_ORDER] == [(18, 27), (63, 72), (18, 72), (63, 117)] and q["M52A"]["fisher_p"] < 0.10,
+         "got": {"forms": [[m["M52A"][f]["hold"], m["M52A"][f]["n"]] for f in FORM_ORDER], "fisher_p": q["M52A"]["fisher_p"]}},
+        {"id": "L2", "text": "M52B: 条件に当たる単位は 15 以上で、成立率は 0.50 以上。fisher_p は 0.05 未満",
+         "ok": m["M52B"]["original"]["n"] >= 15 and m["M52B"]["original"]["rate"] >= 0.50 and q["M52B"]["fisher_p"] < ALPHA,
+         "got": {"hold": m["M52B"]["original"]["hold"], "n": m["M52B"]["original"]["n"], "fisher_p": q["M52B"]["fisher_p"]}},
+        {"id": "L3", "text": "M52U: 条件に当たる単位は 10 未満（保留）", "ok": m["M52U"]["original"]["n"] < 10,
+         "got": {"hold": m["M52U"]["original"]["hold"], "n": m["M52U"]["original"]["n"]}},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "eps": {"small": small, "all": eps_all}, "candidates": cand,
+            "between": between, "column_propositions": {n: list(rows[n].values()) for n in rows}, "shapes": shapes, "decision": decision,
+            "propositions": props, "chunichi_condition_units": mine, "predictions": preds}
+
+
+def round_twelve(full, tables: tuple, focus, ws: list[dict], eleventh: dict, P, pl) -> dict:
+    """第12弾: B クラスの中で翌年 A に戻るのは、配分の巡り合わせか、分布がもともと良かったからか。4 つのマスに分けて問う。"""
+    got, with_next = next_year_rows(ws, full, tables, focus, P, pl)
+    props = [row | {"reading": 5 if row["forms"]["original"]["n"] < r["min_n"] else row["reading"]} for row, r in got]
+    q = {x["id"]: x for x in props}
+    line = next(c["value"] for c in ws[0]["scope"]["where"] if c["col"] == "sim_p_upper")       # 宣言の線（0.32）は命題から読む
+    b = with_next[0].filter(~pl.col("upper_half") & pl.col("upper_half_next").is_not_null() & pl.col("season").is_between(2012, 2024))
+    cells = {}
+    for at in (0.30, line, 0.35):                # 線を前後にずらして同じ表を数える（読むのは line だけ）
+        t = b.group_by((pl.col("alloc_z_strat") < -1).alias("unfav"), (pl.col("sim_p_upper") >= at).alias("high")).agg(
+            n=pl.len(), next_upper=pl.col("upper_half_next").sum())
+        got_cells = {(r["unfav"], r["high"]): r for r in t.to_dicts()}
+        cells[format(at, ".2f")] = [{"unfav": u, "high": h, "n": got_cells[(u, h)]["n"], "next_upper": got_cells[(u, h)]["next_upper"],
+                                    "rate": round(got_cells[(u, h)]["next_upper"] / got_cells[(u, h)]["n"], 9)}
+                                   for u in (False, True) for h in (False, True)]
+    main = cells[format(line, ".2f")]
+    m52b = {x["id"]: x for x in eleventh["propositions"]}["M52B"]["forms"]
+    side = lambda u: (sum(c["next_upper"] for c in main if c["unfav"] == u), sum(c["n"] for c in main if c["unfav"] == u))  # noqa: E731
+    problems = []
+    if [c["n"] for c in main] != [38, 10, 12, 12]:
+        problems.append("第12弾: マスの単位の数が、宣言の前に数えた 38・10・12・12 と違う")
+    if side(True) != (m52b["original"]["hold"], m52b["original"]["n"]) or side(False)[1] != m52b["inverse"]["n"]:
+        problems.append("第12弾: マスを足した数が、第11弾の M52B と違う")
+    hit = lambda i: q[i]["reading"] == 1         # noqa: E731  fisher_p が ALPHA 未満（単位が足りない命題は数えない）
+    alloc, dist = hit("G52H") or hit("G52L"), hit("G52U") or hit("G52N")
+    reading_ = 2 if alloc and dist else 1 if alloc else 3 if dist else 4
+    rate = {(c["unfav"], c["high"]): c["rate"] for c in main}
+    preds = [
+        {"id": "R1", "text": "翌年 A の割合は、「不利・高い」が最も高く、「不利でない・低い」が最も低い",
+         "ok": rate[(True, True)] == max(rate.values()) and rate[(False, False)] == min(rate.values()), "got": [c["rate"] for c in main]},
+        {"id": "R2", "text": "G52N の fisher_p は 0.05 未満", "ok": q["G52N"]["fisher_p"] < ALPHA, "got": q["G52N"]["fisher_p"]},
+        {"id": "R3", "text": "G52L の fisher_p は 0.05 以上", "ok": q["G52L"]["fisher_p"] >= ALPHA, "got": q["G52L"]["fisher_p"]},
+        {"id": "R4", "text": "読みは 3（分布がもともと良かった）", "ok": reading_ == 3, "got": reading_},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "line": line, "cells": cells, "propositions": props,
+            "sides": {"allocation": alloc, "distribution": dist}, "reading": reading_, "predictions": preds}
+
+
+WL_GAPS = ("wl_rf_win_gap", "wl_rf_loss_gap", "wl_wpct_low_gap", "wl_wpct_high_gap")
+
+
+def tie_split(t, win: float, loss: float, extra: float = 0.0) -> dict:
+    """sakanalytics.win_loss_split の 4 つの差を、見込みの中の同点の組（x 対 x、重み w）の置き方を替えて作る（第13弾）。
+    勝ちに win × w / 2（x+1+extra 対 x+extra）、負けに loss × w / 2（x+extra 対 x+1+extra）。win = loss = 0 は道具と同じ。{(年, 球団): 行}。"""
+    import sakanalytics as SA
+    totals: dict[tuple, list] = {}
+    for season, league, rf, ra in t.select("season", "league", "rf", "ra").iter_rows():
+        totals.setdefault((season, league), []).append(rf + ra)
+    cut = {k: statistics.median(v) for k, v in totals.items()}                # 同じ年・同じリーグの試合の合計得点の中央値（道具と同じ）
+    keys = (("rf_win", "rf_win", "n_win"), ("rf_loss", "rf_loss", "n_loss"), ("wpct_low", "w_low", "d_low"), ("wpct_high", "w_high", "d_high"))
+    out = {}
+    for (season, team), g in t.group_by(["season", "team"], maintain_order=True):
+        m = cut[(season, g["league"][0])]
+        rf, ra, home = g["rf"].to_list(), g["ra"].to_list(), g["is_home"].to_list()
+        pairs = []
+        for venue in (True, False):
+            cx = Counter(x for x, h in zip(rf, home) if h == venue)
+            cy = Counter(y for y, h in zip(ra, home) if h == venue)
+            n = sum(cx.values())
+            for x in cx:
+                for y in cy:
+                    w = cx[x] * cy[y] / n
+                    pairs += [(x, y, w)] if x != y else [(x + 1 + extra, y + extra, win * w / 2), (x + extra, y + 1 + extra, loss * w / 2)]
+        act, exp = SA._wl_sums([(x, y, 1.0) for x, y in zip(rf, ra)], m), SA._wl_sums(pairs, m)
+        out[(season, team)] = {f"wl_{name}_gap": act[num] / act[den] - exp[num] / exp[den] for name, num, den in keys}
+    return out
+
+
+def round_thirteen(more: dict, tenth: dict, eleventh: dict, skip: list[int], pl) -> dict:
+    """第13弾: 見込みの同点を決めるときの、負け試合の側の置き方。つまみ 1（λ）とつまみ 2（θ負）で、4 つの列が線の内側に入るか。"""
+    t, orig = more["tables"]["full"], more["units"]["full"]
+    keys = sorted(k for k in orig if k[0] not in skip)
+    values = [0.0, *tenth["eps"]["all"], 1.0]
+
+    def shares(g: dict) -> dict:
+        r = {"win_negative": sum(g[k]["wl_rf_win_gap"] < 0 for k in keys), **{f"{c[3:-4]}_positive": sum(g[k][c] > 0 for k in keys) for c in WL_GAPS[1:]}}
+        inside = {k: 0.35 <= v / len(keys) <= 0.65 for k, v in r.items()}
+        return r | {"inside": inside, "passes": all(inside.values())}
+
+    base = tie_split(t, 0.0, 0.0)
+    now = tie_split(t, 1.0, 1.0)
+    one = [{"lambda": v, **shares(tie_split(t, 1.0, 1.0, v))} for v in values]
+    two_g = {v: tie_split(t, 1.0, v) for v in values}
+    two = [{"theta_loss": v, **shares(two_g[v])} for v in values]
+    problems = []
+    if max(abs(base[k][c] - orig[k][c]) for k in keys for c in WL_GAPS) > 1e-9:
+        problems.append("第13弾: 重み 0・0 が、道具の 4 つの列と違う")
+    if (one[0]["win_negative"], one[0]["rf_loss_positive"]) != (eleventh["candidates"]["t1"]["negative"], 49) or one[0] != {"lambda": 0.0, **shares(now)}:
+        problems.append("第13弾: いまの置き方（重み 1・1、λ 0）の数が、第11弾の 76・SakAnalytics #44 の 49 と違う")
+    ok1 = [r["lambda"] for r in one if r["lambda"] > 0 and r["passes"]]
+    ok2 = [r["theta_loss"] for r in two if r["passes"]]
+    if ok1:                                      # 決め方 1〜3
+        decision, chosen = {"rule": 1, "dial": "lambda", "value": min(ok1)}, tie_split(t, 1.0, 1.0, min(ok1))
+    elif ok2:
+        decision = {"rule": 2, "dial": "theta_loss", "value": 0.0 if 0.0 in ok2 else None}
+        chosen = two_g[0.0] if 0.0 in ok2 else None
+    else:
+        decision, chosen = {"rule": 3, "dial": None, "value": None}, None
+    rho = None
+    if chosen:                                   # 決め方 4: 勧める形の負け試合の列が、元の並びを保つか
+        rho = round(pl.DataFrame({"a": [chosen[k]["wl_rf_loss_gap"] for k in keys], "b": [orig[k]["wl_rf_loss_gap"] for k in keys]})
+                    .select(pl.corr("a", "b", method="spearman")).item(), 6)
+    lam_loss = [r["rf_loss_positive"] for r in one]
+    preds = [
+        {"id": "S1", "text": "ゲートが通る", "ok": not problems, "got": problems},
+        {"id": "S2", "text": "つまみ 1: λ を上げると負け試合の正の数は 49 より減る。通る λ は無い",
+         "ok": not ok1 and all(v <= 49 for v in lam_loss) and lam_loss[-1] < 49, "got": lam_loss},
+        {"id": "S3", "text": "つまみ 2: θ負 が 0.75 以下なら通り、線の外に出るのは 1 だけ", "ok": ok2 == values[:-1], "got": ok2},
+        {"id": "S4", "text": "勝率の 2 つの列は、どのつまみのどの値でも線の内側",
+         "ok": all(r["inside"]["wpct_low_positive"] and r["inside"]["wpct_high_positive"] for r in (*one, *two)),
+         "got": [[r["wpct_low_positive"], r["wpct_high_positive"]] for r in (*one, *two)]},
+        {"id": "S5", "text": "決め方 2 で θ負 = 0 を勧めることになる", "ok": decision == {"rule": 2, "dial": "theta_loss", "value": 0.0}, "got": decision},
+    ]
+    return {"gate": {"ok": not problems, "problems": problems}, "units": len(keys), "values": values, "dial_lambda": one, "dial_theta_loss": two,
+            "passing": {"lambda": ok1, "theta_loss": ok2}, "decision": decision, "rho_loss_original": rho, "predictions": preds}
+
+
 def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None = None, props: Path | None = None,
             extra: Path | None = None, stored: Path | None = None, branch: Path | None = None,
             second: Path | None = None, panel: Path | None = None, fourth: Path | None = None,
-            central: Path | None = None, sixth: Path | None = None, tenth: Path | None = None) -> dict:
+            central: Path | None = None, sixth: Path | None = None, tenth: Path | None = None,
+            eleventh: Path | None = None, twelfth: Path | None = None) -> dict:
     pl, P, PD = load_modules(repo)
     base = repo / "cycles" / "c001-chunichi"
     season, config = season or base / "outputs" / "season.jsonl", config or base / "analysis.toml"
@@ -875,6 +1133,8 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
     central = central or base / "references" / "season-2026-central-summary.jsonl"
     sixth = sixth or HERE / "kind_reask_results" / "kind_reask_r6_propositions.toml"
     tenth = tenth or HERE / "kind_reask_results" / "kind_reask_r10_propositions.toml"
+    eleventh = eleventh or HERE / "kind_reask_results" / "kind_reask_r11_propositions.toml"
+    twelfth = twelfth or HERE / "kind_reask_results" / "kind_reask_r12_propositions.toml"
     stored_rows = {r["id"]: r for r in map(json.loads, stored.read_text(encoding="utf-8").splitlines())}
     sha = hashlib.sha256(props.read_bytes()).hexdigest()
     out = {"inputs": {"season": rel(season, repo), "propositions": rel(props, repo), "propositions_sha256": sha,
@@ -890,20 +1150,24 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
                       "sixth_propositions": rel(sixth, repo),
                       "sixth_propositions_sha256": hashlib.sha256(sixth.read_bytes()).hexdigest(),
                       "tenth_propositions": rel(tenth, repo),
-                      "tenth_propositions_sha256": hashlib.sha256(tenth.read_bytes()).hexdigest()},
+                      "tenth_propositions_sha256": hashlib.sha256(tenth.read_bytes()).hexdigest(),
+                      "eleventh_propositions": rel(eleventh, repo),
+                      "eleventh_propositions_sha256": hashlib.sha256(eleventh.read_bytes()).hexdigest(),
+                      "twelfth_propositions": rel(twelfth, repo),
+                      "twelfth_propositions_sha256": hashlib.sha256(twelfth.read_bytes()).hexdigest()},
            "gate": {"ok": True, "problems": []}, "propositions": [], "predictions": [], "summary": {}, "second": {}, "third": {},
-           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}, "eighth": {}, "ninth": {}, "tenth": {}}
+           "fourth": {}, "fifth": {}, "sixth": {}, "seventh": {}, "eighth": {}, "ninth": {}, "tenth": {}, "eleventh": {}, "twelfth": {}, "thirteenth": {}}
     problems = out["gate"]["problems"]
     stored_sha = {r["meta"]["sha256"] for r in stored_rows.values()}
     if sha not in stored_sha:
         problems.append(f"命題ファイルの sha256 {sha} が保存された値 {sorted(stored_sha)} にない")
     try:
-        ks, ds, fs, gs, ns = load_joined(props, [extra, second, fourth, sixth, tenth], P)
+        ks, ds, fs, gs, ns, vs, ws = load_joined(props, [extra, second, fourth, sixth, tenth, eleventh, twelfth], P)
     except P.PropositionError as e:
         problems.append(f"つなげた命題ファイルが読み込めない: {e}")
-        ks, ds, fs, gs, ns = [], [], [], [], []
+        ks, ds, fs, gs, ns, vs, ws = [], [], [], [], [], [], []
     branch_sig = {P.identity(p)["signature"]: p["id"] for p in P.load(branch)[0]} if branch.exists() else {}
-    for p in [*ks, *ds, *fs, *gs, *ns]:
+    for p in [*ks, *ds, *fs, *gs, *ns, *vs, *ws]:
         other = branch_sig.get(P.identity(p)["signature"])
         if other:
             problems.append(f"{p['id']}: branch 側の {other} と同じ問い（{P.identity(p)['key']}）")
@@ -985,6 +1249,11 @@ def analyze(repo: Path = ROOT, season: Path | None = None, config: Path | None =
     out["ninth"] = round_nine(full, more, [int(e["season"]) for e in exclusions], pl, out["eighth"])
     out["tenth"] = round_ten(repo, full, (included, excluded), focus, ns, more, out["third"], out["fourth"],
                              [int(e["season"]) for e in exclusions], P, pl)
+    ts = [p for p in vs if p["then"][0]["col"] == "wl_rf_win_gap_t1"]       # 第11弾 A の命題（θ = 1 の列）。残りが B
+    out["eleventh"] = round_eleven(repo, full, (included, excluded), focus, fs, ts, [p for p in vs if p not in ts], more,
+                                   out["third"], out["fourth"], out["tenth"], evaluated, [int(e["season"]) for e in exclusions], P, pl)
+    out["twelfth"] = round_twelve(full, (included, excluded), focus, ws, out["eleventh"], P, pl)
+    out["thirteenth"] = round_thirteen(more, out["tenth"], out["eleventh"], [int(e["season"]) for e in exclusions], pl)
     return out
 
 
@@ -1244,6 +1513,83 @@ def render(res: dict) -> str:
     L += ["", f"## 第10弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f10['predictions'])}/{len(f10['predictions'])}", ""]
     for x in f10["predictions"]:
         L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f11 = res["eleventh"]
+    cname, yes = {"t1": "θ = 1（延長を残す）", "eight": "8 回まで"}, lambda b: "○" if b else "×"  # noqa: E731
+    L += ["", "# 第11弾 A: 列を直す形を決める（θ = 1 と 8 回まで）", "",
+          f"ゲート（負の数が第10弾・第3弾と同じ。8 回までの 3 命題が第4弾と同じ）: {'通った' if f11['gate']['ok'] else '通らなかった'}。", "",
+          "| 候補 | 負の単位 | 片寄りなし（0.35〜0.65） | 揺らしても同じ（小さい ε の 5 つ） | 元の列との順位相関 | 元の並びを保つ（0.80 以上） | 使える |",
+          "|---|---|---|---|---|---|---|"]
+    for n, c in f11["candidates"].items():
+        L += [f"| {cname[n]} | {c['negative']}/{c['units']}（{c['share_negative']:.2f}） | {yes(c['unbiased'])} | {yes(c['stable'])} | "
+              f"{c['rho_original']:.2f} | {yes(c['keeps_order'])} | **{yes(c['usable'])}** |"]
+    b = f11["between"]
+    L += ["", f"2 つの候補どうし: 符号が同じ球団年 {b['sign_agreement']:.2f}、順位相関 {b['rho']:.2f} → "
+          f"{'同じものを見ている' if b['same_thing'] else '同じものを見ているとは言えない'}。", "",
+          "揺らし（θ = 1 − ε、x = 8 + ε）: 負の単位・符号が変わった単位・終了コードが変わった形", "",
+          "| ε | θ = 1 − ε | 8 + ε |", "|---|---|---|"]
+    for a, e in zip(f11["candidates"]["t1"]["shakes"], f11["candidates"]["eight"]["shakes"]):
+        cell = lambda x: f"{x['negative']}・{x['sign_flips']}・{'、'.join(x['changed_forms']) or 'なし'}"  # noqa: E731
+        L += [f"| {a['eps']:g}{'' if a['small'] else '（見るだけ）'} | {cell(a)} | {cell(e)} |"]
+    L += ["", "同じ形の命題:", "", "| 命題 | 元 | 対偶 | 逆 | 裏 | 中日以外 | fisher_p | 読み | 総合 |", "|---|---|---|---|---|---|---|---|---|"]
+    for n in ("t1", "eight"):
+        for x in f11["column_propositions"][n]:
+            h = x.get("held_out")
+            L += [f"| {x['id']} {x['statement']} | " + " | ".join(_cell(x["forms"][f]) if f in x["forms"] else "省いた" for f in FORM_ORDER)
+                  + f" | {str(h['hold']) + '/' + str(h['n']) if h else '-'} | {format(x['fisher_p'], '.2g') if x.get('fisher_p') is not None else '-'}"
+                  + f" | {x.get('reading') or '-'} | {x['judgement']['code']} |"]
+    d = f11["decision"]
+    L += ["", "組ごとの総合の終了コードと読み: " + "、".join(f"{x['t1']}・{x['eight']} {'同じ' if x['same'] else '違う'}" for x in f11["shapes"]) + "。", "",
+          f"決め方 {d['rule']}: **" + {2: "どちらでも結論は同じ。勧めるのは θ = 1", 3: "列の形で結論が変わる。未決",
+                                     4: f"使えるのは片方だけ。勧めるのは {cname.get(d['choice'], 'なし')}"}[d["rule"]] + "**", "",
+          "# 第11弾 B: 配分が不利 ⇒ 翌年 A クラス", "",
+          "| 命題 | 元 | 対偶 | 逆 | 裏 | fisher_p | 読み | 総合 |", "|---|---|---|---|---|---|---|---|"]
+    for x in f11["propositions"]:
+        L += [f"| {x['id']} {x['statement']} | " + " | ".join(_cell(x["forms"][f]) for f in FORM_ORDER)
+              + f" | {x['fisher_p']:.2g} | **{x['reading']}** {({1: '割合を上げている', 2: '上げていない', 5: '保留（単位が少ない）'})[x['reading']]} | {x['judgement']['code']} |"]
+    L += ["", "条件に当たる中日の単位（その年 → 翌年）: "
+          + ("、".join(f"{u['unit']}（{'A' if u['upper_half'] else 'B'} → {'A' if u['upper_half_next'] else 'B'}）" for u in f11["chunichi_condition_units"]) or "なし") + "。",
+          "", f"## 第11弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f11['predictions'])}/{len(f11['predictions'])}", ""]
+    for x in f11["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f12 = res["twelfth"]
+    L += ["", "# 第12弾: B クラスの中で翌年 A に戻るのは、配分の巡り合わせか、分布がもともと良かったからか", "",
+          f"ゲート（マスの単位の数が宣言と同じ。足すと第11弾の M52B と同じ）: {'通った' if f12['gate']['ok'] else '通らなかった'}。", "",
+          "マスごとの「翌年 A クラス / 単位」（B クラスの 72 単位。高い = sim_p_upper が線以上）", "",
+          "| 分布の線 | 不利でない・低い | 不利でない・高い | 不利・低い | 不利・高い |", "|---|---|---|---|---|"]
+    for at, cs in f12["cells"].items():
+        L += [f"| {at}{'（宣言の線）' if float(at) == f12['line'] else '（並べるだけ）'} | "
+              + " | ".join(f"{c['next_upper']}/{c['n']}（{c['rate']:.2f}）" for c in cs) + " |"]
+    L += ["", "| 命題 | 元 | 対偶 | 逆 | 裏 | fisher_p | 読み | 総合 |", "|---|---|---|---|---|---|---|---|"]
+    for x in f12["propositions"]:
+        L += [f"| {x['id']} {x['statement']} | " + " | ".join(_cell(x["forms"][f]) for f in FORM_ORDER)
+              + f" | {x['fisher_p']:.2g} | **{x['reading']}** {({1: 'そろえても効く', 2: '効くとは言えない', 5: '保留（単位が少ない）'})[x['reading']]} | {x['judgement']['code']} |"]
+    L += ["", f"読み（判定ではない）: **{f12['reading']}** "
+          + {1: "配分の巡り合わせ", 2: "両方", 3: "分布がもともと良かった", 4: "分けられない"}[f12["reading"]], "",
+          f"## 第12弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f12['predictions'])}/{len(f12['predictions'])}", ""]
+    for x in f12["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
+
+    f13 = res["thirteenth"]
+    mark = lambda r, k: f"{r[k]}{'' if r['inside'][k] else ' ✗'}"  # noqa: E731
+    cols = ("win_negative", "rf_loss_positive", "wpct_low_positive", "wpct_high_positive")
+    L += ["", "# 第13弾: 見込みの同点を決めるとき、負け試合の側をどう置くか", "",
+          f"ゲート（重み 0・0 が道具と同じ。いまの置き方が 76・49）: {'通った' if f13['gate']['ok'] else '通らなかった'}。"
+          f"{f13['units']} 球団年。✗ は線（0.35〜0.65）の外。", ""]
+    for title, key, rows in (("つまみ 1: λ = 延長で負けた側が足す点（重みは勝ち・負けとも 1）", "lambda", f13["dial_lambda"]),
+                             ("つまみ 2: θ負 = 負けの側だけの重み（勝ちの側は 1、λ = 0）", "theta_loss", f13["dial_theta_loss"])):
+        L += [title, "", "| 値 | 勝ち試合の得点の差が負 | 負け試合の得点の差が正 | 勝率（点の少ない試合）の差が正 | 勝率（点の多い試合）の差が正 | 通る |",
+              "|---|---|---|---|---|---|"]
+        L += [f"| {r[key]:g} | " + " | ".join(mark(r, k) for k in cols) + f" | {'○' if r['passes'] else '×'} |" for r in rows] + [""]
+    d = f13["decision"]
+    L += [f"通る値: λ は {'、'.join(format(v, 'g') for v in f13['passing']['lambda']) or 'なし'}、"
+          f"θ負 は {'、'.join(format(v, 'g') for v in f13['passing']['theta_loss']) or 'なし'}。", "",
+          f"決め方 {d['rule']}: **" + ("勧めない" if d["value"] is None else f"{'λ' if d['dial'] == 'lambda' else 'θ負'} = {d['value']:g} を勧める") + "**"
+          + (f"（負け試合の列の、元の並びとの順位相関 {f13['rho_loss_original']:.2f}）" if f13["rho_loss_original"] is not None else ""), "",
+          f"## 第13弾の予想の当たり外れ（判定には使わない）: {sum(x['ok'] for x in f13['predictions'])}/{len(f13['predictions'])}", ""]
+    for x in f13["predictions"]:
+        L += [f"- ({x['id']}) {x['text']}: {'当たり' if x['ok'] else '外れ'}（{json.dumps(x['got'], ensure_ascii=False)}）"]
     return "\n".join(L) + "\n"
 
 
@@ -1436,7 +1782,7 @@ def main(argv=None) -> int:
     args.outdir.mkdir(parents=True, exist_ok=True)
     (args.outdir / "kind_reask.json").write_text(json.dumps(res, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     (args.outdir / "kind_reask.md").write_text(render(res), encoding="utf-8")
-    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh", "eighth", "ninth", "tenth") for x in (res[k].get("gate") or {}).get("problems", [])]
+    problems = res["gate"]["problems"] + [x for k in ("sixth", "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth", "thirteenth") for x in (res[k].get("gate") or {}).get("problems", [])]
     if problems:
         print("ゲートが通らなかった:", *problems, sep="\n  ", file=sys.stderr)
         return EXIT_GATE

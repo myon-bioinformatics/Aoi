@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from dragowing import render
-from scripts.diagnose_dragowing_browser import DiagnosticChrome, _safe_text
+from scripts.dragowing_browser import DiagnosticChrome, _safe_text
 
 _STATE = pytest.StashKey[dict]()
 

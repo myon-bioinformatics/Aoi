@@ -1,7 +1,13 @@
-"""Validation-only browser startup evidence; no automatic browser selection.
+"""DRAgoWing のブラウザ（Chromium）の起動の診断と、その周りの道具。ブラウザを自動では選ばない。標準ライブラリだけ（python -S で走る）。
 
-Run from Aoi's root with ``python scripts/diagnose_dragowing_browser.py --help``.
-This module deliberately leaves the production transport and its budgets alone.
+    python -S scripts/dragowing_browser.py <処理> [その処理の引数]
+
+処理:
+  diagnose         起動の証跡を取る（旧 diagnose_dragowing_browser.py）
+  startup_ci       新しい CI のジョブで、本物の Chromium の初回起動の回帰を 1 回で走らせる（旧 run_browser_startup_ci.py。python -m scripts.dragowing_browser startup_ci）
+  render_fixtures  合成の 3 つの図を一度だけ描き、ブラウザの要らない検査の素材にする（旧 render_static_fixtures.py）
+実際の検査の起動を記録する pytest のプラグインは scripts/observe_dragowing_startup.py（pytest を読むので別のファイル）、
+描いた結果の検査（ブラウザを起動しない）は scripts/rendered_output_checks.py にある。
 """
 from __future__ import annotations
 
@@ -19,21 +25,30 @@ import subprocess
 import sys
 import tempfile
 import threading
-import zlib
 import time
 import xml.etree.ElementTree as ET
+import zlib
 from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Keep this Aoi-only validation script independent of the invocation directory.
 _ROOT = Path(__file__).resolve().parents[1]
-if str(_ROOT) not in sys.path:
+if str(_ROOT) not in sys.path:                    # dragowing/ と scripts/ を、リポジトリの直下から読む
     sys.path.insert(0, str(_ROOT))
 
-from dragowing.chrome_pipe import Chrome, find_chrome
-from dragowing.export import PLOTLY, export_draw, plotly_figure_content
-from dragowing.render import RenderSession, Timeouts
+from dragowing.chrome_pipe import Chrome, find_chrome  # noqa: E402
+from dragowing.export import export_draw, PLOTLY, plotly_figure_content  # noqa: E402
+from dragowing.render import RenderSession, Timeouts  # noqa: E402
+from scripts.rendered_output_checks import check_png, check_svg, figures_digest  # noqa: E402
+
+
+# ==== diagnose（旧 diagnose_dragowing_browser.py）
+
+DIAGNOSE_CLI_DOC = """Validation-only browser startup evidence; no automatic browser selection.
+
+Run from Aoi's root with ``python scripts/dragowing_browser.py diagnose --help``.
+This module deliberately leaves the production transport and its budgets alone.
+"""
 
 _TAIL_BYTES = 4096
 _TEXT_LIMIT = 4096
@@ -179,7 +194,6 @@ def _pipe_observation(pid: int | None, child_fd: int, parent_fd: int | None) -> 
             result["child_inode"] = int(match[1])
             result["matches"] = result["child_inode"] == result["parent_inode"]
     return result
-
 
 
 def _thread_wait_observation(proc: subprocess.Popen | None) -> dict:
@@ -723,8 +737,8 @@ def _positive_seconds(value: str) -> float:
     return parsed
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+def diagnose_cli(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=DIAGNOSE_CLI_DOC)
     parser.add_argument("--chrome", required=True, help="absolute executable path (required; no automatic selection)")
     parser.add_argument("--runs", type=_positive_int, default=5)
     parser.add_argument("--timeout", type=_positive_seconds, default=30.0,
@@ -764,6 +778,120 @@ def main(argv: list[str] | None = None) -> int:
               + f" of {report['requested_runs']} requested; readiness min/max {readiness}"
               + "; failed stages: " + (", ".join(sorted(set(failures))) or "none"))
     return 0 if report["ok"] else 1
+
+
+# ==== startup_ci（旧 run_browser_startup_ci.py）
+
+STARTUP_CI_DOC = """One-command runner for the real Chromium first-start regression.
+
+Run inside a fresh CI job. Network isolation is established by the caller,
+not by this wrapper, so normal and offline jobs stay independent.
+"""
+
+
+def startup_ci(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=STARTUP_CI_DOC)
+    parser.add_argument("--output", type=Path, default=Path("build/startup-context"))
+    args = parser.parse_args(argv)
+    if not os.environ.get("CHROME"):
+        parser.error("CHROME must identify the selected Chromium executable")
+
+    output = args.output.resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    env["DRAGOWING_REQUIRE_CHROME"] = "1"
+    env["DRAGOWING_EXPORT_EVIDENCE_DIR"] = str(output / "export-evidence")
+    env.setdefault("DRAGOWING_PINNED_PLOTLY_JS", str(Path("build/test-assets/plotly.min.js").resolve()))
+    common = [sys.executable, "-m", "pytest", "-c", "pyproject.toml", "-q",
+              "-p", "scripts.observe_dragowing_startup"]
+    # The strict existing regression is the first full browser launch. Do not
+    # retry it in the remainder, or run export tests after a failed gate.
+    first = common + [
+        f"--browser-startup-evidence={output / 'first-start.json'}",
+        "dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version",
+        f"--junitxml={output / 'first-start.xml'}",
+    ]
+    result = subprocess.call(first, env=env)
+    if result != 0:
+        return result
+    remaining = common + [
+        f"--browser-startup-evidence={output / 'actual-tests.json'}",
+        "dragowing/tests/test_chrome_pipe.py",
+        "dragowing/tests/test_render.py",
+        "dragowing/tests/test_export.py",
+        "dragowing/tests/test_plotly_cdn.py",
+        "--deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version",
+        f"--junitxml={output / 'actual-tests.xml'}",
+    ]
+    return subprocess.call(remaining, env=env)
+
+
+# ==== render_fixtures（旧 render_static_fixtures.py）
+
+RENDER_FIXTURES_DOC = """Draw the three synthetic diagnostic figures once and save them as the browser-free test fixtures.
+
+    python scripts/dragowing_browser.py render_fixtures --chrome /path/to/chromium --plotly-js /path/to/plotly.min.js
+
+The output (PNG and SVG per figure plus ``manifest.json``) goes to ``tests/fixtures/rendered_plotly``.
+It is a saved observation, not a reference to reproduce byte for byte: the PNG bytes depend on the
+Chromium build and the SVG on the Plotly.js version. ``tests/test_rendered_output_static.py`` only
+compares them with the figure spec (``scripts/rendered_output_checks.py``), so regenerate them when
+the synthetic figures change or the checks need a newer Plotly, and review the manifest diff.
+"""
+
+ROOT = Path(__file__).resolve().parents[1]
+
+DEFAULT_OUT = ROOT / "tests" / "fixtures" / "rendered_plotly"
+
+
+def render_fixtures(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=RENDER_FIXTURES_DOC.splitlines()[0])
+    parser.add_argument("--chrome", required=True, help="absolute path of Chrome or Chromium")
+    parser.add_argument("--plotly-js", required=True, type=Path, help="local plotly.min.js to draw with")
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    args = parser.parse_args(argv)
+    bundle = args.plotly_js.resolve()
+    version = re.search(r"plotly\.js v([0-9][0-9A-Za-z.\-]*)", bundle.read_text(encoding="utf-8")[:2000])
+    browser = subprocess.run([args.chrome, "--version"], capture_output=True, text=True, timeout=60).stdout.strip()
+    figures = _figures()
+    config = replace(PLOTLY, local_scripts=(lambda: bundle,))
+    args.out.mkdir(parents=True, exist_ok=True)
+    files = {}
+    with RenderSession(chrome=args.chrome) as session:
+        for index, figure in enumerate(figures):
+            for fmt, check in (("png", check_png), ("svg", check_svg)):
+                name = "figure-%d.%s" % (index, fmt)
+                data = export_draw(config, plotly_figure_content(figure), args.out / name, fmt, session=session)
+                check(data, figure)  # never save output the checks would reject
+                files[name] = hashlib.sha256(data).hexdigest()
+    manifest = {
+        "schema": "aoi-rendered-plotly-fixtures/1",
+        "figures_sha256": figures_digest(figures),
+        "plotly_js": version.group(1) if version else None,
+        "browser": browser,
+        "files": files,
+        "regenerate": "python scripts/dragowing_browser.py render_fixtures --chrome <chromium> --plotly-js <plotly.min.js>",
+    }
+    (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print("wrote %d files to %s" % (len(files) + 1, args.out))
+    return 0
+
+
+# ==== 入口
+COMMANDS = {
+    "diagnose": diagnose_cli,
+    "startup_ci": startup_ci,
+    "render_fixtures": render_fixtures,
+}
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="dragowing_browser.py", description=__doc__.split("\n")[0])
+    ap.add_argument("command", choices=COMMANDS, help="どの処理を走らせるか（旧ファイルの名前は各関数の説明に書いた）")
+    ap.add_argument("args", nargs=argparse.REMAINDER, help="その処理に渡す引数（旧ファイルと同じ）")
+    a = ap.parse_args(argv)
+    sys.argv[0] = f"dragowing_browser.py {a.command}"   # 各処理の argparse の使い方の行に、ファイルと処理の名前を出す
+    return COMMANDS[a.command](a.args)
 
 
 if __name__ == "__main__":

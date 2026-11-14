@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import diagnose_dragowing_browser as diagnostic
+from scripts import dragowing_browser as diagnostic
 
 pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="POSIX debugging pipes")
 
@@ -292,12 +292,12 @@ def test_tail_reads_only_bounded_bytes(tmp_path, monkeypatch):
 
 def test_cli_writes_json_and_returns_failure_without_browser(tmp_path):
     output = tmp_path / "report.json"
-    assert diagnostic.main(["--chrome", str(tmp_path / "missing"), "--output", str(output)]) == 1
+    assert diagnostic.diagnose_cli(["--chrome", str(tmp_path / "missing"), "--output", str(output)]) == 1
     assert json.loads(output.read_text())["preflight_failure"]["stage"] == "resolve_browser"
 
 
 def test_cli_success_and_stdout(peer, capsys):
-    assert diagnostic.main(["--chrome", peer(), "--runs", "1", "--timeout", "2", "--output", "-"]) == 0
+    assert diagnostic.diagnose_cli(["--chrome", peer(), "--runs", "1", "--timeout", "2", "--output", "-"]) == 0
     assert json.loads(capsys.readouterr().out)["ok"]
 
 
@@ -305,12 +305,12 @@ def test_cli_success_and_stdout(peer, capsys):
                                            ("--timeout", "-1"), ("--timeout", "nan"), ("--timeout", "inf")])
 def test_cli_rejects_invalid_limits_without_launch(option, value):
     with pytest.raises(SystemExit) as exc:
-        diagnostic.main(["--chrome", "/not-used", "--output", "-", option, value])
+        diagnostic.diagnose_cli(["--chrome", "/not-used", "--output", "-", option, value])
     assert exc.value.code == 2
 
 
 def test_cli_help_runs_without_site_packages_from_other_directory(tmp_path):
-    result = subprocess.run([sys.executable, "-S", str(Path(diagnostic.__file__).resolve()), "--help"],
+    result = subprocess.run([sys.executable, "-S", str(Path(diagnostic.__file__).resolve()), "diagnose", "--help"],
                             cwd=tmp_path, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert "--plotly-js" in result.stdout
@@ -328,7 +328,7 @@ def test_symlink_invocation_is_not_replaced_with_realpath(peer, tmp_path):
 
 
 def test_summary_on_stdout_with_file_output(peer, tmp_path, capsys):
-    assert diagnostic.main(["--chrome", peer(), "--runs", "1", "--timeout", "2",
+    assert diagnostic.diagnose_cli(["--chrome", peer(), "--runs", "1", "--timeout", "2",
                             "--output", str(tmp_path / "evidence.json")]) == 0
     summary = capsys.readouterr().out
     assert "FakeChrome/123.4" in summary and "1 passed, 0 failed" in summary

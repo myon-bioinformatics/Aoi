@@ -63,7 +63,7 @@ def validate(ci, validation):
         'sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends --no-remove ' + packages,
     ]
     wrapper = step(lanes[2], 'Observe the actual tests without preceding browser launches')
-    assert '-m scripts.run_browser_startup_ci --output build/startup-context' in wrapper
+    assert '-m scripts.dragowing_browser startup_ci --output build/startup-context' in wrapper
     assert 'offline) prefix=(sudo unshare --net --)' in wrapper and 'normal) ;;' in wrapper
     assert 'Unknown startup context' in wrapper and 'if:' not in wrapper
     assert lanes[2].index(INSTALL) < lanes[2].index('Observe the actual tests')

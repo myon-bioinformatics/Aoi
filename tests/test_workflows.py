@@ -373,13 +373,13 @@ def test_first_start_context_uses_fresh_jobs_and_unchanged_test_order():
     assert "python-version: '3.15'" in job
     assert "uv sync --locked --python 3.15" in job
     assert "sudo unshare --net --" in job
-    assert "diagnose_dragowing_browser.py" not in job
+    assert "dragowing_browser.py diagnose" not in job
     assert "--runs" not in job and "--timeout" not in job
     assert '"$chromium" --version' in job
-    assert "-m scripts.run_browser_startup_ci --output build/startup-context" in job
+    assert "-m scripts.dragowing_browser startup_ci --output build/startup-context" in job
     # The wrapper's exact pytest/plugin/evidence command is executed and checked
     # in test_browser_startup_ci; the workflow must route through that wrapper.
-    assert "'scripts/run_browser_startup_ci.py'" in text
+    assert "'scripts/dragowing_browser.py'" in text
     modules = "dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \\\n            dragowing/tests/test_plotly_cdn.py"
     assert modules in (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "if: always()" in job and "if-no-files-found: error" in job
@@ -411,7 +411,7 @@ def test_first_start_shell_only_changes_execution_context(tmp_path):
         results.append(((tmp_path / "args").read_text(), (tmp_path / "env").read_text()))
         assert (tmp_path / "sudo-args").exists() == (context == "offline")
     assert results[0] == results[1]
-    assert results[0][0] == "-m\nscripts.run_browser_startup_ci\n--output\nbuild/startup-context\n"
+    assert results[0][0] == "-m\nscripts.dragowing_browser\nstartup_ci\n--output\nbuild/startup-context\n"
     assert results[0][1].startswith("/explicit/chromium\n1\n")
     assert (tmp_path / "sudo-args").read_text().startswith("unshare\n--net\n--\nenv\n")
 

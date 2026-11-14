@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-from scripts import run_browser_startup_ci
+from scripts import dragowing_browser as run_browser_startup_ci
 
 
 def test_runner_gates_remainder_without_retry_or_warmup(tmp_path, monkeypatch):
@@ -17,7 +17,7 @@ def test_runner_gates_remainder_without_retry_or_warmup(tmp_path, monkeypatch):
     monkeypatch.setenv("CHROME", "/usr/bin/chromium")
     monkeypatch.setenv("DRAGOWING_PINNED_PLOTLY_JS", "/tmp/plotly.js")
     monkeypatch.setattr(run_browser_startup_ci.subprocess, "call", fake_call)
-    assert run_browser_startup_ci.main(["--output", str(output)]) == 17
+    assert run_browser_startup_ci.startup_ci(["--output", str(output)]) == 17
     assert output.is_dir()
     assert len(calls) == 2
     first, first_env = calls[0]
@@ -54,7 +54,7 @@ def test_runner_stops_after_failed_first_gate(tmp_path, monkeypatch):
         return 17
     monkeypatch.setenv("CHROME", "/fixture/chromium")
     monkeypatch.setattr(run_browser_startup_ci.subprocess, "call", fail)
-    assert run_browser_startup_ci.main(["--output", str(tmp_path)]) == 17
+    assert run_browser_startup_ci.startup_ci(["--output", str(tmp_path)]) == 17
     assert len(calls) == 1
     assert "dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version" in calls[0]
     assert "dragowing/tests/test_export.py" not in calls[0]
@@ -67,7 +67,7 @@ def test_runner_rejects_implicit_browser_selection(tmp_path, monkeypatch):
     monkeypatch.setattr(run_browser_startup_ci.subprocess, "call", unexpected_call)
     monkeypatch.delenv("CHROME", raising=False)
     try:
-        run_browser_startup_ci.main(["--output", str(tmp_path)])
+        run_browser_startup_ci.startup_ci(["--output", str(tmp_path)])
     except SystemExit as exc:
         assert exc.code == 2
     else:
@@ -77,7 +77,7 @@ def test_runner_rejects_implicit_browser_selection(tmp_path, monkeypatch):
 def test_timeout_thread_snapshot_is_bounded_and_redacted(monkeypatch):
     from contextlib import nullcontext
     from types import SimpleNamespace
-    from scripts import diagnose_dragowing_browser as diagnostic
+    from scripts import dragowing_browser as diagnostic
 
     class Child:
         pid = 42

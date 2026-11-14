@@ -1904,6 +1904,7 @@ def main(argv=None) -> int:
     ap.add_argument("command", choices=COMMANDS, help="どの処理を走らせるか（旧ファイルの名前は各関数の説明に書いた）")
     ap.add_argument("args", nargs=argparse.REMAINDER, help="その処理に渡す引数（旧ファイルと同じ）")
     a = ap.parse_args(argv)
+    sys.argv[0] = f"research.py {a.command}"   # 各処理の argparse の使い方の行に、ファイルと処理の名前を出す
     return COMMANDS[a.command](a.args)
 
 

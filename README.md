@@ -136,7 +136,7 @@ The copy inside Aoi and the standalone repository can drift between syncs; the r
 | 🧪 Suite | ✅ | ⏭️ | 📝 |
 | --- | ---: | ---: | --- |
 | `pytest` (whole repository, `DRAGOWING_REQUIRE_CHROME=1`) | 3916 | 41 | Plotly.js from npm (jsDelivr unreachable here) |
-| `scripts/diagnose_dragowing_browser.py --runs 10` | 10 | | readiness 0.121–0.179 s |
+| `scripts/dragowing_browser.py diagnose --runs 10` | 10 | | readiness 0.121–0.179 s |
 | 🎞️ evidence GIF shots | 8 | | |
 
 ⏭️ The 41 skips are the existing opt-ins (season requirements, cross-repository integration, local-only expectations, network).

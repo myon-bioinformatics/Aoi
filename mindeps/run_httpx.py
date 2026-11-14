@@ -30,6 +30,13 @@ def install_httpx_min() -> None:
     spec.loader.exec_module(module)
 
 
+def install_selectolax_min_for_fetch() -> None:
+    """fetch.py は import 時に selectolax も読む（まとめる前の collect.py は読まなかった）。selectolax が無いときだけ min を置く。"""
+    if importlib.util.find_spec("selectolax") is None:
+        import run_selectolax
+        run_selectolax.install_selectolax_min()
+
+
 class _Handler(BaseHTTPRequestHandler):
     seen: list[str] = []
 
@@ -120,6 +127,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if args.impl == "min":
         install_httpx_min()
+        install_selectolax_min_for_fetch()
     elif importlib.util.find_spec("httpx") is None:
         raise SystemExit("httpx が無い。--impl real は httpx のある環境で動かす")
     result = outcomes()

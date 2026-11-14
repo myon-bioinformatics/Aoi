@@ -42,7 +42,7 @@ with httpx.Client(headers={"User-Agent": UA}, timeout=45, follow_redirects=True)
     fetcher = PoliteFetcher(cache, wait=..., client=client)
 ```
 
-Proxying that client through `PoliteFetcher` touched only `Client` as a context manager, `get(url, headers=)`, `status_code`, `content`, `headers.get` (`etag`, `last-modified`), and `raise_for_status`. `httpx_min` covers that, including redirects, 404, 304, and 500, against a local server. QueRyu already speaks urllib; this is the same shape under the `httpx` name so those three scripts import.
+Proxying that client through `PoliteFetcher` touched only `Client` as a context manager, `get(url, headers=)`, `status_code`, `content`, `headers.get` (`etag`, `last-modified`), and `raise_for_status`. `httpx_min` covers that, including redirects, 404, 304, and 500, against a local server. QueRyu already speaks urllib; this is the same shape under the `httpx` name so those three scripts import. Since the four r001 fetch scripts became `fetch.py`, importing it also imports `selectolax` (the former `observe.py`), so `run_httpx.py --impl min` puts `selectolax_min` in place too when `selectolax` is missing (only for that import).
 
 Not covered, because nothing in the tree calls them: HTTP/2, streaming, auth, cookies, multipart, proxies as `httpx.Proxy` objects, and `httpx.Timeout` objects. `timeout=` has to be a number of seconds. Connection failures raise urllib's `URLError`, not `httpx.ConnectError`. The scripts do not catch either.
 

@@ -51,13 +51,13 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 python blueprobe.py https://openai.com --out observation.json
 ```
 
-The JSON contains the URL, content SHA-256, byte count and structural classification. `--out` is optional; the report is also printed to stdout. For an interoperable QueRyu cache, provide `--cache` and pass the Aoi checkout as `AOI_ROOT` (BlueProbe then uses `AOI_ROOT/queryu`). `PYTHONPATH` is no longer required; a QueRyu already importable from `PYTHONPATH` is still used as is and never replaced:
+The JSON contains the URL, content SHA-256, byte count and structural classification. `--out` is optional; the report is also printed to stdout. For an interoperable QueRyu cache, provide `--cache` and run BlueProbe from Aoi: Aoi's `aoi.py` puts `queryu/` on the import path (`python aoi.py blueprobe …`, `import aoi`, or `eval "$(python aoi.py)"` for one shell). BlueProbe does not look for QueRyu itself; outside Aoi, put a QueRyu checkout on `PYTHONPATH`:
 
 ```bash
-AOI_ROOT=/path/to/Aoi python blueprobe.py https://openai.com --cache ./cache --out observation.json
+python /path/to/Aoi/aoi.py blueprobe https://openai.com --cache ./cache --out observation.json
 ```
 
-The same applies to re-reading a QueRyu cache with `--source ... --cache ...`. Without `AOI_ROOT`, BlueProbe looks next to itself only when it sits inside an Aoi checkout (`pyproject.toml` and `cycles/`), like QueRyu; a standalone checkout never reads a neighbouring `../queryu`. When QueRyu cannot be found, the command exits with code 2 and says to pass `AOI_ROOT`.
+The same applies to re-reading a QueRyu cache with `--source ... --cache ...`. BlueProbe never reads a neighbouring `../queryu`. When QueRyu cannot be found, the command exits with code 2 and names `aoi.py`.
 
 Only UTF-8 HTTP 200 responses up to 10 MiB are accepted. The URL mode currently does not record response headers, perform conditional requests, or reuse cached content; QueRyu's acquisition API remains responsible for those capabilities. An unavailable cache component is reported before fetching.
 

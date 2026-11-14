@@ -55,14 +55,26 @@ class UrlStandaloneTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             script = Path(tmp) / "blueprobe.py"
             shutil.copy2(ROOT / "blueprobe.py", script)
-            # This test deliberately has no QueRyu component. -I ignores PYTHONPATH,
-            # but not the application's explicit AOI_ROOT lookup.
-            env = {key: value for key, value in os.environ.items() if key != "AOI_ROOT"}
+            # This test deliberately has no QueRyu component (-I ignores PYTHONPATH). BlueProbe does not
+            # look for it; the caller (Aoi's aoi.py) supplies the path.
             result = subprocess.run([sys.executable, "-I", str(script), "http://127.0.0.1:1/", "--cache", str(Path(tmp) / "cache")],
-                                    env=env, capture_output=True, text=True, timeout=10)
+                                    capture_output=True, text=True, timeout=10)
             self.assertEqual(result.returncode, 2)
             self.assertIn("cache_core.py", result.stderr)
+            self.assertIn("aoi.py", result.stderr)
             self.assertFalse((Path(tmp) / "cache").exists())
+
+    def test_source_cache_without_queryu_names_aoi_py(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for path in ROOT.glob("*.py"):
+                shutil.copy2(path, Path(tmp) / path.name)
+            cache = Path(tmp) / "cache"
+            cache.mkdir()
+            (cache / "manifest.jsonl").write_text("", encoding="utf-8")
+            result = subprocess.run([sys.executable, "-I", str(Path(tmp) / "blueprobe.py"), "--source", "html_source",
+                                     "--cache", str(cache)], cwd=tmp, capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn("aoi.py", result.stderr)
 
     def test_cache_with_queryu_component(self):
         queryu = os.environ.get("QUERYU_ROOT")

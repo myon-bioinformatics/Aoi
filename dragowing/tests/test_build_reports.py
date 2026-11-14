@@ -1,7 +1,5 @@
-import hashlib
-import json
+import hashlib, json, subprocess
 from pathlib import Path
-import subprocess
 import pytest
 from reports.build_reports import build, revision
 

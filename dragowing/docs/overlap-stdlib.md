@@ -2,8 +2,9 @@
 
 `load_overlap(path, conds)` uses NumPy, Polars, and PythDRagoras's
 `rule_search` as before. Only with `load_overlap(path, conds, backend="stdlib")` does it
-return a dict of the same shape using dedicated row evaluation. The CLI option is `--overlap-backend stdlib`.
-Unspecified means `native`, and an unknown backend is an error. Unsupported input is never silently sent back to native.
+return a dict of the same shape using dedicated row evaluation. The CLI (`python -m dragowing`) defaults to it; `--overlap-backend native` explicitly retains the broader native path.
+`--results DIR` and `--overlap-backend stdlib` remain accepted for compatibility. Without an explicit backend, positional `RESULTS` uses stdlib and legacy `--results DIR` retains native. Explicit `--overlap-backend` takes precedence for either spelling.
+Unspecified means `native` for `load_overlap`, and an unknown backend is an error. Unsupported input is never silently sent back to native.
 
 ```python
 from pathlib import Path
@@ -17,7 +18,7 @@ result = load_overlap(results / "season.jsonl", conditions, backend="stdlib")
 ```
 
 ```sh
-python -m dragowing --results cycles/c001-chunichi/outputs --out build/dragowing --overlap-backend stdlib
+python -m dragowing cycles/c001-chunichi/outputs
 ```
 
 It works whether or not NumPy and Polars are installed. They are not loaded when the module is
@@ -40,7 +41,7 @@ There is no library swapping in `sys.modules` and no change to `sys.path`.
 Empty input cannot produce a result, same as native (matching exception class and message is not part of the contract).
 Duplicate JSON keys, surrogates, NaN/Infinity, list or object cells, huge integers,
 and implicit conversion between bool and numbers/strings are explicitly rejected. This is not a replacement for the full
-range of input native can handle. For unsupported cases, the user chooses `native`.
+range of input native can handle. For unsupported cases, choose `--overlap-backend native` (or the native API); there is no automatic fallback.
 
 Output keys and value types are shared, and no backend marker is added. To check JSON determinism,
 use `json.dumps(result, ensure_ascii=False, sort_keys=True, allow_nan=False)`.
@@ -82,7 +83,7 @@ RSS includes native memory, while tracemalloc covers only Python-tracked objects
 shared-environment load, not a guarantee across all OSes and input sizes.
 
 ```sh
-PYTHONPATH=/path/to/Aoi/pythdragoras python scripts/benchmark_overlap.py \
+AOI_ROOT=/path/to/Aoi python scripts/benchmark_overlap.py \
   --results /path/to/Aoi/cycles/c001-chunichi/outputs --repeats 5 --warm-repeats 7
 ```
 

@@ -9,19 +9,12 @@
 sys.path に載せる。numpy は vendor/aoi の numpy_min.py を sys.modules['numpy'] に、
 overlap も兄弟の rule_search も import するより前に置く。polars はそのまま使う。
 
-AOI_ROOT は Aoi の checkout（cycles/ があること）。rule_search は PYTHONPATH から読む。
+AOI_ROOT は Aoi の checkout（cycles/ があること）。rule_search は AOI_ROOT の pythdragoras/ から読む（PYTHONPATH で import できればそれを使う）。
 本番の import は変えない。
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import importlib.machinery
-import importlib.util
-import json
-import os
-import sys
-import types
+import argparse, hashlib, importlib.machinery, importlib.util, json, os, sys, types
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]

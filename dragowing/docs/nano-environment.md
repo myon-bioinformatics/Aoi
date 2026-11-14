@@ -1,7 +1,7 @@
 # Optional, pinned HTML-only environment
 
 This opt-in recipe keeps DRAgoWing's real HTML implementation and existing
-`--overlap-backend stdlib` path. It installs only the locked Markdown 3.11.2
+explicit `--overlap-backend stdlib` path in the pinned source. It installs only the locked Markdown 3.11.2
 dependency for that feature, not the native NumPy/Polars backend, dev tools,
 Chromium, or a replacement implementation. The repository's dependencies,
 tests, CI and vendor registrations are unchanged.

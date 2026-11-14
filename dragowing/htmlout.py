@@ -1,10 +1,7 @@
 """HTML。文章と表は Markdown から作る。Plotly は index.html の図（軌跡、球団×年、条件の重なり）だけ。"""
 from __future__ import annotations
 
-import html
-import importlib
-import json
-import re
+import html, importlib, json, re
 from pathlib import Path
 
 from .figures import FONT, heatmap_figure, trajectory_figure

@@ -5,11 +5,8 @@ Polars read_ndjson の先頭100行の型推論で結果が変わらない、同�
 """
 from __future__ import annotations
 
-import json
+import json, math, operator
 from pathlib import Path
-
-import math
-import operator
 
 _OPS = {"<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
 

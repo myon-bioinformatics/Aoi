@@ -20,7 +20,7 @@ jobs:
       contents: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
 
-  resolve-aoi:
+  resolve-vendor:
     needs: changes
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
@@ -111,7 +111,7 @@ jobs:
 
   test:
     if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-    needs: [changes, resolve-aoi]
+    needs: [changes, resolve-vendor]
     runs-on: ubuntu-latest
     env:
       # LAB_SHA: past-pattern snapshot of mcp-toolcall-lab used as verification test data.
@@ -129,17 +129,20 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
-          enable-cache: false
           python-version: "${{ matrix.python }}"
           activate-environment: true
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/Aoi
-          ref: ${{ needs.resolve-aoi.outputs.sha }}
+          ref: ${{ needs.resolve-vendor.outputs.sha }}
           path: .test-deps/aoi
           persist-credentials: false
       - name: Confirm resolved Aoi checkout
-        run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "${{ needs.resolve-aoi.outputs.sha }}"
+        run: test "$(git -C .test-deps/aoi rev-parse HEAD)" = "${{ needs.resolve-vendor.outputs.sha }}"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/mcp-toolcall-lab

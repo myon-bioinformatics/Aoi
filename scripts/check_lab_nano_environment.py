@@ -15,7 +15,7 @@ import sys
 import tomllib
 
 EXPECTED = frozenset({
-    'aoi', 'anyio', 'coverage', 'idna', 'iniconfig', 'packaging', 'pluggy',
+    'aoi', 'anyio', 'coverage', 'editables', 'idna', 'iniconfig', 'packaging', 'pluggy',
     'pygments', 'pytest', 'selectolax',
 })
 OMITTED = frozenset({

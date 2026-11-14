@@ -19,16 +19,8 @@ Aoi の原則との対応:
 
 from __future__ import annotations
 
-import argparse
-import importlib
-import re
-import sys
-import unicodedata
-from collections import Counter
-from collections.abc import Iterable, Iterator
-from html.parser import HTMLParser
-from pathlib import Path
-from typing import TypedDict
+import argparse, importlib, importlib.util, os, re, sys, unicodedata
+from collections import Counter; from collections.abc import Iterable, Iterator; from html.parser import HTMLParser; from pathlib import Path; from typing import TypedDict
 
 NORMALIZATION = "nul->U+FFFD, NFKC, collapse-whitespace"
 
@@ -100,6 +92,24 @@ def inspect_snapshots(source, supplier, entries=None, records_out=None) -> list[
 
     parser = (lambda snapshot, url: snapshot_parser(snapshot)) if snapshot_parser is not None else source.parse
     return _inspect(parser, pages(), records_out)
+
+
+def aoi_sibling_path(module: str, sibling: str = "queryu", *, here: Path | None = None, env=None) -> None:
+    """``module`` が import できないときだけ、Aoi の checkout の ``sibling/`` を ``sys.path`` に足す。
+
+    Aoi の場所は ``AOI_ROOT``（pyproject.toml と cycles/ がある）で受け取る。``AOI_ROOT`` がないときは、
+    このファイルの親が Aoi の checkout（Aoi に subtree として入っている）のときだけ使う（QueRyu と同じ）。
+    単独の BlueProbe では足さない。PYTHONPATH などで import できるものは隣で上書きしない。
+    """
+    if importlib.util.find_spec(module) is not None:
+        return
+    env = os.environ if env is None else env
+    value = env.get("AOI_ROOT")
+    root = Path(value).expanduser().resolve() if value else Path(here or __file__).resolve().parent.parent
+    candidate = root / sibling
+    if (root / "pyproject.toml").is_file() and (root / "cycles").is_dir() and candidate.is_dir():
+        if str(candidate) not in sys.path:
+            sys.path.insert(0, str(candidate))
 
 
 def inspect_queryu_cache(source, cache, entries=None, records_out=None) -> list[dict]:
@@ -858,7 +868,7 @@ def classify_document(html: str) -> DocumentClassification:
 
     Only observes: candidate patterns (nodes with visible text only), landmarks,
     structured-data signals, declarative shadow roots, and table kinds.
-    Downstream converters consume this dict (see docs/dom_patterns.md).
+    Downstream converters consume this dict (see docs/dom-patterns.md).
     """
     empty_sd: StructuredData = {"json_ld_types": [], "json_ld_invalid": 0, "microdata_types": [],
                                 "itemprops": [], "opengraph": {}}
@@ -983,8 +993,81 @@ def _nearest(node: _Element, tag: str) -> _Element | None:
     return current
 
 
+def _observe_url(url: str, cache: Path | None = None, out: Path | None = None) -> int:
+    """Fetch one HTTP(S) page with curl and classify its saved HTML."""
+    import hashlib
+    import json
+    import shutil
+    import subprocess
+    import tempfile
+    from urllib.parse import urlsplit
+
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        print("invalid URL", file=sys.stderr)
+        return 2
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username is not None:
+        print("URL must be HTTP(S) without embedded credentials", file=sys.stderr)
+        return 2
+    if not shutil.which("curl"):
+        print("curl is required to fetch a URL", file=sys.stderr)
+        return 127
+    if cache is not None:
+        aoi_sibling_path("cache_core")
+        try:
+            from cache_core import Cache
+        except ModuleNotFoundError as error:
+            if error.name != "cache_core":
+                raise
+            print("--cache requires QueRyu cache_core.py: pass AOI_ROOT=<Aoi root> (uses its queryu/) "
+                  "or put cache_core.py on PYTHONPATH", file=sys.stderr)
+            return 2
+    with tempfile.TemporaryDirectory(prefix="blueprobe-") as tmp:
+        body = Path(tmp) / "body"
+        try:
+            result = subprocess.run(["curl", "--fail", "--silent", "--show-error", "--location",
+                                     "--proto", "=http,https", "--proto-redir", "=http,https",
+                                     "--max-time", "30", "--max-filesize", "10485760", "--output", str(body),
+                                     "--write-out", "%{http_code}", "--", url], capture_output=True, text=True, timeout=35)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            print(f"curl failed: {error}", file=sys.stderr)
+            return 1
+        if result.returncode:
+            print(f"curl failed (exit {result.returncode}): {result.stderr.strip()}", file=sys.stderr)
+            return result.returncode
+        if result.stdout.strip() != "200":
+            print(f"expected HTTP 200, got {result.stdout.strip() or 'unknown'}", file=sys.stderr)
+            return 1
+        raw = body.read_bytes()
+        if len(raw) > 10485760:
+            print("response exceeds 10 MiB", file=sys.stderr)
+            return 1
+        try:
+            html = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            print("response is not UTF-8 HTML", file=sys.stderr)
+            return 1
+        report = {"url": url, "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw),
+                  "classification": classify_document(html)}
+        rendered = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
+        try:
+            if cache is not None:
+                # Cache integrity and provenance are owned by QueRyu's standalone cache component.
+                Cache(cache).put(url, url, "url", 200, raw, {})
+            if out is not None:
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_text(rendered, encoding="utf-8")
+        except (OSError, ValueError) as error:
+            print(f"failed to save observation: {error}", file=sys.stderr)
+            return 1
+        print(rendered, end="")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="取得済みページをオフラインで再解析する")
+    ap.add_argument("url", nargs="?", help="HTTP(S) URL to fetch and classify with curl")
     ap.add_argument("--source", help="取得元モジュール名 (例: npb_calendar, html_source)")
     patterns = ap.add_mutually_exclusive_group()
     patterns.add_argument("--pattern", help="html_source 専用の DOM パターンキー（一覧: --list-patterns）")
@@ -995,6 +1078,11 @@ def main(argv=None) -> int:
     patterns.add_argument("--classify", type=Path, metavar="HTML",
                           help="保存済み HTML ファイル1つを分類し、derived を JSON で表示する（ネットワークなし）")
     args = ap.parse_args(argv)
+
+    if args.url:
+        if args.source or args.pattern or args.list_patterns or args.classify or args.strict:
+            ap.error("URL cannot be combined with source, pattern, classify, list-patterns or strict")
+        return _observe_url(args.url, args.cache, args.out)
 
     if args.classify is not None:
         import json
@@ -1029,7 +1117,15 @@ def main(argv=None) -> int:
     if not manifest.exists():
         print(f"no cache manifest: {manifest}", file=sys.stderr)
         return 1
-    from queryu import Cache
+    aoi_sibling_path("queryu")
+    try:
+        from queryu import Cache
+    except ModuleNotFoundError as error:
+        if error.name != "queryu":
+            raise
+        print("--cache requires QueRyu: pass AOI_ROOT=<Aoi root> (uses its queryu/) "
+              "or put queryu on PYTHONPATH", file=sys.stderr)
+        return 2
     records: list = []
     rows = inspect_queryu_cache(source, Cache(args.cache), records_out=records)
     checks = source.check(records) if hasattr(source, "check") else None
@@ -1048,6 +1144,5 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    sys.path[:0] = [str(Path(__file__).resolve().parent),
-                    str(Path(__file__).resolve().parents[1] / "queryu")]
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     raise SystemExit(main())

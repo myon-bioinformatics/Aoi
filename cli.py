@@ -1,7 +1,7 @@
 """python -m dragowing RESULTS
 
 HTML を --out（省略時は新しい一時ディレクトリ）に書き、書いたものをリンクで1行ずつ表示する。
-重なりは標準ライブラリの経路だけを使い、numpy / polars は読まない（native は内部解析から load_overlap で）。PNG / SVG は --png / --svg と Chrome があるときだけ。
+重なりは既定で標準ライブラリの経路を使う。--overlap-backend native で従来の経路を選べる。PNG / SVG は --png / --svg と Chrome があるときだけ。
 """
 from __future__ import annotations
 
@@ -63,7 +63,10 @@ def team_order(text: str) -> tuple[str, ...]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="記録された結果を HTML にする。判定はやり直さない。")
-    parser.add_argument("results", type=Path, help="season.jsonl と propositions.jsonl があるディレクトリ")
+    parser.add_argument("results", type=Path, nargs="?", help="season.jsonl と propositions.jsonl があるディレクトリ")
+    parser.add_argument("--results", dest="legacy_results", type=Path, help="RESULTS の旧形式（互換用）")
+    parser.add_argument("--overlap-backend", choices=("stdlib", "native"), default=None,
+                        help="既定は RESULTS なら stdlib、旧 --results なら native（NumPy/Polars が必要）")
     parser.add_argument("--out", type=Path, help="HTML の出力ディレクトリ。省略時は新しい一時ディレクトリ（表示するリンクで開く）")
     parser.add_argument("--id", action="append", dest="ids", help="この命題だけ。繰り返せる。省略すると全部")
     parser.add_argument("--column", default="wins_vs_pythag", help="球団×年に置く数値列。既定は wins_vs_pythag")
@@ -105,14 +108,22 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv=None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.results is not None and args.legacy_results is not None:
+        parser.error("RESULTS と --results は同時に指定できません")
+    if args.overlap_backend is None:
+        args.overlap_backend = "native" if args.legacy_results is not None else "stdlib"
+    args.results = args.results if args.results is not None else args.legacy_results
+    if args.results is None:
+        parser.error("RESULTS または --results が必要です")
     try:
         items, present = load_items(args.results)
         season_path = Path(args.results) / "season.jsonl"
         rows = read_jsonl(season_path)
         chosen = select_items(items, present, args.ids)
         conds = finalize_conditions([parse_cond(text) for text in args.conds] if args.conds else None, items, rows)
-        overlap = load_overlap(season_path, conds, backend="stdlib")
+        overlap = load_overlap(season_path, conds, backend=args.overlap_backend)
         index_html, index_figures = index_body(
             rows, overlap, args.column, team_order(args.team_order), args.breakdown, tuple(args.breakdown_keep)
         )

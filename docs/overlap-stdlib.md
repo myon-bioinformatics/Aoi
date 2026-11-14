@@ -2,7 +2,8 @@
 
 `load_overlap(path, conds)` uses NumPy, Polars, and PythDRagoras's
 `rule_search` as before. Only with `load_overlap(path, conds, backend="stdlib")` does it
-return a dict of the same shape using dedicated row evaluation. The CLI (`python -m dragowing`) always uses it and has no backend option.
+return a dict of the same shape using dedicated row evaluation. The CLI (`python -m dragowing`) defaults to it; `--overlap-backend native` explicitly retains the broader native path.
+`--results DIR` and `--overlap-backend stdlib` remain accepted for compatibility. Without an explicit backend, positional `RESULTS` uses stdlib and legacy `--results DIR` retains native. Explicit `--overlap-backend` takes precedence for either spelling.
 Unspecified means `native` for `load_overlap`, and an unknown backend is an error. Unsupported input is never silently sent back to native.
 
 ```python
@@ -40,7 +41,7 @@ There is no library swapping in `sys.modules` and no change to `sys.path`.
 Empty input cannot produce a result, same as native (matching exception class and message is not part of the contract).
 Duplicate JSON keys, surrogates, NaN/Infinity, list or object cells, huge integers,
 and implicit conversion between bool and numbers/strings are explicitly rejected. This is not a replacement for the full
-range of input native can handle. For unsupported cases, the user chooses `native`.
+range of input native can handle. For unsupported cases, choose `--overlap-backend native` (or the native API); there is no automatic fallback.
 
 Output keys and value types are shared, and no backend marker is added. To check JSON determinism,
 use `json.dumps(result, ensure_ascii=False, sort_keys=True, allow_nan=False)`.

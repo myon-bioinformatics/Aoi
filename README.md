@@ -93,8 +93,11 @@ remain separate and unchanged.
 ## Making only the overlap computation lightweight
 
 `load_overlap(path, conds, backend="stdlib")` selects a limited path that does not load NumPy or Polars.
-The CLI always uses it, so `python -m dragowing` needs only the standard library and Python-Markdown.
-`native` (the `load_overlap` default: NumPy, Polars and PythDRagoras's `rule_search`) is for internal analysis code.
+The CLI uses it by default, so its supported scalar inputs need only the standard library and Python-Markdown.
+Use `--overlap-backend native` explicitly for the broader native input domain (NumPy/Polars required).
+The legacy `--results DIR` spelling and `--overlap-backend stdlib` remain accepted.
+Do not supply both `RESULTS` and `--results`. With no explicit backend, positional `RESULTS` selects stdlib, while legacy `--results DIR` retains native. An explicit `--overlap-backend` overrides either default.
+`native` remains the `load_overlap` API default (NumPy, Polars and PythDRagoras's `rule_search`); the API is unchanged.
 Supported input, limitations, and comparison measurements are in [docs/overlap-stdlib.md](docs/overlap-stdlib.md).
 Markdown for HTML, Chromium for image export, and so on are still needed.
 

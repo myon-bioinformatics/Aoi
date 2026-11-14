@@ -32,8 +32,7 @@ key は「年月日-ホーム-ビジター-番号」。
 from __future__ import annotations
 
 import re
-from collections import Counter
-from urllib.parse import urljoin, urlsplit
+from collections import Counter; from urllib.parse import urljoin, urlsplit
 
 from blueprobe import HtmlTree, new_report, normalize
 

@@ -1,17 +1,8 @@
 """Config-driven export, including complete local Plotly figures offline."""
-import hashlib
-import json
-import os
-import struct
-import sys
-import xml.etree.ElementTree as ET
-import zlib
-from dataclasses import replace
-from pathlib import Path
+import hashlib, json, os, re, struct, sys, xml.etree.ElementTree as ET, zlib
+from dataclasses import replace; from pathlib import Path
 
 import pytest
-
-import re
 
 from dragowing.export import MERMAID, PLOTLY, export_draw, mermaid_diagram_content, page_html, plotly_figure_content, plotlyjs_bundle_path
 from dragowing.html_tag_count import count_elements

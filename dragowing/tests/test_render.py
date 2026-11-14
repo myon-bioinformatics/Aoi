@@ -1,11 +1,6 @@
 """Generic render: pure helpers and Chrome when available."""
 
-import ast
-import os
-import socket
-import sys
-import threading
-import time
+import ast, os, socket, sys, threading, time
 from pathlib import Path
 
 import pytest

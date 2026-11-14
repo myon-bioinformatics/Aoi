@@ -7,12 +7,39 @@ ask with the resolved ``--results`` / ``--cycle-dir`` and the NPB team table.
 """
 from __future__ import annotations
 
+import importlib.machinery
 import os
 import re
 import sys
+import types
 from pathlib import Path
 
 DEFAULT_CYCLE = "c001-chunichi"
+
+
+def keep_dragowing_as_package() -> None:
+    """Keep ``import dragowing`` as the package under Aoi.
+
+    DRAgoWing's standalone entry is ``dragowing/dragowing.py``. pytest's pythonpath
+    includes ``dragowing/``, so the default import would load that file and hide
+    ``dragowing.render`` and the rest of the package. Child tests still import
+    ``forms`` / ``records`` as top-level modules, so the path entry stays.
+    Call this before any ``import dragowing`` (including pytest ``-p`` plugins).
+    """
+    root = Path(__file__).resolve().parent / "dragowing"
+    if not root.is_dir():
+        return
+    existing = sys.modules.get("dragowing")
+    if existing is not None and getattr(existing, "__path__", None):
+        return
+    pkg = types.ModuleType("dragowing")
+    pkg.__path__ = [str(root)]
+    pkg.__package__ = "dragowing"
+    spec = importlib.machinery.ModuleSpec("dragowing", loader=None, is_package=True)
+    spec.submodule_search_locations = pkg.__path__
+    pkg.__spec__ = spec
+    sys.modules["dragowing"] = pkg
+
 
 
 def infer_aoi_root(anchor: Path) -> Path:

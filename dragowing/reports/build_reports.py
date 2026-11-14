@@ -1,18 +1,6 @@
 """Build Markdown reports and rendered/source comparisons using upstream markdown.py."""
-import argparse
-import difflib
-import hashlib
-import html
-from html.parser import HTMLParser
-import importlib.util
-import json
-import os
-from pathlib import Path, PurePosixPath
-import re
-import shutil
-import subprocess
-import sys
-from urllib.parse import urljoin
+import argparse, difflib, hashlib, html, importlib.util, json, os, re, shutil, subprocess, sys
+from html.parser import HTMLParser; from pathlib import Path, PurePosixPath; from urllib.parse import urljoin
 
 REPOSITORY = 'myon-bioinformatics/Aoi'
 
@@ -167,13 +155,13 @@ def build(root, upstream, output, previous_ref=None):
     return manifest
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument('--markdown-root', type=Path, required=True)
     parser.add_argument('--output', type=Path, default=Path('build/dragowing'))
     parser.add_argument('--previous-ref')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     result = build(args.root, args.markdown_root, args.output, args.previous_ref)
     print(json.dumps({'documents':len(result['documents']), 'markdown_commit':result['markdown_commit'], 'previous_status':result['previous_status']}))
 

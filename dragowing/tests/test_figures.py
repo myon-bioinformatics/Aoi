@@ -1,14 +1,6 @@
 """図のデータは season.jsonl / propositions.jsonl の値と一致する。丸めない。"""
-import ast
-import html
-import json
-import operator
-import os
-import subprocess
-import sys
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+import ast, html, json, operator, os, subprocess, sys, tempfile
+from pathlib import Path; from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -293,7 +285,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     )
     dump_jsonl(results / "propositions.jsonl", [proposition(posthoc=True)])
     out = tmp_path / "html"
-    assert main(["--results", str(results), "--out", str(out), "--id", "P9"]) == 0
+    assert main([str(results), "--out", str(out), "--id", "P9"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
     assert not (out / "plotly.min.js").exists()
@@ -322,7 +314,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     embed_response.__enter__.return_value = embed_response
     embed_response.__exit__.return_value = False
     with patch("urllib.request.urlopen", return_value=embed_response):
-        assert main(["--results", str(results), "--out", str(embedded), "--id", "P9", "--embed"]) == 0
+        assert main([str(results), "--out", str(embedded), "--id", "P9", "--embed"]) == 0
     alone = (embedded / "index.html").read_text(encoding="utf-8")
     assert "src=\"plotly.min.js\"" not in alone
     assert PLOTLY_JS_CDN not in alone
@@ -331,7 +323,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     embedded_props = (embedded / "propositions.html").read_text(encoding="utf-8")
     assert fetch_plotly_js()[:80] not in embedded_props
     proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"],
+        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"],
         check=False,
         capture_output=True,
         text=True,
@@ -339,6 +331,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     )
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
+    assert (tmp_path / "mod" / "index.html").resolve().as_uri() in proc.stdout
     monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
     with pytest.raises(PngUnavailable, match="Chrome"):
         write_png(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.png")
@@ -347,7 +340,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
     assert not (tmp_path / "x.png").exists()
     assert not (tmp_path / "x.svg").exists()
     missing = subprocess.run(
-        [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "png"), "--png", "--svg"],
+        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "png"), "--png", "--svg"],
         check=False,
         capture_output=True,
         text=True,
@@ -363,9 +356,9 @@ def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path):
     results.mkdir()
     dump_jsonl(results / "season.jsonl", [season_row()])
     dump_jsonl(results / "propositions.jsonl", [proposition()])
-    assert main(["--results", str(results), "--out", str(tmp_path / "o"), "--id", "E25"]) == 1
+    assert main([str(results), "--out", str(tmp_path / "o"), "--id", "E25"]) == 1
     proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "o2"), "--id", "E25"],
+        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o2"), "--id", "E25"],
         check=False,
         capture_output=True,
         text=True,
@@ -375,7 +368,7 @@ def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path):
     assert "結果が読めない" in proc.stderr
     assert "結果にない" not in proc.stderr
     proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", "--results", str(results), "--out", str(tmp_path / "o3"), "--column", "team_name"],
+        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o3"), "--column", "team_name"],
         check=False,
         capture_output=True,
         text=True,
@@ -469,7 +462,7 @@ def test_real_records_are_copied_into_the_figures():
 
 def test_cli_on_the_recorded_cycle_writes_standalone_html(tmp_path):
     out = tmp_path / "out"
-    assert main(["--results", str(RESULTS), "--out", str(out), "--id", "P1"]) == 0
+    assert main([str(RESULTS), "--out", str(out), "--id", "P1"]) == 0
     index = (out / "index.html").read_text(encoding="utf-8")
     props = (out / "propositions.html").read_text(encoding="utf-8")
     assert f'src="{PLOTLY_JS_CDN}"' in index
@@ -603,7 +596,7 @@ def test_cli_reuses_one_session_for_all_figures_and_formats(tmp_path, monkeypatc
     monkeypatch.setattr(cli, "RenderSession", Session)
     monkeypatch.setattr(cli, "find_chrome", lambda chrome: lookups.append(chrome) or "/verified/chrome")
     monkeypatch.setattr(cli, "export_draw", lambda *args, **kwargs: calls.append((args, kwargs)))
-    assert cli.main(["--results", str(results), "--out", str(tmp_path / "out"), "--png", "--svg"]) == 0
+    assert cli.main([str(results), "--out", str(tmp_path / "out"), "--png", "--svg"]) == 0
     assert len(sessions) == 1 and sessions[0].closed
     assert sessions[0].kwargs == {"chrome": "/verified/chrome"}
     assert lookups == [None]

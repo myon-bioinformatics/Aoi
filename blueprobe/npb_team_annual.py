@@ -6,10 +6,8 @@ summary. Missing historical columns are absent/null, never invented as zero.
 """
 from __future__ import annotations
 
-from collections import defaultdict
-import re
-import unicodedata
-from urllib.parse import urlsplit
+import re, unicodedata
+from collections import defaultdict; from urllib.parse import urlsplit
 
 from blueprobe import HtmlTree, new_report, normalize
 

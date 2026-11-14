@@ -2,20 +2,20 @@
 
 📘 [利用ガイド / Usage guide](https://myon-bioinformatics.github.io/Aoi/) (GitHub Pages)
 
-## Aoi entry files for child projects
+## Running the child projects from Aoi
 
-From an Aoi checkout, the named Python entry files forward arguments to the corresponding child under this checkout. Run them from any working directory; input and output paths are resolved relative to the caller's working directory.
+Each child's file named after the project (`blueprobe/blueprobe.py`, `queryu/queryu.py`, …) is a generic single file and does not look for its siblings. `aoi.py` supplies them: it runs the child with the Aoi root and the import paths that pytest uses (`pyproject.toml`), from any working directory, with paths resolved against the caller's directory.
 
 ```bash
-python BlueProbe.py --help
-python QueRyu.py --help
-python NagoyAction.py --help
-python SakAnalytics.py --help
-python PythDRagoras.py --help
-python DRAgoWing.py --help
+python aoi.py blueprobe --help
+python aoi.py queryu --help
+python aoi.py nagoyaction --help
+python aoi.py sakanalytics --help
+python aoi.py pythdragoras --help
+python aoi.py dragowing --help          # dragowing.py; the HTML report is python aoi.py dragowing/__main__.py RESULTS
 ```
 
-`aoi.py` runs any child file with Aoi's settings (the Aoi root, the cycle name and the import paths that pytest uses), so the children themselves stay generic. Nothing is saved; `eval "$(python aoi.py)"` applies the same settings to the current shell only.
+`aoi.py` runs any child file with Aoi's settings (the Aoi root, the cycle name and the import paths that pytest uses), so the children themselves stay generic. Nothing is saved; `eval "$(python aoi.py)"` applies the same settings to the current shell only, and `import aoi` to the current Python process (the paths go after what is already first).
 
 ```bash
 python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan

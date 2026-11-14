@@ -5,20 +5,8 @@ command reply are retained for wait_event(). No preexec_fn runs after fork.
 """
 from __future__ import annotations
 
-import json
-import math
-import os
-import queue
-import selectors
-import shutil
-import signal
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-from collections import deque
-from pathlib import Path
+import json, math, os, queue, selectors, shutil, signal, subprocess, sys, tempfile, threading, time
+from collections import deque; from pathlib import Path
 
 # Automatic discovery is Chromium-only. Legacy names and explicit Chrome
 # paths remain supported through chrome=, CHROME, and CHROMIUM.

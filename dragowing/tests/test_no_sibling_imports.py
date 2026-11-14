@@ -5,8 +5,7 @@
 既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の dragowing/ でも同じ結果になる。
 """
-import ast
-import sys
+import ast, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,17 +18,23 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_benchmark_validation.py", "path:scripts/benchmark_overlap.py"),
     # This fixture loads DRAgoWing’s own ROOT/scripts helper, never Aoi/scripts.
     ("tests/test_dragowing_managed_chromium.py", "path:scripts/install_ci_chromium.py"),
-    # PythDRagoras の propositions と rule_search。PYTHONPATH の pythdragoras
-    ("overlap.py", "import:propositions"),
-    ("overlap.py", "import:rule_search"),
+    # PythDRagoras の propositions と rule_search。AOI_ROOT/pythdragoras（aoi_sibling）
     ("overlap.py", "path:pythdragoras"),
     ("tests/test_forms_review.py", "import:propositions"),
     ("tests/test_figures.py", "import:rule_search"),
-    # QueRyu の ask。PYTHONPATH の queryu/ask。forms.py は queryu を辿る
-    ("forms.py", "import:ask"),
-    ("forms.py", "path:queryu"),
+    # QueRyu の ask。AOI_ROOT/queryu/ask（aoi_sibling）
+    ("forms.py", "path:queryu/ask"),
+    # AOI_ROOT からの探し方の検査。一時ディレクトリに作る Aoi の配置名だけで、兄弟は import しない
+    ("tests/test_aoi_sibling.py", "path:pythdragoras"),
+    ("tests/test_aoi_sibling.py", "path:queryu"),
     ("tests/test_figures.py", "import:ask"),
     ("tests/test_forms.py", "import:ask"),
+    # 上のテストが直接 import する兄弟を、conftest.py が AOI_ROOT から sys.path に足す（PYTHONPATH は要らない）
+    ("conftest.py", "path:pythdragoras"),
+    # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
+    ("vendor/aoi/vendor/uv_tool_build.py", "path:scripts"),
+    ("tests/test_dragowing_standalone.py", "path:scripts"),
+    ("conftest.py", "path:queryu/ask"),
     # テストのデータの場所は AOI_ROOT の Aoi の aoi_paths に聞く（conftest.py が AOI_ROOT を sys.path に足す）
     ("tests/test_figures.py", "import:aoi_paths"),
     ("tests/test_forms.py", "import:aoi_paths"),

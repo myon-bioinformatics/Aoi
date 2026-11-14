@@ -35,10 +35,11 @@ def test_builds_lowercase_child_entry(tmp_path):
     assert (out / "nagoyaction.py").read_bytes() == (ROOT / "nagoyaction" / "nagoyaction.py").read_bytes()
 
 
-def test_rejects_camelcase_root_entry(tmp_path):
-    # Aoi #179 のルートエントリ（NagoyAction.py など）は後追いの PR で小文字にする。
+def test_rejects_camelcase_entry_name(tmp_path):
+    camel = tmp_path / "NagoyAction.py"
+    camel.write_text("def main():\n    return 0\n", encoding="utf-8")
     with pytest.raises(ValueError, match="lowercase"):
-        _load().build([ROOT / "NagoyAction.py"], tmp_path / "out")
+        _load().build([camel], tmp_path / "out")
 
 
 def test_cli_runs_without_site(tmp_path):

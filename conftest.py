@@ -9,6 +9,8 @@ import pytest
 
 import aoi_paths
 
+aoi_paths.keep_dragowing_as_package()
+
 # 子（queryu/ など）の conftest.py は Aoi の場所を AOI_ROOT で受け取る。Aoi の中ではここで入れる
 os.environ.setdefault("AOI_ROOT", str(aoi_paths.resolve_aoi_root(anchor=Path(__file__))))
 

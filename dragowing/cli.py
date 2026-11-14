@@ -1,11 +1,11 @@
-"""python -m dragowing --results DIR --out DIR
+"""python -m dragowing RESULTS
 
-HTML を書く。PNG / SVG は --png / --svg と Chrome があるときだけ。
+HTML を --out（省略時は新しい一時ディレクトリ）に書き、書いたものをリンクで1行ずつ表示する。
+重なりは既定で標準ライブラリの経路を使う。--overlap-backend native で従来の経路を選べる。PNG / SVG は --png / --svg と Chrome があるときだけ。
 """
 from __future__ import annotations
 
-import argparse
-import sys
+import argparse, sys, tempfile
 from pathlib import Path
 
 from .chrome_pipe import find_chrome
@@ -63,8 +63,11 @@ def team_order(text: str) -> tuple[str, ...]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="記録された結果を HTML にする。判定はやり直さない。")
-    parser.add_argument("--results", type=Path, required=True, help="season.jsonl と propositions.jsonl があるディレクトリ")
-    parser.add_argument("--out", type=Path, required=True, help="HTML の出力ディレクトリ")
+    parser.add_argument("results", type=Path, nargs="?", help="season.jsonl と propositions.jsonl があるディレクトリ")
+    parser.add_argument("--results", dest="legacy_results", type=Path, help="RESULTS の旧形式（互換用）")
+    parser.add_argument("--overlap-backend", choices=("stdlib", "native"), default=None,
+                        help="既定は RESULTS なら stdlib、旧 --results なら native（NumPy/Polars が必要）")
+    parser.add_argument("--out", type=Path, help="HTML の出力ディレクトリ。省略時は新しい一時ディレクトリ（表示するリンクで開く）")
     parser.add_argument("--id", action="append", dest="ids", help="この命題だけ。繰り返せる。省略すると全部")
     parser.add_argument("--column", default="wins_vs_pythag", help="球団×年に置く数値列。既定は wins_vs_pythag")
     parser.add_argument(
@@ -94,10 +97,6 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Chrome/Chromium の実行ファイル。省略時は CHROME / CHROMIUM 環境変数、なければ PATH",
     )
-    parser.add_argument(
-        "--overlap-backend", choices=("native", "stdlib"), default="native",
-        help="重なり計算。stdlib は限定したスカラー列のみ（numpy/polars 不要）。既定は native",
-    )
     parser.add_argument("--png", action="store_true", help="PNG も書く。Chrome が要る。既定では HTML だけ")
     parser.add_argument("--svg", action="store_true", help="SVG も書く。Chrome が要る。既定では HTML だけ")
     parser.add_argument(
@@ -109,7 +108,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv=None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.results is not None and args.legacy_results is not None:
+        parser.error("RESULTS と --results は同時に指定できません")
+    if args.overlap_backend is None:
+        args.overlap_backend = "native" if args.legacy_results is not None else "stdlib"
+    args.results = args.results if args.results is not None else args.legacy_results
+    if args.results is None:
+        parser.error("RESULTS または --results が必要です")
     try:
         items, present = load_items(args.results)
         season_path = Path(args.results) / "season.jsonl"
@@ -124,12 +131,16 @@ def main(argv=None) -> int:
     except (FileNotFoundError, ValueError, TypeError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    out = Path(args.out)
+    out = args.out or Path(tempfile.mkdtemp(prefix="dragowing-"))
     out.mkdir(parents=True, exist_ok=True)
     (out / "index.html").write_text(
         standalone("DRAgoWing", index_html, plotly=True, embed=args.embed), encoding="utf-8"
     )
     (out / "propositions.html").write_text(standalone("命題の一覧", prop_html), encoding="utf-8")
+    markdown = sys.modules.get("markdown")
+    print(f"📦 markdown {getattr(markdown, '__version__', '?')}")
+    for name, note in (("index.html", f"📊 {', '.join(index_figures)}"), ("propositions.html", f"🧾 {len(chosen)}")):
+        print(f"📄 {(out / name).resolve().as_uri()} {(out / name).stat().st_size} B · {note}")
     if args.png or args.svg:
         formats = [fmt for fmt, wanted in (("png", args.png), ("svg", args.svg)) if wanted]
         try:
@@ -145,6 +156,8 @@ def main(argv=None) -> int:
                 for name, fig in index_figures.items():
                     for fmt in formats:
                         write_image(fig, out / fmt / f"{name}.{fmt}", fmt, session=session)
+            for fmt in formats:
+                print(f"🖼️ {(out / fmt).resolve().as_uri()} {len(index_figures)} {fmt}")
         except ExportUnavailable as exc:
             print(str(exc), file=sys.stderr)
             return 2

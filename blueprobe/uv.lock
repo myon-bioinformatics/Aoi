@@ -12,6 +12,9 @@ dev = [
     { name = "pytest" },
     { name = "selectolax" },
 ]
+observation-test = [
+    { name = "pytest" },
+]
 
 [package.metadata]
 
@@ -20,6 +23,7 @@ dev = [
     { name = "pytest", specifier = ">=8" },
     { name = "selectolax", specifier = ">=1" },
 ]
+observation-test = [{ name = "pytest", specifier = ">=8" }]
 
 [[package]]
 name = "colorama"

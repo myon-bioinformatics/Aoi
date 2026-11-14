@@ -28,6 +28,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 6つの子が conftest.py と tests に同じ中身で持っている検査（AOI_ROOT の解決と import 経路、親ワークフローの pin、兄弟・scripts/ への参照禁止、Node 入口と Python の一致）の本体は Aoi の `scripts/child_checks.py` が原本で、`shared-tools.lock.json` で `vendor/aoi/scripts/child_checks.py` として子に配る（numpy_min・py_launch.cjs と同じ契約。標準ライブラリだけ、pytest を import しない）。子に残すのは子ごとに違う値（PIN、第三者依存、既知の例外、Node の入口名）と、本体を呼ぶ数行だけ。採用前に `tests/test_child_checks.py` が各 prefix で子の現在の検査と同じ答えになることを確かめる。採用した子は lock の `consumers` に足す。
 
 
+2026-11-14: BlueProbe の main `e71bbdb33bb8cb3569e3b7a62e4b8394b2e88ed1`（#52 の squash。#47〜#51 も含む。#52 は AOI_ROOT から QueRyu を探す）と、DRAgoWing の main `454dee1bf98846b4ef7d5a2a2879d9391f5ed0f8`（#47 の merge。#40〜#46 も含む。#45 は AOI_ROOT から兄弟を探す、#46 は CLI、#47 は共有ビルダー）を、履歴を保持した `git subtree merge`（squash なし）で取り込みました。各 prefix の tree は子の main と一致します。BlueProbe の pin は main 先頭の squash コミット（第一親）、DRAgoWing の pin は #47 の merge コミットです。
+
 2026-11-13: SakAnalytics の main `05e24256cc06042949de40a8397790333310db5e`（#36〜#43。#43 は 8 回までの得点で作り直す `wl_*8` の列）を、履歴を保持した `git subtree merge`（squash なし）で取り込みました。prefix の tree は子の main と一致します。`dist/sakanalytics_min.py` と `distributions.json` の source は、親の `tools/minpy.py` が要るので、この取り込みでは作り直していません。
 
 2026-11-02（#152）: 残る BlueProbe `2ea993aaa1416ff9006eba4ebe2fed6d0b49668e` と QueRyu `4c59cb00ca2ba898573e4af95bc4a63492aa5eb9` を、子の main の第一親の最新コミットに squash なしの `git subtree pull` で同期しました。DRAgoWing・NagoyAction・PythDRagoras・SakAnalytics は上記と同じ登録（`434fd137`・`da68f374`・`9fb998c6`・`95cfacd4`）です。QueRyu #32 で同梱の `numpy_min` を `_load_numpy_min()` で読むようになったため、`scripts/linalg_feasibility.py` と `scripts/shrink_module.py` はこれを numpy として扱います。各 prefix の tree は登録 SHA の tree と同一です。この PR は squash せず merge commit で入れます。

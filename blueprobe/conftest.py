@@ -1,7 +1,6 @@
 """Optional cross-repository integration with an explicit fail-closed mode."""
-from importlib import import_module
 import os
-from pathlib import Path
+from importlib import import_module; from pathlib import Path
 
 import pytest
 

@@ -1,8 +1,6 @@
 """Overlap benchmark checks survive -O in both controller and worker."""
+import subprocess, sys, unittest
 from pathlib import Path
-import subprocess
-import sys
-import unittest
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'scripts/benchmark_overlap.py'
 

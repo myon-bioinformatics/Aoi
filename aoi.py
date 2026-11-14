@@ -2,12 +2,15 @@
 
   python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan
   python aoi.py pythdragoras/season_sensitivity.py --season ... --config ...
-  python aoi.py -m dragowing cycles/c001-chunichi/outputs
+  python aoi.py dragowing/__main__.py cycles/c001-chunichi/outputs   # the DRAgoWing report (-m dragowing is dragowing.py)
   eval "$(python aoi.py)"      # the same settings for this shell only (nothing is saved)
+  import aoi                   # the same settings for this Python process (sys.path and AOI_ROOT)
 
 The run-time mirror of conftest.py: conftest.py sets AOI_ROOT and the import paths for pytest, and this
-file sets them for a child process. The layout itself stays in aoi_paths.py, NPB tables in aoi_npb.py.
-A child (the file named after its project, used on its own elsewhere) reads none of this by itself.
+file sets them for a child process, a shell or the importing process. The layout itself stays in
+aoi_paths.py, NPB tables in aoi_npb.py. A child (the file named after its project) is a generic single
+file: it does not look for its siblings itself. Where it works with one (QueRyu with BlueProbe, DRAgoWing
+with PythDRagoras and QueRyu, ...), the import path comes from here.
 """
 from __future__ import annotations
 
@@ -31,6 +34,18 @@ def environment(env=None) -> dict[str, str]:
     env["AOI_RESEARCH_CYCLE"] = aoi_paths.cycle_name(env.get("AOI_RESEARCH_CYCLE"))
     env["PYTHONPATH"] = os.pathsep.join(filter(None, [*(str((ROOT / p).resolve()) for p in paths), env.get("PYTHONPATH")]))
     return env
+
+
+def activate(env=None, path=None) -> dict[str, str]:
+    """Put the same settings into this process: AOI_ROOT into ``env`` and the import paths onto the end of
+    ``path``, so whatever is already first (the caller's own checkout) still wins. The cycle name is left to
+    aoi_paths (it only goes to child processes)."""
+    env = os.environ if env is None else env
+    path = sys.path if path is None else path
+    settings = environment(env)
+    env["AOI_ROOT"] = settings["AOI_ROOT"]
+    path.extend(p for p in settings["PYTHONPATH"].split(os.pathsep) if p and p not in path)
+    return settings
 
 
 def command(argv: list[str]) -> list[str]:
@@ -59,3 +74,4 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+activate()  # import aoi: the in-process counterpart of eval "$(python aoi.py)"

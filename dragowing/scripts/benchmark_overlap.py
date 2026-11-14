@@ -6,17 +6,8 @@ stdout だけに記録する。入力ファイルは変更しない。Linux/macO
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import importlib.machinery
-import json
+import argparse, hashlib, importlib.machinery, json, platform, statistics, subprocess, sys, time, types
 from pathlib import Path
-import platform
-import statistics
-import subprocess
-import sys
-import time
-import types
 
 
 def worker(args):
@@ -60,13 +51,13 @@ def worker(args):
     return 0
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--results', type=Path, required=True)
     parser.add_argument('--repeats', type=int, default=5)
     parser.add_argument('--warm-repeats', type=int, default=7)
     parser.add_argument('--worker', choices=('native', 'stdlib'), help=argparse.SUPPRESS)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.repeats < 1 or args.warm_repeats < 1:
         parser.error('repeats must be positive')
     if args.worker:

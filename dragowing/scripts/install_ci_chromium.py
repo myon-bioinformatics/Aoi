@@ -5,16 +5,8 @@ privilege changes or existing-install refresh. See docs/export.md for provenance
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import json
-import os
+import argparse, hashlib, json, os, stat, tempfile, time, urllib.request, zipfile
 from pathlib import Path, PurePosixPath
-import stat
-import tempfile
-import time
-import urllib.request
-import zipfile
 
 REVISION = '1706520'
 VERSION = '156.0.8078.0'
@@ -126,10 +118,10 @@ def install(destination: Path) -> Path:
     return destination / 'chrome-linux/chrome'
 
 
-def main() -> None:
+def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--destination', type=Path, required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     executable = install(args.destination)
     print(json.dumps({'revision': REVISION, 'expected_version': VERSION,
                       'archive_sha256': SHA256, 'generation': GENERATION,

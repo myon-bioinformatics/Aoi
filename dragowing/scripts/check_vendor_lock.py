@@ -8,11 +8,7 @@ source は Aoi の中の相対パスで、写しは vendor/aoi/<source> に置�
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import json
-import re
-import sys
+import argparse, hashlib, json, re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -47,9 +47,9 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 ```bash
 python dragowing.py page.html --tag p --tag img
 cat page.html | python dragowing.py --tag p
-python build_stdlib_tool.py build/dragowing-stdlib-tool
-uv tool install ./build/dragowing-stdlib-tool
-dragowing-html page.html --tag p
+python vendor/aoi/vendor/uv_tool_build.py dragowing.py --out build/dragowing-tool
+uv tool install ./build/dragowing-tool
+dragowing page.html --tag p
 ```
 
 The tool project contains only `dragowing.py` and build metadata, and its runtime has no external Python dependencies. The repository's existing rendering entry and its dependencies remain separate. Rebuild the tool project after changing `dragowing.py`.
@@ -57,14 +57,14 @@ The tool project contains only `dragowing.py` and build metadata, and its runtim
 For example, after installing the tool:
 
 ```bash
-printf '<p>one</p><p>two</p><img src="x">' | dragowing-html
+printf '<p>one</p><p>two</p><img src="x">' | dragowing
 # {"img": 1, "p": 2}
-printf '<p>one</p><p>two</p><img src="x">' | dragowing-html --tag p
+printf '<p>one</p><p>two</p><img src="x">' | dragowing --tag p
 # {"p": 2}
-dragowing-html missing.html  # reports a read error; exit 1
+dragowing missing.html  # reports a read error; exit 1
 ```
 
-Without installation, replace `dragowing-html` with `python dragowing.py`. This counts opening tags in saved HTML; to render reports or export figures, use the full DRAgoWing application below.
+Without installation, replace `dragowing` with `python dragowing.py`. This counts opening tags in saved HTML; to render reports or export figures, use the full DRAgoWing application below.
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). Runtime dependencies are polars, numpy, and markdown. Figures use the browser's plotly.js; neither matplotlib nor Python plotly is installed. HTTP uses only the standard library's urllib (no httpx).
 

@@ -331,7 +331,7 @@ def main(argv=None) -> int:
     sys.path.insert(0, str(args.repo / "sakanalytics"))
     import sakanalytics as sa
 
-    wt = load_sibling("wave_eps_trial")
+    wt = load_sibling("wave_eps")        # 旧 wave_eps_trial.py（今は wave_eps.py の trial）
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
     traj = cfg.get("trajectory") or {}
     sims = args.sims or int(traj.get("sims", sa.TRAJ_SIMS))
@@ -342,7 +342,7 @@ def main(argv=None) -> int:
         r = json.loads(line)
         committed[(r["season"], r["team"])] = r
     ctrl = wt.trajectory(sa, tg, sa.wave_basis, sims, min_games, end)
-    g = wt.gate(ctrl, committed, sims, args.new_seasons)
+    g = wt.trial_cli_gate(ctrl, committed, sims, args.new_seasons)
     if not g["pass"]:
         print(f"対照が合わない（{g}）。走らせない。", file=sys.stderr)
         return 2

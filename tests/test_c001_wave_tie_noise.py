@@ -29,7 +29,7 @@ def load(name):
     return mod
 
 
-wt = load("wave_eps_trial")
+wt = load("wave_eps")
 tn = load("wave_tie_noise")
 
 XS149 = [i / 148 for i in range(149)]

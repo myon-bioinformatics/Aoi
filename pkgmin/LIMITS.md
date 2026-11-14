@@ -18,7 +18,7 @@ Dynamic (`pkgmin/trace_used.py`), on `pkgmin/run_paths.py`:
 - **stub** lets the import succeed. The first attribute is logged. Those paths never import, so the log stays empty.
 - **wrap** (CI, after the real wheels are installed) delegates to the installed packages. Project code does not touch them.
 
-`run_paths.py` calls NagoyAction `show` and `doctor` on `cycles/c001-chunichi/pipeline.toml`, BlueProbe `classify_document` on the hand-written fixtures, QueRyu `acquisition_plan` plus `UrllibClient.get` against `127.0.0.1`, and imports the R001 modules (`collect`, `verify`, `observe`, `inning_pilot`) without calling `main` (that hits the network).
+`run_paths.py` calls NagoyAction `show` and `doctor` on `cycles/c001-chunichi/pipeline.toml`, BlueProbe `classify_document` on the hand-written fixtures, QueRyu `acquisition_plan` plus `UrllibClient.get` against `127.0.0.1`, and imports the R001 module `fetch` (`fetch.py`; it was `collect`, `verify`, `observe`, and `inning_pilot` until 2026-11-14) without calling `main` (that hits the network).
 
 The committed result is `pkgmin/evidence/used-surface.json`. Import sites, attributes, and declarations are empty for all three. Eight `import_module` / `__import__` calls take a non-literal argument (`blueprobe.py`, the five `dist/*_min.py` bundles, `queryu/conftest.py`, `scripts/fetch_module.py`). None of them is these packages. A non-literal import inside a function this driver does not call would still be invisible; the AST would see it if the module name were a literal.
 

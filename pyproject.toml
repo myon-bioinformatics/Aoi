@@ -31,9 +31,10 @@ packages = []
 [tool.hatch.build.targets.wheel.force-include]
 "scripts/fetch_module.py" = "fetch_module.py"
 "shrink/numpy_min.py" = "numpy_min.py"
+"vendor/uv_tool_build.py" = "uv_tool_build.py"
 
 [tool.hatch.build.targets.sdist]
-only-include = ["scripts/fetch_module.py", "shrink/numpy_min.py"]
+only-include = ["scripts/fetch_module.py", "shrink/numpy_min.py", "vendor/uv_tool_build.py"]
 
 [tool.pytest.ini_options]
 # サブプロジェクトはそれぞれ単独のディレクトリ。将来の分離に備え、互いをパッケージにしない

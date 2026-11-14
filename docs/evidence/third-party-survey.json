@@ -801,7 +801,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1431,
+      "attribute_uses": 1438,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -811,14 +811,14 @@
         "UsageError": 10,
         "approx": 392,
         "fail": 34,
-        "fixture": 58,
+        "fixture": 59,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 335,
+        "mark.parametrize": 337,
         "mark.skipif": 28,
         "param": 1,
-        "raises": 526,
-        "skip": 13,
+        "raises": 529,
+        "skip": 14,
         "warns": 3,
         "xfail": 1
       },
@@ -954,20 +954,20 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 447,
+          "attribute_uses": 454,
           "attributes": {
             "approx": 104,
             "fail": 13,
-            "fixture": 18,
+            "fixture": 19,
             "importorskip": 3,
-            "mark.parametrize": 124,
+            "mark.parametrize": 126,
             "mark.skipif": 12,
-            "raises": 169,
-            "skip": 4
+            "raises": 172,
+            "skip": 5
           },
           "dynamic_import_sites": 0,
-          "files": 44,
-          "import_sites": 46
+          "files": 45,
+          "import_sites": 47
         }
       },
       "declared": [
@@ -1004,8 +1004,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 139,
-      "import_sites": 142
+      "files": 140,
+      "import_sites": 143
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -3211,7 +3211,20 @@
     },
     {
       "attributes": {
-        "raises": 2
+        "fixture": 1,
+        "mark.parametrize": 2,
+        "raises": 2,
+        "skip": 1
+      },
+      "dynamic_lines": [],
+      "file": "tests/test_aoi_entry_containment.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "tests"
+    },
+    {
+      "attributes": {
+        "raises": 3
       },
       "dynamic_lines": [],
       "file": "tests/test_aoi_npb.py",

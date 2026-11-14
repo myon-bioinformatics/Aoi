@@ -39,6 +39,9 @@ def command(argv: list[str]) -> list[str]:
     if target == "-m":
         return [sys.executable, *argv]
     path = ROOT / target if target.endswith(".py") else ROOT / target.lower() / f"{target.lower()}.py"
+    path = path.resolve()
+    if not path.is_relative_to(ROOT):
+        raise SystemExit("aoi.py: target must be a Python file under Aoi")
     if not path.is_file():
         raise SystemExit(f"aoi.py: {path} がない。子の名前（queryu など）か Aoi の中の .py を渡す")
     return [sys.executable, str(path), *rest]

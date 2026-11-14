@@ -64,7 +64,7 @@ python research/shrink-index/synthetic_shrink.py --check
 
 ## Zero / NaN log
 
-`shrink_index.py` always prints `[zero/NaN log]` lines, once for loading (`load`, printed right after the file is read) and once for the computed results (`compute`), and prints `none` when nothing happened. Values are never changed and nothing is replaced by an epsilon (how to place epsilon is decided separately; the same small logger is in `research/bigmac-ruler/staple_bigmac_check.py`).
+`shrink_index.py` always prints `[zero/NaN log]` lines, once for loading (`load`, printed right after the file is read) and once for the computed results (`compute`), and prints `none` when nothing happened. Values are never changed and nothing is replaced by an epsilon (how to place epsilon is decided separately; `research/bigmac-ruler/staple_bigmac_check.py` reads this logger, so that decision changes one place).
 
 | Kind | Meaning |
 |---|---|

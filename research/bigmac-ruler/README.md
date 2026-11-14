@@ -21,7 +21,7 @@ The default input is `research/staple-price-survey/staple_survey_vertical.csv` (
 
 ## Zero / NaN log
 
-`staple_bigmac_check.py` always prints `[zero/NaN log]` lines, once for loading (`load`) and once for the computed results (`compute`), and prints `none` when nothing happened. Values are never changed and nothing is replaced by an epsilon (how to place epsilon is decided separately).
+`staple_bigmac_check.py` always prints `[zero/NaN log]` lines, once for loading (`load`) and once for the computed results (`compute`), and prints `none` when nothing happened. Values are never changed and nothing is replaced by an epsilon (how to place epsilon is decided separately). The logger (`kind_of`, `ZeroNaNLog`) is the one in `research/shrink-index/shrink_index.py`, so that decision changes one place.
 
 | Kind | Meaning |
 |---|---|

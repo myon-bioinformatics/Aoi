@@ -51,7 +51,7 @@ def kind_of(x):
 
 class ZeroNaNLog:
     """ゼロ・NaN・無限大・空欄・ゼロでのスキップが出たことを数え、必ず出力する。値は変えない。
-    （同じ 40 行を research/bigmac-ruler/staple_bigmac_check.py にも置いている。共通部品にするかは ε の扱いが決まってから）"""
+    （research/bigmac-ruler/staple_bigmac_check.py もここから読む。ε の置き方が決まったら、kind_of と合わせてここ 1 か所で変える）"""
 
     def __init__(self):
         self.count = collections.Counter()

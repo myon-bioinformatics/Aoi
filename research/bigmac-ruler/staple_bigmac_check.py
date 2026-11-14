@@ -36,53 +36,18 @@ import collections
 import csv
 import math
 import sys
+from pathlib import Path
 
 import numpy as np
+
+# ゼロ・NaN・無限大の記録（kind_of・ZeroNaNLog）は shrink_index.py と同じものを使う（ε の置き方が決まったら、そこ 1 か所で変える）
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'shrink-index'))
+from shrink_index import ZeroNaNLog, kind_of  # noqa: E402
 
 DEFAULT_CSV = 'research/staple-price-survey/staple_survey_vertical.csv'
 Y0, Y1 = 2021, 2025
 MIN_MONTHS = 6          # 年平均に必要な月数（先に宣言。結果を見て変えない）
 SEED, BOOT = 20261024, 4000
-
-
-def kind_of(x):
-    """'NaN' / 'INF' / 'ZERO'、どれでもなければ None。"""
-    if x is None:
-        return None
-    if x != x:
-        return 'NaN'
-    if x in (math.inf, -math.inf):
-        return 'INF'
-    return 'ZERO' if x == 0 else None
-
-
-class ZeroNaNLog:
-    """ゼロ・NaN・無限大・空欄・ゼロでのスキップが出たことを数え、必ず出力する。値は変えない。
-    （同じ 40 行を research/shrink-index/shrink_index.py にも置いている。共通部品にするかは ε の扱いが決まってから）"""
-
-    def __init__(self):
-        self.count = collections.Counter()
-        self.examples = collections.defaultdict(list)
-
-    def add(self, stage, name, kind, where=''):
-        key = (stage, name, kind)
-        self.count[key] += 1
-        if len(self.examples[key]) < 3:
-            self.examples[key].append(where if isinstance(where, str) else ' '.join(map(str, where)))
-
-    def scan(self, stage, name, values):
-        """{場所: 値} か値のリストを調べて、ゼロ・NaN・無限大を記録する。"""
-        for where, x in (values.items() if isinstance(values, dict) else enumerate(values)):
-            kind = kind_of(x)
-            if kind:
-                self.add(stage, name, kind, str(where))
-
-    def lines(self, stage):
-        rows = [(k, n) for k, n in sorted(self.count.items()) if k[0] == stage]
-        if not rows:
-            return ['[zero/NaN log] %s: none' % stage]
-        return ['[zero/NaN log] %s: %s %s x%d  e.g. %s' % (stage, k[1], k[2], n, ', '.join(self.examples[k]))
-                for k, n in rows]
 
 
 def usable(x):

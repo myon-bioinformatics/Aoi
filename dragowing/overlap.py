@@ -5,10 +5,8 @@
 """
 from __future__ import annotations
 
-import json
+import json, operator
 from pathlib import Path
-
-import operator
 
 OPS = {"<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
 
@@ -26,20 +24,11 @@ def _check_count(conds: list[dict]) -> None:
 
 
 def _engines():
-    import sys
+    from .aoi_sibling import import_aoi_sibling
 
-    if "propositions" not in sys.modules:
-        here = Path(__file__).resolve()
-        for root in (here.parent, *here.parents):
-            logic = root / "pythdragoras"
-            if (logic / "propositions.py").is_file():
-                path = str(logic)
-                if path not in sys.path:
-                    sys.path.insert(0, path)
-                break
-    import propositions
-    import rule_search
-
+    # PythDRagoras の propositions と rule_search。AOI_ROOT/pythdragoras（PYTHONPATH にあればそれ）
+    propositions = import_aoi_sibling("propositions", "pythdragoras")
+    rule_search = import_aoi_sibling("rule_search", "pythdragoras")
     return rule_search, propositions
 
 

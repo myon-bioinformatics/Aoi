@@ -1,5 +1,4 @@
-import importlib.util
-import json
+import importlib.util, json
 from pathlib import Path
 import pytest
 from dragowing.research_report import render_report

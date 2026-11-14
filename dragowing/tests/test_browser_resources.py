@@ -1,11 +1,6 @@
 """Resource regressions ported from Aoi PR #121; no real browser required."""
-import errno
-import json
-import os
+import errno, json, os, subprocess, sys, textwrap
 from pathlib import Path
-import subprocess
-import sys
-import textwrap
 
 import pytest
 

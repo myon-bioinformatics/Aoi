@@ -35,9 +35,12 @@ jobs:
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
-          enable-cache: false
           python-version: "3.15"
           activate-environment: true
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - name: Resolve Aoi main
         id: aoi
         env:
@@ -110,7 +113,6 @@ jobs:
         id: recorded
         env:
           AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
-          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras:${{ github.workspace }}/.test-deps/aoi/queryu/ask
         run: |
           set -euo pipefail
           uv sync --locked --python 3.15
@@ -130,7 +132,6 @@ jobs:
       - name: render_md from the wheel and load_overlap on numpy_min
         env:
           AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
-          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/pythdragoras:${{ github.workspace }}/.test-deps/aoi/queryu/ask
         run: .venv/bin/python scripts/run_stdlib_paths.py --deps min --markdown-version "${{ steps.recorded.outputs.markdown_version }}" --cache .cdn-cache minimal.json
       - name: Byte-identical to the real markdown and numpy result
         run: cmp reference.json minimal.json

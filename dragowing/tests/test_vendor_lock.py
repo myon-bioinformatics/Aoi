@@ -1,7 +1,5 @@
 """vendor.lock.json と scripts の照合。ネットワークには出ない。"""
-import hashlib
-import importlib.util
-import json
+import hashlib, importlib.util, json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +23,7 @@ def test_lock_matches_vendored_bytes():
     document = lock.load_lock(ROOT)
     assert document["schema"] == "vendor-lock/1"
     names = [Path(entry["source"]).name for entry in document["files"]]
-    assert names == ["fetch_module.py", "numpy_min.py"]
+    assert names == ["fetch_module.py", "numpy_min.py", "uv_tool_build.py"]
     unused = {"shrink_module.py", "shrink_polars.py", "numpy_linalg_min.py", "polars_min.py"}
     assert unused.isdisjoint(names)
     for entry in document["files"]:

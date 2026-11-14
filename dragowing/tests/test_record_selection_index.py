@@ -1,8 +1,6 @@
 """Stdlib parity for multi-ID indexing, duplicate rows and error ordering."""
+import random, sys, unittest
 from pathlib import Path
-import random
-import sys
-import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from records import select_items
 

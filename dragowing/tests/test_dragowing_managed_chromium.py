@@ -1,16 +1,6 @@
 """Managed dependency tests use synthetic ZIPs; no network or browser launches."""
-import hashlib
-import importlib.util
-import io
-import os
-from pathlib import Path
-import stat
-import subprocess
-import tempfile
-import unittest
-from unittest.mock import patch
-import zipfile
-import warnings
+import hashlib, importlib.util, io, os, stat, subprocess, tempfile, unittest, warnings, zipfile
+from pathlib import Path; from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('install_ci_chromium', ROOT / 'scripts/install_ci_chromium.py')

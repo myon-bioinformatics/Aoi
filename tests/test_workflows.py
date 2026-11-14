@@ -570,12 +570,12 @@ def test_holdout_job_provisions_node_before_parity_tests():
 # Named entry files dispatch to Aoi children without requiring external libraries.
 
 ENTRIES = {
-    "BlueProbe": ("blueprobe", "blueprobe.py"),
-    "QueRyu": ("queryu", "queryu.py"),
-    "NagoyAction": ("nagoyaction", "nagoyaction.py"),
-    "SakAnalytics": ("sakanalytics", "sakanalytics.py"),
-    "PythDRagoras": ("pythdragoras", "pythdragoras.py"),
-    "DRAgoWing": ("dragowing", "__main__.py"),
+    "blueprobe": ("blueprobe", "blueprobe.py"),
+    "queryu": ("queryu", "queryu.py"),
+    "nagoyaction": ("nagoyaction", "nagoyaction.py"),
+    "sakanalytics": ("sakanalytics", "sakanalytics.py"),
+    "pythdragoras": ("pythdragoras", "pythdragoras.py"),
+    "dragowing": ("dragowing", "__main__.py"),
 }
 
 
@@ -588,20 +588,26 @@ class NamedChildEntriesTest(unittest.TestCase):
             work.mkdir()
             for name, (directory, filename) in ENTRIES.items():
                 with self.subTest(entry=name):
-                    shutil.copy2(ROOT / (name + ".py"), root / (name + ".py"))
+                    (root / "entries").mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(ROOT / "entries" / (name + ".py"), root / "entries" / (name + ".py"))
                     target = root / directory / filename
                     target.parent.mkdir(parents=True, exist_ok=True)
-                    target.write_text('import json, os, sys\nprint(json.dumps({"args": sys.argv[1:], "cwd": os.getcwd()}))\nsys.exit(7)\n')
+                    target.write_text('import json, os, sys\nprint(json.dumps({"args": sys.argv[1:], "cwd": os.getcwd(), "AOI_ROOT": os.environ.get("AOI_ROOT"), "PYTHONPATH": os.environ.get("PYTHONPATH", "")}))\nsys.exit(7)\n')
                     env = dict(os.environ, PYTHONPATH="")
-                    result = subprocess.run([sys.executable, str(root / (name + ".py")), "x y", "--option"],
+                    env.pop("AOI_ROOT", None)
+                    result = subprocess.run([sys.executable, str(root / "entries" / (name + ".py")), "x y", "--option"],
                                             cwd=work, env=env, capture_output=True, text=True)
                     self.assertEqual(result.returncode, 7, result.stderr)
-                    self.assertEqual(json.loads(result.stdout), {"args": ["x y", "--option"], "cwd": str(work)})
+                    self.assertEqual(json.loads(result.stdout), {
+                        "args": ["x y", "--option"], "cwd": str(work),
+                        "AOI_ROOT": str(root), "PYTHONPATH": "",
+                    })
 
     def test_missing_child_has_actionable_error(self):
         with tempfile.TemporaryDirectory() as temp:
-            entry = Path(temp) / "BlueProbe.py"
-            shutil.copy2(ROOT / "BlueProbe.py", entry)
+            entry = Path(temp) / "entries" / "blueprobe.py"
+            entry.parent.mkdir(parents=True)
+            shutil.copy2(ROOT / "entries" / "blueprobe.py", entry)
             result = subprocess.run([sys.executable, str(entry), "--help"], capture_output=True, text=True)
             self.assertEqual(result.returncode, 2)
             self.assertIn("complete Aoi checkout", result.stderr)

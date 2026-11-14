@@ -4,15 +4,15 @@
 
 ## Aoi entry files for child projects
 
-From an Aoi checkout, the named Python entry files forward arguments to the corresponding child under this checkout. Run them from any working directory; input and output paths are resolved relative to the caller's working directory.
+From an Aoi checkout, the lowercase entry files in `entries/` forward arguments to the corresponding child under this checkout. They set `AOI_ROOT` so the child can find siblings; they do not construct `PYTHONPATH`. `entries/` is not on the import path, so the files do not shadow subtree folders such as `blueprobe/`. Run them from any working directory; input and output paths are resolved relative to the caller's working directory.
 
 ```bash
-python BlueProbe.py --help
-python QueRyu.py --help
-python NagoyAction.py --help
-python SakAnalytics.py --help
-python PythDRagoras.py --help
-python DRAgoWing.py --help
+python entries/blueprobe.py --help
+python entries/queryu.py --help
+python entries/nagoyaction.py --help
+python entries/sakanalytics.py --help
+python entries/pythdragoras.py --help
+python entries/dragowing.py --help
 ```
 
 `aoi.py` runs any child file with Aoi's settings (the Aoi root, the cycle name and the import paths that pytest uses), so the children themselves stay generic. Nothing is saved; `eval "$(python aoi.py)"` applies the same settings to the current shell only.

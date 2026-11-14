@@ -5,7 +5,7 @@
 処理: collect, observe, verify, inning_pilot
 
 1 つの処理が 1 つのサブコマンド（旧 collect.py, observe.py, verify.py … の 1 本が 1 つ）。引数と説明は各関数の説明（旧ファイルの冒頭）にある。
-BlueProbe（npb_calendar・blueprobe）と QueRyu（Cache・PoliteFetcher）を使うので、その 2 つを sys.path に足す。
+BlueProbe（npb/npb_calendar・blueprobe）と QueRyu（Cache・PoliteFetcher）を使うので、その 2 つを sys.path に足す。
 httpx と selectolax が無い環境では mindeps/ の httpx_min・selectolax_min を先に置く（mindeps/run_*.py）。
 同じ中身の補助は 1 つにし、処理ごとに中身が違う名前には処理の名前を付けた。旧ファイルの HERE・ROOT・sys.path の行は、この冒頭の 1 か所にまとめた。
 """
@@ -21,7 +21,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-sys.path[:0] = [str(ROOT / "blueprobe"), str(ROOT / "queryu")]
+sys.path[:0] = [str(ROOT / "blueprobe"), str(ROOT / "blueprobe" / "npb"), str(ROOT / "queryu")]
 
 import httpx  # noqa: E402
 import npb_calendar  # noqa: E402

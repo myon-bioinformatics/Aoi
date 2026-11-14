@@ -94,7 +94,41 @@ def pytest_runtest_makereport(item, call):
         phases[report.when] = report.outcome
 
 
+# NagoyAction の年間史テストは parser のバイトを blueprobe/npb_team_annual.py で読む。
+# その子はこの同期に含めないので、検査の間だけ移した npb/ の実体へリンクする。
+_NPB_ANNUAL_LINK = Path(__file__).resolve().parent / "blueprobe" / "npb_team_annual.py"
+_NPB_ANNUAL_TARGET = Path("npb") / "npb_team_annual.py"
+
+
+def _legacy_npb_annual_test(nodeid: str) -> bool:
+    return "nagoyaction/tests/test_annual_history_report.py" in nodeid.replace("\\", "/")
+
+
+def _link_legacy_npb_annual() -> None:
+    if _NPB_ANNUAL_LINK.exists() or _NPB_ANNUAL_LINK.is_symlink():
+        return
+    if (_NPB_ANNUAL_LINK.parent / _NPB_ANNUAL_TARGET).is_file():
+        _NPB_ANNUAL_LINK.symlink_to(_NPB_ANNUAL_TARGET)
+
+
+def _unlink_legacy_npb_annual() -> None:
+    if _NPB_ANNUAL_LINK.is_symlink() and _NPB_ANNUAL_LINK.readlink() == _NPB_ANNUAL_TARGET:
+        _NPB_ANNUAL_LINK.unlink()
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    if _legacy_npb_annual_test(item.nodeid):
+        _link_legacy_npb_annual()
+
+
+def pytest_runtest_teardown(item, nextitem):
+    if _legacy_npb_annual_test(item.nodeid):
+        _unlink_legacy_npb_annual()
+
+
 def pytest_sessionfinish(session, exitstatus):
+    _unlink_legacy_npb_annual()
     if not session.config.getoption('--require-lab-integration'):
         return
     reports = session.config.stash[_LAB_REPORTS]

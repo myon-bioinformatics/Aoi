@@ -292,12 +292,13 @@ def test_recovered_fielding_source_runs_through_real_offline_cli(tmp_path):
     Cache(cache).put('2025_c', 'https://npb.jp/bis/2025/stats/tmf_c.html', '2025', 200,
                      html.encode(), {})
     out = tmp_path / 'observed.md'
-    result = run([ROOT/'blueprobe/blueprobe.py', '--source', 'npb_team_fielding',
+    # BlueProbe は QueRyu も npb/ も自分では足さない。pytest の path を消したまま、aoi.py が pyproject の path を渡す。
+    result = run([ROOT/'aoi.py', 'blueprobe/blueprobe.py', '--source', 'npb_team_fielding',
                   '--cache', cache, '--out', out], tmp_path)
     assert result.returncode == 0, result.stderr
     assert 'npb_team_fielding' in out.read_text() and '要確認' in out.read_text()
     # Incomplete six-team data is visible, and strict mode must reject it.
-    strict = run([ROOT/'blueprobe/blueprobe.py', '--source', 'npb_team_fielding',
+    strict = run([ROOT/'aoi.py', 'blueprobe/blueprobe.py', '--source', 'npb_team_fielding',
                   '--cache', cache, '--strict'], tmp_path)
     assert strict.returncode == 1 and '取りこぼし' in strict.stderr
 

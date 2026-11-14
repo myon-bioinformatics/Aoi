@@ -28,7 +28,7 @@ def load(name):
 
 gen = load("eps_generality")
 fp = load("fetch_physical")
-ph = load("posthoc_scale_tolerance")
+ph = load("eps_posthoc")
 sa, trial = gen.load_modules(ROOT)
 COLS = fp.COLS
 
@@ -384,7 +384,7 @@ def test_the_real_pins_are_well_formed():
     assert fp.PINS["weather"]["commit"] == fp.PINS["co2"]["commit"]
 
 
-# ---- 事後: 値の単位と絶対値の許容（posthoc_scale_tolerance.py）------------------------------------------------------------
+# ---- 事後: 値の単位と絶対値の許容（eps_posthoc.py の scale_tolerance。旧 posthoc_scale_tolerance.py）------------------------------------------------------------
 def synth_window(sid, i):
     spec = next(x for x in gen.SYNTH if x["id"] == sid)
     return {"key": "k", "start": "2020-01", "values": gen.synth_series(spec, i)}
@@ -406,7 +406,7 @@ def test_posthoc_unscaled_tolerance_moves_the_form_at_a_small_scale_and_a_scaled
 def test_posthoc_analyse_runs_the_unchanged_tolerance_first_and_the_scaled_one_second():
     series = {("k", f"physical:{i}", "u", "s", ""): {j: v for j, v in enumerate(synth_window(sid, k)["values"])}
               for i, (sid, k) in enumerate((("undamped_p1", 7), ("damped_l1", 10)))}
-    res = ph.analyse(gen, sa, trial, series, "month")
+    res = ph.scale_tolerance_analyse(gen, sa, trial, series, "month")
     assert res["windows"] == 2 and res["n"] == 24
     assert res["tolerance_unchanged"]["1e-06"]["forms_changed"] == 2 and res["tolerance_scaled"]["1e-06"]["forms_changed"] == 0
     assert res["tolerance_unchanged"]["1"] == res["tolerance_scaled"]["1"]
@@ -442,7 +442,7 @@ def test_posthoc_cli_writes_both_variants_for_both_cadences_and_is_reproducible(
     outs = []
     for name in ("a", "b"):
         o = tmp_path / name
-        assert ph.main(["--monthly-csv", str(monthly), "--daily-csv", str(daily), "--outdir", str(o), "--repo", str(ROOT)]) == 0
+        assert ph.scale_tolerance(["--monthly-csv", str(monthly), "--daily-csv", str(daily), "--outdir", str(o), "--repo", str(ROOT)]) == 0
         outs.append(o)
     for n in ("posthoc_scale_tolerance.json", "posthoc_scale_tolerance.md"):
         assert (outs[0] / n).read_bytes() == (outs[1] / n).read_bytes()
@@ -458,7 +458,7 @@ def test_posthoc_cli_writes_both_variants_for_both_cadences_and_is_reproducible(
 
 
 def test_posthoc_states_its_prediction_before_the_run_and_the_fine_scales():
-    doc = ph.__doc__
+    doc = ph.SCALE_TOLERANCE_DOC
     assert "予想（走らせる前に書く）" in doc and "(a)" in doc and "(b)" in doc and "EPS_WAVE_SOLVE" in doc
     assert ph.FINE == (1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1.0) and ph.TIE == 1e-12
 
@@ -474,7 +474,7 @@ def test_posthoc_cli_takes_the_staple_input_alone_and_writes_only_that_kind_and_
     outs = []
     for name in ("a", "b"):
         o = tmp_path / name
-        assert ph.main(["--staple-csv", str(staple), "--outdir", str(o), "--repo", str(ROOT)]) == 0
+        assert ph.scale_tolerance(["--staple-csv", str(staple), "--outdir", str(o), "--repo", str(ROOT)]) == 0
         outs.append(o)
     for n in ("posthoc_scale_tolerance.json", "posthoc_scale_tolerance.md"):
         assert (outs[0] / n).read_bytes() == (outs[1] / n).read_bytes()
@@ -494,7 +494,7 @@ def test_posthoc_cli_with_all_three_inputs_keeps_the_order_monthly_daily_staple(
     daily = write_rows(tmp_path / "d.csv", vrows(48, values=wave(48, 0.5)))
     staple = staple_csv(tmp_path / "s.csv")
     o = tmp_path / "o"
-    assert ph.main(["--staple-csv", str(staple), "--daily-csv", str(daily), "--monthly-csv", str(monthly), "--outdir", str(o), "--repo", str(ROOT)]) == 0
+    assert ph.scale_tolerance(["--staple-csv", str(staple), "--daily-csv", str(daily), "--monthly-csv", str(monthly), "--outdir", str(o), "--repo", str(ROOT)]) == 0
     res = json.loads((o / "posthoc_scale_tolerance.json").read_text(encoding="utf-8"))
     assert list(res) == ["monthly", "daily", "staple"]
     md = (o / "posthoc_scale_tolerance.md").read_text(encoding="utf-8")
@@ -503,12 +503,12 @@ def test_posthoc_cli_with_all_three_inputs_keeps_the_order_monthly_daily_staple(
 
 def test_posthoc_cli_stops_when_no_input_is_given(tmp_path):
     with pytest.raises(SystemExit) as e:
-        ph.main(["--outdir", str(tmp_path / "o"), "--repo", str(ROOT)])
+        ph.scale_tolerance(["--outdir", str(tmp_path / "o"), "--repo", str(ROOT)])
     assert e.value.code == 2 and not (tmp_path / "o").exists()
 
 
 def test_posthoc_states_the_staple_prediction_before_the_run_and_what_was_already_seen():
-    doc = ph.__doc__
+    doc = ph.SCALE_TOLERANCE_DOC
     assert "追記（2026-10-27。主食価格の月次に広げる。**走らせる前に書く**" in doc
     for needle in ("すでに見たもの", "まだ見ていないもの", "(a')", "(b')", "2104", "1056", "381", "3.83e-22", "8.52e-4"):
         assert needle in doc, needle
@@ -531,7 +531,7 @@ def test_staple_scale_result_follows_the_written_predictions_and_the_md_is_what_
     for k, v in sc.items():                                                             # (b') 許容に倍率の2乗をかけると、どの倍率でも動かない
         assert v["forms_changed"] == 0 and v["boundary_flag_changed"] == 0 and v["coefficient_max_dev"] < 1e-9, k
     md = (DIR / "results-random" / "staple" / "posthoc_scale_tolerance.md").read_text(encoding="utf-8")
-    assert md == ph.render(res).replace("](../posthoc_scale_tolerance.py)", "](../../posthoc_scale_tolerance.py)")      # 置き場所が 1 階層深いリンクの 1 か所だけ違う
+    assert md == ph.scale_tolerance_render(res).replace("](../eps_posthoc.py)", "](../../eps_posthoc.py)")      # 置き場所が 1 階層深いリンクの 1 か所だけ違う
 
 
 def test_staple_scale_result_tables_in_the_readmes_are_the_json_numbers():
@@ -553,7 +553,7 @@ def test_readme_announces_the_staple_scale_check_before_it_runs_and_points_to_th
     text = (DIR / "README.md").read_text(encoding="utf-8")
     sec = text[text.index("#### 主食価格にも当てる（2026-10-27。**走らせる前に書く**）"):]
     sec = sec[:sec.index("### 再現と置き場所")]
-    for needle in ("posthoc_scale_tolerance.py` の冒頭に書いた", "(a')", "(b')", "1056", "--staple-csv research/staple-price-survey/staple_survey_vertical.csv",
+    for needle in ("eps_posthoc.py scale_tolerance` の冒頭に書いた", "(a')", "(b')", "1056", "--staple-csv research/staple-price-survey/staple_survey_vertical.csv",
                    "results-random/staple/posthoc_scale_tolerance.json", "PR #24 は触らない"):
         assert needle in sec, needle
 
@@ -567,7 +567,7 @@ def test_readme_physical_section_states_the_pinned_inputs_the_scales_and_the_pro
     for needle in ("SCALES = (1e-6, 1e-3, 1, 1e3, 1e6)", "`physical-monthly`", "`physical-daily`", "444 / 221 / 110", "968 / 480 / 240",
                    "13 / 2 / 0", "5,353 行", "11,688 行", "4f18c60d52e26f1ec84496619ee2aa656ae0e3994373064c8be78fd150ceefc9",
                    "1d1ea18b501abc473a9e27bc388a0433fb89551bbbcef396648c15f41caa9824", "tests/test_epsilon_generality_physical.py",
-                   "基準は置かず、報告だけ", "矛盾する材料はなかった", "約 18% 未満", "results-physical/", "posthoc_scale_tolerance.py",
+                   "基準は置かず、報告だけ", "矛盾する材料はなかった", "約 18% 未満", "results-physical/", "eps_posthoc.py scale_tolerance",
                    "走らせる前に", "EPS_WAVE_SOLVE", "直し方"):
         assert needle in sec, needle
     assert "98% 以上" in sec and "20 未満" in sec

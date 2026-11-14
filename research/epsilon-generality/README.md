@@ -78,14 +78,14 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
     --csv research/staple-price-survey/staple_survey_vertical.csv --outdir out --repo .
 ```
 
-約 20 秒（ほぼ 2 回走らせるため）。書き出すもの: `eps_generality.json`（基準・集合ごとの数・τ・合成の式）、`eps_generality.md`（読みやすい表）、`eps_generality_units_n24.jsonl`（24 か月の窓の単位ごとの当てはめ）。C4 が通らなければ何も書かずに止まる。テストは `tests/test_epsilon_generality.py`（`posthoc_boundary_forms.py` は `tests/test_epsilon_generality_posthoc.py`）。
+約 20 秒（ほぼ 2 回走らせるため）。書き出すもの: `eps_generality.json`（基準・集合ごとの数・τ・合成の式）、`eps_generality.md`（読みやすい表）、`eps_generality_units_n24.jsonl`（24 か月の窓の単位ごとの当てはめ）。C4 が通らなければ何も書かずに止まる。テストは `tests/test_epsilon_generality.py`（`eps_posthoc.py boundary_forms` は `tests/test_epsilon_generality_posthoc.py`）。
 
 ## 登録後に足したもの（基準・数・手順は変えていない）
 
 基準・設定をこの文書に置いて GitHub に載せた（コミット cea8c53）。そのスクリプトで実データを 1 回走らせ、結果を見たあとに、次の 2 点を足した。どちらも基準・設定・計算には関わらない（足したあとのスクリプトの `eps_generality.json`・`eps_generality.md` は、足す前の出力とバイト単位で同じ。units の行は 2 つのキーが増えただけ）。
 
 - `eps_generality_units_n24.jsonl` の行に、系列を一意に決める `unit`（単位）と `series_index`（系列の並び順の番号）を足した。同じ国・変数・出どころでも、市場や価格の種類（注）が違う系列があるため（505 系列、注を除くと 464）
-- 結果を見たあとに、基準 C2 を満たさなかった 1 窓の原因を調べるための `posthoc_boundary_forms.py` を足した（下の「事後の確認」）。これは**登録した基準の外**で、`eps_generality.py` の出力は変えない
+- 結果を見たあとに、基準 C2 を満たさなかった 1 窓の原因を調べるための `eps_posthoc.py boundary_forms` を足した（下の「事後の確認」）。これは**登録した基準の外**で、`eps_generality.py` の出力は変えない
 
 ## 系列数の集計修正（2026-10-27）
 
@@ -95,11 +95,11 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 
 ## 事後の確認（登録した基準の外）
 
-`posthoc_boundary_forms.py` は、結果を見たあとに足したもの。境界の単位のうち、ε=1e-3 / 1e-6 で選ばれる周期が ε=1e-9 のときと違う単位を数え、その単位で 2 つの周期の式の誤差の2乗和を並べる。境界でない単位のうち ε=1e-3 / 1e-6 で選ばれる式が今のコードと違う単位についても、今のコードの式・減衰しない波・ε の波の誤差の2乗和を並べる。周期ごとの境界の単位の数を野球の 24 単位と並べる。基準にはしない。結果は `results/posthoc_boundary_forms.md`。
+`eps_posthoc.py boundary_forms` は、結果を見たあとに足したもの。境界の単位のうち、ε=1e-3 / 1e-6 で選ばれる周期が ε=1e-9 のときと違う単位を数え、その単位で 2 つの周期の式の誤差の2乗和を並べる。境界でない単位のうち ε=1e-3 / 1e-6 で選ばれる式が今のコードと違う単位についても、今のコードの式・減衰しない波・ε の波の誤差の2乗和を並べる。周期ごとの境界の単位の数を野球の 24 単位と並べる。基準にはしない。結果は `results/posthoc_boundary_forms.md`。
 
-`posthoc_eps_ladder.py` は、第 3 回の結果を見たあとに足したもの。ε を 1e-4〜1/100 の固定の梯子で動かし、C2 の基準（登録した値と、第 3 回で延ばした値）を超える境界の単位と、ε の波が残らない単位を数え、動いた単位の周期・係数を梯子の上で並べる。基準にはしない。結果は `results-random/*/posthoc_eps_ladder.md`。テストは `tests/test_epsilon_generality_ladder.py`。
+`eps_posthoc.py eps_ladder` は、第 3 回の結果を見たあとに足したもの。ε を 1e-4〜1/100 の固定の梯子で動かし、C2 の基準（登録した値と、第 3 回で延ばした値）を超える境界の単位と、ε の波が残らない単位を数え、動いた単位の周期・係数を梯子の上で並べる。基準にはしない。結果は `results-random/*/posthoc_eps_ladder.md`。テストは `tests/test_epsilon_generality_ladder.py`。
 
-`eps_range_profile.py` は、第 3 回の結果を見たあとに足したもの。「そのデータで、ε がどこまで動かなかったか」を記録するためのもので、**ε の範囲や定数を決めるものではない**（範囲の既定値も置いていない）。境界の単位の係数が基準の ε=1e-9 と相対 10% / 1% / 0.1% / 0.01% 以内に収まった割合と、境界でない単位で選ばれる式が変わらなかった割合を、16 点の ε（1/100〜1e-13）で数え、すべて収まっていた最大の ε と、乱数の選び方（`draw_coefficients`）で ε がその値以下になる確率を並べる。別のデータには別の数字が出る（出てよい）ので、データごとに同じ表を作って並べて見るためのスクリプト。基準にはしない。別のデータには `--csv`（縦持ち）、`--prefix`（変数名の頭）、`--cadence`（month か day）を渡す。範囲を指定するときは `--eps-range MODE LO HI`（`eps_generality.py` と同じ書き方。MODE は inside / above / below）を付ける。LO と HI を格子に足し、その側の格子の ε について、許容ごとの最悪の収まった割合などをまとめる（`--random-eps K` と `--coef-seed` で、その側から ε を乱数で K 個選んで格子に足せる）。付けなければ出力は変わらない。結果は `results-random/*/eps_range_profile.md`。テストは `tests/test_epsilon_generality_range.py`。
+`eps_posthoc.py range_profile` は、第 3 回の結果を見たあとに足したもの。「そのデータで、ε がどこまで動かなかったか」を記録するためのもので、**ε の範囲や定数を決めるものではない**（範囲の既定値も置いていない）。境界の単位の係数が基準の ε=1e-9 と相対 10% / 1% / 0.1% / 0.01% 以内に収まった割合と、境界でない単位で選ばれる式が変わらなかった割合を、16 点の ε（1/100〜1e-13）で数え、すべて収まっていた最大の ε と、乱数の選び方（`draw_coefficients`）で ε がその値以下になる確率を並べる。別のデータには別の数字が出る（出てよい）ので、データごとに同じ表を作って並べて見るためのスクリプト。基準にはしない。別のデータには `--csv`（縦持ち）、`--prefix`（変数名の頭）、`--cadence`（month か day）を渡す。範囲を指定するときは `--eps-range MODE LO HI`（`eps_generality.py` と同じ書き方。MODE は inside / above / below）を付ける。LO と HI を格子に足し、その側の格子の ε について、許容ごとの最悪の収まった割合などをまとめる（`--random-eps K` と `--coef-seed` で、その側から ε を乱数で K 個選んで格子に足せる）。付けなければ出力は変わらない。結果は `results-random/*/eps_range_profile.md`。テストは `tests/test_epsilon_generality_range.py`。
 
 ## 実行の順
 
@@ -163,11 +163,11 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 - `eps_generality.py`: `--profile`（`staple` が既定、`physical-monthly`、`physical-daily`）。日次の刻み、合成の系列の省略、値の単位の報告を足した。**既定（主食価格の回）の出力は変えていない**: 足したあとのスクリプトで第 1 回を走らせ直し、`results/` の 3 ファイルとバイト単位で同じことを確かめてからコミットした
 - `fetch_physical.py`（新）: 上の 3 ファイルを固定したコミットと sha256 で取り、縦持ちの CSV にする
 - `tests/test_epsilon_generality_physical.py`（新）
-- `posthoc_scale_tolerance.py`（新。**結果を見たあとに足した**。下の「事後の確認」）
+- `eps_posthoc.py scale_tolerance`（新。**結果を見たあとに足した**。下の「事後の確認」）
 
 ### 事後の確認（結果を見たあとに足した。登録した基準の外）
 
-物理量の回を走らせたあと、報告だけにした「値の単位を変えたとき」で、倍率 1e-6 のときだけ選ばれる式が大きく動いたのを見た（月次 221 窓のうち 115、日次 478 窓のうち 272。倍率 1e-3 から 1e6 までは動かなかった）。この動きの理由を確かめるため、**走らせる前に**仮説と予想を `posthoc_scale_tolerance.py` の冒頭に書いて push した。
+物理量の回を走らせたあと、報告だけにした「値の単位を変えたとき」で、倍率 1e-6 のときだけ選ばれる式が大きく動いたのを見た（月次 221 窓のうち 115、日次 478 窓のうち 272。倍率 1e-3 から 1e6 までは動かなかった）。この動きの理由を確かめるため、**走らせる前に**仮説と予想を `eps_posthoc.py scale_tolerance` の冒頭に書いて push した。
 
 - 仮説: `sakanalytics` の絶対値の許容 `EPS_WAVE_TIE`（誤差の2乗和の差がこれ以下なら先に並べた式のまま）が、値を c 倍すると c² 倍になる誤差の2乗和の尺度に対して大きくなりすぎ、同点ではない式まで同点にする。`EPS_WAVE_SOLVE` は格子だけで決まり y によらないので、仮説の外
 - 予想: (a) 許容をそのままにして倍率を細かく（1e-8〜1e-2）動かすと、式が動き始める倍率が見つかる。(b) 許容に倍率の2乗をかけると、どの倍率でも式は変わらない。(b) で変わるなら仮説は足りない
@@ -175,20 +175,20 @@ uv run --locked python research/epsilon-generality/eps_generality.py \
 
 #### 主食価格にも当てる（2026-10-27。**走らせる前に書く**）
 
-上の確認を主食価格の月次（N = 24 の窓）にも当てる。物理量では「許容に倍率の2乗をかけると式が動かなくなる」まで確かめたが、主食価格では第 3 回の乱数の倍率（3.83e-22 / 1e-6 / 8.52e-4 以上。許容はそのまま）の結果を見ただけで、細かい格子と、許容に倍率の2乗をかけた場合は見ていない。予想は `posthoc_scale_tolerance.py` の冒頭に書いた（(a') 許容をそのままにすると倍率が小さいほど式が変わった単位は多いか同じで、1e-3 以上では 0。1e-6 は第 3 回と同じ 1056。(b') 許容に倍率の2乗をかけると、どの倍率でも式は変わらない）。登録した基準の外で、`sakanalytics` は変更しない（PR #24 は触らない）。実行は次のとおりで、結果は `results-random/staple/posthoc_scale_tolerance.json`・`.md` に置く。
+上の確認を主食価格の月次（N = 24 の窓）にも当てる。物理量では「許容に倍率の2乗をかけると式が動かなくなる」まで確かめたが、主食価格では第 3 回の乱数の倍率（3.83e-22 / 1e-6 / 8.52e-4 以上。許容はそのまま）の結果を見ただけで、細かい格子と、許容に倍率の2乗をかけた場合は見ていない。予想は `eps_posthoc.py scale_tolerance` の冒頭に書いた（(a') 許容をそのままにすると倍率が小さいほど式が変わった単位は多いか同じで、1e-3 以上では 0。1e-6 は第 3 回と同じ 1056。(b') 許容に倍率の2乗をかけると、どの倍率でも式は変わらない）。登録した基準の外で、`sakanalytics` は変更しない（PR #24 は触らない）。実行は次のとおりで、結果は `results-random/staple/posthoc_scale_tolerance.json`・`.md` に置く。
 
 ```sh
-uv run --locked python research/epsilon-generality/posthoc_scale_tolerance.py --staple-csv research/staple-price-survey/staple_survey_vertical.csv --outdir out/posthoc-staple --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py scale_tolerance --staple-csv research/staple-price-survey/staple_survey_vertical.csv --outdir out/posthoc-staple --repo .
 ```
 
 **結果（走らせたあとに書く）**: (a')(b') とも予想どおり。許容そのままだと、式が変わった単位は倍率 1e-8 → 1 で 2104 → 2103 → 1056（1e-6。第 3 回と同じ）→ 16（1e-5）→ 0、許容に倍率の2乗をかけると全倍率で 0。表と読み方は [results-random/README.md](results-random/README.md) の「主食価格で、倍率の境目を細かく見た確認」。この入力では、倍率で式が動いたことの原因は絶対値の許容で全部説明できる、までで、他の入力・窓の長さには言えない。
 
 #### 式が変わる ε を窓ごとに探す（2026-10-27。予想は走らせる前に書いて push した）
 
-梯子で式が変わった 3 窓（MDA の小麦粉、NIC の米、Mauna Loa の CO2）について、式が変わる ε を二分で 0.1% の幅に挟み、許容を ×10^±3 にしても動かないか、戻って変わらないか、挟む 2 点の誤差の2乗和の差が小さいかを見る。予想 (a)〜(e) は `posthoc_window_crossing.py` の冒頭に書いた。登録した基準の外で、`sakanalytics` は変更しない（PR #24 は触らない）。テストは `tests/test_epsilon_generality_window_crossing.py`。
+梯子で式が変わった 3 窓（MDA の小麦粉、NIC の米、Mauna Loa の CO2）について、式が変わる ε を二分で 0.1% の幅に挟み、許容を ×10^±3 にしても動かないか、戻って変わらないか、挟む 2 点の誤差の2乗和の差が小さいかを見る。予想 (a)〜(e) は `eps_posthoc.py window_crossing` の冒頭に書いた。登録した基準の外で、`sakanalytics` は変更しない（PR #24 は触らない）。テストは `tests/test_epsilon_generality_window_crossing.py`。
 
 ```sh
-uv run --locked python research/epsilon-generality/posthoc_window_crossing.py --staple-csv research/staple-price-survey/staple_survey_vertical.csv --physical-monthly-csv out/physical/physical_monthly_vertical.csv --outdir out/crossing --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py window_crossing --staple-csv research/staple-price-survey/staple_survey_vertical.csv --physical-monthly-csv out/physical/physical_monthly_vertical.csv --outdir out/crossing --repo .
 ```
 
 **結果（走らせたあとに書く）**: 予想 (a)〜(e) はすべて当たり。式が変わる ε は MDA 7.43×10^-4、NIC 5.98×10^-3、Mauna Loa 9.50×10^-3 で、許容を ×10^±3 にしても 0.1% の幅の中で動かず、60 点の並びで戻って変わることもない。登録した ε（最大 1e-3）で式が変わるのは MDA だけで、NIC と Mauna Loa は登録した基準では見えない。表と読み方は [results-random/README.md](results-random/README.md) の「式が変わる ε を窓ごとに探した確認（表 5）」、数は `results-random/window-crossing/`。この 3 窓についてだけで、ε の値の扱いは決めない。
@@ -199,7 +199,7 @@ uv run --locked python research/epsilon-generality/posthoc_window_crossing.py --
 uv run --locked python research/epsilon-generality/fetch_physical.py --raw-dir out/physraw --outdir out/physical --download
 uv run --locked python research/epsilon-generality/eps_generality.py --csv out/physical/physical_monthly_vertical.csv --profile physical-monthly --outdir out/monthly --repo .
 uv run --locked python research/epsilon-generality/eps_generality.py --csv out/physical/physical_daily_vertical.csv --profile physical-daily --outdir out/daily --repo .
-uv run --locked python research/epsilon-generality/posthoc_scale_tolerance.py --monthly-csv out/physical/physical_monthly_vertical.csv --daily-csv out/physical/physical_daily_vertical.csv --outdir out/posthoc --repo .
+uv run --locked python research/epsilon-generality/eps_posthoc.py scale_tolerance --monthly-csv out/physical/physical_monthly_vertical.csv --daily-csv out/physical/physical_daily_vertical.csv --outdir out/posthoc --repo .
 ```
 
 結果は `results-physical/`（`monthly/`、`daily/`、`posthoc_scale_tolerance.json`・`.md`、`README.md`）。取り込んだ CSV の sha256 は `results-physical/physical_manifest.json`。
@@ -341,7 +341,7 @@ uv run --locked python research/epsilon-generality/eps_generality.py --csv <入�
 
 ## 倍率を帯から選ぶ確認（第 5 回）: 事前登録
 
-値の単位を変えたとき（y と τ に同じ倍率をかける）の「式が変わった単位」は、第 3 回の乱数の倍率では 3.83×10^-22（ほぼ全部が変わる）と 8.52×10^-4 以上（変わらない）しか当たらず、変わり始める帯 1×10^-7〜1×10^-4 は 1 つも引いていない。事後の確認（`posthoc_scale_tolerance.py`）の固定の格子（10 のべき）は、帯の端の 1e-7・1e-6・1e-5・1e-4 を見ただけである。この帯の**内側**から乱数の倍率を選び、格子の間の倍率でも同じ向きに動くかを見る。倍率の値と帯は暫定で、結論には使わない（定数にしない）。この節は結果を見る前に書く。
+値の単位を変えたとき（y と τ に同じ倍率をかける）の「式が変わった単位」は、第 3 回の乱数の倍率では 3.83×10^-22（ほぼ全部が変わる）と 8.52×10^-4 以上（変わらない）しか当たらず、変わり始める帯 1×10^-7〜1×10^-4 は 1 つも引いていない。事後の確認（`eps_posthoc.py scale_tolerance`）の固定の格子（10 のべき）は、帯の端の 1e-7・1e-6・1e-5・1e-4 を見ただけである。この帯の**内側**から乱数の倍率を選び、格子の間の倍率でも同じ向きに動くかを見る。倍率の値と帯は暫定で、結論には使わない（定数にしない）。この節は結果を見る前に書く。
 
 ### 足すもの
 

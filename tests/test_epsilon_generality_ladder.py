@@ -1,4 +1,4 @@
-"""research/epsilon-generality/posthoc_eps_ladder.py の確認。
+"""research/epsilon-generality/eps_posthoc.py（旧 posthoc_eps_ladder.py）の確認。
 
 SYNTHETIC: 組み立てた行で、基準を超えた単位・ε の波が消えた単位の数え方、動いた単位の書き出し、梯子が定義域（0 < ε ≤ 1/100）に収まること、
 小さな合成の入力での書き出し（同じ入力なら同じバイト）を確かめる。結論には使わない。
@@ -12,9 +12,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DIR = ROOT / "research" / "epsilon-generality"
-spec = importlib.util.spec_from_file_location("posthoc_eps_ladder", DIR / "posthoc_eps_ladder.py")
+spec = importlib.util.spec_from_file_location("eps_posthoc", DIR / "eps_posthoc.py")
 lad = importlib.util.module_from_spec(spec)
-sys.modules["posthoc_eps_ladder"] = lad
+sys.modules["eps_posthoc"] = lad
 spec.loader.exec_module(lad)
 gen = lad.load_gen()
 
@@ -70,7 +70,7 @@ def test_count_rows_stops_listing_after_the_cap_but_keeps_the_total(monkeypatch)
     monkeypatch.setattr(lad, "MAX_LISTED", 3)
     c = lad.count_rows(gen, [row(over=(1e-3,)) for _ in range(5)])
     assert c["moved_total"] == 5 and len(c["moved"]) == 3 and c["per_eps"][gen.ekey(1e-3)]["over"] == 5
-    assert "動いた単位は 5 個。上の 3 個だけ" in lad.render(gen, {"ladder": list(lad.LADDER), "sets": {"12": c | {"units": 5}}})
+    assert "動いた単位は 5 個。上の 3 個だけ" in lad.eps_ladder_render(gen, {"ladder": list(lad.LADDER), "sets": {"12": c | {"units": 5}}})
 
 
 def small_csv(tmp_path):
@@ -94,7 +94,7 @@ def test_main_writes_the_same_bytes_twice_and_clean_waves_do_not_move(tmp_path):
     outs = []
     for name in ("a", "b"):
         out = tmp_path / name
-        assert lad.main(["--csv", str(small_csv(tmp_path)), "--outdir", str(out), "--repo", str(ROOT)]) == 0
+        assert lad.eps_ladder(["--csv", str(small_csv(tmp_path)), "--outdir", str(out), "--repo", str(ROOT)]) == 0
         outs.append(out)
     for n in ("posthoc_eps_ladder.json", "posthoc_eps_ladder.md"):
         assert (outs[0] / n).read_bytes() == (outs[1] / n).read_bytes(), n
@@ -107,4 +107,4 @@ def test_main_writes_the_same_bytes_twice_and_clean_waves_do_not_move(tmp_path):
 
 def test_readme_points_to_the_script():
     text = (DIR / "README.md").read_text(encoding="utf-8")
-    assert "posthoc_eps_ladder.py" in text and "tests/test_epsilon_generality_ladder.py" in text
+    assert "eps_posthoc.py eps_ladder" in text and "tests/test_epsilon_generality_ladder.py" in text

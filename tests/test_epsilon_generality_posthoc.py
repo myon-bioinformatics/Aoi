@@ -1,4 +1,4 @@
-"""research/epsilon-generality/posthoc_boundary_forms.py の確認。
+"""research/epsilon-generality/eps_posthoc.py（旧 posthoc_boundary_forms.py）の確認。
 
 SYNTHETIC: 小さな合成の入力で、周期が変わった単位の数え方・単式の誤差の2乗和・除いたときの係数のずれ・書き出しを確かめる。
 野球の周期の数だけ、リポジトリに保存済みの行（wave_eps_rows_1e-06.jsonl）と照らす。結論には使わない。
@@ -13,9 +13,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 DIR = ROOT / "research" / "epsilon-generality"
-spec = importlib.util.spec_from_file_location("posthoc_boundary_forms", DIR / "posthoc_boundary_forms.py")
+spec = importlib.util.spec_from_file_location("eps_posthoc", DIR / "eps_posthoc.py")
 ph = importlib.util.module_from_spec(spec)
-sys.modules["posthoc_boundary_forms"] = ph
+sys.modules["eps_posthoc"] = ph
 spec.loader.exec_module(ph)
 gen = ph.gen
 sa, trial = gen.load_modules(ROOT)
@@ -98,18 +98,18 @@ def small_csv(tmp_path):
 
 def test_analyse_finds_nothing_in_a_clean_series_and_builds_the_table_for_a_forced_unit(tmp_path, monkeypatch):
     series = gen.read_series(small_csv(tmp_path))
-    res = ph.analyse(sa, trial, series, ROOT)
+    res = ph.boundary_forms_analyse(sa, trial, series, ROOT)
     assert res["units"] == [] and set(res["by_n"]) == {"12", "24", "48"} and res["baseball"]["boundary"] == 24
     assert res["by_n"]["24"]["changed_period"] == {K3: 0, K6: 0}
     monkeypatch.setattr(ph, "changed_period", lambda rows: {K3: [0], K6: []})
-    forced = ph.analyse(sa, trial, series, ROOT)
+    forced = ph.boundary_forms_analyse(sa, trial, series, ROOT)
     (u,) = [x for x in forced["units"] if x["n"] == 12]
     assert (u["eps"], u["series_index"], u["start"], u["unit"]) == (1e-3, 0, "2020-01", "USD per kg") and len(u["table"]) == 4
     assert forced["by_n"]["12"]["changed_period"] == {K3: 1, K6: 0}
     seen = []
     real_c2 = ph.corrected_c2
     monkeypatch.setattr(ph, "corrected_c2", lambda rows, skip: seen.append(set(skip)) or real_c2(rows, skip))
-    ph.analyse(sa, trial, series, ROOT)
+    ph.boundary_forms_analyse(sa, trial, series, ROOT)
     assert seen == [{0}, {0}, {0}]                                           # 周期が変わった単位は、窓の長さごとに除いて測る
 
 
@@ -123,7 +123,7 @@ def test_analyse_stops_when_windows_and_rows_do_not_line_up(tmp_path, monkeypatc
         return r
     monkeypatch.setattr(gen, "compute", short)
     with pytest.raises(ValueError, match="窓の数が合わない"):
-        ph.analyse(sa, trial, series, ROOT)
+        ph.boundary_forms_analyse(sa, trial, series, ROOT)
     monkeypatch.setattr(gen, "compute", real)
     monkeypatch.setattr(ph, "changed_period", lambda rows: {K3: [1], K6: []})
 
@@ -134,14 +134,14 @@ def test_analyse_stops_when_windows_and_rows_do_not_line_up(tmp_path, monkeypatc
         return r
     monkeypatch.setattr(gen, "compute", swapped)
     with pytest.raises(ValueError, match="窓と行が対応しない"):
-        ph.analyse(sa, trial, series, ROOT)
+        ph.boundary_forms_analyse(sa, trial, series, ROOT)
 
 
 def test_render_and_cli_write_json_and_markdown_and_are_reproducible(tmp_path, monkeypatch):
     csv_path = small_csv(tmp_path)
     o1, o2 = tmp_path / "o1", tmp_path / "o2"
     for o in (o1, o2):
-        assert ph.main(["--csv", str(csv_path), "--outdir", str(o), "--repo", str(ROOT)]) == 0
+        assert ph.boundary_forms(["--csv", str(csv_path), "--outdir", str(o), "--repo", str(ROOT)]) == 0
     for n in ("posthoc_boundary_forms.json", "posthoc_boundary_forms.md"):
         assert (o1 / n).read_bytes() == (o2 / n).read_bytes()
     md = (o1 / "posthoc_boundary_forms.md").read_text(encoding="utf-8")
@@ -149,7 +149,7 @@ def test_render_and_cli_write_json_and_markdown_and_are_reproducible(tmp_path, m
     assert json.loads((o1 / "posthoc_boundary_forms.json").read_text(encoding="utf-8"))["baseball"]["periods"]["2.0"] == 17
     monkeypatch.setattr(ph, "changed_period", lambda rows: {K3: [0], K6: []})
     o3 = tmp_path / "o3"
-    assert ph.main(["--csv", str(csv_path), "--outdir", str(o3), "--repo", str(ROOT)]) == 0
+    assert ph.boundary_forms(["--csv", str(csv_path), "--outdir", str(o3), "--repo", str(ROOT)]) == 0
     md3 = (o3 / "posthoc_boundary_forms.md").read_text(encoding="utf-8")
     assert "### 12 か月・ε=0.001: FPMA AAA staple_price:c0（USD per kg、系列 0）2020-01 から" in md3 and "| 0 |" in md3 and "1e-12" in md3
 
@@ -210,14 +210,14 @@ def test_analyse_builds_the_table_for_a_non_boundary_unit_whose_form_changed(tmp
         row0[K6] = {"decay": 0.5, "period": seen["p"]}                                  # ε=1e-6 では変わらなかったことにする
         return r
     monkeypatch.setattr(gen, "compute", forced)
-    res = ph.analyse(sa, trial, series, ROOT)
+    res = ph.boundary_forms_analyse(sa, trial, series, ROOT)
     (u,) = res["nonboundary_units"]
     p, ep = seen["p"], seen["eps_period"]
     assert (u["n"], u["eps"], u["unmodified"], u["epsilon_form"]) == (12, 1e-3, [0.5, p], [1e-3, ep])
     assert [x["period"] for x in u["table"]] == [p, ep, ep, ep, ep] and len(u["table"]) == 5
     assert u["series_index"] == 0 and u["start"] == "2020-01"
     assert res["by_n"]["12"]["nonboundary_changed"] == {K3: 1, K6: 0} and res["by_n"]["24"]["nonboundary_changed"] == {K3: 0, K6: 0}
-    md = ph.render(res)
+    md = ph.boundary_forms_render(res)
     assert "12 か月: 1 / 0、24 か月: 0 / 0、48 か月: 0 / 0" in md and "今のコードの式は 減衰 0.5・周期 " + format(p, "g") + "、" in md
     assert "同じ周期の減衰しない波（減衰 0）" in md and "ε の格子では 減衰 0.001・周期 " + format(ep, "g") in md
     # 窓と行が対応しないときは止まる
@@ -227,9 +227,9 @@ def test_analyse_builds_the_table_for_a_non_boundary_unit_whose_form_changed(tmp
         return r
     monkeypatch.setattr(gen, "compute", swapped)
     with pytest.raises(ValueError, match="窓と行が対応しない"):
-        ph.analyse(sa, trial, series, ROOT)
+        ph.boundary_forms_analyse(sa, trial, series, ROOT)
 
 
 def test_render_without_changes_says_none_in_both_sections(tmp_path):
-    res = ph.analyse(sa, trial, gen.read_series(small_csv(tmp_path)), ROOT)
-    assert ph.render(res).count("なし。") == 2
+    res = ph.boundary_forms_analyse(sa, trial, gen.read_series(small_csv(tmp_path)), ROOT)
+    assert ph.boundary_forms_render(res).count("なし。") == 2

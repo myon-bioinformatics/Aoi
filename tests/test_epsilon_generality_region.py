@@ -23,7 +23,7 @@ def _load(name, file):
 
 
 gen = _load("eps_generality", "eps_generality.py")
-rp = _load("eps_range_profile", "eps_range_profile.py")
+rp = _load("eps_posthoc", "eps_posthoc.py")
 LO, HI = 8.14e-13, 2.22e-3                          # 利用者が挙げた 2 つの値
 SEED = 18750922
 REGISTERED = [2.22e-3, 1.76e-3, 3.54e-4, 3.20e-4, 7.82e-5, 6.60e-6, 9.82e-9, 2.28e-9, 6.29e-11, 8.14e-13]

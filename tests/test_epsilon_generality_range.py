@@ -1,4 +1,4 @@
-"""research/epsilon-generality/eps_range_profile.py の確認。
+"""research/epsilon-generality/eps_posthoc.py（旧 eps_range_profile.py）の確認。
 
 SYNTHETIC: 組み立てた行で、収まった単位・消えた単位・始まりで落ち着く単位の数え方、足し合わせ、すべてが収まる最大の ε、乱数の選び方の重み、
 小さな合成の入力での書き出し（同じ入力なら同じバイト）を確かめる。結論には使わない。
@@ -15,9 +15,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 DIR = ROOT / "research" / "epsilon-generality"
-spec = importlib.util.spec_from_file_location("eps_range_profile", DIR / "eps_range_profile.py")
+spec = importlib.util.spec_from_file_location("eps_posthoc", DIR / "eps_posthoc.py")
 rp = importlib.util.module_from_spec(spec)
-sys.modules["eps_range_profile"] = rp
+sys.modules["eps_posthoc"] = rp
 spec.loader.exec_module(rp)
 gen = rp.load_gen()
 REF = gen.ekey(gen.REF_EPS)
@@ -192,12 +192,12 @@ def test_render_with_a_range_lists_the_side_and_says_when_it_is_empty():
         t = pooled(rows)
         return {"grid": list(rp.GRID), "deltas": list(rp.DELTAS), "sets": {}, "total": t, "region": region, "region_summary": rp.region_summary(gen, t, region),
                 "full_coverage_max_eps": {format(d, "g"): rp.largest_full(t, d) for d in rp.DELTAS}, "draw_share_le": {format(e, "g"): rp.share_le(gen, e) for e in rp.GRID}}
-    md = rp.render(gen, res_of([row()], dict(REGION, mode="above")))
+    md = rp.range_profile_render(gen, res_of([row()], dict(REGION, mode="above")))
     assert "## 指定した範囲: above（8.14×10^-13 〜 2.22×10^-3" in md and "この側にある格子の ε 3 個: 0.01, 0.005, 0.003。" in md and "| 10% | 100.00% | はい |" in md
     assert "| 0.01 | above |" in md and "| 0.002 | inside |" in md and "| 1e-13 | below |" in md and "ε がこの側に入る確率: 14.4%" in md
-    empty = rp.render(gen, res_of([row()], {"mode": "below", "lo": 1e-14, "hi": HI}))
+    empty = rp.range_profile_render(gen, res_of([row()], {"mode": "below", "lo": 1e-14, "hi": HI}))
     assert "この側にある格子の ε 0 個: なし。" in empty and "まとめられません" in empty and "最悪の収まった割合" not in empty
-    none = rp.render(gen, res_of([row(boundary=False)], REGION))
+    none = rp.range_profile_render(gen, res_of([row(boundary=False)], REGION))
     assert "まとめられません" in none
 
 
@@ -222,7 +222,7 @@ def test_main_takes_another_variable_prefix_writes_the_same_bytes_twice_and_says
     outs = []
     for name in ("a", "b"):
         out = tmp_path / name
-        assert rp.main(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--cadence", "month", "--outdir", str(out), "--repo", str(ROOT)]) == 0
+        assert rp.range_profile(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--cadence", "month", "--outdir", str(out), "--repo", str(ROOT)]) == 0
         outs.append(out)
     for n in ("eps_range_profile.json", "eps_range_profile.md"):
         assert (outs[0] / n).read_bytes() == (outs[1] / n).read_bytes(), n
@@ -237,7 +237,7 @@ def test_main_takes_another_variable_prefix_writes_the_same_bytes_twice_and_says
 
 def test_main_without_matching_variables_stops_with_an_error(tmp_path):
     with pytest.raises(SystemExit) as ei:
-        rp.main(["--csv", str(small_csv(tmp_path)), "--prefix", "nothing:", "--outdir", str(tmp_path / "o"), "--repo", str(ROOT)])
+        rp.range_profile(["--csv", str(small_csv(tmp_path)), "--prefix", "nothing:", "--outdir", str(tmp_path / "o"), "--repo", str(ROOT)])
     assert "nothing:" in str(ei.value) and not (tmp_path / "o").exists()
 
 
@@ -247,15 +247,15 @@ def test_render_says_so_when_nothing_can_be_judged_or_the_smallest_epsilon_fails
         return {"grid": list(rp.GRID), "deltas": list(rp.DELTAS), "sets": {}, "total": t,
                 "full_coverage_max_eps": {format(d, "g"): rp.largest_full(t, d) for d in rp.DELTAS},
                 "draw_share_le": {format(e, "g"): rp.share_le(gen, e) for e in rp.GRID}}
-    assert "境界の単位がないので判定できない" in rp.render(gen, res_of([row(boundary=False)]))
-    md = rp.render(gen, res_of([row(lost=tuple(rp.GRID))]))
+    assert "境界の単位がないので判定できない" in rp.range_profile_render(gen, res_of([row(boundary=False)]))
+    md = rp.range_profile_render(gen, res_of([row(lost=tuple(rp.GRID))]))
     assert "一番小さい ε でも外れた単位がある" in md and "境界の単位がないので" not in md
-    assert "0.01（これ以下の格子の ε ではすべて収まった）" in rp.render(gen, res_of([row()]))
+    assert "0.01（これ以下の格子の ε ではすべて収まった）" in rp.range_profile_render(gen, res_of([row()]))
 
 
 def test_readme_points_to_the_script():
     text = (DIR / "README.md").read_text(encoding="utf-8")
-    assert "eps_range_profile.py" in text and "tests/test_epsilon_generality_range.py" in text
+    assert "eps_posthoc.py range_profile" in text and "tests/test_epsilon_generality_range.py" in text
     assert "その側の格子の ε について、許容ごとの最悪の収まった割合などをまとめる" in text and "`--eps-range MODE LO HI`（`eps_generality.py` と同じ書き方" in text
 
 
@@ -271,14 +271,14 @@ def test_results_readme_and_files_match_the_json_and_say_it_is_not_a_constant():
         assert row in text, row
     for k, r in res.items():
         assert r["grid"] == list(rp.GRID)
-        assert (R / k / "eps_range_profile.md").read_text(encoding="utf-8") == rp.render(gen, r), k
+        assert (R / k / "eps_range_profile.md").read_text(encoding="utf-8") == rp.range_profile_render(gen, r), k
 
 
 def test_main_with_a_range_adds_the_ends_and_random_points_and_a_summary(tmp_path):
     outs = []
     for name in ("a", "b"):
         out = tmp_path / name
-        assert rp.main(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--cadence", "month", "--outdir", str(out), "--repo", str(ROOT),
+        assert rp.range_profile(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--cadence", "month", "--outdir", str(out), "--repo", str(ROOT),
                         "--eps-range", "below", "8.14×10^-13", "2.22e-3", "--random-eps", "3", "--coef-seed", "7"]) == 0
         outs.append(out)
     for n in ("eps_range_profile.json", "eps_range_profile.md"):
@@ -295,7 +295,7 @@ def test_main_with_a_range_adds_the_ends_and_random_points_and_a_summary(tmp_pat
 
 def test_main_without_a_range_has_no_range_section_or_column(tmp_path):
     out = tmp_path / "plain"
-    assert rp.main(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--cadence", "month", "--outdir", str(out), "--repo", str(ROOT)]) == 0
+    assert rp.range_profile(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--cadence", "month", "--outdir", str(out), "--repo", str(ROOT)]) == 0
     res = json.loads((out / "eps_range_profile.json").read_text(encoding="utf-8"))
     assert "region" not in res and "region_summary" not in res and res["grid"] == list(rp.GRID)
     md = (out / "eps_range_profile.md").read_text(encoding="utf-8")
@@ -313,5 +313,5 @@ def test_main_without_a_range_has_no_range_section_or_column(tmp_path):
 ])
 def test_main_refuses_a_bad_range_before_doing_anything(tmp_path, flags):
     with pytest.raises(SystemExit) as e:
-        rp.main(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--outdir", str(tmp_path / "x"), "--repo", str(ROOT), *flags])
+        rp.range_profile(["--csv", str(small_csv(tmp_path)), "--prefix", "mine:", "--outdir", str(tmp_path / "x"), "--repo", str(ROOT), *flags])
     assert e.value.code == 2 and not (tmp_path / "x").exists()

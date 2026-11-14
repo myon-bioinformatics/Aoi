@@ -1,4 +1,4 @@
-"""research/epsilon-generality/posthoc_window_crossing.py の確認。
+"""research/epsilon-generality/eps_posthoc.py の window_crossing（旧 posthoc_window_crossing.py）の確認。
 
 SYNTHETIC: 組み立てた関数・小さな合成の系列で、二分・60 点の並び・許容の差し替えと戻し・窓の取り出し・誤差の2乗和・書き出しが
 約束どおりに動くことを確かめる。実データの結果（予想に当たったか）はここでは確かめない（結論には使わない）。
@@ -26,7 +26,7 @@ def load(name):
     return mod
 
 
-wc = load("posthoc_window_crossing")
+wc = load("eps_posthoc")
 gen = wc.gen
 sa, trial = gen.load_modules(ROOT)
 COLS = ["country", "variable", "unit", "source", "note", "date", "value"]
@@ -178,9 +178,9 @@ def test_the_edge_check_uses_only_the_two_points_next_to_the_switch(monkeypatch)
 
 def test_main_stops_without_writing_when_two_runs_on_the_same_input_differ(tmp_path, monkeypatch):
     results = iter([{"windows": [], "skipped": ["a"]}, {"windows": [], "skipped": ["b"]}])
-    monkeypatch.setattr(wc, "analyse", lambda *a, **k: next(results))
+    monkeypatch.setattr(wc, "window_crossing_analyse", lambda *a, **k: next(results))
     out = tmp_path / "o"
-    assert wc.main(["--staple-csv", str(STAPLE), "--outdir", str(out), "--repo", str(ROOT)]) == 2
+    assert wc.window_crossing(["--staple-csv", str(STAPLE), "--outdir", str(out), "--repo", str(ROOT)]) == 2
     assert not out.exists()
 
 
@@ -210,7 +210,7 @@ def staple_inputs():
 
 @pytest.fixture(scope="module")
 def staple_result(staple_inputs):
-    return wc.analyse(sa, trial, staple_inputs)
+    return wc.window_crossing_analyse(sa, trial, staple_inputs)
 
 
 def test_analyse_skips_the_windows_whose_input_is_absent_and_lists_them(staple_result):
@@ -238,7 +238,7 @@ def test_the_form_just_below_and_above_the_switch_is_what_bisect_promised(staple
 
 
 def test_render_has_one_row_per_window_a_section_per_window_and_the_skipped_ones(staple_result):
-    md = wc.render(staple_result)
+    md = wc.window_crossing_render(staple_result)
     for w in staple_result["windows"]:
         assert f"## {w['id']}" in md and f"| {w['id']}（{w['n']} 点、{w['start']} から）" in md
     assert "入力が無くて飛ばした窓: Mauna Loa CO2" in md and md.count("## ") == len(staple_result["windows"])
@@ -247,16 +247,16 @@ def test_render_has_one_row_per_window_a_section_per_window_and_the_skipped_ones
 def test_main_writes_json_and_md_reproducibly_and_needs_an_input(tmp_path, capsys):
     out1, out2 = tmp_path / "o1", tmp_path / "o2"
     for out in (out1, out2):
-        assert wc.main(["--staple-csv", str(STAPLE), "--outdir", str(out), "--repo", str(ROOT)]) == 0
+        assert wc.window_crossing(["--staple-csv", str(STAPLE), "--outdir", str(out), "--repo", str(ROOT)]) == 0
     for name in ("posthoc_window_crossing.json", "posthoc_window_crossing.md"):
         assert (out1 / name).read_bytes() == (out2 / name).read_bytes()
     with pytest.raises(SystemExit) as e:
-        wc.main(["--outdir", str(tmp_path / "o3")])
+        wc.window_crossing(["--outdir", str(tmp_path / "o3")])
     assert e.value.code == 2
 
 
 def test_the_prediction_is_written_before_the_run_and_names_what_is_not_claimed():
-    doc = wc.__doc__
+    doc = wc.WINDOW_CROSSING_DOC
     for tag in ("(a)", "(b)", "(c)", "(d)", "(e)"):
         assert tag in doc
     assert "走らせる前に書く" in doc and "ε の値をどうするかは決めない" in doc and "この 3 窓" in doc
@@ -293,7 +293,7 @@ def readme_row(w):
 
 
 def test_the_md_in_the_results_is_what_render_makes_from_the_json():
-    assert (RESULTS / "posthoc_window_crossing.md").read_text(encoding="utf-8") == wc.render(results_json())
+    assert (RESULTS / "posthoc_window_crossing.md").read_text(encoding="utf-8") == wc.window_crossing_render(results_json())
 
 
 def test_the_written_predictions_hold_in_the_results_json_as_the_readme_says():

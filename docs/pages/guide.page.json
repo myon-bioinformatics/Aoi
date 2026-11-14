@@ -30,7 +30,7 @@
       "blocks": [
         {
           "type": "text",
-          "text": "Aoi のチェックアウトから、名前つきの入口ファイルで各子プロジェクトを呼べます（引数はそのまま渡します）。"
+          "text": "Aoi のチェックアウトから、名前つきの入口ファイルで各子プロジェクトを呼べます（引数はそのまま渡します）。Supported: Ubuntu/POSIX. Windows: not supported yet / untested."
         },
         {
           "type": "card",

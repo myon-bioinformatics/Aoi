@@ -141,7 +141,8 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
     assert str(root) not in bare["PYTHONPATH"].split(os.pathsep)
     assert str((root / "dragowing").resolve()) not in bare["PYTHONPATH"].split(os.pathsep)
     assert (env["AOI_ROOT"], env["AOI_RESEARCH_CYCLE"]) == (str(root), aoi_paths.DEFAULT_CYCLE)
-    assert "POSIX" in aoi.__doc__ and "Windows" in aoi.__doc__
+    assert "Supported: Ubuntu/POSIX" in aoi.__doc__
+    assert "Windows: not supported yet / untested" in aoi.__doc__
     assert aoi.command(["QueRyu", "--help"]) == [sys.executable, str(root / "queryu/queryu.py"), "--help"]
     assert aoi.command(["-m", "dragowing"]) == [sys.executable, "-m", "dragowing"]
     with pytest.raises(SystemExit):

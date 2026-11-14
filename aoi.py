@@ -5,7 +5,7 @@
   python aoi.py dragowing --help                        # dragowing/dragowing.py (element counter)
   python aoi.py dragowing/__main__.py RESULTS           # the DRAgoWing report, from any cwd
   python aoi.py -m dragowing                            # the package, only when Aoi is already on sys.path (cwd)
-  eval "$(python aoi.py)"   # POSIX sh only; Windows cmd/PowerShell are untested. Nothing is saved.
+  eval "$(python aoi.py)"   # POSIX sh only. Supported: Ubuntu/POSIX. Windows: not supported yet / untested.
   import aoi                # AOI_ROOT and the sibling dirs, for this process
 
 A child is a generic single file: it does not look for its siblings. This launcher passes
@@ -46,6 +46,9 @@ flag             PYTHONPATH on the child's sys.path  script dir  site / .pth    
 it) and do not put it on ``sys.path``. ``-I`` and ``-P`` also omit the script directory, same
 as CPython: a child that imports a neighbour from its own directory at import time, before it
 adds that directory itself, fails the way ``python -I that_file.py`` fails.
+
+Supported: Ubuntu/POSIX. Windows: not supported yet / untested. ``eval "$(python aoi.py)"``
+prints POSIX ``export`` lines (``shlex.quote``); nothing is saved. No Windows launcher is provided.
 """
 from __future__ import annotations
 
@@ -227,7 +230,7 @@ def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv:
         env = environment()
-        # POSIX sh. shlex.quote is not cmd.exe syntax; Windows is untested.
+        # POSIX sh (Ubuntu). Windows is not supported yet / untested.
         for key in ("AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONPATH"):
             print(f"export {key}={shlex.quote(env[key])}")
         return 0

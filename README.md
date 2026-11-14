@@ -15,7 +15,7 @@ python aoi.py pythdragoras --help
 python aoi.py dragowing --help          # dragowing.py; the HTML report is python aoi.py dragowing/__main__.py RESULTS
 ```
 
-Nothing is saved. `eval "$(python aoi.py)"` prints POSIX `export` lines for the current shell only (POSIX sh; Windows cmd and PowerShell are untested). `import aoi` applies the same settings to the current Python process, appending the sibling directories after whatever is already first. `-I` and `-E` do not apply `PYTHONPATH`, so the child is started through a small bootstrap that inserts those directories into `sys.path` and sets `AOI_ROOT` from its arguments.
+Nothing is saved. `eval "$(python aoi.py)"` prints POSIX `export` lines for the current shell only. Supported: Ubuntu/POSIX. Windows: not supported yet / untested. `import aoi` applies the same settings to the current Python process, appending the sibling directories after whatever is already first. `-I` and `-E` do not apply `PYTHONPATH`, so the child is started through a small bootstrap that inserts those directories into `sys.path` and sets `AOI_ROOT` from its arguments.
 
 ```bash
 python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan

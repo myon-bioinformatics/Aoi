@@ -3,7 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from web_observations import observe, source_inventory
+from blueprobe import source_inventory, web
+
+observe = web.observe
 
 
 def receipt():
@@ -76,8 +78,8 @@ def test_failed_producer_receipt_is_observed_without_becoming_a_pass(tmp_path):
 
 def test_cli_preserves_unicode_on_legacy_console(tmp_path):
     save(tmp_path, receipt())
-    script = Path(__file__).resolve().parents[1] / "web_observations.py"
-    result = subprocess.run([sys.executable, "-S", str(script), str(tmp_path)],
+    script = Path(__file__).resolve().parents[1] / "blueprobe.py"
+    result = subprocess.run([sys.executable, "-S", str(script), "web", str(tmp_path)],
         text=True, capture_output=True, encoding="ascii",
         env={**os.environ, "PYTHONIOENCODING": "cp1252"})
     assert result.returncode == 0, result.stderr
@@ -103,8 +105,8 @@ def test_documented_directory_cli_with_source_root(tmp_path):
     sources = tmp_path / "flutter sources"
     sources.mkdir()
     (sources / "view.dart").write_text("// inventory only\n", encoding="utf-8")
-    script = Path(__file__).resolve().parents[1] / "web_observations.py"
-    result = subprocess.run([sys.executable, "-S", str(script), str(observations),
+    script = Path(__file__).resolve().parents[1] / "blueprobe.py"
+    result = subprocess.run([sys.executable, "-S", str(script), "web", str(observations),
         "--source-root", str(sources)], text=True, capture_output=True)
     assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)

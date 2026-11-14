@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import accessible_names as an
+from blueprobe import names as an
 
 PAGES = Path(__file__).resolve().parent / "cases" / "pages"
 

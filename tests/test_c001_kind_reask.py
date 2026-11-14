@@ -87,7 +87,7 @@ def test_a_question_already_asked_in_the_canonical_file_stops_at_the_gate(tmp_pa
     res = kr.analyze(ROOT, extra=extra)
     assert res["gate"]["ok"] is False and len(res["gate"]["problems"]) == 1
     assert res["propositions"] == [] and res["predictions"] == []
-    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {} and res["tenth"] == {} and res["eleventh"] == {} and res["twelfth"] == {}
+    assert res["second"] == {} and res["third"] == {} and res["fourth"] == {} and res["fifth"] == {} and res["sixth"] == {} and res["seventh"] == {} and res["eighth"] == {} and res["ninth"] == {} and res["tenth"] == {} and res["eleventh"] == {} and res["twelfth"] == {} and res["thirteenth"] == {}
 
 
 # ---- 第2弾 A: まだ使っていない年の単位で照らす ------------------------------------------------------------------------
@@ -479,6 +479,33 @@ def test_moving_the_distribution_line_keeps_the_order_of_the_four_cells():
     for at, cells in RES["twelfth"]["cells"].items():           # 線を 0.30・0.35 にずらしても、両方そろったマスが最も高く、どちらも無いマスが最も低い
         rate = [c["rate"] for c in cells]
         assert rate[0] == min(rate) and rate[3] == max(rate) and sum(c["n"] for c in cells) == 72, at
+
+
+# ---- 第13弾: 負け試合の側の置き方 ----------------------------------------------------------------------------------------
+def test_no_placement_of_the_loss_side_is_recommended():
+    f13 = RES["thirteenth"]
+    assert f13["gate"] == {"ok": True, "problems": []} and f13["values"] == [0.0, *RES["tenth"]["eps"]["all"], 1.0]   # 新しい値は引かない
+    lam = [(r["win_negative"], r["rf_loss_positive"]) for r in f13["dial_lambda"]]
+    assert lam[0] == (76, 49) and lam[-1] == (116, 17) and not any(r["passes"] for r in f13["dial_lambda"])   # 足す点を増やすと、両方とも寄る
+    two = {r["theta_loss"]: r for r in f13["dial_theta_loss"]}
+    assert all(r["win_negative"] == 76 for r in two.values())                                    # 勝ちの側は負けの側の重みで動かない
+    assert [two[v]["rf_loss_positive"] for v in (0.0, 0.5, 0.75, 1.0)] == [86, 64, 57, 49]
+    assert (two[0.0]["wpct_low_positive"], two[0.0]["wpct_high_positive"]) == (21, 32)           # 重みを勝ちの側だけにすると、勝率の列が寄る
+    assert f13["passing"] == {"lambda": [], "theta_loss": [0.75]}
+    assert f13["decision"] == {"rule": 2, "dial": "theta_loss", "value": None} and f13["rho_loss_original"] is None
+    assert [x["ok"] for x in f13["predictions"]] == [True, True, False, False, False]
+
+
+def test_tie_split_by_hand():
+    # 得点 {1, 0, 1}・失点 {0, 1, 3}（全部ホーム）。SakAnalytics #44 の手計算と同じ: 重み 1・1 で勝ちの見込み 9/7、負けの見込み 6/11
+    t = pl.DataFrame([{"season": 2024, "team": "d", "league": "CL", "rf": 1, "ra": 0, "is_home": True},
+                      {"season": 2024, "team": "d", "league": "CL", "rf": 0, "ra": 1, "is_home": True},
+                      {"season": 2024, "team": "d", "league": "CL", "rf": 1, "ra": 3, "is_home": True}])
+    g = kr.tie_split(t, 1.0, 1.0)[(2024, "d")]
+    assert abs(g["wl_rf_win_gap"] - (1 - 9 / 7)) < 1e-12 and abs(g["wl_rf_loss_gap"] - (0.5 - 6 / 11)) < 1e-12
+    assert abs(kr.tie_split(t, 1.0, 0.0)[(2024, "d")]["wl_rf_loss_gap"] - (0.5 - 2 / 4)) < 1e-12   # 負けの側に同点を入れない: 見込み 2/3 ÷ 4/3
+    # λ = 0.5: 同点の勝ちは 1.5 点足す。勝ちの重み 7/6、得点の和 2/3 + (1/3)(2.5) + (1/6)(1.5) = 7/4 → 3/2
+    assert abs(kr.tie_split(t, 1.0, 1.0, 0.5)[(2024, "d")]["wl_rf_win_gap"] - (1 - 3 / 2)) < 1e-12
 
 
 # ---- 年次シミュレーションの GIF ------------------------------------------------------------------------------------------

@@ -17042,6 +17042,451 @@
    }
   }
  },
+ "thirteenth": {
+  "decision": {
+   "dial": "theta_loss",
+   "rule": 2,
+   "value": null
+  },
+  "dial_lambda": [
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 0.0,
+    "passes": false,
+    "rf_loss_positive": 49,
+    "win_negative": 76,
+    "wpct_high_positive": 71,
+    "wpct_low_positive": 79
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 4.277e-06,
+    "passes": false,
+    "rf_loss_positive": 49,
+    "win_negative": 76,
+    "wpct_high_positive": 70,
+    "wpct_low_positive": 80
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 0.0001855,
+    "passes": false,
+    "rf_loss_positive": 49,
+    "win_negative": 76,
+    "wpct_high_positive": 70,
+    "wpct_low_positive": 80
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 0.0009206,
+    "passes": false,
+    "rf_loss_positive": 49,
+    "win_negative": 76,
+    "wpct_high_positive": 70,
+    "wpct_low_positive": 80
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 0.01591,
+    "passes": false,
+    "rf_loss_positive": 48,
+    "win_negative": 76,
+    "wpct_high_positive": 70,
+    "wpct_low_positive": 80
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 0.02608,
+    "passes": false,
+    "rf_loss_positive": 47,
+    "win_negative": 78,
+    "wpct_high_positive": 70,
+    "wpct_low_positive": 80
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 0.25,
+    "passes": false,
+    "rf_loss_positive": 35,
+    "win_negative": 88,
+    "wpct_high_positive": 70,
+    "wpct_low_positive": 80
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": false,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 0.5,
+    "passes": false,
+    "rf_loss_positive": 29,
+    "win_negative": 100,
+    "wpct_high_positive": 70,
+    "wpct_low_positive": 80
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": false,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 0.75,
+    "passes": false,
+    "rf_loss_positive": 21,
+    "win_negative": 108,
+    "wpct_high_positive": 67,
+    "wpct_low_positive": 80
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": false,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "lambda": 1.0,
+    "passes": false,
+    "rf_loss_positive": 17,
+    "win_negative": 116,
+    "wpct_high_positive": 67,
+    "wpct_low_positive": 80
+   }
+  ],
+  "dial_theta_loss": [
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": false,
+     "wpct_low_positive": false
+    },
+    "passes": false,
+    "rf_loss_positive": 86,
+    "theta_loss": 0.0,
+    "win_negative": 76,
+    "wpct_high_positive": 32,
+    "wpct_low_positive": 21
+   },
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": false,
+     "wpct_low_positive": false
+    },
+    "passes": false,
+    "rf_loss_positive": 86,
+    "theta_loss": 4.277e-06,
+    "win_negative": 76,
+    "wpct_high_positive": 32,
+    "wpct_low_positive": 21
+   },
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": false,
+     "wpct_low_positive": false
+    },
+    "passes": false,
+    "rf_loss_positive": 86,
+    "theta_loss": 0.0001855,
+    "win_negative": 76,
+    "wpct_high_positive": 32,
+    "wpct_low_positive": 21
+   },
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": false,
+     "wpct_low_positive": false
+    },
+    "passes": false,
+    "rf_loss_positive": 86,
+    "theta_loss": 0.0009206,
+    "win_negative": 76,
+    "wpct_high_positive": 32,
+    "wpct_low_positive": 21
+   },
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": false,
+     "wpct_low_positive": false
+    },
+    "passes": false,
+    "rf_loss_positive": 85,
+    "theta_loss": 0.01591,
+    "win_negative": 76,
+    "wpct_high_positive": 32,
+    "wpct_low_positive": 23
+   },
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": false,
+     "wpct_low_positive": false
+    },
+    "passes": false,
+    "rf_loss_positive": 85,
+    "theta_loss": 0.02608,
+    "win_negative": 76,
+    "wpct_high_positive": 32,
+    "wpct_low_positive": 23
+   },
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": false,
+     "wpct_low_positive": false
+    },
+    "passes": false,
+    "rf_loss_positive": 77,
+    "theta_loss": 0.25,
+    "win_negative": 76,
+    "wpct_high_positive": 44,
+    "wpct_low_positive": 31
+   },
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": false
+    },
+    "passes": false,
+    "rf_loss_positive": 64,
+    "theta_loss": 0.5,
+    "win_negative": 76,
+    "wpct_high_positive": 57,
+    "wpct_low_positive": 47
+   },
+   {
+    "inside": {
+     "rf_loss_positive": true,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "passes": true,
+    "rf_loss_positive": 57,
+    "theta_loss": 0.75,
+    "win_negative": 76,
+    "wpct_high_positive": 65,
+    "wpct_low_positive": 62
+   },
+   {
+    "inside": {
+     "rf_loss_positive": false,
+     "win_negative": true,
+     "wpct_high_positive": true,
+     "wpct_low_positive": true
+    },
+    "passes": false,
+    "rf_loss_positive": 49,
+    "theta_loss": 1.0,
+    "win_negative": 76,
+    "wpct_high_positive": 71,
+    "wpct_low_positive": 79
+   }
+  ],
+  "gate": {
+   "ok": true,
+   "problems": []
+  },
+  "passing": {
+   "lambda": [],
+   "theta_loss": [
+    0.75
+   ]
+  },
+  "predictions": [
+   {
+    "got": [],
+    "id": "S1",
+    "ok": true,
+    "text": "ゲートが通る"
+   },
+   {
+    "got": [
+     49,
+     49,
+     49,
+     49,
+     48,
+     47,
+     35,
+     29,
+     21,
+     17
+    ],
+    "id": "S2",
+    "ok": true,
+    "text": "つまみ 1: λ を上げると負け試合の正の数は 49 より減る。通る λ は無い"
+   },
+   {
+    "got": [
+     0.75
+    ],
+    "id": "S3",
+    "ok": false,
+    "text": "つまみ 2: θ負 が 0.75 以下なら通り、線の外に出るのは 1 だけ"
+   },
+   {
+    "got": [
+     [
+      79,
+      71
+     ],
+     [
+      80,
+      70
+     ],
+     [
+      80,
+      70
+     ],
+     [
+      80,
+      70
+     ],
+     [
+      80,
+      70
+     ],
+     [
+      80,
+      70
+     ],
+     [
+      80,
+      70
+     ],
+     [
+      80,
+      70
+     ],
+     [
+      80,
+      67
+     ],
+     [
+      80,
+      67
+     ],
+     [
+      21,
+      32
+     ],
+     [
+      21,
+      32
+     ],
+     [
+      21,
+      32
+     ],
+     [
+      21,
+      32
+     ],
+     [
+      23,
+      32
+     ],
+     [
+      23,
+      32
+     ],
+     [
+      31,
+      44
+     ],
+     [
+      47,
+      57
+     ],
+     [
+      62,
+      65
+     ],
+     [
+      79,
+      71
+     ]
+    ],
+    "id": "S4",
+    "ok": false,
+    "text": "勝率の 2 つの列は、どのつまみのどの値でも線の内側"
+   },
+   {
+    "got": {
+     "dial": "theta_loss",
+     "rule": 2,
+     "value": null
+    },
+    "id": "S5",
+    "ok": false,
+    "text": "決め方 2 で θ負 = 0 を勧めることになる"
+   }
+  ],
+  "rho_loss_original": null,
+  "units": 144,
+  "values": [
+   0.0,
+   4.277e-06,
+   0.0001855,
+   0.0009206,
+   0.01591,
+   0.02608,
+   0.25,
+   0.5,
+   0.75,
+   1.0
+  ]
+ },
  "twelfth": {
   "cells": {
    "0.30": [

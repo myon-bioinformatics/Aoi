@@ -31,6 +31,9 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_forms.py", "import:ask"),
     # 上のテストが直接 import する兄弟を、conftest.py が AOI_ROOT から sys.path に足す（PYTHONPATH は要らない）
     ("conftest.py", "path:pythdragoras"),
+    # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
+    ("vendor/aoi/vendor/uv_tool_build.py", "path:scripts"),
+    ("tests/test_dragowing_standalone.py", "path:scripts"),
     ("conftest.py", "path:queryu/ask"),
     # テストのデータの場所は AOI_ROOT の Aoi の aoi_paths に聞く（conftest.py が AOI_ROOT を sys.path に足す）
     ("tests/test_figures.py", "import:aoi_paths"),

@@ -27,6 +27,11 @@ class StandaloneTest(unittest.TestCase):
     def test_generated_tool_project_has_single_module(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "tool"
-            subprocess.run([sys.executable, str(ROOT / "build_stdlib_tool.py"), str(target)], check=True)
+            # 親の共通ビルダー（Aoi から vendor/aoi/vendor/ に配布）で、dragowing.py だけの uv tool にする
+            subprocess.run([sys.executable, "-S", str(ROOT / "vendor/aoi/vendor/uv_tool_build.py"),
+                            str(ROOT / "dragowing.py"), "--out", str(target)], check=True, capture_output=True)
             self.assertEqual((target / "dragowing.py").read_bytes(), (ROOT / "dragowing.py").read_bytes())
-            self.assertIn('dragowing-html = "dragowing:main"', (target / "pyproject.toml").read_text())
+            import tomllib
+            data = tomllib.loads((target / "pyproject.toml").read_text(encoding="utf-8"))
+            self.assertEqual(data["project"]["scripts"], {"dragowing": "dragowing:main"})
+            self.assertEqual(data["project"]["dependencies"], [])

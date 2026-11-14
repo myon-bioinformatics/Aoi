@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from blueprobe import inspect
-from html_source import HtmlSource
+from blueprobe import HtmlSource
 
 
 @pytest.fixture(autouse=True)
@@ -180,7 +180,7 @@ def test_verified_cache_real_lab_snapshot_replay(tmp_path, lab_source_access):
 def test_blueprobe_cache_cli_uses_verified_snapshots(tmp_path, monkeypatch, capsys, pattern, selector):
     pytest.importorskip("queryu")
     import blueprobe
-    import html_source
+    import blueprobe as html_source  # HtmlSource は blueprobe.py にある
     from queryu import Cache, CacheIntegrityError
 
     cache = Cache(tmp_path)

@@ -30,7 +30,7 @@ Partial matches like `[itemtype*=...]` aren't available, so schema.org URLs are 
 ### Specifying a preset in Python code (`HtmlSource`)
 
 ```python
-from html_source import HtmlSource
+from blueprobe import HtmlSource
 
 # Specify by pattern key (selector is set automatically)
 source = HtmlSource(pattern="github_readme")

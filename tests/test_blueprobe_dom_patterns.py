@@ -2,7 +2,7 @@ import pytest
 
 import blueprobe
 from blueprobe import HtmlTree
-from html_source import HtmlSource
+from blueprobe import HtmlSource
 
 
 def test_dom_patterns_shim_is_gone():

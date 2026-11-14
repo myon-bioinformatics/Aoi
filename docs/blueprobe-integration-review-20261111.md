@@ -38,7 +38,7 @@ Full suite with the real snapshot and QueRyu checkout: Python 3.11.18, 460 passe
 
 ```sh
 PARENT_AUDIT_SNAPSHOT=../parent-audit.json QUERYU_ROOT=../QueRyu uv run --python 3.11 --group dev pytest -q
-python github_observations.py ../parent-audit.json BlueProbe
+python blueprobe.py github ../parent-audit.json BlueProbe
 PYTHONPATH=../QueRyu python blueprobe.py https://myon-bioinformatics.github.io/myon-bioinformatics/ --cache ../review-cache --out ../url-observation.json
 ```
 
@@ -46,7 +46,7 @@ PYTHONPATH=../QueRyu python blueprobe.py https://myon-bioinformatics.github.io/m
 
 BlueProbe acquires and observes structure, and generates cache entries through QueRyu's component. QueRyu owns cache verification/provenance/reuse and extraction; xprobe owns bounded searches; ErrorRoadRunner diagnoses failures. The parent remains the GitHub collector and dashboard owner. No new collector, diagnosis engine, extraction engine or runtime Python dependency is added.
 
-Remaining limits: external curl required; HTTP 200/UTF-8/10 MiB limit; no JavaScript rendering, HTTP header preservation, conditional requests or BlueProbe URL cache-hit reuse. Content-Type is not validated, so decodable content alone does not prove an HTML response. Snapshot observation time is validated but no freshness threshold is imposed. The generated single-file tool does not package github_observations.py or cache_core.py. Dashboard and ErrorRoadRunner handoff remain unimplemented.
+Remaining limits: external curl required; HTTP 200/UTF-8/10 MiB limit; no JavaScript rendering, HTTP header preservation, conditional requests or BlueProbe URL cache-hit reuse. Content-Type is not validated, so decodable content alone does not prove an HTML response. Snapshot observation time is validated but no freshness threshold is imposed. The generated single-file tool now includes the github tool; it does not package cache_core.py. Dashboard and ErrorRoadRunner handoff remain unimplemented.
 
 ## Proposed GitHub actions AFTER explicit approval
 

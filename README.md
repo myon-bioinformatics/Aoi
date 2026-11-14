@@ -30,13 +30,22 @@ Topics: web crawling, information gathering, research support
 
 BlueProbe is an observation and extraction tool that reads fetched web pages (HTML/CSS/DOM) and records **what is there**. It does not judge wins, losses, or causes.
 
-- Parts independent of the source (notation normalization, the report contract, offline reparsing that reads only the cache) live in `blueprobe.py`.
-- How to read each source is split into separate modules (`<name>.py`); writing `pages()` and `parse()` is enough to use it (see "Adding a source" below).
+- Everything independent of the source lives in the single file `blueprobe.py` (standard library only): notation normalization, the report contract, offline reparsing that reads only the cache, the generic `html_source`, and the observation tools below.
+- How to read each NPB source is in `npb/` (`npb/<name>.py`); writing `pages()` and `parse()` is enough to use it (see "Adding a source" below).
 - It returns not only what was accepted, but also counts of what wasn't, and the source text that matched no category (`unknown`).
 - Reparsing does not access the network. Fetching is handled by [QueRyu](https://github.com/myon-bioinformatics/QueRyu); BlueProbe reads its saved bodies.
 
+| 🧰 | `python blueprobe.py …` | Python |
+|---|---|---|
+| 🔎 | `URL` · `--classify HTML` · `--source NAME --cache DIR` | `classify_document()`, `inspect()` |
+| 🏷️ | `names PAGE [--json]` | `blueprobe.names.observe()` |
+| 🧭 | `headings PAGE [--json]` | `blueprobe.headings.observe()` |
+| 😀 | `emoji PAGE [--url URL] [--json]` | `blueprobe.emoji.observe()` |
+| 🌐 | `web DIR [--source-root DIR]` | `blueprobe.web.observe()` |
+| 🐙 | `github SNAPSHOT REPOSITORY` | `blueprobe.github.observe()` |
+
 The entry point for organizing coordinates and interaction history of saved web screens without a browser is
-[`web_observations.py`](docs/web-portability.md). It can also build a hash list of Dart/Kotlin/Swift sources and
+[`python blueprobe.py web`](docs/web-portability.md). It can also build a hash list of Dart/Kotlin/Swift sources and
 build settings. Parsing saved observations is kept distinct from verifying execution of the current implementation.
 
 This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`blueprobe/`](https://github.com/myon-bioinformatics/Aoi/tree/main/blueprobe) (see "Relationship with Aoi" below).
@@ -64,12 +73,13 @@ Only UTF-8 HTTP 200 responses up to 10 MiB are accepted. The URL mode currently 
 To install the single-file URL/classification tool with uv from a checkout:
 
 ```bash
-python build_stdlib_tool.py build/blueprobe-stdlib-tool
-uv tool install ./build/blueprobe-stdlib-tool
+python /path/to/Aoi/vendor/uv_tool_build.py blueprobe.py --out build/blueprobe-tool   # the parent's shared builder
+uv tool install ./build/blueprobe-tool
 blueprobe https://openai.com --out observation.json
+blueprobe names page.html
 ```
 
-This generated tool has no third-party Python runtime dependencies; building it requires setuptools. Rebuild after changing `blueprobe.py`. Source modules and `cache_core.py` are not packaged in the generated tool and must be supplied separately for operations that need them.
+The generated tool is `blueprobe.py` alone, so every tool in the table above is included and there are no third-party runtime dependencies. Rebuild after changing `blueprobe.py`. NPB sources (`npb/`) and QueRyu (`cache_core.py`) are not packaged and must be supplied separately for operations that need them.
 
 Uses Python 3.11+ and [uv](https://docs.astral.sh/uv/). There are no runtime dependencies (`pyproject.toml`). `selectolax` is only for cross-checking during development, comparing the standard library's HTML tree with Lexbor's results.
 
@@ -92,10 +102,8 @@ It reads only the cache and does not access the network. If there are unknown no
 | File | Role |
 |---|---|
 | `blueprobe.py` | Source-independent parts: normalization, the report contract, offline reparsing (`inspect`), the DOM pattern table (`--list-patterns`), document classification (`classify_document` / `--classify`), and the `html.parser` HTML tree. Details in [docs/dom-patterns.md](docs/dom-patterns.md) |
-| `html_source.py` | A generic source (`HtmlSource`) that passes saved HTML to a trusted offline extraction function |
-| `snapshot_source.py` | The contract for suppliers of saved bodies (`SnapshotSupplier`) and the QueRyu adapter (`QueRyuCacheSource`) |
-| `heading_observations.py` | Observing the heading hierarchy (`<h1>`–`<h6>`) and landmark structure of saved HTML |
-| `web_observations.py` | Organizing observations of saved web screens and source lists (no browser or SDK) |
+| `blueprobe.py` (cont.) | The generic source `HtmlSource` (`--source html_source`), the saved-body supplier contract (`SnapshotSupplier`, `QueRyuCacheSource`), and the tools `names` / `headings` / `emoji` / `web` / `github` |
+| `npb/` | NPB sources (`npb_calendar` … `npb_schedule_current`) and `html_compare` (comparison with NPB observations). Loaded by name: `python blueprobe.py` puts `npb/` on the path, tests list it in `pyproject.toml`, and inside Aoi `aoi.py` does |
 | `docs/contract/v1/` | Contracts for reports and snapshot records (additions stay in v1; breaking changes go to v2) |
 | `docs/boundaries.md` | Boundaries of responsibility between BlueProbe / QueRyu / web-ui (proposal) |
 | `docs/antipatterns.md` | Failures likely to recur, and the commitments against them |
@@ -105,7 +113,7 @@ Sources for NPB (Nippon Professional Baseball) are collected in "NPB (profession
 
 ## Adding a source
 
-Write the following two in `<name>.py` (`blueprobe/<name>.py` in Aoi), and it can be used directly from QueRyu and `inspect`.
+Write the following two in `npb/<name>.py` (or any module on the import path), and it can be used directly from QueRyu and `inspect`.
 
 ```python
 def pages(scope) -> list[tuple[str, str, str]]: ...   # (key, url, group)
@@ -267,7 +275,7 @@ Unsupported selectors are distinguished as unsupported, and no matches as unmatc
 Display colors, inheritance, specificity, variable resolution, and screen-size conditions are not computed; computed_styles is false.
 Being able to read CSS is not treated as being able to reproduce the screen.
 
-`html_compare.compare_calendar()` compares the links read by selector from saved HTML with
+`npb/html_compare.py`'s `compare_calendar()` compares the links read by selector from saved HTML with
 the game URLs accepted by the existing `npb_calendar.parse()`.
 It returns missing accepted games, duplicate links, and extraction failures. The source HTML is passed as is to the NPB parser, so
 judgement of tournament headings, cancellations, and unknown notations stays with the existing processing.
@@ -339,14 +347,14 @@ the latest run of [PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15).
 
 | File | Role |
 |---|---|
-| `npb_calendar.py` | Source: npb.jp's monthly official game calendar |
+| `npb/npb_calendar.py` | Source: npb.jp's monthly official game calendar |
 | `docs/npb-calendar.md` | What was checked for which year in that source (observed and unconfirmed kept separate) |
-| `npb_team_annual.py` | Source: npb.jp's annual team tables (summaries from 1950, detailed tables from 2005) |
-| `npb_team_batting.py` | Source: npb.jp's annual team batting stats ([docs/npb-team-batting.md](docs/npb-team-batting.md)) |
-| `npb_team_fielding.py` | Source: npb.jp's annual team fielding stats ([docs/npb-team-fielding.md](docs/npb-team-fielding.md)) |
-| `npb_game_linescore.py` | Source: npb.jp's game page line scores (R, H, E) ([docs/npb-game-linescore.md](docs/npb-game-linescore.md)) |
-| `npb_schedule_current.py` | Source: npb.jp's current-season monthly schedule and results ([docs/npb-schedule-current.md](docs/npb-schedule-current.md)) |
-| `html_compare.py` | Structural coverage of saved HTML, and comparison with existing NPB observations (offline) |
+| `npb/npb_team_annual.py` | Source: npb.jp's annual team tables (summaries from 1950, detailed tables from 2005) |
+| `npb/npb_team_batting.py` | Source: npb.jp's annual team batting stats ([docs/npb-team-batting.md](docs/npb-team-batting.md)) |
+| `npb/npb_team_fielding.py` | Source: npb.jp's annual team fielding stats ([docs/npb-team-fielding.md](docs/npb-team-fielding.md)) |
+| `npb/npb_game_linescore.py` | Source: npb.jp's game page line scores (R, H, E) ([docs/npb-game-linescore.md](docs/npb-game-linescore.md)) |
+| `npb/npb_schedule_current.py` | Source: npb.jp's current-season monthly schedule and results ([docs/npb-schedule-current.md](docs/npb-schedule-current.md)) |
+| `npb/html_compare.py` | Structural coverage of saved HTML, and comparison with existing NPB observations (offline) |
 
 ```bash
 uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md
@@ -357,11 +365,11 @@ uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar -
 `npb_team_annual.py` reads both leagues' annual summary tables from 1950, and detailed win/loss, batting, pitching, and fielding tables from 2005.
 Individual tables are not extracted. Old items that weren't published are not filled with 0, and unknown columns are kept in `unknown`. Observation only; no recomputing rates or checking agreement between tables.
 
-## Emoji observation in saved HTML (`emoji_observations.py`)
+## Emoji observation in saved HTML (`blueprobe.py emoji`)
 
 ```sh
-python emoji_observations.py page.html            # counts, forms, and locations per identity
-python emoji_observations.py page.html --json     # records (one row per occurrence) and summary
+python blueprobe.py emoji page.html            # counts, forms, and locations per identity
+python blueprobe.py emoji page.html --json     # records (one row per occurrence) and summary
 ```
 
 Emoji in the body, `<title>`, descriptive `<meta>`, and attributes (`aria-label`, `title`, `alt`, `placeholder`, etc.) are recorded
@@ -374,11 +382,11 @@ Detection uses UTS #51 forms and Extended_Pictographic (Unicode 16.0), the same 
 No code from other repositories is imported; alignment is via `tests/cases/emoji_corpus.txt` and expected values built with xprobe
 (`emoji_corpus.expected.json`, recording the xprobe commit). Naming is on QueRyu's `emoji_names.json` side.
 
-## Observing names of controls and images (`accessible_names.py`)
+## Observing names of controls and images (`blueprobe.py names`)
 
 ```sh
-python accessible_names.py page.html                         # counts of names, origins, and categories
-python accessible_names.py tests/cases/pages/github-io-html-import.json   # btk-browser-dom/1: also checks against the aria snapshot
+python blueprobe.py names page.html                         # counts of names, origins, and categories
+python blueprobe.py names tests/cases/pages/github-io-html-import.json   # btk-browser-dom/1: also checks against the aria snapshot
 ```
 
 Names of buttons, links, inputs, tabs, images, etc. are recorded with their origin (`aria-labelledby` / `aria-label` / `label` / `value` / `alt` / body text / `title` / `placeholder`),
@@ -390,29 +398,29 @@ rendered in Chromium, and captured with browser-test-kit's `capture()` (`btk-bro
 Provenance (repository, commit, path, public URL, blocked external requests) is in each JSON's `provenance`. They are renders from commits rather than the public sites themselves,
 so the same thing can be reproduced in environments that can't reach `*.github.io`. The check results are 49 matches, 6 CSS-derived differences, 0 mismatches (pinned in tests).
 
-## Observing heading hierarchy and landmark structure (`heading_observations.py`)
+## Observing heading hierarchy and landmark structure (`blueprobe.py headings`)
 
 ```sh
-python heading_observations.py page.html                        # heading levels, landmarks, flag counts
-python heading_observations.py tests/cases/pages/web-ui-examples-index.json --json
+python blueprobe.py headings page.html                        # heading levels, landmarks, flag counts
+python blueprobe.py headings tests/cases/pages/web-ui-examples-index.json --json
 ```
 
 Observes headings (`<h1>`–`<h6>`) and landmark regions (`<main>`, `<nav>`, `<header>`, `<footer>`, `<aside>`, named `<section>`, and explicit ARIA roles) in HTML.
 Besides level, text, DOM path, containing landmark, and hidden state, it records structural categories: `empty_heading`, `skipped_heading_level`, `multiple_h1`, `missing_main_landmark`, `unlabelled_landmark`, and `heading_outside_landmark`.
 It does not access the network, and makes no judgements or changes.
 
-This is static structural observation, not a reproduction of the browser's whole accessibility tree. `article` and unnamed `section` are not counted as landmarks, and `header` / `footer` inside `main` / `article` / `aside` / `nav` / `section` are not counted as page-wide landmarks ([HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)). `aria-level` is used only when it is an integer of 1 or more; otherwise (empty, 0, negative, invalid) it falls back to the HTML heading level (h1–h6), or to the ARIA default of 2 for `role="heading"`. Tree structure and name computation are shared with `accessible_names.py`. `missing_main_landmark` is also kept as a page-level record (`type: "page"`).
+This is static structural observation, not a reproduction of the browser's whole accessibility tree. `article` and unnamed `section` are not counted as landmarks, and `header` / `footer` inside `main` / `article` / `aside` / `nav` / `section` are not counted as page-wide landmarks ([HTML-AAM](https://www.w3.org/TR/html-aam-1.0/)). `aria-level` is used only when it is an integer of 1 or more; otherwise (empty, 0, negative, invalid) it falls back to the HTML heading level (h1–h6), or to the ARIA default of 2 for `role="heading"`. Tree structure and name computation are shared with `names` (the same file). `missing_main_landmark` is also kept as a page-level record (`type: "page"`).
 
 ## Repository observations from a parent audit (experimental)
 
-`github_observations.py` reads a saved `parent-audit/1` snapshot produced by
+`python blueprobe.py github` reads a saved `parent-audit/1` snapshot produced by
 myon-bioinformatics' `ci_status.py`. It extracts one repository's Issue and PR
 observations, including CI state and head SHA, into BlueProbe's `records`,
 `counts`, and `unknown` structure, preserving the original rows as evidence.
 It does not contact GitHub or infer root causes.
 
 ```bash
-python github_observations.py audit.json Err-o-RoadRunner > observations.json
+python blueprobe.py github audit.json Err-o-RoadRunner > observations.json
 ```
 
 A missing repository, missing/incomplete collection metadata, or reported

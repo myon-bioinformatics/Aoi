@@ -14,13 +14,8 @@ CSS（::before / ::after の content、display:none）を評価しないため�
 """
 from __future__ import annotations
 
-import argparse
-import json
-import re
-import sys
-from collections import Counter
-from html.parser import HTMLParser
-from pathlib import Path
+import argparse, json, re, sys
+from collections import Counter; from html.parser import HTMLParser; from pathlib import Path
 
 from blueprobe import new_report
 from emoji_observations import emoji_sequences
@@ -82,10 +77,17 @@ class _Tree(HTMLParser):
 
 
 def _walk(node):
-    for child in node.children:
+    # Preserve DOM preorder without one Python generator frame per ancestor.
+    stack = [iter(node.children)]
+    while stack:
+        try:
+            child = next(stack[-1])
+        except StopIteration:
+            stack.pop()
+            continue
         if isinstance(child, _Node):
             yield child
-            yield from _walk(child)
+            stack.append(iter(child.children))
 
 
 def _flat(text):

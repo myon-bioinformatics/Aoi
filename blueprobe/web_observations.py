@@ -4,10 +4,7 @@ This is an observation adapter, never a native-equivalence or integrity verifier
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import json
-import math
+import argparse, hashlib, json, math
 from pathlib import Path
 
 from blueprobe import new_report

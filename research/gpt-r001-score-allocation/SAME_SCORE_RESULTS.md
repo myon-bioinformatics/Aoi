@@ -33,7 +33,7 @@ Grok Part3で扱った歴史的A/Bクラス率と、この最終得点別勝率�
 
 ## 実行
 
-`python research/gpt-r001-score-allocation/same_score.py`
+`python research/gpt-r001-score-allocation/analyses.py same_score`
 
 exit=0。公式年計との照合済みデータを入力とし、全得点セルのG/W/L/D和が元の各年・球団・主催区分と一致した。空セルや全引分セルで勝率を0に埋めずnullにする。研究用テストは21件成功。集計の正常終了は、全称・因果命題の成立を意味しない。
 

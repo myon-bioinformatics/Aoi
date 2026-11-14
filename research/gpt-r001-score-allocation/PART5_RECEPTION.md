@@ -1,6 +1,6 @@
 # Part5受領：得点下位でもAクラスの反例との比較
 
-2026-10-03、ユーザー提供の `aoi_part5.zip`（9ファイル）を受領。共有されたコードをそのまま実行せず、既存カレンダー由来の最終成績と前回照合済みのイニング集計から `verify_part5.py` で主要数値を再計算した。原HTMLの再取得・再解析ではない。
+2026-10-03、ユーザー提供の `aoi_part5.zip`（9ファイル）を受領。共有されたコードをそのまま実行せず、既存カレンダー由来の最終成績と前回照合済みのイニング集計から `recheck.py part5` で主要数値を再計算した。原HTMLの再取得・再解析ではない。
 
 ## 再計算で確認した観察
 
@@ -50,12 +50,12 @@
 
 - [part5_recalculated.csv](outputs/part5_recalculated.csv)：再計算した156球団年の順位・対数分解・残差。
 - [part5_verification.json](outputs/part5_verification.json)：9入力ファイルと確認コードのSHA-256、分割表、分解、必要条件への反例。
-- `verify_part5.py`：標準ライブラリのみで照合・再計算。
+- `recheck.py part5`：標準ライブラリのみで照合・再計算。
 
 初回は反例CSVに`team`列があると想定してexit=65で停止した。実際には`name`列だったため、球団年表の名前に結合して修正。入力データを変更せず、再実行はexit=0。これは計算・照合成功であって、上記必要条件の合格ではない。
 
 ```sh
-python research/gpt-r001-score-allocation/verify_part5.py --share /path/to/extracted/part5
+python research/gpt-r001-score-allocation/recheck.py part5 --share /path/to/extracted/part5
 ```
 
 次の説明では、得点順位という大まかな区分に加えて、リーグ平均との差の大きさ、得点回の頻度、得点回の点数、失点側、試合別配分を並べる。単一の原因に固定せず、2019阪神のような残る反例も比較対象に含める。

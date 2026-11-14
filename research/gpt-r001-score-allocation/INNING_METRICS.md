@@ -1,6 +1,6 @@
 # イニング指標辞書
 
-`inning_features.py` が生成する64数値項目。独立した64仮説という意味ではなく、分子・分母・相補的な率を含む。
+`analyses.py inning_features` が生成する64数値項目。独立した64仮説という意味ではなく、分子・分母・相補的な率を含む。
 
 共通キー：`year`、`team`、`league`、`venue`（その球団がhome/away、またはall）、`role`（off=攻撃、def=相手の攻撃）、`window`（all=全実施回、first6=双方が6回まで実施した試合の1–6回）。defのhomeも「その球団がホーム」で、打っている相手はビジター。交流戦を含む。
 

@@ -10,10 +10,8 @@ on:
       - scripts/trace_third_party.py
       - tests/test_third_party_min.py
       - .github/workflows/third-party-min.yml
-      - research/gpt-r001-score-allocation/observe.py
-      - research/gpt-r001-score-allocation/verify.py
-      - research/gpt-r001-score-allocation/inning_pilot.py
-      - research/gpt-r001-score-allocation/collect.py
+      - research/gpt-r001-score-allocation/fetch.py
+      - research/gpt-r001-score-allocation/analyses.py
       - queryu/queryu.py
       - scripts/check_child_heads.py
   workflow_dispatch:

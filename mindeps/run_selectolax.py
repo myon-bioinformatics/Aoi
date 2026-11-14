@@ -5,7 +5,7 @@
     python mindeps/run_selectolax.py --impl min  out.json   # selectolax が入っていない環境
 
 --impl min では、本物の selectolax が import できる環境なら失敗する。
-verify.py は import 時に httpx も読むので、httpx が無いときだけ httpx_min を先に置く。
+fetch.py は import 時に httpx も読むので、httpx が無いときだけ httpx_min を先に置く。
 """
 from __future__ import annotations
 
@@ -49,15 +49,11 @@ def install_selectolax_min() -> None:
 
 
 def use_min_parser() -> None:
-    """既に import 済みの研究モジュールの LexborHTMLParser を min に差し替える。"""
-    import inning_pilot
-    import observe
+    """既に import 済みの研究モジュール（fetch.py の observe・inning_pilot・verify）の LexborHTMLParser を min に差し替える。"""
+    import fetch
     import selectolax_min
-    import verify
 
-    observe.LexborHTMLParser = selectolax_min.LexborHTMLParser
-    inning_pilot.LexborHTMLParser = selectolax_min.LexborHTMLParser
-    verify.LexborHTMLParser = selectolax_min.LexborHTMLParser
+    fetch.LexborHTMLParser = selectolax_min.LexborHTMLParser
 
 
 def _jsonable(value):
@@ -111,9 +107,7 @@ def _annual_page() -> str:
 
 
 def outcomes() -> list:
-    import inning_pilot
-    import observe
-    from verify import annual
+    from fetch import annual, inning_pilot_parse, observe_parse
 
     url = "https://npb.jp/bis/2013/calendar/index_10.html"
     observe_pages = {
@@ -157,9 +151,9 @@ def outcomes() -> list:
             {"away": "d", "home": "s", "as": 3, "hs": 2},
         ),
     }
-    calls = [_call(name, lambda html=html: observe.parse(html, url)) for name, html in observe_pages.items()]
+    calls = [_call(name, lambda html=html: observe_parse(html, url)) for name, html in observe_pages.items()]
     calls += [
-        _call(name, lambda html=html, game=game: inning_pilot.parse(html, game))
+        _call(name, lambda html=html, game=game: inning_pilot_parse(html, game))
         for name, (html, game) in inning_pages.items()
     ]
     calls.append(_call("annual_synthetic", lambda: annual(_annual_page())))

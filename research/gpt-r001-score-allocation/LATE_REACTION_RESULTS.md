@@ -102,8 +102,8 @@
 - 最終敗戦で条件付けるため結果の選別がある。相手が打たせた、勝負強い、先発に弱い、などの原因を判定しない。比較の分母、開始点差、窓、実回数の違いを併記する。
 
 ```sh
-python research/gpt-r001-score-allocation/late_reaction.py --innings /path/team_half_innings.csv.gz --season /path/season.jsonl --plan-commit e39667dd412ffda8facc1963fc24e84e610b36f2 --out /tmp/late_reaction.json --csv /tmp/late_reaction_summary.csv
-python research/gpt-r001-score-allocation/verify_late_reaction.py --innings /path/team_half_innings.csv.gz --result /tmp/late_reaction.json --cutoff /path/inning_cutoff.json
+python research/gpt-r001-score-allocation/analyses.py late_reaction --innings /path/team_half_innings.csv.gz --season /path/season.jsonl --plan-commit e39667dd412ffda8facc1963fc24e84e610b36f2 --out /tmp/late_reaction.json --csv /tmp/late_reaction_summary.csv
+python research/gpt-r001-score-allocation/recheck.py late_reaction --innings /path/team_half_innings.csv.gz --result /tmp/late_reaction.json --cutoff /path/inning_cutoff.json
 ```
 
 `outputs/late_reaction.json` の `columns` が集計配列の列定義、`category_columns` が敗戦分類の列定義。`outputs/late_reaction_summary.csv` は球団年×切点×最終勝敗936行の抜粋。全試合の個票・回行・URLは転載していない。

@@ -36,7 +36,7 @@ PR #2 の `672d9c69031528ed2dfd5f942e889173cfafb283` を起点とした独立研
 
 NPB公式の月別試合日程から2013〜2025年の12球団・11,028公式戦を取得。別の公式年度成績ページ26件と、156球団年すべての試合数・勝・敗・分・得点・失点を照合し、936項目が一致した。これは独立したページ構造による集計照合であり、NPBとは独立した情報源による検証ではない。
 
-元の抽出を実データに適用すると、ポストシーズン等が混入した。2013年10月12日のように CS と公式戦が同日に存在するため、日付だけでは分離できない。研究専用の `observe.py` でページの大会見出しを明示的に使い、276試合リンクを除外した。内訳はオールスター25、CSファースト63、CSファイナル102、日本シリーズ75、アジアシリーズ9、2020年のクライマックスS 2。中止412件は別集計。未知レコードは0件。未知の大会見出しは黙って捨てず停止する。
+元の抽出を実データに適用すると、ポストシーズン等が混入した。2013年10月12日のように CS と公式戦が同日に存在するため、日付だけでは分離できない。研究専用の `fetch.py observe` でページの大会見出しを明示的に使い、276試合リンクを除外した。内訳はオールスター25、CSファースト63、CSファイナル102、日本シリーズ75、アジアシリーズ9、2020年のクライマックスS 2。中止412件は別集計。未知レコードは0件。未知の大会見出しは黙って捨てず停止する。
 
 原HTMLと試合行は既存のデータ方針に従いローカルキャッシュに保存し、このPRには再配布しない。URL・取得時刻・応答・ハッシュは `outputs/source_receipts.json` と `outputs/official_verification.json` に保存した。公開サイトが更新された場合は当時のデータハッシュと一致するとは限らない。
 
@@ -102,14 +102,27 @@ NPB公式の月別試合日程から2013〜2025年の12球団・11,028公式戦�
 ```sh
 python -m venv /tmp/aoi-r001-venv
 /tmp/aoi-r001-venv/bin/pip install -r research/gpt-r001-score-allocation/requirements.txt
-/tmp/aoi-r001-venv/bin/python research/gpt-r001-score-allocation/collect.py
-/tmp/aoi-r001-venv/bin/python research/gpt-r001-score-allocation/observe.py
-/tmp/aoi-r001-venv/bin/python research/gpt-r001-score-allocation/verify.py
-/tmp/aoi-r001-venv/bin/python research/gpt-r001-score-allocation/analyze.py --games data/observations/r001/games.jsonl --out research/gpt-r001-score-allocation/outputs
+/tmp/aoi-r001-venv/bin/python research/gpt-r001-score-allocation/fetch.py collect
+/tmp/aoi-r001-venv/bin/python research/gpt-r001-score-allocation/fetch.py observe
+/tmp/aoi-r001-venv/bin/python research/gpt-r001-score-allocation/fetch.py verify
+/tmp/aoi-r001-venv/bin/python research/gpt-r001-score-allocation/analyses.py analyze --games data/observations/r001/games.jsonl --out research/gpt-r001-score-allocation/outputs
 /tmp/aoi-r001-venv/bin/python -m unittest discover -s research/gpt-r001-score-allocation -p 'test_*.py'
 ```
 
 取得はキャッシュ利用・待機3秒。未知レコード、試合数不一致、公式年計との不一致、ハッシュ不一致では停止する。元データが変化した場合は既存観測を明示的に退避し、変更を調べてから再構築する。
+
+**ファイル（2026-11-14 に 49 本を 5 本にまとめた）**: 旧ファイル 1 本が 1 つのサブコマンドです。`python <ファイル> --help` で処理の一覧が出ます。
+
+| ファイル | 中身 | 処理（旧ファイル名） |
+|---|---|---|
+| `fetch.py` | 取得と公式ページでの照合（npb.jp。キャッシュを先に見る） | collect・observe・verify・inning_pilot |
+| `analyses.py` | 集計（記述） | analyze・inning_features・loss_tail ほか 22 |
+| `recheck.py` | 独立した検算（旧 verify_*.py） | part5・game_state・prediction_independent ほか 13 |
+| `render_score_report.py` | DRAgoWing の研究レポート（旧 render_*.py） | game_state・matched_comeback・preclinch_flow・score_report |
+| `test_r001.py` | 検査（旧 test_*.py の 6 本。28 件） | — |
+
+- `outputs/` の受領記録に残る `script_sha256`・コマンドは、まとめる前のファイルのものです（git の履歴にあります）。値は変えていません。
+- まとめたときに直したのは、移動・改名で古くなっていた道（`BlueProbe/`・`QueRyu/`・`SakAnalytics/baseball/`・`PythDRagoras/logic/`）だけです。外から `PYTHONPATH` を渡さなくても動きます。
 
 研究専用テストは10件（並べ替えの期待値、引分、層の保持、年の欠測、重複・不完全データ、大会見出しの分離等）。既存のpytest設定の対象外なので上のコマンドで明示実行する。出力と実行証跡は [outputs](outputs/) にある。
 

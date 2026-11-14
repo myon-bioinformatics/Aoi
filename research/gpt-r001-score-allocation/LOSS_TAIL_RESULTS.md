@@ -34,7 +34,7 @@
 ## 逐次実行と終了コード
 
 ```sh
-python research/gpt-r001-score-allocation/run_loss_tail.py
+python research/gpt-r001-score-allocation/analyses.py run_loss_tail
 ```
 
 実測は次の順序で完了した。
@@ -53,8 +53,8 @@ python research/gpt-r001-score-allocation/run_loss_tail.py
 個別実行も可能。
 
 ```sh
-python research/gpt-r001-score-allocation/loss_tail.py analyze
-python research/gpt-r001-score-allocation/loss_tail.py judge
+python research/gpt-r001-score-allocation/analyses.py loss_tail analyze
+python research/gpt-r001-score-allocation/analyses.py loss_tail judge
 ```
 
 集計は引分を含む全公式戦を使う。失点の整数値ごとの頻度を保持し、P(失点≥k)のホーム／ビジター差を全kで足すと平均失点差へ戻ることを78球団年で確認した。入力は既存の独立年度照合を通過したものだけを受け付ける。判定対象表はハッシュで集計受領記録と照合する。

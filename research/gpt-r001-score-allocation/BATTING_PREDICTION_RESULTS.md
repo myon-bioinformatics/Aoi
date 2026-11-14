@@ -48,14 +48,14 @@
 
 ## 再計算と証跡
 
-- [batting_prediction.py](batting_prediction.py)：stdlibだけの計算、入力Git blob/Part5ハッシュ検査、全foldの固定モデル評価。
+- [analyses.py batting_prediction](analyses.py)：stdlibだけの計算、入力Git blob/Part5ハッシュ検査、全foldの固定モデル評価。
 - [batting_prediction.json](outputs/batting_prediction.json)：2範囲×3方式、全予測・年度/球団別誤差差・係数範囲・反例群・入力/コードハッシュ。
-- [verify_prediction_independent.py](verify_prediction_independent.py)：任意の独立確認（numpy/pandasが必要、通常pytestの対象外）。独立の参照変換とNumPy least squaresで全4500予測を照合。最大絶対差1.74e-15。
+- [recheck.py prediction_independent](recheck.py)：任意の独立確認（numpy/pandasが必要、通常pytestの対象外）。独立の参照変換とNumPy least squaresで全4500予測を照合。最大絶対差1.74e-15。
 
 同一入力の再実行でJSONバイト一致。不正入力で出力前に停止したことを確認した。研究用の検証と通常pytest CIは別である。
 
 ```sh
-python research/gpt-r001-score-allocation/batting_prediction.py \
+python research/gpt-r001-score-allocation/analyses.py batting_prediction \
   --season /path/to/season.jsonl \
   --part5 /path/to/team_season_relative.csv \
   --previous-batting research/gpt-r001-score-allocation/outputs/batting_size.json \

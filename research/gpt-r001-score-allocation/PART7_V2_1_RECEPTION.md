@@ -6,7 +6,7 @@
 
 ## 追加監査の結果
 
-[stdlib検証コード](verify_part7_v2_1.py)で監査イベントを年・カード・回・表裏で半回CSVに結合し、166,003半回すべてについてCS/PO件数、out/noout、行単位アウト推定、完了フラグを照合した。[集約JSON](outputs/part7_v2_1_verification.json)に入力ハッシュと結果を保存している。
+[stdlib検証コード](recheck.py)で監査イベントを年・カード・回・表裏で半回CSVに結合し、166,003半回すべてについてCS/PO件数、out/noout、行単位アウト推定、完了フラグを照合した。[集約JSON](outputs/part7_v2_1_verification.json)に入力ハッシュと結果を保存している。
 
 | 項目 | 照合結果 |
 |---|---:|
@@ -39,7 +39,7 @@
 再現手順（入力のzip・半回・イベント行は非コミット）：
 
 ```sh
-python research/gpt-r001-score-allocation/verify_part7_v2_1.py /path/to/v2.1/part7 \
+python research/gpt-r001-score-allocation/recheck.py part7_v2_1 /path/to/v2.1/part7 \
   --previous /path/to/v2/part7 --output /tmp/part7_v2_1_verification.json
 ```
 

@@ -55,8 +55,8 @@
 ## 再実行
 
 ```sh
-python research/gpt-r001-score-allocation/scoring_spread.py
-python research/gpt-r001-score-allocation/inning_pilot.py --fetch
+python research/gpt-r001-score-allocation/analyses.py scoring_spread
+python research/gpt-r001-score-allocation/fetch.py inning_pilot --fetch
 python -m unittest discover -s research/gpt-r001-score-allocation -p 'test_*.py'
 ```
 

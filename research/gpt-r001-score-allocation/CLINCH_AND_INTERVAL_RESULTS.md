@@ -51,11 +51,11 @@ H0:p=0.5、独立な二項試行を仮定した片側上側の正確二項確率
 
 ## 再現と残件
 
-`clinch_interval.py` はstdlib＋既存 `inning_features.py`。共有イニングSHA-256を固定し、判定Markdownはhead `35e8f2e4216209a23cd5e87eb58ecb8e92c96fcc` のGit blob `e22e9253126a21128af55863e4fb3654470cbc61` に固定。異なる入力は停止する。
+`analyses.py clinch_interval` はstdlib＋既存 `analyses.py inning_features`。共有イニングSHA-256を固定し、判定Markdownはhead `35e8f2e4216209a23cd5e87eb58ecb8e92c96fcc` のGit blob `e22e9253126a21128af55863e4fb3654470cbc61` に固定。異なる入力は停止する。
 
 ```sh
-python clinch_interval.py --inning /path/to/team_half_innings.csv.gz --objections /path/to/fixed-objections.md --plan-commit 324ccfdf74dc09f3454e8a96cc55cfac1b2171d2 --output outputs/clinch_interval.json
-python verify_clinch_interval.py --result outputs/clinch_interval.json --prior-dir outputs
+python analyses.py clinch_interval --inning /path/to/team_half_innings.csv.gz --objections /path/to/fixed-objections.md --plan-commit 324ccfdf74dc09f3454e8a96cc55cfac1b2171d2 --output outputs/clinch_interval.json
+python recheck.py clinch_interval --result outputs/clinch_interval.json --prior-dir outputs
 ```
 
 1,827確認項目：既存の2022年計・6/7回集計・終盤勝敗別集計との一致、前後を足すと通年に一致、Wilson区間端点の独立なscore式との一致。JSON再実行はバイト一致。研究用実データ照合は通常pytestとは別。

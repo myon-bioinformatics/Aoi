@@ -84,12 +84,12 @@ Claude側は持続性R14・相手補正R15まで進んでいる。当方の持�
 
 ## 再現と証跡
 
-[inning_placement.py](inning_placement.py)はstdlibと既存[inning_features.py](inning_features.py)だけを使う。[出力JSON](outputs/inning_placement.json)に156球団年×5範囲の構成、同点数層の集中度、残差、全分割表・判例、入力/コードハッシュを保存。生の試合行・回行・URLは新しい出力へ転載していない。
+[analyses.py inning_placement](analyses.py)はstdlibと既存[analyses.py inning_features](analyses.py)だけを使う。[出力JSON](outputs/inning_placement.json)に156球団年×5範囲の構成、同点数層の集中度、残差、全分割表・判例、入力/コードハッシュを保存。生の試合行・回行・URLは新しい出力へ転載していない。
 
 同一入力の再実行でJSONバイト一致。独立pandas計算で156球団年の回数7項目（1092照合）、2022セ6球団の同点数HHIと主催/回別RPSを照合して一致した。不正入力ハッシュでは出力前に停止。通常pytest CIと別の研究検証である。
 
 ```sh
-python research/gpt-r001-score-allocation/inning_placement.py \
+python research/gpt-r001-score-allocation/analyses.py inning_placement \
   --innings /path/to/team_half_innings.csv.gz \
   --season /path/to/season.jsonl \
   --prediction research/gpt-r001-score-allocation/outputs/batting_prediction.json \

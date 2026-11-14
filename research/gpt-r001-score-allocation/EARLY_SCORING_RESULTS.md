@@ -104,8 +104,8 @@
 固定年計936項目一致。得点ヒストグラム、得点回数、区分合計と7回増分恒等式を検証。平均点/試合=切点×得点回割合×得点回あたり得点の恒等式も確認した（因果寄与ではない）。独立スクリプトがCSV攻撃行から直接再構成した936ヒストグラム、前回切点集計の件数・早期得点総数、156共通7回群、312他5球団比較を照合。JSON／CSVは再実行バイト一致。原HTML・全イニングの独立再観測ではない。
 
 ```sh
-python research/gpt-r001-score-allocation/early_scoring.py --innings /path/team_half_innings.csv.gz --season /path/season.jsonl --out /tmp/early_scoring.json --csv /tmp/early_scoring_summary.csv
-python research/gpt-r001-score-allocation/verify_early_scoring.py --innings /path/team_half_innings.csv.gz --result /tmp/early_scoring.json --cutoff /path/inning_cutoff.json
+python research/gpt-r001-score-allocation/analyses.py early_scoring --innings /path/team_half_innings.csv.gz --season /path/season.jsonl --out /tmp/early_scoring.json --csv /tmp/early_scoring_summary.csv
+python research/gpt-r001-score-allocation/recheck.py early_scoring --innings /path/team_half_innings.csv.gz --result /tmp/early_scoring.json --cutoff /path/inning_cutoff.json
 ```
 
 切点まで両軍が攻撃した試合を分母とし、未実施の裏を0点で補わない。6回前20試合、7回前33試合が全期間から外れる（球団側40／66単位）。交流戦を含み、独立試行を仮定する検定は行っていない。

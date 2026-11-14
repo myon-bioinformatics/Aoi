@@ -113,8 +113,8 @@
             "Client": 3
           },
           "dynamic_import_sites": 0,
-          "files": 3,
-          "import_sites": 3
+          "files": 1,
+          "import_sites": 2
         }
       },
       "declared": [
@@ -131,8 +131,8 @@
       ],
       "distinct_attributes": 1,
       "dynamic_import_sites": 0,
-      "files": 3,
-      "import_sites": 3
+      "files": 1,
+      "import_sites": 2
     },
     "markdown": {
       "attribute_uses": 3,
@@ -622,8 +622,8 @@
             "when": 1
           },
           "dynamic_import_sites": 0,
-          "files": 9,
-          "import_sites": 9
+          "files": 8,
+          "import_sites": 8
         },
         "dragowing": {
           "attribute_uses": 3,
@@ -775,8 +775,8 @@
       ],
       "distinct_attributes": 28,
       "dynamic_import_sites": 1,
-      "files": 48,
-      "import_sites": 53
+      "files": 47,
+      "import_sites": 52
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -1028,8 +1028,8 @@
             "lexbor.LexborHTMLParser": 3
           },
           "dynamic_import_sites": 0,
-          "files": 3,
-          "import_sites": 3
+          "files": 1,
+          "import_sites": 1
         }
       },
       "declared": [
@@ -1051,8 +1051,8 @@
       ],
       "distinct_attributes": 1,
       "dynamic_import_sites": 0,
-      "files": 4,
-      "import_sites": 4
+      "files": 2,
+      "import_sites": 2
     }
   },
   "schema": 1,
@@ -1352,26 +1352,15 @@
     {
       "attributes": {
         "Boolean": 2,
-        "col": 9,
-        "concat": 1,
-        "lit": 2,
-        "read_ndjson": 1
-      },
-      "dynamic_lines": [],
-      "file": "cycles/c001-chunichi/from-cycle-001/research/r75_provisional.py",
-      "import_sites": 1,
-      "package": "polars",
-      "tree": "cycles"
-    },
-    {
-      "attributes": {
         "DataFrame": 1,
         "Utf8": 1,
-        "col": 4,
-        "read_ndjson": 1
+        "col": 13,
+        "concat": 1,
+        "lit": 2,
+        "read_ndjson": 2
       },
       "dynamic_lines": [],
-      "file": "cycles/c001-chunichi/from-cycle-001/research/r76_remake.py",
+      "file": "cycles/c001-chunichi/from-cycle-001/research/research.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "cycles"
@@ -2743,60 +2732,10 @@
     },
     {
       "attributes": {
-        "Client": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/collect.py",
-      "import_sites": 1,
-      "package": "httpx",
-      "tree": "research"
-    },
-    {
-      "attributes": {
-        "Client": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/inning_pilot.py",
-      "import_sites": 1,
-      "package": "httpx",
-      "tree": "research"
-    },
-    {
-      "attributes": {
-        "lexbor.LexborHTMLParser": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/inning_pilot.py",
-      "import_sites": 1,
-      "package": "selectolax",
-      "tree": "research"
-    },
-    {
-      "attributes": {
-        "DataFrame": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/loss_tail.py",
-      "import_sites": 1,
-      "package": "polars",
-      "tree": "research"
-    },
-    {
-      "attributes": {
-        "lexbor.LexborHTMLParser": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/observe.py",
-      "import_sites": 1,
-      "package": "selectolax",
-      "tree": "research"
-    },
-    {
-      "attributes": {
         "__version__": 1
       },
       "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/preclinch_dates.py",
+      "file": "research/gpt-r001-score-allocation/analyses.py",
       "import_sites": 2,
       "package": "ortools",
       "tree": "research"
@@ -2806,27 +2745,27 @@
         "DataFrame": 1
       },
       "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/test_loss_tail.py",
+      "file": "research/gpt-r001-score-allocation/analyses.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "research"
     },
     {
       "attributes": {
-        "Client": 1
+        "Client": 3
       },
       "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/verify.py",
-      "import_sites": 1,
+      "file": "research/gpt-r001-score-allocation/fetch.py",
+      "import_sites": 2,
       "package": "httpx",
       "tree": "research"
     },
     {
       "attributes": {
-        "lexbor.LexborHTMLParser": 1
+        "lexbor.LexborHTMLParser": 3
       },
       "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/verify.py",
+      "file": "research/gpt-r001-score-allocation/fetch.py",
       "import_sites": 1,
       "package": "selectolax",
       "tree": "research"
@@ -2840,7 +2779,7 @@
         "ones": 2
       },
       "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/verify_prediction_independent.py",
+      "file": "research/gpt-r001-score-allocation/recheck.py",
       "import_sites": 1,
       "package": "numpy",
       "tree": "research"
@@ -2850,9 +2789,19 @@
         "read_json": 1
       },
       "dynamic_lines": [],
-      "file": "research/gpt-r001-score-allocation/verify_prediction_independent.py",
+      "file": "research/gpt-r001-score-allocation/recheck.py",
       "import_sites": 1,
       "package": "pandas",
+      "tree": "research"
+    },
+    {
+      "attributes": {
+        "DataFrame": 1
+      },
+      "dynamic_lines": [],
+      "file": "research/gpt-r001-score-allocation/test_r001.py",
+      "import_sites": 1,
+      "package": "polars",
       "tree": "research"
     },
     {

@@ -2,7 +2,7 @@
 """ε（波の減衰 0 の置き換え）が、野球以外の連続データでも使えるかの確認（探索）。
 
 README.md に事前に書いた基準（C1〜C5）を、(1) リポジトリにある主食価格の月次の系列、(2) 答えが分かっている合成の系列、
-に当てる。sakanalytics の wave_basis / wave_fit と、cycles/c001-chunichi/exploratory/wave_eps_trial.py の make_wave_basis
+に当てる。sakanalytics の wave_basis / wave_fit と、cycles/c001-chunichi/exploratory/wave_eps.py の make_wave_basis
 （減衰 0 の格子を ε に差し替える）をそのまま使う。野球の列（順位・試合・季節）には触れない。ε の値は暫定の置き場所で、結論には使わない。
 
 使い方（リポジトリの直下から。polars が入った環境で）:
@@ -219,13 +219,13 @@ def make_draws(k_eps: int, k_scale: int, seed, eps_range=None, scale_range=None)
 
 
 def load_modules(repo: Path):
-    """sakanalytics と wave_eps_trial（make_wave_basis のため）を読む。"""
+    """sakanalytics と wave_eps（make_wave_basis のため）を読む。"""
     sys.path.insert(0, str(repo / "sakanalytics"))
     import sakanalytics as sa
-    path = repo / "cycles" / "c001-chunichi" / "exploratory" / "wave_eps_trial.py"
-    spec = importlib.util.spec_from_file_location("wave_eps_trial", path)
+    path = repo / "cycles" / "c001-chunichi" / "exploratory" / "wave_eps.py"
+    spec = importlib.util.spec_from_file_location("wave_eps", path)
     mod = importlib.util.module_from_spec(spec)
-    sys.modules["wave_eps_trial"] = mod
+    sys.modules["wave_eps"] = mod
     spec.loader.exec_module(mod)
     return sa, mod
 

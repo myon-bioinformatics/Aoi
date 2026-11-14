@@ -1,4 +1,4 @@
-"""cycles/c001-chunichi/exploratory/wave_eps_sensitivity.py の確認。
+"""cycles/c001-chunichi/exploratory/wave_eps.py の sensitivity（旧 wave_eps_sensitivity.py）の確認。
 
 合成の試合（SYNTHETIC: 2 球団のリーグで、g が前半に負け続け後半に勝ち続ける線）を使う。実データではなく、読みの計算（境界の数え方、
 ε を振ったときの動き、線を動かしたときの入れ替わり、関門）が約束どおりに動くかを確かめるだけで、結論には使わない。
@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "sakanalytics"))
 import sakanalytics as sa  # noqa: E402
 
-spec = importlib.util.spec_from_file_location("wave_eps_sensitivity", ROOT / "cycles" / "c001-chunichi" / "exploratory" / "wave_eps_sensitivity.py")
+spec = importlib.util.spec_from_file_location("wave_eps_sensitivity", ROOT / "cycles" / "c001-chunichi" / "exploratory" / "wave_eps.py")
 sens = importlib.util.module_from_spec(spec)
 sys.modules["wave_eps_sensitivity"] = sens
 spec.loader.exec_module(sens)
@@ -114,7 +114,7 @@ def test_every_variant_row_is_consistent_and_the_histogram_counts_the_base_bound
 
 
 def test_render_names_the_three_readings_and_marks_eps_as_provisional(report):
-    text = sens.render(report)
+    text = sens.sensitivity_cli_render(report)
     for part in ("## 1. ε を振る", "## 2. 線の始まり・終わりを動かす（ε = 1e-06）", "## 3. 基準の境界の単位は", "結論には使わない"):
         assert part in text
     assert text.count("\n| 1e-") >= 2
@@ -125,7 +125,7 @@ def _files(tmp_path):
     cfg = ["[trajectory]", "min_games = 10", "sims = 5", "", "[teams]"] + [f'{t} = {{ name = "{v["name"]}", league = "{v["league"]}" }}' for t, v in TEAMS.items()]
     (tmp_path / "analysis.toml").write_text("\n".join(cfg) + "\n", encoding="utf-8")
     plain = sa.season_trajectory(sa.to_team_games(games_df(), TEAMS), sims=5, min_games=10, end="season")
-    rows = [{"season": r["season"], "team": r["team"], **{c: r[c] for c in sens.trial.WAVE_COLS}} for r in plain.to_dicts()]
+    rows = [{"season": r["season"], "team": r["team"], **{c: r[c] for c in sens.WAVE_COLS}} for r in plain.to_dicts()]
     committed = tmp_path / "season.jsonl"
     committed.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
     return rows, committed
@@ -138,7 +138,7 @@ def _argv(tmp_path, committed):
 
 def test_cli_writes_the_reports_when_the_control_matches(tmp_path):
     _, committed = _files(tmp_path)
-    assert sens.main(_argv(tmp_path, committed)) == 0
+    assert sens.sensitivity_cli(_argv(tmp_path, committed)) == 0
     out = tmp_path / "out"
     assert json.loads((out / "wave_eps_sensitivity_gate.json").read_text(encoding="utf-8"))["pass"] is True
     data = json.loads((out / "wave_eps_sensitivity.json").read_text(encoding="utf-8"))
@@ -151,7 +151,7 @@ def test_cli_stops_without_running_the_analysis_when_the_control_differs(tmp_pat
     rows, committed = _files(tmp_path)
     rows[0]["wave_rmse"] = (rows[0]["wave_rmse"] or 0.0) + 1.0
     committed.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
-    assert sens.main(_argv(tmp_path, committed)) == 2
+    assert sens.sensitivity_cli(_argv(tmp_path, committed)) == 2
     out = tmp_path / "out"
     assert json.loads((out / "wave_eps_sensitivity_gate.json").read_text(encoding="utf-8"))["pass"] is False
     assert not (out / "wave_eps_sensitivity.json").exists()
@@ -182,15 +182,15 @@ def test_cli_accepts_a_new_season_without_committed_rows_and_records_it(tmp_path
     _files(tmp_path)
     empty = tmp_path / "empty_season.jsonl"
     empty.write_text("", encoding="utf-8")
-    assert sens.main(_argv(tmp_path, empty) + ["--new-seasons", "2024"]) == 0
+    assert sens.sensitivity_cli(_argv(tmp_path, empty) + ["--new-seasons", "2024"]) == 0
     g = json.loads((tmp_path / "out" / "wave_eps_sensitivity_gate.json").read_text(encoding="utf-8"))
     assert g["pass"] is True and g["new_seasons"] == [2024] and g["new_units"] == 2 and g["units"] == 2
 
 
 def test_cli_still_stops_when_the_named_new_season_has_committed_rows_or_the_season_is_not_in_the_games(tmp_path):
     _, committed = _files(tmp_path)
-    assert sens.main(_argv(tmp_path, committed) + ["--new-seasons", "2024"]) == 2
+    assert sens.sensitivity_cli(_argv(tmp_path, committed) + ["--new-seasons", "2024"]) == 2
     g = json.loads((tmp_path / "out" / "wave_eps_sensitivity_gate.json").read_text(encoding="utf-8"))
     assert g["pass"] is False and g["new_seasons_with_committed_rows"] == 2
     assert not (tmp_path / "out" / "wave_eps_sensitivity.json").exists()
-    assert sens.main(_argv(tmp_path, committed) + ["--new-seasons", "2027"]) == 2
+    assert sens.sensitivity_cli(_argv(tmp_path, committed) + ["--new-seasons", "2027"]) == 2

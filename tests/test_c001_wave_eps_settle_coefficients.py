@@ -1,4 +1,4 @@
-"""cycles/c001-chunichi/exploratory/wave_eps_settle_coefficients.py の確認。
+"""cycles/c001-chunichi/exploratory/wave_eps.py の settle_coefficients（旧 wave_eps_settle_coefficients.py）の確認。
 
 SYNTHETIC: 落ち着く位置が（係数 / ε）に小さな定数を足した形になるように作った行（実データではない）で、
 ε = a × 10^-n の書き方、「係数 × 10^n」の係数が ε を替えても動かないこと（a を替えれば 1/a 倍になること）、
@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location("wave_eps_settle_coefficients", ROOT / "cycles" / "c001-chunichi" / "exploratory" / "wave_eps_settle_coefficients.py")
+spec = importlib.util.spec_from_file_location("wave_eps_settle_coefficients", ROOT / "cycles" / "c001-chunichi" / "exploratory" / "wave_eps.py")
 coef = importlib.util.module_from_spec(spec)
 sys.modules["wave_eps_settle_coefficients"] = coef
 spec.loader.exec_module(coef)
@@ -178,14 +178,14 @@ def test_cli_writes_json_and_markdown_without_a_separate_constant(tmp_path):
         p = tmp_path / f"wave_eps_rows_{e:g}.jsonl"
         p.write_text("\n".join(json.dumps(r) for r in rows.values()) + "\n", encoding="utf-8")
         files.append(str(p))
-    assert coef.main(["--rows", *files, "--out-json", str(tmp_path / "c.json"), "--out-md", str(tmp_path / "c.md")]) == 0
+    assert coef.settle_cli(["--rows", *files, "--out-json", str(tmp_path / "c.json"), "--out-md", str(tmp_path / "c.md")]) == 0
     data = json.loads((tmp_path / "c.json").read_text(encoding="utf-8"))
     assert data["eps"] == [1e-9, 1e-6, 1e-3] and len(data["units"]) == 2
     md = (tmp_path / "c.md").read_text(encoding="utf-8")
     assert md.startswith("# 落ち着く位置 = 係数 × 10^n") and "ε = 1×10^-9" in md
     assert "| 2014 | b | 8.20×10^1 | 8.15×10^4 | 8.15×10^7 | 0.0815 | 0.542 |" in md       # 指数が 3 ずつ動き、係数は 8.15（ε = 1e-3 だけ上乗せ分で 8.20）
     assert "K" not in md and "K" not in json.dumps(data)
-    assert coef.main(["--rows", files[0], files[0], "--out-json", str(tmp_path / "d.json"), "--out-md", str(tmp_path / "d.md")]) == 2
+    assert coef.settle_cli(["--rows", files[0], files[0], "--out-json", str(tmp_path / "d.json"), "--out-md", str(tmp_path / "d.md")]) == 2
 
 
 @pytest.mark.parametrize("existing_outputs", [False, True])
@@ -209,7 +209,7 @@ def test_cli_invalid_inputs_do_not_create_or_overwrite_outputs(tmp_path, capsys,
     if existing_outputs:
         for path in outputs:
             path.write_text("unchanged\n", encoding="utf-8")
-    assert coef.main(["--rows", *files, "--out-json", str(outputs[0]), "--out-md", str(outputs[1])]) == 2
+    assert coef.settle_cli(["--rows", *files, "--out-json", str(outputs[0]), "--out-md", str(outputs[1])]) == 2
     captured = capsys.readouterr()
     assert captured.err.strip() and not captured.out
     for path in outputs:
@@ -226,7 +226,7 @@ def test_committed_inputs_reproduce_existing_json_and_markdown_exactly(tmp_path)
     assert len(files) == len(by_eps) == 3
     assert all(len(units) == 156 for units in by_eps.values())
     out_json, out_md = tmp_path / "c.json", tmp_path / "c.md"
-    assert coef.main(["--rows", *map(str, files), "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
+    assert coef.settle_cli(["--rows", *map(str, files), "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
     saved = exploratory / "wave_eps_sensitivity_results"
     assert out_json.read_bytes() == (saved / "wave_eps_settle_coefficients.json").read_bytes()
     assert out_md.read_bytes() == (saved / "wave_eps_settle_coefficients.md").read_bytes()
@@ -246,7 +246,7 @@ def test_2026_rows_added_to_the_committed_rows_reproduce_the_saved_coefficients_
     by_eps = dict(coef.load(path) for path in files)
     assert len(files) == len(by_eps) == 3 and all(len(units) == 168 for units in by_eps.values())
     out_json, out_md = tmp_path / "c.json", tmp_path / "c.md"
-    assert coef.main(["--rows", *map(str, files), "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
+    assert coef.settle_cli(["--rows", *map(str, files), "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
     assert out_json.read_bytes() == (saved / "wave_eps_settle_coefficients.json").read_bytes()
     assert out_md.read_bytes() == (saved / "wave_eps_settle_coefficients.md").read_bytes()
     gate = json.loads((saved / "wave_eps_trial_gate.json").read_text(encoding="utf-8"))
@@ -267,7 +267,7 @@ def test_cli_handles_inputs_where_no_unit_moves_with_eps(tmp_path, units):
             rows = [json.loads(line) for line in Path(path).read_text(encoding="utf-8").splitlines()]
             write_rows(Path(path), [dict(r, committed_wave_decay=0.5, eps_wave_decay=0.001) for r in rows])
     out_json, out_md = tmp_path / "c.json", tmp_path / "c.md"
-    assert coef.main(["--rows", *files, "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
+    assert coef.settle_cli(["--rows", *files, "--out-json", str(out_json), "--out-md", str(out_md)]) == 0
     data = json.loads(out_json.read_text(encoding="utf-8"))
     md = out_md.read_text(encoding="utf-8")
     assert len(data["units"]) == len(units) and all(u["settled_at_start"] for u in data["units"])
@@ -285,7 +285,7 @@ def test_cli_builds_both_texts_before_writing_either_output(tmp_path, monkeypatc
     def broken(rows, eps):
         raise RuntimeError("render failed")
 
-    monkeypatch.setattr(coef, "render", broken)
+    monkeypatch.setattr(coef, "settle_cli_render", broken)
     with pytest.raises(RuntimeError, match="render failed"):
-        coef.main(["--rows", *files, "--out-json", str(outputs[0]), "--out-md", str(outputs[1])])
+        coef.settle_cli(["--rows", *files, "--out-json", str(outputs[0]), "--out-md", str(outputs[1])])
     assert [p.read_text(encoding="utf-8") for p in outputs] == ["unchanged\n", "unchanged\n"]

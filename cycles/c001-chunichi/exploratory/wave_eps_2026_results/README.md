@@ -1,6 +1,6 @@
 # 波の減衰 0 → ε: 2026年を足した結果（探索・暫定）
 
-`../wave_eps_trial.py` と `../wave_eps_sensitivity.py` を、2013〜2025年に **2026年（確定した 858 試合）を足して** 走らせた結果です。2013〜2025年の 156 単位の結果は `../wave_eps_trial_results/` と `../wave_eps_sensitivity_results/` に残してあり、ここでは上書きしていません。確定済みの出力（`outputs/season.jsonl` など）は変更していません。**ε の値は暫定の置き場所で、結論には使いません。扱いは今後決めます。**
+`../wave_eps.py trial` と `../wave_eps.py sensitivity` を、2013〜2025年に **2026年（確定した 858 試合）を足して** 走らせた結果です。2013〜2025年の 156 単位の結果は `../wave_eps_trial_results/` と `../wave_eps_sensitivity_results/` に残してあり、ここでは上書きしていません。確定済みの出力（`outputs/season.jsonl` など）は変更していません。**ε の値は暫定の置き場所で、結論には使いません。扱いは今後決めます。**
 
 2026年は、ε を考えたときに使っていない年です（ε の挙動を 2013〜2025年で見たあとに入った年）。ただし単位は 12 しかなく、減衰 0 の単位は 1 つなので、「確かめられた」とは書きません。見たのは「2013〜2025年で見た挙動と違うことが起きたか」だけです。
 
@@ -16,7 +16,7 @@
 - `wave_eps_rows_0.001.jsonl` / `wave_eps_rows_1e-06.jsonl` / `wave_eps_rows_1e-09.jsonl`: **2026年の 12 単位だけ**の行（2013〜2025年の行は上の `../wave_eps_trial_results/` にあり、同じもの）
 - `wave_eps_trial.md` / `wave_eps_trial_gate.json`: 168 単位全体の試験の要約と対照の関門
 - `wave_eps_sensitivity.md` / `.json` / `wave_eps_boundary_membership.jsonl` / `wave_eps_sensitivity_gate.json`: 168 単位全体の感度（ε の格子 9 通りと、線の始まり・終わりを動かした 8 通り）
-- `wave_eps_settle_coefficients.md` / `.json`: 落ち着く位置を「係数 × 10^n」（ε = a × 10^-n）で書いた表。`../wave_eps_trial_results/` の 156 単位の行に 2026年の行を足した 168 単位から（`../wave_eps_settle_coefficients.py`）
+- `wave_eps_settle_coefficients.md` / `.json`: 落ち着く位置を「係数 × 10^n」（ε = a × 10^-n）で書いた表。`../wave_eps_trial_results/` の 156 単位の行に 2026年の行を足した 168 単位から（`../wave_eps.py settle_coefficients`）
 
 ## 結果（要点）
 
@@ -35,9 +35,9 @@
   python cycles/c001-chunichi/exploratory/games_table_from_observed.py \
       --games-raw cycles/c001-chunichi/recovered-inputs/observed/games_raw.json --season-jsonl cycles/c001-chunichi/outputs/season.jsonl \
       --season-2026 cycles/c001-chunichi/season-2026/observed/games.jsonl --totals-2026 cycles/c001-chunichi/season-2026/derived/team_totals.jsonl --out games.jsonl
-  uv run --locked python cycles/c001-chunichi/exploratory/wave_eps_trial.py --games games.jsonl --config cycles/c001-chunichi/analysis.toml \
+  uv run --locked python cycles/c001-chunichi/exploratory/wave_eps.py trial --games games.jsonl --config cycles/c001-chunichi/analysis.toml \
       --committed cycles/c001-chunichi/outputs/season.jsonl --new-seasons 2026 --eps 1e-3 1e-6 1e-9 --outdir out_trial --repo .
-  uv run --locked python cycles/c001-chunichi/exploratory/wave_eps_sensitivity.py --games games.jsonl --config cycles/c001-chunichi/analysis.toml \
+  uv run --locked python cycles/c001-chunichi/exploratory/wave_eps.py sensitivity --games games.jsonl --config cycles/c001-chunichi/analysis.toml \
       --committed cycles/c001-chunichi/outputs/season.jsonl --new-seasons 2026 --outdir out_sens --repo .
   ```
-  試験は約 2 分、感度は約 11 分かかります（`season_trajectory` をそれぞれ 4 回、25 回走らせるため）。`wave_eps_rows_*.jsonl`（2026年の行）から係数の表までは、[tests/test_c001_wave_eps_settle_coefficients.py](../../../../tests/test_c001_wave_eps_settle_coefficients.py) が保存済みの行だけでバイト単位で再現できることを確かめています。
+  試験は約 2 分、感度は約 11 分かかります（`season_trajectory` をそれぞれ 4 回、25 回走らせるため）。`wave_eps_rows_*.jsonl`（2026年の行）から係数の表までは、[tests/test_c001_wave_eps.py settle_coefficients](../../../../tests/test_c001_wave_eps.py settle_coefficients) が保存済みの行だけでバイト単位で再現できることを確かめています。

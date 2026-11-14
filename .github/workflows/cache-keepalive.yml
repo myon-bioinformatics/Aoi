@@ -9,8 +9,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/cache-keepalive.yml'
-      - 'scripts/check_c001_saved_inputs.py'
-      - 'scripts/reconcile_season_2026.py'
+      - 'scripts/research_inputs.py'
       - 'tests/test_c001_saved_inputs.py'
       - 'cycles/c001-chunichi/recovered-inputs/**'
       - 'cycles/c001-chunichi/season-2026/**'
@@ -40,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build
-          python -S scripts/check_c001_saved_inputs.py | tee build/c001-saved-input-check.json
+          python -S scripts/research_inputs.py saved_inputs | tee build/c001-saved-input-check.json
           cat build/c001-saved-input-check.json >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

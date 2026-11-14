@@ -18,8 +18,8 @@
 リポジトリ直下で、保存入力から派生ファイルを再生成できます。ネットワーク取得は行いません。
 
 ```sh
-python scripts/reconcile_season_2026.py
-python scripts/reconcile_season_2026.py --check
+python scripts/research_inputs.py season_2026
+python scripts/research_inputs.py season_2026 --check
 pytest -q tests/test_season_2026.py
 ```
 

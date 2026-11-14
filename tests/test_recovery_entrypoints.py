@@ -43,9 +43,9 @@ def test_recovered_next_cli_reads_frozen_results_from_another_directory(tmp_path
     assert 'P1 ' in result.stdout and '道筋' in result.stdout
 
 
-@pytest.mark.parametrize('script', ['render_score_report.py', 'render_game_state.py', 'render_preclinch_flow.py'])
-def test_recovered_renderers_import_without_pytest_paths(tmp_path, script):
-    result = run([ROOT/'research/gpt-r001-score-allocation'/script, '--help'], tmp_path)
+@pytest.mark.parametrize('command', ['score_report', 'game_state', 'preclinch_flow'])   # 旧 render_<command>.py
+def test_recovered_renderers_import_without_pytest_paths(tmp_path, command):
+    result = run([ROOT/'research/gpt-r001-score-allocation/render_score_report.py', command, '--help'], tmp_path)
     assert result.returncode == 0, result.stderr
     assert '--output' in result.stdout
 

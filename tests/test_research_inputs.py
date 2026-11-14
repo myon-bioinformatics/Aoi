@@ -14,13 +14,13 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-from scripts.recovered_zip import validate_member_path, validated_zip
+from scripts.research_inputs import validate_member_path, validated_zip
 
 
 # ═══ · food share data ═══════════════════════════════════════════════════════════════════════════════════
 # Snapshot and adversarial regressions for research food-share classification.
 
-spec = importlib.util.spec_from_file_location('food_share_check', ROOT / 'scripts/check_food_share_data.py')
+spec = importlib.util.spec_from_file_location('food_share_check', ROOT / 'scripts/research_inputs.py')
 check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(check)
 

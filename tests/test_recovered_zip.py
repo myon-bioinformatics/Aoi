@@ -12,7 +12,7 @@ from zipfile import ZipFile, ZipInfo
 
 import pytest
 
-from scripts.recovered_zip import validate_member_path, validated_zip
+from scripts.research_inputs import validate_member_path, validated_zip
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -223,7 +223,7 @@ def test_documented_restore_refuses_output_symlinks(tmp_path, monkeypatch, direc
 def test_helper_imports_without_site_packages():
     result = subprocess.run(
         [sys.executable, "-S", "-c",
-         "from scripts.recovered_zip import validate_member_path; "
+         "from scripts.research_inputs import validate_member_path; "
          "validate_member_path('data/synthetic/safe.json')"],
         cwd=ROOT, capture_output=True, text=True,
     )

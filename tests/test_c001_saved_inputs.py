@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from scripts import check_c001_saved_inputs as saved
+from scripts import research_inputs as saved
 
 
 class SavedInputTests(unittest.TestCase):
@@ -32,7 +32,7 @@ class SavedInputTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'output'
             path.write_text('stale')
-            with patch.object(saved.season, 'outputs', return_value={path: 'expected'}):
+            with patch.object(saved, 'outputs', return_value={path: 'expected'}):
                 with self.assertRaisesRegex(ValueError, 'Stale'):
                     saved.check()
 

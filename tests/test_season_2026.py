@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from scripts import reconcile_season_2026 as season
+from scripts import research_inputs as season
 
 
 def inputs():

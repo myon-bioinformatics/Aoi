@@ -3,7 +3,7 @@ import hashlib
 
 import pytest
 
-from scripts.audit_recovery_provenance import verify_source
+from scripts.research_inputs import verify_source
 
 
 def test_provenance_rejects_consistent_rebaseline(tmp_path):

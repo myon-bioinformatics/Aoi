@@ -45,7 +45,7 @@ jobs:
           export GCM_INTERACTIVE=never
           export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
           uv --version
-          python -S scripts/check_shared_tools_lock.py --resolve-consumers | tee -a "$GITHUB_STEP_SUMMARY"
+          python -S scripts/repo_checks.py shared_tools_lock --resolve-consumers | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Compare tool hashes to the lock
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -59,7 +59,7 @@ jobs:
             strict=1
           fi
           if [[ "$strict" == "1" ]]; then
-            python -S scripts/check_shared_tool_consumers.py
+            python -S scripts/repo_checks.py shared_tool_consumers
           else
-            python -S scripts/check_shared_tool_consumers.py --warn
+            python -S scripts/repo_checks.py shared_tool_consumers --warn
           fi

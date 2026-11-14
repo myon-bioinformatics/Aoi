@@ -414,7 +414,7 @@ jobs:
             --no-install-package httpcore --no-install-package httpx \
             --no-install-package markdown --no-install-package numpy \
             --no-install-package polars --no-install-package polars-runtime-32
-          python scripts/check_lab_nano_environment.py --output build/test-results/lab-environment.json
+          python scripts/repo_checks.py lab_nano_environment --output build/test-results/lab-environment.json
           uv pip check --offline
           du -sk .venv "$(uv cache dir)"
       - name: Require real offline extractor tests with JUnit

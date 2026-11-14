@@ -154,7 +154,7 @@ python ../BrowserTestKit/tools/evidence_gif.py docs/evidence/browser.gif --serve
 uv run --locked pytest -q                         # tests/ and every subproject's tests/ (pyproject.toml testpaths)
 python -S nagoyaction/linkcheck.py                # Markdown links and images (tracked files, exact case)
 python -S scripts/check_child_heads.py --fail-on-diff   # child repositories vs. their directories in Aoi
-python -S scripts/check_shared_tools_lock.py            # shared tools (stdlib-shrink, py_launch.cjs, uv_tool_build.py) vs. shared-tools.lock.json
+python -S scripts/repo_checks.py shared_tools_lock  # shared tools (stdlib-shrink, py_launch.cjs, uv_tool_build.py) vs. shared-tools.lock.json
 node --test tests/py_launch.test.cjs                    # shared launcher: safe discovery and repeated signal forwarding (Node >= 26)
 ```
 

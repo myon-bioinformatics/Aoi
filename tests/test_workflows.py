@@ -21,12 +21,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import aoi_paths
-import check_action_uses as uses
-import check_shared_tools_lock as lock
+import repo_checks as uses
+import repo_checks as lock
 
 
 # ═══ · action uses ═══════════════════════════════════════════════════════════════════════════════════════
-# scripts/check_action_uses.py が親の uses の書き方を守る。
+# scripts/repo_checks.py の action_uses が親の uses の書き方を守る。
 
 SHA = "5fda3b95a4ea91299a34e894583c3862153e4b97"
 OTHER = "1c37ad07a6a961277cf70c0d37d6f313000f5884"
@@ -116,9 +116,9 @@ def test_hash_mismatch_warns_on_pull_request_and_fails_when_strict(tmp_path, cap
         return OTHER
 
     assert uses.hash_problems(tmp_path, resolve)[0].endswith(f"commit {OTHER} と違う")
-    assert uses.main(["--root", str(tmp_path), "--check-hashes", "--warn"], resolve=resolve) == 0
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes", "--warn"], resolve=resolve) == 0
     assert "::warning::" in capsys.readouterr().err
-    assert uses.main(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 1
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 1
 
 
 def test_matching_release_hash_passes(tmp_path, capsys):
@@ -139,7 +139,7 @@ def test_matching_release_hash_passes(tmp_path, capsys):
         calls.append((repository, tag))
         return {"actions/setup-python": SHA, "astral-sh/setup-uv": OTHER}[repository]
 
-    assert uses.main(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 0
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 0
     assert calls == [
         ("actions/setup-python", "v7.0.0"),
         ("astral-sh/setup-uv", "v10.3.0"),
@@ -167,8 +167,8 @@ def test_api_failure_exits_two_unless_warn(tmp_path, capsys):
     def resolve(repository, tag):
         raise uses.HashCheckError("GitHub API HTTP 403 for tags")
 
-    assert uses.main(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 2
-    assert uses.main(["--root", str(tmp_path), "--check-hashes", "--warn"], resolve=resolve) == 0
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes"], resolve=resolve) == 2
+    assert uses.action_uses(["--root", str(tmp_path), "--check-hashes", "--warn"], resolve=resolve) == 0
     err = capsys.readouterr().err
     assert "::error::" in err
     assert "::warning::" in err
@@ -453,7 +453,7 @@ def test_committed_research_reports_use_the_font():
 # ═══ · lab nano environment ══════════════════════════════════════════════════════════════════════════════
 # The narrow lab lane must preserve its plugins, lock and complete test guard.
 
-SPEC = importlib.util.spec_from_file_location('lab_nano_check', ROOT / 'scripts/check_lab_nano_environment.py')
+SPEC = importlib.util.spec_from_file_location('lab_nano_check', ROOT / 'scripts/repo_checks.py')
 CHECK = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(CHECK)
 
@@ -507,7 +507,7 @@ class LabEnvironmentTests(unittest.TestCase):
                  patch.object(CHECK.sys, 'version_info', python_version), \
                  patch.object(CHECK.sys, 'prefix', str(root / 'environment')), \
                  contextlib.redirect_stdout(io.StringIO()):
-                status = CHECK.main(['--lock', str(lock), '--output', str(output)])
+                status = CHECK.lab_nano_environment(['--lock', str(lock), '--output', str(output)])
             return status, json.loads(output.read_text())
 
     def test_cli_writes_success_evidence(self):
@@ -539,10 +539,10 @@ class LabEnvironmentTests(unittest.TestCase):
                      'test_real_saved_npb_fixture_coverage_and_css',
                      'test_verified_cache_real_lab_snapshot_replay'):
             self.assertIn('::' + node, lane)
-        self.assertIn('scripts/check_lab_nano_environment.py --output', lane)
+        self.assertIn('scripts/repo_checks.py lab_nano_environment --output', lane)
         self.assertIn('uv pip check --offline', lane)
-        self.assertLess(lane.index('uv sync'), lane.index('check_lab_nano_environment.py'))
-        self.assertLess(lane.index('check_lab_nano_environment.py'), lane.index('uv run'))
+        self.assertLess(lane.index('uv sync'), lane.index('repo_checks.py lab_nano_environment'))
+        self.assertLess(lane.index('repo_checks.py lab_nano_environment'), lane.index('uv run'))
         self.assertIn('timeout-minutes: 10', lane)
         self.assertIn('AOI_LAB_SOURCE_ROOT', lane)
         self.assertIn('if-no-files-found: error', lane)
@@ -608,10 +608,10 @@ class NamedChildEntriesTest(unittest.TestCase):
 
 
 # ═══ · shared tools lock ═════════════════════════════════════════════════════════════════════════════════
-# shared-tools.lock.json と scripts/check_shared_tools_lock.py。
+# shared-tools.lock.json と scripts/repo_checks.py の shared_tools_lock。
 
 def test_lock_matches_shared_tool_bytes():
-    assert lock.problems(ROOT) == []
+    assert lock.shared_tools_lock_problems(ROOT) == []
     document = lock.load_lock(ROOT)
     assert document["schema"] == "vendor-lock/1"
     paths = [entry["path"] for entry in document["files"]]
@@ -632,7 +632,7 @@ def test_lock_matches_shared_tool_bytes():
 def test_hash_mismatch_is_reported():
     document = lock.load_lock(ROOT)
     document["files"][0]["sha256"] = "0" * 64
-    found = lock.problems(ROOT, document)
+    found = lock.shared_tools_lock_problems(ROOT, document)
     assert any("sha256 が違う" in item for item in found)
 
 
@@ -646,7 +646,7 @@ def test_warn_exits_zero_when_the_lock_disagrees(capsys):
 
     lock.load_lock = fake
     try:
-        assert lock.main(["--warn", "--root", str(ROOT)]) == 0
+        assert lock.shared_tools_lock(["--warn", "--root", str(ROOT)]) == 0
     finally:
         lock.load_lock = original
     assert "sha256 が違う" in capsys.readouterr().err
@@ -655,16 +655,16 @@ def test_warn_exits_zero_when_the_lock_disagrees(capsys):
 def test_strict_exits_one_when_the_lock_disagrees(capsys):
     document = json.loads((ROOT / "shared-tools.lock.json").read_text(encoding="utf-8"))
     document["schema"] = "other"
-    original = lock.problems
+    original = lock.shared_tools_lock_problems
 
     def fake(root, parsed=None):
         return ["broken"]
 
-    lock.problems = fake
+    lock.shared_tools_lock_problems = fake
     try:
-        assert lock.main(["--root", str(ROOT)]) == 1
+        assert lock.shared_tools_lock(["--root", str(ROOT)]) == 1
     finally:
-        lock.problems = original
+        lock.shared_tools_lock_problems = original
     assert "broken" in capsys.readouterr().err
     assert document["schema"] == "other"
 
@@ -686,7 +686,7 @@ def test_vendor_path_mismatch_is_reported():
     for entry in document["files"]:
         if entry["path"] == "vendor/py_launch.cjs":
             entry["sha256"] = "0" * 64
-    found = lock.problems(ROOT, document)
+    found = lock.shared_tools_lock_problems(ROOT, document)
     assert any(item.startswith("vendor/py_launch.cjs: sha256 が違う") for item in found)
 
 
@@ -695,11 +695,11 @@ def test_consumers_outside_child_heads_or_unsorted_are_reported():
     data = lock.load_lock(lock.ROOT)
     bad = copy.deepcopy(data)
     bad["files"][0]["consumers"] = ["myon-bioinformatics/NotAChild"]
-    assert any("consumers" in p for p in lock.problems(lock.ROOT, bad))
+    assert any("consumers" in p for p in lock.shared_tools_lock_problems(lock.ROOT, bad))
     bad["files"][0]["consumers"] = ["myon-bioinformatics/SakAnalytics", "myon-bioinformatics/DRAgoWing"]
-    assert any("consumers" in p for p in lock.problems(lock.ROOT, bad))
+    assert any("consumers" in p for p in lock.shared_tools_lock_problems(lock.ROOT, bad))
     bad["files"][0]["consumers"] = []
-    assert not any(p.startswith(bad["files"][0]["path"]) for p in lock.problems(lock.ROOT, bad))
+    assert not any(p.startswith(bad["files"][0]["path"]) for p in lock.shared_tools_lock_problems(lock.ROOT, bad))
 
 
 if __name__ == "__main__":

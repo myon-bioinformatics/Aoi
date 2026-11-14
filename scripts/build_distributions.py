@@ -61,6 +61,30 @@ def _omit_from_bundle(snapshot: Path, item: dict) -> list[str]:
     return list(omitted)
 
 
+# Frozen minpy rejects a library-level __file__ ("data files are not bundled").
+# BlueProbe's aoi_sibling_path uses one outside __main__. The stdlib bundle is a
+# single file, so that anchor is not the Aoi checkout. AOI_ROOT and an explicit
+# here still select the root. Only the temporary snapshot is rewritten.
+_BLUEPROBE_FILE_ANCHOR = (
+    "root = Path(value).expanduser().resolve() if value else Path(here or __file__).resolve().parent.parent"
+)
+_BLUEPROBE_BUNDLE_ANCHOR = (
+    "root = Path(value).expanduser().resolve() if value else "
+    "Path(here).resolve().parent.parent if here is not None else Path('.')"
+)
+
+
+def _prepare_bundle_snapshot(snapshot: Path) -> bool:
+    target = snapshot / "blueprobe" / "blueprobe.py"
+    if not target.is_file():
+        return False
+    text = target.read_text(encoding="utf-8")
+    if _BLUEPROBE_FILE_ANCHOR not in text:
+        return False
+    target.write_text(text.replace(_BLUEPROBE_FILE_ANCHOR, _BLUEPROBE_BUNDLE_ANCHOR, 1), encoding="utf-8")
+    return True
+
+
 def build(root, manifest, tool_path, *, check, sources=None):
     if manifest.get('schema') != 'aoi-distributions/1':
         raise ValueError('expected aoi-distributions/1')
@@ -132,12 +156,19 @@ def build(root, manifest, tool_path, *, check, sources=None):
             if not child_notice.is_file() or child_notice.is_symlink() or child_notice.read_bytes() != generated['dist/LICENSE']:
                 raise ValueError('license differs: ' + name + '; preserve a separate notice before publishing')
             omitted = _omit_from_bundle(snapshot, item)
+            # BlueProbe is the only project whose entry uses a library-level __file__.
+            # require_clean is already off for it (omit_from_bundle). Restore the
+            # snapshot so later projects sharing this checkout stay clean.
+            rewritten = item['entry'] == 'blueprobe/blueprobe.py' and _prepare_bundle_snapshot(snapshot)
             try:
                 text = tool.bundle(root=str(snapshot), entry=item['entry'], repository=repository,
                                    commit=revision, search_paths=item['paths'], require_clean=not omitted)
             finally:
-                if omitted:
-                    git(snapshot, 'checkout', '-q', '--', *omitted)
+                restore = list(omitted)
+                if rewritten:
+                    restore.append('blueprobe/blueprobe.py')
+                if restore:
+                    git(snapshot, 'checkout', '-q', '--', *restore)
             header = tool.parse_header(text)
             if header['allow']:
                 raise ValueError('only stdlib distributions are allowed')

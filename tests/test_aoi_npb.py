@@ -120,27 +120,91 @@ def test_parent_calendar_pipeline_uses_shared_npb_settings():
             assert "--month-key" not in step["run"]
 
 
-def test_aoi_entry_runs_a_child_with_the_paths_pytest_uses(tmp_path):
-    import shlex, tomllib
+def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
+    import shlex
     import aoi
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
-    env = aoi.environment({"PYTHONPATH": "kept"})
-    declared = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["tool"]["pytest"]["ini_options"]["pythonpath"]
-    assert env["PYTHONPATH"].split(os.pathsep) == [*(str((root / p).resolve()) for p in declared), "kept"]
+    assert aoi.SIBLINGS == {
+        "blueprobe": ("queryu",),
+        "queryu": ("blueprobe",),
+        "nagoyaction": (),
+        "sakanalytics": ("pythdragoras",),
+        "pythdragoras": (),
+        "dragowing": ("pythdragoras", "queryu/ask"),
+    }
+    assert "dragowing" not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}
+    assert "." not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}
+    env = aoi.environment({"PYTHONPATH": "kept"}, child="queryu")
+    assert env["PYTHONPATH"].split(os.pathsep) == ["kept", str((root / "blueprobe").resolve())]
+    bare = aoi.environment({"PYTHONPATH": "kept"})
+    assert bare["PYTHONPATH"].split(os.pathsep)[0] == "kept"
+    assert str(root) not in bare["PYTHONPATH"].split(os.pathsep)
+    assert str((root / "dragowing").resolve()) not in bare["PYTHONPATH"].split(os.pathsep)
     assert (env["AOI_ROOT"], env["AOI_RESEARCH_CYCLE"]) == (str(root), aoi_paths.DEFAULT_CYCLE)
+    assert "Supported: Ubuntu/POSIX" in aoi.__doc__
+    assert "Windows: not supported yet / untested" in aoi.__doc__
     assert aoi.command(["QueRyu", "--help"]) == [sys.executable, str(root / "queryu/queryu.py"), "--help"]
     assert aoi.command(["-m", "dragowing"]) == [sys.executable, "-m", "dragowing"]
     with pytest.raises(SystemExit):
         aoi.command(["no_such_child"])
     # 子プロセス: 別の作業フォルダから、PYTHONPATH なしで起動しても兄弟（blueprobe）を import できる
-    clean = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE")}
+    clean = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
     run = subprocess.run([sys.executable, str(root / "aoi.py"), "queryu", "--source", "npb_calendar", "--years", "2024",
                           "--cache", str(tmp_path / "cache"), "--offline", "--plan"],
                          cwd=tmp_path, env=clean, capture_output=True, text=True)
     assert run.returncode == 0, run.stderr
-    # 引数なし: このシェルだけに効く export を出す（保存はしない）
+    # 引数なし: このシェルだけに効く POSIX の export を出す（保存はしない）。Aoi の根と dragowing/ は入れない
     shown = subprocess.run([sys.executable, str(root / "aoi.py")], env=clean, capture_output=True, text=True, check=True).stdout
     assert shown.splitlines()[0] == f"export AOI_ROOT={shlex.quote(str(root))}"
+    exported = dict(item.split("=", 1) for item in (shlex.split(line)[1] for line in shown.splitlines()))
+    exported_paths = [entry for entry in exported["PYTHONPATH"].split(os.pathsep) if entry]
+    assert str(root) not in exported_paths
+    assert str((root / "dragowing").resolve()) not in exported_paths
+    assert str((root / "blueprobe").resolve()) in exported_paths
+    assert str((root / "pythdragoras").resolve()) in exported_paths
+
+
+def test_import_aoi_does_not_shadow_the_dragowing_package():
+    """Putting dragowing/ on sys.path makes dragowing.py win and hides dragowing.render."""
+    root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+    code = (
+        "import sys\n"
+        "first = sys.path[0]\n"
+        "import aoi, dragowing.render\n"
+        "import dragowing\n"
+        "assert sys.path[0] == first, sys.path[0]\n"
+        "assert getattr(dragowing, '__path__', None), getattr(dragowing, '__file__', None)\n"
+        f"assert {str(root / 'dragowing')!r} not in sys.path\n"
+        "print(dragowing.render.__file__)\n"
+    )
+    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "PYTHONSAFEPATH")}
+    run = subprocess.run([sys.executable, "-c", code], cwd=root, env=env, capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr
+    assert run.stdout.strip() == str(root / "dragowing" / "render.py")
+
+
+def test_dragowing_script_path_is_the_report_and_the_name_is_the_element_counter(tmp_path):
+    root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
+    report = subprocess.run([sys.executable, str(root / "aoi.py"), "dragowing/__main__.py", "--help"],
+                            cwd=tmp_path, env=env, capture_output=True, text=True)
+    assert report.returncode == 0, report.stderr
+    assert "記録された結果を HTML" in report.stdout
+    assert "Count HTML elements" not in report.stdout
+    counter = subprocess.run([sys.executable, str(root / "aoi.py"), "dragowing", "--help"],
+                             cwd=tmp_path, env=env, capture_output=True, text=True)
+    assert counter.returncode == 0, counter.stderr
+    assert "Count HTML elements" in counter.stdout
+
+
+@pytest.mark.parametrize("flag", ["-I", "-S", "-E", "-P"])
+def test_launcher_flags_still_run_the_element_counter(flag):
+    root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
+    run = subprocess.run([sys.executable, flag, str(root / "aoi.py"), "dragowing", "--help"],
+                         cwd=root, env=env, capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr
+    assert "Count HTML elements" in run.stdout
 
 
 # ==== scope（旧 test_annual_scope.py）

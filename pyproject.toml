@@ -14,7 +14,7 @@ observation-test = ["pytest>=8"]
 package = false
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = [".", "npb"]
 testpaths = ["tests"]
 # JUnit の出力先は CI で指定する（docs/ci/）
 norecursedirs = [".test-deps", ".vendor-dispatch-tools", "build"]

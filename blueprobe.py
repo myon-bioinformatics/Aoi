@@ -5,9 +5,18 @@
   - Report: 1ページを読んだ結果の契約。採用したもの以外も必ず数える
   - inspect(): 取得済みのページを再解析して集計する。ネットワークには出ない
 
-取得元ごとの読み方は別モジュール（例: npb_calendar.py）に置き、次の2つを持たせる:
+取得元ごとの読み方は別モジュールに置き、次の2つを持たせる:
   pages(scope)        -> [(key, url, group)]   取得すべきページの一覧
   parse(html, url)    -> Report               1ページの観測結果
+汎用の取得元 html_source（HtmlSource）と、保存済みページの供給元の契約（SnapshotSupplier）はここにある。
+
+標準ライブラリだけで動く観測ツールも同じファイルにある（Python からは blueprobe.<tool>.observe(...)）:
+  \U0001f50e python blueprobe.py URL | --classify HTML | --source NAME --cache DIR   ページの構造
+  \U0001f3f7️ python blueprobe.py names PAGE      操作要素・画像の名前（accname の近似）
+  \U0001f9ed python blueprobe.py headings PAGE   見出し階層とランドマーク
+  \U0001f600 python blueprobe.py emoji PAGE      絵文字の位置と表記
+  \U0001f310 python blueprobe.py web DIR         保存済み Web 観測とソース一覧
+  \U0001f419 python blueprobe.py github SNAPSHOT REPOSITORY   親の監査から Issue・CI の観測
 
 DOM パターン表と、その判定に使う HTML 木もここにある。木は html.parser で組み立てる。
 
@@ -19,8 +28,9 @@ Aoi の原則との対応:
 
 from __future__ import annotations
 
-import argparse, importlib, importlib.util, os, re, sys, unicodedata
-from collections import Counter; from collections.abc import Iterable, Iterator; from html.parser import HTMLParser; from pathlib import Path; from typing import TypedDict
+import argparse, datetime, hashlib, importlib, json, math, re, sys, unicodedata
+from collections import Counter; from collections.abc import Iterable, Iterator; from html.parser import HTMLParser; from pathlib import Path
+from types import SimpleNamespace; from typing import Protocol, TypedDict, runtime_checkable
 
 NORMALIZATION = "nul->U+FFFD, NFKC, collapse-whitespace"
 
@@ -51,10 +61,10 @@ def merge(total: dict, part: dict, key: str = "key") -> dict:
 
 
 def load_source(name: str):
-    """取得元モジュールを名前で読み込む（blueprobe/ 直下の <name>.py）。"""
+    """取得元を名前で読み込む。html_source はこのファイルの HtmlSource、ほかは <name>.py。"""
     if not re.fullmatch(r"[a-z][a-z0-9_]*", name):
         raise ValueError(f"invalid source name: {name!r}")
-    return importlib.import_module(name)
+    return HtmlSource() if name == "html_source" else importlib.import_module(name)
 
 
 def mask_digits(text: str) -> str:
@@ -71,7 +81,7 @@ def inspect(source, pages: Iterable[tuple[str, str, str, str]], records_out: lis
 
 
 def inspect_snapshots(source, supplier, entries=None, records_out=None) -> list[dict]:
-    """供給元（snapshot_source.SnapshotSupplier）の保存済み本文を、オフラインで再解析する。
+    """供給元（SnapshotSupplier）の保存済み本文を、オフラインで再解析する。
 
     entries を省くと supplier.entries()（既定の行）を読む。指定すれば、その取得時点の行を読む。
     parse_snapshot を持つ source には html-snapshot/1 の記録を、それ以外には本文を渡す。
@@ -94,27 +104,8 @@ def inspect_snapshots(source, supplier, entries=None, records_out=None) -> list[
     return _inspect(parser, pages(), records_out)
 
 
-def aoi_sibling_path(module: str, sibling: str = "queryu", *, here: Path | None = None, env=None) -> None:
-    """``module`` が import できないときだけ、Aoi の checkout の ``sibling/`` を ``sys.path`` に足す。
-
-    Aoi の場所は ``AOI_ROOT``（pyproject.toml と cycles/ がある）で受け取る。``AOI_ROOT`` がないときは、
-    このファイルの親が Aoi の checkout（Aoi に subtree として入っている）のときだけ使う（QueRyu と同じ）。
-    単独の BlueProbe では足さない。PYTHONPATH などで import できるものは隣で上書きしない。
-    """
-    if importlib.util.find_spec(module) is not None:
-        return
-    env = os.environ if env is None else env
-    value = env.get("AOI_ROOT")
-    root = Path(value).expanduser().resolve() if value else Path(here or __file__).resolve().parent.parent
-    candidate = root / sibling
-    if (root / "pyproject.toml").is_file() and (root / "cycles").is_dir() and candidate.is_dir():
-        if str(candidate) not in sys.path:
-            sys.path.insert(0, str(candidate))
-
-
 def inspect_queryu_cache(source, cache, entries=None, records_out=None) -> list[dict]:
     """QueRyu の Cache を供給元として再解析する（QueRyuCacheSource 経由）。"""
-    from snapshot_source import QueRyuCacheSource
     return inspect_snapshots(source, QueRyuCacheSource(cache), entries, records_out)
 
 
@@ -310,7 +301,7 @@ class _HtmlBuilder(HTMLParser):
 
 
 class HtmlTree:
-    """html.parser tree with the CSS subset the pattern table and NPB readers use.
+    """html.parser tree with the CSS subset the pattern table and source readers use.
 
     Supported: a tag, ``#id``, ``.class``, ``[attr]``, ``[attr=value]``,
     descendant whitespace, and the child combinator ``>``. Anything else raises
@@ -542,7 +533,6 @@ CATEGORIES: list[DomCategory] = [
     {"key": "documentation", "label": "技術ドキュメント・解説ページ (Documentation)"},
     {"key": "portfolio_bio", "label": "ポートフォリオ・自己紹介・Profile 領域"},
     {"key": "reader_view", "label": "テキスト重視リーダービュー (Reader View)"},
-    {"key": "npb_sports", "label": "NPB（プロ野球）公式日程・成績表"},
     {"key": "social", "label": "SNS・タイムライン・コメントスレッド (Feed / Thread)"},
     {"key": "ecommerce", "label": "EC 商品詳細・商品一覧 (Product)"},
     {"key": "forum", "label": "Q&A・フォーラム (Question / Answer)"},
@@ -590,22 +580,6 @@ DOM_PATTERNS: dict[str, DomPattern] = {
         "selector": "#reader-content, .reader-view, article, main",
         "description": "リーダーモードやノイズを除去したテキスト閲覧領域",
         "example_sites": ["Reader View", "Web Clipper", "Simplified Article"],
-    },
-    "npb_calendar": {
-        "key": "npb_calendar",
-        "label": "NPB Schedule Calendar Table",
-        "category": "npb_sports",
-        "selector": "#calendar, .calendar, table.calendar",
-        "description": "プロ野球（NPB）公式戦の月別・チーム別日程カレンダー表",
-        "example_sites": ["npb.jp bis calendar"],
-    },
-    "npb_linescore": {
-        "key": "npb_linescore",
-        "label": "NPB Game Linescore Table",
-        "category": "npb_sports",
-        "selector": "table.score_table, .linescore, #linescore",
-        "description": "プロ野球（NPB）試合ページの得点表（ラン・ヒット・エラー）",
-        "example_sites": ["npb.jp linescore"],
     },
     "generic_main": {
         "key": "generic_main",
@@ -1014,14 +988,13 @@ def _observe_url(url: str, cache: Path | None = None, out: Path | None = None) -
         print("curl is required to fetch a URL", file=sys.stderr)
         return 127
     if cache is not None:
-        aoi_sibling_path("cache_core")
         try:
             from cache_core import Cache
         except ModuleNotFoundError as error:
             if error.name != "cache_core":
                 raise
-            print("--cache requires QueRyu cache_core.py: pass AOI_ROOT=<Aoi root> (uses its queryu/) "
-                  "or put cache_core.py on PYTHONPATH", file=sys.stderr)
+            print("--cache requires QueRyu cache_core.py: run from Aoi (python aoi.py blueprobe …; aoi.py puts queryu/ "
+                  "on the path) or put cache_core.py on PYTHONPATH", file=sys.stderr)
             return 2
     with tempfile.TemporaryDirectory(prefix="blueprobe-") as tmp:
         body = Path(tmp) / "body"
@@ -1064,11 +1037,1099 @@ def _observe_url(url: str, cache: Path | None = None, out: Path | None = None) -
         print(rendered, end="")
     return 0
 
+# ──── snapshot supplier ───────────────────────────────────────────────────────────────────────────────────
+# 保存済みページの供給元（snapshot supplier）の契約と、QueRyu 用アダプタ。
+#
+# この snapshot 供給元の経路では取得もキャッシュもしない。保存済みの本文を受け取り、
+# 読むだけにする。QueRyu はその供給元の一つ。契約は docs/contract/v1/snapshot.md。
+#
+# 供給元（SnapshotSupplier）が持つもの:
+#   entries()        -> [entry]  既定で読む行。各 entry は少なくとも key / url / group を持つ
+#   body(entry)      -> str      照合済みの本文（HTML）。照合できなければ例外で止める
+#   snapshot(entry)  -> dict     html-snapshot/1 の記録（下の SNAPSHOT_FIELDS）
+#
+# 供給元は再取得で失敗を隠してはならない。ネットワークにも出ない。
+
+SNAPSHOT_SCHEMA = "html-snapshot/1"
+# 必須: schema, html, url, encoding。任意だが値を推測で埋めない: fetched_at, response_sha256, content_sha256, cache_entry
+SNAPSHOT_FIELDS = ("schema", "html", "url", "fetched_at", "response_sha256",
+                   "content_sha256", "encoding", "cache_entry")
+ENTRY_FIELDS = ("key", "url", "group")
+
+
+@runtime_checkable
+class SnapshotSupplier(Protocol):
+    def entries(self) -> Iterable[dict]: ...
+    def body(self, entry: dict) -> str: ...
+    def snapshot(self, entry: dict) -> dict: ...
+
+
+class QueRyuCacheSource:
+    """QueRyu の `Cache`（Aoi/queryu）を供給元として包む。
+
+    既定の entries() は key ごとの最新行（key の昇順）。照合は Cache 側が行う
+    （sha256 と bytes の照合、失敗は CacheIntegrityError）。
+    """
+
+    def __init__(self, cache):
+        self.cache = cache
+
+    def entries(self) -> list[dict]:
+        return [entry for _, entry in sorted(self.cache.latest().items())]
+
+    def body(self, entry: dict) -> str:
+        return self.cache.body(entry)
+
+    def snapshot(self, entry: dict) -> dict:
+        return self.cache.snapshot(entry)
+
+
+# ──── HTML source ─────────────────────────────────────────────────────────────────────────────────────────
+# Bridge saved HTML observations to a trusted, offline extractor.
+#
+# The extractor is supplied by application code, never loaded from request data.
+# The optional default is mcp-toolcall-lab's stdlib HTML extraction module.
+# No acquisition, asset loading, or network operation is owned here.
+
+class HtmlSource:
+    def __init__(self, *, selector=None, pattern=None, extractor=None, include_css=False, stylesheets=None,
+                 snapshot_extractor=None):
+        if pattern is not None and selector is None:
+            selector = get_selector_for_pattern(pattern)
+        self.pattern = pattern
+        self.selector = selector
+        self.extractor = extractor
+        self.include_css = include_css
+        self.stylesheets = stylesheets
+        self.snapshot_extractor = snapshot_extractor
+
+    def parse(self, html, url):
+        extractor = self.extractor
+        if extractor is None:
+            try:
+                from mcp_toolcall_lab.adapters.html_snapshot import extract
+            except ImportError as exc:
+                raise RuntimeError(
+                    'provide an offline extractor or install the source-access version of mcp-toolcall-lab'
+                ) from exc
+            extractor = extract
+        report = new_report()
+        try:
+            options = {'selector': self.selector}
+            if self.include_css or self.stylesheets is not None:
+                options.update(include_css=self.include_css, stylesheets=self.stylesheets)
+            result = extractor(html, url, **options)
+        except ValueError as exc:
+            report['counts']['extraction_failed'] += 1
+            report['unknown'].append({'raw': html, 'url': url, 'reason': str(exc)})
+            return report
+        report['records'].append({'key': url, 'url': url, 'raw': html, 'derived': result})
+        return report
+
+    def parse_snapshot(self, snapshot):
+        """Use lab's existing snapshot validation, preserving acquisition provenance.
+
+        Cache.snapshot verifies persisted bytes first. The lab validator checks
+        the snapshot envelope and decoded content, not response authenticity or
+        the truth of its URL/acquisition time. A raw extractor is not a substitute
+        for this separate snapshot-extractor contract.
+        """
+        extractor = self.snapshot_extractor
+        if extractor is None:
+            try:
+                from mcp_toolcall_lab.source_access import extract_snapshot
+            except ImportError as exc:
+                raise RuntimeError(
+                    'provide an offline snapshot extractor or install the source-access version of mcp-toolcall-lab'
+                ) from exc
+            extractor = extract_snapshot
+        report = new_report()
+        options = {'selector': self.selector}
+        if self.include_css or self.stylesheets is not None:
+            options.update(include_css=self.include_css, stylesheets=self.stylesheets)
+        try:
+            result = extractor(snapshot, **options)
+        except ValueError as exc:
+            report['counts']['extraction_failed'] += 1
+            saved = snapshot if isinstance(snapshot, dict) else {}
+            raw = saved.get('html', '')
+            report['unknown'].append({'raw': raw if isinstance(raw, str) else '',
+                                      'url': saved.get('url'), 'reason': str(exc),
+                                      'snapshot': snapshot})
+            return report
+        report['records'].append({
+            'key': snapshot['url'], 'url': snapshot['url'], 'raw': snapshot['html'],
+            'derived': result['extraction'], 'snapshot': result['snapshot'],
+            'cache_entry': snapshot.get('cache_entry'),
+        })
+        return report
+
+
+# ──── emoji ───────────────────────────────────────────────────────────────────────────────────────────────
+# 保存済み HTML に出てくる絵文字を観測する。意味づけ・良し悪しの判断はしない。
+#
+# どこに（本文・属性・要素）、どの表記で（U+FE0F の有無）、どの文脈で（ボタン・リンク・
+# aria-hidden・ラベルの有無）出ているかを、原文の抜粋とともに記録する。ネットワークにも
+# キャッシュにも触れない。保存本文は QueRyu などの供給元から受け取る（docs/contract/v1/snapshot.md）。
+#
+# 判定の文法は UTS #51 の形（ZWJ・肌の色・国旗・キーキャップ・タグ）と Extended_Pictographic
+# （Unicode 16.0）。xprobe の emoji_sequences と同じ契約で、tests/cases/emoji_corpus の期待値で揃える
+# （他リポジトリのコードは import しない）。identity は U+FE0F を除いた形。
+#
+#     python emoji_observations.py page.html [--url URL] [--json]
+
+EXT_PICT_UNICODE = "16.0"
+_EXT_PICT = ("a9 ae 203c 2049 2122 2139 2194-2199 21a9-21aa 231a-231b 2328 2388 23cf 23e9-23f3 "
+             "23f8-23fa 24c2 25aa-25ab 25b6 25c0 25fb-25fe 2600-2605 2607-2612 2614-2685 2690-2705 "
+             "2708-2712 2714 2716 271d 2721 2728 2733-2734 2744 2747 274c 274e 2753-2755 2757 "
+             "2763-2767 2795-2797 27a1 27b0 27bf 2934-2935 2b05-2b07 2b1b-2b1c 2b50 2b55 3030 303d "
+             "3297 3299 1f000-1f0ff 1f10d-1f10f 1f12f 1f16c-1f171 1f17e-1f17f 1f18e 1f191-1f19a "
+             "1f1ad-1f1e5 1f201-1f20f 1f21a 1f22f 1f232-1f23a 1f23c-1f23f 1f249-1f3fa 1f400-1f53d "
+             "1f546-1f64f 1f680-1f6ff 1f774-1f77f 1f7d5-1f7ff 1f80c-1f80f 1f848-1f84f 1f85a-1f85f "
+             "1f888-1f88f 1f8ae-1f8ff 1f90c-1f93a 1f93c-1f945 1f947-1faff 1fc00-1fffd")
+
+
+def _emoji_class():
+    parts = []
+    for item in _EXT_PICT.split():
+        lo, _, hi = item.partition("-")
+        parts.append("\\U%08x" % int(lo, 16) + ("-\\U%08x" % int(hi, 16) if hi else ""))
+    return "[" + "".join(parts) + "]"
+
+
+_EMOJI_ELEMENT = _emoji_class() + "(?:\uFE0F|[\U0001F3FB-\U0001F3FF])?"
+_EMOJI = re.compile("[\U0001F1E6-\U0001F1FF]{2}|[0-9#*]\uFE0F?\u20E3"
+                    "|\U0001F3F4[\U000E0020-\U000E007E]+\U000E007F"
+                    "|" + _EMOJI_ELEMENT + "(?:\u200D" + _EMOJI_ELEMENT + ")*")
+_EMOJI_TEXT_ATTRIBUTES = ("aria-label", "title", "alt", "placeholder", "aria-description", "data-tooltip")
+_EMOJI_META = ("description", "og:title", "og:description", "twitter:title", "twitter:description")
+_EMOJI_SKIP = {"script", "style", "template", "noscript", "svg", "math"}
+_EMOJI_CONTROLS = {"a", "button", "summary", "label", "option"}
+
+
+def emoji_sequences(text: str) -> list[str]:
+    """Emoji sequences in text. A single text-default symbol counts only with U+FE0F
+    (below U+2190, or not a So symbol below U+1F000), as xprobe."""
+    out = []
+    for match in _EMOJI.finditer(text):
+        seq = match.group()
+        if len(seq) == 1 and (ord(seq) < 0x2190 or (ord(seq) < 0x1F000
+                                                     and not unicodedata.category(seq).startswith("So"))):
+            continue
+        out.append(seq)
+    return out
+
+
+class _EmojiObserver(HTMLParser):
+    def __init__(self, limit):
+        super().__init__(convert_charrefs=True)
+        self.stack, self.rows, self.limit, self.truncated, self.skip = [], [], limit, False, 0
+
+    def _path(self):
+        parts = []
+        for tag, attrs in self.stack[-4:]:
+            ident = ("#" + attrs["id"]) if attrs.get("id") else (
+                "." + attrs["class"].split()[0] if attrs.get("class", "").split() else "")
+            parts.append(tag + ident)
+        return " > ".join(parts)
+
+    def _context(self):
+        control = next(((t, a) for t, a in reversed(self.stack)
+                        if t in _EMOJI_CONTROLS or a.get("role") in ("button", "link", "tab", "menuitem")), None)
+        return {"aria_hidden": any(a.get("aria-hidden") == "true" for _, a in self.stack),
+                "in_control": control[0] if control else None,
+                "control_label": (control[1].get("aria-label") or control[1].get("title")) if control else None}
+
+    def _add(self, where, text):
+        cursor = 0
+        for seq in emoji_sequences(text):
+            if len(self.rows) >= self.limit:
+                self.truncated = True
+                return
+            start = text.find(seq, cursor)  # sequences come in text order; anchor each one to its own place
+            cursor = start + len(seq)
+            snippet = " ".join(text[max(0, start - 30):start + len(seq) + 30].split())
+            self.rows.append({"emoji": seq, "identity": seq.replace("\ufe0f", ""), "where": where,
+                              "element": self._path(), "raw_text": snippet, **self._context()})
+
+    def handle_starttag(self, tag, attrs):
+        attrs = {k: (v or "") for k, v in attrs}
+        if tag in _EMOJI_SKIP:
+            self.skip += tag not in _VOID
+        if not self.skip or tag in _EMOJI_SKIP:
+            if tag == "meta" and (attrs.get("name") or attrs.get("property")) in _EMOJI_META:
+                self.stack.append((tag, attrs))
+                self._add("meta:" + (attrs.get("name") or attrs.get("property")), attrs.get("content", ""))
+                self.stack.pop()
+            elif not self.skip:
+                self.stack.append((tag, attrs))
+                for name in _EMOJI_TEXT_ATTRIBUTES:
+                    if attrs.get(name):
+                        self._add("attr:" + name, attrs[name])
+                if tag in _VOID:
+                    self.stack.pop()
+
+    def handle_endtag(self, tag):
+        if tag in _EMOJI_SKIP and self.skip:
+            self.skip -= 1
+            return
+        if self.skip:
+            return
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        if not self.skip and data.strip():
+            title = self.stack and self.stack[-1][0] == "title"
+            self._add("title" if title else "text", data)
+
+
+def _emoji_observe(html: str, url: str | None = None, *, max_records: int = 5000) -> dict:
+    """1ページの絵文字観測。records は 1 出現 1 行、counts は identity ごとの出現数。
+
+    raw_text は前後30文字の抜粋（空白は詰める）。script・style・template・noscript・svg の
+    中身は読まない（表示される文字ではないため）が、読まなかったことは数えない。
+    max_records を超えたら unknown に truncated を1件残す（黙って捨てない）。
+    """
+    if not isinstance(html, str):
+        raise TypeError("html must be str")
+    parser = _EmojiObserver(max_records)
+    parser.feed(html)
+    parser.close()
+    report = new_report()
+    for index, row in enumerate(parser.rows):
+        report["records"].append({"key": f"{url or ''}#{index}", "url": url, **row})
+        report["counts"][row["identity"]] += 1
+    if parser.truncated:
+        report["unknown"].append({"url": url, "reason": f"truncated after {max_records} emoji"})
+    return report
+
+
+def _emoji_observe_snapshot(snapshot: dict, **kwargs) -> dict:
+    """html-snapshot/1（QueRyu Cache.snapshot など）を観測する。来歴は records に引き継ぐ。"""
+    if snapshot.get("schema") != "html-snapshot/1" or not isinstance(snapshot.get("html"), str):
+        raise ValueError("expected an html-snapshot/1 record")
+    report = _emoji_observe(snapshot["html"], snapshot.get("url"), **kwargs)
+    for row in report["records"]:
+        row["response_sha256"] = snapshot.get("response_sha256")
+        row["fetched_at"] = snapshot.get("fetched_at")
+    return report
+
+
+def _emoji_summarize(report: dict) -> list[dict]:
+    """identity ごとの要約: 件数、表記（U+FE0F 有無）、場所、ラベルなしの操作要素の中かどうか。"""
+    rows = {}
+    for record in report["records"]:
+        row = rows.setdefault(record["identity"], {"identity": record["identity"], "count": 0,
+                                                    "forms": Counter(), "where": Counter(),
+                                                    "unlabelled_control": 0, "aria_hidden": 0})
+        row["count"] += 1
+        row["forms"][record["emoji"]] += 1
+        row["where"][record["where"]] += 1
+        row["unlabelled_control"] += bool(record["in_control"] and not record["control_label"]
+                                          and not record["aria_hidden"])
+        row["aria_hidden"] += record["aria_hidden"]
+    return [dict(r, forms=dict(r["forms"]), where=dict(r["where"]))
+            for r in sorted(rows.values(), key=lambda r: (-r["count"], r["identity"]))]
+
+
+def _emoji_main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="blueprobe.py emoji", description="\U0001f600 保存済み HTML の絵文字を観測する（ネットワークに出ない）")
+    ap.add_argument("html", type=Path)
+    ap.add_argument("--url")
+    ap.add_argument("--json", action="store_true", help="records と summary を JSON で出す")
+    args = ap.parse_args(argv)
+    try:
+        report = _emoji_observe(args.html.read_text(encoding="utf-8"), args.url)
+    except (OSError, UnicodeDecodeError) as error:
+        print(f"emoji_observations: {error}", file=sys.stderr)
+        return 2
+    summary = _emoji_summarize(report)
+    if args.json:
+        print(json.dumps({"records": report["records"], "summary": summary, "unknown": report["unknown"]},
+                         ensure_ascii=False, indent=1))
+    else:
+        for row in summary:
+            forms = " ".join(f"{k}x{v}" for k, v in row["forms"].items())
+            where = " ".join(f"{k}x{v}" for k, v in row["where"].items())
+            extra = f" unlabelled_control={row['unlabelled_control']}" if row["unlabelled_control"] else ""
+            print(f"{row['identity']}\t{row['count']}\t{forms}\t{where}{extra}")
+        print(f"emoji: {len(summary)} distinct, {len(report['records'])} occurrence(s)"
+              + (f"; {report['unknown'][0]['reason']}" if report["unknown"] else ""))
+    return 0
+
+
+# ──── names ───────────────────────────────────────────────────────────────────────────────────────────────
+# 保存済み HTML の操作要素・画像に付く「名前」（アクセシブルネーム）を観測する。
+#
+# ボタン・リンク・入力・タブ・画像などについて、名前とその出どころ（aria-labelledby /
+# aria-label / label / alt / title / 本文 / placeholder）、役割、絵文字だけの名前かどうか、
+# aria-hidden の中にあるかを記録する。判断はしない。数えるだけ。
+#
+# 名前の計算は W3C accname の**近似**で、ブラウザの計算と同じではない（ACCNAME_APPROXIMATION）。
+# CSS（::before / ::after の content、display:none）を評価しないため、CSS で付く装飾は名前に入らない。
+# ブラウザで採った aria スナップショットとの突き合わせは compare_aria_snapshot() で行い、
+# 一致・CSS 由来の差・不一致を分けて数える。ネットワークには出ない。
+#
+#     python accessible_names.py page.html [--json]
+#     python accessible_names.py capture.json          # btk-browser-dom/1（aria_snapshot があれば突き合わせる）
+
+_NAMES_SKIP = {"script", "style", "template", "noscript"}
+_ROLES = {"button", "link", "tab", "menuitem", "checkbox", "radio", "switch", "option", "combobox",
+          "textbox", "img", "searchbox", "slider", "spinbutton", "treeitem"}
+# type=file is a button in Chromium's accessibility tree (its name comes from the label).
+_INPUT_ROLES = {"button": "button", "submit": "button", "reset": "button", "image": "button", "file": "button",
+                "checkbox": "checkbox", "radio": "radio", "range": "slider", "number": "spinbutton",
+                "search": "searchbox"}
+_NAME_FROM_CONTENT = {"disclosure", "button", "link", "tab", "menuitem", "checkbox", "radio", "switch", "option", "treeitem"}
+
+
+class _Node:
+    __slots__ = ("tag", "attrs", "children", "parent")
+
+    def __init__(self, tag, attrs, parent):
+        self.tag, self.attrs, self.children, self.parent = tag, attrs, [], parent
+
+
+class _Tree(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.root = _Node("#root", {}, None)
+        self.current, self.skip = self.root, 0
+
+    def handle_starttag(self, tag, attrs):
+        if self.skip or tag in _NAMES_SKIP:
+            self.skip += tag in _NAMES_SKIP
+            return
+        node = _Node(tag, {k: (v or "") for k, v in attrs}, self.current)
+        self.current.children.append(node)
+        if tag not in _VOID:
+            self.current = node
+
+    def handle_startendtag(self, tag, attrs):
+        if not self.skip:
+            self.current.children.append(_Node(tag, {k: (v or "") for k, v in attrs}, self.current))
+
+    def handle_endtag(self, tag):
+        if tag in _NAMES_SKIP and self.skip:
+            self.skip -= 1
+            return
+        if self.skip:
+            return
+        node = self.current
+        while node is not self.root and node.tag != tag:
+            node = node.parent
+        if node is not self.root:
+            self.current = node.parent
+
+    def handle_data(self, data):
+        if not self.skip:
+            self.current.children.append(data)
+
+
+def _walk(node):
+    # Preserve DOM preorder without one Python generator frame per ancestor.
+    stack = [iter(node.children)]
+    while stack:
+        try:
+            child = next(stack[-1])
+        except StopIteration:
+            stack.pop()
+            continue
+        if isinstance(child, _Node):
+            yield child
+            stack.append(iter(child.children))
+
+
+def _flat(text):
+    return " ".join(text.split())
+
+
+def _hidden(node):
+    return "hidden" in node.attrs or node.attrs.get("aria-hidden") == "true"
+
+
+def _text(node, ids, depth=0):
+    """Name from content: text, img alt, nested aria-label; hidden subtrees skipped."""
+    parts = []
+    for child in node.children:
+        if isinstance(child, str):
+            parts.append(child)
+        elif not _hidden(child) and depth < 30:
+            label = child.attrs.get("aria-label", "").strip()
+            if label:
+                parts.append(" " + label + " ")
+            elif child.tag == "img":
+                parts.append(" " + child.attrs.get("alt", "") + " ")
+            elif child.tag in ("br",):
+                parts.append(" ")
+            else:
+                parts.append(" " + _text(child, ids, depth + 1) + " ")
+    return _flat("".join(parts))
+
+
+def _role(node):
+    explicit = node.attrs.get("role", "").split()
+    if explicit and explicit[0] in _ROLES:
+        return explicit[0]
+    tag = node.tag
+    if tag == "a" and "href" in node.attrs:
+        return "link"
+    if tag == "button":
+        return "button"
+    if tag == "summary":
+        return "disclosure"  # Chromium: DisclosureTriangle; not a "button" in aria snapshots
+    if tag == "img":
+        return "img" if node.attrs.get("alt", None) != "" else None
+    if tag == "select":
+        return "listbox" if "multiple" in node.attrs or node.attrs.get("size", "1") not in ("", "0", "1") else "combobox"
+    if tag == "option":
+        return "option"
+    if tag == "textarea":
+        return "textbox"
+    if tag == "input":
+        kind = node.attrs.get("type", "text").lower()
+        if kind == "hidden":
+            return None
+        return _INPUT_ROLES.get(kind, "textbox")
+    return None
+
+
+def _name(node, role, ids, labels):
+    attrs = node.attrs
+    if attrs.get("aria-labelledby"):
+        parts = [_text(ids[i], ids) for i in attrs["aria-labelledby"].split() if i in ids]
+        if any(parts):
+            return _flat(" ".join(parts)), "aria-labelledby"
+    if attrs.get("aria-label", "").strip():
+        return _flat(attrs["aria-label"]), "aria-label"
+    if node.tag in ("input", "select", "textarea"):
+        if node.tag == "input" and attrs.get("type", "").lower() in ("button", "submit", "reset") and attrs.get("value"):
+            return _flat(attrs["value"]), "value"
+        label = labels.get(attrs.get("id")) if attrs.get("id") else None
+        wrapper = node.parent
+        while label is None and wrapper is not None:
+            if isinstance(wrapper, _Node) and wrapper.tag == "label":
+                label = wrapper
+            wrapper = wrapper.parent
+        if label is not None and _text(label, ids):
+            return _text(label, ids), "label"
+    if node.tag == "img" and attrs.get("alt", "").strip():
+        return _flat(attrs["alt"]), "alt"
+    if role in _NAME_FROM_CONTENT or (node.tag == "button"):
+        text = _text(node, ids)
+        if text:
+            return text, "content"
+    if attrs.get("title", "").strip():
+        return _flat(attrs["title"]), "title"
+    if attrs.get("placeholder", "").strip():
+        return _flat(attrs["placeholder"]), "placeholder"
+    return "", None
+
+
+def _path(node):
+    parts = []
+    while node is not None and node.tag != "#root" and len(parts) < 4:
+        ident = ("#" + node.attrs["id"]) if node.attrs.get("id") else (
+            "." + node.attrs["class"].split()[0] if node.attrs.get("class", "").split() else "")
+        parts.append(node.tag + ident)
+        node = node.parent
+    return " > ".join(reversed(parts))
+
+
+def _emoji_only(name):
+    if not name:
+        return False
+    rest = name
+    for seq in emoji_sequences(name):
+        rest = rest.replace(seq, "")
+    return bool(emoji_sequences(name)) and not re.sub(r"[\s\W_]", "", rest)
+
+
+def _names_observe(html: str, url: str | None = None) -> dict:
+    """1ページの操作要素・画像の名前の観測。records は DOM の順。
+
+    flags（判断ではなく観測の区分。docs/antipatterns.md に対応）:
+      empty_name          名前が付かない操作要素・画像
+      emoji_only_name     名前が絵文字（と記号）だけ
+      aria_hidden_control aria-hidden="true" の中にある操作要素（hidden 属性や閉じた <details> の中は木から外れるので数えない）
+      image_without_alt   alt 属性のない img（alt="" は装飾として role なし）
+      placeholder_only    名前が placeholder からしか付かない入力
+    """
+    if not isinstance(html, str):
+        raise TypeError("html must be str")
+    tree = _Tree()
+    tree.feed(html)
+    tree.close()
+    nodes = list(_walk(tree.root))
+    ids = {n.attrs["id"]: n for n in nodes if n.attrs.get("id")}
+    labels = {n.attrs["for"]: n for n in nodes if n.tag == "label" and n.attrs.get("for")}
+    report = new_report()
+    for index, node in enumerate(nodes):
+        role = _role(node)
+        if role is None:
+            if node.tag == "img":
+                report["counts"]["decorative_image"] += 1
+            continue
+        name, source = _name(node, role, ids, labels)
+        hidden = aria_hidden = False
+        cursor = node
+        while cursor is not None and cursor.tag != "#root":
+            hidden = hidden or "hidden" in cursor.attrs or (
+                cursor is not node and cursor.tag == "details" and "open" not in cursor.attrs
+                and not (node.tag == "summary" and node.parent is cursor))
+            aria_hidden = aria_hidden or cursor.attrs.get("aria-hidden") == "true"
+            cursor = cursor.parent
+        flags = []
+        if not name:
+            flags.append("empty_name")
+        if _emoji_only(name):
+            flags.append("emoji_only_name")
+        if aria_hidden and not hidden and role != "img":
+            flags.append("aria_hidden_control")
+        if node.tag == "img" and "alt" not in node.attrs:
+            flags.append("image_without_alt")
+        if source == "placeholder":
+            flags.append("placeholder_only")
+        record = {"key": f"{url or ''}#{index}", "url": url, "role": role, "name": name, "name_source": source,
+                  "element": _path(node), "href": node.attrs.get("href") if role == "link" else None,
+                  "emoji": emoji_sequences(name), "hidden": hidden or aria_hidden, "flags": flags}
+        report["records"].append(record)
+        for flag in flags:
+            report["counts"][flag] += 1
+    by_name = {}
+    for record in report["records"]:
+        if record["role"] == "link" and record["name"] and not record["hidden"]:
+            by_name.setdefault(record["name"].casefold(), set()).add(record["href"])
+    report["counts"]["ambiguous_link_name"] = sum(1 for hrefs in by_name.values() if len(hrefs) > 1)
+    return report
+
+
+def _names_observe_capture(capture: dict) -> dict:
+    """btk-browser-dom/1 または html-snapshot/1。aria_snapshot があれば突き合わせ結果も付ける。"""
+    if capture.get("schema") not in ("btk-browser-dom/1", "html-snapshot/1") or not isinstance(capture.get("html"), str):
+        raise ValueError("expected btk-browser-dom/1 or html-snapshot/1")
+    report = _names_observe(capture["html"], capture.get("url"))
+    if isinstance(capture.get("aria_snapshot"), str):
+        report["aria_comparison"] = compare_aria_snapshot(report, capture["aria_snapshot"])
+    return report
+
+
+_ARIA_LINE = re.compile(r'^\s*- (\w+)(?: "((?:[^"\\]|\\.)*)")?')
+
+
+def parse_aria_snapshot(text: str) -> list[tuple[str, str]]:
+    """Playwright aria_snapshot の (role, name) を出現順に。名前のない行は name=""。"""
+    out = []
+    for line in text.splitlines():
+        match = _ARIA_LINE.match(line)
+        if match and match.group(1) in _ROLES | {"listbox"}:
+            out.append((match.group(1), json.loads('"' + (match.group(2) or "") + '"')))
+    return out
+
+
+def compare_aria_snapshot(report: dict, snapshot: str) -> dict:
+    """静的な近似と、ブラウザが計算した名前を役割ごとの出現順で突き合わせる。
+
+    match           名前が同じ（空白の詰め方の差は無視）
+    css_generated   ブラウザの名前が静的な名前を含み、前後が記号だけ（::before/::after の装飾など）
+    mismatch        それ以外。browser_only / static_only は対応する相手がない数
+    """
+    browser = parse_aria_snapshot(snapshot)
+    roles = _ROLES | {"listbox"}
+    ours = [(r["role"], r["name"]) for r in report["records"] if not r["hidden"] and r["role"] in roles]
+    result = Counter()
+    mismatches = []
+    for role in sorted({r for r, _ in browser} | {r for r, _ in ours}):
+        left = [n for r, n in ours if r == role]
+        right = [n for r, n in browser if r == role]
+        for mine, theirs in zip(left, right):
+            a, b = _flat(mine), _flat(theirs)
+            if a == b:
+                result["match"] += 1
+            elif a and a in b and not re.sub(r"[\W_]", "", b.replace(a, "", 1)):
+                result["css_generated"] += 1
+            else:
+                result["mismatch"] += 1
+                mismatches.append({"role": role, "static": mine, "browser": theirs})
+        result["browser_only"] += max(0, len(right) - len(left))
+        result["static_only"] += max(0, len(left) - len(right))
+    keys = ("match", "css_generated", "mismatch", "browser_only", "static_only")
+    return {"counts": {k: result[k] for k in keys}, "mismatches": mismatches[:50]}
+
+
+def _names_summarize(report: dict) -> dict:
+    roles = Counter(r["role"] for r in report["records"])
+    sources = Counter(r["name_source"] or "none" for r in report["records"])
+    return {"controls": len(report["records"]), "roles": dict(roles), "name_sources": dict(sources),
+            "flags": {k: v for k, v in report["counts"].items() if v}}
+
+
+def _names_main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="blueprobe.py names", description="\U0001f3f7️ 保存済み HTML の操作要素・画像の名前を観測する（近似・ネットワークに出ない）")
+    ap.add_argument("path", type=Path, help="HTML、または btk-browser-dom/1 / html-snapshot/1 の JSON")
+    ap.add_argument("--json", action="store_true")
+    args = ap.parse_args(argv)
+    try:
+        text = args.path.read_text(encoding="utf-8")
+        report = _names_observe_capture(json.loads(text)) if args.path.suffix == ".json" else _names_observe(text)
+    except (OSError, ValueError) as error:
+        print(f"accessible_names: {error}", file=sys.stderr)
+        return 2
+    summary = _names_summarize(report)
+    if args.json:
+        print(json.dumps({"summary": summary, "records": report["records"],
+                          "aria_comparison": report.get("aria_comparison")}, ensure_ascii=False, indent=1))
+        return 0
+    print(f"controls {summary['controls']} roles {summary['roles']}")
+    print(f"name sources {summary['name_sources']}")
+    for flag, count in sorted(summary["flags"].items()):
+        print(f"  {flag}: {count}")
+    for record in report["records"]:
+        if record["flags"]:
+            print(f"  [{','.join(record['flags'])}] {record['role']} {record['name']!r} at {record['element']}")
+    if "aria_comparison" in report:
+        print(f"browser comparison {report['aria_comparison']['counts']}")
+    return 0
+
+
+# ──── headings ────────────────────────────────────────────────────────────────────────────────────────────
+# 保存済み HTML の見出し階層（<h1>〜<h6>）とランドマーク構造（<main>, <nav>, <header> 等）を観測する。
+#
+# 見出しのレベル、テキスト、要素の位置、包含するランドマーク、非表示状態、
+# 構造上の不連続（階層のスキップ、空の見出し、複数の h1、メインランドマークの欠落、
+# 未ラベルのランドマーク等）を記録する。判断はしない。数えるだけ。
+#
+# ネットワークには出ない。
+#
+#     python heading_observations.py page.html [--json]
+#     python heading_observations.py capture.json          # btk-browser-dom/1 または html-snapshot/1
+
+_HEADINGS = {"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 5, "h6": 6}
+_LANDMARK_ROLES = {"main", "navigation", "banner", "contentinfo", "complementary", "region", "search"}
+_SECTIONING_TAGS = {"article", "aside", "main", "nav", "section"}
+
+
+def _is_inside_sectioning(node):
+    cursor = node.parent
+    while cursor is not None and cursor.tag != "#root":
+        if cursor.tag in _SECTIONING_TAGS:
+            return True
+        cursor = cursor.parent
+    return False
+
+
+def _landmark_role(node, ids):
+    explicit = node.attrs.get("role", "").split()
+    if explicit and explicit[0] in _LANDMARK_ROLES:
+        return explicit[0]
+    tag = node.tag
+    if tag == "main":
+        return "main"
+    if tag == "nav":
+        return "navigation"
+    if tag == "aside":
+        return "complementary"
+    if tag == "header":
+        return "banner" if not _is_inside_sectioning(node) else None
+    if tag == "footer":
+        return "contentinfo" if not _is_inside_sectioning(node) else None
+    if tag == "section":
+        return "region" if _landmark_label(node, ids) else None
+    return None
+
+
+def _heading_level(node):
+    """A valid aria-level (integer >= 1) wins. A missing, non-integer, zero or negative
+    aria-level falls back to the HTML level (h1-h6), or to ARIA's default 2 for role=heading."""
+    fallback = _HEADINGS.get(node.tag, 2)
+    raw = node.attrs.get("aria-level", "").strip()
+    if not raw:
+        return fallback
+    try:
+        level = int(raw)
+    except ValueError:
+        return fallback
+    return level if level >= 1 else fallback
+
+
+def _landmark_label(node, ids):
+    """Same name computation as accessible_names (aria-labelledby, aria-label, then title)."""
+    return _name(node, None, ids, {})[0]
+
+
+def _find_enclosing_landmark(node, ids):
+    cursor = node.parent
+    while cursor is not None and cursor.tag != "#root":
+        role = _landmark_role(cursor, ids)
+        if role is not None:
+            label = _landmark_label(cursor, ids)
+            return {"tag": cursor.tag, "role": role, "label": label, "element": _path(cursor)}
+        cursor = cursor.parent
+    return None
+
+
+def _headings_observe(html: str, url: str | None = None) -> dict:
+    """1 ページの見出し階層とランドマーク構造の観測。
+
+    flags (構造的な状態の観測区分):
+      empty_heading            テキストが空の見出し
+      skipped_heading_level    例: h1 の直後に h3 が出現（レベル2をスキップ）
+      multiple_h1              ページ内に複数の h1 が存在
+      missing_main_landmark    コンテンツが存在するのに <main> / role="main" が存在しない
+      unlabelled_landmark      ラベルが付けられていないランドマーク（section / nav 等）
+      heading_outside_landmark ランドマーク外にある見出し
+    """
+    if not isinstance(html, str):
+        raise TypeError("html must be str")
+    tree = _Tree()
+    tree.feed(html)
+    tree.close()
+    nodes = list(_walk(tree.root))
+    ids = {n.attrs["id"]: n for n in nodes if n.attrs.get("id")}
+    report = new_report()
+
+    last_visible_level = 0
+    h1_count = 0
+    has_main_landmark = False
+
+    for index, node in enumerate(nodes):
+        hidden = aria_hidden = False
+        cursor = node
+        while cursor is not None and cursor.tag != "#root":
+            hidden = hidden or "hidden" in cursor.attrs or (
+                cursor is not node and cursor.tag == "details" and "open" not in cursor.attrs
+                and not (node.tag == "summary" and node.parent is cursor))
+            aria_hidden = aria_hidden or cursor.attrs.get("aria-hidden") == "true"
+            cursor = cursor.parent
+        is_hidden = hidden or aria_hidden
+
+        # Check if node is a landmark
+        role = _landmark_role(node, ids)
+        if role is not None:
+            if role == "main" and not is_hidden:
+                has_main_landmark = True
+            label = _landmark_label(node, ids)
+            landmark_flags = []
+            if role in ("region", "navigation") and not label:
+                landmark_flags.append("unlabelled_landmark")
+            record = {"key": f"{url or ''}#landmark-{index}", "type": "landmark", "url": url,
+                      "tag": node.tag, "role": role, "label": label, "element": _path(node),
+                      "hidden": is_hidden, "flags": landmark_flags}
+            report["records"].append(record)
+            for flag in landmark_flags:
+                report["counts"][flag] += 1
+
+        # Check if node is a heading
+        if node.tag in _HEADINGS or node.attrs.get("role") == "heading":
+            level = _heading_level(node)
+            text = _text(node, ids)
+            enclosing = _find_enclosing_landmark(node, ids)
+            heading_flags = []
+            if not text:
+                heading_flags.append("empty_heading")
+            if not is_hidden:
+                if level == 1:
+                    h1_count += 1
+                    if h1_count > 1:
+                        heading_flags.append("multiple_h1")
+                if last_visible_level > 0 and level > last_visible_level + 1:
+                    heading_flags.append("skipped_heading_level")
+                last_visible_level = level
+            if enclosing is None and not is_hidden:
+                heading_flags.append("heading_outside_landmark")
+
+            record = {"key": f"{url or ''}#heading-{index}", "type": "heading", "url": url,
+                      "level": level, "tag": node.tag, "text": text, "element": _path(node),
+                      "landmark": enclosing, "hidden": is_hidden, "flags": heading_flags}
+            report["records"].append(record)
+            for flag in heading_flags:
+                report["counts"][flag] += 1
+
+    headings = [r for r in report["records"] if r.get("type") == "heading" and not r["hidden"]]
+    if headings and not has_main_landmark:
+        report["counts"]["missing_main_landmark"] = 1
+        report["records"].append({"key": f"{url or ''}#page", "type": "page", "url": url,
+                                  "visible_headings": len(headings), "flags": ["missing_main_landmark"]})
+
+    return report
+
+
+def _headings_observe_capture(capture: dict) -> dict:
+    """btk-browser-dom/1 または html-snapshot/1 の JSON キャプチャを観測する。"""
+    if capture.get("schema") not in ("btk-browser-dom/1", "html-snapshot/1") or not isinstance(capture.get("html"), str):
+        raise ValueError("expected btk-browser-dom/1 or html-snapshot/1")
+    return _headings_observe(capture["html"], capture.get("url"))
+
+
+def _headings_summarize(report: dict) -> dict:
+    headings = [r for r in report["records"] if r.get("type") == "heading"]
+    landmarks = [r for r in report["records"] if r.get("type") == "landmark"]
+    levels = Counter(f"h{r['level']}" for r in headings)
+    return {"headings": len(headings), "landmarks": len(landmarks), "levels": dict(sorted(levels.items())),
+            "flags": {k: v for k, v in report["counts"].items() if v}}
+
+
+def _headings_main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="blueprobe.py headings", description="\U0001f9ed 保存済み HTML の見出し階層とランドマーク構造を観測する（ネットワークに出ない）")
+    ap.add_argument("path", type=Path, help="HTML、または btk-browser-dom/1 / html-snapshot/1 の JSON")
+    ap.add_argument("--json", action="store_true")
+    args = ap.parse_args(argv)
+    try:
+        text = args.path.read_text(encoding="utf-8")
+        report = _headings_observe_capture(json.loads(text)) if args.path.suffix == ".json" else _headings_observe(text)
+    except (OSError, ValueError) as error:
+        print(f"heading_observations: {error}", file=sys.stderr)
+        return 2
+    summary = _headings_summarize(report)
+    if args.json:
+        print(json.dumps({"summary": summary, "records": report["records"]}, ensure_ascii=False, indent=1))
+        return 0
+    print(f"headings {summary['headings']} levels {summary['levels']} landmarks {summary['landmarks']}")
+    for flag, count in sorted(summary["flags"].items()):
+        print(f"  {flag}: {count}")
+    for record in report["records"]:
+        if record.get("type") == "heading":
+            lm = f" in {record['landmark']['role']}" if record.get("landmark") else " (outside landmark)"
+            flags_str = f" [{','.join(record['flags'])}]" if record["flags"] else ""
+            print(f"  {flags_str} h{record['level']} {record['text']!r}{lm} at {record['element']}")
+        elif record.get("type") == "landmark":
+            flags_str = f" [{','.join(record['flags'])}]" if record["flags"] else ""
+            label_str = f" ({record['label']!r})" if record.get("label") else ""
+            print(f"  {flags_str} landmark {record['role']}{label_str} at {record['element']}")
+    return 0
+
+
+# ──── web ─────────────────────────────────────────────────────────────────────────────────────────────────
+# Read saved Web observations and source inventories, without a browser or SDK.
+#
+# This is an observation adapter, never a native-equivalence or integrity verifier.
+
+WEB_SCHEMA = "web-portability-observations/1"
+_WEB_LANGUAGES = {".dart": "dart", ".kt": "kotlin", ".swift": "swift"}
+_WEB_EXCLUDED = {".git", ".dart_tool", ".venv", "node_modules", "build", "Pods", "vendor"}
+_WEB_BUILD_FILES = {"pubspec.yaml", "pubspec.lock", "Podfile", "Podfile.lock",
+               "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts",
+               "gradle-wrapper.properties", "project.pbxproj", "Package.swift", "Package.resolved"}
+
+
+def source_inventory(root: Path) -> list[dict]:
+    """Hash source bytes; do not infer symbols, call graphs or executable behavior."""
+    rows = []
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root)
+        if any(part in _WEB_EXCLUDED for part in relative.parts) or path.is_symlink():
+            continue
+        if (path.suffix not in _WEB_LANGUAGES and path.name not in _WEB_BUILD_FILES) or not path.is_file():
+            continue
+        data = path.read_bytes()
+        rows.append({"path": relative.as_posix(), "language": _WEB_LANGUAGES.get(path.suffix),
+                     "kind": "build-config" if path.name in _WEB_BUILD_FILES else "source",
+                     "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
+    return rows
+
+
+def _web_controls(value):
+    if not isinstance(value, list) or not value:
+        raise ValueError("missing control inventory")
+    for control in value:
+        if not isinstance(control, dict) or not isinstance(control.get("label"), str):
+            raise ValueError("invalid control label")
+        if not isinstance(control.get("visible"), bool):
+            raise ValueError("invalid visibility")
+        box = control.get("box", {})
+        if not isinstance(box, dict):
+            raise ValueError("invalid box")
+        for name in ("x", "y", "width", "height"):
+            number = box.get(name)
+            if type(number) not in (int, float) or not math.isfinite(number):
+                raise ValueError("invalid box coordinate")
+        if box["width"] < 0 or box["height"] < 0:
+            raise ValueError("negative box size")
+    return value
+
+
+def _web_nonfinite(value):
+    raise ValueError(f"non-finite JSON number: {value}")
+
+
+def _web_observe(root: Path, *, source_root: Path | None = None) -> dict:
+    """Preserve receipts verbatim beside derived geometry and action records.
+
+    Consumer-specific catalogue coverage and screenshot verification remain with
+    the producer's existing verifier. Source hashes are not route bindings.
+    """
+    root = Path(root)
+    if not root.is_dir():
+        raise ValueError("observation root must be a directory")
+    report = new_report()
+    builds = set()
+    for path in sorted(root.rglob("web-observation.json")):
+        key = path.relative_to(root).as_posix()
+        raw = None
+        try:
+            data = path.read_bytes()
+            raw = data.decode("utf-8")
+            raw = json.loads(raw, parse_constant=_web_nonfinite)
+            if not isinstance(raw, dict) or raw.get("schema") != "flutter-web-observation/1":
+                raise ValueError("unsupported observation schema")
+            build = raw.get("build_sha")
+            if not isinstance(build, str) or len(build) != 40 or any(c not in "0123456789abcdef" for c in build):
+                raise ValueError("missing immutable build SHA")
+            display = raw["runtime"]["display"]
+            controls = _web_controls(display["controls"])
+            if not isinstance(raw.get("url"), str) or not raw["url"]:
+                raise ValueError("missing observed URL")
+            exploration_path = path.with_name("exploration.json")
+            exploration = None
+            if exploration_path.exists():
+                exploration = json.loads(exploration_path.read_text(encoding="utf-8"), parse_constant=_web_nonfinite)
+                if exploration.get("schema") != "flutter-web-exploration/1" or not isinstance(exploration.get("actions"), list):
+                    raise ValueError("unsupported exploration receipt")
+            builds.add(build)
+            report["records"].append({"key": key, "raw": raw,
+                "raw_exploration": exploration,
+                "derived": {"url": raw["url"], "reported_build_sha": build,
+                    "controls": controls, "viewport": display.get("viewport"),
+                    "actions": None if exploration is None else exploration["actions"],
+                    "producer_status": raw.get("status"),
+                    "capture_errors": raw.get("capture_errors"),
+                    "evidence_sha256": hashlib.sha256(data).hexdigest()}})
+            report["counts"]["observations"] += 1
+            if raw.get("status") != "passed" or raw.get("capture_errors"):
+                report["counts"]["producer_failed_or_incomplete"] += 1
+            if exploration is None:
+                report["counts"]["missing_action_receipts"] += 1
+        except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+            report["counts"]["invalid"] += 1
+            report["unknown"].append({"key": key, "raw": raw, "reason": str(error)})
+    if not report["records"]:
+        report["counts"]["invalid"] += 1
+        report["unknown"].append({"key": ".", "raw": None, "reason": "no usable observations"})
+    if len(builds) > 1:
+        report["counts"]["invalid"] += 1
+        report["unknown"].append({"key": ".", "raw": sorted(builds), "reason": "mixed reported build SHAs"})
+    if source_root is not None and not Path(source_root).is_dir():
+        raise ValueError("source root must be a directory")
+    return {"schema": WEB_SCHEMA, "scope": "saved-web-observations",
+        "current_code_executed": False, "native_equivalence_verified": False,
+        "report": report,
+        "sources": source_inventory(Path(source_root)) if source_root is not None else [],
+        "unobserved": ["backend request/response bodies and state transitions",
+            "full DOM/accessibility hierarchy and per-action geometry/state changes",
+            "OS permissions, native plugins and device side effects",
+            "source-to-route bindings and source/build correspondence",
+            "independent Python/Node implementation conformance"]}
+
+
+def _web_main(argv=None):
+    parser = argparse.ArgumentParser(prog="blueprobe.py web", description="\U0001f310 Read saved Web observations and source inventories, without a browser or SDK.")
+    parser.add_argument("observations", type=Path)
+    parser.add_argument("--source-root", type=Path)
+    args = parser.parse_args(argv)
+    try:
+        result = _web_observe(args.observations, source_root=args.source_root)
+    except (OSError, ValueError) as error:
+        parser.exit(2, f"{error}\n")
+    print(json.dumps(result, ensure_ascii=True, indent=2, allow_nan=False))
+    return 2 if result["report"]["counts"]["invalid"] else 0
+
+
+# ──── github ──────────────────────────────────────────────────────────────────────────────────────────────
+# Extract repository-scoped issue and CI observations from a saved parent audit.
+
+def _github_observe(snapshot: dict, repository: str) -> dict:
+    """Observe the existing parent-audit/1 records without network access or diagnosis."""
+    if not isinstance(snapshot, dict) or snapshot.get("schema") != "parent-audit/1":
+        raise ValueError("expected parent-audit/1 snapshot")
+    if not isinstance(repository, str) or not repository or "/" in repository:
+        raise ValueError("repository must be the repository name in the snapshot")
+    if not isinstance(snapshot.get("records"), list) or not isinstance(snapshot.get("repositories"), list):
+        raise ValueError("snapshot records and repositories must be lists")
+    report = new_report()
+    generated_at = snapshot.get("generated_at")
+    try:
+        observed = datetime.datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+        if observed.tzinfo is None:
+            raise ValueError("observation time requires a timezone")
+    except (AttributeError, TypeError, ValueError):
+        report["unknown"].append({"key": repository, "reason": "snapshot observation time unavailable or invalid"})
+    if not isinstance(snapshot.get("owner"), str) or not snapshot["owner"].strip():
+        report["unknown"].append({"key": repository, "reason": "snapshot owner unavailable or invalid"})
+    if repository not in snapshot["repositories"]:
+        report["unknown"].append({"key": repository, "reason": "repository not listed in snapshot"})
+    truncated = snapshot.get("truncated")
+    if not isinstance(truncated, list) or not all(isinstance(name, str) for name in truncated):
+        report["unknown"].append({"key": repository, "reason": "snapshot truncation list unavailable or invalid"})
+    elif repository in truncated:
+        report["unknown"].append({"key": repository, "reason": "repository observation truncated"})
+    errors = snapshot.get("errors")
+    if not isinstance(errors, list):
+        report["unknown"].append({"key": repository, "reason": "snapshot error list unavailable"})
+    elif any(not isinstance(error, dict) or not isinstance(error.get("repository"), str) for error in errors):
+        report["unknown"].append({"key": repository, "reason": "invalid collection error entries"})
+    else:
+        relevant = [error for error in errors if error["repository"] == repository]
+        if relevant:
+            report["unknown"].append({"key": repository, "reason": "repository collection failed", "raw": relevant})
+    for index, item in enumerate(snapshot["records"]):
+        if not isinstance(item, dict):
+            report["unknown"].append({"key": str(index), "reason": "invalid record", "raw": item})
+            continue
+        if item.get("repository") != repository:
+            continue
+        kind = item.get("kind")
+        if kind not in ("issue", "pr") or not isinstance(item.get("id"), str):
+            report["unknown"].append({"key": str(index), "reason": "unsupported record", "raw": item})
+            continue
+        if kind == "pr" and (not isinstance(item.get("ci"), str) or not item["ci"]
+                             or not isinstance(item.get("head_sha"), str) or not item["head_sha"]):
+            report["unknown"].append({"key": item["id"], "reason": "PR CI or head identity unavailable", "raw": item})
+        report["records"].append({"key": item["id"], "raw": item,
+                                  "derived": {"repository": repository, "kind": kind,
+                                              "observed_ci": item.get("ci"),
+                                              "labels": item.get("labels"),
+                                              "head_sha": item.get("head_sha")}})
+        report["counts"][kind] += 1
+    return {"schema": "github-repository-observations/1", "generated_at": snapshot.get("generated_at"),
+            "owner": snapshot.get("owner"), "repository": repository, "report": report}
+
+
+def _github_main(argv=None):
+    parser = argparse.ArgumentParser(prog="blueprobe.py github", description="\U0001f419 Extract repository-scoped issue and CI observations from a saved parent audit.")
+    parser.add_argument("snapshot", type=Path)
+    parser.add_argument("repository", help="repository name as listed in parent-audit/1")
+    args = parser.parse_args(argv)
+    try:
+        snapshot = json.loads(args.snapshot.read_text(encoding="utf-8"))
+        result = _github_observe(snapshot, args.repository)
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+    print(json.dumps(result, ensure_ascii=False))
+    return 2 if result["report"]["unknown"] else 0
+
+
+# ──── tools: python blueprobe.py <tool> … / blueprobe.<tool>.observe(…) ──────────────────────────────
+emoji = SimpleNamespace(observe=_emoji_observe, observe_snapshot=_emoji_observe_snapshot, summarize=_emoji_summarize, emoji_sequences=emoji_sequences, main=_emoji_main)
+names = SimpleNamespace(observe=_names_observe, observe_capture=_names_observe_capture, summarize=_names_summarize, parse_aria_snapshot=parse_aria_snapshot, compare_aria_snapshot=compare_aria_snapshot, main=_names_main)
+headings = SimpleNamespace(observe=_headings_observe, observe_capture=_headings_observe_capture, summarize=_headings_summarize, main=_headings_main)
+web = SimpleNamespace(observe=_web_observe, source_inventory=source_inventory, main=_web_main)
+github = SimpleNamespace(observe=_github_observe, main=_github_main)
+
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="取得済みページをオフラインで再解析する")
+    argv = list(sys.argv[1:] if argv is None else argv)
+    tool = globals().get(argv[0]) if argv else None
+    if isinstance(tool, SimpleNamespace):  # names / headings / emoji / web / github
+        return tool.main(argv[1:])
+    ap = argparse.ArgumentParser(description="\U0001f50e 取得済みページをオフラインで再解析する",
+                                 epilog="\U0001f9f0 tools: \U0001f3f7️ names · \U0001f9ed headings · \U0001f600 emoji · \U0001f310 web · \U0001f419 github "
+                                        "（python blueprobe.py <tool> --help）")
     ap.add_argument("url", nargs="?", help="HTTP(S) URL to fetch and classify with curl")
-    ap.add_argument("--source", help="取得元モジュール名 (例: npb_calendar, html_source)")
+    ap.add_argument("--source", help="取得元モジュール名 (例: html_source)")
     patterns = ap.add_mutually_exclusive_group()
     patterns.add_argument("--pattern", help="html_source 専用の DOM パターンキー（一覧: --list-patterns）")
     ap.add_argument("--cache", type=Path, help="QueRyu のキャッシュディレクトリ")
@@ -1105,7 +2166,6 @@ def main(argv=None) -> int:
     if args.pattern is not None:
         if args.source != "html_source":
             ap.error("--pattern requires --source html_source")
-        from html_source import HtmlSource
         try:
             source = HtmlSource(pattern=args.pattern)
         except ValueError as exc:
@@ -1117,13 +2177,12 @@ def main(argv=None) -> int:
     if not manifest.exists():
         print(f"no cache manifest: {manifest}", file=sys.stderr)
         return 1
-    aoi_sibling_path("queryu")
     try:
         from queryu import Cache
     except ModuleNotFoundError as error:
         if error.name != "queryu":
             raise
-        print("--cache requires QueRyu: pass AOI_ROOT=<Aoi root> (uses its queryu/) "
+        print("--cache requires QueRyu: run from Aoi (python aoi.py blueprobe …; aoi.py puts queryu/ on the path) "
               "or put queryu on PYTHONPATH", file=sys.stderr)
         return 2
     records: list = []
@@ -1144,5 +2203,7 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    # Colocated optional components are enabled only for an explicit cache request.
+    if any(arg == "--cache" or arg.startswith("--cache=") for arg in sys.argv[1:]):
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
     raise SystemExit(main())

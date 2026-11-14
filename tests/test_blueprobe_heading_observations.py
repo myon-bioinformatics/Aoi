@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 
-import heading_observations as ho
+import blueprobe
+from blueprobe import headings as ho
 
 PAGES = Path(__file__).resolve().parent / "cases" / "pages"
 
@@ -144,8 +145,8 @@ def test_html_heading_aria_level_falls_back_to_html_level(level, expected):
 
 
 def test_landmark_label_and_tree_are_shared_with_accessible_names():
-    import accessible_names
-    assert ho._Tree is accessible_names._Tree
+    # 見出しと名前は同じ木（blueprobe._Tree）と同じ名前計算を使う
+    assert blueprobe.names.observe.__globals__ is ho.observe.__globals__
     html = '<span id="l">From <b aria-hidden="true">x</b>id</span><section aria-labelledby="l"><h2>A</h2></section>'
     records = ho.observe(html)["records"]
     assert [(r["role"], r["label"]) for r in records if r["type"] == "landmark"] == [("region", "From id")]

@@ -106,6 +106,22 @@ def test_generator_rejects_changed_transitive_sources(tmp_path, monkeypatch, unt
         build(tmp_path, manifest, tmp_path / 'tool.py', check=True)
 
 
+def test_blueprobe_bundle_snapshot_drops_the_library_file_anchor(tmp_path):
+    import runpy
+    api = runpy.run_path(str(ROOT / 'scripts/build_distributions.py'))
+    prepare = api['_prepare_bundle_snapshot']
+    target = tmp_path / 'blueprobe' / 'blueprobe.py'
+    target.parent.mkdir()
+    target.write_text(
+        'root = Path(value).expanduser().resolve() if value else Path(here or __file__).resolve().parent.parent\n',
+        encoding='utf-8')
+    assert prepare(tmp_path) is True
+    text = target.read_text(encoding='utf-8')
+    assert '__file__' not in text
+    assert "else Path('.')" in text
+    assert prepare(tmp_path) is False
+
+
 def test_omit_from_bundle_hides_files_from_minpy_and_keeps_the_checkout(tmp_path, monkeypatch):
     import runpy
     api = runpy.run_path(str(ROOT / 'scripts/build_distributions.py'))

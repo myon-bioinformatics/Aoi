@@ -25,7 +25,7 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 ### 子の検査の本体 `scripts/child_checks.py`（shared-tools.lock）
 
-6つの子が conftest.py と tests に同じ中身で持っている検査（AOI_ROOT の解決と import 経路、親ワークフローの pin、兄弟・scripts/ への参照禁止、Node 入口と Python の一致）の本体は Aoi の `scripts/child_checks.py` が原本で、`shared-tools.lock.json` で `vendor/aoi/scripts/child_checks.py` として子に配る（numpy_min・py_launch.cjs と同じ契約。標準ライブラリだけ、pytest を import しない）。子に残すのは子ごとに違う値（PIN、第三者依存、既知の例外、Node の入口名）と、本体を呼ぶ数行だけ。採用前に `tests/test_child_registry.py` が各 prefix で子の現在の検査と同じ答えになることを確かめる。採用した子は lock の `consumers` に足す。
+6つの子が conftest.py と tests に同じ中身で持っている検査（AOI_ROOT の解決と import 経路、親ワークフローの pin、兄弟・scripts/ への参照禁止、Node 入口と Python の一致）の本体は Aoi の `scripts/child_checks.py` が原本で、`shared-tools.lock.json` で `vendor/aoi/scripts/child_checks.py` として子に配る（numpy_min・py_launch.cjs と同じ契約。標準ライブラリだけ、pytest を import しない）。子に残すのは子ごとに違う値（PIN、第三者依存、既知の例外、Node の入口名）と、本体を呼ぶ数行だけ。採用前に `tests/test_child_checks.py` が各 prefix で子の現在の検査と同じ答えになることを確かめる。採用した子は lock の `consumers` に足す。
 
 
 2026-11-13: SakAnalytics の main `05e24256cc06042949de40a8397790333310db5e`（#36〜#43。#43 は 8 回までの得点で作り直す `wl_*8` の列）を、履歴を保持した `git subtree merge`（squash なし）で取り込みました。prefix の tree は子の main と一致します。`dist/sakanalytics_min.py` と `distributions.json` の source は、親の `tools/minpy.py` が要るので、この取り込みでは作り直していません。

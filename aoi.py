@@ -69,8 +69,8 @@ import aoi_paths
 # Sibling directories each child imports. Not the child itself, not ".", not Aoi's root.
 # "dragowing" is absent on purpose: that directory holds dragowing.py, which would shadow the package.
 SIBLINGS: dict[str, tuple[str, ...]] = {
-    "blueprobe": ("queryu",),                 # --cache: from queryu import Cache
-    "queryu": ("blueprobe",),                 # extraction; the caller's BlueProbe stays first
+    "blueprobe": ("queryu", "blueprobe/npb"),        # --cache: from queryu import Cache; --source npb_* (BlueProbe #53)
+    "queryu": ("blueprobe", "blueprobe/npb"),        # extraction (npb_calendar, npb_team_annual); the caller's BlueProbe stays first
     "nagoyaction": (),                        # its scripts add their own paths from __file__
     "sakanalytics": ("pythdragoras",),        # import propositions
     "pythdragoras": (),                       # local modules only

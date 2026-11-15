@@ -125,8 +125,8 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
     import aoi
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     assert aoi.SIBLINGS == {
-        "blueprobe": ("queryu",),
-        "queryu": ("blueprobe",),
+        "blueprobe": ("queryu", "blueprobe/npb"),
+        "queryu": ("blueprobe", "blueprobe/npb"),
         "nagoyaction": (),
         "sakanalytics": ("pythdragoras",),
         "pythdragoras": (),
@@ -135,7 +135,7 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
     assert "dragowing" not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}
     assert "." not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}
     env = aoi.environment({"PYTHONPATH": "kept"}, child="queryu")
-    assert env["PYTHONPATH"].split(os.pathsep) == ["kept", str((root / "blueprobe").resolve())]
+    assert env["PYTHONPATH"].split(os.pathsep) == ["kept", str((root / "blueprobe").resolve()), str((root / "blueprobe" / "npb").resolve())]
     bare = aoi.environment({"PYTHONPATH": "kept"})
     assert bare["PYTHONPATH"].split(os.pathsep)[0] == "kept"
     assert str(root) not in bare["PYTHONPATH"].split(os.pathsep)

@@ -28,8 +28,9 @@ improvement is claimed. Full integration tests remain in CI.
 
 Benchmark parity checks use explicit conditions and `SystemExit`, so they remain
 active under `python -O`. A subprocess regression test injects incorrect results
-and verifies a nonzero exit with a mismatch diagnostic and no success JSON:
+and verifies a nonzero exit with a mismatch diagnostic and no success JSON
+(`BenchmarkGuardTests`, in the same file as the regression tests):
 
 ```sh
-python -S -m unittest discover -s tests -p test_benchmark_optimization_guard.py -v
+python -S -m unittest discover -s tests -p test_neighbor_retention.py -v
 ```

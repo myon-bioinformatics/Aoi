@@ -562,28 +562,6 @@
       "files": 1,
       "import_sites": 1
     },
-    "pattern_postprocess": {
-      "attribute_uses": 3,
-      "attributes": {
-        "get_pattern": 3
-      },
-      "by_tree": {
-        "aoi": {
-          "attribute_uses": 3,
-          "attributes": {
-            "get_pattern": 3
-          },
-          "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 2
-        }
-      },
-      "declared": [],
-      "distinct_attributes": 1,
-      "dynamic_import_sites": 0,
-      "files": 1,
-      "import_sites": 2
-    },
     "pixelwater": {
       "attribute_uses": 3,
       "attributes": {
@@ -841,7 +819,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1464,
+      "attribute_uses": 1463,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -852,7 +830,7 @@
         "approx": 397,
         "fail": 39,
         "fixture": 60,
-        "hookimpl": 5,
+        "hookimpl": 4,
         "importorskip": 14,
         "mark.parametrize": 345,
         "mark.skipif": 26,
@@ -864,7 +842,7 @@
       },
       "by_tree": {
         "aoi": {
-          "attribute_uses": 15,
+          "attribute_uses": 14,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -872,7 +850,7 @@
             "StashKey": 1,
             "fail": 4,
             "fixture": 3,
-            "hookimpl": 3,
+            "hookimpl": 2,
             "importorskip": 1
           },
           "dynamic_import_sites": 0,
@@ -1317,23 +1295,13 @@
     },
     {
       "attributes": {
-        "get_pattern": 3
-      },
-      "dynamic_lines": [],
-      "file": "conftest.py",
-      "import_sites": 2,
-      "package": "pattern_postprocess",
-      "tree": "aoi"
-    },
-    {
-      "attributes": {
         "ExitCode.OK": 1,
         "ExitCode.TESTS_FAILED": 1,
         "Module": 1,
         "StashKey": 1,
         "fail": 4,
         "fixture": 3,
-        "hookimpl": 3,
+        "hookimpl": 2,
         "importorskip": 1
       },
       "dynamic_lines": [],

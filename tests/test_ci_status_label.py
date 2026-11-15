@@ -179,7 +179,6 @@ on:
       - 'numpy_min backends'
       - 'Pages'
       - 'requests tqdm biopython surface'
-      - 'py_launch tests'
       - 'Season simulator'
       - 'Shared tool lock'
       - 'Shrink linalg experiment'

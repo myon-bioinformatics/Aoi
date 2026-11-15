@@ -231,7 +231,7 @@
       "import_sites": 1
     },
     "numpy": {
-      "attribute_uses": 317,
+      "attribute_uses": 316,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
@@ -270,7 +270,7 @@
         "integer": 1,
         "isfinite": 1,
         "linalg.LinAlgError": 3,
-        "linalg.lstsq": 9,
+        "linalg.lstsq": 8,
         "linalg.norm": 2,
         "linalg.pinv": 1,
         "linalg.svd": 3,
@@ -412,7 +412,7 @@
           "import_sites": 1
         },
         "research": {
-          "attribute_uses": 60,
+          "attribute_uses": 59,
           "attributes": {
             "array": 9,
             "column_stack": 4,
@@ -421,7 +421,7 @@
             "empty": 1,
             "exp": 1,
             "linalg.LinAlgError": 1,
-            "linalg.lstsq": 4,
+            "linalg.lstsq": 3,
             "log": 10,
             "median": 5,
             "ones": 5,
@@ -432,8 +432,8 @@
             "zeros": 1
           },
           "dynamic_import_sites": 0,
-          "files": 3,
-          "import_sites": 3
+          "files": 2,
+          "import_sites": 2
         },
         "shrink": {
           "attribute_uses": 2,
@@ -500,8 +500,8 @@
       ],
       "distinct_attributes": 69,
       "dynamic_import_sites": 0,
-      "files": 22,
-      "import_sites": 23
+      "files": 21,
+      "import_sites": 22
     },
     "ortools": {
       "attribute_uses": 2,
@@ -589,7 +589,7 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1086,
+      "attribute_uses": 1073,
       "attributes": {
         "Boolean": 15,
         "Config.set_tbl_rows": 1,
@@ -598,50 +598,47 @@
         "Float32": 1,
         "Float64": 73,
         "Int32": 37,
-        "Int64": 41,
+        "Int64": 39,
         "Series": 17,
-        "Utf8": 24,
+        "Utf8": 23,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 463,
+        "col": 459,
         "concat": 12,
         "concat_list": 1,
-        "concat_str": 3,
+        "concat_str": 2,
         "corr": 2,
         "exceptions.PolarsError": 1,
         "first": 4,
         "format": 2,
         "int_range": 3,
         "len": 11,
-        "lit": 35,
+        "lit": 32,
         "max_horizontal": 1,
         "read_csv": 1,
-        "read_ndjson": 26,
+        "read_ndjson": 25,
         "sum": 2,
-        "when": 18
+        "when": 17
       },
       "by_tree": {
         "cycles": {
-          "attribute_uses": 100,
+          "attribute_uses": 87,
           "attributes": {
             "Boolean": 3,
             "DataFrame": 15,
             "Float64": 3,
             "Int32": 3,
-            "Int64": 2,
-            "Utf8": 2,
-            "col": 50,
+            "Utf8": 1,
+            "col": 46,
             "concat": 2,
-            "concat_str": 1,
             "corr": 2,
             "len": 1,
-            "lit": 7,
-            "read_ndjson": 8,
-            "when": 1
+            "lit": 4,
+            "read_ndjson": 7
           },
           "dynamic_import_sites": 0,
-          "files": 8,
-          "import_sites": 8
+          "files": 7,
+          "import_sites": 7
         },
         "dragowing": {
           "attribute_uses": 3,
@@ -793,8 +790,8 @@
       ],
       "distinct_attributes": 28,
       "dynamic_import_sites": 1,
-      "files": 47,
-      "import_sites": 52
+      "files": 46,
+      "import_sites": 51
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -819,7 +816,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1463,
+      "attribute_uses": 1471,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -828,15 +825,15 @@
         "StashKey": 3,
         "UsageError": 11,
         "approx": 397,
-        "fail": 39,
-        "fixture": 60,
+        "fail": 40,
+        "fixture": 61,
         "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 345,
-        "mark.skipif": 26,
+        "mark.parametrize": 349,
+        "mark.skipif": 27,
         "param": 1,
         "raises": 535,
-        "skip": 15,
+        "skip": 16,
         "warns": 3,
         "xfail": 1
       },
@@ -973,16 +970,16 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 446,
+          "attribute_uses": 454,
           "attributes": {
             "approx": 104,
-            "fail": 13,
-            "fixture": 19,
+            "fail": 14,
+            "fixture": 20,
             "importorskip": 3,
-            "mark.parametrize": 127,
-            "mark.skipif": 10,
+            "mark.parametrize": 131,
+            "mark.skipif": 11,
             "raises": 165,
-            "skip": 5
+            "skip": 6
           },
           "dynamic_import_sites": 0,
           "files": 28,
@@ -1349,22 +1346,6 @@
       },
       "dynamic_lines": [],
       "file": "cycles/c001-chunichi/exploratory/r18_partial_confirmation.py",
-      "import_sites": 1,
-      "package": "polars",
-      "tree": "cycles"
-    },
-    {
-      "attributes": {
-        "Int64": 2,
-        "Utf8": 1,
-        "col": 4,
-        "concat_str": 1,
-        "lit": 3,
-        "read_ndjson": 1,
-        "when": 1
-      },
-      "dynamic_lines": [],
-      "file": "cycles/c001-chunichi/exploratory/streak_unknown.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "cycles"
@@ -2787,43 +2768,25 @@
     },
     {
       "attributes": {
-        "array": 5,
-        "column_stack": 1,
-        "concatenate": 2,
+        "array": 7,
+        "column_stack": 3,
+        "concatenate": 5,
         "corrcoef": 1,
-        "linalg.LinAlgError": 1,
-        "linalg.lstsq": 1,
-        "log": 1,
-        "ones": 1,
-        "percentile": 1,
-        "random.default_rng": 1,
-        "sqrt": 1,
-        "where": 1
-      },
-      "dynamic_lines": [],
-      "file": "research/bigmac-ruler/staple_bigmac_check.py",
-      "import_sites": 1,
-      "package": "numpy",
-      "tree": "research"
-    },
-    {
-      "attributes": {
-        "array": 2,
-        "column_stack": 2,
-        "concatenate": 3,
         "empty": 1,
         "exp": 1,
+        "linalg.LinAlgError": 1,
         "linalg.lstsq": 2,
-        "log": 8,
+        "log": 9,
         "median": 5,
-        "ones": 2,
-        "percentile": 3,
-        "random.default_rng": 3,
-        "where": 3,
+        "ones": 3,
+        "percentile": 4,
+        "random.default_rng": 4,
+        "sqrt": 1,
+        "where": 4,
         "zeros": 1
       },
       "dynamic_lines": [],
-      "file": "research/bigmac-ruler/synthetic_staples.py",
+      "file": "research/bigmac-ruler/staple_bigmac_check.py",
       "import_sites": 1,
       "package": "numpy",
       "tree": "research"
@@ -3604,10 +3567,15 @@
     },
     {
       "attributes": {
-        "raises": 1
+        "fail": 1,
+        "fixture": 1,
+        "mark.parametrize": 4,
+        "mark.skipif": 1,
+        "raises": 1,
+        "skip": 1
       },
       "dynamic_lines": [],
-      "file": "tests/test_vendor_uv_tool_build.py",
+      "file": "tests/test_vendor_tools.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

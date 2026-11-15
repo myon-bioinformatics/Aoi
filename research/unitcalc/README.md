@@ -8,8 +8,7 @@
 
 | ファイル | 役割 |
 |---|---|
-| [`unitcalc.py`](unitcalc.py) | 実装（次元・量・単位表・構文・表示・CLI）。標準ライブラリのみ |
-| [`benchmark.py`](benchmark.py) | 速さの目安。生サンプルを JSON で出す |
+| [`unitcalc.py`](unitcalc.py) | 実装（次元・量・単位表・構文・表示・CLI）。⏱ `--benchmark` で速さの目安（生サンプルの JSON）。標準ライブラリのみ |
 | `tests/test_unitcalc.py` | 契約と反例（185 件） |
 
 ```bash
@@ -121,7 +120,7 @@ unitcalc --dim JPY --dim item "1000 JPY % 300 JPY/item"    # 100 JPY（あまり
 
 ## 実測
 
-2026-11-07、Linux x86_64・CPython 3.13.18。各時間はウォームアップ後 7 回の中央値（1 回あたり）。生サンプルは `python research/unitcalc/benchmark.py` が JSON で出す。
+2026-11-07、Linux x86_64・CPython 3.13.18。各時間はウォームアップ後 7 回の中央値（1 回あたり）。生サンプルは `python research/unitcalc/unitcalc.py --benchmark` が JSON で出す。
 
 | 項目 | 中央値 |
 |---|---:|
@@ -157,7 +156,7 @@ unitcalc --dim JPY --dim item "1000 JPY % 300 JPY/item"    # 100 JPY（あまり
 
 ## 継続時の入口
 
-`unitcalc.py` が実装、`tests/test_unitcalc.py` が契約と反例、`benchmark.py` が測定。依存を足さずに再開できる。次は、不確かさつきの測定値の定数（G、m_e など。厳密な包含とは別の意味づけが要る）、誤差球どうしの大小比較、`shrink-index` / `bigmac-ruler` での採用を、それぞれ別の変更として検討する。
+`unitcalc.py` が実装、`tests/test_unitcalc.py` が契約と反例、`unitcalc.py --benchmark` が測定。依存を足さずに再開できる。次は、不確かさつきの測定値の定数（G、m_e など。厳密な包含とは別の意味づけが要る）、誤差球どうしの大小比較、`shrink-index` / `bigmac-ruler` での採用を、それぞれ別の変更として検討する。
 
 2026-11-10 の main 取り込み後の確認: Linux・CPython 3.11.17 で現在の `tests/test_unitcalc.py` 185 件が通る。上記の 164 件は 2026-11-07 時点の記録。
 

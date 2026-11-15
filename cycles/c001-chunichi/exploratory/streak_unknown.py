@@ -42,13 +42,8 @@ FORM_ORDER = ("original", "contrapositive", "converse", "inverse")   # 表示の
 EXIT_GATE = 65                                # pythdragoras の終了コード 65（データの誤り）に合わせる
 
 
-def load_modules(repo: Path = ROOT):
-    sys.path.insert(0, str(repo / "pythdragoras"))
-    sys.path.insert(0, str(repo / "pythdragoras" / "core"))  # PythDRagoras #46: propositions などは core/
-    import polars as pl
-    import propositions as P
-    import pythdragoras as PD
-    return pl, P, PD
+sys.path.insert(0, str(HERE))
+from kind_reask import load_modules, rel  # noqa: E402  隣の kind_reask.py と同じ読み込み・パス表示
 
 
 def left_edge_runs(rows: list[dict], col: str) -> dict[tuple, int]:
@@ -124,14 +119,6 @@ def gate(p: dict, a_summary: dict, stored: dict) -> list[str]:
         if got[form] != want[form]:
             problems.append(f"{p['id']} {form}: {got[form]} と保存された {want[form]}")
     return problems
-
-
-def rel(path: Path, repo: Path) -> str:
-    """リポジトリの中なら相対パス、外（テストの一時ファイルなど）ならそのまま。"""
-    try:
-        return str(path.relative_to(repo))
-    except ValueError:
-        return str(path)
 
 
 def stability(by_t: dict) -> dict:

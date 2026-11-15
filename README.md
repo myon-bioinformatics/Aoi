@@ -158,15 +158,14 @@ python ../BrowserTestKit/tools/evidence_gif.py docs/evidence/browser.gif --serve
 ## Tests
 
 ```bash
-uv run --locked pytest -q                         # tests/ and every subproject's tests/ (pyproject.toml testpaths)
+uv run --locked pytest -q                         # tests/ and every subproject's tests/ (pyproject.toml testpaths); tests/test_vendor_tools.py drives py_launch.cjs on Node >= 26
 python -S nagoyaction/linkcheck.py                # Markdown links and images (tracked files, exact case)
 python -S scripts/check_child_heads.py --fail-on-diff   # child repositories vs. their directories in Aoi
 python -S scripts/repo_checks.py shared_tools_lock  # shared tools (stdlib-shrink, py_launch.cjs, uv_tool_build.py) vs. shared-tools.lock.json
-node --test tests/py_launch.test.cjs                    # shared launcher: safe discovery and repeated signal forwarding (Node >= 26)
 ```
 
 CI (`.github/workflows/ci.yml`) runs pytest on Python 3.11–3.15; the Links workflow runs the link check on every change, including docs-only changes.
-The shared launcher workflow runs its regression tests on Node 26. After a launcher update merges into Aoi's main, children pin that actual Aoi merge commit, not the root repository or an unmerged Aoi branch.
+The pytest jobs install Node 26, so the shared launcher's regression tests (`tests/test_vendor_tools.py`) run there. After a launcher update merges into Aoi's main, children pin that actual Aoi merge commit, not the root repository or an unmerged Aoi branch.
 
 ## License
 

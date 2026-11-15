@@ -1,6 +1,6 @@
 # Compact bitmask experiment
 
-既存の `pythdragoras/bitwise_surrogate.py` を再利用する、標準ライブラリのみの独立実験。
+既存の `pythdragoras/core/bitwise_surrogate.py` を再利用する、標準ライブラリのみの独立実験。
 Layer 19/20案のうち、特徴位置の圧縮と共有ビットを破壊しない照合を先に検証する。
 全20層統合・未知物体の完全復元・一意分解を実装したものではない。
 子リポジトリのsubtreeや既存評価経路は変更しない。
@@ -11,7 +11,7 @@ Aoiルートから:
 
 ```sh
 python -S -m unittest discover -s research/compact-bitmask/tests -v
-python -S research/compact-bitmask/benchmark.py
+python -S research/compact-bitmask/compact_bitmask.py --benchmark
 ```
 
 CIの既存Python 3.11〜3.15ジョブで、依存インストール前に `-S` の契約テストを実行する。
@@ -63,7 +63,7 @@ CIの既存Python 3.11〜3.15ジョブで、依存インストール前に `-S` 
 
 ## 継続時の入口
 
-`compact_bitmask.py` が実装、`tests/` が契約と反例、`benchmark.py` が入力生成・比較、
+`compact_bitmask.py` が実装、`tests/` が契約と反例、`compact_bitmask.py --benchmark` が入力生成・比較、
 `measurement.json` が今回の証跡である。依存を追加せず再開できる。
 次は実際の特徴生成経路で不要位置を作らない方式と比較し、位置表を共有する複数行のI/Oに適用する。
 木の祖先コード、学習、C99出力、監査証明書の統合は別の変更として検証する。

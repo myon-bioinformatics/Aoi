@@ -253,7 +253,7 @@ jobs:
         run: python -S -m unittest discover -s research/compact-bitmask/tests -v
       - name: Measure compact bitmask payload and evaluation
         if: matrix.python == '3.15'
-        run: python -S research/compact-bitmask/benchmark.py
+        run: python -S research/compact-bitmask/compact_bitmask.py --benchmark
       # The ordinary suite uses native acceleration; the isolated stdlib lane
       # still proves operation without LAPACK/BLAS. No test or timeout is relaxed.
       - name: Install pinned native runtime for the full suite (Ubuntu 24.04)

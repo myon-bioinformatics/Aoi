@@ -10,7 +10,7 @@ Real staple prices are scarce, and a few real series invite early conclusions (a
 
 - A **recommended condition** for preparing propositions. It is not a completion condition or an acceptance condition.
 - A result on synthetic data is never a conclusion about real data. Synthetic rows never count as real observations (see `docs/propositions.md`: synthetic evidence never increases the count of real observations).
-- The generation rules are fixed in `synthetic_staples.py` **before** the results are read. They are a round grid over structure, not values chosen from estimates on real data. Do not change a rule after seeing a result; add a new pattern with a new ID instead.
+- The generation rules are fixed in `SYNTHETIC_PATTERNS` of `staple_bigmac_check.py` (`--synthetic`) **before** the results are read. They are a round grid over structure, not values chosen from estimates on real data. Do not change a rule after seeing a result; add a new pattern with a new ID instead.
 
 ## Labelling (`docs/data-policy.md`: never mix observed and generated records without labelling)
 
@@ -41,8 +41,8 @@ staple price (local currency) = b * Big Mac price,   B0 = 0.5,   seed = 20261024
 ## Commands
 
 ```bash
-python research/bigmac-ruler/synthetic_staples.py --check       # does the fit recover the known truth?
-python research/bigmac-ruler/synthetic_staples.py --calibrate   # how often does the 95% CI contain the truth?
+python research/bigmac-ruler/staple_bigmac_check.py --synthetic --check       # does the fit recover the known truth?
+python research/bigmac-ruler/staple_bigmac_check.py --synthetic --calibrate   # how often does the 95% CI contain the truth?
 ```
 
 ## Candidates not made yet

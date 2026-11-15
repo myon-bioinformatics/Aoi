@@ -29,8 +29,9 @@ improvement is claimed. Full integration tests remain in CI.
 Benchmark parity checks use explicit conditions and `SystemExit`, so they remain
 active under `python -O`. A subprocess regression test injects incorrect results
 and verifies a nonzero exit with a mismatch diagnostic and no success JSON
-(`BenchmarkGuardTests`, in the same file as the regression tests):
+(`test_benchmark_mismatch_exits_under_optimization_without_reporting_success` in `tests/test_fleet.py`,
+through the parent's shared `run_main` in `vendor/fleet_check.py`):
 
 ```sh
-python -S -m unittest discover -s tests -p test_neighbor_retention.py -v
+AOI_ROOT=<Aoi> uv run --locked pytest -q tests/test_fleet.py -k benchmark
 ```

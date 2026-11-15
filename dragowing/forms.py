@@ -7,20 +7,31 @@
 """
 from __future__ import annotations
 
-import argparse, json, sys
+import argparse, importlib, json, sys
 from pathlib import Path
 
 FORM_ORDER = ("original", "converse", "inverse", "contrapositive")
 
 
-def registration_status(item: dict) -> str:
-    """QueRyu ``ask`` comes from ``AOI_ROOT/queryu/ask`` (or ``PYTHONPATH`` when already importable)."""
-    try:
-        from .aoi_sibling import import_aoi_sibling
-    except ImportError:  # python dragowing/forms.py や、最上位の forms として読んだとき
-        from aoi_sibling import import_aoi_sibling
+def _sibling(module: str, project: str):
+    """Aoi の兄弟（QueRyu の ask、PythDRagoras の propositions / rule_search）を import する。
 
-    return import_aoi_sibling("ask", "queryu/ask").registration_status(item)
+    場所は呼び出し側が入れる（Aoi の aoi.py: ``python aoi.py dragowing/__main__.py``、``import aoi``、
+    ``eval "$(python aoi.py)"``）。DRAgoWing は自分では探さない。
+    """
+    try:
+        return importlib.import_module(module)
+    except ModuleNotFoundError as error:
+        if error.name != module:
+            raise
+        raise ModuleNotFoundError(
+            f"{module}（{project}）が見つからない。Aoi の aoi.py から動かす: python aoi.py dragowing/__main__.py RESULTS"
+            f'（単独の checkout では先に eval "$(python <Aoi>/aoi.py)"）', name=module) from None
+
+
+def registration_status(item: dict) -> str:
+    """QueRyu ``ask`` (its path comes from the caller, e.g. Aoi's aoi.py)."""
+    return _sibling("ask", "QueRyu").registration_status(item)
 
 FORM_LABEL = {
     "original": "元 P→Q",

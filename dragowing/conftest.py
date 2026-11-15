@@ -44,13 +44,14 @@ def _root() -> Path:
     if not value:
         raise pytest.UsageError("AOI_ROOT=<Aoi のルート> を渡す（.github/workflows/ci.yml と同じ）")
     root = Path(value).expanduser().resolve()
-    # テストのデータの場所（既定のサイクル）は Aoi の aoi_paths.py に聞く。DRAgoWing には置かない
+    if not (root / "aoi.py").is_file():
+        raise pytest.UsageError(f"Aoi の aoi.py が見つからない（{root}）。AOI_ROOT=<Aoi のルート> を渡す（.github/workflows/ci.yml と同じ）")
+    # データの場所（aoi_paths）と、テストが直接 import する兄弟（PythDRagoras・QueRyu の ask）の場所は
+    # Aoi の aoi.py が決める（pyproject の pythonpath）。後ろに足すので、このリポジトリのモジュールが先に見える
     if str(root) not in sys.path:
         sys.path.append(str(root))
-    # テストが直接 import する兄弟（PythDRagoras・QueRyu の ask）も AOI_ROOT から。PYTHONPATH は要らない
-    from dragowing.aoi_sibling import aoi_sibling_path
-    for module, sibling in (("propositions", "pythdragoras"), ("rule_search", "pythdragoras"), ("ask", "queryu/ask")):
-        aoi_sibling_path(module, sibling, env={"AOI_ROOT": str(root)})
+    import aoi
+    sys.path.extend(p for p in aoi.environment()["PYTHONPATH"].split(os.pathsep) if p and p not in sys.path)
     return root
 
 
@@ -73,3 +74,13 @@ def pytest_report_header(config):
 @pytest.fixture(scope="session")
 def aoi_root() -> Path:
     return _root()
+
+
+@pytest.fixture(scope="session")
+def sibling_env() -> dict:
+    """子プロセス用の env。兄弟（ask・propositions・rule_search）は、この process で見つかった場所だけを渡す。
+
+    Aoi の pythonpath 全体は渡さない（Aoi の dragowing/ にある dragowing.py が、パッケージ dragowing より先に見える）。
+    """
+    dirs = dict.fromkeys(str(Path(importlib.util.find_spec(name).origin).parent) for name in ("ask", "propositions", "rule_search"))
+    return {**os.environ, "PYTHONPATH": os.pathsep.join(dirs)}

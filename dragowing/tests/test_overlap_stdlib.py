@@ -208,7 +208,7 @@ def test_cli_stdlib_writes_same_html(tmp_path, aoi_root):
 
 
 
-def test_cli_never_imports_numpy_or_polars(tmp_path, aoi_root):
+def test_cli_never_imports_numpy_or_polars(tmp_path, aoi_root, sibling_env):
     code = '''
 import importlib.abc, sys, types
 from pathlib import Path
@@ -224,7 +224,7 @@ from dragowing.cli import main
 assert main([str(data), '--out', str(out)]) == 0
 '''
     proc = subprocess.run([sys.executable, '-c', code, str(REPO), str(aoi_root / 'cycles/c001-chunichi/outputs'), str(tmp_path)],
-                          capture_output=True, text=True, check=False)
+                          env=sibling_env, capture_output=True, text=True, check=False)
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / 'index.html').is_file()
 

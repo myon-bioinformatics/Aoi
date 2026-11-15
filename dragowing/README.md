@@ -80,8 +80,8 @@ python -m dragowing RESULTS [--out DIR] [--id ID ...] [--column COLUMN] [--cond 
 
 - `RESULTS` is a directory containing `season.jsonl` and `propositions.jsonl`. Without `--out`, HTML goes to a new temporary directory. Each written file is printed as a `file://` link with its size (📄), after the Markdown version (📦). `--id` narrows propositions, and `--column` chooses the numeric column for team × year (default `wins_vs_pythag`).
 - Repeat `--cond` to display 2–8 sets including class B. `--breakdown` selects the breakdown column (default `team`); repeat `--breakdown-keep` to keep values separate from “Other”. See [docs/figures.md](docs/figures.md).
-- Condition overlap (`overlap.py`) uses `propositions` and `rule_search` from [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras), and the four-forms table (`forms.py`) uses `ask` (registration status) from [QueRyu](https://github.com/myon-bioinformatics/QueRyu). They are found at run time from the Aoi checkout passed as `AOI_ROOT` (`AOI_ROOT/pythdragoras`, `AOI_ROOT/queryu/ask`), so `PYTHONPATH` is not required. A module already importable from `PYTHONPATH` is used as is and never replaced. Without `AOI_ROOT`, DRAgoWing looks next to itself only when it sits inside an Aoi checkout (`pyproject.toml` and `cycles/`), like QueRyu; a standalone checkout never reads a neighbouring directory. When a module is still missing, the error names `AOI_ROOT`.
-- This directory is the contents of the `dragowing` package, so run `python -m dragowing` from a parent where the directory appears as `dragowing` (see the example under "Tests"), or run the file directly without `PYTHONPATH`: `AOI_ROOT=/path/to/Aoi python /path/to/dragowing/__main__.py RESULTS` (`__main__.py` registers its directory as the `dragowing` package).
+- Condition overlap (`overlap.py`) uses `propositions` and `rule_search` from [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras), and the four-forms table (`forms.py`) uses `ask` (registration status) from [QueRyu](https://github.com/myon-bioinformatics/QueRyu). DRAgoWing does not look for them: the caller puts them on the import path, and in Aoi that is `aoi.py` (`python aoi.py dragowing/__main__.py RESULTS`, `import aoi`, or `eval "$(python aoi.py)"` for one shell). When one is missing, the error names `aoi.py`.
+- This directory is the contents of the `dragowing` package, so run `python -m dragowing` from a parent where the directory appears as `dragowing` (see the example under "Tests"), or run the file directly: `python aoi.py dragowing/__main__.py RESULTS` inside Aoi, or `eval "$(python /path/to/Aoi/aoi.py)"` and then `python /path/to/dragowing/__main__.py RESULTS` for a standalone checkout (`__main__.py` registers its directory as the `dragowing` package). `python aoi.py -m dragowing` is not the report: Aoi's import path includes this directory, so `dragowing` there is `dragowing.py`.
 
 ## Optional HTML-only environment
 
@@ -103,22 +103,22 @@ Markdown for HTML, Chromium for image export, and so on are still needed.
 
 ## Layout
 
-| File | Contents |
-|---|---|
-| `cli.py`, `__main__.py` | `python -m dragowing RESULTS [--out DIR]` |
-| `records.py` | Reads the results directory's JSONL in record order |
-| `figures.py` | Plotly figure JSON (data / layout) of recorded values |
-| `htmlout.py` | HTML. Text and tables are built from Markdown (Plotly for trajectories, team × year, and condition overlap) |
-| `venn.py` | Condition-overlap grids for 2–8 sets in Gray-code order, and per-region stacked breakdown bars; returns Plotly JSON (`venn_figures`) |
-| `forms.py` | 2×2 of the four forms and logic notation for conditions ([docs/forms.md](docs/forms.md)) |
-| `overlap.py` | Overlap of condition sets and the B class (masks are rule_search bit matrices) |
-| `plotly_cdn.py` | Plotly.js (jsDelivr) |
-| `chrome_pipe.py`, `render.py`, `export.py` | Optional PNG / SVG export with headless Chromium ([docs/export.md](docs/export.md)) |
-| `html_tag_count.py` | Counts HTML elements without a browser |
-| `research_report.py`, `reports/` | Research summary figures and Markdown report rendering (called from Aoi's workflow) |
-| `docs/` | `forms.md`, `figures.md`, `export.md` |
-| `vendor/aoi/`, `vendor.lock.json` | The Aoi shared tools this repository uses: `fetch_module.py` and `numpy_min.py` |
-| `tests/` | pytest |
+| File | Contents | ➡️ Planned place |
+|---|---|---|
+| `dragowing.py` | The single file (stdlib only): counts HTML elements without a browser (`python dragowing.py PAGE`, `count_elements()`) | stays at the top, and takes in the generic stdlib parts below |
+| `plotly_cdn.py` | Plotly.js (jsDelivr) | into `dragowing.py` |
+| `chrome_pipe.py`, `render.py`, `export.py` | Optional PNG / SVG export with headless Chromium ([docs/export.md](docs/export.md)) | into `dragowing.py` |
+| `records.py` | Reads the results directory's JSONL in record order | into `dragowing.py` |
+| `venn.py`, `_overlap_stdlib.py` | Condition-overlap grids for 2–8 sets in Gray-code order and per-region stacked bars (`venn_figures`); the stdlib row evaluation behind `load_overlap(..., backend="stdlib")` | `core/` |
+| `cli.py`, `__main__.py` | `python -m dragowing RESULTS [--out DIR]` | `cli.py` → `npb/`; `__main__.py` stays (package entry) |
+| `figures.py` | Plotly figure JSON (data / layout) of recorded values (trajectories, team × year) | `npb/` |
+| `htmlout.py` | HTML. Text and tables are built from Markdown (Plotly for trajectories, team × year, and condition overlap) | `npb/` |
+| `forms.py` | 2×2 of the four forms and logic notation for conditions ([docs/forms.md](docs/forms.md)); uses QueRyu's `ask` | `npb/` |
+| `overlap.py` | Overlap of condition sets and the B class (masks are rule_search bit matrices); uses PythDRagoras | `npb/` |
+| `research_report.py`, `reports/` | Research summary figures and Markdown report rendering (called from Aoi's workflow) | `npb/` |
+| `docs/`, `vendor/aoi/`, `vendor.lock.json`, `tests/` | Docs; the Aoi shared tools (`fetch_module.py`, `numpy_min.py`); pytest | as is |
+
+➡️ The moves happen when DRAgoWing is next synced into Aoi, together with Aoi's side. Aoi names these modules by package path in more than 60 places (`dragowing.overlap`, `dragowing.research_report`, `dragowing.export`, `dragowing.records`, `dragowing.plotly_cdn`, `from dragowing import chrome_pipe, render` in workflows, scripts, tests, `distributions/entries/dragowing_api.py` and provenance records), so moving them here first would break Aoi's CI. Relative imports inside the package (`from .forms import …`) change with them.
 
 ## Tests
 
@@ -133,17 +133,17 @@ AOI_ROOT=$PWD/.test-deps/aoi uv run --locked pytest -q --junitxml=reports/junit.
 - DRAgoWing does not know Aoi's layout. It takes the results directory and (if needed) `--team-order` explicitly. Tests use `aoi_paths.py` from the Aoi at `AOI_ROOT` to locate data.
 - If `AOI_ROOT` does not point to Aoi (no `cycles/`), pytest stops first and prints the reason.
 - This directory is the contents of the `dragowing` package (no `__init__.py`; `export.py` and `cli.py` use relative imports like `from .plotly_cdn`). Tests use `from dragowing.xxx` and `python -m dragowing`. pytest's `pythonpath` is `["."]`, and the top-level `conftest.py` registers this directory as `sys.modules["dragowing"]` (with `__path__` set to this directory) only when `dragowing` cannot yet be imported from the same directory. In Aoi the parent is on pythonpath and the same directory is already `dragowing`, so this registration does nothing.
-- To run the CLI outside pytest, run `__main__.py` directly. It registers its directory as the `dragowing` package whatever the checkout is named, so only `AOI_ROOT` is needed.
+- To run the CLI outside pytest, run Aoi's `aoi.py` first (it exports `AOI_ROOT` and the import paths for this shell only), then `__main__.py`. `__main__.py` registers its directory as the `dragowing` package whatever the checkout is named.
 
 ```bash
-AOI_ROOT=$PWD/.test-deps/aoi uv run --locked python __main__.py "$PWD/.test-deps/aoi/cycles/c001-chunichi/outputs"
+eval "$(python .test-deps/aoi/aoi.py)"
+uv run --locked python __main__.py "$AOI_ROOT/cycles/c001-chunichi/outputs"
 ```
 
 - In addition, the tests use the following from the Aoi at `AOI_ROOT`:
   - Output in `cycles/` (`cycles/c001-chunichi/outputs`).
-  - PythDRagoras's `propositions` and `rule_search` (`overlap.py`, and `conftest.py` for tests that import them directly, find `AOI_ROOT/pythdragoras` through `aoi_sibling.py`).
-  - QueRyu's `ask` (`forms.py`, and `conftest.py` for tests that import it directly, find `AOI_ROOT/queryu/ask` through `aoi_sibling.py`).
-  - `tests/test_no_sibling_imports.py` checks that no other Aoi sibling subprojects or `scripts/` are used (the `queryu/ask` and `pythdragoras` paths given to `aoi_sibling.py` from `overlap.py`, `forms.py` and `conftest.py`, and imports in the tests, are known exceptions).
+  - `aoi.py`: `conftest.py` appends the import paths it gives (`aoi.environment()`, the same list as Aoi's pytest `pythonpath`) after this repository, so PythDRagoras's `propositions` / `rule_search` and QueRyu's `ask` import by name. DRAgoWing names neither directory.
+  - `tests/test_no_sibling_imports.py` checks that no other Aoi sibling subprojects or `scripts/` are used (imports of `propositions`, `rule_search` and `ask` in the tests are known exceptions).
 - `reports/build_reports.py` is an Aoi-side tool (Aoi's DRAgoWing reports workflow checks out `myon-bioinformatics/markdown` and calls it). This repository's CI does not run that workflow.
 - The Python matrix explicitly selects Chromium and requires real-browser tests. Missing Chromium fails CI rather than silently falling back to Chrome or skipping. Locally, real-browser tests remain optional unless `DRAGOWING_REQUIRE_CHROME=1` is set.
 

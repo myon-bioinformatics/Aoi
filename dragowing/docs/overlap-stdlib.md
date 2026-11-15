@@ -83,7 +83,8 @@ RSS includes native memory, while tracemalloc covers only Python-tracked objects
 shared-environment load, not a guarantee across all OSes and input sizes.
 
 ```sh
-AOI_ROOT=/path/to/Aoi python scripts/benchmark_overlap.py \
+eval "$(python /path/to/Aoi/aoi.py)"   # rule_search (PythDRagoras) for the native worker, this shell only
+python scripts/benchmark_overlap.py \
   --results /path/to/Aoi/cycles/c001-chunichi/outputs --repeats 5 --warm-repeats 7
 ```
 

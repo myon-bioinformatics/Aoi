@@ -7,7 +7,7 @@ import pytest
 
 from dragowing.chrome_pipe import find_chrome, frame_message, pop_message
 from dragowing.export import MERMAID, mermaid_diagram_content, page_html
-from dragowing.html_tag_count import count_elements
+from dragowing.dragowing import count_elements
 from dragowing.render import RenderSession, Timeouts, render_html
 
 _PIPE = Path(__file__).resolve().parents[1] / "chrome_pipe.py"

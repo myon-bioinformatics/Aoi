@@ -3,7 +3,7 @@ import math
 import polars as pl
 import pytest
 
-from sakanalytics import K_FIXED, add_rank, season_table, to_team_games
+from team_season import K_FIXED, add_rank, season_table, to_team_games
 
 TEAMS = {"d": {"name": "中日", "league": "C"}, "g": {"name": "巨人", "league": "C"},
          "t": {"name": "阪神", "league": "C"}, "h": {"name": "ソフトバンク", "league": "P"}}
@@ -108,7 +108,7 @@ def _brute(rf, ra):
     ([0, 0, 0], [0, 0, 0]),               # すべて引き分け → 分散 0
 ])
 def test_allocation_matches_enumeration(rf, ra):
-    from sakanalytics import allocation
+    from team_season import allocation
     exp, var = allocation(rf, ra)
     bm, bv = _brute(rf, ra)
     assert exp == pytest.approx(bm) and var == pytest.approx(bv)
@@ -116,7 +116,7 @@ def test_allocation_matches_enumeration(rf, ra):
 
 def test_allocation_random_small_cases_match_enumeration():
     import random
-    from sakanalytics import allocation
+    from team_season import allocation
     rnd = random.Random(1)
     for _ in range(60):
         n = rnd.randint(2, 6)
@@ -127,7 +127,7 @@ def test_allocation_random_small_cases_match_enumeration():
 
 
 def test_allocation_edges():
-    from sakanalytics import allocation
+    from team_season import allocation
     assert allocation([], []) == (0.0, 0.0)
     assert allocation([3], [1]) == (1.0, 0.0)
     with pytest.raises(ValueError):
@@ -137,7 +137,7 @@ def test_allocation_edges():
 def test_allocation_effect_detects_concentrated_runs():
     # 総得点・総失点は同じ（得点 2,2,2,2,10 / 失点 3,3,3,3,0）。
     # 実際の組み合わせ: 大勝1つ・惜敗4つ → 1勝4敗。ランダムなら平均ではもっと勝てる
-    from sakanalytics import allocation_table
+    from team_season import allocation_table
     rows = [("2024-04-0%d" % (i + 1), "d", "g", hs, as_) for i, (hs, as_) in enumerate([(2, 3)] * 4 + [(10, 0)])]
     tg = to_team_games(games(rows), TEAMS)
     d = allocation_table(tg).filter(pl.col("team") == "d").row(0, named=True)
@@ -151,7 +151,7 @@ def test_allocation_effect_detects_concentrated_runs():
 
 
 def test_allocation_next_season_and_same_sign():
-    from sakanalytics import allocation_table
+    from team_season import allocation_table
     rows = []
     for y in (2023, 2024, 2026):  # 2025 がない → 2024 の翌年は空
         rows += [(f"{y}-04-01", "d", "g", 2, 3), (f"{y}-04-02", "d", "g", 9, 0),
@@ -165,7 +165,7 @@ def test_allocation_next_season_and_same_sign():
 
 
 def test_opponent_strata_equal_home_away_strata_when_only_one_opponent():
-    from sakanalytics import allocation_table
+    from team_season import allocation_table
     rows = [("2024-04-01", "d", "g", 2, 3), ("2024-04-02", "d", "g", 9, 0), ("2024-04-03", "d", "g", 4, 4),
             ("2024-04-04", "g", "d", 3, 2), ("2024-04-05", "g", "d", 0, 9), ("2024-04-06", "g", "d", 1, 5)]
     d = allocation_table(to_team_games(games(rows), TEAMS)).filter(pl.col("team") == "d").row(0, named=True)
@@ -177,7 +177,7 @@ def test_opponent_strata_match_shuffle_of_runs_allowed_in_win_equivalents():
     # PR #3（R001）の方法: 得点を固定し、失点だけを（相手 × ホーム/ビジター）の中で並べ替え、
     # 勝相当 WE = W + 0.5·D の平均との差を取る。全通りを数えると、勝−敗の差 = 2 × WE の差になる（引き分けを含めて）
     from itertools import permutations
-    from sakanalytics import allocation_table
+    from team_season import allocation_table
     rows = [("2024-04-01", "d", "g", 2, 3), ("2024-04-02", "d", "g", 9, 0), ("2024-04-03", "d", "g", 4, 4),
             ("2024-04-04", "g", "d", 3, 2), ("2024-04-05", "g", "d", 0, 9),
             ("2024-04-06", "d", "t", 1, 5), ("2024-04-07", "d", "t", 5, 1), ("2024-04-08", "d", "t", 3, 3),
@@ -226,7 +226,7 @@ def test_scoring_deficit_bands_by_hand():
 
 
 def test_scoring_deficit_is_relative_within_season_and_league():
-    from sakanalytics import scoring_deficit
+    from team_season import scoring_deficit
     rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "h", "f", 9, 0), ("2025-04-01", "d", "g", 1, 1)]
     teams = {**TEAMS, "f": {"name": "日本ハム", "league": "P"}}
     t = scoring_deficit(to_team_games(games(rows), teams))
@@ -248,7 +248,7 @@ def _innings_rows(st, scoring):
 
 
 def test_inning_decomposition_identity_and_relative_to_league():
-    from sakanalytics import inning_decomposition
+    from team_season import inning_decomposition
     rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3), ("2024-04-03", "t", "d", 5, 1)]
     st = season_table(to_team_games(games(rows), TEAMS))
     out = inning_decomposition(st, _innings_rows(st, {"d": (18, 2), "g": (17, 3), "t": (17, 4)}))
@@ -263,7 +263,7 @@ def test_inning_decomposition_identity_and_relative_to_league():
 
 
 def test_inning_decomposition_stops_on_mismatch_and_leaves_missing_seasons_empty():
-    from sakanalytics import inning_decomposition
+    from team_season import inning_decomposition
     rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3), ("2024-04-03", "t", "d", 5, 1)]
     st = season_table(to_team_games(games(rows), TEAMS))
     bad = _innings_rows(st, {"d": (18, 2)}).with_columns(runs=pl.col("runs") + 1)
@@ -275,7 +275,7 @@ def test_inning_decomposition_stops_on_mismatch_and_leaves_missing_seasons_empty
 
 
 def test_inning_venue_split_and_scoring_inning_shares():
-    from sakanalytics import inning_decomposition
+    from team_season import inning_decomposition
     rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3), ("2024-04-03", "t", "d", 5, 1)]
     st = season_table(to_team_games(games(rows), TEAMS))
     base = []
@@ -311,7 +311,7 @@ def _batting(st, **over):
 
 
 def test_batting_join_rates_relative_and_no_raw_counts():
-    from sakanalytics import batting_join
+    from team_season import batting_join
     rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3), ("2024-04-03", "t", "d", 5, 1)]
     st = season_table(to_team_games(games(rows), TEAMS))
     out = batting_join(st, _batting(st))
@@ -326,7 +326,7 @@ def test_batting_join_rates_relative_and_no_raw_counts():
 
 @pytest.mark.parametrize("over,msg", [({"r": 999}, "得点"), ({"obp": 0.5}, "obp")])
 def test_batting_join_stops_when_page_disagrees_with_our_numbers(over, msg):
-    from sakanalytics import batting_join
+    from team_season import batting_join
     rows = [("2024-04-01", "d", "g", 2, 6), ("2024-04-02", "g", "t", 4, 3)]
     st = season_table(to_team_games(games(rows), TEAMS))
     with pytest.raises(ValueError, match=msg):
@@ -353,7 +353,7 @@ def _tg(teams):
 def test_rank_probability_matches_a_seeded_random_simulation():
     # 乱数でシーズンを何度も作り直した割合と、厳密な計算が一致する（4チーム・8試合、上位半分 = 2位以内）
     import random
-    from sakanalytics import rank_probability
+    from team_season import rank_probability
     teams = {"a": ([5, 1, 3, 0, 4, 2, 6, 2], [2, 3, 1, 4, 0, 2, 5, 3]), "b": ([2, 2, 3, 1, 0, 4, 2, 1], [3, 1, 2, 2, 4, 0, 1, 2]),
              "c": ([7, 0, 1, 3, 2, 2, 5, 0], [1, 6, 2, 3, 3, 0, 4, 2]), "d": ([1, 0, 2, 1, 3, 0, 1, 2], [2, 4, 1, 3, 2, 5, 1, 0])}
     exact = {r["team"]: r["sim_p_upper"] for r in rank_probability(_tg(teams)).iter_rows(named=True)}
@@ -376,7 +376,7 @@ def test_rank_probability_matches_a_seeded_random_simulation():
 
 
 def test_rank_probability_identical_teams_and_dominant_team():
-    from sakanalytics import rank_probability
+    from team_season import rank_probability
     same = ([3, 1, 4, 1, 5, 2], [2, 7, 1, 8, 2, 8])
     p = {r["team"]: r["sim_p_upper"] for r in rank_probability(_tg({t: same for t in "dgt"})).iter_rows(named=True)}
     assert p["d"] == pytest.approx(p["g"]) == pytest.approx(p["t"])
@@ -387,13 +387,13 @@ def test_rank_probability_identical_teams_and_dominant_team():
 
 
 def test_streaks_ties_break_both():
-    from sakanalytics import _streaks
+    from team_season import _streaks
     assert _streaks([1, 1, -1, -1, -1, 0, -1, 1, 1, 1, 1]) == (4, 3)
     assert _streaks([]) == (0, 0)
 
 
 def test_boundary_features_by_hand():
-    from sakanalytics import boundary_features
+    from team_season import boundary_features
     teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
     # 4球団（セ）+ 交流戦1試合。d は c に2勝、t に1敗、g に1勝。最終順位は勝率で決まる
     rows = [("2024-04-01", "d", "c", 3, 1), ("2024-04-02", "c", "d", 0, 2), ("2024-04-03", "t", "d", 5, 1),
@@ -433,7 +433,7 @@ def test_battle_top_focus_and_pair_diffs_by_hand():
 
 
 def test_streak_counts_consecutive_seasons_and_resets():
-    from sakanalytics import streak
+    from team_season import streak
     st = pl.DataFrame({"team": ["d"] * 6 + ["g"] * 2, "season": [2013, 2014, 2015, 2017, 2018, 2019, 2013, 2014],
                        "x": [1, 1, 0, 1, 1, None, 1, 1]})
     out = streak(st, pl.col("x") == 1, "s").sort("team", "season")
@@ -442,7 +442,7 @@ def test_streak_counts_consecutive_seasons_and_resets():
 
 
 def test_streak_marks_the_runs_whose_previous_year_is_unknown():
-    from sakanalytics import streak
+    from team_season import streak
     st = pl.DataFrame({"team": ["d"] * 6 + ["g"] * 2, "season": [2013, 2014, 2015, 2017, 2018, 2019, 2013, 2014],
                        "x": [1, 1, 0, 1, 1, None, 1, 1]})
     out = streak(st, pl.col("x") == 1, "s").sort("team", "season")
@@ -452,7 +452,7 @@ def test_streak_marks_the_runs_whose_previous_year_is_unknown():
 
 
 def test_streak_run_after_a_year_known_to_fail_is_exact_and_after_an_empty_year_is_not():
-    from sakanalytics import streak
+    from team_season import streak
     st = pl.DataFrame({"team": ["a"] * 4 + ["b"] * 4, "season": [2013, 2014, 2015, 2016] * 2,
                        "x": [0, 1, 1, 0, None, 1, 1, 0]})
     out = streak(st, pl.col("x") == 1, "s").sort("team", "season")
@@ -495,7 +495,7 @@ def _brute_censored(rows):
 
 def test_streak_values_equal_the_old_count_and_the_mark_equals_a_brute_force_reading():
     import random
-    from sakanalytics import streak
+    from team_season import streak
     rng = random.Random(20261027)
     for _ in range(40):
         rows = [(t, y, rng.choice([True, False, None, True])) for t in "abc" for y in range(2012, 2020) if rng.random() > 0.15]
@@ -509,7 +509,7 @@ def test_streak_values_equal_the_old_count_and_the_mark_equals_a_brute_force_rea
 
 
 def test_a_known_run_never_carries_the_mark_and_a_mark_never_sits_on_a_zero_or_an_empty_value():
-    from sakanalytics import streak
+    from team_season import streak
     st = pl.DataFrame({"team": ["a"] * 5, "season": [2013, 2014, 2015, 2016, 2017], "x": [0, 1, 1, 1, 0]})
     out = streak(st, pl.col("x") == 1, "s")
     assert out["s_censored"].to_list() == [False] * 5
@@ -517,7 +517,7 @@ def test_a_known_run_never_carries_the_mark_and_a_mark_never_sits_on_a_zero_or_a
 
 
 def test_add_persistence_adds_the_marks_next_to_the_unchanged_values():
-    from sakanalytics import add_persistence
+    from team_season import add_persistence
     # 2012 は inn_dlog_size が空（試合がない）→ inn の連続は 2013 から。rf は 2012 から分かる。3 球団で、順位 2 と 3・5 と 4 の境を分ける
     teams = ("d", "g", "t")
     rows = [(t, y) for t in teams for y in (2012, 2013, 2014)]
@@ -537,7 +537,7 @@ def test_add_persistence_adds_the_marks_next_to_the_unchanged_values():
 
 
 def test_streak_shuffled_rows_do_not_inherit_another_teams_exact_run():
-    from sakanalytics import streak
+    from team_season import streak
     # a ends with an exact run in 2014; b starts in 2015, but has no 2014 observation.
     # A known false in 2013 does not make c's 2015 run exact across a missing year.
     st = pl.DataFrame({"team": ["b", "c", "a", "b", "a", "c"],
@@ -550,7 +550,7 @@ def test_streak_shuffled_rows_do_not_inherit_another_teams_exact_run():
 
 
 def test_add_persistence_without_inning_data_handles_nulls_and_empty_input():
-    from sakanalytics import add_persistence
+    from team_season import add_persistence
     st = pl.DataFrame({"team": ["a"] * 4, "season": [2013, 2014, 2015, 2016],
                        "rank_rf": [5, None, 5, 5]}, schema_overrides={"season": pl.Int32})
     out = add_persistence(st).sort("season")
@@ -563,7 +563,7 @@ def test_add_persistence_without_inning_data_handles_nulls_and_empty_input():
 
 
 def test_log5_properties():
-    from sakanalytics import log5
+    from team_season import log5
     assert log5(0.5, 0.5) == pytest.approx(0.5)
     assert log5(0.6, 0.5) == pytest.approx(0.6)          # .500 の相手には自分の勝率どおり
     assert log5(0.6, 0.4) + log5(0.4, 0.6) == pytest.approx(1.0)
@@ -571,7 +571,7 @@ def test_log5_properties():
 
 
 def test_opponent_adjusted_by_hand_and_excludes_own_games():
-    from sakanalytics import K_FIXED, log5, opponent_adjusted
+    from team_season import K_FIXED, log5, opponent_adjusted
     rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "g", "d", 2, 1), ("2024-04-03", "d", "t", 1, 4),
             ("2024-04-04", "g", "t", 5, 5), ("2024-04-05", "t", "g", 0, 2), ("2024-04-06", "h", "d", 9, 0)]
     tg = to_team_games(games(rows), TEAMS)
@@ -589,7 +589,7 @@ def test_opponent_adjusted_by_hand_and_excludes_own_games():
 
 
 def test_opponent_run_gaps_by_hand():
-    from sakanalytics import K_FIXED, opponent_adjusted
+    from team_season import K_FIXED, opponent_adjusted
     rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "g", "d", 2, 1), ("2024-04-03", "d", "t", 1, 4),
             ("2024-04-04", "g", "t", 5, 5), ("2024-04-05", "t", "g", 0, 2), ("2024-04-06", "h", "d", 9, 0)]
     tg = to_team_games(games(rows), TEAMS)
@@ -608,7 +608,7 @@ def test_opponent_run_gaps_by_hand():
 
 
 def test_centered_run_gaps_average_zero_within_league_season():
-    from sakanalytics import opponent_adjusted
+    from team_season import opponent_adjusted
     rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "g", "d", 2, 1), ("2024-04-03", "d", "t", 1, 4),
             ("2024-04-04", "g", "t", 5, 5), ("2024-04-05", "t", "g", 0, 2), ("2024-04-06", "t", "d", 3, 2)]
     tg = to_team_games(games(rows), TEAMS)
@@ -621,7 +621,7 @@ def test_centered_run_gaps_average_zero_within_league_season():
 
 
 def test_net_and_env_are_a_rotation_of_scoring_and_prevention_gaps():
-    from sakanalytics import opponent_adjusted
+    from team_season import opponent_adjusted
     rows = [("2024-04-01", "d", "g", 3, 1), ("2024-04-02", "g", "d", 2, 1), ("2024-04-03", "d", "t", 1, 4),
             ("2024-04-04", "g", "t", 5, 5), ("2024-04-05", "t", "g", 0, 2), ("2024-04-06", "t", "d", 3, 2)]
     tg = to_team_games(games(rows), TEAMS)
@@ -633,7 +633,7 @@ def test_net_and_env_are_a_rotation_of_scoring_and_prevention_gaps():
 
 
 def test_win_loss_split_by_hand():
-    from sakanalytics import win_loss_split
+    from team_season import win_loss_split
     # 中日のホーム4試合: (1,0) 勝 (5,4) 勝 (0,3) 負 (2,6) 負。合計得点 1, 9, 3, 8 → 中央値 5.5
     tg = to_team_games(games([("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 5, 4),
                               ("2024-04-03", "d", "g", 0, 3), ("2024-04-04", "d", "g", 2, 6)]), TEAMS)
@@ -647,7 +647,7 @@ def test_win_loss_split_by_hand():
 
 
 def test_win_loss_split_pairs_runs_within_home_and_away_only():
-    from sakanalytics import win_loss_split
+    from team_season import win_loss_split
     # ホームは点が入りにくく（1-0, 0-1）、ビジターは入りやすい（6-5, 5-6）。
     # ホームとビジターを混ぜて組み合わせると、勝ちの見込みの得点は 29/6 ≈ 4.83 になり、球場の違いが差に出てしまう
     tg = to_team_games(games([("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 0, 1),
@@ -657,7 +657,7 @@ def test_win_loss_split_pairs_runs_within_home_and_away_only():
 
 
 def test_win_loss_split_tie_weight_settles_tied_pairs_in_the_expectation():
-    from sakanalytics import win_loss_split
+    from team_season import win_loss_split
     # 中日はホームで得点 {1, 0, 1}・失点 {0, 1, 3}。見込みの組（重み 1/3 ずつ）: 勝ち (1,0) が 2/3、同点 (1,1) が 2/3・(0,0) が 1/3、
     # 負け (1,3) が 2/3・(0,1) が 1/3・(0,3) が 1/3。
     tg = to_team_games(games([("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 0, 1), ("2024-04-03", "d", "g", 1, 3)]), TEAMS)
@@ -677,7 +677,7 @@ def test_win_loss_split_tie_weight_settles_tied_pairs_in_the_expectation():
 
 
 def test_win_loss_split_eighth_uses_eight_inning_scores_and_is_off_without_them(tmp_path):
-    from sakanalytics import read_games, win_loss_split, win_loss_split_eighth
+    from team_season import read_games, win_loss_split, win_loss_split_eighth
     rows = [("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 5, 4), ("2024-04-03", "d", "g", 0, 3), ("2024-04-04", "d", "g", 2, 6)]
     plain = games(rows)
     # 8 回までの得点: 1 試合目は 8 回まで 0-0（9 回に決まった）、4 試合目は 8 回に届かない（空。数えない）
@@ -718,7 +718,7 @@ def test_season_course_by_hand():
 
 
 def test_cubic_fit_recovers_the_curve_and_its_peak_and_valley():
-    from sakanalytics import cubic_extrema, cubic_projection
+    from team_season import cubic_extrema, cubic_projection
     xs = [i / 100 for i in range(101)]
     ys = [2 + 0.6 * x - 1.5 * x * x + x ** 3 for x in xs]     # f'(x) = 3x² − 3x + 0.6 → x = 0.276（山）, 0.724（谷）
     c = [sum(p * y for p, y in zip(row, ys)) for row in cubic_projection(xs)]
@@ -730,7 +730,7 @@ def test_cubic_fit_recovers_the_curve_and_its_peak_and_valley():
 
 
 def test_season_trajectory_finds_a_peak_in_the_wins_minus_losses_line():
-    from sakanalytics import season_trajectory
+    from team_season import season_trajectory
     # d と g の2球団だけのリーグで1日1試合。d は最初の15試合に勝ち、後の15試合に負ける（貯金 +15 から 0 へ）
     rows = [(f"2024-04-{i + 1:02d}", "d", "g", 3, 1) if i < 15 else (f"2024-04-{i + 1:02d}", "d", "g", 1, 3) for i in range(30)]
     tg = to_team_games(games(rows), TEAMS)
@@ -753,7 +753,7 @@ def _damped(xs, h0, lim, lam, per, b):
 
 
 def test_wave_fit_recovers_a_damped_wave_from_its_starting_value():
-    from sakanalytics import wave_basis, wave_fit
+    from team_season import wave_basis, wave_fit
     xs = [0.1 + 0.9 * i / 150 for i in range(151)]
     ys = _damped(xs, h0=5.0, lim=2.0, lam=3.0, per=0.5, b=1.0)   # 始まりは 5、収束する先は 2
     f = wave_fit(ys, wave_basis(xs), xs[0])
@@ -764,7 +764,7 @@ def test_wave_fit_recovers_a_damped_wave_from_its_starting_value():
 
 
 def test_wave_fit_reports_no_limit_for_an_undamped_wave_and_no_period_for_a_plain_approach():
-    from sakanalytics import wave_basis, wave_fit
+    from team_season import wave_basis, wave_fit
     xs = [0.1 + 0.9 * i / 150 for i in range(151)]
     basis = wave_basis(xs)
     f = wave_fit(_damped(xs, h0=3.0, lim=3.0, lam=0.0, per=0.5, b=2.0), basis, xs[0])
@@ -774,7 +774,7 @@ def test_wave_fit_reports_no_limit_for_an_undamped_wave_and_no_period_for_a_plai
 
 
 def test_season_trajectory_start_is_configurable_and_recorded():
-    from sakanalytics import season_trajectory
+    from team_season import season_trajectory
     rows = [(f"2024-04-{i + 1:02d}", "d", "g", 3, 1) if i < 15 else (f"2024-04-{i + 1:02d}", "d", "g", 1, 3) for i in range(30)]
     tg = to_team_games(games(rows), TEAMS)
     a = season_trajectory(tg, sims=5, min_games=10).filter(pl.col("team") == "d").row(0, named=True)
@@ -788,7 +788,7 @@ def test_season_trajectory_start_is_configurable_and_recorded():
 
 
 def test_series_split_by_opponent_venue_and_a_gap_of_three_days():
-    from sakanalytics import _series_of
+    from team_season import _series_of
     gs = [(1, 0, "g", True), (3, 1, "g", True),   # 中1日（雨天中止など）は同じカード
           (6, 2, "g", True),                      # 3日あいたら別のカード
           (7, 3, "g", False),                     # 球場が変わったら別のカード
@@ -797,7 +797,7 @@ def test_series_split_by_opponent_venue_and_a_gap_of_three_days():
 
 
 def test_series_features_by_hand():
-    from sakanalytics import series_features
+    from team_season import series_features
     rows = [("2024-04-02", "d", "g", 3, 1), ("2024-04-03", "d", "g", 1, 2), ("2024-04-04", "d", "g", 4, 0),   # 2勝1敗
             ("2024-04-05", "g", "d", 5, 1), ("2024-04-06", "g", "d", 2, 0), ("2024-04-07", "g", "d", 3, 2),   # 0勝3敗
             ("2024-04-09", "d", "t", 2, 1), ("2024-04-10", "d", "t", 2, 2),                                    # 1勝1分
@@ -828,7 +828,7 @@ def _four_team_season():
 
 
 def test_clinch_dates_by_hand():
-    from sakanalytics import clinch_dates
+    from team_season import clinch_dates
     v = {r["team"]: r for r in clinch_dates(_four_team_season()).iter_rows(named=True)}
     # d: 4日目の終わり 0勝4敗・残り2 → 上限 2/6。g の下限 4/6、t の下限 3/6 がどちらも上 → 2位以内に入れない（x = 3/5）
     assert (v["d"]["clinch_out_x"], v["d"]["clinch_out_left"], v["d"]["clinch_in_x"]) == (pytest.approx(0.6), 2, None)
@@ -842,7 +842,7 @@ def test_clinch_dates_by_hand():
 
 def test_rank_fixed_and_live_dead_split_by_hand():
     """R57: 最終順位が確かになった日と、A・B が決まる前（効く試合）・後（効かない試合）の分け方。"""
-    from sakanalytics import clinch_dates
+    from team_season import clinch_dates
     v = {r["team"]: r for r in clinch_dates(_four_team_season()).iter_rows(named=True)}
     # 最終: g 5勝1敗、t 5勝1敗（同率）、c 2勝4敗、d 0勝6敗。d・c は最終日に4位・3位が確定。g・t は同率なので決まらない
     assert (v["d"]["rank_fixed_x"], v["d"]["rank_fixed_left"], v["d"]["rank_fixed"]) == (pytest.approx(1.0), 0, 4)
@@ -870,7 +870,7 @@ def test_rank_fixed_and_live_dead_split_by_hand():
 
 
 def test_live_dead_when_never_decided():
-    from sakanalytics import clinch_dates
+    from team_season import clinch_dates
     teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
     # 4球団で1日だけ。誰も確定しない → すべて効く試合、効かない試合は 0
     tg = to_team_games(games([("2024-04-01", "g", "d", 3, 1), ("2024-04-01", "t", "c", 2, 0)]), teams)
@@ -878,7 +878,7 @@ def test_live_dead_when_never_decided():
     assert all(r["dead_g"] == 0 and r["dead_wpct"] is None and r["live_g"] == 1 for r in v.values())
 
 def test_season_trajectory_can_stop_when_the_top_half_is_decided():
-    from sakanalytics import season_trajectory
+    from team_season import season_trajectory
     tg = _four_team_season()
     full = season_trajectory(tg, sims=5, min_games=1).filter(pl.col("team") == "g").row(0, named=True)
     cut = season_trajectory(tg, sims=5, min_games=1, end="decided").filter(pl.col("team") == "g").row(0, named=True)
@@ -895,7 +895,7 @@ def test_season_trajectory_can_stop_when_the_top_half_is_decided():
 def test_add_balance_is_relative_to_the_other_teams_and_share_stays_bounded():
     import polars as pl
 
-    import sakanalytics as sa
+    import team_season as sa
 
     # 1リーグ3球団、10試合。他2球団の平均と比べる
     st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3,
@@ -919,7 +919,7 @@ def test_add_balance_is_relative_to_the_other_teams_and_share_stays_bounded():
 def test_short_share_edges(rf, ra, expected):
     import polars as pl
 
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3, "RF": rf, "RA": ra})
     r = sa.add_balance(st).row(0, named=True)
@@ -932,7 +932,7 @@ def test_short_share_edges(rf, ra, expected):
 def test_add_balance_z_scales_by_the_spread_of_all_units():
     import polars as pl
 
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 3 + [2001] * 3, "league": ["C"] * 6, "team": ["a", "b", "c"] * 2,
                        "G": [10] * 6, "RF": [30, 40, 50, 35, 40, 45], "RA": [50, 40, 30, 40, 40, 40]})
@@ -949,7 +949,7 @@ def test_add_balance_standard_error_combines_own_and_others():
 
     import polars as pl
 
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [100] * 3,
                        "RF": [300, 400, 500], "RA": [400, 400, 400],
@@ -966,7 +966,7 @@ def test_add_balance_standard_error_combines_own_and_others():
 def test_add_balance_without_per_game_spread_skips_standard_error():
     import polars as pl
 
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [10] * 3,
                        "RF": [30, 40, 50], "RA": [30, 40, 50]})
@@ -987,7 +987,7 @@ def test_season_table_has_per_game_spread():
 def test_add_composites_values_and_missing_inputs():
     import math
 
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({
         "rf_adv": [-0.6, 0.2, 0.0], "ra_adv": [0.3, -0.1, 0.0], "run_balance": [-0.3, 0.1, 0.0],
@@ -1005,7 +1005,7 @@ def test_add_composites_values_and_missing_inputs():
 
 
 def test_add_composites_skips_columns_whose_inputs_are_absent():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"rf_adv": [0.1], "ra_adv": [0.1], "run_balance": [0.2]})
     assert sa.add_composites(st).columns == st.columns
@@ -1014,7 +1014,7 @@ def test_add_composites_skips_columns_whose_inputs_are_absent():
 # ---------- R45: B に着く道筋の参考値 ----------
 
 def test_add_b_paths_labels_and_nulls():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({
         "rf_zone_se": [-1, 0, 0, 0, None],
@@ -1032,7 +1032,7 @@ def test_add_b_paths_labels_and_nulls():
 
 
 def test_add_b_paths_none_when_no_rule_hits_and_skips_without_inputs():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"rf_zone_se": [1], "ra_zone_se": [1], "wins_vs_pythag": [0.0], "alloc_z_strat": [0.0],
                        "course_fade": [0], "course_rf_d": [0.1], "course_ra_d": [-0.1], "half2_vs_pythag": [0.0]})
@@ -1046,7 +1046,7 @@ def test_add_b_paths_none_when_no_rule_hits_and_skips_without_inputs():
 def test_add_league_shape_gaps_and_rest_spread():
     import statistics
 
-    import sakanalytics as sa
+    import team_season as sa
 
     w = [0.65, 0.55, 0.52, 0.50, 0.45, 0.33]
     st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
@@ -1059,7 +1059,7 @@ def test_add_league_shape_gaps_and_rest_spread():
 
 
 def test_add_league_shape_with_few_teams_is_empty_not_an_error():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 2, "league": ["C"] * 2, "team": ["a", "b"], "rank": [1, 2], "wpct": [0.6, 0.4]})
     out = sa.add_league_shape(st).row(0, named=True)
@@ -1067,7 +1067,7 @@ def test_add_league_shape_with_few_teams_is_empty_not_an_error():
 
 
 def test_line_and_gap_decompose_win_pct_against_the_line():
-    import sakanalytics as sa
+    import team_season as sa
 
     w = [0.65, 0.55, 0.52, 0.50, 0.45, 0.33]
     pyth = [0.60, 0.56, 0.49, 0.53, 0.46, 0.36]
@@ -1087,14 +1087,14 @@ def test_line_and_gap_decompose_win_pct_against_the_line():
     ([0.6, 0.58, 0.56, 0.55, 0.53, 0.51], None),         # 全チームが .500 より上
 ])
 def test_rank_at_500(w, expected):
-    import sakanalytics as sa
+    import team_season as sa
 
     got = sa.rank_at(w, 0.5)
     assert got == (pytest.approx(expected) if expected is not None else None)
 
 
 def test_league_shape_has_rank_at_500():
-    import sakanalytics as sa
+    import team_season as sa
 
     w = [0.6, 0.52, 0.51, 0.49, 0.45, 0.43]
     st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
@@ -1104,7 +1104,7 @@ def test_league_shape_has_rank_at_500():
 # ---------- R52: データの散らばりから引く線 ----------
 
 def test_natural_breaks_and_tiers():
-    import sakanalytics as sa
+    import team_season as sa
 
     w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]       # 隙間: .02 .07 .01 .01 .11
     assert sa.natural_breaks(w, 1) == [5]          # 5位と6位の間
@@ -1114,7 +1114,7 @@ def test_natural_breaks_and_tiers():
 
 
 def test_league_shape_tiers_columns():
-    import sakanalytics as sa
+    import team_season as sa
 
     w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
     st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
@@ -1126,7 +1126,7 @@ def test_league_shape_tiers_columns():
 # ---------- R53: A と B が混ざる帯（1年抜き） ----------
 
 def test_mix_zone_leaves_own_season_out():
-    import sakanalytics as sa
+    import team_season as sa
 
     rows = [(2000, .60, True), (2000, .49, True), (2000, .51, False), (2000, .40, False),
             (2001, .55, True), (2001, .47, False), (2001, .45, False),
@@ -1146,7 +1146,7 @@ def test_mix_zone_leaves_own_season_out():
 
 
 def test_mix_zone_edges_are_inside_and_missing_side_is_null():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000, 2000, 2001], "team": ["a", "b", "c"], "wpct": [.50, .52, .50],
                        "upper_half": [True, False, True]})
@@ -1157,7 +1157,7 @@ def test_mix_zone_edges_are_inside_and_missing_side_is_null():
 
 
 def test_league_bar_uses_only_the_other_teams():
-    import sakanalytics as sa
+    import team_season as sa
 
     w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
     st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 6, "team": list("abcdef"), "rank": [1, 2, 3, 4, 5, 6], "wpct": w})
@@ -1169,7 +1169,7 @@ def test_league_bar_uses_only_the_other_teams():
 
 
 def test_mix_zone_on_another_column_with_prefix():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000, 2000, 2001], "team": ["a", "b", "c"], "wpct": [.50, .52, .50],
                        "live_wpct": [.49, .51, None], "upper_half": [True, False, True]})
@@ -1190,7 +1190,7 @@ def _fld(team, g=143, po=3800, a=1500, e=50, dp=120, pb=5, fpct=None, tc=None):
 
 
 def test_fielding_join_rates_and_relative_to_others():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2024] * 3, "league": ["C"] * 3, "team": ["a", "b", "c"], "G": [143] * 3})
     fld = pl.DataFrame([_fld("a", e=40), _fld("b", e=50), _fld("c", e=60)])
@@ -1208,7 +1208,7 @@ def test_fielding_join_rates_and_relative_to_others():
     ({"fpct": 0.900}, "守備率"),
 ])
 def test_fielding_join_stops_when_the_page_does_not_add_up(bad, match):
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2024], "league": ["C"], "team": ["a"], "G": [143]})
     with pytest.raises(ValueError, match=match):
@@ -1219,7 +1219,7 @@ def test_fielding_join_stops_when_the_page_does_not_add_up(bad, match):
 # ---------- R60: 順位表で A・B の側が落ち着いた試合数 ----------
 
 def test_standing_lock_by_hand():
-    from sakanalytics import standing_lock
+    from team_season import standing_lock
     teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
     # 4球団（上位半分 = 2位以内）。c は3日目まで上の側、4日目から下。g は初日だけ下
     rows = [("2024-04-01", "c", "g", 2, 1), ("2024-04-01", "t", "d", 2, 1),
@@ -1249,7 +1249,7 @@ def test_standing_lock_by_hand():
 
 
 def test_lone_down_counts_quarters_where_only_one_team_lost():
-    from sakanalytics import standing_lock
+    from team_season import standing_lock
     teams = {**TEAMS, "c": {"name": "広島", "league": "C"}}
     # 4日、各球団4試合。d だけが毎日負ける。ほかの3球団は、d に勝った球団以外は互いに 1勝1敗……にならないよう引き分けを使う
     rows = []
@@ -1268,7 +1268,7 @@ def _ls(rows):
 
 
 def test_linescore_join_error_differences_by_game_type():
-    import sakanalytics as sa
+    import team_season as sa
 
     tg = to_team_games(games([("2024-04-01", "d", "g", 3, 2), ("2024-04-02", "d", "g", 1, 5),
                               ("2024-04-03", "g", "d", 4, 3), ("2024-04-04", "d", "g", 6, 0)]), TEAMS)
@@ -1285,7 +1285,7 @@ def test_linescore_join_error_differences_by_game_type():
 
 
 def test_linescore_join_stops_on_mismatch_and_leaves_missing_years_empty():
-    import sakanalytics as sa
+    import team_season as sa
 
     tg = to_team_games(games([("2024-04-01", "d", "g", 3, 2), ("2023-04-01", "d", "g", 1, 0)]), TEAMS)
     st = season_table(tg)
@@ -1301,7 +1301,7 @@ def test_linescore_join_stops_on_mismatch_and_leaves_missing_years_empty():
 
 
 def test_state2_two_lines_on_values():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 6 + [2001] * 6, "league": ["C"] * 12, "team": list("abcdef") * 2,
                        "x": [6, 5, 4, 3, 2, 1, 6, 5, 4, 3, 2, None]})
@@ -1314,7 +1314,7 @@ def test_state2_two_lines_on_values():
 
 def test_bar_from_run_differences_uses_only_the_other_teams():
     """R73: 点の差から見た越えるべき高さ。.500 のような固定の値を使わない。"""
-    import sakanalytics as sa
+    import team_season as sa
 
     w = [0.62, 0.60, 0.53, 0.52, 0.51, 0.40]
     py = [0.70, 0.55, 0.52, 0.51, 0.47, 0.40]   # 1位が点の差で独走している年
@@ -1329,7 +1329,7 @@ def test_bar_from_run_differences_uses_only_the_other_teams():
 
 
 def test_bar_gaps_are_relative_to_the_seasons_own_bar():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 6 + [2001] * 6, "league": ["C"] * 12, "team": list("abcdefabcdef"),
                        "x": [6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]})
@@ -1341,7 +1341,7 @@ def test_bar_gaps_are_relative_to_the_seasons_own_bar():
 
 
 def test_vs_top_is_compared_with_the_seasons_bar():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"team": ["a", "b"], "vs_top_wpct": [0.45, None], "lg_bar": [0.47, 0.5]})
     out = sa.add_vs_top_bar_gap(st)
@@ -1352,7 +1352,7 @@ def test_vs_top_is_compared_with_the_seasons_bar():
 # ---------- ゼロの扱い: 0 で割った値を残さない・名前をつけた許容値・NaN/inf の記録 ----------
 
 def test_vs_others_equals_the_old_inline_formula_when_every_team_has_others():
-    import sakanalytics as sa
+    import team_season as sa
 
     over = ["season", "league"]
     st = pl.DataFrame({"season": [2000] * 6, "league": ["C"] * 3 + ["P"] * 3, "x": [1.0, 2.0, 6.0, 0.1, 0.4, 0.2]})
@@ -1362,7 +1362,7 @@ def test_vs_others_equals_the_old_inline_formula_when_every_team_has_others():
 
 
 def test_vs_others_is_null_not_nan_when_there_is_nobody_to_compare_with():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 4, "league": ["C"] * 3 + ["P"], "x": [1.0, 2.0, 6.0, 5.0]})
     out = st.with_columns(d=sa._vs_others("x"))["d"].to_list()
@@ -1371,7 +1371,7 @@ def test_vs_others_is_null_not_nan_when_there_is_nobody_to_compare_with():
 
 
 def test_vs_others_does_not_count_a_missing_team_among_the_others():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 3, "league": ["C"] * 3, "x": [1.0, None, 3.0]})
     out = st.with_columns(d=sa._vs_others("x"))["d"].to_list()
@@ -1379,7 +1379,7 @@ def test_vs_others_does_not_count_a_missing_team_among_the_others():
 
 
 def test_add_balance_leaves_a_one_team_league_empty_instead_of_nan_or_a_zero_zone():
-    import sakanalytics as sa
+    import team_season as sa
 
     st = pl.DataFrame({"season": [2000] * 4, "league": ["C"] * 3 + ["P"], "team": list("abcd"), "G": [10] * 4,
                        "RF": [30, 40, 50, 45], "RA": [30, 40, 50, 45],
@@ -1393,7 +1393,7 @@ def test_add_balance_leaves_a_one_team_league_empty_instead_of_nan_or_a_zero_zon
 
 
 def test_null_nonfinite_nulls_nan_and_inf_and_reports_the_counts():
-    import sakanalytics as sa
+    import team_season as sa
 
     df = pl.DataFrame({"x": [1.0, float("nan"), float("inf"), float("-inf"), None], "n": [1, 2, 3, 4, 5], "s": list("abcde")})
     out, report = sa.null_nonfinite(df)
@@ -1403,7 +1403,7 @@ def test_null_nonfinite_nulls_nan_and_inf_and_reports_the_counts():
 
 
 def test_null_nonfinite_changes_nothing_when_every_value_is_finite():
-    import sakanalytics as sa
+    import team_season as sa
 
     df = pl.DataFrame({"x": [1.0, None, -2.5], "n": [1, 2, 3]})
     out, report = sa.null_nonfinite(df)
@@ -1411,7 +1411,7 @@ def test_null_nonfinite_changes_nothing_when_every_value_is_finite():
 
 
 def test_named_tolerances_keep_the_values_that_were_hard_coded():
-    import sakanalytics as sa
+    import team_season as sa
 
     assert sa.TOLERANCES == {
         "EPS_CUBIC_COEF": 1e-12, "EPS_FLAT_SLOPE": 1e-9, "EPS_WAVE_SOLVE": 1e-12, "EPS_WAVE_TIE": 1e-12,
@@ -1420,7 +1420,7 @@ def test_named_tolerances_keep_the_values_that_were_hard_coded():
 
 
 def test_k_eff_is_empty_when_the_run_ratio_is_too_close_to_one_to_divide_by():
-    import sakanalytics as sa
+    import team_season as sa
 
     near = chunichi([(5, 4)] * 5 + [(4, 5)] * 4 + [(5, 5)] * 20)       # RF 141 / RA 140: |log| ≈ 0.007 < しきい値
     far = chunichi([(5, 4)] * 6 + [(4, 5)] * 4)                          # RF 46 / RA 44: |log| ≈ 0.044 > しきい値
@@ -1432,7 +1432,7 @@ def test_k_eff_is_empty_when_the_run_ratio_is_too_close_to_one_to_divide_by():
 def test_main_writes_the_run_record(tmp_path):
     import json
 
-    import sakanalytics as sa
+    import team_season as sa
 
     teams = {f"a{i}": "C" for i in range(3)} | {f"b{i}": "P" for i in range(3)}
     rows, n = [], 0
@@ -1459,7 +1459,7 @@ def _undamped_wave():
 
 
 def test_wave_basis_marks_the_lambda_boundary_rows_and_eps_replaces_only_those():
-    from sakanalytics import WAVE_PERIODS, wave_basis
+    from team_season import WAVE_PERIODS, wave_basis
     xs, _ = _undamped_wave()
     plain, lifted = wave_basis(xs), wave_basis(xs, 1e-6)
     boundary = [i for i, r in enumerate(plain) if r["boundary"]]
@@ -1472,7 +1472,7 @@ def test_wave_basis_marks_the_lambda_boundary_rows_and_eps_replaces_only_those()
 
 
 def test_wave_fit_of_an_undamped_wave_lands_on_the_boundary_row_with_or_without_eps():
-    from sakanalytics import wave_basis, wave_fit
+    from team_season import wave_basis, wave_fit
     xs, ys = _undamped_wave()
     plain = wave_fit(ys, wave_basis(xs), xs[0])
     lifted = wave_fit(ys, wave_basis(xs, 1e-6), xs[0])
@@ -1482,7 +1482,7 @@ def test_wave_fit_of_an_undamped_wave_lands_on_the_boundary_row_with_or_without_
 
 
 def test_the_lifted_fit_moves_continuously_with_eps_and_never_settles_as_eps_goes_to_zero():
-    from sakanalytics import WAVE_SETTLE, wave_basis, wave_fit
+    from team_season import WAVE_SETTLE, wave_basis, wave_fit
     xs, ys = _undamped_wave()
     ref = wave_fit(ys, wave_basis(xs), xs[0])
     errors, settles = {}, {}
@@ -1496,7 +1496,7 @@ def test_the_lifted_fit_moves_continuously_with_eps_and_never_settles_as_eps_goe
 
 
 def test_a_damped_wave_does_not_notice_eps():
-    from sakanalytics import wave_basis, wave_fit
+    from team_season import wave_basis, wave_fit
     xs = [0.1 + 0.9 * i / 150 for i in range(151)]
     ys = _damped(xs, h0=5.0, lim=2.0, lam=3.0, per=0.5, b=1.0)
     plain = wave_fit(ys, wave_basis(xs), xs[0])
@@ -1505,8 +1505,8 @@ def test_a_damped_wave_does_not_notice_eps():
 
 @pytest.mark.parametrize("bad", [0, -1e-6, float("nan"), float("inf"), True])
 def test_a_bad_eps_is_refused_not_ignored(bad):
-    from epsilon import EpsilonError
-    from sakanalytics import season_trajectory, wave_basis
+    from sakanalytics import EpsilonError
+    from team_season import season_trajectory, wave_basis
     with pytest.raises(EpsilonError):
         wave_basis([0.0, 0.5, 1.0], bad)
     with pytest.raises(EpsilonError):
@@ -1519,7 +1519,7 @@ def _trajectory_games():
 
 
 def test_season_trajectory_adds_wave_lifted_only_when_eps_is_given_and_changes_nothing_else_here():
-    from sakanalytics import season_trajectory
+    from team_season import season_trajectory
     tg = _trajectory_games()
     plain = season_trajectory(tg, sims=5, min_games=10)
     lifted = season_trajectory(tg, sims=5, min_games=10, wave_eps=1e-6)
@@ -1551,7 +1551,7 @@ def _tiny_season(tmp_path):
 
 def test_cli_records_eps_and_the_boundary_rows_and_the_default_output_is_the_same(tmp_path, capsys):
     import json
-    import sakanalytics as sa
+    import team_season as sa
     base = _tiny_season(tmp_path)
     plain, lifted = tmp_path / "plain.jsonl", tmp_path / "lifted.jsonl"
     meta_plain, meta_lifted = tmp_path / "m1.json", tmp_path / "m2.json"
@@ -1572,7 +1572,7 @@ def test_cli_records_eps_and_the_boundary_rows_and_the_default_output_is_the_sam
 
 @pytest.mark.parametrize("bad", ["0", "-1e-6", "nan", "inf"])
 def test_cli_refuses_a_bad_wave_eps(tmp_path, capsys, bad):
-    import sakanalytics as sa
+    import team_season as sa
     with pytest.raises(SystemExit) as exc:
         sa.main([*_tiny_season(tmp_path), "--out", str(tmp_path / "o.jsonl"), "--wave-eps", bad])
     assert exc.value.code == 2 and "--wave-eps" in capsys.readouterr().err

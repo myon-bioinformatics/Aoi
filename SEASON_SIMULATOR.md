@@ -9,7 +9,7 @@ Python 3.11–3.14. Probability calculation alone runs on the standard library.
 Mathematical clinch determination uses OR-Tools.
 
 ```sh
-uv run --with-requirements season-requirements.txt python season_simulator.py season-example.json \
+uv run --with-requirements season-requirements.txt python npb/season_simulator.py season-example.json \
   --as-of 2022-01-01 --through 2022-01-04 --trials 10000 --seed 42 \
   --exact --output /tmp/season-forecast.json
 AOI_ROOT=/path/to/Aoi uv run --with-requirements season-requirements.txt pytest tests/test_season_simulator.py -q
@@ -40,7 +40,7 @@ It can also read Aoi's existing `data/observations/npb_calendar/games.jsonl`.
 Prepare a settings JSON without `games` and pass it as follows.
 
 ```sh
-python sakanalytics/season_simulator.py /tmp/season-config.json \
+python sakanalytics/npb/season_simulator.py /tmp/season-config.json \
   --calendar-jsonl data/observations/npb_calendar/games.jsonl --season 2022 \
   --as-of 2022-09-01 --through 2022-09-30 --trials 10000 --seed 42 \
   --output /tmp/september.json
@@ -53,7 +53,7 @@ Unless the schedule announced at the time was saved, this cannot be called a rep
 Raw input, HTML, and game rows are not committed.
 
 To use the API from other subprojects, add the `sakanalytics` directory to Python's search path and
-`from season_simulator import ...`. The existing `sakanalytics.py` is not turned into a package.
+`from season_simulator import ...`. The existing `npb/team_season.py` is not turned into a package.
 
 ## Probability and clinching are different outputs
 

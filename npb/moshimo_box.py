@@ -37,7 +37,7 @@ Three ways to use it besides turning the dials by hand:
   is one with an empty row or column (the condition holds for every unit, so there is no converse or inverse to
   turn): that boundary is the ε question.
 * ``--eps 1e-6`` (with --ledger) is the opt-in answer for the zero cell only: the empty cell is lifted to ε (a count,
-  epsilon.lift) and the dials exist. ε's value is not decided, so nothing is lifted unless it is given, and it is never
+  sakanalytics.lift) and the dials exist. ε's value is not decided, so nothing is lifted unless it is given, and it is never
   defaulted. A lifted table has fractional cells ("exact"), so it has no units and no --readout. An empty row or column
   stays refused: 0/0 is undefined, not small. The numbers that depend on ε are the logit-based ones (the original's
   logit and the headroom move with log(1/ε)); the MCC is defined at a zero cell and moves only by about ε.
@@ -54,11 +54,16 @@ not decided, so the box stops with a message instead of substituting a number.
 """
 from __future__ import annotations
 
-import argparse, json, math
+import argparse, json, math, sys
 from pathlib import Path
 
 import synthetic_league as sl
-from epsilon import check_eps, lift
+# 汎用の計算（ε の境界判定）はトップの sakanalytics.py。直接実行しても読めるように足す
+_TOP = str(Path(__file__).resolve().parents[1])
+if _TOP not in sys.path:
+    sys.path.insert(1, _TOP)
+
+from sakanalytics import check_eps, lift
 
 DIALS = ("converse", "inverse", "contrapositive")
 FORMS = ("original", "contrapositive", "converse", "inverse")
@@ -112,7 +117,7 @@ def build(*, converse, inverse, contrapositive, n, exact=False) -> dict:
     Keyword-only on purpose: there is no ``original`` argument. Counts are the exact solution rounded to integers
     (largest remainder); ``dial_error`` is how far the realized rates are from the dials after that rounding.
     ``exact=True`` keeps the unrounded solution instead (fractional cells, n any finite number above 0): a table with a
-    lifted cell (epsilon.py) has a cell of ε units, which no integer table can hold.
+    lifted cell (sakanalytics.lift) has a cell of ε units, which no integer table can hold.
     """
     try:
         finite_n = math.isfinite(n) if isinstance(n, (int, float)) else False

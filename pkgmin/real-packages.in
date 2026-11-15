@@ -1,4 +1,4 @@
-# The real packages pkgmin/ stands in for, as pkgmin-stdlib.yml installs them.
+# The real packages pkgmin/ stands in for, as the surface job of stdlib-min.yml installs them.
 # Kept outside pyproject.toml on purpose: the survey must keep finding them undeclared.
 # Compile (uv.lock as constraints, so numpy/certifi stay at the locked versions):
 #   uv export --locked --format requirements-txt --no-hashes --no-emit-project --all-groups -o /tmp/c.txt

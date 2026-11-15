@@ -585,8 +585,8 @@ The existing stdlib-only survey accepts repeated root-relative POSIX globs
 (`*` also matches `/`). Includes are ORed; exclusions override includes.
 
 ```sh
-python -S scripts/survey_third_party.py --match 'blueprobe/*' --match 'queryu/*' --exclude '*/tests/*' --list
-python -S scripts/survey_third_party.py --match 'blueprobe/*' --json /tmp/blueprobe-survey.json
+python -S scripts/stdlib_min.py survey --match 'blueprobe/*' --match 'queryu/*' --exclude '*/tests/*' --list
+python -S scripts/stdlib_min.py survey --match 'blueprobe/*' --json /tmp/blueprobe-survey.json
 ```
 
 `--list` returns eligible paths as JSON without reading source/declaration

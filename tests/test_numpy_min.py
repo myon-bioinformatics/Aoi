@@ -1,9 +1,6 @@
-"""生成した shrink/numpy_min.py を、queryu/ask/suggest.py が使う範囲で本物の numpy と比べる。
-
-Acceptance v2 checks decomposition correctness, not backend-identical scores/rankings.
-See docs/contracts/numpy-min-acceptance-v2.md. Historical corpus assertions remain in
-scripts/legacy_numpy_min_parity.py; they are not silently marked passed.
+"""numpy_min（shrink/numpy_min.py）と、それを作る scripts/shrink_module.py の検査（旧 3 本をまとめた。節の頭に旧ファイルの名前を書いた）。
 """
+
 import importlib.util
 import json
 import os
@@ -12,9 +9,21 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import pytest  # noqa: E402
+import shrink_module as sm  # noqa: E402
+
+
+# ==== suggest（旧 test_numpy_min_suggest.py）
+# 生成した shrink/numpy_min.py を、queryu/ask/suggest.py が使う範囲で本物の numpy と比べる。
+#
+# Acceptance v2 checks decomposition correctness, not backend-identical scores/rankings.
+# See docs/contracts/numpy-min-acceptance-v2.md. Historical corpus assertions remain in
+# scripts/legacy_numpy_min_parity.py; they are not silently marked passed.
+
+
 np = pytest.importorskip("numpy")
 
 
@@ -136,8 +145,6 @@ def test_log_nan_to_num_and_transpose(mn, backend):
     assert got == np.nan_to_num(np.asarray(v), **kw).tolist()
     m = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
     assert _m(mn, m).T.tolist() == np.asarray(m).T.tolist()
-
-
 
 
 @backends
@@ -293,3 +300,116 @@ def test_v2_binary_rotation_counterexample_is_retained():
     np.testing.assert_allclose(z @ z.T, (z @ rotation) @ (z @ rotation).T, atol=1e-15)
     # Same Gram/float geometry does NOT imply the same compressed binary scores.
     assert not np.allclose(score(z, query), score(z @ rotation, query @ rotation))
+
+
+# ==== gram（旧 test_numpy_min_gram_fallback.py）
+# Tiny public-path regressions; no corpus or performance measurement.
+
+
+@pytest.mark.parametrize("shape", [(2, 401), (401, 2)])
+@pytest.mark.parametrize("small,uses_fallback", [(1e-13, True), (1e-10, False), (0.0, False)])
+def test_gram_preserves_strictly_positive_small_component(monkeypatch, shape, small, uses_fallback):
+    monkeypatch.setenv("NUMPY_MIN_PURE", "1")
+    spec = importlib.util.spec_from_file_location("numpy_min_gram", ROOT / "shrink/numpy_min.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    a = np.zeros(shape)
+    a[0, 0], a[1, 1] = 1.0, small
+    calls = []
+    original = mod._svd_onesided
+    def observed(data, rows, cols):
+        calls.append((rows, cols))
+        return original(data, rows, cols)
+    monkeypatch.setattr(mod, "_svd_onesided", observed)
+    u, s, vt = mod.linalg.svd(mod.asarray(a.tolist(), dtype="float64"), full_matrices=False)
+    U, S, Vt = (np.asarray(x.tolist()) for x in (u, s, vt))
+    assert calls == ([shape] if uses_fallback else [])
+    np.testing.assert_array_equal(S, [1.0, small])
+    np.testing.assert_allclose(U.T @ U, np.eye(2), rtol=0, atol=1e-12)
+    np.testing.assert_allclose(Vt @ Vt.T, np.eye(2), rtol=0, atol=1e-12)
+    # Check the small component itself, not merely its negligible relative norm.
+    np.testing.assert_allclose(U @ np.diag(S) @ Vt, a, rtol=1e-12, atol=0)
+
+
+# ==== shrink（旧 test_shrink_module.py）
+# scripts/shrink_module.py と、生成した shrink/numpy_min.py の同値性（本物の numpy と比べる）。
+
+
+ENTRY = "dragowing/overlap.py:load_overlap"
+ENTRIES = [ENTRY, "queryu/ask/suggest.py:suggest"]
+
+
+def _min():
+    spec = importlib.util.spec_from_file_location("numpy_min", ROOT / "shrink" / "numpy_min.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_analyze_follows_into_rule_search():
+    used, visited = sm.analyze("numpy", [ENTRY])
+    assert "pythdragoras/core/rule_search.py:_masks_to_matrix" in visited
+    assert {"asarray", "ones", "flatnonzero", "zeros", "frombuffer", "uint8", "unpackbits"} <= set(used)
+
+
+def test_generated_file_is_current():
+    out = subprocess.run([sys.executable, "scripts/shrink_module.py", "generate", "numpy", *ENTRIES,
+                          "--out", "shrink/numpy_min.py", "--check"], cwd=ROOT, capture_output=True, text=True)
+    assert out.returncode == 0, out.stderr
+
+
+def test_generate_refuses_unknown_names():
+    with pytest.raises(SystemExit, match="fft.fft"):
+        sm.generate_numpy(["fft.fft", "zeros"], ["x.py:f"])
+
+
+def test_analyze_reaches_suggest_index():
+    used, visited = sm.analyze("numpy", ["queryu/ask/suggest.py:suggest"])
+    assert "queryu/ask/suggest.py:Index" in visited
+    assert {"linalg.svd", "linalg.norm", "argsort", "packbits", "nan_to_num", "divide", "int8", "float32"} <= set(used)
+
+
+def test_generated_keeps_only_requested_linalg():
+    text = sm.generate_numpy(["linalg.norm", "zeros"], ["x.py:f"])
+    assert "staticmethod(norm)" in text and "def svd(" not in text and "def lstsq(" not in text
+
+
+def _same(a, b):
+    assert a.shape == b.shape
+    assert a.tolist() == b.tolist()
+
+
+@pytest.mark.parametrize("seed", range(20))
+def test_masks_to_matrix_path_matches_numpy(seed):
+    """rule_search._masks_to_matrix と同じ手順を両方で行う。"""
+    rnd = random.Random(seed)
+    n = rnd.randint(1, 70)
+    masks = [rnd.getrandbits(n) for _ in range(rnd.randint(1, 4))]
+    width = (n + 7) // 8
+    buf = b"".join(m.to_bytes(width, "little") for m in masks)
+    results = []
+    for mod in (np, _min()):
+        raw = mod.frombuffer(buf, dtype=mod.uint8).reshape(len(masks), width)
+        results.append(mod.unpackbits(raw, axis=1, bitorder="little")[:, :n].astype(bool))
+    _same(*results)
+    for i in range(len(masks)):
+        for j in range(n):
+            assert bool(results[0][i, j]) == bool(results[1][i, j])
+    _same(np.zeros((len(masks), n), dtype=bool), _min().zeros((len(masks), n), dtype=bool))
+
+
+@pytest.mark.parametrize("seed", range(20))
+def test_region_counting_matches_numpy(seed):
+    """overlap.load_overlap の領域の数え方を両方で行う。"""
+    rnd = random.Random(seed)
+    k, n = rnd.randint(1, 3), rnd.randint(0, 40)
+    bits = [[rnd.random() < 0.5 for _ in range(n)] for _ in range(k)]
+    for pattern in range(2**k):
+        outs = []
+        for mod in (np, _min()):
+            arr = mod.asarray(bits, dtype=bool)
+            selected = mod.ones(n, dtype=bool)
+            for i in range(k):
+                selected &= arr[i] if pattern >> i & 1 else ~arr[i]
+            outs.append(([int(i) for i in mod.flatnonzero(selected)], int(selected.sum())))
+        assert outs[0] == outs[1]

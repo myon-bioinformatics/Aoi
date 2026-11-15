@@ -1,6 +1,6 @@
 # What the third-party minimums can and cannot replace
 
-This is the feasibility result for the dependencies that are not polars and not numpy linear algebra. Those two are handled separately. The method was an AST scan (`scripts/trace_third_party.py`) plus dynamic runs: importing the real modules with the package blocked, and proxying the real `selectolax` / `httpx` objects while the research code ran.
+This is the feasibility result for the dependencies that are not polars and not numpy linear algebra. Those two are handled separately. The method was an AST scan (`scripts/stdlib_min.py trace-third-party`) plus dynamic runs: importing the real modules with the package blocked, and proxying the real `selectolax` / `httpx` objects while the research code ran.
 
 Nothing here edits the shared projects. The replacements are opt-in runners under `mindeps/`.
 
@@ -20,7 +20,7 @@ The calls the research code actually makes, found by proxying `LexborHTMLParser`
 - `decompose()`
 - the `.html` property, which is then parsed again by `npb_calendar.parse`
 
-On that surface — the competition-label HTML, the inning scoreboards, a six-team annual table, and the saved 2005 standings page — `selectolax_min` matches lexbor. `mindeps/run_selectolax.py` writes the JSON from those real functions.
+On that surface — the competition-label HTML, the inning scoreboards, a six-team annual table, and the saved 2005 standings page — `selectolax_min` matches lexbor. `scripts/stdlib_min.py selectolax` writes the JSON from those real functions.
 
 It is not a lexbor replacement. html.parser does not do HTML5 recovery, and the parity tests already record the differences:
 
@@ -42,21 +42,21 @@ with httpx.Client(headers={"User-Agent": UA}, timeout=45, follow_redirects=True)
     fetcher = PoliteFetcher(cache, wait=..., client=client)
 ```
 
-Proxying that client through `PoliteFetcher` touched only `Client` as a context manager, `get(url, headers=)`, `status_code`, `content`, `headers.get` (`etag`, `last-modified`), and `raise_for_status`. `httpx_min` covers that, including redirects, 404, 304, and 500, against a local server. QueRyu already speaks urllib; this is the same shape under the `httpx` name so those three scripts import. Since the four r001 fetch scripts became `fetch.py`, importing it also imports `selectolax` (the former `observe.py`), so `run_httpx.py --impl min` puts `selectolax_min` in place too when `selectolax` is missing (only for that import).
+Proxying that client through `PoliteFetcher` touched only `Client` as a context manager, `get(url, headers=)`, `status_code`, `content`, `headers.get` (`etag`, `last-modified`), and `raise_for_status`. `httpx_min` covers that, including redirects, 404, 304, and 500, against a local server. QueRyu already speaks urllib; this is the same shape under the `httpx` name so those three scripts import. Since the four r001 fetch scripts became `fetch.py`, importing it also imports `selectolax` (the former `observe.py`), so `stdlib_min.py httpx --impl min` puts `selectolax_min` in place too when `selectolax` is missing (only for that import).
 
 Not covered, because nothing in the tree calls them: HTTP/2, streaming, auth, cookies, multipart, proxies as `httpx.Proxy` objects, and `httpx.Timeout` objects. `timeout=` has to be a number of seconds. Connection failures raise urllib's `URLError`, not `httpx.ConnectError`. The scripts do not catch either.
 
 ### coverage → `fetch_module` CDN
 
-`coverage` is the other pure-Python dependency the tree actually imports (`tests/test_child_registry.py` measures `scripts/check_child_heads.py`). Its `py3-none-any` wheel has no C tracer and warns about it, but the Python tracer collects data. coverage 7.16.2 publishes one requirement, `tomli; python_full_version <= "3.11.0a6" and extra == "toml"`. The pre-release comparison is not evaluated, and no extra is selected, so `fetch_module` treats that `and` as false and fetches the wheel. `run_coverage.py --impl cdn` calls `resolve` with no extra allowance. A requirement that is not gated on an unselected extra is still rejected.
+`coverage` is the other pure-Python dependency the tree actually imports (`tests/test_child_registry.py` measures `scripts/check_child_heads.py`). Its `py3-none-any` wheel has no C tracer and warns about it, but the Python tracer collects data. coverage 7.16.2 publishes one requirement, `tomli; python_full_version <= "3.11.0a6" and extra == "toml"`. The pre-release comparison is not evaluated, and no extra is selected, so `fetch_module` treats that `and` as false and fetches the wheel. `stdlib_min.py coverage --impl cdn` calls `resolve` with no extra allowance. A requirement that is not gated on an unselected extra is still rejected.
 
-`mindeps/run_coverage.py` runs the real `validate_heads` and `failed` under `Coverage(branch=True)`, then compares `analysis2` and the `json_report` summary. The pure wheel's numbers match the installed C-tracer build of the same locked version.
+`scripts/stdlib_min.py coverage` runs the real `validate_heads` and `failed` under `Coverage(branch=True)`, then compares `analysis2` and the `json_report` summary. The pure wheel's numbers match the installed C-tracer build of the same locked version.
 
 This does not replace the mutation suite. That suite shells out to `python -m coverage` over the registry tests; the pure tracer is slower and was not run over that suite. The API those tests use (`load`, `analysis2`, `json_report`) is what the CDN run exercises, on the real module.
 
 ### markdown
 
-Already done in the CDN experiment (`scripts/fetch_module.py`, `scripts/cdn_markdown_smoke.py`). `dragowing/htmlout.py` loads it with `importlib.import_module("markdown")`. Latest `markdown` still resolves to a `py3-none-any` wheel with no runtime dependencies. Not repeated here.
+Already done in the CDN experiment (`scripts/fetch_module.py`, `scripts/stdlib_min.py cdn-markdown`). `dragowing/htmlout.py` loads it with `importlib.import_module("markdown")`. Latest `markdown` still resolves to a `py3-none-any` wheel with no runtime dependencies. Not repeated here.
 
 ## Not feasible
 

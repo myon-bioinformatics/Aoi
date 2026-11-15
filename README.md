@@ -89,8 +89,8 @@ Linux 以外（macOS、Windows）で速い経路を使えるようにする件�
 A research cycle is described once as a pipeline and runs the same way locally and on GitHub Actions ([NagoyAction](https://github.com/myon-bioinformatics/NagoyAction)):
 
 ```bash
-python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml            # pre-flight check
-python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run  # show what would run
+python aoi.py nagoyaction doctor cycles/c001-chunichi/pipeline.toml            # pre-flight check (steps get the sibling paths from aoi.py)
+python aoi.py nagoyaction run    cycles/c001-chunichi/pipeline.toml --dry-run  # show what would run
 ```
 
 ## Repository Layout

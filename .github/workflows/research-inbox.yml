@@ -100,7 +100,7 @@ jobs:
           AOI_RESULTS_SHA: ${{ steps.results.outputs.sha }}
           AOI_STATE_BRANCH: aoi-research-state-${{ steps.target.outputs.cycle }}
         run: >-
-          python nagoyaction/nagoyaction.py run nagoyaction/pipelines/inbox.toml
+          python aoi.py nagoyaction run nagoyaction/pipelines/inbox.toml
           --receipt build/inbox-receipt.jsonl
 
       - name: Preserve any checkpoint whose push failed

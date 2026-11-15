@@ -11,7 +11,9 @@
 A child is a generic single file: it does not look for its siblings. This launcher passes
 ``AOI_ROOT``, ``AOI_RESEARCH_CYCLE``, and only the sibling directories that child imports
 (``SIBLINGS``). Those directories are appended after the caller's ``PYTHONPATH`` (an externally
-supplied BlueProbe stays ahead of Aoi's). Aoi's root and ``.`` are not put on ``PYTHONPATH``.
+supplied BlueProbe stays ahead of Aoi's). Aoi's root and ``.`` are not put on ``PYTHONPATH``, except for
+NagoyAction: it runs Aoi's workflows, so it gets every sibling directory and Aoi's root (``aoi_npb``,
+``annual_scope``), and the steps it starts (``queryu/queryu.py`` and so on) inherit them.
 ``dragowing/`` is not one of the directories: ``dragowing.py`` would win ``import dragowing``
 and hide ``dragowing.render``. pytest's ``pythonpath`` is a different list and is not copied.
 ``python aoi.py -m dragowing`` keeps the cwd entry, as ``python -m`` does, and does not add
@@ -71,12 +73,13 @@ import aoi_paths
 SIBLINGS: dict[str, tuple[str, ...]] = {
     "blueprobe": ("queryu", "blueprobe/npb"),        # --cache: from queryu import Cache; --source npb_* (BlueProbe #53)
     "queryu": ("blueprobe", "blueprobe/npb"),        # extraction (npb_calendar, npb_team_annual); the caller's BlueProbe stays first
-    "nagoyaction": (),                        # its scripts add their own paths from __file__
     "sakanalytics": ("pythdragoras",),        # import propositions
-    "pythdragoras": (),                       # local modules only
+    "pythdragoras": ("sakanalytics",),        # tests/test_propositions.py: from sakanalytics import season_table …
     "dragowing": ("pythdragoras", "queryu/ask"),  # propositions, rule_search, ask
 }
 _UNION = tuple(dict.fromkeys(rel for name in SIBLINGS for rel in SIBLINGS[name]))
+# NagoyAction runs Aoi's workflows: every sibling and Aoi's root (aoi_npb, annual_scope). Its steps inherit them.
+SIBLINGS["nagoyaction"] = (*_UNION, ".")
 _BARE = object()
 
 # argv: mode, target, AOI_ROOT, AOI_RESEARCH_CYCLE, sibling dirs..., "--", script args...
@@ -116,7 +119,7 @@ def _dirs(rels: tuple[str, ...]) -> list[str]:
     root = str(ROOT)
     for rel in rels:
         path = str((ROOT / rel).resolve())
-        if path != root and path not in found:
+        if (path != root or rel == ".") and path not in found:  # the root only when asked for by name (NagoyAction)
             found.append(path)
     return found
 

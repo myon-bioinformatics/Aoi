@@ -826,14 +826,14 @@
           "qual": "numpy",
           "name": "array",
           "file": "scripts/stdlib_min.py",
-          "line": 1368
+          "line": 1366
         },
         {
           "op": "call",
           "qual": "numpy.array",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1368
+          "line": 1366
         },
         {
           "op": "getattr",
@@ -1243,35 +1243,35 @@
           "qual": "selectolax.lexbor",
           "name": "LexborHTMLParser",
           "file": "scripts/stdlib_min.py",
-          "line": 1377
+          "line": 1375
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1380
+          "line": 1378
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser()",
           "name": "css",
           "file": "scripts/stdlib_min.py",
-          "line": 1381
+          "line": 1379
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser().css",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1381
+          "line": 1379
         },
         {
           "op": "dunder",
           "qual": "selectolax.lexbor.LexborHTMLParser().css()",
           "name": "__iter__",
           "file": "scripts/stdlib_min.py",
-          "line": 1381
+          "line": 1379
         }
       ]
     },
@@ -1309,56 +1309,56 @@
           "qual": "selectolax.lexbor",
           "name": "LexborHTMLParser",
           "file": "scripts/stdlib_min.py",
-          "line": 1377
+          "line": 1375
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1380
+          "line": 1378
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser()",
           "name": "css",
           "file": "scripts/stdlib_min.py",
-          "line": 1381
+          "line": 1379
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser().css",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1381
+          "line": 1379
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser().css()",
           "name": "attributes",
           "file": "scripts/stdlib_min.py",
-          "line": 1385
+          "line": 1383
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser().css()",
           "name": "text",
           "file": "scripts/stdlib_min.py",
-          "line": 1386
+          "line": 1384
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser().css().text",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1386
+          "line": 1384
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser().css()",
           "name": "tag",
           "file": "scripts/stdlib_min.py",
-          "line": 1387
+          "line": 1385
         }
       ]
     },
@@ -1419,21 +1419,21 @@
           "qual": "httpx",
           "name": "Client",
           "file": "scripts/stdlib_min.py",
-          "line": 1423
+          "line": 1421
         },
         {
           "op": "call",
           "qual": "httpx.Client",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1423
+          "line": 1421
         },
         {
           "op": "dunder",
           "qual": "httpx.Client()",
           "name": "__enter__",
           "file": "scripts/stdlib_min.py",
-          "line": 1423
+          "line": 1421
         },
         {
           "op": "getattr",
@@ -1475,7 +1475,7 @@
           "qual": "httpx.Client()",
           "name": "__exit__",
           "file": "scripts/stdlib_min.py",
-          "line": 1423
+          "line": 1421
         }
       ]
     },
@@ -1517,21 +1517,21 @@
           "qual": "httpx",
           "name": "Client",
           "file": "scripts/stdlib_min.py",
-          "line": 1423
+          "line": 1421
         },
         {
           "op": "call",
           "qual": "httpx.Client",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1423
+          "line": 1421
         },
         {
           "op": "dunder",
           "qual": "httpx.Client()",
           "name": "__enter__",
           "file": "scripts/stdlib_min.py",
-          "line": 1423
+          "line": 1421
         },
         {
           "op": "getattr",
@@ -1587,7 +1587,7 @@
           "qual": "httpx.Client()",
           "name": "__exit__",
           "file": "scripts/stdlib_min.py",
-          "line": 1423
+          "line": 1421
         }
       ]
     },
@@ -1697,21 +1697,21 @@
           "qual": "ortools.sat.python",
           "name": "cp_model",
           "file": "scripts/stdlib_min.py",
-          "line": 1447
+          "line": 1445
         },
         {
           "op": "getattr",
           "qual": "ortools.sat.python.cp_model",
           "name": "CpModel",
           "file": "scripts/stdlib_min.py",
-          "line": 1449
+          "line": 1447
         },
         {
           "op": "getattr",
           "qual": "ortools",
           "name": "__version__",
           "file": "scripts/stdlib_min.py",
-          "line": 1451
+          "line": 1449
         }
       ]
     },
@@ -1783,147 +1783,147 @@
           "qual": "pandas",
           "name": "DataFrame",
           "file": "scripts/stdlib_min.py",
-          "line": 1462
+          "line": 1460
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1462
+          "line": 1460
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()",
           "name": "season",
           "file": "scripts/stdlib_min.py",
-          "line": 1471
+          "line": 1469
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame().season",
           "name": "__ge__",
           "file": "scripts/stdlib_min.py",
-          "line": 1471
+          "line": 1469
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()",
           "name": "__getitem__",
           "file": "scripts/stdlib_min.py",
-          "line": 1471
+          "line": 1469
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[]",
           "name": "copy",
           "file": "scripts/stdlib_min.py",
-          "line": 1471
+          "line": 1469
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame()[].copy",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1471
+          "line": 1469
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy()",
           "name": "groupby",
           "file": "scripts/stdlib_min.py",
-          "line": 1472
+          "line": 1470
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame()[].copy().groupby",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1472
+          "line": 1470
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy().groupby()",
           "name": "team",
           "file": "scripts/stdlib_min.py",
-          "line": 1473
+          "line": 1471
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy().groupby().team",
           "name": "transform",
           "file": "scripts/stdlib_min.py",
-          "line": 1473
+          "line": 1471
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame()[].copy().groupby().team.transform",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1473
+          "line": 1471
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy()",
           "name": "bat_iso",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy().groupby()",
           "name": "bat_iso",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy().groupby().bat_iso",
           "name": "transform",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame()[].copy().groupby().bat_iso.transform",
           "name": "",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy().groupby().bat_iso.transform()",
           "name": "__sub__",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy().groupby().team.transform()",
           "name": "__sub__",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy().groupby().bat_iso.transform().__sub__",
           "name": "__truediv__",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy().bat_iso",
           "name": "__sub__",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy()",
           "name": "__setitem__",
           "file": "scripts/stdlib_min.py",
-          "line": 1474
+          "line": 1472
         }
       ]
     }

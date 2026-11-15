@@ -1500,7 +1500,7 @@ def drivers(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     if len(argv) != 1 or argv[0] not in DRIVERS:
         names = ", ".join(sorted(DRIVERS))
-        raise SystemExit(f"usage: trace_drivers.py <{'|'.join(sorted(DRIVERS))}>\nknown: {names}")
+        raise SystemExit(f"usage: stdlib_min.py trace-drivers <{'|'.join(sorted(DRIVERS))}>\nknown: {names}")
     DRIVERS[argv[0]]()
     return 0
 
@@ -2013,13 +2013,8 @@ def _trace(scope: str) -> int:
     import numpy as np
     log: list[dict] = []
     _wrap(np, log)
-    spec = importlib.util.spec_from_file_location("run_linalg", ROOT / "shrink" / "run_linalg.py")
-    if spec is None or spec.loader is None:
-        raise SystemExit("run_linalg を読めない")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    mod._prepare("real", allow_installed=True)
-    payload = mod.collect(scope, "real")
+    _prepare("real", allow_installed=True)        # linalg（旧 run_linalg.py）は同じファイルにある
+    payload = linalg_collect(scope, "real")
     print(json.dumps({"scope": scope, "calls": log, "seconds": payload["meta"]["seconds"], "backend_evidence": payload["backend_evidence"]}, ensure_ascii=False))
     names = {row["fn"] for row in log}
     if scope == "fixture":

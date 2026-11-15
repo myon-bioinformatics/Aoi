@@ -9,6 +9,7 @@ dependencies = []
 dev = ["pytest>=8", "selectolax>=1"]
 # Saved-observation tests only; the full dev group retains the Lexbor oracle.
 observation-test = ["pytest>=8"]
+stdlib-test = ["pytest>=8", "pyyaml>=6"]
 
 [tool.uv]
 package = false

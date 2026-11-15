@@ -172,7 +172,7 @@ def test_cli_daily_replay(tmp_path, exact):
             'rules': asdict(r), 'schedule_basis': 'synthetic'}
     src, dest = tmp_path / 'input.json', tmp_path / 'output.json'
     src.write_text(json.dumps(data))
-    script = Path(__file__).resolve().parents[1] / 'season_simulator.py'
+    script = Path(__file__).resolve().parents[1] / 'npb' / 'season_simulator.py'
     # The stdlib CLI also runs with all site-packages disabled.
     subprocess.run([sys.executable, *([] if exact else ['-S']), str(script), str(src),
                     '--as-of', '2022-01-01', '--through', '2022-01-04', '--trials', '30',
@@ -279,7 +279,7 @@ def test_expected_total_games_validation(tmp_path):
             'rules': asdict(r), 'schedule_basis': 'synthetic'}
     src, dest = tmp_path / 'input.json', tmp_path / 'output.json'
     src.write_text(json.dumps(data))
-    script = Path(__file__).resolve().parents[1] / 'season_simulator.py'
+    script = Path(__file__).resolve().parents[1] / 'npb' / 'season_simulator.py'
 
     # Passing incorrect expected total games via CLI fails
     res = subprocess.run([sys.executable, str(script), str(src),

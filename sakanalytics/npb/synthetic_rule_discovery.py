@@ -1,6 +1,6 @@
 """Optional synthetic-only P96 follow-up. Never writes real ledgers or acceptance.
 
-Run from repo root with PYTHONPATH=sakanalytics:pythdragoras.
+Run through Aoi (python aoi.py sakanalytics/npb/synthetic_rule_discovery.py ...), which sets the import paths.
 Features reconstruct the checked game witness, using existing measurement and
 proposition predicates. Candidate selection only reads batch 0 / reversed;
 freeze its JSON registry before evaluating independent seeds and profiles.
@@ -12,7 +12,7 @@ from itertools import combinations; from pathlib import Path
 
 import polars as pl
 from propositions import _antecedent, load
-from sakanalytics import allocation_table, rank_probability, to_team_games
+from team_season import allocation_table, rank_probability, to_team_games
 from synthetic_league import _season_witness, plan, validate_period
 
 FEATURES = ('rd', 'wins_vs_pythag', 'sim_p_upper', 'alloc_z_strat')
@@ -176,7 +176,7 @@ def main(argv=None):
     source=json.loads(a.input.read_text())
     if a.mode=='features':
         result=dict(synthetic=True,source_sha256=sha(a.input),generator_sha256=sha(Path(__file__).with_name('synthetic_league.py')),
-                    measurement_sha256=sha(Path(__file__).with_name('sakanalytics.py')),rows=features(source))
+                    measurement_sha256=sha(Path(__file__).with_name('team_season.py')),rows=features(source))
     else:
         if source.get('synthetic') is not True or any(r.get('synthetic') is not True for r in source['rows']):
             raise ValueError('synthetic-only input required')

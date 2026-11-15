@@ -121,7 +121,7 @@ def test_cli_checks_manifest_digest_as_well_as_arithmetic(tmp_path,tampered):
     source.write_text(''.join(json.dumps(r)+'\n' for r in observations()))
     source.with_suffix('.manifest.json').write_text(json.dumps(dict(unknown=0,sha256='0'*64 if tampered else hashlib.sha256(source.read_bytes()).hexdigest())))
     out,annual=tmp_path/'audit.json',tmp_path/'annual.jsonl'
-    result=subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'annual_audit.py'),'--observations',str(source),'--years','1950-1950','--out',str(out),'--annual-out',str(annual)],capture_output=True)
+    result=subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'annual_audit.py'),'--observations',str(source),'--years','1950-1950','--out',str(out),'--annual-out',str(annual)],capture_output=True)
     assert result.returncode==int(tampered)
     report=json.loads(out.read_text())
     assert report['failed']==int(tampered)

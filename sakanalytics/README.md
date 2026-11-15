@@ -33,50 +33,46 @@ It only measures; it does not exclude or judge good and bad (that is the job of 
 
 Team membership and display names are given explicitly in the analysis settings' `[teams]`. If an undefined team appears, it is an error rather than being silently dropped.
 
-The main columns are listed at the top of `sakanalytics.py`. Rank (`rank`) is a value derived from winning percentage and
+The main columns are listed at the top of `npb/team_season.py`. Rank (`rank`) is a value derived from winning percentage and
 does not reproduce the official tie rules, so ties are marked `rank_tie = true`.
 
-There are also the outlook for remaining games, CS probability, and clinch magic numbers (`season_simulator.py`, [SEASON_SIMULATOR.md](SEASON_SIMULATOR.md)), annual stats auditing (`annual_audit.py`), and synthetic league generation (`synthetic_league.py`).
+There are also the outlook for remaining games, CS probability, and clinch magic numbers (`npb/season_simulator.py`, [SEASON_SIMULATOR.md](SEASON_SIMULATOR.md)), annual stats auditing (`npb/annual_audit.py`), and synthetic league generation (`npb/synthetic_league.py`).
 
 This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) (see "Relationship with Aoi" below).
 
 ## Installation and usage
 
-### Standalone statistics and boundary checks
+### Generic single file (`sakanalytics.py`)
 
-Generate a stdlib-only `sakanalytics.py` that provides descriptive statistics, two-group comparisons, and boundary detection with optional epsilon adjustment from the canonical `epsilon.py`. This lightweight tool is separate from the full statistics application; it does not provide team-season analysis, simulation, or sequence convergence detection.
+`sakanalytics.py` is the domain-independent edition: standard library only, and the file runs on its own (copy it anywhere, or `curl` it). It has 📐 `check_eps` / `lift` (ε as a symbol: detect a value exactly on a boundary, lift it only when a caller passes ε), 📊 `describe`, and ⚖️ `compare` / `boundary` on the command line, with comma-separated and CSV input. Team × season metrics, simulation and sequence convergence are in `npb/` (below).
 
 ```bash
-python build_stdlib_tool.py build/sakanalytics-stdlib-tool
-python build/sakanalytics-stdlib-tool/sakanalytics.py 0 --lo 0 --eps 0.1
-uv tool install ./build/sakanalytics-stdlib-tool
-sakanalytics-boundary 0 --lo 0 --eps 0.1
+python sakanalytics.py 0 --lo 0 --eps 0.1             # boundary (the default command)
+python sakanalytics.py describe 1 2 3
+python vendor/uv_tool_build.py sakanalytics.py --out build/sakanalytics-tool   # shared builder, vendored from Aoi
+uv tool install ./build/sakanalytics-tool && sakanalytics 0 --lo 0 --eps 0.1
 ```
 
-Omit `--eps` to detect a boundary without changing the value. Regenerate after changing `epsilon.py`. The generated tool has no third-party runtime dependencies; building it requires setuptools.
-
-Examples (after installation; replace `sakanalytics-boundary` with `python build/sakanalytics-stdlib-tool/sakanalytics.py` to run the file directly):
+Omit `--eps` to detect a boundary without changing the value.
 
 ```bash
-sakanalytics-boundary 0 --lo 0
+sakanalytics 0 --lo 0
 # {"original": 0.0, "value": 0.0, "boundary": true}
-sakanalytics-boundary 0 --lo 0 --eps 0.1
+sakanalytics 0 --lo 0 --eps 0.1
 # {"original": 0.0, "value": 0.1, "boundary": true}
-sakanalytics-boundary 0.5 --lo 0 --hi 1
+sakanalytics 0.5 --lo 0 --hi 1
 # {"original": 0.5, "value": 0.5, "boundary": false}
-sakanalytics-boundary 0 --lo 0 --eps -1  # invalid epsilon: exit 2
+sakanalytics 0 --lo 0 --eps -1  # invalid epsilon: exit 2
 ```
 
-The generated tool also provides `sakanalytics describe` and `sakanalytics compare`, including comma-separated and CSV input, as illustrated below. For team-season analysis and simulation, use the existing full application described below.
-
-Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). The only runtime dependency is polars. ortools is optional; exact solving (`season_exact.py`) runs only when `season-requirements.txt` is installed.
+The rest of the repository needs Python 3.11+ and [uv](https://docs.astral.sh/uv/). Its only runtime dependency is polars. ortools is optional; exact solving (`npb/season_exact.py`) runs only when `season-requirements.txt` is installed.
 
 ```bash
 git clone https://github.com/myon-bioinformatics/SakAnalytics.git
 cd SakAnalytics
 uv sync
-uv run python sakanalytics.py --help
-uv run python sakanalytics.py --games <games.jsonl> --config <analysis.toml> --out <season.jsonl>
+uv run python npb/team_season.py --help
+uv run python npb/team_season.py --games <games.jsonl> --config <analysis.toml> --out <season.jsonl>
 ```
 
 The input `--games` is an observation dataset (one game per line: `key, date, home, away, hs, as`, the form [QueRyu](https://github.com/myon-bioinformatics/QueRyu) builds), and `--config` is the analysis settings TOML including `[teams]`. If batting, fielding, or line score observations exist, `--batting`, `--fielding`, and `--linescore` add columns.
@@ -85,17 +81,19 @@ Zero handling: a "vs. the other teams of the league" column is null (not NaN, no
 
 ## Layout
 
+Only the generic single file `sakanalytics.py` (and `conftest.py`) sits at the top. NPB / season-specific modules are in `npb/`, general-purpose ones in `core/`. Modules import each other by plain name: the tests put `.`, `core` and `npb` on the path (`pyproject.toml`), and inside Aoi the path is set by Aoi (`aoi.py`).
+
 | File | Contents |
 |---|---|
-| `sakanalytics.py` | CLI. Team × season metrics (main columns listed at the top) |
-| `season_simulator.py`, `season_exact.py` | Outlook for remaining games (standard library) and optional OR-Tools clinch determination ([SEASON_SIMULATOR.md](SEASON_SIMULATOR.md), [SEASON_SIMULATOR_PLAN.md](SEASON_SIMULATOR_PLAN.md)) |
-| `annual_audit.py` | Auditing annual team tables (integer fields and published digits) |
-| `synthetic_league.py`, `league_laboratory.py` | Synthetic leagues with annual stats fixed first, and experiments on them |
-| `neighbors.py` | Descriptive neighbors that don't use results |
-| `proposition_seed_audit.py`, `synthetic_rule_discovery.py` | Seed sensitivity of propositions, and tracking on synthetic data only (uses PythDRagoras) |
-| `moshimo_box.py` | Moshimo Box (もしもボックス) for proposition generation: dials for a proposition's converse, inverse and contrapositive rates. The original's rate has no dial; it is read out (optional readout uses PythDRagoras) |
-| `moshimo_pool.py` | Moshimo Pool (もしもプール): every formula a `rule_search` pool contains on its 2x2 table, a census by zero cells, and where the boundary formulas rank against the top-K cut. Stdlib + polars only (no numpy) |
-| `epsilon.py` | ε as a symbol: detects a value exactly on a boundary and, only when a caller passes an ε, lifts it inside. No default value, no numpy |
+| `sakanalytics.py` | Generic single file, standard library only (see above) |
+| `npb/team_season.py` | CLI. Team × season metrics (main columns listed at the top) |
+| `npb/season_simulator.py`, `npb/season_exact.py` | Outlook for remaining games (standard library) and optional OR-Tools clinch determination ([SEASON_SIMULATOR.md](SEASON_SIMULATOR.md), [SEASON_SIMULATOR_PLAN.md](SEASON_SIMULATOR_PLAN.md)) |
+| `npb/annual_audit.py` | Auditing annual team tables (integer fields and published digits) |
+| `npb/synthetic_league.py`, `npb/league_laboratory.py` | Synthetic leagues with annual stats fixed first, and experiments on them |
+| `core/neighbors.py` | Descriptive neighbors that don't use results |
+| `core/proposition_seed_audit.py`, `npb/synthetic_rule_discovery.py` | Seed sensitivity of propositions, and tracking on synthetic data only (uses PythDRagoras) |
+| `npb/moshimo_box.py` | Moshimo Box (もしもボックス) for proposition generation: dials for a proposition's converse, inverse and contrapositive rates. The original's rate has no dial; it is read out (optional readout uses PythDRagoras) |
+| `npb/moshimo_pool.py` | Moshimo Pool (もしもプール): every formula a `rule_search` pool contains on its 2x2 table, a census by zero cells, and where the boundary formulas rank against the top-K cut. Stdlib + polars only (no numpy) |
 | `tests/` | pytest |
 
 ## Moshimo Box (もしもボックス)
@@ -103,11 +101,11 @@ Zero handling: a "vs. the other teams of the league" column is null (not NaN, no
 A proposition "if A then B" and its converse, inverse and contrapositive all read the same 2x2 table of units. In proposition generation (`pythdragoras/rule_search.py`) a candidate rule is ranked by the Matthews correlation (MCC) of that table, counting its precision (the original's rate) and its recall (the converse's rate). Ranking by the original's own accuracy invites tuning toward it, so the box does the opposite: it never touches the original, turns the other three forms, and reads out what happens to the original's rate and to the ranking score (`mcc`). The box turns **three dials only: converse, inverse, contrapositive**. There is no dial for the original proposition: with the number of units fixed, the three rates fix the table, so the original's rate is a readout, never an input. Its odds are exactly the product of the dials' odds, `logit(original) = logit(converse) + logit(contrapositive) - logit(inverse)`: with the other two dials held, a higher converse or contrapositive raises the original, and a higher inverse lowers it.
 
 ```bash
-uv run python moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --sweep converse=0.3,0.5,0.7,0.9
+uv run python npb/moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --sweep converse=0.3,0.5,0.7,0.9
 # read each table back through PythDRagoras' own evaluator (needs PYTHONPATH=<Aoi>/pythdragoras)
-uv run python moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --readout usually
+uv run python npb/moshimo_box.py --converse 0.6 --inverse 0.7 --contrapositive 0.8 --n 168 --readout usually
 # start from a real proposition and turn its inverse (path is Aoi's cycles/c001-chunichi/outputs/propositions.jsonl)
-uv run python moshimo_box.py --ledger propositions.jsonl --id P1 --sweep inverse=0.6,0.8,0.9
+uv run python npb/moshimo_box.py --ledger propositions.jsonl --id P1 --sweep inverse=0.6,0.8,0.9
 ```
 
 Three ways to use the other forms without touching the original:
@@ -125,7 +123,7 @@ The units are synthetic model checks (no randomness, never NPB observations). A 
 `pythdragoras/rule_search.py` tries every formula the candidate file allows, ranks them by MCC and keeps the top K; only those can be registered as propositions. Everything else never meets the converse, inverse and contrapositive a registered proposition is judged by, and it is where the zero cells are. A zero cell puts two forms on the boundary at once: `a = 0` makes the original and converse 0, `b = 0` makes the original and contrapositive 1 (no counterexample), `c = 0` makes the converse and inverse 1, `d = 0` makes the contrapositive and inverse 0. An empty row or column leaves a form with no unit (`rule_search` scores that table MCC 0.0 without saying so; `silent_zero_mcc` counts them). The Moshimo Box refuses an empty row or column always, and a zero cell unless an ε is given (`--eps`); the pool counts them ahead of time and substitutes nothing.
 
 ```bash
-uv run python moshimo_pool.py --season outputs/season.jsonl --config analysis.toml --candidates rule_candidates.toml --top 20 --list 10 --json pool.json
+uv run python npb/moshimo_pool.py --season outputs/season.jsonl --config analysis.toml --candidates rule_candidates.toml --top 20 --list 10 --json pool.json
 ```
 
 It reads the same inputs as `rule_search` (units with the config's `[[exclude]]` applied and empty values in used columns dropped, the same formulas, the same ordering key) and counts with Python integers as bit sets, so numpy is not needed (if a numpy-based step is ever needed in a lean environment, Aoi's `shrink/numpy_min.py` route applies). The census lists, per zero-cell pattern, the number of formulas, the number of different unit sets they pick (logically equivalent formulas pick the same units), the share, how many are in the top K, and which forms sit on the boundary; then the best-ranked boundary formulas with their rank by MCC (ties share a rank). A row without a boundary can be given to the box: `moshimo_box.anchor(row)`.
@@ -138,8 +136,8 @@ On Aoi's c001 pools the top 20 match `outputs/rules.jsonl` and `outputs/rules_r2
 
 | Where | What is detected | What ε does (only when passed) |
 |---|---|---|
-| `sakanalytics.py --wave-eps EPS` (`season_trajectory(..., wave_eps=)`) | the undamped wave, λ = 0 (the fit's boundary rows) | replaces λ = 0 by ε in that row; a `wave_lifted` column says which fits were lifted; `--meta-out` records `epsilon` (the ε and how many fits sit on the boundary) |
-| `moshimo_box.py --ledger … --id … --eps EPS` (`table_of`, `anchor(record, eps)`) | a zero cell of a real proposition's 2x2 table (a rate exactly 0 or 1, its logit infinite) | the cell becomes ε units; the table is then exact (fractional cells: no unit list, no `--readout`); the lifted cells are printed and written to `--json` |
+| `npb/team_season.py --wave-eps EPS` (`season_trajectory(..., wave_eps=)`) | the undamped wave, λ = 0 (the fit's boundary rows) | replaces λ = 0 by ε in that row; a `wave_lifted` column says which fits were lifted; `--meta-out` records `epsilon` (the ε and how many fits sit on the boundary) |
+| `npb/moshimo_box.py --ledger … --id … --eps EPS` (`table_of`, `anchor(record, eps)`) | a zero cell of a real proposition's 2x2 table (a rate exactly 0 or 1, its logit infinite) | the cell becomes ε units; the table is then exact (fractional cells: no unit list, no `--readout`); the lifted cells are printed and written to `--json` |
 
 What is lifted is a boundary of a parameter or of a table, and only a value that is exactly on it. What is not:
 
@@ -168,7 +166,7 @@ AOI_ROOT=$PWD/.test-deps/aoi uv run --locked pytest -q --junitxml=reports/junit.
 - The only runtime dependency is polars. ortools is optional; exact solving runs only when `season-requirements.txt` is installed, and otherwise those tests are skipped.
 - In addition, tests use Aoi at `AOI_ROOT`.
   - Cycle data in `cycles/`.
-  - PythDRagoras's `propositions`: `proposition_seed_audit.py` and `synthetic_rule_discovery.py` (`pythdragoras` is put on the path by `conftest.py`, not by `PYTHONPATH`).
+  - PythDRagoras's `propositions`: `core/proposition_seed_audit.py` and `npb/synthetic_rule_discovery.py` (its directory comes from Aoi's `aoi.py`: `conftest.py` appends `aoi.environment()`'s import paths after this repository; SakAnalytics names no sibling directory).
   - `tests/test_no_sibling_imports.py` confirms that no other Aoi sibling subprojects or `scripts/` are used (`propositions` is the known exception).
 
 CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. The default ref is `refs/heads/main`, overridable via `aoi_ref` in `workflow_dispatch`. The resolved SHA is left in the job summary. pytest is `uv run pytest`.
@@ -185,7 +183,7 @@ This README starts from the same file as Aoi's `sakanalytics/README.md`. Links t
 
 `aoi_paths.py` lives in only one place, Aoi's top level (not in this repository). CLIs take `--cycle-dir`, and tests take only `AOI_ROOT`.
 
-`analysis_sha256` of `proposition_seed_audit.py` is compared with Aoi's `seed-evaluation.json` and `source-divergence.json`. Tests compare only against the checked-out Aoi copy and its sidecar. A hash that differs from the record is not let through by a local declaration. With `SOURCE_HASH_CHECK=report` (pull_request), mismatches warn and continue; anything else, including unset, fails. Push to main and schedule fail. Generated artifacts have not been regenerated.
+`analysis_sha256` of `core/proposition_seed_audit.py` is compared with Aoi's `seed-evaluation.json` and `source-divergence.json`. Tests compare only against the checked-out Aoi copy and its sidecar. A hash that differs from the record is not let through by a local declaration. With `SOURCE_HASH_CHECK=report` (pull_request), mismatches warn and continue; anything else, including unset, fails. Push to main and schedule fail. Generated artifacts have not been regenerated.
 
 NPB-specific assumptions (number of teams, rounding, and head-to-head columns in annual tables, the CS rules preset `npb_rules()`, and the 2022 verification `season_verify_2022.py`) live in Aoi's `aoi_npb.py` and `scripts/`, and are received here as `AuditRules` and `Rules`.
 
@@ -241,7 +239,7 @@ MIT License ([LICENSE](LICENSE)). Same contents as Aoi's `LICENSE`.
 The following covers usage in Aoi's research cycle (c001: Chunichi and NPB data) and details of the columns built from research. Paths in the command examples (`sakanalytics/…`, `cycles/…`, `data/…`) are locations from Aoi's root.
 
 ```bash
-uv run python sakanalytics/sakanalytics.py --games data/observations/npb_calendar/games.jsonl \
+uv run python sakanalytics/npb/team_season.py --games data/observations/npb_calendar/games.jsonl \
   --config cycles/c001-chunichi/analysis.toml --out cycles/c001-chunichi/outputs/season.jsonl
 ```
 
@@ -314,8 +312,8 @@ Every column only "measures" and does not judge good or bad. Which research crea
 
 ## Annual team tables and synthetic leagues
 
-`annual_audit.py` audits official annual stats for integer fields, published digits of rates, common columns between tables, and agreement with existing season tables.
-`synthetic_league.py` fixes the whole league's annual stats first, checks the head-to-head capacity with integer max flow, and then expands into game results.
+`npb/annual_audit.py` audits official annual stats for integer fields, published digits of rates, common columns between tables, and agreement with existing season tables.
+`npb/synthetic_league.py` fixes the whole league's annual stats first, checks the head-to-head capacity with integer max flow, and then expands into game results.
 The main target is 2013–2026. The default is 14 years of 3 conditions × 1 set each, and it passes if the annual stats and game totals match for all 14 years.
 Covering past years or increasing the number generated is not required. Years before 2013 are kept for reference, separate from regular analysis, calibration, and pass judgement.
 It can build examples with the same runs scored/allowed but different win/loss allocation. Generated examples are not added to measured counts.
@@ -323,12 +321,12 @@ Procedure, generation families, and completion conditions are in [c001's fetch a
 
 ## Experiments on conditional generation, ability budgets, and scoring scales
 
-`league_laboratory.py` runs an experiment that fixes runs scored/allowed and fills in hidden wins/losses, an experiment that allocates ability under the same point budget,
+`npb/league_laboratory.py` runs an experiment that fixes runs scored/allowed and fills in hidden wins/losses, an experiment that allocates ability under the same point budget,
 and an experiment that measures the same integer scores in 6 kinds of analysis units. It checks with annual stats first and expands only representative examples into games.
 It keeps ungeneratable examples, pass/fail of recommended conditions, fixed/new FP/FN, and rank changes between scales as material for the next propositions.
 
 ```bash
-python -S sakanalytics/league_laboratory.py
+python -S sakanalytics/npb/league_laboratory.py
 ```
 
 Settings are in [league-laboratory.toml](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/league-laboratory.toml),
@@ -342,9 +340,9 @@ Balanced Accuracy / MCC to every proposition and each evaluated form. Zero denom
 Propositions without synthetic input also have seed evaluation fields, `None` when unevaluated. It is not limited to particular re-evaluation candidates.
 
 ```bash
-python sakanalytics/proposition_seed_audit.py --cycle-dir cycles/c001-chunichi
+python aoi.py sakanalytics/core/proposition_seed_audit.py --cycle-dir cycles/c001-chunichi
 # only when also regenerating the annual-stats evidence under the same conditions:
-python sakanalytics/proposition_seed_audit.py --cycle-dir cycles/c001-chunichi --generate-plans
+python aoi.py sakanalytics/core/proposition_seed_audit.py --cycle-dir cycles/c001-chunichi --generate-plans
 ```
 
 It uses the existing 3 series of synthetic annual stats, and ability budget seeds 0–9, 2023–2026, all 28 allocations, and decay 0/0.4.
@@ -355,8 +353,8 @@ Synthetic input covers 13 propositions; propositions lacking needed columns or a
 
 ## Node entry (Node 26+)
 
-- `node vendor/py_launch.cjs --env-var SYNTHETIC_LEAGUE_PYTHON -- synthetic_league.py <args>`
-- `node vendor/py_launch.cjs --env-var ANNUAL_AUDIT_PYTHON -- annual_audit.py <args>`
+- `node vendor/py_launch.cjs --env-var SYNTHETIC_LEAGUE_PYTHON -- npb/synthetic_league.py <args>`
+- `node vendor/py_launch.cjs --env-var ANNUAL_AUDIT_PYTHON -- npb/annual_audit.py <args>`
 
 There are no per-tool `.cjs` wrappers: each command calls the vendored shared launcher `vendor/py_launch.cjs` (pinned in `vendor.lock.json`) directly, and `--env-var` names the interpreter override. A Node older than 26 exits 2.
 Arguments, stdin/stdout/stderr and the exit code are passed through unchanged; Python runs with `-S`, including interpreter discovery.
@@ -367,19 +365,18 @@ Launcher failures (no Python 3.9+, spawn error, signal) exit 2. Set `PY_LAUNCH_E
 
 Regression tests cover every thin entry with acknowledged repeated signals, text/JSON errors, and a hostile `sitecustomize` hook. They also test `noSite` and `isolated` discovery independently without changing the entries' `noSite: true` configuration or the Node 26+ floor.
 
-### 軽量な単一ファイル版の利用例（生成後）
+### 単一ファイル版の利用例
 
-Python 3.11 以上で次を実行します。生成先は存在しないディレクトリを指定します。
+Python 3.11 以上で、`sakanalytics.py` だけをコピーして実行できます。
 
 ```sh
-python build_stdlib_tool.py /tmp/sakanalytics-tool
-python /tmp/sakanalytics-tool/sakanalytics.py describe 45 52 48 61 50
-python /tmp/sakanalytics-tool/sakanalytics.py compare --before 45 52 48 --after 40 44 46
+python sakanalytics.py describe 45 52 48 61 50
+python sakanalytics.py compare --before 45 52 48 --after 40 44 46
 ```
 
 最初の例は件数 5、平均 51.2、中央値 50 をJSONで返します。`population_stddev` は母標準偏差です。比較元の平均がゼロなら増減率は `null` と理由で返します。数列の収束判定はこの軽量版にはまだ含まれません。
 
-生成したディレクトリを使い `uv tool install /tmp/sakanalytics-tool` で登録すると、`sakanalytics --help` から同じ機能を利用できます。単一ファイルの実行時に外部ライブラリは不要です。生成とインストールにはそれぞれリポジトリとビルド環境が必要です。
+`python vendor/uv_tool_build.py sakanalytics.py --out /tmp/sakanalytics-tool` のあと `uv tool install /tmp/sakanalytics-tool` で登録すると、`sakanalytics --help` から同じ機能を利用できます。実行時に外部ライブラリは不要です。
 
 ### カンマ区切りとCSVの入力
 

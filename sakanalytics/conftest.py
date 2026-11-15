@@ -1,8 +1,9 @@
 """SakAnalytics 単独リポジトリ用。サイクルデータと PythDRagoras は Aoi に残す。
 
-Aoi の場所は AOI_ROOT だけで渡す。pythdragoras への import 経路はここで作り、子プロセスにも PYTHONPATH で渡す。
+Aoi の場所は AOI_ROOT だけで渡す。兄弟（PythDRagoras）の import 経路は Aoi の aoi.py が決め、子プロセスには
+使う兄弟の場所だけを PYTHONPATH で渡す。
 """
-import os, sys
+import importlib.util, os, sys
 from pathlib import Path
 
 import pytest
@@ -31,7 +32,12 @@ def _root() -> Path:
     # テストのデータの場所（既定のサイクル）は Aoi の aoi_paths.py に聞く。このリポジトリには置かない
     if str(root) not in sys.path:
         sys.path.append(str(root))
-    _export_path(root / "pythdragoras")
+    # 兄弟の場所は Aoi の aoi.py が決める（Aoi の pytest の pythonpath。import aoi と同じ）。後ろに足すので、
+    # このリポジトリのモジュールが先に見える
+    import aoi
+    sys.path.extend(p for p in aoi.environment()["PYTHONPATH"].split(os.pathsep) if p and p not in sys.path)
+    # CLI のテストは子プロセスで動くので、使う兄弟（PythDRagoras の propositions）の場所は PYTHONPATH にも入れる
+    _export_path(Path(importlib.util.find_spec("propositions").origin).parent)
     return root
 
 

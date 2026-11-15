@@ -13,6 +13,12 @@ CYCLE = aoi_paths.resolve_cycle_path(ROOT)
 OUT = CYCLE / 'outputs/exploratory/league-laboratory'
 
 
+def _aoi_copy(rel):
+    """Aoi の中の実体。Aoi が取り込んだ後は sakanalytics/<フォルダ>/、取り込む前は sakanalytics/ 直下。"""
+    moved = ROOT / 'sakanalytics' / rel
+    return moved if moved.is_file() else ROOT / 'sakanalytics' / Path(rel).name
+
+
 def _recorded_source_sha(out, artifact, field, recorded, source):
     """記録の生成元ハッシュを確かめる。記録は書き換えない（自動で基準を更新しない）。
 
@@ -278,8 +284,8 @@ def test_saved_evidence_replays_and_contains_passes_and_nonpasses(cfg, props):
     assert report['inputs']['propositions_sha256'] == lab.file_sha(CYCLE / 'propositions.toml')
     assert report['inputs']['settings_sha256'] == lab.file_sha(CYCLE / 'league-laboratory.toml')
     _recorded_source_sha(OUT, 'results.json', 'inputs.analysis_sha256', report['inputs']['analysis_sha256'],
-                         ROOT / 'sakanalytics/league_laboratory.py')
-    assert report['inputs']['generator_sha256'] == lab.file_sha(ROOT / 'sakanalytics/synthetic_league.py')
+                         _aoi_copy('npb/league_laboratory.py'))
+    assert report['inputs']['generator_sha256'] == lab.file_sha(_aoi_copy('npb/synthetic_league.py'))
     for info in report['artifacts'].values():
         assert lab.file_sha(OUT / info['path']) == info['sha256']
         assert len(lab.read_jsonl(OUT / info['path'])) == info['rows']

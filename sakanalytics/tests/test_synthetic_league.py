@@ -107,7 +107,7 @@ def test_conditional_counts_are_separate_model_checks_not_real_samples():
 def test_cli_without_site_packages(tmp_path):
     out=tmp_path/'synthetic.json'
     witnesses=tmp_path/'witnesses'
-    subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'synthetic_league.py'),'--seeds','1','--out',str(out),'--witness-dir',str(witnesses)],check=True)
+    subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'synthetic_league.py'),'--seeds','1','--out',str(out),'--witness-dir',str(witnesses)],check=True)
     assert len(json.loads(out.read_text())['cases'])==42
     assert len(json.loads((witnesses/'manifest.json').read_text())['files'])==84
     for path in witnesses.glob('*.annual.json'):

@@ -103,11 +103,12 @@ It reads only the cache and does not access the network. If there are unknown no
 |---|---|
 | `blueprobe.py` | Source-independent parts: normalization, the report contract, offline reparsing (`inspect`), the DOM pattern table (`--list-patterns`), document classification (`classify_document` / `--classify`), and the `html.parser` HTML tree. Details in [docs/dom-patterns.md](docs/dom-patterns.md) |
 | `blueprobe.py` (cont.) | The generic source `HtmlSource` (`--source html_source`), the saved-body supplier contract (`SnapshotSupplier`, `QueRyuCacheSource`), and the tools `names` / `headings` / `emoji` / `web` / `github` |
-| `npb/` | NPB sources (`npb_calendar` … `npb_schedule_current`) and `html_compare` (comparison with NPB observations). Loaded by name: set `PYTHONPATH=npb` explicitly; tests list it in `pyproject.toml`, and inside Aoi `aoi.py` does |
+| `npb/` | NPB sources (`npb_calendar` … `npb_schedule_current`); `npb_calendar.compare_calendar()` compares saved HTML with NPB observations. Loaded by name: set `PYTHONPATH=npb` explicitly; tests list it in `pyproject.toml`, and inside Aoi `aoi.py` does |
 | `docs/contract/v1/` | Contracts for reports and snapshot records (additions stay in v1; breaking changes go to v2) |
 | `docs/boundaries.md` | Boundaries of responsibility between BlueProbe / QueRyu / web-ui (proposal) |
 | `docs/antipatterns.md` | Failures likely to recur, and the commitments against them |
 | `tests/cases/*.jsonl` | Corpus of notation variants (same id / category / value / reason format as xprobe) |
+| `tests/test_*.py` | One file per purpose: `test_blueprobe.py` (core, CLI), `_dom`, `_observations` (the `observation-test` group), `_github`, `_npb_<source>` (one per `npb/` source), `_html_source` / `_html_compare` / `_html_parity` (saved-HTML supplier, NPB comparison, Lexbor oracle). `test_blueprobe_parent_workflow_pins.py` and `test_benchmark_optimization_guard.py` keep the names their sibling repositories use |
 
 Sources for NPB (Nippon Professional Baseball) are collected in "NPB (professional baseball) sources" later on.
 
@@ -275,7 +276,7 @@ Unsupported selectors are distinguished as unsupported, and no matches as unmatc
 Display colors, inheritance, specificity, variable resolution, and screen-size conditions are not computed; computed_styles is false.
 Being able to read CSS is not treated as being able to reproduce the screen.
 
-`npb/html_compare.py`'s `compare_calendar()` compares the links read by selector from saved HTML with
+`npb/npb_calendar.py`'s `compare_calendar()` compares the links read by selector from saved HTML with
 the game URLs accepted by the existing `npb_calendar.parse()`.
 It returns missing accepted games, duplicate links, and extraction failures. The source HTML is passed as is to the NPB parser, so
 judgement of tournament headings, cancellations, and unknown notations stays with the existing processing.
@@ -347,14 +348,13 @@ the latest run of [PR #15](https://github.com/myon-bioinformatics/Aoi/pull/15).
 
 | File | Role |
 |---|---|
-| `npb/npb_calendar.py` | Source: npb.jp's monthly official game calendar |
+| `npb/npb_calendar.py` | Source: npb.jp's monthly official game calendar; `compare_calendar()` gives structural coverage of saved HTML against its observations (offline) |
 | `docs/npb-calendar.md` | What was checked for which year in that source (observed and unconfirmed kept separate) |
 | `npb/npb_team_annual.py` | Source: npb.jp's annual team tables (summaries from 1950, detailed tables from 2005) |
 | `npb/npb_team_batting.py` | Source: npb.jp's annual team batting stats ([docs/npb-team-batting.md](docs/npb-team-batting.md)) |
 | `npb/npb_team_fielding.py` | Source: npb.jp's annual team fielding stats ([docs/npb-team-fielding.md](docs/npb-team-fielding.md)) |
 | `npb/npb_game_linescore.py` | Source: npb.jp's game page line scores (R, H, E) ([docs/npb-game-linescore.md](docs/npb-game-linescore.md)) |
 | `npb/npb_schedule_current.py` | Source: npb.jp's current-season monthly schedule and results ([docs/npb-schedule-current.md](docs/npb-schedule-current.md)) |
-| `npb/html_compare.py` | Structural coverage of saved HTML, and comparison with existing NPB observations (offline) |
 
 ```bash
 PYTHONPATH=npb uv run python blueprobe.py --source npb_calendar --cache data/raw/npb_calendar --out observed.md

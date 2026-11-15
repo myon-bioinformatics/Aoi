@@ -20,8 +20,8 @@ from __future__ import annotations
 import json, re
 from pathlib import Path; from urllib.parse import urlsplit
 
-from blueprobe import HtmlTree, new_report, normalize
-from npb_calendar import GAME_PATH, LEAGUE, TEAM_NAME
+from blueprobe import HtmlTree, new_report
+from npb_calendar import GAME_PATH, LEAGUE, TEAM_NAME, row_cells
 
 NAME = "npb_game_linescore"
 GAMES = Path("data/observations/npb_calendar/games.jsonl")   # 日程の観測（パイプラインの root から）
@@ -49,10 +49,6 @@ def pages(years, games: Path = GAMES) -> list[tuple[str, str, str]]:
     return sorted(set(out))
 
 
-def _cells(tr) -> list[str]:
-    return [normalize(c.text(deep=True)) for c in tr.iter() if c.tag in ("td", "th")]
-
-
 def parse(html: str, url: str = "") -> dict:
     """得点表の2行を読む。選手の行（投手・打者の成績）は読まない・数えない・unknown にも入れない（個人の記録は扱わない方針）。
 
@@ -71,7 +67,7 @@ def parse(html: str, url: str = "") -> dict:
     shapes = []                              # 読めなかったときの手がかり（チーム名の位置, セルの数）
     unknown_names = []                       # 得点表の形の行の、知らない先頭の名前（チーム名の候補）
     for tr in HtmlTree(html).css("tr"):
-        cells = _cells(tr)
+        cells = row_cells(tr)
         names = [re.sub(r"\s", "", c) for c in cells]
         hit = [i for i, n in enumerate(names) if n in TEAM_BY_NAME]
         if not hit:

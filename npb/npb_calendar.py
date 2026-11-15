@@ -27,9 +27,9 @@ URL   : https://npb.jp/bis/{year}/calendar/index_{MM}.html （2012〜2025年は�
 from __future__ import annotations
 
 import re
-from urllib.parse import urljoin, urlsplit
+from collections import Counter; from urllib.parse import urljoin, urlsplit
 
-from blueprobe import HtmlTree, new_report, normalize
+from blueprobe import HtmlSource, HtmlTree, new_report, normalize
 
 NAME = "npb_calendar"
 URL = "https://npb.jp/bis/{year}/calendar/index_{month:02d}.html"
@@ -51,10 +51,10 @@ EXPECTED_DEFAULT = 143
 
 # 正規表現は狭く、全体一致で書く。略字は12文字、得点は半角0〜99
 _TEAM = "[" + "".join(ABBR) + "]"
-_DASH = "[-‐‑‒–—−]"
+DASH = "[-‐‑‒–—−]"
 GAME_PATH = re.compile(r"/bis/(?P<y>\d{4})/games/s(?P<id>(?P=y)(?P<md>\d{4})\d+)\.html")
-SCORE = re.compile(rf"(?P<home>{_TEAM}) ?(?P<hs>[0-9]{{1,2}}) ?{_DASH} ?(?P<as>[0-9]{{1,2}}) ?(?P<away>{_TEAM})")
-CANCELLED = re.compile(rf"{_TEAM} ?\* ?{_DASH} ?\* ?{_TEAM}|.*(中止|ノーゲーム).*")
+SCORE = re.compile(rf"(?P<home>{_TEAM}) ?(?P<hs>[0-9]{{1,2}}) ?{DASH} ?(?P<as>[0-9]{{1,2}}) ?(?P<away>{_TEAM})")
+CANCELLED = re.compile(rf"{_TEAM} ?\* ?{DASH} ?\* ?{_TEAM}|.*(中止|ノーゲーム).*")
 
 # 公式戦以外の大会の見出し（正規化後）。2013〜2025年の全ページで見つかったもの。2020年のセは CS なし、パは1ステージ
 NON_REGULAR_LABELS = frozenset({
@@ -65,6 +65,11 @@ DAY_BLOCK, LABEL = "stvsteam", "tescheaten"
 
 def _has_class(node, name: str) -> bool:
     return name in (node.attributes.get("class") or "").split()
+
+
+def row_cells(tr) -> list[str]:
+    """表の1行のセル（td・th）の文字列（正規化後）。npb_game_linescore・npb_team_batting で共通。"""
+    return [normalize(c.text(deep=True)) for c in tr.iter() if c.tag in ("td", "th")]
 
 
 def competition_label(a) -> str | None:
@@ -143,8 +148,6 @@ def check(records: list[dict]) -> list[dict]:
 
     返り値は年ごとに {"group", "ok", "text"}。判定は ok で行い、text は表示のためだけに使う。
     """
-    from collections import Counter
-
     n = Counter()
     for r in records:
         y = int(r["date"][:4])
@@ -164,3 +167,25 @@ def check(records: list[dict]) -> list[dict]:
 def group(record: dict) -> str:
     """記録がどの group（年）のページから来たか。データセットを年単位で作り直すときに使う。"""
     return record["date"][:4]
+
+
+def compare_calendar(html, url, *, selector='.calendar a', extractor=None,
+                     semantic_parser=None, include_css=False, stylesheets=None):
+    """Compare structural HTML coverage with existing NPB observations, offline.
+
+    The original document goes to the semantic parser intact: reconstructing HTML
+    from links would lose competition headings and cancellation context.
+    """
+    semantic = (parse if semantic_parser is None else semantic_parser)(html, url)
+    structural = HtmlSource(selector=selector, extractor=extractor, include_css=include_css,
+                            stylesheets=stylesheets).parse(html, url)
+    links = structural['records'][0]['derived']['links'] if structural['records'] else []
+    observed = Counter(link['url'] for link in links)
+    adopted = {record['href'] for record in semantic['records']}
+    missing = sorted(adopted - observed.keys())
+    return {'schema': 'blueprobe-html-comparison/1', 'source_url': url, 'selector': selector,
+            'semantic': semantic, 'structural': structural,
+            'coverage': {'adopted_games': len(semantic['records']), 'link_occurrences': len(links),
+                         'unique_links': len(observed), 'missing_adopted_urls': missing,
+                         'duplicate_urls': {key: count for key, count in observed.items() if count > 1},
+                         'complete_for_adopted_games': bool(structural['records']) and not missing}}

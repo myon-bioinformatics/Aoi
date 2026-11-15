@@ -124,16 +124,19 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
     import shlex
     import aoi
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+    union = ("queryu", "blueprobe/npb", "blueprobe", "pythdragoras", "sakanalytics", "queryu/ask")
     assert aoi.SIBLINGS == {
         "blueprobe": ("queryu", "blueprobe/npb"),
         "queryu": ("blueprobe", "blueprobe/npb"),
-        "nagoyaction": (),
         "sakanalytics": ("pythdragoras",),
-        "pythdragoras": (),
+        "pythdragoras": ("sakanalytics",),
         "dragowing": ("pythdragoras", "queryu/ask"),
+        "nagoyaction": (*union, "."),  # Aoi のワークフローを動かすので、兄弟すべてと Aoi 直下（aoi_npb・annual_scope）
     }
     assert "dragowing" not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}
-    assert "." not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}
+    assert "." not in {rel for name, rels in aoi.SIBLINGS.items() if name != "nagoyaction" for rel in rels}
+    workflow = aoi.environment({"PYTHONPATH": "kept"}, child="nagoyaction")["PYTHONPATH"].split(os.pathsep)
+    assert workflow == ["kept", *(str((root / rel).resolve()) for rel in union), str(root)]
     env = aoi.environment({"PYTHONPATH": "kept"}, child="queryu")
     assert env["PYTHONPATH"].split(os.pathsep) == ["kept", str((root / "blueprobe").resolve()), str((root / "blueprobe" / "npb").resolve())]
     bare = aoi.environment({"PYTHONPATH": "kept"})

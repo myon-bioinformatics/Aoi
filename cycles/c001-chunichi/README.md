@@ -72,8 +72,8 @@ cycle-001/chunichi 先端の続き（R27以降の別系列、P115以降、追加
 ## 実行
 
 ```bash
-python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
-python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl
+python aoi.py nagoyaction doctor cycles/c001-chunichi/pipeline.toml
+python aoi.py nagoyaction run    cycles/c001-chunichi/pipeline.toml --receipt data/receipts/c001.jsonl
 ```
 
 GitHub 上では Actions の「cycle c001 (chunichi)」で実行する（main に入るまでは `run/c001` ブランチへの push で起動。結果はそのブランチにコミットされる）。中身は同じコマンド。

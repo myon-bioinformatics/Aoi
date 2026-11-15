@@ -354,8 +354,8 @@ jobs:
           retention-days: 14
       - name: NagoyAction is stdlib-only and the cycle pipeline is runnable
         run: |
-          python -S nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
-          python -S nagoyaction/nagoyaction.py run cycles/c001-chunichi/pipeline.toml --dry-run
+          python -S aoi.py nagoyaction doctor cycles/c001-chunichi/pipeline.toml
+          python -S aoi.py nagoyaction run cycles/c001-chunichi/pipeline.toml --dry-run
 
   lab-integration:
     name: Offline lab integration (Python 3.15)

@@ -1,7 +1,5 @@
 """nagoyaction/containers/llama.py（#48 で消えた NagoyAction/containers/llama.py を復元）。ネットワークは使わない。"""
-import hashlib
-import importlib.util
-import io
+import hashlib, importlib.util, io
 from pathlib import Path
 
 import pytest

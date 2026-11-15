@@ -5,15 +5,8 @@ a current cumulative exit code must not be described as a 2026 holdout result.
 """
 from __future__ import annotations
 
-import argparse
-from collections import Counter
-from datetime import date
-import importlib.util
-import json
-from pathlib import Path
-import re
-import sys
-import tomllib
+import argparse, importlib.util, json, re, sys, tomllib
+from collections import Counter; from datetime import date; from pathlib import Path
 
 import polars as pl
 

@@ -5,10 +5,7 @@ This observer runs in setup; replay, evidence checking and publication are offli
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import importlib.util
-import os
+import argparse, hashlib, importlib.util, os
 from pathlib import Path
 
 from publication_gate import write_json, identity

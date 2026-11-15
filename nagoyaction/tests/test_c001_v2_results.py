@@ -1,15 +1,8 @@
 """Same-attempt evidence and research/publication statuses are separate axes."""
 from __future__ import annotations
 
-import copy
-import json
-import os
-from pathlib import Path
-import subprocess
-import sys
-import tempfile
-import unittest
-from unittest import mock
+import copy, json, os, subprocess, sys, tempfile, unittest
+from pathlib import Path; from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))

@@ -1,0 +1,1113 @@
+{
+  "baseline_aoi_commit": "301b6844b74ad5938b8d32aaa55d8478a9421e3b",
+  "nagoyaction_commit": "fb92e04eeb70acf99f3aa3935bcff7d486f25b03",
+  "python": "Python 3.12.15",
+  "inventory": {
+    "full": {
+      "distributions": [
+        [
+          "Markdown",
+          "3.11.2"
+        ],
+        [
+          "Pygments",
+          "2.21.0"
+        ],
+        [
+          "anyio",
+          "4.15.1"
+        ],
+        [
+          "certifi",
+          "2026.10.19"
+        ],
+        [
+          "coverage",
+          "7.16.2"
+        ],
+        [
+          "h11",
+          "0.16.0"
+        ],
+        [
+          "httpcore",
+          "1.0.9"
+        ],
+        [
+          "httpx",
+          "0.28.1"
+        ],
+        [
+          "idna",
+          "3.20"
+        ],
+        [
+          "iniconfig",
+          "2.3.1"
+        ],
+        [
+          "numpy",
+          "2.5.4"
+        ],
+        [
+          "packaging",
+          "26.3"
+        ],
+        [
+          "pluggy",
+          "1.7.0"
+        ],
+        [
+          "polars",
+          "2.0.0"
+        ],
+        [
+          "polars-runtime-32",
+          "2.0.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "selectolax",
+          "1.0.1"
+        ],
+        [
+          "typing_extensions",
+          "4.16.0"
+        ]
+      ],
+      "regular_file_apparent_bytes": 267981866
+    },
+    "nano": {
+      "distributions": [
+        [
+          "Pygments",
+          "2.21.0"
+        ],
+        [
+          "iniconfig",
+          "2.3.1"
+        ],
+        [
+          "packaging",
+          "26.3"
+        ],
+        [
+          "pluggy",
+          "1.7.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ]
+      ],
+      "regular_file_apparent_bytes": 8667505
+    }
+  },
+  "samples": [
+    {
+      "sample": 1,
+      "mode": "full",
+      "returncode": 0,
+      "wall_seconds": 1.7128616329991928,
+      "cases": [
+        {
+          "id": "tests.test_localci::test_shards_cover_each_check_once_and_stay_balanced",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_empty_shards_when_repeat_exceeds_checks",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_stable_and_distinct",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_substitute_keeps_the_fixed_value_until_a_round_seed_is_active",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_sha_shape_survives_substitution",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_fail_fast_reports_round_shard_and_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_keep_going_finishes_every_round",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_uses_skips_local_docker_and_comments",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_classify_pin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_without_a_release_is_not_a_strict_failure",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_known_sources_and_vendor_lock",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_resolve_checks_repository_id_and_ref_forms",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_ls_remote_prefers_peeled_tag_and_rejects_a_mismatch",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_env_file_github_output_and_provenance",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checksum_and_actionlint_cache",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_github_actions_fails_closed_without_go",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_local_go_fallback_uses_the_resolved_tag",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_records_actionlint_next_to_resolved_shas",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_collapses_an_existing_file_of_duplicates",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_rewrite_is_atomic",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_refs_env_stays_one_line_per_key",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_collect_only_and_collection",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_workflow_delegates_resolution_and_follows_parent_uses_style",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_polars_comparison_keeps_real_oracle_without_unused_dependencies",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_dependabot_matches_the_parent_github_actions_schedule",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_shards_are_disjoint_and_cover_every_test",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_monkeypatches_substitute",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_is_fail_fast_and_prints_the_master_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_fails_when_head_differs",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_matches_a_local_origin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_overlay_matches_the_committed_tree_only",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_self_tests_do_not_fetch_aoi",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_full_suite_checks_out_the_resolved_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_aoi_collection_failure_is_an_error",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_session_reuses_the_checked_out_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_shard_runs_as_one_batch_and_stops",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_batch_names_the_failed_node",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_applied_per_node",
+          "outcome": "passed"
+        }
+      ]
+    },
+    {
+      "sample": 1,
+      "mode": "nano",
+      "returncode": 0,
+      "wall_seconds": 1.8734774330005166,
+      "cases": [
+        {
+          "id": "tests.test_localci::test_shards_cover_each_check_once_and_stay_balanced",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_empty_shards_when_repeat_exceeds_checks",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_stable_and_distinct",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_substitute_keeps_the_fixed_value_until_a_round_seed_is_active",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_sha_shape_survives_substitution",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_fail_fast_reports_round_shard_and_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_keep_going_finishes_every_round",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_uses_skips_local_docker_and_comments",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_classify_pin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_without_a_release_is_not_a_strict_failure",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_known_sources_and_vendor_lock",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_resolve_checks_repository_id_and_ref_forms",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_ls_remote_prefers_peeled_tag_and_rejects_a_mismatch",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_env_file_github_output_and_provenance",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checksum_and_actionlint_cache",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_github_actions_fails_closed_without_go",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_local_go_fallback_uses_the_resolved_tag",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_records_actionlint_next_to_resolved_shas",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_collapses_an_existing_file_of_duplicates",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_rewrite_is_atomic",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_refs_env_stays_one_line_per_key",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_collect_only_and_collection",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_workflow_delegates_resolution_and_follows_parent_uses_style",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_polars_comparison_keeps_real_oracle_without_unused_dependencies",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_dependabot_matches_the_parent_github_actions_schedule",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_shards_are_disjoint_and_cover_every_test",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_monkeypatches_substitute",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_is_fail_fast_and_prints_the_master_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_fails_when_head_differs",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_matches_a_local_origin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_overlay_matches_the_committed_tree_only",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_self_tests_do_not_fetch_aoi",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_full_suite_checks_out_the_resolved_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_aoi_collection_failure_is_an_error",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_session_reuses_the_checked_out_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_shard_runs_as_one_batch_and_stops",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_batch_names_the_failed_node",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_applied_per_node",
+          "outcome": "passed"
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "mode": "nano",
+      "returncode": 0,
+      "wall_seconds": 1.7547554690008837,
+      "cases": [
+        {
+          "id": "tests.test_localci::test_shards_cover_each_check_once_and_stay_balanced",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_empty_shards_when_repeat_exceeds_checks",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_stable_and_distinct",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_substitute_keeps_the_fixed_value_until_a_round_seed_is_active",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_sha_shape_survives_substitution",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_fail_fast_reports_round_shard_and_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_keep_going_finishes_every_round",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_uses_skips_local_docker_and_comments",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_classify_pin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_without_a_release_is_not_a_strict_failure",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_known_sources_and_vendor_lock",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_resolve_checks_repository_id_and_ref_forms",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_ls_remote_prefers_peeled_tag_and_rejects_a_mismatch",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_env_file_github_output_and_provenance",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checksum_and_actionlint_cache",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_github_actions_fails_closed_without_go",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_local_go_fallback_uses_the_resolved_tag",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_records_actionlint_next_to_resolved_shas",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_collapses_an_existing_file_of_duplicates",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_rewrite_is_atomic",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_refs_env_stays_one_line_per_key",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_collect_only_and_collection",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_workflow_delegates_resolution_and_follows_parent_uses_style",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_polars_comparison_keeps_real_oracle_without_unused_dependencies",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_dependabot_matches_the_parent_github_actions_schedule",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_shards_are_disjoint_and_cover_every_test",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_monkeypatches_substitute",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_is_fail_fast_and_prints_the_master_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_fails_when_head_differs",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_matches_a_local_origin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_overlay_matches_the_committed_tree_only",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_self_tests_do_not_fetch_aoi",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_full_suite_checks_out_the_resolved_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_aoi_collection_failure_is_an_error",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_session_reuses_the_checked_out_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_shard_runs_as_one_batch_and_stops",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_batch_names_the_failed_node",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_applied_per_node",
+          "outcome": "passed"
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "mode": "full",
+      "returncode": 0,
+      "wall_seconds": 1.700684674000513,
+      "cases": [
+        {
+          "id": "tests.test_localci::test_shards_cover_each_check_once_and_stay_balanced",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_empty_shards_when_repeat_exceeds_checks",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_stable_and_distinct",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_substitute_keeps_the_fixed_value_until_a_round_seed_is_active",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_sha_shape_survives_substitution",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_fail_fast_reports_round_shard_and_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_keep_going_finishes_every_round",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_uses_skips_local_docker_and_comments",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_classify_pin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_without_a_release_is_not_a_strict_failure",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_known_sources_and_vendor_lock",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_resolve_checks_repository_id_and_ref_forms",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_ls_remote_prefers_peeled_tag_and_rejects_a_mismatch",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_env_file_github_output_and_provenance",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checksum_and_actionlint_cache",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_github_actions_fails_closed_without_go",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_local_go_fallback_uses_the_resolved_tag",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_records_actionlint_next_to_resolved_shas",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_collapses_an_existing_file_of_duplicates",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_rewrite_is_atomic",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_refs_env_stays_one_line_per_key",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_collect_only_and_collection",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_workflow_delegates_resolution_and_follows_parent_uses_style",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_polars_comparison_keeps_real_oracle_without_unused_dependencies",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_dependabot_matches_the_parent_github_actions_schedule",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_shards_are_disjoint_and_cover_every_test",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_monkeypatches_substitute",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_is_fail_fast_and_prints_the_master_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_fails_when_head_differs",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_matches_a_local_origin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_overlay_matches_the_committed_tree_only",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_self_tests_do_not_fetch_aoi",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_full_suite_checks_out_the_resolved_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_aoi_collection_failure_is_an_error",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_session_reuses_the_checked_out_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_shard_runs_as_one_batch_and_stops",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_batch_names_the_failed_node",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_applied_per_node",
+          "outcome": "passed"
+        }
+      ]
+    },
+    {
+      "sample": 3,
+      "mode": "full",
+      "returncode": 0,
+      "wall_seconds": 1.6563195919989084,
+      "cases": [
+        {
+          "id": "tests.test_localci::test_shards_cover_each_check_once_and_stay_balanced",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_empty_shards_when_repeat_exceeds_checks",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_stable_and_distinct",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_substitute_keeps_the_fixed_value_until_a_round_seed_is_active",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_sha_shape_survives_substitution",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_fail_fast_reports_round_shard_and_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_keep_going_finishes_every_round",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_uses_skips_local_docker_and_comments",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_classify_pin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_without_a_release_is_not_a_strict_failure",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_known_sources_and_vendor_lock",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_resolve_checks_repository_id_and_ref_forms",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_ls_remote_prefers_peeled_tag_and_rejects_a_mismatch",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_env_file_github_output_and_provenance",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checksum_and_actionlint_cache",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_github_actions_fails_closed_without_go",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_local_go_fallback_uses_the_resolved_tag",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_records_actionlint_next_to_resolved_shas",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_collapses_an_existing_file_of_duplicates",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_rewrite_is_atomic",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_refs_env_stays_one_line_per_key",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_collect_only_and_collection",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_workflow_delegates_resolution_and_follows_parent_uses_style",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_polars_comparison_keeps_real_oracle_without_unused_dependencies",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_dependabot_matches_the_parent_github_actions_schedule",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_shards_are_disjoint_and_cover_every_test",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_monkeypatches_substitute",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_is_fail_fast_and_prints_the_master_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_fails_when_head_differs",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_matches_a_local_origin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_overlay_matches_the_committed_tree_only",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_self_tests_do_not_fetch_aoi",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_full_suite_checks_out_the_resolved_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_aoi_collection_failure_is_an_error",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_session_reuses_the_checked_out_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_shard_runs_as_one_batch_and_stops",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_batch_names_the_failed_node",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_applied_per_node",
+          "outcome": "passed"
+        }
+      ]
+    },
+    {
+      "sample": 3,
+      "mode": "nano",
+      "returncode": 0,
+      "wall_seconds": 1.6838549910007714,
+      "cases": [
+        {
+          "id": "tests.test_localci::test_shards_cover_each_check_once_and_stay_balanced",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_empty_shards_when_repeat_exceeds_checks",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_stable_and_distinct",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_substitute_keeps_the_fixed_value_until_a_round_seed_is_active",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_sha_shape_survives_substitution",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_fail_fast_reports_round_shard_and_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_keep_going_finishes_every_round",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_uses_skips_local_docker_and_comments",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_classify_pin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_check_reports_outdated_unless_strict_and_rejects_a_random_probe",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pin_without_a_release_is_not_a_strict_failure",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_known_sources_and_vendor_lock",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_resolve_checks_repository_id_and_ref_forms",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_ls_remote_prefers_peeled_tag_and_rejects_a_mismatch",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_env_file_github_output_and_provenance",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checksum_and_actionlint_cache",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_github_actions_fails_closed_without_go",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_local_go_fallback_uses_the_resolved_tag",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_records_actionlint_next_to_resolved_shas",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_collapses_an_existing_file_of_duplicates",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_refs_env_rewrite_is_atomic",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_refs_env_stays_one_line_per_key",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_parse_collect_only_and_collection",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_workflow_delegates_resolution_and_follows_parent_uses_style",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_polars_comparison_keeps_real_oracle_without_unused_dependencies",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_dependabot_matches_the_parent_github_actions_schedule",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_shards_are_disjoint_and_cover_every_test",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_plugin_monkeypatches_substitute",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_run_local_is_fail_fast_and_prints_the_master_seed",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_fails_when_head_differs",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_checkout_aoi_matches_a_local_origin",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_overlay_matches_the_committed_tree_only",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_self_tests_do_not_fetch_aoi",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_full_suite_checks_out_the_resolved_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_aoi_collection_failure_is_an_error",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_session_reuses_the_checked_out_sha",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_shard_runs_as_one_batch_and_stops",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_pytest_batch_names_the_failed_node",
+          "outcome": "passed"
+        },
+        {
+          "id": "tests.test_localci::test_round_seed_is_applied_per_node",
+          "outcome": "passed"
+        }
+      ]
+    }
+  ],
+  "test_source_sha256": "929dbf703cd35158abacb8b8ea1d42a4d73d206f55f7e26068f8c7bfcc1f3e3f",
+  "scope": "Existing tests/test_localci.py only; not all NagoyAction or Aoi tests",
+  "conditions": {
+    "platform": "Linux x86_64",
+    "uv": "0.13.5",
+    "python": "CPython 3.12.15",
+    "baseline": "Aoi locked default dev/runtime third-party dependencies, --no-install-project",
+    "plugins": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 in both environments; localci_pytest explicitly loaded by unchanged subprocess tests",
+    "installation": "Shared pre-existing uv cache, not a cold install benchmark",
+    "capacity": "Logical regular-file apparent bytes after workload; excludes interpreter symlinks, cache, source, and filesystem allocation; hardlinked files counted per pathname"
+  },
+  "source_sha256": {
+    "aoi159-ci-20261104/pyproject.toml": "7f4033fcce6e113fcdf0eb74962f4ec9bc7083f83831ff171977eced550e2495",
+    "aoi159-ci-20261104/uv.lock": "c7b36d70d9ae8f47dfbd77570c3901f6d14114eefa9430e1a624b46343f8a73d",
+    "nano-nagoyaction-20261105/tools/localci-env/pyproject.toml": "72cccd8f4f25efa47da1be2bd94c7fd2dcf977369406db783d3adefec6c10049",
+    "nano-nagoyaction-20261105/tools/localci-env/uv.lock": "7c03b22b922b994bb5122e35644a5fcb98d72ca96829b9a93e55cf5cc04aa55b"
+  },
+  "retained_lock_artifacts_match_baseline": true
+}

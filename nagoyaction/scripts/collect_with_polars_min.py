@@ -12,11 +12,7 @@ overlaid on Aoi.
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import importlib.util
-import json
-import sys
+import argparse, hashlib, importlib.util, json, sys
 from pathlib import Path
 
 NAGOYA = Path(__file__).resolve().parents[1]

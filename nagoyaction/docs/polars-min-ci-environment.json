@@ -1,0 +1,691 @@
+{
+  "schema": "nagoyaction-polars-min-environment/1",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "Python 3.15.1",
+  "uv": "uv 0.13.5 (x86_64-unknown-linux-gnu)",
+  "source_commits": {
+    "NagoyAction": "da68f374ad1ae7c786f926190b98c94920d91420",
+    "Aoi": "157c67ce8b6f49008ad1063f1727f433d7ce4ab3"
+  },
+  "aoi_lock_sha256": "c7b36d70d9ae8f47dfbd77570c3901f6d14114eefa9430e1a624b46343f8a73d",
+  "aoi_pyproject_sha256": "7f4033fcce6e113fcdf0eb74962f4ec9bc7083f83831ff171977eced550e2495",
+  "omitted_direct_packages": [
+    "numpy",
+    "httpx",
+    "coverage",
+    "selectolax",
+    "markdown"
+  ],
+  "selected_tests": [
+    "nagoyaction/tests/test_vendor_aoi.py"
+  ],
+  "all_observations_identical": true,
+  "all_outputs_identical": true,
+  "medians": {
+    "baseline": {
+      "initial_venv_bytes": 265828362,
+      "initial_cache_bytes": 266802909,
+      "minimal_venv_bytes": 58666081,
+      "final_cache_bytes": 266805077,
+      "pipeline_process_seconds": 16.48946333600179,
+      "install_seconds": 13.288649248002912
+    },
+    "candidate": {
+      "initial_venv_bytes": 199856780,
+      "initial_cache_bytes": 200831375,
+      "minimal_venv_bytes": 30313,
+      "final_cache_bytes": 200833552,
+      "pipeline_process_seconds": 9.10709040400252,
+      "install_seconds": 5.389979810999648
+    }
+  },
+  "collection_ids": [
+    "nagoyaction/tests/test_vendor_aoi.py::test_lock_lists_only_the_polars_tools_this_tree_uses",
+    "nagoyaction/tests/test_vendor_aoi.py::test_collect_ast_uses_dataframe_and_col",
+    "nagoyaction/tests/test_vendor_aoi.py::test_hash_mismatch_is_reported_and_warn_exits_zero",
+    "nagoyaction/tests/test_vendor_aoi.py::test_upstream_byte_mismatch_is_reported",
+    "nagoyaction/tests/test_vendor_aoi.py::test_fixture_collect_matches_polars_when_polars_is_absent",
+    "nagoyaction/tests/test_vendor_aoi.py::test_real_cycle_collect_matches_polars_when_polars_is_absent"
+  ],
+  "pytest_external_plugins": [
+    [
+      "anyio",
+      "4.15.1"
+    ]
+  ],
+  "samples": [
+    {
+      "trial": 1,
+      "mode": "baseline",
+      "install": {
+        "seconds": 13.288649248002912,
+        "exitcode": 0
+      },
+      "initial_venv_bytes": 265828362,
+      "initial_cache_bytes": 266802909,
+      "pytest": {
+        "seconds": 2.1898545410003862,
+        "exitcode": 0
+      },
+      "real_collect": {
+        "seconds": 0.6620148310030345,
+        "exitcode": 0
+      },
+      "initial_pip_check": {
+        "seconds": 0.01077335599984508,
+        "exitcode": 0
+      },
+      "minimal_sync": {
+        "seconds": 0.02411121099430602,
+        "exitcode": 0
+      },
+      "minimal_venv_bytes": 58666081,
+      "final_cache_bytes": 266805077,
+      "absence": {
+        "seconds": 0.07231270000193035,
+        "exitcode": 1
+      },
+      "minimal_collect": {
+        "seconds": 0.2525208049992216,
+        "exitcode": 0
+      },
+      "minimal_pip_check": {
+        "seconds": 0.00842994299455313,
+        "exitcode": 0
+      },
+      "output_bytes": 56638,
+      "output_sha256": "7dc308a31d969d3f410f100737613e2073586a3e041cc15c41429272086ead35",
+      "reference_equals_minimal": true,
+      "pipeline_process_seconds": 16.48946333600179,
+      "collected_tests": 6,
+      "passed_phase_reports": 18,
+      "skipped_tests": 0,
+      "initial_inventory_count": 18,
+      "minimal_inventory_count": 9,
+      "initial_inventory_unchanged_after_tests": true
+    },
+    {
+      "trial": 1,
+      "mode": "candidate",
+      "install": {
+        "seconds": 6.488291437002772,
+        "exitcode": 0
+      },
+      "initial_venv_bytes": 199856780,
+      "initial_cache_bytes": 200831375,
+      "pytest": {
+        "seconds": 2.256804066004406,
+        "exitcode": 0
+      },
+      "real_collect": {
+        "seconds": 0.7363673760046368,
+        "exitcode": 0
+      },
+      "initial_pip_check": {
+        "seconds": 0.008378651000384707,
+        "exitcode": 0
+      },
+      "minimal_sync": {
+        "seconds": 0.020470901996304747,
+        "exitcode": 0
+      },
+      "minimal_venv_bytes": 30313,
+      "final_cache_bytes": 200833552,
+      "absence": {
+        "seconds": 0.06314363700221293,
+        "exitcode": 1
+      },
+      "minimal_collect": {
+        "seconds": 0.2738798179998412,
+        "exitcode": 0
+      },
+      "minimal_pip_check": {
+        "seconds": 0.006644478002272081,
+        "exitcode": 0
+      },
+      "output_bytes": 56638,
+      "output_sha256": "7dc308a31d969d3f410f100737613e2073586a3e041cc15c41429272086ead35",
+      "reference_equals_minimal": true,
+      "pipeline_process_seconds": 9.838957236010174,
+      "collected_tests": 6,
+      "passed_phase_reports": 18,
+      "skipped_tests": 0,
+      "initial_inventory_count": 13,
+      "minimal_inventory_count": 0,
+      "initial_inventory_unchanged_after_tests": true
+    },
+    {
+      "trial": 2,
+      "mode": "candidate",
+      "install": {
+        "seconds": 5.389979810999648,
+        "exitcode": 0
+      },
+      "initial_venv_bytes": 199856780,
+      "initial_cache_bytes": 200831375,
+      "pytest": {
+        "seconds": 2.5714361220016144,
+        "exitcode": 0
+      },
+      "real_collect": {
+        "seconds": 0.7976208210020559,
+        "exitcode": 0
+      },
+      "initial_pip_check": {
+        "seconds": 0.011195112994755618,
+        "exitcode": 0
+      },
+      "minimal_sync": {
+        "seconds": 0.02357584900164511,
+        "exitcode": 0
+      },
+      "minimal_venv_bytes": 30313,
+      "final_cache_bytes": 200833552,
+      "absence": {
+        "seconds": 0.06335127700003795,
+        "exitcode": 1
+      },
+      "minimal_collect": {
+        "seconds": 0.26112652399751823,
+        "exitcode": 0
+      },
+      "minimal_pip_check": {
+        "seconds": 0.0072386749961879104,
+        "exitcode": 0
+      },
+      "output_bytes": 56638,
+      "output_sha256": "7dc308a31d969d3f410f100737613e2073586a3e041cc15c41429272086ead35",
+      "reference_equals_minimal": true,
+      "pipeline_process_seconds": 9.10709040400252,
+      "collected_tests": 6,
+      "passed_phase_reports": 18,
+      "skipped_tests": 0,
+      "initial_inventory_count": 13,
+      "minimal_inventory_count": 0,
+      "initial_inventory_unchanged_after_tests": true
+    },
+    {
+      "trial": 2,
+      "mode": "baseline",
+      "install": {
+        "seconds": 6.439938759998768,
+        "exitcode": 0
+      },
+      "initial_venv_bytes": 265828362,
+      "initial_cache_bytes": 266802909,
+      "pytest": {
+        "seconds": 2.203888193995226,
+        "exitcode": 0
+      },
+      "real_collect": {
+        "seconds": 0.7441676899979939,
+        "exitcode": 0
+      },
+      "initial_pip_check": {
+        "seconds": 0.00901582100050291,
+        "exitcode": 0
+      },
+      "minimal_sync": {
+        "seconds": 0.02327327599778073,
+        "exitcode": 0
+      },
+      "minimal_venv_bytes": 58666081,
+      "final_cache_bytes": 266805077,
+      "absence": {
+        "seconds": 0.07629421700403327,
+        "exitcode": 1
+      },
+      "minimal_collect": {
+        "seconds": 0.2482113770020078,
+        "exitcode": 0
+      },
+      "minimal_pip_check": {
+        "seconds": 0.009857659999397583,
+        "exitcode": 0
+      },
+      "output_bytes": 56638,
+      "output_sha256": "7dc308a31d969d3f410f100737613e2073586a3e041cc15c41429272086ead35",
+      "reference_equals_minimal": true,
+      "pipeline_process_seconds": 9.73577351399581,
+      "collected_tests": 6,
+      "passed_phase_reports": 18,
+      "skipped_tests": 0,
+      "initial_inventory_count": 18,
+      "minimal_inventory_count": 9,
+      "initial_inventory_unchanged_after_tests": true
+    },
+    {
+      "trial": 3,
+      "mode": "baseline",
+      "install": {
+        "seconds": 17.155955631002143,
+        "exitcode": 0
+      },
+      "initial_venv_bytes": 265828362,
+      "initial_cache_bytes": 266802909,
+      "pytest": {
+        "seconds": 2.445097114999953,
+        "exitcode": 0
+      },
+      "real_collect": {
+        "seconds": 0.6995044599971152,
+        "exitcode": 0
+      },
+      "initial_pip_check": {
+        "seconds": 0.0103341680005542,
+        "exitcode": 0
+      },
+      "minimal_sync": {
+        "seconds": 0.01950462099921424,
+        "exitcode": 0
+      },
+      "minimal_venv_bytes": 58666081,
+      "final_cache_bytes": 266805077,
+      "absence": {
+        "seconds": 0.061137062999478076,
+        "exitcode": 1
+      },
+      "minimal_collect": {
+        "seconds": 0.2713392650039168,
+        "exitcode": 0
+      },
+      "minimal_pip_check": {
+        "seconds": 0.008869299999787472,
+        "exitcode": 0
+      },
+      "output_bytes": 56638,
+      "output_sha256": "7dc308a31d969d3f410f100737613e2073586a3e041cc15c41429272086ead35",
+      "reference_equals_minimal": true,
+      "pipeline_process_seconds": 20.65253815500182,
+      "collected_tests": 6,
+      "passed_phase_reports": 18,
+      "skipped_tests": 0,
+      "initial_inventory_count": 18,
+      "minimal_inventory_count": 9,
+      "initial_inventory_unchanged_after_tests": true
+    },
+    {
+      "trial": 3,
+      "mode": "candidate",
+      "install": {
+        "seconds": 5.296962683998572,
+        "exitcode": 0
+      },
+      "initial_venv_bytes": 199856780,
+      "initial_cache_bytes": 200831375,
+      "pytest": {
+        "seconds": 2.503497484998661,
+        "exitcode": 0
+      },
+      "real_collect": {
+        "seconds": 0.6559449559936184,
+        "exitcode": 0
+      },
+      "initial_pip_check": {
+        "seconds": 0.008600123001087923,
+        "exitcode": 0
+      },
+      "minimal_sync": {
+        "seconds": 0.02240406999771949,
+        "exitcode": 0
+      },
+      "minimal_venv_bytes": 30313,
+      "final_cache_bytes": 200833552,
+      "absence": {
+        "seconds": 0.07797657499759225,
+        "exitcode": 1
+      },
+      "minimal_collect": {
+        "seconds": 0.26725802200235194,
+        "exitcode": 0
+      },
+      "minimal_pip_check": {
+        "seconds": 0.008558772002288606,
+        "exitcode": 0
+      },
+      "output_bytes": 56638,
+      "output_sha256": "7dc308a31d969d3f410f100737613e2073586a3e041cc15c41429272086ead35",
+      "reference_equals_minimal": true,
+      "pipeline_process_seconds": 8.824043791988515,
+      "collected_tests": 6,
+      "passed_phase_reports": 18,
+      "skipped_tests": 0,
+      "initial_inventory_count": 13,
+      "minimal_inventory_count": 0,
+      "initial_inventory_unchanged_after_tests": true
+    }
+  ],
+  "measurement_notes": [
+    "Each sample used a fresh venv and separate empty uv cache. Pair order: baseline/candidate, candidate/baseline, baseline/candidate.",
+    "Source overlay and interpreter provision happened before measurement; source, interpreter, and OS packages are excluded from size.",
+    "Regular-file logical bytes do not follow symlinks. Venv and uv cache can share hardlinks; do not add their sizes as physical savings.",
+    "Aoi lock and pyproject were unchanged; candidate omitted only the five named direct distributions and retained all other real-phase distributions, including anyio.",
+    "Same source, pytest configuration, read-only observer and normal plugin autoload in both modes. PYTHONDONTWRITEBYTECODE=1 in both modes.",
+    "Pipeline process seconds sum the two syncs, selected pytest, real collect, failed Polars import and minimal collect. Provenance checkout, pip/inventory checks and hashing are excluded.",
+    "OS/CDN caches and unrelated host load were not controlled. All six samples retained; no measured command retried.",
+    "Six unchanged tests passed without skips per sample. All18phase reports, collection IDs, rootdir/config and external plugin inventories matched.",
+    "Reference/minimal JSON matched within every sample and across all samples. The reports derive from the same pinned Aoi research records, not new observations.",
+    "These are local environment measurements, not hosted CI runtime or billing measurements.",
+    "Shared per-mode commands and package inventories are factored into environment_profiles; each sample was independently checked against its mode profile."
+  ],
+  "additional_validation": {
+    "full_nagoyaction_baseline": {
+      "passed": 296,
+      "subtests_passed": 23,
+      "skipped": 0
+    },
+    "full_nagoyaction_candidate": {
+      "passed": 297,
+      "subtests_passed": 23,
+      "skipped": 0,
+      "all_original_test_identities_outcomes_unchanged": true,
+      "new_case": "test_polars_comparison_keeps_real_oracle_without_unused_dependencies"
+    },
+    "workflow_run_body_replay": {
+      "steps": [
+        {
+          "name": "Vendored polars_min equivalence, then record real collect",
+          "exitcode": 0,
+          "installed_packages": [
+            [
+              "Pygments",
+              "2.21.0"
+            ],
+            [
+              "anyio",
+              "4.15.1"
+            ],
+            [
+              "aoi",
+              "0.1.0"
+            ],
+            [
+              "certifi",
+              "2026.10.19"
+            ],
+            [
+              "h11",
+              "0.16.0"
+            ],
+            [
+              "httpcore",
+              "1.0.9"
+            ],
+            [
+              "idna",
+              "3.20"
+            ],
+            [
+              "iniconfig",
+              "2.3.1"
+            ],
+            [
+              "packaging",
+              "26.3"
+            ],
+            [
+              "pluggy",
+              "1.7.0"
+            ],
+            [
+              "polars",
+              "2.0.0"
+            ],
+            [
+              "polars-runtime-32",
+              "2.0.0"
+            ],
+            [
+              "pytest",
+              "9.1.1"
+            ]
+          ]
+        },
+        {
+          "name": "Remove project and dependency groups for the stdlib-only collect",
+          "exitcode": 0,
+          "installed_packages": []
+        },
+        {
+          "name": "polars is not installed",
+          "exitcode": 0
+        },
+        {
+          "name": "Same collect on vendored polars_min",
+          "exitcode": 0
+        },
+        {
+          "name": "Byte-identical to the real polars collect result",
+          "exitcode": 0
+        }
+      ],
+      "output_bytes": 56638,
+      "output_sha256": "7dc308a31d969d3f410f100737613e2073586a3e041cc15c41429272086ead35"
+    },
+    "workflow_contract": {
+      "candidate_passes": true,
+      "original_broad_install_rejected": true
+    },
+    "actionlint_version": "1.7.12",
+    "actionlint_exitcode": 0,
+    "git_diff_check_exitcode": 0
+  },
+  "environment_profiles": {
+    "baseline": {
+      "sync_command": [
+        "uv",
+        "sync",
+        "--locked",
+        "--python",
+        "python3.15"
+      ],
+      "minimal_sync_command": [
+        "uv",
+        "sync",
+        "--locked",
+        "--python",
+        "python3.15",
+        "--no-dev",
+        "--no-install-package",
+        "polars",
+        "--no-install-package",
+        "polars-runtime-32"
+      ],
+      "initial_packages": [
+        [
+          "Markdown",
+          "3.11.2"
+        ],
+        [
+          "Pygments",
+          "2.21.0"
+        ],
+        [
+          "anyio",
+          "4.15.1"
+        ],
+        [
+          "aoi",
+          "0.1.0"
+        ],
+        [
+          "certifi",
+          "2026.10.19"
+        ],
+        [
+          "coverage",
+          "7.16.2"
+        ],
+        [
+          "h11",
+          "0.16.0"
+        ],
+        [
+          "httpcore",
+          "1.0.9"
+        ],
+        [
+          "httpx",
+          "0.28.1"
+        ],
+        [
+          "idna",
+          "3.20"
+        ],
+        [
+          "iniconfig",
+          "2.3.1"
+        ],
+        [
+          "numpy",
+          "2.5.4"
+        ],
+        [
+          "packaging",
+          "26.3"
+        ],
+        [
+          "pluggy",
+          "1.7.0"
+        ],
+        [
+          "polars",
+          "2.0.0"
+        ],
+        [
+          "polars-runtime-32",
+          "2.0.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "selectolax",
+          "1.0.1"
+        ]
+      ],
+      "minimal_packages": [
+        [
+          "Markdown",
+          "3.11.2"
+        ],
+        [
+          "anyio",
+          "4.15.1"
+        ],
+        [
+          "aoi",
+          "0.1.0"
+        ],
+        [
+          "certifi",
+          "2026.10.19"
+        ],
+        [
+          "h11",
+          "0.16.0"
+        ],
+        [
+          "httpcore",
+          "1.0.9"
+        ],
+        [
+          "httpx",
+          "0.28.1"
+        ],
+        [
+          "idna",
+          "3.20"
+        ],
+        [
+          "numpy",
+          "2.5.4"
+        ]
+      ]
+    },
+    "candidate": {
+      "sync_command": [
+        "uv",
+        "sync",
+        "--locked",
+        "--python",
+        "python3.15",
+        "--no-install-package",
+        "numpy",
+        "--no-install-package",
+        "httpx",
+        "--no-install-package",
+        "coverage",
+        "--no-install-package",
+        "selectolax",
+        "--no-install-package",
+        "markdown"
+      ],
+      "minimal_sync_command": [
+        "uv",
+        "sync",
+        "--locked",
+        "--python",
+        "python3.15",
+        "--no-default-groups",
+        "--no-install-project"
+      ],
+      "initial_packages": [
+        [
+          "Pygments",
+          "2.21.0"
+        ],
+        [
+          "anyio",
+          "4.15.1"
+        ],
+        [
+          "aoi",
+          "0.1.0"
+        ],
+        [
+          "certifi",
+          "2026.10.19"
+        ],
+        [
+          "h11",
+          "0.16.0"
+        ],
+        [
+          "httpcore",
+          "1.0.9"
+        ],
+        [
+          "idna",
+          "3.20"
+        ],
+        [
+          "iniconfig",
+          "2.3.1"
+        ],
+        [
+          "packaging",
+          "26.3"
+        ],
+        [
+          "pluggy",
+          "1.7.0"
+        ],
+        [
+          "polars",
+          "2.0.0"
+        ],
+        [
+          "polars-runtime-32",
+          "2.0.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ]
+      ],
+      "minimal_packages": []
+    }
+  }
+}

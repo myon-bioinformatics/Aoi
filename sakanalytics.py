@@ -20,7 +20,7 @@ The value of ε and how to treat a lifted value afterwards are not decided. So:
   rows that were lifted), so the result can be re-read, or redone with another ε, once the handling is decided.
 
 What is lifted: a value that is a *boundary of a parameter or of a table* and sits there exactly, so that a formula
-further on degenerates. Today that is the undamped wave λ = 0 (sakanalytics.wave_basis) and a zero cell of a real 2x2
+further on degenerates. Today that is the undamped wave λ = 0 (team_season.wave_basis) and a zero cell of a real 2x2
 table (moshimo_box.anchor, where it makes a rate exactly 0 or 1 and its logit infinite).
 
 What is not lifted, on purpose:
@@ -32,7 +32,7 @@ What is not lifted, on purpose:
   stays null behind a named threshold (K_EFF_MIN_LOG_RATIO).
 
 ``lift`` tests ``x == bound`` exactly. A near-zero that is not exactly on the bound is the business of the named
-tolerances (sakanalytics.TOLERANCES), not of ε.
+tolerances (team_season.TOLERANCES), not of ε.
 """
 from __future__ import annotations
 

@@ -21,7 +21,7 @@ KNOWN_EXCEPTIONS = {
     ("conftest.py", "import:aoi"),
     # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
     ("vendor/uv_tool_build.py", "path:scripts"),
-    ("tests/test_standalone_boundary.py", "path:scripts"),
+    ("tests/test_sakanalytics.py", "path:scripts"),
     ("core/proposition_seed_audit.py", "import:propositions"),
     ("npb/synthetic_rule_discovery.py", "import:propositions"),
     # もしもボックスの --readout / readout() は、同じ表を PythDRagoras の評価で読み戻す（任意。遅延 import）

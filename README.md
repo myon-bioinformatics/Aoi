@@ -94,7 +94,7 @@ Only the generic single file `sakanalytics.py` (and `conftest.py`) sits at the t
 | `core/proposition_seed_audit.py`, `npb/synthetic_rule_discovery.py` | Seed sensitivity of propositions, and tracking on synthetic data only (uses PythDRagoras) |
 | `npb/moshimo_box.py` | Moshimo Box (もしもボックス) for proposition generation: dials for a proposition's converse, inverse and contrapositive rates. The original's rate has no dial; it is read out (optional readout uses PythDRagoras) |
 | `npb/moshimo_pool.py` | Moshimo Pool (もしもプール): every formula a `rule_search` pool contains on its 2x2 table, a census by zero cells, and where the boundary formulas rank against the top-K cut. Stdlib + polars only (no numpy) |
-| `tests/` | pytest |
+| `tests/` | pytest, one file per module or feature (`test_<module>.py`; `test_sakanalytics.py` is the generic file, `test_neighbor_retention.py` pairs with [docs/neighbor-retention.md](docs/neighbor-retention.md)). `test_fleet.py`: CI pins, vendor lock and dispatch, Node entries and the launcher. `test_no_sibling_imports.py`: the Aoi boundary |
 
 ## Moshimo Box (もしもボックス)
 

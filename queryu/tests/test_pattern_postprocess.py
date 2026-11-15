@@ -1,23 +1,25 @@
 """抽出後の並べ替え・絞り込み。パターン表と検出は BlueProbe に聞く。"""
 
-import ast
-import json
+import ast, json
 from pathlib import Path
 
 import pytest
 
-import pattern_postprocess
-from pattern_postprocess import (
+import blueprobe
+import queryu as pattern_postprocess
+from queryu import (
     filter_table,
     filter_text,
-    main,
+    _post_main as main,
     pattern_for_html,
-    process,
+    _post_process as process,
     sort_table,
     sort_text,
 )
 
-SOURCE = (Path(__file__).resolve().parents[1] / "pattern_postprocess.py").read_text(encoding="utf-8")
+_QUERYU = (Path(__file__).resolve().parents[1] / "queryu.py").read_text(encoding="utf-8")
+# 抽出後の加工（post）の節だけを見る
+SOURCE = _QUERYU[_QUERYU.index("# ──── post "):_QUERYU.index("# ──── tools:")]
 
 
 def test_module_calls_blueprobe_without_a_local_pattern_table():
@@ -28,14 +30,11 @@ def test_module_calls_blueprobe_without_a_local_pattern_table():
             imported.setdefault(node.module, []).extend(alias.name for alias in node.names)
         if isinstance(node, ast.Import):
             assert all(alias.name == "blueprobe" or "." not in alias.name for alias in node.names)
-    assert imported["blueprobe"] == ["detect_pattern", "get_pattern"]
+    assert set(imported["blueprobe"]) == {"detect_pattern", "get_pattern"}  # 遅延 import
     assert all("." not in module for module in imported)
     assert "dom_patterns" not in SOURCE
     assert "load_source" not in SOURCE
     assert "DOM_PATTERNS" not in SOURCE
-    import blueprobe
-    assert pattern_postprocess.detect_pattern is blueprobe.detect_pattern
-    assert pattern_postprocess.get_pattern is blueprobe.get_pattern
     handlers = [handler.type for node in ast.walk(tree) if isinstance(node, ast.ExceptHandler) for handler in [node]]
     assert all(handler is not None for handler in handlers)
     for handler in handlers:
@@ -126,7 +125,7 @@ def test_detection_errors_propagate(monkeypatch):
     def boom(html):
         raise RuntimeError("detector failed")
 
-    monkeypatch.setattr(pattern_postprocess, "detect_pattern", boom)
+    monkeypatch.setattr(blueprobe, "detect_pattern", boom)
     with pytest.raises(RuntimeError, match="detector failed"):
         pattern_for_html("<main>x</main>")
 
@@ -182,3 +181,63 @@ def test_cli_numeric_failure_is_nonzero(tmp_path, capsys):
     path.write_text(json.dumps({"text": ["得点"]}), encoding="utf-8")
     assert main(["--input", str(path), "--sort", "numeric"]) == 1
     assert "数値として並べられません" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("key", ["npb_calendar", " npb_linescore "])
+@pytest.mark.parametrize("html", [None, '<table class="score_table"><tr><td>1</td></tr></table>'])
+def test_explicit_research_key_is_scoped_and_metadata_only(key, html):
+    import blueprobe
+    before = blueprobe.detect_pattern('<table class="score_table"><tr><td>1</td></tr></table>')
+    payload = {"pattern_key": key, "text": ["keep"]}
+    if html is not None:
+        payload["html"] = html
+    result = process(payload)
+    assert result["pattern"]["pattern_key"] == key.strip()
+    assert result["pattern"]["matched_nodes"] is None
+    assert result["text"] == ["keep"]
+    assert blueprobe.detect_pattern('<table class="score_table"><tr><td>1</td></tr></table>') == before
+    assert pattern_for_html('<article class="markdown-body">generic</article>')["pattern_key"] == "github_readme"
+
+
+def test_optional_research_metadata_is_copied():
+    first = pattern_postprocess._requested_pattern("npb_calendar")
+    first["example_sites"].append("mutation")
+    assert "mutation" not in pattern_postprocess._requested_pattern("npb_calendar")["example_sites"]
+
+
+def test_unknown_research_key_stays_an_error():
+    with pytest.raises(ValueError):
+        process({"pattern_key": "npb_missing"})
+
+
+def test_generic_lookup_does_not_import_optional_research(monkeypatch):
+    import builtins
+    original = builtins.__import__
+    def guarded(name, *args, **kwargs):
+        if name == "npb_patterns":
+            raise AssertionError("generic path must not import optional research")
+        return original(name, *args, **kwargs)
+    monkeypatch.setattr(builtins, "__import__", guarded)
+    assert process({"pattern_key": "github_readme"})["pattern"]["pattern_key"] == "github_readme"
+    assert pattern_for_html('<article class="markdown-body">generic</article>')["pattern_key"] == "github_readme"
+
+
+
+@pytest.mark.parametrize('missing', ['npb_patterns', 'nested_dependency'])
+def test_optional_import_preserves_original_or_nested_error(monkeypatch, missing):
+    import builtins
+    original = ValueError('original unknown key')
+    failure = ModuleNotFoundError('missing', name=missing)
+    def lookup(key):
+        raise original
+    real_import = builtins.__import__
+    def importing(name, *args, **kwargs):
+        if name == 'npb_patterns':
+            raise failure
+        return real_import(name, *args, **kwargs)
+    monkeypatch.setattr(blueprobe, 'get_pattern', lookup)
+    monkeypatch.setattr(builtins, '__import__', importing)
+    expected = original if missing == 'npb_patterns' else failure
+    with pytest.raises(type(expected)) as caught:
+        pattern_postprocess._requested_pattern('npb_missing')
+    assert caught.value is expected

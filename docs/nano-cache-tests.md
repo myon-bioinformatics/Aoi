@@ -1,13 +1,11 @@
 # Optional cache test environment
 
 `cache-test` installs the existing locked pytest and its dependencies, without
-NumPy. It is an opt-in development profile for these **unchanged** test files:
-
-- `tests/test_cache_core.py`
-- `tests/test_cache_snapshots.py`
-- `tests/test_queryu_cache_share.py`
-- `tests/test_urllib_client.py`
-- `tests/test_query_retention.py`
+NumPy. It is an opt-in development profile for one test file,
+`tests/test_queryu_cache.py`. It holds, unchanged and under the same test names,
+the tests of the five files measured below (`test_cache_core`, `test_cache_snapshots`,
+`test_queryu_cache_share`, `test_urllib_client`, `test_query_retention`) and the
+query-retention benchmark check (formerly `test_benchmark_validation`).
 
 Together they cover the standalone cache, original-byte verification and immutable
 history, bundle round trips and rejection of unsafe/tampered input, synchronous
@@ -37,12 +35,7 @@ UV_PROJECT_ENVIRONMENT="$cache_env" uv sync --locked --only-group cache-test
 AOI_ROOT="$(cd ../Aoi && pwd)" \
 PYTHONPATH="$(cd ../BlueProbe && pwd)" \
 UV_PROJECT_ENVIRONMENT="$cache_env" \
-  uv run --locked --no-sync python -m pytest -q \
-    tests/test_cache_core.py \
-    tests/test_cache_snapshots.py \
-    tests/test_queryu_cache_share.py \
-    tests/test_urllib_client.py \
-    tests/test_query_retention.py
+  uv run --locked --no-sync python -m pytest -q tests/test_queryu_cache.py
 ```
 
 The separate directory is inside ignored `build/`; it does not replace the
@@ -89,7 +82,7 @@ The smaller environment saved 56,388,510 logical bytes (about 89.5%) in this
 measurement. **Neither installation nor test execution became faster by the
 median.** These are small local samples, not CI timing or a general performance
 claim. Only the first install pair favored the smaller environment. The final small
-environment took 13.105 seconds to install and was not retried. All samples are retained in [the measurement record](nano-cache-tests.json).
+environment took 13.105 seconds to install and was not retried. All samples are retained in [the measurement record](nano-cache-measurement.json).
 
 Counts are installed distributions, not the number of lock records. The full
 Python 3.15 environment has NumPy 2.5.4 in addition to pytest 9.1.1, iniconfig

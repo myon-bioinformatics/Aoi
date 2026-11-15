@@ -57,12 +57,12 @@
     },
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
-      "ref": "a19b39d521de2ea69325080d3e87de9547f55106",
-      "commit": "a19b39d521de2ea69325080d3e87de9547f55106",
+      "ref": "8621a1025ecc330f6d2d0bcca5a9d11b80fb8716",
+      "commit": "8621a1025ecc330f6d2d0bcca5a9d11b80fb8716",
       "source": "tools/stdlib_min/polars_min.py",
       "destination": "shrink/polars_min.py",
-      "blob_sha": "5af0e170973bc8b4c2f3abcec9da5060171c92f5",
-      "sha256": "7c3539937b266e8d11452b3621050aab7d60ae8bb05dc79ffdc12874386cf4e1"
+      "blob_sha": "370bcfc158749a44c2ba6b9588eeffc0f56abc17",
+      "sha256": "ccb23fbfe013d22c59436acbd0c8ad27a5bb64bd30df1f5c22f0956c1d416149"
     },
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",

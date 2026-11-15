@@ -125,7 +125,7 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
     import aoi
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     assert aoi.SIBLINGS == {
-        "blueprobe": ("queryu", "blueprobe/npb"),
+        "blueprobe": ("queryu", "queryu/core", "blueprobe/npb"),
         "queryu": ("blueprobe", "blueprobe/npb"),
         "nagoyaction": (),
         "sakanalytics": ("pythdragoras",),

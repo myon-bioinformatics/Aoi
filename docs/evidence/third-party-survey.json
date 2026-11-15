@@ -50,7 +50,7 @@
     },
     {
       "file": "queryu/conftest.py",
-      "line": 49
+      "line": 48
     },
     {
       "file": "scripts/fetch_module.py",
@@ -816,7 +816,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1438,
+      "attribute_uses": 1445,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -827,19 +827,19 @@
         "approx": 392,
         "fail": 34,
         "fixture": 59,
-        "hookimpl": 5,
+        "hookimpl": 4,
         "importorskip": 14,
-        "mark.parametrize": 341,
+        "mark.parametrize": 346,
         "mark.skipif": 26,
         "param": 1,
-        "raises": 525,
+        "raises": 528,
         "skip": 15,
         "warns": 3,
         "xfail": 1
       },
       "by_tree": {
         "aoi": {
-          "attribute_uses": 15,
+          "attribute_uses": 14,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -847,7 +847,7 @@
             "StashKey": 1,
             "fail": 4,
             "fixture": 3,
-            "hookimpl": 3,
+            "hookimpl": 2,
             "importorskip": 1
           },
           "dynamic_import_sites": 0,
@@ -921,7 +921,7 @@
           "import_sites": 22
         },
         "queryu": {
-          "attribute_uses": 91,
+          "attribute_uses": 99,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -929,14 +929,14 @@
             "approx": 2,
             "fail": 8,
             "fixture": 4,
-            "mark.parametrize": 19,
-            "raises": 50,
+            "mark.parametrize": 24,
+            "raises": 53,
             "skip": 1,
             "xfail": 1
           },
           "dynamic_import_sites": 1,
-          "files": 13,
-          "import_sites": 13
+          "files": 14,
+          "import_sites": 14
         },
         "sakanalytics": {
           "attribute_uses": 437,
@@ -1014,6 +1014,11 @@
         },
         {
           "file": "queryu/pyproject.toml",
+          "kind": "group:cache-test",
+          "name": "pytest"
+        },
+        {
+          "file": "queryu/pyproject.toml",
           "kind": "group:dev",
           "name": "pytest"
         },
@@ -1025,8 +1030,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 124,
-      "import_sites": 127
+      "files": 125,
+      "import_sites": 128
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1283,7 +1288,7 @@
         "StashKey": 1,
         "fail": 4,
         "fixture": 3,
-        "hookimpl": 3,
+        "hookimpl": 2,
         "importorskip": 1
       },
       "dynamic_lines": [],
@@ -2594,8 +2599,18 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 2
+      },
+      "dynamic_lines": [],
+      "file": "queryu/tests/test_ci_blueprobe_sources.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "queryu"
+    },
+    {
+      "attributes": {
         "fail": 1,
-        "raises": 1
+        "raises": 2
       },
       "dynamic_lines": [],
       "file": "queryu/tests/test_fetch_plan.py",
@@ -2605,7 +2620,8 @@
     },
     {
       "attributes": {
-        "raises": 12
+        "mark.parametrize": 3,
+        "raises": 14
       },
       "dynamic_lines": [],
       "file": "queryu/tests/test_pattern_postprocess.py",

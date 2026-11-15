@@ -17,7 +17,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from propositions import _cell, label
+# 外部の主張の表（render_claims）と表のセル（_cell）は propositions.py のものを使う（写しを持たない）
+from propositions import _cell, label, render_claims
 
 
 # ---------- 4つの形を並べて読む（次の命題の種） ----------
@@ -125,30 +126,6 @@ def render_next(readings: list[dict], meta: dict, limit: int = 8) -> str:
     lines += ["", "太字は焦点の球団。形のセルは「終了コード・成立率（単位数）」。終了コードは 0 異議なし、1 例外あり、2 主張が強すぎる、3 不成立、4 判断保留、5 判定できない単位。",
               "逆・裏が「—」の命題は、条件が空か、主語を選ぶだけの条件で省略したもの（道筋の欄に理由）。条件を範囲（where）に書いた命題は、条件を「もし」に移すと逆・裏が作られる（R41）"]
     return "\n".join(lines) + "\n"
-
-
-def render_claims(claims: list[dict]) -> str:
-    if not claims:
-        return ""
-    lines = ["# 外部の主張との照合（自動生成）", "",
-             "外部の主張は観測ではない。再現できても観測にはならず、再現できなければそれ自体が調べるべき矛盾になる。", "",
-             "| id | 主張 | 出どころ | 状態 | 主張値 | 計算値 |", "|---|---|---|---|---|---|"]
-    ja = {"reproduced": "再現", "not-reproduced": "**再現せず**", "not-measurable": "測定不能", "interpretation": "解釈（数では確かめない）"}
-    for c in claims:
-        lines.append(f"| {c['id']} | {_cell(c['statement'])} | {c.get('source')} {c.get('date') or ''} | {ja[c['status']]} "
-                     f"| {_v(c.get('claimed'))} | {_v(c.get('computed'))} |")
-    return "\n".join(lines) + "\n"
-
-
-def _cell(x) -> str:
-    return str(x).replace("|", "\\|")
-
-
-def _v(v):
-    """表示用。率など1未満の値は小数3桁、勝利数などは符号つき小数2桁。"""
-    if isinstance(v, float):
-        return f"{v:.3f}" if abs(v) < 1 else f"{v:+.2f}"
-    return "-" if v is None else str(v)
 
 
 def _positive_int(value: str) -> int:

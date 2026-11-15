@@ -1,4 +1,6 @@
-"""命題の集合（R48）。式の読み、¬ の展開、命題としての判定と覆い。"""
+"""命題の集合（R48）。式の読み（字句の境界）、¬ の展開、命題としての判定と覆い。"""
+
+import unittest
 
 import polars as pl
 import pytest
@@ -120,3 +122,20 @@ def test_stoppers_ledger_counts_expressions_per_unit():
     assert book["t-2015"] == {"counterexample": ["E1", "E2"], "missed": []}
     assert book["d-2018"] == {"counterexample": [], "missed": ["E1", "E3"]}
     assert list(dict(st_.stoppers([result("E1", ["a"], []), result("E2", ["b"], ["b"])])))[0] == "b"
+
+
+# ──── token boundary ─────────────────────────────────────────────────
+
+class TokenBoundaryTests(unittest.TestCase):
+    def test_whitespace_and_long_expression(self):
+        for tail in ('', ' ', '\t\r\n', '\u3000'):
+            self.assertEqual(st_.tokens(' A & (~B | C_1)' + tail),
+                             ['A', '&', '(', '~', 'B', '|', 'C_1', ')'])
+            self.assertEqual(st_.tokens(tail), [])
+        self.assertEqual(st_.tokens('A &' * 10000 + ' B   '),
+                         ['A', '&'] * 10000 + ['B'])
+
+    def test_invalid_suffix_is_reported_without_offset_change(self):
+        with self.assertRaisesRegex(st_.SetError, "式を読めない") as caught:
+            st_.tokens('A & $bad  ')
+        self.assertIn("' $bad  '", str(caught.exception))

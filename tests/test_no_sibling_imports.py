@@ -27,7 +27,7 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_c001_replay_compare.py", "path:scripts"),
     # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
     ("vendor/uv_tool_build.py", "path:scripts"),
-    ("tests/test_standalone_metrics.py", "path:scripts"),
+    ("tests/test_standalone_examples.py", "path:scripts"),
     # Aoi の scripts/check_c001_exploratory_candidates.py を importlib で読む
     ("tests/test_c001_exploratory_candidates.py", "path:scripts/check_c001_exploratory_candidates.py"),
 }

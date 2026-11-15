@@ -7,6 +7,7 @@ suffix diagnostics remain unchanged. No dependency, public API or CI changes.
 Validation: `AOI_ROOT=/path/to/Aoi uv run pytest -xq tests/test_sets.py tests/test_set_token_boundary.py`
 passed 16 tests on Linux/CPython 3.14.9. Added cases cover Unicode/trailing
 whitespace, empty strings, 20,001 tokens and invalid suffix diagnostics.
+The token-boundary cases now live in `tests/test_sets.py` (`TokenBoundaryTests`); the file above was merged into it.
 
 `python -S -m scripts.benchmark_set_tokens` compares tokenizer functions extracted
 with AST from the pinned baseline and current source, using identical regex and

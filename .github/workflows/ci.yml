@@ -5,13 +5,6 @@ on:
   pull_request:
   schedule:
     - cron: "30 7 * * *"
-  workflow_dispatch:
-    inputs:
-      aoi_ref:
-        description: "Aoi ref to checkout. Empty resolves latest main."
-        required: false
-        type: string
-        default: ""
 permissions:
   contents: read
 jobs:
@@ -63,7 +56,7 @@ jobs:
       - name: Resolve referenced repositories
         id: resolve
         env:
-          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
+          AOI_REF_INPUT: ""
           GITHUB_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
           GITHUB_REF: ${{ github.ref }}
@@ -142,7 +135,7 @@ jobs:
           fi
 
   test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     needs: [changes, resolve-vendor]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
@@ -232,7 +225,7 @@ jobs:
   # 最小版は scripts/collect_with_polars_min.py が vendor/aoi/ から載せる。
   polars-min:
     name: collect (real polars, then polars uninstalled)
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     needs: [changes, resolve-vendor]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -302,7 +295,7 @@ jobs:
 
   failure-identity:
     needs: [changes, test]
-    if: (always()) && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    if: (always()) && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule')
     permissions:
       contents: read
       actions: read
@@ -322,7 +315,7 @@ jobs:
 
   local-ci:
     needs: changes
-    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -343,7 +336,7 @@ jobs:
       - name: Run local CI
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
+          AOI_REF_INPUT: ""
         run: |
           set -euo pipefail
           seed="${{ github.run_id }}"

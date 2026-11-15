@@ -16,11 +16,11 @@ PyPI; subsequent use can be offline once all required wheels are cached.
 uv sync --project tools/localci-env --locked --python 3.12
 PYTHONPATH="$PWD" PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   uv run --project tools/localci-env --locked --no-sync python -m pytest \
-  -q tests/test_localci.py tests/test_localci_nano_profile.py
+  -q tests/test_localci.py
 ```
 
-The new three profile-contract tests are separate from the original 39 self-test
-cases. The command checks 42 cases. Third-party plugin autoload is disabled
+The three profile-contract tests (`test_localci_profile_*`, `test_localci_lock_*`)
+sit at the end of `tests/test_localci.py`, after the self-test cases. Third-party plugin autoload is disabled
 explicitly; the unchanged subprocess tests still load `localci_pytest` to check
 seed substitution, disjoint sharding and complete coverage. This setting does
 not disable built-in pytest assertions or fixtures.

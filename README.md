@@ -105,7 +105,8 @@ To bring in shared modules from other repositories, use that repository's `vendo
 | `pipelines/` | Pipeline definitions (`research.toml`, `inbox.toml`) | as is |
 | `inbox/inbox.py`, `docs/inbox.md` | Question intake | as is |
 | `containers/` | Local LLM container (not connected. "Local LLM container" below) | as is |
-| `tests/` | pytest (run inside Aoi. "Tests" below) | as is |
+| `scripts/` | CI and measurement helpers (`check_vendor_aoi.py`, `collect_with_polars_min.py`, `real_forge_smoke.py`, `benchmark_link_case_index.py`) | as is |
+| `tests/` | pytest, one file per module (run inside Aoi. "Tests" below); stand-ins such as `fake_forgejo.py` in `tests/fixtures/` | as is |
 
 ➡️ The modules marked `core/` / `npb/` move when NagoyAction is next synced into Aoi, together with Aoi's side: the tests run inside Aoi's tree with Aoi's pytest `pythonpath` (`nagoyaction` only), and Aoi calls them by path (`links.yml` → `nagoyaction.py linkcheck`, `ci.yml` and `cycles/c001-chunichi/pipeline.toml` → `research_digest.py`, `c001-replay-audit.yml` → `ghi_execution.py`, `scripts/c001_publication_policy.py` → `publication_gate`, DRAgoWing's `tests/test_export.py` → `localci`). Aoi's `pythonpath` then gains `nagoyaction/core` and `nagoyaction/npb`, and `nagoyaction.py` adds its own `core/` for `actionlint` / `hub`.
 
@@ -193,7 +194,7 @@ Tests are in `tests/test_llama_container.py` (no network).
 
 For the independent `localci.py` self-tests only, an [optional locked pytest-only environment](docs/nano-localci-tests.md) avoids installing Aoi research dependencies. It does not replace the complete Aoi-integrated suite below.
 
-Steps and tests use Aoi's top level (`cycles/`, `queryu/`, `sakanalytics/`, `blueprobe/`, `vendor/`, `scripts/`, `docs/`) by relative path. They are not tested standalone. On every run CI resolves main's SHA with `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main`, checks it out, replaces its `nagoyaction/` with this repository's tree, and runs `nagoyaction/tests` with Aoi's settings. The resolved SHA is left in the job summary. A ref can be given via `aoi_ref` in `workflow_dispatch`. With the same SHA, the bytes of `vendor/aoi/` are checked against Aoi's originals. A mismatch is a warning on pull requests and a failure on push to main and on schedule.
+Steps and tests use Aoi's top level (`cycles/`, `queryu/`, `sakanalytics/`, `blueprobe/`, `vendor/`, `scripts/`, `docs/`) by relative path. They are not tested standalone. On every run CI resolves main's SHA with `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main`, checks it out, replaces its `nagoyaction/` with this repository's tree, and runs `nagoyaction/tests` with Aoi's settings. The resolved SHA is left in the job summary. With the same SHA, the bytes of `vendor/aoi/` are checked against Aoi's originals. A mismatch is a warning on pull requests and a failure on push to main and on schedule.
 
 ```sh
 git clone https://github.com/myon-bioinformatics/Aoi.git ../Aoi
@@ -251,7 +252,7 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 ## Node entry (Node 26+)
 
 `node vendor/py_launch.cjs --env-var NAGOYACTION_PYTHON -- nagoyaction.py <args>` runs `nagoyaction.py`
-through the vendored shared launcher `vendor/py_launch.cjs` (there is no per-tool `.cjs` wrapper), taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. The shared uv tool builder `vendor/uv_tool_build.py` is taken the same way from Aoi and pinned separately in that lock. Arguments, stdin/stdout/stderr and the
+through the vendored shared launcher `vendor/py_launch.cjs` (there is no per-tool `.cjs` wrapper), taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. The shared uv tool builder `vendor/uv_tool_build.py` is taken the same way from Aoi and pinned separately in that lock. The parent's shared contract checks `vendor/fleet_check.py` (called by `tests/test_fleet.py`) come straight from `myon-bioinformatics/myon-bioinformatics` and are pinned in the same lock. Arguments, stdin/stdout/stderr and the
 exit code are passed through unchanged; Python runs with `-S`, including interpreter discovery.
 `NAGOYACTION_PYTHON` picks the interpreter (via `--env-var`). The launcher forwards repeated SIGINT/SIGTERM
 until the Python child exits. Launcher failures (no Python 3.9+, spawn error, signal) exit 2, as does a Node older than 26;

@@ -1,6 +1,9 @@
-"""SHA 解決、uses: のピン、シャード、seed 付き入力の差し替え。ネットワークはモックする。"""
+"""SHA 解決、uses: のピン、シャード、seed 付き入力の差し替え。ネットワークはモックする。
 
-import hashlib, io, json, os, random, subprocess, sys, tarfile, urllib.error
+末尾は任意の self-test 環境（tools/localci-env, docs/nano-localci-tests.md）が Aoi の研究用依存から独立していることの確認。
+"""
+
+import hashlib, io, json, os, random, subprocess, sys, tarfile, tomllib, urllib.error
 from pathlib import Path
 
 import pytest
@@ -1259,3 +1262,40 @@ def test_lint_exit_code_is_zero_with_skips_and_strict_stops(tmp_path, monkeypatc
     assert not (tmp_path / "refs.env").exists()  # 使った actionlint が無いので記録もしない
     with pytest.raises(localci.Unreachable):  # main() はこれを exit 1 にする
         lint(False, [])
+
+
+# ──── nano profile: the optional self-test environment stays independent of Aoi research deps ────
+
+PROFILE = ROOT / "tools" / "localci-env"
+
+
+def test_localci_profile_has_only_the_pinned_test_runner():
+    config = tomllib.loads((PROFILE / "pyproject.toml").read_text(encoding="utf-8"))
+    assert config["project"]["dependencies"] == ["pytest==9.1.1"]
+    assert config["project"]["requires-python"] == ">=3.11"
+    assert config["tool"]["uv"]["package"] is False
+
+
+def test_localci_lock_contains_only_pytest_closure():
+    lock = tomllib.loads((PROFILE / "uv.lock").read_text(encoding="utf-8"))
+    packages = {p["name"]: p for p in lock["package"]}
+    assert set(packages) == {
+        "nagoyaction-localci-tests", "pytest", "pluggy", "packaging",
+        "iniconfig", "pygments", "colorama",
+    }
+    assert packages["pytest"]["version"] == "9.1.1"
+    for name, package in packages.items():
+        if name == "nagoyaction-localci-tests":
+            continue
+        assert package["source"] == {"registry": "https://pypi.org/simple"}
+        assert package["wheels"]
+        assert all(wheel["hash"].startswith("sha256:") for wheel in package["wheels"])
+
+
+def test_localci_profile_does_not_become_repository_default():
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert project["project"]["dependencies"] == []
+    assert project["project"]["scripts"] == {"nagoyaction": "nagoyaction:main"}
+    workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    assert "tools/localci-env" not in workflow
+    assert "python localci.py run --repeat 10 --seed" in workflow

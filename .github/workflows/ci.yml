@@ -22,7 +22,7 @@ jobs:
           python-version: "3.11"
           activate-environment: true
       - name: Install verified Gitea and exercise repository, issue, and PR
-        run: python -S tools/real_forge_smoke.py
+        run: python -S scripts/real_forge_smoke.py
 
   changes:
     permissions:

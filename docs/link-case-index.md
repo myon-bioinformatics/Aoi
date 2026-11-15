@@ -7,7 +7,7 @@ first candidate encountered in the same tracked-path union remains the diagnosti
 for case-colliding names. No dependency/API changes or network requests added.
 
 ```sh
-python -S -m unittest discover -s tests -p test_link_case_index.py
+python -m pytest -q tests/test_linkcheck.py -k LinkCaseIndexTests
 python -S -m scripts.benchmark_link_case_index
 ```
 

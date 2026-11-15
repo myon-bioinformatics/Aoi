@@ -4,7 +4,7 @@ from hashlib import sha256; from pathlib import Path; from unittest.mock import 
 import pytest
 
 from html_compare import compare_calendar
-from html_source import HtmlSource
+from blueprobe import HtmlSource
 
 
 @pytest.fixture(autouse=True)

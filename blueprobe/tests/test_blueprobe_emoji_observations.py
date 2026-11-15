@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import emoji_observations as eo
+from blueprobe import emoji as eo
 
 CASES = Path(__file__).resolve().parent / "cases"
 HOME, MAP, MAP_VS = "\U0001F3E0", "\U0001F5FA", "\U0001F5FA\ufe0f"

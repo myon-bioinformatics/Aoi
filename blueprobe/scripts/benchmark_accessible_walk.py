@@ -2,7 +2,7 @@
 import json, statistics, sys, time, tracemalloc
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-import accessible_names as names
+import blueprobe as names  # _Node・_Tree・_walk は blueprobe.py にある
 
 
 def recursive(node):

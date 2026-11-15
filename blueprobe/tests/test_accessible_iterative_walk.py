@@ -2,12 +2,13 @@
 import random, sys, unittest
 from pathlib import Path; from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import accessible_names as names
+import blueprobe
+from blueprobe import names
 
 
 def recursive(node):
     for child in node.children:
-        if isinstance(child, names._Node):
+        if isinstance(child, blueprobe._Node):
             yield child
             yield from recursive(child)
 
@@ -20,20 +21,20 @@ class WalkTests(unittest.TestCase):
             html = ''.join('<div>' * depth + '<button aria-label="go">x</button>'
                            + '</div>' * depth for depth in depths)
             html += '<label for="input">label</label><input id="input"><a href="a">same</a><a href="b">same</a>'
-            tree = names._Tree()
+            tree = blueprobe._Tree()
             tree.feed(html)
-            self.assertEqual(list(names._walk(tree.root)), list(recursive(tree.root)))
+            self.assertEqual(list(blueprobe._walk(tree.root)), list(recursive(tree.root)))
             got = names.observe(html)
-            with patch.object(names, '_walk', recursive):
+            with patch.object(blueprobe, '_walk', recursive):
                 expected = names.observe(html)
             self.assertEqual(got, expected)
 
     def test_dom_beyond_recursion_limit(self):
         depth = sys.getrecursionlimit() + 100
         html = '<div>' * depth + '<button aria-label="go">go</button>' + '</div>' * depth
-        tree = names._Tree()
+        tree = blueprobe._Tree()
         tree.feed(html)
-        self.assertEqual(len(list(names._walk(tree.root))), depth + 1)
+        self.assertEqual(len(list(blueprobe._walk(tree.root))), depth + 1)
         with self.assertRaises(RecursionError):
             list(recursive(tree.root))
         report = names.observe(html)

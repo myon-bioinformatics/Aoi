@@ -1,7 +1,7 @@
 import warnings
 
 from blueprobe import inspect_cache, inspect_queryu_cache, inspect_snapshots, new_report
-from snapshot_source import SNAPSHOT_SCHEMA, QueRyuCacheSource, SnapshotSupplier
+from blueprobe import SNAPSHOT_SCHEMA, QueRyuCacheSource, SnapshotSupplier
 
 
 class MemorySupplier:

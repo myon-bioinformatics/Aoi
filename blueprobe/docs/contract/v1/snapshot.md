@@ -2,7 +2,7 @@
 
 BlueProbe neither fetches nor caches. It receives saved bodies from a **supplier** and reads them.
 QueRyu (the `Cache` in `Aoi/queryu`) is one supplier, wrapped by `QueRyuCacheSource`.
-The implementation is [`snapshot_source.py`](../../../snapshot_source.py).
+The implementation is the snapshot part of [`blueprobe.py`](../../../blueprobe.py) (`SNAPSHOT_SCHEMA`, `QueRyuCacheSource`).
 
 ## Supplier (SnapshotSupplier)
 

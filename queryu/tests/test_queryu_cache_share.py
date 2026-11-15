@@ -1,14 +1,9 @@
 """cache_share: query the manifest, hand caches over as bundles, supply snapshots, fetch politely in parallel."""
-import asyncio
-import io
-import json
-import tarfile
-import threading
-import time
+import asyncio, io, json, tarfile, threading, time
 
 import pytest
 
-import cache_share as cs
+from queryu import share as cs
 from cache_core import Cache, CacheIntegrityError
 from queryu import HandlerClient, Response
 

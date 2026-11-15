@@ -4,6 +4,8 @@ __pycache__/
 .test-deps/
 reports/
 build/
+# 観測の生データ（README: data/ はコミットしない）
+data/
 
 # --- common ignores (shared) ---
 *.py[cod]

@@ -2,7 +2,7 @@
 
 `tools/localci-env` is an opt-in environment for the existing
 `tests/test_localci.py` file. It installs the real pytest runner and its complete
-locked dependency closure. It does not replace a dependency with a stub or
+locked dependency closure. The root `pyproject.toml` installs the stdlib-only CLI; this separate profile remains the opt-in pytest environment. It does not replace a dependency with a stub or
 remove any tests. The full Aoi-integrated matrix and the existing Polars
 real/minimal comparison stay unchanged.
 

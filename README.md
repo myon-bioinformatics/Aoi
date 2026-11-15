@@ -50,7 +50,9 @@ A repository split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi
 
 `local_forge.py` provides the local Gitea/Forgejo management functions extracted from OneLinearNumerousMemo. It uses the existing `OLNM_HOME` and `DIAL_FILE` locations so that a local forge can be found during migration. It is a standard-library module invoked as `nagoyaction hub …`; it does not implement GitHub Actions runners.
 
-Prepare an isolated uv tool project with `python vendor/uv_tool_build.py nagoyaction.py --module local_forge.py --module localci.py --out build/nagoyaction-tool`, then install it with `uv tool install ./build/nagoyaction-tool`. This installs the `nagoyaction` command only (`nagoyaction hub …` covers local forge operations; there is no `local-forge` command). The bundled modules have no third-party runtime dependencies. Pipeline definitions and project-specific inputs remain separate files. The builder itself is the vendored shared copy from Aoi (`vendor/uv_tool_build.py`).
+Install directly from a checkout with `uv tool install .`, or from GitHub with `uv tool install git+https://github.com/myon-bioinformatics/NagoyAction.git`. The root `pyproject.toml` packages `nagoyaction`, `local_forge` and `localci` with no third-party runtime dependencies. The optional locked self-test environment remains under `tools/localci-env`; the complete suite still runs inside Aoi.
+
+Alternatively, prepare an isolated uv tool project with `python vendor/uv_tool_build.py nagoyaction.py --module local_forge.py --module localci.py --out build/nagoyaction-tool`, then install it with `uv tool install ./build/nagoyaction-tool`. This installs the `nagoyaction` command only (`nagoyaction hub …` covers local forge operations; there is no `local-forge` command). The bundled modules have no third-party runtime dependencies. Pipeline definitions and project-specific inputs remain separate files. The builder itself is the vendored shared copy from Aoi (`vendor/uv_tool_build.py`).
 
 ```bash
 nagoyaction hub --help          # or: python nagoyaction.py hub --help

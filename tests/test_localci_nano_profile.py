@@ -30,7 +30,9 @@ def test_localci_lock_contains_only_pytest_closure():
 
 
 def test_localci_profile_does_not_become_repository_default():
-    assert not (ROOT / "pyproject.toml").exists()
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert project["project"]["dependencies"] == []
+    assert project["project"]["scripts"] == {"nagoyaction": "nagoyaction:main"}
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "tools/localci-env" not in workflow
     assert "python localci.py run --repeat 10 --seed" in workflow

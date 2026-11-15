@@ -1,6 +1,12 @@
-"""Local rollout contract; adopted vendor locks are deliberately independent."""
+"""🌐 Fleet contracts: parent pins.
+
+旧 test_queryu_parent_workflow_pins.py をここに移した（節の頭に旧ファイルの名前を書いた）。名前は org の多数（tests/test_fleet.py）に合わせた。
+"""
 import re
 from pathlib import Path
+
+
+# ==== parent pins（旧 test_queryu_parent_workflow_pins.py）: local rollout contract; adopted vendor locks are deliberately independent
 
 PARENT = "myon-bioinformatics/myon-bioinformatics"
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"

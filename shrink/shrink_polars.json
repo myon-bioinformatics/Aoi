@@ -4,6 +4,6 @@
     "pythdragoras/core/propositions.py:_cond"
   ],
   "survey_prefix": "dragowing/",
-  "sys_path": ["", "pythdragoras"],
+  "sys_path": ["", "pythdragoras/core", "pythdragoras"],
   "workload": "shrink.polars_workload:run"
 }

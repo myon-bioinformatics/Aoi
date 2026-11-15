@@ -32,7 +32,7 @@ def main(argv=None) -> int:
         mod = importlib.util.module_from_spec(spec)
         sys.modules["numpy"] = mod
         spec.loader.exec_module(mod)
-    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
+    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras" / "core"), str(ROOT / "pythdragoras")]
     from dragowing.overlap import default_conditions, load_overlap
     from dragowing.records import read_jsonl
 

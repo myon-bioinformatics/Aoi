@@ -234,11 +234,24 @@ def historical_bytes(root, ref, path):
                           check=True, capture_output=True).stdout
 
 
+def located(root, path):
+    """Historical manifest keys stay put. PythDRagoras #46 and SakAnalytics #45 moved the files."""
+    direct = root / path
+    if direct.is_file():
+        return direct
+    parent, _, name = path.rpartition("/")
+    for extra in ("core", "npb"):
+        moved = root / parent / extra / name if parent else root / extra / name
+        if moved.is_file():
+            return moved
+    return direct
+
+
 def verify_source(root, path, recorded, rows, historical):
     """A divergence declaration cannot replace verification of original bytes."""
     if hashlib.sha256(historical).hexdigest() != recorded:
         raise ValueError(f'{path}: recorded hash does not match pinned history')
-    current = hashlib.sha256((root / path).read_bytes()).hexdigest()
+    current = hashlib.sha256(located(root, path).read_bytes()).hexdigest()
     matching = [r for r in rows if r['path'] == path]
     if current == recorded:
         if matching:
@@ -281,13 +294,14 @@ def audit(root=ROOT, read_history=historical_bytes):
         if sidecar['schema'] != 'aoi-source-divergence/1' or sidecar['artifact'] != artifact:
             raise ValueError(f'{rel}: incorrect sidecar identity')
         rows = sidecar['source_divergence']
-        path = f'sakanalytics/{source}'
+        historical = f'sakanalytics/{source}'
+        path = located(root, historical).relative_to(root).as_posix()
         if len(rows) != 1 or rows[0]['path'] != path or rows[0]['field'] != field:
             raise ValueError(f'{rel}: incorrect divergence coverage')
         recorded = json.loads(data)
         for key in field.split('.'):
             recorded = recorded[key]
-        verify_source(root, path, recorded, rows, read_history(root, EXPERIMENT_REF, path))
+        verify_source(root, path, recorded, rows, read_history(root, EXPERIMENT_REF, historical))
         checked += 1
     return {'verified_sources': checked, 'frozen_experiments': 2,
             'holdout_reference': HOLDOUT_REF, 'experiment_reference': EXPERIMENT_REF}

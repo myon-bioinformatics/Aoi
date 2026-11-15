@@ -264,7 +264,7 @@ def inject(name, filename):
     spec.loader.exec_module(module)
 inject("numpy", "shrink/numpy_min.py")
 inject("polars", "shrink/polars_min.py")
-sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
+sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras" / "core"), str(ROOT / "pythdragoras")]
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
 season = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
@@ -319,7 +319,7 @@ spec = importlib.util.spec_from_file_location("polars", ROOT / "shrink" / "polar
 module = importlib.util.module_from_spec(spec)
 sys.modules["polars"] = module
 spec.loader.exec_module(module)
-sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
+sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras" / "core"), str(ROOT / "pythdragoras")]
 import os
 import tempfile
 import polars as pl

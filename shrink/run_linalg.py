@@ -199,7 +199,7 @@ def _prepare(which: str, allow_installed: bool) -> None:
         spec.loader.exec_module(mod)
         if not str(mod.__file__).endswith("numpy_linalg_min.py"):
             raise SystemExit(f"スタンドインではない: {mod.__file__}")
-    for folder in (ROOT, ROOT / "pythdragoras", ROOT / "queryu", ROOT / "queryu" / "ask"):
+    for folder in (ROOT, ROOT / "pythdragoras" / "core", ROOT / "pythdragoras", ROOT / "queryu", ROOT / "queryu" / "ask"):
         entry = str(folder)
         if entry not in sys.path:
             sys.path.insert(0, entry)

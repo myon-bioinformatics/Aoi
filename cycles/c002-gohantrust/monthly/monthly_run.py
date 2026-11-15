@@ -388,6 +388,7 @@ def count(d: dict) -> dict:
 # ---------- 判定（PythDRagoras の仕組みで）----------
 
 def judge(d: dict, outdir: Path = OUT) -> list[dict]:
+    sys.path.insert(0, str(ROOT / "pythdragoras" / "core"))
     sys.path.insert(0, str(ROOT / "pythdragoras"))
     import polars as pl
     import propositions as pr

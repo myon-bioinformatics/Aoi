@@ -17,7 +17,7 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT / "pythdragoras")]
+sys.path[:0] = [str(ROOT / "pythdragoras" / "core"), str(ROOT / "pythdragoras")]
 
 
 def digest(value) -> str:

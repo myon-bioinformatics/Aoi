@@ -21,14 +21,14 @@
     },
     "queryu": {
       "prefix": "queryu",
-      "entry": "cache_core.py",
+      "entry": "core/cache_core.py",
       "paths": [
-        "."
+        "core"
       ],
       "output": "dist/queryu_min.py",
       "api": "verified offline cache and html-snapshot/1",
       "repository": "myon-bioinformatics/QueRyu",
-      "commit": "4c59cb00ca2ba898573e4af95bc4a63492aa5eb9"
+      "commit": "d0ccbd909eef9de3d0e8ad86266981d238061299"
     },
     "sakanalytics": {
       "prefix": "sakanalytics",

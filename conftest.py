@@ -153,6 +153,9 @@ _DISTINCT_BASENAMES = frozenset({
     'test_benchmark_validation.py',
     # PythDRagoras #46 と SakAnalytics が、別々の中身で同じ名前の検査を持つ。
     'test_standalone_examples.py',
+    # 子リポジトリは親の共通検査（vendor/fleet_check.py）を呼ぶ検査を、組織共通の名前 test_fleet.py で持つ
+    # （SakAnalytics #46・PythDRagoras #48 から。中身はリポジトリごとに違う）。
+    'test_fleet.py',
 })
 
 

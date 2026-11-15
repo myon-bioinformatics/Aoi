@@ -1,0 +1,480 @@
+name: stdlib_min experiments
+
+# 標準ライブラリだけの代わり（*_min.py）の実験をまとめたもの。各ジョブの名前は前のワークフローのまま。
+# どれかの実験のファイルが変わったら、全部のジョブを走らせる（前は実験ごとにパスで分けていた）。
+on:
+  pull_request:
+    paths:
+      - scripts/stdlib_min.py
+      - tests/test_survey_third_party.py
+      - tests/test_trace_surface.py
+      - docs/drafts/stdlib-replacement-feasibility.md
+      - docs/evidence/third-party-survey.json
+      - docs/evidence/trace-surfaces.json
+      - .github/workflows/stdlib-min.yml
+      - mindeps/**
+      - tests/test_third_party_min.py
+      - research/gpt-r001-score-allocation/fetch.py
+      - research/gpt-r001-score-allocation/analyses.py
+      - queryu/queryu.py
+      - scripts/check_child_heads.py
+      - scripts/fetch_module.py
+      - queryu/ask/suggest.py
+      - queryu/vendor/aoi/shrink/numpy_min.py
+      - queryu/vendor.lock.json
+      - queryu/tests/test_queryu_numpy_min.py
+      - scripts/shrink_module.py
+      - shrink/numpy_min.py
+      - tests/test_numpy_min_suggest.py
+      - tests/test_numpy_min_gram_fallback.py
+      - tests/test_shrink_module.py
+      - tests/test_numpy_linalg_min.py
+      - shrink/**
+      - dragowing/overlap.py
+      - pythdragoras/core/rule_search.py
+      - shrink/numpy_linalg_min.py
+      - pythdragoras/core/littlebit_prune.py
+      - pythdragoras/core/littlebit_approx.py
+      - pythdragoras/core/littlebit_holdout.py
+      - scripts/shrink_polars.py
+      - shrink/polars_min.py
+      - shrink/polars_feasibility.md
+      - tests/test_shrink_polars.py
+      - pythdragoras/core/propositions.py
+      - pkgmin/**
+      - tests/test_pkgmin_surface.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ---- Stdlib feasibility survey（旧 .github/workflows/stdlib-feasibility-survey.yml）
+  # 実験の棚卸し。第三者がどこで使われているかを数え、import を塞いだ・スタブにした・包んだ
+  # 実行で AST が見ない属性を記録する。既存のワークフローには触れない。<pkg>_min は作らない。
+  survey-and-trace:
+    name: Recount imports and re-trace surfaces
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "3.15"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - run: uv sync --locked --python 3.15
+      - name: Inventory matches the tree
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py survey --check docs/evidence/third-party-survey.json
+      - name: Tool tests
+        run: uv run --locked --python 3.15 pytest -q tests/test_survey_third_party.py tests/test_trace_surface.py
+      - name: Fresh absent, stub, and wrap runs match the committed surfaces
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py trace-surface collect --check --out docs/evidence/trace-surfaces.json
+
+  # ---- Third-party min experiment（旧 .github/workflows/third-party-min.yml）
+  # 実験: selectolax_min（html.parser）と httpx_min（urllib）を本物と比べ、
+  # パッケージの無い環境で研究コードを動かす。coverage は fetch_module の pure wheel。
+  # 既存のワークフローには触れない。1ジョブ。
+  without-packages:
+    name: Real code without selectolax, httpx, and pip coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "3.15"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - run: uv sync --locked --python 3.15
+      - name: Equivalence against the installed packages
+        run: uv run --locked --python 3.15 pytest -q tests/test_third_party_min.py
+      - name: AST survey, package-absent tracebacks, fetch_module rejections
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py trace-third-party --resolve
+      - name: Reference results with the real packages
+        run: |
+          uv run --locked --python 3.15 python scripts/stdlib_min.py selectolax --impl real sel-real.json
+          uv run --locked --python 3.15 python scripts/stdlib_min.py httpx --impl real http-real.json
+          uv run --locked --python 3.15 python scripts/stdlib_min.py coverage --impl real cov-real.json
+      - name: Empty environment without those packages
+        run: uv venv .venv-min --python 3.15
+      - name: The packages are not installed there
+        run: |
+          if .venv-min/bin/python -c 'import selectolax'; then echo 'selectolax is installed in the empty environment' >&2; exit 1; fi
+          if .venv-min/bin/python -c 'import httpx'; then echo 'httpx is installed in the empty environment' >&2; exit 1; fi
+          if .venv-min/bin/python -c 'import coverage'; then echo 'coverage is installed in the empty environment' >&2; exit 1; fi
+      - name: Same research code on the replacements
+        run: |
+          .venv-min/bin/python scripts/stdlib_min.py selectolax --impl min sel-min.json
+          .venv-min/bin/python scripts/stdlib_min.py httpx --impl min http-min.json
+          .venv-min/bin/python scripts/stdlib_min.py coverage --impl cdn cov-min.json
+      - name: Byte-identical to the real packages
+        run: |
+          cmp sel-real.json sel-min.json
+          cmp http-real.json http-min.json
+          cmp cov-real.json cov-min.json
+
+  # ---- CDN module experiment（旧 .github/workflows/cdn-module-experiment.yml）
+  # 実験: pip/uv を使わず、PyPI の pure-Python wheel（markdown）を取り、sha256 を照合し、
+  # キャッシュして sys.path から import する。既存のワークフローには触れない。
+  fetch-and-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "${{ matrix.python }}"
+          activate-environment: true
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - name: Resolve latest markdown wheel and its PyPI sha256
+        id: resolve
+        run: python scripts/fetch_module.py resolve markdown --github-output
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cdn-cache
+          key: cdn-${{ steps.resolve.outputs.filename }}-${{ steps.resolve.outputs.sha256 }}
+      - name: markdown is not installed
+        run: "! python -c 'import markdown'"
+      - name: Fetch (or reuse cache), verify sha256, import from the wheel
+        run: python scripts/fetch_module.py fetch markdown --cache .cdn-cache
+      - name: Run DRAgoWing render_md with the fetched module
+        run: python scripts/stdlib_min.py cdn-markdown .cdn-cache
+
+  # ---- numpy_min backends（旧 .github/workflows/numpy-min-backends.yml）
+  # shrink/numpy_min.py の2つの経路を、公式の最新イメージ python:3.15-slim（Debian 13、3.15.2）で確かめる。
+  # - lapack: apt で liblapack3 / libblas3（と依存の libgfortran5）だけを版固定・--no-install-recommends で入れ、
+  #   ctypes の sgesdd/dgesdd・cblas_?gemm 経路を decomposition-v2 の演算契約で検査すること
+  # - stdlib: 何も入れず、ライブラリが見つからないこと・標準ライブラリだけの経路を同じ演算契約で検査すること
+  # 版を上げるとき: `apt-cache policy liblapack3 libblas3 libgfortran5` で新しい版を見て、下の apt-get install の pkg=version を書き換える。
+  backend:
+    name: numpy_min on ${{ matrix.lane }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: python:3.15-slim@sha256:94d3426f1def7db4a106a232ac121bfd975393e5dfd40a619b955fae45fe7913
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [lapack, stdlib]
+    env:
+      NUMPY_MIN_EXPECT: ${{ matrix.lane }}
+      QUERYU_EXPECT_BACKEND: ${{ matrix.lane }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - name: Install liblapack3 / libblas3 (pinned, minimal)
+        if: matrix.lane == 'lapack'
+        run: |
+          apt-get update -q
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends \
+            liblapack3=3.12.1-6 libblas3=3.12.1-6 libgfortran5=14.2.0-19
+          dpkg-query -W liblapack3 libblas3 libgfortran5
+      - name: Libraries are absent
+        if: matrix.lane == 'stdlib'
+        run: |
+          python3 - <<'PY'
+          import ctypes, ctypes.util
+          for name in ("lapack", "blas"):
+              assert ctypes.util.find_library(name) is None, name
+              try:
+                  ctypes.CDLL(f"lib{name}.so.3")
+              except OSError:
+                  continue
+              raise SystemExit(f"lib{name}.so.3 が読めてしまう")
+          PY
+      - run: uv sync --locked --python "$(command -v python3)"
+      - name: numpy_min backend decomposition-v2 checks
+        shell: bash
+        # BLAS / LAPACK の xerbla は引数の誤りで exit(0) するので、終了コードだけでは落ちたことが分からない。
+        # pytest の最後の集計行が出ていること、"illegal value" が出ていないことも確かめる
+        run: |
+          set -o pipefail
+          uv run --locked --python "$(command -v python3)" pytest -q -rsP -p no:cacheprovider \
+            tests/test_numpy_min_suggest.py tests/test_numpy_min_gram_fallback.py tests/test_shrink_module.py \
+            queryu/tests/test_queryu_numpy_min.py 2>&1 | tee pytest.log
+          grep -Eq '^[0-9]+ passed' pytest.log || grep -Eq '^=+ [0-9]+ passed' pytest.log
+          if grep -Eq ' failed| error' pytest.log; then exit 1; fi
+          if grep -qi 'illegal value' pytest.log; then exit 1; fi
+
+  # ---- Shrink module experiment（旧 .github/workflows/shrink-module-experiment.yml）
+  # 実験: scripts/shrink_module.py が ast で DRAgoWing の load_overlap から numpy の使用を集め、
+  # shrink/numpy_min.py（pure-Python）を生成する。本物の numpy と比べたあと、numpy を入れない環境で
+  # 同じ実コードを numpy_min で動かし、結果が一致することを1回の実行で確かめる。既存のワークフローには触れない。
+  overlap-reference:
+    name: Equivalence with real numpy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "3.15"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - run: uv sync --locked --python 3.15
+      - name: numpy_min is current and matches numpy
+        run: uv run --locked --python 3.15 pytest -q tests/test_shrink_module.py
+      - name: Survey and analyze
+        run: |
+          uv run --locked --python 3.15 python scripts/shrink_module.py survey numpy
+          uv run --locked --python 3.15 python scripts/shrink_module.py analyze numpy dragowing/overlap.py:load_overlap
+      - name: load_overlap on c001 with real numpy
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py overlap --numpy real reference.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: overlap-reference
+          path: reference.json
+          if-no-files-found: error
+
+  overlap-without-numpy:
+    name: Real code on numpy_min (numpy not installed)
+    needs: overlap-reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "${{ matrix.python }}"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - name: Install locked runtime deps except numpy
+        run: uv sync --locked --no-dev --no-install-package numpy --python "${{ matrix.python }}"
+      - name: numpy is not installed
+        run: "! .venv/bin/python -c 'import numpy'"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: overlap-reference
+      - name: load_overlap on c001 with numpy_min
+        run: .venv/bin/python scripts/stdlib_min.py overlap --numpy min minimal.json
+      - name: Byte-identical to the real-numpy result
+        run: cmp reference.json minimal.json
+
+  # ---- Shrink linalg experiment（旧 .github/workflows/shrink-linalg-experiment.yml）
+  # 実験: suggest は同梱 numpy_min、littlebit / ビット行列は実験用 numpy_linalg_min。
+  # 本物の numpy で基準を作り、numpy を入れない環境で同じ実コード（c001）を1回走らせて許容誤差で比べる。
+  # c001 は通常の pytest には入れない。同梱 mini の実際の backend は比較証跡に記録する。
+  # NumPy 未導入と native LAPACK 不在は別条件。stdlib/LAPACK の契約検査は numpy-min-backends.yml。
+  linalg-reference:
+    name: Equivalence with real numpy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "3.15"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - run: uv sync --locked --python 3.15
+      - name: Stand-in matches numpy on small cases and the fixture path
+        run: uv run --locked --python 3.15 pytest -q tests/test_numpy_linalg_min.py
+      - name: AST reachability
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py linalg-feasibility ast
+      - name: Trace real numpy call shapes on c001
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py linalg-feasibility trace --scope c001
+      - name: Production QueRyu works without importing numpy
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py linalg-feasibility absent
+      - name: c001 paths with real numpy
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py linalg --numpy real --scope c001 reference.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linalg-reference
+          path: reference.json
+          if-no-files-found: error
+
+  linalg-without-numpy:
+    name: Real c001 paths on shipped suggest mini and experimental linalg mini
+    needs: linalg-reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "${{ matrix.python }}"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - name: Install locked runtime deps except numpy
+        run: uv sync --locked --no-dev --no-install-package numpy --python "${{ matrix.python }}"
+      - name: numpy is not installed
+        run: if .venv/bin/python -c 'import numpy'; then echo 'numpy is installed' >&2; exit 1; fi
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: linalg-reference
+      - name: c001 paths with shipped suggest mini and experimental linalg mini
+        run: .venv/bin/python scripts/stdlib_min.py linalg --numpy min --scope c001 got.json
+      - name: Within tolerance of the real-numpy result
+        run: .venv/bin/python scripts/stdlib_min.py linalg --compare reference.json got.json
+      - name: Preserve actual mini backend identities and executed calls
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linalg-mini-${{ matrix.python }}
+          path: got.json
+          if-no-files-found: warn
+
+  # ---- Shrink polars experiment（旧 .github/workflows/shrink-polars-experiment.yml）
+  # 実験: DRAgoWing の load_overlap が使う polars を shrink/polars_min.py で置き換える。
+  # 1 ジョブの中で、本物の polars と numpy の JSON を取り、すぐ両方を外して
+  # polars_min と numpy_min で同じ実コードを動かし、バイト単位で比べる。
+  # 既存のワークフローと本番の依存には触れない。
+  without-polars-or-numpy:
+    name: load_overlap on Python ${{ matrix.python }} (real, then neither installed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "${{ matrix.python }}"
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - name: Equivalence against real polars, then record the real load_overlap JSON
+        run: |
+          uv sync --locked --python "${{ matrix.python }}"
+          uv run --locked --python "${{ matrix.python }}" pytest -q tests/test_shrink_polars.py
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py generate dragowing/overlap.py:load_overlap pythdragoras/core/propositions.py:_cond --out shrink/polars_min.py --check
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py survey
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py analyze
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py trace
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py absent
+          uv run --locked --python "${{ matrix.python }}" python scripts/stdlib_min.py overlap-stdlib --deps real reference.json
+      - name: Reinstall locked runtime deps except polars, its runtime, and numpy
+        run: uv sync --locked --no-dev --no-install-package numpy --no-install-package polars --no-install-package polars-runtime-32 --python "${{ matrix.python }}"
+      - name: polars and numpy are not installed
+        run: |
+          if .venv/bin/python -c 'import numpy'; then
+            exit 1
+          fi
+          if .venv/bin/python -c 'import polars'; then
+            exit 1
+          fi
+      - name: Same load_overlap on polars_min and numpy_min
+        run: .venv/bin/python scripts/stdlib_min.py overlap-stdlib --deps min minimal.json
+      - name: Byte-identical to the real polars and numpy result
+        run: cmp reference.json minimal.json
+
+  # ---- requests tqdm biopython surface（旧 .github/workflows/pkgmin-stdlib.yml）
+  # One job. Equivalence against the real packages, then the same Aoi entry points
+  # with those packages uninstalled and the stdlib stand-ins injected. The outputs
+  # are compared in this run. Existing workflows are not edited.
+  surface:
+    name: Used surface, then the real paths without the packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "3.15"
+          activate-environment: true
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
+      - name: Locked environment
+        run: uv sync --locked --python 3.15
+      - name: Survey and traces, packages not required
+        run: uv run --locked --python 3.15 pytest -q tests/test_pkgmin_surface.py
+      - name: Install requests, tqdm, and biopython (pinned, hash-checked; not declared in pyproject.toml)
+        run: uv pip install --require-hashes -r pkgmin/real-packages.txt
+      - name: Equivalence against the installed packages
+        env:
+          PKGMIN_REQUIRE_REAL: "1"
+        run: .venv/bin/python -m pytest -q tests/test_pkgmin_surface.py
+      - name: Reference outputs with the real packages importable
+        run: .venv/bin/python pkgmin/run_paths.py --inject none "${{ runner.temp }}/reference.json"
+      - name: Wrap trace sees no project use
+        run: .venv/bin/python pkgmin/trace_used.py expect-unused
+      - name: Remove the three packages (sync back to the default groups; uv sync is exact)
+        run: uv sync --locked --python 3.15
+      - name: The packages are not installed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if .venv/bin/python -c 'import requests' >/dev/null 2>&1; then
+            echo 'requests is installed' >&2
+            exit 1
+          fi
+          if .venv/bin/python -c 'import tqdm' >/dev/null 2>&1; then
+            echo 'tqdm is installed' >&2
+            exit 1
+          fi
+          if .venv/bin/python -c 'import Bio' >/dev/null 2>&1; then
+            echo 'biopython (Bio) is installed' >&2
+            exit 1
+          fi
+      - name: Same paths on the stdlib stand-ins
+        run: .venv/bin/python pkgmin/run_paths.py --inject min "${{ runner.temp }}/minimal.json"
+      - name: Outputs match
+        run: cmp "${{ runner.temp }}/reference.json" "${{ runner.temp }}/minimal.json"

@@ -25,7 +25,7 @@ c001 が踏む面は `read_ndjson`、`height`、`columns`、列の `[]`、`Serie
 
 `shrink/polars_min.py` は標準ライブラリだけである。c001 の 168 行・286 列は、列名ごとの `to_list()` が polars 2.0.0 と一致する。列の順番は、小さいファイルでは最初に見た順で polars と一致し、c001 では polars 側がファイル順ではない。`load_overlap` は列があるかどうかしか見ない。null は比較の結果も null にする。bool と文字列は polars と同じく `"true"` / `"false"` にして比べ、数値と文字列は両方ともエラーにする。
 
-`scripts/stdlib_min.py overlap-stdlib --deps real` と、numpy も polars も入れずに `--deps min` で動かした結果は同じバイト列である。sha256 は `12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35`（領域 8）。numpy だけの実験（`scripts/stdlib_min.py overlap`）と同じ値である。CI は `.github/workflows/shrink-polars-experiment.yml` の 1 ジョブで、本物の実行、numpy・polars・compiled の `polars-runtime-32` を外した再インストール、最小版の実行、`cmp` まで行う。`polars` だけを外すと lock が runtime wheel を残すので、それも `--no-install-package` に入れる。
+`scripts/stdlib_min.py overlap-stdlib --deps real` と、numpy も polars も入れずに `--deps min` で動かした結果は同じバイト列である。sha256 は `12037df38eb301300768e0ef172e2e16e8e956dc7669aa08fd355414b7619e35`（領域 8）。numpy だけの実験（`scripts/stdlib_min.py overlap`）と同じ値である。CI は `.github/workflows/stdlib-min.yml` の `without-polars-or-numpy` ジョブで、本物の実行、numpy・polars・compiled の `polars-runtime-32` を外した再インストール、最小版の実行、`cmp` まで行う。`polars` だけを外すと lock が runtime wheel を残すので、それも `--no-install-package` に入れる。
 
 ## 呼び出し側は min を使えるか
 

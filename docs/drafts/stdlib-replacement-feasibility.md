@@ -63,7 +63,7 @@ AST names, heaviest first:
 
 `dragowing/htmlout.py` loads it with `importlib.import_module("markdown")` and calls `.markdown(source, extensions=...)`. That call is still the one dynamic import and still has no attribute in the AST. `dragowing/scripts/run_stdlib_paths.py` adds a static `import markdown` and three `__version__` reads while it checks the installed package. A wrap of `render_md` on a table plus a fenced code block is the missing name: `markdown`. Absent mode raises `ModuleNotFoundError` at that `import_module`.
 
-`fetch_module.resolve("markdown")` returns `markdown-3.11.2-py3-none-any.whl` and no runtime dependencies. That is the case #87 already runs in `.github/workflows/cdn-module-experiment.yml`, including DRAgoWing's real `render_md`. Nothing further to shrink. Markdown is not part of the stdlib, so a page that calls `render_md` still needs the wheel on `sys.path`.
+`fetch_module.resolve("markdown")` returns `markdown-3.11.2-py3-none-any.whl` and no runtime dependencies. That is the case #87 already runs in `.github/workflows/stdlib-min.yml` (job `fetch-and-run`), including DRAgoWing's real `render_md`. Nothing further to shrink. Markdown is not part of the stdlib, so a page that calls `render_md` still needs the wheel on `sys.path`.
 
 `vendor/markdown.py` is a different, stdlib-only helper. `htmlout._markdown_library` refuses it if it wins the import. NagoyAction's digest loads that file by path on purpose. The two must not be confused with each other.
 
@@ -163,4 +163,4 @@ A wrap records the path that ran. c001's default conditions never evaluated `<`,
 
 ## Reproduce
 
-The counts and the missed-name sets are checked in CI (`.github/workflows/stdlib-feasibility-survey.yml`) on Python 3.12 with the lockfile. Unit tests of both tools do not need the third-party packages. The collect job does, and it fails if a fresh wrap/absent/stub run disagrees with `docs/evidence/trace-surfaces.json`.
+The counts and the missed-name sets are checked in CI (`.github/workflows/stdlib-min.yml`, job `survey-and-trace`) on Python 3.12 with the lockfile. Unit tests of both tools do not need the third-party packages. The collect job does, and it fails if a fresh wrap/absent/stub run disagrees with `docs/evidence/trace-surfaces.json`.

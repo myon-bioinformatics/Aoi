@@ -59,4 +59,4 @@ There is no loop wrapped in `tqdm`, so there is no project output to compare. Te
 
 ## CI
 
-`.github/workflows/pkgmin-stdlib.yml` is one job. It syncs the lock, runs the tests, installs `requests>=2.31.0`, `tqdm>=4.66.0`, and `biopython>=1.83` (lower bounds only, not added to `pyproject.toml`), checks the real entry points and the wrap trace, uninstalls the three distributions, checks they do not import, reruns `run_paths.py --inject min`, and `cmp`s the JSON. The absence check is `if cmd; then exit 1; fi`.
+The `surface` job of `.github/workflows/stdlib-min.yml` is one job. It syncs the lock, runs the tests, installs `requests>=2.31.0`, `tqdm>=4.66.0`, and `biopython>=1.83` (lower bounds only, not added to `pyproject.toml`), checks the real entry points and the wrap trace, uninstalls the three distributions, checks they do not import, reruns `run_paths.py --inject min`, and `cmp`s the JSON. The absence check is `if cmd; then exit 1; fi`.

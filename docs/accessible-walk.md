@@ -36,5 +36,5 @@ active under `python -O`. A subprocess regression test injects incorrect results
 and verifies a nonzero exit with a mismatch diagnostic and no success JSON:
 
 ```sh
-python -S -m unittest discover -s tests -p test_benchmark_optimization_guard.py -v
+uv run --locked pytest -q tests/test_fleet.py -k mismatch_exits_under_optimization
 ```

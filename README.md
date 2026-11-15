@@ -108,7 +108,8 @@ It reads only the cache and does not access the network. If there are unknown no
 | `docs/boundaries.md` | Boundaries of responsibility between BlueProbe / QueRyu / web-ui (proposal) |
 | `docs/antipatterns.md` | Failures likely to recur, and the commitments against them |
 | `tests/cases/*.jsonl` | Corpus of notation variants (same id / category / value / reason format as xprobe) |
-| `tests/test_*.py` | One file per purpose: `test_blueprobe.py` (core, CLI), `_dom`, `_observations` (the `observation-test` group), `_github`, `_npb_<source>` (one per `npb/` source), `_html_source` / `_html_compare` / `_html_parity` (saved-HTML supplier, NPB comparison, Lexbor oracle). `test_fleet.py` (parent pins) and `test_benchmark_optimization_guard.py` keep the names their sibling repositories use |
+| `tests/test_*.py` | One file per purpose: `test_blueprobe.py` (core, CLI), `_dom`, `_observations` (the `observation-test` group), `_github`, `_npb_<source>` (one per `npb/` source), `_html_source` / `_html_compare` / `_html_parity` (saved-HTML supplier, NPB comparison, Lexbor oracle). `test_fleet.py` (vendor lock, parent pins, benchmark `-O` guard) calls the parent's shared checks and keeps the name its sibling repositories use |
+| `vendor/fleet_check.py` | The parent's shared contract checks, byte for byte at the commit in `vendor.lock.json` (test-only; `test_fleet.py` loads it by file path) |
 
 Sources for NPB (Nippon Professional Baseball) are collected in "NPB (professional baseball) sources" later on.
 

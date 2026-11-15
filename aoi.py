@@ -11,9 +11,10 @@
 A child is a generic single file: it does not look for its siblings. This launcher passes
 ``AOI_ROOT``, ``AOI_RESEARCH_CYCLE``, and only the sibling directories that child imports
 (``SIBLINGS``). Those directories are appended after the caller's ``PYTHONPATH`` (an externally
-supplied BlueProbe stays ahead of Aoi's). Aoi's root and ``.`` are not put on ``PYTHONPATH``, except for
-NagoyAction: it runs Aoi's workflows, so it gets every sibling directory and Aoi's root (``aoi_npb``,
-``annual_scope``), and the steps it starts (``queryu/queryu.py`` and so on) inherit them.
+supplied BlueProbe stays ahead of Aoi's). Aoi's root and ``.`` are not put on ``PYTHONPATH``.
+NagoyAction names ``.`` because ``annual_history_report.py`` imports ``annual_scope`` and
+``inbox/inbox.py`` imports ``aoi_npb`` (single files at Aoi's root). Its other entries are
+the sibling directories those modules and its tests import.
 ``dragowing/`` is not one of the directories: ``dragowing.py`` would win ``import dragowing``
 and hide ``dragowing.render``. pytest's ``pythonpath`` is a different list and is not copied.
 ``python aoi.py -m dragowing`` keeps the cwd entry, as ``python -m`` does, and does not add
@@ -79,8 +80,16 @@ SIBLINGS: dict[str, tuple[str, ...]] = {
     "dragowing": ("pythdragoras", "pythdragoras/core", "queryu/ask"),  # propositions, rule_search (PythDRagoras #46 core/), ask
 }
 _UNION = tuple(dict.fromkeys(rel for name in SIBLINGS for rel in SIBLINGS[name]))
-# NagoyAction runs Aoi's workflows: every sibling and Aoi's root (aoi_npb, annual_scope). Its steps inherit them.
-SIBLINGS["nagoyaction"] = (*_UNION, ".")
+# Dirs NagoyAction imports by name. queryu.py inserts queryu/core itself. inbox/worker.py inserts
+# research_loop, pythdragoras, and pythdragoras/core before `from exploration import`.
+SIBLINGS["nagoyaction"] = (
+    "queryu",            # tests/test_annual_history_report.py: from queryu import Cache
+    "queryu/ask",        # inbox/inbox.py: ask, bank
+    "sakanalytics/npb",  # annual_history_report.py: synthetic_league, annual_audit
+    "blueprobe",         # npb_team_annual: from blueprobe import HtmlTree
+    "blueprobe/npb",     # tests/test_annual_history_report.py: import npb_team_annual
+    ".",                 # annual_history_report.py: annual_scope; inbox/inbox.py: aoi_npb
+)
 _BARE = object()
 
 # argv: mode, target, AOI_ROOT, AOI_RESEARCH_CYCLE, sibling dirs..., "--", script args...
@@ -128,9 +137,9 @@ def _dirs(rels: tuple[str, ...]) -> list[str]:
 def environment(env=None, *, child=_BARE) -> dict[str, str]:
     """``AOI_ROOT``, the cycle name, and the caller's ``PYTHONPATH`` with this child's dirs after it.
 
-    No ``child`` (the ``eval`` / ``import aoi`` form) uses the union of every child's dirs.
-    ``child=None`` or an unknown name adds none. The caller's entries stay in front. Aoi's root
-    is not added.
+    No ``child`` (the ``eval`` / ``import aoi`` form) uses the union of the other children's
+    dirs and does not add Aoi's root. ``child=None`` or an unknown name adds none. The caller's
+    entries stay in front. Aoi's root is added only when that child's list names ``.``.
     """
     env = dict(os.environ if env is None else env)
     if child is _BARE:

@@ -1,4 +1,9 @@
-"""Count HTML elements with html.parser (no browser). Useful for page-weight checks."""
+"""Count HTML elements with html.parser (no browser). Useful for page-weight checks.
+
+➡️ DRAgoWing's single file (stdlib only). The generic stdlib parts of the package (plotly_cdn, chrome_pipe /
+render / export, records) move in here at the next Aoi sync; NPB-specific report modules go to npb/ and the
+generic overlap internals to core/ (README "Layout").
+"""
 
 from __future__ import annotations
 

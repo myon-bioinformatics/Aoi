@@ -1,4 +1,4 @@
-"""vendor.lock.json と scripts の照合。ネットワークには出ない。"""
+"""CI の vendor-lock ジョブが動かす check_vendor_lock.py（scripts/）の検査。ネットワークには出ない。"""
 import hashlib, importlib.util, json
 from pathlib import Path
 
@@ -18,26 +18,14 @@ def _load():
 lock = _load()
 
 
-def test_lock_matches_vendored_bytes():
+def test_checker_accepts_this_repository():
+    """写しと lock の行の照合そのものは tests/test_fleet.py（親の fleet_check.check_lock）。"""
     assert lock.problems(ROOT) == []
-    document = lock.load_lock(ROOT)
-    assert document["schema"] == "vendor-lock/1"
-    names = [Path(entry["source"]).name for entry in document["files"]]
-    assert names == ["fetch_module.py", "numpy_min.py", "uv_tool_build.py"]
-    unused = {"shrink_module.py", "shrink_polars.py", "numpy_linalg_min.py", "polars_min.py"}
-    assert unused.isdisjoint(names)
-    for entry in document["files"]:
-        assert set(entry) == {
-            "repository", "ref", "commit", "source", "destination", "blob_sha", "sha256",
-        }
-        assert entry["repository"] == SOURCE
-        assert entry["ref"] == entry["commit"]
-        assert len(entry["commit"]) == 40
-        vendored = ROOT / entry["destination"]
-        data = vendored.read_bytes()
-        assert hashlib.sha256(data).hexdigest() == entry["sha256"]
-        assert lock.git_blob_sha(data) == entry["blob_sha"]
-        assert entry["destination"] == "vendor/aoi/" + entry["source"]
+
+
+def test_parent_row_is_checked_by_bytes_and_not_against_aoi(tmp_path):
+    assert lock.problems(ROOT, tmp_path) != []  # 空の Aoi: Aoi の行は「Aoi にファイルがない」
+    assert not any("fleet_check.py" in item for item in lock.problems(ROOT, tmp_path))
 
 
 def _tree(tmp_path: Path, payload: bytes, sha: str | None = None) -> Path:

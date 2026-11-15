@@ -5,13 +5,15 @@ from pathlib import Path; from unittest.mock import MagicMock, patch
 import pytest
 
 from dragowing.cli import ExportUnavailable, PngUnavailable, main, write_png, write_svg
-from dragowing.figures import A_COLOR, B_COLOR, heatmap_figure, trajectory_figure
+from dragowing import research_report
+from dragowing.figures import A_COLOR, B_COLOR, FONT, heatmap_figure, trajectory_figure
 from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
 from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
 from dragowing.plotly_cdn import PLOTLY_JS_CDN, fetch_plotly_js, reset_plotly_js_cache
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
 from ask import registration_status
+from reports.build_reports import page as report_page
 
 import aoi_paths
 
@@ -620,3 +622,35 @@ def test_team_order_option_rejects_duplicates():
     import pytest
     with pytest.raises(ValueError):
         team_order("d,d")
+
+
+# ==== 文字（旧 test_font.py）: メイリオを先頭にして、図・ページ・研究用レポートで揃える
+# figures.FONT が基準。research_report.py と reports/build_reports.py は単独で配布・実行されるので
+# import せずに同じ文字列を書き、ここで一致を確かめる。
+
+TIGHT = FONT.replace(" ", "")  # CSS で詰めて書いている形: Meiryo,メイリオ,sans-serif
+
+
+def test_font_puts_meiryo_first():
+    assert FONT == "Meiryo, メイリオ, sans-serif"
+
+
+def test_page_and_figure_use_the_font():
+    fig = heatmap_figure([{"league": "C", "team": "d", "team_name": "中日", "season": 2020, "value": 1}], "value")
+    assert fig["layout"]["font"]["family"] == FONT
+    assert f"font-family: {FONT};" in standalone("t", figure_block(fig, "f"), plotly=True)
+
+
+def test_research_report_template_uses_the_font_and_keeps_it_when_a_figure_sets_its_own_font():
+    t = research_report.TEMPLATE
+    assert f"font:16px/1.65 {TIGHT}" in t and f"family:'{FONT}'" in t
+    assert "system-ui" not in t
+    # 図が layout.font（大きさだけなど）を持っても、既定の family と色を失わない
+    assert "...p.layout,font:{family:" in t and "...(p.layout||{}).font}" in t
+
+
+def test_report_pages_use_the_font():
+    class Md:
+        default_stylesheet = staticmethod(lambda: "")
+    out = report_page("t", "<p>x</p>", Md)
+    assert f"font-family:{TIGHT}" in out and "system-ui" not in out

@@ -116,7 +116,7 @@ Markdown for HTML, Chromium for image export, and so on are still needed.
 | `forms.py` | 2×2 of the four forms and logic notation for conditions ([docs/forms.md](docs/forms.md)); uses QueRyu's `ask` | `npb/` |
 | `overlap.py` | Overlap of condition sets and the B class (masks are rule_search bit matrices); uses PythDRagoras | `npb/` |
 | `research_report.py`, `reports/` | Research summary figures and Markdown report rendering (called from Aoi's workflow) | `npb/` |
-| `docs/`, `vendor/aoi/`, `vendor.lock.json`, `tests/` | Docs; the Aoi shared tools (`fetch_module.py`, `numpy_min.py`); pytest | as is |
+| `docs/`, `vendor/aoi/`, `vendor/fleet_check.py`, `vendor.lock.json`, `tests/` | Docs; the Aoi shared tools (`fetch_module.py`, `numpy_min.py`); the parent's shared contract checks; pytest | as is |
 
 ➡️ The moves happen when DRAgoWing is next synced into Aoi, together with Aoi's side. Aoi names these modules by package path in more than 60 places (`dragowing.overlap`, `dragowing.research_report`, `dragowing.export`, `dragowing.records`, `dragowing.plotly_cdn`, `from dragowing import chrome_pipe, render` in workflows, scripts, tests, `distributions/entries/dragowing_api.py` and provenance records), so moving them here first would break Aoi's CI. Relative imports inside the package (`from .forms import …`) change with them.
 
@@ -144,6 +144,7 @@ uv run --locked python __main__.py "$AOI_ROOT/cycles/c001-chunichi/outputs"
   - Output in `cycles/` (`cycles/c001-chunichi/outputs`).
   - `aoi.py`: `conftest.py` appends the import paths it gives (`aoi.environment()`, the same list as Aoi's pytest `pythonpath`) after this repository, so PythDRagoras's `propositions` / `rule_search` and QueRyu's `ask` import by name. DRAgoWing names neither directory.
   - `tests/test_no_sibling_imports.py` checks that no other Aoi sibling subprojects or `scripts/` are used (imports of `propositions`, `rule_search` and `ask` in the tests are known exceptions).
+- Test files are named by purpose: one per module (`tests/test_<module>.py`; `test_dragowing.py` is the single file, `test_chrome_pipe_regressions.py` the browser-free regressions), `tests/test_fleet.py` for the contracts shared across repositories (vendor lock, parent pins, benchmark guards, CI jobs) through `vendor/fleet_check.py`, and `tests/test_vendor_lock.py` for `scripts/check_vendor_lock.py`.
 - `reports/build_reports.py` is an Aoi-side tool (Aoi's DRAgoWing reports workflow checks out `myon-bioinformatics/markdown` and calls it). This repository's CI does not run that workflow.
 - The Python matrix explicitly selects Chromium and requires real-browser tests. Missing Chromium fails CI rather than silently falling back to Chrome or skipping. Locally, real-browser tests remain optional unless `DRAGOWING_REQUIRE_CHROME=1` is set.
 

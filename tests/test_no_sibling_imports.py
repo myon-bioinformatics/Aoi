@@ -14,12 +14,13 @@ THIRD_PARTY = {"polars", "numpy", "markdown", "pytest"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/。dragowing 自身は含めない。
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "sakanalytics", "scripts")
 KNOWN_EXCEPTIONS = {
-    # The benchmark regression loads this repository's own scripts helper.
-    ("tests/test_benchmark_validation.py", "path:scripts/benchmark_overlap.py"),
+    # The benchmark regressions load this repository's own scripts helpers.
+    ("tests/test_fleet.py", "path:scripts/benchmark_overlap.py"),
+    ("tests/test_fleet.py", "path:scripts/benchmark_record_selection.py"),
     # This fixture loads DRAgoWing’s own ROOT/scripts helper, never Aoi/scripts.
-    ("tests/test_dragowing_managed_chromium.py", "path:scripts/install_ci_chromium.py"),
+    ("tests/test_install_ci_chromium.py", "path:scripts/install_ci_chromium.py"),
     # PythDRagoras の propositions と rule_search、QueRyu の ask。場所は Aoi の aoi.py が入れる（conftest.py）
-    ("tests/test_forms_review.py", "import:propositions"),
+    ("tests/test_forms.py", "import:propositions"),
     ("tests/test_figures.py", "import:rule_search"),
     ("tests/test_figures.py", "import:ask"),
     ("tests/test_forms.py", "import:ask"),
@@ -27,11 +28,11 @@ KNOWN_EXCEPTIONS = {
     ("conftest.py", "import:aoi"),
     # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
     ("vendor/aoi/vendor/uv_tool_build.py", "path:scripts"),
-    ("tests/test_dragowing_standalone.py", "path:scripts"),
+    ("tests/test_dragowing.py", "path:scripts"),
     # テストのデータの場所は AOI_ROOT の Aoi の aoi_paths に聞く（conftest.py が AOI_ROOT を sys.path に足す）
     ("tests/test_figures.py", "import:aoi_paths"),
     ("tests/test_forms.py", "import:aoi_paths"),
-    ("tests/test_research_report.py", "import:aoi_paths"),
+    ("tests/test_reports.py", "import:aoi_paths"),
     # 実験の入口。本番のモジュールは Aoi の scripts/ を import しない。
     ("tests/test_stdlib_paths.py", "path:scripts"),
     # 図の寸法と段階の上限は、NagoyAction の localci がラウンドの seed で差し替える。
@@ -98,7 +99,7 @@ def test_detector_catches_imports_and_paths():
 
 
 def test_local_installer_exception_does_not_allow_sibling_imports_or_other_paths():
-    local_test = "tests/test_dragowing_managed_chromium.py"
+    local_test = "tests/test_install_ci_chromium.py"
     allowed = (local_test, "path:scripts/install_ci_chromium.py")
     assert allowed in KNOWN_EXCEPTIONS
     for rel, code in (
@@ -111,7 +112,7 @@ def test_local_installer_exception_does_not_allow_sibling_imports_or_other_paths
 
 
 def test_benchmark_exception_is_limited_to_the_local_helper():
-    local_test = "tests/test_benchmark_validation.py"
+    local_test = "tests/test_fleet.py"
     assert (local_test, "path:scripts/benchmark_overlap.py") in KNOWN_EXCEPTIONS
     for rel, code in (
         (local_test, "from scripts import benchmark_overlap"),

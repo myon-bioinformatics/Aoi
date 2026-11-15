@@ -27,7 +27,7 @@ Page headings, the list, the 2×2, counterexample tables, and the logic-notation
 
 The text-only 2×2 remains `dragowing/forms.py` in [forms.md](forms.md).
 
-Figures and pages use `figures.FONT` (`Meiryo, メイリオ, sans-serif`). The standalone research-report and report-page templates repeat the same font string, checked by `tests/test_font.py`; code remains monospace. No font files are distributed. Systems without Meiryo, including Linux image exports, use their default sans-serif font.
+Figures and pages use `figures.FONT` (`Meiryo, メイリオ, sans-serif`). The standalone research-report and report-page templates repeat the same font string, checked by `tests/test_figures.py`; code remains monospace. No font files are distributed. Systems without Meiryo, including Linux image exports, use their default sans-serif font.
 
 Add `--png` / `--svg` only when PNG / SVG is needed. Chrome is needed only then too (`--chrome` or the `CHROME` environment variable). Without Chrome, the HTML is written and the exit code is 2. The tests do not use Chrome either.
 

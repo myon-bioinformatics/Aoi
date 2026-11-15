@@ -1,3 +1,4 @@
+"""dragowing.py（標準ライブラリだけの単一ファイル）: 要素の数え方、リポジトリなしでの実行、uv tool 化。"""
 import json
 import shutil
 import subprocess
@@ -5,6 +6,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+from dragowing.dragowing import count_elements
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,3 +38,15 @@ class StandaloneTest(unittest.TestCase):
             data = tomllib.loads((target / "pyproject.toml").read_text(encoding="utf-8"))
             self.assertEqual(data["project"]["scripts"], {"dragowing": "dragowing:main"})
             self.assertEqual(data["project"]["dependencies"], [])
+
+
+def test_count_elements_limits_tags():
+    html = "<html><body><div><p>x</p><p>y</p><img></body></html>"
+    assert count_elements(html, ("p", "img")) == {"p": 2, "img": 1}
+    assert count_elements(html) == {
+        "html": 1,
+        "body": 1,
+        "div": 1,
+        "p": 2,
+        "img": 1,
+    }

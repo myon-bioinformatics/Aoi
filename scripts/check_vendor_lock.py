@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""vendor.lock.json の sha256 を、vendor/aoi の写しと照合する。
+"""vendor.lock.json の sha256 を、vendor/ の写しと照合する。
 
 schema は vendor-lock/1。古いエントリは path、sha256、source（myon-bioinformatics/Aoi）。
 driver のエントリは repository、ref、commit、source、destination、blob_sha、sha256。
 source は Aoi の中の相対パスで、写しは vendor/aoi/<source> に置く。
 --aoi を渡したときは、その checkout の同じ path のバイトとも比べる。
+親（myon-bioinformatics/myon-bioinformatics）の行は vendor/<source> に置き、バイトだけを照合する（Aoi とは比べない）。
 """
 from __future__ import annotations
 
@@ -101,10 +102,12 @@ def problems(root: Path, aoi_root: Path | None = None, lock: dict | None = None)
             continue
         path = rel.as_posix()
         paths.append(path)
-        if entry["repository"] != SOURCE:
+        from_aoi = entry["repository"] != "myon-bioinformatics/myon-bioinformatics"  # 親の行は vendor/ の直下
+        if from_aoi and entry["repository"] != SOURCE:
             found.append(f"{path}: repository は {SOURCE}")
+        place = VENDOR_DIR if from_aoi else VENDOR_DIR.parent
         destination = entry["destination"]
-        expected = (VENDOR_DIR / rel).as_posix()
+        expected = (place / rel).as_posix()
         if destination != expected:
             found.append(f"{path}: destination は {expected}")
         ref = entry["ref"]
@@ -123,9 +126,9 @@ def problems(root: Path, aoi_root: Path | None = None, lock: dict | None = None)
         if not isinstance(sha, str) or not HEX64.fullmatch(sha):
             found.append(f"{path}: sha256 は 64 桁の hex")
             continue
-        vendored = root / VENDOR_DIR / rel
+        vendored = root / place / rel
         if not vendored.is_file():
-            found.append(f"{path}: vendor/aoi にファイルがない")
+            found.append(f"{path}: {place.as_posix()} にファイルがない")
             continue
         data = vendored.read_bytes()
         got = hashlib.sha256(data).hexdigest()
@@ -133,7 +136,7 @@ def problems(root: Path, aoi_root: Path | None = None, lock: dict | None = None)
             found.append(f"{path}: sha256 が違う {got} != {sha}")
         if blob is not None and git_blob_sha(data) != blob:
             found.append(f"{path}: blob_sha が違う {git_blob_sha(data)} != {blob}")
-        if aoi_root is None:
+        if aoi_root is None or not from_aoi:
             continue
         upstream = aoi_root / rel
         if not upstream.is_file():

@@ -1,4 +1,7 @@
-"""Resource regressions ported from Aoi PR #121; no real browser required."""
+"""chrome_pipe.py の回帰（実ブラウザなし）: 🔎 Chromium の選び方、🧹 pipe と fd の後始末。
+
+実際の CDP のやり取りは tests/test_chrome_pipe.py（Aoi のブラウザ用ジョブが名前で指す）。
+"""
 import errno, json, os, subprocess, sys, textwrap
 from pathlib import Path
 
@@ -7,9 +10,100 @@ import pytest
 from dragowing import chrome_pipe
 from dragowing.chrome_pipe import Chrome
 
+posix_only = pytest.mark.skipif(sys.platform == "win32", reason="POSIX pipe transport")
 
-pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="POSIX pipe transport")
 
+# ==== 🔎 selection（旧 test_browser_selection.py）: Chromium defaults are independent of the runner's other installed browsers
+
+@pytest.fixture
+def browsers(monkeypatch, tmp_path):
+    monkeypatch.setattr(chrome_pipe.sys, "platform", "linux")
+    monkeypatch.delenv("CHROME", raising=False)
+    monkeypatch.delenv("CHROMIUM", raising=False)
+    monkeypatch.chdir(tmp_path)
+    paths, searched = {}, []
+
+    def which(name):
+        searched.append(name)
+        return paths.get(name)
+
+    monkeypatch.setattr(chrome_pipe.shutil, "which", which)
+
+    def install(*names):
+        for name in names:
+            executable = tmp_path / "bin" / name
+            executable.parent.mkdir(exist_ok=True)
+            executable.write_text("#!/bin/sh\n", encoding="utf-8")
+            executable.chmod(0o755)
+            paths[name] = str(executable)
+        return paths, searched
+
+    return install
+
+
+@pytest.mark.parametrize("available, expected", [
+    (("google-chrome", "chromium", "chromium-browser"), "chromium"),
+    (("google-chrome", "chromium-browser"), "chromium-browser"),
+])
+def test_default_search_is_chromium_only(browsers, available, expected):
+    paths, searched = browsers(*available)
+    assert chrome_pipe.find_chrome() == paths[expected]
+    assert searched == (["chromium"] if expected == "chromium" else ["chromium", "chromium-browser"])
+
+
+def test_chrome_only_install_does_not_hide_missing_chromium(browsers):
+    _, searched = browsers("google-chrome", "google-chrome-stable", "chrome")
+    with pytest.raises(RuntimeError, match="Chromium was not found on PATH.*Install Chromium.*CHROMIUM"):
+        chrome_pipe.find_chrome()
+    assert searched == ["chromium", "chromium-browser"]
+
+
+@pytest.mark.parametrize("variable", ["CHROME", "CHROMIUM"])
+def test_explicit_environment_override_accepts_legacy_chrome(browsers, monkeypatch, variable):
+    paths, searched = browsers("google-chrome", "chromium")
+    monkeypatch.setenv(variable, "google-chrome")
+    assert chrome_pipe.find_chrome() == paths["google-chrome"]
+    assert searched == ["google-chrome"]
+
+
+def test_argument_precedes_environment_overrides(browsers, monkeypatch):
+    paths, searched = browsers("google-chrome", "chromium")
+    monkeypatch.setenv("CHROME", "/missing/chrome")
+    monkeypatch.setenv("CHROMIUM", paths["chromium"])
+    assert chrome_pipe.find_chrome(paths["google-chrome"]) == paths["google-chrome"]
+    assert searched == []
+
+
+def test_legacy_environment_precedence_is_preserved(browsers, monkeypatch):
+    paths, searched = browsers("google-chrome", "chromium")
+    monkeypatch.setenv("CHROME", paths["google-chrome"])
+    monkeypatch.setenv("CHROMIUM", paths["chromium"])
+    assert chrome_pipe.find_chrome() == paths["google-chrome"]
+    assert searched == []
+    monkeypatch.setenv("CHROME", "/missing/legacy-chrome")
+    assert chrome_pipe.find_chrome() == paths["chromium"]
+    assert searched == ["/missing/legacy-chrome"]
+
+
+@pytest.mark.parametrize("override", ["argument", "CHROME", "CHROMIUM"])
+def test_invalid_explicit_selection_does_not_fall_back_to_path(browsers, monkeypatch, override):
+    _, searched = browsers("chromium", "google-chrome")
+    argument = "missing-explicit-browser" if override == "argument" else None
+    if argument is None:
+        monkeypatch.setenv(override, "missing-explicit-browser")
+    with pytest.raises(RuntimeError, match="not found or not executable: missing-explicit-browser"):
+        chrome_pipe.find_chrome(argument)
+    assert searched == ["missing-explicit-browser"]
+
+
+def test_nonexecutable_default_alias_is_skipped(browsers):
+    paths, searched = browsers("chromium", "chromium-browser")
+    Path(paths["chromium"]).chmod(0o644)
+    assert chrome_pipe.find_chrome() == paths["chromium-browser"]
+    assert searched == ["chromium", "chromium-browser"]
+
+
+# ==== 🧹 resources（旧 test_browser_resources.py）: resource regressions ported from Aoi PR #121; no real browser required
 
 def _is_open(fd):
     try:
@@ -21,9 +115,8 @@ def _is_open(fd):
     return True
 
 
+@posix_only
 def test_second_pipe_allocation_failure_closes_first_pair(monkeypatch):
-    from dragowing import chrome_pipe
-
     real_pipe = os.pipe
     allocated = []
     calls = 0
@@ -145,6 +238,7 @@ print(json.dumps(outcome))
 """
 
 
+@posix_only
 def test_high_descriptors_support_startup_and_close(tmp_path):
     peer = tmp_path / "resource-cdp-peer"
     peer.write_text("#!" + sys.executable + "\n" + textwrap.dedent(r"""

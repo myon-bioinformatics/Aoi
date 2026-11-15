@@ -49,7 +49,7 @@ The existing API's positional arguments are unchanged and the added argument is 
 
 ## Migration decision from the experiment
 
-Aoi's `shrink/run_overlap_stdlib.py --deps min` replaces the process-wide `numpy` and `polars` with
+Aoi's `scripts/stdlib_min.py overlap-stdlib --deps min` (formerly `shrink/run_overlap_stdlib.py`) replaces the process-wide `numpy` and `polars` with
 minimal versions. Mixed with libraries already loaded, the same name points to different implementations,
 affecting other analyses and imports inside libraries. It also assumes the libraries are not installed.
 Production switching does not use it; it calls the limited row evaluation in `_overlap_stdlib.py`.

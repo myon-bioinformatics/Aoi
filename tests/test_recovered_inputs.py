@@ -22,7 +22,7 @@ import pytest
 from queryu import Cache
 from research_loop.exploration import Explorer, plan
 from scripts import research_inputs as season
-from scripts.research_inputs import validate_member_path, validated_zip, verify_source
+from scripts.research_inputs import relocations, validate_member_path, validated_zip, verify_source
 
 
 # ==== zip（旧 test_recovered_zip.py）
@@ -272,6 +272,27 @@ def test_provenance_requires_both_historical_and_current_bytes(tmp_path):
     (tmp_path / 'source.py').write_bytes(old)
     with pytest.raises(ValueError, match='stale'):
         verify_source(tmp_path, 'source.py', recorded, [row], old)
+
+
+def test_provenance_relocation_checks_bytes_at_new_path(tmp_path):
+    old = b'original CLI'
+    recorded = hashlib.sha256(old).hexdigest()
+    (tmp_path / 'core').mkdir()
+    (tmp_path / 'core/source.py').write_bytes(old)
+    record = {'source_relocations': {'source.py': 'core/source.py'}}
+    moved = relocations(tmp_path, record, {'source.py'})
+    verify_source(tmp_path, 'source.py', recorded, [], old, moved['source.py'])
+    # A move is not a rebaseline: changed bytes at the new path still need a divergence.
+    (tmp_path / 'core/source.py').write_bytes(b'changed CLI')
+    with pytest.raises(ValueError, match='missing'):
+        verify_source(tmp_path, 'source.py', recorded, [], old, moved['source.py'])
+    for bad in ({'other.py': 'core/source.py'}, {'source.py': 'core/missing.py'},
+                {'source.py': 'source.py'}):
+        with pytest.raises(ValueError):
+            relocations(tmp_path, {'source_relocations': bad}, {'source.py'})
+    (tmp_path / 'source.py').write_bytes(old)  # the old path must be gone
+    with pytest.raises(ValueError, match='tree'):
+        relocations(tmp_path, record, {'source.py'})
 
 
 # ==== entrypoints（旧 test_recovery_entrypoints.py）

@@ -14,10 +14,10 @@ on:
       - queryu/ask/suggest.py
       - queryu/vendor/aoi/shrink/numpy_min.py
       - queryu/vendor.lock.json
-      - pythdragoras/littlebit_prune.py
-      - pythdragoras/littlebit_approx.py
-      - pythdragoras/littlebit_holdout.py
-      - pythdragoras/rule_search.py
+      - pythdragoras/core/littlebit_prune.py
+      - pythdragoras/core/littlebit_approx.py
+      - pythdragoras/core/littlebit_holdout.py
+      - pythdragoras/core/rule_search.py
       - .github/workflows/shrink-linalg-experiment.yml
   workflow_dispatch:
 

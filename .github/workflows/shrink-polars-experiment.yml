@@ -14,8 +14,8 @@ on:
       - tests/test_shrink_polars.py
       - .github/workflows/shrink-polars-experiment.yml
       - dragowing/overlap.py
-      - pythdragoras/propositions.py
-      - pythdragoras/rule_search.py
+      - pythdragoras/core/propositions.py
+      - pythdragoras/core/rule_search.py
   workflow_dispatch:
 
 permissions:
@@ -46,7 +46,7 @@ jobs:
         run: |
           uv sync --locked --python "${{ matrix.python }}"
           uv run --locked --python "${{ matrix.python }}" pytest -q tests/test_shrink_polars.py
-          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py generate dragowing/overlap.py:load_overlap pythdragoras/propositions.py:_cond --out shrink/polars_min.py --check
+          uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py generate dragowing/overlap.py:load_overlap pythdragoras/core/propositions.py:_cond --out shrink/polars_min.py --check
           uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py survey
           uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py analyze
           uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py trace

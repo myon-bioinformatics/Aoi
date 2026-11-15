@@ -10,7 +10,7 @@ on:
       - shrink/**
       - tests/test_shrink_module.py
       - dragowing/overlap.py
-      - pythdragoras/rule_search.py
+      - pythdragoras/core/rule_search.py
       - .github/workflows/shrink-module-experiment.yml
   workflow_dispatch:
 

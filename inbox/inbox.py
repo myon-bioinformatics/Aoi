@@ -16,7 +16,8 @@ if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "worker":
     raise SystemExit(worker_main(sys.argv[1:]))
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT / "queryu/ask")]
+# QueRyu の ask・bank と Aoi の aoi_npb は名前で import する。場所は Aoi の aoi.py が入れる
+# （python aoi.py nagoyaction run …、または python aoi.py nagoyaction/inbox/inbox.py …）
 
 from ask import (
     ParsedInput,
@@ -34,8 +35,6 @@ try:  # QueRyu の ask は球団表を持たない。Aoi の NPB 設定（aoi_np
 except ImportError:  # 球団表を内蔵していた古い ask
     set_teams = None
 if set_teams is not None:
-    if str(ROOT) not in sys.path:
-        sys.path.append(str(ROOT))
     from aoi_npb import TEAMS as _NPB_TEAMS
     set_teams(_NPB_TEAMS)
 

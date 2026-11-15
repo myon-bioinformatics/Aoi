@@ -1,11 +1,9 @@
 """Join real annual audit and explicitly separate synthetic model-check evidence."""
 from __future__ import annotations
-import argparse, hashlib, json, sys
+import argparse, hashlib, json
 from collections import Counter, defaultdict; from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sakanalytics"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "queryu"))
-# NPB の年間ページの範囲（annual_scope.py）と年間表の前提（aoi_npb.py）は Aoi の直下に置く
-sys.path.append(str(Path(__file__).resolve().parents[1]))
+# SakAnalytics の synthetic_league・annual_audit と、Aoi の annual_scope・aoi_npb は名前で import する。
+# 場所は Aoi の aoi.py が入れる（python aoi.py nagoyaction/annual_history_report.py …）
 from synthetic_league import PRIMARY_YEARS, validate_period, calibration_mean
 from annual_audit import audit_files as _audit_files
 from annual_scope import verify_observations

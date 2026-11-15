@@ -84,24 +84,28 @@ python nagoyaction.py run    <pipeline.toml> --dry-run  # only show what would b
 
 A pipeline TOML has `name`, `root`, `[requires]` (Python version, tools), and `[[step]]` (`name`, argument array `run`, `network`, `outputs`). Examples are `pipelines/research.toml` and `pipelines/inbox.toml`.
 
+Steps inherit the runner's environment. NagoyAction never puts other projects on the import path itself: inside Aoi, start it with `python aoi.py nagoyaction run <pipeline.toml>` so that steps such as `queryu/queryu.py` and `inbox/inbox.py` find QueRyu, BlueProbe, SakAnalytics and Aoi's `aoi_npb` by name (`aoi.py` passes Aoi's pytest `pythonpath`). The same goes for `python aoi.py nagoyaction/annual_history_report.py …`.
+
 GitHub Actions workflows only call this command (e.g. `.github/workflows/cycle-c001.yml`).
 Org-wide reusable workflows (actionlint, etc.) come from `myon-bioinformatics/myon-bioinformatics`.
 To bring in shared modules from other repositories, use that repository's `vendor_sync.py` (SHA-pinned).
 
 ## Layout
 
-| File | Contents |
-|---|---|
-| `nagoyaction.py` | Pipeline pre-checks (`doctor`), structure display (`show`), and execution (`run`) |
-| `localci.py` | Workflow checks repeated locally (actionlint, resolving referenced SHAs, `uses:` pins). "Local CI" below |
-| `pipelines/` | Pipeline definitions (`research.toml`, `inbox.toml`) |
-| `linkcheck.py` | Checks Markdown link and image targets ("Link checking" below) |
-| `inbox/inbox.py`, `docs/inbox.md` | Question intake |
-| `research_digest.py`, `docs/research-digest.md` | Index of research records (R*.md) and proposition judgements (no network or LLM needed) |
-| `publication_gate.py`, `ghi_execution.py`, `PUBLICATION.md` | Pre-publication evidence checks (offline) and matching against running GitHub Actions |
-| `annual_history_report.py` | Lists annual audit results and synthetic model verification results side by side, kept separate |
-| `containers/` | Local LLM container (not connected. "Local LLM container" below) |
-| `tests/` | pytest (run inside Aoi. "Tests" below) |
+| File | Contents | ➡️ Planned place |
+|---|---|---|
+| `nagoyaction.py` | The single file (stdlib only): pipeline pre-checks (`doctor`), structure display (`show`), execution (`run`), and 🔗 `linkcheck` ("Link checking" below). `actionlint` / `hub` hand over to `localci` / `local_forge` | stays at the top |
+| `localci.py`, `localci_pytest.py` | Workflow checks repeated locally (actionlint, resolving referenced SHAs, `uses:` pins). "Local CI" below | `core/` |
+| `local_forge.py` | Local Gitea / Forgejo (`nagoyaction hub`) | `core/` |
+| `publication_gate.py`, `ghi_execution.py`, `PUBLICATION.md` | Pre-publication evidence checks (offline) and matching against running GitHub Actions | `core/` |
+| `research_digest.py`, `docs/research-digest.md` | Index of research records (R*.md) and proposition judgements (no network or LLM needed) | `npb/` |
+| `annual_history_report.py` | Lists annual audit results and synthetic model verification results side by side, kept separate | `npb/` |
+| `pipelines/` | Pipeline definitions (`research.toml`, `inbox.toml`) | as is |
+| `inbox/inbox.py`, `docs/inbox.md` | Question intake | as is |
+| `containers/` | Local LLM container (not connected. "Local LLM container" below) | as is |
+| `tests/` | pytest (run inside Aoi. "Tests" below) | as is |
+
+➡️ The modules marked `core/` / `npb/` move when NagoyAction is next synced into Aoi, together with Aoi's side: the tests run inside Aoi's tree with Aoi's pytest `pythonpath` (`nagoyaction` only), and Aoi calls them by path (`links.yml` → `nagoyaction.py linkcheck`, `ci.yml` and `cycles/c001-chunichi/pipeline.toml` → `research_digest.py`, `c001-replay-audit.yml` → `ghi_execution.py`, `scripts/c001_publication_policy.py` → `publication_gate`, DRAgoWing's `tests/test_export.py` → `localci`). Aoi's `pythonpath` then gains `nagoyaction/core` and `nagoyaction/npb`, and `nagoyaction.py` adds its own `core/` for `actionlint` / `hub`.
 
 ## Local CI (`localci.py`)
 
@@ -151,15 +155,15 @@ python localci.py run --self-tests
 python localci.py run --pytest tests/test_localci.py
 ```
 
-## Link checking (`linkcheck.py`)
+## Link checking (`nagoyaction.py linkcheck`)
 
 ```bash
-python nagoyaction/linkcheck.py --help                                 # all flags and exit codes
-python nagoyaction/linkcheck.py --root .                               # before push: match against git-tracked files, case-sensitive
-python nagoyaction/linkcheck.py --remote OWNER/REPO --ref BRANCH       # after push: exists on that branch? (gh api)
-python nagoyaction/linkcheck.py --external                             # also check http(s) (only 404/410 fail)
-python nagoyaction/linkcheck.py --external --strict                    # unverified also fails (exit code 3)
-python nagoyaction/linkcheck.py --json                                 # stdout is nagoyaction-linkcheck/1
+python nagoyaction/nagoyaction.py linkcheck --help                                 # all flags and exit codes
+python nagoyaction/nagoyaction.py linkcheck --root .                               # before push: match against git-tracked files, case-sensitive
+python nagoyaction/nagoyaction.py linkcheck --remote OWNER/REPO --ref BRANCH       # after push: exists on that branch? (gh api)
+python nagoyaction/nagoyaction.py linkcheck --external                             # also check http(s) (only 404/410 fail)
+python nagoyaction/nagoyaction.py linkcheck --external --strict                    # unverified also fails (exit code 3)
+python nagoyaction/nagoyaction.py linkcheck --json                                 # stdout is nagoyaction-linkcheck/1
 ```
 
 `--root` is the base for git ls-files and Markdown loading (default: current directory). `--remote` requires `--ref`. `--external` checks http and https with HEAD. `--json` writes `nagoyaction-linkcheck/1` (`counts` and `results`) to stdout when scanning succeeded, and `nagoyaction-error/1` to stderr when the exit code is nonzero. Failures before scanning (usage, git) use the same error object, with exit code 2.

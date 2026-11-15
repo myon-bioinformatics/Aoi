@@ -1,7 +1,7 @@
 """Run from repo root with python -S -m scripts.benchmark_link_case_index."""
 import json, statistics, subprocess, tempfile, time, types
 from pathlib import Path
-import linkcheck
+from nagoyaction import linkcheck  # linkcheck は nagoyaction.py の中
 
 
 def main():

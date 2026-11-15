@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from annual_history_report import audit_files, require_primary_years, summary
+import npb_team_annual
 from npb_team_annual import pages, parse
 from queryu import Cache
 from synthetic_league import period_experiment
@@ -54,7 +55,7 @@ def primary_evidence(tmp_path_factory):
         rows+=report['records']
     observations=root/'records.jsonl'
     observations.write_text(''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in rows),encoding='utf-8')
-    parser=Path(__file__).parents[2]/'blueprobe/npb_team_annual.py'
+    parser=Path(npb_team_annual.__file__)  # 読み込んだ取得元そのもの（BlueProbe の直下でも npb/ でも同じ）
     metadata=dict(unknown=0,sha256=sha(observations),source_code_sha256=sha(parser))
     save(observations.with_suffix('.manifest.json'),metadata)
     result=audit_files(observations,range(2013,2027))

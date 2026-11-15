@@ -299,14 +299,15 @@ def audit(root=ROOT, read_history=historical_bytes):
             raise ValueError(f'{rel}: incorrect sidecar identity')
         rows = sidecar['source_divergence']
         path = f'sakanalytics/{source}'
-        if len(rows) != 1 or rows[0]['path'] != path or rows[0]['field'] != field:
+        # The row names the file where it is now (the child's own test reads it the same way);
+        # source_relocations maps the path in EXPERIMENT_REF to it.
+        current = relocations(root, sidecar, {path}).get(path, path)
+        if len(rows) != 1 or rows[0]['path'] != current or rows[0]['field'] != field:
             raise ValueError(f'{rel}: incorrect divergence coverage')
         recorded = json.loads(data)
         for key in field.split('.'):
             recorded = recorded[key]
-        moved = relocations(root, sidecar, {path})
-        verify_source(root, path, recorded, rows, read_history(root, EXPERIMENT_REF, path),
-                      moved.get(path))
+        verify_source(root, current, recorded, rows, read_history(root, EXPERIMENT_REF, path))
         checked += 1
     return {'verified_sources': checked, 'frozen_experiments': 2,
             'holdout_reference': HOLDOUT_REF, 'experiment_reference': EXPERIMENT_REF}

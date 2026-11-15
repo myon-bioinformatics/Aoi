@@ -554,8 +554,8 @@ def test_holdout_job_provisions_node_before_parity_tests():
 
 
 # ═══ · child entries through aoi.py ══════════════════════════════════════════════════════════════════════
-# `python aoi.py <name>` runs the child's same-named single file with Aoi's settings. The import paths
-# (pyproject.toml) and AOI_ROOT come from aoi.py, so the child does not look for its siblings itself.
+# `python aoi.py <name>` runs the child's same-named single file. AOI_ROOT and only that child's
+# sibling directories come from aoi.py (appended after the caller's PYTHONPATH).
 
 CHILDREN = ("blueprobe", "queryu", "nagoyaction", "sakanalytics", "pythdragoras", "dragowing")
 
@@ -577,14 +577,20 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
                 with self.subTest(child=name):
                     target = root / name / f"{name}.py"
                     target.parent.mkdir(parents=True, exist_ok=True)
-                    target.write_text('import json, os, sys\nprint(json.dumps({"args": sys.argv[1:], "cwd": os.getcwd(), "AOI_ROOT": os.environ.get("AOI_ROOT"), "PYTHONPATH": os.environ.get("PYTHONPATH", "")}))\nsys.exit(7)\n')
-                    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT")}
+                    target.write_text('import json, os, sys\nprint(json.dumps({"args": sys.argv[1:], "cwd": os.getcwd(), "AOI_ROOT": os.environ.get("AOI_ROOT"), "PYTHONPATH": os.environ.get("PYTHONPATH", ""), "path0": sys.path[0]}))\nsys.exit(7)\n')
+                    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "PYTHONSAFEPATH")}
                     result = subprocess.run([sys.executable, str(root / "aoi.py"), name, "x y", "--option"],
                                             cwd=work, env=env, capture_output=True, text=True)
                     self.assertEqual(result.returncode, 7, result.stderr)
                     seen = json.loads(result.stdout)
                     self.assertEqual((seen["args"], seen["cwd"], seen["AOI_ROOT"]), (["x y", "--option"], str(work), str(root.resolve())))
-                    self.assertIn(str((root / "blueprobe").resolve()), seen["PYTHONPATH"].split(os.pathsep))
+                    import aoi
+                    expect = [str((root / rel).resolve()) for rel in aoi.SIBLINGS[name]]
+                    got = [entry for entry in seen["PYTHONPATH"].split(os.pathsep) if entry]
+                    self.assertEqual(got, expect)
+                    self.assertNotIn(str(root.resolve()), got)
+                    self.assertNotIn(str((root / "dragowing").resolve()), got)
+                    self.assertEqual(seen["path0"], str((root / name).resolve()))
 
     def test_missing_child_has_actionable_error(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -594,12 +600,98 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
             self.assertIn("blueprobe.py", result.stderr)
 
     def test_import_aoi_adds_the_sibling_paths_after_what_is_already_first(self):
-        env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT")}
-        code = "import sys; first = sys.path[0]; import aoi, blueprobe, propositions; print(sys.path[0] == first, blueprobe.__file__)"
+        env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "PYTHONSAFEPATH")}
+        code = (
+            "import sys\n"
+            "first = sys.path[0]\n"
+            "import aoi, blueprobe, propositions, dragowing.render\n"
+            "import dragowing\n"
+            "print(sys.path[0] == first, blueprobe.__file__)\n"
+            "print(int(bool(getattr(dragowing, '__path__', None))))\n"
+            f"print(int({str(WORKFLOWS_ROOT / 'dragowing')!r} in sys.path))\n"
+        )
         run = subprocess.run([sys.executable, "-c", code], cwd=WORKFLOWS_ROOT, env=env, capture_output=True, text=True)
         self.assertEqual(run.returncode, 0, run.stderr)
-        same_first, blueprobe_file = run.stdout.split()
+        same_first, blueprobe_file = run.stdout.splitlines()[0].split()
         self.assertEqual((same_first, Path(blueprobe_file)), ("True", WORKFLOWS_ROOT / "blueprobe" / "blueprobe.py"))
+        self.assertEqual(run.stdout.splitlines()[1:], ["1", "0"])
+
+    def test_caller_pythonpath_beats_the_sibling_directory(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = self._root(temp)
+            external = Path(temp) / "external"
+            external.mkdir()
+            (external / "blueprobe.py").write_text("ORIGIN = 'external'\n")
+            (root / "blueprobe").mkdir()
+            (root / "blueprobe" / "blueprobe.py").write_text("ORIGIN = 'aoi'\n")
+            target = root / "queryu" / "queryu.py"
+            target.parent.mkdir(parents=True)
+            target.write_text("import blueprobe\nprint(blueprobe.ORIGIN)\n")
+            work = Path(temp) / "work"
+            work.mkdir()
+            base = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "PYTHONSAFEPATH")}
+            external_env = dict(base, PYTHONPATH=str(external))
+            chosen = subprocess.run([sys.executable, str(root / "aoi.py"), "queryu"],
+                                    cwd=work, env=external_env, capture_output=True, text=True)
+            self.assertEqual(chosen.stdout.strip(), "external", chosen.stderr)
+            fallback = subprocess.run([sys.executable, str(root / "aoi.py"), "queryu"],
+                                      cwd=work, env=base, capture_output=True, text=True)
+            self.assertEqual(fallback.stdout.strip(), "aoi", fallback.stderr)
+
+    def test_isolated_flags_insert_siblings_without_applying_pythonpath(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = self._root(temp)
+            sentinel = Path(temp) / "caller"
+            sentinel.mkdir()
+            (sentinel / "sentinel_marker.py").write_text("MARKER = True\n")
+            (root / "blueprobe").mkdir()
+            (root / "blueprobe" / "blueprobe.py").write_text("ORIGIN = 'aoi'\n")
+            target = root / "queryu" / "queryu.py"
+            target.parent.mkdir(parents=True)
+            target.write_text(
+                "import importlib.util, json, os, sys\n"
+                "print(json.dumps({"
+                "'isolated': int(sys.flags.isolated), 'no_site': int(sys.flags.no_site), "
+                "'ignore': int(sys.flags.ignore_environment), 'safe': bool(sys.flags.safe_path), "
+                "'path0': sys.path[0], 'path': sys.path, 'AOI_ROOT': os.environ.get('AOI_ROOT'), "
+                "'argv': sys.argv[1:], "
+                "'sentinel': importlib.util.find_spec('sentinel_marker') is not None, "
+                "'blueprobe': importlib.util.find_spec('blueprobe') is not None}))\n"
+            )
+            work = Path(temp) / "work"
+            work.mkdir()
+            base = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
+            base["PYTHONPATH"] = str(sentinel)
+            script_dir = str((root / "queryu").resolve())
+            sibling = str((root / "blueprobe").resolve())
+            expect = {
+                "-I": {"isolated": 1, "no_site": 0, "ignore": 1, "safe": True, "script_dir": False, "sentinel": False},
+                "-S": {"isolated": 0, "no_site": 1, "ignore": 0, "safe": False, "script_dir": True, "sentinel": True},
+                "-E": {"isolated": 0, "no_site": 0, "ignore": 1, "safe": False, "script_dir": True, "sentinel": False},
+                "-P": {"isolated": 0, "no_site": 0, "ignore": 0, "safe": True, "script_dir": False, "sentinel": True},
+            }
+            for flag, wanted in expect.items():
+                with self.subTest(flag=flag):
+                    result = subprocess.run(
+                        [sys.executable, flag, str(root / "aoi.py"), "queryu", "x"],
+                        cwd=work, env=base, capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    seen = json.loads(result.stdout)
+                    self.assertEqual(seen["argv"], ["x"])
+                    self.assertEqual(seen["AOI_ROOT"], str(root.resolve()))
+                    self.assertEqual(
+                        (seen["isolated"], seen["no_site"], seen["ignore"], seen["safe"]),
+                        (wanted["isolated"], wanted["no_site"], wanted["ignore"], wanted["safe"]))
+                    self.assertEqual(seen["path0"] == script_dir, wanted["script_dir"])
+                    self.assertNotEqual(seen["path0"], str(root.resolve()))
+                    self.assertNotIn("", seen["path"])
+                    self.assertNotIn(str(root.resolve()), seen["path"])
+                    self.assertNotIn(str((root / "dragowing").resolve()), seen["path"])
+                    self.assertIn(sibling, seen["path"])
+                    self.assertEqual(seen["sentinel"], wanted["sentinel"])
+                    self.assertTrue(seen["blueprobe"])
+                    if wanted["sentinel"]:
+                        self.assertLess(seen["path"].index(str(sentinel)), seen["path"].index(sibling))
 
 
 def test_lock_matches_shared_tool_bytes():

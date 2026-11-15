@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-for _p in (ROOT, ROOT / "research_loop", ROOT / "sakanalytics", ROOT / "queryu/ask", ROOT / "dragowing/reports"):
+for _p in (ROOT, ROOT / "research_loop", ROOT / "sakanalytics", ROOT / "sakanalytics/core", ROOT / "queryu/ask", ROOT / "dragowing/reports"):
     if str(_p) not in sys.path:
         sys.path.append(str(_p))
 
@@ -20,7 +20,7 @@ from research import build
 
 def prepare_feedback(root, cycle, state):
     files = [cycle / 'outputs/season.jsonl', cycle / 'outputs/sets.jsonl', cycle / 'outputs/propositions.jsonl',
-             cycle / 'analysis.toml', Path(__file__), root / 'sakanalytics/neighbors.py',
+             cycle / 'analysis.toml', Path(__file__), root / 'sakanalytics/core/neighbors.py',
              root / 'research_loop/neighbor_checks.py']
     identity = digest({str(p.relative_to(root)) if p.is_relative_to(root) else p.name: hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else None for p in files})
     path = state / 'feedback/observations.json'

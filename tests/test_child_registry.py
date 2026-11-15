@@ -77,7 +77,7 @@ def test_queryu_registered_with_exact_ids():
     assert entry["optional"]["subtree_prefix"] == "queryu"
     assert "mirrored_from_parent" not in entry["optional"]  # aoi_paths.py は Aoi 直下だけ。子は写しを持たない
     assert "sha" not in entry  # 履歴から導く
-    for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore", "cache_share.py", "emoji_data.py"):
+    for path in (".github/workflows/ci.yml", "pyproject.toml", "uv.lock", "conftest.py", ".gitignore", "queryu.py", "core/cache_core.py", "emoji_names.json"):  # QueRyu #40〜#44: cache_share / emoji_data は queryu.py へ、cache_core は core/ へ
         assert (ROOT / "queryu" / path).is_file(), path
 
 

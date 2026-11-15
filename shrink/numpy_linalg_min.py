@@ -3,9 +3,9 @@
 標準ライブラリだけ。対象は実際に使っている範囲だけ。
 
 - queryu/ask/suggest.py … ``linalg.svd``（full_matrices=False）と ``linalg.norm``、TF-IDF の配列演算
-- pythdragoras/littlebit_prune.py … ``svd`` / ``lstsq`` / ``einsum("ik,ij,jk->k")`` と、その周りの 2 次元配列
-- pythdragoras/rule_search.py のビット行列 … 0/1 の ``@``（単位数 ≤ 8192 なら float64 で厳密）
-- pythdragoras/littlebit_holdout.py の ``linalg.pinv(..., rcond=1e-12)``
+- pythdragoras/core/littlebit_prune.py … ``svd`` / ``lstsq`` / ``einsum("ik,ij,jk->k")`` と、その周りの 2 次元配列
+- pythdragoras/core/rule_search.py のビット行列 … 0/1 の ``@``（単位数 ≤ 8192 なら float64 で厳密）
+- pythdragoras/core/littlebit_holdout.py の ``linalg.pinv(..., rcond=1e-12)``
 
 SVD は二通り。片側が 400 を超える細い行列（suggest の 145×3247）だけ、小さい方のグラム行列を
 Jacobi 法で対角化する。グラムは条件数を二乗するので、σ_k / σ_max がおよそ 1e-6 より小さい成分は消える。

@@ -152,14 +152,14 @@ def test_ast_reaches_the_heavy_calls_and_not_bitmatrix_svd():
     assert "linalg.svd" in suggest and "linalg.norm" in suggest
     little = {}
     for key in (
-        "pythdragoras/littlebit_prune.py:littlebit",
-        "pythdragoras/littlebit_prune.py:overlap_bounds",
-        "pythdragoras/littlebit_prune.py:search_guaranteed",
+        "pythdragoras/core/littlebit_prune.py:littlebit",
+        "pythdragoras/core/littlebit_prune.py:overlap_bounds",
+        "pythdragoras/core/littlebit_prune.py:search_guaranteed",
     ):
         little.update(found[key]["uses"])
     assert {"linalg.svd", "linalg.lstsq", "einsum"} <= set(little)
-    assert "linalg.pinv" in found["pythdragoras/littlebit_holdout.py:fit"]["uses"]
-    bit = found["pythdragoras/rule_search.py:_search_bitmatrix"]["uses"]
+    assert "linalg.pinv" in found["pythdragoras/core/littlebit_holdout.py:fit"]["uses"]
+    bit = found["pythdragoras/core/rule_search.py:_search_bitmatrix"]["uses"]
     for name in ("linalg.svd", "linalg.lstsq", "linalg.pinv", "einsum"):
         assert name not in bit
     visited = found["queryu/ask/suggest.py:suggest"]["visited"]

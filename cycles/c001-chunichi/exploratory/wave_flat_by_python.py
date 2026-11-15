@@ -27,7 +27,7 @@ LEVELS = (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 0.7, 2.3)
 
 
 def load_sa(root: Path = ROOT):
-    spec = importlib.util.spec_from_file_location("sakanalytics_flat", root / "sakanalytics" / "sakanalytics.py")
+    spec = importlib.util.spec_from_file_location("sakanalytics_flat", root / "sakanalytics" / "npb" / "team_season.py")  # SakAnalytics #45
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)

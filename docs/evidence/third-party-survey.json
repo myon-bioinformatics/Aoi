@@ -37,8 +37,8 @@
       "line": 119
     },
     {
-      "file": "dragowing/aoi_sibling.py",
-      "line": 35
+      "file": "dragowing/forms.py",
+      "line": 23
     },
     {
       "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
@@ -50,7 +50,7 @@
     },
     {
       "file": "queryu/conftest.py",
-      "line": 49
+      "line": 48
     },
     {
       "file": "scripts/fetch_module.py",
@@ -231,17 +231,17 @@
       "import_sites": 1
     },
     "numpy": {
-      "attribute_uses": 302,
+      "attribute_uses": 317,
       "attributes": {
         "__file__": 2,
         "__version__": 4,
-        "abs": 6,
-        "allclose": 5,
+        "abs": 8,
+        "allclose": 8,
         "any": 1,
         "arange": 7,
         "argpartition": 1,
         "argsort": 1,
-        "array": 34,
+        "array": 41,
         "array_equal": 3,
         "asarray": 5,
         "ascontiguousarray": 1,
@@ -252,6 +252,7 @@
         "column_stack": 7,
         "concatenate": 8,
         "corrcoef": 3,
+        "diag": 1,
         "einsum": 1,
         "empty": 3,
         "errstate": 2,
@@ -269,10 +270,10 @@
         "integer": 1,
         "isfinite": 1,
         "linalg.LinAlgError": 3,
-        "linalg.lstsq": 8,
+        "linalg.lstsq": 9,
         "linalg.norm": 2,
         "linalg.pinv": 1,
-        "linalg.svd": 2,
+        "linalg.svd": 3,
         "log": 10,
         "longdouble": 1,
         "maximum": 7,
@@ -334,15 +335,16 @@
           "import_sites": 3
         },
         "pythdragoras": {
-          "attribute_uses": 192,
+          "attribute_uses": 207,
           "attributes": {
             "__version__": 2,
-            "abs": 6,
+            "abs": 8,
+            "allclose": 3,
             "any": 1,
             "arange": 7,
             "argpartition": 1,
             "argsort": 1,
-            "array": 11,
+            "array": 18,
             "array_equal": 2,
             "asarray": 4,
             "ascontiguousarray": 1,
@@ -351,6 +353,7 @@
             "ceil": 1,
             "clip": 4,
             "concatenate": 3,
+            "diag": 1,
             "einsum": 1,
             "empty": 2,
             "errstate": 2,
@@ -365,10 +368,10 @@
             "int64": 12,
             "integer": 1,
             "isfinite": 1,
-            "linalg.lstsq": 1,
+            "linalg.lstsq": 2,
             "linalg.norm": 2,
             "linalg.pinv": 1,
-            "linalg.svd": 1,
+            "linalg.svd": 2,
             "maximum": 7,
             "meshgrid": 1,
             "minimum": 5,
@@ -393,8 +396,8 @@
             "zeros": 11
           },
           "dynamic_import_sites": 0,
-          "files": 9,
-          "import_sites": 9
+          "files": 10,
+          "import_sites": 11
         },
         "queryu": {
           "attribute_uses": 6,
@@ -495,10 +498,10 @@
           "name": "numpy"
         }
       ],
-      "distinct_attributes": 68,
+      "distinct_attributes": 69,
       "dynamic_import_sites": 0,
-      "files": 21,
-      "import_sites": 21
+      "files": 22,
+      "import_sites": 23
     },
     "ortools": {
       "attribute_uses": 2,
@@ -559,6 +562,28 @@
       "files": 1,
       "import_sites": 1
     },
+    "pattern_postprocess": {
+      "attribute_uses": 3,
+      "attributes": {
+        "get_pattern": 3
+      },
+      "by_tree": {
+        "aoi": {
+          "attribute_uses": 3,
+          "attributes": {
+            "get_pattern": 3
+          },
+          "dynamic_import_sites": 0,
+          "files": 1,
+          "import_sites": 2
+        }
+      },
+      "declared": [],
+      "distinct_attributes": 1,
+      "dynamic_import_sites": 0,
+      "files": 1,
+      "import_sites": 2
+    },
     "pixelwater": {
       "attribute_uses": 3,
       "attributes": {
@@ -586,11 +611,11 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1088,
+      "attribute_uses": 1086,
       "attributes": {
         "Boolean": 15,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 275,
+        "DataFrame": 274,
         "Expr": 13,
         "Float32": 1,
         "Float64": 73,
@@ -600,7 +625,7 @@
         "Utf8": 24,
         "__version__": 4,
         "any_horizontal": 1,
-        "col": 464,
+        "col": 463,
         "concat": 12,
         "concat_list": 1,
         "concat_str": 3,
@@ -663,10 +688,10 @@
           "import_sites": 2
         },
         "pythdragoras": {
-          "attribute_uses": 232,
+          "attribute_uses": 228,
           "attributes": {
             "Boolean": 2,
-            "DataFrame": 95,
+            "DataFrame": 94,
             "Expr": 6,
             "Float64": 3,
             "Int32": 1,
@@ -674,7 +699,7 @@
             "Series": 11,
             "Utf8": 1,
             "__version__": 2,
-            "col": 66,
+            "col": 63,
             "concat": 7,
             "concat_str": 1,
             "first": 2,
@@ -684,8 +709,8 @@
             "when": 3
           },
           "dynamic_import_sites": 0,
-          "files": 19,
-          "import_sites": 19
+          "files": 20,
+          "import_sites": 20
         },
         "research": {
           "attribute_uses": 2,
@@ -707,7 +732,7 @@
           "import_sites": 2
         },
         "sakanalytics": {
-          "attribute_uses": 734,
+          "attribute_uses": 736,
           "attributes": {
             "Boolean": 10,
             "Config.set_tbl_rows": 1,
@@ -721,7 +746,7 @@
             "Utf8": 21,
             "__version__": 2,
             "any_horizontal": 1,
-            "col": 346,
+            "col": 348,
             "concat": 3,
             "concat_list": 1,
             "concat_str": 1,
@@ -790,8 +815,8 @@
       ],
       "distinct_attributes": 28,
       "dynamic_import_sites": 1,
-      "files": 46,
-      "import_sites": 51
+      "files": 47,
+      "import_sites": 52
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -816,23 +841,23 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1438,
+      "attribute_uses": 1464,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
         "MonkeyPatch": 2,
         "StashKey": 3,
-        "UsageError": 10,
-        "approx": 392,
-        "fail": 34,
-        "fixture": 59,
+        "UsageError": 11,
+        "approx": 397,
+        "fail": 39,
+        "fixture": 60,
         "hookimpl": 5,
         "importorskip": 14,
-        "mark.parametrize": 341,
+        "mark.parametrize": 345,
         "mark.skipif": 26,
         "param": 1,
-        "raises": 525,
+        "raises": 535,
         "skip": 15,
         "warns": 3,
         "xfail": 1
@@ -873,29 +898,29 @@
           "import_sites": 16
         },
         "dragowing": {
-          "attribute_uses": 94,
+          "attribute_uses": 97,
           "attributes": {
-            "UsageError": 2,
+            "UsageError": 3,
             "fail": 2,
-            "fixture": 8,
+            "fixture": 9,
             "mark.parametrize": 25,
             "mark.skipif": 3,
-            "raises": 50,
+            "raises": 51,
             "skip": 4
           },
           "dynamic_import_sites": 0,
-          "files": 15,
-          "import_sites": 16
+          "files": 16,
+          "import_sites": 17
         },
         "nagoyaction": {
-          "attribute_uses": 85,
+          "attribute_uses": 97,
           "attributes": {
             "MonkeyPatch": 1,
-            "fail": 1,
+            "fail": 6,
             "fixture": 7,
-            "mark.parametrize": 18,
+            "mark.parametrize": 20,
             "mark.skipif": 2,
-            "raises": 55,
+            "raises": 60,
             "skip": 1
           },
           "dynamic_import_sites": 0,
@@ -903,14 +928,14 @@
           "import_sites": 13
         },
         "pythdragoras": {
-          "attribute_uses": 195,
+          "attribute_uses": 192,
           "attributes": {
             "UsageError": 2,
             "approx": 42,
             "fail": 2,
             "fixture": 6,
             "importorskip": 1,
-            "mark.parametrize": 53,
+            "mark.parametrize": 50,
             "mark.skipif": 6,
             "raises": 79,
             "skip": 2,
@@ -921,7 +946,7 @@
           "import_sites": 22
         },
         "queryu": {
-          "attribute_uses": 91,
+          "attribute_uses": 99,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -929,26 +954,26 @@
             "approx": 2,
             "fail": 8,
             "fixture": 4,
-            "mark.parametrize": 19,
-            "raises": 50,
+            "mark.parametrize": 24,
+            "raises": 53,
             "skip": 1,
             "xfail": 1
           },
           "dynamic_import_sites": 1,
-          "files": 13,
-          "import_sites": 13
+          "files": 14,
+          "import_sites": 14
         },
         "sakanalytics": {
-          "attribute_uses": 437,
+          "attribute_uses": 443,
           "attributes": {
             "UsageError": 2,
-            "approx": 244,
+            "approx": 249,
             "fixture": 7,
             "importorskip": 2,
             "mark.parametrize": 68,
             "mark.skipif": 5,
             "param": 1,
-            "raises": 106,
+            "raises": 107,
             "skip": 1,
             "warns": 1
           },
@@ -1003,6 +1028,11 @@
           "name": "pytest"
         },
         {
+          "file": "nagoyaction/tools/localci-env/pyproject.toml",
+          "kind": "runtime",
+          "name": "pytest"
+        },
+        {
           "file": "pyproject.toml",
           "kind": "group:dev",
           "name": "pytest"
@@ -1010,6 +1040,16 @@
         {
           "file": "pythdragoras/pyproject.toml",
           "kind": "group:dev",
+          "name": "pytest"
+        },
+        {
+          "file": "pythdragoras/pyproject.toml",
+          "kind": "group:audit-test",
+          "name": "pytest"
+        },
+        {
+          "file": "queryu/pyproject.toml",
+          "kind": "group:cache-test",
           "name": "pytest"
         },
         {
@@ -1025,8 +1065,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 124,
-      "import_sites": 127
+      "files": 126,
+      "import_sites": 129
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1277,6 +1317,16 @@
     },
     {
       "attributes": {
+        "get_pattern": 3
+      },
+      "dynamic_lines": [],
+      "file": "conftest.py",
+      "import_sites": 2,
+      "package": "pattern_postprocess",
+      "tree": "aoi"
+    },
+    {
+      "attributes": {
         "ExitCode.OK": 1,
         "ExitCode.TESTS_FAILED": 1,
         "Module": 1,
@@ -1470,8 +1520,8 @@
     },
     {
       "attributes": {
-        "UsageError": 2,
-        "fixture": 1
+        "UsageError": 3,
+        "fixture": 2
       },
       "dynamic_lines": [],
       "file": "dragowing/conftest.py",
@@ -1626,6 +1676,16 @@
     },
     {
       "attributes": {
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_forms.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
         "DataFrame": 1
       },
       "dynamic_lines": [],
@@ -1752,7 +1812,7 @@
     {
       "attributes": {},
       "dynamic_lines": [
-        41
+        37
       ],
       "file": "nagoyaction/scripts/collect_with_polars_min.py",
       "import_sites": 0,
@@ -1817,8 +1877,10 @@
     },
     {
       "attributes": {
+        "fail": 5,
         "fixture": 1,
-        "raises": 12
+        "mark.parametrize": 2,
+        "raises": 17
       },
       "dynamic_lines": [],
       "file": "nagoyaction/tests/test_localci.py",
@@ -1839,7 +1901,7 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 5,
+        "mark.parametrize": 4,
         "mark.skipif": 2,
         "raises": 1
       },
@@ -1873,6 +1935,7 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 1,
         "skip": 1
       },
       "dynamic_lines": [],
@@ -1907,16 +1970,6 @@
     },
     {
       "attributes": {
-        "read_ndjson": 1
-      },
-      "dynamic_lines": [],
-      "file": "pythdragoras/bitwise_surrogate.py",
-      "import_sites": 1,
-      "package": "polars",
-      "tree": "pythdragoras"
-    },
-    {
-      "attributes": {
         "UsageError": 2,
         "fixture": 1
       },
@@ -1924,6 +1977,16 @@
       "file": "pythdragoras/conftest.py",
       "import_sites": 1,
       "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "read_ndjson": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/core/bitwise_surrogate.py",
+      "import_sites": 1,
+      "package": "polars",
       "tree": "pythdragoras"
     },
     {
@@ -1946,7 +2009,7 @@
         "zeros": 4
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/littlebit_approx.py",
+      "file": "pythdragoras/core/littlebit_approx.py",
       "import_sites": 1,
       "package": "numpy",
       "tree": "pythdragoras"
@@ -1958,7 +2021,7 @@
         "read_ndjson": 1
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/littlebit_approx.py",
+      "file": "pythdragoras/core/littlebit_approx.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "pythdragoras"
@@ -1973,7 +2036,7 @@
         "ndarray": 4
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/littlebit_holdout.py",
+      "file": "pythdragoras/core/littlebit_holdout.py",
       "import_sites": 1,
       "package": "numpy",
       "tree": "pythdragoras"
@@ -1987,7 +2050,7 @@
         "col": 2
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/littlebit_holdout.py",
+      "file": "pythdragoras/core/littlebit_holdout.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "pythdragoras"
@@ -2030,7 +2093,7 @@
         "zeros": 2
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/littlebit_prune.py",
+      "file": "pythdragoras/core/littlebit_prune.py",
       "import_sites": 1,
       "package": "numpy",
       "tree": "pythdragoras"
@@ -2045,24 +2108,7 @@
         "lit": 3
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/propositions.py",
-      "import_sites": 1,
-      "package": "polars",
-      "tree": "pythdragoras"
-    },
-    {
-      "attributes": {
-        "DataFrame": 17,
-        "Float64": 1,
-        "col": 31,
-        "concat": 3,
-        "first": 2,
-        "len": 2,
-        "lit": 2,
-        "read_ndjson": 2
-      },
-      "dynamic_lines": [],
-      "file": "pythdragoras/pythdragoras.py",
+      "file": "pythdragoras/core/propositions.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "pythdragoras"
@@ -2088,7 +2134,7 @@
         "zeros": 3
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/rule_search.py",
+      "file": "pythdragoras/core/rule_search.py",
       "import_sites": 1,
       "package": "numpy",
       "tree": "pythdragoras"
@@ -2099,7 +2145,7 @@
         "read_ndjson": 1
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/rule_search.py",
+      "file": "pythdragoras/core/rule_search.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "pythdragoras"
@@ -2111,7 +2157,24 @@
         "read_ndjson": 1
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/sets.py",
+      "file": "pythdragoras/core/sets.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "DataFrame": 15,
+        "Float64": 1,
+        "col": 28,
+        "concat": 3,
+        "first": 2,
+        "len": 2,
+        "lit": 2,
+        "read_ndjson": 2
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/npb/season.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "pythdragoras"
@@ -2329,7 +2392,7 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
+        "mark.parametrize": 2,
         "mark.skipif": 1
       },
       "dynamic_lines": [],
@@ -2504,7 +2567,7 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
+        "mark.parametrize": 2,
         "mark.skipif": 1
       },
       "dynamic_lines": [],
@@ -2527,7 +2590,7 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
+        "mark.parametrize": 2,
         "mark.skipif": 1
       },
       "dynamic_lines": [],
@@ -2555,6 +2618,31 @@
       "file": "pythdragoras/tests/test_sets.py",
       "import_sites": 1,
       "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "abs": 2,
+        "allclose": 3,
+        "array": 7,
+        "diag": 1,
+        "linalg.lstsq": 1,
+        "linalg.svd": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_standalone_metrics.py",
+      "import_sites": 2,
+      "package": "numpy",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
+        "DataFrame": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_standalone_metrics.py",
+      "import_sites": 1,
+      "package": "polars",
       "tree": "pythdragoras"
     },
     {
@@ -2594,8 +2682,18 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 2
+      },
+      "dynamic_lines": [],
+      "file": "queryu/tests/test_ci_blueprobe_sources.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "queryu"
+    },
+    {
+      "attributes": {
         "fail": 1,
-        "raises": 1
+        "raises": 2
       },
       "dynamic_lines": [],
       "file": "queryu/tests/test_fetch_plan.py",
@@ -2605,7 +2703,8 @@
     },
     {
       "attributes": {
-        "raises": 12
+        "mark.parametrize": 3,
+        "raises": 14
       },
       "dynamic_lines": [],
       "file": "queryu/tests/test_pattern_postprocess.py",
@@ -2869,10 +2968,21 @@
     },
     {
       "attributes": {
+        "DataFrame": 2,
+        "col": 6
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/core/proposition_seed_audit.py",
+      "import_sites": 1,
+      "package": "polars",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
         "DataFrame": 1
       },
       "dynamic_lines": [],
-      "file": "sakanalytics/moshimo_box.py",
+      "file": "sakanalytics/npb/moshimo_box.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "sakanalytics"
@@ -2885,18 +2995,30 @@
         "read_ndjson": 1
       },
       "dynamic_lines": [],
-      "file": "sakanalytics/moshimo_pool.py",
+      "file": "sakanalytics/npb/moshimo_pool.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "sakanalytics"
     },
     {
       "attributes": {
-        "DataFrame": 2,
-        "col": 6
+        "__version__": 1
       },
       "dynamic_lines": [],
-      "file": "sakanalytics/proposition_seed_audit.py",
+      "file": "sakanalytics/npb/season_exact.py",
+      "import_sites": 2,
+      "package": "ortools",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
+        "DataFrame": 3,
+        "Int32": 1,
+        "col": 1,
+        "lit": 1
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/npb/synthetic_rule_discovery.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "sakanalytics"
@@ -2930,30 +3052,7 @@
         "when": 13
       },
       "dynamic_lines": [],
-      "file": "sakanalytics/sakanalytics.py",
-      "import_sites": 1,
-      "package": "polars",
-      "tree": "sakanalytics"
-    },
-    {
-      "attributes": {
-        "__version__": 1
-      },
-      "dynamic_lines": [],
-      "file": "sakanalytics/season_exact.py",
-      "import_sites": 2,
-      "package": "ortools",
-      "tree": "sakanalytics"
-    },
-    {
-      "attributes": {
-        "DataFrame": 3,
-        "Int32": 1,
-        "col": 1,
-        "lit": 1
-      },
-      "dynamic_lines": [],
-      "file": "sakanalytics/synthetic_rule_discovery.py",
+      "file": "sakanalytics/npb/team_season.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "sakanalytics"
@@ -3063,7 +3162,7 @@
         "Series": 4,
         "Utf8": 1,
         "__version__": 1,
-        "col": 53,
+        "col": 55,
         "format": 2,
         "int_range": 2,
         "len": 2,
@@ -3077,9 +3176,9 @@
     },
     {
       "attributes": {
-        "approx": 204,
+        "approx": 209,
         "mark.parametrize": 7,
-        "raises": 11
+        "raises": 12
       },
       "dynamic_lines": [],
       "file": "sakanalytics/tests/test_sakanalytics.py",

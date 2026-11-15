@@ -2,7 +2,6 @@
 from importlib import import_module
 import importlib.util
 import os
-import shutil
 import sys
 from pathlib import Path
 
@@ -91,82 +90,11 @@ def pytest_runtest_makereport(item, call):
         phases[report.when] = report.outcome
 
 
-# BlueProbe #53 moved NPB modules under blueprobe/npb/ and took NPB keys out of the
-# generic pattern table. QueRyu and NagoyAction in this checkout still look up the
-# old locations. Those children are not part of this sync, so pytest keeps temporary
-# copies (same bytes, not symlinks: QueRyu resolves the path) and, for the one
-# pattern test, answers an NPB key from npb_patterns without changing blueprobe.get_pattern.
-_NPB_COMPAT_NAMES = ("npb_calendar.py", "npb_team_annual.py")
-_NPB_COMPAT_PLACED: list[Path] = []
-_PATTERN_RESTORE = None
-
-
-def _place_npb_module_copies() -> None:
-    root = Path(__file__).resolve().parent / "blueprobe"
-    for name in _NPB_COMPAT_NAMES:
-        dest = root / name
-        source = root / "npb" / name
-        if dest.exists() or dest.is_symlink() or not source.is_file():
-            continue
-        shutil.copyfile(source, dest)
-        _NPB_COMPAT_PLACED.append(dest)
-
-
-def _remove_npb_module_copies() -> None:
-    for path in _NPB_COMPAT_PLACED:
-        if path.is_file() and not path.is_symlink():
-            path.unlink()
-    _NPB_COMPAT_PLACED.clear()
-
-
-def _bridge_queryu_npb_pattern() -> None:
-    global _PATTERN_RESTORE
-    import blueprobe
-    import npb_patterns
-    import pattern_postprocess
-    original = blueprobe.get_pattern
-
-    def bridged(pattern_key):
-        try:
-            return original(pattern_key)
-        except ValueError:
-            key = pattern_key.strip().lower() if isinstance(pattern_key, str) else ""
-            if key in npb_patterns.DOM_PATTERNS:
-                return npb_patterns.get_pattern(pattern_key)
-            raise
-
-    _PATTERN_RESTORE = pattern_postprocess.get_pattern
-    pattern_postprocess.get_pattern = bridged
-
-
-def _restore_queryu_npb_pattern() -> None:
-    global _PATTERN_RESTORE
-    if _PATTERN_RESTORE is None:
-        return
-    import pattern_postprocess
-    pattern_postprocess.get_pattern = _PATTERN_RESTORE
-    _PATTERN_RESTORE = None
-
-
 def pytest_configure(config):
     config.stash[_LAB_REPORTS] = {}
-    _place_npb_module_copies()
-
-
-@pytest.hookimpl(tryfirst=True)
-def pytest_runtest_setup(item):
-    if item.name == "test_pattern_for_html_uses_blueprobe_and_surfaces_misses":
-        _bridge_queryu_npb_pattern()
-
-
-def pytest_runtest_teardown(item, nextitem):
-    if item.name == "test_pattern_for_html_uses_blueprobe_and_surfaces_misses":
-        _restore_queryu_npb_pattern()
 
 
 def pytest_sessionfinish(session, exitstatus):
-    _restore_queryu_npb_pattern()
-    _remove_npb_module_copies()
     if not session.config.getoption('--require-lab-integration'):
         return
     reports = session.config.stash[_LAB_REPORTS]
@@ -221,6 +149,10 @@ _DISTINCT_BASENAMES = frozenset({
     'test_node_launcher_regressions.py',
     # DRAgoWing と SakAnalytics が、別々の中身で同じ名前の検査を持つ（SakAnalytics #36）。
     'test_benchmark_optimization_guard.py',
+    # QueRyu（#33〜#43）と DRAgoWing が、別々の中身で同じ名前の検査を持つ。
+    'test_benchmark_validation.py',
+    # PythDRagoras #46 と SakAnalytics が、別々の中身で同じ名前の検査を持つ。
+    'test_standalone_examples.py',
 })
 
 

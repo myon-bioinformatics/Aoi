@@ -1,9 +1,9 @@
 {
   "entries": [
     "dragowing/overlap.py:load_overlap",
-    "pythdragoras/propositions.py:_cond"
+    "pythdragoras/core/propositions.py:_cond"
   ],
   "survey_prefix": "dragowing/",
-  "sys_path": ["", "pythdragoras"],
+  "sys_path": ["", "pythdragoras", "pythdragoras/core"],
   "workload": "shrink.polars_workload:run"
 }

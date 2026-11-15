@@ -221,7 +221,8 @@ def make_draws(k_eps: int, k_scale: int, seed, eps_range=None, scale_range=None)
 def load_modules(repo: Path):
     """sakanalytics と wave_eps（make_wave_basis のため）を読む。"""
     sys.path.insert(0, str(repo / "sakanalytics"))
-    import sakanalytics as sa
+    sys.path.insert(0, str(repo / "sakanalytics" / "npb"))  # SakAnalytics #45: シーズンの関数は npb/team_season.py
+    import team_season as sa  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     path = repo / "cycles" / "c001-chunichi" / "exploratory" / "wave_eps.py"
     spec = importlib.util.spec_from_file_location("wave_eps", path)
     mod = importlib.util.module_from_spec(spec)

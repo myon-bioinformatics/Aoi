@@ -304,7 +304,7 @@ def test_recovered_fielding_source_runs_through_real_offline_cli(tmp_path):
 
 
 def test_recovered_next_cli_reads_frozen_results_from_another_directory(tmp_path):
-    result = run([ROOT/'pythdragoras/next_seeds.py', 'next',
+    result = run([ROOT/'pythdragoras/core/next_seeds.py', 'next',
                   ROOT/'cycles/c001-chunichi/outputs/propositions.jsonl', '--id', 'P1'], tmp_path)
     assert result.returncode == 0, result.stderr
     assert 'P1 ' in result.stdout and '道筋' in result.stdout

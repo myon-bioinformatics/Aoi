@@ -124,13 +124,14 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
     import shlex
     import aoi
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
-    union = ("queryu", "blueprobe/npb", "blueprobe", "pythdragoras", "sakanalytics", "queryu/ask")
+    union = ("queryu", "queryu/core", "blueprobe/npb", "blueprobe", "pythdragoras", "pythdragoras/core", "sakanalytics/npb",
+             "sakanalytics", "queryu/ask")
     assert aoi.SIBLINGS == {
-        "blueprobe": ("queryu", "blueprobe/npb"),
+        "blueprobe": ("queryu", "queryu/core", "blueprobe/npb"),
         "queryu": ("blueprobe", "blueprobe/npb"),
-        "sakanalytics": ("pythdragoras",),
-        "pythdragoras": ("sakanalytics",),
-        "dragowing": ("pythdragoras", "queryu/ask"),
+        "sakanalytics": ("pythdragoras", "pythdragoras/core", "sakanalytics/npb"),
+        "pythdragoras": ("pythdragoras", "sakanalytics", "sakanalytics/npb"),
+        "dragowing": ("pythdragoras", "pythdragoras/core", "queryu/ask"),
         "nagoyaction": (*union, "."),  # Aoi のワークフローを動かすので、兄弟すべてと Aoi 直下（aoi_npb・annual_scope）
     }
     assert "dragowing" not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}

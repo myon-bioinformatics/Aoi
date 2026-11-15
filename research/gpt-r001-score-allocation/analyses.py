@@ -31,7 +31,7 @@ from statistics import mean, median, pvariance
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-sys.path[:0] = [str(ROOT / "sakanalytics"), str(ROOT / "pythdragoras")]
+sys.path[:0] = [str(ROOT / "sakanalytics"), str(ROOT / "sakanalytics" / "npb"), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
 
 from season_simulator import Game, Snapshot  # noqa: E402
 

@@ -276,7 +276,7 @@ def test_cli_missing_ledger_file_is_a_message_not_a_traceback(tmp_path, capsys):
 
 # --- ε for a zero cell of a real table: opt-in, never defaulted, the logit moves with log(1/ε), the MCC hardly -----------
 
-import epsilon  # noqa: E402
+import sakanalytics as epsilon  # noqa: E402
 
 ZERO_B = {"id": "Z", "metrics": {"tp": 40, "fp": 0, "fn": 10, "tn": 50}}   # no counterexample: original and contrapositive = 1
 

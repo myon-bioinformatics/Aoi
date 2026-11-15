@@ -1,6 +1,9 @@
 """Run from repository root: python -S -m scripts.benchmark_neighbor_retention."""
 import json, random, statistics, subprocess, sys, time, tracemalloc, types
-import neighbors
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'core'))  # neighbors.py は core/
+import neighbors  # noqa: E402
 
 
 def main():

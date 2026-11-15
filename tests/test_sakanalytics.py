@@ -656,6 +656,26 @@ def test_win_loss_split_pairs_runs_within_home_and_away_only():
     assert (d["wl_rf_win"], d["wl_rf_win_exp"], d["wl_rf_win_gap"]) == pytest.approx((3.5, 3.5, 0.0))
 
 
+def test_win_loss_split_tie_weight_settles_tied_pairs_in_the_expectation():
+    from sakanalytics import win_loss_split
+    # 中日はホームで得点 {1, 0, 1}・失点 {0, 1, 3}。見込みの組（重み 1/3 ずつ）: 勝ち (1,0) が 2/3、同点 (1,1) が 2/3・(0,0) が 1/3、
+    # 負け (1,3) が 2/3・(0,1) が 1/3・(0,3) が 1/3。
+    tg = to_team_games(games([("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 0, 1), ("2024-04-03", "d", "g", 1, 3)]), TEAMS)
+    row = lambda w: win_loss_split(tg, tie_weight=w).filter(pl.col("team") == "d").row(0, named=True)  # noqa: E731
+    assert row(0.0) == win_loss_split(tg).filter(pl.col("team") == "d").row(0, named=True)   # 既定は今までと同じ
+    assert row(0.0)["wl_rf_win_exp"] == pytest.approx(1.0)
+    # 重み 1: 同点の半分（1/3 と 1/6）が 1 点足した勝ち。勝ちの重み 2/3 + 1/3 + 1/6 = 7/6、得点の和 2/3 + 2/3 + 1/6 = 3/2 → 9/7
+    one = row(1.0)
+    assert one["wl_rf_win_exp"] == pytest.approx(9 / 7) and one["wl_rf_win_gap"] == pytest.approx(1 - 9 / 7)
+    # 負けの側: 同点の残り半分は、得点はそのままで 1 点取られた負け。負けの重み 4/3 + 1/3 + 1/6 = 11/6、得点の和 2/3 + 1/3 = 1 → 6/11
+    assert one["wl_rf_loss_exp"] == pytest.approx(6 / 11) and one["wl_rf_win"] == row(0.0)["wl_rf_win"]   # 実際の側は変わらない
+    # 重み 0.5: 同点の 4 分の 1 ずつ。勝ちの重み 2/3 + 1/6 + 1/12 = 11/12、得点の和 2/3 + 1/3 + 1/12 = 13/12 → 13/11
+    assert row(0.5)["wl_rf_win_exp"] == pytest.approx(13 / 11)
+    for bad in (-0.1, 1.5):
+        with pytest.raises(ValueError):
+            win_loss_split(tg, tie_weight=bad)
+
+
 def test_win_loss_split_eighth_uses_eight_inning_scores_and_is_off_without_them(tmp_path):
     from sakanalytics import read_games, win_loss_split, win_loss_split_eighth
     rows = [("2024-04-01", "d", "g", 1, 0), ("2024-04-02", "d", "g", 5, 4), ("2024-04-03", "d", "g", 0, 3), ("2024-04-04", "d", "g", 2, 6)]

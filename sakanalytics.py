@@ -607,7 +607,7 @@ def _wl_sums(pairs, cut: float) -> dict[str, float]:
     return s
 
 
-def win_loss_split(tg: pl.DataFrame) -> pl.DataFrame:
+def win_loss_split(tg: pl.DataFrame, tie_weight: float = 0.0) -> pl.DataFrame:
     """R20: 勝ち試合・負け試合の得点と、点の少ない試合・多い試合の勝率。
 
     見込みは、同じチーム・同じシーズンの得点と失点を、ホームとビジターそれぞれの中で組み合わせだけランダムにしたときの値
@@ -618,7 +618,16 @@ def win_loss_split(tg: pl.DataFrame) -> pl.DataFrame:
                                            負けで正なら負け試合に見込みより多くの点が入った
       wl_wpct_low / wl_wpct_high         : 両チームの合計得点が、同じ年・同じリーグの試合の中央値以下／より多い試合の勝率
       wl_wpct_low_exp / _high_exp / _gap : その見込み（見込みの勝ち数 ÷ 見込みの勝敗のついた試合数）と、実際 − 見込み
+
+    tie_weight（0〜1。既定の 0 は今までと同じ）: 見込みの中の同点の組を、この重みで「半分は 1 点足して勝ち・半分は 1 点取られて負け」
+    に数える。実際の試合は 9 回の同点を延長で決めるのに、見込みは同点の組を外すので、既定では勝ち試合の得点の差が片側に寄る
+    （144 球団年中 133 が負）。1 にすると、得点を最終のまま寄りが消え（76）、球団年の並びは既定の列とほぼ同じ（順位相関 0.97。
+    c001 の探索 kind_reask 第10・11弾）。8 回までで作り直す win_loss_split_eighth は、終盤を除いた別の量になる。
+    注意: 重みは 4 つの列すべての見込みに効く。1 にすると、負け試合の得点の差は反対側に少し寄る（正が 144 中 86 → 49。
+    負けた側は延長で点を足さない置き方のため）。勝率の 2 つの列はほとんど動かない。
     """
+    if not 0.0 <= tie_weight <= 1.0:
+        raise ValueError(f"tie_weight は 0 以上 1 以下: {tie_weight}")
     tot = tg.with_columns(_t=pl.col("rf") + pl.col("ra")).group_by("season", "league").agg(pl.col("_t").median())
     cut = {(s, lg): m for s, lg, m in tot.iter_rows()}
     keys = (("rf_win", "rf_win", "n_win"), ("rf_loss", "rf_loss", "n_loss"),
@@ -633,6 +642,9 @@ def win_loss_split(tg: pl.DataFrame) -> pl.DataFrame:
             cy = Counter(y for y, h in zip(ra, home) if h == venue)
             n = sum(cx.values())
             exp_pairs += [(x, y, cx[x] * cy[y] / n) for x in cx for y in cy]
+        if tie_weight:                           # 同点の組を、重みの半分ずつ 1 点差の勝ちと負けに振り分ける（残りは同点のまま）
+            exp_pairs = [q for x, y, w in exp_pairs for q in (((x, y, w),) if x != y else (
+                (x + 1, y, tie_weight * w / 2), (x, y + 1, tie_weight * w / 2), (x, y, (1 - tie_weight) * w)))]
         act, exp = _wl_sums([(x, y, 1.0) for x, y in zip(rf, ra)], m), _wl_sums(exp_pairs, m)
         row = {"season": season, "team": team}
         for name, num, den in keys:

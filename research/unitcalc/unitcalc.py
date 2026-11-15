@@ -21,8 +21,11 @@
 import argparse
 import json
 import math
+import platform
 import re
+import statistics
 import sys
+import time
 from fractions import Fraction as F
 
 MAX_VALUE_BITS = 12000  # 有理数の分子・分母。巨大演算と整数文字列変換を制限する
@@ -717,6 +720,49 @@ def run(text, reg, sig=15, steps=False):
     return lines, rec
 
 
+# ==== 速さの目安（--benchmark）
+# unitcalc の速さの目安。標準ライブラリのみ。時間の閾値は置かない（機械の負荷で変わる小規模測定）。
+#
+#   python research/unitcalc/unitcalc.py --benchmark   # 表（stderr）と生サンプル（JSON）を出す
+# 各項目はウォームアップ後 7 回の中央値（1 回あたりの ns）。次元の積は、ビット詰め（d_mul）と
+# 「スロットごとに取り出して足して詰め直す」素直な書き方（ref）を同じ入力で比べる。
+
+
+def _bench(name, fn, n, reps=7):
+    fn()
+    samples = []
+    for _ in range(reps):
+        t = time.perf_counter_ns()
+        for _ in range(n):
+            fn()
+        samples.append((time.perf_counter_ns() - t) / n)
+    return {'name': name, 'ns_median': round(statistics.median(samples), 1), 'samples_ns': [round(x, 1) for x in samples]}
+
+
+def benchmark():
+    reg = Reg()
+    a, b = reg.dim(kg=1, m=2, s=-2), reg.dim(s=-1, A=-1)
+    m3 = Q(F(3), Z, reg.dim(m=1))
+    m7 = Q(F(7, 3), Z, reg.dim(m=1))
+    two = Q(F(2))
+    ref = lambda x, y: d_pack([p + q for p, q in zip(d_unpack(x), d_unpack(y))])   # noqa: E731
+    assert ref(a, b) == d_mul(a, b)
+    rows = [
+        _bench('d_mul（ビット詰め）', lambda: d_mul(a, b), 200000),
+        _bench('d_mul（ref: 取り出して足して詰め直す）', lambda: ref(a, b), 20000),
+        _bench('Q + Q（厳密）', lambda: m3 + m7, 100000),
+        _bench('Q * Q（厳密、次元も掛ける）', lambda: m3 * m7, 100000),
+        _bench('Q / Q（厳密）', lambda: m3 / m7, 100000),
+        _bench('√2（64 ビットの誤差球）', lambda: _root(two, 2), 20000),
+        _bench("run('3 kW * 2 h -> kWh')（構文・計算・表示）", lambda: run('3 kW * 2 h -> kWh', reg), 5000),
+        _bench("run('10 J / 3 s -> W')（余りの δ つき）", lambda: run('10 J / 3 s -> W', reg), 5000),
+    ]
+    print(json.dumps({'python': platform.python_version(), 'machine': platform.machine(), 'system': platform.system(),
+                      'rows': rows}, ensure_ascii=False))
+    for r in rows:
+        print('%-52s %10.0f ns/op' % (r['name'], r['ns_median']), file=sys.stderr)
+
+
 def main(argv=None, stdin=None):
     ap = argparse.ArgumentParser(description='単位付きの厳密計算（式は引用符で囲む）')
     ap.add_argument('expr', nargs='*')
@@ -726,7 +772,11 @@ def main(argv=None, stdin=None):
     ap.add_argument('--bits', type=int, default=64, help='根の有効ビット（既定 64）')
     ap.add_argument('--steps', action='store_true', help='近似の途中式を出す')
     ap.add_argument('--json', action='store_true', help='1 式 1 行の JSON')
+    ap.add_argument('--benchmark', action='store_true', help='⏱ 速さの目安（JSON、表は stderr）')
     a = ap.parse_args(argv)
+    if a.benchmark:
+        benchmark()
+        return 0
     global PREC
     PREC = a.bits
     reg, code = Reg(), 0

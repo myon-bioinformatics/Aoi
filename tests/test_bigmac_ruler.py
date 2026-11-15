@@ -25,7 +25,6 @@ def _load(name):
 
 
 chk = _load("staple_bigmac_check")
-syn = _load("synthetic_staples")
 
 HEADER = ["country", "date", "year", "variable", "value", "unit", "source", "note", "estimated_value"]
 RICE = "staple_price:rice:test"
@@ -462,10 +461,10 @@ def test_a_duplicated_date_in_one_series_counts_as_one_month(tmp_path):
     assert chk.build_panel(chk.load_survey(str(path)), "staple_price:rice")[0] == []      # 5日付 + 重複 = 6行でも5か月
 
 
-# ---- synthetic_staples --------------------------------------------------------------
+# ---- --synthetic --------------------------------------------------------------
 
 def test_scaffold_uses_real_covariates_only_with_both_bigmac_points(toy):
-    sc = syn.scaffold(str(toy))
+    sc = chk.synthetic_scaffold(str(toy))
     keys = {(r["country"], r["year"]) for r in sc}
     assert len(sc) == 15 * 5 - 1 and ("N01", 2021) not in keys
     r = next(r for r in sc if r["country"] == "N00" and r["year"] == 2021)
@@ -473,43 +472,43 @@ def test_scaffold_uses_real_covariates_only_with_both_bigmac_points(toy):
 
 
 def _pattern(pid):
-    return next((i, p) for i, p in enumerate(syn.PATTERNS) if p[0] == pid)
+    return next((i, p) for i, p in enumerate(chk.SYNTHETIC_PATTERNS) if p[0] == pid)
 
 
 def test_generate_is_deterministic_and_constant_pattern_is_exact(toy):
-    sc = syn.scaffold(str(toy))
+    sc = chk.synthetic_scaffold(str(toy))
     i1, p1 = _pattern("S1")
-    assert np.array_equal(syn.generate(sc, i1, p1), syn.generate(sc, i1, p1))
+    assert np.array_equal(chk.synthetic_generate(sc, i1, p1), chk.synthetic_generate(sc, i1, p1))
     i8, p8 = _pattern("S8")
-    assert np.allclose(syn.generate(sc, i8, p8), syn.B0, rtol=1e-12, atol=0)
+    assert np.allclose(chk.synthetic_generate(sc, i8, p8), chk.SYNTHETIC_B0, rtol=1e-12, atol=0)
 
 
 def test_generate_step_discontinuity_triples_above_median(toy):
-    sc = syn.scaffold(str(toy))
-    b = syn.generate(sc, 0, ("T", "step", 0.0, 0.0, 0.0, 3.0))
+    sc = chk.synthetic_scaffold(str(toy))
+    b = chk.synthetic_generate(sc, 0, ("T", "step", 0.0, 0.0, 0.0, 3.0))
     M = np.array([r["M"] for r in sc])
-    assert np.allclose(b[M <= np.median(M)], syn.B0) and np.allclose(b[M > np.median(M)], 3 * syn.B0)
+    assert np.allclose(b[M <= np.median(M)], chk.SYNTHETIC_B0) and np.allclose(b[M > np.median(M)], 3 * chk.SYNTHETIC_B0)
 
 
 def test_written_rows_are_labelled_synthetic(toy, tmp_path):
-    sc = syn.scaffold(str(toy))
+    sc = chk.synthetic_scaffold(str(toy))
     out = tmp_path / "syn.csv"
-    syn.write_vertical(sc, str(out))
+    chk.synthetic_write_vertical(sc, str(out))
     with open(out, encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
-    assert len(rows) == len(syn.PATTERNS) * len(sc)
+    assert len(rows) == len(chk.SYNTHETIC_PATTERNS) * len(sc)
     assert list(rows[0].keys()) == HEADER
     assert all(r["variable"].startswith("synthetic_staple:") and r["unit"].endswith("(synthetic)")
                and r["source"].startswith("SYNTHETIC") and r["estimated_value"] == "" for r in rows)
     s8 = [r for r in rows if r["variable"].startswith("synthetic_staple:S8_")]
     for r, s in zip(s8, sc):                                       # 価格 = b * ビッグマック価格
-        assert float(r["value"]) == pytest.approx(syn.B0 * s["P"], rel=1e-5)
+        assert float(r["value"]) == pytest.approx(chk.SYNTHETIC_B0 * s["P"], rel=1e-5)
 
 
 def test_check_recovers_known_truth(toy):
-    sc = syn.scaffold(str(toy))
-    rows = {r["id"]: r for r in syn.check(sc, boot=200, verbose=False)}
-    assert set(rows) == {p[0] for p in syn.PATTERNS}
+    sc = chk.synthetic_scaffold(str(toy))
+    rows = {r["id"]: r for r in chk.synthetic_check(sc, boot=200, verbose=False)}
+    assert set(rows) == {p[0] for p in chk.SYNTHETIC_PATTERNS}
     assert rows["S8"]["gamma_hat"] == pytest.approx(0.0, abs=1e-9) and math.isnan(rows["S8"]["r2"])
     for pid in ("S1", "S3", "S4", "S5"):
         assert rows[pid]["gamma_hat"] == pytest.approx(rows[pid]["gamma_true"], abs=0.25)
@@ -519,31 +518,31 @@ def test_check_recovers_known_truth(toy):
 
 
 def test_calibrate_smoke(toy):
-    sc = syn.scaffold(str(toy))
-    out = syn.calibrate(sc, clusters=(5,), reps=3, boot=20, verbose=False)
-    assert set(out) == {(si, 5) for si in range(len(syn.CAL_SCENARIOS))}
+    sc = chk.synthetic_scaffold(str(toy))
+    out = chk.synthetic_calibrate(sc, clusters=(5,), reps=3, boot=20, verbose=False)
+    assert set(out) == {(si, 5) for si in range(len(chk.SYNTHETIC_CAL_SCENARIOS))}
     assert all(0.0 <= v <= 1.0 for v in out.values())
 
 
 def test_main_empty_scaffold_exits_66(tmp_path):
     empty = tmp_path / "empty.csv"
     empty.write_text(",".join(HEADER) + "\n", encoding="utf-8")
-    assert syn.main([str(empty), "--out", str(tmp_path / "x.csv")]) == 66
+    assert chk.main([str(empty), "--synthetic", str(tmp_path / "x.csv")]) == 66
 
 
 def test_main_writes_output(toy, tmp_path):
     out = tmp_path / "syn.csv"
-    assert syn.main([str(toy), "--out", str(out)]) == 0 and out.exists()
+    assert chk.main([str(toy), "--synthetic", str(out)]) == 0 and out.exists()
 
 
-SURVEY = ROOT / syn.DEFAULT_CSV
-COMMITTED = ROOT / syn.DEFAULT_OUT
+SURVEY = ROOT / chk.DEFAULT_CSV
+COMMITTED = ROOT / chk.SYNTHETIC_DEFAULT_OUT
 
 
 @pytest.mark.skipif(not (SURVEY.exists() and COMMITTED.exists()), reason="survey data or committed synthetic CSV absent")
 def test_committed_synthetic_csv_matches_the_generation_rule(tmp_path):
     out = tmp_path / "regen.csv"
-    assert syn.main([str(SURVEY), "--out", str(out)]) == 0
+    assert chk.main([str(SURVEY), "--synthetic", str(out)]) == 0
 
     def read(p):
         with open(p, encoding="utf-8", newline="") as f:

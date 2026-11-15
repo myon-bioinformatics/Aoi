@@ -36,6 +36,8 @@ jobs:
           activate-environment: true
       - name: Test consumer integrity checker
         run: python -S tests/test_shared_tool_consumers.py
+      - name: Tool files match the lock (always strict)
+        run: python -S scripts/repo_checks.py shared_tools_lock
       - name: Resolve consumer mains
         env:
           GITHUB_TOKEN: ${{ github.token }}

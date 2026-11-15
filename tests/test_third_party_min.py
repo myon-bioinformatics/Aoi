@@ -11,30 +11,28 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "mindeps"), str(ROOT / "scripts"), str(ROOT / "blueprobe"), str(ROOT / "queryu")]
 
-import run_httpx  # noqa: E402
-import run_selectolax  # noqa: E402
-import trace_third_party as trace  # noqa: E402
+import stdlib_min as sm  # noqa: E402
 
 selectolax_lexbor = pytest.importorskip("selectolax.lexbor")
 httpx = pytest.importorskip("httpx")
 
 
 def test_ast_surface_is_the_calls_the_mins_implement():
-    found = trace.survey()
+    found = sm.trace_third_party_survey()
     assert set(found["imports"]) >= {"selectolax", "httpx", "pandas", "polars", "numpy", "pytest", "coverage"}
     assert found["attrs"]["selectolax"]["call LexborHTMLParser()"] >= 1
     assert "Client" in found["attrs"]["httpx"]
     assert any("markdown" in item for item in found["dynamic"])
-    absent = trace.absent_traces()
+    absent = sm.absent_traces()
     # fetch.py は collect・observe・verify・inning_pilot をまとめたもの。冒頭で selectolax と httpx の両方を読む
     assert "selectolax" in absent["selectolax:research/gpt-r001-score-allocation/fetch.py"]
     assert "httpx" in absent["httpx:research/gpt-r001-score-allocation/fetch.py"]
 
 
 def test_selectolax_min_matches_real_research_functions():
-    real = run_selectolax.outcomes()
-    run_selectolax.use_min_parser()
-    minimal = run_selectolax.outcomes()
+    real = sm.selectolax_outcomes()
+    sm.use_min_parser()
+    minimal = sm.selectolax_outcomes()
     assert minimal == real
 
 
@@ -66,11 +64,11 @@ def test_html5_recovery_is_not_the_same_as_lexbor():
 def test_httpx_min_matches_real_client_on_the_fetcher():
     real_httpx = httpx.Client
     try:
-        real = run_httpx.outcomes()
+        real = sm.httpx_outcomes()
         httpx.Client = __import__("httpx_min").Client
         # outcomes() は関数内で import httpx する。sys.modules のクラスを差し替える。
         sys.modules["httpx"].Client = httpx.Client
-        minimal = run_httpx.outcomes()
+        minimal = sm.httpx_outcomes()
     finally:
         sys.modules["httpx"].Client = real_httpx
         httpx.Client = real_httpx
@@ -87,10 +85,10 @@ def test_httpx_min_matches_real_client_on_the_fetcher():
 
 def test_httpx_min_follow_redirects_false_returns_the_redirect():
     import httpx_min
-    from run_httpx import _Handler
+    _Handler = sm._Handler
 
-    server = run_httpx.ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
-    thread = run_httpx.threading.Thread(target=server.serve_forever, daemon=True)
+    server = sm.ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
+    thread = sm.threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
         url = f"http://127.0.0.1:{server.server_port}/redir"
@@ -109,9 +107,9 @@ def test_httpx_min_follow_redirects_false_returns_the_redirect():
 
 
 def test_min_cli_refuses_when_the_real_package_is_installed(tmp_path):
-    for script, impl in (("run_selectolax.py", "min"), ("run_httpx.py", "min")):
+    for command, impl in (("selectolax", "min"), ("httpx", "min")):
         proc = subprocess.run(
-            [sys.executable, str(ROOT / "mindeps" / script), "--impl", impl, str(tmp_path / "out.json")],
+            [sys.executable, str(ROOT / "scripts" / "stdlib_min.py"), command, "--impl", impl, str(tmp_path / "out.json")],
             capture_output=True, text=True,
         )
         assert proc.returncode != 0, proc.stdout + proc.stderr
@@ -139,10 +137,11 @@ def test_client_call_shape_is_shared_by_the_research_scripts():
 
 
 def test_coverage_runner_uses_canonical_marker_evaluation():
-    import run_coverage
+    import inspect
 
-    assert not hasattr(run_coverage, "_unselected_extra")
-    source = (ROOT / "mindeps" / "run_coverage.py").read_text(encoding="utf-8")
+    assert not hasattr(sm, "_unselected_extra")
+    source = "".join(inspect.getsource(f) for f in (sm._coverage_paths, sm.exercise, sm.measure, sm._locked_coverage_version,
+                                                  sm._load_cdn, sm.run_coverage))
     assert "allow_deps=True" not in source
 
 
@@ -151,7 +150,7 @@ def test_coverage_exercise_shape(tmp_path):
     assert importlib.util.find_spec("coverage") is not None
     out = tmp_path / "coverage.json"
     proc = subprocess.run(
-        [sys.executable, str(ROOT / "mindeps" / "run_coverage.py"), "--impl", "real", str(out)],
+        [sys.executable, str(ROOT / "scripts" / "stdlib_min.py"), "coverage", "--impl", "real", str(out)],
         cwd=ROOT, capture_output=True, text=True,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr

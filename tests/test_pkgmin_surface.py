@@ -23,7 +23,7 @@ import pkgmin.survey as survey  # noqa: E402
 import pkgmin.trace_used as trace  # noqa: E402
 
 EVIDENCE = ROOT / "pkgmin" / "evidence" / "used-surface.json"
-WORKFLOW = ROOT / ".github" / "workflows" / "pkgmin-stdlib.yml"
+WORKFLOW = ROOT / ".github" / "workflows" / "stdlib-min.yml"
 MIN_FILES = {
     "requests": ROOT / "pkgmin" / "requests_min.py",
     "tqdm": ROOT / "pkgmin" / "tqdm_min.py",

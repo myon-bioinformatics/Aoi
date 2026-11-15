@@ -14,10 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 DIR = ROOT / "research" / "shrink-index"
 sys.path.insert(0, str(DIR))
 import shrink_index as si  # noqa: E402
-import synthetic_shrink as syn  # noqa: E402
 
 OBS = DIR / "countrymaam_observed_vertical.csv"
-COMMITTED_SYN = ROOT / syn.DEFAULT_OUT
+COMMITTED_SYN = ROOT / si.SYNTHETIC_DEFAULT_OUT
 P = "shrink:countrymaam_family_vanilla_cocoa"
 HEADER = ["country", "date", "year", "variable", "value", "unit", "source", "note", "estimated_value"]
 
@@ -191,8 +190,8 @@ def test_cli_exit_codes_and_labels(capsys, tmp_path):
 # ---- 仮想の縮む商品 --------------------------------------------------------------------
 
 def test_synthetic_patterns_behave_as_declared():
-    r = {x["id"]: x for x in syn.check(verbose=False)}
-    assert set(r) == {p[0] for p in syn.PATTERNS}
+    r = {x["id"]: x for x in si.synthetic_check(verbose=False)}
+    assert set(r) == {p[0] for p in si.SYNTHETIC_PATTERNS}
     assert r["M1"]["total_last"] == pytest.approx(math.exp(-0.64), abs=1e-6) and r["M1"]["first_year_in_zone"] is None
     assert r["M2"]["total_last"] == pytest.approx(200 / 300)
     assert r["M3"]["first_year_in_zone"] == 2021                       # q <= 60 g になる最初の年
@@ -207,8 +206,8 @@ def test_synthetic_patterns_behave_as_declared():
 
 def test_synthetic_is_deterministic_and_labelled(tmp_path):
     a, b = tmp_path / "a.csv", tmp_path / "b.csv"
-    syn.write_vertical(a)
-    syn.write_vertical(b)
+    si.synthetic_write_vertical(a)
+    si.synthetic_write_vertical(b)
     assert a.read_bytes() == b.read_bytes()
     rows = list(csv.DictReader(open(a, encoding="utf-8", newline="")))
     assert list(rows[0].keys()) == HEADER
@@ -220,7 +219,7 @@ def test_synthetic_is_deterministic_and_labelled(tmp_path):
 @pytest.mark.skipif(not COMMITTED_SYN.exists(), reason="committed synthetic CSV absent")
 def test_committed_synthetic_csv_matches_the_generation_rule(tmp_path):
     out = tmp_path / "regen.csv"
-    assert syn.main(["--out", str(out)]) == 0
+    assert si.main(["--synthetic", str(out)]) == 0
     assert _read(out) == _read(COMMITTED_SYN)
 
 

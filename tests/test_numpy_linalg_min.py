@@ -15,7 +15,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-import linalg_feasibility as lf  # noqa: E402
+import stdlib_min as lf  # noqa: E402
 
 np = pytest.importorskip("numpy")
 
@@ -169,7 +169,7 @@ def test_ast_reaches_the_heavy_calls_and_not_bitmatrix_svd():
 
 def test_absent_probe_runs_queryu_index_without_numpy():
     proc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "linalg_feasibility.py"), "absent"],
+        [sys.executable, str(ROOT / "scripts" / "stdlib_min.py"), "linalg-feasibility", "absent"],
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     assert proc.returncode == 0, proc.stderr
@@ -187,7 +187,7 @@ def test_absent_probe_fails_if_queryu_imports_numpy(tmp_path):
     text = target.read_text(encoding="utf-8")
     target.write_text(text.replace("np = _load_numpy_min()", "import numpy as np", 1), encoding="utf-8")
     proc = subprocess.run(
-        [sys.executable, str(work / "scripts" / "linalg_feasibility.py"), "absent"],
+        [sys.executable, str(work / "scripts" / "stdlib_min.py"), "linalg-feasibility", "absent"],
         cwd=work, capture_output=True, text=True, check=False,
     )
     assert proc.returncode == 1, proc.stdout + proc.stderr
@@ -196,7 +196,7 @@ def test_absent_probe_fails_if_queryu_imports_numpy(tmp_path):
 
 def test_min_refuses_when_numpy_is_installed(tmp_path):
     proc = subprocess.run(
-        [sys.executable, str(ROOT / "shrink" / "run_linalg.py"), "--numpy", "min", "--scope", "fixture",
+        [sys.executable, str(ROOT / "scripts" / "stdlib_min.py"), "linalg", "--numpy", "min", "--scope", "fixture",
          str(tmp_path / "out.json")],
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
@@ -207,23 +207,23 @@ def test_min_refuses_when_numpy_is_installed(tmp_path):
 @pytest.fixture(scope="module", params=["auto", "stdlib"])
 def fixture_payloads(tmp_path_factory, request):
     tmp_path = tmp_path_factory.mktemp("linalg-" + request.param)
-    script = str(ROOT / "shrink" / "run_linalg.py")
+    script = str(ROOT / "scripts" / "stdlib_min.py")
     real = tmp_path / "real.json"
     got = tmp_path / "got.json"
     first = subprocess.run(
-        [sys.executable, script, "--numpy", "real", "--scope", "fixture", str(real)],
+        [sys.executable, script, "linalg", "--numpy", "real", "--scope", "fixture", str(real)],
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     assert first.returncode == 0, first.stderr
     second = subprocess.run(
-        [sys.executable, script, "--numpy", "min", "--allow-installed", "--scope", "fixture", str(got)],
+        [sys.executable, script, "linalg", "--numpy", "min", "--allow-installed", "--scope", "fixture", str(got)],
         cwd=ROOT, capture_output=True, text=True, check=False,
         env={**os.environ, "NUMPY_MIN_PURE": "1" if request.param == "stdlib" else ""},
     )
     assert second.returncode == 0, second.stderr
     assert second.stdout.strip().endswith("numpy_linalg_min.py") or "numpy_linalg_min.py" in second.stdout
     compared = subprocess.run(
-        [sys.executable, script, "--compare", str(real), str(got)],
+        [sys.executable, script, "linalg", "--compare", str(real), str(got)],
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     assert compared.returncode == 0, compared.stdout + compared.stderr
@@ -234,7 +234,7 @@ def fixture_payloads(tmp_path_factory, request):
 
 
 def _harness():
-    spec = importlib.util.spec_from_file_location("test_run_linalg", ROOT / "shrink" / "run_linalg.py")
+    spec = importlib.util.spec_from_file_location("test_run_linalg", ROOT / "scripts" / "stdlib_min.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -315,7 +315,7 @@ def test_real_collection_rebinds_production_suggest_and_restores_it(monkeypatch)
         raise RuntimeError("stop before numerical work")
     monkeypatch.setattr(harness, "_collect", check)
     with pytest.raises(RuntimeError, match="stop before"):
-        harness.collect("fixture", "real")
+        harness.linalg_collect("fixture", "real")
     assert observed == {"suggest": np, "littlebit": np}
     assert suggest.np is original
     assert littlebit_prune.np is np

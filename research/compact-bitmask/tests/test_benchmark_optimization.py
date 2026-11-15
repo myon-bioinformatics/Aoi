@@ -15,11 +15,10 @@ class BenchmarkOptimizationTests(unittest.TestCase):
             ('CompactRule.evaluate_source', 'timed evaluation mismatch'),
         ):
             code = f'''
-import runpy
-ns = runpy.run_path('benchmark.py')['run'].__globals__
+import compact_bitmask as m
 owner, method = {target!r}.split('.')
-setattr(ns[owner], method, lambda *a, **kw: object())
-ns['run']()
+setattr(getattr(m, owner), method, lambda *a, **kw: object())
+m.benchmark()
 '''
             with self.subTest(target=target):
                 result = subprocess.run([sys.executable, '-O', '-S', '-c', code],

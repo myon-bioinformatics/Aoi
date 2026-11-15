@@ -7,9 +7,7 @@ import socket
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "pythdragoras" / "core"))
-from bitwise_surrogate import BitwiseSymbolicSurrogate
-from compact_bitmask import CompactRule, FeatureLayout, Part, match_scene
+from compact_bitmask import BitwiseSymbolicSurrogate, CompactRule, FeatureLayout, Part, match_scene
 
 
 class CompactBitmaskTests(unittest.TestCase):

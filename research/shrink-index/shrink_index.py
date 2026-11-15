@@ -33,6 +33,7 @@ import argparse
 import collections
 import csv
 import math
+import random
 import sys
 
 DEFAULT_CSV = 'research/shrink-index/countrymaam_observed_vertical.csv'
@@ -234,14 +235,130 @@ def report(product, m, assume=None, danger_total=None, whatif=False, log=None):
     return q, assumed
 
 
+# ==== 合成データ（--synthetic）
+# 仮想の縮む商品（合成データ）を作り、指標が既知の真値どおりに動くか確認する。
+#
+# SYNTHETIC: 生成したデータであり、観測値ではない。実データの結論として扱わない。
+# 完了条件・合格条件には使わず、推奨条件（命題を試す前の足場）として用意する。
+# 生成規則は下の PATTERNS に固定する（実データの結果を見て選ばない。値は構造を網羅する丸い格子）。
+# 規則を直したくなったら、直さずに新しい ID で足す。詳細は SHRINK.md。
+#
+# usage:
+#   python research/shrink-index/shrink_index.py --synthetic [OUT] [--check]
+#     --check   各パターンの指標（総量・水準・危険への近さ・単価・判断材料）を表示する
+
+
+SYNTHETIC_DEFAULT_OUT = 'research/shrink-index/synthetic_shrink_vertical.csv'
+SYNTHETIC_SEED = 20261024
+SYNTHETIC_Y0, SYNTHETIC_Y1 = 1992, 2024
+SYNTHETIC_Q_DANGER = 60.0   # check() の例示用の危険水準（g）。人が食べられない大きさの推定ではない
+SYNTHETIC_PATTERNS = [      # (ID, 名前, ねらい)
+    ('M1', 'gradual_slide', '枚数は一定、1枚の重さが年2%ずつ縮む（ありえる）'),
+    ('M2', 'stepwise_pieces', '1枚は一定、枚数が6年ごとに2枚ずつ減る（段）'),
+    ('M3', 'accelerating', '1枚の重さの縮みが加速する。q_d を割る年がある'),
+    ('M4', 'pieces_nonmonotone', '枚数は増減をくり返し、1枚の重さは縮む。枚数だけで見ると誤る'),
+    ('M5', 'price_fixed_quantity_down', 'M1と同じ縮み方で値段は据え置き。単価が上がる'),
+    ('M6', 'growth_impossible', '1枚の重さが増える（縮む商品ではない）'),
+    ('M7', 'hits_zero_nonexistent', '1枚の重さが最終年に 0 になる（存在しない）'),
+    ('M8', 'rounded_noisy_sparse', 'M1にノイズ、1枚の重さを0.5gに丸め、4点だけ観測'),
+]
+
+
+def synthetic_generate(idx, pid):
+    """({測定: {年: 値}}, 説明)。乱数を使うのは M8 だけ（seed = SEED + idx）。"""
+    n, w, p = {}, {}, {}
+    rng = random.Random(SYNTHETIC_SEED + idx)
+    years = [1992, 2002, 2012, 2024] if pid == 'M8' else range(SYNTHETIC_Y0, SYNTHETIC_Y1 + 1)
+    for y in years:
+        t = y - SYNTHETIC_Y0
+        if pid == 'M1':
+            n[y], w[y] = 30, 10 * math.exp(-0.02 * t)
+        elif pid == 'M2':
+            n[y], w[y] = 30 - 2 * (t // 6), 10.0
+        elif pid == 'M3':
+            n[y], w[y] = 30, 10 * math.exp(-0.002 * t * t)
+        elif pid == 'M4':
+            n[y], w[y] = 30 + 3 * ((t // 8) % 2), 10 * math.exp(-0.015 * t)
+        elif pid == 'M5':
+            n[y], w[y], p[y] = 30, 10 * math.exp(-0.02 * t), 300.0
+        elif pid == 'M6':
+            n[y], w[y] = 30, 10 * math.exp(0.01 * t)
+        elif pid == 'M7':
+            n[y], w[y] = 30, 10 * (1 - t / (SYNTHETIC_Y1 - SYNTHETIC_Y0))
+        elif pid == 'M8':
+            n[y], w[y] = 30, round(10 * math.exp(-0.02 * t + rng.gauss(0, 0.05)) * 2) / 2
+        else:
+            raise ValueError(pid)
+    out = {'pieces': n, 'grams_per_piece': w}
+    if p:
+        out['price'] = p
+    return out
+
+
+SYNTHETIC_UNITS = {'pieces': 'pieces per bag (synthetic)', 'grams_per_piece': 'g per piece (synthetic)',
+         'price': 'JPY per bag (synthetic)'}
+
+
+def synthetic_write_vertical(path):
+    """縦持ち形式で書く。観測値のファイルとは混ぜない（country・variable・unit・source に SYNTHETIC を残す）。"""
+    with open(path, 'w', newline='', encoding='utf-8') as f:
+        w = csv.writer(f)
+        w.writerow(['country', 'date', 'year', 'variable', 'value', 'unit', 'source', 'note', 'estimated_value'])
+        for i, (pid, name, aim) in enumerate(SYNTHETIC_PATTERNS):
+            for measure, series in synthetic_generate(i, pid).items():
+                for y, v in series.items():
+                    # source の旧ファイル名は、既存 CSV とバイト一致させるための記録名（今は --synthetic が作る）
+                    w.writerow(['SYN', '%d-01-01' % y, y, 'synthetic_shrink:%s_%s:%s' % (pid, name, measure),
+                                '%.6g' % v, SYNTHETIC_UNITS[measure], 'SYNTHETIC synthetic_shrink.py seed=%d' % (SYNTHETIC_SEED + i),
+                                aim, ''])
+
+
+def synthetic_check(verbose=True):
+    """各パターンを指標に通した行を返す。"""
+    rows = []
+    for i, (pid, name, _aim) in enumerate(SYNTHETIC_PATTERNS):
+        m = synthetic_generate(i, pid)
+        q, _ = totals(m)
+        lv, pl = level(q), level(m['pieces'])
+        d = {y: danger(v, SYNTHETIC_Q_DANGER) for y, v in q.items()}
+        up = unit_price_index(m['price'], q) if 'price' in m else {}
+        rs = [r for _a, _b, r in rates(q)]
+        rows.append(dict(
+            id=pid, name=name, points=len(q), evidence=evidence(q),
+            total_last=lv[max(lv)] if lv else None, pieces_last=pl[max(pl)] if pl else None,
+            rate_min=min(rs) if rs else None, rate_max=max(rs) if rs else None,
+            d_last=d[max(d)], first_year_in_zone=next((y for y in sorted(d) if d[y] >= 0.5), None),
+            unit_price_last=up[max(up)] if up else None))
+    if verbose:
+        print('q_d=%g g (illustrative), MIN_POINTS=%d' % (SYNTHETIC_Q_DANGER, MIN_POINTS))
+        print('%-3s %-26s %-4s %-13s %-12s %-12s %-6s %-9s %s' % (
+            'id', 'name', 'pts', 'evidence', 'total last', 'pieces last', 'D last', 'in zone', 'unit price last'))
+        for r in rows:
+            f = lambda x, nd=3: '-' if x is None else ('%.*f' % (nd, x))
+            print('%-3s %-26s %-4d %-13s %-12s %-12s %-6s %-9s %s' % (
+                r['id'], r['name'], r['points'], r['evidence'], f(r['total_last']), f(r['pieces_last']),
+                f(r['d_last'], 2), r['first_year_in_zone'] or '-', f(r['unit_price_last'])))
+    return rows
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('csv', nargs='?', default=DEFAULT_CSV)
-    ap.add_argument('--product', required=True, help='例: shrink:countrymaam_family_vanilla_cocoa')
+    mode = ap.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--product', help='例: shrink:countrymaam_family_vanilla_cocoa')
+    mode.add_argument('--synthetic', nargs='?', const=SYNTHETIC_DEFAULT_OUT, metavar='OUT',
+                      help='🧪 合成データを OUT に書く（既定 %s）' % SYNTHETIC_DEFAULT_OUT)
+    ap.add_argument('--check', action='store_true', help='🧪 --synthetic: 各パターンの指標を出す')
     ap.add_argument('--danger-total', type=float, default=None, metavar='G')
     ap.add_argument('--assume-weight', default=None, metavar='YEAR:G,YEAR:G')
     ap.add_argument('--whatif', action='store_true')
     args = ap.parse_args(argv)
+    if args.synthetic:
+        synthetic_write_vertical(args.synthetic)
+        print('wrote %s: %d patterns' % (args.synthetic, len(SYNTHETIC_PATTERNS)))
+        if args.check:
+            synthetic_check()
+        return 0
     log = ZeroNaNLog()
     try:
         data = load(args.csv, log)

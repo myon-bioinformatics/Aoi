@@ -18,11 +18,12 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import os
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+from repo_checks import _git_env   # 隣の scripts/repo_checks.py（git が入力を待たない環境）
 
 REPO = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 URL_TEMPLATE = "https://github.com/{repository}.git"
@@ -31,12 +32,6 @@ LEGACY_VENDOR_CONSUMERS = "vendor-consumers.json"
 
 
 # fetch-guard: ls-remote/fetch of child repositories never wait for a prompt.
-def _git_env() -> dict:
-    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"}
-    env.setdefault("GIT_SSH_COMMAND", "ssh -o BatchMode=yes")
-    return env
-
-
 def _git_bytes(*args, cwd=None, timeout=300) -> bytes:
     out = subprocess.run(["git", *args], cwd=cwd, capture_output=True, timeout=timeout, env=_git_env(),
                          stdin=subprocess.DEVNULL)

@@ -38,7 +38,7 @@ Same columns as `staple_survey_vertical.csv`; `variable = <product>:<measure>` w
 
 ## Synthetic data: `synthetic_shrink_vertical.csv` (SYNTHETIC)
 
-Fictional products with a known truth, 1992-2024, written to a separate file. `country = SYN`, `variable = synthetic_shrink:<ID>_<name>:<measure>`, `unit` ends with `(synthetic)`, `source` starts with `SYNTHETIC`. A **recommended condition**, not an acceptance condition; a result on synthetic data is never a conclusion about a real product. Rules are fixed in `synthetic_shrink.py`; do not change one after seeing a result, add a new pattern with a new ID.
+Fictional products with a known truth, 1992-2024, written to a separate file. `country = SYN`, `variable = synthetic_shrink:<ID>_<name>:<measure>`, `unit` ends with `(synthetic)`, `source` starts with `SYNTHETIC`. A **recommended condition**, not an acceptance condition; a result on synthetic data is never a conclusion about a real product. Rules are fixed in `SYNTHETIC_PATTERNS` of `shrink_index.py` (`--synthetic`); do not change one after seeing a result, add a new pattern with a new ID.
 
 | ID | Name | n (pieces) | w (g per piece) | What it tests |
 |---|---|---|---|---|
@@ -59,7 +59,7 @@ Fictional products with a known truth, 1992-2024, written to a separate file. `c
 python research/shrink-index/shrink_index.py --product shrink:countrymaam_family_vanilla_cocoa
 python research/shrink-index/shrink_index.py --product shrink:countrymaam_family_vanilla_cocoa --assume-weight 2005:10.5,2007:10.5
 python research/shrink-index/shrink_index.py --product shrink:countrymaam_family_vanilla_cocoa --danger-total 60 --whatif
-python research/shrink-index/synthetic_shrink.py --check
+python research/shrink-index/shrink_index.py --synthetic --check
 ```
 
 ## Zero / NaN log

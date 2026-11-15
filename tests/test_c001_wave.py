@@ -910,7 +910,7 @@ def test_the_readme_numbers_are_the_json_numbers():
 
 
 # ==== flat（旧 test_c001_wave_flat_by_python.py）
-# 一定の線に当てはめる式が Python のバージョンで変わるかの確認（cycles/c001-chunichi/exploratory/wave_flat_by_python.py）。
+# 一定の線に当てはめる式が Python のバージョンで変わるかの確認（cycles/c001-chunichi/exploratory/wave_eps.py flat）。
 
 
 EXPLORATORY = ROOT / "cycles" / "c001-chunichi" / "exploratory"
@@ -918,7 +918,7 @@ FLAT_RESULTS = EXPLORATORY / "wave_tie_noise_results"
 
 
 def _load():
-    spec = importlib.util.spec_from_file_location("c001_wave_flat_by_python", EXPLORATORY / "wave_flat_by_python.py")
+    spec = importlib.util.spec_from_file_location("c001_wave_flat_by_python", EXPLORATORY / "wave_eps.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod

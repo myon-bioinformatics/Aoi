@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "files_scanned": 372,
+  "files_scanned": 367,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",

@@ -7,7 +7,6 @@ on:
     paths:
       - scripts/stdlib_min.py
       - tests/test_survey_third_party.py
-      - tests/test_trace_surface.py
       - docs/drafts/stdlib-replacement-feasibility.md
       - docs/evidence/third-party-survey.json
       - docs/evidence/trace-surfaces.json
@@ -25,9 +24,7 @@ on:
       - queryu/tests/test_queryu_numpy_min.py
       - scripts/shrink_module.py
       - shrink/numpy_min.py
-      - tests/test_numpy_min_suggest.py
-      - tests/test_numpy_min_gram_fallback.py
-      - tests/test_shrink_module.py
+      - tests/test_numpy_min.py
       - tests/test_numpy_linalg_min.py
       - shrink/**
       - dragowing/overlap.py
@@ -72,7 +69,7 @@ jobs:
       - name: Inventory matches the tree
         run: uv run --locked --python 3.15 python scripts/stdlib_min.py survey --check docs/evidence/third-party-survey.json
       - name: Tool tests
-        run: uv run --locked --python 3.15 pytest -q tests/test_survey_third_party.py tests/test_trace_surface.py
+        run: uv run --locked --python 3.15 pytest -q tests/test_survey_third_party.py
       - name: Fresh absent, stub, and wrap runs match the committed surfaces
         run: uv run --locked --python 3.15 python scripts/stdlib_min.py trace-surface collect --check --out docs/evidence/trace-surfaces.json
 
@@ -219,7 +216,7 @@ jobs:
         run: |
           set -o pipefail
           uv run --locked --python "$(command -v python3)" pytest -q -rsP -p no:cacheprovider \
-            tests/test_numpy_min_suggest.py tests/test_numpy_min_gram_fallback.py tests/test_shrink_module.py \
+            tests/test_numpy_min.py \
             queryu/tests/test_queryu_numpy_min.py 2>&1 | tee pytest.log
           grep -Eq '^[0-9]+ passed' pytest.log || grep -Eq '^=+ [0-9]+ passed' pytest.log
           if grep -Eq ' failed| error' pytest.log; then exit 1; fi
@@ -247,7 +244,7 @@ jobs:
           prune-cache: true
       - run: uv sync --locked --python 3.15
       - name: numpy_min is current and matches numpy
-        run: uv run --locked --python 3.15 pytest -q tests/test_shrink_module.py
+        run: uv run --locked --python 3.15 pytest -q tests/test_numpy_min.py
       - name: Survey and analyze
         run: |
           uv run --locked --python 3.15 python scripts/shrink_module.py survey numpy

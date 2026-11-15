@@ -87,8 +87,6 @@ SKIP_FILES = {
     "scripts/shrink_polars.py",
     "pkgmin/run_paths.py",
     "tests/test_survey_third_party.py",
-    "tests/test_trace_surface.py",
-    "tests/test_trace_surface_live.py",
     "tests/test_numpy_linalg_min.py",
     "tests/test_pkgmin_surface.py",
     "tests/test_shrink_polars.py",

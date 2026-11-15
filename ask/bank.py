@@ -9,9 +9,8 @@ folder named ``known``.
 """
 import hashlib, json
 from dataclasses import asdict; from pathlib import Path
-from ask import ASKS, FORMS, Query, answer, load
+from ask import ASKS, FORMS, RESULT_FILES, Query, answer, load  # RESULT_FILES: ask と同じ結果ファイル（ハッシュは名前で引く）
 
-RESULT_FILES = ("sets.jsonl", "propositions.jsonl")
 CODE_FILES = ("ask.py", "bank.py")
 
 

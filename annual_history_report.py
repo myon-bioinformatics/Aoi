@@ -4,6 +4,7 @@ import argparse, hashlib, json
 from collections import Counter, defaultdict; from pathlib import Path
 # SakAnalytics の synthetic_league・annual_audit と、Aoi の annual_scope・aoi_npb は名前で import する。
 # 場所は Aoi の aoi.py が入れる（python aoi.py nagoyaction/annual_history_report.py …）
+import synthetic_league
 from synthetic_league import PRIMARY_YEARS, validate_period, calibration_mean
 from annual_audit import audit_files as _audit_files
 from annual_scope import verify_observations
@@ -72,7 +73,7 @@ def summary(observations,audit_file,annual_file,experiment_files,cache_manifest,
                               rejected_controls=sum(c['rejected'] for c in controls),
                               control_types=dict(Counter(c['kind'] for c in controls)),
                               calibration=e['calibration'],generator_sha256=e['generator_sha256'],
-                              replay_generator_sha256=digest(Path(__file__).resolve().parents[1]/'sakanalytics/synthetic_league.py'),
+                              replay_generator_sha256=digest(Path(synthetic_league.__file__).resolve()),  # SakAnalytics #45 で npb/ へ。import したファイルを使う
                               python_version=e['python_version'],sha256=digest(path)))
     return dict(schema='aoi-annual-history-validation/2',
                 scope=dict(primary_years=list(PRIMARY_YEARS), acceptance='2013-2026 only; all 14 years required',

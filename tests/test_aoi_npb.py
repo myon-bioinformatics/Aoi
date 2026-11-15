@@ -132,16 +132,25 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
         "sakanalytics": ("pythdragoras", "pythdragoras/core", "sakanalytics/npb"),
         "pythdragoras": ("pythdragoras", "sakanalytics", "sakanalytics/npb"),
         "dragowing": ("pythdragoras", "pythdragoras/core", "queryu/ask"),
-        "nagoyaction": (*union, "."),  # Aoi のワークフローを動かすので、兄弟すべてと Aoi 直下（aoi_npb・annual_scope）
+        "nagoyaction": (
+            "queryu",            # tests/test_annual_history_report.py: from queryu import Cache
+            "queryu/ask",        # inbox/inbox.py: ask, bank
+            "sakanalytics/npb",  # annual_history_report.py: synthetic_league, annual_audit
+            "blueprobe",         # npb_team_annual: from blueprobe import HtmlTree
+            "blueprobe/npb",     # tests/test_annual_history_report.py: import npb_team_annual
+            ".",                 # annual_history_report.py: annual_scope; inbox/inbox.py: aoi_npb
+        ),
     }
+    assert tuple(dict.fromkeys(rel for name, rels in aoi.SIBLINGS.items() if name != "nagoyaction" for rel in rels)) == union
     assert "dragowing" not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}
     assert "." not in {rel for name, rels in aoi.SIBLINGS.items() if name != "nagoyaction" for rel in rels}
+    nagoya = aoi.SIBLINGS["nagoyaction"]
     workflow = aoi.environment({"PYTHONPATH": "kept"}, child="nagoyaction")["PYTHONPATH"].split(os.pathsep)
-    assert workflow == ["kept", *(str((root / rel).resolve()) for rel in union), str(root)]
+    assert workflow == ["kept", *(str((root / rel).resolve()) for rel in nagoya)]
     env = aoi.environment({"PYTHONPATH": "kept"}, child="queryu")
     assert env["PYTHONPATH"].split(os.pathsep) == ["kept", str((root / "blueprobe").resolve()), str((root / "blueprobe" / "npb").resolve())]
     bare = aoi.environment({"PYTHONPATH": "kept"})
-    assert bare["PYTHONPATH"].split(os.pathsep)[0] == "kept"
+    assert bare["PYTHONPATH"].split(os.pathsep) == ["kept", *(str((root / rel).resolve()) for rel in union)]
     assert str(root) not in bare["PYTHONPATH"].split(os.pathsep)
     assert str((root / "dragowing").resolve()) not in bare["PYTHONPATH"].split(os.pathsep)
     assert (env["AOI_ROOT"], env["AOI_RESEARCH_CYCLE"]) == (str(root), aoi_paths.DEFAULT_CYCLE)
@@ -209,6 +218,27 @@ def test_launcher_flags_still_run_the_element_counter(flag):
                          cwd=root, env=env, capture_output=True, text=True)
     assert run.returncode == 0, run.stderr
     assert "Count HTML elements" in run.stdout
+
+
+def test_nagoyaction_report_and_inbox_import_through_aoi(tmp_path):
+    """annual_history_report and inbox import their siblings when aoi.py launches them.
+
+    The same flags as the element-counter launch, including -I and -S.
+    """
+    root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
+    for flag in (None, "-I", "-S", "-E", "-P"):
+        prefix = [sys.executable] if flag is None else [sys.executable, flag]
+        report = subprocess.run(
+            [*prefix, str(root / "aoi.py"), "nagoyaction/annual_history_report.py", "--help"],
+            cwd=tmp_path, env=env, capture_output=True, text=True)
+        assert report.returncode == 0, (flag, report.stderr)
+        assert "--observations" in report.stdout
+        inbox = subprocess.run(
+            [*prefix, str(root / "aoi.py"), "nagoyaction/inbox/inbox.py", "--help"],
+            cwd=tmp_path, env=env, capture_output=True, text=True)
+        assert inbox.returncode == 0, (flag, inbox.stderr)
+        assert "intake" in inbox.stdout
 
 
 # ==== scope（旧 test_annual_scope.py）

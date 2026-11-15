@@ -1,8 +1,7 @@
 """Regression checks for the Issue #20 deterministic research digest."""
 from __future__ import annotations
 
-import hashlib
-import json
+import hashlib, json
 from pathlib import Path
 
 import pytest

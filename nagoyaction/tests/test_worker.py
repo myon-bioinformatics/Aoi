@@ -1,13 +1,6 @@
 """Supervisor safety contracts plus a real Aoi Explorer subprocess round trip."""
-import argparse
-import importlib.util
-import json
-import os
+import argparse, importlib.util, json, os, shutil, subprocess, sys, time
 from pathlib import Path
-import shutil
-import subprocess
-import sys
-import time
 
 import pytest
 

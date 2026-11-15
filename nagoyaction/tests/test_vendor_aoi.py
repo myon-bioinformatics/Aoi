@@ -5,12 +5,8 @@ tools research_digest.collect uses, not the numpy or fetch_module tools.
 """
 from __future__ import annotations
 
-import importlib.util
-import json
-import subprocess
-import sys
-from collections import Counter
-from pathlib import Path
+import ast, importlib.util, json, subprocess, sys
+from collections import Counter; from pathlib import Path
 
 import pytest
 
@@ -75,6 +71,20 @@ def test_collect_ast_uses_dataframe_and_col():
         "Expr.is_not_null",
     ):
         assert name in shrink_polars.METHOD_SURFACE
+
+
+@pytest.mark.parametrize("package", ["numpy", "polars"])
+def test_bundled_min_loader_assignment_is_a_package_alias(package):
+    tree = ast.parse(
+        f"import {package} as direct\n"
+        f"from {package} import zeros as make_zeros\n"
+        f"first = second = _load_{package}_min()\n"
+        f"wrong = _load_other_min()\n"
+        f"attribute = loader._load_{package}_min()\n"
+    )
+    modules, names = shrink_module._aliases(tree, package)
+    assert modules == {"direct", "first", "second"}
+    assert names == {"make_zeros": "zeros"}
 
 
 def test_hash_mismatch_is_reported_and_warn_exits_zero(tmp_path, capsys):

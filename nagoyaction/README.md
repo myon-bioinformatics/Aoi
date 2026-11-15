@@ -1,5 +1,7 @@
 # NagoyAction
 
+📘 [利用ガイド / Usage guide](https://myon-bioinformatics.github.io/NagoyAction/) (GitHub Pages)
+
 <p align="center">
   <img src="docs/brand/icon.png" alt="NagoyAction icon" width="160" />
 </p>
@@ -44,6 +46,29 @@ A repository split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi
 
 ## Installation and usage
 
+### Local forge (migration in progress)
+
+`local_forge.py` provides the local Gitea/Forgejo management functions extracted from OneLinearNumerousMemo. It uses the existing `OLNM_HOME` and `DIAL_FILE` locations so that a local forge can be found during migration. It is a standard-library module invoked as `nagoyaction hub …`; it does not implement GitHub Actions runners.
+
+Prepare an isolated uv tool project with `python vendor/uv_tool_build.py nagoyaction.py --module local_forge.py --module localci.py --out build/nagoyaction-tool`, then install it with `uv tool install ./build/nagoyaction-tool`. This installs the `nagoyaction` command only (`nagoyaction hub …` covers local forge operations; there is no `local-forge` command). The bundled modules have no third-party runtime dependencies. Pipeline definitions and project-specific inputs remain separate files. The builder itself is the vendored shared copy from Aoi (`vendor/uv_tool_build.py`).
+
+```bash
+nagoyaction hub --help          # or: python nagoyaction.py hub --help
+nagoyaction hub status
+nagoyaction hub dial mirror     # 🎛️  → 🔁 mirror (2)
+nagoyaction hub repo ls
+```
+
+`nagoyaction hub …` passes every argument to `local_forge.py` (replacing the former `local-forge …` command). `python local_forge.py …` still runs the same module directly, and OneLinearNumerousMemo's `olnm hub …` forwards here. From Python, `nagoyaction.hub("dial", "local")` does the same and returns the exit code. `local_forge.py` is imported only for `hub`, so pipeline commands never load it.
+
+The dial takes a name: `offline` (no network), `local` (local forge only), `mirror` (local forge that mirrors GitHub) or `github` (GitHub directly). Output shows the name first and the stored digit after it, for example `🔁 mirror (2)`. The dial file keeps the digit 0–3, so older readers of `DIAL_FILE` keep working, and `dial 2` is still accepted. A mistyped name is rejected with a suggestion (`maybe you meant 'mirror'?` on Python 3.14+) and leaves the dial unchanged.
+
+OneLinearNumerousMemo forwards `olnm hub …` and `olnm dial …` here once its handover change is merged. The BlueProbe/QueRyu launchers are not yet migrated. Do not run both managers concurrently against the same forge.
+
+A newly started forge must pass its health check before startup reports success. Failed startup stops only the child created by that invocation; if cleanup fails, its PID is retained for inspection. A dial change saves its new value only after applying the forge and repository changes. This is not a transaction: earlier process, remote, repository, or mirror changes are not automatically rolled back if a later operation fails. Inspect the forge and repository remotes before retrying; the retained previous dial does not prove every side effect was reverted.
+
+CI's `real-local-forge` job downloads and checksum-verifies Gitea 1.27.3, starts it on localhost in temporary state, and exercises repository creation, push, issue, and pull request operations. The test has no dependency on a real GitHub account or a persistent user configuration. Forgejo remains covered by the fake-server tests only.
+
 No installation needed. It runs on the Python 3.11+ standard library alone.
 
 ```bash
@@ -59,28 +84,45 @@ python nagoyaction.py run    <pipeline.toml> --dry-run  # only show what would b
 
 A pipeline TOML has `name`, `root`, `[requires]` (Python version, tools), and `[[step]]` (`name`, argument array `run`, `network`, `outputs`). Examples are `pipelines/research.toml` and `pipelines/inbox.toml`.
 
+Steps inherit the runner's environment. NagoyAction never puts other projects on the import path itself: inside Aoi, start it with `python aoi.py nagoyaction run <pipeline.toml>` so that steps such as `queryu/queryu.py` and `inbox/inbox.py` find QueRyu, BlueProbe, SakAnalytics and Aoi's `aoi_npb` by name (`aoi.py` passes Aoi's pytest `pythonpath`). The same goes for `python aoi.py nagoyaction/annual_history_report.py …`.
+
 GitHub Actions workflows only call this command (e.g. `.github/workflows/cycle-c001.yml`).
 Org-wide reusable workflows (actionlint, etc.) come from `myon-bioinformatics/myon-bioinformatics`.
 To bring in shared modules from other repositories, use that repository's `vendor_sync.py` (SHA-pinned).
 
 ## Layout
 
-| File | Contents |
-|---|---|
-| `nagoyaction.py` | Pipeline pre-checks (`doctor`), structure display (`show`), and execution (`run`) |
-| `localci.py` | Workflow checks repeated locally (actionlint, resolving referenced SHAs, `uses:` pins). "Local CI" below |
-| `pipelines/` | Pipeline definitions (`research.toml`, `inbox.toml`) |
-| `linkcheck.py` | Checks Markdown link and image targets ("Link checking" below) |
-| `inbox/inbox.py`, `docs/inbox.md` | Question intake |
-| `research_digest.py`, `docs/research-digest.md` | Index of research records (R*.md) and proposition judgements (no network or LLM needed) |
-| `publication_gate.py`, `ghi_execution.py`, `PUBLICATION.md` | Pre-publication evidence checks (offline) and matching against running GitHub Actions |
-| `annual_history_report.py` | Lists annual audit results and synthetic model verification results side by side, kept separate |
-| `containers/` | Local LLM container (not connected. "Local LLM container" below) |
-| `tests/` | pytest (run inside Aoi. "Tests" below) |
+| File | Contents | ➡️ Planned place |
+|---|---|---|
+| `nagoyaction.py` | The single file (stdlib only): pipeline pre-checks (`doctor`), structure display (`show`), execution (`run`), and 🔗 `linkcheck` ("Link checking" below). `actionlint` / `hub` hand over to `localci` / `local_forge` | stays at the top |
+| `localci.py`, `localci_pytest.py` | Workflow checks repeated locally (actionlint, resolving referenced SHAs, `uses:` pins). "Local CI" below | `core/` |
+| `local_forge.py` | Local Gitea / Forgejo (`nagoyaction hub`) | `core/` |
+| `publication_gate.py`, `ghi_execution.py`, `PUBLICATION.md` | Pre-publication evidence checks (offline) and matching against running GitHub Actions | `core/` |
+| `research_digest.py`, `docs/research-digest.md` | Index of research records (R*.md) and proposition judgements (no network or LLM needed) | `npb/` |
+| `annual_history_report.py` | Lists annual audit results and synthetic model verification results side by side, kept separate | `npb/` |
+| `pipelines/` | Pipeline definitions (`research.toml`, `inbox.toml`) | as is |
+| `inbox/inbox.py`, `docs/inbox.md` | Question intake | as is |
+| `containers/` | Local LLM container (not connected. "Local LLM container" below) | as is |
+| `tests/` | pytest (run inside Aoi. "Tests" below) | as is |
+
+➡️ The modules marked `core/` / `npb/` move when NagoyAction is next synced into Aoi, together with Aoi's side: the tests run inside Aoi's tree with Aoi's pytest `pythonpath` (`nagoyaction` only), and Aoi calls them by path (`links.yml` → `nagoyaction.py linkcheck`, `ci.yml` and `cycles/c001-chunichi/pipeline.toml` → `research_digest.py`, `c001-replay-audit.yml` → `ghi_execution.py`, `scripts/c001_publication_policy.py` → `publication_gate`, DRAgoWing's `tests/test_export.py` → `localci`). Aoi's `pythonpath` then gains `nagoyaction/core` and `nagoyaction/npb`, and `nagoyaction.py` adds its own `core/` for `actionlint` / `hub`.
 
 ## Local CI (`localci.py`)
 
 Checks workflows and tests locally without waiting for GitHub Actions to finish.
+
+`nagoyaction actionlint` runs only actionlint and the `uses:` pin checks on the current directory's `.github/workflows` (`--root` to choose another): no SHA resolution, no pytest, no Aoi checkout. It reports every failure in one pass, and `--strict` makes stale SHA pins fail. The actionlint binary and its record stay in `~/.cache/nagoyaction/localci`, so linting another repository writes nothing into it.
+
+actionlint itself is a Go program, but Go is not needed: localci downloads the prebuilt release binary and verifies its checksum. Where that is not possible (a closed network, a blocked or rate-limited GitHub API), `nagoyaction actionlint` works best effort instead of stopping:
+
+| What it can reach | actionlint | `uses:` pins |
+|---|---|---|
+| GitHub | latest release, verified (`go run` at that tag if only the download fails and Go exists) | compared with the latest release |
+| no GitHub, an earlier run's download in `~/.cache/nagoyaction/localci` | that cached, verified version | `[skip]`: SHA pin or not is shown, staleness is not compared |
+| no GitHub, `actionlint` on PATH (carried in) | that binary | `[skip]` as above |
+| none of these | `[skip]`: not linted | `[skip]` as above |
+
+A `[skip]` is not a failure: the exit code stays 0 and the summary ends with `⚠️ best effort: N 件は検査できず [skip]` (plus `何も確かめていない` when nothing could be checked). Real findings still fail with exit code 1. Once GitHub does not answer, the remaining checks do not ask again, so the run does not wait for one timeout per action. `--strict` turns best effort off: anything that cannot be checked fails, as does a stale pin. Inside GitHub Actions best effort is always off. `python localci.py run` (and `--all`) is unchanged and still requires GitHub. `nagoyaction actionlint --all …` is `python localci.py run …` (options included). From Python, `nagoyaction.actionlint("--strict")` returns the exit code. `python localci.py lint` is the same check without nagoyaction.
 
 `python localci.py run` checks `.github/workflows` with actionlint. If shellcheck is on PATH, actionlint also uses it for `run:` blocks. actionlint resolves the latest rhysd/actionlint release on every run and verifies the published checksums and GitHub's digest. The version is not pinned in source. The resolved tag, asset name, and verified sha256 are left in the output and `.localci/refs.env`, and written next to the resolved referenced SHAs if `GITHUB_STEP_SUMMARY` exists. On GitHub Actions it stops if fetching or verification fails and does not fall back to Go. Locally, only when the tag could be resolved, it falls back to `go run github.com/rhysd/actionlint/cmd/actionlint@<tag>`. At the same time it resolves the main SHA of referenced repositories with `git ls-remote` plus a GitHub API repository id check, and writes them to `.localci/refs.env`. Whether `uses:` pins match the commit of each action's latest release tag is only reported by default. Setup actions (`actions/setup-python`, `actions/setup-node`, `astral-sh/setup-uv`) use the release's 40-character SHA and `# vX.Y.Z`. Other `actions/*` use the moving major tag `vN`.
 
@@ -92,6 +134,8 @@ python localci.py run --repeat 10 --keep-going
 python localci.py run --self-tests            # only tests/test_localci.py (no Aoi)
 python localci.py run --strict                # fail on stale SHA pins; vN for non-setup actions/* is allowed
 python localci.py resolve                     # only resolve SHAs; CI's resolve job uses this too
+nagoyaction actionlint                        # actionlint + uses: pins only (= python localci.py lint)
+nagoyaction actionlint --strict --all --repeat 10   # = python localci.py run --strict --repeat 10
 ```
 
 `--repeat N` does not trace the same checks N times. It shuffles the check list (resolving references, actionlint, each `uses:`, the pytest tests) by seed and splits it into N nearly equal shards. Each round runs only one shard, and once all rounds finish every check has run exactly once. It stops at a failing round and prints the round number, shard contents, and seed. `--keep-going` continues. After each round it prints the number of rounds passed and completed against N. Getting deep without failures is a confidence signal that the remaining shards will pass too.
@@ -111,15 +155,15 @@ python localci.py run --self-tests
 python localci.py run --pytest tests/test_localci.py
 ```
 
-## Link checking (`linkcheck.py`)
+## Link checking (`nagoyaction.py linkcheck`)
 
 ```bash
-python nagoyaction/linkcheck.py --help                                 # all flags and exit codes
-python nagoyaction/linkcheck.py --root .                               # before push: match against git-tracked files, case-sensitive
-python nagoyaction/linkcheck.py --remote OWNER/REPO --ref BRANCH       # after push: exists on that branch? (gh api)
-python nagoyaction/linkcheck.py --external                             # also check http(s) (only 404/410 fail)
-python nagoyaction/linkcheck.py --external --strict                    # unverified also fails (exit code 3)
-python nagoyaction/linkcheck.py --json                                 # stdout is nagoyaction-linkcheck/1
+python nagoyaction/nagoyaction.py linkcheck --help                                 # all flags and exit codes
+python nagoyaction/nagoyaction.py linkcheck --root .                               # before push: match against git-tracked files, case-sensitive
+python nagoyaction/nagoyaction.py linkcheck --remote OWNER/REPO --ref BRANCH       # after push: exists on that branch? (gh api)
+python nagoyaction/nagoyaction.py linkcheck --external                             # also check http(s) (only 404/410 fail)
+python nagoyaction/nagoyaction.py linkcheck --external --strict                    # unverified also fails (exit code 3)
+python nagoyaction/nagoyaction.py linkcheck --json                                 # stdout is nagoyaction-linkcheck/1
 ```
 
 `--root` is the base for git ls-files and Markdown loading (default: current directory). `--remote` requires `--ref`. `--external` checks http and https with HEAD. `--json` writes `nagoyaction-linkcheck/1` (`counts` and `results`) to stdout when scanning succeeded, and `nagoyaction-error/1` to stderr when the exit code is nonzero. Failures before scanning (usage, git) use the same error object, with exit code 2.
@@ -145,6 +189,8 @@ Tests are in `tests/test_llama_container.py` (no network).
 
 ## Tests
 
+For the independent `localci.py` self-tests only, an [optional locked pytest-only environment](docs/nano-localci-tests.md) avoids installing Aoi research dependencies. It does not replace the complete Aoi-integrated suite below.
+
 Steps and tests use Aoi's top level (`cycles/`, `queryu/`, `sakanalytics/`, `blueprobe/`, `vendor/`, `scripts/`, `docs/`) by relative path. They are not tested standalone. On every run CI resolves main's SHA with `git ls-remote https://github.com/myon-bioinformatics/Aoi refs/heads/main`, checks it out, replaces its `nagoyaction/` with this repository's tree, and runs `nagoyaction/tests` with Aoi's settings. The resolved SHA is left in the job summary. A ref can be given via `aoi_ref` in `workflow_dispatch`. With the same SHA, the bytes of `vendor/aoi/` are checked against Aoi's originals. A mismatch is a warning on pull requests and a failure on push to main and on schedule.
 
 ```sh
@@ -156,6 +202,8 @@ cd ../Aoi && uv run --locked pytest -q -c pyproject.toml nagoyaction/tests
 ```
 
 CI does the same on Python 3.11–3.15. Python is provisioned with `astral-sh/setup-uv` (not `actions/setup-python`); fixed lanes run on 3.15, the matrix keeps the compatibility range.
+
+The existing real/minimal Polars comparison job uses a [smaller locked environment](docs/polars-min-ci-environment.md), while retaining the real baseline and byte-comparison gates. The full matrix above is unchanged.
 
 ## Relationship with Aoi
 
@@ -200,20 +248,21 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 
 ## Node entry (Node 26+)
 
-`node nagoyaction.cjs <args>` runs `nagoyaction.py` through the vendored shared launcher
-`vendor/py_launch.cjs`, taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. Arguments, stdin/stdout/stderr and the
+`node vendor/py_launch.cjs --env-var NAGOYACTION_PYTHON -- nagoyaction.py <args>` runs `nagoyaction.py`
+through the vendored shared launcher `vendor/py_launch.cjs` (there is no per-tool `.cjs` wrapper), taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. The shared uv tool builder `vendor/uv_tool_build.py` is taken the same way from Aoi and pinned separately in that lock. Arguments, stdin/stdout/stderr and the
 exit code are passed through unchanged; Python runs with `-S`, including interpreter discovery.
-Set `NAGOYACTION_PYTHON` to pick the interpreter. The launcher forwards repeated SIGINT/SIGTERM
-until the Python child exits. Launcher failures (no Python 3.9+, spawn error, signal) exit 2;
+`NAGOYACTION_PYTHON` picks the interpreter (via `--env-var`). The launcher forwards repeated SIGINT/SIGTERM
+until the Python child exits. Launcher failures (no Python 3.9+, spawn error, signal) exit 2, as does a Node older than 26;
 set `PY_LAUNCH_ERROR_FORMAT=json` for a structured launcher error on stderr (independent of
 the tool's `--json` flag).
 
 The launcher and license are pinned to Aoi's accepting main merge commit
 [`827387a`](https://github.com/myon-bioinformatics/Aoi/commit/9e0147a17695ce63fa73daf75d8195a4f49095bb),
-not to the root repository or an unmerged PR head. `shared-tools.lock.json` remains the separate
+not to the root repository or an unmerged PR head. The builder is pinned to Aoi's later main
+first-parent commit
+[`3d8dcc70`](https://github.com/myon-bioinformatics/Aoi/commit/3d8dcc70a9c4e6c4f4b7de05868f54acd3901ce7)
+(#181, which vendors parent #251 including `--module`). `shared-tools.lock.json` remains the separate
 lock for the polars shrink tools under `vendor/aoi/`.
 
-The shared launcher also supports direct use:
-`node vendor/py_launch.cjs [--env-var NAME] [--site] [--] SCRIPT.py [ARGS...]`.
-Direct use defaults to `-S`; `--site` explicitly enables site-packages. The existing
-`nagoyaction.cjs` entry still always requests `noSite: true`.
+The launcher's CLI is `node vendor/py_launch.cjs [--env-var NAME] [--site] [--] SCRIPT.py [ARGS...]`.
+It defaults to `-S`; `--site` explicitly enables site-packages, which this tool does not need.

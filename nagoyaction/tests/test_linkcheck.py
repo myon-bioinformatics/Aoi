@@ -1,18 +1,12 @@
-import json
-import os
-import subprocess
-import sys
-import threading
-import urllib.error
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
+import json, os, subprocess, sys, threading, urllib.error
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer; from pathlib import Path
 
 import pytest
 
-import linkcheck as lc
+from nagoyaction import linkcheck as lc
 
 HERE = Path(__file__).resolve().parents[1]
-LINKCHECK = HERE / "linkcheck.py"
+LINKCHECK = HERE / "nagoyaction.py"  # python nagoyaction.py linkcheck …
 
 
 def repo(tmp_path, files: dict[str, str], untracked: dict[str, str] | None = None):
@@ -114,7 +108,7 @@ def test_repository_links_are_all_valid():
 
 def run_linkcheck(args, *, cwd=None, env=None):
     return subprocess.run(
-        [sys.executable, "-S", str(LINKCHECK), *args],
+        [sys.executable, "-S", str(LINKCHECK), "linkcheck", *args],
         cwd=cwd, env=env, capture_output=True, text=True,
     )
 

@@ -1,0 +1,134 @@
+{
+  "schema": "web-ui-page/1",
+  "title": "nagoyaction 利用ガイド",
+  "theme": "auto",
+  "description": "研究のパイプラインを TOML に 1 度書き、ローカルでも GitHub Actions でも同じコマンドで回す入口。",
+  "icon": "./icon.png",
+  "favicon": "./favicon.png",
+  "blocks": [
+    {
+      "type": "badges",
+      "items": [
+        "📄 単一ファイル",
+        "🧰 標準ライブラリのみ",
+        "🐍 Python 3.11+"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "📥 取得",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
+        },
+        {
+          "type": "output",
+          "text": "git clone https://github.com/myon-bioinformatics/NagoyAction.git\ncd NagoyAction"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "▶️ 実行",
+      "blocks": [
+        {
+          "type": "card",
+          "title": "🩺 doctor",
+          "text": "実行前の確認。fail があれば終了コード 1 で、run はしません。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python nagoyaction.py doctor pipelines/inbox.toml\n[✓] python: 3.13.18 (requires >= 3.11)\n[✓] git: git version 2.43.0"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "👀 show",
+          "text": "パイプラインの構造（変数・ステップ・コマンド・出力）を表示します。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python nagoyaction.py show pipelines/inbox.toml"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "▶️ run",
+          "text": "doctor のあと手順を順に実行し、受領記録（JSONL）を残します。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python nagoyaction.py run pipelines/inbox.toml --dry-run"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "🔍 actionlint",
+          "text": "actionlint と uses: のピン検査をローカルで。localci.py が必要です。actionlint は実行時に取得します。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python nagoyaction.py actionlint"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "🏠 hub",
+          "text": "ローカル GitHub（Gitea / Forgejo）の操作。local_forge.py が必要です。dial mirror は設定を変更し、既存 forge があれば起動・remote の切替も行います。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python nagoyaction.py hub status\n🎛️  ☁️ github (3) | ⚪ down | 📚 0 | http://localhost:3000"
+            },
+            {
+              "type": "output",
+              "text": "$ python nagoyaction.py hub dial mirror"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "🐍 Python から呼ぶ",
+      "blocks": [
+        {
+          "type": "output",
+          "text": "python nagoyaction.py --help   # サブコマンドと終了コード"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "🔗 リンク",
+      "blocks": [
+        {
+          "type": "links",
+          "items": [
+            {
+              "label": "📦 リポジトリ",
+              "href": "https://github.com/myon-bioinformatics/NagoyAction"
+            },
+            {
+              "label": "📖 README",
+              "href": "https://github.com/myon-bioinformatics/NagoyAction#readme"
+            },
+            {
+              "label": "📄 nagoyaction.py",
+              "href": "https://github.com/myon-bioinformatics/NagoyAction/blob/main/nagoyaction.py"
+            },
+            {
+              "label": "🔵 Aoi",
+              "href": "https://github.com/myon-bioinformatics/Aoi"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

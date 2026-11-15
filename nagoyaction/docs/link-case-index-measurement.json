@@ -1,0 +1,21 @@
+{
+  "baseline_sha": "da68f374ad1ae7c786f926190b98c94920d91420",
+  "files": 2001,
+  "links": 500,
+  "samples_ns": {
+    "baseline": [
+      84410095,
+      91390762,
+      90235110
+    ],
+    "indexed": [
+      2708871,
+      3465240,
+      2648411
+    ]
+  },
+  "median_ns": {
+    "baseline": 90235110,
+    "indexed": 2708871
+  }
+}

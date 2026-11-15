@@ -1,13 +1,8 @@
 """Coverage labels must not promote inherited values, skipped work or failures."""
 from __future__ import annotations
 
-import importlib.util
-import json
+import importlib.util, json, subprocess, sys, tempfile, unittest
 from pathlib import Path
-import subprocess
-import sys
-import tempfile
-import unittest
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "annotate_c001_replay.py"
 spec = importlib.util.spec_from_file_location("c001_annotations", SCRIPT)

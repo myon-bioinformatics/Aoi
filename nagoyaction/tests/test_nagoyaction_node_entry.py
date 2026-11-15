@@ -1,13 +1,7 @@
-"""nagoyaction.cjs: Node entry parity with nagoyaction.py through the vendored shared py_launch.cjs."""
+"""Node entry parity with nagoyaction.py, calling the vendored shared py_launch.cjs directly (no per-tool wrapper)."""
 from __future__ import annotations
 
-import hashlib
-import json
-import os
-import re
-import shutil
-import subprocess
-import sys
+import hashlib, json, os, re, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
@@ -70,8 +64,14 @@ def _run(argv: list[str], cwd: Path) -> tuple[int, str, str]:
     return p.returncode, p.stdout, p.stderr
 
 
+def _direct(root: Path, *args: str) -> list[str]:
+    """The documented command: node vendor/py_launch.cjs --env-var NAGOYACTION_PYTHON -- nagoyaction.py ARGS."""
+    return [NODE, str(root / "vendor" / "py_launch.cjs"), "--env-var", ENV_VAR, "--",
+            str(root / f"{TOOL}.py"), *args]
+
+
 def _parity(root: Path, args: list[str]) -> tuple[tuple[int, str, str], tuple[int, str, str]]:
-    via_node = _run([NODE, str(root / f"{TOOL}.cjs"), *args], root)
+    via_node = _run(_direct(root, *args), root)
     via_python = _run([sys.executable, "-S", str(root / f"{TOOL}.py"), *args], root)
     return via_node, via_python
 
@@ -92,7 +92,7 @@ def test_vendored_launcher_matches_lock():
 def test_vendored_license_comes_from_aoi_same_commit():
     lock = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
     by_dest = {f["destination"]: f for f in lock["files"]}
-    assert set(by_dest) == {"vendor/py_launch.cjs", "vendor/aoi-LICENSE"}
+    assert set(by_dest) == {"vendor/py_launch.cjs", "vendor/aoi-LICENSE", "vendor/uv_tool_build.py"}
     lic = by_dest["vendor/aoi-LICENSE"]
     assert lic["repository"] == AOI
     assert lic["source"] == "LICENSE"
@@ -104,11 +104,25 @@ def test_vendored_license_comes_from_aoi_same_commit():
     assert data == (ROOT / "LICENSE").read_bytes()
 
 
-def test_entry_uses_shared_launcher_only():
-    text = (ROOT / f"{TOOL}.cjs").read_text(encoding="utf-8")
-    assert 'require("./vendor/py_launch.cjs")' in text
-    assert "child_process" not in text
-    assert f'"{TOOL}.py"' in text
+def test_vendored_uv_tool_build_matches_lock():
+    lock = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
+    entry = next(f for f in lock["files"] if f["destination"] == "vendor/uv_tool_build.py")
+    assert entry["repository"] == AOI
+    assert entry["source"] == "vendor/uv_tool_build.py"
+    assert entry["ref"] == entry["commit"]
+    assert re.fullmatch(r"[0-9a-f]{40}", entry["commit"])
+    # The launcher and license stay on their own Aoi pin; the builder is a later first-parent commit.
+    assert entry["commit"] != next(f["commit"] for f in lock["files"] if f["destination"] == "vendor/py_launch.cjs")
+    data = (ROOT / "vendor" / "uv_tool_build.py").read_bytes()
+    assert hashlib.sha256(data).hexdigest() == entry["sha256"]
+    blob = hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+    assert blob == entry["blob_sha"]
+
+
+def test_no_per_tool_wrapper_and_readme_documents_the_direct_command():
+    assert not (ROOT / f"{TOOL}.cjs").exists()
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert f"node vendor/py_launch.cjs --env-var {ENV_VAR} -- {TOOL}.py" in readme
     pkg = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
     assert pkg["engines"]["node"] == ">=26"
 
@@ -126,29 +140,10 @@ def test_node_matches_python(args, expected_rc):
 def test_missing_interpreter_is_launcher_failure(tmp_path):
     env = _env()
     env[ENV_VAR] = str(tmp_path / "no-such-python")
-    p = subprocess.run([NODE, str(ROOT / f"{TOOL}.cjs"), "--help"], env=env,
+    p = subprocess.run(_direct(ROOT, "--help"), env=env,
                        capture_output=True, text=True, encoding="utf-8", timeout=60)
     assert p.returncode == 2
     assert p.stdout == ""
-
-
-@needs_node
-@pytest.mark.parametrize("old,new", [
-    (f'"{TOOL}.py"', '"missing_tool.py"'),
-    ("main(PY_SCRIPT, PY_LAUNCH);", "main(PY_SCRIPT, { ...PY_LAUNCH, argv: [] });"),
-    ("noSite: true", "noSite: true, isolated: true, argv: ['--help']"),
-])
-def test_mutated_entry_breaks_parity(tmp_path, old, new):
-    (tmp_path / "vendor").mkdir()
-    shutil.copy(ROOT / "vendor" / "py_launch.cjs", tmp_path / "vendor" / "py_launch.cjs")
-    shutil.copy(ROOT / f"{TOOL}.py", tmp_path / f"{TOOL}.py")
-    shutil.copytree(ROOT / "pipelines", tmp_path / "pipelines")
-    text = (ROOT / f"{TOOL}.cjs").read_text(encoding="utf-8")
-    assert old in text
-    (tmp_path / f"{TOOL}.cjs").write_text(text, encoding="utf-8")
-    assert all(a == b for a, b in (_parity(tmp_path, c["args"]) for c in CASES))  # control
-    (tmp_path / f"{TOOL}.cjs").write_text(text.replace(old, new), encoding="utf-8")
-    assert any(a != b for a, b in (_parity(tmp_path, c["args"]) for c in CASES))
 
 
 @needs_node
@@ -156,13 +151,12 @@ def test_mutated_entry_breaks_parity(tmp_path, old, new):
 def test_entry_forwards_stdin_argv_and_exit_code(tmp_path, code):
     (tmp_path / "vendor").mkdir()
     shutil.copy(ROOT / "vendor" / "py_launch.cjs", tmp_path / "vendor" / "py_launch.cjs")
-    shutil.copy(ROOT / f"{TOOL}.cjs", tmp_path / f"{TOOL}.cjs")
     (tmp_path / f"{TOOL}.py").write_text(
         "import json, sys\n"
         "sys.stdout.write(json.dumps({'argv': sys.argv[1:], 'stdin': sys.stdin.read(),"
         " 'nosite': sys.flags.no_site}))\n"
         f"sys.exit({code})\n", encoding="utf-8")
-    p = subprocess.run([NODE, str(tmp_path / f"{TOOL}.cjs"), "a b", "--x=ü"], env=_env(),
+    p = subprocess.run(_direct(tmp_path, "a b", "--x=ü"), env=_env(),
                        input="こんにちは\n", capture_output=True, text=True, encoding="utf-8", timeout=60)
     assert p.returncode == code
     assert json.loads(p.stdout) == {"argv": ["a b", "--x=ü"], "stdin": "こんにちは\n", "nosite": 1}
@@ -190,13 +184,12 @@ def test_ci_guard_fails_without_node_in_actions_test_job(monkeypatch):
 @pytest.mark.skipif(os.name == "nt", reason="POSIX signal forwarding contract")
 @pytest.mark.parametrize("json_errors", [False, True], ids=["text", "json"])
 def test_entry_forwards_repeated_signals_until_child_exits(tmp_path, json_errors):
-    """Exercise the real entry and vendored launcher, with ack-driven signals."""
+    """Exercise the vendored launcher, with ack-driven signals."""
     import selectors
     import signal
 
     (tmp_path / "vendor").mkdir()
     shutil.copy(ROOT / "vendor" / "py_launch.cjs", tmp_path / "vendor" / "py_launch.cjs")
-    shutil.copy(ROOT / f"{TOOL}.cjs", tmp_path / f"{TOOL}.cjs")
     (tmp_path / f"{TOOL}.py").write_text(
         "import signal, time\n"
         "signal.signal(signal.SIGINT, lambda *_: print('ACK', flush=True))\n"
@@ -207,7 +200,7 @@ def test_entry_forwards_repeated_signals_until_child_exits(tmp_path, json_errors
     env = _env()
     env["PY_LAUNCH_ERROR_FORMAT"] = "json" if json_errors else ""
     child = subprocess.Popen(
-        [NODE, str(tmp_path / f"{TOOL}.cjs")],
+        _direct(tmp_path),
         env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, start_new_session=True,
     )
@@ -242,38 +235,43 @@ def test_entry_forwards_repeated_signals_until_child_exits(tmp_path, json_errors
 
 
 @needs_node
-@pytest.mark.parametrize("no_site,isolated", [(True, False), (False, True), (True, True)],
-                         ids=["no-site", "isolated", "both"])
-def test_entry_startup_flags_also_protect_interpreter_probe(tmp_path, no_site, isolated):
+def test_entry_no_site_also_protects_interpreter_probe(tmp_path):
     """A site hook must not run during discovery, before the protected child."""
     (tmp_path / "vendor").mkdir()
     shutil.copy(ROOT / "vendor" / "py_launch.cjs", tmp_path / "vendor" / "py_launch.cjs")
-    entry = (ROOT / f"{TOOL}.cjs").read_text(encoding="utf-8")
-    if isolated:
-        # Keep the production entry unchanged for its noSite-only contract;
-        # exercise the shared launcher's opt-in -I contract in a private copy.
-        assert "noSite: true" in entry
-        entry = entry.replace("noSite: true", f"noSite: {str(no_site).lower()}, isolated: true")
-    (tmp_path / f"{TOOL}.cjs").write_text(entry, encoding="utf-8")
+    marker = tmp_path / "site-hook-ran"
+    hooks = tmp_path / "hooks"
+    hooks.mkdir()
+    (hooks / "sitecustomize.py").write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).touch()\n", encoding="utf-8")
     (tmp_path / f"{TOOL}.py").write_text(
         "import json, sys\n"
         "print(json.dumps({'no_site': sys.flags.no_site, 'isolated': sys.flags.isolated}))\n",
         encoding="utf-8",
     )
-    hooks = tmp_path / "hooks"
-    hooks.mkdir()
-    marker = tmp_path / "site-hook-ran"
-    (hooks / "sitecustomize.py").write_text(
-        f"from pathlib import Path\nPath({str(marker)!r}).touch()\n",
-        encoding="utf-8",
-    )
     env = _env()
     env["PYTHONPATH"] = str(hooks)
-    result = subprocess.run(
-        [NODE, str(tmp_path / f"{TOOL}.cjs")], env=env,
-        capture_output=True, text=True, encoding="utf-8", timeout=15,
-    )
+    result = subprocess.run(_direct(tmp_path), env=env, capture_output=True, text=True,
+                            encoding="utf-8", timeout=15)
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout) == {"no_site": int(no_site), "isolated": int(isolated)}
+    assert json.loads(result.stdout) == {"no_site": 1, "isolated": 0}
     assert result.stderr == ""
-    assert not marker.exists(), "startup flags must protect interpreter discovery too"
+    assert not marker.exists(), "-S must cover interpreter discovery too"
+
+
+@needs_node
+@pytest.mark.parametrize("no_site,isolated", [(False, False), (True, False), (False, True), (True, True)],
+                         ids=["neither", "no-site", "isolated", "both"])
+def test_discovery_honors_no_site_and_isolated_independently(tmp_path, no_site, isolated):
+    """The CLI only exposes -S (--site opts out); -I is a library option, so check resolution itself."""
+    marker = tmp_path / "site-hook-ran"
+    (tmp_path / "sitecustomize.py").write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).touch()\n", encoding="utf-8")
+    launcher = json.dumps(str(ROOT / "vendor" / "py_launch.cjs"))
+    options = json.dumps({"python": sys.executable, "noSite": no_site, "isolated": isolated})
+    env = _env()
+    env["PYTHONPATH"] = str(tmp_path)
+    result = subprocess.run([NODE, "-e", f"require({launcher}).resolvePython({options});"],
+                            env=env, capture_output=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    assert marker.exists() == (not (no_site or isolated))

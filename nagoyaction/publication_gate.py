@@ -5,14 +5,8 @@ caller. A saved gate report is evidence, never a bearer token authorizing writes
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import json
-import os
+import argparse, hashlib, json, os, re, subprocess, sys
 from pathlib import Path
-import re
-import subprocess
-import sys
 
 
 def _pairs(pairs):

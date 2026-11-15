@@ -5,20 +5,8 @@ unit. Only trusted Aoi code may be used. See docs/worker.md for the threat model
 """
 from __future__ import annotations
 
-import argparse
-import contextlib
-import hashlib
-import importlib.metadata
-import json
-import os
+import argparse, contextlib, hashlib, importlib.metadata, json, os, platform, re, signal, subprocess, sys, tempfile, time
 from pathlib import Path
-import platform
-import re
-import signal
-import subprocess
-import sys
-import tempfile
-import time
 
 MAX_BYTES = 32 * 1024 * 1024
 MAX_SECONDS = 300

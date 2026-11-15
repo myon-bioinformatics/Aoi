@@ -588,7 +588,8 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
                     expect = [str((root / rel).resolve()) for rel in aoi.SIBLINGS[name]]
                     got = [entry for entry in seen["PYTHONPATH"].split(os.pathsep) if entry]
                     self.assertEqual(got, expect)
-                    self.assertNotIn(str(root.resolve()), got)
+                    # Aoi 直下は NagoyAction（Aoi のワークフローを動かす）にだけ渡す
+                    self.assertEqual(str(root.resolve()) in got, name == "nagoyaction")
                     self.assertNotIn(str((root / "dragowing").resolve()), got)
                     self.assertEqual(seen["path0"], str((root / name).resolve()))
 

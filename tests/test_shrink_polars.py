@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import shrink_module as sm  # noqa: E402
 import shrink_polars as sp  # noqa: E402
 
-ENTRY = ["dragowing/overlap.py:load_overlap", "pythdragoras/propositions.py:_cond"]
+ENTRY = ["dragowing/overlap.py:load_overlap", "pythdragoras/core/propositions.py:_cond"]
 SEASON = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
 
 
@@ -31,11 +31,11 @@ def _write(path: Path, rows: list[dict]) -> None:
 
 def test_analyze_does_not_follow_imported_cond():
     used, visited = sm.analyze("polars", ["dragowing/overlap.py:load_overlap"])
-    assert "pythdragoras/propositions.py:_cond" not in visited
+    assert "pythdragoras/core/propositions.py:_cond" not in visited
     assert "col" not in used
     assert {"read_ndjson", "DataFrame"} <= set(used)
     used, visited = sm.analyze("polars", ENTRY)
-    assert "pythdragoras/propositions.py:_cond" in visited
+    assert "pythdragoras/core/propositions.py:_cond" in visited
     assert {"read_ndjson", "DataFrame", "Expr", "col", "lit"} <= set(used)
 
 
@@ -258,7 +258,7 @@ def inject(name, filename):
     spec.loader.exec_module(module)
 inject("numpy", "shrink/numpy_min.py")
 inject("polars", "shrink/polars_min.py")
-sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
+sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.records import read_jsonl
 season = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
@@ -313,7 +313,7 @@ spec = importlib.util.spec_from_file_location("polars", ROOT / "shrink" / "polar
 module = importlib.util.module_from_spec(spec)
 sys.modules["polars"] = module
 spec.loader.exec_module(module)
-sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
+sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
 import os
 import tempfile
 import polars as pl

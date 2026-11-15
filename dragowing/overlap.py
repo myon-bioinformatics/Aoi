@@ -10,7 +10,7 @@ from pathlib import Path
 
 OPS = {"<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
 
-from .forms import _atom
+from .forms import _atom, _sibling
 from .records import read_jsonl
 
 B_COND = {"col": "upper_half", "op": "==", "value": False}
@@ -24,11 +24,9 @@ def _check_count(conds: list[dict]) -> None:
 
 
 def _engines():
-    from .aoi_sibling import import_aoi_sibling
-
-    # PythDRagoras の propositions と rule_search。AOI_ROOT/pythdragoras（PYTHONPATH にあればそれ）
-    propositions = import_aoi_sibling("propositions", "pythdragoras")
-    rule_search = import_aoi_sibling("rule_search", "pythdragoras")
+    # PythDRagoras の propositions と rule_search。場所は呼び出し側（Aoi の aoi.py）が入れる
+    propositions = _sibling("propositions", "PythDRagoras")
+    rule_search = _sibling("rule_search", "PythDRagoras")
     return rule_search, propositions
 
 

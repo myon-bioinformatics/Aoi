@@ -21,7 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 # R75・R76 の命題の判定（propositions・sets）。旧ファイルは from-cycle-001/ へ移る前の深さ（parents[3]）と
 # 旧名の PythDRagoras/ のままで、外から PYTHONPATH を渡したときにしか動かなかった。今の場所と名前に直した
-sys.path[:0] = [str(ROOT / "pythdragoras")]
+sys.path[:0] = [str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
 
 import polars as pl  # noqa: E402
 import propositions as pr  # noqa: E402

@@ -18,6 +18,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT / "pythdragoras"))
+sys.path.insert(0, str(ROOT / "pythdragoras" / "core"))  # PythDRagoras #46: propositions などは core/
 sys.path.insert(0, str(HERE))
 
 import polars as pl  # noqa: E402

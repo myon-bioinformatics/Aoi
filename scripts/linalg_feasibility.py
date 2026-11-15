@@ -36,11 +36,11 @@ SKIP = {".venv", ".git", ".test-deps", "node_modules", "__pycache__"}
 ENTRIES = [
     "queryu/ask/suggest.py:Index",
     "queryu/ask/suggest.py:suggest",
-    "pythdragoras/littlebit_prune.py:littlebit",
-    "pythdragoras/littlebit_prune.py:overlap_bounds",
-    "pythdragoras/littlebit_prune.py:search_guaranteed",
-    "pythdragoras/rule_search.py:_search_bitmatrix",
-    "pythdragoras/littlebit_holdout.py:fit",
+    "pythdragoras/core/littlebit_prune.py:littlebit",
+    "pythdragoras/core/littlebit_prune.py:overlap_bounds",
+    "pythdragoras/core/littlebit_prune.py:search_guaranteed",
+    "pythdragoras/core/rule_search.py:_search_bitmatrix",
+    "pythdragoras/core/littlebit_holdout.py:fit",
 ]
 
 REPORT = """\
@@ -337,7 +337,7 @@ def _absent_child() -> int:
     proxy.__file__ = "<absent numpy>"
     proxy.__package__ = "numpy"
     sys.modules["numpy"] = proxy
-    for folder in (ROOT, ROOT / "pythdragoras", ROOT / "queryu", ROOT / "queryu" / "ask"):
+    for folder in (ROOT, ROOT / "pythdragoras", ROOT / "pythdragoras" / "core", ROOT / "queryu", ROOT / "queryu" / "ask"):
         sys.path.insert(0, str(folder))
     try:
         import suggest

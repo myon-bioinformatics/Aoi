@@ -47,6 +47,16 @@ def _aliases(tree: ast.AST, pkg: str) -> tuple[set[str], dict[str, str]]:
         elif isinstance(node, ast.ImportFrom) and node.module == pkg:
             for a in node.names:
                 names[a.asname or a.name] = a.name
+        elif (
+            isinstance(node, ast.Assign)
+            and isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Name)
+            and node.value.func.id == f"_load_{pkg}_min"
+        ):
+            # 同梱の最小版を読む `np = _load_numpy_min()` も pkg の別名として扱う。
+            for t in node.targets:
+                if isinstance(t, ast.Name):
+                    mods.add(t.id)
     return mods, names
 
 

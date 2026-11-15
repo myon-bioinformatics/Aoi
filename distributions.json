@@ -1,6 +1,6 @@
 {
   "schema": "aoi-distributions/1",
-  "source": "ed740c9a7063a20be181cc35e65054034e369d37",
+  "source": "fa21e710a0bf9241709bcc1b4fa58a7654647c61",
   "python": "3.12",
   "license": "LICENSE",
   "tool": {
@@ -55,7 +55,7 @@
       "entry": "distributions/entries/pythdragoras_api.py",
       "paths": [
         "distributions/entries",
-        "pythdragoras"
+        "pythdragoras/core"
       ],
       "output": "dist/pythdragoras_min.py",
       "api": "generic threshold sweeps, sampled curves and provenance validation"

@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-for _dir in (ROOT, ROOT / "sakanalytics"):
+for _dir in (ROOT, ROOT / "sakanalytics", ROOT / "sakanalytics" / "npb"):
     if str(_dir) not in sys.path:
         sys.path.append(str(_dir))
 from aoi_npb import npb_rules  # noqa: E402

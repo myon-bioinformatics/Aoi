@@ -1,6 +1,5 @@
 """Independent cache freshness and candidate/answer separation across all reply paths."""
-import copy
-import json
+import copy, json
 
 import pytest
 

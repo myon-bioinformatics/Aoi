@@ -1,13 +1,6 @@
 """Supervisor safety contracts plus a real Aoi Explorer subprocess round trip."""
-import argparse
-import importlib.util
-import json
-import os
+import argparse, importlib.util, json, os, shutil, subprocess, sys, time
 from pathlib import Path
-import shutil
-import subprocess
-import sys
-import time
 
 import pytest
 
@@ -35,7 +28,11 @@ def research(tmp_path):
         (root / folder).mkdir()
         names = ["exploration.py"] if folder == "research_loop" else ["pythdragoras.py", "sets.py", "propositions.py"]
         for name in names:
-            shutil.copyfile(AOI / folder / name, root / folder / name)
+            # PythDRagoras #46 以降の Aoi では sets・propositions は pythdragoras/core/。同じ場所に写す。
+            moved = AOI / folder / "core" / name
+            source, dest = (moved, root / folder / "core" / name) if moved.is_file() else (AOI / folder / name, root / folder / name)
+            dest.parent.mkdir(exist_ok=True)
+            shutil.copyfile(source, dest)
     for name in ("uv.lock", "pyproject.toml"):
         shutil.copyfile(AOI / name, root / name)
     cycle = root / "cycles/test"

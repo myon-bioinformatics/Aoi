@@ -3,15 +3,7 @@
 Docker lifecycle is declared in pipelines/inbox.toml and llama.compose.yml.
 Only administrator configuration supplies image/model locations, never comments.
 """
-import argparse
-import hashlib
-import json
-import os
-import re
-import time
-import urllib.error
-import urllib.parse
-import urllib.request
+import argparse, hashlib, json, os, re, time, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]

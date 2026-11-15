@@ -1,6 +1,6 @@
 # Compact bitmask experiment
 
-既存の `pythdragoras/bitwise_surrogate.py` を再利用する、標準ライブラリのみの独立実験。
+既存の `pythdragoras/core/bitwise_surrogate.py` を再利用する、標準ライブラリのみの独立実験。
 Layer 19/20案のうち、特徴位置の圧縮と共有ビットを破壊しない照合を先に検証する。
 全20層統合・未知物体の完全復元・一意分解を実装したものではない。
 子リポジトリのsubtreeや既存評価経路は変更しない。

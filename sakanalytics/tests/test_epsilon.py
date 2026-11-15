@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-import epsilon as ep
+import sakanalytics as ep
 
 
 @pytest.mark.parametrize("bad", [0, 0.0, -1e-9, float("nan"), float("inf"), True, False, "1e-6", [1e-6]])

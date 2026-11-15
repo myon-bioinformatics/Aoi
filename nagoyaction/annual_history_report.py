@@ -1,15 +1,10 @@
 """Join real annual audit and explicitly separate synthetic model-check evidence."""
 from __future__ import annotations
-import argparse
-from collections import Counter, defaultdict
-import hashlib
-import json
-from pathlib import Path
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sakanalytics"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "queryu"))
-# NPB の年間ページの範囲（annual_scope.py）と年間表の前提（aoi_npb.py）は Aoi の直下に置く
-sys.path.append(str(Path(__file__).resolve().parents[1]))
+import argparse, hashlib, json
+from collections import Counter, defaultdict; from pathlib import Path
+# SakAnalytics の synthetic_league・annual_audit と、Aoi の annual_scope・aoi_npb は名前で import する。
+# 場所は Aoi の aoi.py が入れる（python aoi.py nagoyaction/annual_history_report.py …）
+import synthetic_league
 from synthetic_league import PRIMARY_YEARS, validate_period, calibration_mean
 from annual_audit import audit_files as _audit_files
 from annual_scope import verify_observations
@@ -78,7 +73,7 @@ def summary(observations,audit_file,annual_file,experiment_files,cache_manifest,
                               rejected_controls=sum(c['rejected'] for c in controls),
                               control_types=dict(Counter(c['kind'] for c in controls)),
                               calibration=e['calibration'],generator_sha256=e['generator_sha256'],
-                              replay_generator_sha256=digest(Path(__file__).resolve().parents[1]/'sakanalytics/synthetic_league.py'),
+                              replay_generator_sha256=digest(Path(synthetic_league.__file__).resolve()),  # SakAnalytics #45 で npb/ へ。import したファイルを使う
                               python_version=e['python_version'],sha256=digest(path)))
     return dict(schema='aoi-annual-history-validation/2',
                 scope=dict(primary_years=list(PRIMARY_YEARS), acceptance='2013-2026 only; all 14 years required',
@@ -98,7 +93,7 @@ def summary(observations,audit_file,annual_file,experiment_files,cache_manifest,
                 interpretation='Synthetic success counts are model-conditional consistency checks, not additional observed NPB samples or a causal verdict about Chunichi.')
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--observations',type=Path,required=True)
     p.add_argument('--audit',type=Path,required=True)
@@ -107,7 +102,7 @@ def main():
     p.add_argument('--experiment',type=Path,action='append',required=True)
     p.add_argument('--cache-manifest',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
-    a=p.parse_args()
+    a=p.parse_args(argv)
     result=summary(a.observations,a.audit,a.annual,a.experiment,a.cache_manifest,a.baseline)
     a.out.parent.mkdir(parents=True,exist_ok=True)
     a.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

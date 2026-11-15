@@ -119,6 +119,7 @@ jobs:
           uv run --locked --python 3.15 pytest -q tests/test_vendor_lock.py tests/test_stdlib_paths.py
           installed="$(.venv/bin/python -c 'import markdown; print(markdown.__version__)')"
           echo "markdown_version=${installed}" >> "$GITHUB_OUTPUT"
+          eval "$(.venv/bin/python .test-deps/aoi/aoi.py)"  # Aoi の aoi.py が兄弟（rule_search）の場所を入れる
           .venv/bin/python scripts/run_stdlib_paths.py --deps real --markdown-version "${installed}" reference.json
       - name: Drop markdown and numpy; keep polars
         run: uv sync --locked --no-dev --no-install-package markdown --no-install-package numpy --python 3.15
@@ -130,8 +131,9 @@ jobs:
           .venv/bin/python -c 'import numpy' && exit 1
           .venv/bin/python -c 'import polars'
       - name: render_md from the wheel and load_overlap on numpy_min
-        env:
-          AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
-        run: .venv/bin/python scripts/run_stdlib_paths.py --deps min --markdown-version "${{ steps.recorded.outputs.markdown_version }}" --cache .cdn-cache minimal.json
+        run: |
+          set -euo pipefail
+          eval "$(.venv/bin/python .test-deps/aoi/aoi.py)"  # Aoi の aoi.py が兄弟（rule_search）の場所を入れる
+          .venv/bin/python scripts/run_stdlib_paths.py --deps min --markdown-version "${{ steps.recorded.outputs.markdown_version }}" --cache .cdn-cache minimal.json
       - name: Byte-identical to the real markdown and numpy result
         run: cmp reference.json minimal.json

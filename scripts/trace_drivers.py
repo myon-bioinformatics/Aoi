@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def load_overlap() -> None:
     """DRAgoWing load_overlap on the c001 season file."""
-    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
+    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
     from dragowing.overlap import default_conditions, load_overlap as overlap
     from dragowing.records import read_jsonl
 
@@ -47,7 +47,7 @@ def suggest_index() -> None:
 
 def littlebit_svd() -> None:
     """PythDRagoras littlebit_prune.littlebit: svd, lstsq, norm."""
-    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
+    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
     import numpy as np
     from littlebit_prune import littlebit
 

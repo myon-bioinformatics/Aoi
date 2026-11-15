@@ -13,14 +13,14 @@
 
 ## 固定した実験の入口
 
-- 計算: [league_laboratory.py](../../../sakanalytics/league_laboratory.py)。Python 3.11以上、標準ライブラリのみ。
+- 計算: [league_laboratory.py](../../../sakanalytics/npb/league_laboratory.py)。Python 3.11以上、標準ライブラリのみ。
 - 設定: [league-laboratory.toml](../league-laboratory.toml)。主対象は2013〜2026年の14年間。
 - [全比較表](../outputs/exploratory/league-laboratory/report.md) / [設定・固定候補・集約結果](../outputs/exploratory/league-laboratory/results.json)。
 - 全年成績・試合証跡を既存synthetic_leagueの整数最大流とvalidate_gamesで検証する。
 - 初回試行で生成系列による挙動の差が見えたため、系列ごとの学習・比較方向の探索を追加した。設計中に評価年も閲覧しており、事前登録・完全な独立確認とは扱わない。
 
 ```bash
-python -S sakanalytics/league_laboratory.py
+python -S sakanalytics/npb/league_laboratory.py
 ```
 
 学習は各系列の発見seed=0・2013〜2022年・変換損失0だけ。後年2023〜2026年、別seed=1、
@@ -106,7 +106,7 @@ W−ピタゴラス期待勝利数は、これとは別の結果指標として�
 合成で固定した候補をそのまま適用し、実測で再調整しない。
 
 ```bash
-python -S sakanalytics/league_laboratory.py \
+python -S sakanalytics/npb/league_laboratory.py \
   --real-games data/observations/npb_calendar/games.jsonl \
   --real-seasons cycles/c001-chunichi/outputs/season.jsonl \
   --out build/league-laboratory-real

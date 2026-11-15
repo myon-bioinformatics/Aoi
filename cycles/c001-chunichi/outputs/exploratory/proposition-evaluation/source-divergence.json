@@ -4,13 +4,16 @@
   "recorded": "2026-10-17",
   "source_divergence": [
     {
-      "path": "sakanalytics/proposition_seed_audit.py",
+      "path": "sakanalytics/core/proposition_seed_audit.py",
       "field": "analysis_sha256",
       "evidence_sha256": "956044dbb58a9aa6fde60d5e6d47887cc405d8079a9e73a8736bbb584fb0627b",
       "current_sha256": "c265de65216a42e6241025eb1f2d218ca24ee3531ca1b81a857c6237bf86ac2a",
       "artifacts_regenerated": false,
       "inputs_regenerated": false,
-      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() of sakanalytics/proposition_seed_audit.py (top-level AST comparison): paths now resolve through aoi_layout/aoi_paths, with new --root/--cycle and AOI_ROOT / AOI_RESEARCH_CYCLE. That commit rewrote analysis_sha256 in seed-evaluation.json to the new file hash without running the generator. seed-evaluation.json is restored byte for byte to 070dc64, so analysis_sha256 is again the hash of the file that produced it. This is not a regenerated baseline. 2026-10-20: SakAnalytics removed aoi_layout.py. proposition_seed_audit.py main() now takes a required --cycle-dir and no longer locates aoi_paths. The evaluation body is unchanged. seed-evaluation.json was not regenerated, so evidence_sha256 stays the hash of the file that produced the artifact."
+      "reason": "Commit 5352430 (Aoi #49, merged through #51) changed only main() of sakanalytics/proposition_seed_audit.py (top-level AST comparison): paths now resolve through aoi_layout/aoi_paths, with new --root/--cycle and AOI_ROOT / AOI_RESEARCH_CYCLE. That commit rewrote analysis_sha256 in seed-evaluation.json to the new file hash without running the generator. seed-evaluation.json is restored byte for byte to 070dc64, so analysis_sha256 is again the hash of the file that produced it. This is not a regenerated baseline. 2026-10-20: SakAnalytics removed aoi_layout.py. proposition_seed_audit.py main() now takes a required --cycle-dir and no longer locates aoi_paths. The evaluation body is unchanged. seed-evaluation.json was not regenerated, so evidence_sha256 stays the hash of the file that produced the artifact. On 2026-11-15 SakAnalytics main bd6598a07adb792270a915840151a773ad329008 (#45, pulled into Aoi by subtree merge) moved sakanalytics/proposition_seed_audit.py to sakanalytics/core/proposition_seed_audit.py without changing its bytes (same SHA-256 as current_sha256); path is the current path and source_relocations maps the path in the pinned commit to it. seed-evaluation.json is unchanged and was not regenerated."
     }
-  ]
+  ],
+  "source_relocations": {
+    "sakanalytics/proposition_seed_audit.py": "sakanalytics/core/proposition_seed_audit.py"
+  }
 }

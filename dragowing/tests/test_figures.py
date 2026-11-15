@@ -22,7 +22,7 @@ TEAM_ORDER = ("d", "g", "s", "db", "t", "c", "h", "f", "b", "e", "l", "m")
 _MODULE_PARENT = None
 
 
-def _dragowing_module_run(extra_env=None):
+def _dragowing_module_run(sibling_env, extra_env=None):
     """cwd and env so `python -m dragowing` loads this tree.
 
     Inside Aoi, ROOT/dragowing is this directory, so cwd stays ROOT.
@@ -30,7 +30,7 @@ def _dragowing_module_run(extra_env=None):
     when it has that name, otherwise a symlink to this repo).
     """
     pkg = Path(__file__).resolve().parents[1]
-    env = dict(os.environ)
+    env = dict(sibling_env)
     if extra_env:
         env.update(extra_env)
     if (ROOT / "dragowing").resolve() == pkg:
@@ -276,7 +276,7 @@ def test_counterexample_table_copies_values_context_and_question():
     assert "Plotly.newPlot" not in page
 
 
-def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
+def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch, sibling_env):
     results = tmp_path / "results"
     results.mkdir()
     dump_jsonl(
@@ -327,7 +327,7 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
         check=False,
         capture_output=True,
         text=True,
-        **_dragowing_module_run(),
+        **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
@@ -344,14 +344,14 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch):
         check=False,
         capture_output=True,
         text=True,
-        **_dragowing_module_run({"CHROME": str(tmp_path / "missing-chrome")}),
+        **_dragowing_module_run(sibling_env, {"CHROME": str(tmp_path / "missing-chrome")}),
     )
     assert missing.returncode == 2
     assert "Chrome" in missing.stderr
     assert (tmp_path / "png" / "index.html").is_file()
 
 
-def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path):
+def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path, sibling_env):
     results = tmp_path / "results"
     results.mkdir()
     dump_jsonl(results / "season.jsonl", [season_row()])
@@ -362,7 +362,7 @@ def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path):
         check=False,
         capture_output=True,
         text=True,
-        **_dragowing_module_run(),
+        **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 1
     assert "結果が読めない" in proc.stderr
@@ -372,7 +372,7 @@ def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path):
         check=False,
         capture_output=True,
         text=True,
-        **_dragowing_module_run(),
+        **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 1
     assert "数値ではない" in proc.stderr

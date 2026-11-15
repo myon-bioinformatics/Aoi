@@ -192,7 +192,10 @@ def test_cycle1_files_reference_real_columns():
     import tomllib
     from pathlib import Path
 
-    from sakanalytics import add_persistence, batting_join, inning_decomposition, season_table, to_team_games
+    try:  # SakAnalytics #45 以降、シーズンの関数は npb/team_season.py（Aoi の aoi.py が sakanalytics/npb を渡す）
+        from team_season import add_persistence, batting_join, inning_decomposition, season_table, to_team_games
+    except ImportError:  # 取り込み前の Aoi では sakanalytics.py の中
+        from sakanalytics import add_persistence, batting_join, inning_decomposition, season_table, to_team_games
 
     import aoi_paths
     root = aoi_paths.resolve_cycle_path(aoi_paths.resolve_aoi_root(anchor=Path(__file__)))
@@ -455,7 +458,7 @@ def test_judge_flags_redefinition_from_ledger(tmp_path):
 
 
 def test_pipeline_cli_maps_system_errors(tmp_path):
-    from pythdragoras import main as pd_main
+    from season import main as pd_main
     season = tmp_path / "season.jsonl"
     pl.DataFrame({"season": [2024], "team": ["d"], "team_name": ["中日"], "league": ["C"], "W": [1], "L": [1],
                   "rank": [1], "rank_tie": [False], "league_size": [1], "pythag_fixed": [0.5], "pythag_var": [0.5]}

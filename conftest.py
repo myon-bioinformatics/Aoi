@@ -2,7 +2,6 @@
 from importlib import import_module
 import importlib.util
 import os
-import shutil
 import sys
 from pathlib import Path
 
@@ -91,38 +90,11 @@ def pytest_runtest_makereport(item, call):
         phases[report.when] = report.outcome
 
 
-# BlueProbe #53 moved NPB modules under blueprobe/npb/. NagoyAction still reads
-# blueprobe/npb_team_annual.py by that path. QueRyu now asks npb_patterns itself,
-# so pytest only keeps temporary copies (same bytes, not symlinks) for NagoyAction.
-_NPB_COMPAT_NAMES = ("npb_calendar.py", "npb_team_annual.py")
-_NPB_COMPAT_PLACED: list[Path] = []
-
-
-def _place_npb_module_copies() -> None:
-    root = Path(__file__).resolve().parent / "blueprobe"
-    for name in _NPB_COMPAT_NAMES:
-        dest = root / name
-        source = root / "npb" / name
-        if dest.exists() or dest.is_symlink() or not source.is_file():
-            continue
-        shutil.copyfile(source, dest)
-        _NPB_COMPAT_PLACED.append(dest)
-
-
-def _remove_npb_module_copies() -> None:
-    for path in _NPB_COMPAT_PLACED:
-        if path.is_file() and not path.is_symlink():
-            path.unlink()
-    _NPB_COMPAT_PLACED.clear()
-
-
 def pytest_configure(config):
     config.stash[_LAB_REPORTS] = {}
-    _place_npb_module_copies()
 
 
 def pytest_sessionfinish(session, exitstatus):
-    _remove_npb_module_copies()
     if not session.config.getoption('--require-lab-integration'):
         return
     reports = session.config.stash[_LAB_REPORTS]
@@ -177,8 +149,10 @@ _DISTINCT_BASENAMES = frozenset({
     'test_node_launcher_regressions.py',
     # DRAgoWing と SakAnalytics が、別々の中身で同じ名前の検査を持つ（SakAnalytics #36）。
     'test_benchmark_optimization_guard.py',
-    # QueRyu #43 と DRAgoWing が、別々の中身で同じ名前の検査を持つ。
+    # QueRyu（#33〜#43）と DRAgoWing が、別々の中身で同じ名前の検査を持つ。
     'test_benchmark_validation.py',
+    # PythDRagoras #46 と SakAnalytics が、別々の中身で同じ名前の検査を持つ。
+    'test_standalone_examples.py',
 })
 
 

@@ -234,11 +234,26 @@ def historical_bytes(root, ref, path):
                           check=True, capture_output=True).stdout
 
 
-def verify_source(root, path, recorded, rows, historical):
+def relocations(root, record, known):
+    """Moves only: historical path (in the pinned commit) -> current path in this tree.
+
+    A move changes no bytes, so it is not a divergence; the bytes at the new path are still
+    compared with the recorded hash. The old path must be gone so a move cannot hide a file.
+    """
+    moved = record.get('source_relocations', {})
+    for old, new in moved.items():
+        if old not in known or not isinstance(new, str) or new == old:
+            raise ValueError(f'{old}: invalid source relocation')
+        if (root / old).exists() or not (root / new).is_file():
+            raise ValueError(f'{old}: relocation does not match the tree')
+    return moved
+
+
+def verify_source(root, path, recorded, rows, historical, current_path=None):
     """A divergence declaration cannot replace verification of original bytes."""
     if hashlib.sha256(historical).hexdigest() != recorded:
         raise ValueError(f'{path}: recorded hash does not match pinned history')
-    current = hashlib.sha256((root / path).read_bytes()).hexdigest()
+    current = hashlib.sha256((root / (current_path or path)).read_bytes()).hexdigest()
     matching = [r for r in rows if r['path'] == path]
     if current == recorded:
         if matching:
@@ -262,8 +277,10 @@ def audit(root=ROOT, read_history=historical_bytes):
     rows = manifest.get('source_divergence', [])
     if set(r['path'] for r in rows) - set(manifest['source_sha256']):
         raise ValueError('unexpected holdout divergence path')
+    moved = relocations(root, manifest, manifest['source_sha256'])
     for path, recorded in manifest['source_sha256'].items():
-        verify_source(root, path, recorded, rows, read_history(root, HOLDOUT_REF, path))
+        verify_source(root, path, recorded, rows, read_history(root, HOLDOUT_REF, path),
+                      moved.get(path))
     for group in ('inputs_sha256', 'artifacts_sha256'):
         for path, recorded in manifest[group].items():
             if hashlib.sha256((root / path).read_bytes()).hexdigest() != recorded:
@@ -282,12 +299,15 @@ def audit(root=ROOT, read_history=historical_bytes):
             raise ValueError(f'{rel}: incorrect sidecar identity')
         rows = sidecar['source_divergence']
         path = f'sakanalytics/{source}'
-        if len(rows) != 1 or rows[0]['path'] != path or rows[0]['field'] != field:
+        # The row names the file where it is now (the child's own test reads it the same way);
+        # source_relocations maps the path in EXPERIMENT_REF to it.
+        current = relocations(root, sidecar, {path}).get(path, path)
+        if len(rows) != 1 or rows[0]['path'] != current or rows[0]['field'] != field:
             raise ValueError(f'{rel}: incorrect divergence coverage')
         recorded = json.loads(data)
         for key in field.split('.'):
             recorded = recorded[key]
-        verify_source(root, path, recorded, rows, read_history(root, EXPERIMENT_REF, path))
+        verify_source(root, current, recorded, rows, read_history(root, EXPERIMENT_REF, path))
         checked += 1
     return {'verified_sources': checked, 'frozen_experiments': 2,
             'holdout_reference': HOLDOUT_REF, 'experiment_reference': EXPERIMENT_REF}

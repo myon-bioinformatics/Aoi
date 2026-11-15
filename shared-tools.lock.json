@@ -3,7 +3,7 @@
   "files": [
     {
       "path": "scripts/child_checks.py",
-      "sha256": "69d6694890da674890eaed5a58e20ed43f2ae7c8c94b892d5f2d15178552de4d",
+      "sha256": "967c4bfd7beb2cb98818815800ad790131440e3eb26200e4ea22f45af3d1f9c3",
       "source": "myon-bioinformatics/Aoi",
       "consumers": []
     },
@@ -48,7 +48,7 @@
     },
     {
       "path": "shrink/polars_min.py",
-      "sha256": "7c3539937b266e8d11452b3621050aab7d60ae8bb05dc79ffdc12874386cf4e1",
+      "sha256": "ccb23fbfe013d22c59436acbd0c8ad27a5bb64bd30df1f5c22f0956c1d416149",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/NagoyAction"
@@ -69,7 +69,10 @@
       "sha256": "1309ff9277b5dd3a67b5b54645a3dfdda58eed3cbe1db775f7fc57630e2833ce",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
-        "myon-bioinformatics/DRAgoWing"
+        "myon-bioinformatics/DRAgoWing",
+        "myon-bioinformatics/NagoyAction",
+        "myon-bioinformatics/PythDRagoras",
+        "myon-bioinformatics/SakAnalytics"
       ]
     }
   ]

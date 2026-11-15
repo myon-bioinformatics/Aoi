@@ -29,6 +29,12 @@ def _finish_source_hash(problems):
     raise AssertionError(text)
 
 
+def _aoi_copy(rel):
+    """Aoi の中の実体。Aoi が取り込んだ後は sakanalytics/<フォルダ>/、取り込む前は sakanalytics/ 直下。"""
+    moved = ROOT / 'sakanalytics' / rel
+    return moved if moved.is_file() else ROOT / 'sakanalytics' / Path(rel).name
+
+
 def _recorded_source_sha(out, artifact, field, recorded, source):
     """記録の生成元ハッシュを確かめる。記録は書き換えない（自動で基準を更新しない）。
 
@@ -77,7 +83,7 @@ def _divergence_row(source, recorded, current):
 
 
 def test_source_hash_check_fails_closed_unless_report(tmp_path, monkeypatch):
-    source = ROOT / 'sakanalytics/proposition_seed_audit.py'
+    source = _aoi_copy('core/proposition_seed_audit.py')
     recorded = '0' * 64
     monkeypatch.delenv('SOURCE_HASH_CHECK', raising=False)
     with pytest.raises(AssertionError, match='SHA-256 drift'):
@@ -94,7 +100,7 @@ def test_source_hash_check_fails_closed_unless_report(tmp_path, monkeypatch):
 
 
 def test_source_hash_check_accepts_recorded_divergence_and_quiet_match(tmp_path, monkeypatch, recwarn):
-    source = ROOT / 'sakanalytics/proposition_seed_audit.py'
+    source = _aoi_copy('core/proposition_seed_audit.py')
     current = hashlib.sha256(source.read_bytes()).hexdigest()
     recorded = 'ab' * 32
     explained = tmp_path / 'explained'
@@ -131,7 +137,7 @@ def test_replay_seed_registry_from_all_2240_plans():
     actual=audit.build(CYCLE,OUT/'skill-seed-plans.jsonl.gz')
     saved=json.loads((OUT/'seed-evaluation.json').read_text())
     # 生成元のハッシュは Aoi の source-divergence.json だけが説明する。ローカルな上書きはしない。
-    source = ROOT/'sakanalytics/proposition_seed_audit.py'
+    source = _aoi_copy('core/proposition_seed_audit.py')
     _recorded_source_sha(OUT, 'seed-evaluation.json', 'analysis_sha256', saved['analysis_sha256'], source)
     assert actual['analysis_sha256']==hashlib.sha256(source.read_bytes()).hexdigest()
     assert {**actual, 'analysis_sha256': saved['analysis_sha256']}==saved
@@ -215,7 +221,7 @@ def test_annual_row_count_matches_declared_units(annual_input,change):
 
 
 def test_cli_takes_cycle_dir_without_resolving_aoi_paths():
-    text = Path(audit.__file__).read_text(encoding='utf-8')
+    text = _aoi_copy('core/proposition_seed_audit.py').read_text(encoding='utf-8')
     assert 'aoi_layout' not in text and 'aoi_paths' not in text
     with pytest.raises(SystemExit) as caught:
         audit.main([])

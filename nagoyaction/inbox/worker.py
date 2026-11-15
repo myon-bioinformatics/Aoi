@@ -5,20 +5,8 @@ unit. Only trusted Aoi code may be used. See docs/worker.md for the threat model
 """
 from __future__ import annotations
 
-import argparse
-import contextlib
-import hashlib
-import importlib.metadata
-import json
-import os
+import argparse, contextlib, hashlib, importlib.metadata, json, os, platform, re, signal, subprocess, sys, tempfile, time
 from pathlib import Path
-import platform
-import re
-import signal
-import subprocess
-import sys
-import tempfile
-import time
 
 MAX_BYTES = 32 * 1024 * 1024
 MAX_SECONDS = 300
@@ -57,7 +45,8 @@ def snapshot(root, cycle, seed):
     files = [cycle / name for name in
              ("analysis.toml", "propositions.toml", "sets.toml", "outputs/season.jsonl")]
     files += [root / "uv.lock", root / "pyproject.toml"]
-    for folder in ("research_loop", "pythdragoras"):
+    # PythDRagoras #46 以降、sets・propositions などは pythdragoras/core/。無い Aoi（取り込み前）では空。
+    for folder in ("research_loop", "pythdragoras", "pythdragoras/core"):
         files += sorted((root / folder).glob("*.py"))
     result = {}
     for path in files:
@@ -217,7 +206,7 @@ def step(root, cycle):
     # Internal protocol. It never writes a checkpoint; parent remains the sole writer.
     request = json.load(sys.stdin)
     sys.dont_write_bytecode = True
-    sys.path[:0] = [str(root / "research_loop"), str(root / "pythdragoras")]
+    sys.path[:0] = [str(root / "research_loop"), str(root / "pythdragoras"), str(root / "pythdragoras" / "core")]
     sys.addaudithook(_readonly_audit)
     from exploration import Explorer, plan
     selected = request.get("input_bundle")

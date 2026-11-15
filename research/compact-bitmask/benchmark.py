@@ -10,7 +10,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'pythdragoras'))
+sys.path.insert(0, str(ROOT / 'pythdragoras' / 'core'))
 from bitwise_surrogate import BitwiseSymbolicSurrogate
 from compact_bitmask import CompactRule, FeatureLayout
 

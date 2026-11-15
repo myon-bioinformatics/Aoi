@@ -18,23 +18,16 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_benchmark_validation.py", "path:scripts/benchmark_overlap.py"),
     # This fixture loads DRAgoWing’s own ROOT/scripts helper, never Aoi/scripts.
     ("tests/test_dragowing_managed_chromium.py", "path:scripts/install_ci_chromium.py"),
-    # PythDRagoras の propositions と rule_search。AOI_ROOT/pythdragoras（aoi_sibling）
-    ("overlap.py", "path:pythdragoras"),
+    # PythDRagoras の propositions と rule_search、QueRyu の ask。場所は Aoi の aoi.py が入れる（conftest.py）
     ("tests/test_forms_review.py", "import:propositions"),
     ("tests/test_figures.py", "import:rule_search"),
-    # QueRyu の ask。AOI_ROOT/queryu/ask（aoi_sibling）
-    ("forms.py", "path:queryu/ask"),
-    # AOI_ROOT からの探し方の検査。一時ディレクトリに作る Aoi の配置名だけで、兄弟は import しない
-    ("tests/test_aoi_sibling.py", "path:pythdragoras"),
-    ("tests/test_aoi_sibling.py", "path:queryu"),
     ("tests/test_figures.py", "import:ask"),
     ("tests/test_forms.py", "import:ask"),
-    # 上のテストが直接 import する兄弟を、conftest.py が AOI_ROOT から sys.path に足す（PYTHONPATH は要らない）
-    ("conftest.py", "path:pythdragoras"),
+    # 上のテストが import する兄弟の path は、AOI_ROOT の Aoi の aoi.py（environment()）に聞く
+    ("conftest.py", "import:aoi"),
     # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
     ("vendor/aoi/vendor/uv_tool_build.py", "path:scripts"),
     ("tests/test_dragowing_standalone.py", "path:scripts"),
-    ("conftest.py", "path:queryu/ask"),
     # テストのデータの場所は AOI_ROOT の Aoi の aoi_paths に聞く（conftest.py が AOI_ROOT を sys.path に足す）
     ("tests/test_figures.py", "import:aoi_paths"),
     ("tests/test_forms.py", "import:aoi_paths"),

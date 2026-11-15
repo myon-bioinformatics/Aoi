@@ -329,7 +329,9 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     sys.path.insert(0, str(args.repo / "sakanalytics"))
-    import sakanalytics as sa
+
+    sys.path.insert(0, str(args.repo / "sakanalytics" / "npb"))  # SakAnalytics #45: シーズンの関数は npb/team_season.py
+    import team_season as sa  # SakAnalytics #45: シーズンの関数は npb/team_season.py
 
     wt = load_sibling("wave_eps")        # 旧 wave_eps_trial.py（今は wave_eps.py の trial）
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))

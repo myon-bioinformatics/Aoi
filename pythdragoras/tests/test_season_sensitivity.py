@@ -1,10 +1,5 @@
-from copy import deepcopy
-import json
-import math
-from pathlib import Path
-import random
-import subprocess
-import sys
+import json, math, random, subprocess, sys
+from copy import deepcopy; from pathlib import Path
 
 import pytest
 from season_sensitivity import analyze, counts_metrics, prepare, shape, threshold_curve
@@ -146,10 +141,38 @@ thresholds=[-1.0,0.0,1.0]
 baseline_weight=1.0
 baseline_threshold=0.0
 ''', encoding='utf-8')
-    subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'season_sensitivity.py'), '--season',str(source),'--config',str(cfg),'--out',str(out),'--markdown',str(md)],check=True)
+    subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'season_sensitivity.py'), '--season',str(source),'--config',str(cfg),'--out',str(out),'--markdown',str(md)],check=True)
     result = json.loads(out.read_text())
     assert result['sources'][0]['sha256']
     assert '中日の指標値' in md.read_text()
+    # Keep machine-readable stdout clean in both mixed-output directions.
+    if Path('/dev/stdout').exists():
+        command = [sys.executable, '-S', str(Path(__file__).parents[1]/'npb'/'season_sensitivity.py'),
+                   '--season', str(source), '--config', str(cfg)]
+        mixed_md = subprocess.run(command + ['--out', str(out), '--markdown', '/dev/stdout'],
+                                  check=True, capture_output=True, text=True)
+        assert mixed_md.stdout == md.read_text(encoding='utf-8')
+        assert out.resolve().as_uri() in mixed_md.stderr
+        mixed_json = subprocess.run(command + ['--out', '/dev/stdout', '--markdown', str(md)],
+                                    check=True, capture_output=True, text=True)
+        assert json.loads(mixed_json.stdout) == result
+        assert md.resolve().as_uri() in mixed_json.stderr
+        # /dev/stdout may resolve to a regular file after shell redirection.
+        redirected = tmp_path / 'redirected.json'
+        with redirected.open('w', encoding='utf-8') as stream:
+            redirected_run = subprocess.run(command + ['--out', '/dev/stdout', '--markdown', str(md)],
+                                            check=True, stdout=stream, stderr=subprocess.PIPE, text=True)
+        assert json.loads(redirected.read_text(encoding='utf-8')) == result
+        assert md.resolve().as_uri() in redirected_run.stderr
+        assert redirected.resolve().as_uri() not in redirected_run.stderr
+        regular = subprocess.run(command + ['--out', str(out), '--markdown', str(md)],
+                                 check=True, capture_output=True, text=True)
+        assert out.resolve().as_uri() in regular.stdout
+        assert md.resolve().as_uri() in regular.stdout
+    # --out・--markdown が無ければ Markdown を標準出力に
+    shown = subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'season_sensitivity.py'), '--season',str(source),'--config',str(cfg)],
+                           check=True, capture_output=True, text=True).stdout
+    assert shown == md.read_text(encoding='utf-8')
 
 
 def test_incomplete_league_is_not_silently_used_as_peer_reference():

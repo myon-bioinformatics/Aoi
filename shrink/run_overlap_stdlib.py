@@ -39,7 +39,7 @@ def main(argv=None) -> int:
             raise SystemExit(f"{' と '.join(present)} が入っている。--deps min は両方ない環境で動かす")
         inject("numpy", ROOT / "shrink" / "numpy_min.py")
         inject("polars", ROOT / "shrink" / "polars_min.py")
-    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras")]
+    sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
     from dragowing.overlap import default_conditions, load_overlap
     from dragowing.records import read_jsonl
 

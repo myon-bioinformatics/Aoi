@@ -5,7 +5,7 @@ from dataclasses import replace; from pathlib import Path
 import pytest
 
 from dragowing.export import MERMAID, PLOTLY, export_draw, mermaid_diagram_content, page_html, plotly_figure_content, plotlyjs_bundle_path
-from dragowing.html_tag_count import count_elements
+from dragowing.dragowing import count_elements
 from dragowing.render import RenderSession, Timeouts
 
 

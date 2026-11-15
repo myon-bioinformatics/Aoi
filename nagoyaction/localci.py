@@ -37,27 +37,16 @@ actionlint の版もソースに固定しない。実行のたびに最新リリ
 
 from __future__ import annotations
 
-import argparse
-import hashlib
-import io
-import json
-import os
-import random
-import re
-import shutil
-import subprocess
-import sys
-import tarfile
-import tempfile
-import urllib.error
-import urllib.request
-import zipfile
-from dataclasses import dataclass
-from pathlib import Path
+import argparse, hashlib, io, json, os, random, re, shutil, subprocess, sys, tarfile, tempfile, urllib.error, urllib.request, zipfile
+from dataclasses import dataclass; from pathlib import Path
 
 
 class LocalCIError(Exception):
     pass
+
+
+class Unreachable(LocalCIError):
+    """GitHub が応答しない（経路なし・DNS・タイムアウト）。閉域網はここに来る。"""
 
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -83,7 +72,7 @@ SOURCES = (
     Source("aoi", "AOI_SHA", "myon-bioinformatics/Aoi", 1402862784),
     Source("myon_bioinformatics", "MYON_BIOINFORMATICS_SHA", "myon-bioinformatics/myon-bioinformatics", 638801160),
     Source("markdown", "MARKDOWN_SHA", "myon-bioinformatics/markdown", 1374546518),
-    Source("web_ui", "WEB_UI_SHA", "myon-bioinformatics/web-ui", 1382466695),
+    Source("web_ui", "WEB_UI_SHA", "myon-bioinformatics/PySaiyanWeBoo", 1382466695),
 )
 
 _OS = {"Linux": "linux", "Darwin": "darwin", "Windows": "windows"}
@@ -127,7 +116,8 @@ class ActionlintRecord:
     asset: str
     sha256: str
     binary: Path | None
-    via: str
+    via: str  # release | go | path、best effort では cache | none も
+    note: str = ""  # best effort: 最新版を使えなかった理由
 
 
 @dataclass
@@ -306,8 +296,10 @@ def github_json(url: str, token: str, opener=urllib.request.urlopen, timeout: fl
             return json.load(resp)
     except urllib.error.HTTPError as exc:
         raise LocalCIError(f"GitHub API {exc.code} for {url}") from exc
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+    except json.JSONDecodeError as exc:
         raise LocalCIError(f"GitHub API failed for {url}: {exc}") from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise Unreachable(f"GitHub API failed for {url}: {exc}") from exc
 
 
 def fetch_bytes(url: str, token: str, opener=urllib.request.urlopen, timeout: float = 60) -> bytes:
@@ -618,8 +610,10 @@ def latest_release(repo: str, *, token: str = "", opener=urllib.request.urlopen,
         if exc.code == 404:
             return None
         raise LocalCIError(f"GitHub API {exc.code} for {url}") from exc
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+    except json.JSONDecodeError as exc:
         raise LocalCIError(f"GitHub API failed for {url}: {exc}") from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise Unreachable(f"GitHub API failed for {url}: {exc}") from exc
     tag = str(data.get("tag_name", ""))
     if not tag:
         return None
@@ -785,6 +779,33 @@ def ensure_actionlint(cache: Path, *, token: str = "", opener=urllib.request.url
         except LocalCIError:
             asset = ""
         return ActionlintRecord(tag, asset, "", None, "go")
+
+
+def cached_actionlint(cache: Path) -> ActionlintRecord | None:
+    """以前の実行が取得して検証した中で、いちばん新しい版。"""
+    found = []
+    for record_path in (cache / "actionlint").glob(f"*/{_ACTIONLINT_RECORD}"):
+        saved = _read_actionlint_record(record_path)
+        binary = next((path for name in ("actionlint", "actionlint.exe")
+                       if (path := record_path.parent / name).is_file() and os.access(path, os.X_OK)), None)
+        if saved and binary:
+            version = tuple(int(part) for part in re.findall(r"\d+", record_path.parent.name))
+            found.append((version, ActionlintRecord(saved["tag"], saved["asset"], saved["sha256"], binary, "cache")))
+    return max(found, key=lambda item: item[0])[1] if found else None
+
+
+def local_actionlint(cache: Path, note: str, which=None) -> ActionlintRecord:
+    """best effort: 最新版を使えないとき、取得済みの検証済み版 → PATH の actionlint → 無し（検査は skip）。"""
+    if record := cached_actionlint(cache):
+        return ActionlintRecord(record.tag, record.asset, record.sha256, record.binary, "cache", note)
+    if found := (which or shutil.which)("actionlint"):
+        return ActionlintRecord("", "", "", Path(found), "path", note)
+    return ActionlintRecord("", "", "", None, "none", note)
+
+
+def format_best_effort_line(record: ActionlintRecord) -> str:
+    use = {"cache": f"取得済みの {record.tag} を使う", "path": f"PATH の {record.binary} を使う"}.get(record.via, "使えるものが無いので検査しない。actionlint を PATH に置けば使う")
+    return f"actionlint: 最新版を使えない（{record.note}）→ {use}"
 
 
 def actionlint_argv(binary: Path | None, files: list[str], shellcheck: str | None,
@@ -1087,8 +1108,14 @@ class Session:
     def __init__(self, root: Path, *, token: str = "", strict: bool = False,
                  runner=subprocess.run, opener=urllib.request.urlopen,
                  actionlint: Path | None | str = "auto",
-                 aoi_resolved: Resolved | None = None, aoi_ref: str = ""):
+                 aoi_resolved: Resolved | None = None, aoi_ref: str = "", cache: Path | None = None,
+                 best_effort: bool = False):
         self.root = root
+        # best effort: できない検査は fail でなく skip にする。GitHub Actions では常に無効。
+        self.best_effort = best_effort and not running_in_github_actions()
+        self.offline = ""  # GitHub が応答しなかった理由。入ったら、以降は問い合わせない
+        self.unasked: dict[str, str] = {}  # repo → 最新リリースを聞けなかった理由
+        self.cache = cache or root / ".localci"  # actionlint binary + record
         self.token = token
         self.strict = strict
         self.runner = runner
@@ -1109,12 +1136,19 @@ class Session:
         if isinstance(self.actionlint, Path):
             self.actionlint_record = ActionlintRecord("", "", "", self.actionlint, "path")
             return self.actionlint_record
-        record = ensure_actionlint(self.root / ".localci", token=self.token, opener=self.opener)
-        if record.via == "go":
-            if not record.tag:
-                raise LocalCIError("actionlint tag was not resolved")
-            if shutil.which("go") is None:
-                raise LocalCIError(f"actionlint {record.tag} の取得に失敗し、go も PATH に無い")
+        try:
+            record = ensure_actionlint(self.cache, token=self.token, opener=self.opener)
+            if record.via == "go":
+                if not record.tag:
+                    raise LocalCIError("actionlint tag was not resolved")
+                if shutil.which("go") is None:
+                    raise LocalCIError(f"actionlint {record.tag} の取得に失敗し、go も PATH に無い")
+        except LocalCIError as exc:
+            if not self.best_effort:
+                raise
+            if isinstance(exc, Unreachable):
+                self.offline = str(exc)
+            record = local_actionlint(self.cache, str(exc))
         self.actionlint_record = record
         return record
 
@@ -1144,8 +1178,27 @@ class Session:
             self.releases[repo] = latest_release(repo, token=self.token, opener=self.opener, runner=self.runner)
         return self.releases[repo]
 
+    def _latest(self, repo: str) -> tuple[tuple[str, str] | None, str]:
+        """（最新リリース, 聞けなかった理由）。best effort でなければ、聞けないときは例外のまま。"""
+        if not self.best_effort:
+            return self._release(repo), ""
+        if self.offline:  # 理由は最初の 1 回に出した
+            return None, "GitHub に届かない"
+        if why := self.unasked.get(repo, ""):
+            return None, why
+        try:
+            return self._release(repo), ""
+        except LocalCIError as exc:
+            if isinstance(exc, Unreachable):
+                self.offline = str(exc)
+            self.unasked[repo] = str(exc)
+            return None, str(exc)
+
     def _pin(self, check: Check) -> Outcome:
-        latest = self._release(check.repo)
+        latest, why = self._latest(check.repo)
+        if why:  # 手元で分かるのは SHA ピンかどうかまで
+            kind = {"major": "動くメジャータグ", "unpinned": "SHA ピンではない"}.get(classify_pin(check.ref, None, check.repo), "SHA ピン")
+            return Outcome("skip", f"{check.repo}@{check.ref or '(none)'}: {kind}。最新版と比べていない（{why}）", [])
         status = classify_pin(check.ref, latest, check.repo)
         probe = substitute("sha_probe", "0" * 40, lambda rng: f"{rng.getrandbits(160):040x}")
         latest_sha = latest[1] if latest else ""
@@ -1170,6 +1223,8 @@ class Session:
 
     def _actionlint(self, check: Check) -> Outcome:
         record = self.prepare_actionlint()
+        if record is not None and record.via == "none":
+            return Outcome("skip", f"actionlint を使えないので検査していない（{record.note}）", [])
         binary = None if record is None else record.binary
         go_ref = record.tag if record is not None and record.via == "go" else None
         argv = actionlint_argv(binary, [str(self.root / check.target)], self.shellcheck, go_ref=go_ref)
@@ -1226,7 +1281,7 @@ def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going
             line = f"    [{mark}] {outcome.detail.splitlines()[0] if outcome.detail else check.kind}"
             lines.append(line)
             emit(line)
-            if outcome.ok:
+            if outcome.ok or outcome.status == "skip":  # skip: 検査できなかった。失敗ではない
                 return None
             if outcome.detail and "\n" in outcome.detail:
                 emit(outcome.detail)
@@ -1268,7 +1323,8 @@ def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going
         passed = failed_check is None
         reports.append(RoundReport(number, rseed, ids, passed, failed_check, lines))
         if passed:
-            emit(f"[pass] round {number}/{total}")
+            skipped = sum(line.startswith("    [skip]") for line in lines)
+            emit(f"[pass] round {number}/{total}" + (f"（{skipped}/{len(ids)} 件は skip）" if skipped else ""))
         else:
             emit(f"[fail] round {number}/{total} seed={rseed}")
             emit("shard:")
@@ -1287,9 +1343,18 @@ def _emit_print(text: str) -> None:
     print(text, flush=True)
 
 
+LINT_KINDS = ("actionlint", "pin")  # `lint`: workflow checks only — no SHA resolution, no pytest, no Aoi checkout
+
+
+def lint_cache() -> Path:
+    """Where `lint` keeps actionlint and its record, so linting another repository writes nothing into it."""
+    return Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "nagoyaction" / "localci"
+
+
 def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, strict: bool,
               pytest_paths: list[str] | None, skip_pytest: bool, env_file: Path | None,
-              self_tests: bool = False, aoi_ref: str = "",
+              self_tests: bool = False, aoi_ref: str = "", kinds: tuple[str, ...] | None = None, cache: Path | None = None,
+              best_effort: bool = False,
               token: str | None = None, runner=subprocess.run, opener=urllib.request.urlopen,
               emit=_emit_print) -> int:
     master = seed if seed is not None else random.SystemRandom().randrange(1, 2**31)
@@ -1299,6 +1364,8 @@ def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, st
         root, pytest_paths=pytest_paths, skip_pytest=skip_pytest, self_tests=self_tests,
         aoi_ref=aoi_ref, token=token, runner=runner, opener=opener, emit=emit,
     )
+    if kinds is not None:
+        checks = [check for check in checks if check.kind in kinds]
     shards = split_shards(checks, repeat, master)
     shellcheck = shellcheck_path()
     emit(f"localci seed={master} checks={len(checks)} rounds={repeat}")
@@ -1309,13 +1376,15 @@ def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, st
             emit(f"  - {item}")
     session = Session(
         root, token=token, strict=strict, runner=runner, opener=opener,
-        aoi_resolved=aoi_resolved, aoi_ref=aoi_ref,
+        aoi_resolved=aoi_resolved, aoi_ref=aoi_ref, cache=cache, best_effort=best_effort,
     )
     actionlint_record = None
     if any(check.kind == "actionlint" for check in checks):
         actionlint_record = session.prepare_actionlint()
         if actionlint_record is not None and actionlint_record.tag:
             emit(format_actionlint_line(actionlint_record))
+        if actionlint_record is not None and actionlint_record.note:
+            emit(format_best_effort_line(actionlint_record))
 
     def execute(check: Check, cseed: int) -> Outcome:
         del cseed
@@ -1352,6 +1421,9 @@ def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, st
     emit("=== summary ===")
     emit(f"seed: {master}")
     emit(confidence_line(passed, repeat, len(report.rounds), report.stopped))
+    if skipped := sum(line.startswith("    [skip]") for r in report.rounds for line in r.lines):
+        nothing = skipped == sum(len(r.shard) for r in report.rounds)
+        emit(f"⚠️ best effort: {skipped} 件は検査できず [skip]" + ("。何も確かめていない" if nothing else "") + "。失敗にするなら --strict")
     if report.stopped or any(not r.passed for r in report.rounds):
         return 1
     return 0
@@ -1382,10 +1454,17 @@ def run_resolve(root: Path, *, aoi_ref: str, env_file: Path | None, github_outpu
     return 0
 
 
-def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="ワークフローとテストを手元で検査する（GitHub Actions と同じ解決）")
+def _parser(prog: str | None = None) -> argparse.ArgumentParser:
+    """prog: `nagoyaction actionlint` shows `lint` as itself and `run` as `… --all`."""
+    parser = argparse.ArgumentParser(prog=prog, description="ワークフローとテストを手元で検査する（GitHub Actions と同じ解決）")
     sub = parser.add_subparsers(dest="cmd", required=True)
-    run = sub.add_parser("run", help="actionlint、ピン検査、SHA 解決、pytest をシャードして実行する")
+    lint = sub.add_parser("lint", prog=prog, help="🔍 actionlint と uses: のピン検査だけ（SHA 解決・pytest・Aoi checkout なし）")
+    lint.add_argument("--strict", action="store_true",
+                      help="古い SHA ピンと、検査できなかったもの（actionlint を取得できない、GitHub に届かない）を失敗にする。setup 以外の actions/* の vN は許す")
+    lint.add_argument("--seed", type=int, default=None, help="入力の差し替えを再現する")
+    lint.add_argument("--root", type=Path, default=None, help="検査するリポジトリ。既定は今いるディレクトリ")
+    lint.add_argument("--env-file", type=Path, default=None, help="actionlint の記録の書き先。既定はユーザーキャッシュ（~/.cache/nagoyaction/localci）")
+    run = sub.add_parser("run", prog=f"{prog} --all" if prog else None, help="actionlint、ピン検査、SHA 解決、pytest をシャードして実行する")
     run.add_argument("--repeat", type=_positive, default=1, help="シャード数。各検査は全ラウンドで一度だけ走る")
     run.add_argument("--seed", type=int, default=None, help="シャッフルと入力の差し替えを再現する")
     run.add_argument("--keep-going", action="store_true", help="失敗したあとも残りのラウンドを実行する")
@@ -1416,16 +1495,21 @@ def _positive(text: str) -> int:
     return value
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, prog: str | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
-    if not argv or argv[0] not in {"run", "resolve", "-h", "--help"}:
+    if not argv or argv[0] not in {"run", "lint", "resolve", "-h", "--help"}:
         argv = ["run", *argv]
-    args = _parser().parse_args(argv)
-    root = (args.root or Path(__file__).resolve().parent).resolve()
+    args = _parser(prog).parse_args(argv)
+    root = (args.root or (Path.cwd() if args.cmd == "lint" else Path(__file__).resolve().parent)).resolve()
     try:
         if args.cmd == "resolve":
             return run_resolve(root, aoi_ref=args.aoi_ref, env_file=args.env_file, github_output=args.github_output)
+        if args.cmd == "lint":
+            cache = lint_cache()
+            return run_local(root, repeat=1, seed=args.seed, keep_going=True, strict=args.strict, pytest_paths=None,
+                             skip_pytest=True, env_file=args.env_file or cache / "refs.env", kinds=LINT_KINDS, cache=cache,
+                             best_effort=not args.strict)
         return run_local(
             root, repeat=args.repeat, seed=args.seed, keep_going=args.keep_going, strict=args.strict,
             pytest_paths=args.pytest_paths, skip_pytest=args.skip_pytest, env_file=args.env_file,

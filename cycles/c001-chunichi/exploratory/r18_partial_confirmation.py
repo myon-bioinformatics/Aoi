@@ -203,11 +203,14 @@ def main(argv=None) -> int:
         return 2
 
     sys.path.insert(0, str(args.repo / "pythdragoras"))
+
+    sys.path.insert(0, str(args.repo / "pythdragoras" / "core"))  # PythDRagoras #46: propositions などは core/
     sys.path.insert(0, str(args.repo / "sakanalytics"))
+    sys.path.insert(0, str(args.repo / "sakanalytics" / "npb"))  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     import polars as pl
     import propositions as P
     import pythdragoras as PD
-    import sakanalytics as sa
+    import team_season as sa  # SakAnalytics #45: シーズンの関数は npb/team_season.py
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
     confirm = cfg.get("confirm") or {}

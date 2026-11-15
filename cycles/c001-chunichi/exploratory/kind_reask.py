@@ -122,6 +122,7 @@ LOW_SCORING = ("K17", "K25", "K26", "K27", "K28", "K29", "K31", "K32", "K40", "K
 
 def load_modules(repo: Path = ROOT):
     sys.path.insert(0, str(repo / "pythdragoras"))
+    sys.path.insert(0, str(repo / "pythdragoras" / "core"))  # PythDRagoras #46: propositions などは core/
     import polars as pl
     import propositions as P
     import pythdragoras as PD
@@ -289,11 +290,11 @@ def win_runs_gap(repo: Path, full, skip: list[int], pl) -> tuple[dict, dict]:
 
     2 つ目の戻り値は第4弾の材料: 「9 回まで」の表の集計、試合の終わり方の件数、単位ごとの「8 回まで」の値。
     """
-    for d in (HERE, repo / "sakanalytics"):
+    for d in (HERE, repo / "sakanalytics", repo / "sakanalytics" / "npb"):
         if str(d) not in sys.path:
             sys.path.insert(0, str(d))
     import games_table_from_observed as GT
-    import sakanalytics as SA
+    import team_season as SA  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     raw = json.loads((repo / "cycles/c001-chunichi/recovered-inputs/observed/games_raw.json").read_text(encoding="utf-8"))
     table = full.select("season", "team", "league", "G", "wl_rf_win_gap").to_dicts()
     league = {(r["season"], r["team"]): r["league"] for r in table}
@@ -508,7 +509,7 @@ def round_six(repo: Path, config: Path, full, tables: tuple, focus, fs: list[dic
     """第6弾。A: 試合の表から作り直した wl_*8 の列（sakanalytics.win_loss_split_eighth）で E85〜DE86、2026年は記録のみ。
     B: 配分の効果と作り直しの列の、延長による寄りと、その列を使う命題の判定の変化。"""
     import games_table_from_observed as GT
-    import sakanalytics as SA
+    import team_season as SA  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     base = repo / "cycles/c001-chunichi"
     teams = SA.load_config(config)["teams"]
     raw = json.loads((base / "recovered-inputs/observed/games_raw.json").read_text(encoding="utf-8"))
@@ -635,7 +636,7 @@ def imputed_allocation(games: list[dict], innings: dict, teams: dict, impute: bo
 def games_with_innings(repo: Path, full) -> tuple[list[dict], dict, dict]:
     """2013〜2025年の公式戦の試合の表と、試合ごとの回ごとの得点（{key: {"home": [...], "away": [...]}}）、球団の定義。"""
     import games_table_from_observed as GT
-    import sakanalytics as SA
+    import team_season as SA  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     base = repo / "cycles/c001-chunichi"
     teams = SA.load_config(base / "analysis.toml")["teams"]
     raw = json.loads((base / "recovered-inputs/observed/games_raw.json").read_text(encoding="utf-8"))
@@ -648,7 +649,7 @@ def games_with_innings(repo: Path, full) -> tuple[list[dict], dict, dict]:
 
 def round_seven(repo: Path, full, more: dict, skip: list[int], pl) -> dict:
     """第7弾: 配分の効果の強さに沿った寄りを、ホーム・ビジター別と、9 回裏を補った見込みで分ける。"""
-    import sakanalytics as SA
+    import team_season as SA  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     games, innings, teams = games_with_innings(repo, full)
     cols = ("alloc_net_home", "alloc_net_away", "alloc_net_strat")
     stored = {(r["season"], r["team"]): r for r in full.select("season", "team", "upper_half", *cols).to_dicts()}
@@ -684,7 +685,7 @@ def round_eight(full, more: dict, skip: list[int], pl, upper: dict | None = None
     8 回終了時の状態（リード・同点・ビハインド）ごとの 9 回終了時の結果も、A・B クラスで数える。
     upper は {(年, 球団): 上の群か}。渡さなければ最終順位（upper_half）。第9弾は、ここに別の群の決め方を渡す。
     """
-    import sakanalytics as SA
+    import team_season as SA  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     t = more["tables"]["full"].filter(pl.col("rf8").is_not_null() & pl.col("ra8").is_not_null())
     upper = upper or {(r["season"], r["team"]): r["upper_half"] for r in full.select("season", "team", "upper_half").to_dicts()}
     cells = {k: {} for k in ("8,8", "8,9", "9,8", "9,9")}
@@ -801,7 +802,7 @@ def tie_weighted_gap(t, theta: float) -> dict:
 
 def upto_gaps(games: list[dict], innings: dict, teams: dict, n: int, eps: float, pl) -> tuple[dict, int]:
     """x = n + eps 回までの得点（score_upto）で作り直した「勝ち試合の得点 − 見込み」。({(年, 球団): 差}, 使った試合の数)。"""
-    import sakanalytics as SA
+    import team_season as SA  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     rows = []
     for gm in games:
         sc = score_upto(gm, innings[gm["key"]], n, eps)
@@ -835,7 +836,7 @@ def round_ten(repo: Path, full, tables: tuple, focus, ns: list[dict], more: dict
     """第10弾。A: 境界を動かす（x 回まで・同点の重み θ・線をずらす）。B: 式1 を翌年・得失点差で問い直す。"""
     import random
 
-    import epsilon as EPS
+    import sakanalytics as EPS  # SakAnalytics #45: epsilon.py の check_eps は sakanalytics.py へ
     games, innings, teams = games_with_innings(repo, full)
     rng = random.Random(20261113)
     drawn = [float(f"{rng.uniform(1, 10):.3f}e-{rng.randint(1, 6)}") for _ in range(5)]
@@ -1043,7 +1044,7 @@ WL_GAPS = ("wl_rf_win_gap", "wl_rf_loss_gap", "wl_wpct_low_gap", "wl_wpct_high_g
 def tie_split(t, win: float, loss: float, extra: float = 0.0) -> dict:
     """sakanalytics.win_loss_split の 4 つの差を、見込みの中の同点の組（x 対 x、重み w）の置き方を替えて作る（第13弾）。
     勝ちに win × w / 2（x+1+extra 対 x+extra）、負けに loss × w / 2（x+extra 対 x+1+extra）。win = loss = 0 は道具と同じ。{(年, 球団): 行}。"""
-    import sakanalytics as SA
+    import team_season as SA  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     totals: dict[tuple, list] = {}
     for season, league, rf, ra in t.select("season", "league", "rf", "ra").iter_rows():
         totals.setdefault((season, league), []).append(rf + ra)

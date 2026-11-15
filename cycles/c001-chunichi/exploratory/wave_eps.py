@@ -141,8 +141,10 @@ def trial_cli(argv=None) -> int:
     args = ap.parse_args(argv)
 
     sys.path.insert(0, str(args.repo / "sakanalytics"))
+
+    sys.path.insert(0, str(args.repo / "sakanalytics" / "npb"))  # SakAnalytics #45: シーズンの関数は npb/team_season.py
     import polars as pl  # noqa: F401
-    import sakanalytics as sa
+    import team_season as sa  # SakAnalytics #45: シーズンの関数は npb/team_season.py
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
     traj = cfg.get("trajectory") or {}
@@ -452,7 +454,9 @@ def sensitivity_cli(argv=None) -> int:
     args = ap.parse_args(argv)
 
     sys.path.insert(0, str(args.repo / "sakanalytics"))
-    import sakanalytics as sa
+
+    sys.path.insert(0, str(args.repo / "sakanalytics" / "npb"))  # SakAnalytics #45: シーズンの関数は npb/team_season.py
+    import team_season as sa  # SakAnalytics #45: シーズンの関数は npb/team_season.py
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
     traj = cfg.get("trajectory") or {}

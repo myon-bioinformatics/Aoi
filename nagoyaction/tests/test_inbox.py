@@ -1,7 +1,6 @@
 """Regression tests for the initial question-only Aoi inbox."""
-import json
+import json, urllib.error
 from pathlib import Path
-import urllib.error
 
 import pytest
 

@@ -68,14 +68,15 @@ if sys.flags.safe_path and str(ROOT) not in sys.path:
 
 import aoi_paths
 
-# Sibling directories each child imports. Not the child itself, not ".", not Aoi's root.
+# Sibling directories each child imports. Not ".", not Aoi's root. A child's own top or subfolder is listed
+# only when its scripts in a subfolder import it (blueprobe/npb, sakanalytics/npb, pythdragoras for core/*.py).
 # "dragowing" is absent on purpose: that directory holds dragowing.py, which would shadow the package.
 SIBLINGS: dict[str, tuple[str, ...]] = {
-    "blueprobe": ("queryu", "queryu/core", "blueprobe/npb"),  # from queryu import Cache, and cache_core in core/; --source npb_*
-    "queryu": ("blueprobe", "blueprobe/npb"),        # extraction and npb_patterns; queryu.py adds its own core/
-    "sakanalytics": ("pythdragoras",),        # import propositions
-    "pythdragoras": ("sakanalytics",),        # tests/test_propositions.py: from sakanalytics import season_table …
-    "dragowing": ("pythdragoras", "queryu/ask"),  # propositions, rule_search, ask
+    "blueprobe": ("queryu", "queryu/core", "blueprobe/npb"),  # --cache: from cache_core import Cache (QueRyu core/); --source npb_* (BlueProbe #53)
+    "queryu": ("blueprobe", "blueprobe/npb"),        # extraction (npb_calendar, npb_team_annual); the caller's BlueProbe stays first
+    "sakanalytics": ("pythdragoras", "pythdragoras/core", "sakanalytics/npb"),  # import propositions (PythDRagoras #46 core/); season metrics (SakAnalytics #45 npb/)
+    "pythdragoras": ("pythdragoras", "sakanalytics", "sakanalytics/npb"),  # core/*.py: from pythdragoras import … (PythDRagoras #46); tests/test_propositions.py: season_table … (SakAnalytics #45 npb/team_season.py)
+    "dragowing": ("pythdragoras", "pythdragoras/core", "queryu/ask"),  # propositions, rule_search (PythDRagoras #46 core/), ask
 }
 _UNION = tuple(dict.fromkeys(rel for name in SIBLINGS for rel in SIBLINGS[name]))
 # NagoyAction runs Aoi's workflows: every sibling and Aoi's root (aoi_npb, annual_scope). Its steps inherit them.

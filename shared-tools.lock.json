@@ -33,7 +33,7 @@
     },
     {
       "path": "shrink/numpy_linalg_min.py",
-      "sha256": "0057f79fb9ab37337c3efa8df57416d0fe8e6567906903ef091fb378e77357b8",
+      "sha256": "346bca19a4f3d2671cb2ff1fef2fba11db3d6194a8cf3249b9243516a03cbe33",
       "source": "myon-bioinformatics/Aoi",
       "consumers": []
     },

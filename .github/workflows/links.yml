@@ -31,7 +31,7 @@ jobs:
           save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           prune-cache: true
       - name: Local (tracked files, exact case)
-        run: python -S nagoyaction/linkcheck.py
+        run: python -S nagoyaction/nagoyaction.py linkcheck
       - name: Remote (files exist in the checked-out commit)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -39,4 +39,4 @@ jobs:
           # pull_requestではcheckoutもgithub.shaもマージ後のcommit。
           # head_refを使うとmain側だけにあるファイルを404と誤判定する。
           REF: ${{ github.sha }}
-        run: python -S nagoyaction/linkcheck.py --remote "$REPO" --ref "$REF"
+        run: python -S nagoyaction/nagoyaction.py linkcheck --remote "$REPO" --ref "$REF"

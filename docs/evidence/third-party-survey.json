@@ -816,7 +816,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1471,
+      "attribute_uses": 1474,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -832,7 +832,7 @@
         "mark.parametrize": 349,
         "mark.skipif": 27,
         "param": 1,
-        "raises": 535,
+        "raises": 538,
         "skip": 16,
         "warns": 3,
         "xfail": 1
@@ -970,7 +970,7 @@
           "import_sites": 2
         },
         "tests": {
-          "attribute_uses": 454,
+          "attribute_uses": 457,
           "attributes": {
             "approx": 104,
             "fail": 14,
@@ -978,7 +978,7 @@
             "importorskip": 3,
             "mark.parametrize": 131,
             "mark.skipif": 11,
-            "raises": 165,
+            "raises": 168,
             "skip": 6
           },
           "dynamic_import_sites": 0,
@@ -3477,7 +3477,7 @@
         "fail": 6,
         "fixture": 2,
         "mark.parametrize": 13,
-        "raises": 15
+        "raises": 18
       },
       "dynamic_lines": [],
       "file": "tests/test_recovered_inputs.py",

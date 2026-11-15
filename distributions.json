@@ -55,7 +55,8 @@
       "entry": "distributions/entries/pythdragoras_api.py",
       "paths": [
         "distributions/entries",
-        "pythdragoras"
+        "pythdragoras",
+        "pythdragoras/core"
       ],
       "output": "dist/pythdragoras_min.py",
       "api": "generic threshold sweeps, sampled curves and provenance validation"

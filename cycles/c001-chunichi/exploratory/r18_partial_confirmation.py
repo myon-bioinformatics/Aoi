@@ -202,12 +202,14 @@ def main(argv=None) -> int:
         print("--out-panel-2026 は --games から作るときだけ（--panel は読むだけ）", file=sys.stderr)
         return 2
 
+    sys.path.insert(0, str(args.repo / "pythdragoras" / "core"))
     sys.path.insert(0, str(args.repo / "pythdragoras"))
+    sys.path.insert(0, str(args.repo / "sakanalytics" / "npb"))
     sys.path.insert(0, str(args.repo / "sakanalytics"))
     import polars as pl
     import propositions as P
     import pythdragoras as PD
-    import sakanalytics as sa
+    import team_season as sa
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
     confirm = cfg.get("confirm") or {}

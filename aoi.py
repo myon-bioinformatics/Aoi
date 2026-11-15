@@ -11,9 +11,12 @@
 A child is a generic single file: it does not look for its siblings. This launcher passes
 ``AOI_ROOT``, ``AOI_RESEARCH_CYCLE``, and only the sibling directories that child imports
 (``SIBLINGS``). Those directories are appended after the caller's ``PYTHONPATH`` (an externally
-supplied BlueProbe stays ahead of Aoi's). Aoi's root and ``.`` are not put on ``PYTHONPATH``, except for
-NagoyAction: it runs Aoi's workflows, so it gets every sibling directory and Aoi's root (``aoi_npb``,
-``annual_scope``), and the steps it starts (``queryu/queryu.py`` and so on) inherit them.
+supplied BlueProbe stays ahead of Aoi's). Aoi's root and ``.`` are not put on ``PYTHONPATH``.
+NagoyAction is the one exception for the root: ``annual_history_report.py`` imports
+``annual_scope`` by name, and ``inbox/inbox.py`` imports ``aoi_npb`` once QueRyu's ``ask.set_teams``
+is present. Both modules are files in Aoi's root, so that directory is the only path entry that
+can provide them. NagoyAction does not receive every sibling, only ``queryu``, ``queryu/ask``,
+``sakanalytics/npb`` and ``blueprobe/npb``. The steps it starts inherit that environment.
 ``dragowing/`` is not one of the directories: ``dragowing.py`` would win ``import dragowing``
 and hide ``dragowing.render``. pytest's ``pythonpath`` is a different list and is not copied.
 ``python aoi.py -m dragowing`` keeps the cwd entry, as ``python -m`` does, and does not add
@@ -68,18 +71,19 @@ if sys.flags.safe_path and str(ROOT) not in sys.path:
 
 import aoi_paths
 
-# Sibling directories each child imports. Not the child itself, not ".", not Aoi's root.
+# Sibling directories each child imports. Not the child itself, not ".", not Aoi's root,
+# except the "." entry on NagoyAction (annual_scope.py and aoi_npb.py live only in the root).
 # "dragowing" is absent on purpose: that directory holds dragowing.py, which would shadow the package.
 SIBLINGS: dict[str, tuple[str, ...]] = {
     "blueprobe": ("queryu", "queryu/core", "blueprobe/npb"),  # from queryu import Cache, and cache_core in core/; --source npb_*
     "queryu": ("blueprobe", "blueprobe/npb"),        # extraction and npb_patterns; queryu.py adds its own core/
-    "sakanalytics": ("pythdragoras",),        # import propositions
-    "pythdragoras": ("sakanalytics",),        # tests/test_propositions.py: from sakanalytics import season_table …
-    "dragowing": ("pythdragoras", "queryu/ask"),  # propositions, rule_search, ask
+    "sakanalytics": ("pythdragoras/core",),   # import propositions (core/propositions.py)
+    "pythdragoras": ("sakanalytics", "sakanalytics/npb"),  # tests: team_season, with a fallback import of sakanalytics
+    "dragowing": ("pythdragoras/core", "queryu/ask"),  # propositions, rule_search, ask
 }
 _UNION = tuple(dict.fromkeys(rel for name in SIBLINGS for rel in SIBLINGS[name]))
-# NagoyAction runs Aoi's workflows: every sibling and Aoi's root (aoi_npb, annual_scope). Its steps inherit them.
-SIBLINGS["nagoyaction"] = (*_UNION, ".")
+# annual_history_report imports annual_scope; inbox imports aoi_npb. Both files are in the root.
+SIBLINGS["nagoyaction"] = ("queryu", "queryu/ask", "sakanalytics/npb", "blueprobe/npb", ".")
 _BARE = object()
 
 # argv: mode, target, AOI_ROOT, AOI_RESEARCH_CYCLE, sibling dirs..., "--", script args...
@@ -119,7 +123,7 @@ def _dirs(rels: tuple[str, ...]) -> list[str]:
     root = str(ROOT)
     for rel in rels:
         path = str((ROOT / rel).resolve())
-        if (path != root or rel == ".") and path not in found:  # the root only when asked for by name (NagoyAction)
+        if (path != root or rel == ".") and path not in found:  # the root only when the list names "." (NagoyAction)
             found.append(path)
     return found
 
@@ -127,9 +131,9 @@ def _dirs(rels: tuple[str, ...]) -> list[str]:
 def environment(env=None, *, child=_BARE) -> dict[str, str]:
     """``AOI_ROOT``, the cycle name, and the caller's ``PYTHONPATH`` with this child's dirs after it.
 
-    No ``child`` (the ``eval`` / ``import aoi`` form) uses the union of every child's dirs.
-    ``child=None`` or an unknown name adds none. The caller's entries stay in front. Aoi's root
-    is not added.
+    No ``child`` (the ``eval`` / ``import aoi`` form) uses the union of every child's dirs,
+    which does not include NagoyAction's root entry. ``child=None`` or an unknown name adds none.
+    The caller's entries stay in front. Aoi's root is added only when that child's list names ``.``.
     """
     env = dict(os.environ if env is None else env)
     if child is _BARE:

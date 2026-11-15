@@ -4,7 +4,7 @@ on:
     paths:
       - 'scripts/nano/**'
       - 'tests/test_nano_benchmark.py'
-      - 'pythdragoras/pythdragoras.py'
+      - 'pythdragoras/npb/season.py'
       - 'pyproject.toml'
       - 'uv.lock'
       - '.github/workflows/nano-benchmark.yml'

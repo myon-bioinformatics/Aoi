@@ -1,6 +1,6 @@
 # サイクル1: 中日ドラゴンズ。ローカルでも GitHub Actions でも、この定義だけを実行する。
-#   python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml
-#   python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml [--offline]
+#   python aoi.py nagoyaction doctor cycles/c001-chunichi/pipeline.toml
+#   python aoi.py nagoyaction run    cycles/c001-chunichi/pipeline.toml [--offline]
 name = "c001-chunichi"
 root = "../.."
 
@@ -57,7 +57,7 @@ run = ["uv", "run", "python", "blueprobe/blueprobe.py", "--source", "npb_team_ba
 # 4. 測る
 [[step]]
 name = "measure"
-run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games}", "--config", "{config}",
+run = ["uv", "run", "python", "sakanalytics/npb/team_season.py", "--games", "{games}", "--config", "{config}",
        "--out", "{out}/season.jsonl", "--innings", "cycles/c001-chunichi/references/pr3-inning-team-year-metrics.csv.gz",
        "--batting", "data/observations/npb_team_batting/teams.jsonl",
        "--sensitivity-out", "{out}/trajectory_sensitivity_units.jsonl"]
@@ -65,7 +65,7 @@ run = ["uv", "run", "python", "sakanalytics/sakanalytics.py", "--games", "{games
 # 5. 問い直す
 [[step]]
 name = "question"
-run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}/season.jsonl",
+run = ["uv", "run", "python", "pythdragoras/npb/season.py", "--season", "{out}/season.jsonl",
        "--config", "{config}", "--hypotheses", "cycles/c001-chunichi/hypotheses.toml",
        "--propositions", "cycles/c001-chunichi/propositions.toml", "--claims", "cycles/c001-chunichi/claims.toml",
        "--seed-evaluation", "cycles/c001-chunichi/outputs/exploratory/proposition-evaluation/seed-evaluation.json",
@@ -74,19 +74,19 @@ run = ["uv", "run", "python", "pythdragoras/pythdragoras.py", "--season", "{out}
 # 5b. 条件の組み合わせを探す（R11。命題を作る材料で、判定ではない）
 [[step]]
 name = "search"
-run = ["uv", "run", "python", "pythdragoras/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
+run = ["uv", "run", "python", "pythdragoras/core/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
        "--candidates", "cycles/c001-chunichi/rule_candidates.toml", "--out", "{out}/rules.jsonl"]
 
 # 5c. R21: R11 の候補に 2014年の道筋（opp_conv_top）を足し、「または」を3つまでにして探す（R11 の探索はそのまま残す）
 [[step]]
 name = "search_r21"
-run = ["uv", "run", "python", "pythdragoras/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
+run = ["uv", "run", "python", "pythdragoras/core/rule_search.py", "--season", "{out}/season.jsonl", "--config", "{config}",
        "--candidates", "cycles/c001-chunichi/rule_candidates_r21.toml", "--out", "{out}/rules_r21.jsonl"]
 
 # 6. 判定を終了コードで表示する。異議（1〜6）では止めず、仕組みの不具合（64 以上）だけを失敗にする
 [[step]]
 name = "judge"
-run = ["uv", "run", "python", "pythdragoras/propositions.py", "judge", "{out}/propositions.jsonl", "--report-only"]
+run = ["uv", "run", "python", "pythdragoras/core/propositions.py", "judge", "{out}/propositions.jsonl", "--report-only"]
 
 # 7. 研究記録の一覧（オフライン）。現在の総合判定を結合するが、2026年の独立検証とは別。
 [[step]]

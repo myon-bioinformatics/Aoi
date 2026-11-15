@@ -102,7 +102,8 @@ def sibling_uses(root: Path, *, me: str, third_party=(), aoi_provided=("aoi_path
     空なら違反なし。既知の例外は呼ぶ側が差し引く。自分がパッケージ名で import される子
     （dragowing）は extra_local にその名前を足す。"""
     sibling_dirs = tuple(c for c in CHILDREN if c != me) + ("scripts",)
-    local = {p.stem for p in root.glob("*.py")} | {p.stem for p in (root / "tests").glob("*.py")}
+    # core/ と npb/ は子の自分のモジュール（PythDRagoras #46、SakAnalytics #45）。無い子では空。
+    local = {p.stem for d in (".", "core", "npb", "tests") for p in (root / d).glob("*.py")}
     allowed = set(sys.stdlib_module_names) | set(third_party) | set(aoi_provided) | set(extra_local) | local
     found = set()
     for rel, path in _sources(root, frozenset(skip_dirs), exclude):

@@ -9,11 +9,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "sakanalytics" / "npb"))
 sys.path.insert(0, str(ROOT / "sakanalytics"))
 
 import polars as pl  # noqa: E402
 import pytest  # noqa: E402
-import sakanalytics as sa  # noqa: E402
+import team_season as sa  # noqa: E402
 
 
 # ==== trial（旧 test_c001_wave_eps_trial.py）

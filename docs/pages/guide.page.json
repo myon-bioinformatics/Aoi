@@ -160,7 +160,7 @@
       "blocks": [
         {
           "type": "output",
-          "text": "$ uv run --locked python nagoyaction/nagoyaction.py doctor cycles/c001-chunichi/pipeline.toml\n$ uv run --locked python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dry-run"
+          "text": "$ uv run --locked python aoi.py nagoyaction doctor cycles/c001-chunichi/pipeline.toml\n$ uv run --locked python aoi.py nagoyaction run    cycles/c001-chunichi/pipeline.toml --dry-run"
         }
       ]
     },

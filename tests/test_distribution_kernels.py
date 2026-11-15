@@ -64,7 +64,7 @@ def test_neighbors_have_explicit_features_groups_gaps_and_stable_ties(api):
 
 def test_threshold_sweep_matches_independent_recounts_and_existing_math(api):
     _, _, score, _ = api
-    spec = importlib.util.spec_from_file_location('_original_season_math', ROOT / 'pythdragoras/season_sensitivity.py')
+    spec = importlib.util.spec_from_file_location('_original_season_math', ROOT / 'pythdragoras/npb/season_sensitivity.py')
     original = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(original)
     rng = random.Random(871)

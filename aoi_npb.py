@@ -82,8 +82,8 @@ _VERIFIED_CS = {(2022, "CL"), (2022, "PL"), (2025, "CL")}
 
 def npb_rules(year, league, members, previous_order):
     """Only versions actually checked against the official source are preset."""
-    if str(ROOT / "sakanalytics") not in sys.path:
-        sys.path.append(str(ROOT / "sakanalytics"))
+    if str(ROOT / "sakanalytics" / "npb") not in sys.path:
+        sys.path.append(str(ROOT / "sakanalytics" / "npb"))
     from season_simulator import Rules
 
     if (year, league) not in _VERIFIED_CS:
@@ -124,7 +124,7 @@ def main(argv=None) -> int:
         with tempfile.TemporaryDirectory(prefix="aoi-npb-") as directory:
             rules = write_json("annual-audit-rules", Path(directory) / "rules.json")
             return subprocess.run([
-                sys.executable, str(ROOT / "sakanalytics/annual_audit.py"),
+                sys.executable, str(ROOT / "sakanalytics/npb/annual_audit.py"),
                 "--rules", str(rules), *forwarded,
             ], check=False).returncode
 

@@ -13,7 +13,7 @@
 | `neighbor_checks.py` | `PythDRagoras/logic/neighbor_checks.py` | 測った組に、既存の判定の反例が当たるかを見る（不明は不明のまま） |
 | `dragowing_inspect.py` | `BlueProbe/reports/dragowing_inspect.py` | DRAgoWing の HTML に埋め込んだ観測（`report-data`）だけを読む。HTML を実行せず、URL も取らない |
 
-`neighbors.py`（近い球団年の組を測る）は測定なので `sakanalytics/neighbors.py` に置いた。
+`neighbors.py`（近い球団年の組を測る）は測定なので `sakanalytics/core/neighbors.py` に置いた。
 
 ## オフライン worker 接続（有効化は保留）
 

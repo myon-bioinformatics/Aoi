@@ -71,8 +71,8 @@ def read_state(path: Path) -> dict:
 
 def snapshot(root: Path, cycle: Path) -> dict:
     files = [cycle / "analysis.toml", cycle / "propositions.toml", cycle / "sets.toml", cycle / "outputs/season.jsonl",
-             root / "pythdragoras/pythdragoras.py", root / "pythdragoras/sets.py",
-             root / "pythdragoras/propositions.py", root / "research_loop/exploration.py"]
+             root / "pythdragoras/pythdragoras.py", root / "pythdragoras/core/sets.py",
+             root / "pythdragoras/core/propositions.py", root / "research_loop/exploration.py"]
     return {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
 
 

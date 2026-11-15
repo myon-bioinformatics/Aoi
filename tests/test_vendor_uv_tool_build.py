@@ -26,7 +26,8 @@ def _load():
 
 def test_builds_lowercase_child_entry(tmp_path):
     out = tmp_path / "nagoyaction-tool"
-    result = _load().build([ROOT / "nagoyaction" / "nagoyaction.py"], out)
+    result = _load().build([ROOT / "nagoyaction" / "nagoyaction.py"], out,
+                           allow_imports=["localci", "local_forge"])
     data = tomllib.loads((out / "pyproject.toml").read_text(encoding="utf-8"))
     assert data["project"]["name"] == "nagoyaction"
     assert data["project"]["dependencies"] == []
@@ -56,5 +57,6 @@ def test_rejects_camelcase_entry_name(tmp_path):
 
 def test_cli_runs_without_site(tmp_path):
     run = subprocess.run([sys.executable, "-S", str(BUILDER), str(ROOT / "nagoyaction" / "nagoyaction.py"),
+                          "--allow-import", "localci", "--allow-import", "local_forge",
                           "--out", str(tmp_path / "o"), "--json"], capture_output=True, text=True, check=False)
     assert run.returncode == 0, run.stderr

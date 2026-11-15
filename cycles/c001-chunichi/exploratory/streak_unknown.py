@@ -43,6 +43,7 @@ EXIT_GATE = 65                                # pythdragoras の終了コード 
 
 
 def load_modules(repo: Path = ROOT):
+    sys.path.insert(0, str(repo / "pythdragoras" / "core"))
     sys.path.insert(0, str(repo / "pythdragoras"))
     import polars as pl
     import propositions as P

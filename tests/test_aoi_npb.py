@@ -124,19 +124,19 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
     import shlex
     import aoi
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
-    union = ("queryu", "queryu/core", "blueprobe/npb", "blueprobe", "pythdragoras", "sakanalytics", "queryu/ask")
+    nagoya = ("queryu", "queryu/ask", "sakanalytics/npb", "blueprobe/npb", ".")
     assert aoi.SIBLINGS == {
         "blueprobe": ("queryu", "queryu/core", "blueprobe/npb"),
         "queryu": ("blueprobe", "blueprobe/npb"),
-        "sakanalytics": ("pythdragoras",),
-        "pythdragoras": ("sakanalytics",),
-        "dragowing": ("pythdragoras", "queryu/ask"),
-        "nagoyaction": (*union, "."),  # Aoi のワークフローを動かすので、兄弟すべてと Aoi 直下（aoi_npb・annual_scope）
+        "sakanalytics": ("pythdragoras/core",),
+        "pythdragoras": ("sakanalytics", "sakanalytics/npb"),
+        "dragowing": ("pythdragoras/core", "queryu/ask"),
+        "nagoyaction": nagoya,  # annual_scope と aoi_npb は Aoi 直下のファイルなので、そこだけ "." 
     }
     assert "dragowing" not in {rel for rels in aoi.SIBLINGS.values() for rel in rels}
     assert "." not in {rel for name, rels in aoi.SIBLINGS.items() if name != "nagoyaction" for rel in rels}
     workflow = aoi.environment({"PYTHONPATH": "kept"}, child="nagoyaction")["PYTHONPATH"].split(os.pathsep)
-    assert workflow == ["kept", *(str((root / rel).resolve()) for rel in union), str(root)]
+    assert workflow == ["kept", *(str((root / rel).resolve()) for rel in nagoya if rel != "."), str(root)]
     env = aoi.environment({"PYTHONPATH": "kept"}, child="queryu")
     assert env["PYTHONPATH"].split(os.pathsep) == ["kept", str((root / "blueprobe").resolve()), str((root / "blueprobe" / "npb").resolve())]
     bare = aoi.environment({"PYTHONPATH": "kept"})
@@ -164,7 +164,8 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
     assert str(root) not in exported_paths
     assert str((root / "dragowing").resolve()) not in exported_paths
     assert str((root / "blueprobe").resolve()) in exported_paths
-    assert str((root / "pythdragoras").resolve()) in exported_paths
+    assert str((root / "pythdragoras" / "core").resolve()) in exported_paths
+    assert str((root / "sakanalytics" / "npb").resolve()) in exported_paths
 
 
 def test_import_aoi_does_not_shadow_the_dragowing_package():

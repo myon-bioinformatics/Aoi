@@ -6,7 +6,7 @@ import resource
 import sys
 
 root = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location('nano_pythdragoras', root / 'pythdragoras/pythdragoras.py')
+spec = importlib.util.spec_from_file_location('nano_pythdragoras', root / 'pythdragoras/npb/season.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 import polars as pl

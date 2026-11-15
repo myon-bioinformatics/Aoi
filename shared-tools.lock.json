@@ -3,7 +3,7 @@
   "files": [
     {
       "path": "scripts/child_checks.py",
-      "sha256": "69d6694890da674890eaed5a58e20ed43f2ae7c8c94b892d5f2d15178552de4d",
+      "sha256": "0cd63ba233ab687ed20cdd228186fea58e7af6801833528711ebc378e4da9136",
       "source": "myon-bioinformatics/Aoi",
       "consumers": []
     },

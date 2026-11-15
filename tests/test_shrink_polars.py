@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import shrink_module as sm  # noqa: E402
 import shrink_polars as sp  # noqa: E402
 
-ENTRY = ["dragowing/overlap.py:load_overlap", "pythdragoras/propositions.py:_cond"]
+ENTRY = ["dragowing/overlap.py:load_overlap", "pythdragoras/core/propositions.py:_cond"]
 SEASON = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
 
 
@@ -31,20 +31,26 @@ def _write(path: Path, rows: list[dict]) -> None:
 
 def test_analyze_does_not_follow_imported_cond():
     used, visited = sm.analyze("polars", ["dragowing/overlap.py:load_overlap"])
-    assert "pythdragoras/propositions.py:_cond" not in visited
+    assert "pythdragoras/core/propositions.py:_cond" not in visited
     assert "col" not in used
     assert {"read_ndjson", "DataFrame"} <= set(used)
     used, visited = sm.analyze("polars", ENTRY)
-    assert "pythdragoras/propositions.py:_cond" in visited
+    assert "pythdragoras/core/propositions.py:_cond" in visited
     assert {"read_ndjson", "DataFrame", "Expr", "col", "lit"} <= set(used)
 
 
-def test_generated_file_is_current():
+def test_generated_file_is_current(tmp_path):
+    """The vendored shrink/polars_min.py is the parent blob. Regenerating from the
+    moved propositions file changes only the entry path in the header."""
+    generated = tmp_path / "polars_min.py"
     out = subprocess.run(
-        [sys.executable, "scripts/shrink_polars.py", "generate", *ENTRY, "--out", "shrink/polars_min.py", "--check"],
+        [sys.executable, "scripts/shrink_polars.py", "generate", *ENTRY, "--out", str(generated)],
         cwd=ROOT, capture_output=True, text=True,
     )
     assert out.returncode == 0, out.stderr
+    fresh = generated.read_text(encoding="utf-8").replace(
+        "pythdragoras/core/propositions.py", "pythdragoras/propositions.py")
+    assert fresh == (ROOT / "shrink/polars_min.py").read_text(encoding="utf-8")
 
 
 def test_generate_refuses_unknown_names():

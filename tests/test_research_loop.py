@@ -106,7 +106,7 @@ def test_unrecognized_exploration_theme_is_not_silently_ignored(cycle):
 def test_snapshot_fingerprints_the_lowercase_layout():
     real = ROOT / "cycles/c001-chunichi"
     keys = set(snapshot(ROOT, real))
-    assert {"pythdragoras/pythdragoras.py", "pythdragoras/sets.py", "pythdragoras/propositions.py",
+    assert {"pythdragoras/pythdragoras.py", "pythdragoras/core/sets.py", "pythdragoras/core/propositions.py",
             "research_loop/exploration.py"} <= keys
 
 

@@ -24,7 +24,7 @@ def _min():
 
 def test_analyze_follows_into_rule_search():
     used, visited = sm.analyze("numpy", [ENTRY])
-    assert "pythdragoras/rule_search.py:_masks_to_matrix" in visited
+    assert "pythdragoras/core/rule_search.py:_masks_to_matrix" in visited
     assert {"asarray", "ones", "flatnonzero", "zeros", "frombuffer", "uint8", "unpackbits"} <= set(used)
 
 

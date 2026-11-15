@@ -110,7 +110,7 @@ import builtins, sys
 from pathlib import Path
 root = Path(sys.argv[1])
 blocked, target = sys.argv[2], sys.argv[3]
-sys.path[:0] = [str(root), str(root / "blueprobe"), str(root / "queryu"), str(root / "research/gpt-r001-score-allocation")]
+sys.path[:0] = [str(root), str(root / "blueprobe"), str(root / "queryu"), str(root / "sakanalytics" / "npb"), str(root / "pythdragoras" / "core"), str(root / "research/gpt-r001-score-allocation")]
 real = builtins.__import__
 def hook(name, globals=None, locals=None, fromlist=(), level=0):
     if name.split(".", 1)[0] == blocked:

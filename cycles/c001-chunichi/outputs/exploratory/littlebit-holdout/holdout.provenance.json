@@ -67,10 +67,10 @@
     {
       "path": "pythdragoras/pythdragoras.py",
       "evidence_sha256": "9b1bd96469a009ab207efa3ac6f6affdd3a12dbfe00b34c1c67147351607cd7b",
-      "current_sha256": "75cc9260fdce559e74bf671d3450b22d9745bbb1abbb1c70055e63574c093d72",
+      "current_sha256": "e9070752956a1902ae95595cdbc5cfd4652c8e43c3ac302060b2e33a8cda324c",
       "artifacts_regenerated": false,
       "inputs_regenerated": false,
-      "reason": "The same diagnostics commit added an optional --seed-evaluation path. The LittleBit holdout CLI does not use it, and the frozen artifacts were not rewritten."
+      "reason": "The same diagnostics commit added an optional --seed-evaluation path. The LittleBit holdout CLI does not use it, and the frozen artifacts were not rewritten. PythDRagoras #46 then replaced this file with the generic stdlib single file (classification metrics, tails, LittleBit). Season-table analysis moved to pythdragoras/npb/season.py. holdout.json and holdout.md stay at their evidence hashes. This is not a regenerated baseline."
     },
     {
       "path": "pythdragoras/littlebit_approx.py",

@@ -81,7 +81,7 @@ python -S annual_scope.py \
 | reversed | 得失点比と逆向きの配分 | 年の量だけでは排除できない反例を作れるか |
 
 ```bash
-python -S sakanalytics/synthetic_league.py \
+python -S sakanalytics/npb/synthetic_league.py \
   --leagues 2 --calibrate-annual data/observations/npb_team_annual/annual.jsonl \
   --out data/synthetic/annual_leagues/12teams/experiment.json \
   --witness-dir data/synthetic/annual_leagues/12teams/witnesses

@@ -140,9 +140,10 @@ def trial_cli(argv=None) -> int:
     ap.add_argument("--sims", type=int, help="設定の sims と違う値で走らせる（対照が合わなくなるので、動作確認用）")
     args = ap.parse_args(argv)
 
+    sys.path.insert(0, str(args.repo / "sakanalytics" / "npb"))
     sys.path.insert(0, str(args.repo / "sakanalytics"))
     import polars as pl  # noqa: F401
-    import sakanalytics as sa
+    import team_season as sa
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
     traj = cfg.get("trajectory") or {}
@@ -451,8 +452,9 @@ def sensitivity_cli(argv=None) -> int:
     ap.add_argument("--variant-eps", type=float, default=VARIANT_EPS, help="線を動かす実行で使う ε（暫定）")
     args = ap.parse_args(argv)
 
+    sys.path.insert(0, str(args.repo / "sakanalytics" / "npb"))
     sys.path.insert(0, str(args.repo / "sakanalytics"))
-    import sakanalytics as sa
+    import team_season as sa
 
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))
     traj = cfg.get("trajectory") or {}

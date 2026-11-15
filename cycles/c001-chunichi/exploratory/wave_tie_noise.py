@@ -328,8 +328,9 @@ def main(argv=None) -> int:
     ap.add_argument("--sims", type=int, help="設定の sims と違う値で走らせる（対照が合わなくなるので、動作確認用）")
     args = ap.parse_args(argv)
 
+    sys.path.insert(0, str(args.repo / "sakanalytics" / "npb"))
     sys.path.insert(0, str(args.repo / "sakanalytics"))
-    import sakanalytics as sa
+    import team_season as sa
 
     wt = load_sibling("wave_eps")        # 旧 wave_eps_trial.py（今は wave_eps.py の trial）
     cfg = tomllib.loads(args.config.read_text(encoding="utf-8"))

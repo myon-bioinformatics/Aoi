@@ -1,8 +1,6 @@
 """Common diagnostics never replace the fixed proposition judgement."""
-from copy import deepcopy
-import json
-import math
-from pathlib import Path
+import json, math
+from copy import deepcopy; from pathlib import Path
 
 import polars as pl
 import pytest
@@ -141,7 +139,7 @@ def test_saved_seed_registry_matches_every_registered_definition():
 
 
 def test_cli_attaches_diagnostics_to_all_propositions(tmp_path, capsys):
-    from pythdragoras import main
+    from season import main
     assert main(['--season',str(CYCLE/'outputs/season.jsonl'),'--config',str(CYCLE/'analysis.toml'),
                  '--propositions',str(CYCLE/'propositions.toml'),'--seed-evaluation',
                  str(CYCLE/'outputs/exploratory/proposition-evaluation/seed-evaluation.json'),

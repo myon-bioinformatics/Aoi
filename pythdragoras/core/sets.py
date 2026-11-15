@@ -24,10 +24,7 @@
 すべて覆う式を「通る」と書く。逆（後件なら式に入る）は求めない（後件に至る道筋は1つとは限らない）。
 """
 
-import json
-import re
-import sys
-import tomllib
+import json, re, sys, tomllib
 from pathlib import Path
 
 import polars as pl
@@ -69,7 +66,8 @@ def set_dnf(s: dict, props: dict[str, dict]) -> list[list[dict]]:
 
 def tokens(expr: str) -> list[str]:
     out, pos = [], 0
-    while pos < len(expr.rstrip()):
+    end = len(expr.rstrip())
+    while pos < end:
         m = TOKEN.match(expr, pos)
         if not m:
             raise SetError(f"式を読めない: {expr[pos:]!r}")

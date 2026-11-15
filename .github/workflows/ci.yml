@@ -1,4 +1,4 @@
-# Aoi の checkout は実行時に main の SHA を解決する（workflow_dispatch の aoi-ref で上書きできる）。
+# Aoi の checkout は実行時に main の SHA を解決する。
 # vendor/aoi は共有ツールの写しで、vendor-lock ジョブが同じ SHA と照合する。
 # vendor-dispatch は親 main の pilot/vendor_dispatch.py で vendor.lock.json を検証する。--record は付けない。
 name: CI
@@ -8,13 +8,6 @@ on:
   pull_request:
   schedule:
     - cron: "17 7 * * *"
-  workflow_dispatch:
-    inputs:
-      aoi-ref:
-        description: "Aoi ref to checkout (default refs/heads/main; branch, tag, or full commit SHA)"
-        required: false
-        default: "refs/heads/main"
-        type: string
 permissions:
   contents: read
 jobs:
@@ -36,7 +29,7 @@ jobs:
       - name: Resolve Aoi ref
         id: resolve
         env:
-          AOI_REF_INPUT: ${{ inputs.aoi-ref || 'refs/heads/main' }}
+          AOI_REF_INPUT: 'refs/heads/main'
           AOI_REPOSITORY_ID: "1402862784"
           GITHUB_TOKEN: ${{ github.token }}
         shell: bash
@@ -257,7 +250,7 @@ jobs:
           python .test-deps/parent/pilot/vendor_dispatch.py --manifest vendor.lock.json
 
   test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     needs: [changes, resolve-vendor]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-24.04

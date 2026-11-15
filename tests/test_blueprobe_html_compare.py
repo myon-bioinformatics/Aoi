@@ -1,19 +1,12 @@
-import socket
 from hashlib import sha256; from pathlib import Path; from unittest.mock import Mock
 
 import pytest
 
-from html_compare import compare_calendar
 from blueprobe import HtmlSource
+from npb_calendar import compare_calendar
 
 
-@pytest.fixture(autouse=True)
-def no_network(monkeypatch):
-    blocked = Mock(side_effect=AssertionError('unexpected network'))
-    monkeypatch.setattr(socket.socket, 'connect', blocked)
-    monkeypatch.setattr(socket.socket, 'connect_ex', blocked)
-    monkeypatch.setattr(socket, 'create_connection', blocked)
-    monkeypatch.setattr(socket, 'getaddrinfo', blocked)
+pytestmark = pytest.mark.usefixtures('no_network')  # conftest.py: no socket for any test here
 
 
 def test_comparison_uses_original_html_and_reports_missing_adopted_urls():

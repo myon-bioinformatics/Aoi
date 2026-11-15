@@ -764,7 +764,6 @@ def _json_ld_types(data, out: list[str]) -> None:
 
 
 def _structured_data(tree: HtmlTree) -> StructuredData:
-    import json
     found: StructuredData = {"json_ld_types": [], "json_ld_invalid": 0, "microdata_types": [],
                              "itemprops": [], "opengraph": {}}
     for node in _walk_elements(tree.root):
@@ -798,8 +797,8 @@ def _table_observation(index: int, table: _Element) -> TableObservation:
             nested = True
             break
         node = node.parent
-    cells = [n for n in _walk_elements(table) if n.tag in {"td", "th"} and _nearest_table(n) is table]
-    rows = [n for n in _walk_elements(table) if n.tag == "tr" and _nearest_table(n) is table]
+    cells = [n for n in _walk_elements(table) if n.tag in {"td", "th"} and _nearest(n, "table") is table]
+    rows = [n for n in _walk_elements(table) if n.tag == "tr" and _nearest(n, "table") is table]
     role = (table.attributes.get("role") or "").strip().lower()
     if role in {"presentation", "none"}:
         reasons.append(f"role={role}")
@@ -824,13 +823,6 @@ def _table_observation(index: int, table: _Element) -> TableObservation:
     else:
         kind, reasons = "data", ["grid_without_headers"]
     return {"index": index, "kind": kind, "reasons": reasons, "rows": len(rows), "nested": nested}
-
-
-def _nearest_table(node: _Element) -> _Element | None:
-    current = node.parent
-    while current is not None and current.tag != "table":
-        current = current.parent
-    return current
 
 
 def _is_hashed_class(name: str) -> bool:
@@ -969,8 +961,6 @@ def _nearest(node: _Element, tag: str) -> _Element | None:
 
 def _observe_url(url: str, cache: Path | None = None, out: Path | None = None) -> int:
     """Fetch one HTTP(S) page with curl and classify its saved HTML."""
-    import hashlib
-    import json
     import shutil
     import subprocess
     import tempfile
@@ -1373,8 +1363,8 @@ def _emoji_main(argv=None) -> int:
 # ブラウザで採った aria スナップショットとの突き合わせは compare_aria_snapshot() で行い、
 # 一致・CSS 由来の差・不一致を分けて数える。ネットワークには出ない。
 #
-#     python accessible_names.py page.html [--json]
-#     python accessible_names.py capture.json          # btk-browser-dom/1（aria_snapshot があれば突き合わせる）
+#     python blueprobe.py names page.html [--json]
+#     python blueprobe.py names capture.json     # btk-browser-dom/1（aria_snapshot があれば突き合わせる）
 
 _NAMES_SKIP = {"script", "style", "template", "noscript"}
 _ROLES = {"button", "link", "tab", "menuitem", "checkbox", "radio", "switch", "option", "combobox",
@@ -1607,11 +1597,16 @@ def _names_observe(html: str, url: str | None = None) -> dict:
     return report
 
 
-def _names_observe_capture(capture: dict) -> dict:
-    """btk-browser-dom/1 または html-snapshot/1。aria_snapshot があれば突き合わせ結果も付ける。"""
+def _capture_html(capture: dict) -> str:
+    """btk-browser-dom/1 または html-snapshot/1 の html（names・headings で共通）。"""
     if capture.get("schema") not in ("btk-browser-dom/1", "html-snapshot/1") or not isinstance(capture.get("html"), str):
         raise ValueError("expected btk-browser-dom/1 or html-snapshot/1")
-    report = _names_observe(capture["html"], capture.get("url"))
+    return capture["html"]
+
+
+def _names_observe_capture(capture: dict) -> dict:
+    """btk-browser-dom/1 または html-snapshot/1。aria_snapshot があれば突き合わせ結果も付ける。"""
+    report = _names_observe(_capture_html(capture), capture.get("url"))
     if isinstance(capture.get("aria_snapshot"), str):
         report["aria_comparison"] = compare_aria_snapshot(report, capture["aria_snapshot"])
     return report
@@ -1704,8 +1699,8 @@ def _names_main(argv=None) -> int:
 #
 # ネットワークには出ない。
 #
-#     python heading_observations.py page.html [--json]
-#     python heading_observations.py capture.json          # btk-browser-dom/1 または html-snapshot/1
+#     python blueprobe.py headings page.html [--json]
+#     python blueprobe.py headings capture.json  # btk-browser-dom/1 または html-snapshot/1
 
 _HEADINGS = {"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 5, "h6": 6}
 _LANDMARK_ROLES = {"main", "navigation", "banner", "contentinfo", "complementary", "region", "search"}
@@ -1859,9 +1854,7 @@ def _headings_observe(html: str, url: str | None = None) -> dict:
 
 def _headings_observe_capture(capture: dict) -> dict:
     """btk-browser-dom/1 または html-snapshot/1 の JSON キャプチャを観測する。"""
-    if capture.get("schema") not in ("btk-browser-dom/1", "html-snapshot/1") or not isinstance(capture.get("html"), str):
-        raise ValueError("expected btk-browser-dom/1 or html-snapshot/1")
-    return _headings_observe(capture["html"], capture.get("url"))
+    return _headings_observe(_capture_html(capture), capture.get("url"))
 
 
 def _headings_summarize(report: dict) -> dict:
@@ -2146,7 +2139,6 @@ def main(argv=None) -> int:
         return _observe_url(args.url, args.cache, args.out)
 
     if args.classify is not None:
-        import json
         html = args.classify.read_text(encoding="utf-8", errors="replace")
         print(json.dumps(classify_document(html), ensure_ascii=False, indent=2))
         return 0

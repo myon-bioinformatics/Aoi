@@ -10,7 +10,7 @@ on:
       - scripts/shrink_polars.py
       - shrink/polars_min.py
       - shrink/polars_feasibility.md
-      - shrink/run_overlap_stdlib.py
+      - scripts/stdlib_min.py
       - tests/test_shrink_polars.py
       - .github/workflows/shrink-polars-experiment.yml
       - dragowing/overlap.py
@@ -51,7 +51,7 @@ jobs:
           uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py analyze
           uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py trace
           uv run --locked --python "${{ matrix.python }}" python scripts/shrink_polars.py absent
-          uv run --locked --python "${{ matrix.python }}" python shrink/run_overlap_stdlib.py --deps real reference.json
+          uv run --locked --python "${{ matrix.python }}" python scripts/stdlib_min.py overlap-stdlib --deps real reference.json
       - name: Reinstall locked runtime deps except polars, its runtime, and numpy
         run: uv sync --locked --no-dev --no-install-package numpy --no-install-package polars --no-install-package polars-runtime-32 --python "${{ matrix.python }}"
       - name: polars and numpy are not installed
@@ -63,6 +63,6 @@ jobs:
             exit 1
           fi
       - name: Same load_overlap on polars_min and numpy_min
-        run: .venv/bin/python shrink/run_overlap_stdlib.py --deps min minimal.json
+        run: .venv/bin/python scripts/stdlib_min.py overlap-stdlib --deps min minimal.json
       - name: Byte-identical to the real polars and numpy result
         run: cmp reference.json minimal.json

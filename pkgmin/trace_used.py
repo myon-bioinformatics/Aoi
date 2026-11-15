@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run a real entry point with requests, tqdm, and Bio blocked, stubbed, or wrapped.
 
-Same three observations as ``scripts/trace_surface.py`` on draft PR #93:
+Same three observations as ``scripts/stdlib_min.py trace-surface`` on draft PR #93:
 
 absent
     A meta-path finder raises ``ModuleNotFoundError``. The traceback is the

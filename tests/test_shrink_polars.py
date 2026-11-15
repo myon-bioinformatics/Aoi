@@ -108,7 +108,7 @@ def test_min_mode_refuses_when_a_real_package_is_installed():
     if importlib.util.find_spec("numpy") is None and importlib.util.find_spec("polars") is None:
         pytest.skip("numpy も polars も入っていない")
     out = subprocess.run(
-        [sys.executable, "shrink/run_overlap_stdlib.py", "--deps", "min", "out.json"],
+        [sys.executable, "scripts/stdlib_min.py", "overlap-stdlib", "--deps", "min", "out.json"],
         cwd=ROOT, capture_output=True, text=True,
     )
     assert out.returncode != 0
@@ -243,7 +243,7 @@ def test_load_overlap_bytes_match_with_both_mins(tmp_path):
     reference = tmp_path / "reference.json"
     minimal = tmp_path / "minimal.json"
     real = subprocess.run(
-        [sys.executable, "shrink/run_overlap_stdlib.py", "--deps", "real", str(reference)],
+        [sys.executable, "scripts/stdlib_min.py", "overlap-stdlib", "--deps", "real", str(reference)],
         cwd=ROOT, capture_output=True, text=True,
     )
     assert real.returncode == 0, real.stderr

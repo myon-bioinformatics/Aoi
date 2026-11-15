@@ -2,7 +2,7 @@
 
 Draft PR #93's description lists `requests`, `tqdm`, and `biopython` as class (b): shrink the used surface to a stdlib module. The inventory that PR actually measured (`docs/evidence/third-party-survey.json` on that branch) does not contain them. They are not declared in any `pyproject.toml` or requirements file, and no file in Aoi or the six child subtrees imports them.
 
-This change measures that again, with an AST walk plus the same three dynamic modes as `scripts/trace_surface.py` (absent, stub, wrap). It does not edit `shrink/` or `scripts/`. Those directories are already touched by open PRs #91, #92, #93, and #94.
+This change measures that again, with an AST walk plus the same three dynamic modes as `scripts/stdlib_min.py trace-surface` (absent, stub, wrap). It does not edit `shrink/` or `scripts/`. Those directories are already touched by open PRs #91, #92, #93, and #94.
 
 ## What was run
 
@@ -53,7 +53,7 @@ There is no loop wrapped in `tqdm`, so there is no project output to compare. Te
 
 **biopython.** The import name is `Bio`. No file imports `Bio` or `biopython`, and no sequence file is parsed by project code. `Bio.SeqIO.parse` of a two-base FASTA works on the real wheel in the equivalence test (`id == "a"`, sequence `AT`). Copying that into `biopython_min.py` would be a new parser. SeqIO's other formats, `Align` (C aligners), SearchIO, Phylo, PDB, and Entrez are not on any call. The C extensions are not a stdlib subset. Entrez is network. There is no output to diff.
 
-**PR #93's tracer, used as-is, rejects this result.** Its absent mode exits non-zero when the driver finishes without a traceback, because its drivers are supposed to import the package. These paths do not. `pkgmin/trace_used.py` keeps the absent / stub / wrap hooks and records "no hit" as the observation. It does not import `scripts/trace_surface.py`, which is not on `main`.
+**PR #93's tracer, used as-is, rejects this result.** Its absent mode exits non-zero when the driver finishes without a traceback, because its drivers are supposed to import the package. These paths do not. `pkgmin/trace_used.py` keeps the absent / stub / wrap hooks and records "no hit" as the observation. It does not import `scripts/stdlib_min.py trace-surface`, which is not on `main`.
 
 **Uninstall does not scrub the dependency tree.** The absence check is `import requests`, `import tqdm`, and `import Bio`. urllib3, certifi, and idna can remain; httpx from the lock uses certifi and idna. Removing those would change the locked environment and make the second run differ for a reason that is not these three packages.
 

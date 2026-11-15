@@ -1,4 +1,4 @@
-"""Offline checks for scripts/survey_third_party.py."""
+"""Offline checks for `scripts/stdlib_min.py survey`."""
 import json
 import subprocess
 import sys
@@ -6,7 +6,7 @@ import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SURVEY = ROOT / "scripts" / "survey_third_party.py"
+SURVEY = ROOT / "scripts" / "stdlib_min.py"
 
 
 def _write(path: Path, text: str) -> None:
@@ -57,10 +57,10 @@ def _project(tmp: Path) -> None:
 
 def test_survey_counts_aliases_dynamic_imports_and_declared_names(tmp_path):
     sys.path.insert(0, str(ROOT / "scripts"))
-    import survey_third_party as survey
+    import stdlib_min as survey
 
     _project(tmp_path)
-    data = survey.survey(tmp_path)
+    data = survey.survey_survey(tmp_path)
     assert set(data["packages"]) == {"polars", "markdown"}
     polars = data["packages"]["polars"]
     assert polars["files"] == 2
@@ -82,16 +82,16 @@ def test_check_fails_when_the_inventory_is_stale(tmp_path):
     target = tmp_path / "inventory.json"
     target.write_text("{}\n", encoding="utf-8")
     proc = subprocess.run(
-        [sys.executable, str(SURVEY), "--root", str(tmp_path), "--check", str(target)],
+        [sys.executable, str(SURVEY), "survey", "--root", str(tmp_path), "--check", str(target)],
         capture_output=True, text=True,
     )
     assert proc.returncode == 1
     subprocess.run(
-        [sys.executable, str(SURVEY), "--root", str(tmp_path), "--json", str(target)],
+        [sys.executable, str(SURVEY), "survey", "--root", str(tmp_path), "--json", str(target)],
         check=True, capture_output=True, text=True,
     )
     proc = subprocess.run(
-        [sys.executable, str(SURVEY), "--root", str(tmp_path), "--check", str(target)],
+        [sys.executable, str(SURVEY), "survey", "--root", str(tmp_path), "--check", str(target)],
         capture_output=True, text=True,
     )
     assert proc.returncode == 0, proc.stderr
@@ -100,7 +100,7 @@ def test_check_fails_when_the_inventory_is_stale(tmp_path):
 
 def test_pep701_fstring_quotes_parse_and_keep_import_counts(tmp_path):
     sys.path.insert(0, str(ROOT / "scripts"))
-    import survey_third_party as survey
+    import stdlib_min as survey
 
     nested = "shown = f'{row['team']}-{row['season']}'\n"
     same_line = (
@@ -129,7 +129,7 @@ def test_pep701_fstring_quotes_parse_and_keep_import_counts(tmp_path):
             shown = f'{row['team']}-{row['season']}'
             return pl.col(shown)
     """)
-    data = survey.survey(tmp_path)
+    data = survey.survey_survey(tmp_path)
     assert data["unparsed"] == []
     assert data["packages"]["polars"]["attributes"] == {"col": 1}
     tree = survey.parse_source(nested, "nested.py")
@@ -138,7 +138,7 @@ def test_pep701_fstring_quotes_parse_and_keep_import_counts(tmp_path):
 
 def test_committed_inventory_matches_the_tree():
     proc = subprocess.run(
-        [sys.executable, str(SURVEY), "--check", str(ROOT / "docs" / "evidence" / "third-party-survey.json")],
+        [sys.executable, str(SURVEY), "survey", "--check", str(ROOT / "docs" / "evidence" / "third-party-survey.json")],
         cwd=ROOT, capture_output=True, text=True,
     )
     assert proc.returncode == 0, proc.stderr
@@ -146,9 +146,9 @@ def test_committed_inventory_matches_the_tree():
 
 def test_selection_keeps_whole_root_classification(tmp_path):
     sys.path.insert(0, str(ROOT / 'scripts'))
-    import survey_third_party as survey
+    import stdlib_min as survey
     _project(tmp_path)
-    data = survey.survey(tmp_path, matches=['app.py', 'child/*'], excludes=['child/*'])
+    data = survey.survey_survey(tmp_path, matches=['app.py', 'child/*'], excludes=['child/*'])
     assert {row['file'] for row in data['sites']} == {'app.py'}
     assert set(data['packages']) == {'polars'}  # excluded localmod is still local
     assert data['packages']['polars']['declared']
@@ -159,18 +159,18 @@ def test_selection_keeps_whole_root_classification(tmp_path):
 
 def test_list_does_not_read_source_or_declarations(tmp_path, monkeypatch, capsys):
     sys.path.insert(0, str(ROOT / 'scripts'))
-    import survey_third_party as survey
+    import stdlib_min as survey
     _project(tmp_path)
     def forbidden(*a, **k):
         raise AssertionError('content was read')
     monkeypatch.setattr(Path, 'read_text', forbidden)
-    assert survey.main(['--root', str(tmp_path), '--match', 'child/*', '--list']) == 0
+    assert survey.survey(['--root', str(tmp_path), '--match', 'child/*', '--list']) == 0
     assert json.loads(capsys.readouterr().out) == ['child/use_pl.py']
 
 
 def test_selection_errors_and_scoped_check(tmp_path):
     _project(tmp_path)
-    base = [sys.executable, '-S', str(SURVEY), '--root', str(tmp_path)]
+    base = [sys.executable, '-S', str(SURVEY), "survey", '--root', str(tmp_path)]
     for args in (['--match', 'missing*'], ['--exclude', '*.py'], ['--match', ''],
                  ['--list', '--json', str(tmp_path / 'never.json')]):
         proc = subprocess.run(base + args, capture_output=True, text=True)
@@ -186,8 +186,8 @@ def test_selection_errors_and_scoped_check(tmp_path):
 
 def test_list_ignores_directories_with_python_suffix(tmp_path, capsys):
     sys.path.insert(0, str(ROOT / 'scripts'))
-    import survey_third_party as survey
+    import stdlib_min as survey
     (tmp_path / 'directory.py').mkdir()
-    assert survey.main(['--root', str(tmp_path), '--list']) == 0
+    assert survey.survey(['--root', str(tmp_path), '--list']) == 0
     assert json.loads(capsys.readouterr().out) == []
-    assert survey.main(['--root', str(tmp_path), '--match', '*.py', '--list']) == 2
+    assert survey.survey(['--root', str(tmp_path), '--match', '*.py', '--list']) == 2

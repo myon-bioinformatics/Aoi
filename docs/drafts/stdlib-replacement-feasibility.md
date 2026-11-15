@@ -20,19 +20,19 @@ Observed on 2026-10-20 against the locked environment (Python 3.12): polars 2.0.
 
 **(c) Not feasible** as a stdlib replacement of that package. The reason is the native library, the size of the surface, or both. A neighboring path that is already stdlib does not make the package itself shrinkable.
 
-Counts come from `scripts/survey_third_party.py`. That count is static: `import` / `from`, string literals passed to `importlib.import_module` or `__import__`, and `alias.attr` chains. A method on a returned value (`frame.height`, `node.css(...)`, `a > b`) is invisible to it. An f-string that reuses its quote inside `{}` (`f'{row['name']}'`, legal since Python 3.12) is parsed on 3.11 by widening that f-string to triple quotes first, so the same tree produces the same inventory on every interpreter CI runs. `scripts/trace_surface.py` runs the call in three ways:
+Counts come from `scripts/stdlib_min.py survey`. That count is static: `import` / `from`, string literals passed to `importlib.import_module` or `__import__`, and `alias.attr` chains. A method on a returned value (`frame.height`, `node.css(...)`, `a > b`) is invisible to it. An f-string that reuses its quote inside `{}` (`f'{row['name']}'`, legal since Python 3.12) is parsed on 3.11 by widening that f-string to triple quotes first, so the same tree produces the same inventory on every interpreter CI runs. `scripts/stdlib_min.py trace-surface` runs the call in three ways:
 
 - **absent** blocks the import. The traceback is the `ModuleNotFoundError` a missing wheel raises, at the project's import line.
 - **stub** lets the import succeed and returns another stub for every attribute. The first operation that needs a real value raises `StubGap`. The events are the prefix of the surface; the traceback is the first hole.
 - **wrap** delegates to the installed package and logs attribute access whose nearest caller is project code. Names in that log but not in the AST count are the ones the survey missed.
 
-The study's own harness (`scripts/survey_third_party.py`, `scripts/trace_surface.py`, `scripts/trace_drivers.py`, and their tests) is excluded from the counts. So are the sibling experiment harnesses that import the same packages only to measure a stand-in: `mindeps/run_httpx.py`, `mindeps/run_coverage.py`, `pkgmin/run_paths.py`, `scripts/shrink_polars.py`, `scripts/linalg_feasibility.py`, `shrink/run_overlap_stdlib.py`, `shrink/run_linalg.py`, and `tests/test_third_party_min.py`, `tests/test_shrink_polars.py`, `tests/test_numpy_linalg_min.py`, `tests/test_pkgmin_surface.py`. `shrink/run_overlap.py` stays in the count. Inventory: `docs/evidence/third-party-survey.json`. Traces: `docs/evidence/trace-surfaces.json`.
+The study's own harness (`scripts/stdlib_min.py` — `survey`, `trace-surface`, `trace-drivers` — and their tests) is excluded from the counts. So are the sibling experiment harnesses that import the same packages only to measure a stand-in: the other `scripts/stdlib_min.py` commands, `pkgmin/run_paths.py`, `scripts/shrink_polars.py`, and `tests/test_third_party_min.py`, `tests/test_shrink_polars.py`, `tests/test_numpy_linalg_min.py`, `tests/test_pkgmin_surface.py`. `scripts/stdlib_min.py overlap` (formerly `scripts/stdlib_min.py overlap`) was in the count until it moved into that file; its two numpy reads (`__file__`, `__version__`) left the count with it. Inventory: `docs/evidence/third-party-survey.json`. Traces: `docs/evidence/trace-surfaces.json`.
 
 ```sh
-python scripts/survey_third_party.py
-python scripts/survey_third_party.py --check docs/evidence/third-party-survey.json
-python scripts/trace_surface.py wrap polars -- python scripts/trace_drivers.py load_overlap
-python scripts/trace_surface.py collect --check --out docs/evidence/trace-surfaces.json
+python scripts/stdlib_min.py survey
+python scripts/stdlib_min.py survey --check docs/evidence/third-party-survey.json
+python scripts/stdlib_min.py trace-surface wrap polars -- python scripts/stdlib_min.py trace-drivers load_overlap
+python scripts/stdlib_min.py trace-surface collect --check --out docs/evidence/trace-surfaces.json
 ```
 
 ## Inventory
@@ -57,7 +57,7 @@ AST names, heaviest first:
 
 - **polars** (937): `col` 419, `DataFrame` 228, `Float64` 69, `Int64` 38, `Int32` 30, `lit` 27, `Utf8` 22, `read_ndjson` 18, `when` 14, `Series` 15, `concat` 11, `len` 10, `Expr` 11, `Boolean` 8, plus `first`, `sum`, `concat_str`, `__version__`, `any_horizontal`, `max_horizontal`, `read_csv`, `concat_list`, `int_range`, `exceptions.PolarsError`, `Config.set_tbl_rows`.
 - **numpy** (241, 65 names): the `load_overlap` set is `asarray`, `ones`, `flatnonzero`, `frombuffer`, `uint8`, `unpackbits`, `zeros`. The heavy set is `linalg.svd` (2), `linalg.lstsq` (2), `linalg.norm` (6), `linalg.pinv` (1), plus `ndarray` 22, `float64` 24, `where` 9, `maximum` 7, `abs` 7, `sign` 6, and the rest of the table in the JSON.
-- By tree, polars attribute uses are SakAnalytics 677 (4 files), PythDRagoras 223 (17), cycles 22, DRAgoWing 3, NagoyAction 7 (6 files, including the vendored shrink harness), research_loop 2, research 2, root tests 1. Numpy attribute uses are PythDRagoras 192 (9 files), QueRyu 35 (2), research 7, DRAgoWing 5, and 2 in `shrink/run_overlap.py` (the existing harness).
+- By tree, polars attribute uses are SakAnalytics 677 (4 files), PythDRagoras 223 (17), cycles 22, DRAgoWing 3, NagoyAction 7 (6 files, including the vendored shrink harness), research_loop 2, research 2, root tests 1. Numpy attribute uses are PythDRagoras 192 (9 files), QueRyu 35 (2), research 7, DRAgoWing 5.
 
 ## markdown — (a)
 
@@ -111,7 +111,7 @@ AST on that path had counted `asarray`, `ones`, `flatnonzero`, `frombuffer`, `ui
 
 **PythDRagoras `littlebit_prune.littlebit` is the same class.** One wrap (8×5 matrix, rank 2, one stage) called `linalg.svd` and `linalg.lstsq`, plus `einsum`, `sign`, `abs`, `maximum`, `sum`, `.T`, and `__matmul__`. `linalg.norm` and `linalg.pinv` are in the AST (norm in `littlebit_prune.overlap_bounds` and in suggest; pinv in `littlebit_holdout.fit`) and were not on this particular call. Together that is LAPACK (SVD, least squares, pseudoinverse) plus broadcasting and reductions. 192 of the 241 numpy attribute uses sit in PythDRagoras. Class **(c)**. `queryu/tests/test_id_suggest.py` adds `full_like`, `ones_like`, `sqrt` on top of the same Index.
 
-`shrink/run_overlap.py` only touches `numpy.__file__` and `numpy.__version__` while proving which implementation ran.
+`scripts/stdlib_min.py overlap` only touches `numpy.__file__` and `numpy.__version__` while proving which implementation ran (outside the count since it joined the harness file).
 
 ## selectolax — (c)
 
@@ -155,7 +155,7 @@ Of the package modules under `dragowing/`, only two import a third-party library
 
 `dist/dragowing_min.py` (and the other four files next to it) is already the managed stdlib copy. The survey finds no third-party import under `dist/`. It also does not include `load_overlap` or `render_md`. A downstream caller of `dragowing_min` never imports polars, numpy, or markdown. That contract is the one in `docs/distributions.md`, and this study does not change it.
 
-A caller of the **full** package using the default native backend hits lazy `import polars` and `import numpy` inside `load_overlap`; the explicit stdlib backend bypasses both. The injection point already used for numpy is process-wide and does not edit production code: `shrink/run_overlap.py` puts `shrink/numpy_min.py` in `sys.modules["numpy"]` before the import. The same seam is what a `polars_min` would use (`sys.modules["polars"]` before `dragowing.overlap` is imported). It works for a caller that owns the process. It does not work if polars was already imported, and it does not apply to someone who only received `dist/dragowing_min.py`, because that file never calls `load_overlap`.
+A caller of the **full** package using the default native backend hits lazy `import polars` and `import numpy` inside `load_overlap`; the explicit stdlib backend bypasses both. The injection point already used for numpy is process-wide and does not edit production code: `scripts/stdlib_min.py overlap` puts `shrink/numpy_min.py` in `sys.modules["numpy"]` before the import. The same seam is what a `polars_min` would use (`sys.modules["polars"]` before `dragowing.overlap` is imported). It works for a caller that owns the process. It does not work if polars was already imported, and it does not apply to someone who only received `dist/dragowing_min.py`, because that file never calls `load_overlap`.
 
 ## What the traces do not prove
 

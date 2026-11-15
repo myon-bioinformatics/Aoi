@@ -6,7 +6,7 @@ on:
   pull_request:
     paths:
       - scripts/fetch_module.py
-      - scripts/cdn_markdown_smoke.py
+      - scripts/stdlib_min.py
       - .github/workflows/cdn-module-experiment.yml
   workflow_dispatch:
 
@@ -46,4 +46,4 @@ jobs:
       - name: Fetch (or reuse cache), verify sha256, import from the wheel
         run: python scripts/fetch_module.py fetch markdown --cache .cdn-cache
       - name: Run DRAgoWing render_md with the fetched module
-        run: python scripts/cdn_markdown_smoke.py .cdn-cache
+        run: python scripts/stdlib_min.py cdn-markdown .cdn-cache

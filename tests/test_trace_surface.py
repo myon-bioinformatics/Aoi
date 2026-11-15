@@ -1,4 +1,4 @@
-"""Offline checks for scripts/trace_surface.py, using a tiny stand-in package."""
+"""Offline checks for `scripts/stdlib_min.py trace-surface`, using a tiny stand-in package."""
 import json
 import subprocess
 import sys
@@ -6,7 +6,7 @@ import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TRACE = ROOT / "scripts" / "trace_surface.py"
+TRACE = ROOT / "scripts" / "stdlib_min.py"
 
 
 def _write(path: Path, text: str) -> None:
@@ -41,7 +41,7 @@ def _tree(tmp: Path) -> None:
 
 def _run(tmp: Path, mode: str, out: Path):
     return subprocess.run(
-        [sys.executable, str(TRACE), mode, "fakeutil", "--root", str(tmp), "--out", str(out),
+        [sys.executable, str(TRACE), "trace-surface", mode, "fakeutil", "--root", str(tmp), "--out", str(out),
          "--", sys.executable, str(tmp / "driver.py")],
         cwd=tmp, capture_output=True, text=True,
     )

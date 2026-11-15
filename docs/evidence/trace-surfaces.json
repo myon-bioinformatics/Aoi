@@ -7,7 +7,8 @@
       "package": "polars",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "load_overlap"
       ],
       "status": 1,
@@ -18,6 +19,7 @@
         "Config.set_tbl_rows",
         "DataFrame",
         "Expr",
+        "Float32",
         "Float64",
         "Int32",
         "Int64",
@@ -29,8 +31,10 @@
         "concat",
         "concat_list",
         "concat_str",
+        "corr",
         "exceptions.PolarsError",
         "first",
+        "format",
         "int_range",
         "len",
         "lit",
@@ -49,7 +53,8 @@
       "package": "polars",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "load_overlap"
       ],
       "status": 1,
@@ -65,6 +70,7 @@
         "Config.set_tbl_rows",
         "DataFrame",
         "Expr",
+        "Float32",
         "Float64",
         "Int32",
         "Int64",
@@ -76,8 +82,10 @@
         "concat",
         "concat_list",
         "concat_str",
+        "corr",
         "exceptions.PolarsError",
         "first",
+        "format",
         "int_range",
         "len",
         "lit",
@@ -98,35 +106,35 @@
           "qual": "polars",
           "name": "read_ndjson",
           "file": "dragowing/overlap.py",
-          "line": 131
+          "line": 123
         },
         {
           "op": "call",
           "qual": "polars.read_ndjson",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 131
+          "line": 123
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson()",
           "name": "height",
           "file": "dragowing/overlap.py",
-          "line": 132
+          "line": 124
         },
         {
           "op": "dunder",
           "qual": "polars.read_ndjson().height",
           "name": "__ne__",
           "file": "dragowing/overlap.py",
-          "line": 132
+          "line": 124
         },
         {
           "op": "dunder",
           "qual": "polars.read_ndjson().height.__ne__",
           "name": "__bool__",
           "file": "dragowing/overlap.py",
-          "line": 132
+          "line": 124
         }
       ]
     },
@@ -136,7 +144,8 @@
       "package": "polars",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "load_overlap"
       ],
       "status": 0,
@@ -159,6 +168,7 @@
         "Config.set_tbl_rows",
         "DataFrame",
         "Expr",
+        "Float32",
         "Float64",
         "Int32",
         "Int64",
@@ -170,8 +180,10 @@
         "concat",
         "concat_list",
         "concat_str",
+        "corr",
         "exceptions.PolarsError",
         "first",
+        "format",
         "int_range",
         "len",
         "lit",
@@ -197,132 +209,132 @@
           "qual": "polars",
           "name": "read_ndjson",
           "file": "dragowing/overlap.py",
-          "line": 131
+          "line": 123
         },
         {
           "op": "call",
           "qual": "polars.read_ndjson",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 131
+          "line": 123
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson()",
           "name": "height",
           "file": "dragowing/overlap.py",
-          "line": 132
+          "line": 124
         },
         {
           "op": "dunder",
           "qual": "polars.read_ndjson()",
           "name": "__getitem__",
           "file": "dragowing/overlap.py",
-          "line": 134
+          "line": 126
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson().__getitem__",
           "name": "to_list",
           "file": "dragowing/overlap.py",
-          "line": 134
+          "line": 126
         },
         {
           "op": "call",
           "qual": "polars.read_ndjson().__getitem__.to_list",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 134
+          "line": 126
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson()",
           "name": "select",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 49
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson()",
           "name": "columns",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 49
         },
         {
           "op": "getattr",
           "qual": "polars",
           "name": "col",
-          "file": "pythdragoras/propositions.py",
+          "file": "pythdragoras/core/propositions.py",
           "line": 284
         },
         {
           "op": "call",
           "qual": "polars.col",
           "name": "",
-          "file": "pythdragoras/propositions.py",
+          "file": "pythdragoras/core/propositions.py",
           "line": 284
         },
         {
           "op": "getattr",
           "qual": "polars",
           "name": "lit",
-          "file": "pythdragoras/propositions.py",
+          "file": "pythdragoras/core/propositions.py",
           "line": 284
         },
         {
           "op": "call",
           "qual": "polars.lit",
           "name": "",
-          "file": "pythdragoras/propositions.py",
+          "file": "pythdragoras/core/propositions.py",
           "line": 284
         },
         {
           "op": "dunder",
           "qual": "polars.col()",
           "name": "__gt__",
-          "file": "pythdragoras/propositions.py",
+          "file": "pythdragoras/core/propositions.py",
           "line": 284
         },
         {
           "op": "call",
           "qual": "polars.read_ndjson().select",
           "name": "",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 49
         },
         {
           "op": "dunder",
           "qual": "polars.read_ndjson().select()",
           "name": "__getitem__",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 49
         },
         {
           "op": "getattr",
           "qual": "polars.read_ndjson().select().__getitem__",
           "name": "to_list",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 49
         },
         {
           "op": "call",
           "qual": "polars.read_ndjson().select().__getitem__.to_list",
           "name": "",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 49
         },
         {
           "op": "dunder",
           "qual": "polars.col()",
           "name": "__le__",
-          "file": "pythdragoras/propositions.py",
+          "file": "pythdragoras/core/propositions.py",
           "line": 284
         },
         {
           "op": "dunder",
           "qual": "polars.col()",
           "name": "__eq__",
-          "file": "pythdragoras/propositions.py",
+          "file": "pythdragoras/core/propositions.py",
           "line": 284
         }
       ]
@@ -333,7 +345,8 @@
       "package": "numpy",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "load_overlap"
       ],
       "status": 0,
@@ -357,6 +370,7 @@
         "__file__",
         "__version__",
         "abs",
+        "allclose",
         "any",
         "arange",
         "argpartition",
@@ -372,40 +386,42 @@
         "column_stack",
         "concatenate",
         "corrcoef",
-        "divide",
+        "diag",
         "einsum",
         "empty",
         "errstate",
+        "exp",
         "flatnonzero",
         "float32",
         "float64",
         "floating",
         "floor",
         "frombuffer",
-        "full_like",
         "generic",
         "hstack",
         "inf",
         "int64",
-        "int8",
         "integer",
         "isfinite",
+        "linalg.LinAlgError",
         "linalg.lstsq",
         "linalg.norm",
         "linalg.pinv",
         "linalg.svd",
         "log",
+        "longdouble",
         "maximum",
         "mean",
+        "median",
         "meshgrid",
         "minimum",
         "nan_to_num",
         "ndarray",
         "nonzero",
         "ones",
-        "ones_like",
         "packbits",
         "partition",
+        "percentile",
         "random.Generator",
         "random.PCG64",
         "random.default_rng",
@@ -419,8 +435,7 @@
         "uint8",
         "unpackbits",
         "where",
-        "zeros",
-        "zeros_like"
+        "zeros"
       ],
       "missed_by_ast": [
         "__and__",
@@ -435,70 +450,70 @@
           "op": "getattr",
           "qual": "numpy",
           "name": "frombuffer",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 122
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "uint8",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 122
         },
         {
           "op": "call",
           "qual": "numpy.frombuffer",
           "name": "",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 122
         },
         {
           "op": "getattr",
           "qual": "numpy.frombuffer()",
           "name": "reshape",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 122
         },
         {
           "op": "call",
           "qual": "numpy.frombuffer().reshape",
           "name": "",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 122
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "unpackbits",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 124
         },
         {
           "op": "call",
           "qual": "numpy.unpackbits",
           "name": "",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 124
         },
         {
           "op": "dunder",
           "qual": "numpy.unpackbits()",
           "name": "__getitem__",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 124
         },
         {
           "op": "getattr",
           "qual": "numpy.unpackbits().__getitem__",
           "name": "astype",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 124
         },
         {
           "op": "call",
           "qual": "numpy.unpackbits().__getitem__.astype",
           "name": "",
-          "file": "pythdragoras/rule_search.py",
+          "file": "pythdragoras/core/rule_search.py",
           "line": 124
         },
         {
@@ -506,98 +521,98 @@
           "qual": "numpy.unpackbits().__getitem__.astype()",
           "name": "shape",
           "file": "dragowing/overlap.py",
-          "line": 140
+          "line": 132
         },
         {
           "op": "dunder",
           "qual": "numpy.unpackbits().__getitem__.astype()",
           "name": "__getitem__",
           "file": "dragowing/overlap.py",
-          "line": 142
+          "line": 134
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "asarray",
           "file": "dragowing/overlap.py",
-          "line": 166
+          "line": 158
         },
         {
           "op": "call",
           "qual": "numpy.asarray",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 166
+          "line": 158
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "ones",
           "file": "dragowing/overlap.py",
-          "line": 171
+          "line": 163
         },
         {
           "op": "call",
           "qual": "numpy.ones",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 171
+          "line": 163
         },
         {
           "op": "dunder",
           "qual": "numpy.asarray()",
           "name": "__getitem__",
           "file": "dragowing/overlap.py",
-          "line": 173
+          "line": 165
         },
         {
           "op": "dunder",
           "qual": "numpy.asarray().__getitem__",
           "name": "__invert__",
           "file": "dragowing/overlap.py",
-          "line": 173
+          "line": 165
         },
         {
           "op": "dunder",
           "qual": "numpy.ones()",
           "name": "__and__",
           "file": "dragowing/overlap.py",
-          "line": 173
+          "line": 165
         },
         {
           "op": "dunder",
           "qual": "numpy.ones().__and__",
           "name": "__and__",
           "file": "dragowing/overlap.py",
-          "line": 173
+          "line": 165
         },
         {
           "op": "dunder",
           "qual": "numpy.ones().__and__.__and__",
           "name": "__and__",
           "file": "dragowing/overlap.py",
-          "line": 173
+          "line": 165
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "flatnonzero",
           "file": "dragowing/overlap.py",
-          "line": 174
+          "line": 166
         },
         {
           "op": "call",
           "qual": "numpy.flatnonzero",
           "name": "",
           "file": "dragowing/overlap.py",
-          "line": 174
+          "line": 166
         },
         {
           "op": "dunder",
           "qual": "numpy.flatnonzero()",
           "name": "__iter__",
           "file": "dragowing/overlap.py",
-          "line": 174
+          "line": 166
         }
       ]
     },
@@ -607,7 +622,8 @@
       "package": "numpy",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "suggest_index"
       ],
       "status": 0,
@@ -633,6 +649,7 @@
         "column_stack",
         "concatenate",
         "corrcoef",
+        "diag",
         "einsum",
         "empty",
         "errstate",
@@ -692,7 +709,8 @@
       "package": "numpy",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "littlebit_svd"
       ],
       "status": 0,
@@ -724,6 +742,7 @@
         "__file__",
         "__version__",
         "abs",
+        "allclose",
         "any",
         "arange",
         "argpartition",
@@ -739,40 +758,42 @@
         "column_stack",
         "concatenate",
         "corrcoef",
-        "divide",
+        "diag",
         "einsum",
         "empty",
         "errstate",
+        "exp",
         "flatnonzero",
         "float32",
         "float64",
         "floating",
         "floor",
         "frombuffer",
-        "full_like",
         "generic",
         "hstack",
         "inf",
         "int64",
-        "int8",
         "integer",
         "isfinite",
+        "linalg.LinAlgError",
         "linalg.lstsq",
         "linalg.norm",
         "linalg.pinv",
         "linalg.svd",
         "log",
+        "longdouble",
         "maximum",
         "mean",
+        "median",
         "meshgrid",
         "minimum",
         "nan_to_num",
         "ndarray",
         "nonzero",
         "ones",
-        "ones_like",
         "packbits",
         "partition",
+        "percentile",
         "random.Generator",
         "random.PCG64",
         "random.default_rng",
@@ -786,8 +807,7 @@
         "uint8",
         "unpackbits",
         "where",
-        "zeros",
-        "zeros_like"
+        "zeros"
       ],
       "missed_by_ast": [
         "T",
@@ -805,371 +825,371 @@
           "op": "getattr",
           "qual": "numpy",
           "name": "array",
-          "file": "scripts/trace_drivers.py",
-          "line": 54
+          "file": "scripts/stdlib_min.py",
+          "line": 1368
         },
         {
           "op": "call",
           "qual": "numpy.array",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 54
+          "file": "scripts/stdlib_min.py",
+          "line": 1368
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "float64",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 28
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "linalg",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 31
         },
         {
           "op": "getattr",
           "qual": "numpy.linalg",
           "name": "svd",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 31
         },
         {
           "op": "call",
           "qual": "numpy.linalg.svd",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 31
         },
         {
           "op": "dunder",
           "qual": "numpy.linalg.svd()",
           "name": "__iter__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 31
         },
         {
           "op": "getattr",
           "qual": "numpy.linalg.svd()[]",
           "name": "shape",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 32
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "sign",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 35
         },
         {
           "op": "dunder",
           "qual": "numpy.linalg.svd()[]",
           "name": "__getitem__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 35
         },
         {
           "op": "call",
           "qual": "numpy.sign",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 35
         },
         {
           "op": "getattr",
           "qual": "numpy.linalg.svd()[].__getitem__",
           "name": "T",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 35
         },
         {
           "op": "dunder",
           "qual": "numpy.sign()",
           "name": "__eq__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 36
         },
         {
           "op": "dunder",
           "qual": "numpy.sign()",
           "name": "__setitem__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 36
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "abs",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 38
         },
         {
           "op": "call",
           "qual": "numpy.abs",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 38
         },
         {
           "op": "getattr",
           "qual": "numpy.abs()",
           "name": "mean",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 38
         },
         {
           "op": "call",
           "qual": "numpy.abs().mean",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 38
         },
         {
           "op": "getattr",
           "qual": "numpy.abs().mean()",
           "name": "mean",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 40
         },
         {
           "op": "call",
           "qual": "numpy.abs().mean().mean",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 40
         },
         {
           "op": "dunder",
           "qual": "numpy.abs().mean()",
           "name": "__truediv__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 40
         },
         {
           "op": "dunder",
           "qual": "numpy.linalg.svd()[].__getitem__",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 43
         },
         {
           "op": "dunder",
           "qual": "numpy.linalg.svd()[].__getitem__.__mul__",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 43
         },
         {
           "op": "getattr",
           "qual": "numpy.abs().mean().__truediv__",
           "name": "mean",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 43
         },
         {
           "op": "call",
           "qual": "numpy.abs().mean().__truediv__.mean",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 43
         },
         {
           "op": "dunder",
           "qual": "numpy.linalg.svd()[].__getitem__.__mul__.__mul__",
           "name": "__truediv__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 43
         },
         {
           "op": "dunder",
           "qual": "numpy.sign()",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 45
         },
         {
           "op": "getattr",
           "qual": "numpy.sign()",
           "name": "T",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 45
         },
         {
           "op": "dunder",
           "qual": "numpy.sign().__mul__",
           "name": "__matmul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 45
         },
         {
           "op": "dunder",
           "qual": "numpy.abs().mean().__truediv__",
           "name": "__getitem__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 46
         },
         {
           "op": "dunder",
           "qual": "numpy.sign().__mul__.__matmul__",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 46
         },
         {
           "op": "dunder",
           "qual": "numpy.array()",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "getattr",
           "qual": "numpy.array().__mul__",
           "name": "sum",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "call",
           "qual": "numpy.array().__mul__.sum",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "maximum",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "dunder",
           "qual": "numpy.sign().__mul__.__matmul__.__mul__",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "getattr",
           "qual": "numpy.sign().__mul__.__matmul__.__mul__.__mul__",
           "name": "sum",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "call",
           "qual": "numpy.sign().__mul__.__matmul__.__mul__.__mul__.sum",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "call",
           "qual": "numpy.maximum",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "dunder",
           "qual": "numpy.array().__mul__.sum()",
           "name": "__truediv__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 47
         },
         {
           "op": "dunder",
           "qual": "numpy.array().__mul__.sum().__truediv__",
           "name": "__getitem__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 48
         },
         {
           "op": "dunder",
           "qual": "numpy.array().__mul__.sum().__truediv__.__getitem__",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 50
         },
         {
           "op": "getattr",
           "qual": "numpy.array().__mul__.sum().__truediv__.__getitem__.__mul__",
           "name": "T",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 51
         },
         {
           "op": "dunder",
           "qual": "numpy.array().__mul__.sum().__truediv__.__getitem__.__mul__.T",
           "name": "__matmul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 51
         },
         {
           "op": "dunder",
           "qual": "numpy.array().__mul__.sum().__truediv__.__getitem__.__mul__.T.__matmul__",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 51
         },
         {
           "op": "getattr",
           "qual": "numpy",
           "name": "einsum",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 52
         },
         {
           "op": "call",
           "qual": "numpy.einsum",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 52
         },
         {
           "op": "getattr",
           "qual": "numpy.linalg",
           "name": "lstsq",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 53
         },
         {
           "op": "call",
           "qual": "numpy.linalg.lstsq",
           "name": "",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 53
         },
         {
           "op": "dunder",
           "qual": "numpy.array().__mul__.sum().__truediv__.__getitem__.__mul__",
           "name": "__mul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 54
         },
         {
           "op": "getattr",
           "qual": "numpy.sign().__mul__",
           "name": "T",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 56
         },
         {
           "op": "dunder",
           "qual": "numpy.array().__mul__.sum().__truediv__.__getitem__.__mul__.__mul__",
           "name": "__matmul__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 56
         },
         {
           "op": "dunder",
           "qual": "numpy.array()",
           "name": "__sub__",
-          "file": "pythdragoras/littlebit_prune.py",
+          "file": "pythdragoras/core/littlebit_prune.py",
           "line": 56
         }
       ]
@@ -1180,7 +1200,8 @@
       "package": "selectolax",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "selectolax_css"
       ],
       "status": 1,
@@ -1198,7 +1219,8 @@
       "package": "selectolax",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "selectolax_css"
       ],
       "status": 1,
@@ -1220,36 +1242,36 @@
           "op": "getattr",
           "qual": "selectolax.lexbor",
           "name": "LexborHTMLParser",
-          "file": "scripts/trace_drivers.py",
-          "line": 63
+          "file": "scripts/stdlib_min.py",
+          "line": 1377
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 66
+          "file": "scripts/stdlib_min.py",
+          "line": 1380
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser()",
           "name": "css",
-          "file": "scripts/trace_drivers.py",
-          "line": 67
+          "file": "scripts/stdlib_min.py",
+          "line": 1381
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser().css",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 67
+          "file": "scripts/stdlib_min.py",
+          "line": 1381
         },
         {
           "op": "dunder",
           "qual": "selectolax.lexbor.LexborHTMLParser().css()",
           "name": "__iter__",
-          "file": "scripts/trace_drivers.py",
-          "line": 67
+          "file": "scripts/stdlib_min.py",
+          "line": 1381
         }
       ]
     },
@@ -1259,7 +1281,8 @@
       "package": "selectolax",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "selectolax_css"
       ],
       "status": 0,
@@ -1285,57 +1308,57 @@
           "op": "getattr",
           "qual": "selectolax.lexbor",
           "name": "LexborHTMLParser",
-          "file": "scripts/trace_drivers.py",
-          "line": 63
+          "file": "scripts/stdlib_min.py",
+          "line": 1377
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 66
+          "file": "scripts/stdlib_min.py",
+          "line": 1380
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser()",
           "name": "css",
-          "file": "scripts/trace_drivers.py",
-          "line": 67
+          "file": "scripts/stdlib_min.py",
+          "line": 1381
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser().css",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 67
+          "file": "scripts/stdlib_min.py",
+          "line": 1381
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser().css()",
           "name": "attributes",
-          "file": "scripts/trace_drivers.py",
-          "line": 71
+          "file": "scripts/stdlib_min.py",
+          "line": 1385
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser().css()",
           "name": "text",
-          "file": "scripts/trace_drivers.py",
-          "line": 72
+          "file": "scripts/stdlib_min.py",
+          "line": 1386
         },
         {
           "op": "call",
           "qual": "selectolax.lexbor.LexborHTMLParser().css().text",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 72
+          "file": "scripts/stdlib_min.py",
+          "line": 1386
         },
         {
           "op": "getattr",
           "qual": "selectolax.lexbor.LexborHTMLParser().css()",
           "name": "tag",
-          "file": "scripts/trace_drivers.py",
-          "line": 73
+          "file": "scripts/stdlib_min.py",
+          "line": 1387
         }
       ]
     },
@@ -1345,7 +1368,8 @@
       "package": "httpx",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "httpx_get"
       ],
       "status": 1,
@@ -1363,7 +1387,8 @@
       "package": "httpx",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "httpx_get"
       ],
       "status": 1,
@@ -1393,64 +1418,64 @@
           "op": "getattr",
           "qual": "httpx",
           "name": "Client",
-          "file": "scripts/trace_drivers.py",
-          "line": 109
+          "file": "scripts/stdlib_min.py",
+          "line": 1423
         },
         {
           "op": "call",
           "qual": "httpx.Client",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 109
+          "file": "scripts/stdlib_min.py",
+          "line": 1423
         },
         {
           "op": "dunder",
           "qual": "httpx.Client()",
           "name": "__enter__",
-          "file": "scripts/trace_drivers.py",
-          "line": 109
+          "file": "scripts/stdlib_min.py",
+          "line": 1423
         },
         {
           "op": "getattr",
           "qual": "httpx.Client()",
           "name": "get",
           "file": "queryu/queryu.py",
-          "line": 194
+          "line": 179
         },
         {
           "op": "call",
           "qual": "httpx.Client().get",
           "name": "",
           "file": "queryu/queryu.py",
-          "line": 194
+          "line": 179
         },
         {
           "op": "getattr",
           "qual": "httpx.Client().get()",
           "name": "status_code",
           "file": "queryu/queryu.py",
-          "line": 196
+          "line": 181
         },
         {
           "op": "dunder",
           "qual": "httpx.Client().get().status_code",
           "name": "__eq__",
           "file": "queryu/queryu.py",
-          "line": 196
+          "line": 181
         },
         {
           "op": "dunder",
           "qual": "httpx.Client().get().status_code.__eq__",
           "name": "__bool__",
           "file": "queryu/queryu.py",
-          "line": 196
+          "line": 181
         },
         {
           "op": "dunder",
           "qual": "httpx.Client()",
           "name": "__exit__",
-          "file": "scripts/trace_drivers.py",
-          "line": 109
+          "file": "scripts/stdlib_min.py",
+          "line": 1423
         }
       ]
     },
@@ -1460,7 +1485,8 @@
       "package": "httpx",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "httpx_get"
       ],
       "status": 0,
@@ -1490,78 +1516,78 @@
           "op": "getattr",
           "qual": "httpx",
           "name": "Client",
-          "file": "scripts/trace_drivers.py",
-          "line": 109
+          "file": "scripts/stdlib_min.py",
+          "line": 1423
         },
         {
           "op": "call",
           "qual": "httpx.Client",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 109
+          "file": "scripts/stdlib_min.py",
+          "line": 1423
         },
         {
           "op": "dunder",
           "qual": "httpx.Client()",
           "name": "__enter__",
-          "file": "scripts/trace_drivers.py",
-          "line": 109
+          "file": "scripts/stdlib_min.py",
+          "line": 1423
         },
         {
           "op": "getattr",
           "qual": "httpx.Client()",
           "name": "get",
           "file": "queryu/queryu.py",
-          "line": 194
+          "line": 179
         },
         {
           "op": "call",
           "qual": "httpx.Client().get",
           "name": "",
           "file": "queryu/queryu.py",
-          "line": 194
+          "line": 179
         },
         {
           "op": "getattr",
           "qual": "httpx.Client().get()",
           "name": "status_code",
           "file": "queryu/queryu.py",
-          "line": 196
+          "line": 181
         },
         {
           "op": "getattr",
           "qual": "httpx.Client().get()",
           "name": "content",
           "file": "queryu/queryu.py",
-          "line": 202
+          "line": 187
         },
         {
           "op": "getattr",
           "qual": "httpx.Client().get()",
           "name": "headers",
           "file": "queryu/queryu.py",
-          "line": 203
+          "line": 189
         },
         {
           "op": "getattr",
           "qual": "httpx.Client().get().headers",
           "name": "get",
-          "file": "queryu/cache_core.py",
-          "line": 135
+          "file": "queryu/core/cache_core.py",
+          "line": 127
         },
         {
           "op": "call",
           "qual": "httpx.Client().get().headers.get",
           "name": "",
-          "file": "queryu/cache_core.py",
-          "line": 135
+          "file": "queryu/core/cache_core.py",
+          "line": 127
         },
         {
           "op": "dunder",
           "qual": "httpx.Client()",
           "name": "__exit__",
-          "file": "scripts/trace_drivers.py",
-          "line": 109
+          "file": "scripts/stdlib_min.py",
+          "line": 1423
         }
       ]
     },
@@ -1571,7 +1597,8 @@
       "package": "markdown",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "render_md"
       ],
       "status": 1,
@@ -1589,7 +1616,8 @@
       "package": "markdown",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "render_md"
       ],
       "status": 0,
@@ -1609,14 +1637,14 @@
           "qual": "markdown",
           "name": "markdown",
           "file": "dragowing/htmlout.py",
-          "line": 85
+          "line": 89
         },
         {
           "op": "call",
           "qual": "markdown.markdown",
           "name": "",
           "file": "dragowing/htmlout.py",
-          "line": 85
+          "line": 89
         }
       ]
     },
@@ -1626,7 +1654,8 @@
       "package": "ortools",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "ortools_import"
       ],
       "status": 1,
@@ -1644,7 +1673,8 @@
       "package": "ortools",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "ortools_import"
       ],
       "status": 0,
@@ -1666,22 +1696,22 @@
           "op": "getattr",
           "qual": "ortools.sat.python",
           "name": "cp_model",
-          "file": "scripts/trace_drivers.py",
-          "line": 133
+          "file": "scripts/stdlib_min.py",
+          "line": 1447
         },
         {
           "op": "getattr",
           "qual": "ortools.sat.python.cp_model",
           "name": "CpModel",
-          "file": "scripts/trace_drivers.py",
-          "line": 135
+          "file": "scripts/stdlib_min.py",
+          "line": 1449
         },
         {
           "op": "getattr",
           "qual": "ortools",
           "name": "__version__",
-          "file": "scripts/trace_drivers.py",
-          "line": 137
+          "file": "scripts/stdlib_min.py",
+          "line": 1451
         }
       ]
     },
@@ -1691,7 +1721,8 @@
       "package": "pandas",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "pandas_surface"
       ],
       "status": 1,
@@ -1709,7 +1740,8 @@
       "package": "pandas",
       "command": [
         "python",
-        "scripts/trace_drivers.py",
+        "scripts/stdlib_min.py",
+        "trace-drivers",
         "pandas_surface"
       ],
       "status": 1,
@@ -1750,148 +1782,148 @@
           "op": "getattr",
           "qual": "pandas",
           "name": "DataFrame",
-          "file": "scripts/trace_drivers.py",
-          "line": 148
+          "file": "scripts/stdlib_min.py",
+          "line": 1462
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 148
+          "file": "scripts/stdlib_min.py",
+          "line": 1462
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()",
           "name": "season",
-          "file": "scripts/trace_drivers.py",
-          "line": 157
+          "file": "scripts/stdlib_min.py",
+          "line": 1471
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame().season",
           "name": "__ge__",
-          "file": "scripts/trace_drivers.py",
-          "line": 157
+          "file": "scripts/stdlib_min.py",
+          "line": 1471
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()",
           "name": "__getitem__",
-          "file": "scripts/trace_drivers.py",
-          "line": 157
+          "file": "scripts/stdlib_min.py",
+          "line": 1471
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[]",
           "name": "copy",
-          "file": "scripts/trace_drivers.py",
-          "line": 157
+          "file": "scripts/stdlib_min.py",
+          "line": 1471
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame()[].copy",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 157
+          "file": "scripts/stdlib_min.py",
+          "line": 1471
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy()",
           "name": "groupby",
-          "file": "scripts/trace_drivers.py",
-          "line": 158
+          "file": "scripts/stdlib_min.py",
+          "line": 1472
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame()[].copy().groupby",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 158
+          "file": "scripts/stdlib_min.py",
+          "line": 1472
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy().groupby()",
           "name": "team",
-          "file": "scripts/trace_drivers.py",
-          "line": 159
+          "file": "scripts/stdlib_min.py",
+          "line": 1473
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy().groupby().team",
           "name": "transform",
-          "file": "scripts/trace_drivers.py",
-          "line": 159
+          "file": "scripts/stdlib_min.py",
+          "line": 1473
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame()[].copy().groupby().team.transform",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 159
+          "file": "scripts/stdlib_min.py",
+          "line": 1473
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy()",
           "name": "bat_iso",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy().groupby()",
           "name": "bat_iso",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         },
         {
           "op": "getattr",
           "qual": "pandas.DataFrame()[].copy().groupby().bat_iso",
           "name": "transform",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         },
         {
           "op": "call",
           "qual": "pandas.DataFrame()[].copy().groupby().bat_iso.transform",
           "name": "",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy().groupby().bat_iso.transform()",
           "name": "__sub__",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy().groupby().team.transform()",
           "name": "__sub__",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy().groupby().bat_iso.transform().__sub__",
           "name": "__truediv__",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy().bat_iso",
           "name": "__sub__",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         },
         {
           "op": "dunder",
           "qual": "pandas.DataFrame()[].copy()",
           "name": "__setitem__",
-          "file": "scripts/trace_drivers.py",
-          "line": 160
+          "file": "scripts/stdlib_min.py",
+          "line": 1474
         }
       ]
     }

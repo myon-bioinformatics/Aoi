@@ -231,10 +231,10 @@
       "import_sites": 1
     },
     "numpy": {
-      "attribute_uses": 316,
+      "attribute_uses": 314,
       "attributes": {
-        "__file__": 2,
-        "__version__": 4,
+        "__file__": 1,
+        "__version__": 3,
         "abs": 8,
         "allclose": 8,
         "any": 1,
@@ -435,16 +435,6 @@
           "files": 2,
           "import_sites": 2
         },
-        "shrink": {
-          "attribute_uses": 2,
-          "attributes": {
-            "__file__": 1,
-            "__version__": 1
-          },
-          "dynamic_import_sites": 0,
-          "files": 1,
-          "import_sites": 1
-        },
         "tests": {
           "attribute_uses": 11,
           "attributes": {
@@ -500,8 +490,8 @@
       ],
       "distinct_attributes": 69,
       "dynamic_import_sites": 0,
-      "files": 21,
-      "import_sites": 22
+      "files": 20,
+      "import_sites": 21
     },
     "ortools": {
       "attribute_uses": 2,
@@ -3197,17 +3187,6 @@
       "import_sites": 1,
       "package": "pytest",
       "tree": "scripts"
-    },
-    {
-      "attributes": {
-        "__file__": 1,
-        "__version__": 1
-      },
-      "dynamic_lines": [],
-      "file": "shrink/run_overlap.py",
-      "import_sites": 1,
-      "package": "numpy",
-      "tree": "shrink"
     },
     {
       "attributes": {

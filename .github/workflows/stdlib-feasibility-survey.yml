@@ -5,9 +5,7 @@ name: Stdlib feasibility survey
 on:
   pull_request:
     paths:
-      - scripts/survey_third_party.py
-      - scripts/trace_surface.py
-      - scripts/trace_drivers.py
+      - scripts/stdlib_min.py
       - tests/test_survey_third_party.py
       - tests/test_trace_surface.py
       - docs/drafts/stdlib-replacement-feasibility.md
@@ -38,8 +36,8 @@ jobs:
           prune-cache: true
       - run: uv sync --locked --python 3.15
       - name: Inventory matches the tree
-        run: uv run --locked --python 3.15 python scripts/survey_third_party.py --check docs/evidence/third-party-survey.json
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py survey --check docs/evidence/third-party-survey.json
       - name: Tool tests
         run: uv run --locked --python 3.15 pytest -q tests/test_survey_third_party.py tests/test_trace_surface.py
       - name: Fresh absent, stub, and wrap runs match the committed surfaces
-        run: uv run --locked --python 3.15 python scripts/trace_surface.py collect --check --out docs/evidence/trace-surfaces.json
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py trace-surface collect --check --out docs/evidence/trace-surfaces.json

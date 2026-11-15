@@ -7,7 +7,7 @@ on:
   pull_request:
     paths:
       - mindeps/**
-      - scripts/trace_third_party.py
+      - scripts/stdlib_min.py
       - tests/test_third_party_min.py
       - .github/workflows/third-party-min.yml
       - research/gpt-r001-score-allocation/fetch.py
@@ -40,12 +40,12 @@ jobs:
       - name: Equivalence against the installed packages
         run: uv run --locked --python 3.15 pytest -q tests/test_third_party_min.py
       - name: AST survey, package-absent tracebacks, fetch_module rejections
-        run: uv run --locked --python 3.15 python scripts/trace_third_party.py --resolve
+        run: uv run --locked --python 3.15 python scripts/stdlib_min.py trace-third-party --resolve
       - name: Reference results with the real packages
         run: |
-          uv run --locked --python 3.15 python mindeps/run_selectolax.py --impl real sel-real.json
-          uv run --locked --python 3.15 python mindeps/run_httpx.py --impl real http-real.json
-          uv run --locked --python 3.15 python mindeps/run_coverage.py --impl real cov-real.json
+          uv run --locked --python 3.15 python scripts/stdlib_min.py selectolax --impl real sel-real.json
+          uv run --locked --python 3.15 python scripts/stdlib_min.py httpx --impl real http-real.json
+          uv run --locked --python 3.15 python scripts/stdlib_min.py coverage --impl real cov-real.json
       - name: Empty environment without those packages
         run: uv venv .venv-min --python 3.15
       - name: The packages are not installed there
@@ -55,9 +55,9 @@ jobs:
           if .venv-min/bin/python -c 'import coverage'; then echo 'coverage is installed in the empty environment' >&2; exit 1; fi
       - name: Same research code on the replacements
         run: |
-          .venv-min/bin/python mindeps/run_selectolax.py --impl min sel-min.json
-          .venv-min/bin/python mindeps/run_httpx.py --impl min http-min.json
-          .venv-min/bin/python mindeps/run_coverage.py --impl cdn cov-min.json
+          .venv-min/bin/python scripts/stdlib_min.py selectolax --impl min sel-min.json
+          .venv-min/bin/python scripts/stdlib_min.py httpx --impl min http-min.json
+          .venv-min/bin/python scripts/stdlib_min.py coverage --impl cdn cov-min.json
       - name: Byte-identical to the real packages
         run: |
           cmp sel-real.json sel-min.json

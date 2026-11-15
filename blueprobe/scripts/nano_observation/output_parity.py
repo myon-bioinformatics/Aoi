@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
-import accessible_names, emoji_observations, heading_observations
+from blueprobe import names, emoji, headings
 rows=[]
 for p in sorted(Path('tests/cases/pages').glob('*.json')):
     data=json.loads(p.read_text())
     if 'html' not in data:
         raise RuntimeError(f'missing html in {p}')
-    for m in (accessible_names,emoji_observations,heading_observations):
-        rows.append({'input':str(p),'observer':m.__name__,'output':m.observe(data['html'],data.get('url'))})
+    for label, m in (("accessible_names", names), ("emoji_observations", emoji), ("heading_observations", headings)):
+        rows.append({'input':str(p),'observer':label,'output':m.observe(data['html'],data.get('url'))})
 print(json.dumps(rows,sort_keys=True,ensure_ascii=False,allow_nan=False))

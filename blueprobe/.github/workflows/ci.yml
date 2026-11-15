@@ -152,9 +152,10 @@ jobs:
       - run: test "$(git -C .test-deps/lab rev-parse HEAD)" = "$LAB_SHA"
       - run: python -m compileall -q -x '\.test-deps' .
       - run: uv sync --locked --python "${{ matrix.python }}"
-      - run: uv run --locked --python "${{ matrix.python }}" pytest -q --require-blueprobe-lab-integration --junitxml=reports/junit.xml
+      - run: |
+          eval "$(python3 .test-deps/aoi/aoi.py)"  # QueRyu（queryu/・core/）の場所は Aoi の aoi.py が決める
+          PYTHONPATH="$PYTHONPATH:$AOI_LAB_SOURCE_ROOT" uv run --locked --python "${{ matrix.python }}" pytest -q --require-blueprobe-lab-integration --junitxml=reports/junit.xml
         env:
-          PYTHONPATH: ${{ github.workspace }}/.test-deps/aoi/queryu:${{ github.workspace }}/.test-deps/lab/src
           AOI_LAB_SOURCE_ROOT: ${{ github.workspace }}/.test-deps/lab/src
       - name: Preserve JUnit report
         if: always()

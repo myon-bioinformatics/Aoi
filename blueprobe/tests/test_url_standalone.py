@@ -12,6 +12,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+
+def _cache_core(queryu):
+    """QueRyu の cache_core.py（core/ にある。前の配置では直下）。"""
+    return next(p for p in (Path(queryu) / "core" / "cache_core.py", Path(queryu) / "cache_core.py") if p.is_file())
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/missing":
@@ -55,14 +60,26 @@ class UrlStandaloneTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             script = Path(tmp) / "blueprobe.py"
             shutil.copy2(ROOT / "blueprobe.py", script)
-            # This test deliberately has no QueRyu component. -I ignores PYTHONPATH,
-            # but not the application's explicit AOI_ROOT lookup.
-            env = {key: value for key, value in os.environ.items() if key != "AOI_ROOT"}
+            # This test deliberately has no QueRyu component (-I ignores PYTHONPATH). BlueProbe does not
+            # look for it; the caller (Aoi's aoi.py) supplies the path.
             result = subprocess.run([sys.executable, "-I", str(script), "http://127.0.0.1:1/", "--cache", str(Path(tmp) / "cache")],
-                                    env=env, capture_output=True, text=True, timeout=10)
+                                    capture_output=True, text=True, timeout=10)
             self.assertEqual(result.returncode, 2)
             self.assertIn("cache_core.py", result.stderr)
+            self.assertIn("aoi.py", result.stderr)
             self.assertFalse((Path(tmp) / "cache").exists())
+
+    def test_source_cache_without_queryu_names_aoi_py(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for path in ROOT.glob("*.py"):
+                shutil.copy2(path, Path(tmp) / path.name)
+            cache = Path(tmp) / "cache"
+            cache.mkdir()
+            (cache / "manifest.jsonl").write_text("", encoding="utf-8")
+            result = subprocess.run([sys.executable, "-I", str(Path(tmp) / "blueprobe.py"), "--source", "html_source",
+                                     "--cache", str(cache)], cwd=tmp, capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn("aoi.py", result.stderr)
 
     def test_cache_with_queryu_component(self):
         queryu = os.environ.get("QUERYU_ROOT")
@@ -75,7 +92,7 @@ class UrlStandaloneTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             shutil.copy2(ROOT / "blueprobe.py", root / "blueprobe.py")
-            shutil.copy2(Path(queryu) / "cache_core.py", root / "cache_core.py")
+            shutil.copy2(_cache_core(queryu), root / "cache_core.py")
             cache, url = root / "cache", f"http://127.0.0.1:{server.server_port}/"
             result = subprocess.run([sys.executable, "-I", str(root / "blueprobe.py"), url, "--cache", str(cache)],
                                     capture_output=True, text=True, timeout=10)
@@ -90,7 +107,7 @@ class UrlStandaloneTest(unittest.TestCase):
         if not queryu:
             self.skipTest("set QUERYU_ROOT to a QueRyu checkout")
         import importlib.util
-        spec = importlib.util.spec_from_file_location('review_cache_core', Path(queryu) / 'cache_core.py')
+        spec = importlib.util.spec_from_file_location('review_cache_core', _cache_core(queryu))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -99,7 +116,7 @@ class UrlStandaloneTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             shutil.copy2(ROOT / "blueprobe.py", root / "blueprobe.py")
-            shutil.copy2(Path(queryu) / "cache_core.py", root / "cache_core.py")
+            shutil.copy2(_cache_core(queryu), root / "cache_core.py")
             cache, url = root / "cache", f"http://127.0.0.1:{server.server_port}/"
             try:
                 result = subprocess.run([sys.executable, '-I', str(root / 'blueprobe.py'), url, '--cache', str(cache)],

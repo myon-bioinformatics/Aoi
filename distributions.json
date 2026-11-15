@@ -1,6 +1,6 @@
 {
   "schema": "aoi-distributions/1",
-  "source": "61ffcdb394a69f55a045547d5cfabf2646f3f56c",
+  "source": "ed740c9a7063a20be181cc35e65054034e369d37",
   "python": "3.12",
   "license": "LICENSE",
   "tool": {
@@ -15,9 +15,6 @@
       "entry": "blueprobe/blueprobe.py",
       "paths": [
         "blueprobe"
-      ],
-      "omit_from_bundle": [
-        "blueprobe/html_source.py"
       ],
       "output": "dist/blueprobe_min.py",
       "api": "offline observation and snapshot inspection"

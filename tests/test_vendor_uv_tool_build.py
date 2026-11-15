@@ -35,6 +35,18 @@ def test_builds_lowercase_child_entry(tmp_path):
     assert (out / "nagoyaction.py").read_bytes() == (ROOT / "nagoyaction" / "nagoyaction.py").read_bytes()
 
 
+def test_builds_blueprobe_entry_without_its_removed_local_builder(tmp_path):
+    """BlueProbe #53 dropped build_stdlib_tool.py; the shared builder packages blueprobe.py."""
+    out = tmp_path / "blueprobe-tool"
+    result = _load().build([ROOT / "blueprobe" / "blueprobe.py"], out)
+    data = tomllib.loads((out / "pyproject.toml").read_text(encoding="utf-8"))
+    assert data["project"]["name"] == "blueprobe"
+    assert data["project"]["dependencies"] == []
+    assert data["project"]["scripts"] == {"blueprobe": "blueprobe:main"}
+    assert result["scripts"] == {"blueprobe": "blueprobe:main"}
+    assert (out / "blueprobe.py").read_bytes() == (ROOT / "blueprobe" / "blueprobe.py").read_bytes()
+
+
 def test_rejects_camelcase_entry_name(tmp_path):
     camel = tmp_path / "NagoyAction.py"
     camel.write_text("def main():\n    return 0\n", encoding="utf-8")

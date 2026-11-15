@@ -55,7 +55,7 @@ def test_blueprobe_registered_with_exact_ids():
     assert "mirrored_from_parent" not in entry["optional"]
     assert "sha" not in entry  # 履歴から導く
     assert not set(cch.UNSUPPORTED) & entry["optional"].keys()
-    for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "blueprobe.py", "web_observations.py"):
+    for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "blueprobe.py", "npb/npb_calendar.py"):
         assert (ROOT / "blueprobe" / path).is_file(), path
     assert not (ROOT / "blueprobe" / "min.py").exists()
     assert not (ROOT / "blueprobe" / "vendor.lock.json").exists()

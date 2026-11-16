@@ -1,4 +1,4 @@
-# Replaces raw-HTML cache keepalive with checks of committed research inputs.
+# Checks the committed c001 research inputs (formerly cache-keepalive.yml, which kept raw-HTML caches alive).
 name: c001 saved input verification
 
 on:
@@ -8,7 +8,7 @@ on:
   workflow_call:
   pull_request:
     paths:
-      - '.github/workflows/cache-keepalive.yml'
+      - '.github/workflows/c001-saved-inputs.yml'
       - 'scripts/research_inputs.py'
       - 'tests/test_research_inputs.py'
       - 'cycles/c001-chunichi/recovered-inputs/**'

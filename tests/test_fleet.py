@@ -17,11 +17,14 @@ _spec.loader.exec_module(fleet)
 
 WORKFLOWS = fleet.repo_root(__file__)  # 単独では ROOT。Aoi の中では、ワークフローを持つ一番近い親
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
-ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0"}
+ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0",
+            # 📊 親の stdlib_min の plotly_min（静止の図の SVG を Chrome なしで描く）
+            "vendor/tools/stdlib_min/plotly_min.py": "4fb9618e346b20d865af625411c6f06f15def8f6"}
 # destination -> (repository, source)。Aoi の写しは vendor/aoi/<source>。使わない shrink_module.py・polars_min.py などは置かない
 SOURCES = {where: ("myon-bioinformatics/Aoi", where.removeprefix("vendor/aoi/")) for where in (
     "vendor/aoi/scripts/fetch_module.py", "vendor/aoi/shrink/numpy_min.py", "vendor/aoi/vendor/uv_tool_build.py")}
 SOURCES["vendor/fleet_check.py"] = (fleet.PARENT, "fleet_check.py")
+SOURCES["vendor/tools/stdlib_min/plotly_min.py"] = (fleet.PARENT, "tools/stdlib_min/plotly_min.py")
 SETUP_NODE = "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0"
 SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3"
 

@@ -29,6 +29,15 @@
       "sha256": "7c1f86ebb012ad355db3f690bea39916aa7d927967b519dfaf5acf54879c5a4c"
     },
     {
+      "repository": "myon-bioinformatics/myon-bioinformatics",
+      "ref": "4fb9618e346b20d865af625411c6f06f15def8f6",
+      "commit": "4fb9618e346b20d865af625411c6f06f15def8f6",
+      "source": "tools/stdlib_min/plotly_min.py",
+      "destination": "vendor/tools/stdlib_min/plotly_min.py",
+      "blob_sha": "a65d32e4b5062de8828febdfd02eb85d23585caf",
+      "sha256": "571c287e1960c47ba2257f802e24c1932431f8bb079765f92cc86ed0a0193c01"
+    },
+    {
       "repository": "myon-bioinformatics/Aoi",
       "ref": "f15063440ee7f5f869cef1546ae651fa32a07505",
       "commit": "f15063440ee7f5f869cef1546ae651fa32a07505",

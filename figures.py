@@ -66,7 +66,8 @@ def _axis_names(col_index: int) -> tuple[str, str]:
 
 
 def _layout_axis_key(axis_ref: str) -> str:
-    return "xaxis" if axis_ref == "x" else f"{axis_ref}axis"
+    """trace の軸の名前 → layout のキー: x → xaxis、x2 → xaxis2（plotly.js が読むのはこの形。x2axis は読まれない）。"""
+    return f"{axis_ref[0]}axis{axis_ref[1:]}"
 
 
 def trajectory_figure(rows: list[dict]) -> dict:

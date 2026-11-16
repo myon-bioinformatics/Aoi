@@ -64,6 +64,10 @@ printf '<p>one</p><p>two</p><img src="x">' | dragowing --tag p
 dragowing missing.html  # reports a read error; exit 1
 ```
 
+### 📊 FluidFullSpeedSimulation's still figures
+
+[FluidFullSpeedSimulation](https://github.com/myon-bioinformatics/FluidFullSpeedSimulation) draws flows that change over time as GIFs, and leaves its still figures to this repository as records (`run E30` / `E31` / `E32 --jsonl`). `python dragowing.py --ffss RECORDS.jsonl --out DIR` writes `ffss.html` (plotly.js from the CDN) and `svg/F01_energy-coal.svg` … `F09_blood-flow.svg` without Chrome: the SVG is drawn by the parent's standard-library [`plotly_min`](https://github.com/myon-bioinformatics/myon-bioinformatics/blob/main/docs/plotly-min.md), locked at `vendor/tools/stdlib_min/plotly_min.py`. The figures lay down the record values as they are (fuel 100 Sankey diagrams, losses waterfall, HRSG T–Q, heat-pump balance point, start-up Gantt, sensitivity tornado, warm-up window heatmap, cardiac output Sankey); a record that is missing just leaves its figure out. `--no-svg` writes the HTML only. This needs the repository checkout for `vendor/`; the single-module uv tool keeps only the element counter.
+
 Without installation, replace `dragowing` with `python dragowing.py`. This counts opening tags in saved HTML; to render reports or export figures, use the full DRAgoWing application below.
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). Runtime dependencies are polars, numpy, and markdown. Figures use the browser's plotly.js; neither matplotlib nor Python plotly is installed. HTTP uses only the standard library's urllib (no httpx).
@@ -105,7 +109,7 @@ Markdown for HTML, Chromium for image export, and so on are still needed.
 
 | File | Contents | ➡️ Planned place |
 |---|---|---|
-| `dragowing.py` | The single file (stdlib only): counts HTML elements without a browser (`python dragowing.py PAGE`, `count_elements()`) | stays at the top, and takes in the generic stdlib parts below |
+| `dragowing.py` | The single file (stdlib only): counts HTML elements without a browser (`python dragowing.py PAGE`, `count_elements()`), and 📊 draws FluidFullSpeedSimulation's still figures from its records (`--ffss`, `ffss_figures()`, `write_ffss()`) | stays at the top, and takes in the generic stdlib parts below |
 | `plotly_cdn.py` | Plotly.js (jsDelivr) | into `dragowing.py` |
 | `chrome_pipe.py`, `render.py`, `export.py` | Optional PNG / SVG export with headless Chromium ([docs/export.md](docs/export.md)) | into `dragowing.py` |
 | `records.py` | Reads the results directory's JSONL in record order | into `dragowing.py` |

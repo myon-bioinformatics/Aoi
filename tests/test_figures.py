@@ -188,6 +188,13 @@ def test_trajectory_and_heatmap_keep_source_values_including_a_gap():
     assert dragons["marker"]["color"] == [A_COLOR, B_COLOR]
     assert "spline" not in json.dumps(spec)
     assert "trendline" not in json.dumps(spec)
+    two = spec_of(trajectory_figure(rows + [season_row(league="P", team="h", team_name="ソフトバンク")]))
+    refs = {(t.get("xaxis"), t.get("yaxis")) for t in two["data"] if (t.get("meta") or {}).get("role") == "trajectory"}
+    assert refs == {("x", "y"), ("x2", "y2")}
+    for ref in ("xaxis", "yaxis", "xaxis2", "yaxis2"):  # plotly.js が読む名前（x2axis では 2 つ目のリーグが 1 つ目に重なる）
+        assert ref in two["layout"]
+    assert not {"x2axis", "y2axis"} & set(two["layout"])
+    assert two["layout"]["xaxis2"]["domain"][0] > two["layout"]["xaxis"]["domain"][1]
     heat = spec_of(heatmap_figure(rows, "wins_vs_pythag", TEAM_ORDER))
     payload = heat["data"][0]
     assert payload["zsmooth"] is False

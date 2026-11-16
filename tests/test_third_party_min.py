@@ -22,7 +22,8 @@ def test_ast_surface_is_the_calls_the_mins_implement():
     assert set(found["imports"]) >= {"selectolax", "httpx", "pandas", "polars", "numpy", "pytest", "coverage"}
     assert found["attrs"]["selectolax"]["call LexborHTMLParser()"] >= 1
     assert "Client" in found["attrs"]["httpx"]
-    assert any("markdown" in item for item in found["dynamic"])
+    # 📝 DRAgoWing のページの文章は自作の markdown.py（vendor/markdown）。Python-Markdown を動的に読まない
+    assert not any("markdown" in item for item in found["dynamic"])
     absent = sm.absent_traces()
     # fetch.py は collect・observe・verify・inning_pilot をまとめたもの。冒頭で selectolax と httpx の両方を読む
     assert "selectolax" in absent["selectolax:research/gpt-r001-score-allocation/fetch.py"]

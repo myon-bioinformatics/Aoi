@@ -18,7 +18,6 @@ The table lists event types, not a claim that every upstream run concerns a PR.
 | Workflow | Upstream events | Completion wake-up |
 | --- | --- | --- |
 | Action uses | pull_request, push, schedule | allowed |
-| Browser startup validation | pull_request, workflow_dispatch | allowed |
 | c001 offline replay audit | workflow_dispatch, push | allowed |
 | cache keepalive | schedule, workflow_dispatch | allowed |
 | CDN module experiment | pull_request, workflow_dispatch | allowed |

@@ -22,7 +22,7 @@ def keep_dragowing_as_package() -> None:
 
     DRAgoWing's standalone entry is ``dragowing/dragowing.py``. pytest's pythonpath
     includes ``dragowing/``, so the default import would load that file and hide
-    ``dragowing.render`` and the rest of the package. Child tests still import
+    ``dragowing.figures`` and the rest of the package. Child tests still import
     ``forms`` / ``records`` as top-level modules, so the path entry stays.
     Call this before any ``import dragowing`` (including pytest ``-p`` plugins).
     """

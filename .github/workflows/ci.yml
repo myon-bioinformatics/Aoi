@@ -298,58 +298,18 @@ jobs:
           PY
       - name: Compile (syntax errors must never reach main)
         run: python -m compileall -q aoi_paths.py blueprobe queryu sakanalytics pythdragoras nagoyaction dragowing
-      - name: Install pinned official Chromium without a browser warmup
-        run: python3 dragowing/scripts/install_ci_chromium.py --destination "$RUNNER_TEMP/aoi-chromium"
-      - name: Select required Chromium without Chrome fallback
-        shell: bash
-        run: |
-          set -euo pipefail
-          chromium="$RUNNER_TEMP/aoi-chromium/chrome-linux/chrome"
-          test -x "$chromium"
-          actual_version="$("$chromium" --version)"
-          printf '%s\n' "$actual_version"
-          if [[ "$actual_version" != 'Chromium 156.0.8078.0' && "$actual_version" != 'Chromium 156.0.8078.0 '* ]]; then
-            echo '::error::Installed Chromium version does not match the reviewed snapshot.'
-            exit 1
-          fi
-          printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
-      - name: Prepare local Plotly.js for required exports
-        run: |
-          mkdir -p build/test-assets
-          python -S -c 'from pathlib import Path; from dragowing.plotly_cdn import fetch_plotly_js; Path("build/test-assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
-      - name: Require first actual browser startup within eight seconds
-        env:
-          DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js
-        run: |
-          mkdir -p build/test-results
-          uv run --locked --python "${{ matrix.python }}" python -m pytest -c pyproject.toml -q -p scripts.observe_dragowing_startup \
-            --browser-startup-evidence="build/startup-observation/first-start-${{ matrix.python }}.json" \
-            dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version \
-            --junitxml="build/test-results/first-start-${{ matrix.python }}.xml"
+      # 🖼️ DRAgoWing の SVG は親の plotly_min が描く（Chrome なし）。ブラウザは入れない
       - name: Test with JUnit
-        env:
-          DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js
         run: |
           mkdir -p build/test-results
-          uv run --locked --python "${{ matrix.python }}" python -m pytest -c pyproject.toml -q --deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version -p scripts.observe_dragowing_startup \
-            --browser-startup-evidence="build/startup-observation/pytest-${{ matrix.python }}.json" \
+          uv run --locked --python "${{ matrix.python }}" python -m pytest -c pyproject.toml -q \
             --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
       - name: Preserve raw JUnit
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python }}
-          path: |
-            build/test-results/pytest-${{ matrix.python }}.xml
-            build/test-results/first-start-${{ matrix.python }}.xml
-          if-no-files-found: warn
-          retention-days: 14
-      - name: Preserve actual browser startup observations
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: browser-observation-py${{ matrix.python }}
-          path: build/startup-observation/
+          path: build/test-results/pytest-${{ matrix.python }}.xml
           if-no-files-found: warn
           retention-days: 14
       - name: NagoyAction is stdlib-only and the cycle pipeline is runnable
@@ -443,101 +403,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # Keep the legacy job/artifact identifiers for existing report consumers.
-  chrome-export:
-    # Legacy check name is retained to avoid changing required-check contexts.
-    name: Offline Chrome export (Python 3.15)
-    needs: changes
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
-        with:
-          version: "latest"
-          python-version: "3.15"
-          activate-environment: true
-          enable-cache: true
-          # Pull requests restore the cache and never write it; only main saves it.
-          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          prune-cache: true
-      - name: Install dependencies before disconnecting the network
-        run: |
-          uv sync --locked --python 3.15
-      # No browser and no network: the page given to Chromium and the saved PNG/SVG are compared with the figure
-      # spec first, so a red browser step below can be told apart from wrong output. (The same tests also run in
-      # every pytest job; this step only puts them ahead of the browser launch.)
-      - name: Check the drawn output and the page against the figure spec before any browser starts
-        run: |
-          set -euo pipefail
-          .venv/bin/python -m pytest -c pyproject.toml -q tests/test_rendered_output_static.py
-      - name: Prepare Plotly.js from jsDelivr before disconnecting the network
-        run: |
-          mkdir -p build/test-assets
-          python -S -c 'from pathlib import Path; from dragowing.plotly_cdn import fetch_plotly_js; Path("build/test-assets/plotly.min.js").write_text(fetch_plotly_js(), encoding="utf-8")'
-      - name: Install pinned official Chromium without a browser warmup
-        run: python3 dragowing/scripts/install_ci_chromium.py --destination "$RUNNER_TEMP/aoi-chromium"
-      - name: Select required Chromium without Chrome fallback
-        shell: bash
-        run: |
-          set -euo pipefail
-          chromium="$RUNNER_TEMP/aoi-chromium/chrome-linux/chrome"
-          test -x "$chromium"
-          actual_version="$("$chromium" --version)"
-          printf '%s\n' "$actual_version"
-          if [[ "$actual_version" != 'Chromium 156.0.8078.0' && "$actual_version" != 'Chromium 156.0.8078.0 '* ]]; then
-            echo '::error::Installed Chromium version does not match the reviewed snapshot.'
-            exit 1
-          fi
-          printf 'CHROME=%s\nDRAGOWING_REQUIRE_CHROME=1\n' "$chromium" >> "$GITHUB_ENV"
-      - name: Require first offline browser startup within eight seconds
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build/test-results
-          sudo unshare --net -- env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1 \
-            DRAGOWING_PINNED_PLOTLY_JS="$PWD/build/test-assets/plotly.min.js" \
-            "$PWD/.venv/bin/python" -m pytest -c pyproject.toml -q \
-            -p scripts.observe_dragowing_startup \
-            --browser-startup-evidence=build/export-evidence/first-start.json \
-            dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version \
-            --junitxml=build/test-results/chrome-first-start-3.15.xml
-      - name: Require Chromium and render without a network namespace interface
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build/test-results
-          sudo unshare --net -- env CHROME="$CHROME" DRAGOWING_REQUIRE_CHROME=1 \
-            DRAGOWING_EXPORT_EVIDENCE_DIR="$PWD/build/export-evidence" \
-            DRAGOWING_PINNED_PLOTLY_JS="$PWD/build/test-assets/plotly.min.js" \
-            "$PWD/.venv/bin/python" -m pytest -c pyproject.toml -q \
-            dragowing/tests/test_chrome_pipe.py dragowing/tests/test_render.py dragowing/tests/test_export.py \
-            dragowing/tests/test_plotly_cdn.py \
-            --deselect=dragowing/tests/test_render.py::test_stalled_dbus_does_not_block_browser_get_version \
-            --junitxml=build/test-results/chrome-export-3.15.xml
-      - name: Preserve Chromium export JUnit
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: junit-chrome-export-py3.15
-          path: |
-            build/test-results/chrome-export-3.15.xml
-            build/test-results/chrome-first-start-3.15.xml
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Preserve rendered PNG and SVG evidence
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: chrome-export-evidence
-          path: build/export-evidence
-          if-no-files-found: error
-          retention-days: 14
-
   failure-identity:
-    needs: [changes, test, lab-integration, chrome-export]
+    needs: [changes, test, lab-integration]
     if: always() && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch')
     permissions:
       contents: read
@@ -545,7 +412,7 @@ jobs:
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
     with:
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
-      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.11/first-start-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.12/first-start-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.13/first-start-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.14/first-start-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-py3.15/first-start-3.15.xml","junit-lab-integration-py3.15/lab-integration-3.15.xml","junit-chrome-export-py3.15/chrome-export-3.15.xml","junit-chrome-export-py3.15/chrome-first-start-3.15.xml"]'
+      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.15/lab-integration-3.15.xml"]'
       artifact-pattern: "junit-*"
       output-artifact: "failure-identity"
 

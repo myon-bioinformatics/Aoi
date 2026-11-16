@@ -178,22 +178,22 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
 
 
 def test_import_aoi_does_not_shadow_the_dragowing_package():
-    """Putting dragowing/ on sys.path makes dragowing.py win and hides dragowing.render."""
+    """Putting dragowing/ on sys.path makes dragowing.py win and hides dragowing.figures."""
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     code = (
         "import sys\n"
         "first = sys.path[0]\n"
-        "import aoi, dragowing.render\n"
+        "import aoi, dragowing.figures\n"
         "import dragowing\n"
         "assert sys.path[0] == first, sys.path[0]\n"
         "assert getattr(dragowing, '__path__', None), getattr(dragowing, '__file__', None)\n"
         f"assert {str(root / 'dragowing')!r} not in sys.path\n"
-        "print(dragowing.render.__file__)\n"
+        "print(dragowing.figures.__file__)\n"
     )
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "PYTHONSAFEPATH")}
     run = subprocess.run([sys.executable, "-c", code], cwd=root, env=env, capture_output=True, text=True)
     assert run.returncode == 0, run.stderr
-    assert run.stdout.strip() == str(root / "dragowing" / "render.py")
+    assert run.stdout.strip() == str(root / "dragowing" / "figures.py")
 
 
 def test_dragowing_script_path_is_the_report_and_the_name_is_the_element_counter(tmp_path):

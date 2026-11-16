@@ -72,12 +72,9 @@ def test_every_action_is_pinned_to_its_reviewed_commit():
 # ==== Node entry: the vendored shared py_launch.cjs, called directly (no per-tool wrapper)
 
 def test_ci_requires_node_for_node_entry_parity():
-    # The test job must set up Node before running its pytest suite. The separate local-ci job deliberately
-    # samples the stdlib-only runner; fleet.node() fails in the Actions "test" job when Node 26+ is missing.
-    job = fleet.workflow_job(ROOT, "test")
-    assert "actions/setup-node@" in job
-    assert "node-version: '26'" in job
-    assert "Require supported Node in parity CI" in job
+    # The test job must set up Node 26 and guard its major before running its pytest suite. The separate local-ci job
+    # deliberately samples the stdlib-only runner; fleet.node() fails in the Actions "test" job when Node 26+ is missing.
+    assert "actions/setup-node@" in fleet.workflow_job(ROOT, "test", node_floor=26)
 
 
 def test_no_per_tool_wrapper_and_readme_documents_the_direct_command():

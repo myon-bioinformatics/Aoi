@@ -1,0 +1,45 @@
+{
+  "repository": "myon-bioinformatics/FluidFullSpeedSimulation",
+  "commit": "a4e0c3f1a72746115a39d1c12ead98eef82d4049",
+  "commands": [
+    "python -S fluidfullspeedsimulation.py run E30 --jsonl E30.jsonl",
+    "python -S fluidfullspeedsimulation.py run E31 --jsonl E31.jsonl",
+    "python -S fluidfullspeedsimulation.py run E32 --jsonl E32.jsonl"
+  ],
+  "selected_runs": [
+    [
+      "E30",
+      "blood"
+    ],
+    [
+      "E31",
+      "energy:coal"
+    ],
+    [
+      "E31",
+      "energy:lng"
+    ],
+    [
+      "E31",
+      "rate-window"
+    ],
+    [
+      "E31",
+      "sensitivity"
+    ],
+    [
+      "E31",
+      "startup"
+    ],
+    [
+      "E31",
+      "tq"
+    ],
+    [
+      "E32",
+      "balance"
+    ]
+  ],
+  "rows": 823,
+  "sha256": "0c93523d4b0be4233bd7dacd01412d03dbb23618a99cb520053c4a4df05927e4"
+}

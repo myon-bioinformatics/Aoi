@@ -230,7 +230,7 @@ def test_markdown_vendor_pin_matches_bytes_and_license():
     lock = json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))
     assert lock["schema"] == "vendor-lock/1"
     # This digest owns the Markdown pin. The shared lock may also serve other
-    # consumers; tests/test_vendor_lock.py verifies every entry's bytes.
+    # consumers; tests/test_fleet.py (fleet.check_lock) verifies every entry's bytes.
     entries = [entry for entry in lock["files"]
                if entry["repository"] == "myon-bioinformatics/markdown"]
     assert {entry["destination"] for entry in entries} == {

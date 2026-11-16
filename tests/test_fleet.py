@@ -14,12 +14,10 @@ _spec.loader.exec_module(fleet)
 
 ROOT = fleet.repo_root(__file__)
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
-ACCEPTED = {"vendor/fleet_check.py": "6c29503cf17eda856766ddfdf4d66a5b0965a8b1"}
-LATEST_SETUP = {
+ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0"}
+ACTION_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
     "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
-}
-ACTION_PINS = {
     "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
     "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2"
 }
@@ -63,20 +61,7 @@ def test_no_vendor_dispatch_job_remains():
 
 
 def test_actions_use_reviewed_full_shas_and_version_comments():
-    for line in _workflow_text().splitlines():
-        stripped = line.strip()
-        if not stripped.startswith("- uses:") and not stripped.startswith("uses:"):
-            continue
-        use = stripped.split("uses:", 1)[1].strip()
-        action = use.split()[0]
-        if "setup-" in action:
-            name, pin = action.split("@", 1)
-            comment = use[len(action):].strip()
-            assert LATEST_SETUP[name] == pin + " " + comment, use
-            assert re.fullmatch(r"[0-9a-f]{40}", pin)
-        elif action.startswith("actions/"):
-            name, pin = use.split("@", 1)
-            assert ACTION_PINS[name] == pin, use
+    assert fleet.check_actions(ROOT, ACTION_PINS)  # 全 uses: が 40 桁 SHA + 版コメント、かつレビュー済みの pin
 
 
 # ==== benchmark guard（旧 test_benchmark_optimization_guard.py）: mismatch checks stay active when Python removes assert statements

@@ -30,7 +30,7 @@ F08 の色は `zmax=3` で飽和するが、`z` の値は切り捨てない。se
 ## 固定したソース
 
 - FFSS #32: `a4e0c3f1a72746115a39d1c12ead98eef82d4049`
-- 親 #307: `4fb9618e346b20d865af625411c6f06f15def8f6`
+- 親 #308（plotly_min v2）: `3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32`（main の first-parent にあるマージコミット）
 - `vendor/tools/stdlib_min/plotly_min.py` は親の `tools/stdlib_min/plotly_min.py` とバイト一致。
   `vendor.lock.json` に ref=commit、Git blob SHA、SHA-256 を記録する。
 - fixture の生成コマンド、抽出する run、823行の SHA-256 は `tests/ffss_records.source.json` に記録する。
@@ -53,7 +53,7 @@ pytest の既存設定は Aoi を必要とする。通常の全テストはリ�
 | Python 間の差 | 再生成比較は相対・絶対誤差ともに1e-12。3.11と3.12で差があったのは metric 5値、最大絶対差7.55e-15。記録から図JSONへの転記は完全一致で検証 |
 | 本家 Plotly | `plotly` 導入時に全9図の data と明示した layout を `plotly.graph_objects.Figure` と比較。指定していない既定 template だけを比較から除外。未導入時は理由付き skip |
 | SVG | Python `-S` で9枚を生成。XML、寸法、同一入力からのバイト再現性を確認 |
-| 既存図 | 既存の図JSON・HTML・PNG/SVG出力先振分けの回帰テストを実行。Chromiumの実描画は既存のブラウザ用テストで別途確認 |
+| 既存図 | 野球の 4 枚（軌跡・球団×年・重なりの格子・内訳）も `--svg` で plotly_min が描く。Chrome は使わない |
 
 2026-11-16 のローカル検証では Python 3.11.18 / 3.12.14、pytest 9.2.0、Plotly 7.1.0 を使用した。
 全テストは各324件成功、11件skip、subtest 27件成功。Aoi は `c992ddb27c04de79d7d8d45d56fa0e597ff3972e`。
@@ -64,13 +64,12 @@ Chromiumはソケット作成が `Operation not permitted` で起動できなか
 
 ## 描画の境界
 
-親 #307 のレンダラーは単一の座標軸を対象にする。配置、文字幅、サンキーのノード位置は本家 Plotly と同一ではない。
+plotly_min v2（親 #308）はサブプロット・積み上げ棒・ヒートマップのマスの文字まで描く。配置、文字幅、サンキーのノード位置は本家 Plotly と同一ではない。
 JSON互換性の成功は、SVGの画素・配置の一致やKaleidoとの一致を意味しない。これらの一致は未検証。
 
 親 #307 の汎用比較テストもPlotly 7.1.0で実行したところ、名前付き `colorscale="viridis"` の辞書比較が失敗した。
 本家は配色名を色配列へ展開し、plotly_minは名前のまま保持するためである。
 FFSSのF08は明示的な色配列を使い、全9図の比較は成功している。固定したvendorのバイトは変更していない。
 
-既存レポートの `cli.write_image` / `RenderSession` による PNG・SVG 出力は Chromium 経路を維持する。
-FFSS用 `figure_svg` は複数軸・積み上げ棒・ヒートマップの texttemplate を拒否する。自動で Chrome を起動するフォールバックは追加しない。
+🖼️ SVG は野球の図も FFSS の図も `figures.figure_svg`（plotly_min）の 1 本の道で描く。PNG は書かない（スクショは browser-test-kit の持ち物）。
 既存図全体を plotly_min へ移行するか、未対応図を自動振分けするかは別の判断とし、この変更では固定SHAを #308 等へ進めない。

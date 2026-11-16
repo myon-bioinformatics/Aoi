@@ -12,8 +12,8 @@
     },
     {
       "repository": "myon-bioinformatics/markdown",
-      "ref": "b971e01c57c65181d8329a5dc1dd5b209519a5e4",
-      "commit": "b971e01c57c65181d8329a5dc1dd5b209519a5e4",
+      "ref": "733ff26f6f2f642f9e5895955af8a7b83d68c962",
+      "commit": "733ff26f6f2f642f9e5895955af8a7b83d68c962",
       "source": "markdown.py",
       "destination": "vendor/markdown/markdown.py",
       "blob_sha": "e2285a2d6415b7f4d3c5ea7e6f274c5ab576ad64",
@@ -30,12 +30,12 @@
     },
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
-      "ref": "4fb9618e346b20d865af625411c6f06f15def8f6",
-      "commit": "4fb9618e346b20d865af625411c6f06f15def8f6",
+      "ref": "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32",
+      "commit": "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32",
       "source": "tools/stdlib_min/plotly_min.py",
       "destination": "vendor/tools/stdlib_min/plotly_min.py",
-      "blob_sha": "a65d32e4b5062de8828febdfd02eb85d23585caf",
-      "sha256": "571c287e1960c47ba2257f802e24c1932431f8bb079765f92cc86ed0a0193c01"
+      "blob_sha": "9ee1f06c0125a45a493497cb2ad075c936a7c5ce",
+      "sha256": "6fa2875a275ec7104cc73fa73fbaf78946266736d3bba7b1153e79c5f4fb0bed"
     },
     {
       "repository": "myon-bioinformatics/Aoi",

@@ -6,6 +6,7 @@ driver のエントリは repository、ref、commit、source、destination、blo
 source は Aoi の中の相対パスで、写しは vendor/aoi/<source> に置く。
 --aoi を渡したときは、その checkout の同じ path のバイトとも比べる。
 親（myon-bioinformatics/myon-bioinformatics）の行は vendor/<source> に置き、バイトだけを照合する（Aoi とは比べない）。
+ほかの myon-bioinformatics の自作（markdown など）の行は vendor/<リポジトリ名の小文字>/<source> に置き、同じくバイトだけ。
 """
 from __future__ import annotations
 
@@ -102,10 +103,17 @@ def problems(root: Path, aoi_root: Path | None = None, lock: dict | None = None)
             continue
         path = rel.as_posix()
         paths.append(path)
-        from_aoi = entry["repository"] != "myon-bioinformatics/myon-bioinformatics"  # 親の行は vendor/ の直下
-        if from_aoi and entry["repository"] != SOURCE:
-            found.append(f"{path}: repository は {SOURCE}")
-        place = VENDOR_DIR if from_aoi else VENDOR_DIR.parent
+        repository = entry["repository"]
+        from_aoi = repository == SOURCE
+        if repository == "myon-bioinformatics/myon-bioinformatics":  # 親の行は vendor/ の直下
+            place = VENDOR_DIR.parent
+        elif from_aoi:
+            place = VENDOR_DIR
+        elif isinstance(repository, str) and re.fullmatch(r"myon-bioinformatics/[A-Za-z0-9_.-]+", repository):
+            place = VENDOR_DIR.parent / repository.split("/", 1)[1].lower()  # 自作の子は vendor/<名前>/
+        else:
+            found.append(f"{path}: repository は {SOURCE}・親・myon-bioinformatics の自作のどれか")
+            place = VENDOR_DIR
         destination = entry["destination"]
         expected = (place / rel).as_posix()
         if destination != expected:

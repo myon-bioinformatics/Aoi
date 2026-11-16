@@ -4,7 +4,7 @@ from pathlib import Path; from unittest.mock import MagicMock, patch
 
 import pytest
 
-from dragowing.cli import ExportUnavailable, PngUnavailable, main, write_png, write_svg
+from dragowing.cli import main, write_svg
 from dragowing import research_report
 from dragowing.figures import A_COLOR, B_COLOR, FONT, heatmap_figure, trajectory_figure
 from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
@@ -188,6 +188,13 @@ def test_trajectory_and_heatmap_keep_source_values_including_a_gap():
     assert dragons["marker"]["color"] == [A_COLOR, B_COLOR]
     assert "spline" not in json.dumps(spec)
     assert "trendline" not in json.dumps(spec)
+    two = spec_of(trajectory_figure(rows + [season_row(league="P", team="h", team_name="ソフトバンク")]))
+    refs = {(t.get("xaxis"), t.get("yaxis")) for t in two["data"] if (t.get("meta") or {}).get("role") == "trajectory"}
+    assert refs == {("x", "y"), ("x2", "y2")}
+    for ref in ("xaxis", "yaxis", "xaxis2", "yaxis2"):  # plotly.js が読む名前（x2axis では 2 つ目のリーグが 1 つ目に重なる）
+        assert ref in two["layout"]
+    assert not {"x2axis", "y2axis"} & set(two["layout"])
+    assert two["layout"]["xaxis2"]["domain"][0] > two["layout"]["xaxis"]["domain"][1]
     heat = spec_of(heatmap_figure(rows, "wins_vs_pythag", TEAM_ORDER))
     payload = heat["data"][0]
     assert payload["zsmooth"] is False
@@ -278,7 +285,7 @@ def test_counterexample_table_copies_values_context_and_question():
     assert "Plotly.newPlot" not in page
 
 
-def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch, sibling_env):
+def test_cli_writes_standalone_html_and_svg_without_chrome(tmp_path, monkeypatch, sibling_env):
     results = tmp_path / "results"
     results.mkdir()
     dump_jsonl(
@@ -334,23 +341,22 @@ def test_cli_writes_standalone_html_and_png_needs_chrome(tmp_path, monkeypatch, 
     assert proc.returncode == 0, proc.stderr
     assert (tmp_path / "mod" / "index.html").is_file()
     assert (tmp_path / "mod" / "index.html").resolve().as_uri() in proc.stdout
+    # 🖼️ SVG は plotly_min が描く。Chrome の場所を壊しても、PATH を空にしても書ける
     monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
-    with pytest.raises(PngUnavailable, match="Chrome"):
-        write_png(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.png")
-    with pytest.raises(ExportUnavailable, match="Chrome"):
-        write_svg(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.svg")
-    assert not (tmp_path / "x.png").exists()
-    assert not (tmp_path / "x.svg").exists()
-    missing = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "png"), "--png", "--svg"],
+    write_svg(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.svg")
+    assert (tmp_path / "x.svg").read_text(encoding="utf-8").startswith("<svg")
+    drawn = subprocess.run(
+        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "svg"), "--svg"],
         check=False,
         capture_output=True,
         text=True,
-        **_dragowing_module_run(sibling_env, {"CHROME": str(tmp_path / "missing-chrome")}),
+        **_dragowing_module_run(sibling_env, {"CHROME": str(tmp_path / "missing-chrome"), "PATH": ""}),
     )
-    assert missing.returncode == 2
-    assert "Chrome" in missing.stderr
-    assert (tmp_path / "png" / "index.html").is_file()
+    assert drawn.returncode == 0, drawn.stderr
+    assert (tmp_path / "svg" / "index.html").is_file()
+    svgs = sorted(path.stem for path in (tmp_path / "svg" / "svg").glob("*.svg"))
+    assert len(svgs) == 4, svgs  # 軌跡、球団×年、重なりの格子、重なりの内訳
+    assert not (tmp_path / "svg" / "png").exists()
 
 
 def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path, sibling_env):
@@ -566,48 +572,15 @@ def test_figure_script_keeps_ids_inside_a_javascript_string():
     assert "\\u003c/script" in block
 
 
-def test_svg_and_png_export_dispatch_formats(tmp_path, monkeypatch):
+def test_svg_is_drawn_by_plotly_min_and_png_is_gone(tmp_path):
     import dragowing.cli as cli
-    calls = []
-    monkeypatch.setattr(cli, "find_chrome", lambda chrome: "/verified/chrome")
-    monkeypatch.setattr(cli, "export_draw", lambda *args, **kwargs: calls.append((args, kwargs)))
     spec = heatmap_figure([season_row()], "wins_vs_pythag")
-    cli.write_png(spec, tmp_path / "png" / "x.png")
-    cli.write_svg(spec, tmp_path / "svg" / "x.svg")
-    assert [args[3] for args, kwargs in calls] == ["png", "svg"]
-    assert [kwargs["chrome"] for args, kwargs in calls] == ["/verified/chrome"] * 2
-    assert all(args[2].parent.is_dir() for args, kwargs in calls)
-
-
-def test_cli_reuses_one_session_for_all_figures_and_formats(tmp_path, monkeypatch):
-    import dragowing.cli as cli
-    results = tmp_path / "results"
-    results.mkdir()
-    dump_jsonl(results / "season.jsonl", [season_row()])
-    dump_jsonl(results / "propositions.jsonl", [proposition()])
-    sessions, calls, lookups = [], [], []
-    class Session:
-        def __init__(self, **kwargs):
-            self.kwargs = kwargs
-            self.closed = False
-            sessions.append(self)
-        def __enter__(self):
-            return self
-        def __exit__(self, *args):
-            self.closed = True
-    monkeypatch.setattr(cli, "RenderSession", Session)
-    monkeypatch.setattr(cli, "find_chrome", lambda chrome: lookups.append(chrome) or "/verified/chrome")
-    monkeypatch.setattr(cli, "export_draw", lambda *args, **kwargs: calls.append((args, kwargs)))
-    assert cli.main([str(results), "--out", str(tmp_path / "out"), "--png", "--svg"]) == 0
-    assert len(sessions) == 1 and sessions[0].closed
-    assert sessions[0].kwargs == {"chrome": "/verified/chrome"}
-    assert lookups == [None]
-    assert len(calls) >= 4
-    assert all(kwargs == {"session": sessions[0]} for args, kwargs in calls)
-    by_name = {}
-    for args, kwargs in calls:
-        by_name.setdefault(args[2].stem, set()).add(args[3])
-    assert all(formats == {"png", "svg"} for formats in by_name.values())
+    cli.write_svg(spec, tmp_path / "deep" / "x.svg")
+    text = (tmp_path / "deep" / "x.svg").read_text(encoding="utf-8")
+    assert text.startswith("<svg") and "Meiryo" in text
+    options = {action.dest for action in cli.build_parser()._actions}
+    assert "svg" in options and not {"png", "chrome"} & options
+    assert not hasattr(cli, "write_png")
 
 
 def test_heatmap_team_order_is_an_argument_and_defaults_to_code_order():

@@ -1,7 +1,8 @@
 """HTML。文章と表は Markdown から作る。Plotly は index.html の図（軌跡、球団×年、条件の重なり）だけ。"""
 from __future__ import annotations
 
-import html, importlib, json, re
+import html, importlib.util, json, re, sys
+from functools import lru_cache
 from pathlib import Path
 
 from .figures import FONT, heatmap_figure, trajectory_figure
@@ -35,7 +36,6 @@ details { margin: 0.75rem 0 1.1rem; }
 summary { cursor: pointer; }
 """.replace("@@FONT@@", FONT)
 
-_MD = ["tables", "fenced_code", "attr_list", "md_in_html"]
 _SAFE_ANCHOR = re.compile(r"[A-Za-z][A-Za-z0-9_-]*")
 _CARD_FIELDS = ("unit", "season", "team", "team_name", "focus", "surprise", "question", "values", "context")
 _COUNTEREXAMPLE_ORDER = (
@@ -76,17 +76,25 @@ _AFTER_SUMMARY = """\
 """
 
 
+@lru_cache(maxsize=1)
 def _markdown_library():
-    """Python-Markdown。`vendor/markdown.py` が import を横取りしない。"""
-    module = importlib.import_module("markdown")
-    path = Path(getattr(module, "__file__", "") or "").resolve()
-    if path.as_posix().endswith("/vendor/markdown.py"):
-        raise RuntimeError(f"vendor markdown が import を横取りしている: {path}")
+    """📝 自作の markdown.py（myon-bioinformatics/markdown を vendor/markdown に写し、vendor.lock.json で固定）。
+
+    名前は子どうしでぶつからないように dragowing_markdown。Python-Markdown（PyPI）は使わない。
+    """
+    path = Path(__file__).resolve().parent / "vendor" / "markdown" / "markdown.py"
+    if not path.is_file():
+        raise FileNotFoundError(f"markdown.py が無い: {path}（DRAgoWing のリポジトリから動かす）")
+    spec = importlib.util.spec_from_file_location("dragowing_markdown", path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module  # dataclass が自分のモジュールを引く
+    spec.loader.exec_module(module)
     return module
 
 
 def render_md(source: str) -> str:
-    return _markdown_library().markdown(source, extensions=_MD)
+    """ページは Python で組んだ Markdown。図の <div>・<details> は HTML のまま通し、{: .class} を読む。"""
+    return _markdown_library().markdown_to_html(source, raw_html=True, attr_list=True)
 
 
 def to_builtin(obj):

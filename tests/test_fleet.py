@@ -1,5 +1,5 @@
 """🌐 Fleet contracts through the parent's shared checks (vendor/fleet_check.py):
-🔒 vendor lock · 📌 parent pins · ⏱️ benchmark guards (-S / -O) · 🧾 CI jobs (vendor-lock, vendor-dispatch, Chromium).
+🔒 vendor lock · 📌 parent pins · ⏱️ benchmark guards (-S / -O) · 🧾 CI jobs (vendor-lock, vendor-dispatch, no browser).
 
 検査の本体は親の fleet_check.py。ここに残すのは DRAgoWing の期待値（pin・ケース・文言）だけ。
 Aoi は子を subtree で持ち、全部の子のテストを1回の pytest で動かす。最上位の `vendor` パッケージは子どうしで
@@ -17,11 +17,17 @@ _spec.loader.exec_module(fleet)
 
 WORKFLOWS = fleet.repo_root(__file__)  # 単独では ROOT。Aoi の中では、ワークフローを持つ一番近い親
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
-ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0"}
+ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0",
+            # 📊 親の stdlib_min の plotly_min（静止の図の SVG を Chrome なしで描く）
+            "vendor/tools/stdlib_min/plotly_min.py": "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32",
+            # 📝 自作の markdown.py（ページの文章。Python-Markdown の代わり）
+            "vendor/markdown/markdown.py": "733ff26f6f2f642f9e5895955af8a7b83d68c962"}
 # destination -> (repository, source)。Aoi の写しは vendor/aoi/<source>。使わない shrink_module.py・polars_min.py などは置かない
 SOURCES = {where: ("myon-bioinformatics/Aoi", where.removeprefix("vendor/aoi/")) for where in (
-    "vendor/aoi/scripts/fetch_module.py", "vendor/aoi/shrink/numpy_min.py", "vendor/aoi/vendor/uv_tool_build.py")}
+    "vendor/aoi/shrink/numpy_min.py", "vendor/aoi/vendor/uv_tool_build.py")}
 SOURCES["vendor/fleet_check.py"] = (fleet.PARENT, "fleet_check.py")
+SOURCES["vendor/tools/stdlib_min/plotly_min.py"] = (fleet.PARENT, "tools/stdlib_min/plotly_min.py")
+SOURCES["vendor/markdown/markdown.py"] = ("myon-bioinformatics/markdown", "markdown.py")
 SETUP_NODE = "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0"
 SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3"
 
@@ -132,39 +138,8 @@ def test_vendor_dispatch_verifies_the_lock_without_record():
     assert "repository: myon-bioinformatics/myon-bioinformatics" not in job
 
 
-def _assert_required_managed_chromium(job):
-    install = 'python3 scripts/install_ci_chromium.py --destination "$RUNNER_TEMP/dragowing-chromium"'
-    selection = 'chromium="$RUNNER_TEMP/dragowing-chromium/chrome-linux/chrome"'
-    assert install in job and selection in job
-    assert job.index(install) < job.index(selection) < job.index('"$chromium" --version')
-    assert 'command -v chromium' not in job
-    assert 'Chromium 156.0.8078.0' in job
-    assert 'exit 1' in job
-    assert 'continue-on-error' not in job
-    assert 'command -v google-chrome' not in job
-    assert 'Installed Chromium version does not match the reviewed snapshot.' in job
-    assert 'DRAGOWING_REQUIRE_CHROME=1' in job
-    assert 'DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js' in job
-    assert 'from plotly_cdn import fetch_plotly_js' in job
-    assert 'CHROMIUM=%s' not in job
-    assert '"$chromium" --version' in job
-    assert '>> "$GITHUB_ENV"' in job
-
-
-def test_python_matrix_requires_chromium_without_implicit_chrome_fallback():
-    _assert_required_managed_chromium(fleet.workflow_job(WORKFLOWS, "test"))
-
-
-@pytest.mark.parametrize("old,new", [
-    ("python3 scripts/install_ci_chromium.py", "python3 missing-installer.py"),
-    ('chromium="$RUNNER_TEMP/dragowing-chromium/chrome-linux/chrome"', 'chromium=/usr/bin/chromium'),
-    ('Chromium 156.0.8078.0', 'Chromium 155.0.8059.0'),
-    ('DRAGOWING_REQUIRE_CHROME=1', 'DRAGOWING_REQUIRE_CHROME=0'),
-    ('shell: bash', 'continue-on-error: true\n        shell: bash'),
-    ('test -x "$chromium"', 'command -v google-chrome'),
-])
-def test_managed_chromium_contract_rejects_missing_or_weakened_setup(old, new):
+def test_python_matrix_installs_no_browser():
+    """🖼️ SVG は plotly_min が描くので、テストの行列に Chrome / Chromium を入れない。"""
     job = fleet.workflow_job(WORKFLOWS, "test")
-    assert old in job
-    with pytest.raises(AssertionError):
-        _assert_required_managed_chromium(job.replace(old, new))
+    for word in ("chromium", "chrome", "DRAGOWING_PINNED_PLOTLY_JS", "install_ci_chromium"):
+        assert word.lower() not in job.lower(), word

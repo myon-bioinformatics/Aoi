@@ -1,0 +1,823 @@
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "心臓（左）", "target": "脳", "source_group": "heart", "target_group": "organ", "value": 0.75, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "心臓（左）", "target": "冠動脈", "source_group": "heart", "target_group": "organ", "value": 0.25, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "心臓（左）", "target": "腎臓", "source_group": "heart", "target_group": "organ", "value": 1.1, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "心臓（左）", "target": "消化管・肝臓", "source_group": "heart", "target_group": "organ", "value": 1.25, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "心臓（左）", "target": "筋肉", "source_group": "heart", "target_group": "organ", "value": 0.8500000000000001, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "心臓（左）", "target": "皮膚", "source_group": "heart", "target_group": "organ", "value": 0.4, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "心臓（左）", "target": "その他", "source_group": "heart", "target_group": "organ", "value": 0.4, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "脳", "target": "静脈", "source_group": "organ", "target_group": "vein", "value": 0.75, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "冠動脈", "target": "静脈", "source_group": "organ", "target_group": "vein", "value": 0.25, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "腎臓", "target": "静脈", "source_group": "organ", "target_group": "vein", "value": 1.1, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "消化管・肝臓", "target": "静脈", "source_group": "organ", "target_group": "vein", "value": 1.25, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "筋肉", "target": "静脈", "source_group": "organ", "target_group": "vein", "value": 0.8500000000000001, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "皮膚", "target": "静脈", "source_group": "organ", "target_group": "vein", "value": 0.4, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "その他", "target": "静脈", "source_group": "organ", "target_group": "vein", "value": 0.4, "unit": "L/min"}
+{"id": "E30", "slug": "circulation", "run": "blood", "source": "静脈", "target": "肺", "source_group": "vein", "target_group": "lung", "value": 5.0, "unit": "L/min"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:coal", "source": "燃料", "target": "ボイラ", "source_group": "heat", "target_group": "heat", "value": 100.0, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:coal", "source": "ボイラ", "target": "煙突", "source_group": "heat", "target_group": "loss", "value": 6.0, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:coal", "source": "ボイラ", "target": "蒸気", "source_group": "heat", "target_group": "water", "value": 94.0, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:coal", "source": "蒸気", "target": "発電端", "source_group": "water", "target_group": "power", "value": 45.0, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:coal", "source": "蒸気", "target": "海（復水器）", "source_group": "water", "target_group": "loss", "value": 49.0, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:coal", "source": "発電端", "target": "送電端", "source_group": "power", "target_group": "power", "value": 42.0, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:coal", "source": "発電端", "target": "所内", "source_group": "power", "target_group": "loss", "value": 2.999999999999999, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "燃料", "target": "ガスタービン", "source_group": "heat", "target_group": "heat", "value": 100.0, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "ガスタービン", "target": "発電端", "source_group": "heat", "target_group": "power", "value": 42.6, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "ガスタービン", "target": "排熱回収ボイラ", "source_group": "heat", "target_group": "heat", "value": 57.4, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "排熱回収ボイラ", "target": "煙突", "source_group": "heat", "target_group": "loss", "value": 6.141799999999996, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "排熱回収ボイラ", "target": "蒸気", "source_group": "heat", "target_group": "water", "value": 51.2582, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "蒸気", "target": "発電端", "source_group": "water", "target_group": "power", "value": 20.480000000000004, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "蒸気", "target": "海（復水器）", "source_group": "water", "target_group": "loss", "value": 30.7782, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "発電端", "target": "送電端", "source_group": "power", "target_group": "power", "value": 61.434434782608704, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "energy:lng", "source": "発電端", "target": "所内", "source_group": "power", "target_group": "loss", "value": 1.645565217391302, "unit": "%"}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "gas", "q_mw": 0.0, "t_c": 88.0}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "gas", "q_mw": 965.5198674698795, "t_c": 613.785046728972}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "water", "q_mw": 0.0, "t_c": 29.315789473684212}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "water", "q_mw": 115.30328737417398, "t_c": 135.88}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "water", "q_mw": 178.96533648089758, "t_c": 135.88}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "water", "q_mw": 267.27921911153385, "t_c": 223.55}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "water", "q_mw": 354.06288406848, "t_c": 223.55}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "water", "q_mw": 500.12707196857605, "t_c": 350.35}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "water", "q_mw": 660.0240747984037, "t_c": 350.35}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "water", "q_mw": 965.5198674698795, "t_c": 565.0}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "pinch", "drum": "lp", "q_mw": 115.30328737417398, "t_c": 135.88, "t_gas_c": 150.78974300021372, "dt_k": 14.909743000213723}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "pinch", "drum": "ip", "q_mw": 267.27921911153385, "t_c": 223.55, "t_gas_c": 233.55, "dt_k": 10.0}
+{"id": "E31", "slug": "thermal-power", "run": "tq", "stream": "pinch", "drum": "hp", "q_mw": 500.12707196857605, "t_c": 350.35, "t_gas_c": 360.35, "dt_k": 10.0}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "coal", "start": "hot", "phase": "steps", "from_min": 0.0, "to_min": 81.80087399936272, "agora_lo_min": 80.0, "agora_hi_min": 150.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "coal", "start": "hot", "phase": "warmup", "from_min": 81.80087399936272, "to_min": 115.0, "agora_lo_min": 80.0, "agora_hi_min": 150.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "coal", "start": "hot", "phase": "ramp", "from_min": 115.0, "to_min": 132.0, "agora_lo_min": 80.0, "agora_hi_min": 150.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "coal", "start": "cold", "phase": "steps", "from_min": 0.0, "to_min": 81.5647617635814, "agora_lo_min": 180.0, "agora_hi_min": 360.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "coal", "start": "cold", "phase": "warmup", "from_min": 81.5647617635814, "to_min": 232.0, "agora_lo_min": 180.0, "agora_hi_min": 360.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "coal", "start": "cold", "phase": "ramp", "from_min": 232.0, "to_min": 249.0, "agora_lo_min": 180.0, "agora_hi_min": 360.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "lng", "start": "hot", "phase": "steps", "from_min": 0.0, "to_min": 3.952563051646461, "agora_lo_min": 30.0, "agora_hi_min": 40.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "lng", "start": "hot", "phase": "warmup", "from_min": 3.952563051646461, "to_min": 35.0, "agora_lo_min": 30.0, "agora_hi_min": 40.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "lng", "start": "hot", "phase": "ramp", "from_min": 35.0, "to_min": 47.0, "agora_lo_min": 30.0, "agora_hi_min": 40.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "lng", "start": "cold", "phase": "steps", "from_min": 0.0, "to_min": 4.188625095559843, "agora_lo_min": 120.0, "agora_hi_min": 180.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "lng", "start": "cold", "phase": "warmup", "from_min": 4.188625095559843, "to_min": 145.0, "agora_lo_min": 120.0, "agora_hi_min": 180.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "startup", "plant": "lng", "start": "cold", "phase": "ramp", "from_min": 145.0, "to_min": 157.0, "agora_lo_min": 120.0, "agora_hi_min": 180.0, "at": 0.5}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 5.0, "unit": "K", "metric": 0.28153413633164504, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 5.3125, "unit": "K", "metric": 0.24422756854190025, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 5.625, "unit": "K", "metric": 0.23953159551005818, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 5.9375, "unit": "K", "metric": 0.2473308648066913, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 6.25, "unit": "K", "metric": 0.25512662271947134, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 6.5625, "unit": "K", "metric": 0.2629188683343905, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 6.875, "unit": "K", "metric": 0.2707076007422584, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 7.1875, "unit": "K", "metric": 0.2784928190387189, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 7.5, "unit": "K", "metric": 0.3025310884980407, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 7.8125, "unit": "K", "metric": 0.34742666907242226, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 8.125, "unit": "K", "metric": 0.3922950572011604, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 8.4375, "unit": "K", "metric": 0.4371362457000427, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 8.75, "unit": "K", "metric": 0.481950227421731, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 9.0625, "unit": "K", "metric": 0.5267369952558684, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 9.375, "unit": "K", "metric": 0.5714965421291426, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 9.6875, "unit": "K", "metric": 0.6162288610053043, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 10.0, "unit": "K", "metric": 0.6609339448852374, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 10.3125, "unit": "K", "metric": 0.7056117868069811, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 10.625, "unit": "K", "metric": 0.7502623798458157, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 10.9375, "unit": "K", "metric": 0.7948857171142947, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 11.25, "unit": "K", "metric": 0.8394817917622643, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 11.5625, "unit": "K", "metric": 0.884050596977004, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 11.875, "unit": "K", "metric": 0.9285921259831558, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 12.1875, "unit": "K", "metric": 0.9731063720428572, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 12.5, "unit": "K", "metric": 1.017593328455757, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 12.8125, "unit": "K", "metric": 1.0620529885590517, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 13.125, "unit": "K", "metric": 1.1064853457276036, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 13.4375, "unit": "K", "metric": 1.150890393373864, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 13.75, "unit": "K", "metric": 1.1952681249480532, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 14.0625, "unit": "K", "metric": 1.2396185339380916, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 14.375, "unit": "K", "metric": 1.2839416138697546, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 14.6875, "unit": "K", "metric": 1.3282373583066054, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 15.0, "unit": "K", "metric": 1.372505760850181, "use": false, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "pinch", "x": 10.0, "unit": "K", "metric": 0.6609339448852374, "use": true, "lo": 5.0, "hi": 15.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 1.0, "unit": "K/min", "metric": 4.9, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 1.14375, "unit": "K/min", "metric": 3.533333333333333, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 1.2875, "unit": "K/min", "metric": 2.5, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 1.43125, "unit": "K/min", "metric": 1.7, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 1.575, "unit": "K/min", "metric": 1.0333333333333334, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 1.71875, "unit": "K/min", "metric": 0.6333333333333333, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 1.8624999999999998, "unit": "K/min", "metric": 0.7111111111111111, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 2.0062499999999996, "unit": "K/min", "metric": 0.8111111111111111, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 2.15, "unit": "K/min", "metric": 0.9, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 2.29375, "unit": "K/min", "metric": 0.9777777777777777, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 2.4375, "unit": "K/min", "metric": 1.0555555555555556, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 2.58125, "unit": "K/min", "metric": 1.2, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 2.7249999999999996, "unit": "K/min", "metric": 1.3333333333333333, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 2.86875, "unit": "K/min", "metric": 1.5, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 3.0124999999999997, "unit": "K/min", "metric": 1.6, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 3.15625, "unit": "K/min", "metric": 1.7333333333333334, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 3.3, "unit": "K/min", "metric": 1.8333333333333333, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 3.4437499999999996, "unit": "K/min", "metric": 1.9, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 3.5875, "unit": "K/min", "metric": 2.0, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 3.7312499999999997, "unit": "K/min", "metric": 2.066666666666667, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 3.875, "unit": "K/min", "metric": 2.1666666666666665, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 4.01875, "unit": "K/min", "metric": 2.2333333333333334, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 4.1625, "unit": "K/min", "metric": 2.3, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 4.30625, "unit": "K/min", "metric": 2.3333333333333335, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 4.449999999999999, "unit": "K/min", "metric": 2.4, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 4.59375, "unit": "K/min", "metric": 2.433333333333333, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 4.7375, "unit": "K/min", "metric": 2.5, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 4.88125, "unit": "K/min", "metric": 2.533333333333333, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 5.0249999999999995, "unit": "K/min", "metric": 2.6, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 5.168749999999999, "unit": "K/min", "metric": 2.6333333333333333, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 5.3125, "unit": "K/min", "metric": 2.6666666666666665, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 5.45625, "unit": "K/min", "metric": 2.7, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 5.6, "unit": "K/min", "metric": 2.7333333333333334, "use": false, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-rate", "x": 2.0, "unit": "K/min", "metric": 0.8111111111111111, "use": true, "lo": 1.0, "hi": 5.6, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 60.0, "unit": "h", "metric": 0.6777777777777778, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 60.625, "unit": "h", "metric": 0.6888888888888889, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 61.25, "unit": "h", "metric": 0.6888888888888889, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 61.875, "unit": "h", "metric": 0.7, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 62.5, "unit": "h", "metric": 0.7111111111111111, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 63.125, "unit": "h", "metric": 0.7222222222222222, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 63.75, "unit": "h", "metric": 0.7222222222222222, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 64.375, "unit": "h", "metric": 0.7333333333333333, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 65.0, "unit": "h", "metric": 0.7444444444444445, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 65.625, "unit": "h", "metric": 0.7555555555555555, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 66.25, "unit": "h", "metric": 0.7555555555555555, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 66.875, "unit": "h", "metric": 0.7666666666666667, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 67.5, "unit": "h", "metric": 0.7777777777777778, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 68.125, "unit": "h", "metric": 0.7888888888888889, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 68.75, "unit": "h", "metric": 0.7888888888888889, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 69.375, "unit": "h", "metric": 0.8, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 70.0, "unit": "h", "metric": 0.8111111111111111, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 70.625, "unit": "h", "metric": 0.8111111111111111, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 71.25, "unit": "h", "metric": 0.8222222222222222, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 71.875, "unit": "h", "metric": 0.8333333333333334, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 72.5, "unit": "h", "metric": 0.8333333333333334, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 73.125, "unit": "h", "metric": 0.8444444444444444, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 73.75, "unit": "h", "metric": 0.8555555555555555, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 74.375, "unit": "h", "metric": 0.8555555555555555, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 75.0, "unit": "h", "metric": 0.8666666666666667, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 75.625, "unit": "h", "metric": 0.8777777777777778, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 76.25, "unit": "h", "metric": 0.8777777777777778, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 76.875, "unit": "h", "metric": 0.8888888888888888, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 77.5, "unit": "h", "metric": 0.9, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 78.125, "unit": "h", "metric": 0.9, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 78.75, "unit": "h", "metric": 0.9111111111111111, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 79.375, "unit": "h", "metric": 0.9111111111111111, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 80.0, "unit": "h", "metric": 0.9222222222222223, "use": false, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "metal-tau", "x": 70.0, "unit": "h", "metric": 0.8111111111111111, "use": true, "lo": 60.0, "hi": 80.0, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.6, "unit": "", "metric": 0.5652281829771881, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.60625, "unit": "", "metric": 0.5551856464504068, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.6124999999999999, "unit": "", "metric": 0.5453034705709126, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.61875, "unit": "", "metric": 0.535577844770215, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.625, "unit": "", "metric": 0.5260050782625185, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.63125, "unit": "", "metric": 0.5165815953748802, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.6375, "unit": "", "metric": 0.5073039310937796, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.64375, "unit": "", "metric": 0.4981687268176568, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.65, "unit": "", "metric": 0.48917272630259284, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.65625, "unit": "", "metric": 0.4803127717927384, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.6625, "unit": "", "metric": 0.4715858003245218, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.66875, "unit": "", "metric": 0.46298884019648767, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.675, "unit": "", "metric": 0.45451900759484837, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.68125, "unit": "", "metric": 0.44617350336909245, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.6875, "unit": "", "metric": 0.43794960994680093, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.69375, "unit": "", "metric": 0.4298446883839772, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7, "unit": "", "metric": 0.42185617554126864, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.70625, "unit": "", "metric": 0.4139815813817653, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7125, "unit": "", "metric": 0.40621848638314384, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.71875, "unit": "", "metric": 0.3985645390591097, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7250000000000001, "unit": "", "metric": 0.3910174535847485, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.73125, "unit": "", "metric": 0.3835750075205757, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7375, "unit": "", "metric": 0.3762350396303053, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.74375, "unit": "", "metric": 0.36899544778882615, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.75, "unit": "", "metric": 0.361854186974749, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7562500000000001, "unit": "", "metric": 0.3548092673446579, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7625000000000001, "unit": "", "metric": 0.3478587523842336, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.76875, "unit": "", "metric": 0.3410007571342059, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.775, "unit": "", "metric": 0.3342334464853769, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.78125, "unit": "", "metric": 0.3275550335418413, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7875000000000001, "unit": "", "metric": 0.32096377804794096, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7937500000000001, "unit": "", "metric": 0.3144579848764743, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.8, "unit": "", "metric": 0.30803600257501473, "use": false, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "compressor-eta", "x": 0.7, "unit": "", "metric": 0.42185617554126864, "use": true, "lo": 0.6, "hi": 0.8, "source_range": true}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9, "unit": "", "metric": 1.3732682805571514, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.901875, "unit": "", "metric": 1.3386182459071176, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.90375, "unit": "", "metric": 1.3041119873344684, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.905625, "unit": "", "metric": 1.2697486118200911, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9075, "unit": "", "metric": 1.235527233725196, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.909375, "unit": "", "metric": 1.2014469747152257, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.91125, "unit": "", "metric": 1.1675069636847244, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.913125, "unit": "", "metric": 1.1337063366830935, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.915, "unit": "", "metric": 1.1000442368413041, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.916875, "unit": "", "metric": 1.0665198142994825, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.91875, "unit": "", "metric": 1.0331322261353841, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.920625, "unit": "", "metric": 0.9998806362937429, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9225, "unit": "", "metric": 0.9667642155165024, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.924375, "unit": "", "metric": 0.9337821412738534, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.92625, "unit": "", "metric": 0.9009335976961519, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.928125, "unit": "", "metric": 0.8682177755066467, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9299999999999999, "unit": "", "metric": 0.8356338719550032, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.931875, "unit": "", "metric": 0.8031810907516517, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.93375, "unit": "", "metric": 0.7708586420029362, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9356249999999999, "unit": "", "metric": 0.7386657421469989, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9375, "unit": "", "metric": 0.7066016138904859, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.939375, "unit": "", "metric": 0.6746654861459755, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.94125, "unit": "", "metric": 0.6428565939701666, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.943125, "unit": "", "metric": 0.6111741785028121, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.945, "unit": "", "metric": 0.5796174869063586, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.946875, "unit": "", "metric": 0.5481857723063255, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.94875, "unit": "", "metric": 0.5168782937323831, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9506249999999999, "unit": "", "metric": 0.48569431606011093, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9525, "unit": "", "metric": 0.45463310995347656, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.954375, "unit": "", "metric": 0.4236939518079704, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.9562499999999999, "unit": "", "metric": 0.39287612369440783, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.958125, "unit": "", "metric": 0.36217891330340146, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.96, "unit": "", "metric": 0.3316016138904865, "use": false, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "sensitivity", "assumption": "boiler", "x": 0.94, "unit": "", "metric": 0.6640484224011238, "use": true, "lo": 0.9, "hi": 0.96, "source_range": false}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.0, "metric": 6.133333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.1, "metric": 5.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.2, "metric": 4.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.3, "metric": 3.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.4, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.5, "metric": 2.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.6, "metric": 1.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.7000000000000002, "metric": 1.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.8, "metric": 0.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 1.9, "metric": 0.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.0, "metric": 0.6777777777777778}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.1, "metric": 0.7444444444444445}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.2, "metric": 0.8111111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.3, "metric": 0.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.4000000000000004, "metric": 0.9222222222222223}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.5, "metric": 0.9777777777777777}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.6, "metric": 1.0222222222222221}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.7, "metric": 1.0666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.8, "metric": 1.1666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 2.9000000000000004, "metric": 1.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.0, "metric": 1.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.1, "metric": 1.4333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.2, "metric": 1.5333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.3000000000000003, "metric": 1.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.4000000000000004, "metric": 1.6666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.5, "metric": 1.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.6, "metric": 1.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.7, "metric": 1.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.8000000000000003, "metric": 1.9333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 3.9000000000000004, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.0, "metric": 2.033333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.1, "metric": 2.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.2, "metric": 2.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.300000000000001, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.4, "metric": 2.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.5, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.6, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.7, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.800000000000001, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 4.9, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 5.0, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 5.1000000000000005, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 5.2, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 5.3, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 5.4, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 5.5, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 60.0, "rate_k_min": 5.6000000000000005, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.0, "metric": 5.866666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.1, "metric": 4.766666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.2, "metric": 3.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.3, "metric": 3.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.4, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.5, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.6, "metric": 1.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.7000000000000002, "metric": 1.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.8, "metric": 0.7666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 1.9, "metric": 0.6222222222222222}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.0, "metric": 0.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.1, "metric": 0.7777777777777778}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.2, "metric": 0.8333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.3, "metric": 0.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.4000000000000004, "metric": 0.9444444444444444}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.5, "metric": 1.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.6, "metric": 1.0444444444444445}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.7, "metric": 1.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.8, "metric": 1.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 2.9000000000000004, "metric": 1.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.0, "metric": 1.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.1, "metric": 1.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.2, "metric": 1.5666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.3000000000000003, "metric": 1.6666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.4000000000000004, "metric": 1.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.5, "metric": 1.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.6, "metric": 1.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.7, "metric": 1.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.8000000000000003, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 3.9000000000000004, "metric": 2.033333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.0, "metric": 2.066666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.1, "metric": 2.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.2, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.300000000000001, "metric": 2.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.4, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.5, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.6, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.7, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.800000000000001, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 4.9, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 5.0, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 5.1000000000000005, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 5.2, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 5.3, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 5.4, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 5.5, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 62.0, "rate_k_min": 5.6000000000000005, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.0, "metric": 5.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.1, "metric": 4.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.2, "metric": 3.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.3, "metric": 2.933333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.4, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.5, "metric": 1.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.6, "metric": 1.3333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.7000000000000002, "metric": 0.9666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.8, "metric": 0.6666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 1.9, "metric": 0.6555555555555556}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.0, "metric": 0.7333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.1, "metric": 0.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.2, "metric": 0.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.3, "metric": 0.9222222222222223}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.4000000000000004, "metric": 0.9666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.5, "metric": 1.0222222222222221}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.6, "metric": 1.0666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.7, "metric": 1.1666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.8, "metric": 1.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 2.9000000000000004, "metric": 1.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.0, "metric": 1.4666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.1, "metric": 1.5333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.2, "metric": 1.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.3000000000000003, "metric": 1.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.4000000000000004, "metric": 1.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.5, "metric": 1.8333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.6, "metric": 1.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.7, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.8000000000000003, "metric": 2.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 3.9000000000000004, "metric": 2.066666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.0, "metric": 2.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.1, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.2, "metric": 2.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.300000000000001, "metric": 2.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.4, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.5, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.6, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.7, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.800000000000001, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 4.9, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 5.0, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 5.1000000000000005, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 5.2, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 5.3, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 5.4, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 5.5, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 64.0, "rate_k_min": 5.6000000000000005, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.0, "metric": 5.366666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.1, "metric": 4.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.2, "metric": 3.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.3, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.4, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.5, "metric": 1.6666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.6, "metric": 1.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.7000000000000002, "metric": 0.8333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.8, "metric": 0.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 1.9, "metric": 0.6777777777777778}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.0, "metric": 0.7555555555555555}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.1, "metric": 0.8222222222222222}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.2, "metric": 0.8888888888888888}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.3, "metric": 0.9444444444444444}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.4000000000000004, "metric": 0.9888888888888889}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.5, "metric": 1.0444444444444445}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.6, "metric": 1.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.7, "metric": 1.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.8, "metric": 1.3333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 2.9000000000000004, "metric": 1.4333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.0, "metric": 1.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.1, "metric": 1.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.2, "metric": 1.6666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.3000000000000003, "metric": 1.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.4000000000000004, "metric": 1.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.5, "metric": 1.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.6, "metric": 1.9333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.7, "metric": 2.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.8000000000000003, "metric": 2.033333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 3.9000000000000004, "metric": 2.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.0, "metric": 2.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.1, "metric": 2.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.2, "metric": 2.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.300000000000001, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.4, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.5, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.6, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.7, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.800000000000001, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 4.9, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 5.0, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 5.1000000000000005, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 5.2, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 5.3, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 5.4, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 5.5, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 66.0, "rate_k_min": 5.6000000000000005, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.0, "metric": 5.133333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.1, "metric": 4.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.2, "metric": 3.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.3, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.4, "metric": 2.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.5, "metric": 1.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.6, "metric": 1.0666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.7000000000000002, "metric": 0.7666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.8, "metric": 0.6222222222222222}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 1.9, "metric": 0.7111111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.0, "metric": 0.7888888888888889}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.1, "metric": 0.8444444444444444}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.2, "metric": 0.9111111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.3, "metric": 0.9666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.4000000000000004, "metric": 1.011111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.5, "metric": 1.0555555555555556}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.6, "metric": 1.1666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.7, "metric": 1.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.8, "metric": 1.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 2.9000000000000004, "metric": 1.4666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.0, "metric": 1.5666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.1, "metric": 1.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.2, "metric": 1.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.3000000000000003, "metric": 1.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.4000000000000004, "metric": 1.8333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.5, "metric": 1.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.6, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.7, "metric": 2.033333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.8000000000000003, "metric": 2.066666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 3.9000000000000004, "metric": 2.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.0, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.1, "metric": 2.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.2, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.300000000000001, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.4, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.5, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.6, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.7, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.800000000000001, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 4.9, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 5.0, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 5.1000000000000005, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 5.2, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 5.3, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 5.4, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 5.5, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 68.0, "rate_k_min": 5.6000000000000005, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.0, "metric": 4.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.1, "metric": 3.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.2, "metric": 3.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.3, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.4, "metric": 1.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.5, "metric": 1.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.6, "metric": 0.9666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.7000000000000002, "metric": 0.6666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.8, "metric": 0.6555555555555556}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 1.9, "metric": 0.7333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.0, "metric": 0.8111111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.1, "metric": 0.8777777777777778}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.2, "metric": 0.9333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.3, "metric": 0.9888888888888889}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.4000000000000004, "metric": 1.0333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.5, "metric": 1.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.6, "metric": 1.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.7, "metric": 1.3333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.8, "metric": 1.4333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 2.9000000000000004, "metric": 1.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.0, "metric": 1.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.1, "metric": 1.6666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.2, "metric": 1.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.3000000000000003, "metric": 1.8333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.4000000000000004, "metric": 1.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.5, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.6, "metric": 2.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.7, "metric": 2.066666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.8000000000000003, "metric": 2.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 3.9000000000000004, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.0, "metric": 2.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.1, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.2, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.300000000000001, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.4, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.5, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.6, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.7, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.800000000000001, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 4.9, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 5.0, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 5.1000000000000005, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 5.2, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 5.3, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 5.4, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 5.5, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 70.0, "rate_k_min": 5.6000000000000005, "metric": 2.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.0, "metric": 4.666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.1, "metric": 3.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.2, "metric": 2.933333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.3, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.4, "metric": 1.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.5, "metric": 1.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.6, "metric": 0.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.7000000000000002, "metric": 0.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.8, "metric": 0.6777777777777778}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 1.9, "metric": 0.7666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.0, "metric": 0.8333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.1, "metric": 0.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.2, "metric": 0.9555555555555556}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.3, "metric": 1.011111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.4000000000000004, "metric": 1.0555555555555556}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.5, "metric": 1.1666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.6, "metric": 1.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.7, "metric": 1.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.8, "metric": 1.4666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 2.9000000000000004, "metric": 1.5666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.0, "metric": 1.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.1, "metric": 1.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.2, "metric": 1.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.3000000000000003, "metric": 1.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.4000000000000004, "metric": 1.9333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.5, "metric": 2.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.6, "metric": 2.033333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.7, "metric": 2.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.8000000000000003, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 3.9000000000000004, "metric": 2.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.0, "metric": 2.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.1, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.2, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.300000000000001, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.4, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.5, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.6, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.7, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.800000000000001, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 4.9, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 5.0, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 5.1000000000000005, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 5.2, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 5.3, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 5.4, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 5.5, "metric": 2.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 72.0, "rate_k_min": 5.6000000000000005, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.0, "metric": 4.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.1, "metric": 3.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.2, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.3, "metric": 2.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.4, "metric": 1.5666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.5, "metric": 1.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.6, "metric": 0.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.7000000000000002, "metric": 0.6222222222222222}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.8, "metric": 0.7111111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 1.9, "metric": 0.7888888888888889}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.0, "metric": 0.8555555555555555}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.1, "metric": 0.9222222222222223}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.2, "metric": 0.9777777777777777}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.3, "metric": 1.0222222222222221}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.4000000000000004, "metric": 1.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.5, "metric": 1.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.6, "metric": 1.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.7, "metric": 1.4333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.8, "metric": 1.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 2.9000000000000004, "metric": 1.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.0, "metric": 1.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.1, "metric": 1.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.2, "metric": 1.8333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.3000000000000003, "metric": 1.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.4000000000000004, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.5, "metric": 2.033333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.6, "metric": 2.066666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.7, "metric": 2.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.8000000000000003, "metric": 2.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 3.9000000000000004, "metric": 2.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.0, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.1, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.2, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.300000000000001, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.4, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.5, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.6, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.7, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.800000000000001, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 4.9, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 5.0, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 5.1000000000000005, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 5.2, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 5.3, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 5.4, "metric": 2.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 5.5, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 74.0, "rate_k_min": 5.6000000000000005, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.0, "metric": 4.266666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.1, "metric": 3.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.2, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.3, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.4, "metric": 1.4333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.5, "metric": 1.0333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.6, "metric": 0.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.7000000000000002, "metric": 0.6444444444444445}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.8, "metric": 0.7333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 1.9, "metric": 0.8111111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.0, "metric": 0.8777777777777778}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.1, "metric": 0.9444444444444444}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.2, "metric": 1.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.3, "metric": 1.0444444444444445}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.4000000000000004, "metric": 1.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.5, "metric": 1.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.6, "metric": 1.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.7, "metric": 1.4666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.8, "metric": 1.5666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 2.9000000000000004, "metric": 1.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.0, "metric": 1.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.1, "metric": 1.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.2, "metric": 1.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.3000000000000003, "metric": 1.9333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.4000000000000004, "metric": 2.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.5, "metric": 2.066666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.6, "metric": 2.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.7, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.8000000000000003, "metric": 2.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 3.9000000000000004, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.0, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.1, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.2, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.300000000000001, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.4, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.5, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.6, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.7, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.800000000000001, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 4.9, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 5.0, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 5.1000000000000005, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 5.2, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 5.3, "metric": 2.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 5.4, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 5.5, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 76.0, "rate_k_min": 5.6000000000000005, "metric": 2.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.0, "metric": 4.066666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.1, "metric": 3.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.2, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.3, "metric": 1.8333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.4, "metric": 1.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.5, "metric": 0.9333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.6, "metric": 0.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.7000000000000002, "metric": 0.6777777777777778}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.8, "metric": 0.7555555555555555}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 1.9, "metric": 0.8333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.0, "metric": 0.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.1, "metric": 0.9555555555555556}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.2, "metric": 1.011111111111111}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.3, "metric": 1.0666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.4000000000000004, "metric": 1.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.5, "metric": 1.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.6, "metric": 1.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.7, "metric": 1.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.8, "metric": 1.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 2.9000000000000004, "metric": 1.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.0, "metric": 1.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.1, "metric": 1.8333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.2, "metric": 1.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.3000000000000003, "metric": 1.9666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.4000000000000004, "metric": 2.033333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.5, "metric": 2.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.6, "metric": 2.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.7, "metric": 2.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.8000000000000003, "metric": 2.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 3.9000000000000004, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.0, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.1, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.2, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.300000000000001, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.4, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.5, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.6, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.7, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.800000000000001, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 4.9, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 5.0, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 5.1000000000000005, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 5.2, "metric": 2.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 5.3, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 5.4, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 5.5, "metric": 2.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 78.0, "rate_k_min": 5.6000000000000005, "metric": 2.8333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.0, "metric": 3.9}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.1, "metric": 3.033333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.2, "metric": 2.3}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.3, "metric": 1.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.4, "metric": 1.2}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.5, "metric": 0.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.6, "metric": 0.6111111111111112}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.7000000000000002, "metric": 0.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.8, "metric": 0.7777777777777778}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 1.9, "metric": 0.8555555555555555}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.0, "metric": 0.9222222222222223}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.1, "metric": 0.9777777777777777}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.2, "metric": 1.0333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.3, "metric": 1.1}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.4000000000000004, "metric": 1.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.5, "metric": 1.3333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.6, "metric": 1.4666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.7, "metric": 1.5666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.8, "metric": 1.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 2.9000000000000004, "metric": 1.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.0, "metric": 1.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.1, "metric": 1.8666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.2, "metric": 1.9333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.3000000000000003, "metric": 2.0}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.4000000000000004, "metric": 2.066666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.5, "metric": 2.1333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.6, "metric": 2.1666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.7, "metric": 2.2333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.8000000000000003, "metric": 2.2666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 3.9000000000000004, "metric": 2.3333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.0, "metric": 2.3666666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.1, "metric": 2.4}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.2, "metric": 2.433333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.300000000000001, "metric": 2.466666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.4, "metric": 2.5}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.5, "metric": 2.533333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.6, "metric": 2.566666666666667}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.7, "metric": 2.6}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.800000000000001, "metric": 2.6333333333333333}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 4.9, "metric": 2.6666666666666665}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 5.0, "metric": 2.7}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 5.1000000000000005, "metric": 2.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 5.2, "metric": 2.7333333333333334}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 5.3, "metric": 2.7666666666666666}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 5.4, "metric": 2.8}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 5.5, "metric": 2.8333333333333335}
+{"id": "E31", "slug": "thermal-power", "run": "rate-window", "tau_h": 80.0, "rate_k_min": 5.6000000000000005, "metric": 2.8333333333333335}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -20.0, "max_kw": 4.9543627055999995, "load_jis_kw": 6.246470588235293, "load_iso_kw": 6.424941176470589}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -19.5, "max_kw": 4.9637669774, "load_jis_kw": 6.162058823529411, "load_iso_kw": 6.338117647058824}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -19.0, "max_kw": 4.9741021792, "load_jis_kw": 6.077647058823529, "load_iso_kw": 6.251294117647058}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -18.5, "max_kw": 4.985368310999999, "load_jis_kw": 5.993235294117646, "load_iso_kw": 6.164470588235294}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -18.0, "max_kw": 4.9975653728, "load_jis_kw": 5.908823529411764, "load_iso_kw": 6.077647058823529}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -17.5, "max_kw": 5.0106933646, "load_jis_kw": 5.824411764705881, "load_iso_kw": 5.990823529411764}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -17.0, "max_kw": 5.0247522864, "load_jis_kw": 5.739999999999999, "load_iso_kw": 5.904}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -16.5, "max_kw": 5.0397421382, "load_jis_kw": 5.6555882352941165, "load_iso_kw": 5.817176470588235}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -16.0, "max_kw": 5.0556629200000005, "load_jis_kw": 5.5711764705882345, "load_iso_kw": 5.73035294117647}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -15.5, "max_kw": 5.0725146318, "load_jis_kw": 5.4867647058823525, "load_iso_kw": 5.643529411764706}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -15.0, "max_kw": 5.0902972736, "load_jis_kw": 5.40235294117647, "load_iso_kw": 5.556705882352941}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -14.5, "max_kw": 5.1090108454, "load_jis_kw": 5.317941176470588, "load_iso_kw": 5.469882352941177}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -14.0, "max_kw": 5.1286553472, "load_jis_kw": 5.233529411764705, "load_iso_kw": 5.383058823529412}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -13.5, "max_kw": 5.149230779, "load_jis_kw": 5.149117647058823, "load_iso_kw": 5.296235294117647}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -13.0, "max_kw": 5.1707371408, "load_jis_kw": 5.064705882352941, "load_iso_kw": 5.209411764705883}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -12.5, "max_kw": 5.1931744326, "load_jis_kw": 4.980294117647058, "load_iso_kw": 5.122588235294118}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -12.0, "max_kw": 5.2165426544, "load_jis_kw": 4.895882352941176, "load_iso_kw": 5.035764705882353}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -11.5, "max_kw": 5.2408418062, "load_jis_kw": 4.811470588235293, "load_iso_kw": 4.948941176470589}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -11.0, "max_kw": 5.266071888, "load_jis_kw": 4.727058823529411, "load_iso_kw": 4.862117647058824}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -10.5, "max_kw": 5.292232899800001, "load_jis_kw": 4.642647058823529, "load_iso_kw": 4.775294117647058}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -10.0, "max_kw": 5.3193248416, "load_jis_kw": 4.5582352941176465, "load_iso_kw": 4.688470588235294}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -9.5, "max_kw": 5.3473477134, "load_jis_kw": 4.4738235294117645, "load_iso_kw": 4.601647058823529}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -9.0, "max_kw": 5.3763015152, "load_jis_kw": 4.389411764705882, "load_iso_kw": 4.514823529411764}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -8.5, "max_kw": 5.406186247000001, "load_jis_kw": 4.305, "load_iso_kw": 4.428}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -8.0, "max_kw": 5.4370019088, "load_jis_kw": 4.220588235294117, "load_iso_kw": 4.341176470588235}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -7.5, "max_kw": 5.468748500599999, "load_jis_kw": 4.136176470588235, "load_iso_kw": 4.254352941176471}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -7.0, "max_kw": 5.5014260224000004, "load_jis_kw": 4.051764705882353, "load_iso_kw": 4.167529411764706}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -6.5, "max_kw": 5.535034474200001, "load_jis_kw": 3.96735294117647, "load_iso_kw": 4.080705882352941}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -6.0, "max_kw": 5.569573856000001, "load_jis_kw": 3.8829411764705877, "load_iso_kw": 3.9938823529411764}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -5.5, "max_kw": 5.6050441678, "load_jis_kw": 3.7985294117647053, "load_iso_kw": 3.907058823529412}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -5.0, "max_kw": 5.641445409600001, "load_jis_kw": 3.7141176470588233, "load_iso_kw": 3.8202352941176474}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -4.5, "max_kw": 5.6787775814, "load_jis_kw": 3.6297058823529404, "load_iso_kw": 3.733411764705882}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -4.0, "max_kw": 5.7170406832000005, "load_jis_kw": 3.5452941176470585, "load_iso_kw": 3.6465882352941175}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -3.5, "max_kw": 5.756234715000001, "load_jis_kw": 3.460882352941176, "load_iso_kw": 3.559764705882353}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -3.0, "max_kw": 5.7963596768, "load_jis_kw": 3.3764705882352937, "load_iso_kw": 3.472941176470588}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -2.5, "max_kw": 5.837415568600001, "load_jis_kw": 3.2920588235294117, "load_iso_kw": 3.3861176470588235}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -2.0, "max_kw": 5.8794023904, "load_jis_kw": 3.207647058823529, "load_iso_kw": 3.299294117647059}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -1.5, "max_kw": 5.9223201422, "load_jis_kw": 3.1232352941176464, "load_iso_kw": 3.2124705882352944}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -1.0, "max_kw": 5.966168824, "load_jis_kw": 3.0388235294117645, "load_iso_kw": 3.125647058823529}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": -0.5, "max_kw": 6.010948435800001, "load_jis_kw": 2.954411764705882, "load_iso_kw": 3.0388235294117645}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 0.0, "max_kw": 6.056658977600001, "load_jis_kw": 2.8699999999999997, "load_iso_kw": 2.952}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 0.5, "max_kw": 6.1033004494, "load_jis_kw": 2.7855882352941173, "load_iso_kw": 2.865176470588235}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 1.0, "max_kw": 6.150872851200001, "load_jis_kw": 2.701176470588235, "load_iso_kw": 2.7783529411764705}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 1.5, "max_kw": 6.199376183000001, "load_jis_kw": 2.6167647058823524, "load_iso_kw": 2.691529411764706}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 2.0, "max_kw": 6.2488104448, "load_jis_kw": 2.5323529411764705, "load_iso_kw": 2.6047058823529414}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 2.5, "max_kw": 6.2991756366, "load_jis_kw": 2.447941176470588, "load_iso_kw": 2.5178823529411765}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 3.0, "max_kw": 6.3504717584, "load_jis_kw": 2.3635294117647057, "load_iso_kw": 2.431058823529412}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 3.5, "max_kw": 6.4026988102, "load_jis_kw": 2.2791176470588232, "load_iso_kw": 2.344235294117647}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 4.0, "max_kw": 6.455856792000001, "load_jis_kw": 2.194705882352941, "load_iso_kw": 2.257411764705882}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 4.5, "max_kw": 6.509945703800001, "load_jis_kw": 2.1102941176470584, "load_iso_kw": 2.1705882352941175}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 5.0, "max_kw": 8.525929280000001, "load_jis_kw": 2.0258823529411765, "load_iso_kw": 2.083764705882353}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 5.5, "max_kw": 8.59859262, "load_jis_kw": 1.9414705882352938, "load_iso_kw": 1.9969411764705882}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 6.0, "max_kw": 8.672464960000001, "load_jis_kw": 1.8570588235294117, "load_iso_kw": 1.9101176470588237}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 6.5, "max_kw": 8.747546300000002, "load_jis_kw": 1.7726470588235292, "load_iso_kw": 1.8232941176470587}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 7.0, "max_kw": 8.823836640000001, "load_jis_kw": 1.6882352941176468, "load_iso_kw": 1.736470588235294}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 7.5, "max_kw": 8.90133598, "load_jis_kw": 1.6038235294117644, "load_iso_kw": 1.6496470588235295}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 8.0, "max_kw": 8.98004432, "load_jis_kw": 1.5194117647058822, "load_iso_kw": 1.5628235294117645}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 8.5, "max_kw": 9.05996166, "load_jis_kw": 1.4349999999999998, "load_iso_kw": 1.476}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 9.0, "max_kw": 9.141088, "load_jis_kw": 1.3505882352941174, "load_iso_kw": 1.3891764705882352}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 9.5, "max_kw": 9.22342334, "load_jis_kw": 1.2661764705882352, "load_iso_kw": 1.3023529411764707}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 10.0, "max_kw": 9.306967680000001, "load_jis_kw": 1.1817647058823528, "load_iso_kw": 1.215529411764706}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 10.5, "max_kw": 9.39172102, "load_jis_kw": 1.0973529411764704, "load_iso_kw": 1.128705882352941}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 11.0, "max_kw": 9.47768336, "load_jis_kw": 1.0129411764705882, "load_iso_kw": 1.0418823529411765}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 11.5, "max_kw": 9.564854700000001, "load_jis_kw": 0.9285294117647058, "load_iso_kw": 0.9550588235294118}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 12.0, "max_kw": 9.65323504, "load_jis_kw": 0.8441176470588234, "load_iso_kw": 0.868235294117647}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 12.5, "max_kw": 9.742824380000002, "load_jis_kw": 0.7597058823529411, "load_iso_kw": 0.7814117647058823}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 13.0, "max_kw": 9.83362272, "load_jis_kw": 0.6752941176470587, "load_iso_kw": 0.6945882352941176}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 13.5, "max_kw": 9.925630060000001, "load_jis_kw": 0.5908823529411764, "load_iso_kw": 0.607764705882353}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 14.0, "max_kw": 10.018846400000001, "load_jis_kw": 0.5064705882352941, "load_iso_kw": 0.5209411764705882}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 14.5, "max_kw": 10.113271740000002, "load_jis_kw": 0.4220588235294117, "load_iso_kw": 0.4341176470588235}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 15.0, "max_kw": 10.20890608, "load_jis_kw": 0.33764705882352936, "load_iso_kw": 0.3472941176470588}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 15.5, "max_kw": 10.30574942, "load_jis_kw": 0.25323529411764706, "load_iso_kw": 0.2604705882352941}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 16.0, "max_kw": 10.40380176, "load_jis_kw": 0.16882352941176468, "load_iso_kw": 0.1736470588235294}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 16.5, "max_kw": 10.503063100000002, "load_jis_kw": 0.08441176470588234, "load_iso_kw": 0.0868235294117647}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "curve", "t_out": 17.0, "max_kw": 10.603533440000001, "load_jis_kw": 0.0, "load_iso_kw": 0.0}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "catalog", "t_out": 2.0, "max_kw": 6.4}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "catalog", "t_out": -7.0, "max_kw": 5.9}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "catalog", "t_out": -15.0, "max_kw": 5.2}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "balance", "t_out": -13.500536413568387, "iso": false}
+{"id": "E32", "slug": "heat-pump", "run": "balance", "kind": "balance", "t_out": -12.822529267942993, "iso": true}

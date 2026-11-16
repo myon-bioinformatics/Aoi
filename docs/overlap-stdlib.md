@@ -89,6 +89,6 @@ python scripts/benchmark_overlap.py \
 ```
 
 The benchmark's RSS measurement is for Linux/macOS. The product's lightweight path itself has no OS-dependent processing.
-HTML generation still needs Markdown, PNG/SVG needs Chrome, and the registration-status display needs QueRyu.
+HTML generation uses the vendored `markdown.py` (standard library only), and the registration-status display needs QueRyu.
 The public surface and dependency declarations of `dist/dragowing_min.py` are unchanged.
 Nothing is written to research inputs, holdout history, or research result files.

@@ -271,8 +271,12 @@ def test_cli_rejects_missing_or_ambiguous_results(args):
     assert exc.value.code == 2
 
 
-def test_pinned_nano_recipe_keeps_historical_cli():
-    text = (REPO / "docs/nano-environment.md").read_text()
-    assert "be2185b142aebcbedee97688fe08ee0092179472" in text
-    assert '--results "$WORK/src/aoi/cycles/c001-chunichi/outputs"' in text
-    assert '--out "$WORK/html-output" --overlap-backend stdlib' in text
+def test_native_without_numpy_polars_says_which_group(tmp_path, monkeypatch):
+    """🧮 numpy・polars は dev グループ。無いときは ValueError で、CLI は終了コード 1 と理由を出す。"""
+    from dragowing.overlap import load_overlap
+    path = tmp_path / "season.jsonl"
+    path.write_text("", encoding="utf-8")
+    for name in ("numpy", "polars"):
+        monkeypatch.setitem(sys.modules, name, None)
+    with pytest.raises(ValueError, match="dev"):
+        load_overlap(path, [{"col": "rd", "op": ">", "value": 0}], backend="native")

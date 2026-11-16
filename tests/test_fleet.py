@@ -1,4 +1,4 @@
-"""🌐 Fleet contracts through the parent's shared checks (vendor/fleet_check.py): locks, parent pins, Node entry, benchmark guard.
+"""🌐 Fleet contracts through the parent's shared checks (vendor/fleet_check.py): locks, parent pins, action pins, Node entry, benchmark guard.
 
 旧 test_nagoyaction_parent_workflow_pins.py・test_nagoyaction_node_entry.py・test_benchmark_optimization_guard.py をここにまとめた。
 検査の本体は親の fleet_check.py。ここに残すのは NagoyAction の期待値（pin・ケース・文言）だけ。
@@ -16,7 +16,7 @@ _spec.loader.exec_module(fleet)
 
 AOI = "myon-bioinformatics/Aoi"
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
-ACCEPTED = {"vendor/fleet_check.py": "6c29503cf17eda856766ddfdf4d66a5b0965a8b1"}
+ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0"}
 TOOL, ENV_VAR = "nagoyaction.py", "NAGOYACTION_PYTHON"
 CASES = [
     {"id": "help", "args": ["--help"], "rc": 0},
@@ -32,13 +32,14 @@ needs_node = pytest.mark.skipif(fleet.node() is None, reason="Node 26+ not avail
 # ==== vendor lock: bytes and commits (fleet.check_lock); where each file comes from stays here
 
 def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED)
-    assert {where: (row["repository"], row["source"]) for where, row in rows.items()} == {
+    sources = {
         "vendor/aoi-LICENSE": (AOI, "LICENSE"),
         "vendor/py_launch.cjs": (AOI, "vendor/py_launch.cjs"),
         "vendor/uv_tool_build.py": (AOI, "vendor/uv_tool_build.py"),
         "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
     }
+    rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources=sources)
+    assert set(rows) == set(sources)  # no row from any other repository either
     launcher = rows["vendor/py_launch.cjs"]["commit"]
     assert rows["vendor/aoi-LICENSE"]["commit"] == launcher
     assert (ROOT / "vendor/aoi-LICENSE").read_bytes() == (ROOT / "LICENSE").read_bytes()
@@ -54,15 +55,26 @@ def test_parent_workflow_references_use_reviewed_rollout_commit():
     assert set(pins) == {PARENT_WORKFLOW_PIN}, pins
 
 
+# ==== action pins: full SHA + version comment on every uses: (fleet.check_actions); the reviewed pins stay here
+
+def test_every_action_is_pinned_to_its_reviewed_commit():
+    pins = {
+        "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+        "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
+        "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2",
+        "actions/upload-pages-artifact": "fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0",
+        "actions/deploy-pages": "368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1",
+        "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
+    }
+    assert {action for action, _, version in fleet.check_actions(ROOT, pins=pins) if version} == set(pins)
+
+
 # ==== Node entry: the vendored shared py_launch.cjs, called directly (no per-tool wrapper)
 
 def test_ci_requires_node_for_node_entry_parity():
-    # The test job must set up Node before running its pytest suite. The separate local-ci job deliberately
-    # samples the stdlib-only runner; fleet.node() fails in the Actions "test" job when Node 26+ is missing.
-    job = fleet.workflow_job(ROOT, "test")
-    assert "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1" in job
-    assert "node-version: '26'" in job
-    assert "Require supported Node in parity CI" in job
+    # The test job must set up Node 26 and guard its major before running its pytest suite. The separate local-ci job
+    # deliberately samples the stdlib-only runner; fleet.node() fails in the Actions "test" job when Node 26+ is missing.
+    assert "actions/setup-node@" in fleet.workflow_job(ROOT, "test", node_floor=26)
 
 
 def test_no_per_tool_wrapper_and_readme_documents_the_direct_command():

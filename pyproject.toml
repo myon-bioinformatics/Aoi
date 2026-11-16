@@ -3,10 +3,9 @@ name = "dragowing"
 version = "0.1.0"
 description = "記録を、判定をやり直さずに置く（Aoi の dragowing/ から独立）"
 requires-python = ">=3.11"
-dependencies = [
-    # ページの文章。実行時の依存はこのパッケージだけで、3.11 以上。matplotlib は入れない。
-    "markdown>=3.11.1",
-]
+# 📦 実行時の依存は無い（標準ライブラリだけ）。ページの文章は自作の markdown.py（vendor/markdown）、
+# SVG は親の plotly_min（vendor/tools/stdlib_min）。matplotlib・Python-Markdown は入れない。
+dependencies = []
 
 [dependency-groups]
 dev = [

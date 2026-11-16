@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""render_md と load_overlap を、入っているパッケージか代替で動かし、同じ JSON を書く（実験）。
+"""render_md と load_overlap を、入っている numpy か numpy_min で動かし、同じ JSON を書く（実験）。
 
     python scripts/run_stdlib_paths.py --deps real reference.json
     python scripts/run_stdlib_paths.py --deps min  minimal.json
 
---deps real は pip/uv で入った markdown と numpy を使う。
---deps min は両方が入っていないときだけ動く。markdown は pure wheel を sha256 照合して
-sys.path に載せる。numpy は vendor/aoi の numpy_min.py を sys.modules['numpy'] に、
+--deps real は pip/uv で入った numpy を使う。
+--deps min は numpy が入っていないときだけ動く。vendor/aoi の numpy_min.py を sys.modules['numpy'] に、
 overlap も兄弟の rule_search も import するより前に置く。polars はそのまま使う。
+render_md はどちらも自作の markdown.py（vendor/markdown）なので、標準ライブラリだけで同じものになる。
 
 AOI_ROOT は Aoi の checkout（cycles/ があること）。rule_search（PythDRagoras）の場所は Aoi の aoi.py が入れる:
     eval "$(python /path/to/Aoi/aoi.py)"   # AOI_ROOT と兄弟の path（このシェルだけ）
@@ -98,35 +98,16 @@ def _preload_numpy_min():
     return module
 
 
-def _ensure_markdown(cache: Path, version: str | None):
-    fetch_module = _load_py("fetch_module", _vendored("fetch_module.py"))
-    module = fetch_module.ensure("markdown", cache, version)
-    origin = Path(module.__file__ or "").as_posix()
-    if ".whl/" not in origin:
-        raise SystemExit(f"wheel 以外の markdown を読んだ: {origin}")
-    return module
-
-
-def _prepare(deps: str, cache: Path, markdown_version: str | None):
+def _prepare(deps: str):
     if deps == "min":
-        _require_absent(("markdown", "numpy"))
-        numpy = _preload_numpy_min()
-        markdown = _ensure_markdown(cache, markdown_version)
-        return markdown, numpy
-    import markdown
+        _require_absent(("numpy",))
+        return _preload_numpy_min()
     import numpy
 
-    if markdown_version is not None and markdown.__version__ != markdown_version:
-        raise SystemExit(
-            f"入っている markdown {markdown.__version__} は取得した {markdown_version} と違う"
-        )
-    origin = Path(getattr(markdown, "__file__", "") or "").as_posix()
-    if ".whl/" in origin or origin.endswith("/vendor/markdown.py"):
-        raise SystemExit(f"インストールされた markdown ではない: {origin}")
     numpy_origin = Path(getattr(numpy, "__file__", "") or "").as_posix()
     if numpy_origin.endswith("/numpy_min.py"):
         raise SystemExit(f"インストールされた numpy ではない: {numpy_origin}")
-    return markdown, numpy
+    return numpy
 
 
 def _results_dir() -> Path:
@@ -139,8 +120,8 @@ def _results_dir() -> Path:
     return out
 
 
-def run(deps: str, cache: Path, markdown_version: str | None) -> dict:
-    markdown, numpy = _prepare(deps, cache, markdown_version)
+def run(deps: str) -> dict:
+    numpy = _prepare(deps)
     _register_dragowing(ROOT)
     from dragowing.htmlout import render_md
     from dragowing.overlap import default_conditions, load_overlap
@@ -168,7 +149,6 @@ def run(deps: str, cache: Path, markdown_version: str | None) -> dict:
     if sys.modules["rule_search"].np is not numpy or sys.modules["numpy"] is not numpy:
         raise SystemExit("load_overlap の途中で numpy が入れ替わった")
     return {
-        "markdown_version": markdown.__version__,
         "sample_html": sample,
         "pages": pages,
         "overlap": overlap,
@@ -178,11 +158,9 @@ def run(deps: str, cache: Path, markdown_version: str | None) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--deps", choices=("real", "min"), required=True)
-    parser.add_argument("--markdown-version", default=None)
-    parser.add_argument("--cache", default=".cdn-cache")
     parser.add_argument("out")
     args = parser.parse_args(argv)
-    payload = run(args.deps, Path(args.cache), args.markdown_version)
+    payload = run(args.deps)
     text = json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n"
     dest = Path(args.out)
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -191,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
     regions = payload["overlap"]["regions"]
     numpy = sys.modules["numpy"]
     print(
-        f"deps={args.deps} markdown={payload['markdown_version']} "
+        f"deps={args.deps} "
         f"numpy={numpy.__version__} ({numpy.__file__}) "
         f"regions={len(regions)} sha256={digest}"
     )

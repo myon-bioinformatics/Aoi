@@ -23,7 +23,7 @@ With `--embed`, Plotly.js is embedded into `index.html`. `propositions.html` is 
 | `index.html` | Trajectories, team × year, condition-overlap grids and breakdown bars, and the table of region counts and units |
 | `propositions.html` | The list at the top, and per-proposition 2×2, logic notation, and counterexample tables |
 
-Page headings, the list, the 2×2, counterexample tables, and the logic-notation box are written in Markdown and converted to HTML with Python-Markdown. Numbers stay exactly as in the files after conversion; they are not rounded.
+Page headings, the list, the 2×2, counterexample tables, and the logic-notation box are written in Markdown and converted to HTML with our own `markdown.py` (`vendor/markdown/markdown.py`, `raw_html=True, attr_list=True` for the figure blocks, `<details>` and `{: .provenance}`). Numbers stay exactly as in the files after conversion; they are not rounded.
 
 The text-only 2×2 remains `dragowing/forms.py` in [forms.md](forms.md).
 

@@ -98,8 +98,7 @@ def main(argv=None) -> int:
         standalone("DRAgoWing", index_html, plotly=True, embed=args.embed), encoding="utf-8"
     )
     (out / "propositions.html").write_text(standalone("命題の一覧", prop_html), encoding="utf-8")
-    markdown = sys.modules.get("markdown")
-    print(f"📦 markdown {getattr(markdown, '__version__', '?')}")
+    print("📦 markdown.py（vendor/markdown）")
     for name, note in (("index.html", f"📊 {', '.join(index_figures)}"), ("propositions.html", f"🧾 {len(chosen)}")):
         print(f"📄 {(out / name).resolve().as_uri()} {(out / name).stat().st_size} B · {note}")
     if args.svg:

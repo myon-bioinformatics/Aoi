@@ -1,6 +1,6 @@
 """DRAgoWing は Aoi の兄弟サブプロジェクト（pythdragoras など）と Aoi の scripts/ を import しない。
 
-使ってよいのは、標準ライブラリ、pyproject の依存（polars / numpy / markdown）と pytest、このリポジトリの
+使ってよいのは、標準ライブラリ、pyproject の dev の依存（polars / numpy）と pytest、このリポジトリの
 モジュール（このディレクトリ自体がパッケージ dragowing）だけ。
 既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の dragowing/ でも同じ結果になる。
@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKIP_DIRS = {".git", ".venv", ".test-deps", "build", "__pycache__"}
-THIRD_PARTY = {"polars", "numpy", "markdown", "pytest"}
+THIRD_PARTY = {"polars", "numpy", "pytest"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/。dragowing 自身は含めない。
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "sakanalytics", "scripts")
 KNOWN_EXCEPTIONS = {

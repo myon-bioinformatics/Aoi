@@ -11,13 +11,13 @@
       "sha256": "d2fd365d79c71153d1b9f28a4986769af13a48661b34d3e39e4dbc6a7447ee31"
     },
     {
-      "repository": "myon-bioinformatics/Aoi",
-      "ref": "52a433c5e5059b878b3a9815c55de656eb625fdb",
-      "commit": "52a433c5e5059b878b3a9815c55de656eb625fdb",
-      "source": "scripts/fetch_module.py",
-      "destination": "vendor/aoi/scripts/fetch_module.py",
-      "blob_sha": "cbc3a90a59c619139a0341a68cec7a35259c6d62",
-      "sha256": "0fe92150a293cdb6e9e135d93b7c15cd62796f9296ad52e6e87b32d5bf779d26"
+      "repository": "myon-bioinformatics/markdown",
+      "ref": "b971e01c57c65181d8329a5dc1dd5b209519a5e4",
+      "commit": "b971e01c57c65181d8329a5dc1dd5b209519a5e4",
+      "source": "markdown.py",
+      "destination": "vendor/markdown/markdown.py",
+      "blob_sha": "e2285a2d6415b7f4d3c5ea7e6f274c5ab576ad64",
+      "sha256": "07f70881bc3b803ac3bd6166f2a946d7341911719b10097f13ac614740af15fc"
     },
     {
       "repository": "myon-bioinformatics/Aoi",

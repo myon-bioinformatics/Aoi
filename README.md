@@ -70,7 +70,7 @@ dragowing missing.html  # reports a read error; exit 1
 
 Without installation, replace `dragowing` with `python dragowing.py`. This counts opening tags in saved HTML; to render reports or export figures, use the full DRAgoWing application below.
 
-Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). The runtime dependency is markdown. 🧮 polars and numpy are in the `dev` group: only `--overlap-backend native` (PythDRagoras's `rule_search`) uses them. Figures use the browser's plotly.js; neither matplotlib nor Python plotly is installed. HTTP uses only the standard library's urllib (no httpx).
+Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). 📦 There are no runtime dependencies: page text goes through our own [`markdown.py`](https://github.com/myon-bioinformatics/markdown) (`vendor/markdown/markdown.py`, locked in `vendor.lock.json`) and SVG through the parent's `plotly_min`. 🧮 polars and numpy are in the `dev` group: only `--overlap-backend native` (PythDRagoras's `rule_search`) uses them. Figures use the browser's plotly.js; neither matplotlib nor Python plotly is installed. HTTP uses only the standard library's urllib (no httpx).
 
 ```bash
 git clone https://github.com/myon-bioinformatics/DRAgoWing.git
@@ -82,22 +82,15 @@ uv sync
 python -m dragowing RESULTS [--out DIR] [--id ID ...] [--column COLUMN] [--cond col,op,VALUE ...] [--breakdown COLUMN] [--breakdown-keep VALUE ...] [--svg] [--embed]
 ```
 
-- `RESULTS` is a directory containing `season.jsonl` and `propositions.jsonl`. Without `--out`, HTML goes to a new temporary directory. Each written file is printed as a `file://` link with its size (📄), after the Markdown version (📦). `--id` narrows propositions, and `--column` chooses the numeric column for team × year (default `wins_vs_pythag`).
+- `RESULTS` is a directory containing `season.jsonl` and `propositions.jsonl`. Without `--out`, HTML goes to a new temporary directory. Each written file is printed as a `file://` link with its size (📄), after a 📦 line naming the vendored `markdown.py`. `--id` narrows propositions, and `--column` chooses the numeric column for team × year (default `wins_vs_pythag`).
 - Repeat `--cond` to display 2–8 sets including class B. `--breakdown` selects the breakdown column (default `team`); repeat `--breakdown-keep` to keep values separate from “Other”. See [docs/figures.md](docs/figures.md).
 - Condition overlap (`overlap.py`) uses `propositions` and `rule_search` from [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras), and the four-forms table (`forms.py`) uses `ask` (registration status) from [QueRyu](https://github.com/myon-bioinformatics/QueRyu). DRAgoWing does not look for them: the caller puts them on the import path, and in Aoi that is `aoi.py` (`python aoi.py dragowing/__main__.py RESULTS`, `import aoi`, or `eval "$(python aoi.py)"` for one shell). When one is missing, the error names `aoi.py`.
 - This directory is the contents of the `dragowing` package, so run `python -m dragowing` from a parent where the directory appears as `dragowing` (see the example under "Tests"), or run the file directly: `python aoi.py dragowing/__main__.py RESULTS` inside Aoi, or `eval "$(python /path/to/Aoi/aoi.py)"` and then `python /path/to/dragowing/__main__.py RESULTS` for a standalone checkout (`__main__.py` registers its directory as the `dragowing` package). `python aoi.py -m dragowing` is not the report: Aoi's import path includes this directory, so `dragowing` there is `dragowing.py`.
 
-## Optional HTML-only environment
-
-[Prepare the pinned HTML-only environment](docs/nano-environment.md) with the
-shared parent exporter. It keeps the existing stdlib overlap path and real
-Markdown dependency; native/image-export modes and the full test environment
-remain separate and unchanged.
-
 ## Making only the overlap computation lightweight
 
 `load_overlap(path, conds, backend="stdlib")` selects a limited path that does not load NumPy or Polars.
-The CLI uses it by default, so its supported scalar inputs need only the standard library and Python-Markdown.
+The CLI uses it by default, so its supported scalar inputs need only the standard library.
 Use `--overlap-backend native` explicitly for the broader native input domain (NumPy/Polars required).
 The legacy `--results DIR` spelling and `--overlap-backend stdlib` remain accepted.
 Do not supply both `RESULTS` and `--results`. With no explicit backend, positional `RESULTS` selects stdlib, while legacy `--results DIR` retains native. An explicit `--overlap-backend` overrides either default.
@@ -119,7 +112,7 @@ Markdown for HTML is still needed.
 | `forms.py` | 2×2 of the four forms and logic notation for conditions ([docs/forms.md](docs/forms.md)); uses QueRyu's `ask` | `npb/` |
 | `overlap.py` | Overlap of condition sets and the B class (masks are rule_search bit matrices); uses PythDRagoras | `npb/` |
 | `research_report.py`, `reports/` | Research summary figures and Markdown report rendering (called from Aoi's workflow) | `npb/` |
-| `docs/`, `vendor/aoi/`, `vendor/fleet_check.py`, `vendor.lock.json`, `tests/` | Docs; the Aoi shared tools (`fetch_module.py`, `numpy_min.py`); the parent's shared contract checks; pytest | as is |
+| `docs/`, `vendor/aoi/`, `vendor/fleet_check.py`, `vendor.lock.json`, `tests/` | Docs; the Aoi shared tool (`numpy_min.py`); our `markdown.py` (`vendor/markdown/`); the parent's shared contract checks and `plotly_min`; pytest | as is |
 
 ➡️ The moves happen when DRAgoWing is next synced into Aoi, together with Aoi's side. Aoi names these modules by package path in more than 60 places (`dragowing.overlap`, `dragowing.research_report`, `dragowing.records`, `dragowing.plotly_cdn` in workflows, scripts, tests, `distributions/entries/dragowing_api.py` and provenance records), so moving them here first would break Aoi's CI. Relative imports inside the package (`from .forms import …`) change with them.
 

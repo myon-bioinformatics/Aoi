@@ -70,7 +70,7 @@ dragowing missing.html  # reports a read error; exit 1
 
 Without installation, replace `dragowing` with `python dragowing.py`. This counts opening tags in saved HTML; to render reports or export figures, use the full DRAgoWing application below.
 
-Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). Runtime dependencies are polars, numpy, and markdown. Figures use the browser's plotly.js; neither matplotlib nor Python plotly is installed. HTTP uses only the standard library's urllib (no httpx).
+Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/). The runtime dependency is markdown. 🧮 polars and numpy are in the `dev` group: only `--overlap-backend native` (PythDRagoras's `rule_search`) uses them. Figures use the browser's plotly.js; neither matplotlib nor Python plotly is installed. HTTP uses only the standard library's urllib (no httpx).
 
 ```bash
 git clone https://github.com/myon-bioinformatics/DRAgoWing.git

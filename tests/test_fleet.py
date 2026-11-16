@@ -17,7 +17,7 @@ _spec.loader.exec_module(fleet)
 
 WORKFLOWS = fleet.repo_root(__file__)  # 単独では ROOT。Aoi の中では、ワークフローを持つ一番近い親
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
-ACCEPTED = {"vendor/fleet_check.py": "6c29503cf17eda856766ddfdf4d66a5b0965a8b1"}
+ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0"}
 # destination -> (repository, source)。Aoi の写しは vendor/aoi/<source>。使わない shrink_module.py・polars_min.py などは置かない
 SOURCES = {where: ("myon-bioinformatics/Aoi", where.removeprefix("vendor/aoi/")) for where in (
     "vendor/aoi/scripts/fetch_module.py", "vendor/aoi/shrink/numpy_min.py", "vendor/aoi/vendor/uv_tool_build.py")}

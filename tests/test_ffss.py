@@ -11,7 +11,7 @@ import pytest
 
 from dragowing.figures import ffss_figures
 from dragowing.records import read_ffss, read_jsonl
-from dragowing.render import figure_svg, plotly_min
+from dragowing.figures import figure_svg, plotly_min
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tests" / "ffss_records.source.json"
@@ -120,11 +120,11 @@ def test_ffss_entry_uses_only_stdlib(tmp_path):
     {"data": [{"type": "scatter", "xaxis": "x2"}], "layout": {}},
     {"data": [], "layout": {"xaxis2": {}}},
     {"data": [], "layout": {"barmode": "stack"}},
-    {"data": [{"type": "heatmap", "texttemplate": "%{text}"}], "layout": {}},
+    {"data": [{"type": "heatmap", "z": [[1.5]], "text": [["1.5"]], "texttemplate": "%{text}"}], "layout": {}},
 ])
-def test_parent307_unsupported_layout_is_explicit(spec):
-    with pytest.raises(ValueError, match="existing Chromium export"):
-        figure_svg(spec)
+def test_parent308_draws_subplots_stacks_and_cell_text(spec):
+    """🖼️ #308 の plotly_min v2 は、野球の図に要る形（2 つ目の軸・積み上げ・マスの文字）も描く。"""
+    assert figure_svg(spec).startswith(b"<svg")
 
 
 def test_ffss_json_with_real_plotly():

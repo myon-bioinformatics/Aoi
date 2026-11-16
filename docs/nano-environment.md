@@ -2,12 +2,12 @@
 
 This opt-in recipe keeps DRAgoWing's real HTML implementation and existing
 explicit `--overlap-backend stdlib` path in the pinned source. It installs only the locked Markdown 3.11.2
-dependency for that feature, not the native NumPy/Polars backend, dev tools,
-Chromium, or a replacement implementation. The repository's dependencies,
+dependency for that feature, not the native NumPy/Polars backend, dev tools
+or a replacement implementation. The repository's dependencies,
 tests, CI and vendor registrations are unchanged.
 
-Use this for supported JSONL inputs and HTML files only. Do not pass `--embed`,
-`--png` or `--svg` in this environment. Generated HTML still references external
+Use this for supported JSONL inputs and HTML files only. Do not pass `--embed`
+or `--svg` in this environment. Generated HTML still references external
 Plotly.js; producing the file without opening it is not browser-rendering proof.
 The stdlib backend has a restricted input domain; see
 [its supported inputs and limitations](overlap-stdlib.md). Do not silently fall
@@ -151,7 +151,7 @@ Viewing the generated HTML and its external resources is a separate operation.
 
 - The [normal installation and complete test procedure](../README.md#tests)
   stays unchanged. Keep its native libraries, dev dependencies, PythDRagoras,
-  Aoi test context and required CI Chromium; do not run the full suite in the
+  and Aoi test context; do not run the full suite in the
   Markdown-only venv or remove tests to accommodate it.
 - The historical [source-pinned comparison and limits](https://github.com/myon-bioinformatics/myon-bioinformatics/blob/3128b4019b9949a6ccc80c686cd84c93f04af119/docs/nano-feature-environments.md)
   measured supported HTML outputs, not browser appearance or every input domain.

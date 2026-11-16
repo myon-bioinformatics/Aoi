@@ -1,7 +1,7 @@
 """Count HTML elements with html.parser (no browser), and 📊 draw FluidFullSpeedSimulation's still figures.
 
 The element counter works when this file is copied alone. FFSS uses this repository's
-records / figures / render modules, all with standard-library imports only.
+records / figures modules, all with standard-library imports only.
 
 📊 FFSS draws flows that change over time as GIFs; the still figures (Sankey, waterfall, T–Q, balance point,
 start-up Gantt, sensitivity tornado, window heatmap) are drawn here from its ``--jsonl`` records, without
@@ -59,11 +59,11 @@ def ffss_figures(records):
 
 
 def plotly_min():
-    return _ffss_module("render").plotly_min()
+    return _ffss_module("figures").plotly_min()
 
 
 def write_ffss(records_path, out_dir, *, svg=True):
-    return _ffss_module("render").write_ffss(records_path, out_dir, svg=svg)
+    return _ffss_module("figures").write_ffss(records_path, out_dir, svg=svg)
 
 
 def __getattr__(name):

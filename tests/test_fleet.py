@@ -1,5 +1,5 @@
 """🌐 Fleet contracts through the parent's shared checks (vendor/fleet_check.py):
-🔒 vendor lock · 📌 parent pins · ⏱️ benchmark guards (-S / -O) · 🧾 CI jobs (vendor-lock, vendor-dispatch, Chromium).
+🔒 vendor lock · 📌 parent pins · ⏱️ benchmark guards (-S / -O) · 🧾 CI jobs (vendor-lock, vendor-dispatch, no browser).
 
 検査の本体は親の fleet_check.py。ここに残すのは DRAgoWing の期待値（pin・ケース・文言）だけ。
 Aoi は子を subtree で持ち、全部の子のテストを1回の pytest で動かす。最上位の `vendor` パッケージは子どうしで
@@ -135,39 +135,8 @@ def test_vendor_dispatch_verifies_the_lock_without_record():
     assert "repository: myon-bioinformatics/myon-bioinformatics" not in job
 
 
-def _assert_required_managed_chromium(job):
-    install = 'python3 scripts/install_ci_chromium.py --destination "$RUNNER_TEMP/dragowing-chromium"'
-    selection = 'chromium="$RUNNER_TEMP/dragowing-chromium/chrome-linux/chrome"'
-    assert install in job and selection in job
-    assert job.index(install) < job.index(selection) < job.index('"$chromium" --version')
-    assert 'command -v chromium' not in job
-    assert 'Chromium 156.0.8078.0' in job
-    assert 'exit 1' in job
-    assert 'continue-on-error' not in job
-    assert 'command -v google-chrome' not in job
-    assert 'Installed Chromium version does not match the reviewed snapshot.' in job
-    assert 'DRAGOWING_REQUIRE_CHROME=1' in job
-    assert 'DRAGOWING_PINNED_PLOTLY_JS: ${{ github.workspace }}/build/test-assets/plotly.min.js' in job
-    assert 'from plotly_cdn import fetch_plotly_js' in job
-    assert 'CHROMIUM=%s' not in job
-    assert '"$chromium" --version' in job
-    assert '>> "$GITHUB_ENV"' in job
-
-
-def test_python_matrix_requires_chromium_without_implicit_chrome_fallback():
-    _assert_required_managed_chromium(fleet.workflow_job(WORKFLOWS, "test"))
-
-
-@pytest.mark.parametrize("old,new", [
-    ("python3 scripts/install_ci_chromium.py", "python3 missing-installer.py"),
-    ('chromium="$RUNNER_TEMP/dragowing-chromium/chrome-linux/chrome"', 'chromium=/usr/bin/chromium'),
-    ('Chromium 156.0.8078.0', 'Chromium 155.0.8059.0'),
-    ('DRAGOWING_REQUIRE_CHROME=1', 'DRAGOWING_REQUIRE_CHROME=0'),
-    ('shell: bash', 'continue-on-error: true\n        shell: bash'),
-    ('test -x "$chromium"', 'command -v google-chrome'),
-])
-def test_managed_chromium_contract_rejects_missing_or_weakened_setup(old, new):
+def test_python_matrix_installs_no_browser():
+    """🖼️ SVG は plotly_min が描くので、テストの行列に Chrome / Chromium を入れない。"""
     job = fleet.workflow_job(WORKFLOWS, "test")
-    assert old in job
-    with pytest.raises(AssertionError):
-        _assert_required_managed_chromium(job.replace(old, new))
+    for word in ("chromium", "chrome", "DRAGOWING_PINNED_PLOTLY_JS", "install_ci_chromium"):
+        assert word.lower() not in job.lower(), word

@@ -1,7 +1,10 @@
 """記録された値の Plotly 図 JSON（data / layout）。あてはめ、平滑化、階級への丸めはしない。"""
 from __future__ import annotations
 
-import json, math
+import importlib.util, json, math
+from functools import lru_cache
+from html import escape
+from pathlib import Path
 
 A_COLOR = "#1f77b4"
 B_COLOR = "#d62728"
@@ -512,3 +515,49 @@ def ffss_figures(records: dict[tuple[str, str], list[dict]]) -> dict[str, dict]:
             except (KeyError, StopIteration, TypeError, ValueError) as exc:
                 raise ValueError(f"FFSS F{n:02d}_{name}: incomplete or invalid records ({exc})") from exc
     return out
+
+
+# --- 🖼️ 図の JSON → SVG（親の plotly_min、Chrome なし） -----------------------------------------------
+
+@lru_cache(maxsize=1)
+def plotly_min():
+    """vendor/tools/stdlib_min/plotly_min.py（親の stdlib_min を vendor.lock.json で固定）。名前は子どうしでぶつからないように。"""
+    path = Path(__file__).resolve().parent / "vendor" / "tools" / "stdlib_min" / "plotly_min.py"
+    if not path.is_file():
+        raise FileNotFoundError(f"plotly_min が無い: {path}（DRAgoWing のリポジトリから動かす）")
+    spec = importlib.util.spec_from_file_location("dragowing_plotly_min", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def figure_svg(spec: dict) -> bytes:
+    """🖼️ 図の JSON を SVG に。野球の図（サブプロット・積み上げ・マスの文字）も FFSS の図も同じ道。"""
+    return plotly_min().Figure(spec).to_image("svg")
+
+
+def write_ffss(records_path, out_dir, *, svg: bool = True) -> list[Path]:
+    """📊 FFSS の記録から ffss.html（plotly.js）と svg/F<NN>_<識別子>.svg（plotly_min、Chrome なし）を書く。"""
+    from .records import read_ffss
+
+    pm = plotly_min()
+    figs = ffss_figures(read_ffss(records_path))
+    if not figs:
+        raise ValueError("FFSS の図にする記録が無い（run E30・E31・E32 か verify の --jsonl）")
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    blocks = "".join(f'<section><h2>{escape(name)}</h2>{pm.Figure(spec).to_html(include_plotlyjs=False, full_html=False, div_id=name)}</section>'
+                     for name, spec in figs.items())
+    page = (f'<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>📊 FFSS の図</title>'
+            f'<script src="https://cdn.plot.ly/plotly-{pm.PLOTLY_JS}.min.js" charset="utf-8"></script>'
+            f'<style>body{{font-family:{pm.FONT};margin:16px}}h2{{font-size:16px}}</style></head>'
+            f'<body><h1>📊 FFSS の図（記録から）</h1>{blocks}</body></html>\n')
+    written = [out / "ffss.html"]
+    written[0].write_text(page, encoding="utf-8")
+    if svg:
+        (out / "svg").mkdir(exist_ok=True)
+        for name, spec in figs.items():
+            path = out / "svg" / f"{name}.svg"
+            path.write_bytes(figure_svg(spec))
+            written.append(path)
+    return written

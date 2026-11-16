@@ -17,8 +17,6 @@ KNOWN_EXCEPTIONS = {
     # The benchmark regressions load this repository's own scripts helpers.
     ("tests/test_fleet.py", "path:scripts/benchmark_overlap.py"),
     ("tests/test_fleet.py", "path:scripts/benchmark_record_selection.py"),
-    # This fixture loads DRAgoWing’s own ROOT/scripts helper, never Aoi/scripts.
-    ("tests/test_install_ci_chromium.py", "path:scripts/install_ci_chromium.py"),
     # PythDRagoras の propositions と rule_search、QueRyu の ask。場所は Aoi の aoi.py が入れる（conftest.py）
     ("tests/test_forms.py", "import:propositions"),
     ("tests/test_figures.py", "import:rule_search"),
@@ -35,9 +33,6 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_reports.py", "import:aoi_paths"),
     # 実験の入口。本番のモジュールは Aoi の scripts/ を import しない。
     ("tests/test_stdlib_paths.py", "path:scripts"),
-    # 図の寸法と段階の上限は、NagoyAction の localci がラウンドの seed で差し替える。
-    # モジュールは実行時に取得する。無いときは固定値のまま（リポジトリには置かない）。
-    ("tests/test_export.py", "import:localci"),
 }
 
 
@@ -96,19 +91,6 @@ def test_detector_catches_imports_and_paths():
             "p = 'scripts/x.py'\nq = '/pythdragoras/'\nr = 'cycles/c001'\ns = 'scriptsx'\n")
     uses = set(_uses(ast.parse(code)))
     assert {"import:sakanalytics", "import:queryu", "import:json", "path:scripts/x.py", "path:pythdragoras"} == uses
-
-
-def test_local_installer_exception_does_not_allow_sibling_imports_or_other_paths():
-    local_test = "tests/test_install_ci_chromium.py"
-    allowed = (local_test, "path:scripts/install_ci_chromium.py")
-    assert allowed in KNOWN_EXCEPTIONS
-    for rel, code in (
-        (local_test, "from scripts import install_ci_chromium"),
-        (local_test, "path = 'scripts/other.py'"),
-        ("tests/other.py", "path = 'scripts/install_ci_chromium.py'"),
-    ):
-        uses = {(rel, use) for use in _uses(ast.parse(code))}
-        assert uses and not uses.intersection(KNOWN_EXCEPTIONS)
 
 
 def test_benchmark_exception_is_limited_to_the_local_helper():

@@ -21,11 +21,11 @@ PYTHONPATH="$PWD" PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
 
 The three profile-contract tests (`test_localci_profile_*`, `test_localci_lock_*`)
 sit at the end of `tests/test_localci.py`, after the self-test cases. Third-party plugin autoload is disabled
-explicitly; the unchanged subprocess tests still load `localci_pytest` to check
+explicitly; the subprocess tests still load the plugin (`-p nagoyaction`) to check
 seed substitution, disjoint sharding and complete coverage. This setting does
 not disable built-in pytest assertions or fixtures.
 
-This command runs pytest directly. It does **not** run `localci.py run
+This command runs pytest directly. It does **not** run `nagoyaction.py localci run
 --self-tests`, which also resolves external references and runs workflow checks.
 Git is required by the local temporary-repository tests. Tests mock external
 network responses; no model, browser, Docker or production service is started.

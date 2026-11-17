@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-import localci
+import nagoyaction as localci  # 旧 localci.py（nagoyaction.py の localci の節）
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -376,7 +376,7 @@ def test_env_file_github_output_and_provenance(tmp_path, monkeypatch):
     monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(tmp_path / "sum.md"))
     monkeypatch.setenv("EVENT_NAME", "push")
     monkeypatch.setenv("GITHUB_REF", "refs/heads/main")
-    assert localci.main(["resolve", "--root", str(tmp_path), "--github-output", "--env-file", str(tmp_path / "refs.env")]) == 0
+    assert localci.localci_main(["resolve", "--root", str(tmp_path), "--github-output", "--env-file", str(tmp_path / "refs.env")]) == 0
     assert "strict" in (tmp_path / "sum.md").read_text(encoding="utf-8")
     assert f"AOI_SHA={SHA_A}" in (tmp_path / "refs.env").read_text(encoding="utf-8")
 
@@ -697,7 +697,7 @@ def _workflow_job(text: str, name: str) -> str:
 def test_workflow_delegates_resolution_and_follows_parent_uses_style():
     text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     resolve = _workflow_job(text, "resolve-vendor")
-    assert "python localci.py resolve --github-output" in resolve
+    assert "python nagoyaction.py localci resolve --github-output" in resolve
     assert "sha: ${{ steps.resolve.outputs.sha }}" in resolve
     assert "AOI_REPOSITORY_ID" not in resolve
     assert "AOI_REPOSITORY_ID" in _workflow_job(text, "vendor-aoi")
@@ -713,7 +713,7 @@ def test_workflow_delegates_resolution_and_follows_parent_uses_style():
     assert "nagoyaction/scripts/shrink_module.py" not in polars
     assert "nagoyaction/shrink/" not in polars
     assert "test_polars_min.py" not in polars
-    assert 'python localci.py run --repeat 10 --seed "${seed}" --strict' in text
+    assert 'python nagoyaction.py localci run --repeat 10 --seed "${seed}" --strict' in text
     assert "github.run_id" in text
     assert "timeout-minutes: 40" in text
     assert "--self-tests" not in text
@@ -792,7 +792,7 @@ def test_pytest_plugin_shards_are_disjoint_and_cover_every_test(tmp_path):
         marker = tmp_path / "seen"
         marker.unlink(missing_ok=True)
         proc = __import__("subprocess").run(
-            [__import__("sys").executable, "-m", "pytest", "-p", "localci_pytest", "-q",
+            [__import__("sys").executable, "-m", "pytest", "-p", "nagoyaction", "-q",
              "--localci-repeat", "2", "--localci-round", str(round_no), "--localci-seed", "11"],
             cwd=tmp_path, env=env, capture_output=True, text=True, check=False,
         )
@@ -805,7 +805,7 @@ def test_pytest_plugin_shards_are_disjoint_and_cover_every_test(tmp_path):
 
 def test_pytest_plugin_monkeypatches_substitute(tmp_path):
     (tmp_path / "test_sub.py").write_text(
-        "import localci\n"
+        "import nagoyaction as localci\n"
         "def test_sub():\n"
         "    values = [localci.substitute('n', 1, lambda rng: rng.randrange(10**9)) for _ in range(4)]\n"
         "    open('value.txt', 'w', encoding='utf-8').write(','.join(map(str, values)))\n",
@@ -817,7 +817,7 @@ def test_pytest_plugin_monkeypatches_substitute(tmp_path):
 
     def once(seed):
         proc = __import__("subprocess").run(
-            [__import__("sys").executable, "-m", "pytest", "-p", "localci_pytest", "-q",
+            [__import__("sys").executable, "-m", "pytest", "-p", "nagoyaction", "-q",
              "--localci-seed", str(seed), "--localci-activate"],
             cwd=tmp_path, env=env, capture_output=True, text=True, check=False,
         )
@@ -1060,7 +1060,7 @@ def test_pytest_batch_names_the_failed_node(tmp_path):
 
 def test_round_seed_is_applied_per_node(tmp_path):
     (tmp_path / "test_nodes.py").write_text(
-        "import localci\n"
+        "import nagoyaction as localci\n"
         "def test_a():\n"
         "    value = localci.substitute('n', 0, lambda rng: rng.randrange(10**9))\n"
         "    open('a.txt', 'w', encoding='utf-8').write(str(value))\n"
@@ -1073,7 +1073,7 @@ def test_round_seed_is_applied_per_node(tmp_path):
     env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
     env.pop("LOCALCI_INPUT_LOG", None)
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", "-p", "localci_pytest", "-q", "--localci-round-seed", "11"],
+        [sys.executable, "-m", "pytest", "-p", "nagoyaction", "-q", "--localci-round-seed", "11"],
         cwd=tmp_path, env=env, capture_output=True, text=True, check=False,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
@@ -1134,7 +1134,7 @@ def test_lint_runs_only_actionlint_and_pin_checks(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     repo.mkdir()
     monkeypatch.chdir(repo)  # the default root is where you are
-    rc = localci.main(["lint", "--strict", "--seed", "5"])
+    rc = localci.localci_main(["lint", "--strict", "--seed", "5"])
     assert rc == 1
     assert sorted(ran) == ["actionlint", "pin"]  # a failing actionlint does not hide the pin result
     assert made["strict"] is True
@@ -1298,4 +1298,4 @@ def test_localci_profile_does_not_become_repository_default():
     assert project["project"]["scripts"] == {"nagoyaction": "nagoyaction:main"}
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "tools/localci-env" not in workflow
-    assert "python localci.py run --repeat 10 --seed" in workflow
+    assert "python nagoyaction.py localci run --repeat 10 --seed" in workflow

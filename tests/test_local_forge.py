@@ -1,4 +1,4 @@
-"""🧪 local_forge tests (from olnm) — `python -m unittest discover`.
+"""🧪 hub tests (the former local_forge.py, now the hub section of nagoyaction.py; from olnm) — `python -m unittest discover`.
 
 The forge binary is the stand-in tests/fixtures/fake_forgejo.py. FailurePaths (at the end) checks that
 failure paths never announce a completed startup or commit an unapplied dial.
@@ -10,8 +10,11 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parent.parent
 TMP = Path(tempfile.mkdtemp(prefix="olnm-"))
 sys.path.insert(0, str(ROOT))
+# 🏠 OLNM_HOME / DIAL_FILE は import 時に読むので、他のテストが先に import した nagoyaction とは別の実体を読む
 with mock.patch.dict(os.environ, OLNM_HOME=str(TMP / "home"), DIAL_FILE=str(TMP / "dial")):
-    import local_forge as olnm  # noqa: E402
+    _spec = importlib.util.spec_from_file_location("forge_subject", ROOT / "nagoyaction.py")
+    olnm = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(olnm)
 PORT = 3777
 
 
@@ -81,7 +84,7 @@ class TestHubInit(HubBase):
             path = olnm.hub_bundle(str(TMP / "carry"), version="1.2.3", flavor="gitea")
         self.assertEqual(seen[0], "https://github.com/go-gitea/gitea/releases/download/v1.2.3/gitea-1.2.3-linux-amd64")
         self.assertEqual(path.name, "gitea-1.2.3-linux-amd64")
-        self.assertTrue((TMP / "carry" / "local_forge.py").exists())
+        self.assertTrue((TMP / "carry" / "nagoyaction.py").exists())
         with mock.patch.object(olnm, "_fetch", lambda url, dest=None, timeout=0: b"bin" if not url.endswith(".sha256") else b"bad  x"):
             with self.assertRaises(SystemExit):
                 olnm.hub_bundle(str(TMP / "carry2"), version="1.2.3")
@@ -188,7 +191,7 @@ def nagoyaction(*argv, home):
 
 
 class TestNagoyactionHub(unittest.TestCase):
-    """🏠 nagoyaction.py hub … hands every argument to local_forge (exit codes included)."""
+    """🏠 nagoyaction.py hub … hands every argument to the hub section (exit codes included)."""
 
     def setUp(self):
         self.home = Path(tempfile.mkdtemp(prefix="nagoyaction-hub-"))
@@ -202,11 +205,11 @@ class TestNagoyactionHub(unittest.TestCase):
         self.assertIn("🔁 mirror (2)", shown.stdout)
         self.assertIn("🔁 mirror (2) | ⚪ down", nagoyaction("hub", "status", home=self.home).stdout)
 
-    def test_help_and_typos_reach_local_forge(self):
+    def test_help_and_typos_reach_hub(self):
         helped = nagoyaction("hub", "dial", "--help", home=self.home)
         self.assertEqual(helped.returncode, 0)
         self.assertIn("usage: nagoyaction hub dial", helped.stdout)
-        self.assertNotIn("hub hub", helped.stdout)  # local_forge's internal "hub" stays hidden
+        self.assertNotIn("hub hub", helped.stdout)  # the hub parser's internal "hub" stays hidden
         typo = nagoyaction("hub", "dial", "mirorr", home=self.home)
         self.assertEqual(typo.returncode, 2)
         self.assertIn("invalid choice: 'mirorr'", typo.stderr)
@@ -225,7 +228,7 @@ class TestNagoyactionHub(unittest.TestCase):
 
 # ──── failure paths: a separate module instance, so patches never touch `olnm` above ────
 
-spec = importlib.util.spec_from_file_location("forge_failure_subject", ROOT / "local_forge.py")
+spec = importlib.util.spec_from_file_location("forge_failure_subject", ROOT / "nagoyaction.py")
 f = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(f)
 
@@ -254,7 +257,7 @@ class FailurePaths(unittest.TestCase):
         with mock.patch.object(f, "_fetch", side_effect=f.urllib.error.URLError("offline")), \
              mock.patch.object(f.time, "sleep"), mock.patch.object(f.os, "kill") as kill:
             with self.assertRaisesRegex(SystemExit, "timed out"):
-                f.main(["up"])
+                f.local_forge_main(["up"])
         self.child.terminate.assert_called_once()
         self.child.wait.assert_called_once_with(timeout=5)
         kill.assert_not_called()

@@ -68,7 +68,7 @@
         {
           "type": "card",
           "title": "🔍 actionlint",
-          "text": "actionlint と uses: のピン検査をローカルで。localci.py が必要です。actionlint は実行時に取得します。",
+          "text": "actionlint と uses: のピン検査をローカルで。nagoyaction.py だけで動きます。actionlint は実行時に取得します。",
           "blocks": [
             {
               "type": "output",
@@ -79,7 +79,7 @@
         {
           "type": "card",
           "title": "🏠 hub",
-          "text": "ローカル GitHub（Gitea / Forgejo）の操作。local_forge.py が必要です。dial mirror は設定を変更し、既存 forge があれば起動・remote の切替も行います。",
+          "text": "ローカル GitHub（Gitea / Forgejo）の操作。nagoyaction.py だけで動きます。dial mirror は設定を変更し、既存 forge があれば起動・remote の切替も行います。",
           "blocks": [
             {
               "type": "output",

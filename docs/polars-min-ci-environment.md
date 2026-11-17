@@ -17,7 +17,7 @@ Only this job's environment setup changes:
    existing explicit import-absence check still fails if Polars is importable.
 
 The selected tests use pytest, real Polars and stdlib/vendored helpers.
-`research_digest.py` explicitly loads Aoi's vendored `markdown.py`, not PyPI
+`npb/research_digest.py` explicitly loads Aoi's vendored `markdown.py`, not PyPI
 Markdown. Anyio and the HTTP transport dependencies are deliberately retained
 in the real phase to preserve pytest's plugin environment. This is a conservative
 five-package omission, not a claim to the smallest possible dependency closure.

@@ -1,3 +1,5 @@
+"""🐙 `python blueprobe.py github`: repository observations from a saved parent-audit/1 snapshot, offline."""
+
 from blueprobe import github as obs
 
 

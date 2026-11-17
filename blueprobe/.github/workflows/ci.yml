@@ -5,13 +5,6 @@ on:
   pull_request:
   schedule:
     - cron: "0 7 * * *"
-  workflow_dispatch:
-    inputs:
-      aoi_ref:
-        description: "Aoi ref override. Empty resolves refs/heads/main."
-        required: false
-        default: ""
-        type: string
 permissions:
   contents: read
 jobs:
@@ -22,7 +15,7 @@ jobs:
 
   resolve-vendor:
     needs: changes
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -30,8 +23,6 @@ jobs:
     steps:
       - name: Resolve Aoi ref
         id: resolve
-        env:
-          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -110,7 +101,7 @@ jobs:
           PY
 
   test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     needs: [changes, resolve-vendor]
     runs-on: ubuntu-latest
     env:
@@ -168,7 +159,7 @@ jobs:
 
   failure-identity:
     needs: [changes, test]
-    if: always() && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    if: always() && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule')
     permissions:
       contents: read
       actions: read

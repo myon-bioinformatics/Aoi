@@ -6,7 +6,7 @@ Use a fresh checkout: existing sample directories are intentionally rejected.
 import json, os, pathlib, shutil, subprocess, sys, time
 root=pathlib.Path(__file__).resolve().parents[2]
 work=root/'build'/'experiment'
-tests=['tests/test_blueprobe_accessible_names.py','tests/test_blueprobe_emoji_observations.py','tests/test_blueprobe_heading_observations.py','tests/test_blueprobe_snapshot_source.py','tests/test_web_observations.py','tests/test_accessible_iterative_walk.py']
+tests=['tests/test_blueprobe_observations.py']  # the 49 tests of the six files recorded in docs/nano-observation-tests.json
 work.mkdir(parents=True, exist_ok=True)
 if any(work.glob('[1-6]-*')):
     raise SystemExit('Existing samples found; use a fresh checkout to preserve them.')

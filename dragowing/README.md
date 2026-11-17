@@ -47,7 +47,7 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 ```bash
 python dragowing.py page.html --tag p --tag img
 cat page.html | python dragowing.py - --tag p
-python vendor/aoi/vendor/uv_tool_build.py dragowing.py --out build/dragowing-tool
+python vendor/uv_tool_build.py dragowing.py --out build/dragowing-tool
 uv tool install ./build/dragowing-tool
 dragowing page.html --tag p
 ```

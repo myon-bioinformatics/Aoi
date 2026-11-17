@@ -13,14 +13,14 @@ CPython 3.12.14 and uv 0.13.5 on Linux x86_64.
 UV_PROJECT_ENVIRONMENT=build/observation-test/.venv \
   uv sync --locked --only-group observation-test
 UV_PROJECT_ENVIRONMENT=build/observation-test/.venv \
-  uv run --locked --no-sync python -m pytest -q \
-  tests/test_blueprobe_accessible_names.py \
-  tests/test_blueprobe_emoji_observations.py \
-  tests/test_blueprobe_heading_observations.py \
-  tests/test_blueprobe_snapshot_source.py \
-  tests/test_web_observations.py \
-  tests/test_accessible_iterative_walk.py
+  uv run --locked --no-sync python -m pytest -q tests/test_blueprobe_observations.py
 ```
+
+The 49 tests were measured in six files (`test_blueprobe_accessible_names.py`,
+`test_blueprobe_emoji_observations.py`, `test_blueprobe_heading_observations.py`,
+`test_blueprobe_snapshot_source.py`, `test_web_observations.py`,
+`test_accessible_iterative_walk.py`). They are now that one file with the same test
+names, so the node IDs in the recorded receipts keep the old file names.
 
 `--only-group` omits the default dev group; `--no-sync` prevents a later `uv run`
 from reinstalling it. Use the same explicit environment for both commands.

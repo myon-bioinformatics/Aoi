@@ -8,9 +8,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "nagoyaction"))
 import c001_publication_policy as policy
-import publication_gate as gate
+import nagoyaction as gate  # 旧 publication_gate.py
 import publish_c001_v2_results as publisher
-import ghi_execution as adapter
+import nagoyaction as adapter  # 旧 ghi_execution.py
 
 
 class PublicationTests(unittest.TestCase):
@@ -276,7 +276,7 @@ class PublicationTests(unittest.TestCase):
         self.assert_no_catalog()
 
     def test_real_child_recording_and_nonzero_preservation(self):
-        command = [sys.executable, "-S", str(ROOT / "nagoyaction/publication_gate.py"), "record",
+        command = [sys.executable, "-S", str(ROOT / "nagoyaction/nagoyaction.py"), "publication-gate", "record",
                    "--audit", str(self.root), "--stage", "probe", "--evidence", "probe.json", "--", sys.executable, "-S", "-c",
                    f"from pathlib import Path; Path({str(self.root/'probe.json')!r}).write_text('{{}}'); raise SystemExit(7)"]
         child = subprocess.run(command, capture_output=True, text=True)

@@ -11,7 +11,7 @@ from collections import Counter; from datetime import date; from pathlib import 
 import polars as pl
 
 
-_ROOT = Path(__file__).resolve().parents[1]
+_ROOT = Path(__file__).resolve().parents[2]  # Aoi（nagoyaction/npb/ の 2 つ上）
 _MARKDOWN_PATH = _ROOT / "vendor" / "markdown.py"
 _spec = importlib.util.spec_from_file_location("aoi_vendored_markdown", _MARKDOWN_PATH)
 if _spec is None or _spec.loader is None:

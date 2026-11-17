@@ -62,7 +62,7 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
-          python localci.py resolve --github-output
+          python nagoyaction.py localci resolve --github-output
 
   # vendor/aoi のバイトを、解決した Aoi の原本と shared-tools.lock.json に照合する。
   # pull request では不一致を警告にし、main への push と schedule では失敗にする。
@@ -346,4 +346,4 @@ jobs:
           set -euo pipefail
           seed="${{ github.run_id }}"
           echo "localci seed=${seed}"
-          python localci.py run --repeat 10 --seed "${seed}" --strict
+          python nagoyaction.py localci run --repeat 10 --seed "${seed}" --strict

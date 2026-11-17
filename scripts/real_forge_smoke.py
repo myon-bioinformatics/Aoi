@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FORGE = ROOT / "local_forge.py"
+FORGE = ROOT / "nagoyaction.py"  # nagoyaction.py hub …
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
             return subprocess.run(args, cwd=cwd, env=env, text=True, capture_output=True, check=True, timeout=120)
 
         def cli(*args, cwd=None):
-            return run(sys.executable, str(FORGE), *args, cwd=cwd)
+            return run(sys.executable, str(FORGE), "hub", *args, cwd=cwd)
 
         try:
             cli("install", "--version", "1.27.3", "--flavor", "gitea")
@@ -56,7 +56,7 @@ def main():
             print(exc.stderr[-4000:], file=sys.stderr)
             raise
         finally:
-            subprocess.run([sys.executable, str(FORGE), "down"], env=env, text=True, capture_output=True, timeout=15)
+            subprocess.run([sys.executable, str(FORGE), "hub", "down"], env=env, text=True, capture_output=True, timeout=15)
 
 
 if __name__ == "__main__":

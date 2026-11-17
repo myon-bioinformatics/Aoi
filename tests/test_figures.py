@@ -627,3 +627,28 @@ def test_report_pages_use_the_font():
         default_stylesheet = staticmethod(lambda: "")
     out = report_page("t", "<p>x</p>", Md)
     assert f"font-family:{TIGHT}" in out and "system-ui" not in out
+
+
+# ==== 📈 分野を問わない系列・行列（旧 Aoi の distributions/entries/plot_specs.py）
+
+def test_series_and_matrix_keep_order_gaps_and_caller_data():
+    from dragowing.dragowing import matrix_figure, series_figure
+    data = [[1, None], [3, 4]]
+    figure = matrix_figure(["beta", "alpha"], ["sensor-2", "sensor-1"], data)
+    assert figure["data"][0]["z"] == data
+    assert figure["layout"]["yaxis"]["categoryarray"] == ["sensor-2", "sensor-1"]
+    data[0][0] = 100
+    assert figure["data"][0]["z"][0][0] == 1
+    assert figure["layout"]["font"]["family"] == FONT
+    line = series_figure(["t1", "t2"], [0, None], name="n")
+    assert line["data"][0]["connectgaps"] is False and line["data"][0]["y"] == [0, None]
+    with pytest.raises(ValueError):
+        matrix_figure([1], [2], [[3, 4]])
+    with pytest.raises(ValueError):
+        series_figure([1], [float("nan")])
+    with pytest.raises(ValueError):
+        series_figure([1, 2], [3])
+    with pytest.raises(ValueError):
+        series_figure([1], [2], mode="bars")
+    from dragowing.dragowing import figure_svg
+    assert figure_svg(line).startswith(b"<svg") and figure_svg(figure).startswith(b"<svg")

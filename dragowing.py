@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse, html, importlib, importlib.util, json, math, operator, re, sys, tempfile, types
 import urllib.error, urllib.request
 from collections import Counter
+from copy import deepcopy
 from functools import lru_cache
 from html import escape
 from html.parser import HTMLParser
@@ -1256,6 +1257,37 @@ def plotly_min():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def series_figure(x, y, *, name="", title="", x_title="", y_title="", mode="lines+markers") -> dict:
+    """📈 分野を問わない系列の図。順序と欠け（None）をそのまま残す（connectgaps=False）。旧 Aoi の plot_specs。"""
+    x, y = list(x), list(y)
+    if len(x) != len(y):
+        raise ValueError("aligned x and y required")
+    if mode not in ("lines", "markers", "lines+markers"):
+        raise ValueError("unsupported mode")
+    spec = {"data": [{"type": "scatter", "x": deepcopy(x), "y": deepcopy(y),
+                      "name": name, "mode": mode, "connectgaps": False}],
+            "layout": {"template": {}, "font": {"family": FONT}, "title": {"text": title},
+                       "xaxis": {"title": {"text": x_title}},
+                       "yaxis": {"title": {"text": y_title}}}}
+    json.dumps(spec, allow_nan=False)
+    return spec
+
+
+def matrix_figure(x, y, z, *, title="", x_title="", y_title="") -> dict:
+    """🟦 分野を問わない行列の図（ヒートマップ）。ラベルの順と欠けを残し、呼び出し側のデータは写す。旧 Aoi の plot_specs。"""
+    x, y, z = list(x), list(y), [list(row) for row in z]
+    if len(z) != len(y) or any(len(row) != len(x) for row in z):
+        raise ValueError("matrix shape must match axis labels")
+    spec = {"data": [{"type": "heatmap", "x": deepcopy(x), "y": deepcopy(y),
+                      "z": deepcopy(z), "zsmooth": False, "hoverongaps": False}],
+            "layout": {"template": {}, "font": {"family": FONT}, "title": {"text": title},
+                       "xaxis": {"type": "category", "title": {"text": x_title}},
+                       "yaxis": {"type": "category", "categoryorder": "array",
+                                 "categoryarray": deepcopy(y), "title": {"text": y_title}}}}
+    json.dumps(spec, allow_nan=False)
+    return spec
 
 
 def figure_svg(spec: dict) -> bytes:

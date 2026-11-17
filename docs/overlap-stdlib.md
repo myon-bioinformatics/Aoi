@@ -89,5 +89,5 @@ python scripts/benchmark_overlap.py \
 
 The benchmark's RSS measurement is for Linux/macOS. The product's lightweight path itself has no OS-dependent processing.
 HTML generation uses the vendored `markdown.py` (standard library only), and the registration-status display needs QueRyu.
-The public surface and dependency declarations of `dist/dragowing_min.py` are unchanged.
+`dragowing.py` itself is the single-file distribution (standard library only at import); Aoi no longer builds a separate minpy bundle for DRAgoWing.
 Nothing is written to research inputs, holdout history, or research result files.

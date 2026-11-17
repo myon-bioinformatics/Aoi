@@ -1,6 +1,6 @@
 """PythDRagoras は Aoi の兄弟サブプロジェクト（sakanalytics など）と Aoi の scripts/ を import しない。
 
-使ってよいのは、標準ライブラリ、pyproject の依存（polars / numpy）と pytest、このリポジトリの
+使ってよいのは、標準ライブラリ、pyproject の dev の依存（polars / numpy）と pytest、このリポジトリの
 モジュール（Aoi の aoi_paths.py と同じ中身の aoi_paths.py を含む）だけ。既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の pythdragoras/ でも同じ結果になる。
 """

@@ -74,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
             print("min collect refuses to run while import polars succeeds", file=sys.stderr)
             return 1
         _install_min()
-    sys.path.insert(0, str(NAGOYA))
+    sys.path.insert(0, str(NAGOYA / "npb"))
     import research_digest
 
     origin = Path(research_digest.pl.__file__ or "").resolve()

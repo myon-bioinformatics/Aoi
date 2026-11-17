@@ -1,10 +1,17 @@
-"""Regression tests for the initial question-only Aoi inbox."""
-import json, urllib.error
+"""Regression tests for the initial question-only Aoi inbox.
+
+The answer-cache section at the end: known answers and the intake cache share one key, the
+registration label matches on every reply path, and a cached answer never crosses snapshot identity.
+"""
+import copy, json, urllib.error
 from pathlib import Path
 
 import pytest
 
-from ask import Query, answer, main, parse, validate_query
+import bank
+import inbox
+from ask import Query, answer, answer_results, main, parse, registration_status, validate_query
+from bank import cache_key, key_material, lookup, prepare, snapshot_id
 from inbox import (
     GitHub,
     State,
@@ -442,3 +449,188 @@ def test_git_never_waits_for_a_credential_prompt(monkeypatch, tmp_path):
     assert (env["GIT_TERMINAL_PROMPT"], env["GCM_INTERACTIVE"], env["GIT_SSH_COMMAND"]) == (
         "0", "never", "ssh -o BatchMode=yes")
     assert seen["timeout"] == 60
+
+
+# ──── answer cache: known answers and the intake cache use the same key; labels match on three paths ────
+
+
+def row(pid, **meta):
+    return {**item(), "id": pid, **meta}  # item() defaults: n=2, hold=1, one listed counterexample
+
+
+def write_results(path: Path, rows):
+    path.mkdir(parents=True, exist_ok=True)
+    (path / "sets.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+
+
+def test_key_is_cycle_results_code_and_query(tmp_path):
+    results = tmp_path / "results"
+    write_results(results, [row("E1", posthoc=True)])
+    query = Query(ask="has_counterexample", target="E1")
+    body = key_material("c001", results, "abc123", query)
+    assert set(body) == {"cycle", "results", "answer_code", "query"}
+    assert body["cycle"] == "c001"
+    assert body["results"]["sha"] == "abc123"
+    assert body["results"]["files"]["sets.jsonl"]
+    assert body["results"]["files"]["propositions.jsonl"] is None
+    assert body["query"]["target"] == "E1"
+    other_cycle = cache_key("c002", results, query, "abc123")
+    other_sha = cache_key("c001", results, query, "def456")
+    other_query = cache_key("c001", results, Query(ask="counterexamples", target="E1"), "abc123")
+    own = cache_key("c001", results, query, "abc123")
+    assert len({own, other_cycle, other_sha, other_query}) == 4
+    with pytest.raises(ValueError):
+        cache_key("", results, query, "abc123")
+
+
+def test_known_directory_is_the_one_the_caller_passes(tmp_path, monkeypatch):
+    results = tmp_path / "results"
+    write_results(results, [row("E1", posthoc=True)])
+    cache = tmp_path / "cache-answers"
+    known = tmp_path / "explicit-known"
+    poison = cache.parent / "known"
+    poison.mkdir(parents=True)
+    (poison / "do-not-read").write_text("poison", encoding="utf-8")
+    seen = []
+    real = inbox.lookup
+
+    def spy(query, results_path, destination, **kwargs):
+        seen.append(Path(destination))
+        return real(query, results_path, destination, **kwargs)
+
+    monkeypatch.setattr(inbox, "lookup", spy)
+    text = '{"ask":"has_counterexample","target":"E1"}'
+    got, _ = ask_question(text, results, cache=cache, known=known, cycle="c001", result_sha="sha")
+    assert got["result"]["rows"][0]["registration"] == "事後構成"
+    assert seen == [known]
+    assert known != poison
+    assert not (poison / "manifest.json").exists()
+
+
+def test_registration_matches_on_direct_known_and_cache_paths(tmp_path, monkeypatch):
+    rows = [
+        row("E1", posthoc=True),
+        row("E2"),
+        row("E3", posthoc=False),
+        row("E4", preregistered=True),
+    ]
+    expected = {"E1": "事後構成", "E2": "不明", "E3": "不明", "E4": "事前登録"}
+    for item in rows:
+        assert registration_status(item) == expected[item["id"]]
+    results = tmp_path / "results"
+    write_results(results, rows)
+    known = tmp_path / "known"
+    cache = tmp_path / "answers"
+    prepare(results, known, cycle="c001", result_sha="sha")
+    calls = {"n": 0}
+    real = inbox.answer_results
+
+    def counting(query, path):
+        calls["n"] += 1
+        return real(query, path)
+
+    monkeypatch.setattr(inbox, "answer_results", counting)
+    for item in rows:
+        pid = item["id"]
+        query = Query(ask="has_counterexample", target=pid)
+        direct = answer(query, [item])
+        known_res = lookup(query, results, known, cycle="c001", result_sha="sha")
+        text = json.dumps({"ask": "has_counterexample", "target": pid})
+        cached, rendered = ask_question(
+            text, results, cache=cache, known=None, cycle="c001", result_sha="sha",
+        )
+        again, _ = ask_question(
+            text, results, cache=cache, known=None, cycle="c001", result_sha="sha",
+        )
+        label = expected[pid]
+        assert direct["rows"][0]["registration"] == label
+        assert known_res["rows"][0]["registration"] == label
+        assert cached["result"]["rows"][0]["registration"] == label
+        assert again["result"]["rows"][0]["registration"] == label
+        assert f"［{label}］" in rendered
+    assert calls["n"] == len(rows)
+
+
+# ──── answer cache: snapshot freshness and candidate/answer separation across all reply paths ────
+
+
+def write_result(results, hold):
+    write_results(results, [{"id": "E1", "statement": "反例の確認", "posthoc": True,
+                             "forms": [{"form": "original", "n": 2, "hold": hold, "rate": hold / 2,
+                                        "counterexamples": [] if hold == 2 else [{"unit": "t-2015"}]}]}])
+
+
+@pytest.mark.parametrize("change", ["content", "missing", "cycle", "sha", "code"])
+def test_old_known_and_cached_answers_never_cross_snapshot_identity(tmp_path, monkeypatch, change):
+    results, known, cache = [tmp_path / name for name in ("results", "known", "answers")]
+    write_result(results, 1)
+    query = Query(ask="has_counterexample", target="E1")
+    cycle, sha = "c001", "first"
+    text = json.dumps({"ask": query.ask, "target": query.target})
+    prepare(results, known, cycle=cycle, result_sha=sha)
+    response, _ = ask_question(text, results, cache=cache, cycle=cycle, result_sha=sha)
+    assert response["result"]["answer"] == "はい"
+    old_key, old_snapshot = cache_key(cycle, results, query, sha), snapshot_id(cycle, results, sha)
+    if change == "content":
+        write_result(results, 2)
+    elif change == "missing":
+        (results / "sets.jsonl").unlink()
+    elif change == "cycle":
+        cycle = "c002"
+    elif change == "sha":
+        sha = "second"
+    else:
+        monkeypatch.setattr(bank, "answer_code_hash", lambda: "changed-code")
+    assert cache_key(cycle, results, query, sha) != old_key
+    assert snapshot_id(cycle, results, sha) != old_snapshot
+    assert lookup(query, results, known, cycle=cycle, result_sha=sha) is None
+    direct = answer_results(query, results)
+    calls, real_answer = [], inbox.answer_results
+
+    def observed(*args, **kwargs):
+        calls.append(True)
+        return real_answer(*args, **kwargs)
+
+    monkeypatch.setattr(inbox, "answer_results", observed)
+    cached_response, _ = ask_question(text, results, cache=cache, cycle=cycle, result_sha=sha)
+    assert calls == [True]
+    assert cached_response["result"] == direct
+    assert len(list(cache.glob("*.json"))) == 2
+    known_response, _ = ask_question(text, results, known=known, cycle=cycle, result_sha=sha)
+    assert known_response["result"] == direct
+
+
+def test_newly_available_results_invalidate_missing_file_cache(tmp_path):
+    results, cache = tmp_path / "results", tmp_path / "answers"
+    results.mkdir()
+    text = '{"ask":"has_counterexample","target":"E1"}'
+    missing, _ = ask_question(text, results, cache=cache, cycle="c001", result_sha="same-sha")
+    assert "結果が読めない" in missing["result"]["error"]
+    write_result(results, 2)
+    present, _ = ask_question(text, results, cache=cache, cycle="c001", result_sha="same-sha")
+    assert present["result"]["answer"] == "いいえ"
+
+
+def test_inbox_missing_results_with_unread_text_has_no_candidates(tmp_path):
+    (tmp_path / "propositions.jsonl").write_text(json.dumps({"id": "P1", "statement": "雨の日", "forms": []}))
+    got, shown = ask_question("E25 に雨の日だけの反例はある？", tmp_path, suggest_threshold=0)
+    assert got["result"]["answer"] == "判定不能"
+    assert got["query"]["target"] == "E25"
+    assert got["suggestions"] == []
+    assert "もしかして" not in shown
+
+
+def test_unread_text_cannot_consume_or_poison_valid_query_cache(tmp_path):
+    results, known, cache = [tmp_path / name for name in ("results", "known", "answers")]
+    write_result(results, 2)
+    valid = "E1 の反例はある？"
+    response, _ = ask_question(valid, results, known=known, cache=cache, cycle="c001", result_sha="sha")
+    before = copy.deepcopy(response)
+    unknown, shown = ask_question("E1 に雨の日だけの反例はある？", results, known=known, cache=cache,
+                                 cycle="c001", result_sha="sha", suggest_threshold=0)
+    assert unknown["query"] == response["query"]
+    assert unknown["result"]["answer"] == "判定不能"
+    assert unknown["result"]["rows"] == []
+    assert "候補。答えではない" in shown
+    repeated, _ = ask_question(valid, results, known=known, cache=cache, cycle="c001", result_sha="sha")
+    assert repeated == before

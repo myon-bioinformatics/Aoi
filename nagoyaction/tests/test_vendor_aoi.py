@@ -53,16 +53,16 @@ def test_lock_lists_only_the_polars_tools_this_tree_uses():
 
 
 def test_collect_ast_uses_dataframe_and_col():
-    used, visited = shrink_module.analyze("polars", ["research_digest.py:collect"], NAGOYA)
+    used, visited = shrink_module.analyze("polars", ["npb/research_digest.py:collect"], NAGOYA)
     assert used == Counter({"DataFrame": 2, "col": 1})
-    assert "research_digest.py:collect" in visited
+    assert "npb/research_digest.py:collect" in visited
     survey = shrink_module.survey("polars", NAGOYA)
-    assert survey["research_digest.py"] == Counter({"DataFrame": 2, "col": 1})
+    assert survey["npb/research_digest.py"] == Counter({"DataFrame": 2, "col": 1})
     production = [
         name for name in survey
         if not name.startswith(("scripts/", "tests/", "vendor/"))
     ]
-    assert production == ["research_digest.py"]
+    assert production == ["npb/research_digest.py"]
     for name in (
         "DataFrame.explode",
         "DataFrame.filter",

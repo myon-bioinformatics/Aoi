@@ -13,7 +13,7 @@
     },
     {
       "path": "vendor/aoi/shrink/polars_min.py",
-      "sha256": "7c3539937b266e8d11452b3621050aab7d60ae8bb05dc79ffdc12874386cf4e1",
+      "sha256": "ccb23fbfe013d22c59436acbd0c8ad27a5bb64bd30df1f5c22f0956c1d416149",
       "source": "myon-bioinformatics/Aoi"
     }
   ]

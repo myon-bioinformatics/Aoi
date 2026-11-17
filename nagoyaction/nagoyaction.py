@@ -41,7 +41,9 @@ GitHub Actions のワークフローは `python nagoyaction/nagoyaction.py run <
 
 from __future__ import annotations
 
-import argparse, datetime as dt, json, posixpath, re, shutil, subprocess, sys, tomllib, urllib.error, urllib.request
+import argparse, base64, contextlib, datetime as dt, hashlib, importlib.util, io, json, os, posixpath, random, re, secrets
+import shutil, signal, subprocess, sys, tarfile, tempfile, time, tomllib, urllib.error, urllib.request, zipfile
+from dataclasses import dataclass
 from types import SimpleNamespace
 from pathlib import Path
 
@@ -645,29 +647,2472 @@ def _linkcheck_main(argv=None) -> int:
 
 
 
+# ====================================================================================================
+# 🏠 hub: ローカル Gitea / Forgejo（nagoyaction hub …）（旧 local_forge.py）
+# Local Gitea/Forgejo control, extracted from OneLinearNumerousMemo.
+# ====================================================================================================
+
+PY = Path(__file__).resolve()
+OLNM_HOME = Path(os.environ.get("OLNM_HOME", Path.home() / ".olnm"))
+DIAL_FILE = Path(os.environ.get("DIAL_FILE", OLNM_HOME / "dial"))
+DIALS = {0: "🔌 offline", 1: "🏠 local", 2: "🔁 mirror", 3: "☁️ github"}
+DIAL_NAMES = {"offline": 0, "local": 1, "mirror": 2, "github": 3}  # the file keeps the digit; names are for people
+
+
+def dial_level(value: int | str) -> int:
+    """offline|local|mirror|github (or 0-3) → 0-3. Raises ValueError for anything else."""
+    if isinstance(value, int) and not isinstance(value, bool) and value in DIALS:
+        return value
+    text = str(value).strip().lower()
+    if text in DIAL_NAMES:
+        return DIAL_NAMES[text]
+    if text.isdigit() and int(text) in DIALS:
+        return int(text)
+    raise ValueError(f"dial must be one of {', '.join(DIAL_NAMES)} (or 0-3), not {value!r}")
+
+
+def dial_label(level: int) -> str:
+    """'🔁 mirror (2)': the name first, the stored digit after it."""
+    return f"{DIALS[level]} ({level})"
+
+def read_dial(default: int = 3) -> int:
+    """Current dial (0..3); unset = 3 (plain online box)."""
+    try:
+        return int(DIAL_FILE.read_text().strip())
+    except (OSError, ValueError):
+        return default
+
+
+def _write_dial(level: int) -> None:
+    DIAL_FILE.parent.mkdir(parents=True, exist_ok=True)
+    DIAL_FILE.write_text(f"{level}\n")
+
+
+def dial(level: int | str | None = None) -> int:
+    """Show or set the dial (offline|local|mirror|github or 0-3). When the local forge exists, also start/stop it and re-point every repo's origin."""
+    if level is None:
+        lv = read_dial()
+        print(f"🎛️  {dial_label(lv)}  ({DIAL_FILE})")
+        return lv
+    try:
+        level = dial_level(level)
+    except ValueError as error:
+        raise SystemExit(f"❌ {error}") from None
+    try:
+        if FSTATE.exists():
+            _hub_apply(level)
+        _write_dial(level)
+    except (Exception, SystemExit):
+        print("❌ dial change did not complete; inspect forge and repository remotes before retrying. "
+              "Earlier side effects are not automatically rolled back.", file=sys.stderr)
+        raise
+    print(f"🎛️  → {dial_label(level)}" + ("  🌍 one-liners stubbed" if level <= 1 else ""))
+    return level
+
+
+# ───────────────────────── 🏠 hub: local GitHub-like forge (Gitea / Forgejo) ─────────────────────────
+FORGE = OLNM_HOME / "forge"
+BIN, DATA, BARE, LOG = FORGE / "bin" / "forge", FORGE / "data", FORGE / "bare", FORGE / "log"
+INI, PID, FSTATE = FORGE / "app.ini", FORGE / "forge.pid", FORGE / "state.json"
+# 🧬 flavors: Gitea (default: since 2016, MIT, released on GitHub) or Forgejo (its 2022 fork, GPLv3+, released on Codeberg). Same CLI + API.
+FLAVORS = {
+    "forgejo": {"urls": ("https://codeberg.org/forgejo/forgejo/releases/download/v{v}/forgejo-{v}-linux-{arch}", "https://code.forgejo.org/forgejo/forgejo/releases/download/v{v}/forgejo-{v}-linux-{arch}"),
+                "latest": ("https://codeberg.org/api/v1/repos/forgejo/forgejo/releases/latest", "https://code.forgejo.org/api/v1/repos/forgejo/forgejo/releases/latest")},
+    "gitea": {"urls": ("https://github.com/go-gitea/gitea/releases/download/v{v}/gitea-{v}-linux-{arch}", "https://dl.gitea.com/gitea/{v}/gitea-{v}-linux-{arch}"),
+              "latest": ("https://api.github.com/repos/go-gitea/gitea/releases/latest", "https://github.com/go-gitea/gitea/releases/latest")},
+}
+VERIFIED = {"gitea": "1.27.3"}  # ✅ end-to-end checked with olnm; used when the "latest" lookup is blocked but downloads are not
+GH_LABELS = {"bug": "d73a4a", "enhancement": "a2eeef", "documentation": "0075ca", "question": "d876e3", "help wanted": "008672", "good first issue": "7057ff", "wontfix": "ffffff", "duplicate": "cfd3d7"}
+APP_INI = """\
+APP_NAME = olnm hub
+RUN_MODE = prod
+WORK_PATH = {home}
+[server]
+PROTOCOL = http
+HTTP_ADDR = 127.0.0.1
+HTTP_PORT = {port}
+ROOT_URL = http://localhost:{port}/
+PUBLIC_URL_DETECTION = legacy
+DISABLE_SSH = true
+OFFLINE_MODE = true
+[database]
+DB_TYPE = sqlite3
+PATH = {data}/forge.db
+[repository]
+ROOT = {data}/repos
+DEFAULT_BRANCH = main
+[security]
+INSTALL_LOCK = true
+SECRET_KEY = {secret}
+[service]
+DISABLE_REGISTRATION = true
+REQUIRE_SIGNIN_VIEW = false
+[mailer]
+ENABLED = false
+[log]
+MODE = file
+ROOT_PATH = {log}
+[actions]
+ENABLED = true
+[mirror]
+ENABLED = true
+DEFAULT_INTERVAL = 1h
+"""
+_NOPROXY = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+
+def _sh(*cmd: str, cwd: Path | None = None, check: bool = True) -> str:
+    r = subprocess.run(cmd, cwd=cwd, text=True, capture_output=True)
+    if check and r.returncode:
+        raise SystemExit(f"❌ {' '.join(cmd)}\n{r.stderr.strip()}")
+    return r.stdout.strip()
+
+
+def _open(req: urllib.request.Request | str, timeout: int):
+    url = req.full_url if isinstance(req, urllib.request.Request) else req
+    opener = _NOPROXY if url.startswith(("http://127.0.0.1", "http://localhost")) else urllib.request.build_opener()
+    return opener.open(req, timeout=timeout)
+
+
+def _fetch(url: str, dest: Path | None = None, timeout: int = 120) -> bytes:
+    with _open(urllib.request.Request(url, headers={"User-Agent": "olnm"}), timeout) as r:
+        data = r.read()
+    if dest:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(data)
+    return data
+
+
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with Path(path).open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _fstate() -> dict:
+    return json.loads(FSTATE.read_text()) if FSTATE.exists() else {"port": 3000, "user": "admin", "repos": {}}
+
+
+def _fsave(st: dict) -> None:
+    FORGE.mkdir(parents=True, exist_ok=True)
+    FSTATE.write_text(json.dumps(st, indent=2, ensure_ascii=False) + "\n")
+    FSTATE.chmod(0o600)
+
+
+def _forge(*args: str, check: bool = True) -> str:
+    if not BIN.exists():
+        raise SystemExit("❌ forge binary missing → hubdial install")
+    return _sh(str(BIN), "--config", str(INI), *args, check=check)
+
+
+def _running() -> int:
+    if PID.exists():
+        try:
+            pid = int(PID.read_text() or 0)
+            os.kill(pid, 0)
+            return pid
+        except (OSError, ValueError):
+            PID.unlink(missing_ok=True)
+    return 0
+
+
+def hub_port() -> int:
+    """Port of the local forge."""
+    return _fstate()["port"]
+
+
+def _latest_version(flavor: str = "gitea") -> str:
+    for url in FLAVORS[flavor]["latest"]:
+        try:
+            if url.startswith("https://github.com/"):  # release page redirects to /tag/vX.Y.Z
+                with _open(urllib.request.Request(url, headers={"User-Agent": "olnm"}), 20) as r:
+                    return r.geturl().rsplit("/v", 1)[1]
+            return json.loads(_fetch(url, timeout=20))["tag_name"].lstrip("v")
+        except (urllib.error.URLError, KeyError, IndexError, json.JSONDecodeError, TimeoutError):
+            continue
+    if v := VERIFIED.get(flavor):
+        print(f"↪️  latest {flavor} unknown (lookup blocked) → verified {v}")
+        return v
+    other = "gitea" if flavor == "forgejo" else "forgejo"
+    raise SystemExit(f"❌ cannot reach {flavor} releases → try --flavor {other}, or install --from FILE")
+
+
+def hub_bundle(dest: str = "carry", version: str = "latest", arch: str = "amd64", flavor: str = "gitea") -> Path:
+    """🌍 Download the forge binary + .sha256 into DEST and copy nagoyaction.py beside it — carry DEST into a closed network."""
+    if flavor not in FLAVORS:
+        raise SystemExit(f"❌ flavor must be one of {', '.join(FLAVORS)}")
+    v = _latest_version(flavor) if version == "latest" else version
+    out = Path(dest)
+    name = f"{flavor}-{v}-linux-{arch}"
+    for tmpl in FLAVORS[flavor]["urls"]:
+        url = tmpl.format(v=v, arch=arch)
+        try:
+            print(f"⬇️  {url}")
+            binary = _fetch(url, out / name, timeout=900)
+            want = _fetch(url + ".sha256", out / f"{name}.sha256", timeout=60).split()[0].decode()
+            break
+        except urllib.error.URLError as e:
+            print(f"⚠️  {url.split('/')[2]}: {e}")
+    else:
+        raise SystemExit(f"❌ download failed on all hosts → try --flavor {'gitea' if flavor == 'forgejo' else 'forgejo'}")
+    if hashlib.sha256(binary).hexdigest() != want:
+        raise SystemExit("❌ sha256 mismatch")
+    shutil.copy2(PY, out / PY.name)
+    print(f"✅ sha256 ok → 🎒 {out}/  (offline: python3 nagoyaction.py hub install --from {out}/{name})")
+    return out / name
+
+
+def hub_install(version: str = "latest", src: str | None = None, sha: str | None = None, flavor: str = "gitea") -> Path:
+    """Place the forge binary at ~/.olnm/forge/bin/forge. Online: download+verify. Offline: --from carried file (checked against sha or sidecar .sha256)."""
+    if src:
+        path = Path(src)
+        if not path.is_file():
+            raise SystemExit(f"❌ no such file: {src}")
+        side = path.with_name(path.name + ".sha256")
+        want = sha or (side.read_text().split()[0] if side.exists() else None)
+        if want and _sha256(path) != want:
+            raise SystemExit("❌ sha256 mismatch for carried binary")
+    else:
+        path = hub_bundle(str(FORGE / "bundle"), version, flavor=flavor)
+    BIN.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(path, BIN)
+    BIN.chmod(0o755)
+    print(f"📦 {BIN} ← {path.name}")
+    try:
+        print(f"🔖 {_forge('--version', check=False) or 'installed'}")
+    except OSError as e:
+        print(f"⚠️  binary not runnable here: {e}")
+    return BIN
+
+
+def hub_init(port: int = 3000, user: str = "admin", password: str | None = None, email: str = "admin@localhost") -> dict:
+    """Write app.ini (sqlite, 127.0.0.1 only, no SSH/mail/sign-up), migrate, create admin + API token, set git auth."""
+    for d in (DATA, BARE, LOG):
+        d.mkdir(parents=True, exist_ok=True)
+    st = _fstate()
+    if not INI.exists():
+        INI.write_text(APP_INI.format(home=FORGE, port=port, data=DATA, log=LOG, secret=secrets.token_urlsafe(48)))
+        INI.chmod(0o600)
+    _forge("migrate")
+    pw = password or secrets.token_urlsafe(16)
+    out = _forge("admin", "user", "create", "--admin", "--username", user, "--password", pw, "--email", email, "--must-change-password=false", check=False)
+    created = "already exists" not in out.lower()
+    tok = _forge("admin", "user", "generate-access-token", "--username", user, "--token-name", f"olnm-{int(time.time())}", "--scopes", "all", "--raw")
+    st.update(port=port, user=user, token=tok.strip().splitlines()[-1])
+    if created:
+        st["password"] = pw
+    _fsave(st)
+    if not DIAL_FILE.exists():
+        _write_dial(1)
+    basic = base64.b64encode(f"{user}:{st['token']}".encode()).decode()
+    _sh("git", "config", "--global", "--replace-all", f"http.http://localhost:{port}/.extraHeader", f"Authorization: Basic {basic}")
+    print(f"🏗️  http://localhost:{port}  user={user}" + (f"  password={pw}" if created else "  (user existed)"))
+    print(f"🔑 token → {FSTATE}   🔐 git auth → ~/.gitconfig")
+    return st
+
+
+def hub_up() -> int:
+    """Start the forge in the background."""
+    if pid := _running():
+        print(f"🏠 already up pid={pid}")
+        return pid
+    if os.geteuid() == 0:
+        print("⚠️  running as root: Gitea / Forgejo refuse to serve as root → run olnm as a normal user")
+    LOG.mkdir(parents=True, exist_ok=True)
+    with (LOG / "web.out").open("a") as output:
+        p = subprocess.Popen([str(BIN), "--config", str(INI), "web"], stdout=output,
+                             stderr=subprocess.STDOUT, start_new_session=True)
+    try:
+        PID.write_text(str(p.pid))
+        port = hub_port()
+        for _ in range(60):
+            if p.poll() is not None:
+                raise SystemExit(f"❌ forge exited before becoming healthy → {LOG / 'web.out'}")
+            try:
+                _fetch(f"http://127.0.0.1:{port}/api/healthz", timeout=2)
+                if p.poll() is not None:
+                    raise SystemExit(f"❌ forge exited during startup → {LOG / 'web.out'}")
+                print(f"🏠 up pid={p.pid} → http://localhost:{port}")
+                return p.pid
+            except (urllib.error.URLError, TimeoutError, ConnectionError):
+                time.sleep(0.5)
+        raise SystemExit(f"❌ forge health check timed out → {LOG / 'web.out'}")
+    except BaseException:
+        # Only stop the child created by this call, never a PID read from shared state.
+        stopped = p.poll() is not None
+        try:
+            if not stopped:
+                p.terminate()
+                try:
+                    p.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    p.kill()
+                    p.wait(timeout=5)
+                stopped = True
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            print(f"⚠️  failed to stop startup child {p.pid}: {exc}; inspect {LOG / 'web.out'}",
+                  file=sys.stderr)
+        # A different manager may have replaced the PID file during startup.
+        if stopped and PID.exists() and PID.read_text().strip() == str(p.pid):
+            PID.unlink()
+        raise
+
+
+def hub_down() -> None:
+    """Stop the forge."""
+    if pid := _running():
+        os.kill(pid, signal.SIGTERM)
+        PID.unlink(missing_ok=True)
+        print(f"🛑 stopped pid={pid}")
+
+
+def hub_status() -> dict:
+    """Dial, forge state, repo count."""
+    st, pid, lv = _fstate(), _running(), read_dial()
+    print(f"🎛️  {dial_label(lv)} | {'🟢 pid=' + str(pid) if pid else '⚪ down'} | 📚 {len(st['repos'])} | http://localhost:{st['port']}")
+    return {"dial": lv, "pid": pid, "repos": st["repos"]}
+
+
+def hub_logs(n: int = 40) -> str:
+    """Tail the forge web log."""
+    f = LOG / "web.out"
+    out = "\n".join(f.read_text(errors="replace").splitlines()[-n:]) if f.exists() else "(no log yet)"
+    print(out)
+    return out
+
+
+def hub_api(method: str, path: str, data: dict | None = None, token: str | None = None, base: str | None = None):
+    """Gitea / Forgejo REST v1 (GitHub-shaped): hub_api('GET', '/user/repos')."""
+    st = _fstate()
+    url = (base or f"http://127.0.0.1:{st['port']}/api/v1") + path
+    body = json.dumps(data).encode() if data is not None else None
+    req = urllib.request.Request(url, data=body, method=method.upper(), headers={"Authorization": f"token {token or st.get('token', '')}", "Content-Type": "application/json", "Accept": "application/json"})
+    try:
+        with _open(req, 30) as r:
+            raw = r.read()
+            return json.loads(raw) if raw else None
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f"❌ {method} {path} → {e.code} {e.read().decode(errors='replace')[:300]}")
+
+
+def _github_token() -> str:
+    tok = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if not tok and shutil.which("gh"):
+        tok = _sh("gh", "auth", "token", check=False)
+    if not tok:
+        raise SystemExit("❌ dial 2 mirroring needs GITHUB_TOKEN or `gh auth login`")
+    return tok
+
+
+def _ensure_forge_repo(name: str, private: bool = True) -> None:
+    if name not in {r["name"] for r in (hub_api("GET", "/user/repos?limit=200") or [])}:
+        hub_api("POST", "/user/repos", {"name": name, "private": private, "default_branch": "main", "auto_init": False})
+        print(f"  🆕 forge repo {name}")
+
+
+def _point_origin(p: Path, level: int, st: dict) -> str:
+    r = st["repos"][str(p)]
+    target = "bare" if level == 0 else ("github" if level == 3 and r.get("github") else "local")
+    url = _sh("git", "remote", "get-url", target, cwd=p, check=False) or _sh("git", "remote", "get-url", "bare", cwd=p)
+    _sh("git", "remote", "remove", "origin", cwd=p, check=False)
+    _sh("git", "remote", "add", "origin", url, cwd=p)
+    print(f"  🎯 {r['name']}: origin → {target}")
+    return target
+
+
+def _ensure_push_mirror(r: dict, st: dict) -> None:
+    if not r.get("github"):
+        return
+    orp, gh_url = f"{st['user']}/{r['name']}", f"https://github.com/{r['github']}.git"
+    if any(m.get("remote_address", "").rstrip("/") == gh_url for m in hub_api("GET", f"/repos/{orp}/push_mirrors") or []):
+        return
+    hub_api("POST", f"/repos/{orp}/push_mirrors", {"remote_address": gh_url, "remote_username": r["github"].split("/")[0], "remote_password": _github_token(), "interval": "1h", "sync_on_commit": True})
+    print(f"  🔁 push-mirror → {r['github']}")
+
+
+def _hub_apply(level: int) -> None:
+    st = _fstate()
+    if level == 0:
+        hub_down()
+    elif BIN.exists() and INI.exists():
+        hub_up()
+    for path, r in st["repos"].items():
+        p = Path(path)
+        if not p.exists():
+            continue
+        _point_origin(p, level, st)
+        if level >= 1 and _running():
+            _ensure_forge_repo(r["name"], r.get("private", True))
+            if level == 2:
+                _ensure_push_mirror(r, st)
+
+
+def hub_repo_add(path: str = ".", github: str | None = None, private: bool = True) -> dict:
+    """Register a working tree: forge repo + bare backup, remotes `local` `bare` (`github`), origin by dial."""
+    p = Path(path).resolve()
+    if not (p / ".git").exists():
+        _sh("git", "init", "-q", "-b", "main", cwd=p)
+    st, name = _fstate(), p.name
+    bare = BARE / f"{name}.git"
+    if not bare.exists():
+        bare.parent.mkdir(parents=True, exist_ok=True)
+        _sh("git", "init", "-q", "--bare", "-b", "main", str(bare))
+    if _running():
+        _ensure_forge_repo(name, private)
+    else:
+        print("⚠️  forge down; repo is created on next `olnm_dial 1` / `hubdial up`")
+    remotes = {"local": f"http://localhost:{st['port']}/{st['user']}/{name}.git", "bare": str(bare)}
+    if github:
+        remotes["github"] = f"https://github.com/{github}.git"
+    for rname, url in remotes.items():
+        _sh("git", "remote", "remove", rname, cwd=p, check=False)
+        _sh("git", "remote", "add", rname, url, cwd=p)
+    st["repos"][str(p)] = {"name": name, "github": github, "private": private}
+    _fsave(st)
+    print(f"📚 {name}  " + "  ".join(f"{k}={v}" for k, v in remotes.items()))
+    _point_origin(p, read_dial(), st)
+    return st["repos"][str(p)]
+
+
+def hub_repo_ls() -> dict:
+    """Registered repos."""
+    repos = _fstate()["repos"]
+    for path, r in repos.items():
+        print(f"📚 {r['name']:24} {path}  {('☁️ ' + r['github']) if r.get('github') else ''}")
+    return repos
+
+
+def hub_repo_rm(path: str = ".") -> None:
+    """Unregister a working tree (nothing deleted)."""
+    st = _fstate()
+    st["repos"].pop(str(Path(path).resolve()), None)
+    _fsave(st)
+    print("🗑️  unregistered")
+
+
+def hub_sync() -> dict:
+    """Push every registered repo to bare / local / github (github only at dial ≥2)."""
+    st, lv, res = _fstate(), read_dial(), {}
+    for path, r in st["repos"].items():
+        p = Path(path)
+        if not p.exists():
+            continue
+        for rem in ("bare", "local", "github"):
+            if (rem == "local" and not _running()) or (rem == "github" and lv < 2):
+                continue
+            if _sh("git", "remote", "get-url", rem, cwd=p, check=False):
+                ok = subprocess.run(["git", "push", "-q", "--all", rem], cwd=p, capture_output=True).returncode == 0
+                res[f"{r['name']}:{rem}"] = ok
+                print(f"  {'✅' if ok else '⚠️ '} {r['name']} → {rem}")
+    return res
+
+
+def _owner_repo(path: str = ".") -> str:
+    st = _fstate()
+    r = st["repos"].get(str(Path(path).resolve()))
+    if not r:
+        raise SystemExit("❌ not a registered repo → hubadd")
+    return f"{st['user']}/{r['name']}"
+
+
+def hub_issue_ls(path: str = ".", state: str = "open") -> list:
+    """Issues of the current repo."""
+    items = hub_api("GET", f"/repos/{_owner_repo(path)}/issues?state={state}&type=issues") or []
+    for i in items:
+        print(f"🐛 #{i['number']:<4} {i['title']}  {' '.join('🏷️' + l['name'] for l in i.get('labels', []))}")
+    return items
+
+
+def hub_issue_new(title: str, body: str = "", labels: list[str] | None = None, path: str = ".") -> dict:
+    """New issue; labels by name (unknown names are skipped)."""
+    orp = _owner_repo(path)
+    have = {l["name"]: l["id"] for l in hub_api("GET", f"/repos/{orp}/labels") or []} if labels else {}
+    it = hub_api("POST", f"/repos/{orp}/issues", {"title": title, "body": body, "labels": [have[n] for n in labels or [] if n in have]})
+    print(f"🐛 #{it['number']} {it['html_url']}")
+    return it
+
+
+def hub_pr_ls(path: str = ".") -> list:
+    """Open pull requests."""
+    items = hub_api("GET", f"/repos/{_owner_repo(path)}/pulls?state=open") or []
+    for p in items:
+        print(f"🔀 #{p['number']:<4} {p['head']['ref']} → {p['base']['ref']}  {p['title']}")
+    return items
+
+
+def hub_pr_new(title: str, head: str | None = None, base: str = "main", body: str = "", path: str = ".") -> dict:
+    """PR from the current branch (pushed to `local` first)."""
+    p = Path(path).resolve()
+    head = head or _sh("git", "branch", "--show-current", cwd=p)
+    _sh("git", "push", "-q", "-u", "local", head, cwd=p)
+    orp = _owner_repo(path)
+    for _ in range(30):  # the forge indexes pushed branches asynchronously
+        with contextlib.suppress(SystemExit):
+            hub_api("GET", f"/repos/{orp}/branches/{head}")
+            break
+        time.sleep(0.5)
+    pr = hub_api("POST", f"/repos/{orp}/pulls", {"title": title, "head": head, "base": base, "body": body})
+    print(f"🔀 #{pr['number']} {pr['html_url']}")
+    return pr
+
+
+def hub_labels(path: str = ".") -> None:
+    """GitHub's default labels (bug, enhancement, …) in the current repo."""
+    orp = _owner_repo(path)
+    have = {l["name"] for l in hub_api("GET", f"/repos/{orp}/labels") or []}
+    for name, color in GH_LABELS.items():
+        if name not in have:
+            hub_api("POST", f"/repos/{orp}/labels", {"name": name, "color": "#" + color})
+    print(f"🏷️  labels ready in {orp}")
+
+
+def hub_doctor() -> dict:
+    """Binary, config, token, forge, git, gh, GitHub reachability."""
+    st = _fstate()
+    checks = {"binary": BIN.exists(), "app.ini": INI.exists(), "token": bool(st.get("token")), "forge up": bool(_running()), "git": bool(shutil.which("git")), "gh": bool(shutil.which("gh"))}
+    try:
+        _fetch("https://api.github.com", timeout=5)
+        checks["github 🌍"] = True
+    except Exception:
+        checks["github 🌍"] = False
+    print(" ".join(("✅ " if v else "❌ ") + k for k, v in checks.items()))
+    return checks
+
+
+
+def build_parser(prog: str = "nagoyaction hub"):
+    ap = argparse.ArgumentParser(prog=prog)
+    sp = ap.add_subparsers(dest="cmd", required=True)
+    s = sp.add_parser("hub", prog=prog, help="🏠 local GitHub-like forge"); h = s.add_subparsers(dest="sub", required=True)  # main() adds "hub"; keep it out of usage
+    x = h.add_parser("install", help="📦 🌍 download or --from carried binary"); x.add_argument("--version", default="latest"); x.add_argument("--from", dest="src"); x.add_argument("--sha256", dest="sha"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea")
+    x = h.add_parser("bundle", help="🎒 🌍 binary + .sha256 + nagoyaction.py into DIR"); x.add_argument("dir"); x.add_argument("--version", default="latest"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea")
+    x = h.add_parser("init", help="🏗️ config, db, admin, token"); x.add_argument("--port", type=int, default=3000); x.add_argument("--user", default="admin"); x.add_argument("--password")
+    for name, hp in (("up", "🟢 start"), ("down", "🛑 stop"), ("status", "📊 status"), ("doctor", "🩺 checks"), ("sync", "🔄 push to all remotes"), ("labels", "🏷️ GitHub default labels")):
+        h.add_parser(name, help=hp)
+    x = h.add_parser("logs", help="📜 tail log"); x.add_argument("-n", type=int, default=40)
+    x = h.add_parser("dial", help="🎛️ show / set: offline · local · mirror · github (0-3 also work)"); x.add_argument("level", nargs="?", choices=[*DIAL_NAMES, *map(str, DIALS)], metavar="level", help="offline | local | mirror | github (0-3 also work); omit to show")
+    x = h.add_parser("repo", help="📚 register working trees"); r = x.add_subparsers(dest="repo_cmd", required=True)
+    y = r.add_parser("add"); y.add_argument("path", nargs="?", default="."); y.add_argument("--github", help="owner/name"); y.add_argument("--public", action="store_true")
+    r.add_parser("ls"); y = r.add_parser("rm"); y.add_argument("path", nargs="?", default=".")
+    x = h.add_parser("api", help="🌐 raw REST"); x.add_argument("method", choices=["GET", "POST", "PATCH", "PUT", "DELETE"]); x.add_argument("path"); x.add_argument("--data", help="JSON body")
+    x = h.add_parser("issue", help="🐛 issues"); i = x.add_subparsers(dest="issue_cmd", required=True)
+    y = i.add_parser("ls"); y.add_argument("--state", default="open", choices=["open", "closed", "all"])
+    y = i.add_parser("new"); y.add_argument("title"); y.add_argument("--body", default=""); y.add_argument("--label", action="append", default=[])
+    x = h.add_parser("pr", help="🔀 pull requests"); p = x.add_subparsers(dest="pr_cmd", required=True)
+    p.add_parser("ls"); y = p.add_parser("new"); y.add_argument("title"); y.add_argument("--head"); y.add_argument("--base", default="main"); y.add_argument("--body", default="")
+    _suggest(ap)
+    return ap
+
+
+def _suggest(parser: argparse.ArgumentParser) -> None:
+    # 🤔 argparse 3.14+: "maybe you meant 'mirror'?" for choices and subcommands at every level; older Pythons ignore it
+    parser.suggest_on_error = True
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for child in action.choices.values():
+                _suggest(child)
+
+def _hub_main(a: argparse.Namespace) -> None:
+    match a.sub:
+        case "install": hub_install(a.version, a.src, a.sha, a.flavor)
+        case "bundle": hub_bundle(a.dir, a.version, flavor=a.flavor)
+        case "init": hub_init(a.port, a.user, a.password)
+        case "up": hub_up()
+        case "down": hub_down()
+        case "status": hub_status()
+        case "doctor": hub_doctor()
+        case "sync": hub_sync()
+        case "labels": hub_labels()
+        case "logs": hub_logs(a.n)
+        case "dial": dial(a.level)
+        case "repo": {"add": lambda: hub_repo_add(a.path, a.github, not a.public), "ls": hub_repo_ls, "rm": lambda: hub_repo_rm(a.path)}[a.repo_cmd]()
+        case "api": print(json.dumps(hub_api(a.method, a.path, json.loads(a.data) if a.data else None), indent=2, ensure_ascii=False))
+        case "issue": hub_issue_ls(state=a.state) if a.issue_cmd == "ls" else hub_issue_new(a.title, a.body, a.label)
+        case "pr": hub_pr_ls() if a.pr_cmd == "ls" else hub_pr_new(a.title, a.head, a.base, a.body)
+
+
+
+def local_forge_main(argv=None, prog: str = "nagoyaction hub"):
+    args = build_parser(prog).parse_args(["hub", *(sys.argv[1:] if argv is None else argv)])
+    _hub_main(args)
+    return 0
+
+
+# ====================================================================================================
+# 🧪 localci: ワークフローとテストを手元で検査する（nagoyaction localci … / actionlint）（旧 localci.py）
+# ローカル CI。GitHub Actions を待たずに、ワークフローとテストを手元で検査する。
+#
+#   python nagoyaction.py localci run --repeat 10
+#   python nagoyaction.py localci run --repeat 10 --seed 7 --keep-going
+#   python nagoyaction.py localci run --self-tests
+#   python nagoyaction.py localci run --strict
+#   python nagoyaction.py localci resolve --github-output
+#
+# `--repeat N` は同じ検査を N 回なぞらない。検査の一覧を seed でシャッフルし、
+# ほぼ等しい N 個のシャードに分け、1 ラウンドに 1 シャードだけ実行する。
+# 全ラウンドが終わると各検査はちょうど一度だけ走る。失敗したラウンドで止まり、
+# ラウンド番号・シャードの中身・seed を出す。`--keep-going` で最後まで続ける。
+#
+# 既定の pytest は Aoi の `tests/` 全体。実行時に解決した SHA を `.localci/aoi`
+# に checkout し、HEAD がその SHA であることを確かめてから、このリポジトリの
+# tree を `nagoyaction/` に重ねる。`--self-tests` は Aoi を取らず
+# `tests/test_localci.py` だけを実行する。
+#
+# 特定の固定値で通る検査は `substitute` で、そのラウンドの seed から別の値に差し替える。
+# pytest では `-p nagoyaction` が同じ差し替えを monkeypatch する。
+#
+# 参照先（Aoi、myon-bioinformatics/myon-bioinformatics、vendor）の main SHA は
+# `git ls-remote` と GitHub API の repository id 照合で実行時に解決する。
+# SHA はソースに固定しない。`uses:` のピンが各アクションの最新リリースタグの
+# コミットと一致するかは、既定では報告だけする。`--strict` で古い SHA ピンと、
+# setup アクションの SHA でないピンを失敗にする。setup 以外の actions/* の
+# メジャータグ `vN`（checkout、upload-artifact、download-artifact、cache など）は許す。
+#
+# actionlint の版もソースに固定しない。実行のたびに最新リリースを解決し、
+# タグ・資産名・検証した sha256 を記録する。GitHub Actions では取得か検証に
+# 失敗したら停止する。手元では、解決済みのタグだけ `go run ...@<tag>` に戻る。
+# `.localci/refs.env` は追記しない。キーごとに1行へ原子的に書き換え、同じキーは
+# 後の値を残し、並びはファイルに最初に出た順を保つ。
+#
+# 標準ライブラリだけ（Python 3.11+）。
+# ====================================================================================================
+
+class LocalCIError(Exception):
+    pass
+
+
+class Unreachable(LocalCIError):
+    """GitHub が応答しない（経路なし・DNS・タイムアウト）。閉域網はここに来る。"""
+
+
+SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+MAJOR_TAG_RE = re.compile(r"^v[0-9]+$")
+# 親は setup をリリースの 40 桁 SHA にする。actions/setup-* と setup-uv。
+_SETUP_ACTIONS = frozenset({
+    "actions/setup-python",
+    "actions/setup-node",
+    "astral-sh/setup-uv",
+})
+_USES = re.compile(r"^[ \t]*(?:-[ \t]*)?uses:[ \t]*(?P<value>.+?)[ \t]*$", re.M)
+
+# repository id はコミット SHA ではなく、取り違えを防ぐための公開の数値 ID。
+@dataclass(frozen=True)
+class Source:
+    key: str
+    env: str
+    repo: str
+    repository_id: int | None
+
+
+SOURCES = (
+    Source("aoi", "AOI_SHA", "myon-bioinformatics/Aoi", 1402862784),
+    Source("myon_bioinformatics", "MYON_BIOINFORMATICS_SHA", "myon-bioinformatics/myon-bioinformatics", 638801160),
+    Source("markdown", "MARKDOWN_SHA", "myon-bioinformatics/markdown", 1374546518),
+    Source("web_ui", "WEB_UI_SHA", "myon-bioinformatics/PySaiyanWeBoo", 1382466695),
+)
+
+_OS = {"Linux": "linux", "Darwin": "darwin", "Windows": "windows"}
+_ARCH = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64", "i386": "386", "i686": "386"}
+_active_rng: random.Random | None = None
+_substitutions: list[dict] = []
+
+
+@dataclass(frozen=True)
+class Check:
+    id: str
+    kind: str
+    target: str
+    file: str = ""
+    ref: str = ""
+    repo: str = ""
+
+
+@dataclass
+class Outcome:
+    status: str
+    detail: str
+    inputs: list[dict]
+
+    @property
+    def ok(self) -> bool:
+        return self.status == "pass"
+
+
+@dataclass
+class Resolved:
+    source: Source
+    sha: str
+    how: str
+    repository_id: int
+
+
+@dataclass(frozen=True)
+class ActionlintRecord:
+    tag: str
+    asset: str
+    sha256: str
+    binary: Path | None
+    via: str  # release | go | path、best effort では cache | none も
+    note: str = ""  # best effort: 最新版を使えなかった理由
+
+
+@dataclass
+class RoundReport:
+    number: int
+    seed: int
+    shard: list[str]
+    passed: bool
+    failed_check: str | None
+    lines: list[str]
+
+
+@dataclass
+class PlanReport:
+    master_seed: int
+    rounds: list[RoundReport]
+    stopped: bool
+
+    @property
+    def passed_rounds(self) -> int:
+        return sum(1 for r in self.rounds if r.passed)
+
+
+def substitute(name: str, value, draw):
+    """固定値を返す。ラウンドの seed が有効なときは draw(rng) に差し替える。"""
+    rng = _active_rng
+    if rng is None:
+        return value
+    drawn = draw(rng)
+    _substitutions.append({"name": name, "fixed": value, "value": drawn})
+    return drawn
+
+
+def take_substitutions() -> list[dict]:
+    found = list(_substitutions)
+    _substitutions.clear()
+    return found
+
+
+class use_seed:
+    def __init__(self, seed: int):
+        self.seed = seed
+        self.previous = None
+
+    def __enter__(self) -> random.Random:
+        global _active_rng
+        self.previous = _active_rng
+        _substitutions.clear()
+        _active_rng = random.Random(self.seed)
+        return _active_rng
+
+    def __exit__(self, *exc) -> None:
+        global _active_rng
+        _active_rng = self.previous
+
+
+def mix_seed(master: int, *parts: object) -> int:
+    material = ":".join([str(master), *map(str, parts)]).encode()
+    return int.from_bytes(hashlib.sha256(material).digest()[:8], "big")
+
+
+def split_shards(items: list, repeat: int, seed: int) -> list[list]:
+    """seed でシャッフルし、各要素がちょうど一つのシャードに入るよう N 等分する。"""
+    if repeat < 1:
+        raise ValueError("repeat must be >= 1")
+    ordered = list(items)
+    random.Random(seed).shuffle(ordered)
+    total = len(ordered)
+    base, extra = divmod(total, repeat)
+    shards: list[list] = []
+    start = 0
+    for i in range(repeat):
+        size = base + (1 if i < extra else 0)
+        shards.append(ordered[start:start + size])
+        start += size
+    return shards
+
+
+def shard_for_round(items: list, repeat: int, round_no: int, seed: int) -> list:
+    if not 1 <= round_no <= repeat:
+        raise ValueError(f"round {round_no} is outside 1..{repeat}")
+    return split_shards(items, repeat, seed)[round_no - 1]
+
+
+def confidence_line(passed: int, total: int, completed: int, stopped: bool) -> str:
+    text = f"confidence: {passed}/{total} rounds passed, {completed}/{total} completed"
+    if stopped:
+        return text + "; stopped"
+    return text
+
+
+def _strip_yaml_comment(text: str) -> str:
+    if text[:1] in {"'", '"'}:
+        quote = text[0]
+        end = text.find(quote, 1)
+        if end != -1:
+            return text[1:end]
+    mark = text.find(" #")
+    if mark != -1:
+        return text[:mark]
+    return text
+
+
+def parse_action_ref(value: str) -> dict | None:
+    value = value.strip()
+    if not value or value.startswith(("./", "docker://")) or "${{" in value:
+        return None
+    if "@" in value:
+        left, ref = value.rsplit("@", 1)
+    else:
+        left, ref = value, ""
+    parts = [p for p in left.split("/") if p]
+    if len(parts) < 2:
+        return None
+    return {"repo": f"{parts[0]}/{parts[1]}", "path": "/".join(parts[2:]), "ref": ref.strip(), "raw": value}
+
+
+def parse_uses(text: str) -> list[dict]:
+    found = []
+    for match in _USES.finditer(text):
+        raw = _strip_yaml_comment(match.group("value").strip()).strip()
+        parsed = parse_action_ref(raw)
+        if parsed is None:
+            continue
+        parsed["line"] = text.count("\n", 0, match.start()) + 1
+        found.append(parsed)
+    return found
+
+
+def is_setup_action(repo: str) -> bool:
+    """親が 40 桁 SHA と `# vX.Y.Z` で書く setup アクション。"""
+    return repo in _SETUP_ACTIONS or repo.startswith("actions/setup-")
+
+
+def allows_major_tag(repo: str) -> bool:
+    """setup 以外の actions/* は動くメジャータグ vN でよい。"""
+    return repo.startswith("actions/") and not is_setup_action(repo)
+
+
+def classify_pin(ref: str, latest: tuple[str, str] | None, repo: str = "") -> str:
+    """latest は (tag, commit SHA)。リリースが無ければ None。
+
+    setup 以外の actions/* のメジャータグ vN は major。
+    それ以外で SHA でないピンは unpinned。
+    SHA でリリースが無ければ no-release。一致すれば match、違えば outdated。
+    """
+    if MAJOR_TAG_RE.fullmatch(ref) and allows_major_tag(repo):
+        return "major"
+    if not SHA_RE.fullmatch(ref.lower()):
+        return "unpinned"
+    if latest is None:
+        return "no-release"
+    _tag, sha = latest
+    if ref.lower() == sha.lower():
+        return "match"
+    return "outdated"
+
+
+def pin_fails(status: str, strict: bool) -> bool:
+    """major は setup 以外の actions/* の動くメジャータグ。`--strict` でも失敗にしない。"""
+    return strict and status in {"outdated", "unpinned"}
+
+
+def github_token(env: dict | None = None) -> str:
+    env = os.environ if env is None else env
+    return env.get("GITHUB_TOKEN") or env.get("GH_TOKEN") or ""
+
+
+def github_json(url: str, token: str, opener=urllib.request.urlopen, timeout: float = 60):
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "nagoyaction-localci"}
+    if token:
+        headers["Authorization"] = "Bearer " + token
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with opener(req, timeout=timeout) as resp:
+            return json.load(resp)
+    except urllib.error.HTTPError as exc:
+        raise LocalCIError(f"GitHub API {exc.code} for {url}") from exc
+    except json.JSONDecodeError as exc:
+        raise LocalCIError(f"GitHub API failed for {url}: {exc}") from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise Unreachable(f"GitHub API failed for {url}: {exc}") from exc
+
+
+def fetch_bytes(url: str, token: str, opener=urllib.request.urlopen, timeout: float = 60) -> bytes:
+    headers = {"User-Agent": "nagoyaction-localci"}
+    if token:
+        headers["Authorization"] = "Bearer " + token
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with opener(req, timeout=timeout) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as exc:
+        raise LocalCIError(f"download {exc.code} for {url}") from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise LocalCIError(f"download failed for {url}: {exc}") from exc
+
+
+def git_env(base: dict | None = None) -> dict:
+    env = dict(os.environ if base is None else base)
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GCM_INTERACTIVE"] = "never"
+    env["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes"
+    return env
+
+
+def parse_ls_remote(listing: str, ref: str) -> str | None:
+    want = ref
+    for line in listing.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[1] == want and SHA_RE.fullmatch(parts[0].lower()):
+            return parts[0].lower()
+    return None
+
+
+def ls_remote(repo: str, ref: str, runner=subprocess.run) -> str:
+    url = f"https://github.com/{repo}"
+    try:
+        out = runner(
+            ["git", "ls-remote", url, ref],
+            capture_output=True, text=True, check=False, timeout=60, env=git_env(),
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise LocalCIError(f"git ls-remote failed for {repo} {ref}: {exc}") from exc
+    if out.returncode != 0:
+        detail = (out.stderr or out.stdout or "").strip()
+        raise LocalCIError(f"git ls-remote failed for {repo} {ref}: {detail}")
+    peeled = parse_ls_remote(out.stdout or "", ref + "^{}")
+    direct = parse_ls_remote(out.stdout or "", ref)
+    sha = peeled or direct
+    if sha is None:
+        raise LocalCIError(f"could not resolve {repo} {ref}")
+    return sha
+
+
+def verify_repository(repo: str, expected_id: int | None, data: dict) -> int:
+    full = str(data.get("full_name", "")).lower()
+    if full != repo.lower():
+        raise LocalCIError(f"{repo}: repository id mismatch")
+    got = data.get("id")
+    if expected_id is not None and got != expected_id:
+        raise LocalCIError(f"{repo}: repository id mismatch")
+    if data.get("visibility") not in (None, "public") or data.get("private") is True:
+        raise LocalCIError(f"{repo}: repository is not public")
+    if type(got) is not int:
+        raise LocalCIError(f"{repo}: repository id missing")
+    return got
+
+
+def resolve_ref(repo: str, ref_input: str, runner=subprocess.run) -> tuple[str, str]:
+    """ref を SHA にする。40 桁の SHA はそのまま使う。戻り値は (sha, how)。"""
+    text = ref_input.strip()
+    if re.fullmatch(r"[0-9a-fA-F]{40}", text):
+        return text.lower(), "workflow_dispatch input"
+    if re.fullmatch(r"refs/heads/[A-Za-z0-9._/-]+", text):
+        return ls_remote(repo, text, runner), text
+    if re.fullmatch(r"[A-Za-z0-9._/-]+", text):
+        ref = "refs/heads/" + text
+        return ls_remote(repo, ref, runner), ref
+    raise LocalCIError("invalid aoi_ref")
+
+
+def sources_for(root: Path) -> list[Source]:
+    found = list(SOURCES)
+    seen = {s.repo.lower() for s in found}
+    lock = root / "vendor.lock.json"
+    if not lock.is_file():
+        return found
+    try:
+        data = json.loads(lock.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise LocalCIError(f"vendor.lock.json: {exc}") from exc
+    repos: list[str] = []
+    files = data.get("files", [])
+    if isinstance(files, list):
+        repos = [str(item.get("repository", "")) for item in files if isinstance(item, dict)]
+    elif isinstance(files, dict):
+        repos = [str(item.get("source_repo", "")) for item in files.values() if isinstance(item, dict)]
+    for repo in repos:
+        if repo and repo.lower() not in seen:
+            key = re.sub(r"[^A-Za-z0-9]+", "_", repo).strip("_").upper()
+            found.append(Source(key.lower(), key + "_SHA", repo, None))
+            seen.add(repo.lower())
+    return found
+
+
+def resolve_source(source: Source, ref_input: str = "", *, token: str = "",
+                   runner=subprocess.run, opener=urllib.request.urlopen) -> Resolved:
+    data = github_json(f"https://api.github.com/repos/{source.repo}", token, opener)
+    repository_id = verify_repository(source.repo, source.repository_id, data)
+    if ref_input.strip():
+        sha, how = resolve_ref(source.repo, ref_input, runner)
+    else:
+        how = "refs/heads/main"
+        sha = ls_remote(source.repo, how, runner)
+    return Resolved(source, sha, how, repository_id)
+
+
+def resolve_sources(root: Path, aoi_ref: str = "", *, token: str = "",
+                    runner=subprocess.run, opener=urllib.request.urlopen) -> list[Resolved]:
+    resolved = []
+    for source in sources_for(root):
+        override = aoi_ref if source.key == "aoi" else ""
+        resolved.append(resolve_source(source, override, token=token, runner=runner, opener=opener))
+    return resolved
+
+
+def provenance_mode(event_name: str, github_ref: str) -> str:
+    if event_name == "schedule":
+        return "strict"
+    if event_name == "push" and github_ref == "refs/heads/main":
+        return "strict"
+    return "report-only"
+
+
+_ENV_HEADER = "# localci resolved refs. source: git ls-remote + repository id check"
+_ENV_KEY = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def env_pairs(resolved: list[Resolved]) -> list[tuple[str, str]]:
+    pairs: list[tuple[str, str]] = []
+    for item in resolved:
+        pairs.append((item.source.env, item.sha))
+        pairs.append((f"{item.source.env.removesuffix('_SHA')}_REPOSITORY_ID", str(item.repository_id)))
+    return pairs
+
+
+def actionlint_pairs(record: ActionlintRecord) -> list[tuple[str, str]]:
+    pairs = [("ACTIONLINT_TAG", record.tag), ("ACTIONLINT_ASSET", record.asset)]
+    if record.sha256:
+        pairs.append(("ACTIONLINT_SHA256", record.sha256))
+    return pairs
+
+
+def merge_env_lines(existing: str, updates: list[tuple[str, str]], *,
+                    header: str | None = None, drop: tuple[str, ...] = ()) -> str:
+    """同じキーは後の値を残す。並びは最初に出た順で、新しいキーは末尾に足す。"""
+    order: list[str] = []
+    values: dict[str, str] = {}
+    kept = header
+    for raw in existing.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("#"):
+            if kept is None:
+                kept = line
+            continue
+        key, sep, value = line.partition("=")
+        if sep == "" or _ENV_KEY.fullmatch(key) is None:
+            continue
+        if key not in values:
+            order.append(key)
+        values[key] = value
+    for key, value in updates:
+        if key not in values:
+            order.append(key)
+        values[key] = value
+    for key in drop:
+        if key in values:
+            del values[key]
+            order.remove(key)
+    lines: list[str] = []
+    if kept:
+        lines.append(kept)
+    lines.extend(f"{key}={values[key]}" for key in order)
+    if not lines:
+        return ""
+    return "\n".join(lines) + "\n"
+
+
+def atomic_write_text(path: Path, text: str) -> None:
+    """同じディレクトリへ書いてから replace する。失敗しても宛先の中身は残る。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(name, path)
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+
+
+def rewrite_env_file(path: Path, updates: list[tuple[str, str]], *,
+                     header: str | None = None, drop: tuple[str, ...] = ()) -> None:
+    existing = path.read_text(encoding="utf-8") if path.is_file() else ""
+    atomic_write_text(path, merge_env_lines(existing, updates, header=header, drop=drop))
+
+
+def format_env(resolved: list[Resolved]) -> str:
+    return merge_env_lines("", env_pairs(resolved), header=_ENV_HEADER)
+
+
+def write_env_file(path: Path, resolved: list[Resolved]) -> None:
+    rewrite_env_file(path, env_pairs(resolved), header=_ENV_HEADER)
+
+
+def write_actionlint_env(path: Path, record: ActionlintRecord) -> None:
+    drop = () if record.sha256 else ("ACTIONLINT_SHA256",)
+    rewrite_env_file(path, actionlint_pairs(record), drop=drop)
+
+
+def format_github_output(resolved: list[Resolved]) -> str:
+    lines = []
+    for item in resolved:
+        lines.append(f"{item.source.key}_sha={item.sha}")
+        if item.source.key == "aoi":
+            lines.append(f"sha={item.sha}")
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
+def running_in_github_actions() -> bool:
+    return os.environ.get("GITHUB_ACTIONS") == "true"
+
+
+def format_actionlint_line(record: ActionlintRecord) -> str:
+    sha = record.sha256 if record.sha256 else "unverified"
+    via = f"go@{record.tag}" if record.via == "go" and record.tag else record.via
+    return f"actionlint tag={record.tag} asset={record.asset} sha256={sha} via={via}"
+
+
+def format_actionlint_env(record: ActionlintRecord) -> str:
+    return merge_env_lines("", actionlint_pairs(record))
+
+
+def format_run_summary(resolved: list[Resolved], actionlint: ActionlintRecord | None) -> str:
+    """解決した参照先 SHA と、その隣に actionlint の解決結果を書く。"""
+    lines = ["## Resolved repositories"]
+    if not resolved:
+        lines.append("No repository SHA was resolved.")
+    for item in resolved:
+        lines.append(f"- `{item.source.repo}` `{item.sha}` ({item.how}), repository id `{item.repository_id}`")
+    lines.append("")
+    lines.append("## actionlint")
+    if actionlint is None or not actionlint.tag:
+        lines.append("actionlint was not resolved.")
+    else:
+        lines.append(f"- Tag: `{actionlint.tag}`")
+        lines.append(f"- Asset: `{actionlint.asset}`")
+        if actionlint.sha256:
+            lines.append(f"- sha256: `{actionlint.sha256}`")
+        else:
+            lines.append("- sha256: not verified")
+        via = f"go@{actionlint.tag}" if actionlint.via == "go" else actionlint.via
+        lines.append(f"- via: `{via}`")
+    return "\n".join(lines) + "\n"
+
+
+def append_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(text)
+
+
+def format_step_summary(resolved: list[Resolved], mode: str) -> str:
+    aoi = next((item for item in resolved if item.source.key == "aoi"), None)
+    lines = ["## Aoi source"]
+    if aoi is None:
+        lines.append("Aoi was not resolved.")
+    else:
+        lines.append(f"Resolved `{aoi.sha}` from `{aoi.how}`.")
+        lines.append(f"Repository id `{aoi.repository_id}`.")
+        lines.append(f"Source-hash provenance: {mode}.")
+    lines.append("")
+    lines.append("## Referenced repositories")
+    for item in resolved:
+        lines.append(f"- `{item.source.repo}` `{item.sha}` ({item.how}), repository id `{item.repository_id}`")
+    return "\n".join(lines) + "\n"
+
+
+def latest_release(repo: str, *, token: str = "", opener=urllib.request.urlopen,
+                   runner=subprocess.run) -> tuple[str, str] | None:
+    url = f"https://api.github.com/repos/{repo}/releases/latest"
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "nagoyaction-localci"}
+    if token:
+        headers["Authorization"] = "Bearer " + token
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with opener(req, timeout=60) as resp:
+            data = json.load(resp)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise LocalCIError(f"GitHub API {exc.code} for {url}") from exc
+    except json.JSONDecodeError as exc:
+        raise LocalCIError(f"GitHub API failed for {url}: {exc}") from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise Unreachable(f"GitHub API failed for {url}: {exc}") from exc
+    tag = str(data.get("tag_name", ""))
+    if not tag:
+        return None
+    sha = ls_remote(repo, "refs/tags/" + tag, runner)
+    return tag, sha
+
+
+def workflow_files(root: Path) -> list[Path]:
+    directory = root / ".github" / "workflows"
+    if not directory.is_dir():
+        return []
+    return sorted(directory.glob("*.yml")) + sorted(directory.glob("*.yaml"))
+
+
+def workflow_uses(root: Path) -> list[dict]:
+    rows = []
+    for path in workflow_files(root):
+        text = path.read_text(encoding="utf-8")
+        rel = str(path.relative_to(root))
+        for item in parse_uses(text):
+            item = dict(item)
+            item["file"] = rel
+            rows.append(item)
+    return rows
+
+
+def actionlint_archive(version: str, system: str, machine: str) -> str:
+    goos = _OS.get(system)
+    goarch = _ARCH.get(machine)
+    if not goos or not goarch:
+        raise LocalCIError(f"unsupported platform {system}/{machine}")
+    ext = "zip" if goos == "windows" else "tar.gz"
+    return f"actionlint_{version}_{goos}_{goarch}.{ext}"
+
+
+def checksum_for(text: str, filename: str) -> str:
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) < 2 or not re.fullmatch(r"[0-9a-fA-F]{64}", parts[0]):
+            continue
+        name = parts[-1][1:] if parts[-1].startswith("*") else parts[-1]
+        if name == filename:
+            return parts[0].lower()
+    raise LocalCIError(f"no checksum for {filename}")
+
+
+def verify_bytes(data: bytes, expected: str, label: str) -> None:
+    got = hashlib.sha256(data).hexdigest()
+    if got != expected.lower():
+        raise LocalCIError(f"checksum mismatch for {label}")
+
+
+def _asset_digest(asset: dict) -> str | None:
+    digest = str(asset.get("digest", ""))
+    if digest.startswith("sha256:"):
+        return digest.split(":", 1)[1].lower()
+    return None
+
+
+def extract_actionlint(archive: bytes, filename: str) -> bytes:
+    name = "actionlint.exe" if filename.endswith(".zip") else "actionlint"
+    if filename.endswith(".zip"):
+        with zipfile.ZipFile(io.BytesIO(archive)) as zf:
+            member = next((info for info in zf.infolist() if Path(info.filename).name == name), None)
+            if member is None or member.is_dir():
+                raise LocalCIError("actionlint binary missing from archive")
+            return zf.read(member)
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:gz") as tar:
+        member = next((info for info in tar.getmembers() if Path(info.name).name == "actionlint" and info.isfile()), None)
+        if member is None or member.issym() or member.islnk():
+            raise LocalCIError("actionlint binary missing from archive")
+        extracted = tar.extractfile(member)
+        if extracted is None:
+            raise LocalCIError("actionlint binary missing from archive")
+        return extracted.read()
+
+
+_ACTIONLINT_RECORD = "actionlint.record.json"
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _read_actionlint_record(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    sha = str(data.get("sha256", "")).lower()
+    if not _HEX64.fullmatch(sha):
+        return None
+    return {"tag": str(data.get("tag", "")), "asset": str(data.get("asset", "")), "sha256": sha}
+
+
+def _install_actionlint(cache: Path, release: dict, tag: str, version: str, filename: str, *,
+                        token: str, opener) -> ActionlintRecord:
+    dest = cache / "actionlint" / version / ("actionlint.exe" if filename.endswith(".zip") else "actionlint")
+    record_path = dest.parent / _ACTIONLINT_RECORD
+    saved = _read_actionlint_record(record_path)
+    if dest.is_file() and os.access(dest, os.X_OK) and saved and saved["tag"] == tag and saved["asset"] == filename:
+        return ActionlintRecord(tag, filename, saved["sha256"], dest, "release")
+    assets = {item.get("name"): item for item in release.get("assets", [])}
+    archive_asset = assets.get(filename)
+    checksum_name = f"actionlint_{version}_checksums.txt"
+    checksum_asset = assets.get(checksum_name)
+    if not archive_asset or not checksum_asset:
+        raise LocalCIError(f"actionlint release is missing {filename}")
+    archive = fetch_bytes(archive_asset["browser_download_url"], token, opener)
+    checksum_bytes = fetch_bytes(checksum_asset["browser_download_url"], token, opener)
+    archive_digest = _asset_digest(archive_asset)
+    checksum_digest = _asset_digest(checksum_asset)
+    if archive_digest:
+        verify_bytes(archive, archive_digest, filename)
+    if checksum_digest:
+        verify_bytes(checksum_bytes, checksum_digest, checksum_name)
+    expected = checksum_for(checksum_bytes.decode("utf-8", "replace"), filename).lower()
+    verify_bytes(archive, expected, filename)
+    payload = extract_actionlint(archive, filename)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(payload)
+    dest.chmod(0o755)
+    record_path.write_text(
+        json.dumps({"tag": tag, "asset": filename, "sha256": expected}) + "\n",
+        encoding="utf-8",
+    )
+    return ActionlintRecord(tag, filename, expected, dest, "release")
+
+
+def ensure_actionlint(cache: Path, *, token: str = "", opener=urllib.request.urlopen,
+                      system: str | None = None, machine: str | None = None) -> ActionlintRecord:
+    """最新リリースを解決する。版はソースに固定しない。
+
+    取得と checksum/digest の検証に成功した sha256 だけを記録する。
+    GitHub Actions では失敗したらそこで止まる。手元では、タグを解決できたときだけ
+    Go のそのタグへ戻す（`@latest` には戻さない）。
+    """
+    system = system or sys.platform
+    if system == "linux":
+        system = "Linux"
+    elif system == "darwin":
+        system = "Darwin"
+    elif system in {"win32", "windows"}:
+        system = "Windows"
+    if machine is None:
+        if system == "Windows":
+            machine = os.environ.get("PROCESSOR_ARCHITECTURE", "amd64")
+        else:
+            machine = os.uname().machine
+    release = github_json("https://api.github.com/repos/rhysd/actionlint/releases/latest", token, opener)
+    tag = str(release.get("tag_name", ""))
+    version = tag[1:] if tag.startswith("v") else tag
+    if not version:
+        raise LocalCIError("actionlint release has no tag")
+    try:
+        filename = actionlint_archive(version, system, machine)
+        return _install_actionlint(cache, release, tag, version, filename, token=token, opener=opener)
+    except (LocalCIError, OSError) as exc:
+        if running_in_github_actions():
+            raise LocalCIError(f"actionlint {tag}: {exc}") from exc
+        asset = ""
+        try:
+            asset = actionlint_archive(version, system, machine)
+        except LocalCIError:
+            asset = ""
+        return ActionlintRecord(tag, asset, "", None, "go")
+
+
+def cached_actionlint(cache: Path) -> ActionlintRecord | None:
+    """以前の実行が取得して検証した中で、いちばん新しい版。"""
+    found = []
+    for record_path in (cache / "actionlint").glob(f"*/{_ACTIONLINT_RECORD}"):
+        saved = _read_actionlint_record(record_path)
+        binary = next((path for name in ("actionlint", "actionlint.exe")
+                       if (path := record_path.parent / name).is_file() and os.access(path, os.X_OK)), None)
+        if saved and binary:
+            version = tuple(int(part) for part in re.findall(r"\d+", record_path.parent.name))
+            found.append((version, ActionlintRecord(saved["tag"], saved["asset"], saved["sha256"], binary, "cache")))
+    return max(found, key=lambda item: item[0])[1] if found else None
+
+
+def local_actionlint(cache: Path, note: str, which=None) -> ActionlintRecord:
+    """best effort: 最新版を使えないとき、取得済みの検証済み版 → PATH の actionlint → 無し（検査は skip）。"""
+    if record := cached_actionlint(cache):
+        return ActionlintRecord(record.tag, record.asset, record.sha256, record.binary, "cache", note)
+    if found := (which or shutil.which)("actionlint"):
+        return ActionlintRecord("", "", "", Path(found), "path", note)
+    return ActionlintRecord("", "", "", None, "none", note)
+
+
+def format_best_effort_line(record: ActionlintRecord) -> str:
+    use = {"cache": f"取得済みの {record.tag} を使う", "path": f"PATH の {record.binary} を使う"}.get(record.via, "使えるものが無いので検査しない。actionlint を PATH に置けば使う")
+    return f"actionlint: 最新版を使えない（{record.note}）→ {use}"
+
+
+def actionlint_argv(binary: Path | None, files: list[str], shellcheck: str | None,
+                    go_ref: str | None = None) -> list[str]:
+    if binary is not None:
+        cmd = [str(binary)]
+    elif go_ref and go_ref not in {"latest", "@latest"}:
+        ref = go_ref[1:] if go_ref.startswith("@") else go_ref
+        cmd = ["go", "run", f"github.com/rhysd/actionlint/cmd/actionlint@{ref}"]
+    else:
+        raise LocalCIError("actionlint tag was not resolved")
+    if shellcheck:
+        cmd.extend(["-shellcheck", shellcheck])
+    else:
+        cmd.append("-shellcheck=")
+    cmd.extend(files)
+    return cmd
+
+
+def shellcheck_path(which=shutil.which) -> str | None:
+    return which("shellcheck")
+
+
+def parse_collect_only(stdout: str) -> list[str]:
+    """`--collect-only -q` の各行を node id として読む。空白や括弧を含む id も切らない。"""
+    nodeids = []
+    for line in stdout.splitlines():
+        text = line.strip()
+        if "::" not in text or text.startswith(("=", "-", "ERROR", "collected", "warning", "!", "<")):
+            continue
+        if " collected in " in text or text.endswith(" collected"):
+            continue
+        nodeids.append(text)
+    return nodeids
+
+
+def collect_pytest(paths: list[str], root: Path, runner=subprocess.run) -> tuple[list[str], list[str]]:
+    if importlib_pytest() is None:
+        return [], ["pytest が見つからない"]
+    try:
+        out = runner(
+            [sys.executable, "-m", "pytest", "--collect-only", "-q", "--continue-on-collection-errors", *paths],
+            cwd=root, capture_output=True, text=True, check=False, timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return [], [f"pytest collection failed: {exc}"]
+    nodeids = parse_collect_only(out.stdout or "")
+    limits = []
+    for line in ((out.stdout or "") + "\n" + (out.stderr or "")).splitlines():
+        if "ERROR collecting" in line or line.startswith("ERROR "):
+            limits.append(line.strip())
+    if out.returncode != 0 and not nodeids and not limits:
+        limits.append("pytest collection failed")
+    return nodeids, limits
+
+
+def importlib_pytest():
+    import importlib.util
+    return importlib.util.find_spec("pytest")
+
+
+def _read_input_log(path: Path) -> list[dict]:
+    if not path.is_file():
+        return []
+    found = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        parts = line.split("\t")
+        if len(parts) != 3:
+            continue
+        found.append({"name": parts[0], "fixed": parts[1], "value": parts[2]})
+    return found
+
+
+AOI_PYTEST_PREFIX = ["uv", "run", "--locked", "--python", "3.11", "pytest", "-c", "pyproject.toml"]
+_FAILED_NODE = re.compile(r"^(?:FAILED|ERROR)\s+(\S+)", re.M)
+
+
+def _git(runner, argv: list[str], *, cwd: Path, timeout: int, text: bool = True):
+    try:
+        out = runner(argv, cwd=cwd, capture_output=True, text=text, check=False, timeout=timeout, env=git_env())
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise LocalCIError(f"{' '.join(argv)} failed: {exc}") from exc
+    if out.returncode != 0:
+        err = out.stderr or out.stdout or ""
+        if isinstance(err, bytes):
+            err = err.decode("utf-8", "replace")
+        raise LocalCIError(f"{' '.join(argv)} failed: {str(err).strip()}")
+    return out
+
+
+def checkout_aoi(root: Path, resolved: Resolved, *, runner=subprocess.run, remote: str | None = None) -> Path:
+    """解決済み SHA を `.localci/aoi` に checkout し、HEAD が一致しなければ失敗する。"""
+    if not SHA_RE.fullmatch(resolved.sha):
+        raise LocalCIError(f"resolved Aoi SHA is not 40 hex digits: {resolved.sha}")
+    dest = root / ".localci" / "aoi"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if not (dest / ".git").exists():
+        if dest.exists():
+            shutil.rmtree(dest)
+        url = remote or f"https://github.com/{resolved.source.repo}"
+        _git(runner, ["git", "clone", "--no-checkout", url, str(dest)], cwd=root, timeout=600)
+    fetch = resolved.how if resolved.how.startswith("refs/") else resolved.sha
+    _git(runner, ["git", "fetch", "--no-tags", "origin", fetch], cwd=dest, timeout=600)
+    _git(runner, ["git", "checkout", "-f", "--detach", resolved.sha], cwd=dest, timeout=180)
+    head = _git(runner, ["git", "rev-parse", "HEAD"], cwd=dest, timeout=60).stdout.strip().lower()
+    if head != resolved.sha:
+        raise LocalCIError(f"Aoi checkout {head} does not match resolved {resolved.sha}")
+    return dest
+
+
+def overlay_nagoyaction(aoi: Path, root: Path, *, runner=subprocess.run) -> None:
+    """このリポジトリの commit 済み tree を Aoi の nagoyaction/ に重ね、tree が一致することを確かめる。"""
+    dest = aoi / "nagoyaction"
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+    out = _git(runner, ["git", "archive", "HEAD"], cwd=root, timeout=120, text=False)
+    blob = out.stdout if isinstance(out.stdout, bytes) else (out.stdout or "").encode()
+    try:
+        with tarfile.open(fileobj=io.BytesIO(blob), mode="r:") as tar:
+            try:
+                tar.extractall(dest, filter="data")
+            except TypeError:
+                tar.extractall(dest)
+    except (tarfile.TarError, OSError) as exc:
+        raise LocalCIError(f"git archive extract failed: {exc}") from exc
+    _git(runner, ["git", "add", "-A", "nagoyaction"], cwd=aoi, timeout=120)
+    tree = _git(runner, ["git", "write-tree", "--prefix=nagoyaction/"], cwd=aoi, timeout=60).stdout.strip()
+    expected = _git(runner, ["git", "rev-parse", "HEAD^{tree}"], cwd=root, timeout=60).stdout.strip()
+    if tree != expected:
+        raise LocalCIError(f"nagoyaction overlay {tree} does not match HEAD^{{tree}} {expected}")
+
+
+def child_pytest_env(cwd: Path) -> dict:
+    env = git_env()
+    plugin_root = cwd if (cwd / "nagoyaction.py").is_file() else cwd / "nagoyaction"
+    env["PYTHONPATH"] = str(plugin_root) + os.pathsep + env.get("PYTHONPATH", "")
+    return env
+
+
+def failed_pytest_nodes(text: str) -> list[str]:
+    return _FAILED_NODE.findall(text)
+
+
+def _batch_outcomes(checks: list[Check], returncode: int, detail: str, inputs: list[dict],
+                    keep_going: bool) -> dict[str, Outcome]:
+    nodeids = [check.target for check in checks]
+    by_node: dict[str, Outcome] = {}
+    def failed_detail(node: str, body: str) -> str:
+        text = f"failed {node}"
+        if body:
+            return text + "\n" + body
+        return text
+
+    if returncode == 0:
+        for index, check in enumerate(checks):
+            by_node[check.id] = Outcome("pass", "", inputs if index == 0 else [])
+        return by_node
+    failed = [node for node in failed_pytest_nodes(detail) if node in nodeids]
+    if not failed:
+        for index, check in enumerate(checks):
+            by_node[check.id] = Outcome(
+                "fail", failed_detail(check.target, detail) if index == 0 else "failed", inputs if index == 0 else [],
+            )
+        return by_node
+    if keep_going:
+        attached = False
+        failed_set = set(failed)
+        for check in checks:
+            if check.target in failed_set:
+                by_node[check.id] = Outcome(
+                    "fail", failed_detail(check.target, detail) if not attached else check.target, inputs if not attached else [],
+                )
+                attached = True
+            else:
+                by_node[check.id] = Outcome("pass", "", [])
+        return by_node
+    first = failed[0]
+    seen = False
+    for check in checks:
+        if check.target == first:
+            by_node[check.id] = Outcome("fail", failed_detail(first, detail), inputs)
+            seen = True
+        elif seen:
+            by_node[check.id] = Outcome("fail", "not run", [])
+        else:
+            by_node[check.id] = Outcome("pass", "", [])
+    return by_node
+
+
+def run_pytest_batch(checks: list[Check], round_seed: int, *, cwd: Path, prefix: list[str],
+                     keep_going: bool, runner=subprocess.run) -> dict[str, Outcome]:
+    """同じシャードの pytest を 1 プロセスで実行し、ノードごとに round seed から差し替える。"""
+    handle = tempfile.NamedTemporaryFile(prefix="localci-inputs-", suffix=".log", delete=False)
+    log = Path(handle.name)
+    handle.close()
+    cmd = [*prefix, "-q", "--tb=line", "-p", "nagoyaction", "--localci-round-seed", str(round_seed)]
+    if not keep_going:
+        cmd.append("-x")
+    cmd.extend(check.target for check in checks)
+    try:
+        out = runner(cmd, cwd=cwd, capture_output=True, text=True, check=False, timeout=900, env=child_pytest_env(cwd))
+    except (OSError, subprocess.SubprocessError) as exc:
+        inputs = _read_input_log(log)
+        log.unlink(missing_ok=True)
+        return {check.id: Outcome("fail", str(exc) if index == 0 else "not run", inputs if index == 0 else [])
+                for index, check in enumerate(checks)}
+    inputs = _read_input_log(log)
+    log.unlink(missing_ok=True)
+    detail = "\n".join(part for part in ((out.stdout or ""), (out.stderr or "")) if part).strip()
+    return _batch_outcomes(checks, out.returncode, detail, inputs, keep_going)
+
+
+def collect_aoi_tests(aoi: Path, runner=subprocess.run) -> list[str]:
+    if shutil.which("uv") is None:
+        raise LocalCIError(
+            "uv が PATH に無いので Aoi の tests/ を実行できない。"
+            "--self-tests で tests/test_localci.py だけ実行できる"
+        )
+    cmd = [*AOI_PYTEST_PREFIX, "--collect-only", "-q", "nagoyaction/tests"]
+    try:
+        out = runner(cmd, cwd=aoi, capture_output=True, text=True, check=False, timeout=300, env=child_pytest_env(aoi))
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise LocalCIError(f"Aoi のテスト収集に失敗した: {exc}") from exc
+    detail = "\n".join(part for part in ((out.stdout or ""), (out.stderr or "")) if part).strip()
+    if out.returncode != 0:
+        raise LocalCIError(f"Aoi のテスト収集に失敗した: {detail}")
+    nodeids = parse_collect_only(out.stdout or "")
+    if not nodeids:
+        raise LocalCIError(f"Aoi のテスト収集が空だった: {detail}")
+    return nodeids
+
+
+def workflow_checks(root: Path) -> tuple[list[Check], list[str]]:
+    limits: list[str] = []
+    checks: list[Check] = []
+    for source in sources_for(root):
+        checks.append(Check(f"resolve:{source.repo}", "resolve", source.repo, repo=source.repo))
+    files = workflow_files(root)
+    if not files:
+        limits.append("workflow ファイルがない")
+    for path in files:
+        rel = str(path.relative_to(root))
+        checks.append(Check(f"actionlint:{rel}", "actionlint", rel, file=rel))
+    for item in workflow_uses(root):
+        ident = f"pin:{item['file']}:{item['line']}:{item['raw']}"
+        checks.append(Check(ident, "pin", item["raw"], file=item["file"], ref=item["ref"], repo=item["repo"]))
+    return checks, limits
+
+
+def full_suite(pytest_paths: list[str] | None, skip_pytest: bool, self_tests: bool) -> bool:
+    return not skip_pytest and not self_tests and not pytest_paths
+
+
+def prepare_pytest(root: Path, *, pytest_paths: list[str] | None, skip_pytest: bool, self_tests: bool,
+                   aoi_ref: str, token: str, runner, opener, emit) -> tuple[list[Check], list[str], Path, list[str], Resolved | None]:
+    """検査一覧、pytest の cwd、コマンド前置、checkout 済みの Aoi 解決結果を返す。"""
+    if not full_suite(pytest_paths, skip_pytest, self_tests):
+        paths = pytest_paths
+        if self_tests and not paths:
+            paths = ["tests/test_localci.py"]
+        checks, limits = build_checks(root, pytest_paths=paths, skip_pytest=skip_pytest, runner=runner)
+        return checks, limits, root, [sys.executable, "-m", "pytest"], None
+    source = next(item for item in SOURCES if item.key == "aoi")
+    ref = aoi_ref or os.environ.get("AOI_REF_INPUT", "")
+    resolved = resolve_source(source, ref, token=token, runner=runner, opener=opener)
+    emit(f"Aoi {resolved.sha} from {resolved.how} (repository id {resolved.repository_id})")
+    aoi = checkout_aoi(root, resolved, runner=runner)
+    overlay_nagoyaction(aoi, root, runner=runner)
+    emit(f"Aoi checkout {aoi} HEAD {resolved.sha}")
+    nodeids = collect_aoi_tests(aoi, runner)
+    checks, limits = workflow_checks(root)
+    checks.extend(Check(f"pytest:{nodeid}", "pytest", nodeid) for nodeid in nodeids)
+    return checks, limits, aoi, list(AOI_PYTEST_PREFIX), resolved
+
+
+def build_checks(root: Path, *, pytest_paths: list[str] | None, skip_pytest: bool,
+                 runner=subprocess.run) -> tuple[list[Check], list[str]]:
+    checks, limits = workflow_checks(root)
+    if not skip_pytest:
+        paths = pytest_paths or ["tests"]
+        existing = []
+        for path in paths:
+            candidate = Path(path)
+            if not candidate.is_absolute():
+                candidate = root / path
+            if candidate.exists():
+                existing.append(str(path))
+            else:
+                limits.append(f"pytest path がない: {path}")
+        if existing:
+            nodeids, extra = collect_pytest(existing, root, runner)
+            limits.extend(extra)
+            for nodeid in nodeids:
+                checks.append(Check(f"pytest:{nodeid}", "pytest", nodeid))
+    return checks, limits
+
+
+class Session:
+    def __init__(self, root: Path, *, token: str = "", strict: bool = False,
+                 runner=subprocess.run, opener=urllib.request.urlopen,
+                 actionlint: Path | None | str = "auto",
+                 aoi_resolved: Resolved | None = None, aoi_ref: str = "", cache: Path | None = None,
+                 best_effort: bool = False):
+        self.root = root
+        # best effort: できない検査は fail でなく skip にする。GitHub Actions では常に無効。
+        self.best_effort = best_effort and not running_in_github_actions()
+        self.offline = ""  # GitHub が応答しなかった理由。入ったら、以降は問い合わせない
+        self.unasked: dict[str, str] = {}  # repo → 最新リリースを聞けなかった理由
+        self.cache = cache or root / ".localci"  # actionlint binary + record
+        self.token = token
+        self.strict = strict
+        self.runner = runner
+        self.opener = opener
+        self.actionlint = actionlint
+        self.aoi_resolved = aoi_resolved
+        self.aoi_ref = aoi_ref
+        self.resolved: dict[str, Resolved] = {}
+        self.releases: dict[str, tuple[str, str] | None] = {}
+        self.shellcheck = shellcheck_path()
+        self.actionlint_record: ActionlintRecord | None = None
+
+    def prepare_actionlint(self) -> ActionlintRecord | None:
+        if self.actionlint_record is not None:
+            return self.actionlint_record
+        if self.actionlint is None:
+            return None
+        if isinstance(self.actionlint, Path):
+            self.actionlint_record = ActionlintRecord("", "", "", self.actionlint, "path")
+            return self.actionlint_record
+        try:
+            record = ensure_actionlint(self.cache, token=self.token, opener=self.opener)
+            if record.via == "go":
+                if not record.tag:
+                    raise LocalCIError("actionlint tag was not resolved")
+                if shutil.which("go") is None:
+                    raise LocalCIError(f"actionlint {record.tag} の取得に失敗し、go も PATH に無い")
+        except LocalCIError as exc:
+            if not self.best_effort:
+                raise
+            if isinstance(exc, Unreachable):
+                self.offline = str(exc)
+            record = local_actionlint(self.cache, str(exc))
+        self.actionlint_record = record
+        return record
+
+    def execute(self, check: Check) -> Outcome:
+        if check.kind == "resolve":
+            return self._resolve(check)
+        if check.kind == "pin":
+            return self._pin(check)
+        if check.kind == "actionlint":
+            return self._actionlint(check)
+        raise LocalCIError(f"unknown check {check.kind}")
+
+    def _resolve(self, check: Check) -> Outcome:
+        source = next(s for s in sources_for(self.root) if s.repo == check.repo)
+        if source.key == "aoi" and self.aoi_resolved is not None:
+            item = self.aoi_resolved
+        else:
+            ref = ""
+            if source.key == "aoi":
+                ref = self.aoi_ref or os.environ.get("AOI_REF_INPUT", "")
+            item = resolve_source(source, ref, token=self.token, runner=self.runner, opener=self.opener)
+        self.resolved[source.repo] = item
+        return Outcome("pass", f"{item.sha} from {item.how} (repository id {item.repository_id})", [])
+
+    def _release(self, repo: str) -> tuple[str, str] | None:
+        if repo not in self.releases:
+            self.releases[repo] = latest_release(repo, token=self.token, opener=self.opener, runner=self.runner)
+        return self.releases[repo]
+
+    def _latest(self, repo: str) -> tuple[tuple[str, str] | None, str]:
+        """（最新リリース, 聞けなかった理由）。best effort でなければ、聞けないときは例外のまま。"""
+        if not self.best_effort:
+            return self._release(repo), ""
+        if self.offline:  # 理由は最初の 1 回に出した
+            return None, "GitHub に届かない"
+        if why := self.unasked.get(repo, ""):
+            return None, why
+        try:
+            return self._release(repo), ""
+        except LocalCIError as exc:
+            if isinstance(exc, Unreachable):
+                self.offline = str(exc)
+            self.unasked[repo] = str(exc)
+            return None, str(exc)
+
+    def _pin(self, check: Check) -> Outcome:
+        latest, why = self._latest(check.repo)
+        if why:  # 手元で分かるのは SHA ピンかどうかまで
+            kind = {"major": "動くメジャータグ", "unpinned": "SHA ピンではない"}.get(classify_pin(check.ref, None, check.repo), "SHA ピン")
+            return Outcome("skip", f"{check.repo}@{check.ref or '(none)'}: {kind}。最新版と比べていない（{why}）", [])
+        status = classify_pin(check.ref, latest, check.repo)
+        probe = substitute("sha_probe", "0" * 40, lambda rng: f"{rng.getrandbits(160):040x}")
+        latest_sha = latest[1] if latest else ""
+        if latest_sha and probe == latest_sha:
+            probe = substitute("sha_probe_retry", "f" * 40, lambda rng: f"{rng.getrandbits(160):040x}")
+        if latest_sha and classify_pin(probe, latest, check.repo) == "match":
+            raise LocalCIError("random sha probe matched the latest release")
+        if latest is None and status == "major":
+            detail = f"{check.repo}@{check.ref} is a moving major tag; no release to compare"
+        elif latest is None:
+            detail = f"{check.repo}@{check.ref or '(none)'} has no release tag; not compared"
+        elif status == "match":
+            detail = f"{check.repo}@{check.ref} matches {latest[0]}"
+        elif status == "outdated":
+            detail = f"{check.repo}@{check.ref} is outdated; latest {latest[0]} is {latest[1]}"
+        elif status == "major":
+            detail = f"{check.repo}@{check.ref} is a moving major tag; latest {latest[0]} is {latest[1]}"
+        else:
+            detail = f"{check.repo}@{check.ref or '(none)'} is not a SHA pin; latest {latest[0]} is {latest[1]}"
+        failed = pin_fails(status, self.strict)
+        return Outcome("fail" if failed else "pass", detail, [])
+
+    def _actionlint(self, check: Check) -> Outcome:
+        record = self.prepare_actionlint()
+        if record is not None and record.via == "none":
+            return Outcome("skip", f"actionlint を使えないので検査していない（{record.note}）", [])
+        binary = None if record is None else record.binary
+        go_ref = record.tag if record is not None and record.via == "go" else None
+        argv = actionlint_argv(binary, [str(self.root / check.target)], self.shellcheck, go_ref=go_ref)
+        try:
+            out = self.runner(argv, cwd=self.root, capture_output=True, text=True, check=False, timeout=180)
+        except (OSError, subprocess.SubprocessError) as exc:
+            return Outcome("fail", str(exc), [])
+        detail = "\n".join(part for part in ((out.stdout or ""), (out.stderr or "")) if part).strip()
+        tool = "shellcheck on" if self.shellcheck else "shellcheck off"
+        if out.returncode == 0:
+            return Outcome("pass", f"actionlint ok ({tool})", [])
+        return Outcome("fail", detail or f"actionlint exit {out.returncode} ({tool})", [])
+
+
+def iter_work(shard: list[Check], coalesce_pytest: bool):
+    """非 pytest は 1 件ずつ。pytest はシャード内を 1 プロセスにまとめる。"""
+    if not coalesce_pytest:
+        for check in shard:
+            yield [check]
+        return
+    pytest_checks = [check for check in shard if check.kind == "pytest"]
+    emitted = False
+    for check in shard:
+        if check.kind == "pytest":
+            if not emitted:
+                yield pytest_checks
+                emitted = True
+            continue
+        yield [check]
+
+
+def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going: bool, emit,
+             execute_pytest=None) -> PlanReport:
+    reports: list[RoundReport] = []
+    stopped = False
+    total = len(shards)
+    for number, shard in enumerate(shards, 1):
+        rseed = mix_seed(master_seed, "round", number)
+        ids = [c.id for c in shard]
+        emit(f"=== round {number}/{total} seed={rseed} master={master_seed} checks={len(shard)} ===")
+        for ident in ids:
+            emit(f"  - {ident}")
+        if not ids:
+            emit("  (empty shard)")
+        failed_check = None
+        lines: list[str] = []
+
+        def note(check: Check, outcome: Outcome) -> str | None:
+            for item in outcome.inputs:
+                text = f"    inputs: {item['name']} {item['fixed']} -> {item['value']}"
+                lines.append(text)
+                emit(text)
+            mark = "pass" if outcome.ok else outcome.status
+            line = f"    [{mark}] {outcome.detail.splitlines()[0] if outcome.detail else check.kind}"
+            lines.append(line)
+            emit(line)
+            if outcome.ok or outcome.status == "skip":  # skip: 検査できなかった。失敗ではない
+                return None
+            if outcome.detail and "\n" in outcome.detail:
+                emit(outcome.detail)
+            return check.id
+
+        for group in iter_work(shard, execute_pytest is not None):
+            if failed_check is not None and not keep_going:
+                break
+            if execute_pytest is not None and group and group[0].kind == "pytest":
+                for check in group:
+                    emit(f"  > {check.id}")
+                try:
+                    outcomes = execute_pytest(group, rseed, keep_going)
+                except (LocalCIError, OSError, urllib.error.URLError, subprocess.SubprocessError) as exc:
+                    outcomes = {check.id: Outcome("fail", str(exc) if index == 0 else "not run", [])
+                                for index, check in enumerate(group)}
+                for check in group:
+                    outcome = outcomes.get(check.id) or Outcome("fail", "not run", [])
+                    found = note(check, outcome)
+                    if found is not None and failed_check is None:
+                        failed_check = found
+                    if failed_check is not None and not keep_going:
+                        break
+                continue
+            check = group[0]
+            emit(f"  > {check.id}")
+            cseed = mix_seed(rseed, check.id)
+            try:
+                with use_seed(cseed):
+                    outcome = execute(check, cseed)
+                    inputs = take_substitutions()
+                    inputs.extend(outcome.inputs)
+                    outcome = Outcome(outcome.status, outcome.detail, inputs)
+            except (LocalCIError, OSError, urllib.error.URLError, subprocess.SubprocessError) as exc:
+                outcome = Outcome("fail", str(exc), take_substitutions())
+            found = note(check, outcome)
+            if found is not None and failed_check is None:
+                failed_check = found
+        passed = failed_check is None
+        reports.append(RoundReport(number, rseed, ids, passed, failed_check, lines))
+        if passed:
+            skipped = sum(line.startswith("    [skip]") for line in lines)
+            emit(f"[pass] round {number}/{total}" + (f"（{skipped}/{len(ids)} 件は skip）" if skipped else ""))
+        else:
+            emit(f"[fail] round {number}/{total} seed={rseed}")
+            emit("shard:")
+            for ident in ids:
+                emit(f"  - {ident}")
+        completed = len(reports)
+        passed_n = sum(1 for r in reports if r.passed)
+        emit(confidence_line(passed_n, total, completed, stopped=not passed and not keep_going))
+        if not passed and not keep_going:
+            stopped = True
+            break
+    return PlanReport(master_seed, reports, stopped)
+
+
+def _emit_print(text: str) -> None:
+    print(text, flush=True)
+
+
+LINT_KINDS = ("actionlint", "pin")  # `lint`: workflow checks only — no SHA resolution, no pytest, no Aoi checkout
+
+
+def lint_cache() -> Path:
+    """Where `lint` keeps actionlint and its record, so linting another repository writes nothing into it."""
+    return Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "nagoyaction" / "localci"
+
+
+def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, strict: bool,
+              pytest_paths: list[str] | None, skip_pytest: bool, env_file: Path | None,
+              self_tests: bool = False, aoi_ref: str = "", kinds: tuple[str, ...] | None = None, cache: Path | None = None,
+              best_effort: bool = False,
+              token: str | None = None, runner=subprocess.run, opener=urllib.request.urlopen,
+              emit=_emit_print) -> int:
+    master = seed if seed is not None else random.SystemRandom().randrange(1, 2**31)
+    token = github_token() if token is None else token
+    emit(f"localci seed={master}")
+    checks, limits, pytest_cwd, pytest_prefix, aoi_resolved = prepare_pytest(
+        root, pytest_paths=pytest_paths, skip_pytest=skip_pytest, self_tests=self_tests,
+        aoi_ref=aoi_ref, token=token, runner=runner, opener=opener, emit=emit,
+    )
+    if kinds is not None:
+        checks = [check for check in checks if check.kind in kinds]
+    shards = split_shards(checks, repeat, master)
+    shellcheck = shellcheck_path()
+    emit(f"localci seed={master} checks={len(checks)} rounds={repeat}")
+    emit("shellcheck: " + (f"actionlint が {shellcheck} を使う" if shellcheck else "PATH に無いので使わない"))
+    if limits:
+        emit("limits:")
+        for item in limits:
+            emit(f"  - {item}")
+    session = Session(
+        root, token=token, strict=strict, runner=runner, opener=opener,
+        aoi_resolved=aoi_resolved, aoi_ref=aoi_ref, cache=cache, best_effort=best_effort,
+    )
+    actionlint_record = None
+    if any(check.kind == "actionlint" for check in checks):
+        actionlint_record = session.prepare_actionlint()
+        if actionlint_record is not None and actionlint_record.tag:
+            emit(format_actionlint_line(actionlint_record))
+        if actionlint_record is not None and actionlint_record.note:
+            emit(format_best_effort_line(actionlint_record))
+
+    def execute(check: Check, cseed: int) -> Outcome:
+        del cseed
+        return session.execute(check)
+
+    def execute_pytest(group: list[Check], rseed: int, going: bool) -> dict[str, Outcome]:
+        return run_pytest_batch(group, rseed, cwd=pytest_cwd, prefix=pytest_prefix, keep_going=going, runner=runner)
+
+    report = run_plan(
+        shards=shards, master_seed=master, execute=execute, keep_going=keep_going, emit=emit,
+        execute_pytest=None if skip_pytest else execute_pytest,
+    )
+    recorded = list(session.resolved.values())
+    path = env_file or (root / ".localci" / "refs.env")
+    updates: list[tuple[str, str]] = []
+    header = None
+    drop: tuple[str, ...] = ()
+    if recorded:
+        updates.extend(env_pairs(recorded))
+        header = _ENV_HEADER
+        emit(f"refs: {path}")
+        emit(format_env(recorded).rstrip())
+    if actionlint_record is not None and actionlint_record.tag:
+        updates.extend(actionlint_pairs(actionlint_record))
+        if not actionlint_record.sha256:
+            drop = ("ACTIONLINT_SHA256",)
+        emit(format_actionlint_line(actionlint_record))
+    if updates:
+        rewrite_env_file(path, updates, header=header, drop=drop)
+    summary = os.environ.get("GITHUB_STEP_SUMMARY", "")
+    if summary and (recorded or (actionlint_record is not None and actionlint_record.tag)):
+        append_text(Path(summary), format_run_summary(recorded, actionlint_record))
+    passed = report.passed_rounds
+    emit("=== summary ===")
+    emit(f"seed: {master}")
+    emit(confidence_line(passed, repeat, len(report.rounds), report.stopped))
+    if skipped := sum(line.startswith("    [skip]") for r in report.rounds for line in r.lines):
+        nothing = skipped == sum(len(r.shard) for r in report.rounds)
+        emit(f"⚠️ best effort: {skipped} 件は検査できず [skip]" + ("。何も確かめていない" if nothing else "") + "。失敗にするなら --strict")
+    if report.stopped or any(not r.passed for r in report.rounds):
+        return 1
+    return 0
+
+
+def run_resolve(root: Path, *, aoi_ref: str, env_file: Path | None, github_output: bool,
+                token: str | None = None, runner=subprocess.run, opener=urllib.request.urlopen,
+                emit=_emit_print) -> int:
+    token = github_token() if token is None else token
+    if not aoi_ref:
+        aoi_ref = os.environ.get("AOI_REF_INPUT", "")
+    resolved = resolve_sources(root, aoi_ref, token=token, runner=runner, opener=opener)
+    path = env_file or (root / ".localci" / "refs.env")
+    write_env_file(path, resolved)
+    text = format_env(resolved).rstrip()
+    emit(text)
+    if github_output:
+        output = os.environ.get("GITHUB_OUTPUT", "")
+        if not output:
+            raise LocalCIError("GITHUB_OUTPUT is not set")
+        with open(output, "a", encoding="utf-8") as fh:
+            fh.write(format_github_output(resolved))
+        summary = os.environ.get("GITHUB_STEP_SUMMARY", "")
+        if summary:
+            mode = provenance_mode(os.environ.get("EVENT_NAME", ""), os.environ.get("GITHUB_REF", ""))
+            with open(summary, "a", encoding="utf-8") as fh:
+                fh.write(format_step_summary(resolved, mode))
+    return 0
+
+
+def _localci_parser(prog: str | None = None) -> argparse.ArgumentParser:
+    """prog: `nagoyaction actionlint` shows `lint` as itself and `run` as `… --all`."""
+    parser = argparse.ArgumentParser(prog=prog, description="ワークフローとテストを手元で検査する（GitHub Actions と同じ解決）")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    lint = sub.add_parser("lint", prog=prog, help="🔍 actionlint と uses: のピン検査だけ（SHA 解決・pytest・Aoi checkout なし）")
+    lint.add_argument("--strict", action="store_true",
+                      help="古い SHA ピンと、検査できなかったもの（actionlint を取得できない、GitHub に届かない）を失敗にする。setup 以外の actions/* の vN は許す")
+    lint.add_argument("--seed", type=int, default=None, help="入力の差し替えを再現する")
+    lint.add_argument("--root", type=Path, default=None, help="検査するリポジトリ。既定は今いるディレクトリ")
+    lint.add_argument("--env-file", type=Path, default=None, help="actionlint の記録の書き先。既定はユーザーキャッシュ（~/.cache/nagoyaction/localci）")
+    run = sub.add_parser("run", prog=f"{prog} --all" if prog else None, help="actionlint、ピン検査、SHA 解決、pytest をシャードして実行する")
+    run.add_argument("--repeat", type=_positive, default=1, help="シャード数。各検査は全ラウンドで一度だけ走る")
+    run.add_argument("--seed", type=int, default=None, help="シャッフルと入力の差し替えを再現する")
+    run.add_argument("--keep-going", action="store_true", help="失敗したあとも残りのラウンドを実行する")
+    run.add_argument("--strict", action="store_true", help="古い SHA ピンを失敗にする。setup 以外の actions/* の vN は許す")
+    run.add_argument("--root", type=Path, default=None)
+    run.add_argument("--pytest", dest="pytest_paths", action="append", default=None,
+                     help="このリポジトリ内の pytest パス。指定すると Aoi は checkout しない")
+    run.add_argument("--self-tests", action="store_true",
+                     help="Aoi を checkout せず tests/test_localci.py だけ実行する")
+    run.add_argument("--skip-pytest", action="store_true")
+    run.add_argument("--aoi-ref", default="", help="Aoi の ref。空なら AOI_REF_INPUT、それも空なら main")
+    run.add_argument("--env-file", type=Path, default=None)
+    resolve = sub.add_parser("resolve", help="参照先リポジトリの main SHA を解決する")
+    resolve.add_argument("--root", type=Path, default=None)
+    resolve.add_argument("--env-file", type=Path, default=None)
+    resolve.add_argument("--github-output", action="store_true")
+    resolve.add_argument("--aoi-ref", default="", help="Aoi の ref。空なら AOI_REF_INPUT、それも空なら main")
+    return parser
+
+
+def _positive(text: str) -> int:
+    try:
+        value = int(text)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("--repeat は 1 以上の整数") from exc
+    if value < 1:
+        raise argparse.ArgumentTypeError("--repeat は 1 以上の整数")
+    return value
+
+
+def localci_main(argv: list[str] | None = None, prog: str | None = None) -> int:
+    if argv is None:
+        argv = sys.argv[1:]
+    if not argv or argv[0] not in {"run", "lint", "resolve", "-h", "--help"}:
+        argv = ["run", *argv]
+    args = _localci_parser(prog).parse_args(argv)
+    root = (args.root or (Path.cwd() if args.cmd == "lint" else Path(__file__).resolve().parent)).resolve()
+    try:
+        if args.cmd == "resolve":
+            return run_resolve(root, aoi_ref=args.aoi_ref, env_file=args.env_file, github_output=args.github_output)
+        if args.cmd == "lint":
+            cache = lint_cache()
+            return run_local(root, repeat=1, seed=args.seed, keep_going=True, strict=args.strict, pytest_paths=None,
+                             skip_pytest=True, env_file=args.env_file or cache / "refs.env", kinds=LINT_KINDS, cache=cache,
+                             best_effort=not args.strict)
+        return run_local(
+            root, repeat=args.repeat, seed=args.seed, keep_going=args.keep_going, strict=args.strict,
+            pytest_paths=args.pytest_paths, skip_pytest=args.skip_pytest, env_file=args.env_file,
+            self_tests=args.self_tests, aoi_ref=args.aoi_ref,
+        )
+    except LocalCIError as exc:
+        print(f"localci: {exc}", file=sys.stderr)
+        return 1
+
+
+# ====================================================================================================
+# 🎲 pytest プラグイン: 1 ラウンドのシャードと seed つきの差し替え（pytest -p nagoyaction）（旧 localci_pytest.py）
+# pytest plugin: shard one round, and seeded input substitution.
+#
+#   pytest -p nagoyaction --localci-repeat 10 --localci-round 3 --localci-seed 7
+#
+# `--localci-round` を省略すると絞らない。`--localci-seed` があるときは
+# `substitute` が固定値ではなく seed からの値を返す。
+# `--localci-round-seed` は各テストの直前に `mix_seed(round, "pytest:" + nodeid)`
+# で乱数を置き直す。同じシャードの複数ノードを 1 プロセスで実行するときに使う。
+# ====================================================================================================
+
+def pytest_addoption(parser):
+    parser.addoption("--localci-repeat", type=int, default=None)
+    parser.addoption("--localci-round", type=int, default=None)
+    parser.addoption("--localci-seed", default=None)
+    parser.addoption("--localci-round-seed", default=None)
+    parser.addoption("--localci-activate", action="store_true")
+
+
+def pytest_configure(config):
+    global _active_rng
+    raw = config.getoption("localci_seed")
+    if raw is None or raw == "":
+        return
+    config._localci_previous_rng = _active_rng  # pytest を import せずに、終わりに元へ戻す
+    _active_rng = random.Random(int(raw))
+
+
+def pytest_unconfigure(config):
+    global _active_rng
+    if hasattr(config, "_localci_previous_rng"):
+        _active_rng = config._localci_previous_rng
+
+
+def pytest_runtest_setup(item):
+    global _active_rng
+    raw = item.config.getoption("localci_round_seed")
+    if raw is None or raw == "":
+        return
+    seed = mix_seed(int(raw), "pytest:" + item.nodeid)
+    _substitutions.clear()
+    _active_rng = random.Random(seed)
+
+
+def pytest_collection_modifyitems(config, items):
+    repeat = config.getoption("localci_repeat")
+    round_no = config.getoption("localci_round")
+    raw_seed = config.getoption("localci_seed")
+    if not repeat or round_no is None or raw_seed is None or raw_seed == "":
+        return
+    ids = [item.nodeid for item in items]
+    chosen = shard_for_round(ids, int(repeat), int(round_no), int(raw_seed))
+    order = {node: index for index, node in enumerate(chosen)}
+    selected = [item for item in items if item.nodeid in order]
+    selected.sort(key=lambda item: order[item.nodeid])
+    deselected = [item for item in items if item.nodeid not in order]
+    items[:] = selected
+    if deselected:
+        config.hook.pytest_deselected(items=deselected)
+
+
+def pytest_runtest_teardown(item, nextitem):
+    del item, nextitem
+    log = os.environ.get("LOCALCI_INPUT_LOG", "")
+    notes = take_substitutions()
+    if not log or not notes:
+        return
+    with open(log, "a", encoding="utf-8") as fh:
+        for note in notes:
+            fixed = str(note["fixed"]).replace("\t", " ").replace("\n", " ")
+            value = str(note["value"]).replace("\t", " ").replace("\n", " ")
+            fh.write(f"{note['name']}\t{fixed}\t{value}\n")
+
+
+# ====================================================================================================
+# 🚦 publication-gate: 公開前の証拠の検査と記録（オフライン）（旧 publication_gate.py）
+# Offline publication gate and same-execution evidence recorder (stdlib only).
+#
+# Identity observation belongs to the GHI adapter; research rules belong to the
+# caller. A saved gate report is evidence, never a bearer token authorizing writes.
+# ====================================================================================================
+
+def _pairs(pairs):
+    obj = {}
+    for key, value in pairs:
+        if key in obj:
+            raise ValueError(f"duplicate JSON key: {key}")
+        obj[key] = value
+    return obj
+
+
+def _constant(value):
+    raise ValueError(f"non-finite JSON: {value}")
+
+
+def loads(text):
+    value = json.loads(text, object_pairs_hook=_pairs, parse_constant=_constant)
+    # This also rejects overflow literals such as 1e999, including nested ones.
+    json.dumps(value, allow_nan=False)
+    return value
+
+
+def read_json(path):
+    return loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_json(path, value):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+    temp = path.with_name(path.name + ".tmp")
+    temp.write_text(text, encoding="utf-8")
+    temp.replace(path)
+
+
+def safe_path(root, name):
+    root = Path(root).resolve()
+    rel = Path(name)
+    if rel.is_absolute() or not rel.parts or any(p in {"..", "."} for p in rel.parts):
+        raise ValueError(f"unsafe evidence path: {name}")
+    path = root
+    for part in rel.parts:
+        path /= part
+        if path.is_symlink():
+            raise ValueError(f"symlink evidence: {name}")
+    if not path.resolve().is_relative_to(root):
+        raise ValueError(f"escaped evidence: {name}")
+    return path
+
+
+def digest(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def identity(root, env=None):
+    value = read_json(safe_path(root, "execution-identity.json"))
+    if not isinstance(value, dict) or value.get("schema") != "nagoyaction-execution/1":
+        raise ValueError("missing execution identity schema")
+    if value.get("mode") != "github_actions" or value.get("observer") != "gh_identity":
+        raise ValueError("unobserved execution identity")
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", value.get("repository", "")):
+        raise ValueError("invalid repository identity")
+    for name in ("run_id", "run_attempt", "workflow_id"):
+        if type(value.get(name)) is not int or value[name] < 1:
+            raise ValueError(f"invalid identity {name}")
+    for name in ("head_sha", "harness_sha", "research_sha", "ghi_sha"):
+        if not re.fullmatch(r"[a-f0-9]{40}", value.get(name, "")):
+            raise ValueError(f"invalid identity {name}")
+    if value["head_sha"] != value["harness_sha"]:
+        raise ValueError("run head does not match harness checkout")
+    if not isinstance(value.get("workflow_path"), str) or not value["workflow_path"]:
+        raise ValueError("missing workflow path")
+    env = os.environ if env is None else env
+    if env.get("GITHUB_ACTIONS") == "true":
+        expected = {"repository": env.get("GITHUB_REPOSITORY"),
+                    "run_id": int(env.get("GITHUB_RUN_ID", "0")),
+                    "run_attempt": int(env.get("GITHUB_RUN_ATTEMPT", "0")),
+                    "head_sha": env.get("GITHUB_SHA")}
+        if any(value[key] != val for key, val in expected.items()):
+            raise ValueError("stale execution identity: repository/run/attempt/SHA")
+    return value
+
+
+def seal(root, stage, names, returncode, env=None):
+    """Called by record_command after the child, including on nonzero exit."""
+    root = Path(root).resolve()
+    identity(root, env)
+    if not re.fullmatch(r"[a-z][a-z0-9_-]*", stage) or type(returncode) is not int:
+        raise ValueError("invalid stage receipt")
+    files = {}
+    for name in names:
+        path = safe_path(root, name)
+        files[name] = digest(path) if path.is_file() else None
+    payload = {"schema": "nagoyaction-stage/1", "stage": stage,
+               "identity_sha256": digest(root / "execution-identity.json"),
+               "returncode": returncode, "files": files}
+    dest = safe_path(root, f"stage-evidence/{stage}.json")
+    if dest.exists():
+        raise ValueError(f"stage evidence already exists: {stage}")
+    write_json(dest, payload)
+    return payload
+
+
+def record_command(root, stage, names, command, runner=subprocess.run):
+    identity(root)
+    if safe_path(root, f"stage-evidence/{stage}.json").exists():
+        raise ValueError("cannot overwrite a previous stage receipt")
+    try:
+        code = runner(command, check=False).returncode
+    except OSError:
+        seal(root, stage, names, 64)
+        raise
+    seal(root, stage, names, code)
+    return code
+
+
+def inspect(root, required_files, env=None):
+    """Authenticate mandatory stage coverage, bytes and the execution binding."""
+    root = Path(root).resolve()
+    observed = identity(root, env)
+    ident_hash = digest(root / "execution-identity.json")
+    hashes, stages = {}, {}
+    for stage, names in required_files.items():
+        path = safe_path(root, f"stage-evidence/{stage}.json")
+        receipt = read_json(path)
+        if (not isinstance(receipt, dict) or receipt.get("schema") != "nagoyaction-stage/1" or receipt.get("stage") != stage
+                or receipt.get("identity_sha256") != ident_hash):
+            raise ValueError(f"stage identity mismatch: {stage}")
+        if type(receipt.get("returncode")) is not int:
+            raise ValueError(f"invalid return code: {stage}")
+        files = receipt.get("files")
+        if not isinstance(files, dict) or not set(names) <= files.keys():
+            raise ValueError(f"incomplete evidence coverage: {stage}")
+        for name, expected in files.items():
+            path = safe_path(root, name)
+            if not isinstance(expected, str) or not path.is_file() or digest(path) != expected:
+                raise ValueError(f"evidence hash mismatch or missing file: {stage}/{name}")
+            hashes[name] = expected
+        stages[stage] = receipt["returncode"]
+    return {"identity": observed, "identity_sha256": ident_hash,
+            "stage_returncodes": stages, "evidence_sha256": hashes}
+
+
+def decide(evidence, checks):
+    """Generic fail-closed gate. All named checks must explicitly pass."""
+    if not checks or any(type(v) is not bool for v in checks.values()):
+        raise ValueError("gate checks must be explicit nonempty booleans")
+    failed = [key for key, ok in checks.items() if not ok]
+    return {"schema": "nagoyaction-publication-gate/1", "allowed": not failed,
+            "status": "allowed" if not failed else "blocked",
+            "failed_checks": failed, "checks": checks, **evidence}
+
+
+def publication_gate_main(argv=None):
+    parser = argparse.ArgumentParser(prog="nagoyaction publication-gate", description="Offline publication gate and same-execution evidence recorder (stdlib only).")
+    parser.add_argument("command", choices=["record"])
+    parser.add_argument("--audit", type=Path, required=True)
+    parser.add_argument("--stage", required=True)
+    parser.add_argument("--evidence", nargs="+", required=True)
+    args, command = parser.parse_known_args(argv)
+    if command[:1] == ["--"]:
+        command = command[1:]
+    if not command:
+        parser.error("child command required after --")
+    try:
+        return record_command(args.audit, args.stage, args.evidence, command)
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        parser.exit(64, f"Invalid stage evidence: {exc}\n")
+
+
+# ====================================================================================================
+# 🪪 ghi-execution: GHI で Actions の実行と checkout を結びつける（読むだけ）（旧 ghi_execution.py）
+# Read-only GHI adapter: bind this Actions attempt and both actual checkouts.
+#
+# GHI is loaded from a pinned separate checkout, not copied or reimplemented.
+# This observer runs in setup; replay, evidence checking and publication are offline.
+# ====================================================================================================
+
+GHI_COMMIT = "fc2c527257b12eb99c00637bbae74f8988fd6bf4"
+GHI_BLOB = "57f96181fecaef0a6f19bf5052b93d9bdcab69c5"
+
+
+def load_ghi(directory):
+    path = Path(directory).resolve() / "gh_identity.py"
+    if path.is_symlink():
+        raise ValueError("GHI source must be a regular file")
+    raw = path.read_bytes()
+    blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+    if blob != GHI_BLOB:
+        raise ValueError("GHI source blob differs from reviewed pin")
+    spec = importlib.util.spec_from_file_location("_aoi_pinned_ghi", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if module.local_identity(cwd=str(path.parent), env={})["sha"] != GHI_COMMIT:
+        raise ValueError("GHI checkout differs from reviewed pin")
+    return module
+
+
+def observe(ghi, harness, research, env):
+    repository = ghi.repo(env["GITHUB_REPOSITORY"])
+    run, attempt = int(env["GITHUB_RUN_ID"]), int(env["GITHUB_RUN_ATTEMPT"])
+    if run < 1 or attempt < 1:
+        raise ValueError("invalid Actions run/attempt")
+    # Do not let GITHUB_SHA mask the separate research checkout's actual SHA.
+    h = ghi.local_identity(cwd=str(harness), env={})
+    r = ghi.local_identity(cwd=str(research), env={})
+    endpoint = f"repos/{repository}/actions/runs/{run}/attempts/{attempt}"
+    data = ghi.request("GET", endpoint, transport="auto", timeout=30)
+    if (type(data.get("id")) is not int or type(data.get("run_attempt")) is not int
+            or data["id"] != run or data["run_attempt"] != attempt
+            or data.get("repository", {}).get("full_name") != repository
+            or data.get("head_sha") != h["sha"] or h["sha"] != env["GITHUB_SHA"]):
+        raise ValueError("GHI observation does not match this run/attempt/checkout")
+    return {"schema": "nagoyaction-execution/1", "mode": "github_actions",
+            "observer": "gh_identity", "ghi_sha": GHI_COMMIT, "ghi_blob": GHI_BLOB,
+            "repository": repository, "run_id": run, "run_attempt": attempt,
+            "workflow_id": data.get("workflow_id"), "workflow_path": data.get("path"),
+            "event": data.get("event"), "head_sha": data["head_sha"],
+            "harness_sha": h["sha"], "research_sha": r["sha"],
+            "observation_scope": "identity_only_not_final_workflow_success"}
+
+
+def ghi_execution_main(argv=None):
+    parser = argparse.ArgumentParser(prog="nagoyaction ghi-execution", description="Read-only GHI adapter: bind this Actions attempt and both actual checkouts.")
+    parser.add_argument("--ghi", type=Path, required=True)
+    parser.add_argument("--harness", type=Path, default=Path.cwd())
+    parser.add_argument("--research", type=Path, required=True)
+    parser.add_argument("--audit", type=Path, required=True)
+    args = parser.parse_args(argv)
+    try:
+        if args.audit.exists():
+            raise ValueError("audit directory must be new for each execution")
+        ghi = load_ghi(args.ghi)
+        result = observe(ghi, args.harness.resolve(), args.research.resolve(), os.environ)
+        args.audit.mkdir(parents=True)
+        write_json(args.audit / "execution-identity.json", result)
+        identity(args.audit)
+    except Exception as exc:
+        parser.exit(64, f"Execution identity unavailable: {exc}\n")
+    print("GHI execution identity captured; no research source was fetched")
+    return 0
+
+# ====================================================================================================
+# 🧭 入口（サブコマンドを各節の *_main に渡す）
+# ====================================================================================================
+
+
 def actionlint(*argv: str) -> int:
     """actionlint + `uses:` pin checks of .github/workflows; --all = the whole localci run (SHA resolution, pytest in Aoi).
     Same as `nagoyaction actionlint ...`: actionlint("--strict"), actionlint("--all", "--repeat", "10")."""
-    import localci  # only when asked, so pipeline commands never load it
     rest = list(argv)
     if "--all" in rest:
         rest.remove("--all")
-        return localci.main(["run", *rest], prog="nagoyaction actionlint")
-    return localci.main(["lint", *rest], prog="nagoyaction actionlint")
+        return localci_main(["run", *rest], prog="nagoyaction actionlint")
+    return localci_main(["lint", *rest], prog="nagoyaction actionlint")
 
 
 def hub(*argv: str) -> int:
     """Local forge (Gitea / Forgejo): hub("status"), hub("dial", "mirror"). Same as `nagoyaction hub ...` and `olnm hub ...`."""
-    import local_forge  # only when asked, so pipeline commands never load it
-    return local_forge.main(list(argv), prog="nagoyaction hub")
+    return local_forge_main(list(argv), prog="nagoyaction hub")
 
 
 linkcheck = SimpleNamespace(links_in=links_in, classify=_link_classify, resolve=_link_resolve, tracked_files=tracked_files, check_local=check_local, check_remote=check_remote, check_external=check_external, summarize=_link_summarize, unverified_count=_link_unverified_count, exit_code=_link_exit_code, LinkcheckError=LinkcheckError, main=_linkcheck_main)  # Python: nagoyaction.linkcheck.check_local(...)
-DELEGATES = {"actionlint": actionlint, "hub": hub, "linkcheck": lambda *argv: _linkcheck_main(list(argv))}
+DELEGATES = {"actionlint": actionlint, "hub": hub, "linkcheck": lambda *argv: _linkcheck_main(list(argv)),
+             "localci": lambda *argv: localci_main(list(argv), prog="nagoyaction localci"),
+             "publication-gate": lambda *argv: publication_gate_main(list(argv)),
+             "ghi-execution": lambda *argv: ghi_execution_main(list(argv))}
 DELEGATES_HELP = {
-    "actionlint": "🔍 actionlint と uses: のピン検査（--strict / --all で localci run 全体）。残りの引数を localci に渡す",
-    "hub": "🏠 ローカル GitHub（Gitea / Forgejo）の操作。残りの引数を local_forge に渡す（例: hub status / hub dial mirror）",
+    "actionlint": "🔍 actionlint と uses: のピン検査（--strict / --all で localci run 全体）",
+    "hub": "🏠 ローカル GitHub（Gitea / Forgejo）の操作（例: hub status / hub dial mirror）",
     "linkcheck": "🔗 Markdown のリンク・画像の参照先を確かめる（このファイルの中。--remote / --external / --json）",
+    "localci": "🧪 ワークフローとテストを手元で検査する（lint / run / resolve。CI の resolve・local-ci ジョブも使う）",
+    "publication-gate": "🚦 公開前の証拠の検査と記録（record --audit DIR --stage NAME --evidence … -- コマンド）",
+    "ghi-execution": "🪪 GHI で Actions の実行と両方の checkout を結びつける（--ghi --research --audit）",
 }
 
 

@@ -23,8 +23,9 @@ ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0",
             # 📝 自作の markdown.py（ページの文章。Python-Markdown の代わり）
             "vendor/markdown/markdown.py": "733ff26f6f2f642f9e5895955af8a7b83d68c962"}
 # destination -> (repository, source)。Aoi の写しは vendor/aoi/<source>。使わない shrink_module.py・polars_min.py などは置かない
-SOURCES = {where: ("myon-bioinformatics/Aoi", where.removeprefix("vendor/aoi/")) for where in (
-    "vendor/aoi/shrink/numpy_min.py", "vendor/aoi/vendor/uv_tool_build.py")}
+SOURCES = {"vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py"),
+           # 🧰 Aoi の vendor/ の共通ビルダーは、兄弟（SakAnalytics・PythDRagoras）と同じく vendor/ の直下
+           "vendor/uv_tool_build.py": ("myon-bioinformatics/Aoi", "vendor/uv_tool_build.py")}
 SOURCES["vendor/fleet_check.py"] = (fleet.PARENT, "fleet_check.py")
 SOURCES["vendor/tools/stdlib_min/plotly_min.py"] = (fleet.PARENT, "tools/stdlib_min/plotly_min.py")
 SOURCES["vendor/markdown/markdown.py"] = ("myon-bioinformatics/markdown", "markdown.py")

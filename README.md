@@ -36,7 +36,7 @@ Team membership and display names are given explicitly in the analysis settings'
 The main columns are listed at the top of `npb/team_season.py`. Rank (`rank`) is a value derived from winning percentage and
 does not reproduce the official tie rules, so ties are marked `rank_tie = true`.
 
-There are also the outlook for remaining games, CS probability, and clinch magic numbers (`npb/season_simulator.py`, [SEASON_SIMULATOR.md](SEASON_SIMULATOR.md)), annual stats auditing (`npb/annual_audit.py`), and synthetic league generation (`npb/synthetic_league.py`).
+There are also the outlook for remaining games, CS probability, and clinch magic numbers (`npb/season_simulator.py`, [docs/season-simulator.md](docs/season-simulator.md)), annual stats auditing (`npb/annual_audit.py`), and synthetic league generation (`npb/synthetic_league.py`).
 
 This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`sakanalytics/`](https://github.com/myon-bioinformatics/Aoi/tree/main/sakanalytics) (see "Relationship with Aoi" below).
 
@@ -65,7 +65,7 @@ sakanalytics 0.5 --lo 0 --hi 1
 sakanalytics 0 --lo 0 --eps -1  # invalid epsilon: exit 2
 ```
 
-The rest of the repository needs Python 3.11+ and [uv](https://docs.astral.sh/uv/). Its only runtime dependency is polars. ortools is optional; exact solving (`npb/season_exact.py`) runs only when `season-requirements.txt` is installed.
+The rest of the repository needs Python 3.11+ and [uv](https://docs.astral.sh/uv/). 📦 There are no runtime dependencies: `sakanalytics.py` is standard library only. 🧮 polars is in the `dev` group, for the internal analyses in `npb/` and `core/`. ortools is optional; exact solving (`npb/season_exact.py`) runs only when `npb/season-requirements.txt` is installed.
 
 ```bash
 git clone https://github.com/myon-bioinformatics/SakAnalytics.git
@@ -87,7 +87,7 @@ Only the generic single file `sakanalytics.py` (and `conftest.py`) sits at the t
 |---|---|
 | `sakanalytics.py` | Generic single file, standard library only (see above) |
 | `npb/team_season.py` | CLI. Team × season metrics (main columns listed at the top) |
-| `npb/season_simulator.py`, `npb/season_exact.py` | Outlook for remaining games (standard library) and optional OR-Tools clinch determination ([SEASON_SIMULATOR.md](SEASON_SIMULATOR.md), [SEASON_SIMULATOR_PLAN.md](SEASON_SIMULATOR_PLAN.md)) |
+| `npb/season_simulator.py`, `npb/season_exact.py` | Outlook for remaining games (standard library) and optional OR-Tools clinch determination ([docs/season-simulator.md](docs/season-simulator.md), [docs/season-simulator-plan.md](docs/season-simulator-plan.md)) |
 | `npb/annual_audit.py` | Auditing annual team tables (integer fields and published digits) |
 | `npb/synthetic_league.py`, `npb/league_laboratory.py` | Synthetic leagues with annual stats fixed first, and experiments on them |
 | `core/neighbors.py` | Descriptive neighbors that don't use results |
@@ -163,7 +163,7 @@ AOI_ROOT=$PWD/.test-deps/aoi uv run --locked pytest -q --junitxml=reports/junit.
 
 - CLIs take paths such as `--cycle-dir` explicitly. Tests receive Aoi only through `AOI_ROOT` and ask Aoi's `aoi_paths.py` for data locations.
 - If `AOI_ROOT` doesn't point to Aoi (no `cycles/`), pytest stops at the start and gives the reason.
-- The only runtime dependency is polars. ortools is optional; exact solving runs only when `season-requirements.txt` is installed, and otherwise those tests are skipped.
+- There are no runtime dependencies; polars (for `npb/` and `core/`) is in the `dev` group. ortools is optional; exact solving runs only when `npb/season-requirements.txt` is installed, and otherwise those tests are skipped.
 - In addition, tests use Aoi at `AOI_ROOT`.
   - Cycle data in `cycles/`.
   - PythDRagoras's `propositions`: `core/proposition_seed_audit.py` and `npb/synthetic_rule_discovery.py` (its directory comes from Aoi's `aoi.py`: `conftest.py` appends `aoi.environment()`'s import paths after this repository; SakAnalytics names no sibling directory).

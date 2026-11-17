@@ -1,7 +1,7 @@
 """SakAnalytics は Aoi の兄弟サブプロジェクト（pythdragoras など）と Aoi の scripts/ を import しない。
 
-使ってよいのは、標準ライブラリ、pyproject の依存（polars）と pytest、任意の ortools
-（season-requirements.txt。入っていなければ exact のテストは skip）、このリポジトリの
+使ってよいのは、標準ライブラリ、pyproject の dev の依存（polars）と pytest、任意の ortools
+（npb/season-requirements.txt。入っていなければ exact のテストは skip）、このリポジトリの
 モジュールだけ。既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の sakanalytics/ でも同じ結果になる。
 """

@@ -3,12 +3,11 @@ name = "sakanalytics"
 version = "0.1.0"
 description = "数字は語る。だが、まだ語りきっていないことがある（Aoi の sakanalytics/ から独立）"
 requires-python = ">=3.11"
-dependencies = [
-    "polars>=2.0.0",
-]
+# 📦 実行時の依存は無い（sakanalytics.py は標準ライブラリだけ）。polars は npb/・core/ の内部解析用で dev グループ。
+dependencies = []
 
 [dependency-groups]
-dev = ["pytest>=9.1.1"]
+dev = ["pytest>=9.1.1", "polars>=2.0.0"]
 stdlib-test = ["pytest>=8"]
 
 [tool.uv]

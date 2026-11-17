@@ -57,9 +57,9 @@ overlap = types.ModuleType('dragowing.overlap')
 overlap.default_conditions = lambda *args: []
 answers = iter([{{'regions': []}}, {{'regions': [1] if {mismatch} else []}}])
 overlap.load_overlap = lambda *args, **kwargs: next(answers)
-records = types.ModuleType('dragowing.records')
+records = types.ModuleType('dragowing.dragowing')
 records.read_jsonl = lambda *args: []
-mock.patch.dict(sys.modules, {{'dragowing.overlap': overlap, 'dragowing.records': records}}).start()
+mock.patch.dict(sys.modules, {{'dragowing.overlap': overlap, 'dragowing.dragowing': records}}).start()
 g['main'] = lambda: g['worker'](types.SimpleNamespace(results=Path({tmp!r}), worker='stdlib', warm_repeats=1))
 """
 # scripts/benchmark_overlap.py の controller: 2 つの backend の JSON が違う

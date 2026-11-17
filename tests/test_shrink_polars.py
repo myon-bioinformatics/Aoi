@@ -115,15 +115,14 @@ def test_min_mode_refuses_when_a_real_package_is_installed():
     assert "入っている" in out.stderr
 
 
-def test_managed_dragowing_copy_does_not_offer_polars():
-    """dist/dragowing_min.py は minpy の stdlib 束ね。load_overlap も polars も入っていない。"""
-    text = (ROOT / "dist" / "dragowing_min.py").read_text(encoding="utf-8")
-    assert "polars" not in text
-    assert "def load_overlap" not in text
-    modules = next(line for line in text.splitlines() if line.startswith("# modules:"))
-    allow = next(line for line in text.splitlines() if line.startswith("# allow:"))
-    assert "overlap" not in modules
-    assert allow.strip() == "# allow:"
+def test_dragowing_single_file_does_not_import_polars():
+    """dragowing/dragowing.py は標準ライブラリだけ。polars・numpy は α の overlap.py（native）にだけある。"""
+    import ast
+    tree = ast.parse((ROOT / "dragowing" / "dragowing.py").read_text(encoding="utf-8"))
+    names = {alias.name.split(".")[0] for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
+    names |= {node.module.split(".")[0] for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module and not node.level}
+    assert not names & {"polars", "numpy"}
+    assert "import polars" in (ROOT / "dragowing" / "overlap.py").read_text(encoding="utf-8")
 
 
 def test_absent_discovers_only_the_c001_surface():
@@ -260,7 +259,7 @@ inject("numpy", "shrink/numpy_min.py")
 inject("polars", "shrink/polars_min.py")
 sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
 from dragowing.overlap import default_conditions, load_overlap
-from dragowing.records import read_jsonl
+from dragowing.dragowing import read_jsonl
 season = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
 rows = read_jsonl(season)
 result = load_overlap(season, default_conditions(read_jsonl(ROOT / "cycles/c001-chunichi/outputs/propositions.jsonl"), rows))

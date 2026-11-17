@@ -1,7 +1,7 @@
 import sys
 
 if __package__:
-    from .cli import main
+    from .dragowing import main
 else:
     # `python <このディレクトリ>/__main__.py` で動かしたとき（PYTHONPATH なし）。
     # このディレクトリをパッケージ dragowing として登録する（conftest.py と同じ。__init__.py は置かない）。
@@ -18,6 +18,6 @@ else:
         _pkg.__spec__ = importlib.machinery.ModuleSpec("dragowing", loader=None, is_package=True)
         _pkg.__spec__.submodule_search_locations = _pkg.__path__
         sys.modules["dragowing"] = _pkg
-    from dragowing.cli import main
+    from dragowing.dragowing import main
 
 sys.exit(main())

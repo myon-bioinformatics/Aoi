@@ -7,7 +7,7 @@ import pytest
 
 import propositions
 from ask import registration_status
-from forms import contingency, format_contingency_cell, logic_lines, render_forms_table, render_item, render_logic, main
+from dragowing.dragowing import contingency, format_contingency_cell, logic_lines, render_forms_table, render_item, render_logic, forms_main as main
 
 LABELS = ("事後構成", "事前登録", "不明")
 
@@ -127,7 +127,7 @@ def test_real_proposition_table_agrees_with_its_forms():
 
 def test_missing_sibling_names_aoi_py(monkeypatch):
     # 兄弟の場所は呼び出し側（Aoi の aoi.py）が入れる。DRAgoWing は探さず、aoi.py を案内して止まる
-    import forms
+    import dragowing.dragowing as forms
     monkeypatch.setitem(sys.modules, "ask", None)
     with pytest.raises(ModuleNotFoundError, match=r"aoi\.py") as caught:
         forms.registration_status({})

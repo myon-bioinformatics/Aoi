@@ -1,4 +1,4 @@
-"""R001 の結果を DRAgoWing の研究レポート（dragowing.research_report）で 1 枚のページにする（4 種類）。
+"""R001 の結果を DRAgoWing の研究レポート（dragowing.dragowing.render_report）で 1 枚のページにする（4 種類）。
 
     python research/gpt-r001-score-allocation/render_score_report.py <処理> [その処理の引数]
 
@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path[:0] = [str(ROOT)]
 
-from dragowing.research_report import render_report  # noqa: E402
+from dragowing.dragowing import render_report  # noqa: E402
 
 
 # ==== game_state（旧 render_game_state.py）

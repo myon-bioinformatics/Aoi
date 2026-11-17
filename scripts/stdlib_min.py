@@ -1328,7 +1328,7 @@ def load_overlap() -> None:
     """DRAgoWing load_overlap on the c001 season file."""
     sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
     from dragowing.overlap import default_conditions, load_overlap as overlap
-    from dragowing.records import read_jsonl
+    from dragowing.dragowing import read_jsonl
 
     season = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
     props = ROOT / "cycles/c001-chunichi/outputs/propositions.jsonl"
@@ -2465,7 +2465,7 @@ def overlap(argv=None) -> int:
         inject("numpy", ROOT / "shrink" / "numpy_min.py")
     sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
     from dragowing.overlap import default_conditions, load_overlap
-    from dragowing.records import read_jsonl
+    from dragowing.dragowing import read_jsonl
 
     import numpy
 
@@ -2502,7 +2502,7 @@ def overlap_stdlib(argv=None) -> int:
         inject("polars", ROOT / "shrink" / "polars_min.py")
     sys.path[:0] = [str(ROOT), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
     from dragowing.overlap import default_conditions, load_overlap
-    from dragowing.records import read_jsonl
+    from dragowing.dragowing import read_jsonl
 
     import numpy
     import polars

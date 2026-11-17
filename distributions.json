@@ -1,6 +1,6 @@
 {
   "schema": "aoi-distributions/1",
-  "source": "1aefc1d188e0f8180264a60cf4f8e9e8a930309e",
+  "source": "5d8d2277e539054f4d8a5025423adf5bdaeac84b",
   "python": "3.12",
   "license": "LICENSE",
   "tool": {
@@ -39,16 +39,6 @@
       ],
       "output": "dist/sakanalytics_min.py",
       "api": "explicit period comparisons and descriptive neighbors"
-    },
-    "dragowing": {
-      "prefix": "dragowing",
-      "entry": "distributions/entries/dragowing_api.py",
-      "paths": [
-        "distributions/entries",
-        "dragowing"
-      ],
-      "output": "dist/dragowing_min.py",
-      "api": "generic series/matrix specifications and HTML reports (Plotly.js in browser)"
     },
     "pythdragoras": {
       "prefix": "pythdragoras",

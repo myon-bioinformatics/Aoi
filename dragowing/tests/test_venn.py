@@ -6,10 +6,10 @@ import json, random
 
 import pytest
 
-from dragowing.cli import main
-from dragowing.htmlout import embed_json, figure_block, spec_from, standalone
+from dragowing.dragowing import main
+from dragowing.dragowing import embed_json, figure_block, spec_from, standalone
 from dragowing.overlap import B_COND, MAX_SETS, finalize_conditions, load_overlap
-from dragowing.venn import BY_KEYS, MAX_SERIES, breakdown_figure, grid_figure, karnaugh, venn_figures
+from dragowing.dragowing import BY_KEYS, MAX_SERIES, breakdown_figure, grid_figure, karnaugh, venn_figures
 
 
 def make(tmp_path, n, units=60, seed=0):

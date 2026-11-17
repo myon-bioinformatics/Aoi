@@ -341,9 +341,9 @@ def test_recovered_renderers_import_without_pytest_paths(tmp_path, command):
 def test_research_loop_and_dragowing_package_coexist_in_clean_process():
     code = '''
 import research_loop.feedback
-import dragowing.figures
-import dragowing.plotly_cdn
-from dragowing.research_report import render_report
+import dragowing.dragowing
+import dragowing.overlap
+from dragowing.dragowing import render_report
 assert callable(render_report)
 '''
     result = run(['-c', code], ROOT)

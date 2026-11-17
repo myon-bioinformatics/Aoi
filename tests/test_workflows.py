@@ -24,7 +24,7 @@ import aoi_paths  # noqa: E402
 import pytest  # noqa: E402
 import repo_checks as uses  # noqa: E402
 import repo_checks as lock  # noqa: E402
-from dragowing.figures import FONT  # noqa: E402
+from dragowing.dragowing import FONT  # noqa: E402
 
 
 # ==== workflows（旧 test_workflows.py）
@@ -450,7 +450,7 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
         code = (
             "import sys\n"
             "first = sys.path[0]\n"
-            "import aoi, blueprobe, propositions, dragowing.figures\n"
+            "import aoi, blueprobe, propositions, dragowing.overlap\n"
             "import dragowing\n"
             "print(sys.path[0] == first, blueprobe.__file__)\n"
             "print(int(bool(getattr(dragowing, '__path__', None))))\n"

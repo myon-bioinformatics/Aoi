@@ -20,8 +20,7 @@ python -S dragowing.py --ffss tests/ffss_records.jsonl --out build/ffss
 | F09 血流サンキー | E30 / blood | F01 と同じリンク形式、単位 L/min |
 
 各行は JSON オブジェクトで、文字列の `id` と `run` を持つ。FFSS の `slug` と未使用フィールドは保持する。
-`records.read_ffss` が既存の `read_jsonl` で読み、`figures.ffss_figures` が図JSONに変換し、`render.write_ffss` が保存する。
-入口の `dragowing.py` はこれらを呼び出す。元の `read_jsonl` と既存図の入力形式は変更しない。
+`dragowing.py` の `read_ffss` が既存の `read_jsonl` で読み、`ffss_figures` が図JSONに変換し、`write_ffss` が保存する（どれも同じ 1 ファイル）。元の `read_jsonl` と既存図の入力形式は変更しない。
 
 図に必要な run がなければその図だけを省略する。存在する run の必須フィールド不足・非有限数値・不完全なヒートマップ格子はエラーにする。
 実験の判定は再実行しない。図JSONは元の数値を保持し、表示ラベルだけを丸める。

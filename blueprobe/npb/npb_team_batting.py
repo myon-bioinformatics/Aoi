@@ -21,7 +21,7 @@ import re
 from urllib.parse import urlsplit
 
 from blueprobe import HtmlTree, new_report, normalize
-from npb_calendar import LEAGUE, TEAM_NAME
+from npb_calendar import LEAGUE, TEAM_NAME, row_cells
 
 NAME = "npb_team_batting"
 URL = "https://npb.jp/bis/{year}/stats/tmb_{lg}.html"
@@ -46,10 +46,6 @@ def pages(years) -> list[tuple[str, str, str]]:
     return [(f"{y}_{lg}", URL.format(year=y, lg=lg), str(y)) for y in years for lg in LEAGUES]
 
 
-def _cells(tr) -> list[str]:
-    return [normalize(c.text(deep=True)) for c in tr.iter() if c.tag in ("td", "th")]
-
-
 def _header(tr) -> list[tuple[str, int]]:
     """見出しの各セルの（空白を除いた名前, 横に何列分か）。"""
     out = []
@@ -71,7 +67,7 @@ def parse_team_table(html: str, url: str, path: re.Pattern, columns: dict, rates
     season, league = (int(m["y"]), LEAGUES[m["lg"]]) if m else (None, None)
     header, pending = None, None
     for tr in HtmlTree(html).css("tr"):
-        cells = _cells(tr)
+        cells = row_cells(tr)
         if pending is not None:                        # またがる見出しの下の行
             subs = [re.sub(r"\s", "", c) for c in cells]
             if len(subs) == sum(span for _, span in pending if span > 1):

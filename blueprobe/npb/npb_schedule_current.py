@@ -35,25 +35,22 @@ import re
 from collections import Counter; from urllib.parse import urljoin, urlsplit
 
 from blueprobe import HtmlTree, new_report, normalize
+from npb_calendar import DASH, LEAGUE, MONTHS   # 12球団（LEAGUE のキー）・月・ダッシュは日程（npb_calendar）と同じ
 
 NAME = "npb_schedule_current"
 URL = "https://npb.jp/games/{year}/schedule_{month:02d}_detail.html"
-MONTHS = range(3, 12)
 
-CODES = {"g", "s", "db", "d", "t", "c", "h", "f", "b", "e", "l", "m"}
 EXPECTED_MAX = 143   # 1球団の公式戦の数。これを超えたら公式戦以外が混ざっている
 
-_DASH = "[-‐‑‒–—−]"
 GAME_PATH = re.compile(r"/scores/(?P<y>\d{4})/(?P<md>\d{4})/(?P<home>[a-z]+)-(?P<away>[a-z]+)-(?P<n>\d+)/?")
-SCORE = re.compile(rf"(?P<hs>[0-9]{{1,2}}) ?{_DASH} ?(?P<as>[0-9]{{1,2}})")
+SCORE = re.compile(rf"(?P<hs>[0-9]{{1,2}}) ?{DASH} ?(?P<as>[0-9]{{1,2}})")
 CANCELLED = re.compile(r".*(中止|ノーゲーム).*")
 # まだ結果のない試合: スコアの代わりに「- （球場）18:00」（preview_2026 で実ページに見た表記、2026-10-06）
-SCHEDULED = re.compile(rf"{_DASH}? ?(\([^)]*\))? ?[0-9]{{1,2}}:[0-9]{{2}}")
+SCHEDULED = re.compile(rf"{DASH}? ?(\([^)]*\))? ?[0-9]{{1,2}}:[0-9]{{2}}")
 # 公式戦以外のコード: オールスター（cl-pl / pl-cl、preview_2026 で見た）
 NON_REGULAR_CODES = {"cl": "オールスター", "pl": "オールスター"}
 # 同じ組み合わせの公式戦の数（同じリーグ 25、交流戦 3）。超えたら CS などが混ざっている
 PAIR_MAX = {True: 25, False: 3}
-LEAGUE = {t: ("C" if t in {"g", "s", "db", "d", "t", "c"} else "P") for t in CODES}
 
 
 def pages(years) -> list[tuple[str, str, str]]:
@@ -81,7 +78,7 @@ def parse(html: str, url: str = "") -> dict:
         if path["home"] in NON_REGULAR_CODES or path["away"] in NON_REGULAR_CODES:
             out["counts"][f"non_regular:{NON_REGULAR_CODES.get(path['home']) or NON_REGULAR_CODES[path['away']]}"] += 1
             continue
-        if path["home"] not in CODES or path["away"] not in CODES:
+        if path["home"] not in LEAGUE or path["away"] not in LEAGUE:
             out["unknown"].append({"key": key, "raw": f"[{path['home']}-{path['away']}] {raw}"})
             continue
         if m := SCORE.fullmatch(t):
@@ -119,7 +116,7 @@ def check(records: list[dict]) -> list[dict]:
         pair[(y, *sorted((r["home"], r["away"])))] += 1
     out = []
     for y in sorted({y for y, _ in n}):
-        got = {t: n[(y, t)] for t in sorted(CODES)}
+        got = {t: n[(y, t)] for t in sorted(LEAGUE)}
         double = sorted(f"{d}:{t}" for (d, t), k in day.items() if k > 1 and d.startswith(str(y)))
         over = sorted(f"{a}-{b}:{k}" for (yy, a, b), k in pair.items()
                       if yy == y and k > PAIR_MAX[LEAGUE[a] == LEAGUE[b]])

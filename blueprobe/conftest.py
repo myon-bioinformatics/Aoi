@@ -1,6 +1,6 @@
-"""Optional cross-repository integration with an explicit fail-closed mode."""
-import os
-from importlib import import_module; from pathlib import Path
+"""Optional cross-repository integration with an explicit fail-closed mode, and the shared no-network guard."""
+import os, socket
+from importlib import import_module; from pathlib import Path; from unittest.mock import Mock
 
 import pytest
 
@@ -22,6 +22,16 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.stash[_LAB_REPORTS] = {}
+
+
+@pytest.fixture
+def no_network(monkeypatch):
+    """Any socket use fails the test (saved-page tests and the lab integration)."""
+    blocked = Mock(side_effect=AssertionError('unexpected network'))
+    monkeypatch.setattr(socket.socket, 'connect', blocked)
+    monkeypatch.setattr(socket.socket, 'connect_ex', blocked)
+    monkeypatch.setattr(socket, 'create_connection', blocked)
+    monkeypatch.setattr(socket, 'getaddrinfo', blocked)
 
 
 @pytest.fixture

@@ -1,3 +1,10 @@
+"""🧱 blueprobe.py: normalization, the report contract, offline reparsing and the main CLI.
+
+- core: 取得元に依存しない部分: 正規化、報告の契約、オフライン再解析。
+- cli: --list-patterns / --pattern / --source + --cache are checked before any source or cache is touched.
+- url: `python blueprobe.py URL [--cache DIR]` against a local HTTP server (curl); QueRyu cache cases need QUERYU_ROOT.
+"""
+
 import json
 import os
 import shutil
@@ -8,14 +15,139 @@ import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from unittest.mock import Mock
+
+import pytest
+
+import blueprobe
+import npb_calendar
+from blueprobe import inspect, load_source, mask_digits, normalize, to_markdown
+
+
+# ──── core ────────────────────────────────────────────────────────
+
+P = "/bis/2024/games/s2024040201097.html"
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("", ""), (" ", ""), ("\n", ""), ("a\r\nb", "a b"), ("a b", "a b"), ("a　b", "a b"),
+    ("４", "4"), ("\x00", "�"), ("日本語🙂", "日本語🙂"), ("ﾔ", "ヤ"),
+])
+def test_normalize_matrix(text, expected):
+    assert normalize(text) == expected
+
+
+def test_normalize_is_idempotent():
+    for s in ["中 ４　-　3 巨", "\x00x", " a  b "]:
+        assert normalize(normalize(s)) == normalize(s)
+
+
+@pytest.mark.parametrize("name", ["", "../x", "Npb", "a-b", "a b"])
+def test_load_source_rejects_odd_names(name):
+    with pytest.raises(ValueError):
+        load_source(name)
+
+
+def test_mask_digits():
+    assert mask_digits("中 4x - 3 巨 ４") == "中 #x - # 巨 #"
+
+
+def test_inspect_groups_counts_and_unknown_shapes():
+    pages = [
+        ("2024_03", "u", "2024", ""),  # 存在しない月（空）
+        ("2024_04", "u", "2024", f'<a href="{P}">中 4 - 3 巨</a><a href="/cs/">神 1 - 3 デ</a>'),
+        ("2024_05", "u", "2024", f'<a href="{P.replace("1097", "1200")}">中 4x - 3 巨</a>'),
+    ]
+    rows = inspect(npb_calendar, pages)
+    assert rows == [{"group": "2024", "pages": 2, "empty_pages": 1, "records": 1,
+                     "n_non_regular": 1, "unknown": 1, "unknown_shapes": ["中 #x - # 巨"]}]
+    md = to_markdown(rows, "t")
+    assert "中 #x - # 巨" in md and "中 4x" not in md  # 生の得点は docs に残さない
+
+
+def test_inspect_can_hand_back_records_and_markdown_shows_checks():
+    recs = []
+    inspect(npb_calendar, [("2024_04", "u", "2024", f'<a href="{P}">中 4 - 3 巨</a>')], recs)
+    assert [r["key"] for r in recs] == ["2024040201097"]
+    checks = npb_calendar.check(recs)
+    assert [(c["group"], c["ok"]) for c in checks] == [("2024", False)]
+    assert "取りこぼしの確認" in to_markdown([], "t", checks)
+
+
+# ──── cli ─────────────────────────────────────────────────────────
+
+def test_list_patterns_needs_no_cache_or_queryu(monkeypatch, capsys):
+    monkeypatch.setitem(sys.modules, 'queryu', None)
+    load = Mock(side_effect=AssertionError('must not load a source'))
+    monkeypatch.setattr(blueprobe, 'load_source', load)
+    assert blueprobe.main(['--list-patterns']) == 0
+    output = capsys.readouterr()
+    assert output.err == ''
+    for pattern in blueprobe.list_patterns():
+        assert pattern['key'] in output.out
+        assert pattern['selector'] in output.out
+    load.assert_not_called()
+
+
+@pytest.mark.parametrize('pattern,message', [
+    ('invalid_pattern_xyz', "unknown pattern key 'invalid_pattern_xyz'"),
+    ('', 'must be a non-empty string'),
+    ('   ', 'must be a non-empty string'),
+])
+def test_invalid_pattern_is_cli_error_before_cache_access(pattern, message, tmp_path, capsys):
+    output = tmp_path / 'report.md'
+    with pytest.raises(SystemExit) as exc:
+        blueprobe.main(['--source', 'html_source', '--pattern', pattern,
+                        '--cache', str(tmp_path / 'missing'), '--out', str(output)])
+    assert exc.value.code == 2
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert '--pattern:' in captured.err
+    assert message in captured.err
+    assert '--list-patterns' in captured.err
+    assert 'Traceback' not in captured.err
+    assert 'no cache manifest' not in captured.err
+    assert not output.exists()
+
+
+@pytest.mark.parametrize('pattern', ['github_readme', 'invalid_pattern_xyz', ''])
+@pytest.mark.parametrize('source', ['npb_calendar', 'does_not_exist'])
+def test_pattern_rejects_other_sources_before_loading(source, pattern, tmp_path, monkeypatch, capsys):
+    load = Mock(side_effect=AssertionError('must validate before source import'))
+    monkeypatch.setattr(blueprobe, 'load_source', load)
+    with pytest.raises(SystemExit) as exc:
+        blueprobe.main(['--source', source, '--pattern', pattern, '--cache', str(tmp_path)])
+    assert exc.value.code == 2
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert '--pattern requires --source html_source' in captured.err
+    load.assert_not_called()
+
+
+@pytest.mark.parametrize('args', [[], ['--source', 'html_source'], ['--cache', 'missing']])
+def test_reanalysis_still_requires_source_and_cache(args, capsys):
+    with pytest.raises(SystemExit) as exc:
+        blueprobe.main(args)
+    assert exc.value.code == 2
+    assert '--source and --cache are required' in capsys.readouterr().err
+
+
+def test_listing_cannot_silently_ignore_pattern(capsys):
+    with pytest.raises(SystemExit) as exc:
+        blueprobe.main(['--list-patterns', '--pattern', 'github_readme'])
+    assert exc.value.code == 2
+    assert 'not allowed with argument' in capsys.readouterr().err
+
+
+# ──── url ─────────────────────────────────────────────────────────
 
 ROOT = Path(__file__).resolve().parents[1]
-
 
 
 def _cache_core(queryu):
     """QueRyu の cache_core.py（core/ にある。前の配置では直下）。"""
     return next(p for p in (Path(queryu) / "core" / "cache_core.py", Path(queryu) / "cache_core.py") if p.is_file())
+
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -55,6 +187,17 @@ class UrlStandaloneTest(unittest.TestCase):
             missing = subprocess.run([sys.executable, "-I", str(script), url + "missing"],
                                      capture_output=True, text=True, timeout=10)
             self.assertNotEqual(missing.returncode, 0)
+
+    def test_the_single_file_is_the_uv_tool(self):
+        # 🧰 Aoi から写した共通ビルダー（vendor/uv_tool_build.py）で、blueprobe.py だけの uv tool になる
+        import tomllib
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "tool"
+            subprocess.run([sys.executable, "-S", str(ROOT / "vendor" / "uv_tool_build.py"), str(ROOT / "blueprobe.py"),
+                            "--out", str(out)], check=True, capture_output=True)
+            project = tomllib.loads((out / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+            self.assertEqual((project["dependencies"], project["scripts"]), ([], {"blueprobe": "blueprobe:main"}))
+            self.assertEqual((out / "blueprobe.py").read_bytes(), (ROOT / "blueprobe.py").read_bytes())
 
     def test_cache_requires_component_before_network(self):
         with tempfile.TemporaryDirectory() as tmp:

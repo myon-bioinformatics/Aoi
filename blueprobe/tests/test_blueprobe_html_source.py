@@ -1,4 +1,3 @@
-import socket
 from unittest.mock import Mock
 
 import pytest
@@ -7,13 +6,7 @@ from blueprobe import inspect
 from blueprobe import HtmlSource
 
 
-@pytest.fixture(autouse=True)
-def no_network(monkeypatch):
-    blocked = Mock(side_effect=AssertionError('unexpected network'))
-    monkeypatch.setattr(socket.socket, 'connect', blocked)
-    monkeypatch.setattr(socket.socket, 'connect_ex', blocked)
-    monkeypatch.setattr(socket, 'create_connection', blocked)
-    monkeypatch.setattr(socket, 'getaddrinfo', blocked)
+pytestmark = pytest.mark.usefixtures('no_network')  # conftest.py: no socket for any test here
 
 
 def test_saved_pages_delegate_selector_and_preserve_observations():

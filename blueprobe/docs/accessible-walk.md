@@ -8,7 +8,7 @@ Public report schema, naming approximation, `_text` depth limit and parsing beha
 are unchanged. `observe` still holds the DOM and node list; this is not streaming HTML.
 
 ```sh
-python -S -m unittest discover -s tests -p test_accessible_iterative_walk.py -v
+python -S -m unittest discover -s tests -p test_blueprobe_observations.py -v
 python -S scripts/benchmark_accessible_walk.py
 ```
 
@@ -36,5 +36,5 @@ active under `python -O`. A subprocess regression test injects incorrect results
 and verifies a nonzero exit with a mismatch diagnostic and no success JSON:
 
 ```sh
-python -S -m unittest discover -s tests -p test_benchmark_optimization_guard.py -v
+uv run --locked pytest -q tests/test_fleet.py -k mismatch_exits_under_optimization
 ```

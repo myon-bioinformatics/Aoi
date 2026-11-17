@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT))
 with mock.patch.dict(os.environ, OLNM_HOME=str(TMP / "home"), DIAL_FILE=str(TMP / "dial")):
     _spec = importlib.util.spec_from_file_location("forge_subject", ROOT / "nagoyaction.py")
     olnm = importlib.util.module_from_spec(_spec)
+    sys.modules[_spec.name] = olnm  # dataclass は自分のモジュールを sys.modules から引く（3.11・3.12）
     _spec.loader.exec_module(olnm)
 PORT = 3777
 
@@ -230,6 +231,7 @@ class TestNagoyactionHub(unittest.TestCase):
 
 spec = importlib.util.spec_from_file_location("forge_failure_subject", ROOT / "nagoyaction.py")
 f = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = f
 spec.loader.exec_module(f)
 
 

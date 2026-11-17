@@ -6,7 +6,7 @@ import pytest
 
 # Only tests that actually invoke the solver require the optional dependency.
 requires_solver = pytest.mark.skipif(find_spec('ortools') is None,
-    reason='install season-requirements.txt for exact simulator tests')
+    reason='install npb/season-requirements.txt for exact simulator tests')
 
 from season_simulator import (Game, Rules, Snapshot, baseline_probabilities,
     calendar_games, crossing_events, forecast, magic_events, ranking, snapshot, wilson)

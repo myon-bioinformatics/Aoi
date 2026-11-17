@@ -14,7 +14,9 @@ _spec.loader.exec_module(fleet)
 
 ROOT = fleet.repo_root(__file__)
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
-ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0"}
+ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0",
+            # 🧰 Aoi の共通 uv tool ビルダー（#181 のマージ。SakAnalytics・PythDRagoras・DRAgoWing と同じバイト）
+            "vendor/uv_tool_build.py": "3d8dcc70a9c4e6c4f4b7de05868f54acd3901ce7"}
 ACTION_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
     "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
@@ -27,13 +29,15 @@ def _workflow_text():
     return (ROOT / ".github/workflows" / "ci.yml").read_text(encoding="utf-8")
 
 
-# ==== vendor lock: 親の共通検査 1 本だけを持つ（旧 test_no_vendor_lock_is_kept は「lock が無いこと」を見ていた）
+# ==== vendor lock: 親の fleet_check と Aoi の uv_tool_build（旧 test_no_vendor_lock_is_kept は「lock が無いこと」を見ていた）
 
 def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
     rows = fleet.check_lock(ROOT, commits=ACCEPTED)
     assert set(rows) == set(ACCEPTED)
     row = rows["vendor/fleet_check.py"]
     assert (row["repository"], row["source"]) == (fleet.PARENT, "fleet_check.py")
+    row = rows["vendor/uv_tool_build.py"]
+    assert (row["repository"], row["source"]) == ("myon-bioinformatics/Aoi", "vendor/uv_tool_build.py")
 
 
 # ==== parent pins: local rollout contract; adopted vendor locks are deliberately independent

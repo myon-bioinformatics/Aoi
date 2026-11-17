@@ -188,6 +188,17 @@ class UrlStandaloneTest(unittest.TestCase):
                                      capture_output=True, text=True, timeout=10)
             self.assertNotEqual(missing.returncode, 0)
 
+    def test_the_single_file_is_the_uv_tool(self):
+        # 🧰 Aoi から写した共通ビルダー（vendor/uv_tool_build.py）で、blueprobe.py だけの uv tool になる
+        import tomllib
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "tool"
+            subprocess.run([sys.executable, "-S", str(ROOT / "vendor" / "uv_tool_build.py"), str(ROOT / "blueprobe.py"),
+                            "--out", str(out)], check=True, capture_output=True)
+            project = tomllib.loads((out / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+            self.assertEqual((project["dependencies"], project["scripts"]), ([], {"blueprobe": "blueprobe:main"}))
+            self.assertEqual((out / "blueprobe.py").read_bytes(), (ROOT / "blueprobe.py").read_bytes())
+
     def test_cache_requires_component_before_network(self):
         with tempfile.TemporaryDirectory() as tmp:
             script = Path(tmp) / "blueprobe.py"

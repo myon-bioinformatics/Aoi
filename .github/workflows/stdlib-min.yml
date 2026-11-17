@@ -121,43 +121,6 @@ jobs:
           cmp http-real.json http-min.json
           cmp cov-real.json cov-min.json
 
-  # ---- CDN module experiment（旧 .github/workflows/cdn-module-experiment.yml）
-  # 実験: pip/uv を使わず、PyPI の pure-Python wheel（markdown）を取り、sha256 を照合し、
-  # キャッシュして sys.path から import する。既存のワークフローには触れない。
-  fetch-and-run:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.11", "3.14"]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
-        with:
-          version: "latest"
-          python-version: "${{ matrix.python }}"
-          activate-environment: true
-          enable-cache: true
-          # Pull requests restore the cache and never write it; only main saves it.
-          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          prune-cache: true
-      - name: Resolve latest markdown wheel and its PyPI sha256
-        id: resolve
-        run: python scripts/fetch_module.py resolve markdown --github-output
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .cdn-cache
-          key: cdn-${{ steps.resolve.outputs.filename }}-${{ steps.resolve.outputs.sha256 }}
-      - name: markdown is not installed
-        run: "! python -c 'import markdown'"
-      - name: Fetch (or reuse cache), verify sha256, import from the wheel
-        run: python scripts/fetch_module.py fetch markdown --cache .cdn-cache
-      - name: Run DRAgoWing render_md with the fetched module
-        run: python scripts/stdlib_min.py cdn-markdown .cdn-cache
-
   # ---- numpy_min backends（旧 .github/workflows/numpy-min-backends.yml）
   # shrink/numpy_min.py の2つの経路を、公式の最新イメージ python:3.15-slim（Debian 13、3.15.2）で確かめる。
   # - lapack: apt で liblapack3 / libblas3（と依存の libgfortran5）だけを版固定・--no-install-recommends で入れ、

@@ -99,7 +99,7 @@ def benchmark(output, uv, repeats=3, workers=4):
                     '--no-header', '--format', 'requirements.txt']
             if name == 'feature':
                 args += ['--no-default-groups', '--group', 'runtime']
-                for package in ('numpy', 'httpx', 'markdown'):
+                for package in ('numpy', 'httpx'):
                     args += ['--prune', package]
             req.write_text(run(args, env=local_env).stdout)
             venv = folder / 'venv'

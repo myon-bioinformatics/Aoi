@@ -9,16 +9,6 @@
         }
       ],
       "name": "editables"
-    },
-    {
-      "declared": [
-        {
-          "file": "pyproject.toml",
-          "kind": "group:runtime",
-          "name": "markdown"
-        }
-      ],
-      "name": "markdown"
     }
   ],
   "dynamic_nonliteral": [

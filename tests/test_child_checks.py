@@ -20,7 +20,7 @@ PIN_CHILDREN = ("blueprobe", "queryu", "sakanalytics", "pythdragoras", "nagoyact
 SIBLING_CHILDREN = {
     "sakanalytics": dict(third_party={"polars", "pytest", "ortools"}),
     "pythdragoras": dict(third_party={"polars", "numpy", "pytest"}),
-    "dragowing": dict(third_party={"polars", "numpy", "markdown", "pytest"}, aoi_provided=(),
+    "dragowing": dict(third_party={"polars", "numpy", "pytest"}, aoi_provided=(),
                       extra_local=("dragowing", "reports")),
 }
 LIVE_REF = "${{ steps.parent.outputs.sha }}"  # pythdragoras だけが親の main を実行時に解決する

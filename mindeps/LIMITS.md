@@ -56,7 +56,7 @@ This does not replace the mutation suite. That suite shells out to `python -m co
 
 ### markdown
 
-Already done in the CDN experiment (`scripts/fetch_module.py`, `scripts/stdlib_min.py cdn-markdown`). `dragowing/htmlout.py` loads it with `importlib.import_module("markdown")`. Latest `markdown` still resolves to a `py3-none-any` wheel with no runtime dependencies. Not repeated here.
+No longer used (2026-11-17). DRAgoWing renders its pages with our own `markdown.py` (`dragowing/vendor/markdown/markdown.py`), so Aoi no longer declares Python-Markdown, and the CDN experiment for it (`scripts/stdlib_min.py cdn-markdown`) is gone.
 
 ## Not feasible
 

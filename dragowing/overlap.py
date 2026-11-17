@@ -115,8 +115,12 @@ def load_overlap(path: Path, conds: list[dict], *, backend: str = "native") -> d
         rows = read_rows(path)
         bits = condition_bits(rows, labeled)
     else:
-        import numpy as np
-        import polars as pl
+        try:
+            import numpy as np
+            import polars as pl
+        except ImportError as exc:
+            # 🧮 native は PythDRagoras の rule_search 用。numpy・polars は dev グループにある
+            raise ValueError(f"native の重なりには numpy・polars が要る（uv sync --group dev）。既定は stdlib の経路: {exc}") from exc
 
         rows = read_jsonl(path)
         rule_search, _ = _engines()

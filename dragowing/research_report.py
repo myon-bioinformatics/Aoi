@@ -2,11 +2,11 @@
 
 #48 で消えた `DRAgoWing/dragowing.py` の中身をそのまま戻したもの（render_report）。
 今の `dragowing/` は `dragowing.export` などを持つパッケージなので、`dragowing/dragowing.py` という名前に戻すと
-`dragowing` の import がこのファイルに取られて、パッケージ側（chrome_pipe・export・plotly_cdn）が読めなくなる。
+`dragowing` の import がこのファイルに取られて、パッケージ側（plotly_cdn など）が読めなくなる。
 そのため `dragowing.research_report` にした。使う側: `dragowing/reports/research.py`、
 `research/gpt-r001-score-allocation/render_*.py`、`research_loop/feedback.py`（research.build 経由）。
 Plotly.js の URL（3.6.0、SRI なし）は当時のまま。web-ui の固定（plotly_cdn）に寄せるかは別に決める。
-文字は figures.FONT と同じ（メイリオ先頭）。単独のモジュールとして配布されるので import せず書き、tests/test_font.py で一致を確かめる。
+文字は figures.FONT と同じ（メイリオ先頭）。単独のモジュールとして配布されるので import せず書き、tests/test_figures.py で一致を確かめる。
 """
 import html, json
 

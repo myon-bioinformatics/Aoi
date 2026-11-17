@@ -9,7 +9,7 @@ python -m dragowing cycles/c001-chunichi/outputs --column wins_vs_pythag
 python -m dragowing cycles/c001-chunichi/outputs --cond 'rd,>,0' --cond 'rank_ra,<=,2'
 python -m dragowing cycles/c001-chunichi/outputs --embed
 python -m dragowing cycles/c001-chunichi/outputs --team-order d,g,s   # top-to-bottom order of team × year; symbol order if omitted
-python -m dragowing cycles/c001-chunichi/outputs --png --svg
+python -m dragowing cycles/c001-chunichi/outputs --svg   # 🖼️ svg/<figure>.svg, no Chrome
 ```
 
 `--cond` values are JSON (`0`, `true`, `"d"`). If omitted, it looks at the `if` of `propositions.jsonl` in file order, takes 2 atoms on columns present in `season.jsonl`, and adds the B class (`upper_half == false`). That gives 2 or 3 sets. Repeating `--cond` permits 2–8 sets including class B. Select the breakdown with `--breakdown COLUMN` (default `team`) and repeatable `--breakdown-keep VALUE`.
@@ -23,13 +23,13 @@ With `--embed`, Plotly.js is embedded into `index.html`. `propositions.html` is 
 | `index.html` | Trajectories, team × year, condition-overlap grids and breakdown bars, and the table of region counts and units |
 | `propositions.html` | The list at the top, and per-proposition 2×2, logic notation, and counterexample tables |
 
-Page headings, the list, the 2×2, counterexample tables, and the logic-notation box are written in Markdown and converted to HTML with Python-Markdown. Numbers stay exactly as in the files after conversion; they are not rounded.
+Page headings, the list, the 2×2, counterexample tables, and the logic-notation box are written in Markdown and converted to HTML with our own `markdown.py` (`vendor/markdown/markdown.py`, `raw_html=True, attr_list=True` for the figure blocks, `<details>` and `{: .provenance}`). Numbers stay exactly as in the files after conversion; they are not rounded.
 
 The text-only 2×2 remains `dragowing/forms.py` in [forms.md](forms.md).
 
-Figures and pages use `figures.FONT` (`Meiryo, メイリオ, sans-serif`). The standalone research-report and report-page templates repeat the same font string, checked by `tests/test_font.py`; code remains monospace. No font files are distributed. Systems without Meiryo, including Linux image exports, use their default sans-serif font.
+Figures and pages use `figures.FONT` (`Meiryo, メイリオ, sans-serif`). The standalone research-report and report-page templates repeat the same font string, checked by `tests/test_figures.py`; code remains monospace. No font files are distributed. Systems without Meiryo use their default sans-serif font.
 
-Add `--png` / `--svg` only when PNG / SVG is needed. Chrome is needed only then too (`--chrome` or the `CHROME` environment variable). Without Chrome, the HTML is written and the exit code is 2. The tests do not use Chrome either.
+Add `--svg` only when SVG is needed. 🖼️ The parent's standard-library `plotly_min` draws it from the same figure JSON (`vendor/tools/stdlib_min/plotly_min.py`, locked in `vendor.lock.json`); no Chrome is used. PNG is not written; screenshots of the HTML belong to browser-test-kit.
 
 `sets.jsonl` is not in these results. The Hasse diagram of condition formulas (proposal C6) is not produced. Hold rates are not newly computed here for coloring.
 
@@ -44,7 +44,6 @@ Version updates are done as a pair: the upstream contract update and the lock up
 web-ui's `remote_scripts` / `remote_script_tag` / `fetch_plotly_js` are shared.
 Since `plotly_figure` returns a `ui-panel` with inline initialization, the existing
 `application/json` figure blocks, IDs, CSS, and DRAgoWing initialization are kept.
-The PNG/SVG API and CLI `--png` copy Plotly.js under the same CDN contract as `export_draw` into a temporary directory and use it.
 
 ## Observation
 

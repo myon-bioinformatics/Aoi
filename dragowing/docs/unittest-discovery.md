@@ -9,7 +9,7 @@ These focused tests also need a POSIX environment with `bash` on `PATH`
 a native Windows Python installation alone is not sufficient.
 
 ```sh
-python -S -m unittest discover -s tests -p test_dragowing_managed_chromium.py -v
+python -S -m unittest discover -s tests -p test_install_ci_chromium.py -v
 ```
 
 Validated on Linux / CPython 3.12.14: **10 tests, exit 0** (2026-11-03).
@@ -17,7 +17,7 @@ Validated on Linux / CPython 3.12.14: **10 tests, exit 0** (2026-11-03).
 To narrow the first command to a test name, use the built-in `-k` filter:
 
 ```sh
-python -S -m unittest discover -s tests -p test_dragowing_managed_chromium.py -v -k test_success_installs_once_without_executing
+python -S -m unittest discover -s tests -p test_install_ci_chromium.py -v -k test_success_installs_once_without_executing
 ```
 
 `-s` is the discovery start directory, `-p` matches test filenames, `-k`

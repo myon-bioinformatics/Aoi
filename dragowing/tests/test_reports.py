@@ -1,8 +1,17 @@
-import hashlib, json, subprocess
+"""レポート: 📄 reports/build_reports.py（Markdown の版比較）、📊 research_report.py（集計図の HTML）。"""
+import hashlib, importlib.util, json, subprocess
 from pathlib import Path
+
 import pytest
+
+import aoi_paths
+from dragowing.research_report import render_report
 from reports.build_reports import build, revision
 
+ROOT=aoi_paths.resolve_aoi_root(anchor=Path(__file__))
+
+
+# ==== 📄 reports/build_reports.py（旧 test_build_reports.py）
 
 def commit(root, message):
     subprocess.run(['git','-C',str(root),'add','.'],check=True,capture_output=True)
@@ -75,3 +84,39 @@ def test_nonempty_output_rejected(repos):
     out.mkdir();(out/'keep').write_text('keep')
     with pytest.raises(ValueError,match='empty'):build(root,upstream,out,old)
     assert (out/'keep').read_text()=='keep'
+
+
+# ==== 📊 research_report.py（旧 test_research_report.py）
+
+def test_script_and_title_escaping():
+    spec={'title':'</script><script>alert(1)</script>','default':'x','frames':{'x':{}},'note':'<>&'}
+    result=render_report(spec)
+    assert '<script>alert(1)' not in result
+    payload=result.split('type="application/json">')[1].split('</script>')[0]
+    assert json.loads(payload)==spec
+
+
+def test_invalid_default_and_nonfinite():
+    with pytest.raises(ValueError):render_report({'frames':{},'default':'x'})
+    with pytest.raises(ValueError):render_report({'frames':{'x':{}},'default':'x','title':'x','bad':float('nan')})
+
+
+def test_real_aggregate_mapping():
+    path=ROOT/'research/gpt-r001-score-allocation/render_score_report.py'
+    module_spec=importlib.util.spec_from_file_location('score_report',path)
+    module=importlib.util.module_from_spec(module_spec);module_spec.loader.exec_module(module)
+    outputs=path.parent/'outputs'
+    early=json.loads((outputs/'early_scoring.json').read_text())
+    late=json.loads((outputs/'late_reaction.json').read_text())
+    spec=module.build_spec(early,late)
+    assert len(spec['frames'])==26
+    panels=spec['frames']['2022|7']['panels']
+    assert panels[1]['data'][0]['y'][0]==34/143
+    assert panels[2]['data'][0]['y'][1]==22/75
+    assert panels[2]['data'][1]['y'][1]==117/342
+    assert panels[3]['data'][1]['y']==[12/66,56/267]
+    assert '参考' in spec['frames']['2020|7']['caption']
+    assert panels[0]['data'][0]['y'][7] is None
+    assert render_report(spec)==render_report(spec)
+    early['rows'].append(early['rows'][0])
+    with pytest.raises(ValueError):module.build_spec(early,late)

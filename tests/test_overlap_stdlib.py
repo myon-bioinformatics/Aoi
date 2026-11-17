@@ -272,11 +272,12 @@ def test_cli_rejects_missing_or_ambiguous_results(args):
 
 
 def test_native_without_numpy_polars_says_which_group(tmp_path, monkeypatch):
-    """🧮 numpy・polars は dev グループ。無いときは ValueError で、CLI は終了コード 1 と理由を出す。"""
+    """🧮 numpy・polars は dev グループ。無いときは ModuleNotFoundError（名前つき）で、CLI は終了コード 1 と理由を出す。"""
     from dragowing.overlap import load_overlap
     path = tmp_path / "season.jsonl"
     path.write_text("", encoding="utf-8")
     for name in ("numpy", "polars"):
         monkeypatch.setitem(sys.modules, name, None)
-    with pytest.raises(ValueError, match="dev"):
+    with pytest.raises(ModuleNotFoundError, match="dev") as caught:
         load_overlap(path, [{"col": "rd", "op": ">", "value": 0}], backend="native")
+    assert caught.value.name in {"numpy", "polars"}

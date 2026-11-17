@@ -11,9 +11,7 @@
       "path": "scripts/fetch_module.py",
       "sha256": "0fe92150a293cdb6e9e135d93b7c15cd62796f9296ad52e6e87b32d5bf779d26",
       "source": "myon-bioinformatics/Aoi",
-      "consumers": [
-        "myon-bioinformatics/DRAgoWing"
-      ]
+      "consumers": []
     },
     {
       "path": "scripts/shrink_module.py",

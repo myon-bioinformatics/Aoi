@@ -1,13 +1,21 @@
-"""🧪 olnm tests — `python -m unittest discover`."""
-import json, os, re, shutil, subprocess, sys, tempfile, unittest
+"""🧪 hub tests (the former local_forge.py, now the hub section of nagoyaction.py; from olnm) — `python -m unittest discover`.
+
+The forge binary is the stand-in tests/fixtures/fake_forgejo.py. FailurePaths (at the end) checks that
+failure paths never announce a completed startup or commit an unapplied dial.
+"""
+import contextlib, importlib.util, io, json, os, re, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parent.parent
 TMP = Path(tempfile.mkdtemp(prefix="olnm-"))
 sys.path.insert(0, str(ROOT))
+# 🏠 OLNM_HOME / DIAL_FILE は import 時に読むので、他のテストが先に import した nagoyaction とは別の実体を読む
 with mock.patch.dict(os.environ, OLNM_HOME=str(TMP / "home"), DIAL_FILE=str(TMP / "dial")):
-    import local_forge as olnm  # noqa: E402
+    _spec = importlib.util.spec_from_file_location("forge_subject", ROOT / "nagoyaction.py")
+    olnm = importlib.util.module_from_spec(_spec)
+    sys.modules[_spec.name] = olnm  # dataclass は自分のモジュールを sys.modules から引く（3.11・3.12）
+    _spec.loader.exec_module(olnm)
 PORT = 3777
 
 
@@ -28,7 +36,7 @@ class HubBase(unittest.TestCase):
         self.addCleanup(patcher.stop)
         reset_forge()
         olnm.BIN.parent.mkdir(parents=True)
-        shutil.copy(ROOT / "tests" / "fake_forgejo.py", olnm.BIN); olnm.BIN.chmod(0o755)
+        shutil.copy(ROOT / "tests" / "fixtures" / "fake_forgejo.py", olnm.BIN); olnm.BIN.chmod(0o755)
         self.wt = TMP / "wt"; shutil.rmtree(self.wt, ignore_errors=True); self.wt.mkdir()
         git("init", "-q", "-b", "main", cwd=self.wt)
         (self.wt / "a").write_text("a"); git("add", ".", cwd=self.wt)
@@ -77,7 +85,7 @@ class TestHubInit(HubBase):
             path = olnm.hub_bundle(str(TMP / "carry"), version="1.2.3", flavor="gitea")
         self.assertEqual(seen[0], "https://github.com/go-gitea/gitea/releases/download/v1.2.3/gitea-1.2.3-linux-amd64")
         self.assertEqual(path.name, "gitea-1.2.3-linux-amd64")
-        self.assertTrue((TMP / "carry" / "local_forge.py").exists())
+        self.assertTrue((TMP / "carry" / "nagoyaction.py").exists())
         with mock.patch.object(olnm, "_fetch", lambda url, dest=None, timeout=0: b"bin" if not url.endswith(".sha256") else b"bad  x"):
             with self.assertRaises(SystemExit):
                 olnm.hub_bundle(str(TMP / "carry2"), version="1.2.3")
@@ -184,7 +192,7 @@ def nagoyaction(*argv, home):
 
 
 class TestNagoyactionHub(unittest.TestCase):
-    """🏠 nagoyaction.py hub … hands every argument to local_forge (exit codes included)."""
+    """🏠 nagoyaction.py hub … hands every argument to the hub section (exit codes included)."""
 
     def setUp(self):
         self.home = Path(tempfile.mkdtemp(prefix="nagoyaction-hub-"))
@@ -198,11 +206,11 @@ class TestNagoyactionHub(unittest.TestCase):
         self.assertIn("🔁 mirror (2)", shown.stdout)
         self.assertIn("🔁 mirror (2) | ⚪ down", nagoyaction("hub", "status", home=self.home).stdout)
 
-    def test_help_and_typos_reach_local_forge(self):
+    def test_help_and_typos_reach_hub(self):
         helped = nagoyaction("hub", "dial", "--help", home=self.home)
         self.assertEqual(helped.returncode, 0)
         self.assertIn("usage: nagoyaction hub dial", helped.stdout)
-        self.assertNotIn("hub hub", helped.stdout)  # local_forge's internal "hub" stays hidden
+        self.assertNotIn("hub hub", helped.stdout)  # the hub parser's internal "hub" stays hidden
         typo = nagoyaction("hub", "dial", "mirorr", home=self.home)
         self.assertEqual(typo.returncode, 2)
         self.assertIn("invalid choice: 'mirorr'", typo.stderr)
@@ -217,3 +225,113 @@ class TestNagoyactionHub(unittest.TestCase):
         run = subprocess.run([sys.executable, "-c", code, str(ROOT)], capture_output=True, text=True, env=env, timeout=60)
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertEqual((self.home / "dial").read_text().strip(), "1")
+
+
+# ──── failure paths: a separate module instance, so patches never touch `olnm` above ────
+
+spec = importlib.util.spec_from_file_location("forge_failure_subject", ROOT / "nagoyaction.py")
+f = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = f
+spec.loader.exec_module(f)
+
+
+class FailurePaths(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        for name, path in {"LOG": root / "log", "PID": root / "pid",
+                           "FSTATE": root / "state", "DIAL_FILE": root / "dial"}.items():
+            patch = mock.patch.object(f, name, path)
+            patch.start()
+            self.addCleanup(patch.stop)
+        self.child = mock.Mock(pid=123456)
+        self.child.poll.return_value = None
+        for name, value in {"_running": 0, "hub_port": 3000}.items():
+            patch = mock.patch.object(f, name, return_value=value)
+            patch.start()
+            self.addCleanup(patch.stop)
+        patch = mock.patch.object(f.subprocess, "Popen", return_value=self.child)
+        patch.start()
+        self.addCleanup(patch.stop)
+
+    def test_timeout_fails_cli_and_reaps_only_own_child(self):
+        with mock.patch.object(f, "_fetch", side_effect=f.urllib.error.URLError("offline")), \
+             mock.patch.object(f.time, "sleep"), mock.patch.object(f.os, "kill") as kill:
+            with self.assertRaisesRegex(SystemExit, "timed out"):
+                f.local_forge_main(["up"])
+        self.child.terminate.assert_called_once()
+        self.child.wait.assert_called_once_with(timeout=5)
+        kill.assert_not_called()
+        self.assertFalse(f.PID.exists())
+
+    def test_early_exit_does_not_accept_other_server_health(self):
+        self.child.poll.return_value = 1
+        with mock.patch.object(f, "_fetch") as fetch:
+            with self.assertRaisesRegex(SystemExit, "exited"):
+                f.hub_up()
+        fetch.assert_not_called()
+        self.child.terminate.assert_not_called()
+        self.assertFalse(f.PID.exists())
+
+    def test_child_exit_during_health_check_is_failure(self):
+        self.child.poll.side_effect = [None, 1, 1]
+        with mock.patch.object(f, "_fetch", return_value=b"healthy"):
+            with self.assertRaisesRegex(SystemExit, "exited"):
+                f.hub_up()
+        self.child.terminate.assert_not_called()
+
+    def test_success_keeps_child_and_pid(self):
+        with mock.patch.object(f, "_fetch", return_value=b"healthy"):
+            self.assertEqual(f.hub_up(), self.child.pid)
+        self.child.terminate.assert_not_called()
+        self.assertEqual(f.PID.read_text(), str(self.child.pid))
+
+    def test_replaced_pid_is_not_removed_or_signalled(self):
+        def failed(*a, **kw):
+            f.PID.write_text("987654")
+            raise OSError("injected startup failure")
+        with mock.patch.object(f, "_fetch", side_effect=failed), mock.patch.object(f.os, "kill") as kill:
+            with self.assertRaises(OSError):
+                f.hub_up()
+        self.assertEqual(f.PID.read_text(), "987654")
+        kill.assert_not_called()
+        self.child.terminate.assert_called_once()
+
+    def test_unresponsive_child_is_killed_and_reaped(self):
+        self.child.wait.side_effect = [f.subprocess.TimeoutExpired("forge", 5), 0]
+        with mock.patch.object(f, "_fetch", side_effect=RuntimeError("failure")):
+            with self.assertRaises(RuntimeError):
+                f.hub_up()
+        self.child.kill.assert_called_once()
+        self.assertEqual(self.child.wait.call_count, 2)
+
+    def test_apply_failure_does_not_commit_dial_or_claim_success(self):
+        f.FSTATE.write_text("{}")
+        f.DIAL_FILE.write_text("3\n")
+        output, errors = io.StringIO(), io.StringIO()
+        with mock.patch.object(f, "_hub_apply", side_effect=SystemExit("apply failed")), \
+             contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            with self.assertRaises(SystemExit):
+                f.dial(1)
+        self.assertEqual(f.DIAL_FILE.read_text(), "3\n")
+        self.assertNotIn("→", output.getvalue())
+        self.assertIn("not automatically rolled back", errors.getvalue())
+
+    def test_success_commits_dial_after_apply(self):
+        f.FSTATE.write_text("{}")
+        f.DIAL_FILE.write_text("3\n")
+        def apply(level):
+            self.assertEqual(level, 1)
+            self.assertEqual(f.DIAL_FILE.read_text(), "3\n")
+        with mock.patch.object(f, "_hub_apply", side_effect=apply):
+            self.assertEqual(f.dial(1), 1)
+        self.assertEqual(f.DIAL_FILE.read_text(), "1\n")
+
+    def test_failed_cleanup_preserves_pid_and_original_error(self):
+        self.child.terminate.side_effect = PermissionError("not allowed")
+        with mock.patch.object(f, "_fetch", side_effect=RuntimeError("original failure")):
+            with self.assertRaisesRegex(RuntimeError, "original failure"):
+                f.hub_up()
+        self.assertEqual(f.PID.read_text(), str(self.child.pid))
+        self.child.kill.assert_not_called()

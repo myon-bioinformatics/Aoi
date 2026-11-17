@@ -37,13 +37,10 @@ def _load():
     return module
 
 
-NAGOYACTION_MODULES = [ROOT / "nagoyaction" / "local_forge.py", ROOT / "nagoyaction" / "localci.py"]
-
-
 def test_builds_lowercase_child_entry(tmp_path):
     out = tmp_path / "nagoyaction-tool"
-    # NagoyAction #51 以降、hub / actionlint は関数の中で local_forge / localci を読む。子の README と同じく --module で同梱する。
-    result = _load().build([ROOT / "nagoyaction" / "nagoyaction.py"], out, extra_modules=NAGOYACTION_MODULES)
+    # NagoyAction #58 で hub・localci も nagoyaction.py 1 本になった。--module は要らない
+    result = _load().build([ROOT / "nagoyaction" / "nagoyaction.py"], out)
     data = tomllib.loads((out / "pyproject.toml").read_text(encoding="utf-8"))
     assert data["project"]["name"] == "nagoyaction"
     assert data["project"]["dependencies"] == []
@@ -73,7 +70,6 @@ def test_rejects_camelcase_entry_name(tmp_path):
 
 def test_cli_runs_without_site(tmp_path):
     run = subprocess.run([sys.executable, "-S", str(BUILDER), str(ROOT / "nagoyaction" / "nagoyaction.py"),
-                          *(arg for m in NAGOYACTION_MODULES for arg in ("--module", str(m))),
                           "--out", str(tmp_path / "o"), "--json"], capture_output=True, text=True, check=False)
     assert run.returncode == 0, run.stderr
 

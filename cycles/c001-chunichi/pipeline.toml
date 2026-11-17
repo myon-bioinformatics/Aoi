@@ -91,5 +91,5 @@ run = ["uv", "run", "python", "aoi.py", "pythdragoras/core/propositions.py", "ju
 # 7. 研究記録の一覧（オフライン）。現在の総合判定を結合するが、2026年の独立検証とは別。
 [[step]]
 name = "digest"
-run = ["uv", "run", "python", "nagoyaction/research_digest.py",
+run = ["uv", "run", "python", "nagoyaction/npb/research_digest.py",
        "cycles/c001-chunichi", "--outdir", "{out}"]

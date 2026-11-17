@@ -773,12 +773,11 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1357,
+      "attribute_uses": 1351,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
-        "MonkeyPatch": 1,
         "StashKey": 2,
         "UsageError": 11,
         "approx": 397,
@@ -786,10 +785,10 @@
         "fixture": 52,
         "hookimpl": 3,
         "importorskip": 13,
-        "mark.parametrize": 300,
-        "mark.skipif": 10,
+        "mark.parametrize": 297,
+        "mark.skipif": 9,
         "param": 1,
-        "raises": 513,
+        "raises": 512,
         "skip": 11,
         "warns": 3,
         "xfail": 1
@@ -844,19 +843,18 @@
           "import_sites": 11
         },
         "nagoyaction": {
-          "attribute_uses": 97,
+          "attribute_uses": 91,
           "attributes": {
-            "MonkeyPatch": 1,
             "fail": 6,
             "fixture": 7,
-            "mark.parametrize": 20,
-            "mark.skipif": 2,
-            "raises": 60,
+            "mark.parametrize": 17,
+            "mark.skipif": 1,
+            "raises": 59,
             "skip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 13,
-          "import_sites": 13
+          "files": 10,
+          "import_sites": 10
         },
         "pythdragoras": {
           "attribute_uses": 177,
@@ -1005,10 +1003,10 @@
           "name": "pytest"
         }
       ],
-      "distinct_attributes": 18,
+      "distinct_attributes": 17,
       "dynamic_import_sites": 1,
-      "files": 107,
-      "import_sites": 110
+      "files": 104,
+      "import_sites": 107
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1613,21 +1611,11 @@
     },
     {
       "attributes": {
-        "MonkeyPatch": 1
-      },
-      "dynamic_lines": [],
-      "file": "nagoyaction/localci_pytest.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "nagoyaction"
-    },
-    {
-      "attributes": {
         "DataFrame": 2,
         "col": 1
       },
       "dynamic_lines": [],
-      "file": "nagoyaction/research_digest.py",
+      "file": "nagoyaction/npb/research_digest.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "nagoyaction"
@@ -1656,10 +1644,11 @@
     },
     {
       "attributes": {
-        "raises": 1
+        "mark.parametrize": 1,
+        "mark.skipif": 1
       },
       "dynamic_lines": [],
-      "file": "nagoyaction/tests/test_answer_cache_keys.py",
+      "file": "nagoyaction/tests/test_fleet.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "nagoyaction"
@@ -1668,8 +1657,8 @@
       "attributes": {
         "fail": 1,
         "fixture": 1,
-        "mark.parametrize": 3,
-        "raises": 2
+        "mark.parametrize": 4,
+        "raises": 3
       },
       "dynamic_lines": [],
       "file": "nagoyaction/tests/test_inbox.py",
@@ -1718,28 +1707,6 @@
       },
       "dynamic_lines": [],
       "file": "nagoyaction/tests/test_nagoyaction.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "nagoyaction"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 4,
-        "mark.skipif": 2,
-        "raises": 1
-      },
-      "dynamic_lines": [],
-      "file": "nagoyaction/tests/test_nagoyaction_node_entry.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "nagoyaction"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 1
-      },
-      "dynamic_lines": [],
-      "file": "nagoyaction/tests/test_pr42_cache_review.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "nagoyaction"

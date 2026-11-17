@@ -5,13 +5,6 @@ on:
   pull_request:
   schedule:
     - cron: "30 7 * * *"
-  workflow_dispatch:
-    inputs:
-      aoi_ref:
-        description: "Aoi ref to checkout. Empty resolves latest main."
-        required: false
-        type: string
-        default: ""
 permissions:
   contents: read
 jobs:
@@ -29,7 +22,7 @@ jobs:
           python-version: "3.11"
           activate-environment: true
       - name: Install verified Gitea and exercise repository, issue, and PR
-        run: python -S tools/real_forge_smoke.py
+        run: python -S scripts/real_forge_smoke.py
 
   changes:
     permissions:
@@ -63,13 +56,13 @@ jobs:
       - name: Resolve referenced repositories
         id: resolve
         env:
-          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
+          AOI_REF_INPUT: ""
           GITHUB_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
           GITHUB_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
-          python localci.py resolve --github-output
+          python nagoyaction.py localci resolve --github-output
 
   # vendor/aoi のバイトを、解決した Aoi の原本と shared-tools.lock.json に照合する。
   # pull request では不一致を警告にし、main への push と schedule では失敗にする。
@@ -142,7 +135,7 @@ jobs:
           fi
 
   test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     needs: [changes, resolve-vendor]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
@@ -160,7 +153,12 @@ jobs:
         with:
           node-version: '26'
       - name: Require supported Node in parity CI
-        run: node -e "if (+process.versions.node.split('.')[0] < 26) process.exit(1)"
+        run: |
+          node_major=$(node -p "process.versions.node.split('.')[0]")
+          if [[ "$node_major" -lt 26 ]]; then
+            echo "node ${node_major} is older than 26" >&2
+            exit 1
+          fi
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "latest"
@@ -232,7 +230,7 @@ jobs:
   # 最小版は scripts/collect_with_polars_min.py が vendor/aoi/ から載せる。
   polars-min:
     name: collect (real polars, then polars uninstalled)
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     needs: [changes, resolve-vendor]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -302,7 +300,7 @@ jobs:
 
   failure-identity:
     needs: [changes, test]
-    if: (always()) && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    if: (always()) && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule')
     permissions:
       contents: read
       actions: read
@@ -322,7 +320,7 @@ jobs:
 
   local-ci:
     needs: changes
-    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -343,9 +341,9 @@ jobs:
       - name: Run local CI
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          AOI_REF_INPUT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.aoi_ref || '' }}
+          AOI_REF_INPUT: ""
         run: |
           set -euo pipefail
           seed="${{ github.run_id }}"
           echo "localci seed=${seed}"
-          python localci.py run --repeat 10 --seed "${seed}" --strict
+          python nagoyaction.py localci run --repeat 10 --seed "${seed}" --strict

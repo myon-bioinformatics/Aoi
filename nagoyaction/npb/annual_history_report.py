@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse, hashlib, json
 from collections import Counter, defaultdict; from pathlib import Path
 # SakAnalytics の synthetic_league・annual_audit と、Aoi の annual_scope・aoi_npb は名前で import する。
-# 場所は Aoi の aoi.py が入れる（python aoi.py nagoyaction/annual_history_report.py …）
+# 場所は Aoi の aoi.py が入れる（python aoi.py nagoyaction/npb/annual_history_report.py …）
 import synthetic_league
 from synthetic_league import PRIMARY_YEARS, validate_period, calibration_mean
 from annual_audit import audit_files as _audit_files

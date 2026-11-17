@@ -135,10 +135,10 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
         "nagoyaction": (
             "queryu",            # tests/test_annual_history_report.py: from queryu import Cache
             "queryu/ask",        # inbox/inbox.py: ask, bank
-            "sakanalytics/npb",  # annual_history_report.py: synthetic_league, annual_audit
+            "sakanalytics/npb",  # npb/annual_history_report.py: synthetic_league, annual_audit
             "blueprobe",         # npb_team_annual: from blueprobe import HtmlTree
             "blueprobe/npb",     # tests/test_annual_history_report.py: import npb_team_annual
-            ".",                 # annual_history_report.py: annual_scope; inbox/inbox.py: aoi_npb
+            ".",                 # npb/annual_history_report.py: annual_scope; inbox/inbox.py: aoi_npb
         ),
     }
     assert tuple(dict.fromkeys(rel for name, rels in aoi.SIBLINGS.items() if name != "nagoyaction" for rel in rels)) == union
@@ -230,7 +230,7 @@ def test_nagoyaction_report_and_inbox_import_through_aoi(tmp_path):
     for flag in (None, "-I", "-S", "-E", "-P"):
         prefix = [sys.executable] if flag is None else [sys.executable, flag]
         report = subprocess.run(
-            [*prefix, str(root / "aoi.py"), "nagoyaction/annual_history_report.py", "--help"],
+            [*prefix, str(root / "aoi.py"), "nagoyaction/npb/annual_history_report.py", "--help"],
             cwd=tmp_path, env=env, capture_output=True, text=True)
         assert report.returncode == 0, (flag, report.stderr)
         assert "--observations" in report.stdout

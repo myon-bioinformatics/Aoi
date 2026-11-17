@@ -1,4 +1,4 @@
-import json, os, subprocess, sys, threading, urllib.error
+import json, os, subprocess, sys, tempfile, threading, unittest, urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer; from pathlib import Path
 
 import pytest
@@ -266,3 +266,19 @@ def test_cli_remote_404_stays_broken_under_strict(tmp_path):
     err = json.loads(proc.stderr)
     assert doc["results"][0]["status"] == "broken"
     assert err["error"]["code"] == "broken" and err["exit"] == 1
+
+
+# ──── case-mismatch index (docs/link-case-index.md) ─────────────────────────────
+
+
+class LinkCaseIndexTests(unittest.TestCase):
+    def test_case_directory_missing_and_exact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            (root/'README.md').write_text('[ok](Target.txt) [case](target.txt) [dir](folder) [missing](absent.md) [again](target.txt)',encoding='utf-8')
+            records=lc.check_local(root,['README.md','Target.txt','Folder/item.txt'])
+            self.assertEqual([r['status'] for r in records],['ok','broken','broken','broken','broken'])
+            self.assertIn('Target.txt',records[1]['reason'])
+            self.assertIn('Folder',records[2]['reason'])
+            self.assertEqual(records[1]['reason'],records[4]['reason'])
+            self.assertEqual(records[3]['reason'],'git に登録されたファイルがない')

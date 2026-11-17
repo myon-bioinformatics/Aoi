@@ -5,8 +5,8 @@ The target is `cycles/c001-chunichi/research/R*.md`. It is an index that scans a
 ## Running
 
 ```bash
-uv run python nagoyaction/research_digest.py cycles/c001-chunichi
-uv run python nagoyaction/research_digest.py cycles/c001-chunichi --check
+uv run python nagoyaction/npb/research_digest.py cycles/c001-chunichi
+uv run python nagoyaction/npb/research_digest.py cycles/c001-chunichi --check
 uv run pytest -q nagoyaction/tests/test_research_digest.py
 ```
 

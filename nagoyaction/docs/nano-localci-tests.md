@@ -2,7 +2,7 @@
 
 `tools/localci-env` is an opt-in environment for the existing
 `tests/test_localci.py` file. It installs the real pytest runner and its complete
-locked dependency closure. It does not replace a dependency with a stub or
+locked dependency closure. The root `pyproject.toml` installs the stdlib-only CLI; this separate profile remains the opt-in pytest environment. It does not replace a dependency with a stub or
 remove any tests. The full Aoi-integrated matrix and the existing Polars
 real/minimal comparison stay unchanged.
 
@@ -16,16 +16,16 @@ PyPI; subsequent use can be offline once all required wheels are cached.
 uv sync --project tools/localci-env --locked --python 3.12
 PYTHONPATH="$PWD" PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   uv run --project tools/localci-env --locked --no-sync python -m pytest \
-  -q tests/test_localci.py tests/test_localci_nano_profile.py
+  -q tests/test_localci.py
 ```
 
-The new three profile-contract tests are separate from the original 39 self-test
-cases. The command checks 42 cases. Third-party plugin autoload is disabled
-explicitly; the unchanged subprocess tests still load `localci_pytest` to check
+The three profile-contract tests (`test_localci_profile_*`, `test_localci_lock_*`)
+sit at the end of `tests/test_localci.py`, after the self-test cases. Third-party plugin autoload is disabled
+explicitly; the subprocess tests still load the plugin (`-p nagoyaction`) to check
 seed substitution, disjoint sharding and complete coverage. This setting does
 not disable built-in pytest assertions or fixtures.
 
-This command runs pytest directly. It does **not** run `localci.py run
+This command runs pytest directly. It does **not** run `nagoyaction.py localci run
 --self-tests`, which also resolves external references and runs workflow checks.
 Git is required by the local temporary-repository tests. Tests mock external
 network responses; no model, browser, Docker or production service is started.

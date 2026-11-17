@@ -12,7 +12,7 @@ A child is a generic single file: it does not look for its siblings. This launch
 ``AOI_ROOT``, ``AOI_RESEARCH_CYCLE``, and only the sibling directories that child imports
 (``SIBLINGS``). Those directories are appended after the caller's ``PYTHONPATH`` (an externally
 supplied BlueProbe stays ahead of Aoi's). Aoi's root and ``.`` are not put on ``PYTHONPATH``.
-NagoyAction names ``.`` because ``annual_history_report.py`` imports ``annual_scope`` and
+NagoyAction names ``.`` because ``npb/annual_history_report.py`` imports ``annual_scope`` and
 ``inbox/inbox.py`` imports ``aoi_npb`` (single files at Aoi's root). Its other entries are
 the sibling directories those modules and its tests import.
 ``dragowing/`` is not one of the directories: ``dragowing.py`` would win ``import dragowing``
@@ -85,10 +85,10 @@ _UNION = tuple(dict.fromkeys(rel for name in SIBLINGS for rel in SIBLINGS[name])
 SIBLINGS["nagoyaction"] = (
     "queryu",            # tests/test_annual_history_report.py: from queryu import Cache
     "queryu/ask",        # inbox/inbox.py: ask, bank
-    "sakanalytics/npb",  # annual_history_report.py: synthetic_league, annual_audit
+    "sakanalytics/npb",  # npb/annual_history_report.py: synthetic_league, annual_audit
     "blueprobe",         # npb_team_annual: from blueprobe import HtmlTree
     "blueprobe/npb",     # tests/test_annual_history_report.py: import npb_team_annual
-    ".",                 # annual_history_report.py: annual_scope; inbox/inbox.py: aoi_npb
+    ".",                 # npb/annual_history_report.py: annual_scope; inbox/inbox.py: aoi_npb
 )
 _BARE = object()
 

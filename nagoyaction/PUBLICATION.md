@@ -6,7 +6,7 @@ research-specific release rules; the publisher does not invent a second gate.
 
 ## Identity and trust boundary
 
-`ghi_execution.py` imports the canonical single file from a separate checkout at
+`nagoyaction.py ghi-execution` (formerly `ghi_execution.py`) imports the canonical single file from a separate checkout at
 `gh_identity@fc2c527257b12eb99c00637bbae74f8988fd6bf4`. Its Git blob is checked before
 import. No GitHub HTTP transport is copied into Aoi. The adapter uses GHI
 `request()` for a GET of the current run attempt, and `local_identity(env={})`

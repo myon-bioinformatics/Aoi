@@ -113,7 +113,7 @@ python -S sakanalytics/synthetic_league.py \
 通常の集約は期間外の実測や不完全な14年組を拒否する。参考側の検証成功は合格の前提にしない。
 
 ```bash
-uv run python nagoyaction/annual_history_report.py \
+uv run python aoi.py nagoyaction/npb/annual_history_report.py \
   --observations data/observations/npb_team_annual/records.jsonl \
   --audit data/observations/npb_team_annual/audit.json \
   --baseline cycles/c001-chunichi/outputs/season.jsonl \

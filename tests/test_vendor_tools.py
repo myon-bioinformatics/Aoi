@@ -70,7 +70,6 @@ def test_rejects_camelcase_entry_name(tmp_path):
 
 def test_cli_runs_without_site(tmp_path):
     run = subprocess.run([sys.executable, "-S", str(BUILDER), str(ROOT / "nagoyaction" / "nagoyaction.py"),
-                          *(arg for m in NAGOYACTION_MODULES for arg in ("--module", str(m))),
                           "--out", str(tmp_path / "o"), "--json"], capture_output=True, text=True, check=False)
     assert run.returncode == 0, run.stderr
 

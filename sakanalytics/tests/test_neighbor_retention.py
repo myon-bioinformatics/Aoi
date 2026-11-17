@@ -1,7 +1,15 @@
+"""🧭 近い候補の保持（core/neighbors.py）。ベンチマークの -O ガードは tests/test_fleet.py（親の fleet_check.run_main）。
+
+標準ライブラリだけ（docs/neighbor-retention.md）:
+
+    python -S -m unittest discover -s tests -p test_neighbor_retention.py -v
+"""
 import sys, unittest
 from pathlib import Path
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-import neighbors
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'core'))  # neighbors.py は core/（python -S -m unittest でも読める）
+import neighbors  # noqa: E402
 
 
 class NeighborRetentionTests(unittest.TestCase):

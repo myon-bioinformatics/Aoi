@@ -1,7 +1,7 @@
 """SakAnalytics は Aoi の兄弟サブプロジェクト（pythdragoras など）と Aoi の scripts/ を import しない。
 
-使ってよいのは、標準ライブラリ、pyproject の依存（polars）と pytest、任意の ortools
-（season-requirements.txt。入っていなければ exact のテストは skip）、このリポジトリの
+使ってよいのは、標準ライブラリ、pyproject の dev の依存（polars）と pytest、任意の ortools
+（npb/season-requirements.txt。入っていなければ exact のテストは skip）、このリポジトリの
 モジュールだけ。既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の sakanalytics/ でも同じ結果になる。
 """
@@ -21,7 +21,9 @@ KNOWN_EXCEPTIONS = {
     ("conftest.py", "import:aoi"),
     # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
     ("vendor/uv_tool_build.py", "path:scripts"),
-    ("tests/test_standalone_boundary.py", "path:scripts"),
+    ("tests/test_sakanalytics.py", "path:scripts"),
+    # このリポジトリの scripts/ のベンチマーク（-O ガードが親の fleet_check.run_main に渡す場所）。Aoi の scripts/ ではない
+    ("tests/test_fleet.py", "path:scripts/benchmark_neighbor_retention.py"),
     ("core/proposition_seed_audit.py", "import:propositions"),
     ("npb/synthetic_rule_discovery.py", "import:propositions"),
     # もしもボックスの --readout / readout() は、同じ表を PythDRagoras の評価で読み戻す（任意。遅延 import）

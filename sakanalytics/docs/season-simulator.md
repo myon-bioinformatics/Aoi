@@ -1,7 +1,7 @@
 # Remaining games, CS probability, and title magic numbers
 
 Standalone shared components of SakAnalytics. They do not depend on the analysis in research Draft PR #3.
-This is the implementation of the [pre-implementation plan](SEASON_SIMULATOR_PLAN.md); it does not establish the cause of Chunichi's slump.
+This is the implementation of the [pre-implementation plan](season-simulator-plan.md); it does not establish the cause of Chunichi's slump.
 
 ## Quick start
 
@@ -9,10 +9,10 @@ Python 3.11–3.14. Probability calculation alone runs on the standard library.
 Mathematical clinch determination uses OR-Tools.
 
 ```sh
-uv run --with-requirements season-requirements.txt python npb/season_simulator.py season-example.json \
+uv run --with-requirements npb/season-requirements.txt python npb/season_simulator.py npb/season-example.json \
   --as-of 2022-01-01 --through 2022-01-04 --trials 10000 --seed 42 \
   --exact --output /tmp/season-forecast.json
-AOI_ROOT=/path/to/Aoi uv run --with-requirements season-requirements.txt pytest tests/test_season_simulator.py -q
+AOI_ROOT=/path/to/Aoi uv run --with-requirements npb/season-requirements.txt pytest tests/test_season_simulator.py -q
 ```
 
 The example is entirely fictional. A's magic number changes 2 → out → 1 → 0.
@@ -22,7 +22,7 @@ With 6 teams and a CS, there are 24 solves per day. If each uses the default 10 
 
 ## Input and connection
 
-The input JSON has the following 4 items. See [season-example.json](season-example.json) for an example.
+The input JSON has the following 4 items. See [npb/season-example.json](../npb/season-example.json) for an example.
 
 | Item | Contents |
 |---|---|
@@ -117,7 +117,7 @@ Aggregates cut off at the point of low probability have selection bias, so aggre
 
 ## Verification
 
-The [2022 connection verification JSON](season-validation-2022.json) contains only computed aggregates.
+The [2022 connection verification JSON](../npb/season-validation-2022.json) contains only computed aggregates.
 To rerun with local permitted input, use the following at Aoi's root (moved to Aoi's `scripts/` because it is NPB 2022-specific).
 
 ```sh

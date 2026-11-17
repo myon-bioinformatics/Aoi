@@ -120,7 +120,9 @@ def load_overlap(path: Path, conds: list[dict], *, backend: str = "native") -> d
             import polars as pl
         except ImportError as exc:
             # 🧮 native は PythDRagoras の rule_search 用。numpy・polars は dev グループにある
-            raise ValueError(f"native の重なりには numpy・polars が要る（uv sync --group dev）。既定は stdlib の経路: {exc}") from exc
+            # 足りないのはパッケージなので ModuleNotFoundError のまま（読み込みの検査が import の行として数えられる）
+            raise ModuleNotFoundError(f"native の重なりには numpy・polars が要る（uv sync --group dev）。既定は stdlib の経路: {exc}",
+                                      name=exc.name) from exc
 
         rows = read_jsonl(path)
         rule_search, _ = _engines()

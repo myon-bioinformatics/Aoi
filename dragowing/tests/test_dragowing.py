@@ -30,8 +30,8 @@ class StandaloneTest(unittest.TestCase):
     def test_generated_tool_project_has_single_module(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "tool"
-            # 親の共通ビルダー（Aoi から vendor/aoi/vendor/ に配布）で、dragowing.py だけの uv tool にする
-            subprocess.run([sys.executable, "-S", str(ROOT / "vendor/aoi/vendor/uv_tool_build.py"),
+            # 親の共通ビルダー（Aoi から vendor/ に配布）で、dragowing.py だけの uv tool にする
+            subprocess.run([sys.executable, "-S", str(ROOT / "vendor/uv_tool_build.py"),
                             str(ROOT / "dragowing.py"), "--out", str(target)], check=True, capture_output=True)
             self.assertEqual((target / "dragowing.py").read_bytes(), (ROOT / "dragowing.py").read_bytes())
             import tomllib

@@ -49,7 +49,7 @@ The existing API's positional arguments are unchanged and the added argument is 
 
 ## Migration decision from the experiment
 
-Aoi's `shrink/run_overlap_stdlib.py --deps min` replaces the process-wide `numpy` and `polars` with
+Aoi's `scripts/stdlib_min.py overlap-stdlib --deps min` (formerly `shrink/run_overlap_stdlib.py`) replaces the process-wide `numpy` and `polars` with
 minimal versions. Mixed with libraries already loaded, the same name points to different implementations,
 affecting other analyses and imports inside libraries. It also assumes the libraries are not installed.
 Production switching does not use it; it calls the limited row evaluation in `_overlap_stdlib.py`.
@@ -89,6 +89,6 @@ python scripts/benchmark_overlap.py \
 ```
 
 The benchmark's RSS measurement is for Linux/macOS. The product's lightweight path itself has no OS-dependent processing.
-HTML generation still needs Markdown, PNG/SVG needs Chrome, and the registration-status display needs QueRyu.
+HTML generation uses the vendored `markdown.py` (standard library only), and the registration-status display needs QueRyu.
 The public surface and dependency declarations of `dist/dragowing_min.py` are unchanged.
 Nothing is written to research inputs, holdout history, or research result files.

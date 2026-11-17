@@ -12,7 +12,7 @@ trades memory for fewer repeated scans: typical indexed work is O(rows + IDs +
 output) rather than O(rows times IDs), using O(rows) temporary references.
 
 ```sh
-python -S -m unittest discover -s tests -p test_record_selection_index.py -v
+python -S -m unittest discover -s tests -p test_records.py -v
 python -S scripts/benchmark_record_selection.py
 ```
 

@@ -166,7 +166,6 @@ on:
   workflow_run:
     workflows:
       - 'Action uses'
-      - 'Browser startup validation'
       - 'c001 offline replay audit'
       - 'c001 saved input verification'
       - 'CI'

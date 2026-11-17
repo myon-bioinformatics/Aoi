@@ -1,4 +1,4 @@
-"""Plotly.js for DRAgoWing HTML and Chrome export (jsDelivr, no SRI/hash pin).
+"""Plotly.js for DRAgoWing HTML (jsDelivr, no SRI/hash pin).
 
 Figure JSON/initialization remains DRAgoWing-owned. web-ui alignment is tracked
 separately; this module uses the versionless jsDelivr dist URL directly.

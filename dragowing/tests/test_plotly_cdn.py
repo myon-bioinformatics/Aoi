@@ -1,8 +1,8 @@
 """DRAgoWing Plotly.js CDN adapter (jsDelivr, no hash pin)."""
 from __future__ import annotations
 
-import io, os, urllib.error
-from pathlib import Path; from unittest.mock import patch
+import io, urllib.error
+from unittest.mock import patch
 
 import pytest
 
@@ -87,13 +87,3 @@ def test_inline_raw_text_terminator_is_rejected():
         with pytest.raises(ValueError, match='script end tag'):
             plotly_cdn.fetch_plotly_js()
     assert plotly_cdn._PLOTLY_JS_CACHE is None
-
-
-def test_pinned_bundle_used_for_offline_export_fixture():
-    source = os.environ.get('DRAGOWING_PINNED_PLOTLY_JS')
-    if not source:
-        pytest.skip('pinned Plotly bundle supplied by Chrome CI')
-    raw = Path(source).read_bytes()
-    assert raw
-    with patch('urllib.request.urlopen', return_value=Response(raw)):
-        assert plotly_cdn.fetch_plotly_js() == raw.decode('utf-8')

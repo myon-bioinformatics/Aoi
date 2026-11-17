@@ -1,57 +1,24 @@
 """python -m dragowing RESULTS
 
 HTML を --out（省略時は新しい一時ディレクトリ）に書き、書いたものをリンクで1行ずつ表示する。
-重なりは既定で標準ライブラリの経路を使う。--overlap-backend native で従来の経路を選べる。PNG / SVG は --png / --svg と Chrome があるときだけ。
+重なりは既定で標準ライブラリの経路を使う。--overlap-backend native で従来の経路を選べる。SVG は --svg で、親の plotly_min が描く（Chrome なし）。
 """
 from __future__ import annotations
 
 import argparse, sys, tempfile
 from pathlib import Path
 
-from .chrome_pipe import find_chrome
-from .export import PLOTLY, export_draw, plotly_figure_content
-from .render import RenderSession
+from .figures import figure_svg
 from .forms import load_items
 from .htmlout import index_body, propositions_body, standalone
 from .overlap import finalize_conditions, load_overlap, parse_cond
 from .records import read_jsonl, select_items
 
 
-class ExportUnavailable(RuntimeError):
-    """Chrome が無い。HTML は書けている。"""
-
-
-class PngUnavailable(ExportUnavailable):
-    """Chrome が無い。後方互換のための例外クラス。"""
-
-
-def write_image(
-    spec: dict, path: Path, fmt: str = "png", *, chrome: str | None = None, session: RenderSession | None = None
-) -> None:
-    """session を渡すと、その Chrome を使い回す（--png と --svg で起動は 1 回）。"""
-    if session is not None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        export_draw(PLOTLY, plotly_figure_content(spec), path, fmt, session=session)
-        return
-    try:
-        executable = find_chrome(chrome)
-    except RuntimeError as exc:
-        raise ExportUnavailable(
-            f"{fmt.upper()} には Chrome/Chromium が必要です。--chrome または CHROME 環境変数で実行ファイルを指定してください。"
-        ) from exc
+def write_svg(spec: dict, path: Path) -> None:
+    """🖼️ 図の JSON を SVG に。描くのは親の plotly_min（標準ライブラリ、Chrome なし）。"""
     path.parent.mkdir(parents=True, exist_ok=True)
-    export_draw(PLOTLY, plotly_figure_content(spec), path, fmt, chrome=executable)
-
-
-def write_png(spec: dict, path: Path, *, chrome: str | None = None) -> None:
-    try:
-        write_image(spec, path, "png", chrome=chrome)
-    except ExportUnavailable as exc:
-        raise PngUnavailable(str(exc)) from exc
-
-
-def write_svg(spec: dict, path: Path, *, chrome: str | None = None) -> None:
-    write_image(spec, path, "svg", chrome=chrome)
+    path.write_bytes(figure_svg(spec))
 
 
 def team_order(text: str) -> tuple[str, ...]:
@@ -92,13 +59,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help="内訳で「その他」にまとめず別の色で残す値。繰り返せる。例: d（件数にかかわらず残す）",
     )
-    parser.add_argument(
-        "--chrome",
-        default=None,
-        help="Chrome/Chromium の実行ファイル。省略時は CHROME / CHROMIUM 環境変数、なければ PATH",
-    )
-    parser.add_argument("--png", action="store_true", help="PNG も書く。Chrome が要る。既定では HTML だけ")
-    parser.add_argument("--svg", action="store_true", help="SVG も書く。Chrome が要る。既定では HTML だけ")
+    parser.add_argument("--svg", action="store_true", help="🖼️ SVG も書く（親の plotly_min、Chrome なし）。既定では HTML だけ")
     parser.add_argument(
         "--embed",
         action="store_true",
@@ -128,7 +89,7 @@ def main(argv=None) -> int:
             rows, overlap, args.column, team_order(args.team_order), args.breakdown, tuple(args.breakdown_keep)
         )
         prop_html = propositions_body(chosen)
-    except (FileNotFoundError, ValueError, TypeError) as exc:
+    except (FileNotFoundError, ValueError, TypeError, ModuleNotFoundError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
     out = args.out or Path(tempfile.mkdtemp(prefix="dragowing-"))
@@ -137,31 +98,11 @@ def main(argv=None) -> int:
         standalone("DRAgoWing", index_html, plotly=True, embed=args.embed), encoding="utf-8"
     )
     (out / "propositions.html").write_text(standalone("命題の一覧", prop_html), encoding="utf-8")
-    markdown = sys.modules.get("markdown")
-    print(f"📦 markdown {getattr(markdown, '__version__', '?')}")
+    print("📦 markdown.py（vendor/markdown）")
     for name, note in (("index.html", f"📊 {', '.join(index_figures)}"), ("propositions.html", f"🧾 {len(chosen)}")):
         print(f"📄 {(out / name).resolve().as_uri()} {(out / name).stat().st_size} B · {note}")
-    if args.png or args.svg:
-        formats = [fmt for fmt, wanted in (("png", args.png), ("svg", args.svg)) if wanted]
-        try:
-            try:
-                executable = find_chrome(args.chrome)
-            except RuntimeError as exc:
-                raise ExportUnavailable(
-                    f"{'/'.join(f.upper() for f in formats)} には Chrome/Chromium が必要です。"
-                    "--chrome または CHROME 環境変数で実行ファイルを指定してください。"
-                ) from exc
-            # 図と形式が何件あっても Chrome の起動は 1 回だけ。
-            with RenderSession(chrome=executable) as session:
-                for name, fig in index_figures.items():
-                    for fmt in formats:
-                        write_image(fig, out / fmt / f"{name}.{fmt}", fmt, session=session)
-            for fmt in formats:
-                print(f"🖼️ {(out / fmt).resolve().as_uri()} {len(index_figures)} {fmt}")
-        except ExportUnavailable as exc:
-            print(str(exc), file=sys.stderr)
-            return 2
-        except (OSError, ValueError, RuntimeError) as exc:
-            print(str(exc), file=sys.stderr)
-            return 1
+    if args.svg:
+        for name, fig in index_figures.items():
+            write_svg(fig, out / "svg" / f"{name}.svg")
+        print(f"🖼️ {(out / 'svg').resolve().as_uri()} {len(index_figures)} svg")
     return 0

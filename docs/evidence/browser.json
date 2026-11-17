@@ -147,21 +147,6 @@
       "label": "📱 得点のタイミング",
       "url": "/research/gpt-r001-score-allocation/outputs/score_timing.html",
       "viewport": "392x848"
-    },
-    {
-      "label": "🐉 DRAgoWing figure-0",
-      "url": "/tests/fixtures/rendered_plotly/figure-0.svg",
-      "viewport": "1280x800"
-    },
-    {
-      "label": "🐉 DRAgoWing figure-1",
-      "url": "/tests/fixtures/rendered_plotly/figure-1.svg",
-      "viewport": "1280x800"
-    },
-    {
-      "label": "🐉 DRAgoWing figure-2",
-      "url": "/tests/fixtures/rendered_plotly/figure-2.svg",
-      "viewport": "1280x800"
     }
   ]
 }

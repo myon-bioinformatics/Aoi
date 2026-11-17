@@ -37,12 +37,12 @@
       "line": 119
     },
     {
-      "file": "dragowing/forms.py",
-      "line": 23
+      "file": "dragowing/dragowing.py",
+      "line": 50
     },
     {
-      "file": "dragowing/vendor/aoi/scripts/fetch_module.py",
-      "line": 390
+      "file": "dragowing/forms.py",
+      "line": 23
     },
     {
       "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",
@@ -148,39 +148,6 @@
       "dynamic_import_sites": 0,
       "files": 1,
       "import_sites": 2
-    },
-    "markdown": {
-      "attribute_uses": 3,
-      "attributes": {
-        "__version__": 3
-      },
-      "by_tree": {
-        "dragowing": {
-          "attribute_uses": 3,
-          "attributes": {
-            "__version__": 3
-          },
-          "dynamic_import_sites": 1,
-          "files": 2,
-          "import_sites": 1
-        }
-      },
-      "declared": [
-        {
-          "file": "dragowing/pyproject.toml",
-          "kind": "runtime",
-          "name": "markdown"
-        },
-        {
-          "file": "pyproject.toml",
-          "kind": "group:runtime",
-          "name": "markdown"
-        }
-      ],
-      "distinct_attributes": 1,
-      "dynamic_import_sites": 1,
-      "files": 2,
-      "import_sites": 1
     },
     "mcp_toolcall_lab": {
       "attribute_uses": 2,
@@ -454,12 +421,12 @@
       "declared": [
         {
           "file": "dragowing/pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:dev",
           "name": "numpy"
         },
         {
           "file": "dragowing/pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:dev",
           "name": "numpy"
         },
         {
@@ -754,7 +721,7 @@
       "declared": [
         {
           "file": "dragowing/pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:dev",
           "name": "polars"
         },
         {
@@ -806,24 +773,24 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1472,
+      "attribute_uses": 1378,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
-        "MonkeyPatch": 2,
-        "StashKey": 3,
+        "MonkeyPatch": 1,
+        "StashKey": 2,
         "UsageError": 11,
         "approx": 397,
-        "fail": 40,
-        "fixture": 61,
-        "hookimpl": 4,
-        "importorskip": 12,
-        "mark.parametrize": 349,
-        "mark.skipif": 27,
+        "fail": 32,
+        "fixture": 52,
+        "hookimpl": 3,
+        "importorskip": 13,
+        "mark.parametrize": 318,
+        "mark.skipif": 17,
         "param": 1,
-        "raises": 538,
-        "skip": 16,
+        "raises": 509,
+        "skip": 11,
         "warns": 3,
         "xfail": 1
       },
@@ -863,19 +830,18 @@
           "import_sites": 16
         },
         "dragowing": {
-          "attribute_uses": 97,
+          "attribute_uses": 60,
           "attributes": {
             "UsageError": 3,
-            "fail": 2,
-            "fixture": 9,
-            "mark.parametrize": 25,
-            "mark.skipif": 3,
-            "raises": 51,
-            "skip": 4
+            "fixture": 5,
+            "importorskip": 1,
+            "mark.parametrize": 18,
+            "mark.skipif": 1,
+            "raises": 32
           },
           "dynamic_import_sites": 0,
-          "files": 16,
-          "import_sites": 17
+          "files": 10,
+          "import_sites": 11
         },
         "nagoyaction": {
           "attribute_uses": 97,
@@ -947,33 +913,29 @@
           "import_sites": 14
         },
         "scripts": {
-          "attribute_uses": 5,
+          "attribute_uses": 1,
           "attributes": {
-            "MonkeyPatch": 1,
-            "StashKey": 1,
-            "fixture": 1,
-            "hookimpl": 1,
             "importorskip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 2,
-          "import_sites": 2
+          "files": 1,
+          "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 455,
+          "attribute_uses": 402,
           "attributes": {
             "approx": 104,
-            "fail": 14,
-            "fixture": 20,
+            "fail": 8,
+            "fixture": 16,
             "importorskip": 1,
-            "mark.parametrize": 131,
-            "mark.skipif": 11,
-            "raises": 168,
-            "skip": 6
+            "mark.parametrize": 107,
+            "mark.skipif": 3,
+            "raises": 158,
+            "skip": 5
           },
           "dynamic_import_sites": 0,
-          "files": 25,
-          "import_sites": 27
+          "files": 22,
+          "import_sites": 24
         }
       },
       "declared": [
@@ -990,6 +952,11 @@
         {
           "file": "dragowing/pyproject.toml",
           "kind": "group:dev",
+          "name": "pytest"
+        },
+        {
+          "file": "dragowing/pyproject.toml",
+          "kind": "group:stdlib-test",
           "name": "pytest"
         },
         {
@@ -1030,8 +997,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 123,
-      "import_sites": 126
+      "files": 113,
+      "import_sites": 116
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1469,16 +1436,6 @@
       "tree": "dragowing"
     },
     {
-      "attributes": {},
-      "dynamic_lines": [
-        81
-      ],
-      "file": "dragowing/htmlout.py",
-      "import_sites": 0,
-      "package": "markdown",
-      "tree": "dragowing"
-    },
-    {
       "attributes": {
         "asarray": 1,
         "flatnonzero": 1,
@@ -1502,16 +1459,6 @@
     },
     {
       "attributes": {
-        "__version__": 3
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/scripts/run_stdlib_paths.py",
-      "import_sites": 1,
-      "package": "markdown",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
         "__file__": 1,
         "__version__": 1
       },
@@ -1523,72 +1470,13 @@
     },
     {
       "attributes": {
-        "fail": 1,
-        "fixture": 2,
-        "skip": 1
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/tests/conftest.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
+        "importorskip": 1,
+        "mark.parametrize": 2,
         "mark.skipif": 1,
-        "skip": 1
+        "raises": 4
       },
       "dynamic_lines": [],
-      "file": "dragowing/tests/test_browser_resources.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
-        "fixture": 1,
-        "mark.parametrize": 3,
-        "raises": 2
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/tests/test_browser_selection.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
-        "fixture": 1,
-        "raises": 2
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/tests/test_build_reports.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
-        "fixture": 1,
-        "mark.parametrize": 3,
-        "mark.skipif": 1,
-        "raises": 9
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/tests/test_chrome_pipe.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
-        "fail": 1,
-        "mark.skipif": 1,
-        "raises": 3,
-        "skip": 1
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/tests/test_export.py",
+      "file": "dragowing/tests/test_ffss.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -1605,12 +1493,30 @@
     },
     {
       "attributes": {
-        "raises": 3
+        "raises": 1
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_figures.py",
       "import_sites": 2,
       "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {},
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_fleet.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "DataFrame": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_forms.py",
+      "import_sites": 1,
+      "package": "polars",
       "tree": "dragowing"
     },
     {
@@ -1621,16 +1527,6 @@
       "file": "dragowing/tests/test_forms.py",
       "import_sites": 1,
       "package": "pytest",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
-        "DataFrame": 1
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/tests/test_forms_review.py",
-      "import_sites": 1,
-      "package": "polars",
       "tree": "dragowing"
     },
     {
@@ -1652,7 +1548,7 @@
     {
       "attributes": {
         "mark.parametrize": 9,
-        "raises": 10
+        "raises": 11
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_overlap_stdlib.py",
@@ -1664,8 +1560,7 @@
       "attributes": {
         "fixture": 2,
         "mark.parametrize": 1,
-        "raises": 4,
-        "skip": 1
+        "raises": 4
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_plotly_cdn.py",
@@ -1675,21 +1570,11 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 2,
-        "raises": 7
+        "fixture": 1,
+        "raises": 5
       },
       "dynamic_lines": [],
-      "file": "dragowing/tests/test_render.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
-        "raises": 3
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/tests/test_research_report.py",
+      "file": "dragowing/tests/test_reports.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -1701,17 +1586,6 @@
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_stdlib_paths.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "dragowing"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 1,
-        "raises": 1
-      },
-      "dynamic_lines": [],
-      "file": "dragowing/tests/test_vendor_dispatch_ci.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -3177,19 +3051,6 @@
     },
     {
       "attributes": {
-        "MonkeyPatch": 1,
-        "StashKey": 1,
-        "fixture": 1,
-        "hookimpl": 1
-      },
-      "dynamic_lines": [],
-      "file": "scripts/observe_dragowing_startup.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "scripts"
-    },
-    {
-      "attributes": {
         "fixture": 1,
         "mark.parametrize": 2,
         "raises": 2,
@@ -3237,17 +3098,6 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_bigmac_ruler.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "tests"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 3,
-        "raises": 1
-      },
-      "dynamic_lines": [],
-      "file": "tests/test_browser_startup_ci.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"
@@ -3379,21 +3229,6 @@
     },
     {
       "attributes": {
-        "fail": 6,
-        "fixture": 3,
-        "mark.parametrize": 9,
-        "mark.skipif": 8,
-        "raises": 4,
-        "skip": 1
-      },
-      "dynamic_lines": [],
-      "file": "tests/test_dragowing_browser.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "tests"
-    },
-    {
-      "attributes": {
         "approx": 60,
         "fixture": 2,
         "mark.parametrize": 16,
@@ -3438,18 +3273,6 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_recovered_inputs.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "tests"
-    },
-    {
-      "attributes": {
-        "fixture": 1,
-        "mark.parametrize": 12,
-        "raises": 5
-      },
-      "dynamic_lines": [],
-      "file": "tests/test_rendered_output_static.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

@@ -726,8 +726,6 @@ COLLECT = [
     ("absent", "httpx", "httpx_get"),
     ("stub", "httpx", "httpx_get"),
     ("wrap", "httpx", "httpx_get"),
-    ("absent", "markdown", "render_md"),
-    ("wrap", "markdown", "render_md"),
     ("absent", "ortools", "ortools_import"),
     ("stub", "ortools", "ortools_import"),
     ("absent", "pandas", "pandas_surface"),
@@ -1428,17 +1426,6 @@ def httpx_get() -> None:
     print("httpx_get ok")
 
 
-def render_md() -> None:
-    """DRAgoWing render_md, which loads Python-Markdown through import_module."""
-    sys.path[:0] = [str(ROOT)]
-    from dragowing.htmlout import render_md as render
-
-    html = render("| a | b |\n|---|---|\n| 1 | 2 |\n\n```\ncode\n```\n")
-    if "<table>" not in html or "<pre><code>" not in html:
-        raise SystemExit("render_md did not render the table and code")
-    print(f"render_md chars={len(html)}")
-
-
 def ortools_import() -> None:
     """The optional exact solver imported inside sakanalytics.season_exact.solve."""
     import ortools
@@ -1483,7 +1470,6 @@ DRIVERS = {
     "littlebit_svd": littlebit_svd,
     "selectolax_css": selectolax_css,
     "httpx_get": httpx_get,
-    "render_md": render_md,
     "ortools_import": ortools_import,
     "pandas_surface": pandas_surface,
 }
@@ -1649,8 +1635,8 @@ def reject_fetch() -> None:
             print(package, text)
         else:
             raise SystemExit(f"{package} resolved unexpectedly: {spec['filename']}")
-    markdown = fm.resolve("markdown")
-    print("markdown", markdown["version"], markdown["filename"])
+    coverage = fm.resolve("coverage", _locked_coverage_version())  # 拒まれない側（pure wheel、依存なし）
+    print("coverage", coverage["version"], coverage["filename"])
 
 
 def trace_third_party(argv=None) -> int:
@@ -2979,34 +2965,6 @@ def run_coverage(argv=None) -> int:
     return 0
 
 
-# ==== cdn-markdown（旧 cdn_markdown_smoke.py）
-
-
-def cdn_markdown(argv=None):
-    """fetch_module.py で取った Python-Markdown で DRAgoWing の render_md を動かす（実験）。
-
-    pip/uv で markdown を入れていない環境で、wheel を sys.path に載せて使う。
-    """
-    sys.path.insert(0, str(ROOT / "scripts"))
-    sys.path.insert(0, str(ROOT))
-    import fetch_module
-    argv = sys.argv[1:] if argv is None else list(argv)
-    cache = argv[0] if argv else ".cdn-cache"
-    markdown = fetch_module.ensure("markdown", cache)
-    origin = Path(markdown.__file__).as_posix()
-    assert ".whl/markdown/" in origin, f"wheel 以外の markdown を読んだ: {origin}"
-
-    from dragowing.htmlout import render_md  # noqa: E402
-
-    html = render_md("| a | b |\n|---|---|\n| 1 | 2 |\n\n```\ncode\n```\n\nText\n{: .provenance}\n")
-    assert "<table>" in html and "<pre><code>" in html and 'class="provenance"' in html, html
-    page = render_md((ROOT / "dragowing" / "README.md").read_text(encoding="utf-8"))
-    assert "<h1" in page and "<table>" in page, page[:200]
-    print(f"markdown {markdown.__version__} from {origin}")
-    print(f"render_md ok ({len(html)} + {len(page)} chars)")
-    return 0
-
-
 # ==== 入口
 COMMANDS = {
     "survey": survey,
@@ -3020,7 +2978,6 @@ COMMANDS = {
     "selectolax": run_selectolax,
     "httpx": run_httpx,
     "coverage": run_coverage,
-    "cdn-markdown": cdn_markdown,
 }
 
 

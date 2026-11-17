@@ -298,6 +298,5 @@ def test_committed_traces_keep_the_names_the_report_cites():
 
     assert {"css", "text", "attributes", "tag"} <= set(runs[("wrap", "selectolax", "selectolax_css")]["missed_by_ast"])
     assert {"get", "status_code", "content", "headers"} <= set(runs[("wrap", "httpx", "httpx_get")]["missed_by_ast"])
-    assert runs[("wrap", "markdown", "render_md")]["missed_by_ast"] == ["markdown"]
     assert "ModuleNotFoundError" in runs[("absent", "polars", "load_overlap")]["exception"]
     assert "StubGap" in runs[("stub", "polars", "load_overlap")]["exception"]

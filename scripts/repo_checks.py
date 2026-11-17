@@ -553,7 +553,7 @@ EXPECTED = frozenset({
     'pygments', 'pytest', 'selectolax',
 })
 OMITTED = frozenset({
-    'certifi', 'h11', 'httpcore', 'httpx', 'markdown', 'numpy', 'polars',
+    'certifi', 'h11', 'httpcore', 'httpx', 'numpy', 'polars',
     'polars-runtime-32',
 })
 

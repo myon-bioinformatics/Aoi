@@ -37,3 +37,13 @@ def select_items(items: list[dict], present: dict[str, bool], ids: list[str] | N
             raise ValueError(f"{ident} は判定済みの結果にない")
         chosen.extend(hit)
     return chosen
+
+
+def read_ffss(path) -> dict[tuple[str, str], list[dict]]:
+    """FFSS の ``run`` / ``verify --jsonl`` の記録を (実験 ID, run) ごとの行に（記録の順のまま）。"""
+    out: dict[tuple[str, str], list[dict]] = {}
+    for index, row in enumerate(read_jsonl(path), 1):
+        if not isinstance(row, dict) or any(not isinstance(row.get(k), str) for k in ("id", "run")):
+            raise ValueError(f"FFSS record {index}: id and run must be strings")
+        out.setdefault((row["id"], row["run"]), []).append(row)
+    return out

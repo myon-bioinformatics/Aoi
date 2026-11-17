@@ -115,8 +115,14 @@ def load_overlap(path: Path, conds: list[dict], *, backend: str = "native") -> d
         rows = read_rows(path)
         bits = condition_bits(rows, labeled)
     else:
-        import numpy as np
-        import polars as pl
+        try:
+            import numpy as np
+            import polars as pl
+        except ImportError as exc:
+            # 🧮 native は PythDRagoras の rule_search 用。numpy・polars は dev グループにある
+            # 足りないのはパッケージなので ModuleNotFoundError のまま（読み込みの検査が import の行として数えられる）
+            raise ModuleNotFoundError(f"native の重なりには numpy・polars が要る（uv sync --group dev）。既定は stdlib の経路: {exc}",
+                                      name=exc.name) from exc
 
         rows = read_jsonl(path)
         rule_search, _ = _engines()

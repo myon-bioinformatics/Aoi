@@ -68,7 +68,6 @@
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/NagoyAction",
         "myon-bioinformatics/PythDRagoras",
         "myon-bioinformatics/SakAnalytics"
       ]

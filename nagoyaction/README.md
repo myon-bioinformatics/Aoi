@@ -52,7 +52,7 @@ The 🏠 hub section of `nagoyaction.py` (formerly `local_forge.py`) provides th
 
 Install directly from a checkout with `uv tool install .`, or from GitHub with `uv tool install git+https://github.com/myon-bioinformatics/NagoyAction.git`. The root `pyproject.toml` packages the single module `nagoyaction` with no third-party runtime dependencies. The optional locked self-test environment remains under `tools/localci-env`; the complete suite still runs inside Aoi.
 
-Alternatively, prepare an isolated uv tool project with `python vendor/uv_tool_build.py nagoyaction.py --out build/nagoyaction-tool`, then install it with `uv tool install ./build/nagoyaction-tool`. This installs the `nagoyaction` command only (`nagoyaction hub …` covers local forge operations; there is no `local-forge` command). The single file has no third-party runtime dependencies. Pipeline definitions and project-specific inputs remain separate files. The builder itself is the vendored shared copy from Aoi (`vendor/uv_tool_build.py`).
+This installs the `nagoyaction` command only (`nagoyaction hub …` covers local forge operations; there is no `local-forge` command). Pipeline definitions and project-specific inputs remain separate files.
 
 ```bash
 nagoyaction hub --help          # or: python nagoyaction.py hub --help
@@ -249,7 +249,7 @@ python nagoyaction/nagoyaction.py run    cycles/c001-chunichi/pipeline.toml --dr
 ## Node entry (Node 26+)
 
 `node vendor/py_launch.cjs --env-var NAGOYACTION_PYTHON -- nagoyaction.py <args>` runs `nagoyaction.py`
-through the vendored shared launcher `vendor/py_launch.cjs` (there is no per-tool `.cjs` wrapper), taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. The shared uv tool builder `vendor/uv_tool_build.py` is taken the same way from Aoi and pinned separately in that lock. The parent's shared contract checks `vendor/fleet_check.py` (called by `tests/test_fleet.py`) come straight from `myon-bioinformatics/myon-bioinformatics` and are pinned in the same lock. Arguments, stdin/stdout/stderr and the
+through the vendored shared launcher `vendor/py_launch.cjs` (there is no per-tool `.cjs` wrapper), taken byte-identical from Aoi's `vendor/py_launch.cjs` (parent → Aoi → NagoyAction; no generation is skipped) together with Aoi's `LICENSE` as `vendor/aoi-LICENSE`, both pinned to one Aoi main merge commit in `vendor.lock.json`. The parent's shared contract checks `vendor/fleet_check.py` (called by `tests/test_fleet.py`) come straight from `myon-bioinformatics/myon-bioinformatics` and are pinned in the same lock. Arguments, stdin/stdout/stderr and the
 exit code are passed through unchanged; Python runs with `-S`, including interpreter discovery.
 `NAGOYACTION_PYTHON` picks the interpreter (via `--env-var`). The launcher forwards repeated SIGINT/SIGTERM
 until the Python child exits. Launcher failures (no Python 3.9+, spawn error, signal) exit 2, as does a Node older than 26;
@@ -258,10 +258,7 @@ the tool's `--json` flag).
 
 The launcher and license are pinned to Aoi's accepting main merge commit
 [`827387a`](https://github.com/myon-bioinformatics/Aoi/commit/9e0147a17695ce63fa73daf75d8195a4f49095bb),
-not to the root repository or an unmerged PR head. The builder is pinned to Aoi's later main
-first-parent commit
-[`3d8dcc70`](https://github.com/myon-bioinformatics/Aoi/commit/3d8dcc70a9c4e6c4f4b7de05868f54acd3901ce7)
-(#181, which vendors parent #251 including `--module`). `shared-tools.lock.json` remains the separate
+not to the root repository or an unmerged PR head. `shared-tools.lock.json` remains the separate
 lock for the polars shrink tools under `vendor/aoi/`.
 
 The launcher's CLI is `node vendor/py_launch.cjs [--env-var NAME] [--site] [--] SCRIPT.py [ARGS...]`.

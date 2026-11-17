@@ -35,7 +35,6 @@ def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
     sources = {
         "vendor/aoi-LICENSE": (AOI, "LICENSE"),
         "vendor/py_launch.cjs": (AOI, "vendor/py_launch.cjs"),
-        "vendor/uv_tool_build.py": (AOI, "vendor/uv_tool_build.py"),
         "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
     }
     rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources=sources)
@@ -43,8 +42,7 @@ def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
     launcher = rows["vendor/py_launch.cjs"]["commit"]
     assert rows["vendor/aoi-LICENSE"]["commit"] == launcher
     assert (ROOT / "vendor/aoi-LICENSE").read_bytes() == (ROOT / "LICENSE").read_bytes()
-    # The launcher and license stay on their own Aoi pin; the builder is a later first-parent commit.
-    assert rows["vendor/uv_tool_build.py"]["commit"] != launcher
+    assert not (ROOT / "vendor/uv_tool_build.py").exists()  # 📦 the root pyproject.toml is the uv tool (uv tool install .)
 
 
 # ==== parent pins: local rollout contract; adopted vendor locks are deliberately independent

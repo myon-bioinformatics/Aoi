@@ -95,17 +95,21 @@ wheels = [
 name = "sakanalytics"
 version = "0.1.0"
 source = { virtual = "." }
-dependencies = [
-    { name = "polars" },
-]
 
 [package.dev-dependencies]
 dev = [
+    { name = "polars" },
+    { name = "pytest" },
+]
+stdlib-test = [
     { name = "pytest" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "polars", specifier = ">=2.0.0" }]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.1.1" }]
+dev = [
+    { name = "polars", specifier = ">=2.0.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
+]
+stdlib-test = [{ name = "pytest", specifier = ">=8" }]

@@ -1,5 +1,5 @@
 # Aoi はコピーしない。main の SHA は実行時に ls-remote で解決する。
-# workflow_dispatch の aoi_ref で ref を上書きできる。リポジトリ ID は同一性の確認で、コミット SHA のピンではない。
+# リポジトリ ID は同一性の確認で、コミット SHA のピンではない。
 name: CI
 on:
   push:
@@ -7,13 +7,6 @@ on:
   pull_request:
   schedule:
     - cron: "0 7 * * *"
-  workflow_dispatch:
-    inputs:
-      aoi_ref:
-        description: "解決する Aoi の ref。既定は refs/heads/main。40桁の SHA も指定できる"
-        required: false
-        default: refs/heads/main
-        type: string
 permissions:
   contents: read
 jobs:
@@ -24,7 +17,7 @@ jobs:
 
   resolve-vendor:
     needs: changes
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -35,7 +28,7 @@ jobs:
         env:
           AOI_URL: https://github.com/myon-bioinformatics/Aoi
           AOI_REPOSITORY_ID: "1402862784"
-          AOI_REF: ${{ github.event.inputs.aoi_ref || 'refs/heads/main' }}
+          AOI_REF: refs/heads/main
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
@@ -83,7 +76,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   test:
-    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule'
     needs: [changes, resolve-vendor]
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
@@ -119,7 +112,7 @@ jobs:
       - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
           AOI_ROOT: ${{ github.workspace }}/.test-deps/aoi
-          # pull_request だけ警告。push（main）・schedule・workflow_dispatch・未設定は失敗。
+          # pull_request だけ警告。push（main）・schedule・未設定は失敗。
           SOURCE_HASH_CHECK: ${{ github.event_name == 'pull_request' && 'report' || 'strict' }}
       - name: Preserve JUnit report
         if: always()
@@ -132,7 +125,7 @@ jobs:
 
   failure-identity:
     needs: [changes, test]
-    if: always() && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    if: always() && (needs.changes.outputs.product_changed == 'true' || github.event_name == 'schedule')
     permissions:
       contents: read
       actions: read
@@ -156,7 +149,7 @@ jobs:
   vendor-dispatch:
     name: Vendor dispatch
     needs: changes
-    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: needs.changes.outputs.product_changed == 'true' || needs.changes.outputs.workflow_changed == 'true' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

@@ -6,7 +6,10 @@ import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "nagoyaction"))
-import publication_gate as gate
+try:  # 🔁 NagoyAction の 1 ファイル化（publication_gate.py → nagoyaction.py）を取り込むまでの両対応
+    import publication_gate as gate
+except ModuleNotFoundError:
+    import nagoyaction as gate
 
 KINDS = (("propositions.jsonl", "proposition", "P"), ("sets.jsonl", "expression", "E"))
 DEFINITIONS = ("pipeline.toml", "analysis.toml", "claims.toml", "hypotheses.toml",

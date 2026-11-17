@@ -1,6 +1,6 @@
 """PythDRagoras は Aoi の兄弟サブプロジェクト（sakanalytics など）と Aoi の scripts/ を import しない。
 
-使ってよいのは、標準ライブラリ、pyproject の依存（polars / numpy）と pytest、このリポジトリの
+使ってよいのは、標準ライブラリ、pyproject の dev の依存（polars / numpy）と pytest、このリポジトリの
 モジュール（Aoi の aoi_paths.py と同じ中身の aoi_paths.py を含む）だけ。既知の例外は KNOWN_EXCEPTIONS に (ファイル, 対象) で書く。
 例外が使われなくなったら、このテストが落ちるので消す。Aoi の pythdragoras/ でも同じ結果になる。
 """
@@ -27,7 +27,7 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_c001_replay_compare.py", "path:scripts"),
     # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
     ("vendor/uv_tool_build.py", "path:scripts"),
-    ("tests/test_standalone_metrics.py", "path:scripts"),
+    ("tests/test_standalone_examples.py", "path:scripts"),
     # Aoi の scripts/check_c001_exploratory_candidates.py を importlib で読む
     ("tests/test_c001_exploratory_candidates.py", "path:scripts/check_c001_exploratory_candidates.py"),
 }

@@ -211,7 +211,7 @@ The diagram's **Explore → Analyze → Model → Evaluate → Interpret → Exp
 
 The illustration includes player records and pitcher/batter contributions as broad examples. Under [The Unit Is Observed As A Whole](data-policy.md#the-unit-is-observed-as-a-whole), member-level explanations are outside Aoi's current policy scope, not merely waiting for more data. The illustration does not expand that scope or approve new collection.
 
-Implementation: [SakAnalytics README](../sakanalytics/README.md), including team × season metrics; [remaining-season simulation, CS probability and title magic](../sakanalytics/SEASON_SIMULATOR.md).
+Implementation: [SakAnalytics README](../sakanalytics/README.md), including team × season metrics; [remaining-season simulation, CS probability and title magic](../sakanalytics/docs/season-simulator.md).
 
 ---
 

@@ -61,7 +61,7 @@ uv tool install ./build/pythdragoras-tool && pythdragoras 16 0 56 72
 
 The LittleBit here is pure Python (one-sided Jacobi SVD) for matrices up to a few hundred rows and columns. `core/littlebit_prune.py` is the numpy version used inside the analysis; tests check that both give the same approximation. Errors exit 2 (`pythdragoras -1 0 0 0`: counts must be nonnegative integers).
 
-The season analysis and the rest of the repository need Python 3.11+ and [uv](https://docs.astral.sh/uv/); their runtime dependencies are polars and numpy (`pyproject.toml`; ortools is not used).
+The season analysis and the rest of the repository need Python 3.11+ and [uv](https://docs.astral.sh/uv/); 📦 there are no runtime dependencies (`pythdragoras.py` is standard library only); 🧮 polars and numpy for `core/` and `npb/` are in the `dev` group, which `uv sync` installs by default (`pyproject.toml`; ortools is not used).
 
 ```bash
 git clone https://github.com/myon-bioinformatics/PythDRagoras.git
@@ -112,7 +112,7 @@ git -C .test-deps/aoi checkout main
 AOI_ROOT=$PWD/.test-deps/aoi uv run pytest -q --junitxml=reports/junit.xml
 ```
 
-CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. A ref can be given via `aoi_ref` in `workflow_dispatch`. The resolved SHA is left in the job summary.
+CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. An empty `AOI_REF` resolves `refs/heads/main`. The resolved SHA is left in the job summary.
 
 For work on the stdlib audit and sensitivity modules, an optional locked
 [`audit-test` environment](docs/nano-audit-tests.md) runs four existing test files
@@ -120,7 +120,8 @@ without NumPy/Polars. Keep the ordinary full suite for final verification.
 
 - Tests receive Aoi only through `AOI_ROOT` (the one env var CI sets). `conftest.py` appends the import paths Aoi's `aoi.py` gives (`aoi.environment()`, Aoi's pytest `pythonpath`) after this repository, so SakAnalytics imports by name; PythDRagoras names no sibling directory and `PYTHONPATH` is not set. Tests ask Aoi's `aoi_paths.py` for data locations. No `aoi_paths.py` is kept in this repository.
 - If `AOI_ROOT` doesn't point to Aoi, pytest stops at the start and gives the reason.
-- The only runtime dependencies are polars and numpy (ortools is not used).
+- 🗂️ Test files: mostly one per module (`tests/test_<module>.py`; `test_standalone_examples.py` = the single file `pythdragoras.py`, `test_pythdragoras.py` = `npb/season.py`), plus 🌐 `tests/test_fleet.py` for cross-repository contracts (vendor lock, parent pins, CI setup, Node entries, launcher contract), which calls the parent's shared checks `vendor/fleet_check.py` (pinned in `vendor.lock.json`).
+- There are no runtime dependencies; polars and numpy (for `core/` and `npb/`) are in the `dev` group (ortools is not used).
 - In addition, tests use Aoi at `AOI_ROOT`.
   - SakAnalytics: `tests/test_propositions.py:195` (`sakanalytics`, put on the path by `conftest.py`).
   - Aoi's `scripts/`: `tests/test_c001_replay_compare.py:7` (`compare_c001_replay`) and `tests/test_c001_exploratory_candidates.py:14` (`check_c001_exploratory_candidates.py`).

@@ -441,12 +441,12 @@
         },
         {
           "file": "pythdragoras/pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:dev",
           "name": "numpy"
         },
         {
           "file": "pythdragoras/pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:dev",
           "name": "numpy"
         },
         {
@@ -487,7 +487,7 @@
       },
       "declared": [
         {
-          "file": "sakanalytics/season-requirements.txt",
+          "file": "sakanalytics/npb/season-requirements.txt",
           "kind": "requirements",
           "name": "ortools"
         }
@@ -546,11 +546,11 @@
       "import_sites": 1
     },
     "polars": {
-      "attribute_uses": 1073,
+      "attribute_uses": 1072,
       "attributes": {
         "Boolean": 15,
         "Config.set_tbl_rows": 1,
-        "DataFrame": 274,
+        "DataFrame": 273,
         "Expr": 13,
         "Float32": 1,
         "Float64": 73,
@@ -620,10 +620,10 @@
           "import_sites": 2
         },
         "pythdragoras": {
-          "attribute_uses": 228,
+          "attribute_uses": 227,
           "attributes": {
             "Boolean": 2,
-            "DataFrame": 94,
+            "DataFrame": 93,
             "Expr": 6,
             "Float64": 3,
             "Int32": 1,
@@ -641,8 +641,8 @@
             "when": 3
           },
           "dynamic_import_sites": 0,
-          "files": 20,
-          "import_sites": 20
+          "files": 19,
+          "import_sites": 19
         },
         "research": {
           "attribute_uses": 2,
@@ -731,12 +731,12 @@
         },
         {
           "file": "pythdragoras/pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:dev",
           "name": "polars"
         },
         {
           "file": "sakanalytics/pyproject.toml",
-          "kind": "runtime",
+          "kind": "group:dev",
           "name": "polars"
         },
         {
@@ -747,8 +747,8 @@
       ],
       "distinct_attributes": 28,
       "dynamic_import_sites": 1,
-      "files": 46,
-      "import_sites": 51
+      "files": 45,
+      "import_sites": 50
     },
     "pycountry": {
       "attribute_uses": 1,
@@ -773,7 +773,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1382,
+      "attribute_uses": 1357,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -786,8 +786,8 @@
         "fixture": 52,
         "hookimpl": 3,
         "importorskip": 13,
-        "mark.parametrize": 318,
-        "mark.skipif": 17,
+        "mark.parametrize": 300,
+        "mark.skipif": 10,
         "param": 1,
         "raises": 513,
         "skip": 11,
@@ -859,22 +859,22 @@
           "import_sites": 13
         },
         "pythdragoras": {
-          "attribute_uses": 192,
+          "attribute_uses": 177,
           "attributes": {
             "UsageError": 2,
             "approx": 42,
             "fail": 2,
             "fixture": 6,
             "importorskip": 1,
-            "mark.parametrize": 50,
-            "mark.skipif": 6,
+            "mark.parametrize": 39,
+            "mark.skipif": 2,
             "raises": 79,
             "skip": 2,
             "warns": 2
           },
           "dynamic_import_sites": 0,
-          "files": 22,
-          "import_sites": 22
+          "files": 18,
+          "import_sites": 18
         },
         "queryu": {
           "attribute_uses": 99,
@@ -895,22 +895,22 @@
           "import_sites": 14
         },
         "sakanalytics": {
-          "attribute_uses": 443,
+          "attribute_uses": 433,
           "attributes": {
             "UsageError": 2,
             "approx": 249,
             "fixture": 7,
             "importorskip": 2,
-            "mark.parametrize": 68,
-            "mark.skipif": 5,
+            "mark.parametrize": 61,
+            "mark.skipif": 2,
             "param": 1,
             "raises": 107,
             "skip": 1,
             "warns": 1
           },
           "dynamic_import_sites": 0,
-          "files": 14,
-          "import_sites": 14
+          "files": 12,
+          "import_sites": 12
         },
         "scripts": {
           "attribute_uses": 1,
@@ -971,6 +971,11 @@
         },
         {
           "file": "pythdragoras/pyproject.toml",
+          "kind": "group:stdlib-test",
+          "name": "pytest"
+        },
+        {
+          "file": "pythdragoras/pyproject.toml",
           "kind": "group:dev",
           "name": "pytest"
         },
@@ -993,12 +998,17 @@
           "file": "sakanalytics/pyproject.toml",
           "kind": "group:dev",
           "name": "pytest"
+        },
+        {
+          "file": "sakanalytics/pyproject.toml",
+          "kind": "group:stdlib-test",
+          "name": "pytest"
         }
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 113,
-      "import_sites": 116
+      "files": 107,
+      "import_sites": 110
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2052,6 +2062,17 @@
     },
     {
       "attributes": {
+        "mark.parametrize": 2,
+        "mark.skipif": 1
+      },
+      "dynamic_lines": [],
+      "file": "pythdragoras/tests/test_fleet.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "pythdragoras"
+    },
+    {
+      "attributes": {
         "arange": 1,
         "array": 4,
         "array_equal": 2,
@@ -2205,17 +2226,6 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 2,
-        "mark.skipif": 1
-      },
-      "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_littlebit_survey_node_entry.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "pythdragoras"
-    },
-    {
-      "attributes": {
         "DataFrame": 1
       },
       "dynamic_lines": [],
@@ -2231,17 +2241,6 @@
       },
       "dynamic_lines": [],
       "file": "pythdragoras/tests/test_next_seeds.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "pythdragoras"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 7,
-        "mark.skipif": 2
-      },
-      "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_node_launcher_regressions.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "pythdragoras"
@@ -2312,31 +2311,10 @@
     },
     {
       "attributes": {
-        "DataFrame": 2
-      },
-      "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_rule_search.py",
-      "import_sites": 1,
-      "package": "polars",
-      "tree": "pythdragoras"
-    },
-    {
-      "attributes": {
-        "approx": 1,
-        "raises": 1
-      },
-      "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_rule_search.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "pythdragoras"
-    },
-    {
-      "attributes": {
         "random.default_rng": 2
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_rule_search_bitmatrix.py",
+      "file": "pythdragoras/tests/test_rule_search.py",
       "import_sites": 1,
       "package": "numpy",
       "tree": "pythdragoras"
@@ -2344,24 +2322,24 @@
     {
       "attributes": {
         "Boolean": 1,
-        "DataFrame": 5,
+        "DataFrame": 6,
         "Int64": 3,
         "read_ndjson": 1
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_rule_search_bitmatrix.py",
+      "file": "pythdragoras/tests/test_rule_search.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "pythdragoras"
     },
     {
       "attributes": {
-        "approx": 1,
+        "approx": 2,
         "mark.parametrize": 6,
-        "raises": 4
+        "raises": 5
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_rule_search_bitmatrix.py",
+      "file": "pythdragoras/tests/test_rule_search.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "pythdragoras"
@@ -2380,34 +2358,12 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 2,
-        "mark.skipif": 1
-      },
-      "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_score_sensitivity_node_entry.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "pythdragoras"
-    },
-    {
-      "attributes": {
         "approx": 1,
         "mark.parametrize": 1,
         "raises": 2
       },
       "dynamic_lines": [],
       "file": "pythdragoras/tests/test_season_sensitivity.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "pythdragoras"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 2,
-        "mark.skipif": 1
-      },
-      "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_season_sensitivity_node_entry.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "pythdragoras"
@@ -2443,7 +2399,7 @@
         "linalg.svd": 1
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_standalone_metrics.py",
+      "file": "pythdragoras/tests/test_standalone_examples.py",
       "import_sites": 2,
       "package": "numpy",
       "tree": "pythdragoras"
@@ -2453,7 +2409,7 @@
         "DataFrame": 1
       },
       "dynamic_lines": [],
-      "file": "pythdragoras/tests/test_standalone_metrics.py",
+      "file": "pythdragoras/tests/test_standalone_examples.py",
       "import_sites": 1,
       "package": "polars",
       "tree": "pythdragoras"
@@ -2865,22 +2821,11 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 2,
+        "mark.parametrize": 4,
         "mark.skipif": 1
       },
       "dynamic_lines": [],
-      "file": "sakanalytics/tests/test_annual_audit_node_entry.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "sakanalytics"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 2,
-        "raises": 4
-      },
-      "dynamic_lines": [],
-      "file": "sakanalytics/tests/test_epsilon.py",
+      "file": "sakanalytics/tests/test_fleet.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "sakanalytics"
@@ -2927,17 +2872,6 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 7,
-        "mark.skipif": 2
-      },
-      "dynamic_lines": [],
-      "file": "sakanalytics/tests/test_node_launcher_regressions.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "sakanalytics"
-    },
-    {
-      "attributes": {
         "fixture": 1,
         "mark.parametrize": 5,
         "raises": 8,
@@ -2951,29 +2885,8 @@
     },
     {
       "attributes": {
-        "Boolean": 4,
-        "DataFrame": 50,
-        "Int32": 8,
-        "Series": 4,
-        "Utf8": 1,
-        "__version__": 1,
-        "col": 55,
-        "format": 2,
-        "int_range": 2,
-        "len": 2,
-        "when": 1
-      },
-      "dynamic_lines": [],
-      "file": "sakanalytics/tests/test_sakanalytics.py",
-      "import_sites": 6,
-      "package": "polars",
-      "tree": "sakanalytics"
-    },
-    {
-      "attributes": {
-        "approx": 209,
-        "mark.parametrize": 7,
-        "raises": 12
+        "mark.parametrize": 2,
+        "raises": 4
       },
       "dynamic_lines": [],
       "file": "sakanalytics/tests/test_sakanalytics.py",
@@ -3009,21 +2922,42 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 2,
-        "mark.skipif": 1
+        "raises": 5
       },
       "dynamic_lines": [],
-      "file": "sakanalytics/tests/test_synthetic_league_node_entry.py",
+      "file": "sakanalytics/tests/test_synthetic_rule_discovery.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "sakanalytics"
     },
     {
       "attributes": {
-        "raises": 5
+        "Boolean": 4,
+        "DataFrame": 50,
+        "Int32": 8,
+        "Series": 4,
+        "Utf8": 1,
+        "__version__": 1,
+        "col": 55,
+        "format": 2,
+        "int_range": 2,
+        "len": 2,
+        "when": 1
       },
       "dynamic_lines": [],
-      "file": "sakanalytics/tests/test_synthetic_rule_discovery.py",
+      "file": "sakanalytics/tests/test_team_season.py",
+      "import_sites": 6,
+      "package": "polars",
+      "tree": "sakanalytics"
+    },
+    {
+      "attributes": {
+        "approx": 209,
+        "mark.parametrize": 7,
+        "raises": 12
+      },
+      "dynamic_lines": [],
+      "file": "sakanalytics/tests/test_team_season.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "sakanalytics"

@@ -123,9 +123,9 @@ def _results_dir() -> Path:
 def run(deps: str) -> dict:
     numpy = _prepare(deps)
     _register_dragowing(ROOT)
-    from dragowing.htmlout import render_md
+    from dragowing.dragowing import render_md
     from dragowing.overlap import default_conditions, load_overlap
-    from dragowing.records import read_jsonl
+    from dragowing.dragowing import read_jsonl
 
     if "rule_search" in sys.modules:
         raise SystemExit("rule_search が overlap の読み込みで import されている")

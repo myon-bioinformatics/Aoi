@@ -12,7 +12,7 @@ on:
       - vendor/markdown/markdown.py
       - scripts/run_stdlib_paths.py
       - tests/test_stdlib_paths.py
-      - htmlout.py
+      - dragowing.py
       - overlap.py
       - pyproject.toml
       - uv.lock

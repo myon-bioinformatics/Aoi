@@ -4,7 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-import records
+import dragowing as records  # select_items は dragowing.py（旧 records.py）
 
 
 def main():

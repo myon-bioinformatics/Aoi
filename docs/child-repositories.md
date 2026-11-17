@@ -181,7 +181,7 @@ git push https://github.com/myon-bioinformatics/PythDRagoras.git sync/pythdragor
 
 2026-10-20: main `563d84488a57efd3bca2d89c97c0a72759ab8ee5`（#26 の DOM パターン）を squash なしの `git subtree pull --prefix=blueprobe` で取り込みました。QueRyu の新しい `pattern_postprocess` が `load_source("dom_patterns")` を import 時に呼ぶためです。
 
-- BlueProbe は Aoi の [`blueprobe/`](../blueprobe/) から独立したリポジトリです。親 myon-bioinformatics の `child-heads.json` への登録は廃止し、Aoi の `child-heads.json` に移しました。Aoi と子の間では vendor lock を使いません（`vendor/`・`vendor.lock.json` は子から除く）。main `596f334198b669546a32c432422acc2eb37afeee`（#21: Aoi 側にだけあった NPB 取得元の移植と vendor カタログの除去）に対し、一度だけの join を入れました。merge commit は第2親として join を残します。PR は squash/rebase せず merge commit で入れてください。
+- BlueProbe は Aoi の [`blueprobe/`](../blueprobe/) から独立したリポジトリです。親 myon-bioinformatics の `child-heads.json` への登録は廃止し、Aoi の `child-heads.json` に移しました。子の `vendor.lock.json` は親の `fleet_check.py` と Aoi の `vendor/uv_tool_build.py`（共通の uv tool ビルダー）だけを持ちます（2026-11-17 の BlueProbe #58 から。それまでは vendor lock を使いませんでした）。main `596f334198b669546a32c432422acc2eb37afeee`（#21: Aoi 側にだけあった NPB 取得元の移植と vendor カタログの除去）に対し、一度だけの join を入れました。merge commit は第2親として join を残します。PR は squash/rebase せず merge commit で入れてください。
 - `blueprobe/` 全体（子の CI・LICENSE・`.gitignore`・`pyproject.toml`・`uv.lock`・`conftest.py` も含む）は登録した BlueProbe の tree と同一です。Aoi の原本を写したファイルはないので `mirrored_from_parent` は書きません。`min.py` は Aoi が提供し、子には置きません。
 - サイクルデータ（`cycles/`）の fixture と QueRyu 連携は Aoi に残します。子の CI は Aoi の past-pattern snapshot を SHA で取得して検証データに使い、`PYTHONPATH` の `queryu` を渡して pytest を動かします。Aoi の中では `blueprobe/.github/` は動きません。
 - 同期は PythDRagoras の手順の `pythdragoras` を `blueprobe`、リポジトリを BlueProbe に読み替えます。

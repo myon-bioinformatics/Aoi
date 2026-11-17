@@ -58,7 +58,6 @@ def test_blueprobe_registered_with_exact_ids():
     for path in (".github/workflows/ci.yml", ".gitignore", "LICENSE", "pyproject.toml", "uv.lock", "conftest.py", "README.md", "blueprobe.py", "npb/npb_calendar.py"):
         assert (ROOT / "blueprobe" / path).is_file(), path
     assert not (ROOT / "blueprobe" / "min.py").exists()
-    assert not (ROOT / "blueprobe" / "vendor.lock.json").exists()
 
 
 def test_pythdragoras_registered_with_exact_ids_and_mirrors():

@@ -773,7 +773,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1351,
+      "attribute_uses": 1352,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -782,11 +782,12 @@
         "UsageError": 11,
         "approx": 397,
         "fail": 32,
-        "fixture": 52,
+        "fixture": 51,
         "hookimpl": 3,
         "importorskip": 13,
         "mark.parametrize": 297,
         "mark.skipif": 9,
+        "mark.usefixtures": 2,
         "param": 1,
         "raises": 512,
         "skip": 11,
@@ -811,22 +812,23 @@
           "import_sites": 1
         },
         "blueprobe": {
-          "attribute_uses": 70,
+          "attribute_uses": 71,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
             "StashKey": 1,
             "fail": 4,
-            "fixture": 4,
+            "fixture": 3,
             "hookimpl": 1,
             "importorskip": 6,
             "mark.parametrize": 31,
+            "mark.usefixtures": 2,
             "raises": 20,
             "skip": 1
           },
           "dynamic_import_sites": 0,
-          "files": 16,
-          "import_sites": 16
+          "files": 10,
+          "import_sites": 10
         },
         "dragowing": {
           "attribute_uses": 64,
@@ -948,6 +950,11 @@
           "name": "pytest"
         },
         {
+          "file": "blueprobe/pyproject.toml",
+          "kind": "group:stdlib-test",
+          "name": "pytest"
+        },
+        {
           "file": "dragowing/pyproject.toml",
           "kind": "group:dev",
           "name": "pytest"
@@ -1003,10 +1010,10 @@
           "name": "pytest"
         }
       ],
-      "distinct_attributes": 17,
+      "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 104,
-      "import_sites": 107
+      "files": 98,
+      "import_sites": 101
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1075,7 +1082,7 @@
         "ExitCode.TESTS_FAILED": 1,
         "StashKey": 1,
         "fail": 4,
-        "fixture": 2,
+        "fixture": 3,
         "hookimpl": 1,
         "importorskip": 1
       },
@@ -1087,22 +1094,11 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 1,
-        "raises": 2
+        "mark.parametrize": 6,
+        "raises": 5
       },
       "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_accessible_names.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "blueprobe"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 2,
-        "raises": 1
-      },
-      "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_core.py",
+      "file": "blueprobe/tests/test_blueprobe.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "blueprobe"
@@ -1110,49 +1106,28 @@
     {
       "attributes": {
         "importorskip": 1,
-        "mark.parametrize": 3
-      },
-      "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_dom_classification.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "blueprobe"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 2,
+        "mark.parametrize": 5,
         "raises": 4
       },
       "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_dom_patterns.py",
+      "file": "blueprobe/tests/test_blueprobe_dom.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "blueprobe"
     },
     {
       "attributes": {
-        "raises": 2
+        "skip": 1
       },
       "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_emoji_observations.py",
+      "file": "blueprobe/tests/test_blueprobe_github.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "blueprobe"
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
-        "raises": 2
-      },
-      "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_heading_observations.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "blueprobe"
-    },
-    {
-      "attributes": {
-        "fixture": 1
+        "mark.usefixtures": 1
       },
       "dynamic_lines": [],
       "file": "blueprobe/tests/test_blueprobe_html_compare.py",
@@ -1172,9 +1147,9 @@
     },
     {
       "attributes": {
-        "fixture": 1,
         "importorskip": 4,
         "mark.parametrize": 2,
+        "mark.usefixtures": 1,
         "raises": 4
       },
       "dynamic_lines": [],
@@ -1185,20 +1160,10 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 5
+        "mark.parametrize": 9
       },
       "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_npb_parse.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "blueprobe"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 4
-      },
-      "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_npb_score_text.py",
+      "file": "blueprobe/tests/test_blueprobe_npb_calendar.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "blueprobe"
@@ -1226,31 +1191,11 @@
     },
     {
       "attributes": {
-        "mark.parametrize": 4,
-        "raises": 4
+        "mark.parametrize": 5,
+        "raises": 6
       },
       "dynamic_lines": [],
-      "file": "blueprobe/tests/test_blueprobe_pattern_cli.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "blueprobe"
-    },
-    {
-      "attributes": {
-        "skip": 1
-      },
-      "dynamic_lines": [],
-      "file": "blueprobe/tests/test_github_observations.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "blueprobe"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 1
-      },
-      "dynamic_lines": [],
-      "file": "blueprobe/tests/test_web_observations.py",
+      "file": "blueprobe/tests/test_blueprobe_observations.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "blueprobe"

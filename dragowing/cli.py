@@ -89,7 +89,7 @@ def main(argv=None) -> int:
             rows, overlap, args.column, team_order(args.team_order), args.breakdown, tuple(args.breakdown_keep)
         )
         prop_html = propositions_body(chosen)
-    except (FileNotFoundError, ValueError, TypeError) as exc:
+    except (FileNotFoundError, ValueError, TypeError, ModuleNotFoundError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
     out = args.out or Path(tempfile.mkdtemp(prefix="dragowing-"))

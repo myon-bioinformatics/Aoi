@@ -1,11 +1,11 @@
 """レポート: 📄 reports/build_reports.py（Markdown の版比較）、📊 research_report.py（集計図の HTML）。"""
-import hashlib, importlib.util, json, subprocess
+import hashlib, importlib, importlib.util, json, subprocess, sys
 from pathlib import Path
 
 import pytest
 
 import aoi_paths
-from dragowing.research_report import render_report
+from dragowing.dragowing import render_report
 from reports.build_reports import build, revision
 
 ROOT=aoi_paths.resolve_aoi_root(anchor=Path(__file__))
@@ -103,6 +103,8 @@ def test_invalid_default_and_nonfinite():
 
 def test_real_aggregate_mapping():
     path=ROOT/'research/gpt-r001-score-allocation/render_score_report.py'
+    # Aoi の main が旧名 dragowing.research_report を読む間の橋（Aoi が dragowing.dragowing を読むようになれば使われない）
+    sys.modules.setdefault('dragowing.research_report', importlib.import_module('dragowing.dragowing'))
     module_spec=importlib.util.spec_from_file_location('score_report',path)
     module=importlib.util.module_from_spec(module_spec);module_spec.loader.exec_module(module)
     outputs=path.parent/'outputs'

@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from dragowing import plotly_cdn
+import dragowing.dragowing as plotly_cdn
 
 
 class Response(io.BytesIO):
@@ -36,7 +36,7 @@ def test_fetch_and_successful_byte_cache(fixture_bytes):
 
 
 def test_external_script_without_sri_and_embed_preserves_json(fixture_bytes):
-    from dragowing.htmlout import figure_block, spec_from, standalone
+    from dragowing.dragowing import figure_block, spec_from, standalone
     spec = {'data': [{'type': 'scatter', 'x': [1], 'y': [2]}], 'layout': {'title': {'text': '<exact>'}}}
     body = figure_block(spec, 'g')
     external = standalone('test', body, plotly=True)

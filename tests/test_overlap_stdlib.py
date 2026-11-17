@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from dragowing.overlap import B_COND, default_conditions, load_overlap, parse_cond
-from dragowing.records import read_jsonl
+from dragowing.dragowing import read_jsonl
 
 REPO = Path(__file__).resolve().parents[1]
 OPS = ('<', '<=', '>', '>=', '==', '!=')
@@ -156,8 +156,8 @@ class Block(importlib.abc.MetaPathFinder):
             raise AssertionError('unexpected import: ' + fullname)
 sys.meta_path.insert(0, Block())
 from dragowing.overlap import default_conditions, finalize_conditions, load_overlap, parse_cond
-from dragowing.records import read_jsonl
-from dragowing.cli import build_parser
+from dragowing.dragowing import read_jsonl
+from dragowing.dragowing import build_parser
 before = list(sys.path)
 rows = read_jsonl(data / 'season.jsonl')
 conds = default_conditions(read_jsonl(data / 'propositions.jsonl'), rows)
@@ -195,7 +195,7 @@ def test_unicode_surrogates_are_outside_supported_domain(tmp_path, target):
 
 
 def test_cli_stdlib_writes_same_html(tmp_path, aoi_root):
-    import dragowing.cli as cli
+    import dragowing.dragowing as cli
     data = aoi_root / 'cycles/c001-chunichi/outputs'
     native, light = tmp_path / 'native', tmp_path / 'stdlib'
     assert cli.main([str(data), '--out', str(light), '--id', 'P1']) == 0
@@ -220,7 +220,7 @@ class Block(importlib.abc.MetaPathFinder):
         if fullname.split('.')[0] in blocked:
             raise AssertionError('unexpected import: ' + fullname)
 sys.meta_path.insert(0, Block())
-from dragowing.cli import main
+from dragowing.dragowing import main
 assert main([str(data), '--out', str(out)]) == 0
 '''
     proc = subprocess.run([sys.executable, '-c', code, str(REPO), str(aoi_root / 'cycles/c001-chunichi/outputs'), str(tmp_path)],
@@ -230,7 +230,7 @@ assert main([str(data), '--out', str(out)]) == 0
 
 
 def test_cli_without_out_writes_a_new_temp_dir_and_prints_links(tmp_path, monkeypatch, capsys, aoi_root):
-    from dragowing.cli import main
+    from dragowing.dragowing import main
     monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path))
     assert main([str(aoi_root / 'cycles/c001-chunichi/outputs'), '--id', 'P1']) == 0
     [out] = tmp_path.glob('dragowing-*')
@@ -247,7 +247,7 @@ def test_cli_without_out_writes_a_new_temp_dir_and_prints_links(tmp_path, monkey
     (["--results", "data", "--overlap-backend", "native"], "native"),
 ])
 def test_cli_compatible_spellings_dispatch_backend(args, expected, monkeypatch):
-    import dragowing.cli as cli
+    import dragowing.dragowing as cli
     class ReachedBackend(Exception):
         pass
     monkeypatch.setattr(cli, "load_items", lambda path: ([], []))
@@ -265,7 +265,7 @@ def test_cli_compatible_spellings_dispatch_backend(args, expected, monkeypatch):
 
 @pytest.mark.parametrize("args", [[], ["data", "--results", "other"]])
 def test_cli_rejects_missing_or_ambiguous_results(args):
-    from dragowing.cli import main
+    from dragowing.dragowing import main
     with pytest.raises(SystemExit) as exc:
         main(args)
     assert exc.value.code == 2

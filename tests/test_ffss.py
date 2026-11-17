@@ -9,9 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from dragowing.figures import ffss_figures
-from dragowing.records import read_ffss, read_jsonl
-from dragowing.figures import figure_svg, plotly_min
+from dragowing.dragowing import ffss_figures
+from dragowing.dragowing import read_ffss, read_jsonl
+from dragowing.dragowing import figure_svg, plotly_min
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tests" / "ffss_records.source.json"

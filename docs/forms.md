@@ -1,9 +1,9 @@
 # 2×2 of the four forms and condition notation
 
-`dragowing/forms.py` displays one judged row (`propositions.jsonl` or `sets.jsonl`). It never goes to the network. It builds counts from `n` and `hold`, and does not write reasons for holding or not holding.
+`python dragowing.py RESULTS --forms` displays one judged row (`propositions.jsonl` or `sets.jsonl`). It never goes to the network. It builds counts from `n` and `hold`, and does not write reasons for holding or not holding.
 
 ```bash
-python dragowing/forms.py --results cycles/c001-chunichi/outputs --id P1
+python dragowing.py cycles/c001-chunichi/outputs --forms --id P1   # forms_main(['--results', …, '--id', 'P1']) from Python
 ```
 
 ## Observation

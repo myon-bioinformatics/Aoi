@@ -8,8 +8,7 @@ Unspecified means `native` for `load_overlap`, and an unknown backend is an erro
 
 ```python
 from pathlib import Path
-from dragowing.overlap import default_conditions, load_overlap
-from dragowing.records import read_jsonl
+from dragowing.overlap import default_conditions, load_overlap, read_jsonl  # native が既定（dragowing.dragowing.load_overlap は stdlib が既定）
 
 results = Path("cycles/c001-chunichi/outputs")
 conditions = default_conditions(read_jsonl(results / "propositions.jsonl"),
@@ -52,7 +51,7 @@ The existing API's positional arguments are unchanged and the added argument is 
 Aoi's `scripts/stdlib_min.py overlap-stdlib --deps min` (formerly `shrink/run_overlap_stdlib.py`) replaces the process-wide `numpy` and `polars` with
 minimal versions. Mixed with libraries already loaded, the same name points to different implementations,
 affecting other analyses and imports inside libraries. It also assumes the libraries are not installed.
-Production switching does not use it; it calls the limited row evaluation in `_overlap_stdlib.py`.
+Production switching does not use it; it calls the limited row evaluation in `dragowing.py` (`read_rows`, `condition_bits`).
 The experimental artifacts and injection runner remain as a comparison experiment.
 
 ## Verification and measurement

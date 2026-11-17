@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "files_scanned": 338,
+  "files_scanned": 335,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
@@ -9,10 +9,6 @@
     {
       "file": "dist/blueprobe_min.py",
       "line": 117
-    },
-    {
-      "file": "dist/dragowing_min.py",
-      "line": 120
     },
     {
       "file": "dist/pythdragoras_min.py",
@@ -28,15 +24,15 @@
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 63
+      "line": 64
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 57
+      "line": 58
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 206
+      "line": 207
     },
     {
       "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",

@@ -21,10 +21,6 @@
       "line": 117
     },
     {
-      "file": "dist/dragowing_min.py",
-      "line": 120
-    },
-    {
       "file": "dist/pythdragoras_min.py",
       "line": 120
     },
@@ -38,15 +34,15 @@
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 63
+      "line": 64
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 57
+      "line": 58
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 206
+      "line": 207
     },
     {
       "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",
@@ -777,7 +773,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1378,
+      "attribute_uses": 1382,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -793,7 +789,7 @@
         "mark.parametrize": 318,
         "mark.skipif": 17,
         "param": 1,
-        "raises": 509,
+        "raises": 513,
         "skip": 11,
         "warns": 3,
         "xfail": 1
@@ -834,14 +830,14 @@
           "import_sites": 16
         },
         "dragowing": {
-          "attribute_uses": 60,
+          "attribute_uses": 64,
           "attributes": {
             "UsageError": 3,
             "fixture": 5,
             "importorskip": 1,
             "mark.parametrize": 18,
             "mark.skipif": 1,
-            "raises": 32
+            "raises": 36
           },
           "dynamic_import_sites": 0,
           "files": 10,
@@ -1497,7 +1493,7 @@
     },
     {
       "attributes": {
-        "raises": 1
+        "raises": 5
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_figures.py",

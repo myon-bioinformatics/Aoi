@@ -22,7 +22,7 @@ def worker(args):
     pkg.__spec__ = importlib.machinery.ModuleSpec('dragowing', loader=None, is_package=True)
     sys.modules['dragowing'] = pkg
     from dragowing.overlap import default_conditions, load_overlap
-    from dragowing.records import read_jsonl
+    from dragowing.dragowing import read_jsonl
 
     rows = read_jsonl(args.results / 'season.jsonl')
     conds = default_conditions(read_jsonl(args.results / 'propositions.jsonl'), rows)

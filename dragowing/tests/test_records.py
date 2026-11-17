@@ -1,8 +1,10 @@
 """Stdlib parity for multi-ID indexing, duplicate rows and error ordering."""
 import random, sys, unittest
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from records import select_items
+import importlib
+import dragowing
+# pytest では dragowing はパッケージ（conftest）、`python -S -m unittest discover -s tests` では dragowing.py そのもの
+select_items = getattr(dragowing, 'select_items', None) or importlib.import_module('dragowing.dragowing').select_items
 
 
 class RecordSelectionTests(unittest.TestCase):

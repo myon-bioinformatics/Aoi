@@ -4,14 +4,14 @@ from pathlib import Path; from unittest.mock import MagicMock, patch
 
 import pytest
 
-from dragowing.cli import main, write_svg
-from dragowing import research_report
-from dragowing.figures import A_COLOR, B_COLOR, FONT, heatmap_figure, trajectory_figure
-from dragowing.forms import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
-from dragowing.htmlout import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
-from dragowing.plotly_cdn import PLOTLY_JS_CDN, fetch_plotly_js, reset_plotly_js_cache
+from dragowing.dragowing import main, write_svg
+import dragowing.dragowing as research_report
+from dragowing.dragowing import A_COLOR, B_COLOR, FONT, heatmap_figure, trajectory_figure
+from dragowing.dragowing import FORM_LABEL, _cell, _form_cell, contingency, format_contingency_cell
+from dragowing.dragowing import embed_json, figure_block, heatmap_note, overlap_md, proposition_section, propositions_body, render_md, spec_from, standalone
+from dragowing.dragowing import PLOTLY_JS_CDN, fetch_plotly_js, reset_plotly_js_cache
 from dragowing.overlap import default_conditions, load_overlap
-from dragowing.records import read_jsonl
+from dragowing.dragowing import read_jsonl
 from ask import registration_status
 from reports.build_reports import page as report_page
 
@@ -573,7 +573,7 @@ def test_figure_script_keeps_ids_inside_a_javascript_string():
 
 
 def test_svg_is_drawn_by_plotly_min_and_png_is_gone(tmp_path):
-    import dragowing.cli as cli
+    import dragowing.dragowing as cli
     spec = heatmap_figure([season_row()], "wins_vs_pythag")
     cli.write_svg(spec, tmp_path / "deep" / "x.svg")
     text = (tmp_path / "deep" / "x.svg").read_text(encoding="utf-8")
@@ -590,7 +590,7 @@ def test_heatmap_team_order_is_an_argument_and_defaults_to_code_order():
 
 
 def test_team_order_option_rejects_duplicates():
-    from dragowing.cli import team_order
+    from dragowing.dragowing import team_order
     assert team_order("d, g ,") == ("d", "g")
     import pytest
     with pytest.raises(ValueError):
@@ -598,8 +598,8 @@ def test_team_order_option_rejects_duplicates():
 
 
 # ==== 文字（旧 test_font.py）: メイリオを先頭にして、図・ページ・研究用レポートで揃える
-# figures.FONT が基準。research_report.py と reports/build_reports.py は単独で配布・実行されるので
-# import せずに同じ文字列を書き、ここで一致を確かめる。
+# dragowing.py の FONT が基準。研究レポートのテンプレートと reports/build_reports.py（単独で配布・実行）は
+# 同じ文字列を書いているので、ここで一致を確かめる。
 
 TIGHT = FONT.replace(" ", "")  # CSS で詰めて書いている形: Meiryo,メイリオ,sans-serif
 
@@ -627,3 +627,28 @@ def test_report_pages_use_the_font():
         default_stylesheet = staticmethod(lambda: "")
     out = report_page("t", "<p>x</p>", Md)
     assert f"font-family:{TIGHT}" in out and "system-ui" not in out
+
+
+# ==== 📈 分野を問わない系列・行列（旧 Aoi の distributions/entries/plot_specs.py）
+
+def test_series_and_matrix_keep_order_gaps_and_caller_data():
+    from dragowing.dragowing import matrix_figure, series_figure
+    data = [[1, None], [3, 4]]
+    figure = matrix_figure(["beta", "alpha"], ["sensor-2", "sensor-1"], data)
+    assert figure["data"][0]["z"] == data
+    assert figure["layout"]["yaxis"]["categoryarray"] == ["sensor-2", "sensor-1"]
+    data[0][0] = 100
+    assert figure["data"][0]["z"][0][0] == 1
+    assert figure["layout"]["font"]["family"] == FONT
+    line = series_figure(["t1", "t2"], [0, None], name="n")
+    assert line["data"][0]["connectgaps"] is False and line["data"][0]["y"] == [0, None]
+    with pytest.raises(ValueError):
+        matrix_figure([1], [2], [[3, 4]])
+    with pytest.raises(ValueError):
+        series_figure([1], [float("nan")])
+    with pytest.raises(ValueError):
+        series_figure([1, 2], [3])
+    with pytest.raises(ValueError):
+        series_figure([1], [2], mode="bars")
+    from dragowing.dragowing import figure_svg
+    assert figure_svg(line).startswith(b"<svg") and figure_svg(figure).startswith(b"<svg")

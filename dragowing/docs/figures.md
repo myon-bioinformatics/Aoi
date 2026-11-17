@@ -25,9 +25,9 @@ With `--embed`, Plotly.js is embedded into `index.html`. `propositions.html` is 
 
 Page headings, the list, the 2×2, counterexample tables, and the logic-notation box are written in Markdown and converted to HTML with our own `markdown.py` (`vendor/markdown/markdown.py`, `raw_html=True, attr_list=True` for the figure blocks, `<details>` and `{: .provenance}`). Numbers stay exactly as in the files after conversion; they are not rounded.
 
-The text-only 2×2 remains `dragowing/forms.py` in [forms.md](forms.md).
+The text-only 2×2 is `--forms` in [forms.md](forms.md).
 
-Figures and pages use `figures.FONT` (`Meiryo, メイリオ, sans-serif`). The standalone research-report and report-page templates repeat the same font string, checked by `tests/test_figures.py`; code remains monospace. No font files are distributed. Systems without Meiryo use their default sans-serif font.
+Figures and pages use `FONT` (`Meiryo, メイリオ, sans-serif`). The standalone research-report and report-page templates repeat the same font string, checked by `tests/test_figures.py`; code remains monospace. No font files are distributed. Systems without Meiryo use their default sans-serif font.
 
 Add `--svg` only when SVG is needed. 🖼️ The parent's standard-library `plotly_min` draws it from the same figure JSON (`vendor/tools/stdlib_min/plotly_min.py`, locked in `vendor.lock.json`); no Chrome is used. PNG is not written; screenshots of the HTML belong to browser-test-kit.
 
@@ -98,7 +98,7 @@ B is the display name of the set `upper_half == false`.
 
 The number of sets, including B, is 2–8 (`overlap.MAX_SETS`). All 2^n regions remain present in the grid, including zero-count regions.
 
-**Grid** (`venn.py::grid_figure`, figure ID `overlap_grid`). Each region occupies one cell in a Karnaugh-style grid; there are no area-fitted circles or ellipses.
+**Grid** (`dragowing.py::grid_figure`, figure ID `overlap_grid`). Each region occupies one cell in a Karnaugh-style grid; there are no area-fitted circles or ellipses.
 
 - Rows represent the first floor(n/2) sets and columns the rest. Axes follow Gray-code order, starting on the side containing the first set (10, 11, 01, 00 for four sets). Adjacent cells differ by one set. Axis labels list membership bits in set-number order.
 - Cell labels are exact counts. Color intensity also represents count; it does not assign importance. There is no color scale legend.
@@ -113,10 +113,7 @@ The number of sets, including B, is 2–8 (`overlap.MAX_SETS`). All 2^n regions 
 The Python API returns only Plotly JSON (`data` / `layout`), without Python plotly or NumPy. Pass it directly to `Plotly.newPlot(id, spec.data, spec.layout)`.
 
 ```python
-from dragowing.overlap import finalize_conditions, load_overlap, parse_cond
-from dragowing.records import read_jsonl
-from dragowing.venn import venn_figures
-from dragowing.htmlout import figure_block, standalone
+from dragowing.dragowing import figure_block, finalize_conditions, load_overlap, parse_cond, read_jsonl, standalone, venn_figures
 
 rows = read_jsonl("season.jsonl")
 conds = finalize_conditions([parse_cond(t) for t in ("rd,>,0", "rank_ra,<=,2", "rank_rf,<=,3")], [], rows)  # + B = 4 sets

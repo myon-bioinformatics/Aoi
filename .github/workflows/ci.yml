@@ -439,9 +439,9 @@ jobs:
           save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           prune-cache: true
       - name: Generate digest from committed records only
-        run: uv run --locked --python 3.15 python nagoyaction/research_digest.py cycles/c001-chunichi
+        run: uv run --locked --python 3.15 python nagoyaction/npb/research_digest.py cycles/c001-chunichi
       - name: Verify reproducibility
-        run: uv run --locked --python 3.15 python nagoyaction/research_digest.py cycles/c001-chunichi --check
+        run: uv run --locked --python 3.15 python nagoyaction/npb/research_digest.py cycles/c001-chunichi --check
       - name: Preserve generated research digest
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

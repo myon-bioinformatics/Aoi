@@ -47,14 +47,14 @@ jobs:
           prune-cache: true
       - name: Import and CLI smoke for the GHI past-pattern snapshot
         run: |
-          python -S -c "import sys; sys.path.insert(0, 'nagoyaction'); from ghi_execution import load_ghi; g = load_ghi('.ghi'); assert callable(g.request) and callable(g.local_identity)"
+          python -S -c "import sys; sys.path.insert(0, 'nagoyaction'); from nagoyaction import load_ghi; g = load_ghi('.ghi'); assert callable(g.request) and callable(g.local_identity)"
           python -S .ghi/gh_identity.py --help
       - name: Test c001 annotations and publication gate (stdlib)
         run: python -S -m unittest discover -s nagoyaction/tests -p 'test_c001_*.py' -v
       - name: Observe current execution identity through GHI
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python -S nagoyaction/ghi_execution.py --ghi .ghi --research research --audit "$AUDIT_DIR"
+        run: python -S nagoyaction/nagoyaction.py ghi-execution --ghi .ghi --research research --audit "$AUDIT_DIR"
       - name: Freeze inputs and check formulas from annual totals
         run: python -S scripts/run_c001_replay_stage.py freeze --audit "$AUDIT_DIR"
       - name: Install execution dependencies (not research data)

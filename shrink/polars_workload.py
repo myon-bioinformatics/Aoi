@@ -6,7 +6,7 @@ from pathlib import Path
 
 def run(root: Path) -> dict:
     from dragowing.overlap import default_conditions, load_overlap
-    from dragowing.records import read_jsonl
+    from dragowing.dragowing import read_jsonl
 
     season = root / "cycles/c001-chunichi/outputs/season.jsonl"
     props = root / "cycles/c001-chunichi/outputs/propositions.jsonl"

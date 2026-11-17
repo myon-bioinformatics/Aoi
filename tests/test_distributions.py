@@ -1,4 +1,4 @@
-"""Run all five min artifacts together with no source checkout or site packages, and check the min APIs on domain-neutral examples."""
+"""Run the four min artifacts and DRAgoWing's single file together with no source checkout or site packages, and check the min APIs on domain-neutral examples."""
 from copy import deepcopy
 import importlib.util
 import json
@@ -18,13 +18,15 @@ def test_min_distributions_are_isolated_and_interoperate(tmp_path):
     for item in manifest['projects'].values():
         p = ROOT / item['output']
         shutil.copyfile(p, tmp_path / p.name)
+    # 🐉 DRAgoWing は dragowing.py そのものが単一ファイル（minpy の束ねはない）
+    shutil.copyfile(ROOT / 'dragowing' / 'dragowing.py', tmp_path / 'dragowing.py')
     code = r'''
 import sys
 sys.path.insert(0, '.')
 import blueprobe_min as blue
 import queryu_min as query
 import sakanalytics_min as saka
-import dragowing_min as draw
+import dragowing as draw
 import pythdragoras_min as pyth
 from pathlib import Path
 assert blue.normalize('Ａ\0 B') == 'A� B'
@@ -61,7 +63,6 @@ report = draw.render_report({'title': '<unsafe>', 'frames': {'x': {}}, 'default'
 assert '&lt;unsafe&gt;' in report
 assert draw.series_figure([1, 2], [3, None])['data'][0]['connectgaps'] is False
 assert draw.matrix_figure(['p'], ['q'], [[4]])['data'][0]['z'] == [[4]]
-assert not any(hasattr(draw, n) for n in ['class_mark', 'trajectory_figure', 'heatmap_figure', 'select_items'])
 assert not any(name in sys.modules for name in ['cache_core', 'snapshot_source', 'annual_audit', 'figures', 'score_sensitivity'])
 assert not any(name in sys.modules for name in ['numpy', 'polars', 'httpx', 'selectolax'])
 '''
@@ -203,7 +204,8 @@ def test_omit_from_bundle_rejects_bad_entries(tmp_path, monkeypatch, omit, kind,
 @pytest.fixture
 def api(monkeypatch):
     monkeypatch.syspath_prepend(str(ROOT / 'distributions/entries'))
-    import period_comparison, neighbor_comparison, score_math, plot_specs
+    import period_comparison, neighbor_comparison, score_math
+    import dragowing.dragowing as plot_specs  # series_figure・matrix_figure は dragowing.py（旧 plot_specs）
     return period_comparison, neighbor_comparison, score_math, plot_specs
 
 

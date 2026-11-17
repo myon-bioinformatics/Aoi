@@ -38,11 +38,15 @@
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 50
+      "line": 63
     },
     {
-      "file": "dragowing/forms.py",
-      "line": 23
+      "file": "dragowing/dragowing.py",
+      "line": 57
+    },
+    {
+      "file": "dragowing/dragowing.py",
+      "line": 206
     },
     {
       "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",

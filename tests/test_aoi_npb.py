@@ -178,46 +178,46 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
 
 
 def test_import_aoi_does_not_shadow_the_dragowing_package():
-    """Putting dragowing/ on sys.path makes dragowing.py win and hides dragowing.figures."""
+    """Putting dragowing/ on sys.path makes dragowing.py win and hides dragowing.overlap (α)."""
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     code = (
         "import sys\n"
         "first = sys.path[0]\n"
-        "import aoi, dragowing.figures\n"
+        "import aoi, dragowing.overlap\n"
         "import dragowing\n"
         "assert sys.path[0] == first, sys.path[0]\n"
         "assert getattr(dragowing, '__path__', None), getattr(dragowing, '__file__', None)\n"
         f"assert {str(root / 'dragowing')!r} not in sys.path\n"
-        "print(dragowing.figures.__file__)\n"
+        "print(dragowing.overlap.__file__)\n"
     )
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "PYTHONSAFEPATH")}
     run = subprocess.run([sys.executable, "-c", code], cwd=root, env=env, capture_output=True, text=True)
     assert run.returncode == 0, run.stderr
-    assert run.stdout.strip() == str(root / "dragowing" / "figures.py")
+    assert run.stdout.strip() == str(root / "dragowing" / "overlap.py")
 
 
-def test_dragowing_script_path_is_the_report_and_the_name_is_the_element_counter(tmp_path):
+def test_dragowing_script_path_and_name_run_the_same_main(tmp_path):
+    """🐉 dragowing.py は 1 ファイルで、__main__.py も同じ main（レポート・--forms・--ffss・要素数）。"""
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
     report = subprocess.run([sys.executable, str(root / "aoi.py"), "dragowing/__main__.py", "--help"],
                             cwd=tmp_path, env=env, capture_output=True, text=True)
     assert report.returncode == 0, report.stderr
-    assert "記録された結果を HTML" in report.stdout
-    assert "Count HTML elements" not in report.stdout
+    assert "記録された結果を HTML" in report.stdout and "--ffss" in report.stdout
     counter = subprocess.run([sys.executable, str(root / "aoi.py"), "dragowing", "--help"],
                              cwd=tmp_path, env=env, capture_output=True, text=True)
     assert counter.returncode == 0, counter.stderr
-    assert "Count HTML elements" in counter.stdout
+    assert "記録された結果を HTML" in counter.stdout and "--forms" in counter.stdout and "--ffss" in counter.stdout
 
 
 @pytest.mark.parametrize("flag", ["-I", "-S", "-E", "-P"])
-def test_launcher_flags_still_run_the_element_counter(flag):
+def test_launcher_flags_still_run_dragowing_py(flag):
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
     run = subprocess.run([sys.executable, flag, str(root / "aoi.py"), "dragowing", "--help"],
                          cwd=root, env=env, capture_output=True, text=True)
     assert run.returncode == 0, run.stderr
-    assert "Count HTML elements" in run.stdout
+    assert "記録された結果を HTML" in run.stdout
 
 
 def test_nagoyaction_report_and_inbox_import_through_aoi(tmp_path):

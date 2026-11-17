@@ -20,10 +20,10 @@ DEFAULT_CYCLE = "c001-chunichi"
 def keep_dragowing_as_package() -> None:
     """Keep ``import dragowing`` as the package under Aoi.
 
-    DRAgoWing's standalone entry is ``dragowing/dragowing.py``. pytest's pythonpath
-    includes ``dragowing/``, so the default import would load that file and hide
-    ``dragowing.figures`` and the rest of the package. Child tests still import
-    ``forms`` / ``records`` as top-level modules, so the path entry stays.
+    DRAgoWing is the single file ``dragowing/dragowing.py`` plus ``overlap.py`` (α).
+    pytest's pythonpath includes ``dragowing/``, so the default import would load that
+    file and hide ``dragowing.overlap`` and ``dragowing.dragowing``. A child test still
+    runs as ``python -m unittest`` with ``dragowing`` as the file, so the path entry stays.
     Call this before any ``import dragowing`` (including pytest ``-p`` plugins).
     """
     root = Path(__file__).resolve().parent / "dragowing"

@@ -2,8 +2,8 @@
 
   python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan
   python aoi.py pythdragoras/season_sensitivity.py --season ... --config ...
-  python aoi.py dragowing --help                        # dragowing/dragowing.py (element counter)
-  python aoi.py dragowing/__main__.py RESULTS           # the DRAgoWing report, from any cwd
+  python aoi.py dragowing RESULTS                       # dragowing/dragowing.py: the DRAgoWing report (and --forms, --ffss, PAGE.html)
+  python aoi.py dragowing/__main__.py RESULTS           # the same main through the package entry, from any cwd
   python aoi.py -m dragowing                            # the package, only when Aoi is already on sys.path (cwd)
   eval "$(python aoi.py)"   # POSIX sh only. Supported: Ubuntu/POSIX. Windows: not supported yet / untested.
   import aoi                # AOI_ROOT and the sibling dirs, for this process
@@ -16,7 +16,7 @@ NagoyAction names ``.`` because ``annual_history_report.py`` imports ``annual_sc
 ``inbox/inbox.py`` imports ``aoi_npb`` (single files at Aoi's root). Its other entries are
 the sibling directories those modules and its tests import.
 ``dragowing/`` is not one of the directories: ``dragowing.py`` would win ``import dragowing``
-and hide ``dragowing.figures``. pytest's ``pythonpath`` is a different list and is not copied.
+and hide ``dragowing.overlap`` (the native α). pytest's ``pythonpath`` is a different list and is not copied.
 ``python aoi.py -m dragowing`` keeps the cwd entry, as ``python -m`` does, and does not add
 Aoi's root: from an Aoi checkout it runs the package report, and from another directory the
 module is not on ``sys.path``. ``dragowing/__main__.py`` does not depend on the cwd.

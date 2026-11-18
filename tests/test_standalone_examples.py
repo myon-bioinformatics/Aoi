@@ -152,11 +152,11 @@ class GenericLittleBitTest(unittest.TestCase):
             bad = subprocess.run([sys.executable, "-I", str(script), "littlebit"], input="[[1, 2], [3]]",
                                  capture_output=True, text=True, cwd=temp)
             self.assertEqual(bad.returncode, 2)
-            out = Path(temp) / "tool"
-            subprocess.run([sys.executable, "-S", str(ROOT / "vendor" / "uv_tool_build.py"), str(ROOT / "pythdragoras.py"),
-                            "--out", str(out)], check=True, capture_output=True)
-            project = tomllib.loads((out / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+            config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+            project = config["project"]
             self.assertEqual((project["dependencies"], project["scripts"]), ([], {"pythdragoras": "pythdragoras:main"}))
+            self.assertEqual(project["requires-python"], ">=3.11")
+            self.assertEqual(config["tool"]["setuptools"]["py-modules"], ["pythdragoras"])
 
 
 def test_generic_metrics_are_the_canonical_definitions():

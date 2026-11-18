@@ -55,8 +55,8 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 ```bash
 python pythdragoras.py 16 0 56 72                     # metrics (TP FP FN TN); also bayes / expected / pythagorean
 echo '[[1,0,1],[0,1,1],[1,1,0]]' | python pythdragoras.py littlebit --rank 2
-python vendor/uv_tool_build.py pythdragoras.py --out build/pythdragoras-tool   # shared builder, vendored from Aoi
-uv tool install ./build/pythdragoras-tool && pythdragoras 16 0 56 72
+uv tool install . && pythdragoras 16 0 56 72
+# Or: uv tool install git+https://github.com/myon-bioinformatics/PythDRagoras.git
 ```
 
 The LittleBit here is pure Python (one-sided Jacobi SVD) for matrices up to a few hundred rows and columns. `core/littlebit_prune.py` is the numpy version used inside the analysis; tests check that both give the same approximation. Errors exit 2 (`pythdragoras -1 0 0 0`: counts must be nonnegative integers).
@@ -114,7 +114,7 @@ git -C .test-deps/aoi add -A pythdragoras
 (cd .test-deps/aoi && uv run --locked pytest -q -c pyproject.toml pythdragoras/tests)
 ```
 
-The root `pyproject.toml` is the uv-tool project that `vendor/uv_tool_build.py` generates for `pythdragoras.py` (byte for byte), so tests run in Aoi's environment (pytest, polars, numpy from Aoi's `uv.lock`) with this tree in place of Aoi's `pythdragoras/`. CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. An empty `AOI_REF` resolves `refs/heads/main`. The resolved SHA is left in the job summary.
+The root `pyproject.toml` packages `pythdragoras.py` directly for `uv tool install .`; no builder copy is needed. Tests run in Aoi's environment (pytest, polars, numpy from Aoi's `uv.lock`) with this tree in place of Aoi's `pythdragoras/`. CI (`.github/workflows/ci.yml`) does the same on Python 3.11–3.15. An empty `AOI_REF` resolves `refs/heads/main`. The resolved SHA is left in the job summary.
 
 The optional `audit-test` environment ([record](docs/nano-audit-tests.md)) ended when the root `pyproject.toml` became the tool project; the record stays as the 2026-11-04 measurement.
 
@@ -363,4 +363,4 @@ python pythdragoras.py pythagorean --for 80 --against 60
 
 JSONの `accuracy` は 0.85、`precision` は約 0.889、`recall` は 0.8、`f1` は約 0.842 です。ベイズの `posterior` は約 0.154、期待勝率は 0.64 です。定義できない値は `null` と理由で返します。ピタゴラス期待値の指数は `--exponent` で指定でき、省略時は 2 です。
 
-`python vendor/uv_tool_build.py pythdragoras.py --out /tmp/pythdragoras-tool` のあと `uv tool install /tmp/pythdragoras-tool` で登録すると、`pythdragoras --help` から同じ機能を利用できます。実行時に外部ライブラリは不要です。
+`uv tool install .`（または `uv tool install git+https://github.com/myon-bioinformatics/PythDRagoras.git`）で登録すると、`pythdragoras --help` から同じ機能を利用できます。Python 3.11 以降で動き、実行時に外部ライブラリは不要です。

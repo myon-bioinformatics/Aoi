@@ -49,8 +49,8 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 ```bash
 python sakanalytics.py 0 --lo 0 --eps 0.1             # boundary (the default command)
 python sakanalytics.py describe 1 2 3
-python vendor/uv_tool_build.py sakanalytics.py --out build/sakanalytics-tool   # shared builder, vendored from Aoi
-uv tool install ./build/sakanalytics-tool && sakanalytics 0 --lo 0 --eps 0.1
+uv tool install . && sakanalytics 0 --lo 0 --eps 0.1
+# Or: uv tool install git+https://github.com/myon-bioinformatics/SakAnalytics.git
 ```
 
 Omit `--eps` to detect a boundary without changing the value.
@@ -376,7 +376,7 @@ python sakanalytics.py compare --before 45 52 48 --after 40 44 46
 
 最初の例は件数 5、平均 51.2、中央値 50 をJSONで返します。`population_stddev` は母標準偏差です。比較元の平均がゼロなら増減率は `null` と理由で返します。数列の収束判定はこの軽量版にはまだ含まれません。
 
-`python vendor/uv_tool_build.py sakanalytics.py --out /tmp/sakanalytics-tool` のあと `uv tool install /tmp/sakanalytics-tool` で登録すると、`sakanalytics --help` から同じ機能を利用できます。実行時に外部ライブラリは不要です。
+`uv tool install .`（または `uv tool install git+https://github.com/myon-bioinformatics/SakAnalytics.git`）で登録すると、`sakanalytics --help` から同じ機能を利用できます。Python 3.11 以降で動き、実行時に外部ライブラリは不要です。
 
 ### カンマ区切りとCSVの入力
 

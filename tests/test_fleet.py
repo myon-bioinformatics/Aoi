@@ -23,7 +23,6 @@ _spec.loader.exec_module(fleet)
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
 ACCEPTED = {
     "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
-    "vendor/uv_tool_build.py": "f15063440ee7f5f869cef1546ae651fa32a07505",
     "vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0",
 }
 ACTION_PINS = {

@@ -80,12 +80,17 @@ def test_cli_entry_point_does_not_add_a_sibling(tmp_path, aoi_root):
         assert origin.parent != (ROOT.parent / "blueprobe").resolve()
 
 
-def test_import_guard_preserves_standalone_and_embedded_contracts(aoi_root):
+def _conftest_guard():
+    """The root conftest.py as a separate module, to call its origin guards directly."""
     import importlib.util
     spec = importlib.util.spec_from_file_location("queryu_conftest_guard", ROOT / "conftest.py")
     guard = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(guard)
-    check = guard._blueprobe_origin_is_allowed
+    return guard
+
+
+def test_import_guard_preserves_standalone_and_embedded_contracts(aoi_root):
+    check = _conftest_guard()._blueprobe_origin_is_allowed
     root = Path("/example/aoi")
     own = root / "blueprobe" / "blueprobe.py"
     external = Path("/example/pinned-blueprobe/blueprobe.py")
@@ -97,11 +102,7 @@ def test_import_guard_preserves_standalone_and_embedded_contracts(aoi_root):
 
 
 def test_own_module_origin_must_be_this_checkout(tmp_path):
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("queryu_layout_guard", ROOT / "conftest.py")
-    guard = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(guard)
-    check = guard._own_module_origin_is_allowed
+    check = _conftest_guard()._own_module_origin_is_allowed
     root = tmp_path / "aoi"
     here = root / "queryu"
     assert check("ask", here / "ask" / "ask.py", root, here)

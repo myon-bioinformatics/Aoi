@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "blueprobe"
 version = "0.1.0"
@@ -5,13 +9,21 @@ description = "まず見に行く。解釈はあとで。HTML/CSS/DOM の構造�
 requires-python = ">=3.11"
 dependencies = []
 
+# 🧰 uv tool: `uv tool install .` で blueprobe.py 1 ファイルがそのまま `blueprobe` コマンドになる（ビルダーの写しは要らない）
+[project.scripts]
+blueprobe = "blueprobe:main"
+
 [dependency-groups]
 dev = ["pytest>=8", "selectolax>=1"]
 # Saved-observation tests only; the full dev group retains the Lexbor oracle.
 observation-test = ["pytest>=8"]
 stdlib-test = ["pytest>=8"]
 
+[tool.setuptools]
+py-modules = ["blueprobe"]
+
 [tool.uv]
+# uv run / uv sync ではこのリポジトリを入れない（テストはパスで読む）。uv tool install . は上の setuptools で 1 ファイルを入れる
 package = false
 
 [tool.pytest.ini_options]

@@ -50,7 +50,7 @@
     },
     {
       "file": "queryu/conftest.py",
-      "line": 48
+      "line": 49
     },
     {
       "file": "scripts/fetch_module.py",
@@ -440,16 +440,6 @@
           "name": "numpy"
         },
         {
-          "file": "pythdragoras/pyproject.toml",
-          "kind": "group:dev",
-          "name": "numpy"
-        },
-        {
-          "file": "pythdragoras/pyproject.toml",
-          "kind": "group:dev",
-          "name": "numpy"
-        },
-        {
           "file": "queryu/pyproject.toml",
           "kind": "group:dev",
           "name": "numpy"
@@ -730,11 +720,6 @@
           "name": "polars"
         },
         {
-          "file": "pythdragoras/pyproject.toml",
-          "kind": "group:dev",
-          "name": "polars"
-        },
-        {
           "file": "sakanalytics/pyproject.toml",
           "kind": "group:dev",
           "name": "polars"
@@ -891,8 +876,8 @@
             "xfail": 1
           },
           "dynamic_import_sites": 1,
-          "files": 14,
-          "import_sites": 14
+          "files": 9,
+          "import_sites": 9
         },
         "sakanalytics": {
           "attribute_uses": 433,
@@ -975,21 +960,6 @@
           "name": "pytest"
         },
         {
-          "file": "pythdragoras/pyproject.toml",
-          "kind": "group:stdlib-test",
-          "name": "pytest"
-        },
-        {
-          "file": "pythdragoras/pyproject.toml",
-          "kind": "group:dev",
-          "name": "pytest"
-        },
-        {
-          "file": "pythdragoras/pyproject.toml",
-          "kind": "group:audit-test",
-          "name": "pytest"
-        },
-        {
           "file": "queryu/pyproject.toml",
           "kind": "group:cache-test",
           "name": "pytest"
@@ -997,6 +967,11 @@
         {
           "file": "queryu/pyproject.toml",
           "kind": "group:dev",
+          "name": "pytest"
+        },
+        {
+          "file": "queryu/pyproject.toml",
+          "kind": "group:stdlib-test",
           "name": "pytest"
         },
         {
@@ -1012,8 +987,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 98,
-      "import_sites": 101
+      "files": 93,
+      "import_sites": 96
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2331,7 +2306,7 @@
         "ExitCode.OK": 1,
         "ExitCode.TESTS_FAILED": 1,
         "UsageError": 4,
-        "fixture": 1
+        "fixture": 2
       },
       "dynamic_lines": [],
       "file": "queryu/conftest.py",
@@ -2341,74 +2316,27 @@
     },
     {
       "attributes": {
-        "fixture": 1
-      },
-      "dynamic_lines": [],
-      "file": "queryu/tests/conftest.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "queryu"
-    },
-    {
-      "attributes": {
-        "fail": 1,
-        "mark.parametrize": 4,
-        "raises": 13
-      },
-      "dynamic_lines": [],
-      "file": "queryu/tests/test_cache_snapshots.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "queryu"
-    },
-    {
-      "attributes": {
         "mark.parametrize": 2
       },
       "dynamic_lines": [],
-      "file": "queryu/tests/test_ci_blueprobe_sources.py",
+      "file": "queryu/tests/test_fleet.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "queryu"
     },
     {
-      "attributes": {
-        "fail": 1,
-        "raises": 2
-      },
+      "attributes": {},
       "dynamic_lines": [],
-      "file": "queryu/tests/test_fetch_plan.py",
+      "file": "queryu/tests/test_no_sibling_imports.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "queryu"
     },
     {
       "attributes": {
-        "mark.parametrize": 3,
-        "raises": 14
-      },
-      "dynamic_lines": [],
-      "file": "queryu/tests/test_pattern_postprocess.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "queryu"
-    },
-    {
-      "attributes": {
-        "fail": 1,
+        "fail": 4,
         "mark.parametrize": 6,
-        "raises": 5
-      },
-      "dynamic_lines": [],
-      "file": "queryu/tests/test_pr42_boundaries.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "queryu"
-    },
-    {
-      "attributes": {
-        "fail": 2,
-        "raises": 2
+        "raises": 9
       },
       "dynamic_lines": [],
       "file": "queryu/tests/test_queryu.py",
@@ -2418,10 +2346,27 @@
     },
     {
       "attributes": {
-        "raises": 8
+        "fail": 1,
+        "fixture": 1,
+        "mark.parametrize": 5
+      },
+      "dynamic_lines": [
+        520
+      ],
+      "file": "queryu/tests/test_queryu_ask.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "queryu"
+    },
+    {
+      "attributes": {
+        "fail": 1,
+        "fixture": 1,
+        "mark.parametrize": 4,
+        "raises": 23
       },
       "dynamic_lines": [],
-      "file": "queryu/tests/test_queryu_cache_share.py",
+      "file": "queryu/tests/test_queryu_cache.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "queryu"
@@ -2433,7 +2378,7 @@
         "raises": 7
       },
       "dynamic_lines": [],
-      "file": "queryu/tests/test_queryu_emoji_data.py",
+      "file": "queryu/tests/test_queryu_emoji.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "queryu"
@@ -2466,34 +2411,12 @@
       "tree": "queryu"
     },
     {
-      "attributes": {},
-      "dynamic_lines": [],
-      "file": "queryu/tests/test_sibling_imports.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "queryu"
-    },
-    {
       "attributes": {
-        "fail": 1,
-        "fixture": 1,
-        "mark.parametrize": 5
-      },
-      "dynamic_lines": [
-        189
-      ],
-      "file": "queryu/tests/test_unread_input.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "queryu"
-    },
-    {
-      "attributes": {
-        "fixture": 1,
-        "raises": 2
+        "mark.parametrize": 3,
+        "raises": 14
       },
       "dynamic_lines": [],
-      "file": "queryu/tests/test_urllib_client.py",
+      "file": "queryu/tests/test_queryu_post.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "queryu"

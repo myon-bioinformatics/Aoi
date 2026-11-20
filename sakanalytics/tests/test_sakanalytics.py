@@ -4,7 +4,7 @@
 
 - epsilon: ε を記号のまま扱う check_eps / lift（関数として呼ぶ）
 - standalone: 1 ファイルだけを一時ディレクトリに写し、python -I で CLI（describe / compare / boundary）を動かす
-- uv tool: 共通の vendor/uv_tool_build.py で、この 1 ファイルがそのまま uv tool になる
+- uv tool: ルートの pyproject.toml で、この 1 ファイルがそのまま uv tool になる（`uv tool install .`、ビルダーの写しは要らない）
 """
 import json
 import math
@@ -161,15 +161,14 @@ class StandaloneExamples(unittest.TestCase):
         self.assertEqual(self.run_cli("1", "--lo", "2", "--hi", "1").returncode, 2)
 
 
-# ==== uv tool（旧 test_standalone_boundary.py の SharedUvToolBuildTest）
+# ==== uv tool（旧 test_standalone_boundary.py の SharedUvToolBuildTest。PythDRagoras #54 に倣い、ルートの pyproject がそのまま uv tool）
 
 class SharedUvToolBuildTest(unittest.TestCase):
     def test_the_generic_file_is_the_uv_tool(self):
         import tomllib
-        with tempfile.TemporaryDirectory() as temp:
-            out = Path(temp) / "tool"
-            subprocess.run([sys.executable, "-S", str(ROOT / "vendor" / "uv_tool_build.py"), str(ROOT / "sakanalytics.py"),
-                            "--out", str(out)], check=True, capture_output=True)
-            project = tomllib.loads((out / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-            self.assertEqual((project["dependencies"], project["scripts"]), ([], {"sakanalytics": "sakanalytics:main"}))
-            self.assertEqual((out / "sakanalytics.py").read_bytes(), (ROOT / "sakanalytics.py").read_bytes())
+        config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+        project = config["project"]
+        self.assertEqual((project["dependencies"], project["scripts"]), ([], {"sakanalytics": "sakanalytics:main"}))
+        self.assertEqual(project["requires-python"], ">=3.11")
+        self.assertEqual(config["tool"]["setuptools"]["py-modules"], ["sakanalytics"])   # 入るのはこの 1 ファイルだけ
+        self.assertFalse((ROOT / "vendor" / "uv_tool_build.py").exists())

@@ -3,7 +3,7 @@
 # tool: minpy/0.1.0
 # python: 3.12
 # repository: myon-bioinformatics/QueRyu
-# commit: d0ccbd909eef9de3d0e8ad86266981d238061299
+# commit: 2cba00797e0a564489c4dcc98859051cad678519
 # entry: core/cache_core.py
 # entry-module: cache_core
 # search-paths: core
@@ -11,14 +11,14 @@
 # allow-cycles: no
 # cycles: 
 # modules: cache_core
-# prefix: _minpy_fd00f420f6bd6015
-# content-sha256: b09c6cddc70610f4054d8d00be5355fcf8eaec3cc9a994bdd8d95acd27f6b275
+# prefix: _minpy_b673cb3a20b291d7
+# content-sha256: 000bfc434f895f73493fca7abad2b49d6a0a85f306b9392091ff2e2aff031314
 # content-sha256-rule: sha256-utf8-with-content-sha256-hex-replaced-by-64-zeros
 
 import importlib.machinery
 import sys
 
-_MINPY_PREFIX = "_minpy_fd00f420f6bd6015"
+_MINPY_PREFIX = "_minpy_b673cb3a20b291d7"
 _MINPY_ENTRY = "cache_core"
 _MINPY_PACKAGES = ()
 _MINPY_SOURCES = {

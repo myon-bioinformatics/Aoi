@@ -28,16 +28,13 @@ class StandaloneTest(unittest.TestCase):
             self.assertIn("Cannot read HTML", missing.stderr)
 
     def test_generated_tool_project_has_single_module(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            target = Path(tmp) / "tool"
-            # 親の共通ビルダー（Aoi から vendor/ に配布）で、dragowing.py だけの uv tool にする
-            subprocess.run([sys.executable, "-S", str(ROOT / "vendor/uv_tool_build.py"),
-                            str(ROOT / "dragowing.py"), "--out", str(target)], check=True, capture_output=True)
-            self.assertEqual((target / "dragowing.py").read_bytes(), (ROOT / "dragowing.py").read_bytes())
-            import tomllib
-            data = tomllib.loads((target / "pyproject.toml").read_text(encoding="utf-8"))
-            self.assertEqual(data["project"]["scripts"], {"dragowing": "dragowing:main"})
-            self.assertEqual(data["project"]["dependencies"], [])
+        # 🧰 ルートの pyproject がそのまま uv tool（uv tool install .）。入るのは dragowing.py 1 ファイルだけ（PythDRagoras #54 に倣う）
+        import tomllib
+        data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+        self.assertEqual(data["project"]["scripts"], {"dragowing": "dragowing:main"})
+        self.assertEqual((data["project"]["dependencies"], data["project"]["requires-python"]), ([], ">=3.11"))
+        self.assertEqual(data["tool"]["setuptools"]["py-modules"], ["dragowing"])
+        self.assertFalse((ROOT / "vendor/uv_tool_build.py").exists())
 
 
 def test_count_elements_limits_tags():

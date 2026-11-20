@@ -66,12 +66,7 @@
       "path": "vendor/uv_tool_build.py",
       "sha256": "1309ff9277b5dd3a67b5b54645a3dfdda58eed3cbe1db775f7fc57630e2833ce",
       "source": "myon-bioinformatics/Aoi",
-      "consumers": [
-        "myon-bioinformatics/BlueProbe",
-        "myon-bioinformatics/DRAgoWing",
-        "myon-bioinformatics/PythDRagoras",
-        "myon-bioinformatics/SakAnalytics"
-      ]
+      "consumers": []
     }
   ]
 }

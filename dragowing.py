@@ -2064,11 +2064,162 @@ def team_order(text: str) -> tuple[str, ...]:
     return codes
 
 
+PALETTE = ('#440154', '#3B528B', '#21918C', '#5EC962', '#FDE725')
+
+
+def heat_color(value, low, high, levels=0):
+    """Viridis-like five-stop display scale; source value is never modified."""
+    if value is None:
+        return None
+    if not all(type(v) in (int, float) and math.isfinite(v) for v in (value, low, high)) or low > high:
+        raise ValueError('finite value and ordered range required')
+    if type(levels) is not int or (levels != 0 and not 2 <= levels <= 256):
+        raise ValueError('levels must be 0 (continuous) or 2..256')
+    t = 0.5 if high == low else max(0, min(1, (value - low) / (high - low)))
+    if levels:
+        t = math.floor(t * (levels - 1) + 0.5) / (levels - 1)
+    p = t * (len(PALETTE) - 1)
+    i = min(len(PALETTE) - 2, int(p))
+    a, b = (bytes.fromhex(c[1:]) for c in PALETTE[i:i + 2])
+    return '#' + ''.join(f'{math.floor(x + (y-x)*(p-i) + 0.5):02X}' for x, y in zip(a, b))
+
+
+def heatmap_scene(source):
+    """Import a numeric matrix or ONE Plotly heatmap trace; row zero is at top.
+
+    This imports data, not Plotly layout/axis rendering. Keep source metadata so
+    the scene is an editable composition, never a replacement research result.
+    """
+    if isinstance(source, list):
+        trace = {'z': source}
+    elif isinstance(source, dict) and isinstance(source.get('data'), list):
+        traces = [t for t in source['data'] if isinstance(t, dict) and t.get('type') == 'heatmap']
+        if len(traces) != 1:
+            raise ValueError('exactly one heatmap trace required')
+        trace = traces[0]
+    else:
+        trace = source
+    if not isinstance(trace, dict):
+        raise ValueError('matrix or heatmap object required')
+    z = trace.get('z')
+    if (not isinstance(z, list) or not z or not isinstance(z[0], list) or not z[0]
+            or len(z) * len(z[0]) > 4096 or any(not isinstance(r, list) or len(r) != len(z[0]) for r in z)):
+        raise ValueError('rectangular matrix of 1..4096 cells required')
+    finite = [v for row in z for v in row if v is not None]
+    def safe(v):
+        if type(v) is int:
+            return abs(v) <= 2**53-1
+        return type(v) is float and math.isfinite(v) and (not v.is_integer() or abs(v) <= 2**53-1)
+    if any(not safe(v) for v in finite):
+        raise ValueError('finite JavaScript-safe numbers or null required')
+    low, high = trace.get('zmin'), trace.get('zmax')
+    low = min(finite, default=0) if low is None else low
+    high = max(finite, default=1) if high is None else high
+    if not safe(low) or not safe(high):
+        raise ValueError('finite JavaScript-safe color range required')
+    heat_color(low, low, high)
+    x, y = trace.get('x', list(range(len(z[0])))), trace.get('y', list(range(len(z))))
+    if not isinstance(x, list) or not isinstance(y, list) or len(x) != len(z[0]) or len(y) != len(z):
+        raise ValueError('axis label counts do not match matrix')
+    return {'schema': 'ironmate-image-studio/1', 'width': 1280, 'height': 720, 'background': '#FFFFFF',
+            'layers': [{'id': 'heatmap', 'kind': 'heatmap', 'name': 'Heatmap', 'x': 80, 'y': 90,
+                        'w': 1120, 'h': 520, 'rotation': 0, 'opacity': 1,
+                        'z': z, 'xlabels': x, 'ylabels': y, 'low': low, 'high': high,
+                        'levels': 0, 'labels': True}], 'source': source}
+
+
+HEATMAP_JS = r"""  function heatColor(v, lo, hi, levels = 0) {
+    if (v === null) return "none";
+    if (
+      ![v, lo, hi].every(Number.isFinite) ||
+      lo > hi ||
+      !Number.isInteger(levels) ||
+      (levels !== 0 && (levels < 2 || levels > 256))
+    )
+      fail("色の範囲または段階数が不正です");
+    let t = hi === lo ? 0.5 : Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
+    if (levels) t = Math.round(t * (levels - 1)) / (levels - 1);
+    const p = t * 4,
+      i = Math.min(3, Math.floor(p));
+    const a = PALETTE[i].match(/\w\w/g).map((x) => parseInt(x, 16));
+    const b = PALETTE[i + 1].match(/\w\w/g).map((x) => parseInt(x, 16));
+    return (
+      "#" +
+      a
+        .map((x, j) =>
+          Math.round(x + (b[j] - x) * (p - i))
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")
+        .toUpperCase()
+    );
+  }
+  function matrix(source) {
+    let t;
+    if (Array.isArray(source)) t = { z: source };
+    else if (Array.isArray(source?.data)) {
+      const traces = source.data.filter((t) => t?.type === "heatmap");
+      if (traces.length !== 1) fail("heatmapトレースは1つにしてください");
+      t = traces[0];
+    } else t = source;
+    const z = t?.z,
+      cols = z?.[0]?.length;
+    if (
+      !Array.isArray(z) ||
+      !cols ||
+      z.length * cols > 4096 ||
+      z.some((r) => !Array.isArray(r) || r.length !== cols)
+    )
+      fail("1〜4096セルの長方形の数値行列が必要です");
+    const values = z.flat().filter((v) => v !== null);
+    if (
+      values.some(
+        (v) =>
+          !Number.isFinite(v) ||
+          (Number.isInteger(v) && !Number.isSafeInteger(v)),
+      )
+    )
+      fail("有限の数値またはnullを指定してください（巨大な整数は非対応）");
+    const low = t.zmin ?? (values.length ? Math.min(...values) : 0),
+      high = t.zmax ?? (values.length ? Math.max(...values) : 1);
+    if (
+      [low, high].some(
+        (v) =>
+          !Number.isFinite(v) ||
+          (Number.isInteger(v) && !Number.isSafeInteger(v)),
+      )
+    )
+      fail("色の範囲には有限の安全な数値を指定してください");
+    heatColor(low, low, high);
+    const xlabels = t.x ?? Array.from({ length: cols }, (_, i) => i),
+      ylabels = t.y ?? Array.from({ length: z.length }, (_, i) => i);
+    if (
+      !Array.isArray(xlabels) ||
+      !Array.isArray(ylabels) ||
+      xlabels.length !== cols ||
+      ylabels.length !== z.length
+    )
+      fail("軸ラベルの数が一致しません");
+    return {
+      z: clone(z),
+      xlabels: clone(xlabels),
+      ylabels: clone(ylabels),
+      low,
+      high,
+      levels: 0,
+      labels: true,
+    };
+  }
+"""
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="📈 記録された結果を HTML（と SVG）にする。判定はやり直さない。"
                     " RESULTS がディレクトリでなければ 🔢 HTML の要素を数える（ブラウザなし）。",
     )
+    parser.add_argument("--heatmap", metavar="JSON", help="行列またはPlotly JSONを編集用シーンとして標準出力に書く。- は標準入力")
     parser.add_argument("results", nargs="?",
                         help="📂 season.jsonl と propositions.jsonl があるディレクトリ。🔢 HTML ファイルか - なら要素を数える（省略は標準入力）")
     parser.add_argument("--results", dest="legacy_results", type=Path, help="RESULTS の旧形式（互換用）")
@@ -2145,6 +2296,13 @@ def main(argv=None) -> int:
     """📈 RESULTS → HTML（--svg で SVG）、🧾 --forms、📊 --ffss RECORDS、🔢 HTML ファイル（か標準入力）の要素数。"""
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.heatmap is not None:
+        try:
+            source = sys.stdin.read() if args.heatmap == "-" else Path(args.heatmap).read_text(encoding="utf-8")
+            print(json.dumps(heatmap_scene(json.loads(source)), ensure_ascii=False, allow_nan=False))
+        except (ValueError, OSError) as exc:
+            parser.exit(1, f"{exc}\n")
+        return 0
     if args.ffss is not None:
         try:
             written = write_ffss(args.ffss, args.out or Path("build/ffss"), svg=not args.no_svg)

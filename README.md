@@ -212,3 +212,10 @@ Local example (point the output at an empty directory):
 git clone https://github.com/myon-bioinformatics/markdown.git .deps/markdown
 python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --output build/dragowing --previous-ref HEAD~1
 ```
+
+### ヒートマップ
+
+[ヒートマップを開く](https://myon-bioinformatics.github.io/DRAgoWing/heatmap/)。
+行列または単一の Plotly heatmap を貼り付けるか、JSON ファイルを選ぶ。
+色の段階と値の表示を調整し、SVG または Ironmate で編集できるシーン JSON を保存する。
+同じシーンを CLI から生成するには `python -S dragowing.py --heatmap matrix.json > scene.json`。

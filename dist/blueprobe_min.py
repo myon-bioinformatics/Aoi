@@ -3,7 +3,7 @@
 # tool: minpy/0.1.0
 # python: 3.12
 # repository: myon-bioinformatics/Aoi
-# commit: 79af3402db79c344df596c52e7f3867188b6419d
+# commit: 8e103a98240243cc5f948abb8c4d1dcd086ebda9
 # entry: blueprobe/blueprobe.py
 # entry-module: blueprobe
 # search-paths: blueprobe
@@ -11,14 +11,14 @@
 # allow-cycles: no
 # cycles: 
 # modules: blueprobe
-# prefix: _minpy_8ec4ddacfa5abbb1
-# content-sha256: a9ac3f3910adb1a43d2a6b634dde5a69cb0f1513a044ebb85350b13eaba4fb14
+# prefix: _minpy_c45df1298c8207ff
+# content-sha256: fc8330624cd6be2f53e43318b812129e634d0fa8b301b08df20612ee66048a27
 # content-sha256-rule: sha256-utf8-with-content-sha256-hex-replaced-by-64-zeros
 
 import importlib.machinery
 import sys
 
-_MINPY_PREFIX = "_minpy_8ec4ddacfa5abbb1"
+_MINPY_PREFIX = "_minpy_c45df1298c8207ff"
 _MINPY_ENTRY = "blueprobe"
 _MINPY_PACKAGES = ()
 _MINPY_SOURCES = {

@@ -24,8 +24,6 @@ KNOWN_EXCEPTIONS = {
     ("tests/test_forms.py", "import:ask"),
     # 上のテストが import する兄弟の path は、AOI_ROOT の Aoi の aoi.py（environment()）に聞く
     ("conftest.py", "import:aoi"),
-    # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
-    ("vendor/uv_tool_build.py", "path:scripts"),
     ("tests/test_dragowing.py", "path:scripts"),
     # テストのデータの場所は AOI_ROOT の Aoi の aoi_paths に聞く（conftest.py が AOI_ROOT を sys.path に足す）
     ("tests/test_figures.py", "import:aoi_paths"),

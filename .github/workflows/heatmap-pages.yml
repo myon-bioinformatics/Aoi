@@ -1,0 +1,46 @@
+name: Heatmap Pages
+on:
+  pull_request:
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', '.github/workflows/heatmap-pages.yml']
+  push:
+    branches: [main]
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', '.github/workflows/heatmap-pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Build heatmap and check the scene export
+        run: |
+          mkdir -p site/heatmap
+          python -S scripts/build_heatmap_page.py > site/heatmap/index.html
+          printf '%s\n' '<!doctype html><html lang="ja"><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=heatmap/"><title>DRAgoWing</title><a href="heatmap/">ヒートマップ</a></html>' > site/index.html
+          echo '[[0,null]]' | python -S dragowing.py --heatmap - | python -c 'import json,sys; assert json.load(sys.stdin)["layers"][0]["z"] == [[0,None]]'
+      - name: Exercise the generated editor in Chrome
+        run: |
+          google-chrome --headless --no-sandbox --disable-gpu --dump-dom "file://$PWD/site/heatmap/index.html" > "$RUNNER_TEMP/heatmap-dom.html"
+          grep -F '2行 × 3列' "$RUNNER_TEMP/heatmap-dom.html"
+          grep -F 'download="scene.json"' "$RUNNER_TEMP/heatmap-dom.html"
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
+        with:
+          path: site
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    concurrency: heatmap-pages-deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.publish.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
+      - id: publish
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346

@@ -15,6 +15,8 @@ PAGE = """<!doctype html>
 <label><input type="checkbox" id="labels" checked>値を表示</label>
 <button>描画</button></form><p role="status" id="status"></p>
 <div id="view"></div><p id="downloads"></p>
+<p id="raster" hidden><label>PNGの長辺 <select id="size"><option>512</option><option selected>1024</option><option>2048</option></select> px</label>
+<button type="button" id="png">PNGを保存</button></p>
 <a href="https://myon-bioinformatics.github.io/Ironmate/">シーンJSONをIronmateで開く</a></main>
 <script>
 const PALETTE = __PALETTE__;
@@ -24,6 +26,7 @@ __CORE__
 const el = id => document.getElementById(id);
 const urls = [];
 function clearOutput() {
+  el("raster").hidden = true;
   el("view").replaceChildren();
   el("downloads").replaceChildren();
   for (const url of urls.splice(0)) URL.revokeObjectURL(url);
@@ -36,6 +39,42 @@ function download(name, blob) {
   urls.push(link.href);
   el("downloads").append(link, " ");
 }
+el("png").onclick = async () => {
+  const button = el("png");
+  const svg = el("view").querySelector("svg");
+  if (!svg || button.disabled) return;
+  button.disabled = true;
+  let sourceURL;
+  try {
+    const {width, height} = svg.viewBox.baseVal;
+    const scale = Number(el("size").value) / Math.max(width, height);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    const copy = svg.cloneNode(true);
+    copy.setAttribute("width", canvas.width);
+    copy.setAttribute("height", canvas.height);
+    const source = new XMLSerializer().serializeToString(copy);
+    sourceURL = URL.createObjectURL(new Blob([source], {type:"image/svg+xml"}));
+    const image = new Image();
+    image.src = sourceURL;
+    await image.decode();
+    canvas.getContext("2d").drawImage(image, 0, 0);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    if (!blob) fail("PNGを生成できませんでした");
+    if (!svg.isConnected) return;
+    const link = document.createElement("a");
+    link.download = "heatmap.png";
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  } catch (error) {
+    if (svg.isConnected) el("status").textContent = error.message;
+  } finally {
+    if (sourceURL) URL.revokeObjectURL(sourceURL);
+    button.disabled = false;
+  }
+};
 function draw() {
   clearOutput();
   try {
@@ -68,6 +107,7 @@ function draw() {
     const scene = {schema:"ironmate-image-studio/1",width:1280,height:720,background:"#FFFFFF",layers:[layer],source};
     download("scene.json",new Blob([JSON.stringify(scene)],{type:"application/json"}));
     download("heatmap.svg",new Blob([new XMLSerializer().serializeToString(svg)],{type:"image/svg+xml"}));
+    el("raster").hidden = false;
     el("status").textContent = rows+"行 × "+cols+"列";
   } catch (error) { el("status").textContent = error.message; }
 }

@@ -189,15 +189,12 @@ class UrlStandaloneTest(unittest.TestCase):
             self.assertNotEqual(missing.returncode, 0)
 
     def test_the_single_file_is_the_uv_tool(self):
-        # 🧰 Aoi から写した共通ビルダー（vendor/uv_tool_build.py）で、blueprobe.py だけの uv tool になる
+        # 🧰 ルートの pyproject がそのまま uv tool（uv tool install .）。入るのは blueprobe.py 1 ファイルだけ（PythDRagoras #54 に倣う）
         import tomllib
-        with tempfile.TemporaryDirectory() as tmp:
-            out = Path(tmp) / "tool"
-            subprocess.run([sys.executable, "-S", str(ROOT / "vendor" / "uv_tool_build.py"), str(ROOT / "blueprobe.py"),
-                            "--out", str(out)], check=True, capture_output=True)
-            project = tomllib.loads((out / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-            self.assertEqual((project["dependencies"], project["scripts"]), ([], {"blueprobe": "blueprobe:main"}))
-            self.assertEqual((out / "blueprobe.py").read_bytes(), (ROOT / "blueprobe.py").read_bytes())
+        config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+        project = config["project"]
+        self.assertEqual((project["dependencies"], project["scripts"]), ([], {"blueprobe": "blueprobe:main"}))
+        self.assertEqual((project["requires-python"], config["tool"]["setuptools"]["py-modules"]), (">=3.11", ["blueprobe"]))
 
     def test_cache_requires_component_before_network(self):
         with tempfile.TemporaryDirectory() as tmp:

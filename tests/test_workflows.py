@@ -383,6 +383,22 @@ class LabEnvironmentTests(unittest.TestCase):
         self.assertIn('if-no-files-found: error', lane)
 
 
+def test_junit_identity_labels_the_event_commit_checked_out_by_both_producers():
+    workflow = (WORKFLOWS_ROOT / '.github/workflows/ci.yml').read_text()
+    jobs = dict(re.findall(r'^  ([a-z][\w-]*):\n(.*?)(?=^  [a-z][\w-]*:\n|\Z)',
+                           workflow, flags=re.MULTILINE | re.DOTALL))
+    collector = jobs['failure-identity']
+    assert 'needs: [changes, test, lab-integration]' in collector
+    assert re.findall(r'^      commit-sha: (.+)$', collector, re.MULTILINE) == ['${{ github.sha }}']
+    for producer in ('test', 'lab-integration'):
+        # These are current-repository checkouts; lab-integration's later
+        # checkout of a pinned external fixture must not determine the SHA.
+        checkout = re.search(r'^      - uses: actions/checkout@.*\n((?:        .*\n)*)',
+                             jobs[producer], re.MULTILINE)
+        assert checkout is not None
+        assert not re.search(r'^          (?:ref|repository|path):', checkout[1], re.MULTILINE)
+
+
 def test_holdout_job_provisions_node_before_parity_tests():
     workflow = (Path(__file__).resolve().parents[1] /
                 '.github/workflows/littlebit-holdout-drift.yml').read_text()

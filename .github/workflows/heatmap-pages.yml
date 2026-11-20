@@ -1,10 +1,10 @@
 name: Heatmap Pages
 on:
   pull_request:
-    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', '.github/workflows/heatmap-pages.yml']
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'tests/check_heatmap_png.py', '.github/workflows/heatmap-pages.yml']
   push:
     branches: [main]
-    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', '.github/workflows/heatmap-pages.yml']
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'tests/check_heatmap_png.py', '.github/workflows/heatmap-pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -26,6 +26,7 @@ jobs:
           google-chrome --headless --no-sandbox --disable-gpu --dump-dom "file://$PWD/site/heatmap/index.html" > "$RUNNER_TEMP/heatmap-dom.html"
           grep -F '2行 × 3列' "$RUNNER_TEMP/heatmap-dom.html"
           grep -F 'download="scene.json"' "$RUNNER_TEMP/heatmap-dom.html"
+          python -S tests/check_heatmap_png.py site/heatmap/index.html
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
         with:
           path: site

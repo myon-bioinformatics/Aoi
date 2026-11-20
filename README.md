@@ -217,5 +217,5 @@ python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --ou
 
 [ヒートマップを開く](https://myon-bioinformatics.github.io/DRAgoWing/heatmap/)。
 行列または単一の Plotly heatmap を貼り付けるか、JSON ファイルを選ぶ。
-色の段階と値の表示を調整し、SVG または Ironmate で編集できるシーン JSON を保存する。
+色の段階と値の表示を調整し、SVG または Ironmate で編集できるシーン JSON を保存する。PNG が必要なときは長辺を選んで「PNGを保存」を押す。欠測セルは透明のまま書き出す。
 同じシーンを CLI から生成するには `python -S dragowing.py --heatmap matrix.json > scene.json`。

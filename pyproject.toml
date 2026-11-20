@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "dragowing"
 version = "0.1.0"
@@ -6,6 +10,10 @@ requires-python = ">=3.11"
 # 📦 実行時の依存は無い（標準ライブラリだけ）。ページの文章は自作の markdown.py（vendor/markdown）、
 # SVG は親の plotly_min（vendor/tools/stdlib_min）。matplotlib・Python-Markdown は入れない。
 dependencies = []
+
+# 🧰 uv tool: `uv tool install .` で dragowing.py 1 ファイルがそのまま `dragowing` コマンドになる（ビルダーの写しは要らない）
+[project.scripts]
+dragowing = "dragowing:main"
 
 [dependency-groups]
 dev = [
@@ -19,7 +27,11 @@ dev = [
 ]
 stdlib-test = ["pytest>=8"]
 
+[tool.setuptools]
+py-modules = ["dragowing"]
+
 [tool.uv]
+# uv run / uv sync ではこのリポジトリを入れない（テストはパスで読む）。uv tool install . は上の setuptools で 1 ファイルを入れる
 package = false
 
 [tool.pytest.ini_options]

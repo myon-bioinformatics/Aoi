@@ -1,8 +1,9 @@
 """QueRyu 単独リポジトリ用。サイクルデータ・blueprobe の fixture・nagoyaction/inbox は Aoi に残す（AOI_ROOT）。
 
 BlueProbe（抽出）は最新 main の BlueProbe checkout を PYTHONPATH で渡す。Aoi の blueprobe/ は使わない。
+テストでは球団表を tests/fixtures/teams.json から入れる（本番は呼び出し側が ask.set_teams / --teams で渡す）。
 """
-import os, sys
+import json, os, sys
 from pathlib import Path
 
 import pytest
@@ -90,3 +91,15 @@ def pytest_sessionfinish(session, exitstatus):
 @pytest.fixture(scope="session")
 def aoi_root() -> Path:
     return _root()
+
+
+TEAMS = json.loads((HERE / "tests" / "fixtures" / "teams.json").read_text(encoding="utf-8"))
+
+
+@pytest.fixture(autouse=True)
+def _ask_teams():
+    import ask
+    before = dict(ask.TEAMS)
+    ask.set_teams(TEAMS)
+    yield
+    ask.set_teams(before)

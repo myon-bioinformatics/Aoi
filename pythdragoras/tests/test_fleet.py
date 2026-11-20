@@ -23,7 +23,6 @@ PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
 LIVE_PARENT_REF = "${{ steps.parent.outputs.sha }}"
 ACCEPTED = {
     "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
-    "vendor/uv_tool_build.py": "f15063440ee7f5f869cef1546ae651fa32a07505",
     "vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0",
 }
 # Node 入口: ツール名 -> 本体（トップにはメインだけ。ツールは core/ と npb/ にいる）。環境変数は <TOOL>_PYTHON
@@ -45,11 +44,13 @@ def _env_var(tool: str) -> str:
 # ==== vendor lock: placed bytes, accepted commits and where each row comes from (independent of the parent pin)
 
 def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
-    fleet.check_lock(ROOT, commits=ACCEPTED, sources={
+    sources = {
         "vendor/py_launch.cjs": ("myon-bioinformatics/Aoi", "vendor/py_launch.cjs"),
-        "vendor/uv_tool_build.py": ("myon-bioinformatics/Aoi", "vendor/uv_tool_build.py"),
         "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
-    })
+    }
+    rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources=sources)
+    assert set(rows) == set(sources)
+    assert not (ROOT / "vendor/uv_tool_build.py").exists()
 
 
 # ==== parent pins and action pins: local rollout contract

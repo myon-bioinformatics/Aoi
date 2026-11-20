@@ -73,8 +73,7 @@ Only UTF-8 HTTP 200 responses up to 10 MiB are accepted. The URL mode currently 
 To install the single-file URL/classification tool with uv from a checkout:
 
 ```bash
-python vendor/uv_tool_build.py blueprobe.py --out build/blueprobe-tool   # shared builder, vendored from Aoi
-uv tool install ./build/blueprobe-tool
+uv tool install .   # or: uv tool install git+https://github.com/myon-bioinformatics/BlueProbe.git
 blueprobe https://openai.com --out observation.json
 blueprobe names page.html
 ```

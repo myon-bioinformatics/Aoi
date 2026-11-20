@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sakanalytics"
 version = "0.1.0"
@@ -6,11 +10,19 @@ requires-python = ">=3.11"
 # 📦 実行時の依存は無い（sakanalytics.py は標準ライブラリだけ）。polars は npb/・core/ の内部解析用で dev グループ。
 dependencies = []
 
+# 🧰 uv tool: `uv tool install .` で sakanalytics.py 1 ファイルがそのまま `sakanalytics` コマンドになる（ビルダーの写しは要らない）
+[project.scripts]
+sakanalytics = "sakanalytics:main"
+
 [dependency-groups]
 dev = ["pytest>=9.1.1", "polars>=2.0.0"]
 stdlib-test = ["pytest>=8"]
 
+[tool.setuptools]
+py-modules = ["sakanalytics"]
+
 [tool.uv]
+# uv run / uv sync ではこのリポジトリを入れない（テストはパスで読む）。uv tool install . は上の setuptools で 1 ファイルを入れる
 package = false
 
 [tool.pytest.ini_options]

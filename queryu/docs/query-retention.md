@@ -6,7 +6,8 @@ manifest order after filtering. `history=True` keeps the original full-history
 behavior. No dependencies or API changes. Source manifests are still fully parsed
 by `_rows`; this is not a streaming parser or a bound on total process memory.
 
-Run `python -S -m unittest discover -s tests -p test_query_retention.py`.
+Run `python -S -m unittest discover -s tests -p test_queryu_cache.py`
+(its two `unittest.TestCase` classes: this regression and the benchmark check).
 The regression checks latest order, glob/status filtering, body-only behavior and
 full history. Full pytest runs in CI.
 

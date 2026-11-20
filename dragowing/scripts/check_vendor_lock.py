@@ -4,7 +4,6 @@
 schema は vendor-lock/1。古いエントリは path、sha256、source（myon-bioinformatics/Aoi）。
 driver のエントリは repository、ref、commit、source、destination、blob_sha、sha256。
 source は Aoi の中の相対パスで、写しは vendor/aoi/<source> に置く。
-Aoi 自身の vendor/ にある共通の道具（uv_tool_build.py など）だけは、兄弟と同じく vendor/<名前> に置く。
 --aoi を渡したときは、その checkout の同じ path のバイトとも比べる。
 親（myon-bioinformatics/myon-bioinformatics）の行は vendor/<source> に置き、バイトだけを照合する（Aoi とは比べない）。
 ほかの myon-bioinformatics の自作（markdown など）の行は vendor/<リポジトリ名の小文字>/<source> に置き、同じくバイトだけ。
@@ -108,8 +107,6 @@ def problems(root: Path, aoi_root: Path | None = None, lock: dict | None = None)
         from_aoi = repository == SOURCE
         if repository == "myon-bioinformatics/myon-bioinformatics":  # 親の行は vendor/ の直下
             place = VENDOR_DIR.parent
-        elif from_aoi and rel.parts[:1] == ("vendor",):  # 🧰 Aoi の vendor/ の共通の道具は兄弟と同じ vendor/ の直下
-            place = Path()
         elif from_aoi:
             place = VENDOR_DIR
         elif isinstance(repository, str) and re.fullmatch(r"myon-bioinformatics/[A-Za-z0-9_.-]+", repository):

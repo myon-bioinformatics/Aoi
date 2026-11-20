@@ -19,8 +19,6 @@ AOI_PROVIDED = {"aoi_paths"}
 KNOWN_EXCEPTIONS = {
     # 兄弟の import 経路は AOI_ROOT の Aoi の aoi.py（environment()）に聞く
     ("conftest.py", "import:aoi"),
-    # 親の共通 uv tool ビルダー（Aoi から配布）。"[project.scripts]" の文字列で、Aoi の scripts/ ではない
-    ("vendor/uv_tool_build.py", "path:scripts"),
     ("tests/test_sakanalytics.py", "path:scripts"),
     # このリポジトリの scripts/ のベンチマーク（-O ガードが親の fleet_check.run_main に渡す場所）。Aoi の scripts/ ではない
     ("tests/test_fleet.py", "path:scripts/benchmark_neighbor_retention.py"),

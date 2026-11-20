@@ -16,7 +16,7 @@ heatmap_figure・write_ffss・render_report など）。
 """
 from __future__ import annotations
 
-import argparse, html, importlib, importlib.util, json, math, operator, re, sys, tempfile, types
+import argparse, html, http.client, importlib, importlib.util, json, math, operator, re, sys, tempfile, types
 import urllib.error, urllib.request
 from collections import Counter
 from copy import deepcopy
@@ -121,8 +121,60 @@ def read_ffss(path) -> dict[tuple[str, str], list[dict]]:
 # separately; this module uses the versionless jsDelivr dist URL directly.
 # ====================================================================================================
 
-PLOTLY_JS_CDN = "https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js"
+# BEGIN DRAgoWing Plotly runtime
+PLOTLY_JS_URL = "https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js"
 PLOTLY_JS_MAX_BYTES = 8 * 1024 * 1024
+
+
+def verify_plotly_js(raw: bytes) -> bytes:
+    """Return CDN bytes or fail before any decoding, caching or execution."""
+    if not isinstance(raw, bytes):
+        raise TypeError("Plotly.js payload must be bytes")
+    if not raw:
+        raise RuntimeError("Plotly.js CDN returned an empty body")
+    if len(raw) > PLOTLY_JS_MAX_BYTES:
+        raise RuntimeError(f"Plotly.js exceeds {PLOTLY_JS_MAX_BYTES} byte limit")
+    return raw
+
+
+def _fetch_plotly_bytes(*, timeout: float, user_agent: str) -> bytes:
+    """Explicitly fetch the allowlisted jsDelivr bundle with a bounded read.
+
+    Rendering helpers do not call this function. Consumers own successful-byte
+    caching; cached/local bytes can be checked with verify_plotly_js().
+    """
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError("timeout must be finite and positive")
+    request = urllib.request.Request(
+        PLOTLY_JS_URL, headers={"User-Agent": user_agent},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            status = getattr(response, "status", None)
+            if status is None:
+                status = getattr(response, "getcode", lambda: 200)()
+            if status != 200:
+                raise RuntimeError(f"Plotly.js CDN returned HTTP {status} for {PLOTLY_JS_URL}")
+            raw = response.read(PLOTLY_JS_MAX_BYTES + 1)
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(f"Plotly.js CDN request failed: HTTP {exc.code} {exc.reason}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"Plotly.js CDN request failed: {exc.reason}") from exc
+    except (OSError, http.client.HTTPException) as exc:
+        raise RuntimeError(f"Plotly.js CDN request failed: {exc}") from exc
+    return verify_plotly_js(raw)
+
+
+def _plotly_initializer(div_id: str, spec_expression: str, config_expression: str) -> str:
+    """Build the initializer from caller-serialized JS expressions."""
+    identity = json.dumps(div_id, ensure_ascii=True).replace("<", "\\u003c")
+    return (
+        f'(function(){{var s={spec_expression};var el=document.getElementById({identity});'
+        f'if(el&&window.Plotly){{window.Plotly.newPlot(el,s.data,s.layout,{config_expression});}}}})();'
+    )
+# END DRAgoWing Plotly runtime
+
+PLOTLY_JS_CDN = PLOTLY_JS_URL
 _PLOTLY_JS_CACHE: bytes | None = None
 
 
@@ -142,33 +194,7 @@ def fetch_plotly_js() -> str:
     """Fetch Plotly.js bytes from jsDelivr and cache successful responses only."""
     global _PLOTLY_JS_CACHE
     if _PLOTLY_JS_CACHE is None:
-        request = urllib.request.Request(
-            PLOTLY_JS_CDN,
-            headers={"User-Agent": "dragowing/plotly_cdn (Plotly embed)"},
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=60.0) as response:
-                status = getattr(response, "status", None)
-                if status is None:
-                    getcode = getattr(response, "getcode", None)
-                    status = getcode() if getcode is not None else 200
-                if status != 200:
-                    raise RuntimeError(
-                        "Plotly.js CDN returned HTTP %s for %s" % (status, PLOTLY_JS_CDN)
-                    )
-                raw = response.read(PLOTLY_JS_MAX_BYTES + 1)
-        except urllib.error.HTTPError as exc:
-            raise RuntimeError(
-                "Plotly.js CDN returned HTTP %s for %s" % (exc.code, PLOTLY_JS_CDN)
-            ) from exc
-        except urllib.error.URLError as exc:
-            raise RuntimeError("Plotly.js request failed: %s" % exc.reason) from exc
-        except TimeoutError as exc:
-            raise RuntimeError("Plotly.js request failed: timed out") from exc
-        if not raw:
-            raise RuntimeError("Plotly.js CDN returned an empty body")
-        if len(raw) > PLOTLY_JS_MAX_BYTES:
-            raise RuntimeError("Plotly.js exceeds %s byte limit" % PLOTLY_JS_MAX_BYTES)
+        raw = _fetch_plotly_bytes(timeout=60.0, user_agent="dragowing/plotly_cdn (Plotly embed)")
         _classic_script(raw.decode("utf-8"))
         _PLOTLY_JS_CACHE = raw
     return _PLOTLY_JS_CACHE.decode("utf-8")
@@ -1720,17 +1746,15 @@ def _js_string(value: str) -> str:
 def figure_block(spec: dict, div_id: str) -> str:
     payload = embed_json(spec)
     attr = html.escape(div_id, quote=True)
-    js_id = _js_string(div_id)
+    data_id = _js_string(div_id + "-data")
+    initializer = _plotly_initializer(
+        div_id, f"JSON.parse(document.getElementById({data_id}).textContent)",
+        "{responsive:true,displaylogo:false}",
+    )
     return (
         f'<div id="{attr}" class="figure"></div>\n'
         f'<script type="application/json" id="{attr}-data">{payload}</script>\n'
-        "<script>\n"
-        "(function(){\n"
-        f"  var id = {js_id};\n"
-        '  var spec = JSON.parse(document.getElementById(id + "-data").textContent);\n'
-        "  Plotly.newPlot(id, spec.data, spec.layout, {responsive:true,displaylogo:false});\n"
-        "})();\n"
-        "</script>"
+        f'<script>{initializer}</script>'
     )
 
 

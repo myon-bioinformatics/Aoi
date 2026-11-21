@@ -1513,10 +1513,29 @@ def test_pytest_unittest_subtests_preserve_parent_outcomes(tmp_path, monkeypatch
     assert mixed.batch_error == ""
 
 
-def test_batch_receipt_is_not_inherited_by_nested_pytest():
-    target = "tests/test_localci.py::test_pytest_plugin_monkeypatches_substitute"
+@pytest.mark.parametrize("child_prefix", ["", "nagoyaction/"])
+def test_batch_receipt_is_not_inherited_by_nested_pytest(tmp_path, monkeypatch, child_prefix):
+    # pytest node IDs are relative to the config root, which need not be the
+    # directory containing the NagoyAction source (for example, in Aoi).
+    config = tmp_path / "pyproject.toml"
+    config.write_text("[tool.pytest.ini_options]\n", encoding="utf-8")
+    testdir = tmp_path / child_prefix / "tests"
+    testdir.mkdir(parents=True)
+    (testdir / "test_inner.py").write_text("def test_inner(): pass\n", encoding="utf-8")
+    inner_target = f"{child_prefix}tests/test_inner.py::test_inner"
+    (testdir / "test_outer.py").write_text(
+        "import subprocess, sys\n"
+        "def test_outer():\n"
+        "    for _ in range(2):\n"
+        f"        subprocess.run([sys.executable, '-m', 'pytest', '-q', '-p', 'nagoyaction', "
+        f"'-c', {str(config)!r}, {inner_target!r}], check=True)\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    target = f"{child_prefix}tests/test_outer.py::test_outer"
     check = localci.Check("nested", "pytest", target)
-    result = localci.run_pytest_batch([check], 7, cwd=ROOT, prefix=[sys.executable, "-m", "pytest"], keep_going=True)
+    prefix = [sys.executable, "-m", "pytest", "-c", str(config)]
+    result = localci.run_pytest_batch([check], 7, cwd=tmp_path, prefix=prefix, keep_going=True)
     assert result["nested"].status == "pass", result.batch_error
     assert not result.batch_error
 

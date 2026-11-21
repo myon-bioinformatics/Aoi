@@ -1048,7 +1048,7 @@ def test_pytest_batch_names_the_failed_node(tmp_path):
         assert argv[argv.index("--localci-round-seed") + 1] == "9"
         assert "-x" in argv
         assert argv[-2:] == ["tests/test_a.py::test_one", "tests/test_a.py::test_two"]
-        Path(kwargs["env"]["LOCALCI_PYTEST_RECEIPT"]).write_text(json.dumps(["tests/test_a.py::test_one", "call", "failed", ""]) + "\n")
+        Path(argv[argv.index("--localci-receipt") + 1]).write_text(json.dumps(["tests/test_a.py::test_one", "call", "failed", ""]) + "\n")
         return Proc(rc=1, stdout="F\nFAILED tests/test_a.py::test_one - assert 0\n")
 
     outcomes = localci.run_pytest_batch(
@@ -1344,9 +1344,9 @@ def test_incomplete_pytest_skip_receipt_fails_closed(tmp_path):
     name = "test_receipt.py::test_skip"
     check = localci.Check("skip", "pytest", name)
 
-    def runner(*args, **kwargs):
+    def runner(argv, **kwargs):
         records = ([name, phase, status, ""] for phase, status in (("call", "skipped"), ("teardown", "passed")))
-        Path(kwargs["env"]["LOCALCI_PYTEST_RECEIPT"]).write_text("".join(json.dumps(record) + "\n" for record in records))
+        Path(argv[argv.index("--localci-receipt") + 1]).write_text("".join(json.dumps(record) + "\n" for record in records))
         return Proc(rc=0)
 
     result = localci.run_pytest_batch([check], 7, cwd=tmp_path, prefix=[], keep_going=True, runner=runner)
@@ -1365,7 +1365,7 @@ def test_same_seed_budget_timeout_keeps_later_checks_unexecuted(tmp_path, keep_g
             called.append(([check.id for check in group], round_seed))
             if len(called) == 1:
                 raise subprocess.TimeoutExpired(argv, kwargs["timeout"])
-            with Path(kwargs["env"]["LOCALCI_PYTEST_RECEIPT"]).open("w") as stream:
+            with Path(argv[argv.index("--localci-receipt") + 1]).open("w") as stream:
                 for check in group:
                     for phase in ("setup", "call", "teardown"):
                         stream.write(json.dumps([check.target, phase, "passed", ""]) + "\n")
@@ -1511,3 +1511,28 @@ def test_pytest_unittest_subtests_preserve_parent_outcomes(tmp_path, monkeypatch
     assert [mixed[check.id].status for check in checks] == ["pass", "fail", "skip"]
     assert "subcase unavailable" in mixed["partial"].detail
     assert mixed.batch_error == ""
+
+
+def test_batch_receipt_is_not_inherited_by_nested_pytest():
+    target = "tests/test_localci.py::test_pytest_plugin_monkeypatches_substitute"
+    check = localci.Check("nested", "pytest", target)
+    result = localci.run_pytest_batch([check], 7, cwd=ROOT, prefix=[sys.executable, "-m", "pytest"], keep_going=True)
+    assert result["nested"].status == "pass", result.batch_error
+    assert not result.batch_error
+
+
+def test_batch_receipt_diagnostics_distinguish_missing_and_duplicate_phase(tmp_path):
+    check = localci.Check("one", "pytest", "test_target.py::test_one")
+
+    def missing(*args, **kwargs):
+        return Proc(rc=0)
+
+    def duplicate(argv, **kwargs):
+        record = json.dumps([check.target, "setup", "passed", ""]) + "\n"
+        Path(argv[argv.index("--localci-receipt") + 1]).write_text(record * 2)
+        return Proc(rc=0)
+
+    for runner, diagnostic in [(missing, "receipt not created"), (duplicate, "duplicate pytest phase")]:
+        result = localci.run_pytest_batch([check], 7, cwd=tmp_path, prefix=[], keep_going=True, runner=runner)
+        assert result["one"].status == "not_run"
+        assert diagnostic in result.batch_error

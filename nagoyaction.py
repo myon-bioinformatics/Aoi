@@ -2204,8 +2204,9 @@ class PytestBatch(dict[str, Outcome]):
 
 def _batch_outcomes(checks, returncode, detail, inputs, receipt, *, timed_out=False):
     by_node = {}
+    receipt_error = ""
     try:
-        for line in receipt.read_text(encoding="utf-8").splitlines():
+        for lineno, line in enumerate(receipt.read_text(encoding="utf-8").splitlines(), 1):
             node, phase, status, reason = json.loads(line)
             if not isinstance(node, str) or not isinstance(reason, str):
                 raise ValueError("invalid pytest evidence")
@@ -2216,10 +2217,17 @@ def _batch_outcomes(checks, returncode, detail, inputs, receipt, *, timed_out=Fa
                 if phases.get(phase, ("", ""))[0] != "failed":
                     phases[phase] = (status, reason)
                 continue
-            if phase in phases or phase not in ("setup", "call", "teardown") or status not in ("passed", "failed", "skipped"):
-                raise ValueError("invalid pytest phase report")
+            if phase in phases:
+                raise ValueError(f"duplicate pytest phase at receipt line {lineno}")
+            if phase not in ("setup", "call", "teardown") or status not in ("passed", "failed", "skipped"):
+                raise ValueError(f"invalid pytest phase at receipt line {lineno}")
             phases[phase] = (status, reason)
-    except (OSError, TypeError, ValueError):
+    except FileNotFoundError:
+        receipt_error = "receipt not created"
+    except OSError:
+        receipt_error = "receipt unreadable"
+    except (TypeError, ValueError) as exc:
+        receipt_error = f"malformed receipt ({exc})"
         by_node.clear()
 
     results = PytestBatch()
@@ -2256,6 +2264,8 @@ def _batch_outcomes(checks, returncode, detail, inputs, receipt, *, timed_out=Fa
     if checks and not failed and not results.batch_error:
         if missing:
             results.batch_error = "pytest batch failed or has missing per-test evidence"
+            if receipt_error:
+                results.batch_error += f": {receipt_error}"
         elif returncode:
             results.batch_error = f"pytest session exited {returncode}"
     if results.batch_error and detail:
@@ -2277,12 +2287,13 @@ def run_pytest_batch(checks: list[Check], round_seed: int, *, cwd: Path, prefix:
     cmd = [*prefix, "-q", "--tb=line", "-p", "nagoyaction", "--localci-round-seed", str(round_seed)]
     if not keep_going:
         cmd.append("-x")
-    cmd.extend(check.target for check in checks)
     try:
         with tempfile.TemporaryDirectory(prefix="localci-pytest-") as temp:
             receipt = Path(temp) / "outcomes.jsonl"
+            # Pass the destination only to this pytest invocation; a nested
+            # pytest must never write to the enclosing session's receipt.
+            cmd.extend(["--localci-receipt", str(receipt), *(check.target for check in checks)])
             env = child_pytest_env(cwd)
-            env["LOCALCI_PYTEST_RECEIPT"] = str(receipt)
             try:
                 out = runner(cmd, cwd=cwd, capture_output=True, text=True, check=False, timeout=900, env=env)
             except subprocess.TimeoutExpired as exc:
@@ -2834,11 +2845,14 @@ def pytest_addoption(parser):
     parser.addoption("--localci-round", type=int, default=None)
     parser.addoption("--localci-seed", default=None)
     parser.addoption("--localci-round-seed", default=None)
+    parser.addoption("--localci-receipt", default=None, help=argparse.SUPPRESS)
     parser.addoption("--localci-activate", action="store_true")
 
 
 def pytest_configure(config):
     global _active_rng
+    if path := config.getoption("localci_receipt"):
+        config.pluginmanager.register(_PytestReceiptWriter(path), name="localci-receipt-writer")
     raw = config.getoption("localci_seed")
     if raw is None or raw == "":
         return
@@ -2879,9 +2893,14 @@ def pytest_collection_modifyitems(config, items):
         config.hook.pytest_deselected(items=deselected)
 
 
-def pytest_runtest_logreport(report):
-    path = os.environ.get("LOCALCI_PYTEST_RECEIPT")
-    if path:
+class _PytestReceiptWriter:
+    def __init__(self, path):
+        self.path = path
+        self.pid = os.getpid()
+
+    def pytest_runtest_logreport(self, report):
+        if os.getpid() != self.pid:
+            return
         # Native and legacy pytest subtest reports have their own type and
         # context, but reuse the parent's nodeid and normal call phase.
         subtest = hasattr(report, "context") and any(
@@ -2895,7 +2914,7 @@ def pytest_runtest_logreport(report):
                 reason = f"xfail: {xfail}"
             elif isinstance(report.longrepr, tuple):
                 reason = str(report.longrepr[-1])
-        with open(path, "a", encoding="utf-8") as receipt:
+        with open(self.path, "a", encoding="utf-8") as receipt:
             receipt.write(json.dumps([report.nodeid, "subtest" if subtest else report.when, report.outcome, reason[:240]]) + "\n")
 
 

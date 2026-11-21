@@ -101,7 +101,9 @@ def test_external_only_404_and_410_fail():
 
 
 def test_repository_links_are_all_valid():
-    root = __import__("pathlib").Path(__file__).resolve().parents[2]
+    root = Path(subprocess.check_output(
+        ["git", "rev-parse", "--show-toplevel"], cwd=HERE, text=True,
+    ).strip())
     broken = [r for r in lc.check_local(root, lc.tracked_files(root)) if r["status"] == "broken"]
     assert broken == []
 

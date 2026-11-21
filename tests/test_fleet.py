@@ -62,7 +62,7 @@ def test_every_action_is_pinned_to_its_reviewed_commit():
         "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2",
         "actions/upload-pages-artifact": "fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0",
         "actions/deploy-pages": "368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1",
-        "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
+        "astral-sh/setup-uv": "1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0",
     }
     assert {action for action, _, version in fleet.check_actions(ROOT, pins=pins) if version} == set(pins)
 

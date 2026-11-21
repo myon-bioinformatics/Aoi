@@ -1,6 +1,6 @@
 import unittest
 
-from dragowing import structure_figure
+from dragowing.dragowing import structure_figure
 
 
 class StructureFigureTests(unittest.TestCase):

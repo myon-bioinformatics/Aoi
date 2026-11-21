@@ -393,6 +393,7 @@ sakanalytics describe --file numbers.csv
 
 # ヘッダー付きCSVは対象列を指定
 sakanalytics describe --file measurements.csv --column duration
+printf 'duration,unit\n10,ms\n20,ms\n' | sakanalytics describe --file - --column duration
 ```
 
 空欄・不正な値・NaN・無限大は黙って除外せず、エラーにします。ヘッダー付きファイルでは `--column` を指定してください。区切りのカンマを含む数値（例: 桁区切りの1,000）は２つの値として解釈されます。比較では各組に数値か `-` を指定でき、標準入力を使えるのは１組だけです。

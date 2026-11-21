@@ -2210,6 +2210,12 @@ def _batch_outcomes(checks, returncode, detail, inputs, receipt, *, timed_out=Fa
             if not isinstance(node, str) or not isinstance(reason, str):
                 raise ValueError("invalid pytest evidence")
             phases = by_node.setdefault(node, {})
+            if phase == "subtest" and status in ("failed", "skipped"):
+                # Multiple subtests share one parent node; only the strongest
+                # non-pass outcome is relevant to the parent receipt.
+                if phases.get(phase, ("", ""))[0] != "failed":
+                    phases[phase] = (status, reason)
+                continue
             if phase in phases or phase not in ("setup", "call", "teardown") or status not in ("passed", "failed", "skipped"):
                 raise ValueError("invalid pytest phase report")
             phases[phase] = (status, reason)
@@ -2220,11 +2226,14 @@ def _batch_outcomes(checks, returncode, detail, inputs, receipt, *, timed_out=Fa
     for check in checks:
         phases = by_node.get(check.target, {})
         setup, call, teardown = (phases.get(key, ("", ""))[0] for key in ("setup", "call", "teardown"))
-        if "failed" in (setup, call, teardown):
+        subtest, subreason = phases.get("subtest", ("", ""))
+        if "failed" in (setup, call, teardown, subtest):
             outcome = Outcome("fail", f"failed {check.target}", [])
         elif (setup, call, teardown) == ("passed", "passed", "passed"):
             # Pytest treats non-strict XPASS as successful, strict XPASS as failed.
-            outcome = Outcome("pass", "", [])
+            outcome = (Outcome("skip", f"pytest subtest skipped {check.target}" +
+                               (f": {subreason}" if subreason else ""), [])
+                       if subtest == "skipped" else Outcome("pass", "", []))
         elif teardown in ("passed", "skipped") and (
             (setup == "skipped" and not call) or
             (setup == "passed" and call in ("passed", "skipped") and "skipped" in (call, teardown))
@@ -2873,6 +2882,13 @@ def pytest_collection_modifyitems(config, items):
 def pytest_runtest_logreport(report):
     path = os.environ.get("LOCALCI_PYTEST_RECEIPT")
     if path:
+        # Native and legacy pytest subtest reports have their own type and
+        # context, but reuse the parent's nodeid and normal call phase.
+        subtest = hasattr(report, "context") and any(
+            cls.__name__.lower() == "subtestreport" for cls in type(report).__mro__
+        )
+        if subtest and report.passed:
+            return
         reason = ""
         if report.skipped:
             if xfail := getattr(report, "wasxfail", None):
@@ -2880,7 +2896,7 @@ def pytest_runtest_logreport(report):
             elif isinstance(report.longrepr, tuple):
                 reason = str(report.longrepr[-1])
         with open(path, "a", encoding="utf-8") as receipt:
-            receipt.write(json.dumps([report.nodeid, report.when, report.outcome, reason[:240]]) + "\n")
+            receipt.write(json.dumps([report.nodeid, "subtest" if subtest else report.when, report.outcome, reason[:240]]) + "\n")
 
 
 def pytest_runtest_teardown(item, nextitem):

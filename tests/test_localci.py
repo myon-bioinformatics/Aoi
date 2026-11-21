@@ -1485,3 +1485,29 @@ def test_pytest_launch_failure_keeps_all_nodes_unobserved(tmp_path):
                             execute_pytest=launch)
     assert plan.stopped and plan.rounds[0].not_run == 2
     assert plan.rounds[0].failed_check is None
+
+
+def test_pytest_unittest_subtests_preserve_parent_outcomes(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    (tmp_path / "test_subtests_contract.py").write_text(
+        "import unittest\n"
+        "class Cases(unittest.TestCase):\n"
+        "    def test_good(self):\n"
+        "        for n in (1, 2):\n"
+        "            with self.subTest(n=n): self.assertGreater(n, 0)\n"
+        "    def test_bad(self):\n"
+        "        for n in (1, 2):\n"
+        "            with self.subTest(n=n): self.assertEqual(n, 0)\n"
+        "    def test_partial(self):\n"
+        "        with self.subTest(n=1): self.skipTest('subcase unavailable')\n"
+        "        with self.subTest(n=2): self.assertGreater(2, 0)\n"
+    )
+    checks = [localci.Check(name, "pytest", f"test_subtests_contract.py::Cases::test_{name}") for name in ("good", "bad", "partial")]
+    prefix = [sys.executable, "-m", "pytest"]
+    alone = localci.run_pytest_batch(checks[:1], 7, cwd=tmp_path, prefix=prefix, keep_going=True)
+    assert alone["good"].status == "pass"
+    assert alone.batch_error == ""
+    mixed = localci.run_pytest_batch(checks, 7, cwd=tmp_path, prefix=prefix, keep_going=True)
+    assert [mixed[check.id].status for check in checks] == ["pass", "fail", "skip"]
+    assert "subcase unavailable" in mixed["partial"].detail
+    assert mixed.batch_error == ""

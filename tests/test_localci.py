@@ -737,7 +737,7 @@ def test_workflow_delegates_resolution_and_follows_parent_uses_style():
     uv = [item["ref"] for item in uses if item["repo"] == "astral-sh/setup-uv"]
     assert set(uv) == {"1db35dd8eee11c5894872e0b383ae6c406cf738d"}
     upload = [item["ref"] for item in uses if item["repo"] == "actions/upload-artifact"]
-    assert upload == ["cf430e030ddbb5b0abf93d22962f4752f3646cd9"]
+    assert upload == ["cf430e030ddbb5b0abf93d22962f4752f3646cd9"] * 2
 
 
 
@@ -1298,7 +1298,12 @@ def test_localci_profile_does_not_become_repository_default():
     assert project["project"]["dependencies"] == []
     assert project["project"]["scripts"] == {"nagoyaction": "nagoyaction:main"}
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    assert "tools/localci-env" not in workflow
+    for job in ("resolve-vendor", "vendor-aoi", "test", "polars-min"):
+        assert "tools/localci-env" not in _workflow_job(workflow, job)
+    local_job = _workflow_job(workflow, "local-ci")
+    assert "uv sync --project tools/localci-env --locked" in local_job
+    assert "timeout-minutes: 4" in local_job
+    assert "localci-budget-faults.xml" in local_job
     assert "python nagoyaction.py localci run --repeat 10 --seed" in workflow
 
 @pytest.mark.parametrize(("nodes", "going", "expected"), [
@@ -1555,3 +1560,19 @@ def test_batch_receipt_diagnostics_distinguish_missing_and_duplicate_phase(tmp_p
         result = localci.run_pytest_batch([check], 7, cwd=tmp_path, prefix=[], keep_going=True, runner=runner)
         assert result["one"].status == "not_run"
         assert diagnostic in result.batch_error
+
+
+def test_budget_probe_rejects_malformed_cache_metadata_and_missing_binary(tmp_path):
+    malformed = _cached_actionlint(tmp_path, "1.7.9")
+    (malformed.parent / "actionlint.record.json").write_text("{", encoding="utf-8")
+    missing = _cached_actionlint(tmp_path, "1.7.10")
+    missing.unlink()
+    assert localci.cached_actionlint(tmp_path) is None
+
+
+def test_budget_probe_missing_executable_is_not_a_pass(tmp_path):
+    check = localci.Check("unobserved", "pytest", "test_none.py::test_none")
+    result = localci.run_pytest_batch([check], 7, cwd=tmp_path,
+                                     prefix=[str(tmp_path / "missing-python")], keep_going=False)
+    assert result[check.id].status == "not_run"
+    assert "launch failed" in result.batch_error

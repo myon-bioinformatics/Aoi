@@ -11,6 +11,8 @@ from collections import Counter
 import hashlib
 import json
 import math
+
+from c001_publication_policy import EX_USAGE
 from pathlib import Path
 
 SCHEMA = "c001-verification/1"
@@ -276,10 +278,10 @@ def main(argv=None):
     try:
         summary = annotate(args.audit)
     except (OSError, ValueError, KeyError, TypeError) as exc:
-        parser.exit(64, f"Invalid replay evidence: {exc}\n")
+        parser.exit(EX_USAGE, f"Invalid replay evidence: {exc}\n")
     print(json.dumps({k: summary[k] for k in ("verification_coverage", "annual_field_counts", "outputs")}, ensure_ascii=False))
     if any(step["status"] == "failed" for step in summary["execution_steps"].values()):
-        return 64
+        return EX_USAGE
     different = any(result["counts"].get("different", 0) for result in summary["outputs"].values())
     return 1 if summary["formula_mismatches"] or different else 0
 

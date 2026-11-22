@@ -25,7 +25,7 @@ sys.path[:0] = [str(ROOT / "blueprobe"), str(ROOT / "blueprobe" / "npb"), str(RO
 
 import httpx  # noqa: E402
 import npb_calendar  # noqa: E402
-from analyses import analyze_describe as describe, analyze_sha as sha, units  # noqa: E402
+from analyses import EX_DATAERR, EX_NOINPUT, analyze_describe as describe, analyze_sha as sha, units  # noqa: E402
 from blueprobe import merge, new_report, NORMALIZATION  # noqa: E402
 from queryu import Cache, PoliteFetcher, UA, write_dataset  # noqa: E402
 from selectolax.lexbor import LexborHTMLParser  # noqa: E402
@@ -283,9 +283,9 @@ def inning_pilot(argv=None):
     try:
         inning_pilot_main(argv)
     except (FileNotFoundError,KeyError) as e:
-        print(str(e),file=sys.stderr);sys.exit(66)
+        print(str(e),file=sys.stderr);sys.exit(EX_NOINPUT)
     except ValueError as e:
-        print(str(e),file=sys.stderr);sys.exit(65)
+        print(str(e),file=sys.stderr);sys.exit(EX_DATAERR)
 
 
 # ==== 入口

@@ -33,6 +33,13 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path[:0] = [str(ROOT / "sakanalytics"), str(ROOT / "sakanalytics" / "npb"), str(ROOT / "pythdragoras"), str(ROOT / "pythdragoras" / "core")]
 
+# 終了コード（sysexits.h の慣習、Issue #30）。同じ中身の補助はここにまとめ、
+# fetch / recheck は analyses 経由でこの定義を使う。
+# 64 = 使用法エラー、65 = データ不正、66 = 入力なし。
+EX_USAGE = 64
+EX_DATAERR = 65
+EX_NOINPUT = 66
+
 from season_simulator import Game, Snapshot  # noqa: E402
 
 
@@ -707,9 +714,9 @@ def inning_features(argv=None):
     try:
         inning_features_main(argv)
     except FileNotFoundError as e:
-        print(str(e),file=sys.stderr);sys.exit(66)
+        print(str(e),file=sys.stderr);sys.exit(EX_NOINPUT)
     except (ValueError,KeyError) as e:
-        print(str(e),file=sys.stderr);sys.exit(65)
+        print(str(e),file=sys.stderr);sys.exit(EX_DATAERR)
 
 
 # ==== clinch_interval（旧 clinch_interval.py）
@@ -2021,7 +2028,7 @@ def judge(args):
 
 class Parser(argparse.ArgumentParser):
     def error(self, message):
-        self.exit(64, json.dumps(dict(exit_code=64,error=message))+"\n")
+        self.exit(EX_USAGE, json.dumps(dict(exit_code=EX_USAGE,error=message))+"\n")
 
 
 def loss_tail(argv=None):
@@ -2361,8 +2368,8 @@ def same_score(argv=None):
     """Descriptive outcomes conditional on final runs; see SAME_SCORE_PROTOCOL.md.
     """
     try:sys.exit(same_score_main())
-    except FileNotFoundError as e:print(str(e),file=sys.stderr);sys.exit(66)
-    except (ValueError,KeyError,TypeError) as e:print(str(e),file=sys.stderr);sys.exit(65)
+    except FileNotFoundError as e:print(str(e),file=sys.stderr);sys.exit(EX_NOINPUT)
+    except (ValueError,KeyError,TypeError) as e:print(str(e),file=sys.stderr);sys.exit(EX_DATAERR)
     except Exception as e:print(str(e),file=sys.stderr);sys.exit(70)
 
 

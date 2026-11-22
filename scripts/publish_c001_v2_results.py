@@ -8,7 +8,7 @@ import re
 import shutil
 import tempfile
 
-from c001_publication_policy import evaluate, gate
+from c001_publication_policy import EX_USAGE, evaluate, gate
 
 SCHEMA = "c001-v2-results/1"
 
@@ -87,7 +87,7 @@ def main(argv=None):
     try:
         summary = publish(args.audit)
     except (OSError, ValueError, KeyError, TypeError) as exc:
-        parser.exit(64, f"Invalid V2 publication evidence: {exc}\n")
+        parser.exit(EX_USAGE, f"Invalid V2 publication evidence: {exc}\n")
     print(json.dumps(summary, ensure_ascii=False))
     return summary["exit_code"]
 

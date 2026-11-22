@@ -8,6 +8,10 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "nagoyaction"))
 import nagoyaction as gate  # 🚦 publication-gate の節（旧 publication_gate.py）
 
+# 終了コード（sysexits.h の慣習、Issue #30）。c001 の scripts 群ではここを定義元とし、
+# publish / run_c001_replay_stage / annotate はこの値を import して使う。
+EX_USAGE = 64
+
 KINDS = (("propositions.jsonl", "proposition", "P"), ("sets.jsonl", "expression", "E"))
 DEFINITIONS = ("pipeline.toml", "analysis.toml", "claims.toml", "hypotheses.toml",
                "propositions.toml", "sets.toml", "rule_candidates.toml", "rule_candidates_r21.toml")
@@ -138,7 +142,7 @@ def evaluate(audit, env=None):
                   full_field_differences=len(differences), unresolved_differences=unresolved,
                   provenance_differences=len(differences) - unresolved, difference_items=differences,
                   scope="downstream_replay_on_V1_inputs", candidate_results=len(candidates),
-                  exit_code=0 if report["allowed"] else (64 if any(
+                  exit_code=0 if report["allowed"] else (EX_USAGE if any(
                       code != 0 and not (name == "compare" and code == 1)
                       for name, code in evidence["stage_returncodes"].items()) or not all(
                       checks[f"step:{name}"] for name in ("question", "sets", "judge")) else 1))

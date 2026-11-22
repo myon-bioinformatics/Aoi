@@ -219,3 +219,13 @@ python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --ou
 行列または単一の Plotly heatmap を貼り付けるか、JSON ファイルを選ぶ。
 色の段階と値の表示を調整し、SVG または Ironmate で編集できるシーン JSON を保存する。PNG が必要なときは長辺を選んで「PNGを保存」を押す。欠測セルは透明のまま書き出す。
 同じシーンを CLI から生成するには `python -S dragowing.py --heatmap matrix.json > scene.json`。
+
+## 核酸・タンパク質の原子座標
+
+SSIS の `structure --output graph` が出力する JSON を回転・拡大できる 3D 図にします。
+
+```sh
+python -S dragowing.py --structure-graph model.json --embed > model.html
+```
+
+`-` で標準入力からも読み込めます。各点は元素別の原子、線は SSIS が抽出した残基間の接触候補です。点にカーソルを置くと鎖・残基・原子名と座標（Å）、線では候補の種類と距離が読めます。`--embed` は生成時に Plotly.js を取得して HTML に含めます。

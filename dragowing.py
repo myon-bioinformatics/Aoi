@@ -1743,6 +1743,42 @@ def _js_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace("<", "\\u003c")
 
 
+def structure_figure(graph):
+    """Display measured XYZ coordinates and the contact candidates supplied by SSIS."""
+    if graph.get("schema") != "structure-graph/1" or graph.get("unit") != "angstrom":
+        raise ValueError("expected structure-graph/1 in angstrom")
+    atom_nodes = [n for n in graph["nodes"] if n["type"] == "Atom"]
+    atoms = {n["id"]: n for n in atom_nodes}
+    if len(atoms) != len(atom_nodes):
+        raise ValueError("duplicate atom ID")
+    if not atoms or any(not math.isfinite(a[k]) for a in atoms.values() for k in "xyz"):
+        raise ValueError("expected finite atom coordinates")
+    traces = []
+    contacts = [e for e in graph["edges"] if e["relation"] == "nearAtom"]
+    if contacts:
+        lines = {axis: [] for axis in "xyz"}
+        hover = []
+        for edge in contacts:
+            hover.extend([escape(", ".join(edge["labels"])) + f" · {edge['distance_angstrom']:.3f} Å"] * 2 + [""])
+            a, b = atoms[edge["source"]], atoms[edge["target"]]
+            for axis in lines:
+                lines[axis].extend((a[axis], b[axis], None))
+        traces.append(dict(type="scatter3d", mode="lines", name="接触候補", **lines,
+                           line=dict(color="#7794a0", width=3), text=hover, hovertemplate="%{text}<extra></extra>"))
+    colors = {"C": "#626d7c", "N": "#3c66ae", "O": "#c84d52", "P": "#a0539f", "S": "#b98b16"}
+    for element in sorted({a["element"] for a in atoms.values()}):
+        group = [a for a in atoms.values() if a["element"] == element]
+        labels = [escape(" ".join(str(a[k]) for k in ("chain", "residue", "residue_id", "name", "altloc")).strip())
+                  for a in group]
+        traces.append(dict(type="scatter3d", mode="markers", name=escape(element), text=labels,
+                           marker=dict(size=4, color=colors.get(element, "#408878")),
+                           hovertemplate="%{text}<br>(%{x}, %{y}, %{z}) Å<extra></extra>",
+                           **{axis: [a[axis] for a in group] for axis in "xyz"}))
+    scene = {axis + "axis": {"title": {"text": axis.upper() + " (Å)"}} for axis in "xyz"}
+    title = f"モデル {escape(str(graph['model']))} · {len(atoms)} 原子 · 接触候補 {len(contacts)}/{graph['contact_count']}"
+    return {"data": traces, "layout": {"title": {"text": title}, "scene": {**scene, "aspectmode": "data"}, "height": 570}}
+
+
 def figure_block(spec: dict, div_id: str) -> str:
     payload = embed_json(spec)
     attr = html.escape(div_id, quote=True)
@@ -2243,6 +2279,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="📈 記録された結果を HTML（と SVG）にする。判定はやり直さない。"
                     " RESULTS がディレクトリでなければ 🔢 HTML の要素を数える（ブラウザなし）。",
     )
+    parser.add_argument("--structure-graph", metavar="JSON", help="SSIS原子座標の回転可能な3D HTMLを標準出力へ。- は標準入力")
     parser.add_argument("--heatmap", metavar="JSON", help="行列またはPlotly JSONを編集用シーンとして標準出力に書く。- は標準入力")
     parser.add_argument("results", nargs="?",
                         help="📂 season.jsonl と propositions.jsonl があるディレクトリ。🔢 HTML ファイルか - なら要素を数える（省略は標準入力）")
@@ -2320,6 +2357,14 @@ def main(argv=None) -> int:
     """📈 RESULTS → HTML（--svg で SVG）、🧾 --forms、📊 --ffss RECORDS、🔢 HTML ファイル（か標準入力）の要素数。"""
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.structure_graph is not None:
+        try:
+            raw = sys.stdin.read() if args.structure_graph == "-" else Path(args.structure_graph).read_text(encoding="utf-8")
+            figure = structure_figure(json.loads(raw))
+            print(standalone("分子の原子座標", figure_block(figure, "structure"), plotly=True, embed=args.embed))
+        except (ValueError, KeyError, TypeError, AttributeError, RuntimeError, OSError) as exc:
+            parser.exit(1, f"Cannot draw structure graph: {exc}\n")
+        return 0
     if args.heatmap is not None:
         try:
             source = sys.stdin.read() if args.heatmap == "-" else Path(args.heatmap).read_text(encoding="utf-8")

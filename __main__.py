@@ -1,3 +1,4 @@
+"""`python -m dragowing`（またはこのファイルを直接）で dragowing.main を呼ぶ入口。"""
 import sys
 
 if __package__:

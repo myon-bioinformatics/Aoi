@@ -1,3 +1,4 @@
+"""Benchmark the cache-share query against the old cache_share.py: same rows, peak bytes from tracemalloc (JSON)."""
 import json, subprocess, sys, tracemalloc, types
 from pathlib import Path; from unittest.mock import patch
 import queryu  # cache_share は queryu.py の share に入った

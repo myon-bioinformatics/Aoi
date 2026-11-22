@@ -34,7 +34,7 @@ The text table of the four forms is in [docs/forms.md](docs/forms.md). HTML (tra
 
 It produces `index.html` and `propositions.html` in `--out` (a new temporary directory when omitted; the printed links open them). The trajectories, team × year, and condition overlap (grid and breakdown) in `index.html` are drawn from Plotly JSON specs with the browser's plotly.js (the latest dist on jsDelivr). The Python `plotly` package is not used. `propositions.html` is a list and Markdown tables, without Plotly. Add `--embed` to embed Plotly.js into `index.html`. Page text is converted from Markdown to HTML.
 
-🖼️ SVG is optional: `--svg` writes `svg/<figure>.svg` with the parent's standard-library [`plotly_min`](https://github.com/myon-bioinformatics/myon-bioinformatics/blob/main/docs/plotly-min.md) (`vendor/tools/stdlib_min/plotly_min.py`). No Chrome / Chromium is used. PNG is not written here; screenshots belong to [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit).
+🖼️ SVG is optional: `--svg` writes `svg/<figure>.svg` with the parent's standard-library [`plotly_min`](https://github.com/myon-bioinformatics/myon-bioinformatics/blob/main/docs/plotly-min.md) (`vendor/tools/stdlib_min/plotly_min.py`). No Chrome / Chromium is used. PNG is not written here; screenshots belong to [BrowserTestKit](https://github.com/myon-bioinformatics/BrowserTestKit).
 
 This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) (see "Relationship with Aoi" below).
 
@@ -198,7 +198,7 @@ MIT License ([LICENSE](LICENSE)). `LICENSE` has the same contents as the MIT LIC
 An example of building HTML from the c001 (Chunichi) output at Aoi's root.
 
 ```bash
-python DRAgoWing.py cycles/c001-chunichi/outputs \
+python aoi.py dragowing cycles/c001-chunichi/outputs \
   --team-order d,g,s,db,t,c,h,f,b,e,l,m   # order is Aoi's setting (TEAM_ORDER in aoi_npb.py)
 ```
 

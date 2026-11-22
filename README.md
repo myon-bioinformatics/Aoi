@@ -158,7 +158,7 @@ python ../BrowserTestKit/tools/evidence_gif.py docs/evidence/browser.gif --serve
 
 ```bash
 uv run --locked pytest -q                         # tests/ and every subproject's tests/ (pyproject.toml testpaths); tests/test_vendor_tools.py drives py_launch.cjs on Node >= 26
-python -S nagoyaction/linkcheck.py                # Markdown links and images (tracked files, exact case)
+python -S nagoyaction/nagoyaction.py linkcheck     # Markdown links and images (tracked files, exact case)
 python -S scripts/check_child_heads.py --fail-on-diff   # child repositories vs. their directories in Aoi
 python -S scripts/repo_checks.py shared_tools_lock  # shared tools (stdlib-shrink, py_launch.cjs, uv_tool_build.py) vs. shared-tools.lock.json
 ```

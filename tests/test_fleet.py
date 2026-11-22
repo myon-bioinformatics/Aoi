@@ -8,6 +8,7 @@ Node entries through the vendored py_launch.cjs, the launcher contract and the b
 Node entry: `node vendor/py_launch.cjs --env-var <TOOL>_PYTHON -- npb/<tool>.py ARGS` (no per-tool wrapper).
 """
 from __future__ import annotations
+import unittest
 
 import importlib.util, json
 from pathlib import Path
@@ -23,7 +24,7 @@ _spec.loader.exec_module(fleet)
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
 ACCEPTED = {
     "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
-    "vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0",
+    "vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266",
 }
 ACTION_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
@@ -117,3 +118,11 @@ def test_benchmark_mismatch_exits_under_optimization_without_reporting_success()
     assert result.returncode != 0, result.stdout
     assert "report mismatch" in result.stderr
     assert result.stdout == ""
+
+
+# 🧰 Scripts: 📝 each one describes itself and ⌨️ one that reads sys.argv declares its arguments (argparse /
+# cli_args). Read with ast, never run; the portfolio's script catalog reads the same facts.
+
+class ScriptsDescribeThemselves(unittest.TestCase):
+    def test_every_script_has_a_description_and_declared_arguments(self):
+        fleet.check_scripts(fleet.repo_root(__file__))

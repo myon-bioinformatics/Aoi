@@ -27,7 +27,7 @@ from statistics import mean, NormalDist
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 
-from analyses import digest, HERE, INNING_FEATURES_CL as CL, INNING_FEATURES_TEAMS as TEAMS, inning_features_write_csv as write_csv, read_input, require as part5_require, require as supplement_require, ROOT  # noqa: E402
+from analyses import EX_DATAERR, EX_NOINPUT, digest, HERE, INNING_FEATURES_CL as CL, INNING_FEATURES_TEAMS as TEAMS, inning_features_write_csv as write_csv, read_input, require as part5_require, require as supplement_require, ROOT  # noqa: E402
 
 
 # ==== clinch_interval（旧 verify_clinch_interval.py）
@@ -556,8 +556,8 @@ def part5(argv=None):
     """Recalculate Part5's main comparisons using the previously reconciled inputs.
     """
     try:part5_main(argv)
-    except FileNotFoundError as e:print(e,file=sys.stderr);sys.exit(66)
-    except (ValueError,KeyError) as e:print(e,file=sys.stderr);sys.exit(65)
+    except FileNotFoundError as e:print(e,file=sys.stderr);sys.exit(EX_NOINPUT)
+    except (ValueError,KeyError) as e:print(e,file=sys.stderr);sys.exit(EX_DATAERR)
 
 
 # ==== part6（旧 verify_part6.py）
@@ -1213,8 +1213,8 @@ def supplement(argv=None):
     """Offline reconciliation of the user-supplied supplemental evidence package.
     """
     try:supplement_main(argv)
-    except FileNotFoundError as e:print(e,file=sys.stderr);sys.exit(66)
-    except (ValueError,KeyError) as e:print(e,file=sys.stderr);sys.exit(65)
+    except FileNotFoundError as e:print(e,file=sys.stderr);sys.exit(EX_NOINPUT)
+    except (ValueError,KeyError) as e:print(e,file=sys.stderr);sys.exit(EX_DATAERR)
 
 
 # ==== 入口

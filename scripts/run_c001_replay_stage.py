@@ -8,7 +8,7 @@ from pathlib import Path
 import shutil
 import sys
 
-from c001_publication_policy import STAGES, DEFINITIONS, FROZEN, gate
+from c001_publication_policy import EX_USAGE, STAGES, DEFINITIONS, FROZEN, gate
 
 
 def freeze(audit, research):
@@ -140,7 +140,7 @@ def main(argv=None):
                    "--audit", str(audit), "--research", str(research), "--child"]
         return gate.record_command(audit, args.stage, STAGES[args.stage], command)
     except (OSError, ValueError, KeyError, TypeError) as exc:
-        parser.exit(64, f"Invalid c001 stage: {exc}\n")
+        parser.exit(EX_USAGE, f"Invalid c001 stage: {exc}\n")
 
 
 if __name__ == "__main__":

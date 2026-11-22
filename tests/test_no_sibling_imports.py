@@ -16,6 +16,8 @@ SIBLING_DIRS = ("blueprobe", "queryu", "sakanalytics", "nagoyaction", "dragowing
 # テストのデータの場所だけが読む。littlebit の CLI は --cycle-dir か AOI_ROOT を受け取り、配置は探さない
 AOI_PROVIDED = {"aoi_paths"}
 KNOWN_EXCEPTIONS = {
+    # 親の fleet_check.check_scripts の既定の glob（このリポジトリ自身の scripts/。Aoi の scripts/ ではない）
+    ("vendor/fleet_check.py", "path:scripts/*"),
     # 実データの列名と sakanalytics の出力を突き合わせる
     ("tests/test_propositions.py", "import:sakanalytics"),
     # SakAnalytics #45 以降はシーズンの関数が npb/team_season.py（取り込み前の Aoi では sakanalytics）

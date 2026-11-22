@@ -7,6 +7,7 @@ Node entries through the vendored py_launch.cjs, launcher contract.
 Node entry: `node vendor/py_launch.cjs --env-var <TOOL>_PYTHON -- <core|npb>/<tool>.py ARGS` (no per-tool wrapper).
 """
 from __future__ import annotations
+import unittest
 
 import importlib.util, json
 from pathlib import Path
@@ -23,7 +24,7 @@ PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
 LIVE_PARENT_REF = "${{ steps.parent.outputs.sha }}"
 ACCEPTED = {
     "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
-    "vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0",
+    "vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266",
 }
 # Node 入口: ツール名 -> 本体（トップにはメインだけ。ツールは core/ と npb/ にいる）。環境変数は <TOOL>_PYTHON
 SCRIPTS = {
@@ -114,3 +115,11 @@ def test_node_matches_python(tool, args, expected_rc):
 def test_vendored_launcher_keeps_its_contract(tool):
     """Missing interpreter, passthrough under -S, hostile sitecustomize x resolvePython/run/main, both signal orders."""
     fleet.launcher_contract(ROOT, _env_var(tool))
+
+
+# 🧰 Scripts: 📝 each one describes itself and ⌨️ one that reads sys.argv declares its arguments (argparse /
+# cli_args). Read with ast, never run; the portfolio's script catalog reads the same facts.
+
+class ScriptsDescribeThemselves(unittest.TestCase):
+    def test_every_script_has_a_description_and_declared_arguments(self):
+        fleet.check_scripts(fleet.repo_root(__file__))

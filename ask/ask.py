@@ -424,13 +424,18 @@ def _id_key(i: str) -> tuple:
     return (i[0], int(i[1:])) if re.fullmatch(r"[PE]\d+", i) else (i, 0)
 
 
-def registration_status(item: dict) -> str:
-    """Conservative provenance label; posthoc false/missing is not preregistration."""
+def registration_code(item: dict) -> str:
+    """Conservative provenance as a machine value; posthoc false/missing is not preregistration."""
     if item.get("posthoc") is True:
-        return "事後構成"
+        return "posthoc"
     if item.get("preregistered") is True or item.get("preregistered_at") or item.get("preregistration"):
-        return "事前登録"
-    return "不明"
+        return "preregistered"
+    return "unknown"
+
+
+def registration_status(item: dict) -> str:
+    """Display label for registration_code (the value shown to people)."""
+    return {"posthoc": "事後構成", "preregistered": "事前登録", "unknown": "不明"}[registration_code(item)]
 
 
 def answer(q: Query, items: list[dict]) -> dict:
@@ -470,7 +475,8 @@ def answer(q: Query, items: list[dict]) -> dict:
                      "counterexamples_left": left if count_known else None,
                      "has_counterexample": bool(cx) or (count_known and left > 0),
                      "undetermined": f.get("undetermined", 0), "counterexamples": cx, "listed_all": complete,
-                     "statement": it.get("statement", ""), "registration": registration_status(it)})
+                     "statement": it.get("statement", ""), "registration": registration_status(it),
+                     "registration_code": registration_code(it)})
     if q.ask == "has_counterexample":
         ans = ("はい" if any(r["has_counterexample"] for r in rows)
                else "判定不能" if uncertain or not evaluated else "いいえ")

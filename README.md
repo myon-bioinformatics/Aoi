@@ -1,5 +1,7 @@
 # BlueProbe
 
+🌐 [GitHub Pages](https://myon-bioinformatics.github.io/BlueProbe/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
+
 <p align="center">
   <img src="docs/brand/icon.png" alt="BlueProbe icon" width="160" />
 </p>

@@ -45,6 +45,9 @@ import argparse, base64, contextlib, datetime as dt, hashlib, importlib.util, io
 import shutil, signal, subprocess, sys, tarfile, tempfile, time, tomllib, urllib.error, urllib.request, zipfile
 from dataclasses import dataclass
 from types import SimpleNamespace
+
+# 終了コード（sysexits.h の慣習、Aoi Issue #30）。この節では 64 = 使用法エラーのみを使う。
+EX_USAGE = 64
 from pathlib import Path
 
 
@@ -3126,7 +3129,7 @@ def publication_gate_main(argv=None):
     try:
         return record_command(args.audit, args.stage, args.evidence, command)
     except (OSError, ValueError, TypeError, KeyError) as exc:
-        parser.exit(64, f"Invalid stage evidence: {exc}\n")
+        parser.exit(EX_USAGE, f"Invalid stage evidence: {exc}\n")
 
 
 # ====================================================================================================
@@ -3197,7 +3200,7 @@ def ghi_execution_main(argv=None):
         write_json(args.audit / "execution-identity.json", result)
         identity(args.audit)
     except Exception as exc:
-        parser.exit(64, f"Execution identity unavailable: {exc}\n")
+        parser.exit(EX_USAGE, f"Execution identity unavailable: {exc}\n")
     print("GHI execution identity captured; no research source was fetched")
     return 0
 

@@ -42,7 +42,7 @@
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 207
+      "line": 233
     },
     {
       "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",
@@ -758,7 +758,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1352,
+      "attribute_uses": 1358,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -766,11 +766,11 @@
         "StashKey": 2,
         "UsageError": 11,
         "approx": 397,
-        "fail": 32,
+        "fail": 33,
         "fixture": 51,
         "hookimpl": 3,
         "importorskip": 13,
-        "mark.parametrize": 297,
+        "mark.parametrize": 302,
         "mark.skipif": 9,
         "mark.usefixtures": 2,
         "param": 1,
@@ -830,11 +830,11 @@
           "import_sites": 11
         },
         "nagoyaction": {
-          "attribute_uses": 91,
+          "attribute_uses": 96,
           "attributes": {
-            "fail": 6,
+            "fail": 7,
             "fixture": 7,
-            "mark.parametrize": 17,
+            "mark.parametrize": 21,
             "mark.skipif": 1,
             "raises": 59,
             "skip": 1
@@ -862,7 +862,7 @@
           "import_sites": 18
         },
         "queryu": {
-          "attribute_uses": 99,
+          "attribute_uses": 100,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -870,7 +870,7 @@
             "approx": 2,
             "fail": 8,
             "fixture": 4,
-            "mark.parametrize": 24,
+            "mark.parametrize": 25,
             "raises": 53,
             "skip": 1,
             "xfail": 1
@@ -1609,9 +1609,9 @@
     },
     {
       "attributes": {
-        "fail": 5,
+        "fail": 6,
         "fixture": 1,
-        "mark.parametrize": 2,
+        "mark.parametrize": 6,
         "raises": 17
       },
       "dynamic_lines": [],
@@ -2348,7 +2348,7 @@
       "attributes": {
         "fail": 1,
         "fixture": 1,
-        "mark.parametrize": 5
+        "mark.parametrize": 6
       },
       "dynamic_lines": [
         520

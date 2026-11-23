@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "files_scanned": 335,
+  "files_scanned": 295,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
@@ -32,7 +32,7 @@
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 207
+      "line": 233
     },
     {
       "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",

@@ -758,7 +758,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1352,
+      "attribute_uses": 1357,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -766,11 +766,11 @@
         "StashKey": 2,
         "UsageError": 11,
         "approx": 397,
-        "fail": 32,
+        "fail": 33,
         "fixture": 51,
         "hookimpl": 3,
         "importorskip": 13,
-        "mark.parametrize": 297,
+        "mark.parametrize": 301,
         "mark.skipif": 9,
         "mark.usefixtures": 2,
         "param": 1,
@@ -830,11 +830,11 @@
           "import_sites": 11
         },
         "nagoyaction": {
-          "attribute_uses": 91,
+          "attribute_uses": 96,
           "attributes": {
-            "fail": 6,
+            "fail": 7,
             "fixture": 7,
-            "mark.parametrize": 17,
+            "mark.parametrize": 21,
             "mark.skipif": 1,
             "raises": 59,
             "skip": 1
@@ -1609,9 +1609,9 @@
     },
     {
       "attributes": {
-        "fail": 5,
+        "fail": 6,
         "fixture": 1,
-        "mark.parametrize": 2,
+        "mark.parametrize": 6,
         "raises": 17
       },
       "dynamic_lines": [],

@@ -17,18 +17,6 @@
       "line": 67
     },
     {
-      "file": "dist/pythdragoras_min.py",
-      "line": 120
-    },
-    {
-      "file": "dist/queryu_min.py",
-      "line": 117
-    },
-    {
-      "file": "dist/sakanalytics_min.py",
-      "line": 119
-    },
-    {
       "file": "dragowing/dragowing.py",
       "line": 64
     },
@@ -754,7 +742,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1359,
+      "attribute_uses": 1348,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -766,11 +754,11 @@
         "fixture": 51,
         "hookimpl": 3,
         "importorskip": 13,
-        "mark.parametrize": 302,
+        "mark.parametrize": 295,
         "mark.skipif": 9,
         "mark.usefixtures": 2,
         "param": 1,
-        "raises": 513,
+        "raises": 509,
         "skip": 11,
         "warns": 3,
         "xfail": 1
@@ -903,20 +891,20 @@
           "import_sites": 1
         },
         "tests": {
-          "attribute_uses": 402,
+          "attribute_uses": 391,
           "attributes": {
             "approx": 104,
             "fail": 8,
             "fixture": 16,
             "importorskip": 1,
-            "mark.parametrize": 107,
+            "mark.parametrize": 100,
             "mark.skipif": 3,
-            "raises": 158,
+            "raises": 154,
             "skip": 5
           },
           "dynamic_import_sites": 0,
-          "files": 22,
-          "import_sites": 24
+          "files": 21,
+          "import_sites": 23
         }
       },
       "declared": [
@@ -963,8 +951,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 93,
-      "import_sites": 96
+      "files": 92,
+      "import_sites": 95
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -2963,8 +2951,8 @@
       "attributes": {
         "approx": 1,
         "fixture": 1,
-        "mark.parametrize": 3,
-        "raises": 9
+        "mark.parametrize": 1,
+        "raises": 7
       },
       "dynamic_lines": [],
       "file": "tests/test_distributions.py",
@@ -3089,17 +3077,6 @@
       },
       "dynamic_lines": [],
       "file": "tests/test_vendor_tools.py",
-      "import_sites": 1,
-      "package": "pytest",
-      "tree": "tests"
-    },
-    {
-      "attributes": {
-        "mark.parametrize": 5,
-        "raises": 2
-      },
-      "dynamic_lines": [],
-      "file": "tests/test_workflows.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "tests"

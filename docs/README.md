@@ -60,7 +60,7 @@ The list is checked by a test (`nagoyaction/tests/test_docs_masters.py`): a file
 | [ecosystem.md](ecosystem.md) | The structure of the ecosystem: independent projects, each answering a different type of question |
 | [child-repositories.md](child-repositories.md) | Subprojects split into their own repositories (git subtree): registration, drift and diff checks |
 | [unittest-discovery.md](unittest-discovery.md) | Standard unittest discovery commands and their supported scope |
-| [distributions.md](distributions.md) | Minimal stdlib API registration, frozen-source regeneration, license notices and subtree boundaries |
+| [distributions.md](distributions.md) | Reusable stdlib API files to copy (no bundling), license notices and subtree boundaries |
 
 重なり計算の軽量経路: [DRAgoWing の backend 契約・検証・測定](../dragowing/docs/overlap-stdlib.md)。明示指定時のみ有効。
 

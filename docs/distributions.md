@@ -1,16 +1,18 @@
 # Aoi の最小配布API
 
-Aoi がサブプロジェクトの配布登録を管理する。親アカウントの共通ツールを使い、Aoi → 子（アカウント親から見ると孫）という責任範囲にする。
+Aoi がサブプロジェクトの小さな再利用APIを管理する。どれも束ねず、元のファイルをそのまま写して使う（2026-11-23 から。束ねる道具 `tools/minpy.py` と `dist/`・`distributions.json` は使わない）。
 
-| プロジェクト | 単一ファイル | 提供範囲 |
+| プロジェクト | 写すファイル | 提供範囲 |
 |---|---|---|
-| BlueProbe | `blueprobe/blueprobe.py`（束ねなし） | 観測・正規化・検証済みsnapshotの解析、ほか BlueProbe の全部 |
-| QueRyu | `dist/queryu_min.py` | Cache・本文検証・html-snapshot/1。取得・問いの索引は含めない |
-| SakAnalytics | `dist/sakanalytics_min.py` | 列を明示した年次・期間比較、記述的な近傍比較 |
-| DRAgoWing | `dragowing/dragowing.py`（束ねなし） | 汎用系列・行列の図仕様、HTMLレポート・JSONL、ほか DRAgoWing の全部。描画時のPlotly.jsはブラウザ側の依存 |
-| PythDRagoras | `dist/pythdragoras_min.py` | 汎用数値スコアの閾値走査、標本曲線、来歴ラベルの検証 |
+| 🔵 BlueProbe | `blueprobe/blueprobe.py` | 観測・正規化・検証済みsnapshotの解析、ほか BlueProbe の全部 |
+| 🔎 QueRyu | `queryu/core/cache_core.py` | Cache・本文検証・html-snapshot/1。取得・問いの索引は含めない |
+| 🐟 SakAnalytics | `distributions/entries/sakanalytics_api.py`・`period_comparison.py`・`neighbor_comparison.py` | 列を明示した年次・期間比較、記述的な近傍比較 |
+| 🐉 DRAgoWing | `dragowing/dragowing.py` | 汎用系列・行列の図仕様、HTMLレポート・JSONL、ほか DRAgoWing の全部。描画時のPlotly.jsはブラウザ側の依存 |
+| 📐 PythDRagoras | `distributions/entries/pythdragoras_api.py`・`score_math.py`・`period_comparison.py` と `pythdragoras/core/registration_audit.py` | 汎用数値スコアの閾値走査、標本曲線、来歴ラベルの検証 |
 
-4本の束ねと `dragowing.py` の5本とも Python 3.11 以降で標準ライブラリだけでimportできる。DRAgoWing は 2026-11-17 から `dragowing.py` 1 ファイルなので、minpy では束ねない（vendor・`overlap.py`・兄弟を動的に読むので minpy が拒む）。各ファイルの公開APIは独立しており、1つのプロセスでも併用できる。Polars/NumPyを使う分析本体は元のAPIとして維持する。全機能の置き換えとは扱わない。QueRyuの取得は現在も同期式である。
+どれも Python 3.11 以降で標準ライブラリだけで import できる。複数のファイルを写すものは、同じディレクトリに並べればそのまま読める（互いを最上位の名前で import する）。各ファイルの公開APIは独立しており、1つのプロセスでも併用できる。ライセンスはリポジトリの `LICENSE`（MIT）で、写す側がファイルと一緒に通知を持つ。Polars/NumPyを使う分析本体は元のAPIとして維持する。全機能の置き換えとは扱わない。QueRyuの取得は現在も同期式である。
+
+`tests/test_distributions.py` は表のファイルだけを空のディレクトリへ写し、`python -I -S` で読んで、キャッシュ改ざん拒否・BlueProbe連携・期間比較・近傍・閾値・来歴・HTML生成を実行する。
 
 ## 再利用APIの境界
 
@@ -19,13 +21,13 @@ NPB・野球の列名、勝敗、順位、CS確率、球団順序は分析本体
 - SakAnalytics: `compare_periods(rows, entity=..., period=..., metrics=..., before=..., after=...)` は比較する2期間を明示し、整数差を丸めず保持する。欠けた期間・不明値は理由と `None`、基準0の相対変化も `None`。`discover(rows, identifier=..., features=..., group=None, excluded=(), limit=20)` は完全な数値を持つ行全体の母標準偏差で標準化し、指定群内の最近傍ペアを返す。一定の特徴量は距離から除き、欠測・除外理由を返す。順位や結果による絞り込みは行わない。記述的な距離であり、因果や有意性は判定しない。
 - PythDRagoras: `threshold_curve(scores, outcomes, thresholds)` は任意の有限スコアとBoolean観測を使う。`score >= threshold` を陽性として混同行列・MCC等を計算する。既存 `season_sensitivity` の数値核を抽出し、並べ替え `O(n log n)` の後、単調な閾値を `O(n+t)` で走査する。各行の状態更新は最大1回。全件再集計との同値性をテストする。これは計算量の性質であり、全入力での実時間高速化を保証しない。`counts_metrics`、`shape` と `Provenance` / `classify` / `audit_record` も提供する。標本曲線の欠測区間は補間せず、分母0は不明とする。
 - DRAgoWing: `series_figure(x, y, ...)` と `matrix_figure(x, y, z, ...)` はラベル・順序・欠測を保つPlotly仕様を作る（`dragowing.py` の中、旧 `distributions/entries/plot_specs.py`）。`render_report` は既存の汎用HTMLレポート、`read_jsonl` は記録読込。`dragowing.py` には球団向けの図も同じファイルにある。HTMLのブラウザ描画にはPlotly.js取得が必要で、Python単一ファイルの標準ライブラリ契約と分ける。
-- BlueProbeとQueRyu: 観測・検証済みsnapshot・キャッシュ本文の整合性を提供する。取得の非同期化や未計測の高速化を提供済みとはしない。BlueProbe の HTML 木は標準ライブラリの `html.parser` で、DOM パターン表も `blueprobe.py` 1 ファイルにある。汎用の HTML 観測と snapshot 契約も `blueprobe.py` にまとまっている（`html_source.py` と `snapshot_source.py` はそこへ入った）。NPB の取得元は `npb/` にあり、この bundle の検索パスには入らない。 BlueProbe は 2026-11-23 に束ね（`dist/blueprobe_min.py`）をやめ、DRAgoWing と同じく `blueprobe/blueprobe.py` をそのまま使う形にした。1 ファイルを丸ごと束ね直しており、CLI のヘルプ文の変更でも束ねが変わっていたため。
+- BlueProbeとQueRyu: 観測・検証済みsnapshot・キャッシュ本文の整合性を提供する。取得の非同期化や未計測の高速化を提供済みとはしない。BlueProbe の HTML 木は標準ライブラリの `html.parser` で、DOM パターン表も `blueprobe.py` 1 ファイルにある。汎用の HTML 観測と snapshot 契約も `blueprobe.py` にまとまっている（`html_source.py` と `snapshot_source.py` はそこへ入った）。NPB の取得元は `npb/` にあり、写すファイルには入らない。
 
 例えば野球と無関係な測定装置の年次比較も、列を変えるだけで使える。
 
 ```python
-from sakanalytics_min import compare_periods, discover
-from pythdragoras_min import threshold_curve
+from sakanalytics_api import compare_periods, discover   # distributions/entries/
+from pythdragoras_api import threshold_curve             # distributions/entries/ と registration_audit.py
 from dragowing import series_figure   # dragowing/dragowing.py
 
 rows = [dict(sensor="north", year=2024, energy=10),
@@ -39,26 +41,10 @@ figure = series_figure([p["threshold"] for p in curve],
                        [p["mcc"] for p in curve], y_title="MCC")
 ```
 
-## 登録と再生成
-
-`distributions.json` が配布レジストリ。共通の `license: LICENSE` を1行で宣言し、完全なMIT通知を `dist/LICENSE` に同梱する。すべての配布元の通知が完全に同じバイト列であることを確認する。違う場合は勝手にまとめず停止する。ライセンス文に同期規則やSHAを追記しない。運用規則はこの文書、来歴は生成物のヘッダに置く。
-
-- `source`: Aoiの入口と元モジュールを凍結したcommit。成果物を含める後続commitから参照し、自己参照を避ける。
-- `tool`: 親の `tools/minpy.py` の取得元commitとSHA-256。実行前に照合する。
-- `projects`: 入口・検索パス・出力・提供範囲。QueRyuのcache coreだけは、Aoiの `queryu/` と同じ tree を持つ QueRyu main のコミット（`check_child_heads.py --print-synced myon-bioinformatics/QueRyu` で履歴から導く）を `repository` / `commit` に記録する。この `commit` は手で固定する値で、導出で自動更新はしない。
-- 生成はPython 3.12で固定。同じツール・ソースから全ファイルを再生成し、バイト一致を確認する。元コードが変わった場合はソースのcommitを更新して再生成する。入口だけでなく検索ディレクトリ内の依存核の変更・未追跡ファイルも検出して停止する。
-
-```sh
-python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py --sources /checkouts
-python -S scripts/build_distributions.py --minpy /checkout/parent/tools/minpy.py --sources /checkouts --check
-```
-
-`/checkouts/queryu` は、`queryu/` と同じ tree を持つ QueRyu のコミット（`--print-synced` で導く）の checkout である。親の `tools/minpy.py` は実行時に `git ls-remote` で myon-bioinformatics/myon-bioinformatics の最新 main を解決し、repository id `638801160` を確かめてからその SHA を checkout する。解決した SHA と checkout の SHA-256 はジョブの summary に残す。reusable workflow の uses は動的にできないので、検証済みの40桁SHA `9e3da7ae1846e9604ebc24bb5178f7de094a4e77` のままにする。最新 main の `tools/minpy.py` SHA-256 を `distributions.json` の `tool.sha256` と照合する。不一致は pull request では警告にし、main への push と schedule では失敗にする。pull request 以外のイベントも失敗にする。配布物の再現は `tool.commit` と `tool.sha256` で承認済みコンパイラを取得し、commit と SHA-256 を検証してから `.test-deps/frozen-minpy.py` へ保存して使う。この実行前の検証はどのイベントでも失敗にする。親 main の更新だけでは配布 manifest・承認済みコンパイラ・成果物を書き換えない。`workflow_dispatch` では親 ref と QueRyu ref を上書きできる。`--check` は成果物を書き換えず、実行するコンパイラの SHA-256 を import 前に再検証する。隔離テストはコピーした5本だけを `python -I -S` で読み、キャッシュ改ざん拒否・BlueProbe連携・期間比較・近傍・閾値・来歴・HTML生成を実行する。
-
 ## subtreeとの関係
 
-開発履歴の同期は全体subtree、他プロジェクトへの小さな配布は上記minAPIであり、それぞれ独立した契約である。subtreeの子を丸ごとvendor lockに重複登録しない。minAPIを別の利用者がvendorするときは、その利用者が配布ファイルと通知を固定する。
+開発履歴の同期は全体subtree、他プロジェクトへの小さな配布は上記minAPIであり、それぞれ独立した契約である。subtreeの子を丸ごとvendor lockに重複登録しない。minAPIを別の利用者がvendorするときは、その利用者が写したファイルと通知を固定する。
 
-`child-heads.json` に登録した子は、履歴から導いた同期済みcommitとprefixの完全一致を維持する（shaは書かない）。QueRyuのcache coreを使うmin配布と全体subtree同期は独立した検証である。全体subtreeの初回joinでは、QueRyu main `5ce256d77d64b33d4c71c2cbb84fe201f9637567` を `git subtree add` で Aoi の `queryu/` に取り込み、登録SHA・tree・mirrorの一致を確認した。min配布の QueRyu checkout は、その後 `queryu/` と同じ tree を持つコミット（`--print-synced` で導く）に合わせる。SakAnalyticsとDRAgoWingの公開リポジトリ新規作成も、この登録だけでは実行していない。
+`child-heads.json` に登録した子は、履歴から導いた同期済みcommitとprefixの完全一致を維持する（shaは書かない）。QueRyuの `core/cache_core.py` は全体subtreeで取り込んだものをそのまま使う。全体subtreeの初回joinでは、QueRyu main `5ce256d77d64b33d4c71c2cbb84fe201f9637567` を `git subtree add` で Aoi の `queryu/` に取り込み、登録SHA・tree・mirrorの一致を確認した。SakAnalyticsとDRAgoWingの公開リポジトリ新規作成も、この登録だけでは実行していない。
 
 Aoi → 子の書き込みは親PR #102で比較ref必須になった `gh_ops.py subtree-push` を使う。指定refがない・比較対象を選べない・取得できない・祖先でない場合は止める。検証済みSHAだけを新しいブランチへ空の期待値のlease付きで送り、PRで確認する。既定ブランチへ直接pushしない。joinを含むAoi統合PRはmerge commitで履歴を残す。

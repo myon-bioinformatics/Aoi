@@ -5,10 +5,10 @@
 - url: `python blueprobe.py URL [--cache DIR]` against a local HTTP server (curl); QueRyu cache cases need QUERYU_ROOT.
 """
 
+import importlib.util
 import json
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import threading
@@ -142,6 +142,10 @@ def test_listing_cannot_silently_ignore_pattern(capsys):
 # ──── url ─────────────────────────────────────────────────────────
 
 ROOT = Path(__file__).resolve().parents[1]
+_cli_spec = importlib.util.spec_from_file_location("blueprobe_cli_args", ROOT / "vendor/cli_args.py")
+_cli_args = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_args
+_cli_spec.loader.exec_module(_cli_args)
 
 
 def _cache_core(queryu):
@@ -177,15 +181,13 @@ class UrlStandaloneTest(unittest.TestCase):
             shutil.copy2(ROOT / "blueprobe.py", script)
             url = f"http://127.0.0.1:{server.server_port}/"
             out = Path(tmp) / "result.json"
-            result = subprocess.run([sys.executable, "-I", str(script), url, "--out", str(out)],
-                                    capture_output=True, text=True, timeout=10)
+            result = _cli_args.run_cli(script, url, "--out", str(out), python_options=("-I",), timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr)
-            report = json.loads(result.stdout)
+            report = result.json()
             self.assertEqual(report["url"], url)
             self.assertGreater(report["classification"]["landmarks"].get("main", 0), 0)
             self.assertEqual(json.loads(out.read_text()), report)
-            missing = subprocess.run([sys.executable, "-I", str(script), url + "missing"],
-                                     capture_output=True, text=True, timeout=10)
+            missing = _cli_args.run_cli(script, url + "missing", python_options=("-I",), timeout=10)
             self.assertNotEqual(missing.returncode, 0)
 
     def test_the_single_file_is_the_uv_tool(self):
@@ -202,8 +204,8 @@ class UrlStandaloneTest(unittest.TestCase):
             shutil.copy2(ROOT / "blueprobe.py", script)
             # This test deliberately has no QueRyu component (-I ignores PYTHONPATH). BlueProbe does not
             # look for it; the caller (Aoi's aoi.py) supplies the path.
-            result = subprocess.run([sys.executable, "-I", str(script), "http://127.0.0.1:1/", "--cache", str(Path(tmp) / "cache")],
-                                    capture_output=True, text=True, timeout=10)
+            result = _cli_args.run_cli(script, "http://127.0.0.1:1/", "--cache", str(Path(tmp) / "cache"),
+                                       python_options=("-I",), timeout=10)
             self.assertEqual(result.returncode, 2)
             self.assertIn("cache_core.py", result.stderr)
             self.assertIn("aoi.py", result.stderr)
@@ -216,8 +218,8 @@ class UrlStandaloneTest(unittest.TestCase):
             cache = Path(tmp) / "cache"
             cache.mkdir()
             (cache / "manifest.jsonl").write_text("", encoding="utf-8")
-            result = subprocess.run([sys.executable, "-I", str(Path(tmp) / "blueprobe.py"), "--source", "html_source",
-                                     "--cache", str(cache)], cwd=tmp, capture_output=True, text=True, timeout=10)
+            result = _cli_args.run_cli(Path(tmp) / "blueprobe.py", "--source", "html_source", "--cache", str(cache),
+                                       python_options=("-I",), cwd=tmp, timeout=10)
             self.assertEqual(result.returncode, 2, result.stderr)
             self.assertIn("aoi.py", result.stderr)
 
@@ -234,8 +236,8 @@ class UrlStandaloneTest(unittest.TestCase):
             shutil.copy2(ROOT / "blueprobe.py", root / "blueprobe.py")
             shutil.copy2(_cache_core(queryu), root / "cache_core.py")
             cache, url = root / "cache", f"http://127.0.0.1:{server.server_port}/"
-            result = subprocess.run([sys.executable, "-I", str(root / "blueprobe.py"), url, "--cache", str(cache)],
-                                    capture_output=True, text=True, timeout=10)
+            result = _cli_args.run_cli(root / "blueprobe.py", url, "--cache", str(cache),
+                                       python_options=("-I",), timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr)
             entry = json.loads((cache / "manifest.jsonl").read_text())
             self.assertEqual(entry["url"], url)
@@ -259,8 +261,8 @@ class UrlStandaloneTest(unittest.TestCase):
             shutil.copy2(_cache_core(queryu), root / "cache_core.py")
             cache, url = root / "cache", f"http://127.0.0.1:{server.server_port}/"
             try:
-                result = subprocess.run([sys.executable, '-I', str(root / 'blueprobe.py'), url, '--cache', str(cache)],
-                                        capture_output=True, text=True, timeout=10)
+                result = _cli_args.run_cli(root / 'blueprobe.py', url, '--cache', str(cache),
+                                           python_options=('-I',), timeout=10)
                 self.assertEqual(result.returncode, 0, result.stderr)
             finally:
                 server.shutdown()

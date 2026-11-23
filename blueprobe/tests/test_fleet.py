@@ -14,8 +14,11 @@ fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
 ROOT = fleet.repo_root(__file__)
-PARENT_WORKFLOW_PIN = "98a0e611cc879fde2d047da806de5a2121a65524"
-ACCEPTED = {"vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266"}
+PARENT_WORKFLOW_PIN = "fbf433b296ec047f1c9acdf4d5d12c81ff7f59e8"
+ACCEPTED = {
+    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
+    "vendor/fleet_check.py": "bc57f08a590ee1cb33a8bb37c1bb3b8f28a2f3c9",
+}
 ACTION_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
     "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
@@ -82,3 +85,9 @@ def test_mismatch_exits_under_optimization_without_reporting_success():
 class ScriptsDescribeThemselves(unittest.TestCase):
     def test_every_script_has_a_description_and_declared_arguments(self):
         fleet.check_scripts(fleet.repo_root(__file__))
+
+    def test_root_scripts_import_only_the_standard_library(self):
+        root = fleet.repo_root(__file__)
+        for path in sorted(root.glob("*.py")):
+            if path.name != "conftest.py":
+                fleet.check_imports(root, path.name)

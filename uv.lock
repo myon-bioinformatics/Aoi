@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.11"
 
 [[package]]
@@ -15,9 +15,6 @@ dev = [
 observation-test = [
     { name = "pytest" },
 ]
-stdlib-test = [
-    { name = "pytest" },
-]
 
 [package.metadata]
 
@@ -27,7 +24,6 @@ dev = [
     { name = "selectolax", specifier = ">=1" },
 ]
 observation-test = [{ name = "pytest", specifier = ">=8" }]
-stdlib-test = [{ name = "pytest", specifier = ">=8" }]
 
 [[package]]
 name = "colorama"

@@ -519,3 +519,24 @@ def test_without_a_team_table_team_names_are_unread():
     assert any("中日" in u for u in parsed.unread)
     with __import__("pytest").raises(ValueError):
         ask.set_teams({"": "d"})
+
+
+# ──── registration: an English machine value next to the Japanese display label ──────────────────────────
+
+@pytest.mark.parametrize("item,code,label", [
+    ({"posthoc": True}, "posthoc", "事後構成"),
+    ({"posthoc": False}, "unknown", "不明"),
+    ({}, "unknown", "不明"),
+    ({"preregistered": True}, "preregistered", "事前登録"),
+    ({"preregistration": {"evidence": "plan"}}, "preregistered", "事前登録"),
+    ({"posthoc": True, "preregistered": True}, "posthoc", "事後構成"),
+])
+def test_registration_code_is_english_and_the_label_stays_separate(item, code, label):
+    assert ask.registration_code(item) == code
+    assert ask.registration_status(item) == label
+
+
+def test_rows_carry_the_registration_code_next_to_the_label(results, capsys):
+    main(["P121 の反例はある？", "--results", str(results), "--json"])
+    row = json.loads(capsys.readouterr().out)["rows"][0]
+    assert (row["registration"], row["registration_code"]) == ("不明", "unknown")

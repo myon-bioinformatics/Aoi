@@ -360,7 +360,7 @@ def _parser() -> JsonArgumentParser:
                       " doctor が止めたときは、その代わりに nagoyaction-doctor/1 を1つだけ書く。"
                       " 手順が失敗したときは、その終了コードと stderr の nagoyaction-error/1（error.code=step）。")
     for name, help_text in DELEGATES_HELP.items():  # main() hands these to their module before this parser runs
-        sub.add_parser(name, help=help_text, add_help=False).add_argument("rest", nargs=argparse.REMAINDER)
+        sub.add_parser(name, help=help_text, add_help=False).add_argument("rest", nargs=argparse.REMAINDER, help="そのまま各節へ渡す引数")
     for each in (ap, *sub.choices.values()):
         each.suggest_on_error = True  # 🤔 argparse 3.14+: "maybe you meant" for subcommands; older Pythons ignore it
     return ap
@@ -649,7 +649,7 @@ def _linkcheck_main(argv=None) -> int:
 
 # ====================================================================================================
 # 🏠 hub: ローカル Gitea / Forgejo（nagoyaction hub …）（旧 local_forge.py）
-# Local Gitea/Forgejo control, extracted from OneLinearNumerousMemo.
+# Local Gitea/Forgejo control, extracted from OneLaunchNumerousModules.
 # ====================================================================================================
 
 PY = Path(__file__).resolve()
@@ -1186,22 +1186,22 @@ def build_parser(prog: str = "nagoyaction hub"):
     ap = argparse.ArgumentParser(prog=prog)
     sp = ap.add_subparsers(dest="cmd", required=True)
     s = sp.add_parser("hub", prog=prog, help="🏠 local GitHub-like forge"); h = s.add_subparsers(dest="sub", required=True)  # main() adds "hub"; keep it out of usage
-    x = h.add_parser("install", help="📦 🌍 download or --from carried binary"); x.add_argument("--version", default="latest"); x.add_argument("--from", dest="src"); x.add_argument("--sha256", dest="sha"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea")
-    x = h.add_parser("bundle", help="🎒 🌍 binary + .sha256 + nagoyaction.py into DIR"); x.add_argument("dir"); x.add_argument("--version", default="latest"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea")
-    x = h.add_parser("init", help="🏗️ config, db, admin, token"); x.add_argument("--port", type=int, default=3000); x.add_argument("--user", default="admin"); x.add_argument("--password")
+    x = h.add_parser("install", help="📦 🌍 download or --from carried binary"); x.add_argument("--version", default="latest", help="🏷️ release number such as 1.27.3 (default: latest)"); x.add_argument("--from", dest="src", help="📁 carried binary to place instead of downloading"); x.add_argument("--sha256", dest="sha", help="🔐 expected sha256 of --from (default: its .sha256 sidecar)"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea", help="🍵 forge to fetch")
+    x = h.add_parser("bundle", help="🎒 🌍 binary + .sha256 + nagoyaction.py into DIR"); x.add_argument("dir", help="📁 directory to fill and carry"); x.add_argument("--version", default="latest", help="🏷️ release number such as 1.27.3 (default: latest)"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea", help="🍵 forge to fetch")
+    x = h.add_parser("init", help="🏗️ config, db, admin, token"); x.add_argument("--port", type=int, default=3000, help="🔌 HTTP port on 127.0.0.1"); x.add_argument("--user", default="admin", help="👤 admin user name"); x.add_argument("--password", help="🔑 admin password (default: a random one)")
     for name, hp in (("up", "🟢 start"), ("down", "🛑 stop"), ("status", "📊 status"), ("doctor", "🩺 checks"), ("sync", "🔄 push to all remotes"), ("labels", "🏷️ GitHub default labels")):
         h.add_parser(name, help=hp)
-    x = h.add_parser("logs", help="📜 tail log"); x.add_argument("-n", type=int, default=40)
+    x = h.add_parser("logs", help="📜 tail log"); x.add_argument("-n", type=int, default=40, help="🔢 lines to show")
     x = h.add_parser("dial", help="🎛️ show / set: offline · local · mirror · github (0-3 also work)"); x.add_argument("level", nargs="?", choices=[*DIAL_NAMES, *map(str, DIALS)], metavar="level", help="offline | local | mirror | github (0-3 also work); omit to show")
     x = h.add_parser("repo", help="📚 register working trees"); r = x.add_subparsers(dest="repo_cmd", required=True)
-    y = r.add_parser("add"); y.add_argument("path", nargs="?", default="."); y.add_argument("--github", help="owner/name"); y.add_argument("--public", action="store_true")
-    r.add_parser("ls"); y = r.add_parser("rm"); y.add_argument("path", nargs="?", default=".")
-    x = h.add_parser("api", help="🌐 raw REST"); x.add_argument("method", choices=["GET", "POST", "PATCH", "PUT", "DELETE"]); x.add_argument("path"); x.add_argument("--data", help="JSON body")
+    y = r.add_parser("add", help="➕ register a working tree"); y.add_argument("path", nargs="?", default=".", help="📁 working tree (default: .)"); y.add_argument("--github", help="owner/name"); y.add_argument("--public", action="store_true", help="🌐 public forge repo (default: private)")
+    r.add_parser("ls", help="📋 registered trees"); y = r.add_parser("rm", help="➖ unregister a working tree"); y.add_argument("path", nargs="?", default=".", help="📁 working tree (default: .)")
+    x = h.add_parser("api", help="🌐 raw REST"); x.add_argument("method", choices=["GET", "POST", "PATCH", "PUT", "DELETE"], help="🔤 HTTP method"); x.add_argument("path", help="🧭 path under /api/v1, e.g. /user/repos"); x.add_argument("--data", help="JSON body")
     x = h.add_parser("issue", help="🐛 issues"); i = x.add_subparsers(dest="issue_cmd", required=True)
-    y = i.add_parser("ls"); y.add_argument("--state", default="open", choices=["open", "closed", "all"])
-    y = i.add_parser("new"); y.add_argument("title"); y.add_argument("--body", default=""); y.add_argument("--label", action="append", default=[])
+    y = i.add_parser("ls", help="📋 list"); y.add_argument("--state", default="open", choices=["open", "closed", "all"], help="🔍 which issues")
+    y = i.add_parser("new", help="➕ open"); y.add_argument("title", help="🏷️ title"); y.add_argument("--body", default="", help="📝 body"); y.add_argument("--label", action="append", default=[], help="🏷️ label name, repeatable (unknown names are skipped)")
     x = h.add_parser("pr", help="🔀 pull requests"); p = x.add_subparsers(dest="pr_cmd", required=True)
-    p.add_parser("ls"); y = p.add_parser("new"); y.add_argument("title"); y.add_argument("--head"); y.add_argument("--base", default="main"); y.add_argument("--body", default="")
+    p.add_parser("ls", help="📋 open ones"); y = p.add_parser("new", help="➕ open from a branch (pushed to `local` first)"); y.add_argument("title", help="🏷️ title"); y.add_argument("--head", help="🌿 source branch (default: current)"); y.add_argument("--base", default="main", help="🎯 target branch"); y.add_argument("--body", default="", help="📝 body")
     _suggest(ap)
     return ap
 
@@ -1366,6 +1366,14 @@ class RoundReport:
     passed: bool
     failed_check: str | None
     lines: list[str]
+    skipped: int = 0
+    not_run: int = 0
+    pytest_skipped: int = 0
+    batch_error: str = ""
+
+    @property
+    def confirmed_pass(self) -> bool:
+        return self.passed and bool(self.shard) and not (self.skipped or self.not_run)
 
 
 @dataclass
@@ -1376,7 +1384,7 @@ class PlanReport:
 
     @property
     def passed_rounds(self) -> int:
-        return sum(1 for r in self.rounds if r.passed)
+        return sum(1 for r in self.rounds if r.confirmed_pass)
 
 
 def substitute(name: str, value, draw):
@@ -2118,7 +2126,6 @@ def _read_input_log(path: Path) -> list[dict]:
 
 
 AOI_PYTEST_PREFIX = ["uv", "run", "--locked", "--python", "3.11", "pytest", "-c", "pyproject.toml"]
-_FAILED_NODE = re.compile(r"^(?:FAILED|ERROR)\s+(\S+)", re.M)
 
 
 def _git(runner, argv: list[str], *, cwd: Path, timeout: int, text: bool = True):
@@ -2184,77 +2191,119 @@ def child_pytest_env(cwd: Path) -> dict:
     return env
 
 
-def failed_pytest_nodes(text: str) -> list[str]:
-    return _FAILED_NODE.findall(text)
+class PytestBatch(dict[str, Outcome]):
+    """Keep session errors separate from observed node outcomes."""
+    batch_error: str = ""
+
+    @classmethod
+    def unobserved(cls, checks, error):
+        batch = cls((check.id, Outcome("not_run", "not run", [])) for check in checks)
+        batch.batch_error = error
+        return batch
 
 
-def _batch_outcomes(checks: list[Check], returncode: int, detail: str, inputs: list[dict],
-                    keep_going: bool) -> dict[str, Outcome]:
-    nodeids = [check.target for check in checks]
-    by_node: dict[str, Outcome] = {}
-    def failed_detail(node: str, body: str) -> str:
-        text = f"failed {node}"
-        if body:
-            return text + "\n" + body
-        return text
+def _batch_outcomes(checks, returncode, detail, inputs, receipt, *, timed_out=False):
+    by_node = {}
+    receipt_error = ""
+    try:
+        for lineno, line in enumerate(receipt.read_text(encoding="utf-8").splitlines(), 1):
+            node, phase, status, reason = json.loads(line)
+            if not isinstance(node, str) or not isinstance(reason, str):
+                raise ValueError("invalid pytest evidence")
+            phases = by_node.setdefault(node, {})
+            if phase == "subtest" and status in ("failed", "skipped"):
+                # Multiple subtests share one parent node; only the strongest
+                # non-pass outcome is relevant to the parent receipt.
+                if phases.get(phase, ("", ""))[0] != "failed":
+                    phases[phase] = (status, reason)
+                continue
+            if phase in phases:
+                raise ValueError(f"duplicate pytest phase at receipt line {lineno}")
+            if phase not in ("setup", "call", "teardown") or status not in ("passed", "failed", "skipped"):
+                raise ValueError(f"invalid pytest phase at receipt line {lineno}")
+            phases[phase] = (status, reason)
+    except FileNotFoundError:
+        receipt_error = "receipt not created"
+    except OSError:
+        receipt_error = "receipt unreadable"
+    except (TypeError, ValueError) as exc:
+        receipt_error = f"malformed receipt ({exc})"
+        by_node.clear()
 
-    if returncode == 0:
-        for index, check in enumerate(checks):
-            by_node[check.id] = Outcome("pass", "", inputs if index == 0 else [])
-        return by_node
-    failed = [node for node in failed_pytest_nodes(detail) if node in nodeids]
-    if not failed:
-        for index, check in enumerate(checks):
-            by_node[check.id] = Outcome(
-                "fail", failed_detail(check.target, detail) if index == 0 else "failed", inputs if index == 0 else [],
-            )
-        return by_node
-    if keep_going:
-        attached = False
-        failed_set = set(failed)
-        for check in checks:
-            if check.target in failed_set:
-                by_node[check.id] = Outcome(
-                    "fail", failed_detail(check.target, detail) if not attached else check.target, inputs if not attached else [],
-                )
-                attached = True
-            else:
-                by_node[check.id] = Outcome("pass", "", [])
-        return by_node
-    first = failed[0]
-    seen = False
+    results = PytestBatch()
     for check in checks:
-        if check.target == first:
-            by_node[check.id] = Outcome("fail", failed_detail(first, detail), inputs)
-            seen = True
-        elif seen:
-            by_node[check.id] = Outcome("fail", "not run", [])
+        phases = by_node.get(check.target, {})
+        setup, call, teardown = (phases.get(key, ("", ""))[0] for key in ("setup", "call", "teardown"))
+        subtest, subreason = phases.get("subtest", ("", ""))
+        if "failed" in (setup, call, teardown, subtest):
+            outcome = Outcome("fail", f"failed {check.target}", [])
+        elif (setup, call, teardown) == ("passed", "passed", "passed"):
+            # Pytest treats non-strict XPASS as successful, strict XPASS as failed.
+            outcome = (Outcome("skip", f"pytest subtest skipped {check.target}" +
+                               (f": {subreason}" if subreason else ""), [])
+                       if subtest == "skipped" else Outcome("pass", "", []))
+        elif teardown in ("passed", "skipped") and (
+            (setup == "skipped" and not call) or
+            (setup == "passed" and call in ("passed", "skipped") and "skipped" in (call, teardown))
+        ):
+            reason = next(phases[key][1] for key in ("setup", "call", "teardown") if phases.get(key, ("", ""))[0] == "skipped")
+            outcome = Outcome("skip", f"pytest skipped {check.target}" + (f": {reason}" if reason else ""), [])
         else:
-            by_node[check.id] = Outcome("pass", "", [])
-    return by_node
+            outcome = Outcome("not_run", "not run", [])
+        results[check.id] = outcome
+    failed = next((key for key, out in results.items() if out.status == "fail"), None)
+    missing = next((key for key, out in results.items() if out.status == "not_run"), None)
+    if timed_out and checks:
+        interrupted = next((check.id for check in checks
+                            if results[check.id].status == "not_run" and check.target in by_node), None)
+        if interrupted:
+            failed = interrupted
+            results[failed] = Outcome("fail", "pytest batch timed out", [])
+        else:
+            results.batch_error = "pytest batch timed out"
+    if checks and not failed and not results.batch_error:
+        if missing:
+            results.batch_error = "pytest batch failed or has missing per-test evidence"
+            if receipt_error:
+                results.batch_error += f": {receipt_error}"
+        elif returncode:
+            results.batch_error = f"pytest session exited {returncode}"
+    if results.batch_error and detail:
+        results.batch_error += "\n" + detail
+    if failed:
+        results[failed].detail += "\n" + detail if detail else ""
+        results[failed].inputs.extend(inputs)
+    elif checks:
+        results[checks[0].id].inputs.extend(inputs)
+    return results
 
 
 def run_pytest_batch(checks: list[Check], round_seed: int, *, cwd: Path, prefix: list[str],
                      keep_going: bool, runner=subprocess.run) -> dict[str, Outcome]:
-    """同じシャードの pytest を 1 プロセスで実行し、ノードごとに round seed から差し替える。"""
+    """Run one shard in a single pytest process and observe each node."""
     handle = tempfile.NamedTemporaryFile(prefix="localci-inputs-", suffix=".log", delete=False)
     log = Path(handle.name)
     handle.close()
     cmd = [*prefix, "-q", "--tb=line", "-p", "nagoyaction", "--localci-round-seed", str(round_seed)]
     if not keep_going:
         cmd.append("-x")
-    cmd.extend(check.target for check in checks)
     try:
-        out = runner(cmd, cwd=cwd, capture_output=True, text=True, check=False, timeout=900, env=child_pytest_env(cwd))
+        with tempfile.TemporaryDirectory(prefix="localci-pytest-") as temp:
+            receipt = Path(temp) / "outcomes.jsonl"
+            # Pass the destination only to this pytest invocation; a nested
+            # pytest must never write to the enclosing session's receipt.
+            cmd.extend(["--localci-receipt", str(receipt), *(check.target for check in checks)])
+            env = child_pytest_env(cwd)
+            try:
+                out = runner(cmd, cwd=cwd, capture_output=True, text=True, check=False, timeout=900, env=env)
+            except subprocess.TimeoutExpired as exc:
+                return _batch_outcomes(checks, 1, str(exc), _read_input_log(log), receipt, timed_out=True)
+            detail = "\n".join(x for x in (out.stdout, out.stderr) if x).strip()
+            return _batch_outcomes(checks, out.returncode, detail, _read_input_log(log), receipt)
     except (OSError, subprocess.SubprocessError) as exc:
-        inputs = _read_input_log(log)
+        return PytestBatch.unobserved(checks, f"pytest launch failed: {exc}")
+    finally:
         log.unlink(missing_ok=True)
-        return {check.id: Outcome("fail", str(exc) if index == 0 else "not run", inputs if index == 0 else [])
-                for index, check in enumerate(checks)}
-    inputs = _read_input_log(log)
-    log.unlink(missing_ok=True)
-    detail = "\n".join(part for part in ((out.stdout or ""), (out.stderr or "")) if part).strip()
-    return _batch_outcomes(checks, out.returncode, detail, inputs, keep_going)
 
 
 def collect_aoi_tests(aoi: Path, runner=subprocess.run) -> list[str]:
@@ -2508,9 +2557,16 @@ def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going
         if not ids:
             emit("  (empty shard)")
         failed_check = None
+        batch_error = ""
         lines: list[str] = []
+        skipped = pytest_skipped = 0
+        not_run = len(ids)
 
         def note(check: Check, outcome: Outcome) -> str | None:
+            nonlocal skipped, not_run, pytest_skipped
+            skipped += outcome.status == "skip"
+            pytest_skipped += check.kind == "pytest" and outcome.status == "skip"
+            not_run -= outcome.status != "not_run"
             for item in outcome.inputs:
                 text = f"    inputs: {item['name']} {item['fixed']} -> {item['value']}"
                 lines.append(text)
@@ -2519,14 +2575,14 @@ def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going
             line = f"    [{mark}] {outcome.detail.splitlines()[0] if outcome.detail else check.kind}"
             lines.append(line)
             emit(line)
-            if outcome.ok or outcome.status == "skip":  # skip: 検査できなかった。失敗ではない
+            if outcome.ok or outcome.status in ("skip", "not_run"):  # skip: 検査できなかった。失敗ではない
                 return None
             if outcome.detail and "\n" in outcome.detail:
                 emit(outcome.detail)
             return check.id
 
         for group in iter_work(shard, execute_pytest is not None):
-            if failed_check is not None and not keep_going:
+            if (failed_check is not None or batch_error) and not keep_going:
                 break
             if execute_pytest is not None and group and group[0].kind == "pytest":
                 for check in group:
@@ -2534,15 +2590,23 @@ def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going
                 try:
                     outcomes = execute_pytest(group, rseed, keep_going)
                 except (LocalCIError, OSError, urllib.error.URLError, subprocess.SubprocessError) as exc:
-                    outcomes = {check.id: Outcome("fail", str(exc) if index == 0 else "not run", [])
-                                for index, check in enumerate(group)}
+                    outcomes = PytestBatch.unobserved(group, f"pytest batch failed: {exc}")
                 for check in group:
-                    outcome = outcomes.get(check.id) or Outcome("fail", "not run", [])
+                    outcome = outcomes.get(check.id) or Outcome("not_run", "not run", [])
                     found = note(check, outcome)
                     if found is not None and failed_check is None:
                         failed_check = found
-                    if failed_check is not None and not keep_going:
-                        break
+                error = getattr(outcomes, "batch_error", "")
+                if not error and any(check.id not in outcomes for check in group):
+                    error = "pytest batch has missing per-test evidence"
+                if error:
+                    batch_error = error
+                    line = f"    [fail] {error.splitlines()[0]}"
+                    lines.append(line)
+                    emit(line)
+                    if "\n" in error:
+                        emit(error)
+                # -x stops pytest execution; account for every observed result in this batch.
                 continue
             check = group[0]
             emit(f"  > {check.id}")
@@ -2558,18 +2622,18 @@ def run_plan(*, shards: list[list[Check]], master_seed: int, execute, keep_going
             found = note(check, outcome)
             if found is not None and failed_check is None:
                 failed_check = found
-        passed = failed_check is None
-        reports.append(RoundReport(number, rseed, ids, passed, failed_check, lines))
+        passed = failed_check is None and not batch_error
+        reports.append(RoundReport(number, rseed, ids, passed, failed_check, lines, skipped, not_run, pytest_skipped, batch_error))
         if passed:
-            skipped = sum(line.startswith("    [skip]") for line in lines)
-            emit(f"[pass] round {number}/{total}" + (f"（{skipped}/{len(ids)} 件は skip）" if skipped else ""))
+            label = "empty" if not ids else "skip" if skipped == len(ids) else "partial" if skipped or not_run else "pass"
+            emit(f"[{label}] round {number}/{total}" + (f"（{skipped}/{len(ids)} 件は skip）" if skipped else ""))
         else:
             emit(f"[fail] round {number}/{total} seed={rseed}")
             emit("shard:")
             for ident in ids:
                 emit(f"  - {ident}")
         completed = len(reports)
-        passed_n = sum(1 for r in reports if r.passed)
+        passed_n = sum(1 for r in reports if r.confirmed_pass)
         emit(confidence_line(passed_n, total, completed, stopped=not passed and not keep_going))
         if not passed and not keep_going:
             stopped = True
@@ -2659,8 +2723,14 @@ def run_local(root: Path, *, repeat: int, seed: int | None, keep_going: bool, st
     emit("=== summary ===")
     emit(f"seed: {master}")
     emit(confidence_line(passed, repeat, len(report.rounds), report.stopped))
-    if skipped := sum(line.startswith("    [skip]") for r in report.rounds for line in r.lines):
-        nothing = skipped == sum(len(r.shard) for r in report.rounds)
+    pytest_skipped = sum(r.pytest_skipped for r in report.rounds)
+    if pytest_skipped:
+        emit(f"pytest: {pytest_skipped} 件は [skip]（成功数に含めない）")
+    not_run = sum(r.not_run for r in report.rounds) + sum(len(shard) for shard in shards[len(report.rounds):])
+    if not_run:
+        emit(f"未実行 [not_run]: {not_run}/{len(checks)} 件")
+    if skipped := sum(r.skipped for r in report.rounds) - pytest_skipped:
+        nothing = skipped == len(checks)
         emit(f"⚠️ best effort: {skipped} 件は検査できず [skip]" + ("。何も確かめていない" if nothing else "") + "。失敗にするなら --strict")
     if report.stopped or any(not r.passed for r in report.rounds):
         return 1
@@ -2707,18 +2777,18 @@ def _localci_parser(prog: str | None = None) -> argparse.ArgumentParser:
     run.add_argument("--seed", type=int, default=None, help="シャッフルと入力の差し替えを再現する")
     run.add_argument("--keep-going", action="store_true", help="失敗したあとも残りのラウンドを実行する")
     run.add_argument("--strict", action="store_true", help="古い SHA ピンを失敗にする。setup 以外の actions/* の vN は許す")
-    run.add_argument("--root", type=Path, default=None)
+    run.add_argument("--root", type=Path, default=None, help="検査するリポジトリ。既定は今いるディレクトリ")
     run.add_argument("--pytest", dest="pytest_paths", action="append", default=None,
                      help="このリポジトリ内の pytest パス。指定すると Aoi は checkout しない")
     run.add_argument("--self-tests", action="store_true",
                      help="Aoi を checkout せず tests/test_localci.py だけ実行する")
-    run.add_argument("--skip-pytest", action="store_true")
+    run.add_argument("--skip-pytest", action="store_true", help="pytest を実行しない（Aoi も checkout しない）")
     run.add_argument("--aoi-ref", default="", help="Aoi の ref。空なら AOI_REF_INPUT、それも空なら main")
-    run.add_argument("--env-file", type=Path, default=None)
+    run.add_argument("--env-file", type=Path, default=None, help="解決した SHA と actionlint の記録の書き先。既定は <root>/.localci/refs.env")
     resolve = sub.add_parser("resolve", help="参照先リポジトリの main SHA を解決する")
-    resolve.add_argument("--root", type=Path, default=None)
-    resolve.add_argument("--env-file", type=Path, default=None)
-    resolve.add_argument("--github-output", action="store_true")
+    resolve.add_argument("--root", type=Path, default=None, help="参照を読むリポジトリ。既定は今いるディレクトリ")
+    resolve.add_argument("--env-file", type=Path, default=None, help="解決した SHA の書き先。既定は <root>/.localci/refs.env")
+    resolve.add_argument("--github-output", action="store_true", help="$GITHUB_OUTPUT にも <key>_sha=… を書く（Aoi は sha=… も）")
     resolve.add_argument("--aoi-ref", default="", help="Aoi の ref。空なら AOI_REF_INPUT、それも空なら main")
     return parser
 
@@ -2775,11 +2845,14 @@ def pytest_addoption(parser):
     parser.addoption("--localci-round", type=int, default=None)
     parser.addoption("--localci-seed", default=None)
     parser.addoption("--localci-round-seed", default=None)
+    parser.addoption("--localci-receipt", default=None, help=argparse.SUPPRESS)
     parser.addoption("--localci-activate", action="store_true")
 
 
 def pytest_configure(config):
     global _active_rng
+    if path := config.getoption("localci_receipt"):
+        config.pluginmanager.register(_PytestReceiptWriter(path), name="localci-receipt-writer")
     raw = config.getoption("localci_seed")
     if raw is None or raw == "":
         return
@@ -2818,6 +2891,31 @@ def pytest_collection_modifyitems(config, items):
     items[:] = selected
     if deselected:
         config.hook.pytest_deselected(items=deselected)
+
+
+class _PytestReceiptWriter:
+    def __init__(self, path):
+        self.path = path
+        self.pid = os.getpid()
+
+    def pytest_runtest_logreport(self, report):
+        if os.getpid() != self.pid:
+            return
+        # Native and legacy pytest subtest reports have their own type and
+        # context, but reuse the parent's nodeid and normal call phase.
+        subtest = hasattr(report, "context") and any(
+            cls.__name__.lower() == "subtestreport" for cls in type(report).__mro__
+        )
+        if subtest and report.passed:
+            return
+        reason = ""
+        if report.skipped:
+            if xfail := getattr(report, "wasxfail", None):
+                reason = f"xfail: {xfail}"
+            elif isinstance(report.longrepr, tuple):
+                reason = str(report.longrepr[-1])
+        with open(self.path, "a", encoding="utf-8") as receipt:
+            receipt.write(json.dumps([report.nodeid, "subtest" if subtest else report.when, report.outcome, reason[:240]]) + "\n")
 
 
 def pytest_runtest_teardown(item, nextitem):
@@ -2994,10 +3092,10 @@ def decide(evidence, checks):
 
 def publication_gate_main(argv=None):
     parser = argparse.ArgumentParser(prog="nagoyaction publication-gate", description="Offline publication gate and same-execution evidence recorder (stdlib only).")
-    parser.add_argument("command", choices=["record"])
-    parser.add_argument("--audit", type=Path, required=True)
-    parser.add_argument("--stage", required=True)
-    parser.add_argument("--evidence", nargs="+", required=True)
+    parser.add_argument("command", choices=["record"], help="record: run the child command after -- and seal its stage receipt")
+    parser.add_argument("--audit", type=Path, required=True, help="audit directory holding execution-identity.json")
+    parser.add_argument("--stage", required=True, help="stage name; its receipt cannot be overwritten")
+    parser.add_argument("--evidence", nargs="+", required=True, help="files under --audit that this stage produces")
     args, command = parser.parse_known_args(argv)
     if command[:1] == ["--"]:
         command = command[1:]
@@ -3063,10 +3161,10 @@ def observe(ghi, harness, research, env):
 
 def ghi_execution_main(argv=None):
     parser = argparse.ArgumentParser(prog="nagoyaction ghi-execution", description="Read-only GHI adapter: bind this Actions attempt and both actual checkouts.")
-    parser.add_argument("--ghi", type=Path, required=True)
-    parser.add_argument("--harness", type=Path, default=Path.cwd())
-    parser.add_argument("--research", type=Path, required=True)
-    parser.add_argument("--audit", type=Path, required=True)
+    parser.add_argument("--ghi", type=Path, required=True, help="checkout holding the pinned gh_identity.py")
+    parser.add_argument("--harness", type=Path, default=Path.cwd(), help="harness checkout (default: current directory)")
+    parser.add_argument("--research", type=Path, required=True, help="research checkout")
+    parser.add_argument("--audit", type=Path, required=True, help="new audit directory to create")
     args = parser.parse_args(argv)
     try:
         if args.audit.exists():

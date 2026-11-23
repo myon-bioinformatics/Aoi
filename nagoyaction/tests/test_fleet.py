@@ -16,7 +16,7 @@ _spec.loader.exec_module(fleet)
 
 AOI = "myon-bioinformatics/Aoi"
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
-ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0"}
+ACCEPTED = {"vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266"}
 TOOL, ENV_VAR = "nagoyaction.py", "NAGOYACTION_PYTHON"
 CASES = [
     {"id": "help", "args": ["--help"], "rc": 0},
@@ -62,7 +62,7 @@ def test_every_action_is_pinned_to_its_reviewed_commit():
         "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2",
         "actions/upload-pages-artifact": "fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0",
         "actions/deploy-pages": "368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1",
-        "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
+        "astral-sh/setup-uv": "1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0",
     }
     assert {action for action, _, version in fleet.check_actions(ROOT, pins=pins) if version} == set(pins)
 
@@ -108,3 +108,11 @@ class OptimizedBenchmarkTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0, result.stdout)
                 self.assertIn("link report mismatch", result.stderr)
                 self.assertEqual(result.stdout, "")
+
+
+# 🧰 Scripts: 📝 each one describes itself and ⌨️ one that reads sys.argv declares its arguments (argparse /
+# cli_args). Read with ast, never run; the portfolio's script catalog reads the same facts.
+
+class ScriptsDescribeThemselves(unittest.TestCase):
+    def test_every_script_has_a_description_and_declared_arguments(self):
+        fleet.check_scripts(fleet.repo_root(__file__))

@@ -5,6 +5,7 @@ import importlib.util, json, subprocess, sys, tempfile, unittest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "annotate_c001_replay.py"
+sys.path.insert(0, str(SCRIPT.parent))  # the script imports its sibling c001_publication_policy, as test_c001_v2_results does
 spec = importlib.util.spec_from_file_location("c001_annotations", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)

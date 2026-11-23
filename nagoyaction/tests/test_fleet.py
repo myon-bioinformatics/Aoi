@@ -15,8 +15,12 @@ fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
 AOI = "myon-bioinformatics/Aoi"
-PARENT_WORKFLOW_PIN = "98a0e611cc879fde2d047da806de5a2121a65524"
-ACCEPTED = {"vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266"}
+PARENT_WORKFLOW_PIN = "fbf433b296ec047f1c9acdf4d5d12c81ff7f59e8"
+ACCEPTED = {
+    "vendor/fleet_check.py": "bc57f08a590ee1cb33a8bb37c1bb3b8f28a2f3c9",
+    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
+    "vendor/cli_args-LICENSE": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
+}
 TOOL, ENV_VAR = "nagoyaction.py", "NAGOYACTION_PYTHON"
 CASES = [
     {"id": "help", "args": ["--help"], "rc": 0},
@@ -36,6 +40,8 @@ def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
         "vendor/aoi-LICENSE": (AOI, "LICENSE"),
         "vendor/py_launch.cjs": (AOI, "vendor/py_launch.cjs"),
         "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
+        "vendor/cli_args.py": ("myon-bioinformatics/cli_args", "cli_args.py"),
+        "vendor/cli_args-LICENSE": ("myon-bioinformatics/cli_args", "LICENSE"),
     }
     rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources=sources)
     assert set(rows) == set(sources)  # no row from any other repository either
@@ -114,3 +120,9 @@ class OptimizedBenchmarkTests(unittest.TestCase):
 class ScriptsDescribeThemselves(unittest.TestCase):
     def test_every_script_has_a_description_and_declared_arguments(self):
         fleet.check_scripts(fleet.repo_root(__file__))
+
+    def test_root_scripts_import_only_the_standard_library(self):
+        root = fleet.repo_root(__file__)
+        for path in sorted(root.glob("*.py")):
+            if path.name != "conftest.py":
+                fleet.check_imports(root, path.name)

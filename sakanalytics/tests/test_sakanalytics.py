@@ -6,6 +6,7 @@
 - standalone: 1 ファイルだけを一時ディレクトリに写し、python -I で CLI（describe / compare / boundary）を動かす
 - uv tool: ルートの pyproject.toml で、この 1 ファイルがそのまま uv tool になる（`uv tool install .`、ビルダーの写しは要らない）
 """
+import importlib.util
 import json
 import math
 import shutil
@@ -20,6 +21,10 @@ import pytest
 import sakanalytics as ep
 
 ROOT = Path(__file__).resolve().parents[1]
+_cli_spec = importlib.util.spec_from_file_location("sakanalytics_cli_args", ROOT / "vendor/cli_args.py")
+_cli_args = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_args
+_cli_spec.loader.exec_module(_cli_args)
 
 
 # ==== epsilon（旧 test_epsilon.py）
@@ -92,12 +97,12 @@ class StandaloneExamples(unittest.TestCase):
         self.script = target / "sakanalytics.py"
 
     def run_cli(self, *args):
-        return subprocess.run([sys.executable, "-I", str(self.script), *args], cwd=self.temp.name, text=True, capture_output=True)
+        return _cli_args.run_cli(self.script, *args, python_options=("-I",), cwd=self.temp.name)
 
     def call(self, *args):
         result = self.run_cli(*args)
         self.assertEqual(result.returncode, 0, result.stderr)
-        return json.loads(result.stdout)
+        return result.json()
 
     def test_examples(self):
 

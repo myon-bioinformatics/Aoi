@@ -5,7 +5,6 @@ on:
   push:
     branches: [main]
     paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'tests/check_heatmap_png.py', '.github/workflows/heatmap-pages.yml']
-  workflow_dispatch:
 
 permissions:
   contents: read

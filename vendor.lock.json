@@ -108,6 +108,24 @@
       "destination": "vendor/fleet_check.py",
       "blob_sha": "e464c95809c288029d6b3a8562cf65214205de33",
       "sha256": "2906b1583593567816abd91d24367bd6db14cef61c35e5abe17bd46cc64ad140"
+    },
+    {
+      "repository": "myon-bioinformatics/cli_args",
+      "ref": "e5d4bf4f39d6fc3d5f7890a7c8e9cffb723c1ece",
+      "commit": "e5d4bf4f39d6fc3d5f7890a7c8e9cffb723c1ece",
+      "source": "cli_args.py",
+      "destination": "vendor/cli_args.py",
+      "blob_sha": "b6610635a13e778518f53118c14e8743b31c0b5b",
+      "sha256": "8a45d1c21792f22a1cd5e1bc9ed6387444787d193a217979a1bc5f90e100247b"
+    },
+    {
+      "repository": "myon-bioinformatics/cli_args",
+      "ref": "e5d4bf4f39d6fc3d5f7890a7c8e9cffb723c1ece",
+      "commit": "e5d4bf4f39d6fc3d5f7890a7c8e9cffb723c1ece",
+      "source": "LICENSE",
+      "destination": "vendor/cli_args-LICENSE",
+      "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
+      "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
     }
   ]
 }

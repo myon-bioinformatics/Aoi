@@ -3,6 +3,7 @@
 旧 test_blueprobe_parent_workflow_pins.py と旧 test_benchmark_optimization_guard.py をここに集めた。
 共通の処理は親の fleet_check.py が持ち、ここには BlueProbe 固有の期待値（pin・メッセージ）だけを置く。
 """
+import unittest
 import importlib.util, re
 from pathlib import Path
 
@@ -14,12 +15,14 @@ _spec.loader.exec_module(fleet)
 
 ROOT = fleet.repo_root(__file__)
 PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
-ACCEPTED = {"vendor/fleet_check.py": "81f6aea6231d4490e581443fdeb43a09e6018ff0"}
+ACCEPTED = {"vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266"}
 ACTION_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
     "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
     "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
-    "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2"
+    "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2",
+    "actions/upload-pages-artifact": "fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0",
+    "actions/deploy-pages": "368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1",
 }
 
 
@@ -73,3 +76,11 @@ def test_mismatch_exits_under_optimization_without_reporting_success():
     assert result.returncode != 0, result.stdout
     assert "traversal mismatch" in result.stderr
     assert result.stdout == ""
+
+
+# 🧰 Scripts: 📝 each one describes itself and ⌨️ one that reads sys.argv declares its arguments (argparse /
+# cli_args). Read with ast, never run; the portfolio's script catalog reads the same facts.
+
+class ScriptsDescribeThemselves(unittest.TestCase):
+    def test_every_script_has_a_description_and_declared_arguments(self):
+        fleet.check_scripts(fleet.repo_root(__file__))

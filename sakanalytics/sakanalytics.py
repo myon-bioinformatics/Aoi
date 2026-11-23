@@ -90,26 +90,30 @@ def parse_numbers(chunks):
 
 
 def read_csv_column(path, column):
-    import csv
     with open(path, encoding="utf-8-sig", newline="") as stream:
-        rows = csv.DictReader(stream)
-        if not rows.fieldnames or column not in rows.fieldnames:
-            raise ValueError("CSV column not found: " + repr(column))
-        if len(set(rows.fieldnames)) != len(rows.fieldnames):
-            raise ValueError("duplicate CSV column names")
-        values = []
-        for line, row in enumerate(rows, 2):
-            cell = row.get(column)
-            if cell is None or not cell.strip():
-                raise ValueError("missing value in CSV row " + str(line))
-            try:
-                number = float(cell.strip())
-            except ValueError:
-                raise ValueError("invalid number in CSV row " + str(line) + ": " + repr(cell)) from None
-            if not math.isfinite(number):
-                raise ValueError("non-finite number in CSV row " + str(line))
-            values.append(number)
-        return values
+        return _csv_values(stream, column)
+
+
+def _csv_values(stream, column):
+    import csv
+    rows = csv.DictReader(stream)
+    if not rows.fieldnames or column not in rows.fieldnames:
+        raise ValueError("CSV column not found: " + repr(column))
+    if len(set(rows.fieldnames)) != len(rows.fieldnames):
+        raise ValueError("duplicate CSV column names")
+    values = []
+    for line, row in enumerate(rows, 2):
+        cell = row.get(column)
+        if cell is None or not cell.strip():
+            raise ValueError("missing value in CSV row " + str(line))
+        try:
+            number = float(cell.strip())
+        except ValueError:
+            raise ValueError("invalid number in CSV row " + str(line) + ": " + repr(cell)) from None
+        if not math.isfinite(number):
+            raise ValueError("non-finite number in CSV row " + str(line))
+        values.append(number)
+    return values
 
 
 def describe(values):
@@ -146,18 +150,18 @@ def main(argv=None):
 
     parser = NumericArgumentParser(description="Summarize and compare numbers or check boundaries.")
     sub = parser.add_subparsers(dest="command", required=True)
-    desc = sub.add_parser("describe")
+    desc = sub.add_parser("describe", help="📊 summary of one list of numbers")
     desc.add_argument("values", nargs="*", help="numbers separated by spaces or commas; - reads stdin")
-    desc.add_argument("--file", help="read a CSV file")
+    desc.add_argument("--file", help="read a file, or - for UTF-8 stdin")
     desc.add_argument("--column", help="CSV header to analyze (requires --file)")
-    comp = sub.add_parser("compare")
-    comp.add_argument("--before", nargs="+", required=True)
-    comp.add_argument("--after", nargs="+", required=True)
-    boundary = sub.add_parser("boundary")
-    boundary.add_argument("value", type=float)
-    boundary.add_argument("--lo", type=float)
-    boundary.add_argument("--hi", type=float)
-    boundary.add_argument("--eps", type=float)
+    comp = sub.add_parser("compare", help="⚖️ two summaries and the change in mean")
+    comp.add_argument("--before", nargs="+", required=True, help="numbers separated by spaces or commas; - reads stdin")
+    comp.add_argument("--after", nargs="+", required=True, help="numbers separated by spaces or commas; - reads stdin")
+    boundary = sub.add_parser("boundary", help="📐 is the value on a bound? lift it by --eps only when asked")
+    boundary.add_argument("value", type=float, help="finite number to check")
+    boundary.add_argument("--lo", type=float, help="lower bound (less than --hi)")
+    boundary.add_argument("--hi", type=float, help="upper bound")
+    boundary.add_argument("--eps", type=float, help="lift a value on a bound by this much, greater than 0 (default: detect only)")
     args = parser.parse_args(argv)
     try:
         if args.command == "describe":
@@ -166,7 +170,14 @@ def main(argv=None):
             if args.column and not args.file:
                 parser.error("--column requires --file")
             if args.file:
-                if args.column:
+                if args.file == "-":
+                    from io import TextIOWrapper
+                    stream = TextIOWrapper(sys.stdin.buffer, encoding="utf-8-sig", newline="")
+                    try:
+                        values = _csv_values(stream, args.column) if args.column else parse_numbers([stream.read()])
+                    finally:
+                        stream.detach()
+                elif args.column:
                     values = read_csv_column(args.file, args.column)
                 else:
                     with open(args.file, encoding="utf-8-sig") as stream:

@@ -621,20 +621,22 @@ def _share_main(argv=None) -> int:
     import argparse
     import sys
     parser = argparse.ArgumentParser(prog="queryu.py share", description="🗃️ Query, share and supply a QueRyu cache (stdlib only)")
-    parser.add_argument("--cache", required=True, type=Path)
+    parser.add_argument("--cache", required=True, type=Path, help="📁 QueRyu cache directory")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("query", "export", "verify"):
-        command = sub.add_parser(name)
-        command.add_argument("--key")
-        command.add_argument("--url")
-        command.add_argument("--group")
-        command.add_argument("--status", type=int, action="append")
-        command.add_argument("--since")
-        command.add_argument("--until")
-        command.add_argument("--history", action="store_true")
+    for name, about in (("query", "🔎 matching rows as JSON lines, bodyless ones (304, 5xx, errors) too"),
+                        ("export", "📦 bundle the matching 200/404 rows"),
+                        ("verify", "✅ check the bodies of the matching rows (exit 3 when none match)")):
+        command = sub.add_parser(name, help=about)
+        command.add_argument("--key", help="🔑 key glob, e.g. npb_calendar:2024_*")
+        command.add_argument("--url", help="🌐 URL glob")
+        command.add_argument("--group", help="🗂️ exact group")
+        command.add_argument("--status", type=int, action="append", help="🔢 HTTP status, repeatable")
+        command.add_argument("--since", help="🕐 ISO time on fetched_at, inclusive")
+        command.add_argument("--until", help="🕐 ISO time on fetched_at, inclusive (\"as of then\" without --history)")
+        command.add_argument("--history", action="store_true", help="🕰️ every row, not only the latest per key")
         if name == "export":
-            command.add_argument("--out", required=True, type=Path)
-    sub.add_parser("import").add_argument("bundle", type=Path)
+            command.add_argument("--out", required=True, type=Path, help="📦 bundle file to write")
+    sub.add_parser("import", help="📥 add one bundle to the cache").add_argument("bundle", type=Path, help="📦 bundle from export")
     args = parser.parse_args(argv)
     cache = _Cache(args.cache)
     if args.command == "import":
@@ -1183,7 +1185,7 @@ def main(argv=None) -> int:
         return tool.main(argv[1:])
     ap = argparse.ArgumentParser(description="📥 取得元からページを集め、観測データセットを作る",
                                  epilog="🧰 tools: 🗃️ share · 😀 emoji · 🧹 post（python queryu.py <tool> --help）")
-    ap.add_argument("--source", required=True)
+    ap.add_argument("--source", required=True, help="取得元の名前。html_source は BlueProbe 組み込み、ほかは <name>.py のモジュール")
     ap.add_argument("--years", required=True, help="例: 2012-2025")
     ap.add_argument("--cache", type=Path, default=None,
                     help="生ページのキャッシュ。省略時は取ったページをこの実行の中だけで使い、何も書かない")

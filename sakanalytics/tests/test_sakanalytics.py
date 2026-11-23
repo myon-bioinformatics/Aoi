@@ -122,6 +122,19 @@ class StandaloneExamples(unittest.TestCase):
         path.write_text("label,value\na,10\nb,\n", encoding="utf-8")
         self.assertIn("missing value", self.run_cli("describe", "--file", str(path), "--column", "value").stderr)
 
+    def test_csv_pipe_matches_file_bytes(self):
+        args = [sys.executable, "-I", str(self.script), "describe", "--file", "-", "--column", "値"]
+        path = Path(self.temp.name) / "input.csv"
+        data = '\ufeff"値",label\r\n10,"one\r\ntwo"\r\n20,three\r\n'.encode()
+        path.write_bytes(data)
+        result = subprocess.run(args, input=data, capture_output=True, check=True)
+        self.assertEqual(json.loads(result.stdout), self.call("describe", "--file", str(path), "--column", "値"))
+        bad = subprocess.run(args, input="値,値\n1,2".encode(), capture_output=True)
+        self.assertEqual(bad.returncode, 2)
+        self.assertIn(b"duplicate", bad.stderr)
+        plain = subprocess.run(args[:-2], input=b"1,2,3", capture_output=True, check=True)
+        self.assertEqual(json.loads(plain.stdout)["mean"], 2)
+
     def test_invalid_numbers_are_not_silently_skipped(self):
         for value in ("1,,2", "1,bad,3", "1,nan", "1,inf"):
             self.assertEqual(self.run_cli("describe", value).returncode, 2)

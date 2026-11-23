@@ -14,6 +14,8 @@ THIRD_PARTY = {"polars", "numpy", "pytest"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/。dragowing 自身は含めない。
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "sakanalytics", "scripts")
 KNOWN_EXCEPTIONS = {
+    # The parent's fleet_check.check_scripts globs this repository's own scripts/ (not Aoi's scripts/).
+    ("vendor/fleet_check.py", "path:scripts/*"),
     # The benchmark regressions load this repository's own scripts helpers.
     ("tests/test_fleet.py", "path:scripts/benchmark_overlap.py"),
     ("tests/test_fleet.py", "path:scripts/benchmark_record_selection.py"),

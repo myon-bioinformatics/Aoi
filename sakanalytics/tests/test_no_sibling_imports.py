@@ -17,6 +17,8 @@ SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "dragowing
 # 読むのはテストのデータの場所だけ。CLI は --cycle-dir を受け取る。
 AOI_PROVIDED = {"aoi_paths"}
 KNOWN_EXCEPTIONS = {
+    # 親の fleet_check.check_scripts の既定の glob（このリポジトリ自身の scripts/。Aoi の scripts/ ではない）
+    ("vendor/fleet_check.py", "path:scripts/*"),
     # 兄弟の import 経路は AOI_ROOT の Aoi の aoi.py（environment()）に聞く
     ("conftest.py", "import:aoi"),
     ("tests/test_sakanalytics.py", "path:scripts"),

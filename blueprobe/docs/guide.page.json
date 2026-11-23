@@ -1,0 +1,102 @@
+{
+  "schema": "web-ui-page/1",
+  "title": "BlueProbe 利用ガイド",
+  "theme": "auto",
+  "description": "取得済みのウェブページ（HTML / CSS / DOM）を読み、そこに何があるかを記録する観測・抽出ツール。勝敗や原因は判定しません。",
+  "icon": "./icon.png",
+  "favicon": "./favicon.png",
+  "blocks": [
+    {
+      "type": "badges",
+      "items": [
+        "🔭 観測と抽出",
+        "🧰 blueprobe.py は標準ライブラリのみ",
+        "🐍 Python 3.11+"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "📥 取得",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
+        },
+        {
+          "type": "output",
+          "text": "git clone https://github.com/myon-bioinformatics/BlueProbe.git\ncd BlueProbe"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "▶️ 実行",
+      "blocks": [
+        {
+          "type": "card",
+          "title": "🔭 ページを観測",
+          "text": "受け入れた件数だけでなく、受け入れなかった件数と、どの分類にも当たらなかった原文も返します。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python blueprobe.py https://openai.com --out observation.json"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "📋 パターン一覧",
+          "text": "使える DOM パターンの一覧を表示します。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python blueprobe.py --list-patterns"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "❓ ヘルプ",
+          "text": "引数の一覧です。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python blueprobe.py --help"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "🔗 リンク",
+      "blocks": [
+        {
+          "type": "links",
+          "items": [
+            {
+              "label": "📦 リポジトリ",
+              "href": "https://github.com/myon-bioinformatics/BlueProbe"
+            },
+            {
+              "label": "📖 README",
+              "href": "https://github.com/myon-bioinformatics/BlueProbe#readme"
+            },
+            {
+              "label": "📄 blueprobe.py",
+              "href": "https://github.com/myon-bioinformatics/BlueProbe/blob/main/blueprobe.py"
+            },
+            {
+              "label": "🌊 QueRyu（取得）",
+              "href": "https://github.com/myon-bioinformatics/QueRyu"
+            },
+            {
+              "label": "🔵 Aoi",
+              "href": "https://github.com/myon-bioinformatics/Aoi"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

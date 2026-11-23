@@ -42,7 +42,7 @@
     },
     {
       "file": "dragowing/dragowing.py",
-      "line": 207
+      "line": 233
     },
     {
       "file": "nagoyaction/vendor/aoi/scripts/shrink_polars.py",
@@ -758,7 +758,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1357,
+      "attribute_uses": 1358,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -770,7 +770,7 @@
         "fixture": 51,
         "hookimpl": 3,
         "importorskip": 13,
-        "mark.parametrize": 301,
+        "mark.parametrize": 302,
         "mark.skipif": 9,
         "mark.usefixtures": 2,
         "param": 1,
@@ -862,7 +862,7 @@
           "import_sites": 18
         },
         "queryu": {
-          "attribute_uses": 99,
+          "attribute_uses": 100,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
@@ -870,7 +870,7 @@
             "approx": 2,
             "fail": 8,
             "fixture": 4,
-            "mark.parametrize": 24,
+            "mark.parametrize": 25,
             "raises": 53,
             "skip": 1,
             "xfail": 1
@@ -2348,7 +2348,7 @@
       "attributes": {
         "fail": 1,
         "fixture": 1,
-        "mark.parametrize": 5
+        "mark.parametrize": 6
       },
       "dynamic_lines": [
         520

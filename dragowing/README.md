@@ -34,7 +34,7 @@ The text table of the four forms is in [docs/forms.md](docs/forms.md). HTML (tra
 
 It produces `index.html` and `propositions.html` in `--out` (a new temporary directory when omitted; the printed links open them). The trajectories, team × year, and condition overlap (grid and breakdown) in `index.html` are drawn from Plotly JSON specs with the browser's plotly.js (the latest dist on jsDelivr). The Python `plotly` package is not used. `propositions.html` is a list and Markdown tables, without Plotly. Add `--embed` to embed Plotly.js into `index.html`. Page text is converted from Markdown to HTML.
 
-🖼️ SVG is optional: `--svg` writes `svg/<figure>.svg` with the parent's standard-library [`plotly_min`](https://github.com/myon-bioinformatics/myon-bioinformatics/blob/main/docs/plotly-min.md) (`vendor/tools/stdlib_min/plotly_min.py`). No Chrome / Chromium is used. PNG is not written here; screenshots belong to [browser-test-kit](https://github.com/myon-bioinformatics/browser-test-kit).
+🖼️ SVG is optional: `--svg` writes `svg/<figure>.svg` with the parent's standard-library [`plotly_min`](https://github.com/myon-bioinformatics/myon-bioinformatics/blob/main/docs/plotly-min.md) (`vendor/tools/stdlib_min/plotly_min.py`). No Chrome / Chromium is used. PNG is not written here; screenshots belong to [BrowserTestKit](https://github.com/myon-bioinformatics/BrowserTestKit).
 
 This repository was split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi) subproject [`dragowing/`](https://github.com/myon-bioinformatics/Aoi/tree/main/dragowing) (see "Relationship with Aoi" below).
 
@@ -198,7 +198,7 @@ MIT License ([LICENSE](LICENSE)). `LICENSE` has the same contents as the MIT LIC
 An example of building HTML from the c001 (Chunichi) output at Aoi's root.
 
 ```bash
-python DRAgoWing.py cycles/c001-chunichi/outputs \
+python aoi.py dragowing cycles/c001-chunichi/outputs \
   --team-order d,g,s,db,t,c,h,f,b,e,l,m   # order is Aoi's setting (TEAM_ORDER in aoi_npb.py)
 ```
 
@@ -212,3 +212,20 @@ Local example (point the output at an empty directory):
 git clone https://github.com/myon-bioinformatics/markdown.git .deps/markdown
 python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --output build/dragowing --previous-ref HEAD~1
 ```
+
+### ヒートマップ
+
+[ヒートマップを開く](https://myon-bioinformatics.github.io/DRAgoWing/heatmap/)。
+行列または単一の Plotly heatmap を貼り付けるか、JSON ファイルを選ぶ。
+色の段階と値の表示を調整し、SVG または Ironmate で編集できるシーン JSON を保存する。PNG が必要なときは長辺を選んで「PNGを保存」を押す。欠測セルは透明のまま書き出す。
+同じシーンを CLI から生成するには `python -S dragowing.py --heatmap matrix.json > scene.json`。
+
+## 核酸・タンパク質の原子座標
+
+SSIS の `structure --output graph` が出力する JSON を回転・拡大できる 3D 図にします。
+
+```sh
+python -S dragowing.py --structure-graph model.json --embed > model.html
+```
+
+`-` で標準入力からも読み込めます。各点は元素別の原子、線は SSIS が抽出した残基間の接触候補です。点にカーソルを置くと鎖・残基・原子名と座標（Å）、線では候補の種類と距離が読めます。`--embed` は生成時に Plotly.js を取得して HTML に含めます。

@@ -1,5 +1,7 @@
 # BlueProbe
 
+🌐 [GitHub Pages](https://myon-bioinformatics.github.io/BlueProbe/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
+
 <p align="center">
   <img src="docs/brand/icon.png" alt="BlueProbe icon" width="160" />
 </p>
@@ -38,9 +40,9 @@ BlueProbe is an observation and extraction tool that reads fetched web pages (HT
 | 🧰 | `python blueprobe.py …` | Python |
 |---|---|---|
 | 🔎 | `URL` · `--classify HTML` · `--source NAME --cache DIR` | `classify_document()`, `inspect()` |
-| 🏷️ | `names PAGE [--json]` | `blueprobe.names.observe()` |
-| 🧭 | `headings PAGE [--json]` | `blueprobe.headings.observe()` |
-| 😀 | `emoji PAGE [--url URL] [--json]` | `blueprobe.emoji.observe()` |
+| 🏷️ | `names PAGE [--format json]` | `blueprobe.names.observe()` |
+| 🧭 | `headings PAGE [--format json]` | `blueprobe.headings.observe()` |
+| 😀 | `emoji PAGE [--url URL] [--format json]` | `blueprobe.emoji.observe()` |
 | 🌐 | `web DIR [--source-root DIR]` | `blueprobe.web.observe()` |
 | 🐙 | `github SNAPSHOT REPOSITORY` | `blueprobe.github.observe()` |
 
@@ -369,7 +371,7 @@ Individual tables are not extracted. Old items that weren't published are not fi
 
 ```sh
 python blueprobe.py emoji page.html            # counts, forms, and locations per identity
-python blueprobe.py emoji page.html --json     # records (one row per occurrence) and summary
+python blueprobe.py emoji page.html --format json  # records (one row per occurrence) and summary; --json is shorthand
 ```
 
 Emoji in the body, `<title>`, descriptive `<meta>`, and attributes (`aria-label`, `title`, `alt`, `placeholder`, etc.) are recorded

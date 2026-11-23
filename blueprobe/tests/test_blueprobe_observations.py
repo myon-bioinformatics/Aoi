@@ -153,6 +153,8 @@ def test_capture_validation_and_cli(tmp_path, capsys):
     assert an.main([str(PAGES / "web-ui-examples-index.json"), "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
     assert data["aria_comparison"]["counts"]["match"] == 3 and data["summary"]["controls"] == 3
+    assert an.main([str(PAGES / "web-ui-examples-index.json"), "--format", "json"]) == 0  # --json is shorthand for this
+    assert json.loads(capsys.readouterr().out) == data
     assert an.main([str(tmp_path / "missing.html")]) == 2
 
 
@@ -615,3 +617,10 @@ class WalkTests(unittest.TestCase):
         self.assertEqual(len(report['records']), 1)
         self.assertEqual(report['records'][0]['name'], 'go')
         self.assertEqual(report['records'][0]['key'], '#' + str(depth))
+
+
+class SourceStaysInTheBasicPlane(unittest.TestCase):
+    def test_no_character_above_u_ffff(self):
+        # Aoi bundles blueprobe.py into dist/blueprobe_min.py; its bundler cannot carry characters above U+FFFF.
+        source = (Path(__file__).resolve().parents[1] / "blueprobe.py").read_text(encoding="utf-8")
+        self.assertEqual([ch for ch in source if ord(ch) > 0xFFFF], [])

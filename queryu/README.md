@@ -1,5 +1,7 @@
 # QueRyu
 
+🌐 [GitHub Pages](https://myon-bioinformatics.github.io/QueRyu/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
+
 <p align="center">
   <img src="docs/brand/icon.png" alt="QueRyu icon" width="160" />
 </p>
@@ -77,7 +79,7 @@ The main arguments of `queryu.py` are `--source`, `--years`, `--cache`, `--out`,
 
 ```bash
 python ask/ask.py P1 の判例は？ --results out
-mkfifo q && python ask/ask.py --results out --json < q &   # then: echo "P1 の判例は？" > q
+mkfifo q && python ask/ask.py --results out --format json < q &   # then: echo "P1 の判例は？" > q
 ``` An example of building a dataset is under "Datasets" below.
 
 ## Layout

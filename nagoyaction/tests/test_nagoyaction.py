@@ -190,6 +190,17 @@ def test_show_formatting_text_and_json(tmp_path, capsys):
     captured_json = capsys.readouterr().out
     assert json.loads(captured_json)["name"] == "t"
 
+    # --format json is the canonical spelling; --json stays as shorthand, before or after the subcommand.
+    for argv in (["show", str(p["_path"]), "--format", "json"], ["--format=json", "show", str(p["_path"])]):
+        assert na.main(argv) == 0
+        assert json.loads(capsys.readouterr().out) == json.loads(captured_json)
+    assert na.main(["show", str(p["_path"]), "--format", "text"]) == 0
+    assert "Pipeline: t" in capsys.readouterr().out
+    with pytest.raises(SystemExit) as usage:  # a usage error under --format json is one JSON object on stderr
+        na.main(["--format", "json", "show"])
+    assert usage.value.code == 2
+    assert json.loads(capsys.readouterr().err)["error"]["code"] == "usage"
+
 
 def test_cli_is_stdlib_only_and_runs_from_another_directory(tmp_path):
     # 1ファイルをコピーすれば使える: 別ディレクトリから python -S（site-packages なし）で実行できる
@@ -231,7 +242,7 @@ def test_help_documents_every_flag_and_exit_codes():
     top = run_nagoyaction(["--help"])
     assert top.returncode == 0, top.stderr
     assert "doctor" in top.stdout and "show" in top.stdout and "run" in top.stdout
-    assert "--json" in top.stdout and "nagoyaction-error/1" in top.stdout
+    assert "--format" in top.stdout and "--json" in top.stdout and "nagoyaction-error/1" in top.stdout
     assert "終了コード:" in top.stdout and "error.code" in top.stdout
 
     expected = {

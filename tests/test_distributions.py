@@ -18,12 +18,13 @@ def test_min_distributions_are_isolated_and_interoperate(tmp_path):
     for item in manifest['projects'].values():
         p = ROOT / item['output']
         shutil.copyfile(p, tmp_path / p.name)
-    # 🐉 DRAgoWing は dragowing.py そのものが単一ファイル（minpy の束ねはない）
+    # 🐉 DRAgoWing と 🔵 BlueProbe は .py そのものが単一ファイル（minpy の束ねはない）
     shutil.copyfile(ROOT / 'dragowing' / 'dragowing.py', tmp_path / 'dragowing.py')
+    shutil.copyfile(ROOT / 'blueprobe' / 'blueprobe.py', tmp_path / 'blueprobe.py')
     code = r'''
 import sys
 sys.path.insert(0, '.')
-import blueprobe_min as blue
+import blueprobe as blue
 import queryu_min as query
 import sakanalytics_min as saka
 import dragowing as draw

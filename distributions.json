@@ -10,15 +10,6 @@
     "sha256": "4c3c6890495fbbca9b4539474ff9f56cd2eaff7c66feae219f6e5a8a463839e1"
   },
   "projects": {
-    "blueprobe": {
-      "prefix": "blueprobe",
-      "entry": "blueprobe/blueprobe.py",
-      "paths": [
-        "blueprobe"
-      ],
-      "output": "dist/blueprobe_min.py",
-      "api": "offline observation and snapshot inspection"
-    },
     "queryu": {
       "prefix": "queryu",
       "entry": "core/cache_core.py",

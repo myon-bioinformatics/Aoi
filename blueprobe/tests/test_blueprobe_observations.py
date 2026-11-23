@@ -153,6 +153,8 @@ def test_capture_validation_and_cli(tmp_path, capsys):
     assert an.main([str(PAGES / "web-ui-examples-index.json"), "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
     assert data["aria_comparison"]["counts"]["match"] == 3 and data["summary"]["controls"] == 3
+    assert an.main([str(PAGES / "web-ui-examples-index.json"), "--format", "json"]) == 0  # --json is shorthand for this
+    assert json.loads(capsys.readouterr().out) == data
     assert an.main([str(tmp_path / "missing.html")]) == 2
 
 

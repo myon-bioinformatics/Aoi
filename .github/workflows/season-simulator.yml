@@ -5,7 +5,6 @@ on:
     paths: ['sakanalytics/npb/season*', 'sakanalytics/tests/test_season_simulator.py', '.github/workflows/season-simulator.yml']
   pull_request:
     paths: ['sakanalytics/npb/season*', 'sakanalytics/tests/test_season_simulator.py', '.github/workflows/season-simulator.yml']
-  workflow_dispatch:
 permissions:
   contents: read
 jobs:

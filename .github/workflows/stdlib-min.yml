@@ -40,7 +40,6 @@ on:
       - pythdragoras/core/propositions.py
       - pkgmin/**
       - tests/test_pkgmin_surface.py
-  workflow_dispatch:
 
 permissions:
   contents: read

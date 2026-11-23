@@ -4,7 +4,6 @@ name: c001 saved input verification
 on:
   schedule:
     - cron: '17 3 * * 1,4'
-  workflow_dispatch:
   workflow_call:
   pull_request:
     paths:

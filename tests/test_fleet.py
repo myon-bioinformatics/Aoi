@@ -20,7 +20,7 @@ _spec = importlib.util.spec_from_file_location("pythdragoras_fleet_check", ROOT 
 fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
-PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
+PARENT_WORKFLOW_PIN = "a816ff489a7d4fdf59ee6890c84b0aca4bc9015c"
 LIVE_PARENT_REF = "${{ steps.parent.outputs.sha }}"
 ACCEPTED = {
     "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
@@ -68,8 +68,6 @@ def test_every_action_is_pinned_to_its_reviewed_commit():
         "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
         "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
         "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2",
-        "actions/upload-pages-artifact": "fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0",
-        "actions/deploy-pages": "368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1",
         "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
     })
     assert {sha for action, sha, _ in rows if action.startswith(fleet.PARENT + "/")} == {PARENT_WORKFLOW_PIN}, rows

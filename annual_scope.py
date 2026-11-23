@@ -84,8 +84,8 @@ def verify_observations(cache_root, observations):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--cache', type=Path, required=True)
-    p.add_argument('--out', type=Path)
+    p.add_argument('--cache', type=Path, required=True,help="年次ページのキャッシュ")
+    p.add_argument('--out', type=Path,help="主要な年だけを写す先（--verify-observations と同時には使えない）")
     p.add_argument('--verify-observations',type=Path,help='replay primary HTML into this saved dataset; requires existing BlueProbe dependencies')
     a = p.parse_args(argv)
     if a.verify_observations:

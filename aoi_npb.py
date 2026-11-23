@@ -130,8 +130,8 @@ def main(argv=None) -> int:
             ], check=False).returncode
 
     parser = argparse.ArgumentParser(description="NPB の設定を子の CLI 用の JSON に書き出す")
-    parser.add_argument("kind", choices=("teams", "annual-audit-rules"))
-    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("kind", choices=("teams", "annual-audit-rules"),help="書き出す設定（球団表か年間監査の規則）")
+    parser.add_argument("--out", type=Path, required=True,help="JSON の書き出し先")
     args = parser.parse_args(argv)
     print(write_json(args.kind, args.out))
     return 0

@@ -48,7 +48,7 @@ A repository split out from the [Aoi](https://github.com/myon-bioinformatics/Aoi
 
 ### Local forge (migration in progress)
 
-The 🏠 hub section of `nagoyaction.py` (formerly `local_forge.py`) provides the local Gitea/Forgejo management functions extracted from OneLinearNumerousMemo. It uses the existing `OLNM_HOME` and `DIAL_FILE` locations so that a local forge can be found during migration. It is standard library only and invoked as `nagoyaction hub …`; it does not implement GitHub Actions runners.
+The 🏠 hub section of `nagoyaction.py` (formerly `local_forge.py`) provides the local Gitea/Forgejo management functions extracted from OneLaunchNumerousModules. It uses the existing `OLNM_HOME` and `DIAL_FILE` locations so that a local forge can be found during migration. It is standard library only and invoked as `nagoyaction hub …`; it does not implement GitHub Actions runners.
 
 Install directly from a checkout with `uv tool install .`, or from GitHub with `uv tool install git+https://github.com/myon-bioinformatics/NagoyAction.git`. The root `pyproject.toml` packages the single module `nagoyaction` with no third-party runtime dependencies. The optional locked self-test environment remains under `tools/localci-env`; the complete suite still runs inside Aoi.
 
@@ -61,11 +61,11 @@ nagoyaction hub dial mirror     # 🎛️  → 🔁 mirror (2)
 nagoyaction hub repo ls
 ```
 
-`nagoyaction hub …` passes every argument to the hub section (`local_forge_main`; it replaced the former `local-forge …` command and `python local_forge.py …`). OneLinearNumerousMemo's `olnm hub …` forwards here. From Python, `nagoyaction.hub("dial", "local")` does the same and returns the exit code. `hub bundle DIR` copies `nagoyaction.py` next to the binary, so the carried directory needs nothing else (`python3 nagoyaction.py hub install --from DIR/…`).
+`nagoyaction hub …` passes every argument to the hub section (`local_forge_main`; it replaced the former `local-forge …` command and `python local_forge.py …`). OneLaunchNumerousModules's `olnm hub …` forwards here. From Python, `nagoyaction.hub("dial", "local")` does the same and returns the exit code. `hub bundle DIR` copies `nagoyaction.py` next to the binary, so the carried directory needs nothing else (`python3 nagoyaction.py hub install --from DIR/…`).
 
 The dial takes a name: `offline` (no network), `local` (local forge only), `mirror` (local forge that mirrors GitHub) or `github` (GitHub directly). Output shows the name first and the stored digit after it, for example `🔁 mirror (2)`. The dial file keeps the digit 0–3, so older readers of `DIAL_FILE` keep working, and `dial 2` is still accepted. A mistyped name is rejected with a suggestion (`maybe you meant 'mirror'?` on Python 3.14+) and leaves the dial unchanged.
 
-OneLinearNumerousMemo forwards `olnm hub …` and `olnm dial …` here once its handover change is merged. The BlueProbe/QueRyu launchers are not yet migrated. Do not run both managers concurrently against the same forge.
+OneLaunchNumerousModules forwards `olnm hub …` and `olnm dial …` here once its handover change is merged. The BlueProbe/QueRyu launchers are not yet migrated. Do not run both managers concurrently against the same forge.
 
 A newly started forge must pass its health check before startup reports success. Failed startup stops only the child created by that invocation; if cleanup fails, its PID is retained for inspection. A dial change saves its new value only after applying the forge and repository changes. This is not a transaction: earlier process, remote, repository, or mirror changes are not automatically rolled back if a later operation fails. Inspect the forge and repository remotes before retrying; the retained previous dial does not prove every side effect was reverted.
 
@@ -138,7 +138,7 @@ nagoyaction actionlint                                  # actionlint + uses: pin
 nagoyaction actionlint --strict --all --repeat 10       # = nagoyaction localci run --strict --repeat 10
 ```
 
-`--repeat N` does not trace the same checks N times. It shuffles the check list (resolving references, actionlint, each `uses:`, the pytest tests) by seed and splits it into N nearly equal shards. Each round runs only one shard, and once all rounds finish every check has run exactly once. It stops at a failing round and prints the round number, shard contents, and seed. `--keep-going` continues. After each round it prints the number of rounds passed and completed against N. Getting deep without failures is a confidence signal that the remaining shards will pass too.
+`--repeat N` does not trace the same checks N times. It shuffles the check list (resolving references, actionlint, each `uses:`, the pytest tests) by seed and splits it into N nearly equal shards. Each round attempts only one shard. Checks assigned to a stopped round or omitted by pytest are not counted as run. It stops at a failing round and prints the round number, shard contents, and seed. `--keep-going` continues. After each round it prints the number of rounds passed and completed against N. A round is counted as passed only if it has checks and every check passed. Skips and unexecuted checks are shown separately and do not add to the passed count. A pytest session error can fail the round even when recorded individual test outcomes are preserved.
 
 Checks that pass with fixed values are switched to other values from that round's seed with `substitute(name, value, draw)`. In pytest, `-p nagoyaction` does the same via monkeypatch. Rounds can also be chosen with the plugin alone.
 

@@ -95,3 +95,19 @@ The exact pytest pin matches the measured Aoi baseline. When refreshing it,
 update the lock, profile-contract expectations and measurements together.
 The application source, vendor locks, workflow files and default installation
 behavior are unchanged. No hosted workflow was dispatched for this experiment.
+
+## GitHub Actions resource probe
+
+The existing Linux `local-ci` job records the `localci-budget` artifact. The
+probe compares four fixed linkcheck shards (seed 7) at parallelism 1 and 2
+with three interleaved repetitions per setting. It checks exact, complete
+JUnit identities/outcomes against an independent unsharded run and requires
+RSS availability on the Linux runner, but does not gate on timing. It records wall time,
+CPU time, throughput, first dependency-sync duration, and sampled process
+tree RSS including shared-page double counting; sampled maxima are not
+cgroup or physical RAM high-water marks. The separate 128 MiB address-space
+limit test is on a purpose-built child, not on production workloads or the
+whole runner. Fault tests cover missing executable, missing cache binary,
+malformed cache metadata, and a timed-out child; they do not attest integrity
+of every cache hit. This experiment does not change production defaults or
+require a deployment.

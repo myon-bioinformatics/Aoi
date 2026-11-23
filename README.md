@@ -1,5 +1,7 @@
 # SakAnalytics
 
+🌐 [GitHub Pages](https://myon-bioinformatics.github.io/SakAnalytics/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
+
 <p align="center">
   <img src="docs/brand/icon.png" alt="SakAnalytics icon" width="160" />
 </p>

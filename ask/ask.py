@@ -522,7 +522,8 @@ def main(argv=None) -> int:
     ap.add_argument("--query", help="読み取りを飛ばし、Query を JSON で直接渡す（llama.cpp・MCP が選んだもの）。"
                     "- なら標準入力から読む（引用符は要らない）")
     ap.add_argument("--schema", action="store_true", help="Query の JSON Schema を出す")
-    ap.add_argument("--json", action="store_true", help="答えを JSON で出す")
+    ap.add_argument("--format", choices=("text", "json"), default="text", help="📤 出力の形式（既定: text）")
+    ap.add_argument("--json", action="store_const", const="json", dest="format", help="--format json の短い書き方。答えを JSON で出す")
     ap.add_argument("--log", type=Path, help="問いと読み取りを1行ずつ足す（JSONL）。同じ Query なら答えは同じ")
     args = ap.parse_intermixed_args(argv)  # 語と --オプションが混ざっていてよい
 
@@ -571,7 +572,7 @@ def _answer(text: str, parsed, results: Path, threshold, args, *, stream: bool =
                                  **parsed.metadata()}, ensure_ascii=False) + "\n")
     payload = {"query": asdict(q), "unread": unread, **parsed.metadata(), **res,
                "suggestions": hinted["candidates"], "suggestion_status": hinted["status"]}
-    print(json.dumps(payload, ensure_ascii=False, indent=None if stream else 2) if args.json
+    print(json.dumps(payload, ensure_ascii=False, indent=None if stream else 2) if args.format == "json"
           else render(text, q, unread, res, hinted["line"]), flush=stream)
     return 1 if res.get("error") else 0
 

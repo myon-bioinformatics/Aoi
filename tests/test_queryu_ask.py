@@ -186,6 +186,9 @@ def test_questions_from_a_queue_are_answered_in_order(tmp_path, capsys, monkeypa
     assert main(["--results", str(results), "--json", "--suggest-threshold", "0"]) == 0
     lines = capsys.readouterr().out.splitlines()
     assert [json.loads(line)["query"]["target"] for line in lines] == ["P1", "P2"]
+    monkeypatch.setattr("sys.stdin", _Queue("P1 の判例は？\n\nP2 の判例は？\n"))
+    assert main(["--results", str(results), "--format", "json", "--suggest-threshold", "0"]) == 0  # --json is shorthand for this
+    assert capsys.readouterr().out.splitlines() == lines
 
 
 def test_query_json_can_come_from_stdin(tmp_path, capsys, monkeypatch):

@@ -5,9 +5,9 @@
   "license": "LICENSE",
   "tool": {
     "repository": "myon-bioinformatics/myon-bioinformatics",
-    "commit": "d8ff83b6762eb5d5c896316ebb0186f5f2338dca",
+    "commit": "c35af6186f9e05f62b118f265b198f80d7a3e337",
     "source": "tools/minpy.py",
-    "sha256": "4c3c6890495fbbca9b4539474ff9f56cd2eaff7c66feae219f6e5a8a463839e1"
+    "sha256": "5972cc374b2217e92e75c356689f238add46a7eeef1da912f6f499c0b4f5b9b6"
   },
   "projects": {
     "queryu": {

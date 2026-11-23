@@ -188,10 +188,10 @@ NumPy, HTTP clients, Aoi files or an implicit source checkout. Unknown code
 provenance remains `None`; callers may pass `source_version` explicitly. The full
 `queryu.Cache` subclasses this core and retains its existing Git/timestamp hooks.
 
-The Aoi parent builds `queryu_min.py` with the account parent's `tools/minpy.py`.
-The min API is the cache/snapshot subset, not the full planner or question index.
-Acquisition uses the existing synchronous urllib client; no asynchronous support
-is claimed by the min artifact. Whole-tree subtree synchronization remains the
+`core/cache_core.py` is one self-contained file: copy it alone to use the min API
+(Aoi does so; nothing is bundled). The min API is the cache/snapshot subset, not the
+full planner or question index. Acquisition uses the existing synchronous urllib
+client; no asynchronous support is claimed by the min API. Whole-tree subtree synchronization remains the
 Aoi/QueRyu development relationship. MIT notices are kept in `LICENSE`.
 
 ## Querying, handing over, and concurrently fetching the cache (`queryu.py share`)

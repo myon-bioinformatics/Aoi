@@ -99,6 +99,15 @@
       "destination": "mindeps/httpx_min.py",
       "blob_sha": "e2452063aaa36699d56911d0c31811d221a8e49b",
       "sha256": "eeb9c7789b355528ae1c8d16ec63afb6562aa19c14e67e21bcaf42753108df78"
+    },
+    {
+      "repository": "myon-bioinformatics/myon-bioinformatics",
+      "ref": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266",
+      "commit": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266",
+      "source": "fleet_check.py",
+      "destination": "vendor/fleet_check.py",
+      "blob_sha": "e464c95809c288029d6b3a8562cf65214205de33",
+      "sha256": "2906b1583593567816abd91d24367bd6db14cef61c35e5abe17bd46cc64ad140"
     }
   ]
 }

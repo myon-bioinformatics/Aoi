@@ -12,6 +12,7 @@ Node の入口名）と、それをここに渡す数行だけ。
 """
 from __future__ import annotations
 
+import argparse
 import ast
 import os
 import re
@@ -154,18 +155,22 @@ def parity(node: str, root: Path, tool: str, args: list, *, python: str = sys.ex
 # --- CLI ----------------------------------------------------------------------------------
 
 def main(argv=None) -> int:
-    argv = sys.argv[1:] if argv is None else argv
-    if len(argv) < 2 or argv[0] not in ("pins", "uses"):
-        print(__doc__.strip(), file=sys.stderr)
-        return 2
-    root = Path(argv[1]).resolve()
-    if argv[0] == "pins":
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("mode", choices=("pins", "uses"), help="pins: 親ワークフローの pin / uses: 兄弟・scripts/ への参照")
+    parser.add_argument("root", type=Path, help="子の checkout")
+    parser.add_argument("siblings", nargs="*", help="（受け取るだけ。兄弟は root の名前から決まる）")
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as stop:              # 使い方の誤りは従来どおり 2 を返す（--help は 0）
+        return int(stop.code or 0)
+    root = args.root.resolve()
+    if args.mode == "pins":
         rows = parent_workflow_pins(root)
     else:
         rows = sorted(f"{rel}\t{use}" for rel, use in sibling_uses(root, me=root.name))
     for row in rows:
         print(row)
-    return 0 if rows or argv[0] == "uses" else 1
+    return 0 if rows or args.mode == "uses" else 1
 
 
 if __name__ == "__main__":

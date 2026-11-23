@@ -649,7 +649,7 @@ def _linkcheck_main(argv=None) -> int:
 
 # ====================================================================================================
 # 🏠 hub: ローカル Gitea / Forgejo（nagoyaction hub …）（旧 local_forge.py）
-# Local Gitea/Forgejo control, extracted from OneLinearNumerousMemo.
+# Local Gitea/Forgejo control, extracted from OneLaunchNumerousModules.
 # ====================================================================================================
 
 PY = Path(__file__).resolve()

@@ -2331,7 +2331,7 @@
         "mark.parametrize": 6
       },
       "dynamic_lines": [
-        520
+        523
       ],
       "file": "queryu/tests/test_queryu_ask.py",
       "import_sites": 1,

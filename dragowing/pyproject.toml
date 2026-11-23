@@ -25,7 +25,6 @@ dev = [
     "numpy>=2.4.6",
     "numpy>=2.5.4; python_version >= '3.12'",
 ]
-stdlib-test = ["pytest>=8"]
 
 [tool.setuptools]
 py-modules = ["dragowing"]

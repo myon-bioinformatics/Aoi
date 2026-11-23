@@ -16,7 +16,7 @@ fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
 WORKFLOWS = fleet.repo_root(__file__)  # 単独では ROOT。Aoi の中では、ワークフローを持つ一番近い親
-PARENT_WORKFLOW_PIN = "9e3da7ae1846e9604ebc24bb5178f7de094a4e77"
+PARENT_WORKFLOW_PIN = "a816ff489a7d4fdf59ee6890c84b0aca4bc9015c"
 ACCEPTED = {"vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266",
             # 📊 親の stdlib_min の plotly_min（静止の図の SVG を Chrome なしで描く）
             "vendor/tools/stdlib_min/plotly_min.py": "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32",

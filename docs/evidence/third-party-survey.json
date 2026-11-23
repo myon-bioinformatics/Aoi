@@ -935,18 +935,8 @@
           "name": "pytest"
         },
         {
-          "file": "blueprobe/pyproject.toml",
-          "kind": "group:stdlib-test",
-          "name": "pytest"
-        },
-        {
           "file": "dragowing/pyproject.toml",
           "kind": "group:dev",
-          "name": "pytest"
-        },
-        {
-          "file": "dragowing/pyproject.toml",
-          "kind": "group:stdlib-test",
           "name": "pytest"
         },
         {
@@ -970,18 +960,8 @@
           "name": "pytest"
         },
         {
-          "file": "queryu/pyproject.toml",
-          "kind": "group:stdlib-test",
-          "name": "pytest"
-        },
-        {
           "file": "sakanalytics/pyproject.toml",
           "kind": "group:dev",
-          "name": "pytest"
-        },
-        {
-          "file": "sakanalytics/pyproject.toml",
-          "kind": "group:stdlib-test",
           "name": "pytest"
         }
       ],

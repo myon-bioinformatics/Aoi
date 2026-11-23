@@ -16,7 +16,6 @@ sakanalytics = "sakanalytics:main"
 
 [dependency-groups]
 dev = ["pytest>=9.1.1", "polars>=2.0.0"]
-stdlib-test = ["pytest>=8"]
 
 [tool.setuptools]
 py-modules = ["sakanalytics"]

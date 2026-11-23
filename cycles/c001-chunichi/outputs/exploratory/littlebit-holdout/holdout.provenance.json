@@ -67,10 +67,10 @@
     {
       "path": "pythdragoras/pythdragoras.py",
       "evidence_sha256": "9b1bd96469a009ab207efa3ac6f6affdd3a12dbfe00b34c1c67147351607cd7b",
-      "current_sha256": "e9070752956a1902ae95595cdbc5cfd4652c8e43c3ac302060b2e33a8cda324c",
+      "current_sha256": "9fcafe4a5b66c1c20f9018210c0dcede32efdabbc316d63ccfa4d7fe7e69e500",
       "artifacts_regenerated": false,
       "inputs_regenerated": false,
-      "reason": "The same diagnostics commit added an optional --seed-evaluation path. The LittleBit holdout CLI does not use it, and the frozen artifacts were not rewritten. On 2026-11-15 PythDRagoras main f6c0fb72741ff7c2c9a448326485788df70cb9de (#37 to #46, pulled into Aoi by subtree merge) made pythdragoras.py the generic stdlib single file; the season and proposition code moved to core/ and npb/ (#46). Previous current 75cc9260fdce559e74bf671d3450b22d9745bbb1abbb1c70055e63574c093d72 was the file before that change. myon reviewed and approved re-recording the current SHA-256 on 2026-11-15. holdout.json and holdout.md stay at their evidence hashes and were not regenerated. This is not a regenerated baseline."
+      "reason": "The same diagnostics commit added an optional --seed-evaluation path. The LittleBit holdout CLI does not use it, and the frozen artifacts were not rewritten. On 2026-11-15 PythDRagoras main f6c0fb72741ff7c2c9a448326485788df70cb9de (#37 to #46, pulled into Aoi by subtree merge) made pythdragoras.py the generic stdlib single file; the season and proposition code moved to core/ and npb/ (#46). Previous current 75cc9260fdce559e74bf671d3450b22d9745bbb1abbb1c70055e63574c093d72 was the file before that change. myon reviewed and approved re-recording the current SHA-256 on 2026-11-15. holdout.json and holdout.md stay at their evidence hashes and were not regenerated. This is not a regenerated baseline. On 2026-11-23 PythDRagoras #60 re-applied #57: help strings for nine argparse arguments in pythdragoras.py (no argument, default, or behaviour changed; #59 had reverted #57 because of this hash). Previous current e9070752956a1902ae95595cdbc5cfd4652c8e43c3ac302060b2e33a8cda324c was the file before that change. myon reviewed and approved re-recording the current SHA-256 on 2026-11-23. holdout.json and holdout.md stay at their evidence hashes and were not regenerated. This is not a regenerated baseline."
     },
     {
       "path": "pythdragoras/littlebit_approx.py",

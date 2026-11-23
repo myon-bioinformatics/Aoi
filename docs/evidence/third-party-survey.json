@@ -758,7 +758,7 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1358,
+      "attribute_uses": 1359,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
@@ -774,7 +774,7 @@
         "mark.skipif": 9,
         "mark.usefixtures": 2,
         "param": 1,
-        "raises": 512,
+        "raises": 513,
         "skip": 11,
         "warns": 3,
         "xfail": 1
@@ -830,13 +830,13 @@
           "import_sites": 11
         },
         "nagoyaction": {
-          "attribute_uses": 96,
+          "attribute_uses": 97,
           "attributes": {
             "fail": 7,
             "fixture": 7,
             "mark.parametrize": 21,
             "mark.skipif": 1,
-            "raises": 59,
+            "raises": 60,
             "skip": 1
           },
           "dynamic_import_sites": 0,
@@ -1603,7 +1603,7 @@
     {
       "attributes": {
         "mark.parametrize": 1,
-        "raises": 6
+        "raises": 7
       },
       "dynamic_lines": [],
       "file": "nagoyaction/tests/test_nagoyaction.py",
@@ -2331,7 +2331,7 @@
         "mark.parametrize": 6
       },
       "dynamic_lines": [
-        520
+        523
       ],
       "file": "queryu/tests/test_queryu_ask.py",
       "import_sites": 1,

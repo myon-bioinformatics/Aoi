@@ -16,7 +16,7 @@ heatmap_figure・write_ffss・render_report など）。
 """
 from __future__ import annotations
 
-import argparse, html, importlib, importlib.util, json, math, operator, re, sys, tempfile, types
+import argparse, html, http.client, importlib, importlib.util, json, math, operator, re, sys, tempfile, types
 import urllib.error, urllib.request
 from collections import Counter
 from copy import deepcopy
@@ -121,8 +121,60 @@ def read_ffss(path) -> dict[tuple[str, str], list[dict]]:
 # separately; this module uses the versionless jsDelivr dist URL directly.
 # ====================================================================================================
 
-PLOTLY_JS_CDN = "https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js"
+# BEGIN DRAgoWing Plotly runtime
+PLOTLY_JS_URL = "https://cdn.jsdelivr.net/npm/plotly.js-dist-min/plotly.min.js"
 PLOTLY_JS_MAX_BYTES = 8 * 1024 * 1024
+
+
+def verify_plotly_js(raw: bytes) -> bytes:
+    """Return CDN bytes or fail before any decoding, caching or execution."""
+    if not isinstance(raw, bytes):
+        raise TypeError("Plotly.js payload must be bytes")
+    if not raw:
+        raise RuntimeError("Plotly.js CDN returned an empty body")
+    if len(raw) > PLOTLY_JS_MAX_BYTES:
+        raise RuntimeError(f"Plotly.js exceeds {PLOTLY_JS_MAX_BYTES} byte limit")
+    return raw
+
+
+def _fetch_plotly_bytes(*, timeout: float, user_agent: str) -> bytes:
+    """Explicitly fetch the allowlisted jsDelivr bundle with a bounded read.
+
+    Rendering helpers do not call this function. Consumers own successful-byte
+    caching; cached/local bytes can be checked with verify_plotly_js().
+    """
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError("timeout must be finite and positive")
+    request = urllib.request.Request(
+        PLOTLY_JS_URL, headers={"User-Agent": user_agent},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            status = getattr(response, "status", None)
+            if status is None:
+                status = getattr(response, "getcode", lambda: 200)()
+            if status != 200:
+                raise RuntimeError(f"Plotly.js CDN returned HTTP {status} for {PLOTLY_JS_URL}")
+            raw = response.read(PLOTLY_JS_MAX_BYTES + 1)
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(f"Plotly.js CDN request failed: HTTP {exc.code} {exc.reason}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"Plotly.js CDN request failed: {exc.reason}") from exc
+    except (OSError, http.client.HTTPException) as exc:
+        raise RuntimeError(f"Plotly.js CDN request failed: {exc}") from exc
+    return verify_plotly_js(raw)
+
+
+def _plotly_initializer(div_id: str, spec_expression: str, config_expression: str) -> str:
+    """Build the initializer from caller-serialized JS expressions."""
+    identity = json.dumps(div_id, ensure_ascii=True).replace("<", "\\u003c")
+    return (
+        f'(function(){{var s={spec_expression};var el=document.getElementById({identity});'
+        f'if(el&&window.Plotly){{window.Plotly.newPlot(el,s.data,s.layout,{config_expression});}}}})();'
+    )
+# END DRAgoWing Plotly runtime
+
+PLOTLY_JS_CDN = PLOTLY_JS_URL
 _PLOTLY_JS_CACHE: bytes | None = None
 
 
@@ -142,33 +194,7 @@ def fetch_plotly_js() -> str:
     """Fetch Plotly.js bytes from jsDelivr and cache successful responses only."""
     global _PLOTLY_JS_CACHE
     if _PLOTLY_JS_CACHE is None:
-        request = urllib.request.Request(
-            PLOTLY_JS_CDN,
-            headers={"User-Agent": "dragowing/plotly_cdn (Plotly embed)"},
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=60.0) as response:
-                status = getattr(response, "status", None)
-                if status is None:
-                    getcode = getattr(response, "getcode", None)
-                    status = getcode() if getcode is not None else 200
-                if status != 200:
-                    raise RuntimeError(
-                        "Plotly.js CDN returned HTTP %s for %s" % (status, PLOTLY_JS_CDN)
-                    )
-                raw = response.read(PLOTLY_JS_MAX_BYTES + 1)
-        except urllib.error.HTTPError as exc:
-            raise RuntimeError(
-                "Plotly.js CDN returned HTTP %s for %s" % (exc.code, PLOTLY_JS_CDN)
-            ) from exc
-        except urllib.error.URLError as exc:
-            raise RuntimeError("Plotly.js request failed: %s" % exc.reason) from exc
-        except TimeoutError as exc:
-            raise RuntimeError("Plotly.js request failed: timed out") from exc
-        if not raw:
-            raise RuntimeError("Plotly.js CDN returned an empty body")
-        if len(raw) > PLOTLY_JS_MAX_BYTES:
-            raise RuntimeError("Plotly.js exceeds %s byte limit" % PLOTLY_JS_MAX_BYTES)
+        raw = _fetch_plotly_bytes(timeout=60.0, user_agent="dragowing/plotly_cdn (Plotly embed)")
         _classic_script(raw.decode("utf-8"))
         _PLOTLY_JS_CACHE = raw
     return _PLOTLY_JS_CACHE.decode("utf-8")
@@ -464,7 +490,7 @@ def forms_text(results: Path, ident: str | None = None) -> str:
 def forms_main(argv=None) -> int:
     """``python dragowing.py RESULTS --forms [--id P1]`` と同じ。旧 ``python dragowing/forms.py --results … --id …``。"""
     parser = argparse.ArgumentParser(description="四つの形の 2×2 と条件の論理記号を出す")
-    parser.add_argument("--results", type=Path, required=True)
+    parser.add_argument("--results", type=Path, required=True, help="propositions.jsonl・sets.jsonl のあるディレクトリ")
     parser.add_argument("--id", help="この ID だけ。省略すると読み込んだ順")
     args = parser.parse_args(argv)
     try:
@@ -1717,20 +1743,54 @@ def _js_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace("<", "\\u003c")
 
 
+def structure_figure(graph):
+    """Display measured XYZ coordinates and the contact candidates supplied by SSIS."""
+    if graph.get("schema") != "structure-graph/1" or graph.get("unit") != "angstrom":
+        raise ValueError("expected structure-graph/1 in angstrom")
+    atom_nodes = [n for n in graph["nodes"] if n["type"] == "Atom"]
+    atoms = {n["id"]: n for n in atom_nodes}
+    if len(atoms) != len(atom_nodes):
+        raise ValueError("duplicate atom ID")
+    if not atoms or any(not math.isfinite(a[k]) for a in atoms.values() for k in "xyz"):
+        raise ValueError("expected finite atom coordinates")
+    traces = []
+    contacts = [e for e in graph["edges"] if e["relation"] == "nearAtom"]
+    if contacts:
+        lines = {axis: [] for axis in "xyz"}
+        hover = []
+        for edge in contacts:
+            hover.extend([escape(", ".join(edge["labels"])) + f" · {edge['distance_angstrom']:.3f} Å"] * 2 + [""])
+            a, b = atoms[edge["source"]], atoms[edge["target"]]
+            for axis in lines:
+                lines[axis].extend((a[axis], b[axis], None))
+        traces.append(dict(type="scatter3d", mode="lines", name="接触候補", **lines,
+                           line=dict(color="#7794a0", width=3), text=hover, hovertemplate="%{text}<extra></extra>"))
+    colors = {"C": "#626d7c", "N": "#3c66ae", "O": "#c84d52", "P": "#a0539f", "S": "#b98b16"}
+    for element in sorted({a["element"] for a in atoms.values()}):
+        group = [a for a in atoms.values() if a["element"] == element]
+        labels = [escape(" ".join(str(a[k]) for k in ("chain", "residue", "residue_id", "name", "altloc")).strip())
+                  for a in group]
+        traces.append(dict(type="scatter3d", mode="markers", name=escape(element), text=labels,
+                           marker=dict(size=4, color=colors.get(element, "#408878")),
+                           hovertemplate="%{text}<br>(%{x}, %{y}, %{z}) Å<extra></extra>",
+                           **{axis: [a[axis] for a in group] for axis in "xyz"}))
+    scene = {axis + "axis": {"title": {"text": axis.upper() + " (Å)"}} for axis in "xyz"}
+    title = f"モデル {escape(str(graph['model']))} · {len(atoms)} 原子 · 接触候補 {len(contacts)}/{graph['contact_count']}"
+    return {"data": traces, "layout": {"title": {"text": title}, "scene": {**scene, "aspectmode": "data"}, "height": 570}}
+
+
 def figure_block(spec: dict, div_id: str) -> str:
     payload = embed_json(spec)
     attr = html.escape(div_id, quote=True)
-    js_id = _js_string(div_id)
+    data_id = _js_string(div_id + "-data")
+    initializer = _plotly_initializer(
+        div_id, f"JSON.parse(document.getElementById({data_id}).textContent)",
+        "{responsive:true,displaylogo:false}",
+    )
     return (
         f'<div id="{attr}" class="figure"></div>\n'
         f'<script type="application/json" id="{attr}-data">{payload}</script>\n'
-        "<script>\n"
-        "(function(){\n"
-        f"  var id = {js_id};\n"
-        '  var spec = JSON.parse(document.getElementById(id + "-data").textContent);\n'
-        "  Plotly.newPlot(id, spec.data, spec.layout, {responsive:true,displaylogo:false});\n"
-        "})();\n"
-        "</script>"
+        f'<script>{initializer}</script>'
     )
 
 
@@ -2064,11 +2124,163 @@ def team_order(text: str) -> tuple[str, ...]:
     return codes
 
 
+PALETTE = ('#440154', '#3B528B', '#21918C', '#5EC962', '#FDE725')
+
+
+def heat_color(value, low, high, levels=0):
+    """Viridis-like five-stop display scale; source value is never modified."""
+    if value is None:
+        return None
+    if not all(type(v) in (int, float) and math.isfinite(v) for v in (value, low, high)) or low > high:
+        raise ValueError('finite value and ordered range required')
+    if type(levels) is not int or (levels != 0 and not 2 <= levels <= 256):
+        raise ValueError('levels must be 0 (continuous) or 2..256')
+    t = 0.5 if high == low else max(0, min(1, (value - low) / (high - low)))
+    if levels:
+        t = math.floor(t * (levels - 1) + 0.5) / (levels - 1)
+    p = t * (len(PALETTE) - 1)
+    i = min(len(PALETTE) - 2, int(p))
+    a, b = (bytes.fromhex(c[1:]) for c in PALETTE[i:i + 2])
+    return '#' + ''.join(f'{math.floor(x + (y-x)*(p-i) + 0.5):02X}' for x, y in zip(a, b))
+
+
+def heatmap_scene(source):
+    """Import a numeric matrix or ONE Plotly heatmap trace; row zero is at top.
+
+    This imports data, not Plotly layout/axis rendering. Keep source metadata so
+    the scene is an editable composition, never a replacement research result.
+    """
+    if isinstance(source, list):
+        trace = {'z': source}
+    elif isinstance(source, dict) and isinstance(source.get('data'), list):
+        traces = [t for t in source['data'] if isinstance(t, dict) and t.get('type') == 'heatmap']
+        if len(traces) != 1:
+            raise ValueError('exactly one heatmap trace required')
+        trace = traces[0]
+    else:
+        trace = source
+    if not isinstance(trace, dict):
+        raise ValueError('matrix or heatmap object required')
+    z = trace.get('z')
+    if (not isinstance(z, list) or not z or not isinstance(z[0], list) or not z[0]
+            or len(z) * len(z[0]) > 4096 or any(not isinstance(r, list) or len(r) != len(z[0]) for r in z)):
+        raise ValueError('rectangular matrix of 1..4096 cells required')
+    finite = [v for row in z for v in row if v is not None]
+    def safe(v):
+        if type(v) is int:
+            return abs(v) <= 2**53-1
+        return type(v) is float and math.isfinite(v) and (not v.is_integer() or abs(v) <= 2**53-1)
+    if any(not safe(v) for v in finite):
+        raise ValueError('finite JavaScript-safe numbers or null required')
+    low, high = trace.get('zmin'), trace.get('zmax')
+    low = min(finite, default=0) if low is None else low
+    high = max(finite, default=1) if high is None else high
+    if not safe(low) or not safe(high):
+        raise ValueError('finite JavaScript-safe color range required')
+    heat_color(low, low, high)
+    x, y = trace.get('x', list(range(len(z[0])))), trace.get('y', list(range(len(z))))
+    if not isinstance(x, list) or not isinstance(y, list) or len(x) != len(z[0]) or len(y) != len(z):
+        raise ValueError('axis label counts do not match matrix')
+    return {'schema': 'ironmate-image-studio/1', 'width': 1280, 'height': 720, 'background': '#FFFFFF',
+            'layers': [{'id': 'heatmap', 'kind': 'heatmap', 'name': 'Heatmap', 'x': 80, 'y': 90,
+                        'w': 1120, 'h': 520, 'rotation': 0, 'opacity': 1,
+                        'z': z, 'xlabels': x, 'ylabels': y, 'low': low, 'high': high,
+                        'levels': 0, 'labels': True}], 'source': source}
+
+
+HEATMAP_JS = r"""  function heatColor(v, lo, hi, levels = 0) {
+    if (v === null) return "none";
+    if (
+      ![v, lo, hi].every(Number.isFinite) ||
+      lo > hi ||
+      !Number.isInteger(levels) ||
+      (levels !== 0 && (levels < 2 || levels > 256))
+    )
+      fail("色の範囲または段階数が不正です");
+    let t = hi === lo ? 0.5 : Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
+    if (levels) t = Math.round(t * (levels - 1)) / (levels - 1);
+    const p = t * 4,
+      i = Math.min(3, Math.floor(p));
+    const a = PALETTE[i].match(/\w\w/g).map((x) => parseInt(x, 16));
+    const b = PALETTE[i + 1].match(/\w\w/g).map((x) => parseInt(x, 16));
+    return (
+      "#" +
+      a
+        .map((x, j) =>
+          Math.round(x + (b[j] - x) * (p - i))
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")
+        .toUpperCase()
+    );
+  }
+  function matrix(source) {
+    let t;
+    if (Array.isArray(source)) t = { z: source };
+    else if (Array.isArray(source?.data)) {
+      const traces = source.data.filter((t) => t?.type === "heatmap");
+      if (traces.length !== 1) fail("heatmapトレースは1つにしてください");
+      t = traces[0];
+    } else t = source;
+    const z = t?.z,
+      cols = z?.[0]?.length;
+    if (
+      !Array.isArray(z) ||
+      !cols ||
+      z.length * cols > 4096 ||
+      z.some((r) => !Array.isArray(r) || r.length !== cols)
+    )
+      fail("1〜4096セルの長方形の数値行列が必要です");
+    const values = z.flat().filter((v) => v !== null);
+    if (
+      values.some(
+        (v) =>
+          !Number.isFinite(v) ||
+          (Number.isInteger(v) && !Number.isSafeInteger(v)),
+      )
+    )
+      fail("有限の数値またはnullを指定してください（巨大な整数は非対応）");
+    const low = t.zmin ?? (values.length ? Math.min(...values) : 0),
+      high = t.zmax ?? (values.length ? Math.max(...values) : 1);
+    if (
+      [low, high].some(
+        (v) =>
+          !Number.isFinite(v) ||
+          (Number.isInteger(v) && !Number.isSafeInteger(v)),
+      )
+    )
+      fail("色の範囲には有限の安全な数値を指定してください");
+    heatColor(low, low, high);
+    const xlabels = t.x ?? Array.from({ length: cols }, (_, i) => i),
+      ylabels = t.y ?? Array.from({ length: z.length }, (_, i) => i);
+    if (
+      !Array.isArray(xlabels) ||
+      !Array.isArray(ylabels) ||
+      xlabels.length !== cols ||
+      ylabels.length !== z.length
+    )
+      fail("軸ラベルの数が一致しません");
+    return {
+      z: clone(z),
+      xlabels: clone(xlabels),
+      ylabels: clone(ylabels),
+      low,
+      high,
+      levels: 0,
+      labels: true,
+    };
+  }
+"""
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="📈 記録された結果を HTML（と SVG）にする。判定はやり直さない。"
                     " RESULTS がディレクトリでなければ 🔢 HTML の要素を数える（ブラウザなし）。",
     )
+    parser.add_argument("--structure-graph", metavar="JSON", help="SSIS原子座標の回転可能な3D HTMLを標準出力へ。- は標準入力")
+    parser.add_argument("--heatmap", metavar="JSON", help="行列またはPlotly JSONを編集用シーンとして標準出力に書く。- は標準入力")
     parser.add_argument("results", nargs="?",
                         help="📂 season.jsonl と propositions.jsonl があるディレクトリ。🔢 HTML ファイルか - なら要素を数える（省略は標準入力）")
     parser.add_argument("--results", dest="legacy_results", type=Path, help="RESULTS の旧形式（互換用）")
@@ -2145,6 +2357,21 @@ def main(argv=None) -> int:
     """📈 RESULTS → HTML（--svg で SVG）、🧾 --forms、📊 --ffss RECORDS、🔢 HTML ファイル（か標準入力）の要素数。"""
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.structure_graph is not None:
+        try:
+            raw = sys.stdin.read() if args.structure_graph == "-" else Path(args.structure_graph).read_text(encoding="utf-8")
+            figure = structure_figure(json.loads(raw))
+            print(standalone("分子の原子座標", figure_block(figure, "structure"), plotly=True, embed=args.embed))
+        except (ValueError, KeyError, TypeError, AttributeError, RuntimeError, OSError) as exc:
+            parser.exit(1, f"Cannot draw structure graph: {exc}\n")
+        return 0
+    if args.heatmap is not None:
+        try:
+            source = sys.stdin.read() if args.heatmap == "-" else Path(args.heatmap).read_text(encoding="utf-8")
+            print(json.dumps(heatmap_scene(json.loads(source)), ensure_ascii=False, allow_nan=False))
+        except (ValueError, OSError) as exc:
+            parser.exit(1, f"{exc}\n")
+        return 0
     if args.ffss is not None:
         try:
             written = write_ffss(args.ffss, args.out or Path("build/ffss"), svg=not args.no_svg)

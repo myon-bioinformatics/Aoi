@@ -490,7 +490,7 @@ def forms_text(results: Path, ident: str | None = None) -> str:
 def forms_main(argv=None) -> int:
     """``python dragowing.py RESULTS --forms [--id P1]`` と同じ。旧 ``python dragowing/forms.py --results … --id …``。"""
     parser = argparse.ArgumentParser(description="四つの形の 2×2 と条件の論理記号を出す")
-    parser.add_argument("--results", type=Path, required=True)
+    parser.add_argument("--results", type=Path, required=True, help="propositions.jsonl・sets.jsonl のあるディレクトリ")
     parser.add_argument("--id", help="この ID だけ。省略すると読み込んだ順")
     args = parser.parse_args(argv)
     try:

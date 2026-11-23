@@ -360,7 +360,7 @@ def _parser() -> JsonArgumentParser:
                       " doctor が止めたときは、その代わりに nagoyaction-doctor/1 を1つだけ書く。"
                       " 手順が失敗したときは、その終了コードと stderr の nagoyaction-error/1（error.code=step）。")
     for name, help_text in DELEGATES_HELP.items():  # main() hands these to their module before this parser runs
-        sub.add_parser(name, help=help_text, add_help=False).add_argument("rest", nargs=argparse.REMAINDER)
+        sub.add_parser(name, help=help_text, add_help=False).add_argument("rest", nargs=argparse.REMAINDER, help="そのまま各節へ渡す引数")
     for each in (ap, *sub.choices.values()):
         each.suggest_on_error = True  # 🤔 argparse 3.14+: "maybe you meant" for subcommands; older Pythons ignore it
     return ap
@@ -649,7 +649,7 @@ def _linkcheck_main(argv=None) -> int:
 
 # ====================================================================================================
 # 🏠 hub: ローカル Gitea / Forgejo（nagoyaction hub …）（旧 local_forge.py）
-# Local Gitea/Forgejo control, extracted from OneLinearNumerousMemo.
+# Local Gitea/Forgejo control, extracted from OneLaunchNumerousModules.
 # ====================================================================================================
 
 PY = Path(__file__).resolve()
@@ -1186,22 +1186,22 @@ def build_parser(prog: str = "nagoyaction hub"):
     ap = argparse.ArgumentParser(prog=prog)
     sp = ap.add_subparsers(dest="cmd", required=True)
     s = sp.add_parser("hub", prog=prog, help="🏠 local GitHub-like forge"); h = s.add_subparsers(dest="sub", required=True)  # main() adds "hub"; keep it out of usage
-    x = h.add_parser("install", help="📦 🌍 download or --from carried binary"); x.add_argument("--version", default="latest"); x.add_argument("--from", dest="src"); x.add_argument("--sha256", dest="sha"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea")
-    x = h.add_parser("bundle", help="🎒 🌍 binary + .sha256 + nagoyaction.py into DIR"); x.add_argument("dir"); x.add_argument("--version", default="latest"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea")
-    x = h.add_parser("init", help="🏗️ config, db, admin, token"); x.add_argument("--port", type=int, default=3000); x.add_argument("--user", default="admin"); x.add_argument("--password")
+    x = h.add_parser("install", help="📦 🌍 download or --from carried binary"); x.add_argument("--version", default="latest", help="🏷️ release number such as 1.27.3 (default: latest)"); x.add_argument("--from", dest="src", help="📁 carried binary to place instead of downloading"); x.add_argument("--sha256", dest="sha", help="🔐 expected sha256 of --from (default: its .sha256 sidecar)"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea", help="🍵 forge to fetch")
+    x = h.add_parser("bundle", help="🎒 🌍 binary + .sha256 + nagoyaction.py into DIR"); x.add_argument("dir", help="📁 directory to fill and carry"); x.add_argument("--version", default="latest", help="🏷️ release number such as 1.27.3 (default: latest)"); x.add_argument("--flavor", choices=sorted(FLAVORS), default="gitea", help="🍵 forge to fetch")
+    x = h.add_parser("init", help="🏗️ config, db, admin, token"); x.add_argument("--port", type=int, default=3000, help="🔌 HTTP port on 127.0.0.1"); x.add_argument("--user", default="admin", help="👤 admin user name"); x.add_argument("--password", help="🔑 admin password (default: a random one)")
     for name, hp in (("up", "🟢 start"), ("down", "🛑 stop"), ("status", "📊 status"), ("doctor", "🩺 checks"), ("sync", "🔄 push to all remotes"), ("labels", "🏷️ GitHub default labels")):
         h.add_parser(name, help=hp)
-    x = h.add_parser("logs", help="📜 tail log"); x.add_argument("-n", type=int, default=40)
+    x = h.add_parser("logs", help="📜 tail log"); x.add_argument("-n", type=int, default=40, help="🔢 lines to show")
     x = h.add_parser("dial", help="🎛️ show / set: offline · local · mirror · github (0-3 also work)"); x.add_argument("level", nargs="?", choices=[*DIAL_NAMES, *map(str, DIALS)], metavar="level", help="offline | local | mirror | github (0-3 also work); omit to show")
     x = h.add_parser("repo", help="📚 register working trees"); r = x.add_subparsers(dest="repo_cmd", required=True)
-    y = r.add_parser("add"); y.add_argument("path", nargs="?", default="."); y.add_argument("--github", help="owner/name"); y.add_argument("--public", action="store_true")
-    r.add_parser("ls"); y = r.add_parser("rm"); y.add_argument("path", nargs="?", default=".")
-    x = h.add_parser("api", help="🌐 raw REST"); x.add_argument("method", choices=["GET", "POST", "PATCH", "PUT", "DELETE"]); x.add_argument("path"); x.add_argument("--data", help="JSON body")
+    y = r.add_parser("add", help="➕ register a working tree"); y.add_argument("path", nargs="?", default=".", help="📁 working tree (default: .)"); y.add_argument("--github", help="owner/name"); y.add_argument("--public", action="store_true", help="🌐 public forge repo (default: private)")
+    r.add_parser("ls", help="📋 registered trees"); y = r.add_parser("rm", help="➖ unregister a working tree"); y.add_argument("path", nargs="?", default=".", help="📁 working tree (default: .)")
+    x = h.add_parser("api", help="🌐 raw REST"); x.add_argument("method", choices=["GET", "POST", "PATCH", "PUT", "DELETE"], help="🔤 HTTP method"); x.add_argument("path", help="🧭 path under /api/v1, e.g. /user/repos"); x.add_argument("--data", help="JSON body")
     x = h.add_parser("issue", help="🐛 issues"); i = x.add_subparsers(dest="issue_cmd", required=True)
-    y = i.add_parser("ls"); y.add_argument("--state", default="open", choices=["open", "closed", "all"])
-    y = i.add_parser("new"); y.add_argument("title"); y.add_argument("--body", default=""); y.add_argument("--label", action="append", default=[])
+    y = i.add_parser("ls", help="📋 list"); y.add_argument("--state", default="open", choices=["open", "closed", "all"], help="🔍 which issues")
+    y = i.add_parser("new", help="➕ open"); y.add_argument("title", help="🏷️ title"); y.add_argument("--body", default="", help="📝 body"); y.add_argument("--label", action="append", default=[], help="🏷️ label name, repeatable (unknown names are skipped)")
     x = h.add_parser("pr", help="🔀 pull requests"); p = x.add_subparsers(dest="pr_cmd", required=True)
-    p.add_parser("ls"); y = p.add_parser("new"); y.add_argument("title"); y.add_argument("--head"); y.add_argument("--base", default="main"); y.add_argument("--body", default="")
+    p.add_parser("ls", help="📋 open ones"); y = p.add_parser("new", help="➕ open from a branch (pushed to `local` first)"); y.add_argument("title", help="🏷️ title"); y.add_argument("--head", help="🌿 source branch (default: current)"); y.add_argument("--base", default="main", help="🎯 target branch"); y.add_argument("--body", default="", help="📝 body")
     _suggest(ap)
     return ap
 
@@ -2777,18 +2777,18 @@ def _localci_parser(prog: str | None = None) -> argparse.ArgumentParser:
     run.add_argument("--seed", type=int, default=None, help="シャッフルと入力の差し替えを再現する")
     run.add_argument("--keep-going", action="store_true", help="失敗したあとも残りのラウンドを実行する")
     run.add_argument("--strict", action="store_true", help="古い SHA ピンを失敗にする。setup 以外の actions/* の vN は許す")
-    run.add_argument("--root", type=Path, default=None)
+    run.add_argument("--root", type=Path, default=None, help="検査するリポジトリ。既定は今いるディレクトリ")
     run.add_argument("--pytest", dest="pytest_paths", action="append", default=None,
                      help="このリポジトリ内の pytest パス。指定すると Aoi は checkout しない")
     run.add_argument("--self-tests", action="store_true",
                      help="Aoi を checkout せず tests/test_localci.py だけ実行する")
-    run.add_argument("--skip-pytest", action="store_true")
+    run.add_argument("--skip-pytest", action="store_true", help="pytest を実行しない（Aoi も checkout しない）")
     run.add_argument("--aoi-ref", default="", help="Aoi の ref。空なら AOI_REF_INPUT、それも空なら main")
-    run.add_argument("--env-file", type=Path, default=None)
+    run.add_argument("--env-file", type=Path, default=None, help="解決した SHA と actionlint の記録の書き先。既定は <root>/.localci/refs.env")
     resolve = sub.add_parser("resolve", help="参照先リポジトリの main SHA を解決する")
-    resolve.add_argument("--root", type=Path, default=None)
-    resolve.add_argument("--env-file", type=Path, default=None)
-    resolve.add_argument("--github-output", action="store_true")
+    resolve.add_argument("--root", type=Path, default=None, help="参照を読むリポジトリ。既定は今いるディレクトリ")
+    resolve.add_argument("--env-file", type=Path, default=None, help="解決した SHA の書き先。既定は <root>/.localci/refs.env")
+    resolve.add_argument("--github-output", action="store_true", help="$GITHUB_OUTPUT にも <key>_sha=… を書く（Aoi は sha=… も）")
     resolve.add_argument("--aoi-ref", default="", help="Aoi の ref。空なら AOI_REF_INPUT、それも空なら main")
     return parser
 
@@ -3092,10 +3092,10 @@ def decide(evidence, checks):
 
 def publication_gate_main(argv=None):
     parser = argparse.ArgumentParser(prog="nagoyaction publication-gate", description="Offline publication gate and same-execution evidence recorder (stdlib only).")
-    parser.add_argument("command", choices=["record"])
-    parser.add_argument("--audit", type=Path, required=True)
-    parser.add_argument("--stage", required=True)
-    parser.add_argument("--evidence", nargs="+", required=True)
+    parser.add_argument("command", choices=["record"], help="record: run the child command after -- and seal its stage receipt")
+    parser.add_argument("--audit", type=Path, required=True, help="audit directory holding execution-identity.json")
+    parser.add_argument("--stage", required=True, help="stage name; its receipt cannot be overwritten")
+    parser.add_argument("--evidence", nargs="+", required=True, help="files under --audit that this stage produces")
     args, command = parser.parse_known_args(argv)
     if command[:1] == ["--"]:
         command = command[1:]
@@ -3161,10 +3161,10 @@ def observe(ghi, harness, research, env):
 
 def ghi_execution_main(argv=None):
     parser = argparse.ArgumentParser(prog="nagoyaction ghi-execution", description="Read-only GHI adapter: bind this Actions attempt and both actual checkouts.")
-    parser.add_argument("--ghi", type=Path, required=True)
-    parser.add_argument("--harness", type=Path, default=Path.cwd())
-    parser.add_argument("--research", type=Path, required=True)
-    parser.add_argument("--audit", type=Path, required=True)
+    parser.add_argument("--ghi", type=Path, required=True, help="checkout holding the pinned gh_identity.py")
+    parser.add_argument("--harness", type=Path, default=Path.cwd(), help="harness checkout (default: current directory)")
+    parser.add_argument("--research", type=Path, required=True, help="research checkout")
+    parser.add_argument("--audit", type=Path, required=True, help="new audit directory to create")
     args = parser.parse_args(argv)
     try:
         if args.audit.exists():

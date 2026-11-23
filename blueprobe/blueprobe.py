@@ -1327,8 +1327,8 @@ def _emoji_summarize(report: dict) -> list[dict]:
 
 def _emoji_main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="blueprobe.py emoji", description="\U0001f600 保存済み HTML の絵文字を観測する（ネットワークに出ない）")
-    ap.add_argument("html", type=Path)
-    ap.add_argument("--url")
+    ap.add_argument("html", type=Path, help="保存済みの HTML ファイル")
+    ap.add_argument("--url", help="記録に残すページの URL（key と url に入る）")
     ap.add_argument("--json", action="store_true", help="records と summary を JSON で出す")
     args = ap.parse_args(argv)
     try:
@@ -1665,7 +1665,7 @@ def _names_summarize(report: dict) -> dict:
 def _names_main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="blueprobe.py names", description="\U0001f3f7️ 保存済み HTML の操作要素・画像の名前を観測する（近似・ネットワークに出ない）")
     ap.add_argument("path", type=Path, help="HTML、または btk-browser-dom/1 / html-snapshot/1 の JSON")
-    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--json", action="store_true", help="summary・records・aria_comparison を JSON で出す")
     args = ap.parse_args(argv)
     try:
         text = args.path.read_text(encoding="utf-8")
@@ -1868,7 +1868,7 @@ def _headings_summarize(report: dict) -> dict:
 def _headings_main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="blueprobe.py headings", description="\U0001f9ed 保存済み HTML の見出し階層とランドマーク構造を観測する（ネットワークに出ない）")
     ap.add_argument("path", type=Path, help="HTML、または btk-browser-dom/1 / html-snapshot/1 の JSON")
-    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--json", action="store_true", help="人向けの行の代わりに JSON で出す")
     args = ap.parse_args(argv)
     try:
         text = args.path.read_text(encoding="utf-8")
@@ -2019,8 +2019,8 @@ def _web_observe(root: Path, *, source_root: Path | None = None) -> dict:
 
 def _web_main(argv=None):
     parser = argparse.ArgumentParser(prog="blueprobe.py web", description="\U0001f310 Read saved Web observations and source inventories, without a browser or SDK.")
-    parser.add_argument("observations", type=Path)
-    parser.add_argument("--source-root", type=Path)
+    parser.add_argument("observations", type=Path, help="directory searched for web-observation.json receipts")
+    parser.add_argument("--source-root", type=Path, help="directory to inventory as sources (hashes only, not route bindings)")
     args = parser.parse_args(argv)
     try:
         result = _web_observe(args.observations, source_root=args.source_root)
@@ -2092,7 +2092,7 @@ def _github_observe(snapshot: dict, repository: str) -> dict:
 
 def _github_main(argv=None):
     parser = argparse.ArgumentParser(prog="blueprobe.py github", description="\U0001f419 Extract repository-scoped issue and CI observations from a saved parent audit.")
-    parser.add_argument("snapshot", type=Path)
+    parser.add_argument("snapshot", type=Path, help="saved parent-audit/1 JSON")
     parser.add_argument("repository", help="repository name as listed in parent-audit/1")
     args = parser.parse_args(argv)
     try:

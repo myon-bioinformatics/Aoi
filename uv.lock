@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -27,9 +27,6 @@ dev = [
     { name = "polars" },
     { name = "pytest" },
 ]
-stdlib-test = [
-    { name = "pytest" },
-]
 
 [package.metadata]
 
@@ -40,7 +37,6 @@ dev = [
     { name = "polars", specifier = ">=2.0.0" },
     { name = "pytest", specifier = ">=9.1.1" },
 ]
-stdlib-test = [{ name = "pytest", specifier = ">=8" }]
 
 [[package]]
 name = "iniconfig"

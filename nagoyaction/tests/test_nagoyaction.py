@@ -1,4 +1,4 @@
-import json, subprocess, sys
+import importlib.util, json, os, subprocess, sys
 from pathlib import Path
 
 import pytest
@@ -213,10 +213,25 @@ def test_cli_is_stdlib_only_and_runs_from_another_directory(tmp_path):
 NAGOYA = Path(__file__).resolve().parents[1] / "nagoyaction.py"
 
 
-def run_nagoyaction(args, *, cwd=None):
-    return subprocess.run(
-        [sys.executable, "-S", str(NAGOYA), *args],
-        cwd=cwd, capture_output=True, text=True,
+_cli_args_spec = importlib.util.spec_from_file_location(
+    "nagoyaction_cli_args", Path(__file__).resolve().parents[1] / "vendor" / "cli_args.py",
+)
+_cli_args = importlib.util.module_from_spec(_cli_args_spec)
+sys.modules[_cli_args_spec.name] = _cli_args
+_cli_args_spec.loader.exec_module(_cli_args)
+
+
+def run_nagoyaction(args, *, cwd=None, env=None):
+    # run_cli decodes stdout/stderr as UTF-8; force the child to emit UTF-8
+    # even when the parent locale or PYTHONIOENCODING is not UTF-8.
+    # A provided env replaces the environment, as with subprocess.run(env=...).
+    child_env = dict(os.environ if env is None else env)
+    for key in list(child_env):
+        if key.upper() == "PYTHONIOENCODING":
+            del child_env[key]
+    child_env["PYTHONIOENCODING"] = "utf-8"
+    return _cli_args.run_cli(
+        NAGOYA, *args, python_options=("-S",), cwd=cwd, env=child_env,
     )
 
 
@@ -236,6 +251,21 @@ tools = ["git"]
 name = "local"
 run = ["python", "-c", "print(1)"]
 """
+
+
+def test_run_nagoyaction_decodes_japanese_help_under_a_non_utf8_parent_encoding():
+    # The child must still emit UTF-8 so run_cli can decode 終了コード: when the
+    # inherited environment would otherwise use a non-UTF-8 stdio encoding.
+    # PYTHONIOENCODING=latin-1 is portable (Windows / macOS / Linux).
+    hostile = dict(os.environ)
+    for key in list(hostile):
+        if key.upper() in {"PYTHONIOENCODING", "PYTHONUTF8"}:
+            del hostile[key]
+    hostile["PYTHONIOENCODING"] = "latin-1"
+    hostile["PYTHONUTF8"] = "0"
+    proc = run_nagoyaction(["--help"], env=hostile)
+    assert proc.returncode == 0, proc.stderr
+    assert "終了コード:" in proc.stdout
 
 
 def test_help_documents_every_flag_and_exit_codes():

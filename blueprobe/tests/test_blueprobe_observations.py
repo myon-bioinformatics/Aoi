@@ -617,3 +617,10 @@ class WalkTests(unittest.TestCase):
         self.assertEqual(len(report['records']), 1)
         self.assertEqual(report['records'][0]['name'], 'go')
         self.assertEqual(report['records'][0]['key'], '#' + str(depth))
+
+
+class SourceStaysInTheBasicPlane(unittest.TestCase):
+    def test_no_character_above_u_ffff(self):
+        # Aoi bundles blueprobe.py into dist/blueprobe_min.py; its bundler cannot carry characters above U+FFFF.
+        source = (Path(__file__).resolve().parents[1] / "blueprobe.py").read_text(encoding="utf-8")
+        self.assertEqual([ch for ch in source if ord(ch) > 0xFFFF], [])

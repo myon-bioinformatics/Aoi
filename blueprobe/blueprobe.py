@@ -1329,7 +1329,7 @@ def _emoji_main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="blueprobe.py emoji", description="\U0001f600 保存済み HTML の絵文字を観測する（ネットワークに出ない）")
     ap.add_argument("html", type=Path, help="保存済みの HTML ファイル")
     ap.add_argument("--url", help="記録に残すページの URL（key と url に入る）")
-    ap.add_argument("--format", choices=("text", "json"), default="text", help="📤 出力の形式（既定: text）")
+    ap.add_argument("--format", choices=("text", "json"), default="text", help="出力の形式（既定: text）")
     ap.add_argument("--json", action="store_const", const="json", dest="format", help="--format json の短い書き方。records と summary を JSON で出す")
     args = ap.parse_args(argv)
     try:
@@ -1666,7 +1666,7 @@ def _names_summarize(report: dict) -> dict:
 def _names_main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="blueprobe.py names", description="\U0001f3f7️ 保存済み HTML の操作要素・画像の名前を観測する（近似・ネットワークに出ない）")
     ap.add_argument("path", type=Path, help="HTML、または btk-browser-dom/1 / html-snapshot/1 の JSON")
-    ap.add_argument("--format", choices=("text", "json"), default="text", help="📤 出力の形式（既定: text）")
+    ap.add_argument("--format", choices=("text", "json"), default="text", help="出力の形式（既定: text）")
     ap.add_argument("--json", action="store_const", const="json", dest="format", help="--format json の短い書き方。summary・records・aria_comparison を JSON で出す")
     args = ap.parse_args(argv)
     try:
@@ -1870,7 +1870,7 @@ def _headings_summarize(report: dict) -> dict:
 def _headings_main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="blueprobe.py headings", description="\U0001f9ed 保存済み HTML の見出し階層とランドマーク構造を観測する（ネットワークに出ない）")
     ap.add_argument("path", type=Path, help="HTML、または btk-browser-dom/1 / html-snapshot/1 の JSON")
-    ap.add_argument("--format", choices=("text", "json"), default="text", help="📤 出力の形式（既定: text）")
+    ap.add_argument("--format", choices=("text", "json"), default="text", help="出力の形式（既定: text）")
     ap.add_argument("--json", action="store_const", const="json", dest="format", help="--format json の短い書き方。人向けの行の代わりに JSON で出す")
     args = ap.parse_args(argv)
     try:

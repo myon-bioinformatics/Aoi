@@ -12,7 +12,7 @@ GitHub Actions のワークフローは `python nagoyaction/nagoyaction.py run <
     --only / --from / --until  一部の手順だけ実行する
     -v KEY=VALUE     変数をコマンドラインから設定・上書きする
     --dry-run        何を実行するかだけ表示する
-    --json           成功は stdout の JSON。失敗は stderr の nagoyaction-error/1
+    --format json    成功は stdout の JSON。失敗は stderr の nagoyaction-error/1（--json は短い書き方）
 
 終了コード（--help にも書く）:
   0      成功。doctor の warn は成功。run は選んだ手順がすべて成功
@@ -266,8 +266,16 @@ JSON_PARENT_HELP = (
 )
 
 
+class _SchemaHelpFormatter(argparse.RawDescriptionHelpFormatter):
+    """schema 名（nagoyaction-error/1 など）をハイフンで折り返さない。端末の幅が変わっても --help を検索できる。"""
+
+    def _split_lines(self, text: str, width: int) -> list[str]:
+        import textwrap
+        return textwrap.wrap(" ".join(text.split()), width, break_on_hyphens=False)
+
+
 class JsonArgumentParser(argparse.ArgumentParser):
-    """--json のとき、使い方の誤りを nagoyaction-error/1 で stderr に書く。"""
+    """--format json（--json）のとき、使い方の誤りを nagoyaction-error/1 で stderr に書く。"""
 
     json_mode = False
     tool = "nagoyaction"
@@ -299,24 +307,38 @@ def _arm_json(parser: JsonArgumentParser, enabled: bool) -> None:
                 _arm_json(sub, enabled)
 
 
-def _add_json_flag(parser: argparse.ArgumentParser, help_text: str) -> None:
+class _FormatAction(argparse.Action):
+    """--format text|json を、--json と同じ真偽値の宛先へ書く。"""
+
+    def __call__(self, parser, namespace, value, option_string=None) -> None:
+        setattr(namespace, self.dest, value == "json")
+
+
+def _json_asked(argv: list[str]) -> bool:
+    # argparse が誤りを報告するより前に形式を知る必要があるので、生の argv を見る。
+    return "--json" in argv or "--format=json" in argv or ("--format", "json") in zip(argv, argv[1:])
+
+
+def _add_json_flag(parser: argparse.ArgumentParser, help_text: str, *, dest: str = "json_output", default=argparse.SUPPRESS) -> None:
     # 親とサブコマンドの両方に置く。サブコマンド側は未指定のとき親の値を上書きしない。
-    parser.add_argument("--json", dest="json_output", action="store_true",
-                        default=argparse.SUPPRESS, help=help_text)
+    parser.add_argument("--format", dest=dest, choices=("text", "json"), action=_FormatAction, default=default,
+                        help="📤 出力の形式（既定: text）。json の中身は --json の説明のとおり")
+    parser.add_argument("--json", dest=dest, action="store_true", default=default,
+                        help="--format json の短い書き方。" + help_text)
 
 
 def _parser() -> JsonArgumentParser:
     ap = JsonArgumentParser(
         description="パイプラインの事前確認と実行（ローカル / GitHub Actions 共通）",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=_SchemaHelpFormatter,
         epilog=EXIT_EPILOG,
     )
-    ap.add_argument("--json", dest="json_output", action="store_true", help=JSON_PARENT_HELP)
+    _add_json_flag(ap, JSON_PARENT_HELP, default=False)
     sub = ap.add_subparsers(dest="cmd", required=True)
     d = sub.add_parser(
         "doctor",
         help="実行前の確認。fail があれば終了コード 1 で、run はしない",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=_SchemaHelpFormatter,
         epilog=EXIT_EPILOG,
     )
     d.add_argument("pipeline", type=Path, help="パイプライン TOML のパス")
@@ -327,7 +349,7 @@ def _parser() -> JsonArgumentParser:
     s = sub.add_parser(
         "show",
         help="パイプラインの構造（変数・ステップ・コマンド・出力・ネットワーク要求）を表示する",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=_SchemaHelpFormatter,
         epilog=EXIT_EPILOG,
     )
     s.add_argument("pipeline", type=Path, help="パイプライン TOML のパス")
@@ -338,7 +360,7 @@ def _parser() -> JsonArgumentParser:
     r = sub.add_parser(
         "run",
         help="doctor のあと手順を順に実行する。失敗した手順の終了コードを返す",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=_SchemaHelpFormatter,
         epilog=EXIT_EPILOG,
     )
     r.add_argument("pipeline", type=Path, help="パイプライン TOML のパス")
@@ -367,7 +389,7 @@ def _parser() -> JsonArgumentParser:
 
 
 def _json_mode(args, argv: list[str]) -> bool:
-    return bool(getattr(args, "json_output", False)) or "--json" in argv
+    return bool(getattr(args, "json_output", False)) or _json_asked(argv)
 
 
 def _report(json_mode: bool, exit_code: int, code: str, message: str, *, human: str) -> None:
@@ -571,7 +593,7 @@ def _linkcheck_parser() -> JsonArgumentParser:
     ap = JsonArgumentParser(
         prog="nagoyaction linkcheck",
         description="🔗 Markdown のリンクと画像の参照先を確かめる",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=_SchemaHelpFormatter,
         epilog=_LINKCHECK_EPILOG,
     )
     ap.tool = "linkcheck"  # nagoyaction-error/1 の tool
@@ -585,10 +607,10 @@ def _linkcheck_parser() -> JsonArgumentParser:
     ap.add_argument("--external", action="store_true",
                     help="http と https を HEAD で確かめる。404 と 410 だけ broken。"
                          " タイムアウト、接続失敗、それ以外の HTTP は unverified で、既定の終了コードは 0。")
-    ap.add_argument("--json", action="store_true",
-                    help="走査できたときは stdout に schema nagoyaction-linkcheck/1"
-                         "（ok, exit, strict, counts, results）。"
-                         " 終了コードが 0 でないとき、および走査前の失敗は stderr の nagoyaction-error/1。")
+    _add_json_flag(ap, "走査できたときは stdout に schema nagoyaction-linkcheck/1"
+                       "（ok, exit, strict, counts, results）。"
+                       " 終了コードが 0 でないとき、および走査前の失敗は stderr の nagoyaction-error/1。",
+                   dest="json", default=False)
     ap.add_argument("--strict", action="store_true",
                     help="broken が無く unverified（status または remote）があるとき終了コード 3。"
                          " 既定では unverified だけでは 0。Aoi の Links ワークフローはこれを付けない。")
@@ -600,7 +622,7 @@ def _linkcheck_main(argv=None) -> int:
         argv = sys.argv[1:]
     argv = list(argv)
     ap = _linkcheck_parser()
-    ap.json_mode = "--json" in argv
+    ap.json_mode = _json_asked(argv)
     args = ap.parse_args(argv)
     if args.remote and not args.ref:
         ap.error("--remote には --ref が必要")
@@ -3221,7 +3243,7 @@ def main(argv=None) -> int:
     if argv[:1] and argv[0] in DELEGATES:  # hand everything (incl. --help) to the module before this parser sees it
         return DELEGATES[argv[0]](*argv[1:])
     ap = _parser()
-    _arm_json(ap, "--json" in argv)
+    _arm_json(ap, _json_asked(argv))
     args = ap.parse_args(argv)
     if args.cmd in DELEGATES:  # e.g. `--json hub status`
         return DELEGATES[args.cmd](*args.rest)

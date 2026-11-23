@@ -9,8 +9,6 @@ import argparse
 import csv
 import gzip
 import itertools
-import json
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -22,6 +20,9 @@ ROOT = HERE.parents[1]
 import analyses as a  # noqa: E402
 from analyses import features, inning_features_aggregate as aggregate, INNING_FEATURES_FIELDS as FIELDS, metrics, read_input, split, zero_probability  # noqa: E402
 from fetch import cell, inning_pilot_parse as test_inning_pilot_parse, observe_parse as test_observe_parse  # noqa: E402
+
+sys.path.insert(0, str(ROOT / "vendor"))
+from cli_args import run_cli  # noqa: E402
 
 
 # ==== test_analyze（旧 test_analyze.py）
@@ -206,14 +207,14 @@ class LossTailTests(unittest.TestCase):
         self.assertEqual(split([0,2],[2,10],6),(5,3,2))
 
     def test_invalid_stage_exit_64(self):
-        p=subprocess.run([sys.executable,str(HERE/"analyses.py"),"loss_tail","invalid-stage"],capture_output=True,text=True)
+        p=run_cli(HERE/"analyses.py","loss_tail","invalid-stage")
         self.assertEqual(p.returncode,64)
 
     def test_missing_input_exit_66(self):
         with tempfile.TemporaryDirectory() as d:
-            p=subprocess.run([sys.executable,str(HERE/'analyses.py'),'loss_tail','analyze','--games',str(Path(d)/'absent.jsonl')],capture_output=True,text=True)
+            p=run_cli(HERE/'analyses.py','loss_tail','analyze','--games',Path(d)/'absent.jsonl')
             self.assertEqual(p.returncode,66)
-            self.assertEqual(json.loads(p.stderr)['exit_code'],66)
+            self.assertEqual(p.error()['exit_code'],66)
 
     def test_bad_manifest_exit_65(self):
         with tempfile.TemporaryDirectory() as d:
@@ -221,7 +222,7 @@ class LossTailTests(unittest.TestCase):
             path.write_text('')
             path.with_suffix('.manifest.json').write_text('{}')
             verify=Path(d)/'verification.json';verify.write_text('{}')
-            p=subprocess.run([sys.executable,str(HERE/'analyses.py'),'loss_tail','analyze','--games',str(path),'--verification',str(verify)],capture_output=True,text=True)
+            p=run_cli(HERE/'analyses.py','loss_tail','analyze','--games',path,'--verification',verify)
             self.assertEqual(p.returncode,65)
 
     def test_existing_engine_returns_objection_not_success(self):

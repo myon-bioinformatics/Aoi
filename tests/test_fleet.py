@@ -23,6 +23,7 @@ _spec.loader.exec_module(fleet)
 
 PARENT_WORKFLOW_PIN = "fbf433b296ec047f1c9acdf4d5d12c81ff7f59e8"
 ACCEPTED = {
+    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
     "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
     "vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266",
 }

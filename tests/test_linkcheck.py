@@ -144,6 +144,8 @@ def test_cli_broken_link_exits_1_with_structured_json(tmp_path):
     proc = run_linkcheck(["--root", str(root), "--json"], cwd=Path("/"))
     assert proc.returncode == 1, proc.stderr
     doc = json.loads(proc.stdout)
+    canonical = run_linkcheck(["--root", str(root), "--format", "json"], cwd=Path("/"))  # --json is shorthand for this
+    assert (canonical.returncode, json.loads(canonical.stdout)) == (1, doc)
     err = json.loads(proc.stderr)
     assert doc["schema"] == "nagoyaction-linkcheck/1"
     assert doc["ok"] is False and doc["exit"] == 1 and doc["strict"] is False

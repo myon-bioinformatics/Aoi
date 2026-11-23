@@ -37,7 +37,7 @@ For projects whose data can't leave the machine, just run the same definition lo
 - `show`: displays the pipeline structure (variables, steps, commands, outputs, network requirements) (`--json` gives `nagoyaction-pipeline/1`)
 - `run`: runs the steps in order after doctor and leaves a receipt (JSONL) at `--receipt`. Returns the failing step's exit code as-is
 - Usage, TOML, pipeline definition, and file loading errors exit 2. With `--json`, failures are `nagoyaction-error/1` on stderr. `error.code` is `doctor` / `step` / `pipeline` / `usage` / `toml` / `io`. A step that itself exits 2 is distinguished from a definition error by this `error.code`
-- Flag descriptions and exit codes are in `python nagoyaction.py --help` and each `--help` of `doctor` / `show` / `run`. `--json` works the same before or after the subcommand
+- Flag descriptions and exit codes are in `python nagoyaction.py --help` and each `--help` of `doctor` / `show` / `run`. `--format json` is the canonical spelling and `--json` is shorthand for it; both work the same before or after the subcommand
 - `localci`: checks workflows and tests locally without waiting for GitHub Actions to finish ("Local CI" below)
 - Steps run as argument arrays, not through a shell
 - Standard library only (Python 3.11+). Copy this one file to use it in other repositories
@@ -163,7 +163,7 @@ python nagoyaction/nagoyaction.py linkcheck --root .                            
 python nagoyaction/nagoyaction.py linkcheck --remote OWNER/REPO --ref BRANCH       # after push: exists on that branch? (gh api)
 python nagoyaction/nagoyaction.py linkcheck --external                             # also check http(s) (only 404/410 fail)
 python nagoyaction/nagoyaction.py linkcheck --external --strict                    # unverified also fails (exit code 3)
-python nagoyaction/nagoyaction.py linkcheck --json                                 # stdout is nagoyaction-linkcheck/1
+python nagoyaction/nagoyaction.py linkcheck --format json                          # stdout is nagoyaction-linkcheck/1 (--json is shorthand)
 ```
 
 `--root` is the base for git ls-files and Markdown loading (default: current directory). `--remote` requires `--ref`. `--external` checks http and https with HEAD. `--json` writes `nagoyaction-linkcheck/1` (`counts` and `results`) to stdout when scanning succeeded, and `nagoyaction-error/1` to stderr when the exit code is nonzero. Failures before scanning (usage, git) use the same error object, with exit code 2.

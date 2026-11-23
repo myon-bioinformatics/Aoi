@@ -15,7 +15,7 @@ fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
 PARENT_WORKFLOW_PIN = "fbf433b296ec047f1c9acdf4d5d12c81ff7f59e8"
-ACCEPTED = {"vendor/fleet_check.py": "64db25eb0fd9025dbe3cbcbced8b88a39ecb9266"}
+ACCEPTED = {"vendor/fleet_check.py": "bc57f08a590ee1cb33a8bb37c1bb3b8f28a2f3c9"}
 SOURCES = {  # destination -> (repository, source)
     "vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py"),
     "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
@@ -121,3 +121,8 @@ check_npb_source "$1" npb_team_annual.py
 class ScriptsDescribeThemselves(unittest.TestCase):
     def test_every_script_has_a_description_and_declared_arguments(self):
         fleet.check_scripts(fleet.repo_root(__file__))
+
+    def test_queryu_imports_only_the_standard_library_its_core_and_blueprobe(self):
+        root = fleet.repo_root(__file__)
+        fleet.check_imports(root, "core/cache_core.py")
+        fleet.check_imports(root, "queryu.py", allow=("blueprobe", "npb_patterns"), paths=("core",))

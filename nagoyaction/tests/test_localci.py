@@ -725,7 +725,7 @@ def test_workflow_delegates_resolution_and_follows_parent_uses_style():
         repo, ref = item["repo"], item["ref"]
         assert localci.SHA_RE.fullmatch(ref.lower()), item
     assert "actions/setup-python" not in text
-    assert "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3" in text
+    assert "astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0" in text
     assert "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1" in text
     assert "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2" in text
     assert "actions/checkout@v7" not in text
@@ -735,9 +735,9 @@ def test_workflow_delegates_resolution_and_follows_parent_uses_style():
     assert checkout and set(checkout) == {"3d3c42e5aac5ba805825da76410c181273ba90b1"}
     assert not [item for item in uses if item["repo"] == "actions/setup-python"]
     uv = [item["ref"] for item in uses if item["repo"] == "astral-sh/setup-uv"]
-    assert set(uv) == {"68559e99cc807c1eb7e9238fd43a15bba460eec2"}
+    assert set(uv) == {"1db35dd8eee11c5894872e0b383ae6c406cf738d"}
     upload = [item["ref"] for item in uses if item["repo"] == "actions/upload-artifact"]
-    assert upload == ["cf430e030ddbb5b0abf93d22962f4752f3646cd9"]
+    assert upload == ["cf430e030ddbb5b0abf93d22962f4752f3646cd9"] * 2
 
 
 
@@ -1048,6 +1048,7 @@ def test_pytest_batch_names_the_failed_node(tmp_path):
         assert argv[argv.index("--localci-round-seed") + 1] == "9"
         assert "-x" in argv
         assert argv[-2:] == ["tests/test_a.py::test_one", "tests/test_a.py::test_two"]
+        Path(argv[argv.index("--localci-receipt") + 1]).write_text(json.dumps(["tests/test_a.py::test_one", "call", "failed", ""]) + "\n")
         return Proc(rc=1, stdout="F\nFAILED tests/test_a.py::test_one - assert 0\n")
 
     outcomes = localci.run_pytest_batch(
@@ -1257,7 +1258,7 @@ def test_lint_exit_code_is_zero_with_skips_and_strict_stops(tmp_path, monkeypatc
 
     out = []
     assert lint(True, out) == 0
-    assert "[pass] round 1/1（2/2 件は skip）" in out
+    assert "[skip] round 1/1（2/2 件は skip）" in out
     assert "⚠️ best effort: 2 件は検査できず [skip]。何も確かめていない。失敗にするなら --strict" in out
     assert not (tmp_path / "refs.env").exists()  # 使った actionlint が無いので記録もしない
     with pytest.raises(localci.Unreachable):  # main() はこれを exit 1 にする
@@ -1297,5 +1298,281 @@ def test_localci_profile_does_not_become_repository_default():
     assert project["project"]["dependencies"] == []
     assert project["project"]["scripts"] == {"nagoyaction": "nagoyaction:main"}
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    assert "tools/localci-env" not in workflow
+    for job in ("resolve-vendor", "vendor-aoi", "test", "polars-min"):
+        assert "tools/localci-env" not in _workflow_job(workflow, job)
+    local_job = _workflow_job(workflow, "local-ci")
+    assert "uv sync --project tools/localci-env --locked" in local_job
+    assert "timeout-minutes: 4" in local_job
+    assert "localci-budget-faults.xml" in local_job
     assert "python nagoyaction.py localci run --repeat 10 --seed" in workflow
+
+@pytest.mark.parametrize(("nodes", "going", "expected"), [
+    (("good", "skip"), True, ("pass", "skip")),
+    (("skip",), True, ("skip",)),
+    (("bad", "skip", "good"), True, ("fail", "skip", "pass")),
+    (("bad", "skip", "good"), False, ("fail", "not_run", "not_run")),
+    (("teardown", "xfail", "xpass", "strict_xpass"), True, ("skip", "skip", "pass", "fail")),
+])
+def test_batch_observes_actual_pytest_phases(tmp_path, monkeypatch, nodes, going, expected):
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    (tmp_path / "test_receipt.py").write_text(
+        "import pytest\n"
+        "def test_good(): pass\n"
+        "def test_bad(): assert False\n"
+        "def test_skip(): pytest.skip('fixture unavailable')\n"
+        "@pytest.fixture\n"
+        "def once():\n"
+        "    yield\n"
+        "    pytest.skip('teardown skipped')\n"
+        "def test_teardown(once): pass\n"
+        "@pytest.mark.xfail(reason='known case')\n"
+        "def test_xfail(): assert False\n"
+        "@pytest.mark.xfail(strict=False)\n"
+        "def test_xpass(): pass\n"
+        "@pytest.mark.xfail(strict=True)\n"
+        "def test_strict_xpass(): pass\n"
+    )
+    checks = [localci.Check(name, "pytest", f"test_receipt.py::test_{name}") for name in nodes]
+    results = localci.run_pytest_batch(checks, 7, cwd=tmp_path, prefix=[sys.executable, "-m", "pytest"], keep_going=going)
+    assert tuple(results[name].status for name in nodes) == expected
+    if "xfail" in results:
+        assert "xfail: known case" in results["xfail"].detail
+        assert "teardown skipped" in results["teardown"].detail
+    report = localci.run_plan(shards=[checks], master_seed=7, execute=None, execute_pytest=lambda *a: results,
+                              keep_going=going, emit=lambda _: None)
+    assert report.passed_rounds == 0
+    assert report.rounds[0].not_run == expected.count("not_run")
+    assert report.stopped is (not going and "fail" in expected)
+
+
+def test_incomplete_pytest_skip_receipt_fails_closed(tmp_path):
+    name = "test_receipt.py::test_skip"
+    check = localci.Check("skip", "pytest", name)
+
+    def runner(argv, **kwargs):
+        records = ([name, phase, status, ""] for phase, status in (("call", "skipped"), ("teardown", "passed")))
+        Path(argv[argv.index("--localci-receipt") + 1]).write_text("".join(json.dumps(record) + "\n" for record in records))
+        return Proc(rc=0)
+
+    result = localci.run_pytest_batch([check], 7, cwd=tmp_path, prefix=[], keep_going=True, runner=runner)
+    assert result["skip"].status == "not_run"
+    assert "missing per-test evidence" in result.batch_error
+
+
+@pytest.mark.parametrize("keep_going", [False, True])
+def test_same_seed_budget_timeout_keeps_later_checks_unexecuted(tmp_path, keep_going):
+    checks = [localci.Check(name, "pytest", name) for name in ("first", "second", "third", "fourth")]
+    shards = localci.split_shards(checks, 2, 7)
+    called = []
+    def execute(group, round_seed, going):
+        def runner(argv, **kwargs):
+            assert kwargs["timeout"] == 900
+            called.append(([check.id for check in group], round_seed))
+            if len(called) == 1:
+                raise subprocess.TimeoutExpired(argv, kwargs["timeout"])
+            with Path(argv[argv.index("--localci-receipt") + 1]).open("w") as stream:
+                for check in group:
+                    for phase in ("setup", "call", "teardown"):
+                        stream.write(json.dumps([check.target, phase, "passed", ""]) + "\n")
+            return Proc(rc=0)
+        return localci.run_pytest_batch(group, round_seed, cwd=tmp_path, prefix=[], keep_going=going, runner=runner)
+
+    report = localci.run_plan(shards=shards, master_seed=7, execute=None, execute_pytest=execute,
+                              keep_going=keep_going, emit=lambda _: None)
+    for index, (ids, seed) in enumerate(called):
+        assert ids == [check.id for check in shards[index]]
+        assert seed == localci.mix_seed(7, "round", index + 1)
+    assert "timed out" in "\n".join(report.rounds[0].lines)
+    assert report.rounds[0].not_run == 2
+    assert report.stopped is not keep_going
+    assert report.passed_rounds == int(keep_going)
+
+
+def test_fail_fast_accounts_for_pytest_reordered_results(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    (tmp_path / "conftest.py").write_text("def pytest_collection_modifyitems(items): items.reverse()\n")
+    (tmp_path / "test_order.py").write_text(
+        "def test_bad(): assert False\n"
+        "def test_good(): pass\n"
+    )
+    checks = [localci.Check(name, "pytest", f"test_order.py::test_{name}") for name in ("bad", "good")]
+    next_check = localci.Check("later", "pin", "later")
+
+    def execute(group, seed, going):
+        return localci.run_pytest_batch(group, seed, cwd=tmp_path,
+                                         prefix=[sys.executable, "-m", "pytest"], keep_going=going)
+
+    report = localci.run_plan(shards=[[*checks, next_check]], master_seed=7, keep_going=False,
+                              execute=lambda *_: pytest.fail("must not run next group"),
+                              execute_pytest=execute, emit=lambda _: None)
+    assert report.stopped
+    assert report.rounds[0].failed_check == "bad"
+    assert any(line.strip() == "[pass] pytest" for line in report.rounds[0].lines)
+    assert report.rounds[0].not_run == 1
+
+
+def test_timeout_preserves_already_completed_test_evidence(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    (tmp_path / "test_budget.py").write_text(
+        "import time\n"
+        "def test_good(): pass\n"
+        "def test_hangs(): time.sleep(60)\n"
+        "def test_later(): pass\n"
+    )
+    checks = [localci.Check(name, "pytest", f"test_budget.py::test_{name}") for name in ("good", "hangs", "later")]
+
+    def runner(argv, **kwargs):
+        assert kwargs["timeout"] == 900
+        return subprocess.run(argv, **dict(kwargs, timeout=1.5))
+
+    results = localci.run_pytest_batch(checks, 7, cwd=tmp_path, prefix=[sys.executable, "-m", "pytest"],
+                                      keep_going=True, runner=runner)
+    assert [results[check.id].status for check in checks] == ["pass", "fail", "not_run"]
+    assert "timed out" in results["hangs"].detail
+
+
+@pytest.mark.parametrize("session_finish", ["session.exitstatus = 3", "time.sleep(60)"])
+def test_pytest_session_failure_preserves_complete_node_evidence(tmp_path, monkeypatch, session_finish):
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    (tmp_path / "conftest.py").write_text(
+        f"import time\ndef pytest_sessionfinish(session): {session_finish}\n"
+    )
+    (tmp_path / "test_session.py").write_text(
+        "import pytest\n"
+        "def test_good(): pass\n"
+        "def test_skip(): pytest.skip('reason')\n"
+    )
+    checks = [localci.Check(name, "pytest", f"test_session.py::test_{name}") for name in ("good", "skip")]
+    def runner(argv, **kwargs):
+        return subprocess.run(argv, **dict(kwargs, timeout=1.5))
+
+    results = localci.run_pytest_batch(checks, 7, cwd=tmp_path, prefix=[sys.executable, "-m", "pytest"],
+                                      keep_going=False, runner=runner)
+    assert [results[check.id].status for check in checks] == ["pass", "skip"]
+    assert results.batch_error.startswith("pytest")
+    plan = localci.run_plan(shards=[checks, []], master_seed=7, execute=None, keep_going=False,
+                            emit=lambda _: None, execute_pytest=lambda *_: results)
+    assert plan.stopped
+    assert plan.rounds[0].failed_check is None
+    assert plan.rounds[0].not_run == 0
+    assert plan.rounds[0].batch_error == results.batch_error
+    assert not plan.rounds[0].passed
+
+
+def test_pytest_collection_failure_does_not_blame_an_unrun_test(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    (tmp_path / "test_collection.py").write_text(
+        "raise RuntimeError('fixture collection failed')\n"
+        "def test_first(): pass\n"
+        "def test_second(): pass\n"
+    )
+    checks = [localci.Check(name, "pytest", f"test_collection.py::test_{name}") for name in ("first", "second")]
+    result = localci.run_pytest_batch(checks, 7, cwd=tmp_path, prefix=[sys.executable, "-m", "pytest"],
+                                     keep_going=False)
+    assert all(outcome.status == "not_run" for outcome in result.values())
+    assert "fixture collection failed" in result.batch_error
+    plan = localci.run_plan(shards=[checks], master_seed=7, execute=None, keep_going=False, emit=lambda _: None,
+                            execute_pytest=lambda *_: result)
+    assert plan.stopped and plan.rounds[0].not_run == 2
+    assert plan.rounds[0].failed_check is None
+
+
+def test_pytest_launch_failure_keeps_all_nodes_unobserved(tmp_path):
+    checks = [localci.Check(name, "pytest", name) for name in ("first", "second")]
+
+    def launch(*args, **kwargs):
+        raise OSError("pytest executable unavailable")
+
+    result = localci.run_pytest_batch(checks, 7, cwd=tmp_path, prefix=[], keep_going=True, runner=launch)
+    assert all(outcome.status == "not_run" for outcome in result.values())
+    assert "pytest executable unavailable" in result.batch_error
+    plan = localci.run_plan(shards=[checks], master_seed=7, execute=None, keep_going=False, emit=lambda _: None,
+                            execute_pytest=launch)
+    assert plan.stopped and plan.rounds[0].not_run == 2
+    assert plan.rounds[0].failed_check is None
+
+
+def test_pytest_unittest_subtests_preserve_parent_outcomes(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    (tmp_path / "test_subtests_contract.py").write_text(
+        "import unittest\n"
+        "class Cases(unittest.TestCase):\n"
+        "    def test_good(self):\n"
+        "        for n in (1, 2):\n"
+        "            with self.subTest(n=n): self.assertGreater(n, 0)\n"
+        "    def test_bad(self):\n"
+        "        for n in (1, 2):\n"
+        "            with self.subTest(n=n): self.assertEqual(n, 0)\n"
+        "    def test_partial(self):\n"
+        "        with self.subTest(n=1): self.skipTest('subcase unavailable')\n"
+        "        with self.subTest(n=2): self.assertGreater(2, 0)\n"
+    )
+    checks = [localci.Check(name, "pytest", f"test_subtests_contract.py::Cases::test_{name}") for name in ("good", "bad", "partial")]
+    prefix = [sys.executable, "-m", "pytest"]
+    alone = localci.run_pytest_batch(checks[:1], 7, cwd=tmp_path, prefix=prefix, keep_going=True)
+    assert alone["good"].status == "pass"
+    assert alone.batch_error == ""
+    mixed = localci.run_pytest_batch(checks, 7, cwd=tmp_path, prefix=prefix, keep_going=True)
+    assert [mixed[check.id].status for check in checks] == ["pass", "fail", "skip"]
+    assert "subcase unavailable" in mixed["partial"].detail
+    assert mixed.batch_error == ""
+
+
+@pytest.mark.parametrize("child_prefix", ["", "nagoyaction/"])
+def test_batch_receipt_is_not_inherited_by_nested_pytest(tmp_path, monkeypatch, child_prefix):
+    # pytest node IDs are relative to the config root, which need not be the
+    # directory containing the NagoyAction source (for example, in Aoi).
+    config = tmp_path / "pyproject.toml"
+    config.write_text("[tool.pytest.ini_options]\n", encoding="utf-8")
+    testdir = tmp_path / child_prefix / "tests"
+    testdir.mkdir(parents=True)
+    (testdir / "test_inner.py").write_text("def test_inner(): pass\n", encoding="utf-8")
+    inner_target = f"{child_prefix}tests/test_inner.py::test_inner"
+    (testdir / "test_outer.py").write_text(
+        "import subprocess, sys\n"
+        "def test_outer():\n"
+        "    for _ in range(2):\n"
+        f"        subprocess.run([sys.executable, '-m', 'pytest', '-q', '-p', 'nagoyaction', "
+        f"'-c', {str(config)!r}, {inner_target!r}], check=True)\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+    target = f"{child_prefix}tests/test_outer.py::test_outer"
+    check = localci.Check("nested", "pytest", target)
+    prefix = [sys.executable, "-m", "pytest", "-c", str(config)]
+    result = localci.run_pytest_batch([check], 7, cwd=tmp_path, prefix=prefix, keep_going=True)
+    assert result["nested"].status == "pass", result.batch_error
+    assert not result.batch_error
+
+
+def test_batch_receipt_diagnostics_distinguish_missing_and_duplicate_phase(tmp_path):
+    check = localci.Check("one", "pytest", "test_target.py::test_one")
+
+    def missing(*args, **kwargs):
+        return Proc(rc=0)
+
+    def duplicate(argv, **kwargs):
+        record = json.dumps([check.target, "setup", "passed", ""]) + "\n"
+        Path(argv[argv.index("--localci-receipt") + 1]).write_text(record * 2)
+        return Proc(rc=0)
+
+    for runner, diagnostic in [(missing, "receipt not created"), (duplicate, "duplicate pytest phase")]:
+        result = localci.run_pytest_batch([check], 7, cwd=tmp_path, prefix=[], keep_going=True, runner=runner)
+        assert result["one"].status == "not_run"
+        assert diagnostic in result.batch_error
+
+
+def test_budget_probe_rejects_malformed_cache_metadata_and_missing_binary(tmp_path):
+    malformed = _cached_actionlint(tmp_path, "1.7.9")
+    (malformed.parent / "actionlint.record.json").write_text("{", encoding="utf-8")
+    missing = _cached_actionlint(tmp_path, "1.7.10")
+    missing.unlink()
+    assert localci.cached_actionlint(tmp_path) is None
+
+
+def test_budget_probe_missing_executable_is_not_a_pass(tmp_path):
+    check = localci.Check("unobserved", "pytest", "test_none.py::test_none")
+    result = localci.run_pytest_batch([check], 7, cwd=tmp_path,
+                                     prefix=[str(tmp_path / "missing-python")], keep_going=False)
+    assert result[check.id].status == "not_run"
+    assert "launch failed" in result.batch_error

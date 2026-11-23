@@ -138,7 +138,7 @@ nagoyaction actionlint                                  # actionlint + uses: pin
 nagoyaction actionlint --strict --all --repeat 10       # = nagoyaction localci run --strict --repeat 10
 ```
 
-`--repeat N` does not trace the same checks N times. It shuffles the check list (resolving references, actionlint, each `uses:`, the pytest tests) by seed and splits it into N nearly equal shards. Each round runs only one shard, and once all rounds finish every check has run exactly once. It stops at a failing round and prints the round number, shard contents, and seed. `--keep-going` continues. After each round it prints the number of rounds passed and completed against N. Getting deep without failures is a confidence signal that the remaining shards will pass too.
+`--repeat N` does not trace the same checks N times. It shuffles the check list (resolving references, actionlint, each `uses:`, the pytest tests) by seed and splits it into N nearly equal shards. Each round attempts only one shard. Checks assigned to a stopped round or omitted by pytest are not counted as run. It stops at a failing round and prints the round number, shard contents, and seed. `--keep-going` continues. After each round it prints the number of rounds passed and completed against N. A round is counted as passed only if it has checks and every check passed. Skips and unexecuted checks are shown separately and do not add to the passed count. A pytest session error can fail the round even when recorded individual test outcomes are preserved.
 
 Checks that pass with fixed values are switched to other values from that round's seed with `substitute(name, value, draw)`. In pytest, `-p nagoyaction` does the same via monkeypatch. Rounds can also be chosen with the plugin alone.
 

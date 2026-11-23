@@ -110,7 +110,7 @@ python aoi.py nagoyaction run    cycles/c001-chunichi/pipeline.toml --dry-run  #
 | [`shrink/`](shrink/) | Stdlib-only minimal NumPy and polars stand-ins (`numpy_min.py`, `numpy_linalg_min.py`, `polars_min.py`) that are distributed to the subtree children; see [Lightweight NumPy compatibility](#lightweight-numpy-compatibility) |
 | [`mindeps/`](mindeps/LIMITS.md) | Opt-in minimal httpx and selectolax stand-ins with runners; [what they can and cannot replace](mindeps/LIMITS.md) |
 | [`pkgmin/`](pkgmin/LIMITS.md) | Minimal requests, tqdm and biopython stand-ins and the used-surface measurement; [limits](pkgmin/LIMITS.md) |
-| [`dist/`](dist/), [`distributions/`](distributions/), `distributions.json` | Single-file stdlib distributions (`*_min.py`); see [docs/distributions.md](docs/distributions.md) |
+| [`distributions/`](distributions/) | Small stdlib cores for the reusable min APIs, copied as files (no bundling); see [docs/distributions.md](docs/distributions.md) |
 | [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash. `vendor/py_launch.cjs` is the canonical copy of the parent repository's Node launcher (Node >= 26), and `vendor/uv_tool_build.py` the parent's single-file stdlib → uv tool builder; Aoi's children vendor both from Aoi |
 | `shared-tools.lock.json` | Stdlib-shrink tools, `vendor/py_launch.cjs` and `vendor/uv_tool_build.py` that Aoi distributes to its subtree children, verified by hash (no child takes `uv_tool_build.py` any more: each child's root `pyproject.toml` is its uv tool) |
 | [`docs/`](docs/) | Philosophy, principles, method and specifications |

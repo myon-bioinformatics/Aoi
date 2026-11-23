@@ -27,7 +27,6 @@ The table lists event types, not a claim that every upstream run concerns a PR.
 | DRAgoWing reports | push, pull_request, workflow_dispatch | allowed |
 | Links | push, pull_request, workflow_dispatch | allowed |
 | LittleBit holdout drift | pull_request, push, workflow_dispatch | allowed |
-| Minimal stdlib distributions | pull_request, push, workflow_dispatch | allowed |
 | Nano research environment comparison | pull_request, workflow_dispatch | allowed |
 | numpy_min backends | pull_request, workflow_dispatch | allowed |
 | requests tqdm biopython surface | pull_request, workflow_dispatch | allowed |

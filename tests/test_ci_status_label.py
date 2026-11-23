@@ -172,7 +172,6 @@ on:
       - 'DRAgoWing reports'
       - 'Links'
       - 'LittleBit holdout drift'
-      - 'Minimal stdlib distributions'
       - 'Nano research environment comparison'
       - 'Pages'
       - 'Season simulator'

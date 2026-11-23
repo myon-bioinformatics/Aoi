@@ -1,22 +1,10 @@
 {
   "schema": 1,
-  "files_scanned": 294,
+  "files_scanned": 290,
   "dynamic_nonliteral": [
     {
       "file": "blueprobe/blueprobe.py",
       "line": 67
-    },
-    {
-      "file": "dist/pythdragoras_min.py",
-      "line": 120
-    },
-    {
-      "file": "dist/queryu_min.py",
-      "line": 117
-    },
-    {
-      "file": "dist/sakanalytics_min.py",
-      "line": 119
     },
     {
       "file": "dragowing/dragowing.py",

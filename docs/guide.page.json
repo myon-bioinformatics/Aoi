@@ -14,53 +14,74 @@
       ]
     },
     {
-      "type": "section",
-      "title": "📥 取得",
-      "blocks": [
+      "type": "tabs",
+      "id": "guide",
+      "tabs": [
         {
-          "type": "text",
-          "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
-        },
-        {
-          "type": "output",
-          "text": "git clone https://github.com/myon-bioinformatics/QueRyu.git\ncd QueRyu"
-        }
-      ]
-    },
-    {
-      "type": "section",
-      "title": "▶️ 実行",
-      "blocks": [
-        {
-          "type": "card",
-          "title": "📄 単一ファイルを作る",
-          "text": "配布用の1ファイルを組み立てます。",
+          "label": "🧩 機能一覧",
           "blocks": [
             {
-              "type": "output",
-              "text": "$ python scripts/build_single_file.py dist-single/queryu.py"
+              "type": "section",
+              "title": "📥 取得",
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
+                },
+                {
+                  "type": "output",
+                  "text": "git clone https://github.com/myon-bioinformatics/QueRyu.git\ncd QueRyu"
+                }
+              ]
+            },
+            {
+              "type": "section",
+              "title": "▶️ 実行",
+              "blocks": [
+                {
+                  "type": "card",
+                  "title": "📄 単一ファイルを作る",
+                  "text": "配布用の1ファイルを組み立てます。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python scripts/build_single_file.py dist-single/queryu.py"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "❓ ヘルプ",
+                  "text": "引数の一覧です。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python dist-single/queryu.py --help"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "🗺️ 取得せずに計画を見る",
+                  "text": "--plan は件数と待ち時間を見積もるだけで、取得しません。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python dist-single/queryu.py --source your_source --years 2024 \\\n    --cache ./cache --plan --offline"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
         {
-          "type": "card",
-          "title": "❓ ヘルプ",
-          "text": "引数の一覧です。",
+          "label": "🎞 GIF デモ",
           "blocks": [
             {
-              "type": "output",
-              "text": "$ python dist-single/queryu.py --help"
-            }
-          ]
-        },
-        {
-          "type": "card",
-          "title": "🗺️ 取得せずに計画を見る",
-          "text": "--plan は件数と待ち時間を見積もるだけで、取得しません。",
-          "blocks": [
-            {
-              "type": "output",
-              "text": "$ python dist-single/queryu.py --source your_source --years 2024 \\\n    --cache ./cache --plan --offline"
+              "type": "text",
+              "text": "🎞 まだ GIF はありません。ブラウザテストや実行の様子を GIF にしたら、ここに並びます。",
+              "muted": true
             }
           ]
         }

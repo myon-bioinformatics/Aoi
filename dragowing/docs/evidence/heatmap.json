@@ -1,0 +1,180 @@
+{
+  "schema": "btk-evidence-gif/2",
+  "gif": "heatmap.gif",
+  "bytes": 74865,
+  "sha256": "da7be2043e8c6a7ab73584b4852dc9ad39b38f4986da89b3f36d3eb183cc607f",
+  "frames": 16,
+  "canvas": "720x512",
+  "browser": "chromium 153.0.8010.12",
+  "executable": {
+    "source": "given",
+    "path": "/opt/pw-browsers/chromium-1243/chrome-linux64/chrome"
+  },
+  "recorded": "2026-11-24",
+  "commit": "c7c5da06f788fb3ed4195806362ae223530a8827",
+  "stills": {
+    "dir": null,
+    "files": []
+  },
+  "encoder": {
+    "module": "PySaiyanWeBoo gif.js",
+    "web_ui": "bbe5c0b0087f40ff3fffd53bec5111c2ba2d747d",
+    "bytes": 74865,
+    "frames": 16,
+    "colors": 255,
+    "thin": 0,
+    "attempts": 1,
+    "stored": 16,
+    "merged": 0,
+    "buckets": 1892,
+    "overBudget": false,
+    "encodeMs": 134,
+    "images": 11,
+    "reused": 5,
+    "patches": 0,
+    "synthesized": 0,
+    "capture_s": 10.9
+  },
+  "limits": {
+    "colors": 255,
+    "max_bytes": null,
+    "max_frames": 300,
+    "last_hold_ms": 2000
+  },
+  "transfer": {
+    "screenshots": 16,
+    "png_bytes": 637117,
+    "identical": 5,
+    "patches": 0,
+    "calls": 3,
+    "sent_bytes": 572148,
+    "gif_bytes": 74865
+  },
+  "mapped": [],
+  "summary": {
+    "pass": 3,
+    "fail": 0
+  },
+  "shots": [
+    {
+      "label": "🌡️ 行列を貼って描画",
+      "url": "/heatmap/index.html",
+      "viewport": "1280x800",
+      "steps": [
+        "fill #source",
+        "click form button",
+        "wait 600",
+        "eval ⚙️",
+        "wait 600",
+        "click #labels",
+        "wait 600"
+      ],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": [],
+      "generator": null
+    },
+    {
+      "label": "📈 Plotly の heatmap を読む",
+      "url": "/heatmap/index.html",
+      "viewport": "1280x800",
+      "steps": [
+        "fill #source",
+        "click form button",
+        "wait 600"
+      ],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": [],
+      "generator": null
+    },
+    {
+      "label": "📱 スマホ幅",
+      "url": "/heatmap/index.html",
+      "viewport": "392x848",
+      "steps": [
+        "fill #source",
+        "click form button",
+        "wait 600"
+      ],
+      "status": "pass",
+      "errors": [],
+      "allowed": [],
+      "external": [],
+      "generator": null
+    }
+  ],
+  "plan": [
+    {
+      "label": "🌡️ 行列を貼って描画",
+      "url": "/heatmap/index.html",
+      "viewport": "1280x800",
+      "steps": [
+        {
+          "fill": [
+            "#source",
+            "[[3,1,4,1,5,9],[2,6,5,3,5,8],[9,7,9,3,2,3],[8,4,6,null,6,4]]"
+          ]
+        },
+        {
+          "click": "form button"
+        },
+        {
+          "wait": 600
+        },
+        {
+          "eval": "const s=document.getElementById('steps'); s.value=5; s.dispatchEvent(new Event('change'))"
+        },
+        {
+          "wait": 600
+        },
+        {
+          "click": "#labels"
+        },
+        {
+          "wait": 600
+        }
+      ]
+    },
+    {
+      "label": "📈 Plotly の heatmap を読む",
+      "url": "/heatmap/index.html",
+      "viewport": "1280x800",
+      "steps": [
+        {
+          "fill": [
+            "#source",
+            "{\"data\":[{\"type\":\"heatmap\",\"x\":[\"月\",\"火\",\"水\",\"木\"],\"y\":[\"朝\",\"昼\",\"夜\"],\"z\":[[1,2,3,4],[2,4,6,8],[4,3,2,1]]}]}"
+          ]
+        },
+        {
+          "click": "form button"
+        },
+        {
+          "wait": 600
+        }
+      ]
+    },
+    {
+      "label": "📱 スマホ幅",
+      "url": "/heatmap/index.html",
+      "viewport": "392x848",
+      "steps": [
+        {
+          "fill": [
+            "#source",
+            "[[3,1,4],[1,5,9],[2,6,5]]"
+          ]
+        },
+        {
+          "click": "form button"
+        },
+        {
+          "wait": 600
+        }
+      ]
+    }
+  ]
+}

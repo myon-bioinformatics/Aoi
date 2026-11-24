@@ -8,6 +8,12 @@ SOURCE = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("research_worker", SOURCE / "inbox/worker.py")
 w = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(w)
+_cli_args_spec = importlib.util.spec_from_file_location(
+    "nagoyaction_cli_args", SOURCE / "vendor" / "cli_args.py",
+)
+_cli_args = importlib.util.module_from_spec(_cli_args_spec)
+sys.modules[_cli_args_spec.name] = _cli_args
+_cli_args_spec.loader.exec_module(_cli_args)
 AOI = Path(os.environ.get("AOI_WORKER_TEST_ROOT", SOURCE.parent))
 
 
@@ -172,9 +178,8 @@ def test_paths_and_offline_capabilities(research, tmp_path, enabled):
 
 
 def test_inbox_cli_worker_dispatch_needs_no_reader_dependencies(tmp_path):
-    env = {**os.environ, "AOI_RESEARCH_ENABLED": "0"}
-    result = subprocess.run([sys.executable, str(SOURCE / "inbox/inbox.py"), "worker", "--seconds", "1"],
-                            env=env, text=True, capture_output=True, timeout=10)
+    result = _cli_args.run_cli(SOURCE / "inbox/inbox.py", "worker", "--seconds", "1",
+                               env=_cli_args.build_env({"AOI_RESEARCH_ENABLED": "0"}), timeout=10)
     assert result.returncode == 1 and "worker disabled" in result.stderr
 
 
@@ -190,9 +195,8 @@ def test_cli_watchdog_also_bounds_snapshot(research, tmp_path, enabled):
     engine.write_text(text.replace('def snapshot(root, cycle, seed):',
                                    'def snapshot(root, cycle, seed):\n    time.sleep(30)'))
     started = time.monotonic()
-    result = subprocess.run([sys.executable, str(engine), "worker", "--root", str(research),
-                             "--cycle", "test", "--seconds", "1", "--state-dir", str(tmp_path / "state")],
-                            capture_output=True, text=True, timeout=5)
+    result = _cli_args.run_cli(engine, "worker", "--root", research, "--cycle", "test", "--seconds", "1",
+                               "--state-dir", tmp_path / "state", timeout=5)
     assert result.returncode == 124
     assert time.monotonic() - started < 4
     assert "wall-clock deadline" in result.stderr
@@ -222,9 +226,8 @@ def test_cli_signals_do_not_orphan_worker(research, tmp_path, enabled, sig):
 
 @pytest.mark.parametrize("mode", ["_step", "_run"])
 def test_internal_entry_points_also_require_opt_in(mode):
-    result = subprocess.run([sys.executable, str(SOURCE / "inbox/worker.py"), mode],
-                            env={**os.environ, "AOI_RESEARCH_ENABLED": "0"},
-                            text=True, capture_output=True, timeout=5)
+    result = _cli_args.run_cli(SOURCE / "inbox/worker.py", mode,
+                               env=_cli_args.build_env({"AOI_RESEARCH_ENABLED": "0"}), timeout=5)
     assert result.returncode == 1 and "worker disabled" in result.stderr
 
 

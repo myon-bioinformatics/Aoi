@@ -14,53 +14,74 @@
       ]
     },
     {
-      "type": "section",
-      "title": "📥 取得",
-      "blocks": [
+      "type": "tabs",
+      "id": "guide",
+      "tabs": [
         {
-          "type": "text",
-          "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
-        },
-        {
-          "type": "output",
-          "text": "git clone https://github.com/myon-bioinformatics/PythDRagoras.git\ncd PythDRagoras"
-        }
-      ]
-    },
-    {
-      "type": "section",
-      "title": "▶️ 実行",
-      "blocks": [
-        {
-          "type": "card",
-          "title": "🧮 指標",
-          "text": "TP FP FN TN の4つの数から指標を計算します。",
+          "label": "🧩 機能一覧",
           "blocks": [
             {
-              "type": "output",
-              "text": "$ python pythdragoras.py 16 0 56 72\n{\"accuracy\": 0.6111111111111112, \"balanced_accuracy\": 0.6111111111111112, \"f1\": 0.36363636363636365, \"fn\": 56, \"fp\": 0, \"mcc\": 0.3535533905932738, \"n\": 144, ..., \"precision\": 1.0, \"recall\": 0.2222222222222222, \"tn\": 72, \"tp\": 16}"
+              "type": "section",
+              "title": "📥 取得",
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
+                },
+                {
+                  "type": "output",
+                  "text": "git clone https://github.com/myon-bioinformatics/PythDRagoras.git\ncd PythDRagoras"
+                }
+              ]
+            },
+            {
+              "type": "section",
+              "title": "▶️ 実行",
+              "blocks": [
+                {
+                  "type": "card",
+                  "title": "🧮 指標",
+                  "text": "TP FP FN TN の4つの数から指標を計算します。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python pythdragoras.py 16 0 56 72\n{\"accuracy\": 0.6111111111111112, \"balanced_accuracy\": 0.6111111111111112, \"f1\": 0.36363636363636365, \"fn\": 56, \"fp\": 0, \"mcc\": 0.3535533905932738, \"n\": 144, ..., \"precision\": 1.0, \"recall\": 0.2222222222222222, \"tn\": 72, \"tp\": 16}"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "🧩 LittleBit",
+                  "text": "行列を標準入力から渡します。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ echo '[[1,0,1],[0,1,1],[1,1,0]]' | python pythdragoras.py littlebit --rank 2"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "📦 コマンドとして導入",
+                  "text": "uv があれば、クローンせずに導入できます。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ uv tool install git+https://github.com/myon-bioinformatics/PythDRagoras.git\n$ pythdragoras 16 0 56 72"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
         {
-          "type": "card",
-          "title": "🧩 LittleBit",
-          "text": "行列を標準入力から渡します。",
+          "label": "🎞 GIF デモ",
           "blocks": [
             {
-              "type": "output",
-              "text": "$ echo '[[1,0,1],[0,1,1],[1,1,0]]' | python pythdragoras.py littlebit --rank 2"
-            }
-          ]
-        },
-        {
-          "type": "card",
-          "title": "📦 コマンドとして導入",
-          "text": "uv があれば、クローンせずに導入できます。",
-          "blocks": [
-            {
-              "type": "output",
-              "text": "$ uv tool install git+https://github.com/myon-bioinformatics/PythDRagoras.git\n$ pythdragoras 16 0 56 72"
+              "type": "text",
+              "text": "🎞 まだ GIF はありません。ブラウザテストや実行の様子を GIF にしたら、ここに並びます。",
+              "muted": true
             }
           ]
         }

@@ -3,10 +3,10 @@
 📘 [利用ガイド / Usage guide](https://myon-bioinformatics.github.io/NagoyAction/) (GitHub Pages)
 
 <p align="center">
-  <img src="docs/brand/icon.png" alt="NagoyAction icon" width="160" />
+  <img src="https://myon-bioinformatics.github.io/NagoyAction/icon.png" alt="NagoyAction icon" width="160" />
 </p>
 
-[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+[Icon](https://myon-bioinformatics.github.io/NagoyAction/icon.png) · [Favicon](https://myon-bioinformatics.github.io/NagoyAction/favicon.png)
 
 > Turning research into a system you can keep running.
 >

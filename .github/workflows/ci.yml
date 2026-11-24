@@ -126,10 +126,11 @@ jobs:
       fail-fast: false
       matrix:
         # Aoi の CI と同じ。failure-identity の expected-reports と揃えること
-        python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+                # Pull requests run the newest Python only; push and schedule run the full matrix.
+        python: ${{ github.event_name == 'pull_request' && fromJSON('["3.15"]') || fromJSON('["3.11", "3.12", "3.13", "3.14", "3.15"]') }}
         backend: [lapack]
-        # PURE 強制 lane。PR と push は 3.14 だけ、schedule は 3.11 と 3.15 も
-        include: ${{ fromJSON(github.event_name == 'schedule' && '[{"python":"3.11","backend":"pure"},{"python":"3.14","backend":"pure"},{"python":"3.15","backend":"pure"}]' || '[{"python":"3.14","backend":"pure"}]') }}
+        # PURE 強制 lane。push は 3.14 だけ、schedule は 3.11 と 3.15 も、PR では走らせない
+        include: ${{ fromJSON(github.event_name == 'schedule' && '[{"python":"3.11","backend":"pure"},{"python":"3.14","backend":"pure"},{"python":"3.15","backend":"pure"}]' || (github.event_name == 'push' && '[{"python":"3.14","backend":"pure"}]' || '[]')) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -262,7 +263,7 @@ jobs:
       actions: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1368174821fb03be258ecf3312ce0ea809f6ea22
     with:
-      expected-reports: ${{ github.event_name == 'schedule' && '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.11/junit.xml","junit-pure-py3.14/junit.xml","junit-pure-py3.15/junit.xml"]' || '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.14/junit.xml"]' }}
+      expected-reports: ${{ github.event_name == 'schedule' && '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.11/junit.xml","junit-pure-py3.14/junit.xml","junit-pure-py3.15/junit.xml"]' || (github.event_name == 'pull_request' && '["junit-py3.15/junit.xml"]' || '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.14/junit.xml"]') }}
       artifact-pattern: junit-*
       output-artifact: failure-identity
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}

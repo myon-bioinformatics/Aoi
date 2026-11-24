@@ -1,4 +1,4 @@
-import json, os, subprocess, sys, tempfile, threading, unittest, urllib.error
+import importlib.util, json, os, subprocess, sys, tempfile, threading, unittest, urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer; from pathlib import Path
 
 import pytest
@@ -108,10 +108,21 @@ def test_repository_links_are_all_valid():
     assert broken == []
 
 
+_cli_args_spec = importlib.util.spec_from_file_location(
+    "nagoyaction_cli_args", Path(__file__).resolve().parents[1] / "vendor" / "cli_args.py",
+)
+_cli_args = importlib.util.module_from_spec(_cli_args_spec)
+sys.modules[_cli_args_spec.name] = _cli_args
+_cli_args_spec.loader.exec_module(_cli_args)
+
+
 def run_linkcheck(args, *, cwd=None, env=None):
-    return subprocess.run(
-        [sys.executable, "-S", str(LINKCHECK), "linkcheck", *args],
-        cwd=cwd, env=env, capture_output=True, text=True,
+    # run_cli decodes stdout/stderr as UTF-8, and these tests read Japanese text:
+    # make the child emit UTF-8 whatever the parent locale is. A provided env
+    # replaces the environment, as with subprocess.run(env=...).
+    return _cli_args.run_cli(
+        LINKCHECK, "linkcheck", *args, python_options=("-S",), cwd=cwd,
+        env=_cli_args.build_env({"PYTHONIOENCODING": "utf-8"}, base=env),
     )
 
 

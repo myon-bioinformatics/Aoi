@@ -1,7 +1,7 @@
 """Coverage labels must not promote inherited values, skipped work or failures."""
 from __future__ import annotations
 
-import importlib.util, json, subprocess, sys, tempfile, unittest
+import importlib.util, json, sys, tempfile, unittest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "annotate_c001_replay.py"
@@ -9,6 +9,12 @@ sys.path.insert(0, str(SCRIPT.parent))  # the script imports its sibling c001_pu
 spec = importlib.util.spec_from_file_location("c001_annotations", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
+_cli_args_spec = importlib.util.spec_from_file_location(
+    "nagoyaction_cli_args", Path(__file__).resolve().parents[1] / "vendor" / "cli_args.py",
+)
+_cli_args = importlib.util.module_from_spec(_cli_args_spec)
+sys.modules[_cli_args_spec.name] = _cli_args
+_cli_args_spec.loader.exec_module(_cli_args)
 
 
 class AnnotationTests(unittest.TestCase):
@@ -207,7 +213,7 @@ class AnnotationTests(unittest.TestCase):
         self.assertEqual(self.output("season.jsonl")[0]["data"]["team_name"], "中日")
 
     def test_python_S_cli_really_generates_annotation_artifact(self):
-        child = subprocess.run([sys.executable, "-S", str(SCRIPT), str(self.root)], capture_output=True, text=True)
+        child = self.cli()
         self.assertEqual(child.returncode, 0, child.stderr)
         self.assertIn('"verification_coverage": "partial"', child.stdout)
         self.assertTrue((self.root / "v2/annotated/verification-summary.json").is_file())
@@ -283,7 +289,7 @@ class AnnotationTests(unittest.TestCase):
             self.run_audit()
 
     def cli(self):
-        return subprocess.run([sys.executable, "-S", str(SCRIPT), str(self.root)], capture_output=True, text=True)
+        return _cli_args.run_cli(SCRIPT, self.root, python_options=("-S",))
 
     def test_failed_execution_has_nonzero_cli_and_preserves_V1(self):
         self.rows("replay-receipt.jsonl", [{"step": "question", "returncode": 64}])

@@ -186,9 +186,20 @@ class TestDialNames(unittest.TestCase):
         self.assertEqual(olnm.read_dial(), 2)  # a rejected name changes nothing
 
 
+_cli_args_spec = importlib.util.spec_from_file_location(
+    "nagoyaction_cli_args", ROOT / "vendor" / "cli_args.py",
+)
+_cli_args = importlib.util.module_from_spec(_cli_args_spec)
+sys.modules[_cli_args_spec.name] = _cli_args
+_cli_args_spec.loader.exec_module(_cli_args)
+
+
 def nagoyaction(*argv, home):
-    env = dict(os.environ, OLNM_HOME=str(home), DIAL_FILE=str(home / "dial"))
-    return subprocess.run([sys.executable, str(ROOT / "nagoyaction.py"), *argv], capture_output=True, text=True, env=env, timeout=60)
+    # run_cli decodes stdout/stderr as UTF-8 and these tests read the dial emoji: make the child emit UTF-8.
+    env = _cli_args.build_env({"OLNM_HOME": str(home), "DIAL_FILE": str(home / "dial"), "PYTHONIOENCODING": "utf-8"})
+    result = _cli_args.run_cli(ROOT / "nagoyaction.py", *argv, env=env, timeout=60)
+    assert not result.timed_out, result.stderr  # a hang past 60 s still fails the test
+    return result
 
 
 class TestNagoyactionHub(unittest.TestCase):
@@ -221,8 +232,8 @@ class TestNagoyactionHub(unittest.TestCase):
     def test_python_callable_by_name(self):
         code = ("import os, sys; sys.path.insert(0, sys.argv[1]); import nagoyaction;"
                 " sys.exit(nagoyaction.hub('dial', 'local'))")
-        env = dict(os.environ, OLNM_HOME=str(self.home), DIAL_FILE=str(self.home / "dial"))
-        run = subprocess.run([sys.executable, "-c", code, str(ROOT)], capture_output=True, text=True, env=env, timeout=60)
+        env = _cli_args.build_env({"OLNM_HOME": str(self.home), "DIAL_FILE": str(self.home / "dial")})
+        run = _cli_args.run_command(_cli_args.Command((sys.executable, "-c", code, str(ROOT))), env=env, timeout=60)
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertEqual((self.home / "dial").read_text().strip(), "1")
 

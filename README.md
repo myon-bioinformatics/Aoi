@@ -3,10 +3,10 @@
 🌐 [GitHub Pages](https://myon-bioinformatics.github.io/SakAnalytics/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
 
 <p align="center">
-  <img src="docs/brand/icon.png" alt="SakAnalytics icon" width="160" />
+  <img src="https://myon-bioinformatics.github.io/SakAnalytics/icon.png" alt="SakAnalytics icon" width="160" />
 </p>
 
-[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+[Icon](https://myon-bioinformatics.github.io/SakAnalytics/icon.png) · [Favicon](https://myon-bioinformatics.github.io/SakAnalytics/favicon.png)
 
 > The numbers speak, but they haven't said everything yet.
 >

@@ -21,6 +21,9 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   without-numpy:
     name: render_md and load_overlap (real numpy, then numpy_min)

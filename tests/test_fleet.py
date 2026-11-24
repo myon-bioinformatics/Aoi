@@ -17,7 +17,7 @@ _spec.loader.exec_module(fleet)
 
 WORKFLOWS = fleet.repo_root(__file__)  # 単独では ROOT。Aoi の中では、ワークフローを持つ一番近い親
 PARENT_WORKFLOW_PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
-ACCEPTED = {"vendor/fleet_check.py": "bc57f08a590ee1cb33a8bb37c1bb3b8f28a2f3c9",
+ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
             # 📊 親の stdlib_min の plotly_min（静止の図の SVG を Chrome なしで描く）
             "vendor/tools/stdlib_min/plotly_min.py": "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32",
             # 📝 自作の markdown.py（ページの文章。Python-Markdown の代わり）
@@ -150,6 +150,10 @@ def test_python_matrix_installs_no_browser():
 class ScriptsDescribeThemselves(unittest.TestCase):
     def test_every_script_has_a_description_and_declared_arguments(self):
         fleet.check_scripts(fleet.repo_root(__file__))
+
+    def test_pull_request_ci_stays_quick(self):
+        # ⏱ push limited to branches, superseded PR runs cancelled, every job timed (fleet_check.check_ci)
+        fleet.check_ci(fleet.repo_root(__file__))
 
     def test_root_scripts_import_only_the_standard_library(self):
         root = fleet.repo_root(__file__)

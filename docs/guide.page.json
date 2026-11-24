@@ -15,53 +15,74 @@
       ]
     },
     {
-      "type": "section",
-      "title": "📥 取得",
-      "blocks": [
+      "type": "tabs",
+      "id": "guide",
+      "tabs": [
         {
-          "type": "text",
-          "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
-        },
-        {
-          "type": "output",
-          "text": "git clone https://github.com/myon-bioinformatics/BlueProbe.git\ncd BlueProbe"
-        }
-      ]
-    },
-    {
-      "type": "section",
-      "title": "▶️ 実行",
-      "blocks": [
-        {
-          "type": "card",
-          "title": "🔭 ページを観測",
-          "text": "受け入れた件数だけでなく、受け入れなかった件数と、どの分類にも当たらなかった原文も返します。",
+          "label": "🧩 機能一覧",
           "blocks": [
             {
-              "type": "output",
-              "text": "$ python blueprobe.py https://openai.com --out observation.json"
+              "type": "section",
+              "title": "📥 取得",
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
+                },
+                {
+                  "type": "output",
+                  "text": "git clone https://github.com/myon-bioinformatics/BlueProbe.git\ncd BlueProbe"
+                }
+              ]
+            },
+            {
+              "type": "section",
+              "title": "▶️ 実行",
+              "blocks": [
+                {
+                  "type": "card",
+                  "title": "🔭 ページを観測",
+                  "text": "受け入れた件数だけでなく、受け入れなかった件数と、どの分類にも当たらなかった原文も返します。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python blueprobe.py https://openai.com --out observation.json"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "📋 パターン一覧",
+                  "text": "使える DOM パターンの一覧を表示します。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python blueprobe.py --list-patterns"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "❓ ヘルプ",
+                  "text": "引数の一覧です。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python blueprobe.py --help"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
         {
-          "type": "card",
-          "title": "📋 パターン一覧",
-          "text": "使える DOM パターンの一覧を表示します。",
+          "label": "🎞 GIF デモ",
           "blocks": [
             {
-              "type": "output",
-              "text": "$ python blueprobe.py --list-patterns"
-            }
-          ]
-        },
-        {
-          "type": "card",
-          "title": "❓ ヘルプ",
-          "text": "引数の一覧です。",
-          "blocks": [
-            {
-              "type": "output",
-              "text": "$ python blueprobe.py --help"
+              "type": "text",
+              "text": "🎞 まだ GIF はありません。ブラウザテストや実行の様子を GIF にしたら、ここに並びます。",
+              "muted": true
             }
           ]
         }

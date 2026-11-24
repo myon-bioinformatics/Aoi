@@ -22,13 +22,14 @@ permissions:
 
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   PYSAIYANWEBOO: "pysaiyanweboo @ git+https://github.com/myon-bioinformatics/PySaiyanWeBoo@a955daad04aa7643f7dbfee97161120d541bdb3b"
 
 jobs:
   build:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -52,6 +53,7 @@ jobs:
           path: _site
 
   deploy:
+    timeout-minutes: 30
     if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest

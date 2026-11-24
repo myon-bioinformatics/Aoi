@@ -40,4 +40,4 @@
   uv run --locked python cycles/c001-chunichi/exploratory/wave_eps.py sensitivity --games games.jsonl --config cycles/c001-chunichi/analysis.toml \
       --committed cycles/c001-chunichi/outputs/season.jsonl --new-seasons 2026 --outdir out_sens --repo .
   ```
-  試験は約 2 分、感度は約 11 分かかります（`season_trajectory` をそれぞれ 4 回、25 回走らせるため）。`wave_eps_rows_*.jsonl`（2026年の行）から係数の表までは、[tests/test_c001_wave_eps.py settle_coefficients](../../../../tests/test_c001_wave_eps.py settle_coefficients) が保存済みの行だけでバイト単位で再現できることを確かめています。
+  試験は約 2 分、感度は約 11 分かかります（`season_trajectory` をそれぞれ 4 回、25 回走らせるため）。`wave_eps_rows_*.jsonl`（2026年の行）から係数の表までは、[`tests/test_c001_wave.py`](../../../../tests/test_c001_wave.py)（`settle_coefficients` の節）が保存済みの行だけでバイト単位で再現できることを確かめています。

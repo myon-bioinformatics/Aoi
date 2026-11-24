@@ -300,6 +300,10 @@ Scheduled acquisition, change detection, coordinated runs, notifications, report
 
 # PythDRagoras
 
+![PythDRagoras concept: Observation, Explanation, Residual, New Hypothesis, Validation](images/pythdragoras.webp)
+
+*構想図。図中の例は説明用であり、実際の研究結果や検証済み命題の一覧ではありません。[画像を開く](images/pythdragoras.webp)。*
+
 ## Purpose
 
 Hypothesis generation and explanation validation.
@@ -333,6 +337,8 @@ Its role is to identify:
 - hidden assumptions
 - model boundaries
 - opportunities for new hypotheses
+
+Implementation and specification: [PythDRagoras README](../pythdragoras/README.md), [docs/PythDRagoras.md](PythDRagoras.md), and [docs/propositions.md](propositions.md).
 
 ---
 

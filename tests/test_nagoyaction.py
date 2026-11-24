@@ -1,4 +1,4 @@
-import importlib.util, json, os, subprocess, sys
+import importlib.util, json, os, sys
 from pathlib import Path
 
 import pytest
@@ -204,8 +204,8 @@ def test_show_formatting_text_and_json(tmp_path, capsys):
 
 def test_cli_is_stdlib_only_and_runs_from_another_directory(tmp_path):
     # 1ファイルをコピーすれば使える: 別ディレクトリから python -S（site-packages なし）で実行できる
-    out = subprocess.run([sys.executable, "-S", str(ROOT / "nagoyaction" / "nagoyaction.py"), "run",
-                          str(CYCLE), "--dry-run"], capture_output=True, text=True, cwd=tmp_path)
+    out = _cli_args.run_cli(ROOT / "nagoyaction" / "nagoyaction.py", "run", CYCLE, "--dry-run",
+                            python_options=("-S",), cwd=tmp_path)
     assert out.returncode in (0, 1), out.stderr  # 1 = 手元に uv がない環境では doctor が止める
     assert ("[dry-run] fetch" in out.stdout) or ("uv" in out.stdout and "✗" in out.stdout)
 

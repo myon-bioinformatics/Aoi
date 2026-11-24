@@ -5,7 +5,7 @@ tools research_digest.collect uses, not the numpy or fetch_module tools.
 """
 from __future__ import annotations
 
-import ast, importlib.util, json, subprocess, sys
+import ast, importlib.util, json, sys
 from collections import Counter; from pathlib import Path
 
 import pytest
@@ -32,9 +32,12 @@ shrink_polars = _load("vendored_shrink_polars", NAGOYA / "vendor" / "aoi" / "scr
 run_collect = _load("collect_with_polars_min", RUN)
 
 
-def _run(args: list[str], *, isolated: bool) -> subprocess.CompletedProcess[str]:
-    cmd = [sys.executable, "-S"] if isolated else [sys.executable]
-    return subprocess.run(cmd + args, capture_output=True, text=True, check=False)
+_cli_args_spec = importlib.util.spec_from_file_location(
+    "nagoyaction_cli_args", Path(__file__).resolve().parents[1] / "vendor" / "cli_args.py",
+)
+_cli_args = importlib.util.module_from_spec(_cli_args_spec)
+sys.modules[_cli_args_spec.name] = _cli_args
+_cli_args_spec.loader.exec_module(_cli_args)
 
 
 def test_lock_lists_only_the_polars_tools_this_tree_uses():
@@ -153,10 +156,7 @@ def _fixture(tmp_path: Path) -> Path:
 def test_fixture_collect_matches_polars_when_polars_is_absent(tmp_path):
     cycle = _fixture(tmp_path)
     out = tmp_path / "min.json"
-    proc = _run(
-        [str(RUN), "--deps", "min", "--cycle", str(cycle), str(out)],
-        isolated=True,
-    )
+    proc = _cli_args.run_cli(RUN, "--deps", "min", "--cycle", cycle, out, python_options=("-S",))
     assert proc.returncode == 0, proc.stderr + proc.stdout
     assert out.read_bytes() == run_collect.canonical(*digest.collect(cycle))
     payload = json.loads(out.read_text(encoding="utf-8"))
@@ -172,7 +172,7 @@ def test_real_cycle_collect_matches_polars_when_polars_is_absent(tmp_path):
     if not (CYCLE / "research").is_dir():
         pytest.skip("c001 cycle is on the Aoi checkout this test runs inside")
     out = tmp_path / "min.json"
-    proc = _run([str(RUN), "--deps", "min", str(out)], isolated=True)
+    proc = _cli_args.run_cli(RUN, "--deps", "min", out, python_options=("-S",))
     assert proc.returncode == 0, proc.stderr + proc.stdout
     assert out.read_bytes() == run_collect.canonical(*digest.collect(CYCLE))
     assert "deps=min" in proc.stdout

@@ -3,10 +3,10 @@
 🌐 [GitHub Pages](https://myon-bioinformatics.github.io/PythDRagoras/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
 
 <p align="center">
-  <img src="docs/brand/icon.png" alt="PythDRagoras icon" width="160" />
+  <img src="https://myon-bioinformatics.github.io/PythDRagoras/icon.png" alt="PythDRagoras icon" width="160" />
 </p>
 
-[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+[Icon](https://myon-bioinformatics.github.io/PythDRagoras/icon.png) · [Favicon](https://myon-bioinformatics.github.io/PythDRagoras/favicon.png)
 
 > Propositions, precedents, objections.
 >

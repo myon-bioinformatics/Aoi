@@ -14,7 +14,7 @@ _spec = importlib.util.spec_from_file_location("queryu_fleet_check", ROOT / "ven
 fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
-PARENT_WORKFLOW_PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
+PARENT_WORKFLOW_PIN = "0778ede0c872d609bb2dc590f9f9898a39a18668"
 ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3"}
 SOURCES = {  # destination -> (repository, source)
     "vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py"),

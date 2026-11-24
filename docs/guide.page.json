@@ -14,53 +14,74 @@
       ]
     },
     {
-      "type": "section",
-      "title": "📥 取得",
-      "blocks": [
+      "type": "tabs",
+      "id": "guide",
+      "tabs": [
         {
-          "type": "text",
-          "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
-        },
-        {
-          "type": "output",
-          "text": "git clone https://github.com/myon-bioinformatics/SakAnalytics.git\ncd SakAnalytics"
-        }
-      ]
-    },
-    {
-      "type": "section",
-      "title": "▶️ 実行",
-      "blocks": [
-        {
-          "type": "card",
-          "title": "🧱 境界の値をずらす",
-          "text": "下限に当たる値を ε だけ内側へ動かします（既定のコマンド）。",
+          "label": "🧩 機能一覧",
           "blocks": [
             {
-              "type": "output",
-              "text": "$ python sakanalytics.py 0 --lo 0 --eps 0.1\n{\"original\": 0.0, \"value\": 0.1, \"boundary\": true}"
+              "type": "section",
+              "title": "📥 取得",
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
+                },
+                {
+                  "type": "output",
+                  "text": "git clone https://github.com/myon-bioinformatics/SakAnalytics.git\ncd SakAnalytics"
+                }
+              ]
+            },
+            {
+              "type": "section",
+              "title": "▶️ 実行",
+              "blocks": [
+                {
+                  "type": "card",
+                  "title": "🧱 境界の値をずらす",
+                  "text": "下限に当たる値を ε だけ内側へ動かします（既定のコマンド）。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python sakanalytics.py 0 --lo 0 --eps 0.1\n{\"original\": 0.0, \"value\": 0.1, \"boundary\": true}"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "📈 要約統計",
+                  "text": "数値の列を要約します。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ python sakanalytics.py describe 1 2 3\n{\"count\": 3, \"sum\": 6.0, \"mean\": 2.0, \"median\": 2.0, \"min\": 1.0, \"max\": 3.0, \"population_stddev\": 0.816496580927726}"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "📦 コマンドとして導入",
+                  "text": "uv があれば、クローンせずに導入できます。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "$ uv tool install git+https://github.com/myon-bioinformatics/SakAnalytics.git\n$ sakanalytics 0 --lo 0"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
         {
-          "type": "card",
-          "title": "📈 要約統計",
-          "text": "数値の列を要約します。",
+          "label": "🎞 GIF デモ",
           "blocks": [
             {
-              "type": "output",
-              "text": "$ python sakanalytics.py describe 1 2 3\n{\"count\": 3, \"sum\": 6.0, \"mean\": 2.0, \"median\": 2.0, \"min\": 1.0, \"max\": 3.0, \"population_stddev\": 0.816496580927726}"
-            }
-          ]
-        },
-        {
-          "type": "card",
-          "title": "📦 コマンドとして導入",
-          "text": "uv があれば、クローンせずに導入できます。",
-          "blocks": [
-            {
-              "type": "output",
-              "text": "$ uv tool install git+https://github.com/myon-bioinformatics/SakAnalytics.git\n$ sakanalytics 0 --lo 0"
+              "type": "text",
+              "text": "🎞 まだ GIF はありません。ブラウザテストや実行の様子を GIF にしたら、ここに並びます。",
+              "muted": true
             }
           ]
         }

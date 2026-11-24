@@ -215,7 +215,10 @@ python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --ou
 
 ### ヒートマップ
 
-[ヒートマップを開く](https://myon-bioinformatics.github.io/DRAgoWing/heatmap/)。
+[ヒートマップを開く](https://myon-bioinformatics.github.io/tools/heatmap/)（ポートフォリオの 🧭 Tools & Demos。公開時に `scripts/build_heatmap_page.py` で組む）。このリポジトリの Pages は [利用ガイド](https://myon-bioinformatics.github.io/DRAgoWing/)（🎞 GIF デモ / 🧩 機能一覧）。
+
+![ヒートマップ: 行列を貼って描画し、色の段階と値の表示を切り替え、Plotly の heatmap を読み、スマホ幅でも描く](docs/evidence/heatmap.gif)
+
 行列または単一の Plotly heatmap を貼り付けるか、JSON ファイルを選ぶ。
 色の段階と値の表示を調整し、SVG または Ironmate で編集できるシーン JSON を保存する。PNG が必要なときは長辺を選んで「PNGを保存」を押す。欠測セルは透明のまま書き出す。
 同じシーンを CLI から生成するには `python -S dragowing.py --heatmap matrix.json > scene.json`。

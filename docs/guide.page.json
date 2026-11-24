@@ -1,0 +1,128 @@
+{
+  "schema": "web-ui-page/1",
+  "title": "🐉 DRAgoWing 利用ガイド",
+  "theme": "auto",
+  "description": "記録した野球の研究結果を、判定をやり直さずに Plotly.js の HTML レポート・命題の表・SVG にするリポジトリ（Aoi の可視化担当）。",
+  "icon": "./icon.png",
+  "favicon": "./favicon.png",
+  "blocks": [
+    {
+      "type": "badges",
+      "items": [
+        "📈 HTML レポート",
+        "🧰 python -S で動く",
+        "🌡️ ヒートマップはポートフォリオで公開"
+      ]
+    },
+    {
+      "type": "tabs",
+      "id": "guide",
+      "tabs": [
+        {
+          "label": "🎞 GIF デモ",
+          "blocks": [
+            {
+              "type": "card",
+              "title": "🌡️ ヒートマップ",
+              "text": "行列を貼って描画し、色の段階と値の表示を切り替えます。Plotly の heatmap トレースも読めます（PC 幅とスマホ幅）。",
+              "blocks": [
+                {
+                  "type": "image",
+                  "src": "./demos/heatmap.gif",
+                  "alt": "DRAgoWing heatmap editor: drawing a pasted matrix, changing the colour steps and labels, reading a Plotly heatmap, and the phone width"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🧩 機能一覧",
+          "blocks": [
+            {
+              "type": "section",
+              "title": "🧭 ブラウザで開く",
+              "blocks": [
+                {
+                  "type": "links",
+                  "items": [
+                    {
+                      "label": "🌡️ ヒートマップ",
+                      "href": "https://myon-bioinformatics.github.io/tools/heatmap/"
+                    },
+                    {
+                      "label": "🖼 Image Studio（シーンを編集）",
+                      "href": "https://myon-bioinformatics.github.io/tools/ironmate/"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "section",
+              "title": "▶️ 手元で動かす",
+              "blocks": [
+                {
+                  "type": "card",
+                  "title": "📈 レポートを作る",
+                  "text": "season.jsonl と propositions.jsonl のあるディレクトリから HTML（と SVG）を書き出します。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "python -S dragowing.py RESULTS_DIR --out build/dragowing"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "🌡️ 行列 → シーン JSON",
+                  "text": "Ironmate の Image Studio で開けるシーン JSON にします（- は標準入力）。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "python -S dragowing.py --heatmap matrix.json > scene.json"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "🔢 HTML の要素を数える",
+                  "text": "ディレクトリでないものを渡すと、ブラウザなしで要素を数えます。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "python -S dragowing.py report.html"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "🧪 ヒートマップの画面を組む",
+                  "text": "ポートフォリオは公開時にこれを呼び、tools/heatmap/ に載せます。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "python -S scripts/build_heatmap_page.py > heatmap.html"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "links",
+      "items": [
+        {
+          "label": "📦 リポジトリ",
+          "href": "https://github.com/myon-bioinformatics/DRAgoWing"
+        },
+        {
+          "label": "🧭 ポートフォリオ",
+          "href": "https://myon-bioinformatics.github.io/tools/projects/dragowing.html"
+        }
+      ]
+    }
+  ]
+}

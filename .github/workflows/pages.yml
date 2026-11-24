@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PYSAIYANWEBOO: "pysaiyanweboo @ git+https://github.com/myon-bioinformatics/PySaiyanWeBoo@05e5961ff6b8e702d193354f8f3fbcd2dd907d0d"
+  PYSAIYANWEBOO: "pysaiyanweboo @ git+https://github.com/myon-bioinformatics/PySaiyanWeBoo@a955daad04aa7643f7dbfee97161120d541bdb3b"
 
 jobs:
   build:
@@ -41,10 +41,11 @@ jobs:
           enable-cache: false
       - name: Build the guide
         run: |
-          mkdir -p _site
-          uv run --no-project --with "$PYSAIYANWEBOO" python -m pysaiyanweboo --page docs/pages/guide.page.json --repository "$GITHUB_REPOSITORY" > _site/index.html
-          cp docs/brand/icon.png docs/brand/favicon.png _site/
-          mkdir -p _site/demos && cp docs/evidence/browser.gif _site/demos/   # 🎞 the guide's GIF tab
+          mkdir -p _site/demos
+          cp docs/brand/icon.png docs/brand/favicon.png docs/pages/guide.page.json _site/
+          cp docs/evidence/browser.gif _site/demos/   # 🎞 the guide's GIF tab
+          # 📲 icon-180/192/512.png, manifest.webmanifest and the spec with its Base64 cache (home) for "Add to Home Screen".
+          uv run --no-project --with "$PYSAIYANWEBOO" python -m pysaiyanweboo --page _site/guide.page.json --home-screen _site --repository "$GITHUB_REPOSITORY" > _site/index.html
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: github.ref == 'refs/heads/main'
         with:

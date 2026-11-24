@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import child_checks  # noqa: E402
 
-PIN = "dbe7e16be53f9e5b8c9ba29ff6ed8be0899a35ff"
+PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
 PIN_CHILDREN = ("blueprobe", "queryu", "sakanalytics", "pythdragoras", "nagoyaction", "dragowing")
 # 子の tests/test_no_sibling_imports.py の定数（採用後は子にこれだけが残る）
 SIBLING_CHILDREN = {

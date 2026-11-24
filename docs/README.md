@@ -15,6 +15,7 @@ Master files may be improved and extended, but only in ways that keep their inte
 | SakAnalytics | [Measure patterns and preserve uncertainty](ecosystem.md#sakanalytics) | [SakAnalytics README](../sakanalytics/README.md) |
 | DRAgoWing | [Make recorded structures visible](ecosystem.md#dragowing) | [DRAgoWing README](../dragowing/README.md) |
 | NagoyAction | [Repeat and trace the research process](ecosystem.md#nagoyaction) | [NagoyAction README](../nagoyaction/README.md) |
+| PythDRagoras | [Challenge explanations and generate better questions](ecosystem.md#pythdragoras) | [PythDRagoras README](../pythdragoras/README.md) |
 
 The artwork is kept in Aoi's `docs/images/` and reused without adding copies to child repositories. It illustrates the concept, not measured results, actual source HTML, or feature availability. [PythDRagoras](PythDRagoras.md) supplies the hypothesis and validation role that closes the loop.
 

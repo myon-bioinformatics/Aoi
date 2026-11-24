@@ -19,7 +19,7 @@ Nothing is saved. `eval "$(python aoi.py)"` prints POSIX `export` lines for the 
 
 ```bash
 python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan
-python aoi.py sakanalytics/moshimo_box.py --ledger cycles/c001-chunichi/outputs/propositions.jsonl --id P1
+python aoi.py sakanalytics/npb/moshimo_box.py --ledger cycles/c001-chunichi/outputs/propositions.jsonl --id P1
 ```
 
 These launchers use only the Python standard library, but are not self-contained copies of the children: the Aoi checkout and any dependencies required by the selected backend must exist. They do not install dependencies. The capabilities and arguments are those of the child version synced in Aoi, not unmerged child pull requests. They are not yet included in Aoi's uv tool distribution.
@@ -111,13 +111,13 @@ python aoi.py nagoyaction run    cycles/c001-chunichi/pipeline.toml --dry-run  #
 | [`mindeps/`](mindeps/LIMITS.md) | Opt-in minimal httpx and selectolax stand-ins with runners; [what they can and cannot replace](mindeps/LIMITS.md) |
 | [`pkgmin/`](pkgmin/LIMITS.md) | Minimal requests, tqdm and biopython stand-ins and the used-surface measurement; [limits](pkgmin/LIMITS.md) |
 | [`distributions/`](distributions/) | Small stdlib cores for the reusable min APIs, copied as files (no bundling); see [docs/distributions.md](docs/distributions.md) |
-| [`vendor/`](vendor/), `vendor.lock.json` | Pinned single-file copies from other repositories, verified by hash. `vendor/py_launch.cjs` is the canonical copy of the parent repository's Node launcher (Node >= 26), and `vendor/uv_tool_build.py` the parent's single-file stdlib → uv tool builder; Aoi's children vendor both from Aoi |
-| `shared-tools.lock.json` | Stdlib-shrink tools, `vendor/py_launch.cjs` and `vendor/uv_tool_build.py` that Aoi distributes to its subtree children, verified by hash (no child takes `uv_tool_build.py` any more: each child's root `pyproject.toml` is its uv tool) |
+| [`vendor/`](vendor/), [`vendor.lock.json`](vendor.lock.json) | Pinned single-file copies from other repositories, verified by hash. `vendor/py_launch.cjs` is the canonical copy of the parent repository's Node launcher (Node >= 26), and `vendor/uv_tool_build.py` the parent's single-file stdlib → uv tool builder; Aoi's children vendor both from Aoi |
+| [`shared-tools.lock.json`](shared-tools.lock.json) | Stdlib-shrink tools, `vendor/py_launch.cjs` and `vendor/uv_tool_build.py` that Aoi distributes to its subtree children, verified by hash (no child takes `uv_tool_build.py` any more: each child's root `pyproject.toml` is its uv tool) |
 | [`docs/`](docs/) | Philosophy, principles, method and specifications |
 | [`tests/`](tests/) | Repository-level tests (each subproject keeps its own `tests/`) |
-| `child-heads.json` | Registered child repositories (ID and subtree prefix; the synced commit is derived from the child's history); see [docs/child-repositories.md](docs/child-repositories.md) |
-| `aoi_paths.py`, `aoi_npb.py` | Parent-owned paths and NPB settings passed to the child APIs; see [NPB commands](cycles/c001-chunichi/npb-configuration.md) |
-| `annual_scope.py` | NPB-specific: copies only the primary years from an annual cache and keeps history as reference |
+| [`child-heads.json`](child-heads.json) | Registered child repositories (ID and subtree prefix; the synced commit is derived from the child's history); see [docs/child-repositories.md](docs/child-repositories.md) |
+| [`aoi_paths.py`](aoi_paths.py), [`aoi_npb.py`](aoi_npb.py) | Parent-owned paths and NPB settings passed to the child APIs; see [NPB commands](cycles/c001-chunichi/npb-configuration.md) |
+| [`annual_scope.py`](annual_scope.py) | NPB-specific: copies only the primary years from an annual cache and keeps history as reference |
 
 ## Child Repositories
 
@@ -344,11 +344,11 @@ Each project focuses on a different stage of understanding reality.
 | NagoyAction | Automation and orchestration | [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction) | [`nagoyaction/`](nagoyaction/) |
 | PythDRagoras | Hypothesis generation and explanation validation | [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) | [`pythdragoras/`](pythdragoras/) |
 
-The project concept diagrams are collected with text explanations in [docs/ecosystem.md](docs/ecosystem.md):
+The project concept diagrams are shown in each section below and collected with fuller explanations in [docs/ecosystem.md](docs/ecosystem.md):
 [BlueProbe](docs/ecosystem.md#blueprobe), [QueRyu](docs/ecosystem.md#queryu),
 [SakAnalytics](docs/ecosystem.md#sakanalytics), [DRAgoWing](docs/ecosystem.md#dragowing),
-and [NagoyAction](docs/ecosystem.md#nagoyaction).
-They reuse the existing parent-owned images in `docs/images/`; they are concept illustrations, not research results or a list of implemented features.
+[NagoyAction](docs/ecosystem.md#nagoyaction), and [PythDRagoras](docs/ecosystem.md#pythdragoras).
+They reuse the existing parent-owned images in `docs/images/` (which the child repositories also reference); they are concept illustrations, not research results or a list of implemented features.
 For supported commands and formats, use the child documentation linked below.
 
 Together they form a continuous research loop.
@@ -383,6 +383,10 @@ PythDRagoras -> Challenge
 
 ### QueRyu
 
+![QueRyu](docs/images/queryu.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
 Responsible for retrieval, querying, and execution.
 
 Question:
@@ -398,6 +402,10 @@ Documentation:
 ---
 
 ### BlueProbe
+
+![BlueProbe](docs/images/blueprobe.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
 Responsible for observation, exploration, parsing, and discovery.
 
@@ -416,6 +424,10 @@ Documentation:
 
 ### SakAnalytics
 
+![SakAnalytics](docs/images/sakanalytics.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
 Responsible for analytical methods and statistical reasoning.
 
 Question:
@@ -432,6 +444,10 @@ Documentation:
 
 ### DRAgoWing
 
+![DRAgoWing](docs/images/dragowing.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
+
 Responsible for visual communication.
 
 Question:
@@ -442,11 +458,16 @@ Repository: [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing) (in Ao
 
 Documentation:
 
+- [dragowing/README.md](dragowing/README.md)
 - 四つの形の 2×2 と条件の論理記号: [dragowing/docs/forms.md](dragowing/docs/forms.md)。軌跡・球団×年・条件の重なり・命題の一覧の HTML: [dragowing/docs/figures.md](dragowing/docs/figures.md)。構想図は [docs/images/dragowing.webp](docs/images/dragowing.webp)
 
 ---
 
 ### NagoyAction
+
+![NagoyAction](docs/images/nagoyaction.webp)
+
+*イメージ図（構想を共有するための図。実際のデータ・HTML構造ではない）*
 
 Responsible for workflows and automation.
 

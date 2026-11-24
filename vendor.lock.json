@@ -21,12 +21,12 @@
     },
     {
       "repository": "myon-bioinformatics/Aoi",
-      "ref": "52a433c5e5059b878b3a9815c55de656eb625fdb",
-      "commit": "52a433c5e5059b878b3a9815c55de656eb625fdb",
+      "ref": "3223164c3b0adb55b0cd27ba7ad5e89226628bb3",
+      "commit": "3223164c3b0adb55b0cd27ba7ad5e89226628bb3",
       "source": "shrink/numpy_min.py",
       "destination": "vendor/aoi/shrink/numpy_min.py",
-      "blob_sha": "8dbd26bc91084cb94f34b19e65aa50a27c9fe0e8",
-      "sha256": "7c1f86ebb012ad355db3f690bea39916aa7d927967b519dfaf5acf54879c5a4c"
+      "blob_sha": "cf1249edcaa32e94387e9f5c4b47b1f81c0451c2",
+      "sha256": "66eae6440c534cc144b68f57cb1a9a9be6d60a09b31a5a2ea1bc9661d5b09dcb"
     },
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",

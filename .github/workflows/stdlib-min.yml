@@ -44,6 +44,9 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   # ---- Stdlib feasibility survey（旧 .github/workflows/stdlib-feasibility-survey.yml）
   # 実験の棚卸し。第三者がどこで使われているかを数え、import を塞いだ・スタブにした・包んだ

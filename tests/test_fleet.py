@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 _spec = importlib.util.spec_from_file_location("aoi_fleet_check", ROOT / "vendor/fleet_check.py")
 fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
-ACCEPTED = {"vendor/fleet_check.py": "bc57f08a590ee1cb33a8bb37c1bb3b8f28a2f3c9"}
+ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3"}
 
 
 class VendorLock(unittest.TestCase):
@@ -22,3 +22,7 @@ class ScriptsDescribeThemselves(unittest.TestCase):
     def test_every_script_has_a_description_and_declared_arguments(self):
         # aoi.py は子へ、aoi_paths.py の ask は ask.py へ引数をそのまま渡す（自分では解釈しない）
         fleet.check_scripts(ROOT, passthrough=('aoi.py', 'aoi_paths.py'))
+
+    def test_pull_request_ci_stays_quick(self):
+        # ⏱ push limited to branches, superseded PR runs cancelled, every job timed (fleet_check.check_ci)
+        fleet.check_ci(fleet.repo_root(__file__))

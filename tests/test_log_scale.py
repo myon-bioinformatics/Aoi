@@ -1,15 +1,15 @@
-"""Unit tests for core/log_scale.py (stdlib only; collected by pytest too).
+"""Unit tests for sakanalytics scale helpers (stdlib only; collected by pytest too).
 
     python3 -S -m unittest tests/test_log_scale.py
 """
 from __future__ import annotations
 
-import math, os, subprocess, sys, tempfile, unittest
+import io, json, math, os, subprocess, sys, tempfile, unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'core'))  # log_scale.py は core/（python -S -m unittest でも読める）
-import log_scale as scale  # noqa: E402
+sys.path.insert(0, str(ROOT))  # sakanalytics.py はリポジトリ根（python -S -m unittest でも読める）
+import sakanalytics as scale  # noqa: E402
 
 
 # Public portfolio Languages bar example (docs/skills.md): unrounded scores.
@@ -137,11 +137,10 @@ class AdjustNarrowAndLinearTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             scale.linear_scale([1], factor=float("nan"))
 
-    def test_public_api_is_exported(self):
-        self.assertEqual(set(scale.__all__),
-                         {"log_scale", "linear_scale", "adjust_narrow", "round_score"})
-        for name in scale.__all__:
+    def test_public_api_is_on_sakanalytics_and_the_old_module_is_gone(self):
+        for name in ("log_scale", "linear_scale", "adjust_narrow", "round_score"):
             self.assertTrue(callable(getattr(scale, name)))
+        self.assertFalse((ROOT / "core" / "log_scale.py").exists())
 
     def test_round_score_none_and_invalid_step(self):
         self.assertEqual(scale.round_score(12.3, step=None), 12.3)
@@ -150,6 +149,82 @@ class AdjustNarrowAndLinearTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             scale.round_score(float("nan"))
 
+
+
+class ScaleCliTests(unittest.TestCase):
+    def invoke(self, argv, stdin=""):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        old = sys.stdin, sys.stdout, sys.stderr
+        sys.stdin, sys.stdout, sys.stderr = io.StringIO(stdin), stdout, stderr
+        try:
+            try:
+                code = scale.main(list(argv))
+            except SystemExit as exc:
+                code = 0 if exc.code is None else exc.code
+        finally:
+            sys.stdin, sys.stdout, sys.stderr = old
+        return code, stdout.getvalue(), stderr.getvalue()
+
+    def scores(self, *argv):
+        code, out, err = self.invoke(argv)
+        self.assertEqual(code, 0, err)
+        payload = json.loads(out)
+        return payload["mode"], payload["scores"]
+
+    def test_bare_number_still_dispatches_to_boundary(self):
+        code, out, err = self.invoke(["0", "--lo", "0"])
+        self.assertEqual(code, 0, err)
+        self.assertEqual(json.loads(out)["boundary"], True)
+
+    def test_log_defaults_and_portfolio_language_example(self):
+        mode, scores = self.scores("scale", "26235991", "500501", "--anchor", "26235991")
+        self.assertEqual((mode, scores), ("log", [90, 70]))
+        mode, scores = self.scores("scale", "26235991", "500501", "--anchor", "26235991", "--round-to", "none")
+        self.assertEqual(mode, "log")
+        self.assertEqual(scores, [90.0, NODE_UNROUNDED])
+
+    def test_top_none_floor_and_base(self):
+        mode, scores = self.scores("scale", "0", "3", "--top", "none", "--round-to", "none", "--base", str(math.e))
+        self.assertEqual((mode, scores), ("log", [math.log1p(0), math.log1p(3)]))
+        mode, scores = self.scores("scale", "0", "9", "--anchor", "9", "--floor", "3")
+        self.assertEqual((mode, scores), ("log", [3, 90]))
+        ten = self.scores("scale", "500501", "--anchor", "26235991", "--round-to", "none", "--base", "10")[1]
+        two = self.scores("scale", "500501", "--anchor", "26235991", "--round-to", "none", "--base", "2")[1]
+        self.assertAlmostEqual(ten[0], two[0], places=12)
+
+    def test_linear_mode_and_optional_factor_and_rounding(self):
+        mode, scores = self.scores("scale", "--linear", "--factor", ".97", "3", "4")
+        self.assertEqual((mode, scores), ("linear", [.97 * 3, .97 * 4]))
+        mode, scores = self.scores("scale", "--linear", "0", "10")
+        self.assertEqual((mode, scores), ("linear", [0, 10]))
+        mode, scores = self.scores("scale", "--linear", "--factor", "2", "--round-to", "5", "0", "10", "--floor", "3")
+        self.assertEqual((mode, scores), ("linear", [3, 20]))
+
+    def test_stdin_values(self):
+        code, out, err = self.invoke(["scale", "-"], stdin="1 10\n")
+        self.assertEqual(code, 0, err)
+        self.assertEqual(json.loads(out)["scores"], scale.log_scale([1, 10]))
+
+    def test_error_paths(self):
+        cases = [
+            (["scale"], ""),
+            (["scale", "-1", "2"], ""),
+            (["scale", "--factor", "0.97", "3"], ""),
+            (["scale", "--linear", "--anchor", "10", "3"], ""),
+            (["scale", "--linear", "--top", "90", "3"], ""),
+            (["scale", "--linear", "--base", "10", "3"], ""),
+            (["scale", "1", "--base", "1"], ""),
+            (["scale", "1", "--round-to", "0"], ""),
+            (["scale", "1", "--top", "inf"], ""),
+            (["scale", "1", "--top", "abc"], ""),
+            (["scale", "-", "-"], "1\n"),
+            (["scale", "0", "1", "--anchor", "0"], ""),
+        ]
+        for argv, stdin in cases:
+            with self.subTest(argv=argv):
+                code, _out, err = self.invoke(argv, stdin=stdin)
+                self.assertEqual(code, 2, err)
+                self.assertTrue(err)
 
 class LeagueLaboratoryStandaloneTests(unittest.TestCase):
     def test_help_runs_with_isolated_python_and_without_pythonpath(self):

@@ -6,7 +6,7 @@ import pytest
 
 import aoi_paths
 import league_laboratory as lab
-import log_scale as scale
+import sakanalytics as scale
 import synthetic_league as sl
 
 ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))

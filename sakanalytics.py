@@ -5,10 +5,13 @@
   📐 check_eps / lift   値がちょうど境界にあるかを見つけ、頼まれたときだけ ε だけ持ち上げる（下の説明）
   📊 describe            件数・和・平均・中央値・最小・最大・母標準偏差
   ⚖️ compare / boundary  2 組の比較と、境界の判定（CLI）
+  📈 scale               非負の列を対数または線形に換算（log_scale / linear_scale / adjust_narrow / round_score）
 
   python sakanalytics.py describe 1 2 3
   python sakanalytics.py compare --before 1 2 --after 2 3
   python sakanalytics.py boundary 0 --lo 0 --eps 1e-6
+  python sakanalytics.py scale 1 10 --anchor 10
+  python sakanalytics.py scale --linear --factor 0.97 3 4
 
 ε as a symbol: one place that detects a value sitting exactly on a boundary and, only when asked, lifts it by ε.
 
@@ -125,12 +128,143 @@ def describe(values):
             "population_stddev": statistics.pstdev(values)}
 
 
+
+def _require_finite(value, name):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ValueError(name + " must be a finite number")
+    return value
+
+
+def _require_nonneg(value, name):
+    value = _require_finite(value, name)
+    if value < 0:
+        raise ValueError(name + " must be nonnegative")
+    return value
+
+
+def _numbers(values):
+    if isinstance(values, (str, bytes)) or not hasattr(values, "__iter__"):
+        raise ValueError("values must be a nonempty iterable of finite nonnegative numbers")
+    items = [_require_nonneg(value, "value") for value in values]
+    if not items:
+        raise ValueError("values must be a nonempty iterable of finite nonnegative numbers")
+    return items
+
+
+def _log1p(value, base):
+    if base == math.e:
+        return math.log1p(value)
+    if base == 10:
+        return math.log10(1 + value)
+    if base == 2:
+        return math.log2(1 + value)
+    return math.log1p(value) / math.log(base)
+
+
+def round_score(score, *, step=5):
+    """Round ``score`` to a multiple of ``step``, half away from zero.
+
+    ``step=None`` returns ``score`` unchanged. ``step`` must be positive.
+    """
+    score = _require_finite(score, "score")
+    if step is None:
+        return score
+    step = _require_finite(step, "step")
+    if step <= 0:
+        raise ValueError("step must be positive")
+    quotient = score / step
+    rounded = math.floor(quotient + 0.5) if quotient >= 0 else math.ceil(quotient - 0.5)
+    return rounded * step
+
+
+def _apply(items, scores, floor, round_to):
+    result = []
+    for value, score in zip(items, scores):
+        if value == 0 and floor is not None:
+            result.append(floor)
+        else:
+            result.append(round_score(score, step=round_to))
+    return result
+
+
+def _optional_floor(floor):
+    if floor is None:
+        return None
+    return _require_finite(floor, "floor")
+
+
+def log_scale(values, *, anchor=None, top=90, floor=None, round_to=5, base=10):
+    """Scale nonnegative values: ``top * log(1+x) / log(1+anchor)``.
+
+    ``anchor`` defaults to the maximum of ``values``. ``round_to`` is the
+    step for :func:`round_score`; ``round_to=None`` disables rounding.
+    ``top=None`` returns ``log(1+x)`` in the given ``base`` (``anchor`` is
+    unused) so callers that need unnormalized log1p can share this helper.
+
+    A zero value uses ``floor`` as the final score when ``floor`` is set
+    (it is not rounded). When the resolved anchor is 0, every value must
+    be 0: each score is 0, or ``floor`` if set. A positive value with
+    anchor 0 raises ValueError, as does a negative value or a negative
+    anchor.
+    """
+    items = _numbers(values)
+    base = _require_finite(base, "base")
+    if base <= 0 or base == 1:
+        raise ValueError("base must be positive and not 1")
+    floor = _optional_floor(floor)
+    if top is None:
+        scores = [_log1p(value, base) for value in items]
+        return _apply(items, scores, floor, round_to)
+    top = _require_finite(top, "top")
+    if anchor is None:
+        anchor = max(items)
+    else:
+        anchor = _require_nonneg(anchor, "anchor")
+    if anchor == 0:
+        if any(value > 0 for value in items):
+            raise ValueError("anchor must be positive when a value is positive")
+        scores = [0.0] * len(items)
+        return _apply(items, scores, floor, round_to)
+    denom = _log1p(anchor, base)
+    scores = [top * _log1p(value, base) / denom for value in items]
+    return _apply(items, scores, floor, round_to)
+
+
+def linear_scale(values, *, factor=1.0, floor=None, round_to=None):
+    """Scale nonnegative values with ``factor * x``.
+
+    ``round_to=None`` (the default) disables rounding. A zero value uses
+    ``floor`` as the final score when ``floor`` is set (it is not rounded).
+    """
+    items = _numbers(values)
+    factor = _require_finite(factor, "factor")
+    floor = _optional_floor(floor)
+    scores = [factor * value for value in items]
+    return _apply(items, scores, floor, round_to)
+
+
+def adjust_narrow(score, count, *, below=3, factor=0.75):
+    """Shrink ``score`` when ``0 < count < below`` (else return ``score``).
+
+    Used for a narrow footprint (default: count 1 or 2). The caller decides
+    whether to round before or after; the Languages bar rule applies this
+    to the unrounded score, then :func:`round_score`.
+    """
+    score = _require_finite(score, "score")
+    count = _require_finite(count, "count")
+    below = _require_finite(below, "below")
+    factor = _require_finite(factor, "factor")
+    if 0 < count < below:
+        return score * factor
+    return score
+
+
 def main(argv=None):
     import argparse
     import json
     import sys
     argv = list(sys.argv[1:] if argv is None else argv)
-    if argv and argv[0] not in ("describe", "compare", "boundary", "-h", "--help"):
+    if argv and argv[0] not in ("describe", "compare", "boundary", "scale", "-h", "--help"):
         argv.insert(0, "boundary")
     class NumericArgumentParser(argparse.ArgumentParser):
         def _parse_optional(self, token):
@@ -162,6 +296,25 @@ def main(argv=None):
     boundary.add_argument("--lo", type=float, help="lower bound (less than --hi)")
     boundary.add_argument("--hi", type=float, help="upper bound")
     boundary.add_argument("--eps", type=float, help="lift a value on a bound by this much, greater than 0 (default: detect only)")
+    def _none_or_finite(token):
+        if token.lower() == "none":
+            return None
+        try:
+            value = float(token)
+        except ValueError:
+            raise argparse.ArgumentTypeError("must be a finite number or none") from None
+        if not math.isfinite(value):
+            raise argparse.ArgumentTypeError("must be a finite number or none")
+        return value
+    scaler = sub.add_parser("scale", help="📈 log or linear scaling of nonnegative numbers")
+    scaler.add_argument("values", nargs="*", help="nonnegative numbers separated by spaces or commas; - reads stdin")
+    scaler.add_argument("--anchor", type=_none_or_finite, default=argparse.SUPPRESS, help="log denominator; default is the maximum")
+    scaler.add_argument("--top", type=_none_or_finite, default=argparse.SUPPRESS, help="log numerator cap (default 90; none for unnormalized log)")
+    scaler.add_argument("--base", type=float, default=argparse.SUPPRESS, help="log base (default 10)")
+    scaler.add_argument("--round-to", dest="round_to", type=_none_or_finite, default=argparse.SUPPRESS, help="rounding step (default 5 for log, none for linear; none disables)")
+    scaler.add_argument("--floor", type=_none_or_finite, help="final score for a zero value")
+    scaler.add_argument("--linear", action="store_true", help="use linear_scale instead of log_scale")
+    scaler.add_argument("--factor", type=float, help="linear factor (requires --linear; default 1)")
     args = parser.parse_args(argv)
     try:
         if args.command == "describe":
@@ -196,6 +349,27 @@ def main(argv=None):
             result = {"before": before, "after": after, "mean_difference": delta,
                       "mean_relative_change": delta / before["mean"] if before["mean"] else None,
                       "none_reason": None if before["mean"] else "before_mean_zero"}
+        elif args.command == "scale":
+            if args.values.count("-") > 1:
+                parser.error("stdin can only be read once")
+            values = parse_numbers([sys.stdin.read() if value == "-" else value for value in args.values])
+            if args.linear:
+                conflict = [opt for opt in ("--anchor", "--top", "--base") if hasattr(args, opt.lstrip("-"))]
+                if conflict:
+                    parser.error("linear mode does not take " + ", ".join(conflict))
+                factor = 1.0 if args.factor is None else args.factor
+                round_to = args.round_to if hasattr(args, "round_to") else None
+                scores = linear_scale(values, factor=factor, floor=args.floor, round_to=round_to)
+                result = {"mode": "linear", "scores": scores}
+            else:
+                if args.factor is not None:
+                    parser.error("--factor requires --linear")
+                top = args.top if hasattr(args, "top") else 90
+                base = args.base if hasattr(args, "base") else 10
+                round_to = args.round_to if hasattr(args, "round_to") else 5
+                anchor = args.anchor if hasattr(args, "anchor") else None
+                scores = log_scale(values, anchor=anchor, top=top, floor=args.floor, round_to=round_to, base=base)
+                result = {"mode": "log", "scores": scores}
         else:
             if not math.isfinite(args.value) or any(x is not None and not math.isfinite(x) for x in (args.lo, args.hi)):
                 parser.error("value and bounds must be finite")

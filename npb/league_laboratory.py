@@ -8,8 +8,8 @@ from __future__ import annotations
 import argparse, gzip, hashlib, io, json, math, random, sys, tomllib
 from collections import Counter, defaultdict; from copy import deepcopy; from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'core'))  # log_scale.py は core/
-import log_scale as scale  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # sakanalytics.py はリポジトリ根
+from sakanalytics import linear_scale, log_scale  # noqa: E402
 import synthetic_league as sl
 
 VIEWS = ("raw", "linear_097", "log1p", "sqrt", "capped4", "relative")
@@ -184,10 +184,10 @@ def point_values(rf, ra, view):
         return rf, ra
     if view == 'linear_097':
         # Constant factor only; not a top/anchor score.
-        return tuple(scale.linear_scale((rf, ra), factor=.97, round_to=None))
+        return tuple(linear_scale((rf, ra), factor=.97, round_to=None))
     if view == 'log1p':
         # Unnormalized ln(1+x); not the generic top/anchor Languages-bar score.
-        return tuple(scale.log_scale((rf, ra), top=None, round_to=None, base=math.e))
+        return tuple(log_scale((rf, ra), top=None, round_to=None, base=math.e))
     if view == 'sqrt':
         return math.sqrt(rf), math.sqrt(ra)
     if view == 'capped4':

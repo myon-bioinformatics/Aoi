@@ -3,7 +3,7 @@
 旧 test_epsilon.py・test_standalone_boundary.py・test_standalone_examples.py をここにまとめた（節の頭に旧ファイルの名前を書いた）。
 
 - epsilon: ε を記号のまま扱う check_eps / lift（関数として呼ぶ）
-- standalone: 1 ファイルだけを一時ディレクトリに写し、python -I で CLI（describe / compare / boundary）を動かす
+- standalone: 1 ファイルだけを一時ディレクトリに写し、python -I で CLI（describe / compare / boundary / scale）を動かす
 - uv tool: ルートの pyproject.toml で、この 1 ファイルがそのまま uv tool になる（`uv tool install .`、ビルダーの写しは要らない）
 """
 import importlib.util
@@ -178,6 +178,15 @@ class StandaloneExamples(unittest.TestCase):
         self.assertEqual(self.run_cli("nan", "--lo", "0").returncode, 2)
         self.assertEqual(self.run_cli("1", "--lo", "2", "--hi", "1").returncode, 2)
 
+    def test_scale_log_and_linear_on_the_copied_file(self):
+        data = self.call("scale", "26235991", "500501", "--anchor", "26235991")
+        self.assertEqual(data, {"mode": "log", "scores": [90, 70]})
+        data = self.call("scale", "--linear", "--factor", ".97", "3", "4")
+        self.assertEqual(data, {"mode": "linear", "scores": [.97 * 3, .97 * 4]})
+        bad = self.run_cli("scale", "-1", "2")
+        self.assertEqual(bad.returncode, 2)
+        self.assertIn("nonnegative", bad.stderr)
+
 
 # ==== uv tool（旧 test_standalone_boundary.py の SharedUvToolBuildTest。PythDRagoras #54 に倣い、ルートの pyproject がそのまま uv tool）
 
@@ -190,3 +199,17 @@ class SharedUvToolBuildTest(unittest.TestCase):
         self.assertEqual(project["requires-python"], ">=3.11")
         self.assertEqual(config["tool"]["setuptools"]["py-modules"], ["sakanalytics"])   # 入るのはこの 1 ファイルだけ
         self.assertFalse((ROOT / "vendor" / "uv_tool_build.py").exists())
+
+
+def test_sakanalytics_imports_only_the_standard_library():
+    import ast
+    tree = ast.parse((ROOT / "sakanalytics.py").read_text(encoding="utf-8"))
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            names.add(node.module.split(".")[0])
+    assert "polars" not in names and "npb" not in names
+    assert names <= set(sys.stdlib_module_names)
+

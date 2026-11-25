@@ -247,6 +247,34 @@ def test_zero_completion_preserves_existing_directions():
     np.testing.assert_allclose(q.T @ q, np.eye(2), rtol=0, atol=1e-12)
 
 
+def test_wide_rank_deficient_svd_limits_zero_vector_search(monkeypatch):
+    """Exercise the stdlib Gram path without timing the runner."""
+    mod = MODS["stdlib"]
+    rows, cols, rank = 12, 448, 9
+    a = np.zeros((rows, cols))
+    a[np.arange(rank), np.arange(rank) * 47] = np.arange(1, rank + 1)
+
+    fsum = mod._math.fsum
+    sum_calls = 0
+
+    def counted_fsum(values):
+        nonlocal sum_calls
+        sum_calls += 1
+        return fsum(values)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(mod._math, "fsum", counted_fsum)
+        u, s, vt = mod.linalg.svd(_m(mod, a), full_matrices=False)
+
+    # Allow headroom, but reject reorthogonalizing all 448 axes per zero vector.
+    assert sum_calls < 4 * cols
+    U, S, Vt = (np.asarray(part.tolist()) for part in (u, s, vt))
+    np.testing.assert_array_equal(S, [*range(rank, 0, -1), 0, 0, 0])
+    np.testing.assert_allclose(U @ np.diag(S) @ Vt, a, rtol=0, atol=1e-12)
+    np.testing.assert_allclose(U.T @ U, np.eye(rows), rtol=0, atol=1e-12)
+    np.testing.assert_allclose(Vt @ Vt.T, np.eye(rows), rtol=0, atol=1e-12)
+
+
 @backends
 @pytest.mark.parametrize("dtype", ["float32", "float64"])
 @pytest.mark.parametrize("scale", [0.125, 1.0, 8.0])

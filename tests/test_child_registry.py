@@ -3,6 +3,7 @@
 ネットワークは使わない。子はローカルの bare リポジトリ（file://）。
 """
 import ast
+import concurrent.futures
 import copy
 import json
 import os
@@ -901,8 +902,11 @@ def test_mutations_all_killed(tmp_path):
     assert mutants, "no mutants generated"
     killed = 0
     survived = []
-    for name, mutant_source, _site in mutants:
-        rc = _run_registry_tests_with_source(tmp_path, mutant_source)
+    # ⚡ side by side, one copy per mutant as before (removed after its run): 190 in a row took ~12 min on CI.
+    # At most 4 copies exist at once (~400 MB each).
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, os.cpu_count() or 1)) as pool:
+        codes = list(pool.map(lambda mutant: _run_registry_tests_with_source(tmp_path, mutant[1]), mutants))
+    for (name, _mutant_source, _site), rc in zip(mutants, codes):
         if rc == 0:
             survived.append(name)
         elif rc == 1:

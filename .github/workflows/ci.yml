@@ -225,8 +225,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # failure-identity の expected-reports と揃えること
-        python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+        # failure-identity の expected-reports と揃えること。⏱ PR は最古と最新、main への push で全版
+        python: ${{ github.event_name == 'pull_request' && fromJSON('["3.11", "3.15"]') || fromJSON('["3.11", "3.12", "3.13", "3.14", "3.15"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -302,7 +302,9 @@ jobs:
       - name: Test with JUnit
         run: |
           mkdir -p build/test-results
+          # 🧬 変異テスト（190 個、版にほぼよらない）は 3.15 のレーンだけ
           uv run --locked --python "${{ matrix.python }}" python -m pytest -c pyproject.toml -q \
+            ${{ matrix.python != '3.15' && '--deselect tests/test_child_registry.py::test_mutations_all_killed' || '' }} \
             --junitxml="build/test-results/pytest-${{ matrix.python }}.xml"
       - name: Preserve raw JUnit
         if: always()
@@ -413,7 +415,7 @@ jobs:
     with:
       # Both report-producing jobs use the event commit checkout (PR merge commit).
       commit-sha: ${{ github.sha }}
-      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.15/lab-integration-3.15.xml"]'
+      expected-reports: ${{ github.event_name == 'pull_request' && '["junit-py3.11/pytest-3.11.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.15/lab-integration-3.15.xml"]' || '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml","junit-py3.15/pytest-3.15.xml","junit-lab-integration-py3.15/lab-integration-3.15.xml"]' }}
       artifact-pattern: "junit-*"
       output-artifact: "failure-identity"
 

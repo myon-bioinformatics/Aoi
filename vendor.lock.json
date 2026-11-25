@@ -48,12 +48,12 @@
     },
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
-      "ref": "a19b39d521de2ea69325080d3e87de9547f55106",
-      "commit": "a19b39d521de2ea69325080d3e87de9547f55106",
+      "ref": "876fb65a42a8ffeb99d65b0ea8c5e06970e0a8cd",
+      "commit": "876fb65a42a8ffeb99d65b0ea8c5e06970e0a8cd",
       "source": "tools/stdlib_min/numpy_linalg_min.py",
       "destination": "shrink/numpy_linalg_min.py",
-      "blob_sha": "63aa0f9cdea8ab39c80e957a6ab12206bdb62290",
-      "sha256": "346bca19a4f3d2671cb2ff1fef2fba11db3d6194a8cf3249b9243516a03cbe33"
+      "blob_sha": "2b3ef4314507d7a8d8e1190b2bc003dc53713f17",
+      "sha256": "5ea61b0dbf5889888eaba28216d7d3d35103337eec9b486cccca5fd5e9eaf074"
     },
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",

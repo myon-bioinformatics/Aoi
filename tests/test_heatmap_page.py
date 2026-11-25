@@ -54,5 +54,5 @@ def test_pswb_is_pinned_by_commit_and_not_vendored():
 
 def test_built_page_accepts_portfolio_back_nav():
     ui = _pswb()
-    with_nav = ui.add_back_nav(_page(), [{"label": "← 🧭 Tools & Demos", "href": "../../index.html#tools"}], test_id="portfolio-back")
+    with_nav = ui.add_back_nav(_page(), [{"label": "← 🧰 Tools", "href": "../../index.html#tools"}], test_id="portfolio-back")
     assert '<main class="ui-page"><nav class="ui-back"' in with_nav and 'data-testid="portfolio-back"' in with_nav

@@ -215,7 +215,7 @@ python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --ou
 
 ### ヒートマップ
 
-[ヒートマップを開く](https://myon-bioinformatics.github.io/tools/heatmap/)（ポートフォリオの 🧭 Tools & Demos。公開時に `scripts/build_heatmap_page.py` で組む）。このリポジトリの Pages は [利用ガイド](https://myon-bioinformatics.github.io/DRAgoWing/)（🎞 GIF デモ / 🧩 機能一覧）。
+[ヒートマップを開く](https://myon-bioinformatics.github.io/tools/heatmap/)（ポートフォリオの 🧰 Tools。公開時に `scripts/build_heatmap_page.py` で組む）。このリポジトリの Pages は [利用ガイド](https://myon-bioinformatics.github.io/DRAgoWing/)（🎞 GIF デモ / 🧩 機能一覧）。
 
 ![ヒートマップ: 行列を貼って描画し、色の段階と値の表示を切り替え、Plotly の heatmap を読み、スマホ幅でも描く](docs/evidence/heatmap.gif)
 

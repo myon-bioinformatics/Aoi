@@ -114,8 +114,9 @@
                       {
                         "id": "heatmap",
                         "title": "🌡️ 行列 → ヒートマップのシーン",
-                        "command": "printf '[[1,2],[3,4]]' | python3 -S dragowing.py --heatmap /dev/stdin | head -c 240",
+                        "command": "printf '[[1,2],[3,4]]' | python3 -S dragowing.py --heatmap /dev/stdin | { head -c 240 && cat >/dev/null; }",
                         "expect": "{\"schema\": \"ironmate-image-studio/1\", \"width\": 1280, \"height\": 720, …",
+                        "expect_stdout_contains": "{\"schema\": \"ironmate-image-studio/1\", \"width\": 1280, \"height\": 720,",
                         "run": true
                       }
                     ]

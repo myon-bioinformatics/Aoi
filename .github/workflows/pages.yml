@@ -1,68 +1,31 @@
 name: Pages
 
-# Publishes the usage guide: docs/pages/guide.page.json (a web-ui-page/1 spec, data only) rendered at build
-# time by PySaiyanWeBoo's pysaiyanweboo.page_document — no HTML, CSS or JS lives in this repository.
-# Pull requests build the page (an invalid spec fails here); only main deploys.
-# Move the PySaiyanWeBoo pin by changing PYSAIYANWEBOO below.
+# Publishes the usage guide: docs/pages/guide.page.json (a web-ui-page/1 spec, data only). The parent's reusable
+# workflow renders it with the PySaiyanWeBoo commit pinned there — no HTML, CSS or JS lives in this repository.
+# Pull requests build the page (an invalid spec fails there); only main deploys.
 on:
   push:
     branches: [main]
     paths:
       - "docs/pages/guide.page.json"
-      - "docs/brand/**"
+      - "docs/evidence/browser.gif"
       - ".github/workflows/pages.yml"
   pull_request:
     paths:
       - "docs/pages/guide.page.json"
-      - "docs/brand/**"
+      - "docs/evidence/browser.gif"
       - ".github/workflows/pages.yml"
 
 permissions:
   contents: read
-
-concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
-env:
-  PYSAIYANWEBOO: "pysaiyanweboo @ git+https://github.com/myon-bioinformatics/PySaiyanWeBoo@a955daad04aa7643f7dbfee97161120d541bdb3b"
+  pages: write
+  id-token: write
 
 jobs:
-  build:
-    timeout-minutes: 30
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
-        with:
-          version: "latest"
-          python-version: "3.15"
-          enable-cache: false
-      - name: Build the guide
-        run: |
-          mkdir -p _site/demos
-          cp docs/brand/icon.png docs/brand/favicon.png docs/pages/guide.page.json _site/
-          cp docs/evidence/browser.gif _site/demos/   # 🎞 the guide's GIF tab
-          # 📲 icon-180/192/512.png, manifest.webmanifest and the spec with its Base64 cache (home) for "Add to Home Screen".
-          uv run --no-project --with "$PYSAIYANWEBOO" python -m pysaiyanweboo --page _site/guide.page.json --home-screen _site --repository "$GITHUB_REPOSITORY" > _site/index.html
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        if: github.ref == 'refs/heads/main'
-        with:
-          path: _site
-
-  deploy:
-    timeout-minutes: 30
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+  pages:
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@0778ede0c872d609bb2dc590f9f9898a39a18668
+    with:
+      artifact_path: _site
+      guide_page: docs/pages/guide.page.json
+      guide_assets: docs/evidence/browser.gif=demos/browser.gif   # 🎞 the guide's GIF tab
+      guide_brand: Aoi   # ♻️ icon and favicon from CaChereCyCle (Aoi.icon / Aoi.favicon)

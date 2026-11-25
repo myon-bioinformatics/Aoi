@@ -25,10 +25,10 @@ python aoi.py sakanalytics/npb/moshimo_box.py --ledger cycles/c001-chunichi/outp
 These launchers use only the Python standard library, but are not self-contained copies of the children: the Aoi checkout and any dependencies required by the selected backend must exist. They do not install dependencies. The capabilities and arguments are those of the child version synced in Aoi, not unmerged child pull requests. They are not yet included in Aoi's uv tool distribution.
 
 <p align="center">
-  <img src="docs/brand/icon.png" alt="Aoi icon" width="160" />
+  <img src="https://myon-bioinformatics.github.io/Aoi/icon.png" alt="Aoi icon" width="160" />
 </p>
 
-[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+[Icon](https://myon-bioinformatics.github.io/Aoi/icon.png) · [Favicon](https://myon-bioinformatics.github.io/Aoi/favicon.png)
 
 > Observe. Measure. Question.
 

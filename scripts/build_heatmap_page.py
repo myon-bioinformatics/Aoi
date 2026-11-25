@@ -2,8 +2,8 @@
 
 Its parts are PySaiyanWeBoo's, read from the vendored single file (vendor/pysaiyanweboo/, pinned in vendor.lock.json)
 under ``python -S``: the stylesheet (``bundle_css``), the theme switch, the stat tiles and the browser modules (ui.js,
-scroll.js, records.js for the drafts, imagestudio.js for the PNG Base64). Only the heatmap's own controls, rules and
-script live here; the colour core is dragowing.py's ``HEATMAP_JS``.
+scroll.js, records.js for the drafts, imagestudio.js for PNG Base64 and heatmap colors). Only the heatmap controls,
+axes, and other page-specific behavior live here; matrix parsing is dragowing.py's ``HEATMAP_MATRIX_JS``.
 """
 import json
 import sys
@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "vendor" / "pysaiyanweboo")]
 import pysaiyanweboo as ui  # noqa: E402
-from dragowing import HEATMAP_JS, PALETTE  # noqa: E402
+from dragowing import HEATMAP_MATRIX_JS, PALETTE  # noqa: E402
 
 # 🎨 The heatmap's own rules, after PySaiyanWeBoo's sheet (every theme of the switch, scroll, records).
 HEATMAP_CSS = """@layer components{
@@ -53,7 +53,7 @@ a.ui-button{display:inline-flex;align-items:center;text-decoration:none;box-sizi
 # 🧩 PySaiyanWeBoo browser modules and the names the page script takes from each (imagestudio.js sets
 # globalThis.webUiImageStudio itself; scroll.js binds every [data-ui-scroll] on load).
 MODULES = (("ui.js", ("copyText", "bindTheme")), ("scroll.js", ("refreshScroll",)), ("records.js", ("bindDrafts", "downloadText")),
-           ("imagestudio.js", ()))
+           ("imagestudio.js", ("heatmapColor",)))
 
 PAGE = r"""<!doctype html>
 <html lang="ja">
@@ -199,7 +199,7 @@ PAGE = r"""<!doctype html>
     <div class="hm-actions">
       <a class="ui-button" href="https://myon-bioinformatics.github.io/tools/image-studio/">🖼️ シーン JSON を Image Studio で開く ↗</a>
     </div>
-    <p class="ui-muted">ダウンロードした <code>scene.json</code>（<code>ironmate-image-studio/1</code>）を Image Studio の「開く」で読み込み、図形や注釈を重ねられます。Image Studio のヒートマップ層は Viridis 風の 5 色スケールで描画されます。CLI 生成: <code>python -S dragowing.py --heatmap matrix.json &gt; scene.json</code></p>
+    <p class="ui-muted">ダウンロードした <code>scene.json</code>（<code>ironmate-image-studio/1</code>）を Image Studio の「開く」で読み込み、図形や注釈を重ねられます。配色はシーンに保存され、配色対応の Image Studio で再現できます。CLI 生成: <code>python -S dragowing.py --heatmap matrix.json &gt; scene.json</code></p>
   </div>
 </section>
 </main>
@@ -222,6 +222,7 @@ SCRIPT = r"""(() => {
   function fail(message) { throw Error(message); }
 __CORE__
   const ui = globalThis.PySaiyanWeBoo;
+  const heatColor = (value, low, high, levels = 0) => ui.heatmapColor(value, low, high, levels, PALETTE);
   ui.bindTheme(document);
 
   const el = id => document.getElementById(id);
@@ -825,7 +826,7 @@ __CORE__
       el("view").append(svg);
 
       const rows = data.z.length, cols = data.xlabels.length;
-      const layer = { id: "heatmap", kind: "heatmap", name: "Heatmap", x: 80, y: 90, w: 1120, h: 520, rotation: 0, opacity: 1, ...data };
+      const layer = { id: "heatmap", kind: "heatmap", name: "Heatmap", x: 80, y: 90, w: 1120, h: 520, rotation: 0, opacity: 1, ...data, palette: [...PALETTE] };
       const scene = { schema: "ironmate-image-studio/1", width: 1280, height: 720, background: "#FFFFFF", layers: [layer], source };
       const sceneText = JSON.stringify(scene, null, 2);
       const svgText = serializeSVGForExport(svg);
@@ -918,7 +919,7 @@ def page() -> str:
                            ("欠測 (null)", "—", "透明セル")))
     modules = "".join(ui.module_script(ui.js_source(name) + (
         f"\nObject.assign(globalThis.PySaiyanWeBoo ??= {{}}, {{ {', '.join(names)} }});\n" if names else "")) for name, names in MODULES)
-    script = SCRIPT.replace("__PALETTE__", json.dumps(PALETTE)).replace("__CORE__", HEATMAP_JS)
+    script = SCRIPT.replace("__PALETTE__", json.dumps(PALETTE)).replace("__CORE__", HEATMAP_MATRIX_JS)
     return (PAGE.replace("__STYLE_CSS__", css)
             .replace("__THEME_SWITCH__", ui.theme_switch_html(control="select", legend="テーマ"))
             .replace("__STATS__", f'<div id="stats" hidden>{stats}</div>')

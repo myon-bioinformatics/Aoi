@@ -67,6 +67,15 @@ const done = arguments[0];
   firstCell.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   if (!document.querySelector("#cell-info").textContent.includes("選択セル")) throw Error("cell inspector failed");
 
+  document.querySelector("#reverse-palette").click();
+  const scene = await (await fetch(document.querySelector('a[download="scene.json"]').href)).json();
+  const layer = scene.layers[0];
+  const stops = ["#FEE838", "#BBAE6F", "#7C7B78", "#414D6B", "#00224E"];
+  if (JSON.stringify(layer.palette) !== JSON.stringify(stops)) throw Error("scene lost the reversed palette");
+  const preview = [...document.querySelectorAll("#view rect[data-cell]")].map(rect => rect.getAttribute("fill"));
+  const restored = [...webUiImageStudio.svg(scene).matchAll(/fill="([^"]+)"><title>/g)].map(match => match[1]);
+  if (JSON.stringify(preview) !== JSON.stringify(restored)) throw Error("Image Studio colors differ from preview");
+
   document.querySelector("#base64").click();
   for (let i = 0; i < 40 && !document.querySelector("#b64text").value; i++) {
     await new Promise(r => setTimeout(r, 50));

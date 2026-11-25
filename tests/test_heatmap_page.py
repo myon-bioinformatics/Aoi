@@ -31,6 +31,10 @@ def test_page_runs_with_python_minus_s_and_uses_pswb_parts():
     assert html.count('<script type="module">') == 5                              # ui, scroll, records, imagestudio, the page
     assert "<script>" not in html                                                    # no classic copy of PySaiyanWeBoo
     assert "globalThis.webUiImageStudio" in html and "pngPayload(" in html          # 🔡 Base64 from imagestudio.js
+    assert html.count("function heatmapColor(") == 1
+    editor = html.rsplit('<script type="module">', 1)[-1]
+    assert "ui.heatmapColor(value, low, high, levels, PALETTE)" in editor
+    assert "palette: [...PALETTE]" in editor and "function heatColor(" not in editor
     assert "bindDrafts(document" in html and "localStorage" not in html.split('<script type="module">')[-1]   # 📝 records.js
     assert "https://myon-bioinformatics.github.io/tools/image-studio/" in html and "/tools/ironmate/" not in html
 

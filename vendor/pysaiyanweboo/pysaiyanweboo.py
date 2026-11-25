@@ -13401,8 +13401,14 @@ def studio_cos(x: float) -> float:
     return _stu_kcos(y0, y1) if k == 0 else -_stu_ksin(y0, y1, 1) if k == 1 else -_stu_kcos(y0, y1) if k == 2 else _stu_ksin(y0, y1, 1)
 
 
-def studio_heat_color(value: Any, low: Any, high: Any, levels: Any = 0) -> str:
-    """A five-stop scale from violet to yellow; ``None`` (missing) is ``"none"``. The value is never changed, only shown."""
+def studio_heat_color(value: Any, low: Any, high: Any, levels: Any = 0, palette: Any = _STU_UNDEFINED) -> str:
+    """Map a value to evenly spaced RGB stops, defaulting to the original violet-to-yellow scale."""
+    if palette is _STU_UNDEFINED:
+        palette = STUDIO_PALETTE
+    else:
+        _stu_need(isinstance(palette, list) and 2 <= len(palette) <= 256 and all(
+            isinstance(stop, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", stop) for stop in palette
+        ), "配色には2〜256個の #RRGGBB が必要です")
     if value is None:
         return "none"
     finite = lambda v: type(v) in (int, float) and math.isfinite(v)
@@ -13411,9 +13417,9 @@ def studio_heat_color(value: Any, low: Any, high: Any, levels: Any = 0) -> str:
     t = 0.5 if high == low else max(0, min(1, (value - low) / (high - low)))
     if levels:
         t = _math_round(t * (levels - 1)) / (levels - 1)
-    p = t * 4
-    i = min(3, math.floor(p))
-    a, b = (bytes.fromhex(c[1:]) for c in STUDIO_PALETTE[i:i + 2])
+    p = t * (len(palette) - 1)
+    i = min(len(palette) - 2, math.floor(p))
+    a, b = (bytes.fromhex(c[1:]) for c in palette[i:i + 2])
     return "#" + "".join(f"{_math_round(x + (y - x) * (p - i)):02X}" for x, y in zip(a, b))
 
 
@@ -13508,7 +13514,7 @@ def studio_validate(scene: Any) -> dict[str, Any]:
             _stu_need(not _stu_defined(layer, "sampling") or layer["sampling"] in ("pixelated", "smooth"), "補間方式が不正です")
         elif kind == "heatmap":
             studio_matrix({"z": layer.get("z"), "x": layer.get("xlabels"), "y": layer.get("ylabels"), "zmin": layer.get("low"), "zmax": layer.get("high")})
-            studio_heat_color(layer.get("low", _STU_UNDEFINED), layer.get("low", _STU_UNDEFINED), layer.get("high", _STU_UNDEFINED), layer.get("levels", 0))
+            studio_heat_color(layer.get("low", _STU_UNDEFINED), layer.get("low", _STU_UNDEFINED), layer.get("high", _STU_UNDEFINED), layer.get("levels", 0), layer.get("palette", _STU_UNDEFINED))
         else:
             _stu_need(_stu_color(layer.get("fill")) and _stu_color(layer.get("stroke")) and _stu_num(layer.get("strokeWidth"), 0, 64), "図形の色または線幅が不正です")
         if kind == "arrow":
@@ -13912,7 +13918,7 @@ def studio_layer_svg(layer: dict[str, Any], image_source: Any = None) -> str:
         for y, row in enumerate(layer["z"]):
             for x, v in enumerate(row):
                 title = f'{js_string(layer["ylabels"][y])} / {js_string(layer["xlabels"][x])}: {"欠測" if v is None else js_string(v)}'
-                body += (f'<rect x="{n(left + x * cw)}" y="{n(top + y * ch)}" width="{n(cw)}" height="{n(ch)}" fill="{studio_heat_color(v, layer["low"], layer["high"], layer.get("levels", 0))}">'
+                body += (f'<rect x="{n(left + x * cw)}" y="{n(top + y * ch)}" width="{n(cw)}" height="{n(ch)}" fill="{studio_heat_color(v, layer["low"], layer["high"], layer.get("levels", 0), layer.get("palette", _STU_UNDEFINED))}">'
                          f'<title>{studio_escape(title)}</title></rect>')
                 if _stu_truthy(layer.get("labels")) and cw >= 35 and ch >= 24 and v is not None:
                     body += (f'<text x="{n(left + (x + 0.5) * cw)}" y="{n(top + (y + 0.5) * ch)}" text-anchor="middle" dominant-baseline="central" font-family="Meiryo,sans-serif" font-size="12" '
@@ -17096,17 +17102,25 @@ def _studio_js_constants() -> str:
 
 
 
-_JS["imagestudio.js"] = "/* web-ui imagestudio: the Ironmate image studio in the page (memory only). Scene checks, SVG, history, workspace files and the layers a click places are the functions of pysaiyanweboo.py (studio_*) and give the same text; the editor on top is the page's. Python is the reference; this must agree. Differences: text is measured with the installed fonts here (a fixed 0.65 em / 1 em estimate in Python), words and graphemes follow the same rules as Python (Latin, Hangul, kana and Han; the Japanese dictionary of Intl.Segmenter is not used, so every engine gives the same lines), and the clock hands use fdlibm's sin and cos written out here and in Python (V8's of Node 22), not the engine's Math.sin and Math.cos, which differ in the last bit between engines and versions. */\n" + _CLIPBOARD_JS + _studio_js_constants() + r"""export class StudioError extends Error{}
+# A small standalone browser module for heatmap consumers that do not need the editor.
+_JS["heatmap-color.js"] = f"const heatmapDefaultPalette={json.dumps(STUDIO_PALETTE)};\n" + r"""export function heatmapColor(v,lo,hi,levels=0,palette=heatmapDefaultPalette){
+ if(!Array.isArray(palette)||palette.length<2||palette.length>256||
+    [...palette].some(stop=>typeof stop!=="string"||stop.length!==7||!/^#[0-9a-f]{6}$/i.test(stop)))throw new TypeError("配色には2〜256個の #RRGGBB が必要です");
+ if(v===null)return"none";
+ if(![v,lo,hi].every(Number.isFinite)||lo>hi||!Number.isInteger(levels)||(levels!==0&&(levels<2||levels>256)))throw new TypeError("色の範囲または段階数が不正です");
+ let t=hi===lo?0.5:Math.max(0,Math.min(1,(v-lo)/(hi-lo)));if(levels)t=Math.round(t*(levels-1))/(levels-1);
+ const p=t*(palette.length-1),i=Math.min(palette.length-2,Math.floor(p)),a=palette[i].match(/\w\w/g).map(x=>parseInt(x,16)),b=palette[i+1].match(/\w\w/g).map(x=>parseInt(x,16));
+ return"#"+a.map((x,j)=>Math.round(x+(b[j]-x)*(p-i)).toString(16).padStart(2,"0")).join("").toUpperCase()}
+"""
+
+
+_JS["imagestudio.js"] = "/* web-ui imagestudio: the Ironmate image studio in the page (memory only). Scene checks, SVG, history, workspace files and the layers a click places are the functions of pysaiyanweboo.py (studio_*) and give the same text; the editor on top is the page's. Python is the reference; this must agree. Differences: text is measured with the installed fonts here (a fixed 0.65 em / 1 em estimate in Python), words and graphemes follow the same rules as Python (Latin, Hangul, kana and Han; the Japanese dictionary of Intl.Segmenter is not used, so every engine gives the same lines), and the clock hands use fdlibm's sin and cos written out here and in Python (V8's of Node 22), not the engine's Math.sin and Math.cos, which differ in the last bit between engines and versions. */\n" + _CLIPBOARD_JS + _studio_js_constants() + _JS["heatmap-color.js"] + r"""export class StudioError extends Error{}
 const fail=message=>{throw new StudioError(message)};
 export const clone=x=>JSON.parse(JSON.stringify(x));
 export const escape=x=>String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"})[c]);
 const num=(v,lo,hi)=>typeof v==="number"&&Number.isFinite(v)&&v>=lo&&v<=hi,color=c=>typeof c==="string"&&/^(#[0-9a-f]{6}|none)$/i.test(c);
-export function heatColor(v,lo,hi,levels=0){
- if(v===null)return"none";
- if(![v,lo,hi].every(Number.isFinite)||lo>hi||!Number.isInteger(levels)||(levels!==0&&(levels<2||levels>256)))fail("色の範囲または段階数が不正です");
- let t=hi===lo?0.5:Math.max(0,Math.min(1,(v-lo)/(hi-lo)));if(levels)t=Math.round(t*(levels-1))/(levels-1);
- const p=t*4,i=Math.min(3,Math.floor(p)),a=PALETTE[i].match(/\w\w/g).map(x=>parseInt(x,16)),b=PALETTE[i+1].match(/\w\w/g).map(x=>parseInt(x,16));
- return"#"+a.map((x,j)=>Math.round(x+(b[j]-x)*(p-i)).toString(16).padStart(2,"0")).join("").toUpperCase()}
+export function heatColor(v,lo,hi,levels=0,palette){
+ try{return heatmapColor(v,lo,hi,levels,palette)}catch(error){fail(error.message)}}
 const safe=v=>Number.isFinite(v)&&!(Number.isInteger(v)&&!Number.isSafeInteger(v));
 export function matrix(source){
  let t;
@@ -17146,7 +17160,7 @@ export function validate(scene){
    imageBytes+=l.src.length;if(imageBytes>20000000)fail("シーンの画像合計は20MB以下にしてください");
    if(!Number.isInteger(l.cell)||!num(l.cell,1,512)||!Number.isInteger(l.levels)||!num(l.levels,2,256))fail("モザイク設定が不正です");
    if(l.sampling!==undefined&&!["pixelated","smooth"].includes(l.sampling))fail("補間方式が不正です")}
-  else if(l.kind==="heatmap"){matrix({z:l.z,x:l.xlabels,y:l.ylabels,zmin:l.low,zmax:l.high});heatColor(l.low,l.low,l.high,l.levels)}
+  else if(l.kind==="heatmap"){matrix({z:l.z,x:l.xlabels,y:l.ylabels,zmin:l.low,zmax:l.high});heatColor(l.low,l.low,l.high,l.levels,l.palette)}
   else if(!color(l.fill)||!color(l.stroke)||!num(l.strokeWidth,0,64))fail("図形の色または線幅が不正です");
   if(l.kind==="arrow"){arrowGeometry(l.w,l.h,l.headSize,l.headPlacement);if(l.headStyle!==undefined&&!["triangle","beginner"].includes(l.headStyle))fail("矢羽根の形が不正です")}
   if(l.kind==="clock"&&(!Number.isInteger(l.hour)||!num(l.hour,0,23)||!Number.isInteger(l.minute)||!num(l.minute,0,59)))fail("時計の時刻が不正です")}
@@ -17335,7 +17349,7 @@ export function layerSVG(l,imageSource=x=>x.src){
   for(let y=0;y<l.z.length;y++){
    for(let x=0;x<l.z[y].length;x++){
     const v=l.z[y][x],title=`${l.ylabels[y]} / ${l.xlabels[x]}: ${v===null?"欠測":v}`;
-    body+=`<rect x="${left+x*cw}" y="${top+y*ch}" width="${cw}" height="${ch}" fill="${heatColor(v,l.low,l.high,l.levels)}"><title>${escape(title)}</title></rect>`;
+    body+=`<rect x="${left+x*cw}" y="${top+y*ch}" width="${cw}" height="${ch}" fill="${heatColor(v,l.low,l.high,l.levels,l.palette)}"><title>${escape(title)}</title></rect>`;
     if(l.labels&&cw>=35&&ch>=24&&v!==null)body+=`<text x="${left+(x+0.5)*cw}" y="${top+(y+0.5)*ch}" text-anchor="middle" dominant-baseline="central" font-family="Meiryo,sans-serif" font-size="12" fill="#111827" stroke="#FFFFFF" stroke-width="2" paint-order="stroke">${escape(v)}</text>`}
    body+=`<text x="${left-10}" y="${top+(y+0.5)*ch}" text-anchor="end" dominant-baseline="central" font-family="Meiryo,sans-serif" font-size="12">${escape(l.ylabels[y])}</text>`}
   for(let x=0;x<l.z[0].length;x++)body+=`<text x="${left+(x+0.5)*cw}" y="${l.h-bottom+20}" text-anchor="middle" font-family="Meiryo,sans-serif" font-size="12">${escape(l.xlabels[x])}</text>`;

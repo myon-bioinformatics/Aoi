@@ -92,6 +92,7 @@ Only the generic single file `sakanalytics.py` (and `conftest.py`) sits at the t
 | `npb/season_simulator.py`, `npb/season_exact.py` | Outlook for remaining games (standard library) and optional OR-Tools clinch determination ([docs/season-simulator.md](docs/season-simulator.md), [docs/season-simulator-plan.md](docs/season-simulator-plan.md)) |
 | `npb/annual_audit.py` | Auditing annual team tables (integer fields and published digits) |
 | `npb/synthetic_league.py`, `npb/league_laboratory.py` | Synthetic leagues with annual stats fixed first, and experiments on them |
+| `core/log_scale.py` | Generic log/linear scaling (`log_scale`, `linear_scale`, `adjust_narrow`, `round_score`); standard library only |
 | `core/neighbors.py` | Descriptive neighbors that don't use results |
 | `core/proposition_seed_audit.py`, `npb/synthetic_rule_discovery.py` | Seed sensitivity of propositions, and tracking on synthetic data only (uses PythDRagoras) |
 | `npb/moshimo_box.py` | Moshimo Box (もしもボックス) for proposition generation: dials for a proposition's converse, inverse and contrapositive rates. The original's rate has no dial; it is read out (optional readout uses PythDRagoras) |

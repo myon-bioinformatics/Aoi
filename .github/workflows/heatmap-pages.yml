@@ -5,10 +5,10 @@ name: Pages
 # docs/guide.page.json (🎞 GIF demo / 🧩 features) with the parent's reusable workflow.
 on:
   pull_request:
-    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'vendor/pysaiyanweboo/pysaiyanweboo.py', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/brand/**', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'vendor/pysaiyanweboo/pysaiyanweboo.py', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
   push:
     branches: [main]
-    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'vendor/pysaiyanweboo/pysaiyanweboo.py', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/brand/**', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'vendor/pysaiyanweboo/pysaiyanweboo.py', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
 
 permissions:
   contents: read
@@ -38,8 +38,9 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@1368174821fb03be258ecf3312ce0ea809f6ea22
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@176e6c216bb517c0f882152d7f8da2838e4b9a89
     with:
       artifact_path: _site
       guide_page: docs/guide.page.json
-      guide_assets: docs/brand/icon.png=icon.png docs/brand/favicon.png=favicon.png docs/evidence/heatmap.gif=demos/heatmap.gif
+      guide_assets: docs/evidence/heatmap.gif=demos/heatmap.gif
+      guide_brand: DRAgoWing   # ♻️ icon and favicon from CaChereCyCle (DRAgoWing.icon / DRAgoWing.favicon)

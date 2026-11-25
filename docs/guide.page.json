@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "nagoyaction 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "研究のパイプラインを TOML に 1 度書き、ローカルでも GitHub Actions でも同じコマンドで回す入口。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",

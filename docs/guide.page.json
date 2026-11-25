@@ -19,23 +19,6 @@
       "id": "guide",
       "tabs": [
         {
-          "label": "🎞 GIF デモ",
-          "blocks": [
-            {
-              "type": "card",
-              "title": "🌡️ ヒートマップ",
-              "text": "行列を貼って描画し、色の段階と値の表示を切り替えます。Plotly の heatmap トレースも読めます（PC 幅とスマホ幅）。",
-              "blocks": [
-                {
-                  "type": "image",
-                  "src": "./demos/heatmap.gif",
-                  "alt": "DRAgoWing heatmap editor: drawing a pasted matrix, changing the colour steps and labels, reading a Plotly heatmap, and the phone width"
-                }
-              ]
-            }
-          ]
-        },
-        {
           "label": "🧩 機能一覧",
           "blocks": [
             {
@@ -51,7 +34,7 @@
                     },
                     {
                       "label": "🖼 Image Studio（シーンを編集）",
-                      "href": "https://myon-bioinformatics.github.io/tools/ironmate/"
+                      "href": "https://myon-bioinformatics.github.io/tools/image-studio/"
                     }
                   ]
                 }
@@ -104,6 +87,23 @@
                       "text": "python -S scripts/build_heatmap_page.py > heatmap.html"
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🎞 GIF デモ",
+          "blocks": [
+            {
+              "type": "card",
+              "title": "🌡️ ヒートマップ",
+              "text": "行列を貼って描画し、色の段階と値の表示を切り替えます。Plotly の heatmap トレースも読めます（PC 幅とスマホ幅）。",
+              "blocks": [
+                {
+                  "type": "image",
+                  "src": "./demos/heatmap.gif",
+                  "alt": "DRAgoWing heatmap editor: drawing a pasted matrix, changing the colour steps and labels, reading a Plotly heatmap, and the phone width"
                 }
               ]
             }

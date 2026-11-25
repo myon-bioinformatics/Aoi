@@ -2188,34 +2188,7 @@ def heatmap_scene(source):
                         'levels': 0, 'labels': True}], 'source': source}
 
 
-HEATMAP_JS = r"""  function heatColor(v, lo, hi, levels = 0) {
-    if (v === null) return "none";
-    if (
-      ![v, lo, hi].every(Number.isFinite) ||
-      lo > hi ||
-      !Number.isInteger(levels) ||
-      (levels !== 0 && (levels < 2 || levels > 256))
-    )
-      fail("色の範囲または段階数が不正です");
-    let t = hi === lo ? 0.5 : Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
-    if (levels) t = Math.round(t * (levels - 1)) / (levels - 1);
-    const p = t * 4,
-      i = Math.min(3, Math.floor(p));
-    const a = PALETTE[i].match(/\w\w/g).map((x) => parseInt(x, 16));
-    const b = PALETTE[i + 1].match(/\w\w/g).map((x) => parseInt(x, 16));
-    return (
-      "#" +
-      a
-        .map((x, j) =>
-          Math.round(x + (b[j] - x) * (p - i))
-            .toString(16)
-            .padStart(2, "0"),
-        )
-        .join("")
-        .toUpperCase()
-    );
-  }
-  function matrix(source) {
+HEATMAP_MATRIX_JS = r"""  function matrix(source) {
     let t;
     if (Array.isArray(source)) t = { z: source };
     else if (Array.isArray(source?.data)) {

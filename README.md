@@ -219,8 +219,8 @@ python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --ou
 
 ![ヒートマップ: 行列を貼って描画し、色の段階と値の表示を切り替え、Plotly の heatmap を読み、スマホ幅でも描く](docs/evidence/heatmap.gif)
 
-行列または単一の Plotly heatmap を貼り付けるか、JSON ファイルを選ぶ。
-色の段階と値の表示を調整し、SVG または Ironmate で編集できるシーン JSON を保存する。PNG が必要なときは長辺を選んで「PNGを保存」を押す。欠測セルは透明のまま書き出す。
+行列・CSV/TSV または Plotly heatmap を貼り付けるか、ファイルを開く（サンプルデータ切替・ブラウザ内下書き保存対応）。
+配色パレット・段階数・`zmin`/`zmax`・値の表示・転置/上下反転・軸ラベル/凡例を調整し、統計サマリー・数値テーブル・セル詳細を確認して、SVG / CSV / PNG / PNG Base64 または Image Studio で編集できるシーン JSON を保存・コピーする。欠測セルは透明のまま書き出す（見た目は PySaiyanWeBoo のテーマ切替に対応）。
 同じシーンを CLI から生成するには `python -S dragowing.py --heatmap matrix.json > scene.json`。
 
 ## 核酸・タンパク質の原子座標

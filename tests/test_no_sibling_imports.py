@@ -19,6 +19,11 @@ KNOWN_EXCEPTIONS = {
     # The benchmark regressions load this repository's own scripts helpers.
     ("tests/test_fleet.py", "path:scripts/benchmark_overlap.py"),
     ("tests/test_fleet.py", "path:scripts/benchmark_record_selection.py"),
+    # 🌡️ ヒートマップページは vendor/ の PySaiyanWeBoo で組み、そのテストは -S で scripts/ のページを組む。
+    # PySaiyanWeBoo の PIL は、画像を書くときだけ使う任意の import（ページでは使わない）。
+    ("scripts/build_heatmap_page.py", "import:pysaiyanweboo"),
+    ("tests/test_heatmap_page.py", "path:scripts/build_heatmap_page.py"),
+    ("vendor/pysaiyanweboo/pysaiyanweboo.py", "import:PIL"),
     # PythDRagoras の propositions と rule_search、QueRyu の ask。場所は Aoi の aoi.py が入れる（conftest.py）
     ("tests/test_forms.py", "import:propositions"),
     ("tests/test_figures.py", "import:rule_search"),

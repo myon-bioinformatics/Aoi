@@ -24,6 +24,8 @@ dev = [
     # 2.5 系の最新は Python 3.12 以上。3.11 では配布物の Requires-Python により 2.4.6 が選ばれる。
     "numpy>=2.4.6",
     "numpy>=2.5.4; python_version >= '3.12'",
+    # 🎨 ヒートマップページ（scripts/build_heatmap_page.py）の CSS/UI バンドルを PySaiyanWeBoo から生成・検証する（実行時は標準ライブラリのみ）
+    "pysaiyanweboo @ git+https://github.com/myon-bioinformatics/PySaiyanWeBoo@a55e8504d351c7f58bb13096ef1abae3ce5fcc8a",
 ]
 
 [tool.setuptools]

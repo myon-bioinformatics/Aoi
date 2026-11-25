@@ -5,10 +5,10 @@ name: Pages
 # docs/guide.page.json (🎞 GIF demo / 🧩 features) with the parent's reusable workflow.
 on:
   pull_request:
-    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'tests/check_heatmap_png.py', 'docs/guide.page.json', 'docs/brand/**', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'scripts/build_heatmap_bundle.py', 'scripts/heatmap_bundle.py', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/brand/**', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
   push:
     branches: [main]
-    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'tests/check_heatmap_png.py', 'docs/guide.page.json', 'docs/brand/**', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'scripts/build_heatmap_bundle.py', 'scripts/heatmap_bundle.py', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/brand/**', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
 
 permissions:
   contents: read

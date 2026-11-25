@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "PythDRagoras 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "説明を「A ならば B」の命題として書き、反例と異議を並べて検証するツール。答えを出すより、説明の足りない所を見つけるのが目的です。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",

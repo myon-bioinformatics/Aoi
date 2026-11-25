@@ -8,13 +8,21 @@ on:
     branches: [main]
     paths:
       - "docs/guide.page.json"
+      - "docs/guide.features.json"
       - "docs/brand/**"
       - ".github/workflows/pages.yml"
+      - "queryu.py"
+      - "ask/*.py"
+      - "core/cache_core.py"
   pull_request:
     paths:
       - "docs/guide.page.json"
+      - "docs/guide.features.json"
       - "docs/brand/**"
       - ".github/workflows/pages.yml"
+      - "queryu.py"
+      - "ask/*.py"
+      - "core/cache_core.py"
 
 permissions:
   contents: read
@@ -23,8 +31,9 @@ permissions:
 
 jobs:
   pages:
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@0778ede0c872d609bb2dc590f9f9898a39a18668
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@def72acfe886769fef417afd832028f66193f5d0
     with:
       artifact_path: _site
       guide_page: docs/guide.page.json
+      guide_features_config: docs/guide.features.json
       guide_brand: QueRyu   # ♻️ icon and favicon from CaChereCyCle (QueRyu.icon / QueRyu.favicon)

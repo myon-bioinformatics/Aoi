@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "QueRyu 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "取得と観測データセットの構築を受け持つツール。取得元への負荷を抑え、いつ・どこから・どのコードで取ったかを毎回記録します。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",

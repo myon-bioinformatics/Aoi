@@ -16,7 +16,10 @@ dependencies = []
 dragowing = "dragowing:main"
 
 [dependency-groups]
+# 🌡️ The heatmap page's parts (scripts/build_heatmap_page.py): PySaiyanWeBoo, pinned by commit like the other repositories.
+pages = ["pysaiyanweboo @ git+https://github.com/myon-bioinformatics/PySaiyanWeBoo@901b790f14ad7a04a4280409bfd274d8f6926fa7"]
 dev = [
+    { include-group = "pages" },
     "pytest>=9.1.1",
     # 🧮 native の重なり（--overlap-backend native）は兄弟 PythDRagoras の rule_search を呼ぶ。
     # 既定の stdlib の経路では使わないので、実行時の依存ではなくテスト用に置く。

@@ -5,10 +5,10 @@ name: Pages
 # docs/guide.page.json (🎞 GIF demo / 🧩 features) with the parent's reusable workflow.
 on:
   pull_request:
-    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'vendor/pysaiyanweboo/pysaiyanweboo.py', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'pyproject.toml', 'uv.lock', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
   push:
     branches: [main]
-    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'vendor/pysaiyanweboo/pysaiyanweboo.py', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
+    paths: ['dragowing.py', 'scripts/build_heatmap_page.py', 'pyproject.toml', 'uv.lock', 'tests/check_heatmap_png.py', 'tests/test_heatmap_page.py', 'docs/guide.page.json', 'docs/evidence/heatmap.gif', '.github/workflows/heatmap-pages.yml']
 
 permissions:
   contents: read
@@ -22,10 +22,18 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "latest"
+          python-version: "3.15"
+          enable-cache: true
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
       - name: Build heatmap and check the scene export
+        # 📦 the pages group: the pinned PySaiyanWeBoo (pyproject.toml), like the other repositories.
         run: |
           mkdir -p site/heatmap
-          python -S scripts/build_heatmap_page.py > site/heatmap/index.html
+          uv run --locked --only-group pages python scripts/build_heatmap_page.py > site/heatmap/index.html
           echo '[[0,null]]' | python -S dragowing.py --heatmap - | python -c 'import json,sys; assert json.load(sys.stdin)["layers"][0]["z"] == [[0,None]]'
       - name: Exercise the generated editor in Chrome
         run: |
@@ -38,7 +46,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@176e6c216bb517c0f882152d7f8da2838e4b9a89
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@1cd621c8a46d18611a9135bdc8a0e9d46013d58d
     with:
       artifact_path: _site
       guide_page: docs/guide.page.json

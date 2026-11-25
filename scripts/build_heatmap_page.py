@@ -1,7 +1,7 @@
-"""🌡️ The DRAgoWing heatmap editor as one page (``page()``; ``python -S scripts/build_heatmap_page.py`` writes it to stdout).
+"""🌡️ The DRAgoWing heatmap editor as one page (``page()``; ``uv run --locked --only-group pages python
+scripts/build_heatmap_page.py`` writes it to stdout).
 
-Its parts are PySaiyanWeBoo's, read from the vendored single file (vendor/pysaiyanweboo/, pinned in vendor.lock.json)
-under ``python -S``: the stylesheet (``bundle_css``), the theme switch, the stat tiles and the browser modules (ui.js,
+Its parts are PySaiyanWeBoo's, the pinned ``pysaiyanweboo`` (📦 the ``pages`` group in pyproject.toml): the stylesheet (``bundle_css``), the theme switch, the stat tiles and the browser modules (ui.js,
 scroll.js, records.js for the drafts, imagestudio.js for PNG Base64 and heatmap colors). Only the heatmap controls,
 axes, and other page-specific behavior live here; matrix parsing is dragowing.py's ``HEATMAP_MATRIX_JS``.
 """
@@ -10,8 +10,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT), str(ROOT / "vendor" / "pysaiyanweboo")]
-import pysaiyanweboo as ui  # noqa: E402
+sys.path[:0] = [str(ROOT)]
+import pysaiyanweboo as ui  # noqa: E402  (📦 the pinned PySaiyanWeBoo)
 from dragowing import HEATMAP_MATRIX_JS, PALETTE  # noqa: E402
 
 # 🎨 The heatmap's own rules, after PySaiyanWeBoo's sheet (every theme of the switch, scroll, records).

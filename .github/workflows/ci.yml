@@ -17,7 +17,7 @@ jobs:
   changes:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@176e6c216bb517c0f882152d7f8da2838e4b9a89
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1cd621c8a46d18611a9135bdc8a0e9d46013d58d
 
   resolve-vendor:
     name: Resolve Aoi
@@ -308,7 +308,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@176e6c216bb517c0f882152d7f8da2838e4b9a89
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1cd621c8a46d18611a9135bdc8a0e9d46013d58d
     with:
       expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
       artifact-pattern: junit-*
@@ -320,4 +320,4 @@ jobs:
     if: needs.changes.outputs.workflow_changed == 'true'
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@176e6c216bb517c0f882152d7f8da2838e4b9a89
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@1cd621c8a46d18611a9135bdc8a0e9d46013d58d

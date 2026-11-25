@@ -76,6 +76,71 @@
           ]
         },
         {
+          "label": "🔬 検証ガイド",
+          "blocks": [
+            {
+              "type": "runbook",
+              "id": "verify",
+              "books": [
+                {
+                  "label": "🐍 python",
+                  "intro": "🤖 のついた手順は CI で実際に動かし、出た結果をそのまま載せています。",
+                  "runbook": {
+                    "key": "queryu/python",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/QueRyu/main/queryu.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "single",
+                        "title": "📄 単一ファイルを作る",
+                        "command": "python scripts/build_single_file.py dist-single/queryu.py",
+                        "run": true
+                      },
+                      {
+                        "id": "help",
+                        "title": "❓ ヘルプ",
+                        "command": "python dist-single/queryu.py --help",
+                        "run": true
+                      },
+                      {
+                        "id": "plan",
+                        "title": "🗺️ 取得せずに計画を見る",
+                        "command": "python dist-single/queryu.py --source your_source --years 2024 --cache ./cache --plan --offline",
+                        "needs": "🔭 BlueProbe の checkout（PYTHONPATH）"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "⚡ uv",
+                  "intro": "uv があれば Python の版を気にせず動きます。",
+                  "runbook": {
+                    "key": "queryu/uv",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/QueRyu/main/queryu.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "single",
+                        "title": "📄 単一ファイルを作る",
+                        "command": "uv run --no-project python scripts/build_single_file.py dist-single/queryu.py",
+                        "run": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "label": "🎞 GIF デモ",
           "blocks": [
             {

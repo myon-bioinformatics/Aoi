@@ -20,6 +20,15 @@
       "sha256": "07f70881bc3b803ac3bd6166f2a946d7341911719b10097f13ac614740af15fc"
     },
     {
+      "repository": "myon-bioinformatics/PySaiyanWeBoo",
+      "ref": "a55e8504d351c7f58bb13096ef1abae3ce5fcc8a",
+      "commit": "a55e8504d351c7f58bb13096ef1abae3ce5fcc8a",
+      "source": "pysaiyanweboo.py",
+      "destination": "vendor/pysaiyanweboo/pysaiyanweboo.py",
+      "blob_sha": "1c5b62d095398efa788098c49dab3cad3be5be57",
+      "sha256": "dc62887350a96078512bde3b03aeedde35a34e97ce3dbe97cefaf52eca79eb39"
+    },
+    {
       "repository": "myon-bioinformatics/Aoi",
       "ref": "3223164c3b0adb55b0cd27ba7ad5e89226628bb3",
       "commit": "3223164c3b0adb55b0cd27ba7ad5e89226628bb3",

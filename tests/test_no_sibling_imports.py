@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKIP_DIRS = {".git", ".venv", ".test-deps", "build", "__pycache__"}
-THIRD_PARTY = {"polars", "numpy", "pytest", "pysaiyanweboo"}
+THIRD_PARTY = {"polars", "numpy", "pytest"}
 # Aoi の pyproject の pythonpath にある兄弟と、Aoi の scripts/。dragowing 自身は含めない。
 SIBLING_DIRS = ("blueprobe", "queryu", "pythdragoras", "nagoyaction", "sakanalytics", "scripts")
 KNOWN_EXCEPTIONS = {
@@ -19,10 +19,11 @@ KNOWN_EXCEPTIONS = {
     # The benchmark regressions load this repository's own scripts helpers.
     ("tests/test_fleet.py", "path:scripts/benchmark_overlap.py"),
     ("tests/test_fleet.py", "path:scripts/benchmark_record_selection.py"),
-    # ヒートマップページのバンドル検査と -S 実行テストは、このリポジトリ自身の scripts/ を参照する。
-    ("tests/test_heatmap_page.py", "path:scripts/build_heatmap_bundle.py"),
+    # 🌡️ ヒートマップページは vendor/ の PySaiyanWeBoo で組み、そのテストは -S で scripts/ のページを組む。
+    # PySaiyanWeBoo の PIL は、画像を書くときだけ使う任意の import（ページでは使わない）。
+    ("scripts/build_heatmap_page.py", "import:pysaiyanweboo"),
     ("tests/test_heatmap_page.py", "path:scripts/build_heatmap_page.py"),
-    ("tests/test_heatmap_page.py", "path:scripts/heatmap_bundle.py"),
+    ("vendor/pysaiyanweboo/pysaiyanweboo.py", "import:PIL"),
     # PythDRagoras の propositions と rule_search、QueRyu の ask。場所は Aoi の aoi.py が入れる（conftest.py）
     ("tests/test_forms.py", "import:propositions"),
     ("tests/test_figures.py", "import:rule_search"),

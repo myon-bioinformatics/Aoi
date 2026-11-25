@@ -27,6 +27,8 @@ SOURCES = {"vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink
 SOURCES["vendor/fleet_check.py"] = (fleet.PARENT, "fleet_check.py")
 SOURCES["vendor/tools/stdlib_min/plotly_min.py"] = (fleet.PARENT, "tools/stdlib_min/plotly_min.py")
 SOURCES["vendor/markdown/markdown.py"] = ("myon-bioinformatics/markdown", "markdown.py")
+# 🌡️ the heatmap page (scripts/build_heatmap_page.py) builds its sheet, controls and browser modules from it under python -S
+SOURCES["vendor/pysaiyanweboo/pysaiyanweboo.py"] = ("myon-bioinformatics/PySaiyanWeBoo", "pysaiyanweboo.py")
 SETUP_NODE = "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0"
 SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3"
 

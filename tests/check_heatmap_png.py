@@ -61,7 +61,7 @@ const done = arguments[0];
   document.querySelector("#zmin").value = "0";
   document.querySelector("#zmax").value = "40";
   document.querySelector("#zmax").dispatchEvent(new Event("change"));
-  if (!document.querySelector("#stat-range").textContent.includes("0 – 40")) throw Error("zmin/zmax failed");
+  if (!document.querySelectorAll("#stats .ui-stat-value")[1].textContent.includes("0 – 40")) throw Error("zmin/zmax failed");
 
   const firstCell = document.querySelector("#view rect[data-cell]");
   firstCell.dispatchEvent(new MouseEvent("click", { bubbles: true }));

@@ -1,22 +1,59 @@
-"""Write the standalone DRAgoWing heatmap editor to stdout."""
-import importlib.util
+"""🌡️ The DRAgoWing heatmap editor as one page (``page()``; ``python -S scripts/build_heatmap_page.py`` writes it to stdout).
+
+Its parts are PySaiyanWeBoo's, read from the vendored single file (vendor/pysaiyanweboo/, pinned in vendor.lock.json)
+under ``python -S``: the stylesheet (``bundle_css``), the theme switch, the stat tiles and the browser modules (ui.js,
+scroll.js, records.js for the drafts, imagestudio.js for the PNG Base64). Only the heatmap's own controls, rules and
+script live here; the colour core is dragowing.py's ``HEATMAP_JS``.
+"""
 import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from dragowing import HEATMAP_JS, PALETTE
+ROOT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(ROOT), str(ROOT / "vendor" / "pysaiyanweboo")]
+import pysaiyanweboo as ui  # noqa: E402
+from dragowing import HEATMAP_JS, PALETTE  # noqa: E402
+
+# 🎨 The heatmap's own rules, after PySaiyanWeBoo's sheet (modern, github-like, scroll, records).
+HEATMAP_CSS = """@layer components{
+.hm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:var(--ui-space)}
+.hm-head .ui-title{margin:0 0 .25rem}
+.hm-head .ui-muted{margin:0}
+.hm-head .ui-layout-switch{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:0;border:0;padding:0}
+.hm-source{width:100%;box-sizing:border-box;font-family:var(--ui-font-mono);min-height:7.5rem;resize:vertical}
+.hm-mono{width:100%;box-sizing:border-box;font-family:var(--ui-font-mono)}
+.hm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:.75rem;margin:.75rem 0}
+.hm-grid label{display:block}
+.hm-grid .ui-input,.hm-grid select{width:100%;box-sizing:border-box;margin-top:.25rem}
+.hm-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:.75rem 0}
+.hm-checks{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 1.25rem;margin:.75rem 0}
+.hm-checks label{display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;color:var(--ui-fg)}
+.hm-range-row{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;margin-top:.25rem}
+.hm-range-row input[type=range]{width:100%;margin:0}
+.hm-primary{border-color:var(--ui-accent);font-weight:700}
+.hm-status{margin:.5rem 0;font-weight:600;overflow-wrap:anywhere}
+.hm-status[data-error]{color:var(--ui-danger)}
+.hm-legend{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin:.75rem 0;padding:.5rem .75rem;border:1px solid var(--ui-border);border-radius:var(--ui-radius)}
+.hm-bar{flex:1 1 180px;min-width:120px;height:16px;border:1px solid var(--ui-border);border-radius:var(--ui-radius);overflow:hidden;display:flex}
+.hm-bar-grad{width:100%;height:100%}
+.hm-bar-step{flex:1 1 0;height:100%}
+.hm-cell-info{margin:.5rem 0;padding:.5rem .75rem;border-left:4px solid var(--ui-accent);background:var(--ui-bg);font-family:var(--ui-font-mono);font-size:.875rem;overflow-wrap:anywhere}
+.hm-view-scroll{border:1px solid var(--ui-border);border-radius:var(--ui-radius);padding:.75rem;background:repeating-conic-gradient(color-mix(in srgb,var(--ui-border) 22%,transparent) 0 25%,transparent 0 50%) 0 0/16px 16px}
+.hm-view-scroll svg{display:block;max-width:none;height:auto}
+.hm-view-scroll rect[data-cell]{cursor:pointer}
+.hm-view-scroll rect[data-selected]{stroke:var(--ui-accent);stroke-width:3}
+.hm-details{margin:.75rem 0 0}
+.hm-details summary{cursor:pointer;font-weight:600}
+a.ui-button{display:inline-flex;align-items:center;text-decoration:none;box-sizing:border-box}
+.hm-actions button,.hm-actions a.ui-button{min-height:44px}
+[hidden]{display:none!important}
+}"""
 
 
-def _load_bundle():
-    path = Path(__file__).with_name("heatmap_bundle.py")
-    spec = importlib.util.spec_from_file_location("heatmap_bundle", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-BUNDLE = _load_bundle()
+# 🧩 PySaiyanWeBoo browser modules and the names the page script takes from each (imagestudio.js sets
+# globalThis.webUiImageStudio itself; scroll.js binds every [data-ui-scroll] on load).
+MODULES = (("ui.js", ("copyText", "bindTheme")), ("scroll.js", ("refreshScroll",)), ("records.js", ("bindDrafts", "downloadText")),
+           ("imagestudio.js", ()))
 
 PAGE = r"""<!doctype html>
 <html lang="ja">
@@ -31,7 +68,7 @@ PAGE = r"""<!doctype html>
 <header class="hm-head">
   <div>
     <h1 class="ui-title">🌡️ ヒートマップ</h1>
-    <p class="ui-muted">数値行列・CSV/TSV・Plotly heatmap JSON から、端末内で SVG / PNG / Base64 / Ironmate シーン JSON を作成します。</p>
+    <p class="ui-muted">数値行列・CSV/TSV・Plotly heatmap JSON から、端末内で SVG / PNG / Base64 / Image Studio のシーン JSON を作成します。</p>
   </div>
   __THEME_SWITCH__
 </header>
@@ -46,11 +83,11 @@ PAGE = r"""<!doctype html>
   </div>
   <form id="heatmap-form">
     <label for="source">数値行列 / CSV / TSV / Plotly JSON</label>
-    <textarea class="ui-input hm-source" id="source" rows="5" spellcheck="false">[[0,1,2],[3,null,4]]</textarea>
+    <textarea class="ui-input hm-source" id="source" data-ui-draft="source" rows="5" spellcheck="false">[[0,1,2],[3,null,4]]</textarea>
     <div class="hm-grid">
       <div>
         <label for="format">入力形式</label>
-        <select class="ui-input" id="format">
+        <select class="ui-input" id="format" data-ui-draft="format">
           <option value="auto" selected>自動判定</option>
           <option value="json">JSON（行列 / Plotly）</option>
           <option value="csv">CSV（カンマ区切り）</option>
@@ -69,8 +106,8 @@ PAGE = r"""<!doctype html>
     <div class="hm-grid">
       <div>
         <label for="palette">配色パレット</label>
-        <select class="ui-input" id="palette">
-          <option value="viridis" selected>Viridis 風（既定・Ironmate 互換）</option>
+        <select class="ui-input" id="palette" data-ui-draft="palette">
+          <option value="viridis" selected>Viridis 風（既定・Image Studio と同じ）</option>
           <option value="cividis">Cividis 風（色覚多様性配慮）</option>
           <option value="plasma">Plasma 風</option>
           <option value="rdbu">青 – 白 – 赤（発散）</option>
@@ -81,24 +118,24 @@ PAGE = r"""<!doctype html>
         <label for="steps">色の段階（0 は連続、2〜256）</label>
         <div class="hm-range-row">
           <input id="steps-range" type="range" min="0" max="256" value="0" aria-label="色の段階スライダー">
-          <input class="ui-input" id="steps" type="number" min="0" max="256" value="0" style="width:5.5rem">
+          <input class="ui-input" id="steps" data-ui-draft="steps" type="number" min="0" max="256" value="0" style="width:5.5rem">
         </div>
       </div>
       <div>
         <label for="zmin">色の下限 zmin（空欄は自動）</label>
-        <input class="ui-input" id="zmin" type="number" step="any" placeholder="自動">
+        <input class="ui-input" id="zmin" data-ui-draft="zmin" type="number" step="any" placeholder="自動">
       </div>
       <div>
         <label for="zmax">色の上限 zmax（空欄は自動）</label>
-        <input class="ui-input" id="zmax" type="number" step="any" placeholder="自動">
+        <input class="ui-input" id="zmax" data-ui-draft="zmax" type="number" step="any" placeholder="自動">
       </div>
     </div>
     <div class="hm-checks">
-      <label><input type="checkbox" id="labels" checked> 値を表示</label>
-      <label><input type="checkbox" id="reverse-palette"> 配色を反転</label>
-      <label><input type="checkbox" id="transpose"> 転置（行⇄列）</label>
-      <label><input type="checkbox" id="flip-y"> 上下反転</label>
-      <label><input type="checkbox" id="export-axes" checked> SVG/PNG に軸ラベル・凡例を含める</label>
+      <label><input type="checkbox" id="labels" data-ui-draft="labels" checked> 値を表示</label>
+      <label><input type="checkbox" id="reverse-palette" data-ui-draft="reverse"> 配色を反転</label>
+      <label><input type="checkbox" id="transpose" data-ui-draft="transpose"> 転置（行⇄列）</label>
+      <label><input type="checkbox" id="flip-y" data-ui-draft="flip-y"> 上下反転</label>
+      <label><input type="checkbox" id="export-axes" data-ui-draft="export-axes" checked> SVG/PNG に軸ラベル・凡例を含める</label>
     </div>
     <div class="hm-actions">
       <button class="ui-button hm-primary" type="submit" id="draw-btn">描画</button>
@@ -113,12 +150,7 @@ PAGE = r"""<!doctype html>
 <section class="ui-panel" aria-labelledby="preview-heading">
   <h2 id="preview-heading">プレビューと統計</h2>
   <p role="status" id="status" class="hm-status" aria-live="polite"></p>
-  <div class="ui-grid ui-stats" id="stats" hidden>
-    <article class="ui-card ui-stat"><b class="ui-stat-value" id="stat-size">—</b><span class="ui-stat-label">サイズ</span><span class="ui-stat-hint">行 × 列</span></article>
-    <article class="ui-card ui-stat"><b class="ui-stat-value" id="stat-range">—</b><span class="ui-stat-label">色範囲</span><span class="ui-stat-hint">zmin – zmax</span></article>
-    <article class="ui-card ui-stat"><b class="ui-stat-value" id="stat-avg">—</b><span class="ui-stat-label">平均 / 中央値</span><span class="ui-stat-hint">有限値のみ</span></article>
-    <article class="ui-card ui-stat"><b class="ui-stat-value" id="stat-missing">—</b><span class="ui-stat-label">欠測 (null)</span><span class="ui-stat-hint">透明セル</span></article>
-  </div>
+  __STATS__
   <div class="hm-legend" id="legend" hidden>
     <span id="legend-low" class="ui-tag"></span>
     <div class="hm-bar" id="legend-bar" aria-hidden="true"></div>
@@ -138,7 +170,7 @@ PAGE = r"""<!doctype html>
 </section>
 
 <section class="ui-panel" aria-labelledby="export-heading">
-  <h2 id="export-heading">エクスポート・Ironmate 連携</h2>
+  <h2 id="export-heading">エクスポート・Image Studio 連携</h2>
   <p id="downloads" class="hm-actions"></p>
   <div class="hm-actions" id="copy-actions" hidden>
     <button type="button" class="ui-button" id="copy-svg">SVG をコピー</button>
@@ -148,12 +180,12 @@ PAGE = r"""<!doctype html>
   </div>
   <div id="raster" hidden>
     <div class="hm-actions">
-      <label>PNG の長辺 <select class="ui-input" id="size"><option>512</option><option selected>1024</option><option>2048</option></select> px</label>
+      <label>PNG の長辺 <select class="ui-input" id="size" data-ui-draft="size"><option>512</option><option selected>1024</option><option>2048</option></select> px</label>
       <button type="button" class="ui-button hm-primary" id="png">PNG を保存</button>
       <button type="button" class="ui-button" id="base64">PNG を Base64 表示</button>
     </div>
     <details class="hm-details" id="b64panel">
-      <summary>Base64（Ironmate や資料への貼り付け用）</summary>
+      <summary>Base64（Image Studio や資料への貼り付け用）</summary>
       <div class="hm-actions">
         <label>形式 <select class="ui-input" id="b64mode"><option value="dataUri">PNG data URI</option><option value="base64">Base64 のみ</option></select></label>
         <button type="button" class="ui-button" id="b64copy">Base64 をコピー</button>
@@ -165,18 +197,18 @@ PAGE = r"""<!doctype html>
   </div>
   <div class="ui-card">
     <div class="hm-actions">
-      <a class="ui-button" href="https://myon-bioinformatics.github.io/tools/ironmate/">シーン JSON を Ironmate で開く ↗</a>
+      <a class="ui-button" href="https://myon-bioinformatics.github.io/tools/image-studio/">🖼️ シーン JSON を Image Studio で開く ↗</a>
     </div>
-    <p class="ui-muted">ダウンロードした <code>scene.json</code>（<code>ironmate-image-studio/1</code>）を Ironmate の「開く」で読み込み、図形や注釈を重ねられます。Ironmate 側のヒートマップ層は Viridis 風の 5 色スケールで描画されます。CLI 生成: <code>python -S dragowing.py --heatmap matrix.json &gt; scene.json</code></p>
+    <p class="ui-muted">ダウンロードした <code>scene.json</code>（<code>ironmate-image-studio/1</code>）を Image Studio の「開く」で読み込み、図形や注釈を重ねられます。Image Studio のヒートマップ層は Viridis 風の 5 色スケールで描画されます。CLI 生成: <code>python -S dragowing.py --heatmap matrix.json &gt; scene.json</code></p>
   </div>
 </section>
 </main>
 
-<script>
-__PSWB_JS__
-</script>
-<script>
-(() => {
+__SCRIPTS__
+</body>
+</html>"""
+
+SCRIPT = r"""(() => {
   const DEFAULT_PALETTE = __PALETTE__;
   const PALETTES = {
     viridis: { name: "Viridis 風", stops: DEFAULT_PALETTE },
@@ -190,10 +222,9 @@ __PSWB_JS__
   function fail(message) { throw Error(message); }
 __CORE__
   const ui = globalThis.PySaiyanWeBoo;
-  if (ui && ui.bindTheme) ui.bindTheme(document);
+  ui.bindTheme(document);
 
   const el = id => document.getElementById(id);
-  const DRAFT_KEY = "dragowing-heatmap-draft/1";
   const DEFAULT_SOURCE = "[[0,1,2],[3,null,4]]";
   const SAMPLES = {
     basic: { format: "json", source: DEFAULT_SOURCE },
@@ -574,10 +605,11 @@ __CORE__
       sorted.length % 2 ? sorted[(sorted.length - 1) / 2] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
     );
 
-    el("stat-size").textContent = `${data.z.length} × ${data.xlabels.length}`;
-    el("stat-range").textContent = `${fmtNum(data.low)} – ${fmtNum(data.high)}`;
-    el("stat-avg").textContent = `${fmtNum(mean)} / ${fmtNum(median)}`;
-    el("stat-missing").textContent = String(missing);
+    const [size, range, average, gaps] = el("stats").querySelectorAll(".ui-stat-value");   // stat_tiles() order
+    size.textContent = `${data.z.length} × ${data.xlabels.length}`;
+    range.textContent = `${fmtNum(data.low)} – ${fmtNum(data.high)}`;
+    average.textContent = `${fmtNum(mean)} / ${fmtNum(median)}`;
+    gaps.textContent = String(missing);
     el("stats").hidden = false;
 
     el("legend-low").textContent = `下限: ${fmtNum(data.low)}`;
@@ -658,47 +690,12 @@ __CORE__
     return lines.join("\n") + "\n";
   }
 
+  // 📝 PySaiyanWeBoo's records.js keeps every [data-ui-draft] field under SCOPE (restored now, saved on input);
+  // a draw also saves what the page itself changed (a sample, the defaults).
+  const drafts = ui.bindDrafts(document, { scope: "dragowing-heatmap/2" });
+  el("steps-range").value = el("steps").value;
   function saveDraft() {
-    try {
-      const payload = {
-        source: el("source").value,
-        format: el("format").value,
-        palette: el("palette").value,
-        reverse: el("reverse-palette").checked,
-        steps: el("steps").value,
-        zmin: el("zmin").value,
-        zmax: el("zmax").value,
-        labels: el("labels").checked,
-        transpose: el("transpose").checked,
-        flipY: el("flip-y").checked,
-        exportAxes: el("export-axes").checked,
-        size: el("size").value,
-      };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
-    } catch {}
-  }
-
-  function loadDraft() {
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const d = JSON.parse(raw);
-      if (typeof d.source === "string") el("source").value = d.source;
-      if (typeof d.format === "string") el("format").value = d.format;
-      if (typeof d.palette === "string" && PALETTES[d.palette]) el("palette").value = d.palette;
-      if (typeof d.reverse === "boolean") el("reverse-palette").checked = d.reverse;
-      if (typeof d.steps === "string" || typeof d.steps === "number") {
-        el("steps").value = String(d.steps);
-        el("steps-range").value = String(d.steps);
-      }
-      if (typeof d.zmin === "string") el("zmin").value = d.zmin;
-      if (typeof d.zmax === "string") el("zmax").value = d.zmax;
-      if (typeof d.labels === "boolean") el("labels").checked = d.labels;
-      if (typeof d.transpose === "boolean") el("transpose").checked = d.transpose;
-      if (typeof d.flipY === "boolean") el("flip-y").checked = d.flipY;
-      if (typeof d.exportAxes === "boolean") el("export-axes").checked = d.exportAxes;
-      if (typeof d.size === "string") el("size").value = d.size;
-    } catch {}
+    for (const field of drafts) field.dispatchEvent(new Event("input"));
   }
 
   async function renderPNGBlob(svg) {
@@ -754,13 +751,7 @@ __CORE__
     button.disabled = true;
     try {
       const blob = await renderPNGBlob(svg);
-      const bytes = new Uint8Array(await blob.arrayBuffer());
-      let binary = "";
-      for (let i = 0; i < bytes.length; i += 8192) {
-        binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
-      }
-      const b64 = btoa(binary);
-      lastPngPayload = { base64: b64, dataUri: "data:image/png;base64," + b64, bytes: bytes.length };
+      lastPngPayload = globalThis.webUiImageStudio.pngPayload(new Uint8Array(await blob.arrayBuffer()));   // 🔡 PySaiyanWeBoo
       updateBase64Text();
       el("b64status").textContent = `PNG ${bytes.length.toLocaleString("en-US")} bytes`;
       el("b64panel").open = true;
@@ -775,7 +766,7 @@ __CORE__
   async function doCopy(text, label) {
     if (!text) return;
     try {
-      await (ui?.copyText ? ui.copyText(text) : navigator.clipboard.writeText(text));
+      await ui.copyText(text);
       el("copy-status").textContent = `${label}をコピーしました。`;
     } catch {
       el("copy-status").textContent = `${label}をコピーできませんでした。`;
@@ -788,7 +779,7 @@ __CORE__
     const text = el("b64text").value;
     if (!text) return;
     try {
-      await (ui?.copyText ? ui.copyText(text) : navigator.clipboard.writeText(text));
+      await ui.copyText(text);
       el("b64status").textContent = "コピーしました。";
     } catch {
       el("b64text").focus();
@@ -799,11 +790,7 @@ __CORE__
   el("b64save").onclick = () => {
     const text = el("b64text").value;
     if (!text) return;
-    const a = document.createElement("a");
-    a.download = "heatmap.base64.txt";
-    a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    ui.downloadText("heatmap.base64.txt", text, "text/plain");
   };
 
   function draw() {
@@ -855,7 +842,7 @@ __CORE__
       el("raster").hidden = false;
       setStatus(`${rows}行 × ${cols}列 · ${paletteLabel} · ${data.levels ? data.levels + "段階" : "連続色"}`);
       saveDraft();
-      if (ui && ui.refreshScroll) ui.refreshScroll();
+      ui.refreshScroll();
     } catch (error) {
       setStatus(error.message, true);
     }
@@ -869,7 +856,6 @@ __CORE__
   for (const id of ["format", "trace-index", "palette", "reverse-palette", "labels", "transpose", "flip-y", "export-axes", "zmin", "zmax"]) {
     el(id).onchange = draw;
   }
-  el("size").onchange = saveDraft;
 
   for (const button of document.querySelectorAll("[data-sample]")) {
     button.onclick = () => {
@@ -884,7 +870,6 @@ __CORE__
   }
 
   el("reset-draft").onclick = () => {
-    try { localStorage.removeItem(DRAFT_KEY); } catch {}
     el("source").value = DEFAULT_SOURCE;
     el("format").value = "auto";
     el("palette").value = "viridis";
@@ -921,18 +906,24 @@ __CORE__
     }
   };
 
-  loadDraft();
   draw();
 })();
-</script>
-</body>
-</html>"""
+"""
+
+def page() -> str:
+    """The whole page: PySaiyanWeBoo's sheet, theme switch, stat tiles and modules around the heatmap's own markup and script."""
+    css = ui.bundle_css(theme="modern", extra_css="".join(ui.css_source(name) for name in (
+        "themes/github-like.css", "scroll.css", "records.css")) + HEATMAP_CSS)
+    stats = ui.stat_tiles((("サイズ", "—", "行 × 列"), ("色範囲", "—", "zmin – zmax"), ("平均 / 中央値", "—", "有限値のみ"),
+                           ("欠測 (null)", "—", "透明セル")))
+    modules = "".join(ui.module_script(ui.js_source(name) + (
+        f"\nObject.assign(globalThis.PySaiyanWeBoo ??= {{}}, {{ {', '.join(names)} }});\n" if names else "")) for name, names in MODULES)
+    script = SCRIPT.replace("__PALETTE__", json.dumps(PALETTE)).replace("__CORE__", HEATMAP_JS)
+    return (PAGE.replace("__STYLE_CSS__", css)
+            .replace("__THEME_SWITCH__", ui.theme_switch_html(control="select", legend="テーマ"))
+            .replace("__STATS__", f'<div id="stats" hidden>{stats}</div>')
+            .replace("__SCRIPTS__", modules + ui.module_script(script)))
+
 
 if __name__ == "__main__":
-    print(
-        PAGE.replace("__STYLE_CSS__", BUNDLE.STYLE_CSS)
-        .replace("__THEME_SWITCH__", BUNDLE.PSWB_HTML["theme_switch"])
-        .replace("__PSWB_JS__", BUNDLE.PSWB_JS)
-        .replace("__PALETTE__", json.dumps(PALETTE))
-        .replace("__CORE__", HEATMAP_JS)
-    )
+    print(page())

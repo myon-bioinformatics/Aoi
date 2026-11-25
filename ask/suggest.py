@@ -103,7 +103,7 @@ class Index:
                 X[r, j] = 1 + np.log(v)
                 # Each term occurs once in this document's counts.
                 frequencies[j] += 1
-        df = np.array(frequencies)
+        df = np.asarray(frequencies)
         self.idf = np.log((1 + len(docs)) / (1 + df)) + 1
         X *= self.idf
         X = _unit(X)

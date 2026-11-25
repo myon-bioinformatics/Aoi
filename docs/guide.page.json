@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "🐉 DRAgoWing 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "記録した野球の研究結果を、判定をやり直さずに Plotly.js の HTML レポート・命題の表・SVG にするリポジトリ（Aoi の可視化担当）。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",

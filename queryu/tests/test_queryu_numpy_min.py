@@ -25,7 +25,10 @@ DOCS = [
     ("N1", "明日の天気とビールの売上"),
     ("N2", "監督の名前と本拠地"),
 ]
-QUESTIONS = ["得失点差がプラスなら上位か", "中日の走者あたりの得点", "1点差で勝つと", "本塁打と得点", "天気", "無関係な問い xyz"]
+QUESTIONS = [
+    "得失点差がプラスなら上位か", "中日の走者あたりの得点", "1点差で勝つと", "本塁打と得点",
+    "天気", "無関係な問い xyz", "", " ！？ ", "🦕",
+]
 
 
 def _suggest_on_real_numpy():
@@ -86,6 +89,16 @@ def test_suggest_matches_real_numpy():
         want = real.suggest(q, DOCS, threshold=0.3, dim=4, k=5)
         assert mine["status"] == want["status"]
         assert mine["selected"] == want["selected"]
+
+
+def test_document_frequency_counts_a_repeated_term_once_per_document():
+    index = suggest.Index([("P1", "aa"), ("P2", "a"), ("P3", "！？")])
+    assert index.idf[index.vocab["a"]] == pytest.approx(1 + numpy.log(4 / 3))
+    assert index.idf[index.vocab["aa"]] == pytest.approx(1 + numpy.log(4 / 2))
+
+    empty = suggest.Index([("P1", "！？")])
+    assert empty.idf.tolist() == pytest.approx([1 + numpy.log(2)])
+    assert empty.vec("未知").tolist() == [0.0]
 
 
 def test_unit_matches_real_numpy():

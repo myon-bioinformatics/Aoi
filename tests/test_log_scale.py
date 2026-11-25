@@ -36,7 +36,7 @@ class LogScaleTests(unittest.TestCase):
 
     def test_round_to_none_disables_rounding(self):
         raw = scale.log_scale([NODE_BYTES], anchor=PYTHON_BYTES, top=90, round_to=None)
-        self.assertEqual(raw, [NODE_UNROUNDED])
+        self.assertAlmostEqual(raw[0], NODE_UNROUNDED, places=12)
         self.assertNotEqual(raw[0], 70)
 
     def test_round_to_default_is_multiple_of_five_half_away_from_zero(self):
@@ -60,8 +60,48 @@ class LogScaleTests(unittest.TestCase):
         values = [0, 3, 4]
         self.assertEqual(scale.log_scale(values, top=None, round_to=None, base=math.e),
                          [math.log1p(x) for x in values])
-        self.assertEqual(scale.log_scale(values, top=None, round_to=None, base=10),
-                         [math.log10(1 + x) for x in values])
+        for base, log in ((2, math.log2), (10, math.log10)):
+            for value, score in zip(values, scale.log_scale(values, top=None, round_to=None, base=base)):
+                self.assertAlmostEqual(score, log(1 + value), places=15)
+
+    def test_unnormalized_tiny_value_retains_precision_in_each_base(self):
+        tiny = 1e-20
+        for base in (2, 10, math.e):
+            with self.subTest(base=base):
+                score, = scale.log_scale([tiny], top=None, round_to=None, base=base)
+                # At this magnitude, the quadratic term of ln(1+x) is below one ulp.
+                self.assertTrue(math.isclose(score, tiny / math.log(base), rel_tol=1e-15), score)
+
+    def test_tiny_anchor_normalizes_in_each_base_without_rounding(self):
+        tiny = 1e-20
+        for base in (2, 10, math.e):
+            for anchor in (None, tiny):
+                with self.subTest(base=base, anchor=anchor):
+                    self.assertEqual(scale.log_scale([0, tiny / 4, tiny], anchor=anchor,
+                                                     round_to=None, base=base), [0.0, 22.5, 90.0])
+
+    def test_unnormalized_smallest_subnormals_round_in_each_base(self):
+        smallest = math.ulp(0.0)
+        for base, units in ((2, [1, 3]), (10, [0, 1]), (math.e, [1, 2])):
+            with self.subTest(base=base):
+                self.assertEqual(scale.log_scale([smallest, 2 * smallest], top=None,
+                                                 round_to=None, base=base),
+                                 [count * smallest for count in units])
+
+    def test_subnormal_anchor_normalizes_before_rounding_to_float(self):
+        smallest = math.ulp(0.0)
+        for base in (2, 10, math.e):
+            with self.subTest(base=base):
+                self.assertEqual(scale.log_scale([0, smallest, 2 * smallest],
+                                                 top=0.25, round_to=None, base=base),
+                                 [0.0, 0.125, 0.25])
+
+    def test_normalization_preserves_representable_scores_across_magnitudes(self):
+        smallest = math.ulp(0.0)
+        self.assertEqual(scale.log_scale([smallest], anchor=math.expm1(16), round_to=None),
+                         [6 * smallest])
+        self.assertEqual(scale.log_scale([1], anchor=smallest, top=smallest, round_to=None),
+                         [math.log(2)])
 
     def test_anchor_zero_with_all_zeros(self):
         self.assertEqual(scale.log_scale([0, 0], round_to=None), [0.0, 0.0])
@@ -96,9 +136,11 @@ class LogScaleTests(unittest.TestCase):
         raw = scale.log_scale(
             [PYTHON_BYTES, NODE_BYTES, TS_BYTES],
             anchor=PYTHON_BYTES, top=90, round_to=None)
-        self.assertEqual(raw, [90.0, NODE_UNROUNDED, TS_UNROUNDED])
-        self.assertEqual(scale.adjust_narrow(raw[1], 8), NODE_UNROUNDED)
-        self.assertEqual(scale.adjust_narrow(raw[2], 2), TS_NARROW)
+        self.assertEqual(raw[0], 90.0)
+        self.assertAlmostEqual(raw[1], NODE_UNROUNDED, places=12)
+        self.assertAlmostEqual(raw[2], TS_UNROUNDED, places=12)
+        self.assertEqual(scale.adjust_narrow(raw[1], 8), raw[1])
+        self.assertAlmostEqual(scale.adjust_narrow(raw[2], 2), TS_NARROW, places=12)
         self.assertEqual(scale.round_score(scale.adjust_narrow(raw[1], 8)), 70)
         self.assertEqual(scale.round_score(scale.adjust_narrow(raw[2], 2)), 45)
 
@@ -181,7 +223,13 @@ class ScaleCliTests(unittest.TestCase):
         self.assertEqual((mode, scores), ("log", [90, 70]))
         mode, scores = self.scores("scale", "26235991", "500501", "--anchor", "26235991", "--round-to", "none")
         self.assertEqual(mode, "log")
-        self.assertEqual(scores, [90.0, NODE_UNROUNDED])
+        self.assertEqual(scores[0], 90.0)
+        self.assertAlmostEqual(scores[1], NODE_UNROUNDED, places=12)
+
+    def test_unnormalized_tiny_value_keeps_scientific_notation_precision(self):
+        mode, scores = self.scores("scale", "1e-20", "--top", "none", "--round-to", "none", "--base", "10")
+        self.assertEqual(mode, "log")
+        self.assertTrue(math.isclose(scores[0], 4.342944819032518e-21, rel_tol=1e-15), scores)
 
     def test_top_none_floor_and_base(self):
         mode, scores = self.scores("scale", "0", "3", "--top", "none", "--round-to", "none", "--base", str(math.e))

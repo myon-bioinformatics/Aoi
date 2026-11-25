@@ -151,16 +151,6 @@ def _numbers(values):
     return items
 
 
-def _log1p(value, base):
-    if base == math.e:
-        return math.log1p(value)
-    if base == 10:
-        return math.log10(1 + value)
-    if base == 2:
-        return math.log2(1 + value)
-    return math.log1p(value) / math.log(base)
-
-
 def round_score(score, *, step=5):
     """Round ``score`` to a multiple of ``step``, half away from zero.
 
@@ -200,6 +190,7 @@ def log_scale(values, *, anchor=None, top=90, floor=None, round_to=5, base=10):
     step for :func:`round_score`; ``round_to=None`` disables rounding.
     ``top=None`` returns ``log(1+x)`` in the given ``base`` (``anchor`` is
     unused) so callers that need unnormalized log1p can share this helper.
+    Otherwise the base cancels in the ratio.
 
     A zero value uses ``floor`` as the final score when ``floor`` is set
     (it is not rounded). When the resolved anchor is 0, every value must
@@ -213,7 +204,8 @@ def log_scale(values, *, anchor=None, top=90, floor=None, round_to=5, base=10):
         raise ValueError("base must be positive and not 1")
     floor = _optional_floor(floor)
     if top is None:
-        scores = [_log1p(value, base) for value in items]
+        log_base = 1.0 if base == math.e else math.log(base)
+        scores = [math.log1p(value) / log_base for value in items]
         return _apply(items, scores, floor, round_to)
     top = _require_finite(top, "top")
     if anchor is None:
@@ -225,8 +217,18 @@ def log_scale(values, *, anchor=None, top=90, floor=None, round_to=5, base=10):
             raise ValueError("anchor must be positive when a value is positive")
         scores = [0.0] * len(items)
         return _apply(items, scores, floor, round_to)
-    denom = _log1p(anchor, base)
-    scores = [top * _log1p(value, base) / denom for value in items]
+    # Keep the powers of two separate so only the final score can underflow or overflow.
+    top_fraction, top_exponent = math.frexp(top)
+    anchor_fraction, anchor_exponent = math.frexp(math.log1p(anchor))
+    scores = []
+    for value in items:
+        fraction, exponent = math.frexp(math.log1p(value))
+        try:
+            score = math.ldexp(top_fraction * (fraction / anchor_fraction),
+                               top_exponent + exponent - anchor_exponent)
+        except OverflowError:
+            raise ValueError("score must be a finite number") from None
+        scores.append(score)
     return _apply(items, scores, floor, round_to)
 
 

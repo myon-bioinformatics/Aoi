@@ -14,7 +14,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "vendor" / "pysaiyanweboo")]
 import pysaiyanweboo as ui  # noqa: E402
 from dragowing import HEATMAP_JS, PALETTE  # noqa: E402
 
-# 🎨 The heatmap's own rules, after PySaiyanWeBoo's sheet (modern, github-like, scroll, records).
+# 🎨 The heatmap's own rules, after PySaiyanWeBoo's sheet (every theme of the switch, scroll, records).
 HEATMAP_CSS = """@layer components{
 .hm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:var(--ui-space)}
 .hm-head .ui-title{margin:0 0 .25rem}
@@ -913,7 +913,7 @@ __CORE__
 def page() -> str:
     """The whole page: PySaiyanWeBoo's sheet, theme switch, stat tiles and modules around the heatmap's own markup and script."""
     css = ui.bundle_css(theme="modern", extra_css="".join(ui.css_source(name) for name in (
-        "themes/github-like.css", "scroll.css", "records.css")) + HEATMAP_CSS)
+        "themes/github-like.css", "themes/terminal.css", "scroll.css", "records.css")) + HEATMAP_CSS)
     stats = ui.stat_tiles((("サイズ", "—", "行 × 列"), ("色範囲", "—", "zmin – zmax"), ("平均 / 中央値", "—", "有限値のみ"),
                            ("欠測 (null)", "—", "透明セル")))
     modules = "".join(ui.module_script(ui.js_source(name) + (

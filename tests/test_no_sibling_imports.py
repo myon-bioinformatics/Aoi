@@ -23,7 +23,6 @@ KNOWN_EXCEPTIONS = {
     # PySaiyanWeBoo の PIL は、画像を書くときだけ使う任意の import（ページでは使わない）。
     ("scripts/build_heatmap_page.py", "import:pysaiyanweboo"),
     ("tests/test_heatmap_page.py", "path:scripts/build_heatmap_page.py"),
-    ("vendor/pysaiyanweboo/pysaiyanweboo.py", "import:PIL"),
     # PythDRagoras の propositions と rule_search、QueRyu の ask。場所は Aoi の aoi.py が入れる（conftest.py）
     ("tests/test_forms.py", "import:propositions"),
     ("tests/test_figures.py", "import:rule_search"),

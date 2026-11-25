@@ -10,19 +10,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _page() -> str:
-    return subprocess.run([sys.executable, "-S", str(ROOT / "scripts/build_heatmap_page.py")], cwd=ROOT, capture_output=True,
+    return subprocess.run([sys.executable, str(ROOT / "scripts/build_heatmap_page.py")], cwd=ROOT, capture_output=True,
                           text=True, check=True).stdout
 
 
 def _pswb():
-    """The vendored PySaiyanWeBoo the page is built from (loaded by path, beside the repository's own modules)."""
-    spec = importlib.util.spec_from_file_location("dragowing_vendored_pswb", ROOT / "vendor/pysaiyanweboo/pysaiyanweboo.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    """The pinned PySaiyanWeBoo the page is built from (📦 the pages group)."""
+    return importlib.import_module("pysaiyanweboo")
 
 
-def test_page_runs_with_python_minus_s_and_uses_pswb_parts():
+def test_page_uses_pswb_parts():
     html = _page()
     assert html.startswith("<!doctype html>")
     assert '<body class="ui-elements" data-ui-theme="modern">' in html and '<main class="ui-page">' in html
@@ -46,11 +43,13 @@ def test_every_draft_field_has_a_records_key():
                                    "flip-y", "export-axes", "size"})
 
 
-def test_the_vendored_pswb_is_the_locked_one():
-    row = next(f for f in json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))["files"]
-               if f["repository"] == "myon-bioinformatics/PySaiyanWeBoo")
-    assert row["destination"] == "vendor/pysaiyanweboo/pysaiyanweboo.py" and row["ref"] == row["commit"]
-    assert 'sys.path[:0] = [str(ROOT), str(ROOT / "vendor" / "pysaiyanweboo")]' in (ROOT / "scripts/build_heatmap_page.py").read_text()
+def test_pswb_is_pinned_by_commit_and_not_vendored():
+    import tomllib
+    pages = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["dependency-groups"]["pages"]
+    assert len(pages) == 1 and re.fullmatch(r"pysaiyanweboo @ git\+https://github\.com/myon-bioinformatics/PySaiyanWeBoo@[0-9a-f]{40}", pages[0])
+    assert not [f for f in json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))["files"]
+                if f["repository"] == "myon-bioinformatics/PySaiyanWeBoo"]
+    assert not (ROOT / "vendor/pysaiyanweboo").exists()
 
 
 def test_built_page_accepts_portfolio_back_nav():

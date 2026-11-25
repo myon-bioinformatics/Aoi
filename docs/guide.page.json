@@ -84,7 +84,7 @@
                   "blocks": [
                     {
                       "type": "output",
-                      "text": "python -S scripts/build_heatmap_page.py > heatmap.html"
+                      "text": "uv run --only-group pages python scripts/build_heatmap_page.py > heatmap.html"
                     }
                   ]
                 }

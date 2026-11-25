@@ -17,7 +17,7 @@ PAGE = """<!doctype html>
 <div id="view"></div><p id="downloads"></p>
 <p id="raster" hidden><label>PNGの長辺 <select id="size"><option>512</option><option selected>1024</option><option>2048</option></select> px</label>
 <button type="button" id="png">PNGを保存</button></p>
-<a href="https://myon-bioinformatics.github.io/tools/ironmate/">シーンJSONをIronmateで開く</a></main>
+<a href="https://myon-bioinformatics.github.io/tools/image-studio/">🖼️ シーンJSONを Image Studio で開く</a></main>
 <script>
 const PALETTE = __PALETTE__;
 const clone = structuredClone;

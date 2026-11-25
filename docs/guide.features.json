@@ -1,0 +1,7 @@
+[
+  {"source": "queryu.py", "cli": [[], ["share"], ["emoji"], ["post"]], "namespaces": true},
+  {"source": "ask/ask.py", "cli": [[]]},
+  {"source": "ask/suggest.py", "cli": [[]]},
+  {"source": "ask/bank.py"},
+  {"source": "core/cache_core.py"}
+]

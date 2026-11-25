@@ -95,13 +95,15 @@ class Index:
                 counts[j] = counts.get(j, 0) + 1
             rows.append(counts)
         self.vocab = vocab
-        X = np.zeros((len(docs), max(len(vocab), 1)), np.float32)
+        width = max(len(vocab), 1)
+        X = np.zeros((len(docs), width), np.float32)
+        frequencies = [0] * width
         for r, counts in enumerate(rows):
             for j, v in counts.items():
                 X[r, j] = 1 + np.log(v)
-        if not vocab:
-            X[:] = 0
-        df = (X > 0).sum(0)
+                # Each term occurs once in this document's counts.
+                frequencies[j] += 1
+        df = np.array(frequencies)
         self.idf = np.log((1 + len(docs)) / (1 + df)) + 1
         X *= self.idf
         X = _unit(X)
@@ -125,10 +127,14 @@ class Index:
         x = np.zeros(len(self.vocab) or self.P.shape[0], np.float32)
         if not self.vocab:
             return x
+        matched = False
         for g in ngrams(text):
             j = self.vocab.get(g)
             if j is not None:
                 x[j] += 1
+                matched = True
+        if not matched:
+            return x
         nz = x > 0
         x[nz] = 1 + np.log(x[nz])
         x *= self.idf

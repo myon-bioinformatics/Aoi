@@ -11,8 +11,10 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "vendor"))
 import shrink_module as sm  # noqa: E402
 import shrink_polars as sp  # noqa: E402
+from cli_args import run_cli  # noqa: E402
 
 ENTRY = ["dragowing/overlap.py:load_overlap", "pythdragoras/core/propositions.py:_cond"]
 SEASON = ROOT / "cycles/c001-chunichi/outputs/season.jsonl"
@@ -40,10 +42,7 @@ def test_analyze_does_not_follow_imported_cond():
 
 
 def test_generated_file_is_current():
-    out = subprocess.run(
-        [sys.executable, "scripts/shrink_polars.py", "generate", *ENTRY, "--out", "shrink/polars_min.py", "--check"],
-        cwd=ROOT, capture_output=True, text=True,
-    )
+    out = run_cli("scripts/shrink_polars.py", "generate", *ENTRY, "--out", "shrink/polars_min.py", "--check", cwd=ROOT)
     assert out.returncode == 0, out.stderr
 
 
@@ -107,10 +106,7 @@ def test_read_ndjson_upcasts_mixed_numbers_and_rejects_the_rest(tmp_path):
 def test_min_mode_refuses_when_a_real_package_is_installed():
     if importlib.util.find_spec("numpy") is None and importlib.util.find_spec("polars") is None:
         pytest.skip("numpy も polars も入っていない")
-    out = subprocess.run(
-        [sys.executable, "scripts/stdlib_min.py", "overlap-stdlib", "--deps", "min", "out.json"],
-        cwd=ROOT, capture_output=True, text=True,
-    )
+    out = run_cli("scripts/stdlib_min.py", "overlap-stdlib", "--deps", "min", "out.json", cwd=ROOT)
     assert out.returncode != 0
     assert "入っている" in out.stderr
 
@@ -127,7 +123,7 @@ def test_dragowing_single_file_does_not_import_polars():
 
 def test_absent_discovers_only_the_c001_surface():
     pytest.importorskip("numpy")
-    out = subprocess.run([sys.executable, "scripts/shrink_polars.py", "absent"], cwd=ROOT, capture_output=True, text=True)
+    out = run_cli("scripts/shrink_polars.py", "absent", cwd=ROOT)
     assert out.returncode == 0, out.stderr
     for key in (
         "polars.read_ndjson", "DataFrame.height", "DataFrame.columns", "DataFrame.__getitem__",
@@ -143,7 +139,7 @@ def test_absent_discovers_only_the_c001_surface():
 
 def test_trace_names_methods_the_ast_misses():
     pytest.importorskip("polars")
-    out = subprocess.run([sys.executable, "scripts/shrink_polars.py", "trace"], cwd=ROOT, capture_output=True, text=True)
+    out = run_cli("scripts/shrink_polars.py", "trace", cwd=ROOT)
     assert out.returncode == 0, out.stderr + out.stdout
     missed = out.stdout.split("missed by ast: ", 1)[1]
     for name in ("DataFrame.height", "DataFrame.columns", "DataFrame.select", "DataFrame.__getitem__", "Series.to_list", "Expr.__eq__"):
@@ -241,10 +237,7 @@ def test_load_overlap_bytes_match_with_both_mins(tmp_path):
     pytest.importorskip("numpy")
     reference = tmp_path / "reference.json"
     minimal = tmp_path / "minimal.json"
-    real = subprocess.run(
-        [sys.executable, "scripts/stdlib_min.py", "overlap-stdlib", "--deps", "real", str(reference)],
-        cwd=ROOT, capture_output=True, text=True,
-    )
+    real = run_cli("scripts/stdlib_min.py", "overlap-stdlib", "--deps", "real", str(reference), cwd=ROOT)
     assert real.returncode == 0, real.stderr
     injected = r"""
 import importlib.util, json, sys

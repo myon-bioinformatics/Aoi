@@ -17,6 +17,9 @@ from annual_scope import primary_cache, PRIMARY_YEARS
 from npb_team_annual import pages
 from queryu import Cache
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "vendor"))
+from cli_args import run_cli  # noqa: E402
+
 
 # ==== npb（旧 test_aoi_npb.py）
 
@@ -100,11 +103,10 @@ def test_npb_annual_cli_enforces_leagues_that_generic_cli_does_not(tmp_path):
         "unknown": 0, "sha256": hashlib.sha256(b"").hexdigest(),
     }))
     out, annual = tmp_path / "audit.json", tmp_path / "annual.jsonl"
-    result = subprocess.run([
-        sys.executable, "-I", "-S", str(aoi_npb.ROOT / "aoi_npb.py"), "annual-audit",
-        "--observations", str(observed), "--years", "2026-2026",
-        "--out", str(out), "--annual-out", str(annual),
-    ], cwd=tmp_path, text=True, capture_output=True)
+    result = run_cli(aoi_npb.ROOT / "aoi_npb.py", "annual-audit",
+                     "--observations", str(observed), "--years", "2026-2026",
+                     "--out", str(out), "--annual-out", str(annual),
+                     python_options=("-I", "-S"), cwd=tmp_path)
     assert result.returncode == 1, result.stdout + result.stderr
     audit = json.loads(out.read_text())
     assert sum(c["check"] == "standings_present" for c in audit["failures"]) == 4
@@ -162,12 +164,14 @@ def test_aoi_entry_appends_only_the_siblings_a_child_needs(tmp_path):
         aoi.command(["no_such_child"])
     # 子プロセス: 別の作業フォルダから、PYTHONPATH なしで起動しても兄弟（blueprobe）を import できる
     clean = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
-    run = subprocess.run([sys.executable, str(root / "aoi.py"), "queryu", "--source", "npb_calendar", "--years", "2024",
-                          "--cache", str(tmp_path / "cache"), "--offline", "--plan"],
-                         cwd=tmp_path, env=clean, capture_output=True, text=True)
+    run = run_cli(root / "aoi.py", "queryu", "--source", "npb_calendar", "--years", "2024",
+                  "--cache", str(tmp_path / "cache"), "--offline", "--plan",
+                  cwd=tmp_path, env=clean)
     assert run.returncode == 0, run.stderr
     # 引数なし: このシェルだけに効く POSIX の export を出す（保存はしない）。Aoi の根と dragowing/ は入れない
-    shown = subprocess.run([sys.executable, str(root / "aoi.py")], env=clean, capture_output=True, text=True, check=True).stdout
+    shown_result = run_cli(root / "aoi.py", env=clean)
+    assert shown_result.returncode == 0, shown_result.stderr
+    shown = shown_result.stdout
     assert shown.splitlines()[0] == f"export AOI_ROOT={shlex.quote(str(root))}"
     exported = dict(item.split("=", 1) for item in (shlex.split(line)[1] for line in shown.splitlines()))
     exported_paths = [entry for entry in exported["PYTHONPATH"].split(os.pathsep) if entry]
@@ -200,12 +204,10 @@ def test_dragowing_script_path_and_name_run_the_same_main(tmp_path):
     """🐉 dragowing.py は 1 ファイルで、__main__.py も同じ main（レポート・--forms・--ffss・要素数）。"""
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
-    report = subprocess.run([sys.executable, str(root / "aoi.py"), "dragowing/__main__.py", "--help"],
-                            cwd=tmp_path, env=env, capture_output=True, text=True)
+    report = run_cli(root / "aoi.py", "dragowing/__main__.py", "--help", cwd=tmp_path, env=env)
     assert report.returncode == 0, report.stderr
     assert "記録された結果を HTML" in report.stdout and "--ffss" in report.stdout
-    counter = subprocess.run([sys.executable, str(root / "aoi.py"), "dragowing", "--help"],
-                             cwd=tmp_path, env=env, capture_output=True, text=True)
+    counter = run_cli(root / "aoi.py", "dragowing", "--help", cwd=tmp_path, env=env)
     assert counter.returncode == 0, counter.stderr
     assert "記録された結果を HTML" in counter.stdout and "--forms" in counter.stdout and "--ffss" in counter.stdout
 
@@ -214,8 +216,7 @@ def test_dragowing_script_path_and_name_run_the_same_main(tmp_path):
 def test_launcher_flags_still_run_dragowing_py(flag):
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
-    run = subprocess.run([sys.executable, flag, str(root / "aoi.py"), "dragowing", "--help"],
-                         cwd=root, env=env, capture_output=True, text=True)
+    run = run_cli(root / "aoi.py", "dragowing", "--help", python_options=(flag,), cwd=root, env=env)
     assert run.returncode == 0, run.stderr
     assert "記録された結果を HTML" in run.stdout
 
@@ -228,15 +229,13 @@ def test_nagoyaction_report_and_inbox_import_through_aoi(tmp_path):
     root = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "AOI_RESEARCH_CYCLE", "PYTHONSAFEPATH")}
     for flag in (None, "-I", "-S", "-E", "-P"):
-        prefix = [sys.executable] if flag is None else [sys.executable, flag]
-        report = subprocess.run(
-            [*prefix, str(root / "aoi.py"), "nagoyaction/npb/annual_history_report.py", "--help"],
-            cwd=tmp_path, env=env, capture_output=True, text=True)
+        options = () if flag is None else (flag,)
+        report = run_cli(root / "aoi.py", "nagoyaction/npb/annual_history_report.py", "--help",
+                         python_options=options, cwd=tmp_path, env=env)
         assert report.returncode == 0, (flag, report.stderr)
         assert "--observations" in report.stdout
-        inbox = subprocess.run(
-            [*prefix, str(root / "aoi.py"), "nagoyaction/inbox/inbox.py", "--help"],
-            cwd=tmp_path, env=env, capture_output=True, text=True)
+        inbox = run_cli(root / "aoi.py", "nagoyaction/inbox/inbox.py", "--help",
+                        python_options=options, cwd=tmp_path, env=env)
         assert inbox.returncode == 0, (flag, inbox.stderr)
         assert "intake" in inbox.stdout
 

@@ -113,6 +113,83 @@
           ]
         },
         {
+          "label": "🔬 検証ガイド",
+          "blocks": [
+            {
+              "type": "runbook",
+              "id": "verify",
+              "books": [
+                {
+                  "label": "🐍 python",
+                  "intro": "🤖 のついた手順は CI で実際に動かし、出た結果をそのまま載せています。",
+                  "runbook": {
+                    "key": "nagoyaction/python",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/NagoyAction/main/nagoyaction.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "doctor",
+                        "title": "🩺 doctor",
+                        "command": "python nagoyaction.py doctor pipelines/inbox.toml",
+                        "run": true
+                      },
+                      {
+                        "id": "show",
+                        "title": "👀 show",
+                        "command": "python nagoyaction.py show pipelines/inbox.toml",
+                        "run": true
+                      },
+                      {
+                        "id": "dry",
+                        "title": "▶️ run（試すだけ）",
+                        "command": "python nagoyaction.py run pipelines/inbox.toml --dry-run",
+                        "run": true
+                      },
+                      {
+                        "id": "lint",
+                        "title": "🔍 actionlint",
+                        "command": "python nagoyaction.py actionlint",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "hub",
+                        "title": "🏠 hub",
+                        "command": "python nagoyaction.py hub status",
+                        "needs": "🏠 ローカルの forge"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "⚡ uv",
+                  "intro": "uv があれば Python の版を気にせず動きます。",
+                  "runbook": {
+                    "key": "nagoyaction/uv",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/NagoyAction/main/nagoyaction.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "doctor",
+                        "title": "🩺 doctor",
+                        "command": "uv run --no-project python nagoyaction.py doctor pipelines/inbox.toml",
+                        "run": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "label": "🎞 GIF デモ",
           "blocks": [
             {

@@ -18,6 +18,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "vendor"))
+from cli_args import run_cli  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import aoi_paths  # noqa: E402
@@ -439,8 +442,7 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_text('import json, os, sys\nprint(json.dumps({"args": sys.argv[1:], "cwd": os.getcwd(), "AOI_ROOT": os.environ.get("AOI_ROOT"), "PYTHONPATH": os.environ.get("PYTHONPATH", ""), "path0": sys.path[0]}))\nsys.exit(7)\n')
                     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "PYTHONSAFEPATH")}
-                    result = subprocess.run([sys.executable, str(root / "aoi.py"), name, "x y", "--option"],
-                                            cwd=work, env=env, capture_output=True, text=True)
+                    result = run_cli(root / "aoi.py", name, "x y", "--option", cwd=work, env=env)
                     self.assertEqual(result.returncode, 7, result.stderr)
                     seen = json.loads(result.stdout)
                     self.assertEqual((seen["args"], seen["cwd"], seen["AOI_ROOT"]), (["x y", "--option"], str(work), str(root.resolve())))
@@ -456,7 +458,7 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
     def test_missing_child_has_actionable_error(self):
         with tempfile.TemporaryDirectory() as temp:
             root = self._root(temp)
-            result = subprocess.run([sys.executable, str(root / "aoi.py"), "blueprobe", "--help"], capture_output=True, text=True)
+            result = run_cli(root / "aoi.py", "blueprobe", "--help")
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("blueprobe.py", result.stderr)
 
@@ -492,11 +494,9 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
             work.mkdir()
             base = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "AOI_ROOT", "PYTHONSAFEPATH")}
             external_env = dict(base, PYTHONPATH=str(external))
-            chosen = subprocess.run([sys.executable, str(root / "aoi.py"), "queryu"],
-                                    cwd=work, env=external_env, capture_output=True, text=True)
+            chosen = run_cli(root / "aoi.py", "queryu", cwd=work, env=external_env)
             self.assertEqual(chosen.stdout.strip(), "external", chosen.stderr)
-            fallback = subprocess.run([sys.executable, str(root / "aoi.py"), "queryu"],
-                                      cwd=work, env=base, capture_output=True, text=True)
+            fallback = run_cli(root / "aoi.py", "queryu", cwd=work, env=base)
             self.assertEqual(fallback.stdout.strip(), "aoi", fallback.stderr)
 
     def test_isolated_flags_insert_siblings_without_applying_pythonpath(self):
@@ -533,9 +533,7 @@ class ChildEntriesThroughAoiTest(unittest.TestCase):
             }
             for flag, wanted in expect.items():
                 with self.subTest(flag=flag):
-                    result = subprocess.run(
-                        [sys.executable, flag, str(root / "aoi.py"), "queryu", "x"],
-                        cwd=work, env=base, capture_output=True, text=True)
+                    result = run_cli(root / "aoi.py", "queryu", "x", python_options=(flag,), cwd=work, env=base)
                     self.assertEqual(result.returncode, 0, result.stderr)
                     seen = json.loads(result.stdout)
                     self.assertEqual(seen["argv"], ["x"])

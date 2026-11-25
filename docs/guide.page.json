@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "BlueProbe 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "取得済みのウェブページ（HTML / CSS / DOM）を読み、そこに何があるかを記録する観測・抽出ツール。勝敗や原因は判定しません。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",

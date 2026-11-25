@@ -76,6 +76,71 @@
           ]
         },
         {
+          "label": "🔬 検証ガイド",
+          "blocks": [
+            {
+              "type": "runbook",
+              "id": "verify",
+              "books": [
+                {
+                  "label": "🐍 python",
+                  "intro": "🤖 のついた手順は CI で実際に動かし、出た結果をそのまま載せています。",
+                  "runbook": {
+                    "key": "sakanalytics/python",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/SakAnalytics/main/sakanalytics.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "edge",
+                        "title": "🧱 境界の値をずらす",
+                        "command": "python sakanalytics.py 0 --lo 0 --eps 0.1",
+                        "run": true
+                      },
+                      {
+                        "id": "describe",
+                        "title": "📈 要約統計",
+                        "command": "python sakanalytics.py describe 1 2 3",
+                        "run": true
+                      },
+                      {
+                        "id": "tool",
+                        "title": "📦 コマンドとして導入",
+                        "command": "uv tool install git+https://github.com/myon-bioinformatics/SakAnalytics.git",
+                        "needs": "🌐 ネットワーク"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "⚡ uv",
+                  "intro": "uv があれば Python の版を気にせず動きます。",
+                  "runbook": {
+                    "key": "sakanalytics/uv",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/SakAnalytics/main/sakanalytics.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "edge",
+                        "title": "🧱 境界の値をずらす",
+                        "command": "uv run --no-project python sakanalytics.py 0 --lo 0 --eps 0.1",
+                        "run": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "label": "🎞 GIF デモ",
           "blocks": [
             {

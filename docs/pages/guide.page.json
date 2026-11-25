@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "Aoi 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "観測・計測・問い直しのための仮説駆動の研究フレームワーク。野球は実験室で、主題は「説明」そのもの。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",

@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "SakAnalytics 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "観測データセット（1行1試合）から、チーム × シーズンの指標を作るツール。測るだけで、除外や良し悪しの判定はしません。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",

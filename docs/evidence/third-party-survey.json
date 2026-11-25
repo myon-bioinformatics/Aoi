@@ -182,7 +182,7 @@
       "import_sites": 1
     },
     "numpy": {
-      "attribute_uses": 314,
+      "attribute_uses": 317,
       "attributes": {
         "__file__": 1,
         "__version__": 3,
@@ -225,7 +225,7 @@
         "linalg.norm": 2,
         "linalg.pinv": 1,
         "linalg.svd": 3,
-        "log": 10,
+        "log": 13,
         "longdouble": 1,
         "maximum": 7,
         "mean": 2,
@@ -351,12 +351,13 @@
           "import_sites": 11
         },
         "queryu": {
-          "attribute_uses": 6,
+          "attribute_uses": 9,
           "attributes": {
             "allclose": 2,
             "array": 2,
             "float32": 1,
-            "linalg.svd": 1
+            "linalg.svd": 1,
+            "log": 3
           },
           "dynamic_import_sites": 0,
           "files": 1,
@@ -742,14 +743,14 @@
       "import_sites": 2
     },
     "pytest": {
-      "attribute_uses": 1348,
+      "attribute_uses": 1351,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
         "StashKey": 2,
         "UsageError": 11,
-        "approx": 397,
+        "approx": 400,
         "fail": 33,
         "fixture": 51,
         "hookimpl": 3,
@@ -846,12 +847,12 @@
           "import_sites": 18
         },
         "queryu": {
-          "attribute_uses": 100,
+          "attribute_uses": 103,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
             "UsageError": 4,
-            "approx": 2,
+            "approx": 5,
             "fail": 8,
             "fixture": 4,
             "mark.parametrize": 25,
@@ -2352,7 +2353,8 @@
         "allclose": 2,
         "array": 2,
         "float32": 1,
-        "linalg.svd": 1
+        "linalg.svd": 1,
+        "log": 3
       },
       "dynamic_lines": [],
       "file": "queryu/tests/test_queryu_numpy_min.py",
@@ -2362,7 +2364,7 @@
     },
     {
       "attributes": {
-        "approx": 2,
+        "approx": 5,
         "fail": 1,
         "mark.parametrize": 2,
         "skip": 1,

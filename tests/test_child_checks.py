@@ -15,7 +15,14 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import child_checks  # noqa: E402
 
 PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
-PIN_CHILDREN = ("blueprobe", "queryu", "sakanalytics", "pythdragoras", "nagoyaction", "dragowing")
+PIN_CHILDREN = {
+    "blueprobe": PIN,
+    "queryu": "0361d4d81add261ba15073fc32f2a524d2b7e2de",
+    "sakanalytics": PIN,
+    "pythdragoras": PIN,
+    "nagoyaction": PIN,
+    "dragowing": PIN,
+}
 # 子の tests/test_no_sibling_imports.py の定数（採用後は子にこれだけが残る）
 SIBLING_CHILDREN = {
     "sakanalytics": dict(third_party={"polars", "pytest", "ortools"}),
@@ -33,12 +40,12 @@ def _load(path: Path):
     return module
 
 
-@pytest.mark.parametrize("child", PIN_CHILDREN)
-def test_parent_pins_match_each_child_copy(child):
+@pytest.mark.parametrize("child,expected_pin", PIN_CHILDREN.items())
+def test_parent_pins_match_each_child_copy(child, expected_pin):
     pins = child_checks.parent_workflow_pins(ROOT / child)
     live = [p for p in pins if p == LIVE_REF]
     pins = [p for p in pins if p != LIVE_REF]
-    assert pins and set(pins) == {PIN}, pins
+    assert pins and set(pins) == {expected_pin}, pins
     assert live == ([LIVE_REF] if child == "pythdragoras" else [])
 
 
@@ -85,7 +92,7 @@ def test_find_node_rejects_old_major(tmp_path):
 
 def test_cli_lists_pins_and_uses(capsys):
     assert child_checks.main(["pins", str(ROOT / "queryu")]) == 0
-    assert set(capsys.readouterr().out.split()) == {PIN}
+    assert set(capsys.readouterr().out.split()) == {PIN_CHILDREN["queryu"]}
     assert child_checks.main(["uses", str(ROOT / "pythdragoras")]) == 0
     assert "import:sakanalytics" in capsys.readouterr().out
     assert child_checks.main(["nope"]) == 2

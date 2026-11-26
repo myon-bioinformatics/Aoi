@@ -160,10 +160,6 @@
           "type": "links",
           "items": [
             {
-              "label": "📦 リポジトリ",
-              "href": "https://github.com/myon-bioinformatics/SakAnalytics"
-            },
-            {
               "label": "📖 README",
               "href": "https://github.com/myon-bioinformatics/SakAnalytics#readme"
             },

@@ -12,12 +12,13 @@ python aoi.py queryu --help
 python aoi.py nagoyaction --help
 python aoi.py sakanalytics --help
 python aoi.py pythdragoras --help
-python aoi.py dragowing RESULTS         # 🐉 dragowing.py (one stdlib file): HTML report; also --forms, --ffss, PAGE.html
+python aoi.py dragowing --help
 ```
 
 Nothing is saved. `eval "$(python aoi.py)"` prints POSIX `export` lines for the current shell only. Supported: Ubuntu/POSIX. Windows: not supported yet / untested. `import aoi` applies the same settings to the current Python process, appending the sibling directories after whatever is already first. `-I` and `-E` do not apply `PYTHONPATH`, so the child is started through a small bootstrap that inserts those directories into `sys.path` and sets `AOI_ROOT` from its arguments.
 
 ```bash
+python aoi.py dragowing RESULTS
 python aoi.py queryu --source npb_calendar --years 2024 --cache data/raw/npb_calendar --offline --plan
 python aoi.py sakanalytics/npb/moshimo_box.py --ledger cycles/c001-chunichi/outputs/propositions.jsonl --id P1
 ```

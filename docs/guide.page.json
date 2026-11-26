@@ -149,10 +149,6 @@
       "type": "links",
       "items": [
         {
-          "label": "📦 リポジトリ",
-          "href": "https://github.com/myon-bioinformatics/DRAgoWing"
-        },
-        {
           "label": "🌡️ ヒートマップ（ポートフォリオの 🧰 Tools）",
           "href": "https://myon-bioinformatics.github.io/tools/heatmap/"
         }

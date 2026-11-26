@@ -120,7 +120,7 @@ jobs:
     needs: [changes, resolve-vendor]
     name: ${{ matrix.backend == 'pure' && 'pytest numpy_min NUMPY_MIN_PURE forced' || 'pytest' }} (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
-    # NUMPY_MIN_PURE で stdlib 経路を強制し、実データの SVD も検証する
+    # NUMPY_MIN_PURE で stdlib 経路を強制した lane は遅い（実データの SVD が数分かかる）
     timeout-minutes: ${{ matrix.backend == 'pure' && 30 || 10 }}
     strategy:
       fail-fast: false
@@ -129,8 +129,8 @@ jobs:
         # Pull requests run the newest Python only; push and schedule run the full matrix.
         python: ${{ github.event_name == 'pull_request' && fromJSON('["3.15"]') || fromJSON('["3.11", "3.12", "3.13", "3.14", "3.15"]') }}
         backend: [lapack]
-        # PURE 強制 lane。PR と push は 3.14、schedule は 3.11 と 3.15 も実行する
-        include: ${{ fromJSON(github.event_name == 'schedule' && '[{"python":"3.11","backend":"pure"},{"python":"3.14","backend":"pure"},{"python":"3.15","backend":"pure"}]' || ((github.event_name == 'pull_request' || github.event_name == 'push') && '[{"python":"3.14","backend":"pure"}]' || '[]')) }}
+        # PURE 強制 lane。push は 3.14 だけ、schedule は 3.11 と 3.15 も、PR では走らせない
+        include: ${{ fromJSON(github.event_name == 'schedule' && '[{"python":"3.11","backend":"pure"},{"python":"3.14","backend":"pure"},{"python":"3.15","backend":"pure"}]' || (github.event_name == 'push' && '[{"python":"3.14","backend":"pure"}]' || '[]')) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -263,7 +263,7 @@ jobs:
       actions: read
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@0361d4d81add261ba15073fc32f2a524d2b7e2de
     with:
-      expected-reports: ${{ github.event_name == 'schedule' && '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.11/junit.xml","junit-pure-py3.14/junit.xml","junit-pure-py3.15/junit.xml"]' || (github.event_name == 'pull_request' && '["junit-py3.15/junit.xml","junit-pure-py3.14/junit.xml"]' || '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.14/junit.xml"]') }}
+      expected-reports: ${{ github.event_name == 'schedule' && '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.11/junit.xml","junit-pure-py3.14/junit.xml","junit-pure-py3.15/junit.xml"]' || (github.event_name == 'pull_request' && '["junit-py3.15/junit.xml"]' || '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.14/junit.xml"]') }}
       artifact-pattern: junit-*
       output-artifact: failure-identity
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}

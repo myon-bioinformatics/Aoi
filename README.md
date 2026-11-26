@@ -42,7 +42,7 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 
 ### Standalone HTML inspection
 
-🐉 `dragowing.py` is the whole of DRAgoWing in one standard-library file (reports, four forms, FFSS figures, element counts). Counting elements in any saved UTF-8 HTML document needs nothing else:
+🐉 `dragowing.py` is the whole of DRAgoWing in one standard-library file (reports, four forms, FFSS figures, element counts). Counting elements in any saved UTF-8 HTML document and rendering the four-form text from JSONL records need no sibling modules:
 
 ```bash
 python dragowing.py page.html --tag p --tag img
@@ -51,7 +51,7 @@ uv tool install .   # or: uv tool install git+https://github.com/myon-bioinforma
 dragowing page.html --tag p
 ```
 
-The tool project contains only `dragowing.py` and build metadata, and its runtime has no external Python dependencies. Reports and SVG also read `vendor/` (`markdown.py`, `plotly_min`), so run them from a checkout. Rebuild the tool project after changing `dragowing.py`.
+The tool project contains only `dragowing.py` and build metadata, and its runtime has no external Python dependencies. HTML reports and SVG also read `vendor/` (`markdown.py`, `plotly_min`), so run them from a checkout. Rebuild the tool project after changing `dragowing.py`.
 
 For example, after installing the tool:
 

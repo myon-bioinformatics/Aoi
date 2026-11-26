@@ -125,13 +125,19 @@ def test_real_proposition_table_agrees_with_its_forms():
     assert registration_status(row) in LABELS
 
 
-def test_missing_sibling_names_aoi_py(monkeypatch):
-    # 兄弟の場所は呼び出し側（Aoi の aoi.py）が入れる。DRAgoWing は探さず、aoi.py を案内して止まる
+def test_forms_do_not_require_ask(monkeypatch):
     import dragowing.dragowing as forms
     monkeypatch.setitem(sys.modules, "ask", None)
+    assert forms.registration_status({}) == "不明"
+    assert forms.registration_status({"posthoc": True}) == "事後構成"
+
+
+def test_missing_native_sibling_names_aoi_py(monkeypatch):
+    import dragowing.dragowing as forms
+    monkeypatch.setitem(sys.modules, "rule_search", None)
     with pytest.raises(ModuleNotFoundError, match=r"aoi\.py") as caught:
-        forms.registration_status({})
-    assert caught.value.name == "ask"
+        forms._sibling("rule_search", "PythDRagoras")
+    assert caught.value.name == "rule_search"
 
 
 # ==== 表示と既存の評価器の照合（旧 test_forms_review.py）: compare the display against the existing evaluator, without changing its decisions
@@ -164,3 +170,13 @@ def test_four_forms_are_a_markdown_table_with_a_separator():
     tables = text.split("\n\n")
     assert len(tables) == 3
     assert tables[-1].splitlines()[1] == "|---|---|"
+
+
+def test_registration_labels_match_queryu():
+    # Compare the standalone presentation contract with the authoritative producer.
+    from ask import registration_status as queryu_status
+    from dragowing.dragowing import registration_status
+    for item in ({}, {"posthoc": False}, {"posthoc": True, "preregistered": True},
+                 {"preregistered": True}, {"preregistered_at": "2026-01-01"},
+                 {"preregistration": "ref"}, {"posthoc": 1}, {"preregistered": 1}):
+        assert registration_status(item) == queryu_status(item)

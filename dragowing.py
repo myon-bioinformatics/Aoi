@@ -224,7 +224,7 @@ FORM_ORDER = ("original", "converse", "inverse", "contrapositive")
 
 
 def _sibling(module: str, project: str):
-    """Aoi の兄弟（QueRyu の ask、PythDRagoras の propositions / rule_search）を import する。
+    """native backend が使う Aoi の兄弟を import する。
 
     場所は呼び出し側が入れる（Aoi の aoi.py: ``python aoi.py dragowing/__main__.py``、``import aoi``、
     ``eval "$(python aoi.py)"``）。DRAgoWing は自分では探さない。
@@ -240,8 +240,12 @@ def _sibling(module: str, project: str):
 
 
 def registration_status(item: dict) -> str:
-    """QueRyu ``ask`` (its path comes from the caller, e.g. Aoi's aoi.py)."""
-    return _sibling("ask", "QueRyu").registration_status(item)
+    """Render recorded provenance using QueRyu registration semantics, without importing ask."""
+    if item.get("posthoc") is True:
+        return "事後構成"
+    if item.get("preregistered") is True or item.get("preregistered_at") or item.get("preregistration"):
+        return "事前登録"
+    return "不明"
 
 FORM_LABEL = {
     "original": "元 P→Q",
@@ -618,13 +622,6 @@ MAX_SETS = 8
 def _check_count(conds: list[dict]) -> None:
     if not 2 <= len(conds) <= MAX_SETS:
         raise ValueError(f"条件集合は 2 個から {MAX_SETS} 個にする（B クラスを含む）。受け取った数: {len(conds)}")
-
-
-def _engines():
-    # PythDRagoras の propositions と rule_search。場所は呼び出し側（Aoi の aoi.py）が入れる
-    propositions = _sibling("propositions", "PythDRagoras")
-    rule_search = _sibling("rule_search", "PythDRagoras")
-    return rule_search, propositions
 
 
 def is_b(cond: dict) -> bool:

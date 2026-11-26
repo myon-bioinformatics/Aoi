@@ -160,10 +160,6 @@
           "type": "links",
           "items": [
             {
-              "label": "📦 リポジトリ",
-              "href": "https://github.com/myon-bioinformatics/PythDRagoras"
-            },
-            {
               "label": "📖 README",
               "href": "https://github.com/myon-bioinformatics/PythDRagoras#readme"
             },

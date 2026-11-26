@@ -161,10 +161,6 @@
           "type": "links",
           "items": [
             {
-              "label": "📦 リポジトリ",
-              "href": "https://github.com/myon-bioinformatics/BlueProbe"
-            },
-            {
               "label": "📖 README",
               "href": "https://github.com/myon-bioinformatics/BlueProbe#readme"
             },

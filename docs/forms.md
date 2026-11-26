@@ -39,6 +39,6 @@ When a formula ID is given and `sets.jsonl` does not exist, it shows `結果が�
 
 This table places the stored judgment counts into cells. A large cell is not read as meaning the proposition is true or will hold next year. `不明` does not mean "it was not preregistered"; it means there is no machine-readable record.
 
-Candidate IDs (`もしかして`, "did you mean") are not shown in this display. Handling on the query side is in [ask.md](../../queryu/docs/ask.md).
+Candidate IDs (`もしかして`, "did you mean") are not shown in this display. Handling on the query side is in [ask.md](https://github.com/myon-bioinformatics/QueRyu/blob/main/docs/ask.md).
 
 HTML (trajectories, team × year, condition overlap, list of propositions) is in [figures.md](figures.md).

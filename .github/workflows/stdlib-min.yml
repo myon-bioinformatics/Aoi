@@ -1,9 +1,11 @@
 name: stdlib_min experiments
 
 # 標準ライブラリだけの代わり（*_min.py）の実験をまとめたもの。各ジョブの名前は前のワークフローのまま。
-# どれかの実験のファイルが変わったら、全部のジョブを走らせる（前は実験ごとにパスで分けていた）。
+# 重い linalg 系があるため PR では走らせない。push（main、対象パス）と毎日の schedule で回す。
+# 形は QueRyu #75 の pure レーンと同じ。
 on:
-  pull_request:
+  push:
+    branches: [main]
     paths:
       - scripts/stdlib_min.py
       - tests/test_survey_third_party.py
@@ -40,13 +42,15 @@ on:
       - pythdragoras/core/propositions.py
       - pkgmin/**
       - tests/test_pkgmin_surface.py
+  schedule:
+    - cron: "17 19 * * *" # 毎日 04:17 JST
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   # ---- Stdlib feasibility survey（旧 .github/workflows/stdlib-feasibility-survey.yml）
   # 実験の棚卸し。第三者がどこで使われているかを数え、import を塞いだ・スタブにした・包んだ

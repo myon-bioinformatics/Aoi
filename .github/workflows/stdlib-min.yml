@@ -1,7 +1,8 @@
 name: stdlib_min experiments
 
 # 標準ライブラリだけの代わり（*_min.py）の実験をまとめたもの。各ジョブの名前は前のワークフローのまま。
-# main への push は関連する変更時のみ、週次は変更の有無にかかわらず全ジョブを実行する。
+# 重い linalg 系があるため PR では走らせない。push（main、対象パス）と毎日の schedule で回す。
+# 形は QueRyu #75 の pure レーンと同じ。
 on:
   push:
     branches: [main]
@@ -42,7 +43,7 @@ on:
       - pkgmin/**
       - tests/test_pkgmin_surface.py
   schedule:
-    - cron: "17 19 * * 0" # 月曜 04:17 JST
+    - cron: "17 19 * * *" # 毎日 04:17 JST
 
 permissions:
   contents: read

@@ -20,9 +20,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check_child_heads.py"
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "vendor"))
 
 
 import check_child_heads as cch  # noqa: E402
+from cli_args import run_cli  # noqa: E402
 
 SHA = "a" * 40
 NAME = "o/child"
@@ -127,8 +129,7 @@ def test_registered_mirrors_are_blob_identical_to_aoi_originals():
 
 
 def test_offline_cli_passes():
-    out = subprocess.run([sys.executable, "-S", str(SCRIPT), "--offline", "--fail-on-diff"],
-                         capture_output=True, text=True, check=False)
+    out = run_cli(SCRIPT, "--offline", "--fail-on-diff", python_options=("-S",))
     assert out.returncode == 0, out.stderr
     report = json.loads(out.stdout)
     assert report["schema"] == "aoi-child-heads-check/1"
@@ -560,7 +561,8 @@ def test_script_entry_point(tmp_path, monkeypatch, capsys):
 
 
 def test_default_root_is_repository():
-    out = subprocess.run([sys.executable, "-S", str(SCRIPT), "--help"], capture_output=True, text=True, check=True)
+    out = run_cli(SCRIPT, "--help", python_options=("-S",))
+    assert out.returncode == 0, out.stderr
     assert out.stdout.startswith("usage:") and cch.__doc__.splitlines()[0] in out.stdout
     assert "形と Aoi 側だけ確かめる（GitHub に取りに行かない）" in out.stdout
     assert "子の URL。{repository} を owner/repository にする" in out.stdout

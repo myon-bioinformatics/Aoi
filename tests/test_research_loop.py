@@ -14,9 +14,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "research_loop"))
+sys.path.insert(0, str(ROOT / "vendor"))
 
 import pytest  # noqa: E402
 from exploration import atomic_json, Explorer, plan, read_state, save_state, snapshot  # noqa: E402
+from cli_args import run_cli  # noqa: E402
 
 
 # ==== loop（旧 test_research_loop.py）
@@ -214,9 +216,9 @@ def test_inbox_schedule_and_intake_pipeline_are_preserved():
 def test_research_cli_requires_explicit_enablement():
     import os
     for enabled in ("", "0"):
-        completed = subprocess.run(
-            [sys.executable, str(ROOT / "nagoyaction/inbox/inbox.py"), "worker", "--seconds", "1"],
-            cwd=ROOT, capture_output=True, text=True, timeout=10, check=False,
+        completed = run_cli(
+            ROOT / "nagoyaction/inbox/inbox.py", "worker", "--seconds", "1",
+            cwd=ROOT, timeout=10,
             env={**os.environ, "AOI_RESEARCH_ENABLED": enabled, "AOI_INBOX_ISSUE": "1"},
         )
         assert completed.returncode == 1

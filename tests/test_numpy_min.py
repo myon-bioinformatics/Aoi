@@ -11,9 +11,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "vendor"))
 
 import pytest  # noqa: E402
 import shrink_module as sm  # noqa: E402
+from cli_args import run_cli  # noqa: E402
 
 
 # ==== suggest（旧 test_numpy_min_suggest.py）
@@ -381,8 +383,8 @@ def test_analyze_follows_into_rule_search():
 
 
 def test_generated_file_is_current():
-    out = subprocess.run([sys.executable, "scripts/shrink_module.py", "generate", "numpy", *ENTRIES,
-                          "--out", "shrink/numpy_min.py", "--check"], cwd=ROOT, capture_output=True, text=True)
+    out = run_cli("scripts/shrink_module.py", "generate", "numpy", *ENTRIES,
+                  "--out", "shrink/numpy_min.py", "--check", cwd=ROOT)
     assert out.returncode == 0, out.stderr
 
 

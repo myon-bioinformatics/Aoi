@@ -15,7 +15,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "vendor"))
 import stdlib_min as lf  # noqa: E402
+from cli_args import run_cli  # noqa: E402
 
 np = pytest.importorskip("numpy")
 
@@ -168,9 +170,9 @@ def test_ast_reaches_the_heavy_calls_and_not_bitmatrix_svd():
 
 
 def test_absent_probe_runs_queryu_index_without_numpy():
-    proc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "stdlib_min.py"), "linalg-feasibility", "absent"],
-        cwd=ROOT, capture_output=True, text=True, check=False,
+    proc = run_cli(
+        ROOT / "scripts" / "stdlib_min.py", "linalg-feasibility", "absent",
+        cwd=ROOT,
     )
     assert proc.returncode == 0, proc.stderr
     assert "ran without touching numpy" in proc.stdout
@@ -186,19 +188,19 @@ def test_absent_probe_fails_if_queryu_imports_numpy(tmp_path):
     target = work / "queryu" / "ask" / "suggest.py"
     text = target.read_text(encoding="utf-8")
     target.write_text(text.replace("np = _load_numpy_min()", "import numpy as np", 1), encoding="utf-8")
-    proc = subprocess.run(
-        [sys.executable, str(work / "scripts" / "stdlib_min.py"), "linalg-feasibility", "absent"],
-        cwd=work, capture_output=True, text=True, check=False,
+    proc = run_cli(
+        work / "scripts" / "stdlib_min.py", "linalg-feasibility", "absent",
+        cwd=work,
     )
     assert proc.returncode == 1, proc.stdout + proc.stderr
     assert "touched numpy" in proc.stderr
 
 
 def test_min_refuses_when_numpy_is_installed(tmp_path):
-    proc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "stdlib_min.py"), "linalg", "--numpy", "min", "--scope", "fixture",
-         str(tmp_path / "out.json")],
-        cwd=ROOT, capture_output=True, text=True, check=False,
+    proc = run_cli(
+        ROOT / "scripts" / "stdlib_min.py", "linalg", "--numpy", "min", "--scope", "fixture",
+        str(tmp_path / "out.json"),
+        cwd=ROOT,
     )
     assert proc.returncode != 0
     assert "numpy が入っている" in proc.stderr
@@ -210,21 +212,21 @@ def fixture_payloads(tmp_path_factory, request):
     script = str(ROOT / "scripts" / "stdlib_min.py")
     real = tmp_path / "real.json"
     got = tmp_path / "got.json"
-    first = subprocess.run(
-        [sys.executable, script, "linalg", "--numpy", "real", "--scope", "fixture", str(real)],
-        cwd=ROOT, capture_output=True, text=True, check=False,
+    first = run_cli(
+        script, "linalg", "--numpy", "real", "--scope", "fixture", str(real),
+        cwd=ROOT,
     )
     assert first.returncode == 0, first.stderr
-    second = subprocess.run(
-        [sys.executable, script, "linalg", "--numpy", "min", "--allow-installed", "--scope", "fixture", str(got)],
-        cwd=ROOT, capture_output=True, text=True, check=False,
+    second = run_cli(
+        script, "linalg", "--numpy", "min", "--allow-installed", "--scope", "fixture", str(got),
+        cwd=ROOT,
         env={**os.environ, "NUMPY_MIN_PURE": "1" if request.param == "stdlib" else ""},
     )
     assert second.returncode == 0, second.stderr
     assert second.stdout.strip().endswith("numpy_linalg_min.py") or "numpy_linalg_min.py" in second.stdout
-    compared = subprocess.run(
-        [sys.executable, script, "linalg", "--compare", str(real), str(got)],
-        cwd=ROOT, capture_output=True, text=True, check=False,
+    compared = run_cli(
+        script, "linalg", "--compare", str(real), str(got),
+        cwd=ROOT,
     )
     assert compared.returncode == 0, compared.stdout + compared.stderr
 

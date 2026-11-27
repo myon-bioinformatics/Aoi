@@ -9,6 +9,9 @@ import sys
 import textwrap
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "vendor"))
+from cli_args import run_cli  # noqa: E402
+
 
 # ==== survey（旧 test_survey_third_party.py）
 
@@ -88,18 +91,16 @@ def test_check_fails_when_the_inventory_is_stale(tmp_path):
     _project(tmp_path)
     target = tmp_path / "inventory.json"
     target.write_text("{}\n", encoding="utf-8")
-    proc = subprocess.run(
-        [sys.executable, str(SURVEY), "survey", "--root", str(tmp_path), "--check", str(target)],
-        capture_output=True, text=True,
+    proc = run_cli(
+        SURVEY, "survey", "--root", str(tmp_path), "--check", str(target),
     )
     assert proc.returncode == 1
-    subprocess.run(
-        [sys.executable, str(SURVEY), "survey", "--root", str(tmp_path), "--json", str(target)],
-        check=True, capture_output=True, text=True,
+    result = run_cli(
+        SURVEY, "survey", "--root", str(tmp_path), "--json", str(target),
     )
-    proc = subprocess.run(
-        [sys.executable, str(SURVEY), "survey", "--root", str(tmp_path), "--check", str(target)],
-        capture_output=True, text=True,
+    assert result.returncode == 0, result.stderr
+    proc = run_cli(
+        SURVEY, "survey", "--root", str(tmp_path), "--check", str(target),
     )
     assert proc.returncode == 0, proc.stderr
     json.loads(target.read_text(encoding="utf-8"))
@@ -144,9 +145,9 @@ def test_pep701_fstring_quotes_parse_and_keep_import_counts(tmp_path):
 
 
 def test_committed_inventory_matches_the_tree():
-    proc = subprocess.run(
-        [sys.executable, str(SURVEY), "survey", "--check", str(ROOT / "docs" / "evidence" / "third-party-survey.json")],
-        cwd=ROOT, capture_output=True, text=True,
+    proc = run_cli(
+        SURVEY, "survey", "--check", str(ROOT / "docs" / "evidence" / "third-party-survey.json"),
+        cwd=ROOT,
     )
     assert proc.returncode == 0, proc.stderr
 
@@ -177,17 +178,17 @@ def test_list_does_not_read_source_or_declarations(tmp_path, monkeypatch, capsys
 
 def test_selection_errors_and_scoped_check(tmp_path):
     _project(tmp_path)
-    base = [sys.executable, '-S', str(SURVEY), "survey", '--root', str(tmp_path)]
     for args in (['--match', 'missing*'], ['--exclude', '*.py'], ['--match', ''],
                  ['--list', '--json', str(tmp_path / 'never.json')]):
-        proc = subprocess.run(base + args, capture_output=True, text=True)
+        proc = run_cli(SURVEY, "survey", "--root", str(tmp_path), *args, python_options=("-S",))
         assert proc.returncode == 2, proc.stderr
     target = tmp_path / 'selected.json'
     args = ['--match', 'app.py']
-    subprocess.run(base + args + ['--json', str(target)], check=True, capture_output=True)
-    proc = subprocess.run(base + args + ['--check', str(target)], capture_output=True)
+    result = run_cli(SURVEY, "survey", "--root", str(tmp_path), *args, '--json', str(target), python_options=("-S",))
+    assert result.returncode == 0, result.stderr
+    proc = run_cli(SURVEY, "survey", "--root", str(tmp_path), *args, '--check', str(target), python_options=("-S",))
     assert proc.returncode == 0, proc.stderr
-    proc = subprocess.run(base + ['--check', str(target)], capture_output=True)
+    proc = run_cli(SURVEY, "survey", "--root", str(tmp_path), '--check', str(target), python_options=("-S",))
     assert proc.returncode == 1
 
 
@@ -233,10 +234,10 @@ def _tree(tmp: Path) -> None:
 
 
 def _run(tmp: Path, mode: str, out: Path):
-    return subprocess.run(
-        [sys.executable, str(TRACE), "trace-surface", mode, "fakeutil", "--root", str(tmp), "--out", str(out),
-         "--", sys.executable, str(tmp / "driver.py")],
-        cwd=tmp, capture_output=True, text=True,
+    return run_cli(
+        TRACE, "trace-surface", mode, "fakeutil", "--root", str(tmp), "--out", str(out),
+        "--", sys.executable, str(tmp / "driver.py"),
+        cwd=tmp,
     )
 
 

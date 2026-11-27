@@ -170,6 +170,7 @@ on:
       - 'c001 saved input verification'
       - 'CI'
       - 'DRAgoWing reports'
+      - 'Lean verification'
       - 'Links'
       - 'LittleBit holdout drift'
       - 'Nano research environment comparison'

@@ -6,6 +6,7 @@ on:
       - "formal/**"
       - "research_loop/**"
       - "tests/test_formal_request_selection.py"
+      - "tests/test_workflows.py"
       - ".github/workflows/lean-verification.yml"
   push:
     branches: [main]
@@ -13,6 +14,7 @@ on:
       - "formal/**"
       - "research_loop/**"
       - "tests/test_formal_request_selection.py"
+      - "tests/test_workflows.py"
       - ".github/workflows/lean-verification.yml"
   workflow_dispatch:
 

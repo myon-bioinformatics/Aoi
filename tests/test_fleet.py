@@ -20,7 +20,7 @@ _spec = importlib.util.spec_from_file_location("pythdragoras_fleet_check", ROOT 
 fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
-PARENT_WORKFLOW_PIN = "6c2558c4251698c50bc07bad86fb49f902b2738f"
+PARENT_WORKFLOW_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
 LIVE_PARENT_REF = "${{ steps.parent.outputs.sha }}"
 ACCEPTED = {
     "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",

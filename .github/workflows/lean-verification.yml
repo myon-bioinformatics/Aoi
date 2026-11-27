@@ -1,0 +1,40 @@
+name: Lean verification
+
+on:
+  pull_request:
+    paths:
+      - "formal/**"
+      - "research_loop/**"
+      - "tests/test_formal_request_selection.py"
+      - "tests/test_workflows.py"
+      - ".github/workflows/lean-verification.yml"
+  push:
+    branches: [main]
+    paths:
+      - "formal/**"
+      - "research_loop/**"
+      - "tests/test_formal_request_selection.py"
+      - "tests/test_workflows.py"
+      - ".github/workflows/lean-verification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  request-selection:
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-lean-verify.yml@6c2558c4251698c50bc07bad86fb49f902b2738f
+    with:
+      project-directory: formal
+      proof: RequestSelection.lean
+      theorems: |
+        Aoi.selected_registered
+        Aoi.selected_runnable
+        Aoi.stopped_not_selected
+        Aoi.terminal_not_selected
+        Aoi.exhausted_iff
+        Aoi.selected_prefix_stable

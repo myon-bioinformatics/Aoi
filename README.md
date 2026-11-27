@@ -157,6 +157,10 @@ python ../BrowserTestKit/tools/evidence_gif.py docs/evidence/browser.gif --serve
 
 ## Tests
 
+[Formal request-selection checks](formal/README.md) pair Lean proofs of the
+stop/terminal-state selection rules with tests of the actual Python selector.
+Lean runs in a separate CI lane; ordinary execution and tests do not require it.
+
 ```bash
 uv run --locked pytest -q                         # tests/ and every subproject's tests/ (pyproject.toml testpaths); tests/test_vendor_tools.py drives py_launch.cjs on Node >= 26
 python -S nagoyaction/nagoyaction.py linkcheck     # Markdown links and images (tracked files, exact case)

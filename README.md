@@ -105,6 +105,10 @@ Main functions in `npb/season.py` and others:
 
 ## Tests
 
+[Formal rule checks](docs/formal-verification.md) prove satisfiability and the
+soundness of implication/exclusivity for the bitmask rule fragment. Independent
+set-based tests connect those statements to the actual Python implementation.
+
 Cycle data (`cycles/`), `scripts/`, and SakAnalytics stay in Aoi. They are not copied; CI resolves Aoi's main at run time and checks it out. Locally, use main.
 
 ```bash

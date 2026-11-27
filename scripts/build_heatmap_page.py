@@ -849,7 +849,7 @@ __CORE__
     }
   }
 
-  document.querySelector("form").onsubmit = event => { event.preventDefault(); draw(); };
+  el("heatmap-form").onsubmit = event => { event.preventDefault(); draw(); };
   el("steps").onchange = () => { el("steps-range").value = el("steps").value; draw(); };
   el("steps-range").oninput = () => { el("steps").value = el("steps-range").value; draw(); };
   el("continuous").onclick = () => { el("steps").value = "0"; el("steps-range").value = "0"; draw(); };

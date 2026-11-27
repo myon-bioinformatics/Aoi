@@ -19,8 +19,10 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "vendor"))
 import pkgmin.survey as survey  # noqa: E402
 import pkgmin.trace_used as trace  # noqa: E402
+from cli_args import run_cli  # noqa: E402
 
 EVIDENCE = ROOT / "pkgmin" / "evidence" / "used-surface.json"
 WORKFLOW = ROOT / ".github" / "workflows" / "stdlib-min.yml"
@@ -128,9 +130,9 @@ def test_real_paths_match_when_the_standins_are_injected(tmp_path: Path):
     none = tmp_path / "none.json"
     injected = tmp_path / "min.json"
     for label, path in (("none", none), ("min", injected)):
-        proc = subprocess.run(
-            [sys.executable, "pkgmin/run_paths.py", "--inject", label, str(path)],
-            cwd=ROOT, capture_output=True, text=True, check=False,
+        proc = run_cli(
+            "pkgmin/run_paths.py", "--inject", label, str(path),
+            cwd=ROOT,
         )
         assert proc.returncode == 0, proc.stderr
     assert none.read_bytes() == injected.read_bytes()

@@ -9,9 +9,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT / "mindeps"), str(ROOT / "scripts"), str(ROOT / "blueprobe"), str(ROOT / "queryu")]
+sys.path[:0] = [str(ROOT / "mindeps"), str(ROOT / "scripts"), str(ROOT / "blueprobe"), str(ROOT / "queryu"), str(ROOT / "vendor")]
 
 import stdlib_min as sm  # noqa: E402
+from cli_args import run_cli  # noqa: E402
 
 selectolax_lexbor = pytest.importorskip("selectolax.lexbor")
 httpx = pytest.importorskip("httpx")
@@ -109,9 +110,8 @@ def test_httpx_min_follow_redirects_false_returns_the_redirect():
 
 def test_min_cli_refuses_when_the_real_package_is_installed(tmp_path):
     for command, impl in (("selectolax", "min"), ("httpx", "min")):
-        proc = subprocess.run(
-            [sys.executable, str(ROOT / "scripts" / "stdlib_min.py"), command, "--impl", impl, str(tmp_path / "out.json")],
-            capture_output=True, text=True,
+        proc = run_cli(
+            ROOT / "scripts" / "stdlib_min.py", command, "--impl", impl, str(tmp_path / "out.json"),
         )
         assert proc.returncode != 0, proc.stdout + proc.stderr
 
@@ -150,9 +150,9 @@ def test_coverage_exercise_shape(tmp_path):
     coverage = pytest.importorskip("coverage")
     assert importlib.util.find_spec("coverage") is not None
     out = tmp_path / "coverage.json"
-    proc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "stdlib_min.py"), "coverage", "--impl", "real", str(out)],
-        cwd=ROOT, capture_output=True, text=True,
+    proc = run_cli(
+        ROOT / "scripts" / "stdlib_min.py", "coverage", "--impl", "real", str(out),
+        cwd=ROOT,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
     data = json.loads(out.read_text(encoding="utf-8"))

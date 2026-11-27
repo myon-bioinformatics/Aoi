@@ -30,6 +30,9 @@ from scripts.research_inputs import relocations, validate_member_path, validated
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "vendor"))
+from cli_args import run_cli  # noqa: E402
+
 README = ROOT / "cycles/c001-chunichi/recovered-inputs/README.md"
 
 
@@ -301,8 +304,8 @@ def test_provenance_relocation_checks_bytes_at_new_path(tmp_path):
 
 def run(args, cwd):
     env = {k: v for k, v in os.environ.items() if k != 'PYTHONPATH'}
-    return subprocess.run([sys.executable, *map(str, args)], cwd=cwd, env=env,
-                          text=True, capture_output=True, timeout=30)
+    args = tuple(map(str, args))
+    return run_cli(args[0], *args[1:], cwd=cwd, env=env, timeout=30)
 
 
 def test_recovered_fielding_source_runs_through_real_offline_cli(tmp_path):
@@ -557,10 +560,10 @@ def cli(state, steps):
     env = {k: v for k, v in os.environ.items() if not k.startswith(('GITHUB_', 'AOI_RESEARCH_'))}
     env.update(AOI_RESEARCH_ENABLED='1', AOI_RESEARCH_ACTOR='local-offline-test',
                AOI_RESEARCH_ALLOWED_ACTORS='["local-offline-test"]', GITHUB_REPOSITORY='myon-bioinformatics/Aoi')
-    result = subprocess.run([sys.executable, str(ENGINE), 'worker', '--root', str(ROOT),
+    result = run_cli(ENGINE, 'worker', '--root', str(ROOT),
         '--cycle', 'c001-chunichi', '--input-bundle', 'extended-v1', '--seed', 'E1',
-        '--seconds', '30', '--max-steps', str(steps), '--state-dir', str(state)],
-        env=env, capture_output=True, text=True, timeout=35)
+        '--seconds', '30', '--max-steps', str(steps), '--state-dir', str(state),
+        env=env, timeout=35)
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)
 
@@ -598,9 +601,9 @@ def test_real_cli_rejects_bad_bundle_without_checkpoint(selected, tmp_path, corr
     env = {k: v for k, v in os.environ.items() if not k.startswith(("GITHUB_", "AOI_RESEARCH_"))}
     env.update(AOI_RESEARCH_ENABLED="1", AOI_RESEARCH_ACTOR="local-offline-test",
                AOI_RESEARCH_ALLOWED_ACTORS='["local-offline-test"]', GITHUB_REPOSITORY="myon-bioinformatics/Aoi")
-    result = subprocess.run([sys.executable, str(ENGINE), "worker", "--root", str(root),
+    result = run_cli(ENGINE, "worker", "--root", str(root),
         "--cycle", "c001-chunichi", "--input-bundle", "extended-v1", "--seed", "E1",
-        "--seconds", "30", "--max-steps", "1", "--state-dir", str(state)],
-        env=env, capture_output=True, text=True, timeout=35)
+        "--seconds", "30", "--max-steps", "1", "--state-dir", str(state),
+        env=env, timeout=35)
     assert result.returncode == 1 and ("hash mismatch" in result.stderr or "P9999" in result.stderr)
     assert not (state / "checkpoint.json").exists()

@@ -23,6 +23,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "vendor"))
+from cli_args import run_cli  # noqa: E402
+
 BUILDER = ROOT / "vendor" / "uv_tool_build.py"
 LAUNCHER = ROOT / "vendor" / "py_launch.cjs"
 
@@ -69,8 +72,8 @@ def test_rejects_camelcase_entry_name(tmp_path):
 
 
 def test_cli_runs_without_site(tmp_path):
-    run = subprocess.run([sys.executable, "-S", str(BUILDER), str(ROOT / "nagoyaction" / "nagoyaction.py"),
-                          "--out", str(tmp_path / "o"), "--json"], capture_output=True, text=True, check=False)
+    run = run_cli(BUILDER, str(ROOT / "nagoyaction" / "nagoyaction.py"),
+                  "--out", str(tmp_path / "o"), "--json", python_options=("-S",))
     assert run.returncode == 0, run.stderr
 
 

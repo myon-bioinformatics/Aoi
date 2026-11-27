@@ -1,0 +1,14 @@
+[
+  {
+    "source": "nagoyaction.py",
+    "cli": [
+      [],
+      ["hub"],
+      ["linkcheck"],
+      ["localci"],
+      ["publication-gate"],
+      ["ghi-execution"]
+    ],
+    "namespaces": true
+  }
+]

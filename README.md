@@ -34,10 +34,10 @@ Write a pipeline once in TOML and run it with **the same command locally and on 
 For projects whose data can't leave the machine, just run the same definition locally.
 
 - `doctor`: checks the Python version, required tools (e.g. git, uv), optional tools (e.g. gh), and whether the artifacts needed for offline runs exist. If anything is missing it exits 1 and stops before running. Warnings only give 0
-- `show`: displays the pipeline structure (variables, steps, commands, outputs, network requirements) (`--json` gives `nagoyaction-pipeline/1`)
+- `show`: displays the pipeline structure (variables, steps, commands, outputs, network requirements) (`--format json` gives `nagoyaction-pipeline/1`)
 - `run`: runs the steps in order after doctor and leaves a receipt (JSONL) at `--receipt`. Returns the failing step's exit code as-is
-- Usage, TOML, pipeline definition, and file loading errors exit 2. With `--json`, failures are `nagoyaction-error/1` on stderr. `error.code` is `doctor` / `step` / `pipeline` / `usage` / `toml` / `io`. A step that itself exits 2 is distinguished from a definition error by this `error.code`
-- Flag descriptions and exit codes are in `python nagoyaction.py --help` and each `--help` of `doctor` / `show` / `run`. `--format json` is the canonical spelling and `--json` is shorthand for it; both work the same before or after the subcommand
+- Usage, TOML, pipeline definition, and file loading errors exit 2. With `--format json`, failures are `nagoyaction-error/1` on stderr. `error.code` is `doctor` / `step` / `pipeline` / `usage` / `toml` / `io`. A step that itself exits 2 is distinguished from a definition error by this `error.code`
+- Flag descriptions and exit codes are in `python nagoyaction.py --help` and each `--help` of `doctor` / `show` / `run`. `--format json` works before or after the subcommand
 - `localci`: checks workflows and tests locally without waiting for GitHub Actions to finish ("Local CI" below)
 - Steps run as argument arrays, not through a shell
 - Standard library only (Python 3.11+). Copy this one file to use it in other repositories
@@ -75,7 +75,7 @@ No installation needed. It runs on the Python 3.11+ standard library alone.
 
 ```bash
 python nagoyaction.py doctor <pipeline.toml>            # pre-run check
-python nagoyaction.py show   <pipeline.toml>            # show pipeline structure (--json also works)
+python nagoyaction.py show   <pipeline.toml>            # show pipeline structure
 python nagoyaction.py show   <pipeline.toml> -v x=val   # show with a variable overridden
 python nagoyaction.py run    <pipeline.toml>            # run
 python nagoyaction.py run    <pipeline.toml> --offline  # don't fetch
@@ -163,10 +163,10 @@ python nagoyaction/nagoyaction.py linkcheck --root .                            
 python nagoyaction/nagoyaction.py linkcheck --remote OWNER/REPO --ref BRANCH       # after push: exists on that branch? (gh api)
 python nagoyaction/nagoyaction.py linkcheck --external                             # also check http(s) (only 404/410 fail)
 python nagoyaction/nagoyaction.py linkcheck --external --strict                    # unverified also fails (exit code 3)
-python nagoyaction/nagoyaction.py linkcheck --format json                          # stdout is nagoyaction-linkcheck/1 (--json is shorthand)
+python nagoyaction/nagoyaction.py linkcheck --format json                          # stdout is nagoyaction-linkcheck/1
 ```
 
-`--root` is the base for git ls-files and Markdown loading (default: current directory). `--remote` requires `--ref`. `--external` checks http and https with HEAD. `--json` writes `nagoyaction-linkcheck/1` (`counts` and `results`) to stdout when scanning succeeded, and `nagoyaction-error/1` to stderr when the exit code is nonzero. Failures before scanning (usage, git) use the same error object, with exit code 2.
+`--root` is the base for git ls-files and Markdown loading (default: current directory). `--remote` requires `--ref`. `--external` checks http and https with HEAD. `--format json` writes `nagoyaction-linkcheck/1` (`counts` and `results`) to stdout when scanning succeeded, and `nagoyaction-error/1` to stderr when the exit code is nonzero. Failures before scanning (usage, git) use the same error object, with exit code 2.
 
 Exit codes:
 
@@ -254,7 +254,7 @@ exit code are passed through unchanged; Python runs with `-S`, including interpr
 `NAGOYACTION_PYTHON` picks the interpreter (via `--env-var`). The launcher forwards repeated SIGINT/SIGTERM
 until the Python child exits. Launcher failures (no Python 3.9+, spawn error, signal) exit 2, as does a Node older than 26;
 set `PY_LAUNCH_ERROR_FORMAT=json` for a structured launcher error on stderr (independent of
-the tool's `--json` flag).
+the tool's `--format json` flag).
 
 The launcher and license are pinned to Aoi's accepting main merge commit
 [`827387a`](https://github.com/myon-bioinformatics/Aoi/commit/9e0147a17695ce63fa73daf75d8195a4f49095bb),

@@ -1740,6 +1740,35 @@ def _js_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace("<", "\\u003c")
 
 
+def xyz_figure(text, columns=("x", "y", "z"), *, delimiter=",", label=None):
+    """Draw arbitrary finite XYZ columns without a dataframe dependency."""
+    import csv
+    import io
+    reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+    required = set(columns) | ({label} if label else set())
+    if len(columns) != 3 or not reader.fieldnames or not required <= set(reader.fieldnames):
+        raise ValueError("missing XYZ or label columns")
+    if len(set(reader.fieldnames)) != len(reader.fieldnames):
+        raise ValueError("duplicate column names")
+    coords = {axis: [] for axis in "xyz"}
+    labels = []
+    for row in reader:
+        if None in row or any(row[k] is None for k in required):
+            raise ValueError("invalid row width")
+        for axis, column in zip("xyz", columns):
+            value = float(row[column])
+            if not math.isfinite(value):
+                raise ValueError("expected finite XYZ coordinates")
+            coords[axis].append(value)
+        labels.append(escape(row[label]) if label else str(len(labels) + 1))
+    if not labels:
+        raise ValueError("no points")
+    trace = dict(type="scatter3d", mode="markers", text=labels, marker=dict(size=4),
+                 hovertemplate="%{text}<br>(%{x}, %{y}, %{z})<extra></extra>", **coords)
+    scene = {axis + "axis": {"title": {"text": escape(column)}} for axis, column in zip("xyz", columns)}
+    return {"data": [trace], "layout": {"scene": {**scene, "aspectmode": "data"}, "height": 570}}
+
+
 def structure_figure(graph):
     """Display measured XYZ coordinates and the contact candidates supplied by SSIS."""
     if graph.get("schema") != "structure-graph/1" or graph.get("unit") != "angstrom":
@@ -2249,6 +2278,12 @@ def build_parser() -> argparse.ArgumentParser:
         description="📈 記録された結果を HTML（と SVG）にする。判定はやり直さない。"
                     " RESULTS がディレクトリでなければ 🔢 HTML の要素を数える（ブラウザなし）。",
     )
+    parser.add_argument("--csv", metavar="FILE", help="任意のXYZ列を3D表示。- は標準入力")
+    parser.add_argument("--x", default="x")
+    parser.add_argument("--y", default="y")
+    parser.add_argument("--z", default="z")
+    parser.add_argument("--point-label")
+    parser.add_argument("--tsv", action="store_true", help="--csv の区切りをタブにする")
     parser.add_argument("--structure-graph", metavar="JSON", help="SSIS原子座標の回転可能な3D HTMLを標準出力へ。- は標準入力")
     parser.add_argument("--heatmap", metavar="JSON", help="行列またはPlotly JSONを編集用シーンとして標準出力に書く。- は標準入力")
     parser.add_argument("results", nargs="?",
@@ -2327,6 +2362,14 @@ def main(argv=None) -> int:
     """📈 RESULTS → HTML（--svg で SVG）、🧾 --forms、📊 --ffss RECORDS、🔢 HTML ファイル（か標準入力）の要素数。"""
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.csv is not None:
+        try:
+            raw = sys.stdin.read() if args.csv == "-" else Path(args.csv).read_text(encoding="utf-8-sig")
+            figure = xyz_figure(raw, (args.x, args.y, args.z), delimiter="\t" if args.tsv else ",", label=args.point_label)
+            print(standalone("XYZ", figure_block(figure, "xyz"), plotly=True, embed=args.embed))
+        except (ValueError, OSError) as exc:
+            parser.exit(1, f"Cannot draw XYZ: {exc}\n")
+        return 0
     if args.structure_graph is not None:
         try:
             raw = sys.stdin.read() if args.structure_graph == "-" else Path(args.structure_graph).read_text(encoding="utf-8")

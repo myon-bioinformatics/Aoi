@@ -8,11 +8,17 @@ on:
     branches: [main]
     paths:
       - "docs/guide.page.json"
+      - "docs/guide.features.json"
+      - "nagoyaction.py"
+      - "pipelines/inbox.toml"
       - "docs/brand/**"
       - ".github/workflows/pages.yml"
   pull_request:
     paths:
       - "docs/guide.page.json"
+      - "docs/guide.features.json"
+      - "nagoyaction.py"
+      - "pipelines/inbox.toml"
       - "docs/brand/**"
       - ".github/workflows/pages.yml"
 
@@ -27,4 +33,5 @@ jobs:
     with:
       artifact_path: _site
       guide_page: docs/guide.page.json
+      guide_features_config: docs/guide.features.json
       guide_brand: NagoyAction   # ♻️ icon and favicon from CaChereCyCle (NagoyAction.icon / NagoyAction.favicon)

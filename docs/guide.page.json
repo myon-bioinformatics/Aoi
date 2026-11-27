@@ -19,7 +19,7 @@
       "id": "guide",
       "tabs": [
         {
-          "label": "🧩 機能一覧",
+          "label": "🚀 使い方",
           "blocks": [
             {
               "type": "section",
@@ -27,7 +27,7 @@
               "blocks": [
                 {
                   "type": "text",
-                  "text": "Python 3.11+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
+                  "text": "Python 3.11 以上と git が必要です。inbox の例はリポジトリ全体を取得して実行します。"
                 },
                 {
                   "type": "output",
@@ -37,7 +37,7 @@
             },
             {
               "type": "section",
-              "title": "▶️ 実行",
+              "title": "▶️ よく使うコマンド",
               "blocks": [
                 {
                   "type": "card",
@@ -46,7 +46,7 @@
                   "blocks": [
                     {
                       "type": "output",
-                      "text": "$ python nagoyaction.py doctor pipelines/inbox.toml\n[✓] python: 3.13.18 (requires >= 3.11)\n[✓] git: git version 2.43.0"
+                      "text": "python nagoyaction.py doctor pipelines/inbox.toml"
                     }
                   ]
                 },
@@ -64,7 +64,7 @@
                 {
                   "type": "card",
                   "title": "▶️ run",
-                  "text": "doctor のあと手順を順に実行し、受領記録（JSONL）を残します。",
+                  "text": "まず --dry-run で実行内容を確認します。実際に処理して受領記録（JSONL）を残すには --dry-run を外します。",
                   "blocks": [
                     {
                       "type": "output",
@@ -75,7 +75,7 @@
                 {
                   "type": "card",
                   "title": "🔍 actionlint",
-                  "text": "actionlint と uses: のピン検査をローカルで。nagoyaction.py だけで動きます。actionlint は実行時に取得します。",
+                  "text": "actionlint と uses: のピン検査をローカルで実行します。既定は localci lint と同じで、--all を付けると localci run 相当です。actionlint は実行時に取得します。",
                   "blocks": [
                     {
                       "type": "output",
@@ -97,16 +97,64 @@
                       "text": "$ python nagoyaction.py hub dial mirror"
                     }
                   ]
+                },
+                {
+                  "type": "card",
+                  "title": "🔗 linkcheck",
+                  "text": "Markdown のリンクと画像の参照先を検査します。既定ではローカルが対象です。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "python nagoyaction.py linkcheck --help"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "🧪 localci",
+                  "text": "ワークフローの検査（lint）、ローカル CI（run）、参照先の解決（resolve）を実行します。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "python nagoyaction.py localci --help"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "🚦 publication-gate",
+                  "text": "公開前の処理を実行し、同じ実行で得た証跡を記録します。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "python nagoyaction.py publication-gate --help"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "🪪 ghi-execution",
+                  "text": "GitHub Actions の試行と、実際にチェックアウトした作業側・研究側のリポジトリを証跡に結び付けます。",
+                  "blocks": [
+                    {
+                      "type": "output",
+                      "text": "python nagoyaction.py ghi-execution --help"
+                    }
+                  ]
                 }
               ]
             },
             {
               "type": "section",
-              "title": "🐍 Python から呼ぶ",
+              "title": "📄 単一ファイルで始める",
               "blocks": [
                 {
+                  "type": "text",
+                  "text": "Python 3.11+ と curl があれば、スクリプトだけでヘルプを確認できます。上の inbox の例には別ファイルの pipelines/inbox.toml が必要です。全コマンドと引数は「機能全一覧」を参照してください。"
+                },
+                {
                   "type": "output",
-                  "text": "python nagoyaction.py --help   # サブコマンドと終了コード"
+                  "text": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/NagoyAction/main/nagoyaction.py\npython -S nagoyaction.py --help"
                 }
               ]
             }
@@ -127,9 +175,9 @@
                     "steps": [
                       {
                         "id": "get",
-                        "title": "📥 ファイルを置く",
-                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/NagoyAction/main/nagoyaction.py",
-                        "needs": "🌐 ネットワーク"
+                        "title": "📥 リポジトリを取得して移動",
+                        "command": "git clone https://github.com/myon-bioinformatics/NagoyAction.git && cd NagoyAction",
+                        "needs": "🌐 ネットワークと git"
                       },
                       {
                         "id": "doctor",
@@ -166,36 +214,26 @@
                 },
                 {
                   "label": "⚡ uv",
-                  "intro": "uv があれば Python の版を気にせず動きます。",
+                  "intro": "uv で Python 3.11 以上を選んで実行します。",
                   "runbook": {
                     "key": "nagoyaction/uv",
                     "steps": [
                       {
                         "id": "get",
-                        "title": "📥 ファイルを置く",
-                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/NagoyAction/main/nagoyaction.py",
-                        "needs": "🌐 ネットワーク"
+                        "title": "📥 リポジトリを取得して移動",
+                        "command": "git clone https://github.com/myon-bioinformatics/NagoyAction.git && cd NagoyAction",
+                        "needs": "🌐 ネットワークと git"
                       },
                       {
                         "id": "doctor",
                         "title": "🩺 doctor",
-                        "command": "uv run --no-project python nagoyaction.py doctor pipelines/inbox.toml",
+                        "command": "uv run --no-project --python \">=3.11\" python nagoyaction.py doctor pipelines/inbox.toml",
                         "run": true
                       }
                     ]
                   }
                 }
               ]
-            }
-          ]
-        },
-        {
-          "label": "🎞 GIF デモ",
-          "blocks": [
-            {
-              "type": "text",
-              "text": "🎞 まだ GIF はありません。ブラウザテストや実行の様子を GIF にしたら、ここに並びます。",
-              "muted": true
             }
           ]
         }

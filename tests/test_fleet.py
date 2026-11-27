@@ -14,7 +14,7 @@ fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
 ROOT = fleet.repo_root(__file__)
-PARENT_WORKFLOW_PIN = "43cfe1df924ea96ca44f47a6771c18102c38f7f3"
+PARENT_WORKFLOW_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
 ACCEPTED = {
     "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
     "vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",

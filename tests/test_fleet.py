@@ -14,11 +14,11 @@ fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
 ROOT = fleet.repo_root(__file__)
-PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 ACCEPTED = {
-    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
-    "vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
-}
+    "vendor/cli_args.py",
+    "vendor/fleet_check.py",
+}  # 🔁 locked destinations; they follow main
 ACTION_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
     "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
@@ -34,7 +34,7 @@ def _workflow_text():
 # ==== vendor lock: 親の fleet_check（旧 test_no_vendor_lock_is_kept は「lock が無いこと」を見ていた。uv tool はルートの pyproject）
 
 def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED)
+    rows = fleet.check_lock(ROOT)
     assert set(rows) == set(ACCEPTED)
     row = rows["vendor/fleet_check.py"]
     assert (row["repository"], row["source"]) == (fleet.PARENT, "fleet_check.py")

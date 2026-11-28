@@ -17,12 +17,17 @@ from queryu import (Cache, HandlerClient, HTTPStatusError, OfflineMiss, PoliteFe
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# Use this checkout's vendored CLI helper without importing a shared vendor namespace.
-_cli_spec = importlib.util.spec_from_file_location("_queryu_test_cli_args", ROOT / "vendor" / "cli_args.py")
-_cli_module = importlib.util.module_from_spec(_cli_spec)
-sys.modules[_cli_spec.name] = _cli_module
-_cli_spec.loader.exec_module(_cli_module)
-run_cli = _cli_module.run_cli
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+run_cli = load_vendored("queryu_cli_args", "vendor/cli_args.py").run_cli
 
 MONTH_KEY = r"(?P<year>\d{4})_(?P<month>\d{2})"  # npb_calendar の key（年_月）。Aoi の pipeline と同じ
 PAGE = (aoi_paths.resolve_aoi_root(anchor=Path(__file__)) / "blueprobe" / "tests" / "fixtures" / "npb_calendar_sample.html").read_text(encoding="utf-8")

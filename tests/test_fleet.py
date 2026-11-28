@@ -4,19 +4,29 @@
 Aoi は子を subtree で持ち、全部の子のテストを1回の pytest で動かす。最上位の `vendor` パッケージは子どうしで
 ぶつかるので、fleet_check はファイルの場所から固有の名前で読み込む。
 """
+import sys
 import hashlib, importlib.util, os, subprocess, unittest
 from pathlib import Path
 
 import pytest
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 ROOT = Path(__file__).resolve().parents[1]
-_spec = importlib.util.spec_from_file_location("queryu_fleet_check", ROOT / "vendor/fleet_check.py")
-fleet = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(fleet)
+fleet = load_vendored("queryu_fleet_check", "vendor/fleet_check.py")
 
 PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
 PARENT_PAGES_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
-ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
+ACCEPTED = {"vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f",
             "vendor/cli_args.py": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
             "vendor/cli_args-LICENSE": "55d8d0bfe699869c2439ff9ca86abfd3aa879846"}
 SOURCES = {  # destination -> (repository, source)
@@ -137,3 +147,6 @@ class ScriptsDescribeThemselves(unittest.TestCase):
         root = fleet.repo_root(__file__)
         fleet.check_imports(root, "core/cache_core.py")
         fleet.check_imports(root, "queryu.py", allow=("blueprobe", "npb_patterns"), paths=("core",))
+
+    def test_no_top_level_vendor_package_imports(self):
+        assert fleet.check_no_vendor_package_imports(ROOT) == []

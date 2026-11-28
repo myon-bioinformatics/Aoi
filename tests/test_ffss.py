@@ -4,6 +4,7 @@ import json
 import math
 import os
 import subprocess
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -12,6 +13,13 @@ import pytest
 from dragowing.dragowing import ffss_figures
 from dragowing.dragowing import read_ffss, read_jsonl
 from dragowing.dragowing import figure_svg, plotly_min
+
+_cli_spec = importlib.util.spec_from_file_location(
+    "dragowing_cli_args", Path(__file__).resolve().parents[1] / "vendor/cli_args/cli_args.py")
+_cli_args = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_args
+_cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tests" / "ffss_records.source.json"
@@ -110,8 +118,7 @@ def test_invalid_run_reports_figure_and_nan_is_rejected():
 
 
 def test_ffss_entry_uses_only_stdlib(tmp_path):
-    result = subprocess.run([sys.executable, "-S", str(ROOT / "dragowing.py"), "--ffss", str(RECORDS), "--out", str(tmp_path)],
-                            capture_output=True, text=True)
+    result = run_cli(ROOT / "dragowing.py", "--ffss", str(RECORDS), "--out", str(tmp_path), python_options=("-S",))
     assert result.returncode == 0, result.stderr
     assert len(list((tmp_path / "svg").glob("*.svg"))) == 9
 

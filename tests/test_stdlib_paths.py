@@ -5,14 +5,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts" / "run_stdlib_paths.py"
 
+_cli_spec = importlib.util.spec_from_file_location("dragowing_cli_args", ROOT / "vendor/cli_args/cli_args.py")
+_cli_args = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_args
+_cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
+
 
 def test_min_refuses_while_numpy_is_installed(tmp_path):
-    proc = subprocess.run(
-        [sys.executable, str(RUNNER), "--deps", "min", str(tmp_path / "out.json")],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    proc = run_cli(RUNNER, "--deps", "min", str(tmp_path / "out.json"))
     assert proc.returncode != 0
     assert "numpy" in proc.stderr
     assert not (tmp_path / "out.json").exists()

@@ -746,7 +746,7 @@ def _run_mutant(base: Path, mutant_source: str) -> int:
 
 def _run_registry_tests_in_repo(repo_root: Path) -> int:
     test_file = repo_root / "tests" / "test_child_registry.py"
-    env = {**os.environ, "PYTHONPATH": str(repo_root / "scripts")}
+    env = {**os.environ, "PYTHONPATH": str(repo_root / "scripts"), "PYTHONDONTWRITEBYTECODE": "1"}
     proc = subprocess.run(
         [sys.executable, "-m", "pytest", "-q", str(test_file), "-k", _COVERAGE_TEST_FILTER],
         cwd=repo_root,
@@ -904,11 +904,22 @@ def test_mutations_all_killed(tmp_path):
     assert mutants, "no mutants generated"
     killed = 0
     survived = []
-    # ⚡ side by side, one copy per mutant as before (removed after its run): 190 in a row took ~12 min on CI.
-    # At most 4 copies exist at once (~400 MB each).
-    with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, os.cpu_count() or 1)) as pool:
-        codes = list(pool.map(lambda mutant: _run_registry_tests_with_source(tmp_path, mutant[1]), mutants))
-    for (name, _mutant_source, _site), rc in zip(mutants, codes):
+    workers = min(4, os.cpu_count() or 1, generated)
+
+    def run_batch(batch):
+        results = []
+        with tempfile.TemporaryDirectory(dir=tmp_path) as staging:
+            repo = _materialize_mutant_repo(Path(staging), source)
+            script = repo / "scripts" / "check_child_heads.py"
+            for name, mutant_source, _site in batch:
+                script.write_text(mutant_source, encoding="utf-8")
+                results.append((name, _run_registry_tests_in_repo(repo)))
+        return results
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+        batches = pool.map(run_batch, (mutants[i::workers] for i in range(workers)))
+        results = [result for batch in batches for result in batch]
+    for name, rc in results:
         if rc == 0:
             survived.append(name)
         elif rc == 1:

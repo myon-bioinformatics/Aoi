@@ -383,15 +383,35 @@ def resolve_consumers(root: Path) -> str:
     return "\n".join(lines)
 
 
+def refresh_vendored(root: Path) -> int:
+    """🔁 Copy each vendored file's sha256 from vendor.lock.json (rows follow main) into shared-tools.lock.json."""
+    vendored = {row["destination"]: row["sha256"]
+                for row in json.loads((root / "vendor.lock.json").read_text(encoding="utf-8"))["files"]}
+    lock = load_lock(root)
+    moved = 0
+    for entry in lock["files"]:
+        sha = vendored.get(entry.get("path"))
+        if sha and entry["sha256"] != sha:
+            entry["sha256"], moved = sha, moved + 1
+    if moved:
+        (root / LOCK_NAME).write_text(json.dumps(lock, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return moved
+
+
 def shared_tools_lock(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=SHARED_TOOLS_LOCK_DOC.splitlines()[0])
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--warn", action="store_true", help="不一致を警告にして終了コード 0")
     parser.add_argument("--resolve-consumers", action="store_true", help="子の main を ls-remote で解決する")
+    parser.add_argument("--refresh-vendored", action="store_true",
+                        help="🔁 vendor.lock.json の写し（main を追う行）の sha256 をこの lock へ写す")
     args = parser.parse_args(argv)
     root = args.root.resolve()
     if args.resolve_consumers:
         print(resolve_consumers(root))
+        return 0
+    if args.refresh_vendored:
+        print(f"{LOCK_NAME}: {refresh_vendored(root)} 件を vendor.lock.json に合わせた")
         return 0
     found = shared_tools_lock_problems(root)
     if not found:

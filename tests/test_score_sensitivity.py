@@ -1,14 +1,21 @@
+import importlib.util
 import json, random, subprocess, sys
 from pathlib import Path
 import pytest
 from score_sensitivity import analyze, sweep, team_games
 
-import importlib.util as _ilu, pathlib as _pl, sys as _sys
-_cli_spec = _ilu.spec_from_file_location("pythdragoras_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
-_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
-if _cli_spec.name not in _sys.modules:
-    _sys.modules[_cli_spec.name] = _cli_args
-    _cli_spec.loader.exec_module(_cli_args)
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("pythdragoras_cli_args", "vendor/cli_args.py")
 run_cli = _cli_args.run_cli
 
 

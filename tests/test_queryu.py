@@ -17,7 +17,13 @@ from queryu import (Cache, HandlerClient, HTTPStatusError, OfflineMiss, PoliteFe
 
 ROOT = Path(__file__).resolve().parents[1]
 
-from vendor.cli_args import run_cli
+# Use this checkout's vendored CLI helper without importing a shared vendor namespace.
+_cli_spec = importlib.util.spec_from_file_location("_queryu_test_cli_args", ROOT / "vendor" / "cli_args.py")
+_cli_module = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_module
+_cli_spec.loader.exec_module(_cli_module)
+run_cli = _cli_module.run_cli
+
 MONTH_KEY = r"(?P<year>\d{4})_(?P<month>\d{2})"  # npb_calendar の key（年_月）。Aoi の pipeline と同じ
 PAGE = (aoi_paths.resolve_aoi_root(anchor=Path(__file__)) / "blueprobe" / "tests" / "fixtures" / "npb_calendar_sample.html").read_text(encoding="utf-8")
 

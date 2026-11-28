@@ -3,16 +3,26 @@
 旧 test_nagoyaction_parent_workflow_pins.py・test_nagoyaction_node_entry.py・test_benchmark_optimization_guard.py をここにまとめた。
 検査の本体は親の fleet_check.py。ここに残すのは NagoyAction の期待値（pin・ケース・文言）だけ。
 """
+import sys
 import importlib.util, json, unittest
 from pathlib import Path
 
 import pytest
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 ROOT = Path(__file__).resolve().parents[1]
 # Aoi は子を全部 1 回の pytest で回す。トップの vendor パッケージは子どうしでぶつかるので、ファイルの場所から固有の名前で読む。
-_spec = importlib.util.spec_from_file_location("nagoyaction_fleet_check", ROOT / "vendor/fleet_check.py")
-fleet = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(fleet)
+fleet = load_vendored("nagoyaction_fleet_check", "vendor/fleet_check.py")
 
 AOI = "myon-bioinformatics/Aoi"
 PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
@@ -130,3 +140,6 @@ class ScriptsDescribeThemselves(unittest.TestCase):
         for path in sorted(root.glob("*.py")):
             if path.name != "conftest.py":
                 fleet.check_imports(root, path.name)
+
+    def test_no_top_level_vendor_package_imports(self):
+        assert fleet.check_no_vendor_package_imports(ROOT) == []

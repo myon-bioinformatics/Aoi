@@ -4,7 +4,13 @@ from copy import deepcopy; from pathlib import Path
 import pytest
 from season_sensitivity import analyze, counts_metrics, prepare, shape, threshold_curve
 
-from vendor.cli_args import Command, run_cli, run_command
+import importlib.util as _ilu, pathlib as _pl, sys as _sys
+_cli_spec = _ilu.spec_from_file_location("pythdragoras_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
+_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
+if _cli_spec.name not in _sys.modules:
+    _sys.modules[_cli_spec.name] = _cli_args
+    _cli_spec.loader.exec_module(_cli_args)
+Command, run_cli, run_command = _cli_args.Command, _cli_args.run_cli, _cli_args.run_command
 
 
 def config():

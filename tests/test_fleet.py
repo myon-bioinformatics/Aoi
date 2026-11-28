@@ -3,15 +3,24 @@
 旧 test_blueprobe_parent_workflow_pins.py と旧 test_benchmark_optimization_guard.py をここに集めた。
 共通の処理は親の fleet_check.py が持ち、ここには BlueProbe 固有の期待値（pin・メッセージ）だけを置く。
 """
+import sys
 import unittest
 import importlib.util, re
 from pathlib import Path
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 # Aoi は子を subtree で並べて 1 回の pytest で回すので、`from vendor import …` は子同士でぶつかる。ファイルパスで読む。
-_spec = importlib.util.spec_from_file_location(
-    "blueprobe_fleet_check", Path(__file__).resolve().parents[1] / "vendor/fleet_check.py")
-fleet = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(fleet)
+fleet = load_vendored("blueprobe_fleet_check", "vendor/fleet_check.py")
 
 ROOT = fleet.repo_root(__file__)
 PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"

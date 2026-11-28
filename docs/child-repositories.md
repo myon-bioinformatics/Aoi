@@ -27,6 +27,8 @@ python -S scripts/check_child_heads.py --fail-on-diff
 
 6つの子が conftest.py と tests に同じ中身で持っている検査（AOI_ROOT の解決と import 経路、親ワークフローの pin、兄弟・scripts/ への参照禁止、Node 入口と Python の一致）の本体は Aoi の `scripts/child_checks.py` が原本で、`shared-tools.lock.json` で `vendor/aoi/scripts/child_checks.py` として子に配る（numpy_min・py_launch.cjs と同じ契約。標準ライブラリだけ、pytest を import しない）。子に残すのは子ごとに違う値（PIN、第三者依存、既知の例外、Node の入口名）と、本体を呼ぶ数行だけ。採用前に `tests/test_child_checks.py` が各 prefix で子の現在の検査と同じ答えになることを確かめる。採用した子は lock の `consumers` に足す。
 
+2026-11-28（続き）: BlueProbe の main `db35be801bca3b829cb4c11d00a65d167b961e25`（#87: ローカル HTTP テストの shutdown 待ちを短くする）を、履歴を保持した `git subtree pull`（squash なし）で取り込みました。第2親はこの SHA で、`blueprobe/` の tree はこの SHA の tree と同一です。親ワークフローの PIN は変わらず `main` です。
+
 2026-11-28: 6つの子の main を、履歴を保持した `git subtree pull`（squash なし）で取り込みました（BlueProbe `6f07fef892d6833abe3c58839d03a50b90dee975`、DRAgoWing `3c90132c8363d5e05c87050372ce3251e8bcad61`、NagoyAction `c4a80ffa55afe95bb64a51c491aefba00fc1d340`、PythDRagoras `50113050cfd5a211a904d2444c3aae14f474b86e`、QueRyu `162d32f627aed8e1f2331a5eae9263d42351db2e`、SakAnalytics `0980735d110db77214fe3480a42cc71d58c50e36`）。各取り込み commit の第2親はこの SHA で、各 prefix の tree はこの SHA の tree と同一です。5つの子は親の再利用ワークフローを `main` で呼び、QueRyu は `27dedd9651efc816fa88d8922adb5f242725df69` で呼びます。`tests/test_child_checks.py` の PIN もそれに合わせました。
 
 2026-11-24（続き）: 6つの子の main をもう一度 `git subtree pull`（squash なし）で取り込みました。どの子も親の再利用ワークフローを `1368174821fb03be258ecf3312ce0ea809f6ea22`（📲 利用ガイドにホーム画面用の icon-180/192/512・manifest・Base64 キャッシュ、親 #362）で呼びます。`tests/test_child_checks.py` の PIN も同じ commit にし、Aoi 自身の利用ガイドも PySaiyanWeBoo `a955daa` の `--home-screen` で組みます。

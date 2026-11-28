@@ -14,8 +14,8 @@ _spec = importlib.util.spec_from_file_location("queryu_fleet_check", ROOT / "ven
 fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
-PARENT_WORKFLOW_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
-PARENT_PAGES_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
+PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+PARENT_PAGES_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
 ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
             "vendor/cli_args.py": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
             "vendor/cli_args-LICENSE": "55d8d0bfe699869c2439ff9ca86abfd3aa879846"}

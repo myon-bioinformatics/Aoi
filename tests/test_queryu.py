@@ -16,6 +16,14 @@ from queryu import (Cache, HandlerClient, HTTPStatusError, OfflineMiss, PoliteFe
                     split_future_months, write_dataset)
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Use this checkout's vendored CLI helper without importing a shared vendor namespace.
+_cli_spec = importlib.util.spec_from_file_location("_queryu_test_cli_args", ROOT / "vendor" / "cli_args.py")
+_cli_module = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_module
+_cli_spec.loader.exec_module(_cli_module)
+run_cli = _cli_module.run_cli
+
 MONTH_KEY = r"(?P<year>\d{4})_(?P<month>\d{2})"  # npb_calendar の key（年_月）。Aoi の pipeline と同じ
 PAGE = (aoi_paths.resolve_aoi_root(anchor=Path(__file__)) / "blueprobe" / "tests" / "fixtures" / "npb_calendar_sample.html").read_text(encoding="utf-8")
 
@@ -394,7 +402,8 @@ def test_future_filter_at_year_boundary_keeps_non_month_keys(today, kept):
 
 def test_single_file_help_and_cache_in_isolation(tmp_path):
     output = tmp_path / "queryu.py"
-    subprocess.run([sys.executable, str(ROOT / "scripts/build_single_file.py"), str(output)], check=True)
+    built = run_cli(ROOT / "scripts/build_single_file.py", str(output))
+    assert built.returncode == 0, built.stderr
     result = subprocess.run([sys.executable, "-I", str(output), "--help"], cwd=tmp_path,
                             capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
@@ -408,7 +417,8 @@ def test_single_file_help_and_cache_in_isolation(tmp_path):
 
 def test_single_file_missing_blueprobe_is_explained(tmp_path):
     output = tmp_path / "queryu.py"
-    subprocess.run([sys.executable, str(ROOT / "scripts/build_single_file.py"), str(output)], check=True)
+    built = run_cli(ROOT / "scripts/build_single_file.py", str(output))
+    assert built.returncode == 0, built.stderr
     result = subprocess.run([sys.executable, "-I", str(output), "--source", "example", "--years", "2024",
                              "--cache", str(tmp_path / "cache"), "--plan"], cwd=tmp_path,
                             capture_output=True, text=True)
@@ -421,7 +431,8 @@ def test_single_file_offline_plan_with_blueprobe(tmp_path):
     import blueprobe
     import npb_calendar
     output = tmp_path / "queryu.py"
-    subprocess.run([sys.executable, str(ROOT / "scripts/build_single_file.py"), str(output)], check=True)
+    built = run_cli(ROOT / "scripts/build_single_file.py", str(output))
+    assert built.returncode == 0, built.stderr
     for module in (blueprobe, npb_calendar):
         source = Path(module.__file__)
         shutil.copy2(source, tmp_path / source.name)

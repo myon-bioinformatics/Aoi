@@ -24,6 +24,16 @@ import npb_calendar
 from blueprobe import inspect, load_source, mask_digits, normalize, to_markdown
 
 
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 # ──── core ────────────────────────────────────────────────────────
 
 P = "/bis/2024/games/s2024040201097.html"
@@ -142,10 +152,7 @@ def test_listing_cannot_silently_ignore_pattern(capsys):
 # ──── url ─────────────────────────────────────────────────────────
 
 ROOT = Path(__file__).resolve().parents[1]
-_cli_spec = importlib.util.spec_from_file_location("blueprobe_cli_args", ROOT / "vendor/cli_args.py")
-_cli_args = importlib.util.module_from_spec(_cli_spec)
-sys.modules[_cli_spec.name] = _cli_args
-_cli_spec.loader.exec_module(_cli_args)
+_cli_args = load_vendored("blueprobe_cli_args", "vendor/cli_args.py")
 
 
 def _cache_core(queryu):

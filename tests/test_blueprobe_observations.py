@@ -24,14 +24,20 @@ import warnings
 from pathlib import Path
 from unittest.mock import patch
 
-import importlib.util as _importlib_util
-import sys as _sys
+import importlib.util
 
-_cli_spec = _importlib_util.spec_from_file_location("blueprobe_cli_args", Path(__file__).resolve().parents[1] / "vendor" / "cli_args.py")
-_cli_args = _importlib_util.module_from_spec(_cli_spec)
-_sys.modules[_cli_spec.name] = _cli_args
-_cli_spec.loader.exec_module(_cli_args)
-run_cli = _cli_args.run_cli
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+run_cli = load_vendored("blueprobe_cli_args", "vendor/cli_args.py").run_cli
 
 try:
     import pytest

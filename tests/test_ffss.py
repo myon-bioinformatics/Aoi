@@ -34,7 +34,7 @@ def test_fixture_receipt_and_pinned_renderer():
     assert sorted([list(k) for k in read_ffss(RECORDS)]) == receipt["selected_runs"]
     lock = json.loads((ROOT / "vendor.lock.json").read_text())
     entry = next(e for e in lock["files"] if e["source"] == "tools/stdlib_min/plotly_min.py")
-    assert entry["ref"] == entry["commit"] == "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32"
+    assert entry["ref"] == "main"  # 🔁 own sources follow main
     data = (ROOT / entry["destination"]).read_bytes()
     assert hashlib.sha256(data).hexdigest() == entry["sha256"]
     assert hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest() == entry["blob_sha"]

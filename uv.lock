@@ -39,10 +39,10 @@ dev = [
     { name = "numpy", specifier = ">=2.4.6" },
     { name = "numpy", marker = "python_full_version >= '3.12'", specifier = ">=2.5.4" },
     { name = "polars", specifier = ">=2.0.0" },
-    { name = "pysaiyanweboo", git = "https://github.com/myon-bioinformatics/PySaiyanWeBoo?rev=901b790f14ad7a04a4280409bfd274d8f6926fa7" },
+    { name = "pysaiyanweboo", git = "https://github.com/myon-bioinformatics/PySaiyanWeBoo?rev=main" },
     { name = "pytest", specifier = ">=9.1.1" },
 ]
-pages = [{ name = "pysaiyanweboo", git = "https://github.com/myon-bioinformatics/PySaiyanWeBoo?rev=901b790f14ad7a04a4280409bfd274d8f6926fa7" }]
+pages = [{ name = "pysaiyanweboo", git = "https://github.com/myon-bioinformatics/PySaiyanWeBoo?rev=main" }]
 
 [[package]]
 name = "iniconfig"
@@ -269,7 +269,7 @@ wheels = [
 [[package]]
 name = "pysaiyanweboo"
 version = "0.1.0"
-source = { git = "https://github.com/myon-bioinformatics/PySaiyanWeBoo?rev=901b790f14ad7a04a4280409bfd274d8f6926fa7#901b790f14ad7a04a4280409bfd274d8f6926fa7" }
+source = { git = "https://github.com/myon-bioinformatics/PySaiyanWeBoo?rev=main#43335dfce36a2d5afa2beb29035db40abb8e7ee7" }
 
 [[package]]
 name = "pytest"

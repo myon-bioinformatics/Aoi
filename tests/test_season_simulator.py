@@ -4,6 +4,14 @@ from dataclasses import replace; from importlib.util import find_spec; from iter
 
 import pytest
 
+import importlib.util as _ilu, pathlib as _pl, sys as _sys
+_cli_spec = _ilu.spec_from_file_location("sakanalytics_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
+_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
+if _cli_spec.name not in _sys.modules:
+    _sys.modules[_cli_spec.name] = _cli_args
+    _cli_spec.loader.exec_module(_cli_args)
+Command, run_cli, run_command = _cli_args.Command, _cli_args.run_cli, _cli_args.run_command
+
 # Only tests that actually invoke the solver require the optional dependency.
 requires_solver = pytest.mark.skipif(find_spec('ortools') is None,
     reason='install npb/season-requirements.txt for exact simulator tests')
@@ -174,9 +182,10 @@ def test_cli_daily_replay(tmp_path, exact):
     src.write_text(json.dumps(data))
     script = Path(__file__).resolve().parents[1] / 'npb' / 'season_simulator.py'
     # The stdlib CLI also runs with all site-packages disabled.
-    subprocess.run([sys.executable, *([] if exact else ['-S']), str(script), str(src),
+    sim = run_command(Command([sys.executable, *([] if exact else ['-S']), str(script), str(src),
                     '--as-of', '2022-01-01', '--through', '2022-01-04', '--trials', '30',
-                    *(['--exact'] if exact else []), '--output', str(dest)], check=True, cwd=tmp_path)
+                    *(['--exact'] if exact else []), '--output', str(dest)]), cwd=tmp_path)
+    assert sim.returncode == 0, sim.stderr
     out = json.loads(dest.read_text())
     assert len(out['daily']) == 4
     if exact:
@@ -282,10 +291,9 @@ def test_expected_total_games_validation(tmp_path):
     script = Path(__file__).resolve().parents[1] / 'npb' / 'season_simulator.py'
 
     # Passing incorrect expected total games via CLI fails
-    res = subprocess.run([sys.executable, str(script), str(src),
-                          '--as-of', '2022-01-01', '--trials', '10',
-                          '--expected-total-games', '12', '--output', str(dest)],
-                         capture_output=True, text=True)
+    res = run_cli(script, str(src),
+                  '--as-of', '2022-01-01', '--trials', '10',
+                  '--expected-total-games', '12', '--output', str(dest))
     assert res.returncode == 2
     assert "error: total games for team 'X' is 24, expected 12" in res.stderr
     assert 'Traceback' not in res.stderr

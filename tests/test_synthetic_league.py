@@ -1,6 +1,14 @@
 import json, subprocess, sys
 from collections import Counter; from copy import deepcopy; from pathlib import Path
 import pytest
+
+import importlib.util as _ilu, pathlib as _pl, sys as _sys
+_cli_spec = _ilu.spec_from_file_location("sakanalytics_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
+_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
+if _cli_spec.name not in _sys.modules:
+    _sys.modules[_cli_spec.name] = _cli_args
+    _cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
 from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan,period_experiment,validate_period,calibration_mean,_flow)
 
 
@@ -107,7 +115,8 @@ def test_conditional_counts_are_separate_model_checks_not_real_samples():
 def test_cli_without_site_packages(tmp_path):
     out=tmp_path/'synthetic.json'
     witnesses=tmp_path/'witnesses'
-    subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'synthetic_league.py'),'--seeds','1','--out',str(out),'--witness-dir',str(witnesses)],check=True)
+    league = run_cli(Path(__file__).parents[1]/'npb'/'synthetic_league.py','--seeds','1','--out',str(out),'--witness-dir',str(witnesses),python_options=('-S',))
+    assert league.returncode == 0, league.stderr
     assert len(json.loads(out.read_text())['cases'])==42
     assert len(json.loads((witnesses/'manifest.json').read_text())['files'])==84
     for path in witnesses.glob('*.annual.json'):

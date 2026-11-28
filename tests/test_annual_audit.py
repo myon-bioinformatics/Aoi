@@ -1,5 +1,13 @@
 from copy import deepcopy; from functools import partial
 import pytest
+
+import importlib.util as _ilu, pathlib as _pl, sys as _sys
+_cli_spec = _ilu.spec_from_file_location("sakanalytics_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
+_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
+if _cli_spec.name not in _sys.modules:
+    _sys.modules[_cli_spec.name] = _cli_args
+    _cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
 from annual_audit import audit as generic_audit
 
 # NPB の前提はテスト用にここで渡す（本番は Aoi の aoi_npb.py の ANNUAL_AUDIT_RULES）
@@ -121,7 +129,7 @@ def test_cli_checks_manifest_digest_as_well_as_arithmetic(tmp_path,tampered):
     source.write_text(''.join(json.dumps(r)+'\n' for r in observations()))
     source.with_suffix('.manifest.json').write_text(json.dumps(dict(unknown=0,sha256='0'*64 if tampered else hashlib.sha256(source.read_bytes()).hexdigest())))
     out,annual=tmp_path/'audit.json',tmp_path/'annual.jsonl'
-    result=subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'annual_audit.py'),'--observations',str(source),'--years','1950-1950','--out',str(out),'--annual-out',str(annual)],capture_output=True)
+    result=run_cli(Path(__file__).parents[1]/'npb'/'annual_audit.py','--observations',str(source),'--years','1950-1950','--out',str(out),'--annual-out',str(annual),python_options=('-S',))
     assert result.returncode==int(tampered)
     report=json.loads(out.read_text())
     assert report['failed']==int(tampered)

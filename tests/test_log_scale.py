@@ -10,6 +10,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # sakanalytics.py はリポジトリ根（python -S -m unittest でも読める）
 import sakanalytics as scale  # noqa: E402
+import importlib.util as _ilu, pathlib as _pl, sys as _sys
+_cli_spec = _ilu.spec_from_file_location("sakanalytics_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
+_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
+if _cli_spec.name not in _sys.modules:
+    _sys.modules[_cli_spec.name] = _cli_args
+    _cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli  # noqa: E402
 
 
 # Public portfolio Languages bar example (docs/skills.md): unrounded scores.
@@ -280,9 +287,9 @@ class LeagueLaboratoryStandaloneTests(unittest.TestCase):
         env.pop("PYTHONPATH", None)
         script = ROOT / "npb" / "league_laboratory.py"
         with tempfile.TemporaryDirectory() as cwd:
-            result = subprocess.run(
-                [sys.executable, "-S", str(script), "--help"],
-                cwd=cwd, env=env, capture_output=True, text=True,
+            result = run_cli(
+                script, "--help",
+                python_options=("-S",), cwd=cwd, env=env,
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--cycle-dir", result.stdout)

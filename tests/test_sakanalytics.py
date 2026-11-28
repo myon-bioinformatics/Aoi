@@ -117,7 +117,7 @@ class StandaloneExamples(unittest.TestCase):
         self.assertEqual(self.call("compare", "--before", "1,2", "--after", "3,4")["mean_difference"], 2)
 
     def test_stdin_and_files(self):
-        result = subprocess.run([sys.executable, "-I", str(self.script), "describe", "-"], input="1,2,3\n4,5,6\n", text=True, capture_output=True)
+        result = _cli_args.run_cli(self.script, "describe", "-", python_options=("-I",), stdin="1,2,3\n4,5,6\n")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)["mean"], 3.5)
         path = Path(self.temp.name) / "data.csv"

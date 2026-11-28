@@ -24,12 +24,16 @@ def load_vendored(name, relpath):
 ROOT = Path(__file__).resolve().parents[1]
 fleet = load_vendored("queryu_fleet_check", "vendor/fleet_check.py")
 
-PARENT_WORKFLOW_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
-PARENT_PAGES_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
-ACCEPTED = {"vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f"}
+PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+PARENT_PAGES_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+ACCEPTED = {"vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f",
+            "vendor/cli_args.py": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
+            "vendor/cli_args-LICENSE": "55d8d0bfe699869c2439ff9ca86abfd3aa879846"}
 SOURCES = {  # destination -> (repository, source)
     "vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py"),
     "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
+    "vendor/cli_args.py": ("myon-bioinformatics/cli_args", "cli_args.py"),
+    "vendor/cli_args-LICENSE": ("myon-bioinformatics/cli_args", "LICENSE"),
 }
 
 

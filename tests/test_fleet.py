@@ -26,14 +26,14 @@ ROOT = Path(__file__).resolve().parents[1]
 fleet = load_vendored("dragowing_fleet_check", "vendor/fleet_check.py")
 
 WORKFLOWS = fleet.repo_root(__file__)  # 単独では ROOT。Aoi の中では、ワークフローを持つ一番近い親
-PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
-ACCEPTED = {"vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f",
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
+ACCEPTED = {"vendor/fleet_check.py",
             # 📊 親の stdlib_min の plotly_min（静止の図の SVG を Chrome なしで描く）
-            "vendor/tools/stdlib_min/plotly_min.py": "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32",
+            "vendor/tools/stdlib_min/plotly_min.py",
             # 📝 自作の markdown.py（ページの文章。Python-Markdown の代わり）
-            "vendor/markdown/markdown.py": "733ff26f6f2f642f9e5895955af8a7b83d68c962",
-            "vendor/cli_args/cli_args.py": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
-            "vendor/cli_args/LICENSE": "55d8d0bfe699869c2439ff9ca86abfd3aa879846"}
+            "vendor/markdown/markdown.py",
+            "vendor/cli_args/cli_args.py",
+            "vendor/cli_args/LICENSE"}  # 🔁 locked destinations; they follow main
 # destination -> (repository, source)。Aoi の写しは vendor/aoi/<source>。使わない shrink_module.py・polars_min.py などは置かない
 SOURCES = {"vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py")}
 SOURCES["vendor/fleet_check.py"] = (fleet.PARENT, "fleet_check.py")
@@ -49,7 +49,7 @@ SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.
 # ==== 🔒 vendor lock（旧 test_vendor_lock.py の写しの照合。scripts/check_vendor_lock.py の検査は test_vendor_lock.py）
 
 def test_vendor_lock_matches_vendored_copy():
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED)
+    rows = fleet.check_lock(ROOT)
     assert {where: (row["repository"], row["source"]) for where, row in rows.items()} == SOURCES
     for row in rows.values():
         assert set(row) == {"repository", "ref", "commit", "source", "destination", "blob_sha", "sha256"}

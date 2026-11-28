@@ -3,6 +3,7 @@
 # vendor-dispatch は親 main の pilot/vendor_dispatch.py で vendor.lock.json を検証する。--record は付けない。
 name: CI
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -17,7 +18,7 @@ jobs:
   changes:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@27dedd9651efc816fa88d8922adb5f242725df69
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@main
 
   resolve-vendor:
     name: Resolve Aoi
@@ -308,7 +309,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@27dedd9651efc816fa88d8922adb5f242725df69
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@main
     with:
       expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
       artifact-pattern: junit-*
@@ -320,4 +321,16 @@ jobs:
     if: needs.changes.outputs.workflow_changed == 'true'
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@27dedd9651efc816fa88d8922adb5f242725df69
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@main
+
+  # 🔁 own sources follow main: on schedule / manual run, take main of own repositories and push to main
+  follow-main:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-follow-main.yml@main
+    permissions:
+      contents: write
+    with:
+      node-version: "26"
+      check: |
+        git clone -q --depth 1 https://github.com/myon-bioinformatics/Aoi .test-deps/aoi
+        AOI_ROOT="$PWD/.test-deps/aoi" uv run --locked pytest -q

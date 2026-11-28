@@ -3,10 +3,10 @@
 🌐 [GitHub Pages](https://myon-bioinformatics.github.io/SakAnalytics/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
 
 <p align="center">
-  <img src="docs/brand/icon.png" alt="SakAnalytics icon" width="160" />
+  <img src="https://myon-bioinformatics.github.io/SakAnalytics/icon.png" alt="SakAnalytics icon" width="160" />
 </p>
 
-[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+[Icon](https://myon-bioinformatics.github.io/SakAnalytics/icon.png) · [Favicon](https://myon-bioinformatics.github.io/SakAnalytics/favicon.png)
 
 > The numbers speak, but they haven't said everything yet.
 >
@@ -46,11 +46,13 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 
 ### Generic single file (`sakanalytics.py`)
 
-`sakanalytics.py` is the domain-independent edition: standard library only, and the file runs on its own (copy it anywhere, or `curl` it). It has 📐 `check_eps` / `lift` (ε as a symbol: detect a value exactly on a boundary, lift it only when a caller passes ε), 📊 `describe`, and ⚖️ `compare` / `boundary` on the command line, with comma-separated and CSV input. Team × season metrics, simulation and sequence convergence are in `npb/` (below).
+`sakanalytics.py` is the domain-independent edition: standard library only, and the file runs on its own (copy it anywhere, or `curl` it). It has 📐 `check_eps` / `lift` (ε as a symbol: detect a value exactly on a boundary, lift it only when a caller passes ε), 📊 `describe`, ⚖️ `compare` / `boundary`, and 📈 `scale` (`log_scale` / `linear_scale` / `adjust_narrow` / `round_score`) on the command line, with comma-separated and CSV input. Team × season metrics, simulation and sequence convergence are in `npb/` (below).
 
 ```bash
 python sakanalytics.py 0 --lo 0 --eps 0.1             # boundary (the default command)
 python sakanalytics.py describe 1 2 3
+python sakanalytics.py scale 1 10 --anchor 10
+python sakanalytics.py scale --linear --factor 0.97 3 4
 uv tool install . && sakanalytics 0 --lo 0 --eps 0.1
 # Or: uv tool install git+https://github.com/myon-bioinformatics/SakAnalytics.git
 ```
@@ -87,7 +89,7 @@ Only the generic single file `sakanalytics.py` (and `conftest.py`) sits at the t
 
 | File | Contents |
 |---|---|
-| `sakanalytics.py` | Generic single file, standard library only (see above) |
+| `sakanalytics.py` | Generic single file, standard library only (see above). Includes 📈 `scale` (`log_scale`, `linear_scale`, `adjust_narrow`, `round_score`) |
 | `npb/team_season.py` | CLI. Team × season metrics (main columns listed at the top) |
 | `npb/season_simulator.py`, `npb/season_exact.py` | Outlook for remaining games (standard library) and optional OR-Tools clinch determination ([docs/season-simulator.md](docs/season-simulator.md), [docs/season-simulator-plan.md](docs/season-simulator-plan.md)) |
 | `npb/annual_audit.py` | Auditing annual team tables (integer fields and published digits) |
@@ -374,6 +376,8 @@ Python 3.11 以上で、`sakanalytics.py` だけをコピーして実行でき�
 ```sh
 python sakanalytics.py describe 45 52 48 61 50
 python sakanalytics.py compare --before 45 52 48 --after 40 44 46
+python sakanalytics.py scale 1 10 --anchor 10
+python sakanalytics.py scale --linear --factor 0.97 3 4
 ```
 
 最初の例は件数 5、平均 51.2、中央値 50 をJSONで返します。`population_stddev` は母標準偏差です。比較元の平均がゼロなら増減率は `null` と理由で返します。数列の収束判定はこの軽量版にはまだ含まれません。

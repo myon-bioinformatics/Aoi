@@ -4,16 +4,22 @@ from pathlib import Path
 
 import pytest
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 SOURCE = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("research_worker", SOURCE / "inbox/worker.py")
 w = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(w)
-_cli_args_spec = importlib.util.spec_from_file_location(
-    "nagoyaction_cli_args", SOURCE / "vendor" / "cli_args.py",
-)
-_cli_args = importlib.util.module_from_spec(_cli_args_spec)
-sys.modules[_cli_args_spec.name] = _cli_args
-_cli_args_spec.loader.exec_module(_cli_args)
+_cli_args = load_vendored("nagoyaction_cli_args", "vendor/cli_args.py")
 AOI = Path(os.environ.get("AOI_WORKER_TEST_ROOT", SOURCE.parent))
 
 

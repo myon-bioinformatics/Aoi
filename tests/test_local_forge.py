@@ -7,6 +7,17 @@ import contextlib, importlib.util, io, json, os, re, shutil, subprocess, sys, te
 from pathlib import Path
 from unittest import mock
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 ROOT = Path(__file__).resolve().parent.parent
 TMP = Path(tempfile.mkdtemp(prefix="olnm-"))
 sys.path.insert(0, str(ROOT))
@@ -161,7 +172,6 @@ class TestHub(HubBase):
         self.assertIn("401", str(e.exception))
 
 
-
 class TestDialNames(unittest.TestCase):
     """🎛️ People type names; the shared dial file keeps the digit (olnm reads the same file)."""
 
@@ -186,12 +196,7 @@ class TestDialNames(unittest.TestCase):
         self.assertEqual(olnm.read_dial(), 2)  # a rejected name changes nothing
 
 
-_cli_args_spec = importlib.util.spec_from_file_location(
-    "nagoyaction_cli_args", ROOT / "vendor" / "cli_args.py",
-)
-_cli_args = importlib.util.module_from_spec(_cli_args_spec)
-sys.modules[_cli_args_spec.name] = _cli_args
-_cli_args_spec.loader.exec_module(_cli_args)
+_cli_args = load_vendored("nagoyaction_cli_args", "vendor/cli_args.py")
 
 
 def nagoyaction(*argv, home):

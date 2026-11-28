@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "BlueProbe 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "取得済みのウェブページ（HTML / CSS / DOM）を読み、そこに何があるかを記録する観測・抽出ツール。勝敗や原因は判定しません。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",
@@ -77,6 +77,71 @@
           ]
         },
         {
+          "label": "🔬 検証ガイド",
+          "blocks": [
+            {
+              "type": "runbook",
+              "id": "verify",
+              "books": [
+                {
+                  "label": "🐍 python",
+                  "intro": "🤖 のついた手順は CI で実際に動かし、出た結果をそのまま載せています。",
+                  "runbook": {
+                    "key": "blueprobe/python",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/BlueProbe/main/blueprobe.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "help",
+                        "title": "❓ ヘルプ",
+                        "command": "python blueprobe.py --help",
+                        "run": true
+                      },
+                      {
+                        "id": "patterns",
+                        "title": "📋 パターン一覧",
+                        "command": "python blueprobe.py --list-patterns",
+                        "run": true
+                      },
+                      {
+                        "id": "observe",
+                        "title": "🔭 ページを観測",
+                        "command": "python blueprobe.py https://example.com --out observation.json",
+                        "needs": "🌐 ネットワーク"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "⚡ uv",
+                  "intro": "uv があれば Python の版を気にせず動きます。",
+                  "runbook": {
+                    "key": "blueprobe/uv",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/BlueProbe/main/blueprobe.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "help",
+                        "title": "❓ ヘルプ",
+                        "command": "uv run --no-project python blueprobe.py --help",
+                        "run": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "label": "🎞 GIF デモ",
           "blocks": [
             {
@@ -95,10 +160,6 @@
         {
           "type": "links",
           "items": [
-            {
-              "label": "📦 リポジトリ",
-              "href": "https://github.com/myon-bioinformatics/BlueProbe"
-            },
             {
               "label": "📖 README",
               "href": "https://github.com/myon-bioinformatics/BlueProbe#readme"

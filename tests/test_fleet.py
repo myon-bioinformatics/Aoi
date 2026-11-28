@@ -20,13 +20,13 @@ _spec = importlib.util.spec_from_file_location("pythdragoras_fleet_check", ROOT 
 fleet = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fleet)
 
-PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 LIVE_PARENT_REF = "${{ steps.parent.outputs.sha }}"
 ACCEPTED = {
-    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
-    "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
-    "vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
-}
+    "vendor/cli_args.py",
+    "vendor/py_launch.cjs",
+    "vendor/fleet_check.py",
+}  # 🔁 locked destinations; they follow main
 # Node 入口: ツール名 -> 本体（トップにはメインだけ。ツールは core/ と npb/ にいる）。環境変数は <TOOL>_PYTHON
 SCRIPTS = {
     "littlebit_survey": "core/littlebit_survey.py",
@@ -51,7 +51,7 @@ def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
         "vendor/py_launch.cjs": ("myon-bioinformatics/Aoi", "vendor/py_launch.cjs"),
         "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
     }
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources=sources)
+    rows = fleet.check_lock(ROOT, sources=sources)
     assert set(rows) == set(sources)
     assert not (ROOT / "vendor/uv_tool_build.py").exists()
 

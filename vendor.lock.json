@@ -22,7 +22,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "py_launch.cjs",
       "destination": "vendor/py_launch.cjs",
       "blob_sha": "caf5ef6d42bd572e9cfde84ee570e3036edc4726",
@@ -31,7 +31,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "tools/uv_tool_build.py",
       "destination": "vendor/uv_tool_build.py",
       "blob_sha": "f81a75c254e85c20e9b643bfdffe96b424f1a725",
@@ -40,7 +40,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "tools/stdlib_min/numpy_min.py",
       "destination": "shrink/numpy_min.py",
       "blob_sha": "cf1249edcaa32e94387e9f5c4b47b1f81c0451c2",
@@ -49,7 +49,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "tools/stdlib_min/numpy_linalg_min.py",
       "destination": "shrink/numpy_linalg_min.py",
       "blob_sha": "2b3ef4314507d7a8d8e1190b2bc003dc53713f17",
@@ -58,7 +58,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "tools/stdlib_min/polars_min.py",
       "destination": "shrink/polars_min.py",
       "blob_sha": "370bcfc158749a44c2ba6b9588eeffc0f56abc17",
@@ -67,7 +67,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "tools/stdlib_min/biopython_min.py",
       "destination": "pkgmin/biopython_min.py",
       "blob_sha": "21d42f91067a51ca7da865c2c75eb247b1dffc0d",
@@ -76,7 +76,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "tools/stdlib_min/requests_min.py",
       "destination": "pkgmin/requests_min.py",
       "blob_sha": "0b884942b445a63fc473ac31f74e3fb7778bc6d1",
@@ -85,7 +85,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "tools/stdlib_min/tqdm_min.py",
       "destination": "pkgmin/tqdm_min.py",
       "blob_sha": "c538481bf0375771850fa682e54ea2418a54fda4",
@@ -94,7 +94,7 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "tools/stdlib_min/httpx_min.py",
       "destination": "mindeps/httpx_min.py",
       "blob_sha": "e2452063aaa36699d56911d0c31811d221a8e49b",
@@ -103,11 +103,11 @@
     {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "main",
-      "commit": "27dedd9651efc816fa88d8922adb5f242725df69",
+      "commit": "eee8c096fc753465a5d5a26264e64c12e555638f",
       "source": "fleet_check.py",
       "destination": "vendor/fleet_check.py",
-      "blob_sha": "2a7973ab7485c8a5cac36d3e43796ef6496ea9ff",
-      "sha256": "71c54df9de11c70312ff9580f0633cfd50252ad6738829d05ce92a46e3b18029"
+      "blob_sha": "8cffb731ce78c461f602f4da0653178214e1da46",
+      "sha256": "47b526dc3d2c09afe121071c429014a9423475dd8e32e1b4bde022e4186c29d1"
     },
     {
       "repository": "myon-bioinformatics/cli_args",

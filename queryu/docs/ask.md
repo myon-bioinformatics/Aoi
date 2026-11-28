@@ -79,7 +79,7 @@ When there are no results, no matching form, or undeterminable units remain, the
 is not asserted as 「いいえ」 (no). Exclusions and team filters using an incomplete counterexample list are handled the same way.
 The counterexample count is `n - hold`. `undetermined` is counted outside `n`, so it is not subtracted twice.
 
-Comment intake and search operations are in [NagoyAction](../../nagoyaction/docs/inbox.md).
+Comment intake and search operations are in [NagoyAction](https://github.com/myon-bioinformatics/NagoyAction/blob/main/docs/inbox.md).
 
 ## Presenting candidates (`queryu/ask/suggest.py`)
 
@@ -128,4 +128,4 @@ A formula ID such as `E25` needs `sets.jsonl`. A proposition ID needs `propositi
 - A missing file is not read as "that ID has not been judged". Formula results are read from the results ref checkout (`.aoi-results/<cycle>/outputs`), as in Issue #9.
 - When the specified results folder doesn't exist, it does not switch to another folder. Nor does it create and fill `sets.jsonl` in this repository.
 
-The four-forms table and condition notation are in [DRAgoWing](../../dragowing/docs/forms.md).
+The four-forms table and condition notation are in [DRAgoWing](https://github.com/myon-bioinformatics/DRAgoWing/blob/main/docs/forms.md).

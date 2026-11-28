@@ -78,7 +78,7 @@ def test_cli_runs_without_site(tmp_path):
 
 
 # ---- 🚀 vendor/py_launch.cjs ------------------------------------------------------
-USAGE = re.compile(r"usage: node py_launch\.cjs \[--env-var NAME\] \[--site\] \[--\] SCRIPT\.py")
+USAGE = re.compile(r"usage: node py_launch\.cjs \[--env-var NAME\] \[--site\] (?:\[--call TARGET\] )?\[--\] SCRIPT\.py")  # 🔁 main adds --call
 
 
 @pytest.fixture(scope="module")

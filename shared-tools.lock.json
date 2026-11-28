@@ -54,7 +54,7 @@
     },
     {
       "path": "vendor/py_launch.cjs",
-      "sha256": "f900e2662e7065a087897f4b927815d34a81f0e9ca811c0412151b38a218a501",
+      "sha256": "fcdf3bcba98709d8138e75231af3fb468707d531df4e70a142441e0052e77e85",
       "source": "myon-bioinformatics/Aoi",
       "consumers": [
         "myon-bioinformatics/NagoyAction",
@@ -64,7 +64,7 @@
     },
     {
       "path": "vendor/uv_tool_build.py",
-      "sha256": "1309ff9277b5dd3a67b5b54645a3dfdda58eed3cbe1db775f7fc57630e2833ce",
+      "sha256": "e9151e8a4d465167d5666962eee2b23db8910356f7a3cf6870e708db62da4afc",
       "source": "myon-bioinformatics/Aoi",
       "consumers": []
     }

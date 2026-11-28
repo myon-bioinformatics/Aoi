@@ -20,7 +20,7 @@ PIN_CHILDREN = {
     "queryu": "27dedd9651efc816fa88d8922adb5f242725df69",
     "sakanalytics": PIN,
     "pythdragoras": PIN,
-    "nagoyaction": PIN,
+    "nagoyaction": "main",  # 🔁 synced to NagoyAction main, whose parent refs follow main
     "dragowing": PIN,
 }
 # 子の tests/test_no_sibling_imports.py の定数（採用後は子にこれだけが残る）

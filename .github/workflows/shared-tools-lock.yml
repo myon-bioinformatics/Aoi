@@ -65,3 +65,15 @@ jobs:
           else
             python -S scripts/repo_checks.py shared_tool_consumers --warn
           fi
+
+  # 🔁 own sources follow main: on schedule / manual run, take main of own repositories and push to main
+  follow-main:
+    if: github.event_name == 'schedule'
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-follow-main.yml@main
+    permissions:
+      contents: write
+    with:
+      node-version: "26"
+      after: python -S scripts/repo_checks.py shared_tools_lock --refresh-vendored
+      check: |
+        uv run --locked python -m pytest -c pyproject.toml -q --deselect tests/test_child_registry.py::test_mutations_all_killed

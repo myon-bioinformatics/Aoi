@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   actionlint:
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@27dedd9651efc816fa88d8922adb5f242725df69 # actionlint v1.7.12
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@main # actionlint v1.7.12
   test:
     timeout-minutes: 30
     runs-on: ubuntu-latest

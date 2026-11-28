@@ -24,7 +24,7 @@ concurrency:
 jobs:
   changes:
     name: Change detection
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@27dedd9651efc816fa88d8922adb5f242725df69
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@main
 
   vendor-lock:
     name: Vendor lock
@@ -338,7 +338,7 @@ jobs:
         with:
           repository: myon-bioinformatics/mcp-toolcall-lab
           # LAB_SHA: past-pattern snapshot of mcp-toolcall-lab used as verification test data
-          ref: 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90
+          ref: 6a3fe3aac7e5ae939d2fe2720dfae002d5f0dd90 # 📌 LAB_SHA snapshot (test data), not a dependency
           path: .test-deps/lab
           persist-credentials: false
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
@@ -412,7 +412,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@27dedd9651efc816fa88d8922adb5f242725df69
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@main
     with:
       # Both report-producing jobs use the event commit checkout (PR merge commit).
       commit-sha: ${{ github.sha }}
@@ -423,7 +423,7 @@ jobs:
   actionlint:
     needs: changes
     if: needs.changes.outputs.workflow_changed == 'true'
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@27dedd9651efc816fa88d8922adb5f242725df69
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@main
 
 
   research-digest:

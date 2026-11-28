@@ -650,7 +650,7 @@ def test_consumers_outside_child_heads_or_unsorted_are_reported():
 
 
 PARENT = "myon-bioinformatics/myon-bioinformatics"
-PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 PINS_ROOT = next(p for p in Path(__file__).resolve().parents if (p / ".github/workflows").is_dir())
 
 

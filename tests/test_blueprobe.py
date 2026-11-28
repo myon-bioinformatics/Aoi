@@ -13,6 +13,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import Mock
@@ -168,15 +169,22 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 
+@contextmanager
+def local_http_server():
+    with ThreadingHTTPServer(("127.0.0.1", 0), Handler) as server:
+        thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.02})
+        thread.start()
+        try:
+            yield server
+        finally:
+            server.shutdown()
+            thread.join()
+
+
 @unittest.skipUnless(shutil.which("curl"), "curl unavailable")
 class UrlStandaloneTest(unittest.TestCase):
     def test_url_and_missing_page(self):
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-        thread = threading.Thread(target=server.serve_forever, daemon=True)
-        thread.start()
-        self.addCleanup(server.server_close)
-        self.addCleanup(server.shutdown)
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory() as tmp, local_http_server() as server:
             script = Path(tmp) / "blueprobe.py"
             shutil.copy2(ROOT / "blueprobe.py", script)
             url = f"http://127.0.0.1:{server.server_port}/"
@@ -227,11 +235,7 @@ class UrlStandaloneTest(unittest.TestCase):
         queryu = os.environ.get("QUERYU_ROOT")
         if not queryu:
             self.skipTest("set QUERYU_ROOT to a QueRyu checkout")
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-        threading.Thread(target=server.serve_forever, daemon=True).start()
-        self.addCleanup(server.server_close)
-        self.addCleanup(server.shutdown)
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory() as tmp, local_http_server() as server:
             root = Path(tmp)
             shutil.copy2(ROOT / "blueprobe.py", root / "blueprobe.py")
             shutil.copy2(_cache_core(queryu), root / "cache_core.py")
@@ -252,20 +256,16 @@ class UrlStandaloneTest(unittest.TestCase):
         spec = importlib.util.spec_from_file_location('review_cache_core', _cache_core(queryu))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-        threading.Thread(target=server.serve_forever, daemon=True).start()
-        self.addCleanup(server.server_close)
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             shutil.copy2(ROOT / "blueprobe.py", root / "blueprobe.py")
             shutil.copy2(_cache_core(queryu), root / "cache_core.py")
-            cache, url = root / "cache", f"http://127.0.0.1:{server.server_port}/"
-            try:
+            cache = root / "cache"
+            with local_http_server() as server:
+                url = f"http://127.0.0.1:{server.server_port}/"
                 result = _cli_args.run_cli(root / 'blueprobe.py', url, '--cache', str(cache),
                                            python_options=('-I',), timeout=10)
                 self.assertEqual(result.returncode, 0, result.stderr)
-            finally:
-                server.shutdown()
             store = module.Cache(cache)
             entry = store.latest()[url]
             saved = store.snapshot(entry)

@@ -137,4 +137,4 @@ Grid adjacency and nested outlines do not imply similarity or causation. Color i
 
 `question` in counterexample tables is the stored question text. This page does not answer that question.
 
-Candidate IDs (`もしかして`, "did you mean") are not shown. For the query side, see [ask.md](../../queryu/docs/ask.md).
+Candidate IDs (`もしかして`, "did you mean") are not shown. For the query side, see [ask.md](https://github.com/myon-bioinformatics/QueRyu/blob/main/docs/ask.md).

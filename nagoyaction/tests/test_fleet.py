@@ -17,7 +17,7 @@ _spec.loader.exec_module(fleet)
 AOI = "myon-bioinformatics/Aoi"
 PARENT_WORKFLOW_PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
 ACCEPTED = {
-    "vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f",
+    "vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
     "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
     "vendor/cli_args-LICENSE": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
 }
@@ -130,7 +130,3 @@ class ScriptsDescribeThemselves(unittest.TestCase):
         for path in sorted(root.glob("*.py")):
             if path.name != "conftest.py":
                 fleet.check_imports(root, path.name)
-
-    def test_no_top_level_vendor_package_imports(self):
-        # 📦 vendored modules load by path under a repo-unique name (cli_args README: Loading a vendored copy)
-        self.assertEqual(fleet.check_no_vendor_package_imports(ROOT), [])

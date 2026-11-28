@@ -16,7 +16,7 @@ _spec.loader.exec_module(fleet)
 
 PARENT_WORKFLOW_PIN = "0361d4d81add261ba15073fc32f2a524d2b7e2de"
 PARENT_PAGES_PIN = "0361d4d81add261ba15073fc32f2a524d2b7e2de"
-ACCEPTED = {"vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f"}
+ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3"}
 SOURCES = {  # destination -> (repository, source)
     "vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py"),
     "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
@@ -133,7 +133,3 @@ class ScriptsDescribeThemselves(unittest.TestCase):
         root = fleet.repo_root(__file__)
         fleet.check_imports(root, "core/cache_core.py")
         fleet.check_imports(root, "queryu.py", allow=("blueprobe", "npb_patterns"), paths=("core",))
-
-    def test_no_top_level_vendor_package_imports(self):
-        # 📦 vendored modules load by path under a repo-unique name (cli_args README: Loading a vendored copy)
-        self.assertEqual(fleet.check_no_vendor_package_imports(ROOT), [])

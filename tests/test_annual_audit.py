@@ -1,5 +1,7 @@
 from copy import deepcopy; from functools import partial
 import pytest
+
+from vendor.cli_args import run_cli
 from annual_audit import audit as generic_audit
 
 # NPB の前提はテスト用にここで渡す（本番は Aoi の aoi_npb.py の ANNUAL_AUDIT_RULES）
@@ -121,7 +123,7 @@ def test_cli_checks_manifest_digest_as_well_as_arithmetic(tmp_path,tampered):
     source.write_text(''.join(json.dumps(r)+'\n' for r in observations()))
     source.with_suffix('.manifest.json').write_text(json.dumps(dict(unknown=0,sha256='0'*64 if tampered else hashlib.sha256(source.read_bytes()).hexdigest())))
     out,annual=tmp_path/'audit.json',tmp_path/'annual.jsonl'
-    result=subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'annual_audit.py'),'--observations',str(source),'--years','1950-1950','--out',str(out),'--annual-out',str(annual)],capture_output=True)
+    result=run_cli(Path(__file__).parents[1]/'npb'/'annual_audit.py','--observations',str(source),'--years','1950-1950','--out',str(out),'--annual-out',str(annual),python_options=('-S',))
     assert result.returncode==int(tampered)
     report=json.loads(out.read_text())
     assert report['failed']==int(tampered)

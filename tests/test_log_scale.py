@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # sakanalytics.py はリポジトリ根（python -S -m unittest でも読める）
 import sakanalytics as scale  # noqa: E402
+from vendor.cli_args import run_cli  # noqa: E402
 
 
 # Public portfolio Languages bar example (docs/skills.md): unrounded scores.
@@ -280,9 +281,9 @@ class LeagueLaboratoryStandaloneTests(unittest.TestCase):
         env.pop("PYTHONPATH", None)
         script = ROOT / "npb" / "league_laboratory.py"
         with tempfile.TemporaryDirectory() as cwd:
-            result = subprocess.run(
-                [sys.executable, "-S", str(script), "--help"],
-                cwd=cwd, env=env, capture_output=True, text=True,
+            result = run_cli(
+                script, "--help",
+                python_options=("-S",), cwd=cwd, env=env,
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--cycle-dir", result.stdout)

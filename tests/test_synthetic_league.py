@@ -1,6 +1,8 @@
 import json, subprocess, sys
 from collections import Counter; from copy import deepcopy; from pathlib import Path
 import pytest
+
+from vendor.cli_args import run_cli
 from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan,period_experiment,validate_period,calibration_mean,_flow)
 
 
@@ -107,7 +109,8 @@ def test_conditional_counts_are_separate_model_checks_not_real_samples():
 def test_cli_without_site_packages(tmp_path):
     out=tmp_path/'synthetic.json'
     witnesses=tmp_path/'witnesses'
-    subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'synthetic_league.py'),'--seeds','1','--out',str(out),'--witness-dir',str(witnesses)],check=True)
+    league = run_cli(Path(__file__).parents[1]/'npb'/'synthetic_league.py','--seeds','1','--out',str(out),'--witness-dir',str(witnesses),python_options=('-S',))
+    assert league.returncode == 0, league.stderr
     assert len(json.loads(out.read_text())['cases'])==42
     assert len(json.loads((witnesses/'manifest.json').read_text())['files'])==84
     for path in witnesses.glob('*.annual.json'):

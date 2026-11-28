@@ -4,6 +4,8 @@ import pytest
 
 import moshimo_box as mb
 
+from vendor.cli_args import Command, run_cli, run_command
+
 
 def logit(p):
     return math.log(p / (1 - p))
@@ -494,7 +496,7 @@ def test_real_ledger_extreme_multiline_cli_sweep(tmp_path, exact, aoi_root):
             '--sweep', 'contrapositive=0.5,5e-324,1e-300', '--json', str(out)]
     if exact:
         args += ['--eps', '1e-6']
-    result = subprocess.run(args, capture_output=True, text=True)
+    result = run_command(Command(args))
     assert 'Traceback' not in result.stderr
     if exact:
         assert result.returncode == 0, result.stderr
@@ -515,9 +517,8 @@ def test_reported_integer_ledger_cli_sweep(tmp_path):
     ledger = tmp_path / 'ledger.jsonl'
     ledger.write_text(json.dumps({'id': 'P1', 'metrics': dict(tp=10, fp=10, fn=10, tn=10)}))
     out = tmp_path / 'tables.json'
-    result = subprocess.run([sys.executable, str(Path(mb.__file__)), '--ledger', str(ledger), '--id', 'P1',
-                             '--eps', '1e-6', '--sweep', 'contrapositive=0.5,5e-324', '--json', str(out)],
-                            capture_output=True, text=True)
+    result = run_cli(Path(mb.__file__), '--ledger', str(ledger), '--id', 'P1',
+                     '--eps', '1e-6', '--sweep', 'contrapositive=0.5,5e-324', '--json', str(out))
     assert result.returncode == 0, result.stderr
     assert 'Traceback' not in result.stderr
     assert len(json.loads(out.read_text())['tables']) == 2

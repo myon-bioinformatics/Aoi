@@ -1,5 +1,5 @@
 """図のデータは season.jsonl / propositions.jsonl の値と一致する。丸めない。"""
-import ast, html, json, operator, os, subprocess, sys, tempfile
+import importlib.util, ast, html, json, operator, os, subprocess, sys, tempfile
 from pathlib import Path; from unittest.mock import MagicMock, patch
 
 import pytest
@@ -14,7 +14,13 @@ from dragowing.overlap import default_conditions, load_overlap
 from dragowing.dragowing import read_jsonl
 from ask import registration_status
 
-from vendor.cli_args import Command, run_command
+_cli_spec = importlib.util.spec_from_file_location(
+    "dragowing_cli_args", Path(__file__).resolve().parents[1] / "vendor/cli_args/cli_args.py")
+_cli_args = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_args
+_cli_spec.loader.exec_module(_cli_args)
+Command = _cli_args.Command
+run_command = _cli_args.run_command
 from reports.build_reports import page as report_page
 
 import aoi_paths

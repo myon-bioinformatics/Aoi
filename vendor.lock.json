@@ -2,6 +2,24 @@
   "schema": "vendor-lock/1",
   "files": [
     {
+      "repository": "myon-bioinformatics/cli_args",
+      "ref": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
+      "commit": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
+      "source": "LICENSE",
+      "destination": "vendor/cli_args/LICENSE",
+      "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
+      "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
+    },
+    {
+      "repository": "myon-bioinformatics/cli_args",
+      "ref": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
+      "commit": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
+      "source": "cli_args.py",
+      "destination": "vendor/cli_args/cli_args.py",
+      "blob_sha": "9f93ed31499c16d03c867beb9284b6fc3170d31b",
+      "sha256": "f3753bdba3546d92b79f7b5af96a7cfb6a33d8ba42e8ef47ca1089d9650e964b"
+    },
+    {
       "repository": "myon-bioinformatics/myon-bioinformatics",
       "ref": "20de01921e50e9339aa9271b0547a5be7649b3b3",
       "commit": "20de01921e50e9339aa9271b0547a5be7649b3b3",
@@ -36,24 +54,6 @@
       "destination": "vendor/tools/stdlib_min/plotly_min.py",
       "blob_sha": "9ee1f06c0125a45a493497cb2ad075c936a7c5ce",
       "sha256": "6fa2875a275ec7104cc73fa73fbaf78946266736d3bba7b1153e79c5f4fb0bed"
-    },
-    {
-      "repository": "myon-bioinformatics/cli_args",
-      "ref": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
-      "commit": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
-      "source": "cli_args.py",
-      "destination": "vendor/cli_args.py",
-      "blob_sha": "9f93ed31499c16d03c867beb9284b6fc3170d31b",
-      "sha256": "f3753bdba3546d92b79f7b5af96a7cfb6a33d8ba42e8ef47ca1089d9650e964b"
-    },
-    {
-      "repository": "myon-bioinformatics/cli_args",
-      "ref": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
-      "commit": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
-      "source": "LICENSE",
-      "destination": "vendor/cli_args-LICENSE",
-      "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
-      "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
     }
   ]
 }

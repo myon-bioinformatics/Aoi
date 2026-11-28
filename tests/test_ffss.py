@@ -4,6 +4,7 @@ import json
 import math
 import os
 import subprocess
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -13,7 +14,12 @@ from dragowing.dragowing import ffss_figures
 from dragowing.dragowing import read_ffss, read_jsonl
 from dragowing.dragowing import figure_svg, plotly_min
 
-from vendor.cli_args import run_cli
+_cli_spec = importlib.util.spec_from_file_location(
+    "dragowing_cli_args", Path(__file__).resolve().parents[1] / "vendor/cli_args/cli_args.py")
+_cli_args = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_args
+_cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tests" / "ffss_records.source.json"

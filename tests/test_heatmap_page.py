@@ -8,7 +8,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-from vendor.cli_args import run_cli
+_cli_spec = importlib.util.spec_from_file_location("dragowing_cli_args", ROOT / "vendor/cli_args/cli_args.py")
+_cli_args = importlib.util.module_from_spec(_cli_spec)
+sys.modules[_cli_spec.name] = _cli_args
+_cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
 
 
 def _page() -> str:

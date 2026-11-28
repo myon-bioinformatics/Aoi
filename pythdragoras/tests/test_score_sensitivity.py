@@ -1,7 +1,22 @@
+import importlib.util
 import json, random, subprocess, sys
 from pathlib import Path
 import pytest
 from score_sensitivity import analyze, sweep, team_games
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("pythdragoras_cli_args", "vendor/cli_args.py")
+run_cli = _cli_args.run_cli
 
 
 def oracle(scores):
@@ -79,7 +94,8 @@ def test_cli(tmp_path):
     config.write_text('[focus]\nteam="d"\n[teams]\nd={name="中日"}\n',encoding='utf-8')
     out = tmp_path/'out.json'
     md_out = tmp_path/'out.md'
-    subprocess.run([sys.executable,str(Path(__file__).parents[1]/'npb'/'score_sensitivity.py'),'--games',str(source),'--config',str(config),'--out',str(out),'--markdown',str(md_out)],check=True)
+    scored = run_cli(Path(__file__).parents[1]/'npb'/'score_sensitivity.py','--games',str(source),'--config',str(config),'--out',str(out),'--markdown',str(md_out))
+    assert scored.returncode == 0, scored.stderr
     assert json.loads(out.read_text())['schema']=='aoi-score-sensitivity/1'
     assert md_out.exists()
     content = md_out.read_text(encoding='utf-8')

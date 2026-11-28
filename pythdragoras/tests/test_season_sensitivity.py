@@ -1,8 +1,23 @@
+import importlib.util
 import json, math, random, subprocess, sys
 from copy import deepcopy; from pathlib import Path
 
 import pytest
 from season_sensitivity import analyze, counts_metrics, prepare, shape, threshold_curve
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("pythdragoras_cli_args", "vendor/cli_args.py")
+Command, run_cli, run_command = _cli_args.Command, _cli_args.run_cli, _cli_args.run_command
 
 
 def config():
@@ -141,7 +156,8 @@ thresholds=[-1.0,0.0,1.0]
 baseline_weight=1.0
 baseline_threshold=0.0
 ''', encoding='utf-8')
-    subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'season_sensitivity.py'), '--season',str(source),'--config',str(cfg),'--out',str(out),'--markdown',str(md)],check=True)
+    baseline = run_cli(Path(__file__).parents[1]/'npb'/'season_sensitivity.py', '--season',str(source),'--config',str(cfg),'--out',str(out),'--markdown',str(md),python_options=('-S',))
+    assert baseline.returncode == 0, baseline.stderr
     result = json.loads(out.read_text())
     assert result['sources'][0]['sha256']
     assert '中日の指標値' in md.read_text()
@@ -149,12 +165,12 @@ baseline_threshold=0.0
     if Path('/dev/stdout').exists():
         command = [sys.executable, '-S', str(Path(__file__).parents[1]/'npb'/'season_sensitivity.py'),
                    '--season', str(source), '--config', str(cfg)]
-        mixed_md = subprocess.run(command + ['--out', str(out), '--markdown', '/dev/stdout'],
-                                  check=True, capture_output=True, text=True)
+        mixed_md = run_command(Command(command + ['--out', str(out), '--markdown', '/dev/stdout']))
+        assert mixed_md.returncode == 0, mixed_md.stderr
         assert mixed_md.stdout == md.read_text(encoding='utf-8')
         assert out.resolve().as_uri() in mixed_md.stderr
-        mixed_json = subprocess.run(command + ['--out', '/dev/stdout', '--markdown', str(md)],
-                                    check=True, capture_output=True, text=True)
+        mixed_json = run_command(Command(command + ['--out', '/dev/stdout', '--markdown', str(md)]))
+        assert mixed_json.returncode == 0, mixed_json.stderr
         assert json.loads(mixed_json.stdout) == result
         assert md.resolve().as_uri() in mixed_json.stderr
         # /dev/stdout may resolve to a regular file after shell redirection.
@@ -165,13 +181,14 @@ baseline_threshold=0.0
         assert json.loads(redirected.read_text(encoding='utf-8')) == result
         assert md.resolve().as_uri() in redirected_run.stderr
         assert redirected.resolve().as_uri() not in redirected_run.stderr
-        regular = subprocess.run(command + ['--out', str(out), '--markdown', str(md)],
-                                 check=True, capture_output=True, text=True)
+        regular = run_command(Command(command + ['--out', str(out), '--markdown', str(md)]))
+        assert regular.returncode == 0, regular.stderr
         assert out.resolve().as_uri() in regular.stdout
         assert md.resolve().as_uri() in regular.stdout
     # --out・--markdown が無ければ Markdown を標準出力に
-    shown = subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'season_sensitivity.py'), '--season',str(source),'--config',str(cfg)],
-                           check=True, capture_output=True, text=True).stdout
+    shown_result = run_cli(Path(__file__).parents[1]/'npb'/'season_sensitivity.py', '--season',str(source),'--config',str(cfg),python_options=('-S',))
+    assert shown_result.returncode == 0, shown_result.stderr
+    shown = shown_result.stdout
     assert shown == md.read_text(encoding='utf-8')
 
 

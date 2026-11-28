@@ -52,7 +52,7 @@ Each derived candidate has the following.
 - `posthoc` = true, `exploratory` = true
 - `registration`: the result of `classify` in [core/registration_audit.py](../core/registration_audit.py)
 
-This construction produces conditions after seeing results, so `classify` returns posthoc. `exploratory` marks it as exploration; it does not add a further value to posthoc / preregistered / unknown. Making it pre-registered requires evidence recorded before evaluation, as in [registration-metadata-audit.md](../../docs/registration-metadata-audit.md). No such evidence is attached here.
+This construction produces conditions after seeing results, so `classify` returns posthoc. `exploratory` marks it as exploration; it does not add a further value to posthoc / preregistered / unknown. Making it pre-registered requires evidence recorded before evaluation, as in [registration-metadata-audit.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/registration-metadata-audit.md). No such evidence is attached here.
 
 `search` builds masks from `col`, `op`, and `value` only, and its sort key looks only at those three. The records above don't change the counts of holds and counterexamples.
 
@@ -60,13 +60,13 @@ This construction produces conditions after seeing results, so `classify` return
 
 Residual energy is the squared difference between the condition matrix and the reconstruction, summed per unit. Units above the mean over all units become clues for finding counterexamples (`lead`). Exactly the mean is not a clue. It does not split by the truth of the target column.
 
-A clue is a record that "the factors couldn't fully reconstruct the candidate pattern for this team-year". The list of units decided to be counterexamples is kept separately by the judgement in [propositions.md](../../docs/propositions.md).
+A clue is a record that "the factors couldn't fully reconstruct the candidate pattern for this team-year". The list of units decided to be counterexamples is kept separately by the judgement in [propositions.md](https://github.com/myon-bioinformatics/Aoi/blob/main/docs/propositions.md).
 
 ## c001 rankings
 
-For c001, the top results from passing only existing candidates to `search` and from passing them with the derived candidates are laid side by side and written to `cycles/c001-chunichi/outputs/exploratory/littlebit-approx/`. Observation and interpretation are in separate sections of [comparison.md](../../cycles/c001-chunichi/outputs/exploratory/littlebit-approx/comparison.md). The full machine-readable version is `comparison.json` in the same directory.
+For c001, the top results from passing only existing candidates to `search` and from passing them with the derived candidates are laid side by side and written to `cycles/c001-chunichi/outputs/exploratory/littlebit-approx/`. Observation and interpretation are in separate sections of [comparison.md](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/outputs/exploratory/littlebit-approx/comparison.md). The full machine-readable version is `comparison.json` in the same directory.
 
-Confirmation records are in [confirmation.md](../../cycles/c001-chunichi/outputs/confirmation.md). The candidate file is [rule_candidates.toml](../../cycles/c001-chunichi/rule_candidates.toml). Regenerate with:
+Confirmation records are in [confirmation.md](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/outputs/confirmation.md). The candidate file is [rule_candidates.toml](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/rule_candidates.toml). Regenerate with:
 
 ```bash
 uv run python pythdragoras/core/littlebit_approx.py --cycle-dir cycles/c001-chunichi
@@ -96,8 +96,8 @@ uv run python pythdragoras/core/littlebit_holdout.py --cycle-dir cycles/c001-chu
 
 The default block comparison is training 2012–2022 and evaluation 2023–2025. The auxiliary walk-forward starts from the first 5 years,
 evaluates the next year, then extends the training period. It keeps the existing setting's 2020 exclusion, and saves all settings, input SHA-256, formulas, models, and
-TP/FP/FN/TN ID sets in [holdout.json](../../cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.json).
-The comparison table is in [holdout.md](../../cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.md).
+TP/FP/FN/TN ID sets in [holdout.json](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.json).
+The comparison table is in [holdout.md](https://github.com/myon-bioinformatics/Aoi/blob/main/cycles/c001-chunichi/outputs/exploratory/littlebit-holdout/holdout.md).
 
 The comparisons are the best formula from the training side's existing candidates (baseline), the best formula including added candidates (augmented),
 and the best formula containing at least one derived column (derived). derived is searched exhaustively, not limited to formulas in the top 20.

@@ -2,7 +2,13 @@ import json, subprocess, sys
 from collections import Counter; from copy import deepcopy; from pathlib import Path
 import pytest
 
-from vendor.cli_args import run_cli
+import importlib.util as _ilu, pathlib as _pl, sys as _sys
+_cli_spec = _ilu.spec_from_file_location("sakanalytics_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
+_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
+if _cli_spec.name not in _sys.modules:
+    _sys.modules[_cli_spec.name] = _cli_args
+    _cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
 from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan,period_experiment,validate_period,calibration_mean,_flow)
 
 

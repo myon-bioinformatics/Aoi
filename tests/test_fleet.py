@@ -26,7 +26,7 @@ fleet = load_vendored("queryu_fleet_check", "vendor/fleet_check.py")
 
 PARENT_WORKFLOW_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
 PARENT_PAGES_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
-ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3"}
+ACCEPTED = {"vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f"}
 SOURCES = {  # destination -> (repository, source)
     "vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py"),
     "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
@@ -143,3 +143,6 @@ class ScriptsDescribeThemselves(unittest.TestCase):
         root = fleet.repo_root(__file__)
         fleet.check_imports(root, "core/cache_core.py")
         fleet.check_imports(root, "queryu.py", allow=("blueprobe", "npb_patterns"), paths=("core",))
+
+    def test_no_top_level_vendor_package_imports(self):
+        assert fleet.check_no_vendor_package_imports(ROOT) == []

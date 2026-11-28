@@ -112,6 +112,11 @@ Markdown for HTML is still needed.
 
 ## Tests
 
+[Formal overlap checks](docs/formal-verification.md) prove that every original
+row index belongs to exactly one Boolean-signature region. Tests compare the
+real stdlib overlap output with an independent row-index partition; rendering
+and scientific interpretation remain separate checks.
+
 Cycle data (outputs in `cycles/`), [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) (`propositions` and `rule_search`), and [QueRyu](https://github.com/myon-bioinformatics/QueRyu) (`ask`) stay in Aoi. They are not copied; Aoi's main is checked out and passed in.
 
 ```bash

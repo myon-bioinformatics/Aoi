@@ -1,5 +1,6 @@
 name: CI
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -30,7 +31,7 @@ jobs:
   changes:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@1368174821fb03be258ecf3312ce0ea809f6ea22
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@main
 
   resolve-vendor:
     needs: changes
@@ -144,10 +145,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
-      fail-fast: false
+      fail-fast: ${{ github.event_name == 'pull_request' }}
       matrix:
         # Aoi の CI と同じ。failure-identity の expected-reports と揃えること
-        python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+        # ⏱ PRs run the newest Python only; push and schedule run all five
+        python: ${{ github.event_name == 'pull_request' && fromJSON('["3.15"]') || fromJSON('["3.11", "3.12", "3.13", "3.14", "3.15"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -307,9 +309,9 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1368174821fb03be258ecf3312ce0ea809f6ea22
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@main
     with:
-      expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
+      expected-reports: ${{ github.event_name == 'pull_request' && '["junit-py3.15/junit.xml"]' || '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]' }}
       artifact-pattern: junit-*
       output-artifact: failure-identity
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -319,7 +321,7 @@ jobs:
     if: needs.changes.outputs.workflow_changed == 'true'
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@1368174821fb03be258ecf3312ce0ea809f6ea22
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@main
 
   local-ci:
     needs: changes
@@ -369,3 +371,18 @@ jobs:
           seed="${{ github.run_id }}"
           echo "localci seed=${seed}"
           python nagoyaction.py localci run --repeat 10 --seed "${seed}" --strict
+
+  # 🔁 own sources follow main: on schedule / manual run, take main of own repositories and push to main
+  follow-main:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-follow-main.yml@main
+    permissions:
+      contents: write
+    with:
+      node-version: "26"
+      check: |
+        git clone -q --depth 1 https://github.com/myon-bioinformatics/Aoi .test-deps/aoi
+        rm -rf .test-deps/aoi/nagoyaction && mkdir .test-deps/aoi/nagoyaction
+        git ls-files -z | xargs -0 cp --parents -t .test-deps/aoi/nagoyaction
+        git -C .test-deps/aoi add -A nagoyaction
+        cd .test-deps/aoi && uv run --locked pytest -q -c pyproject.toml nagoyaction/tests

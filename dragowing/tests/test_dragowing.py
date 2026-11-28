@@ -100,3 +100,25 @@ def test_ffss_svg_without_chrome_and_html():
         with unittest.TestCase().assertRaises(SystemExit) as cm:
             main(["--ffss", str(empty), "--out", str(out)])
         assert cm.exception.code == 1
+
+
+def test_forms_and_help_with_only_one_python_file(tmp_path):
+    script = tmp_path / "dragowing.py"
+    shutil.copy2(ROOT / "dragowing.py", script)
+    records = tmp_path / "records"
+    records.mkdir()
+    items = [{"id": "P1", "posthoc": True},
+             {"id": "P2", "preregistered": True},
+             {"id": "P3", "posthoc": False}]
+    (records / "propositions.jsonl").write_text(
+        "".join(json.dumps(item) + "\n" for item in items), encoding="utf-8")
+    for args, expected in [
+        (["--help"], ["--forms", "--help"]),
+        ([str(records), "--forms"], ["事後構成", "事前登録", "不明"]),
+    ]:
+        result = subprocess.run(
+            [sys.executable, "-I", "-S", str(script), *args],
+            cwd=tmp_path, capture_output=True, text=True, encoding="utf-8", timeout=30,
+        )
+        assert result.returncode == 0, result.stderr
+        assert all(label in result.stdout for label in expected)

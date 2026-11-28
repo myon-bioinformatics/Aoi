@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "🐉 DRAgoWing 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "記録した野球の研究結果を、判定をやり直さずに Plotly.js の HTML レポート・命題の表・SVG にするリポジトリ（Aoi の可視化担当）。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",
@@ -19,23 +19,6 @@
       "id": "guide",
       "tabs": [
         {
-          "label": "🎞 GIF デモ",
-          "blocks": [
-            {
-              "type": "card",
-              "title": "🌡️ ヒートマップ",
-              "text": "行列を貼って描画し、色の段階と値の表示を切り替えます。Plotly の heatmap トレースも読めます（PC 幅とスマホ幅）。",
-              "blocks": [
-                {
-                  "type": "image",
-                  "src": "./demos/heatmap.gif",
-                  "alt": "DRAgoWing heatmap editor: drawing a pasted matrix, changing the colour steps and labels, reading a Plotly heatmap, and the phone width"
-                }
-              ]
-            }
-          ]
-        },
-        {
           "label": "🧩 機能一覧",
           "blocks": [
             {
@@ -47,11 +30,11 @@
                   "items": [
                     {
                       "label": "🌡️ ヒートマップ",
-                      "href": "https://myon-bioinformatics.github.io/tools/heatmap/"
+                      "href": "https://myon-bioinformatics.github.io/tools/#heatmap"
                     },
                     {
                       "label": "🖼 Image Studio（シーンを編集）",
-                      "href": "https://myon-bioinformatics.github.io/tools/ironmate/"
+                      "href": "https://myon-bioinformatics.github.io/tools/#image-studio"
                     }
                   ]
                 }
@@ -101,9 +84,60 @@
                   "blocks": [
                     {
                       "type": "output",
-                      "text": "python -S scripts/build_heatmap_page.py > heatmap.html"
+                      "text": "uv run --only-group pages python scripts/build_heatmap_page.py > heatmap.html"
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🔬 検証ガイド",
+          "blocks": [
+            {
+              "type": "runbook",
+              "id": "verify",
+              "books": [
+                {
+                  "label": "⚡ そのまま",
+                  "intro": "📋 コピーして手元で試し、結果を記録できます。🤖 の手順は、Pages の公開で実際に動かした結果も載ります。",
+                  "runbook": {
+                    "key": "dragowing/verify",
+                    "steps": [
+                      {
+                        "id": "help",
+                        "title": "❓ ヘルプ",
+                        "command": "python3 -S dragowing.py --help",
+                        "run": true
+                      },
+                      {
+                        "id": "heatmap",
+                        "title": "🌡️ 行列 → ヒートマップのシーン",
+                        "command": "printf '[[1,2],[3,4]]' | python3 -S dragowing.py --heatmap /dev/stdin | { head -c 240 && cat >/dev/null; }",
+                        "expect": "{\"schema\": \"ironmate-image-studio/1\", \"width\": 1280, \"height\": 720, …",
+                        "expect_stdout_contains": "{\"schema\": \"ironmate-image-studio/1\", \"width\": 1280, \"height\": 720,",
+                        "run": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🎞 GIF デモ",
+          "blocks": [
+            {
+              "type": "card",
+              "title": "🌡️ ヒートマップ",
+              "text": "行列を貼って描画し、色の段階と値の表示を切り替えます。Plotly の heatmap トレースも読めます（PC 幅とスマホ幅）。",
+              "blocks": [
+                {
+                  "type": "image",
+                  "src": "./demos/heatmap.gif",
+                  "alt": "DRAgoWing heatmap editor: drawing a pasted matrix, changing the colour steps and labels, reading a Plotly heatmap, and the phone width"
                 }
               ]
             }
@@ -115,12 +149,8 @@
       "type": "links",
       "items": [
         {
-          "label": "📦 リポジトリ",
-          "href": "https://github.com/myon-bioinformatics/DRAgoWing"
-        },
-        {
-          "label": "🧭 ポートフォリオ",
-          "href": "https://myon-bioinformatics.github.io/tools/projects/dragowing.html"
+          "label": "🌡️ ヒートマップ（ポートフォリオの 🧰 Tools）",
+          "href": "https://myon-bioinformatics.github.io/tools/#heatmap"
         }
       ]
     }

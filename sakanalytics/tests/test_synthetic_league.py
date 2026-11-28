@@ -1,9 +1,22 @@
+import importlib.util
 import json, subprocess, sys
 from collections import Counter; from copy import deepcopy; from pathlib import Path
 import pytest
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("sakanalytics_cli_args", "vendor/cli_args.py")
+run_cli = _cli_args.run_cli
 from synthetic_league import (InfeasibleScenario,expand,experiment,plan,validate_games,validate_plan,period_experiment,validate_period,calibration_mean,_flow)
-
-
 @pytest.mark.parametrize('profile',['aligned','same_totals','reversed'])
 @pytest.mark.parametrize('leagues',[1,2])
 def test_annual_first_then_games_exactly_match_every_team_stat(profile,leagues):
@@ -107,7 +120,8 @@ def test_conditional_counts_are_separate_model_checks_not_real_samples():
 def test_cli_without_site_packages(tmp_path):
     out=tmp_path/'synthetic.json'
     witnesses=tmp_path/'witnesses'
-    subprocess.run([sys.executable,'-S',str(Path(__file__).parents[1]/'npb'/'synthetic_league.py'),'--seeds','1','--out',str(out),'--witness-dir',str(witnesses)],check=True)
+    league = run_cli(Path(__file__).parents[1]/'npb'/'synthetic_league.py','--seeds','1','--out',str(out),'--witness-dir',str(witnesses),python_options=('-S',))
+    assert league.returncode == 0, league.stderr
     assert len(json.loads(out.read_text())['cases'])==42
     assert len(json.loads((witnesses/'manifest.json').read_text())['files'])==84
     for path in witnesses.glob('*.annual.json'):

@@ -160,10 +160,6 @@
           "type": "links",
           "items": [
             {
-              "label": "📦 リポジトリ",
-              "href": "https://github.com/myon-bioinformatics/QueRyu"
-            },
-            {
               "label": "📖 README",
               "href": "https://github.com/myon-bioinformatics/QueRyu#readme"
             },

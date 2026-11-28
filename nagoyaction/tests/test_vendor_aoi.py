@@ -13,6 +13,16 @@ import pytest
 import research_digest as digest
 
 
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 NAGOYA = Path(__file__).resolve().parents[1]
 AOI = NAGOYA.parent
 CYCLE = AOI / "cycles" / "c001-chunichi"
@@ -32,12 +42,7 @@ shrink_polars = _load("vendored_shrink_polars", NAGOYA / "vendor" / "aoi" / "scr
 run_collect = _load("collect_with_polars_min", RUN)
 
 
-_cli_args_spec = importlib.util.spec_from_file_location(
-    "nagoyaction_cli_args", Path(__file__).resolve().parents[1] / "vendor" / "cli_args.py",
-)
-_cli_args = importlib.util.module_from_spec(_cli_args_spec)
-sys.modules[_cli_args_spec.name] = _cli_args
-_cli_args_spec.loader.exec_module(_cli_args)
+_cli_args = load_vendored("nagoyaction_cli_args", "vendor/cli_args.py")
 
 
 def test_lock_lists_only_the_polars_tools_this_tree_uses():

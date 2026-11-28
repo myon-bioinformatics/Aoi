@@ -7,6 +7,7 @@ Node entries through the vendored py_launch.cjs, launcher contract.
 Node entry: `node vendor/py_launch.cjs --env-var <TOOL>_PYTHON -- <core|npb>/<tool>.py ARGS` (no per-tool wrapper).
 """
 from __future__ import annotations
+import sys
 import unittest
 
 import importlib.util, json
@@ -14,19 +15,28 @@ from pathlib import Path
 
 import pytest
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 ROOT = Path(__file__).resolve().parents[1]
 # Aoi は子を全部 1 回の pytest で回す。トップの `vendor` パッケージは子どうしでぶつかるので、ファイルから固有の名前で読む
-_spec = importlib.util.spec_from_file_location("pythdragoras_fleet_check", ROOT / "vendor/fleet_check.py")
-fleet = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(fleet)
+fleet = load_vendored("pythdragoras_fleet_check", "vendor/fleet_check.py")
 
-PARENT_WORKFLOW_PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 LIVE_PARENT_REF = "${{ steps.parent.outputs.sha }}"
 ACCEPTED = {
-    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
-    "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
-    "vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
-}
+    "vendor/cli_args.py",
+    "vendor/py_launch.cjs",
+    "vendor/fleet_check.py",
+}  # 🔁 locked destinations; they follow main
 # Node 入口: ツール名 -> 本体（トップにはメインだけ。ツールは core/ と npb/ にいる）。環境変数は <TOOL>_PYTHON
 SCRIPTS = {
     "littlebit_survey": "core/littlebit_survey.py",
@@ -51,7 +61,7 @@ def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
         "vendor/py_launch.cjs": ("myon-bioinformatics/Aoi", "vendor/py_launch.cjs"),
         "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
     }
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources=sources)
+    rows = fleet.check_lock(ROOT, sources=sources)
     assert set(rows) == set(sources)
     assert not (ROOT / "vendor/uv_tool_build.py").exists()
 
@@ -135,3 +145,6 @@ class ScriptsDescribeThemselves(unittest.TestCase):
         for path in sorted(root.glob("*.py")):
             if path.name != "conftest.py":
                 fleet.check_imports(root, path.name)
+
+    def test_no_top_level_vendor_package_imports(self):
+        assert fleet.check_no_vendor_package_imports(ROOT) == []

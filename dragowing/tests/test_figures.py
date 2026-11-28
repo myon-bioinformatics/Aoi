@@ -1,5 +1,5 @@
 """図のデータは season.jsonl / propositions.jsonl の値と一致する。丸めない。"""
-import ast, html, json, operator, os, subprocess, sys, tempfile
+import importlib.util, ast, html, json, operator, os, subprocess, sys, tempfile
 from pathlib import Path; from unittest.mock import MagicMock, patch
 
 import pytest
@@ -13,10 +13,24 @@ from dragowing.dragowing import PLOTLY_JS_CDN, fetch_plotly_js, reset_plotly_js_
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.dragowing import read_jsonl
 from ask import registration_status
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("dragowing_cli_args", "vendor/cli_args/cli_args.py")
+Command = _cli_args.Command
+run_command = _cli_args.run_command
 from reports.build_reports import page as report_page
 
 import aoi_paths
-
 ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 RESULTS = aoi_paths.default_cycle_outputs(ROOT)
 # 並び順は呼び出し側（Aoi）の設定。ここではテスト用に同じ並びを渡す
@@ -331,11 +345,8 @@ def test_cli_writes_standalone_html_and_svg_without_chrome(tmp_path, monkeypatch
     assert not (embedded / "plotly.min.js").exists()
     embedded_props = (embedded / "propositions.html").read_text(encoding="utf-8")
     assert fetch_plotly_js()[:80] not in embedded_props
-    proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"],
-        check=False,
-        capture_output=True,
-        text=True,
+    proc = run_command(
+        Command([sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"]),
         **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 0, proc.stderr
@@ -345,11 +356,8 @@ def test_cli_writes_standalone_html_and_svg_without_chrome(tmp_path, monkeypatch
     monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
     write_svg(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.svg")
     assert (tmp_path / "x.svg").read_text(encoding="utf-8").startswith("<svg")
-    drawn = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "svg"), "--svg"],
-        check=False,
-        capture_output=True,
-        text=True,
+    drawn = run_command(
+        Command([sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "svg"), "--svg"]),
         **_dragowing_module_run(sibling_env, {"CHROME": str(tmp_path / "missing-chrome"), "PATH": ""}),
     )
     assert drawn.returncode == 0, drawn.stderr
@@ -365,21 +373,15 @@ def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path, sibli
     dump_jsonl(results / "season.jsonl", [season_row()])
     dump_jsonl(results / "propositions.jsonl", [proposition()])
     assert main([str(results), "--out", str(tmp_path / "o"), "--id", "E25"]) == 1
-    proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o2"), "--id", "E25"],
-        check=False,
-        capture_output=True,
-        text=True,
+    proc = run_command(
+        Command([sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o2"), "--id", "E25"]),
         **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 1
     assert "結果が読めない" in proc.stderr
     assert "結果にない" not in proc.stderr
-    proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o3"), "--column", "team_name"],
-        check=False,
-        capture_output=True,
-        text=True,
+    proc = run_command(
+        Command([sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o3"), "--column", "team_name"]),
         **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 1

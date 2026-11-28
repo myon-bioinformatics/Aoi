@@ -182,17 +182,17 @@
       "import_sites": 1
     },
     "numpy": {
-      "attribute_uses": 317,
+      "attribute_uses": 311,
       "attributes": {
         "__file__": 1,
         "__version__": 3,
         "abs": 8,
-        "allclose": 8,
+        "allclose": 7,
         "any": 1,
         "arange": 7,
         "argpartition": 1,
         "argsort": 1,
-        "array": 41,
+        "array": 40,
         "array_equal": 3,
         "asarray": 5,
         "ascontiguousarray": 1,
@@ -224,8 +224,8 @@
         "linalg.lstsq": 8,
         "linalg.norm": 2,
         "linalg.pinv": 1,
-        "linalg.svd": 3,
-        "log": 13,
+        "linalg.svd": 2,
+        "log": 10,
         "longdouble": 1,
         "maximum": 7,
         "mean": 2,
@@ -351,13 +351,11 @@
           "import_sites": 11
         },
         "queryu": {
-          "attribute_uses": 9,
+          "attribute_uses": 3,
           "attributes": {
-            "allclose": 2,
-            "array": 2,
-            "float32": 1,
-            "linalg.svd": 1,
-            "log": 3
+            "allclose": 1,
+            "array": 1,
+            "float32": 1
           },
           "dynamic_import_sites": 0,
           "files": 1,
@@ -742,25 +740,68 @@
       "files": 1,
       "import_sites": 2
     },
+    "pysaiyanweboo": {
+      "attribute_uses": 7,
+      "attributes": {
+        "bundle_css": 1,
+        "css_source": 1,
+        "js_source": 1,
+        "module_script": 2,
+        "stat_tiles": 1,
+        "theme_switch_html": 1
+      },
+      "by_tree": {
+        "dragowing": {
+          "attribute_uses": 7,
+          "attributes": {
+            "bundle_css": 1,
+            "css_source": 1,
+            "js_source": 1,
+            "module_script": 2,
+            "stat_tiles": 1,
+            "theme_switch_html": 1
+          },
+          "dynamic_import_sites": 1,
+          "files": 2,
+          "import_sites": 1
+        }
+      },
+      "declared": [
+        {
+          "file": "dragowing/pyproject.toml",
+          "kind": "group:pages",
+          "name": "pysaiyanweboo"
+        },
+        {
+          "file": "pyproject.toml",
+          "kind": "group:dev",
+          "name": "pysaiyanweboo"
+        }
+      ],
+      "distinct_attributes": 6,
+      "dynamic_import_sites": 1,
+      "files": 2,
+      "import_sites": 1
+    },
     "pytest": {
-      "attribute_uses": 1351,
+      "attribute_uses": 1358,
       "attributes": {
         "ExitCode.OK": 3,
         "ExitCode.TESTS_FAILED": 3,
         "Module": 1,
         "StashKey": 2,
         "UsageError": 11,
-        "approx": 400,
+        "approx": 401,
         "fail": 33,
         "fixture": 51,
         "hookimpl": 3,
         "importorskip": 13,
-        "mark.parametrize": 295,
+        "mark.parametrize": 299,
         "mark.skipif": 9,
         "mark.usefixtures": 2,
         "param": 1,
-        "raises": 509,
-        "skip": 11,
+        "raises": 510,
+        "skip": 12,
         "warns": 3,
         "xfail": 1
       },
@@ -801,18 +842,18 @@
           "import_sites": 10
         },
         "dragowing": {
-          "attribute_uses": 64,
+          "attribute_uses": 69,
           "attributes": {
             "UsageError": 3,
             "fixture": 5,
             "importorskip": 1,
-            "mark.parametrize": 18,
+            "mark.parametrize": 22,
             "mark.skipif": 1,
-            "raises": 36
+            "raises": 37
           },
           "dynamic_import_sites": 0,
-          "files": 10,
-          "import_sites": 11
+          "files": 11,
+          "import_sites": 12
         },
         "nagoyaction": {
           "attribute_uses": 97,
@@ -847,17 +888,17 @@
           "import_sites": 18
         },
         "queryu": {
-          "attribute_uses": 103,
+          "attribute_uses": 105,
           "attributes": {
             "ExitCode.OK": 1,
             "ExitCode.TESTS_FAILED": 1,
             "UsageError": 4,
-            "approx": 5,
+            "approx": 6,
             "fail": 8,
             "fixture": 4,
             "mark.parametrize": 25,
             "raises": 53,
-            "skip": 1,
+            "skip": 2,
             "xfail": 1
           },
           "dynamic_import_sites": 1,
@@ -952,8 +993,8 @@
       ],
       "distinct_attributes": 18,
       "dynamic_import_sites": 1,
-      "files": 92,
-      "import_sites": 95
+      "files": 93,
+      "import_sites": 96
     },
     "selectolax": {
       "attribute_uses": 11,
@@ -1352,6 +1393,21 @@
     },
     {
       "attributes": {
+        "bundle_css": 1,
+        "css_source": 1,
+        "js_source": 1,
+        "module_script": 2,
+        "stat_tiles": 1,
+        "theme_switch_html": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/scripts/build_heatmap_page.py",
+      "import_sites": 1,
+      "package": "pysaiyanweboo",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
         "__file__": 1,
         "__version__": 1
       },
@@ -1424,6 +1480,16 @@
     },
     {
       "attributes": {},
+      "dynamic_lines": [
+        34
+      ],
+      "file": "dragowing/tests/test_heatmap_page.py",
+      "import_sites": 0,
+      "package": "pysaiyanweboo",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {},
       "dynamic_lines": [],
       "file": "dragowing/tests/test_overlap_stdlib.py",
       "import_sites": 1,
@@ -1490,6 +1556,17 @@
       },
       "dynamic_lines": [],
       "file": "dragowing/tests/test_venn.py",
+      "import_sites": 1,
+      "package": "pytest",
+      "tree": "dragowing"
+    },
+    {
+      "attributes": {
+        "mark.parametrize": 4,
+        "raises": 1
+      },
+      "dynamic_lines": [],
+      "file": "dragowing/tests/test_xyz_scatter.py",
       "import_sites": 1,
       "package": "pytest",
       "tree": "dragowing"
@@ -2350,11 +2427,9 @@
     },
     {
       "attributes": {
-        "allclose": 2,
-        "array": 2,
-        "float32": 1,
-        "linalg.svd": 1,
-        "log": 3
+        "allclose": 1,
+        "array": 1,
+        "float32": 1
       },
       "dynamic_lines": [],
       "file": "queryu/tests/test_queryu_numpy_min.py",
@@ -2364,10 +2439,10 @@
     },
     {
       "attributes": {
-        "approx": 5,
+        "approx": 6,
         "fail": 1,
         "mark.parametrize": 2,
-        "skip": 1,
+        "skip": 2,
         "xfail": 1
       },
       "dynamic_lines": [],

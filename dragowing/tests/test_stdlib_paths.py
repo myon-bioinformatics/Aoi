@@ -6,13 +6,22 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts" / "run_stdlib_paths.py"
 
 
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("dragowing_cli_args", "vendor/cli_args/cli_args.py")
+run_cli = _cli_args.run_cli
+
+
 def test_min_refuses_while_numpy_is_installed(tmp_path):
-    proc = subprocess.run(
-        [sys.executable, str(RUNNER), "--deps", "min", str(tmp_path / "out.json")],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    proc = run_cli(RUNNER, "--deps", "min", str(tmp_path / "out.json"))
     assert proc.returncode != 0
     assert "numpy" in proc.stderr
     assert not (tmp_path / "out.json").exists()

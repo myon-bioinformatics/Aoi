@@ -1,0 +1,39 @@
+name: Lean verification
+
+on:
+  pull_request:
+    paths:
+      - "formal/**"
+      - "core/bitwise_surrogate.py"
+      - "tests/test_formal_bridge.py"
+      - ".github/workflows/lean-verification.yml"
+  push:
+    branches: [main]
+    paths:
+      - "formal/**"
+      - "core/bitwise_surrogate.py"
+      - "tests/test_formal_bridge.py"
+      - ".github/workflows/lean-verification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  rule-soundness:
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-lean-verify.yml@main
+    with:
+      project-directory: formal
+      proof: RuleSoundness.lean
+      theorems: |
+        PythDRagoras.satisfiable_iff
+        PythDRagoras.unsatisfiable_rejects_all
+        PythDRagoras.forced_true
+        PythDRagoras.implication_checks_sound
+        PythDRagoras.reported_implication_sound
+        PythDRagoras.combined_rule_iff
+        PythDRagoras.exclusive_sound

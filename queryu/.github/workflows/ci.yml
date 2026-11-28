@@ -14,7 +14,7 @@ jobs:
   changes:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@0361d4d81add261ba15073fc32f2a524d2b7e2de
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@27dedd9651efc816fa88d8922adb5f242725df69
 
   resolve-vendor:
     name: Resolve Aoi and BlueProbe
@@ -238,8 +238,9 @@ jobs:
           install() { sudo --preserve-env=NEEDRESTART_SUSPEND apt-get install -y -q liblapack3 libblas3; }
           install || { sudo apt-get update -q && install; }
       - run: python -m compileall -q -x '\.test-deps' .
-      - run: uv run --locked --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
+      - run: uv run --locked ${{ matrix.backend == 'pure' && github.event_name == 'push' && '--only-group cache-test' || '' }} --python "${{ matrix.python }}" pytest -q --junitxml=reports/junit.xml
         env:
+          QUERYU_NO_NUMPY: ${{ matrix.backend == 'pure' && github.event_name == 'push' && '1' || '' }}
           NUMPY_MIN_PURE: ${{ matrix.backend == 'pure' && '1' || '' }}
           QUERYU_EXPECT_BACKEND: ${{ matrix.backend == 'pure' && 'stdlib' || 'lapack' }}
           # vendor した numpy_min と最新 Aoi main のずれ: main への push と schedule では失敗、それ以外は xfail
@@ -261,7 +262,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@0361d4d81add261ba15073fc32f2a524d2b7e2de
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@27dedd9651efc816fa88d8922adb5f242725df69
     with:
       expected-reports: ${{ github.event_name == 'schedule' && '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.11/junit.xml","junit-pure-py3.14/junit.xml","junit-pure-py3.15/junit.xml"]' || (github.event_name == 'pull_request' && '["junit-py3.15/junit.xml"]' || '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml","junit-pure-py3.14/junit.xml"]') }}
       artifact-pattern: junit-*
@@ -273,4 +274,4 @@ jobs:
     if: needs.changes.outputs.workflow_changed == 'true'
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@0361d4d81add261ba15073fc32f2a524d2b7e2de
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@27dedd9651efc816fa88d8922adb5f242725df69

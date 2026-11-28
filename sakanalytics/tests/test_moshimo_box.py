@@ -1,8 +1,25 @@
+import sys
+from pathlib import Path
+import importlib.util
 import inspect, json, math, random
 
 import pytest
 
 import moshimo_box as mb
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("sakanalytics_cli_args", "vendor/cli_args.py")
+Command, run_cli, run_command = _cli_args.Command, _cli_args.run_cli, _cli_args.run_command
 
 
 def logit(p):
@@ -277,7 +294,6 @@ def test_cli_missing_ledger_file_is_a_message_not_a_traceback(tmp_path, capsys):
 # --- ε for a zero cell of a real table: opt-in, never defaulted, the logit moves with log(1/ε), the MCC hardly -----------
 
 import sakanalytics as epsilon  # noqa: E402
-
 ZERO_B = {"id": "Z", "metrics": {"tp": 40, "fp": 0, "fn": 10, "tn": 50}}   # no counterexample: original and contrapositive = 1
 
 
@@ -454,7 +470,6 @@ def test_cli_rejects_bad_ledger_counts_with_reason(tmp_path, capsys, bad):
     assert "count tp must be a non-negative integer" in capsys.readouterr().err
 
 
-
 def test_exact_sweep_with_tiny_dials_keeps_finite_tables_and_headroom():
     tables = mb.sweep("converse", [1e-300, 1e-200, 0.5], inverse=0.5,
                       converse=1e-300, contrapositive=1e-300, n=100, exact=True)
@@ -494,7 +509,7 @@ def test_real_ledger_extreme_multiline_cli_sweep(tmp_path, exact, aoi_root):
             '--sweep', 'contrapositive=0.5,5e-324,1e-300', '--json', str(out)]
     if exact:
         args += ['--eps', '1e-6']
-    result = subprocess.run(args, capture_output=True, text=True)
+    result = run_command(Command(args))
     assert 'Traceback' not in result.stderr
     if exact:
         assert result.returncode == 0, result.stderr
@@ -515,9 +530,8 @@ def test_reported_integer_ledger_cli_sweep(tmp_path):
     ledger = tmp_path / 'ledger.jsonl'
     ledger.write_text(json.dumps({'id': 'P1', 'metrics': dict(tp=10, fp=10, fn=10, tn=10)}))
     out = tmp_path / 'tables.json'
-    result = subprocess.run([sys.executable, str(Path(mb.__file__)), '--ledger', str(ledger), '--id', 'P1',
-                             '--eps', '1e-6', '--sweep', 'contrapositive=0.5,5e-324', '--json', str(out)],
-                            capture_output=True, text=True)
+    result = run_cli(Path(mb.__file__), '--ledger', str(ledger), '--id', 'P1',
+                     '--eps', '1e-6', '--sweep', 'contrapositive=0.5,5e-324', '--json', str(out))
     assert result.returncode == 0, result.stderr
     assert 'Traceback' not in result.stderr
     assert len(json.loads(out.read_text())['tables']) == 2

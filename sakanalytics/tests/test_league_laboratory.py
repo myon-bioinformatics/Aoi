@@ -1,11 +1,12 @@
 """Model assumptions, conserved game witnesses, frozen evaluation and units."""
-import hashlib, json, tomllib
+import hashlib, json, math, tomllib
 from copy import deepcopy; from pathlib import Path
 
 import pytest
 
 import aoi_paths
 import league_laboratory as lab
+import sakanalytics as scale
 import synthetic_league as sl
 
 ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
@@ -117,6 +118,36 @@ def test_equal_raw_margins_can_have_distinct_geometries():
     for rf, ra, view in [(-1, 0, 'raw'), (float('nan'), 1, 'raw'), (1, 1, 'other')]:
         with pytest.raises(ValueError):
             lab.point_values(rf, ra, view)
+
+
+def test_point_values_outputs_are_pinned_for_every_view():
+    pinned = {
+        (3, 4, "raw"): (3, 4),
+        (6, 7, "raw"): (6, 7),
+        (3, 4, "linear_097"): (.97 * 3, .97 * 4),
+        (6, 7, "linear_097"): (.97 * 6, .97 * 7),
+        (3, 4, "log1p"): (math.log1p(3), math.log1p(4)),
+        (6, 7, "log1p"): (math.log1p(6), math.log1p(7)),
+        (3, 4, "sqrt"): (math.sqrt(3), math.sqrt(4)),
+        (9, 16, "sqrt"): (3.0, 4.0),
+        (3, 5, "capped4"): (3, 4),
+        (0, 4, "capped4"): (0, 4),
+        (3, 4, "relative"): (3 / 8, 4 / 8),
+        (6, 7, "relative"): (6 / 14, 7 / 14),
+        (0, 0, "raw"): (0, 0),
+        (0, 0, "linear_097"): (0.0, 0.0),
+        (0, 0, "log1p"): (0.0, 0.0),
+        (0, 0, "sqrt"): (0.0, 0.0),
+        (0, 0, "capped4"): (0, 0),
+        (0, 0, "relative"): (0.0, 0.0),
+    }
+    for key, expected in pinned.items():
+        assert lab.point_values(*key) == expected, key
+    # Delegation stays exact: log1p is ln(1+x), linear_097 is a constant factor.
+    assert lab.point_values(3, 4, "log1p") == tuple(
+        scale.log_scale((3, 4), top=None, round_to=None, base=math.e))
+    assert lab.point_values(3, 4, "linear_097") == tuple(
+        scale.linear_scale((3, 4), factor=.97, round_to=None))
 
 
 def test_transform_precedes_aggregation_and_input_scores_remain_integer():

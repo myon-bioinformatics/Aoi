@@ -224,7 +224,7 @@ FORM_ORDER = ("original", "converse", "inverse", "contrapositive")
 
 
 def _sibling(module: str, project: str):
-    """Aoi の兄弟（QueRyu の ask、PythDRagoras の propositions / rule_search）を import する。
+    """native backend が使う Aoi の兄弟を import する。
 
     場所は呼び出し側が入れる（Aoi の aoi.py: ``python aoi.py dragowing/__main__.py``、``import aoi``、
     ``eval "$(python aoi.py)"``）。DRAgoWing は自分では探さない。
@@ -240,8 +240,12 @@ def _sibling(module: str, project: str):
 
 
 def registration_status(item: dict) -> str:
-    """QueRyu ``ask`` (its path comes from the caller, e.g. Aoi's aoi.py)."""
-    return _sibling("ask", "QueRyu").registration_status(item)
+    """Render recorded provenance using QueRyu registration semantics, without importing ask."""
+    if item.get("posthoc") is True:
+        return "事後構成"
+    if item.get("preregistered") is True or item.get("preregistered_at") or item.get("preregistration"):
+        return "事前登録"
+    return "不明"
 
 FORM_LABEL = {
     "original": "元 P→Q",
@@ -618,13 +622,6 @@ MAX_SETS = 8
 def _check_count(conds: list[dict]) -> None:
     if not 2 <= len(conds) <= MAX_SETS:
         raise ValueError(f"条件集合は 2 個から {MAX_SETS} 個にする（B クラスを含む）。受け取った数: {len(conds)}")
-
-
-def _engines():
-    # PythDRagoras の propositions と rule_search。場所は呼び出し側（Aoi の aoi.py）が入れる
-    propositions = _sibling("propositions", "PythDRagoras")
-    rule_search = _sibling("rule_search", "PythDRagoras")
-    return rule_search, propositions
 
 
 def is_b(cond: dict) -> bool:
@@ -1743,6 +1740,35 @@ def _js_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace("<", "\\u003c")
 
 
+def xyz_figure(text, columns=("x", "y", "z"), *, delimiter=",", label=None):
+    """Draw arbitrary finite XYZ columns without a dataframe dependency."""
+    import csv
+    import io
+    reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+    required = set(columns) | ({label} if label else set())
+    if len(columns) != 3 or not reader.fieldnames or not required <= set(reader.fieldnames):
+        raise ValueError("missing XYZ or label columns")
+    if len(set(reader.fieldnames)) != len(reader.fieldnames):
+        raise ValueError("duplicate column names")
+    coords = {axis: [] for axis in "xyz"}
+    labels = []
+    for row in reader:
+        if None in row or any(row[k] is None for k in required):
+            raise ValueError("invalid row width")
+        for axis, column in zip("xyz", columns):
+            value = float(row[column])
+            if not math.isfinite(value):
+                raise ValueError("expected finite XYZ coordinates")
+            coords[axis].append(value)
+        labels.append(escape(row[label]) if label else str(len(labels) + 1))
+    if not labels:
+        raise ValueError("no points")
+    trace = dict(type="scatter3d", mode="markers", text=labels, marker=dict(size=4),
+                 hovertemplate="%{text}<br>(%{x}, %{y}, %{z})<extra></extra>", **coords)
+    scene = {axis + "axis": {"title": {"text": escape(column)}} for axis, column in zip("xyz", columns)}
+    return {"data": [trace], "layout": {"scene": {**scene, "aspectmode": "data"}, "height": 570}}
+
+
 def structure_figure(graph):
     """Display measured XYZ coordinates and the contact candidates supplied by SSIS."""
     if graph.get("schema") != "structure-graph/1" or graph.get("unit") != "angstrom":
@@ -2188,34 +2214,7 @@ def heatmap_scene(source):
                         'levels': 0, 'labels': True}], 'source': source}
 
 
-HEATMAP_JS = r"""  function heatColor(v, lo, hi, levels = 0) {
-    if (v === null) return "none";
-    if (
-      ![v, lo, hi].every(Number.isFinite) ||
-      lo > hi ||
-      !Number.isInteger(levels) ||
-      (levels !== 0 && (levels < 2 || levels > 256))
-    )
-      fail("色の範囲または段階数が不正です");
-    let t = hi === lo ? 0.5 : Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
-    if (levels) t = Math.round(t * (levels - 1)) / (levels - 1);
-    const p = t * 4,
-      i = Math.min(3, Math.floor(p));
-    const a = PALETTE[i].match(/\w\w/g).map((x) => parseInt(x, 16));
-    const b = PALETTE[i + 1].match(/\w\w/g).map((x) => parseInt(x, 16));
-    return (
-      "#" +
-      a
-        .map((x, j) =>
-          Math.round(x + (b[j] - x) * (p - i))
-            .toString(16)
-            .padStart(2, "0"),
-        )
-        .join("")
-        .toUpperCase()
-    );
-  }
-  function matrix(source) {
+HEATMAP_MATRIX_JS = r"""  function matrix(source) {
     let t;
     if (Array.isArray(source)) t = { z: source };
     else if (Array.isArray(source?.data)) {
@@ -2279,6 +2278,12 @@ def build_parser() -> argparse.ArgumentParser:
         description="📈 記録された結果を HTML（と SVG）にする。判定はやり直さない。"
                     " RESULTS がディレクトリでなければ 🔢 HTML の要素を数える（ブラウザなし）。",
     )
+    parser.add_argument("--csv", metavar="FILE", help="任意のXYZ列を3D表示。- は標準入力")
+    parser.add_argument("--x", default="x")
+    parser.add_argument("--y", default="y")
+    parser.add_argument("--z", default="z")
+    parser.add_argument("--point-label")
+    parser.add_argument("--tsv", action="store_true", help="--csv の区切りをタブにする")
     parser.add_argument("--structure-graph", metavar="JSON", help="SSIS原子座標の回転可能な3D HTMLを標準出力へ。- は標準入力")
     parser.add_argument("--heatmap", metavar="JSON", help="行列またはPlotly JSONを編集用シーンとして標準出力に書く。- は標準入力")
     parser.add_argument("results", nargs="?",
@@ -2357,6 +2362,14 @@ def main(argv=None) -> int:
     """📈 RESULTS → HTML（--svg で SVG）、🧾 --forms、📊 --ffss RECORDS、🔢 HTML ファイル（か標準入力）の要素数。"""
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.csv is not None:
+        try:
+            raw = sys.stdin.read() if args.csv == "-" else Path(args.csv).read_text(encoding="utf-8-sig")
+            figure = xyz_figure(raw, (args.x, args.y, args.z), delimiter="\t" if args.tsv else ",", label=args.point_label)
+            print(standalone("XYZ", figure_block(figure, "xyz"), plotly=True, embed=args.embed))
+        except (ValueError, OSError) as exc:
+            parser.exit(1, f"Cannot draw XYZ: {exc}\n")
+        return 0
     if args.structure_graph is not None:
         try:
             raw = sys.stdin.read() if args.structure_graph == "-" else Path(args.structure_graph).read_text(encoding="utf-8")

@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "PythDRagoras 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "説明を「A ならば B」の命題として書き、反例と異議を並べて検証するツール。答えを出すより、説明の足りない所を見つけるのが目的です。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",
@@ -76,6 +76,71 @@
           ]
         },
         {
+          "label": "🔬 検証ガイド",
+          "blocks": [
+            {
+              "type": "runbook",
+              "id": "verify",
+              "books": [
+                {
+                  "label": "🐍 python",
+                  "intro": "🤖 のついた手順は CI で実際に動かし、出た結果をそのまま載せています。",
+                  "runbook": {
+                    "key": "pythdragoras/python",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/PythDRagoras/main/pythdragoras.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "metrics",
+                        "title": "🧮 指標",
+                        "command": "python pythdragoras.py 16 0 56 72",
+                        "run": true
+                      },
+                      {
+                        "id": "littlebit",
+                        "title": "🧩 LittleBit",
+                        "command": "echo '[[1,0,1],[0,1,1],[1,1,0]]' | python pythdragoras.py littlebit --rank 2",
+                        "run": true
+                      },
+                      {
+                        "id": "tool",
+                        "title": "📦 コマンドとして導入",
+                        "command": "uv tool install git+https://github.com/myon-bioinformatics/PythDRagoras.git",
+                        "needs": "🌐 ネットワーク"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "⚡ uv",
+                  "intro": "uv があれば Python の版を気にせず動きます。",
+                  "runbook": {
+                    "key": "pythdragoras/uv",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/PythDRagoras/main/pythdragoras.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "metrics",
+                        "title": "🧮 指標",
+                        "command": "uv run --no-project python pythdragoras.py 16 0 56 72",
+                        "run": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "label": "🎞 GIF デモ",
           "blocks": [
             {
@@ -94,10 +159,6 @@
         {
           "type": "links",
           "items": [
-            {
-              "label": "📦 リポジトリ",
-              "href": "https://github.com/myon-bioinformatics/PythDRagoras"
-            },
             {
               "label": "📖 README",
               "href": "https://github.com/myon-bioinformatics/PythDRagoras#readme"

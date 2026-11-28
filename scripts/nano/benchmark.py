@@ -96,7 +96,9 @@ def benchmark(output, uv, repeats=3, workers=4):
             req = folder / 'requirements.txt'
             args = [uv, '--no-config', 'export', '--project', str(ROOT), '--locked', '--offline',
                     '--no-python-downloads', '--python', sys.executable, '--no-emit-project',
-                    '--no-header', '--format', 'requirements.txt']
+                    '--no-header', '--format', 'requirements.txt',
+                    # a git dependency cannot carry a hash, and this install uses --require-hashes
+                    '--no-emit-package', 'pysaiyanweboo']
             if name == 'feature':
                 args += ['--no-default-groups', '--group', 'runtime']
                 for package in ('numpy', 'httpx'):

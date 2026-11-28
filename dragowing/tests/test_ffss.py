@@ -4,6 +4,7 @@ import json
 import math
 import os
 import subprocess
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -12,6 +13,20 @@ import pytest
 from dragowing.dragowing import ffss_figures
 from dragowing.dragowing import read_ffss, read_jsonl
 from dragowing.dragowing import figure_svg, plotly_min
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("dragowing_cli_args", "vendor/cli_args/cli_args.py")
+run_cli = _cli_args.run_cli
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tests" / "ffss_records.source.json"
@@ -26,7 +41,7 @@ def test_fixture_receipt_and_pinned_renderer():
     assert sorted([list(k) for k in read_ffss(RECORDS)]) == receipt["selected_runs"]
     lock = json.loads((ROOT / "vendor.lock.json").read_text())
     entry = next(e for e in lock["files"] if e["source"] == "tools/stdlib_min/plotly_min.py")
-    assert entry["ref"] == entry["commit"] == "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32"
+    assert entry["ref"] == "main"  # 🔁 own sources follow main
     data = (ROOT / entry["destination"]).read_bytes()
     assert hashlib.sha256(data).hexdigest() == entry["sha256"]
     assert hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest() == entry["blob_sha"]
@@ -110,8 +125,7 @@ def test_invalid_run_reports_figure_and_nan_is_rejected():
 
 
 def test_ffss_entry_uses_only_stdlib(tmp_path):
-    result = subprocess.run([sys.executable, "-S", str(ROOT / "dragowing.py"), "--ffss", str(RECORDS), "--out", str(tmp_path)],
-                            capture_output=True, text=True)
+    result = run_cli(ROOT / "dragowing.py", "--ffss", str(RECORDS), "--out", str(tmp_path), python_options=("-S",))
     assert result.returncode == 0, result.stderr
     assert len(list((tmp_path / "svg").glob("*.svg"))) == 9
 

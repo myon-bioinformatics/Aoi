@@ -3,7 +3,7 @@
 `formal/RuleSoundness.lean` は、`core/bitwise_surrogate.py` の規則の意味と、
 「成立し得ない」「含意する」「同時には成立しない」という判定の根拠を形式化します。
 実行時の依存は増やしません。共通の Python ラッパーと Lean 専用 CI は
-[親リポジトリ](https://github.com/myon-bioinformatics/myon-bioinformatics/blob/27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c/lean_verify.py)
+[親リポジトリ](https://github.com/myon-bioinformatics/myon-bioinformatics/blob/27dedd9651efc816fa88d8922adb5f242725df69/lean_verify.py)
 で管理し、このリポジトリは固有の証明と Python 側の接続テストを管理します。
 
 ## 規則のモデル

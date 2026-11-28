@@ -14,17 +14,23 @@ from dragowing.overlap import default_conditions, load_overlap
 from dragowing.dragowing import read_jsonl
 from ask import registration_status
 
-_cli_spec = importlib.util.spec_from_file_location(
-    "dragowing_cli_args", Path(__file__).resolve().parents[1] / "vendor/cli_args/cli_args.py")
-_cli_args = importlib.util.module_from_spec(_cli_spec)
-sys.modules[_cli_spec.name] = _cli_args
-_cli_spec.loader.exec_module(_cli_args)
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("dragowing_cli_args", "vendor/cli_args/cli_args.py")
 Command = _cli_args.Command
 run_command = _cli_args.run_command
 from reports.build_reports import page as report_page
 
 import aoi_paths
-
 ROOT = aoi_paths.resolve_aoi_root(anchor=Path(__file__))
 RESULTS = aoi_paths.default_cycle_outputs(ROOT)
 # 並び順は呼び出し側（Aoi）の設定。ここではテスト用に同じ並びを渡す

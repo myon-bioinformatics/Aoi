@@ -24,6 +24,15 @@ import warnings
 from pathlib import Path
 from unittest.mock import patch
 
+import importlib.util as _importlib_util
+import sys as _sys
+
+_cli_spec = _importlib_util.spec_from_file_location("blueprobe_cli_args", Path(__file__).resolve().parents[1] / "vendor" / "cli_args.py")
+_cli_args = _importlib_util.module_from_spec(_cli_spec)
+_sys.modules[_cli_spec.name] = _cli_args
+_cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
+
 try:
     import pytest
 except ImportError:  # `python -S` (no site-packages): only the unittest.TestCase classes below run.
@@ -571,8 +580,8 @@ def test_documented_directory_cli_with_source_root(tmp_path):
     sources.mkdir()
     (sources / "view.dart").write_text("// inventory only\n", encoding="utf-8")
     script = Path(__file__).resolve().parents[1] / "blueprobe.py"
-    result = subprocess.run([sys.executable, "-S", str(script), "web", str(observations),
-        "--source-root", str(sources)], text=True, capture_output=True)
+    result = run_cli(script, "web", str(observations),
+        "--source-root", str(sources), python_options=("-S",))
     assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)
     assert len(report["report"]["records"]) == 1

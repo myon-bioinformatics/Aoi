@@ -555,6 +555,7 @@ EXPECTED = frozenset({
 OMITTED = frozenset({
     'certifi', 'h11', 'httpcore', 'httpx', 'numpy', 'polars',
     'polars-runtime-32',
+    'pysaiyanweboo',  # dev-group git dependency for dragowing/tests/test_heatmap_page.py; this lane never runs it
 })
 
 

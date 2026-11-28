@@ -375,6 +375,7 @@ jobs:
             --no-install-package certifi --no-install-package h11 \
             --no-install-package httpcore --no-install-package httpx \
             --no-install-package numpy \
+            --no-install-package pysaiyanweboo \
             --no-install-package polars --no-install-package polars-runtime-32
           python scripts/repo_checks.py lab_nano_environment --output build/test-results/lab-environment.json
           uv pip check --offline

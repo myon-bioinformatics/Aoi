@@ -16,7 +16,7 @@ jobs:
   changes:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-change-detection.yml@27dedd9651efc816fa88d8922adb5f242725df69
 
   resolve-vendor:
     needs: changes
@@ -132,7 +132,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@27dedd9651efc816fa88d8922adb5f242725df69
     with:
       expected-reports: '["junit-py3.11/junit.xml","junit-py3.12/junit.xml","junit-py3.13/junit.xml","junit-py3.14/junit.xml","junit-py3.15/junit.xml"]'
       artifact-pattern: junit-*
@@ -144,7 +144,7 @@ jobs:
     if: needs.changes.outputs.workflow_changed == 'true'
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@27dedd9651efc816fa88d8922adb5f242725df69
 
   # 親の main は実行時に ls-remote で解決する。SHA は summary に残す。
   # vendor_sync.py の python -S 検査はこのリポジトリには無い。

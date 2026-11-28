@@ -36,7 +36,7 @@ ACTION_USES_DOC = """Aoi の GitHub Actions uses を親リポジトリの書き�
   そのリリースの 40 桁 commit SHA と `# vX.Y.Z`（2026-10-31 myon さんの判断で統一）。
   例: checkout v7.0.1、setup-python v7.1.0、setup-node v7.1.0。
 - 同じリポジトリの reusable workflow は相対パス。
-- 他リポジトリの reusable workflow は 40 桁 SHA。
+- 他リポジトリの reusable workflow は 40 桁 SHA、または子の follow-main による @main。
 - 更新は Dependabot の github-actions（毎月、Asia/Tokyo、PR は 5 件まで）。
   action の uses を書き換える autofix workflow は無い。
 - 親の parent_pin_check は action のタグと SHA を見ない。親リポジトリ自身の
@@ -128,10 +128,10 @@ def _style_problem(raw: str, comment: str) -> str | None:
         if (
             entry.startswith(".github/workflows/")
             and entry.endswith((".yml", ".yaml"))
-            and ACTION_USES_HEX40.fullmatch(rev)
+            and (ACTION_USES_HEX40.fullmatch(rev) or rev == "main")
         ):
             return None
-        return "親の reusable workflow は .github/workflows/*.yml@40桁SHA"
+        return "親の reusable workflow は .github/workflows/*.yml@40桁SHA または @main"
     if _needs_sha(action):
         if not ACTION_USES_HEX40.fullmatch(rev) or not PATCH.fullmatch(comment):
             return "actions/* と setup は 40 桁 SHA と # vX.Y.Z"

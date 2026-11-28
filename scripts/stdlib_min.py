@@ -123,6 +123,9 @@ def project_names(root: Path) -> set[str]:
 
 
 def _dep_list(text: str) -> list[str]:
+    # PEP 735 `{include-group = "..."}` tables are not requirement strings.
+    if not isinstance(text, str):
+        return []
     names = []
     for line in text.splitlines():
         body = line.split("#", 1)[0].strip()

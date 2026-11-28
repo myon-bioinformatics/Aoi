@@ -4,15 +4,25 @@
 Aoi は子を subtree で持ち、全部の子のテストを1回の pytest で動かす。最上位の `vendor` パッケージは子どうしで
 ぶつかるので、fleet_check はファイルの場所から固有の名前で読み込む。
 """
+import sys
 import hashlib, importlib.util, os, subprocess, unittest
 from pathlib import Path
 
 import pytest
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 ROOT = Path(__file__).resolve().parents[1]
-_spec = importlib.util.spec_from_file_location("queryu_fleet_check", ROOT / "vendor/fleet_check.py")
-fleet = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(fleet)
+fleet = load_vendored("queryu_fleet_check", "vendor/fleet_check.py")
 
 PARENT_WORKFLOW_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
 PARENT_PAGES_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"

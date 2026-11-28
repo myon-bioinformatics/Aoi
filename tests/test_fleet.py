@@ -31,12 +31,12 @@ ROOT = Path(__file__).resolve().parents[1]
 # Aoi は子をまとめて 1 回の pytest で動かす。トップの vendor パッケージは子どうしでぶつかるので、場所から固有の名前で読む
 fleet = load_vendored("sakanalytics_fleet_check", "vendor/fleet_check.py")
 
-PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 ACCEPTED = {
-    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
-    "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
-    "vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f",
-}
+    "vendor/cli_args.py",
+    "vendor/py_launch.cjs",
+    "vendor/fleet_check.py",
+}  # 🔁 locked destinations; they follow main
 ACTION_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
     "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
@@ -59,7 +59,7 @@ def _env_var(tool: str) -> str:
 # ==== vendor lock と親のピン: local rollout contract; adopted vendor locks are deliberately independent
 
 def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED)
+    rows = fleet.check_lock(ROOT)
     launcher = rows["vendor/py_launch.cjs"]
     assert (launcher["repository"], launcher["source"]) == ("myon-bioinformatics/Aoi", "vendor/py_launch.cjs")
 

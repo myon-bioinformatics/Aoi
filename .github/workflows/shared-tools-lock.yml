@@ -4,7 +4,6 @@ name: Shared tool lock
 # pull request では不一致を警告にし、main への push と schedule では失敗にする。
 # 子の SHA は lock にもこのファイルにも書かない。実行時に git ls-remote で main を取る。
 on:
-  workflow_dispatch:
   pull_request:
   push:
     branches: [main]
@@ -69,7 +68,7 @@ jobs:
 
   # 🔁 own sources follow main: on schedule / manual run, take main of own repositories and push to main
   follow-main:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule'
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-follow-main.yml@main
     permissions:
       contents: write

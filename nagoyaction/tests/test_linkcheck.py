@@ -5,6 +5,17 @@ import pytest
 
 from nagoyaction import linkcheck as lc
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 HERE = Path(__file__).resolve().parents[1]
 LINKCHECK = HERE / "nagoyaction.py"  # python nagoyaction.py linkcheck …
 
@@ -108,12 +119,7 @@ def test_repository_links_are_all_valid():
     assert broken == []
 
 
-_cli_args_spec = importlib.util.spec_from_file_location(
-    "nagoyaction_cli_args", Path(__file__).resolve().parents[1] / "vendor" / "cli_args.py",
-)
-_cli_args = importlib.util.module_from_spec(_cli_args_spec)
-sys.modules[_cli_args_spec.name] = _cli_args
-_cli_args_spec.loader.exec_module(_cli_args)
+_cli_args = load_vendored("nagoyaction_cli_args", "vendor/cli_args.py")
 
 
 def run_linkcheck(args, *, cwd=None, env=None):

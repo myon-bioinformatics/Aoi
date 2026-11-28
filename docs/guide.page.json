@@ -30,11 +30,11 @@
                   "items": [
                     {
                       "label": "🌡️ ヒートマップ",
-                      "href": "https://myon-bioinformatics.github.io/tools/heatmap/"
+                      "href": "https://myon-bioinformatics.github.io/tools/#heatmap"
                     },
                     {
                       "label": "🖼 Image Studio（シーンを編集）",
-                      "href": "https://myon-bioinformatics.github.io/tools/image-studio/"
+                      "href": "https://myon-bioinformatics.github.io/tools/#image-studio"
                     }
                   ]
                 }
@@ -150,7 +150,7 @@
       "items": [
         {
           "label": "🌡️ ヒートマップ（ポートフォリオの 🧰 Tools）",
-          "href": "https://myon-bioinformatics.github.io/tools/heatmap/"
+          "href": "https://myon-bioinformatics.github.io/tools/#heatmap"
         }
       ]
     }

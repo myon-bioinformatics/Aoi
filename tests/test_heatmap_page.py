@@ -36,7 +36,7 @@ def test_page_uses_pswb_parts():
     assert "ui.heatmapColor(value, low, high, levels, PALETTE)" in editor
     assert "palette: [...PALETTE]" in editor and "function heatColor(" not in editor
     assert "bindDrafts(document" in html and "localStorage" not in html.split('<script type="module">')[-1]   # 📝 records.js
-    assert "https://myon-bioinformatics.github.io/tools/image-studio/" in html and "/tools/ironmate/" not in html
+    assert "https://myon-bioinformatics.github.io/tools/#image-studio" in html and "/tools/ironmate/" not in html
 
 
 def test_every_draft_field_has_a_records_key():

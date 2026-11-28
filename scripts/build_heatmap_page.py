@@ -197,7 +197,7 @@ PAGE = r"""<!doctype html>
   </div>
   <div class="ui-card">
     <div class="hm-actions">
-      <a class="ui-button" href="https://myon-bioinformatics.github.io/tools/image-studio/">🖼️ シーン JSON を Image Studio で開く ↗</a>
+      <a class="ui-button" href="https://myon-bioinformatics.github.io/tools/#image-studio">🖼️ シーン JSON を Image Studio で開く ↗</a>
     </div>
     <p class="ui-muted">ダウンロードした <code>scene.json</code>（<code>ironmate-image-studio/1</code>）を Image Studio の「開く」で読み込み、図形や注釈を重ねられます。配色はシーンに保存され、配色対応の Image Studio で再現できます。CLI 生成: <code>python -S dragowing.py --heatmap matrix.json &gt; scene.json</code></p>
   </div>

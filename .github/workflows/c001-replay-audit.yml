@@ -32,7 +32,7 @@ jobs:
         with:
           repository: myon-bioinformatics/gh_identity
           # past-pattern snapshot of gh_identity, fetched by SHA for verification test data
-          ref: fc2c527257b12eb99c00637bbae74f8988fd6bf4
+          ref: main
           path: .ghi
           persist-credentials: false
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3

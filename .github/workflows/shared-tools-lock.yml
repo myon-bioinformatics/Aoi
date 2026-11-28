@@ -4,6 +4,7 @@ name: Shared tool lock
 # pull request では不一致を警告にし、main への push と schedule では失敗にする。
 # 子の SHA は lock にもこのファイルにも書かない。実行時に git ls-remote で main を取る。
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches: [main]
@@ -65,3 +66,15 @@ jobs:
           else
             python -S scripts/repo_checks.py shared_tool_consumers --warn
           fi
+
+  # 🔁 own sources follow main: on schedule / manual run, take main of own repositories and push to main
+  follow-main:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-follow-main.yml@main
+    permissions:
+      contents: write
+    with:
+      node-version: "26"
+      after: python -S scripts/repo_checks.py shared_tools_lock --refresh-vendored
+      check: |
+        uv run --locked python -m pytest -c pyproject.toml -q --deselect tests/test_child_registry.py::test_mutations_all_killed

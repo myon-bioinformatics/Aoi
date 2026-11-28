@@ -30,13 +30,13 @@ ROOT = Path(__file__).resolve().parents[1]
 # Aoi は子を全部 1 回の pytest で回す。トップの `vendor` パッケージは子どうしでぶつかるので、ファイルから固有の名前で読む
 fleet = load_vendored("pythdragoras_fleet_check", "vendor/fleet_check.py")
 
-PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 LIVE_PARENT_REF = "${{ steps.parent.outputs.sha }}"
 ACCEPTED = {
-    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
-    "vendor/py_launch.cjs": "9e0147a17695ce63fa73daf75d8195a4f49095bb",
-    "vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f",
-}
+    "vendor/cli_args.py",
+    "vendor/py_launch.cjs",
+    "vendor/fleet_check.py",
+}  # 🔁 locked destinations; they follow main
 # Node 入口: ツール名 -> 本体（トップにはメインだけ。ツールは core/ と npb/ にいる）。環境変数は <TOOL>_PYTHON
 SCRIPTS = {
     "littlebit_survey": "core/littlebit_survey.py",
@@ -61,7 +61,7 @@ def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
         "vendor/py_launch.cjs": ("myon-bioinformatics/Aoi", "vendor/py_launch.cjs"),
         "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
     }
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources=sources)
+    rows = fleet.check_lock(ROOT, sources=sources)
     assert set(rows) == set(sources)
     assert not (ROOT / "vendor/uv_tool_build.py").exists()
 

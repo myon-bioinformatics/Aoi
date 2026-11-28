@@ -1534,7 +1534,10 @@ def classify_pin(ref: str, latest: tuple[str, str] | None, repo: str = "") -> st
     setup 以外の actions/* のメジャータグ vN は major。
     それ以外で SHA でないピンは unpinned。
     SHA でリリースが無ければ no-release。一致すれば match、違えば outdated。
+    🔁 自作（myon-bioinformatics/*）の main は main（固定せず main を追う、2026-11-28）。
     """
+    if ref == "main" and repo.split("/")[0].casefold() == "myon-bioinformatics":
+        return "main"
     if MAJOR_TAG_RE.fullmatch(ref) and allows_major_tag(repo):
         return "major"
     if not SHA_RE.fullmatch(ref.lower()):
@@ -2509,7 +2512,7 @@ class Session:
     def _pin(self, check: Check) -> Outcome:
         latest, why = self._latest(check.repo)
         if why:  # 手元で分かるのは SHA ピンかどうかまで
-            kind = {"major": "動くメジャータグ", "unpinned": "SHA ピンではない"}.get(classify_pin(check.ref, None, check.repo), "SHA ピン")
+            kind = {"major": "動くメジャータグ", "unpinned": "SHA ピンではない", "main": "🔁 main を追う"}.get(classify_pin(check.ref, None, check.repo), "SHA ピン")
             return Outcome("skip", f"{check.repo}@{check.ref or '(none)'}: {kind}。最新版と比べていない（{why}）", [])
         status = classify_pin(check.ref, latest, check.repo)
         probe = substitute("sha_probe", "0" * 40, lambda rng: f"{rng.getrandbits(160):040x}")
@@ -2518,7 +2521,9 @@ class Session:
             probe = substitute("sha_probe_retry", "f" * 40, lambda rng: f"{rng.getrandbits(160):040x}")
         if latest_sha and classify_pin(probe, latest, check.repo) == "match":
             raise LocalCIError("random sha probe matched the latest release")
-        if latest is None and status == "major":
+        if status == "main":
+            detail = f"{check.repo}@main follows main (own repository)"
+        elif latest is None and status == "major":
             detail = f"{check.repo}@{check.ref} is a moving major tag; no release to compare"
         elif latest is None:
             detail = f"{check.repo}@{check.ref or '(none)'} has no release tag; not compared"

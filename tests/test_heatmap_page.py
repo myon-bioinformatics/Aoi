@@ -53,7 +53,7 @@ def test_every_draft_field_has_a_records_key():
 def test_pswb_is_pinned_by_commit_and_not_vendored():
     import tomllib
     pages = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["dependency-groups"]["pages"]
-    assert len(pages) == 1 and re.fullmatch(r"pysaiyanweboo @ git\+https://github\.com/myon-bioinformatics/PySaiyanWeBoo@[0-9a-f]{40}", pages[0])
+    assert len(pages) == 1 and re.fullmatch(r"pysaiyanweboo @ git\+https://github\.com/myon-bioinformatics/PySaiyanWeBoo@main", pages[0])  # 🔁 follows main; uv.lock records the commit
     assert not [f for f in json.loads((ROOT / "vendor.lock.json").read_text(encoding="utf-8"))["files"]
                 if f["repository"] == "myon-bioinformatics/PySaiyanWeBoo"]
     assert not (ROOT / "vendor/pysaiyanweboo").exists()

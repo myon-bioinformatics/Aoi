@@ -120,11 +120,12 @@ def problems(root: Path, aoi_root: Path | None = None, lock: dict | None = None)
             found.append(f"{path}: destination は {expected}")
         ref = entry["ref"]
         commit = entry["commit"]
-        if not isinstance(ref, str) or not HEX40.fullmatch(ref):
-            found.append(f"{path}: ref は 40 桁の hex")
+        following = ref == "main" and isinstance(repository, str) and repository.startswith("myon-bioinformatics/")
+        if not following and (not isinstance(ref, str) or not HEX40.fullmatch(ref)):  # 🔁 自作は main を追ってよい
+            found.append(f"{path}: ref は 40 桁の hex か（自作なら）main")
         if not isinstance(commit, str) or not HEX40.fullmatch(commit):
             found.append(f"{path}: commit は 40 桁の hex")
-        elif isinstance(ref, str) and ref != commit:
+        elif isinstance(ref, str) and ref != commit and not following:
             found.append(f"{path}: ref と commit が違う")
         blob = entry["blob_sha"]
         if not isinstance(blob, str) or not HEX40.fullmatch(blob):

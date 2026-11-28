@@ -5,28 +5,43 @@
 Aoi は子を subtree で持ち、全部の子のテストを1回の pytest で動かす。最上位の `vendor` パッケージは子どうしで
 ぶつかるので、fleet_check はファイルの場所から固有の名前で読み込む。
 """
+import sys
 import importlib.util, tempfile, unittest
 from pathlib import Path
 
 import pytest
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 ROOT = Path(__file__).resolve().parents[1]
-_spec = importlib.util.spec_from_file_location("dragowing_fleet_check", ROOT / "vendor/fleet_check.py")
-fleet = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(fleet)
+fleet = load_vendored("dragowing_fleet_check", "vendor/fleet_check.py")
 
 WORKFLOWS = fleet.repo_root(__file__)  # 単独では ROOT。Aoi の中では、ワークフローを持つ一番近い親
-PARENT_WORKFLOW_PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
-ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
+ACCEPTED = {"vendor/fleet_check.py",
             # 📊 親の stdlib_min の plotly_min（静止の図の SVG を Chrome なしで描く）
-            "vendor/tools/stdlib_min/plotly_min.py": "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32",
+            "vendor/tools/stdlib_min/plotly_min.py",
             # 📝 自作の markdown.py（ページの文章。Python-Markdown の代わり）
-            "vendor/markdown/markdown.py": "733ff26f6f2f642f9e5895955af8a7b83d68c962"}
+            "vendor/markdown/markdown.py",
+            "vendor/cli_args/cli_args.py",
+            "vendor/cli_args/LICENSE"}  # 🔁 locked destinations; they follow main
 # destination -> (repository, source)。Aoi の写しは vendor/aoi/<source>。使わない shrink_module.py・polars_min.py などは置かない
 SOURCES = {"vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py")}
 SOURCES["vendor/fleet_check.py"] = (fleet.PARENT, "fleet_check.py")
 SOURCES["vendor/tools/stdlib_min/plotly_min.py"] = (fleet.PARENT, "tools/stdlib_min/plotly_min.py")
 SOURCES["vendor/markdown/markdown.py"] = ("myon-bioinformatics/markdown", "markdown.py")
+SOURCES["vendor/cli_args/cli_args.py"] = ("myon-bioinformatics/cli_args", "cli_args.py")
+SOURCES["vendor/cli_args/LICENSE"] = ("myon-bioinformatics/cli_args", "LICENSE")
+# 🌡️ the heatmap page (scripts/build_heatmap_page.py) builds its sheet, controls and browser modules from it under python -S
 SETUP_NODE = "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0"
 SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3"
 
@@ -34,7 +49,7 @@ SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.
 # ==== 🔒 vendor lock（旧 test_vendor_lock.py の写しの照合。scripts/check_vendor_lock.py の検査は test_vendor_lock.py）
 
 def test_vendor_lock_matches_vendored_copy():
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED)
+    rows = fleet.check_lock(ROOT)
     assert {where: (row["repository"], row["source"]) for where, row in rows.items()} == SOURCES
     for row in rows.values():
         assert set(row) == {"repository", "ref", "commit", "source", "destination", "blob_sha", "sha256"}
@@ -160,3 +175,6 @@ class ScriptsDescribeThemselves(unittest.TestCase):
         for path in sorted(root.glob("*.py")):
             if path.name != "conftest.py":
                 fleet.check_imports(root, path.name)
+
+    def test_no_top_level_vendor_package_imports(self):
+        assert fleet.check_no_vendor_package_imports(ROOT) == []

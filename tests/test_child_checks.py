@@ -14,10 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import child_checks  # noqa: E402
 
-PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
+PIN = "main"
 PIN_CHILDREN = {
     "blueprobe": PIN,
-    "queryu": "0361d4d81add261ba15073fc32f2a524d2b7e2de",
+    "queryu": "27dedd9651efc816fa88d8922adb5f242725df69",
     "sakanalytics": PIN,
     "pythdragoras": PIN,
     "nagoyaction": "main",  # 🔁 synced to NagoyAction main, whose parent refs follow main

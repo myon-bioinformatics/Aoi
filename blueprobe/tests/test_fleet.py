@@ -3,22 +3,31 @@
 旧 test_blueprobe_parent_workflow_pins.py と旧 test_benchmark_optimization_guard.py をここに集めた。
 共通の処理は親の fleet_check.py が持ち、ここには BlueProbe 固有の期待値（pin・メッセージ）だけを置く。
 """
+import sys
 import unittest
 import importlib.util, re
 from pathlib import Path
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 # Aoi は子を subtree で並べて 1 回の pytest で回すので、`from vendor import …` は子同士でぶつかる。ファイルパスで読む。
-_spec = importlib.util.spec_from_file_location(
-    "blueprobe_fleet_check", Path(__file__).resolve().parents[1] / "vendor/fleet_check.py")
-fleet = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(fleet)
+fleet = load_vendored("blueprobe_fleet_check", "vendor/fleet_check.py")
 
 ROOT = fleet.repo_root(__file__)
-PARENT_WORKFLOW_PIN = "1368174821fb03be258ecf3312ce0ea809f6ea22"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 ACCEPTED = {
-    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
-    "vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
-}
+    "vendor/cli_args.py",
+    "vendor/fleet_check.py",
+}  # 🔁 locked destinations; they follow main
 ACTION_PINS = {
     "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0",
     "astral-sh/setup-uv": "68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3",
@@ -34,7 +43,7 @@ def _workflow_text():
 # ==== vendor lock: 親の fleet_check（旧 test_no_vendor_lock_is_kept は「lock が無いこと」を見ていた。uv tool はルートの pyproject）
 
 def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED)
+    rows = fleet.check_lock(ROOT)
     assert set(rows) == set(ACCEPTED)
     row = rows["vendor/fleet_check.py"]
     assert (row["repository"], row["source"]) == (fleet.PARENT, "fleet_check.py")
@@ -95,3 +104,6 @@ class ScriptsDescribeThemselves(unittest.TestCase):
         for path in sorted(root.glob("*.py")):
             if path.name != "conftest.py":
                 fleet.check_imports(root, path.name)
+
+    def test_no_top_level_vendor_package_imports(self):
+        assert fleet.check_no_vendor_package_imports(ROOT) == []

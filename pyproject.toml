@@ -10,7 +10,14 @@ requires-python = ">=3.11"
 # git から入るのは標準ライブラリの共有モジュールだけ。研究用ライブラリは下のグループ。
 
 [dependency-groups]
-dev = ["pytest>=8", "coverage>=7", "selectolax>=1", "editables>=0.3"]
+dev = [
+    "pytest>=8",
+    "coverage>=7",
+    "selectolax>=1",
+    "editables>=0.3",
+    # 🌡️ dragowing/tests/test_heatmap_page.py が scripts/build_heatmap_page.py 経由で使う（子の pages グループと同じ）
+    "pysaiyanweboo",
+]
 runtime = [
     "polars>=2",
     "httpx>=0.28",
@@ -23,6 +30,9 @@ runtime = [
 
 [tool.uv]
 default-groups = ["dev", "runtime"]
+
+[tool.uv.sources]
+pysaiyanweboo = { git = "https://github.com/myon-bioinformatics/PySaiyanWeBoo", rev = "main" }
 
 [tool.hatch.build.targets.wheel]
 packages = []

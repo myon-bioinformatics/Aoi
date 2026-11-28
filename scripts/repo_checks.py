@@ -36,7 +36,7 @@ ACTION_USES_DOC = """Aoi の GitHub Actions uses を親リポジトリの書き�
   そのリリースの 40 桁 commit SHA と `# vX.Y.Z`（2026-10-31 myon さんの判断で統一）。
   例: checkout v7.0.1、setup-python v7.1.0、setup-node v7.1.0。
 - 同じリポジトリの reusable workflow は相対パス。
-- 他リポジトリの reusable workflow は 40 桁 SHA。
+- 他リポジトリの reusable workflow は 40 桁 SHA、または子の follow-main による @main。
 - 更新は Dependabot の github-actions（毎月、Asia/Tokyo、PR は 5 件まで）。
   action の uses を書き換える autofix workflow は無い。
 - 親の parent_pin_check は action のタグと SHA を見ない。親リポジトリ自身の
@@ -128,10 +128,10 @@ def _style_problem(raw: str, comment: str) -> str | None:
         if (
             entry.startswith(".github/workflows/")
             and entry.endswith((".yml", ".yaml"))
-            and (ACTION_USES_HEX40.fullmatch(rev) or rev == "main")  # 🔁 own sources follow main (2026-11-28)
+            and (ACTION_USES_HEX40.fullmatch(rev) or rev == "main")
         ):
             return None
-        return "親の reusable workflow は .github/workflows/*.yml@40桁SHA か @main"
+        return "親の reusable workflow は .github/workflows/*.yml@40桁SHA または @main"
     if _needs_sha(action):
         if not ACTION_USES_HEX40.fullmatch(rev) or not PATCH.fullmatch(comment):
             return "actions/* と setup は 40 桁 SHA と # vX.Y.Z"
@@ -383,35 +383,15 @@ def resolve_consumers(root: Path) -> str:
     return "\n".join(lines)
 
 
-def refresh_vendored(root: Path) -> int:
-    """🔁 Copy each vendored file's sha256 from vendor.lock.json (rows follow main) into shared-tools.lock.json."""
-    vendored = {row["destination"]: row["sha256"]
-                for row in json.loads((root / "vendor.lock.json").read_text(encoding="utf-8"))["files"]}
-    lock = load_lock(root)
-    moved = 0
-    for entry in lock["files"]:
-        sha = vendored.get(entry.get("path"))
-        if sha and entry["sha256"] != sha:
-            entry["sha256"], moved = sha, moved + 1
-    if moved:
-        (root / LOCK_NAME).write_text(json.dumps(lock, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    return moved
-
-
 def shared_tools_lock(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=SHARED_TOOLS_LOCK_DOC.splitlines()[0])
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--warn", action="store_true", help="不一致を警告にして終了コード 0")
     parser.add_argument("--resolve-consumers", action="store_true", help="子の main を ls-remote で解決する")
-    parser.add_argument("--refresh-vendored", action="store_true",
-                        help="🔁 vendor.lock.json の写し（main を追う行）の sha256 をこの lock へ写す")
     args = parser.parse_args(argv)
     root = args.root.resolve()
     if args.resolve_consumers:
         print(resolve_consumers(root))
-        return 0
-    if args.refresh_vendored:
-        print(f"{LOCK_NAME}: {refresh_vendored(root)} 件を vendor.lock.json に合わせた")
         return 0
     found = shared_tools_lock_problems(root)
     if not found:
@@ -575,6 +555,7 @@ EXPECTED = frozenset({
 OMITTED = frozenset({
     'certifi', 'h11', 'httpcore', 'httpx', 'numpy', 'polars',
     'polars-runtime-32',
+    'pysaiyanweboo',  # dev-group git dependency for dragowing/tests/test_heatmap_page.py; this lane never runs it
 })
 
 

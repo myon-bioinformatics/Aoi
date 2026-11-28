@@ -3,7 +3,7 @@
 旧 test_epsilon.py・test_standalone_boundary.py・test_standalone_examples.py をここにまとめた（節の頭に旧ファイルの名前を書いた）。
 
 - epsilon: ε を記号のまま扱う check_eps / lift（関数として呼ぶ）
-- standalone: 1 ファイルだけを一時ディレクトリに写し、python -I で CLI（describe / compare / boundary）を動かす
+- standalone: 1 ファイルだけを一時ディレクトリに写し、python -I で CLI（describe / compare / boundary / scale）を動かす
 - uv tool: ルートの pyproject.toml で、この 1 ファイルがそのまま uv tool になる（`uv tool install .`、ビルダーの写しは要らない）
 """
 import importlib.util
@@ -20,11 +20,19 @@ import pytest
 
 import sakanalytics as ep
 
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
 ROOT = Path(__file__).resolve().parents[1]
-_cli_spec = importlib.util.spec_from_file_location("sakanalytics_cli_args", ROOT / "vendor/cli_args.py")
-_cli_args = importlib.util.module_from_spec(_cli_spec)
-sys.modules[_cli_spec.name] = _cli_args
-_cli_spec.loader.exec_module(_cli_args)
+_cli_args = load_vendored("sakanalytics_cli_args", "vendor/cli_args.py")
 
 
 # ==== epsilon（旧 test_epsilon.py）
@@ -117,7 +125,7 @@ class StandaloneExamples(unittest.TestCase):
         self.assertEqual(self.call("compare", "--before", "1,2", "--after", "3,4")["mean_difference"], 2)
 
     def test_stdin_and_files(self):
-        result = subprocess.run([sys.executable, "-I", str(self.script), "describe", "-"], input="1,2,3\n4,5,6\n", text=True, capture_output=True)
+        result = _cli_args.run_cli(self.script, "describe", "-", python_options=("-I",), stdin="1,2,3\n4,5,6\n")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)["mean"], 3.5)
         path = Path(self.temp.name) / "data.csv"
@@ -178,6 +186,15 @@ class StandaloneExamples(unittest.TestCase):
         self.assertEqual(self.run_cli("nan", "--lo", "0").returncode, 2)
         self.assertEqual(self.run_cli("1", "--lo", "2", "--hi", "1").returncode, 2)
 
+    def test_scale_log_and_linear_on_the_copied_file(self):
+        data = self.call("scale", "26235991", "500501", "--anchor", "26235991")
+        self.assertEqual(data, {"mode": "log", "scores": [90, 70]})
+        data = self.call("scale", "--linear", "--factor", ".97", "3", "4")
+        self.assertEqual(data, {"mode": "linear", "scores": [.97 * 3, .97 * 4]})
+        bad = self.run_cli("scale", "-1", "2")
+        self.assertEqual(bad.returncode, 2)
+        self.assertIn("nonnegative", bad.stderr)
+
 
 # ==== uv tool（旧 test_standalone_boundary.py の SharedUvToolBuildTest。PythDRagoras #54 に倣い、ルートの pyproject がそのまま uv tool）
 
@@ -190,3 +207,17 @@ class SharedUvToolBuildTest(unittest.TestCase):
         self.assertEqual(project["requires-python"], ">=3.11")
         self.assertEqual(config["tool"]["setuptools"]["py-modules"], ["sakanalytics"])   # 入るのはこの 1 ファイルだけ
         self.assertFalse((ROOT / "vendor" / "uv_tool_build.py").exists())
+
+
+def test_sakanalytics_imports_only_the_standard_library():
+    import ast
+    tree = ast.parse((ROOT / "sakanalytics.py").read_text(encoding="utf-8"))
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            names.add(node.module.split(".")[0])
+    assert "polars" not in names and "npb" not in names
+    assert names <= set(sys.stdlib_module_names)
+

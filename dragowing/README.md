@@ -1,10 +1,10 @@
 # DRAgoWing
 
 <p align="center">
-  <img src="docs/brand/icon.png" alt="DRAgoWing icon" width="160" />
+  <img src="https://myon-bioinformatics.github.io/DRAgoWing/icon.png" alt="DRAgoWing icon" width="160" />
 </p>
 
-[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+[Icon](https://myon-bioinformatics.github.io/DRAgoWing/icon.png) · [Favicon](https://myon-bioinformatics.github.io/DRAgoWing/favicon.png)
 
 > Lay down the record without re-judging it.
 >
@@ -42,7 +42,7 @@ This repository was split out from the [Aoi](https://github.com/myon-bioinformat
 
 ### Standalone HTML inspection
 
-🐉 `dragowing.py` is the whole of DRAgoWing in one standard-library file (reports, four forms, FFSS figures, element counts). Counting elements in any saved UTF-8 HTML document needs nothing else:
+🐉 `dragowing.py` is the whole of DRAgoWing in one standard-library file (reports, four forms, FFSS figures, element counts). Counting elements in any saved UTF-8 HTML document and rendering the four-form text from JSONL records need no sibling modules:
 
 ```bash
 python dragowing.py page.html --tag p --tag img
@@ -51,7 +51,7 @@ uv tool install .   # or: uv tool install git+https://github.com/myon-bioinforma
 dragowing page.html --tag p
 ```
 
-The tool project contains only `dragowing.py` and build metadata, and its runtime has no external Python dependencies. Reports and SVG also read `vendor/` (`markdown.py`, `plotly_min`), so run them from a checkout. Rebuild the tool project after changing `dragowing.py`.
+The tool project contains only `dragowing.py` and build metadata, and its runtime has no external Python dependencies. HTML reports and SVG also read `vendor/` (`markdown.py`, `plotly_min`), so run them from a checkout. Rebuild the tool project after changing `dragowing.py`.
 
 For example, after installing the tool:
 
@@ -111,6 +111,11 @@ Markdown for HTML is still needed.
 | `scripts/`, `reports/`, `docs/` | Vendor-lock check, benchmarks and the stdlib-substitute experiment; Aoi-side report building; docs |
 
 ## Tests
+
+[Formal overlap checks](docs/formal-verification.md) prove that every original
+row index belongs to exactly one Boolean-signature region. Tests compare the
+real stdlib overlap output with an independent row-index partition; rendering
+and scientific interpretation remain separate checks.
 
 Cycle data (outputs in `cycles/`), [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) (`propositions` and `rule_search`), and [QueRyu](https://github.com/myon-bioinformatics/QueRyu) (`ask`) stay in Aoi. They are not copied; Aoi's main is checked out and passed in.
 
@@ -215,12 +220,12 @@ python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --ou
 
 ### ヒートマップ
 
-[ヒートマップを開く](https://myon-bioinformatics.github.io/tools/heatmap/)（ポートフォリオの 🧭 Tools & Demos。公開時に `scripts/build_heatmap_page.py` で組む）。このリポジトリの Pages は [利用ガイド](https://myon-bioinformatics.github.io/DRAgoWing/)（🎞 GIF デモ / 🧩 機能一覧）。
+[ヒートマップを開く](https://myon-bioinformatics.github.io/tools/#heatmap)（ポートフォリオの 🧰 Tools。公開時に `scripts/build_heatmap_page.py` で組む）。このリポジトリの Pages は [利用ガイド](https://myon-bioinformatics.github.io/DRAgoWing/)（🎞 GIF デモ / 🧩 機能一覧）。
 
 ![ヒートマップ: 行列を貼って描画し、色の段階と値の表示を切り替え、Plotly の heatmap を読み、スマホ幅でも描く](docs/evidence/heatmap.gif)
 
-行列または単一の Plotly heatmap を貼り付けるか、JSON ファイルを選ぶ。
-色の段階と値の表示を調整し、SVG または Ironmate で編集できるシーン JSON を保存する。PNG が必要なときは長辺を選んで「PNGを保存」を押す。欠測セルは透明のまま書き出す。
+行列・CSV/TSV または Plotly heatmap を貼り付けるか、ファイルを開く（サンプルデータ切替・ブラウザ内下書き保存対応）。
+配色パレット・段階数・`zmin`/`zmax`・値の表示・転置/上下反転・軸ラベル/凡例を調整し、統計サマリー・数値テーブル・セル詳細を確認して、SVG / CSV / PNG / PNG Base64 または Image Studio で編集できるシーン JSON を保存・コピーする。欠測セルは透明のまま書き出す（見た目は PySaiyanWeBoo のテーマ切替に対応）。
 同じシーンを CLI から生成するには `python -S dragowing.py --heatmap matrix.json > scene.json`。
 
 ## 核酸・タンパク質の原子座標

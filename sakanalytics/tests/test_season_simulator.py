@@ -1,8 +1,23 @@
 """Synthetic fixtures only. Exhaustion is independent of the constraint model."""
+import importlib.util
 import json, random, subprocess, sys
 from dataclasses import replace; from importlib.util import find_spec; from itertools import product; from pathlib import Path
 
 import pytest
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("sakanalytics_cli_args", "vendor/cli_args.py")
+Command, run_cli, run_command = _cli_args.Command, _cli_args.run_cli, _cli_args.run_command
 
 # Only tests that actually invoke the solver require the optional dependency.
 requires_solver = pytest.mark.skipif(find_spec('ortools') is None,
@@ -11,8 +26,6 @@ requires_solver = pytest.mark.skipif(find_spec('ortools') is None,
 from season_simulator import (Game, Rules, Snapshot, baseline_probabilities,
     calendar_games, crossing_events, forecast, magic_events, ranking, snapshot, wilson)
 from season_exact import qualification, solve, title_magic
-
-
 def rule(members=('A', 'B', 'C'), central=True, slots=2, previous=None):
     return Rules(tuple(members), tuple(previous or members), central, slots, 'synthetic-v1', 'synthetic')
 
@@ -174,9 +187,10 @@ def test_cli_daily_replay(tmp_path, exact):
     src.write_text(json.dumps(data))
     script = Path(__file__).resolve().parents[1] / 'npb' / 'season_simulator.py'
     # The stdlib CLI also runs with all site-packages disabled.
-    subprocess.run([sys.executable, *([] if exact else ['-S']), str(script), str(src),
+    sim = run_command(Command([sys.executable, *([] if exact else ['-S']), str(script), str(src),
                     '--as-of', '2022-01-01', '--through', '2022-01-04', '--trials', '30',
-                    *(['--exact'] if exact else []), '--output', str(dest)], check=True, cwd=tmp_path)
+                    *(['--exact'] if exact else []), '--output', str(dest)]), cwd=tmp_path)
+    assert sim.returncode == 0, sim.stderr
     out = json.loads(dest.read_text())
     assert len(out['daily']) == 4
     if exact:
@@ -282,10 +296,9 @@ def test_expected_total_games_validation(tmp_path):
     script = Path(__file__).resolve().parents[1] / 'npb' / 'season_simulator.py'
 
     # Passing incorrect expected total games via CLI fails
-    res = subprocess.run([sys.executable, str(script), str(src),
-                          '--as-of', '2022-01-01', '--trials', '10',
-                          '--expected-total-games', '12', '--output', str(dest)],
-                         capture_output=True, text=True)
+    res = run_cli(script, str(src),
+                  '--as-of', '2022-01-01', '--trials', '10',
+                  '--expected-total-games', '12', '--output', str(dest))
     assert res.returncode == 2
     assert "error: total games for team 'X' is 24, expected 12" in res.stderr
     assert 'Traceback' not in res.stderr

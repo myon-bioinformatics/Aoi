@@ -3,10 +3,10 @@
 🌐 [GitHub Pages](https://myon-bioinformatics.github.io/PythDRagoras/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
 
 <p align="center">
-  <img src="docs/brand/icon.png" alt="PythDRagoras icon" width="160" />
+  <img src="https://myon-bioinformatics.github.io/PythDRagoras/icon.png" alt="PythDRagoras icon" width="160" />
 </p>
 
-[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+[Icon](https://myon-bioinformatics.github.io/PythDRagoras/icon.png) · [Favicon](https://myon-bioinformatics.github.io/PythDRagoras/favicon.png)
 
 > Propositions, precedents, objections.
 >
@@ -104,6 +104,10 @@ Main functions in `npb/season.py` and others:
 | `core/littlebit_approx.py` | Turns latent patterns of a candidate 0/1 matrix into candidate conditions (search; judgement is `core/rule_search.py`) |
 
 ## Tests
+
+[Formal rule checks](docs/formal-verification.md) prove satisfiability and the
+soundness of implication/exclusivity for the bitmask rule fragment. Independent
+set-based tests connect those statements to the actual Python implementation.
 
 Cycle data (`cycles/`), `scripts/`, and SakAnalytics stay in Aoi. They are not copied; CI resolves Aoi's main at run time and checks it out. Locally, use main.
 

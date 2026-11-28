@@ -1,11 +1,26 @@
 """littlebit_survey: 乗算・浮動小数なしのコア、FWHT の往復、シナリオごとの合格線（オフライン）。"""
 
+import importlib.util
 import ast, inspect, random, subprocess, sys
 from pathlib import Path
 
 import pytest
 
 import littlebit_survey as ls
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("pythdragoras_cli_args", "vendor/cli_args.py")
+run_cli = _cli_args.run_cli
 
 # シナリオごとの合格線。seed 1〜30 で測った最小値（README の表）から余裕を取って決めた。
 THRESHOLDS = {
@@ -128,7 +143,7 @@ def test_isolated_noise_rejection_matters():
 
 
 def test_report_cli():
-    out = subprocess.run([sys.executable, str(Path(ls.__file__)), "--report"], capture_output=True, text=True)
+    out = run_cli(Path(ls.__file__), "--report")
     assert out.returncode == 0, out.stderr
     lines = out.stdout.strip().splitlines()
     assert lines[0].startswith("| シナリオ |") and len(lines) == 2 + len(ls.SCENARIOS)

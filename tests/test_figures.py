@@ -13,6 +13,8 @@ from dragowing.dragowing import PLOTLY_JS_CDN, fetch_plotly_js, reset_plotly_js_
 from dragowing.overlap import default_conditions, load_overlap
 from dragowing.dragowing import read_jsonl
 from ask import registration_status
+
+from vendor.cli_args import Command, run_command
 from reports.build_reports import page as report_page
 
 import aoi_paths
@@ -331,11 +333,8 @@ def test_cli_writes_standalone_html_and_svg_without_chrome(tmp_path, monkeypatch
     assert not (embedded / "plotly.min.js").exists()
     embedded_props = (embedded / "propositions.html").read_text(encoding="utf-8")
     assert fetch_plotly_js()[:80] not in embedded_props
-    proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"],
-        check=False,
-        capture_output=True,
-        text=True,
+    proc = run_command(
+        Command([sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "mod"), "--id", "P9"]),
         **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 0, proc.stderr
@@ -345,11 +344,8 @@ def test_cli_writes_standalone_html_and_svg_without_chrome(tmp_path, monkeypatch
     monkeypatch.setenv("CHROME", str(tmp_path / "missing-chrome"))
     write_svg(heatmap_figure([season_row()], "wins_vs_pythag"), tmp_path / "x.svg")
     assert (tmp_path / "x.svg").read_text(encoding="utf-8").startswith("<svg")
-    drawn = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "svg"), "--svg"],
-        check=False,
-        capture_output=True,
-        text=True,
+    drawn = run_command(
+        Command([sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "svg"), "--svg"]),
         **_dragowing_module_run(sibling_env, {"CHROME": str(tmp_path / "missing-chrome"), "PATH": ""}),
     )
     assert drawn.returncode == 0, drawn.stderr
@@ -365,21 +361,15 @@ def test_cli_refuses_a_missing_expression_file_and_a_text_column(tmp_path, sibli
     dump_jsonl(results / "season.jsonl", [season_row()])
     dump_jsonl(results / "propositions.jsonl", [proposition()])
     assert main([str(results), "--out", str(tmp_path / "o"), "--id", "E25"]) == 1
-    proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o2"), "--id", "E25"],
-        check=False,
-        capture_output=True,
-        text=True,
+    proc = run_command(
+        Command([sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o2"), "--id", "E25"]),
         **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 1
     assert "結果が読めない" in proc.stderr
     assert "結果にない" not in proc.stderr
-    proc = subprocess.run(
-        [sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o3"), "--column", "team_name"],
-        check=False,
-        capture_output=True,
-        text=True,
+    proc = run_command(
+        Command([sys.executable, "-m", "dragowing", str(results), "--out", str(tmp_path / "o3"), "--column", "team_name"]),
         **_dragowing_module_run(sibling_env),
     )
     assert proc.returncode == 1

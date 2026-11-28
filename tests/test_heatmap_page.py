@@ -8,10 +8,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+from vendor.cli_args import run_cli
+
 
 def _page() -> str:
-    return subprocess.run([sys.executable, str(ROOT / "scripts/build_heatmap_page.py")], cwd=ROOT, capture_output=True,
-                          text=True, check=True).stdout
+    page = run_cli(ROOT / "scripts/build_heatmap_page.py", cwd=ROOT)
+    assert page.returncode == 0, page.stderr
+    return page.stdout
 
 
 def _pswb():

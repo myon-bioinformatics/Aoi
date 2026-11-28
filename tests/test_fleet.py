@@ -21,12 +21,16 @@ ACCEPTED = {"vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
             # 📊 親の stdlib_min の plotly_min（静止の図の SVG を Chrome なしで描く）
             "vendor/tools/stdlib_min/plotly_min.py": "3dbb1c6b8a8b069c6955d0b09a5280ab6e92fb32",
             # 📝 自作の markdown.py（ページの文章。Python-Markdown の代わり）
-            "vendor/markdown/markdown.py": "733ff26f6f2f642f9e5895955af8a7b83d68c962"}
+            "vendor/markdown/markdown.py": "733ff26f6f2f642f9e5895955af8a7b83d68c962",
+            "vendor/cli_args.py": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
+            "vendor/cli_args-LICENSE": "55d8d0bfe699869c2439ff9ca86abfd3aa879846"}
 # destination -> (repository, source)。Aoi の写しは vendor/aoi/<source>。使わない shrink_module.py・polars_min.py などは置かない
 SOURCES = {"vendor/aoi/shrink/numpy_min.py": ("myon-bioinformatics/Aoi", "shrink/numpy_min.py")}
 SOURCES["vendor/fleet_check.py"] = (fleet.PARENT, "fleet_check.py")
 SOURCES["vendor/tools/stdlib_min/plotly_min.py"] = (fleet.PARENT, "tools/stdlib_min/plotly_min.py")
 SOURCES["vendor/markdown/markdown.py"] = ("myon-bioinformatics/markdown", "markdown.py")
+SOURCES["vendor/cli_args.py"] = ("myon-bioinformatics/cli_args", "cli_args.py")
+SOURCES["vendor/cli_args-LICENSE"] = ("myon-bioinformatics/cli_args", "LICENSE")
 # 🌡️ the heatmap page (scripts/build_heatmap_page.py) builds its sheet, controls and browser modules from it under python -S
 SETUP_NODE = "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0"
 SETUP_UV = "astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3"

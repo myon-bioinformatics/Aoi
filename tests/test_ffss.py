@@ -13,6 +13,8 @@ from dragowing.dragowing import ffss_figures
 from dragowing.dragowing import read_ffss, read_jsonl
 from dragowing.dragowing import figure_svg, plotly_min
 
+from vendor.cli_args import run_cli
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tests" / "ffss_records.source.json"
 RECORDS = ROOT / "tests" / "ffss_records.jsonl"
@@ -110,8 +112,7 @@ def test_invalid_run_reports_figure_and_nan_is_rejected():
 
 
 def test_ffss_entry_uses_only_stdlib(tmp_path):
-    result = subprocess.run([sys.executable, "-S", str(ROOT / "dragowing.py"), "--ffss", str(RECORDS), "--out", str(tmp_path)],
-                            capture_output=True, text=True)
+    result = run_cli(ROOT / "dragowing.py", "--ffss", str(RECORDS), "--out", str(tmp_path), python_options=("-S",))
     assert result.returncode == 0, result.stderr
     assert len(list((tmp_path / "svg").glob("*.svg"))) == 9
 

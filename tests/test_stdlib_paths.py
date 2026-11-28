@@ -5,14 +5,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts" / "run_stdlib_paths.py"
 
+from vendor.cli_args import run_cli
+
 
 def test_min_refuses_while_numpy_is_installed(tmp_path):
-    proc = subprocess.run(
-        [sys.executable, str(RUNNER), "--deps", "min", str(tmp_path / "out.json")],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    proc = run_cli(RUNNER, "--deps", "min", str(tmp_path / "out.json"))
     assert proc.returncode != 0
     assert "numpy" in proc.stderr
     assert not (tmp_path / "out.json").exists()

@@ -25,12 +25,12 @@ ROOT = Path(__file__).resolve().parents[1]
 fleet = load_vendored("nagoyaction_fleet_check", "vendor/fleet_check.py")
 
 AOI = "myon-bioinformatics/Aoi"
-PARENT_WORKFLOW_PIN = "27dedd9651efc816fa88d8922adb5f242725df69"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 ACCEPTED = {
-    "vendor/fleet_check.py": "eee8c096fc753465a5d5a26264e64c12e555638f",
-    "vendor/cli_args.py": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
-    "vendor/cli_args-LICENSE": "5ae22b1a1b808eca93e3c385a8db867fbeb8ee32",
-}
+    "vendor/fleet_check.py",
+    "vendor/cli_args.py",
+    "vendor/cli_args-LICENSE",
+}  # 🔁 locked destinations; they follow main
 TOOL, ENV_VAR = "nagoyaction.py", "NAGOYACTION_PYTHON"
 CASES = [
     {"id": "help", "args": ["--help"], "rc": 0},
@@ -53,7 +53,7 @@ def test_vendor_lock_matches_checked_in_bytes_and_accepted_commits():
         "vendor/cli_args.py": ("myon-bioinformatics/cli_args", "cli_args.py"),
         "vendor/cli_args-LICENSE": ("myon-bioinformatics/cli_args", "LICENSE"),
     }
-    rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources=sources)
+    rows = fleet.check_lock(ROOT, sources=sources)
     assert set(rows) == set(sources)  # no row from any other repository either
     launcher = rows["vendor/py_launch.cjs"]["commit"]
     assert rows["vendor/aoi-LICENSE"]["commit"] == launcher

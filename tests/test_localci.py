@@ -200,6 +200,9 @@ def test_classify_pin():
     assert localci.classify_pin("v10", latest, "astral-sh/setup-uv") == "unpinned"
     assert localci.classify_pin("v1", latest, "example/widget") == "unpinned"
     assert localci.classify_pin("v1", latest, "myon-bioinformatics/myon-bioinformatics") == "unpinned"
+    assert localci.classify_pin("main", latest, "myon-bioinformatics/myon-bioinformatics") == "main"   # 🔁 own: follows main
+    assert localci.classify_pin("main", latest, "example/widget") == "unpinned"
+    assert not localci.pin_fails("main", True)
     assert localci.classify_pin(SHA_A, None) == "no-release"
     assert localci.classify_pin("v1", None, "actions/checkout") == "major"
     assert localci.classify_pin("v1", None, "actions/setup-python") == "unpinned"
@@ -723,7 +726,7 @@ def test_workflow_delegates_resolution_and_follows_parent_uses_style():
     assert uses
     for item in uses:
         repo, ref = item["repo"], item["ref"]
-        assert localci.SHA_RE.fullmatch(ref.lower()), item
+        assert localci.SHA_RE.fullmatch(ref.lower()) or (ref == "main" and repo.startswith("myon-bioinformatics/")), item
     assert "actions/setup-python" not in text
     assert "astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0" in text
     assert "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1" in text

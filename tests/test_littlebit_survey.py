@@ -7,6 +7,14 @@ import pytest
 
 import littlebit_survey as ls
 
+import importlib.util as _ilu, pathlib as _pl, sys as _sys
+_cli_spec = _ilu.spec_from_file_location("pythdragoras_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
+_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
+if _cli_spec.name not in _sys.modules:
+    _sys.modules[_cli_spec.name] = _cli_args
+    _cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
+
 # シナリオごとの合格線。seed 1〜30 で測った最小値（README の表）から余裕を取って決めた。
 THRESHOLDS = {
     "Dense Object": {"iou": 0.95, "skip": 0.70, "com": 0.5},
@@ -128,7 +136,7 @@ def test_isolated_noise_rejection_matters():
 
 
 def test_report_cli():
-    out = subprocess.run([sys.executable, str(Path(ls.__file__)), "--report"], capture_output=True, text=True)
+    out = run_cli(Path(ls.__file__), "--report")
     assert out.returncode == 0, out.stderr
     lines = out.stdout.strip().splitlines()
     assert lines[0].startswith("| シナリオ |") and len(lines) == 2 + len(ls.SCENARIOS)

@@ -3,6 +3,14 @@ from pathlib import Path
 import pytest
 from score_sensitivity import analyze, sweep, team_games
 
+import importlib.util as _ilu, pathlib as _pl, sys as _sys
+_cli_spec = _ilu.spec_from_file_location("pythdragoras_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
+_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
+if _cli_spec.name not in _sys.modules:
+    _sys.modules[_cli_spec.name] = _cli_args
+    _cli_spec.loader.exec_module(_cli_args)
+run_cli = _cli_args.run_cli
+
 
 def oracle(scores):
     w, l = sum(a > b for a,b in scores), sum(a < b for a,b in scores)
@@ -79,7 +87,8 @@ def test_cli(tmp_path):
     config.write_text('[focus]\nteam="d"\n[teams]\nd={name="中日"}\n',encoding='utf-8')
     out = tmp_path/'out.json'
     md_out = tmp_path/'out.md'
-    subprocess.run([sys.executable,str(Path(__file__).parents[1]/'npb'/'score_sensitivity.py'),'--games',str(source),'--config',str(config),'--out',str(out),'--markdown',str(md_out)],check=True)
+    scored = run_cli(Path(__file__).parents[1]/'npb'/'score_sensitivity.py','--games',str(source),'--config',str(config),'--out',str(out),'--markdown',str(md_out))
+    assert scored.returncode == 0, scored.stderr
     assert json.loads(out.read_text())['schema']=='aoi-score-sensitivity/1'
     assert md_out.exists()
     content = md_out.read_text(encoding='utf-8')

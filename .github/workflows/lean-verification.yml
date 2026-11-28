@@ -1,0 +1,36 @@
+name: Lean verification
+
+on:
+  pull_request:
+    paths:
+      - "formal/**"
+      - "dragowing.py"
+      - "overlap.py"
+      - "tests/test_formal_overlap_partition.py"
+      - ".github/workflows/lean-verification.yml"
+  push:
+    branches: [main]
+    paths:
+      - "formal/**"
+      - "dragowing.py"
+      - "overlap.py"
+      - "tests/test_formal_overlap_partition.py"
+      - ".github/workflows/lean-verification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  overlap-partition:
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-lean-verify.yml@27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c
+    with:
+      project-directory: formal
+      proof: OverlapPartition.lean
+      theorems: |
+        DRAgoWing.region_contains_exact_signature
+        DRAgoWing.every_row_once

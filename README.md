@@ -112,6 +112,11 @@ Markdown for HTML is still needed.
 
 ## Tests
 
+[Formal overlap checks](docs/formal-verification.md) prove that every original
+row index belongs to exactly one Boolean-signature region. Tests compare the
+real stdlib overlap output with an independent row-index partition; rendering
+and scientific interpretation remain separate checks.
+
 Cycle data (outputs in `cycles/`), [PythDRagoras](https://github.com/myon-bioinformatics/PythDRagoras) (`propositions` and `rule_search`), and [QueRyu](https://github.com/myon-bioinformatics/QueRyu) (`ask`) stay in Aoi. They are not copied; Aoi's main is checked out and passed in.
 
 ```bash
@@ -215,7 +220,7 @@ python -S dragowing/reports/build_reports.py --markdown-root .deps/markdown --ou
 
 ### ヒートマップ
 
-[ヒートマップを開く](https://myon-bioinformatics.github.io/tools/heatmap/)（ポートフォリオの 🧰 Tools。公開時に `scripts/build_heatmap_page.py` で組む）。このリポジトリの Pages は [利用ガイド](https://myon-bioinformatics.github.io/DRAgoWing/)（🎞 GIF デモ / 🧩 機能一覧）。
+[ヒートマップを開く](https://myon-bioinformatics.github.io/tools/#heatmap)（ポートフォリオの 🧰 Tools。公開時に `scripts/build_heatmap_page.py` で組む）。このリポジトリの Pages は [利用ガイド](https://myon-bioinformatics.github.io/DRAgoWing/)（🎞 GIF デモ / 🧩 機能一覧）。
 
 ![ヒートマップ: 行列を貼って描画し、色の段階と値の表示を切り替え、Plotly の heatmap を読み、スマホ幅でも描く](docs/evidence/heatmap.gif)
 

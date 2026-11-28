@@ -6,7 +6,7 @@ numpy は dev 依存で、ここで突き合わせるためだけに使う。NUM
 import ast, hashlib, importlib.util, json, os, subprocess, sys
 from pathlib import Path
 
-import numpy
+import math
 import pytest
 
 import suggest
@@ -31,6 +31,14 @@ QUESTIONS = [
 ]
 
 
+def _numpy_oracle():
+    if os.environ.get("QUERYU_NO_NUMPY") == "1":
+        assert importlib.util.find_spec("numpy") is None
+        pytest.skip("NumPy oracle runs in the full test environment")
+    import numpy
+    return numpy
+
+
 def _suggest_on_real_numpy():
     """同じ suggest.py を、np だけ本物の numpy に差し替えて読む。"""
     name = "queryu_suggest_real_numpy"
@@ -38,7 +46,7 @@ def _suggest_on_real_numpy():
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
     spec.loader.exec_module(module)
-    module.np = numpy
+    module.np = _numpy_oracle()
     return module
 
 
@@ -93,11 +101,11 @@ def test_suggest_matches_real_numpy():
 
 def test_document_frequency_counts_a_repeated_term_once_per_document():
     index = suggest.Index([("P1", "aa"), ("P2", "a"), ("P3", "！？")])
-    assert index.idf[index.vocab["a"]] == pytest.approx(1 + numpy.log(4 / 3))
-    assert index.idf[index.vocab["aa"]] == pytest.approx(1 + numpy.log(4 / 2))
+    assert index.idf[index.vocab["a"]] == pytest.approx(1 + math.log(4 / 3))
+    assert index.idf[index.vocab["aa"]] == pytest.approx(1 + math.log(4 / 2))
 
     empty = suggest.Index([("P1", "！？")])
-    assert empty.idf.tolist() == pytest.approx([1 + numpy.log(2)])
+    assert empty.idf.tolist() == pytest.approx([1 + math.log(2)])
     assert empty.vec("未知").tolist() == [0.0]
 
 
@@ -105,6 +113,7 @@ def test_unit_matches_real_numpy():
     real = _suggest_on_real_numpy()
     rows = [[3.0, 4.0, 0.0], [0.0, 0.0, 0.0], [1.0, -2.0, 2.0]]
     got = suggest._unit(suggest.np.array(rows, suggest.np.float32)).tolist()
+    numpy = real.np
     want = real._unit(numpy.array(rows, numpy.float32)).tolist()
     assert numpy.allclose(got, want, atol=1e-6)
 
@@ -149,10 +158,11 @@ def test_missing_libraries_fall_back_to_stdlib(monkeypatch):
     spec.loader.exec_module(module)
     assert "lapack" in looked_up
     assert module.BACKEND == "stdlib"
-    real = numpy.array([[1.0, 2.0], [3.0, 4.0], [5.0, 7.0]])
-    s_real = numpy.linalg.svd(real, full_matrices=False, compute_uv=False)
-    s_mine = module.linalg.svd(module.array(real.tolist()), full_matrices=False, compute_uv=False)
-    assert numpy.allclose(s_mine.tolist(), s_real, atol=1e-9)
+    matrix = module.array([[1.0, 2.0], [3.0, 4.0], [5.0, 7.0]])
+    singular = module.linalg.svd(matrix, full_matrices=False, compute_uv=False)
+    # Eigenvalues of A.T @ A have sum 104 and product 14.
+    expected = [math.sqrt(52 + sign * math.sqrt(2690)) for sign in (1, -1)]
+    assert singular.tolist() == pytest.approx(expected, abs=1e-9)
 
 
 def test_backend_matches_ci_lane():

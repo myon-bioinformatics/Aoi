@@ -7,6 +7,8 @@ import pytest
 
 import littlebit_survey as ls
 
+from vendor.cli_args import run_cli
+
 # シナリオごとの合格線。seed 1〜30 で測った最小値（README の表）から余裕を取って決めた。
 THRESHOLDS = {
     "Dense Object": {"iou": 0.95, "skip": 0.70, "com": 0.5},
@@ -128,7 +130,7 @@ def test_isolated_noise_rejection_matters():
 
 
 def test_report_cli():
-    out = subprocess.run([sys.executable, str(Path(ls.__file__)), "--report"], capture_output=True, text=True)
+    out = run_cli(Path(ls.__file__), "--report")
     assert out.returncode == 0, out.stderr
     lines = out.stdout.strip().splitlines()
     assert lines[0].startswith("| シナリオ |") and len(lines) == 2 + len(ls.SCENARIOS)

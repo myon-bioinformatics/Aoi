@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 from score_sensitivity import analyze, sweep, team_games
 
+from vendor.cli_args import run_cli
+
 
 def oracle(scores):
     w, l = sum(a > b for a,b in scores), sum(a < b for a,b in scores)
@@ -79,7 +81,8 @@ def test_cli(tmp_path):
     config.write_text('[focus]\nteam="d"\n[teams]\nd={name="中日"}\n',encoding='utf-8')
     out = tmp_path/'out.json'
     md_out = tmp_path/'out.md'
-    subprocess.run([sys.executable,str(Path(__file__).parents[1]/'npb'/'score_sensitivity.py'),'--games',str(source),'--config',str(config),'--out',str(out),'--markdown',str(md_out)],check=True)
+    scored = run_cli(Path(__file__).parents[1]/'npb'/'score_sensitivity.py','--games',str(source),'--config',str(config),'--out',str(out),'--markdown',str(md_out))
+    assert scored.returncode == 0, scored.stderr
     assert json.loads(out.read_text())['schema']=='aoi-score-sensitivity/1'
     assert md_out.exists()
     content = md_out.read_text(encoding='utf-8')

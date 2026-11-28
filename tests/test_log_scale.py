@@ -4,18 +4,26 @@
 """
 from __future__ import annotations
 
+import importlib.util
 import io, json, math, os, subprocess, sys, tempfile, unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # sakanalytics.py はリポジトリ根（python -S -m unittest でも読める）
 import sakanalytics as scale  # noqa: E402
-import importlib.util as _ilu, pathlib as _pl, sys as _sys
-_cli_spec = _ilu.spec_from_file_location("sakanalytics_cli_args", _pl.Path(__file__).resolve().parents[1] / "vendor/cli_args.py")
-_cli_args = _sys.modules.get(_cli_spec.name) or _ilu.module_from_spec(_cli_spec)
-if _cli_spec.name not in _sys.modules:
-    _sys.modules[_cli_spec.name] = _cli_args
-    _cli_spec.loader.exec_module(_cli_args)
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+_cli_args = load_vendored("sakanalytics_cli_args", "vendor/cli_args.py")
 run_cli = _cli_args.run_cli  # noqa: E402
 
 
@@ -199,7 +207,6 @@ class AdjustNarrowAndLinearTests(unittest.TestCase):
             scale.round_score(float("nan"))
 
 
-
 class ScaleCliTests(unittest.TestCase):
     def invoke(self, argv, stdin=""):
         stdout, stderr = io.StringIO(), io.StringIO()
@@ -293,7 +300,6 @@ class LeagueLaboratoryStandaloneTests(unittest.TestCase):
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--cycle-dir", result.stdout)
-
 
 
 if __name__ == "__main__":
